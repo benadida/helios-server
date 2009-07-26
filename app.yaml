@@ -1,0 +1,31 @@
+﻿application: iacrhelios
+version: 1
+runtime: python
+api_version: 1
+
+default_expiration: '3650d'
+
+handlers:
+- url: /static/auth
+  static_dir: auth/media
+  secure: always
+
+- url: /static/helios
+  static_dir: helios/media
+  secure: always
+  
+- url: /static
+  static_dir: iacr/media
+  secure: always
+
+- url: /booth
+  static_dir: heliosbooth
+  secure: always
+  
+- url: /verifier
+  static_dir: heliosverifier
+  secure: always
+
+- url: /.*
+  script: django-gae.py
+  secure: always
