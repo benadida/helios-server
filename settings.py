@@ -117,7 +117,7 @@ INSTALLED_APPS = (
     'appengine_django',
     'auth',
     'helios',
-    'votwee',
+    'iacr',
 )
 
 
@@ -125,4 +125,4 @@ APPEND_SLASH = False
 DEBUG = True
 TEMPLATE_DEBUG = True
 
-URL_HOST = "http://votwee.com"
+URL_HOST = "https://iacr-helios.appspot.com"
