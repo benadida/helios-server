@@ -107,7 +107,7 @@ DEFAULT_FROM_EMAIL = 'ben@adida.net'
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'votweerulez!!!ohyeah,andheliostoo'
+SECRET_KEY = 'iacrrulez!!!ohyeah,andheliostoo'
 
 #LOGIN_URL = '/account/login/'
 #LOGOUT_URL = '/account/logout/'
@@ -126,3 +126,5 @@ DEBUG = True
 TEMPLATE_DEBUG = True
 
 URL_HOST = "https://iacr-helios.appspot.com"
+
+IACR_ELECTION_UUID = 'foobar'

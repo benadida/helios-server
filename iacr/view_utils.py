@@ -10,6 +10,8 @@ from django.shortcuts import render_to_response
 
 from auth.security import get_user
 
+from django.conf import settings
+
 ##
 ## template abstraction
 ##
@@ -18,6 +20,7 @@ def render_template(request, template_name, vars = {}):
   
   vars_with_user = vars.copy()
   vars_with_user['user'] = get_user(request)
+  vars_with_user['settings'] = settings
   
   return render_to_response('iacr/templates/%s.html' % template_name, vars_with_user)
   

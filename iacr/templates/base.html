@@ -31,12 +31,6 @@
     <div id="content">
         <div id="header">
         {% block header %}
-{% if user %}
-logged in as <b>{{user.name}} ({{user.user_type}})</b>
-[<a href="{% url auth.views.logout %}?return_url={{CURRENT_URL}}">logout</a>]
-{% else %}
-not logged in. [<a href="{% url auth.views.index %}?return_url={{CURRENT_URL}}">login</a>]
-{% endif %}
         {% endblock %}
         </div>
       {% block content %}{% endblock %}

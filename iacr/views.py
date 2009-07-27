@@ -1,5 +1,5 @@
 """
-Votwee specific views
+IACR specific views
 """
 
 from helios.models import *

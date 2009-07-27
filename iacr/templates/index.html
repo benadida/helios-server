@@ -4,29 +4,5 @@
 {% block content %}
 <h1>Welcome to IACR Helios</h1>
 
-{% if user %}
-<p style="font-size: 1.4em;">
-logged in as <b>{{user.name}}</b>.
-</p>
-
-<p>
-    {{elections|length}} elections administered: 
-{% for e in elections %}
-<a href="{% url helios.views.one_election_view e.uuid %}">{{e.name}}</a>&nbsp;&nbsp;&nbsp;
-{% endfor %}
-</p>
-
-<p>
-    {{elections_registered|length}} elections for which you're registered: 
-{% for e in elections_registered %}
-<a href="{% url helios.views.one_election_view e.uuid %}">{{e.name}}</a>&nbsp;&nbsp;&nbsp;
-{% endfor %}
-</p>
-
-<p>
-    <a href="{% url helios.views.election_new %}">create an election</a>
-</p>
-{% else %}
-<a href="{% url auth.views.index %}">log in</a>
-{% endif %}
+<a href="{% url helios.views.one_election_view settings.IACR_ELECTION_UUID %}">the election</a>
 {% endblock %}
