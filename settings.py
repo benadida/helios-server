@@ -109,7 +109,7 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'iacrrulez!!!ohyeah,andheliostoo'
 
-#LOGIN_URL = '/account/login/'
+LOGIN_URL = '/auth/'
 #LOGOUT_URL = '/account/logout/'
 #LOGIN_REDIRECT_URL = '/'
 
