@@ -9,5 +9,5 @@ import auth.models
 
 helios.TEMPLATE_BASE = "iacr/templates/base.html"
 helios.ADMIN_ONLY = True
-helios.ADMIN = auth.models.User.get_or_create(user_type = 'twitter', user_id = 'benadidatest')
+helios.ADMIN = auth.models.User.get_or_create(user_type = 'password', user_id = 'benadida')
 helios.SELF_REGISTRATION = False
