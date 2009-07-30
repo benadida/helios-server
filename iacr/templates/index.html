@@ -1,8 +1,19 @@
 {% extends 'iacr/templates/base.html' %}
 {% block title %}IACR Helios{% endblock %}
 
-{% block content %}
-<h1>Welcome to IACR Helios</h1>
+{% block header %}
+<h2>IACR Election (Test)</h2>
+{% endblock %}
 
+{% block content %}
+
+<p>
+    Welcome the IACR 2009 Board Election (this is just a test).
+</p>
+
+<p>
+    Proceed to
 <a href="{% url helios.views.one_election_view settings.IACR_ELECTION_UUID %}">the election</a>
+</p>
+
 {% endblock %}

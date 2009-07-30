@@ -11,12 +11,10 @@ body {
   padding: 20px 30px 20px 30px;
   top: 0px;
   margin-left: 100px;
-  margin-top: 0px;
+  margin-top: 20px;
   width: 860px;
-  background: #eee;
-  border-left: 1px solid #666;
-  border-right: 1px solid #666;
-  border-bottom: 1px solid #666;
+  background: white;
+  border: 1px solid #666;
 }
 
 #header {
@@ -26,7 +24,6 @@ body {
 }
 
 #footer {
-  border-top: 1px solid #666;
   bottom: 0px;
   margin: auto;
   width: 860px;
