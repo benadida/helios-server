@@ -7,3 +7,6 @@
 [submodule "heliosbooth"]
 	path = heliosbooth
 	url = git@github.com:/benadida/helios-booth.git
+[submodule "heliosverifier"]
+	path = heliosverifier
+	url = git@github.com:benadida/helios-verifier.git
