@@ -8,24 +8,32 @@ from view_utils import *
 
 import helios.views
 import helios
+from helios.crypto import utils as cryptoutils
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotAllowed
 
+ELECTION_SHORT_NAME = 'iacr09'
+
+def get_election():
+  return Election.get_by_key_name(ELECTION_SHORT_NAME)
+  
 def home(request):
   # create the election if need be
   election_params = {
-    'short_name' : 'iacr09',
+    'short_name' : ELECTION_SHORT_NAME,
     'name' : 'IACR 2009 Election',
     'description' : 'Election for the IACR Board - 2009',
     'uuid' : 'iacr',
     'cast_url' : reverse(cast),
     'self_registration' : False,
     'openreg': False,
-    'admin' : helios.ADMIN
+    'admin' : helios.ADMIN,
+    'tally_type': 'homomorphic',
+    'ballot_type': 'homomorphic'
   }
   
-  election = Election.get_by_key_name(election_params['short_name'])
+  election = get_election()
   if not election:
     election = Election(key_name = election_params['short_name'], **election_params)
     election.put()
@@ -35,12 +43,71 @@ def home(request):
 def about(request):
   return HttpResponse(request, "about")
     
-@helios.views.election_view(frozen=True)
-def cast(request, election):
+def cast(request):
+  encrypted_vote = request.POST['encrypted_vote']
+  request.session['encrypted_vote'] = encrypted_vote
+  return HttpResponseRedirect(reverse(cast_confirm))
+
+# the form for password login  
+from auth.auth_systems.password import LoginForm, password_check
+
+def cast_confirm(request):
+  election = get_election()
+  if not election.frozen_at or election.result:
+    return HttpResponse("election is not ready or already done")
+
+  encrypted_vote = request.session['encrypted_vote']
+  vote_fingerprint = cryptoutils.hash_b64(encrypted_vote)  
+  
+  error = None
+  
   if request.method == "GET":
-    encrypted_vote = request.POST['encrypted_vote']
-    request.session['encrypted_vote'] = encrypted_vote
-    return render_template(request, "cast", {'election': election})
+    form = LoginForm()
   else:
-    # do the casting
-    pass
+    form = LoginForm(request.POST)
+
+    if form.is_valid():
+      user = User.get_by_type_and_id('password', form.cleaned_data['username'])
+      if password_check(user, form.cleaned_data['password']):
+        # cast the actual vote
+        voter = Voter.get_by_election_and_user(election, user)
+        if not voter:
+          return HttpResponse("problem, you are not registered for this election")
+        
+        # prepare the vote to cast
+        cast_vote_params = {
+          'vote' : electionalgs.EncryptedVote.fromJSONDict(utils.from_json(encrypted_vote)),
+          'voter' : voter,
+          'vote_hash': vote_fingerprint,
+          'cast_at': datetime.datetime.utcnow(),
+          'election': election
+        }
+    
+        cast_vote = CastVote(**cast_vote_params)
+
+        # verify the vote
+        if cast_vote.vote.verify(election):
+          # store it
+          voter.store_vote(cast_vote)
+        else:
+          return HttpResponse("vote does not verify: " + utils.to_json(cast_vote.vote.toJSONDict()))
+
+        # remove the vote from the store
+        del request.session['encrypted_vote']
+        
+        return HttpResponseRedirect(reverse(cast_done) + '?email=' + voter.voter_id)
+      else:
+        error = 'Bad Username or Password'
+
+  return render_template(request, "confirm", {'election': election, 'vote_fingerprint': vote_fingerprint, 'error': error, 'form': form})
+  
+def cast_done(request):
+  email = request.GET['email']
+
+  election = get_election()
+  user = User.get_by_type_and_id('password', email)
+  voter = Voter.get_by_election_and_user(election, user)
+  past_votes = CastVote.get_by_election_and_voter(election, voter)
+  
+  return render_template(request, 'done', {'election': election, 'past_votes' : past_votes, 'voter': voter})
+  

@@ -1,0 +1,29 @@
+{% extends 'iacr/templates/base.html' %}
+{% block title %}Confirm Vote{% endblock %}
+
+{% block content %}
+<h1>Confirm your Vote</h1>
+
+{% if error %}
+<p style="color: red;">{{error}}</p>
+{% endif %}
+
+<h3>Your Ballot</h3>
+
+<p style="font-size:1.6em;">
+    <tt>{{vote_fingerprint}}</tt>
+</p>
+
+<h3>Cast Your Ballot with your Credentials</h3>
+
+<form method="post" action="">
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+
+<table>
+{{form.as_table}}
+</table><br />
+
+    <input type="submit" value="cast this ballot" /><br /><br />
+</form>
+
+{% endblock %}
