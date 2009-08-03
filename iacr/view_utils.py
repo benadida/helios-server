@@ -22,5 +22,9 @@ def render_template(request, template_name, vars = {}):
   vars_with_user['user'] = get_user(request)
   vars_with_user['settings'] = settings
   
+  # csrf protection
+  if request.session.has_key('csrf_token'):
+    vars_with_user['csrf_token'] = request.session['csrf_token']
+  
   return render_to_response('iacr/templates/%s.html' % template_name, vars_with_user)
   

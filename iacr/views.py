@@ -9,11 +9,14 @@ from view_utils import *
 import helios.views
 import helios
 from helios.crypto import utils as cryptoutils
+from auth.security import *
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotAllowed
 
+
 ELECTION_SHORT_NAME = 'iacr09'
+
 
 def get_election():
   return Election.get_by_key_name(ELECTION_SHORT_NAME)
@@ -65,6 +68,8 @@ def cast_confirm(request):
     form = LoginForm()
   else:
     form = LoginForm(request.POST)
+
+    check_csrf(request)
 
     if form.is_valid():
       user = User.get_by_type_and_id('password', form.cleaned_data['username'])
