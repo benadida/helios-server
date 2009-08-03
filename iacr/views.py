@@ -14,6 +14,8 @@ from auth.security import *
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotAllowed
 
+from django.conf import settings
+
 
 ELECTION_SHORT_NAME = 'iacr09'
 
@@ -28,7 +30,7 @@ def home(request):
     'name' : 'IACR 2009 Election',
     'description' : 'Election for the IACR Board - 2009',
     'uuid' : 'iacr',
-    'cast_url' : reverse(cast),
+    'cast_url' : settings.URL_HOST + reverse(cast),
     'openreg': False,
     'admin' : helios.ADMIN,
     'tally_type': 'homomorphic',
