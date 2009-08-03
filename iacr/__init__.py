@@ -11,7 +11,6 @@ import auth.models
 helios.TEMPLATE_BASE = "iacr/templates/base.html"
 helios.ADMIN_ONLY = True
 helios.ADMIN = auth.models.User.get_or_create(user_type = 'password', user_id = 'benadida', info={'password':'test'})
-helios.SELF_REGISTRATION = False
 
 # authentication limited to passwords
 auth.ENABLED_AUTH_SYSTEMS = ['password']

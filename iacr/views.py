@@ -29,7 +29,6 @@ def home(request):
     'description' : 'Election for the IACR Board - 2009',
     'uuid' : 'iacr',
     'cast_url' : reverse(cast),
-    'self_registration' : False,
     'openreg': False,
     'admin' : helios.ADMIN,
     'tally_type': 'homomorphic',
