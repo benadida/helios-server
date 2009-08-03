@@ -7,24 +7,40 @@ from auth.security import *
 from view_utils import *
 
 import helios.views
+import helios
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotAllowed
 
 def home(request):
-  user = get_user(request)
-  if user:
-    elections = Election.get_by_user_as_admin(user)
-    elections_registered = Election.get_by_user_as_voter(user)
-  else:
-    elections = []
-    elections_registered = []
-    
-  return render_template(request, "index", {'elections' : elections, 'elections_registered' : elections_registered})
+  # create the election if need be
+  election_params = {
+    'short_name' : 'iacr09',
+    'name' : 'IACR 2009 Election',
+    'description' : 'Election for the IACR Board - 2009',
+    'uuid' : 'iacr',
+    'cast_url' : reverse(cast),
+    'self_registration' : False,
+    'openreg': False,
+    'admin' : helios.ADMIN
+  }
+  
+  election = Election.get_by_key_name(election_params['short_name'])
+  if not election:
+    election = Election(key_name = election_params['short_name'], **election_params)
+    election.put()
+  
+  return render_template(request, "index")
   
 def about(request):
   return HttpResponse(request, "about")
     
-def election_shortcut(request, election_short_name):
-  election = Election.get_by_short_name(election_short_name)
-  return HttpResponseRedirect(reverse(helios.views.one_election_view, args=[election.uuid]))
+@helios.views.election_view(frozen=True)
+def cast(request, election):
+  if request.method == "GET":
+    encrypted_vote = request.POST['encrypted_vote']
+    request.session['encrypted_vote'] = encrypted_vote
+    return render_template(request, "cast", {'election': election})
+  else:
+    # do the casting
+    pass

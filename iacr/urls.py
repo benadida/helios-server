@@ -5,5 +5,6 @@ from views import *
 
 urlpatterns = patterns('',
   (r'^$', home),
-  (r'^about$', about)
+  (r'^about$', about),
+  (r'^cast$', cast)
 )

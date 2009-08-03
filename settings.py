@@ -127,4 +127,4 @@ TEMPLATE_DEBUG = True
 
 URL_HOST = "https://iacr-helios.appspot.com"
 
-IACR_ELECTION_UUID = '2d52d7fd-7d94-11de-b131-ed929ff4d68f'
+IACR_ELECTION_UUID = 'iacr'
