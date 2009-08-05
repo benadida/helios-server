@@ -26,4 +26,7 @@
     <input type="submit" value="cast this ballot" /><br /><br />
 </form>
 
+<p>
+    Forgot your password? <a href="{% url auth.auth_systems.password.password_forgotten_view %}?return_url={% url iacr.views.cast_confirm %}">Have it emailed to you</a>.<br />(don't worry, we won't forget your vote).
+</p>
 {% endblock %}
