@@ -2,18 +2,30 @@
 {% block title %}IACR Helios{% endblock %}
 
 {% block header %}
-<h2>IACR Election (Test)</h2>
+<h2>IACR Election</h2>
 {% endblock %}
 
 {% block content %}
 
 <p>
-    Welcome the IACR 2009 Board Election (this is just a test).
+    Welcome the IACR 2009 Board Election [[this is just a test]].
 </p>
 
 <p>
+    This site uses the <a href="http://heliosvoting.org">Helios Voting System</a> to enable individual voters
+    to verify that their vote was correctly captured and tallied. Helios is a type of open-audit voting system,
+    also called an end-to-end voting system.
+</p>
+
+<p>
+    Because Helios is built to be used on the Web, it is appropriate <em><b>only for low-coercion elections</b></em>.
+    Specifically, Helios is not appropriate at this time for governmental elections where the stakes are particularly high,
+    and the risk of one voter attempting to influence another are very real.
+</p>
+
+<p style="font-size: 1.4em;">
     Proceed to
-<a href="{% url helios.views.one_election_view settings.IACR_ELECTION_UUID %}">the election</a>
+<a href="{% url helios.views.one_election_view settings.IACR_ELECTION_UUID %}">the IACR election</a>.
 </p>
 
 {% endblock %}
