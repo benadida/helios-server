@@ -18,6 +18,12 @@ handlers:
   static_dir: iacr/media
   secure: always
 
+# this overrides the style for the booth
+# without having to fork the code
+- url: /booth/css
+  static_dir: iacr/media/boothcss
+  secure: always
+  
 - url: /booth
   static_dir: heliosbooth
   secure: always
