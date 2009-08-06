@@ -34,7 +34,8 @@ def home(request):
     'openreg': False,
     'admin' : helios.ADMIN,
     'tally_type': 'homomorphic',
-    'ballot_type': 'homomorphic'
+    'ballot_type': 'homomorphic',
+    'use_voter_aliases': True
   }
   
   election = get_election()

@@ -2,6 +2,16 @@
 {% block title %}Confirm Vote{% endblock %}
 
 {% block content %}
+<script language="javascript">
+$(document).ready(function() {
+  $('#waiting_div').hide();
+});
+
+function show_waiting() {
+  $('#cast_div').hide();
+  $('#waiting_div').show();
+}
+</script>
 <h1>Confirm your Vote</h1>
 
 {% if error %}
@@ -14,9 +24,10 @@
     <tt>{{vote_fingerprint}}</tt>
 </p>
 
+<div id="cast_div">
 <h3>Cast Your Ballot with your Credentials</h3>
 
-<form method="post" action="">
+<form method="post" onsubmit="show_waiting();" action="">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 
 <table>
@@ -29,4 +40,11 @@
 <p>
     Forgot your password? <a href="{% url auth.auth_systems.password.password_forgotten_view %}?return_url={% url iacr.views.cast_confirm %}">Have it emailed to you</a>.<br />(don't worry, we won't forget your vote).
 </p>
+</div>
+
+<div id="waiting_div" align="center">
+  Verifying and Casting your ballot<br />
+  <img src="/static/helios/loading.gif" />
+</div>
+
 {% endblock %}
