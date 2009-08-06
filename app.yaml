@@ -3,7 +3,7 @@ version: 1
 runtime: python
 api_version: 1
 
-default_expiration: '3650d'
+default_expiration: '1h'
 
 handlers:
 - url: /static/auth
