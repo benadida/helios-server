@@ -38,10 +38,7 @@ def home(request):
     'use_voter_aliases': True
   }
   
-  election = get_election()
-  if not election:
-    election = Election(key_name = election_params['short_name'], **election_params)
-    election.put()
+  election, created_p = Election.get_or_create(**election_params)
   
   return render_template(request, "index")
   
