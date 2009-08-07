@@ -6,6 +6,10 @@ api_version: 1
 default_expiration: '1h'
 
 handlers:
+- url: /remote_api
+  script: $PYTHON_LIB/google/appengine/ext/remote_api/handler.py
+  login: admin
+  
 - url: /static/auth
   static_dir: auth/media
   secure: always
