@@ -1,0 +1,14 @@
+{% extends 'iacr/templates/base.html' %}
+
+{% block content %}
+
+  <h2 class="title">Election {{election.name}} Already Tallied</h2>
+
+  <p>
+      This election has already been tallied (or at least the tally has begun), so you can no longer cast a vote.
+  </p>
+  
+  <p>
+      <a href="{% url helios.views.one_election_view election_id=election.uuid %}">view the election</a>
+  </p>
+{% endblock %}

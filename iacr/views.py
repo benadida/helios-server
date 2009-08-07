@@ -58,6 +58,10 @@ def cast_confirm(request):
   if not election.frozen_at or election.result:
     return HttpResponse("election is not ready or already done")
 
+  # tallied election, no vote casting
+  if election.encrypted_tally or election.result:
+    return render_template(request, 'election_tallied', {'election': election})
+  
   encrypted_vote = request.session['encrypted_vote']
   vote_fingerprint = cryptoutils.hash_b64(encrypted_vote)  
   
