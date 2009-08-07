@@ -103,7 +103,7 @@ TEMPLATE_DIRS = (
 
 
 # Change your email settings
-DEFAULT_FROM_EMAIL = 'ben@adida.net'
+DEFAULT_FROM_EMAIL = 'Ben Adida for Helios <ben@adida.net>'
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Make this unique, and don't share it with anybody.
