@@ -1,5 +1,5 @@
 """
-Utilities for iacr views
+Utilities for single election views
 
 Ben Adida (2009-07-18)
 """
@@ -26,5 +26,5 @@ def render_template(request, template_name, vars = {}):
   if request.session.has_key('csrf_token'):
     vars_with_user['csrf_token'] = request.session['csrf_token']
   
-  return render_to_response('iacr/templates/%s.html' % template_name, vars_with_user)
+  return render_to_response('single-election/templates/%s.html' % template_name, vars_with_user)
   

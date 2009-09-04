@@ -1,14 +1,14 @@
-{% extends 'iacr/templates/base.html' %}
-{% block title %}IACR Helios{% endblock %}
+{% extends 'single-election/templates/base.html' %}
+{% block title %}Single Election Helios{% endblock %}
 
 {% block header %}
-<h2>IACR Election</h2>
+<h2>Single Election</h2>
 {% endblock %}
 
 {% block content %}
 
 <p>
-    Welcome the IACR 2009 Board Election.
+    Welcome to the SINGLE HELIOS ELECTION Server.
 </p>
 
 <p>
@@ -25,7 +25,7 @@
 
 <p style="font-size: 1.4em;">
     Proceed to
-<a href="{% url helios.views.one_election_view settings.IACR_ELECTION_UUID %}">the IACR election</a>.
+<a href="{% url helios.views.one_election_view settings.SINGLE_ELECTION_UUID %}">the SINGLE HELIOS ELECTION</a>.
 </p>
 
 {% endblock %}

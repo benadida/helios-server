@@ -1,5 +1,5 @@
 """
-IACR specific views
+single-election specific views
 """
 
 from helios.models import *
@@ -17,27 +17,15 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpRespons
 from django.conf import settings
 
 
-ELECTION_SHORT_NAME = 'iacr09'
-
-
 def get_election():
-  return Election.get_by_key_name(ELECTION_SHORT_NAME)
+  return Election.get_by_key_name(settings.SINGLE_ELECTION_SHORT_NAME)
   
 def home(request):
-  # create the election if need be
-  election_params = {
-    'short_name' : ELECTION_SHORT_NAME,
-    'name' : 'IACR 2009 Election',
-    'description' : 'Election for the IACR Board - 2009',
-    'uuid' : 'iacr',
-    'cast_url' : settings.URL_HOST + reverse(cast),
-    'openreg': False,
-    'admin' : helios.ADMIN,
-    'tally_type': 'homomorphic',
-    'ballot_type': 'homomorphic',
-    'use_voter_aliases': True
-  }
+  election_params = settings.SINGLE_ELECTION_PARAMS
+  election_params['cast_url'] = settings.URL_HOST + reverse(cast)
+  election_params['admin'] = helios.ADMIN
   
+  # create the election if need be
   election, created_p = Election.get_or_create(**election_params)
   
   return render_template(request, "index")

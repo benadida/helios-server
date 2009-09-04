@@ -107,7 +107,7 @@ DEFAULT_FROM_EMAIL = 'Ben Adida for Helios <ben@adida.net>'
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'iacrrulez!!!ohyeah,andheliostoo'
+SECRET_KEY = 'votingrulez!!!ohyeah,andheliostoo'
 
 LOGIN_URL = '/auth/'
 #LOGOUT_URL = '/account/logout/'
@@ -117,7 +117,7 @@ INSTALLED_APPS = (
     'appengine_django',
     'auth',
     'helios',
-    'iacr',
+    'single-election',
 )
 
 
@@ -125,6 +125,20 @@ APPEND_SLASH = False
 DEBUG = True
 TEMPLATE_DEBUG = True
 
-URL_HOST = "https://iacr-helios.appspot.com"
+URL_HOST = "https://FILL-ME-IN-helios.appspot.com"
 
-IACR_ELECTION_UUID = 'iacr'
+# election stuff
+SINGLE_ELECTION_UUID = 'FILL-ME-IN'
+SINGLE_ELECTION_SHORT_NAME = 'FILL-ME-IN'
+
+SINGLE_ELECTION_PARAMS = {
+  'short_name' : SINGLE_ELECTION_SHORT_NAME,
+  'name' : 'IACR 2009 Election',
+  'description' : 'Election for the IACR Board - 2009',
+  'uuid' : 'iacr',
+  'openreg': False,
+  'tally_type': 'homomorphic',
+  'ballot_type': 'homomorphic',
+  'use_voter_aliases': True
+}
+

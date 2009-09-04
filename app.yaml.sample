@@ -1,4 +1,4 @@
-﻿application: iacr-helios
+﻿application: XXX-helios
 version: 1
 runtime: python
 api_version: 1
@@ -19,13 +19,13 @@ handlers:
   secure: always
   
 - url: /static
-  static_dir: iacr/media
+  static_dir: single-election/media
   secure: always
 
 # this overrides the style for the booth
 # without having to fork the code
 - url: /booth/css
-  static_dir: iacr/media/boothcss
+  static_dir: single-election/media/boothcss
   secure: always
   
 - url: /booth

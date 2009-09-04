@@ -5,5 +5,5 @@ from django.contrib import admin
 urlpatterns = patterns('',
     (r'^auth/', include('auth.urls')),
     (r'^helios/', include('helios.urls')),
-    (r'^', include('iacr.urls')),
+    (r'^', include('single-election.urls')),
 )

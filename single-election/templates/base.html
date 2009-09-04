@@ -7,7 +7,7 @@
     xml:lang="{% firstof LANGUAGE_CODE 'en' %}"
     lang="{% firstof LANGUAGE_CODE 'en' %}">
   <head>
-    <title>{% block title %}{% endblock %} - IACR Helios</title>
+    <title>{% block title %}{% endblock %} - Helios</title>
     {% block css %}
       <!--
           <link rel="stylesheet" type="text/css"  media="screen, projection" href="{{ MEDIA_URL }}combined-{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}.css" />
@@ -30,7 +30,7 @@
   <body>
     <div id="content">
         <div id="header">
-            <img src="/static/iacrlogo.gif" /><br />
+            <img src="/static/logo.gif" /><br />
         {% block header %}
         {% endblock %}
         </div>
@@ -43,7 +43,6 @@
               {% block content %}{% endblock %}
       <div id="footer">
         <br /><br />
-          <em>This web site is not endorsed by the IACR. It is only meant for demonstration purposes.</em>
       </div>
     </div>
     
