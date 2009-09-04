@@ -128,6 +128,8 @@ TEMPLATE_DEBUG = True
 URL_HOST = "https://FILL-ME-IN-helios.appspot.com"
 
 # election stuff
+SITE_TITLE = 'Helios Single Election Server'
+SINGLE_ELECTION_TITLE = 'Helios Single Election'
 SINGLE_ELECTION_UUID = 'FILL-ME-IN'
 SINGLE_ELECTION_SHORT_NAME = 'FILL-ME-IN'
 

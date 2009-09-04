@@ -2,13 +2,13 @@
 {% block title %}Single Election Helios{% endblock %}
 
 {% block header %}
-<h2>Single Election</h2>
+<h2>{{ settings.SITE_TITLE }}</h2>
 {% endblock %}
 
 {% block content %}
 
 <p>
-    Welcome to the SINGLE HELIOS ELECTION Server.
+    Welcome to the {{settings.SITE_TITLE}} Server.
 </p>
 
 <p>
@@ -20,12 +20,12 @@
 <p>
     Because Helios is built to be used on the Web, it is appropriate <em><b>only for low-coercion elections</b></em>.
     Specifically, Helios is not appropriate at this time for governmental elections where the stakes are particularly high,
-    and the risk of one voter attempting to influence another are very real.
+    and the risk of one voter attempting to influence another is very real.
 </p>
 
 <p style="font-size: 1.4em;">
     Proceed to
-<a href="{% url helios.views.one_election_view settings.SINGLE_ELECTION_UUID %}">the SINGLE HELIOS ELECTION</a>.
+<a href="{% url helios.views.one_election_view settings.SINGLE_ELECTION_UUID %}">the {{settings.SINGLE_ELECTION_TITLE}}</a>.
 </p>
 
 {% endblock %}

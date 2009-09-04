@@ -13,4 +13,4 @@ helios.ADMIN_ONLY = True
 helios.ADMIN = auth.models.User.get_or_create(user_type = 'password', user_id = 'benadida', info={'password':'test'})
 
 # authentication limited to passwords
-auth.ENABLED_AUTH_SYSTEMS = ['password']
+auth.ENABLED_AUTH_SYSTEMS = ['cas']
