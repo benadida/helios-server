@@ -22,7 +22,12 @@ def get_election():
   
 def home(request):
   election_params = settings.SINGLE_ELECTION_PARAMS
-  election_params['cast_url'] = settings.URL_HOST + reverse(cast)
+  
+  # let's not do this
+
+  # election_params['cast_url'] = settings.URL_HOST + reverse(cast)
+  election_params['cast_url'] = settings.URL_HOST + reverse(helios.views.one_election_cast, args=[election_params['uuid']])
+  
   election_params['admin'] = helios.ADMIN
   
   # create the election if need be
