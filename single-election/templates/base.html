@@ -30,10 +30,11 @@
   <body>
     <div id="content">
         <div id="header">
-            <img src="/static/logo.gif" /><br />
+            <a href="/"><img border="0" src="/static/logo.gif" /></a><br />
         {% block header %}
         {% endblock %}
         </div>
+        <div id="contentbody">
 {% if admin_p %}
         <div style="float:right; border-left: 1px dashed black; padding: 0px 20px 5px 20px;">
           <h3>Administration</h3>
@@ -41,8 +42,17 @@
         </div>
 {% endif %}      
               {% block content %}{% endblock %}
+        </div>
       <div id="footer">
-        <br /><br />
+<span style="float:right;">
+{% if user %}
+logged in as {{user.user_id}}@{{user.user_type}}  [<a href="{% url auth.views.logout %}">logout</a>]
+{% else %}
+{% endif %}
+</span>
+<a href="http://heliosvoting.org">About Helios</a> |
+
+<br clear="right" />
       </div>
     </div>
     
