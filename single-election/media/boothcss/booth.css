@@ -76,21 +76,14 @@ body {
 }
 
 #footer {
-  border-top: 1px solid #666;
-  position: absolute;
-  margin: auto;
-  width: 860px;
+  position: relative;
+  bottom: 0px;
+  width: 100%;
   text-align: center;
-  color: #666;
-}
-
-#footer a, #footer a:visited {
-  color: black;
-  text-decoration: none;
-}
-
-#footer a:hover {
-  text-decoration: underline;
+  margin-top: 10px;
+  padding: 2px 0px 2px 0px;
+  background: #ddd;
+  border-top: 1px solid #666;
 }
 
 #page h2 {
