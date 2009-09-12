@@ -135,9 +135,9 @@ SINGLE_ELECTION_SHORT_NAME = 'FILL-ME-IN'
 
 SINGLE_ELECTION_PARAMS = {
   'short_name' : SINGLE_ELECTION_SHORT_NAME,
-  'name' : 'IACR 2009 Election',
-  'description' : 'Election for the IACR Board - 2009',
-  'uuid' : 'iacr',
+  'name' : SINGLE_ELECTION_TITLE,
+  'description' : 'Election for the Fall 2009 Princeton Freshman Class Officers',
+  'uuid' : SINGLE_ELECTION_UUID,
   'openreg': False,
   'tally_type': 'homomorphic',
   'ballot_type': 'homomorphic',

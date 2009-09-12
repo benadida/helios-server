@@ -36,6 +36,9 @@ import django.dispatch.dispatcher
 def main():
   # Create a Django application for WSGI.
   application = django.core.handlers.wsgi.WSGIHandler()
+  
+  # if there's initialiation, run it
+  import initialization
 
   # Run the WSGI CGI handler with that application.
   util.run_wsgi_app(application)

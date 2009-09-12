@@ -1,5 +1,6 @@
 app.yaml
 settings.py
+initialization.py
 *.pyc
 .DS_Store
 *~
