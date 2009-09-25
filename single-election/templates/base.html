@@ -45,12 +45,16 @@
         </div>
       <div id="footer">
 <span style="float:right;">
+<img src="/static/footer-logo.gif" />
+</span>
 {% if user %}
-logged in as {{user.user_id}}@{{user.user_type}}  [<a href="{% url auth.views.logout %}">logout</a>]
+logged in as {{user.user_id}}  [<a href="{% url auth.views.logout %}">logout</a>]<br />
 {% else %}
 {% endif %}
-</span>
-<a href="http://heliosvoting.org">About Helios</a> |
+<a href="http://heliosvoting.org">About Helios</a>
+{% for footer_link in settings.FOOTER_LINKS %}
+| <a href="{{ footer_link.url }}">{{footer_link.text}}</a>
+{% endfor %}
 
 <br clear="right" />
       </div>

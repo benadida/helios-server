@@ -144,3 +144,6 @@ SINGLE_ELECTION_PARAMS = {
   'use_voter_aliases': True
 }
 
+# FOOTER links
+FOOTER_LINKS = [{'url':'http://usg.princeton.edu/elections', 'text':'USG Elections Center'}]
+
