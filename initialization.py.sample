@@ -11,7 +11,7 @@ import auth.models
 
 helios.TEMPLATE_BASE = "single-election/templates/base.html"
 helios.ADMIN_ONLY = True
-helios.ADMIN = auth.models.User.get_or_create(user_type = 'password', user_id = 'benadida', info={'password':'test'})
+helios.ADMIN = auth.models.User.get_or_create(user_type = 'cas', user_id = 'yaro', info={})
 
 # authentication limited to passwords
 auth.ENABLED_AUTH_SYSTEMS = ['cas', 'password']
