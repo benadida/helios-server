@@ -17,6 +17,11 @@ indexes:
   - name: election
   - name: uuid
 
+- kind: Voter
+  properties:
+  - name: election
+  - name: voter_id
+
 - kind: CastVote
   properties:
   - name: voter
