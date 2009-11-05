@@ -132,11 +132,12 @@ SITE_TITLE = 'Helios Single Election Server'
 SINGLE_ELECTION_TITLE = 'Helios Single Election'
 SINGLE_ELECTION_UUID = 'FILL-ME-IN'
 SINGLE_ELECTION_SHORT_NAME = 'FILL-ME-IN'
+SINGLE_ELECTION_DESCRIPTION = 'FILL-ME-IN'
 
 SINGLE_ELECTION_PARAMS = {
   'short_name' : SINGLE_ELECTION_SHORT_NAME,
   'name' : SINGLE_ELECTION_TITLE,
-  'description' : 'Election for the Fall 2009 Princeton Freshman Class Officers',
+  'description' : SINGLE_ELECTION_DESCRIPTION,
   'uuid' : SINGLE_ELECTION_UUID,
   'openreg': False,
   'tally_type': 'homomorphic',
