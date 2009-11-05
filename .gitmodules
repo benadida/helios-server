@@ -1,12 +1,12 @@
 [submodule "helios"]
 	path = helios
-	url = git@github.com:benadida/helios-django-app.git
+	url = git://github.com/benadida/helios-django-app.git
 [submodule "auth"]
 	path = auth
-	url = git@github.com:benadida/auth-django-app.git
+	url = git://github.com/benadida/auth-django-app.git
 [submodule "heliosbooth"]
 	path = heliosbooth
-	url = git@github.com:/benadida/helios-booth.git
+	url = git://github.com/benadida/helios-booth.git
 [submodule "heliosverifier"]
 	path = heliosverifier
-	url = git@github.com:benadida/helios-verifier.git
+	url = git://github.com/benadida/helios-verifier.git
