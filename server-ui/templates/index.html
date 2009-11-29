@@ -1,4 +1,4 @@
-{% extends 'single-election/templates/base.html' %}
+{% extends 'server-ui/templates/base.html' %}
 {% block title %}{{ settings.SITE_TITLE }}{% endblock %}
 
 {% block header %}
@@ -16,9 +16,14 @@
     Learn more about Helios, and why secure voting matters, <a href="http://heliosvoting.org">here</a>.
 </p>
 
+
 <p style="font-size: 1.4em;">
-    Proceed to
-<a href="{% url helios.views.one_election_view settings.SINGLE_ELECTION_UUID %}">the {{settings.SINGLE_ELECTION_TITLE}}</a>.
+Current Elections:
+<ul>
+{% for election in elections %}
+  <li> <a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
+{% endfor %}
+</ul>
 </p>
 
 {% endblock %}

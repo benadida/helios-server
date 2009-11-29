@@ -117,7 +117,7 @@ INSTALLED_APPS = (
     'appengine_django',
     'auth',
     'helios',
-    'single-election',
+    'server-ui',
 )
 
 

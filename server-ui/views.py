@@ -1,5 +1,5 @@
 """
-single-election specific views
+server-ui specific views
 """
 
 from helios.models import *
@@ -18,22 +18,14 @@ from django.conf import settings
 
 
 def get_election():
-  return Election.get_by_key_name(settings.SINGLE_ELECTION_SHORT_NAME)
+  return None
   
 def home(request):
-  election_params = settings.SINGLE_ELECTION_PARAMS
+  # load the featured elections
+  featured_elections = [Election.get_by_key_name(uuid) for uuid in settings.FEATURED_ELECTION_UUIDS]
+  featured_elections = [e for e in featured_elections if e != None]
   
-  # let's not do this
-
-  # election_params['cast_url'] = settings.URL_HOST + reverse(cast)
-  election_params['cast_url'] = settings.URL_HOST + reverse(helios.views.one_election_cast, args=[election_params['uuid']])
-  
-  election_params['admin'] = helios.ADMIN
-  
-  # create the election if need be
-  election, created_p = Election.get_or_create(**election_params)
-  
-  return render_template(request, "index")
+  return render_template(request, "index", {'elections': featured_elections})
   
 def about(request):
   return HttpResponse(request, "about")
