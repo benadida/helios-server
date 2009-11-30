@@ -9,7 +9,7 @@ import helios.views, helios.signals
 
 import views
 
-def vote_cast_update_status(user, voter, election, cast_vote, **kwargs):
+def vote_cast_send_message(user, voter, election, cast_vote, **kwargs):
   # prepare the message
   subject = "%s - vote cast" % election.name
   
@@ -21,7 +21,7 @@ You have successfully cast a vote in
 Your ballot tracking number is:
 
   %s
-""" % (election.name, cast_vote.vote_hash
+""" % (election.name, cast_vote.vote_hash)
   
   if election.use_voter_aliases:
     body += """
@@ -39,7 +39,7 @@ Your voter alias is : %s
   # send it via the notification system associated with the auth system
   user.send_message(subject, body)
   
-helios.signals.vote_cast.connect(vote_cast_update_status)
+helios.signals.vote_cast.connect(vote_cast_send_message)
 
 def election_tallied(election, **kwargs):
   pass

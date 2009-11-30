@@ -19,13 +19,13 @@ handlers:
   secure: always
   
 - url: /static
-  static_dir: server-ui/media
+  static_dir: server_ui/media
   secure: always
 
 # this overrides the style for the booth
 # without having to fork the code
 - url: /booth/css
-  static_dir: server-ui/media/boothcss
+  static_dir: server_ui/media/boothcss
   secure: always
   
 - url: /booth

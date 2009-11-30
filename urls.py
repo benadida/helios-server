@@ -5,5 +5,5 @@ from django.contrib import admin
 urlpatterns = patterns('',
     (r'^auth/', include('auth.urls')),
     (r'^helios/', include('helios.urls')),
-    (r'^', include('server-ui.urls')),
+    (r'^', include('server_ui.urls')),
 )

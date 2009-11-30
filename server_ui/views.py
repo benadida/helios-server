@@ -1,5 +1,5 @@
 """
-server-ui specific views
+server_ui specific views
 """
 
 from helios.models import *
