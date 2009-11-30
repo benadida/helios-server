@@ -11,17 +11,18 @@
     Welcome to the {{settings.SITE_TITLE}} system!
 </p>
 
+<!--
 <p>
     Helios is a revolutionary voting system that empowers voters to verify that their votes were correctly tallied.<br />
     Learn more about Helios, and why secure voting matters, <a href="http://heliosvoting.org">here</a>.
 </p>
-
+-->
 
 <p style="font-size: 1.4em;">
 Current Elections:
 <ul>
 {% for election in elections %}
-  <li> <a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
+  <li> <a href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a></li>
 {% endfor %}
 </ul>
 </p>
