@@ -22,8 +22,7 @@ def get_election():
   
 def home(request):
   # load the featured elections
-  featured_elections = [Election.get_by_short_name(short_name) for short_name in settings.FEATURED_ELECTIONS]
-  featured_elections = [e for e in featured_elections if e != None]
+  featured_elections = Election.get_featured()
   
   return render_template(request, "index", {'elections': featured_elections})
   
