@@ -10,6 +10,7 @@ import helios.views
 import helios
 from helios.crypto import utils as cryptoutils
 from auth.security import *
+from helios.security import can_create_election
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotAllowed
@@ -24,7 +25,9 @@ def home(request):
   # load the featured elections
   featured_elections = Election.get_featured()
   
-  return render_template(request, "index", {'elections': featured_elections})
+  create_p = can_create_election(request)
+  
+  return render_template(request, "index", {'elections': featured_elections, 'create_p':create_p})
   
 def about(request):
   return HttpResponse(request, "about")

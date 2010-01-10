@@ -18,6 +18,12 @@
 </p>
 -->
 
+{% if create_p %}
+<a href="{% url helios.views.election_new %}">create election</a>
+|
+<a href="{% url helios.views.elections_administered %}">elections you administer</a>
+{% endif %}
+
 <p style="font-size: 1.4em;">
 Current Elections:
 <ul>
@@ -26,5 +32,6 @@ Current Elections:
 {% endfor %}
 </ul>
 </p>
+
 
 {% endblock %}

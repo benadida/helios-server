@@ -45,7 +45,9 @@
         </div>
       <div id="footer">
 <span style="float:right;">
+{% if settings.FOOTER_LOGO %}
 <img src="/static/footer-logo.gif" />
+{% endif %}
 </span>
 {% if user %}
 logged in as {{user.user_id}}  [<a href="{% url auth.views.logout %}">logout</a>]<br />
