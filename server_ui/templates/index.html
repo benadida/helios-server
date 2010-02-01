@@ -11,12 +11,9 @@
     Welcome to the {{settings.SITE_TITLE}} system!
 </p>
 
-<!--
 <p>
-    Helios is a revolutionary voting system that empowers voters to verify that their votes were correctly tallied.<br />
-    Learn more about Helios, and why secure voting matters, <a href="http://heliosvoting.org">here</a>.
+  {{settings.WELCOME_MESSAGE|safe}}
 </p>
--->
 
 {% if create_p %}
 <a href="{% url helios.views.election_new %}">create election</a>
