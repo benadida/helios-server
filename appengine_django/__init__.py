@@ -102,6 +102,7 @@ except ImportError, e:
       SDK_PATH,
       os.path.join(SDK_PATH, 'lib', 'antlr3'),
       os.path.join(SDK_PATH, 'lib', 'django'),
+      os.path.join(SDK_PATH, 'lib', 'ipaddr'),
       os.path.join(SDK_PATH, 'lib', 'webob'),
       os.path.join(SDK_PATH, 'lib', 'yaml', 'lib'),
   ]

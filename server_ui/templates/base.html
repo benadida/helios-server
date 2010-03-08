@@ -51,7 +51,12 @@
 {% endif %}
 </span>
 {% if user %}
-logged in as {{user.name}}  [<a href="{% url auth.views.logout %}">logout</a>]<br />
+logged in as
+{% if user.name %}
+{{user.name}}
+{% else %}
+{{user.user_id}}
+{% endif %}  [<a href="{% url auth.views.logout %}">logout</a>]<br />
 {% else %}
 not logged in. [<a href="{% url auth.views.index %}">log in</a>]<br />
 {% endif %}
