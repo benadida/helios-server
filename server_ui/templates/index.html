@@ -21,14 +21,18 @@
 <a href="{% url helios.views.elections_administered %}">elections you administer</a>
 {% endif %}
 
+{% if elections|length %}
 <p style="font-size: 1.4em;">
-Current Elections:
+Current Featured Elections:
 <ul>
 {% for election in elections %}
   <li> <a href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a></li>
 {% endfor %}
 </ul>
 </p>
+{% else %}
+<h4>no featured elections at the moment</h4>
+{% endif %}
 
 
 {% endblock %}
