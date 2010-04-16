@@ -8,6 +8,7 @@ sys.path.append(path)
 sys.path.append("%s/lib/yaml/lib" % path)
 sys.path.append("%s/lib/django" % path)
 sys.path.append("%s/lib/antlr3" % path)
+sys.path.append("%s/lib/ipaddr" % path)
 
 from appengine_django import InstallAppengineHelperForDjango
 InstallAppengineHelperForDjango()

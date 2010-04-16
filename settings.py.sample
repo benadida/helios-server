@@ -113,6 +113,8 @@ LOGIN_URL = '/auth/'
 #LOGOUT_URL = '/account/logout/'
 #LOGIN_REDIRECT_URL = '/'
 
+LOGOUT_ON_CONFIRMATION = True
+
 INSTALLED_APPS = (
     'appengine_django',
     'auth',
