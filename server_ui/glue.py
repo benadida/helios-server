@@ -38,7 +38,9 @@ Your voter alias is : %s
   
   # send it via the notification system associated with the auth system
   user.send_message(subject, body)
-  
+
+import logging
+logging.error("connecting the vote_cast signal")
 helios.signals.vote_cast.connect(vote_cast_send_message)
 
 def election_tallied(election, **kwargs):
