@@ -14,12 +14,17 @@
       -->
       <link rel="stylesheet" type="text/css" media="screen" href="/static/main.css">
 
+	<link rel="stylesheet" type="text/css" href="/static/helios/css/ui-lightness/jquery-ui-1.8.1.custom.css">
+
       <!--[if IE]>
         <link rel="stylesheet" type="text/css" media="screen, projection" href="{{ MEDIA_URL }}ie.css">
       <![endif]-->
     {% endblock %}
 
-    <script language="javascript" src="/static/helios/helios/jquery-1.2.2.min.js"></script>
+      <script language="javascript" src="/static/helios/js/jquery-1.4.2.min.js"></script>
+      <script language="javascript" src="/static/helios/js/jquery-ui-1.8.1.custom.min.js"></script>
+      <script language="javascript" src="/static/helios/js/jqsplitdatetime.js"></script>
+    
     <script language="javascript" src="/static/helios/helios/jquery.json.min.js"></script>
 
     {% block js %}
@@ -36,12 +41,6 @@
         {% endblock %}
         </div>
         <div id="contentbody">
-{% if admin_p %}
-        <div style="float:right; border-left: 1px dashed black; padding: 0px 20px 5px 20px; width: 250px;">
-          <h3>Administration</h3>
-              {% block admin %}{% endblock %}
-        </div>
-{% endif %}      
               {% block content %}{% endblock %}
         </div>
       <div id="footer">
