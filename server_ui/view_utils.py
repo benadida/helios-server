@@ -21,6 +21,7 @@ def render_template(request, template_name, vars = {}):
   vars_with_user = vars.copy()
   vars_with_user['user'] = get_user(request)
   vars_with_user['settings'] = settings
+  vars_with_user['CURRENT_URL'] = request.path
   
   # csrf protection
   if request.session.has_key('csrf_token'):
