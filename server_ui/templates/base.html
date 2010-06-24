@@ -55,7 +55,7 @@ logged in as
 {{user.name}}
 {% else %}
 {{user.user_id}}
-{% endif %}  [<a href="{% url auth.views.logout %}">logout</a>]<br />
+{% endif %}  [<a href="{% url auth.views.logout %}?return_url={{CURRENT_URL}}">logout</a>]<br />
 {% else %}
 not logged in. [<a href="{% url auth.views.index %}?return_url={{CURRENT_URL}}">log in</a>]<br />
 {% endif %}
