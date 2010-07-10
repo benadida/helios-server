@@ -111,3 +111,22 @@ FOOTER_LOGO = False
 
 WELCOME_MESSAGE = "welcome"
 
+AUTH_TEMPLATE_BASE = "server_ui/templates/base.html"
+HELIOS_TEMPLATE_BASE = "server_ui/templates/base.html"
+HELIOS_ADMIN_ONLY = False
+HELIOS_ADMIN = None
+HELIOS_VOTERS_UPLOAD = True
+HELIOS_VOTERS_EMAIL = True
+
+# authentication limited to passwords
+AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter']
+AUTH_DEFAULT_AUTH_SYSTEM = None
+
+
+# set up logging
+import logging
+logging.basicConfig(
+    level = logging.DEBUG,
+    format = '%(asctime)s %(levelname)s %(message)s'
+)
+    
