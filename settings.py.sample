@@ -103,13 +103,13 @@ LOGOUT_ON_CONFIRMATION = True
 URL_HOST = "http://localhost:8000"
 
 # election stuff
-SITE_TITLE = 'Helios Single Election Server'
+SITE_TITLE = 'Helios Election Server'
 
 # FOOTER links
-FOOTER_LINKS = [{'url':'http://usg.princeton.edu/elections', 'text':'USG Elections Center'}]
+FOOTER_LINKS = []
 FOOTER_LOGO = False
 
-WELCOME_MESSAGE = "welcome"
+WELCOME_MESSAGE = "This is the default message"
 
 AUTH_TEMPLATE_BASE = "server_ui/templates/base.html"
 HELIOS_TEMPLATE_BASE = "server_ui/templates/base.html"
