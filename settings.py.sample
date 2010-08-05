@@ -138,7 +138,7 @@ logging.basicConfig(
     level = logging.DEBUG,
     format = '%(asctime)s %(levelname)s %(message)s'
 )
-    
+
 # set up django-celery
 BROKER_HOST = "localhost"
 BROKER_PORT = 5672
