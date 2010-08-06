@@ -51,6 +51,7 @@
 </span>
 {% if user %}
 logged in as
+<img border="0" height="15" src="/static/auth/login-icons/{{user.user_type}}.png" alt="{{user.user_type}}" />
 {% if user.name %}
 {{user.name}}
 {% else %}
