@@ -7,32 +7,62 @@
 
 {% block content %}
 
-<p>
-    Welcome to the {{settings.SITE_TITLE}} system!
-</p>
+<div id="mystuff">
+{% if user %}
+<div style="font-size:1.4em;" class="highlight-box">
+{{user.display_html_big|safe}}
+</div>
+{% if create_p %}
+<h4>Administration</h4>
+{% if elections_administered %}
+<ul>
+{% for election in elections_administered %}
+<li> <a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
+{% endfor %}
+</ul>
+{% else %}
+<em>none yet</em><br />
+{% endif %}
+<div style="text-align:right">
+<button style="font-size:1.2em;"><a href="{% url helios.views.election_new %}">create election &gt;</a></button>
+</div>
+{% endif %}
 
-<p>
+<h4>Recent Votes</h4>
+{% if elections_voted %}
+<ul>
+{% for election in elections_voted %}
+<li><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
+{% endfor %}
+</ul>
+{% else %}
+<em>none yet</em>
+{% endif %}
+{% else %}
+<h3>Log In to Start Voting</h3>
+{{login_box|safe}}
+{% endif %}
+<br /><br />
+</div>
+
+<p style="font-size: 1.4em;">
   {{settings.WELCOME_MESSAGE|safe}}
 </p>
 
-{% if create_p %}
-<a href="{% url helios.views.election_new %}">create election</a>
-|
-<a href="{% url helios.views.elections_administered %}">elections you administer</a>
-{% endif %}
-
 {% if elections|length %}
-<p style="font-size: 1.4em;">
-Current Featured Elections:
-<ul>
+<p>
 {% for election in elections %}
-  <li> <a href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a></li>
+<div class="highlight-box-margin">
+<a style="font-size: 1.4em;" href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a> by {{election.admin.display_html_small|safe}}<br />
+{{election.description}}
+</div>
+<br />
 {% endfor %}
-</ul>
 </p>
 {% else %}
 <h4>no featured elections at the moment</h4>
 {% endif %}
 
+<br clear="right" /><br />
 
 {% endblock %}

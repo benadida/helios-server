@@ -50,13 +50,8 @@
 {% endif %}
 </span>
 {% if user %}
-logged in as
-<img border="0" height="15" src="/static/auth/login-icons/{{user.user_type}}.png" alt="{{user.user_type}}" />
-{% if user.name %}
-{{user.name}}
-{% else %}
-{{user.user_id}}
-{% endif %}  [<a href="{% url auth.views.logout %}?return_url={{CURRENT_URL}}">logout</a>]<br />
+logged in as {{user.display_html_small|safe}}
+[<a href="{% url auth.views.logout %}?return_url={{CURRENT_URL}}">logout</a>]<br />
 {% else %}
 not logged in. [<a href="{% url auth.views.index %}?return_url={{CURRENT_URL}}">log in</a>]<br />
 {% endif %}

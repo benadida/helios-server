@@ -55,6 +55,13 @@ body {
   font-size: 16pt;
 }
 
+#mystuff {
+ float:right;
+ width: 250px;
+ border-left: 1px solid #888;
+ padding-left: 20px;
+}
+
 table.pretty {
     margin: 1em 1em 1em 2em;
     background: whitesmoke;
@@ -73,6 +80,14 @@ table.pretty th, td {
   padding: 10px;
   color: black;
   border: 1px solid #888;
+}
+
+.highlight-box-margin {
+  background:#ccc;
+  padding: 10px;
+  color: black;
+  border: 1px solid #888;
+  margin-right: 300px;
 }
 
 .round {
