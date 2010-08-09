@@ -63,10 +63,10 @@ body {
 }
 
 table.pretty {
-    margin: 1em 1em 1em 2em;
+    margin: 0.5em 0.5em 0.5em 0.5em;
     background: whitesmoke;
     border-collapse: collapse;
-    width: 80%;
+    width: 100%;
 }
 
 table.pretty th, td {
