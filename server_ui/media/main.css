@@ -76,14 +76,14 @@ table.pretty th, td {
 }
 
 .highlight-box {
-  background:#ccc;
+  background:#eee;
   padding: 10px;
   color: black;
   border: 1px solid #888;
 }
 
 .highlight-box-margin {
-  background:#ccc;
+  background:#eee;
   padding: 10px;
   color: black;
   border: 1px solid #888;
