@@ -97,8 +97,9 @@ VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
 
 
 # Change your email settings
-DEFAULT_FROM_EMAIL = 'Ben Adida for Helios <ben@adida.net>'
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
+DEFAULT_FROM_EMAIL = 'ben@adida.net'
+DEFAULT_FROM_NAME = 'Ben for Helios'
+SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 
 LOGIN_URL = '/auth/'
 LOGOUT_ON_CONFIRMATION = True
