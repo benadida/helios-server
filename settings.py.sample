@@ -136,6 +136,11 @@ FACEBOOK_API_SECRET = ''
 # twitter
 TWITTER_API_KEY = ''
 TWITTER_API_SECRET = ''
+TWITTER_USER_TO_FOLLOW = 'heliosvoting'
+TWITTER_REASON_TO_FOLLOW = "we can direct-message you when the result has been computed in an election in which you participated"
+
+# the token for Helios to do direct messaging
+TWITTER_DM_TOKEN = {"oauth_token": "", "oauth_token_secret": "", "user_id": "", "screen_name": ""}
 
 # email server
 EMAIL_HOST = 'localhost'
