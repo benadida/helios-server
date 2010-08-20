@@ -109,6 +109,12 @@ LOGOUT_ON_CONFIRMATION = True
 URL_HOST = "http://localhost:8000"
 SECURE_URL_HOST = "https://localhost:8443"
 
+# this additional host is used to iframe-isolate the social buttons,
+# which usually involve hooking in remote JavaScript, which could be
+# a security issue. Plus, if there's a loading issue, it blocks the whole
+# page. Not cool.
+SOCIALBUTTONS_URL_HOST= "http://127.0.0.1:8000"
+
 # election stuff
 SITE_TITLE = 'Helios Election Server'
 
