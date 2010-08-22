@@ -1,0 +1,68 @@
+{% extends "helios/templates/cryptobase.html" %}
+
+{% block content %}
+  <h2 class="title">{{election.name}} &mdash; Questions <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
+
+  <script language="javascript">
+{% if election.questions %}
+  QUESTIONS = {{questions_json|safe}};
+{% else %}
+  QUESTIONS = [];
+{% endif %}
+
+  CSRF_TOKEN = '{{csrf_token}}';
+
+  function refresh() {
+      $('#questions').processTemplate({'questions' : QUESTIONS});            
+  }
+  
+  $(document).ready(function() {
+      $('#questions').setTemplateURL("/static/helios/static_templates/question.html");
+
+      $('#questions').processTemplate({'questions' : QUESTIONS});      
+  });
+  
+  function save_questions(callback) {
+      $.post('./save_questions', {'questions_json' : $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function(result) {
+          callback();          
+      });      
+  }
+  
+  function question_add(form) {
+      var max = null;
+      if (form.max.value != "")
+        max = parseInt(form.max.value);
+        
+      var new_q = {'question' : form.question.value, 'min': parseInt(form.min.value), 'max': max, 'short_name': form.question.value, 'answers': [], 'answer_urls': [], 'choice_type': form.choice_type.value, 'tally_type': 'homomorphic', 'result_type': form.result_type.value};
+      var i = 0;
+      while(true) {
+          i += 1;
+          if (!form['answer_' + i] || !form['answer_' + i].value)
+            break;
+          new_q.answers[i-1] = form['answer_' + i].value;
+          new_q.answer_urls[i-1] = null;
+      }
+      
+      QUESTIONS.push(new_q);
+      
+      save_questions(refresh);
+  }
+  
+  function question_remove(q_num) {
+      var new_questions = [];
+      $(QUESTIONS).each(function(i, q) {
+          if (i == q_num)
+            return;
+          new_questions.push(q);
+      });
+      QUESTIONS = new_questions;
+      save_questions(refresh);
+  }
+
+  </script>
+
+  <div id="questions">
+  </div>
+					
+			<!-- end #content -->
+{% endblock %}

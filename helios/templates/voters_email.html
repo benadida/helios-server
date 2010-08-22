@@ -1,0 +1,48 @@
+{% extends TEMPLATE_BASE %}
+
+{% block title %}Email Voters for {{election.name}}{% endblock %}
+{% block content %}
+<script>
+var BATCH_SIZE = 25;
+
+var voter_id = null;
+{% if voter %}
+voter_id = '{{voter.voter_id}}';
+{% endif %}
+</script>
+
+  <h2 class="title">{{election.name}} &mdash; Email Voters <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
+
+{% if voter %}  
+  <p>
+    You are sending this email to a specific user: <b>{{voter.name}} ({{voter.voter_id}})</b>
+  </p>
+{% endif %}
+
+  <p>
+    The email will <b><u>automatically</u></b> include a "Dear Voter" line, as well as a footer including<br />
+    the election URL, the login information, and a simple email signature.<br />
+    No need to include these in the body of your email below.
+  </p>
+  <form class="prettyform" action="" method="POST" id="email_form">
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+    <table class="pretty">
+     {{email_form.as_table}}
+     </table>
+  <div>
+  <label for="">&nbsp;</label><input type="submit" value="Send" id="send_button" />
+  </div>
+  </form>
+  
+  <div id="processing">
+  </div>
+  
+  <div id="done" style="display:none;">
+    Done, go <a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>.
+  </div>
+
+  <div id="error" style="display:none;">
+    Error emailing participants. Check server settings, make sure there's an SMTP server.
+  </div>
+
+{% endblock %}

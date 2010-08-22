@@ -1,0 +1,273 @@
+{% extends TEMPLATE_BASE %}
+
+{% block title %}{{election.name}}{% endblock %}
+{% block content %}
+{% if election.voting_has_started %}
+<script>
+if (!navigator.javaEnabled()) {
+//
+// even if Java is not enabled, we now have a server-side solution
+//
+//  $(document).ready(function() {
+//    $('#votelink').hide();
+//    $('#nojava_message').show();    
+//  });
+//
+}
+</script>
+{% endif %}
+<div style="float: left; margin-right: 50px;">
+  <h2 class="title">{{ election.name }}
+{% if admin_p %}
+{% if not election.frozen_at %}
+<span class="adminaction"><a href="{% url helios.views.one_election_edit election.uuid %}">edit</a></span>
+{% endif %}
+{% endif %}</h2>
+<p style="padding-top:0px; margin-top:0px">
+an election created by <u><b>{{election.admin.display_html_small|safe}}</b></u><br />
+{% if admin_p %}
+{% if election.featured_p %}
+this election is featured on the front page.
+{% if can_feature_p %}
+[<a href="{% url helios.views.one_election_set_featured election.uuid %}?featured_p=0">unfeature it</a>]
+{% endif %}
+{% else %}
+this election is <u>not</u> featured on the front page.
+{% if can_feature_p %}
+[<a href="{% url helios.views.one_election_set_featured election.uuid %}?featured_p=1">feature it</a>]
+{% endif %}
+{% endif %}
+{% endif %}
+</p>
+
+</div>
+
+
+<br /><br />
+{% if socialbuttons_url %}
+<iframe src="{{socialbuttons_url}}" frameborder="0" border="0" style="width: 300px; height:100px;"></iframe>
+{% endif %}
+
+
+<br clear="left" />
+
+<div style="margin-bottom: 25px;margin-left: 15px; border-left: 1px solid #aaa; padding-left: 5px; font-size:1.3em; ">
+{{election.description}}
+</div>
+
+
+<p align="center" style="font-size: 1.5em;">
+<a href="{% url helios.views.one_election_questions election.uuid %}">questions ({% if election.questions %}{{election.questions|length}}{% else %}0{% endif %})</a>
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<a href="{% url helios.views.voters_list_pretty election.uuid %}">voters</a>
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<a href="{% url helios.views.list_trustees_view election.uuid %}">trustees ({{trustees|length}})</a>
+</p>
+
+{% if admin_p %}
+<p>
+
+{% if election.result %}
+
+<!-- election complete, no next step -->
+
+{% else %}
+<b>Next Step:</b>
+<span style="font-size: 1.3em;">
+{% if not election.frozen_at %}
+{% if election.issues_before_freeze %}
+add questions, voters, and trustees.
+{% else %}
+<a href="{% url helios.views.one_election_freeze election.uuid %}">freeze ballot and open election.</a>
+<br />
+{% if election.voting_starts_at %}
+once you do this, the election will be ready for voting and will open automatically<br />
+at {{election.voting_starts_at}}, as per your settings.
+{% else %}
+once you do this, the election will be immediately open for voting.
+{% endif %}
+{% endif %}
+
+{% else %}
+
+{% if not election.encrypted_tally %}
+{% if election.tallying_started_at %}
+Tally computation is under way.<br />
+Reload this page in a couple of minutes.
+{% else %}
+<a href="{% url helios.views.one_election_compute_tally election.uuid %}">compute encrypted tally</a><br />
+The encrypted votes will be combined into an encrypted tally. Once this is done,<br />
+trustees will be asked to provide their share of the decryption.
+{% endif %}
+{% else %}
+
+{% if election.ready_for_decryption_combination %}
+<a onclick="return confirm('Ready for the tally? Voters will be notified immediately.');" href="{% url helios.views.combine_decryptions election.uuid %}">combine trustee decryptions and release results</a><br />
+The decryption shares from the trustees are combined and the tally is decrypted.<br />
+Once you do this, the tally will be immediately available for all to see, and
+all voters will be notified that the tally is ready.
+{% else %}
+<a href="{% url helios.views.list_trustees_view election.uuid %}">trustees (for decryption)</a>
+{% endif %}
+
+{% endif %}
+
+{% endif %}
+</span>
+
+{% endif %}
+
+</p>
+
+{% endif %}
+
+<br /><br />
+
+{% if election.result %}
+<span class="highlight-box round">
+    This election is complete.
+</span><br />
+
+<br />
+<h2 class="highlight-box">Tally</h2>
+{% for question in election.pretty_result %}
+<b>{{question.question}}</b>:
+<ul>
+{% for answer in question.answers %}
+<li> {{answer.answer}}: {{answer.count}}
+{% endfor %}
+</ul>
+{% endfor %}
+
+{% else %}
+
+{% if election.voting_has_stopped %}
+<span class="highlight-box round">
+    Election closed. Tally will be computed soon.
+</span><br />
+{% else %}
+
+{% if election.voting_has_started %}
+<span class="highlight-box round" style="font-size: 1.6em; margin-right: 10px;" id="votelink">
+<a href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">Vote in this election </a>
+</span><br />
+{% if not user %}
+<br />
+<br /><br />
+For your privacy, you'll be asked to log in only once your ballot is encrypted.
+{% endif %}
+{% if election.voting_extended_until %}
+<br />
+This election was initially scheduled to end at {{election.voting_ends_at}},<br />
+but has been extended until {{ election.voting_extended_until }}.
+{% else %}
+{% if election.voting_ends_at %}
+<br />
+This election is scheduled to end at {{election.voting_ends_at}}.
+{% else %}
+<br />
+This election ends at the administrator's discretion.
+{% endif %}
+<br />
+{% endif %}
+
+<div class="highlight-box round" style="font-size: 1.2em; margin-right: 400px; display:none;" id="nojava_message">
+  You do not have Java installed in your browser.<br />At this time, Helios requires Java.<br />
+  Visit <a target="_new" href="http://java.sun.com">java.sun.com</a> to install it.
+</div>
+<br />
+{% else %}
+<span class="highlight-box round">
+  voting is not yet open
+</span> <br /><br />
+{% endif %}
+
+{% if user %}
+{% if voter %}
+<p style="padding-top:1px;">
+  You are registered to vote in this election.
+{% if election.use_voter_aliases %}
+Your voter alias is {{voter.alias}}.
+{% endif %}
+</p>
+
+{% else %}
+{% if election.result %}
+{% else %}
+{% if election.openreg %}
+{% if eligible_p %}
+{% if election.voting_has_started %}
+This election is open to anyone.
+{% else %}
+You are <em>not</em> registered to vote in this election.<br />
+<form method="post" action="{% url helios.views.one_election_register election.uuid %}">
+<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<input type="submit" value="register!" />
+</form>
+{% endif %}
+{% else %}
+Registration for this election is open, but You are <em>not eligible</em>.
+{% endif %}
+{% else %}
+You are <em>not eligible</em> to vote in this election, because registration is closed and you are not registered.<br />
+{% endif %}
+{% endif %}
+{% endif %}
+{% else %}
+
+{% endif %}
+
+{% endif %}
+
+{% endif %}
+
+
+<div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">
+<a href="#" onclick="$('#auditbody').slideToggle(250);">Audit Info</a>
+<div id="auditbody" style="display:none;">
+<br />Election URL:<br />
+<tt style="font-size: 1.2em;"><a href="{{election.url}}">{{election.url}}</a></tt>
+
+{% if election.frozen_at %}
+<br />
+<br />Election Fingerprint:<br />
+<tt style="font-size: 1.3em; font-weight: bold;">{{election.hash}}</tt>
+
+
+{% if votes %}
+<p>Your smart ballot tracker:<br />
+<tt style="font-size:14pt; font-weight: bold;">{{votes.0.vote_hash}}</tt>
+</p>
+{% endif %}
+
+<p style="font-size: 1.3em;">
+<a href="{% url helios.views.one_election_bboard election.uuid %}">Ballot Tracking Center</a> &nbsp;| &nbsp;
+<a href="{% url helios.views.one_election_audited_ballots election.uuid %}">Audited Ballots</a>
+</p>
+
+{% if not election.voting_has_started %}
+<p style="font-size: 1.2em;">
+  <a href="{{SECURE_URL_HOST}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">preview booth</a>
+</p>
+{% endif %}  
+
+{% endif %}
+
+{% if election.voting_has_stopped %}
+<p style="font-size: 1.2em;">
+{% if election.result %}
+verify <a target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">election tally</a>.
+{% endif %}
+
+review the <a href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">voting booth</a>.
+</p>
+
+{% endif %}
+
+</div>
+</div>
+
+
+
+
+{% endblock %}

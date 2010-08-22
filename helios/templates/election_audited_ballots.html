@@ -1,0 +1,31 @@
+{% extends TEMPLATE_BASE %}
+
+{% block title %}Audited Ballots for {{election.name}}{% endblock %}
+
+{% block content %}
+  <h2 class="title">{{election.name}} &mdash; Audited Ballots <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election_uuid=election.uuid %}">back to election</a>]</span></h2>
+
+Audited Ballots {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
+
+<p>
+  To verify an audited ballot, copy its entire content and paste it in the <a target="_new" href="/booth/single-ballot-verify.html?election_url={% url helios.views.one_election election.uuid %}">single ballot verifier</a>.
+</p>
+
+{% if next_after %}
+<a href="?after={{next_after}}&offset={{offset_plus_limit}}">next {{limit}}</a> &nbsp;&nbsp;
+{% endif %}
+
+{% ifequal offset 0 %}
+{% else %}
+<a href="?">back to start</a> &nbsp;&nbsp;
+{% endifequal %}
+{% if more_p %}
+<a href="?after={{next_after}}&offset={{next_offset}}">next {{limit}}</a>
+{% endif %}
+<table class="pretty">
+{% for b in audited_ballots %}
+<tr><td><tt style="font-size: 1.4em;">{{b.vote_hash}}</tt> [<a target="_blank" href="?vote_hash={{b.vote_hash|urlencode}}">view</a>]</td></tr>
+{% endfor %}
+</table>
+
+{% endblock %}

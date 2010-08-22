@@ -1,0 +1,14 @@
+{% extends TEMPLATE_BASE %}
+
+{% block content %}
+
+  <h2 class="title">Election {{election.name}} Already Tallied</h2>
+
+  <p>
+      This election has already been tallied, you can no longer cast a vote.
+  </p>
+  
+  <p>
+      <a href="{% url helios.views.one_election_view election.uuid %}">view the election tally</a>
+  </p>
+{% endblock %}

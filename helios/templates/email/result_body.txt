@@ -1,0 +1,12 @@
+Dear {{voter.name}},
+
+The tally has been computed for 
+
+  {{voter.election.name}}
+
+Check out the results at:
+
+  {{election_url}}
+
+--
+Helios

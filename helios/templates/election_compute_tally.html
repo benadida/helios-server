@@ -1,0 +1,26 @@
+{% extends TEMPLATE_BASE %}
+
+{% block title %}Compute Encryted Tally for {{election.name}}{% endblock %}
+
+{% block content %}
+  <h2 class="title">Compute Tally for Election: {{election.name}}</h2>
+
+<div id="instructions">
+<p>
+    You are about to compute the encrypted tally for election <b>{{election.name}}</b>.
+</p>
+
+<p>
+    Once you do this, voters will no longer be able to cast a ballot.
+</p>
+
+<form method="post" action="" onsubmit="alert('ok, tally has begun')" class="pretty">
+<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+    
+<input class="pretty" type="submit" value="compute encrypted tally!" />
+<button onclick="document.location='./view'; return false;">never mind</button>
+</form>
+</div>
+
+<br /><br />
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends TEMPLATE_BASE %}
+
+{% block content %}
+  <h2 class="title">{{election.name}} &mdash; Manage Voters <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
+
+<form method="get" action="{% url helios.views.voters_search election.uuid %}"><b>search</b>: <input type="text" name="q" /> <input type="submit" value="search" /></form>
+
+{% if upload_p %}
+<p><a href="{% url helios.views.voters_upload election_uuid=election.uuid %}">bulk upload voters</a></p>
+{% endif %}
+
+Voters {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
+
+{% if next_after %}
+<a href="./manage?after={{next_after}}&offset={{offset_plus_limit}}">next {{limit}}</a> &nbsp;&nbsp;
+{% endif %}
+
+{% ifequal offset 0 %}
+{% else %}
+<a href="./manage">back to start</a> &nbsp;&nbsp;
+{% endifequal %}
+{% if more_p %}
+<a href="./manage?after={{next_after}}&offset={{next_offset}}">next {{limit}}</a>
+{% endif %}
+
+<table class="pretty">
+<tr><th>Alias</th><th>Name</th><th>Username</th></tr>
+{% for voter in voters %}
+<tr><td>{{voter.alias}}</td><td>{{voter.name}}</td><td>{{voter.voter_id}}
+{% if election.frozen_at %}
+{% else %}
+[<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">x</a>]
+{% endif %}
+</td></tr>
+{% endfor %}
+</table>
+
+
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "helios/templates/cryptobase.html" %}
+
+{% block content %}
+  <h2 class="title">{{election.name}} &mdash; Trustee {{trustee.name}} Home</span></h2>
+
+<p>
+{% if trustee.public_key_hash %}
+You have successfully uploaded your public key.<br />
+Your public key fingerprint is: <b>{{trustee.public_key_hash}}</b>.<br />
+You can <a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">verify that you have the right secret key</a>.
+{% else %}
+<a href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">setup your key</a>
+{% endif %}
+</p>
+
+<p>
+{% if election.encrypted_tally %}
+{% if trustee.decryption_factors %}
+You have successfully uploaded your decryption.
+{% else %}
+    The encrypted tally for this election is ready.<br />
+    <a href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">decrypt with your key</a>
+{% endif %}
+{% else %}
+Once the tally is computed, come back here to provide your secret key for decryption purposes.<br />
+You should keep the email with your trustee homepage link, which contains the credentials needed to get back here.
+{% endif %}
+</p>
+
+
+
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends TEMPLATE_BASE %}
+
+{% block content %}
+  <h2 class="title">{{ election.name }} – Register</h2>
+
+{% if user %}
+<p>
+    You are currently logged in as {{user.user_id}} [{{user.user_type}}]
+</p>
+{% if voter %}
+<p>
+    You are currently registered for this election.
+</p>
+{% else %}
+<p>
+    You are <em>not</em> registered for this election.
+</p>
+
+<form method="post" action="{% url helios.views.one_election_register election.uuid %}">
+<input type="submit" value="register!" />
+</form>
+{% endif %}
+
+{% else %}
+{% endif %}
+
+{% endblock %}

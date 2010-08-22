@@ -1,0 +1,112 @@
+{% extends TEMPLATE_BASE %}
+
+{% block title %}Voters for {{election.name}}{% endblock %}
+{% block content %}
+  <h2 class="title">{{election.name}} &mdash; Voters <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
+
+<p>
+<u>Registration</u> is {% if not election.frozen_at %}currently{% endif %} <b>{{ election.registration_status_pretty }}</b>.
+{% if admin_p and not election.frozen_at %}
+{% if election.openreg %}
+[<a href="{% url helios.views.one_election_set_reg election.uuid %}?open_p=0">switch to closed</a>]
+{% else %}
+[<a href="{% url helios.views.one_election_set_reg election.uuid %}?open_p=1">switch to open</a>]
+{% endif %}
+{% endif %}
+</p>
+
+<!--
+<p>
+<u>Eligibility</u>: [more to come]
+</p>
+-->
+
+{% if email_voters and election.frozen_at and admin_p %}
+<p><a href="{% url helios.views.voters_email election.uuid %}">email voters</a></p>
+{% endif %}
+
+
+<p>
+<form method="get" action="{% url helios.views.voters_search election.uuid %}"><b>search</b>: <input type="text" name="q" /> <input type="submit" value="search" /></form>
+</p>
+
+{% if admin_p and upload_p %}
+<p>
+{% if not election.frozen_at %}
+<a href="{% url helios.views.voters_upload election_uuid=election.uuid %}">bulk upload voters</a>
+{% endif %}
+</p>
+
+{% if voter_files %}
+Prior Bulk Uploads:
+<ul>
+{% for vf in voter_files %}
+<li> {{vf.voter_file.size}} bytes, at {{vf.uploaded_at}}:
+{% if vf.processing_finished_at %}
+<em>done processing: {{vf.num_voters}} voters loaded</em>
+{% else %}
+
+{% if vf.processing_started_at %}
+<em>currently processing</em>
+{% else %}
+<em>not yet processed</em>
+{% endif %}
+
+{% endif %}
+</li>
+{% endfor %}
+</ul>
+{% endif %}
+{% endif %}
+
+{% if voters %}
+Voters {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
+
+{% if next_after %}
+<a href="./list?after={{next_after}}&offset={{offset_plus_limit}}">next {{limit}}</a> &nbsp;&nbsp;
+{% endif %}
+
+{% ifequal offset 0 %}
+{% else %}
+<a href="./list">back to start</a> &nbsp;&nbsp;
+{% endifequal %}
+{% if more_p %}
+<a href="./list?after={{next_after}}&offset={{next_offset}}">next {{limit}}</a>
+{% endif %}
+
+<table class="pretty">
+<tr>
+{% if admin_p or not election.use_voter_aliases %}
+<th>Name</th>
+{% endif %}
+
+{% if election.use_voter_aliases %}
+<th>Alias</th>
+{% endif %}
+</tr>
+{% for voter in voters %}
+<tr>
+{% if admin_p or not election.use_voter_aliases %}
+<td>
+{% if admin_p %}
+{% if not election.frozen_at %}
+[<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">x</a>]
+{% endif %}
+{% if election.frozen_at and election.openreg and not election.encrypted_tally %}
+[<a onclick="return confirm('are you sure you want to remove {{voter.name}} and the vote he/she has cast?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">x</a>]
+{% endif %}
+{% endif %}
+<img border="0" height="20" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}</td>
+{% endif %}
+{% if election.use_voter_aliases %}
+<td>{{voter.alias}}</td>
+{% endif %}
+</tr>
+{% endfor %}
+</table>
+
+{% else %}
+<em>no voters yet</em>
+{% endif %}
+
+{% endblock %}

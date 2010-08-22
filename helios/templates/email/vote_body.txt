@@ -1,0 +1,24 @@
+Dear {{voter.name}},
+
+{{custom_message|safe}}
+
+Election URL:  {{election_url}}
+Election Fingerprint:  {{voter.election.hash}}
+{% ifequal voter.voter_type "password" %}
+Your username: {{voter.user.user_id}}
+Your password: {{voter.user.info.password}}
+{% else %}
+Log in with your {{voter.voter_type}} account.
+{% endifequal %}
+{% if election.use_voter_aliases %}
+Your voter alias: {{voter.alias}}
+
+In order to protect your privacy, this election is configured
+to never display your username, name, or email address to the public.
+Instead, the ballot tracking center will only display your alias.
+
+IMPORTANTLY, when you are prompted to log in to vote,
+please use your *username*, not your alias.
+{% endif %}
+--
+Helios

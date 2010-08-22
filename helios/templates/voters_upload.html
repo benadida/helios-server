@@ -1,0 +1,30 @@
+{% extends TEMPLATE_BASE %}
+
+{% block content %}
+  <h2 class="title">{{election.name}} &mdash; Bulk Upload Voters <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
+
+<form method="post" action="" id="upload_form" enctype="multipart/form-data">
+  <p>
+      If your election allows for password-based voters, then you can bulk upload them here.<br />
+      Please enter CSV content for your list of voters as follows:
+  </p>
+  <pre>
+      benadida,ben@adida.net,Ben Adida
+      bob,bob@acme.org,Bob Acme
+      ...
+  </pre> 
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+    
+    <input type="file" name="voters_file" />
+    <input type="submit" value="go" />
+</form>
+
+<div id="processing">
+</div>
+
+<div id="done" style="display:none;">
+  OK, done uploading.<br />
+  You can now <a href="./manage">view the list of voters</a>.
+</div>
+
+{% endblock %}

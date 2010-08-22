@@ -1,0 +1,22 @@
+{% extends TEMPLATE_BASE %}
+
+{% block content %}
+
+  <h2 class="title">Create a New Election</h2>
+  
+{% if error %}
+<p style="color: red;">
+    {{error}}
+</p>
+{% endif %}
+  
+  <form class="prettyform" action="" method="POST" id="create_election_form">
+    <table class="pretty">
+     {{election_form.as_table}}
+     </table>
+  <div>
+  <label for="">&nbsp;</label><input type="submit" value="Next &gt;&gt;" id="next_button" />
+  </div>
+  </form>
+
+{% endblock %}
