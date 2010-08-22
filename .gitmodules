@@ -1,6 +1,3 @@
-[submodule "helios"]
-	path = helios
-	url = git://github.com/benadida/helios-django-app.git
 [submodule "auth"]
 	path = auth
 	url = git://github.com/benadida/auth-django-app.git
