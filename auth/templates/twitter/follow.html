@@ -1,0 +1,25 @@
+{% extends TEMPLATE_BASE %}
+
+{% block header %}
+<h2>{{ settings.SITE_TITLE }} &mdash; Twitter Follow?</h2>
+{% endblock %}
+
+
+{% block content %}
+
+<div style="font-size: 1.2em;">
+We recommend that you follow <b>@{{user_to_follow}}</b>.<br /><br />
+That way, {{reason_to_follow}}. We will not abuse of this friendship: only messages pertinent to you will be sent to you directly, and general updates happen only sporadically.
+</div>
+<br /><br />
+<form method="post" action="">
+<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<span style="font-size: 1.3em;">
+<input type="checkbox" name="follow_p" value="1" checked>
+follow @{{user_to_follow}}
+<br /><br />
+<input type="submit" value="continue" />
+</span>
+</form>
+
+{% endblock %}

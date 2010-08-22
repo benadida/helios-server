@@ -1,0 +1,22 @@
+<fb:header>
+  {% comment %}
+    We can use {{ fbuser }} to get at the current user.
+    {{ fbuser.id }} will be the user's UID, and {{ fbuser.language }}
+    is his/her favorite language (Python :-).
+  {% endcomment %}
+  Welcome, <fb:name uid="{{ fbuser.id }}" firstnameonly="true" useyou="false" />!
+</fb:header>
+
+<div class="clearfix" style="float: left; border: 1px #d8dfea solid; padding: 10px 10px 10px 10px; margin-left: 30px; margin-bottom: 30px; width: 500px;">
+  Your favorite language is {{ fbuser.language|escape }}.
+  <br /><br />
+
+  <div class="grayheader clearfix">
+    <br /><br />
+
+    <form action="." method="POST">
+      <input type="text" name="language" value="{{ fbuser.language|escape }}" />
+      <input type="submit" value="Change" />
+    </form>
+  </div>
+</div>

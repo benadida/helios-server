@@ -1,0 +1,17 @@
+{% extends TEMPLATE_BASE %}
+
+{% block content %}
+<h1>Authentication</h1>
+
+{% if user %}
+<p style="font-size: 1.4em;">
+    You are currently logged in as<br /><b>{{user.user_id}}</b> via <b>{{user.user_type}}</b>.
+</p>
+<p>
+    <a href="{% url auth.views.logout %}">logout</a>
+</p>
+
+{% else %}
+{% include "login_box.html" %}
+{% endif %}
+{% endblock %}

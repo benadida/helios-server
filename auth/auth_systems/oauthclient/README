@@ -1,0 +1,56 @@
+Python Oauth client for Twitter
+---------
+
+I built this so that i didn't have to keep looking for an oauth client for twitter to use in python. 
+
+It is based off of the PHP work from abrah.am (http://github.com/poseurtech/twitteroauth/tree/master). 
+It was very helpful. 
+
+I am using the OAuth lib that is from google gdata. I figure it is a working client and is in production use - so it should be solid. You can find it at:
+http://gdata-python-client.googlecode.com/svn/trunk/src/gdata/oauth
+
+With a bit of modification this client should work with other publishers. 
+
+btw, i am a python n00b. so feel free to help out. 
+
+Thanks,
+harper - harper@nata2.org (email and xmpp)
+
+
+-----------
+Links:
+
+Google Code Project: http://code.google.com/p/twitteroauth-python/
+Issue Tracker: http://code.google.com/p/twitteroauth-python/issues/list
+Wiki: http://wiki.github.com/harperreed/twitteroauth-python
+
+-----------
+
+The example client is included in the client.py. It is:
+
+if __name__ == '__main__':
+    consumer_key = ''
+    consumer_secret = ''
+    while not consumer_key:
+        consumer_key = raw_input('Please enter consumer key: ')
+    while not consumer_secret:
+        consumer_secret = raw_input('Please enter consumer secret: ')
+    auth_client = TwitterOAuthClient(consumer_key,consumer_secret)
+    tok = auth_client.get_request_token()
+    token = tok['oauth_token']
+    token_secret = tok['oauth_token_secret']
+    url = auth_client.get_authorize_url(token) 
+    webbrowser.open(url)
+    print "Visit this URL to authorize your app: " + url
+    response_token = raw_input('What is the oauth_token from twitter: ')
+    response_client = TwitterOAuthClient(consumer_key, consumer_secret,token, token_secret) 
+    tok = response_client.get_access_token()
+    print "Making signed request"
+    #verify user access
+    content = response_client.oauth_request('https://twitter.com/account/verify_credentials.json', method='POST')
+    #make an update
+    #content = response_client.oauth_request('https://twitter.com/statuses/update.xml', {'status':'Updated from a python oauth client. awesome.'}, method='POST')
+    print content
+   
+    print 'Done.'
+

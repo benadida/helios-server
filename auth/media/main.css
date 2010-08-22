@@ -1,0 +1,55 @@
+
+body {
+  font-family: 'Lucida Grande',sans-serif;
+  background: white;
+  padding: 0px;
+  margin: 0px;
+}
+
+#content {
+  position: absolute;
+  padding: 20px 30px 20px 30px;
+  top: 0px;
+  margin-left: 100px;
+  margin-top: 0px;
+  width: 860px;
+  background: #eee;
+  border-left: 1px solid #666;
+  border-right: 1px solid #666;
+  border-bottom: 1px solid #666;
+}
+
+#header {
+  padding-top: 0px;
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+#footer {
+  border-top: 1px solid #666;
+  bottom: 0px;
+  margin: auto;
+  width: 860px;
+  text-align: center;
+  color: #666;
+  clear: both;
+}
+
+#footer a, #footer a:visited {
+  color: black;
+  text-decoration: none;
+}
+
+#footer a:hover {
+  text-decoration: underline;
+}
+
+#page h2 {
+  background: #fc9;
+  border-bottom: 1px solid #666;
+  padding: 5px 0px 2px 5px;
+}
+
+#election_info {
+  font-size: 16pt;
+}

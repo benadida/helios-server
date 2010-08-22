@@ -1,0 +1,26 @@
+{% if default_auth_system %}
+<p><a href="{% url auth.views.start system_name=default_auth_system %}?return_url={{return_url}}">
+{{default_auth_system_obj.LOGIN_MESSAGE}}
+</a></p>
+{% else %}
+{% for auth_system in enabled_auth_systems %}
+{% ifequal auth_system "password" %}
+<form method="post" action="{% url auth.auth_systems.password.password_login_view %}">
+<input type="hidden" name="election_uuid" value="{{election.uuid}}" />
+<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<input type="hidden" name="return_url" value="{{return_url}}" />
+<table>
+    {{form.as_table}}
+</table>
+<input type="submit" value="log in" />
+<a style="font-size: 0.8em;" href="{% url auth.auth_systems.password.password_forgotten_view %}?return_url={{return_url|urlencode}}">forgot password?</a>
+</form>
+{% else %}
+<p>
+    <a href="{% url auth.views.start system_name=auth_system %}?return_url={{return_url}}" style="font-size: 1.4em;">
+<img border="0" height="35" src="/static/auth/login-icons/{{auth_system}}.png" alt="{{auth_system}}" /> {{auth_system}}
+{% endifequal %}
+</a>
+</p>
+{% endfor %}
+{% endif %}
