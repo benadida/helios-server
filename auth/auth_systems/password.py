@@ -112,5 +112,5 @@ def update_status(token, message):
 def send_message(user_id, user_name, user_info, subject, body):
   if user_info.has_key('email'):
     email = user_info['email']
-    name = user_info.get('name', email)
+    name = user_name or user_info.get('name', email)
     send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, email)], fail_silently=False)    
