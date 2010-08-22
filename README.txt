@@ -25,6 +25,10 @@ GETTING SOUTH WORKING ON EXISTING INSTALL
 - if you've already loaded the data model beforehand, you need to tell South that you've migrated appropriately
 - so, if your data model is up to date with the code, do
 
+python manage.py syncdb
+
+to get the south db models set up, and then:
+
 python manage.py migrate --list
 
 - if there are some unchecked migrations, and you are SURE that your database is up to date with the models (which should be the case if you're between v3.0.0 and v3.0.4 inclusive), then do
