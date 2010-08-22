@@ -79,6 +79,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     ## needed for queues
     'djcelery',
+    ## needed for schema migration
+    'south',
     ## HELIOS stuff
     'auth',
     'helios',

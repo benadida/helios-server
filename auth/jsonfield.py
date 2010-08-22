@@ -53,3 +53,10 @@ class JSONField(models.TextField):
         value = json.dumps(value, cls=DjangoJSONEncoder)
 
         return super(JSONField, self).get_db_prep_save(value)
+
+##
+## for schema migration, we have to tell South about JSONField
+## basically that it's the same as its parent class
+##
+from south.modelsinspector import add_introspection_rules
+add_introspection_rules([], ["^auth\.jsonfield\.JSONField"])
