@@ -1,0 +1,1 @@
+[{"pk": 1, "model": "auth.user", "fields": {"info": "{u'password': u'test'}", "user_id": "foobar", "name": "Foo Bar", "user_type": "password", "token": null, "admin_p": false}}]

@@ -298,6 +298,9 @@ class Election(models.Model, electionalgs.Election):
     """
     election is frozen when the voter registration, questions, and trustees are finalized
     """
+    if len(self.issues_before_freeze) > 0:
+      raise Exception("cannot freeze an election that has issues")
+
     self.frozen_at = datetime.datetime.utcnow()
     
     # voters hash
@@ -488,9 +491,19 @@ class Voter(models.Model, electionalgs.Voter):
   vote = JSONField(electionalgs.EncryptedVote, null=True)
   vote_hash = models.CharField(max_length = 100, null=True)
   cast_at = models.DateTimeField(auto_now_add=False, null=True)
-  
+
+  @classmethod
+  def register_user_in_election(cls, user, election):
+    voter_uuid = str(uuid.uuid4())
+    voter = Voter(uuid= voter_uuid, voter_type = user.user_type, voter_id = user.user_id, election = election, name = user.name)
+    voter.save()
+    return voter
+
   @classmethod
   def get_by_election(cls, election, cast=None, order_by='voter_id', after=None, limit=None):
+    """
+    FIXME: review this for non-GAE?
+    """
     query = cls.objects.filter(election = election)
     
     # the boolean check is not stupid, this is ternary logic

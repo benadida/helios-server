@@ -682,11 +682,7 @@ def _register_voter(election, user):
   if not _check_eligibility(election, user):
     return None
     
-  voter_uuid = str(uuid.uuid1())
-  voter = Voter(uuid= voter_uuid, voter_type = user.user_type, voter_id = user.user_id, election = election, name = user.name)
-  
-  voter.save()
-  return voter
+  return Voter.register_user_in_election(user, election)
     
 @election_view()
 def one_election_register(request, election):
