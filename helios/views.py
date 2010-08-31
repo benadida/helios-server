@@ -838,6 +838,7 @@ def voters_list_pretty(request, election):
   # for django pagination support
   page = int(request.GET.get('page', 1))
   limit = int(request.GET.get('limit', 50))
+  q = request.GET.get('q','')
   
   order_by = 'voter_id'
 
@@ -849,6 +850,13 @@ def voters_list_pretty(request, election):
 
   # load a bunch of voters
   voters = Voter.get_by_election(election, order_by=order_by)
+
+  if q != '':
+    if election.use_voter_aliases:
+      voters = voters.filter(alias__icontains = q)
+    else:
+      voters = voters.filter(name__icontains = q)
+
   total_voters = voters.count()
 
   voter_paginator = Paginator(voters, limit)
@@ -858,7 +866,7 @@ def voters_list_pretty(request, election):
                                                   'voters': voters_page.object_list, 'admin_p': admin_p, 
                                                   'email_voters': helios.VOTERS_EMAIL,
                                                   'limit': limit, 'total_voters': total_voters,
-                                                  'upload_p': helios.VOTERS_UPLOAD,
+                                                  'upload_p': helios.VOTERS_UPLOAD, 'q' : q,
                                                   'voter_files': voter_files})
 
 @election_admin(frozen=False)

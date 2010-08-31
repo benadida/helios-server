@@ -59,7 +59,7 @@ this election is <u>not</u> featured on the front page.
 <p align="center" style="font-size: 1.5em;">
 <a href="{% url helios.views.one_election_questions election.uuid %}">questions ({% if election.questions %}{{election.questions|length}}{% else %}0{% endif %})</a>
 &nbsp;&nbsp;|&nbsp;&nbsp;
-<a href="{% url helios.views.voters_list_pretty election.uuid %}">voters</a>
+<a href="{% url helios.views.voters_list_pretty election.uuid %}">voters &amp; ballots</a>
 &nbsp;&nbsp;|&nbsp;&nbsp;
 <a href="{% url helios.views.list_trustees_view election.uuid %}">trustees ({{trustees|length}})</a>
 </p>
@@ -241,7 +241,7 @@ You are <em>not eligible</em> to vote in this election, because registration is 
 {% endif %}
 
 <p style="font-size: 1.3em;">
-<a href="{% url helios.views.one_election_bboard election.uuid %}">Ballot Tracking Center</a> &nbsp;| &nbsp;
+<a href="{% url helios.views.voters_list_pretty election.uuid %}">Ballot Tracking Center</a> &nbsp;| &nbsp;
 <a href="{% url helios.views.one_election_audited_ballots election.uuid %}">Audited Ballots</a>
 </p>
 
