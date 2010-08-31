@@ -7,7 +7,9 @@ Ben Adida (ben@adida.net)
 
 from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
+from django.core.paginator import Paginator
 from django.http import *
+from django.db import transaction
 
 from mimetypes import guess_type
 
@@ -709,6 +711,7 @@ def one_election_save_questions(request, election):
   # always a machine API
   return SUCCESS
 
+@transaction.commit_on_success
 @election_admin(frozen=False)
 def one_election_freeze(request, election):
   # figure out the number of questions and trustees
@@ -829,9 +832,11 @@ def one_election_set_result_and_proof(request, election):
 def voters_list_pretty(request, election):
   """
   Show the list of voters
+  now using Django pagination
   """
-  after = request.GET.get('after', None)
-  offset= int(request.GET.get('offset', 0))
+
+  # for django pagination support
+  page = int(request.GET.get('page', 1))
   limit = int(request.GET.get('limit', 50))
   
   order_by = 'voter_id'
@@ -843,33 +848,18 @@ def voters_list_pretty(request, election):
   voter_files = election.voterfile_set.all()
 
   # load a bunch of voters
-  voters = Voter.get_by_election(election, after=after, limit=limit+1, order_by=order_by)
+  voters = Voter.get_by_election(election, order_by=order_by)
+  total_voters = voters.count()
+
+  voter_paginator = Paginator(voters, limit)
+  voters_page = voter_paginator.page(page)
     
-  more_p = len(voters) > limit
-  if more_p:
-    voters = voters[0:limit]
-    next_after = getattr(voters[limit-1], order_by)
-  else:
-    next_after = None
-    
-  return render_template(request, 'voters_list', {'election': election, 'voters': voters, 'admin_p': admin_p, 
-                                                  'next_after': next_after, 'email_voters': helios.VOTERS_EMAIL,
-                                                  'offset': offset, 'limit': limit, 'offset_plus_one': offset+1,
-                                                  'offset_plus_limit': offset+min(limit,len(voters)),
+  return render_template(request, 'voters_list', {'election': election, 'voters_page': voters_page,
+                                                  'voters': voters_page.object_list, 'admin_p': admin_p, 
+                                                  'email_voters': helios.VOTERS_EMAIL,
+                                                  'limit': limit, 'total_voters': total_voters,
                                                   'upload_p': helios.VOTERS_UPLOAD,
                                                   'voter_files': voter_files})
-
-@election_admin()
-def voters_search(request, election):
-  """
-  Search the voters by voter_id
-  """
-  search_term = request.GET.get('q', None)
-  if not search_term:
-    raise Exception("must provide a search term")
-  
-  voter = Voter.get_by_election_and_voter_id(election, voter_id=search_term)
-  return render_template(request, 'voters_search', {'election': election, 'voter': voter, 'search_term': search_term})
 
 @election_admin(frozen=False)
 def voters_upload(request, election):

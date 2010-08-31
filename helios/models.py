@@ -196,6 +196,10 @@ class Election(models.Model, electionalgs.Election):
     if len(trustees) == 0:
       issues.append("no trustees")
 
+    for t in trustees:
+      if t.public_key == None:
+        issues.append("trustee %s hasn't generated a key yet" % t.name)
+
     return issues
     
 
