@@ -68,9 +68,15 @@ def stats(request):
   if not user or not user.admin_p:
     raise PermissionDenied()
 
-  elections = Election.objects.all().order_by('-created_at')[:25]
+  page = int(request.GET.get('page', 1))
+  limit = int(request.GET.get('limit', 25))
 
-  return render_template(request, "stats", {'elections' : elections})
+  elections = Election.objects.all().order_by('-created_at')
+  elections_paginator = Paginator(elections, limit)
+  elections_page = elections_paginator.page(page)
+
+  return render_template(request, "stats", {'elections' : elections_page.object_list, 'elections_page': elections_page
+                                            'limit' : limit})
     
 ##
 ## General election features

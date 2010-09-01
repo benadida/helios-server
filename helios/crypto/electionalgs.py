@@ -428,7 +428,7 @@ class Voter(HeliosObject):
   A voter in an election
   """
   FIELDS = ['election_uuid', 'uuid', 'voter_type', 'voter_id', 'name', 'alias']
-  JSON_FIELDS = ['election_uuid', 'uuid', 'voter_type', 'voter_id', 'name']
+  JSON_FIELDS = ['election_uuid', 'uuid', 'voter_type', 'voter_id_hash', 'name']
   
   # alternative, for when the voter is aliased
   ALIASED_VOTER_JSON_FIELDS = ['election_uuid', 'uuid', 'alias']
@@ -439,6 +439,10 @@ class Voter(HeliosObject):
       return super(Voter, self).toJSONDict(self.ALIASED_VOTER_JSON_FIELDS)
     else:
       return super(Voter,self).toJSONDict()
+
+  @property
+  def voter_id_hash(self):
+    return utils.hash_b64(self.voter_id)
 
 class Trustee(HeliosObject):
   """
