@@ -75,7 +75,7 @@ def stats(request):
   elections_paginator = Paginator(elections, limit)
   elections_page = elections_paginator.page(page)
 
-  return render_template(request, "stats", {'elections' : elections_page.object_list, 'elections_page': elections_page
+  return render_template(request, "stats", {'elections' : elections_page.object_list, 'elections_page': elections_page,
                                             'limit' : limit})
     
 ##
