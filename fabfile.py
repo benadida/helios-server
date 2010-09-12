@@ -45,6 +45,14 @@ def checkout_tag(tag, path):
         if result.failed:
             abort("on remote: could not check out tag %s" % tag)
 
+        result = run('git submodule init')
+        if result.failed:
+            abort("on remote: could not init submodules")
+
+        result = run('git submodule update')
+        if result.failed:
+            abort("on remote: could not update submodules")
+
 def migrate_db(path):
     with cd(path):
         result = run('python manage.py migrate')
@@ -56,12 +64,17 @@ def restart_apache():
     if result.failed:
         abort("could not restart apache")
 
+def restart_celeryd():
+    result = sudo('/etc/init.d/celeryd restart')
+    if result.failed:
+        abort("could not restart celeryd")
+
 def deploy(tag, path):
     confirm("Ready to deploy %s to %s?" % (tag,path))
     run_tests()
     check_tag(tag, path=path)
     checkout_tag(tag, path=path)
-    #migrate_db(path=path)
+    migrate_db(path=path)
     restart_apache()
     
 def staging_deploy(tag):
@@ -69,3 +82,4 @@ def staging_deploy(tag):
 
 def production_deploy(tag):
     deploy(tag, path=PRODUCTION_DIR)
+    restart_celeryd()

@@ -221,13 +221,13 @@ def one_election_view(request, election):
   # status update message?
   if election.openreg:
     if election.voting_has_started:
-      status_update_message = "Vote in %s" % election.name
+      status_update_message = u"Vote in %s" % election.name
     else:
-      status_update_message = "Register to vote in %s" % election.name
+      status_update_message = u"Register to vote in %s" % election.name
 
   # result!
   if election.result:
-    status_update_message = "Results are in for %s" % election.name
+    status_update_message = u"Results are in for %s" % election.name
   
   # a URL for the social buttons
   socialbuttons_url = None
@@ -236,7 +236,7 @@ def one_election_view(request, election):
                                      reverse(socialbuttons),
                                      urllib.urlencode({
           'url' : election_url,
-          'text': status_update_message
+          'text': status_update_message.encode('utf-8')
           }))
 
   trustees = Trustee.get_by_election(election)
