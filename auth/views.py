@@ -84,7 +84,7 @@ def do_local_logout(request):
 
   # let's clean up the self-referential issue:
   field_names_to_save = set(field_names_to_save)
-  field_names_to_save.remove(FIELDS_TO_SAVE)
+  field_names_to_save = field_names_to_save - set([FIELDS_TO_SAVE])
   field_names_to_save = list(field_names_to_save)
 
   fields_to_save = dict([(name, request.session.get(name, None)) for name in field_names_to_save])
