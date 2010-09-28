@@ -1,0 +1,14 @@
+{% extends TEMPLATE_BASE %}
+
+{% block title %}Cookies are required for Helios use{% endblock %}
+
+{% block content %}
+  <h2 class="title">Cookies are Required for Helios</h2>
+
+<p>
+It appears your browser does not support cookies or is set up to block cookies from this site. Helios needs to set a session cookie so that it can save your vote, let you log in, etc. Enable cookies and then <a href="{{retest_url}}">proceed to preparing your ballot</a>
+</p>
+<p>
+If you keep getting sent back to this page, it's probably because you haven't enabled cookies successfully.
+</p>
+{% endblock %}

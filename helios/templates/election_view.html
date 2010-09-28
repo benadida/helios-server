@@ -149,7 +149,7 @@ all voters will be notified that the tally is ready.
 
 {% if election.voting_has_started %}
 <span class="highlight-box round" style="font-size: 1.6em; margin-right: 10px;" id="votelink">
-<a href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">Vote in this election </a>
+<a href="{{test_cookie_url}}">Vote in this election </a>
 </span><br />
 {% if not user %}
 <br />

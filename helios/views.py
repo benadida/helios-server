@@ -203,6 +203,10 @@ def one_election_view(request, election):
   
   election_url = get_election_url(election)
   status_update_message = None
+
+  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url' : reverse(one_election, args=[election.uuid])}))
+
+  test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : vote_url}))
   
   if user:
     voter = Voter.get_by_election_and_user(election, user)
@@ -244,8 +248,27 @@ def one_election_view(request, election):
   return render_template(request, 'election_view',
                          {'election' : election, 'trustees': trustees, 'admin_p': admin_p, 'user': user,
                           'voter': voter, 'votes': votes, 'notregistered': notregistered, 'eligible_p': eligible_p,
-                          'can_feature_p': can_feature_p, 'election_url' : election_url,
-                          'socialbuttons_url' : socialbuttons_url})
+                          'can_feature_p': can_feature_p, 'election_url' : election_url, 'vote_url': vote_url,
+                          'test_cookie_url': test_cookie_url, 'socialbuttons_url' : socialbuttons_url})
+
+def test_cookie(request):
+  continue_url = request.GET['continue_url']
+  request.session.set_test_cookie()
+  next_url = "%s?%s" % (reverse(test_cookie_2), urllib.urlencode({'continue_url': continue_url}))
+  return HttpResponseRedirect(next_url)  
+
+def test_cookie_2(request):
+  continue_url = request.GET['continue_url']
+
+  if not request.session.test_cookie_worked():
+    return HttpResponseRedirect("%s?%s" % (reverse(nocookies), urllib.urlencode({'continue_url': continue_url})))
+
+  request.session.delete_test_cookie()
+  return HttpResponseRedirect(continue_url)  
+
+def nocookies(request):
+  retest_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : request.GET['continue_url']}))
+  return render_template(request, 'nocookies', {'retest_url': retest_url})
 
 def socialbuttons(request):
   """
