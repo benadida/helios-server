@@ -30,7 +30,7 @@
 <br />
 {% if admin_p and upload_p %}
 <p>
-{% if not election.frozen_at %}
+{% if election.openreg or not election.frozen_at %}
 <a href="{% url helios.views.voters_upload election_uuid=election.uuid %}">bulk upload voters</a>
 {% endif %}
 </p>

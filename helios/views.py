@@ -879,7 +879,7 @@ def voters_list_pretty(request, election):
                                                   'upload_p': helios.VOTERS_UPLOAD, 'q' : q,
                                                   'voter_files': voter_files})
 
-@election_admin(frozen=False)
+@election_admin()
 def voters_upload(request, election):
   """
   Upload a CSV of password-based voters with
@@ -887,6 +887,9 @@ def voters_upload(request, election):
   
   name and email are needed only if voter_type is static
   """
+  if election.frozen_at and not election.openreg:
+    raise PermissionDenied()
+
   if request.method == "GET":
     return render_template(request, 'voters_upload', {'election': election})
     
