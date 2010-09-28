@@ -59,6 +59,7 @@ not logged in. [<a href="{% url auth.views.index %}?return_url={{CURRENT_URL}}">
 {% for footer_link in settings.FOOTER_LINKS %}
 | <a href="{{ footer_link.url }}">{{footer_link.text}}</a>
 {% endfor %}
+| <a href="mailto:help@heliosvoting.org">Help!</a>
 
 <br clear="right" />
       </div>
