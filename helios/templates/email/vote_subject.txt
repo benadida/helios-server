@@ -1,1 +1,1 @@
-vote in {{voter.election.name}}
+{{voter.election.name}} - {{custom_subject|safe}}

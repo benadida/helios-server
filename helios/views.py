@@ -916,8 +916,10 @@ def voters_email(request, election):
       body_template = 'email/vote_body.txt'
       
       extra_vars = {
+        'custom_subject' : email_form.cleaned_data['subject'],
         'custom_message' : email_form.cleaned_data['body'],
-        'election_url' : get_election_url(election)
+        'election_url' : get_election_url(election),
+        'election' : election
         }
         
 

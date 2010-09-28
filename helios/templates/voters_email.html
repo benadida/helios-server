@@ -24,6 +24,11 @@ voter_id = '{{voter.voter_id}}';
     the election URL, the login information, and a simple email signature.<br />
     No need to include these in the body of your email below.
   </p>
+
+  <p>
+    The email will also <b><u>automatically</u></b> include the name of the election in the subject,<br />followed by your custom subject.
+  </p>
+  
   <form class="prettyform" action="" method="POST" id="email_form">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     <table class="pretty">
