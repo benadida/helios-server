@@ -57,7 +57,7 @@ def password_login_view(request):
           if request.POST.has_key('return_url'):
             request.session['auth_return_url'] = request.POST.get('return_url')
 
-          request.session['user'] = user
+          request.session['password_user'] = user
           return HttpResponseRedirect(reverse(after))
       except User.DoesNotExist:
         pass
@@ -101,7 +101,7 @@ def get_auth_url(request, redirect_url = None):
   return reverse(password_login_view)
     
 def get_user_info_after_auth(request):
-  user = request.session['user']
+  user = request.session['password_user']
   user_info = user.info
   
   return {'type': 'password', 'user_id' : user.user_id, 'name': user.name, 'info': user.info, 'token': None}

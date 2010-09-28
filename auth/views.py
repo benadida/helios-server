@@ -81,6 +81,12 @@ def do_local_logout(request):
   # but we definitely kill the session and renew
   # the cookie
   field_names_to_save = request.session.get(FIELDS_TO_SAVE, [])
+
+  # let's clean up the self-referential issue:
+  field_names_to_save = set(field_names_to_save)
+  field_names_to_save.remove(FIELDS_TO_SAVE)
+  field_names_to_save = list(field_names_to_save)
+
   fields_to_save = dict([(name, request.session.get(name, None)) for name in field_names_to_save])
 
   # let's not forget to save the list of fields to save
@@ -126,8 +132,9 @@ def logout(request):
 def start(request, system_name):
   if not (system_name in auth.ENABLED_AUTH_SYSTEMS):
     return HttpResponseRedirect(reverse(index))
-    
-  request.session.save()
+  
+  # why is this here? Let's try without it
+  # request.session.save()
   
   # store in the session the name of the system used for auth
   request.session['auth_system_name'] = system_name
