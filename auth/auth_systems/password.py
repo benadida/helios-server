@@ -45,18 +45,18 @@ def password_login_view(request):
   else:
     form = LoginForm(request.POST)
 
+    # set this in case we came here straight from the multi-login chooser
+    # and thus did not have a chance to hit the "start/password" URL
+    request.session['auth_system_name'] = 'password'
+    if request.POST.has_key('return_url'):
+      request.session['auth_return_url'] = request.POST.get('return_url')
+
     if form.is_valid():
       username = form.cleaned_data['username'].strip()
       password = form.cleaned_data['password'].strip()
       try:
         user = User.get_by_type_and_id('password', username)
         if password_check(user, password):
-          # set this in case we came here from another location than 
-          # the normal login process
-          request.session['auth_system_name'] = 'password'
-          if request.POST.has_key('return_url'):
-            request.session['auth_return_url'] = request.POST.get('return_url')
-
           request.session['password_user'] = user
           return HttpResponseRedirect(reverse(after))
       except User.DoesNotExist:
@@ -102,6 +102,7 @@ def get_auth_url(request, redirect_url = None):
     
 def get_user_info_after_auth(request):
   user = request.session['password_user']
+  del request.session['password_user']
   user_info = user.info
   
   return {'type': 'password', 'user_id' : user.user_id, 'name': user.name, 'info': user.info, 'token': None}

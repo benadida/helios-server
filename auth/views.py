@@ -90,13 +90,15 @@ def do_local_logout(request):
   fields_to_save = dict([(name, request.session.get(name, None)) for name in field_names_to_save])
 
   # let's not forget to save the list of fields to save
-  field_names_to_save.append(FIELDS_TO_SAVE)
   fields_to_save[FIELDS_TO_SAVE] = field_names_to_save
 
   request.session.flush()
 
   for name in field_names_to_save:
     request.session[name] = fields_to_save[name]
+
+  # copy the list of fields to save
+  request.session[FIELDS_TO_SAVE] = fields_to_save[FIELDS_TO_SAVE]
 
   request.session['user_for_remote_logout'] = user
 
@@ -105,8 +107,10 @@ def do_remote_logout(request, user, return_url="/"):
   auth_system = AUTH_SYSTEMS[user['type']]
   
   # does the auth system have a special logout procedure?
+  user_for_remote_logout = request.session.get('user_for_remote_logout', None)
+  del request.session['user_for_remote_logout']
   if hasattr(auth_system, 'do_logout'):
-    response = auth_system.do_logout(request.session.get('user_for_remote_logout', None))
+    response = auth_system.do_logout(user_for_remote_logout)
     return response
 
 def do_complete_logout(request, return_url="/"):
@@ -186,5 +190,9 @@ def after(request):
   return HttpResponseRedirect(reverse(after_intervention))
 
 def after_intervention(request):
-  return HttpResponseRedirect(request.session['auth_return_url'] or "/")
+  return_url = "/"
+  if request.session.has_key('auth_return_url'):
+    return_url = request.session['auth_return_url']
+    del request.session['auth_return_url']
+  return HttpResponseRedirect(return_url)
 
