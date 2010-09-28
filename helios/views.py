@@ -270,7 +270,7 @@ def list_trustees(request, election):
 def list_trustees_view(request, election):
   trustees = Trustee.get_by_election(election)
   user = get_user(request)
-  admin_p = user and (user == election.admin)
+  admin_p = security.user_can_admin_election(user, election)
   
   return render_template(request, 'list_trustees', {'election': election, 'trustees': trustees, 'admin_p':admin_p})
   
@@ -679,7 +679,7 @@ def one_election_archive(request, election, admin, api_client):
 def one_election_questions(request, election):
   questions_json = utils.to_json(election.questions)
   user = get_user(request)
-  admin_p = user and (user == election.admin)  
+  admin_p = security.user_can_admin_election(user, election)
 
   return render_template(request, 'election_questions', {'election': election, 'questions_json' : questions_json, 'admin_p': admin_p})
 
@@ -848,8 +848,12 @@ def voters_list_pretty(request, election):
   
   order_by = 'voter_id'
 
+  # unless it's by alias, in which case we better go by UUID
+  if election.use_voter_aliases:
+    order_by = 'alias'
+
   user = get_user(request)
-  admin_p = user and (user == election.admin)  
+  admin_p = security.user_can_admin_election(user, election)
   
   # files being processed
   voter_files = election.voterfile_set.all()
