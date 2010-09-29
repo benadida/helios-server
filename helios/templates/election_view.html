@@ -259,7 +259,7 @@ You are <em>not eligible</em> to vote in this election, because registration is 
 verify <a target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">election tally</a>.
 {% endif %}
 
-review the <a href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">voting booth</a>.
+review the <a href="{{vote_url}}">voting booth</a>.
 </p>
 
 {% endif %}
