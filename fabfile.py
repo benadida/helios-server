@@ -36,6 +36,7 @@ def check_tag(tag, path):
 
     with cd(path):
         run('git pull origin master')
+        run('git fetch --tags')
         result = run('git tag')
         if tag not in result.split("\n"):
             abort("no remote tag %s" % tag)

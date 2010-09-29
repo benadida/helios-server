@@ -634,7 +634,8 @@ def voter_delete(request, election, voter_uuid):
   - election is not frozen or
   - election is open reg
   """
-  if not (election.frozen_at or election.openreg):
+  # if election is frozen and has closed registration
+  if election.frozen_at and (not election.openreg):
     raise PermissionDenied()
 
   if election.encrypted_tally:
