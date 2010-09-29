@@ -32,7 +32,15 @@ def get_auth_url(request, redirect_url):
 def get_user_info_after_auth(request):
   data = view_helpers.finish_openid(request.session, request.GET, request.session['google_redirect_url'])
 
-  return {'type' : 'google', 'user_id': data['ax']['email'][0], 'name': "%s %s" % (data['ax']['firstname'][0], data['ax']['lastname'][0]), 'info': {}, 'token':{}}
+  email = data['ax']['email'][0]
+
+  # do we have a firstname/lastname?
+  if data['ax'].has_key('firstname') and data['ax'].has_key('lastname'):
+    name = "%s %s" % (data['ax']['firstname'][0], data['ax']['lastname'][0])
+  else:
+    name = email
+
+  return {'type' : 'google', 'user_id': email, 'name': name , 'info': {}, 'token':{}}
     
 def do_logout(user):
   """
