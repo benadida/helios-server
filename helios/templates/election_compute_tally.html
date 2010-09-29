@@ -6,6 +6,7 @@
   <h2 class="title">Compute Tally for Election: {{election.name}}</h2>
 
 <div id="instructions">
+{% if election.num_cast_votes %}
 <p>
     You are about to compute the encrypted tally for election <b>{{election.name}}</b>.
 </p>
@@ -20,6 +21,12 @@
 <input class="pretty" type="submit" value="compute encrypted tally!" />
 <button onclick="document.location='./view'; return false;">never mind</button>
 </form>
+{% else %}
+<p>
+No votes have been cast in this election. At least one vote must be cast before you compute the tally.<br /><br />
+<a href="./view">back to election</a>
+</p>
+{% endif %}
 </div>
 
 <br /><br />
