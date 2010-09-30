@@ -407,7 +407,9 @@ def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
 
 def utf_8_encoder(unicode_csv_data):
     for line in unicode_csv_data:
-        yield line.encode('utf-8')
+      # FIXME: this used to be line.encode('utf-8'),
+      # need to figure out why this isn't consistent
+      yield line
   
 class VoterFile(models.Model):
   """
