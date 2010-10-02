@@ -63,6 +63,16 @@ Prior Bulk Uploads:
 <a href="./list?page={{voters_page.previous_page_number}}&limit={{limit}}&q={{q|urlencode}}">previous {{limit}}</a> &nbsp;&nbsp;
 {% endif %}
 
+<p>
+<b>
+{% if election.num_cast_votes %}
+{{election.num_cast_votes}} cast vote{% ifequal election.num_cast_votes 1 %}{% else %}s{% endifequal %}
+{% else %}
+no votes yet
+{% endif %}
+</b>
+</p>
+
 Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voters}})&nbsp;&nbsp;
 
 {% if voters_page.has_next %}
