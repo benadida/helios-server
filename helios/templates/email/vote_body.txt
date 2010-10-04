@@ -9,7 +9,13 @@ Your username: {{voter.user.user_id}}
 Your password: {{voter.user.info.password}}
 {% else %}
 Log in with your {{voter.voter_type}} account.
-{% endifequal %}{% if election.use_voter_aliases %}
+{% endifequal %}{% if voter.vote_hash %}
+We have a vote recorded for you already, with smart tracker:
+
+  {{voter.vote_hash}}
+
+You may re-vote if you wish: only your last vote counts.
+{% endif %}{% if election.use_voter_aliases %}
 In order to protect your privacy, this election is configured
 to never display your username, name, or email address to the public.
 Instead, the ballot tracking center will only display your alias.

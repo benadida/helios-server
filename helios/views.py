@@ -936,7 +936,7 @@ def voters_email(request, election):
   voter = Voter.get_by_election_and_voter_id(election, voter_id)
   
   if request.method == "GET":
-    email_form = forms.EmailVotersForm()
+    email_form = forms.EmailVotersForm({'subject': 'Vote in %s' % election.name, 'body':' '})
   else:
     email_form = forms.EmailVotersForm(request.POST)
     
