@@ -96,7 +96,14 @@ Your smart ballot tracker is:<br /><br />
 <p>
   Now, we need you to log in, so we can verify your eligibility.<br /><br />
 {% if election.openreg %}
+{% if election.eligibility %}
+{% if password_only %}
+This election is open only to designated participants who received credentials via email.
+{% else %}
+{% endif %}
+{% else %}
 This election is open to <em>anyone</em>, so log in with your preferred account.
+{% endif %}
 {% else %}
 {% if password_only %}
 Please log in with the username and password you received by email.<br />
