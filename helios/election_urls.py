@@ -14,6 +14,7 @@ urlpatterns = patterns('',
     # edit election params
     (r'^/edit$', one_election_edit),
     (r'^/schedule$', one_election_schedule),
+    (r'^/archive$', one_election_archive),
 
     # adding trustees
     (r'^/trustees/$', list_trustees),

@@ -57,7 +57,7 @@ def get_election_url(election):
 def home(request):
   user = get_user(request)
   if user:
-    elections = Election.get_by_user_as_admin(user)
+    elections = Election.get_by_user_as_admin(user, archived_p = False)
   else:
     elections = []
   
@@ -428,7 +428,7 @@ def one_election_cast(request, election):
 
   save_in_session_across_logouts(request, 'encrypted_vote', encrypted_vote)
 
-  return HttpResponseRedirect("%s%s" % (settings.URL_HOST, reverse(one_election_cast_confirm, args=[election.uuid])))
+  return HttpResponseRedirect("%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_cast_confirm, args=[election.uuid])))
   
 @election_view(frozen=True)
 def one_election_cast_confirm(request, election):
@@ -436,7 +436,7 @@ def one_election_cast_confirm(request, election):
 
   # if no encrypted vote, the user is reloading this page or otherwise getting here in a bad way
   if not request.session.has_key('encrypted_vote'):
-    return HttpResponseRedirect("/")
+    return HttpResponseRedirect(settings.URL_HOST)
 
   if user:
     voter = Voter.get_by_election_and_user(election, user)
@@ -515,7 +515,7 @@ def one_election_cast_confirm(request, election):
     
     # voting has not started or has ended
     if (not election.voting_has_started()) or election.voting_has_stopped():
-      return HttpResponseRedirect("/")
+      return HttpResponseRedirect(settings.URL_HOST)
             
     # if user is not logged in
     # bring back to the confirmation page to let him know
@@ -539,7 +539,7 @@ def one_election_cast_confirm(request, election):
     # remove the vote from the store
     del request.session['encrypted_vote']
     
-    return HttpResponseRedirect(reverse(one_election_cast_done, args=[election.uuid]))
+    return HttpResponseRedirect("%s%s" % (settings.URL_HOST, reverse(one_election_cast_done, args=[election.uuid])))
   
 @election_view()
 def one_election_cast_done(request, election):
@@ -679,7 +679,7 @@ def one_election_set_featured(request, election):
   return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
 
 @election_admin()
-def one_election_archive(request, election, admin, api_client):
+def one_election_archive(request, election):
   
   archive_p = request.GET.get('archive_p', True)
   
@@ -688,13 +688,9 @@ def one_election_archive(request, election, admin, api_client):
   else:
     election.archived_at = None
     
-  # FIXME: what is this??
-  storage.election_update(election)
+  election.save()
 
-  if get_user(request):
-    return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
-  else:
-    return SUCCESS
+  return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
 
 # changed from admin to view because 
 # anyone can see the questions, the administration aspect is now

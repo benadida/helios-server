@@ -21,9 +21,10 @@
 {% endfor %}
 </ul>
 {% else %}
-<em>none yet</em><br />
+<em>none yet</em>
 {% endif %}
-<div style="text-align:right">
+<p>[<a href="{% url helios.views.elections_administered %}">see all</a>]</p>
+<div style="text-align:right;">
 <a href="{% url helios.views.election_new %}" style="font-size: 1.2em; padding:5px; background: #eee; border: 1px solid #888">create election &gt;</a>
 </div>
 {% endif %}

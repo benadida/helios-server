@@ -31,7 +31,7 @@ def home(request):
   create_p = can_create_election(request)
 
   if create_p:
-    elections_administered = Election.get_by_user_as_admin(user)
+    elections_administered = Election.get_by_user_as_admin(user, archived_p=False, limit=5)
   else:
     elections_administered = None
 

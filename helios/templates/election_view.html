@@ -24,7 +24,14 @@ if (!navigator.javaEnabled()) {
 {% endif %}
 {% endif %}</h2>
 <p style="padding-top:0px; margin-top:0px">
-an election created by <u><b>{{election.admin.display_html_small|safe}}</b></u><br />
+an election created by <u><b>{{election.admin.display_html_small|safe}}</b></u>
+{% if election.is_archived %}
+[archived]
+{% endif %}
+{% if admin_p %}
+&nbsp;[{% if election.is_archived %}<a href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=0">unarchive it</a>{% else %}<a href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=1">archive it</a>{% endif %}]
+{% endif %}
+<br />
 {% if admin_p %}
 {% if election.featured_p %}
 this election is featured on the front page.

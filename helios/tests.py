@@ -126,6 +126,13 @@ class ElectionModelTests(TestCase):
         # make sure it logged something
         self.assertTrue(len(self.election.get_log().all()) > 0)
 
+    def test_archive(self):
+        self.election.archived_at = datetime.datetime.utcnow()
+        self.assertTrue(self.election.is_archived)
+
+        self.election.archived_at = None
+        self.assertFalse(self.election.is_archived)
+
     def test_voter_registration(self):
         # before adding a voter
         voters = models.Voter.get_by_election(self.election)

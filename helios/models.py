@@ -109,6 +109,10 @@ class Election(models.Model, electionalgs.Election):
 
     return utils.hash_b64(self.encrypted_tally.toJSON())
 
+  @property
+  def is_archived(self):
+    return self.archived_at != None
+
   @classmethod
   def get_featured(cls):
     return cls.objects.filter(featured_p = True).order_by('short_name')
@@ -118,12 +122,17 @@ class Election(models.Model, electionalgs.Election):
     return cls.objects.get_or_create(short_name = kwargs['short_name'], defaults=kwargs)
 
   @classmethod
-  def get_by_user_as_admin(cls, user, include_archived=False):
+  def get_by_user_as_admin(cls, user, archived_p=None, limit=None):
     query = cls.objects.filter(admin = user)
-    if include_archived:
-      query = query.filter('archived_at', None)
+    if archived_p == True:
+      query = query.exclude(archived_at= None)
+    if archived_p == False:
+      query = query.filter(archived_at= None)
     query = query.order_by('-created_at')
-    return query
+    if limit:
+      return query[:limit]
+    else:
+      return query
     
   @classmethod
   def get_by_user_as_voter(cls, user):
