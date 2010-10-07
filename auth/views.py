@@ -150,7 +150,7 @@ def start(request, system_name):
   system = AUTH_SYSTEMS[system_name]  
   
   # where to send the user to?
-  redirect_url = "%s%s" % (settings.URL_HOST,reverse(after))
+  redirect_url = "%s%s" % (settings.SECURE_URL_HOST,reverse(after))
   auth_url = system.get_auth_url(request, redirect_url=redirect_url)
   
   if auth_url:
@@ -194,5 +194,5 @@ def after_intervention(request):
   if request.session.has_key('auth_return_url'):
     return_url = request.session['auth_return_url']
     del request.session['auth_return_url']
-  return HttpResponseRedirect(return_url)
+  return HttpResponseRedirect("%s%s" % (settings.URL_HOST, return_url))
 

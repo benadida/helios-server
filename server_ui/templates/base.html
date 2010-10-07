@@ -53,7 +53,7 @@
 logged in as {{user.display_html_small|safe}}
 [<a href="{% url auth.views.logout %}?return_url={{CURRENT_URL}}">logout</a>]<br />
 {% else %}
-not logged in. [<a href="{% url auth.views.index %}?return_url={{CURRENT_URL}}">log in</a>]<br />
+not logged in. [<a href="{{settings.SECURE_URL_HOST}}{% url auth.views.index %}?return_url={{CURRENT_URL}}">log in</a>]<br />
 {% endif %}
 <a href="http://heliosvoting.org">About Helios</a>
 {% for footer_link in settings.FOOTER_LINKS %}
