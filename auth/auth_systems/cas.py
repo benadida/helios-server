@@ -34,7 +34,8 @@ def _get_service_url():
   
   return settings.URL_HOST + reverse(after)
   
-def get_auth_url(request):
+def get_auth_url(request, redirect_url):
+  request.session['cas_redirect_url'] = redirect_url
   return CAS_URL + 'login?service=' + urllib.quote(_get_service_url())
 
 def get_user_category(user_id):
@@ -93,7 +94,10 @@ def get_user_info(user_id):
   # get the value elements (a bit of a hack but no big deal)
   values = response_doc.getElementsByTagName('value')
   
-  return {'name' : values[0].firstChild.wholeText, 'category' : values[1].firstChild.wholeText}
+  if len(values)>0:
+    return {'name' : values[0].firstChild.wholeText, 'category' : values[1].firstChild.wholeText}
+  else:
+    return None
   
 def get_user_info_after_auth(request):
   ticket = request.GET.get('ticket', None)
@@ -113,9 +117,14 @@ def get_user_info_after_auth(request):
     netid = r[1].strip()
     
     category = get_user_category(netid)
-    info = {'name': netid, 'category': category}
+    user_info = get_user_info(netid)
+
+    if user_info:
+      info = {'name': user_info['name'], 'category': category}
+    else:
+      info = {'name': netid, 'category': category}
       
-    return {'type': 'cas', 'user_id': netid, 'name': netid, 'info': info, 'token': None}
+    return {'type': 'cas', 'user_id': netid, 'name': info['name'], 'info': info, 'token': None}
   else:
     return None
     
