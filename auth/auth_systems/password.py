@@ -79,7 +79,10 @@ def password_forgotten_view(request):
     username = request.POST['username']
     return_url = request.POST['return_url']
     
-    user = User.get_by_type_and_id('password', username)
+    try:
+      user = User.get_by_type_and_id('password', username)
+    except User.DoesNotExist:
+      return render_template(request, 'password/forgot', {'return_url': request.GET.get('return_url', ''), 'error': 'no such username'})
     
     body = """
 
