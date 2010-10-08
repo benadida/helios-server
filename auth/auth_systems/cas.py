@@ -25,6 +25,8 @@ if hasattr(settings, 'CAS_USERNAME'):
 
 # display tweaks
 LOGIN_MESSAGE = "Log in with my NetID"
+STATUS_UPDATES = False
+
 
 def _get_service_url():
   # FIXME current URL
