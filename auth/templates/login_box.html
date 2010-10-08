@@ -17,7 +17,7 @@
 </form>
 {% else %}
 <p>
-    <a href="{% url auth.views.start system_name=auth_system %}?return_url={{return_url}}" style="font-size: 1.4em;">
+    <a href="{{SECURE_URL_HOST}}{% url auth.views.start system_name=auth_system %}?return_url={{return_url}}" style="font-size: 1.4em;">
 <img border="0" height="35" src="/static/auth/login-icons/{{auth_system}}.png" alt="{{auth_system}}" /> {{auth_system}}
 {% endifequal %}
 </a>

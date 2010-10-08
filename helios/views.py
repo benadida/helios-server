@@ -421,7 +421,7 @@ def one_election_cast(request, election):
   on a GET, this is a cancellation, on a POST it's a cast
   """
   if request.method == "GET":
-    return HttpResponseRedirect(reverse(one_election_view, args = [election.uuid]))
+    return HttpResponseRedirect("%s%s" % (settings.URL_HOST, reverse(one_election_view, args = [election.uuid])))
     
   user = get_user(request)    
   encrypted_vote = request.POST['encrypted_vote']
