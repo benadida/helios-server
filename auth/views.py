@@ -38,7 +38,7 @@ def index(request):
   
   default_auth_system_obj = None
   if auth.DEFAULT_AUTH_SYSTEM:
-    default_auth_system_obj = auth_systems.AUTH_SYSTEMS[auth.DEFAULT_AUTH_SYSTEM]
+    default_auth_system_obj = AUTH_SYSTEMS[auth.DEFAULT_AUTH_SYSTEM]
 
   form = password.LoginForm()
 
@@ -54,7 +54,7 @@ def login_box_raw(request, return_url='/', auth_systems = None):
   """
   default_auth_system_obj = None
   if auth.DEFAULT_AUTH_SYSTEM:
-    default_auth_system_obj = auth_systems.AUTH_SYSTEMS[auth.DEFAULT_AUTH_SYSTEM]
+    default_auth_system_obj = AUTH_SYSTEMS[auth.DEFAULT_AUTH_SYSTEM]
   
   enabled_auth_systems = auth_systems or auth.ENABLED_AUTH_SYSTEMS
 
