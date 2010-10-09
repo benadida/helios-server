@@ -299,7 +299,7 @@ class Election(models.Model, electionalgs.Election):
     voter_types = [r['voter_type'] for r in self.voter_set.values('voter_type').distinct()]
 
     if self.openreg:
-      if not 'password' in voter_types:
+      if not 'password' in voter_types and 'password' in auth_systems:
         auth_systems.remove('password')
     else:
       auth_systems = [vt for vt in voter_types if vt in auth_systems]
