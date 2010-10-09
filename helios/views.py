@@ -551,11 +551,13 @@ def one_election_cast_done(request, election):
   
   # local logout ensures that there's no more
   # user locally
-  if logout:
-    auth_views.do_local_logout(request)
+  # WHY DO WE COMMENT THIS OUT? because we want to force a full logout via the iframe, including
+  # from remote systems, just in case, i.e. CAS
+  # if logout:
+  #   auth_views.do_local_logout(request)
     
   # remote logout is happening asynchronously in an iframe to be modular given the logout mechanism
-  return render_template(request, 'cast_done', {'election': election, 'last_vote': votes[0], 'logout': logout})
+  return render_template(request, 'cast_done', {'election': election, 'last_vote': votes[0], 'logout': logout}, include_user=False)
 
 @election_view()
 @json
