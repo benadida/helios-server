@@ -158,3 +158,26 @@ def send_email(sender, recpt_lst, subject, body):
   
 
   
+##
+## raw SQL and locking
+##
+
+def lock_row(model, pk):
+  """
+  you almost certainly want to use lock_row inside a commit_on_success function
+  Eventually, in Django 1.2, this should move to the .for_update() support
+  """
+
+  from django.db import connection, transaction
+  cursor = connection.cursor()
+
+  cursor.execute("select * from " + model._meta.db_table + " where id = %s for update", [pk])
+  row = cursor.fetchone()
+
+  # if this is under transaction management control, mark the transaction dirty
+  try:
+    transaction.set_dirty()
+  except:
+    pass
+
+  return row

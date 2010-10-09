@@ -6,7 +6,7 @@ Ben Adida
 (ben@adida.net)
 """
 
-from django.db import models
+from django.db import models, transaction
 from django.utils import simplejson
 from django.conf import settings
 
@@ -156,7 +156,7 @@ class Election(models.Model, electionalgs.Election):
     """
     expects a django uploaded_file data structure, which has filename, content, size...
     """
-    random_filename = str(uuid.uuid1())
+    random_filename = str(uuid.uuid4())
     new_voter_file = VoterFile(election = self)
     new_voter_file.voter_file.save(random_filename, uploaded_file)
     self.append_log(ElectionLog.VOTER_FILE_ADDED)
@@ -344,7 +344,7 @@ class Election(models.Model, electionalgs.Election):
 
     # create the trustee
     trustee = Trustee(election = self)
-    trustee.uuid = str(uuid.uuid1())
+    trustee.uuid = str(uuid.uuid4())
     trustee.name = settings.DEFAULT_FROM_NAME
     trustee.email = settings.DEFAULT_FROM_EMAIL
     trustee.public_key = keypair.pk
@@ -470,7 +470,7 @@ class VoterFile(models.Model):
     
       # create the voter
       if not voter:
-        voter_uuid = str(uuid.uuid1())
+        voter_uuid = str(uuid.uuid4())
         voter = Voter(uuid= voter_uuid, voter_type = 'password', voter_id = voter_id, name = name, election = election)
         voter_uuids.append(voter_uuid)
         voter.save()
@@ -508,9 +508,17 @@ class Voter(models.Model, electionalgs.Voter):
   cast_at = models.DateTimeField(auto_now_add=False, null=True)
 
   @classmethod
+  @transaction.commit_on_success
   def register_user_in_election(cls, user, election):
     voter_uuid = str(uuid.uuid4())
     voter = Voter(uuid= voter_uuid, voter_type = user.user_type, voter_id = user.user_id, election = election, name = user.name)
+
+    # do we need to generate an alias?
+    if election.use_voter_aliases:
+      heliosutils.lock_row(Election, election.id)
+      alias_num = election.num_voters + 1
+      voter.alias = "V%s" % alias_num
+
     voter.save()
     return voter
 
