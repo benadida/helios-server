@@ -103,6 +103,17 @@ class Election(models.Model, electionalgs.Election):
     return self.voter_set.count()
 
   @property
+  def last_alias_num(self):
+    """
+    FIXME: we should be tracking alias number, not the V* alias which then
+    makes things a lot harder
+    """
+    if not self.use_voter_aliases:
+      return None
+    
+    return heliosutils.one_val_raw_sql("select max(cast(substring(alias, 2) as integer)) from " + Voter._meta.db_table + " where election_id = %s", [self.id]) or 0
+
+  @property
   def encrypted_tally_hash(self):
     if not self.encrypted_tally:
       return None
@@ -441,7 +452,7 @@ class VoterFile(models.Model):
     election = self.election
     reader = unicode_csv_reader(self.voter_file)
     
-    num_voters_before = election.num_voters
+    last_alias_num = election.last_alias_num
 
     num_voters = 0
     voter_uuids = []
@@ -476,7 +487,7 @@ class VoterFile(models.Model):
         voter.save()
 
     if election.use_voter_aliases:
-      voter_alias_integers = range(num_voters_before+1, num_voters_before+1+num_voters)
+      voter_alias_integers = range(last_alias_num+1, last_alias_num+1+num_voters)
       random.shuffle(voter_alias_integers)
       for i, voter_uuid in enumerate(voter_uuids):
         voter = Voter.get_by_election_and_uuid(election, voter_uuid)
@@ -516,7 +527,7 @@ class Voter(models.Model, electionalgs.Voter):
     # do we need to generate an alias?
     if election.use_voter_aliases:
       heliosutils.lock_row(Election, election.id)
-      alias_num = election.num_voters + 1
+      alias_num = election.last_alias_num + 1
       voter.alias = "V%s" % alias_num
 
     voter.save()

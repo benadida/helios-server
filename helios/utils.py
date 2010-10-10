@@ -162,6 +162,16 @@ def send_email(sender, recpt_lst, subject, body):
 ## raw SQL and locking
 ##
 
+def one_val_raw_sql(raw_sql, values=[]):
+  """
+  for a simple aggregate
+  """
+  from django.db import connection, transaction
+  cursor = connection.cursor()
+
+  cursor.execute(raw_sql, values)
+  return cursor.fetchone()[0]
+
 def lock_row(model, pk):
   """
   you almost certainly want to use lock_row inside a commit_on_success function
