@@ -16,6 +16,9 @@ urlpatterns = patterns('',
     (r'^/schedule$', one_election_schedule),
     (r'^/archive$', one_election_archive),
 
+    # badge
+    (r'^/badge$', election_badge),
+
     # adding trustees
     (r'^/trustees/$', list_trustees),
     (r'^/trustees/view$', list_trustees_view),

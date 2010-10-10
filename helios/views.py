@@ -193,6 +193,11 @@ def one_election(request, election):
   return election.toJSONDict()
 
 @election_view()
+def election_badge(request, election):
+  election_url = get_election_url(election)
+  return render_template(request, "election_badge", {'election': election, 'election_url': election_url})
+
+@election_view()
 def one_election_view(request, election):
   user = get_user(request)
   admin_p = security.user_can_admin_election(user, election)
