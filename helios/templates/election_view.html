@@ -165,12 +165,12 @@ For your privacy, you'll be asked to log in only once your ballot is encrypted.
 {% endif %}
 {% if election.voting_extended_until %}
 <br />
-This election was initially scheduled to end at {{election.voting_ends_at}},<br />
-but has been extended until {{ election.voting_extended_until }}.
+This election was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
+but has been extended until {{ election.voting_extended_until }} (UTC).
 {% else %}
 {% if election.voting_ends_at %}
 <br />
-This election is scheduled to end at {{election.voting_ends_at}}.
+This election is scheduled to end at {{election.voting_ends_at}} (UTC).
 {% else %}
 <br />
 This election ends at the administrator's discretion.

@@ -898,10 +898,10 @@ def voters_list_pretty(request, election):
     else:
       voters = voters.filter(name__icontains = q)
 
-  total_voters = voters.count()
-
   voter_paginator = Paginator(voters, limit)
   voters_page = voter_paginator.page(page)
+
+  total_voters = voter_paginator.count
     
   return render_template(request, 'voters_list', {'election': election, 'voters_page': voters_page,
                                                   'voters': voters_page.object_list, 'admin_p': admin_p, 

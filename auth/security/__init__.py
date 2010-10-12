@@ -92,7 +92,7 @@ def admin_required(func):
 # get the user
 def get_user(request):
   # push the expiration of the session back
-  request.session.set_expiry(settings.SESSION_COOKIE_AGE)
+  # request.session.set_expiry(settings.SESSION_COOKIE_AGE)
   
   # set up CSRF protection if needed
   if not request.session.has_key('csrf_token') or type(request.session['csrf_token']) != str:

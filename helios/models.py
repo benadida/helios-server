@@ -152,7 +152,7 @@ class Election(models.Model, electionalgs.Election):
   @classmethod
   def get_by_uuid(cls, uuid):
     try:
-      return cls.objects.get(uuid=uuid)
+      return cls.objects.select_related().get(uuid=uuid)
     except cls.DoesNotExist:
       return None
   
@@ -599,7 +599,7 @@ class Voter(models.Model, electionalgs.Voter):
 
   @classmethod
   def get_by_user(cls, user):
-    return cls.objects.filter(voter_type = user.user_type, voter_id = user.user_id).order_by('-cast_at')
+    return cls.objects.select_related().filter(voter_type = user.user_type, voter_id = user.user_id).order_by('-cast_at')
 
   @property
   def user(self):
