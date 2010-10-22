@@ -422,8 +422,11 @@ def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
     csv_reader = csv.reader(utf_8_encoder(unicode_csv_data),
                             dialect=dialect, **kwargs)
     for row in csv_reader:
-        # decode UTF-8 back to Unicode, cell by cell:
+      # decode UTF-8 back to Unicode, cell by cell:
+      try:
         yield [unicode(cell, 'utf-8') for cell in row]
+      except:
+        yield [unicode(cell, 'latin-1') for cell in row]        
 
 def utf_8_encoder(unicode_csv_data):
     for line in unicode_csv_data:
@@ -450,7 +453,7 @@ class VoterFile(models.Model):
     self.save()
 
     election = self.election
-    reader = unicode_csv_reader(self.voter_file)
+    reader = unicode_csv_reader(open(self.voter_file.path, "rU"))
     
     last_alias_num = election.last_alias_num
 
