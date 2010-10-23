@@ -15,7 +15,7 @@ import copy
 
 
 @task()
-def cast_vote_verify_and_store(cast_vote_id, status_update_message=None):
+def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
     cast_vote = CastVote.objects.get(id = cast_vote_id)
     result = cast_vote.verify_and_store()
 
@@ -32,8 +32,8 @@ def cast_vote_verify_and_store(cast_vote_id, status_update_message=None):
 
             user.update_status(status_update_message)
     else:
-        # FIXME: do something about a bad vote
-        pass
+        logger = cast_vote_verify_and_store.get_logger(**kwargs)
+        logger.error("Failed to verify and store %d" % cast_vote_id)
     
 @task()
 def voters_email(election_id, subject_template, body_template, extra_vars={}):
