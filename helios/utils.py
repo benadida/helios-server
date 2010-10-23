@@ -14,13 +14,13 @@ from auth.utils import *
 from django.conf import settings
   
 import random, logging
-import sha, hmac, base64
+import hashlib, hmac, base64
 
 def do_hmac(k,s):
   """
   HMAC a value with a key, hex output
   """
-  mac = hmac.new(k, s, sha)
+  mac = hmac.new(k, s, hashlib.sha1)
   return mac.hexdigest()
 
 

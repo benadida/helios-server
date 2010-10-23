@@ -14,6 +14,7 @@ import urlparse
 import hmac
 import base64
 import logging
+import hashlib
 
 VERSION = '1.0' # Hi Blaine!
 HTTP_METHOD = 'GET'
@@ -513,12 +514,7 @@ class OAuthSignatureMethod_HMAC_SHA1(OAuthSignatureMethod):
         key, raw = self.build_signature_base_string(oauth_request, consumer, token)
 
         # hmac object
-        try:
-            import hashlib # 2.5
-            hashed = hmac.new(key, raw, hashlib.sha1)
-        except:
-            import sha # deprecated
-            hashed = hmac.new(key, raw, sha)
+        hashed = hmac.new(key, raw, hashlib.sha1)
 
         # calculate the digest base 64
         return base64.b64encode(hashed.digest())

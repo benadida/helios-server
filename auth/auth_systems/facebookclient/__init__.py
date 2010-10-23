@@ -50,10 +50,7 @@ import struct
 import urllib
 import urllib2
 import httplib
-try:
-    import hashlib
-except ImportError:
-    import md5 as hashlib
+import hashlib
 import binascii
 import urlparse
 import mimetypes

@@ -2,7 +2,7 @@
 Crypto Utils
 """
 
-import sha, hmac, base64
+import hmac, base64
 
 from django.utils import simplejson
 
