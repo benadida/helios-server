@@ -36,9 +36,22 @@ def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwarg
         logger.error("Failed to verify and store %d" % cast_vote_id)
     
 @task()
-def voters_email(election_id, subject_template, body_template, extra_vars={}):
+def voters_email(election_id, subject_template, body_template, extra_vars={},
+                 voter_constraints_include=None, voter_constraints_exclude=None):
+    """
+    voter_constraints_include are conditions on including voters
+    voter_constraints_exclude are conditions on excluding voters
+    """
     election = Election.objects.get(id = election_id)
-    for voter in election.voter_set.all():
+
+    # select the right list of voters
+    voters = election.voter_set.all()
+    if voter_constraints_include:
+        voters = voters.filter(**voter_constraints_include)
+    if voter_constraints_exclude:
+        voters = voters.exclude(**voter_constraints_exclude)
+
+    for voter in voters:
         single_voter_email.delay(voter.uuid, subject_template, body_template, extra_vars)
 
 @task()

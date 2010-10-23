@@ -943,7 +943,7 @@ def voters_email(request, election):
   voter = Voter.get_by_election_and_voter_id(election, voter_id)
   
   if request.method == "GET":
-    email_form = forms.EmailVotersForm({'subject': 'Vote in %s' % election.name, 'body':' '})
+    email_form = forms.EmailVotersForm(initial={'subject': 'Vote in %s' % election.name})
   else:
     email_form = forms.EmailVotersForm(request.POST)
     
@@ -952,6 +952,9 @@ def voters_email(request, election):
       # the client knows to submit only once with a specific voter_id
       subject_template = 'email/vote_subject.txt'
       body_template = 'email/vote_body.txt'
+
+      if email_form.cleaned_data['suppress_election_links']:
+        body_template = 'email/vote_body_nolinks.txt'
       
       extra_vars = {
         'custom_subject' : email_form.cleaned_data['subject'],
@@ -960,11 +963,21 @@ def voters_email(request, election):
         'election' : election
         }
         
+      voter_constraints_include = None
+      voter_constraints_exclude = None
+
+      # exclude those who have not voted
+      if email_form.cleaned_data['send_to'] == 'voted':
+        voter_constraints_exclude = {'vote_hash' : None}
+
+      # include only those who have not voted
+      if email_form.cleaned_data['send_to'] == 'not-voted':
+        voter_constraints_include = {'vote_hash': None}
 
       if voter:
         tasks.single_voter_email.delay(voter_uuid = voter.uuid, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars)
       else:
-        tasks.voters_email.delay(election_id = election.id, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars)
+        tasks.voters_email.delay(election_id = election.id, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars, voter_constraints_include = voter_constraints_include, voter_constraints_exclude = voter_constraints_exclude)
 
       # this batch process is all async, so we can return a nice note
       return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))

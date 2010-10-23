@@ -1,0 +1,6 @@
+Dear {{voter.name}},
+
+{{custom_message|safe}}
+
+--
+Helios

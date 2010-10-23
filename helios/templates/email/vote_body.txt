@@ -10,7 +10,7 @@ Your password: {{voter.user.info.password}}
 {% else %}
 Log in with your {{voter.voter_type}} account.
 {% endifequal %}{% if voter.vote_hash %}
-We have a vote recorded for you already, with smart tracker:
+We have recorded your vote with smart tracker:
 
   {{voter.vote_hash}}
 
