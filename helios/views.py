@@ -195,7 +195,10 @@ def one_election(request, election):
 @election_view()
 def election_badge(request, election):
   election_url = get_election_url(election)
-  return render_template(request, "election_badge", {'election': election, 'election_url': election_url})
+  params = {'election': election, 'election_url': election_url}
+  for option_name in ['show_title', 'show_vote_link']:
+    params[option_name] = (request.GET.get(option_name, '1') == '1')
+  return render_template(request, "election_badge", params)
 
 @election_view()
 def one_election_view(request, election):
