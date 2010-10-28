@@ -551,11 +551,24 @@ def one_election_cast_confirm(request, election):
   
 @election_view()
 def one_election_cast_done(request, election):
+  """
+  This view needs to be loaded because of the IFRAME, but then this causes 
+  problems if someone clicks "reload". So we need a strategy.
+  We store the ballot hash in the session
+  """
   user = get_user(request)
-  voter = Voter.get_by_election_and_user(election, user)
-  votes = CastVote.get_by_voter(voter)
 
-  logout = settings.LOGOUT_ON_CONFIRMATION
+  if user:
+    voter = Voter.get_by_election_and_user(election, user)
+    votes = CastVote.get_by_voter(voter)
+    vote_hash = votes[0].vote_hash
+
+    logout = settings.LOGOUT_ON_CONFIRMATION
+
+    save_in_session_across_logouts(request, 'last_vote_hash', vote_hash)
+  else:
+    vote_hash = request.session['last_vote_hash']
+    logout = False
   
   # local logout ensures that there's no more
   # user locally
@@ -565,7 +578,7 @@ def one_election_cast_done(request, election):
   #   auth_views.do_local_logout(request)
     
   # remote logout is happening asynchronously in an iframe to be modular given the logout mechanism
-  return render_template(request, 'cast_done', {'election': election, 'last_vote': votes[0], 'logout': logout}, include_user=False)
+  return render_template(request, 'cast_done', {'election': election, 'vote_hash': vote_hash, 'logout': logout}, include_user=False)
 
 @election_view()
 @json
