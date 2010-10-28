@@ -136,14 +136,14 @@ all voters will be notified that the tally is ready.
 </span><br />
 
 <br />
-<h2 class="highlight-box">Tally</h2>
+<h3 class="highlight-box">Tally</h3>
 {% for question in election.pretty_result %}
-<b>{{question.question}}</b>:
-<ul>
+<b><span style="font-size:0.8em;">Question #{{forloop.counter}}</span><br />{{question.question}}</b><br />
+<table class="pretty" style="width: auto;">
 {% for answer in question.answers %}
-<li> {{answer.answer}}: {{answer.count}}
+<tr><td style="padding-right:80px;">{{answer.answer}}</td><td align="right">{{answer.count}}</td></tr>
 {% endfor %}
-</ul>
+</table>
 {% endfor %}
 
 {% else %}
