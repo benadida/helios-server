@@ -363,6 +363,29 @@ class EncryptedVote(HeliosObject):
     encrypted_answers = [EncryptedAnswer.fromElectionAndAnswer(election, answer_num, answers[answer_num]) for answer_num in range(len(answers))]
     return cls(encrypted_answers=encrypted_answers, election_hash=election.hash, election_uuid = election.uuid)
     
+
+def one_question_winner(question, result, num_cast_votes):
+  """
+  determining the winner for one question
+  """
+  # sort the answers , keep track of the index
+  counts = sorted(enumerate(result), key=lambda(x): x[1])
+  counts.reverse()
+
+  # if there's a max > 1, we assume that the top MAX win
+  if question['max'] > 1:
+    return [c[0] for c in counts[:max]]
+
+  # if max = 1, then depends on absolute or relative
+  if question['result_type'] == 'absolute':
+    if counts[0][1] >=  (num_cast_votes/2 + 1):
+      return [counts[0][0]]
+    else:
+      return []
+
+  if question['result_type'] == 'relative':
+    return [counts[0][0]]    
+
 class Election(HeliosObject):
   
   FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description', 'voters_hash', 'openreg',
@@ -400,9 +423,21 @@ class Election(HeliosObject):
       return "Closed"
     
   @property
+  def winners(self):
+    """
+    Depending on the type of each question, determine the winners
+    returns an array of winners for each question, aka an array of arrays.
+    assumes that if there is a max to the question, that's how many winners there are.
+    """
+    return [one_question_winner(self.questions[i], self.result[i], self.num_cast_votes) for i in range(len(self.questions))]
+    
+  @property
   def pretty_result(self):
     if not self.result:
       return None
+    
+    # get the winners
+    winners = self.winners
 
     raw_result = self.result
     prettified_result = []
@@ -416,7 +451,7 @@ class Election(HeliosObject):
       for j in range(len(q['answers'])):
         a = q['answers'][j]
         count = raw_result[i][j]
-        pretty_question.append({'answer': a, 'count': count})
+        pretty_question.append({'answer': a, 'count': count, 'winner': (j in winners[i])})
         
       prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
 

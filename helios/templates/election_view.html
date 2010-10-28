@@ -141,7 +141,7 @@ all voters will be notified that the tally is ready.
 <b><span style="font-size:0.8em;">Question #{{forloop.counter}}</span><br />{{question.question}}</b><br />
 <table class="pretty" style="width: auto;">
 {% for answer in question.answers %}
-<tr><td style="padding-right:80px;">{{answer.answer}}</td><td align="right">{{answer.count}}</td></tr>
+<tr><td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td><td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.count}}</td></tr>
 {% endfor %}
 </table>
 {% endfor %}
