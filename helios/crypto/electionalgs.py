@@ -374,7 +374,7 @@ def one_question_winner(question, result, num_cast_votes):
 
   # if there's a max > 1, we assume that the top MAX win
   if question['max'] > 1:
-    return [c[0] for c in counts[:max]]
+    return [c[0] for c in counts[:question['max']]]
 
   # if max = 1, then depends on absolute or relative
   if question['result_type'] == 'absolute':
