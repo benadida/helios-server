@@ -448,6 +448,24 @@ class VoterFile(models.Model):
   processing_finished_at = models.DateTimeField(auto_now_add=False, null=True)
   num_voters = models.IntegerField(null=True)
 
+  def itervoters(self):
+    reader = unicode_csv_reader(open(self.voter_file.path, "rU"))
+
+    for voter_fields in reader:
+      # bad line
+      if len(voter_fields) < 1:
+        continue
+    
+      return_dict = {'voter_id': voter_fields[0]}
+
+      if len(voter_fields) > 1:
+        return_dict['email'] = voter_fields[1]
+
+      if len(voter_fields) > 2:
+        return_dict['name'] = voter_fields[2]
+
+      yield return_dict
+    
   def process(self):
     self.processing_started_at = datetime.datetime.utcnow()
     self.save()

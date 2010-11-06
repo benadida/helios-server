@@ -1,0 +1,26 @@
+{% extends TEMPLATE_BASE %}
+
+{% block content %}
+  <h2 class="title">{{election.name}} &mdash; Bulk Upload Voters &mdash; Confirm<span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
+
+<p>
+You have uploaded a file of voters. The first few rows of this file are:
+</p>
+
+<table>
+<tr><th>Voter Login</th><th>Email Address</th><th>Name</th></tr>
+{% for v in voters %}
+<tr><td>{{v.voter_id}}</td><td>{{v.email}}</td><td>{{v.name}}</td></tr>
+{% endfor %}
+</table>
+
+<p></p>
+<form method="post" action="" id="upload_form">
+  Does this look right to you?
+  <input type="hidden" name="confirm_p" value="1" />
+  <input type="submit" value="Yes, let's go" />
+</form>
+
+<a href="{% url helios.views.voters_upload_cancel election.uuid %}">no, let me upload a different file</a>
+
+{% endblock %}

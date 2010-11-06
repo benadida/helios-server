@@ -941,14 +941,36 @@ def voters_upload(request, election):
     return render_template(request, 'voters_upload', {'election': election})
     
   if request.method == "POST":
-    # we store the file away for future processing
-    voters_file = request.FILES['voters_file']
-    voter_file_obj = election.add_voters_file(voters_file)
+    if bool(request.POST.get('confirm_p', 0)):
+      # launch the background task to parse that file
+      tasks.voter_file_process.delay(voter_file_id = request.session['voter_file_id'])
+      del request.session['voter_file_id']
 
-    # launch the background task to parse that file
-    tasks.voter_file_process.delay(voter_file_id = voter_file_obj.id)
+      return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+    else:
+      # we need to confirm
+      voters_file = request.FILES['voters_file']
+      voter_file_obj = election.add_voters_file(voters_file)
 
-    return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+      request.session['voter_file_id'] = voter_file_obj.id
+
+      # import the first few lines to check
+      voters = [v for v in voter_file_obj.itervoters()][:5]
+
+      return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters})
+
+@election_admin()
+def voters_upload_cancel(request, election):
+  """
+  cancel upload of CSV file
+  """
+  voter_file_id = request.session.get('voter_file_id', None)
+  if voter_file_id:
+    vf = VoterFile.objects.get(id = voter_file_id)
+    vf.delete()
+  del request.session['voter_file_id']
+
+  return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
 
 @election_admin(frozen=True)
 def voters_email(request, election):
