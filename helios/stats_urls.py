@@ -12,4 +12,5 @@ urlpatterns = patterns(
     '',
     (r'^$', home),
     (r'^elections$', elections),
+    (r'^recent-votes$', recent_votes),
 )

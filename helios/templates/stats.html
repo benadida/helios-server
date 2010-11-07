@@ -4,22 +4,9 @@
 {% block content %}
 <h1>Statistics</h1>
 
-<p>
-{% if elections_page.has_previous %}
-<a href="?page={{elections_page.previous_page_number}}&limit={{limit}}">previous {{limit}}</a> &nbsp;&nbsp;
-{% endif %}
-
-Elections {{elections_page.start_index}} - {{elections_page.end_index}}&nbsp;&nbsp;
-
-{% if elections_page.has_next %}
-<a href="?page={{elections_page.next_page_number}}&limit={{limit}}">next {{limit}}</a> &nbsp;&nbsp;
-{% endif %}
-</p>
-
-{% for election in elections %}
-<p>
-<b><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></b> -- {{election.num_voters}} voters
-</p>
-{% endfor %}
+<ul>
+<li> <a href="{% url helios.stats_views.elections %}">elections</a></li>
+<li> <a href="{% url helios.stats_views.recent_votes %}">recent votes</a></li>
+</ul>
 
 {% endblock %}
