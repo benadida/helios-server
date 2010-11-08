@@ -22,11 +22,19 @@ DM_TOKEN = settings.TWITTER_DM_TOKEN
 STATUS_UPDATES = True
 STATUS_UPDATE_WORDING_TEMPLATE = "Tweet %s"
 
+OAUTH_PARAMS = {
+  'root_url' : 'https://twitter.com',
+  'request_token_path' : '/oauth/request_token',
+  'authorize_path' : '/oauth/authorize',
+  'authenticate_path' : '/oauth/authenticate',
+  'access_token_path': '/oauth/access_token'
+}
+
 def _get_new_client(token=None, token_secret=None):
   if token:
-    return client.TwitterOAuthClient(API_KEY, API_SECRET, token, token_secret)
+    return client.LoginOAuthClient(API_KEY, API_SECRET, OAUTH_PARAMS, token, token_secret)
   else:
-    return client.TwitterOAuthClient(API_KEY, API_SECRET)
+    return client.LoginOAuthClient(API_KEY, API_SECRET, OAUTH_PARAMS)
 
 def _get_client_by_token(token):
   return _get_new_client(token['oauth_token'], token['oauth_token_secret'])

@@ -1,5 +1,6 @@
 '''
 Python Oauth client for Twitter
+modified to work with other oAuth logins like LinkedIn (Ben Adida)
 
 Used the SampleClient from the OAUTH.org example python client as basis.
 
@@ -13,22 +14,26 @@ import webbrowser
 import oauth as oauth
 from urlparse import urlparse
 
-class TwitterOAuthClient(oauth.OAuthClient):
-    api_root_url = 'https://twitter.com' #for testing 'http://term.ie'
-    api_root_port = "80"
+class LoginOAuthClient(oauth.OAuthClient):
 
     #set api urls
     def request_token_url(self):
-        return self.api_root_url + '/oauth/request_token'
+        return self.server_params['root_url'] + self.server_params['request_token_path']
     def authorize_url(self):
-        return self.api_root_url + '/oauth/authorize'
+        return self.server_params['root_url'] + self.server_params['authorize_path']
     def authenticate_url(self):
-      return self.api_root_url + '/oauth/authenticate'
+        return self.server_params['root_url'] + self.server_params['authenticate_path']
     def access_token_url(self):
-        return self.api_root_url + '/oauth/access_token'
+        return self.server_params['root_url'] + self.server_params['access_token_path']
 
     #oauth object
-    def __init__(self, consumer_key, consumer_secret, oauth_token=None, oauth_token_secret=None):
+    def __init__(self, consumer_key, consumer_secret, server_params, oauth_token=None, oauth_token_secret=None):
+        """
+        params should be a dictionary including
+        root_url, request_token_path, authorize_path, authenticate_path, access_token_path
+        """
+        self.server_params = server_params
+
         self.sha1_method = oauth.OAuthSignatureMethod_HMAC_SHA1()
         self.consumer = oauth.OAuthConsumer(consumer_key, consumer_secret)
         if ((oauth_token != None) and (oauth_token_secret!=None)):
@@ -97,8 +102,11 @@ class TwitterOAuthClient(oauth.OAuthClient):
     def get_authenticate_url(self, token):
         return self.authenticate_url() + '?oauth_token=' +token
 
-    def get_access_token(self,token=None):
-        r = self.oauth_request(self.access_token_url())
+    def get_access_token(self,token=None,verifier=None):
+        if verifier:
+            r = self.oauth_request(self.access_token_url(), args={'oauth_verifier': verifier})
+        else:
+            r = self.oauth_request(self.access_token_url())
         token = self.oauth_parse_response(r)
         self.token = oauth.OAuthConsumer(token['oauth_token'],token['oauth_token_secret'])
         return token
@@ -117,6 +125,9 @@ class TwitterOAuthClient(oauth.OAuthClient):
             return self.http_wrapper(req.get_normalized_http_url(),req.to_postdata())
 
         
+##
+## the code below needs to be updated to take into account not just Twitter
+##
 
 if __name__ == '__main__':
     consumer_key = ''
@@ -125,7 +136,7 @@ if __name__ == '__main__':
         consumer_key = raw_input('Please enter consumer key: ')
     while not consumer_secret:
         consumer_secret = raw_input('Please enter consumer secret: ')
-    auth_client = TwitterOAuthClient(consumer_key,consumer_secret)
+    auth_client = LoginOAuthClient(consumer_key,consumer_secret)
     tok = auth_client.get_request_token()
     token = tok['oauth_token']
     token_secret = tok['oauth_token_secret']
@@ -133,7 +144,7 @@ if __name__ == '__main__':
     webbrowser.open(url)
     print "Visit this URL to authorize your app: " + url
     response_token = raw_input('What is the oauth_token from twitter: ')
-    response_client = TwitterOAuthClient(consumer_key, consumer_secret,token, token_secret) 
+    response_client = LoginOAuthClient(consumer_key, consumer_secret,token, token_secret, server_params={})
     tok = response_client.get_access_token()
     print "Making signed request"
     #verify user access
