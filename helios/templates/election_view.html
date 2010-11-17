@@ -24,7 +24,7 @@ if (!navigator.javaEnabled()) {
 {% endif %}
 {% endif %}</h2>
 <p style="padding-top:0px; margin-top:0px">
-an election created by <u><b>{{election.admin.display_html_small|safe}}</b></u>
+{{ election.election_type }} created by <u><b>{{election.admin.display_html_small|safe}}</b></u>
 {% if election.is_archived %}
 [archived]
 {% endif %}
@@ -34,12 +34,12 @@ an election created by <u><b>{{election.admin.display_html_small|safe}}</b></u>
 <br />
 {% if admin_p %}
 {% if election.featured_p %}
-this election is featured on the front page.
+this {{election.election_type}} is featured on the front page.
 {% if can_feature_p %}
 [<a href="{% url helios.views.one_election_set_featured election.uuid %}?featured_p=0">unfeature it</a>]
 {% endif %}
 {% else %}
-this election is <u>not</u> featured on the front page.
+this {{election.election_type}} is <u>not</u> featured on the front page.
 {% if can_feature_p %}
 [<a href="{% url helios.views.one_election_set_featured election.uuid %}?featured_p=1">feature it</a>]
 {% endif %}
@@ -156,7 +156,7 @@ all voters will be notified that the tally is ready.
 
 {% if election.voting_has_started %}
 <span class="highlight-box round" style="font-size: 1.6em; margin-right: 10px;" id="votelink">
-<a href="{{test_cookie_url}}">Vote in this election </a>
+<a href="{{test_cookie_url}}">Vote in this {{election.election_type}} </a>
 </span><br />
 {% if not user %}
 <br />
@@ -165,15 +165,15 @@ For your privacy, you'll be asked to log in only once your ballot is encrypted.
 {% endif %}
 {% if election.voting_extended_until %}
 <br />
-This election was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
+This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
 but has been extended until {{ election.voting_extended_until }} (UTC).
 {% else %}
 {% if election.voting_ends_at %}
 <br />
-This election is scheduled to end at {{election.voting_ends_at}} (UTC).
+This {{election.election_type}} is scheduled to end at {{election.voting_ends_at}} (UTC).
 {% else %}
 <br />
-This election ends at the administrator's discretion.
+This {{election.election_type}} ends at the administrator's discretion.
 {% endif %}
 <br />
 {% endif %}
@@ -192,7 +192,7 @@ This election ends at the administrator's discretion.
 {% if user %}
 {% if voter %}
 <p style="padding-top:1px;">
-  You are registered to vote in this election.
+  You are registered to vote in this {{election.election_type}}.
 {% if election.use_voter_aliases %}
 Your voter alias is {{voter.alias}}.
 {% endif %}
@@ -204,19 +204,19 @@ Your voter alias is {{voter.alias}}.
 {% if election.openreg %}
 {% if eligible_p %}
 {% if election.voting_has_started %}
-This election is open to anyone.
+This {{election.election_type}} is open to anyone.
 {% else %}
-You are <em>not</em> registered to vote in this election.<br />
+You are <em>not</em> registered to vote in this {{election.election_type}}.<br />
 <form method="post" action="{% url helios.views.one_election_register election.uuid %}">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 <input type="submit" value="register!" />
 </form>
 {% endif %}
 {% else %}
-Registration for this election is open, but You are <em>not eligible</em>.
+Registration for this {{election.election_type}} is open, but You are <em>not eligible</em>.
 {% endif %}
 {% else %}
-You are <em>not eligible</em> to vote in this election, because registration is closed and you are not registered.<br />
+You are <em>not eligible</em> to vote in this {{election.election_type}}, because registration is closed and you are not registered.<br />
 {% endif %}
 {% endif %}
 {% endif %}

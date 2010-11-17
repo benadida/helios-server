@@ -145,8 +145,7 @@ def election_new(request):
 
         user = get_user(request)
         election_params['admin'] = user
-        # election_params['api_client'] = get_api_client(request)
-
+        
         election, created_p = Election.get_or_create(**election_params)
       
         if created_p:
@@ -162,7 +161,7 @@ def election_new(request):
 def one_election_edit(request, election):
 
   error = None
-  RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases']
+  RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases', 'election_type']
   
   if request.method == "GET":
     values = {}

@@ -35,6 +35,14 @@ class Election(models.Model, electionalgs.Election):
   short_name = models.CharField(max_length=100)
   name = models.CharField(max_length=250)
   
+  ELECTION_TYPES = (
+    ('election', 'Election'),
+    ('referendum', 'Referendum')
+    )
+
+  election_type = models.CharField(max_length=250, null=False, default='election', choices = ELECTION_TYPES)
+  advanced_audit_features = models.BooleanField(default=True, null=False)
+
   description = models.TextField()
   public_key = JSONField(algs.EGPublicKey, null=True)
   private_key = JSONField(algs.EGSecretKey, null=True)
@@ -93,7 +101,11 @@ class Election(models.Model, electionalgs.Election):
 
   # decryption proof, a JSON object
   result_proof = JSONField(null=True)
-  
+
+  @property
+  def pretty_type(self):
+    return dict(self.ELECTION_TYPES)[self.election_type]
+
   @property
   def num_cast_votes(self):
     return self.voter_set.exclude(vote=None).count()
@@ -653,6 +665,9 @@ class CastVote(models.Model, electionalgs.CastVote):
 
   # cache the hash of the vote
   vote_hash = models.CharField(max_length=100)
+
+  # a tiny version of the hash to enable short URLs
+  vote_tinyhash = models.CharField(max_length=50, null=True, unique=True)
 
   cast_at = models.DateTimeField(auto_now_add=True)
 
