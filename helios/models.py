@@ -319,7 +319,11 @@ class Election(models.Model, electionalgs.Election):
       return
 
     auth_systems = copy.copy(settings.AUTH_ENABLED_AUTH_SYSTEMS)
-    voter_types = [r['voter_type'] for r in self.voter_set.values('voter_type').distinct()]
+    voter_types = [r['user__user_type'] for r in self.voter_set.values('user__user_type').distinct()]
+    
+    # password is now separate, not an explicit voter type
+    if self.voter_set.filter(user=None).count() > 0:
+      voter_types.append('password')
 
     if self.openreg:
       if not 'password' in voter_types and 'password' in auth_systems:
@@ -539,8 +543,16 @@ class Voter(models.Model, electionalgs.Voter):
   election = models.ForeignKey(Election)
   
   name = models.CharField(max_length = 200, null=True)
-  voter_type = models.CharField(max_length = 100)
-  voter_id = models.CharField(max_length = 100)
+  
+  # let's link directly to the user now
+  # voter_type = models.CharField(max_length = 100)
+
+  user = models.ForeignKey('auth.User', null=True)
+
+  # if user is null, then you need a voter login ID and password
+  voter_id = models.CharField(max_length = 100, null=True)
+  voter_password = models.CharField(max_length = 100, null=True)
+  
   uuid = models.CharField(max_length = 50)
   
   # if election uses aliases
@@ -555,7 +567,7 @@ class Voter(models.Model, electionalgs.Voter):
   @transaction.commit_on_success
   def register_user_in_election(cls, user, election):
     voter_uuid = str(uuid.uuid4())
-    voter = Voter(uuid= voter_uuid, voter_type = user.user_type, voter_id = user.user_id, election = election, name = user.name)
+    voter = Voter(uuid= voter_uuid, user = user, election = election, name = user.name)
 
     # do we need to generate an alias?
     if election.use_voter_aliases:
@@ -614,7 +626,7 @@ class Voter(models.Model, electionalgs.Voter):
     
   @classmethod
   def get_by_election_and_user(cls, election, user):
-    query = cls.objects.filter(election = election, voter_id = user.user_id, voter_type= user.user_type)
+    query = cls.objects.filter(election = election, user = user)
 
     try:
       return query[0]
@@ -632,12 +644,8 @@ class Voter(models.Model, electionalgs.Voter):
 
   @classmethod
   def get_by_user(cls, user):
-    return cls.objects.select_related().filter(voter_type = user.user_type, voter_id = user.user_id).order_by('-cast_at')
+    return cls.objects.select_related().filter(user = user).order_by('-cast_at')
 
-  @property
-  def user(self):
-    return User.get_by_type_and_id(self.voter_type, self.voter_id)
-    
   @property
   def election_uuid(self):
     return self.election.uuid
