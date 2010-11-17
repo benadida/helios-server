@@ -23,7 +23,7 @@ def require_admin(request):
 
 def home(request):
   user = require_admin(request)
-  num_votes_in_queue = CastVote.objects.filter(invalidated_at=None, cast_at=None).count()
+  num_votes_in_queue = CastVote.objects.filter(invalidated_at=None, verified_at=None).count()
   return render_template(request, 'stats', {'num_votes_in_queue': num_votes_in_queue})
 
 def elections(request):
