@@ -1,0 +1,13 @@
+{% extends TEMPLATE_BASE %}
+
+{% block title %}{{cast_vote.vote_tinyhash}} &mdash; {{election.name}}{% endblock %}
+{% block content %}
+<h2 class="title">Cast Vote {{cast_vote.vote_tinyhash}}</h2>
+cast in <a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a><br />
+by {{voter.name}}
+<br /><br />
+
+
+
+
+{% endblock %}

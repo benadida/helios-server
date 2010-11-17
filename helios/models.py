@@ -682,6 +682,33 @@ class CastVote(models.Model, electionalgs.CastVote):
   @property
   def voter_hash(self):
     return self.voter.hash
+
+  def set_tinyhash(self):
+    """
+    find a tiny version of the hash for a URL slug.
+    """
+    safe_hash = self.vote_hash
+    for c in ['/', '+']:
+      safe_hash = safe_hash.replace(c,'')
+    
+    length = 8
+    while True:
+      vote_tinyhash = safe_hash[:length]
+      if CastVote.objects.filter(vote_tinyhash = vote_tinyhash).count() == 0:
+        break
+      length += 1
+      
+    self.vote_tinyhash = vote_tinyhash
+
+  def save(self, *args, **kwargs):
+    """
+    override this just to get a hook
+    """
+    # not saved yet? then we generate a tiny hash
+    if not self.vote_tinyhash:
+      self.set_tinyhash()
+
+    super(CastVote, self).save(*args, **kwargs)
   
   @classmethod
   def get_by_voter(cls, voter):

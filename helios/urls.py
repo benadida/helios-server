@@ -17,6 +17,9 @@ urlpatterns = patterns('',
 
   # election shortcut by shortname
   (r'^e/(?P<election_short_name>[^/]+)$', election_shortcut),
+
+  # vote shortcut
+  (r'^v/(?P<vote_tinyhash>[^/]+)$', castvote_shortcut),
   
   # trustee login
   (r'^t/(?P<election_short_name>[^/]+)/(?P<trustee_email>[^/]+)/(?P<trustee_secret>[^/]+)$', trustee_login),

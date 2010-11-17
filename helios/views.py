@@ -99,6 +99,15 @@ def election_shortcut(request, election_short_name):
   else:
     raise Http404
 
+def castvote_shortcut(request, vote_tinyhash):
+  try:
+    cast_vote = CastVote.objects.get(vote_tinyhash = vote_tinyhash)
+  except CastVote.DoesNotExist:
+    raise Http404
+
+  # FIXME: consider privacy of election
+  return render_template(request, 'castvote', {'cast_vote' : cast_vote, 'voter': cast_vote.voter, 'election': cast_vote.voter.election})
+
 @trustee_check
 def trustee_keygenerator(request, election, trustee):
   """
