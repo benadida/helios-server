@@ -951,7 +951,7 @@ def voters_list_pretty(request, election):
   limit = int(request.GET.get('limit', 50))
   q = request.GET.get('q','')
   
-  order_by = 'voter_id'
+  order_by = 'user__user_id'
 
   # unless it's by alias, in which case we better go by UUID
   if election.use_voter_aliases:

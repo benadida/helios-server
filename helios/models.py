@@ -542,16 +542,15 @@ class VoterFile(models.Model):
 class Voter(models.Model, electionalgs.Voter):
   election = models.ForeignKey(Election)
   
-  name = models.CharField(max_length = 200, null=True)
-  
   # let's link directly to the user now
   # voter_type = models.CharField(max_length = 100)
 
   user = models.ForeignKey('auth.User', null=True)
 
   # if user is null, then you need a voter login ID and password
-  voter_id = models.CharField(max_length = 100, null=True)
+  voter_login_id = models.CharField(max_length = 100, null=True)
   voter_password = models.CharField(max_length = 100, null=True)
+  voter_name = models.CharField(max_length = 200, null=True)
   
   uuid = models.CharField(max_length = 50)
   
@@ -567,7 +566,7 @@ class Voter(models.Model, electionalgs.Voter):
   @transaction.commit_on_success
   def register_user_in_election(cls, user, election):
     voter_uuid = str(uuid.uuid4())
-    voter = Voter(uuid= voter_uuid, user = user, election = election, name = user.name)
+    voter = Voter(uuid= voter_uuid, user = user, election = election)
 
     # do we need to generate an alias?
     if election.use_voter_aliases:
@@ -617,7 +616,7 @@ class Voter(models.Model, electionalgs.Voter):
 
   @classmethod
   def get_by_election_and_voter_id(cls, election, voter_id):
-    query = cls.objects.filter(election = election, voter_id = voter_id)
+    query = cls.objects.filter(election = election, voter_login_id = voter_id)
 
     try:
       return query[0]
@@ -649,6 +648,27 @@ class Voter(models.Model, electionalgs.Voter):
   @property
   def election_uuid(self):
     return self.election.uuid
+
+  @property
+  def name(self):
+    if self.user:
+      return self.user.name
+    else:
+      return self.voter_name
+
+  @property
+  def voter_id(self):
+    if self.user:
+      return self.user.user_id
+    else:
+      return self.voter_login_id
+
+  @property
+  def voter_type(self):
+    if self.user:
+      return self.user.user_type
+    else:
+      return 'password'
   
   def store_vote(self, cast_vote):
     # only store the vote if it's cast later than the current one
