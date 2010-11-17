@@ -11,6 +11,7 @@ from helios.stats_views import *
 urlpatterns = patterns(
     '',
     (r'^$', home),
+    (r'^force-queue$', force_queue),
     (r'^elections$', elections),
     (r'^recent-votes$', recent_votes),
 )

@@ -13,6 +13,7 @@ from security import *
 from auth.security import get_user, save_in_session_across_logouts
 from view_utils import *
 
+from helios import tasks
 
 def require_admin(request):
   user = get_user(request)
@@ -25,6 +26,14 @@ def home(request):
   user = require_admin(request)
   num_votes_in_queue = CastVote.objects.filter(invalidated_at=None, verified_at=None).count()
   return render_template(request, 'stats', {'num_votes_in_queue': num_votes_in_queue})
+
+def force_queue(request):
+  user = require_admin(request)
+  votes_in_queue = CastVote.objects.filter(invalidated_at=None, verified_at=None)
+  for cv in votes_in_queue:
+    tasks.cast_vote_verify_and_store.delay(cv.id)
+
+  return HttpResponseRedirect(reverse(home))
 
 def elections(request):
   user = require_admin(request)
