@@ -492,7 +492,7 @@ class VoterFile(models.Model):
     last_alias_num = election.last_alias_num
 
     num_voters = 0
-    voter_uuids = []
+    new_voters = []
     for voter in reader:
       # bad line
       if len(voter) < 1:
@@ -509,25 +509,24 @@ class VoterFile(models.Model):
       if len(voter) > 2:
         name = voter[2]
     
-      # create the user
-      user = User.update_or_create(user_type='password', user_id=voter_id, info = {'password': heliosutils.random_string(10), 'email': email, 'name': name})
-      user.save()
+      # create the user -- NO MORE!
+      # user = User.update_or_create(user_type='password', user_id=voter_id, info = {'password': heliosutils.random_string(10), 'email': email, 'name': name})
+      # user.save()
     
       # does voter for this user already exist
-      voter = Voter.get_by_election_and_user(election, user)
+      voter = Voter.get_by_election_and_voter_id(election, voter_id)
     
       # create the voter
       if not voter:
         voter_uuid = str(uuid.uuid4())
-        voter = Voter(uuid= voter_uuid, voter_type = 'password', voter_id = voter_id, name = name, election = election)
-        voter_uuids.append(voter_uuid)
+        voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter_id, voter_name = name, election = election)
+        new_voters.append(voter)
         voter.save()
 
     if election.use_voter_aliases:
       voter_alias_integers = range(last_alias_num+1, last_alias_num+1+num_voters)
       random.shuffle(voter_alias_integers)
-      for i, voter_uuid in enumerate(voter_uuids):
-        voter = Voter.get_by_election_and_uuid(election, voter_uuid)
+      for i, voter in enumerate(new_voters):
         voter.alias = 'V%s' % voter_alias_integers[i]
         voter.save()
 
