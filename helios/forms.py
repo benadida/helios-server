@@ -27,3 +27,8 @@ class EmailVotersForm(forms.Form):
   body = forms.CharField(max_length=2000, widget=forms.Textarea)
   suppress_election_links = forms.BooleanField(label = "Suppress links?", required=False)
   send_to = forms.ChoiceField(label="Send To", choices= [('all', 'all voters'), ('voted', 'voters who have cast a ballot'), ('not-voted', 'voters who have not yet cast a ballot')])
+
+class TallyNotificationEmailForm(forms.Form):
+  subject = forms.CharField(max_length=80)
+  body = forms.CharField(max_length=2000, widget=forms.Textarea)
+  send_to = forms.ChoiceField(label="Send To", choices= [('all', 'all voters'), ('voted', 'only voters who cast a ballot')])

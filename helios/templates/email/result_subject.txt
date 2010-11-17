@@ -1,1 +1,1 @@
-Tally computed for {{voter.election.name}}
+{{custom_subject|safe}}

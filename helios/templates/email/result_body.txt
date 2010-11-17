@@ -1,12 +1,19 @@
 Dear {{voter.name}},
 
-The tally has been computed for 
-
-  {{voter.election.name}}
-
-Check out the results at:
+The tally for {{election.name}} has been computed and released:
 
   {{election_url}}
 
+{{custom_message|safe}}
+
+{% if voter.vote_hash %}You smart ballot tracker in this election was:
+
+  {{voter.vote_hash}}
+
+If you believe this tracker to be in error, please contact us.
+{% else %}
+It appears you did not cast a vote in this election.
+Please contact us if you believe you did.
+{% endif %}
 --
 Helios

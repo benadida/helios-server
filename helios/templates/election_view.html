@@ -109,7 +109,7 @@ trustees will be asked to provide their share of the decryption.
 {% else %}
 
 {% if election.ready_for_decryption_combination %}
-<a onclick="return confirm('Ready for the tally? Voters will be notified immediately.');" href="{% url helios.views.combine_decryptions election.uuid %}">combine trustee decryptions and release results</a><br />
+<a href="{% url helios.views.combine_decryptions election.uuid %}">combine trustee decryptions and release results</a><br />
 The decryption shares from the trustees are combined and the tally is decrypted.<br />
 Once you do this, the tally will be immediately available for all to see, and
 all voters will be notified that the tally is ready.

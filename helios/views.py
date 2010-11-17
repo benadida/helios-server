@@ -851,26 +851,68 @@ def trustee_upload_decryption(request, election, trustee_uuid):
   
 @election_admin(frozen=True)
 def combine_decryptions(request, election):
-  election.combine_decryptions()
-  election.save()
+  """
+  combine trustee decryptions
+  """
 
-  # notify voters!
-  extra_vars = {
-    'election_url' : get_election_url(election)
-    }
-  
-  # full-length email
-  tasks.voters_email.delay(election_id = election.id,
-                           subject_template = 'email/result_subject.txt',
-                           body_template = 'email/result_body.txt',
-                           extra_vars = extra_vars)
+  election_url = get_election_url(election)
 
-  # rapid short-message notification
-  tasks.voters_notify.delay(election_id = election.id,
-                            notification_template = 'notification/result.txt',
-                            extra_vars = extra_vars)
-  
-  return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+  default_subject = 'Tally released for %s' % election.name
+  default_body = render_template_raw(None, 'email/result_body.txt', {
+      'election' : election,
+      'election_url' : election_url,
+      'custom_subject' : default_subject,
+      'custom_message': '&lt;YOUR MESSAGE HERE&gt;',
+      'voter': {'vote_hash' : '<SMART_TRACKER>',
+                'name': '<VOTER_NAME>'}
+      })
+
+  if request.method == "GET":
+    email_form = forms.TallyNotificationEmailForm(initial= {'subject': default_subject})
+  else:
+    check_csrf(request)
+
+    email_form = forms.TallyNotificationEmailForm(request.POST)
+
+    if email_form.is_valid():
+      election.combine_decryptions()
+      election.save()
+
+      # notify voters!
+      extra_vars = {
+        'custom_subject' : email_form.cleaned_data['subject'],
+        'custom_message' : email_form.cleaned_data['body'],
+        'election_url' : election_url,
+        'election' : election
+        }
+
+      # exclude those who have not voted
+      if email_form.cleaned_data['send_to'] == 'voted':
+        voter_constraints_exclude = {'vote_hash' : None}
+      else:
+        voter_constraints_exclude = {}
+      
+      # full-length email
+      tasks.voters_email.delay(election_id = election.id,
+                               subject_template = 'email/result_subject.txt',
+                               body_template = 'email/result_body.txt',
+                               extra_vars = extra_vars,
+                               voter_constraints_exclude = voter_constraints_exclude)
+
+      # rapid short-message notification
+      # this inherently only applies to those who have voted (for the most part)
+      tasks.voters_notify.delay(election_id = election.id,
+                                notification_template = 'notification/result.txt',
+                                extra_vars = extra_vars)
+
+      return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+
+  # if just viewing the form or the form is not valid
+  return render_template(request, 'combine_decryptions', {'election': election,
+                                                          'email_form' : email_form,
+                                                          'default_subject': default_subject,
+                                                          'default_body': default_body})
+
 
 @election_admin(frozen=True)
 def one_election_set_result_and_proof(request, election):
