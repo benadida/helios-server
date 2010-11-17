@@ -391,7 +391,11 @@ def trustee_upload_pk(request, election, trustee):
     trustee.save()
     
     # send a note to admin
-    election.admin.send_message("%s - trustee pk upload" % election.name, "trustee %s (%s) uploaded a pk." % (trustee.name, trustee.email))
+    try:
+      election.admin.send_message("%s - trustee pk upload" % election.name, "trustee %s (%s) uploaded a pk." % (trustee.name, trustee.email))
+    except:
+      # oh well, no message sent
+      pass
     
   return HttpResponseRedirect(reverse(trustee_home, args=[election.uuid, trustee.uuid]))
 
@@ -834,8 +838,12 @@ def trustee_upload_decryption(request, election, trustee_uuid):
   if trustee.verify_decryption_proofs():
     trustee.save()
     
-    # send a note to admin
-    election.admin.send_message("%s - trustee partial decryption" % election.name, "trustee %s (%s) did their partial decryption." % (trustee.name, trustee.email))
+    try:
+      # send a note to admin
+      election.admin.send_message("%s - trustee partial decryption" % election.name, "trustee %s (%s) did their partial decryption." % (trustee.name, trustee.email))
+    except:
+      # ah well
+      pass
     
     return SUCCESS
   else:
