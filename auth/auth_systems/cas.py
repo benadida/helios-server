@@ -77,63 +77,6 @@ def get_saml_info(ticket):
   req = urllib2.Request(url, saml_request)
 
   raw_response = urllib2.urlopen(req).read()
-
-  #mock
-  raw_response = """<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
-    <SOAP-ENV:Header/>
-    <SOAP-ENV:Body>
-    <Response xmlns="urn:oasis:names:tc:SAML:1.0:protocol"
-    xmlns:saml="urn:oasis:names:tc:SAML:1.0:assertion"
-    xmlns:samlp="urn:oasis:names:tc:SAML:1.0:protocol"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    IssueInstant="2008-09-22T20:38:28.672Z"
-    MajorVersion="1"
-    MinorVersion="1"
-    Recipient="https://trogdor.princeton.edu:8443/test1/"
-    ResponseID="_eada71e012b88219d7ecb15c3432f002">
-    <Status>
-    <StatusCode Value="samlp:Success"></StatusCode>
-    </Status>
-    <Assertion xmlns="urn:oasis:names:tc:SAML:1.0:assertion"
-    AssertionID="_17fb3f1437c7fe89e36594c1141ec31f"
-    IssueInstant="2008-09-22T20:38:28.672Z"
-    Issuer="localhost"
-    MajorVersion="1"
-    MinorVersion="1">
-    <Conditions NotBefore="2008-09-22T20:38:28.672Z" NotOnOrAfter="2008-09-22T20:38:58.672Z">
-    <AudienceRestrictionCondition>
-    <Audience>https://trogdor.princeton.edu/test1/</Audience>
-    </AudienceRestrictionCondition></Conditions>
-    <AttributeStatement>
-    <Subject>
-    <NameIdentifier>mbarton</NameIdentifier>
-    <SubjectConfirmation>
-    <ConfirmationMethod>urn:oasis:names:tc:SAML:1.0:cm:artifact</ConfirmationMethod>
-    </SubjectConfirmation>
-    </Subject>
-    <Attribute AttributeName="pustatus" AttributeNamespace="http://www.ja-sig.org/products/cas/">
-    <AttributeValue>stf</AttributeValue>
-    </Attribute>
-    <Attribute AttributeName="mail" AttributeNamespace="http://www.ja-sig.org/products/cas/">
-    <AttributeValue>mbarton@princeton.edu</AttributeValue>
-    </Attribute>
-    </AttributeStatement>
-    <AuthenticationStatement AuthenticationInstant="2008-09-22T20:38:28.375Z"
-    AuthenticationMethod="urn:oasis:names:tc:SAML:1.0:am:unspecified">
-    <Subject>
-    <NameIdentifier>mbarton</NameIdentifier>
-    <SubjectConfirmation>
-    <ConfirmationMethod>urn:oasis:names:tc:SAML:1.0:cm:artifact</ConfirmationMethod>
-    </SubjectConfirmation>
-    </Subject>
-    </AuthenticationStatement>
-    </Assertion>
-    </Response>
-    </SOAP-ENV:Body>
-    </SOAP-ENV:Envelope>
-"""
-
   response = ElementTree.fromstring(raw_response)
 
   # ugly path down the tree of attributes
