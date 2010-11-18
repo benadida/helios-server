@@ -9,12 +9,13 @@ from django.http import *
 from django.core.mail import send_mail
 from django.conf import settings
 
-import sys, os, cgi, urllib, urllib2, re
+import sys, os, cgi, urllib, urllib2, re, uuid, datetime
 from xml.etree import ElementTree
 
 CAS_EMAIL_DOMAIN = "princeton.edu"
 CAS_URL= 'https://fed.princeton.edu/cas/'
 CAS_LOGOUT_URL = 'https://fed.princeton.edu/cas/logout?service=%s'
+CAS_SAML_VALIDATE_URL = 'https://fed.princeton.edu/cas/samlValidate?TARGET=%s'
 
 # eligibility checking
 if hasattr(settings, 'CAS_USERNAME'):
@@ -34,7 +35,7 @@ def _get_service_url():
   from django.conf import settings
   from django.core.urlresolvers import reverse
   
-  return settings.URL_HOST + reverse(after)
+  return settings.SECURE_URL_HOST + reverse(after)
   
 def get_auth_url(request, redirect_url):
   request.session['cas_redirect_url'] = redirect_url
@@ -52,6 +53,98 @@ def get_user_category(user_id):
   parsed_result = ElementTree.fromstring(result)
   return parsed_result.text
   
+def get_saml_info(ticket):
+  """
+  Using SAML, get all of the information needed
+  """
+  saml_request = """<?xml version='1.0' encoding='UTF-8'?> 
+  <soap-env:Envelope 
+     xmlns:soap-env='http://schemas.xmlsoap.org/soap/envelope/'> 
+     <soap-env:Body> 
+       <samlp:Request xmlns:samlp="urn:oasis:names:tc:SAML:1.0:protocol"
+                      MajorVersion="1" MinorVersion="1"
+                      RequestID="%s"
+                      IssueInstant="%s">
+           <samlp:AssertionArtifact>%s</samlp:AssertionArtifact>
+       </samlp:Request>
+     </soap-env:Body> 
+  </soap-env:Envelope>
+""" % (uuid.uuid1(), datetime.datetime.utcnow(), ticket)
+
+  url = CAS_SAML_VALIDATE_URL % urllib.quote(_get_service_url())
+
+  # by virtue of having a body, this is a POST
+  req = urllib2.Request(url, saml_request)
+
+  raw_response = urllib2.urlopen(req).read()
+
+  #mock
+  raw_response = """<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+    <SOAP-ENV:Header/>
+    <SOAP-ENV:Body>
+    <Response xmlns="urn:oasis:names:tc:SAML:1.0:protocol"
+    xmlns:saml="urn:oasis:names:tc:SAML:1.0:assertion"
+    xmlns:samlp="urn:oasis:names:tc:SAML:1.0:protocol"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    IssueInstant="2008-09-22T20:38:28.672Z"
+    MajorVersion="1"
+    MinorVersion="1"
+    Recipient="https://trogdor.princeton.edu:8443/test1/"
+    ResponseID="_eada71e012b88219d7ecb15c3432f002">
+    <Status>
+    <StatusCode Value="samlp:Success"></StatusCode>
+    </Status>
+    <Assertion xmlns="urn:oasis:names:tc:SAML:1.0:assertion"
+    AssertionID="_17fb3f1437c7fe89e36594c1141ec31f"
+    IssueInstant="2008-09-22T20:38:28.672Z"
+    Issuer="localhost"
+    MajorVersion="1"
+    MinorVersion="1">
+    <Conditions NotBefore="2008-09-22T20:38:28.672Z" NotOnOrAfter="2008-09-22T20:38:58.672Z">
+    <AudienceRestrictionCondition>
+    <Audience>https://trogdor.princeton.edu/test1/</Audience>
+    </AudienceRestrictionCondition></Conditions>
+    <AttributeStatement>
+    <Subject>
+    <NameIdentifier>mbarton</NameIdentifier>
+    <SubjectConfirmation>
+    <ConfirmationMethod>urn:oasis:names:tc:SAML:1.0:cm:artifact</ConfirmationMethod>
+    </SubjectConfirmation>
+    </Subject>
+    <Attribute AttributeName="pustatus" AttributeNamespace="http://www.ja-sig.org/products/cas/">
+    <AttributeValue>stf</AttributeValue>
+    </Attribute>
+    <Attribute AttributeName="mail" AttributeNamespace="http://www.ja-sig.org/products/cas/">
+    <AttributeValue>mbarton@princeton.edu</AttributeValue>
+    </Attribute>
+    </AttributeStatement>
+    <AuthenticationStatement AuthenticationInstant="2008-09-22T20:38:28.375Z"
+    AuthenticationMethod="urn:oasis:names:tc:SAML:1.0:am:unspecified">
+    <Subject>
+    <NameIdentifier>mbarton</NameIdentifier>
+    <SubjectConfirmation>
+    <ConfirmationMethod>urn:oasis:names:tc:SAML:1.0:cm:artifact</ConfirmationMethod>
+    </SubjectConfirmation>
+    </Subject>
+    </AuthenticationStatement>
+    </Assertion>
+    </Response>
+    </SOAP-ENV:Body>
+    </SOAP-ENV:Envelope>
+"""
+
+  response = ElementTree.fromstring(raw_response)
+
+  # ugly path down the tree of attributes
+  attributes = response.findall('{http://schemas.xmlsoap.org/soap/envelope/}Body/{urn:oasis:names:tc:SAML:1.0:protocol}Response/{urn:oasis:names:tc:SAML:1.0:assertion}Assertion/{urn:oasis:names:tc:SAML:1.0:assertion}AttributeStatement/{urn:oasis:names:tc:SAML:1.0:assertion}Attribute')
+
+  values = {}
+  for attribute in attributes:
+    values[str(attribute.attrib['AttributeName'])] = attribute.findtext('{urn:oasis:names:tc:SAML:1.0:assertion}AttributeValue')
+  
+  # parse response for netid, display name, and employee type (category)
+  return {'user_id': values.get('mail',None), 'name': values.get('displayName', None), 'category': values.get('employeeType',None)}
   
 def get_user_info(user_id):
   url = 'http://dsml.princeton.edu/'
@@ -108,27 +201,10 @@ def get_user_info_after_auth(request):
   if not ticket:
     return None
 
-  # fetch the information from the CAS server
-  val_url = CAS_URL + "validate" + \
-     '?service=' + urllib.quote(_get_service_url()) + \
-     '&ticket=' + urllib.quote(ticket)
-  r = urllib.urlopen(val_url).readlines()   # returns 2 lines
+  user_info = get_saml_info(ticket)
+  user_info['type'] = 'cas'
 
-  # success
-  if len(r) == 2 and re.match("yes", r[0]) != None:
-    netid = r[1].strip()
-    
-    category = get_user_category(netid)
-    user_info = get_user_info(netid)
-
-    if user_info:
-      info = {'name': user_info['name'], 'category': category}
-    else:
-      info = {'name': netid, 'category': category}
-      
-    return {'type': 'cas', 'user_id': netid, 'name': info['name'], 'info': info, 'token': None}
-  else:
-    return None
+  return user_info
     
 def do_logout(user):
   """
