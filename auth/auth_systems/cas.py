@@ -57,26 +57,32 @@ def get_saml_info(ticket):
   """
   Using SAML, get all of the information needed
   """
+
+  import logging
+
   saml_request = """<?xml version='1.0' encoding='UTF-8'?> 
   <soap-env:Envelope 
      xmlns:soap-env='http://schemas.xmlsoap.org/soap/envelope/'> 
+     <soap-env:Header />
      <soap-env:Body> 
        <samlp:Request xmlns:samlp="urn:oasis:names:tc:SAML:1.0:protocol"
                       MajorVersion="1" MinorVersion="1"
                       RequestID="%s"
-                      IssueInstant="%s">
+                      IssueInstant="%sZ">
            <samlp:AssertionArtifact>%s</samlp:AssertionArtifact>
        </samlp:Request>
      </soap-env:Body> 
   </soap-env:Envelope>
-""" % (uuid.uuid1(), datetime.datetime.utcnow(), ticket)
+""" % (uuid.uuid1(), datetime.datetime.utcnow().isoformat(), ticket)
 
   url = CAS_SAML_VALIDATE_URL % urllib.quote(_get_service_url())
 
   # by virtue of having a body, this is a POST
   req = urllib2.Request(url, saml_request)
-
   raw_response = urllib2.urlopen(req).read()
+
+  logging.info("RESP:\n%s\n\n" % raw_response)
+
   response = ElementTree.fromstring(raw_response)
 
   # ugly path down the tree of attributes
@@ -137,6 +143,33 @@ def get_user_info(user_id):
   else:
     return None
   
+def get_user_info_special(ticket):
+  # fetch the information from the CAS server
+  val_url = CAS_URL + "validate" + \
+     '?service=' + urllib.quote(_get_service_url()) + \
+     '&ticket=' + urllib.quote(ticket)
+  r = urllib.urlopen(val_url).readlines() # returns 2 lines
+
+  # success
+  if len(r) == 2 and re.match("yes", r[0]) != None:
+    netid = r[1].strip()
+    
+    category = get_user_category(netid)
+    
+    try:
+      user_info = get_user_info(netid)
+    except:
+      user_info = None
+
+    if user_info:
+      info = {'name': user_info['name'], 'category': category}
+    else:
+      info = {'name': netid, 'category': category}
+      
+    return {'user_id': netid, 'name': info['name'], 'info': info, 'token': None}
+  else:
+    return None
+
 def get_user_info_after_auth(request):
   ticket = request.GET.get('ticket', None)
   
@@ -144,8 +177,10 @@ def get_user_info_after_auth(request):
   if not ticket:
     return None
 
-  user_info = get_saml_info(ticket)
-  user_info['type'] = 'cas'
+  #user_info = get_saml_info(ticket)
+  user_info = get_user_info_special(ticket)
+
+  user_info['type'] = 'cas'  
 
   return user_info
     
