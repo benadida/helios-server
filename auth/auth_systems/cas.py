@@ -156,10 +156,13 @@ def get_user_info_special(ticket):
     
     category = get_user_category(netid)
     
-    try:
-      user_info = get_user_info(netid)
-    except:
-      user_info = None
+    #try:
+    #  user_info = get_user_info(netid)
+    #except:
+    #  user_info = None
+
+    # for now, no need to wait for this request to finish
+    user_info = None
 
     if user_info:
       info = {'name': user_info['name'], 'category': category}
