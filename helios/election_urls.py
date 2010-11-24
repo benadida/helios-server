@@ -60,6 +60,7 @@ urlpatterns = patterns('',
     # casting a ballot before we know who the voter is
     (r'^/cast$', one_election_cast),
     (r'^/cast_confirm$', one_election_cast_confirm),
+    (r'^/password_voter_login$', password_voter_login),
     (r'^/cast_done$', one_election_cast_done),
     
     # post audited ballot

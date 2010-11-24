@@ -449,7 +449,24 @@ def one_election_cast(request, election):
   save_in_session_across_logouts(request, 'encrypted_vote', encrypted_vote)
 
   return HttpResponseRedirect("%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_cast_confirm, args=[election.uuid])))
+
+@election_view(frozen=True)
+def password_voter_login(request, election):
+  """
+  This is used to log in as a voter for a particular election
+  """
+  password_login_form = forms.VoterPasswordForm(request.POST)
+  if password_login_form.is_valid():
+    try:
+      voter = election.voter_set.get(voter_login_id = password_login_form.cleaned_data['voter_id'],
+                                     voter_password = password_login_form.cleaned_data['password'])
+
+      request.session['CURRENT_VOTER'] = voter
+    except Voter.DoesNotExist:
+      pass
   
+  return HttpResponseRedirect(reverse(one_election_cast_confirm, args = [election.uuid]))
+
 @election_view(frozen=True)
 def one_election_cast_confirm(request, election):
   user = get_user(request)    
@@ -458,10 +475,15 @@ def one_election_cast_confirm(request, election):
   if not request.session.has_key('encrypted_vote'):
     return HttpResponseRedirect(settings.URL_HOST)
 
-  if user:
-    voter = Voter.get_by_election_and_user(election, user)
-  else:
-    voter = None
+  voter = None
+  if request.session.has_key('CURRENT_VOTER'):
+    voter = request.session['CURRENT_VOTER']
+    if voter.election != election:
+      voter = None
+
+  if not voter:
+    if user:
+      voter = Voter.get_by_election_and_user(election, user)
   
   # auto-register this person if the election is openreg
   if user and not voter and election.openreg:
@@ -518,8 +540,10 @@ def one_election_cast_confirm(request, election):
 
     if auth_systems == ['password']:
       password_only = True
+      password_login_form = forms.VoterPasswordForm()
     else:
       password_only = False
+      password_login_form = None
 
     return_url = reverse(one_election_cast_confirm, args=[election.uuid])
     login_box = auth_views.login_box_raw(request, return_url=return_url, auth_systems = auth_systems)
@@ -528,7 +552,7 @@ def one_election_cast_confirm(request, election):
         'login_box': login_box, 'election' : election, 'vote_fingerprint': vote_fingerprint,
         'past_votes': past_votes, 'issues': issues, 'voter' : voter,
         'status_update_label': status_update_label, 'status_update_message': status_update_message,
-        'password_only': password_only})
+        'password_only': password_only, 'password_login_form': password_login_form})
       
   if request.method == "POST":
     check_csrf(request)

@@ -669,6 +669,14 @@ class Voter(models.Model, electionalgs.Voter):
     else:
       return 'password'
   
+  @property
+  def display_html_big(self):
+    if self.user:
+      return self.user.display_html_big
+    else:
+      return """<img border="0" height="25" src="/static/auth/login-icons/password.png" alt="password" /> %s""" % self.name
+      
+
   def store_vote(self, cast_vote):
     # only store the vote if it's cast later than the current one
     if self.cast_at and cast_vote.cast_at < self.cast_at:

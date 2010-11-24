@@ -11,6 +11,28 @@ function show_waiting() {
   $('#cast_form').hide();
   $('#waiting_div').show();
 }
+
+// FIXME: set this to false once it's clear how to set it back to true
+// so that it's not easy to forget to cast a ballot
+var ready_to_unload = true;
+
+window.onbeforeunload = function(evt) {
+  if (ready_to_unload)
+    return;
+
+  if (typeof evt == 'undefined') {
+    evt = window.event;
+  }
+  
+  var message = "You have not yet cast your ballot! Make sure to complete the voting process if you want your vote to count.";
+
+  if (evt) {
+    evt.returnValue = message;
+  }
+  
+  return message;
+};
+
 </script>
 <h1>{{election.name}} &mdash; Submit your Vote</h1>
 
@@ -20,65 +42,33 @@ Your smart ballot tracker is:<br /><br />
     <tt style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</tt>
 </p>
 
+{% if password_only %}
+{% if voter %}
+{% include "_castconfirm_docast.html" %}
+{% else %}
+{% include "_castconfirm_password.html" %}
+{% endif %}
+{% else %}
+
+
 {% if user %}
 
 {% if voter %}
-{% if past_votes %}
-<!--
-<h3>Past Votes Cast for this Election</h3>
-<ul>
-{% for vote in past_votes %}
-<li> <tt>{{vote.vote_hash}}</tt></li>
-{% endfor %}
-</ul>
--->
-{% else %}
-<!--<em>no vote cast yet</em>-->
-{% endif %}
 
 {% if election.voting_has_started %}
-{% if not election.voting_has_stopped %}
-<br />
-<div id="cast_form">
-<form method="post" action="" onsubmit="show_waiting()">
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    
-{% if status_update_label %}
-<div class="round" style="background: #eee; padding: 10px; border: 1px dashed #888;">
-<input type="checkbox" name="status_update" value="1" checked /> {{status_update_label}}<br />
-<blockquote style="font-size: 1.3em;">
-"{{status_update_message}}"
-</blockquote>
-<input type="hidden" name="status_update_message" value="{{status_update_message}}" />
-</div>
-<br />
-{% endif %}
-
-    <button type="submit" style="font-size: 1.5em; height: 50px;">I am <u>{{user.display_html_big|safe}}</u>, cast this ballot</button>
-    <span style="font-size:0.8em;"><br />You can cast as many ballots as you want.<br />Only the last one counts.</span>
-</form>
-
-<p>
-    <button style="font-size: 1.5em;" onclick="document.location='./view';">cancel</button><br />
-    <span style="font-size:0.8em;">If you cancel now, your ballot will <em>NOT</em> be recorded.<br />
-    You can start the voting process over again, of course.</span>
-</p>
-
-</div>
-<div id="waiting_div">
-    Verifying and Casting your ballot<br />
-    <img src="/static/helios/loading.gif" />
-</div>
-{% else %}
+  {% if not election.voting_has_stopped %}
+    {% include "_castconfirm_docast.html" %}
+  {% else %}
 <p style="font-size:1.4em;">
   voting has stopped, sorry.
 </p>
-{% endif %}
+  {% endif %}
 {% else %}
 <p style="font-size:1.4em;">
   voting has not yet begun, sorry.
 </p>
 {% endif %}
+
 {% else %}
 <p>
 {% if election.openreg %}
@@ -96,31 +86,24 @@ Your smart ballot tracker is:<br /><br />
 <p>
   Now, we need you to log in, so we can verify your eligibility.<br /><br />
 {% if election.openreg %}
+
 {% if election.eligibility %}
-{% if password_only %}
-This election is open only to designated participants who received credentials via email.
 {% else %}
+ This election is open to <em>anyone</em>, so log in with your preferred account.
 {% endif %}
-{% else %}
-This election is open to <em>anyone</em>, so log in with your preferred account.
-{% endif %}
-{% else %}
-{% if password_only %}
-Please log in with the username and password you received by email.<br />
+
 {% else %}
 This election is only open to <em>registered voters</em>, so log in with
 the same account you registered with.
 {% endif %}
-{% endif %}
 </p>
 
 {{login_box|safe}}
-<!--
-<form method="get" action="{% url auth.views.index %}">
-    <input type="hidden" name="return_url" value="{% url helios.views.one_election_cast_confirm election.uuid %}">
-    <input type="submit" class="pretty" style="font-size: 1.6em;" value="Log In" />
-</form>-->
 <br />
 Don't worry, we'll remember your ballot while you log in.
 {% endif %}
+
+{# this closes the IF ELSE of this being password_only #}
+{% endif %}
+
 {% endblock %}
