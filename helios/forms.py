@@ -30,5 +30,5 @@ class EmailVotersForm(forms.Form):
 
 class TallyNotificationEmailForm(forms.Form):
   subject = forms.CharField(max_length=80)
-  body = forms.CharField(max_length=2000, widget=forms.Textarea)
-  send_to = forms.ChoiceField(label="Send To", choices= [('all', 'all voters'), ('voted', 'only voters who cast a ballot')])
+  body = forms.CharField(max_length=2000, widget=forms.Textarea, required=False)
+  send_to = forms.ChoiceField(label="Send To", choices= [('all', 'all voters'), ('voted', 'only voters who cast a ballot'), ('none', 'no one -- are you sure about this?')])

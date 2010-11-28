@@ -886,21 +886,24 @@ def combine_decryptions(request, election):
         'election' : election
         }
 
-      # exclude those who have not voted
-      if email_form.cleaned_data['send_to'] == 'voted':
-        voter_constraints_exclude = {'vote_hash' : None}
-      else:
-        voter_constraints_exclude = {}
+      # if the user opted for notifying no one, then we skip this step
+      if email_form.cleaned_data['send_to'] != 'none':
+        # exclude those who have not voted
+        if email_form.cleaned_data['send_to'] == 'voted':
+          voter_constraints_exclude = {'vote_hash' : None}
+        else:
+          voter_constraints_exclude = {}
       
-      # full-length email
-      tasks.voters_email.delay(election_id = election.id,
-                               subject_template = 'email/result_subject.txt',
-                               body_template = 'email/result_body.txt',
-                               extra_vars = extra_vars,
-                               voter_constraints_exclude = voter_constraints_exclude)
+        # full-length email
+        tasks.voters_email.delay(election_id = election.id,
+                                 subject_template = 'email/result_subject.txt',
+                                 body_template = 'email/result_body.txt',
+                                 extra_vars = extra_vars,
+                                 voter_constraints_exclude = voter_constraints_exclude)
 
       # rapid short-message notification
       # this inherently only applies to those who have voted (for the most part)
+      # and this is not configurable, this is ALWAYS sent
       tasks.voters_notify.delay(election_id = election.id,
                                 notification_template = 'notification/result.txt',
                                 extra_vars = extra_vars)
