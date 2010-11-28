@@ -326,7 +326,7 @@ def new_trustee_helios(request, election):
   election.generate_trustee(ELGAMAL_PARAMS)
   return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
   
-@election_admin()
+@election_admin(frozen=False)
 def delete_trustee(request, election):
   trustee = Trustee.get_by_election_and_uuid(election, request.GET['uuid'])
   trustee.delete()
