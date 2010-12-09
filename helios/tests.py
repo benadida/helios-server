@@ -176,7 +176,7 @@ class VoterModelTests(TestCase):
         self.election = models.Election.objects.get(short_name='test')
 
     def test_create_password_voter(self):
-        v = models.Voter(uuid = uuid.uuid1(), election = self.election, voter_login_id = 'voter_test_1', voter_name = 'Voter Test 1')
+        v = models.Voter(uuid = str(uuid.uuid1()), election = self.election, voter_login_id = 'voter_test_1', voter_name = 'Voter Test 1')
         v.generate_password()
 
         v.save()
