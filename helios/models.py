@@ -42,6 +42,7 @@ class Election(models.Model, electionalgs.Election):
 
   election_type = models.CharField(max_length=250, null=False, default='election', choices = ELECTION_TYPES)
   advanced_audit_features = models.BooleanField(default=True, null=False)
+  private_p = models.BooleanField(default=False, null=False)
 
   description = models.TextField()
   public_key = JSONField(algs.EGPublicKey, null=True)
@@ -520,6 +521,7 @@ class VoterFile(models.Model):
       if not voter:
         voter_uuid = str(uuid.uuid4())
         voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter_id, voter_name = name, election = election)
+        voter.generate_password()
         new_voters.append(voter)
         voter.save()
 
@@ -577,7 +579,7 @@ class Voter(models.Model, electionalgs.Voter):
     return voter
 
   @classmethod
-  def get_by_election(cls, election, cast=None, order_by='voter_id', after=None, limit=None):
+  def get_by_election(cls, election, cast=None, order_by='voter_login_id', after=None, limit=None):
     """
     FIXME: review this for non-GAE?
     """
@@ -624,11 +626,9 @@ class Voter(models.Model, electionalgs.Voter):
     
   @classmethod
   def get_by_election_and_user(cls, election, user):
-    query = cls.objects.filter(election = election, user = user)
-
     try:
-      return query[0]
-    except:
+      return cls.objects.get(election = election, user = user)
+    except cls.DoesNotExist:
       return None
       
   @classmethod
@@ -668,7 +668,7 @@ class Voter(models.Model, electionalgs.Voter):
       return self.user.user_type
     else:
       return 'password'
-  
+
   @property
   def display_html_big(self):
     if self.user:
@@ -676,6 +676,11 @@ class Voter(models.Model, electionalgs.Voter):
     else:
       return """<img border="0" height="25" src="/static/auth/login-icons/password.png" alt="password" /> %s""" % self.name
       
+  def generate_password(self, length=10):
+    if self.voter_password:
+      raise Exception("password already exists")
+    
+    self.voter_password = heliosutils.random_string(length)
 
   def store_vote(self, cast_vote):
     # only store the vote if it's cast later than the current one

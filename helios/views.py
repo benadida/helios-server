@@ -170,7 +170,7 @@ def election_new(request):
 def one_election_edit(request, election):
 
   error = None
-  RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases', 'election_type', 'advanced_audit_features']
+  RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases', 'election_type', 'advanced_audit_features', 'private_p']
   
   if request.method == "GET":
     values = {}

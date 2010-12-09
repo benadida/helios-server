@@ -15,6 +15,8 @@ from django.test import TestCase
 
 from django.core import mail
 
+import uuid
+
 class ElectionModelTests(TestCase):
     fixtures = ['users.json']
 
@@ -33,7 +35,7 @@ class ElectionModelTests(TestCase):
         self.election.generate_trustee(ELGAMAL_PARAMS)
     
     def setUp(self):
-        self.user = auth_models.User.objects.get(user_id='foobar')
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
         self.election, self.created_p = self.create_election()
 
     def test_create_election(self):
@@ -101,7 +103,7 @@ class ElectionModelTests(TestCase):
         self.assertEquals(LOGS,pulled_logs)
 
     def test_eligibility(self):
-        self.election.eligibility = [{'auth_system': 'password'}]
+        self.election.eligibility = [{'auth_system': self.user.user_type}]
 
         # without openreg, this should be false
         self.assertFalse(self.election.user_eligible_p(self.user))
@@ -151,7 +153,9 @@ class ElectionModelTests(TestCase):
         
         # make sure voter is there now
         voter_2 = models.Voter.get_by_election_and_user(self.election, self.user)
+
         self.assertFalse(voter == None)
+        self.assertFalse(voter_2 == None)
         self.assertEquals(voter, voter_2)
 
         # make sure voter is there in this call too
@@ -159,10 +163,27 @@ class ElectionModelTests(TestCase):
         self.assertTrue(len(voters) == 1)
         self.assertEquals(voter, voters[0])
 
-        voter_2 = models.Voter.get_by_election_and_voter_id(self.election, voter.voter_id)
-        self.assertEquals(voter, voter_2)
-
         voter_2 = models.Voter.get_by_election_and_uuid(self.election, voter.uuid)
         self.assertEquals(voter, voter_2)
 
         self.assertEquals(voter.user, self.user)
+
+
+class VoterModelTests(TestCase):
+    fixtures = ['users.json', 'election.json']
+
+    def setUp(self):
+        self.election = models.Election.objects.get(short_name='test')
+
+    def test_create_password_voter(self):
+        v = models.Voter(uuid = uuid.uuid1(), election = self.election, voter_login_id = 'voter_test_1', voter_name = 'Voter Test 1')
+        v.generate_password()
+
+        v.save()
+        
+        # password has been generated!
+        self.assertFalse(v.voter_password == None)
+
+        # can't generate passwords twice
+        self.assertRaises(Exception, lambda: v.generate_password())
+        

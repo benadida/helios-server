@@ -24,7 +24,7 @@ if (!navigator.javaEnabled()) {
 {% endif %}
 {% endif %}</h2>
 <p style="padding-top:0px; margin-top:0px">
-{{ election.election_type }} created by <u><b>{{election.admin.display_html_small|safe}}</b></u>
+<em>{% if election.private_p %}private{%else%}public{% endif %}</em> {{ election.election_type }} created by <u><b>{{election.admin.display_html_small|safe}}</b></u>
 {% if election.is_archived %}
 [archived]
 {% endif %}
