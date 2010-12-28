@@ -5,8 +5,8 @@ Dear {{voter.name}},
 Election URL:  {{election_url}}
 Election Fingerprint:  {{voter.election.hash}}
 {% ifequal voter.voter_type "password" %}
-Your username: {{voter.user.user_id}}
-Your password: {{voter.user.info.password}}
+Your username: {{voter.voter_login_id}}
+Your password: {{voter.voter_password}}
 {% else %}
 Log in with your {{voter.voter_type}} account.
 {% endifequal %}{% if voter.vote_hash %}

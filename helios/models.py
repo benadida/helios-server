@@ -9,6 +9,7 @@ Ben Adida
 from django.db import models, transaction
 from django.utils import simplejson
 from django.conf import settings
+from django.core.mail import send_mail
 
 import datetime, logging, uuid, random
 
@@ -510,9 +511,8 @@ class VoterFile(models.Model):
       if len(voter) > 2:
         name = voter[2]
     
-      # create the user -- NO MORE!
-      # user = User.update_or_create(user_type='password', user_id=voter_id, info = {'password': heliosutils.random_string(10), 'email': email, 'name': name})
-      # user.save()
+      # create the user -- NO MORE
+      # user = User.update_or_create(user_type='password', user_id=email, info = {'name': name})
     
       # does voter for this user already exist
       voter = Voter.get_by_election_and_voter_id(election, voter_id)
@@ -520,7 +520,8 @@ class VoterFile(models.Model):
       # create the voter
       if not voter:
         voter_uuid = str(uuid.uuid4())
-        voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter_id, voter_name = name, election = election)
+        voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter_id,
+                      voter_name = name, voter_email = email, election = election)
         voter.generate_password()
         new_voters.append(voter)
         voter.save()
@@ -546,12 +547,15 @@ class Voter(models.Model, electionalgs.Voter):
   # let's link directly to the user now
   # voter_type = models.CharField(max_length = 100)
 
+  # for users of type password, no user object is created
+  # but a dynamic user object is created automatically
   user = models.ForeignKey('auth.User', null=True)
 
   # if user is null, then you need a voter login ID and password
   voter_login_id = models.CharField(max_length = 100, null=True)
   voter_password = models.CharField(max_length = 100, null=True)
   voter_name = models.CharField(max_length = 200, null=True)
+  voter_email = models.CharField(max_length = 250, null=True)
   
   uuid = models.CharField(max_length = 50)
   
@@ -562,6 +566,13 @@ class Voter(models.Model, electionalgs.Voter):
   vote = JSONField(electionalgs.EncryptedVote, null=True)
   vote_hash = models.CharField(max_length = 100, null=True)
   cast_at = models.DateTimeField(auto_now_add=False, null=True)
+
+  def __init__(self, *args, **kwargs):
+    super(Voter, self).__init__(*args, **kwargs)
+
+    # stub the user so code is not full of IF statements
+    if not self.user:
+      self.user = User(user_type='password', user_id=self.voter_email, name=self.voter_name)
 
   @classmethod
   @transaction.commit_on_success
@@ -617,11 +628,9 @@ class Voter(models.Model, electionalgs.Voter):
 
   @classmethod
   def get_by_election_and_voter_id(cls, election, voter_id):
-    query = cls.objects.filter(election = election, voter_login_id = voter_id)
-
     try:
-      return query[0]
-    except:
+      return cls.objects.get(election = election, voter_login_id = voter_id)
+    except cls.DoesNotExist:
       return None
     
   @classmethod
@@ -650,32 +659,23 @@ class Voter(models.Model, electionalgs.Voter):
 
   @property
   def name(self):
-    if self.user:
-      return self.user.name
-    else:
-      return self.voter_name
+    return self.user.name
 
   @property
   def voter_id(self):
-    if self.user:
-      return self.user.user_id
-    else:
-      return self.voter_login_id
+    return self.user.user_id
 
   @property
   def voter_type(self):
-    if self.user:
-      return self.user.user_type
-    else:
-      return 'password'
+    return self.user.user_type
 
   @property
   def display_html_big(self):
-    if self.user:
-      return self.user.display_html_big
-    else:
-      return """<img border="0" height="25" src="/static/auth/login-icons/password.png" alt="password" /> %s""" % self.name
+    return self.user.display_html_big
       
+  def send_message(self, subject, body):
+    self.user.send_message(subject, body)
+
   def generate_password(self, length=10):
     if self.voter_password:
       raise Exception("password already exists")

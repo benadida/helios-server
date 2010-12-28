@@ -77,7 +77,24 @@ def stats(request):
 
   return render_template(request, "stats", {'elections' : elections_page.object_list, 'elections_page': elections_page,
                                             'limit' : limit})
-    
+
+
+def get_voter(request, user, election):
+  """
+  return the current voter
+  """
+  voter = None
+  if request.session.has_key('CURRENT_VOTER'):
+    voter = request.session['CURRENT_VOTER']
+    if voter.election != election:
+      voter = None
+
+  if not voter:
+    if user:
+      voter = Voter.get_by_election_and_user(election, user)
+  
+  return voter
+
 ##
 ## General election features
 ##
@@ -475,16 +492,8 @@ def one_election_cast_confirm(request, election):
   if not request.session.has_key('encrypted_vote'):
     return HttpResponseRedirect(settings.URL_HOST)
 
-  voter = None
-  if request.session.has_key('CURRENT_VOTER'):
-    voter = request.session['CURRENT_VOTER']
-    if voter.election != election:
-      voter = None
+  voter = get_voter(request, user, election)
 
-  if not voter:
-    if user:
-      voter = Voter.get_by_election_and_user(election, user)
-  
   # auto-register this person if the election is openreg
   if user and not voter and election.openreg:
     voter = _register_voter(election, user)
@@ -593,9 +602,9 @@ def one_election_cast_done(request, election):
   We store the ballot hash in the session
   """
   user = get_user(request)
+  voter = get_voter(request, user, election)
 
-  if user:
-    voter = Voter.get_by_election_and_user(election, user)
+  if voter:
     votes = CastVote.get_by_voter(voter)
     vote_hash = votes[0].vote_hash
 
