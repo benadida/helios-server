@@ -8,6 +8,7 @@ import models
 from auth import models as auth_models
 from views import ELGAMAL_PARAMS
 import views
+import utils
 
 from django.db import IntegrityError, transaction
 
@@ -221,12 +222,25 @@ class ElectionBlackboxTests(TestCase):
         self.assertContains(response, self.election.description)
 
     def test_get_election_questions(self):
-        assert False
+        response = self.client.get("/helios/elections/%s/questions" % self.election.uuid, follow=False)
+        for q in self.election.questions:
+            self.assertContains(response, q['question'])
     
     def test_get_election_trustees(self):
-        assert False
+        response = self.client.get("/helios/elections/%s/trustees" % self.election.uuid, follow=False)
+        for t in self.election.trustee_set.all():
+            self.assertContains(response, t.name)
 
     def test_get_election_voters(self):
-        assert False
+        response = self.client.get("/helios/elections/%s/voters/list" % self.election.uuid, follow=False)
+        # check total count of voters
+        if self.election.num_voters == 0:
+            self.assertContains(response, "no voters")
+        else:
+            self.assertContains(response, "(of %s)" % self.election.num_voters)
+
+    def test_get_election_voters_raw(self):
+        response = self.client.get("/helios/elections/%s/voters/" % self.election.uuid, follow=False)
+        self.assertEquals(len(utils.from_json(response.content)), self.election.num_voters)
         
         
