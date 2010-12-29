@@ -4,6 +4,8 @@ The Helios Election Server
 LICENSE: this code is released under the GPL v3 or later.
 
 NEEDS:
+- as of Helios v3.1, requires Django 1.2.4+
+
 - http://github.com/openid/python-openid
 - rabbitmq 1.8
 -- http://www.rabbitmq.com/debian.html
@@ -31,6 +33,6 @@ to get the south db models set up, and then:
 
 python manage.py migrate --list
 
-- if there are some unchecked migrations, and you are SURE that your database is up to date with the models (which should be the case if you're between v3.0.0 and v3.0.4 inclusive), then do
+- if there are some unchecked migrations, and you are SURE that your database is up to date with the models (which should be the case if you're on a v3.0.x version), then do
 
 python manage.py migrate --fake

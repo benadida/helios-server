@@ -177,6 +177,7 @@ class ElectionModelTests(TestCase):
         self.assertEquals(voter.user, self.user)
 
 
+
 class VoterModelTests(TestCase):
     fixtures = ['users.json', 'election.json']
 
@@ -207,7 +208,8 @@ class ElectionBlackboxTests(TestCase):
     fixtures = ['users.json', 'election.json']
 
     def setUp(self):
-        self.election = models.Election.objects.all()[0]        
+        self.election = models.Election.objects.all()[0]
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
 
     def test_get_election_shortcut(self):
         response = self.client.get("/helios/e/%s" % self.election.short_name, follow=True)
@@ -243,4 +245,53 @@ class ElectionBlackboxTests(TestCase):
         response = self.client.get("/helios/elections/%s/voters/" % self.election.uuid, follow=False)
         self.assertEquals(len(utils.from_json(response.content)), self.election.num_voters)
         
+    def test_election_creation_not_logged_in(self):
+        response = self.client.post("/helios/elections/new", {
+                "short_name" : "test-complete",
+                "name" : "Test Complete",
+                "description" : "A complete election test",
+                "election_type" : "referendum",
+                "use_voter_aliases": "0",
+                "use_advanced_audit_features": "1",
+                "private_p" : "0"})
+
+        self.assertRedirects(response, "/auth/?return_url=/helios/elections/new")
         
+    def test_do_complete_election(self):
+        # set up the session
+        session = self.client.session
+        session['user'] = self.user
+        session.save()
+
+        # create the election
+        response = self.client.post("/helios/elections/new", {
+                "short_name" : "test-complete",
+                "name" : "Test Complete",
+                "description" : "A complete election test",
+                "election_type" : "referendum",
+                "use_voter_aliases": "0",
+                "use_advanced_audit_features": "1",
+                "private_p" : "0"})
+
+        import pdb; pdb.set_trace()
+        # add helios as trustee
+
+        # add a few voters
+        
+        # add questions
+
+        # freeze election
+
+        # vote by preparing a ballot via the server-side encryption
+
+        # cast the ballot
+
+        # confirm it
+
+        # encrypted tally
+
+        # should trigger helios decryption automatically
+
+        # combine decryptions
+
+        # check that tally matches
