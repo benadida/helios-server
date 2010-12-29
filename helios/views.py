@@ -215,6 +215,8 @@ def one_election_schedule(request, election):
 @election_view()
 @json
 def one_election(request, election):
+  if not election:
+    raise Http404
   return election.toJSONDict()
 
 @election_view()

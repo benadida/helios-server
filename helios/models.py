@@ -32,6 +32,12 @@ class Election(models.Model, electionalgs.Election):
   admin = models.ForeignKey(User)
   
   uuid = models.CharField(max_length=50, null=False)
+
+  # keep track of the type and version of election, which will help dispatch to the right
+  # code, both for crypto and serialization
+  # v3 and prior have a datatype of "legacy/election"
+  # v3.1 and above have a specific datatype of "2011/01/election"
+  datatype = models.CharField(max_length=250, null=False, default="2011/01/election")
   
   short_name = models.CharField(max_length=100)
   name = models.CharField(max_length=250)
@@ -42,7 +48,6 @@ class Election(models.Model, electionalgs.Election):
     )
 
   election_type = models.CharField(max_length=250, null=False, default='election', choices = ELECTION_TYPES)
-  advanced_audit_features = models.BooleanField(default=True, null=False)
   private_p = models.BooleanField(default=False, null=False)
 
   description = models.TextField()
@@ -64,6 +69,7 @@ class Election(models.Model, electionalgs.Election):
     
   # voter aliases?
   use_voter_aliases = models.BooleanField(default=False)
+  use_advanced_audit_features = models.BooleanField(default=True, null=False)
   
   # where votes should be cast
   cast_url = models.CharField(max_length = 500)
@@ -652,6 +658,16 @@ class Voter(models.Model, electionalgs.Voter):
   @classmethod
   def get_by_user(cls, user):
     return cls.objects.select_related().filter(user = user).order_by('-cast_at')
+
+  @property
+  def vote_tinyhash(self):
+    """
+    get the tinyhash of the latest castvote
+    """
+    if not self.vote_hash:
+      return None
+    
+    return CastVote.objects.get(vote_hash = self.vote_hash).vote_tinyhash
 
   @property
   def election_uuid(self):

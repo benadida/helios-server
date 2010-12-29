@@ -107,7 +107,7 @@ Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voter
 {% if election.use_voter_aliases %}
 <td>{{voter.alias}}</td>
 {% endif %}
-<td><tt style="font-size: 1.4em;;">{% if voter.vote_hash %}{{voter.vote_hash}} <span style="font-size:0.8em;">[<a href="{% url helios.views.voter_last_vote election_uuid=election.uuid,voter_uuid=voter.uuid %}">view</a>]</span>{% else %}&mdash;{% endif %}</tt></td>
+<td><tt style="font-size: 1.4em;;">{% if voter.vote_hash %}{{voter.vote_hash}} <span style="font-size:0.8em;">[<a href="{% url helios.views.castvote_shortcut vote_tinyhash=voter.vote_tinyhash %}">view</a>]</span>{% else %}&mdash;{% endif %}</tt></td>
 </tr>
 {% endfor %}
 </table>

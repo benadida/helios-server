@@ -7,7 +7,7 @@
             "short_name" : "test",
             "name" : "Test Election",
             "election_type" : "election",
-            "advanced_audit_features" : true,
+            "use_advanced_audit_features" : true,
             "private_p" : false,
             "description" : "test descriptoin",
             "public_key" : null,

@@ -7,6 +7,7 @@ import unittest, datetime
 import models
 from auth import models as auth_models
 from views import ELGAMAL_PARAMS
+import views
 
 from django.db import IntegrityError, transaction
 
@@ -14,6 +15,8 @@ from django.test.client import Client
 from django.test import TestCase
 
 from django.core import mail
+from django.core.files import File
+from django.core.urlresolvers import reverse
 
 import uuid
 
@@ -57,7 +60,11 @@ class ElectionModelTests(TestCase):
         self.assertEquals(self.election, election)
         
     def test_add_voters_file(self):
-        pass
+        election = self.election
+
+        FILE = "helios/fixtures/voter-file.csv"
+        vf = models.VoterFile.objects.create(election = election, voter_file = File(open(FILE), "voter_file.css"))
+        vf.process()
 
     def test_check_issues_before_freeze(self):
         # should be two issues: no trustees, and no questions
@@ -176,7 +183,8 @@ class VoterModelTests(TestCase):
         self.election = models.Election.objects.get(short_name='test')
 
     def test_create_password_voter(self):
-        v = models.Voter(uuid = str(uuid.uuid1()), election = self.election, voter_login_id = 'voter_test_1', voter_name = 'Voter Test 1')
+        v = models.Voter(uuid = str(uuid.uuid1()), election = self.election, voter_login_id = 'voter_test_1', voter_name = 'Voter Test 1', voter_email='foobar@acme.com')
+
         v.generate_password()
 
         v.save()
@@ -186,4 +194,39 @@ class VoterModelTests(TestCase):
 
         # can't generate passwords twice
         self.assertRaises(Exception, lambda: v.generate_password())
+        
+        # check that you can get at the voter user structure
+        self.assertEquals(v.user.user_id, v.voter_email)
+
+##
+## Black box tests
+##
+
+class ElectionBlackboxTests(TestCase):
+    fixtures = ['users.json', 'election.json']
+
+    def setUp(self):
+        self.election = models.Election.objects.all()[0]        
+
+    def test_get_election_shortcut(self):
+        response = self.client.get("/helios/e/%s" % self.election.short_name, follow=True)
+        self.assertContains(response, self.election.description)
+        
+    def test_get_election_raw(self):
+        response = self.client.get("/helios/elections/%s" % self.election.uuid, follow=False)
+        self.assertEquals(response.content, self.election.toJSON())
+    
+    def test_get_election(self):
+        response = self.client.get("/helios/elections/%s/view" % self.election.uuid, follow=False)
+        self.assertContains(response, self.election.description)
+
+    def test_get_election_questions(self):
+        assert False
+    
+    def test_get_election_trustees(self):
+        assert False
+
+    def test_get_election_voters(self):
+        assert False
+        
         
