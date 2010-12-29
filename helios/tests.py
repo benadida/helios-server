@@ -2,7 +2,7 @@
 Unit Tests for Helios
 """
 
-import unittest, datetime
+import unittest, datetime, re
 
 import models
 from auth import models as auth_models
@@ -258,9 +258,12 @@ class ElectionBlackboxTests(TestCase):
         self.assertRedirects(response, "/auth/?return_url=/helios/elections/new")
         
     def test_do_complete_election(self):
+        # a bogus call to set up the session
+        self.client.get("/")
+
         # set up the session
         session = self.client.session
-        session['user'] = self.user
+        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
         session.save()
 
         # create the election
@@ -273,7 +276,11 @@ class ElectionBlackboxTests(TestCase):
                 "use_advanced_audit_features": "1",
                 "private_p" : "0"})
 
-        import pdb; pdb.set_trace()
+        # we are redirected to the election
+        election_id = re.search('/elections/([^/]+)/', str(response['Location'])).group(1)
+
+        assert False
+        
         # add helios as trustee
 
         # add a few voters
