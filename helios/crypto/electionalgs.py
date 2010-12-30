@@ -21,7 +21,6 @@ class HeliosObject(object):
   JSON_FIELDS = None
 
   def __init__(self, **kwargs):
-    import pdb; pdb.set_trace()
     self.set_from_args(**kwargs)
     
     # generate uuid if need be

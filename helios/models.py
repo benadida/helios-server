@@ -552,9 +552,11 @@ class Voter(models.Model, electionalgs.Voter):
   
   # let's link directly to the user now
   # FIXME: delete this as soon as migrations are set up
-  name = models.CharField(max_length = 200, null=True)
-  voter_type = models.CharField(max_length = 100)
-  voter_id = models.CharField(max_length = 100)
+  #name = models.CharField(max_length = 200, null=True)
+  #voter_type = models.CharField(max_length = 100)
+  #voter_id = models.CharField(max_length = 100)
+
+  uuid = models.CharField(max_length = 50)
 
   # for users of type password, no user object is created
   # but a dynamic user object is created automatically
@@ -565,8 +567,6 @@ class Voter(models.Model, electionalgs.Voter):
   voter_password = models.CharField(max_length = 100, null=True)
   voter_name = models.CharField(max_length = 200, null=True)
   voter_email = models.CharField(max_length = 250, null=True)
-  
-  uuid = models.CharField(max_length = 50)
   
   # if election uses aliases
   alias = models.CharField(max_length = 100, null=True)
