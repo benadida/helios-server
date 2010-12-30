@@ -552,7 +552,9 @@ class Voter(models.Model, electionalgs.Voter):
   
   # let's link directly to the user now
   # FIXME: delete this as soon as migrations are set up
+  name = models.CharField(max_length = 200, null=True)
   voter_type = models.CharField(max_length = 100)
+  voter_id = models.CharField(max_length = 100)
 
   # for users of type password, no user object is created
   # but a dynamic user object is created automatically
