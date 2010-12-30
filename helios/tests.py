@@ -219,17 +219,24 @@ class CastVoteModelTests(TestCase):
 
 class LegacyElectionBlackboxTests(TestCase):
     fixtures = ['legacy-data.json']
-    EXPECTED_OUTPUT_FILE = 'helios/fixtures/legacy-election-expected.json'
+    EXPECTED_ELECTION_FILE = 'helios/fixtures/legacy-election-expected.json'
+    EXPECTED_VOTERS_FILE = 'helios/fixtures/legacy-election-voters-expected.json'
 
     def setUp(self):
         self.election = models.Election.objects.all()[0]
 
-    def test_legacy_format(self):
-        response = self.client.get("/helios/elections/%s" % self.election.uuid, follow=False)
-        expected = open(self.EXPECTED_OUTPUT_FILE)
+    def assertEqualsToFile(self, response, file_path):
+        expected = open(file_path)
         self.assertEquals(response.content, expected.read())
         expected.close()
-        
+
+    def test_election(self):
+        response = self.client.get("/helios/elections/%s" % self.election.uuid, follow=False)
+        self.assertEqualsToFile(response, self.EXPECTED_ELECTION_FILE)
+
+    def test_voters_list(self):
+        response = self.client.get("/helios/elections/%s/voters/" % self.election.uuid, follow=False)
+        self.assertEqualsToFile(response, self.EXPECTED_VOTERS_FILE)
 
 class ElectionBlackboxTests(TestCase):
     fixtures = ['users.json', 'election.json']

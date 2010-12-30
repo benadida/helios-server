@@ -480,7 +480,12 @@ class Voter(HeliosObject):
 
   @property
   def voter_id_hash(self):
-    return utils.hash_b64(self.voter_id)
+    if self.voter_login_id:
+      # for backwards compatibility with v3.0, and since it doesn't matter
+      # too much if we hash the email or the unique login ID here.
+      return utils.hash_b64(self.voter_login_id)
+    else:
+      return utils.hash_b64(self.voter_id)
 
 class Trustee(HeliosObject):
   """
