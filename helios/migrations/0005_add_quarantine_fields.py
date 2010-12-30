@@ -1,39 +1,33 @@
 # encoding: utf-8
 import datetime
 from south.db import db
-from south.v2 import DataMigration
+from south.v2 import SchemaMigration
 from django.db import models
 
-class Migration(DataMigration):
+class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        """
-        update the voters data objects to point to users when it makes sense,
-        and otherwise to copy the data needed from the users table.
-        """
-        for v in orm.Voter.objects.all():
-            user = orm['auth.User'].objects.get(user_type = v.voter_type, user_id = v.voter_id)
+        
+        # Adding field 'Election.complaint_period_ends_at'
+        db.add_column('helios_election', 'complaint_period_ends_at', self.gf('django.db.models.fields.DateTimeField')(default=None, null=True), keep_default=False)
 
-            if v.voter_type == 'password':
-                v.voter_login_id = v.voter_id
-                v.voter_name = v.name
+        # Adding field 'CastVote.quarantined_p'
+        db.add_column('helios_castvote', 'quarantined_p', self.gf('django.db.models.fields.BooleanField')(default=False), keep_default=False)
 
-                v.voter_email = user.info['email']
-                v.voter_password = user.info['password']
-            else:
-                v.user = user
-
-            v.save()
-
-        # also, update tinyhash for all votes
-        for cv in orm.CastVote.objects.all():
-            cv.set_tinyhash()
-            cv.save()
+        # Adding field 'CastVote.released_from_quarantine_at'
+        db.add_column('helios_castvote', 'released_from_quarantine_at', self.gf('django.db.models.fields.DateTimeField')(null=True), keep_default=False)
 
 
     def backwards(self, orm):
-        "Write your backwards methods here."
-        raise Exception("can't revert to system-wide user passwords, rather than election specific")
+        
+        # Deleting field 'Election.complaint_period_ends_at'
+        db.delete_column('helios_election', 'complaint_period_ends_at')
+
+        # Deleting field 'CastVote.quarantined_p'
+        db.delete_column('helios_castvote', 'quarantined_p')
+
+        # Deleting field 'CastVote.released_from_quarantine_at'
+        db.delete_column('helios_castvote', 'released_from_quarantine_at')
 
 
     models = {
@@ -60,6 +54,8 @@ class Migration(DataMigration):
             'cast_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'invalidated_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
+            'quarantined_p': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'released_from_quarantine_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'verified_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'vote': ('auth.jsonfield.JSONField', [], {}),
             'vote_hash': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
@@ -71,6 +67,7 @@ class Migration(DataMigration):
             'admin': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
             'archived_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'cast_url': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
+            'complaint_period_ends_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'datatype': ('django.db.models.fields.CharField', [], {'default': "'2011/01/election'", 'max_length': '250'}),
             'description': ('django.db.models.fields.TextField', [], {}),
@@ -133,17 +130,14 @@ class Migration(DataMigration):
             'cast_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'election': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios.Election']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True'}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True'}),
             'uuid': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
             'vote': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
             'vote_hash': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True'}),
             'voter_email': ('django.db.models.fields.CharField', [], {'max_length': '250', 'null': 'True'}),
-            'voter_id': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'voter_login_id': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True'}),
             'voter_name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True'}),
-            'voter_password': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True'}),
-            'voter_type': ('django.db.models.fields.CharField', [], {'max_length': '100'})
+            'voter_password': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True'})
         },
         'helios.voterfile': {
             'Meta': {'object_name': 'VoterFile'},

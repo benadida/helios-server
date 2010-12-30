@@ -738,7 +738,7 @@ class CastVote(models.Model, electionalgs.CastVote):
   cast_at = models.DateTimeField(auto_now_add=True)
 
   # some ballots can be quarantined (this is not the same thing as provisional)
-  quarantined_p = modelsBooleanField(default=False, null=False)
+  quarantined_p = models.BooleanField(default=False, null=False)
   released_from_quarantine_at = models.DateTimeField(auto_now_add=False, null=True)
 
   # when is the vote verified?

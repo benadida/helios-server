@@ -217,6 +217,20 @@ class CastVoteModelTests(TestCase):
 ## Black box tests
 ##
 
+class LegacyElectionBlackboxTests(TestCase):
+    fixtures = ['legacy-data.json']
+    EXPECTED_OUTPUT_FILE = 'helios/fixtures/legacy-election-expected.json'
+
+    def setUp(self):
+        self.election = models.Election.objects.all()[0]
+
+    def test_legacy_format(self):
+        response = self.client.get("/helios/elections/%s" % self.election.uuid, follow=False)
+        expected = open(self.EXPECTED_OUTPUT_FILE)
+        self.assertEquals(response.content, expected.read())
+        expected.close()
+        
+
 class ElectionBlackboxTests(TestCase):
     fixtures = ['users.json', 'election.json']
 
