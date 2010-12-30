@@ -551,7 +551,8 @@ class Voter(models.Model, electionalgs.Voter):
   election = models.ForeignKey(Election)
   
   # let's link directly to the user now
-  # voter_type = models.CharField(max_length = 100)
+  # FIXME: delete this as soon as migrations are set up
+  voter_type = models.CharField(max_length = 100)
 
   # for users of type password, no user object is created
   # but a dynamic user object is created automatically
