@@ -217,13 +217,7 @@ class CastVoteModelTests(TestCase):
 ## Black box tests
 ##
 
-class LegacyElectionBlackboxTests(TestCase):
-    fixtures = ['legacy-data.json']
-    EXPECTED_ELECTION_FILE = 'helios/fixtures/legacy-election-expected.json'
-    EXPECTED_VOTERS_FILE = 'helios/fixtures/legacy-election-voters-expected.json'
-    EXPECTED_TRUSTEES_FILE = 'helios/fixtures/legacy-trustees-expected.json'
-    EXPECTED_BALLOTS_FILE = 'helios/fixtures/legacy-ballots-expected.json'
-
+class DataFormatBlackboxTests(object):
     def setUp(self):
         self.election = models.Election.objects.all()[0]
 
@@ -247,6 +241,28 @@ class LegacyElectionBlackboxTests(TestCase):
     def test_ballots_list(self):
         response = self.client.get("/helios/elections/%s/ballots/" % self.election.uuid, follow=False)
         self.assertEqualsToFile(response, self.EXPECTED_BALLOTS_FILE)
+
+## now we have a set of fixtures and expected results for various formats
+## note how TestCase is used as a "mixin" here, so that the generic DataFormatBlackboxTests
+## does not register as a set of test cases to run, but each concrete data format does.
+
+class LegacyElectionBlackboxTests(DataFormatBlackboxTests, TestCase):
+    fixtures = ['legacy-data.json']
+    EXPECTED_ELECTION_FILE = 'helios/fixtures/legacy-election-expected.json'
+    EXPECTED_VOTERS_FILE = 'helios/fixtures/legacy-election-voters-expected.json'
+    EXPECTED_TRUSTEES_FILE = 'helios/fixtures/legacy-trustees-expected.json'
+    EXPECTED_BALLOTS_FILE = 'helios/fixtures/legacy-ballots-expected.json'
+
+class V3_1_ElectionBlackboxTests(DataFormatBlackboxTests, TestCase):
+    fixtures = ['v3.1-data.json']
+    EXPECTED_ELECTION_FILE = 'helios/fixtures/v3.1-election-expected.json'
+    EXPECTED_VOTERS_FILE = 'helios/fixtures/v3.1-election-voters-expected.json'
+    EXPECTED_TRUSTEES_FILE = 'helios/fixtures/v3.1-trustees-expected.json'
+    EXPECTED_BALLOTS_FILE = 'helios/fixtures/v3.1-ballots-expected.json'
+
+##
+## overall operation of the system
+##
 
 class ElectionBlackboxTests(TestCase):
     fixtures = ['users.json', 'election.json']
