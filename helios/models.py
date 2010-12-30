@@ -87,6 +87,13 @@ class Election(models.Model, electionalgs.Election):
   registration_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
   voting_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
   voting_ends_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+
+  # if this is non-null, then a complaint period, where people can cast a quarantined ballot.
+  # we do NOT call this a "provisional" ballot, since provisional implies that the voter has not
+  # been qualified. We may eventually add this, but it can't be in the same CastVote table, which
+  # is tied to a voter.
+  complaint_period_ends_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+
   tallying_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
   
   # dates when things were forced to be performed
@@ -730,6 +737,10 @@ class CastVote(models.Model, electionalgs.CastVote):
 
   cast_at = models.DateTimeField(auto_now_add=True)
 
+  # some ballots can be quarantined (this is not the same thing as provisional)
+  quarantined_p = modelsBooleanField(default=False, null=False)
+  released_from_quarantine_at = models.DateTimeField(auto_now_add=False, null=True)
+
   # when is the vote verified?
   verified_at = models.DateTimeField(null=True)
   invalidated_at = models.DateTimeField(null=True)
@@ -741,6 +752,10 @@ class CastVote(models.Model, electionalgs.CastVote):
   @property
   def voter_hash(self):
     return self.voter.hash
+
+  @property
+  def is_quarantined(self):
+    return self.quarantined_p and not self.released_from_quarantine_at
 
   def set_tinyhash(self):
     """
@@ -774,6 +789,10 @@ class CastVote(models.Model, electionalgs.CastVote):
     return cls.objects.filter(voter = voter).order_by('-cast_at')
 
   def verify_and_store(self):
+    # if it's quarantined, don't let this go through
+    if self.is_quarantined:
+      raise Exception("cast vote is quarantined, verification and storage is delayed.")
+
     result = self.vote.verify(self.voter.election)
 
     if result:

@@ -24,7 +24,8 @@ class Migration(SchemaMigration):
         db.add_column('helios_voter', 'voter_email', self.gf('django.db.models.fields.CharField')(max_length=250, null=True), keep_default=False)
 
         # Adding field 'Election.datatype'
-        db.add_column('helios_election', 'datatype', self.gf('django.db.models.fields.CharField')(default='2011/01/election', max_length=250), keep_default=False)
+        # manually tweaked default value to ensure proper datatype for older elections
+        db.add_column('helios_election', 'datatype', self.gf('django.db.models.fields.CharField')(default='legacy/election', max_length=250), keep_default=False)
 
         # Adding field 'Election.election_type'
         db.add_column('helios_election', 'election_type', self.gf('django.db.models.fields.CharField')(default='election', max_length=250), keep_default=False)

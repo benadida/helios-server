@@ -200,6 +200,19 @@ class VoterModelTests(TestCase):
         # check that you can get at the voter user structure
         self.assertEquals(v.user.user_id, v.voter_email)
 
+
+class CastVoteModelTests(TestCase):
+    fixtures = ['users.json', 'election.json']
+
+    def setUp(self):
+        self.election = models.Election.objects.get(short_name='test')
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+
+        # register the voter
+        self.voter = models.Voter.register_user_in_election(self.user, self.election)
+
+    def test_cast_vote(self):
+        assert False
 ##
 ## Black box tests
 ##
