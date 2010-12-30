@@ -1039,7 +1039,7 @@ def voters_upload(request, election):
       tasks.voter_file_process.delay(voter_file_id = request.session['voter_file_id'])
       del request.session['voter_file_id']
 
-      return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+      return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
     else:
       # we need to confirm
       voters_file = request.FILES['voters_file']

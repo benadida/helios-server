@@ -276,19 +276,45 @@ class ElectionBlackboxTests(TestCase):
                 "use_advanced_audit_features": "1",
                 "private_p" : "0"})
 
-        # we are redirected to the election
+        # we are redirected to the election, let's extract the ID out of the URL
         election_id = re.search('/elections/([^/]+)/', str(response['Location'])).group(1)
 
-        assert False
-        
         # add helios as trustee
+        response = self.client.post("/helios/elections/%s/trustees/add-helios" % election_id)
+        self.assertRedirects(response, "/helios/elections/%s/trustees/view" % election_id)
 
-        # add a few voters
+        # check that helios is indeed a trustee
+        response = self.client.get("/helios/elections/%s/trustees/view" % election_id)
+        self.assertContains(response, "Trustee #1")
+
+        # add a few voters, via file upload
+        FILE = "helios/fixtures/voter-file.csv"
+        voters_file = open(FILE)
+        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'voters_file': voters_file})
+        voters_file.close()
+        self.assertContains(response, "first few rows of this file")
+
+        # now we confirm the upload
+        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'confirm_p': "1"})
+        self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
+
+        # and we want to check that there are now voters
+        response = self.client.get("/helios/elections/%s/voters/" % election_id)
+        self.assertEquals(len(utils.from_json(response.content)), 4)
         
         # add questions
+        response = self.client.post("/helios/elections/%s/save_questions" % election_id, {
+                'questions_json': utils.to_json([{"answer_urls": [None,None], "answers": ["Alice", "Bob"], "choice_type": "approval", "max": 1, "min": 0, "question": "Who should be president?", "result_type": "absolute", "short_name": "Who should be president?", "tally_type": "homomorphic"}]),
+                'csrf_token': self.client.session['csrf_token']})
 
+        self.assertContains(response, "SUCCESS")
+        
         # freeze election
+        response = self.client.post("/helios/elections/%s/freeze" % election_id, {
+                "csrf_token" : self.client.session['csrf_token']})
+        self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
 
+        assert False
         # vote by preparing a ballot via the server-side encryption
 
         # cast the ballot
