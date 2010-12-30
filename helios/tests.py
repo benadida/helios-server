@@ -221,6 +221,7 @@ class LegacyElectionBlackboxTests(TestCase):
     fixtures = ['legacy-data.json']
     EXPECTED_ELECTION_FILE = 'helios/fixtures/legacy-election-expected.json'
     EXPECTED_VOTERS_FILE = 'helios/fixtures/legacy-election-voters-expected.json'
+    EXPECTED_TRUSTEES_FILE = 'helios/fixtures/legacy-trustees-expected.json'
 
     def setUp(self):
         self.election = models.Election.objects.all()[0]
@@ -237,6 +238,10 @@ class LegacyElectionBlackboxTests(TestCase):
     def test_voters_list(self):
         response = self.client.get("/helios/elections/%s/voters/" % self.election.uuid, follow=False)
         self.assertEqualsToFile(response, self.EXPECTED_VOTERS_FILE)
+
+    def test_trustees_list(self):
+        response = self.client.get("/helios/elections/%s/trustees/" % self.election.uuid, follow=False)
+        self.assertEqualsToFile(response, self.EXPECTED_TRUSTEES_FILE)
 
 class ElectionBlackboxTests(TestCase):
     fixtures = ['users.json', 'election.json']
