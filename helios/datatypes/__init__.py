@@ -1,5 +1,29 @@
 """
 The Helios datatypes are RDF datatypes that map to JSON-LD
+
+A datatype object wraps another object and performs serialization / de-serialization
+to and from that object. For example, a Helios election is treated as follows:
+
+  helios_election = get_current_election() # returns a helios.models.Election object
+  
+  # dispatch to the right contructor via factory pattern
+  # LDObject knows about base classes like Election, Voter, CastVote, Trustee
+  # and it looks for the datatype field within the wrapped object to determine
+  # which LDObject subclass to dispatch to.
+  ld_object = LDObject.instantiate(helios_election)
+
+  # get some JSON-LD
+  ld_object.serialize()
+
+And when data comes in:
+
+  # the type is the base type, Election, CastVote, Trustee, ...
+  # if this is raw JSON, then this invokes the legacy LDObject parser
+  # if this is JSON-LD, then it finds the right LDObject based on the declared type
+  # in the JSON-LD.
+  # the optional type variable is necessary for legacy objects (otherwise, what is the type?)
+  # but is not necessary for full JSON-LD objects.
+  LDObject.deserialize(json_string, type=...)
 """
 
 from helios import utils
@@ -18,6 +42,19 @@ class LDObject(object):
 
     # fields to serialize
     FIELDS = []
+
+    @classmethod
+    def instantiate(cls, obj):
+        if not hasattr(obj, 'datatype'):
+            raise Exception("no datatype found")
+
+        # parse datatype string "v31/Election" --> from v31 import Election
+        parsed_datatype = obj.datatype.split("/")
+
+        # construct it
+        dynamic_cls = getattr(__import__(".".join(parsed_datatype[:-1]), globals(), locals(), [], level=-1), parsed_datatype[len(parsed_datatype)-1])
+
+        return dynamic_cls(obj)
 
     def set_from_args(self, **kwargs):
         for f in self.FIELDS:

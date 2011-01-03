@@ -5,6 +5,8 @@ Unit Tests for Helios
 import unittest, datetime, re
 
 import models
+import datatypes
+
 from auth import models as auth_models
 from views import ELGAMAL_PARAMS
 import views
@@ -213,6 +215,17 @@ class CastVoteModelTests(TestCase):
 
     def test_cast_vote(self):
         assert False
+
+class DatatypeTests(TestCase):
+    fixtures = ['election.json']
+
+    def setUp(self):
+        self.election = models.Election.objects.all()[0]
+
+    def test_instantiate(self):
+        ld_obj = datatypes.LDObject.instantiate(self.election)
+
+
 ##
 ## Black box tests
 ##

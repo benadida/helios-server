@@ -37,7 +37,7 @@ class Election(models.Model, electionalgs.Election):
   # code, both for crypto and serialization
   # v3 and prior have a datatype of "legacy/election"
   # v3.1 and above have a specific datatype of "2011/01/election"
-  datatype = models.CharField(max_length=250, null=False, default="2011/01/election")
+  datatype = models.CharField(max_length=250, null=False, default="2011/01/Election")
   
   short_name = models.CharField(max_length=100)
   name = models.CharField(max_length=250)
