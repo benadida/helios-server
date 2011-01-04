@@ -98,7 +98,7 @@ class ElectionModelTests(TestCase):
 
         self.assertTrue(self.election.has_helios_trustee())
 
-        trustee = self.election.get_helios_trustee()        
+        trustee = self.election.get_helios_trustee()
         self.assertNotEquals(trustee, None)
 
     def test_log(self):
@@ -221,10 +221,13 @@ class DatatypeTests(TestCase):
 
     def setUp(self):
         self.election = models.Election.objects.all()[0]
+        self.election.generate_trustee(ELGAMAL_PARAMS)
 
     def test_instantiate(self):
-        ld_obj = datatypes.LDObject.instantiate(self.election)
-
+        ld_obj = datatypes.LDObject.instantiate(self.election.get_helios_trustee(), '2011/01/Trustee')
+        foo = ld_obj.serialize()
+        
+        
 
 ##
 ## Black box tests

@@ -34,7 +34,8 @@ class LDObject(object):
     data format. For example, a legacy election LDObject instance will wrap an Election object
     and serialize its fields according to the specs for that version.
 
-    To accomodate old JSON types, we allow  classes to override default JSON-LD fields.
+    To accomodate old JSON types, we allow  classes to do basically whatever they want,
+    or to let this base class serialize pure JSON thingies, without the JSON-LD.
     """
 
     # whether or not to add JSON-LD things
@@ -43,26 +44,56 @@ class LDObject(object):
     # fields to serialize
     FIELDS = []
 
+    # structured fields
+    STRUCTURED_FIELDS = {}
+
+    def __init__(self, wrapped_obj):
+        self.wrapped_obj = wrapped_obj
+        self.structured_fields = {}
+
     @classmethod
-    def instantiate(cls, obj):
-        if not hasattr(obj, 'datatype'):
+    def get_class(cls, datatype):
+        # parse datatype string "v31/Election" --> from v31 import Election
+        parsed_datatype = datatype.split("/")
+
+        # get the module
+        dynamic_module = __import__(".".join(parsed_datatype[:-1]), globals(), locals(), [], level=-1)
+
+        # go down the attributes to get to the class
+        dynamic_ptr = dynamic_module
+        for attr in parsed_datatype[1:]:
+            dynamic_ptr = getattr(dynamic_ptr, attr)
+        dynamic_cls = dynamic_ptr
+        
+        return dynamic_cls
+        
+    @classmethod
+    def instantiate(cls, obj, datatype=None):
+        if hasattr(obj, 'datatype') and not datatype:
+            datatype = getattr(obj, 'datatype')
+
+        if not datatype:
             raise Exception("no datatype found")
 
-        # parse datatype string "v31/Election" --> from v31 import Election
-        parsed_datatype = obj.datatype.split("/")
+        # the class
+        dynamic_cls = cls.get_class(datatype)
 
-        # construct it
-        dynamic_cls = getattr(__import__(".".join(parsed_datatype[:-1]), globals(), locals(), [], level=-1), parsed_datatype[len(parsed_datatype)-1])
+        # instantiate it
+        return_obj = dynamic_cls(obj)
 
-        return dynamic_cls(obj)
+        # go through the subfields and instantiate them too
+        for subfield_name, subfield_type in dynamic_cls.STRUCTURED_FIELDS.iteritems():
+            return_obj.structured_fields[subfield_name] = cls.instantiate(getattr(return_obj.wrapped_obj, subfield_name), datatype = subfield_type)
+
+        return return_obj
 
     def set_from_args(self, **kwargs):
         for f in self.FIELDS:
             if kwargs.has_key(f):
                 new_val = self.process_value_in(f, kwargs[f])
-                setattr(self, f, new_val)
+                setattr(self.wrapped_obj, f, new_val)
             else:
-                setattr(self, f, None)
+                setattr(self.wrapped_obj, f, None)
         
     def serialize(self):
         return utils.to_json(self.toDict())
@@ -70,17 +101,23 @@ class LDObject(object):
     def toDict(self, alternate_fields=None):
         val = {}
         for f in (alternate_fields or self.FIELDS):
-            val[f] = self.process_value_out(f, getattr(self, f))
+            # is it a structured subfield?
+            if self.structured_fields.has_key(f):
+                val[f] = self.structured_fields[f].toDict()
+            else:
+                val[f] = self.process_value_out(f, getattr(self.wrapped_obj, f))
         return val
     
     @classmethod
     def fromDict(cls, d):
+        raise Exception("not a good idea yet")
+
         # go through the keys and fix them
         new_d = {}
         for k in d.keys():
             new_d[str(k)] = d[k]
       
-        return cls(**new_d)    
+        return cls(**new_d)
 
     @property
     def hash(self):
@@ -125,3 +162,25 @@ class LDObject(object):
     
         return other != None and self.uuid == other.uuid
   
+
+class ArrayOfObjects(LDObject):
+    """
+    If one type has, as a subtype, an array of things, then this is the structured field used
+    """
+
+    def __init__(self, wrapped_array, item_type):
+        self.item_type = item_type
+        self.items = [LDObject.instantiate(wrapped_item, item_type) for wrapped_item in wrapped_array]
+    
+    def toDict(self):
+        return [item.serialize() for item in self.items]
+
+def arrayOf(item_type):
+    """
+    a wrapper for the construtor of the array
+    returns the constructor
+    """
+    def array_constructor(wrapped_array):
+        return ArrayOfObjects(wrapped_array, item_type)
+
+    return array_constructor
