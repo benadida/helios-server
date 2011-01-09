@@ -676,6 +676,10 @@ class Voter(HeliosModel):
     return cls.objects.select_related().filter(user = user).order_by('-cast_at')
 
   @property
+  def datatype(self):
+    return self.election.datatype.replace('Election', 'Voter')
+
+  @property
   def vote_tinyhash(self):
     """
     get the tinyhash of the latest castvote
@@ -696,6 +700,15 @@ class Voter(HeliosModel):
   @property
   def voter_id(self):
     return self.user.user_id
+
+  @property
+  def voter_id_hash(self):
+    if self.voter_login_id:
+      # for backwards compatibility with v3.0, and since it doesn't matter
+      # too much if we hash the email or the unique login ID here.
+      return utils.hash_b64(self.voter_login_id)
+    else:
+      return utils.hash_b64(self.voter_id)
 
   @property
   def voter_type(self):
@@ -751,6 +764,10 @@ class CastVote(HeliosModel):
   verified_at = models.DateTimeField(null=True)
   invalidated_at = models.DateTimeField(null=True)
   
+  @property
+  def datatype(self):
+    return self.voter.datatype.replace('Voter', 'CastVote')
+
   @property
   def voter_uuid(self):
     return self.voter.uuid  
@@ -890,6 +907,10 @@ class Trustee(HeliosModel):
   @classmethod
   def get_by_election_and_email(cls, election, email):
     return cls.objects.get(election = election, email = email)
+
+  @property
+  def datatype(self):
+    return self.election.datatype.replace('Election', 'Trustee')    
     
   def verify_decryption_proofs(self):
     """

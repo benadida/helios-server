@@ -27,6 +27,19 @@ And when data comes in:
 """
 
 from helios import utils
+from helios.crypto import utils as cryptoutils
+
+##
+## utility function
+##
+def recursiveToDict(obj):
+    if not obj:
+        return None
+
+    if type(obj) == list:
+        return [recursiveToDict(el) for el in obj]
+    else:
+        return obj.toDict()
 
 class LDObjectContainer(object):
     """
@@ -45,6 +58,10 @@ class LDObjectContainer(object):
 
     def toJSON(self):
         return self.ld_object.serialize()
+
+    @property
+    def hash(self):
+        return self.ld_object.hash
 
 class LDObject(object):
     """
@@ -93,6 +110,14 @@ class LDObject(object):
         if not datatype:
             raise Exception("no datatype found")
 
+        # nulls
+        if not obj:
+            return None
+
+        # array
+        if isArray(datatype):
+            return [cls.instantiate(el, datatype = datatype.element_type) for el in obj]
+
         # the class
         dynamic_cls = cls.get_class(datatype)
 
@@ -121,7 +146,7 @@ class LDObject(object):
         for f in (alternate_fields or self.FIELDS):
             # is it a structured subfield?
             if self.structured_fields.has_key(f):
-                val[f] = self.structured_fields[f].toDict()
+                val[f] = recursiveToDict(self.structured_fields[f])
             else:
                 val[f] = self.process_value_out(f, getattr(self.wrapped_obj, f))
         return val
@@ -140,7 +165,7 @@ class LDObject(object):
     @property
     def hash(self):
         s = self.serialize()
-        return utils.hash_b64(s)
+        return cryptoutils.hash_b64(s)
     
     def process_value_in(self, field_name, field_value):
         """
@@ -193,12 +218,13 @@ class ArrayOfObjects(LDObject):
     def toDict(self):
         return [item.serialize() for item in self.items]
 
-def arrayOf(item_type):
+class arrayOf(object):
     """
     a wrapper for the construtor of the array
     returns the constructor
     """
-    def array_constructor(wrapped_array):
-        return ArrayOfObjects(wrapped_array, item_type)
+    def __init__(self, element_type):
+        self.element_type = element_type
 
-    return array_constructor
+def isArray(field_type):
+    return type(field_type) == arrayOf

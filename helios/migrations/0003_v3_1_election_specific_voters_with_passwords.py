@@ -10,7 +10,12 @@ class Migration(DataMigration):
         """
         update the voters data objects to point to users when it makes sense,
         and otherwise to copy the data needed from the users table.
+        make all elections legacy, because before now they are.
         """
+        for e in orm.Election.objects.all():
+            e.datatype = 'legacy/Election'
+            e.save()
+
         for v in orm.Voter.objects.all():
             user = orm['auth.User'].objects.get(user_type = v.voter_type, user_id = v.voter_id)
 
@@ -27,7 +32,18 @@ class Migration(DataMigration):
 
         # also, update tinyhash for all votes
         for cv in orm.CastVote.objects.all():
-            cv.set_tinyhash()
+            safe_hash = cv.vote_hash
+            for c in ['/', '+']:
+                safe_hash = safe_hash.replace(c,'')
+    
+            length = 8
+            while True:
+                vote_tinyhash = safe_hash[:length]
+                if orm.CastVote.objects.filter(vote_tinyhash = vote_tinyhash).count() == 0:
+                    break
+                length += 1
+      
+            cv.vote_tinyhash = vote_tinyhash
             cv.save()
 
 
