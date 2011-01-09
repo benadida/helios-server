@@ -12,7 +12,10 @@ class Election(LegacyObject):
               'frozen_at', 'public_key', 'cast_url', 'use_voter_aliases', 'voting_starts_at', 'voting_ends_at']
 
     STRUCTURED_FIELDS = {
-        'public_key' : 'legacy/EGPublicKey'
+        'public_key' : 'legacy/EGPublicKey',
+        'voting_starts_at': 'core/Timestamp',
+        'voting_ends_at': 'core/Timestamp',
+        'frozen_at': 'core/Timestamp'
         }
         
 class EncryptedAnswer(LegacyObject):
@@ -26,10 +29,36 @@ class EncryptedAnswer(LegacyObject):
         }
 
 class Voter(LegacyObject):
-    pass
+    FIELDS = ['election_uuid', 'uuid', 'voter_type', 'voter_id_hash', 'name', 'alias']
+
+    ALIASED_VOTER_FIELDS = ['election_uuid', 'uuid', 'alias']
+
+    def toDict(self):
+        """
+        depending on whether the voter is aliased, use different fields
+        """
+        if self.wrapped_obj.alias != None:
+            return super(Voter, self).toDict(self.ALIASED_VOTER_FIELDS)
+        else:
+            return super(Voter,self).toDict()
+
 
 class CastVote(LegacyObject):
-    pass
+    FIELDS = ['vote', 'cast_at', 'voter_uuid', 'voter_hash', 'vote_hash']
 
 class Trustee(LegacyObject):
-    pass
+    FIELDS = ['uuid', 'public_key', 'public_key_hash', 'pok', 'decryption_factors', 'decryption_proofs', 'email']
+
+    STRUCTURED_FIELDS = {
+        'public_key' : 'legacy/EGPublicKey',
+        'pok': 'legacy/DLogProof',
+        'decryption_factors': arrayOf('core/BigInteger'),
+        'decryption_proofs' : arrayOf('legacy/DLogProof')}
+
+class EGPublicKey(LegacyObject):
+    FIELDS = ['y', 'p', 'g', 'q']
+    STRUCTURED_FIELDS = {
+        'y': 'core/BigInteger',
+        'p': 'core/BigInteger',
+        'q': 'core/BigInteger',
+        'g': 'core/BigInteger'}

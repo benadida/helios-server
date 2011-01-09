@@ -17,6 +17,8 @@ from crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
 import helios
 
+from helios import datatypes
+
 # useful stuff in auth
 from auth.models import User, AUTH_SYSTEMS
 from auth.jsonfield import JSONField
@@ -28,7 +30,11 @@ GLOBAL_COUNTER_VOTERS = 'global_counter_voters'
 GLOBAL_COUNTER_CAST_VOTES = 'global_counter_cast_votes'
 GLOBAL_COUNTER_ELECTIONS = 'global_counter_elections'
 
-class Election(models.Model, electionalgs.Election):
+class HeliosModel(models.Model, datatypes.LDObjectContainer):
+  class Meta:
+    abstract = True
+
+class Election(HeliosModel):
   admin = models.ForeignKey(User)
   
   uuid = models.CharField(max_length=50, null=False)
@@ -554,7 +560,7 @@ class VoterFile(models.Model):
 
 
     
-class Voter(models.Model, electionalgs.Voter):
+class Voter(HeliosModel):
   election = models.ForeignKey(Election)
   
   # let's link directly to the user now
@@ -722,7 +728,7 @@ class Voter(models.Model, electionalgs.Voter):
     return CastVote(vote = self.vote, vote_hash = self.vote_hash, cast_at = self.cast_at, voter=self)
     
   
-class CastVote(models.Model, electionalgs.CastVote):
+class CastVote(HeliosModel):
   # the reference to the voter provides the voter_uuid
   voter = models.ForeignKey(Voter)
   
@@ -834,7 +840,7 @@ class AuditedBallot(models.Model):
 
     return query
     
-class Trustee(models.Model, electionalgs.Trustee):
+class Trustee(HeliosModel):
   election = models.ForeignKey(Election)
   
   uuid = models.CharField(max_length=50)

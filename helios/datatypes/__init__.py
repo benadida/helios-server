@@ -28,6 +28,24 @@ And when data comes in:
 
 from helios import utils
 
+class LDObjectContainer(object):
+    """
+    a simple container for an LD Object.
+    """
+    
+    @property
+    def ld_object(self):
+        if not hasattr(self, '_ld_object'):
+            self._ld_object = LDObject.instantiate(self)
+
+        return self._ld_object
+
+    def toJSONDict(self):
+        return self.ld_object.toDict()
+
+    def toJSON(self):
+        return self.ld_object.serialize()
+
 class LDObject(object):
     """
     A linked-data object wraps another object and serializes it according to a particular
@@ -107,7 +125,7 @@ class LDObject(object):
             else:
                 val[f] = self.process_value_out(f, getattr(self.wrapped_obj, f))
         return val
-    
+
     @classmethod
     def fromDict(cls, d):
         raise Exception("not a good idea yet")

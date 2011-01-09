@@ -11,5 +11,15 @@ class BigInteger(LDObject):
     """
 
     def toDict(self):
-        return str(self.wrapped_obj)
+        if self.wrapped_obj:
+            return str(self.wrapped_obj)
+        else:
+            return None
 
+class Timestamp(LDObject):
+    def toDict(self):
+        if self.wrapped_obj:
+            return str(self.wrapped_obj)
+        else:
+            return None
+    
