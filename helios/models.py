@@ -906,7 +906,7 @@ class Trustee(HeliosModel):
                                  null=True)
 
   decryption_proofs = JSONField(datatypes.LDObject,
-                                deserialization_params = {'type_hint' : datatypes.arrayOf(datatypes.arrayOf('legacy/DLogProof'))},
+                                deserialization_params = {'type_hint' : datatypes.arrayOf(datatypes.arrayOf('legacy/EGZKProof'))},
                                 null=True)
   
   def save(self, *args, **kwargs):

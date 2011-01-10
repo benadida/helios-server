@@ -30,18 +30,18 @@ class JSONField(models.TextField):
     def to_python(self, value):
         """Convert our string value to JSON after we load it from the DB"""
 
-        # must handle the case where the value is already ready
         if self.json_type:
             if isinstance(value, self.json_type):
                 return value
-        else:
-            if isinstance(value, dict) or isinstance(value, list):
-                return value
+
+        if isinstance(value, dict) or isinstance(value, list):
+            return value
 
         if value == "" or value == None:
             return None
 
         parsed_value = json.loads(value)
+
         if self.json_type and parsed_value:
             parsed_value = self.json_type.fromJSONDict(parsed_value, **self.deserialization_params)
                 
@@ -58,7 +58,7 @@ class JSONField(models.TextField):
         if value == None:
             return None
 
-        if self.json_type or hasattr(value,'toJSONDict'):
+        if self.json_type and isinstance(value, self.json_type):
             the_dict = value.toJSONDict()
         else:
             the_dict = value

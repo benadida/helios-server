@@ -3,13 +3,17 @@ Legacy datatypes for Helios (v3.0)
 """
 
 from helios.datatypes import LDObject, arrayOf
+from helios.crypto import elgamal as crypto_elgamal
+from helios.workflows import homomorphic
 
 ##
 ## utilities
 
 class DictObject(object):
-    def __init__(self, d):
+    def __init__(self, d=None):
         self.d = d
+        if not self.d:
+            self.d = {}
         
     def __getattr__(self, k):
         return self.d[k]
@@ -31,8 +35,9 @@ class Election(LegacyObject):
         'voting_ends_at': 'core/Timestamp',
         'frozen_at': 'core/Timestamp'
         }
-        
+
 class EncryptedAnswer(LegacyObject):
+    WRAPPED_OBJ_CLASS = homomorphic.EncryptedAnswer
     FIELDS = ['choices', 'individual_proofs', 'overall_proof']
     STRUCTURED_FIELDS = {
         'choices': arrayOf('legacy/EGCiphertext'),
@@ -53,6 +58,7 @@ class EncryptedVote(LegacyObject):
     """
     An encrypted ballot
     """
+    WRAPPED_OBJ_CLASS = homomorphic.EncryptedVote
     FIELDS = ['answers', 'election_hash', 'election_uuid']
     STRUCTURED_FIELDS = {
         'answers' : arrayOf('legacy/EncryptedAnswer')
@@ -93,6 +99,7 @@ class Trustee(LegacyObject):
         'decryption_proofs' : arrayOf(arrayOf('legacy/DLogProof'))}
 
 class EGPublicKey(LegacyObject):
+    WRAPPED_OBJ_CLASS = crypto_elgamal.PublicKey
     FIELDS = ['y', 'p', 'g', 'q']
     STRUCTURED_FIELDS = {
         'y': 'core/BigInteger',
@@ -100,7 +107,15 @@ class EGPublicKey(LegacyObject):
         'q': 'core/BigInteger',
         'g': 'core/BigInteger'}
 
+class EGSecretKey(LegacyObject):
+    WRAPPED_OBJ_CLASS = crypto_elgamal.SecretKey
+    FIELDS = ['x','pk']
+    STRUCTURED_FIELDS = {
+        'x': 'core/BigInteger',
+        'pk': 'legacy/EGPublicKey'}
+
 class EGCiphertext(LegacyObject):
+    WRAPPED_OBJ_CLASS = crypto_elgamal.Ciphertext
     FIELDS = ['alpha','beta']
     STRUCTURED_FIELDS = {
         'alpha': 'core/BigInteger',
@@ -116,6 +131,7 @@ class EGZKProofCommitment(LegacyObject):
         super(EGZKProofCommitment, self).__init__(DictObject(wrapped_obj))
     
 class EGZKProof(LegacyObject):
+    WRAPPED_OBJ_CLASS = crypto_elgamal.ZKProof
     FIELDS = ['commitment', 'challenge', 'response']
     STRUCTURED_FIELDS = {
         'commitment': 'legacy/EGZKProofCommitment',
@@ -123,9 +139,14 @@ class EGZKProof(LegacyObject):
         'response' : 'core/BigInteger'}
         
 class EGZKDisjunctiveProof(LegacyObject):
+    WRAPPED_OBJ_CLASS = crypto_elgamal.ZKDisjunctiveProof
     FIELDS = ['proofs']
     STRUCTURED_FIELDS = {
         'proofs': arrayOf('legacy/EGZKProof')}
+
+    def loadDataFromDict(self, d):
+        "hijack and make sure we add the proofs name back on"
+        return super(EGZKDisjunctiveProof, self).loadDataFromDict({'proofs': d})
 
     def toDict(self):
         "hijack toDict and make it return the proofs array only, since that's the spec for legacy"
