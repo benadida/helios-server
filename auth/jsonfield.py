@@ -12,14 +12,19 @@ from django.utils import simplejson as json
 from django.core.serializers.json import DjangoJSONEncoder
 
 class JSONField(models.TextField):
-    """JSONField is a generic textfield that neatly serializes/unserializes
-    JSON objects seamlessly"""
+    """
+    JSONField is a generic textfield that neatly serializes/unserializes
+    JSON objects seamlessly.
+    
+    deserialization_params added on 2011-01-09 to provide additional hints at deserialization time
+    """
 
     # Used so to_python() is called
     __metaclass__ = models.SubfieldBase
 
-    def __init__(self, json_type=None, **kwargs):
+    def __init__(self, json_type=None, deserialization_params=None, **kwargs):
         self.json_type = json_type
+        self.deserialization_params = deserialization_params
         super(JSONField, self).__init__(**kwargs)
 
     def to_python(self, value):
@@ -38,7 +43,7 @@ class JSONField(models.TextField):
 
         parsed_value = json.loads(value)
         if self.json_type and parsed_value:
-            parsed_value = self.json_type.fromJSONDict(parsed_value)
+            parsed_value = self.json_type.fromJSONDict(parsed_value, **self.deserialization_params)
                 
         return parsed_value
 

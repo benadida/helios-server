@@ -226,6 +226,15 @@ class DatatypeTests(TestCase):
     def test_instantiate(self):
         ld_obj = datatypes.LDObject.instantiate(self.election.get_helios_trustee(), '2011/01/Trustee')
         foo = ld_obj.serialize()
+
+    def test_from_dict(self):
+        ld_obj = datatypes.LDObject.fromDict({
+                'y' : '1234',
+                'p' : '23434',
+                'g' : '2343243242',
+                'q' : '2343242343434'}, type_hint = 'pkc/elgamal/PublicKey')
+        
+        import pdb; pdb.set_trace()
         
         
 

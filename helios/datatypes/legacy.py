@@ -18,6 +18,7 @@ class DictObject(object):
 ##
 
 class LegacyObject(LDObject):
+    WRAPPED_OBJ_CLASS = dict
     USE_JSON_LD = False
 
 class Election(LegacyObject):
@@ -142,3 +143,15 @@ class DLogProof(LegacyObject):
             super(DLogProof, self).__init__(DictObject(wrapped_obj))
         else:
             super(DLogProof, self).__init__(wrapped_obj)
+
+class Result(LegacyObject):
+    pass
+
+class Questions(LegacyObject):
+    pass
+
+class Tally(LegacyObject):
+    pass
+
+class Eligibility(LegacyObject):
+    pass

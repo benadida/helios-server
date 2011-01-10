@@ -79,8 +79,11 @@ class LDObject(object):
     # fields to serialize
     FIELDS = []
 
-    # structured fields
+    # structured fields are other LD objects, not simple types
     STRUCTURED_FIELDS = {}
+
+    # the underlying object type, which contains algorithms, to instantiate by default
+    WRAPPED_OBJ_CLASS = None
 
     def __init__(self, wrapped_obj):
         self.wrapped_obj = wrapped_obj
@@ -151,16 +154,48 @@ class LDObject(object):
                 val[f] = self.process_value_out(f, getattr(self.wrapped_obj, f))
         return val
 
-    @classmethod
-    def fromDict(cls, d):
-        raise Exception("not a good idea yet")
+    def loadDataFromDict(self, d):
+        """
+        load data from a dictionary
+        """
 
-        # go through the keys and fix them
-        new_d = {}
-        for k in d.keys():
-            new_d[str(k)] = d[k]
-      
-        return cls(**new_d)
+        # the structured fields
+        structured_fields = self.STRUCTURED_FIELDS.keys()
+
+        # go through the fields and set them properly
+        # on the newly instantiated object
+        for f in self.FIELDS:
+            if f in structured_fields:
+                # a structured ld field, recur
+                sub_ld_object = self.fromDict(d[f], type_hint = self.STRUCTURED_FIELDS[f])
+                self.structured_fields[f] = sub_ld_object
+                
+                # set the field on the wrapped object too
+                setattr(self.wrapped_obj, f, sub_ld_object.wrapped_obj)
+            else:
+                # a simple type
+                new_val = self.process_value_in(f, d[f])
+                setattr(self.wrapped_obj, f, new_val)
+        
+    @classmethod
+    def fromDict(cls, d, type_hint=None):
+        # the LD type is either in d or in type_hint
+        # FIXME: get this from the dictionary itself
+        ld_type = type_hint
+
+        # get the LD class so we know what wrapped object to instantiate
+        ld_cls = cls.get_class(ld_type)
+
+        wrapped_obj_cls = ld_cls.WRAPPED_OBJ_CLASS
+        wrapped_obj = wrapped_obj_cls()
+
+        # then instantiate the LD object and load the data
+        ld_obj = ld_cls(wrapped_obj)
+        ld_obj.loadDataFromDict(d)
+
+        return ld_obj
+
+    fromJSONDict = fromDict
 
     @property
     def hash(self):
@@ -181,7 +216,7 @@ class LDObject(object):
             return field_value
     
     def _process_value_in(self, field_name, field_value):
-        return None
+        return field_value
 
     def process_value_out(self, field_name, field_value):
         """
