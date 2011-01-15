@@ -353,7 +353,7 @@ def new_trustee_helios(request, election):
   election.generate_trustee(ELGAMAL_PARAMS)
   return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
   
-@election_admin()
+@election_admin(frozen=False)
 def delete_trustee(request, election):
   trustee = Trustee.get_by_election_and_uuid(election, request.GET['uuid'])
   trustee.delete()
@@ -538,7 +538,7 @@ def one_election_cast_confirm(request, election):
     # status update this vote
     if voter and user and user.can_update_status():
       status_update_label = voter.user.update_status_template() % "your smart ballot tracker"
-      status_update_message = "I voted in %s, my smart tracker is %s.. -- %s" % (election.name, cast_vote.vote_hash[:10], get_election_url(election))
+      status_update_message = "I voted in %s - my smart tracker is %s.. #heliosvoting" % (get_election_url(election),cast_vote.vote_hash[:10])
     else:
       status_update_label = None
       status_update_message = None
@@ -929,21 +929,24 @@ def combine_decryptions(request, election):
         'election' : election
         }
 
-      # exclude those who have not voted
-      if email_form.cleaned_data['send_to'] == 'voted':
-        voter_constraints_exclude = {'vote_hash' : None}
-      else:
-        voter_constraints_exclude = {}
+      # if the user opted for notifying no one, then we skip this step
+      if email_form.cleaned_data['send_to'] != 'none':
+        # exclude those who have not voted
+        if email_form.cleaned_data['send_to'] == 'voted':
+          voter_constraints_exclude = {'vote_hash' : None}
+        else:
+          voter_constraints_exclude = {}
       
-      # full-length email
-      tasks.voters_email.delay(election_id = election.id,
-                               subject_template = 'email/result_subject.txt',
-                               body_template = 'email/result_body.txt',
-                               extra_vars = extra_vars,
-                               voter_constraints_exclude = voter_constraints_exclude)
+        # full-length email
+        tasks.voters_email.delay(election_id = election.id,
+                                 subject_template = 'email/result_subject.txt',
+                                 body_template = 'email/result_body.txt',
+                                 extra_vars = extra_vars,
+                                 voter_constraints_exclude = voter_constraints_exclude)
 
       # rapid short-message notification
       # this inherently only applies to those who have voted (for the most part)
+      # and this is not configurable, this is ALWAYS sent
       tasks.voters_notify.delay(election_id = election.id,
                                 notification_template = 'notification/result.txt',
                                 extra_vars = extra_vars)
