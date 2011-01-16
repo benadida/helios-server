@@ -149,7 +149,11 @@ class SecretKey:
     def __init__(self):
         self.x = None
         self.pk = None
-    
+
+    @property
+    def public_key(self):
+        return self.pk
+
     def decryption_factor(self, ciphertext):
         """
         provide the decryption factor, not yet inverted because of needed proof

@@ -234,7 +234,6 @@ class DatatypeTests(TestCase):
                 'g' : '2343243242',
                 'q' : '2343242343434'}, type_hint = 'pkc/elgamal/PublicKey')
         
-        import pdb; pdb.set_trace()
         
         
 
@@ -278,12 +277,12 @@ class LegacyElectionBlackboxTests(DataFormatBlackboxTests, TestCase):
     EXPECTED_TRUSTEES_FILE = 'helios/fixtures/legacy-trustees-expected.json'
     EXPECTED_BALLOTS_FILE = 'helios/fixtures/legacy-ballots-expected.json'
 
-class V3_1_ElectionBlackboxTests(DataFormatBlackboxTests, TestCase):
-    fixtures = ['v3.1-data.json']
-    EXPECTED_ELECTION_FILE = 'helios/fixtures/v3.1-election-expected.json'
-    EXPECTED_VOTERS_FILE = 'helios/fixtures/v3.1-election-voters-expected.json'
-    EXPECTED_TRUSTEES_FILE = 'helios/fixtures/v3.1-trustees-expected.json'
-    EXPECTED_BALLOTS_FILE = 'helios/fixtures/v3.1-ballots-expected.json'
+#class V3_1_ElectionBlackboxTests(DataFormatBlackboxTests, TestCase):
+#    fixtures = ['v3.1-data.json']
+#    EXPECTED_ELECTION_FILE = 'helios/fixtures/v3.1-election-expected.json'
+#    EXPECTED_VOTERS_FILE = 'helios/fixtures/v3.1-election-voters-expected.json'
+#    EXPECTED_TRUSTEES_FILE = 'helios/fixtures/v3.1-trustees-expected.json'
+#    EXPECTED_BALLOTS_FILE = 'helios/fixtures/v3.1-ballots-expected.json'
 
 ##
 ## overall operation of the system
@@ -393,7 +392,7 @@ class ElectionBlackboxTests(TestCase):
                 'csrf_token': self.client.session['csrf_token']})
 
         self.assertContains(response, "SUCCESS")
-        
+
         # freeze election
         response = self.client.post("/helios/elections/%s/freeze" % election_id, {
                 "csrf_token" : self.client.session['csrf_token']})

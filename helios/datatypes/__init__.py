@@ -118,6 +118,9 @@ class LDObject(object):
 
     @classmethod
     def instantiate(cls, obj, datatype=None):
+        if isinstance(obj, LDObject):
+            return obj
+
         if hasattr(obj, 'datatype') and not datatype:
             datatype = getattr(obj, 'datatype')
 
@@ -136,7 +139,10 @@ class LDObject(object):
 
         # go through the subfields and instantiate them too
         for subfield_name, subfield_type in dynamic_cls.STRUCTURED_FIELDS.iteritems():
-            return_obj.structured_fields[subfield_name] = cls.instantiate(getattr(return_obj.wrapped_obj, subfield_name), datatype = subfield_type)
+            try:
+                return_obj.structured_fields[subfield_name] = cls.instantiate(getattr(return_obj.wrapped_obj, subfield_name), datatype = subfield_type)
+            except:
+                import pdb; pdb.set_trace()
 
         return return_obj
 
@@ -178,7 +184,7 @@ class LDObject(object):
                 # a structured ld field, recur
                 try:
                     sub_ld_object = self.fromDict(d[f], type_hint = self.STRUCTURED_FIELDS[f])
-                except TypeError:
+                except KeyError:
                     import pdb; pdb.set_trace()
 
                 self.structured_fields[f] = sub_ld_object

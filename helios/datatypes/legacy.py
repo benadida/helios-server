@@ -109,10 +109,10 @@ class EGPublicKey(LegacyObject):
 
 class EGSecretKey(LegacyObject):
     WRAPPED_OBJ_CLASS = crypto_elgamal.SecretKey
-    FIELDS = ['x','pk']
+    FIELDS = ['x','public_key']
     STRUCTURED_FIELDS = {
         'x': 'core/BigInteger',
-        'pk': 'legacy/EGPublicKey'}
+        'public_key': 'legacy/EGPublicKey'}
 
 class EGCiphertext(LegacyObject):
     WRAPPED_OBJ_CLASS = crypto_elgamal.Ciphertext
@@ -169,7 +169,10 @@ class Result(LegacyObject):
     pass
 
 class Questions(LegacyObject):
-    pass
+    WRAPPED_OBJ = list
+
+    def __len__(self):
+        return len(self.wrapped_obj)
 
 class Tally(LegacyObject):
     pass

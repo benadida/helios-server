@@ -22,3 +22,21 @@ class PublicKey(LDObject):
         'g' : 'core/BigInteger',
         'q' : 'core/BigInteger'}
 
+
+class SecretKey(LDObject):
+    WRAPPED_OBJ_CLASS = crypto_elgamal.SecretKey
+
+    FIELDS = ['public_key', 'x']
+    STRUCTURED_FIELDS = {
+        'public_key' : 'pkc/elgamal/PublicKey',
+        'x' : 'core/BigInteger'
+        }
+
+class DLogProof(LDObject):
+    WRAPPED_OBJ_CLASS = crypto_elgamal.DLogProof
+    FIELDS = ['commitment', 'challenge', 'response']
+
+    STRUCTURED_FIELDS = {
+        'commitment' : 'core/BigInteger',
+        'challenge' : 'core/BigInteger',
+        'response' : 'core/BigInteger'}

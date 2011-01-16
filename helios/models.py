@@ -409,12 +409,12 @@ class Election(HeliosModel):
     trustee.uuid = str(uuid.uuid4())
     trustee.name = settings.DEFAULT_FROM_NAME
     trustee.email = settings.DEFAULT_FROM_EMAIL
-    trustee.public_key = keypair.pk
-    trustee.secret_key = keypair.sk
+    trustee.public_key = datatypes.LDObject.instantiate(keypair.pk, 'pkc/elgamal/PublicKey')
+    trustee.secret_key = datatypes.LDObject.instantiate(keypair.sk, 'pkc/elgamal/SecretKey')
     
     # FIXME: compute it
-    trustee.public_key_hash = utils.hash_b64(utils.to_json(trustee.public_key.toJSONDict()))
-    trustee.pok = trustee.secret_key.prove_sk(algs.DLog_challenge_generator)
+    trustee.public_key_hash = utils.hash_b64(trustee.public_key.serialize())
+    trustee.pok = datatypes.LDObject.instantiate(trustee.secret_key.wrapped_obj.prove_sk(algs.DLog_challenge_generator), 'pkc/elgamal/DLogProof')
 
     trustee.save()
 

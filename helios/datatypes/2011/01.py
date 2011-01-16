@@ -29,6 +29,9 @@ class Election(LDObject):
     'frozen_at': 'core/Timestamp'
     }
 
+class Voter(LDObject):
+    FIELDS = ['election_uuid', 'uuid', 'voter_type', 'voter_id_hash', 'name']
+
 class EncryptedAnswer(LDObject):
     FIELDS = ['choices', 'individual_proofs', 'overall_proof', 'randomness', 'answer']
     STRUCTURED_FIELDS = {

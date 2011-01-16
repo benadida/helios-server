@@ -40,7 +40,10 @@ class JSONField(models.TextField):
         if value == "" or value == None:
             return None
 
-        parsed_value = json.loads(value)
+        try:
+            parsed_value = json.loads(value)
+        except:
+            import pdb; pdb.set_trace()
 
         if self.json_type and parsed_value:
             parsed_value = self.json_type.fromJSONDict(parsed_value, **self.deserialization_params)
