@@ -26,11 +26,6 @@ from helios.datatypes.djangofield import LDObjectField
 
 import csv, copy
   
-# global counters
-GLOBAL_COUNTER_VOTERS = 'global_counter_voters'
-GLOBAL_COUNTER_CAST_VOTES = 'global_counter_cast_votes'
-GLOBAL_COUNTER_ELECTIONS = 'global_counter_elections'
-
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
   class Meta:
     abstract = True

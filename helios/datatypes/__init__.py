@@ -80,8 +80,8 @@ class LDObjectContainer(object):
 
         return self._ld_object
 
-    def toJSONDict(self):
-        return self.ld_object.toJSONDict()
+    def toJSONDict(self, complete=False):
+        return self.ld_object.toJSONDict(complete=complete)
 
     def toJSON(self):
         return self.ld_object.serialize()
@@ -177,12 +177,10 @@ class LDObject(object):
                 self._setattr_wrapped(f, new_val)
         
     def serialize(self):
-        d = self.toDict()
-        if self.USE_JSON_LD:
-            d['#'] = {'_': 'http://heliosvoting.org/ns#'}
+        d = self.toDict(complete = True)
         return utils.to_json(d)
     
-    def toDict(self, alternate_fields=None):
+    def toDict(self, alternate_fields=None, complete=False):
         val = {}
         for f in (alternate_fields or self.FIELDS):
             # is it a structured subfield?
@@ -190,6 +188,10 @@ class LDObject(object):
                 val[f] = recursiveToDict(self.structured_fields[f])
             else:
                 val[f] = self.process_value_out(f, self._getattr_wrapped(f))
+
+        if complete and self.USE_JSON_LD:
+            val['#'] = {'_': 'http://heliosvoting.org/ns#'}
+
         return val
 
     toJSONDict = toDict

@@ -214,7 +214,7 @@ def one_election_schedule(request, election):
 def one_election(request, election):
   if not election:
     raise Http404
-  return datatypes.LDObject.instantiate(election, datatype='legacy/Election')
+  return election.toJSONDict(complete=True)
 
 @election_view()
 def election_badge(request, election):
