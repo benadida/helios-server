@@ -84,10 +84,10 @@ def json(func):
     """
     def convert_to_json(self, *args, **kwargs):
       return_val = func(self, *args, **kwargs)
-      if isinstance(return_val, datatypes.LDObject):
-        return render_json(return_val.serialize())
-      else:
+      try:
         return render_json(utils.to_json(return_val))
+      except:
+        import pdb; pdb.set_trace()
 
     return update_wrapper(convert_to_json,func)
     

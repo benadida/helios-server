@@ -11,7 +11,7 @@ class BigInteger(LDObject):
     """
     WRAPPED_OBJ_CLASS = int
 
-    def toDict(self):
+    def toDict(self, complete=False):
         if self.wrapped_obj:
             return str(self.wrapped_obj)
         else:
@@ -22,7 +22,7 @@ class BigInteger(LDObject):
         self.wrapped_obj = int(d)
 
 class Timestamp(LDObject):
-    def toDict(self):
+    def toDict(self, complete=False):
         if self.wrapped_obj:
             return str(self.wrapped_obj)
         else:

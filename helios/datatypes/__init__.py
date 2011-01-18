@@ -274,8 +274,8 @@ class BaseArrayOfObjects(LDObject):
     def __init__(self, wrapped_obj):
         super(BaseArrayOfObjects, self).__init__(wrapped_obj)
     
-    def toDict(self):
-        return [item.toDict() for item in self.items]
+    def toDict(self, complete=False):
+        return [item.toDict(complete=complete) for item in self.items]
 
     def loadData(self):
         "go through each item and LD instantiate it, as if it were a structured field"

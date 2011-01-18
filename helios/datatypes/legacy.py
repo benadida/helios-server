@@ -66,14 +66,14 @@ class Voter(LegacyObject):
 
     ALIASED_VOTER_FIELDS = ['election_uuid', 'uuid', 'alias']
 
-    def toDict(self):
+    def toDict(self, complete=False):
         """
         depending on whether the voter is aliased, use different fields
         """
         if self.wrapped_obj.alias != None:
-            return super(Voter, self).toDict(self.ALIASED_VOTER_FIELDS)
+            return super(Voter, self).toDict(self.ALIASED_VOTER_FIELDS, complete = complete)
         else:
-            return super(Voter,self).toDict()
+            return super(Voter,self).toDict(complete = complete)
 
 
 class ShortCastVote(LegacyObject):
@@ -85,6 +85,10 @@ class CastVote(LegacyObject):
     STRUCTURED_FIELDS = {
         'cast_at' : 'core/Timestamp',
         'vote' : 'legacy/EncryptedVote'}
+
+    @property
+    def short(self):
+        return self.instantiate(self.wrapped_obj, datatype='legacy/ShortCastVote')
 
 class Trustee(LegacyObject):
     FIELDS = ['uuid', 'public_key', 'public_key_hash', 'pok', 'decryption_factors', 'decryption_proofs', 'email']
@@ -143,9 +147,9 @@ class EGZKDisjunctiveProof(LegacyObject):
         "hijack and make sure we add the proofs name back on"
         return super(EGZKDisjunctiveProof, self).loadDataFromDict({'proofs': d})
 
-    def toDict(self):
+    def toDict(self, complete = False):
         "hijack toDict and make it return the proofs array only, since that's the spec for legacy"
-        return super(EGZKDisjunctiveProof, self).toDict()['proofs']
+        return super(EGZKDisjunctiveProof, self).toDict(complete=complete)['proofs']
 
 class DLogProof(LegacyObject):
     WRAPPED_OBJ_CLASS = crypto_elgamal.DLogProof
@@ -170,7 +174,7 @@ class Questions(LegacyObject):
     def loadDataFromDict(self, d):
         self.wrapped_obj = d
 
-    def toDict(self):
+    def toDict(self, complete=False):
         return self.wrapped_obj
 
 

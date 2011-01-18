@@ -319,7 +319,7 @@ def socialbuttons(request):
 @election_view()
 def list_trustees(request, election):
   trustees = Trustee.get_by_election(election)
-  return [datatypes.LDObject.instantiate(t, 'legacy/Trustee').toDict() for t in trustees]
+  return [t.toJSONDict(complete=True) for t in trustees]
   
 @election_view()
 def list_trustees_view(request, election):
@@ -1172,7 +1172,9 @@ def ballot_list(request, election):
     after = datetime.datetime.strptime(request.GET['after'], '%Y-%m-%d %H:%M:%S')
     
   voters = Voter.get_by_election(election, cast=True, order_by='cast_at', limit=limit, after=after)
-  return [datatypes.LDObject.instantiate(v.last_cast_vote(), 'legacy/ShortCastVote').toDict() for v in voters]
+
+  # we explicitly cast this to a short cast vote
+  return [v.last_cast_vote().ld_object.short.toDict(complete=True) for v in voters]
 
 
 
