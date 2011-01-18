@@ -22,6 +22,7 @@ from helios import datatypes
 # useful stuff in auth
 from auth.models import User, AUTH_SYSTEMS
 from auth.jsonfield import JSONField
+from helios.datatypes.djangofield import LDObjectField
 
 import csv, copy
   
@@ -57,22 +58,18 @@ class Election(HeliosModel):
   private_p = models.BooleanField(default=False, null=False)
 
   description = models.TextField()
-  public_key = JSONField(datatypes.LDObject,
-                         deserialization_params = {'type_hint' : 'legacy/EGPublicKey'},
-                         null=True)
-  private_key = JSONField(datatypes.LDObject,
-                          deserialization_params = {'type_hint' : 'legacy/EGSecretKey'},
-                          null=True)
+  public_key = LDObjectField(type_hint = 'legacy/EGPublicKey',
+                             null=True)
+  private_key = LDObjectField(type_hint = 'legacy/EGSecretKey',
+                              null=True)
   
-  questions = JSONField(datatypes.LDObject,
-                        deserialization_params = {'type_hint' : 'legacy/Questions'},
-                        null=True)
+  questions = LDObjectField(type_hint = 'legacy/Questions',
+                            null=True)
   
   # eligibility is a JSON field, which lists auth_systems and eligibility details for that auth_system, e.g.
   # [{'auth_system': 'cas', 'constraint': [{'year': 'u12'}, {'year':'u13'}]}, {'auth_system' : 'password'}, {'auth_system' : 'openid', 'constraint': [{'host':'http://myopenid.com'}]}]
-  eligibility = JSONField(datatypes.LDObject,
-                          deserialization_params = {'type_hint' : 'legacy/Eligibility'},
-                          null=True)
+  eligibility = LDObjectField(type_hint = 'legacy/Eligibility',
+                              null=True)
 
   # open registration?
   # this is now used to indicate the state of registration,
@@ -124,14 +121,12 @@ class Election(HeliosModel):
   
   # encrypted tally, each a JSON string
   # used only for homomorphic tallies
-  encrypted_tally = JSONField(datatypes.LDObject,
-                              deserialization_params={'type_hint': 'legacy/Tally'},
-                              null=True)
+  encrypted_tally = LDObjectField(type_hint = 'legacy/Tally',
+                                  null=True)
 
   # results of the election
-  result = JSONField(datatypes.LDObject,
-                     deserialization_params = {'type_hint' : 'legacy/Result'},
-                     null=True)
+  result = LDObjectField(type_hint = 'legacy/Result',
+                         null=True)
 
   # decryption proof, a JSON object
   # no longer needed since it's all trustees
@@ -409,12 +404,13 @@ class Election(HeliosModel):
     trustee.uuid = str(uuid.uuid4())
     trustee.name = settings.DEFAULT_FROM_NAME
     trustee.email = settings.DEFAULT_FROM_EMAIL
-    trustee.public_key = datatypes.LDObject.instantiate(keypair.pk, 'pkc/elgamal/PublicKey')
-    trustee.secret_key = datatypes.LDObject.instantiate(keypair.sk, 'pkc/elgamal/SecretKey')
+    trustee.public_key = keypair.pk
+    trustee.secret_key = keypair.sk
     
-    # FIXME: compute it
-    trustee.public_key_hash = utils.hash_b64(trustee.public_key.serialize())
-    trustee.pok = datatypes.LDObject.instantiate(trustee.secret_key.wrapped_obj.prove_sk(algs.DLog_challenge_generator), 'pkc/elgamal/DLogProof')
+    # FIXME: is this at the right level of abstraction?
+    trustee.public_key_hash = datatypes.LDObject.instantiate(trustee.public_key, datatype='legacy/EGPublicKey').hash
+
+    trustee.pok = trustee.secret_key.prove_sk(algs.DLog_challenge_generator)
 
     trustee.save()
 
@@ -599,9 +595,8 @@ class Voter(HeliosModel):
   alias = models.CharField(max_length = 100, null=True)
   
   # we keep a copy here for easy tallying
-  vote = JSONField(datatypes.LDObject,
-                   deserialization_params = {'type_hint': 'legacy/EncryptedVote'},
-                   null=True)
+  vote = LDObjectField(type_hint = 'legacy/EncryptedVote',
+                       null=True)
   vote_hash = models.CharField(max_length = 100, null=True)
   cast_at = models.DateTimeField(auto_now_add=False, null=True)
 
@@ -762,8 +757,7 @@ class CastVote(HeliosModel):
   voter = models.ForeignKey(Voter)
   
   # the actual encrypted vote
-  vote = JSONField(datatypes.LDObject,
-                   deserialization_params = {'type_hint' : 'legacy/EncryptedVote'})
+  vote = LDObjectField(type_hint = 'legacy/EncryptedVote')
 
   # cache the hash of the vote
   vote_hash = models.CharField(max_length=100)
@@ -883,31 +877,26 @@ class Trustee(HeliosModel):
   secret = models.CharField(max_length=100)
   
   # public key
-  public_key = JSONField(datatypes.LDObject,
-                         deserialization_params = {'type_hint': 'legacy/EGPublicKey'},
-                         null=True)
+  public_key = LDObjectField(type_hint = 'legacy/EGPublicKey',
+                             null=True)
   public_key_hash = models.CharField(max_length=100)
 
   # secret key
   # if the secret key is present, this means
   # Helios is playing the role of the trustee.
-  secret_key = JSONField(datatypes.LDObject,
-                         deserialization_params = {'type_hint': 'legacy/EGSecretKey'},
-                         null=True)
+  secret_key = LDObjectField(type_hint = 'legacy/EGSecretKey',
+                             null=True)
   
   # proof of knowledge of secret key
-  pok = JSONField(datatypes.LDObject,
-                  deserialization_params = {'type_hint': 'legacy/DLogProof'},
-                  null=True)
+  pok = LDObjectField(type_hint = 'legacy/DLogProof',
+                      null=True)
   
   # decryption factors
-  decryption_factors = JSONField(datatypes.LDObject,
-                                 deserialization_params = {'type_hint' : datatypes.arrayOf(datatypes.arrayOf('core/BigInteger'))},
-                                 null=True)
+  decryption_factors = LDObjectField(type_hint = datatypes.arrayOf(datatypes.arrayOf('core/BigInteger')),
+                                     null=True)
 
-  decryption_proofs = JSONField(datatypes.LDObject,
-                                deserialization_params = {'type_hint' : datatypes.arrayOf(datatypes.arrayOf('legacy/EGZKProof'))},
-                                null=True)
+  decryption_proofs = LDObjectField(type_hint = datatypes.arrayOf(datatypes.arrayOf('legacy/EGZKProof')),
+                                    null=True)
   
   def save(self, *args, **kwargs):
     """

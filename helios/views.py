@@ -319,7 +319,7 @@ def socialbuttons(request):
 @election_view()
 def list_trustees(request, election):
   trustees = Trustee.get_by_election(election)
-  return [t.toJSONDict() for t in trustees]
+  return [datatypes.LDObject.instantiate(t, 'legacy/Trustee').toDict() for t in trustees]
   
 @election_view()
 def list_trustees_view(request, election):
@@ -802,7 +802,7 @@ def one_election_register(request, election):
 def one_election_save_questions(request, election):
   check_csrf(request)
   
-  election.questions = datatypes.LDObject.instantiate(utils.from_json(request.POST['questions_json']), 'legacy/Questions');
+  election.questions = utils.from_json(request.POST['questions_json'])
   election.save()
 
   # always a machine API
@@ -1172,7 +1172,7 @@ def ballot_list(request, election):
     after = datetime.datetime.strptime(request.GET['after'], '%Y-%m-%d %H:%M:%S')
     
   voters = Voter.get_by_election(election, cast=True, order_by='cast_at', limit=limit, after=after)
-  return [v.last_cast_vote().toJSONDict() for v in voters]
+  return [datatypes.LDObject.instantiate(v.last_cast_vote(), 'legacy/ShortCastVote').toDict() for v in voters]
 
 
 

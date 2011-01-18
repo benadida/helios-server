@@ -9,7 +9,7 @@
             "election_type" : "election",
             "use_advanced_audit_features" : true,
             "private_p" : false,
-            "description" : "test descriptoin",
+            "description" : "test description",
             "public_key" : null,
             "private_key" : null,
             "questions" : [],

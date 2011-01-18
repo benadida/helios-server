@@ -233,6 +233,14 @@ class DatatypeTests(TestCase):
                 'p' : '23434',
                 'g' : '2343243242',
                 'q' : '2343242343434'}, type_hint = 'pkc/elgamal/PublicKey')
+
+    def test_dictobject_from_dict(self):
+        original_dict = {
+            'A' : '35423432',
+            'B' : '234324243'}
+        ld_obj = datatypes.LDObject.fromDict(original_dict, type_hint = 'legacy/EGZKProofCommitment')
+
+        self.assertEquals(original_dict, ld_obj.toDict())
         
         
         

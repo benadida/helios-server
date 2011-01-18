@@ -7,25 +7,22 @@ from helios.crypto import elgamal as crypto_elgamal
 from helios.workflows import homomorphic
 
 ##
-## utilities
-
-class DictObject(object):
-    def __init__(self, d=None):
-        self.d = d
-        if not self.d:
-            self.d = {}
-        
-    def __getattr__(self, k):
-        return self.d[k]
-
-##
 ##
 
 class LegacyObject(LDObject):
     WRAPPED_OBJ_CLASS = dict
     USE_JSON_LD = False
 
+class DictObject(object):
+    "when the wrapped object is actually dictionary"
+    def _getattr_wrapped(self, attr):
+        return self.wrapped_obj[attr]
+
+    def _setattr_wrapped(self, attr, val):
+        self.wrapped_obj[attr] = val
+
 class Election(LegacyObject):
+    WRAPPED_OBJ_CLASS = homomorphic.Election
     FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description', 'voters_hash', 'openreg',
               'frozen_at', 'public_key', 'cast_url', 'use_voter_aliases', 'voting_starts_at', 'voting_ends_at']
 
@@ -96,7 +93,7 @@ class Trustee(LegacyObject):
         'public_key' : 'legacy/EGPublicKey',
         'pok': 'legacy/DLogProof',
         'decryption_factors': arrayOf(arrayOf('core/BigInteger')),
-        'decryption_proofs' : arrayOf(arrayOf('legacy/DLogProof'))}
+        'decryption_proofs' : arrayOf(arrayOf('legacy/EGZKProof'))}
 
 class EGPublicKey(LegacyObject):
     WRAPPED_OBJ_CLASS = crypto_elgamal.PublicKey
@@ -121,14 +118,12 @@ class EGCiphertext(LegacyObject):
         'alpha': 'core/BigInteger',
         'beta' : 'core/BigInteger'}
 
-class EGZKProofCommitment(LegacyObject):
+class EGZKProofCommitment(DictObject, LegacyObject):
     FIELDS = ['A', 'B']
     STRUCTURED_FIELDS = {
         'A' : 'core/BigInteger',
         'B' : 'core/BigInteger'}
 
-    def __init__(self, wrapped_obj):
-        super(EGZKProofCommitment, self).__init__(DictObject(wrapped_obj))
     
 class EGZKProof(LegacyObject):
     WRAPPED_OBJ_CLASS = crypto_elgamal.ZKProof
@@ -153,6 +148,7 @@ class EGZKDisjunctiveProof(LegacyObject):
         return super(EGZKDisjunctiveProof, self).toDict()['proofs']
 
 class DLogProof(LegacyObject):
+    WRAPPED_OBJ_CLASS = crypto_elgamal.DLogProof
     FIELDS = ['commitment', 'challenge', 'response']
     STRUCTURED_FIELDS = {
         'commitment' : 'core/BigInteger',
@@ -160,10 +156,10 @@ class DLogProof(LegacyObject):
         'response' : 'core/BigInteger'}
 
     def __init__(self, wrapped_obj):
-        if type(wrapped_obj) == dict:
-            super(DLogProof, self).__init__(DictObject(wrapped_obj))
-        else:
-            super(DLogProof, self).__init__(wrapped_obj)
+        if isinstance(wrapped_obj, dict):
+            import pdb; pdb.set_trace()
+
+        super(DLogProof,self).__init__(wrapped_obj)
 
 class Result(LegacyObject):
     pass
@@ -171,8 +167,12 @@ class Result(LegacyObject):
 class Questions(LegacyObject):
     WRAPPED_OBJ = list
 
-    def __len__(self):
-        return len(self.wrapped_obj)
+    def loadDataFromDict(self, d):
+        self.wrapped_obj = d
+
+    def toDict(self):
+        return self.wrapped_obj
+
 
 class Tally(LegacyObject):
     pass

@@ -510,7 +510,7 @@ class ZKDisjunctiveProof:
     self.proofs = proofs  
 
 class DLogProof(object):
-  def __init__(self, commitment, challenge, response):
+  def __init__(self, commitment=None, challenge=None, response=None):
     self.commitment = commitment
     self.challenge = challenge
     self.response = response

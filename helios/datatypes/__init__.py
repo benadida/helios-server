@@ -33,7 +33,7 @@ from helios.crypto import utils as cryptoutils
 ## utility function
 ##
 def recursiveToDict(obj):
-    if not obj:
+    if obj == None:
         return None
 
     if type(obj) == list:
@@ -118,6 +118,7 @@ class LDObject(object):
 
     @classmethod
     def instantiate(cls, obj, datatype=None):
+        "FIXME: should datatype override the object's internal datatype? probably not"
         if isinstance(obj, LDObject):
             return obj
 
@@ -128,47 +129,30 @@ class LDObject(object):
             raise Exception("no datatype found")
 
         # nulls
-        if not obj:
+        if obj == None:
             return None
 
         # the class
         dynamic_cls = get_class(datatype)
 
-        # instantiate it
+        # instantiate it and load data
         return_obj = dynamic_cls(obj)
-
-        # go through the subfields and instantiate them too
-        for subfield_name, subfield_type in dynamic_cls.STRUCTURED_FIELDS.iteritems():
-            try:
-                return_obj.structured_fields[subfield_name] = cls.instantiate(getattr(return_obj.wrapped_obj, subfield_name), datatype = subfield_type)
-            except:
-                import pdb; pdb.set_trace()
+        return_obj.loadData()
 
         return return_obj
 
-    def set_from_args(self, **kwargs):
-        for f in self.FIELDS:
-            if kwargs.has_key(f):
-                new_val = self.process_value_in(f, kwargs[f])
-                setattr(self.wrapped_obj, f, new_val)
-            else:
-                setattr(self.wrapped_obj, f, None)
+    def _getattr_wrapped(self, attr):
+        return getattr(self.wrapped_obj, attr)
+
+    def _setattr_wrapped(self, attr, val):
+        setattr(self.wrapped_obj, attr, val)
+
+    def loadData(self):
+        "load data using from the wrapped object"
+        # go through the subfields and instantiate them too
+        for subfield_name, subfield_type in self.STRUCTURED_FIELDS.iteritems():
+            self.structured_fields[subfield_name] = self.instantiate(self._getattr_wrapped(subfield_name), datatype = subfield_type)
         
-    def serialize(self):
-        return utils.to_json(self.toDict())
-    
-    def toDict(self, alternate_fields=None):
-        val = {}
-        for f in (alternate_fields or self.FIELDS):
-            # is it a structured subfield?
-            if self.structured_fields.has_key(f):
-                val[f] = recursiveToDict(self.structured_fields[f])
-            else:
-                val[f] = self.process_value_out(f, getattr(self.wrapped_obj, f))
-        return val
-
-    toJSONDict = toDict
-
     def loadDataFromDict(self, d):
         """
         load data from a dictionary
@@ -182,23 +166,31 @@ class LDObject(object):
         for f in self.FIELDS:
             if f in structured_fields:
                 # a structured ld field, recur
-                try:
-                    sub_ld_object = self.fromDict(d[f], type_hint = self.STRUCTURED_FIELDS[f])
-                except KeyError:
-                    import pdb; pdb.set_trace()
-
+                sub_ld_object = self.fromDict(d[f], type_hint = self.STRUCTURED_FIELDS[f])
                 self.structured_fields[f] = sub_ld_object
 
                 # set the field on the wrapped object too
-                try:
-                    setattr(self.wrapped_obj, f, sub_ld_object.wrapped_obj)
-                except AttributeError:
-                    import pdb; pdb.set_trace()
+                self._setattr_wrapped(f, sub_ld_object.wrapped_obj)
             else:
                 # a simple type
                 new_val = self.process_value_in(f, d[f])
-                setattr(self.wrapped_obj, f, new_val)
+                self._setattr_wrapped(f, new_val)
         
+    def serialize(self):
+        return utils.to_json(self.toDict())
+    
+    def toDict(self, alternate_fields=None):
+        val = {}
+        for f in (alternate_fields or self.FIELDS):
+            # is it a structured subfield?
+            if self.structured_fields.has_key(f):
+                val[f] = recursiveToDict(self.structured_fields[f])
+            else:
+                val[f] = self.process_value_out(f, self._getattr_wrapped(f))
+        return val
+
+    toJSONDict = toDict
+
     @classmethod
     def fromDict(cls, d, type_hint=None):
         # the LD type is either in d or in type_hint
@@ -275,16 +267,20 @@ class BaseArrayOfObjects(LDObject):
     WRAPPED_OBJ_CLASS = list
 
     def __init__(self, wrapped_obj):
-        self.items = []
         super(BaseArrayOfObjects, self).__init__(wrapped_obj)
     
     def toDict(self):
         return [item.toDict() for item in self.items]
 
+    def loadData(self):
+        "go through each item and LD instantiate it, as if it were a structured field"
+        self.items = [self.instantiate(element, datatype= self.ELEMENT_TYPE) for element in self.wrapped_obj]
+
     def loadDataFromDict(self, d):
         "assumes that d is a list"
         # TODO: should we be using ELEMENT_TYPE_CLASS here instead of LDObject?
         self.items = [LDObject.fromDict(element, type_hint = self.ELEMENT_TYPE) for element in d]
+        self.wrapped_obj = [item.wrapped_obj for item in self.items]
         
 
 def arrayOf(element_type):
