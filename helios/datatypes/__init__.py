@@ -177,7 +177,10 @@ class LDObject(object):
                 self._setattr_wrapped(f, new_val)
         
     def serialize(self):
-        return utils.to_json(self.toDict())
+        d = self.toDict()
+        if self.USE_JSON_LD:
+            d['#'] = {'_': 'http://heliosvoting.org/ns#'}
+        return utils.to_json(d)
     
     def toDict(self, alternate_fields=None):
         val = {}

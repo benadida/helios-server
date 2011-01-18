@@ -10,6 +10,8 @@ from django.shortcuts import render_to_response
 
 import utils
 
+from helios import datatypes
+
 # nicely update the wrapper function
 from functools import update_wrapper
 
@@ -81,7 +83,11 @@ def json(func):
     web client.
     """
     def convert_to_json(self, *args, **kwargs):
-      return render_json(utils.to_json(func(self, *args, **kwargs)))
+      return_val = func(self, *args, **kwargs)
+      if isinstance(return_val, datatypes.LDObject):
+        return render_json(return_val.serialize())
+      else:
+        return render_json(utils.to_json(return_val))
 
     return update_wrapper(convert_to_json,func)
     
