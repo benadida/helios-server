@@ -442,6 +442,17 @@ class Election(HeliosModel):
   def url(self):
     return helios.get_election_url(self)
 
+  def init_tally(self):
+    return Tally(election=self)
+        
+  @property
+  def registration_status_pretty(self):
+    if self.openreg:
+      return "Open"
+    else:
+      return "Closed"
+
+    
 class ElectionLog(models.Model):
   """
   a log of events for an election
@@ -836,6 +847,18 @@ class CastVote(HeliosModel):
       self.voter.store_vote(self)
     
     return result
+
+  def issues(self, election):
+    """
+    Look for consistency problems
+    """
+    issues = []
+    
+    # check the election
+    if self.vote.election_uuid != election.uuid:
+      issues.append("the vote's election UUID does not match the election for which this vote is being cast")
+    
+    return issues
     
 class AuditedBallot(models.Model):
   """

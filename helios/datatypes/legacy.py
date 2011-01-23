@@ -42,7 +42,7 @@ class EncryptedAnswer(LegacyObject):
         'overall_proof' : 'legacy/EGZKDisjunctiveProof'
         }
 
-class EncryptedAnswerWithDecryption(LegacyObject):
+class EncryptedAnswerWithRandomness(LegacyObject):
     FIELDS = ['choices', 'individual_proofs', 'overall_proof', 'randomness', 'answer']
     STRUCTURED_FIELDS = {
         'choices': arrayOf('legacy/EGCiphertext'),
@@ -60,6 +60,20 @@ class EncryptedVote(LegacyObject):
     STRUCTURED_FIELDS = {
         'answers' : arrayOf('legacy/EncryptedAnswer')
         }
+
+    def includeRandomness(self):
+        return self.instantiate(self.wrapped_obj, datatype='legacy/EncryptedVoteWithRandomness')
+
+class EncryptedVoteWithRandomness(LegacyObject):
+    """
+    An encrypted ballot with randomness for answers
+    """
+    WRAPPED_OBJ_CLASS = homomorphic.EncryptedVote
+    FIELDS = ['answers', 'election_hash', 'election_uuid']
+    STRUCTURED_FIELDS = {
+        'answers' : arrayOf('legacy/EncryptedAnswerWithRandomness')
+        }
+    
 
 class Voter(LegacyObject):
     FIELDS = ['election_uuid', 'uuid', 'voter_type', 'voter_id_hash', 'name']
@@ -179,7 +193,7 @@ class Questions(LegacyObject):
 
 
 class Tally(LegacyObject):
-    pass
+    WRAPPED_OBJ_CLASS = homomorphic.Tally
 
 class Eligibility(LegacyObject):
     pass

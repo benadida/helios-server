@@ -17,6 +17,7 @@ import csv, urllib
 
 from crypto import algs, electionalgs, elgamal
 from crypto import utils as cryptoutils
+from workflows import homomorphic
 from helios import utils as helios_utils
 from view_utils import *
 from auth.security import *
@@ -91,6 +92,24 @@ def get_voter(request, user, election):
       voter = Voter.get_by_election_and_user(election, user)
   
   return voter
+
+## 
+## simple admin for development
+##
+def admin_autologin(request):
+  if "localhost" not in settings.URL_HOST:
+    raise Http404
+  
+  users = User.objects.filter(admin_p=True)
+  if len(users) == 0:
+    users = User.objects.all()
+
+  if len(users) == 0:
+    return HttpResponse("no users!")
+
+  user = users[0]
+  request.session['user'] = {'type' : user.user_type, 'user_id' : user.user_id}
+  return HttpResponseRedirect(reverse(home))
 
 ##
 ## General election features
@@ -436,8 +455,8 @@ def encrypt_ballot(request, election):
   """
   # FIXME: maybe make this just request.POST at some point?
   answers = utils.from_json(request.REQUEST['answers_json'])
-  ev = electionalgs.EncryptedVote.fromElectionAndAnswers(election, answers)
-  return ev.toJSONDict(with_randomness=True)
+  ev = homomorphic.EncryptedVote.fromElectionAndAnswers(election, answers)
+  return ev.ld_object.includeRandomness().toJSONDict()
     
 @election_view(frozen=True)
 def post_audited_ballot(request, election):
@@ -506,9 +525,11 @@ def one_election_cast_confirm(request, election):
 
   # if this user is a voter, prepare some stuff
   if voter:
+    vote = datatypes.LDObject.fromDict(utils.from_json(encrypted_vote), type_hint='legacy/EncryptedVote').wrapped_obj
+
     # prepare the vote to cast
     cast_vote_params = {
-      'vote' : electionalgs.EncryptedVote.fromJSONDict(utils.from_json(encrypted_vote)),
+      'vote' : vote,
       'voter' : voter,
       'vote_hash': vote_fingerprint,
       'cast_at': datetime.datetime.utcnow()

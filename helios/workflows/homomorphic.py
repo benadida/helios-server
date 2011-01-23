@@ -10,8 +10,10 @@ from helios.crypto import algs, utils
 import logging
 import uuid
 import datetime
+from helios import models
+from . import WorkflowObject
 
-class EncryptedAnswer(object):
+class EncryptedAnswer(WorkflowObject):
   """
   An encrypted answer to a single election question
   """
@@ -157,11 +159,26 @@ class EncryptedAnswer(object):
     
 # WORK HERE
 
-class EncryptedVote(object):
+class EncryptedVote(WorkflowObject):
   """
   An encrypted ballot
   """
-  
+  def __init__(self):
+    self.encrypted_answers = None
+
+  @property
+  def datatype(self):
+    # FIXME
+    return "legacy/EncryptedVote"
+
+  def _answers_get(self):
+    return self.encrypted_answers
+
+  def _answers_set(self, value):
+    self.encrypted_answers = value
+
+  answers = property(_answers_get, _answers_set)
+
   def verify(self, election):
     # right number of answers
     if len(self.encrypted_answers) != len(election.questions):
@@ -196,70 +213,41 @@ class EncryptedVote(object):
 
     # each answer is an index into the answer array
     encrypted_answers = [EncryptedAnswer.fromElectionAndAnswer(election, answer_num, answers[answer_num]) for answer_num in range(len(answers))]
-    return cls(encrypted_answers=encrypted_answers, election_hash=election.hash, election_uuid = election.uuid)
+    return_val = cls()
+    return_val.encrypted_answers = encrypted_answers
+    return_val.election_hash = election.hash
+    return_val.election_uuid = election.uuid
+
+    return return_val
     
+class Election(models.Election):
 
-def one_question_winner(question, result, num_cast_votes):
-  """
-  determining the winner for one question
-  """
-  # sort the answers , keep track of the index
-  counts = sorted(enumerate(result), key=lambda(x): x[1])
-  counts.reverse()
-
-  # if there's a max > 1, we assume that the top MAX win
-  if question['max'] > 1:
-    return [c[0] for c in counts[:question['max']]]
-
-  # if max = 1, then depends on absolute or relative
-  if question['result_type'] == 'absolute':
-    if counts[0][1] >=  (num_cast_votes/2 + 1):
-      return [counts[0][0]]
-    else:
-      return []
-
-  if question['result_type'] == 'relative':
-    return [counts[0][0]]    
-
-class Election(object):
-  
-  FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description', 'voters_hash', 'openreg',
-      'frozen_at', 'public_key', 'private_key', 'cast_url', 'result', 'result_proof', 'use_voter_aliases', 'voting_starts_at', 'voting_ends_at', 'election_type']
-
-  JSON_FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description', 'voters_hash', 'openreg',
-      'frozen_at', 'public_key', 'cast_url', 'use_voter_aliases', 'voting_starts_at', 'voting_ends_at']
-
-  # need to add in v3.1: use_advanced_audit_features, election_type, and probably more
-
-  def init_tally(self):
-    return Tally(election=self)
-        
-  def _process_value_in(self, field_name, field_value):
-    if field_name == 'frozen_at' or field_name == 'voting_starts_at' or field_name == 'voting_ends_at':
-      if type(field_value) == str or type(field_value) == unicode:
-        return datetime.datetime.strptime(field_value, '%Y-%m-%d %H:%M:%S')
+  class Meta:
+    abstract = True
       
-    if field_name == 'public_key':
-      return algs.EGPublicKey.fromJSONDict(field_value)
-      
-    if field_name == 'private_key':
-      return algs.EGSecretKey.fromJSONDict(field_value)
+  @classmethod
+  def one_question_winner(cls, question, result, num_cast_votes):
+    """
+    determining the winner for one question
+    """
+    # sort the answers , keep track of the index
+    counts = sorted(enumerate(result), key=lambda(x): x[1])
+    counts.reverse()
     
-  def _process_value_out(self, field_name, field_value):
-    # the date
-    if field_name == 'frozen_at' or field_name == 'voting_starts_at' or field_name == 'voting_ends_at':
-      return str(field_value)
+    # if there's a max > 1, we assume that the top MAX win
+    if question['max'] > 1:
+      return [c[0] for c in counts[:question['max']]]
 
-    if field_name == 'public_key' or field_name == 'private_key':
-      return field_value.toJSONDict()
-    
-  @property
-  def registration_status_pretty(self):
-    if self.openreg:
-      return "Open"
-    else:
-      return "Closed"
-    
+    # if max = 1, then depends on absolute or relative
+    if question['result_type'] == 'absolute':
+      if counts[0][1] >=  (num_cast_votes/2 + 1):
+        return [counts[0][0]]
+      else:
+        return []
+
+    if question['result_type'] == 'relative':
+      return [counts[0][0]]    
+
   @property
   def winners(self):
     """
@@ -267,7 +255,7 @@ class Election(object):
     returns an array of winners for each question, aka an array of arrays.
     assumes that if there is a max to the question, that's how many winners there are.
     """
-    return [one_question_winner(self.questions[i], self.result[i], self.num_cast_votes) for i in range(len(self.questions))]
+    return [self.one_question_winner(self.questions[i], self.result[i], self.num_cast_votes) for i in range(len(self.questions))]
     
   @property
   def pretty_result(self):
@@ -296,106 +284,6 @@ class Election(object):
     return prettified_result
 
     
-class Voter(object):
-  """
-  A voter in an election
-  """
-  FIELDS = ['election_uuid', 'uuid', 'voter_type', 'voter_id', 'name', 'alias']
-  JSON_FIELDS = ['election_uuid', 'uuid', 'voter_type', 'voter_id_hash', 'name']
-  
-  # alternative, for when the voter is aliased
-  ALIASED_VOTER_JSON_FIELDS = ['election_uuid', 'uuid', 'alias']
-  
-  def toJSONDict(self):
-    fields = None
-    if self.alias != None:
-      return super(Voter, self).toJSONDict(self.ALIASED_VOTER_JSON_FIELDS)
-    else:
-      return super(Voter,self).toJSONDict()
-
-  @property
-  def voter_id_hash(self):
-    if self.voter_login_id:
-      # for backwards compatibility with v3.0, and since it doesn't matter
-      # too much if we hash the email or the unique login ID here.
-      return utils.hash_b64(self.voter_login_id)
-    else:
-      return utils.hash_b64(self.voter_id)
-
-class Trustee(object):
-  """
-  a trustee
-  """
-  FIELDS = ['uuid', 'public_key', 'public_key_hash', 'pok', 'decryption_factors', 'decryption_proofs', 'email']
-
-  def _process_value_in(self, field_name, field_value):
-    if field_name == 'public_key':
-      return algs.EGPublicKey.fromJSONDict(field_value)
-      
-    if field_name == 'pok':
-      return algs.DLogProof.fromJSONDict(field_value)
-    
-  def _process_value_out(self, field_name, field_value):
-    if field_name == 'public_key' or field_name == 'pok':
-      return field_value.toJSONDict()
-          
-class CastVote(object):
-  """
-  A cast vote, which includes an encrypted vote and some cast metadata
-  """
-  FIELDS = ['vote', 'cast_at', 'voter_uuid', 'voter_hash', 'vote_hash']
-  
-  def __init__(self, *args, **kwargs):
-    super(CastVote, self).__init__(*args, **kwargs)
-    self.election = None
-  
-  @classmethod
-  def fromJSONDict(cls, d, election=None):
-    o = cls()
-    o.election = election
-    o.set_from_args(**d)
-    return o
-    
-  def toJSONDict(self, include_vote=True):
-    result = super(CastVote,self).toJSONDict()
-    if not include_vote:
-      del result['vote']
-    return result
-
-  @classmethod
-  def fromOtherObject(cls, o, election):
-    obj = cls()
-    obj.election = election
-    obj.set_from_other_object(o)
-    return obj
-  
-  def _process_value_in(self, field_name, field_value):
-    if field_name == 'cast_at':
-      if type(field_value) == str:
-        return datetime.datetime.strptime(field_value, '%Y-%m-%d %H:%M:%S')
-      
-    if field_name == 'vote':
-      return EncryptedVote.fromJSONDict(field_value, self.election.public_key)
-      
-  def _process_value_out(self, field_name, field_value):
-    # the date
-    if field_name == 'cast_at':
-      return str(field_value)
-
-    if field_name == 'vote':
-      return field_value.toJSONDict()
-      
-  def issues(self, election):
-    """
-    Look for consistency problems
-    """
-    issues = []
-    
-    # check the election
-    if self.vote.election_uuid != election.uuid:
-      issues.append("the vote's election UUID does not match the election for which this vote is being cast")
-    
-    return issues
 
 class DLogTable(object):
   """
@@ -431,31 +319,23 @@ class DLogTable(object):
     return self.dlogs.get(value, None)
       
     
-class Tally(object):
+class Tally(WorkflowObject):
   """
   A running homomorphic tally
   """
-  
-  FIELDS = ['num_tallied', 'tally']
-  JSON_FIELDS = ['num_tallied', 'tally']
   
   def __init__(self, *args, **kwargs):
     super(Tally, self).__init__(*args, **kwargs)
 
     self.election = kwargs.get('election',None)
+    self.tally = None
+    self.num_tallied = 0    
 
     if self.election:
       self.init_election(self.election)
     else:
       self.questions = None
       self.public_key = None
-      
-      if not self.tally:
-        self.tally = None
-      
-    # initialize
-    if self.num_tallied == None:
-      self.num_tallied = 0    
 
   def init_election(self, election):
     """
@@ -463,9 +343,7 @@ class Tally(object):
     """
     self.questions = election.questions
     self.public_key = election.public_key
-    
-    if not self.tally:
-      self.tally = [[0 for a in q['answers']] for q in self.questions]
+    self.tally = [[0 for a in q['answers']] for q in self.questions]
     
   def add_vote_batch(self, encrypted_votes, verify_p=True):
     """
