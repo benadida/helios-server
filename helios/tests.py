@@ -474,4 +474,4 @@ class ElectionBlackboxTests(TestCase):
 
         # check that tally matches
         response = self.client.get("/helios/elections/%s/result" % election_id)
-        self.assertEquals(utils.from_json(response.content), [0,1])
+        self.assertEquals(utils.from_json(response.content), [[0,1]])

@@ -180,7 +180,13 @@ class DLogProof(LegacyObject):
         super(DLogProof,self).__init__(wrapped_obj)
 
 class Result(LegacyObject):
-    pass
+    WRAPPED_OBJ = list
+
+    def loadDataFromDict(self, d):
+        self.wrapped_obj = d
+
+    def toDict(self, complete=False):
+        return self.wrapped_obj
 
 class Questions(LegacyObject):
     WRAPPED_OBJ = list
