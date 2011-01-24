@@ -2,7 +2,7 @@
 Legacy datatypes for Helios (v3.0)
 """
 
-from helios.datatypes import LDObject, arrayOf
+from helios.datatypes import LDObject, arrayOf, DictObject, ListObject
 from helios.crypto import elgamal as crypto_elgamal
 from helios.workflows import homomorphic
 
@@ -12,14 +12,6 @@ from helios.workflows import homomorphic
 class LegacyObject(LDObject):
     WRAPPED_OBJ_CLASS = dict
     USE_JSON_LD = False
-
-class DictObject(object):
-    "when the wrapped object is actually dictionary"
-    def _getattr_wrapped(self, attr):
-        return self.wrapped_obj[attr]
-
-    def _setattr_wrapped(self, attr, val):
-        self.wrapped_obj[attr] = val
 
 class Election(LegacyObject):
     WRAPPED_OBJ_CLASS = homomorphic.Election
@@ -188,15 +180,8 @@ class Result(LegacyObject):
     def toDict(self, complete=False):
         return self.wrapped_obj
 
-class Questions(LegacyObject):
+class Questions(ListObject, LegacyObject):
     WRAPPED_OBJ = list
-
-    def loadDataFromDict(self, d):
-        self.wrapped_obj = d
-
-    def toDict(self, complete=False):
-        return self.wrapped_obj
-
 
 class Tally(LegacyObject):
     WRAPPED_OBJ_CLASS = homomorphic.Tally

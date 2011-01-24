@@ -98,7 +98,12 @@ the same account you registered with.
 {% endif %}
 </p>
 
+{% if show_password %}
+{% include "_castconfirm_password.html" %}
+{% endif %}
+
 {{login_box|safe}}
+
 <br />
 Don't worry, we'll remember your ballot while you log in.
 {% endif %}

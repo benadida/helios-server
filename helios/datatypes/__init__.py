@@ -62,8 +62,9 @@ def get_class(datatype):
             dynamic_ptr = getattr(dynamic_ptr, attr)
         dynamic_cls = dynamic_ptr
     except AttributeError:
-        raise Exception ("no module for %s" % datatype)
-    
+        raise Exception ("no module for %s" % datatype)    
+
+    dynamic_cls.datatype = datatype
         
     return dynamic_cls
         
@@ -189,8 +190,12 @@ class LDObject(object):
             else:
                 val[f] = self.process_value_out(f, self._getattr_wrapped(f))
 
-        if complete and self.USE_JSON_LD:
-            val['#'] = {'_': 'http://heliosvoting.org/ns#'}
+        if self.USE_JSON_LD:
+            if complete:
+                val['#'] = {'_': 'http://heliosvoting.org/ns#'}
+
+            if hasattr(self, 'datatype'):
+                val['a'] = self.datatype
 
         return val
 
@@ -297,4 +302,19 @@ def arrayOf(element_type):
         ELEMENT_TYPE = element_type
 
     return ArrayOfTypedObjects
+
+class DictObject(object):
+    "when the wrapped object is actually dictionary"
+    def _getattr_wrapped(self, attr):
+        return self.wrapped_obj[attr]
+
+    def _setattr_wrapped(self, attr, val):
+        self.wrapped_obj[attr] = val
+
+class ListObject(object):
+    def loadDataFromDict(self, d):
+        self.wrapped_obj = d
+
+    def toDict(self, complete=False):
+        return self.wrapped_obj
 

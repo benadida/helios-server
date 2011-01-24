@@ -567,11 +567,15 @@ def one_election_cast_confirm(request, election):
     else:
       auth_systems = None
 
-    if auth_systems == ['password']:
-      password_only = True
+    password_only = False
+    if auth_systems == None or 'password' in auth_systems:
+      show_password = True
       password_login_form = forms.VoterPasswordForm()
+
+      if auth_systems == ['password']:
+        password_only = True
     else:
-      password_only = False
+      show_password = False
       password_login_form = None
 
     return_url = reverse(one_election_cast_confirm, args=[election.uuid])
@@ -581,7 +585,7 @@ def one_election_cast_confirm(request, election):
         'login_box': login_box, 'election' : election, 'vote_fingerprint': vote_fingerprint,
         'past_votes': past_votes, 'issues': issues, 'voter' : voter,
         'status_update_label': status_update_label, 'status_update_message': status_update_message,
-        'password_only': password_only, 'password_login_form': password_login_form})
+        'show_password': show_password, 'password_only': password_only, 'password_login_form': password_login_form})
       
   if request.method == "POST":
     check_csrf(request)

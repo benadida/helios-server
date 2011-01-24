@@ -55,8 +55,12 @@ def login_box_raw(request, return_url='/', auth_systems = None):
   default_auth_system_obj = None
   if auth.DEFAULT_AUTH_SYSTEM:
     default_auth_system_obj = AUTH_SYSTEMS[auth.DEFAULT_AUTH_SYSTEM]
-  
-  enabled_auth_systems = auth_systems or auth.ENABLED_AUTH_SYSTEMS
+
+  # make sure that auth_systems includes only available and enabled auth systems
+  if auth_systems != None:
+    enabled_auth_systems = set(auth_systems).intersection(set(auth.ENABLED_AUTH_SYSTEMS)).intersection(set(AUTH_SYSTEMS.keys()))
+  else:
+    enabled_auth_systems = set(auth.ENABLED_AUTH_SYSTEMS).intersection(set(AUTH_SYSTEMS.keys()))
 
   form = password.LoginForm()
 

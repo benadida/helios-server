@@ -2,7 +2,7 @@
 data types for 2011/01 Helios
 """
 
-from helios.datatypes import LDObject, arrayOf
+from helios.datatypes import LDObject, arrayOf, DictObject, ListObject
 
 class Trustee(LDObject):
   """
@@ -26,7 +26,8 @@ class Election(LDObject):
     'public_key' : 'pkc/elgamal/PublicKey',
     'voting_starts_at': 'core/Timestamp',
     'voting_ends_at': 'core/Timestamp',
-    'frozen_at': 'core/Timestamp'
+    'frozen_at': 'core/Timestamp',
+    'questions': '2011/01/Questions',
     }
 
 class Voter(LDObject):
@@ -42,4 +43,7 @@ class EncryptedAnswer(LDObject):
         # answer is not a structured field, it's an as-is integer
         }
 
+
+class Questions(ListObject, LDObject):
+    WRAPPED_OBJ = list
 
