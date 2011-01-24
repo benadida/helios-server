@@ -325,25 +325,27 @@ class Tally(WorkflowObject):
   """
   
   def __init__(self, *args, **kwargs):
-    super(Tally, self).__init__(*args, **kwargs)
-
-    self.election = kwargs.get('election',None)
+    super(Tally, self).__init__()
+    
+    election = kwargs.get('election',None)
     self.tally = None
     self.num_tallied = 0    
 
-    if self.election:
-      self.init_election(self.election)
+    if election:
+      self.init_election(election)
+      self.tally = [[0 for a in q['answers']] for q in self.questions]
     else:
       self.questions = None
       self.public_key = None
+      self.tally = None
 
   def init_election(self, election):
     """
     given the election, initialize some params
     """
+    self.election = election
     self.questions = election.questions
     self.public_key = election.public_key
-    self.tally = [[0 for a in q['answers']] for q in self.questions]
     
   def add_vote_batch(self, encrypted_votes, verify_p=True):
     """
@@ -393,8 +395,8 @@ class Tally(WorkflowObject):
 
         # look up appropriate discrete log
         # this is the string conversion
-        question_factors.append(str(dec_factor))
-        question_proof.append(proof.toJSONDict())
+        question_factors.append(dec_factor)
+        question_proof.append(proof)
         
       decryption_factors.append(question_factors)
       decryption_proof.append(question_proof)

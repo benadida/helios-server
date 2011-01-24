@@ -87,7 +87,7 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
 def election_compute_tally(election_id):
     election = Election.objects.get(id = election_id)
     election.compute_tally()
-    
+
     election_notify_admin.delay(election_id = election_id,
                                 subject = "encrypted tally computed",
                                 body = """
@@ -97,7 +97,6 @@ The encrypted tally for election %s has been computed.
 Helios
 """ % election.name)
                                 
-    
     if election.has_helios_trustee():
         tally_helios_decrypt.delay(election_id = election.id)
 

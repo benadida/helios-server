@@ -455,9 +455,23 @@ class ElectionBlackboxTests(TestCase):
         self.assertRedirects(response, "%s/helios/elections/%s/cast_done" % (settings.URL_HOST, election_id))
 
         # encrypted tally
+        response = self.client.post("/helios/elections/%s/compute_tally" % election_id, {
+                "csrf_token" : self.client.session['csrf_token']                
+                })
+        self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
 
         # should trigger helios decryption automatically
+        self.assertNotEquals(models.Election.objects.get(uuid=election_id).get_helios_trustee().decryption_proofs, None)
 
         # combine decryptions
+        response = self.client.post("/helios/elections/%s/combine_decryptions" % election_id, {
+                "csrf_token" : self.client.session['csrf_token'],
+                "subject" : "tally subject",
+                "body" : "tally body",
+                "send_to" : "all"
+                })
+        self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
 
         # check that tally matches
+        response = self.client.get("/helios/elections/%s/result" % election_id)
+        self.assertEquals(utils.from_json(response.content), [0,1])

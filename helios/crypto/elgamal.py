@@ -71,7 +71,7 @@ class KeyPair(object):
       self.sk.x = Utils.random_mpz_lt(p)
       self.pk.y = pow(g, self.sk.x, p)
       
-      self.sk.pk = self.pk
+      self.sk.public_key = self.pk
 
 class PublicKey:
     def __init__(self):
@@ -148,11 +148,11 @@ class PublicKey:
 class SecretKey:
     def __init__(self):
         self.x = None
-        self.pk = None
+        self.public_key = None
 
     @property
-    def public_key(self):
-        return self.pk
+    def pk(self):
+        return self.public_key
 
     def decryption_factor(self, ciphertext):
         """

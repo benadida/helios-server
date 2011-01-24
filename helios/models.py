@@ -19,6 +19,7 @@ import helios
 
 from helios import datatypes
 
+
 # useful stuff in auth
 from auth.models import User, AUTH_SYSTEMS
 from auth.jsonfield import JSONField
@@ -443,7 +444,9 @@ class Election(HeliosModel):
     return helios.get_election_url(self)
 
   def init_tally(self):
-    return Tally(election=self)
+    # FIXME: create the right kind of tally
+    from helios.workflows import homomorphic
+    return homomorphic.Tally(election=self)
         
   @property
   def registration_status_pretty(self):
