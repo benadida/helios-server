@@ -258,8 +258,7 @@ class Election(HeliosModel):
       if t.public_key == None:
         issues.append("trustee %s hasn't generated a key yet" % t.name)
 
-    return issues
-    
+    return issues    
 
   def ready_for_tallying(self):
     return datetime.datetime.utcnow() >= self.tallying_starts_at
@@ -455,6 +454,63 @@ class Election(HeliosModel):
     else:
       return "Closed"
 
+  @classmethod
+  def one_question_winner(cls, question, result, num_cast_votes):
+    """
+    determining the winner for one question
+    """
+    # sort the answers , keep track of the index
+    counts = sorted(enumerate(result), key=lambda(x): x[1])
+    counts.reverse()
+    
+    # if there's a max > 1, we assume that the top MAX win
+    if question['max'] > 1:
+      return [c[0] for c in counts[:question['max']]]
+
+    # if max = 1, then depends on absolute or relative
+    if question['result_type'] == 'absolute':
+      if counts[0][1] >=  (num_cast_votes/2 + 1):
+        return [counts[0][0]]
+      else:
+        return []
+
+    if question['result_type'] == 'relative':
+      return [counts[0][0]]    
+
+  @property
+  def winners(self):
+    """
+    Depending on the type of each question, determine the winners
+    returns an array of winners for each question, aka an array of arrays.
+    assumes that if there is a max to the question, that's how many winners there are.
+    """
+    return [self.one_question_winner(self.questions[i], self.result[i], self.num_cast_votes) for i in range(len(self.questions))]
+    
+  @property
+  def pretty_result(self):
+    if not self.result:
+      return None
+    
+    # get the winners
+    winners = self.winners
+
+    raw_result = self.result
+    prettified_result = []
+
+    # loop through questions
+    for i in range(len(self.questions)):
+      q = self.questions[i]
+      pretty_question = []
+      
+      # go through answers
+      for j in range(len(q['answers'])):
+        a = q['answers'][j]
+        count = raw_result[i][j]
+        pretty_question.append({'answer': a, 'count': count, 'winner': (j in winners[i])})
+        
+      prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
+
+    return prettified_result
     
 class ElectionLog(models.Model):
   """

@@ -5,6 +5,7 @@ Legacy datatypes for Helios (v3.0)
 from helios.datatypes import LDObject, arrayOf, DictObject, ListObject
 from helios.crypto import elgamal as crypto_elgamal
 from helios.workflows import homomorphic
+from helios import models
 
 ##
 ##
@@ -14,7 +15,7 @@ class LegacyObject(LDObject):
     USE_JSON_LD = False
 
 class Election(LegacyObject):
-    WRAPPED_OBJ_CLASS = homomorphic.Election
+    WRAPPED_OBJ_CLASS = models.Election
     FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description', 'voters_hash', 'openreg',
               'frozen_at', 'public_key', 'cast_url', 'use_voter_aliases', 'voting_starts_at', 'voting_ends_at']
 
