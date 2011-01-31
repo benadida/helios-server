@@ -192,7 +192,7 @@ class LDObject(object):
 
         if self.USE_JSON_LD:
             if complete:
-                val['#'] = {'_': 'http://heliosvoting.org/ns#'}
+                val['#'] = {'#vocab': 'http://heliosvoting.org/ns#'}
 
             if hasattr(self, 'datatype'):
                 val['a'] = self.datatype

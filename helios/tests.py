@@ -372,8 +372,9 @@ class ElectionBlackboxTests(TestCase):
         election_id = re.search('/elections/([^/]+)/', str(response['Location'])).group(1)
 
         # add helios as trustee
-        response = self.client.post("/helios/elections/%s/trustees/add-helios" % election_id)
-        self.assertRedirects(response, "/helios/elections/%s/trustees/view" % election_id)
+        # no longer needed because automatic for all elections
+        #response = self.client.post("/helios/elections/%s/trustees/add-helios" % election_id)
+        #self.assertRedirects(response, "/helios/elections/%s/trustees/view" % election_id)
 
         # check that helios is indeed a trustee
         response = self.client.get("/helios/elections/%s/trustees/view" % election_id)

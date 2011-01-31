@@ -191,6 +191,9 @@ def election_new(request):
         election, created_p = Election.get_or_create(**election_params)
       
         if created_p:
+          # add Helios as a trustee by default
+          election.generate_trustee(ELGAMAL_PARAMS)
+          
           return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
         else:
           error = "An election with short name %s already exists" % election_params['short_name']
