@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:8000/" />
+<title>create-election-and-vote</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">create-election-and-vote</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/helios/autologin</td>
+	<td></td>
+</tr>
+<tr>
+	<td>open</td>
+	<td>/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=create election &gt;</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id_short_name</td>
+	<td>test1</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id_name</td>
+	<td>test1</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id_description</td>
+	<td>test1</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>next_button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=voters &amp; ballots</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=switch to open</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=back to election</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=questions (0)</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>answer_table</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>question</td>
+	<td>w?</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>answer_1</td>
+	<td>a</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>answer_2</td>
+	<td>b</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>answer_3</td>
+	<td>c</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//input[@value='add question']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=back to election</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=freeze ballot and open election.</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>//input[@value='freeze!']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//input[@value='freeze!']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Vote in this election</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>//button[@onclick='BOOTH.show_question(0);']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[@onclick='BOOTH.show_question(0);']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>answer_0_0</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//input[@value='Proceed']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//button[@onclick='BOOTH.seal_ballot();']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>proceed_button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>proceed_button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>link=return to election info</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=return to election info</td>
+	<td></td>
+</tr>
+<tr>
+	<td>open</td>
+	<td>/helios/autologin</td>
+	<td></td>
+</tr>
+<tr>
+	<td>open</td>
+	<td>/helios/e/test1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=compute encrypted tally</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>//input[@value='compute encrypted tally!']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//input[@value='compute encrypted tally!']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertAlert</td>
+	<td>ok, tally has begun</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>link=combine trustee decryptions and release results</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=combine trustee decryptions and release results</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>id_body</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id_body</td>
+	<td>test</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>send_button</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTextPresent</td>
+	<td></td>
+	<td>This election is complete.</td>
+</tr>
+
+</tbody></table>
+</body>
+</html>
