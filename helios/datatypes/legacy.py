@@ -190,6 +190,5 @@ class Tally(LegacyObject):
     STRUCTURED_FIELDS = {
         'tally': arrayOf(arrayOf('legacy/EGCiphertext'))}
 
-
-class Eligibility(LegacyObject):
-    pass
+class Eligibility(ListObject, LegacyObject):
+    WRAPPED_OBJ = list

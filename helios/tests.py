@@ -118,6 +118,11 @@ class ElectionModelTests(TestCase):
         # without openreg, this should be false
         self.assertFalse(self.election.user_eligible_p(self.user))
         
+        # what about after saving?
+        self.election.save()
+        e = models.Election.objects.get(uuid = self.election.uuid)
+        self.assertEquals(e.eligibility, [{'auth_system': self.user.user_type}])
+
         self.election.openreg = True
 
         # without openreg, and now true

@@ -571,6 +571,7 @@ def one_election_cast_confirm(request, election):
       auth_systems = None
 
     password_only = False
+
     if auth_systems == None or 'password' in auth_systems:
       show_password = True
       password_login_form = forms.VoterPasswordForm()

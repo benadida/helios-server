@@ -344,8 +344,8 @@ class Election(HeliosModel):
       return
 
     auth_systems = copy.copy(settings.AUTH_ENABLED_AUTH_SYSTEMS)
-    voter_types = [r['user__user_type'] for r in self.voter_set.values('user__user_type').distinct()]
-    
+    voter_types = [r['user__user_type'] for r in self.voter_set.values('user__user_type').distinct() if r['user__user_type'] != None]
+
     # password is now separate, not an explicit voter type
     if self.voter_set.filter(user=None).count() > 0:
       voter_types.append('password')
