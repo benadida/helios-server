@@ -4,7 +4,7 @@ The Helios Election Server
 LICENSE: this code is released under the GPL v3 or later.
 
 NEEDS:
-- as of Helios v3.1, requires Django 1.2.4+
+- as of Helios v3.1, requires Django 1.2.5+
 
 - http://github.com/openid/python-openid
 - rabbitmq 1.8
