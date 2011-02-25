@@ -43,7 +43,7 @@ class JSONField(models.TextField):
         try:
             parsed_value = json.loads(value)
         except:
-            import pdb; pdb.set_trace()
+            raise Exception("not JSON")
 
         if self.json_type and parsed_value:
             parsed_value = self.json_type.fromJSONDict(parsed_value, **self.deserialization_params)
