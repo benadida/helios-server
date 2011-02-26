@@ -185,8 +185,17 @@ class Election(HeliosModel):
       return query
     
   @classmethod
-  def get_by_user_as_voter(cls, user):
-    return [v.election for v in Voter.get_by_user(user)]
+  def get_by_user_as_voter(cls, user, archived_p=None, limit=None):
+    query = cls.objects.filter(voter__user = user)
+    if archived_p == True:
+      query = query.exclude(archived_at= None)
+    if archived_p == False:
+      query = query.filter(archived_at= None)
+    query = query.order_by('-created_at')
+    if limit:
+      return query[:limit]
+    else:
+      return query
     
   @classmethod
   def get_by_uuid(cls, uuid):

@@ -39,6 +39,7 @@
 {% else %}
 <em>none yet</em>
 {% endif %}
+<p>[<a href="{% url helios.views.elections_voted %}">see all</a>]</p>
 {% else %}
 <h3>Log In to Start Voting</h3>
 {{login_box|safe}}

@@ -31,6 +31,7 @@ urlpatterns = patterns('',
   (r'^elections/single_ballot_verifier$', election_single_ballot_verifier),
   (r'^elections/new$', election_new),
   (r'^elections/administered$', elections_administered),
+  (r'^elections/voted$', elections_voted),
   
   (r'^elections/(?P<election_uuid>[^/]+)', include('helios.election_urls')),
   

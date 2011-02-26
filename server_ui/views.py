@@ -36,7 +36,7 @@ def home(request):
     elections_administered = None
 
   if user:
-    elections_voted = Election.get_by_user_as_voter(user)
+    elections_voted = Election.get_by_user_as_voter(user, limit=5)
   else:
     elections_voted = None
  

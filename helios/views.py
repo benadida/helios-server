@@ -159,6 +159,13 @@ def elections_administered(request):
   elections = Election.get_by_user_as_admin(user)
   
   return render_template(request, "elections_administered", {'elections': elections})
+
+@login_required
+def elections_voted(request):
+  user = get_user(request)
+  elections = Election.get_by_user_as_voter(user)
+  
+  return render_template(request, "elections_voted", {'elections': elections})
     
 
 @login_required
