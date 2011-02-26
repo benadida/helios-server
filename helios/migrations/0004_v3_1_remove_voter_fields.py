@@ -68,7 +68,7 @@ class Migration(SchemaMigration):
             'archived_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'cast_url': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'datatype': ('django.db.models.fields.CharField', [], {'default': "'2011/01/election'", 'max_length': '250'}),
+            'datatype': ('django.db.models.fields.CharField', [], {'default': "'legacy/Election'", 'max_length': '250'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'election_type': ('django.db.models.fields.CharField', [], {'default': "'election'", 'max_length': '250'}),
             'eligibility': ('auth.jsonfield.JSONField', [], {'null': 'True'}),

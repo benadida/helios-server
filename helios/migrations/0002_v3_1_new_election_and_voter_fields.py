@@ -24,7 +24,7 @@ class Migration(SchemaMigration):
         db.add_column('helios_voter', 'voter_email', self.gf('django.db.models.fields.CharField')(max_length=250, null=True), keep_default=False)
 
         # Adding field 'Election.datatype'
-        db.add_column('helios_election', 'datatype', self.gf('django.db.models.fields.CharField')(default='2011/01/Election', max_length=250), keep_default=False)
+        db.add_column('helios_election', 'datatype', self.gf('django.db.models.fields.CharField')(default='legacy/Election', max_length=250), keep_default=False)
 
         # Adding field 'Election.election_type'
         db.add_column('helios_election', 'election_type', self.gf('django.db.models.fields.CharField')(default='election', max_length=250), keep_default=False)
@@ -108,7 +108,7 @@ class Migration(SchemaMigration):
             'archived_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'cast_url': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'datatype': ('django.db.models.fields.CharField', [], {'default': "'2011/01/election'", 'max_length': '250'}),
+            'datatype': ('django.db.models.fields.CharField', [], {'default': "'legacy/Election'", 'max_length': '250'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'election_type': ('django.db.models.fields.CharField', [], {'default': "'election'", 'max_length': '250'}),
             'eligibility': ('auth.jsonfield.JSONField', [], {'null': 'True'}),

@@ -109,7 +109,7 @@ def admin_autologin(request):
 
   user = users[0]
   request.session['user'] = {'type' : user.user_type, 'user_id' : user.user_id}
-  return HttpResponseRedirect(reverse(home))
+  return HttpResponseRedirect("/")
 
 ##
 ## General election features
@@ -557,7 +557,7 @@ def one_election_cast_confirm(request, election):
       issues = None
 
     # status update this vote
-    if voter and user and user.can_update_status():
+    if voter and voter.user.can_update_status():
       status_update_label = voter.user.update_status_template() % "your smart ballot tracker"
       status_update_message = "I voted in %s - my smart tracker is %s.. #heliosvoting" % (get_election_url(election),cast_vote.vote_hash[:10])
     else:
@@ -1034,7 +1034,7 @@ def voters_list_pretty(request, election):
     if election.use_voter_aliases:
       voters = voters.filter(alias__icontains = q)
     else:
-      voters = voters.filter(name__icontains = q)
+      voters = voters.filter(voter_name__icontains = q)
 
   voter_paginator = Paginator(voters, limit)
   voters_page = voter_paginator.page(page)

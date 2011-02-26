@@ -38,9 +38,10 @@ class Election(HeliosModel):
 
   # keep track of the type and version of election, which will help dispatch to the right
   # code, both for crypto and serialization
-  # v3 and prior have a datatype of "legacy/election"
-  # v3.1 and above have a specific datatype of "2011/01/election"
-  datatype = models.CharField(max_length=250, null=False, default="2011/01/Election")
+  # v3 and prior have a datatype of "legacy/Election"
+  # v3.1 will still use legacy/Election
+  # later versions, at some point will upgrade to "2011/01/Election"
+  datatype = models.CharField(max_length=250, null=False, default="legacy/Election")
   
   short_name = models.CharField(max_length=100)
   name = models.CharField(max_length=250)
