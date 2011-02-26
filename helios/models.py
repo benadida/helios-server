@@ -142,6 +142,10 @@ class Election(HeliosModel):
     return self.voter_set.count()
 
   @property
+  def num_trustees(self):
+    return self.trustee_set.count()
+
+  @property
   def last_alias_num(self):
     """
     FIXME: we should be tracking alias number, not the V* alias which then
