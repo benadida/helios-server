@@ -1,15 +1,11 @@
 {% extends TEMPLATE_BASE %}
 
-{% block title %}Combine Decryptions and Release Tally &mdash; {{election.name}}{% endblock %}
+{% block title %}Release Tally &mdash; {{election.name}}{% endblock %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Combine Decryptions and Release Tally <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">cancel</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; Release Tally <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">cancel</a>]</span></h2>
 
   <p>
-    The tally for this election will now be computed and displayed on the main election page.
-  </p>
-
-  <p>
-In addition, voters will be notified that of the availability of the tally. The default message reads:
+    The tally for this election will be released, and voters will be notified that of the availability of the tally.<br />The default message reads:
 </p>
 
 <pre style="margin:10px; border: 1px solid #888; padding:20px">
