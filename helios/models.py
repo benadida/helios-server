@@ -259,6 +259,9 @@ class Election(HeliosModel):
       if t.public_key == None:
         issues.append("trustee %s hasn't generated a key yet" % t.name)
 
+    if self.voter_set.count() == 0 and not self.openreg:
+      issues.append("no voters and closed registration")
+
     return issues    
 
   def ready_for_tallying(self):
