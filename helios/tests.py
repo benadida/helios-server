@@ -39,6 +39,10 @@ class ElectionModelTests(TestCase):
 
     def setup_trustee(self):
         self.election.generate_trustee(ELGAMAL_PARAMS)
+
+    def setup_openreg(self):
+        self.election.openreg=True
+        self.election.save()
     
     def setUp(self):
         self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
@@ -62,6 +66,10 @@ class ElectionModelTests(TestCase):
         election = models.Election.get_by_short_name(self.election.short_name)
         self.assertEquals(self.election, election)
         
+    def test_setup_trustee(self):
+        self.setup_trustee()
+        self.assertEquals(self.election.num_trustees, 1)
+
     def test_add_voters_file(self):
         election = self.election
 
@@ -70,25 +78,28 @@ class ElectionModelTests(TestCase):
         vf.process()
 
     def test_check_issues_before_freeze(self):
-        # should be two issues: no trustees, and no questions
+        # should be three issues: no trustees, and no questions, and no voters
         issues = self.election.issues_before_freeze
-        self.assertEquals(len(issues), 2)
+        self.assertEquals(len(issues), 3)
 
         self.setup_questions()
 
-        # should be one issue: no trustees
+        # should be two issues: no trustees, and no voters
         issues = self.election.issues_before_freeze
-        self.assertEquals(len(issues), 1)
+        self.assertEquals(len(issues), 2)
 
         self.election.questions = None
 
         self.setup_trustee()
 
-        # should be one issue: no trustees
+        # should be two issues: no questions, and no voters
         issues = self.election.issues_before_freeze
-        self.assertEquals(len(issues), 1)
+        self.assertEquals(len(issues), 2)
         
         self.setup_questions()
+
+        # move to open reg
+        self.setup_openreg()
 
         issues = self.election.issues_before_freeze
         self.assertEquals(len(issues), 0)
@@ -136,6 +147,7 @@ class ElectionModelTests(TestCase):
         
         self.setup_questions()
         self.setup_trustee()
+        self.setup_openreg()
 
         # this time it should work
         try_freeze()
