@@ -442,7 +442,7 @@ class ElectionBlackboxTests(TestCase):
         self.assertEquals(email_message.subject, "your password")
 
         # get the username and password
-        username = re.search('username: (.*)', email_message.body).group(1)
+        username = re.search('voter ID: (.*)', email_message.body).group(1)
         password = re.search('password: (.*)', email_message.body).group(1)
 
         # vote by preparing a ballot via the server-side encryption
