@@ -37,6 +37,6 @@ class TallyNotificationEmailForm(forms.Form):
   send_to = forms.ChoiceField(label="Send To", choices= [('all', 'all voters'), ('voted', 'only voters who cast a ballot'), ('none', 'no one -- are you sure about this?')])
 
 class VoterPasswordForm(forms.Form):
-  voter_id = forms.CharField(max_length=50)
+  voter_id = forms.CharField(max_length=50, label="Voter ID")
   password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
 
