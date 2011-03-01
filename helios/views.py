@@ -508,7 +508,7 @@ def password_voter_login(request, election):
 
       request.session['CURRENT_VOTER'] = voter
     except Voter.DoesNotExist:
-      pass
+        return HttpResponseRedirect(reverse(one_election_cast_confirm, args = [election.uuid]) + "?bad_voter_login=1")
   
   return HttpResponseRedirect(reverse(one_election_cast_confirm, args = [election.uuid]))
 
@@ -563,6 +563,8 @@ def one_election_cast_confirm(request, election):
     else:
       issues = None
 
+    bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
+
     # status update this vote
     if voter and voter.user.can_update_status():
       status_update_label = voter.user.update_status_template() % "your smart ballot tracker"
@@ -596,7 +598,8 @@ def one_election_cast_confirm(request, election):
         'login_box': login_box, 'election' : election, 'vote_fingerprint': vote_fingerprint,
         'past_votes': past_votes, 'issues': issues, 'voter' : voter,
         'status_update_label': status_update_label, 'status_update_message': status_update_message,
-        'show_password': show_password, 'password_only': password_only, 'password_login_form': password_login_form})
+        'show_password': show_password, 'password_only': password_only, 'password_login_form': password_login_form,
+        'bad_voter_login': bad_voter_login})
       
   if request.method == "POST":
     check_csrf(request)
