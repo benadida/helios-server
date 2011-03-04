@@ -134,9 +134,24 @@ class User(models.Model):
 
     return self.user_id
   
+  @property
+  def public_url(self):
+    if AUTH_SYSTEMS.has_key(self.user_type):
+      if hasattr(AUTH_SYSTEMS[self.user_type], 'public_url'):
+        return AUTH_SYSTEMS[self.user_type].public_url(self.user_id)
+
+    return None
+    
   def _display_html(self, size):
+    public_url = self.public_url
+    
+    if public_url:
+      name_display = '<a href="%s">%s</a>' % (public_url, self.pretty_name)
+    else:
+      name_display = self.pretty_name
+
     return """<img border="0" height="%s" src="/static/auth/login-icons/%s.png" alt="%s" /> %s""" % (
-      str(int(size)), self.user_type, self.user_type, self.pretty_name)
+      str(int(size)), self.user_type, self.user_type, name_display)
 
   @property
   def display_html_small(self):

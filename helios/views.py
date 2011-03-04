@@ -100,7 +100,7 @@ def get_voter(request, user, election):
 ## simple admin for development
 ##
 def admin_autologin(request):
-  if "localhost" not in settings.URL_HOST:
+  if "localhost" not in settings.URL_HOST and "127.0.0.1" not in settings.URL_HOST:
     raise Http404
   
   users = User.objects.filter(admin_p=True)

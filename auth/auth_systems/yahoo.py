@@ -27,7 +27,7 @@ def get_auth_url(request, redirect_url):
 def get_user_info_after_auth(request):
   data = view_helpers.finish_openid(request.session, request.GET, request.session['yahoo_redirect_url'])
 
-  return {'type' : 'yahoo', 'user_id': data['ax']['email'][0], 'name': data['ax']['fullname'][0], 'info': {}, 'token':{}}
+  return {'type' : 'yahoo', 'user_id': data['ax']['email'][0], 'name': data['ax']['fullname'][0], 'info': {'email': data['ax']['email'][0]}, 'token':{}}
     
 def do_logout(user):
   """

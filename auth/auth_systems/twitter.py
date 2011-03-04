@@ -86,6 +86,9 @@ def update_status(user_id, user_info, token, message):
 def send_message(user_id, user_name, user_info, subject, body):
   pass
 
+def public_url(user_id):
+  return "http://twitter.com/%s" % user_id
+
 def send_notification(user_id, user_info, message):
   twitter_client = _get_client_by_token(DM_TOKEN)
   result = twitter_client.oauth_request('http://api.twitter.com/1/direct_messages/new.json', args={'screen_name': user_id, 'text': message}, method='POST')

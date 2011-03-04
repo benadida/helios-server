@@ -40,7 +40,7 @@ def get_user_info_after_auth(request):
   else:
     name = email
 
-  return {'type' : 'google', 'user_id': email, 'name': name , 'info': {}, 'token':{}}
+  return {'type' : 'google', 'user_id': email, 'name': name , 'info': {'email': email}, 'token':{}}
     
 def do_logout(user):
   """
