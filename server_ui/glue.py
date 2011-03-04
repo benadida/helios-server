@@ -19,10 +19,10 @@ You have successfully cast a vote in
 
   %s
   
-Your ballot tracking number is:
+Your ballot is archived at:
 
   %s
-""" % (election.name, cast_vote.vote_hash)
+""" % (election.name, helios.views.get_castvote_url(cast_vote))
   
   if election.use_voter_aliases:
     body += """

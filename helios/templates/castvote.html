@@ -4,7 +4,15 @@
 {% block content %}
 <h2 class="title">Cast Vote {{cast_vote.vote_tinyhash}}</h2>
 cast in <a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a><br />
-by {{voter.name}}
+Fingerprint: <tt>{{cast_vote.vote_hash}}</tt><br />
+by <b><u>{{voter.name}}</u></b>
+<br /><br />
+<a href="#" onclick="$('#castvote_content').slideToggle(250); return false;">details</a><br /><br />
+<div style="display:none;" id="castvote_content">
+<textarea cols="100" rows="10">
+{{vote_content}}
+</textarea>
+</div>
 <br /><br />
 
 

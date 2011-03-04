@@ -51,6 +51,9 @@ from django.conf import settings
 def get_election_url(election):
   return settings.URL_HOST + reverse(election_shortcut, args=[election.short_name])  
 
+def get_castvote_url(cast_vote):
+  return settings.URL_HOST + reverse(castvote_shortcut, args=[cast_vote.vote_tinyhash])
+
 # simple static views
 def home(request):
   user = get_user(request)
@@ -139,7 +142,7 @@ def castvote_shortcut(request, vote_tinyhash):
     raise Http404
 
   # FIXME: consider privacy of election
-  return render_template(request, 'castvote', {'cast_vote' : cast_vote, 'voter': cast_vote.voter, 'election': cast_vote.voter.election})
+  return render_template(request, 'castvote', {'cast_vote' : cast_vote, 'vote_content': cast_vote.vote.toJSON(), 'voter': cast_vote.voter, 'election': cast_vote.voter.election})
 
 @trustee_check
 def trustee_keygenerator(request, election, trustee):

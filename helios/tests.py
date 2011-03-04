@@ -15,6 +15,7 @@ import utils
 from django.db import IntegrityError, transaction
 from django.test.client import Client
 from django.test import TestCase
+from django.utils.html import escape as html_escape
 
 from django.core import mail
 from django.core.files import File
@@ -471,6 +472,16 @@ class ElectionBlackboxTests(TestCase):
                 "csrf_token" : self.client.session['csrf_token'],
                 "status_update" : False})
         self.assertRedirects(response, "%s/helios/elections/%s/cast_done" % (settings.URL_HOST, election_id))
+
+        # at this point an email should have gone out to the user
+        # at position num_messages after, since that was the len() before we cast this ballot
+        email_message = mail.outbox[num_messages_after]
+        url = re.search('http://[^/]+(/[^ \n]*)', email_message.body).group(1)
+
+        # check that we can get at that URL
+        response = self.client.get(url)
+        self.assertContains(response, ballot.hash)
+        self.assertContains(response, html_escape(encrypted_vote))
 
         # encrypted tally
         response = self.client.post("/helios/elections/%s/compute_tally" % election_id, {
