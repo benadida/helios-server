@@ -649,7 +649,13 @@ def one_election_cast_done(request, election):
     votes = CastVote.get_by_voter(voter)
     vote_hash = votes[0].vote_hash
 
-    logout = settings.LOGOUT_ON_CONFIRMATION
+    # only log out if the setting says so *and* we're dealing
+    # with a site-wide voter. Definitely remove current_voter
+    if voter.user == user:
+      logout = settings.LOGOUT_ON_CONFIRMATION
+    else:
+      logout = False
+      del request.session['CURRENT_VOTER']
 
     save_in_session_across_logouts(request, 'last_vote_hash', vote_hash)
   else:
@@ -664,7 +670,8 @@ def one_election_cast_done(request, election):
   #   auth_views.do_local_logout(request)
     
   # remote logout is happening asynchronously in an iframe to be modular given the logout mechanism
-  return render_template(request, 'cast_done', {'election': election, 'vote_hash': vote_hash, 'logout': logout}, include_user=False)
+  # include_user is set to False if logout is happening
+  return render_template(request, 'cast_done', {'election': election, 'vote_hash': vote_hash, 'logout': logout}, include_user=(not logout))
 
 @election_view()
 @json

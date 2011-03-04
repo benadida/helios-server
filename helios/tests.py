@@ -483,6 +483,10 @@ class ElectionBlackboxTests(TestCase):
         self.assertContains(response, ballot.hash)
         self.assertContains(response, html_escape(encrypted_vote))
 
+        # if we request the redirect to cast_done, the voter should be logged out, but not the user
+        response = self.client.get("/helios/elections/%s/cast_done" % election_id)
+        assert not self.client.session.has_key('CURRENT_VOTER')
+
         # encrypted tally
         response = self.client.post("/helios/elections/%s/compute_tally" % election_id, {
                 "csrf_token" : self.client.session['csrf_token']                
