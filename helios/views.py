@@ -740,9 +740,10 @@ def voter_delete(request, election, voter_uuid):
   - election is not frozen or
   - election is open reg
   """
+  ## FOR NOW we allow this to see if we can redefine the meaning of "closed reg" to be more flexible
   # if election is frozen and has closed registration
-  if election.frozen_at and (not election.openreg):
-    raise PermissionDenied()
+  #if election.frozen_at and (not election.openreg):
+  #  raise PermissionDenied()
 
   if election.encrypted_tally:
     raise PermissionDenied()
@@ -1066,8 +1067,10 @@ def voters_upload(request, election):
   
   name and email are needed only if voter_type is static
   """
-  if election.frozen_at and not election.openreg:
-    raise PermissionDenied()
+
+  ## TRYING this: allowing voters upload by admin when election is frozen
+  #if election.frozen_at and not election.openreg:
+  #  raise PermissionDenied()
 
   if request.method == "GET":
     return render_template(request, 'voters_upload', {'election': election})

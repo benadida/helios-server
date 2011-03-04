@@ -30,9 +30,7 @@
 <br />
 {% if admin_p and upload_p %}
 <p>
-{% if election.openreg or not election.frozen_at %}
 <a href="{% url helios.views.voters_upload election_uuid=election.uuid %}">bulk upload voters</a>
-{% endif %}
 </p>
 
 {% if voter_files %}
@@ -95,12 +93,7 @@ Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voter
 {% if admin_p or not election.use_voter_aliases %}
 <td>
 {% if admin_p %}
-{% if not election.frozen_at %}
 [<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">x</a>]
-{% endif %}
-{% if election.frozen_at and election.openreg and not election.encrypted_tally %}
-[<a onclick="return confirm('are you sure you want to remove {{voter.name}} and the vote he/she has cast?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">x</a>]
-{% endif %}
 {% endif %}
 <img border="0" height="20" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}</td>
 {% endif %}
