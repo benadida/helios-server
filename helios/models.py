@@ -682,7 +682,6 @@ class Voter(HeliosModel):
   vote_hash = models.CharField(max_length = 100, null=True)
   cast_at = models.DateTimeField(auto_now_add=False, null=True)
 
-  ## FIXME: add migration
   class Meta:
     unique_together = (('election', 'voter_login_id'))
 
