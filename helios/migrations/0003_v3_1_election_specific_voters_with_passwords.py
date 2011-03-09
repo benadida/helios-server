@@ -16,7 +16,9 @@ class Migration(DataMigration):
             e.datatype = 'legacy/Election'
             e.save()
 
-        for v in orm.Voter.objects.all():
+        # use the .iterator() call to reduce caching and make this more efficient
+        # so as not to trigger a memory error
+        for v in orm.Voter.objects.all().iterator():
             user = orm['auth.User'].objects.get(user_type = v.voter_type, user_id = v.voter_id)
 
             if v.voter_type == 'password':
