@@ -33,7 +33,7 @@ class Migration(DataMigration):
             v.save()
 
         # also, update tinyhash for all votes
-        for cv in orm.CastVote.objects.all():
+        for cv in orm.CastVote.objects.all().iterator():
             safe_hash = cv.vote_hash
             for c in ['/', '+']:
                 safe_hash = safe_hash.replace(c,'')
