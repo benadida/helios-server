@@ -28,7 +28,9 @@
 {% endif %}
 </p>
 <br />
-{% if admin_p and upload_p %}
+{% if admin_p %}
+Add a Voter: WORK HERE
+{% if upload_p %}
 <p>
 <a href="{% url helios.views.voters_upload election_uuid=election.uuid %}">bulk upload voters</a>
 </p>
@@ -52,6 +54,7 @@ Prior Bulk Uploads:
 </li>
 {% endfor %}
 </ul>
+{% endif %}
 {% endif %}
 {% endif %}
 
