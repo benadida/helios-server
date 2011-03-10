@@ -613,7 +613,7 @@ def one_election_cast_confirm(request, election):
             
     # if user is not logged in
     # bring back to the confirmation page to let him know
-    if not user or not voter:
+    if not voter:
       return HttpResponseRedirect(reverse(one_election_cast_confirm, args=[election.uuid]))
     
     # don't store the vote in the voter's data structure until verification

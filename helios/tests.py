@@ -451,6 +451,12 @@ class ElectionBlackboxTests(TestCase):
         username = re.search('voter ID: (.*)', email_message.body).group(1)
         password = re.search('password: (.*)', email_message.body).group(1)
 
+        # now log out as administrator
+        session = self.client.session
+        del session['user']
+        session.save()
+        self.assertEquals(self.client.session.has_key('user'), False)
+
         # vote by preparing a ballot via the server-side encryption
         response = self.client.post("/helios/elections/%s/encrypt-ballot" % election_id, {
                 'answers_json': utils.to_json([[1]])})
@@ -491,6 +497,11 @@ class ElectionBlackboxTests(TestCase):
         # if we request the redirect to cast_done, the voter should be logged out, but not the user
         response = self.client.get("/helios/elections/%s/cast_done" % election_id)
         assert not self.client.session.has_key('CURRENT_VOTER')
+
+        # log back in as administrator
+        session = self.client.session
+        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
+        session.save()
 
         # encrypted tally
         response = self.client.post("/helios/elections/%s/compute_tally" % election_id, {
