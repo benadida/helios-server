@@ -612,15 +612,15 @@ class VoterFile(models.Model):
         continue
     
       num_voters += 1
-      voter_id = voter[0]
+      voter_id = voter[0].strip()
       name = voter_id
       email = voter_id
     
       if len(voter) > 1:
-        email = voter[1]
+        email = voter[1].strip()
     
       if len(voter) > 2:
-        name = voter[2]
+        name = voter[2].strip()
     
       # create the user -- NO MORE
       # user = User.update_or_create(user_type='password', user_id=email, info = {'name': name})

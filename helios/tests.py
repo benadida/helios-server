@@ -78,6 +78,11 @@ class ElectionModelTests(TestCase):
         vf = models.VoterFile.objects.create(election = election, voter_file = File(open(FILE), "voter_file.css"))
         vf.process()
 
+        # make sure that we stripped things correctly
+        voter = election.voter_set.get(voter_login_id = 'benadida5')
+        self.assertEquals(voter.voter_email, 'ben5@adida.net')
+        self.assertEquals(voter.voter_name, 'Ben5 Adida')
+
     def test_check_issues_before_freeze(self):
         # should be three issues: no trustees, and no questions, and no voters
         issues = self.election.issues_before_freeze
