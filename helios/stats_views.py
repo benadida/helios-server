@@ -56,3 +56,11 @@ def recent_votes(request):
   elections_with_votes_in_24hours = Election.objects.filter(voter__castvote__cast_at__gt= datetime.datetime.utcnow() - datetime.timedelta(days=1)).annotate(last_cast_vote = Max('voter__castvote__cast_at'), num_recent_cast_votes = Count('voter__castvote')).order_by('-last_cast_vote')
 
   return render_template(request, "stats_recent_votes", {'elections' : elections_with_votes_in_24hours})
+
+def recent_problem_elections(request):
+  user = require_admin(request)
+
+  # elections left unfrozen older than 1 day old (and younger than 10 days old, so we don't go back too far)
+  elections_with_problems = Election.objects.filter(frozen_at = None, created_at__gt = datetime.datetime.utcnow() - datetime.timedelta(days=10), created_at__lt = datetime.datetime.utcnow() - datetime.timedelta(days=1) )
+
+  return render_template(request, "stats_problem_elections", {'elections' : elections_with_problems})

@@ -105,7 +105,7 @@ def admin_autologin(request):
   
   users = User.objects.filter(admin_p=True)
   if len(users) == 0:
-    users = User.objects.all()
+    return HttpResponse("no admin users!")
 
   if len(users) == 0:
     return HttpResponse("no users!")
