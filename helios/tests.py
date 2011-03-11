@@ -326,6 +326,17 @@ class ElectionBlackboxTests(TestCase):
         self.election = models.Election.objects.all()[0]
         self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
 
+    def setup_login(self):
+        # set up the session
+        session = self.client.session
+        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
+        session.save()        
+
+    def clear_login(self):
+        session = self.client.session
+        del session['user']
+        session.save()        
+
     def test_get_election_shortcut(self):
         response = self.client.get("/helios/e/%s" % self.election.short_name, follow=True)
         self.assertContains(response, self.election.description)
@@ -371,15 +382,32 @@ class ElectionBlackboxTests(TestCase):
                 "private_p" : "0"})
 
         self.assertRedirects(response, "/auth/?return_url=/helios/elections/new")
+    
+    def test_election_edit(self):
+        # a bogus call to set up the session
+        self.client.get("/")
+
+        self.setup_login()
+        response = self.client.get("/helios/elections/%s/edit" % self.election.uuid)
+        response = self.client.post("/helios/elections/%s/edit" % self.election.uuid, {
+                "short_name" : self.election.short_name + "-2",
+                "name" : self.election.name,
+                "description" : self.election.description,
+                "election_type" : self.election.election_type,
+                "use_voter_aliases": self.election.use_voter_aliases,
+                'csrf_token': self.client.session['csrf_token']
+                })
+
+        self.assertRedirects(response, "/helios/elections/%s/view" % self.election.uuid)
+
+        new_election = models.Election.objects.get(uuid = self.election.uuid)
+        self.assertEquals(new_election.short_name, self.election.short_name + "-2")
         
     def test_do_complete_election(self):
         # a bogus call to set up the session
         self.client.get("/")
 
-        # set up the session
-        session = self.client.session
-        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
-        session.save()
+        self.setup_login()
 
         # create the election
         response = self.client.post("/helios/elections/new", {
@@ -452,9 +480,7 @@ class ElectionBlackboxTests(TestCase):
         password = re.search('password: (.*)', email_message.body).group(1)
 
         # now log out as administrator
-        session = self.client.session
-        del session['user']
-        session.save()
+        self.clear_login()
         self.assertEquals(self.client.session.has_key('user'), False)
 
         # vote by preparing a ballot via the server-side encryption
@@ -499,9 +525,7 @@ class ElectionBlackboxTests(TestCase):
         assert not self.client.session.has_key('CURRENT_VOTER')
 
         # log back in as administrator
-        session = self.client.session
-        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
-        session.save()
+        self.setup_login()
 
         # encrypted tally
         response = self.client.post("/helios/elections/%s/compute_tally" % election_id, {
