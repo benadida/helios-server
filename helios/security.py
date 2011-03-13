@@ -75,6 +75,14 @@ def election_view(**checks):
     
       # do checks
       do_election_checks(election, checks)
+
+      # if private election, only logged in voters
+      if election.private_p and not checks.get('allow_logins',False):
+        from views import get_voter, get_user
+        user = get_user(request)
+        if not user_can_admin_election(user, election) and not get_voter(request, user, election):
+          # FIXME: should be a nice redirect
+          raise PermissionDenied()
     
       return func(request, election, *args, **kw)
 

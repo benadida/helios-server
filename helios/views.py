@@ -499,12 +499,20 @@ def one_election_cast(request, election):
 
   return HttpResponseRedirect("%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_cast_confirm, args=[election.uuid])))
 
-@election_view(frozen=True)
+@election_view(frozen=True, allow_logins=True)
 def password_voter_login(request, election):
   """
   This is used to log in as a voter for a particular election
   """
   password_login_form = forms.VoterPasswordForm(request.POST)
+
+  # redirect base depending on whether this is a private election
+  # cause if it's private the login is happening on the front page
+  if election.private_p:
+    redirect_base = reverse(one_election_view, args=[election.uuid])
+  else:
+    redirect_base = reverse(one_election_cast_confirm, args=[election.uuid])
+
   if password_login_form.is_valid():
     try:
       voter = election.voter_set.get(voter_login_id = password_login_form.cleaned_data['voter_id'],
@@ -512,9 +520,9 @@ def password_voter_login(request, election):
 
       request.session['CURRENT_VOTER'] = voter
     except Voter.DoesNotExist:
-        return HttpResponseRedirect(reverse(one_election_cast_confirm, args = [election.uuid]) + "?bad_voter_login=1")
+        return HttpResponseRedirect(redirect_base + "?bad_voter_login=1")
   
-  return HttpResponseRedirect(reverse(one_election_cast_confirm, args = [election.uuid]))
+  return HttpResponseRedirect(redirect_base)
 
 @election_view(frozen=True)
 def one_election_cast_confirm(request, election):

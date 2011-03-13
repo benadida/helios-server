@@ -21,6 +21,7 @@ from django.core import mail
 from django.core.files import File
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
 
 import uuid
 
@@ -402,30 +403,35 @@ class ElectionBlackboxTests(TestCase):
 
         new_election = models.Election.objects.get(uuid = self.election.uuid)
         self.assertEquals(new_election.short_name, self.election.short_name + "-2")
-        
-    def test_do_complete_election(self):
+
+    def _setup_complete_election(self, election_params={}):
+        "do the setup part of a whole election"
+
         # a bogus call to set up the session
         self.client.get("/")
 
+        # REPLACE with params?
         self.setup_login()
 
         # create the election
-        response = self.client.post("/helios/elections/new", {
-                "short_name" : "test-complete",
-                "name" : "Test Complete",
-                "description" : "A complete election test",
-                "election_type" : "referendum",
-                "use_voter_aliases": "0",
-                "use_advanced_audit_features": "1",
-                "private_p" : "0"})
+        full_election_params = {
+            "short_name" : "test-complete",
+            "name" : "Test Complete",
+            "description" : "A complete election test",
+            "election_type" : "referendum",
+            "use_voter_aliases": "0",
+            "use_advanced_audit_features": "1",
+            "private_p" : "0"}
+
+        # override with the given
+        full_election_params.update(election_params)
+
+        response = self.client.post("/helios/elections/new", full_election_params)
 
         # we are redirected to the election, let's extract the ID out of the URL
         election_id = re.search('/elections/([^/]+)/', str(response['Location'])).group(1)
 
-        # add helios as trustee
-        # no longer needed because automatic for all elections
-        #response = self.client.post("/helios/elections/%s/trustees/add-helios" % election_id)
-        #self.assertRedirects(response, "/helios/elections/%s/trustees/view" % election_id)
+        # helios is automatically added as a trustee
 
         # check that helios is indeed a trustee
         response = self.client.get("/helios/elections/%s/trustees/view" % election_id)
@@ -483,6 +489,10 @@ class ElectionBlackboxTests(TestCase):
         self.clear_login()
         self.assertEquals(self.client.session.has_key('user'), False)
 
+        # return the voter username and password to vote
+        return election_id, username, password
+
+    def _cast_ballot(self, election_id, username, password):
         # vote by preparing a ballot via the server-side encryption
         response = self.client.post("/helios/elections/%s/encrypt-ballot" % election_id, {
                 'answers_json': utils.to_json([[1]])})
@@ -512,7 +522,7 @@ class ElectionBlackboxTests(TestCase):
 
         # at this point an email should have gone out to the user
         # at position num_messages after, since that was the len() before we cast this ballot
-        email_message = mail.outbox[num_messages_after]
+        email_message = mail.outbox[len(mail.outbox) - 1]
         url = re.search('http://[^/]+(/[^ \n]*)', email_message.body).group(1)
 
         # check that we can get at that URL
@@ -524,6 +534,7 @@ class ElectionBlackboxTests(TestCase):
         response = self.client.get("/helios/elections/%s/cast_done" % election_id)
         assert not self.client.session.has_key('CURRENT_VOTER')
 
+    def _do_tally(self, election_id):
         # log back in as administrator
         self.setup_login()
 
@@ -548,3 +559,22 @@ class ElectionBlackboxTests(TestCase):
         # check that tally matches
         response = self.client.get("/helios/elections/%s/result" % election_id)
         self.assertEquals(utils.from_json(response.content), [[0,1]])
+        
+    def test_do_complete_election(self):
+        election_id, username, password = self._setup_complete_election()
+        self._cast_ballot(election_id, username, password)
+        self._do_tally(election_id)
+
+    def test_do_complete_election_private(self):
+        # private election
+        election_id, username, password = self._setup_complete_election({'private_p' : "1"})
+
+        # log in
+        response = self.client.post("/helios/elections/%s/password_voter_login" % election_id, {
+                'voter_id' : username,
+                'password' : password
+                })
+        self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
+
+        self._cast_ballot(election_id, username, password)
+        self._do_tally(election_id)
