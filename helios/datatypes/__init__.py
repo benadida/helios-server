@@ -171,7 +171,10 @@ class LDObject(object):
                 self.structured_fields[f] = sub_ld_object
 
                 # set the field on the wrapped object too
-                self._setattr_wrapped(f, sub_ld_object.wrapped_obj)
+                if sub_ld_object != None:
+                    self._setattr_wrapped(f, sub_ld_object.wrapped_obj)
+                else:
+                    self._setattr_wrapped(f, None)
             else:
                 # a simple type
                 new_val = self.process_value_in(f, d[f])
@@ -203,6 +206,10 @@ class LDObject(object):
 
     @classmethod
     def fromDict(cls, d, type_hint=None):
+        # null objects
+        if d == None:
+            return None
+
         # the LD type is either in d or in type_hint
         # FIXME: get this from the dictionary itself
         ld_type = type_hint

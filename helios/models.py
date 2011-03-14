@@ -480,9 +480,12 @@ class Election(HeliosModel):
     counts = sorted(enumerate(result), key=lambda(x): x[1])
     counts.reverse()
     
+    the_max = question['max'] or 1
+    the_min = question['min'] or 0
+
     # if there's a max > 1, we assume that the top MAX win
-    if question['max'] > 1:
-      return [c[0] for c in counts[:question['max']]]
+    if the_max > 1:
+      return [c[0] for c in counts[:the_max]]
 
     # if max = 1, then depends on absolute or relative
     if question['result_type'] == 'absolute':
@@ -490,8 +493,8 @@ class Election(HeliosModel):
         return [counts[0][0]]
       else:
         return []
-
-    if question['result_type'] == 'relative':
+    else:
+      # assumes that anything non-absolute is relative
       return [counts[0][0]]    
 
   @property
