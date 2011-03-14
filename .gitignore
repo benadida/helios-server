@@ -4,3 +4,4 @@ initialization.py
 *.pyc
 .DS_Store
 *~
+media/*
