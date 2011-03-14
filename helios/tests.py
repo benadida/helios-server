@@ -492,7 +492,7 @@ class ElectionBlackboxTests(TestCase):
         # return the voter username and password to vote
         return election_id, username, password
 
-    def _cast_ballot(self, election_id, username, password):
+    def _cast_ballot(self, election_id, username, password, need_login=True):
         # vote by preparing a ballot via the server-side encryption
         response = self.client.post("/helios/elections/%s/encrypt-ballot" % election_id, {
                 'answers_json': utils.to_json([[1]])})
@@ -507,12 +507,15 @@ class ElectionBlackboxTests(TestCase):
                 'encrypted_vote': encrypted_vote})
         self.assertRedirects(response, "%s/helios/elections/%s/cast_confirm" % (settings.SECURE_URL_HOST, election_id))        
 
-        # log in
-        response = self.client.post("/helios/elections/%s/password_voter_login" % election_id, {
-                'voter_id' : username,
-                'password' : password
-                })
-        self.assertRedirects(response, "/helios/elections/%s/cast_confirm" % election_id)
+        if need_login:
+            response = self.client.post("/helios/elections/%s/password_voter_login" % election_id, {
+                    'voter_id' : username,
+                    'password' : password
+                    })
+            self.assertRedirects(response, "/helios/elections/%s/cast_confirm" % election_id)
+        else:
+            response = self.client.get("/helios/elections/%s/cast_confirm" % election_id)
+            self.assertContains(response, "I am ")
 
         # confirm the vote
         response = self.client.post("/helios/elections/%s/cast_confirm" % election_id, {
@@ -576,5 +579,5 @@ class ElectionBlackboxTests(TestCase):
                 })
         self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
 
-        self._cast_ballot(election_id, username, password)
+        self._cast_ballot(election_id, username, password, need_login = False)
         self._do_tally(election_id)

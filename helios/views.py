@@ -499,11 +499,16 @@ def one_election_cast(request, election):
 
   return HttpResponseRedirect("%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_cast_confirm, args=[election.uuid])))
 
-@election_view(frozen=True, allow_logins=True)
+@election_view(allow_logins=True)
 def password_voter_login(request, election):
   """
   This is used to log in as a voter for a particular election
   """
+
+  if request.method == "GET":
+    password_login_form = forms.VoterPasswordForm()
+    return render_template(request, 'password_voter_login', {'election': election, 'password_login_form': password_login_form})
+
   password_login_form = forms.VoterPasswordForm(request.POST)
 
   # redirect base depending on whether this is a private election

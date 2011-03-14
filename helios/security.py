@@ -7,6 +7,7 @@ Ben Adida (ben@adida.net)
 # nicely update the wrapper function
 from functools import update_wrapper
 
+from django.core.urlresolvers import reverse
 from django.core.exceptions import *
 from django.conf import settings
 
@@ -72,17 +73,17 @@ def election_view(**checks):
   def election_view_decorator(func):
     def election_view_wrapper(request, election_uuid=None, *args, **kw):
       election = get_election_by_uuid(election_uuid)
-    
+
       # do checks
       do_election_checks(election, checks)
 
       # if private election, only logged in voters
       if election.private_p and not checks.get('allow_logins',False):
-        from views import get_voter, get_user
+        from views import get_voter, get_user, password_voter_login
         user = get_user(request)
         if not user_can_admin_election(user, election) and not get_voter(request, user, election):
           # FIXME: should be a nice redirect
-          raise PermissionDenied()
+          return HttpResponseRedirect(reverse(password_voter_login, args=[election.uuid]))
     
       return func(request, election, *args, **kw)
 
