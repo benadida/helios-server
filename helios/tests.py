@@ -492,7 +492,10 @@ class ElectionBlackboxTests(TestCase):
         # return the voter username and password to vote
         return election_id, username, password
 
-    def _cast_ballot(self, election_id, username, password, need_login=True):
+    def _cast_ballot(self, election_id, username, password, need_login=True, check_user_logged_in=False):
+        """
+        check_user_logged_in looks for the "you're already logged" message
+        """
         # vote by preparing a ballot via the server-side encryption
         response = self.client.post("/helios/elections/%s/encrypt-ballot" % election_id, {
                 'answers_json': utils.to_json([[1]])})
@@ -508,6 +511,11 @@ class ElectionBlackboxTests(TestCase):
         self.assertRedirects(response, "%s/helios/elections/%s/cast_confirm" % (settings.SECURE_URL_HOST, election_id))        
 
         if need_login:
+            if check_user_logged_in:
+                response = self.client.get("/helios/elections/%s/cast_confirm" % election_id)
+                self.assertContains(response, "You are logged in as")
+                self.assertContains(response, "requires election-specific credentials")                
+
             response = self.client.post("/helios/elections/%s/password_voter_login" % election_id, {
                     'voter_id' : username,
                     'password' : password
@@ -565,7 +573,15 @@ class ElectionBlackboxTests(TestCase):
         
     def test_do_complete_election(self):
         election_id, username, password = self._setup_complete_election()
-        self._cast_ballot(election_id, username, password)
+        
+        # cast a ballot while not logged in
+        self._cast_ballot(election_id, username, password, check_user_logged_in=False)
+
+        # cast a ballot while logged in as a user (not a voter)
+        self.setup_login()
+        self._cast_ballot(election_id, username, password, check_user_logged_in=True)
+        self.clear_login()
+
         self._do_tally(election_id)
 
     def test_do_complete_election_private(self):

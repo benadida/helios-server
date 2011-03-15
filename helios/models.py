@@ -366,11 +366,14 @@ class Election(HeliosModel):
     # password is now separate, not an explicit voter type
     if self.voter_set.filter(user=None).count() > 0:
       voter_types.append('password')
-
-    if self.openreg:
-      if not 'password' in voter_types and 'password' in auth_systems:
-        auth_systems.remove('password')
     else:
+      # no password users, remove password from the possible auth systems
+      if 'password' in auth_systems:
+        auth_systems.remove('password')        
+
+    # closed registration: limit the auth_systems to just the ones
+    # that have registered voters
+    if not self.openreg:
       auth_systems = [vt for vt in voter_types if vt in auth_systems]
 
     self.eligibility = [{'auth_system': auth_system} for auth_system in auth_systems]

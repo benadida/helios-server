@@ -49,6 +49,12 @@ Your smart ballot tracker is:<br /><br />
 {% else %}
 
 {% if show_password %}
+{% if user %}
+<p>
+You are logged in as <u>{{user.display_html_small|safe}}</u>, but this election<br />
+requires election-specific credentials.
+</p>
+{% endif %}
 {% include "_castconfirm_password.html" %}
 
 {% else %}
