@@ -1199,6 +1199,8 @@ def one_voter(request, election, voter_uuid):
   View a single voter's info as JSON.
   """
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
+  if not voter:
+    raise Http404
   return voter.toJSONDict()  
 
 @election_view()
