@@ -452,6 +452,14 @@ class ElectionBlackboxTests(TestCase):
         response = self.client.get("/helios/elections/%s/voters/" % election_id)
         NUM_VOTERS = 4
         self.assertEquals(len(utils.from_json(response.content)), NUM_VOTERS)
+
+        # let's get a single voter
+        single_voter = models.Election.objects.get(uuid = election_id).voter_set.all()[0]
+        response = self.client.get("/helios/elections/%s/voters/%s" % (election_id, single_voter.uuid))
+        self.assertContains(response, '"uuid": "%s"' % single_voter.uuid)
+
+        response = self.client.get("/helios/elections/%s/voters/foobar" % election_id)
+        self.assertEquals(response.status_code, 404)
         
         # add questions
         response = self.client.post("/helios/elections/%s/save_questions" % election_id, {
