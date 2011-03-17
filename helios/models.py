@@ -808,9 +808,14 @@ class Voter(HeliosModel):
     if self.voter_login_id:
       # for backwards compatibility with v3.0, and since it doesn't matter
       # too much if we hash the email or the unique login ID here.
-      return utils.hash_b64(self.voter_login_id)
+      value_to_hash = self.voter_login_id
     else:
-      return utils.hash_b64(self.voter_id)
+      value_to_hash = self.voter_id
+
+    try:
+      return utils.hash_b64(value_to_hash)
+    except:
+      return utils.hash_b64(value_to_hash.encode('latin-1'))
 
   @property
   def voter_type(self):
