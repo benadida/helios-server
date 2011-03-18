@@ -232,6 +232,10 @@ You are <em>not eligible</em> to vote in this {{election.election_type}}, becaus
 {% endif %}
 {% else %}
 
+{% if election.openreg %}
+Anyone can register for this election. <a href="{{settings.SECURE_URL_HOST}}{% url auth.views.index %}?return_url={{CURRENT_URL}}">Log in</a> and register!
+{% endif %}
+
 {% endif %}
 
 {% endif %}
