@@ -609,3 +609,9 @@ class ElectionBlackboxTests(TestCase):
 
         self._cast_ballot(election_id, username, password, need_login = False)
         self._do_tally(election_id)
+
+    def test_do_complete_election_with_trustees(self):
+        """
+        FIXME: do the this test
+        """
+        pass
