@@ -338,6 +338,10 @@ class ElectionBlackboxTests(TestCase):
         del session['user']
         session.save()        
 
+    def test_election_params(self):
+        response = self.client.get("/helios/elections/params")
+        self.assertEquals(response.content, views.ELGAMAL_PARAMS_LD_OBJECT.serialize())
+
     def test_get_election_shortcut(self):
         response = self.client.get("/helios/e/%s" % self.election.short_name, follow=True)
         self.assertContains(response, self.election.description)

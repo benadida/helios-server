@@ -106,6 +106,14 @@ class Trustee(LegacyObject):
         'decryption_factors': arrayOf(arrayOf('core/BigInteger')),
         'decryption_proofs' : arrayOf(arrayOf('legacy/EGZKProof'))}
 
+class EGParams(LegacyObject):
+    WRAPPED_OBJ_CLASS = crypto_elgamal.Cryptosystem
+    FIELDS = ['p', 'q', 'g']
+    STRUCTURED_FIELDS = {
+        'p': 'core/BigInteger',
+        'q': 'core/BigInteger',
+        'g': 'core/BigInteger'}
+
 class EGPublicKey(LegacyObject):
     WRAPPED_OBJ_CLASS = crypto_elgamal.PublicKey
     FIELDS = ['y', 'p', 'g', 'q']
