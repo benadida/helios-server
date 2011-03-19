@@ -1031,7 +1031,10 @@ class Trustee(HeliosModel):
 
   @classmethod
   def get_by_election_and_email(cls, election, email):
-    return cls.objects.get(election = election, email = email)
+    try:
+      return cls.objects.get(election = election, email = email)
+    except cls.DoesNotExist:
+      return None
 
   @property
   def datatype(self):

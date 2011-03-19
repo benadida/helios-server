@@ -396,9 +396,16 @@ def trustee_login(request, election_short_name, trustee_email, trustee_secret):
   if election:
     trustee = Trustee.get_by_election_and_email(election, trustee_email)
     
-    if trustee and trustee.secret == trustee_secret:
-      set_logged_in_trustee(request, trustee)
-      return HttpResponseRedirect(reverse(trustee_home, args=[election.uuid, trustee.uuid]))
+    if trustee:
+      if trustee.secret == trustee_secret:
+        set_logged_in_trustee(request, trustee)
+        return HttpResponseRedirect(reverse(trustee_home, args=[election.uuid, trustee.uuid]))
+      else:
+        # bad secret, we'll let that redirect to the front page
+        pass
+    else:
+      # no such trustee
+      raise Http404
 
   return HttpResponseRedirect("/")
 
