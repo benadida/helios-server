@@ -49,9 +49,11 @@ ELGAMAL_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(ELGAMAL_PARAMS, dataty
 # single election server? Load the single electionfrom models import Election
 from django.conf import settings
 
-# a helper function
 def get_election_url(election):
   return settings.URL_HOST + reverse(election_shortcut, args=[election.short_name])  
+
+def get_election_govote_url(election):
+  return settings.URL_HOST + reverse(election_vote_shortcut, args=[election.short_name])  
 
 def get_castvote_url(cast_vote):
   return settings.URL_HOST + reverse(castvote_shortcut, args=[cast_vote.vote_tinyhash])
@@ -134,6 +136,17 @@ def election_shortcut(request, election_short_name):
   election = Election.get_by_short_name(election_short_name)
   if election:
     return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+  else:
+    raise Http404
+
+def election_vote_shortcut(request, election_short_name):
+  election = Election.get_by_short_name(election_short_name)
+  if election:
+    vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url' : reverse(one_election, args=[election.uuid])}))
+
+    test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : vote_url}))
+
+    return HttpResponseRedirect(test_cookie_url)
   else:
     raise Http404
 
@@ -311,7 +324,7 @@ def one_election_view(request, election):
           }))
 
   trustees = Trustee.get_by_election(election)
-    
+
   return render_template(request, 'election_view',
                          {'election' : election, 'trustees': trustees, 'admin_p': admin_p, 'user': user,
                           'voter': voter, 'votes': votes, 'notregistered': notregistered, 'eligible_p': eligible_p,
@@ -1165,7 +1178,7 @@ def voters_email(request, election):
       extra_vars = {
         'custom_subject' : email_form.cleaned_data['subject'],
         'custom_message' : email_form.cleaned_data['body'],
-        'election_url' : get_election_url(election),
+        'election_url' : get_election_govote_url(election),
         'election' : election
         }
         

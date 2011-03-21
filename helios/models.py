@@ -15,7 +15,7 @@ import datetime, logging, uuid, random
 
 from crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
-import helios
+import helios.views
 
 from helios import datatypes
 
@@ -460,7 +460,7 @@ class Election(HeliosModel):
 
   @property
   def url(self):
-    return helios.get_election_url(self)
+    return helios.views.get_election_url(self)
 
   def init_tally(self):
     # FIXME: create the right kind of tally

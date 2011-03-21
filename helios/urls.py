@@ -18,6 +18,7 @@ urlpatterns = patterns('',
 
   # election shortcut by shortname
   (r'^e/(?P<election_short_name>[^/]+)$', election_shortcut),
+  (r'^e/(?P<election_short_name>[^/]+)/vote$', election_vote_shortcut),
 
   # vote shortcut
   (r'^v/(?P<vote_tinyhash>[^/]+)$', castvote_shortcut),
