@@ -259,6 +259,10 @@ class Tally(WorkflowObject):
   """
   A running homomorphic tally
   """
+
+  @property
+  def datatype(self):
+    return "legacy/Tally"
   
   def __init__(self, *args, **kwargs):
     super(Tally, self).__init__()
@@ -377,12 +381,13 @@ class Tally(WorkflowObject):
     decryption_proofs are the corresponding proofs
     public_key is, of course, the public key of the trustee
     """
-    
+
     # go through each one
     for q_num, q in enumerate(self.tally):
       for a_num, answer_tally in enumerate(q):
         # parse the proof
-        proof = algs.EGZKProof.fromJSONDict(decryption_proofs[q_num][a_num])
+        #proof = algs.EGZKProof.fromJSONDict(decryption_proofs[q_num][a_num])
+        proof = decryption_proofs[q_num][a_num]
         
         # check that g, alpha, y, dec_factor is a DH tuple
         if not proof.verify(public_key.g, answer_tally.alpha, public_key.y, int(decryption_factors[q_num][a_num]), public_key.p, public_key.q, challenge_generator):

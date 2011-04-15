@@ -11,7 +11,8 @@ $(document).ready(function() {
     $('#error_div').hide();
     
     BigInt.setup(function() {
-        ELECTION_PK = ElGamal.PublicKey.fromJSONObject({{election.public_key.toJSON|safe}});
+        ELECTION_JSON = {{election.toJSON|safe}};
+        ELECTION_PK = ElGamal.PublicKey.fromJSONObject(ELECTION_JSON['public_key']);
         TALLY = HELIOS.Tally.fromJSONObject({{election.encrypted_tally.toJSON|safe}}, ELECTION_PK);   
         $('#sk_section').show();
     });

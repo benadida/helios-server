@@ -956,11 +956,13 @@ def trustee_upload_decryption(request, election, trustee_uuid):
   trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
 
   factors_and_proofs = utils.from_json(request.POST['factors_and_proofs'])
-  
+
   # verify the decryption factors
-  trustee.decryption_factors = factors_and_proofs['decryption_factors']
-  trustee.decryption_proofs = factors_and_proofs['decryption_proofs']
-  
+  trustee.decryption_factors = [[datatypes.LDObject.fromDict(factor, type_hint='core/BigInteger').wrapped_obj for factor in one_q_factors] for one_q_factors in factors_and_proofs['decryption_factors']]
+
+  # each proof needs to be deserialized
+  trustee.decryption_proofs = [[datatypes.LDObject.fromDict(proof, type_hint='legacy/EGZKProof').wrapped_obj for proof in one_q_proofs] for one_q_proofs in factors_and_proofs['decryption_proofs']]
+
   if trustee.verify_decryption_proofs():
     trustee.save()
     
