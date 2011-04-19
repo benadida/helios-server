@@ -1161,7 +1161,10 @@ def voters_email(request, election):
     return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
   
   voter_id = request.REQUEST.get('voter_id', None)
-  voter = Voter.get_by_election_and_voter_id(election, voter_id)
+  if voter_id:
+    voter = Voter.get_by_election_and_voter_id(election, voter_id)
+  else:
+    voter = None
   
   if request.method == "GET":
     email_form = forms.EmailVotersForm(initial={'subject': 'Vote in %s' % election.name})
