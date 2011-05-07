@@ -52,6 +52,9 @@ from django.conf import settings
 def get_election_url(election):
   return settings.URL_HOST + reverse(election_shortcut, args=[election.short_name])  
 
+def get_election_badge_url(election):
+  return settings.URL_HOST + reverse(election_badge, args=[election.uuid])  
+
 def get_election_govote_url(election):
   return settings.URL_HOST + reverse(election_vote_shortcut, args=[election.short_name])  
 
@@ -282,6 +285,7 @@ def one_election_view(request, election):
   eligible_p = True
   
   election_url = get_election_url(election)
+  election_badge_url = get_election_badge_url(election)
   status_update_message = None
 
   vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url' : reverse(one_election, args=[election.uuid])}))
@@ -328,7 +332,8 @@ def one_election_view(request, election):
   return render_template(request, 'election_view',
                          {'election' : election, 'trustees': trustees, 'admin_p': admin_p, 'user': user,
                           'voter': voter, 'votes': votes, 'notregistered': notregistered, 'eligible_p': eligible_p,
-                          'can_feature_p': can_feature_p, 'election_url' : election_url, 'vote_url': vote_url,
+                          'can_feature_p': can_feature_p, 'election_url' : election_url, 
+                          'vote_url': vote_url, 'election_badge_url' : election_badge_url,
                           'test_cookie_url': test_cookie_url, 'socialbuttons_url' : socialbuttons_url})
 
 def test_cookie(request):

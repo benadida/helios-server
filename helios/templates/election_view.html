@@ -72,6 +72,20 @@ this {{election.election_type}} is <u>not</u> featured on the front page.
 </p>
 
 {% if admin_p %}
+{% if not election.private_p %}
+<div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">
+<a href="#" onclick="$('#badgebody').slideToggle(250);">Embed an Election Badge</a>
+<div id="badgebody" style="display:none;">
+<br />
+<form action="#">
+<textarea cols="90" rows="4" wrap="soft">&lt;iframe src="{{election_badge_url}}" frameborder="0" style="border: 1px solid black" height="75" width="200"&gt;
+&lt;/iframe&gt;</textarea><br />
+<p style="font-size:0.8em;">adding this HTML to your site displays a thin banner with direct links to voting.</p>
+</form>
+</div>
+</div>
+{% endif %}
+
 <p>
 
 {% if election.result %}
