@@ -1087,7 +1087,8 @@ def voters_list_pretty(request, election):
   voter_files = election.voterfile_set.all()
 
   # load a bunch of voters
-  voters = Voter.get_by_election(election, order_by=order_by)
+  # voters = Voter.get_by_election(election, order_by=order_by)
+  voters = Voter.objects.filter(election = election).order_by(order_by).defer('vote')
 
   if q != '':
     if election.use_voter_aliases:
