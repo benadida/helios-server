@@ -61,6 +61,19 @@ def get_election_govote_url(election):
 def get_castvote_url(cast_vote):
   return settings.URL_HOST + reverse(castvote_shortcut, args=[cast_vote.vote_tinyhash])
 
+# social buttons
+def get_socialbuttons_url(url, text):
+  if not text:
+    return None
+  
+  return "%s%s?%s" % (settings.SOCIALBUTTONS_URL_HOST,
+                      reverse(socialbuttons),
+                      urllib.urlencode({
+        'url' : url,
+        'text': text.encode('utf-8')
+        }))
+  
+
 # simple static views
 def home(request):
   user = get_user(request)
@@ -318,14 +331,7 @@ def one_election_view(request, election):
     status_update_message = u"Results are in for %s" % election.name
   
   # a URL for the social buttons
-  socialbuttons_url = None
-  if status_update_message:
-    socialbuttons_url = "%s%s?%s" % (settings.SOCIALBUTTONS_URL_HOST,
-                                     reverse(socialbuttons),
-                                     urllib.urlencode({
-          'url' : election_url,
-          'text': status_update_message.encode('utf-8')
-          }))
+  socialbuttons_url = get_socialbuttons_url(election_url, status_update_message)
 
   trustees = Trustee.get_by_election(election)
 
@@ -689,6 +695,7 @@ def one_election_cast_done(request, election):
   if voter:
     votes = CastVote.get_by_voter(voter)
     vote_hash = votes[0].vote_hash
+    cv_url = get_castvote_url(votes[0])
 
     # only log out if the setting says so *and* we're dealing
     # with a site-wide voter. Definitely remove current_voter
@@ -699,8 +706,10 @@ def one_election_cast_done(request, election):
       del request.session['CURRENT_VOTER']
 
     save_in_session_across_logouts(request, 'last_vote_hash', vote_hash)
+    save_in_session_across_logouts(request, 'last_vote_cv_url', cv_url)
   else:
     vote_hash = request.session['last_vote_hash']
+    cv_url = request.session['last_vote_cv_url']
     logout = False
   
   # local logout ensures that there's no more
@@ -709,10 +718,16 @@ def one_election_cast_done(request, election):
   # from remote systems, just in case, i.e. CAS
   # if logout:
   #   auth_views.do_local_logout(request)
-    
+  
+  # tweet/fb your vote
+  socialbuttons_url = get_socialbuttons_url(cv_url, 'I cast a vote in %s' % election.name) 
+  
   # remote logout is happening asynchronously in an iframe to be modular given the logout mechanism
   # include_user is set to False if logout is happening
-  return render_template(request, 'cast_done', {'election': election, 'vote_hash': vote_hash, 'logout': logout}, include_user=(not logout))
+  return render_template(request, 'cast_done', {'election': election,
+                                                'vote_hash': vote_hash, 'logout': logout,
+                                                'socialbuttons_url': socialbuttons_url},
+                         include_user=(not logout))
 
 @election_view()
 @json
