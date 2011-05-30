@@ -1142,7 +1142,7 @@ def voters_upload(request, election):
   #  raise PermissionDenied()
 
   if request.method == "GET":
-    return render_template(request, 'voters_upload', {'election': election})
+    return render_template(request, 'voters_upload', {'election': election, 'error': request.GET.get('e',None)})
     
   if request.method == "POST":
     if bool(request.POST.get('confirm_p', 0)):
@@ -1153,15 +1153,18 @@ def voters_upload(request, election):
       return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
     else:
       # we need to confirm
-      voters_file = request.FILES['voters_file']
-      voter_file_obj = election.add_voters_file(voters_file)
+      if request.FILES.has_key('voters_file'):
+        voters_file = request.FILES['voters_file']
+        voter_file_obj = election.add_voters_file(voters_file)
 
-      request.session['voter_file_id'] = voter_file_obj.id
+        request.session['voter_file_id'] = voter_file_obj.id
+        
+        # import the first few lines to check
+        voters = [v for v in voter_file_obj.itervoters()][:5]
 
-      # import the first few lines to check
-      voters = [v for v in voter_file_obj.itervoters()][:5]
-
-      return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters})
+        return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters})
+      else:
+        return HttpResponseRedirect("%s?%s" % (reverse(voters_upload, args=[election.uuid]), urllib.urlencode({'e':'no voter file specified, try again'})))
 
 @election_admin()
 def voters_upload_cancel(request, election):
