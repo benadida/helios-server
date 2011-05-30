@@ -262,18 +262,30 @@ class Election(HeliosModel):
   def issues_before_freeze(self):
     issues = []
     if self.questions == None or len(self.questions) == 0:
-      issues.append("no questions")
+      issues.append(
+        {'type': 'questions',
+         'action': "add questions to the ballot"}
+        )
   
     trustees = Trustee.get_by_election(self)
     if len(trustees) == 0:
-      issues.append("no trustees")
+      issues.append({
+          'type': 'trustees',
+          'action': "add at least one trustee"
+          })
 
     for t in trustees:
       if t.public_key == None:
-        issues.append("trustee %s hasn't generated a key yet" % t.name)
+        issues.append({
+            'type': 'trustee keypairs',
+            'action': 'have trustee %s generate a keypair' % t.name
+            })
 
     if self.voter_set.count() == 0 and not self.openreg:
-      issues.append("no voters and closed registration")
+      issues.append({
+          "type" : "voters",
+          "action" : 'enter your voter list (or open registration to the public)'
+          })
 
     return issues    
 

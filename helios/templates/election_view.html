@@ -33,6 +33,7 @@ if (!navigator.javaEnabled()) {
 {% endif %}
 <br />
 {% if admin_p %}
+{% if not election.private_p %}
 {% if election.featured_p %}
 this {{election.election_type}} is featured on the front page.
 {% if can_feature_p %}
@@ -42,6 +43,7 @@ this {{election.election_type}} is featured on the front page.
 this {{election.election_type}} is <u>not</u> featured on the front page.
 {% if can_feature_p %}
 [<a href="{% url helios.views.one_election_set_featured election.uuid %}?featured_p=1">feature it</a>]
+{% endif %}
 {% endif %}
 {% endif %}
 {% endif %}
@@ -72,7 +74,7 @@ this {{election.election_type}} is <u>not</u> featured on the front page.
 </p>
 
 {% if admin_p %}
-{% if not election.private_p %}
+{% if election.frozen_p %}
 <div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">
 <a href="#" onclick="$('#badgebody').slideToggle(250);">Embed an Election Badge</a>
 <div id="badgebody" style="display:none;">
@@ -85,7 +87,6 @@ this {{election.election_type}} is <u>not</u> featured on the front page.
 </div>
 </div>
 {% endif %}
-
 <p>
 
 {% if election.result %}
@@ -97,7 +98,9 @@ this {{election.election_type}} is <u>not</u> featured on the front page.
 <span style="font-size: 1.3em;">
 {% if not election.frozen_at %}
 {% if election.issues_before_freeze %}
-add questions, voters, and trustees.
+{% for issue in election.issues_before_freeze %}
+{{issue.action}}{% if forloop.last %}{% else %}, and{% endif %}<br />
+{% endfor %}
 {% else %}
 <a href="{% url helios.views.one_election_freeze election.uuid %}">freeze ballot and open election.</a>
 <br />
@@ -182,13 +185,8 @@ all voters will be notified that the tally is ready.
 <span class="highlight-box round" style="font-size: 1.6em; margin-right: 10px;" id="votelink">
 <a href="{{test_cookie_url}}">Vote in this {{election.election_type}} </a>
 </span><br />
-{% if not user %}
 <br />
-<br /><br />
-For your privacy, you'll be asked to log in only once your ballot is encrypted.
-{% endif %}
 {% if election.voting_extended_until %}
-<br />
 This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
 but has been extended until {{ election.voting_extended_until }} (UTC).
 {% else %}
@@ -196,10 +194,14 @@ but has been extended until {{ election.voting_extended_until }} (UTC).
 <br />
 This {{election.election_type}} is scheduled to end at {{election.voting_ends_at}} (UTC).
 {% else %}
-<br />
 This {{election.election_type}} ends at the administrator's discretion.
 {% endif %}
 <br />
+{% endif %}
+
+{% if election.private_p and voter %}
+<br />
+This election is <em>private</em>. You are signed in as eligible voter <em>{{voter.name}}</em>.
 {% endif %}
 
 <div class="highlight-box round" style="font-size: 1.2em; margin-right: 400px; display:none;" id="nojava_message">

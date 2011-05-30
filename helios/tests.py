@@ -553,6 +553,17 @@ class ElectionBlackboxTests(TestCase):
         url = re.search('http://[^/]+(/[^ \n]*)', email_message.body).group(1)
 
         # check that we can get at that URL
+        if not need_login:
+            # confusing piece: if need_login is True, that means it was a public election
+            # that required login before casting a ballot.
+            # so if need_login is False, it was a private election, and we do need to re-login here
+            # we need to re-login if it's a private election, because all data, including ballots
+            # is otherwise private
+            response = self.client.post("/helios/elections/%s/password_voter_login" % election_id, {
+                    'voter_id' : username,
+                    'password' : password
+                    })
+            
         response = self.client.get(url)
         self.assertContains(response, ballot.hash)
         self.assertContains(response, html_escape(encrypted_vote))

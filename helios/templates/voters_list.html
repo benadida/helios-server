@@ -10,7 +10,12 @@
 {% if election.openreg %}
 [<a href="{% url helios.views.one_election_set_reg election.uuid %}?open_p=0">switch to closed</a>]
 {% else %}
+{% if election.private_p %}
+<br />
+Your election is marked private: registration can be opened to the public only for public elections.
+{% else %}
 [<a href="{% url helios.views.one_election_set_reg election.uuid %}?open_p=1">switch to open</a>]
+{% endif %}
 {% endif %}
 {% endif %}
 </p>
@@ -19,7 +24,7 @@
 <p><a href="{% url helios.views.voters_email election.uuid %}">email voters</a></p>
 {% endif %}
 
-
+{% if election.num_voters > 20 %}
 <p>
 {% if q %}
 <p><em>searching for <u>{{q}}</u>.</em> [<a href="?">clear search</a>]</p>
@@ -27,9 +32,10 @@
 <form method="get" action="{% url helios.views.voters_list_pretty election.uuid %}"><b>search</b>: <input type="text" name="q" /> <input type="submit" value="search" /></form>
 {% endif %}
 </p>
-<br />
+{% endif %}
+
 {% if admin_p %}
-Add a Voter: WORK HERE
+<!-- Add a Voter: WORK HERE-->
 {% if upload_p %}
 <p>
 <a href="{% url helios.views.voters_upload election_uuid=election.uuid %}">bulk upload voters</a>

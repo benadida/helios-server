@@ -3,15 +3,15 @@
 {% block content %}
   <h2 class="title">{{election.name}} &mdash; Freeze Ballot</h2>
 <p>
-Once the ballot is frozen, the questions and available choices can no longer be modified.<br />
+Once the ballot is frozen, the questions and options can no longer be modified.<br />
 The list of trustees and their public keys will also be frozen.
 </p>
 
 <p>
 {% if election.openreg %}
-Your election currently has <b>open registration</b>. After you freeze the ballot, you will be able to continue to manage the voter list while the election runs. You will <em>not</em> be able to switch back to a closed-registration setting.
+Registration for your election is currently <b>open</b>, which means anyone can vote, even after you freeze the ballot.
 {% else %}
-Your election currently has <b>closed registration</b>.<br />After you freeze the ballot, you also will <em>not</em> be able to modify the voter list, nor will you be able to re-open registration.
+Registration for your election is currently <b>closed</b>, which means only the voters you designate will be able to cast a ballot. As the administrator, you will still be able to modify that voter list as the election progresses.
 {% endif %}
 </p>    
 
@@ -23,10 +23,10 @@ You must freeze the ballot before you can contact voters.
 
 {% if issues_p %}
 <p>
-    There are <b>problems</b> that prevent you from freezing the election:
+    Before you can freeze the election, you will need to:
     <ul>
         {% for issue in issues %}
-        <li>{{issue}}</li>
+        <li>{{issue.action}}</li>
         {% endfor %}
     </ul>
     <a href="{% url helios.views.one_election_view election.uuid %}">go back to the election</a>
@@ -35,7 +35,7 @@ You must freeze the ballot before you can contact voters.
 <form method="post" action="">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
-<input class="pretty" type="submit" value="freeze!" />
+<input class="pretty" type="submit" value="Freeze the ballot" />
 <button onclick="document.location='./view'; return false;">never mind</button>
 </form>
 {% endif %}

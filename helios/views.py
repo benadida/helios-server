@@ -166,14 +166,17 @@ def election_vote_shortcut(request, election_short_name):
   else:
     raise Http404
 
+@election_view()
+def _castvote_shortcut_by_election(request, election, cast_vote):
+  return render_template(request, 'castvote', {'cast_vote' : cast_vote, 'vote_content': cast_vote.vote.toJSON(), 'voter': cast_vote.voter, 'election': election})
+  
 def castvote_shortcut(request, vote_tinyhash):
   try:
     cast_vote = CastVote.objects.get(vote_tinyhash = vote_tinyhash)
   except CastVote.DoesNotExist:
     raise Http404
 
-  # FIXME: consider privacy of election
-  return render_template(request, 'castvote', {'cast_vote' : cast_vote, 'vote_content': cast_vote.vote.toJSON(), 'voter': cast_vote.voter, 'election': cast_vote.voter.election})
+  return _castvote_shortcut_by_election(request, election_uuid = cast_vote.voter.election.uuid, cast_vote=cast_vote)
 
 @trustee_check
 def trustee_keygenerator(request, election, trustee):
@@ -247,8 +250,8 @@ def election_new(request):
 def one_election_edit(request, election):
 
   error = None
-  RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases', 'election_type']
-  # RELEVANT_FIELDS += ['use_advanced_audit_features', 'private_p']
+  RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases', 'election_type', 'private_p']
+  # RELEVANT_FIELDS += ['use_advanced_audit_features']
   
   if request.method == "GET":
     values = {}
@@ -308,15 +311,16 @@ def one_election_view(request, election):
   if user:
     voter = Voter.get_by_election_and_user(election, user)
     
-    if voter:
-      # cast any votes?
-      votes = CastVote.get_by_voter(voter)
-    else:
+    if not voter:
       eligible_p = _check_eligibility(election, user)
-      votes = None
       notregistered = True
   else:
-    voter = None
+    voter = get_voter(request, user, election)
+
+  if voter:
+    # cast any votes?
+    votes = CastVote.get_by_voter(voter)
+  else:
     votes = None
 
   # status update message?
@@ -829,9 +833,11 @@ def one_election_set_reg(request, election):
   """
   Set whether this is open registration or not
   """
-  open_p = bool(int(request.GET['open_p']))
-  election.openreg = open_p
-  election.save()
+  # only allow this for public elections
+  if not election.private_p:
+    open_p = bool(int(request.GET['open_p']))
+    election.openreg = open_p
+    election.save()
   
   return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
 
