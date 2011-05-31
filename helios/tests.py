@@ -618,8 +618,12 @@ class ElectionBlackboxTests(TestCase):
         # log in
         response = self.client.post("/helios/elections/%s/password_voter_login" % election_id, {
                 'voter_id' : username,
-                'password' : password
+                'password' : password,
+                'return_url' : "/helios/elections/%s/view" % election_id
                 })
+
+        # FIXME: probably better to fetch password_voter_login as a get and post the form obtained
+        # rather than assume return_url
         self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
 
         self._cast_ballot(election_id, username, password, need_login = False)
