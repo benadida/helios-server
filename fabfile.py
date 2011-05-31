@@ -3,8 +3,8 @@ Deployment Fabric file
 
 A fabric deployment script for Helios that assumes the following:
 - locally, development is /web/helios-server
-- remotely, production is /web/production/helios-server
-- remotely, staging is /web/staging/helios-server
+- remotely, a number of production setups 
+- remotely, a number of staging setups
 - all of these directories are git checkouts that have a proper origin pointer
 
 Other assumptions that should probably change:
@@ -15,15 +15,35 @@ Deployment is git and tag based, so:
 fab staging_deploy:tag=v3.0.4,hosts="vote.heliosvoting.org"
 fab production_deploy:tag=v3.0.5,hosts="vote.heliosvoting.org"
 
+also to get the latest
+
+fab production_deploy:tag=latest,hosts="vote.heliosvoting.org"
+
 IMPORTANT: settings file may need to be tweaked manually
 """
 
 from fabric.api import local, settings, abort, cd, run, sudo
 from fabric.contrib.console import confirm
 
-STAGING_DIR = "/web/staging/helios-server"
-PRODUCTION_DIR = "/web/production/helios-server"
+STAGING_SETUP = {
+    'root' : "/web/staging/helios-server",
+    'celery' : "/etc/init.d/staging-celeryd",
+    'dbname' : "helios-staging"
+    }
 
+PRODUCTION_SETUPS = [
+    {
+        'root' : "/web/production/helios-server",
+        'celery' : "/etc/init.d/celeryd",
+        'dbname' : "helios"
+        },
+    {
+        'root' : "/web/princeton/helios-server",
+        'celery' : "/etc/init.d/princeton-celeryd",
+        'dbname' : "princeton-helios"
+        },
+]
+        
 def run_tests():
     result = local("python manage.py test", capture=False)
     if result.failed:
@@ -41,6 +61,20 @@ def check_tag(tag, path):
         if tag not in result.split("\n"):
             abort("no remote tag %s" % tag)
 
+def get_latest(path):
+    with cd(path):
+        result = run('git pull')
+        if result.failed:
+            abort("on remote: could not get latest")
+
+        result = run('git submodule init')
+        if result.failed:
+            abort("on remote: could not init submodules")
+
+        result = run('git submodule update')
+        if result.failed:
+            abort("on remote: could not update submodules")
+    
 def checkout_tag(tag, path):
     with cd(path):
         result = run('git checkout %s' % tag)
@@ -66,22 +100,26 @@ def restart_apache():
     if result.failed:
         abort("could not restart apache")
 
-def restart_celeryd():
-    result = sudo('/etc/init.d/celeryd restart')
+def restart_celeryd(path):
+    result = sudo('%s restart' % celery_path)
     if result.failed:
-        abort("could not restart celeryd")
+        abort("could not restart celeryd - %s " % celery_path)
 
 def deploy(tag, path):
     confirm("Ready to deploy %s to %s?" % (tag,path))
     run_tests()
-    check_tag(tag, path=path)
-    checkout_tag(tag, path=path)
+    if tag == 'latest':
+        get_latest(path=path)
+    else:
+        check_tag(tag, path=path)
+        checkout_tag(tag, path=path)
     migrate_db(path=path)
     restart_apache()
     
 def staging_deploy(tag):
-    deploy(tag, path=STAGING_DIR)
+    deploy(tag, path=STAGING_SETUP['root'])
 
 def production_deploy(tag):
-    deploy(tag, path=PRODUCTION_DIR)
-    restart_celeryd()
+    for prod_setup in PRODUCTION_SETUPS:
+        deploy(tag, path = prod_setup['root'])
+        restart_celeryd(path = prod_setup['celery'])
