@@ -41,7 +41,7 @@ PRODUCTION_SETUPS = [
         'root' : "/web/princeton/helios-server",
         'celery' : "/etc/init.d/princeton-celeryd",
         'dbname' : "princeton-helios"
-        },
+        }
 ]
         
 def run_tests():
@@ -101,13 +101,11 @@ def restart_apache():
         abort("could not restart apache")
 
 def restart_celeryd(path):
-    result = sudo('%s restart' % celery_path)
+    result = sudo('%s restart' % path)
     if result.failed:
-        abort("could not restart celeryd - %s " % celery_path)
+        abort("could not restart celeryd - %s " % path)
 
 def deploy(tag, path):
-    confirm("Ready to deploy %s to %s?" % (tag,path))
-    run_tests()
     if tag == 'latest':
         get_latest(path=path)
     else:
@@ -120,6 +118,10 @@ def staging_deploy(tag):
     deploy(tag, path=STAGING_SETUP['root'])
 
 def production_deploy(tag):
+    production_roots = ",".join([p['root'] for p in PRODUCTION_SETUPS])
+    if not confirm("Ready to deploy %s to %s?" % (tag, production_roots)):
+        return
+    run_tests()
     for prod_setup in PRODUCTION_SETUPS:
         deploy(tag, path = prod_setup['root'])
         restart_celeryd(path = prod_setup['celery'])

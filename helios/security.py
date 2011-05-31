@@ -15,6 +15,7 @@ from models import *
 from auth.security import get_user
 
 from django.http import HttpResponseRedirect
+import urllib
 
 import helios
 
@@ -82,8 +83,10 @@ def election_view(**checks):
         from views import get_voter, get_user, password_voter_login
         user = get_user(request)
         if not user_can_admin_election(user, election) and not get_voter(request, user, election):
-          # FIXME: should be a nice redirect
-          return HttpResponseRedirect(reverse(password_voter_login, args=[election.uuid]))
+          return_url = request.get_full_path()
+          return HttpResponseRedirect("%s?%s" % (reverse(password_voter_login, args=[election.uuid]), urllib.urlencode({
+                  'return_url' : return_url
+                  })))
     
       return func(request, election, *args, **kw)
 

@@ -155,14 +155,19 @@ def election_shortcut(request, election_short_name):
   else:
     raise Http404
 
+# a hidden view behind the shortcut that performs the actual perm check
+@election_view()
+def _election_vote_shortcut(request, election):
+  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url' : reverse(one_election, args=[election.uuid])}))
+  
+  test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : vote_url}))
+
+  return HttpResponseRedirect(test_cookie_url)
+  
 def election_vote_shortcut(request, election_short_name):
   election = Election.get_by_short_name(election_short_name)
   if election:
-    vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url' : reverse(one_election, args=[election.uuid])}))
-
-    test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : vote_url}))
-
-    return HttpResponseRedirect(test_cookie_url)
+    return _election_vote_shortcut(request, election_uuid=election.uuid)
   else:
     raise Http404
 
@@ -542,18 +547,25 @@ def password_voter_login(request, election):
   This is used to log in as a voter for a particular election
   """
 
+  # the URL to send the user to after they've logged in
+  return_url = request.REQUEST.get('return_url', reverse(one_election_cast_confirm, args=[election.uuid]))
   if request.method == "GET":
     password_login_form = forms.VoterPasswordForm()
-    return render_template(request, 'password_voter_login', {'election': election, 'password_login_form': password_login_form})
+    return render_template(request, 'password_voter_login', {'election': election, 
+                                                             'return_url' : return_url,
+                                                             'password_login_form': password_login_form})
+
+  login_url = request.REQUEST.get('login_url', None)
+
+  if not login_url:
+    # login depending on whether this is a private election
+    # cause if it's private the login is happening on the front page
+    if election.private_p:
+      login_url = reverse(one_election_view, args=[election.uuid])
+    else:
+      login_url = reverse(one_election_cast_confirm, args=[election.uuid])
 
   password_login_form = forms.VoterPasswordForm(request.POST)
-
-  # redirect base depending on whether this is a private election
-  # cause if it's private the login is happening on the front page
-  if election.private_p:
-    redirect_base = reverse(one_election_view, args=[election.uuid])
-  else:
-    redirect_base = reverse(one_election_cast_confirm, args=[election.uuid])
 
   if password_login_form.is_valid():
     try:
@@ -562,9 +574,9 @@ def password_voter_login(request, election):
 
       request.session['CURRENT_VOTER'] = voter
     except Voter.DoesNotExist:
-        return HttpResponseRedirect(redirect_base + "?bad_voter_login=1")
+      return HttpResponseRedirect(login_url + "?bad_voter_login=1")
   
-  return HttpResponseRedirect(redirect_base)
+  return HttpResponseRedirect(return_url)
 
 @election_view(frozen=True)
 def one_election_cast_confirm(request, election):
