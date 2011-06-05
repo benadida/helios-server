@@ -827,7 +827,10 @@ class Voter(HeliosModel):
     try:
       return utils.hash_b64(value_to_hash)
     except:
-      return utils.hash_b64(value_to_hash.encode('latin-1'))
+      try:
+        return utils.hash_b64(value_to_hash.encode('latin-1'))
+      except:
+        return utils.hash_b64(value_to_hash.encode('utf-8'))        
 
   @property
   def voter_type(self):
