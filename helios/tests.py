@@ -3,6 +3,7 @@ Unit Tests for Helios
 """
 
 import unittest, datetime, re
+import django_webtest
 
 import models
 import datatypes
@@ -316,11 +317,30 @@ class LegacyElectionBlackboxTests(DataFormatBlackboxTests, TestCase):
 #    EXPECTED_TRUSTEES_FILE = 'helios/fixtures/v3.1-trustees-expected.json'
 #    EXPECTED_BALLOTS_FILE = 'helios/fixtures/v3.1-ballots-expected.json'
 
+class WebTest(django_webtest.WebTest):
+    def assertRedirects(self, response, url):
+        """
+        reimplement this in case it's a WebOp response
+        """
+        if hasattr(response, 'status_code'):
+            return super(django_webtest.WebTest, self).assertRedirects(response, url)
+
+        assert response.status_int == 302
+        assert url in response.location, "redirected to %s instead of %s" % (response.location, url)
+
+    def assertContains(self, response, text):
+        if hasattr(response, 'status_code'):
+            return super(django_webtest.WebTest, self).assertContains(response, text)
+
+        assert response.status_int == 200
+        assert text in response.testbody, "missing text %s" % text
+        
+
 ##
 ## overall operation of the system
 ##
 
-class ElectionBlackboxTests(TestCase):
+class ElectionBlackboxTests(WebTest):
     fixtures = ['users.json', 'election.json']
 
     def setUp(self):
@@ -331,7 +351,10 @@ class ElectionBlackboxTests(TestCase):
         # set up the session
         session = self.client.session
         session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
-        session.save()        
+        session.save()
+        
+        # set up the app, too
+        self.app.cookies['sessionid'] = self.client.cookies.get('sessionid').value
 
     def clear_login(self):
         session = self.client.session
@@ -513,38 +536,45 @@ class ElectionBlackboxTests(TestCase):
         check_user_logged_in looks for the "you're already logged" message
         """
         # vote by preparing a ballot via the server-side encryption
-        response = self.client.post("/helios/elections/%s/encrypt-ballot" % election_id, {
+        response = self.app.post("/helios/elections/%s/encrypt-ballot" % election_id, {
                 'answers_json': utils.to_json([[1]])})
         self.assertContains(response, "answers")
         
         # parse it as an encrypted vote, and re-serialize it
-        ballot = datatypes.LDObject.fromDict(utils.from_json(response.content), type_hint='legacy/EncryptedVote')
+        ballot = datatypes.LDObject.fromDict(utils.from_json(response.testbody), type_hint='legacy/EncryptedVote')
         encrypted_vote = ballot.serialize()
         
         # cast the ballot
-        response = self.client.post("/helios/elections/%s/cast" % election_id, {
+        response = self.app.post("/helios/elections/%s/cast" % election_id, {
                 'encrypted_vote': encrypted_vote})
         self.assertRedirects(response, "%s/helios/elections/%s/cast_confirm" % (settings.SECURE_URL_HOST, election_id))        
 
+        cast_confirm_page = response.follow()
+        
         if need_login:
             if check_user_logged_in:
-                response = self.client.get("/helios/elections/%s/cast_confirm" % election_id)
-                self.assertContains(response, "You are logged in as")
-                self.assertContains(response, "requires election-specific credentials")                
+                self.assertContains(cast_confirm_page, "You are logged in as")
+                self.assertContains(cast_confirm_page, "requires election-specific credentials")
 
-            response = self.client.post("/helios/elections/%s/password_voter_login" % election_id, {
-                    'voter_id' : username,
-                    'password' : password
-                    })
-            self.assertRedirects(response, "/helios/elections/%s/cast_confirm" % election_id)
-        else:
-            response = self.client.get("/helios/elections/%s/cast_confirm" % election_id)
-            self.assertContains(response, "I am ")
+            # set the form
+            login_form = cast_confirm_page.form
+            login_form['voter_id'] = username
+            login_form['password'] = password
 
-        # confirm the vote
-        response = self.client.post("/helios/elections/%s/cast_confirm" % election_id, {
-                "csrf_token" : self.client.session['csrf_token'],
-                "status_update" : False})
+            cast_confirm_page = login_form.submit()
+
+            self.assertRedirects(cast_confirm_page, "/helios/elections/%s/cast_confirm" % election_id)
+            cast_confirm_page = cast_confirm_page.follow()
+
+        # here we should be at the cast-confirm page and logged in
+        self.assertContains(cast_confirm_page, "I am ")
+
+        # confirm the vote, now with the actual form
+        cast_form = cast_confirm_page.form
+        
+        if 'status_update' in cast_form.fields.keys():
+            cast_form['status_update'] = False
+        response = cast_form.submit()
         self.assertRedirects(response, "%s/helios/elections/%s/cast_done" % (settings.URL_HOST, election_id))
 
         # at this point an email should have gone out to the user
@@ -559,18 +589,25 @@ class ElectionBlackboxTests(TestCase):
             # so if need_login is False, it was a private election, and we do need to re-login here
             # we need to re-login if it's a private election, because all data, including ballots
             # is otherwise private
-            response = self.client.post("/helios/elections/%s/password_voter_login" % election_id, {
-                    'voter_id' : username,
-                    'password' : password
-                    })
+            login_page = self.app.get("/helios/elections/%s/password_voter_login" % election_id)
+
+            # if we redirected, that's because we can see the page, I think
+            if login_page.status_int != 302:
+                login_form = login_page.form
+                
+                login_form['voter_id'] = username
+                login_form['password'] = password
+                login_form.submit()
             
-        response = self.client.get(url)
+        response = self.app.get(url)
         self.assertContains(response, ballot.hash)
         self.assertContains(response, html_escape(encrypted_vote))
 
         # if we request the redirect to cast_done, the voter should be logged out, but not the user
-        response = self.client.get("/helios/elections/%s/cast_done" % election_id)
-        assert not self.client.session.has_key('CURRENT_VOTER')
+        response = self.app.get("/helios/elections/%s/cast_done" % election_id)
+
+        # FIXME: how to check this? We can't do it by checking session that we're doign webtes
+        # assert not self.client.session.has_key('CURRENT_VOTER')
 
     def _do_tally(self, election_id):
         # log back in as administrator
@@ -615,15 +652,19 @@ class ElectionBlackboxTests(TestCase):
         # private election
         election_id, username, password = self._setup_complete_election({'private_p' : "1"})
 
-        # log in
-        response = self.client.post("/helios/elections/%s/password_voter_login" % election_id, {
-                'voter_id' : username,
-                'password' : password,
-                'return_url' : "/helios/elections/%s/view" % election_id
-                })
+        # get the password_voter_login_form via the front page
+        # (which will test that redirects are doing the right thing)
+        response = self.app.get("/helios/elections/%s/view" % election_id)
 
-        # FIXME: probably better to fetch password_voter_login as a get and post the form obtained
-        # rather than assume return_url
+        # ensure it redirects
+        self.assertRedirects(response, "/helios/elections/%s/password_voter_login" % election_id)
+
+        login_form = response.follow().form
+
+        login_form['voter_id'] = username
+        login_form['password'] = password
+
+        response = login_form.submit()
         self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
 
         self._cast_ballot(election_id, username, password, need_login = False)

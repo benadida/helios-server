@@ -100,22 +100,6 @@ def stats(request):
                                             'limit' : limit})
 
 
-def get_voter(request, user, election):
-  """
-  return the current voter
-  """
-  voter = None
-  if request.session.has_key('CURRENT_VOTER'):
-    voter = request.session['CURRENT_VOTER']
-    if voter.election != election:
-      voter = None
-
-  if not voter:
-    if user:
-      voter = Voter.get_by_election_and_user(election, user)
-  
-  return voter
-
 ## 
 ## simple admin for development
 ##
@@ -546,10 +530,15 @@ def password_voter_login(request, election):
   """
   This is used to log in as a voter for a particular election
   """
-
+  
   # the URL to send the user to after they've logged in
   return_url = request.REQUEST.get('return_url', reverse(one_election_cast_confirm, args=[election.uuid]))
   if request.method == "GET":
+    # if user logged in somehow in the interim, e.g. using the login link for administration,
+    # then go!
+    if user_can_see_election(request, election):
+      return HttpResponseRedirect(reverse(one_election_view, args = [election.uuid]))
+
     password_login_form = forms.VoterPasswordForm()
     return render_template(request, 'password_voter_login', {'election': election, 
                                                              'return_url' : return_url,
@@ -663,6 +652,7 @@ def one_election_cast_confirm(request, election):
     return render_template(request, 'election_cast_confirm', {
         'login_box': login_box, 'election' : election, 'vote_fingerprint': vote_fingerprint,
         'past_votes': past_votes, 'issues': issues, 'voter' : voter,
+        'return_url': return_url,
         'status_update_label': status_update_label, 'status_update_message': status_update_message,
         'show_password': show_password, 'password_only': password_only, 'password_login_form': password_login_form,
         'bad_voter_login': bad_voter_login})

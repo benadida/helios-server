@@ -21,6 +21,10 @@ NEEDS:
 - South for schema migration
 -- easy_install South
 
+- django-webtest for testing
+-- http://pypi.python.org/pypi/django-webtest
+-- easy_install webtest
+-- easy_install django-webtest
 
 GETTING SOUTH WORKING ON EXISTING INSTALL
 - as of Helios v3.0.4, we're using South to migrate data models

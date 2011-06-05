@@ -19,6 +19,23 @@ import urllib
 
 import helios
 
+# current voter
+def get_voter(request, user, election):
+  """
+  return the current voter
+  """
+  voter = None
+  if request.session.has_key('CURRENT_VOTER'):
+    voter = request.session['CURRENT_VOTER']
+    if voter.election != election:
+      voter = None
+
+  if not voter:
+    if user:
+      voter = Voter.get_by_election_and_user(election, user)
+  
+  return voter
+
 # a function to check if the current user is a trustee
 HELIOS_TRUSTEE_UUID = 'helios_trustee_uuid'
 def get_logged_in_trustee(request):
@@ -80,9 +97,8 @@ def election_view(**checks):
 
       # if private election, only logged in voters
       if election.private_p and not checks.get('allow_logins',False):
-        from views import get_voter, get_user, password_voter_login
-        user = get_user(request)
-        if not user_can_admin_election(user, election) and not get_voter(request, user, election):
+        from views import password_voter_login
+        if not user_can_see_election(request, election):
           return_url = request.get_full_path()
           return HttpResponseRedirect("%s?%s" % (reverse(password_voter_login, args=[election.uuid]), urllib.urlencode({
                   'return_url' : return_url
@@ -101,6 +117,21 @@ def user_can_admin_election(user, election):
   # election or site administrator
   return election.admin == user or user.admin_p
   
+def user_can_see_election(request, election):
+  user = get_user(request)
+
+  if not election.private_p:
+    return True
+
+  # election is private
+  
+  # but maybe this user is the administrator?
+  if user_can_admin_election(user, election):
+    return True
+
+  # then this user has to be a voter
+  return (get_voter(request, user, election) != None)
+
 def api_client_can_admin_election(api_client, election):
   return election.api_client == api_client and api_client != None
   
