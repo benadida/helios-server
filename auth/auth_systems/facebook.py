@@ -39,7 +39,7 @@ def get_auth_url(request, redirect_url):
   return facebook_url('/oauth/authorize', {
       'client_id': APP_ID,
       'redirect_uri': redirect_url,
-      'scope': 'publish_stream,email'})
+      'scope': 'publish_stream,email,user_groups'})
     
 def get_user_info_after_auth(request):
   args = facebook_get('/oauth/access_token', {
@@ -67,3 +67,45 @@ def update_status(user_id, user_info, token, message):
 def send_message(user_id, user_name, user_info, subject, body):
   if user_info.has_key('email'):
     send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (user_name, user_info['email'])], fail_silently=False)    
+
+
+##
+## eligibility checking
+##
+
+# a constraint looks like
+# {'group' : {'id': 123, 'name': 'asdfsdf'}}
+#
+# only the ID matters for checking, the name of the group is cached
+# here for ease of display so it doesn't have to be re-queried.
+
+def get_user_groups(user):
+  groups_raw = utils.from_json(facebook_get('/me/groups', {'access_token':user.token['access_token']}))
+  return groups_raw['data']    
+
+def check_constraint(constraint, user):
+  # get the groups for the user
+  groups = [group['id'] for group in get_user_groups(user.token)]
+
+  # check if one of them is the group in the constraint
+  try:
+    return constraint['group']['id'] in groups
+  except:
+    # FIXME: be more specific about exception catching
+    return False
+
+def generate_constraint(category_id, user):
+  """
+  generate the proper basic data structure to express a constraint
+  based on the category string
+  """
+  groups = get_user_groups(user)
+  the_group = [g for g in groups if g['id'] == category_id][0]
+
+  return {'group': the_group}
+
+def list_categories(user):
+  return get_user_groups(user)
+
+def pretty_eligibility(constraint):
+  return "Facebook users who are members of the \"%s\" group" % constraint['group']['name']

@@ -9,6 +9,16 @@
 {% if admin_p and not election.frozen_at %}
 {% if election.openreg %}
 [<a href="{% url helios.views.one_election_set_reg election.uuid %}?open_p=0">switch to closed</a>]
+
+{% if can_set_eligibility %}
+<p>
+<em>{{election.pretty_eligibility|safe}}</em>
+<br />
+You can <a href="{% url helios.views.voters_eligibility election.uuid %}">limit the eligibility</a> of voters based on their {{user.user_type}} credentials.
+</p>
+{% endif %}
+
+
 {% else %}
 {% if election.private_p %}
 <br />

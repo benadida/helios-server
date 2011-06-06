@@ -12,7 +12,7 @@ from jsonfield import JSONField
 
 import datetime, logging
 
-from auth_systems import AUTH_SYSTEMS
+from auth_systems import AUTH_SYSTEMS, can_check_constraint, can_list_categories
 
 
 class User(models.Model):
@@ -111,7 +111,7 @@ class User(models.Model):
       
     for constraint in eligibility_case['constraint']:
       # do we match on this constraint?
-      if auth_system.check_constraint(constraint=constraint, user_info = self.info):
+      if auth_system.check_constraint(constraint=constraint, user = self):
         return True
   
     # no luck

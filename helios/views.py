@@ -20,7 +20,10 @@ from crypto import utils as cryptoutils
 from workflows import homomorphic
 from helios import utils as helios_utils
 from view_utils import *
+
 from auth.security import *
+from auth.auth_systems import AUTH_SYSTEMS, can_list_categories
+
 from helios import security
 from auth import views as auth_views
 
@@ -1110,6 +1113,11 @@ def voters_list_pretty(request, election):
 
   user = get_user(request)
   admin_p = security.user_can_admin_election(user, election)
+
+  if admin_p and election.openreg:
+    can_set_eligibility = can_list_categories(user.user_type)
+  else:
+    can_set_eligibility = False
   
   # files being processed
   voter_files = election.voterfile_set.all()
@@ -1129,13 +1137,42 @@ def voters_list_pretty(request, election):
 
   total_voters = voter_paginator.count
     
-  return render_template(request, 'voters_list', {'election': election, 'voters_page': voters_page,
-                                                  'voters': voters_page.object_list, 'admin_p': admin_p, 
-                                                  'email_voters': helios.VOTERS_EMAIL,
-                                                  'limit': limit, 'total_voters': total_voters,
-                                                  'upload_p': helios.VOTERS_UPLOAD, 'q' : q,
-                                                  'voter_files': voter_files})
+  return render_template(request, 'voters_list', 
+                         {'election': election, 'voters_page': voters_page,
+                          'voters': voters_page.object_list, 'admin_p': admin_p, 
+                          'email_voters': helios.VOTERS_EMAIL,
+                          'limit': limit, 'total_voters': total_voters,
+                          'upload_p': helios.VOTERS_UPLOAD, 'q' : q,
+                          'voter_files': voter_files,
+                          'can_set_eligibility': can_set_eligibility})
 
+@election_admin()
+def voters_eligibility(request, election):
+  user = get_user(request)
+
+  if not can_list_categories(user.user_type):
+    return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
+
+  if request.method == "GET":
+    categories = AUTH_SYSTEMS[user.user_type].list_categories(user)
+
+    return render_template(request, 'voters_eligibility',
+                           {'categories' : categories, 'election': election})
+
+  # now process the constraint
+  category_id = request.POST['category_id']
+  if category_id == "":
+    category_id = None
+
+  if category_id:
+    constraint = AUTH_SYSTEMS[user.user_type].generate_constraint(category_id, user)
+    election.eligibility = [{'auth_system': user.user_type, 'constraint': [constraint]}]
+  else:
+    election.eligibility = None
+  
+  election.save()
+  return HttpResponseRedirect(reverse(voters_eligibility, args=[election.uuid]))
+  
 @election_admin()
 def voters_upload(request, election):
   """

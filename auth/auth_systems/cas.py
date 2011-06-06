@@ -216,7 +216,7 @@ def send_message(user_id, name, user_info, subject, body):
     
   send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, email)], fail_silently=False)
   
-def check_constraint(constraint, user_info):
-  if not user_info.has_key('category'):
+def check_constraint(constraint, user):
+  if not user.user_info.has_key('category'):
     return False
-  return constraint['year'] == user_info['category']
+  return constraint['year'] == user.user_info['category']
