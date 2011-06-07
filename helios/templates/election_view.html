@@ -229,27 +229,24 @@ Your voter alias is {{voter.alias}}.
 {% else %}
 {% if election.openreg %}
 {% if eligible_p %}
-{% if election.voting_has_started %}
-This {{election.election_type}} is open to anyone.
+You are eligible to vote in this election.
 {% else %}
-You are <em>not</em> registered to vote in this {{election.election_type}}.<br />
-<form method="post" action="{% url helios.views.one_election_register election.uuid %}">
-<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-<input type="submit" value="register!" />
-</form>
+You are <em>not eligible</em> to vote in this {{election.election_type}}.
 {% endif %}
 {% else %}
-Registration for this {{election.election_type}} is open, but You are <em>not eligible</em>.
-{% endif %}
-{% else %}
-You are <em>not eligible</em> to vote in this {{election.election_type}}, because registration is closed and you are not registered.<br />
+You are <em>not eligible</em> to vote in this {{election.election_type}}.
+<br />
 {% endif %}
 {% endif %}
 {% endif %}
 {% else %}
 
 {% if election.openreg %}
-Anyone can register for this election. <a href="{{settings.SECURE_URL_HOST}}{% url auth.views.index %}?return_url={{CURRENT_URL}}">Log in</a> and register!
+{% if election.eligibility %}
+This election is open to: {{election.pretty_eligibility|safe}}.  <a href="{{settings.SECURE_URL_HOST}}{% url auth.views.index %}?return_url={{CURRENT_URL}}">Log in</a> to check your eligibility.
+{% else %}
+Anyone can vote in this election.
+{% endif %}
 {% endif %}
 
 {% endif %}

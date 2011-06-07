@@ -1114,10 +1114,9 @@ def voters_list_pretty(request, election):
   user = get_user(request)
   admin_p = security.user_can_admin_election(user, election)
 
-  if admin_p and election.openreg:
-    can_set_eligibility = can_list_categories(user.user_type)
-  else:
-    can_set_eligibility = False
+  categories = None
+  if admin_p and can_list_categories(user.user_type):
+      categories = AUTH_SYSTEMS[user.user_type].list_categories(user)
   
   # files being processed
   voter_files = election.voterfile_set.all()
@@ -1144,34 +1143,43 @@ def voters_list_pretty(request, election):
                           'limit': limit, 'total_voters': total_voters,
                           'upload_p': helios.VOTERS_UPLOAD, 'q' : q,
                           'voter_files': voter_files,
-                          'can_set_eligibility': can_set_eligibility})
+                          'categories': categories})
 
 @election_admin()
 def voters_eligibility(request, election):
+  """
+  set eligibility for voters
+  """
   user = get_user(request)
 
-  if not can_list_categories(user.user_type):
+  if request.method == "GET":
+    # this shouldn't happen, only POSTs
+    return HttpResponseRedirect("/")
+
+  # for now, private elections cannot change eligibility
+  if election.private_p:
     return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
 
-  if request.method == "GET":
-    categories = AUTH_SYSTEMS[user.user_type].list_categories(user)
+  # eligibility
+  eligibility = request.POST['eligibility']
 
-    return render_template(request, 'voters_eligibility',
-                           {'categories' : categories, 'election': election})
+  if eligibility in ['openreg', 'limitedreg']:
+    election.openreg= True
 
-  # now process the constraint
-  category_id = request.POST['category_id']
-  if category_id == "":
-    category_id = None
+  if eligibility == 'closedreg':
+    election.openreg= False
 
-  if category_id:
+  if eligibility == 'limitedreg':
+    # now process the constraint
+    category_id = request.POST['category_id']
+
     constraint = AUTH_SYSTEMS[user.user_type].generate_constraint(category_id, user)
     election.eligibility = [{'auth_system': user.user_type, 'constraint': [constraint]}]
   else:
     election.eligibility = None
-  
+
   election.save()
-  return HttpResponseRedirect(reverse(voters_eligibility, args=[election.uuid]))
+  return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
   
 @election_admin()
 def voters_upload(request, election):

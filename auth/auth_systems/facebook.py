@@ -85,7 +85,7 @@ def get_user_groups(user):
 
 def check_constraint(constraint, user):
   # get the groups for the user
-  groups = [group['id'] for group in get_user_groups(user.token)]
+  groups = [group['id'] for group in get_user_groups(user)]
 
   # check if one of them is the group in the constraint
   try:

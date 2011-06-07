@@ -49,6 +49,7 @@ class ElectionModelTests(TestCase):
     
     def setUp(self):
         self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.fb_user = auth_models.User.objects.get(user_type='facebook')
         self.election, self.created_p = self.create_election()
 
     def test_create_election(self):
@@ -146,6 +147,24 @@ class ElectionModelTests(TestCase):
 
         # without openreg, and now true
         self.assertTrue(self.election.user_eligible_p(self.user))
+
+    def test_facebook_eligibility(self):
+        self.election.eligibility = [{'auth_system': 'facebook', 'constraint':[{'group': {'id': '123', 'name':'Fake Group'}}]}]
+
+        # without openreg, this should be false
+        self.assertFalse(self.election.user_eligible_p(self.fb_user))
+        
+        self.election.openreg = True
+
+        # fake out the facebook constraint checking, since
+        # our access_token is obviously wrong
+        from auth.auth_systems import facebook
+
+        def fake_check_constraint(constraint, user):
+            return constraint == {'group': {'id': '123', 'name':'Fake Group'}} and user == self.fb_user                
+        facebook.check_constraint = fake_check_constraint
+
+        self.assertTrue(self.election.user_eligible_p(self.fb_user))
 
     def test_freeze(self):
         # freezing without trustees and questions, no good
@@ -669,6 +688,36 @@ class ElectionBlackboxTests(WebTest):
 
         self._cast_ballot(election_id, username, password, need_login = False)
         self._do_tally(election_id)
+
+    def test_election_voters_eligibility(self):
+        # create the election
+        self.client.get("/")
+        self.setup_login()
+        response = self.app.post("/helios/elections/new", {
+                "short_name" : "test-eligibility",
+                "name" : "Test Eligibility",
+                "description" : "An election test for voter eligibility",
+                "election_type" : "election",
+                "use_voter_aliases": "0",
+                "use_advanced_audit_features": "1",
+                "private_p" : "0"})
+
+        election_id = re.match("(.*)/elections/(.*)/view", response.location).group(2)
+        
+        # get the eligibility page
+        eligibility_page = self.app.get("/helios/elections/%s/voters/list" % election_id)
+
+        elig_form = eligibility_page.form
+        elig_form['eligibility'] = 'openreg'
+        elig_page = elig_form.submit().follow()
+
+        self.assertContains(elig_page, "Everyone can vote")
+
+        elig_form = elig_page.form
+        elig_form['eligibility'] = 'closedreg'
+        elig_page = elig_form.submit().follow()
+
+        self.assertContains(elig_page, "Only the voters listed here")
 
     def test_do_complete_election_with_trustees(self):
         """

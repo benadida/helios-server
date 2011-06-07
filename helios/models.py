@@ -255,7 +255,7 @@ class Election(HeliosModel):
     if not self.eligibility:
       return "Everyone can vote."
     else:
-      return_val = "Only the following users can vote:<ul>"
+      return_val = "<ul>"
       
       for constraint in self.eligibility:
         for one_constraint in constraint['constraint']:

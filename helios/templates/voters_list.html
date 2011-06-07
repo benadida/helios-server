@@ -5,30 +5,36 @@
   <h2 class="title">{{election.name}} &mdash; Voters and Ballot Tracking Center <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
 
 <p>
-<u>Registration</u> is {% if not election.frozen_at %}currently{% endif %} <b>{{ election.registration_status_pretty }}</b>.
-{% if admin_p and not election.frozen_at %}
+<b>Who can vote?</b>
 {% if election.openreg %}
-[<a href="{% url helios.views.one_election_set_reg election.uuid %}?open_p=0">switch to closed</a>]
-
-{% if can_set_eligibility %}
-<p>
-<em>{{election.pretty_eligibility|safe}}</em>
-<br />
-You can <a href="{% url helios.views.voters_eligibility election.uuid %}">limit the eligibility</a> of voters based on their {{user.user_type}} credentials.
-</p>
-{% endif %}
-
-
+{{election.pretty_eligibility|safe}}
 {% else %}
+<em>Only the voters listed here</em>.
+{% endif %}
+</p>
+
+{% if admin_p and not election.frozen_at %}
 {% if election.private_p %}
-<br />
-Your election is marked private: registration can be opened to the public only for public elections.
+<em>Your election is marked private, which means you cannot open registration up more widely</em>.<br />
 {% else %}
-[<a href="{% url helios.views.one_election_set_reg election.uuid %}?open_p=1">switch to open</a>]
+You can change this setting:
+<form method="post" action="{% url helios.views.voters_eligibility election.uuid %}">
+<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> anyone can vote<br />
+<input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> only voters listed explicitly below can vote<br />
+{% if categories %}
+<input type="radio" name="eligibility" value="limitedreg" {% if election.eligibility %}CHECKED{% endif %} /> only voters who are members of 
+<select name="category_id">
+{% for category in categories %}
+<option value="{{category.id}}"> {{category.name}}</option>
+{% endfor %}
+</select>
+<br />
+{% endif %}
+<input type="submit" value="update" />
+</form>
 {% endif %}
 {% endif %}
-{% endif %}
-</p>
 
 {% if email_voters and election.frozen_at and admin_p %}
 <p><a href="{% url helios.views.voters_email election.uuid %}">email voters</a></p>
@@ -46,7 +52,7 @@ Your election is marked private: registration can be opened to the public only f
 
 {% if admin_p %}
 <!-- Add a Voter: WORK HERE-->
-{% if upload_p %}
+{% if upload_p and not election.openreg %}
 <p>
 <a href="{% url helios.views.voters_upload election_uuid=election.uuid %}">bulk upload voters</a>
 </p>
@@ -125,6 +131,7 @@ Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voter
 </table>
 
 {% else %}
+<br /><br />
 <em>no voters.</em>
 {% endif %}
 
