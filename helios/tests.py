@@ -148,6 +148,9 @@ class ElectionModelTests(TestCase):
         # without openreg, and now true
         self.assertTrue(self.election.user_eligible_p(self.user))
 
+        # try getting pretty eligibility, make sure it doesn't throw an exception
+        assert self.user.user_type in self.election.pretty_eligibility
+
     def test_facebook_eligibility(self):
         self.election.eligibility = [{'auth_system': 'facebook', 'constraint':[{'group': {'id': '123', 'name':'Fake Group'}}]}]
 
