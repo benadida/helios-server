@@ -26,7 +26,7 @@ You can change this setting:
 <input type="radio" name="eligibility" value="limitedreg" {% if election.eligibility %}CHECKED{% endif %} /> only voters who are members of 
 <select name="category_id">
 {% for category in categories %}
-<option value="{{category.id}}"> {{category.name}}</option>
+<option value="{{category.id}}" {% if eligibility_category_id == category.id %}SELECTED{% endif %}> {{category.name}}</option>
 {% endfor %}
 </select>
 <br />

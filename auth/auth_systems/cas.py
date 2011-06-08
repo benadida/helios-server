@@ -215,8 +215,30 @@ def send_message(user_id, name, user_info, subject, body):
     name = email
     
   send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, email)], fail_silently=False)
-  
+
+#
+# eligibility
+#
+
 def check_constraint(constraint, user):
-  if not user.user_info.has_key('category'):
+  if not user.info.has_key('category'):
     return False
-  return constraint['year'] == user.user_info['category']
+  return constraint['year'] == user.info['category']
+
+def generate_constraint(category_id, user):
+  """
+  generate the proper basic data structure to express a constraint
+  based on the category string
+  """
+  return {'year': category_id}
+
+def list_categories(user):
+  current_year = datetime.datetime.now().year
+  return [{'id': str(y), 'name': 'Class of %s' % y} for y 
+          in range(current_year, current_year+5)]
+
+def eligibility_category_id(constraint):
+  return constraint['year']
+
+def pretty_eligibility(constraint):
+  return "Members of the Class of %s" % constraint['year']

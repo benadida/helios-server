@@ -107,5 +107,8 @@ def generate_constraint(category_id, user):
 def list_categories(user):
   return get_user_groups(user)
 
+def eligibility_category_id(constraint):
+  return constraint['group']['id']
+
 def pretty_eligibility(constraint):
   return "Facebook users who are members of the \"%s\" group" % constraint['group']['name']

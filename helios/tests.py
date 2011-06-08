@@ -166,6 +166,9 @@ class ElectionModelTests(TestCase):
 
         self.assertTrue(self.election.user_eligible_p(self.fb_user))
 
+        # also check that eligibility_category_id does the right thing
+        self.assertEquals(self.election.eligibility_category_id('facebook'), '123')
+
     def test_freeze(self):
         # freezing without trustees and questions, no good
         def try_freeze():
@@ -711,7 +714,7 @@ class ElectionBlackboxTests(WebTest):
         elig_form['eligibility'] = 'openreg'
         elig_page = elig_form.submit().follow()
 
-        self.assertContains(elig_page, "Everyone can vote")
+        self.assertContains(elig_page, "Anyone can vote")
 
         elig_form = elig_page.form
         elig_form['eligibility'] = 'closedreg'

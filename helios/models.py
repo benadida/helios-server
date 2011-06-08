@@ -250,10 +250,18 @@ class Election(HeliosModel):
 
     return [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type][0]
 
+  def eligibility_category_id(self, user_type):
+    "when eligibility is by category, this returns the category_id"
+    if not self.eligibility:
+      return None
+    
+    constraint = self.eligibility_constraint_for(user_type)[0]
+    return AUTH_SYSTEMS[user_type].eligibility_category_id(constraint)
+    
   @property
   def pretty_eligibility(self):
     if not self.eligibility:
-      return "Everyone can vote."
+      return "Anyone can vote."
     else:
       return_val = "<ul>"
       

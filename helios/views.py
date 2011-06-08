@@ -1115,8 +1115,10 @@ def voters_list_pretty(request, election):
   admin_p = security.user_can_admin_election(user, election)
 
   categories = None
+  eligibility_category_id = None
   if admin_p and can_list_categories(user.user_type):
       categories = AUTH_SYSTEMS[user.user_type].list_categories(user)
+      eligibility_category_id = election.eligibility_category_id(user.user_type)
   
   # files being processed
   voter_files = election.voterfile_set.all()
@@ -1143,7 +1145,8 @@ def voters_list_pretty(request, election):
                           'limit': limit, 'total_voters': total_voters,
                           'upload_p': helios.VOTERS_UPLOAD, 'q' : q,
                           'voter_files': voter_files,
-                          'categories': categories})
+                          'categories': categories,
+                          'eligibility_category_id' : eligibility_category_id})
 
 @election_admin()
 def voters_eligibility(request, election):
