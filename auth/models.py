@@ -14,6 +14,9 @@ import datetime, logging
 
 from auth_systems import AUTH_SYSTEMS, can_check_constraint, can_list_categories
 
+# an exception to catch when a user is no longer authenticated
+class AuthenticationExpired(Exception):
+  pass
 
 class User(models.Model):
   user_type = models.CharField(max_length=50)

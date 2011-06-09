@@ -28,7 +28,11 @@ def facebook_url(url, params):
 
 def facebook_get(url, params):
   full_url = facebook_url(url,params)
-  return urllib2.urlopen(full_url).read()
+  try:
+    return urllib2.urlopen(full_url).read()
+  except urllib2.HTTPError:
+    from auth.models import AuthenticationExpired
+    raise AuthenticationExpired()
 
 def facebook_post(url, params):
   full_url = facebook_url(url, None)

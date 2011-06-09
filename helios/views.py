@@ -23,6 +23,7 @@ from view_utils import *
 
 from auth.security import *
 from auth.auth_systems import AUTH_SYSTEMS, can_list_categories
+from auth.models import AuthenticationExpired
 
 from helios import security
 from auth import views as auth_views
@@ -304,7 +305,16 @@ def one_election_view(request, election):
     voter = Voter.get_by_election_and_user(election, user)
     
     if not voter:
-      eligible_p = _check_eligibility(election, user)
+      try:
+        eligible_p = _check_eligibility(election, user)
+      except AuthenticationExpired:
+        # FIXME: should we be wary of infinite redirects here, and
+        # add a parameter to prevent it? Maybe.
+        login_url = "%s%s?%s" % (settings.SECURE_URL_HOST,
+                                 reverse(auth_views.start, args=[user.user_type]),
+                                 urllib.urlencode({'return_url':
+                                                     request.get_full_path()}))
+        return HttpResponseRedirect(login_url)
       notregistered = True
   else:
     voter = get_voter(request, user, election)
