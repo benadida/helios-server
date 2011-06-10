@@ -1,0 +1,7 @@
+
+Helios is an open-source project.
+
+Significant contributors:
+- Ben Adida
+- Olivier Pereira
+- Olivier de Marneffe
