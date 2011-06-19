@@ -20,7 +20,7 @@
 </p>
 
 <p>
-    [ <a onclick="return(confirm('Are you sure you want to add a trustee?\n\nThis is an advanced feature that requires a good bit more owrk to tally the election.\nThe simplest option is to let Helios tally the election for you.'));" href="{% url helios.views.new_trustee election.uuid %}">add a trustee</a> ]
+    [ <a onclick="return(confirm('Adding your own trustee requires a good bit more work to tally the election.\nYou will need to have trustees generate keypairs and safeguard their secret key.\n\nIf you are not sure what that means, we strongly recommend\nclicking Cancel and letting Helios tally the election for you.'));" href="{% url helios.views.new_trustee election.uuid %}">add a trustee</a> ]
 </p>
 {% if not election.has_helios_trustee %}
 <p>
