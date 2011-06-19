@@ -5,3 +5,4 @@ Significant contributors:
 - Ben Adida
 - Olivier Pereira
 - Olivier de Marneffe
+- Emily Stark, Mike Hamburg, Tom Wu, and Dan Boneh for SJCL and integration of javascript crypto.
