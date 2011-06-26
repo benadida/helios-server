@@ -404,6 +404,10 @@ class Election(HeliosModel):
     if self.eligibility != None:
       return
 
+    # enable this ONLY once the cast_confirm screen makes sense
+    #if self.voter_set.count() == 0:
+    #  return
+
     auth_systems = copy.copy(settings.AUTH_ENABLED_AUTH_SYSTEMS)
     voter_types = [r['user__user_type'] for r in self.voter_set.values('user__user_type').distinct() if r['user__user_type'] != None]
 
