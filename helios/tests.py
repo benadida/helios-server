@@ -620,8 +620,9 @@ class ElectionBlackboxTests(WebTest):
             if login_page.status_int != 302:
                 login_form = login_page.form
                 
-                login_form['voter_id'] = username
-                login_form['password'] = password
+                # try with extra spaces
+                login_form['voter_id'] = '  ' + username + '   '
+                login_form['password'] = '  ' + password + '      '
                 login_form.submit()
             
         response = self.app.get(url)
