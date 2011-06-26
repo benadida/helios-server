@@ -546,6 +546,8 @@ def password_voter_login(request, election):
   
   # the URL to send the user to after they've logged in
   return_url = request.REQUEST.get('return_url', reverse(one_election_cast_confirm, args=[election.uuid]))
+  bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
+
   if request.method == "GET":
     # if user logged in somehow in the interim, e.g. using the login link for administration,
     # then go!
@@ -553,17 +555,19 @@ def password_voter_login(request, election):
       return HttpResponseRedirect(reverse(one_election_view, args = [election.uuid]))
 
     password_login_form = forms.VoterPasswordForm()
-    return render_template(request, 'password_voter_login', {'election': election, 
-                                                             'return_url' : return_url,
-                                                             'password_login_form': password_login_form})
-
+    return render_template(request, 'password_voter_login',
+                           {'election': election, 
+                            'return_url' : return_url,
+                            'password_login_form': password_login_form,
+                            'bad_voter_login' : bad_voter_login})
+  
   login_url = request.REQUEST.get('login_url', None)
 
   if not login_url:
     # login depending on whether this is a private election
     # cause if it's private the login is happening on the front page
     if election.private_p:
-      login_url = reverse(one_election_view, args=[election.uuid])
+      login_url = reverse(password_voter_login, args=[election.uuid])
     else:
       login_url = reverse(one_election_cast_confirm, args=[election.uuid])
 
@@ -571,12 +575,17 @@ def password_voter_login(request, election):
 
   if password_login_form.is_valid():
     try:
-      voter = election.voter_set.get(voter_login_id = password_login_form.cleaned_data['voter_id'],
-                                     voter_password = password_login_form.cleaned_data['password'])
+      voter = election.voter_set.get(voter_login_id = password_login_form.cleaned_data['voter_id'].strip(),
+                                     voter_password = password_login_form.cleaned_data['password'].strip())
 
       request.session['CURRENT_VOTER'] = voter
     except Voter.DoesNotExist:
-      return HttpResponseRedirect(login_url + "?bad_voter_login=1")
+      redirect_url = login_url + "?" + urllib.urlencode({
+          'bad_voter_login' : '1',
+          'return_url' : return_url
+          })
+
+      return HttpResponseRedirect(redirect_url)
   
   return HttpResponseRedirect(return_url)
 
