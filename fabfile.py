@@ -116,6 +116,7 @@ def deploy(tag, path):
     
 def staging_deploy(tag):
     deploy(tag, path=STAGING_SETUP['root'])
+    restart_celeryd(path = STAGING_SETUP['celery'])
 
 def production_deploy(tag):
     production_roots = ",".join([p['root'] for p in PRODUCTION_SETUPS])
