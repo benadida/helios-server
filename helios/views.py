@@ -78,6 +78,20 @@ def get_socialbuttons_url(url, text):
         }))
   
 
+##
+## remote auth utils
+
+def user_reauth(request, user):
+  # FIXME: should we be wary of infinite redirects here, and
+  # add a parameter to prevent it? Maybe.
+  login_url = "%s%s?%s" % (settings.SECURE_URL_HOST,
+                           reverse(auth_views.start, args=[user.user_type]),
+                           urllib.urlencode({'return_url':
+                                               request.get_full_path()}))
+  return HttpResponseRedirect(login_url)
+
+##
+
 # simple static views
 def home(request):
   user = get_user(request)
@@ -308,13 +322,7 @@ def one_election_view(request, election):
       try:
         eligible_p = _check_eligibility(election, user)
       except AuthenticationExpired:
-        # FIXME: should we be wary of infinite redirects here, and
-        # add a parameter to prevent it? Maybe.
-        login_url = "%s%s?%s" % (settings.SECURE_URL_HOST,
-                                 reverse(auth_views.start, args=[user.user_type]),
-                                 urllib.urlencode({'return_url':
-                                                     request.get_full_path()}))
-        return HttpResponseRedirect(login_url)
+        return user_reauth(request, user)
       notregistered = True
   else:
     voter = get_voter(request, user, election)
@@ -1135,9 +1143,13 @@ def voters_list_pretty(request, election):
 
   categories = None
   eligibility_category_id = None
-  if admin_p and can_list_categories(user.user_type):
+
+  try:
+    if admin_p and can_list_categories(user.user_type):
       categories = AUTH_SYSTEMS[user.user_type].list_categories(user)
       eligibility_category_id = election.eligibility_category_id(user.user_type)
+  except AuthenticationExpired:
+    return user_reauth(request, user)
   
   # files being processed
   voter_files = election.voterfile_set.all()
