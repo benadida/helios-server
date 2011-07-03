@@ -9,6 +9,7 @@ from functools import update_wrapper
 
 from django.core.urlresolvers import reverse
 from django.core.exceptions import *
+from django.http import *
 from django.conf import settings
 
 from models import *
@@ -91,6 +92,9 @@ def election_view(**checks):
   def election_view_decorator(func):
     def election_view_wrapper(request, election_uuid=None, *args, **kw):
       election = get_election_by_uuid(election_uuid)
+
+      if not election:
+        raise Http404
 
       # do checks
       do_election_checks(election, checks)

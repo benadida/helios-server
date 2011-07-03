@@ -390,6 +390,10 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.get("/helios/elections/params")
         self.assertEquals(response.content, views.ELGAMAL_PARAMS_LD_OBJECT.serialize())
 
+    def test_election_404(self):
+        response = self.client.get("/helios/elections/foobar")
+        self.assertEquals(response.status_code, 404)
+
     def test_election_bad_trustee(self):
         response = self.client.get("/helios/t/%s/foobar@bar.com/badsecret" % self.election.short_name)
         self.assertEquals(response.status_code, 404)
