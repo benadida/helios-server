@@ -2,7 +2,7 @@ Dear {{voter.name}},
 
 {{custom_message|safe}}
 
-Election URL:  {{election_url}}
+Election URL:  {{election_vote_url}}
 Election Fingerprint:  {{voter.election.hash}}
 {% ifequal voter.voter_type "password" %}
 Your voter ID: {{voter.voter_login_id}}

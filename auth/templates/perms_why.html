@@ -1,0 +1,21 @@
+{% extends TEMPLATE_BASE %}
+
+{% block content %}
+<h1>Why we need your information</h1>
+
+<p>
+It looks like you declined to grant us permission to access your
+information. We understand and value your privacy. We ask for this
+information so we can contact you with your voting tracking number and
+when an election in which you participated has been tallied. We
+promise not to use this information for any other purpose. Without
+this information, we unfortunately cannot help you vote.
+</p>
+
+<form method="POST" action="">
+<input type="hidden" value="{{csrf_token}}" />
+<input type="submit" value="OK, I understand, let's do this login thing." /><br /><br />
+<a href="http://google.com">nope, get me out of here</a>.
+</form>
+
+{% endblock %}

@@ -547,7 +547,7 @@ class ElectionBlackboxTests(WebTest):
         self.assertEquals(num_messages_after - num_messages_before, NUM_VOTERS)
 
         email_message = mail.outbox[num_messages_before]
-        self.assertEquals(email_message.subject, "your password")
+        assert "your password" in email_message.subject, "bad subject in email"
 
         # get the username and password
         username = re.search('voter ID: (.*)', email_message.body).group(1)
@@ -655,11 +655,11 @@ class ElectionBlackboxTests(WebTest):
         # combine decryptions
         response = self.client.post("/helios/elections/%s/combine_decryptions" % election_id, {
                 "csrf_token" : self.client.session['csrf_token'],
-                "subject" : "tally subject",
-                "body" : "tally body",
-                "send_to" : "all"
                 })
-        self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
+
+        # after tallying, we now are supposed to see the email screen
+        # with the right template value of 'result'
+        self.assertRedirects(response, "/helios/elections/%s/voters/email?template=result" % election_id)
 
         # check that tally matches
         response = self.client.get("/helios/elections/%s/result" % election_id)

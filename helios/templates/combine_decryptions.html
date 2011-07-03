@@ -5,28 +5,12 @@
   <h2 class="title">{{election.name}} &mdash; Release Tally <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">cancel</a>]</span></h2>
 
   <p>
-    The tally for this election will be released, and voters will be notified that of the availability of the tally.<br />The default message reads:
-</p>
+    You are about to release the tally for this election
+  </p>
 
-<pre style="margin:10px; border: 1px solid #888; padding:20px">
-Subject: {{default_subject}}
-
-{{default_body|safe}}
-</pre>
-
-<p>
-You may tweak the subject and add a custom message using the form below.
-</p>
-
-  <form class="prettyform" action="" method="POST" id="email_form">
+  <form method="POST" action="">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    <table class="pretty">
-     {{email_form.as_table}}
-     </table>
-  <div>
-  <label for="">&nbsp;</label><input type="submit" value="Release Tally and Notify Voters" id="send_button" />
-  </div>
+    <input type="submit" value="release the tally!" />
   </form>
-  
 
 {% endblock %}

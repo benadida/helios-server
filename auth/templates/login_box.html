@@ -3,16 +3,6 @@
 {% else %}
 {% for auth_system in enabled_auth_systems %}
 {% ifequal auth_system "password" %}
-<form method="post" action="{% url auth.auth_systems.password.password_login_view %}">
-<input type="hidden" name="election_uuid" value="{{election.uuid}}" />
-<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-<input type="hidden" name="return_url" value="{{return_url}}" />
-<table>
-    {{form.as_table}}
-</table>
-<input type="submit" value="log in" />
-<a style="font-size: 0.8em;" href="{% url auth.auth_systems.password.password_forgotten_view %}?return_url={{return_url|urlencode}}">forgot password?</a>
-</form>
 {% else %}
 <p>
     <a href="{{SECURE_URL_HOST}}{% url auth.views.start system_name=auth_system %}?return_url={{return_url}}" style="font-size: 1.4em;">

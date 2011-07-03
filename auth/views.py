@@ -40,13 +40,12 @@ def index(request):
   if auth.DEFAULT_AUTH_SYSTEM:
     default_auth_system_obj = AUTH_SYSTEMS[auth.DEFAULT_AUTH_SYSTEM]
 
-  form = password.LoginForm()
+  #form = password.LoginForm()
 
   return render_template(request,'index', {'return_url' : request.GET.get('return_url', '/'),
                                            'enabled_auth_systems' : auth.ENABLED_AUTH_SYSTEMS,
                                            'default_auth_system': auth.DEFAULT_AUTH_SYSTEM,
-                                           'default_auth_system_obj': default_auth_system_obj,
-                                           'form' : form})
+                                           'default_auth_system_obj': default_auth_system_obj})
 
 def login_box_raw(request, return_url='/', auth_systems = None):
   """

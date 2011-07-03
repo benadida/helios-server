@@ -1043,65 +1043,16 @@ def combine_decryptions(request, election):
 
   election_url = get_election_url(election)
 
-  default_subject = 'Tally released for %s' % election.name
-  default_body = render_template_raw(None, 'email/result_body.txt', {
-      'election' : election,
-      'election_url' : election_url,
-      'custom_subject' : default_subject,
-      'custom_message': '&lt;YOUR MESSAGE HERE&gt;',
-      'voter': {'vote_hash' : '<SMART_TRACKER>',
-                'name': '<VOTER_NAME>'}
-      })
-
-  if request.method == "GET":
-    email_form = forms.TallyNotificationEmailForm(initial= {'subject': default_subject})
-  else:
+  if request.method == "POST":
     check_csrf(request)
 
-    email_form = forms.TallyNotificationEmailForm(request.POST)
+    election.combine_decryptions()
+    election.save()
 
-    if email_form.is_valid():
-      election.combine_decryptions()
-      election.save()
-
-      # notify voters!
-      extra_vars = {
-        'custom_subject' : email_form.cleaned_data['subject'],
-        'custom_message' : email_form.cleaned_data['body'],
-        'election_url' : election_url,
-        'election' : election
-        }
-
-      # if the user opted for notifying no one, then we skip this step
-      if email_form.cleaned_data['send_to'] != 'none':
-        # exclude those who have not voted
-        if email_form.cleaned_data['send_to'] == 'voted':
-          voter_constraints_exclude = {'vote_hash' : None}
-        else:
-          voter_constraints_exclude = {}
-      
-        # full-length email
-        tasks.voters_email.delay(election_id = election.id,
-                                 subject_template = 'email/result_subject.txt',
-                                 body_template = 'email/result_body.txt',
-                                 extra_vars = extra_vars,
-                                 voter_constraints_exclude = voter_constraints_exclude)
-
-      # rapid short-message notification
-      # this inherently only applies to those who have voted (for the most part)
-      # and this is not configurable, this is ALWAYS sent
-      tasks.voters_notify.delay(election_id = election.id,
-                                notification_template = 'notification/result.txt',
-                                extra_vars = extra_vars)
-
-      return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+    return HttpResponseRedirect("%s?%s" % (reverse(voters_email, args=[election.uuid]), urllib.urlencode({'template': 'result'})))
 
   # if just viewing the form or the form is not valid
-  return render_template(request, 'combine_decryptions', {'election': election,
-                                                          'email_form' : email_form,
-                                                          'default_subject': default_subject,
-                                                          'default_body': default_body})
-
+  return render_template(request, 'combine_decryptions', {'election': election})
 
 @election_admin(frozen=True)
 def one_election_set_result_and_proof(request, election):
@@ -1270,31 +1221,55 @@ def voters_upload_cancel(request, election):
 def voters_email(request, election):
   if not helios.VOTERS_EMAIL:
     return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
-  
+  TEMPLATES = [
+    ('vote', 'Time to Vote'),
+    ('info', 'Additional Info'),
+    ('result', 'Election Result')
+    ]
+
+  template = request.REQUEST.get('template', 'vote')
+  if not template in [t[0] for t in TEMPLATES]:
+    raise Exception("bad template")
+
   voter_id = request.REQUEST.get('voter_id', None)
   if voter_id:
     voter = Voter.get_by_election_and_voter_id(election, voter_id)
   else:
     voter = None
   
+  election_url = get_election_url(election)
+  election_vote_url = get_election_govote_url(election)
+
+  default_subject = render_template_raw(None, 'email/%s_subject.txt' % template, {
+      'custom_subject': "&lt;SUBJECT&gt;"
+})
+  default_body = render_template_raw(None, 'email/%s_body.txt' % template, {
+      'election' : election,
+      'election_url' : election_url,
+      'election_vote_url' : election_vote_url,
+      'custom_subject' : default_subject,
+      'custom_message': '&lt;YOUR MESSAGE HERE&gt;',
+      'voter': {'vote_hash' : '<SMART_TRACKER>',
+                'name': '<VOTER_NAME>',
+                'voter_type' : election.voter_set.all()[0].voter_type,
+                'election' : election}
+      })
+
   if request.method == "GET":
-    email_form = forms.EmailVotersForm(initial={'subject': 'Vote in %s' % election.name})
+    email_form = forms.EmailVotersForm()
   else:
     email_form = forms.EmailVotersForm(request.POST)
     
     if email_form.is_valid():
       
       # the client knows to submit only once with a specific voter_id
-      subject_template = 'email/vote_subject.txt'
-      body_template = 'email/vote_body.txt'
+      subject_template = 'email/%s_subject.txt' % template
+      body_template = 'email/%s_body.txt' % template
 
-      if email_form.cleaned_data['suppress_election_links']:
-        body_template = 'email/vote_body_nolinks.txt'
-      
       extra_vars = {
         'custom_subject' : email_form.cleaned_data['subject'],
         'custom_message' : email_form.cleaned_data['body'],
-        'election_url' : get_election_govote_url(election),
+        'election_url' : election_url,
         'election' : election
         }
         
@@ -1317,7 +1292,13 @@ def voters_email(request, election):
       # this batch process is all async, so we can return a nice note
       return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
     
-  return render_template(request, "voters_email", {'email_form': email_form, 'election': election, 'voter': voter})    
+  return render_template(request, "voters_email", {
+      'email_form': email_form, 'election': election,
+      'voter': voter,
+      'default_subject': default_subject,
+      'default_body' : default_body,
+      'template' : template,
+      'templates' : TEMPLATES})    
 
 # Individual Voters
 @election_view()
