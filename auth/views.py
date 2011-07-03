@@ -16,7 +16,7 @@ from auth_systems import AUTH_SYSTEMS
 from auth_systems import password
 import auth
 
-import copy
+import copy, urllib
 
 from models import User
 
@@ -136,6 +136,22 @@ def logout(request):
     return response
   
   return HttpResponseRedirect(return_url)
+
+def _do_auth(request):
+  # the session has the system name
+  system_name = request.session['auth_system_name']
+
+  # get the system
+  system = AUTH_SYSTEMS[system_name]
+  
+  # where to send the user to?
+  redirect_url = "%s%s" % (settings.SECURE_URL_HOST,reverse(after))
+  auth_url = system.get_auth_url(request, redirect_url=redirect_url)
+  
+  if auth_url:
+    return HttpResponseRedirect(auth_url)
+  else:
+    return HttpResponse("an error occurred trying to contact " + system_name +", try again later")
   
 def start(request, system_name):
   if not (system_name in auth.ENABLED_AUTH_SYSTEMS):
@@ -150,17 +166,13 @@ def start(request, system_name):
   # where to return to when done
   request.session['auth_return_url'] = request.GET.get('return_url', '/')
 
-  # get the system
-  system = AUTH_SYSTEMS[system_name]  
-  
-  # where to send the user to?
-  redirect_url = "%s%s" % (settings.SECURE_URL_HOST,reverse(after))
-  auth_url = system.get_auth_url(request, redirect_url=redirect_url)
-  
-  if auth_url:
-    return HttpResponseRedirect(auth_url)
-  else:
-    return HttpResponse("an error occurred trying to contact " + system_name +", try again later")
+  return _do_auth(request)
+
+def perms_why(request):
+  if request.method == "GET":
+    return render_template(request, "perms_why")
+
+  return _do_auth(request)
 
 def after(request):
   # which auth system were we using?
@@ -179,8 +191,7 @@ def after(request):
     
     request.session['user'] = user
   else:
-    # we were logging out
-    pass
+    return HttpResponseRedirect("%s?%s" % (reverse(perms_why), urllib.urlencode({'system_name' : request.session['auth_system_name']})))
 
   # does the auth system want to present an additional view?
   # this is, for example, to prompt the user to follow @heliosvoting

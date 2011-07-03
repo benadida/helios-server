@@ -32,6 +32,9 @@ def get_auth_url(request, redirect_url):
 def get_user_info_after_auth(request):
   data = view_helpers.finish_openid(request.session, request.GET, request.session['google_redirect_url'])
 
+  if not data.has_key('ax'):
+    return None
+
   email = data['ax']['email'][0]
 
   # do we have a firstname/lastname?

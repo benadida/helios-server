@@ -17,6 +17,7 @@ urlpatterns = patterns('',
     (r'^start/(?P<system_name>.*)$', start),
     # weird facebook constraint for trailing slash
     (r'^after/$', after),
+    (r'^why$', perms_why),
     (r'^after_intervention$', after_intervention),
     
     ## should make the following modular
