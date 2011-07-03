@@ -50,7 +50,7 @@ logged in as {{user.display_html_small|safe}}
 [<a href="{% url auth.views.logout %}?return_url={{CURRENT_URL}}">logout</a>]<br />
 {% else %}
 {% if voter %}
-You are signed in as voter <u>{{voter.name}}</u> in election <u>{{voter.election.name}}</u>. [<a href="{{settings.SECURE_URL_HOST}}{% url auth.views.index %}?return_url={{CURRENT_URL}}">sign out and back in</a>]
+You are signed in as voter <u>{{voter.name}}</u> in election <u>{{voter.election.name}}</u>. [<a href="{{settings.SECURE_URL_HOST}}{% url auth.views.logout %}?return_url={{CURRENT_URL}}">sign out</a>]
 {% else %}
 not logged in. [<a href="{{settings.SECURE_URL_HOST}}{% url auth.views.index %}?return_url={{CURRENT_URL}}">log in</a>]
 {% endif %}
