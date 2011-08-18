@@ -1309,7 +1309,7 @@ def voter_list(request, election):
   if limit > 500: limit = 500
     
   voters = Voter.get_by_election(election, order_by='uuid', after=request.GET.get('after',None), limit= limit)
-  return [v.toJSONDict() for v in voters]
+  return [v.ld_object.toDict() for v in voters]
   
 @election_view()
 @json
