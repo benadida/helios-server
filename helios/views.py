@@ -1248,7 +1248,7 @@ def voters_email(request, election):
       'election_url' : election_url,
       'election_vote_url' : election_vote_url,
       'custom_subject' : default_subject,
-      'custom_message': '&lt;YOUR MESSAGE HERE&gt;',
+      'custom_message': '&lt;BODY&gt;',
       'voter': {'vote_hash' : '<SMART_TRACKER>',
                 'name': '<VOTER_NAME>',
                 'voter_login_id': '<VOTER_LOGIN_ID>',
