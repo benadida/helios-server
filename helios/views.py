@@ -1251,6 +1251,8 @@ def voters_email(request, election):
       'custom_message': '&lt;YOUR MESSAGE HERE&gt;',
       'voter': {'vote_hash' : '<SMART_TRACKER>',
                 'name': '<VOTER_NAME>',
+                'voter_login_id': '<VOTER_LOGIN_ID>',
+                'voter_password': '<VOTER_PASSWORD>',
                 'voter_type' : election.voter_set.all()[0].voter_type,
                 'election' : election}
       })
@@ -1269,7 +1271,7 @@ def voters_email(request, election):
       extra_vars = {
         'custom_subject' : email_form.cleaned_data['subject'],
         'custom_message' : email_form.cleaned_data['body'],
-        'election_url' : election_url,
+        'election_vote_url' : election_vote_url,
         'election' : election
         }
         
