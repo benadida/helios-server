@@ -1009,7 +1009,7 @@ def trustee_decrypt_and_prove(request, election, trustee):
 @election_view(frozen=True)
 def trustee_upload_decryption(request, election, trustee_uuid):
   if not _check_election_tally_type(election) or election.encrypted_tally == None:
-    return HttpResponseRedirect(reverse(one_election_view,args=[election.election_id]))
+    return FAILURE
 
   trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
 
