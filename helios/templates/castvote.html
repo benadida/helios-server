@@ -6,10 +6,10 @@
 cast in <a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a><br />
 Fingerprint: <tt>{{cast_vote.vote_hash}}</tt><br />
 by <b><u>
-{% if voter.alias %}
-{{voter.alias}}
+{% if the_voter.alias %}
+{{the_voter.alias}}
 {% else %}
-{{voter.name}}
+{{the_voter.name}}
 {% endif %}
 </u></b>
 <br /><br />

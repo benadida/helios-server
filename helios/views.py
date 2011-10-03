@@ -175,7 +175,7 @@ def election_vote_shortcut(request, election_short_name):
 
 @election_view()
 def _castvote_shortcut_by_election(request, election, cast_vote):
-  return render_template(request, 'castvote', {'cast_vote' : cast_vote, 'vote_content': cast_vote.vote.toJSON(), 'voter': cast_vote.voter, 'election': election})
+  return render_template(request, 'castvote', {'cast_vote' : cast_vote, 'vote_content': cast_vote.vote.toJSON(), 'the_voter': cast_vote.voter, 'election': election})
   
 def castvote_shortcut(request, vote_tinyhash):
   try:
