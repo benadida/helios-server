@@ -74,7 +74,7 @@ def render_template_raw(request, template_name, vars={}):
 
 
 def render_json(json_txt):
-  return HttpResponse(json_txt)
+  return HttpResponse(json_txt, "application/json")
 
 # decorator
 def json(func):
