@@ -41,7 +41,7 @@ class EncryptedAnswerWithRandomness(LegacyObject):
         'choices': arrayOf('legacy/EGCiphertext'),
         'individual_proofs': arrayOf('legacy/EGZKDisjunctiveProof'),
         'overall_proof' : 'legacy/EGZKDisjunctiveProof',
-        'randomness' : 'core/BigInteger'
+        'randomness' : arrayOf('core/BigInteger')
         }
 
 class EncryptedVote(LegacyObject):
