@@ -23,7 +23,7 @@ Instead, the ballot tracking center will only display your alias.
 Your voter alias is {{voter.alias}}.
 
 IMPORTANTLY, when you are prompted to log in to vote,
-please use your *voter login ID*, not your alias.
+please use your *voter ID*, not your alias.
 {% endif %}
 --
 Helios
