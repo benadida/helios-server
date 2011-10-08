@@ -1,0 +1,106 @@
+
+body {
+  font-family: Arial;
+  background: white;
+  padding: 0px;
+  margin: 0px;
+}
+
+#wrapper {
+  position: absolute;
+  padding: 0px;
+  background: white;
+  border: 1px solid #666;
+  top: 20px;
+  margin-left: 100px;
+  margin-top: 0px;
+  width: 1000px;
+}
+
+#content {
+  padding: 20px 30px 20px 30px;
+}
+
+#header {
+  padding-top: 0px;
+  text-align: center;
+  padding-bottom: 5px;
+}
+
+#header h1 {
+  font-size: 28pt;
+  padding: 0px;
+  margin: 0px;
+  line-height: 120%;
+}
+
+#header h2 {
+  font-size: 20pt;
+  padding: 0px;
+  margin: 0px;
+  line-height: 100%;
+  font-weight: none;
+}
+
+#banner {
+  width: 100%;
+  text-align: center;
+  padding: 2px 0px 2px 0px;
+  background: #ccc;
+  font-size: 18pt;
+  border-bottom: 1px solid #666;
+}
+
+#progress_div {
+  width: 100%;
+  font-size: 14pt;
+}
+
+#progress_div table {
+  border-collapse: collapse;
+  text-align: center;
+  border: 0px;
+}
+
+#progress_div td.unselected {
+  background: #ccc;
+  color: #888;
+  border: 1px solid #333;
+}
+
+#progress_div td.selected {
+  background: #fc9;
+  color: black;
+  font-weight: bold;
+  border: 1px solid black;
+}
+
+#footer {
+  position: relative;
+  bottom: 0px;
+  width: 100%;
+  text-align: center;
+  margin-top: 10px;
+  padding: 2px 0px 2px 0px;
+  background: #ddd;
+  border-top: 1px solid #666;
+}
+
+#page h2 {
+  background: #fc9;
+  border-bottom: 1px solid #f90;
+  padding: 5px 0px 2px 5px;
+}
+
+h3 {
+	font-size: 1.6em;
+}
+
+#election_info {
+  font-size: 16pt;
+}
+
+#election_hash {
+  font-family: courier;
+}
+}

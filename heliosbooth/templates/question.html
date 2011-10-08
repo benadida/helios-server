@@ -1,0 +1,56 @@
+
+<form onsubmit="return false;" class="prettyform" id="answer_form">
+<input type="hidden" name="question_num" value="{$T.question_num}" />
+
+<p>
+<br /> 
+<b>{$T.question.question}</b>
+<br />
+<span style="font-size: 0.6em;">Question #{$T.question_num + 1} of {$T.last_question_num + 1} &mdash;
+ select 
+{#if $T.question.min && $T.question.min > 0}
+at least {$T.question.min} answer{#if $T.question.min > 1}s{#/if}, 
+{#/if} 
+{#if $T.question.max}
+up to {$T.question.max} answer{#if $T.question.max > 1}s{#/if}
+{#else}
+as many of the choices as you approve of
+{#/if}
+</span>
+</p>
+
+{#foreach $T.question.answers as answer}
+<div id="answer_label_{$T.question_num}_{$T.answer$index}"><input type="checkbox" class="ballot_answer" id="answer_{$T.question_num}_{$T.answer$index}" name="answer_{$T.question_num}_{$T.answer$index}" value="yes" onclick="BOOTH.click_checkbox({$T.question_num}, {$T.answer$index}, this.checked);" /> {$T.answer}
+
+{#if $T.question.answer_urls && $T.question.answer_urls[$T.answer$index] && $T.question.answer_urls[$T.answer$index] != ""}
+&nbsp;&nbsp;
+<span style="font-size: 12pt;">
+[<a target="_blank" href="{$T.question.answer_urls[$T.answer$index]}">more info</a>]
+</span>
+{#/if}
+</div>
+{#/for}
+
+<div id="warning_box" style="color: green; text-align:center; font-size: 0.8em; padding-top:10px; padding-bottom: 10px; height:50px;">
+</div>
+
+
+{#if $T.show_reviewall}
+<div style="float: right;">
+<input type="button" onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Proceed" />
+</div>
+{#/if}
+
+{#if $T.question_num != 0}
+<input type="button" onclick="BOOTH.previous({$T.question_num})" value="Previous" />
+&nbsp;
+{#/if}
+
+{#if $T.question_num < $T.last_question_num}
+<input type="button" onclick="BOOTH.next({$T.question_num})" value="Next" />
+&nbsp;
+{#/if}
+
+<br clear="both" />
+
+</form>

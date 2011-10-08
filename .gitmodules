@@ -1,9 +1,0 @@
-[submodule "heliosbooth"]
-	path = heliosbooth
-	url = git://github.com/benadida/helios-booth.git
-[submodule "heliosverifier"]
-	path = heliosverifier
-	url = git://github.com/benadida/helios-verifier.git
-[submodule "helios/media/helios/jscrypto"]
-	path = helios/media/helios/jscrypto
-	url = git://github.com/benadida/jscrypto
