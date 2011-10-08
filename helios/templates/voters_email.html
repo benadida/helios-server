@@ -24,7 +24,7 @@ voter_id = '{{voter.voter_id}}';
 {% if template_option.0 == template %}
 <b>{{template_option.1}}</b>
 {% else %}
-<a href="?template={{template_option.0}}">{{template_option.1}}</a>
+<a href="?template={{template_option.0}}&voter_id={{voter.voter_login_id}}">{{template_option.1}}</a>
 {% endif %}
 &nbsp;&nbsp;&nbsp;
 {% endfor %}
@@ -42,6 +42,7 @@ You may tweak the subject and add a custom message using the form below.
   <form class="prettyform" action="" method="POST" id="email_form">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     <input type="hidden" name="template" value="{{template}}" />
+    <input type="hidden" name="voter_id" value="{{voter.voter_login_id}}" />
     <table class="pretty">
      {{email_form.as_table}}
      </table>

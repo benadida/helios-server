@@ -1232,6 +1232,7 @@ def voters_email(request, election):
     raise Exception("bad template")
 
   voter_id = request.REQUEST.get('voter_id', None)
+
   if voter_id:
     voter = Voter.get_by_election_and_voter_id(election, voter_id)
   else:
@@ -1259,6 +1260,8 @@ def voters_email(request, election):
 
   if request.method == "GET":
     email_form = forms.EmailVotersForm()
+    if voter:
+      email_form.fields['send_to'].widget = email_form.fields['send_to'].hidden_widget()
   else:
     email_form = forms.EmailVotersForm(request.POST)
     
@@ -1279,17 +1282,17 @@ def voters_email(request, election):
       voter_constraints_include = None
       voter_constraints_exclude = None
 
-      # exclude those who have not voted
-      if email_form.cleaned_data['send_to'] == 'voted':
-        voter_constraints_exclude = {'vote_hash' : None}
-
-      # include only those who have not voted
-      if email_form.cleaned_data['send_to'] == 'not-voted':
-        voter_constraints_include = {'vote_hash': None}
-
       if voter:
         tasks.single_voter_email.delay(voter_uuid = voter.uuid, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars)
       else:
+        # exclude those who have not voted
+        if email_form.cleaned_data['send_to'] == 'voted':
+          voter_constraints_exclude = {'vote_hash' : None}
+          
+        # include only those who have not voted
+        if email_form.cleaned_data['send_to'] == 'not-voted':
+          voter_constraints_include = {'vote_hash': None}
+
         tasks.voters_email.delay(election_id = election.id, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars, voter_constraints_include = voter_constraints_include, voter_constraints_exclude = voter_constraints_exclude)
 
       # this batch process is all async, so we can return a nice note
