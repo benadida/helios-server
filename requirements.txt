@@ -1,3 +1,0 @@
-Django==1.2
-psycopg2==2.4.2
-openid==2.2.5
