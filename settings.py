@@ -136,7 +136,8 @@ HELIOS_VOTERS_UPLOAD = True
 HELIOS_VOTERS_EMAIL = True
 
 # authentication systems enabled
-AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
+#AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
+AUTH_ENABLED_AUTH_SYSTEMS = ['google']
 AUTH_DEFAULT_AUTH_SYSTEM = None
 
 # facebook
