@@ -5,3 +5,7 @@ initialization.py
 .DS_Store
 *~
 media/*
+bin
+build
+include
+lib
