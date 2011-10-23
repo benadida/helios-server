@@ -625,7 +625,11 @@ class VoterFile(models.Model):
   PATH = settings.VOTER_UPLOAD_REL_PATH
 
   election = models.ForeignKey(Election)
-  voter_file = models.FileField(upload_to=PATH, max_length=250)
+
+  # we move to storing the content in the DB
+  voter_file = models.FileField(upload_to=PATH, max_length=250,null=True)
+  voter_file_content = models.TextField(null=True)
+
   uploaded_at = models.DateTimeField(auto_now_add=True)
   processing_started_at = models.DateTimeField(auto_now_add=False, null=True)
   processing_finished_at = models.DateTimeField(auto_now_add=False, null=True)
