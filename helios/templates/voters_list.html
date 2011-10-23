@@ -61,7 +61,13 @@ You can change this setting:
 Prior Bulk Uploads:
 <ul>
 {% for vf in voter_files %}
-<li> {{vf.voter_file.size}} bytes, at {{vf.uploaded_at}}:
+<li>
+{% if vf.voter_file %}
+{{vf.voter_file.size}}
+{% else %}
+{{vf.voter_file_content|length}}
+{% endif %}
+ bytes, at {{vf.uploaded_at}}:
 {% if vf.processing_finished_at %}
 <em>done processing: {{vf.num_voters}} voters loaded</em>
 {% else %}

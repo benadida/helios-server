@@ -8,7 +8,7 @@ def get_from_env(var, default):
     else:
         return default
 
-DEBUG = False
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
