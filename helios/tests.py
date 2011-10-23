@@ -2,7 +2,7 @@
 Unit Tests for Helios
 """
 
-import unittest, datetime, re
+import unittest, datetime, re, urllib
 import django_webtest
 
 import models
@@ -346,20 +346,41 @@ class WebTest(django_webtest.WebTest):
     def assertRedirects(self, response, url):
         """
         reimplement this in case it's a WebOp response
+        and it seems to be screwing up in a few places too
+        thus the localhost exception
         """
-        if hasattr(response, 'status_code'):
-            return super(django_webtest.WebTest, self).assertRedirects(response, url)
+        if hasattr(response, 'location'):
+            assert url in response.location
+        else:
+            assert url in response._headers['location'][1]
+        self.assertEqual(response.status_code, 302)
 
-        assert response.status_int == 302
-        assert url in response.location, "redirected to %s instead of %s" % (response.location, url)
+        #return super(django_webtest.WebTest, self).assertRedirects(response, url)
+        #if hasattr(response, 'status_code') and hasattr(response, 'location'):
+
+        #if hasattr(response, 'status_code'):
+        #    assert response.status_code == 302
+        #else:
+        #    assert response.status_int == 302
+
+        #assert url in response.location, "redirected to %s instead of %s" % (response.location, url)
 
     def assertContains(self, response, text):
         if hasattr(response, 'status_code'):
-            return super(django_webtest.WebTest, self).assertContains(response, text)
+            assert response.status_code == 200
+#            return super(django_webtest.WebTest, self).assertContains(response, text)
+        else:
+            assert response.status_int == 200
 
-        assert response.status_int == 200
-        assert text in response.testbody, "missing text %s" % text
         
+        if hasattr(response, "testbody"):
+            assert text in response.testbody, "missing text %s" % text
+        else:
+            if hasattr(response, "body"):
+                assert text in response.body, "missing text %s" % text        
+            else:
+                assert text in response.content, "missing text %s" % text
+
 
 ##
 ## overall operation of the system
@@ -567,7 +588,10 @@ class ElectionBlackboxTests(WebTest):
         # vote by preparing a ballot via the server-side encryption
         response = self.app.post("/helios/elections/%s/encrypt-ballot" % election_id, {
                 'answers_json': utils.to_json([[1]])})
-        self.assertContains(response, "answers")
+        try:
+            self.assertContains(response, "answers")
+        except:
+            import pdb; pdb.set_trace()
 
         # parse it as an encrypted vote with randomness, and make sure randomness is there
         the_ballot = utils.from_json(response.testbody)
@@ -692,7 +716,7 @@ class ElectionBlackboxTests(WebTest):
         response = self.app.get("/helios/elections/%s/view" % election_id)
 
         # ensure it redirects
-        self.assertRedirects(response, "/helios/elections/%s/password_voter_login" % election_id)
+        self.assertRedirects(response, "/helios/elections/%s/password_voter_login?%s" % (election_id, urllib.urlencode({"return_url": "/helios/elections/%s/view" % election_id})))
 
         login_form = response.follow().form
 

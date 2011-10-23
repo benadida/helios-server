@@ -186,3 +186,6 @@ import djcelery
 djcelery.setup_loader()
 BROKER_BACKEND = "djkombu.transport.DatabaseTransport"
 CELERY_RESULT_DBURI = DATABASES['default']
+
+# for testing
+CELERY_ALWAYS_EAGER = True
