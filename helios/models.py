@@ -11,7 +11,7 @@ from django.utils import simplejson
 from django.conf import settings
 from django.core.mail import send_mail
 
-import datetime, logging, uuid, random
+import datetime, logging, uuid, random, StringIO
 
 from crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
@@ -219,11 +219,14 @@ class Election(HeliosModel):
     """
     expects a django uploaded_file data structure, which has filename, content, size...
     """
-    random_filename = str(uuid.uuid4())
-    new_voter_file = VoterFile(election = self)
-    new_voter_file.voter_file.save(random_filename, uploaded_file)
-    self.append_log(ElectionLog.VOTER_FILE_ADDED)
+    # now we're just storing the content
+    # random_filename = str(uuid.uuid4())
+    # new_voter_file.voter_file.save(random_filename, uploaded_file)
 
+    new_voter_file = VoterFile(election = self, voter_file_content = uploaded_file.read())
+    new_voter_file.save()
+    
+    self.append_log(ElectionLog.VOTER_FILE_ADDED)
     return new_voter_file
   
   def user_eligible_p(self, user):
@@ -636,7 +639,12 @@ class VoterFile(models.Model):
   num_voters = models.IntegerField(null=True)
 
   def itervoters(self):
-    reader = unicode_csv_reader(open(self.voter_file.path, "rU"))
+    if self.voter_file_content:
+      voter_stream = StringIO.StringIO(self.voter_file_content)
+    else:
+      voter_stream = open(self.voter_file.path, "rU")
+
+    reader = unicode_csv_reader(voter_stream)
 
     for voter_fields in reader:
       # bad line
@@ -658,7 +666,14 @@ class VoterFile(models.Model):
     self.save()
 
     election = self.election
-    reader = unicode_csv_reader(open(self.voter_file.path, "rU"))
+
+    # now we're looking straight at the content
+    if self.voter_file_content:
+      voter_stream = StringIO.StringIO(self.voter_file_content)
+    else:
+      voter_stream = open(self.voter_file.path, "rU")
+
+    reader = unicode_csv_reader(voter_stream)
     
     last_alias_num = election.last_alias_num
 

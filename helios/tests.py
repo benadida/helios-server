@@ -588,10 +588,7 @@ class ElectionBlackboxTests(WebTest):
         # vote by preparing a ballot via the server-side encryption
         response = self.app.post("/helios/elections/%s/encrypt-ballot" % election_id, {
                 'answers_json': utils.to_json([[1]])})
-        try:
-            self.assertContains(response, "answers")
-        except:
-            import pdb; pdb.set_trace()
+        self.assertContains(response, "answers")
 
         # parse it as an encrypted vote with randomness, and make sure randomness is there
         the_ballot = utils.from_json(response.testbody)
