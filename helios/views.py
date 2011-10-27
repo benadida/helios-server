@@ -220,7 +220,7 @@ def election_new(request):
   error = None
   
   if request.method == "GET":
-    election_form = forms.ElectionForm()
+    election_form = forms.ElectionForm(initial={'private_p': settings.HELIOS_PRIVATE_DEFAULT})
   else:
     election_form = forms.ElectionForm(request.POST)
     

@@ -144,6 +144,9 @@ HELIOS_ADMIN_ONLY = False
 HELIOS_VOTERS_UPLOAD = True
 HELIOS_VOTERS_EMAIL = True
 
+# are elections private by default?
+HELIOS_PRIVATE_DEFAULT = False
+
 # authentication systems enabled
 #AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
 AUTH_ENABLED_AUTH_SYSTEMS = ['google']
