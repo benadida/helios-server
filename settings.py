@@ -136,7 +136,7 @@ SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Election Server')
 FOOTER_LINKS = []
 FOOTER_LOGO = False
 
-WELCOME_MESSAGE = "This is the default message"
+WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', "This is the default message")
 
 AUTH_TEMPLATE_BASE = "server_ui/templates/base.html"
 HELIOS_TEMPLATE_BASE = "server_ui/templates/base.html"
