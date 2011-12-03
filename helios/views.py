@@ -13,7 +13,7 @@ from django.db import transaction
 
 from mimetypes import guess_type
 
-import csv, urllib
+import csv, urllib, os, base64
 
 from crypto import algs, electionalgs, elgamal
 from crypto import utils as cryptoutils
@@ -506,6 +506,16 @@ def trustee_upload_pk(request, election, trustee):
 ##
 ## Ballot Management
 ##
+
+@json
+@election_view(frozen=True)
+def get_randomness(request, election):
+  """
+  get some randomness to sprinkle into the sjcl entropy pool
+  """
+  return {
+    "randomness" : base64.b64encode(os.urandom(32))
+    }
 
 @json
 @election_view(frozen=True)

@@ -321,7 +321,15 @@ BOOTH.load_and_setup_election = function(election_url) {
         BOOTH.setup_election(raw_json);
         BOOTH.show_election();
         BOOTH.election_url = election_url;
-    });    
+    });
+
+    
+    if (USE_SJCL) {
+      // get more randomness from server
+      $.getJSON(election_url + "/get-randomness", {}, function(result) {
+        sjcl.random.addEntropy(result.randomness);
+      });
+    }
 };
 
 BOOTH.hide_progress = function() {
@@ -370,8 +378,9 @@ BOOTH.nojava = function() {
 BOOTH.ready_p = false;
 
 $(document).ready(function() {
-    if (USE_SJCL)
+    if (USE_SJCL) {
       sjcl.random.startCollectors();
+    }
 
     // we're asynchronous if we have SJCL and Worker
     BOOTH.synchronous = !(USE_SJCL && window.Worker);
