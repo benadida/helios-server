@@ -9,6 +9,7 @@
 
 // extend jquery to do object keys
 // from http://snipplr.com/view.php?codeview&id=10430
+/*
 $.extend({
     keys: function(obj){
         var a = [];
@@ -16,12 +17,13 @@ $.extend({
         return a.sort();
     }
 });
+*/
 
 var UTILS = {};
 
 UTILS.array_remove_value = function(arr, val) {
   var new_arr = [];
-  $(arr).each(function(i, v) {
+  _(arr).each(function(v, i) {
     if (v != val) {
 	new_arr.push(v);
     }
@@ -69,7 +71,7 @@ UTILS.PROGRESS = Class.extend({
 // produce the same object but with keys sorted
 UTILS.object_sort_keys = function(obj) {
   var new_obj = {};
-  $($.keys(obj)).each(function(i, k) {
+  _(_.keys(obj)).each(function(k) {
     new_obj[k] = obj[k];
   });
   return new_obj;
@@ -85,7 +87,7 @@ HELIOS = {};
 // this public key should not be used ever, that's why the secret key is 
 // not given.
 HELIOS.get_bogus_public_key = function() {
-  return ElGamal.PublicKey.fromJSONObject($.secureEvalJSON('{"g": "14887492224963187634282421537186040801304008017743492304481737382571933937568724473847106029915040150784031882206090286938661464458896494215273989547889201144857352611058572236578734319505128042602372864570426550855201448111746579871811249114781674309062693442442368697449970648232621880001709535143047913661432883287150003429802392229361583608686643243349727791976247247948618930423866180410558458272606627111270040091203073580238905303994472202930783207472394578498507764703191288249547659899997131166130259700604433891232298182348403175947450284433411265966789131024573629546048637848902243503970966798589660808533", "p": "16328632084933010002384055033805457329601614771185955389739167309086214800406465799038583634953752941675645562182498120750264980492381375579367675648771293800310370964745767014243638518442553823973482995267304044326777047662957480269391322789378384619428596446446984694306187644767462460965622580087564339212631775817895958409016676398975671266179637898557687317076177218843233150695157881061257053019133078545928983562221396313169622475509818442661047018436264806901023966236718367204710755935899013750306107738002364137917426595737403871114187750804346564731250609196846638183903982387884578266136503697493474682071", "q": "61329566248342901292543872769978950870633559608669337131139375508370458778917", "y": "8049609819434159960341080485505898805169812475728892670296439571117039276506298996734003515763387841154083296559889658342770776712289026341097211553854451556820509582109412351633111518323196286638684857563764318086496248973278960517204721786711381246407429787246857335714789053255852788270719245108665072516217144567856965465184127683058484847896371648547639041764249621310049114411288049569523544645318180042074181845024934696975226908854019646138985505600641910417380245960080668869656287919893859172484656506039729440079008919716011166605004711585860172862472422362509002423715947870815838511146670204726187094944"}'));
+  return ElGamal.PublicKey.fromJSONObject(JSON.parse('{"g": "14887492224963187634282421537186040801304008017743492304481737382571933937568724473847106029915040150784031882206090286938661464458896494215273989547889201144857352611058572236578734319505128042602372864570426550855201448111746579871811249114781674309062693442442368697449970648232621880001709535143047913661432883287150003429802392229361583608686643243349727791976247247948618930423866180410558458272606627111270040091203073580238905303994472202930783207472394578498507764703191288249547659899997131166130259700604433891232298182348403175947450284433411265966789131024573629546048637848902243503970966798589660808533", "p": "16328632084933010002384055033805457329601614771185955389739167309086214800406465799038583634953752941675645562182498120750264980492381375579367675648771293800310370964745767014243638518442553823973482995267304044326777047662957480269391322789378384619428596446446984694306187644767462460965622580087564339212631775817895958409016676398975671266179637898557687317076177218843233150695157881061257053019133078545928983562221396313169622475509818442661047018436264806901023966236718367204710755935899013750306107738002364137917426595737403871114187750804346564731250609196846638183903982387884578266136503697493474682071", "q": "61329566248342901292543872769978950870633559608669337131139375508370458778917", "y": "8049609819434159960341080485505898805169812475728892670296439571117039276506298996734003515763387841154083296559889658342770776712289026341097211553854451556820509582109412351633111518323196286638684857563764318086496248973278960517204721786711381246407429787246857335714789053255852788270719245108665072516217144567856965465184127683058484847896371648547639041764249621310049114411288049569523544645318180042074181845024934696975226908854019646138985505600641910417380245960080668869656287919893859172484656506039729440079008919716011166605004711585860172862472422362509002423715947870815838511146670204726187094944"}'));
 };
 
 // election
@@ -117,23 +119,23 @@ HELIOS.Election = Class.extend({
   toJSON: function() {
     // FIXME: only way around the backslash thing for now.... how ugly
     //return jQuery.toJSON(this.toJSONObject()).replace(/\//g,"\\/");
-    return jQuery.toJSON(this.toJSONObject());
+    return JSON.stringify(this.toJSONObject());
   }
 });
 
 HELIOS.Election.fromJSONString = function(raw_json) {
-  var json_object = $.secureEvalJSON(raw_json);
+  var json_object = JSON.parse(raw_json);
   
-  // hash fix for the issue with re-json'ifying unicode chars
+  // let's hash the raw_json
   var election = HELIOS.Election.fromJSONObject(json_object);
-  election.election_hash = b64_sha256(election.toJSON());
+  election.election_hash = b64_sha256(raw_json);
   
   return election;
 };
 
 HELIOS.Election.fromJSONObject = function(d) {
   var el = new HELIOS.Election();
-  jQuery.extend(el, d);
+  _.extend(el, d);
   
   // empty questions
   if (!el.questions)
@@ -163,8 +165,8 @@ BALLOT.pretty_choices = function(election, ballot) {
     var answers = ballot.answers;
 
     // process the answers
-    var choices = $(questions).map(function(q_num) {
-	    return $(answers[q_num]).map(function(dummy, ans) {
+    var choices = _(questions).map(function(q, q_num) {
+	    return _(answers[q_num]).map(function(ans) {
 	      return questions[q_num].answers[ans];
 	    });
     });
@@ -239,8 +241,9 @@ HELIOS.EncryptedAnswer = Class.extend({
     
     // possible plaintexts [question.min .. , question.max]
     var plaintexts = null;
-    if (question.max != null)
+    if (question.max != null) {
       plaintexts = UTILS.generate_plaintexts(pk, question.min, question.max);
+    }
     
     var zero_one_plaintexts = UTILS.generate_plaintexts(pk, 0, 1);
     
@@ -258,7 +261,7 @@ HELIOS.EncryptedAnswer = Class.extend({
     for (var i=0; i<question.answers.length; i++) {
       var index, plaintext_index;
       // if this is the answer, swap them so m is encryption 1 (g)
-      if (jQuery.inArray(i, answer) > -1) {
+      if (_(answer).include(i)) {
         plaintext_index = 1;
         num_selected_answers += 1;
       } else {
@@ -302,8 +305,9 @@ HELIOS.EncryptedAnswer = Class.extend({
       var overall_plaintext_index = num_selected_answers;
       if (question.min)
         overall_plaintext_index -= question.min;
-        
+      
       overall_proof = hom_sum.generateDisjunctiveProof(plaintexts, overall_plaintext_index, rand_sum, ElGamal.disjunctive_challenge_generator);
+
       if (progress) {
         for (var i=0; i<question.max; i++)
           progress.tick();
@@ -346,16 +350,16 @@ HELIOS.EncryptedAnswer = Class.extend({
   
   toString: function() {
     // get each ciphertext as a JSON string
-    var choices_strings = jQuery.makeArray($(this.choices).map(function(i,c) {return c.toString();}));
+    var choices_strings = _(this.choices).map(function(c) {return c.toString();});
     return choices_strings.join("|");
   },
   
   toJSONObject: function(include_plaintext) {
     var return_obj = {
-      'choices' : $(this.choices).map(function(i, choice) {
+      'choices' : _(this.choices).map(function(choice) {
         return choice.toJSONObject();
       }),
-      'individual_proofs' : $(this.individual_proofs).map(function(i, disj_proof) {
+      'individual_proofs' : _(this.individual_proofs).map(function(disj_proof) {
         return disj_proof.toJSONObject();
       })
     };
@@ -368,7 +372,7 @@ HELIOS.EncryptedAnswer = Class.extend({
     
     if (include_plaintext) {
       return_obj.answer = this.answer;
-      return_obj.randomness = $(this.randomness).map(function(i, r) {
+      return_obj.randomness = _(this.randomness).map(function(r) {
         return r.toJSONObject();
       });
     }
@@ -379,11 +383,11 @@ HELIOS.EncryptedAnswer = Class.extend({
 
 HELIOS.EncryptedAnswer.fromJSONObject = function(d, election) {
   var ea = new HELIOS.EncryptedAnswer();
-  ea.choices = $(d.choices).map(function(i, choice) {
+  ea.choices = _(d.choices).map(function(choice) {
     return ElGamal.Ciphertext.fromJSONObject(choice, election.public_key);
   });
   
-  ea.individual_proofs = $(d.individual_proofs).map(function (i, p) {
+  ea.individual_proofs = _(d.individual_proofs).map(function (p) {
     return ElGamal.DisjunctiveProof.fromJSONObject(p);
   });
   
@@ -391,7 +395,7 @@ HELIOS.EncryptedAnswer.fromJSONObject = function(d, election) {
   
   // possibly load randomness and plaintext
   if (d.randomness) {
-    ea.randomness = $(d.randomness).map(function(i, r) {
+    ea.randomness = _(d.randomness).map(function(r) {
       return BigInt.fromJSONObject(r);
     });
     ea.answer = d.answer;
@@ -419,45 +423,45 @@ HELIOS.EncryptedVote = Class.extend({
 
     if (progress) {
       // set up the number of ticks
-      $(election.questions).each(function(q_num, q) {
+      _(election.questions).each(function(q, q_num) {
         // + 1 for the overall proof
         progress.addTicks(q.answers.length);
         if (q.max != null)
           progress.addTicks(q.max);
       });
+
+      progress.addTicks(0, n_questions);
     }
-    
-    progress.addTicks(0, n_questions);
       
     // loop through questions
     for (var i=0; i<n_questions; i++) {
       this.encrypted_answers[i] = new HELIOS.EncryptedAnswer(election.questions[i], answers[i], election.public_key, progress);
     }    
   },
-  
+
   toString: function() {
     // for each question, get the encrypted answer as a string
-    var answer_strings = jQuery.makeArray($(this.encrypted_answers).map(function(i,a) {return a.toString();}));
+    var answer_strings = _(this.encrypted_answers).map(function(a) {return a.toString();});
     
     return answer_strings.join("//");
   },
   
   clearPlaintexts: function() {
-    $(this.encrypted_answers).each(function(i, ea) {
+    _(this.encrypted_answers).each(function(ea) {
       ea.clearPlaintexts();
     });
   },
   
   verifyEncryption: function(questions, pk) {
     var overall_result = true;
-    $(this.encrypted_answers).each(function(i, ea) {
+    _(this.encrypted_answers).each(function(ea, i) {
       overall_result = overall_result && ea.verifyEncryption(questions[i], pk);
     });
     return overall_result;
   },
   
   toJSONObject: function(include_plaintext) {
-    var answers = $(this.encrypted_answers).map(function(i,ea) {
+      var answers = _(this.encrypted_answers).map(function(ea,i) {
       return ea.toJSONObject(include_plaintext);
     });
     
@@ -469,7 +473,7 @@ HELIOS.EncryptedVote = Class.extend({
   },
   
   get_hash: function() {
-    return b64_sha256(jQuery.toJSON(this));
+     return b64_sha256(JSON.stringify(this.toJSONObject()));
   },
   
   get_audit_trail: function() {
@@ -484,14 +488,14 @@ HELIOS.EncryptedVote = Class.extend({
     var self = this;
     
     // for each question and associate encrypted answer
-    $(this.encrypted_answers).each(function(ea_num, enc_answer) {
+    _(this.encrypted_answers).each(function(enc_answer, ea_num) {
         var overall_result = 1;
 
         // the max number of answers (decides whether this is approval or not and requires an overall proof)
         var max = self.election.questions[ea_num].max;
 
         // go through each individual proof
-        $(enc_answer.choices).each(function(choice_num, choice) {
+        _(enc_answer.choices).each(function(choice, choice_num) {
           var result = choice.verifyDisjunctiveProof(zero_or_one, enc_answer.individual_proofs[choice_num], ElGamal.disjunctive_challenge_generator);
           outcome_callback(ea_num, choice_num, result, choice);
           
@@ -526,7 +530,7 @@ HELIOS.EncryptedVote.fromJSONObject = function(d, election) {
     
   var ev = new HELIOS.EncryptedVote(election);
   
-  ev.encrypted_answers = $(d.answers).map(function(i, ea) {
+  ev.encrypted_answers = _(d.answers).map(function(ea) {
     return HELIOS.EncryptedAnswer.fromJSONObject(ea, election);
   });
   
@@ -534,6 +538,16 @@ HELIOS.EncryptedVote.fromJSONObject = function(d, election) {
   ev.election_uuid = d.election_uuid;
   
   return ev;
+};
+
+// create an encrypted vote from a set of answers
+HELIOS.EncryptedVote.fromEncryptedAnswers = function(election, enc_answers) {
+    var enc_vote = new HELIOS.EncryptedVote(election, null);
+    enc_vote.encrypted_answers = [];
+    _(enc_answers).each(function(enc_answer, answer_num) {
+	    enc_vote.encrypted_answers[answer_num] = enc_answer;
+	});
+    return enc_vote;
 };
 
 //
@@ -547,8 +561,8 @@ HELIOS.Tally = Class.extend({
   },
   
   toJSONObject: function() {
-    var tally_json_obj = $(this.tally).map(function(i, one_q) {
-      return $(one_q).map(function(j, one_a) {
+    var tally_json_obj = _(this.tally).map(function(one_q) {
+      return _(one_q).map(function(one_a) {
         return one_a.toJSONObject();
       });
     });
@@ -564,8 +578,8 @@ HELIOS.Tally = Class.extend({
 HELIOS.Tally.fromJSONObject = function(d, public_key) {
   var num_tallied = d['num_tallied'];
   
-  var raw_tally = $(d['tally']).map(function(i, one_q) {
-    return $(one_q).map(function(j, one_a) {
+  var raw_tally = _(d['tally']).map(function(one_q) {
+    return _(one_q).map(function(one_a) {
       var new_val= ElGamal.Ciphertext.fromJSONObject(one_a, public_key);
       return new_val;
     });
@@ -583,7 +597,7 @@ HELIOS.jsonify_list_of_lists = function(lol) {
   if (!lol)
     return null;
     
-  return $(lol).map(function(i, sublist) {return $(sublist).map(function(j, item) {return item.toJSONObject();})});
+  return _(lol).map(function(sublist) {return _(sublist).map(function(item) {return item.toJSONObject();})});
 };
 
 // a utility function for doing the opposite with an item-level de-jsonifier
@@ -591,7 +605,7 @@ HELIOS.dejsonify_list_of_lists = function(lol, item_dejsonifier) {
   if (!lol)
     return null;
     
-  return $(lol).map(function(i, sublist) {return $(sublist).map(function(j, item) {return item_dejsonifier(item);})});
+  return _(lol).map(function(sublist) {return _(sublist).map(function(item) {return item_dejsonifier(item);})});
 }
 
 HELIOS.Trustee = Class.extend({

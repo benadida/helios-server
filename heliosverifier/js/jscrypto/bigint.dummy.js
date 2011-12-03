@@ -73,6 +73,9 @@ BigInt.fromInt = function(i) {
   return BigInt.fromJSONObject("" + i);
 };
 
+BigInt.patchForChrome = function(serialize_obj_func) {
+  return serialize_obj_func();
+};
 
 // Set up the pointer to the applet if necessary, and some
 // basic Big Ints that everyone needs (0, 1, 2, and 42)

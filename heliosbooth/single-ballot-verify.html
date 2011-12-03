@@ -5,6 +5,10 @@
   <title>Helios Voting System</title>
   <link rel="stylesheet" type="text/css" href="css/booth.css" />
   <link rel="stylesheet" type="text/css" href="css/forms.css" />
+  <script language="javascript" src="js/jscrypto/jsbn.js"></script>
+  <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
+  <script language="javascript" src="js/jscrypto/sjcl.js"></script>
+  <script language="javascript" src="js/underscore-min.js"></script>
   <script language="javascript" src="js/jquery-1.2.2.min.js"></script>
   <script language="javascript" src="js/jquery-jtemplates.js"></script>
   <script language="javascript" src="js/jquery.json.min.js"></script>
@@ -22,6 +26,7 @@
   <script language="javascript" src="js/jscrypto/sha1.js"></script>
   <script language="javascript" src="js/jscrypto/sha2.js"></script>
   <script language="javascript" src="js/jscrypto/helios.js"></script>
+  <script language="javascript" src="verifier.js"></script>
 </head>
 <body>
 <script language="javascript">
@@ -59,76 +64,38 @@ function verify_single_ballot(election_url, audit_trail) {
   
   $('#loading').show();
   
+  var after_computation = function(overall_result) {
+    result_append("<br />");
+    
+    $('#loading').hide();
+    
+    if (overall_result) {
+       result_append('SUCCESSFUL VERIFICATION, DONE!');
+    } else {
+       result_append('PROBLEM - THIS BALLOT DOES NOT VERIFY.');        
+    }
+  };
+
   // the hash will be computed within the setup function call now
   $.ajax({url: election_url, success: function(raw_json) {
-    var overall_result = true;
-    try {
-      election = HELIOS.Election.fromJSONString(raw_json);
-      var election_hash = election.get_hash();
-      result_append("election fingerprint is " + election_hash);
-      
-      // check if the election ballot_type is homomorphic
-      // no longer the way this is done
+    if (window.Worker) {
+      var verifier_worker = new window.Worker("verifierworker.js");
+      verifier_worker.onmessage = function(event) {
+        if (event.data.type == 'log')
+          return console.log(event.data.msg);
+       
+        if (event.data.type == 'status')
+          return result_append(event.data.msg);
 
-      // display ballot fingerprint
-      encrypted_vote = HELIOS.EncryptedVote.fromJSONObject(encrypted_vote_json, election);
-      BigInt.patchForChrome(function() {
-        return $.toJSON(encrypted_vote.toJSONObject());
-      });
-      result_append("smart ballot tracker is " + encrypted_vote.get_hash());
+        if (event.data.type == 'result')
+          return after_computation(event.data.result);
+      };
 
-      // check the hash
-      if (election_hash == encrypted_vote.election_hash) {
-          result_append("election fingerprint matches ballot");
-      } else {
-          overall_result = false;
-          result_append("PROBLEM = election fingerprint does not match");          
-      }
-      
-      // display the ballot as it is claimed to be
-      result_append("Ballot Contents:")
-      $(election.questions).each(function(qnum, q) {
-          if (q.tally_type != "homomorphic") {
-            result_append("WARNING: the tally type for this question is not homomorphic. Verification may fail because this verifier is only set up to handle homomorphic ballots.");
-          }
-        
-          var answer_pretty_list = jQuery.map(encrypted_vote.encrypted_answers[qnum].answer, function(aindex, anum) {
-              return q.answers[aindex];
-          });
-          result_append("Question #" + (qnum+1) + " - " + q.short_name + " : " + answer_pretty_list.join(", "));
-      });
-      
-      // verify the encryption
-      if (encrypted_vote.verifyEncryption(election.questions, election.public_key)) {
-          result_append("Encryption Verified");
-      } else {
-          overall_result = false;
-          result_append("PROBLEM = Encryption doesn't match.");
-      }
-      
-      // verify the proofs
-      if (encrypted_vote.verifyProofs(election.public_key, function(ea_num, choice_num, result) {
-      })) {
-          result_append("Proofs ok.");
-      } else {
-          overall_result = false;
-          result_append("PROBLEM = Proofs don't work.");
-      }
-    } catch (e) {
-      alert(e);
-      result_append('problem parsing election or ballot data structures, malformed inputs.');
-      overall_result=false;
-    }
-      
-    result_append("<br />");
-      
-    $('#loading').hide();
-      
-    if (overall_result) {
-      result_append('SUCCESSFUL VERIFICATION, DONE!');
+      verifier_worker.postMessage({'type':'verify', 'election':raw_json, 'vote':encrypted_vote_json});
     } else {
-      result_append('PROBLEM - THIS BALLOT DOES NOT VERIFY.');        
-    }      
+      var overall_result = verify_ballot(raw_json, encrypted_vote_json, result_append);
+      after_computation(overall_result);
+    }
   }, error: function() {
       result_append('PROBLEM LOADING election. Are you sure you have the right election URL?<br />');
 

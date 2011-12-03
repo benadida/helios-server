@@ -204,11 +204,4 @@ BigInt.fromInt = function(i) {
     return BigInt.fromJSONObject("" + i);
 };
 
-// .onload instead of .ready, as I don't think the applet is ready until onload.
-// FIXME: something wrong here in the first load
-$(document).ready(function() {
-	//BigInt.use_applet = check_applet();
-	BigInt.use_applet = false;
-});
-
-//}
+BigInt.use_applet = false;

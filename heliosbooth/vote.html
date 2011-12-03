@@ -5,6 +5,10 @@
   <title>Helios Voting Booth</title>
   <link rel="stylesheet" type="text/css" href="css/booth.css" />
   <link rel="stylesheet" type="text/css" href="css/forms.css" />
+  <script language="javascript" src="js/jscrypto/jsbn.js"></script>
+  <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
+  <script language="javascript" src="js/jscrypto/sjcl.js"></script>
+  <script language="javascript" src="js/underscore-min.js"></script>
   <script language="javascript" src="js/jquery-1.2.2.min.js"></script>
   <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
   <script language="javascript" src="js/jquery-jtemplates.js"></script>
@@ -92,6 +96,54 @@ BOOTH.setup_ballot = function(election) {
   });
 };
 
+// all ciphertexts to null
+BOOTH.reset_ciphertexts = function() {
+  _(BOOTH.encrypted_answers).each(function(enc_answer, ea_num) {
+    BOOTH.launch_async_encryption_answer(ea_num);
+  });
+};
+
+BOOTH.setup_workers = function(election_raw_json) {
+  // async?
+  if (!BOOTH.synchronous) {
+      // prepare spots for encrypted answers
+      // and one worker per question
+      BOOTH.encrypted_answers = [];
+      BOOTH.answer_timestamps = [];
+      BOOTH.workers = [];
+      $(BOOTH.election.questions).each(function(q_num, q) {
+        BOOTH.encrypted_answers[q_num] = null;
+        var new_worker = new window.Worker("boothworker.js");
+        new_worker.postMessage({
+          'type': 'setup',
+          'election' : election_raw_json,
+          'question_num' : q_num
+        });
+
+        new_worker.onmessage = function(event) {
+           // logging
+           if (event.data.type == 'log')
+             return console.log(event.data.msg);
+
+           // result of encryption
+           if (event.data.type == 'result') {
+             console.log("got encrypted answer " + q_num);
+             
+             // this check ensures that race conditions
+             // don't screw up votes.
+             if (event.data.id == BOOTH.answer_timestamps[q_num]) {
+                BOOTH.encrypted_answers[q_num] = HELIOS.EncryptedAnswer.fromJSONObject(event.data.encrypted_answer, BOOTH.election);
+             } else {
+                console.log("no way jose");
+             }
+           }
+        };
+
+        BOOTH.workers[q_num] = new_worker;
+      });
+  }
+};
+
 function escape_html(content) {
   return $('<div/>').text(content).html();
 }
@@ -108,6 +160,12 @@ BOOTH.setup_election = function(raw_json) {
   // because different code uses each one. Bah. Need fixing.
   BOOTH.election.hash = b64_sha256(raw_json);
   BOOTH.election.election_hash = BOOTH.election.hash
+
+  // dirty markers for encryption (mostly for async)
+  BOOTH.dirty = [];
+
+  // async?
+  BOOTH.setup_workers(raw_json);
   
   document.title += ' - ' + BOOTH.election.name;
 
@@ -131,6 +189,17 @@ BOOTH.show_election = function() {
   BOOTH.show($('#election_div')).processTemplate({'election' : BOOTH.election});
 };
 
+BOOTH.launch_async_encryption_answer = function(question_num) {
+   BOOTH.answer_timestamps[question_num] = new Date().getTime();
+   BOOTH.encrypted_answers[question_num] = null;
+   BOOTH.dirty[question_num] = false;
+   BOOTH.workers[question_num].postMessage({
+      'type' : 'encrypt',
+      'answer' : BOOTH.ballot.answers[question_num],
+      'id' : BOOTH.answer_timestamps[question_num]
+   });
+};
+
 // check if the current question is ok
 BOOTH.validate_question = function(question_num) {
     // check if enough answers are checked
@@ -139,6 +208,15 @@ BOOTH.validate_question = function(question_num) {
         return false;
     }
     
+    // if we need to launch the worker, let's do it
+    if (!BOOTH.synchronous) {
+       // we need a unique ID for this to ensure that old results
+       // don't mess things up. Using timestamp.
+       // check if dirty
+       if (BOOTH.dirty[question_num]) {
+         BOOTH.launch_async_encryption_answer(question_num);
+       }
+    }						    
     return true;
 };
 
@@ -177,10 +255,13 @@ BOOTH.show_question = function(question_num) {
   // first we remove the answers array
   var answer_array = BOOTH.ballot.answers[question_num];
   BOOTH.ballot.answers[question_num] = [];
+
+  // we should not set the dirty bit here, so we save it away
+  var old_dirty = BOOTH.dirty[question_num];
   $(answer_array).each(function(i, ans) {
     BOOTH.click_checkbox_script(question_num, ans, true);
   });
-
+  BOOTH.dirty[question_num] = old_dirty;
 };
 
 
@@ -190,6 +271,8 @@ BOOTH.click_checkbox_script = function(question_num, answer_num) {
 };
 
 BOOTH.click_checkbox = function(question_num, answer_num, checked_p) {
+  // keep track of dirty answers that need encrypting
+  BOOTH.dirty[question_num] = true;
 
   if (checked_p) {
      // multiple click events shouldn't screw this up
@@ -226,11 +309,10 @@ BOOTH.show_processing_before = function(str_to_execute) {
     setTimeout(str_to_execute, 250);
 };
 
-BOOTH.show_encryption_message_before = function(str_to_execute) {
+BOOTH.show_encryption_message_before = function(func_to_execute) {
     BOOTH.show($('#encrypting_div'));
-    
-    // add a timeout so browsers like Safari actually display the processing message
-    setTimeout(str_to_execute, 100);
+
+    func_to_execute();
 };
 
 BOOTH.load_and_setup_election = function(election_url) {
@@ -272,19 +354,28 @@ BOOTH.nojava = function() {
   // because navigator.javaEnabled() still returns true.
   // $('#election_div').hide();
   // $('#error_div').show();
-  var script = document.createElement('script');
+/*  var script = document.createElement('script');
   script.type = 'text/javascript';
   script.src = JSCRYPTO_HOME + '/bigint.dummy.js';
   document.getElementsByTagName('head')[0].appendChild(script);  
 
   // FIXME: this is a bit unfortunate, can we have a trigger
   // for loading this new script?
-  setTimeout("BigInt.setup(BOOTH.so_lets_go)", 2000);
+  setTimeout("BigInt.setup(BOOTH.so_lets_go)", 2000); */
+    USE_SJCL = true;
+    sjcl.random.startCollectors();
+    BigInt.setup(BOOTH.so_lets_go);
 };
 
 BOOTH.ready_p = false;
 
 $(document).ready(function() {
+    if (USE_SJCL)
+      sjcl.random.startCollectors();
+
+    // we're asynchronous if we have SJCL and Worker
+    BOOTH.synchronous = !(USE_SJCL && window.Worker);
+
     BigInt.setup(BOOTH.so_lets_go, BOOTH.nojava);
 });  
 
@@ -304,12 +395,8 @@ BOOTH.check_encryption_status = function() {
 };
 
 BOOTH._after_ballot_encryption = function() {
-    // hack to fix a weird Chrome 10 Mac bug where .toJSONObject suddenly returns "[object Object]"
-    var encrypted_vote_json = BigInt.patchForChrome(function() {
-      return $.toJSON(BOOTH.encrypted_ballot);
-    });
-
-    // store the ballot hash (after the fix above)
+    // removing the chrome weird fix because no more Java
+    var encrypted_vote_json = JSON.stringify(BOOTH.encrypted_ballot.toJSONObject());
     BOOTH.encrypted_ballot_hash = BOOTH.encrypted_ballot.get_hash();
 
     $('#seal_div').processTemplate({'cast_url': BOOTH.election.cast_url,
@@ -322,12 +409,28 @@ BOOTH._after_ballot_encryption = function() {
     BOOTH.show_progress('3');    
 };
 
-BOOTH.seal_ballot_raw = function() {
-    BOOTH.progress = new UTILS.PROGRESS();
-    var progress_interval = setInterval("BOOTH.check_encryption_status()", 500);
-    BOOTH.encrypted_ballot = new HELIOS.EncryptedVote(BOOTH.election, BOOTH.ballot.answers, BOOTH.progress);
-    clearInterval(progress_interval);
+// wait for all workers to be done
+BOOTH.wait_for_ciphertexts = function() {
+    if (_.any(BOOTH.encrypted_answers, _.isNull)) {
+      setTimeout(BOOTH.wait_for_ciphertexts, 500);
+      return;
+    }
+
+    BOOTH.encrypted_ballot = HELIOS.EncryptedVote.fromEncryptedAnswers(BOOTH.election, BOOTH.encrypted_answers);
+
     BOOTH._after_ballot_encryption();
+};
+
+BOOTH.seal_ballot_raw = function() {
+    if (BOOTH.synchronous) {
+      BOOTH.progress = new UTILS.PROGRESS();
+      var progress_interval = setInterval("BOOTH.check_encryption_status()", 500);
+      BOOTH.encrypted_ballot = new HELIOS.EncryptedVote(BOOTH.election, BOOTH.ballot.answers, BOOTH.progress);
+      clearInterval(progress_interval);
+      BOOTH._after_ballot_encryption();
+    } else {
+      BOOTH.wait_for_ciphertexts();
+    }
 };
 
 BOOTH.request_ballot_encryption = function() {
@@ -343,9 +446,9 @@ BOOTH.seal_ballot = function() {
     // if we don't have the ability to do crypto in the browser,
     // we use the server
     if (BigInt.is_dummy) {
-      BOOTH.show_encryption_message_before("BOOTH.request_ballot_encryption()", true);
+      BOOTH.show_encryption_message_before(BOOTH.request_ballot_encryption, true);
     } else {
-      BOOTH.show_encryption_message_before("BOOTH.seal_ballot_raw()", true);
+      BOOTH.show_encryption_message_before(BOOTH.seal_ballot_raw, true);
       $('#percent_done_container').show();
     }
 };
