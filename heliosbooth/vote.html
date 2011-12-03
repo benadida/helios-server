@@ -454,9 +454,7 @@ BOOTH.seal_ballot = function() {
 };
 
 BOOTH.audit_ballot = function() {
-    BOOTH.audit_trail = BigInt.patchForChrome(function() {
-      return $.toJSON(BOOTH.encrypted_ballot.get_audit_trail());
-    });
+    BOOTH.audit_trail = $.toJSON(BOOTH.encrypted_ballot.get_audit_trail());
 
     BOOTH.show($('#audit_div')).processTemplate({'audit_trail' : BOOTH.audit_trail, 'election_url' : BOOTH.election_url});
 };

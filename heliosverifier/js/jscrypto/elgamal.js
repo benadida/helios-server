@@ -519,12 +519,8 @@ ElGamal.disjunctive_challenge_generator = function(commitments) {
   // go through all proofs and append the commitments
   _(commitments).each(function(commitment) {
     // toJSONObject instead of toString because of IE weirdness.
-    strings_to_hash[strings_to_hash.length] = BigInt.patchForChrome(function() {
-      return commitment.A.toJSONObject();
-    });
-    strings_to_hash[strings_to_hash.length] = BigInt.patchForChrome(function() {
-      return commitment.B.toJSONObject();
-    });
+    strings_to_hash[strings_to_hash.length] = commitment.A.toJSONObject();
+    strings_to_hash[strings_to_hash.length] = commitment.B.toJSONObject();
   });
   
   // console.log(strings_to_hash);
@@ -538,7 +534,5 @@ ElGamal.fiatshamir_challenge_generator = function(commitment) {
 };
 
 ElGamal.fiatshamir_dlog_challenge_generator = function(commitment) {
-  return new BigInt(hex_sha1(BigInt.patchForChrome(function() {
-    return commitment.toJSONObject();
-  })), 16);
+  return new BigInt(hex_sha1(commitment.toJSONObject()), 16);
 };
