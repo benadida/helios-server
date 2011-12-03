@@ -375,6 +375,9 @@ $(document).ready(function() {
 
     // we're asynchronous if we have SJCL and Worker
     BOOTH.synchronous = !(USE_SJCL && window.Worker);
+    
+    // we do in the browser only if it's asynchronous
+    BigInt.in_browser = !BOOTH.synchronous;
 
     BigInt.setup(BOOTH.so_lets_go, BOOTH.nojava);
 });  
@@ -445,7 +448,7 @@ BOOTH.seal_ballot = function() {
 
     // if we don't have the ability to do crypto in the browser,
     // we use the server
-    if (BigInt.is_dummy) {
+    if (!BigInt.in_browser) {
       BOOTH.show_encryption_message_before(BOOTH.request_ballot_encryption, true);
     } else {
       BOOTH.show_encryption_message_before(BOOTH.seal_ballot_raw, true);
