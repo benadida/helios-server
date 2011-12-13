@@ -89,10 +89,15 @@ BOOTH.exit = function() {
 BOOTH.setup_ballot = function(election) {
   BOOTH.ballot = {};
 
+  // dirty markers for encryption (mostly for async)
+  BOOTH.dirty = [];
+
   // each question starts out with an empty array answer
+  // and a dirty bit to make sure we encrypt
   BOOTH.ballot.answers = [];
   $(BOOTH.election.questions).each(function(i,x){
     BOOTH.ballot.answers[i] = [];
+    BOOTH.dirty[i] = true;
   });
 };
 
@@ -160,9 +165,6 @@ BOOTH.setup_election = function(raw_json) {
   // because different code uses each one. Bah. Need fixing.
   BOOTH.election.hash = b64_sha256(raw_json);
   BOOTH.election.election_hash = BOOTH.election.hash
-
-  // dirty markers for encryption (mostly for async)
-  BOOTH.dirty = [];
 
   // async?
   BOOTH.setup_workers(raw_json);
