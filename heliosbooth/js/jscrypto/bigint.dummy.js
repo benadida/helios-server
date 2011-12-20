@@ -80,6 +80,6 @@ BigIntDummy.FORTY_TWO = new BigIntDummy("42",10);
 BigIntDummy.ready_p = true;
 
 BigIntDummy.setup = function(callback, fail_callback) {
-  console.log("using dummy bigint");
+    //console.log("using dummy bigint");
   callback();
 }
