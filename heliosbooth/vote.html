@@ -408,17 +408,26 @@ BOOTH.check_encryption_status = function() {
 
 BOOTH._after_ballot_encryption = function() {
     // removing the chrome weird fix because no more Java
-    var encrypted_vote_json = JSON.stringify(BOOTH.encrypted_ballot.toJSONObject());
-    BOOTH.encrypted_ballot_hash = BOOTH.encrypted_ballot.get_hash();
+    BOOTH.encrypted_vote_json = JSON.stringify(BOOTH.encrypted_ballot.toJSONObject());
 
-    $('#seal_div').processTemplate({'cast_url': BOOTH.election.cast_url,
-        'encrypted_vote_json': encrypted_vote_json,
+    var do_hash = function() {
+       BOOTH.encrypted_ballot_hash = b64_sha256(BOOTH.encrypted_vote_json); // BOOTH.encrypted_ballot.get_hash();
+       window.setTimeout(show_cast, 0);
+    };
+
+    var show_cast = function() {
+      $('#seal_div').processTemplate({'cast_url': BOOTH.election.cast_url,
+        'encrypted_vote_json': BOOTH.encrypted_vote_json,
         'encrypted_vote_hash' : BOOTH.encrypted_ballot_hash,
         'election_uuid' : BOOTH.election.uuid,
         'election_hash' : BOOTH.election_hash,
         'election': BOOTH.election});
-    BOOTH.show($('#seal_div'));
-    BOOTH.show_progress('3');    
+      BOOTH.show($('#seal_div'));
+      BOOTH.show_progress('3');
+      BOOTH.encrypted_vote_json = null;
+    };
+
+    window.setTimeout(do_hash, 0);
 };
 
 // wait for all workers to be done
@@ -448,7 +457,7 @@ BOOTH.seal_ballot_raw = function() {
 BOOTH.request_ballot_encryption = function() {
     $.post(BOOTH.election_url + "/encrypt-ballot", {'answers_json': $.toJSON(BOOTH.ballot.answers)}, function(result) {
       BOOTH.encrypted_ballot = HELIOS.EncryptedVote.fromJSONObject($.secureEvalJSON(result), BOOTH.election);
-      BOOTH._after_ballot_encryption();
+      window.setTimeout(BOOTH._after_ballot_encryption, 0);
     });
 };
 
