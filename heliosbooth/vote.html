@@ -407,8 +407,8 @@ BOOTH.check_encryption_status = function() {
 };
 
 BOOTH._after_ballot_encryption = function() {
-    // removing the chrome weird fix because no more Java
-    BOOTH.encrypted_vote_json = JSON.stringify(BOOTH.encrypted_ballot.toJSONObject());
+    // if already serialized, use that, otherwise serialize
+    BOOTH.encrypted_vote_json = BOOTH.encrypted_ballot_serialized || JSON.stringify(BOOTH.encrypted_ballot.toJSONObject());
 
     var do_hash = function() {
        BOOTH.encrypted_ballot_hash = b64_sha256(BOOTH.encrypted_vote_json); // BOOTH.encrypted_ballot.get_hash();
@@ -456,7 +456,20 @@ BOOTH.seal_ballot_raw = function() {
 
 BOOTH.request_ballot_encryption = function() {
     $.post(BOOTH.election_url + "/encrypt-ballot", {'answers_json': $.toJSON(BOOTH.ballot.answers)}, function(result) {
-      BOOTH.encrypted_ballot = HELIOS.EncryptedVote.fromJSONObject($.secureEvalJSON(result), BOOTH.election);
+      //BOOTH.encrypted_ballot = HELIOS.EncryptedVote.fromJSONObject($.secureEvalJSON(result), BOOTH.election);
+      // rather than deserialize and reserialize, which is inherently slow on browsers
+      // that already need to do network requests, just remove the plaintexts
+
+      BOOTH.encrypted_ballot_with_plaintexts_serialized = result;
+      var ballot_json_obj = $.secureEvalJSON(BOOTH.encrypted_ballot_with_plaintexts_serialized);
+      var answers = ballot_json_obj.answers;
+      for (var i=0; i<answers.length; i++) {
+         delete answers[i]['answer'];
+         delete answers[i]['randomness'];
+      }
+   
+      BOOTH.encrypted_ballot_serialized = JSON.stringify(ballot_json_obj);
+
       window.setTimeout(BOOTH._after_ballot_encryption, 0);
     });
 };
@@ -475,7 +488,7 @@ BOOTH.seal_ballot = function() {
 };
 
 BOOTH.audit_ballot = function() {
-    BOOTH.audit_trail = $.toJSON(BOOTH.encrypted_ballot.get_audit_trail());
+    BOOTH.audit_trail = BOOTH.encrypted_ballot_with_plaintexts_serialized || $.toJSON(BOOTH.encrypted_ballot.get_audit_trail());
 
     BOOTH.show($('#audit_div')).processTemplate({'audit_trail' : BOOTH.audit_trail, 'election_url' : BOOTH.election_url});
 };
@@ -495,7 +508,11 @@ BOOTH.cast_ballot = function() {
     BOOTH.setup_ballot(BOOTH.election);
 
     // clear the plaintext from the encrypted 
-    BOOTH.encrypted_ballot.clearPlaintexts();
+    if (BOOTH.encrypted_ballot)
+       BOOTH.encrypted_ballot.clearPlaintexts();
+
+    BOOTH.encrypted_ballot_serialized = null;
+    BOOTH.encrypted_ballot_with_plaintexts_serialized = null;
     
     // remove audit trail
     BOOTH.audit_trail = null;
