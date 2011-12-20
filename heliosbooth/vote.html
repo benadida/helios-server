@@ -5,6 +5,8 @@
   <title>Helios Voting Booth</title>
   <link rel="stylesheet" type="text/css" href="css/booth.css" />
   <link rel="stylesheet" type="text/css" href="css/forms.css" />
+  <script language="javascript" src="js/jscrypto/class.js"></script>
+  <script language="javascript" src="js/jscrypto/bigint.dummy.js"></script>
   <script language="javascript" src="js/jscrypto/jsbn.js"></script>
   <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
   <script language="javascript" src="js/jscrypto/sjcl.js"></script>
@@ -364,14 +366,6 @@ BOOTH.nojava = function() {
   // because navigator.javaEnabled() still returns true.
   // $('#election_div').hide();
   // $('#error_div').show();
-/*  var script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src = JSCRYPTO_HOME + '/bigint.dummy.js';
-  document.getElementsByTagName('head')[0].appendChild(script);  
-
-  // FIXME: this is a bit unfortunate, can we have a trigger
-  // for loading this new script?
-  setTimeout("BigInt.setup(BOOTH.so_lets_go)", 2000); */
     USE_SJCL = true;
     sjcl.random.startCollectors();
     BigInt.setup(BOOTH.so_lets_go);
@@ -389,6 +383,10 @@ $(document).ready(function() {
     
     // we do in the browser only if it's asynchronous
     BigInt.in_browser = !BOOTH.synchronous;
+
+    // set up dummy bigint for fast parsing and serialization
+    if (!BigInt.in_browser)
+      BigInt = BigIntDummy;
 
     BigInt.setup(BOOTH.so_lets_go, BOOTH.nojava);
 });  
