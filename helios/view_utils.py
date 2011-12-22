@@ -86,8 +86,10 @@ def json(func):
       return_val = func(self, *args, **kwargs)
       try:
         return render_json(utils.to_json(return_val))
-      except:
-        import pdb; pdb.set_trace()
+      except Exception, e:
+        import logging
+        logging.error("problem with serialization: " + str(return_val) + " / " + str(e))
+        raise e
 
     return update_wrapper(convert_to_json,func)
     
