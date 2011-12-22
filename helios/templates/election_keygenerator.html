@@ -27,13 +27,21 @@ function reuse_key(secret_key_text) {
     show_pk();
 }
 
+// start collecting some local randomness
+sjcl.random.startCollectors();
+
 $(document).ready(function() {
     clear_keys();
     $('#generator').hide();
-    BigInt.setup(function() {
-        ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
-        $('#waiting_message').hide();
-        $('#generator').show();
+
+    // get some more server-side randomness for keygen
+    $.getJSON('../../get-randomness', function(result) {
+       sjcl.random.addEntropy(result.randomness);
+       BigInt.setup(function() {
+          ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
+          $('#waiting_message').hide();
+          $('#generator').show();
+       });
     });
 });
 

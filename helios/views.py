@@ -508,7 +508,7 @@ def trustee_upload_pk(request, election, trustee):
 ##
 
 @json
-@election_view(frozen=True)
+@election_view()
 def get_randomness(request, election):
   """
   get some randomness to sprinkle into the sjcl entropy pool
