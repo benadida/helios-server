@@ -133,6 +133,11 @@ def user_can_see_election(request, election):
   if user_can_admin_election(user, election):
     return True
 
+  # or maybe this is a trustee of the election?
+  trustee = get_logged_in_trustee(request)
+  if trustee and trustee.election.uuid == election.uuid:
+    return True
+
   # then this user has to be a voter
   return (get_voter(request, user, election) != None)
 
