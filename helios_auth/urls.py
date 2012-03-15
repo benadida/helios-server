@@ -22,7 +22,7 @@ urlpatterns = patterns('',
     
     ## should make the following modular
 
-    # password auth
+    # password helios_auth
     (r'^password/login', password_login_view),
     (r'^password/forgot', password_forgotten_view),
 

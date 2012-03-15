@@ -9,12 +9,12 @@ from django.http import *
 from django.core.urlresolvers import reverse
 
 from view_utils import *
-from auth.security import get_user
+from helios_auth.security import get_user
 
 import auth_systems
 from auth_systems import AUTH_SYSTEMS
 from auth_systems import password
-import auth
+import helios_auth
 
 import copy, urllib
 
@@ -29,22 +29,22 @@ def index(request):
   
   user = get_user(request)
 
-  # single auth system?
-  if len(auth.ENABLED_AUTH_SYSTEMS) == 1 and not user:
-    return HttpResponseRedirect(reverse(start, args=[auth.ENABLED_AUTH_SYSTEMS[0]])+ '?return_url=' + request.GET.get('return_url', ''))
+  # single helios_auth system?
+  if len(helios_auth.ENABLED_AUTH_SYSTEMS) == 1 and not user:
+    return HttpResponseRedirect(reverse(start, args=[helios_auth.ENABLED_AUTH_SYSTEMS[0]])+ '?return_url=' + request.GET.get('return_url', ''))
 
-  #if auth.DEFAULT_AUTH_SYSTEM and not user:
-  #  return HttpResponseRedirect(reverse(start, args=[auth.DEFAULT_AUTH_SYSTEM])+ '?return_url=' + request.GET.get('return_url', ''))
+  #if helios_auth.DEFAULT_AUTH_SYSTEM and not user:
+  #  return HttpResponseRedirect(reverse(start, args=[helios_auth.DEFAULT_AUTH_SYSTEM])+ '?return_url=' + request.GET.get('return_url', ''))
   
   default_auth_system_obj = None
-  if auth.DEFAULT_AUTH_SYSTEM:
-    default_auth_system_obj = AUTH_SYSTEMS[auth.DEFAULT_AUTH_SYSTEM]
+  if helios_auth.DEFAULT_AUTH_SYSTEM:
+    default_auth_system_obj = AUTH_SYSTEMS[helios_auth.DEFAULT_AUTH_SYSTEM]
 
   #form = password.LoginForm()
 
   return render_template(request,'index', {'return_url' : request.GET.get('return_url', '/'),
-                                           'enabled_auth_systems' : auth.ENABLED_AUTH_SYSTEMS,
-                                           'default_auth_system': auth.DEFAULT_AUTH_SYSTEM,
+                                           'enabled_auth_systems' : helios_auth.ENABLED_AUTH_SYSTEMS,
+                                           'default_auth_system': helios_auth.DEFAULT_AUTH_SYSTEM,
                                            'default_auth_system_obj': default_auth_system_obj})
 
 def login_box_raw(request, return_url='/', auth_systems = None):
@@ -52,20 +52,20 @@ def login_box_raw(request, return_url='/', auth_systems = None):
   a chunk of HTML that shows the various login options
   """
   default_auth_system_obj = None
-  if auth.DEFAULT_AUTH_SYSTEM:
-    default_auth_system_obj = AUTH_SYSTEMS[auth.DEFAULT_AUTH_SYSTEM]
+  if helios_auth.DEFAULT_AUTH_SYSTEM:
+    default_auth_system_obj = AUTH_SYSTEMS[helios_auth.DEFAULT_AUTH_SYSTEM]
 
-  # make sure that auth_systems includes only available and enabled auth systems
+  # make sure that auth_systems includes only available and enabled helios_auth systems
   if auth_systems != None:
-    enabled_auth_systems = set(auth_systems).intersection(set(auth.ENABLED_AUTH_SYSTEMS)).intersection(set(AUTH_SYSTEMS.keys()))
+    enabled_auth_systems = set(auth_systems).intersection(set(helios_auth.ENABLED_AUTH_SYSTEMS)).intersection(set(AUTH_SYSTEMS.keys()))
   else:
-    enabled_auth_systems = set(auth.ENABLED_AUTH_SYSTEMS).intersection(set(AUTH_SYSTEMS.keys()))
+    enabled_auth_systems = set(helios_auth.ENABLED_AUTH_SYSTEMS).intersection(set(AUTH_SYSTEMS.keys()))
 
   form = password.LoginForm()
 
   return render_template_raw(request, 'login_box', {
       'enabled_auth_systems': enabled_auth_systems, 'return_url': return_url,
-      'default_auth_system': auth.DEFAULT_AUTH_SYSTEM, 'default_auth_system_obj': default_auth_system_obj,
+      'default_auth_system': helios_auth.DEFAULT_AUTH_SYSTEM, 'default_auth_system_obj': default_auth_system_obj,
       'form' : form})
   
 def do_local_logout(request):
@@ -109,7 +109,7 @@ def do_remote_logout(request, user, return_url="/"):
   # FIXME: do something with return_url
   auth_system = AUTH_SYSTEMS[user['type']]
   
-  # does the auth system have a special logout procedure?
+  # does the helios_auth system have a special logout procedure?
   user_for_remote_logout = request.session.get('user_for_remote_logout', None)
   del request.session['user_for_remote_logout']
   if hasattr(auth_system, 'do_logout'):
@@ -153,13 +153,13 @@ def _do_auth(request):
     return HttpResponse("an error occurred trying to contact " + system_name +", try again later")
   
 def start(request, system_name):
-  if not (system_name in auth.ENABLED_AUTH_SYSTEMS):
+  if not (system_name in helios_auth.ENABLED_AUTH_SYSTEMS):
     return HttpResponseRedirect(reverse(index))
   
   # why is this here? Let's try without it
   # request.session.save()
   
-  # store in the session the name of the system used for auth
+  # store in the session the name of the system used for helios_auth
   request.session['auth_system_name'] = system_name
   
   # where to return to when done
@@ -174,7 +174,7 @@ def perms_why(request):
   return _do_auth(request)
 
 def after(request):
-  # which auth system were we using?
+  # which helios_auth system were we using?
   if not request.session.has_key('auth_system_name'):
     do_local_logout(request)
     return HttpResponseRedirect("/")
@@ -192,7 +192,7 @@ def after(request):
   else:
     return HttpResponseRedirect("%s?%s" % (reverse(perms_why), urllib.urlencode({'system_name' : request.session['auth_system_name']})))
 
-  # does the auth system want to present an additional view?
+  # does the helios_auth system want to present an additional view?
   # this is, for example, to prompt the user to follow @heliosvoting
   # so they can hear about election results
   if hasattr(system, 'user_needs_intervention'):

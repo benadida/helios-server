@@ -21,17 +21,17 @@ from workflows import homomorphic
 from helios import utils as helios_utils
 from view_utils import *
 
-from auth.security import *
-from auth.auth_systems import AUTH_SYSTEMS, can_list_categories
-from auth.models import AuthenticationExpired
+from helios_auth.security import *
+from helios_auth.auth_systems import AUTH_SYSTEMS, can_list_categories
+from helios_auth.models import AuthenticationExpired
 
 from helios import security
-from auth import views as auth_views
+from helios_auth import views as auth_views
 
 import tasks
 
 from security import *
-from auth.security import get_user, save_in_session_across_logouts
+from helios_auth.security import get_user, save_in_session_across_logouts
 
 import uuid, datetime
 
@@ -79,7 +79,7 @@ def get_socialbuttons_url(url, text):
   
 
 ##
-## remote auth utils
+## remote helios_auth utils
 
 def user_reauth(request, user):
   # FIXME: should we be wary of infinite redirects here, and

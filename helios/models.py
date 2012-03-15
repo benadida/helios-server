@@ -20,9 +20,9 @@ import helios.views
 from helios import datatypes
 
 
-# useful stuff in auth
-from auth.models import User, AUTH_SYSTEMS
-from auth.jsonfield import JSONField
+# useful stuff in helios_auth
+from helios_auth.models import User, AUTH_SYSTEMS
+from helios_auth.jsonfield import JSONField
 from helios.datatypes.djangofield import LDObjectField
 
 import csv, copy
@@ -418,7 +418,7 @@ class Election(HeliosModel):
     if self.voter_set.filter(user=None).count() > 0:
       voter_types.append('password')
     else:
-      # no password users, remove password from the possible auth systems
+      # no password users, remove password from the possible helios_auth systems
       if 'password' in auth_systems:
         auth_systems.remove('password')        
 
@@ -738,7 +738,7 @@ class Voter(HeliosModel):
 
   # for users of type password, no user object is created
   # but a dynamic user object is created automatically
-  user = models.ForeignKey('auth.User', null=True)
+  user = models.ForeignKey('helios_auth.User', null=True)
 
   # if user is null, then you need a voter login ID and password
   voter_login_id = models.CharField(max_length = 100, null=True)

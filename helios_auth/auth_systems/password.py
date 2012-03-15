@@ -15,7 +15,7 @@ STATUS_UPDATES = False
 
 
 def create_user(username, password, name = None):
-  from auth.models import User
+  from helios_auth.models import User
   
   user = User.get_by_type_and_id('password', username)
   if user:
@@ -34,9 +34,9 @@ def password_check(user, password):
   
 # the view for logging in
 def password_login_view(request):
-  from auth.view_utils import render_template
-  from auth.views import after
-  from auth.models import User
+  from helios_auth.view_utils import render_template
+  from helios_auth.views import after
+  from helios_auth.models import User
 
   error = None
   
@@ -70,8 +70,8 @@ def password_forgotten_view(request):
   forgotten password view and submit.
   includes return_url
   """
-  from auth.view_utils import render_template
-  from auth.models import User
+  from helios_auth.view_utils import render_template
+  from helios_auth.models import User
 
   if request.method == "GET":
     return render_template(request, 'password/forgot', {'return_url': request.GET.get('return_url', '')})
