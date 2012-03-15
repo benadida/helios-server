@@ -93,7 +93,7 @@ class FacebookRequestHandler(RequestHandler):
             return
 
         if not (require_app or require_login) and need_session:
-            self.facebook.helios_auth.getSession()
+            self.facebook.auth.getSession()
 
     def redirect(self, url, **kwargs):
         """
