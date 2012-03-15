@@ -7,7 +7,7 @@ from oauthclient import client
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 
-from auth import utils
+from helios_auth import utils
 
 from xml.etree import ElementTree
 
@@ -76,7 +76,7 @@ def _get_client_by_request(request):
   
 def update_status(user_id, user_info, token, message):
   """
-  post a message to the auth system's update stream, e.g. twitter stream
+  post a message to the helios_auth system's update stream, e.g. twitter stream
   """
   return
   #twitter_client = _get_client_by_token(token)

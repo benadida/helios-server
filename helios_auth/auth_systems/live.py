@@ -17,7 +17,7 @@ import urllib, urllib2, cgi
 STATUS_UPDATES = False
 # STATUS_UPDATE_WORDING_TEMPLATE = "Send %s to your facebook status"
 
-from auth import utils
+from helios_auth import utils
 
 def live_url(url, params):
   if params:
@@ -56,7 +56,7 @@ def get_user_info_after_auth(request):
     
 def update_status(user_id, user_info, token, message):
   """
-  post a message to the auth system's update stream, e.g. twitter stream
+  post a message to the helios_auth system's update stream, e.g. twitter stream
   """
   result = facebook_post('/me/feed', {
       'access_token': token['access_token'],

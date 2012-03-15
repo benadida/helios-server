@@ -31,7 +31,7 @@ STATUS_UPDATES = False
 
 def _get_service_url():
   # FIXME current URL
-  from auth.views import after
+  from helios_auth.views import after
   from django.conf import settings
   from django.core.urlresolvers import reverse
   

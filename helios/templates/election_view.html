@@ -244,7 +244,7 @@ You are <em>not eligible</em> to vote in this {{election.election_type}}.
 {% if election.openreg %}
 {% if election.eligibility %}
 This election is open to: {{election.pretty_eligibility|safe}}
-<a href="{{settings.SECURE_URL_HOST}}{% url auth.views.index %}?return_url={{CURRENT_URL}}">Log in</a> to check your eligibility.
+<a href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.index %}?return_url={{CURRENT_URL}}">Log in</a> to check your eligibility.
 {% else %}
 Anyone can vote in this election.
 {% endif %}

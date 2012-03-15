@@ -8,7 +8,7 @@ import django_webtest
 import models
 import datatypes
 
-from auth import models as auth_models
+from helios_auth import models as auth_models
 from views import ELGAMAL_PARAMS
 import views
 import utils
@@ -161,7 +161,7 @@ class ElectionModelTests(TestCase):
 
         # fake out the facebook constraint checking, since
         # our access_token is obviously wrong
-        from auth.auth_systems import facebook
+        from helios_auth.auth_systems import facebook
 
         def fake_check_constraint(constraint, user):
             return constraint == {'group': {'id': '123', 'name':'Fake Group'}} and user == self.fb_user                
@@ -465,7 +465,7 @@ class ElectionBlackboxTests(WebTest):
                 "use_advanced_audit_features": "1",
                 "private_p" : "0"})
 
-        self.assertRedirects(response, "/auth/?return_url=/helios/elections/new")
+        self.assertRedirects(response, "/helios_auth/?return_url=/helios/elections/new")
     
     def test_election_edit(self):
         # a bogus call to set up the session

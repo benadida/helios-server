@@ -126,8 +126,8 @@ METHODS = {
         ],
     },
 
-    # auth methods
-    'auth': {
+    # helios_auth methods
+    'helios_auth': {
         'revokeAuthorization': [
             ('uid', int, ['optional']),
         ],
@@ -655,10 +655,10 @@ class FacebookError(Exception):
 
 
 class AuthProxy(AuthProxy):
-    """Special proxy for facebook.auth."""
+    """Special proxy for facebook.helios_auth."""
 
     def getSession(self):
-        """Facebook API call. See http://developers.facebook.com/documentation.php?v=1.0&method=auth.getSession"""
+        """Facebook API call. See http://developers.facebook.com/documentation.php?v=1.0&method=helios_auth.getSession"""
         args = {}
         try:
             args['auth_token'] = self._client.auth_token
@@ -672,7 +672,7 @@ class AuthProxy(AuthProxy):
         return result
 
     def createToken(self):
-        """Facebook API call. See http://developers.facebook.com/documentation.php?v=1.0&method=auth.createToken"""
+        """Facebook API call. See http://developers.facebook.com/documentation.php?v=1.0&method=helios_auth.createToken"""
         token = self._client('%s.createToken' % self._name)
         self._client.auth_token = token
         return token
@@ -829,7 +829,7 @@ class Facebook(object):
         to canvas pages.
 
     auth_token
-        The auth token that Facebook gives you, either with facebook.auth.createToken,
+        The helios_auth token that Facebook gives you, either with facebook.helios_auth.createToken,
         or through a GET parameter.
 
     callback_path
@@ -882,7 +882,7 @@ class Facebook(object):
         Your application's secret key, as set in the constructor.
 
     session_key
-        The current session key. Set automatically by auth.getSession, but can be set
+        The current session key. Set automatically by helios_auth.getSession, but can be set
         manually for doing infinite sessions.
 
     session_key_expires
@@ -890,7 +890,7 @@ class Facebook(object):
 
     uid
         After a session is created, you can get the user's UID with this variable. Set
-        automatically by auth.getSession.
+        automatically by helios_auth.getSession.
 
     ----------------------------------------------------------------------
 
@@ -902,15 +902,15 @@ class Facebook(object):
 
         If this is a desktop application, the next couple of steps you might want to take are:
 
-        facebook.auth.createToken() # create an auth token
+        facebook.helios_auth.createToken() # create an helios_auth token
         facebook.login()            # show a browser window
         wait_login()                # somehow wait for the user to log in
-        facebook.auth.getSession()  # get a session key
+        facebook.helios_auth.getSession()  # get a session key
 
         For web apps, if you are passed an auth_token from Facebook, pass that in as a named parameter.
         Then call:
 
-        facebook.auth.getSession()
+        facebook.helios_auth.getSession()
 
         """
         self.api_key = api_key
@@ -1034,7 +1034,7 @@ class Facebook(object):
         if not self.session_key:
             return args
             #some calls don't need a session anymore. this might be better done in the markup
-            #raise RuntimeError('Session key not set. Make sure auth.getSession has been called.')
+            #raise RuntimeError('Session key not set. Make sure helios_auth.getSession has been called.')
 
         args['session_key'] = self.session_key
         args['call_id'] = str(int(time.time() * 1000))
@@ -1226,7 +1226,7 @@ class Facebook(object):
     def check_session(self, request):
         """
         Checks the given Django HttpRequest for Facebook parameters such as
-        POST variables or an auth token. If the session is valid, returns True
+        POST variables or an helios_auth token. If the session is valid, returns True
         and this object can now be used to access the Facebook API. Otherwise,
         it returns False, and the application should take the appropriate action
         (either log the user in or have him add the application).
@@ -1251,7 +1251,7 @@ class Facebook(object):
                 self.auth_token = request.GET['auth_token']
 
                 try:
-                    self.auth.getSession()
+                    self.helios_auth.getSession()
                 except FacebookError, e:
                     self.auth_token = None
                     return False
@@ -1396,7 +1396,7 @@ if __name__ == '__main__':
 
     facebook = Facebook(api_key, secret_key)
 
-    facebook.auth.createToken()
+    facebook.helios_auth.createToken()
 
     # Show login window
     # Set popup=True if you want login without navigational elements
@@ -1406,7 +1406,7 @@ if __name__ == '__main__':
     print 'After logging in, press enter...'
     raw_input()
 
-    facebook.auth.getSession()
+    facebook.helios_auth.getSession()
     print 'Session Key:   ', facebook.session_key
     print 'Your UID:      ', facebook.uid
 

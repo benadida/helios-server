@@ -37,7 +37,7 @@ Your voter alias is : %s
 %s
 """ % settings.SITE_TITLE  
   
-  # send it via the notification system associated with the auth system
+  # send it via the notification system associated with the helios_auth system
   user.send_message(subject, body)
 
 helios.signals.vote_cast.connect(vote_cast_send_message)

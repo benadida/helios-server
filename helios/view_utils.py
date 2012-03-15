@@ -15,7 +15,7 @@ from helios import datatypes
 # nicely update the wrapper function
 from functools import update_wrapper
 
-from auth.security import get_user
+from helios_auth.security import get_user
 
 import helios
 
