@@ -7,7 +7,7 @@ from oauthclient import client
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 
-from auth import utils
+from helios_auth import utils
 
 import logging
 
@@ -99,8 +99,8 @@ def send_notification(user_id, user_info, message):
 
 def follow_view(request):
   if request.method == "GET":
-    from auth.view_utils import render_template
-    from auth.views import after
+    from helios_auth.view_utils import render_template
+    from helios_auth.views import after
     
     return render_template(request, 'twitter/follow', {'user_to_follow': USER_TO_FOLLOW, 'reason_to_follow' : REASON_TO_FOLLOW})
 
@@ -108,13 +108,13 @@ def follow_view(request):
     follow_p = bool(request.POST.get('follow_p',False))
     
     if follow_p:
-      from auth.security import get_user
+      from helios_auth.security import get_user
 
       user = get_user(request)
       twitter_client = _get_client_by_token(user.token)
       result = twitter_client.oauth_request('http://api.twitter.com/1/friendships/create.json', args={'screen_name': USER_TO_FOLLOW}, method='POST')
 
-    from auth.views import after_intervention
+    from helios_auth.views import after_intervention
     return HttpResponseRedirect(reverse(after_intervention))
 
 

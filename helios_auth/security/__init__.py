@@ -15,7 +15,7 @@ import oauth
 
 import uuid
 
-from auth.models import *
+from helios_auth.models import *
 
 FIELDS_TO_SAVE = 'FIELDS_TO_SAVE'
 

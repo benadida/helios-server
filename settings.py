@@ -90,7 +90,7 @@ INSTALLED_APPS = (
     ## needed for schema migration
     'south',
     ## HELIOS stuff
-    'auth',
+    'helios_auth',
     'helios',
     'server_ui',
 )

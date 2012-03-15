@@ -8,9 +8,9 @@ from django.template import Context, Template, loader
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
 
-from auth.security import get_user
+from helios_auth.security import get_user
 
-import auth
+import helios_auth
 
 from django.conf import settings
 
@@ -34,7 +34,7 @@ def prepare_vars(request, vars):
     
   vars_with_user['STATIC'] = '/static/auth'
   vars_with_user['MEDIA_URL'] = '/static/auth/'
-  vars_with_user['TEMPLATE_BASE'] = auth.TEMPLATE_BASE
+  vars_with_user['TEMPLATE_BASE'] = helios_auth.TEMPLATE_BASE
   
   vars_with_user['settings'] = settings
   

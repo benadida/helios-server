@@ -8,8 +8,8 @@ Ben Adida - ben@adida.net
 import urllib, re, sys, datetime, urlparse, string
 import threading
 
-# utils from auth, too
-from auth.utils import *
+# utils from helios_auth, too
+from helios_auth.utils import *
 
 from django.conf import settings
   

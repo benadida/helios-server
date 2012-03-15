@@ -18,7 +18,7 @@ import urllib, urllib2, cgi
 STATUS_UPDATES = True
 STATUS_UPDATE_WORDING_TEMPLATE = "Send %s to your facebook status"
 
-from auth import utils
+from helios_auth import utils
 
 def facebook_url(url, params):
   if params:
@@ -31,7 +31,7 @@ def facebook_get(url, params):
   try:
     return urllib2.urlopen(full_url).read()
   except urllib2.HTTPError:
-    from auth.models import AuthenticationExpired
+    from helios_auth.models import AuthenticationExpired
     raise AuthenticationExpired()
 
 def facebook_post(url, params):
