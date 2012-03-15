@@ -61,7 +61,7 @@ def get_user_info_after_auth(request):
     
 def update_status(user_id, user_info, token, message):
   """
-  post a message to the helios_auth system's update stream, e.g. twitter stream
+  post a message to the auth system's update stream, e.g. twitter stream
   """
   result = facebook_post('/me/feed', {
       'access_token': token['access_token'],

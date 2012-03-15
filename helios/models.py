@@ -418,7 +418,7 @@ class Election(HeliosModel):
     if self.voter_set.filter(user=None).count() > 0:
       voter_types.append('password')
     else:
-      # no password users, remove password from the possible helios_auth systems
+      # no password users, remove password from the possible auth systems
       if 'password' in auth_systems:
         auth_systems.remove('password')        
 

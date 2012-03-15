@@ -21,7 +21,7 @@ OPENID_ENDPOINT = 'https://www.google.com/accounts/o8/id'
 
 # FIXME!
 # TRUST_ROOT = 'http://localhost:8000'
-# RETURN_TO = 'http://localhost:8000/helios_auth/after'
+# RETURN_TO = 'http://localhost:8000/auth/after'
 
 def get_auth_url(request, redirect_url):
   # FIXME?? TRUST_ROOT should be diff than return_url?
