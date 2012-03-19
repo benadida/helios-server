@@ -86,7 +86,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     ## needed for queues
     'djcelery',
-    'djkombu',
+    'kombu.transport.django',
     ## needed for schema migration
     'south',
     ## HELIOS stuff
