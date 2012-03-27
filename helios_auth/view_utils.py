@@ -45,7 +45,7 @@ def render_template(request, template_name, vars = {}):
   
   vars_with_user = prepare_vars(request, vars)
   
-  return render_to_response('auth/templates/%s.html' % template_name, vars_with_user)
+  return render_to_response('helios_auth/templates/%s.html' % template_name, vars_with_user)
 
 def render_template_raw(request, template_name, vars={}):
   t = loader.get_template(template_name + '.html')
