@@ -430,10 +430,23 @@ BOOTH._after_ballot_encryption = function() {
     window.setTimeout(do_hash, 0);
 };
 
+BOOTH.total_cycles_waited = 0;
+
 // wait for all workers to be done
 BOOTH.wait_for_ciphertexts = function() {
-    if (_.any(BOOTH.encrypted_answers, _.isNull)) {
+    BOOTH.total_cycles_waited += 1;
+
+    var answers_done = _.reject(BOOTH.encrypted_answers, _.isNull);
+    var percentage_done = Math.round((100 * answers_done.length) / BOOTH.encrypted_answers.length);
+
+    if (BOOTH.total_cycles_waited > 150) {
+      alert('there appears to be a problem with the encryption process.\nPlease email help@heliosvoting.org and indicate that your encryption process froze at ' + percentage_done + '%');
+      return;
+    }
+
+    if (percentage_done < 100) {
       setTimeout(BOOTH.wait_for_ciphertexts, 500);
+      $('#percent_done').html(percentage_done + '');
       return;
     }
 
@@ -450,6 +463,7 @@ BOOTH.seal_ballot_raw = function() {
       clearInterval(progress_interval);
       BOOTH._after_ballot_encryption();
     } else {
+      BOOTH.total_cycles_waited = 0;
       BOOTH.wait_for_ciphertexts();
     }
 };
@@ -568,14 +582,7 @@ BOOTH.do_done = function() {
       <h3 align="center">Helios is now encrypting your ballot<br />
           <img src="encrypting.gif" /> <span style="font-size:0.7em; display:none;" id="percent_done_container">(<span id="percent_done">0</span>%)</span></h3>
       
-      <p>
-          <b>If your browser complains about "long-running JavaScript"</b>, click Continue and let Helios finish encrypting your ballot.
-      </p>
-      
-      <p>
-          <b>Why so long and complicated?</b>: Helios employs state-of-the-art cryptography to protect the secrecy of your ballot while giving you a smart tracker to ensure your ballot was counted.
-          No other web-based voting system provides this level of election integrity. Even the latest browsers don't support this technology natively, which means Helios is encrypting your data in JavaScript, and that takes a little bit more time than you may be accustomed to.
-      </p>
+      <p align="center"><b>This may take a few seconds.</b>
   </div>
 
   <div id="seal_div" class="panel">
