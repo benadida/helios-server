@@ -139,12 +139,11 @@ BOOTH.setup_workers = function(election_raw_json) {
 
            // result of encryption
            if (event.data.type == 'result') {
-             BOOTH.log("got encrypted answer " + q_num);
-
              // this check ensures that race conditions
              // don't screw up votes.
              if (event.data.id == BOOTH.answer_timestamps[q_num]) {
                 BOOTH.encrypted_answers[q_num] = HELIOS.EncryptedAnswer.fromJSONObject(event.data.encrypted_answer, BOOTH.election);
+                BOOTH.log("got encrypted answer " + q_num);
              } else {
                 BOOTH.log("no way jose");
              }
