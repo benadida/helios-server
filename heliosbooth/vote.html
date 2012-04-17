@@ -443,7 +443,7 @@ BOOTH.wait_for_ciphertexts = function() {
     var answers_done = _.reject(BOOTH.encrypted_answers, _.isNull);
     var percentage_done = Math.round((100 * answers_done.length) / BOOTH.encrypted_answers.length);
 
-    if (BOOTH.total_cycles_waited > 150) {
+    if (BOOTH.total_cycles_waited > 250) {
       alert('there appears to be a problem with the encryption process.\nPlease email help@heliosvoting.org and indicate that your encryption process froze at ' + percentage_done + '%');
       return;
     }
@@ -586,7 +586,7 @@ BOOTH.do_done = function() {
       <h3 align="center">Helios is now encrypting your ballot<br />
           <img src="encrypting.gif" /> <span style="font-size:0.7em; display:none;" id="percent_done_container">(<span id="percent_done">0</span>%)</span></h3>
 
-      <p align="center"><b>This may take a few seconds.</b>
+      <p align="center"><b>This may take up to two minutes.</b>
   </div>
 
   <div id="seal_div" class="panel">
