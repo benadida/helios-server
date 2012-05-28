@@ -251,7 +251,12 @@ class Election(HeliosModel):
     if not self.eligibility:
       return []
 
-    return [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type][0]
+    # constraints that are relevant
+    relevant_constraints = [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type]
+    if len(relevant_constraints) > 0:
+      return relevant_constraints[0]
+    else:
+      return []
 
   def eligibility_category_id(self, user_type):
     "when eligibility is by category, this returns the category_id"
