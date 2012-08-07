@@ -214,6 +214,35 @@ UTILS.generate_plaintexts = function(pk, min, max) {
 // crypto
 //
 
+// the low-level crypto code expects challenge generators that take
+// a single value (or a commitment of two values) and generates
+// a challenge accordingly (by hashing). We want to integrate other,
+// election-specific information, with minimal code change.
+//
+// To accomplish this, we use the awesomeness of JavaScript:
+// functions that take the public key against which the encryption is done,
+// and return another function, itself a challenge generator, which uses the public key
+// as part of the challenge generation.
+HELIOS.makeDisjunctiveChallengeGenerator = function(pk) {
+    return function(commitments) {
+	var strings_to_hash = [];
+
+	// election information factored into the list of commitments
+	// before hashing
+	strings_to_hash.push(JSON.stringify(pk.toJSONObject()));
+
+	// go through all proofs and append the commitments
+	_(commitments).each(function(commitment) {
+		// toJSONObject instead of toString because of IE weirdness.
+		strings_to_hash.push(commitment.A.toJSONObject());
+		strings_to_hash.push(commitment.B.toJSONObject());
+	    });
+	
+	// console.log(strings_to_hash);
+	// STRINGS = strings_to_hash;
+	return new BigInt(hex_sha1(strings_to_hash.join(",")), 16);
+    };
+}
 
 HELIOS.EncryptedAnswer = Class.extend({
   init: function(question, answer, pk, progress) {    
@@ -278,7 +307,7 @@ HELIOS.EncryptedAnswer = Class.extend({
       // generate proof
       if (generate_new_randomness) {
         // generate proof that this ciphertext is a 0 or a 1
-        individual_proofs[i] = choices[i].generateDisjunctiveProof(zero_one_plaintexts, plaintext_index, randomness[i], ElGamal.disjunctive_challenge_generator);        
+	individual_proofs[i] = choices[i].generateDisjunctiveProof(zero_one_plaintexts, plaintext_index, randomness[i], HELIOS.makeDisjunctiveChallengeGenerator(pk));
       }
       
       if (progress)
@@ -306,7 +335,7 @@ HELIOS.EncryptedAnswer = Class.extend({
       if (question.min)
         overall_plaintext_index -= question.min;
       
-      overall_proof = hom_sum.generateDisjunctiveProof(plaintexts, overall_plaintext_index, rand_sum, ElGamal.disjunctive_challenge_generator);
+      overall_proof = hom_sum.generateDisjunctiveProof(plaintexts, overall_plaintext_index, rand_sum, HELIOS.makeDisjunctiveChallengeGenerator(pk));
 
       if (progress) {
         for (var i=0; i<question.max; i++)
@@ -487,6 +516,8 @@ HELIOS.EncryptedVote = Class.extend({
     
     var self = this;
     
+    var challengeGenerator = HELIOS.makeDisjunctiveChallengeGenerator(pk);
+
     // for each question and associate encrypted answer
     _(this.encrypted_answers).each(function(enc_answer, ea_num) {
         var overall_result = 1;
@@ -496,7 +527,7 @@ HELIOS.EncryptedVote = Class.extend({
 
         // go through each individual proof
         _(enc_answer.choices).each(function(choice, choice_num) {
-          var result = choice.verifyDisjunctiveProof(zero_or_one, enc_answer.individual_proofs[choice_num], ElGamal.disjunctive_challenge_generator);
+	  var result = choice.verifyDisjunctiveProof(zero_or_one, enc_answer.individual_proofs[choice_num], challengeGenerator);
           outcome_callback(ea_num, choice_num, result, choice);
           
           VALID_P = VALID_P && result;
@@ -511,7 +542,7 @@ HELIOS.EncryptedVote = Class.extend({
           var plaintexts = UTILS.generate_plaintexts(pk, self.election.questions[ea_num].min, self.election.questions[ea_num].max);
         
           // check the proof on the overall product
-          var overall_check = overall_result.verifyDisjunctiveProof(plaintexts, enc_answer.overall_proof, ElGamal.disjunctive_challenge_generator);
+          var overall_check = overall_result.verifyDisjunctiveProof(plaintexts, enc_answer.overall_proof, challengeGenerator);
           outcome_callback(ea_num, null, overall_check, null);
           VALID_P = VALID_P && overall_check;
         } else {
