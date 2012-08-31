@@ -194,3 +194,9 @@ CELERY_RESULT_DBURI = DATABASES['default']
 
 # for testing
 CELERY_ALWAYS_EAGER = True
+
+# useful trick for custom settings
+try:
+    from local_settings import *
+except ImportError:
+    pass
