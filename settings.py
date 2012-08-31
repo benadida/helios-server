@@ -182,7 +182,7 @@ EMAIL_USE_TLS = False
 # set up logging
 import logging
 logging.basicConfig(
-    level = logging.DEBUG,
+    level = logging.DEBUG if DEBUG else logging.INFO,
     format = '%(asctime)s %(levelname)s %(message)s'
 )
 
