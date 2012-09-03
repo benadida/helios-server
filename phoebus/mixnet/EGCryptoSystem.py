@@ -219,6 +219,8 @@ def _is_generator(p, g):
             True    if g is a generator of Z_{p}^{*}
             False    otherwise
         """
+	return True
+	# this asserts a semantically insecure cryptosystem
         if(not (1 <= g <= (p - 1))):    # g must be an element in Z_{p}^{*}
             return False
         

@@ -5,7 +5,13 @@ from datetime import datetime
 from random import randint, shuffle
 from collections import defaultdict
 from hashlib import sha256
+from math import log
 
+
+from mixnet.EGCryptoSystem import EGCryptoSystem as MixCryptosystem
+from mixnet.PublicKey import PublicKey as MixPublicKey
+from mixnet.Ciphertext import Ciphertext as MixCiphertext
+from mixnet.CiphertextCollection import CiphertextCollection as MixCiphertextCollection
 
 """
 Assume C := { the candidates }, V := { the voters }
@@ -345,6 +351,7 @@ class Election(object):
             self._logs.update(_logs)
 
         self.validate_cryptosystem()
+        self.init_mixnet()
 
     def validate_cryptosystem(self):
         from Crypto.Util.number import isPrime
@@ -422,8 +429,6 @@ class Election(object):
     @classmethod
     def mk_random(cls,  min_candidates  =   3,
                         max_candidates  =   10,
-                        min_voters      =   10,
-                        max_voters      =   50,
                         public_key      =   None):
 
         candidate_range = xrange(randint(min_candidates, max_candidates))
@@ -536,17 +541,35 @@ class Election(object):
 
     cast_vote = cast_votes
 
+    def init_mixnet(self):
+        pk = self.public_key
+        self.mix_nbits = ((int(log(pk.p, 2)) - 1) & ~255) + 256
+        self.mix_EG = MixCryptosystem.load(self.mix_nbits, pk.p, pk.g)
+        self.mix_pk = MixPublicKey(self.mix_EG, pk.y)
+
     def mix_ballots(self):
+        mix_pk = self.mix_pk
+        mix_nbits = self.mix_nbits
+        mix_pkfinger = mix_pk.get_fingerprint()
+        mix_collection = MixCiphertextCollection(mix_pk)
+        add_ciphertext = mix_collection.add_ciphertext
+        for v in self.encrypted_ballots:
+            ballot = v.encrypted_ballot
+            ct = MixCiphertext(mix_nbits, mix_pkfinger)
+            ct.append(ballot['a'], ballot['b'])
+            add_ciphertext(ct)
+
+        # :mock-mixing, without reencryption, without proof
+        # shuffle(ballots)
+
+        mix_shuffled, mix_proof = mix_collection.shuffle_with_proof()
+        mix_proof.verify(mix_collection, mix_shuffled)
+
         ballots = []
         append = ballots.append
-        for v in self.encrypted_ballots:
-            b = Ballot(self, encrypted_ballot=v.encrypted_ballot)
-            append(b)
-
-        # FIXME >>
-        # :mock-mixing, without reencryption, without proof
-        shuffle(ballots)
-        # << FIXME
+        for ct in mix_shuffled:
+            encrypted_ballot = {'a': ct.gamma[0], 'b': ct.delta[0]}
+            append(Ballot(self, encrypted_ballot=encrypted_ballot))
 
         self.mixed_ballots = ballots
         return ballots
@@ -735,7 +758,7 @@ def main(argv):
     stderr.write("\nInterrupt this. It won't stop on its own.\n\n")
 
     while 1:
-        nr_votes = randint(20, 300)
+        nr_votes = randint(3, 10)
         election = Election.mk_random(public_key=pk)
         votes = []
         for i in xrange(nr_votes):
