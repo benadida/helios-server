@@ -26,7 +26,9 @@ from auth.jsonfield import JSONField
 from helios.datatypes.djangofield import LDObjectField
 
 import csv, copy
-  
+ 
+from helios.workflows import get_workflow_module
+
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
   class Meta:
     abstract = True
@@ -51,7 +53,14 @@ class Election(HeliosModel):
     ('referendum', 'Referendum')
     )
 
+  WORKFLOW_TYPES = (
+    ('homomorphic', 'Homomorphic'),
+    ('mixnet', 'Mixnet')
+  )
+
   election_type = models.CharField(max_length=250, null=False, default='election', choices = ELECTION_TYPES)
+  workflow_type = models.CharField(max_length=250, null=False, default='homomorphic',
+      choices = WORKFLOW_TYPES)
   private_p = models.BooleanField(default=False, null=False)
 
   description = models.TextField()
@@ -118,9 +127,12 @@ class Election(HeliosModel):
   
   # encrypted tally, each a JSON string
   # used only for homomorphic tallies
-  encrypted_tally = LDObjectField(type_hint = 'legacy/Tally',
+  encrypted_tally = LDObjectField(type_hint='legacy/Tally',
                                   null=True)
 
+  # mixnet tally, to be used for mixnet elections
+  mixed_tally = LDObjectField(type_hint='legacy/MixedTally', null=True)
+    
   # results of the election
   result = LDObjectField(type_hint = 'legacy/Result',
                          null=True)
@@ -128,7 +140,7 @@ class Election(HeliosModel):
   # decryption proof, a JSON object
   # no longer needed since it's all trustees
   result_proof = JSONField(null=True)
-
+    
   @property
   def pretty_type(self):
     return dict(self.ELECTION_TYPES)[self.election_type]
@@ -154,18 +166,23 @@ class Election(HeliosModel):
     if not self.use_voter_aliases:
       return None
     
+    # FIXME: https://docs.djangoproject.com/en/dev/topics/db/multi-db/#database-routers
+    # use database routes api to find proper database for the Voter model.
+    # This will still work if someone deploys helios using only the default
+    # database.
     SUBSTR_FUNCNAME = "substring"
     if 'sqlite' in settings.DATABASES['default']['ENGINE']:
         SUBSTR_FUNCNAME = "substr"
 
     return heliosutils.one_val_raw_sql("select max(cast(substr(alias, 2) as integer)) from " + Voter._meta.db_table + " where election_id = %s", [self.id]) or 0
+  
+  @property
+  def tallied(self):
+    return self.workflow.tallied(self)
 
   @property
   def encrypted_tally_hash(self):
-    if not self.encrypted_tally:
-      return None
-
-    return utils.hash_b64(self.encrypted_tally.toJSON())
+    return self.workflow.tally_hash(self)
 
   @property
   def is_archived(self):
@@ -304,7 +321,8 @@ class Election(HeliosModel):
     or failing that the date voting was extended until, or failing that the date voting is scheduled to end at.
     """
     voting_end = self.voting_ended_at or self.voting_extended_until or self.voting_ends_at
-    return (voting_end != None and datetime.datetime.utcnow() >= voting_end) or self.encrypted_tally
+    return (voting_end != None and datetime.datetime.utcnow() >= voting_end) or \
+        self.tallied
 
   @property
   def issues_before_freeze(self):
@@ -344,16 +362,10 @@ class Election(HeliosModel):
     """
     tally the election, assuming votes already verified
     """
-    tally = self.init_tally()
-    for voter in self.voter_set.all():
-      if voter.vote:
-        tally.add_vote(voter.vote, verify_p=False)
-
-    self.encrypted_tally = tally
-    self.save()    
+    self.workflow.compute_tally(self)
   
   def ready_for_decryption(self):
-    return self.encrypted_tally != None
+    return self.workflow.ready_for_decryption(self)
     
   def ready_for_decryption_combination(self):
     """
@@ -369,15 +381,11 @@ class Election(HeliosModel):
     """
     combine all of the decryption results
     """
-    
     # gather the decryption factors
     trustees = Trustee.get_by_election(self)
     decryption_factors = [t.decryption_factors for t in trustees]
-    
-    self.result = self.encrypted_tally.decrypt_from_factors(decryption_factors, self.public_key)
-
+    self.result = self.workflow.decrypt_tally(self, decryption_factors)
     self.append_log(ElectionLog.DECRYPTIONS_COMBINED)
-
     self.save()
   
   def generate_voters_hash(self):
@@ -499,17 +507,19 @@ class Election(HeliosModel):
       return trustees_with_sk[0]
     else:
       return None
-    
+
+  @property 
+  def workflow(self):
+    return get_workflow_module(self.workflow_type)
+
   def has_helios_trustee(self):
     return self.get_helios_trustee() != None
 
   def helios_trustee_decrypt(self):
-    tally = self.encrypted_tally
-    tally.init_election(self)
-
     trustee = self.get_helios_trustee()
-    factors, proof = tally.decryption_factors_and_proofs(trustee.secret_key)
-
+    factors, proof = self.workflow.get_decryption_factors_and_proof(self, 
+            trustee.secret_key)
+    
     trustee.decryption_factors = factors
     trustee.decryption_proofs = proof
     trustee.save()
@@ -527,9 +537,7 @@ class Election(HeliosModel):
     return helios.views.get_election_url(self)
 
   def init_tally(self):
-    # FIXME: create the right kind of tally
-    from helios.workflows import homomorphic
-    return homomorphic.Tally(election=self)
+    return self.workflow.Tally(election=self)
         
   @property
   def registration_status_pretty(self):
@@ -1127,6 +1135,5 @@ class Trustee(HeliosModel):
     """
     verify that the decryption proofs match the tally for the election
     """
-    # verify_decryption_proofs(self, decryption_factors, decryption_proofs, public_key, challenge_generator):
-    return self.election.encrypted_tally.verify_decryption_proofs(self.decryption_factors, self.decryption_proofs, self.public_key, algs.EG_fiatshamir_challenge_generator)
+    return self.workflow.verify_encryption_proof(self)
     

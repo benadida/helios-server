@@ -13,6 +13,8 @@ import datetime
 from helios import models
 from . import WorkflowObject
 
+TYPE = 'homomorphic'
+
 class EncryptedAnswer(WorkflowObject):
   """
   An encrypted answer to a single election question
@@ -431,4 +433,44 @@ class Tally(WorkflowObject):
   def _process_value_out(self, field_name, field_value):
     if field_name == 'tally':
       return [[a.toJSONDict() for a in q] for q in field_value]    
-        
+
+"""
+Workflow api methods
+"""
+
+def tallied(election):
+    return bool(election.encrypted_tally)
+
+def compute_tally(election):
+    tally = election.init_tally()
+    for voter in election.voter_set.all():
+      if voter.vote:
+        tally.add_vote(voter.vote, verify_p=False)
+    
+    election.encrypted_tally = tally
+    election.save()
+
+def tally_hash(election):
+    if not election.encrypted_tally:
+      return None
+
+    return utils.hash_b64(election.encrypted_tally.toJSON())
+
+def ready_for_decription(election):
+    return election.encrypted_tally != None
+
+def decrypt_tally(election, decryption_factors):
+    return election.encrypted_tally.decrypt_from_factors(decryption_factors, 
+            election.public_key)
+
+def get_decryption_factors_and_proof(election, key):
+    tally = election.encrypted_tally
+    tally.init_election(election)
+    return tally.decryption_factors_and_proofs(key)
+
+def verify_encryption_proof(election):
+    return election.encrypted_tally.verify_decryption_proofs(
+            self.decryption_factors, 
+            self.decryption_proofs, 
+            self.public_key, 
+            algs.EG_fiatshamir_challenge_generator)

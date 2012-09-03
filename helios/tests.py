@@ -37,7 +37,19 @@ class ElectionModelTests(TestCase):
             admin=self.user)
 
     def setup_questions(self):
-        QUESTIONS = [{"answer_urls": [None, None, None], "answers": ["a", "b", "c"], "choice_type": "approval", "max": 1, "min": 0, "question": "w?", "result_type": "absolute", "short_name": "w?", "tally_type": "homomorphic"}]
+        QUESTIONS = [
+                {
+                    "answer_urls": [None, None, None], 
+                    "answers": ["a", "b", "c"], 
+                    "choice_type": "approval", 
+                    "max": 1, "min": 0, 
+                    "question": "w?", 
+                    "result_type": 
+                    "absolute", 
+                    "short_name": "w?", 
+                    "tally_type": "homomorphic"
+                }
+            ]
         self.election.questions = QUESTIONS
 
     def setup_trustee(self):
@@ -761,3 +773,7 @@ class ElectionBlackboxTests(WebTest):
         FIXME: do the this test
         """
         pass
+
+
+
+from helios.phoebus_tests import *

@@ -25,13 +25,4 @@ class Command(BaseCommand):
 
         # for each one, do the decryption
         for t in active_helios_trustees:
-            tally = t.election.encrypted_tally
-
-            # FIXME: this should probably be in the encrypted_tally getter
-            tally.init_election(t.election)
-
-            factors, proof = tally.decryption_factors_and_proofs(t.secret_key)
-            t.decryption_factors = factors
-            t.decryption_proofs = proof
-            t.save()
-            
+            t.election.helios_trustee_decrypt()

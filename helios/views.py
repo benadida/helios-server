@@ -624,7 +624,7 @@ def one_election_cast_confirm(request, election):
     voter = _register_voter(election, user)
     
   # tallied election, no vote casting
-  if election.encrypted_tally or election.result:
+  if election.tallied or election.result:
     return render_template(request, 'election_tallied', {'election': election})
     
   encrypted_vote = request.session['encrypted_vote']
@@ -859,7 +859,7 @@ def voter_delete(request, election, voter_uuid):
   #if election.frozen_at and (not election.openreg):
   #  raise PermissionDenied()
 
-  if election.encrypted_tally:
+  if election.tallied:
     raise PermissionDenied()
 
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
@@ -983,10 +983,7 @@ def one_election_freeze(request, election):
       return SUCCESS    
 
 def _check_election_tally_type(election):
-  for q in election.questions:
-    if q['tally_type'] != "homomorphic":
-      return False
-  return True
+  return election.workflow_type in ["homomorphic", "mixnet"]
 
 @election_admin(frozen=True)
 def one_election_compute_tally(request, election):
@@ -1013,14 +1010,14 @@ def one_election_compute_tally(request, election):
 
 @trustee_check
 def trustee_decrypt_and_prove(request, election, trustee):
-  if not _check_election_tally_type(election) or election.encrypted_tally == None:
+  if not _check_election_tally_type(election) or not election.tallied:
     return HttpResponseRedirect(reverse(one_election_view,args=[election.uuid]))
     
   return render_template(request, 'trustee_decrypt_and_prove', {'election': election, 'trustee': trustee})
   
 @election_view(frozen=True)
 def trustee_upload_decryption(request, election, trustee_uuid):
-  if not _check_election_tally_type(election) or election.encrypted_tally == None:
+  if not _check_election_tally_type(election) or not election.tallied:
     return FAILURE
 
   trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
@@ -1068,7 +1065,7 @@ def combine_decryptions(request, election):
 
 @election_admin(frozen=True)
 def one_election_set_result_and_proof(request, election):
-  if election.tally_type != "homomorphic" or election.encrypted_tally == None:
+  if not election.tallied:
     return HttpResponseRedirect(reverse(one_election_view,args=[election.election_id]))
 
   # FIXME: check csrf
