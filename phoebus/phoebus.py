@@ -1,8 +1,10 @@
 from elgamal import (   Cryptosystem as Crypto,
-                        PublicKey, SecretKey, Plaintext, Ciphertext )
+                        PublicKey, SecretKey, Plaintext, Ciphertext,
+                        fiatshamir_challenge_generator  )
 from datetime import datetime
 from random import randint, shuffle
 from collections import defaultdict
+from hashlib import sha256
 
 
 """
@@ -239,6 +241,44 @@ def count_results(ballots):
     return sorted(results.items())
 
 
+def strbin_to_int(string):
+    # lsb
+    s = 0
+    base = 1
+    for c in string:
+        s += ord(c) * base
+        base *= 256
+
+    return s
+
+def hash_to_commitment_and_challenge(alpha, beta):
+    h = sha256()
+    h.update(hex(alpha))
+    ha = strbin_to_int(h.digest())
+    h = sha256()
+    h.update(hex(beta))
+    hb = strbin_to_int(h.digest())
+    commitment = (ha >> 128) | ((hb << 128) & (2**256-1))
+    challenge = (hb >> 128) | ((ha << 128) & (2**256-1))
+
+    return commitment, challenge
+
+def prove_encryption(modulus, alpha, beta, randomness):
+    commitment, challenge = hash_to_commitment_and_challenge(alpha, beta)
+    response = (commitment + challenge * randomness)
+    return response
+
+def verify_encryption(modulus, base, alpha, beta, proof):
+    commitment, challenge = hash_to_commitment_and_challenge(alpha, beta)
+    return (pow(base, proof, modulus) == 
+            (pow(base, commitment, modulus) *
+             pow(alpha, challenge, modulus) % modulus))
+
+
+class InvalidVoteError(Exception):
+    pass
+
+
 class Election(object):
 
     candidates = None
@@ -328,7 +368,7 @@ class Election(object):
         return 1
 
     def __str__(self):
-        return ("Election(%d candidates / %d votes)" % 
+        return ("Election (%d candidates / %d votes)" % 
                 (self.nr_candidates, len(self.encrypted_ballots)))
 
     __repr__ = __str__
@@ -473,15 +513,21 @@ class Election(object):
         ballot_append = self.encrypted_ballots.append
 
         for vote in votes:
-            timestamp = get_timestamp()
             owner = vote.owner
+            eb = vote.encrypted_ballot
+            if not verify_encryption(pk.p, pk.g, eb['a'], eb['b'], eb['proof']):
+                m = ("Invalid encryption proof for vote #%d, from %s"
+                        % (len(owners), owner))
+                raise InvalidVoteError(m)
+
+            timestamp = get_timestamp()
             if owner in owners:
                 m = ("Owner %s attempts to vote again. "
                      "Original vote was #%d at %s, second attempt (now) #%d."
                      % (owner, onwers[owner][0], owners[owner][1],
                         len(owners), timestamp))
 
-                raise ValueError(m)
+                raise InvalidVoteError(m)
 
             # FIXME: verification?
 
@@ -659,10 +705,10 @@ class Ballot(object):
         pk = self.election.public_key
         c, r = pk.encrypt_return_r(Plaintext(encoded_ballot, pk))
         encryption_random = r
-        encrypted_ballot = {'a': c.alpha, 'b': c.beta}
-
-        self.encrypted_ballot = encrypted_ballot
+        proof = prove_encryption(pk.p, c.alpha, c.beta, encryption_random)
+        encrypted_ballot = {'a': c.alpha, 'b': c.beta, 'proof': proof}
         self.encryption_random = encryption_random
+        self.encrypted_ballot = encrypted_ballot
 
         return encrypted_ballot, encryption_random
 
