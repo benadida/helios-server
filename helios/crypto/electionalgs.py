@@ -336,7 +336,7 @@ class EncryptedVote(HeliosObject):
     return True
     
   def get_hash(self):
-    return utils.hash_b64(utils.to_json(self.toJSONDict()))
+    return utils.hash_vote(self.toJSONDict())
     
   def toJSONDict(self, with_randomness=False):
     return {

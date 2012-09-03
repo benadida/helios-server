@@ -475,7 +475,7 @@ HELIOS.EncryptedVote = Class.extend({
   },
   
   get_hash: function() {
-     return b64_sha256(JSON.stringify(this.toJSONObject()));
+     return b64_sha256(this.toString());
   },
   
   get_audit_trail: function() {
