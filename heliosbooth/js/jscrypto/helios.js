@@ -351,7 +351,9 @@ HELIOS.EncryptedAnswer = Class.extend({
   toString: function() {
     // get each ciphertext as a JSON string
     var choices_strings = _(this.choices).map(function(c) {return c.toString();});
-    return choices_strings.join("|");
+    var ip_strings = _(this.individual_proofs).map(function (p) {return p.toString();});
+    var op_string = this.overall_proof.toString();
+    return choices_strings.join("|") + "#" + ip_strings.join("|") + "#" + op_string;
   },
   
   toJSONObject: function(include_plaintext) {
@@ -443,7 +445,7 @@ HELIOS.EncryptedVote = Class.extend({
     // for each question, get the encrypted answer as a string
     var answer_strings = _(this.encrypted_answers).map(function(a) {return a.toString();});
     
-    return answer_strings.join("//");
+    return answer_strings.join("//") + "#" + this.election_hash + "#" + this.election_uuid;
   },
   
   clearPlaintexts: function() {
