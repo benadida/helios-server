@@ -78,7 +78,7 @@ class PublicKey:
         self.g = None
         self.q = None
 
-    def encrypt_with_r(self, plaintext, r, encode_message= False):
+    def encrypt_with_r(self, plaintext, r, encode_message=False):
         """
         expecting plaintext.m to be a big integer
         """
@@ -172,7 +172,7 @@ class SecretKey:
 
         return dec_factor, proof
 
-    def decrypt(self, ciphertext, dec_factor = None, decode_m=False):
+    def decrypt(self, ciphertext, dec_factor=None, decode_m=False):
         """
         Decrypt a ciphertext. Optional parameter decides whether to encode the message into the proper subgroup.
         """
