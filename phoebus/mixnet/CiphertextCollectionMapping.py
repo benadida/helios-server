@@ -431,7 +431,7 @@ class CiphertextCollectionMapping:
         pool = multiprocessing.Pool()
         async_params = [(self, result, other_mapping, index) for index in range(0, length)]
         results = pool.map_async(calculate_subtraction, async_params)
-        for reencryption, cindex, bindex in results.get():
+        for reencryption, cindex, bindex in results.get(99999999):
             result._reencryptions[cindex] = reencryption
             result._reordering[cindex] = bindex
         
