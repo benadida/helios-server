@@ -806,7 +806,7 @@ def main(argv):
         election.mix_ballots()
         t2 = time()
         t_mix = t2 - t1
-        stderr.write( (" %s: %s: mixed complete in %.1f seconds\n")
+        stderr.write( (" %s: %s: mix complete in %.1f seconds\n")
                        % (c, election, t_mix) )
 
         append = election.decrypted_ballots.append
