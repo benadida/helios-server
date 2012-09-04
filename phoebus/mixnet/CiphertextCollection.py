@@ -38,6 +38,10 @@
 # THE SOFTWARE.
 # ============================================================================
 
+from PVCExceptions import (InvalidCiphertextCollectionMappingError,
+                           IncompatibleCiphertextCollectionError,
+                           IncompatibleCiphertextError)
+
 class CiphertextCollection:
     """
     An object representing an ordered collection of ciphertexts.
