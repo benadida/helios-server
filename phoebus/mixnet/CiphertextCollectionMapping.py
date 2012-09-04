@@ -49,6 +49,7 @@ from Crypto.Random.random import StrongRandom
 
 # Use configuration parameters from params.py
 import params
+import multiprocessing
 
 from CiphertextCollection import CiphertextCollection
 from .CiphertextReencryptionInfo import CiphertextReencryptionInfo
@@ -57,6 +58,7 @@ from PVCExceptions import IncompatibleCiphertextCollectionError
 from PVCExceptions import IncompatibleReencryptionInfoError
 from PVCExceptions import IncompatibleCiphertextCollectionMappingError
 
+
 def new_collection_mapping(original_collection):
     """
     CiphertextCollectionMapping.new wrapper, to be used with multiprocessing
@@ -64,6 +66,34 @@ def new_collection_mapping(original_collection):
     """
     from Crypto.Random import atfork; atfork()
     return CiphertextCollectionMapping.new(original_collection)
+
+
+def calculate_subtraction(params):
+    mapping, result, other_mapping, i = params
+    indB = mapping._reordering[i]  # indB is the index of the element in B
+    indC = other_mapping._reordering[i] # index in C
+    
+    # Now, we get the re-encryption from a \in A to b \in B
+    atob_reencryption = mapping._reencryptions[i]
+    
+    # and the corresponding one from a to c \in C
+    atoc_reencryption = other_mapping._reencryptions[i]
+    
+    # Generate the c-to-b re-encryption by subtracting a-to-c from 
+    # a-to-b.
+    try:
+        ctob_reencryption = atob_reencryption.subtract(atoc_reencryption)
+    except IncompatibleReencryptionInfoError, e:
+        raise IncompatibleCiphertextCollectionMappingError( \
+            "The given ciphertext collection mappings are incompatible"\
+            " for rebase. It is likely that the origin collection for "\
+            "each mapping is not the same. In particular, it would " \
+            "seem that the %dth element of the origin collection is " \
+            "incompatible between mappings. Inner exception message: " \
+            "\"%s\"" % (i, str(e)))
+
+    return ctob_reencryption, indC, indB
+
 
 def _random_shuffle_in_place(strong_random, l):
     """
@@ -398,37 +428,12 @@ class CiphertextCollectionMapping:
         
         # Calculate C->B element by element, in the order of the element's 
         # index in A.
-        for i in range(0, length):
-            # i is the index of the element in A
-            
-            indB = self._reordering[i]  # indB is the index of the element in B
-            indC = other_mapping._reordering[i] # index in C
-            
-            # So in C->B, indC goes to indB
-            result._reordering[indC] = indB
-            
-            # Now, we get the re-encryption from a \in A to b \in B
-            atob_reencryption = self._reencryptions[i]
-            
-            # and the corresponding one from a to c \in C
-            atoc_reencryption = other_mapping._reencryptions[i]
-            
-            # Generate the c-to-b re-encryption by subtracting a-to-c from 
-            # a-to-b.
-            try:
-                ctob_reencryption = atob_reencryption.subtract(atoc_reencryption)
-            except IncompatibleReencryptionInfoError, e:
-                raise IncompatibleCiphertextCollectionMappingError( \
-                    "The given ciphertext collection mappings are incompatible"\
-                    " for rebase. It is likely that the origin collection for "\
-                    "each mapping is not the same. In particular, it would " \
-                    "seem that the %dth element of the origin collection is " \
-                    "incompatible between mappings. Inner exception message: " \
-                    "\"%s\"" % (i, str(e)))
-            
-            # result._reencryption should be indexed by the ciphertext's index 
-            # in the origin collection (C)
-            result._reencryptions[indC] = ctob_reencryption
+        pool = multiprocessing.Pool()
+        async_params = [(self, result, other_mapping, index) for index in range(0, length)]
+        results = pool.map_async(calculate_subtraction, async_params)
+        for reencryption, cindex, bindex in results.get():
+            result._reencryptions[cindex] = reencryption
+            result._reordering[cindex] = bindex
         
         # Do some resource intensive checks to ensure that result has the right 
         # structure (only in debug mode)
