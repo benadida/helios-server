@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from elgamal import (   Cryptosystem as Crypto,
                         PublicKey, SecretKey, Plaintext, Ciphertext,
                         fiatshamir_challenge_generator  )
@@ -370,8 +371,9 @@ class Election(object):
         return 1
 
     def __str__(self):
-        return ("Election (%d candidates / %d votes)" % 
-                (self.nr_candidates, len(self.encrypted_ballots)))
+        return ("Election (%d candidates / %d votes / %d bits)" % 
+                (self.nr_candidates, len(self.encrypted_ballots),
+		 self.mix_nbits))
 
     __repr__ = __str__
 
@@ -744,8 +746,38 @@ class Ballot(object):
 
 
 def main(argv):
+
     from sys import stderr
+    from time import time
+
     argc = len(argv)
+    min_candidates = 3
+    max_candidates = 5
+
+    if argc >= 2:
+        if argv[1] in ('-h', '--help'):
+            print ( "Usage: %s [[min_candidates[:max_candidates]]"
+                    "[min_voters[:max_voters]]]" % (argv[0],) )
+            raise SystemExit
+
+        min_candidates, sep, max_candidates = argv[1].partition(':')
+        min_candidates = int(min_candidates)
+        if not max_candidates:
+            max_candidates = min_candidates
+        else:
+            max_candidates = int(max_candidates)
+
+    min_voters = min_candidates * min_candidates
+    max_voters = max_candidates * max_candidates
+
+    if argc >= 3:
+        min_voters, sep, max_voters = argv[2].partition(':')
+        min_voters = int(min_voters)
+        if not max_voters:
+            max_voters = min_voters
+        else:
+            max_voters = int(max_voters)
+
     pk = _default_public_key
     sk = _default_secret_key
 
@@ -753,16 +785,30 @@ def main(argv):
     stderr.write("\nInterrupt this. It won't stop on its own.\n\n")
 
     while 1:
-        nr_votes = randint(3, 10)
-        election = Election.mk_random(public_key=pk)
+        t0 = time()
+        nr_votes = randint(min_voters, max_voters)
+        election = Election.mk_random(min_candidates=min_candidates,
+                                      max_candidates=max_candidates,
+                                      public_key=pk)
         votes = []
         for i in xrange(nr_votes):
             stderr.write(" %s: %s: generating %d/%d votes.\r"
                             % (c, election, i, nr_votes))
             v = election.cast_random_votes(1)
             votes.extend(v)
+
+        t1 = time()
+        t_generate = t1 - t0
+        stderr.write(" %s: %s: generated %d votes in %.1f seconds\n"
+                     % (c, election, nr_votes, t_generate))
+
         stderr.write((" %s: %s: mixing." + " "*30 + "\r") % (c, election))
         election.mix_ballots()
+        t2 = time()
+        t_mix = t2 - t1
+        stderr.write( (" %s: %s: mixed complete in %.1f seconds\n")
+                       % (c, election, t_mix) )
+
         append = election.decrypted_ballots.append
         for i, b in enumerate(election.mixed_ballots):
             stderr.write(" %s: %s: decrypting %d/%d votes.\r"
@@ -772,12 +818,19 @@ def main(argv):
 
         election_results = election.get_results()
         vote_results = count_results(votes)
+
+        t3 = time()
+        t_decrypt = t3 - t2
+        stderr.write(" %s: %s: decrypted %d votes in %.1f seconds\n"
+                            % (c, election, nr_votes, t_decrypt))
+
         if election_results != vote_results:
             m = "Election corrupt!"
             raise AssertionError(m)
 
-        stderr.write((" %s: %s: %d votes OK." + " "*30 +"\n")
-                        % (c, election, nr_votes))
+        t_all = t3 - t0
+        stderr.write( (" %s: %s: %d votes OK in total %.1f seconds"+" "*30+"\n\n")
+                       % (c, election, nr_votes, t_all) )
         c += 1
 
 
