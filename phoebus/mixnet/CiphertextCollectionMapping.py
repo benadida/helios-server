@@ -57,6 +57,14 @@ from PVCExceptions import IncompatibleCiphertextCollectionError
 from PVCExceptions import IncompatibleReencryptionInfoError
 from PVCExceptions import IncompatibleCiphertextCollectionMappingError
 
+def new_collection_mapping(original_collection):
+    """
+    CiphertextCollectionMapping.new wrapper, to be used with multiprocessing
+    module.
+    """
+    from Crypto.Random import atfork; atfork()
+    return CiphertextCollectionMapping.new(original_collection)
+
 def _random_shuffle_in_place(strong_random, l):
     """
     This method is a workaround for pycrypto's bug 720310 
