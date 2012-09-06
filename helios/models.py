@@ -1135,5 +1135,5 @@ class Trustee(HeliosModel):
     """
     verify that the decryption proofs match the tally for the election
     """
-    return self.workflow.verify_encryption_proof(self)
+    return self.election.workflow.verify_encryption_proof(self.election, self)
     

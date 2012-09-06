@@ -468,9 +468,10 @@ def get_decryption_factors_and_proof(election, key):
     tally.init_election(election)
     return tally.decryption_factors_and_proofs(key)
 
-def verify_encryption_proof(election):
+def verify_encryption_proof(election, trustee):
     return election.encrypted_tally.verify_decryption_proofs(
-            self.decryption_factors, 
-            self.decryption_proofs, 
-            self.public_key, 
+            trustee.decryption_factors, 
+            trustee.decryption_proofs, 
+            trustee.public_key, 
             algs.EG_fiatshamir_challenge_generator)
+
