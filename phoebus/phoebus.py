@@ -7,6 +7,7 @@ from random import randint, shuffle
 from collections import defaultdict
 from hashlib import sha256
 from math import log
+import Crypto.Util.number as number
 
 
 from mixnet.EGCryptoSystem import EGCryptoSystem as MixCryptosystem
@@ -277,6 +278,33 @@ def verify_encryption(modulus, base, alpha, beta, proof):
              pow(alpha, challenge, modulus) % modulus))
 
 
+def sign_message(modulus, base, order, key, message):
+    while 1:
+        w = number.getRandomRange(3, order)
+        r = pow(base, w, modulus) % order
+        w = number.inverse(w, order)
+        s = w * (message + r*key)
+        if s != 0:
+            break
+    return {'r': r, 's': s, 'm': message}
+
+def verify_signature(modulus, base, order, signature):
+    r = signature['r']
+    s = signature['s']
+    m = signature['m']
+
+    if r <= 0 or r >= order or s <= 0 or s >= order:
+        return 0
+
+    u1 = (w * m) % order
+    u2 = (w * r) % order
+    u = (pow(base, u1, modulus) * pow(base, u2, modulus)) % order
+    if u != r:
+        return 0
+
+    return 1
+
+
 class InvalidVoteError(Exception):
     pass
 
@@ -373,7 +401,7 @@ class Election(object):
     def __str__(self):
         return ("Election (%d candidates / %d votes / %d bits)" % 
                 (self.nr_candidates, len(self.encrypted_ballots),
-		 self.mix_nbits))
+                 self.mix_nbits))
 
     __repr__ = __str__
 
@@ -534,6 +562,8 @@ class Election(object):
             # FIXME: verification?
 
             ballot_append(vote)
+            vote.sign(_default_secret_key)
+            vote.verify_signature()
             owners[owner] = (len(owners), timestamp)
 
     cast_vote = cast_votes
@@ -591,6 +621,7 @@ class Ballot(object):
     ballot_id = None
     encryption_random = None
     encrypted_ballot = None
+    submission_signature = None
 
     _owner_count = 0
 
@@ -731,6 +762,31 @@ class Ballot(object):
         self.encrypted_ballot = encrypted_ballot
 
         return encrypted_ballot, encryption_random
+
+    def get_fingerprint(self):
+        h = sha256()
+        eb = self.encrypted_ballot
+        h.update("%x" % (eb['a']))
+        h.update("%x" % (eb['b']))
+        h.update("%x" % (eb['proof']))
+        f = strbin_to_int(h.digest())
+        return f
+
+    def sign(self, secret_key):
+        m = self.get_fingerprint()
+        k = secret_key.x
+        pk = self.election.public_key
+        signature = sign_message(pk.p, pk.g, pk.q, k, m)
+        self.signature = signature
+        return signature
+ 
+    def verify_signature(self):
+        m = self.get_fingerprint()
+        s = self.signature
+        if m != s['m']:
+            return 0
+	pk = self.election.public_key
+        return verify_signature(pk.p, pk.g, pk.q, s)
 
     def _decrypt(self, secret_key, encrypted_ballot):
         eb = self.encrypted_ballot
