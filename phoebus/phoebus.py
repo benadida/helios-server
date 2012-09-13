@@ -7,6 +7,7 @@ from random import randint, shuffle
 from collections import defaultdict
 from hashlib import sha256
 from math import log
+from bisect import bisect_right
 import Crypto.Util.number as number
 
 
@@ -62,9 +63,9 @@ def get_choice_params(nr_choices, nr_candidates=None, max_choices=None):
     if max_choices is None:
         max_choices = nr_candidates
 
-    if nr_choices <= 0 or nr_candidates <= 0 or max_choices <= 0:
-        m = ("choice encoding needs positive parameters, "
-             "not (%d, %d, %d)" % (nr_choices, nr_candidates, max_choices))
+    if nr_choices < 0 or nr_candidates <= 0 or max_choices <= 0:
+        m = ("invalid parameters not (%d < 0 or %d <= 0 or %d <= 0)"
+             % (nr_choices, nr_candidates, max_choices))
         raise ValueError(m)
 
     if nr_choices > max_choices:
@@ -99,19 +100,192 @@ def validate_choices(choices, nr_candidates=None, max_choices=None):
 
     return 1
 
-def factorial_encode(choices, nr_candidates=None, max_choices=None):
-    nr_candidates, max_choices = \
-        get_choice_params(len(choices), nr_candidates, max_choices)
 
-    sumus = 1
-    base = nr_candidates
+_terms = {}
+
+def get_term(n, k):
+    if k >= n:
+        return 1
+
+    if n in _terms:
+        t = _terms[n]
+        if k in t:
+            return t[k]
+    else:
+        t = {n:1}
+        _terms[n] = t
+
+    m = k
+    while 1:
+        m += 1
+        if m in t:
+            break
+
+    term = t[m]
+    while 1:
+        term *= m
+        m -= 1
+        t[m] = term
+        if m <= k:
+            break
+
+    return term
+
+_offsets = {}
+
+def get_offsets(n):
+    if n in _offsets:   
+        return _offsets[n]
+
+    factor = 1
+    offsets = []
+    append = offsets.append
+    sumus = 0
+    i = 0
+    while 1:
+        sumus += get_term(n, n-i)
+        append(sumus)
+        if i == n:
+            break
+        i += 1
+
+    _offsets[n] = offsets
+    return offsets
+
+_factors = {}
+
+def get_factor(b, n):
+    if n <= 1:
+        return 1
+
+    if b in _factors:
+        t = _factors[b]
+        if n in t:
+            return t[n]
+    else:
+        t = {1: 1}
+        _factors[b] = t
+
+    i = n
+    while 1:
+        i -= 1
+        if i in t:
+            break
+
+    f = t[i]
+    while 1:
+        f *= b + i
+        i += 1
+        t[i] = f
+        if i >= n:
+            break
+
+    return f
+
+def gamma_encode(choices, nr_candidates=None, max_choices=None):
+    nr_choices = len(choices)
+    nr_candidates, max_choices = \
+        get_choice_params(nr_choices, nr_candidates, max_choices)
+    if not nr_choices:
+        return 0
+
+    offsets = get_offsets(nr_candidates)
+    sumus = offsets[nr_choices - 1]
+
+    b = nr_candidates - nr_choices
+    i = 1
+    while 1:
+        sumus += choices[-i] * get_factor(b, i)
+        if i >= nr_choices:
+            break
+        i += 1
+
+    return sumus
+ 
+def gamma_decode(sumus, nr_candidates=None, max_choices=None):
+    nr_candidates, max_choices = \
+        get_choice_params(nr_candidates, nr_candidates, max_choices)
+
+    if sumus <= 0:
+        return []
+
+    offsets = get_offsets(nr_candidates)
+    nr_choices = bisect_right(offsets, sumus)
+    sumus -= offsets[nr_choices - 1]
+
+    choices = []
+    append = choices.append
+    b = nr_candidates - nr_choices
+    i = nr_choices
+    while 1:
+        choice, sumus = divmod(sumus, get_factor(b, i))
+        append(choice)
+        if i <= 1:
+            break
+        i -= 1
+
+    return choices
+
+
+def verify_gamma_encoding(n, completeness=1):
+    choice_sets = {}
+    encode_limit = get_offsets(n)[-1]
+    encoded_limit = gamma_encode(range(n-1, -1, -1), n) + 1
+    if encode_limit != encoded_limit:
+        m = "Incorrect encode limit %d vs %d!" % (encode_limit, encoded_limit)
+        raise AssertionError(m)
+
+    for encoded in xrange(encode_limit):
+        choices = tuple(gamma_decode(encoded, n))
+        new_encoded = gamma_encode(choices, n)
+        if new_encoded != encoded:
+            m = ("Incorrect encoding %s to %d instead of %d"
+                    % (choices, new_encoded, encoded))
+            raise AssertionError(m)
+
+        if not completeness:
+            continue
+
+        nr_choices = len(choices)
+        if nr_choices not in choice_sets:
+            choice_sets[nr_choices] = set()
+        choice_set = choice_sets[nr_choices]
+        if choices in choice_set:
+            m = ("Duplicate decoding for %d: %s!" % (encoded, choices))
+        choice_set.add(choices)
+
+
+    if not completeness:
+        return
+
+    for i in xrange(n + 1):
+        if i not in choice_sets:
+            m = "Encoding is not bijective! missing choice set %d" % (i,)
+            AssertionError(m)
+
+        c = len(choice_sets[i])
+        t = get_term(n, n-i)
+        if c != t:
+            m = ("Encoding is not bijective! "
+                 "length-%d choices are %d instead of %d"
+                 % (i, c, t))
+            raise AssertionError(m)
+        print "%d length-%d choices OK" % (c, i)
+
+
+def factorial_encode(choices, nr_candidates=None, max_choices=None):
+    nr_choices = len(choices)
+    nr_candidates, max_choices = \
+        get_choice_params(nr_choices, nr_candidates, max_choices)
+
+    sumus = 0
+    base = nr_candidates + 1
     factor = 1
     for choice in choices:
-        if choice == 0:
-            break
+        choice += 1
         if choice >= base:
             m = ("Cannot vote for %dth candidate when there are only %d remaining"
-                    % (choice+1, base))
+                    % (choice, base - 1))
             raise ValueError(m)
         sumus += choice * factor
         factor *= base
@@ -119,17 +293,20 @@ def factorial_encode(choices, nr_candidates=None, max_choices=None):
 
     return sumus
 
-def factorial_decode(sumus, nr_candidates=None, max_choices=None):
+def factorial_decode(encoded, nr_candidates=None, max_choices=None):
     nr_candidates, max_choices = \
         get_choice_params(nr_candidates, nr_candidates, max_choices)
 
+    if encoded <= 0:
+        return []
+
+    sumus = encoded
     factors = []
     append = factors.append
-    base = nr_candidates
+    base = nr_candidates + 1
     factor = 1
-    sumus -= 1
 
-    for _ in xrange(max_choices):
+    while factor <= sumus:
         append(factor)
         factor *= base
         base -= 1
@@ -139,17 +316,19 @@ def factorial_decode(sumus, nr_candidates=None, max_choices=None):
     append = choices.append
     for factor in factors:
         choice, sumus = divmod(sumus, factor)
-        append(choice)
+        if choice == 0:
+            break
+        append(choice - 1)
 
-    nr_choices = len(choices)
-    if nr_choices > max_choices:
-        m = ("Decoding came up with more choices than expected: %d > %d" % 
-             (nr_choices, max_choices))
+    if sumus != 0:
+        m = ("Invalid encoding %d" % (encoded,))
         raise AssertionError(m)
 
-    if sumus > nr_candidates:
-        m = ("Decoding run out of factors "
-             "while sumus is still too high: %d > %d" % (sumus, nr_candidates))
+    nr_choices = len(choices)
+
+    if nr_choices > max_choices:
+        m = ("Decoding came up with more choices than allowed: %d > %d"
+            % (nr_choices, max_choices))
         raise AssertionError(m)
 
     choices.reverse()
@@ -160,11 +339,11 @@ def maxbase_encode(choices, nr_candidates=None, max_choices=None):
     nr_candidates, max_choices = \
         get_choice_params(len(choices), nr_candidates, max_choices)
 
-    base = nr_candidates + 1
+    base = nr_candidates + 2
     sumus = 0
     e = 1
     for i, choice in enumerate(choices):
-        sumus += choice * e
+        sumus += (choice + 1) * e
         e *= base
 
     return sumus
@@ -175,28 +354,46 @@ def maxbase_decode(sumus, nr_candidates, max_choices=None):
     choices = []
     append = choices.append
 
-    base = nr_candidates + 1
+    base = nr_candidates + 2
     while sumus > 0:
         sumus, choice = divmod(sumus, base)
-        append(choice)
-
-    choices += [0] * (nr_candidates - len(choices))
+        append(choice - 1)
 
     return choices
 
 
+def cross_check_encodings(n):
+    # verify_gamma_encoding(n)
+    encode_limit = gamma_encode(range(n-1, -1, -1), n) + 1
+    for e in xrange(encode_limit):
+        choices = gamma_decode(e, n)
+        maxbase_encoded = maxbase_encode(choices, n)
+        maxbase_choices = maxbase_decode(maxbase_encoded, n)
+        factorial_encoded = factorial_encode(choices, n)
+        factorial_choices = factorial_decode(factorial_encoded, n)
+
+        if (factorial_choices != maxbase_choices
+            or factorial_choices != choices
+            or maxbase_choices != choices):
+
+            m = ("gamma_encoded: %d, choices mismatch: "
+                 "gamma %s, maxbase %s, factorial %s"
+                 % (e, choices, maxbase_choices, factorial_choices))
+            raise AssertionError(m)
+
+
+ballot_encode = gamma_encode
+ballot_decode = gamma_decode
+
 def chooser(answers, candidates):
     candidates = list(candidates)
     nr_candidates = len(candidates)
-    tmp_answers = answers + [0] * (nr_candidates - len(answers))
-    validate_choices(tmp_answers, nr_candidates, nr_candidates)
+    validate_choices(answers, nr_candidates, nr_candidates)
 
     rank = []
     append = rank.append
     for answer in answers:
-        if answer == 0:
-            break
-        append(candidates.pop(answer-1))
+        append(candidates.pop(answer))
 
     return rank, candidates
 
@@ -507,7 +704,7 @@ class Election(object):
         nr_candidates = self.nr_candidates
         max_choices = self.max_choices
         crange = range(nr_candidates, nr_candidates-max_choices, -1)
-        top = factorial_encode(crange, nr_candidates, max_choices)
+        top = ballot_encode(crange, nr_candidates, max_choices)
         pk = self.public_key
         g = pk.g
         n = 1
@@ -713,14 +910,14 @@ class Ballot(object):
         max_choices = election.max_choices
 
         validate_choices(answers, nr_candidates, max_choices)
-        self.ballot_id = factorial_encode(answers, nr_candidates, max_choices)
+        self.ballot_id = ballot_encode(answers, nr_candidates, max_choices)
         self.answers = answers
 
     def calculate_answers(self, sumus):
         election = self.election
         nr_candidates = election.nr_candidates
         max_choices = election.max_choices
-        answers = factorial_decode(sumus, nr_candidates, max_choices)
+        answers = ballot_decode(sumus, nr_candidates, max_choices)
         validate_choices(answers, nr_candidates, max_choices)
         self.answers = answers
         self.ballot_id = sumus
@@ -730,7 +927,7 @@ class Ballot(object):
         election = self.election
         nr_candidates = election.nr_candidates
         max_choices = election.max_choices
-        answers = factorial_decode(sumus, nr_candidates, max_choices)
+        answers = ballot_decode(sumus, nr_candidates, max_choices)
         if answers != self.answers:
             m = ("Ballot id: %d corresponds to answers %s, "
                  "which do not correspond to ballot answers %s",
@@ -785,7 +982,7 @@ class Ballot(object):
         s = self.signature
         if m != s['m']:
             return 0
-	pk = self.election.public_key
+        pk = self.election.public_key
         return verify_signature(pk.p, pk.g, pk.q, s)
 
     def _decrypt(self, secret_key, encrypted_ballot):
@@ -896,6 +1093,8 @@ q = _default_crypto.q
 
 if __name__ == '__main__':
     import sys
+    verify_gamma_encoding(7)
+    cross_check_encodings(7)
     main(sys.argv)
     raise KeyboardInterrupt
 
