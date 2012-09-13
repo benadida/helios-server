@@ -134,7 +134,7 @@ def get_term(n, k):
 _offsets = {}
 
 def get_offsets(n):
-    if n in _offsets:   
+    if n in _offsets:
         return _offsets[n]
 
     factor = 1
@@ -201,7 +201,7 @@ def gamma_encode(choices, nr_candidates=None, max_choices=None):
         i += 1
 
     return sumus
- 
+
 def gamma_decode(sumus, nr_candidates=None, max_choices=None):
     nr_candidates, max_choices = \
         get_choice_params(nr_candidates, nr_candidates, max_choices)
@@ -470,7 +470,7 @@ def prove_encryption(modulus, alpha, beta, randomness):
 
 def verify_encryption(modulus, base, alpha, beta, proof):
     commitment, challenge = hash_to_commitment_and_challenge(alpha, beta)
-    return (pow(base, proof, modulus) == 
+    return (pow(base, proof, modulus) ==
             (pow(base, commitment, modulus) *
              pow(alpha, challenge, modulus) % modulus))
 
@@ -596,7 +596,7 @@ class Election(object):
         return 1
 
     def __str__(self):
-        return ("Election (%d candidates / %d votes / %d bits)" % 
+        return ("Election (%d candidates / %d votes / %d bits)" %
                 (self.nr_candidates, len(self.encrypted_ballots),
                  self.mix_nbits))
 
@@ -614,6 +614,7 @@ class Election(object):
                 '_logs'                     :   self._logs,
                }
 
+    @classmethod
     def get_generic_election(cls, nr_candidates, max_choices, pk):
         elections = cls._generic_elections
         if (max_choices is None
@@ -637,6 +638,7 @@ class Election(object):
                             max_choices     =   max_choices,
                             public_key      =   public_key)
         elections[key] = election
+        return election
 
     @classmethod
     def from_dict(cls, dict_object):
@@ -693,7 +695,7 @@ class Election(object):
             return m
         else:
             return -m % pk.p
-            
+
     def q_decode(self, m):
         pk = self.public_key
         if m > q:
@@ -976,7 +978,7 @@ class Ballot(object):
         signature = sign_message(pk.p, pk.g, pk.q, k, m)
         self.signature = signature
         return signature
- 
+
     def verify_signature(self):
         m = self.get_fingerprint()
         s = self.signature
