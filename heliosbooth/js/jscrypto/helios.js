@@ -21,6 +21,60 @@ $.extend({
 
 var UTILS = {};
 
+UTILS.strbin_to_int = function(st) {
+  var c, i, s, base, add, ss;
+  s = new BigInt("0", 10);
+  base = new BigInt("1", 10);
+  for (i = 0; i<st.length; i++) {
+    c = st.charCodeAt(i);
+    add = base.multiply(new BigInt(''+c, 10));
+    s = s.add(new BigInt(''+add, 10));
+    base = base.multiply(new BigInt('256', 10));
+  }
+  return s;
+}
+
+UTILS.hash_to_commitment_and_challenge = function(alpha, beta) {
+  var ha, hb, commitment, challenge, and;
+  
+  ha = UTILS.strbin_to_int(str_sha256("0x" + alpha.toString(16) + "L"));
+  hb = UTILS.strbin_to_int(str_sha256("0x" + beta.toString(16) + "L"));
+
+  twopower = (new BigInt('2', 10)).pow(256).subtract(BigInt.ONE);
+  commitment = ha.shiftRight(128).or(hb.shiftLeft(128).and(twopower));
+  challenge = hb.shiftRight(128).or(ha.shiftLeft(128).and(twopower));
+  return {'commitment': commitment, 'challenge': challenge};
+}
+
+UTILS.get_encryption_proof = function(alpha, beta, randomness) {
+  var hash;
+  hash = UTILS.hash_to_commitment_and_challenge(alpha, beta);
+  return hash.commitment.add(hash.challenge.multiply(randomness));
+}
+
+UTILS.verify_encryption_proof = function(modulus, base, alpha, beta, proof) {
+  var hash, proof_pow, cipher_pow, challenge, commitment;
+
+  hash = UTILS.hash_to_commitment_and_challenge(alpha, beta);
+  challenge = hash.challenge;
+  commitment = hash.commitment;
+  
+  proof_pow = base.modPow(proof, modulus);
+  cipher_pow = base.modPow(commitment,
+                  modulus).multiply(alpha.modPow(challenge, 
+                                          modulus)).mod(modulus);
+  return proof_pow.equals(cipher_pow);
+}
+
+UTILS.generate_stv_plaintext = function(choice, pk) {
+  console.log("NOT IMPLEMENTED");
+  return new ElGamal.Plaintext(new BigInt("121357219501", 10), pk, false);
+}
+
+UTILS.verify_encryption = function() {
+  console.log("NOT IMPLEMENTED", arguments);
+}
+
 UTILS.array_remove_value = function(arr, val) {
   var new_arr = [];
   _(arr).each(function(v, i) {
@@ -166,7 +220,11 @@ BALLOT.pretty_choices = function(election, ballot) {
 
     // process the answers
     var choices = _(questions).map(function(q, q_num) {
-	    return _(answers[q_num]).map(function(ans) {
+        var q_answers = answers[q_num];
+        if (q.tally_type == "stv") {
+            qanswers = answers[q_num][0];
+        }
+	    return _(qanswers).map(function(ans) {
 	      return questions[q_num].answers[ans];
 	    });
     });
@@ -216,36 +274,44 @@ UTILS.generate_plaintexts = function(pk, min, max) {
 
 
 HELIOS.EncryptedAnswer = Class.extend({
-  init: function(question, answer, pk, progress) {    
+  init: function(question, answer, pk, progress, randomness) {    
     // if nothing in the constructor
     if (question == null)
       return;
-
+    
     // store answer
     // CHANGE 2008-08-06: answer is now an *array* of answers, not just a single integer
     this.answer = answer;
 
     // do the encryption
-    var enc_result = this.doEncryption(question, answer, pk, null, progress);
+    var enc_result = this.doEncryption(question, answer, pk, randomness, progress);
 
     this.choices = enc_result.choices;
     this.randomness = enc_result.randomness;
     this.individual_proofs = enc_result.individual_proofs;
     this.overall_proof = enc_result.overall_proof;    
+    this.encryption_proof = enc_result.encryption_proof;    
   },
   
   doEncryption: function(question, answer, pk, randomness, progress) {
+    var stv = question.tally_type == "stv" ? true : false;
     var choices = [];
     var individual_proofs = [];
     var overall_proof = null;
+    var encryption_proofs = [];
     
-    // possible plaintexts [question.min .. , question.max]
     var plaintexts = null;
-    if (question.max != null) {
-      plaintexts = UTILS.generate_plaintexts(pk, question.min, question.max);
+    var zero_one_plaintexts = null;
+    if (!stv) {
+      // possible plaintexts [question.min .. , question.max]
+      if (question.max != null) {
+        plaintexts = UTILS.generate_plaintexts(pk, question.min, question.max);
+      }
+      
+      var zero_one_plaintexts = UTILS.generate_plaintexts(pk, 0, 1);
+    } else {
+      plaintexts = zero_one_plaintexts = [UTILS.generate_stv_plaintext(choices[0], pk)];
     }
-    
-    var zero_one_plaintexts = UTILS.generate_plaintexts(pk, 0, 1);
     
     // keep track of whether we need to generate new randomness
     var generate_new_randomness = false;    
@@ -253,39 +319,53 @@ HELIOS.EncryptedAnswer = Class.extend({
       randomness = [];
       generate_new_randomness = true;
     }
-    
+     
     // keep track of number of options selected.
     var num_selected_answers = 0;
     
     // go through each possible answer and encrypt either a g^0 or a g^1.
     for (var i=0; i<question.answers.length; i++) {
+      
+      // stv case
+      if (stv && i > 0) { break; }
+
       var index, plaintext_index;
-      // if this is the answer, swap them so m is encryption 1 (g)
-      if (_(answer).include(i)) {
-        plaintext_index = 1;
-        num_selected_answers += 1;
+
+      if (!stv) {
+        // if this is the answer, swap them so m is encryption 1 (g)
+        if (_(answer).include(i)) {
+          plaintext_index = 1;
+          num_selected_answers += 1;
+        } else {
+          plaintext_index = 0;
+        }
       } else {
         plaintext_index = 0;
+        num_selected_answers = choices.length;
       }
 
       // generate randomness?
       if (generate_new_randomness) {
         randomness[i] = Random.getRandomInteger(pk.q);        
       }
-
+      
       choices[i] = ElGamal.encrypt(pk, zero_one_plaintexts[plaintext_index], randomness[i]);
       
       // generate proof
       if (generate_new_randomness) {
-        // generate proof that this ciphertext is a 0 or a 1
-        individual_proofs[i] = choices[i].generateDisjunctiveProof(zero_one_plaintexts, plaintext_index, randomness[i], ElGamal.disjunctive_challenge_generator);        
+        if (!stv) {
+          // generate proof that this ciphertext is a 0 or a 1
+          individual_proofs[i] = choices[i].generateDisjunctiveProof(zero_one_plaintexts, plaintext_index, randomness[i], ElGamal.disjunctive_challenge_generator);        
+        }
       }
+
+      encryption_proofs[i] = UTILS.get_encryption_proof(choices[i].alpha, choices[i].beta, randomness[i]);
       
       if (progress)
         progress.tick();
     }
-
-    if (generate_new_randomness && question.max != null) {
+    
+    if (generate_new_randomness && question.max != null && !stv) {
       // we also need proof that the whole thing sums up to the right number
       // only if max is non-null, otherwise it's full approval voting
     
@@ -318,7 +398,8 @@ HELIOS.EncryptedAnswer = Class.extend({
       'choices' : choices,
       'randomness' : randomness,
       'individual_proofs' : individual_proofs,
-      'overall_proof' : overall_proof
+      'overall_proof' : overall_proof,
+      'encryption_proof' : encryption_proofs[0]
     };
   },
   
@@ -355,19 +436,30 @@ HELIOS.EncryptedAnswer = Class.extend({
   },
   
   toJSONObject: function(include_plaintext) {
+    var return_obj = {};
+
     var return_obj = {
       'choices' : _(this.choices).map(function(choice) {
         return choice.toJSONObject();
-      }),
-      'individual_proofs' : _(this.individual_proofs).map(function(disj_proof) {
-        return disj_proof.toJSONObject();
       })
+    };
+
+    if (this.individual_proofs) {
+      return_obj['individual_proofs'] = _(this.individual_proofs).map(function(disj_proof) {
+        return disj_proof.toJSONObject();
+      });
     };
     
     if (this.overall_proof != null) {
       return_obj.overall_proof = this.overall_proof.toJSONObject();
     } else {
       return_obj.overall_proof = null;
+    }
+
+    if (this.encryption_proof) {
+      return_obj.encryption_proof = this.encryption_proof.toJSONObject();
+    } else {
+      return_obj.encryption_proof = null;
     }
     
     if (include_plaintext) {
@@ -392,6 +484,7 @@ HELIOS.EncryptedAnswer.fromJSONObject = function(d, election) {
   });
   
   ea.overall_proof = ElGamal.DisjunctiveProof.fromJSONObject(d.overall_proof);
+  ea.encryption_proof = new BigInt(d.encryption_proof, 10);
   
   // possibly load randomness and plaintext
   if (d.randomness) {
