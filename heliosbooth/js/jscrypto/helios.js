@@ -235,6 +235,36 @@ STV.gamma_decode = function(sumus, nr_candidates, max_choices) {
     return choices;
 }
 
+STV.to_relative_answers = function(choices, nr_candidates) {
+    var relative, candidates;
+    relative = [];
+    candidates = _.range(nr_candidates);
+    choices = _.map(choices, function(c) { return _.indexOf(candidates, c)});
+    _.each(choices, function(c) {
+        var index;
+        index = _.indexOf(candidates, c);
+        relative.push(index);
+        candidates.splice(_.indexOf(candidates, c), 1);
+    });
+
+    return relative;
+}
+
+STV.to_absolute_answers = function(choices, nr_candidates) {
+    var absolute_choices, tmp_cands, candidates;
+    absolute_choices = [];
+    candidates = _.range(nr_candidates);
+    tmp_cands = candidates.slice(0);
+    _.each(choices, function(c) {
+        var index;
+        c = tmp_cands[c];
+        absolute_choices.push(_.indexOf(candidates, c));
+        tmp_cands.splice(_.indexOf(tmp_cands, c), 1);
+    });
+
+    return absolute_choices;
+}
+
 STV.encode = STV.gamma_encode;
 STV.decode = STV.gamma_decode;
 
@@ -258,9 +288,9 @@ UTILS.bisect_right = function(a, x, lo, hi) {
     return lo;
 }
 
-UTILS.generate_stv_plaintext = function(choice, pk) {
-  var encoded = STV.encode(choice);
-  return new ElGamal.Plaintext(sumus, pk, false);
+UTILS.generate_stv_plaintext = function(choice, pk, nr_candidates, max_choices) {
+  var encoded = STV.encode(choice, nr_candidates, max_choices);
+  return new ElGamal.Plaintext(encoded, pk, false);
 }
 
 UTILS.verify_encryption = function() {
@@ -475,6 +505,10 @@ HELIOS.EncryptedAnswer = Class.extend({
     // CHANGE 2008-08-06: answer is now an *array* of answers, not just a single integer
     this.answer = answer;
 
+    if (question.tally_type == "stv") {
+        answer[0] = STV.to_relative_answers(answer[0], question.answers.length);
+    }
+
     // do the encryption
     var enc_result = this.doEncryption(question, answer, pk, randomness, progress);
 
@@ -502,7 +536,8 @@ HELIOS.EncryptedAnswer = Class.extend({
       
       var zero_one_plaintexts = UTILS.generate_plaintexts(pk, 0, 1);
     } else {
-      plaintexts = zero_one_plaintexts = [UTILS.generate_stv_plaintext(choices[0], pk)];
+      var nchoices = question.answers.length;
+      plaintexts = zero_one_plaintexts = [UTILS.generate_stv_plaintext(answer[0], pk, nchoices, nchoices)];
     }
     
     // keep track of whether we need to generate new randomness
