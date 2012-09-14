@@ -66,9 +66,201 @@ UTILS.verify_encryption_proof = function(modulus, base, alpha, beta, proof) {
   return proof_pow.equals(cipher_pow);
 }
 
+var STV = {};
+STV.get_choice_params = function(nr_choices, nr_candidates, max_choices) {
+    nr_candidates = nr_candidates || nr_choices;
+    max_choices = max_choices || nr_candidates;
+
+    if (nr_choices < 0 || nr_candidates <= 0 || max_choices <= 0) {
+        throw "Invalid parameters";
+    }
+
+    if (nr_choices > max_choices) {
+        throw "Invalid choices";
+    }
+
+    return {'nr_candidates': nr_candidates, 'max_choices': max_choices}
+}
+
+STV._terms = {};
+STV.get_term = function(n, k) {
+    var t, m, term, _terms;
+    if (k >= n) { return new BigInt('1', 10) };
+    if (n in STV._terms) {
+        t = STV._terms[n];
+        if (k in t) {
+            return t[k];
+        }
+    } else {
+        t = {};
+        t[n] = new BigInt('1', 10);
+        STV._terms[n] = t;
+    }
+
+    m = k;
+    while (1) {
+        m += 1;
+        if (m in t) {
+            break;
+        }
+
+        if (m > 100) { break; }
+    }
+
+    term = t[m];
+    while (1) {
+        term = term.multiply(new BigInt(''+m, 10));
+        m -= 1;
+        t[m] = term;
+        if (m <= k) {
+            break;
+        }
+    }
+    return term;
+}
+
+STV._offsets = {};
+STV.get_offsets = function(n) {
+    var factor, offsets, sumus, i;
+    if (n in STV._offsets) {
+        return STV._offsets[n];
+    }
+
+    factor = 1;
+    offsets = [];
+    sumus = new BigInt('0', 10);
+    i = 0;
+
+    while (1) {
+        sumus = sumus.add(new BigInt(''+STV.get_term(n, n-i), 10));
+        offsets.push(sumus);
+        if (i == n) { break; }
+        if (i > 100) { break;}
+        i++;
+    }
+
+    STV._offsets[n] = offsets;
+    return offsets;
+}
+
+
+STV._factors = {};
+STV.get_factor = function(b, n) {
+    var f, t, i;
+    if (n <= 1) { return new BigInt('1', 10)};
+
+    if (b in STV._factors) {
+        t = STV._factors[b];
+        if (n in t) {
+            return t[n];
+        }
+    } else {
+        t = {1: new BigInt("1", 10)};
+        STV._factors[b] = t;
+    }
+
+    i = n;
+    while (1) {
+        i -= 1;
+        if (i in t) {
+            break;
+        }
+    }
+
+    f = t[i];
+    while (1) {
+        f = f.multiply(new BigInt('' + (b+i), 10));
+        i += 1;
+        t[i] = f;
+        if (i >= n) { break; }
+    }
+
+    return f;
+}
+
+STV.gamma_encode = function(choices, nr_candidates, max_choices) {
+    var nr_choices, ichoices, params, offsets, b, i, sumus, f;
+    nr_choices = choices.length;
+    params = STV.get_choice_params(nr_choices, nr_candidates, max_choices);
+    nr_candidates = params.nr_candidates;
+    max_choices = params.max_choices;
+
+    if (!nr_choices) { return 0 };
+    
+    offsets = STV.get_offsets(nr_candidates);
+
+    sumus = offsets[nr_choices-1];
+    b = nr_candidates - nr_choices;
+    i = 1;
+
+    ichoices = choices.slice(0)
+    ichoices.reverse();
+
+    while (1) {
+        f = STV.get_factor(b, i);
+        f = f.multiply(new BigInt(''+ichoices[i-1], 10));
+        sumus = sumus.add(f);
+        if (i >= nr_choices) { break; }
+        i++;
+    }
+
+    return sumus;
+}
+
+STV.gamma_decode = function(sumus, nr_candidates, max_choices) {
+    var nr_choices, choice, choices, params, offsets, i, b, sumus, f, divmod;
+    params = STV.get_choice_params(nr_candidates, nr_candidates, max_choices);
+    nr_candidates = params.nr_candidates;
+    max_choices = params.max_choices;
+
+    if (sumus <= 0) { return [] };
+
+    offsets = STV.get_offsets(nr_candidates);
+    nr_choices = UTILS.bisect_right(offsets, sumus);
+    
+    sumus = sumus.subtract(offsets[nr_choices-1]);
+    choices = [];
+    b = nr_candidates - nr_choices;
+    i = nr_choices;
+    while (1) {
+        f = STV.get_factor(b, i);
+        divmod = sumus.divideAndRemainder(f);
+        choice = divmod[0];
+        sumus = divmod[1];
+        choices.push(choice);
+
+        if (i <= 1) { break; }
+        i -= 1;
+    }
+    return choices;
+}
+
+STV.encode = STV.gamma_encode;
+STV.decode = STV.gamma_decode;
+
+UTILS.bisect_right = function(a, x, lo, hi) {
+    var mid, bigints, compare;
+
+    lo = lo == undefined ? 0: lo;
+
+    if (lo < 0) { throw "lo cannot be negative"; }
+    if (!hi) { hi = a.length; }
+    
+    var j = 1;
+    while (lo < hi) {
+        mid = parseInt((lo+hi) / 2);
+        if (x.compareTo(a[mid]) < 0) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    return lo;
+}
+
 UTILS.generate_stv_plaintext = function(choice, pk) {
-  console.log("NOT IMPLEMENTED");
-  return new ElGamal.Plaintext(new BigInt("121357219501", 10), pk, false);
+  var encoded = STV.encode(choice);
+  return new ElGamal.Plaintext(sumus, pk, false);
 }
 
 UTILS.verify_encryption = function() {
