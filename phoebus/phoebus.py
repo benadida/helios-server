@@ -501,6 +501,36 @@ def verify_signature(modulus, base, order, signature):
 
     return 1
 
+def to_relative_answers(choices, nr_candidates):
+    """
+    Answer choices helper, convert absolute indexed answers to relative.
+
+    e.g. for candidates [A, B, C] absolute choices [1, 2, 0] will be converted
+    to [1, 1, 0].
+    """
+    relative = []
+    candidates = list(range(nr_candidates))
+    choices = [candidates.index(c) for c in choices]
+    for choice in choices:
+        index = candidates.index(choice)
+        relative.append(index)
+        candidates.remove(choice)
+
+    return relative
+
+def to_absolute_answers(choices, nr_candidates):
+    """
+    Inverts `to_relative_answers` result.
+    """
+    absolute_choices = []
+    candidates = list(range(nr_candidates))
+    tmp_cands = candidates[:]
+    for choice in choices:
+        choice = tmp_cands[choice]
+        absolute_choices.append(candidates.index(choice))
+        tmp_cands.remove(choice)
+    return absolute_choices
+
 
 class InvalidVoteError(Exception):
     pass
@@ -641,6 +671,15 @@ class Election(object):
         return election
 
     @classmethod
+    def from_helios_election_model(cls, election, **kwargs):
+        candidates = election.questions[0]['answers']
+        max_choices = len(candidates)
+        public_key = election.public_key
+        name = election.name
+        return cls(candidates=candidates, max_choices = max_choices,
+              public_key = public_key, name = name, **kwargs)
+
+    @classmethod
     def from_dict(cls, dict_object):
         ob = dict(dict_object)
         pk = ob.pop('public_key')
@@ -744,10 +783,11 @@ class Election(object):
         for vote in votes:
             owner = vote.owner
             eb = vote.encrypted_ballot
-            if not verify_encryption(pk.p, pk.g, eb['a'], eb['b'], eb['proof']):
-                m = ("Invalid encryption proof for vote #%d, from %s"
-                        % (len(owners), owner))
-                raise InvalidVoteError(m)
+            if eb['proof']:
+              if not verify_encryption(pk.p, pk.g, eb['a'], eb['b'], eb['proof']):
+                  m = ("Invalid encryption proof for vote #%d, from %s"
+                          % (len(owners), owner))
+                  raise InvalidVoteError(m)
 
             timestamp = get_timestamp()
             if owner in owners:
@@ -798,7 +838,7 @@ class Election(object):
             append(Ballot(self, encrypted_ballot=encrypted_ballot))
 
         self.mixed_ballots = ballots
-        return ballots
+        return ballots, mix_proof
 
     def decrypt_ballots(self, secret_key):
         # FIXME: This should be split into several calls of partial_decrypt
@@ -874,7 +914,7 @@ class Ballot(object):
                }
 
     def __str__(self):
-        return str(self.answers)
+        return str(self.answers) if self.answers else "Empty Ballot"
 
     __repr__ = __str__
 
@@ -905,6 +945,7 @@ class Ballot(object):
 
         ballot = cls(election, answers=answers)
         return ballot
+
 
     def calculate_ballot_id(self, answers):
         election = self.election
