@@ -83,19 +83,9 @@ def validate_choices(choices, nr_candidates=None, max_choices=None):
 
     for i, choice in choice_iter:
         m = nr_candidates - i
-        if choice < 0 or choice > m:
+        if choice < 0 or choice >= m:
             m = "Choice #%d: %d not in range [%d, %d]" % (i, choice, 0, m)
             raise AssertionError(m)
-
-        if choice == 0:
-            nzi = i
-            for i, choice in choice_iter:
-                if choice != 0:
-                    m = ("Choice #%d is nonzero (%d) after zero choice #%d" %
-                         (i, choice, nzi))
-                    raise AssertionError(m)
-            return 1
-
         m -= 1
 
     return 1
@@ -536,6 +526,17 @@ class InvalidVoteError(Exception):
     pass
 
 
+def mixnet_pk(elgamal_pk):
+    """
+    Convert a phoebus.elgamal.PublicKey to mixnet.PublicKey. Also returns the
+    bit size of the cryptosystem of the key.
+    """
+    mix_nbits = ((int(log(elgamal_pk.p, 2)) - 1) & ~255) + 256
+    mix_EG = MixCryptosystem.load(mix_nbits, elgamal_pk.p, elgamal_pk.g)
+    mix_pk = MixPublicKey(mix_EG, elgamal_pk.y)
+    return mix_pk, mix_nbits
+
+
 class Election(object):
 
     candidates = None
@@ -783,7 +784,7 @@ class Election(object):
         for vote in votes:
             owner = vote.owner
             eb = vote.encrypted_ballot
-            if eb['proof']:
+            if 'proof' in eb and eb['proof']:
               if not verify_encryption(pk.p, pk.g, eb['a'], eb['b'], eb['proof']):
                   m = ("Invalid encryption proof for vote #%d, from %s"
                           % (len(owners), owner))
@@ -801,8 +802,10 @@ class Election(object):
             # FIXME: verification?
 
             ballot_append(vote)
-            vote.sign(_default_secret_key)
-            vote.verify_signature()
+            if vote.encrypted_ballot and 'proof' in vote.encrypted_ballot and \
+               vote.encrypted_ballot['proof']:
+                vote.sign(_default_secret_key)
+                vote.verify_signature()
             owners[owner] = (len(owners), timestamp)
 
     cast_vote = cast_votes
@@ -813,10 +816,14 @@ class Election(object):
         self.mix_EG = MixCryptosystem.load(self.mix_nbits, pk.p, pk.g)
         self.mix_pk = MixPublicKey(self.mix_EG, pk.y)
 
-    def mix_ballots(self):
+    def ballots_as_cipher_collection(self):
+        """
+        Return a MixCipherCollection of the encrypted ballots.
+        """
         mix_pk = self.mix_pk
         mix_nbits = self.mix_nbits
         mix_pkfinger = mix_pk.get_fingerprint()
+
         mix_collection = MixCiphertextCollection(mix_pk)
         add_ciphertext = mix_collection.add_ciphertext
         for v in self.encrypted_ballots:
@@ -824,6 +831,10 @@ class Election(object):
             ct = MixCiphertext(mix_nbits, mix_pkfinger)
             ct.append(ballot['a'], ballot['b'])
             add_ciphertext(ct)
+        return mix_collection
+
+    def mix_ballots(self):
+        mix_collection = self.ballots_as_cipher_collection()
 
         # :mock-mixing, without reencryption, without proof
         # shuffle(ballots)
@@ -833,6 +844,7 @@ class Election(object):
 
         ballots = []
         append = ballots.append
+
         for ct in mix_shuffled:
             encrypted_ballot = {'a': ct.gamma[0], 'b': ct.delta[0]}
             append(Ballot(self, encrypted_ballot=encrypted_ballot))
@@ -1128,6 +1140,7 @@ def main(argv):
         stderr.write( (" %s: %s: %d votes OK in total %.1f seconds"+" "*30+"\n\n")
                        % (c, election, nr_votes, t_all) )
         c += 1
+
 
 
 g = _default_crypto.g
