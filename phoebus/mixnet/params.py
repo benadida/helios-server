@@ -2,7 +2,7 @@
 #
 #  params.py : Configuration parameters and constants used by PloneVoteCryptoLib
 #
-#  Modify the values of the constants of this file under "Basic parameters" and 
+#  Modify the values of the constants of this file under "Basic parameters" and
 #  "Advanced parameters" to easily customize PloneVoteCrypto behavior.
 #
 #  Part of the PloneVote cryptographic library (PloneVoteCryptoLib)
@@ -18,10 +18,10 @@
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to whom the Software is
 # furnished to do so, subject to the following conditions:
-# 
+#
 # The above copyright notice and this permission notice shall be included in
 # all copies or substantial portions of the Software.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 # FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,24 +43,24 @@ from Enumerate import Enumerate
 
 # Is this a debug build?
 # This will trigger additional verifications at the cost of speed.
-DEBUG = True
+DEBUG = False
 
 # What level of security we should use?
-# This affects derived parameters, the higher the security level, the stronger 
+# This affects derived parameters, the higher the security level, the stronger
 # the security parameters that are used, but the computations become slower.
 
 SECURITY_LEVELS_ENUM = Enumerate(       # Do not modify this enumeration
         'INSECURE',  # Do not use except for tests, broken security.
-        'LOWEST',    # Expected to be breakable NOW 
+        'LOWEST',    # Expected to be breakable NOW
                      #      (but only with high computational resources).
         'LOW',       # Likely safe now, but considered unsafe past 2030.
         'NORMAL',    # The recommended default.
         'HIGH',      # A bit above the recommended parameters, just to be safe
-        'HIGHEST',   # Tries to follow NIST key management guidelines for 
+        'HIGHEST',   # Tries to follow NIST key management guidelines for
                      #      256bit-symmetric equivalent key strength.
         'OVERKILL')  # Wastes CPU and storage space.
 
-SECURITY_LEVEL = SECURITY_LEVELS_ENUM.INSECURE
+SECURITY_LEVEL = SECURITY_LEVELS_ENUM.NORMAL
 
 
 
@@ -80,7 +80,7 @@ CUSTOM_DEFAULT_KEY_SIZE = None
 # If None, minimum key-size will be selected based on SECURITY_LEVEL
 CUSTOM_MINIMUM_KEY_SIZE = None
 
-# The probability that we select a composite number instead of a prime when 
+# The probability that we select a composite number instead of a prime when
 # setting up the cryptosystem.
 # If None, false prime probability will be selected based on SECURITY_LEVEL
 CUSTOM_FALSE_PRIME_PROBABILITY = None
@@ -145,8 +145,8 @@ else:
                         }[SECURITY_LEVEL]
 
 # Used when a pre-generated cryptosystem is loaded
-# Much lower than FALSE_PRIME_PROBABILITY for performance reasons, but still 
-# high enough to detect most accidental corruptions or surreptitious 
+# Much lower than FALSE_PRIME_PROBABILITY for performance reasons, but still
+# high enough to detect most accidental corruptions or surreptitious
 # alterations of cryptosystem or key files.
 FALSE_PRIME_PROBABILITY_ON_VERIFICATION = {
                         SECURITY_LEVELS_ENUM.INSECURE : 1, #No verification

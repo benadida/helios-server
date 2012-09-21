@@ -172,6 +172,31 @@ class CiphertextCollectionMapping:
         self._reencryptions = []
 
     @classmethod
+    def from_dict(cls, d, pk, nbits):
+        from .CiphertextReencryptionInfo import CiphertextReencryptionInfo
+        mapping = cls()
+
+        for reorder in d['reordering']:
+            mapping._reordering.append(reorder)
+
+        for reenc_data in d['reencryptions']:
+            mapping._reencryptions.append(CiphertextReencryptionInfo.from_dict(reenc_data,
+                                                                              pk,
+                                                                              nbits))
+
+        return mapping
+
+    def to_dict(self):
+        data = {'reordering': [], 'reencryptions': []}
+        for reorder in self._reordering:
+            data['reordering'].append(reorder)
+
+        for reenc in self._reencryptions:
+            data['reencryptions'].append(reenc.to_dict())
+
+        return data
+
+    @classmethod
     def new(cls, collection):
         """
         Generate a new mapping compatible with the given collection.

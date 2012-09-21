@@ -166,6 +166,40 @@ class ShufflingProof:
         self._challenge = None
 
 
+    @classmethod
+    def from_dict(cls, d, pk, nbits):
+        from .CiphertextCollectionMapping import CiphertextCollectionMapping
+        from .CiphertextCollection import CiphertextCollection
+
+        proof = cls()
+        proof._challenge = d['challenge']
+
+        for mapping_data in d['mappings']:
+            proof._mappings.append(CiphertextCollectionMapping.from_dict(mapping_data,
+                                                                        pk,
+                                                                         nbits))
+
+        for collection_data in d['collections']:
+            proof._collections.append(CiphertextCollection.from_dict(collection_data,
+                                                                    pk, nbits))
+
+        return proof
+
+    def to_dict(self):
+        if not self._challenge:
+            raise Exception("Uninitialized shuffling")
+
+        data = {'collections': [], 'mappings': [], 'challenge': None}
+        for mapping in self._mappings:
+            data['mappings'].append(mapping.to_dict())
+
+        for collection in self._collections:
+            data['collections'].append(collection.to_dict())
+
+        data['challenge'] = self._challenge
+        return data
+
+
     def _generate_challenge(self, original_collection, shuffled_collection):
         """
         Generates the challenge used to construct and verify the proof.
