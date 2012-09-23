@@ -35,7 +35,9 @@
       if (form.max.value != "")
         max = parseInt(form.max.value);
         
-      var new_q = {'question' : form.question.value, 'min': parseInt(form.min.value), 'max': max, 'short_name': form.question.value, 'answers': [], 'answer_urls': [], 'choice_type': form.choice_type.value, 'tally_type': 'homomorphic', 'result_type': form.result_type.value};
+      var new_q = {'question' : form.question.value, 'min': parseInt(form.min.value), 'max': max,
+        'short_name': form.question.value, 'answers': [], 'answer_urls': [], 'choice_type':
+        form.choice_type.value, 'tally_type': 'stv', 'result_type': form.result_type.value};
       var i = 0;
       while(true) {
           i += 1;

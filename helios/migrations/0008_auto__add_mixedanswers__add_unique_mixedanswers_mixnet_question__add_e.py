@@ -8,6 +8,41 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # Adding model 'MixedAnswers'
+        db.create_table('helios_mixedanswers', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('mixnet', self.gf('django.db.models.fields.related.ForeignKey')(related_name='mixed_answers', to=orm['helios.ElectionMixnet'])),
+            ('question', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('mixed_answers', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True)),
+            ('shuffling_proof', self.gf('django.db.models.fields.TextField')(null=True)),
+        ))
+        db.send_create_signal('helios', ['MixedAnswers'])
+
+        # Adding unique constraint on 'MixedAnswers', fields ['mixnet', 'question']
+        db.create_unique('helios_mixedanswers', ['mixnet_id', 'question'])
+
+        # Adding model 'ElectionMixnet'
+        db.create_table('helios_electionmixnet', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('name', self.gf('django.db.models.fields.CharField')(default='Helios mixnet', max_length=255)),
+            ('mixnet_type', self.gf('django.db.models.fields.CharField')(default='local', max_length=255)),
+            ('election', self.gf('django.db.models.fields.related.ForeignKey')(related_name='mixnets', to=orm['helios.Election'])),
+            ('mix_order', self.gf('django.db.models.fields.PositiveIntegerField')(default=0)),
+            ('remote_ip', self.gf('django.db.models.fields.CharField')(max_length=255, null=True, blank=True)),
+            ('remote_protocol', self.gf('django.db.models.fields.CharField')(default='helios', max_length=255)),
+            ('mixing_started_at', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+            ('mixing_finished_at', self.gf('django.db.models.fields.DateTimeField')(null=True)),
+            ('status', self.gf('django.db.models.fields.CharField')(default='pending', max_length=255)),
+            ('mix_error', self.gf('django.db.models.fields.TextField')(null=True, blank=True)),
+        ))
+        db.send_create_signal('helios', ['ElectionMixnet'])
+
+        # Adding unique constraint on 'ElectionMixnet', fields ['election', 'mix_order']
+        db.create_unique('helios_electionmixnet', ['election_id', 'mix_order'])
+
+        # Adding unique constraint on 'ElectionMixnet', fields ['election', 'name']
+        db.create_unique('helios_electionmixnet', ['election_id', 'name'])
+
         # Adding field 'Election.workflow_type'
         db.add_column('helios_election', 'workflow_type',
                       self.gf('django.db.models.fields.CharField')(default='homomorphic', max_length=250),
@@ -15,6 +50,21 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
+        # Removing unique constraint on 'ElectionMixnet', fields ['election', 'name']
+        db.delete_unique('helios_electionmixnet', ['election_id', 'name'])
+
+        # Removing unique constraint on 'ElectionMixnet', fields ['election', 'mix_order']
+        db.delete_unique('helios_electionmixnet', ['election_id', 'mix_order'])
+
+        # Removing unique constraint on 'MixedAnswers', fields ['mixnet', 'question']
+        db.delete_unique('helios_mixedanswers', ['mixnet_id', 'question'])
+
+        # Deleting model 'MixedAnswers'
+        db.delete_table('helios_mixedanswers')
+
+        # Deleting model 'ElectionMixnet'
+        db.delete_table('helios_electionmixnet')
+
         # Deleting field 'Election.workflow_type'
         db.delete_column('helios_election', 'workflow_type')
 
@@ -98,6 +148,28 @@ class Migration(SchemaMigration):
             'election': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios.Election']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'log': ('django.db.models.fields.CharField', [], {'max_length': '500'})
+        },
+        'helios.electionmixnet': {
+            'Meta': {'ordering': "['-mix_order']", 'unique_together': "[('election', 'mix_order'), ('election', 'name')]", 'object_name': 'ElectionMixnet'},
+            'election': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'mixnets'", 'to': "orm['helios.Election']"}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'mix_error': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'mix_order': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
+            'mixing_finished_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
+            'mixing_started_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
+            'mixnet_type': ('django.db.models.fields.CharField', [], {'default': "'local'", 'max_length': '255'}),
+            'name': ('django.db.models.fields.CharField', [], {'default': "'Helios mixnet'", 'max_length': '255'}),
+            'remote_ip': ('django.db.models.fields.CharField', [], {'max_length': '255', 'null': 'True', 'blank': 'True'}),
+            'remote_protocol': ('django.db.models.fields.CharField', [], {'default': "'helios'", 'max_length': '255'}),
+            'status': ('django.db.models.fields.CharField', [], {'default': "'pending'", 'max_length': '255'})
+        },
+        'helios.mixedanswers': {
+            'Meta': {'unique_together': "(('mixnet', 'question'),)", 'object_name': 'MixedAnswers'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'mixed_answers': ('helios.datatypes.djangofield.LDObjectField', [], {'null': 'True'}),
+            'mixnet': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'mixed_answers'", 'to': "orm['helios.ElectionMixnet']"}),
+            'question': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
+            'shuffling_proof': ('django.db.models.fields.TextField', [], {'null': 'True'})
         },
         'helios.trustee': {
             'Meta': {'object_name': 'Trustee'},
