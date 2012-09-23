@@ -444,9 +444,10 @@ BALLOT.pretty_choices = function(election, ballot) {
     var choices = _(questions).map(function(q, q_num) {
         var q_answers = answers[q_num];
         if (q.tally_type == "stv") {
-            qanswers = answers[q_num][0];
+            q_answers = answers[q_num][0];
         }
-	    return _(qanswers).map(function(ans) {
+
+	    return _(q_answers).map(function(ans) {
 	      return questions[q_num].answers[ans];
 	    });
     });
@@ -670,7 +671,9 @@ HELIOS.EncryptedAnswer = Class.extend({
         return choice.toJSONObject();
       })
     };
-
+    
+    // stv
+    this.individual_proofs = null;
     if (this.individual_proofs) {
       return_obj['individual_proofs'] = _(this.individual_proofs).map(function(disj_proof) {
         return disj_proof.toJSONObject();
@@ -680,7 +683,8 @@ HELIOS.EncryptedAnswer = Class.extend({
     if (this.overall_proof != null) {
       return_obj.overall_proof = this.overall_proof.toJSONObject();
     } else {
-      return_obj.overall_proof = null;
+      // do not return overall_proof
+      //return_obj.overall_proof = null;
     }
 
     if (this.encryption_proof) {
@@ -695,7 +699,6 @@ HELIOS.EncryptedAnswer = Class.extend({
         return r.toJSONObject();
       });
     }
-    
     return return_obj;
   }
 });

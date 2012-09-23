@@ -23,13 +23,18 @@ function verify_ballot(election_raw_json, encrypted_vote_json, status_cb) {
       // display the ballot as it is claimed to be
       status_cb("Ballot Contents:");
       _(election.questions).each(function(q, qnum) {
-	      if (q.tally_type != "homomorphic") {
-		  status_cb("WARNING: the tally type for this question is not homomorphic. Verification may fail because this verifier is only set up to handle homomorphic ballots.");
-	      }
-        
-	      var answer_pretty_list = _(encrypted_vote.encrypted_answers[qnum].answer).map(function(aindex, anum) {
-		      return q.answers[aindex];
-		  });
+          if (q.tally_type == "homomorphic") {
+            var answer_pretty_list = _(encrypted_vote.encrypted_answers[qnum].answer).map(function(aindex, anum) {
+                return q.answers[aindex];
+            });
+          } else {
+            var abs_answers = STV.to_absolute_answers(encrypted_vote.encrypted_answers[qnum].answer[0], 
+                                                             q.answers.length);
+
+            var answer_pretty_list = _(abs_answers).map(function(aindex, anum) {
+              return q.answers[aindex];
+            })
+          }
 	      status_cb("Question #" + (qnum+1) + " - " + q.short_name + " : " + answer_pretty_list.join(", "));
       });
       
@@ -42,12 +47,14 @@ function verify_ballot(election_raw_json, encrypted_vote_json, status_cb) {
       }
       
       // verify the proofs
-      if (encrypted_vote.verifyProofs(election.public_key, function(ea_num, choice_num, result) {
-      })) {
-          status_cb("Proofs ok.");
-      } else {
-          overall_result = false;
-          status_cb("PROBLEM = Proofs don't work.");
+      if (election.workflow_type == "homomorphic") {
+        if (encrypted_vote.verifyProofs(election.public_key, function(ea_num, choice_num, result) {
+        })) {
+            status_cb("Proofs ok.");
+        } else {
+            overall_result = false;
+            status_cb("PROBLEM = Proofs don't work.");
+        }
       }
     } catch (e) {
       status_cb('problem parsing election or ballot data structures, malformed inputs: ' + e.toString());
