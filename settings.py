@@ -29,11 +29,11 @@ DATABASES = {
 # although not all choices may be available on all operating systems.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'America/Los_Angeles'
+TIME_ZONE = 'Europe/Athens'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'el-gr'
 
 SITE_ID = 1
 
@@ -114,20 +114,21 @@ SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 LOGIN_URL = '/auth/'
 LOGOUT_ON_CONFIRMATION = True
 
+SITE_DOMAIN = "localhost"
 # The two hosts are here so the main site can be over plain HTTP
 # while the voting URLs are served over SSL.
-URL_HOST = get_from_env("URL_HOST", "http://localhost:8000")
+URL_HOST = get_from_env("URL_HOST", "http://%s:8000" % SITE_DOMAIN)
 
 # IMPORTANT: you should not change this setting once you've created
 # elections, as your elections' cast_url will then be incorrect.
 # SECURE_URL_HOST = "https://localhost:8443"
-SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", "http://localhost:8000")
+SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", "http://%s:8000" % SITE_DOMAIN)
 
 # this additional host is used to iframe-isolate the social buttons,
 # which usually involve hooking in remote JavaScript, which could be
 # a security issue. Plus, if there's a loading issue, it blocks the whole
 # page. Not cool.
-SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", "http://localhost:8000")
+SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", "http://%s:8000" % SITE_DOMAIN)
 
 # election stuff
 SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Election Server')
@@ -182,7 +183,7 @@ EMAIL_USE_TLS = False
 # set up logging
 import logging
 logging.basicConfig(
-    level = logging.DEBUG,
+    level = logging.INFO if DEBUG else logging.INFO,
     format = '%(asctime)s %(levelname)s %(message)s'
 )
 
@@ -194,3 +195,16 @@ CELERY_RESULT_DBURI = DATABASES['default']
 
 # for testing
 CELERY_ALWAYS_EAGER = True
+CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+
+BOOTH_STATIC_PATH = ROOT_PATH + '/phoebus_ui/static/phoebus/booth/'
+VERIFIER_STATIC_PATH = ROOT_PATH + '/phoebus_ui/static/phoebus/verifier/'
+
+BOOTH_STATIC_PATH = ROOT_PATH + '/heliosbooth/'
+VERIFIER_STATIC_PATH = ROOT_PATH + '/heliosverifier/'
+
+# useful trick for custom settings
+try:
+    from local_settings import *
+except ImportError:
+    pass

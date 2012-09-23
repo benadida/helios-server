@@ -1,25 +1,132 @@
 """
-homomorphic workflow and algorithms for Helios
+Election-specific algorithms for Helios
 
 Ben Adida
 2008-08-30
-reworked 2011-01-09
 """
 
-from helios.crypto import algs, utils
+import algs
 import logging
+import utils
 import uuid
 import datetime
-from helios import models
-from . import WorkflowObject
 
-TYPE = 'homomorphic'
+class HeliosObject(object):
+  """
+  A base class to ease serialization and de-serialization
+  crypto objects are kept as full-blown crypto objects, serialized to jsonobjects on the way out
+  and deserialized from jsonobjects on the way in
+  """
+  FIELDS = []
+  JSON_FIELDS = None
 
-class EncryptedAnswer(WorkflowObject):
+  def __init__(self, **kwargs):
+    self.set_from_args(**kwargs)
+    
+    # generate uuid if need be
+    if 'uuid' in self.FIELDS and (not hasattr(self, 'uuid') or self.uuid == None):
+      self.uuid = str(uuid.uuid4())
+      
+  def set_from_args(self, **kwargs):
+    for f in self.FIELDS:
+      if kwargs.has_key(f):
+        new_val = self.process_value_in(f, kwargs[f])
+        setattr(self, f, new_val)
+      else:
+        setattr(self, f, None)
+        
+  def set_from_other_object(self, o):
+    for f in self.FIELDS:
+      if hasattr(o, f):
+        setattr(self, f, self.process_value_in(f, getattr(o,f)))
+      else:
+        setattr(self, f, None)
+    
+  def toJSON(self):
+    return utils.to_json(self.toJSONDict())
+    
+  def toJSONDict(self, alternate_fields=None):
+    val = {}
+    for f in (alternate_fields or self.JSON_FIELDS or self.FIELDS):
+      val[f] = self.process_value_out(f, getattr(self, f))
+    return val
+    
+  @classmethod
+  def fromJSONDict(cls, d):
+    # go through the keys and fix them
+    new_d = {}
+    for k in d.keys():
+      new_d[str(k)] = d[k]
+      
+    return cls(**new_d)
+    
+  @classmethod
+  def fromOtherObject(cls, o):
+    obj = cls()
+    obj.set_from_other_object(o)
+    return obj
+  
+  def toOtherObject(self, o):
+    for f in self.FIELDS:
+      # FIXME: why isn't this working?
+      if hasattr(o, f):
+        # BIG HAMMER
+        try:
+          setattr(o, f, self.process_value_out(f, getattr(self,f)))    
+        except:
+          pass
+
+  @property
+  def hash(self):
+    s = utils.to_json(self.toJSONDict())
+    return utils.hash_b64(s)
+    
+  def process_value_in(self, field_name, field_value):
+    """
+    process some fields on the way into the object
+    """
+    if field_value == None:
+      return None
+      
+    val = self._process_value_in(field_name, field_value)
+    if val != None:
+      return val
+    else:
+      return field_value
+    
+  def _process_value_in(self, field_name, field_value):
+    return None
+
+  def process_value_out(self, field_name, field_value):
+    """
+    process some fields on the way out of the object
+    """
+    if field_value == None:
+      return None
+      
+    val = self._process_value_out(field_name, field_value)
+    if val != None:
+      return val
+    else:
+      return field_value
+  
+  def _process_value_out(self, field_name, field_value):
+    return None
+    
+  def __eq__(self, other):
+    if not hasattr(self, 'uuid'):
+      return super(HeliosObject,self) == other
+    
+    return other != None and self.uuid == other.uuid
+  
+class EncryptedAnswer(HeliosObject):
   """
   An encrypted answer to a single election question
   """
 
+  FIELDS = ['choices', 'individual_proofs', 'overall_proof', 'randomness', 'answer']
+
+  # FIXME: remove this constructor and use only named-var constructor from HeliosObject
   def __init__(self, choices=None, individual_proofs=None, overall_proof=None, randomness=None, answer=None):
     self.choices = choices
     self.individual_proofs = individual_proofs
@@ -87,6 +194,41 @@ class EncryptedAnswer(WorkflowObject):
       # approval voting, no need for overall proof verification
       return True
         
+  def toJSONDict(self, with_randomness=False):
+    value = {
+      'choices': [c.to_dict() for c in self.choices],
+      'individual_proofs' : [p.to_dict() for p in self.individual_proofs]
+    }
+    
+    if self.overall_proof:
+      value['overall_proof'] = self.overall_proof.to_dict()
+    else:
+      value['overall_proof'] = None
+
+    if with_randomness:
+      value['randomness'] = [str(r) for r in self.randomness]
+      value['answer'] = self.answer
+    
+    return value
+    
+  @classmethod
+  def fromJSONDict(cls, d, pk=None):
+    ea = cls()
+
+    ea.choices = [algs.EGCiphertext.from_dict(c, pk) for c in d['choices']]
+    ea.individual_proofs = [algs.EGZKDisjunctiveProof.from_dict(p) for p in d['individual_proofs']]
+    
+    if d['overall_proof']:
+      ea.overall_proof = algs.EGZKDisjunctiveProof.from_dict(d['overall_proof'])
+    else:
+      ea.overall_proof = None
+
+    if d.has_key('randomness'):
+      ea.randomness = [int(r) for r in d['randomness']]
+      ea.answer = d['answer']
+      
+    return ea
+
   @classmethod
   def fromElectionAndAnswer(cls, election, question_num, answer_indexes):
     """
@@ -159,28 +301,12 @@ class EncryptedAnswer(WorkflowObject):
     
     return cls(choices, individual_proofs, overall_proof, randomness, answer_indexes)
     
-# WORK HERE
-
-class EncryptedVote(WorkflowObject):
+class EncryptedVote(HeliosObject):
   """
   An encrypted ballot
   """
-  def __init__(self):
-    self.encrypted_answers = None
-
-  @property
-  def datatype(self):
-    # FIXME
-    return "legacy/EncryptedVote"
-
-  def _answers_get(self):
-    return self.encrypted_answers
-
-  def _answers_set(self, value):
-    self.encrypted_answers = value
-
-  answers = property(_answers_get, _answers_set)
-
+  FIELDS = ['encrypted_answers', 'election_hash', 'election_uuid']
+  
   def verify(self, election):
     # right number of answers
     if len(self.encrypted_answers) != len(election.questions):
@@ -209,19 +335,232 @@ class EncryptedVote(WorkflowObject):
         
     return True
     
+  def get_hash(self):
+    return utils.hash_b64(utils.to_json(self.toJSONDict()))
+    
+  def toJSONDict(self, with_randomness=False):
+    return {
+      'answers': [a.toJSONDict(with_randomness) for a in self.encrypted_answers],
+      'election_hash': self.election_hash,
+      'election_uuid': self.election_uuid
+    }
+    
+  @classmethod
+  def fromJSONDict(cls, d, pk=None):
+    ev = cls()
+
+    ev.encrypted_answers = [EncryptedAnswer.fromJSONDict(ea, pk) for ea in d['answers']]
+    ev.election_hash = d['election_hash']
+    ev.election_uuid = d['election_uuid']
+
+    return ev
+    
   @classmethod
   def fromElectionAndAnswers(cls, election, answers):
     pk = election.public_key
 
     # each answer is an index into the answer array
     encrypted_answers = [EncryptedAnswer.fromElectionAndAnswer(election, answer_num, answers[answer_num]) for answer_num in range(len(answers))]
-    return_val = cls()
-    return_val.encrypted_answers = encrypted_answers
-    return_val.election_hash = election.hash
-    return_val.election_uuid = election.uuid
-
-    return return_val
+    return cls(encrypted_answers=encrypted_answers, election_hash=election.hash, election_uuid = election.uuid)
     
+
+def one_question_winner(question, result, num_cast_votes):
+  """
+  determining the winner for one question
+  """
+  # sort the answers , keep track of the index
+  counts = sorted(enumerate(result), key=lambda(x): x[1])
+  counts.reverse()
+
+  # if there's a max > 1, we assume that the top MAX win
+  if question['max'] > 1:
+    return [c[0] for c in counts[:question['max']]]
+
+  # if max = 1, then depends on absolute or relative
+  if question['result_type'] == 'absolute':
+    if counts[0][1] >=  (num_cast_votes/2 + 1):
+      return [counts[0][0]]
+    else:
+      return []
+
+  if question['result_type'] == 'relative':
+    return [counts[0][0]]    
+
+class Election(HeliosObject):
+  
+  FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description', 'voters_hash', 'openreg',
+      'frozen_at', 'public_key', 'private_key', 'cast_url', 'result', 'result_proof', 'use_voter_aliases', 'voting_starts_at', 'voting_ends_at', 'election_type']
+
+  JSON_FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description', 'voters_hash', 'openreg',
+      'frozen_at', 'public_key', 'cast_url', 'use_voter_aliases', 'voting_starts_at', 'voting_ends_at']
+
+  # need to add in v3.1: use_advanced_audit_features, election_type, and probably more
+
+  def init_tally(self):
+    return Tally(election=self)
+        
+  def _process_value_in(self, field_name, field_value):
+    if field_name == 'frozen_at' or field_name == 'voting_starts_at' or field_name == 'voting_ends_at':
+      if type(field_value) == str or type(field_value) == unicode:
+        return datetime.datetime.strptime(field_value, '%Y-%m-%d %H:%M:%S')
+      
+    if field_name == 'public_key':
+      return algs.EGPublicKey.fromJSONDict(field_value)
+      
+    if field_name == 'private_key':
+      return algs.EGSecretKey.fromJSONDict(field_value)
+    
+  def _process_value_out(self, field_name, field_value):
+    # the date
+    if field_name == 'frozen_at' or field_name == 'voting_starts_at' or field_name == 'voting_ends_at':
+      return str(field_value)
+
+    if field_name == 'public_key' or field_name == 'private_key':
+      return field_value.toJSONDict()
+    
+  @property
+  def registration_status_pretty(self):
+    if self.openreg:
+      return "Open"
+    else:
+      return "Closed"
+    
+  @property
+  def winners(self):
+    """
+    Depending on the type of each question, determine the winners
+    returns an array of winners for each question, aka an array of arrays.
+    assumes that if there is a max to the question, that's how many winners there are.
+    """
+    return [one_question_winner(self.questions[i], self.result[i], self.num_cast_votes) for i in range(len(self.questions))]
+    
+  @property
+  def pretty_result(self):
+    if not self.result:
+      return None
+    
+    # get the winners
+    winners = self.winners
+
+    raw_result = self.result
+    prettified_result = []
+
+    # loop through questions
+    for i in range(len(self.questions)):
+      q = self.questions[i]
+      pretty_question = []
+      
+      # go through answers
+      for j in range(len(q['answers'])):
+        a = q['answers'][j]
+        count = raw_result[i][j]
+        pretty_question.append({'answer': a, 'count': count, 'winner': (j in winners[i])})
+        
+      prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
+
+    return prettified_result
+
+    
+class Voter(HeliosObject):
+  """
+  A voter in an election
+  """
+  FIELDS = ['election_uuid', 'uuid', 'voter_type', 'voter_id', 'name', 'alias']
+  JSON_FIELDS = ['election_uuid', 'uuid', 'voter_type', 'voter_id_hash', 'name']
+  
+  # alternative, for when the voter is aliased
+  ALIASED_VOTER_JSON_FIELDS = ['election_uuid', 'uuid', 'alias']
+  
+  def toJSONDict(self):
+    fields = None
+    if self.alias != None:
+      return super(Voter, self).toJSONDict(self.ALIASED_VOTER_JSON_FIELDS)
+    else:
+      return super(Voter,self).toJSONDict()
+
+  @property
+  def voter_id_hash(self):
+    if self.voter_login_id:
+      # for backwards compatibility with v3.0, and since it doesn't matter
+      # too much if we hash the email or the unique login ID here.
+      return utils.hash_b64(self.voter_login_id)
+    else:
+      return utils.hash_b64(self.voter_id)
+
+class Trustee(HeliosObject):
+  """
+  a trustee
+  """
+  FIELDS = ['uuid', 'public_key', 'public_key_hash', 'pok', 'decryption_factors', 'decryption_proofs', 'email']
+
+  def _process_value_in(self, field_name, field_value):
+    if field_name == 'public_key':
+      return algs.EGPublicKey.fromJSONDict(field_value)
+      
+    if field_name == 'pok':
+      return algs.DLogProof.fromJSONDict(field_value)
+    
+  def _process_value_out(self, field_name, field_value):
+    if field_name == 'public_key' or field_name == 'pok':
+      return field_value.toJSONDict()
+          
+class CastVote(HeliosObject):
+  """
+  A cast vote, which includes an encrypted vote and some cast metadata
+  """
+  FIELDS = ['vote', 'cast_at', 'voter_uuid', 'voter_hash', 'vote_hash']
+  
+  def __init__(self, *args, **kwargs):
+    super(CastVote, self).__init__(*args, **kwargs)
+    self.election = None
+  
+  @classmethod
+  def fromJSONDict(cls, d, election=None):
+    o = cls()
+    o.election = election
+    o.set_from_args(**d)
+    return o
+    
+  def toJSONDict(self, include_vote=True):
+    result = super(CastVote,self).toJSONDict()
+    if not include_vote:
+      del result['vote']
+    return result
+
+  @classmethod
+  def fromOtherObject(cls, o, election):
+    obj = cls()
+    obj.election = election
+    obj.set_from_other_object(o)
+    return obj
+  
+  def _process_value_in(self, field_name, field_value):
+    if field_name == 'cast_at':
+      if type(field_value) == str:
+        return datetime.datetime.strptime(field_value, '%Y-%m-%d %H:%M:%S')
+      
+    if field_name == 'vote':
+      return EncryptedVote.fromJSONDict(field_value, self.election.public_key)
+      
+  def _process_value_out(self, field_name, field_value):
+    # the date
+    if field_name == 'cast_at':
+      return str(field_value)
+
+    if field_name == 'vote':
+      return field_value.toJSONDict()
+      
+  def issues(self, election):
+    """
+    Look for consistency problems
+    """
+    issues = []
+    
+    # check the election
+    if self.vote.election_uuid != election.uuid:
+      issues.append("the vote's election UUID does not match the election for which this vote is being cast")
+    
+    return issues
 
 class DLogTable(object):
   """
@@ -257,37 +596,41 @@ class DLogTable(object):
     return self.dlogs.get(value, None)
       
     
-class Tally(WorkflowObject):
+class Tally(HeliosObject):
   """
   A running homomorphic tally
   """
-
-  @property
-  def datatype(self):
-    return "legacy/Tally"
+  
+  FIELDS = ['num_tallied', 'tally']
+  JSON_FIELDS = ['num_tallied', 'tally']
   
   def __init__(self, *args, **kwargs):
-    super(Tally, self).__init__()
-    
-    election = kwargs.get('election',None)
-    self.tally = None
-    self.num_tallied = 0    
+    super(Tally, self).__init__(*args, **kwargs)
 
-    if election:
-      self.init_election(election)
-      self.tally = [[0 for a in q['answers']] for q in self.questions]
+    self.election = kwargs.get('election',None)
+
+    if self.election:
+      self.init_election(self.election)
     else:
       self.questions = None
       self.public_key = None
-      self.tally = None
+      
+      if not self.tally:
+        self.tally = None
+      
+    # initialize
+    if self.num_tallied == None:
+      self.num_tallied = 0    
 
   def init_election(self, election):
     """
     given the election, initialize some params
     """
-    self.election = election
     self.questions = election.questions
     self.public_key = election.public_key
+    
+    if not self.tally:
+      self.tally = [[0 for a in q['answers']] for q in self.questions]
     
   def add_vote_batch(self, encrypted_votes, verify_p=True):
     """
@@ -337,8 +680,8 @@ class Tally(WorkflowObject):
 
         # look up appropriate discrete log
         # this is the string conversion
-        question_factors.append(dec_factor)
-        question_proof.append(proof)
+        question_factors.append(str(dec_factor))
+        question_proof.append(proof.toJSONDict())
         
       decryption_factors.append(question_factors)
       decryption_proof.append(question_proof)
@@ -383,13 +726,12 @@ class Tally(WorkflowObject):
     decryption_proofs are the corresponding proofs
     public_key is, of course, the public key of the trustee
     """
-
+    
     # go through each one
     for q_num, q in enumerate(self.tally):
       for a_num, answer_tally in enumerate(q):
         # parse the proof
-        #proof = algs.EGZKProof.fromJSONDict(decryption_proofs[q_num][a_num])
-        proof = decryption_proofs[q_num][a_num]
+        proof = algs.EGZKProof.fromJSONDict(decryption_proofs[q_num][a_num])
         
         # check that g, alpha, y, dec_factor is a DH tuple
         if not proof.verify(public_key.g, answer_tally.alpha, public_key.y, int(decryption_factors[q_num][a_num]), public_key.p, public_key.q, challenge_generator):
@@ -433,45 +775,4 @@ class Tally(WorkflowObject):
   def _process_value_out(self, field_name, field_value):
     if field_name == 'tally':
       return [[a.toJSONDict() for a in q] for q in field_value]    
-
-"""
-Workflow api methods
-"""
-
-def tallied(election):
-    return bool(election.encrypted_tally)
-
-def compute_tally(election):
-    tally = election.init_tally()
-    for voter in election.voter_set.all():
-      if voter.vote:
-        tally.add_vote(voter.vote, verify_p=False)
-    
-    election.encrypted_tally = tally
-    election.save()
-
-def tally_hash(election):
-    if not election.encrypted_tally:
-      return None
-
-    return utils.hash_b64(election.encrypted_tally.toJSON())
-
-def ready_for_decription(election):
-    return election.encrypted_tally != None
-
-def decrypt_tally(election, decryption_factors):
-    return election.encrypted_tally.decrypt_from_factors(decryption_factors, 
-            election.public_key)
-
-def get_decryption_factors_and_proof(election, key):
-    tally = election.encrypted_tally
-    tally.init_election(election)
-    return tally.decryption_factors_and_proofs(key)
-
-def verify_encryption_proof(election, trustee):
-    return election.encrypted_tally.verify_decryption_proofs(
-            trustee.decryption_factors, 
-            trustee.decryption_proofs, 
-            trustee.public_key, 
-            algs.EG_fiatshamir_challenge_generator)
-
+        

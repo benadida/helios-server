@@ -114,7 +114,7 @@ once you do this, the election will be immediately open for voting.
 
 {% else %}
 
-{% if not election.encrypted_tally %}
+{% if not election.tallied %}
 {% if election.tallying_started_at %}
 Tally computation is under way.<br />
 Reload this page in a couple of minutes.

@@ -4,7 +4,7 @@ Legacy datatypes for Helios (v3.0)
 
 from helios.datatypes import LDObject, arrayOf, DictObject, ListObject
 from helios.crypto import elgamal as crypto_elgamal
-from helios.workflows import homomorphic
+from helios.workflows import homomorphic, mixnet
 from helios import models
 
 ##
@@ -200,3 +200,7 @@ class Tally(LegacyObject):
 
 class Eligibility(ListObject, LegacyObject):
     WRAPPED_OBJ = list
+
+class MixedTally(Tally):
+    WRAPPED_OBJ_CLASS = mixnet.Tally
+

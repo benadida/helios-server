@@ -21,6 +21,282 @@ $.extend({
 
 var UTILS = {};
 
+UTILS.strbin_to_int = function(st) {
+  var c, i, s, base, add, ss;
+  s = new BigInt("0", 10);
+  base = new BigInt("1", 10);
+  for (i = 0; i<st.length; i++) {
+    c = st.charCodeAt(i);
+    add = base.multiply(new BigInt(''+c, 10));
+    s = s.add(new BigInt(''+add, 10));
+    base = base.multiply(new BigInt('256', 10));
+  }
+  return s;
+}
+
+UTILS.hash_to_commitment_and_challenge = function(alpha, beta) {
+  var ha, hb, commitment, challenge, and;
+  
+  ha = UTILS.strbin_to_int(str_sha256("0x" + alpha.toString(16) + "L"));
+  hb = UTILS.strbin_to_int(str_sha256("0x" + beta.toString(16) + "L"));
+
+  twopower = (new BigInt('2', 10)).pow(256).subtract(BigInt.ONE);
+  commitment = ha.shiftRight(128).or(hb.shiftLeft(128).and(twopower));
+  challenge = hb.shiftRight(128).or(ha.shiftLeft(128).and(twopower));
+  return {'commitment': commitment, 'challenge': challenge};
+}
+
+UTILS.get_encryption_proof = function(alpha, beta, randomness) {
+  var hash;
+  hash = UTILS.hash_to_commitment_and_challenge(alpha, beta);
+  return hash.commitment.add(hash.challenge.multiply(randomness));
+}
+
+UTILS.verify_encryption_proof = function(modulus, base, alpha, beta, proof) {
+  var hash, proof_pow, cipher_pow, challenge, commitment;
+
+  hash = UTILS.hash_to_commitment_and_challenge(alpha, beta);
+  challenge = hash.challenge;
+  commitment = hash.commitment;
+  
+  proof_pow = base.modPow(proof, modulus);
+  cipher_pow = base.modPow(commitment,
+                  modulus).multiply(alpha.modPow(challenge, 
+                                          modulus)).mod(modulus);
+  return proof_pow.equals(cipher_pow);
+}
+
+var STV = {};
+STV.get_choice_params = function(nr_choices, nr_candidates, max_choices) {
+    nr_candidates = nr_candidates || nr_choices;
+    max_choices = max_choices || nr_candidates;
+
+    if (nr_choices < 0 || nr_candidates <= 0 || max_choices <= 0) {
+        throw "Invalid parameters";
+    }
+
+    if (nr_choices > max_choices) {
+        throw "Invalid choices";
+    }
+
+    return {'nr_candidates': nr_candidates, 'max_choices': max_choices}
+}
+
+STV._terms = {};
+STV.get_term = function(n, k) {
+    var t, m, term, _terms;
+    if (k >= n) { return new BigInt('1', 10) };
+    if (n in STV._terms) {
+        t = STV._terms[n];
+        if (k in t) {
+            return t[k];
+        }
+    } else {
+        t = {};
+        t[n] = new BigInt('1', 10);
+        STV._terms[n] = t;
+    }
+
+    m = k;
+    while (1) {
+        m += 1;
+        if (m in t) {
+            break;
+        }
+
+        if (m > 100) { break; }
+    }
+
+    term = t[m];
+    while (1) {
+        term = term.multiply(new BigInt(''+m, 10));
+        m -= 1;
+        t[m] = term;
+        if (m <= k) {
+            break;
+        }
+    }
+    return term;
+}
+
+STV._offsets = {};
+STV.get_offsets = function(n) {
+    var factor, offsets, sumus, i;
+    if (n in STV._offsets) {
+        return STV._offsets[n];
+    }
+
+    factor = 1;
+    offsets = [];
+    sumus = new BigInt('0', 10);
+    i = 0;
+
+    while (1) {
+        sumus = sumus.add(new BigInt(''+STV.get_term(n, n-i), 10));
+        offsets.push(sumus);
+        if (i == n) { break; }
+        if (i > 100) { break;}
+        i++;
+    }
+
+    STV._offsets[n] = offsets;
+    return offsets;
+}
+
+
+STV._factors = {};
+STV.get_factor = function(b, n) {
+    var f, t, i;
+    if (n <= 1) { return new BigInt('1', 10)};
+
+    if (b in STV._factors) {
+        t = STV._factors[b];
+        if (n in t) {
+            return t[n];
+        }
+    } else {
+        t = {1: new BigInt("1", 10)};
+        STV._factors[b] = t;
+    }
+
+    i = n;
+    while (1) {
+        i -= 1;
+        if (i in t) {
+            break;
+        }
+    }
+
+    f = t[i];
+    while (1) {
+        f = f.multiply(new BigInt('' + (b+i), 10));
+        i += 1;
+        t[i] = f;
+        if (i >= n) { break; }
+    }
+
+    return f;
+}
+
+STV.gamma_encode = function(choices, nr_candidates, max_choices) {
+    var nr_choices, ichoices, params, offsets, b, i, sumus, f;
+    nr_choices = choices.length;
+    params = STV.get_choice_params(nr_choices, nr_candidates, max_choices);
+    nr_candidates = params.nr_candidates;
+    max_choices = params.max_choices;
+
+    if (!nr_choices) { return 0 };
+    
+    offsets = STV.get_offsets(nr_candidates);
+
+    sumus = offsets[nr_choices-1];
+    b = nr_candidates - nr_choices;
+    i = 1;
+
+    ichoices = choices.slice(0)
+    ichoices.reverse();
+
+    while (1) {
+        f = STV.get_factor(b, i);
+        f = f.multiply(new BigInt(''+ichoices[i-1], 10));
+        sumus = sumus.add(f);
+        if (i >= nr_choices) { break; }
+        i++;
+    }
+
+    return sumus;
+}
+
+STV.gamma_decode = function(sumus, nr_candidates, max_choices) {
+    var nr_choices, choice, choices, params, offsets, i, b, sumus, f, divmod;
+    params = STV.get_choice_params(nr_candidates, nr_candidates, max_choices);
+    nr_candidates = params.nr_candidates;
+    max_choices = params.max_choices;
+
+    if (sumus <= 0) { return [] };
+
+    offsets = STV.get_offsets(nr_candidates);
+    nr_choices = UTILS.bisect_right(offsets, sumus);
+    
+    sumus = sumus.subtract(offsets[nr_choices-1]);
+    choices = [];
+    b = nr_candidates - nr_choices;
+    i = nr_choices;
+    while (1) {
+        f = STV.get_factor(b, i);
+        divmod = sumus.divideAndRemainder(f);
+        choice = divmod[0];
+        sumus = divmod[1];
+        choices.push(choice);
+
+        if (i <= 1) { break; }
+        i -= 1;
+    }
+    return choices;
+}
+
+STV.to_relative_answers = function(choices, nr_candidates) {
+    var relative, candidates;
+    relative = [];
+    candidates = _.range(nr_candidates);
+    choices = _.map(choices, function(c) { return _.indexOf(candidates, c)});
+    _.each(choices, function(c) {
+        var index;
+        index = _.indexOf(candidates, c);
+        relative.push(index);
+        candidates.splice(_.indexOf(candidates, c), 1);
+    });
+
+    return relative;
+}
+
+STV.to_absolute_answers = function(choices, nr_candidates) {
+    var absolute_choices, tmp_cands, candidates;
+    absolute_choices = [];
+    candidates = _.range(nr_candidates);
+    tmp_cands = candidates.slice(0);
+    _.each(choices, function(c) {
+        var index;
+        c = tmp_cands[c];
+        absolute_choices.push(_.indexOf(candidates, c));
+        tmp_cands.splice(_.indexOf(tmp_cands, c), 1);
+    });
+
+    return absolute_choices;
+}
+
+STV.encode = STV.gamma_encode;
+STV.decode = STV.gamma_decode;
+
+UTILS.bisect_right = function(a, x, lo, hi) {
+    var mid, bigints, compare;
+
+    lo = lo == undefined ? 0: lo;
+
+    if (lo < 0) { throw "lo cannot be negative"; }
+    if (!hi) { hi = a.length; }
+    
+    var j = 1;
+    while (lo < hi) {
+        mid = parseInt((lo+hi) / 2);
+        if (x.compareTo(a[mid]) < 0) {
+            hi = mid;
+        } else {
+            lo = mid + 1;
+        }
+    }
+    return lo;
+}
+
+UTILS.generate_stv_plaintext = function(choice, pk, nr_candidates, max_choices) {
+  var encoded = STV.encode(choice, nr_candidates, max_choices);
+  return new ElGamal.Plaintext(encoded, pk, false);
+}
+
+UTILS.verify_encryption = function() {
+  console.log("NOT IMPLEMENTED", arguments);
+}
+
 UTILS.array_remove_value = function(arr, val) {
   var new_arr = [];
   _(arr).each(function(v, i) {
@@ -166,7 +442,12 @@ BALLOT.pretty_choices = function(election, ballot) {
 
     // process the answers
     var choices = _(questions).map(function(q, q_num) {
-	    return _(answers[q_num]).map(function(ans) {
+        var q_answers = answers[q_num];
+        if (q.tally_type == "stv") {
+            q_answers = answers[q_num][0];
+        }
+
+	    return _(q_answers).map(function(ans) {
 	      return questions[q_num].answers[ans];
 	    });
     });
@@ -216,36 +497,49 @@ UTILS.generate_plaintexts = function(pk, min, max) {
 
 
 HELIOS.EncryptedAnswer = Class.extend({
-  init: function(question, answer, pk, progress) {    
+  init: function(question, answer, pk, progress, randomness) {    
     // if nothing in the constructor
     if (question == null)
       return;
-
+    
     // store answer
     // CHANGE 2008-08-06: answer is now an *array* of answers, not just a single integer
     this.answer = answer;
 
+    if (question.tally_type == "stv") {
+        answer[0] = STV.to_relative_answers(answer[0], question.answers.length);
+    }
+
     // do the encryption
-    var enc_result = this.doEncryption(question, answer, pk, null, progress);
+    var enc_result = this.doEncryption(question, answer, pk, randomness, progress);
 
     this.choices = enc_result.choices;
     this.randomness = enc_result.randomness;
     this.individual_proofs = enc_result.individual_proofs;
     this.overall_proof = enc_result.overall_proof;    
+    this.encryption_proof = enc_result.encryption_proof;    
   },
   
   doEncryption: function(question, answer, pk, randomness, progress) {
+    var stv = question.tally_type == "stv" ? true : false;
     var choices = [];
     var individual_proofs = [];
     var overall_proof = null;
+    var encryption_proofs = [];
     
-    // possible plaintexts [question.min .. , question.max]
     var plaintexts = null;
-    if (question.max != null) {
-      plaintexts = UTILS.generate_plaintexts(pk, question.min, question.max);
+    var zero_one_plaintexts = null;
+    if (!stv) {
+      // possible plaintexts [question.min .. , question.max]
+      if (question.max != null) {
+        plaintexts = UTILS.generate_plaintexts(pk, question.min, question.max);
+      }
+      
+      var zero_one_plaintexts = UTILS.generate_plaintexts(pk, 0, 1);
+    } else {
+      var nchoices = question.answers.length;
+      plaintexts = zero_one_plaintexts = [UTILS.generate_stv_plaintext(answer[0], pk, nchoices, nchoices)];
     }
-    
-    var zero_one_plaintexts = UTILS.generate_plaintexts(pk, 0, 1);
     
     // keep track of whether we need to generate new randomness
     var generate_new_randomness = false;    
@@ -253,39 +547,53 @@ HELIOS.EncryptedAnswer = Class.extend({
       randomness = [];
       generate_new_randomness = true;
     }
-    
+     
     // keep track of number of options selected.
     var num_selected_answers = 0;
     
     // go through each possible answer and encrypt either a g^0 or a g^1.
     for (var i=0; i<question.answers.length; i++) {
+      
+      // stv case
+      if (stv && i > 0) { break; }
+
       var index, plaintext_index;
-      // if this is the answer, swap them so m is encryption 1 (g)
-      if (_(answer).include(i)) {
-        plaintext_index = 1;
-        num_selected_answers += 1;
+
+      if (!stv) {
+        // if this is the answer, swap them so m is encryption 1 (g)
+        if (_(answer).include(i)) {
+          plaintext_index = 1;
+          num_selected_answers += 1;
+        } else {
+          plaintext_index = 0;
+        }
       } else {
         plaintext_index = 0;
+        num_selected_answers = choices.length;
       }
 
       // generate randomness?
       if (generate_new_randomness) {
         randomness[i] = Random.getRandomInteger(pk.q);        
       }
-
+      
       choices[i] = ElGamal.encrypt(pk, zero_one_plaintexts[plaintext_index], randomness[i]);
       
       // generate proof
       if (generate_new_randomness) {
-        // generate proof that this ciphertext is a 0 or a 1
-        individual_proofs[i] = choices[i].generateDisjunctiveProof(zero_one_plaintexts, plaintext_index, randomness[i], ElGamal.disjunctive_challenge_generator);        
+        if (!stv) {
+          // generate proof that this ciphertext is a 0 or a 1
+          individual_proofs[i] = choices[i].generateDisjunctiveProof(zero_one_plaintexts, plaintext_index, randomness[i], ElGamal.disjunctive_challenge_generator);        
+        }
       }
+
+      encryption_proofs[i] = UTILS.get_encryption_proof(choices[i].alpha, choices[i].beta, randomness[i]);
       
       if (progress)
         progress.tick();
     }
-
-    if (generate_new_randomness && question.max != null) {
+    
+    if (generate_new_randomness && question.max != null && !stv) {
       // we also need proof that the whole thing sums up to the right number
       // only if max is non-null, otherwise it's full approval voting
     
@@ -318,7 +626,8 @@ HELIOS.EncryptedAnswer = Class.extend({
       'choices' : choices,
       'randomness' : randomness,
       'individual_proofs' : individual_proofs,
-      'overall_proof' : overall_proof
+      'overall_proof' : overall_proof,
+      'encryption_proof' : encryption_proofs[0]
     };
   },
   
@@ -355,19 +664,33 @@ HELIOS.EncryptedAnswer = Class.extend({
   },
   
   toJSONObject: function(include_plaintext) {
+    var return_obj = {};
+
     var return_obj = {
       'choices' : _(this.choices).map(function(choice) {
         return choice.toJSONObject();
-      }),
-      'individual_proofs' : _(this.individual_proofs).map(function(disj_proof) {
-        return disj_proof.toJSONObject();
       })
+    };
+    
+    // stv
+    this.individual_proofs = null;
+    if (this.individual_proofs) {
+      return_obj['individual_proofs'] = _(this.individual_proofs).map(function(disj_proof) {
+        return disj_proof.toJSONObject();
+      });
     };
     
     if (this.overall_proof != null) {
       return_obj.overall_proof = this.overall_proof.toJSONObject();
     } else {
-      return_obj.overall_proof = null;
+      // do not return overall_proof
+      //return_obj.overall_proof = null;
+    }
+
+    if (this.encryption_proof) {
+      return_obj.encryption_proof = this.encryption_proof.toJSONObject();
+    } else {
+      return_obj.encryption_proof = null;
     }
     
     if (include_plaintext) {
@@ -376,7 +699,6 @@ HELIOS.EncryptedAnswer = Class.extend({
         return r.toJSONObject();
       });
     }
-    
     return return_obj;
   }
 });
@@ -392,6 +714,7 @@ HELIOS.EncryptedAnswer.fromJSONObject = function(d, election) {
   });
   
   ea.overall_proof = ElGamal.DisjunctiveProof.fromJSONObject(d.overall_proof);
+  ea.encryption_proof = new BigInt(d.encryption_proof, 10);
   
   // possibly load randomness and plaintext
   if (d.randomness) {

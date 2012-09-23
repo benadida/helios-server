@@ -66,7 +66,6 @@ def start_openid(session, openid_url, trust_root, return_to):
         error = "OpenID discovery error: %s" % (str(e),)
 
     if error:
-        import pdb; pdb.set_trace()
         raise Exception("error in openid")
 
     # Add Simple Registration request information.  Some fields
@@ -86,7 +85,7 @@ def start_openid(session, openid_url, trust_root, return_to):
         ax_request.add(ax.AttrInfo(v, required=True))
 
     auth_request.addExtension(ax_request)
-                
+
     # Compute the trust root and return URL values to build the
     # redirect information.
     # trust_root = util.getViewURL(request, startOpenID)

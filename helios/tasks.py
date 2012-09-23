@@ -5,13 +5,15 @@ Celery queued tasks for Helios
 ben@adida.net
 """
 
+import traceback
+import signals
+import copy
+
 from celery.decorators import task
 
-from models import *
-from view_utils import render_template_raw
-import signals
+from helios.models import *
+from helios.view_utils import render_template_raw
 
-import copy
 
 
 @task()
@@ -26,7 +28,7 @@ def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwarg
     if result:
         # send the signal
         signals.vote_cast.send(sender=election, election=election, user=user, voter=voter, cast_vote=cast_vote)
-        
+
         if status_update_message and user.can_update_status():
             from views import get_election_url
 
@@ -34,7 +36,7 @@ def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwarg
     else:
         logger = cast_vote_verify_and_store.get_logger(**kwargs)
         logger.error("Failed to verify and store %d" % cast_vote_id)
-    
+
 @task()
 def voters_email(election_id, subject_template, body_template, extra_vars={},
                  voter_constraints_include=None, voter_constraints_exclude=None):
@@ -87,8 +89,23 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
 def election_compute_tally(election_id):
     election = Election.objects.get(id = election_id)
     election.compute_tally()
+    if election.error_mixnet:
+        election_notify_admin.delay(election_id = election_id,
+                                subject = "encrypted tally failed to compute",
+                                body = """
+Error occured while mixing. Mixnet data where cleared.
 
-    election_notify_admin.delay(election_id = election_id,
+Mixnet: %s
+
+error: %s
+""" % (election.error_mixnet.name, election.error_mixnet.mix_error))
+        election.error_mixnet.reset_mixing()
+        election.tallying_started_at = None
+        election.save()
+        return
+
+    if election.mixing_finished and election.has_helios_trustee():
+        election_notify_admin.delay(election_id = election_id,
                                 subject = "encrypted tally computed",
                                 body = """
 The encrypted tally for election %s has been computed.
@@ -96,9 +113,9 @@ The encrypted tally for election %s has been computed.
 --
 Helios
 """ % election.name)
-                                
-    if election.has_helios_trustee():
-        tally_helios_decrypt.delay(election_id = election.id)
+        tally_helios_decrypt.delay(election_id=election.id)
+    else:
+        election_compute_tally.delay(election_id=election_id)
 
 @task()
 def tally_helios_decrypt(election_id):
@@ -118,7 +135,7 @@ Helios
 def voter_file_process(voter_file_id):
     voter_file = VoterFile.objects.get(id = voter_file_id)
     voter_file.process()
-    election_notify_admin.delay(election_id = voter_file.election.id, 
+    election_notify_admin.delay(election_id = voter_file.election.id,
                                 subject = 'voter file processed',
                                 body = """
 Your voter file upload for election %s

@@ -5,3 +5,4 @@ initialization.py
 .DS_Store
 *~
 media/*
+local_settings.py
