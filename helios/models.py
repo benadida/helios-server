@@ -655,7 +655,7 @@ class VoterFile(models.Model):
       voter_stream = open(self.voter_file.path, "rU")
 
     #reader = unicode_csv_reader(voter_stream)
-    reader = unicodecsv.reader(voter_stream)
+    reader = unicodecsv.reader(voter_stream, encoding='utf-8')
 
     for voter_fields in reader:
       # bad line
@@ -685,7 +685,7 @@ class VoterFile(models.Model):
       voter_stream = open(self.voter_file.path, "rU")
 
     # reader = unicode_csv_reader(voter_stream)
-    reader = unicodecsv.reader(voter_stream)
+    reader = unicodecsv.reader(voter_stream, encoding='utf-8')
     
     last_alias_num = election.last_alias_num
 
