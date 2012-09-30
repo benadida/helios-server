@@ -214,32 +214,30 @@ UTILS.generate_plaintexts = function(pk, min, max) {
 // crypto
 //
 
-// the low-level crypto code expects challenge generators that take
-// a single value (or a commitment of two values) and generates
-// a challenge accordingly (by hashing). We want to integrate other,
-// election-specific information, with minimal code change.
+// moving to Helios v4 challenge generation
+// A challenge generator takes as input an array of commitment pairs A and B,
+// adds context, JSON serializes the whole thing, and does
+// the conversion to an integer.
 //
-// To accomplish this, we use the awesomeness of JavaScript:
-// functions that take the public key against which the encryption is done,
-// and return another function, itself a challenge generator, which uses the public key
-// as part of the challenge generation.
-HELIOS.makeDisjunctiveChallengeGenerator = function(pk) {
+// this challenge-generator *factory* (oh gawd, I said factory)
+// captures the context that will need to be used in the generation
+// of the challenge.
+//
+// context is an object whose values are ready-to-JSON-serialize plain objects.
+HELIOS.makeDisjunctiveChallengeGenerator = function(context) {
     return function(commitments) {
-	var strings_to_hash = [];
-
-	// election information factored into the list of commitments
-	// before hashing
-	strings_to_hash.push(JSON.stringify(pk.toJSONObject()));
-
+	var prepared_commitments = [];
 	// go through all proofs and append the commitments
 	_(commitments).each(function(commitment) {
 		// toJSONObject instead of toString because of IE weirdness.
-		strings_to_hash.push(commitment.A.toJSONObject());
-		strings_to_hash.push(commitment.B.toJSONObject());
+		prepared_commitments.push({"A": commitment.A.toJSONObject(), "B": commitment.B.toJSONObject()});
 	    });
+
+	context.commitments = prepared_commitments;
+
+	// JSON serialize and hash
+	// WORK HERE
 	
-	// console.log(strings_to_hash);
-	// STRINGS = strings_to_hash;
 	return new BigInt(hex_sha1(strings_to_hash.join(",")), 16);
     };
 }
