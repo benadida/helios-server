@@ -680,7 +680,7 @@ class VoterFile(models.Model):
 
     # now we're looking straight at the content
     if self.voter_file_content:
-      voter_stream = StringIO.StringIO(self.voter_file_content)
+      voter_stream = StringIO.StringIO(self.voter_file_content.encode('utf-8'))
     else:
       voter_stream = open(self.voter_file.path, "rU")
 
