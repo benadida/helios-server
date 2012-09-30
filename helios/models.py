@@ -684,7 +684,8 @@ class VoterFile(models.Model):
     else:
       voter_stream = open(self.voter_file.path, "rU")
 
-    reader = unicode_csv_reader(voter_stream)
+    # reader = unicode_csv_reader(voter_stream)
+    reader = unicodecsv.reader(voter_stream)
     
     last_alias_num = election.last_alias_num
 
