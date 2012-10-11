@@ -2,14 +2,8 @@
 
 {{custom_message|safe}}
 
-Σύνδεσμος εκλογής:  {{election_vote_url}}
-Προσωπικό αποτύπωμα εκλογής: {{voter.election.hash}}
-{% ifequal voter.voter_type "password" %}
-Όνομα χρήστη: {{voter.voter_login_id}}
-Κωδικός πρόσβασης: {{voter.voter_password}}
-{% else %}
-Συνδεθείτε στο σύστημα με τον λογαριασμό {{voter.voter_type}}.
-{% endifequal %}{% if voter.vote_hash %}
+Σύνδεσμος υποβολής ψήφου:  {{ voter.get_quick_login_url }}
+Αποτύπωμα εκλογής: {{ voter.election.hash }}{% if voter.vote_hash %}
 
 Έχουμε καταγράψει την ψήφο σας με το ακόλουθο αποτύπωμα:
 
@@ -28,7 +22,6 @@
 Κωδικοί ελέγχου:
 {% for pass in voter.get_audit_passwords %}
 - {{ pass }}{% endfor %}{% endif %}
-{% endif %}
 
 --
 Zeus
