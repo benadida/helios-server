@@ -1,8 +1,12 @@
-{% extends TEMPLATE_BASE %}
+{% extends "election_page.html" %}
+
+{% block title %}{{election.name}}: Ψηφοφόροι{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
 
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Bulk Upload Voters <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
-
+<h5>Διαχείριση ψηφοφόρων</h5>
 <form method="post" action="" id="upload_form" enctype="multipart/form-data">
   <p>
     If you would like to specify your list of voters by name and email address,<br />

@@ -1,22 +1,41 @@
 {% extends TEMPLATE_BASE %}
-
+{% load i18n %}
+{% block tabs_menu %}
+{% with menu_active="create" %}
+{% include "_admin_index_menu.html" %}
+{% endwith %}
+{% endblock %}
 {% block content %}
-
-  <h2 class="title">Create a New Election</h2>
-  
+<div class="columns twelve">
+  <div class="description">
+    <p>
+    {% blocktrans %}
+    Σε αυτό το σημείο σας ζητάμε κάποιες πληροφορίες απαραίτητες για την
+    δημιουργία της  ψηφοφορίας.
+    {% endblocktrans %}
+    </p>
+</div>
 {% if error %}
-<p style="color: red;">
-    {{error}}
-</p>
+<div class="panel alert">
+    {{ error }}
+</div>
 {% endif %}
   
   <form class="prettyform" action="" method="POST" id="create_election_form">
     <table class="pretty">
-     {{election_form.as_table}}
+      {% with form=election_form %}
+      {% include "foundation_form.html" %}
+      {% endwith %}
      </table>
   <div>
-  <label for="">&nbsp;</label><input type="submit" value="Next &gt;&gt;" id="next_button" />
-  </div>
-  </form>
+  <input class="button" type="submit" value="Αποθήκευση" id="next_button" />
+</div>
 
+<script>
+    $(function() {
+   $(".datepicker").datepicker({ dateFormat: 'yy-mm-dd' });
+});
+</script>
+  </form>
+</div>
 {% endblock %}

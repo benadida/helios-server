@@ -1,4 +1,4 @@
-{% extends "helios/templates/cryptobase.html" %}
+{% extends "helios/templates/trustee_home_base.html" %}
 
 {% block content %}
 <script>
@@ -38,12 +38,77 @@ function check_sk(sk_value) {
     var reset_link = "<br /><a href='javascript:reset();'>try again</a>";
     if (key_ok_p) {
       $('#result').html("your secret key matches!");
+      $.ajax({
+        "url": "{% url helios.views.trustee_verify_key election.uuid trustee.uuid %}",
+        "data": {'verified': true}
+      })
     } else {
       $('#result').html("OH OH, your key is bad." + reset_link);
     }
-}
+  }
+
+var opts = {
+    dragClass: "drag",
+    accept: false,
+    readAsMap: {
+        'text/*' : 'Text'
+    },
+    readAsDefault: 'Text',
+    on: {
+        beforestart: function(e, file) {
+        	// return false if you want to skip this file
+
+    	},
+        loadstart: function(e, file) {
+        	// Native ProgressEvent
+
+    	},
+        progress: function(e, file) {
+        	// Native ProgressEvent
+
+    	},
+        load: function(e, file) {
+          // Native ProgressEvent
+          if (e.srcElement && e.srcElement.result) {
+            $("textarea[name=secret_key]").val(e.srcElement.result);
+          }
+          if (e.currentTarget && e.currentTarget.result) {
+            $("textarea[name=secret_key]").val(e.currentTarget.result);
+          }
+    	},
+        error: function(e, file) {
+        	// Native ProgressEvent
+
+    	},
+        loadend: function(e, file) {
+        	// Native ProgressEvent
+
+    	},
+        abort: function(e, file) {
+        	// Native ProgressEvent
+
+    	},
+        skip: function(e, file) {
+        	// Called when a file is skipped.  This happens when:
+        	// 	1) A file doesn't match the accept option
+        	// 	2) false is returned in the beforestart callback
+    	},
+        groupstart: function(group) {
+
+    	},
+        groupend: function(group) {
+
+    	}
+    }
+  };
+
+  $(document).ready(function(){
+    try {
+      $("#file-input").fileReaderJS(opts);
+    } catch (err) {
+    }
+  })
 </script>
-  <h2 class="title">{{election.name}} &mdash; Trustee {{trustee.name}} &mdash; Check Secret Key <span style="font-size:0.7em;">[<a href="./home">back to trustee home</a>]</span></h2>
 
 <p>
 Your public key fingerprint is: <b>{{trustee.public_key_hash}}</b>
@@ -58,6 +123,7 @@ loading crypto functions...
 To verify that you have the right secret key, paste it here:
 <p>
 
+<input type="file" id="file-input" />
 <form onsubmit="check_sk(this.secret_key.value); this.secret_key.value=''; return false;">
 <textarea name="secret_key" cols="60" rows ="5" wrap="soft">
 </textarea>

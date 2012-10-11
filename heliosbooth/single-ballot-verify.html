@@ -1,31 +1,47 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="el"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="el"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="el"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="el"> <!--<![endif]-->
 <head>
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8" /> 
-  <title>Helios Voting System</title>
-  <link rel="stylesheet" type="text/css" href="css/booth.css" />
-  <link rel="stylesheet" type="text/css" href="css/forms.css" />
+  
+  <title></title>
+  <meta charset="utf-8">
+
+  <!--foundation styles and js-->
+  <link rel="stylesheet" href="phoebus/stylesheets/app.css">
+  <script src="phoebus/javascripts/foundation/modernizr.foundation.js"></script>
+  <script src="phoebus/javascripts/foundation/jquery.js"></script>
+  <link href='http://fonts.googleapis.com/css?family=Didact+Gothic&subset=latin,greek' rel='stylesheet' type='text/css'>
+
+  <script language="javascript" src="js/jscrypto/class.js"></script>
+  <script language="javascript" src="js/jscrypto/bigint.dummy.js"></script>
   <script language="javascript" src="js/jscrypto/jsbn.js"></script>
   <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
   <script language="javascript" src="js/jscrypto/sjcl.js"></script>
   <script language="javascript" src="js/underscore-min.js"></script>
-  <script language="javascript" src="js/jquery-1.2.2.min.js"></script>
-  <script language="javascript" src="js/jquery-jtemplates.js"></script>
-  <script language="javascript" src="js/jquery.json.min.js"></script>
   <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
+  <script language="javascript" src="js/jquery.json.min.js"></script>
+  <script language="javascript" src="js/jquery-jtemplates.js"></script>
+  <script language="javascript" src="js/json2.js"></script>
+  <script language="javascript" src="js/texts.js"></script>
 
   <script language="javascript">
     // required for jscrypto library
-    var JSCRYPTO_HOME = document.location.pathname.replace("single-ballot-verify.html", "js/jscrypto");
+    var JSCRYPTO_HOME = document.location.pathname.replace("vote.html", "js/jscrypto");
   </script>
 
-  <script language="javascript" src="js/jscrypto/class.js"></script>  
-  <script language="javascript" src="js/jscrypto/bigint.js"></script>
+  <script language="javascript" src="js/jscrypto/class.js"></script>
+  <script language="javascript" src="js/jscrypto/bigint.js?d=20111004"></script>
+  <script language="javascript" src="js/jscrypto/bigint.dummy.js"></script>
   <script language="javascript" src="js/jscrypto/random.js"></script>
-  <script language="javascript" src="js/jscrypto/elgamal.js"></script>
+  <script language="javascript" src="js/jscrypto/elgamal.js?d=20111004"></script>
   <script language="javascript" src="js/jscrypto/sha1.js"></script>
   <script language="javascript" src="js/jscrypto/sha2.js"></script>
-  <script language="javascript" src="js/jscrypto/helios.js"></script>
+  <script language="javascript" src="js/jscrypto/helios.js?d=20111004"></script>
+  <script src="phoebus/javascripts/foundation/jquery.foundation.reveal.js"></script>
   <script language="javascript" src="verifier.js"></script>
 </head>
 <body>
@@ -108,10 +124,13 @@ function verify_single_ballot(election_url, audit_trail) {
 
 </script>
 </head>
-<body>
-<div id="wrapper">
-<div id="banner">
-    Helios Single-Ballot Verifier
+<body class="booth">
+  <div id="wrapper" class="row">
+    <div class="columns twelve">
+  <div id="banner">
+    <h1>
+      Ηλεκτρονική κάλπη "Ζευς": Έλεγχος ψήφου
+    </h1>
 </div>
 <div id="content">
 
@@ -130,7 +149,9 @@ At this time, the Java plugin is required for browser-based ballot auditing, alt
 </p>
 
 <form onsubmit="try {verify_single_ballot(this.election_url.value, this.audit_trail.value);} catch (e) {E = e;} return false;">
-Enter the Election URL:
+  <p>
+  Enter the Election URL:
+  </p>
     <input type="text" size="50" name="election_url" id="election_url" /><br />
 
 <p>
@@ -139,7 +160,7 @@ Your Ballot:
 
 <textarea name="audit_trail" cols="80" rows="7">
 </textarea><br /><br />
-<input type="submit" class="pretty" value="Verify" />
+<input type="submit" class="button success medium pretty" value="Έλεγχος" />
 </form>
 
 <br /><br />
@@ -147,11 +168,11 @@ Your Ballot:
 </div>
 <img id="loading" src="loading.gif" style="display:none;" />
 </div>
-</div>
 
 </div>
 
 <div id="applet_div">
+</div>
 </div>
 </body>
 </html>

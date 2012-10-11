@@ -1,0 +1,13 @@
+<dd class="{% if menu_active == "overview" %}active{% endif %}"><a 
+  href="{% url helios.views.one_election_view election.uuid %}">Πληροφορίες</a></dd>
+<dd class="{% if menu_active == "candidates" %}active{% endif %}"><a 
+  href="{% url helios.views.one_election_questions election.uuid %}">Υποψήφιοι</a></dd>
+{% if admin_p %}
+<dd class="{% if menu_active == "voters" %}active{% endif %}"><a 
+  href="{% url helios.views.voters_list_pretty election.uuid %}">Λίστα ψηφοφόρων</a></dd>
+{% else %}
+<dd class="{% if menu_active == "voters" %}active{% endif %}"><a 
+  href="{% url helios.views.voters_list_pretty election.uuid %}">Έλεγχος ψήφου</a></dd>
+{% endif %}
+<dd class="{% if menu_active == "trustees" %}active{% endif %}"><a 
+  href="{% url helios.views.list_trustees_view election.uuid %}">Εφορευτική επιτροπή</a></dd>

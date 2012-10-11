@@ -9,10 +9,10 @@ import urllib, re, sys, datetime, urlparse, string
 import threading
 
 # utils from auth, too
-from auth.utils import *
+from heliosauth.utils import *
 
 from django.conf import settings
-  
+
 import random, logging
 import hashlib, hmac, base64
 
@@ -38,7 +38,7 @@ def split_by_length(str, length, rejoin_with=None):
     return rejoin_with.join(str_arr)
   else:
     return str_arr
-    
+
 
 def urlencode(str):
     """
@@ -71,7 +71,7 @@ def dictToURLParams(d):
     return None
 ##
 ## XML escaping and unescaping
-## 
+##
 
 def xml_escape(s):
     raise Exception('not implemented yet')
@@ -79,7 +79,7 @@ def xml_escape(s):
 def xml_unescape(s):
     new_s = s.replace('&lt;','<').replace('&gt;','>')
     return new_s
-    
+
 ##
 ## XSS attack prevention
 ##
@@ -113,10 +113,10 @@ def xss_strip_all_tags(s):
                 else:
                     return unicode(entity, "iso-8859-1")
         return text # leave as is
-        
+
     return re.sub("(?s)<[^>]*>|&#?\w+;", fixup, s)
-    
- 
+
+
 random.seed()
 
 def random_string(length=20):
@@ -130,10 +130,10 @@ def random_string(length=20):
 
 def get_host():
   return settings.SERVER_HOST
-  
+
 def get_prefix():
   return settings.SERVER_PREFIX
-  
+
 
 ##
 ## Datetime utilities
@@ -144,7 +144,7 @@ def string_to_datetime(str, fmt="%Y-%m-%d %H:%M"):
     return None
 
   return datetime.datetime.strptime(str, fmt)
-  
+
 ##
 ## email
 ##
@@ -155,9 +155,9 @@ def send_email(sender, recpt_lst, subject, body):
   # subject up until the first newline
   subject = subject.split("\n")[0]
   django_mail.send_mail(subject, body, sender, recpt_lst, fail_silently=True)
-  
 
-  
+
+
 ##
 ## raw SQL and locking
 ##

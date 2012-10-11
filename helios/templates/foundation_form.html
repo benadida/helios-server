@@ -1,0 +1,30 @@
+{% if form.non_field_errors %}
+<div class="alert-box error">
+  {{ form.non_field_errors|join:"<br/>" }}
+</div>
+{% endif %}
+{% for field in form %}
+{% if field.is_hidden %}
+{{ field }}
+{% else %}
+<div class="form-field {% if field.errors %} error{% endif %}">
+  {% if field.label %}
+  <label for="{{ field.auto_id }}" {% if field.field.required %}class="requiredField"{% endif %}>
+    {{ field.label|safe }}
+  </label>
+  {% if field.help_text %}
+  <div style="display:block; margin-bottom:10px; color:#aaa; font-size: 0.9em;">
+    {{ field.help_text|safe }}
+  </div>
+  {% endif %}
+  {{ field }}           
+  {% for error in field.errors %}
+  <div class="alert label small">{{ error }}</div>
+  {% endfor %}
+  {% endif %}
+</div>
+<br />
+{% endif %}
+<br />
+{% endfor %}
+

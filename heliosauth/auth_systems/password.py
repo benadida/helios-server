@@ -1,0 +1,166 @@
+# -*- coding: utf-8 -*-
+
+"""
+Username/Password Authentication
+"""
+
+import httplib
+import urllib
+import json
+
+from django.core.urlresolvers import reverse
+from django import forms
+from django.core.mail import send_mail
+from django.conf import settings
+from django.http import HttpResponseRedirect
+
+import logging
+
+# some parameters to indicate that status updating is possible
+STATUS_UPDATES = False
+
+
+def create_user(username, password, name = None, extra_info={}):
+  from heliosauth.models import User
+
+  try:
+    user = User.get_by_type_and_id('password', username)
+  except User.DoesNotExist:
+    user = None
+
+  if user:
+    raise Exception('user exists')
+
+  info = {'password' : password, 'name': name}
+  info.update(extra_info)
+  user = User.update_or_create(user_type='password', user_id=username, info=info)
+  user.save()
+  return user
+
+class LoginForm(forms.Form):
+  username = forms.CharField(max_length=50)
+  password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
+
+def check_evoting_credentials(username, password):
+  url = settings.CAS_LOGIN_URL
+  params = urllib.urlencode({'username': username, 'password': password})
+  response = urllib.urlopen(url, params)
+  data = {}
+
+  try:
+    data = json.loads(response.read())
+  except:
+    return False, data
+
+  if 'success' in data and data['success'] == 'true' and data['message'] == 'Ok':
+    data['faculty'] = "ΤΕΙ Πειραιώς"
+    return True, data
+
+  return False, data
+
+def get_evoting_user(username, password):
+  from zeus.models import Faculty
+  from heliosauth.models import User
+
+  is_valid, user_data = check_evoting_credentials(username, password)
+  user = None
+  try:
+    user = User.get_by_type_and_id('password', username)
+  except User.DoesNotExist:
+    if is_valid:
+      user = create_user(username, password)
+      user.admin_p = True
+      user.info['name'] = user.info['name'] or user.user_id
+      user.faculty, created = Faculty.objects.get_or_create(name=user_data['faculty'])
+      user.save()
+
+  return user
+
+def password_check(user, password):
+  return (user and user.info['password'] == password)
+
+# the view for logging in
+def password_login_view(request):
+  from heliosauth.view_utils import render_template
+  from heliosauth.views import after
+  from heliosauth.models import User
+
+  error = None
+
+  if request.method == "GET":
+    form = LoginForm()
+  else:
+    form = LoginForm(request.POST)
+
+    # set this in case we came here straight from the multi-login chooser
+    # and thus did not have a chance to hit the "start/password" URL
+    request.session['auth_system_name'] = 'password'
+    if request.POST.has_key('return_url'):
+      request.session['auth_return_url'] = request.POST.get('return_url')
+
+    if form.is_valid():
+      username = form.cleaned_data['username'].strip()
+      password = form.cleaned_data['password'].strip()
+      try:
+        user = get_evoting_user(username, password)
+        if password_check(user, password):
+          request.session['password_user'] = user
+          return HttpResponseRedirect(reverse(after))
+      except User.DoesNotExist:
+        pass
+      error = 'Bad Username or Password'
+
+  return render_template(request, 'password/login', {'form': form, 'error': error})
+
+def password_forgotten_view(request):
+  """
+  forgotten password view and submit.
+  includes return_url
+  """
+  from heliosauth.view_utils import render_template
+  from heliosauth.models import User
+
+  if request.method == "GET":
+    return render_template(request, 'password/forgot', {'return_url': request.GET.get('return_url', '')})
+  else:
+    username = request.POST['username']
+    return_url = request.POST['return_url']
+
+    try:
+      user = User.get_by_type_and_id('password', username)
+    except User.DoesNotExist:
+      return render_template(request, 'password/forgot', {'return_url': request.GET.get('return_url', ''), 'error': 'no such username'})
+
+    body = """
+
+This is a password reminder:
+
+Your username: %s
+Your password: %s
+
+--
+%s
+""" % (user.user_id, user.info['password'], settings.SITE_TITLE)
+
+    # FIXME: make this a task
+    send_mail('password reminder', body, settings.SERVER_EMAIL, ["%s <%s>" % (user.info['name'], user.info['email'])], fail_silently=False)
+
+    return HttpResponseRedirect(return_url)
+
+def get_auth_url(request, redirect_url = None):
+  return reverse(password_login_view)
+
+def get_user_info_after_auth(request):
+  user = request.session['password_user']
+  del request.session['password_user']
+  user_info = user.info
+
+  return {'type': 'password', 'user_id' : user.user_id, 'name': user.name, 'info': user.info, 'token': None}
+
+def update_status(token, message):
+  pass
+
+def send_message(user_id, user_name, user_info, subject, body):
+  email = user_id
+  name = user_name or user_info.get('name', email)
+  send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, email)], fail_silently=False)

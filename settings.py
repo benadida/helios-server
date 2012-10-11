@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 import os
 
 # go through environment variables and override them
@@ -33,7 +33,8 @@ TIME_ZONE = 'Europe/Athens'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
-LANGUAGE_CODE = 'el-gr'
+LANGUAGE_CODE = 'el'
+LANGUAGES = (('el', 'Greek'),)
 
 SITE_ID = 1
 
@@ -62,13 +63,13 @@ SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.load_template_source',
     'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',
 )
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
@@ -80,41 +81,45 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-#    'django.contrib.auth',
-#    'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
-    ## needed for queues
+    'django.contrib.messages',
     'djcelery',
     'djkombu',
-    ## needed for schema migration
     'south',
-    ## HELIOS stuff
-    'auth',
+    'heliosauth',
     'helios',
+    'zeus',
     'server_ui',
 )
+
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+  "django.contrib.auth.context_processors.auth",
+  "django.core.context_processors.debug",
+  "django.core.context_processors.i18n",
+  "django.core.context_processors.media",
+  "django.core.context_processors.static",
+  "django.contrib.messages.context_processors.messages")
 
 ##
 ## HELIOS
 ##
-
 
 MEDIA_ROOT = ROOT_PATH + "media/"
 
 # a relative path where voter upload files are stored
 VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
 
-
 # Change your email settings
-DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'ben@adida.net')
-DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Ben for Helios')
+DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'elections@zeus.minedu.gov.gr')
+DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Εκλογές zeus.minedu.gov.gr')
 SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 
 LOGIN_URL = '/auth/'
-LOGOUT_ON_CONFIRMATION = True
+LOGOUT_ON_CONFIRMATION = False
 
-SITE_DOMAIN = "localhost"
+SITE_DOMAIN = "kpap-edet.grnet-hq.admin.grnet.gr"
 # The two hosts are here so the main site can be over plain HTTP
 # while the voting URLs are served over SSL.
 URL_HOST = get_from_env("URL_HOST", "http://%s:8000" % SITE_DOMAIN)
@@ -131,7 +136,7 @@ SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", "http://%s:8000" % SITE_DOMAIN
 SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", "http://%s:8000" % SITE_DOMAIN)
 
 # election stuff
-SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Election Server')
+SITE_TITLE = get_from_env('SITE_TITLE', 'Ηλεκτρονική κάλπη "Ζευς"')
 
 # FOOTER links
 FOOTER_LINKS = []
@@ -197,11 +202,11 @@ CELERY_RESULT_DBURI = DATABASES['default']
 CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 
-BOOTH_STATIC_PATH = ROOT_PATH + '/phoebus_ui/static/phoebus/booth/'
-VERIFIER_STATIC_PATH = ROOT_PATH + '/phoebus_ui/static/phoebus/verifier/'
 
 BOOTH_STATIC_PATH = ROOT_PATH + '/heliosbooth/'
 VERIFIER_STATIC_PATH = ROOT_PATH + '/heliosverifier/'
+
+CAS_LOGIN_URL = "https://x.x.x.x/checkuser.php"
 
 # useful trick for custom settings
 try:

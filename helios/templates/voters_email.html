@@ -1,6 +1,11 @@
-{% extends TEMPLATE_BASE %}
+{% extends "election_page.html" %}
 
-{% block title %}Contact Voters for {{election.name}}{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
+
+{% block title %}{{election.name}}: αποστολή email στους ψηφοφόρους{% endblock %}
+
 {% block content %}
 <script>
 var voter_id = null;
@@ -9,7 +14,7 @@ voter_id = '{{voter.voter_id}}';
 {% endif %}
 </script>
 
-  <h2 class="title">{{election.name}} &mdash; Contact Voters <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
+<h5>Αποστολή email</h5>
 
 {% if voter %}  
   <p>
@@ -18,7 +23,7 @@ voter_id = '{{voter.voter_id}}';
 {% endif %}
 
 <p>
-<b>Templates</b>:
+<b>Πρότυπα</b>:
 
 {% for template_option in templates %}
 {% if template_option.0 == template %}
@@ -29,7 +34,7 @@ voter_id = '{{voter.voter_id}}';
 &nbsp;&nbsp;&nbsp;
 {% endfor %}
 
-<pre style="margin:10px; border: 1px solid #888; padding:20px">
+<pre style="border: 1px solid #888; padding:20px">
 Subject: {{default_subject}}
 
 {{default_body|safe}}

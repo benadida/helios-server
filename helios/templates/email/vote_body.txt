@@ -2,14 +2,15 @@ Dear {{voter.name}},
 
 {{custom_message|safe}}
 
-Election URL:  {{election_vote_url}}
 Election Fingerprint:  {{voter.election.hash}}
+
 {% ifequal voter.voter_type "password" %}
-Your voter ID: {{voter.voter_login_id}}
-Your password: {{voter.voter_password}}
+Your login url: {{voter.get_quick_login_url}}
 {% else %}
+
 Log in with your {{voter.voter_type}} account.
-{% endifequal %}{% if voter.vote_hash %}
+{% endifequal %}
+{% if voter.vote_hash %}
 We have recorded your vote with smart tracker:
 
   {{voter.vote_hash}}
@@ -25,5 +26,10 @@ Your voter alias is {{voter.alias}}.
 IMPORTANTLY, when you are prompted to log in to vote,
 please use your *voter ID*, not your alias.
 {% endif %}
+{% if voter.audit_passwords %}
+Audit passwords:
+{% for pass in voter.get_audit_passwords %}
+- {{ pass }}{% endfor %}{% endif %}
+
 --
 Helios

@@ -1,145 +1,100 @@
-{% extends TEMPLATE_BASE %}
+{% extends "election_page.html" %}
 
-{% block title %}Voters &amp; Ballot Tracking Center for {{election.name}}{% endblock %}
+{% block title %}{{election.name}}: Ψηφοφόροι{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Voters and Ballot Tracking Center <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
-
-<p>
-<b>Who can vote?</b>
-{% if election.openreg %}
-{{election.pretty_eligibility|safe}}
-{% else %}
-<em>Only the voters listed here</em>.
-{% endif %}
-</p>
-
-{% if admin_p and not election.frozen_at %}
-{% if election.private_p %}
-<em>Your election is marked private, which means you cannot open registration up more widely</em>.<br />
-{% else %}
-You can change this setting:
-<form method="post" action="{% url helios.views.voters_eligibility election.uuid %}">
-<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-<input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> anyone can vote<br />
-<input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> only voters listed explicitly below can vote<br />
-{% if categories %}
-<input type="radio" name="eligibility" value="limitedreg" {% if election.eligibility %}CHECKED{% endif %} /> only voters who are members of 
-<select name="category_id">
-{% for category in categories %}
-<option value="{{category.id}}" {% if eligibility_category_id == category.id %}SELECTED{% endif %}> {{category.name}}</option>
-{% endfor %}
-</select>
-<br />
-{% endif %}
-<input type="submit" value="update" />
-</form>
-{% endif %}
-{% endif %}
-
-{% if email_voters and election.frozen_at and admin_p %}
-<p><a href="{% url helios.views.voters_email election.uuid %}">email voters</a></p>
-{% endif %}
-
-{% if election.num_voters > 20 %}
-<p>
-{% if q %}
-<p><em>searching for <u>{{q}}</u>.</em> [<a href="?">clear search</a>]</p>
-{% else %}
-<form method="get" action="{% url helios.views.voters_list_pretty election.uuid %}"><b>search</b>: <input type="text" name="q" /> <input type="submit" value="search" /></form>
-{% endif %}
-</p>
-{% endif %}
 
 {% if admin_p %}
-<!-- Add a Voter: WORK HERE-->
-{% if upload_p and not election.openreg %}
-<p>
-<a href="{% url helios.views.voters_upload election_uuid=election.uuid %}">bulk upload voters</a>
-</p>
-
-{% if voter_files %}
-Prior Bulk Uploads:
-<ul>
-{% for vf in voter_files %}
-<li>
-{% if vf.voter_file %}
-{{vf.voter_file.size}}
-{% else %}
-{{vf.voter_file_content|length}}
+<div class="clearfix">
+  {% if election.frozen_at %}
+  <a style="float: right" class="button small" href="{% url helios.views.voters_email election.uuid %}">Αποστολή email</a>
+  {% else %}
+  <a style="float: right" class="button small disabled" href="#">Αποστολή email</a>
+  {% endif %}
+  <a style="float: right; margin-right: 10px;" class="button small" href="{% url helios.views.voters_upload election.uuid %}">Προσθήκη</a>
+</div>
 {% endif %}
- bytes, at {{vf.uploaded_at}}:
-{% if vf.processing_finished_at %}
-<em>done processing: {{vf.num_voters}} voters loaded</em>
-{% else %}
-
-{% if vf.processing_started_at %}
-<em>currently processing</em>
-{% else %}
-<em>not yet processed</em>
-{% endif %}
-
-{% endif %}
-</li>
-{% endfor %}
-</ul>
-{% endif %}
-{% endif %}
-{% endif %}
-
-{% if voters %}
-
-{% if voters_page.has_previous %}
-<a href="./list?page={{voters_page.previous_page_number}}&limit={{limit}}&q={{q|urlencode}}">previous {{limit}}</a> &nbsp;&nbsp;
-{% endif %}
-
-<p>
-<b>
-{% if election.num_cast_votes %}
-{{election.num_cast_votes}} cast vote{% ifequal election.num_cast_votes 1 %}{% else %}s{% endifequal %}
-{% else %}
-no votes yet
-{% endif %}
-</b>
-</p>
-
-Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voters}})&nbsp;&nbsp;
-
-{% if voters_page.has_next %}
-<a href="./list?page={{voters_page.next_page_number}}&limit={{limit}}&q={{q|urlencode}}">next {{limit}}</a> &nbsp;&nbsp;
-{% endif %}
-
-<table class="pretty">
-<tr>
-{% if admin_p or not election.use_voter_aliases %}
-<th>Name</th>
-{% endif %}
-
-{% if election.use_voter_aliases %}
-<th>Alias</th>
-{% endif %}
-<th>Smart Ballot Tracker</th>
-</tr>
-{% for voter in voters %}
-<tr>
-{% if admin_p or not election.use_voter_aliases %}
-<td>
-{% if admin_p %}
-[<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}">email</a>]
-[<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">x</a>]
-{% endif %}
-<img border="0" height="20" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}</td>
-{% endif %}
-{% if election.use_voter_aliases %}
-<td>{{voter.alias}}</td>
-{% endif %}
-<td><tt style="font-size: 1.4em;;">{% if voter.vote_hash %}{{voter.vote_hash}} <span style="font-size:0.8em;">[<a href="{% url helios.views.castvote_shortcut vote_tinyhash=voter.vote_tinyhash %}">view</a>]</span>{% else %}&mdash;{% endif %}</tt></td>
-</tr>
-{% endfor %}
-</table>
-
-{% else %}
 <br /><br />
-<em>no voters.</em>
+{% if election.frozen_at %}
+<div class="panel">
+  <h5>Έλεγχος αναγνωριστικού ψήφου</h5>
+
+  <form action="./list" method="get">
+    {% if validate_hash %}
+      <br />
+      {% if hash_valid == "1" %}
+      <div class="label success" style="padding:10px;">Το αναγνωρίστικό ψήφου
+        "<b style="font-size: 1.2em">{{ validate_hash }}</b>" έχει καταχωρηθεί</div>
+      {% endif %}
+      {% if hash_invalid == "1" %}
+      <div class="label alert" style="padding:10px;">Το αναγνωρίστικό ψήφου "<b
+          style="font-size: 1.2em">{{ validate_hash }}</b>" δεν έχει καταχωρηθεί</div>
+      {% endif %}
+      <br /><br /><br />
+      {% else %}
+    {% endif %}
+      <p>συμπληρώστε το αναγνωριστικό της ψήφου σας στο παρακάτω πεδίο και πατήστε
+      επιβεβαίωση για να επιβεβαιώσετε οτι η ψήφος σας έχει καταχωρηθέι.</p>
+      <input type="text" value="" name="vote_hash" />
+      <input type="submit" class="button small success" value="Επιβεβαίωση"/>
+  </form>
+</div>
 {% endif %}
 
+{% if admin_p %}
+<table class="voters" width="100%">
+  <thead>
+    <tr>
+      <th>Όνομα</th>
+      <th>Email</th>
+      <th>Έχει ψηφίσει</th>
+      {% if admin_p %}
+      {% if election.frozen_at %}
+      <th>Αποστολή email</th>
+      {% endif %}
+      <th>Διαγραφή</th>
+      <th>Τελευταία αποστολή email στις</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+  {% for voter in voters %}
+  <tr>
+    <td width="100%">
+      {{ voter.name }}
+    </td>
+    <td>
+      {{ voter.voter_email }}
+    </td>
+    <td>
+      {% if voter.vote_hash %}
+      Ναι
+      {% else %}
+      Όχι
+      {% endif %}
+
+    </td>
+{% if admin_p %}
+      {% if election.frozen_at %}
+    <td>
+<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}">Αποστολή email</a>
+</td>
+{% endif %}
+<td>
+<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" 
+  href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">
+  Διαγραφή
+  </a>
+</td>
+<td>
+  {{ voter.last_email_send_at }}
+</td>
+  {% endif %}
+  </tr>
+  {% endfor %}
+</tbody>
+</table>
+{% endif %}
 {% endblock %}

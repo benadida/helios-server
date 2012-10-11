@@ -1,0 +1,32 @@
+{% extends TEMPLATE_BASE %}
+{% block title %}{{ election.name }}{% endblock %}
+
+
+{% block head_subtitle %}
+   <h4 id="election-name" class="subheader">
+      {{election.name}}<span class="button small
+        election-desc-toggle">Πληροφορίες</span>
+{% if election.is_archived %}
+<span class="medium label alert">αρχείο</span>
+{% endif %}
+<div class="extra-election-actions">
+  {% block extra_title %}
+{% endblock %}
+</div>
+</h4>
+  <div id="election-description-modal" class="reveal-modal">
+    <h4>{{ election.name }}</h4>
+    <p class="election-description-in-modal">{{ election.description }}</p>
+  </div>
+  <div id="election-description">
+    <p class="election-description">{{ election.description }}</p>
+  </div>
+  <script>
+    $("span.election-desc-toggle").live("click", function(){
+      $('#election-description-modal').reveal();
+    })
+</script>
+  {% endblock %}
+
+  {% block tabs_menu %}
+  {% endblock %}

@@ -1,5 +1,10 @@
-{% extends TEMPLATE_BASE %}
+{% extends "election_page.html" %}
 {% block title %}Confirm Vote{% endblock %}
+
+{% block tabs_menu %}
+          <dd id="progress_1"><a href="#">Βήμα 1: Επιλογή ψηφοδελτίου</a></dd>
+          <dd id="progress_2" class="active"><a href="#">Βήμα 2: Κρυπτογράφηση ψηφοδελτίου</a></dd>
+{% endblock %}
 
 {% block content %}
 <script language="javascript">
@@ -11,6 +16,27 @@ function show_waiting() {
   $('#cast_form').hide();
   $('#waiting_div').show();
 }
+
+function check_cast_form() {
+  $(".form-row").removeClass("checked");
+  if ($("#required-to-cast-1:checked").length > 0) {
+      $("#required-to-cast-1").closest(".form-row").addClass("checked");
+  }
+  if ($("#required-to-cast-2:checked").length > 0) {
+      $("#required-to-cast-2").closest(".form-row").addClass("checked");
+  }
+  if ($("#required-to-cast-1:checked").length > 0 &&
+      $("#required-to-cast-2:checked").length > 0) {
+      $("#cast_form input.submit").show();
+  } else {
+      $("#cast_form input.submit").hide();
+  
+  }
+}
+
+$(document).ready(function(){
+  check_cast_form();
+})
 
 // FIXME: set this to false once it's clear how to set it back to true
 // so that it's not easy to forget to cast a ballot
@@ -34,12 +60,12 @@ window.onbeforeunload = function(evt) {
 };
 
 </script>
-<h1>{{election.name}} &mdash; Submit your Vote</h1>
+
 
 <p>
-  We have received, <b><u>but not yet recorded</u></b>, your encrypted ballot.<br />
-Your smart ballot tracker is:<br /><br />
-    <tt style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</tt>
+Η ψήφος σας έχει αποθηκευθεί στο σύστημα ψηφοφορίας. Για να συμπεριλάβει
+το σύστημα την ψήφο σας στις ψήφους καταμέτρησης αποτελέσματος παρακαλούμε αποδεχθείτε τους παρακάτω όρους και πατήστε το κουμπί "Καταχώρηση ψήφου". Σε διαφορετική περίπτωση πατήστε το κουμπί "Ακύρωση". Μπορείτε οποιαδήποτε στιγμή να επισκεφθείτε την σελίδα
+ψηφοφορίας για να ξαναψηφίσετε.
 </p>
 
 {% if voter %}
@@ -56,7 +82,6 @@ requires election-specific credentials.
 </p>
 {% endif %}
 {% include "_castconfirm_password.html" %}
-
 {% else %}
 
 {% if user %}
@@ -68,16 +93,16 @@ requires election-specific credentials.
 {% endif %}
 </p>
 <p>
-    [<a href="{% url helios.views.one_election_view election.uuid %}">return to the main election page</a>]
+[<a href="{% url helios.views.one_election_view election.uuid %}">return to the main election page</a>]
 </p>
 {% else %}
 <p>
-  Now, we need you to log in, so we can verify your eligibility.<br /><br />
+Now, we need you to log in, so we can verify your eligibility.<br /><br />
 {% if election.openreg %}
 
 {% if election.eligibility %}
 {% else %}
- This election is open to <em>anyone</em>, so log in with your preferred account.
+This election is open to <em>anyone</em>, so log in with your preferred account.
 {% endif %}
 
 {% else %}

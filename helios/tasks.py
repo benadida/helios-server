@@ -8,13 +8,12 @@ ben@adida.net
 import traceback
 import signals
 import copy
+import datetime
 
 from celery.decorators import task
 
 from helios.models import *
 from helios.view_utils import render_template_raw
-
-
 
 @task()
 def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
@@ -63,7 +62,8 @@ def voters_notify(election_id, notification_template, extra_vars={}):
         single_voter_notify.delay(voter.uuid, notification_template, extra_vars)
 
 @task()
-def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={}):
+def single_voter_email(voter_uuid, subject_template, body_template,
+                       extra_vars={}, update_date=True):
     voter = Voter.objects.get(uuid = voter_uuid)
 
     the_vars = copy.copy(extra_vars)
@@ -71,6 +71,10 @@ def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={
 
     subject = render_template_raw(None, subject_template, the_vars)
     body = render_template_raw(None, body_template, the_vars)
+
+    if update_date:
+      voter.last_email_send_at = datetime.datetime.now()
+      voter.save()
 
     voter.user.send_message(subject, body)
 
@@ -150,4 +154,5 @@ Helios
 @task()
 def election_notify_admin(election_id, subject, body):
     election = Election.objects.get(id = election_id)
-    election.admin.send_message(subject, body)
+    for admin in election.admins.all():
+      admin.send_message(subject, body)

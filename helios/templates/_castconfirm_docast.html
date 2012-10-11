@@ -2,7 +2,7 @@
   {% if not election.voting_has_stopped %}
 
 <div id="cast_form">
-<form method="post" action="" onsubmit="show_waiting()">
+<form method="post" action="" onsubmit="show_waiting()" class="">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
 {% if status_update_label %}
@@ -15,16 +15,30 @@
 </div>
 <br />
 {% endif %}
+    
+    <div class="clearfix form-row">
+<label for="required-to-cast-1" onclick="check_cast_form()">
+  <input type="checkbox" id="required-to-cast-1" style=""
+  onclick="check_cast_form()">
+  <span class="custom checkbox" onclick="check_cast_form()"></span> Επιβεβαιώνω οτι είμαι ο "{{ voter.name }}".
+</label>
+</div>
 
-    <button type="submit" style="font-size: 1.5em; height: 50px;">I am <u>{{voter.display_html_big|safe}}</u>, cast this ballot</button>
-    <span style="font-size:0.8em;"><br />You can cast as many ballots as you want.<br />Only the last one counts.</span>
+    <div class="clearfix form-row">
+<label for="required-to-cast-2" onclick="check_cast_form()">
+  <input type="checkbox" id="required-to-cast-2" style=""
+  onclick="check_cast_form()">
+  <span class="custom checkbox" onclick="check_cast_form()"></span> Επιβεβαιώνω ότι αυτή τη στιγμή είμαι μόνος 
+        στο τερματικό μου, και κανένας άλλος δεν έχει παρακολουθήσει τις επιλογές μου
+      </label>
+    </div>
+    
+    <div class="cast-actions clearfix">
+    <input type="submit" class="submit button success medium" value="Καταχώρηση ψήφου" />
+    <button class="button medium alert cancel"
+      onclick="document.location='./view';">Ακύρωση</button><br />
+  </div>
 </form>
-
-<p>
-    <button style="font-size: 1.5em;" onclick="document.location='./view';">cancel</button><br />
-    <span style="font-size:0.8em;">If you cancel now, your ballot will <em>NOT</em> be recorded.<br />
-    You can start the voting process over again, of course.</span>
-</p>
 
 </div>
 <div id="waiting_div">

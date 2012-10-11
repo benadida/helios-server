@@ -5,67 +5,25 @@
 <h2>{{ settings.SITE_TITLE }}</h2>
 {% endblock %}
 
-{% block content %}
-
-<div id="mystuff">
-{% if user %}
-<div style="font-size:1.4em;" class="highlight-box">
-{{user.display_html_big|safe}}
-</div>
-{% if create_p %}
-<h4>Administration</h4>
-{% if elections_administered %}
-<ul>
-{% for election in elections_administered %}
-<li> <a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
-{% endfor %}
-</ul>
-{% else %}
-<em>none yet</em>
-{% endif %}
-<p>[<a href="{% url helios.views.elections_administered %}">see all</a>]</p>
-<div style="text-align:right;">
-<a href="{% url helios.views.election_new %}" style="font-size: 1.2em; padding:5px; background: #eee; border: 1px solid #888">create election &gt;</a>
-</div>
-{% endif %}
-
-<h4>Recent Votes</h4>
-{% if elections_voted %}
-<ul>
-{% for election in elections_voted %}
-<li><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
-{% endfor %}
-</ul>
-{% else %}
-<em>none yet</em>
-{% endif %}
-<p>[<a href="{% url helios.views.elections_voted %}">see all</a>]</p>
-{% else %}
-<h3>Log In to Start Voting</h3>
-{{login_box|safe}}
-{% endif %}
-<br /><br />
-</div>
-
-<p style="font-size: 1.4em;">
-  {{settings.WELCOME_MESSAGE|safe}}
-</p>
-
-{% if elections|length %}
-<h3>Current Featured Elections</h3>
-<p>
-{% for election in elections %}
-<div class="highlight-box-margin">
-<a style="font-size: 1.4em;" href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a> by {{election.admin.display_html_small|safe}}<br />
-{{election.description}}
-</div>
-<br />
-{% endfor %}
-</p>
-{% else %}
-<h4>no featured elections at the moment</h4>
-{% endif %}
-
-<br clear="right" /><br />
-
+{% block tabs_menu %}
+{% with menu_active="list" %}
+{% include "_admin_index_menu.html" %}
+{% endwith %}
 {% endblock %}
+
+
+{% block content %}
+<table>
+    {% for election in user.elections.all %}
+    <tr>
+        <td>
+            {{ election.name }}
+        </td>
+        <td>
+            <a href="{% url helios.views.one_election_view election.uuid %}">Προβολή</a>
+        </td>
+    </tr>
+    {% endfor %}
+    </table>
+{% endblock %}
+

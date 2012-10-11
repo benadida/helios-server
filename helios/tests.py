@@ -8,7 +8,7 @@ import django_webtest
 import models
 import datatypes
 
-from auth import models as auth_models
+from heliosauth import models as auth_models
 from views import ELGAMAL_PARAMS
 import views
 import utils
@@ -173,7 +173,7 @@ class ElectionModelTests(TestCase):
 
         # fake out the facebook constraint checking, since
         # our access_token is obviously wrong
-        from auth.auth_systems import facebook
+        from heliosauth.auth_systems import facebook
 
         def fake_check_constraint(constraint, user):
             return constraint == {'group': {'id': '123', 'name':'Fake Group'}} and user == self.fb_user

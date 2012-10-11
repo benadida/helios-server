@@ -57,53 +57,53 @@ class Migration(SchemaMigration):
         db.delete_unique('helios_voter', ['voter_login_id', 'election_id'])
 
         # Changing field 'Voter.vote'
-        db.alter_column('helios_voter', 'vote', self.gf('auth.jsonfield.JSONField')(null=True))
+        db.alter_column('helios_voter', 'vote', self.gf('heliosauth.jsonfield.JSONField')(null=True))
 
         # Changing field 'Election.result'
-        db.alter_column('helios_election', 'result', self.gf('auth.jsonfield.JSONField')(null=True))
+        db.alter_column('helios_election', 'result', self.gf('heliosauth.jsonfield.JSONField')(null=True))
 
         # Changing field 'Election.questions'
-        db.alter_column('helios_election', 'questions', self.gf('auth.jsonfield.JSONField')(null=True))
+        db.alter_column('helios_election', 'questions', self.gf('heliosauth.jsonfield.JSONField')(null=True))
 
         # Changing field 'Election.encrypted_tally'
-        db.alter_column('helios_election', 'encrypted_tally', self.gf('auth.jsonfield.JSONField')(null=True))
+        db.alter_column('helios_election', 'encrypted_tally', self.gf('heliosauth.jsonfield.JSONField')(null=True))
 
         # Changing field 'Election.eligibility'
-        db.alter_column('helios_election', 'eligibility', self.gf('auth.jsonfield.JSONField')(null=True))
+        db.alter_column('helios_election', 'eligibility', self.gf('heliosauth.jsonfield.JSONField')(null=True))
 
         # Changing field 'Election.private_key'
-        db.alter_column('helios_election', 'private_key', self.gf('auth.jsonfield.JSONField')(null=True))
+        db.alter_column('helios_election', 'private_key', self.gf('heliosauth.jsonfield.JSONField')(null=True))
 
         # Changing field 'Election.public_key'
-        db.alter_column('helios_election', 'public_key', self.gf('auth.jsonfield.JSONField')(null=True))
+        db.alter_column('helios_election', 'public_key', self.gf('heliosauth.jsonfield.JSONField')(null=True))
 
         # Changing field 'Trustee.public_key'
-        db.alter_column('helios_trustee', 'public_key', self.gf('auth.jsonfield.JSONField')(null=True))
+        db.alter_column('helios_trustee', 'public_key', self.gf('heliosauth.jsonfield.JSONField')(null=True))
 
         # Changing field 'Trustee.decryption_proofs'
-        db.alter_column('helios_trustee', 'decryption_proofs', self.gf('auth.jsonfield.JSONField')(null=True))
+        db.alter_column('helios_trustee', 'decryption_proofs', self.gf('heliosauth.jsonfield.JSONField')(null=True))
 
         # Changing field 'Trustee.pok'
-        db.alter_column('helios_trustee', 'pok', self.gf('auth.jsonfield.JSONField')(null=True))
+        db.alter_column('helios_trustee', 'pok', self.gf('heliosauth.jsonfield.JSONField')(null=True))
 
         # Changing field 'Trustee.secret_key'
-        db.alter_column('helios_trustee', 'secret_key', self.gf('auth.jsonfield.JSONField')(null=True))
+        db.alter_column('helios_trustee', 'secret_key', self.gf('heliosauth.jsonfield.JSONField')(null=True))
 
         # Changing field 'Trustee.decryption_factors'
-        db.alter_column('helios_trustee', 'decryption_factors', self.gf('auth.jsonfield.JSONField')(null=True))
+        db.alter_column('helios_trustee', 'decryption_factors', self.gf('heliosauth.jsonfield.JSONField')(null=True))
 
         # Changing field 'CastVote.vote'
-        db.alter_column('helios_castvote', 'vote', self.gf('auth.jsonfield.JSONField')())
+        db.alter_column('helios_castvote', 'vote', self.gf('heliosauth.jsonfield.JSONField')())
 
 
     models = {
-        'auth.user': {
+        'heliosauth.user': {
             'Meta': {'unique_together': "(('user_type', 'user_id'),)", 'object_name': 'User'},
             'admin_p': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'info': ('auth.jsonfield.JSONField', [], {}),
+            'info': ('heliosauth.jsonfield.JSONField', [], {}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True'}),
-            'token': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'token': ('heliosauth.jsonfield.JSONField', [], {'null': 'True'}),
             'user_id': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'user_type': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
@@ -130,7 +130,7 @@ class Migration(SchemaMigration):
         },
         'helios.election': {
             'Meta': {'object_name': 'Election'},
-            'admin': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
+            'admin': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['heliosauth.User']"}),
             'archived_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'cast_url': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
             'complaint_period_ends_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
@@ -152,7 +152,7 @@ class Migration(SchemaMigration):
             'questions': ('helios.datatypes.djangofield.LDObjectField', [], {'null': 'True'}),
             'registration_starts_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'result': ('helios.datatypes.djangofield.LDObjectField', [], {'null': 'True'}),
-            'result_proof': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'result_proof': ('heliosauth.jsonfield.JSONField', [], {'null': 'True'}),
             'short_name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'tallies_combined_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'tallying_finished_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
@@ -196,7 +196,7 @@ class Migration(SchemaMigration):
             'cast_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'election': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios.Election']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']", 'null': 'True'}),
+            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['heliosauth.User']", 'null': 'True'}),
             'uuid': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
             'vote': ('helios.datatypes.djangofield.LDObjectField', [], {'null': 'True'}),
             'vote_hash': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True'}),

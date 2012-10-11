@@ -17,7 +17,9 @@ class LegacyObject(LDObject):
 class Election(LegacyObject):
     WRAPPED_OBJ_CLASS = models.Election
     FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description', 'voters_hash', 'openreg',
-              'frozen_at', 'public_key', 'cast_url', 'use_voter_aliases', 'voting_starts_at', 'voting_ends_at']
+              'frozen_at', 'public_key', 'cast_url', 'use_voter_aliases',
+              'voting_starts_at', 'voting_ends_at', 'workflow_type',
+              'help_email']
 
     STRUCTURED_FIELDS = {
         'public_key' : 'legacy/EGPublicKey',
@@ -66,7 +68,7 @@ class EncryptedVoteWithRandomness(LegacyObject):
     STRUCTURED_FIELDS = {
         'answers' : arrayOf('legacy/EncryptedAnswerWithRandomness')
         }
-    
+
 
 class Voter(LegacyObject):
     FIELDS = ['election_uuid', 'uuid', 'voter_type', 'voter_id_hash', 'name']
@@ -143,7 +145,7 @@ class EGZKProofCommitment(DictObject, LegacyObject):
         'A' : 'core/BigInteger',
         'B' : 'core/BigInteger'}
 
-    
+
 class EGZKProof(LegacyObject):
     WRAPPED_OBJ_CLASS = crypto_elgamal.ZKProof
     FIELDS = ['commitment', 'challenge', 'response']
@@ -151,7 +153,7 @@ class EGZKProof(LegacyObject):
         'commitment': 'legacy/EGZKProofCommitment',
         'challenge' : 'core/BigInteger',
         'response' : 'core/BigInteger'}
-        
+
 class EGZKDisjunctiveProof(LegacyObject):
     WRAPPED_OBJ_CLASS = crypto_elgamal.ZKDisjunctiveProof
     FIELDS = ['proofs']
@@ -175,9 +177,6 @@ class DLogProof(LegacyObject):
         'response' : 'core/BigInteger'}
 
     def __init__(self, wrapped_obj):
-        if isinstance(wrapped_obj, dict):
-            import pdb; pdb.set_trace()
-
         super(DLogProof,self).__init__(wrapped_obj)
 
 class Result(LegacyObject):

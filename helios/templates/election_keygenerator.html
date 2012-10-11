@@ -1,4 +1,5 @@
-{% extends "helios/templates/cryptobase.html" %}
+{% extends "helios/templates/trustee_home_base.html" %}
+
 {% block content %}
 <script language="javascript">
 
@@ -76,7 +77,13 @@ function show_sk() {
 }
 
 function download_sk() {
+  try{
+    var bb = new BlobBuilder;
+    bb.append(jQuery.toJSON(SECRET_KEY));
+    saveAs(bb.getBlob("text/plain;charset=utf-8"), "election_key.txt");
+  } catch (err) {
     UTILS.open_window_with_content(jQuery.toJSON(SECRET_KEY), "application/json");
+  }
 }
 
 function show_pk() {
@@ -86,8 +93,6 @@ function show_pk() {
 }
 
 </script>
-
-<h2 class="title">{{election.name}} &mdash; Trustee {{trustee.name}} &mdash; Key Setup</h2>
 
 <p>
   As a trustee, it's time to set up your key for this election.

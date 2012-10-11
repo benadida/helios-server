@@ -2,51 +2,62 @@
 <form onsubmit="return false;" class="prettyform" id="answer_form">
 <input type="hidden" name="question_num" value="{$T.question_num}" />
 
-<p>
-<br /> 
-<b>{$T.question.question}</b>
-<br />
-<span style="font-size: 0.6em;">Question #{$T.question_num + 1} of {$T.last_question_num + 1} &mdash;
- select 
-{#if $T.question.min && $T.question.min > 0}
-at least {$T.question.min} answer{#if $T.question.min > 1}s{#/if}, 
-{#/if} 
-{#if $T.question.max}
-up to {$T.question.max} answer{#if $T.question.max > 1}s{#/if}
-{#else}
-as many of the choices as you approve of
-{#/if}
-</span>
-</p>
-
-{#foreach $T.question.answers as answer}
-<span class="stv_choice">{$T.answer$index} - {$T.answer}
-</span>
-<br />
-{#/if}
-<br />
-<input type="text" id="stv_answer" id="stv_answer" value="2,0,1"/>
-
-<div id="warning_box" style="color: green; text-align:center; font-size: 0.8em; padding-top:10px; padding-bottom: 10px; height:50px;">
+<div class="row">
+  <div class="columns twelve">
+    <!--<h5>Επιλογή σειράς υποψηφίων</h5>-->
+    <p class="stv-description">
+    Κάντε κλικ στο όνομα του υποψήφιου που θέλετε να επιλέξετε απο την λίστα
+    "Διαθέσιμοι υποψήφιοι". Σε περίπτωση που δεν επιλέξετε κανέναν υποψήφιο, η
+    ψήφος σας θα καταμετρηθεί ως "λευκή". Όταν τελειώσετε με την επιλογή των 
+    υποψηφίων πατήστε στο κουμπί "Αποδοχή ψήφου" για να συνεχίσετε.
+    </p>
+  </div>
+  <div class="columns five stv-candidates">
+    <h6>Διαθέσιμοι Υποψήφιοι</h6>
+    <ul class="stv-candidates stv-list">
+      {#foreach $T.question.answers as answer}
+      <li class="stv-choice choice-{$T.answer$index}">
+      <a href="#" class="button disabled secondary small">{$T.answer}</a></li>
+      {#/foreach}
+    </ul>
+  </div>
+  <div class="columns six stv-choices offset-by-one">
+    <h6>Συμπληρωμένο ψηφοδέλτιο</h6>
+    <ul class="stv-choices stv-list">
+      {#foreach $T.question.answers as answer}
+      <li class="stv-ballot-choice choice-{$T.answer$index}">
+      <a class="button secondary clearfix small">
+        <span class="index-num">Επιλογή {$T.answer$index+1}</span>
+        <span class="value"></span>
+      </a>
+      </li>
+      {#/foreach}
+    </ul>
+  </div>
 </div>
 
+<input type="text" id="stv_answer" id="stv_answer" value="" style=""/>
 
 {#if $T.show_reviewall}
-<div style="float: right;">
-<input type="button" onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Proceed" />
+<div class="row">
+  <div class="columns twelve">
+  <input style="float:right" id="submit-stv" class="button medium success" type="button" 
+  onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Συνέχεια" />
+  <br />
+  <a class="show-audit-form" href="#">Υποβολή ψήφου ελέγχου</a>
+  {#/if}
 </div>
-{#/if}
+</div>
 
-{#if $T.question_num != 0}
-<input type="button" onclick="BOOTH.previous({$T.question_num})" value="Previous" />
-&nbsp;
-{#/if}
-
-{#if $T.question_num < $T.last_question_num}
-<input type="button" onclick="BOOTH.next({$T.question_num})" value="Next" />
-&nbsp;
-{#/if}
-
-<br clear="both" />
-
+<div class="row audit-form">
+  <div class="columns twelve">
+    <h5>Εισαγωγή κωδικού για υποβολή ψήφου ελέγχου</h5>
+    <p>
+    Σε περίπτωση που θέλετε να υποβάλετε ψήφο ελέγχου, παρακαλούμε συμπληρώστε
+    το ακόλουθο πεδίο με έναν απο τους "Κωδικούς ψήφου ελέγχου" απο τους οποίους
+    σας έχουν αποσταλεί στην ηλεκτρονική σας διευθυνση.
+    </p>
+    <label for="submit-pass-for-audit">Κωδικός ελέγχου</label><input id="submit-pass-for-audit" />
+  </div>
+</div>
 </form>

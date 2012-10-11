@@ -1,46 +1,74 @@
 
-<div style="float: right; background: lightyellow; margin-left: 20px; padding: 0px 10px 10px 10px; border: 1px solid #ddd; width:200px;">
-<h4><a onclick="$('#auditbody').slideToggle(250);" href="#">Audit</a> <span style="font-size: 0.8em; color: #444">[optional]</span></h4>
-<div id="auditbody" style="display:none;">
-<p>
-If you choose, you can audit your ballot and reveal how your choices were encrypted.
-</p>
-<p>
-You will then be guided to re-encrypt your choices for final casting.
-</p>
-<input type="button" value="Verify Encryption" onclick="BOOTH.audit_ballot();" class="pretty" />
-</p>
+<div class="row">
+  <div class="columns twelve">
+    <p>
+    Η  κρυπτογράφηση της ψήφου σας έχει ολοκληρωθεί. Σε αυτό το σημείο
+    επιβεβαιώστε ότι οι επιλογές σας αντιστοιχούν στην παρακάτω λίστα.  Σε
+    περίπτωση που θέλετε να αλλάξετε την σειρά επιλογής των υποψηφίων πατήστε
+    στο κουμπί <b>"Επιστροφή στην επιλογή υποψηφίων"</b> για να επεξεργαστείτε τις επιλογές σας.
+  </p>
+  <div class="panel confirm-vote">
+    {#foreach $T.questions as question}
+    <ul class="confirm-choices">
+      {#foreach $T.choices[$T.question$index] as choice}
+      <li><h6>Επιλογή {$T.choice$index+1}: {$T.choice}</h6></li>
+      {#/for}
+      {#if !$T.choices[$T.question$index].length }
+      <li><h5>Λευκή ψήφος</h5></li>
+      {#/if}
+    </ul>
+  </div>
+</div>
+<div class="columns twelve">
+  <a onclick="BOOTH.show_question({$T.question$index}); return false;"
+    class="button medium">Επιστροφή στην επιλογή υποψηφίων</a>
+  {#/for}
 </div>
 </div>
 
-<h3>Your ballot was successfully encrypted</h3>
+<br />
+<br />
+<div class="row">
+  <div class="columns twelve">
+  <p>Σε περίπτωση που δεν θέλετε να κάνετε αλλαγές στις επιλογές σας
+  παρακαλούμε κρατήστε το ακόλουθο <b>"μοναδικό αναγνωριστικό"</b> της κρυπτογραφημένης
+  ψήφου σας. Αφου αποθηκευσετε το αναγνωριστικό πατήστε το κουμπί
+  <b>"Υποβολή ψήφου"</b> για να προχωρήσετε στο τελικό βήμα υποβολής της ψήφου σας.
+  </p>
+  <div class="vote-hash panel">{$T.encrypted_vote_hash}
+    <div class="vote-hash-actions">
+      <span class="button tiny" onclick="BOOTH.show_receipt(); return false;">Εκτύπωση</span>
+      <a href="mailto:?subject=Σύστημα 'Ζευς' - Αναγνωριστικό ψήφου - {$T.election.name}&body=%0AΑναγνωριστικό ψήφου για την ψηφοφορία {$T.election.name}%0A%0A  {$T.encrypted_vote_hash}" class="button tiny">Αποστολή μέσω email</a>
+    </div>
+  </div>
+</div>
+</div>
 
-<p>
-Please <b><u>keep a record</u></b> of your smart ballot tracker [<a onclick="BOOTH.show_receipt(); return false;" href="#">print</a>]
-&nbsp; [<a target="_blank" href="mailto:?subject=Helios%20Receipt - {$T.election.name}&body=%0AThis is your smart ballot tracker for {$T.election.name}%0A%0A  {$T.encrypted_vote_hash}">email</a>]:<br /><br />
+<form>
+<div class="confirm-checks">
+  <div class="clearfix form-row">
+    <label for="required-to-cast-2" onclick="BOOTH.check_cast_form()">
+      <input type="checkbox" id="required-to-cast-2" style=""
+      onclick="BOOTH.check_cast_form()">
+      <span class="custom checkbox" onclick="BOOTH.check_cast_form()"></span>
+      Επιβεβαιώνω ότι αυτή τη στιγμή είμαι μόνος 
+      στο τερματικό μου, και κανένας άλλος δεν έχει παρακολουθήσει τις επιλογές μου.
+    </label>
+  </div>
+</div>
+</form>
 
-<b><tt style="font-size: 16pt;">&nbsp;&nbsp;&nbsp;{$T.encrypted_vote_hash}</tt></b><br /><br />
-
-</p>
-
-<p>
-To protect your privacy:
-<ul>
-  <li> Helios has not yet asked for your identity.</li>
-  <li> Once you click "Proceed", Helios will remember only your encrypted vote.</li>
-  <li> Thus, only you know your vote.</li>
-</ul>
-</p>
-
-<button id="proceed_button" onclick="BOOTH.cast_ballot();">Proceed to Cast</button><br />
+<button id="proceed_button" class="button success medium secondary cast-ballot"
+  onclick="BOOTH.cast_ballot();">Υποβολή ψήφου</button><br />
 <div id="loading_div"></div>
 
-
-
-<form method="POST" action="{$T.cast_url}" id="send_ballot_form" class="prettyform">
-<input type="hidden" name="election_uuid" value="{$T.election_uuid}" />
-<input type="hidden" name="election_hash" value="{$T.election_hash}" />
-<textarea name="encrypted_vote" style="display: none;">
-{$T.encrypted_vote_json}
-</textarea>
+<form method="post" action="{$T.cast_url}" id="send_ballot_form" class="prettyform">
+  <input type="hidden" name="election_uuid" value="{$T.election_uuid}" />
+  <input type="hidden" name="election_hash" value="{$T.election_hash}" />
+  <input type="hidden" name="audit_password" value="{$T.audit_password}" />
+  <textarea name="encrypted_vote" style="display: none;">
+    {$T.encrypted_vote_json}
+  </textarea>
 </form>
+
+

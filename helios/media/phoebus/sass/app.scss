@@ -1,0 +1,188 @@
+// You custom settings file to override Foundation defaults
+@import "settings";
+
+// Comment out this import if you are customizing you imports below
+@import "foundation";
+
+$customBorder: 1px solid #ddd;
+
+body {
+  background-image: url("../images/pattern.jpg");
+}
+
+body.booth {
+  #progress_div .tabs a { cursor: text}
+}
+
+body {
+  
+  #progress_div .tabs a { font-size: 12px; }
+  .extra-election-actions { margin-top: 10px; span{ float: none !important;}}
+  #cast_form {
+    .required-to-cast { float: left; }
+    .submit { display: none; }
+  }
+
+  .clearfix { 
+    @include clearfix();
+  }
+
+  #header h4, h1 {
+    font-family: 'Didact Gothic', Helvetica, Arial, sans-serif !important;
+
+    span { font-family: $bodyFontFamily !important }
+  }
+  
+  #header { margin-bottom: 50px; }
+  #banner {
+    border-bottom: $customBorder;
+  }
+
+  #footer {
+    padding: 10px 0;
+    border-top: $customBorder;
+    margin-top: 20px;
+    border-bottom: $customBorder;
+
+    .footer-icons { float: right; }
+  }
+
+  .start-voting { float: left; margin-top: 20px; }
+
+  
+  .stv-candidates {
+  }
+
+  ol li.step { margin-bottom: 10px; }
+  ol li.step .step-title { font-weight: bold; display: block;}
+  ol li.step .step-desc { font-style: italic; }
+  
+  .panel.confirm-vote {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  p.alert {color: red}
+  .green { color: #5DA423; }
+
+  .vote-hash { text-align: left; font-weight: bold; font-size: 1.2em;}
+  .vote-hash-actions { float: right; margin-top: -2px !important;}
+
+  ul.stv-list { 
+    list-style: none; 
+    li { margin-bottom: 10px; }
+    .button { width: 100%; }
+    a span.index-num { font-size: 0.8em; float: left; }
+    .stv-ballot-choice a { text-align: right; }
+    .stv-ballot-choice a span:hover { background-color: transparent !important; }
+  }
+  #stv_answer { display: none; }
+  span.election-desc-toggle { cursor: pointer; float: right; padding: 5px; margin-top: 2px; }
+  h4#election-name span { float: right; }
+  h4#election-name span.label { padding:4px; margin-top:5px }
+  
+  ul.confirm-choices { list-style: none; margin-bottom: 10px; margin-top: 10px; }
+  #confirm-vote { margin-left: 10px; }
+  #percent_done_container { margin-bottom: 10px; }
+
+  .audit-info { font-size: 0.5em; h4{ font-size: 1em; color: #aaa}}
+  #auditbody { display: none; }
+
+  .audit-button { float: right; margin-top: -32px;}
+  form .form-row.checked { label { color: green !important; }}
+  form .form-row { margin-left: 25px; margin-bottom: 10px; label { text-indent: -25px; font-size: 0.9em; color:red;
+      font-weight: bold;}}
+
+  .cast-actions .cancel { float: right;}
+  .cast-actions .submit { float: left;}
+  .election-description { display: none; }
+
+  table.voters {
+      thead th { font-size: 11px; }
+      tbody td { font-size: 12px; }
+  }
+  
+  a.show-audit-form { 
+    &.active {
+      color: #000;
+    }
+    color: #aaa; 
+  }
+  .audit-form { display: none; }
+
+  .description p {
+
+  }
+
+  label {
+    font-weight: bold;
+    color: $mainColor;
+  }
+}
+
+body.election-page {
+    //h4 span.election-desc-toggle { display: none;}
+    //.election-description { display: block; }
+}
+
+body > .row {
+  border-right: $customBorder;
+  border-left: $customBorder;
+  background-color: #fff;
+
+}
+
+body {
+  margin-top: 20px !important;
+}
+
+body .bg-wrapper {
+  margin-top: 20px;
+  width: 768px;
+  margin: 0 auto;
+  @include box-shadow(#3E5665 0px 0px 100px 0px);
+  background-color: #fff;
+}
+
+
+// ----------------------------------------
+// Import specific parts of Foundation by commenting the import "foundation"
+// and uncommenting what you want below. You must uncomment the following if customizing
+
+@import "compass/css3";
+// @import "foundation/settings";
+// @import "foundation/functions/all";
+// @import "foundation/common/globals";
+// @import "foundation/mixins/clearfix";
+// @import "modular-scale";
+
+// Control which mixins you have access too
+
+// @import "foundation/mixins/css-triangle";
+// @import "foundation/mixins/font-size";
+
+// Must include next two for semantic grid to work
+
+// @import "foundation/mixins/respond-to";
+// @import "foundation/mixins/semantic-grid";
+
+// Must include the grid for any responsiveness
+
+// @import "foundation/components/grid";
+
+// Control which common styles get compiled
+
+@import "foundation/common/typography";
+@import "foundation/common/forms";
+
+// Control which components you get if customizing
+
+// @import "foundation/components/modules/buttons";
+// @import "foundation/components/modules/tabs";
+// @import "foundation/components/modules/ui";
+// @import "foundation/components/modules/topbar";
+// @import "foundation/components/modules/navbar";
+// @import "foundation/components/modules/orbit";
+// @import "foundation/components/modules/reveal";
+// @import "foundation/components/modules/offcanvas";
+

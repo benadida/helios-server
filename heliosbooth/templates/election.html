@@ -1,30 +1,50 @@
-
 <div id="questions_div">
-<p>
-    To cast a vote, you will be led through the following steps.<br />
-    If you have not yet logged in, you will be asked to do so at the very end of the process.
-<p>
-    
-<ol>
-    <li> <b>Select</b> your options.<br />
-<span style="font-size: 14pt;">Answer the questions, and review your choices.</span></li>
-<br />
 
-    <li> <b>Encrypt</b> your selection.<br />
-<span style="font-size: 14pt;">
-  Your selection is encrypted safely inside in your browser.<br />
-  A smart ballot tracker is given to let you track your ballot.<br />
-</span>
-</li>
-<br />
+  <div class="election-quick-guide panel">
+    <p>Καλώς ήλθατε στο "ηλεκτρονικό παραβάν" του συστήματος ψηφοφορίας
+    "Ζευς".</p>
+    <p>
+    Φτάνοντας σε αυτή τη σελίδα σημαίνει ότι έχετε ακολουθήσει το σύνδεσμο που
+    σας έχει σταλεί στην ηλεκτρονική σας διεύθυνση και έχετε την δυνατότητα να
+    ψηφίσετε για τις <b>"{$T.election.name}"</b>.</p>
 
-    <li> <b>Submit</b> your encrypted ballot.<br />
-<span style="font-size: 14pt;">
-Proceed to log in and cast your encrypted ballot for tallying.
-</span>
-</li>
-</ol>
+    <p>
+    Για να αποστείλετε την ηλεκτρονική σας ψήφο θα πρέπει να ακολουθήσετε τα
+    επόμενα βήματα. Στο πάνω μέρος της σελίδας θα σας εμφανίζονται επιπλέον
+    οδηγίες χρήσιμες για την ολοκλήρωση του εκάστοτε βήματος.
+    </p>
 
-<div align="center"><button onclick="BOOTH.show_question(0);">Start</button></div>
+    <ol>
+      <li class="step"> 
+      <span class="step-title">
+        Συμπλήρωση ψηφοδελτίου.
+      </span>
+      <span class="step-desc">
+        Στο βήμα αυτό θα πρέπει να επιλέξετε την σειρά των υποψηφίων που θέλετε
+        να ψηφίσετε.
+      </span>
+      </li>
+      <li class="step"> 
+      <span class="step-title">
+        Κρυπτογράφηση επιλογής και υποβολή ψήφου.
+      </span>
+      <span class="step-desc">
+        Η επιλογή που κάνατε στο προηγούμενο βήμα θα κρυπτογραφηθεί από
+        "πρόγραμμα πλοήγησης" που χρησιμοποιείτε. Ένα μοναδικό αναγνωριστικό θα
+        σας δοθεί για να μπορέσετε αργότερα να επιβεβαιώσετε οτι η ψήφος σας
+        έχει καταμετρηθεί.
+      </span>
+      </li>
+    </ol>
+    <p>
+    Οποιαδήποτε στιγμή μπορείτε να επισκεφθείτε το σύνδεσμο που σας έχει
+    αποσταλεί και να ξανάψηφίσετε. Κάθε φορά που ψηφίζεται η προηγούμενη ψήφος
+    σας αποκλείετε από το σύνολο των ψήφων που θα καταμετρηθούν για την εξαγωγή
+    του τελικού αποτελέσματος.
+    </p>
+  </div>
+
+  <button class="start-voting button success medium button-submit"
+    onclick="BOOTH.show_question(0);">Εκκίνηση</button>
 </div>
 

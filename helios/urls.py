@@ -22,10 +22,10 @@ urlpatterns = patterns('',
 
   # vote shortcut
   (r'^v/(?P<vote_tinyhash>[^/]+)$', castvote_shortcut),
-  
+
   # trustee login
   (r'^t/(?P<election_short_name>[^/]+)/(?P<trustee_email>[^/]+)/(?P<trustee_secret>[^/]+)$', trustee_login),
-  
+
   # election
   (r'^elections/params$', election_params),
   (r'^elections/verifier$', election_verifier),
@@ -33,9 +33,9 @@ urlpatterns = patterns('',
   (r'^elections/new$', election_new),
   (r'^elections/administered$', elections_administered),
   (r'^elections/voted$', elections_voted),
-  
+
   (r'^elections/(?P<election_uuid>[^/]+)', include('helios.election_urls')),
-  
+
 )
 
 

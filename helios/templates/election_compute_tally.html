@@ -1,31 +1,30 @@
-{% extends TEMPLATE_BASE %}
+{% extends "election_page.html" %}
 
-{% block title %}Compute Encryted Tally for {{election.name}}{% endblock %}
+{% block tabs_menu %}
+<dd class="active"><a 
+  href="{% url helios.views.one_election_view election.uuid %}">Κλείσιμο κάλπης</a></dd>
+{% endblock %}
 
 {% block content %}
-  <h2 class="title">Compute Tally for Election: {{election.name}}</h2>
 
 <div id="instructions">
 {% if election.num_cast_votes %}
 <p>
-    You are about to compute the encrypted tally for election <b>{{election.name}}</b>.
+    Είστε σίγουρος οτι θέλετε να κλείσετε την κάλπη της ψηφοφορίας <b>{{election.name}}</b>.
 </p>
 
 <p>
-    Once you do this, voters will no longer be able to cast a ballot.
+    Μόλις κλείσει η κάλπη κανένας ψηφοφόρος δεν θα μπορεί να ψηφίσει.
 </p>
 
-<form method="post" action="" onsubmit="alert('ok, tally has begun')" class="pretty">
-<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<form method="post" action="" onsubmit="alert('Η μείξη κρυπτογραφημένων ψήφων έχει ξεκινήσει.')" class="pretty">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
     
-<input class="pretty" type="submit" value="compute encrypted tally!" />
-<button onclick="document.location='./view'; return false;">never mind</button>
+<input class="button success pretty small" type="submit" value="Κλείσιμο" />
+<button class="button alert small" onclick="document.location='./view'; return false;">Ακύρωση</button>
 </form>
 {% else %}
-<p>
-No votes have been cast in this election. At least one vote must be cast before you compute the tally.<br /><br />
-<a href="./view">back to election</a>
-</p>
+<a href="./view">Επιστροφή στην σελίδα των εκλογών</a>
 {% endif %}
 </div>
 

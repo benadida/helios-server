@@ -34,6 +34,7 @@ urlpatterns = patterns('',
     (r'^/trustees/(?P<trustee_uuid>[^/]+)/upload-pk$', trustee_upload_pk),
     (r'^/trustees/(?P<trustee_uuid>[^/]+)/decrypt-and-prove$', trustee_decrypt_and_prove),
     (r'^/trustees/(?P<trustee_uuid>[^/]+)/upload-decryption$', trustee_upload_decryption),
+    (r'^/trustees/(?P<trustee_uuid>[^/]+)/verify-key$', trustee_verify_key),
 
     # election voting-process actions
     (r'^/view$', one_election_view),
@@ -64,6 +65,7 @@ urlpatterns = patterns('',
     (r'^/cast$', one_election_cast),
     (r'^/cast_confirm$', one_election_cast_confirm),
     (r'^/password_voter_login$', password_voter_login),
+    (r'^/l/(?P<voter_uuid>.*)/(?P<voter_secret>.*)$', voter_quick_login),
     (r'^/cast_done$', one_election_cast_done),
 
     # post audited ballot

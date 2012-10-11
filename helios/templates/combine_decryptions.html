@@ -1,16 +1,22 @@
 {% extends TEMPLATE_BASE %}
 
-{% block title %}Release Tally &mdash; {{election.name}}{% endblock %}
-{% block content %}
-  <h2 class="title">{{election.name}} &mdash; Release Tally <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">cancel</a>]</span></h2>
+{% block tabs_menu %}
+<dd class="active"><a 
+  href="{% url helios.views.one_election_view election.uuid %}">Υπολογισμός αποτελέσματος</a></dd>
+{% endblock %}
 
-  <p>
-    You are about to release the tally for this election
+{% block content %}
+
+<p>
+Είστε σίγουρος οτι θέλετε να υπολογίσετε τα αποτελέσματα της ψηφοφορίας: 
+<b>{{ election.name }}</b>;
   </p>
 
   <form method="POST" action="">
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    <input type="submit" value="release the tally!" />
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" class=""/>
+    <input type="submit" value="Υπολογισμός αποτελέσματος" class="button
+    success"/>
+<a class="button alert" href="{% url helios.views.one_election_view election.uuid %}">Ακύρωση</a>
   </form>
 
 {% endblock %}

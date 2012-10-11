@@ -1,0 +1,28 @@
+{% extends "helios/templates/cryptobase.html" %}
+
+{% block title %}{{election.name}}: σελίδα μέλους εφορευτικής επιτροπής{% endblock %}
+
+
+
+{% block head_subtitle %}
+   <h4 id="election-name" class="subheader">
+      {{election.name}}<span class="button small
+        election-desc-toggle">Πληροφορίες</span>
+    </h4>
+  <div id="election-description-modal" class="reveal-modal">
+    <h4>{{ election.name }}</h4>
+    <p class="election-description-in-modal">{{ election.description }}</p>
+  </div>
+  <script>
+    $("span.election-desc-toggle").live("click", function(){
+      $('#election-description-modal').reveal();
+    })
+</script>
+{% endblock %}
+
+
+{% block tabs_menu %}
+<dd class="active"><a 
+  href="{% url helios.views.one_election_view election.uuid %}">Ενέργειες μέλους
+εφορευτικής επιτροπής</a></dd>
+{% endblock %}

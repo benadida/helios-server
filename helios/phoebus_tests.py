@@ -12,7 +12,7 @@ import django_webtest
 
 from django.conf import settings
 
-from auth import models as auth_models
+from heliosauth import models as auth_models
 from helios import models
 from helios.crypto import elgamal
 from helios.crypto.algs import *
@@ -322,6 +322,37 @@ class PhoebusElectionTests(WebTest):
         self.assertEqual(response.status_code, 200)
         self._clear_login()
 
+    def _quick_init_election(self):
+        election = self._create_election()
+        self._create_election_questions(election)
+        election.generate_trustee(ELGAMAL_PARAMS)
+        self._upload_voters(election)
+        self._create_election_mixnets(election, 2)
+        self._freeze_election(election)
+        return models.Election.objects.get(uuid=election.uuid)
+
+    def test_voter_url_login(self):
+        el = self._quick_init_election()
+
+        el_url = el.get_short_url()
+
+        response = self.client.get(el_url)
+        self.assertEqual(response.status_code, 302)
+
+        response = self.client.get(el_url, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "password_voter_login")
+
+        voter = models.Voter.objects.all()[0]
+        login_url = voter.get_quick_login_url()
+        response = self.client.get(login_url)
+        self.assertEqual(response.status_code, 302)
+        assert self.client.session.get('CURRENT_VOTER')
+        response = self.client.get(login_url, follow=True)
+        self.assertContains(response, "You are signed in")
+
+
+
     def test_complete_election(self):
         # ballot preparation
         self.VOTERS = 3
@@ -332,6 +363,7 @@ class PhoebusElectionTests(WebTest):
         #        This may change by removing hardcoded [0]'s.
         election = self._create_election()
         self._create_election_questions(election)
+        election.generate_trustee(ELGAMAL_PARAMS)
         self.assertEqual(models.Election.objects.count(), 1)
 
         # ADMIN: At this step helios has already added the "Helios Trustee" to
@@ -433,12 +465,22 @@ class PhoebusElectionTests(WebTest):
             'public_key': pk, 'nr_candidates': 6, 'max_choices': 6})
         bd.decrypt(sk)
 
+        e = ph.Election(public_key=pk, candidates=range(6))
+        b = ph.Ballot(election=e, answers=[0])
+        b.encrypt()
+
+        eb = b.encrypted_ballot
+        bd = ph.Ballot.from_dict({'encrypted_ballot':{
+            'a': eb['a'], 'b': eb['b']},
+            'public_key': pk, 'nr_candidates': 6, 'max_choices': 6})
+        print bd.decrypt(sk), "DECRYPT"
+
         for i in range(10):
-            print ph.Ballot.mk_random(e)
+            ph.Ballot.mk_random(e)
 
         choice = [1,3,3,1,2,1]
-        self.assertEqual(ph.gamma_decode(ph.gamma_encode([1,3,3,1,2,1], 6), 6),
-                         choice)
+        #self.assertEqual(ph.gamma_decode(ph.gamma_encode([1,3,3,1,2,1], 6), 6),
+                         #choice)
 
     def test_mixnet_to_json(self):
         import copy

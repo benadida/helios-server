@@ -185,7 +185,7 @@ STV.gamma_encode = function(choices, nr_candidates, max_choices) {
     nr_candidates = params.nr_candidates;
     max_choices = params.max_choices;
 
-    if (!nr_choices) { return 0 };
+    if (!nr_choices) { return new BigInt(''+0) };
     
     offsets = STV.get_offsets(nr_candidates);
 
@@ -417,6 +417,8 @@ HELIOS.Election.fromJSONObject = function(d) {
   if (!el.questions)
     el.questions = [];
   
+  el.help_email = d.help_email;
+
   if (el.public_key) {
     el.public_key = ElGamal.PublicKey.fromJSONObject(el.public_key);
   } else {
@@ -424,7 +426,8 @@ HELIOS.Election.fromJSONObject = function(d) {
     el.public_key = HELIOS.get_bogus_public_key();
     el.BOGUS_P = true;
   }
-    
+   
+  if (d.workflow_type) { el.workflow_type = d.workflow_type }
   return el;
 };
 
@@ -459,7 +462,7 @@ BALLOT.pretty_choices = function(election, ballot) {
 // open up a new window and do something with it.
 UTILS.open_window_with_content = function(content, mime_type) {
     if (!mime_type)
-	mime_type = "text/plain";
+	mime_type = "text/utf8";
     if (BigInt.is_ie) {
 	    w = window.open("");
 	    w.document.open(mime_type);
@@ -505,7 +508,7 @@ HELIOS.EncryptedAnswer = Class.extend({
     // store answer
     // CHANGE 2008-08-06: answer is now an *array* of answers, not just a single integer
     this.answer = answer;
-
+    
     if (question.tally_type == "stv") {
         answer[0] = STV.to_relative_answers(answer[0], question.answers.length);
     }

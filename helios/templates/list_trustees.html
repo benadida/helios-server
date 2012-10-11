@@ -1,27 +1,19 @@
-{% extends "helios/templates/cryptobase.html" %}
+{% extends "election_page.html" %}
 
-{% block title %}Trustees for {{election.name}}{% endblock %}
-
+{% block title %}{{election.name}}: Ψηφοφόροι{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Trustees <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
 
 <p>
-    Trustees are responsible for decrypting the election result.<br />
-    Each trustee generates a keypair and submits the public portion to Helios.<br />
-    When it's time to decrypt, each trustee needs to provide his secret key.
+Τα μέλη της εφορευτικής επιτροπής που εμφανίζονται στην παρακάτω λίστα 
+είναι υπεύθυνα για την αποκρυπτογράφηση του αποτελέσματος των ηλεκτρονικών
+εκλογών.
 </p>
 
 {% if not election.frozen_at %}
 
-<p>
-  Helios is automatically your first trustee and will handle its keypair generation and decryption automatically.<br />
-  You may add additional trustees if you want, and you can even remove the Helios trustee.<br />
-  However, we recommend you do this only if you have a solid understanding of the trustee's role.
-</p>
-
-<p>
-    [ <a onclick="return(confirm('Adding your own trustee requires a good bit more work to tally the election.\nYou will need to have trustees generate keypairs and safeguard their secret key.\n\nIf you are not sure what that means, we strongly recommend\nclicking Cancel and letting Helios tally the election for you.'));" href="{% url helios.views.new_trustee election.uuid %}">add a trustee</a> ]
-</p>
 {% if not election.has_helios_trustee %}
 <p>
     <a href="{% url helios.views.new_trustee_helios election.uuid %}">add Helios as a trustee</a>
@@ -33,34 +25,40 @@
 
 {% else %}
 {% for t in trustees %}
-<h3> Trustee #{{forloop.counter}}: {{t.name}} 
+{% if t != election.get_helios_trustee %}
+<h5>
+{{ t.name }} 
 {% if admin_p %}
-{% if t.secret_key %}
-{% if not election.frozen_at %}[<a onclick="return confirm('Are you sure you want to remove Helios as a trustee?');" href="{% url helios.views.delete_trustee election.uuid %}?uuid={{t.uuid}}">x</a>]{% endif %}
-{% else %}
-({{t.email}})
-{% if not election.frozen_at %}[<a onclick="return confirm('Are you sure you want to remove this Trustee?');" href="{% url helios.views.delete_trustee election.uuid %}?uuid={{t.uuid}}">x</a>]{% endif %}
-[<a onclick="return confirm('Are you sure you want to send this trustee his/her admin URL?');" href="{% url helios.views.trustee_send_url election.uuid t.uuid %}">send login</a>]
+<br /><span style="font-size:0.8em; color:#aaa">{{t.email}}</span>
+<a class="button success small"
+href="{% url helios.views.trustee_send_url election.uuid t.uuid %}">
+αποστολή συνδέσμου</a>
+{% if not election.frozen_at %}
+<a class="button alert small"
+onclick="return confirm('Είστε σίγουρος οτι θέλετε να διαγράψετε το συγκεκριμένο μέλος;');" 
+href="{% url helios.views.delete_trustee election.uuid %}?uuid={{t.uuid}}">Διαγραφή</a>
 {% endif %}
 {% endif %}
-</h3>
+</h5>
 
-<p>
-{% if t.public_key_hash %}
-  Public Key Fingerprint: <tt style="font-size:1.5em;">{{t.public_key_hash}}</tt>
-{% else %}
-No public key uploaded yet.
-{% endif %}
-</p>
+    <p>
+    {% if t.public_key_hash %}
+    Αναγνωριστικό ηλεκτρονικού κλειδιού: <tt style="font-size:1.5em;">{{t.public_key_hash}}</tt>
+    {% else %}
+    <span class="label alert">Δεν έχει οριστεί ηλεκτρονικό κλειδί.</span>
+    {% endif %}
 
-{% if election.encrypted_tally %}
-{% if t.decryption_factors %}
-<b>tally recorded for this trustee.</b>
-{% else %}
-<em>waiting for this trustee's tally</em>
+    {% if election.encrypted_tally  and admin_p %}
+    {% if t.decryption_factors %}
+    <span class="success label">Το μέλος έχει αποκρυπτογραφήσει τα αποτελέσματα
+        επιτυχώς.</b>
+    {% else %}
+    <span class="alert label">Το μέλος δεν έχει αποκρυπτογραφήσει τα αποτελέσματα.</b>
+    {% endif %}
+    {% endif %}
+    </p>
+    </li>
 {% endif %}
-{% endif %}
-</li>
 {% endfor %}
 </ul>
 
