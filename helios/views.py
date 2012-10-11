@@ -240,7 +240,7 @@ def election_new(request):
         election = Election()
         election, trustees = election_form.save(election, user.faculty, ELGAMAL_PARAMS)
         election.admins.add(user)
-        return HttpResponseRedirect(reverse(voters_upload, args=[election.uuid]))
+        return HttpResponseRedirect(reverse(one_election_questions, args=[election.uuid]))
 
 
   return render_template(request, "election_new", {'election_form': election_form, 'error': error})
@@ -567,6 +567,9 @@ def one_election_cast(request, election):
 
   user = get_user(request)
   voter = get_voter(request, user, election)
+
+  if not voter:
+    raise PermissionDenied
 
   encrypted_vote = request.POST['encrypted_vote']
 
@@ -990,6 +993,10 @@ def one_election_questions(request, election):
     election.save()
     election.update_answers()
 
+    if election.voter_set.count() == 0:
+      return HttpResponseRedirect(reverse(voters_upload,
+                                        args=[election.uuid]))
+
     return HttpResponseRedirect(reverse(one_election_view,
                                         args=[election.uuid]))
 
@@ -1308,7 +1315,7 @@ def voters_upload(request, election):
         request.session['voter_file_id'] = voter_file_obj.id
 
         # import the first few lines to check
-        voters = [v for v in voter_file_obj.itervoters()][:5]
+        voters = [v for v in voter_file_obj.itervoters()]
 
         return render_template(request, 'voters_upload_confirm', {'election': election,
                                                                   'voters': voters,
@@ -1379,6 +1386,7 @@ def voters_email(request, election):
 
   if request.method == "GET":
     email_form = forms.EmailVotersForm()
+    email_form.fields['subject'].initial = TEMPLATES[template]
     if voter:
       email_form.fields['send_to'].widget = email_form.fields['send_to'].hidden_widget()
   else:
