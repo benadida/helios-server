@@ -119,7 +119,7 @@ SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 LOGIN_URL = '/auth/'
 LOGOUT_ON_CONFIRMATION = False
 
-SITE_DOMAIN = "kpap-edet.grnet-hq.admin.grnet.gr"
+SITE_DOMAIN = "zeus.minedu.gov.gr"
 # The two hosts are here so the main site can be over plain HTTP
 # while the voting URLs are served over SSL.
 URL_HOST = get_from_env("URL_HOST", "http://%s:8000" % SITE_DOMAIN)
