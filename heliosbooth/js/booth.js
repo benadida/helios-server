@@ -495,7 +495,7 @@ $(document).ready(function() {
     BOOTH.synchronous = !(USE_SJCL && window.Worker);
 
     // we do in the browser only if it's asynchronous
-    BigInt.in_browser = !BOOTH.synchronous;
+    BigInt.in_browser = true;
 
     // set up dummy bigint for fast parsing and serialization
     if (!BigInt.in_browser)
