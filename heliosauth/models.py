@@ -93,10 +93,12 @@ class User(models.Model):
     if AUTH_SYSTEMS.has_key(self.user_type):
       AUTH_SYSTEMS[self.user_type].update_status(self.user_id, self.info, self.token, status)
 
-  def send_message(self, subject, body):
+  def send_message(self, subject, body, attachments=[]):
     if AUTH_SYSTEMS.has_key(self.user_type):
       subject = subject.split("\n")[0]
-      AUTH_SYSTEMS[self.user_type].send_message(self.user_id, self.name, self.info, subject, body)
+      AUTH_SYSTEMS[self.user_type].send_message(self.user_id, self.name,
+                                                self.info, subject, body,
+                                                attachments=attachments)
 
   def send_notification(self, message):
     if AUTH_SYSTEMS.has_key(self.user_type):

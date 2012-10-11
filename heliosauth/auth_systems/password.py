@@ -10,7 +10,7 @@ import json
 
 from django.core.urlresolvers import reverse
 from django import forms
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from django.conf import settings
 from django.http import HttpResponseRedirect
 
@@ -166,7 +166,11 @@ def get_user_info_after_auth(request):
 def update_status(token, message):
   pass
 
-def send_message(user_id, user_name, user_info, subject, body):
+def send_message(user_id, user_name, user_info, subject, body, attachments=[]):
   email = user_id
   name = user_name or user_info.get('name', email)
-  send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, email)], fail_silently=False)
+  message = EmailMessage(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, email)])
+  for attachment in attachments:
+      message.attach(*attachment)
+
+  message.send(fail_silently=False)
