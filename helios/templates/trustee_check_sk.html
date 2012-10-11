@@ -35,27 +35,27 @@ function check_sk(sk_value) {
     
     $('#processing').hide();
 
-    var reset_link = "<br /><a href='javascript:reset();'>try again</a>";
+    var reset_link = "<br /><a href='javascript:reset();'>Προσπαθήστε ξανά</a>";
     if (key_ok_p) {
-      $('#result').html("your secret key matches!");
+      $('#result').html("Το μυστικό κλειδί σας είναι έγκυρο!");
     } else {
-      $('#result').html("OH OH, your key is bad." + reset_link);
+      $('#result').html("Το μυστικό κλειδί σας είναι εσφαλμένο." + reset_link);
     }
 }
 </script>
-  <h2 class="title">{{election.name}} &mdash; Trustee {{trustee.name}} &mdash; Check Secret Key <span style="font-size:0.7em;">[<a href="./home">back to trustee home</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; Επίτροπος {{trustee.name}} &mdash; Έλεγχος μυστικού κλειδιού<span style="font-size:0.7em;">[<a href="./home">επιστροφή στην αρχική σελίδα</a>]</span></h2>
 
 <p>
-Your public key fingerprint is: <b>{{trustee.public_key_hash}}</b>
+Το αποτύπωμα του δημόσιου κλειδιού σας είναι: <b>{{trustee.public_key_hash}}</b>
 </p>
 
 <div id="loading">
-loading crypto functions...
+Φόρτωμα συναρτήσεων κρυπτογράφησης...
 </div>
 
 <div id="input" style="display:none;">
 <p>
-To verify that you have the right secret key, paste it here:
+Για να βεβαιωθείτε ότι έχετε το σωστό ιδιωτικό κλειδί, επικολλήσετε το εδώ: 
 <p>
 
 <form onsubmit="check_sk(this.secret_key.value); this.secret_key.value=''; return false;">
@@ -67,7 +67,7 @@ To verify that you have the right secret key, paste it here:
 </div>
 
 <div id="processing" style="display:none;">
-checking your secret key...
+Έλεγχος ιδιωτικού κλειδιού...
 </div>
 
 <div id="result">
