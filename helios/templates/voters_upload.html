@@ -1,23 +1,23 @@
 {% extends TEMPLATE_BASE %}
 
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Bulk Upload Voters <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; Μαζική μεταφόρτωση χρηστών<span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">επιστροφή στην εκλογή</a>]</span></h2>
 
 <form method="post" action="" id="upload_form" enctype="multipart/form-data">
   <p>
-    If you would like to specify your list of voters by name and email address,<br />
-    you can bulk upload a list of such voters here.<br /><br />
+    Μπορείτε να καθορίστε και να μεταφορτώσετε την λίστα των ψηφοφόρων δίνοντας το όνομα και την διεύθυνση του ηλεκτρονικού ταχυδρομείου τους εδώ.<br /><br />
 
-    Please prepare a text file of comma-separated values, as follows:
+    Παρακαλώ προετοιμάστε ένα αρχείο απλού κειμένου σε μορφή CSV, όπως το παρακάτω:
   </p>
   <pre>
-      benadida,ben@adida.net,Ben Adida
-      bob,bob@acme.org,Bob Acme
+      ben@adida.net,Ben Adida
+      bob@acme.org,Bob Acme
       ...
   </pre> 
 
   <p>
-    The easiest way to prepare such a file is to use a spreadsheet program and to export as "CSV".
+    Ο ευκολότερος τρόπος για να προετοιμάσετε ένα τέτοιο αρχείο είναι 
+    να χρησιμοποιήσετε ένα πρόγραμμα υπολογιστικών φύλλων και να το εξάγετε σε μορφή CSV.
   </p>
   {% if error %}
   <div style="color: red;">{{error}}</div>
@@ -32,8 +32,8 @@
 </div>
 
 <div id="done" style="display:none;">
-  OK, done uploading.<br />
-  You can now <a href="./manage">view the list of voters</a>.
+  Η μεταφόρτωση ολοκληρώθηκε.<br />
+  Μπορείτε τώρα να <a href="./manage">δείτε την λίστα των ψηφοφόρων</a>.
 </div>
 
 {% endblock %}
