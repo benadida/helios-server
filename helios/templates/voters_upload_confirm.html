@@ -6,25 +6,27 @@
 {% endblock %}
 
 {% block content %}
-<h5>Διαχείριση ψηφοφόρων</h5>
+<h5>Μαζική μεταφόρτωση χρηστών</h5>
 <p>
-You have uploaded a file of voters. The first few rows of this file are:
+Στο αρχείο που μόλις μεταμορφόσατε εντοπίσαμε τις ακόλουθες εγγραφές.
 </p>
 
 <table>
-<tr><th>Voter Login</th><th>Email Address</th><th>Name</th></tr>
+<tr><th>Ηλεκτρονική διευθυνση</th><th>Όνοματεπώνυμο</th></tr>
 {% for v in voters %}
-<tr><td>{{v.voter_id}}</td><td>{{v.email}}</td><td>{{v.name}}</td></tr>
+<tr><td>{{v.email}}</td><td>{{v.name}}</td></tr>
 {% endfor %}
 </table>
 
 <p></p>
 <form method="post" action="" id="upload_form">
-  Does this look right to you?
+  Παρακαλούμε επιβεβαιώστε οτι η λίστα ψηφοφόρων είναι σωστή.
   <input type="hidden" name="confirm_p" value="1" />
-  <input type="submit" value="Yes, let's go" />
+  <Br /><br />
+  <input class="button success" type="submit" value="Επιβεβαίωση" />
 </form>
 
-<a href="{% url helios.views.voters_upload_cancel election.uuid %}">no, let me upload a different file</a>
+<a class="button alert small" href="{% url helios.views.voters_upload_cancel election.uuid %}">ακύρωση μαζικής προσθήκης
+ψηφοφόρων</a>
 
 {% endblock %}
