@@ -239,6 +239,7 @@ def election_new(request):
       with transaction.commit_on_success():
         election = Election()
         election, trustees = election_form.save(election, user.faculty, ELGAMAL_PARAMS)
+        election.admins.add(user)
         return HttpResponseRedirect(reverse(voters_upload, args=[election.uuid]))
 
 
