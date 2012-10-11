@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-11 20:57+0300\n"
+"POT-Creation-Date: 2012-10-11 22:17+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: forms.py:33
+msgid "Vote for election"
+msgstr ""
 
 #: models.py:448
 #, fuzzy
@@ -99,15 +103,35 @@ msgstr "Δεν έχετε ορίσει λίστα ψηφοφόρων."
 msgid "setup election mixnets"
 msgstr ""
 
-#: views.py:1340
+#: models.py:1446
+#, python-format
+msgid ""
+"\n"
+"    You are a trustee for %(election_name)s.\n"
+"\n"
+"    Your trustee dashboard is at\n"
+"\n"
+"      %(url)s\n"
+"\n"
+"    --\n"
+"    Helios\n"
+"             "
+msgstr ""
+
+#: models.py:1457
+#, python-format
+msgid "your trustee homepage for %(election_name)s"
+msgstr ""
+
+#: views.py:1347
 msgid "Time to Vote"
 msgstr "Ενημέρωση για συμμετοχή"
 
-#: views.py:1341
+#: views.py:1348
 msgid "Additional Info"
 msgstr "Πληροφορίες"
 
-#: views.py:1342
+#: views.py:1349
 msgid "Election Result"
 msgstr "Αποτέλεσμα ψηφοφορίας"
 
