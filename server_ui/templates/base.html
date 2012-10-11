@@ -72,7 +72,7 @@
             {% endif %}
           </span>
           {% if user %}
-          Έχετε συνδεθεί ως το μέλος της εφορευτικής επιτροπής: {{ user.display_html_small|safe }}
+          Έχετε συνδεθεί ως διαχειριστής εκλογών: {{ user.display_html_small|safe }}
           <a href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a><br />
           {% else %}
           {% if voter %}

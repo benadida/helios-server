@@ -14,6 +14,33 @@
 
 {% block content %}
 <table>
+  <thead>
+    <th>
+      Όνομα
+    </th>
+    <th>
+      Διαχείριση
+    </th>
+    <th>
+      Ίδρυμα
+    </th>
+    <th>
+      Διαχειριστής
+    </th>
+    <th>
+      Έναρξη
+    </th>
+    <th>
+      Λήξη
+    </th>
+    <th>
+      Ψηφοφόροι
+    </th>
+    <th>
+      Έχουν ψηφήσει
+    </th>
+  </thead>
+  <tbody>
     {% for election in user.elections.all %}
     <tr>
         <td>
@@ -22,8 +49,27 @@
         <td>
             <a href="{% url helios.views.one_election_view election.uuid %}">Προβολή</a>
         </td>
+        <td>
+            {{ election.faculty.name }}
+        </td>
+        <td>
+            {{ election.admins.all.0.info.name }}
+        </td>
+        <td>
+            {{ election.voting_starts_at }}
+        </td>
+        <td>
+            {{ election.voting_ends_at }}
+        </td>
+        <td>
+            {{ election.voter_set.all.count }}
+        </td>
+        <td>
+            {{ election.voted_count }}
+        </td>
     </tr>
     {% endfor %}
+  </tbody>
     </table>
 {% endblock %}
 

@@ -462,6 +462,9 @@ class Election(HeliosModel):
     OPTIONAL_STEPS = ['voters_not_voted_notified', 'extended']
 
 
+  def voted_count(self):
+    return self.voter_set.filter(vote__isnull=False).count()
+
   def step_created_completed(self):
     return bool(self.pk)
 
