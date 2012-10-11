@@ -4,6 +4,9 @@ from django.conf import settings
 
 urlpatterns = patterns(
     '',
+    (r'^$', 'zeus.views.home'),
+    (r'^admin/$', 'server_ui.views.home'),
+    (r'^faqs/$', 'zeus.views.faqs'),
     (r'^auth/', include('heliosauth.urls')),
     (r'^helios/', include('helios.urls')),
 
@@ -16,8 +19,7 @@ urlpatterns = patterns(
     (r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/server_ui/media'}),
 
     (r'^', include('server_ui.urls')),
-
-    )
+)
 
 if settings.DEBUG:
     from helios.devutils import quick_start_election

@@ -1,0 +1,22 @@
+{% extends "server_ui/templates/base.html" %}
+
+{% block tabs_menu %}
+<dd id="" class="{% if menu_active == "home" %}active{% endif %}"><a
+  href="/">Αρχική σελίδα</a></dd>
+<dd id="" class="{% if menu_active == "faqs" %}active{% endif %}"><a 
+  href="{% url zeus.views.faqs %}">Συχνές ερωτήσεις</a></dd>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="columns twelve">
+    <h4>Ερωτήσεις για τους χρήστες</h4>
+    {% include "zeus/faqs_voter.html" %}
+  </div>
+
+  <div class="columns twelve">
+    <h4>Ερωτήσεις για τους διαχειριστές</h4>
+    {% include "zeus/faqs_admin.html" %}
+  </div>
+</div>
+{% endblock %}

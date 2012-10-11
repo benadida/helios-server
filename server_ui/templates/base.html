@@ -71,9 +71,10 @@
             <img src="/static/footer-logo.gif" />
             {% endif %}
           </span>
-          {% if user %}
+          {% if user and user.pk %}
           Έχετε συνδεθεί ως διαχειριστής εκλογών: {{ user.display_html_small|safe }}
-          <a href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a><br />
+          <a href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a> |
+          <a href="/admin/">διαχείριση</a><br />
           {% else %}
           {% if voter %}
           Έχετε συνδεθεί ως ο ψηφοφόρος <u>{{voter.name}}</u> της ψηφοφορίας 
@@ -85,6 +86,8 @@
           Έχετε συνδεθεί ως μέλος της εφορευτικής <u>{{trustee.name}}</u> της
           ψηφοφορίας  <u>{{ election.name }}</u>
           <a href="{{settings.SECURE_URL_HOST}}{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
+          {% else %}
+          <a href="{{settings.SECURE_URL_HOST}}{% url heliosauth.auth_systems.password.password_login_view %}?return_url=/">Σύνδεση</a>
           {% endif %}
           {% endif %}
           <br />
