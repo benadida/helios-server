@@ -1443,18 +1443,18 @@ class Trustee(HeliosModel):
 
     url = self.get_login_url()
 
-    body = """
-    You are a trustee for %s.
+    body = _("""
+    You are a trustee for %(election_name)s.
 
     Your trustee dashboard is at
 
-      %s
+      %(url)s
 
     --
     Helios
-    """ % (self.election.name, url)
+             """) % {'election_name': self.election.name, 'url': url}
 
-    send_mail('your trustee homepage for %s' % self.election.name,
+    send_mail(_('your trustee homepage for %(election_name)s') % {'election_name': self.election.name},
               body,
               settings.SERVER_EMAIL,
               ["%s <%s>" % (self.name, self.email)],
