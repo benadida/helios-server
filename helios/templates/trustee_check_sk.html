@@ -37,15 +37,11 @@ function check_sk(sk_value) {
 
     var reset_link = "<br /><a href='javascript:reset();'>Προσπαθήστε ξανά</a>";
     if (key_ok_p) {
-<<<<<<< HEAD
       $('#result').html("Το μυστικό κλειδί σας είναι έγκυρο!");
       $.ajax({
         "url": "{% url helios.views.trustee_verify_key election.uuid trustee.uuid %}",
         "data": {'verified': true}
       })
-=======
-      $('#result').html("Το μυστικό κλειδί σας είναι έγκυρο!");
->>>>>>> grnet/master
     } else {
       $('#result').html("Το μυστικό κλειδί σας είναι εσφαλμένο." + reset_link);
     }
@@ -59,18 +55,6 @@ var opts = {
     },
     readAsDefault: 'Text',
     on: {
-        beforestart: function(e, file) {
-        	// return false if you want to skip this file
-
-    	},
-        loadstart: function(e, file) {
-        	// Native ProgressEvent
-
-    	},
-        progress: function(e, file) {
-        	// Native ProgressEvent
-
-    	},
         load: function(e, file) {
           // Native ProgressEvent
           if (e.srcElement && e.srcElement.result) {
@@ -80,29 +64,6 @@ var opts = {
             $("textarea[name=secret_key]").val(e.currentTarget.result);
           }
     	},
-        error: function(e, file) {
-        	// Native ProgressEvent
-
-    	},
-        loadend: function(e, file) {
-        	// Native ProgressEvent
-
-    	},
-        abort: function(e, file) {
-        	// Native ProgressEvent
-
-    	},
-        skip: function(e, file) {
-        	// Called when a file is skipped.  This happens when:
-        	// 	1) A file doesn't match the accept option
-        	// 	2) false is returned in the beforestart callback
-    	},
-        groupstart: function(group) {
-
-    	},
-        groupend: function(group) {
-
-    	}
     }
   };
 
