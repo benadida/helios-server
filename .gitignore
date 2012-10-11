@@ -6,3 +6,4 @@ initialization.py
 *~
 media/*
 local_settings.py
+.sass-cache
