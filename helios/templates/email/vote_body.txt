@@ -1,29 +1,28 @@
-Dear {{voter.name}},
+Αγαπητέ {{voter.name}},
 
 {{custom_message|safe}}
 
-Election URL:  {{election_vote_url}}
-Election Fingerprint:  {{voter.election.hash}}
+Σύνδεσμος εκλογής:  {{election_vote_url}}
+Προσωπικό αναγνωριστικό εκλογής: {{voter.election.hash}}
 {% ifequal voter.voter_type "password" %}
-Your voter ID: {{voter.voter_login_id}}
-Your password: {{voter.voter_password}}
+Όνομα χρήστη: {{voter.voter_login_id}}
+Κωδικός πρόσβασης: {{voter.voter_password}}
 {% else %}
-Log in with your {{voter.voter_type}} account.
+Συνδεθείτε στο σύστημα με τον λογαριασμό {{voter.voter_type}}.
 {% endifequal %}{% if voter.vote_hash %}
-We have recorded your vote with smart tracker:
+
+Έχουμε καταγράψει την ψήφο σας με το ακόλουθο αναγνωριστικό:
 
   {{voter.vote_hash}}
 
-You may re-vote if you wish: only your last vote counts.
+Εάν επιθυμείτε έχετε την δυνατότητα να ψηφίσετε ξανά. Μόνο η τελευταία ψήφος σας μετράει. 
 {% endif %}{% if election.use_voter_aliases %}
-In order to protect your privacy, this election is configured
-to never display your voter login ID, name, or email address to the public.
-Instead, the ballot tracking center will only display your alias.
+Η εκλογή αυτή έχει διαμορφωθεί έτσι ώστε να προστατεύει τα προσωπικά σας δεδομένα και μην εμφανίζει δημοσίως ευαίσθητα στοιχεία όπως το όνομα χρήστη, το όνομα σας και την ηλεκτρονική σας διεύθυνση. 
 
-Your voter alias is {{voter.alias}}.
+Το ψευδώνυμο σας για αυτή την εκλογή είναι {{voter.alias}}.
 
-IMPORTANTLY, when you are prompted to log in to vote,
-please use your *voter ID*, not your alias.
+ΣΗΜΑΝΤΙΚΟ: όταν σας ζητηθεί να συνδεθείτε για να ψηφίσετε παρακαλούμε να χρησιμοποιήσετε την όνομα χρήστη και όχι το ψευδώνυμο σας.
 {% endif %}
+
 --
-Helios
+Zeus
