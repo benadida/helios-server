@@ -12,10 +12,14 @@
 </p>
 
 <table>
-<tr><th>Ηλεκτρονική διευθυνση</th><th>Όνοματεπώνυμο</th></tr>
+  <thead>
+    <tr><th>Ηλεκτρονική διευθυνση</th><th>Όνοματεπώνυμο</th></tr>
+  </thead>
+  <tbody>
 {% for v in voters %}
 <tr><td>{{v.email}}</td><td>{{v.name}}</td></tr>
 {% endfor %}
+</tbody>
 </table>
 
 <p></p>
