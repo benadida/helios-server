@@ -1,0 +1,71 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-10-11 20:57+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: forms.py:79
+msgid "Election name"
+msgstr ""
+
+#: forms.py:82
+msgid "the name of the election (e.g. University of Piraeus 2014 elections."
+msgstr ""
+
+#: forms.py:85
+msgid "Election description"
+msgstr ""
+
+#: forms.py:89
+msgid "When voting starts"
+msgstr ""
+
+#: forms.py:93
+msgid "When voting ends"
+msgstr ""
+
+#: forms.py:99
+msgid "Voting extension date"
+msgstr ""
+
+#: forms.py:102
+msgid ""
+"Trustees list. e.g. <br/><br/> Giannhs Gianopoulos, giannhs@email.com<br /> "
+"Kwstas Kwstopoulos, kwstas@email.com<br />"
+msgstr ""
+
+#: forms.py:105
+msgid ""
+"University faculties. e.g. <br/><br/> Faculty 1<br />Faculty 2<br /> Faculty "
+"3<br />"
+msgstr ""
+
+#: forms.py:108
+msgid "Voters can contact this email for election suport"
+msgstr ""
+
+#: forms.py:109
+msgid "Voters can contact this phone for election suport"
+msgstr ""
+
+#: forms.py:137
+msgid "Invalid trustess"
+msgstr ""
+
+#: forms.py:167
+msgid "Election candidates changed due to faculties changes"
+msgstr ""

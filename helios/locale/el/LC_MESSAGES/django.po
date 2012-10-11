@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-09-28 13:42+0300\n"
+"POT-Creation-Date: 2012-10-11 20:57+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,36 +18,106 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: models.py:469
+#: models.py:448
+#, fuzzy
+msgid "Election initialized."
+msgstr "Όνομα ψηφοφορίας"
+
+#: models.py:449
+#, fuzzy
+msgid "Election candidates added."
+msgstr "Όνομα ψηφοφορίας"
+
+#: models.py:450
+#, fuzzy
+msgid "Election voters added."
+msgstr "Όνομα ψηφοφορίας"
+
+#: models.py:451
+msgid "Trustees keys generated."
+msgstr ""
+
+#: models.py:452
+#, fuzzy
+msgid "Election opened."
+msgstr "Όνομα ψηφοφορίας"
+
+#: models.py:453
+#, fuzzy
+msgid "Election voters notified"
+msgstr "Αποτέλεσμα ψηφοφορίας"
+
+#: models.py:454
+msgid "Election voters which not voted notified"
+msgstr ""
+
+#: models.py:455
+msgid "Election extension needed."
+msgstr ""
+
+#: models.py:456
+#, fuzzy
+msgid "Election closed."
+msgstr "Όνομα ψηφοφορίας"
+
+#: models.py:457
+#, fuzzy
+msgid "Eleciton tallied."
+msgstr "Όνομα ψηφοφορίας"
+
+#: models.py:458
+msgid "Trustees should decrypt results."
+msgstr ""
+
+#: models.py:459
+msgid "Election results where decrypted."
+msgstr ""
+
+#: models.py:538
 msgid "add at least one trustee"
 msgstr ""
 
-#: models.py:476
+#: models.py:545
 #, python-format
 msgid "have trustee %s generate a keypair"
 msgstr ""
 "Το μέλος της εφορευτικής επιτροπης '%s' πρέπει να δημιουργήσει το "
 "ηλεκτρονικό του κλειδί."
 
-#: models.py:482
+#: models.py:551
+#, fuzzy, python-format
+msgid "have trustee %s verify his key"
+msgstr ""
+"Το μέλος της εφορευτικής επιτροπης '%s' πρέπει να δημιουργήσει το "
+"ηλεκτρονικό του κλειδί."
+
+#: models.py:557
 msgid "enter your voter list (or open registration to the public)"
 msgstr "Δεν έχετε ορίσει λίστα ψηφοφόρων."
 
-#: models.py:488
+#: models.py:563
 msgid "setup election mixnets"
 msgstr ""
 
-#: views.py:1291
+#: views.py:1340
 msgid "Time to Vote"
 msgstr "Ενημέρωση για συμμετοχή"
 
-#: views.py:1292
+#: views.py:1341
 msgid "Additional Info"
 msgstr "Πληροφορίες"
 
-#: views.py:1293
+#: views.py:1342
 msgid "Election Result"
 msgstr "Αποτέλεσμα ψηφοφορίας"
+
+#: templates/election_new.html:12
+msgid ""
+"\n"
+"    Σε αυτό το σημείο σας ζητάμε κάποιες πληροφορίες απαραίτητες για την\n"
+"    δημιουργία της  ψηφοφορίας.\n"
+"    "
+msgstr ""
 
 msgid "Username"
 msgstr "Όνομα χρήστη (email)"
@@ -60,7 +130,3 @@ msgstr "όνομα χρήστη (email)"
 
 msgid "password"
 msgstr "κωδικός"
-
-msgid "Election name"
-msgstr "Όνομα ψηφοφορίας"
-
