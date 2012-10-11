@@ -1,19 +1,19 @@
-Dear {{voter.name}},
+Αγαπητέ {{voter.name}},
 
-The tally for {{election.name}} has been computed and released:
+Τα εκλογικά αποτελέσματα για την ψηφοφορία {{election.name}} έχουν υπολογισθεί και είναι διαθέσιμα στον ακόλουθο σύνδεσμο:
 
   {{election_url}}
 
 {{custom_message|safe}}
 
-{% if voter.vote_hash %}Your smart ballot tracker in this election was:
+{% if voter.vote_hash %}Το αποτύπωμα της ψήφου σας είναι:
 
   {{voter.vote_hash}}
 
-If you believe this tracker to be in error, please contact us.
+Εάν πιστεύετε ότι το παραπάνω αποτύπωμα είναι λανθασμένο παρακαλώ επικοινωνήστε μαζί μας.
 {% else %}
-It appears you did not cast a vote in this election.
-Please contact us if you believe you did.
+Το σύστημα μας δεν έχει καταγράψει την ψήφο σας για αυτή την εκλογή.
+Παρακαλώ επικοινωνήστε μαζί μας εάν πιστεύετε πως ψηφίσατε.
 {% endif %}
 --
-Helios
+Zeus
