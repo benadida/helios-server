@@ -62,14 +62,14 @@
 {% endif %}
 
 
-{% if not admin_p %}
+{% if not admin_p or election.tallied %}
 <div class="columns 
   {% if admin_p and not election.frozen_at %}six{% else %}twelve{% endif %}">
   <div class="panel">
     <ol>
-      {% for cand in candidates %}
+      {% for a in election.questions.0.answers %}
       <li>
-      {{ cand }}
+      {{ a }}
       </li>
   {% empty %}
   <li><span class="label alert">Δεν έχουν προστεθεί υποψήφιοι</span></li>
