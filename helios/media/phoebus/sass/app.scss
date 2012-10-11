@@ -15,7 +15,7 @@ body.booth {
 }
 
 body {
-  
+    background-color: #0A212F;
   #progress_div .tabs a { font-size: 12px; }
   .extra-election-actions { margin-top: 10px; span{ float: none !important;}}
   #cast_form {
@@ -27,15 +27,19 @@ body {
     @include clearfix();
   }
 
-  #header h4, h1 {
-    font-family: 'Didact Gothic', Helvetica, Arial, sans-serif !important;
-
-    span { font-family: $bodyFontFamily !important }
+  .header {
+    h4, h1 {
+        font-family: 'Didact Gothic', Helvetica, Arial, sans-serif !important;
+        span { font-family: $bodyFontFamily !important }
+        display: none;
+      }
+    h4 { font-size: 26px; display: block; padding: 0 15px;}
+    padding: 0;
   }
   
-  #header { margin-bottom: 50px; }
+  #header { margin-bottom: 30px; }
   #banner {
-    border-bottom: $customBorder;
+    //border-bottom: $customBorder;
   }
 
   #footer {

@@ -36,8 +36,15 @@
 
     
     <div class="bg-wrapper">
-      <div id="wrapper" class="row">
-        <div class="twelve columns">
+        <div id="wrapper" class="row">
+                <div class="twelve columns header">
+            {% if election %}
+            <a href="{% url helios.views.one_election_view election.uuid %}">
+                {% else %}
+                <a href="{% url zeus.views.home %}">
+                    {% endif %}
+                <img src="/static/helios/phoebus/images/logo_bg.jpg" />
+            </a>
           <div id="banner"><h1>Ηλεκτρονική κάλπη "Ζευς"</h1></div>
           <div id="header">
             {% block head_subtitle %}{% endblock %}
