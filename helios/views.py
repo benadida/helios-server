@@ -1386,7 +1386,7 @@ def voters_email(request, election):
 
   if request.method == "GET":
     email_form = forms.EmailVotersForm()
-    email_form.fields['subject'].initial = TEMPLATES[template]
+    email_form.fields['subject'].initial = dict(TEMPLATES)[template]
     if voter:
       email_form.fields['send_to'].widget = email_form.fields['send_to'].hidden_widget()
   else:
