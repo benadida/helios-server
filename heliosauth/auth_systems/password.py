@@ -53,7 +53,8 @@ def check_evoting_credentials(username, password):
     return False, data
 
   if 'success' in data and data['success'] == 'true' and data['message'] == 'Ok':
-    data['faculty'] = "ΤΕΙ Πειραιώς"
+    if not data['institutionName'] or not data['institutionId']:
+      return False, data
     return True, data
 
   return False, data
@@ -66,12 +67,17 @@ def get_evoting_user(username, password):
   user = None
   try:
     user = User.get_by_type_and_id('password', username)
+    user.faculty, created = Faculty.objects.get_or_create(name=user_data['institutionName'],
+                                                           faculty_id=user_data['institutionId'])
+    user.info['name'] = username
+    user.save()
   except User.DoesNotExist:
     if is_valid:
       user = create_user(username, password)
       user.admin_p = True
-      user.info['name'] = user.info['name'] or user.user_id
-      user.faculty, created = Faculty.objects.get_or_create(name=user_data['faculty'])
+      user.info['name'] = user.user_id
+      user.faculty, created = Faculty.objects.get_or_create(name=user_data['institutionName'],
+                                                           faculty_id=user_data['institutionId'])
       user.save()
 
   return user
