@@ -206,7 +206,7 @@ CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 BOOTH_STATIC_PATH = ROOT_PATH + '/heliosbooth/'
 VERIFIER_STATIC_PATH = ROOT_PATH + '/heliosverifier/'
 
-CAS_LOGIN_URL = "https://x.x.x.x/checkuser.php"
+EVOTING_LOGIN_URL = "https://x.x.x.x/checkuser.php"
 
 # useful trick for custom settings
 try:

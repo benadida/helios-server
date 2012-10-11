@@ -42,7 +42,7 @@ class LoginForm(forms.Form):
   password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
 
 def check_evoting_credentials(username, password):
-  url = settings.CAS_LOGIN_URL
+  url = settings.EVOTING_LOGIN_URL
   params = urllib.urlencode({'username': username, 'password': password})
   response = urllib.urlopen(url, params)
   data = {}
