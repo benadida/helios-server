@@ -1,4 +1,4 @@
-{% extends "helios/templates/cryptobase.html" %}
+{% extends "helios/templates/trustee_home_base.html" %}
 
 {% block content %}
 <script language="javascript">
@@ -130,8 +130,36 @@ function reset() {
   $('#first-step-success').hide();
 }
 
+var opts = {
+    dragClass: "drag",
+    accept: false,
+    readAsMap: {
+        'text/*' : 'Text'
+    },
+    readAsDefault: 'Text',
+    on: {
+        load: function(e, file) {
+          // Native ProgressEvent
+          if (e.srcElement && e.srcElement.result) {
+            $("textarea#sk_textarea").val(e.srcElement.result);
+          }
+          if (e.currentTarget && e.currentTarget.result) {
+            $("textarea#sk_textarea").val(e.currentTarget.result);
+          }
+    	},
+    }
+  };
+
+  $(document).ready(function(){
+    try {
+      $("#file-input").fileReaderJS(opts);
+      } catch (err) {
+      console.log(err);
+    }
+  })
 </script>
-  <h2 class="title">Επίτροπος {{trustee.name}} &mdash; Αποτέλεσμα αποκρυπτογράφησης της εκλογής {{election.name}}</h2>
+  <h4 class="title">Επίτροπος {{trustee.name}} &mdash; Αποτέλεσμα
+      αποκρυπτογράφησης της εκλογής {{election.name}}</h4>
 
 <p>
     <b>Επίτροπος:</b> <tt>{{trustee.email}}</tt><br/>
@@ -157,6 +185,7 @@ function reset() {
 
       <form onsubmit="return false;">
           <h3>Βήμα πρώτο: εισάγετε το μυστικό κλειδί σας</h3>
+          <input type="file" id="file-input" />
           <textarea id="sk_textarea" cols="60" rows="5"></textarea>
       </form>
       <p id="tally_section">
