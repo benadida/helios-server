@@ -7,6 +7,7 @@ urlpatterns = patterns(
     (r'^$', 'zeus.views.home'),
     (r'^admin/$', 'server_ui.views.home'),
     (r'^faqs/$', 'zeus.views.faqs'),
+    (r'^resources/$', 'zeus.views.resources'),
     (r'^auth/', include('heliosauth.urls')),
     (r'^helios/', include('helios.urls')),
 
