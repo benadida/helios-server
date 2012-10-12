@@ -1,42 +1,43 @@
 {% extends TEMPLATE_BASE %}
 
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Freeze Ballot</h2>
+  <h2 class="title">{{election.name}} &mdash; Πάγωμα ψηφοφορίας</h2>
 <p>
-Once the ballot is frozen, the questions and options can no longer be modified.<br />
-The list of trustees and their public keys will also be frozen.
+Μόλις η ψηφοφορία παγώσει, οι ερωτήσεις και οι επιλογές δεν μπορούν πλέον να τροποποιηθούν.<br />
+Η λίστα των επιτρόπων και των δημόσιων κλειδιών τους θα δεσμεύονται επίσης.
 </p>
 
 <p>
 {% if election.openreg %}
-Registration for your election is currently <b>open</b>, which means anyone can vote, even after you freeze the ballot.
+Η εγγραφή για την εκλογή είναι <b>ανοιχτή</b> που σημαίνει ότι οποιοσδήποτε μπορεί να ψηφίζει ακόμα και εάν παγώσετε την ψηφοφορία.
 {% else %}
-Registration for your election is currently <b>closed</b>, which means only the voters you designate will be able to cast a ballot. As the administrator, you will still be able to modify that voter list as the election progresses.
+Η εγγραφή για την εκλογή σας είναι <b>κλειστή</b> που σημαίνει ότι οι ψηφοφόροι που ορίζετε μπορούν να ρίξουν το ψηφοδέλτιο τους. 
+Ως διαχειριστής, θα μπορείτε να τροποποιήσετε τον κατάλογο των ψηφοφόρων καθώς εξελίσσεται η εκλογή.
 {% endif %}
 </p>    
 
 {% if helios.VOTERS_EMAIL %}
 <p>
-You must freeze the ballot before you can contact voters.
+Θα πρέπει να παγώσει η ψηφοφορία προτού μπορέσετε να επικοινωνήσετε με τους ψηφοφόρους.
 </p>
 {% endif %}
 
 {% if issues_p %}
 <p>
-    Before you can freeze the election, you will need to:
+    Πριν παγώσετε την εκλογή πρέπει να:
     <ul>
         {% for issue in issues %}
         <li>{{issue.action}}</li>
         {% endfor %}
     </ul>
-    <a href="{% url helios.views.one_election_view election.uuid %}">go back to the election</a>
+    <a href="{% url helios.views.one_election_view election.uuid %}">επιστροφή στην εκλογή</a>
 </p>
 {% else %}
 <form method="post" action="">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
-<input class="pretty" type="submit" value="Freeze the ballot" />
-<button onclick="document.location='./view'; return false;">never mind</button>
+<input class="pretty" type="submit" value="Πάγωμα ψηφοφορίας" />
+<button onclick="document.location='./view'; return false;">ακύρωση παγώματος</button>
 </form>
 {% endif %}
 

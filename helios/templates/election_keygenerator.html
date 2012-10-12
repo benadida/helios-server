@@ -90,11 +90,11 @@ function show_pk() {
 <h2 class="title">{{election.name}} &mdash; Trustee {{trustee.name}} &mdash; Key Setup</h2>
 
 <p>
-  As a trustee, it's time to set up your key for this election.
+Ως επίτροπος πρέπει να δημιουργησετε το κλειδί σας για αυτές τις εκλογές.
 </p>
 
 <p id="waiting_message">
-  Please wait for the generator to load...
+  Παρακαλώ περιμένετε για τον γεννήτορα να φορτώσει...
 </p>
 
 <p id="generator">
@@ -102,14 +102,14 @@ function show_pk() {
 <span id="buttons"><button onclick="generate_keypair(); return false;" id="generate_button">Generate Election Keys</button></span>
 
 <br /><br />
-If you've already generated a keypair, you can <a href="javascript:show_key_reuse()">reuse it</a>.
+Εάν έχετε ήδη δημιουργήσει το ζεύγος κλειδιών μπορείτε να το <a href="javascript:show_key_reuse()">επαναχρησιμοποιήσετε</a>.
 </p>
 
 <div id="reuse">
-<h3>Reusing a Key</h3>
+<h3>Επαναχρησιμοποίηση Κλειδιού</h3>
 
 <p>
-Enter your complete secret key below:
+Εισάγετε το μυστικό κλειδί σας παρακάτω:
 </p>
 <form onsubmit="reuse_key(this.secret_key.value); return false;">
 <textarea cols="80" rows="5" wrap="soft" name="secret_key">
@@ -120,29 +120,29 @@ Enter your complete secret key below:
 </div>
 
 <div id="sk_download">
-<h3>Your Secret Key</h3>
+<h3>Το μυστικό κλειδί σας</h3>
 <span id="clear_button">
-Your key has been generated, but you may choose to<br /><a href="javascript:clear_keys();">clear it from memory and start from scratch</a> if you prefer.<br />
+Το κλειδί σας έχει παραχθεί αλλά εάν θέλετε μπορείτε να το <br /><a href="javascript:clear_keys();">διαγράψετε από την μνήμη και να ξεκινήσετε από την αρχή.</a> <br />
 </span>
 
 <p>
-    <button style="font-size:16pt;" onclick="download_sk(); $('#pk_link').show();">Save your secret key</button>
+    <button style="font-size:16pt;" onclick="download_sk(); $('#pk_link').show();">Σώστε το μυστικό κλειδί σας</button>
 </p>
 
 <p style="display: none;" id="pk_link">
-  <a href="javascript:show_pk();">ok, I've saved the key, let's move on</a>.
+  <a href="javascript:show_pk();">Εντάξει έσωσα το μυστικό κλειδί. Ας συνεχίσουμε</a>.
 </p>
 </div>
 
 <form method="post" id="pk_form" action="{% url helios.views.trustee_upload_pk election.uuid, trustee.uuid %}">
-<h3>Your Public Key</h3>
+<h3>Το δημόσιο κλειδί σας</h3>
 <p>
-    It's time to upload the public key to the server.
+    Τώρα πρέπει να φορτώσετε το δημόσιο κλειδί σας στον εξυπηρετητή.
 </p>
 <p>
-    The fingerprint of your public key is: <tt id="pk_hash" style="font-size: 1.5em; font-weight: bold;"></tt>.<br />
-    You may want to save this to confirm that your public key was properly stored by the server.<br />
-    (Your public key is not currently being displayed because you do not need to save it, the fingerprint is sufficient.)
+    Το αποτύπωμα του κλειδιού σας είναι: <tt id="pk_hash" style="font-size: 1.5em; font-weight: bold;"></tt>.<br />
+  Μπορεί να θέλετε να αποθηκεύσετε το αποτύπωμα και να επιβεβαιώσετε ότι το δημόσιο κλειδί σας έχει αποθηκευτεί σωστά από το διακομιστή.<br />
+    (Το δημόσιο κλειδί σας δεν εμφανίζεται επί του παρόντος επειδή δεν χρειάζεται να το αποθηκεύσετε. Το δακτυλικό αποτύπωμα είναι επαρκές.)
 </p>
 <textarea id="pk_textarea" name="public_key_json" cols="80" rows="10" style="display:none;">
 </textarea>

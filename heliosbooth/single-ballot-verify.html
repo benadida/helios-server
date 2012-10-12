@@ -54,11 +54,11 @@ function result_append(str) {
 function verify_single_ballot(election_url, audit_trail) {
   var encrypted_vote_json = jQuery.secureEvalJSON(audit_trail);
   
-  result_append("loading election...");
+  result_append("Φόρτωμα εκλογής...");
 
   // quick and dirty detection of cast ballot
   if (encrypted_vote_json['cast_at']) {
-    result_append("\n\nIt looks like you are trying to verify a cast ballot. That can't be done, only audited ballots can be verified.");
+    result_append("\n\nΦαίνεται σαν να προσπαθείτε να ελέγξετε ένα ψηφοδέλτιο. Αυτό δεν μπορεί να γίνει: μόνο τα ελεγμένα ψηφοδέλτια μπορούν να επαληθευτούν.");
     return;
   }
   
@@ -70,9 +70,9 @@ function verify_single_ballot(election_url, audit_trail) {
     $('#loading').hide();
     
     if (overall_result) {
-       result_append('SUCCESSFUL VERIFICATION, DONE!');
+       result_append('Επιτυχής επαλήθευση!');
     } else {
-       result_append('PROBLEM - THIS BALLOT DOES NOT VERIFY.');        
+       result_append('Σφάλμα - αυτό το ψηφοδέλτιο δεν επαληθεύεται.');        
     }
   };
 
@@ -97,11 +97,11 @@ function verify_single_ballot(election_url, audit_trail) {
       after_computation(overall_result);
     }
   }, error: function() {
-      result_append('PROBLEM LOADING election. Are you sure you have the right election URL?<br />');
+      result_append('Πρόβλημα φόρτωσης της εκλογής. Είστε βέβαιος ότι έχετε το κατάλληλο URL;<br />');
 
       $('#loading').hide();
       
-      result_append('PROBLEM - THIS BALLOT DOES NOT VERIFY.');        
+      result_append('Σφάλμα - αυτό το ψηφοδέλτιο δεν επαληθεύεται.');        
   }
   });
 }
@@ -111,30 +111,31 @@ function verify_single_ballot(election_url, audit_trail) {
 <body>
 <div id="wrapper">
 <div id="banner">
-    Helios Single-Ballot Verifier
+    Επαληθευτής Ψηφοδελτίου του συστήματος Ζεύς
 </div>
 <div id="content">
 
 <div id="verifier_loading">
-Loading verifier...
+Φόρτωμα επαληθευτή...
 </div>
 
 <div id="dummy_bigint" style="display:none;">
-Your browser does not have the Java plugin installed.<br /><br />
-At this time, the Java plugin is required for browser-based ballot auditing, although it is not required for ballot preparation.
+Ο περιηγητής σας δεν έχει εγκατεστημένο το κατάλληλο Java plugin.<br /><br />
+Αυτή τη στιγμή απαιτείται το Java plugin για την πραγματοποίηση ελέγχου των ψηφοδελτίων στον περιηγητή εάν και δεν απαιτείτε για 
+την προετοιμασία των ψηφοδελτίων. 
 </div>
 
 <div id="verifier" style="display:none;">
 <p style="font-size: 16pt;">
-    This single-ballot verifier lets you enter an audited ballot<br />and verify that it was prepared correctly.
+   Ο επαληθευτής ψηφοδελτίου επιτρέπει την εισαγωγή ελεγμένου ψηφοδελτίου <br />και την επαλήθευση ότι το ψηφοδέλτιο αυτό προετοιμάστηκε σωστά.
 </p>
 
 <form onsubmit="try {verify_single_ballot(this.election_url.value, this.audit_trail.value);} catch (e) {E = e;} return false;">
-Enter the Election URL:
+Εισάγετε το URL της εκλογής:
     <input type="text" size="50" name="election_url" id="election_url" /><br />
 
 <p>
-Your Ballot:
+Το ψηφοδέλτιο σας:
 </p>
 
 <textarea name="audit_trail" cols="80" rows="7">
