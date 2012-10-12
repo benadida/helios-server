@@ -23,17 +23,6 @@ from zeus.widgets import JqSplitDateTimeField, JqSplitDateTimeWidget
 from django.core.validators import validate_email
 
 
-class ElectionCandidatesForm(forms.Form):
-
-  def __init__(self, election, *args, **kwargs):
-    self.election = election
-    super(ElectionCandidatesForm, self).__init__(*args, **kwargs)
-
-
-  def save(self):
-    self.election.save()
-
-
 def _in_two_days():
     return datetime.now() + timedelta(days=2)
 
