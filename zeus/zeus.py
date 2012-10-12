@@ -1703,16 +1703,12 @@ class ZeusCoreElection(object):
 
     def do_store_trustee(self, public, commitment, challenge, response):
         trustees = self.trustees
-        if public in trustees:
-            m = "Trustee already exists!"
-            raise ZeusError(m)
         trustees[public] = [commitment, challenge, response]
 
     def do_get_trustee(self, public):
         trustees = self.trustees
         if public not in trustees:
-            m = "Trustee does not exist!"
-            raise ZeusError(m)
+            return None
         return trustees[public]
 
     def do_get_trustees(self):
@@ -1900,6 +1896,17 @@ class ZeusCoreElection(object):
         self.do_store_zeus_key(secret, public, commitment, challenge, response)
         return key_info
 
+    def invalidate_election_public(self):
+        self.do_store_election_public(None)
+
+    def compute_election_public(self):
+        trustees = self.do_get_trustees()
+        public = 1
+        modulus, generator, order = self.do_get_cryptosystem()
+        for trustee in trustees:
+            public = (public * trustee) % modulus
+        self.do_store_election_public(public)
+
     def add_trustee(self, trustee_public_key, trustee_key_proof):
         self.do_assert_stage('CREATING')
         p, g, q = self.do_get_cryptosystem()
@@ -1912,9 +1919,17 @@ class ZeusCoreElection(object):
         if election_public is None:
             election_public = 1
         modulus, generator, order = self.do_get_cryptosystem()
-        election_public = (election_public * trustee_public_key) % modulus
+        self.invalidate_election_public()
         self.do_store_trustee(trustee_public_key, *trustee_key_proof)
-        self.do_store_election_public(election_public)
+        self.compute_election_public()
+
+    def reprove_trustee(self, trustee_public_key, trustee_key_proof):
+        self.do_assert_stage('CREATING')
+        if not self.do_get_trustee(trustee_public_key):
+            m = "Trustee does not exist!"
+            raise ZeusError(m)
+
+        return self.add_trustee(trustee_public_key, trustee_key_proof)
 
     def add_candidates(self, *names):
         candidates = set(self.do_get_candidates())
@@ -2720,6 +2735,11 @@ class ZeusCoreElection(object):
         proof = prove_dlog(modulus, generator, order, public, secret)
         return sk_from_args(modulus, generator, order, secret, public, *proof)
 
+    def mk_reprove_trustee(self, public, secret):
+        modulus, generator, order = self.do_get_cryptosystem()
+        proof = prove_dlog(modulus, generator, order, public, secret)
+        return sk_from_args(modulus, generator, order, secret, public, *proof)
+
     def mk_psudorandom_selection(self):
         selections = []
         append = selections.append
@@ -2795,6 +2815,12 @@ class ZeusCoreElection(object):
             trustees = [self.mk_random_trustee() for _ in xrange(nr_trustees)]
             for trustee in trustees:
                 self.add_trustee(key_public(trustee), key_proof(trustee))
+
+            trustees = [self.mk_reprove_trustee(key_public(t), key_secret(t))
+                        for t in trustees]
+            for trustee in trustees:
+                self.reprove_trustee(key_public(trustee), key_proof(trustee))
+
             self._trustees = trustees
             self.set_voting()
 
