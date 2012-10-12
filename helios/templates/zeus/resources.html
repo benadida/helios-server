@@ -3,7 +3,7 @@
 {% block tabs_menu %}
 <dd id="" class="{% if menu_active == "home" %}active{% endif %}"><a
   href="/">Αρχική σελίδα</a></dd>
-<dd id="" class="{% if menu_active == "faqs" %}active{% endif %}"><a 
+<dd id="" class="{% if menu_active == "faq" %}active{% endif %}"><a 
   href="{% url zeus.views.faqs %}">Συχνές ερωτήσεις</a></dd>
 <dd id="" class="{% if menu_active == "resources" %}active{% endif %}"><a 
   href="{% url zeus.views.faqs %}">Υλικό</a></dd>
@@ -11,14 +11,10 @@
 
 {% block content %}
 <div class="row">
-  <div class="columns twelve">
-    <h4>Ερωτήσεις για τους χρήστες</h4>
-    {% include "zeus/faqs_voter.html" %}
-  </div>
-
-  <div class="columns twelve">
-    <h4>Ερωτήσεις για τους διαχειριστές</h4>
-    {% include "zeus/faqs_admin.html" %}
-  </div>
+<div class="columns twelve">
+  <h4>Υλικό</h4>
+  <ul>
+    <li><a href="#">Zeus presentation</a></li>
+    <li><a href="#">Zeus press</a></li>
+  </ul>
 </div>
-{% endblock %}
