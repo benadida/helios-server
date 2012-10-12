@@ -1843,6 +1843,7 @@ class ZeusCoreElection(object):
 
     def do_init_decrypting(self):
         self.trustee_factors = {}
+        self.zeus_decryption_factors = None
 
     def do_store_trustee_factors(self, trustee_factors):
         trustee_public = trustee_factors['trustee_public']
@@ -1851,6 +1852,12 @@ class ZeusCoreElection(object):
 
     def do_get_all_trustee_factors(self):
         return dict(self.trustee_factors)
+
+    def do_store_zeus_factors(self, zeus_decryption_factors):
+        self.zeus_decryption_factors = zeus_decryption_factors
+
+    def do_get_zeus_factors(self):
+        return self.zeus_decryption_factors
 
     ### FINISHED BACKEND API ###
 
@@ -1901,7 +1908,7 @@ class ZeusCoreElection(object):
 
     def compute_election_public(self):
         trustees = self.do_get_trustees()
-        public = 1
+        public = self.do_get_zeus_public()
         modulus, generator, order = self.do_get_cryptosystem()
         for trustee in trustees:
             public = (public * trustee) % modulus
@@ -2036,7 +2043,7 @@ class ZeusCoreElection(object):
 
         election_public = self.do_get_election_public()
         with teller.task("Validating Election Public Key"):
-            _election_public = 1
+            _election_public = self.do_get_zeus_public()
             for public in trustees:
                 _election_public = (_election_public * public) % modulus
             if _election_public != election_public:
@@ -2563,6 +2570,7 @@ class ZeusCoreElection(object):
             raise ZeusError(m)
 
         self.validate_mixing()
+        self.compute_zeus_factors()
         self.do_set_stage('DECRYPTING')
 
     def export_decrypting(self):
@@ -2667,19 +2675,34 @@ class ZeusCoreElection(object):
 
         teller.finish()
 
-    def decrypt_ballots(self):
+    def compute_zeus_factors(self):
+        teller = self.teller
         mixed_ballots = self.get_mixed_ballots()
+        modulus, generator, order = self.do_get_cryptosystem()
+        secret = self.do_get_zeus_secret()
+        with teller.task("Computing Zeus factors"):
+            zeus_factors = compute_decryption_factors(modulus, generator, order,
+                                                      secret, mixed_ballots,
+                                                      teller=teller)
+        self.do_store_zeus_factors(zeus_factors)
+
+    def decrypt_ballots(self):
+        teller = self.teller
+        mixed_ballots = self.get_mixed_ballots()
+        modulus, generator, order = self.do_get_cryptosystem()
+        zeus_factors = self.do_get_zeus_factors()
         all_factors = self.do_get_all_trustee_factors().values()
-        crypto = self.do_get_cryptosystem()
-        modulus, generator, order = crypto
+        all_factors.append(zeus_factors)
         decryption_factors = combine_decryption_factors(modulus, all_factors)
         plaintexts = []
         append = plaintexts.append
 
-        for ballot, factor in izip(mixed_ballots, decryption_factors):
-            plaintext = decrypt_with_decryptor(modulus, generator, order,
-                                               ballot[BETA], factor)
-            append(plaintext)
+        with teller.task("Decrypting ballots", total=len(mixed_ballots)):
+            for ballot, factor in izip(mixed_ballots, decryption_factors):
+                plaintext = decrypt_with_decryptor(modulus, generator, order,
+                                                   ballot[BETA], factor)
+                append(plaintext)
+                teller.advance()
 
         self.do_store_results(plaintexts)
         return plaintexts
@@ -2710,12 +2733,14 @@ class ZeusCoreElection(object):
             raise ZeusError(m)
 
         finished = self.export_decrypting()
+        finished['zeus_decryption_factors'] = self.do_get_zeus_factors()
         finished['results'] = self.do_get_results()
         return finished
 
     @classmethod
     def new_at_finished(cls, finished, teller=_teller):
         self = cls.new_at_decrypting(finished, teller=teller)
+        self.do_store_zeus_factors(finished['zeus_decryption_factors'])
         self.do_store_results(finished['results'])
         self.set_finished()
         return self
