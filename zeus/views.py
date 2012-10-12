@@ -12,3 +12,8 @@ def faqs(request):
   user = get_user(request)
   return render_template(request, "zeus/faqs", {'menu_active': 'faqs',
                                                         'user': user})
+
+def resources(request):
+  user = get_user(request)
+  return render_template(request, "zeus/resources", {'menu_active': 'resources',
+                                                     'user': user})
