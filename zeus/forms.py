@@ -110,9 +110,7 @@ class ElectionForm(forms.Form):
       self.fields['name'].widget.attrs['disabled'] = True
       self.fields['name'].widget.attrs['readonly'] = True
       del self.fields['trustees']
-      del self.fields['schools']
-
-      self.fields['faculties'].initial = self.election.faculties.join("\n")
+      del self.fields['faculties']
     else:
       del self.fields['voting_extended_until']
 
