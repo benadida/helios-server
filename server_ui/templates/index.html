@@ -19,9 +19,6 @@
       Όνομα
     </th>
     <th>
-      Διαχείριση
-    </th>
-    <th>
       Ίδρυμα
     </th>
     <th>
@@ -44,13 +41,10 @@
     {% for election in user.elections.all %}
     <tr>
         <td>
-            {{ election.name }}
+            <a href="{% url helios.views.one_election_view election.uuid %}">{{ election.name }}
+</a>
         </td>
         <td>
-            <a href="{% url helios.views.one_election_view election.uuid %}">Προβολή</a>
-        </td>
-        <td>
-            {{ election.institution.name }}
         </td>
         <td>
             {{ election.admins.all.0.info.name }}

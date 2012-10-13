@@ -11,6 +11,11 @@
 {% endif %}
 <div class="extra-election-actions">
   {% block extra_title %}
+{% if admin_p %}
+<a class="button small" href="{% url helios.views.one_election_edit election.uuid %}">Επεξεργασία</a>
+{% if election.completed %}
+{% endif %}
+{% endif %}
 {% endblock %}
 </div>
 </h4>
