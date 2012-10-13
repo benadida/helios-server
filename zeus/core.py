@@ -1078,7 +1078,7 @@ def element_from_elements_hash(modulus, generator, order, *elements):
     element = pow(generator, number, modulus)
     return element
 
-def prove_dlog(modulus, generator, order, power, dlog):
+def prove_dlog_zeus(modulus, generator, order, power, dlog):
     randomness = get_random_int(2, order)
     commitment = pow(generator, randomness, modulus)
     challenge = element_from_elements_hash(modulus, generator, order,
@@ -1086,14 +1086,32 @@ def prove_dlog(modulus, generator, order, power, dlog):
     response = (randomness + challenge * dlog) % order
     return [commitment, challenge, response]
 
-def verify_dlog_power(modulus, generator, order, power,
-                      commitment, challenge, response):
+def verify_dlog_power_zeus(modulus, generator, order, power,
+                           commitment, challenge, response):
     _challenge = element_from_elements_hash(modulus, generator, order,
                                             power, commitment)
     if _challenge != challenge:
         return 0
     return (pow(generator, response, modulus) 
             == ((commitment * pow(power, challenge, modulus)) % modulus))
+
+def prove_dlog_helios(modulus, generator, order, power, dlog):
+    randomness = get_random_int(2, order)
+    commitment = pow(generator, randomness, modulus)
+    challenge = int(sha1(str(commitment)).hexdigest(), 16) % order
+    response = (randomness + challenge * dlog) % order
+    return [commitment, challenge, response]
+
+def verify_dlog_power_helios(modulus, generator, order, power,
+                           commitment, challenge, response):
+    _challenge = int(sha1(str(commitment)).hexdigest(), 16) % order
+    if _challenge != challenge:
+        return 0
+    return (pow(generator, response, modulus) 
+            == ((commitment * pow(power, challenge, modulus)) % modulus))
+
+prove_dlog = prove_dlog_helios
+verify_dlog_power = verify_dlog_power_helios
 
 def generate_keypair(modulus, generator, order, secret_key=None):
     if secret_key is None:
