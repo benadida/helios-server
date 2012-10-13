@@ -1431,6 +1431,7 @@ def get_random_permutation_gamma(nr_elements):
 
 _queue = None
 _parallel_mix = None
+_report_thresh = 4
 
 def shuffle_ciphers(modulus, generator, order, public, ciphers, teller=None):
     if _parallel_mix:
@@ -1439,6 +1440,7 @@ def shuffle_ciphers(modulus, generator, order, public, ciphers, teller=None):
     mixed_offsets = get_random_permutation(nr_ciphers)
     mixed_ciphers = [None] * nr_ciphers
     mixed_randoms = [None] * nr_ciphers
+    count = 0
 
     for i in xrange(nr_ciphers):
         alpha, beta = ciphers[i]
@@ -1447,11 +1449,16 @@ def shuffle_ciphers(modulus, generator, order, public, ciphers, teller=None):
         mixed_randoms[i] = secret
         o = mixed_offsets[i]
         mixed_ciphers[o] = (alpha, beta)
-        if _parallel_mix and _queue is not None:
-            _queue.put(1)
-        if teller:
-            teller.advance()
+        count += 1
+        if (count >= _report_thresh
+            and _parallel_mix and _queue is not None):
+            _queue.put(count)
+            if teller:
+                teller.advance(count)
+            count = 0
 
+    if _parallel_mix and _queue is not None and i:
+        _queue.put(count)
     return [mixed_ciphers, mixed_offsets, mixed_randoms]
 
 def shuffle_map(args):
@@ -1485,9 +1492,11 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS, teller=_teller):
             args_collection = repeat((p, g, q, y, original_ciphers), nr_rounds)
             result = WorkerPool.map_async(shuffle_map, args_collection)
             Random.atfork()
-            for _ in xrange(nr_ciphers * nr_rounds):
-                _queue.get()
-                teller.advance()
+            count = nr_ciphers * nr_rounds
+            while count > 0:
+                n = _queue.get()
+                teller.advance(n)
+                count -= n
             mixed = result.get()
         else:
             args = (p, g, q, y, original_ciphers, teller)
