@@ -5,14 +5,17 @@ PYTHON_MAJOR = sys.version_info[0]
 from datetime import datetime
 from random import randint, shuffle, choice
 from collections import defaultdict
-from hashlib import sha256
-from itertools import izip
+from hashlib import sha256, sha1
+from itertools import izip, repeat
+from functools import partial
 from math import log
 from bisect import bisect_right
 import Crypto.Util.number as number
 inverse = number.inverse
 from Crypto import Random
 from operator import mul as mul_operator
+from multiprocessing import Pool, Queue as PoolQueue
+
 
 class ZeusError(Exception):
     pass
@@ -23,7 +26,7 @@ PROOF = 2
 
 VOTER_KEY_CEIL = 2**256
 VOTER_SLOT_CEIL = 2**48
-MIN_MIX_ROUNDS = 8
+MIN_MIX_ROUNDS = 3
 
 V_CAST_VOTE     =   'CAST VOTE'
 V_PUBLIC_AUDIT  =   'PUBLIC AUDIT'
@@ -163,8 +166,11 @@ class Teller(object):
 
 
     def __init__(self, name='', total=1, current=0, depth=0,
-                       parent=None, resume=False,
+                       parent=None, resume=False, subtask=False,
                        outstream=sys.stderr, **kw):
+        if subtask and parent:
+            name = str(parent) + '/' + name
+            self.feed = ''
         self.name = name
         self.depth = depth
         self.total = total
@@ -173,8 +179,8 @@ class Teller(object):
         self.parent = parent
         self.children = {}
         self.set_format()
-        self.outstream = outstream
         self.resuming = resume
+        self.outstream = outstream
 
         for k, v in kw.iteritems():
             a = getattr(self, k, None)
@@ -297,7 +303,8 @@ class Teller(object):
 
         return self
 
-    def task(self, name='', total=1, current=0, resume=False, **kw):
+    def task(self, name='', total=1, current=0,
+             resume=False, subtask=False, **kw):
         self = self.active()
         children = self.children
         kw['parent'] = self
@@ -306,7 +313,7 @@ class Teller(object):
         kw['fail_parent'] = self.fail_parent
         kw['active'] = self.active
         task = self.__class__(name=name, total=total, current=current,
-                              resume=resume, **kw)
+                              resume=resume, subtask=subtask, **kw)
         children[id(task)] = task
         task.check_tell(None)
         return task
@@ -1071,7 +1078,7 @@ def element_from_elements_hash(modulus, generator, order, *elements):
     element = pow(generator, number, modulus)
     return element
 
-def prove_dlog(modulus, generator, order, power, dlog):
+def prove_dlog_zeus(modulus, generator, order, power, dlog):
     randomness = get_random_int(2, order)
     commitment = pow(generator, randomness, modulus)
     challenge = element_from_elements_hash(modulus, generator, order,
@@ -1079,14 +1086,32 @@ def prove_dlog(modulus, generator, order, power, dlog):
     response = (randomness + challenge * dlog) % order
     return [commitment, challenge, response]
 
-def verify_dlog_power(modulus, generator, order, power,
-                      commitment, challenge, response):
+def verify_dlog_power_zeus(modulus, generator, order, power,
+                           commitment, challenge, response):
     _challenge = element_from_elements_hash(modulus, generator, order,
                                             power, commitment)
     if _challenge != challenge:
         return 0
     return (pow(generator, response, modulus) 
             == ((commitment * pow(power, challenge, modulus)) % modulus))
+
+def prove_dlog_helios(modulus, generator, order, power, dlog):
+    randomness = get_random_int(2, order)
+    commitment = pow(generator, randomness, modulus)
+    challenge = int(sha1(str(commitment)).hexdigest(), 16) % order
+    response = (randomness + challenge * dlog) % order
+    return [commitment, challenge, response]
+
+def verify_dlog_power_helios(modulus, generator, order, power,
+                           commitment, challenge, response):
+    _challenge = int(sha1(str(commitment)).hexdigest(), 16) % order
+    if _challenge != challenge:
+        return 0
+    return (pow(generator, response, modulus) 
+            == ((commitment * pow(power, challenge, modulus)) % modulus))
+
+prove_dlog = prove_dlog_helios
+verify_dlog_power = verify_dlog_power_helios
 
 def generate_keypair(modulus, generator, order, secret_key=None):
     if secret_key is None:
@@ -1398,7 +1423,12 @@ def get_random_permutation_gamma(nr_elements):
     selection = gamma_decode(rand, nr_elements)
     return selection
 
-def shuffle_ciphers(modulus, generator, order, public, ciphers):
+_queue = None
+_parallel_mix = None
+
+def shuffle_ciphers(modulus, generator, order, public, ciphers, teller=None):
+    if _parallel_mix:
+        Random.atfork()
     nr_ciphers = len(ciphers)
     mixed_offsets = get_random_permutation(nr_ciphers)
     mixed_ciphers = [None] * nr_ciphers
@@ -1411,8 +1441,15 @@ def shuffle_ciphers(modulus, generator, order, public, ciphers):
         mixed_randoms[i] = secret
         o = mixed_offsets[i]
         mixed_ciphers[o] = (alpha, beta)
+        if _parallel_mix and _queue is not None:
+            _queue.put(1)
+        if teller:
+            teller.advance()
 
     return [mixed_ciphers, mixed_offsets, mixed_randoms]
+
+def shuffle_map(args):
+    return shuffle_ciphers(*args)
 
 def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS, teller=_teller):
     p = ciphers_for_mixing['modulus']
@@ -1433,18 +1470,37 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS, teller=_teller):
         mixed_ciphers, mixed_offsets, mixed_randoms = shuffled
         cipher_mix['mixed_ciphers'] = mixed_ciphers
 
-    with teller.task('Producing ciphers for proof', total=nr_rounds):
-        cipher_collections = []
-        random_collections = []
-        offset_collections = []
+    total = nr_ciphers * nr_rounds
+    with teller.task('Producing ciphers for proof', total=total):
+        if _parallel_mix:
+            global _queue
+            _queue = PoolQueue()
+            WorkerPool = Pool(processes=_parallel_mix)
+            args_collection = repeat((p, g, q, y, original_ciphers), nr_rounds)
+            result = WorkerPool.map_async(shuffle_map, args_collection)
+            Random.atfork()
+            for _ in xrange(nr_ciphers * nr_rounds):
+                _queue.get()
+                teller.advance()
+            mixed = result.get()
+        else:
+            args = (p, g, q, y, original_ciphers, teller)
+            args_collection = repeat(args, nr_rounds)
+            mixed = map(shuffle_map, args_collection)
+        unzipped = [list(x) for x in izip(*mixed)]
+        cipher_collections, offset_collections, random_collections = unzipped
 
-        for _ in xrange(nr_rounds):
-            shuffled = shuffle_ciphers(p, g, q, y, original_ciphers)
-            ciphers, offsets, randoms = shuffled
-            cipher_collections.append(ciphers)
-            offset_collections.append(offsets)
-            random_collections.append(randoms)
-            teller.advance()
+        #cipher_collections = []
+        #random_collections = []
+        #offset_collections = []
+        #
+        #for _ in xrange(nr_rounds):
+        #    shuffled = shuffle_ciphers(p, g, q, y, original_ciphers)
+        #    ciphers, offsets, randoms = shuffled
+        #    cipher_collections.append(ciphers)
+        #    offset_collections.append(offsets)
+        #    random_collections.append(randoms)
+        #    teller.advance()
 
         cipher_mix['cipher_collections'] = cipher_collections
         cipher_mix['random_collections'] = random_collections
@@ -2937,6 +2993,9 @@ def main():
         help=("Read a MIXING election from the input file, mix it, "
               "and write the mix to the output file"))
 
+    parser.add_argument('--parallel', dest='nr_procs', default=2,
+        help="Use multiple processes for parallel mixing")
+
     parser.add_argument('--generate', nargs='*', metavar='outfile',
         help="Generate a random election and write it out in JSON")
 
@@ -2976,6 +3035,10 @@ def main():
     teller = Teller(outstream=outstream)
     import json
 
+    if args.nr_procs > 1:
+        global _parallel_mix
+        _parallel_mix = int(args.nr_procs)
+
     if args.generate is not None:
         filename = args.generate
         filename = filename[0] if filename else None
@@ -2985,6 +3048,7 @@ def main():
                             nr_trustees     =   args.nr_trustees,
                             nr_voters       =   args.nr_voters,
                             nr_votes        =   args.nr_votes,
+                            nr_rounds       =   args.nr_rounds,
 
                             teller=teller)
         finished = election.export_finished()
