@@ -6,18 +6,15 @@ Replace these with more appropriate tests for your application.
 """
 
 from django.test import TestCase
+from zeus.helios_election import *
+from helios.models import *
+from zeus.models import *
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.failUnlessEqual(1 + 1, 2)
+class TestHeliosElection(TestCase):
 
-__test__ = {"doctest": """
-Another way to test that 1 + 1 is equal to 2.
+    def test_election_workflow(self):
 
->>> 1 + 1 == 2
-True
-"""}
+        e = Election(name="election test", uuid="test")
+        e.save()
+
 

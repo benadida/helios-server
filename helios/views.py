@@ -222,6 +222,9 @@ def elections_voted(request):
 def election_new(request):
   from zeus.forms import ElectionForm
   user = get_user(request)
+  institution = user.institution
+
+  # only one election per user
   #if user.election:
     #return HttpResponseRedirect(reverse(one_election_view, args=[user.election.uuid]))
 
@@ -231,14 +234,17 @@ def election_new(request):
   error = None
 
   if request.method == "GET":
-    election_form = ElectionForm(initial={'private_p': settings.HELIOS_PRIVATE_DEFAULT})
+    election_form = ElectionForm(None, institution,
+                                 initial={
+                                     'private_p': settings.HELIOS_PRIVATE_DEFAULT
+                                 })
   else:
-    election_form = ElectionForm(None, request.POST)
+    election_form = ElectionForm(None, institution, request.POST)
 
     if election_form.is_valid():
       with transaction.commit_on_success():
         election = Election()
-        election, trustees = election_form.save(election, user.faculty, ELGAMAL_PARAMS)
+        election, trustees = election_form.save(election, user.institution, ELGAMAL_PARAMS)
         election.admins.add(user)
         return HttpResponseRedirect(reverse(one_election_questions, args=[election.uuid]))
 
@@ -249,6 +255,7 @@ def election_new(request):
 def one_election_edit(request, election):
   from zeus.forms import ElectionForm
   user = get_user(request)
+  institution = user.institution
 
   if not can_create_election(request):
     return HttpResponseForbidden('only an administrator can create an election')
@@ -256,22 +263,21 @@ def one_election_edit(request, election):
   error = None
 
   if request.method == "GET":
-    election_form = ElectionForm(election, initial={
+    election_form = ElectionForm(election, institution, initial={
       'name': election.name,
       'voting_starts_at': election.voting_starts_at,
       'voting_ends_at': election.voting_ends_at,
       'help_phone': election.help_phone,
       'help_email': election.help_email,
-      'faculties': election.faculties_string,
+      'departments': election.departments_string,
       'trustees': election.trustees_string,
       'description': election.description})
   else:
-    election_form = ElectionForm(election, request.POST)
+    election_form = ElectionForm(election, institution, request.POST)
 
-    print election_form.data
     if election_form.is_valid():
       with transaction.commit_on_success():
-        election, trustees = election_form.save(election, user.faculty, ELGAMAL_PARAMS)
+        election, trustees = election_form.save(election, ELGAMAL_PARAMS)
         return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
 
   return render_template(request, "election_new", {'election_form' : election_form, 'election' : election, 'error': error})
@@ -969,14 +975,14 @@ def one_election_questions(request, election):
   if admin_p and request.method == "POST":
     questions = []
 
-    fields = ['surname', 'name', 'father_name', 'faculty']
+    fields = ['surname', 'name', 'father_name', 'department']
 
     surnames = filter(bool, request.POST.getlist('candidates_lastname'))
     names = filter(bool, request.POST.getlist('candidates_name'))
     fathernames = filter(bool, request.POST.getlist('candidates_fathers_name'))
-    faculties = filter(bool, request.POST.getlist('candidates_faculty'))
+    departments = filter(bool, request.POST.getlist('candidates_department'))
 
-    candidates_data = zip(surnames, names, fathernames, faculties)
+    candidates_data = zip(surnames, names, fathernames, departments)
     candidates = [dict(zip(fields, d)) for d in candidates_data]
     candidates = sorted(candidates, key=lambda c: c['surname'])
 
@@ -1004,7 +1010,7 @@ def one_election_questions(request, election):
   return render_template(request, 'election_questions', {
     'election': election, 'questions_json' : questions_json,
     'candidates': election.candidates,
-    'faculties': election.faculties,
+    'departments': election.departments,
     'empty_inputs': empty_inputs,
     'menu_active': 'candidates',
     'admin_p': admin_p})

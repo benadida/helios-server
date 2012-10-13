@@ -65,6 +65,7 @@ def add_test_voters(election):
   return new_voters
 
 class ElectionForm(forms.Form):
+  institution = forms.CharField(max_length=100, label=_('Institution')))
   name = forms.CharField( max_length=100,label=_('Election name'),
                          widget=forms.TextInput(attrs={'size':60}),
                          initial="",
@@ -90,17 +91,21 @@ class ElectionForm(forms.Form):
   trustees = forms.CharField(widget=forms.Textarea,
         help_text=_('Trustees list. e.g. <br/><br/> Giannhs Gianopoulos, '
                     'giannhs@email.com<br /> Kwstas Kwstopoulos, kwstas@email.com<br />'))
-  faculties = forms.CharField(widget=forms.Textarea,
-        help_text=_('University faculties. e.g. <br/><br/> Faculty 1<br />'
-                    'Faculty 2<br /> Faculty 3<br />'))
+  departments = forms.CharField(widget=forms.Textarea,
+        help_text=_('Institution departments. e.g. <br/><br/> Department 1<br />'
+                    'Department 2<br /> Department 3<br />'))
 
   help_email = forms.EmailField(help_text=_('Voters can contact this email for election suport'))
   help_phone = forms.CharField(help_text=_('Voters can contact this phone for election suport'))
 
 
-  def __init__(self, election=None, *args, **kwargs):
+  def __init__(self, election=None, institution, *args, **kwargs):
     self.election = election
+    self.institution = institution
     super(ElectionForm, self).__init__(*args, **kwargs)
+
+    self.fields['institution'].widget.attrs['readonly'] = True
+    self.fields['institution'].initial = institution.name
 
     if self.election and self.election.frozen_at:
       self.fields['voting_starts_at'].widget.attrs['readonly'] = True
@@ -110,7 +115,7 @@ class ElectionForm(forms.Form):
       self.fields['name'].widget.attrs['disabled'] = True
       self.fields['name'].widget.attrs['readonly'] = True
       del self.fields['trustees']
-      del self.fields['faculties']
+      del self.fields['departments']
     else:
       del self.fields['voting_extended_until']
 
@@ -127,8 +132,9 @@ class ElectionForm(forms.Form):
 
     return "\n".join(["%s, %s" % (t[0], t[1]) for t in trustees_list])
 
-  def save(self, election, faculty, params):
+  def save(self, election, params):
     is_new = not bool(election.pk)
+    institution = self.institution
 
     data = self.cleaned_data
     data['slug'] = slughifi(data['name'])
@@ -139,20 +145,20 @@ class ElectionForm(forms.Form):
       e.use_voter_aliases = True
       e.workflow_type = 'mixnet'
       e.private_p = True
-      e.faculty = faculty
+      e.institution = institution
       e.help_phone = data['help_phone']
       e.help_email = data['help_email']
-      e.faculties = [d.strip() for d in data['faculties'].split("\n")]
+      e.departments = [d.strip() for d in data['departments'].split("\n")]
 
       if e.candidates:
         new_cands = []
         for cand in e.candidates:
-          if cand['faculty'] in e.faculties:
+          if cand['department'] in e.departments:
             new_cands.append(cand)
 
         if len(new_cands) != len(e.candidates):
-          messages.warning(_("Election candidates changed due to faculties"
-                             " changes"))
+          messages.warning(_("Election candidates changed due to election"
+                             " institution department changes"))
         e.candidates = new_cands
 
 
@@ -181,7 +187,6 @@ class ElectionForm(forms.Form):
     e.save()
 
     if is_new:
-      commitee = User.objects.filter(faculty=faculty)
       e.generate_helios_mixnet({"name":"zeus mixnet %d" % 1})
 
     if not e.get_helios_trustee():

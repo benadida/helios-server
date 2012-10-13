@@ -30,7 +30,6 @@ from helios import datatypes
 from helios.datatypes.djangofield import LDObjectField
 from helios.workflows import get_workflow_module
 
-from zeus import models as zeus_models
 
 # useful stuff in auth
 from heliosauth.models import User, AUTH_SYSTEMS
@@ -151,9 +150,10 @@ class ElectionMixnet(HeliosModel):
         self.save()
 
 
+
 class Election(HeliosModel):
   admins = models.ManyToManyField(User, related_name="elections")
-  faculty = models.ForeignKey(zeus_models.Faculty)
+  institution = models.ForeignKey('zeus.Institution', null=True)
   help_email = models.CharField(max_length=254, null=True, blank=True)
   help_phone = models.CharField(max_length=254, null=True, blank=True)
   send_email_on_cast_done = models.BooleanField(default=True)
@@ -171,7 +171,7 @@ class Election(HeliosModel):
   name = models.CharField(max_length=250)
 
   candidates = JSONField(default="{}")
-  faculties = JSONField(default="[]")
+  departments = JSONField(default="[]")
 
   ELECTION_TYPES = (
     ('election', 'Election'),
@@ -307,9 +307,8 @@ class Election(HeliosModel):
     return heliosutils.one_val_raw_sql("select max(cast(substr(alias, 2) as integer)) from " + Voter._meta.db_table + " where election_id = %s", [self.id]) or 0
 
   @property
-  def faculties_string(self):
-    faculties = self.faculties or []
-    return "\n".join(faculties)
+  def departments_string(self):
+    return "\n".join(self.departments or [])
 
   @property
   def trustees_string(self):
@@ -323,7 +322,7 @@ class Election(HeliosModel):
     answers = []
     for cand in cands:
       answers.append(u"%s %s του %s [%s]" % (cand['surname'], cand['name'], cand['father_name'],
-                             cand['faculty'].strip()))
+                             cand['department'].strip()))
 
     self.questions[0]['answers'] = answers
     self.save()
@@ -769,11 +768,16 @@ class Election(HeliosModel):
     mixnet = ElectionMixnet(**params)
     mixnet.save()
 
+  @property
+  def zeus_election(self):
+    return zeus.HeliosElection(uuid=self.uuid)
+
   def generate_trustee(self, params):
     """
     generate a trustee including the secret key,
     thus a helios-based trustee
     """
+
     # FIXME: generate the keypair
     keypair = params.generate_keypair()
 

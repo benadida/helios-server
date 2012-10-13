@@ -50,7 +50,7 @@
             <a href="{% url helios.views.one_election_view election.uuid %}">Προβολή</a>
         </td>
         <td>
-            {{ election.faculty.name }}
+            {{ election.institution.name }}
         </td>
         <td>
             {{ election.admins.all.0.info.name }}

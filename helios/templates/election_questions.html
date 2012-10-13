@@ -26,9 +26,9 @@
         placeholder="Πατρώνυμο" />
       </div>
       <div class="columns two">
-        <select type="text" name="candidates_faculty">
-          {% for faculty in faculties %}
-          <option {% if cand.faculty == faculty %}selected{% endif %} value="{{ faculty }}">{{ faculty }}</option>
+        <select type="text" name="candidates_department">
+          {% for department in departments %}
+          <option {% if cand.department == department %}selected{% endif %} value="{{ department }}">{{ department }}</option>
           {% endfor %} 
         </select>
       </div>
@@ -48,9 +48,9 @@
         placeholder="Πατρώνυμο" />
       </div>
       <div class="columns two">
-        <select type="text" value="{{ cand }}" name="candidates_faculty">
-          {% for faculty in faculties %}
-          <option value="{{ faculty }}">{{ faculty }}</option>
+        <select type="text" value="{{ cand }}" name="candidates_department">
+          {% for department in departments %}
+          <option value="{{ department }}">{{ department }}</option>
           {% endfor %}
         </select>
       </div>
