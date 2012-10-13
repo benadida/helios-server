@@ -2165,6 +2165,12 @@ class ZeusCoreElection(object):
         if fingerprint != vote['fingerprint']:
             m = "Invalid vote fingerprint!"
             raise ZeusError(m)
+
+        stored = self.do_get_vote(fingerprint)
+        if stored is not None:
+            m = "Vote has already been cast!"
+            raise ZeusError(m)
+
         return vote
 
     def sign_vote(self, vote, comments):
