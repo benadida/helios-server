@@ -99,7 +99,7 @@ def pk_all_args(pk):
     return [pk['modulus'], pk['generator'], pk['order'], pk['public'],
             ['commitment'], pk['challenge'], pk['response']]
 
-def pk_no_proof_from_args(p, g, q, y):
+def pk_noproof_from_args(p, g, q, y):
     return {'modulus': p, 'generator': g, 'order': q, 'public': y}
 
 def pk_from_args(p, g, q, y, t, c, f):
@@ -1011,8 +1011,9 @@ def validate_element(modulus, generator, order, element):
     legendre = pow(element, order, modulus)
     return legendre == 1
 
-def encrypt(message, modulus, generator, order, public):
-    randomness = get_random_int(1, order)
+def encrypt(message, modulus, generator, order, public, randomness=None):
+    if randomness is None:
+        randomness = get_random_int(1, order)
     message = message + 1
     if message >= order:
         m = "message is too large"
@@ -1267,7 +1268,7 @@ def encode_selection(selection):
 
 def vote_from_encoded(modulus, generator, order, public,
                       voter, encoded, nr_candidates,
-                      slot=None, audit=None):
+                      audit_code=None, publish=None):
 
     alpha, beta, rnd = encrypt(encoded, modulus, generator, order, public)
     proof = prove_encryption(modulus, generator, order, alpha, rnd)
@@ -1288,11 +1289,11 @@ def vote_from_encoded(modulus, generator, order, public,
             'fingerprint': fingerprint,
             'encrypted_ballot': eb}
 
-    if slot:
-        vote['slot'] = None
+    if audit_code:
+        vote['audit_code'] = audit_code
 
-    if audit:
-        vote['secret'] = rnd
+    if publish:
+        vote['voter_secret'] = rnd
 
     return vote
 
@@ -1308,7 +1309,7 @@ def sign_vote(vote, comments, modulus, generator, order, public, secret):
     m0 = status
     m1 = (V_ELECTION + "%x") % election
     m2 = (V_FINGERPRINT + "%s") % fingerprint
-    m3 = (V_INDEX + "%x") % index
+    m3 = (V_INDEX + "%s") % (("%x" % index) if index is not None else 'NONE')
     m4 = (V_PREVIOUS + "%s") % previous_vote
     m5 = (V_ZEUS_PUBLIC + "%x") % public
     m6 = (V_COMMENTS + "%s") % comments
@@ -1318,7 +1319,9 @@ def sign_vote(vote, comments, modulus, generator, order, public, secret):
 
 def validate_vote_info(vote_signature_message):
     m0, m1, m2, m3, m4, m5, m6 = vote_signature_message.split('\n', 6)
-    if (not m0.startswith(V_CAST_VOTE)
+    if (not (m0.startswith(V_CAST_VOTE)
+             or m0.startswith(V_AUDIT_REQUEST)
+             or m0.startswith(V_PUBLIC_AUDIT))
         or not m1.startswith(V_ELECTION)
         or not m2.startswith(V_FINGERPRINT)
         or not m3.startswith(V_INDEX)
@@ -1335,7 +1338,10 @@ def validate_vote_info(vote_signature_message):
     zeus_public = m5[len(V_ZEUS_PUBLIC):]
 
     election = int(election, 16)
-    index = int(index, 16)
+    try:
+        index = int(index, 16)
+    except ValueError:
+        index = None
     zeus_public = int(zeus_public, 16)
     return [election, fingerprint, index, previous, zeus_public]
 
@@ -1425,6 +1431,7 @@ def get_random_permutation_gamma(nr_elements):
 
 _queue = None
 _parallel_mix = None
+_report_thresh = 4
 
 def shuffle_ciphers(modulus, generator, order, public, ciphers, teller=None):
     if _parallel_mix:
@@ -1433,6 +1440,7 @@ def shuffle_ciphers(modulus, generator, order, public, ciphers, teller=None):
     mixed_offsets = get_random_permutation(nr_ciphers)
     mixed_ciphers = [None] * nr_ciphers
     mixed_randoms = [None] * nr_ciphers
+    count = 0
 
     for i in xrange(nr_ciphers):
         alpha, beta = ciphers[i]
@@ -1441,11 +1449,16 @@ def shuffle_ciphers(modulus, generator, order, public, ciphers, teller=None):
         mixed_randoms[i] = secret
         o = mixed_offsets[i]
         mixed_ciphers[o] = (alpha, beta)
-        if _parallel_mix and _queue is not None:
-            _queue.put(1)
-        if teller:
-            teller.advance()
+        count += 1
+        if (count >= _report_thresh
+            and _parallel_mix and _queue is not None):
+            _queue.put(count)
+            if teller:
+                teller.advance(count)
+            count = 0
 
+    if _parallel_mix and _queue is not None and i:
+        _queue.put(count)
     return [mixed_ciphers, mixed_offsets, mixed_randoms]
 
 def shuffle_map(args):
@@ -1479,9 +1492,11 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS, teller=_teller):
             args_collection = repeat((p, g, q, y, original_ciphers), nr_rounds)
             result = WorkerPool.map_async(shuffle_map, args_collection)
             Random.atfork()
-            for _ in xrange(nr_ciphers * nr_rounds):
-                _queue.get()
-                teller.advance()
+            count = nr_ciphers * nr_rounds
+            while count > 0:
+                n = _queue.get()
+                teller.advance(n)
+                count -= n
             mixed = result.get()
         else:
             args = (p, g, q, y, original_ciphers, teller)
@@ -1490,6 +1505,8 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS, teller=_teller):
         unzipped = [list(x) for x in izip(*mixed)]
         cipher_collections, offset_collections, random_collections = unzipped
 
+        ## single process
+        #
         #cipher_collections = []
         #random_collections = []
         #offset_collections = []
@@ -1702,7 +1719,7 @@ class ZeusCoreElection(object):
         self.cryptosys = None
         self.candidates = []
         self.voters = {}
-        self.slots = {}
+        self.audit_codes = {}
         self.options = {}
         self.zeus_secret = None
         self.zeus_public = None
@@ -1788,17 +1805,17 @@ class ZeusCoreElection(object):
     def do_get_voters(self):
         return dict(self.voters)
 
-    def do_store_voter_slots(self, slots):
-        self.slots.update(slots)
+    def do_store_voter_audit_codes(self, audit_codes):
+        self.audit_codes.update(audit_codes)
 
-    def do_get_voter_slots(self, voter_key):
-        slots = self.slots
-        if voter_key not in slots:
+    def do_get_voter_audit_codes(self, voter_key):
+        audit_codes = self.audit_codes
+        if voter_key not in audit_codes:
             return None
-        return slots[voter_key]
+        return audit_codes[voter_key]
 
-    def do_get_all_voter_slots(self):
-        return dict(self.slots)
+    def do_get_all_voter_audit_codes(self):
+        return dict(self.audit_codes)
 
     ### VOTING BACKEND API ###
 
@@ -2011,14 +2028,15 @@ class ZeusCoreElection(object):
             raise ZeusError(m)
 
         new_voters = {}
-        voter_slots = {}
+        voter_audit_codes = {}
         for name in names:
             voter_key = "%x" % get_random_int(2, VOTER_KEY_CEIL)
             new_voters[voter_key] = name
-            slots = list(get_random_int(1, VOTER_SLOT_CEIL) for _ in xrange(3))
-            voter_slots[voter_key] = slots
+            audit_codes = list(get_random_int(2, VOTER_SLOT_CEIL)
+                               for _ in xrange(3))
+            voter_audit_codes[voter_key] = audit_codes
         self.do_store_voters(new_voters)
-        self.do_store_voter_slots(voter_slots)
+        self.do_store_voter_audit_codes(voter_audit_codes)
 
     def validate_creating(self):
         teller = self.teller
@@ -2054,13 +2072,13 @@ class ZeusCoreElection(object):
                     m = "Duplicate voter keys!"
                     raise ZeusError(m)
 
-            with teller.task("Validating voter slots"):
-                slots = self.do_get_all_voter_slots()
-                if slots.keys() != keys:
+            with teller.task("Validating voter audit_codes"):
+                audit_codes = self.do_get_all_voter_audit_codes()
+                if audit_codes.keys() != keys:
                     m = "Slots do not correspond to voters!"
                     raise ZeusError(m)
-                slot_set = set(tuple(v) for v in slots.values())
-                if len(slot_set) < nr_keys / 2:
+                audit_code_set = set(tuple(v) for v in audit_codes.values())
+                if len(audit_code_set) < nr_keys / 2:
                     m = "Slots don't have enough variation!"
                     raise ZeusError(m)
             teller.notice("%d voters" % nr_keys)
@@ -2118,7 +2136,7 @@ class ZeusCoreElection(object):
         creating['options'] = self.do_get_options()
         creating['candidates'] = self.do_get_candidates()
         creating['voters'] = self.do_get_voters()
-        creating['slots'] = self.do_get_all_voter_slots()
+        creating['audit_codes'] = self.do_get_all_voter_audit_codes()
         creating['cryptosystem'] = self.do_get_cryptosystem()
         creating['zeus_public'] = self.do_get_zeus_public()
         creating['zeus_secret'] = self.do_get_zeus_secret()
@@ -2126,7 +2144,7 @@ class ZeusCoreElection(object):
         creating['election_public'] = self.do_get_election_public()
         creating['trustees'] = self.do_get_trustees()
         creating['voters'] = self.do_get_voters()
-        creating['voter_slots'] = self.do_get_all_voter_slots()
+        creating['voter_audit_codes'] = self.do_get_all_voter_audit_codes()
         return creating
 
     def set_voting(self):
@@ -2156,13 +2174,13 @@ class ZeusCoreElection(object):
             trustee_public_key = int(trustee_public_key)
             self.do_store_trustee(trustee_public_key, *trustee_key_proof)
         self.do_store_voters(voting['voters'])
-        self.do_store_voter_slots(voting['voter_slots'])
+        self.do_store_voter_audit_codes(voting['voter_audit_codes'])
         self.set_voting()
         return self
 
     def validate_submitted_vote(self, vote):
         keys = set(('voter', 'encrypted_ballot', 'fingerprint',
-                    'slot', 'secret'))
+                    'audit_code', 'voter_secret'))
         nr_keys = len(keys)
         vote_keys = vote.keys()
         if len(vote_keys) > len(keys):
@@ -2258,13 +2276,14 @@ class ZeusCoreElection(object):
             m = "Cannot find verified vote [%s] in store!" % (fingerprint,)
             raise AssertionError(m)
 
-        indexed_fingerprint = self.do_get_index_vote(index)
-        if indexed_fingerprint != fingerprint:
-            m = ("Corrupt vote index: "
-                 "signed vote [%s] with index %d not found: "
-                 "index %d holds vote [%s]"
-                 % (fingerprint, index, index, indexed_fingerprint))
-            raise AssertionError(m)
+        if index:
+            indexed_fingerprint = self.do_get_index_vote(index)
+            if indexed_fingerprint != fingerprint:
+                m = ("Corrupt vote index: "
+                     "signed vote [%s] with index %d not found: "
+                     "index %d holds vote [%s]"
+                     % (fingerprint, index, index, indexed_fingerprint))
+                raise AssertionError(m)
 
         if previous and self.do_get_vote(previous) is None:
             m = "Cannot find valid previous vote [%s] in store!" % (previous,)
@@ -2272,30 +2291,29 @@ class ZeusCoreElection(object):
 
     def cast_vote(self, vote):
         self.do_assert_stage('VOTING')
-        vote = self.validate_submitted_vote(vote)
-
         fingerprint = vote['fingerprint']
-        audit_request = self.do_get_audit_request(fingerprint)
-
         voter_key = vote['voter']
         voter = self.do_get_voter(voter_key)
-        slots = self.do_get_voter_slots(voter_key)
-        if not voter and not slots:
+        audit_codes = self.do_get_voter_audit_codes(voter_key)
+        if not voter and not audit_codes:
             m = "Invalid voter key!"
             raise ZeusError(m)
-        if not voter or not slots:
-            m = "Voter slot inconsistency! Invalid Election."
+
+        if not voter or not audit_codes:
+            m = "Voter audit_code inconsistency! Invalid Election."
             raise AssertionError(m)
 
-        voter_secret = vote['secret'] if 'secret' in vote else None
-        voter_slot = vote['slot'] if 'slot' in vote else None
+        audit_request = self.do_get_audit_request(fingerprint)
+        voter_secret = vote['voter_secret'] if 'voter_secret' in vote else None
+        voter_audit_code = vote['audit_code'] if 'audit_code' in vote else None
+
         if voter_secret:
             # This is an audit publication
-            if not voter_slot:
-                m = "Invalid audit vote publication! No slot given."
+            if not voter_audit_code:
+                m = "Invalid audit vote publication! No audit_code given."
                 raise ZeusError(m)
-            if voter_slot in slots:
-                m = "Invalid audit vote publication! Invalid slot given."
+            if voter_audit_code in audit_codes:
+                m = "Invalid audit vote publication! Invalid audit_code given."
                 raise ZeusError(m)
             if voter_key != audit_request:
                 m = "Cannot find prior audit request for publish request!"
@@ -2310,17 +2328,17 @@ class ZeusCoreElection(object):
             self.do_store_votes((vote,))
             return signature
 
-        if not voter_slot:
+        if not voter_audit_code:
             skip_audit = self.do_get_option('skip_audit')
             if skip_audit or skip_audit is None:
-                # skips auditing for submission simplicity
-                voter_slot = slots[0]
+                # skip auditing for submission simplicity
+                voter_audit_code = audit_codes[0]
             else:
                 m = ("Invalid vote submission! "
-                     "No slot given but skip_audit is disabled")
+                     "No audit_code given but skip_audit is disabled")
                 raise ZeusError(m)
 
-        if voter_slot not in slots:
+        if voter_audit_code not in audit_codes:
             # This is an audit request submission
             if audit_request:
                 m = ("Audit request for vote [%s] already exists!"
@@ -2353,7 +2371,8 @@ class ZeusCoreElection(object):
         else:
             previous_fingerprint = cast_votes[-1]
 
-        # first index, then sign?!
+        vote = self.validate_submitted_vote(vote)
+
         vote['previous'] = previous_fingerprint
         vote['status'] = V_CAST_VOTE
         index = self.do_index_vote(fingerprint)
@@ -2363,7 +2382,64 @@ class ZeusCoreElection(object):
         vote['signature'] = signature
         self.do_append_vote(voter_key, fingerprint)
         self.do_store_votes((vote,))
+        # DANGER: commit all data to disk before giving a signature out!
         return signature
+
+    def verify_audit_votes(self):
+        teller = self.teller
+        audit_reqs = self.do_get_audit_requests()
+        get_vote = self.do_get_vote
+        votes = [dict(get_vote(f)) for f in audit_reqs]
+        failed = []
+        missing = []
+        modulus, generator, order = self.do_get_cryptosystem()
+        public = self.do_get_election_public()
+        nr_candidates = len(self.do_get_candidates())
+        max_encoded = gamma_encoding_max(nr_candidates)
+
+        with teller.task("Verifying audit votes", total=len(votes)):
+            for vote in votes:
+                if not 'voter_secret' in vote:
+                    missing.append(vote)
+                    m = "[%s] public audit secret not found"
+                    teller.notice(m, vote['fingerprint'])
+                    teller.advance()
+                    continue
+
+                voter_secret = vote['voter_secret']
+
+                eb = vote['encrypted_ballot']
+                if not verify_encryption(modulus, generator, order,
+                                         eb['alpha'],
+                                         eb['commitment'],
+                                         eb['challenge'],
+                                         eb['response']):
+                    failed.append(vote)
+                    m = "[%s] cannot verify encryption"
+                    teller.notice(m, vote['fingerprint'])
+                    teller.advance()
+                    continue
+
+                alpha = pow(generator, voter_secret, modulus)
+                if alpha != eb['alpha']:
+                    failed.append(vote)
+                    m = "[%s] ciphertext mismatch: wrong key"
+                    teller.notice(m, vote['fingerprint'])
+                    teller.advance()
+                    continue
+
+                encoded = pow(public, voter_secret, modulus)
+                encoded = inverse(encoded, modulus)
+                encoded = (encoded * eb['beta']) % modulus
+                if encoded >= order:
+                    encoded = -encoded % modulus
+                if encoded > max_encoded:
+                    m = "[%s] invalid plaintext!"
+                    teller.notice(m, vote['fingerprint'])
+                    failed.append(vote)
+                teller.advance()
+
+        return missing, failed
 
     def validate_voting(self):
         teller = self.teller
@@ -2391,34 +2467,38 @@ class ZeusCoreElection(object):
                     teller.advance()
                     previous = cast_vote
 
-            current = teller.get_current()
-
-        with teller.task("Validating audit votes",
-                         current=current, total=nr_votes):
-            audit_votes = self.do_get_audit_publications()
-            for audit_vote in audit_votes:
+        audit_pubs = self.do_get_audit_publications()
+        nr_audit_pubs = len(audit_pubs)
+        with teller.task("Validating audit publications", total=nr_audit_pubs):
+            all_audit_requests = self.do_get_audit_requests()
+            for audit_vote in audit_pubs:
                 if audit_vote not in all_votes:
                     m = "Audit vote [%s] not found in vote archive!" % (audit_vote,)
                     raise AssertionError(m)
                 vote = all_votes[audit_vote]
                 self.verify_vote(vote)
-                del all_votes[audit_vote]
+                msg = vote['signature']['m']
+                if msg.startswith(V_PUBLIC_AUDIT):
+                    if vote['fingerprint'] not in all_audit_requests:
+                        m = "Public audit vote not found in requests!"
+                        raise AssertionError(m)
+                else:
+                    m = "Invalid audit vote!"
+                    raise AssertionError(m)
                 teller.advance()
 
-            current = teller.get_current()
-
+        all_audit_requests = self.do_get_audit_requests()
+        nr_all_audit_requests = len(all_audit_requests)
         with teller.task("Validating audit requests",
-                         current=current, total=nr_votes):
-
-            all_audit_requests = self.do_get_audit_requests()
-            for audit_request in all_audit_requests.iteritems():
+                         total=nr_all_audit_requests):
+            for audit_request, voter_key in all_audit_requests.iteritems():
                 if audit_request not in all_votes:
-                    m = ("Audit request [%s] not found in vote archive!"
-                        % (audit_request,))
+                    m = ("Audit request %s/[%s] not found in vote archive!"
+                        % (voter_key, audit_request))
                     raise AssertionError(m)
-                vote = all_votes[audit_vote]
+                vote = all_votes[audit_request]
                 self.verify_vote(vote)
-                del all_votes[audit_vote]
+                del all_votes[audit_request]
                 teller.advance()
 
             current = teller.get_current()
@@ -2847,7 +2927,8 @@ class ZeusCoreElection(object):
 
         return selections
 
-    def mk_random_vote(self, selection=None, voter=None, slot=None, audit=None):
+    def mk_random_vote(self, selection=None, voter=None,
+                             audit_code=None, publish=None):
         modulus, generator, order = self.do_get_cryptosystem()
         public = self.do_get_election_public()
         candidates = self.do_get_candidates()
@@ -2859,24 +2940,28 @@ class ZeusCoreElection(object):
             voters = self.do_get_voters()
             voter = choice(voters.keys())
         encoded = encode_selection(selection)
-        vote = vote_from_encoded(modulus, generator, order, public,
-                                 voter, encoded, nr_candidates)
-        if audit:
+        valid = True
+        if audit_code:
             if voters is None:
                 voters = self.do_get_voters()
-            if slot is None:
+            voter_audit_codes = self.do_get_voter_audit_codes(voter)
+            if audit_code < 0:
                 if voter not in voters:
-                    m = ("Given slot audit vote requested but voter "
-                         "could not be found!")
+                    m = ("Valid audit_code requested but voter not found!")
                     raise ValueError(m)
-                slot = voters[voter][0]
-            else:
-                if voter not in voters:
-                    encoded = None
-                elif slot not in voters[voter]:
-                    encoded = None
-            vote['slot'] = slot
-        return vote, selection, encoded
+                audit_code = voter_audit_codes[0]
+            elif voter not in voters:
+                valid = False
+            elif audit_code not in voter_audit_codes:
+                valid = False
+        vote = vote_from_encoded(modulus, generator, order, public,
+                                 voter, encoded, nr_candidates,
+                                 audit_code=audit_code, publish=1)
+        rnd = vote['voter_secret']
+        if not publish:
+            del vote['voter_secret']
+
+        return vote, selection, encoded if valid else None, rnd
 
     @classmethod
     def mk_random(cls,  nr_candidates   =   3,
@@ -2919,17 +3004,58 @@ class ZeusCoreElection(object):
             selections = []
             plaintexts = {}
             votes = []
-            for _ in xrange(nr_votes):
-                vote, selection, encoded = self.mk_random_vote()
+            for i in xrange(nr_votes):
+                kw = {'audit_code': -1} if (i & 1) else {}
+                vote, selection, encoded, rnd = self.mk_random_vote(**kw)
                 selections.append(selection)
                 if encoded is not None:
                     plaintexts[vote['voter']] = encoded
                 votes.append(vote)
-                self.cast_vote(vote)
+                signature = self.cast_vote(vote)
+                if not signature['m'].startswith(V_CAST_VOTE):
+                    m = "Invalid cast vote signature!"
+                    raise AssertionError(m)
                 teller.advance()
             self._selections = selections
             self._plaintexts = plaintexts
             self._votes = votes
+
+        with teller.task("Casting a valid audit vote"):
+            vote, selection, encoded, rnd = self.mk_random_vote(audit_code=1)
+            signature = self.cast_vote(vote)
+            if not signature['m'].startswith(V_AUDIT_REQUEST):
+                m = "Invalid audit request reply!"
+                raise AssertionError(m)
+
+            vote['voter_secret'] = rnd
+            self.cast_vote(vote)
+
+        self.verify_audit_votes()
+
+        with teller.task("Casting an invalid audit vote"):
+            vote, selection, encoded, rnd = self.mk_random_vote(audit_code=1)
+            signature = self.cast_vote(vote)
+            if not signature['m'].startswith(V_AUDIT_REQUEST):
+                m = "Invalid audit request reply!"
+                raise AssertionError(m)
+
+            vote['voter_secret'] = rnd
+            eb = vote['encrypted_ballot']
+            phony = eb['alpha'] + 1
+            eb['alpha'] = phony
+            modulus, generator, order = self.do_get_cryptosystem()
+            alpha = eb['alpha']
+            commitment = eb['commitment']
+            challenge = eb['challenge']
+            response = eb['response']
+            if verify_encryption(modulus, generator, order, alpha,
+                                 commitment, challenge, response):
+                m = "This should have failed"
+                raise AssertionError(m)
+            signature = self.cast_vote(vote)
+            if not signature['m'].startswith(V_PUBLIC_AUDIT):
+                m = "Invalid public audit reply!"
+                raise AssertionError(m)
 
         with teller.active():
             self.set_mixing()
@@ -2968,6 +3094,12 @@ class ZeusCoreElection(object):
             if sorted(results) != sorted(self._plaintexts.values()):
                 m = ("Invalid Election! "
                      "Casted plaintexts do not match plaintext results!")
+                raise AssertionError(m)
+
+            missing, failed = self.verify_audit_votes()
+            if (missing or not failed or
+                not failed[0]['encrypted_ballot']['alpha'] == phony):
+                m = "Invalid audit request not detected!"
                 raise AssertionError(m)
 
         return self
@@ -3049,7 +3181,6 @@ def main():
                             nr_voters       =   args.nr_voters,
                             nr_votes        =   args.nr_votes,
                             nr_rounds       =   args.nr_rounds,
-
                             teller=teller)
         finished = election.export_finished()
         if not filename:
@@ -3079,7 +3210,7 @@ def main():
         #mixed_ballots = election.get_mixed_ballots()
 
         last_mix = mixing['mixes'][-1]
-        ciphers_to_mix = pk_no_proof_from_args(*pk_args(last_mix))
+        ciphers_to_mix = pk_noproof_from_args(*pk_args(last_mix))
         ciphers_to_mix['mixed_ciphers'] = last_mix['mixed_ciphers']
         mixed_ciphers = mix_ciphers(ciphers_to_mix, nr_rounds=args.nr_rounds,
                                     teller=teller)
