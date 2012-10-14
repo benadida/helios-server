@@ -15,6 +15,7 @@ inverse = number.inverse
 from Crypto import Random
 from operator import mul as mul_operator
 from multiprocessing import Pool, Queue as PoolQueue
+from time import time
 
 
 class ZeusError(Exception):
@@ -124,6 +125,41 @@ def get_timestamp():
     return datetime.strftime(datetime.utcnow(), "%Y-%m-%dT%H:%M:%S.%fZ")
 
 
+class TellerStream(object):
+
+    def __init__(self, outstream=None, output_interval_ms=2000,
+                       buffering=1, buffer_feeds=0):
+        self.oms = output_interval_ms
+        self.outstream = outstream
+        self.last_output = 0
+        self.last_eject = 0
+        self.buffer_feeds = buffer_feeds
+        self.buffering = buffering
+        self.buffered_lines = []
+
+    def write(self, data):
+        buffer_feeds = self.buffer_feeds
+        eject = not buffer_feeds and (1 if '\n' in data else 0)
+        if not self.buffering:
+            self.buffered_lines = []
+        self.buffered_lines.append(data)
+
+        t = time()
+        tdiff = (t - self.last_output) * 1000.0
+
+        if eject or self.last_eject or tdiff > self.oms:
+            self.last_output = t
+            self.flush()
+
+        self.last_eject = eject
+
+    def flush(self):
+        outstream = self.outstream
+        if outstream:
+            outstream.write(''.join(self.buffered_lines))
+        self.buffered_lines = []
+
+
 class Teller(object):
     name = None
     total = None
@@ -131,7 +167,7 @@ class Teller(object):
     finished = None
     status_fmt = None
     status_args = None
-    clear_size = None
+    start_time = None
     disabled = False
     children = None
     parent = None
@@ -140,6 +176,7 @@ class Teller(object):
     last_active = None
     last_teller = [None]
     last_ejected = [None]
+    last_line = ['']
 
     redirect = True
     fail_parent = True
@@ -181,6 +218,7 @@ class Teller(object):
         self.set_format()
         self.resuming = resume
         self.outstream = outstream
+        self.start_time = time()
 
         for k, v in kw.iteritems():
             a = getattr(self, k, None)
@@ -214,6 +252,9 @@ class Teller(object):
             status_fmt = self.status_fmt
         status_args = self.status_args
 
+        start_time = self.start_time
+        running_time = time() - start_time
+
         finished = self.finished
         if finished is None:
             mark = self.start_mark
@@ -235,6 +276,13 @@ class Teller(object):
         line += self.name + self.status_sep
         line += self.status_fmt % self.status_args
         line += status
+        if running_time > 2 and current > 0 and current < total:
+            ss = running_time * (total - current) / current
+            mm = ss / 60
+            ss = ss % 60
+            hh = mm / 60
+            mm = mm % 60
+            line += 'approx. %02d:%02d:%02d left' % (hh, mm, ss)
         return line
 
     def disable(self):
@@ -247,17 +295,17 @@ class Teller(object):
             return
 
         line = self.__str__()
-        clear_size = len(line)
-        if clear_size > self.clear_size:
-            self.clear_size = clear_size
-
-        line += self.eol
         self.output(line, feed=feed, eject=eject)
 
     def output(self, text, feed=False, eject=0):
         outstream = self.outstream
         if outstream is None or self.disabled:
             return
+
+        text += self.eol
+        last_line = self.last_line
+        clear_line = ' ' * len(last_line[0]) + '\r'
+        text = clear_line + text
 
         last_teller = self.last_teller
         teller = last_teller[0]
@@ -266,13 +314,14 @@ class Teller(object):
         feeder = self.feed
         if not ejected and (feed or teller != self):
             text = feeder + text
-            self.clear_size = 0
         if eject:
             text += feeder * eject
-            self.clear_size = 0
+
         outstream.write(text)
         last_teller[0] = self
         last_ejected[0] = eject
+        junk, sep, last = text.rpartition('\n')
+        last_line[0] = last[len(clear_line):]
 
     def check_tell(self, tell, feed=False, eject=False):
         if tell or (tell is None and self.default_tell):
@@ -322,7 +371,6 @@ class Teller(object):
         self = self.active()
 
         text = fmt % args
-        clear_line = ' ' * self.clear_size + self.eol
         lines = []
         append = lines.append
 
@@ -331,7 +379,7 @@ class Teller(object):
             line += text_line
             append(line)
 
-        final_text = clear_line + '\n'.join(lines)
+        final_text = '\n'.join(lines)
         self.output(final_text, feed=1, eject=1)
 
     def __enter__(self):
@@ -3118,6 +3166,14 @@ def main():
     parser.add_argument('--quiet', action='store_false', dest='verbose',
         help=("Be quiet. Cancel --verbose"))
 
+    parser.add_argument('--oms', '--output-interval-ms', type=int,
+        metavar='millisec', default=100, dest='oms',
+        help=("Set the output update interval"))
+
+    parser.add_argument('--buffer-feeds', action='store_true', default=False,
+        help=("Buffer output newlines according to --oms "
+              "instead of sending them out immediately"))
+
     parser.add_argument('--validate', metavar='infile',
         help="Read a FINISHED election from a JSON file and validate it")
 
@@ -3158,13 +3214,16 @@ def main():
     args = parser.parse_args()
 
     class Nullstream(object):
-        def read(*args):
-            return ''
         def write(*args):
+            return
+        def flush(*args):
             return
 
     outstream = sys.stderr if args.verbose else Nullstream()
-    teller = Teller(outstream=outstream)
+    teller_stream = TellerStream(outstream=outstream,
+                                 output_interval_ms=args.oms,
+                                 buffer_feeds=args.buffer_feeds)
+    teller = Teller(outstream=teller_stream)
     import json
 
     if args.nr_procs > 1:
@@ -3183,6 +3242,7 @@ def main():
                             nr_rounds       =   args.nr_rounds,
                             teller=teller)
         finished = election.export_finished()
+        teller_stream.flush()
         if not filename:
             name = ("%x" % election.do_get_election_public())[:32]
             filename = 'election-%s.json' % (name,)
@@ -3196,6 +3256,7 @@ def main():
         with open(filename, "r") as f:
             finished = json.load(f)
         election = ZeusCoreElection.new_at_finished(finished, teller=teller)
+        teller_stream.flush()
         return
 
     if args.mix:
@@ -3214,6 +3275,7 @@ def main():
         ciphers_to_mix['mixed_ciphers'] = last_mix['mixed_ciphers']
         mixed_ciphers = mix_ciphers(ciphers_to_mix, nr_rounds=args.nr_rounds,
                                     teller=teller)
+        teller_stream.flush()
         with open(outfile, "w") as f:
             json.dump(mixed_ciphers, f, indent=2)
         return
