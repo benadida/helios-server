@@ -2,48 +2,51 @@
 
 {% block tabs_menu %}
 <dd class="active"><a 
-  href="{% url helios.views.one_election_view election.uuid %}">Ανοιγμα ψηφοφορίας</a></dd>
+  href="{% url helios.views.one_election_view election.uuid %}">Οριστικοποίηση ψηφοφορίας</a></dd>
 {% endblock %}
 
 {% block content %}
-<h5>{{election.name}} &mdash; Πάγωμα ψηφοφορίας</h5>
+<h5>{{election.name}} &mdash; Οριστικοποίηση ψηφοφορίας</h5>
 <p>
-Μόλις η ψηφοφορία παγώσει, οι ερωτήσεις και οι επιλογές δεν μπορούν πλέον να τροποποιηθούν.<br />
-Η λίστα των επιτρόπων και των δημόσιων κλειδιών τους θα δεσμεύονται επίσης.
+Μετά την οριστικοποίηση της ψηφοφορίας,
+οι υποψήφιοι και τα μέλη της εφορευτικής επιτροπής δεν μπορούν να μεταβληθούν.<br/>
 </p>
 
 <p>
 {% if election.openreg %}
-Η εγγραφή για την εκλογή είναι <b>ανοιχτή</b> που σημαίνει ότι οποιοσδήποτε μπορεί να ψηφίζει ακόμα και εάν παγώσετε την ψηφοφορία.
+Η ψηφοφορία είναι <b>ανοιχτή</b> που σημαίνει ότι οποιοσδήποτε
+μπορεί να ψηφίζει ακόμα και εάν την οριστικοποιήσετε.
 {% else %}
-Η εγγραφή για την εκλογή σας είναι <b>κλειστή</b> που σημαίνει ότι οι ψηφοφόροι που ορίζετε μπορούν να ρίξουν το ψηφοδέλτιο τους. 
-Ως διαχειριστής, θα μπορείτε να τροποποιήσετε τον κατάλογο των ψηφοφόρων καθώς εξελίσσεται η εκλογή.
+Η ψηφοφορία είναι <b>κλειστή</b> που σημαίνει ότι οι μόνο οι ψηφοφόροι
+που έχουν ορισθεί μπορούν να ψηφίσουν.
+Ως διαχειριστής, θα μπορείτε να τροποποιήσετε τον κατάλογο των ψηφοφόρων
+καθώς εξελίσσεται η εκλογή.
 {% endif %}
 </p>    
 
 {% if helios.VOTERS_EMAIL %}
 <p>
-Θα πρέπει να παγώσει η ψηφοφορία προτού μπορέσετε να επικοινωνήσετε με τους ψηφοφόρους.
+Πριν επικοινωνήσετε με τους ψηφοφόρους, θα πρέπει να οριστικοποιήσετε την ψηφοφορία.
 </p>
 {% endif %}
 
 {% if issues_p %}
 <p>
-    Πριν παγώσετε την εκλογή πρέπει να:
+    Πριν οριστικοποιήσετε την εκλογή πρέπει να:
     <ul>
         {% for issue in issues %}
         <li>{{issue.action}}</li>
         {% endfor %}
     </ul>
-    <a href="{% url helios.views.one_election_view election.uuid %}">επιστροφή στην εκλογή</a>
+    <a href="{% url helios.views.one_election_view election.uuid %}">επιστροφή στην ψηφοφορία</a>
 </p>
 {% else %}
 <form method="post" action="">
 <input class="button success" type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
 
-<input class="pretty button success" type="submit" value="Πάγωμα ψηφοφορίας" />
-<button class="button alert" onclick="document.location='./view'; return false;">ακύρωση παγώματος</button>
+<input class="pretty button success" type="submit" value="Οριστικοποίηση" />
+<button class="button alert" onclick="document.location='./view'; return false;">Άκυρο και επιστροφή</button>
 
 </form>
 {% endif %}

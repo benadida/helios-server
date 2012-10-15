@@ -3,11 +3,11 @@
 {% block content %}
 <p>
 {% if trustee.public_key_hash %}
-Το δημόσιο κλειδί σας φορτώθηκε με επιτυχία.<br />
+Το δημόσιο κλειδί του Κωδικού σας μεταφορτώθηκε με επιτυχία.<br />
 Το αποτύπωμα του δημόσιου κλειδιού σας είναι <b>{{trustee.public_key_hash}}</b>.<br />
 Μπορείτε <a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">να επαληθεύσετε ότι έχετε το σωστό μυστικό κλειδί</a>.
 {% else %}
-<a href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">ρυθμίστε το μυστικό κλειδί σας</a>
+<a href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">ρυθμίστε τον Κωδικό Ψηφοφορίας</a>
 {% endif %}
 </p>
 
@@ -16,12 +16,12 @@
 {% if trustee.decryption_factors %}
 Έχετε μεταφορτώσει την αποκρυπτογράφηση σας με επιτυχία.
 {% else %}
-    Τα κρυπτογραφημένη καταμέτρηση για αυτή την εκλογή είναι έτοιμη.<br />
-    <a href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">αποκρυπτογραφήστε με το κλειδί σας</a>
+    Τα τελικά ψηφοδέλτια είναι έτοιμα για αποκρυπτογράφηση.<br />
+    <a href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">αποκρυπτογραφήστε με τον Κωδικό Ψηφοφορίας σας</a>
 {% endif %}
 {% else %}
 Μετά την ολοκλήρωση της καταμέτρησης μπορείτε να επιστρέψετε εδώ για την αποκρυπτογράφηση των αποτελεσμάτων.<br />
-Πρέπει να κρατήσετε το μήνυμα του συστήματος Ζεύς στο ηλεκτρονικό ταχυδρομείο σας με τον σύνδεσμο στην αρχική σελίδα σας και τα απαραίτητα διαπιστευτήρια για να εισέλθετε στο σύστημα.
+Πρέπει να κρατήσετε το μήνυμα του συστήματος &lquote;Ζεύς&rquote; στο ηλεκτρονικό ταχυδρομείο σας με τον σύνδεσμο στην αρχική σελίδα σας.
 {% endif %}
 </p>
 
