@@ -41,7 +41,10 @@ def get_voter(request, user, election):
 HELIOS_TRUSTEE_UUID = 'helios_trustee_uuid'
 def get_logged_in_trustee(request):
   if request.session.has_key(HELIOS_TRUSTEE_UUID):
-    return Trustee.get_by_uuid(request.session[HELIOS_TRUSTEE_UUID])
+    try:
+      return Trustee.get_by_uuid(request.session[HELIOS_TRUSTEE_UUID])
+    except Trustee.DoesNotExist:
+      del request.session[HELIOS_TRUSTEE_UUID]
   else:
     return None
 
