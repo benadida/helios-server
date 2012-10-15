@@ -318,23 +318,16 @@ def one_election_view(request, election):
 
   test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : vote_url}))
 
-  if user:
-    voter = Voter.get_by_election_and_user(election, user)
-
-    if not voter:
-      try:
-        eligible_p = _check_eligibility(election, user)
-      except AuthenticationExpired:
-        return user_reauth(request, user)
-      notregistered = True
-  else:
-    voter = get_voter(request, user, election)
+  voter = get_voter(request, user, election)
 
   if voter:
     # cast any votes?
     votes = CastVote.get_by_voter(voter)
   else:
     votes = None
+
+  if not voter and not user:
+    raise PermissionDenied()
 
   # status update message?
   if election.openreg:
@@ -582,6 +575,8 @@ def one_election_cast(request, election):
     return HttpResponse('{"audit": 1}', mimetype="application/json")
   else:
     url = "%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_cast_done, args=[election.uuid]))
+    signals.vote_cast.send(sender=election, election=election, user=user,
+                           voter=voter, signature=signature)
     return HttpResponse('{"cast_url": "%s"}' % url, mimetype="application/json")
 
 @election_view(frozen=True, allow_logins=True)
@@ -807,10 +802,10 @@ def one_election_cast_done(request, election):
   # tweet/fb your vote
   socialbuttons_url = get_socialbuttons_url(cv_url, 'I cast a vote in %s' % election.name)
 
-  if election.send_email_on_cast_done:
-    tasks.single_voter_email.delay(voter.uuid, 'email/cast_done_subject.txt',
-                                   'email/cast_done_body.txt',
-                                   extra_vars={vote_hash: vote_hash}, update_date=False)
+  #if election.send_email_on_cast_done:
+    #tasks.single_voter_email.delay(voter.uuid, 'email/cast_done_subject.txt',
+                                   #'email/cast_done_body.txt',
+                                   #extra_vars={vote_hash: vote_hash}, update_date=False)
 
   # remote logout is happening asynchronously in an iframe to be modular given the logout mechanism
   # include_user is set to False if logout is happening
