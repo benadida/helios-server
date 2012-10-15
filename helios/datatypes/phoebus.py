@@ -33,6 +33,7 @@ class Election(LegacyObject):
     FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description',
               'voters_hash', 'openreg', 'frozen_at', 'public_key', 'cast_url',
               'use_voter_aliases', 'voting_starts_at', 'voting_ends_at',
+              'help_email', 'help_phone',
               'workflow_type']
 
     STRUCTURED_FIELDS = {
