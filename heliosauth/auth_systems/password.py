@@ -59,16 +59,30 @@ def check_ecounting_credentials(username, password):
 
   return False, data
 
-def get_ecounting_user(username, password):
+def get_institution(user_data):
   from zeus.models import Institution
+  try:
+    inst = Institution.objects.get(ecounting_id=user_data['institutionId'])
+    inst.name = user_data['institutionName']
+    inst.save()
+  except Institution.DoesNotExist:
+    inst = Institution()
+    inst.ecounting_id = user_data['institutionId']
+    inst.name = user_data['institutionName']
+    inst.save()
+  return inst
+
+def get_ecounting_user(username, password):
   from heliosauth.models import User
 
   is_valid, user_data = check_ecounting_credentials(username, password)
   user = None
+  if not is_valid:
+    return user
+
   try:
     user = User.get_by_type_and_id('password', username)
-    user.institution, created = Institution.objects.get_or_create(name=user_data['institutionName'],
-                                                           ecounting_id=user_data['institutionId'])
+    user.institution = get_institution(user_data)
     user.info['name'] = username
     user.save()
   except User.DoesNotExist:
@@ -76,8 +90,7 @@ def get_ecounting_user(username, password):
       user = create_user(username, password)
       user.admin_p = True
       user.info['name'] = user.user_id
-      user.Institution, created = Institution.objects.get_or_create(name=user_data['institutionName'],
-                                                           ecounting_id=user_data['institutionId'])
+      user.institution = get_institution(user_data)
       user.save()
 
   return user
