@@ -24,6 +24,13 @@
   <div id="election-description-modal" class="reveal-modal">
     <h4>{{ election.name }}</h4>
     <p class="election-description-in-modal">{{ election.description }}</p>
+      <br /><br />
+      <u>Στοιχεία επικοινωνίας</u>
+      <br /><Br />
+      <ul>
+          <li><b>Email:</b>{{ election.help_email }}</li>
+          <li><b>Τηλέφωνο:</b>{{ election.help_phone }}</li>
+      </ul>
   </div>
   <div id="election-description">
     <p class="election-description">{{ election.description }}</p>

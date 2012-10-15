@@ -563,25 +563,36 @@ def one_election_cast(request, election):
   user = get_user(request)
   voter = get_voter(request, user, election)
 
+  if (not election.voting_has_started()) or election.voting_has_stopped():
+    return HttpResponseRedirect(settings.URL_HOST)
+
+  # if user is not logged in
+  # bring back to the confirmation page to let him know
   if not voter:
-    raise PermissionDenied
+    return HttpResponseRedirect(reverse(one_election_cast_confirm, args=[election.uuid]))
 
   encrypted_vote = request.POST['encrypted_vote']
   vote = datatypes.LDObject.fromDict(utils.from_json(encrypted_vote),
         type_hint='phoebus/EncryptedVote').wrapped_obj
-  signature = election.cast_vote(voter, vote, request.POST.get('audit_password', None))
+  audit_password = request.POST.get('audit_password', None)
+  signature = election.cast_vote(voter, vote, audit_password)
 
   if signature['m'].startswith("AUDIT REQUEST"):
     return HttpResponse('{"audit": 1}', mimetype="application/json")
   else:
-    url = "%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_cast_done, args=[election.uuid]))
+    # notify user
+    tasks.send_cast_vote_email(election, voter, signature)
+    url = "%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_cast_done,
+                                                      args=[election.uuid]))
     signals.vote_cast.send(sender=election, election=election, user=user,
                            voter=voter, signature=signature)
     return HttpResponse('{"cast_url": "%s"}' % url, mimetype="application/json")
 
+
 @election_view(frozen=True, allow_logins=True)
 def voter_quick_login(request, election, voter_uuid, voter_secret):
-    return_url = reverse(one_election_view, kwargs={'election_uuid': election.uuid})
+    return_url = reverse(one_election_view, kwargs={'election_uuid':
+                                                    election.uuid})
     try:
       voter = election.voter_set.get(uuid = voter_uuid,
                                      voter_password = voter_secret)
