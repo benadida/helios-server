@@ -13,6 +13,8 @@
   {% block extra_title %}
 {% if admin_p %}
 <a class="button small" href="{% url helios.views.one_election_edit election.uuid %}">Επεξεργασία</a>
+<a class="button small" href="{% url helios.views.one_election_view election.uuid %}">
+  Προβολή εκκρεμοτήτων</a>
 {% if election.completed %}
 {% endif %}
 {% endif %}

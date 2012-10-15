@@ -104,11 +104,11 @@ function upload_show_pk() {
       type: 'post',
       data: data,
       success: function() {
-        alert("Key activated");
+        alert("O κωδικός σας ενεργοποιήθηκε.");
         window.location = '{% url heliosauth.views.logout %}'
       },
       error: function() {
-        alert("Key activation error. Please try again.");
+        alert("Σφάλμα ενεργοποίησης. Παρακαλούμε δοκιμάστε ξανά.");
       }
     })
 

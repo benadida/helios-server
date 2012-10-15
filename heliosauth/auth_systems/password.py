@@ -13,6 +13,7 @@ from django import forms
 from django.core.mail import send_mail, EmailMessage
 from django.conf import settings
 from django.http import HttpResponseRedirect
+from django.utils.translation import ugettext_lazy as _
 
 import logging
 
@@ -38,8 +39,8 @@ def create_user(username, password, name = None, extra_info={}):
   return user
 
 class LoginForm(forms.Form):
-  username = forms.CharField(max_length=50)
-  password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
+  username = forms.CharField(label=_('Username'), max_length=50)
+  password = forms.CharField(label=_('Password'), widget=forms.PasswordInput(), max_length=100)
 
 def check_ecounting_credentials(username, password):
   url = settings.ECOUNTING_LOGIN_URL

@@ -51,8 +51,8 @@
               <div class="panel warning">Έχετε συνδεθεί ως διαχειριστής εκλογών για το 
                   <em>"{{ user.institution.name }}"</em>
                   <br /><br />
-                  <a href="/admin/">σελίδα διαχείρισης</a> | 
-                  <a href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
+                  <a class="button tiny" href="/admin/">σελίδα διαχείρισης</a>
+                  <a class="button tiny alert" href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
               </div>
           </div>
           {% endif %}

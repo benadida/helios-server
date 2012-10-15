@@ -33,7 +33,6 @@ class JqSplitDateTimeWidget(MultiWidget):
         if value:
             d = strftime("%Y-%m-%d", value.timetuple())
             hour = strftime("%I", value.timetuple())
-            print (d, hour)
             return (d, hour)
         else:
             return (None, None, None, None)

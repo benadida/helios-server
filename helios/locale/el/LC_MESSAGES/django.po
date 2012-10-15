@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-15 15:42+0300\n"
+"POT-Creation-Date: 2012-10-15 22:47+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,82 +38,82 @@ msgstr "τους ψηφοφόρους που δεν έχουν ψηφίσει α
 msgid "Voter ID"
 msgstr "Αναγνωριστικό ψηφοφόρου"
 
-#: models.py:448
+#: models.py:422
 msgid "Election initialized."
 msgstr "Η ψηφοφορία αρχικοποιήθηκε."
 
-#: models.py:449
+#: models.py:423
 msgid "Election candidates added."
 msgstr "Οι υποψήφιοι έχουν καταχωρηθεί."
 
-#: models.py:450
+#: models.py:424
 msgid "Election voters added."
 msgstr "Οι εκλέκτορες ψηφοφόροι έχουν καταχωρηθεί."
 
-#: models.py:451
+#: models.py:425
 msgid "Trustees keys generated."
 msgstr "Οι Κωδικοί της ψηφοφορίας έχουν παραχθεί."
 
-#: models.py:452
+#: models.py:426
 msgid "Election opened."
 msgstr "Η ψηφοφορία έχει αρχίσει."
 
-#: models.py:453
+#: models.py:427
 msgid "Election voters notified"
 msgstr "Οι ψηφοφόροι έχουν ειδοποιηθεί"
 
-#: models.py:454
+#: models.py:428
 msgid "Election voters which not voted notified"
 msgstr "Οι ψηφοφόροι που δεν έχουν ψηφήσει έχουν ειδοποιηθεί"
 
-#: models.py:455
+#: models.py:429
 msgid "Election extension needed."
 msgstr "Παράταση της ψηφοφορίας."
 
-#: models.py:456
+#: models.py:430
 msgid "Election closed."
 msgstr "Η ψηφοφορία έχει λήξει."
 
-#: models.py:457
+#: models.py:431
 msgid "Election tallied."
 msgstr "Τα ψηφοδέλτια έχουν αναμιχθεί"
 
-#: models.py:458
+#: models.py:432
 msgid "Trustees should decrypt results."
 msgstr ""
 "Η εφορευτική επιτροπή πρέπει να αποκρυπτογραφήσει τα τελικά ψηφοδέλτια."
 
-#: models.py:459
+#: models.py:433
 msgid "Election results where decrypted."
 msgstr "Τα τελικά ψηφοδέλτια έχουν αποκρυπτογραφηθεί."
 
-#: models.py:538
+#: models.py:518
 msgid "add at least one trustee"
 msgstr "προσθέστε τουλάχιστον ένα μέλος στην εφορευτική επιτροπή"
 
-#: models.py:545
+#: models.py:525
 #, python-format
 msgid "have trustee %s generate a keypair"
 msgstr ""
 "Το μέλος της εφορευτικής επιτροπής '%s' πρέπει να δημιουργήσει τον Κωδικό "
 "Ψηφοφορίας του"
 
-#: models.py:551
+#: models.py:531
 #, python-format
 msgid "have trustee %s verify his key"
 msgstr ""
 "Το μέλος της εφορευτικής επιτροπης '%s' πρέπει να επιβεβαιώσει τον Κωδικό "
 "Ψηφοφορίας του"
 
-#: models.py:557
+#: models.py:537
 msgid "enter your voter list (or open registration to the public)"
 msgstr "Δεν έχετε ορίσει τη λίστα των ψηφοφόρων."
 
-#: models.py:563
+#: models.py:543
 msgid "setup election mixnets"
 msgstr "ρυθμίστε τη μίξη των ψηφοδελτίων"
 
-#: models.py:1446
+#: models.py:1472
 #, python-format
 msgid ""
 "\n"
@@ -138,29 +138,27 @@ msgstr ""
 "    Ψηφιακή Κάλπη «Ζεύς»\n"
 "             "
 
-#: models.py:1457
+#: models.py:1483
 #, python-format
 msgid "your trustee homepage for %(election_name)s"
 msgstr "%(election_name)s: η ιστοσελίδα σας ως μέλος της εφορευτικής επιτροπής"
 
-#: views.py:1347
+#: views.py:1350
 msgid "Time to Vote"
 msgstr "Ενημέρωση για συμμετοχή"
 
-#: views.py:1348
+#: views.py:1351
 msgid "Additional Info"
 msgstr "Περισσότερες Πληροφορίες"
 
-#: views.py:1349
+#: views.py:1352
 msgid "Election Result"
 msgstr "Αποτέλεσμα ψηφοφορίας"
 
 #: templates/election_new.html:12
 msgid ""
-"\n"
-"    Σε αυτό το σημείο εισάγετε πληροφορίες απαραίτητες για την\n"
-"    δημιουργία της ψηφοφορίας.\n"
-"    "
+"Σε αυτό το σημείο εισάγετε πληροφορίες απαραίτητες για την δημιουργία της "
+"ψηφοφορίας."
 msgstr ""
 
 #~ msgid "Vote for election"

@@ -105,11 +105,11 @@ class ElectionForm(forms.Form):
                     'giannhs@email.com<br /> Kwstas Kwstopoulos, kwstas@email.com<br />'))
   departments = forms.CharField(label=_('Schools and Departments'),
                                 widget=forms.Textarea,
-        help_text=_('University Schools. e.g. <br/><br/> School of Engineering <br />' +
-                    'School of Medicine<br />School of Informatics<br />'))
+        help_text=_('University Schools. e.g. <br/><br/> School of Engineering <br /> School of Medicine<br />School of Informatics<br />'))
 
-  eligibles_count = forms.IntegerField(help_text=_('Set the eligibles count of the election'), initial=5)
-  has_department_limit = forms.BooleanField(required=False, initial=True,
+  eligibles_count = forms.IntegerField(label=_('Eligibles count'),
+                                       help_text=_('Set the eligibles count of the election'), initial=6)
+  has_department_limit = forms.BooleanField(label=_('Has department limit'), required=False, initial=True,
                                             help_text=_('4009/2011 (A\' 195)'))
 
   help_email = forms.EmailField(label=_('Help email'), help_text=_('Voters can contact this email for election suport'))
