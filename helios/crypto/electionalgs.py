@@ -158,6 +158,7 @@ class EncryptedAnswer(HeliosObject):
     ea = cls()
     ea.choices = [algs.EGCiphertext.from_dict(c, pk) for c in d['choices']]
     ea.encryption_proof = d['encryption_proof']
+    ea.encryption_proof = [long(a) for a in ea.encryption_proof]
     if d.has_key('randomness'):
       ea.randomness = [int(r) for r in d['randomness']]
       ea.answer = d['answer']

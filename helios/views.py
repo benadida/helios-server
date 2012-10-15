@@ -244,7 +244,7 @@ def election_new(request):
     if election_form.is_valid():
       with transaction.commit_on_success():
         election = Election()
-        election, trustees = election_form.save(election, user.institution, ELGAMAL_PARAMS)
+        election = election_form.save(election, user.institution, ELGAMAL_PARAMS)
         election.admins.add(user)
         return HttpResponseRedirect(reverse(one_election_questions, args=[election.uuid]))
 
@@ -419,7 +419,7 @@ def new_trustee(request, election):
     name = request.POST['name']
     email = request.POST['email']
 
-    trustee = Trustee(uuid = str(uuid.uuid1()), election = election, name=name, email=email)
+    trustee = Trustee(uuid = str(uuid.uuid1()), election=election, name=name, email=email)
     trustee.save()
     return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
 
@@ -461,6 +461,7 @@ def trustee_verify_key(request, election, trustee_uuid):
   trustee.save()
   return HttpResponse("OK")
 
+
 def trustee_login(request, election_short_name, trustee_email, trustee_secret):
   election = Election.get_by_short_name(election_short_name)
   force_logout(request, election)
@@ -481,41 +482,35 @@ def trustee_login(request, election_short_name, trustee_email, trustee_secret):
 
   return HttpResponseRedirect("/")
 
+
 @election_admin()
 def trustee_send_url(request, election, trustee_uuid):
   trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
   trustee.send_url_via_mail()
   return HttpResponseRedirect(reverse(list_trustees_view, args = [election.uuid]))
 
+
 @trustee_check
 def trustee_home(request, election, trustee):
   if not trustee.public_key:
     return HttpResponseRedirect(reverse(trustee_keygenerator, args=[election.uuid,
                                                             trustee.uuid]))
-
   return render_template(request, 'trustee_home', {'election': election, 'trustee':trustee})
+
 
 @trustee_check
 def trustee_check_sk(request, election, trustee):
   return render_template(request, 'trustee_check_sk', {'election': election, 'trustee':trustee})
 
+
 @trustee_check
 def trustee_upload_pk(request, election, trustee):
   if request.method == "POST":
-    # get the public key and the hash, and add it
     public_key_and_proof = utils.from_json(request.POST['public_key_json'])
-    trustee.public_key = algs.EGPublicKey.fromJSONDict(public_key_and_proof['public_key'])
-    trustee.pok = algs.DLogProof.fromJSONDict(public_key_and_proof['pok'])
+    public_key = algs.EGPublicKey.fromJSONDict(public_key_and_proof['public_key'])
+    pok = algs.DLogProof.fromJSONDict(public_key_and_proof['pok'])
+    election.add_trustee_pk(trustee, public_key, pok)
 
-    # verify the pok
-    if not trustee.public_key.verify_sk_proof(trustee.pok, algs.DLog_challenge_generator):
-      raise Exception("bad pok for this public key")
-
-    trustee.public_key_hash = utils.hash_b64(utils.to_json(trustee.public_key.toJSONDict()))
-
-    trustee.save()
-
-    # send a note to admin
     try:
       for admin in election.admins.all():
         admin.send_message("%s - trustee pk upload" % election.name, "trustee %s (%s) uploaded a pk." % (trustee.name, trustee.email))
@@ -524,6 +519,7 @@ def trustee_upload_pk(request, election, trustee):
       pass
 
   return HttpResponseRedirect(reverse(trustee_home, args=[election.uuid, trustee.uuid]))
+
 
 ##
 ## Ballot Management
@@ -578,13 +574,14 @@ def one_election_cast(request, election):
     raise PermissionDenied
 
   encrypted_vote = request.POST['encrypted_vote']
+  vote = datatypes.LDObject.fromDict(utils.from_json(encrypted_vote),
+        type_hint='phoebus/EncryptedVote').wrapped_obj
+  signature = election.cast_vote(voter, vote, request.POST.get('audit_password', None))
 
-  save_in_session_across_logouts(request, 'encrypted_vote', encrypted_vote)
-
-  if voter.check_audit_password(request.POST.get('audit_password', None)):
+  if signature['m'].startswith("AUDIT REQUEST"):
     return HttpResponse('{"audit": 1}', mimetype="application/json")
   else:
-    url = "%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_cast_confirm, args=[election.uuid]))
+    url = "%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_cast_done, args=[election.uuid]))
     return HttpResponse('{"cast_url": "%s"}' % url, mimetype="application/json")
 
 @election_view(frozen=True, allow_logins=True)
@@ -1006,7 +1003,7 @@ def one_election_questions(request, election):
     return HttpResponseRedirect(reverse(one_election_view,
                                         args=[election.uuid]))
 
-  empty_inputs = range(10 - len(candidates) + 6)
+  empty_inputs = range(5) if len(candidates) else range(15)
   return render_template(request, 'election_questions', {
     'election': election, 'questions_json' : questions_json,
     'candidates': election.candidates,
@@ -1219,7 +1216,7 @@ def voters_list_pretty(request, election):
 
   # load a bunch of voters
   # voters = Voter.get_by_election(election, order_by=order_by)
-  voters = Voter.objects.filter(election = election).order_by(order_by)
+  voters = Voter.objects.filter(election = election).order_by('voter_surname')
 
   if q != '':
     if election.use_voter_aliases:

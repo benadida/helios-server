@@ -11,13 +11,27 @@
   <form action="./questions" method="post">
     <p>Ανανεώστε την λίστα υποψηφίων και πατήστε αποθήκευση.</p>
 
-    <div class="row">
+    <div class="row labels">
+      <div class="columns four">
+        <label>Επώνυμο</label>
+      </div>
+      <div class="columns two">
+        <label>Όνομα</label>
+      </div>
+      <div class="columns two">
+        <label>Πατρώνυμο</label>
+      </div>
+      <div class="columns four">
+        <label>Σχολή</label>
+      </div>
+      </div>
       {% for cand in candidates %}
+    <div class="row">
       <div class="columns four">
         <input type="text" value="{{ cand.surname }}" name="candidates_lastname"  
         placeholder="Επώνυμο" />
       </div>
-      <div class="columns four">
+      <div class="columns two">
         <input type="text" value="{{ cand.name }}" name="candidates_name"  
         placeholder="Όνομα" />
       </div>
@@ -25,21 +39,23 @@
         <input type="text" value="{{ cand.father_name }}" name="candidates_fathers_name"
         placeholder="Πατρώνυμο" />
       </div>
-      <div class="columns two">
+      <div class="columns four">
         <select type="text" name="candidates_department">
           {% for department in departments %}
           <option {% if cand.department == department %}selected{% endif %} value="{{ department }}">{{ department }}</option>
           {% endfor %} 
         </select>
       </div>
+      </div>
     {% endfor %}
 
     {% for i in empty_inputs %}
+    <div class="row">
       <div class="columns four">
         <input type="text" value="{{ cand }}" name="candidates_lastname"  
         placeholder="Επώνυμο" />
       </div>
-      <div class="columns four">
+      <div class="columns two">
         <input type="text" value="{{ cand }}" name="candidates_name"  
         placeholder="Όνομα" />
       </div>
@@ -47,16 +63,18 @@
         <input type="text" value="{{ cand }}" name="candidates_fathers_name"
         placeholder="Πατρώνυμο" />
       </div>
-      <div class="columns two">
+      <div class="columns four">
         <select type="text" value="{{ cand }}" name="candidates_department">
           {% for department in departments %}
           <option value="{{ department }}">{{ department }}</option>
           {% endfor %}
         </select>
       </div>
-    {% endfor %}
     </div>
+    {% endfor %}
+    <div class="row">
     <input type="submit" class="button success" value="Αποθήκευση">
+    </div>
 </form>
 </div>
 {% endif %}

@@ -34,36 +34,44 @@ UTILS.strbin_to_int = function(st) {
   return s;
 }
 
-UTILS.hash_to_commitment_and_challenge = function(alpha, beta) {
-  var ha, hb, commitment, challenge, and;
+//UTILS.hash_to_commitment_and_challenge = function(alpha, beta) {
+  //var ha, hb, commitment, challenge, and;
   
-  ha = UTILS.strbin_to_int(str_sha256("0x" + alpha.toString(16) + "L"));
-  hb = UTILS.strbin_to_int(str_sha256("0x" + beta.toString(16) + "L"));
+  //ha = UTILS.strbin_to_int(str_sha256("0x" + alpha.toString(16) + "L"));
+  //hb = UTILS.strbin_to_int(str_sha256("0x" + beta.toString(16) + "L"));
 
-  twopower = (new BigInt('2', 10)).pow(256).subtract(BigInt.ONE);
-  commitment = ha.shiftRight(128).or(hb.shiftLeft(128).and(twopower));
-  challenge = hb.shiftRight(128).or(ha.shiftLeft(128).and(twopower));
-  return {'commitment': commitment, 'challenge': challenge};
-}
+  //twopower = (new BigInt('2', 10)).pow(256).subtract(BigInt.ONE);
+  //commitment = ha.shiftRight(128).or(hb.shiftLeft(128).and(twopower));
+  //challenge = hb.shiftRight(128).or(ha.shiftLeft(128).and(twopower));
+  //return {'commitment': commitment, 'challenge': challenge};
+//}
 
-UTILS.get_encryption_proof = function(alpha, beta, randomness) {
-  var hash;
-  hash = UTILS.hash_to_commitment_and_challenge(alpha, beta);
-  return hash.commitment.add(hash.challenge.multiply(randomness));
-}
+//UTILS.get_encryption_proof = function(alpha, beta, randomness) {
+  //var hash;
+  //hash = UTILS.hash_to_commitment_and_challenge(alpha, beta);
+  //return hash.commitment.add(hash.challenge.multiply(randomness));
+//}
 
-UTILS.verify_encryption_proof = function(modulus, base, alpha, beta, proof) {
-  var hash, proof_pow, cipher_pow, challenge, commitment;
+//UTILS.verify_encryption_proof = function(modulus, base, alpha, beta, proof) {
+  //var hash, proof_pow, cipher_pow, challenge, commitment;
 
-  hash = UTILS.hash_to_commitment_and_challenge(alpha, beta);
-  challenge = hash.challenge;
-  commitment = hash.commitment;
+  //hash = UTILS.hash_to_commitment_and_challenge(alpha, beta);
+  //challenge = hash.challenge;
+  //commitment = hash.commitment;
   
-  proof_pow = base.modPow(proof, modulus);
-  cipher_pow = base.modPow(commitment,
-                  modulus).multiply(alpha.modPow(challenge, 
-                                          modulus)).mod(modulus);
-  return proof_pow.equals(cipher_pow);
+  //proof_pow = base.modPow(proof, modulus);
+  //cipher_pow = base.modPow(commitment,
+                  //modulus).multiply(alpha.modPow(challenge, 
+                                          //modulus)).mod(modulus);
+  //return proof_pow.equals(cipher_pow);
+//}
+
+UTILS.get_encryption_proof = function(alpha, beta, randomness, pk) {
+  var rand = Random.getRandomInteger(pk.q);
+  var commitment = pk.g.modPow(rand, pk.p);
+  var challenge = new BigInt(''+hex_sha1(commitment.toString()), 16).mod(pk.q);
+  var response = rand.add(challenge.multiply(randomness)).mod(pk.q);
+  return [commitment, challenge, response];
 }
 
 var STV = {};
@@ -590,7 +598,7 @@ HELIOS.EncryptedAnswer = Class.extend({
         }
       }
 
-      encryption_proofs[i] = UTILS.get_encryption_proof(choices[i].alpha, choices[i].beta, randomness[i]);
+      encryption_proofs[i] = UTILS.get_encryption_proof(choices[i].alpha, choices[i].beta, randomness[i], pk);
       
       if (progress)
         progress.tick();
@@ -691,7 +699,8 @@ HELIOS.EncryptedAnswer = Class.extend({
     }
 
     if (this.encryption_proof) {
-      return_obj.encryption_proof = this.encryption_proof.toJSONObject();
+      var proof = this.encryption_proof;
+      return_obj.encryption_proof = [proof[0].toJSONObject(), proof[1].toJSONObject(), proof[2].toJSONObject()];
     } else {
       return_obj.encryption_proof = null;
     }
@@ -717,7 +726,7 @@ HELIOS.EncryptedAnswer.fromJSONObject = function(d, election) {
   });
   
   ea.overall_proof = ElGamal.DisjunctiveProof.fromJSONObject(d.overall_proof);
-  ea.encryption_proof = new BigInt(d.encryption_proof, 10);
+  ea.encryption_proof = [new BigInt(d.encryption_proof[0], 10), new BigInt(d.encryption_proof[1], 10), new BigInt(d.encryption_proof[2], 10)];
   
   // possibly load randomness and plaintext
   if (d.randomness) {

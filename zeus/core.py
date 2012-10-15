@@ -527,7 +527,7 @@ def validate_cryptosystem(modulus, generator, order, teller=_teller):
 
     with task("is the generator size >= 2000 bits?"):
         if log(g, 2) <= 2000:
-            m = "GENERATOR SMALLER THAN 2000 BITS" 
+            m = "GENERATOR SMALLER THAN 2000 BITS"
             raise AssertionError(m)
 
     with task("is the generator valid?"):
@@ -1141,7 +1141,7 @@ def verify_dlog_power_zeus(modulus, generator, order, power,
                                             power, commitment)
     if _challenge != challenge:
         return 0
-    return (pow(generator, response, modulus) 
+    return (pow(generator, response, modulus)
             == ((commitment * pow(power, challenge, modulus)) % modulus))
 
 def prove_dlog_helios(modulus, generator, order, power, dlog):
@@ -1156,7 +1156,7 @@ def verify_dlog_power_helios(modulus, generator, order, power,
     _challenge = int(sha1(str(commitment)).hexdigest(), 16) % order
     if _challenge != challenge:
         return 0
-    return (pow(generator, response, modulus) 
+    return (pow(generator, response, modulus)
             == ((commitment * pow(power, challenge, modulus)) % modulus))
 
 prove_dlog = prove_dlog_helios
@@ -1841,7 +1841,7 @@ class ZeusCoreElection(object):
         return pk_from_args(*args)
 
     def do_get_zeus_key(self):
-        args = self.cryptosys 
+        args = self.cryptosys
         args += [self.zeus_secret, self.zeus_public]
         args += self.zeus_key_proof
         return sk_from_args(*args)

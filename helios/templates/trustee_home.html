@@ -4,7 +4,11 @@
 <p>
 {% if trustee.public_key_hash %}
 Το δημόσιο κλειδί του Κωδικού σας μεταφορτώθηκε με επιτυχία.<br />
-Το αποτύπωμα του δημόσιου κλειδιού σας είναι <b>{{trustee.public_key_hash}}</b>.<br />
+Το αποτύπωμα του δημόσιου κλειδιού σας είναι 
+
+<div class="panel">
+  <b>{{trustee.public_key_hash}}</b>.<br />
+</div>
 Μπορείτε <a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">να επαληθεύσετε ότι έχετε το σωστό μυστικό κλειδί</a>.
 {% else %}
 <a href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">ρυθμίστε τον Κωδικό Ψηφοφορίας</a>

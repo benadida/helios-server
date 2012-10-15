@@ -93,7 +93,8 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
 def election_compute_tally(election_id):
     election = Election.objects.get(id = election_id)
     election.compute_tally()
-    if election.error_mixnet:
+    bad_mixnet = election.bad_mixnet()
+    if bad_mixnet:
         election_notify_admin.delay(election_id = election_id,
                                 subject = "encrypted tally failed to compute",
                                 body = """
@@ -102,9 +103,10 @@ Error occured while mixing. Mixnet data where cleared.
 Mixnet: %s
 
 error: %s
-""" % (election.error_mixnet.name, election.error_mixnet.mix_error))
-        election.error_mixnet.reset_mixing()
-        election.tallying_started_at = None
+""" % (bad_mixnet.name, bad_mixnet.mix_error))
+        bad_mixnet.reset_mixing()
+        if bad_mixnet.mix_order == 0:
+          election.tallying_started_at = None
         election.save()
         return
 
@@ -122,8 +124,30 @@ Helios
         election_compute_tally.delay(election_id=election_id)
 
 @task()
+def tally_decrypt(election_id):
+    election = Election.objects.get(id=election_id)
+    if not election.ready_for_decryption_combination():
+        raise Exception("Not all trustee factors uploaded")
+
+    election = Election.objects.get(id = election_id)
+    election.zeus_election.validate_mixing()
+    election.zeus_election.decrypt_ballots()
+    election_notify_admin.delay(election_id = election_id,
+                                subject = 'Election Decrypt',
+                                body = """
+Result decrypted for election %s.
+--
+Helios
+""" % election.name)
+
+
+@task()
 def tally_helios_decrypt(election_id):
     election = Election.objects.get(id = election_id)
+    if not election.mixing_finished:
+      raise Exception("Mixing not finished cannot decrypt")
+
+    #election.zeus_election.validate_mixing()
     election.helios_trustee_decrypt()
     election_notify_admin.delay(election_id = election_id,
                                 subject = 'Helios Decrypt',

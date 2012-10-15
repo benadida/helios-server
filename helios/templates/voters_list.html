@@ -47,6 +47,7 @@
 <table class="voters" width="100%">
   <thead>
     <tr>
+      <th>Επώνυμο</th>
       <th>Όνομα</th>
       <th>Email</th>
       <th>Έχει ψηφίσει</th>
@@ -63,6 +64,9 @@
   {% for voter in voters %}
   <tr>
     <td width="100%">
+      {{ voter.voter_surname }}
+    </td>
+    <td>
       {{ voter.name }}
     </td>
     <td>
