@@ -1182,7 +1182,7 @@ def validate_public_key(modulus, generator, order, public_key,
     return verify_dlog_power(modulus, generator, order, public_key,
                              commitment, challenge, response)
 
-def prove_ddh_tuple(modulus, generator, order,
+def prove_ddh_tuple_zeus(modulus, generator, order,
                     message, base_power, message_power, exponent):
     randomness = get_random_int(2, order)
 
@@ -1195,7 +1195,7 @@ def prove_ddh_tuple(modulus, generator, order,
     response = (randomness + challenge * exponent) % order
     return [base_commitment, message_commitment, challenge, response]
 
-def verify_ddh_tuple(modulus, generator, order,
+def verify_ddh_tuple_zeus(modulus, generator, order,
                      message, base_power, message_power,
                      base_commitment, message_commitment,
                      challenge, response):
@@ -1214,6 +1214,40 @@ def verify_ddh_tuple(modulus, generator, order,
         return 0
 
     return 1
+
+def prove_ddh_tuple_helios(modulus, generator, order,
+                    message, base_power, message_power, exponent):
+    randomness = get_random_int(2, order)
+
+    base_commitment = pow(generator, randomness, modulus)
+    message_commitment = pow(message, randomness, modulus)
+
+    args = (str(base_commitment), str(message_commitment))
+    challenge = int(sha1(','.join(args)).hexdigest(), 16) % order
+    response = (randomness + challenge * exponent) % order
+    return [base_commitment, message_commitment, challenge, response]
+
+def verify_ddh_tuple_helios(modulus, generator, order,
+                     message, base_power, message_power,
+                     base_commitment, message_commitment,
+                     challenge, response):
+    args = (str(base_commitment), str(message_commitment))
+    _challenge = int(sha1(','.join(args)).hexdigest(), 16) % order
+    if _challenge != challenge:
+        return 0
+
+    b = (base_commitment * pow(base_power, challenge, modulus)) % modulus
+    if b != pow(generator, response, modulus):
+        return 0
+
+    m = (message_commitment * pow(message_power, challenge, modulus)) % modulus
+    if m != pow(message, response, modulus):
+        return 0
+
+    return 1
+
+prove_ddh_tuple = prove_ddh_tuple_helios
+verify_ddh_tuple = verify_ddh_tuple_helios
 
 def prove_encryption(modulus, generator, order, alpha, secret):
     """Prove ElGamal encryption"""
@@ -2443,7 +2477,7 @@ class ZeusCoreElection(object):
         modulus, generator, order = self.do_get_cryptosystem()
         public = self.do_get_election_public()
         nr_candidates = len(self.do_get_candidates())
-        max_encoded = gamma_encoding_max(nr_candidates)
+        max_encoded = gamma_encoding_max(nr_candidates) + 1
 
         with teller.task("Verifying audit votes", total=len(votes)):
             for vote in votes:

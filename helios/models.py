@@ -453,7 +453,7 @@ class Election(HeliosModel):
       'voters_not_voted_notified': _('Election voters which not voted notified'),
       'extended': _('Election extension needed.'),
       'closed': _('Election closed.'),
-      'tallied': _('Eleciton tallied.'),
+      'tallied': _('Election tallied.'),
       'combined_decryptions': _('Trustees should decrypt results.'),
       'results_decrypted': _('Election results where decrypted.'),
     }

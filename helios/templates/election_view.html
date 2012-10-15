@@ -42,21 +42,22 @@ if (!navigator.javaEnabled()) {
   {% endfor %}
 </ul>
 {% else %}
-<a class="button medium success" href="{% url helios.views.one_election_freeze election.uuid %}">Άνοιγμα ψηφοφορίας</a>
-<p>Η ψηφοφορία θα ξεκινήσει στις {{ election.voting_starts_at }}</p>
+<a class="button medium success" href="{% url helios.views.one_election_freeze election.uuid %}">
+Οριστικοποίηση ψηφοφορίας</a>
+<p>Η ψηφοφορία θα αρχίσει στις {{ election.voting_starts_at }}</p>
 {% endif %}
 
 {% else %}
 
 {% if not election.tallied %}
 {% if election.tallying_started_at %}
-Η διαδικασία μείξης έχει ξεκινήσει. Παρακαλούμε ανανεώστε τη σελίδα
-ανα τακτά χρονικά διαστήματα μέχρι να ολοκληρωθεί η διαδικασία.
+Η διαδικασία μίξης έχει ξεκινήσει. Παρακαλούμε ανανεώστε τη σελίδα
+ανά τακτά χρονικά διαστήματα μέχρι να ολοκληρωθεί η διαδικασία.
 {% else %}
 {% if election.num_cast_votes %}
-<a class="button success" href="{% url helios.views.one_election_compute_tally election.uuid %}">Κλείσιμο κάλπης</a><br />
+<a class="button success" href="{% url helios.views.one_election_compute_tally election.uuid %}">Κλείσιμο της κάλπης</a><br />
 {% else %}
-<a class="button success disabled secondary">Κλείσιμο κάλπης</a><br />
+<a class="button success disabled secondary">Κλείσιμο της κάλπης</a><br />
 {% endif %}
 {% endif %}
 {% else %}
@@ -66,15 +67,16 @@ if (!navigator.javaEnabled()) {
 {% if election.num_trustees == 1 %}
 release results
 {% else %}
-Υπολογισμός αποτελέσματος
+Αποκρυπτογράφηση τελικών ψηφοδελτίων.
 {% endif %}
 </a><br />
 {% if election.num_trustees == 1 %}
-The result is released and all voters are notified.
+Τα τελικά ψηφοδέλτια έχουν αποκρυπτογραφηθεί.
 {% else %}
 {% endif %}
 {% else %}
-<a class="button success" href="{% url helios.views.list_trustees_view election.uuid %}">Τα μέλη της εφορευτικής επιτροπής πρέπει να αποκρυπτογραφήσουν τα αποτελέσματα</a>
+<a class="button success" href="{% url helios.views.list_trustees_view election.uuid %}">
+Τα μέλη της εφορευτικής επιτροπής πρέπει να αποκρυπτογραφήσουν τα αποτελέσματα</a>
 {% endif %}
 
 {% endif %}
@@ -122,14 +124,15 @@ The result is released and all voters are notified.
 </span><br />
 <br />
 {% if election.voting_extended_until %}
-This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at}},<br />
-but has been extended until {{ election.voting_extended_until }} (UTC).
+H {{election.election_type}} ήταν προγραμματισμένη αρχικά να λήξει στις {{election.voting_ends_at}},<br />
+αλλά παρατάθηκε μέχρι τις {{ election.voting_extended_until }}.
 {% else %}
 {% if election.voting_ends_at %}
 <br />
-Η ψηφοφορία θα ολοκληρωθεί στις {{election.voting_ends_at}}.
+Η ψηφοφορία θα λήξει στις {{election.voting_ends_at}}.
 {% else %}
-This {{election.election_type}} ends at the administrator's discretion.
+Ο χρόνος της λήξης αυτής της {{election.election_type}} είναι
+στη διακριτική ευχέρεια του διαχειριστή της.
 {% endif %}
 <br />
 {% endif %}
@@ -137,7 +140,7 @@ This {{election.election_type}} ends at the administrator's discretion.
 {% else %}
 <span class="highlight-box round">
   {% if not admin_p %}
-  Η ψηφοφορία ανοίγει στις {{ election.voting_starts_at}}
+  Η ψηφοφορία αρχίζει στις {{ election.voting_starts_at}}
   {% endif %}
 </span> <br /><br />
 {% endif %}
@@ -145,10 +148,11 @@ This {{election.election_type}} ends at the administrator's discretion.
 {% if user %}
 {% if voter %}
 <p style="padding-top:1px;">
-  You are registered to vote in this {{election.election_type}}.
+  Έχετε καταχωρηθεί ως ψηφοφόρος σε αυτήν την {{election.election_type}}
 {% if election.use_voter_aliases %}
-Your voter alias is {{voter.alias}}.
+με ψευδώνυμο {{voter.alias}}
 {% endif %}
+.
 </p>
 
 {% else %}
@@ -166,12 +170,12 @@ Your voter alias is {{voter.alias}}.
 
 {% if election.frozen_at %}
 <br />
-<br />Election Fingerprint:<br />
+<br />Αποτύπωμα Ψηφοφορίας<br />
 <tt style="font-size: 1.3em; font-weight: bold;">{{election.hash}}</tt>
 
 
 {% if votes %}
-<p>Your smart ballot tracker:<br />
+<p>Το αποτύπωμα της ψήφου σας<br/>
 <tt style="font-size:14pt; font-weight: bold;">{{votes.0.vote_hash}}</tt>
 </p>
 {% endif %}
@@ -183,7 +187,8 @@ Your voter alias is {{voter.alias}}.
 
 {% if not election.voting_has_started %}
 <p style="font-size: 1.2em;">
-  <a href="{{SECURE_URL_HOST}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">preview booth</a>
+  <a href="{{SECURE_URL_HOST}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}"
+>προεπισκόπηση του ψηφοδελτίου</a>
 </p>
 {% endif %}  
 
@@ -192,10 +197,10 @@ Your voter alias is {{voter.alias}}.
 {% if election.voting_has_stopped %}
 <p style="font-size: 1.2em;">
 {% if election.result %}
-verify <a target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">election tally</a>.
+Επαληθεύστε <a target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">τη διαδικασία της ψηφοφορίας</a>.
 {% endif %}
 
-review the <a href="{{vote_url}}">voting booth</a>.
+δείτε <a href="{{vote_url}}">ψηφιακό παραπέτασμα</a> της ψηφοφορίας.
 </p>
 {% endif %}
 

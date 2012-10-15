@@ -6,10 +6,11 @@
 {% endblock %}
 
 {% block content %}
-<h5>Μαζική μεταφόρτωση χρηστών</h5>
+<h5>Μαζική προσθήκη ψηφοφόρων στην ψηφοφορία</h5>
 <form method="post" action="" id="upload_form" enctype="multipart/form-data">
   <p>
-    Μπορείτε να καθορίστε και να μεταφορτώσετε την λίστα των ψηφοφόρων δίνοντας το όνομα και την διεύθυνση του ηλεκτρονικού ταχυδρομείου τους εδώ.<br /><br />
+    Μπορείτε να καθορίστε και να μεταφορτώσετε μια λίστα ψηφοφόρων δίνοντας το όνομα
+    και την διεύθυνση του ηλεκτρονικού ταχυδρομείου τους εδώ.<br/><br/>
 
     Παρακαλώ προετοιμάστε ένα αρχείο απλού κειμένου σε μορφή CSV, όπως το παρακάτω:
   </p>
@@ -26,11 +27,11 @@
   {% if error %}
   <div style="color: red;">{{error}}</div>
   {% endif %}
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}"/>
     
     <input type="file" name="voters_file" />
     <br /><br />
-    <input class="button success" type="submit" value="Μεταμόρφοση αρχείου" />
+    <input class="button success" type="submit" value="Μεταφόρτωση αρχείου"/>
 </form>
 
 <div id="processing">

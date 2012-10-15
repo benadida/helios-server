@@ -95,26 +95,28 @@ function show_pk() {
 </script>
 
 <p>
-Ως επίτροπος πρέπει να δημιουργησετε το κλειδί σας για αυτές τις εκλογές.
+Ως μέλος της εφορευτικής επιτροπής πρέπει να δημιουργήστε τον δικό σας Κωδικό Ψηφοφορίας.
 </p>
 
 <p id="waiting_message">
-  Παρακαλώ περιμένετε για τον γεννήτορα να φορτώσει...
+  Παρακαλώ περιμένετε...
 </p>
 
 <p id="generator">
 
-<span id="buttons"><button onclick="generate_keypair(); return false;" id="generate_button">Generate Election Keys</button></span>
+<span id="buttons"><button onclick="generate_keypair(); return false;" id="generate_button">
+Δημιουργία προσωπικού Κωδικού Ψηφοφορίας</button></span>
 
 <br /><br />
-Εάν έχετε ήδη δημιουργήσει το ζεύγος κλειδιών μπορείτε να το <a href="javascript:show_key_reuse()">επαναχρησιμοποιήσετε</a>.
+Εάν έχετε ήδη Κωδικό Ψηφοφορίας μπορείτε να τον
+<a href="javascript:show_key_reuse()">επαναχρησιμοποιήσετε</a>.
 </p>
 
 <div id="reuse">
-<h3>Επαναχρησιμοποίηση Κλειδιού</h3>
+<h3>Επαναχρησιμοποίηση Κωδικού Ψηφοφορίας</h3>
 
 <p>
-Εισάγετε το μυστικό κλειδί σας παρακάτω:
+Εισάγετε τον Κωδικό Ψηφοφορίας σας παρακάτω:
 </p>
 <form onsubmit="reuse_key(this.secret_key.value); return false;">
 <textarea cols="80" rows="5" wrap="soft" name="secret_key">
@@ -127,31 +129,37 @@ function show_pk() {
 <div id="sk_download">
 <h3>Το μυστικό κλειδί σας</h3>
 <span id="clear_button">
-Το κλειδί σας έχει παραχθεί αλλά εάν θέλετε μπορείτε να το <br /><a href="javascript:clear_keys();">διαγράψετε από την μνήμη και να ξεκινήσετε από την αρχή.</a> <br />
+Ο κωδικός σας έχει παραχθεί αλλά εάν θέλετε μπορείτε να τον
+<br/><a href="javascript:clear_keys();">
+διαγράψετε από την μνήμη και να ξεκινήσετε από την αρχή.</a><br/>
 </span>
 
 <p>
-    <button style="font-size:16pt;" onclick="download_sk(); $('#pk_link').show();">Σώστε το μυστικό κλειδί σας</button>
+<button style="font-size:14pt;font-weight:bold" onclick="download_sk(); $('#pk_link').show();">
+Αποθηκεύστε τον Κωδικό σας</button>
 </p>
 
 <p style="display: none;" id="pk_link">
-  <a href="javascript:show_pk();">Εντάξει έσωσα το μυστικό κλειδί. Ας συνεχίσουμε</a>.
+  <a href="javascript:show_pk();">Ο Κωδικός είναι αποθηκευμένος και ασφαλής. Ας συνεχίσει η διαδικασία.</a>.
 </p>
 </div>
 
 <form method="post" id="pk_form" action="{% url helios.views.trustee_upload_pk election.uuid, trustee.uuid %}">
-<h3>Το δημόσιο κλειδί σας</h3>
+<h3>Το δημόσιο κλειδί του Κωδικού σας</h3>
 <p>
-    Τώρα πρέπει να φορτώσετε το δημόσιο κλειδί σας στον εξυπηρετητή.
+    Τώρα πρέπει να μεταφορτώσετε το δημόσιο κλειδί σας στο σύστημα «Ζεύς»
 </p>
 <p>
-    Το αποτύπωμα του κλειδιού σας είναι: <tt id="pk_hash" style="font-size: 1.5em; font-weight: bold;"></tt>.<br />
-  Μπορεί να θέλετε να αποθηκεύσετε το αποτύπωμα και να επιβεβαιώσετε ότι το δημόσιο κλειδί σας έχει αποθηκευτεί σωστά από το διακομιστή.<br />
-    (Το δημόσιο κλειδί σας δεν εμφανίζεται επί του παρόντος επειδή δεν χρειάζεται να το αποθηκεύσετε. Το δακτυλικό αποτύπωμα είναι επαρκές.)
+Το αποτύπωμα του δημόσιου κλειδιού του Κωδικού σας είναι:
+<tt id="pk_hash" style="font-size: 1.5em; font-weight: bold;"></tt>.<br />
+Μπορεί να θέλετε να αποθηκεύσετε το αποτύπωμα και να επιβεβαιώσετε ότι
+το δημόσιο κλειδί του Κωδικού σας έχει αποθηκευτεί σωστά από το διακομιστή.<br />
+(Το πλήρες δημόσιο κλειδί του Κωδικού σας δεν εμφανίζεται τώρα
+επειδή δεν χρειάζεται να το αποθηκεύσετε. Το αποτύπωμά του είναι επαρκές.)
 </p>
 <textarea id="pk_textarea" name="public_key_json" cols="80" rows="10" style="display:none;">
 </textarea>
-<input type="submit" value="Upload your public key">
+<input type="submit" value="Ενεργοποίηση του Κωδικού σας">
 </form>
 
 <div id="applet_div"></div>
