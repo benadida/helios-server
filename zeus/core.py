@@ -17,6 +17,12 @@ from operator import mul as mul_operator
 from multiprocessing import Pool, Queue as PoolQueue
 from time import time
 
+bit_length = lambda num: num.bit_length()
+if sys.version_info < (2, 7):
+    def bit_length(num):
+        s = bin(num)
+        s = s.lstrip('-0b')
+        return len(s)
 
 class ZeusError(Exception):
     pass
@@ -1039,11 +1045,11 @@ def bit_iterator(nr, infinite=True):
 
 def get_random_int(minimum, ceiling):
     top = ceiling - minimum
-    nr_bits = top.bit_length()
+    nr_bits = bit_length(top)
     nr_bytes = (nr_bits - 1) / 8 + 1
     strbin = _random_generator_file.read(nr_bytes)
     num = strbin_to_int(strbin)
-    shift = num.bit_length() - nr_bits
+    shift = bit_length(num) - nr_bits
     if shift > 0:
         num >>= shift
     if num >= top:
