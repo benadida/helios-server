@@ -1231,7 +1231,7 @@ def verify_ddh_tuple_helios(modulus, generator, order,
                      message, base_power, message_power,
                      base_commitment, message_commitment,
                      challenge, response):
-    args = (str(base_commitment), (message_commitment))
+    args = (str(base_commitment), str(message_commitment))
     _challenge = int(sha1(','.join(args)).hexdigest(), 16) % order
     if _challenge != challenge:
         return 0
@@ -2477,7 +2477,7 @@ class ZeusCoreElection(object):
         modulus, generator, order = self.do_get_cryptosystem()
         public = self.do_get_election_public()
         nr_candidates = len(self.do_get_candidates())
-        max_encoded = gamma_encoding_max(nr_candidates)
+        max_encoded = gamma_encoding_max(nr_candidates) + 1
 
         with teller.task("Verifying audit votes", total=len(votes)):
             for vote in votes:
