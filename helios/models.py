@@ -23,6 +23,8 @@ from django.utils import simplejson
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils.translation import ugettext_lazy as _
+from django.core.validators import validate_email
+from django.forms import ValidationError
 
 from helios.crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
@@ -1021,6 +1023,9 @@ def csv_reader(csv_data, **kwargs):
     all_encodings.reverse()
     for line in csv_data.splitlines():
       encodings = list(all_encodings)
+      if not line.strip():
+        continue
+
       while 1:
           if not encodings:
             m = "Cannot decode csv data!"
@@ -1075,10 +1080,24 @@ class VoterFile(models.Model):
       return_dict = {'voter_id': voter_fields[0]}
 
       if len(voter_fields) > 0:
+        validate_email(voter_fields[0])
         return_dict['email'] = voter_fields[0]
 
       if len(voter_fields) > 1:
+        if voter_fields[1].strip() == "":
+          raise ValidationError(_("Name cannot be empty"))
+
         return_dict['name'] = voter_fields[1]
+
+      if len(voter_fields) > 2:
+
+        if voter_fields[1].strip() == "":
+          raise ValidationError(_("Surname cannot be empty"))
+
+        return_dict['surname'] = voter_fields[2]
+
+      if len(voter_fields) > 3:
+        return_dict['fathername'] = voter_fields[3]
 
       yield return_dict
 
@@ -1109,12 +1128,19 @@ class VoterFile(models.Model):
       voter_id = voter[0].strip()
       name = voter_id
       email = voter_id
+      fathername = ""
 
       if len(voter) > 0:
         email = voter[0].strip()
 
       if len(voter) > 1:
         name = voter[1].strip()
+
+      if len(voter) > 2:
+        surname = voter[2].strip()
+
+      if len(voter) > 3:
+        fathername = voter[3].strip()
 
       # create the user -- NO MORE
       # user = User.update_or_create(user_type='password', user_id=email, info = {'name': name})
@@ -1126,7 +1152,8 @@ class VoterFile(models.Model):
       if not voter:
         voter_uuid = str(uuid.uuid4())
         voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter_id,
-                      voter_name = name, voter_email = email, election = election)
+                      voter_name = name, voter_email = email, election = election,
+                      voter_surname=surname, voter_fathername=fathername)
         voter.init_audit_passwords()
         voter.generate_password()
         new_voters.append(voter)
@@ -1134,6 +1161,8 @@ class VoterFile(models.Model):
 
       else:
         voter.voter_name = name
+        voter.voter_surname = surname
+        voter.voter_fathername = fathername
         voter.save()
 
     if election.use_voter_aliases:
@@ -1166,6 +1195,7 @@ class Voter(HeliosModel):
   voter_name = models.CharField(max_length = 200, null=True)
   voter_surname = models.CharField(max_length = 200, null=True)
   voter_email = models.CharField(max_length = 250, null=True)
+  voter_fathername = models.CharField(max_length = 250, null=True)
 
   # if election uses aliases
   alias = models.CharField(max_length = 100, null=True)

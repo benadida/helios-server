@@ -28,6 +28,7 @@ from helios import utils as helios_utils
 from helios.workflows import homomorphic
 from helios.workflows import mixnet
 from helios.view_utils import *
+from django.forms import ValidationError
 
 import tasks
 
@@ -43,9 +44,7 @@ import forms, signals
 # Parameters for everything
 ELGAMAL_PARAMS = elgamal.Cryptosystem()
 
-DEFAULT_CRYPTOSYSTEM = {'p': 16328632084933010002384055033805457329601614771185955389739167309086214800406465799038583634953752941675645562182498120750264980492381375579367675648771293800310370964745767014243638518442553823973482995267304044326777047662957480269391322789378384619428596446446984694306187644767462460965622580087564339212631775817895958409016676398975671266179637898557687317076177218843233150695157881061257053019133078545928983562221396313169622475509818442661047018436264806901023966236718367204710755935899013750306107738002364137917426595737403871114187750804346564731250609196846638183903982387884578266136503697493474682071L, 'q': 61329566248342901292543872769978950870633559608669337131139375508370458778917L, 'g': 14887492224963187634282421537186040801304008017743492304481737382571933937568724473847106029915040150784031882206090286938661464458896494215273989547889201144857352611058572236578734319505128042602372864570426550855201448111746579871811249114781674309062693442442368697449970648232621880001709535143047913661432883287150003429802392229361583608686643243349727791976247247948618930423866180410558458272606627111270040091203073580238905303994472202930783207472394578498507764703191288249547659899997131166130259700604433891232298182348403175947450284433411265966789131024573629546048637848902243503970966798589660808533L}
-
-DEFAULT_CRYPTOSYSTEM_PARAMS = getattr(settings, 'HELIOS_CRYPTOSYSTEM_PARAMS', DEFAULT_CRYPTOSYSTEM)
+DEFAULT_CRYPTOSYSTEM_PARAMS = getattr(settings, 'HELIOS_CRYPTOSYSTEM_PARAMS', False)
 
 # trying new ones from OlivierP
 ELGAMAL_PARAMS.p = DEFAULT_CRYPTOSYSTEM_PARAMS['p']
@@ -1177,7 +1176,6 @@ def voters_list_pretty(request, election):
   now using Django pagination
   """
 
-  messages.info(request, "lala")
   # for django pagination support
   page = int(request.GET.get('page', 1))
   limit = int(request.GET.get('limit', 50))
@@ -1232,6 +1230,7 @@ def voters_list_pretty(request, election):
   voters_page = voter_paginator.page(page)
 
   total_voters = voter_paginator.count
+  voters_voted = voters.filter(vote__isnull=False)
 
   return render_template(request, 'voters_list',
                          {'election': election, 'voters_page': voters_page,
@@ -1241,6 +1240,7 @@ def voters_list_pretty(request, election):
                           'upload_p': helios.VOTERS_UPLOAD, 'q' : q,
                           'menu_active': 'voters',
                           'voter_files': voter_files,
+                          'voted_count': voters_voted.count(),
                           'hash_valid': hash_valid,
                           'validate_hash': validate_hash,
                           'hash_invalid': hash_invalid,
@@ -1315,6 +1315,7 @@ def voters_upload(request, election):
       return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
     else:
       # we need to confirm
+      error = None
       if request.FILES.has_key('voters_file'):
         voters_file = request.FILES['voters_file']
         voter_file_obj = election.add_voters_file(voters_file)
@@ -1322,11 +1323,21 @@ def voters_upload(request, election):
         request.session['voter_file_id'] = voter_file_obj.id
 
         # import the first few lines to check
-        voters = [v for v in voter_file_obj.itervoters()]
+        voters = []
+        try:
+          voters = [v for v in voter_file_obj.itervoters()]
+        except ValidationError, e:
+          if hasattr(e, 'messages') and e.messages:
+            error = e.messages[0]
+          else:
+            error = str(e)
+        except Exception, e:
+          error = str(e)
 
         return render_template(request, 'voters_upload_confirm', {'election': election,
                                                                   'voters': voters,
                                                                   'admin_p': True,
+                                                                  'error': error,
                                                                   'menu_active': 'voters' })
       else:
         return HttpResponseRedirect("%s?%s" % (reverse(voters_upload, args=[election.uuid]), urllib.urlencode({'e':'no voter file specified, try again'})))

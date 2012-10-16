@@ -7,17 +7,23 @@
 
 {% block content %}
 <h5>Μαζική μεταφόρτωση χρηστών</h5>
+
+{% if error %}
+<div class="panel alert-box alert">
+  Προέκυψε σφάλμα στην ανάγνωση του αρχείου. ({{ error }})
+</div>
+{% else %}
 <p>
 Στο αρχείο που μόλις μεταφορτώσατε εντοπίσαμε τις ακόλουθες εγγραφές.
 </p>
 
 <table>
   <thead>
-    <tr><th>Ηλεκτρονική διευθυνση</th><th>Όνοματεπώνυμο</th></tr>
+    <tr><th>Ηλεκτρονική διευθυνση</th><th>Όνομα</th><th>Επώνυμο</th><th>Πατρώνυμο</th></tr>
   </thead>
   <tbody>
 {% for v in voters %}
-<tr><td>{{v.email}}</td><td>{{v.name}}</td></tr>
+<tr><td>{{v.email}}</td><td>{{v.name}}</td><td>{{v.surname}}</td><td>{{ v.fathername }}</td></tr>
 {% endfor %}
 </tbody>
 </table>
@@ -29,7 +35,7 @@
   <Br /><br />
   <input class="button success" type="submit" value="Επιβεβαίωση" />
 </form>
-
+{% endif %}
 <a class="button alert small" href="{% url helios.views.voters_upload_cancel election.uuid %}">ακύρωση μαζικής προσθήκης
 ψηφοφόρων</a>
 
