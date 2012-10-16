@@ -584,8 +584,6 @@ def one_election_cast(request, election):
     tasks.send_cast_vote_email(election, voter, signature)
     url = "%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_cast_done,
                                                       args=[election.uuid]))
-    signals.vote_cast.send(sender=election, election=election, user=user,
-                           voter=voter, signature=signature)
     return HttpResponse('{"cast_url": "%s"}' % url, mimetype="application/json")
 
 
