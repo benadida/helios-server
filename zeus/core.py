@@ -2977,6 +2977,22 @@ class ZeusCoreElection(object):
         finished['results'] = self.do_get_results()
         return finished
 
+    _export_methods = {
+        'CREATING': None,
+        'VOTING': 'export_creating',
+        'MIXING': 'export_voting',
+        'DECRYPTING': 'export_mixing',
+        'FINISHED': 'export_finished',
+    }
+
+    def export(self):
+        stage = self.do_get_stage()
+        method_name = self._export_methods[stage]
+        if method_name is None:
+            m = "Cannot export stage '%s'" % (stage,)
+            raise ValueError(m)
+        return getattr(self, method_name)(), stage
+
     @classmethod
     def new_at_finished(cls, finished, teller=_teller):
         self = cls.new_at_decrypting(finished, teller=teller)
@@ -3061,62 +3077,47 @@ class ZeusCoreElection(object):
 
         return vote, selection, encoded if valid else None, rnd
 
-    @classmethod
-    def mk_random(cls,  nr_candidates   =   3,
-                        nr_trustees     =   2,
-                        nr_voters       =   10,
-                        nr_votes        =   10,
-                        nr_mixes        =   2,
-                        nr_rounds       =   8,
-                        teller          =   _teller):
+    def mk_stage_creating(self, teller=_teller):
+        candidate_range = xrange(self._nr_candidates)
+        candidates = [("Candidate-%04d" % x) for x in candidate_range]
+        voter_range = xrange(self._nr_voters)
+        voters = [("Voter-%08d" % x) for x in voter_range]
 
-        with teller.task("Creating election"):
-            candidate_range = xrange(nr_candidates)
-            candidates = [("Candidate #%d" % x) for x in candidate_range]
-            voter_range = xrange(nr_voters)
-            voters = [("Voter #%d" % x) for x in voter_range]
+        self.create_zeus_key()
+        self.add_candidates(*candidates)
+        self.add_voters(*voters)
 
-            self = cls(teller=teller)
-            election = self
-            self.create_zeus_key()
-            self.add_candidates(*candidates)
-            self.add_voters(*voters)
+        trustees = [self.mk_random_trustee()
+                    for _ in xrange(self._nr_trustees)]
+        for trustee in trustees:
+            self.add_trustee(key_public(trustee), key_proof(trustee))
 
-            trustees = [self.mk_random_trustee() for _ in xrange(nr_trustees)]
-            for trustee in trustees:
-                self.add_trustee(key_public(trustee), key_proof(trustee))
+        trustees = [self.mk_reprove_trustee(key_public(t), key_secret(t))
+                    for t in trustees]
+        for trustee in trustees:
+            self.reprove_trustee(key_public(trustee), key_proof(trustee))
 
-            trustees = [self.mk_reprove_trustee(key_public(t), key_secret(t))
-                        for t in trustees]
-            for trustee in trustees:
-                self.reprove_trustee(key_public(trustee), key_proof(trustee))
+        self._trustees = trustees
 
-            self._trustees = trustees
-            self.set_voting()
-
-        crypto = self.do_get_cryptosystem()
-        modulus, generator, order = self.do_get_cryptosystem()
-
-        teller.task("Voting")
-        with teller.task("Generating and casting votes", total=nr_votes):
-            selections = []
-            plaintexts = {}
-            votes = []
-            for i in xrange(nr_votes):
-                kw = {'audit_code': -1} if (i & 1) else {}
-                vote, selection, encoded, rnd = self.mk_random_vote(**kw)
-                selections.append(selection)
-                if encoded is not None:
-                    plaintexts[vote['voter']] = encoded
-                votes.append(vote)
-                signature = self.cast_vote(vote)
-                if not signature['m'].startswith(V_CAST_VOTE):
-                    m = "Invalid cast vote signature!"
-                    raise AssertionError(m)
-                teller.advance()
-            self._selections = selections
-            self._plaintexts = plaintexts
-            self._votes = votes
+    def mk_stage_voting(self, teller=_teller):
+        selections = []
+        plaintexts = {}
+        votes = []
+        for i in xrange(self._nr_votes):
+            kw = {'audit_code': -1} if (i & 1) else {}
+            vote, selection, encoded, rnd = self.mk_random_vote(**kw)
+            selections.append(selection)
+            if encoded is not None:
+                plaintexts[vote['voter']] = encoded
+            votes.append(vote)
+            signature = self.cast_vote(vote)
+            if not signature['m'].startswith(V_CAST_VOTE):
+                m = "Invalid cast vote signature!"
+                raise AssertionError(m)
+            teller.advance()
+        self._selections = selections
+        self._plaintexts = plaintexts
+        self._votes = votes
 
         with teller.task("Casting a valid audit vote"):
             vote, selection, encoded, rnd = self.mk_random_vote(audit_code=1)
@@ -3141,6 +3142,7 @@ class ZeusCoreElection(object):
             eb = vote['encrypted_ballot']
             phony = eb['alpha'] + 1
             eb['alpha'] = phony
+            self._phony = phony
             modulus, generator, order = self.do_get_cryptosystem()
             alpha = eb['alpha']
             commitment = eb['commitment']
@@ -3155,38 +3157,34 @@ class ZeusCoreElection(object):
                 m = "Invalid public audit reply!"
                 raise AssertionError(m)
 
-        with teller.active():
-            self.set_mixing()
+    def mk_stage_mixing(self, teller=_teller):
+        for _ in xrange(self._nr_mixes):
+            cipher_collection = self.get_last_mix()
+            mixed_collection = mix_ciphers(cipher_collection,
+                                           nr_rounds=self._nr_rounds,
+                                           teller=teller)
+            self.add_mix(mixed_collection)
+            teller.advance()
 
-        with teller.task("Mixing", total=nr_mixes):
-            for _ in xrange(nr_mixes):
-                cipher_collection = self.get_last_mix()
-                mixed_collection = mix_ciphers(cipher_collection,
-                                               nr_rounds=nr_rounds,
-                                               teller=teller)
-                self.add_mix(mixed_collection)
+    def mk_stage_decrypting(self, teller=_teller):
+        modulus, generator, order = self.do_get_cryptosystem()
+        ciphers = self.get_mixed_ballots()
+        with teller.task("Calculating and adding decryption factors",
+                         total=self._nr_trustees):
+            for trustee in self._trustees:
+                factors = compute_decryption_factors(
+                                    modulus, generator, order,
+                                    key_secret(trustee), ciphers,
+                                    teller=teller)
+                trustee_factors = {'trustee_public': key_public(trustee),
+                                   'decryption_factors': factors,
+                                   'modulus': modulus,
+                                   'generator': generator,
+                                   'order': order}
+                self.add_trustee_factors(trustee_factors)
                 teller.advance()
 
-        self.set_decrypting()
-
-        with teller.task("Decrypting"):
-            ciphers = self.get_mixed_ballots()
-            with teller.task("Calculating and adding decryption factors",
-                             total=nr_trustees):
-                for trustee in trustees:
-                    factors = compute_decryption_factors(
-                                        modulus, generator, order,
-                                        key_secret(trustee), ciphers,
-                                        teller=teller)
-                    trustee_factors = {'trustee_public': key_public(trustee),
-                                       'decryption_factors': factors,
-                                       'modulus': modulus,
-                                       'generator': generator,
-                                       'order': order}
-                    self.add_trustee_factors(trustee_factors)
-                    teller.advance()
-            self.set_finished()
-
+    def mk_stage_finished(self, teller=_teller):
         with teller.task("Validating results"):
             results = self.get_results()
             if sorted(results) != sorted(self._plaintexts.values()):
@@ -3196,12 +3194,55 @@ class ZeusCoreElection(object):
 
             missing, failed = self.verify_audit_votes()
             if (missing or not failed or
-                not failed[0]['encrypted_ballot']['alpha'] == phony):
+                not failed[0]['encrypted_ballot']['alpha'] == self._phony):
                 m = "Invalid audit request not detected!"
                 raise AssertionError(m)
 
-        return self
+    @classmethod
+    def mk_random(cls,  nr_candidates   =   3,
+                        nr_trustees     =   2,
+                        nr_voters       =   10,
+                        nr_votes        =   10,
+                        nr_mixes        =   2,
+                        nr_rounds       =   8,
+                        stage           =   'FINISHED',
+                        teller          =   _teller):
 
+        self = cls(teller=teller)
+        self._nr_candidates = nr_candidates
+        self._nr_trustees = nr_trustees
+        self._nr_voters = nr_voters
+        self._nr_votes = nr_votes
+        self._nr_mixes = nr_mixes
+        self._nr_rounds = nr_rounds
+        stage = stage.upper()
+
+        with teller.task("Creating election"):
+            self.mk_stage_creating(teller)
+        if stage == 'CREATING':
+            return self
+
+        self.set_voting()
+        with teller.task("Voting", total=nr_votes):
+            self.mk_stage_voting(teller)
+        if stage == 'VOTING':
+            return self
+
+        self.set_mixing()
+        with teller.task("Mixing", total=nr_mixes):
+            self.mk_stage_mixing(teller)
+        if stage == 'MIXING':
+            return self
+
+        self.set_decrypting()
+        with teller.task("Decrypting"):
+            self.mk_stage_decrypting(teller)
+        if stage == 'DECRYPTING':
+            return self
+
+        self.set_finished()
+        self.mk_stage_finished(teller)
+        return self
 
 
 def main():
@@ -3237,6 +3278,9 @@ def main():
 
     parser.add_argument('--generate', nargs='*', metavar='outfile',
         help="Generate a random election and write it out in JSON")
+
+    parser.add_argument('--stage', type=str, default='FINISHED',
+                        help="Generate: Stop when this stage is complete")
 
     parser.add_argument('--candidates', type=int, default=3,
                         dest='nr_candidates',
@@ -3274,14 +3318,15 @@ def main():
                             nr_voters       =   args.nr_voters,
                             nr_votes        =   args.nr_votes,
                             nr_rounds       =   args.nr_rounds,
+                            stage           =   args.stage,
                             teller=teller)
-        finished = election.export_finished()
+        exported, stage = election.export()
         if not filename:
-            name = ("%x" % election.do_get_election_public())[:32]
-            filename = 'election-%s.json' % (name,)
+            name = ("%x" % election.do_get_election_public())[:16]
+            filename = 'election-%s-%s.json' % (name, stage)
             sys.stderr.write("writing out to '%s'\n" % (filename,))
         with open(filename, "w") as f:
-            json.dump(finished, f, indent=2)
+            json.dump(exported, f, indent=2)
 
     def main_validate(args, teller=_teller):
         filename = args.validate
