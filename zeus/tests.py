@@ -23,14 +23,19 @@ from zeus.helios_election import *
 from zeus.models import *
 from zeus.core import get_random_selection, encode_selection, prove_encryption
 
-TRUSTEES_COUNT = 4
-VOTERS_COUNT = 10
+TRUSTEES_COUNT = 5
+VOTERS_COUNT = 950
 VOTES_COUNT = 10
+MIXNETS_COUNT = 2
 
-class TestZeusElection(TestCase):
+#TRUSTEES_COUNT = 2
+#VOTERS_COUNT = 5
+#VOTES_COUNT = 2
 
-    def test_mk_random(self):
-        HeliosElection.mk_random(uuid="testuuid")
+#class TestZeusElection(TestCase):
+
+    #def test_mk_random(self):
+        #HeliosElection.mk_random(uuid="testuuid")
 
 class TestHeliosElection(TestCase):
 
@@ -44,7 +49,6 @@ class TestHeliosElection(TestCase):
         return Election.objects.get(uuid=self.UUID)
 
     def test_election_workflow(self):
-
         institution = Institution(name="test institution")
         e = Election(name="election test", uuid=self.UUID)
         e.questions = [{'answers':[1,2,3,4,5], 'choice_type': 'stv', 'result_type':
@@ -100,8 +104,8 @@ class TestHeliosElection(TestCase):
         self.assertEqual(self.election.zeus_election.do_get_stage(), "VOTING")
 
         VOTES_CASTED = 0
+        SELECTIONS = {}
         for voter in range(VOTERS_COUNT):
-            print "VOTER", voter
             cast = choice(range(10)) > 1
             cast_with_audit_pass = choice(range(10)) > 5
             if voter == 0:
@@ -113,14 +117,14 @@ class TestHeliosElection(TestCase):
             if not cast:
                 continue
 
-            VOTES_CASTED += 1
             cast_votes_count = choice(range(VOTES_COUNT)) + 1
             voter_obj = e.voter_set.get(election=e,
                               voter_email='voter%d@testvoter.com' % voter)
 
+            print "VOTER", voter
             for voter_vote_index in range(cast_votes_count):
                 audit_password = ""
-                cast_audit = choice(range(3)) > 2
+                cast_audit = choice(range(5)) > 3
 
                 selection = get_random_selection(len(e.questions[0]['answers']))
                 encoded = encode_selection(selection)
@@ -161,19 +165,21 @@ class TestHeliosElection(TestCase):
 
                     signature = self.election.cast_vote(voter_obj, session_enc_vote,
                                             audit_password)
-                    print "VOTER CASTS AUDIT REQUEST", selection
 
                     enc_vote = enc_vote.ld_object.includeRandomness().wrapped_obj
                     signature = self.election.cast_vote(voter_obj, enc_vote,
                                             audit_password)
-                    print "VOTER CASTS AUDIT PUBLISHING", selection
+                    print "VOTER", voter, "CASTED AUDIT BALLOT", selection
+                    continue
+
+                if cast_audit and range(10) > 9:
                     continue
 
                 self.election.cast_vote(voter_obj, enc_vote, audit_password)
-                print "VOTER CASTS VOTE", selection
-            print 100*"="
+                print "VOTER", voter, "CASTED BALLOT", selection
+                SELECTIONS[voter_obj.uuid] = selection
 
-        #self.election.zeus_election.validate_voting()
+        self.election.zeus_election.validate_voting()
 
         e = self.election
         e.workflow_type = 'mixnet'
@@ -181,11 +187,12 @@ class TestHeliosElection(TestCase):
         e.voting_ended_at = datetime.datetime.now()
         e.save()
 
-        e.generate_helios_mixnet()
-        e.generate_helios_mixnet()
+        for i in range(MIXNETS_COUNT):
+            e.generate_helios_mixnet()
+
         self.assertEqual(self.election.zeus_election.do_get_stage(), "MIXING")
         tasks.election_compute_tally(e.pk)
-        self.assertEqual(self.election.encrypted_tally.num_tallied, VOTES_CASTED)
+        self.assertEqual(self.election.encrypted_tally.num_tallied, len(SELECTIONS.values()))
 
         e = self.election
         for tpk, val in trustees_keys.iteritems():
@@ -197,8 +204,8 @@ class TestHeliosElection(TestCase):
                   dec_factor, proof = sk.decryption_factor_and_proof(vote)
                   decryption_factors[0].append(dec_factor)
                   decryption_proofs[0].append(proof)
-                  e.add_trustee_factors(trustee, decryption_factors,
-                                        decryption_proofs)
+            e.add_trustee_factors(trustee, decryption_factors,
+                                decryption_proofs)
 
         e = self.election
         self.assertTrue(self.election.result)
@@ -206,4 +213,9 @@ class TestHeliosElection(TestCase):
         self.election.zeus_election.validate_decrypting()
         self.assertEqual(e.zeus_election.do_get_stage(), 'FINISHED')
 
-        print e.pretty_result
+        results = e.pretty_result['selections']
+
+        from helios.counter import Counter
+        results = ["".join(map(str, r)) for r in results]
+        selections = ["".join(map(str, r)) for r in SELECTIONS.values()]
+        assert Counter(results) == Counter(selections)
