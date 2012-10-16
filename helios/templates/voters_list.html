@@ -7,13 +7,24 @@
 {% block content %}
 
 {% if admin_p %}
-<div class="clearfix">
+<div class="row">
+  <div class="columns seven">
+    <div class="columns six">
+    <h6>Σύνολο ψηφοφόρων: <span>{{ voters.count }}</span></h6>
+    </div>
+    <div class="columns six" style="padding-left:0; width: 42%;" >
+    <h6>Έχουν ψηφίσει: {{ voted_count }}</h6>
+    </div>
+  </div>
+  <div class="columns five">
   {% if election.frozen_at %}
   <a style="float: right" class="button small" href="{% url helios.views.voters_email election.uuid %}">Αποστολή email</a>
   {% else %}
   <a style="float: right" class="button small disabled" href="#">Αποστολή email</a>
   {% endif %}
   <a style="float: right; margin-right: 10px;" class="button small" href="{% url helios.views.voters_upload election.uuid %}">Προσθήκη</a>
+
+</div>
 </div>
 {% endif %}
 <br /><br />
@@ -49,6 +60,7 @@
     <tr>
       <th>Επώνυμο</th>
       <th>Όνομα</th>
+      <th>Πατρώνυμο</th>
       <th>Email</th>
       <th>Έχει ψηφίσει</th>
       {% if admin_p %}
@@ -68,6 +80,9 @@
     </td>
     <td>
       {{ voter.name }}
+    </td>
+    <td>
+      {{ voter.voter_fathername }}
     </td>
     <td>
       {{ voter.voter_email }}

@@ -8,6 +8,7 @@ Random = {};
 Random.GENERATOR = null;
 
 Random.setupGenerator = function() {
+  // no longer needed
 /*    if (Random.GENERATOR == null && !USE_SJCL) {
 	    if (BigInt.use_applet) {
 	      var foo = BigInt.APPLET.newSecureRandom();

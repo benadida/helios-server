@@ -23,6 +23,8 @@ from django.utils import simplejson
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils.translation import ugettext_lazy as _
+from django.core.validators import validate_email
+from django.forms import ValidationError
 
 from helios.crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
@@ -149,7 +151,7 @@ class Election(HeliosModel):
   datatype = models.CharField(max_length=250, null=False, default="legacy/Election")
 
   short_name = models.CharField(max_length=100)
-  name = models.CharField(max_length=250)
+  name = models.CharField(max_length=110)
 
   candidates = JSONField(default="{}")
   departments = JSONField(default="[]")
@@ -294,8 +296,19 @@ class Election(HeliosModel):
     self.cands = cands
     answers = []
     for cand in cands:
-      answers.append(u"%s %s του %s [%s]" % (cand['surname'], cand['name'], cand['father_name'],
+      answers.append(u"%s %s %s [%s]" % (cand['surname'], cand['name'], cand['father_name'],
                              cand['department'].strip()))
+
+    if not self.questions:
+        question = {}
+        question['answer_urls'] = [None for x in range(len(answers))]
+        question['choice_type'] = 'stv'
+        question['question'] = 'Candidates choice'
+        question['answers'] = []
+        question['result_type'] = 'absolute'
+        question['tally_type'] = 'stv'
+        self.questions = []
+        self.questions.append(question)
 
     self.questions[0]['answers'] = answers
     self.save()
@@ -507,7 +520,7 @@ class Election(HeliosModel):
     if self.questions == None or len(self.questions) == 0:
       issues.append(
         {'type': 'questions',
-         'action': "Add candidates to the election"}
+         'action': _("Add candidates to the election")}
         )
 
     trustees = Trustee.get_by_election(self)
@@ -891,6 +904,57 @@ class Election(HeliosModel):
       # assumes that anything non-absolute is relative
       return [counts[0][0]]
 
+  def ecounting_dict(self):
+    schools = []
+    for school in self.departments:
+      candidates = []
+      for i, candidate in enumerate(self.candidates):
+        if candidate['department'] != school:
+          continue
+
+        candidate_entry = {
+          'candidateTmpId': str(i+1),
+          'firstName': candidate['name'],
+          'lastName': candidate['surname'],
+          'fatherName': candidate['father_name']
+        }
+
+        candidates.append(candidate_entry)
+
+      school_entry = {
+        'Name': school,
+        'candidates': candidates
+      }
+      schools.append(school_entry)
+
+    ballots = []
+    for i, ballot in enumerate(self.pretty_result['candidates_selections']):
+      ballot_votes = []
+      for j, selection in enumerate(ballot):
+        vote_entry = {
+          'rank': j + 1,
+          'candidateTmpId': selection['selection_index']
+        }
+        ballot_votes.append(vote_entry)
+
+      ballot_entry = {
+        'ballotSerialNumber': str(i+1),
+        'votes': ballot_votes
+      }
+      ballots.append(ballot_entry)
+
+    data = {
+      'elName': self.name,
+      'elDescription': self.description,
+      'numOfRegisteredVoters': self.voter_set.count(),
+      'numOfCandidates': len(self.candidates),
+      'numOfEligibles': self.eligibles_count,
+      'hasLimit': 1 if self.has_department_limit else 0,
+      'schools': schools,
+      'ballots': ballots
+    }
+    return data
+
   @property
   def winners(self):
     """
@@ -905,21 +969,34 @@ class Election(HeliosModel):
     from helios.counter import Counter
     cands_count = len(self.questions[0]['answers'])
     answers = self.questions[0]['answers']
-    candidate_selections = []
+    candidates_selections = []
+    decoded_selections = []
     abs_selections = []
+    answer_selections = []
     selections = []
+
     for vote in self.result[0]:
         decoded = vote
-        selection = gamma_decode(vote, cands_count)
+        selection = gamma_decode(vote, cands_count, cands_count)
         abs_selection = to_absolute_answers(selection, cands_count)
         cands = [answers[i] for i in abs_selection]
+        cands_objs = [self.candidates[i].update() for i in abs_selection]
+        cands_objs = []
+        for i in abs_selection:
+          obj = self.candidates[i]
+          obj['selection_index'] = i + 1
+          cands_objs.append(obj)
 
         selections.append(selection)
         abs_selections.append(abs_selection)
-        candidate_selections.append(candidate_selections)
+        answer_selections.append(cands)
+        candidates_selections.append(cands_objs)
+    decoded_selections.append(decoded)
 
     return {'selections': selections, 'abs_selections': abs_selections,
-            'candidate_selections': candidate_selections}
+            'answer_selections': answer_selections,
+            'candidates_selections': candidates_selections,
+            'decoded_selections': decoded}
 
 class ElectionLog(models.Model):
   """
@@ -946,6 +1023,9 @@ def csv_reader(csv_data, **kwargs):
     all_encodings.reverse()
     for line in csv_data.splitlines():
       encodings = list(all_encodings)
+      if not line.strip():
+        continue
+
       while 1:
           if not encodings:
             m = "Cannot decode csv data!"
@@ -1000,10 +1080,24 @@ class VoterFile(models.Model):
       return_dict = {'voter_id': voter_fields[0]}
 
       if len(voter_fields) > 0:
+        validate_email(voter_fields[0])
         return_dict['email'] = voter_fields[0]
 
       if len(voter_fields) > 1:
+        if voter_fields[1].strip() == "":
+          raise ValidationError(_("Name cannot be empty"))
+
         return_dict['name'] = voter_fields[1]
+
+      if len(voter_fields) > 2:
+
+        if voter_fields[1].strip() == "":
+          raise ValidationError(_("Surname cannot be empty"))
+
+        return_dict['surname'] = voter_fields[2]
+
+      if len(voter_fields) > 3:
+        return_dict['fathername'] = voter_fields[3]
 
       yield return_dict
 
@@ -1034,12 +1128,19 @@ class VoterFile(models.Model):
       voter_id = voter[0].strip()
       name = voter_id
       email = voter_id
+      fathername = ""
 
       if len(voter) > 0:
         email = voter[0].strip()
 
       if len(voter) > 1:
         name = voter[1].strip()
+
+      if len(voter) > 2:
+        surname = voter[2].strip()
+
+      if len(voter) > 3:
+        fathername = voter[3].strip()
 
       # create the user -- NO MORE
       # user = User.update_or_create(user_type='password', user_id=email, info = {'name': name})
@@ -1051,7 +1152,8 @@ class VoterFile(models.Model):
       if not voter:
         voter_uuid = str(uuid.uuid4())
         voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter_id,
-                      voter_name = name, voter_email = email, election = election)
+                      voter_name = name, voter_email = email, election = election,
+                      voter_surname=surname, voter_fathername=fathername)
         voter.init_audit_passwords()
         voter.generate_password()
         new_voters.append(voter)
@@ -1059,6 +1161,8 @@ class VoterFile(models.Model):
 
       else:
         voter.voter_name = name
+        voter.voter_surname = surname
+        voter.voter_fathername = fathername
         voter.save()
 
     if election.use_voter_aliases:
@@ -1091,6 +1195,7 @@ class Voter(HeliosModel):
   voter_name = models.CharField(max_length = 200, null=True)
   voter_surname = models.CharField(max_length = 200, null=True)
   voter_email = models.CharField(max_length = 250, null=True)
+  voter_fathername = models.CharField(max_length = 250, null=True)
 
   # if election uses aliases
   alias = models.CharField(max_length = 100, null=True)

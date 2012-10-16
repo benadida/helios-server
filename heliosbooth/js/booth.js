@@ -679,6 +679,7 @@ BOOTH.cast_ballot = function() {
       error: function(xhr, status, error) {
         alert("Προέκυψε σφάλμα στην καταχώρηση της ψήφου σας, παρακαλούμε" +
               " δοκιμάστε ξανά.");
+        BOOTH.show_question(0);
       }
     })
 };

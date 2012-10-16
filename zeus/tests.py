@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 This file demonstrates two different styles of tests (one doctest and one
 unittest). These will both pass when you run "manage.py test".
@@ -21,16 +22,17 @@ from helios import tasks
 
 from zeus.helios_election import *
 from zeus.models import *
-from zeus.core import get_random_selection, encode_selection, prove_encryption
+from zeus.core import get_random_selection, encode_selection, \
+    prove_encryption, to_absolute_answers, gamma_encode, to_relative_answers
 
 TRUSTEES_COUNT = 5
 VOTERS_COUNT = 950
 VOTES_COUNT = 10
 MIXNETS_COUNT = 2
 
-#TRUSTEES_COUNT = 2
-#VOTERS_COUNT = 5
-#VOTES_COUNT = 2
+TRUSTEES_COUNT = 5
+VOTERS_COUNT = 100
+VOTES_COUNT = 12
 
 #class TestZeusElection(TestCase):
 
@@ -51,8 +53,53 @@ class TestHeliosElection(TestCase):
     def test_election_workflow(self):
         institution = Institution(name="test institution")
         e = Election(name="election test", uuid=self.UUID)
-        e.questions = [{'answers':[1,2,3,4,5], 'choice_type': 'stv', 'result_type':
+        e.departments = [
+          "Φιλοσοφική Σχολή",
+          "Σχολή Θετικών Επιστημών",
+          "Ανεξάρτητο Παιδαγωγικό Τμήμα Δημοτικής Εκπαίδευσης"
+        ]
+        candidates = [
+            {
+            'department': u'Φιλοσοφική Σχολή',
+            'father_name': u'Γεώργιος',
+            'name': u'Ιωάννης',
+            'surname': u'Παναγιωτόπουλος'
+            },
+            {
+            'department': u'Φιλοσοφική Σχολή',
+            'father_name': u'Γεώργιος',
+            'name': u'Κώνσταντίνος',
+            'surname': u'Δημητρίου'
+            },
+            {
+            'department': u'Σχολή Θετικών Επιστημών',
+            'father_name': u'Γεώργιος',
+            'name': u'Κώνσταντίνος',
+            'surname': u'Αναστόπουλος'
+            },
+            {
+            'department': u'Ανεξάρτητο Παιδαγωγικό Τμήμα Δημοτικής Εκπαίδευσης',
+            'father_name': u'Γεώργιος',
+            'name': u'Βαγγέλης',
+            'surname': u'Παπαδημητρίου'
+            },
+            {
+            'department': u'Ανεξάρτητο Παιδαγωγικό Τμήμα Δημοτικής Εκπαίδευσης',
+            'father_name': u'Ιωάννης',
+            'name': u'Κώνσταντίνος',
+            'surname': u'Τσουκαλάς'
+            },
+        ]
+
+        NUM_ANSWERS = choice(range(5, 15))
+        cands = [dict(choice(candidates)) for i in range(NUM_ANSWERS)]
+        for i, cand in enumerate(cands):
+          cand['name'] += str(i)
+
+        e.candidates = cands
+        e.questions = [{'choice_type': 'stv', 'result_type':
                         'absolute', 'tally_type': 'stv'}]
+        e.update_answers()
         e.save()
 
         self.assertEqual(self.election.zeus_election.do_get_stage(), "CREATING")
@@ -126,9 +173,18 @@ class TestHeliosElection(TestCase):
                 audit_password = ""
                 cast_audit = choice(range(5)) > 3
 
-                selection = get_random_selection(len(e.questions[0]['answers']))
-                encoded = encode_selection(selection)
+                cands_size = len(e.questions[0]['answers'])
+                vote_size = choice(range(cands_size))
+                selection = []
+                for s in range(vote_size):
+                  vchoice = choice(range(cands_size))
+                  if not vchoice in selection:
+                    selection.append(vchoice)
 
+                rel_selection = to_relative_answers(selection, cands_size)
+                encoded = gamma_encode(rel_selection, cands_size, cands_size)
+
+                print "ENCODED", encoded
                 plaintext = algs.EGPlaintext(encoded, e.public_key)
                 randomness = algs.Utils.random_mpz_lt(e.public_key.q)
                 cipher = e.public_key.encrypt_with_r(plaintext, randomness, True)
@@ -169,7 +225,7 @@ class TestHeliosElection(TestCase):
                     enc_vote = enc_vote.ld_object.includeRandomness().wrapped_obj
                     signature = self.election.cast_vote(voter_obj, enc_vote,
                                             audit_password)
-                    print "VOTER", voter, "CASTED AUDIT BALLOT", selection
+                    print "VOTER", voter, "AUDIT BALLOT", selection
                     continue
 
                 if cast_audit and range(10) > 9:
@@ -213,9 +269,37 @@ class TestHeliosElection(TestCase):
         self.election.zeus_election.validate_decrypting()
         self.assertEqual(e.zeus_election.do_get_stage(), 'FINISHED')
 
-        results = e.pretty_result['selections']
+        results = e.pretty_result['abs_selections']
 
         from helios.counter import Counter
-        results = ["".join(map(str, r)) for r in results]
-        selections = ["".join(map(str, r)) for r in SELECTIONS.values()]
+        results = [",".join(map(str, r)) for r in results]
+        selections = [",".join(map(str, r)) for r in SELECTIONS.values()]
+
         assert Counter(results) == Counter(selections)
+
+
+        # validate ecounting results
+        ecounting_results = self.election.ecounting_dict()['ballots']
+        assert Counter(results) == Counter(selections)
+
+        for voter, selection in SELECTIONS.iteritems():
+          vote = selection
+          print 20*"*"
+          if not len(vote):
+            print "EMPTY VOTE"
+          for i, v in enumerate(vote):
+            if v == 0:
+              continue
+            cand = self.election.candidates[v-1]
+            print i+1, cand['surname'], cand['name'], cand['father_name']
+          print 20*"*"
+
+        ecounting_ballots = [[int(s['candidateTmpId'])-1 for s in ballot['votes']] for \
+                              ballot in self.election.ecounting_dict()['ballots']]
+
+        ecounting_selections = [",".join(map(str, r)) for r in ecounting_ballots]
+        assert Counter(results) == Counter(selections) == Counter(ecounting_selections)
+        #print 20*"="
+        #print json.dumps(self.election.ecounting_dict(), ensure_ascii=0)
+        #print 20*"="
+
