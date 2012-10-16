@@ -904,7 +904,23 @@ class Election(HeliosModel):
   @property
   def pretty_result(self):
     from helios.counter import Counter
-    import pdb; pdb.set_trace()
+    cands_count = len(self.questions[0]['answers'])
+    answers = self.questions[0]['answers']
+    candidate_selections = []
+    abs_selections = []
+    selections = []
+    for vote in self.result[0]:
+        decoded = vote
+        selection = gamma_decode(vote, cands_count)
+        abs_selection = to_absolute_answers(selection, cands_count)
+        cands = [answers[i] for i in abs_selection]
+
+        selections.append(selection)
+        abs_selections.append(abs_selection)
+        candidate_selections.append(candidate_selections)
+
+    return {'selections': selections, 'abs_selections': abs_selections,
+            'candidate_selections': candidate_selections}
 
 class ElectionLog(models.Model):
   """
