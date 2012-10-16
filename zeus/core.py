@@ -640,13 +640,17 @@ def permutation_to_selection(permutation):
 
     return selection
 
-def get_random_selection(nr_elements):
+def get_random_selection(nr_elements, full=1):
     selection = []
+    variable = not bool(full)
     append = selection.append
     for m in xrange(nr_elements, 1, -1):
-        append(get_random_int(0, m))
-        #append(randint(0, m-1))
-    append(0)
+        r = get_random_int(0, m+variable)
+        if r == m:
+            break
+        append(r)
+    else:
+        append(0)
     return selection
 
 def selection_to_permutation(selection):
@@ -716,7 +720,7 @@ def selection_to_permutation(selection):
     return permutation
 
 def get_random_permutation(nr_elements):
-    return selection_to_permutation(get_random_selection(nr_elements))
+    return selection_to_permutation(get_random_selection(nr_elements, full=1))
 
 _terms = {}
 
@@ -1350,8 +1354,9 @@ def verify_text_signature(signature, modulus, generator, order, public):
                                     modulus, generator, order, public)
 
 
-def encode_selection(selection):
-    nr_candidates = len(selection)
+def encode_selection(selection, nr_candidates=None):
+    if nr_candidates is None:
+        nr_candidates = len(selection)
     return gamma_encode(selection, nr_candidates, nr_candidates)
 
 def vote_from_encoded(modulus, generator, order, public,
@@ -3022,12 +3027,12 @@ class ZeusCoreElection(object):
         candidates = self.do_get_candidates()
         nr_candidates = len(candidates)
         if selection is None:
-            selection = get_random_selection(nr_candidates)
+            selection = get_random_selection(nr_candidates, full=0)
         voters = None
         if voter is None:
             voters = self.do_get_voters()
             voter = choice(voters.keys())
-        encoded = encode_selection(selection)
+        encoded = encode_selection(selection, nr_candidates)
         valid = True
         if audit_code:
             if voters is None:
