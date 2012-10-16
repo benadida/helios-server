@@ -14,6 +14,8 @@ from celery.decorators import task
 
 from helios.models import *
 from helios.view_utils import render_template_raw
+from django.utils.translation import ugettext_lazy as _
+from django.core.mail import send_mail, EmailMessage
 
 @task()
 def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
@@ -178,8 +180,14 @@ Helios
 @task()
 def election_notify_admin(election_id, subject, body):
     election = Election.objects.get(id = election_id)
-    for admin in election.admins.all():
-      admin.send_message(subject, body)
+    #for admin in election.admins.all():
+      #admin.send_message(subject, body)
+    for admin, admin_email in settings.ADMINS:
+        message = EmailMessage(subject,
+                               body,
+                               settings.SERVER_EMAIL,
+                               ["%s <%s>" % (admin, admin_email)])
+    message.send(fail_silently=False)
 
 
 @task()
@@ -201,5 +209,5 @@ you can find your encrypted vote attached in this mail.
   for attachment in attachments:
       message.attach(*attachment)
 
-  message.send(fail_silently=True)
+  message.send(fail_silently=False)
 
