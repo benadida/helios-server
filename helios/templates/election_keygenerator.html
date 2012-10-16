@@ -77,10 +77,15 @@ function show_sk() {
 }
 
 function download_sk() {
-  try{
-    var bb = new BlobBuilder;
+  try {
+    var filetype = "text/plain;charset=utf-8";
+    if ($.browser.mozilla) {
+        filetype = "application/octet-stream";
+    }
+
+    bb = new BlobBuilder;
     bb.append(jQuery.toJSON(SECRET_KEY));
-    saveAs(bb.getBlob("text/plain;charset=utf-8"), "Κωδικός Ψηφοφορίας {{ trustee.name }}.txt");
+    saveAs(bb.getBlob(filetype), "Κωδικός Ψηφοφορίας {{ trustee.name }}.txt");
   } catch (err) {
     UTILS.open_window_with_content(jQuery.toJSON(SECRET_KEY), "application/json");
   }
@@ -95,6 +100,7 @@ function download_sk() {
 
 function upload_show_pk() {
     if (!$(".confirm-check").is(":checked")) {
+      alert("Παρακαλούμε αποδεχθείτε οτι έχετε αποθηκεύσει τον κωδικό ψηφοφορίας σας.")
       return;
     }
 
@@ -103,6 +109,7 @@ function upload_show_pk() {
       url: $("#pk_form").attr("action"),
       type: 'post',
       data: data,
+
       success: function() {
         alert("O κωδικός σας ενεργοποιήθηκε.");
         window.location = '{% url heliosauth.views.logout %}'

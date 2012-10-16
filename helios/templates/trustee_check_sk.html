@@ -37,13 +37,20 @@ function check_sk(sk_value) {
 
     var reset_link = "<br /><a href='javascript:reset();'>Προσπαθήστε ξανά</a>";
     if (key_ok_p) {
-      $('#result').html("Το μυστικό κλειδί σας είναι έγκυρο!");
       $.ajax({
         "url": "{% url helios.views.trustee_verify_key election.uuid trustee.uuid %}",
-        "data": {'verified': true}
+        "data": {'verified': true},
+        "error": function() {
+          alert("Προέκυψε σφάλμα στον έλεγχο του κωδικού σας, παρακαλούμε δοκιμάστε ξανά.");
+          window.location = '{% url heliosauth.views.logout %}';
+        },
+        "success": function() {
+            alert("Το κωδικός ψηφοφορίας σας είναι έγκυρος!");
+            window.location = '{% url heliosauth.views.logout %}';
+        }
       })
     } else {
-      $('#result').html("Το μυστικό κλειδί σας είναι εσφαλμένο." + reset_link);
+      $('#result').html("Το κωδικός ψηφοφορίας σας είναι εσφαλμένος." + reset_link);
     }
   }
 
@@ -70,13 +77,22 @@ var opts = {
   $(document).ready(function(){
     try {
       $("#file-input").fileReaderJS(opts);
+      $(".select-file-option").show();
+      $(".paste-file-option").hide();
     } catch (err) {
+        $(".paste-file-option").show();
+        $(".select-file-option").hide();
+    }
+
+    if ($.browser.webkit || $.browser.mozilla) {
+        $(".select-file-option").show();
+        $(".paste-file-option").hide();
     }
   })
 </script>
 
 <p>
-Το αποτύπωμα του δημόσιου κλειδιού σας είναι: <b>{{trustee.public_key_hash}}</b>
+Το αποτύπωμα του δημόσιου μέρους του κωδικού ψηφοφορίας σας είναι: <b>{{trustee.public_key_hash}}</b>
 </p>
 
 <div id="loading">
@@ -84,14 +100,20 @@ var opts = {
 </div>
 
 <div id="input" style="display:none;">
+<div class="select-file-option">
 <p>
-Για να βεβαιωθείτε ότι έχετε το σωστό ιδιωτικό κλειδί, επικολλήσετε το εδώ: 
+Επιλέξτε το αρχείο κωδικού ψηφοφορίας σας και πατήστε "Έλεγχος".
 <p>
-
 <input type="file" id="file-input" />
+</div>
+<div class="paste-file-option">
+<p>
+Για να βεβαιωθείτε ότι έχετε τοn σωστό κωδικό ψηφοφορίας, επικολλήσετε το εδώ: 
+<p>
 <form onsubmit="check_sk(this.secret_key.value); this.secret_key.value=''; return false;">
 <textarea name="secret_key" cols="60" rows ="5" wrap="soft">
 </textarea>
+</div>
 <br />
 <input class="button success medium" type="submit" value="Έλεγχος" />
 </form>
