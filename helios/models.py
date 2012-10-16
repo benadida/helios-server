@@ -149,7 +149,7 @@ class Election(HeliosModel):
   datatype = models.CharField(max_length=250, null=False, default="legacy/Election")
 
   short_name = models.CharField(max_length=100)
-  name = models.CharField(max_length=250)
+  name = models.CharField(max_length=110)
 
   candidates = JSONField(default="{}")
   departments = JSONField(default="[]")
@@ -294,8 +294,19 @@ class Election(HeliosModel):
     self.cands = cands
     answers = []
     for cand in cands:
-      answers.append(u"%s %s του %s [%s]" % (cand['surname'], cand['name'], cand['father_name'],
+      answers.append(u"%s %s %s [%s]" % (cand['surname'], cand['name'], cand['father_name'],
                              cand['department'].strip()))
+
+    if not self.questions:
+        question = {}
+        question['answer_urls'] = [None for x in range(len(answers))]
+        question['choice_type'] = 'stv'
+        question['question'] = 'Candidates choice'
+        question['answers'] = []
+        question['result_type'] = 'absolute'
+        question['tally_type'] = 'stv'
+        self.questions = []
+        self.questions.append(question)
 
     self.questions[0]['answers'] = answers
     self.save()
@@ -891,6 +902,57 @@ class Election(HeliosModel):
       # assumes that anything non-absolute is relative
       return [counts[0][0]]
 
+  def ecounting_dict(self):
+    schools = []
+    for school in self.departments:
+      candidates = []
+      for i, candidate in enumerate(self.candidates):
+        if candidate['department'] != school:
+          continue
+
+        candidate_entry = {
+          'candidateTmpId': str(i+1),
+          'firstName': candidate['name'],
+          'lastName': candidate['surname'],
+          'fatherName': candidate['father_name']
+        }
+
+        candidates.append(candidate_entry)
+
+      school_entry = {
+        'Name': school,
+        'candidates': candidates
+      }
+      schools.append(school_entry)
+
+    ballots = []
+    for i, ballot in enumerate(self.pretty_result['candidates_selections']):
+      ballot_votes = []
+      for j, selection in enumerate(ballot):
+        vote_entry = {
+          'rank': j + 1,
+          'candidateTmpId': selection['selection_index']
+        }
+        ballot_votes.append(vote_entry)
+
+      ballot_entry = {
+        'ballotSerialNumber': str(i+1),
+        'votes': ballot_votes
+      }
+      ballots.append(ballot_entry)
+
+    data = {
+      'elName': self.name,
+      'elDescription': self.description,
+      'numOfRegisteredVoters': self.voter_set.count(),
+      'numOfCandidates': len(self.candidates),
+      'numOfEligibles': self.eligibles_count,
+      'hasLimit': 1 if self.has_department_limit else 0,
+      'schools': schools,
+      'ballots': ballots
+    }
+    return data
+
   @property
   def winners(self):
     """
@@ -905,21 +967,34 @@ class Election(HeliosModel):
     from helios.counter import Counter
     cands_count = len(self.questions[0]['answers'])
     answers = self.questions[0]['answers']
-    candidate_selections = []
+    candidates_selections = []
+    decoded_selections = []
     abs_selections = []
+    answer_selections = []
     selections = []
+
     for vote in self.result[0]:
         decoded = vote
-        selection = gamma_decode(vote, cands_count)
+        selection = gamma_decode(vote, cands_count, cands_count)
         abs_selection = to_absolute_answers(selection, cands_count)
         cands = [answers[i] for i in abs_selection]
+        cands_objs = [self.candidates[i].update() for i in abs_selection]
+        cands_objs = []
+        for i in abs_selection:
+          obj = self.candidates[i]
+          obj['selection_index'] = i + 1
+          cands_objs.append(obj)
 
         selections.append(selection)
         abs_selections.append(abs_selection)
-        candidate_selections.append(candidate_selections)
+        answer_selections.append(cands)
+        candidates_selections.append(cands_objs)
+    decoded_selections.append(decoded)
 
     return {'selections': selections, 'abs_selections': abs_selections,
-            'candidate_selections': candidate_selections}
+            'answer_selections': answer_selections,
+            'candidates_selections': candidates_selections,
+            'decoded_selections': decoded}
 
 class ElectionLog(models.Model):
   """
