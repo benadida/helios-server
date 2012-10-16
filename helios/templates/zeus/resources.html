@@ -4,7 +4,7 @@
 <dd id="" class="{% if menu_active == "home" %}active{% endif %}"><a
   href="/">Αρχική σελίδα</a></dd>
 <dd id="" class="{% if menu_active == "faq" %}active{% endif %}"><a 
-  href="{% url zeus.views.faqs_voter %}">Συχνές ερωτήσεις</a></dd>
+  href="{% url zeus.views.faqs %}">Συχνές ερωτήσεις</a></dd>
 <dd id="" class="{% if menu_active == "resources" %}active{% endif %}"><a 
   href="{% url zeus.views.resources %}">Υλικό</a></dd>
 {% endblock %}
@@ -14,11 +14,11 @@
   <div class="columns twelve">
     <h4>Υλικό</h4>
     <ul>
-      <li>Το σύστημα <a href="http://heliosvoting.org">Helios</a>, στο οποίο βασίζεται το σύστημα &laquo;Ζευς&raquo;</li>
+      <li>Το σύστημα <a href="http://heliosvoting.org">Helios</a>, στο οποίο βασίζεται το σύστημα &laquo;Ζευς&raquo;</li> 
       <li>Η <a href="http://static.usenix.org/events/sec08/tech/full_papers/adida/adida.pdf">αρχική
       δημοσίεση</a> του συστήματος Helios</li>
       <li>Ο <a href="https://github.com/grnet/zeus">πηγαίος κώδικας
-      του Ζεύς</a></li>
+      του συστήματος Ζευς</a></li>
     </ul>
   </div>
 </div>
