@@ -479,15 +479,36 @@ ElGamal.DisjunctiveProof.fromJSONObject = function(d) {
   );
 };
 
-ElGamal.encrypt = function(pk, plaintext, r) {
-  if (plaintext.getM().equals(BigInt.ZERO))
-    throw "Can't encrypt 0 with El Gamal"
+ElGamal.encrypt = function(pk, plaintext, r, encode_message) {
+  encode_message = encode_message == undefined ? true: encode_message;
 
   if (!r)
     r = Random.getRandomInteger(pk.q);
   
+        //# make sure m is in the right subgroup
+        //if encode_message:
+          //y = plaintext.m + 1
+          //if pow(y, self.q, self.p) == 1:
+            //m = y
+          //else:
+            //m = -y % self.p
+        //else:
+          //m = plaintext.m
+
+  // make sure m is in the right subgroup
+  m = plaintext.getM();
+  if (encode_message) {
+    y = plaintext.m.add(new BigInt(''+1));
+    if (y.modPow(pk.q, pk.p) == 1) {
+      m = y;
+    } else {
+      m = y.negate().mod(pk.p);
+    }
+  }
+  
+  console.log(m, "ENC");
   var alpha = pk.g.modPow(r, pk.p);
-  var beta = (pk.y.modPow(r, pk.p)).multiply(plaintext.m).mod(pk.p);
+  var beta = (pk.y.modPow(r, pk.p)).multiply(m).mod(pk.p);
   
   return new ElGamal.Ciphertext(alpha, beta, pk);
 };
