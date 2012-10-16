@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8" /> 
-  <title>Helios Voting System -- Verifier</title>
+  <title>Σύστημα ψηφοφορίας Ζεύς-- Επαληθευτής</title>
   <link rel="stylesheet" type="text/css" href="css/booth.css" />
   <link rel="stylesheet" type="text/css" href="css/forms.css" />
   <script language="javascript" src="js/jscrypto/jsbn.js"></script>
@@ -33,7 +33,7 @@ $(document).ready(function() {
        $('#verifier_loading').hide();
        $('#verifier').show();
     }, function() {
-       alert('sorry, in-browser verification requires Java Support at this time.');
+       alert('Ο επαληθευτής χρειάζεται υποστήριξη Java για να τρέξει.');
     });
 });    
 
@@ -41,7 +41,7 @@ function result_append(str) {
     $('#results').append(str).append("<br />");
 }
 
-function pretty_result(result) {return result? "VERIFIED" : "FAIL";}
+function pretty_result(result) {return result? "ΕΠΑΛΗΘΕΥΤΗΚΕ" : "ΑΠΕΤΥΧΕ";}
 
 function load_ballots(election_url, ballot_list, ballots, final_callback) {
     // the ballots array is the place where we build up the list of ballots
@@ -52,16 +52,16 @@ function load_ballots(election_url, ballot_list, ballots, final_callback) {
         return;
     }
     
-    result_append("loading ballot for voter #" + (ballots.length + 1));
+    result_append("Φόρτωση ψηφοδελτίου για τον ψηφοφόρο #" + (ballots.length + 1));
         
     // get the next ballot
     $.get(election_url + "/ballots/" + ballot_list[ballots.length].uuid + '/last', function(result) {
         var new_ballot = jQuery.secureEvalJSON(result);
         ballots.push(new_ballot);
         if (new_ballot.vote == null)
-          result_append("no ballot for this voter #" + ballots.length);
+          result_append("Δεν υπάρχει ψηφοδέλτιο για τον ψηφοφόρο #" + ballots.length);
         else
-          result_append("FOUND a ballot for voter #" + ballots.length);
+          result_append("Βρέθηκε ψηφοδέλτιο για τον ψηφοφόρο #" + ballots.length);
         load_ballots(election_url, ballot_list, ballots, final_callback);
     });
 }
@@ -90,22 +90,22 @@ function load_ballot_list(election_url, ballot_list, after, final_callback) {
 
 function load_election_and_ballots(election_url) {
         
-    result_append("<h3>Election</h3>");
-    result_append("loading election...");
+    result_append("<h3>Εκλογή</h3>");
+    result_append("φόρτωση εκλογής...");
 
     var overall_result = true;
     
     // the hash will be computed within the setup function call now
     $.get(election_url, function(raw_json) {
         election = HELIOS.Election.fromJSONString(raw_json);
-        result_append("loaded election: " + election.name);
-        result_append("election fingerprint: " + election.get_hash());
+        result_append("φόρτωσα την εκλογή: " + election.name);
+        result_append("αποτύπωμα εκλογής: " + election.get_hash());
         
         var tally = [];
 
         $(election.questions).each(function(qnum, q) {
             if (q.tally_type != "homomorphic") {
-              result_append("PROBLEM: this election is not a straight-forward homomorphic-tally election. As a result, Helios cannot currently verify it.");
+              result_append("ΠΡΟΒΛΗΜΑ: αυτή η εκλογή δεν είναι μια δεν είναι μια απλή ομομορφική εκλογή. Ως αποτέλεσμα, το σύστημα Ζεύς δεν μπορεί να επαληθεύσει αυτή τη στιγμή.");
               return;
             }
 
@@ -114,16 +114,16 @@ function load_election_and_ballots(election_url) {
             });
         });
 
-        result_append("loading list of voters...");
+        result_append("φόρτωμα λίστας ψηφοφόρων...");
         
         // load voter list
         load_ballot_list(election_url, [], null, function(ballot_list) {
-            result_append("loaded voter list, now loading ballots for each..");
+            result_append("φόρτωσα την λίστα ψηφοφόρων, τώρα φορτώνω τα ψηφοδέλτια τους..");
             
             // load all ballots
             load_ballots(election_url, ballot_list, [], function(ballots) {
                 result_append("");
-                result_append("<h3>Ballots</h3>");
+                result_append("<h3>Ψηφοδέλτια</h3>");
                 // now load each ballot
                 $(ballots).each(function(i, cast_vote){
 
@@ -131,9 +131,9 @@ function load_election_and_ballots(election_url) {
                       return;
                       
                     var vote = HELIOS.EncryptedVote.fromJSONObject(cast_vote.vote, election);
-                    result_append("Voter #" + (i+1));
+                    result_append("Ψηφοφόρος #" + (i+1));
                     result_append("-- UUID: " + cast_vote.voter_uuid);
-                    result_append("-- Ballot Tracking Number: " + vote.get_hash());
+                    result_append("-- Αποτύπωμα ψηφοδελτίου: " + vote.get_hash());
 
                     vote.verifyProofs(election.public_key, function(answer_num, choice_num, result, choice) {
                         overall_result = overall_result && result;
@@ -141,9 +141,9 @@ function load_election_and_ballots(election_url) {
                             // keep track of tally
                             tally[answer_num][choice_num] = choice.multiply(tally[answer_num][choice_num]);
 
-                            result_append("Question #" + (answer_num+1) + ", Option #" + (choice_num+1) + " -- " + pretty_result(result));                            
+                            result_append("Ερώτηση #" + (answer_num+1) + ", Επιλογή #" + (choice_num+1) + " -- " + pretty_result(result));                            
                         } else {
-                            result_append("Question #" + (answer_num+1) + " OVERALL -- " + pretty_result(result));            
+                            result_append("Ερώτηση #" + (answer_num+1) + " ΣΥΝΟΛΙΚΟ -- " + pretty_result(result));            
                         }
                     });
 
@@ -164,16 +164,16 @@ function load_election_and_ballots(election_url) {
                        // the public key that we'll check
                        var combined_key = 1;
 
-                       result_append("<h3>Trustees</h3>");
+                       result_append("<h3>Επίτροποι</h3>");
                        // verify the keys
                        $(trustees).each(function(i, trustee) {
-                          result_append("Trustee #" + (i+1) + ": " + trustee.email);
+                          result_append("Επίτροπος #" + (i+1) + ": " + trustee.email);
                           if (trustee.public_key.verifyKnowledgeOfSecretKey(trustee.pok, ElGamal.fiatshamir_dlog_challenge_generator)) {
-                              result_append("-- PK " + trustee.public_key_hash + " -- VERIFIED.");
+                              result_append("-- ΔΚ " + trustee.public_key_hash + " -- ΕΠΑΛΗΘΕΥΤΗΚΕ.");
 
                               // FIXME check the public key hash
                           } else {
-                              result_append("==== ERROR for PK of trustee " + trustee.email);
+                              result_append("====  Σφάλμα για το ΔΚ του επιτρόπου " + trustee.email);
                               overall_result = false;
                           }
 
@@ -184,21 +184,21 @@ function load_election_and_ballots(election_url) {
 
                        // verify the combination of the keys into the final public key
                        if (combined_key.equals(election.public_key)) {
-                           result_append("election public key CORRECTLY FORMED");
+                           result_append("το δημόσιο κλειδί της εκλογής είναι ΣΧΗΜΑΤΙΣΜΕΝΟ ΣΩΣΤΑ");
                        } else {
-                           result_append("==== ERROR, election public key doesn't match");
+                           result_append("==== ΣΦΑΛΜΑ, το δημόσιο κλειδί της εκλογής δεν ταιριάζει");
                            overall_result = false;
                        }
 
-                       result_append("<h3>Tally</h3>");
+                       result_append("<h3>Καταμέτρηση</h3>");
 
                        $(tally).each(function(q_num, q) {
-                           result_append("Question #" + (q_num+1) + ": " + election.questions[q_num].short_name);
+                           result_append("Ερώτηση #" + (q_num+1) + ": " + election.questions[q_num].short_name);
                            $(q).each(function(a_num, a) {
                                var plaintext = new ElGamal.Plaintext(election.public_key.g.modPow(BigInt.fromInt(results[q_num][a_num]), election.public_key.p), election.public_key);
 
                                var check = true;
-                               result_append("Answer #" + (a_num + 1) + ": " + election.questions[q_num].answers[a_num] + " - COUNT = " + results[q_num][a_num]);
+                               result_append("Απάντηση #" + (a_num + 1) + ": " + election.questions[q_num].answers[a_num] + " - ΑΡΙΘΜΟΣ = " + results[q_num][a_num]);
 
                                var decryption_factors = [];
 
@@ -206,9 +206,9 @@ function load_election_and_ballots(election_url) {
                                $(trustees).each(function(t_num, trustee) {
                                    if (trustee.public_key.verifyDecryptionFactor(a, trustee.decryption_factors[q_num][a_num],
                                                    trustee.decryption_proofs[q_num][a_num], ElGamal.fiatshamir_challenge_generator)) {
-                                       result_append("-- Trustee " + trustee.email + ": decryption factor verifies");
+                                       result_append("-- Επίτροπος " + trustee.email + ": ο παράγοντας αποκρυπτογράφησης επαληθεύεται");
                                    } else {
-                                       result_append("==== ERROR with Trustee " + trustee.email + ": decryption factor does not verify");
+                                       result_append("==== ΣΦΑΛΜΑ στον επίτροπο " + trustee.email + ": ο παράγοντας αποκρυπτογράφησης δεν επαληθεύεται");
                                        check= false;
                                        overall_result = false;
                                    }
@@ -230,12 +230,12 @@ function load_election_and_ballots(election_url) {
 
                        });
 
-                       result_append("<h3>FINAL RESULT</h3>");
+                       result_append("<h3>ΤΕΛΙΚΟ ΑΠΟΤΕΛΕΣΜΑ</h3>");
         
                        if (overall_result) {
-                         result_append("ELECTION FULLY VERIFIED -- SUCCESS!");
+                         result_append("Η ΕΚΛΟΓΗ ΕΠΑΛΗΘΕΥΕΤΑΙ ΠΛΗΡΩΣ -- ΕΠΙΤΥΧΙΑ!");
                        } else {
-                         result_append("VERIFICATION FAILED");
+                         result_append("Η ΕΠΑΛΗΘΕΥΣΗ ΑΠΕΤΥΧΕ");
                        }
                     });
                 });                
@@ -255,16 +255,16 @@ $(document).ready(function() {
 <body>
 <div id="wrapper">
 <div id="banner">
-    Helios Election Verifier
+    Ζεύς - Επαληθευτής Εκλογής 
 </div>
 <div id="content">
 
 <div id="verifier_loading">
-loading verifier ...
+Φόρτωμα επαληθευτή ...
 </div>
 
 <div id="verifier" align="center" style="display:none;">
-Enter the Election URL:
+Εισάγετε το URL των εκλογών:
 <form onsubmit="try{load_election_and_ballots(this.election_url.value);} catch (e) {} return false;">
     <input type="text" size="50" name="election_url" id="election_url" /><br />
     <input type="submit" value="start verification" />

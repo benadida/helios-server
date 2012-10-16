@@ -1,30 +1,28 @@
 {% extends "helios/templates/trustee_home_base.html" %}
 
 {% block content %}
-
 <p>
 {% if trustee.public_key_hash %}
-Έχετε μεταφορτώσει επιτυχώς το δημόσιο κλειδί σας.<br />
-Το αποτύπωμα του δημόσιο κλειδιού σας είναι: <b>{{trustee.public_key_hash}}</b>.<br />
-Μπορείτε <a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}"> να επαληθεύσετε ότι έχετε το σωστό μυστικό κλειδί</a>.
+Το δημόσιο κλειδί του Κωδικού σας μεταφορτώθηκε με επιτυχία.<br />
+Το αποτύπωμα του δημόσιου κλειδιού σας είναι <b>{{trustee.public_key_hash}}</b>.<br />
+Μπορείτε <a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">να επαληθεύσετε ότι έχετε το σωστό μυστικό κλειδί</a>.
 {% else %}
-<a href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">Ρυθμίστε το κλειδί σας</a>
+<a href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">ρυθμίστε τον Κωδικό Ψηφοφορίας</a>
 {% endif %}
 </p>
 
 <p>
 {% if election.encrypted_tally %}
 {% if trustee.decryption_factors %}
-Έχετε ανεβάσει με επιτυχία την αποκρυπτογράφηση σας.
+Έχετε μεταφορτώσει την αποκρυπτογράφηση σας με επιτυχία.
 {% else %}
-    Τα κρυπτογραφημένα εκλογικά αποτελέσματα  είναι έτοιμα.<br />
-    <a href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">αποκρυπτογράφηση με το κλειδί σας</a>
+    Τα τελικά ψηφοδέλτια είναι έτοιμα για αποκρυπτογράφηση.<br />
+    <a href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">αποκρυπτογραφήστε με τον Κωδικό Ψηφοφορίας σας</a>
 {% endif %}
 {% else %}
-Αφού υπολογισθούν τα αποτελέσματα, επιστρέψτε εδώ και δώστε το μυστικό κλειδί για να ολοκληρωθεί η αποκρυπτογράφηση.<br />
-Πρέπει να κρατήσετε το μήνυμα στο ηλεκτρονικό ταχυδρομείο σας το οποίο περιέχει τον σύνδεσμο στην αρχική σελίδα και τα διαπιστευτήρια που απαιτούνται για την είσοδο σας στο σύστημα.
+Μετά την ολοκλήρωση της καταμέτρησης μπορείτε να επιστρέψετε εδώ για την αποκρυπτογράφηση των αποτελεσμάτων.<br />
+Πρέπει να κρατήσετε το μήνυμα του συστήματος &lquote;Ζεύς&rquote; στο ηλεκτρονικό ταχυδρομείο σας με τον σύνδεσμο στην αρχική σελίδα σας.
 {% endif %}
 </p>
-
 
 {% endblock %}

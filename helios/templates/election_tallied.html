@@ -2,13 +2,13 @@
 
 {% block content %}
 
-  <h2 class="title">Election {{election.name}} Already Tallied</h2>
+  <h2 class="title">Η εκλογή {{election.name}} έχει ήδη καταμετρηθεί</h2>
 
   <p>
-      This election has already been tallied, you can no longer cast a vote.
+      Αυτή η εκλογή έχει ήδη καταμετρηθεί δεν μπορείτε πλέον να ρίξετε την ψήφο σας.
   </p>
   
   <p>
-      <a href="{% url helios.views.one_election_view election.uuid %}">view the election tally</a>
+      <a href="{% url helios.views.one_election_view election.uuid %}">δείτε την εκλογική καταμέτρηση</a>
   </p>
 {% endblock %}

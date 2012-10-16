@@ -39,7 +39,6 @@ from models import *
 
 import forms, signals
 
-from zeus.forms import ElectionForm, ElectionCandidatesForm
 
 # Parameters for everything
 ELGAMAL_PARAMS = elgamal.Cryptosystem()
@@ -221,6 +220,7 @@ def elections_voted(request):
 
 @login_required
 def election_new(request):
+  from zeus.forms import ElectionForm
   user = get_user(request)
   #if user.election:
     #return HttpResponseRedirect(reverse(one_election_view, args=[user.election.uuid]))
@@ -247,7 +247,7 @@ def election_new(request):
 
 @election_admin()
 def one_election_edit(request, election):
-
+  from zeus.forms import ElectionForm
   user = get_user(request)
 
   if not can_create_election(request):

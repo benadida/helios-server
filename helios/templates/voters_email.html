@@ -18,7 +18,7 @@ voter_id = '{{voter.voter_id}}';
 
 {% if voter %}  
   <p>
-    You are sending this email to a specific user: <b>{{voter.name}} ({{voter.voter_id}})</b>
+    Το μήνυμα αυτό θα αποσταλεί μόνο στον συγκεκριμένο ψηφοφόρο: <b>{{voter.name}} ({{voter.voter_id}})</b>
   </p>
 {% endif %}
 
@@ -52,7 +52,7 @@ You may tweak the subject and add a custom message using the form below.
      {{email_form.as_table}}
      </table>
   <div>
-  <label for="">&nbsp;</label><input type="submit" value="Send" id="send_button" />
+  <label for="">&nbsp;</label><input type="submit" value="Αποστολή" id="send_button" />
   </div>
   </form>
   
@@ -60,7 +60,7 @@ You may tweak the subject and add a custom message using the form below.
   </div>
   
   <div id="done" style="display:none;">
-    Done, go <a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>.
+    Η αποστολή ολοκληρώθηκε. <a href="{% url helios.views.one_election_view election.uuid %}">Πίσω στην ψηφοφορία</a>.
   </div>
 
   <div id="error" style="display:none;">

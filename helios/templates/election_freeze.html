@@ -2,45 +2,52 @@
 
 {% block tabs_menu %}
 <dd class="active"><a 
-  href="{% url helios.views.one_election_view election.uuid %}">Ανοιγμα ψηφοφορίας</a></dd>
+  href="{% url helios.views.one_election_view election.uuid %}">Οριστικοποίηση ψηφοφορίας</a></dd>
 {% endblock %}
 
 {% block content %}
+<h5>{{election.name}} &mdash; Οριστικοποίηση ψηφοφορίας</h5>
 <p>
-Once the ballot is frozen, the questions and options can no longer be modified.<br />
-The list of trustees and their public keys will also be frozen.
+Μετά την οριστικοποίηση της ψηφοφορίας,
+οι υποψήφιοι και τα μέλη της εφορευτικής επιτροπής δεν μπορούν να μεταβληθούν.<br/>
 </p>
 
 <p>
 {% if election.openreg %}
-Registration for your election is currently <b>open</b>, which means anyone can vote, even after you freeze the ballot.
+Η ψηφοφορία είναι <b>ανοιχτή</b> που σημαίνει ότι οποιοσδήποτε
+μπορεί να ψηφίζει ακόμα και εάν την οριστικοποιήσετε.
 {% else %}
-Registration for your election is currently <b>closed</b>, which means only the voters you designate will be able to cast a ballot. As the administrator, you will still be able to modify that voter list as the election progresses.
+Η ψηφοφορία είναι <b>κλειστή</b> που σημαίνει ότι οι μόνο οι ψηφοφόροι
+που έχουν ορισθεί μπορούν να ψηφίσουν.
+Ως διαχειριστής, θα μπορείτε να τροποποιήσετε τον κατάλογο των ψηφοφόρων
+καθώς εξελίσσεται η εκλογή.
 {% endif %}
 </p>    
 
 {% if helios.VOTERS_EMAIL %}
 <p>
-You must freeze the ballot before you can contact voters.
+Πριν επικοινωνήσετε με τους ψηφοφόρους, θα πρέπει να οριστικοποιήσετε την ψηφοφορία.
 </p>
 {% endif %}
 
 {% if issues_p %}
 <p>
-    Before you can freeze the election, you will need to:
+    Πριν οριστικοποιήσετε την εκλογή πρέπει να:
     <ul>
         {% for issue in issues %}
         <li>{{issue.action}}</li>
         {% endfor %}
     </ul>
-    <a href="{% url helios.views.one_election_view election.uuid %}">go back to the election</a>
+    <a href="{% url helios.views.one_election_view election.uuid %}">επιστροφή στην ψηφοφορία</a>
 </p>
 {% else %}
 <form method="post" action="">
 <input class="button success" type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
-<input class="pretty button success" type="submit" value="Έναρξη" />
-<button class="button alert" onclick="document.location='./view'; return false;">Ακύρωση</button>
+
+<input class="pretty button success" type="submit" value="Οριστικοποίηση" />
+<button class="button alert" onclick="document.location='./view'; return false;">Άκυρο και επιστροφή</button>
+
 </form>
 {% endif %}
 
