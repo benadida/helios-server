@@ -118,7 +118,7 @@ class HeliosElection(ZeusCoreElection):
                 audit_password=audited.audit_code)
             zeus_vote['fingerprint'] = audited.fingerprint
             zeus_vote['signature'] = audited.signature
-            votes[helios_vote.fingerprint] = zeus_vote
+            votes[audited.fingerprint] = zeus_vote
         return votes
 
     def _casted_votes(self):
@@ -334,7 +334,6 @@ class HeliosElection(ZeusCoreElection):
         return [pok.commitment, pok.challenge, pok.response]
 
     def do_store_trustee_factors(self, factors):
-        print factors
         pass
 
     def do_store_trustee(self, public, commitment, challenge, response):
