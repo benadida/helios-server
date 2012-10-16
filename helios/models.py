@@ -12,7 +12,6 @@ import logging
 import uuid
 import random
 import StringIO
-import csv
 import copy
 import json as json_module
 import base64
@@ -936,26 +935,36 @@ class ElectionLog(models.Model):
   at = models.DateTimeField(auto_now_add=True)
 
 ##
-## UTF8 craziness for CSV
+## Craziness for CSV
 ##
 
-from django.utils.encoding import smart_unicode, smart_str
-def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
-    # csv.py doesn't do Unicode; encode temporarily as UTF-8:
-    csv_reader = csv.reader(utf_8_encoder(unicode_csv_data),
-                            dialect=dialect, **kwargs)
-    for row in csv_reader:
-      # decode UTF-8 back to Unicode, cell by cell:
-      try:
-        yield [smart_str(cell) for cell in row]
-      except:
-        yield [unicode(cell, 'iso-8859-7') for cell in row]
-
-def utf_8_encoder(unicode_csv_data):
-    for line in unicode_csv_data:
-      # FIXME: this used to be line.encode('utf-8'),
-      # need to figure out why this isn't consistent
-      yield smart_str(line)
+def csv_reader(csv_data, **kwargs):
+    if not isinstance(csv_data, str):
+        m = "Please provide string data to csv_reader, not %s" % type(csv_data)
+        raise ValueError(m)
+    all_encodings = ['utf-8', 'utf-16', 'utf-16le', 'utf-16be', 'iso-8859-7']
+    all_encodings.reverse()
+    for line in csv_data.splitlines():
+      encodings = list(all_encodings)
+      while 1:
+          if not encodings:
+            m = "Cannot decode csv data!"
+            raise ValueError(m)
+          encoding = encodings[-1]
+          try:
+            cells = line.split(',', 3)
+            if len(cells) < 3:
+                cells = line.split(';')
+                if len(cells) < 3:
+                    m = ("CSV must have at least 3 fields "
+                         "(email, last_name, name)")
+                    raise ValueError(m)
+                cells += [u''] * (4 - len(cells))
+            yield [cell.decode(encoding) for cell in cells]
+            break
+          except UnicodeDecodeError, e:
+            encodings.pop()
+            continue
 
 class VoterFile(models.Model):
   """
@@ -977,11 +986,11 @@ class VoterFile(models.Model):
 
   def itervoters(self):
     if self.voter_file_content:
-      voter_stream = StringIO.StringIO(base64.decodestring(self.voter_file_content))
+      voter_data = base64.decodestring(self.voter_file_content)
     else:
-      voter_stream = open(self.voter_file.path, "rU")
+      voter_data = open(self.voter_file.path, "r").read()
 
-    reader = unicode_csv_reader(voter_stream)
+    reader = csv_reader(voter_data)
 
     for voter_fields in reader:
       # bad line
@@ -1006,11 +1015,11 @@ class VoterFile(models.Model):
 
     # now we're looking straight at the content
     if self.voter_file_content:
-      voter_stream = StringIO.StringIO(base64.decodestring(self.voter_file_content))
+      voter_data = base64.decodestring(self.voter_file_content)
     else:
-      voter_stream = open(self.voter_file.path, "rU")
+      voter_data = open(self.voter_file.path, "r").read()
 
-    reader = unicode_csv_reader(voter_stream)
+    reader = csv_reader(voter_data)
 
     last_alias_num = election.last_alias_num
 
