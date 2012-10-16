@@ -16,6 +16,11 @@ from Crypto import Random
 from operator import mul as mul_operator
 from multiprocessing import Pool, Queue as PoolQueue
 from time import time
+from gmpy import mpz
+
+_pow = pow
+def pow(b, e, m):
+    return int(_pow(mpz(b), e, m))
 
 bit_length = lambda num: num.bit_length()
 if sys.version_info < (2, 7):
@@ -3198,6 +3203,7 @@ class ZeusCoreElection(object):
         return self
 
 
+
 def main():
     import argparse
     description='Zeus Election Reference Implementation and Verifier.'
@@ -3258,24 +3264,7 @@ def main():
 
     args = parser.parse_args()
 
-    class Nullstream(object):
-        def write(*args):
-            return
-        def flush(*args):
-            return
-
-    outstream = sys.stderr if args.verbose else Nullstream()
-    teller_stream = TellerStream(outstream=outstream,
-                                 output_interval_ms=args.oms,
-                                 buffer_feeds=args.buffer_feeds)
-    teller = Teller(outstream=teller_stream)
-    import json
-
-    if args.nr_procs > 1:
-        global _parallel_mix
-        _parallel_mix = int(args.nr_procs)
-
-    if args.generate is not None:
+    def main_generate(args, teller=_teller):
         filename = args.generate
         filename = filename[0] if filename else None
 
@@ -3287,24 +3276,20 @@ def main():
                             nr_rounds       =   args.nr_rounds,
                             teller=teller)
         finished = election.export_finished()
-        teller_stream.flush()
         if not filename:
             name = ("%x" % election.do_get_election_public())[:32]
             filename = 'election-%s.json' % (name,)
             sys.stderr.write("writing out to '%s'\n" % (filename,))
         with open(filename, "w") as f:
             json.dump(finished, f, indent=2)
-        return
 
-    if args.validate:
+    def main_validate(args, teller=_teller):
         filename = args.validate
         with open(filename, "r") as f:
             finished = json.load(f)
         election = ZeusCoreElection.new_at_finished(finished, teller=teller)
-        teller_stream.flush()
-        return
 
-    if args.mix:
+    def main_mix(args, teller=_teller):
         infile, outfile = args.mix
         with open(infile, "r") as f:
             mixing = json.load(f)
@@ -3323,10 +3308,34 @@ def main():
         teller_stream.flush()
         with open(outfile, "w") as f:
             json.dump(mixed_ciphers, f, indent=2)
-        return
 
-    parser.print_help()
-    return
+    class Nullstream(object):
+        def write(*args):
+            return
+        def flush(*args):
+            return
+
+    outstream = sys.stderr if args.verbose else Nullstream()
+    teller_stream = TellerStream(outstream=outstream,
+                                 output_interval_ms=args.oms,
+                                 buffer_feeds=args.buffer_feeds)
+    teller = Teller(outstream=teller_stream)
+    import json
+
+    if args.nr_procs > 1:
+        global _parallel_mix
+        _parallel_mix = int(args.nr_procs)
+
+    if args.generate is not None:
+        return main_generate(args, teller=teller)
+    elif args.validate:
+        return main_validate(args, teller=teller)
+    elif args.mix:
+        return main_mix(args, teller=teller)
+    else:
+        parser.print_help()
+
+    teller_stream.flush()
 
 g = _default_crypto['generator']
 p = _default_crypto['modulus']
