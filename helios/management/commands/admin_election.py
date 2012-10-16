@@ -37,7 +37,7 @@ class Command(BaseCommand):
       pt("Election info")
       p("Name", e.name)
       p("UUID", e.uuid)
-      p("Faculty", e.faculty.name)
+      p("Institution", e.institution.name)
 
       pt("Admins")
       for a in e.admins.filter():

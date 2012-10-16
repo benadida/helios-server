@@ -46,6 +46,16 @@
                 <img src="/static/helios/phoebus/images/logo_bg.jpg" />
             </a>
           <div id="banner"><h1>Ηλεκτρονική κάλπη "Ζευς"</h1></div>
+          {% if user and user.admin_p %}
+          <div class="columns twelve loginbox">
+              <div class="panel warning">Έχετε συνδεθεί ως διαχειριστής εκλογών για το 
+                  <em>"{{ user.institution.name }}"</em>
+                  <br /><br />
+                  <a class="button tiny" href="/admin/">σελίδα διαχείρισης</a>
+                  <a class="button tiny alert" href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
+              </div>
+          </div>
+          {% endif %}
           <div id="header">
             {% block head_subtitle %}{% endblock %}
           </div>

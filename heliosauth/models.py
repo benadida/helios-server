@@ -22,7 +22,7 @@ class AuthenticationExpired(Exception):
 class User(models.Model):
   user_type = models.CharField(max_length=50)
   user_id = models.CharField(max_length=100)
-  faculty = models.ForeignKey(zeus_models.Faculty, null=True)
+  institution = models.ForeignKey(zeus_models.Institution, null=True)
 
   name = models.CharField(max_length=200, null=True)
 

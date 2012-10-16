@@ -14,6 +14,8 @@ from celery.decorators import task
 
 from helios.models import *
 from helios.view_utils import render_template_raw
+from django.utils.translation import ugettext_lazy as _
+from django.core.mail import send_mail, EmailMessage
 
 @task()
 def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
@@ -93,7 +95,8 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
 def election_compute_tally(election_id):
     election = Election.objects.get(id = election_id)
     election.compute_tally()
-    if election.error_mixnet:
+    bad_mixnet = election.bad_mixnet()
+    if bad_mixnet:
         election_notify_admin.delay(election_id = election_id,
                                 subject = "encrypted tally failed to compute",
                                 body = """
@@ -102,9 +105,10 @@ Error occured while mixing. Mixnet data where cleared.
 Mixnet: %s
 
 error: %s
-""" % (election.error_mixnet.name, election.error_mixnet.mix_error))
-        election.error_mixnet.reset_mixing()
-        election.tallying_started_at = None
+""" % (bad_mixnet.name, bad_mixnet.mix_error))
+        bad_mixnet.reset_mixing()
+        if bad_mixnet.mix_order == 0:
+          election.tallying_started_at = None
         election.save()
         return
 
@@ -122,8 +126,30 @@ Helios
         election_compute_tally.delay(election_id=election_id)
 
 @task()
+def tally_decrypt(election_id):
+    election = Election.objects.get(id=election_id)
+    if not election.ready_for_decryption_combination():
+        raise Exception("Not all trustee factors uploaded")
+
+    election = Election.objects.get(id = election_id)
+    election.zeus_election.validate_mixing()
+    election.zeus_election.decrypt_ballots()
+    election_notify_admin.delay(election_id = election_id,
+                                subject = 'Election Decrypt',
+                                body = """
+Result decrypted for election %s.
+--
+Helios
+""" % election.name)
+
+
+@task()
 def tally_helios_decrypt(election_id):
     election = Election.objects.get(id = election_id)
+    if not election.mixing_finished:
+      raise Exception("Mixing not finished cannot decrypt")
+
+    #election.zeus_election.validate_mixing()
     election.helios_trustee_decrypt()
     election_notify_admin.delay(election_id = election_id,
                                 subject = 'Helios Decrypt',
@@ -154,5 +180,34 @@ Helios
 @task()
 def election_notify_admin(election_id, subject, body):
     election = Election.objects.get(id = election_id)
-    for admin in election.admins.all():
-      admin.send_message(subject, body)
+    #for admin in election.admins.all():
+      #admin.send_message(subject, body)
+    for admin, admin_email in settings.ADMINS:
+        message = EmailMessage(subject,
+                               body,
+                               settings.SERVER_EMAIL,
+                               ["%s <%s>" % (admin, admin_email)])
+    message.send(fail_silently=False)
+
+
+@task()
+def send_cast_vote_email(election, voter, signature):
+  subject = _("%(election_name)s - vote cast") % {'election_name': election.name}
+
+  body = _(u"""
+You have successfully cast a vote in
+
+  %(election_name)s
+
+you can find your encrypted vote attached in this mail.
+""") % {'election_name': election.name }
+
+  # send it via the notification system associated with the auth system
+  attachments = [('vote.signature', signature['m'], 'text/plain')]
+  message = EmailMessage(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (voter.voter_name,
+                                                                voter.voter_email)])
+  for attachment in attachments:
+      message.attach(*attachment)
+
+  message.send(fail_silently=False)
+

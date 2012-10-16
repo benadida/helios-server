@@ -17,6 +17,12 @@ from operator import mul as mul_operator
 from multiprocessing import Pool, Queue as PoolQueue
 from time import time
 
+bit_length = lambda num: num.bit_length()
+if sys.version_info < (2, 7):
+    def bit_length(num):
+        s = bin(num)
+        s = s.lstrip('-0b')
+        return len(s)
 
 class ZeusError(Exception):
     pass
@@ -527,7 +533,7 @@ def validate_cryptosystem(modulus, generator, order, teller=_teller):
 
     with task("is the generator size >= 2000 bits?"):
         if log(g, 2) <= 2000:
-            m = "GENERATOR SMALLER THAN 2000 BITS" 
+            m = "GENERATOR SMALLER THAN 2000 BITS"
             raise AssertionError(m)
 
     with task("is the generator valid?"):
@@ -1039,11 +1045,11 @@ def bit_iterator(nr, infinite=True):
 
 def get_random_int(minimum, ceiling):
     top = ceiling - minimum
-    nr_bits = top.bit_length()
+    nr_bits = bit_length(top)
     nr_bytes = (nr_bits - 1) / 8 + 1
     strbin = _random_generator_file.read(nr_bytes)
     num = strbin_to_int(strbin)
-    shift = num.bit_length() - nr_bits
+    shift = bit_length(num) - nr_bits
     if shift > 0:
         num >>= shift
     if num >= top:
@@ -1141,7 +1147,7 @@ def verify_dlog_power_zeus(modulus, generator, order, power,
                                             power, commitment)
     if _challenge != challenge:
         return 0
-    return (pow(generator, response, modulus) 
+    return (pow(generator, response, modulus)
             == ((commitment * pow(power, challenge, modulus)) % modulus))
 
 def prove_dlog_helios(modulus, generator, order, power, dlog):
@@ -1156,7 +1162,7 @@ def verify_dlog_power_helios(modulus, generator, order, power,
     _challenge = int(sha1(str(commitment)).hexdigest(), 16) % order
     if _challenge != challenge:
         return 0
-    return (pow(generator, response, modulus) 
+    return (pow(generator, response, modulus)
             == ((commitment * pow(power, challenge, modulus)) % modulus))
 
 prove_dlog = prove_dlog_helios
@@ -1841,7 +1847,7 @@ class ZeusCoreElection(object):
         return pk_from_args(*args)
 
     def do_get_zeus_key(self):
-        args = self.cryptosys 
+        args = self.cryptosys
         args += [self.zeus_secret, self.zeus_public]
         args += self.zeus_key_proof
         return sk_from_args(*args)

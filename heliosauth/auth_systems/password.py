@@ -13,6 +13,7 @@ from django import forms
 from django.core.mail import send_mail, EmailMessage
 from django.conf import settings
 from django.http import HttpResponseRedirect
+from django.utils.translation import ugettext_lazy as _
 
 import logging
 
@@ -38,11 +39,11 @@ def create_user(username, password, name = None, extra_info={}):
   return user
 
 class LoginForm(forms.Form):
-  username = forms.CharField(max_length=50)
-  password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
+  username = forms.CharField(label=_('Username'), max_length=50)
+  password = forms.CharField(label=_('Password'), widget=forms.PasswordInput(), max_length=100)
 
-def check_evoting_credentials(username, password):
-  url = settings.EVOTING_LOGIN_URL
+def check_ecounting_credentials(username, password):
+  url = settings.ECOUNTING_LOGIN_URL
   params = urllib.urlencode({'username': username, 'password': password})
   response = urllib.urlopen(url, params)
   data = {}
@@ -59,16 +60,30 @@ def check_evoting_credentials(username, password):
 
   return False, data
 
-def get_evoting_user(username, password):
-  from zeus.models import Faculty
+def get_institution(user_data):
+  from zeus.models import Institution
+  try:
+    inst = Institution.objects.get(ecounting_id=user_data['institutionId'])
+    inst.name = user_data['institutionName']
+    inst.save()
+  except Institution.DoesNotExist:
+    inst = Institution()
+    inst.ecounting_id = user_data['institutionId']
+    inst.name = user_data['institutionName']
+    inst.save()
+  return inst
+
+def get_ecounting_user(username, password):
   from heliosauth.models import User
 
-  is_valid, user_data = check_evoting_credentials(username, password)
+  is_valid, user_data = check_ecounting_credentials(username, password)
   user = None
+  if not is_valid:
+    return user
+
   try:
     user = User.get_by_type_and_id('password', username)
-    user.faculty, created = Faculty.objects.get_or_create(name=user_data['institutionName'],
-                                                           faculty_id=user_data['institutionId'])
+    user.institution = get_institution(user_data)
     user.info['name'] = username
     user.save()
   except User.DoesNotExist:
@@ -76,8 +91,7 @@ def get_evoting_user(username, password):
       user = create_user(username, password)
       user.admin_p = True
       user.info['name'] = user.user_id
-      user.faculty, created = Faculty.objects.get_or_create(name=user_data['institutionName'],
-                                                           faculty_id=user_data['institutionId'])
+      user.institution = get_institution(user_data)
       user.save()
 
   return user
@@ -108,7 +122,7 @@ def password_login_view(request):
       username = form.cleaned_data['username'].strip()
       password = form.cleaned_data['password'].strip()
       try:
-        user = get_evoting_user(username, password)
+        user = get_ecounting_user(username, password)
         if password_check(user, password):
           request.session['password_user'] = user
           return HttpResponseRedirect(reverse(after))

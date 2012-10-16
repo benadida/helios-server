@@ -55,7 +55,6 @@ function generate_keypair() {
     } catch (e) {
         alert(e);
     }
-
     setup_public_key_and_proof();
 }
 
@@ -69,6 +68,7 @@ function setup_public_key_and_proof() {
     $('#pk_hash').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY)));
 
     $('#clear_button').show();
+    $('.reuse_key').hide();
     show_sk();
 }
 
@@ -80,22 +80,64 @@ function download_sk() {
   try{
     var bb = new BlobBuilder;
     bb.append(jQuery.toJSON(SECRET_KEY));
-    saveAs(bb.getBlob("text/plain;charset=utf-8"), "election_key.txt");
+    saveAs(bb.getBlob("text/plain;charset=utf-8"), "Κωδικός Ψηφοφορίας {{ trustee.name }}.txt");
   } catch (err) {
     UTILS.open_window_with_content(jQuery.toJSON(SECRET_KEY), "application/json");
   }
+  
+  check_confirm();
+  $('#pk_link').show();
+  $('.reuse_key').hide();
+  $('#clear_button').hide();
+  $('#save_key').removeClass('success').addClass('secondary');
+  $('#save_key').hide();
 }
 
-function show_pk() {
+function upload_show_pk() {
+    if (!$(".confirm-check").is(":checked")) {
+      return;
+    }
+
+    var data = $("#pk_form").serialize();
+    $.ajax({
+      url: $("#pk_form").attr("action"),
+      type: 'post',
+      data: data,
+      success: function() {
+        alert("O κωδικός σας ενεργοποιήθηκε.");
+        window.location = '{% url heliosauth.views.logout %}'
+      },
+      error: function() {
+        alert("Σφάλμα ενεργοποίησης. Παρακαλούμε δοκιμάστε ξανά.");
+      }
+    })
+
     $('#sk_download').hide();
-    $('#pk_hash').show();
-    $('#pk_form').show();
+    //$('#pk_hash').show();
+    //$('#pk_form').show();
 }
+
+function check_confirm() {
+  if ($(".confirm-check").is(":checked")) {
+    $('#pk_link a.button').removeClass("disabled").removeClass("secondary");
+    $('#pk_link a.button').addClass("success");
+  } else {
+    $('#pk_link a.button').addClass("disabled").addClass("secondary");
+    $('#pk_link a.button').removeClass("success");
+  }
+}
+
+$(document).ready(function(){
+  $(".confirm-check").click(function(){
+    check_confirm();
+  })
+})
 
 </script>
 
-<p>
-Ως μέλος της εφορευτικής επιτροπής πρέπει να δημιουργήστε τον δικό σας Κωδικό Ψηφοφορίας.
+<p style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+Ως μέλος της εφορευτικής επιτροπής πρέπει να δημιουργήστε τον δικό σας 
+<a href="/faqs/trustee/#secret-key">Κωδικό Ψηφοφορίας</a>.
 </p>
 
 <p id="waiting_message">
@@ -104,12 +146,30 @@ function show_pk() {
 
 <p id="generator">
 
-<span id="buttons"><button onclick="generate_keypair(); return false;" id="generate_button">
+<span id="buttons"><button class="button success medium" onclick="generate_keypair(); return false;" id="generate_button">
 Δημιουργία προσωπικού Κωδικού Ψηφοφορίας</button></span>
+<div id="sk_download">
+  <div id="pk_link" style="display: none;">
+    <p>
+    <em><input class="confirm-check" type="checkbox" />Ο Κωδικός είναι αποθηκευμένος και ασφαλής. Ας συνεχίσει η διαδικασία.</em><br />
+    </p>
+    <a class="button success medium" href="javascript:upload_show_pk();">Ενεργοποίηση Κωδικού</a>
+  </div>
+  <p>
+  <button id="save_key" class="button success medium" style="" onclick="download_sk();">
+    Αποθηκεύστε τον Κωδικό σας</button>
+  </p>
+  <span id="clear_button" style="color:#aaa">
+    Ο κωδικός σας έχει παραχθεί αλλά εάν θέλετε μπορείτε να τον
+    <a href="javascript:clear_keys();">
+      διαγράψετε από την μνήμη και να ξεκινήσετε από την αρχή.</a><br/>
+  </span>
+</div>
 
-<br /><br />
+<div class="reuse_key">
 Εάν έχετε ήδη Κωδικό Ψηφοφορίας μπορείτε να τον
 <a href="javascript:show_key_reuse()">επαναχρησιμοποιήσετε</a>.
+</div>
 </p>
 
 <div id="reuse">
@@ -126,28 +186,11 @@ function show_pk() {
 </form>
 </div>
 
-<div id="sk_download">
-<h3>Το μυστικό κλειδί σας</h3>
-<span id="clear_button">
-Ο κωδικός σας έχει παραχθεί αλλά εάν θέλετε μπορείτε να τον
-<br/><a href="javascript:clear_keys();">
-διαγράψετε από την μνήμη και να ξεκινήσετε από την αρχή.</a><br/>
-</span>
-
-<p>
-<button style="font-size:14pt;font-weight:bold" onclick="download_sk(); $('#pk_link').show();">
-Αποθηκεύστε τον Κωδικό σας</button>
-</p>
-
-<p style="display: none;" id="pk_link">
-  <a href="javascript:show_pk();">Ο Κωδικός είναι αποθηκευμένος και ασφαλής. Ας συνεχίσει η διαδικασία.</a>.
-</p>
-</div>
 
 <form method="post" id="pk_form" action="{% url helios.views.trustee_upload_pk election.uuid, trustee.uuid %}">
 <h3>Το δημόσιο κλειδί του Κωδικού σας</h3>
 <p>
-    Τώρα πρέπει να μεταφορτώσετε το δημόσιο κλειδί σας στο σύστημα «Ζεύς»
+Τώρα πρέπει να μεταφορτώσετε το δημόσιο κλειδί σας στο σύστημα «Ζεύς»
 </p>
 <p>
 Το αποτύπωμα του δημόσιου κλειδιού του Κωδικού σας είναι:
@@ -159,7 +202,7 @@ function show_pk() {
 </p>
 <textarea id="pk_textarea" name="public_key_json" cols="80" rows="10" style="display:none;">
 </textarea>
-<input type="submit" value="Ενεργοποίηση του Κωδικού σας">
+<input class="button success medium" type="submit" value="Ενεργοποίηση του Κωδικού σας">
 </form>
 
 <div id="applet_div"></div>

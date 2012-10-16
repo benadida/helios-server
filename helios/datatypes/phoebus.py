@@ -33,6 +33,7 @@ class Election(LegacyObject):
     FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description',
               'voters_hash', 'openreg', 'frozen_at', 'public_key', 'cast_url',
               'use_voter_aliases', 'voting_starts_at', 'voting_ends_at',
+              'help_email', 'help_phone',
               'workflow_type']
 
     STRUCTURED_FIELDS = {
@@ -76,14 +77,14 @@ class EncryptedAnswer(LegacyObject):
     FIELDS = ['choices', 'encryption_proof']
     STRUCTURED_FIELDS = {
         'choices': arrayOf('legacy/EGCiphertext'),
-        'encryption_proof': 'core/BigInteger'}
+        'encryption_proof': arrayOf('core/BigInteger')}
 
 
 class EncryptedAnswerWithRandomness(LegacyObject):
     FIELDS = ['choices', 'encryption_proof', 'randomness', 'answer']
     STRUCTURED_FIELDS = {
         'choices': arrayOf('legacy/EGCiphertext'),
-        'encryption_proof': 'core/BigInteger',
+        'encryption_proof': arrayOf('core/BigInteger'),
         'randomness': arrayOf('core/BigInteger')}
 
 
@@ -114,3 +115,4 @@ class Result(LegacyObject):
 
     def toDict(self, complete=False):
         return self.wrapped_obj
+

@@ -9,30 +9,14 @@ ben@adida.net
 """
 
 from django.core.management.base import BaseCommand, CommandError
-import csv, datetime
+import datetime
 
 from helios import utils as helios_utils
 
 from helios.models import *
 
-##
-## UTF8 craziness for CSV
-##
-
-def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
-    # csv.py doesn't do Unicode; encode temporarily as UTF-8:
-    csv_reader = csv.reader(utf_8_encoder(unicode_csv_data),
-                            dialect=dialect, **kwargs)
-    for row in csv_reader:
-        # decode UTF-8 back to Unicode, cell by cell:
-        yield [unicode(cell, 'utf-8') for cell in row]
-
-def utf_8_encoder(unicode_csv_data):
-    for line in unicode_csv_data:
-        yield line.encode('utf-8')
-  
 def process_csv_file(election, f):
-    reader = unicode_csv_reader(f)
+    reader = csv_reader(f.read())
     
     num_voters = 0
     for voter in reader:

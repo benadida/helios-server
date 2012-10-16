@@ -1,6 +1,7 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
 
+
 def quick_start_election(request):
   from zeus.models import *
   from helios.models import *
@@ -15,9 +16,9 @@ def quick_start_election(request):
     clear = True
 
   if clear:
-    Faculty.objects.filter(name="Panepistimio %s name" % eid).delete()
+    Institution.objects.filter(name="Panepistimio %s name" % eid).delete()
 
-  fac = Faculty.objects.create(name="Panepistimio %s name" % eid)
+  institution = Institution.objects.create(name="Panepistimio %s name" % eid)
 
   commision = []
   voters = []
@@ -33,7 +34,7 @@ def quick_start_election(request):
 
     commision.append(commid)
     user = create_user(commid, "1234", commname)
-    user.faculty = fac
+    user.institution = institution
     user.admin_p = True
     user.save()
 

@@ -68,6 +68,7 @@ TEMPLATE_LOADERS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
@@ -206,7 +207,7 @@ CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 BOOTH_STATIC_PATH = ROOT_PATH + '/heliosbooth/'
 VERIFIER_STATIC_PATH = ROOT_PATH + '/heliosverifier/'
 
-EVOTING_LOGIN_URL = "https://x.x.x.x/checkuser.php"
+ECOUNTING_LOGIN_URL = "https://x.x.x.x/checkuser.php"
 
 # useful trick for custom settings
 try:

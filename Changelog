@@ -1,0 +1,11 @@
+v0.1.1a
+=======
+
+- Changed setting name EVOTING_LOGIN_URL to ECOUNTING_LOGIN_URL
+- Major db refactoring (faculties renamed to institutions). DB migration
+  needed::
+	
+	$ python manage.py migrate zeus
+	$ python manage.py migrate heliosauth
+	$ python manage.py migrate helios
+

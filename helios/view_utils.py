@@ -20,6 +20,7 @@ from heliosauth.security import get_user
 import helios
 
 from django.conf import settings
+from django.template import RequestContext
 
 ##
 ## BASICS
@@ -59,7 +60,8 @@ def render_template(request, template_name, vars = {}, include_user=True):
   if not include_user:
     del vars_with_user['user']
 
-  return render_to_response('helios/templates/%s.html' % template_name, vars_with_user)
+  return render_to_response('helios/templates/%s.html' % template_name,
+                          vars_with_user)
 
 def render_template_raw(request, template_name, vars={}):
   t = loader.get_template(template_name)

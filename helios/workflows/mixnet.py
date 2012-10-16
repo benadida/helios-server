@@ -275,19 +275,7 @@ def tallied(election):
   return election.mixing_finished
 
 def compute_tally(election):
-  """
-  This runs async, inside a celery task.
-  """
-  mixnet = election.get_next_mixnet()
-  if not mixnet:
-    return False
-
-  mixnet.mix_votes(Mixnet)
-
-  last_mixnet = election.last_mixed_mixnet
-  if last_mixnet:
-      election.init_encrypted_tally()
-  return True
+  raise NotImplemented
 
 def tally_hash(election):
   pass
