@@ -1019,7 +1019,7 @@ def csv_reader(csv_data, **kwargs):
     if not isinstance(csv_data, str):
         m = "Please provide string data to csv_reader, not %s" % type(csv_data)
         raise ValueError(m)
-    all_encodings = ['utf-8', 'utf-16', 'utf-16le', 'utf-16be', 'iso-8859-7']
+    all_encodings = ['utf-8', 'iso-8859-7']
     all_encodings.reverse()
     for line in csv_data.splitlines():
       encodings = list(all_encodings)
@@ -1032,6 +1032,7 @@ def csv_reader(csv_data, **kwargs):
             raise ValueError(m)
           encoding = encodings[-1]
           try:
+            line = line.decode(encoding)
             cells = line.split(',', 3)
             if len(cells) < 3:
                 cells = line.split(';')
@@ -1040,7 +1041,7 @@ def csv_reader(csv_data, **kwargs):
                          "(email, last_name, name)")
                     raise ValueError(m)
                 cells += [u''] * (4 - len(cells))
-            yield [cell.decode(encoding) for cell in cells]
+            yield cells
             break
           except UnicodeDecodeError, e:
             encodings.pop()
@@ -1077,27 +1078,28 @@ class VoterFile(models.Model):
       if len(voter_fields) < 1:
         continue
 
-      return_dict = {'voter_id': voter_fields[0]}
+      email = voter_fields[0].strip()
+      return_dict = {'voter_id': email}
 
       if len(voter_fields) > 0:
-        validate_email(voter_fields[0])
-        return_dict['email'] = voter_fields[0]
+        validate_email(email)
+        return_dict['email'] = email
 
       if len(voter_fields) > 1:
         if voter_fields[1].strip() == "":
           raise ValidationError(_("Name cannot be empty"))
 
-        return_dict['name'] = voter_fields[1]
+        return_dict['name'] = voter_fields[1].strip()
 
       if len(voter_fields) > 2:
 
         if voter_fields[1].strip() == "":
           raise ValidationError(_("Surname cannot be empty"))
 
-        return_dict['surname'] = voter_fields[2]
+        return_dict['surname'] = voter_fields[2].strip()
 
       if len(voter_fields) > 3:
-        return_dict['fathername'] = voter_fields[3]
+        return_dict['fathername'] = voter_fields[3].strip()
 
       yield return_dict
 
