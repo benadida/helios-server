@@ -110,6 +110,7 @@ class ElectionForm(forms.Form):
   eligibles_count = forms.ChoiceField(label=_('Eligibles count'),
                                       help_text=_('Set the eligibles count of the election'),
                                       choices = [('6','6'),('8','8')],
+                                      initial='6',
                                       widget=forms.RadioSelect)
   has_department_limit = forms.BooleanField(label=_('Has department limit'), required=False, initial=True,
                                             help_text=_('4009/2011 (A\' 195)'))

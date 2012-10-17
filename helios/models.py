@@ -674,13 +674,13 @@ class Election(HeliosModel):
     if len(self.issues_before_freeze) > 0:
       raise Exception("cannot freeze an election that has issues")
 
-    self.frozen_at = datetime.datetime.utcnow()
     # voters hash
-    self.generate_voters_hash()
-    self.set_eligibility()
     self.zeus_election.validate_creating()
     # log it
     self.append_log(ElectionLog.FROZEN)
+    self.frozen_at = datetime.datetime.utcnow()
+    self.generate_voters_hash()
+    self.set_eligibility()
     self.save()
 
   @property
