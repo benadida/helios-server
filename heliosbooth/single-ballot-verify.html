@@ -74,7 +74,7 @@ function verify_single_ballot(election_url, audit_trail) {
 
   // quick and dirty detection of cast ballot
   if (encrypted_vote_json['cast_at']) {
-    result_append("\n\nΦαίνεται σαν να προσπαθείτε να ελέγξετε ένα ψηφοδέλτιο. Αυτό δεν μπορεί να γίνει: μόνο τα ελεγμένα ψηφοδέλτια μπορούν να επαληθευτούν.");
+    result_append("\n\nΠροσπαθείτε να ελέγξετε ένα προς καταμέτρηση ψηφοδέλτιο. Αυτό δεν μπορεί να γίνει: μόνο τα ψηφοδέλτια προς έλεγχο μπορούν να επαληθευτούν.");
     return;
   }
   
@@ -88,7 +88,7 @@ function verify_single_ballot(election_url, audit_trail) {
     if (overall_result) {
        result_append('Επιτυχής επαλήθευση!');
     } else {
-       result_append('Σφάλμα - αυτό το ψηφοδέλτιο δεν επαληθεύεται.');        
+       result_append('Σφάλμα - η επαλήθευση του ψηφοδελτίου απέτυχε.');        
     }
   };
 
@@ -113,11 +113,11 @@ function verify_single_ballot(election_url, audit_trail) {
       after_computation(overall_result);
     }
   }, error: function() {
-      result_append('Πρόβλημα φόρτωσης της εκλογής. Είστε βέβαιος ότι έχετε το κατάλληλο URL;<br />');
+      result_append('Η ψηφοφορία δεν βρέθηκε. Είστε βέβαιος ότι έχετε το κατάλληλο URL;<br />');
 
       $('#loading').hide();
       
-      result_append('Σφάλμα - αυτό το ψηφοδέλτιο δεν επαληθεύεται.');        
+      result_append('Σφάλμα - η επαλήθευση του ψηφοδελτίου απέτυχε.');        
   }
   });
 }
@@ -129,7 +129,7 @@ function verify_single_ballot(election_url, audit_trail) {
     <div class="columns twelve">
   <div id="banner">
     <h1>
-      Επαληθευτής Ψηφοδελτίου του συστήματος Ζεύς
+      Επαληθευτής Ψηφοδελτίου του συστήματος «Ζευς»
     </h1>
 </div>
 <div id="content">
@@ -140,7 +140,7 @@ function verify_single_ballot(election_url, audit_trail) {
 
 <div id="dummy_bigint" style="display:none;">
 Ο περιηγητής σας δεν έχει εγκατεστημένο το κατάλληλο Java plugin.<br /><br />
-Αυτή τη στιγμή απαιτείται το Java plugin για την πραγματοποίηση ελέγχου των ψηφοδελτίων στον περιηγητή εάν και δεν απαιτείτε για 
+Αυτή τη στιγμή απαιτείται το Java plugin για την πραγματοποίηση ελέγχου των ψηφοδελτίων στον περιηγητή εάν και δεν απαιτείται για 
 την προετοιμασία των ψηφοδελτίων. 
 </div>
 

@@ -20,7 +20,7 @@ msgstr ""
 
 #: glue.py:15
 #, python-format
-msgid "%(election_name)s - vote cast"
+msgid "%(election_name)s - Ψήφος ερρίφθη"
 msgstr ""
 
 #: glue.py:17
@@ -33,3 +33,9 @@ msgid ""
 "\n"
 "you can find your encrypted vote attached in this mail.\n"
 msgstr ""
+"\n"
+"Ψηφίσατε επιτυχώς στην ψηφοφορία\n"
+"\n"
+"  %(election_name)s\n"
+"\n"
+"μπορείτε να βρείτε συνημμένη την απόδειξη της ψήφου σας.\n"
