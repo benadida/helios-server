@@ -1379,7 +1379,8 @@ def voters_upload(request, election):
                                                                   'error': error,
                                                                   'menu_active': 'voters' })
       else:
-        return HttpResponseRedirect("%s?%s" % (reverse(voters_upload, args=[election.uuid]), urllib.urlencode({'e':'no voter file specified, try again'})))
+        return HttpResponseRedirect("%s?%s" % (reverse(voters_upload, args=[election.uuid]),
+                    urllib.urlencode({'e':'δεν ορίσατε αρχείο ψηφοφόρων, δοκιμάστε ξανά'})))
 
 @election_admin()
 def voters_upload_cancel(request, election):

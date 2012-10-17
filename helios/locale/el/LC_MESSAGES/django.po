@@ -172,7 +172,7 @@ msgstr "%(election_name)s: παρακαλούμε για τις ενέργειέ
 #: tasks.py:195
 #, python-format
 msgid "%(election_name)s - vote cast"
-msgstr ""
+msgstr "%(election_name)s - Ψήφος ερρίφθη"
 
 #: tasks.py:197
 #, python-format
@@ -184,6 +184,12 @@ msgid ""
 "\n"
 "you can find your encrypted vote attached in this mail.\n"
 msgstr ""
+"\n"
+"Ψηφίσατε επιτυχώς στην ψηφοφορία\n"
+"\n"
+"  %(election_name)s\n"
+"\n"
+"Μπορείτε να βρείτε συνημμένη την απόδειξη της ψήφου σας.\n"
 
 #: views.py:1399
 msgid "Time to Vote"
