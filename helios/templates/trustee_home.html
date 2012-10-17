@@ -9,7 +9,8 @@
 <div class="panel">
   <b>{{trustee.public_key_hash}}</b>.<br />
 </div>
-Μπορείτε <a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">να επαληθεύσετε ότι έχετε το σωστό μυστικό κλειδί</a>.
+Πρέπει <a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">
+να επαληθεύσετε ότι έχετε το σωστό Κωδικό Ψηφοφορίας</a>, αν δεν το έχετε ήδη κάνει.
 {% else %}
 <a href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">ρυθμίστε τον Κωδικό Ψηφοφορίας</a>
 {% endif %}

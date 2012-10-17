@@ -2,7 +2,7 @@
 
 {{custom_message|safe}}
 
-Σύνδεσμος εκλογής: {{election_vote_url}}
+Σύνδεσμος ψηφοφορίας: {{election_vote_url}}
 
 --
-Zeus
+Ψηφιακή κάλπη «Ζευς»

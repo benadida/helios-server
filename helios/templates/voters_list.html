@@ -102,7 +102,7 @@
 </td>
 {% endif %}
 <td>
-<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" 
+<a onclick="return confirm('επιβεβαιώστε τη διαγραφή ψηφοφόρου: {{voter.name}} ?');" 
   href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">
   Διαγραφή
   </a>

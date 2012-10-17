@@ -165,7 +165,7 @@ msgstr ""
 
 #: views.py:1356
 msgid "Time to Vote"
-msgstr "Ενημέρωση για συμμετοχή"
+msgstr "Συμμετοχή σας σε ψηφοφορία"
 
 #: views.py:1357
 msgid "Additional Info"
