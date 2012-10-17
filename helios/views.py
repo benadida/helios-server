@@ -434,8 +434,11 @@ def new_trustee_helios(request, election):
 
 @election_admin(frozen=False)
 def delete_trustee(request, election):
+
+  election.zeus_election.invalidate_election_public()
   trustee = Trustee.get_by_election_and_uuid(election, request.GET['uuid'])
   trustee.delete()
+  election.zeus_election.compute_election_public()
   return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
 
 
@@ -1104,7 +1107,6 @@ def one_election_freeze(request, election):
     return render_template(request, 'election_freeze', {'election': election, 'issues' : issues, 'issues_p' : len(issues) > 0})
   else:
     check_csrf(request)
-
     election.freeze()
 
     if get_user(request):
