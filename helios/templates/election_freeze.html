@@ -6,6 +6,12 @@
 {% endblock %}
 
 {% block content %}
+
+{% if error %}
+<div class="alert-box alert">
+  Σφάλμα οριστικοποίησης: {{ error }}
+</div>
+{% endif %}
 <h5>{{election.name}} &mdash; Οριστικοποίηση ψηφοφορίας</h5>
 <p>
 Μετά την οριστικοποίηση της ψηφοφορίας,

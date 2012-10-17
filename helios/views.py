@@ -1109,7 +1109,12 @@ def one_election_freeze(request, election):
     return render_template(request, 'election_freeze', {'election': election, 'issues' : issues, 'issues_p' : len(issues) > 0})
   else:
     check_csrf(request)
-    election.freeze()
+    error = False
+    try:
+      election.freeze()
+    except Exception, e:
+      error = str(e)
+      return render_template(request, 'election_freeze', {'error': error, 'election': election, 'issues' : issues, 'issues_p' : len(issues) > 0})
 
     if get_user(request):
       return HttpResponseRedirect(reverse(voters_email, args=[election.uuid]))

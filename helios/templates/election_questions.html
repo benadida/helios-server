@@ -80,7 +80,6 @@
 {% endif %}
 
 
-{% if not admin_p or election.tallied %}
 <div class="columns 
   {% if admin_p and not election.frozen_at %}six{% else %}twelve{% endif %}">
   <div class="panel">
@@ -95,5 +94,4 @@
 </ol>
 </div>
 </div>
-{% endif %}
 {% endblock %}

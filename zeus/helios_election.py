@@ -453,11 +453,12 @@ class HeliosElection(ZeusCoreElection):
         super(cls, HeliosElection).mk_random(*args, **kwargs)
 
 
-    def do_store_candidates(self, candidates):
-        e = self.model.election
-        if not e.questions:
-            e.questions = [{
-                'answers': candidates,
-                'choice_type': 'stv',
-                'result_type': 'absolute', 'tally_type': 'stv'}]
-            e.save()
+    #def do_store_candidates(self, candidates):
+        #e = self.model.election
+        #if not e.questions:
+            #e.questions = [{
+                #'answers': candidates,
+                #'choice_type': 'stv',
+                #'result_type': 'absolute', 'tally_type': 'stv'}]
+            #e.save()
+
