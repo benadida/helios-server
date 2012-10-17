@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-15 23:12+0300\n"
+"POT-Creation-Date: 2012-10-17 15:58+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,12 +18,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: glue.py:15
+#: glue.py:16
 #, python-format
-msgid "%(election_name)s - Ψήφος ερρίφθη"
+msgid "%(election_name)s - vote cast"
 msgstr ""
 
-#: glue.py:17
+#: glue.py:18
 #, python-format
 msgid ""
 "\n"

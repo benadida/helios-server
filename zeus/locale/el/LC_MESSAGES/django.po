@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-17 14:59+0300\n"
+"POT-Creation-Date: 2012-10-17 15:58+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -102,46 +102,46 @@ msgstr "Πλήθος εκλεγόμενων "
 msgid "Set the eligibles count of the election"
 msgstr "το πλήθος των εκλεγόμενων (6 ή 8 ανάλογα με το μέγεθος της σχολής)"
 
-#: forms.py:112
+#: forms.py:114
 msgid "Has department limit"
 msgstr "Τα εσωτερικά μέλη ανά σχολή δεν μπορούν να υπερβαίνουν τα δύο"
 
-#: forms.py:113
+#: forms.py:115
 msgid "4009/2011 (A' 195)"
 msgstr ""
 "Επιλέξτε εάν εφαρμόζεται ο περιορισμός του τέταρτου εδαφίου της περίπτωσης "
 "β΄ της παραγράφου 4 του άρθρου 8 του νόμου 4009/2011 (Α΄ 195) όπως ισχύει με "
 "την τροποποίηση του άρθρου 47 του ν. 4025/2011 (Α΄228)"
 
-#: forms.py:115
+#: forms.py:117
 msgid "Help email"
 msgstr "E-mail για βοήθεια"
 
-#: forms.py:115
+#: forms.py:117
 msgid "Voters can contact this email for election suport"
 msgstr ""
 "οι ψηφοφόροι μπορούν να απευθύνονται σε αυτό το e-mail για υποστήριξη σε "
 "θέματα της ψηφοφορίας"
 
-#: forms.py:116
+#: forms.py:118
 msgid "Help phone"
 msgstr "Τηλέφωνα για βοήθεια"
 
-#: forms.py:116
+#: forms.py:118
 msgid "Voters can contact this phone for election suport"
 msgstr ""
 "οι ψηφοφόροι θα μπορούν να επικοινωνούν σε αυτά τα τηλέφωνα για υποστήριξη "
 "σε θέματα της ψηφοφορίας"
 
-#: forms.py:145
+#: forms.py:148
 msgid "Invalid voting dates"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:156
+#: forms.py:159
 msgid "Invalid trustess"
 msgstr "Οι Κωδικοί Ψηφοφορίας είναι άκυροι"
 
-#: forms.py:187
+#: forms.py:190
 msgid ""
 "Election candidates changed due to election institution department changes"
 msgstr "Κάποιοι υποψήφιοι αφαιρέθηκαν λόγω αλλαγών στις Σχολές"
