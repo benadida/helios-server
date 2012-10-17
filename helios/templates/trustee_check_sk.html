@@ -41,16 +41,16 @@ function check_sk(sk_value) {
         "url": "{% url helios.views.trustee_verify_key election.uuid trustee.uuid %}",
         "data": {'verified': true},
         "error": function() {
-          alert("Προέκυψε σφάλμα στον έλεγχο του κωδικού σας, παρακαλούμε δοκιμάστε ξανά.");
+          alert("Προέκυψε σφάλμα στον έλεγχο του Κωδικού σας, παρακαλούμε δοκιμάστε ξανά.");
           window.location = '{% url heliosauth.views.logout %}';
         },
         "success": function() {
-            alert("Το κωδικός ψηφοφορίας σας είναι έγκυρος!");
+            alert("Ο Κωδικός Ψηφοφορίας σας είναι έγκυρος!");
             window.location = '{% url heliosauth.views.logout %}';
         }
       })
     } else {
-      $('#result').html("Το κωδικός ψηφοφορίας σας είναι εσφαλμένος." + reset_link);
+      $('#result').html("Ο Κωδικός Ψηφοφορίας σας είναι εσφαλμένος." + reset_link);
     }
   }
 
@@ -92,7 +92,7 @@ var opts = {
 </script>
 
 <p>
-Το αποτύπωμα του δημόσιου μέρους του κωδικού ψηφοφορίας σας είναι: <b>{{trustee.public_key_hash}}</b>
+Το αποτύπωμα του δημόσιου μέρους του Κωδικού Ψηφοφορίας σας είναι: <b>{{trustee.public_key_hash}}</b>
 </p>
 
 <div id="loading">
@@ -102,13 +102,13 @@ var opts = {
 <div id="input" style="display:none;">
 <div class="select-file-option">
 <p>
-Επιλέξτε το αρχείο κωδικού ψηφοφορίας σας και πατήστε "Έλεγχος".
+Επιλέξτε το αρχείο του Κωδικού Ψηφοφορίας σας και πατήστε "Έλεγχος".
 <p>
 <input type="file" id="file-input" />
 </div>
 <div class="paste-file-option">
 <p>
-Για να βεβαιωθείτε ότι έχετε τοn σωστό κωδικό ψηφοφορίας, επικολλήσετε το εδώ: 
+Για να βεβαιωθείτε ότι έχετε το σωστό Κωδικό Ψηφοφορίας, επικολλήσετε τον εδώ: 
 <p>
 <form onsubmit="check_sk(this.secret_key.value); this.secret_key.value=''; return false;">
 <textarea name="secret_key" cols="60" rows ="5" wrap="soft">
