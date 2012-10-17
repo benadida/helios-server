@@ -1427,6 +1427,7 @@ def voters_email(request, election):
       'custom_message': '&lt;BODY&gt;',
       'voter': {'vote_hash' : '<SMART_TRACKER>',
                 'name': '<VOTER_NAME>',
+                'voter_surname': '<VOTER_SURNAME>',
                 'voter_login_id': '<VOTER_LOGIN_ID>',
                 'voter_password': '<VOTER_PASSWORD>',
                 'audit_passwords': '1',
