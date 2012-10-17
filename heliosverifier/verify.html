@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8" /> 
-  <title>Σύστημα ψηφοφορίας Ζεύς-- Επαληθευτής</title>
+  <title>Σύστημα ψηφοφορίας Ζευς -- Επαληθευτής</title>
   <link rel="stylesheet" type="text/css" href="css/booth.css" />
   <link rel="stylesheet" type="text/css" href="css/forms.css" />
   <script language="javascript" src="js/jscrypto/jsbn.js"></script>
@@ -105,7 +105,7 @@ function load_election_and_ballots(election_url) {
 
         $(election.questions).each(function(qnum, q) {
             if (q.tally_type != "homomorphic") {
-              result_append("ΠΡΟΒΛΗΜΑ: αυτή η εκλογή δεν είναι μια δεν είναι μια απλή ομομορφική εκλογή. Ως αποτέλεσμα, το σύστημα Ζεύς δεν μπορεί να επαληθεύσει αυτή τη στιγμή.");
+              result_append("ΠΡΟΒΛΗΜΑ: αυτή η ψηφοφορία δεν είναι μια δεν είναι ομομορφική. Ως αποτέλεσμα, το σύστημα Ζευς δεν μπορεί να επαληθεύσει αυτή τη στιγμή.");
               return;
             }
 
@@ -114,7 +114,7 @@ function load_election_and_ballots(election_url) {
             });
         });
 
-        result_append("φόρτωμα λίστας ψηφοφόρων...");
+        result_append("φόρτωση λίστας ψηφοφόρων...");
         
         // load voter list
         load_ballot_list(election_url, [], null, function(ballot_list) {
@@ -255,12 +255,12 @@ $(document).ready(function() {
 <body>
 <div id="wrapper">
 <div id="banner">
-    Ζεύς - Επαληθευτής Εκλογής 
+    Ζευς - Επαληθευτής Ψηφοφορίας 
 </div>
 <div id="content">
 
 <div id="verifier_loading">
-Φόρτωμα επαληθευτή ...
+Φόρτωση επαληθευτή ...
 </div>
 
 <div id="verifier" align="center" style="display:none;">
