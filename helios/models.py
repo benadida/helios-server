@@ -760,7 +760,7 @@ class Election(HeliosModel):
             trustee.public_key.toJSONDict()))
     trustee.save()
     # verify the pok
-
+    trustee.send_url_via_mail()
     self.zeus_election.add_trustee(trustee.public_key.y, [pok.commitment,
                                                          pok.challenge,
                                                          pok.response])
@@ -1601,6 +1601,20 @@ class Trustee(HeliosModel):
                                                      self.secret])
     return url
 
+  def get_step(self):
+      if not self.public_key:
+          return 1
+      if not self.last_verified_key_at:
+          return 2
+      if not self.decryption_factors:
+          return 3
+
+      return 1
+
+  STEP_TEXTS = [_(u'Δημιουργία κωδικού ψηφοφορίας'),
+                _(u'Επιβεβαίωση Κωδικού Ψηφοφορίας'),
+                _(u'Αποκρυπτογράφηση ψήφων')]
+
   def send_url_via_mail(self):
 
     url = self.get_login_url()
@@ -1611,12 +1625,22 @@ class Trustee(HeliosModel):
     Your trustee dashboard is at
 
       %(url)s
-
+      %(step)s
+      %(step_text)s
     --
     Helios
-             """) % {'election_name': self.election.name, 'url': url}
+             """) % {
+                 'election_name': self.election.name,
+                 'url': url,
+                 'step': self.get_step(),
+                 'step_text': self.STEP_TEXTS[self.get_step()-1]}
 
-    send_mail(_('your trustee homepage for %(election_name)s') % {'election_name': self.election.name},
+    subject = _('your trustee homepage for %(election_name)s (step %(step)s: %(step_text)s)') % {
+        'election_name': self.election.name,
+        'step_text': self.STEP_TEXTS[self.get_step()-1],
+        'step': self.get_step()}
+
+    send_mail(subject,
               body,
               settings.SERVER_EMAIL,
               ["%s <%s>" % (self.name, self.email)],
