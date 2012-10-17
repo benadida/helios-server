@@ -141,7 +141,7 @@ class ElectionForm(forms.Form):
       if 'voting_extended_until' in cleaned_data:
           dextend = cleaned_data['voting_extended_until']
 
-      if dfrom > dto:
+      if dfrom >= dto:
           raise forms.ValidationError(_("Invalid voting dates"))
 
       return cleaned_data

@@ -1625,8 +1625,7 @@ class Trustee(HeliosModel):
     Your trustee dashboard is at
 
       %(url)s
-      %(step)s
-      %(step_text)s
+
     --
     Helios
              """) % {
@@ -1635,7 +1634,7 @@ class Trustee(HeliosModel):
                  'step': self.get_step(),
                  'step_text': self.STEP_TEXTS[self.get_step()-1]}
 
-    subject = _('your trustee homepage for %(election_name)s (step %(step)s: %(step_text)s)') % {
+    subject = _('your trustee homepage for %(election_name)s %(step)s') % {
         'election_name': self.election.name,
         'step_text': self.STEP_TEXTS[self.get_step()-1],
         'step': self.get_step()}

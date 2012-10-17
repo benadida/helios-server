@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-15 22:57+0300\n"
+"POT-Creation-Date: 2012-10-17 14:59+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -91,8 +91,8 @@ msgid ""
 "Medicine<br />School of Informatics<br />"
 msgstr ""
 "συμπληρώστε τις σχολές και τα ανεξάρτητα τμήματα του ιδρύματος για το οποίο "
-"διεξάγεται η ψηφοφορία. Π.χ. <br/><br/>Σχολή Θετικών Επιστημών<br/>"
-"Φιλοσοφική Σχολή<br/>Ανεξάρτητο Παιδαγωγικό Τμήμα Δημοτικής Εκπαίδευσης<br/>"
+"διεξάγεται η ψηφοφορία. Π.χ. <br/><br/>Σχολή Θετικών Επιστημών<br/"
+">Φιλοσοφική Σχολή<br/>Ανεξάρτητο Παιδαγωγικό Τμήμα Δημοτικής Εκπαίδευσης<br/>"
 
 #: forms.py:110
 msgid "Eligibles count"
@@ -110,8 +110,8 @@ msgstr "Τα εσωτερικά μέλη ανά σχολή δεν μπορούν
 msgid "4009/2011 (A' 195)"
 msgstr ""
 "Επιλέξτε εάν εφαρμόζεται ο περιορισμός του τέταρτου εδαφίου της περίπτωσης "
-"β΄ της παραγράφου 4 του άρθρου 8 του νόμου 4009/2011 (Α΄ 195) όπως ισχύει με την "
-"τροποποίηση του άρθρου 47 του ν. 4025/2011 (Α΄228)"
+"β΄ της παραγράφου 4 του άρθρου 8 του νόμου 4009/2011 (Α΄ 195) όπως ισχύει με "
+"την τροποποίηση του άρθρου 47 του ν. 4025/2011 (Α΄228)"
 
 #: forms.py:115
 msgid "Help email"
@@ -133,11 +133,15 @@ msgstr ""
 "οι ψηφοφόροι θα μπορούν να επικοινωνούν σε αυτά τα τηλέφωνα για υποστήριξη "
 "σε θέματα της ψηφοφορίας"
 
-#: forms.py:146
+#: forms.py:145
+msgid "Invalid voting dates"
+msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
+
+#: forms.py:156
 msgid "Invalid trustess"
 msgstr "Οι Κωδικοί Ψηφοφορίας είναι άκυροι"
 
-#: forms.py:179
+#: forms.py:187
 msgid ""
 "Election candidates changed due to election institution department changes"
 msgstr "Κάποιοι υποψήφιοι αφαιρέθηκαν λόγω αλλαγών στις Σχολές"
