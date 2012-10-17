@@ -72,6 +72,10 @@ body {
     margin-bottom: 10px !important;
   }
 
+  .form-field ul {
+    list-style: none;
+  }
+
   p.alert {color: red}
   .green { color: #5DA423; }
 
@@ -107,7 +111,7 @@ body {
   .cast-actions .submit { float: left;}
   .election-description { display: none; }
 
-  table.voters {
+  table.voters, table.elections {
       thead th { font-size: 11px; }
       tbody td { font-size: 12px; }
   }
