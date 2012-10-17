@@ -611,6 +611,7 @@ def voter_quick_login(request, election, voter_uuid, voter_secret):
       request.session['CURRENT_VOTER'] = voter
       if 'user' in request.session:
         del request.session['user']
+
     except Voter.DoesNotExist:
       login_url = reverse(password_voter_login, args=[election.uuid])
       redirect_url = login_url + "?" + urllib.urlencode({
@@ -922,6 +923,9 @@ def voter_delete(request, election, voter_uuid):
     raise PermissionDenied()
 
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
+  if voter.vote:
+      raise PermissionDenied
+
   if voter:
     voter.delete()
 
