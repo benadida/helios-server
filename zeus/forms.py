@@ -138,6 +138,11 @@ class ElectionForm(forms.Form):
 
   def clean(self, *args, **kwargs):
       cleaned_data = super(ElectionForm, self).clean(*args, **kwargs)
+      slug = slughifi(cleaned_data['name'])
+
+      if Election.objects.filter(short_name=slug):
+        raise forms.ValidationError(_("Another election with the same name exists"))
+
       dfrom = cleaned_data['voting_starts_at']
       dto = cleaned_data['voting_ends_at']
       dextend = None
