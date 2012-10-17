@@ -5291,11 +5291,11 @@ body .election-description {
   display: none;
 }
 /* line 115, ../sass/app.scss */
-body table.voters thead th {
+body table.voters thead th, body table.elections thead th {
   font-size: 11px;
 }
 /* line 116, ../sass/app.scss */
-body table.voters tbody td {
+body table.voters tbody td, body table.elections tbody td {
   font-size: 12px;
 }
 /* line 119, ../sass/app.scss */

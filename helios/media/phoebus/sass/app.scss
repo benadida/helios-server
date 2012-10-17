@@ -111,7 +111,7 @@ body {
   .cast-actions .submit { float: left;}
   .election-description { display: none; }
 
-  table.voters {
+  table.voters, table.elections {
       thead th { font-size: 11px; }
       tbody td { font-size: 12px; }
   }
