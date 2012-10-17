@@ -1180,19 +1180,7 @@ def combine_decryptions(request, election):
   """
   combine trustee decryptions
   """
-
-  election_url = get_election_url(election)
-
-  if request.method == "POST":
-    check_csrf(request)
-
-    election.combine_decryptions()
-    election.save()
-
-    return HttpResponseRedirect("%s?%s" % (reverse(voters_email, args=[election.uuid]), urllib.urlencode({'template': 'result'})))
-
-  # if just viewing the form or the form is not valid
-  return render_template(request, 'combine_decryptions', {'election': election})
+  return HttpResponseRedirect(reverse(one_election_view,args=[election.election_id]))
 
 @election_admin(frozen=True)
 def one_election_set_result_and_proof(request, election):
