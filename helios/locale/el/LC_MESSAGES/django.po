@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-17 16:04+0300\n"
+"POT-Creation-Date: 2012-10-17 23:48+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -191,15 +191,15 @@ msgstr ""
 "\n"
 "Μπορείτε να βρείτε συνημμένη την απόδειξη της ψήφου σας.\n"
 
-#: views.py:1399
+#: views.py:1409
 msgid "Time to Vote"
 msgstr "Συμμετοχή σας σε ψηφοφορία"
 
-#: views.py:1400
+#: views.py:1410
 msgid "Additional Info"
 msgstr "Περισσότερες Πληροφορίες"
 
-#: views.py:1401
+#: views.py:1411
 msgid "Election Result"
 msgstr "Αποτέλεσμα ψηφοφορίας"
 
