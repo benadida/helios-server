@@ -252,12 +252,13 @@ class HeliosElection(ZeusCoreElection):
         return self.model.election.voter_set.get(uuid=voter_uuid)
 
     def do_get_voter(self, voter_uuid):
-        return self._get_voter_object(voter_uuid).voter_name
+	v = self._get_voter_object(voter_uuid)
+        return v.voter_name + u" " + v.voter_surname
 
     def do_get_voters(self):
         voters = {}
         for v in self.model.election.voter_set.all():
-            voters[v.uuid] = v.voter_name
+            voters[v.uuid] = v.voter_name + u" " + v.voter_surname
 
         return voters
 
