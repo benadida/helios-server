@@ -1336,7 +1336,8 @@ def voters_upload(request, election):
   if request.method == "POST":
     if bool(request.POST.get('confirm_p', 0)):
       # launch the background task to parse that file
-      tasks.voter_file_process.delay(voter_file_id = request.session['voter_file_id'])
+      voter_file = VoterFile.objects.get(id = request.session['voter_file_id'])
+      voter_file.process()
       del request.session['voter_file_id']
 
       if not election.questions or not len(election.questions):
