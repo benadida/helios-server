@@ -276,7 +276,7 @@ def one_election_edit(request, election):
 
     if election_form.is_valid():
       with transaction.commit_on_success():
-        election, trustees = election_form.save(election, ELGAMAL_PARAMS)
+        election = election_form.save(election, user.institution, ELGAMAL_PARAMS)
         return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
 
   return render_template(request, "election_new", {'election_form' : election_form, 'election' : election, 'error': error})
