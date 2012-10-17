@@ -32,7 +32,11 @@ def get_datatype(datatype, obj=None, **kwargs):
 class HeliosElection(ZeusCoreElection):
 
     def __init__(self, *args, **kwargs):
-        self.model, created = ElectionInfo.objects.get_or_create(uuid=kwargs.pop('uuid'))
+        if kwargs.get('model', None):
+            self.model = kwargs.pop('model')
+            kwargs.pop('uuid', None)
+        else:
+            self.model, created = ElectionInfo.objects.get_or_create(uuid=kwargs.pop('uuid'))
         kwargs['cryptosystem'] = (ELGAMAL_PARAMS.p, ELGAMAL_PARAMS.g,
                                   ELGAMAL_PARAMS.q)
         kwargs['teller'] = Teller(outstream=NullStream())

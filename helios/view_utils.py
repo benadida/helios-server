@@ -52,9 +52,12 @@ def prepare_vars(request, vars):
 
   trustee = None
   if request.session.has_key('helios_trustee_uuid'):
-    from helios.models import Trustee
-    trustee = Trustee.objects.get(uuid=request.session.get('helios_trustee_uuid'))
-    election = trustee.election
+    try:
+        from helios.models import Trustee
+        trustee = Trustee.objects.get(uuid=request.session.get('helios_trustee_uuid'))
+        election = trustee.election
+    except:
+        del request.session['helios_trustee_uuid']
 
   vars_with_user['trustee'] = trustee
 

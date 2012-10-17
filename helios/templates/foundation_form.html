@@ -1,7 +1,13 @@
+{% if form.errors %}
+<div class="alert-box alert">
+  Προέκυψε σφάλμα στην αποθύκευση της φόρμας.
+</div>
+{% endif %}
 {% if form.non_field_errors %}
-<div class="alert-box error">
+<div class="alert-box alert">
   {{ form.non_field_errors|join:"<br/>" }}
 </div>
+<br />
 {% endif %}
 {% for field in form %}
 {% if field.is_hidden %}

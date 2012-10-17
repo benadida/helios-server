@@ -129,15 +129,25 @@ class ElectionForm(forms.Form):
     if self.election and self.election.frozen_at:
       self.fields['voting_starts_at'].widget.attrs['readonly'] = True
       self.fields['voting_ends_at'].widget.attrs['readonly'] = True
-      self.fields['voting_starts_at'].widget.attrs['disabled'] = True
-      self.fields['voting_ends_at'].widget.attrs['disabled'] = True
-      self.fields['name'].widget.attrs['disabled'] = True
       self.fields['name'].widget.attrs['readonly'] = True
       self.fields['eligibles_count'].widget.attrs['disabled'] = True
       del self.fields['trustees']
       del self.fields['departments']
     else:
       del self.fields['voting_extended_until']
+
+  def clean(self, *args, **kwargs):
+      cleaned_data = super(ElectionForm, self).clean(*args, **kwargs)
+      dfrom = cleaned_data['voting_starts_at']
+      dto = cleaned_data['voting_ends_at']
+      dextend = None
+      if 'voting_extended_until' in cleaned_data:
+          dextend = cleaned_data['voting_extended_until']
+
+      if dfrom >= dto:
+          raise forms.ValidationError(_("Invalid voting dates"))
+
+      return cleaned_data
 
   def clean_trustees(self):
     trustees_list = []
@@ -150,7 +160,7 @@ class ElectionForm(forms.Form):
 
     validations = [validate_email(t[1].strip()) for t in trustees_list]
 
-    return "\n".join(["%s, %s" % (t[0], t[1]) for t in trustees_list])
+    return "\n".join(["%s,%s" % (t[0], t[1]) for t in trustees_list])
 
   def save(self, election, institution, params):
     is_new = not bool(election.pk)
@@ -168,9 +178,7 @@ class ElectionForm(forms.Form):
       e.institution = institution
       e.help_phone = data['help_phone']
       e.help_email = data['help_email']
-      e.eligibles_count = data['eligibles_count']
-      e.has_department_limit = data['has_department_limit']
-      e.departments = [d.strip() for d in data['departments'].split("\n")]
+      e.departments = [d.strip() for d in data['departments'].strip().split("\n")]
 
       if e.candidates:
         new_cands = []
@@ -205,6 +213,8 @@ class ElectionForm(forms.Form):
     if 'voting_extended_until' in data:
       e.voting_extended_until = data['voting_extended_until']
 
+    e.eligibles_count = data['eligibles_count']
+    e.has_department_limit = data['has_department_limit']
     e.save()
 
     if is_new:
@@ -219,14 +229,15 @@ class ElectionForm(forms.Form):
 
       for t in trustees:
         name, email = t[0], t[1]
-        if not existing_trustees:
-          trustee = Trustee(uuid=str(uuid.uuid1()), election=e,
-                                   name=name,
+        trustee, created = Trustee.objects.get_or_create(election=e,
                                    email=email)
-          trustee.save()
-          trustee.send_url_via_mail()
+        trustee.name = name
+        if created:
+          trustee.uuid = str(uuid.uuid1())
 
-        else:
-            self.fields.pop('voting_extended_until', None)
+        trustee.save()
+
+        if created:
+            trustee.send_url_via_mail()
 
     return e

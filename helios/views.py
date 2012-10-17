@@ -270,6 +270,8 @@ def one_election_edit(request, election):
       'help_email': election.help_email,
       'departments': election.departments_string,
       'trustees': election.trustees_string,
+      'eligibles_count': election.eligibles_count,
+      'has_department_limit': election.has_department_limit,
       'description': election.description})
   else:
     election_form = ElectionForm(election, institution, request.POST)
@@ -434,8 +436,11 @@ def new_trustee_helios(request, election):
 
 @election_admin(frozen=False)
 def delete_trustee(request, election):
+
+  election.zeus_election.invalidate_election_public()
   trustee = Trustee.get_by_election_and_uuid(election, request.GET['uuid'])
   trustee.delete()
+  election.zeus_election.compute_election_public()
   return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
 
 
@@ -1104,7 +1109,6 @@ def one_election_freeze(request, election):
     return render_template(request, 'election_freeze', {'election': election, 'issues' : issues, 'issues_p' : len(issues) > 0})
   else:
     check_csrf(request)
-
     election.freeze()
 
     if get_user(request):
@@ -1334,7 +1338,8 @@ def voters_upload(request, election):
   if request.method == "POST":
     if bool(request.POST.get('confirm_p', 0)):
       # launch the background task to parse that file
-      tasks.voter_file_process.delay(voter_file_id = request.session['voter_file_id'])
+      voter_file = VoterFile.objects.get(id = request.session['voter_file_id'])
+      voter_file.process()
       del request.session['voter_file_id']
 
       if not election.questions or not len(election.questions):
