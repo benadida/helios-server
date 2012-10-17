@@ -50,6 +50,14 @@ def prepare_vars(request, vars):
   vars_with_user['SECURE_URL_HOST'] = settings.SECURE_URL_HOST
   vars_with_user['voter'] = request.session.get('CURRENT_VOTER')
 
+  trustee = None
+  if request.session.has_key('helios_trustee_uuid'):
+    from helios.models import Trustee
+    trustee = Trustee.objects.get(uuid=request.session.get('helios_trustee_uuid'))
+    election = trustee.election
+
+  vars_with_user['trustee'] = trustee
+
   return vars_with_user
 
 def render_template(request, template_name, vars = {}, include_user=True):

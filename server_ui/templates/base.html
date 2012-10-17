@@ -56,6 +56,27 @@
               </div>
           </div>
           {% endif %}
+          {% if voter %}
+          <div class="columns twelve loginbox">
+              <div class="panel warning">Έχετε συνδεθεί ως ψήφοφόρος της ψηφοφορίας
+                  <em>"<a href="{% url helios.views.one_election_view voter.election.uuid %}">{{ voter.election.name }}</a>"</em>
+                  <br /><br />
+                  <a class="button tiny" href="{% url helios.views.one_election_view voter.election.uuid %}">προβολή
+                      σελίδας ψηφοφορίας</a>
+                  <a class="button tiny alert" href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
+              </div>
+          </div>
+          {% endif %}
+          {% if trustee and trustee.election %}
+          <div class="columns twelve loginbox">
+              <div class="panel warning">Έχετε συνδεθεί ως μέλος εφορευτικής επιτροπής της ψηφοφορίας 
+                  <em>"<a href="{% url helios.views.one_election_view trustee.election.uuid %}">{{ trustee.election.name }}</a>"</em>
+                  <br /><br />
+                  <a class="button tiny" href="{% url helios.views.trustee_home trustee.election.uuid, trustee.uuid %}">σελίδα μέλους εφορευτικής</a>
+                  <a class="button tiny alert" href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
+              </div>
+          </div>
+          {% endif %}
           <div id="header">
             {% block head_subtitle %}{% endblock %}
           </div>

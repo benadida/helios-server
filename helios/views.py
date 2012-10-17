@@ -325,7 +325,15 @@ def one_election_view(request, election):
   else:
     votes = None
 
-  if not voter and not user:
+  trustee = None
+  if request.session.get('helios_trustee_uuid', None):
+    try:
+        trustee = Trustee.objects.get(election=election,
+                    uuid=request.session.get('helios_trustee_uuid', None))
+    except:
+        raise PermissionDenied()
+
+  if not voter and not user and not trustee:
     raise PermissionDenied()
 
   # status update message?
@@ -350,6 +358,7 @@ def one_election_view(request, election):
                           'can_feature_p': can_feature_p, 'election_url' : election_url,
                           'vote_url': vote_url, 'election_badge_url' : election_badge_url,
                           'menu_active': 'overview',
+                          'trustee': trustee,
                           'test_cookie_url': test_cookie_url, 'socialbuttons_url' : socialbuttons_url})
 
 def test_cookie(request):
@@ -959,6 +968,38 @@ def one_election_archive(request, election):
   election.save()
 
   return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+
+def check_election_permission(request, election,
+                              anon=False, eladmin=True,
+                              trustee=True, voter=True):
+
+    is_user = get_user(request)
+    is_admin = security.user_can_admin_election(user, election)
+    is_trustee = None
+    trustee_uuid = request.session.get('helios_trustee_uuid', None)
+
+    try:
+        is_trustee = election.trustee_set.objecst.get(uuid=trustee_uuid)
+    except Trustee.DoesNotExit:
+        pass
+
+    is_voter = get_voter(request, user, election)
+
+    if eladmin and is_admin:
+        return is_user, is_admin, is_trustee, is_voter
+
+    if trustee and is_trustee:
+        return is_user, is_admin, is_trustee, is_voter
+
+    if voter and not is_voter:
+        return is_user, is_admin, is_trustee, is_voter
+
+    if anon:
+        return is_user, is_admin, is_trustee, is_voter
+
+    raise PermissionDenied
+
+
 
 # changed from admin to view because
 # anyone can see the questions, the administration aspect is now
