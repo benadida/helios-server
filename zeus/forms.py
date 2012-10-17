@@ -107,8 +107,10 @@ class ElectionForm(forms.Form):
                                 widget=forms.Textarea,
         help_text=_('University Schools. e.g. <br/><br/> School of Engineering <br /> School of Medicine<br />School of Informatics<br />'))
 
-  eligibles_count = forms.IntegerField(label=_('Eligibles count'),
-                                       help_text=_('Set the eligibles count of the election'), initial=6)
+  eligibles_count = forms.ChoiceField(label=_('Eligibles count'),
+                                      help_text=_('Set the eligibles count of the election'),
+                                      choices = [('6','6'),('8','8')],
+                                      widget=forms.RadioSelect)
   has_department_limit = forms.BooleanField(label=_('Has department limit'), required=False, initial=True,
                                             help_text=_('4009/2011 (A\' 195)'))
 
@@ -131,6 +133,7 @@ class ElectionForm(forms.Form):
       self.fields['voting_ends_at'].widget.attrs['disabled'] = True
       self.fields['name'].widget.attrs['disabled'] = True
       self.fields['name'].widget.attrs['readonly'] = True
+      self.fields['eligibles_count'].widget.attrs['disabled'] = True
       del self.fields['trustees']
       del self.fields['departments']
     else:
