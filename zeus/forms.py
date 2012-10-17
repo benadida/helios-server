@@ -136,6 +136,9 @@ class ElectionForm(forms.Form):
     else:
       del self.fields['voting_extended_until']
 
+  def clean(self, *args, **kwargs):
+      return super(ElectionForm, self).clean(*args, **kwargs)
+
   def clean_trustees(self):
     trustees_list = []
     try:
@@ -147,7 +150,7 @@ class ElectionForm(forms.Form):
 
     validations = [validate_email(t[1].strip()) for t in trustees_list]
 
-    return "\n".join(["%s, %s" % (t[0], t[1]) for t in trustees_list])
+    return "\n".join(["%s,%s" % (t[0], t[1]) for t in trustees_list])
 
   def save(self, election, institution, params):
     is_new = not bool(election.pk)
@@ -221,9 +224,6 @@ class ElectionForm(forms.Form):
         trustee.name = name
         if created:
           trustee.uuid = str(uuid.uuid1())
-
-        else:
-            self.fields.pop('voting_extended_until', None)
 
         trustee.save()
 
