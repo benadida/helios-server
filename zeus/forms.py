@@ -199,7 +199,6 @@ class ElectionForm(forms.Form):
       e.voting_ends_at = data['voting_ends_at']
 
 
-
     if 'voting_extended_until' in data:
       e.voting_extended_until = data['voting_extended_until']
 
@@ -225,6 +224,6 @@ class ElectionForm(forms.Form):
           trustee.send_url_via_mail()
 
         else:
-            del self.fields['voting_extended_until']
+            self.fields.pop('voting_extended_until', None)
 
     return e
