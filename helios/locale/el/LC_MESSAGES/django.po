@@ -89,7 +89,7 @@ msgstr "Τα τελικά ψηφοδέλτια έχουν αποκρυπτογρ
 
 #: models.py:523
 msgid "Add candidates to the election"
-msgstr "Προσθήκη ψηφοφόρων."
+msgstr "Προσθήκη υποψηφίων."
 
 #: models.py:530
 msgid "add at least one trustee"
