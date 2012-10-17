@@ -74,7 +74,12 @@
                   <br /><br />
                   <a class="button tiny" href="{% url helios.views.trustee_home trustee.election.uuid, trustee.uuid %}">σελίδα μέλους εφορευτικής</a>
                   <a class="button tiny alert" href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
-              </div>
+                </div>
+                <div class="alert-box alert" style="display:none"
+                  id="invalid-browser">
+        Το πρόγραμμα πλοήγησης που χρησιμοποιείτε δεν υποστηρίζεται για τις
+        ενέργειες του μέλους της εφορευτικής επιτροπής.
+                </div>
           </div>
           {% endif %}
           <div id="header">

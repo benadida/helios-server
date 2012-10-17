@@ -80,7 +80,6 @@ function download_sk() {
   try {
     var filetype = "text/plain;charset=utf-8";
     if ($.browser.mozilla) {
-        filetype = "application/octet-stream";
     }
 
     bb = new BlobBuilder;
@@ -170,6 +169,12 @@ $(document).ready(function(){
   <p>
   <button id="save_key" class="button success medium" style="" onclick="download_sk();">
     Αποθηκεύστε τον Κωδικό σας</button>
+  <br />
+  <u>
+Σε περίπτωση που το πρόγραμμα πλοήγησης σας εμφανίσει τα περιεχόμενα του Κωδικού σας σε νέο παράθυρο, αποθηκεύστε την νέα αυτή σελίδα 
+πατώντας ctrl+s. Το αρχείο που θα αποθηκευτεί θα περιέχει τον 
+Κωδικό Ψηφοφορίας σας.
+  </u>
   </p>
   <span id="clear_button" style="color:#aaa">
     Ο κωδικός σας έχει παραχθεί αλλά εάν θέλετε μπορείτε να τον
