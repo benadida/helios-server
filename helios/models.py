@@ -537,7 +537,7 @@ class Election(HeliosModel):
             'action': _('have trustee %s generate a keypair') % t.name
             })
 
-      if t.last_verified_key_at == None:
+      if t.public_key and t.last_verified_key_at == None:
         issues.append({
             'type': 'trustee verifications',
             'action': _('have trustee %s verify his key') % t.name
