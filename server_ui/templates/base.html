@@ -58,7 +58,7 @@
           {% endif %}
           {% if voter %}
           <div class="columns twelve loginbox">
-              <div class="panel warning">Έχετε συνδεθεί ως ψήφοφόρος της ψηφοφορίας
+              <div class="panel warning">Έχετε συνδεθεί ως o ψηφοφόρος <u>{{ voter.voter_surname }} {{ voter.name }}</u> της ψηφοφορίας
                   <em>"<a href="{% url helios.views.one_election_view voter.election.uuid %}">{{ voter.election.name }}</a>"</em>
                   <br /><br />
                   <a class="button tiny" href="{% url helios.views.one_election_view voter.election.uuid %}">προβολή
@@ -120,7 +120,7 @@
           <a href="/admin/">διαχείριση</a><br />
           {% else %}
           {% if voter %}
-          Έχετε συνδεθεί ως ο ψηφοφόρος <u>{{voter.name}}</u> της ψηφοφορίας 
+          Έχετε συνδεθεί ως ο ψηφοφόρος <u>{{ voter.voter_surname }} {{voter.name}}</u> της ψηφοφορίας 
           <u>{{voter.election.name}}</u> | 
           <a onclick="return confirm('Είστε σίγουρος οτι θέλετε να αποσυνδεθείτε;')"
             href="{{settings.SECURE_URL_HOST}}{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
