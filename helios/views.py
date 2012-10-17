@@ -270,6 +270,8 @@ def one_election_edit(request, election):
       'help_email': election.help_email,
       'departments': election.departments_string,
       'trustees': election.trustees_string,
+      'eligibles_count': election.eligibles_count,
+      'has_department_limit': election.has_department_limit,
       'description': election.description})
   else:
     election_form = ElectionForm(election, institution, request.POST)
