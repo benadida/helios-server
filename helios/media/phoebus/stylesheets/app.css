@@ -5147,11 +5147,11 @@ body ol li.step {
 /* line 63, ../sass/app.scss */
 body ol li.step .step-title {
   font-weight: bold;
-  display: block;
 }
 /* line 64, ../sass/app.scss */
 body ol li.step .step-desc {
   font-style: italic;
+  display: block;
 }
 /* line 66, ../sass/app.scss */
 body .panel.confirm-vote {

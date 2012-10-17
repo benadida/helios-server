@@ -27,7 +27,16 @@ if (!navigator.javaEnabled()) {
 {% endif %}
 
 
+<div class="row">
+  <div class="columns six"><i>Έναρξη ψηφοφορίας στις:</i> <b>{{ election.voting_starts_at }}</b></div>
+  <div class="columns six"><i>Λήψη ψηφοφορίας στις:</i> <b>{{ election.voting_ends_at }}</b></div>
 
+</div>
+<br/>
+<div class="row">
+  <div class="columns six"><i>Σύνολο ψηφοφόρων:</i> <b>{{ election.voter_set.count }}</b></div>
+</div>
+<br /><br />
 {% if admin_p %}
 {% if election.result %}
 {% else %}
@@ -124,8 +133,12 @@ release results
 </span><br />
 <br />
 {% if election.voting_extended_until %}
-H {{election.election_type}} ήταν προγραμματισμένη αρχικά να λήξει στις {{election.voting_ends_at}},<br />
+<div class="alert-box alert">
+  <p>
+H ψηφοφορία ήταν προγραμματισμένη αρχικά να λήξει στις {{election.voting_ends_at}},<br />
 αλλά παρατάθηκε μέχρι τις {{ election.voting_extended_until }}.
+</p>
+</div>
 {% else %}
 {% if election.voting_ends_at %}
 <br />

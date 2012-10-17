@@ -60,8 +60,8 @@ body {
   }
 
   ol li.step { margin-bottom: 10px; }
-  ol li.step .step-title { font-weight: bold; display: block;}
-  ol li.step .step-desc { font-style: italic; }
+  ol li.step .step-title { font-weight: bold;}
+  ol li.step .step-desc { font-style: italic; display:block; }
   
   .panel.confirm-vote {
     padding-top: 0;
