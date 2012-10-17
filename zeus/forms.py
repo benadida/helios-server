@@ -141,7 +141,12 @@ class ElectionForm(forms.Form):
       cleaned_data = super(ElectionForm, self).clean(*args, **kwargs)
       slug = slughifi(cleaned_data['name'])
 
-      if Election.objects.filter(short_name=slug):
+      from django.db.models import Q
+      q = Q()
+      if self.election and self.election.pk:
+        q = ~Q(pk=self.election.pk)
+
+      if Election.objects.filter(q, short_name=slug):
         raise forms.ValidationError(_("Another election with the same name exists"))
 
       dfrom = cleaned_data['voting_starts_at']
@@ -164,7 +169,10 @@ class ElectionForm(forms.Form):
     except:
       raise forms.ValidationError(_("Invalid trustess"))
 
-    validations = [validate_email(t[1].strip()) for t in trustees_list]
+    try:
+      validations = [validate_email(t[1].strip()) for t in trustees_list]
+    except Exception, e:
+      raise forms.ValidationError(_("Invalid trustess"))
 
     return "\n".join(["%s,%s" % (t[0], t[1]) for t in trustees_list])
 
