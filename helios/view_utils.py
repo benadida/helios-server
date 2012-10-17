@@ -51,7 +51,7 @@ def prepare_vars(request, vars):
   vars_with_user['voter'] = request.session.get('CURRENT_VOTER')
 
   trustee = None
-  if request.session.has_key('helios_trustee_uuid'):
+  if request.session.has_key('helios_trustee_uuid') and not 'trustee' in vars:
     try:
         from helios.models import Trustee
         trustee = Trustee.objects.get(uuid=request.session.get('helios_trustee_uuid'))
@@ -59,7 +59,7 @@ def prepare_vars(request, vars):
     except:
         del request.session['helios_trustee_uuid']
 
-  vars_with_user['trustee'] = trustee
+  vars_with_user['trustee'] = vars.get('trustee', trustee)
 
   return vars_with_user
 

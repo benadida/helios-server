@@ -116,6 +116,13 @@ def do_remote_logout(request, user, return_url="/"):
     response = auth_system.do_logout(user_for_remote_logout)
     return response
 
+def do_complete_logout(request, return_url="/"):
+  do_local_logout(request)
+  user_for_remote_logout = request.session.get('user_for_remote_logout', None)
+  if user_for_remote_logout:
+    response = do_remote_logout(request, user_for_remote_logout, return_url)
+    return response
+
   from helios.security import HELIOS_TRUSTEE_UUID
   if request.session.has_key(HELIOS_TRUSTEE_UUID):
     del request.session[HELIOS_TRUSTEE_UUID]
@@ -123,12 +130,6 @@ def do_remote_logout(request, user, return_url="/"):
   if request.session.has_key('CURRENT_VOTER'):
     del request.session['CURRENT_VOTER']
 
-def do_complete_logout(request, return_url="/"):
-  do_local_logout(request)
-  user_for_remote_logout = request.session.get('user_for_remote_logout', None)
-  if user_for_remote_logout:
-    response = do_remote_logout(request, user_for_remote_logout, return_url)
-    return response
   return None
 
 def logout(request):
