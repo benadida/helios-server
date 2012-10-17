@@ -216,14 +216,18 @@ class ElectionForm(forms.Form):
 
       for t in trustees:
         name, email = t[0], t[1]
-        if not existing_trustees:
-          trustee = Trustee(uuid=str(uuid.uuid1()), election=e,
-                                   name=name,
+        trustee, created = Trustee.objects.get_or_create(election=e,
                                    email=email)
-          trustee.save()
-          trustee.send_url_via_mail()
+        trustee.name = name
+        if created:
+          trustee.uuid = str(uuid.uuid1())
 
         else:
             self.fields.pop('voting_extended_until', None)
+
+        trustee.save()
+
+        if created:
+            trustee.send_url_via_mail()
 
     return e
