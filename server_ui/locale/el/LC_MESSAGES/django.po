@@ -21,7 +21,7 @@ msgstr ""
 #: glue.py:16
 #, python-format
 msgid "%(election_name)s - vote cast"
-msgstr ""
+msgstr "%(election_name)s - Ψήφος ερρίφθη"
 
 #: glue.py:18
 #, python-format
