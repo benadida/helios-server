@@ -1308,7 +1308,7 @@ class Voter(HeliosModel):
   @classmethod
   def get_by_election_and_voter_id(cls, election, voter_id):
     try:
-      return cls.objects.get(election = election, voter_login_id = voter_id)
+      return cls.objects.get(election = election, voter_email = voter_id)
     except cls.DoesNotExist:
       return None
 

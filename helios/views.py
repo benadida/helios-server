@@ -1416,6 +1416,8 @@ def voters_email(request, election):
 
   if voter_id:
     voter = Voter.get_by_election_and_voter_id(election, voter_id)
+    if not voter:
+      return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
   else:
     voter = None
 
@@ -1488,7 +1490,7 @@ def voters_email(request, election):
 
   return render_template(request, "voters_email", {
       'email_form': email_form, 'election': election,
-      'voter': voter,
+      'voter_o': voter,
       'default_subject': default_subject,
       'default_body' : default_body,
       'template' : template,

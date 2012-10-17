@@ -9,16 +9,17 @@
 {% block content %}
 <script>
 var voter_id = null;
-{% if voter %}
-voter_id = '{{voter.voter_id}}';
+{% if voter_o %}
+voter_id = '{{voter_o.voter_id}}';
 {% endif %}
 </script>
 
 <h5>Αποστολή email</h5>
 
-{% if voter %}  
+{% if voter_o %}  
   <p>
-    Το μήνυμα αυτό θα αποσταλεί μόνο στον συγκεκριμένο ψηφοφόρο: <b>{{voter.name}} ({{voter.voter_id}})</b>
+    Το μήνυμα αυτό θα αποσταλεί μόνο στον συγκεκριμένο ψηφοφόρο:
+    <b>{{ voter_o.voter_surname }} {{voter_o.name}} ({{voter_o.voter_id}})</b>
   </p>
 {% endif %}
 
@@ -29,7 +30,7 @@ voter_id = '{{voter.voter_id}}';
 {% if template_option.0 == template %}
 <b>{{template_option.1}}</b>
 {% else %}
-<a href="?template={{template_option.0}}&voter_id={{voter.voter_login_id}}">{{template_option.1}}</a>
+<a href="?template={{template_option.0}}&voter_id={{voter_o.voter_login_id}}">{{template_option.1}}</a>
 {% endif %}
 &nbsp;&nbsp;&nbsp;
 {% endfor %}
@@ -47,7 +48,7 @@ You may tweak the subject and add a custom message using the form below.
   <form class="prettyform" action="" method="POST" id="email_form">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     <input type="hidden" name="template" value="{{template}}" />
-    <input type="hidden" name="voter_id" value="{{voter.voter_login_id}}" />
+    <input type="hidden" name="voter_id" value="{{voter_o.voter_email}}" />
     <table class="pretty">
      {{email_form.as_table}}
      </table>
