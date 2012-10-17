@@ -733,7 +733,11 @@ class Election(HeliosModel):
       return self._zeus_election
 
     from zeus import helios_election
-    obj = helios_election.HeliosElection(uuid=self.uuid)
+    from zeus.models import ElectionInfo
+    el_info , created = ElectionInfo.objects.get_or_create(uuid=self.uuid)
+    el_info._election = self
+    obj = helios_election.HeliosElection(uuid=self.uuid,
+                                         model=el_info)
     obj.do_set_stage(self.zeus_stage)
     self._zeus_election = obj
     return obj
