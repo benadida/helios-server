@@ -32,8 +32,8 @@ class JqSplitDateTimeWidget(MultiWidget):
     def decompress(self, value):
         if value:
             d = strftime("%Y-%m-%d", value.timetuple())
-            hour = strftime("%I", value.timetuple())
-            return (d, hour)
+            hour = strftime("%H", value.timetuple())
+            return (d, str(int(hour)))
         else:
             return (None, None, None, None)
 
