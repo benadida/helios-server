@@ -23,11 +23,13 @@ def require_admin(request):
   return user
 
 def home(request):
+  return dummy_view(request)
   user = require_admin(request)
   num_votes_in_queue = CastVote.objects.filter(invalidated_at=None, verified_at=None).count()
   return render_template(request, 'stats', {'num_votes_in_queue': num_votes_in_queue})
 
 def force_queue(request):
+  return dummy_view(request)
   user = require_admin(request)
   votes_in_queue = CastVote.objects.filter(invalidated_at=None, verified_at=None)
   for cv in votes_in_queue:
@@ -36,6 +38,7 @@ def force_queue(request):
   return HttpResponseRedirect(reverse(home))
 
 def elections(request):
+  return dummy_view(request)
   user = require_admin(request)
 
   page = int(request.GET.get('page', 1))
@@ -49,6 +52,7 @@ def elections(request):
                                                       'limit' : limit})
 
 def recent_votes(request):
+  return dummy_view(request)
   user = require_admin(request)
 
   # elections with a vote in the last 24 hours, ordered by most recent cast vote time
@@ -58,6 +62,7 @@ def recent_votes(request):
   return render_template(request, "stats_recent_votes", {'elections' : elections_with_votes_in_24hours})
 
 def recent_problem_elections(request):
+  return dummy_view(request)
   user = require_admin(request)
 
   # elections left unfrozen older than 1 day old (and younger than 10 days old, so we don't go back too far)

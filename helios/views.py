@@ -57,6 +57,9 @@ ELGAMAL_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(ELGAMAL_PARAMS, dataty
 # single election server? Load the single electionfrom models import Election
 from django.conf import settings
 
+def dummy_view(request):
+    return PermissionDenied
+
 def get_election_url(election):
   return settings.URL_HOST + reverse(election_shortcut, args=[election.short_name])
 
@@ -108,6 +111,7 @@ def home(request):
   return render_template(request, "index", {'elections' : elections})
 
 def stats(request):
+  return dummy_view(request)
   user = get_user(request)
   if not user or not user.admin_p:
     raise PermissionDenied()
@@ -201,6 +205,7 @@ def trustee_keygenerator(request, election, trustee):
 
 @login_required
 def elections_administered(request):
+  return dummy_view(request)
   if not can_create_election(request):
     return HttpResponseForbidden('only an administrator has elections to administer')
 
@@ -285,6 +290,7 @@ def one_election_edit(request, election):
 
 @election_admin(frozen=False)
 def one_election_schedule(request, election):
+  return dummy_view(request)
   return HttpResponse("foo")
 
 @election_view()
@@ -296,6 +302,7 @@ def one_election(request, election):
 
 @election_view()
 def election_badge(request, election):
+  return dummy_view(request)
   election_url = get_election_url(election)
   params = {'election': election, 'election_url': election_url}
   for option_name in ['show_title', 'show_vote_link']:
@@ -383,6 +390,7 @@ def nocookies(request):
   return render_template(request, 'nocookies', {'retest_url': retest_url})
 
 def socialbuttons(request):
+  return dummy_view(request)
   """
   just render the social buttons for sharing a URL
   expecting "url" and "text" in request.GET
@@ -415,6 +423,7 @@ def list_trustees_view(request, election):
 
 @election_admin(frozen=False)
 def new_trustee(request, election):
+  return dummy_view(request)
   if request.method == "GET":
     return render_template(request, 'new_trustee', {'election' : election})
   else:
@@ -550,6 +559,7 @@ def encrypt_ballot(request, election):
   perform the ballot encryption given answers_json, a JSON'ified list of list of answers
   (list of list because each question could have a list of answers if more than one.)
   """
+  return dummy_view(request)
   # FIXME: maybe make this just request.POST at some point?
   answers = utils.from_json(request.REQUEST['answers_json'])
   ev = mixnet.EncryptedVote.fromElectionAndAnswers(election, answers)
@@ -627,7 +637,7 @@ def password_voter_login(request, election):
   This is used to log in as a voter for a particular election
   """
 
-  return HttpResponseRedirect("/")
+  return dummy_view(request)
 
   # the URL to send the user to after they've logged in
   bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
@@ -840,6 +850,7 @@ def one_election_cast_done(request, election):
 @election_view()
 @json
 def one_election_result(request, election):
+  return dummy_view(request)
   return election.result
 
 @election_view()
@@ -886,6 +897,7 @@ def one_election_audited_ballots(request, election):
   """
   UI to show election audited ballots
   """
+  return dummy_view(request)
 
   if request.GET.has_key('vote_hash'):
     b = AuditedBallot.get(election, request.GET['vote_hash'])
@@ -940,6 +952,7 @@ def one_election_set_reg(request, election):
   """
   Set whether this is open registration or not
   """
+  return dummy_view(request)
   # only allow this for public elections
   if not election.private_p:
     open_p = bool(int(request.GET['open_p']))
@@ -953,6 +966,7 @@ def one_election_set_featured(request, election):
   """
   Set whether this is a featured election or not
   """
+  return dummy_view(request)
 
   user = get_user(request)
   if not security.user_can_feature_election(user, election):
@@ -967,6 +981,7 @@ def one_election_set_featured(request, election):
 @election_admin()
 def one_election_archive(request, election):
 
+  return dummy_view(request)
   archive_p = request.GET.get('archive_p', True)
 
   if bool(int(archive_p)):
@@ -1080,6 +1095,7 @@ def _register_voter(election, user):
 
 @election_view()
 def one_election_register(request, election):
+  return dummy_view(request)
   if not election.openreg:
     return HttpResponseForbidden('registration is closed for this election')
 
@@ -1197,6 +1213,7 @@ def combine_decryptions(request, election):
 
 @election_admin(frozen=True)
 def one_election_set_result_and_proof(request, election):
+  return dummy_view(request)
   if not election.tallied:
     return HttpResponseRedirect(reverse(one_election_view,args=[election.election_id]))
 
@@ -1553,6 +1570,7 @@ def ballot_list(request, election):
   this will order the ballots from most recent to oldest.
   and optionally take a after parameter.
   """
+  return dummy_view(request)
   limit = after = None
   if request.GET.has_key('limit'):
     limit = int(request.GET['limit'])
