@@ -44,9 +44,9 @@ href="{% url helios.views.delete_trustee election.uuid %}?uuid={{t.uuid}}">Δι�
     <p>
     {% if admin_p %}
     {% if t.public_key_hash %}
-    Αναγνωριστικό ηλεκτρονικού κλειδιού: <tt style="font-size:1.5em;">{{t.public_key_hash}}</tt>
+    Αναγνωριστικό Κωδικού Ψηφοφορίας: <tt style="font-size:1.5em;">{{t.public_key_hash}}</tt>
     {% else %}
-    <span class="label alert">Δεν έχει οριστεί ηλεκτρονικό κλειδί.</span>
+    <span class="label alert">Δεν έχει οριστεί Κωδικός Ψηφοφορίας.</span>
     {% endif %}
     {% endif %}
 
