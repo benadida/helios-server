@@ -57,7 +57,7 @@ class HeliosElection(ZeusCoreElection):
             zeus_vote['signature'] = vote.signature
             zeus_vote['previous'] = vote.previous
             zeus_vote['voter'] = vote.voter.uuid
-            zeus_vote['index'] = vote.pk
+            zeus_vote['index'] = vote.index
             return zeus_vote
         except helios_models.CastVote.DoesNotExist:
             pass
@@ -98,7 +98,7 @@ class HeliosElection(ZeusCoreElection):
         return index
 
     def do_get_index_vote(self, index):
-        return self.model.election.castvote_set.get(pk=index).fingerprint
+        return self.model.election.castvote_set.get(index=index).fingerprint
 
     def do_get_vote_index(self):
         votes = []
@@ -135,7 +135,7 @@ class HeliosElection(ZeusCoreElection):
             zeus_vote['signature'] = vote.signature
             zeus_vote['previous'] = vote.previous
             zeus_vote['voter'] = vote.voter.uuid
-            zeus_vote['index'] = vote.pk
+            zeus_vote['index'] = vote.index
             votes[vote.fingerprint] = zeus_vote
         return votes
 
