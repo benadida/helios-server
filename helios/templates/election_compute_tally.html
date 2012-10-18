@@ -2,7 +2,7 @@
 
 {% block tabs_menu %}
 <dd class="active"><a 
-  href="{% url helios.views.one_election_view election.uuid %}">Κλείσιμο κάλπης</a></dd>
+  href="{% url helios.views.one_election_view election.uuid %}">Λήξη της ψηφοφορίας</a></dd>
 {% endblock %}
 
 {% block content %}
@@ -10,17 +10,17 @@
 <div id="instructions">
 {% if election.num_cast_votes %}
 <p>
-    Είστε σίγουρος οτι θέλετε να κλείσετε την κάλπη της ψηφοφορίας <b>{{election.name}}</b>.
+    Είστε σίγουρος οτι θέλετε να λήξετε οριστικά την ψηφοφορία <b>{{election.name}}</b>;
 </p>
 
 <p>
-    Μόλις κλείσει η κάλπη κανένας ψηφοφόρος δεν θα μπορεί να ψηφίσει.
+    Μετά τη λήξη της ψηφοφορίας κανένας ψηφοφόρος δεν θα μπορεί να ψηφίσει.
 </p>
 
 <form method="post" action="" onsubmit="alert('Η μείξη κρυπτογραφημένων ψήφων έχει ξεκινήσει.')" class="pretty">
 <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
     
-<input class="button success pretty small" type="submit" value="Κλείσιμο" />
+<input class="button success pretty small" type="submit" value="Λήξη" />
 <button class="button alert small" onclick="document.location='./view'; return false;">Ακύρωση</button>
 </form>
 {% else %}

@@ -64,9 +64,9 @@ if (!navigator.javaEnabled()) {
 ανά τακτά χρονικά διαστήματα μέχρι να ολοκληρωθεί η διαδικασία.
 {% else %}
 {% if election.num_cast_votes %}
-<a class="button success" href="{% url helios.views.one_election_compute_tally election.uuid %}">Κλείσιμο της κάλπης</a><br />
+<a class="button success" href="{% url helios.views.one_election_compute_tally election.uuid %}">Λήξη της ψηφοφορίας</a><br />
 {% else %}
-<a class="button success disabled secondary">Κλείσιμο της κάλπης</a><br />
+<a class="button success disabled secondary">Λήξη της ψηφοφορίας</a><br />
 {% endif %}
 {% endif %}
 {% else %}
@@ -123,7 +123,7 @@ release results
 
 {% if election.voting_has_stopped %}
 <span class="highlight-box round">
-Η ψηφοφορία έχει κλείσει.
+Η ψηφοφορία έχει λήξει οριστικά.
 </span><br />
 {% else %}
 
