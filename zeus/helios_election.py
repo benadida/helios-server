@@ -98,7 +98,7 @@ class HeliosElection(ZeusCoreElection):
         return index
 
     def do_get_index_vote(self, index):
-        return self.model.election.castvote_set.get(index=index).fingerprint
+        return self.model.election.castvote_set.get(pk=index).fingerprint
 
     def do_get_vote_index(self):
         votes = []
