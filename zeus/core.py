@@ -2630,16 +2630,24 @@ class ZeusCoreElection(object):
 
     def extract_votes_for_mixing(self):
         vote_index = self.do_get_vote_index()
-        scratch = [None] * len(vote_index)
         do_get_vote = self.do_get_vote
+        index_map = dict((do_get_vote(f)['index'], i) for i, f in \
+                                 enumerate(vote_index))
+        scratch = [None] * len(vote_index)
         vote_count = 0
+        old_index = 0
 
         for i, fingerprint in enumerate(vote_index):
             vote = dict(do_get_vote(fingerprint))
             index = vote['index']
-            if i != index:
-                m = "Index mismatch %d != %d. Corrupt index!" % (i, index)
+            #if i != index:
+                #m = "Index mismatch %d != %d. Corrupt index!" % (i, index)
+                #raise AssertionError(m)
+            if index <= old_index:
+                m = "Corrupt index!"
                 raise AssertionError(m)
+            old_index = index
+
             eb = vote['encrypted_ballot']
             _vote = [eb['alpha'], eb['beta']]
             scratch[i] = _vote
@@ -2650,7 +2658,7 @@ class ZeusCoreElection(object):
 
             previous_vote = dict(do_get_vote(previous))
             previous_index = previous_vote['index']
-            if previous_index >= index or scratch[previous_index] is None:
+            if previous_index >= index or scratch[index_map[previous_index]] is None:
                 m = "Inconsistent index!"
                 raise AssertionError(m)
             if previous_vote['voter'] != vote['voter']:
@@ -2658,7 +2666,7 @@ class ZeusCoreElection(object):
                     % (previous_vote['voter'], vote['voter']))
                 raise AssertionError(m)
 
-            scratch[previous_index] = None
+            scratch[index_map[previous_index]] = None
 
         votes_for_mixing = [v for v in scratch if v is not None]
         nr_votes = len(votes_for_mixing)
