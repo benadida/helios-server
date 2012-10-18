@@ -1555,7 +1555,7 @@ def shuffle_ciphers(modulus, generator, order, public, ciphers,
                 teller.advance(count)
             count = 0
 
-    if nr_parallel and _queue is not None and i:
+    if nr_parallel and _queue is not None and count:
         _queue.put(count)
     if teller:
         teller.advance(count)
