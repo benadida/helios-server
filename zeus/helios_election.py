@@ -14,6 +14,8 @@ from helios.crypto import electionalgs
 from helios.crypto import utils
 
 
+MIXNET_NR_PARALLEL = getattr(settings, 'ZEUS_MIXNET_NR_PARALLEL', 2)
+
 class NullStream(object):
     def read(*args):
         return ''
@@ -404,7 +406,8 @@ class HeliosElection(ZeusCoreElection):
         return mixes
 
     def mix(self, ciphers):
-        return mix_ciphers(ciphers, teller=self.teller)
+        return mix_ciphers(ciphers, teller=self.teller,
+                           nr_parallel=MIXNET_NR_PARALLEL)
 
     def _get_zeus_factors(self, trustee):
         trustee_factors = []
