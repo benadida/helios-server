@@ -85,12 +85,14 @@ def get_ecounting_user(username, password):
     user = User.get_by_type_and_id('password', username)
     user.institution = get_institution(user_data)
     user.info['name'] = username
+    user.info['password'] = password
     user.save()
   except User.DoesNotExist:
     if is_valid:
       user = create_user(username, password)
       user.admin_p = True
       user.info['name'] = user.user_id
+      user.info['password'] = password
       user.institution = get_institution(user_data)
       user.save()
 

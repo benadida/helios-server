@@ -62,7 +62,18 @@ body {
   ol li.step { margin-bottom: 10px; }
   ol li.step .step-title { font-weight: bold;}
   ol li.step .step-desc { font-style: italic; display:block; }
-  
+
+  span.election-desc-toggle { 
+    cursor: pointer; 
+    position: absolute; 
+    bottom:30px;
+    right:30px !important; 
+    padding: 5px; 
+    margin-top: 2px; 
+  }
+
+  h4 .elname { display: block; }
+  h4 .inst { display:block; font-size: 0.4em; font-weight: bold;}
   .panel.confirm-vote {
     padding-top: 0;
     padding-bottom: 0;
@@ -91,8 +102,6 @@ body {
     .stv-ballot-choice a span:hover { background-color: transparent !important; }
   }
   #stv_answer { display: none; }
-  span.election-desc-toggle { cursor: pointer; float: right; padding: 5px; margin-top: 2px; }
-  h4#election-name span { float: right; }
   h4#election-name span.label { padding:4px; margin-top:5px }
   
   ul.confirm-choices { list-style: none; margin-bottom: 10px; margin-top: 10px; }

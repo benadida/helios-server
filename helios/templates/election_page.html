@@ -4,7 +4,11 @@
 
 {% block head_subtitle %}
    <h4 id="election-name" class="subheader">
-      {{election.name}}<span class="button small
+       <span class="inst">{{ election.institution.name }}</span>
+       <span class="elname">
+           {{election.name}}
+           </span>
+           <span class="button small
         election-desc-toggle">Πληροφορίες</span>
 {% if election.is_archived %}
 <span class="medium label alert">αρχείο</span>

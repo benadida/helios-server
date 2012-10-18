@@ -21,8 +21,9 @@
 {% if trustee.decryption_factors %}
 Έχετε μεταφορτώσει την αποκρυπτογράφηση σας με επιτυχία.
 {% else %}
-    Τα τελικά ψηφοδέλτια είναι έτοιμα για αποκρυπτογράφηση.<br />
-    <a href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">αποκρυπτογραφήστε με τον Κωδικό Ψηφοφορίας σας</a>
+<b>Τα τελικά ψηφοδέλτια είναι έτοιμα για αποκρυπτογράφηση.</b><br /><br />
+
+    <a class="button success medium" href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">Αποκρυπτογραφήστε με τον Κωδικό Ψηφοφορίας σας</a>
 {% endif %}
 {% else %}
 Μετά την ολοκλήρωση της καταμέτρησης μπορείτε να επιστρέψετε εδώ για την αποκρυπτογράφηση των αποτελεσμάτων.<br />
