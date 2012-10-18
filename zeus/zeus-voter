@@ -11,11 +11,13 @@ from urllib import urlencode
 from os.path import exists
 from sys import argv, stderr
 from json import loads, dumps
+from Queue import Queue, Empty
+from threading import Thread
 
 p, g, q, x, y = c2048()
 
 def generate_voter_file(nr, domain='zeus.minedu.gov.gr'):
-    return '\n'.join((u'voter-%d@%s, Ψηφοφόρος %d' % (i, domain, i))
+    return '\n'.join((u'voter-%d@%s, Ψηφοφόρος, %d' % (i, domain, i))
                      for i in xrange(nr))
 
 def generate_vote(p, g, q, y, nr_candidates):
@@ -82,12 +84,33 @@ def main_generate(nr, domain, voters_file):
     with open(voters_file, "w") as f:
         f.write(generate_voter_file(nr, domain=domain).encode('utf-8'))
 
-def main_cast(voter_url_file):
-    voter_urls = open(voter_url_file).read().splitlines()
-    total = len(voter_urls)
-    for i, voter_url in enumerate(voter_urls):
+def main_cast_thread(queue):
+    while 1:
+        try:
+            o = queue.get_nowait()
+            if not o:
+                break
+        except Empty, e:
+            break
+        i, total, voter_url = o
         print "%d/%d" % (i, total)
         cast_vote(voter_url)
+
+def main_cast(voter_url_file, nr_threads=2):
+    voter_urls = open(voter_url_file).read().splitlines()
+    total = len(voter_urls)
+    queue = Queue(maxsize=total)
+    for i, voter_url in enumerate(voter_urls):
+        queue.put((i, total, voter_url))
+
+    threads = [Thread(target=main_cast_thread, args=(queue,))
+               for _ in xrange(nr_threads)]
+
+    for t in threads:
+        t.start()
+
+    for t in threads:
+        t.join()
 
 def main_help():
     usage = ("Usage: ./zeus-voter generate <nr_voters> <domain> <voters.csv>\n"
@@ -100,7 +123,7 @@ def main():
     argc = len(argv)
 
     usage = ("Usage: ./zeus-voter generate <nr> <domain> <voters.csv>\n"
-             "       ./zeus-voter cast <voter_url_file>\n")
+             "       ./zeus-voter cast <voter_url_file> [nr_threads]\n")
 
     if argc < 3:
         main_help()
@@ -112,8 +135,8 @@ def main():
         main_generate(int(argv[2]), argv[3], argv[4])
 
     elif argv[1] == 'cast':
-        main_cast(argv[2])
-
+        nr_threads=int(argv[3]) if argc > 3 else 2
+        main_cast(argv[2], nr_threads=nr_threads)
     else:
         main_help()
 
