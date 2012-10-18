@@ -1023,33 +1023,45 @@ def csv_reader(csv_data, **kwargs):
     if not isinstance(csv_data, str):
         m = "Please provide string data to csv_reader, not %s" % type(csv_data)
         raise ValueError(m)
-    all_encodings = ['utf-8', 'iso-8859-7']
-    all_encodings.reverse()
-    for line in csv_data.splitlines():
-      encodings = list(all_encodings)
-      if not line.strip():
-        continue
-
-      while 1:
-          if not encodings:
+    encodings = ['utf-8', 'iso8859-7', 'utf-16', 'utf-16le', 'utf-16be']
+    encodings.reverse()
+    rows = []
+    append = rows.append
+    while 1:
+        if not encodings:
             m = "Cannot decode csv data!"
             raise ValueError(m)
-          encoding = encodings[-1]
-          try:
-            line = line.decode(encoding)
-            cells = line.split(',', 3)
-            if len(cells) < 3:
-                cells = line.split(';')
-                if len(cells) < 3:
-                    m = ("CSV must have at least 3 fields "
-                         "(email, last_name, name)")
-                    raise ValueError(m)
-                cells += [u''] * (4 - len(cells))
-            yield cells
+        encoding = encodings[-1]
+        try:
+            data = csv_data.decode(encoding)
+            data = data.strip(u'\ufeff')
+            if data.count(u'\x00') > 0:
+                m = "Wrong encoding detected (heuristic)"
+                raise ValueError(m)
+            if data.count(u'\u2000') > data.count(u'\u0020'):
+                m = "Wrong endianess (heuristic)"
+                raise ValueError(m)
             break
-          except UnicodeDecodeError, e:
+        except (UnicodeDecodeError, ValueError), e:
             encodings.pop()
             continue
+
+    for line in data.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        cells = line.split(',', 3)
+        if len(cells) < 3:
+            cells = line.split(';')
+            if len(cells) < 3:
+                m = ("CSV must have at least 3 fields "
+                     "(email, last_name, name)")
+                raise ValueError(m)
+            cells += [u''] * (4 - len(cells))
+        append(cells)
+
+    return rows
+
 
 class VoterFile(models.Model):
   """
