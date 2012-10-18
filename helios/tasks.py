@@ -136,6 +136,10 @@ def tally_decrypt(election_id):
 
     election = Election.objects.get(id = election_id)
     election.zeus_election.decrypt_ballots()
+
+    for t in election.trustee_set.filter(secret_key__isnull=True):
+      t.send_url_via_mail()
+
     election_notify_admin.delay(election_id = election_id,
                                 subject = 'Election Decrypt',
                                 body = """
