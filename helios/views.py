@@ -58,7 +58,7 @@ ELGAMAL_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(ELGAMAL_PARAMS, dataty
 from django.conf import settings
 
 def dummy_view(request):
-    return PermissionDenied
+  return HttpResponseRedirect("/")
 
 def get_election_url(election):
   return settings.URL_HOST + reverse(election_shortcut, args=[election.short_name])
@@ -804,7 +804,15 @@ def one_election_cast_confirm(request, election):
 
   return HttpResponseRedirect("%s%s" % (settings.URL_HOST, reverse(one_election_cast_done, args=[election.uuid])))
 
-@election_view()
+@election_view(allow_logins=True)
+def one_election_download_signature(request, election, fingerprint):
+  vote = CastVote.objects.get(fingerprint=fingerprint)
+  response = HttpResponse(content_type='application/binary')
+  response['Content-Dispotition'] = 'attachment:filename=signature.txt'
+  response.write(vote.signature)
+  return response
+
+@election_view(allow_logins=True)
 def one_election_cast_done(request, election):
   """
   This view needs to be loaded because of the IFRAME, but then this causes
@@ -838,22 +846,20 @@ def one_election_cast_done(request, election):
   # user locally
   # WHY DO WE COMMENT THIS OUT? because we want to force a full logout via the iframe, including
   # from remote systems, just in case, i.e. CAS
-  auth_views.do_local_logout(request)
 
-  # tweet/fb your vote
-  socialbuttons_url = get_socialbuttons_url(cv_url, 'I cast a vote in %s' % election.name)
+  if voter:
+    votes = CastVote.get_by_voter(voter)
+    return HttpResponseRedirect(reverse(one_election_cast_done,
+                                        args=[election.uuid]) + "?finger=%s" % votes[0].fingerprint)
 
-  #if election.send_email_on_cast_done:
-    #tasks.single_voter_email.delay(voter.uuid, 'email/cast_done_subject.txt',
-                                   #'email/cast_done_body.txt',
-                                   #extra_vars={vote_hash: vote_hash}, update_date=False)
 
-  # remote logout is happening asynchronously in an iframe to be modular given the logout mechanism
-  # include_user is set to False if logout is happening
-  return render_template(request, 'cast_done', {'election': election,
-                                                'vote_hash': vote_hash, 'logout': logout,
-                                                'socialbuttons_url': socialbuttons_url},
-                         include_user=(not logout))
+  if request.GET.get("finger", None):
+    vote = CastVote.objects.get(fingerprint=request.GET.get("finger"))
+    return render_template(request, 'cast_done', {'election': election,
+                                                  'logout': logout, 'cast_vote': vote},
+                           include_user=(not logout))
+
+  return HttpResponseRedirect("/")
 
 @election_view()
 @json

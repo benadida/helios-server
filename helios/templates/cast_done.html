@@ -10,6 +10,9 @@
 {% block content %}
 <p>
 Συγχαρητήρια, η ψήφος σας καταχωρήθηκε.
+
+<a target="_blank" href="{% url helios.views.one_election_download_signature election.uuid cast_vote.fingerprint %}"
+  >download signature</a>
 </p>
 
 {% comment %}

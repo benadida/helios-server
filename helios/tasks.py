@@ -140,6 +140,7 @@ def tally_decrypt(election_id):
     for t in election.trustee_set.filter(secret_key__isnull=True):
       t.send_url_via_mail()
 
+    election.post_ecounting()
     election_notify_admin.delay(election_id = election_id,
                                 subject = 'Election Decrypt',
                                 body = """
