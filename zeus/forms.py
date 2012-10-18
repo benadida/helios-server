@@ -95,7 +95,7 @@ class ElectionForm(forms.Form):
 
   #create_test_voters = forms.BooleanField(required=False)
   voting_extended_until = JqSplitDateTimeField(label=_('Voting extended until'),
-                                          initial=datetime.now,
+                                               required=False,
                                           widget=JqSplitDateTimeWidget(
                                             attrs={'date_class':'datepicker','time_class':'timepicker'}),
                                           help_text = _('Voting extension date'))
@@ -131,7 +131,6 @@ class ElectionForm(forms.Form):
       self.fields['voting_starts_at'].widget.attrs['readonly'] = True
       self.fields['voting_ends_at'].widget.attrs['readonly'] = True
       self.fields['name'].widget.attrs['readonly'] = True
-      self.fields['eligibles_count'].widget.attrs['disabled'] = True
       del self.fields['trustees']
       del self.fields['departments']
     else:
@@ -157,6 +156,9 @@ class ElectionForm(forms.Form):
 
       if dfrom >= dto:
           raise forms.ValidationError(_("Invalid voting dates"))
+
+      if dextend and cleaned_data['voting_extended_until'] < dto:
+          raise forms.ValidationError(_("Invalid voting extension date"))
 
       return cleaned_data
 

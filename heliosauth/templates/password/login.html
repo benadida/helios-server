@@ -17,7 +17,7 @@
 </div>
 {% endif %}
 
-<form class="prettyform" action="" method="POST" id="login_form">
+<form class="prettyform" action="{% url heliosauth.auth_systems.password.password_login_view %}" method="POST" id="login_form">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 <table>
     {{form.as_p}}

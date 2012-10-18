@@ -209,6 +209,8 @@ VERIFIER_STATIC_PATH = ROOT_PATH + '/heliosverifier/'
 
 ECOUNTING_LOGIN_URL = "https://x.x.x.x/checkuser.php"
 
+HELIOS_VOTER_EMAIL_RATE = '20/m'
+
 # useful trick for custom settings
 try:
     from local_settings import *

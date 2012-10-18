@@ -63,7 +63,7 @@ def voters_notify(election_id, notification_template, extra_vars={}):
     for voter in election.voter_set.all():
         single_voter_notify.delay(voter.uuid, notification_template, extra_vars)
 
-@task()
+@task(rate_limit=getattr(settings, 'HELIOS_VOTER_EMAIL_RATE', '20/m'))
 def single_voter_email(voter_uuid, subject_template, body_template,
                        extra_vars={}, update_date=True):
     voter = Voter.objects.get(uuid = voter_uuid)
