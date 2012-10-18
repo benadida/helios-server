@@ -1528,11 +1528,11 @@ def get_random_permutation_gamma(nr_elements):
     return selection
 
 _queue = None
-_parallel_mix = None
 _report_thresh = 4
 
-def shuffle_ciphers(modulus, generator, order, public, ciphers, teller=None):
-    if _parallel_mix:
+def shuffle_ciphers(modulus, generator, order, public, ciphers,
+                    teller=None, nr_parallel=0):
+    if nr_parallel:
         Random.atfork()
     nr_ciphers = len(ciphers)
     mixed_offsets = get_random_permutation(nr_ciphers)
@@ -1548,21 +1548,24 @@ def shuffle_ciphers(modulus, generator, order, public, ciphers, teller=None):
         o = mixed_offsets[i]
         mixed_ciphers[o] = (alpha, beta)
         count += 1
-        if (count >= _report_thresh
-            and _parallel_mix and _queue is not None):
-            _queue.put(count)
+        if (count >= _report_thresh):
+            if nr_parallel and _queue is not None:
+                _queue.put(count)
             if teller:
                 teller.advance(count)
             count = 0
 
-    if _parallel_mix and _queue is not None and i:
+    if nr_parallel and _queue is not None and i:
         _queue.put(count)
+    if teller:
+        teller.advance(count)
     return [mixed_ciphers, mixed_offsets, mixed_randoms]
 
 def shuffle_map(args):
-    return shuffle_ciphers(*args)
+    return shuffle_ciphers(*args[0], **args[1])
 
-def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS, teller=_teller):
+def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS,
+                teller=_teller, nr_parallel=0):
     p = ciphers_for_mixing['modulus']
     g = ciphers_for_mixing['generator']
     q = ciphers_for_mixing['order']
@@ -1576,18 +1579,20 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS, teller=_teller):
     cipher_mix = {'modulus': p, 'generator': g, 'order': q, 'public': y}
     cipher_mix['original_ciphers'] = original_ciphers
 
-    with teller.task('Producing final mixed ciphers'):
-        shuffled = shuffle_ciphers(p, g, q, y, original_ciphers)
+    with teller.task('Producing final mixed ciphers', total=nr_ciphers):
+        shuffled = shuffle_ciphers(p, g, q, y, original_ciphers, teller=teller)
         mixed_ciphers, mixed_offsets, mixed_randoms = shuffled
         cipher_mix['mixed_ciphers'] = mixed_ciphers
 
     total = nr_ciphers * nr_rounds
     with teller.task('Producing ciphers for proof', total=total):
-        if _parallel_mix:
+        if nr_parallel:
             global _queue
             _queue = PoolQueue()
-            WorkerPool = Pool(processes=_parallel_mix)
-            args_collection = repeat((p, g, q, y, original_ciphers), nr_rounds)
+            WorkerPool = Pool(processes=nr_parallel)
+            args_collection = repeat(((p, g, q, y, original_ciphers),
+                                      {'nr_parallel': nr_parallel}),
+                                      nr_rounds)
             result = WorkerPool.map_async(shuffle_map, args_collection)
             Random.atfork()
             count = nr_ciphers * nr_rounds
@@ -1701,7 +1706,7 @@ def verify_cipher_mix(cipher_mix, teller=_teller):
     #    m = "Invalid cryptosystem"
     #    raise AssertionError(m)
 
-    teller.task('Verifying rounds', total=nr_rounds)
+    teller.task('Verifying ciphers', total=nr_rounds*nr_ciphers)
     for i, bit in zip(xrange(nr_rounds), bit_iterator(int(challenge, 16))):
         ciphers = cipher_collections[i]
         randoms = random_collections[i]
@@ -1720,6 +1725,7 @@ def verify_cipher_mix(cipher_mix, teller=_teller):
                     m = ('MIXING VERIFICATION FAILED AT '
                          'ROUND %d CIPHER %d' % (i, j))
                     raise AssertionError(m)
+                teller.advance()
         elif bit == 1:
             for j in xrange(nr_ciphers):
                 cipher = ciphers[j]
@@ -1733,11 +1739,11 @@ def verify_cipher_mix(cipher_mix, teller=_teller):
                     m = ('MIXING VERIFICATION FAILED AT '
                          'ROUND %d CIPHER %d' % (i, j))
                     raise AssertionError(m)
+                teller.advance()
         else:
             m = "This should be impossible. Something is broken."
             raise AssertionError(m)
-        teller.advance()
-    teller.finish('Verifying rounds')
+    teller.finish('Verifying ciphers')
     teller.finish('Verifying mixing')
     return 1
 
@@ -2159,7 +2165,7 @@ class ZeusCoreElection(object):
             with teller.task("Validating Voter Names"):
                 names = voters.values()
                 nr_names = len(names)
-		## disabled
+                ## disabled
                 #if len(set(names)) != nr_names:
                 #    m = "Duplicate voter names!"
                 #    raise ZeusError(m)
@@ -3100,7 +3106,7 @@ class ZeusCoreElection(object):
 
         self._trustees = trustees
 
-    def mk_stage_voting(self, teller=_teller):
+    def mk_stage_voting(self, teller=_teller, nr_parallel=0):
         selections = []
         plaintexts = {}
         votes = []
@@ -3158,16 +3164,17 @@ class ZeusCoreElection(object):
                 m = "Invalid public audit reply!"
                 raise AssertionError(m)
 
-    def mk_stage_mixing(self, teller=_teller):
+    def mk_stage_mixing(self, teller=_teller, nr_parallel=0):
         for _ in xrange(self._nr_mixes):
             cipher_collection = self.get_last_mix()
             mixed_collection = mix_ciphers(cipher_collection,
                                            nr_rounds=self._nr_rounds,
-                                           teller=teller)
+                                           teller=teller,
+                                           nr_parallel=nr_parallel)
             self.add_mix(mixed_collection)
             teller.advance()
 
-    def mk_stage_decrypting(self, teller=_teller):
+    def mk_stage_decrypting(self, teller=_teller, nr_parallel=0):
         modulus, generator, order = self.do_get_cryptosystem()
         ciphers = self.get_mixed_ballots()
         with teller.task("Calculating and adding decryption factors",
@@ -3185,7 +3192,7 @@ class ZeusCoreElection(object):
                 self.add_trustee_factors(trustee_factors)
                 teller.advance()
 
-    def mk_stage_finished(self, teller=_teller):
+    def mk_stage_finished(self, teller=_teller, nr_parallel=0):
         with teller.task("Validating results"):
             results = self.get_results()
             if sorted(results) != sorted(self._plaintexts.values()):
@@ -3207,7 +3214,8 @@ class ZeusCoreElection(object):
                         nr_mixes        =   2,
                         nr_rounds       =   8,
                         stage           =   'FINISHED',
-                        teller          =   _teller):
+                        teller=_teller,
+                        nr_parallel=0):
 
         self = cls(teller=teller)
         self._nr_candidates = nr_candidates
@@ -3231,7 +3239,7 @@ class ZeusCoreElection(object):
 
         self.set_mixing()
         with teller.task("Mixing", total=nr_mixes):
-            self.mk_stage_mixing(teller)
+            self.mk_stage_mixing(teller, nr_parallel=nr_parallel)
         if stage == 'MIXING':
             return self
 
@@ -3309,7 +3317,7 @@ def main():
 
     args = parser.parse_args()
 
-    def main_generate(args, teller=_teller):
+    def main_generate(args, teller=_teller, nr_parallel=0):
         filename = args.generate
         filename = filename[0] if filename else None
 
@@ -3320,7 +3328,7 @@ def main():
                             nr_votes        =   args.nr_votes,
                             nr_rounds       =   args.nr_rounds,
                             stage           =   args.stage,
-                            teller=teller)
+                            teller=teller, nr_parallel=nr_parallel)
         exported, stage = election.export()
         if not filename:
             name = ("%x" % election.do_get_election_public())[:16]
@@ -3335,7 +3343,7 @@ def main():
             finished = json.load(f)
         election = ZeusCoreElection.new_at_finished(finished, teller=teller)
 
-    def main_mix(args, teller=_teller):
+    def main_mix(args, teller=_teller, nr_parallel=0):
         infile, outfile = args.mix
         with open(infile, "r") as f:
             mixing = json.load(f)
@@ -3350,7 +3358,7 @@ def main():
         ciphers_to_mix = pk_noproof_from_args(*pk_args(last_mix))
         ciphers_to_mix['mixed_ciphers'] = last_mix['mixed_ciphers']
         mixed_ciphers = mix_ciphers(ciphers_to_mix, nr_rounds=args.nr_rounds,
-                                    teller=teller)
+                                    teller=teller, nr_parallel=nr_parallel)
         teller_stream.flush()
         with open(outfile, "w") as f:
             json.dump(mixed_ciphers, f, indent=2)
@@ -3368,16 +3376,16 @@ def main():
     teller = Teller(outstream=teller_stream)
     import json
 
+    nr_parallel = 0
     if args.nr_procs > 1:
-        global _parallel_mix
-        _parallel_mix = int(args.nr_procs)
+        nr_parallel = int(args.nr_procs)
 
     if args.generate is not None:
-        return main_generate(args, teller=teller)
+        return main_generate(args, teller=teller, nr_parallel=nr_parallel)
     elif args.validate:
-        return main_validate(args, teller=teller)
+        return main_validate(args, teller=teller, nr_parallel=nr_parallel)
     elif args.mix:
-        return main_mix(args, teller=teller)
+        return main_mix(args, teller=teller, nr_parallel=nr_parallel)
     else:
         parser.print_help()
 
