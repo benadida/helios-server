@@ -4,13 +4,8 @@
 <p>
 {% if trustee.public_key_hash %}
 Το δημόσιο κλειδί του Κωδικού σας μεταφορτώθηκε με επιτυχία.<br />
-Το αποτύπωμα του δημόσιου κλειδιού σας είναι 
-
-<div class="panel">
-  <b>{{trustee.public_key_hash}}</b>.<br />
-</div>
-Πρέπει <a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">
-να επαληθεύσετε ότι έχετε το σωστό Κωδικό Ψηφοφορίας</a>, αν δεν το έχετε ήδη κάνει.
+<a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">
+Επαληθεύστε ότι έχετε το σωστό Κωδικό Ψηφοφορίας</a>, αν δεν το έχετε ήδη κάνει.
 {% else %}
 <a href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">ρυθμίστε τον Κωδικό Ψηφοφορίας</a>
 {% endif %}
@@ -19,10 +14,11 @@
 <p>
 {% if election.encrypted_tally %}
 {% if trustee.decryption_factors %}
-Έχετε μεταφορτώσει την αποκρυπτογράφηση σας με επιτυχία.
+Έχετε αποστείλει τη μερική αποκρυπτογράφησή σας με επιτυχία.
 {% else %}
-    Τα τελικά ψηφοδέλτια είναι έτοιμα για αποκρυπτογράφηση.<br />
-    <a href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">αποκρυπτογραφήστε με τον Κωδικό Ψηφοφορίας σας</a>
+Τα τελικά ψηφοδέλτια είναι έτοιμα για αποκρυπτογράφηση.<br />
+<a href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">
+Αποκρυπτογραφήστε με τον Κωδικό Ψηφοφορίας σας</a>
 {% endif %}
 {% else %}
 Μετά την ολοκλήρωση της καταμέτρησης μπορείτε να επιστρέψετε εδώ για την αποκρυπτογράφηση των αποτελεσμάτων.<br />
