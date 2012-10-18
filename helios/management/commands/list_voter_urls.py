@@ -25,7 +25,7 @@ class Command(BaseCommand):
             voters = Voter.objects.all()
 
         for v in voters:
-            print v.election.uuid, v.get_quick_login_url()
+            print v.get_quick_login_url()
         # once broken out of the while loop, quit and wait for next invocation
         # this happens when there are no votes left to verify
 
