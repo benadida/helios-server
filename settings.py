@@ -12,7 +12,11 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    ('Ben Adida', 'ben@adida.net'),
+    ('Grnet user', 'test@grnet.gr'),
+)
+
+ELECTION_ADMINS = (
+    ('Grnet user', 'tesst@grnet.gr'),
 )
 
 MANAGERS = ADMINS
@@ -208,8 +212,11 @@ BOOTH_STATIC_PATH = ROOT_PATH + '/heliosbooth/'
 VERIFIER_STATIC_PATH = ROOT_PATH + '/heliosverifier/'
 
 ECOUNTING_LOGIN_URL = "https://x.x.x.x/checkuser.php"
+ECOUNTING_POST_URL = "https://x.x.x.x/newelection.php"
+ECOUNTING_CHECK_URL = "https://x.x.x.x/newelection.php"
+ECOUNTING_SECRET = "xxxxx"
 
-HELIOS_VOTER_EMAIL_RATE = '20/m'
+HELIOS_VOTER_EMAIL_RATE = '30/m'
 
 # useful trick for custom settings
 try:

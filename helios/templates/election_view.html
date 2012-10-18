@@ -29,7 +29,12 @@ if (!navigator.javaEnabled()) {
 
 <div class="row">
   <div class="columns six"><i>Έναρξη ψηφοφορίας στις:</i> <b>{{ election.voting_starts_at }}</b></div>
-  <div class="columns six"><i>Λήξη ψηφοφορίας στις:</i> <b>{{ election.voting_ends_at }}</b></div>
+  <div class="columns six"><i>Λήξη ψηφοφορίας στις:</i> <b>
+      {% if election.voting_extended_until %}
+      {{ election.voting_extended_until }}
+      {% else %}
+      {{ election.voting_ends_at }}
+      {% endif %}</b></div>
 
 </div>
 <br/>
@@ -102,23 +107,17 @@ release results
 {% if election.result %}
 <h5>Η ψηφοφορία έχει ολοκληρωθεί</h5>
 
-<h3 class="highlight-box">Αποτελέσματα</h3>
-<table width="100%">
-  <thead>
-    <tr>
-      <th>Σειρά επιλογής</th>
-      <th>Ψήφοι</th>
-    </tr>
-  </thead>
-  <tbody>
-{% for q,b in election.pretty_result.items %}
-    <tr>
-      <td>{{ q }}</td><td> {{ b }} </td>
-    </tr>
-</tbody>
-{% endfor %}
-</table>
-
+{% if admin_p %}
+{% if election.ecounting_request_send %}
+<p>
+Τα αποκρυπτογραφημένα ψηφοδέλτια έχουν σταλεί στο <b><a
+        href="https://e-counting.minedu.gov.gr">σύστημα
+        e-counting</a></b>
+{% else %}
+<a href="{% url helios.views.election_post_ecounting election.uuid %}">Αποστολή δεδομένων στην
+πλατφόρμα ecounting</a>
+{% endif %}
+{% endif %}
 {% else %}
 
 {% if election.voting_has_stopped %}
@@ -132,24 +131,6 @@ release results
 <a class="button success large" href="{{test_cookie_url}}">Συμμετοχή στην ψηφοφορία</a>
 </span><br />
 <br />
-{% if election.voting_extended_until %}
-<div class="alert-box alert">
-  <p>
-H ψηφοφορία ήταν προγραμματισμένη αρχικά να λήξει στις {{election.voting_ends_at}},<br />
-αλλά παρατάθηκε μέχρι τις {{ election.voting_extended_until }}.
-</p>
-</div>
-{% else %}
-{% if election.voting_ends_at %}
-<br />
-Η ψηφοφορία θα λήξει στις {{election.voting_ends_at}}.
-{% else %}
-Ο χρόνος της λήξης αυτής της {{election.election_type}} είναι
-στη διακριτική ευχέρεια του διαχειριστή της.
-{% endif %}
-<br />
-{% endif %}
-
 {% else %}
 <span class="highlight-box round">
   {% if not admin_p %}
@@ -173,6 +154,22 @@ H ψηφοφορία ήταν προγραμματισμένη αρχικά να
 {% endif %}
 {% endif %}
 {% endif %}
+
+{% if election.voting_extended_until %}
+<div class="alert-box alert">
+H ψηφοφορία ήταν προγραμματισμένη αρχικά να λήξει στις {{election.voting_ends_at}},<br />
+αλλά παρατάθηκε μέχρι τις {{ election.voting_extended_until }}.
+</div>
+{% else %}
+{% if election.voting_ends_at %}
+<br />
+{% else %}
+Ο χρόνος της λήξης αυτής της {{election.election_type}} είναι
+στη διακριτική ευχέρεια του διαχειριστή της.
+{% endif %}
+<br />
+{% endif %}
+
 
 {% if 0 %}
 <div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">

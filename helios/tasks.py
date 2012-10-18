@@ -9,11 +9,14 @@ import traceback
 import signals
 import copy
 import datetime
+import json
+import urllib, urllib2
 
 from celery.decorators import task
 
 from helios.models import *
 from helios.view_utils import render_template_raw
+
 from django.utils.translation import ugettext_lazy as _
 from django.core.mail import send_mail, EmailMessage
 
@@ -132,8 +135,11 @@ def tally_decrypt(election_id):
         raise Exception("Not all trustee factors uploaded")
 
     election = Election.objects.get(id = election_id)
-    election.zeus_election.validate_mixing()
     election.zeus_election.decrypt_ballots()
+
+    for t in election.trustee_set.filter(secret_key__isnull=True):
+      t.send_url_via_mail()
+
     election_notify_admin.delay(election_id = election_id,
                                 subject = 'Election Decrypt',
                                 body = """
@@ -182,12 +188,12 @@ def election_notify_admin(election_id, subject, body):
     election = Election.objects.get(id = election_id)
     #for admin in election.admins.all():
       #admin.send_message(subject, body)
-    for admin, admin_email in settings.ADMINS:
+    for admin, admin_email in settings.ELECTION_ADMINS:
         message = EmailMessage(subject,
                                body,
                                settings.SERVER_EMAIL,
                                ["%s <%s>" % (admin, admin_email)])
-    message.send(fail_silently=False)
+        message.send(fail_silently=False)
 
 
 @task()
@@ -210,4 +216,29 @@ you can find your encrypted vote attached in this mail.
       message.attach(*attachment)
 
   message.send(fail_silently=False)
+
+@task()
+def election_post_ecounting(election_id, user=None):
+    e = Election.objects.get(pk=election_id)
+    ecounting_data = e.ecounting_dict()
+    ecounting_data.update(getattr(settings, 'ECOUNTING_SECRET', ''))
+    ecounting_data['username'] = user
+
+    data = {
+        'json': json.dumps(ecounting_data, ensure_ascii=1)
+    }
+
+    values = urllib.urlencode(data)
+    url = getattr(settings, 'ECOUNTING_POST_URL', None)
+
+    if not url:
+      return
+
+    req = urllib2.Request(url, values)
+    response = urllib2.urlopen(req)
+    ecount_response = json.loads(response.read())
+    if ecount_response['success']:
+        e.ecounting_request_send = datetime.datetime.now()
+        e.save()
+
 

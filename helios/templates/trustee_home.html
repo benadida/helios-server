@@ -16,8 +16,8 @@
 {% if trustee.decryption_factors %}
 Έχετε αποστείλει τη μερική αποκρυπτογράφησή σας με επιτυχία.
 {% else %}
-Τα τελικά ψηφοδέλτια είναι έτοιμα για αποκρυπτογράφηση.<br />
-<a href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">
+<b>Τα τελικά ψηφοδέλτια είναι έτοιμα για αποκρυπτογράφηση.</b><br /><br />
+<a class="button success medium" href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">
 Αποκρυπτογραφήστε με τον Κωδικό Ψηφοφορίας σας</a>
 {% endif %}
 {% else %}

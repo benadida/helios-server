@@ -256,6 +256,14 @@ def election_new(request):
   return render_template(request, "election_new", {'election_form': election_form, 'error': error})
 
 @election_admin()
+def election_post_ecounting(request, election):
+    if not election.result:
+        raise PermissionDenied
+
+    election.post_ecounting()
+    return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+
+@election_admin()
 def one_election_edit(request, election):
   from zeus.forms import ElectionForm
   user = get_user(request)
@@ -1181,28 +1189,32 @@ def trustee_upload_decryption(request, election, trustee_uuid):
 
   trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
 
+  #if trustee.decryption_factors and trustee.decryption_proofs:
+    #raise PermissionDenied
+
   factors_and_proofs = utils.from_json(request.POST['factors_and_proofs'])
 
   # verify the decryption factors
-  trustee.decryption_factors = [[datatypes.LDObject.fromDict(factor, type_hint='core/BigInteger').wrapped_obj for factor in one_q_factors] for one_q_factors in factors_and_proofs['decryption_factors']]
+  decryption_factors = [[datatypes.LDObject.fromDict(factor, type_hint='core/BigInteger').wrapped_obj for factor in one_q_factors] for one_q_factors in factors_and_proofs['decryption_factors']]
 
   # each proof needs to be deserialized
-  trustee.decryption_proofs = [[datatypes.LDObject.fromDict(proof, type_hint='legacy/EGZKProof').wrapped_obj for proof in one_q_proofs] for one_q_proofs in factors_and_proofs['decryption_proofs']]
+  decryption_proofs = [[datatypes.LDObject.fromDict(proof, type_hint='legacy/EGZKProof').wrapped_obj for proof in one_q_proofs] for one_q_proofs in factors_and_proofs['decryption_proofs']]
 
-  if trustee.verify_decryption_proofs():
-    trustee.save()
+  try:
+    election.add_trustee_factors(trustee, decryption_factors, decryption_proofs)
+  except Exception, e:
+    print e
 
-    try:
-      # send a note to admin
-      for admin in election.admins.all():
-        admin.send_message("%s - trustee partial decryption" % election.name, "trustee %s (%s) did their partial decryption." % (trustee.name, trustee.email))
-    except:
-      # ah well
-      pass
-
-    return SUCCESS
-  else:
+  try:
+    # send a note to admin
+    for admin in election.admins.all():
+      admin.send_message("%s - trustee partial decryption" % election.name, "trustee %s (%s) did their partial decryption." % (trustee.name, trustee.email))
+  except:
     return FAILURE
+    # ah well
+    pass
+
+  return SUCCESS
 
 @election_admin(frozen=True)
 def combine_decryptions(request, election):
