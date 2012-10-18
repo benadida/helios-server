@@ -1177,6 +1177,7 @@ def one_election_compute_tally(request, election):
   election.tallying_started_at = datetime.datetime.utcnow()
   election.save()
 
+  election.zeus_election.validate_voting()
   tasks.election_compute_tally.delay(election_id = election.id)
 
   return HttpResponseRedirect(reverse(one_election_view,args=[election.uuid]))
