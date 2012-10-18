@@ -10,7 +10,7 @@ from django.forms.widgets import Select, MultiWidget, DateInput, TextInput
 from time import strftime
 
 
-hour_selections = [(str(t), "%02d:00" % t) for t in range(24)]
+hour_selections = [('','')] + [(str(t), "%02d:00" % t) for t in range(24)]
 class JqSplitDateTimeWidget(MultiWidget):
 
     def __init__(self, attrs=None, date_format=None, time_format=None):
@@ -63,6 +63,7 @@ class JqSplitDateTimeField(fields.MultiValueField):
             fields.CharField(max_length=10),
             fields.CharField(max_length=2),
             )
+
         super(JqSplitDateTimeField, self).__init__(all_fields, *args, **kwargs)
 
     def compress(self, data_list):
