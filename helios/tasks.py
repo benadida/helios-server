@@ -112,6 +112,7 @@ error: %s
         bad_mixnet.reset_mixing()
         if bad_mixnet.mix_order == 0:
           election.tallying_started_at = None
+
         election.save()
         return
 
