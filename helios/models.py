@@ -85,6 +85,7 @@ class ElectionMixnet(HeliosModel):
     # TODO: also reset mixnets with higher that current mix_order
     self.mixing_started_at = None
     self.mix = None
+    self.second_mix = None
     self.status = 'pending'
     self.mix_error = None
     self.save()
@@ -134,7 +135,6 @@ class ElectionMixnet(HeliosModel):
         self._do_mix()
     except Exception, e:
         self.status = 'error'
-        print traceback.format_exc()
         self.mix_error = traceback.format_exc()
         self.save()
         self.notify_admin_for_mixing_error()
@@ -255,6 +255,17 @@ class Election(HeliosModel):
   # decryption proof, a JSON object
   # no longer needed since it's all trustees
   result_proof = JSONField(null=True)
+  ecounting_request_send = models.DateTimeField(auto_now_add=False, null=True, default=None)
+
+  def get_ecounting_admin_user(self):
+    try:
+        return self.admins.all()[0].info['name']
+    except:
+        return None
+
+  def post_ecounting(self):
+    from helios import tasks
+    tasks.election_post_ecounting(self.pk, self.get_ecounting_admin_user())
 
   @property
   def pretty_type(self):

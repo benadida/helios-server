@@ -19,7 +19,7 @@ $(document).ready(function() {
 });
 
 
-function decrypt_and_prove_tally(tally, public_key, secret_key) {
+function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
     // we need to keep track of the values of g^{voter_num} for decryption
     var DISCRETE_LOGS = {};
     var CURRENT_EXP = 0;
@@ -34,58 +34,140 @@ function decrypt_and_prove_tally(tally, public_key, secret_key) {
     }
     
     // initialize the arrays
-    var decryption_factors= [];
-    var decryption_proofs= [];
+    var decryption_factors= [[]];
+    var decryption_proofs= [[]];
     
-    // decrypt the tallies
-    $(tally.tally).each(function(q_num, q_tally) {
-        decryption_factors[q_num] = [];
-        decryption_proofs[q_num] = [];
+    function update_progress() {
+        var met = $(".progress .meter");
+        var perc = (100 * computed) / tally.num_tallied;
+    }
 
-        $(q_tally).each(function(choice_num, choice_tally) {
-           var one_choice_result = secret_key.decryptionFactorAndProof(choice_tally, ElGamal.fiatshamir_challenge_generator);
-           
-           decryption_factors[q_num][choice_num] = one_choice_result.decryption_factor
-           decryption_proofs[q_num][choice_num] = one_choice_result.decryption_proof;
-        });
-    });
+    var computed = 0;
+    var computed_perc = 0;
+
+    var batches = [];
+    var BATCH_SIZE = 5;
+    var batch_med_time = 0;
+    var batches_completed = 0;
+
+    _.each(_.range(tally.num_tallied/BATCH_SIZE), function(i){
+        var from, to, batch;
+        from = i * BATCH_SIZE;
+        to = from + BATCH_SIZE;
+        if (to >= tally.num_tallied) {
+            to = tally.num_tallied;
+        }
+        batch = tally.tally[0].slice(from, to);
+        if (batch.length) {
+            batches.push(batch); 
+        }
+      });
+
+    var batches_count = batches.length;
+    var remaining = 0;
+    var choice_num = 0;
+    function _decrypt(from, to) {
+        var dbatch = batches.pop();
+        var time = new Date
+        
+        if (!dbatch) {
+            callback({
+                'decryption_factors': decryption_factors,
+                'decryption_proofs': decryption_proofs
+              });
+            return;
+        }
+        $(dbatch).each(function(index, q_tally) {
+          $(q_tally).each(function(choice_tally_index, choice_tally) {
+                var choice_tally = tally.tally[0][choice_num];
+                var one_choice_result = secret_key.decryptionFactorAndProof(choice_tally, 
+                                                ElGamal.fiatshamir_challenge_generator);
+               decryption_factors[0][choice_num] = one_choice_result.decryption_factor
+               decryption_proofs[0][choice_num] = one_choice_result.decryption_proof;
+               choice_num++;
+           });
+       });
+
+       batch_time = new Date - time;
+       batches_completed++;
+       batch_med_time = (batch_med_time + batch_time) / 2;
+       time_remaining = batch_med_time * (batches_count - batches_completed + 1);
+       var percentage_done = (100*batches_completed) / batches_count
+       batch_complete_callback(dbatch, batches_completed, batch_time, 
+                               batch_med_time, time_remaining, 
+                               batches_count, percentage_done);
+
+       window.setTimeout(_decrypt, 100);
+        
+    };
+   window.setTimeout(_decrypt, 100);
+}
+
+function batch_complete_callback(batch, batch_index, time, median_time, 
+                                 time_remaining, total_batches, percentage) {
+    //console.log("BATCH", batch_index, " of ", total_batches, 
+                //" finished in ", time/1000, "seconds. Approx. time:", 
+                //time_remaining, " Percentage:", percentage);
     
-    return {'decryption_factors': decryption_factors, 'decryption_proofs' : decryption_proofs};
+    if (batch_index > 1) {
+      $(".progress-message").show();
+    }
+    $(".progress .meter").css({'width': percentage + '%'});
+
+    var time_msg = parseInt(time_remaining/1000) + " δευτερόλεπτα.";
+    if (time_remaining/1000 > 60) {
+      time_msg = parseInt(time_remaining/1000/60) + " λεπτά.";
+    }
+
+    $(".progress-message .time").text(time_msg);
 }
 
 function get_secret_key() {
-  return ElGamal.SecretKey.fromJSONObject($.secureEvalJSON($('#sk_textarea').val()));
+  try{
+    return ElGamal.SecretKey.fromJSONObject($.secureEvalJSON($('#sk_textarea').val()));
+  } catch (err) {
+    alert("error");
+  }
 }
 
 function do_tally() {
   $('#sk_section').hide();
   $('#waiting_div').show();
+
+  $(".progress").show();
+  $(".progress .meter").width(10);
   
   var secret_key = get_secret_key();
   
-  var factors_and_proof = decrypt_and_prove_tally(TALLY, ELECTION_PK, secret_key);
-  
-  // json'ify it
-  var factors = factors_and_proof.decryption_factors
-  var decryption_proofs = $(factors_and_proof.decryption_proofs).map(function(i, q_proof) {
-      return $(q_proof).map(function(j, a_proof){
-         return a_proof.toJSONObject(); 
+  decrypt_and_prove_tally(TALLY, ELECTION_PK, secret_key, callback);
+
+  function callback(factors_and_proof) {
+
+      $(".progress-message").hide();
+      $(".progress-message .time").text("");
+
+      // json'ify it
+      var factors = factors_and_proof.decryption_factors
+      var decryption_proofs = $(factors_and_proof.decryption_proofs).map(function(i, q_proof) {
+          return $(q_proof).map(function(j, a_proof){
+             return a_proof.toJSONObject(); 
+          });
       });
-  });
-  
-  var factors_and_proofs = {'decryption_factors': factors, 'decryption_proofs': decryption_proofs};
-  var factors_and_proofs_json = $.toJSON(factors_and_proofs);
-  
-  // clear stuff
-  secret_key = null;
-  $('#sk_textarea').val("");
-  
-  // display the result in a text area.
-  $('#waiting_div').hide();
-  
-  $('#result_textarea').html(factors_and_proofs_json);
-  $('#result_div').show();
-  $('#first-step-success').show();
+      
+      var factors_and_proofs = {'decryption_factors': factors, 'decryption_proofs': decryption_proofs};
+      var factors_and_proofs_json = $.toJSON(factors_and_proofs);
+      
+      // clear stuff
+      secret_key = null;
+      $('#sk_textarea').val("");
+      
+      // display the result in a text area.
+      $('#waiting_div').hide();
+      
+      $('#result_textarea').html(factors_and_proofs_json);
+      $('#result_div').show();
+      $('#first-step-success').show();
+  }
 }
 
 function submit_result() {
@@ -174,11 +256,12 @@ var opts = {
 
     <p>
       Η διαδικασία αυτή γίνεται σε δυο βήματα.<br /><br />
-      <u>Πρώτον</u>, το μυστικό κλειδί σας χρησιμοποιείται για την αποκρυπτογράφηση των αποτελεσμάτων <em>εντός</em> του περιηγητή σας, χωρίς να συνδεθείτε στο δίκτυο.<br />
+      <u>Πρώτον</u>, ο Κωδικός Ψηφοφορίας σας χρησιμοποιείται για την αποκρυπτογράφηση των αποτελεσμάτων <em>εντός</em> του περιηγητή σας, χωρίς να συνδεθείτε στο δίκτυο.<br />
        Εάν θέλετε, μπορείτε να θέσετε τον περιηγητή σας σε λειτουργία "εκτός σύνδεσης" για αυτό το βήμα.<br /><br />
       <u>Δεύτερον</u>, μετά την διαδικασία αποκρυπτογράφησης, ο περιηγητής σας θα πρέπει να είναι "συνδεδεμένος" για να ολοκληρωθεί η παράδοση των αποτελεσμάτων στον εξυπηρετητή.<br />
       Εάν θέλετε, μπορείτε να υπολογίσετε τα αποτελέσματα της αποκρυπτογράφησης, να τα αντιγράψετε στο πληκτρολόγιο, να επανεκκινήσετε τον περιηγητή σας, και<br />
-      να περάσετε στο δεύτερο βήμα έτσι ώστε ο περιηγητής σας δεν είναι πότε συνδεδεμένος όταν εισάγετε το μυστικό κλειδί σας.
+      να περάσετε στο δεύτερο βήμα έτσι ώστε ο περιηγητής σας δεν είναι πότε
+      συνδεδεμένος όταν εισάγετε τον Κωδικό Ψηφοφορίας σας.
     </p>
     
   <div id="sk_section" style="display:none;">
@@ -189,8 +272,8 @@ var opts = {
           <textarea id="sk_textarea" cols="60" rows="5"></textarea>
       </form>
       <p id="tally_section">
-          <button onclick="do_tally();">Παραγωγή μερικής αποκρυπτογράφησης</button>
-      </p>
+          <button class="button success medium" onclick="do_tally();">Παραγωγή μερικής αποκρυπτογράφησης</button>
+          </p>
 
       <p id="skip_to_second_step_instructions">
         <a href="javascript:skip_to_second_step();">μεταφορά στο δεύτερο βήμα</a><br />
@@ -199,8 +282,21 @@ var opts = {
   </div>
   
   <div id="waiting_div">
-      Παραγωγή μερικών αποτελεσμάτων αποκρυπτογράφησης και αποδείξεων...<br />
-      <img src="/static/helios/loading.gif" />
+    <b>Παραγωγή μερικών αποτελεσμάτων αποκρυπτογράφησης και αποδείξεων...</b><br
+    /><br />
+    <div class="alert-box alert">
+Σε αυτό το σημείο το πρόγραμμα πλοήγησης ενδέχεται να μην αποκρίνεται μέχρι το πέρας της διαδικασίας. Παρακαλούμε περιμένετε.
+    </div>
+      <br />
+          <div class="row">
+              <div class="columns twelve">
+                  <div class="radius progress success eight" style="display:none">
+                      <span style="width:0px" class="meter"></span>
+                  </div>
+                  <div style="display:none" class="progress-message">Εκτιμώμενος
+                    χρόνος αποκρυπτογράφησης: <span class="time"></span></div>
+              </div>
+          </div>
   </div>
 
   <div id="waiting_submit_div">
@@ -218,7 +314,7 @@ var opts = {
       Η μερική αποκρυπτογράφηση σας:<br />
       <form action="javascript:submit_result();">
           <textarea id="result_textarea" cols="60" rows="5" wrap="soft"></textarea><br /><br />
-          <input type="submit" value="Μεταφορτώστε τα στοιχεία στον εξυπηρετητή" />
+          <input class="button medium success" type="submit" value="Μεταφορτώστε τα στοιχεία στον εξυπηρετητή" />
       </form>
       <br />
       <a href="javascript:reset()">επαναφορά και επανεκκίνηση της διαδικασίας αποκρυπτογράφησης</a>
@@ -226,7 +322,8 @@ var opts = {
   </div>
   
   <div id="done_div">
-      Η διαδικασία ολοκληρώθηκε! <a href="{% url helios.views.one_election_view election.uuid %}">Επιστροφή στην εκλογή</a>
+    Η διαδικασία ολοκληρώθηκε! 
+    <a class="button medium alert" href="{% url heliosauth.views.logout %}">Έξοδος</a>
   </div>
   
   <div id="error_div">

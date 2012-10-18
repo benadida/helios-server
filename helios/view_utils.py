@@ -57,7 +57,10 @@ def prepare_vars(request, vars):
         trustee = Trustee.objects.get(uuid=request.session.get('helios_trustee_uuid'))
         election = trustee.election
     except:
-        del request.session['helios_trustee_uuid']
+        try:
+            del request.session['helios_trustee_uuid']
+        except:
+            pass
 
   vars_with_user['trustee'] = vars.get('trustee', trustee)
 

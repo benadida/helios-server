@@ -28,10 +28,10 @@ from zeus.core import get_random_selection, encode_selection, \
 TRUSTEES_COUNT = 5
 VOTERS_COUNT = 950
 VOTES_COUNT = 10
-MIXNETS_COUNT = 2
+MIXNETS_COUNT = 1
 
 TRUSTEES_COUNT = 5
-VOTERS_COUNT = 100
+VOTERS_COUNT = 4
 VOTES_COUNT = 12
 
 #class TestZeusElection(TestCase):
@@ -53,6 +53,7 @@ class TestHeliosElection(TestCase):
     def test_election_workflow(self):
         institution = Institution(name="test institution")
         e = Election(name="election test", uuid=self.UUID)
+        e.short_name = "test"
         e.departments = [
           "Φιλοσοφική Σχολή",
           "Σχολή Θετικών Επιστημών",
@@ -137,7 +138,8 @@ class TestHeliosElection(TestCase):
         for i in range(VOTERS_COUNT):
             voter_uuid = str(uuid.uuid4())
             voter_id = email = name = "voter%d@testvoter.com" % i
-            voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter_id,
+            voter = Voter(uuid= voter_uuid, user = None, voter_login_id =
+                          voter_id,voter_surname=name,
                           voter_name = name, voter_email = email, election = self.election)
             voter.init_audit_passwords()
             voter.generate_password()
@@ -300,6 +302,6 @@ class TestHeliosElection(TestCase):
         ecounting_selections = [",".join(map(str, r)) for r in ecounting_ballots]
         assert Counter(results) == Counter(selections) == Counter(ecounting_selections)
         #print 20*"="
-        #print json.dumps(self.election.ecounting_dict(), ensure_ascii=0)
+        print json.dumps(self.election.ecounting_dict(), ensure_ascii=0)
         #print 20*"="
 
