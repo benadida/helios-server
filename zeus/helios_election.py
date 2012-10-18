@@ -403,6 +403,8 @@ class HeliosElection(ZeusCoreElection):
         mixes = [self.extract_votes_for_mixing()]
         for mixnet in self.model.election.mixnets.filter():
           mixes.append(mixnet.mix)
+          if mixnet.second_mix:
+            mixes.append(mixnet.second_mix)
         return mixes
 
     def mix(self, ciphers):

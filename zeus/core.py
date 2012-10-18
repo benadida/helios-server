@@ -1602,7 +1602,7 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS,
                 count -= n
             mixed = result.get()
         else:
-            args = (p, g, q, y, original_ciphers, teller)
+            args = ((p, g, q, y, original_ciphers, teller),{})
             args_collection = repeat(args, nr_rounds)
             mixed = map(shuffle_map, args_collection)
         unzipped = [list(x) for x in izip(*mixed)]

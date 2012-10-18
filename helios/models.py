@@ -68,6 +68,7 @@ class ElectionMixnet(HeliosModel):
   status = models.CharField(max_length=255, choices=MIXNET_STATUS_CHOICES, default='pending')
   mix_error = models.TextField(null=True, blank=True)
   mix = JSONField(null=True)
+  second_mix = JSONField(null=True)
 
 
   class Meta:
@@ -90,6 +91,9 @@ class ElectionMixnet(HeliosModel):
     return True
 
   def zeus_mix(self):
+    if self.second_mix:
+      return self.second_mix
+
     return self.mix
 
   def get_original_ciphers(self):
@@ -103,10 +107,17 @@ class ElectionMixnet(HeliosModel):
   def _do_mix(self):
     zeus_mix = self.election.zeus_election.get_last_mix()
     new_mix = self.election.zeus_election.mix(zeus_mix)
-    self.mix = new_mix
+
+    if not self.mix:
+      self.mix = new_mix
+
+    if not self.second_mix:
+      self.second_mix = self.election.zeus_election.mix(self.mix)
+
     self.status = 'finished'
     self.save()
     return new_mix
+
 
   def mix_ciphers(self):
     if not self.can_mix():
@@ -115,7 +126,6 @@ class ElectionMixnet(HeliosModel):
     if self.mixnet_type == "remote":
       raise Exception("Remote mixnets not implemented yet.")
 
-    self._do_mix()
     self.mixing_started_at = datetime.datetime.now()
     self.status = 'mixing'
     self.save()
@@ -577,6 +587,7 @@ class Election(HeliosModel):
     """
     self.mix_next_mixnet()
     if self.mixing_finished and not self.encrypted_tally:
+      self.zeus_election.validate_mixing()
       self.store_encrypted_tally()
       self.save()
 
