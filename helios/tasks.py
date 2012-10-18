@@ -137,9 +137,6 @@ def tally_decrypt(election_id):
     election = Election.objects.get(id = election_id)
     election.zeus_election.decrypt_ballots()
 
-    for t in election.trustee_set.filter(secret_key__isnull=True):
-      t.send_url_via_mail()
-
     election.post_ecounting()
     election_notify_admin.delay(election_id = election_id,
                                 subject = 'Election Decrypt',
@@ -158,6 +155,10 @@ def tally_helios_decrypt(election_id):
 
     #election.zeus_election.validate_mixing()
     election.helios_trustee_decrypt()
+
+    for t in election.trustee_set.filter(secret_key__isnull=True):
+      t.send_url_via_mail()
+
     election_notify_admin.delay(election_id = election_id,
                                 subject = 'Helios Decrypt',
                                 body = """
