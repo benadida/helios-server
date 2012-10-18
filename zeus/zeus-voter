@@ -5,7 +5,7 @@ from zeus.core import ( c2048, get_random_selection,
                         gamma_encode,
                         encrypt, prove_encryption )
 
-from httplib import HTTPConnection as Conn
+from httplib import HTTPConnection, HTTPSConnection
 from urlparse import urlparse
 from urllib import urlencode
 from os.path import exists
@@ -37,7 +37,12 @@ def generate_vote(p, g, q, y, nr_candidates):
 
 def get_http_connection(url):
     parsed = urlparse(url)
-    default_port = '443' if parsed.scheme == 'https' else '80'
+    if parsed.scheme == 'https':
+	    default_port = '443'
+	    Conn = HTTPSConnection
+    else:
+	    default_port = '80'
+	    Conn = HTTPConnection
     host, sep, port = parsed.netloc.partition(':')
     if not port:
         port = default_port
@@ -52,7 +57,10 @@ def cast_vote(voter_url):
     conn.request('GET', voter_path)
     response = conn.getresponse()
     response.read()
-    cookie = response.getheader('Set-Cookie').split(';')[0]
+    cookie = response.getheader('Set-Cookie')
+    if not cookie:
+	raise RuntimeError("Cannot get cookie")
+    cookie = cookie.split(';')[0]
     cast_path = '/'.join(voter_path.split('/')[:-3]) + '/cast'
     headers = {'Cookie': cookie}
 
@@ -103,6 +111,7 @@ def main_cast(voter_url_file, nr_threads=2):
     for i, voter_url in enumerate(voter_urls):
         queue.put((i, total, voter_url))
 
+    #main_cast_thread(queue)
     threads = [Thread(target=main_cast_thread, args=(queue,))
                for _ in xrange(nr_threads)]
 
@@ -113,17 +122,13 @@ def main_cast(voter_url_file, nr_threads=2):
         t.join()
 
 def main_help():
-    usage = ("Usage: ./zeus-voter generate <nr_voters> <domain> <voters.csv>\n"
-             "       ./zeus-voter cast <voter_url_file>\n")
-
+    usage = ("Usage: ./zeus-voter generate <nr> <domain> <voters.csv>\n"
+             "       ./zeus-voter cast <voter_url_file> [nr_threads]\n")
     stderr.write(usage)
     raise SystemExit
 
 def main():
     argc = len(argv)
-
-    usage = ("Usage: ./zeus-voter generate <nr> <domain> <voters.csv>\n"
-             "       ./zeus-voter cast <voter_url_file> [nr_threads]\n")
 
     if argc < 3:
         main_help()
