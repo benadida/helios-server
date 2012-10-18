@@ -99,6 +99,11 @@ def election_view(**checks):
       if not election:
         raise Http404
 
+      if election.canceled:
+        from helios.views import render_template
+        return render_template(request, 'election_canceled',
+                           {'election': election})
+
       # do checks
       do_election_checks(election, checks)
 

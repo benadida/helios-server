@@ -1,0 +1,19 @@
+{% extends TEMPLATE_BASE %}
+{% block title %}{{ election.name }}{% endblock %}
+
+
+{% block head_subtitle %}
+   <h4 id="election-name" class="subheader">
+       <span class="inst">{{ election.institution.name }}</span>
+       <span class="elname">
+           {{election.name}}
+         </span>
+       </h4>
+{% endblock %}
+
+{% block tabs_menu %}
+{% endblock %}
+
+{% block content %}
+Η ψηφοφορία έχει ακυρωθεί.
+{% endblock %}

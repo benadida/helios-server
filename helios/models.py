@@ -150,7 +150,7 @@ class Election(HeliosModel):
   help_email = models.CharField(max_length=254, null=True, blank=True)
   help_phone = models.CharField(max_length=254, null=True, blank=True)
   send_email_on_cast_done = models.BooleanField(default=True)
-
+  canceled = models.BooleanField(default=False)
   uuid = models.CharField(max_length=50, null=False)
 
   # keep track of the type and version of election, which will help dispatch to the right
