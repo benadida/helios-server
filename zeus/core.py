@@ -2159,9 +2159,10 @@ class ZeusCoreElection(object):
             with teller.task("Validating Voter Names"):
                 names = voters.values()
                 nr_names = len(names)
-                if len(set(names)) != nr_names:
-                    m = "Duplicate voter names!"
-                    raise ZeusError(m)
+		## disabled
+                #if len(set(names)) != nr_names:
+                #    m = "Duplicate voter names!"
+                #    raise ZeusError(m)
                 del names
             with teller.task("Validating Voter Keys"):
                 keys = voters.keys()
