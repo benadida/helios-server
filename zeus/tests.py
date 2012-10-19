@@ -51,6 +51,7 @@ class TestHeliosElection(TestCase):
         return Election.objects.get(uuid=self.UUID)
 
     def test_election_workflow(self):
+        settings.DEBUG = True
         institution = Institution(name="test institution")
         e = Election(name="election test", uuid=self.UUID)
         e.short_name = "test"
