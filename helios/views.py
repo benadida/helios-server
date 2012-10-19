@@ -490,19 +490,6 @@ def delete_trustee(request, election):
   return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
 
 
-def force_logout(request, election=None):
-  user = get_user(request)
-  voter = get_voter(request, user, election)
-  if user or voter:
-    try:
-      del request.session['user']
-    except:
-      pass
-    try:
-      del request.session['CURRENT_VOTER']
-    except:
-      pass
-
 @election_view(frozen=False)
 def trustee_verify_key(request, election, trustee_uuid):
   if trustee_uuid != request.session.get('helios_trustee_uuid', None):
@@ -516,7 +503,7 @@ def trustee_verify_key(request, election, trustee_uuid):
 
 def trustee_login(request, election_short_name, trustee_email, trustee_secret):
   election = Election.get_by_short_name(election_short_name)
-  force_logout(request, election)
+  clear_previous_logins(request)
 
   if election:
     trustee = Trustee.get_by_election_and_email(election, trustee_email)
@@ -636,6 +623,7 @@ def one_election_cast(request, election):
         type_hint='phoebus/EncryptedVote').wrapped_obj
   audit_password = request.POST.get('audit_password', None)
   signature = election.cast_vote(voter, vote, audit_password)
+  del request.session['encrypted_vote']
 
   if signature['m'].startswith("AUDIT REQUEST"):
     return HttpResponse('{"audit": 1}', mimetype="application/json")
@@ -656,8 +644,6 @@ def voter_quick_login(request, election, voter_uuid, voter_secret):
                                      voter_password = voter_secret)
 
       request.session['CURRENT_VOTER'] = voter
-      if 'user' in request.session:
-        del request.session['user']
 
     except Voter.DoesNotExist:
       login_url = reverse(password_voter_login, args=[election.uuid])
@@ -666,6 +652,7 @@ def voter_quick_login(request, election, voter_uuid, voter_secret):
           'return_url' : return_url
           })
 
+    clear_previous_logins(request)
     return HttpResponseRedirect(return_url)
 
 @election_view(allow_logins=True)
@@ -851,30 +838,7 @@ def one_election_cast_done(request, election):
   user = get_user(request)
   voter = get_voter(request, user, election)
 
-  if voter:
-    votes = CastVote.get_by_voter(voter)
-    vote_hash = votes[0].vote_hash
-    cv_url = get_castvote_url(votes[0])
-
-    # only log out if the setting says so *and* we're dealing
-    # with a site-wide voter. Definitely remove current_voter
-    if voter.user == user:
-      logout = settings.LOGOUT_ON_CONFIRMATION
-    else:
-      logout = False
-      del request.session['CURRENT_VOTER']
-
-    save_in_session_across_logouts(request, 'last_vote_hash', vote_hash)
-    save_in_session_across_logouts(request, 'last_vote_cv_url', cv_url)
-  else:
-    vote_hash = request.session['last_vote_hash']
-    cv_url = request.session['last_vote_cv_url']
-    logout = False
-
-  # local logout ensures that there's no more
-  # user locally
-  # WHY DO WE COMMENT THIS OUT? because we want to force a full logout via the iframe, including
-  # from remote systems, just in case, i.e. CAS
+  clear_previous_logins(request)
 
   if voter:
     votes = CastVote.get_by_voter(voter)

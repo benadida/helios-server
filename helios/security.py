@@ -48,6 +48,11 @@ def get_logged_in_trustee(request):
   else:
     return None
 
+def clear_previous_logins(request):
+  for sess_key in [HELIOS_TRUSTEE_UUID, 'user', 'CURRENT_VOTER']:
+    if sess_key in request.session:
+      del request.session[sess_key]
+
 def set_logged_in_trustee(request, trustee):
   request.session[HELIOS_TRUSTEE_UUID] = trustee.uuid
 
