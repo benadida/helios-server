@@ -185,6 +185,11 @@ def trustee_check(func):
 
     trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
 
+    if election.canceled_at:
+      from helios.views import render_template
+      return render_template(request, 'election_canceled',
+                         {'election': election})
+
     if trustee == get_logged_in_trustee(request):
       return func(request, election, trustee, *args, **kwargs)
     else:
