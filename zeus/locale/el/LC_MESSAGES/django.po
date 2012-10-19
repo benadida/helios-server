@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-17 23:48+0300\n"
+"POT-Creation-Date: 2012-10-19 10:36+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,8 +33,8 @@ msgstr "Τίτλος ψηφοφορίας"
 #: forms.py:80
 msgid "the name of the election (e.g. University of Piraeus 2014 elections)."
 msgstr ""
-"δώστε τίτλο στην ψηφοφορία (π.χ. "
-"Εκλογή Εσωτερικών Μελών Συμβουλίου Διοίκησης Πανεπιστημίου Πειραιώς 2014)."
+"δώστε τίτλο στην ψηφοφορία (π.χ. Εκλογή Εσωτερικών Μελών Συμβουλίου "
+"Διοίκησης Πανεπιστημίου Πειραιώς 2014)."
 
 #: forms.py:83
 msgid "Description"
@@ -133,19 +133,23 @@ msgstr ""
 "οι ψηφοφόροι θα μπορούν να επικοινωνούν σε αυτά τα τηλέφωνα για υποστήριξη "
 "σε θέματα της ψηφοφορίας"
 
-#: forms.py:150
+#: forms.py:149
 msgid "Another election with the same name exists"
 msgstr ""
 
-#: forms.py:159
+#: forms.py:158
 msgid "Invalid voting dates"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:170 forms.py:175
+#: forms.py:161
+msgid "Invalid voting extension date"
+msgstr "Λάθος ημερομηνία και ώρα λήξης της ψηφοφορίας"
+
+#: forms.py:172 forms.py:177
 msgid "Invalid trustess"
 msgstr "Οι Κωδικοί Ψηφοφορίας είναι άκυροι"
 
-#: forms.py:204
+#: forms.py:206
 msgid ""
 "Election candidates changed due to election institution department changes"
 msgstr "Κάποιοι υποψήφιοι αφαιρέθηκαν λόγω αλλαγών στις Σχολές"
