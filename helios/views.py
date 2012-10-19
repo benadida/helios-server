@@ -264,8 +264,8 @@ def voters_csv(request, election):
   response['Content-Dispotition'] = 'attachment; filename="%s"' % filename
   writer = csv.writer(response)
   for voter in voters:
-    writer.writerow([voter.voter_email, voter.voter_name, voter.voter_surname,
-               voter.voter_fathername or '', "Ναί" if voter.vote else "Όχι"])
+    writer.writerow(map(smart_unicode,[voter.voter_email, voter.voter_name, voter.voter_surname,
+               voter.voter_fathername or '', "Ναί" if voter.vote else "Όχι"]))
   return response
 
 @election_admin()
@@ -639,6 +639,7 @@ def one_election_cast(request, election):
 def voter_quick_login(request, election, voter_uuid, voter_secret):
     return_url = reverse(one_election_view, kwargs={'election_uuid':
                                                     election.uuid})
+    clear_previous_logins(request)
     try:
       voter = election.voter_set.get(uuid = voter_uuid,
                                      voter_password = voter_secret)
@@ -652,7 +653,6 @@ def voter_quick_login(request, election, voter_uuid, voter_secret):
           'return_url' : return_url
           })
 
-    clear_previous_logins(request)
     return HttpResponseRedirect(return_url)
 
 @election_view(allow_logins=True)
@@ -845,7 +845,7 @@ def one_election_cast_done(request, election):
     return HttpResponseRedirect(reverse(one_election_cast_done,
                                         args=[election.uuid]) + "?finger=%s" % votes[0].fingerprint)
 
-
+  logout = True
   if request.GET.get("finger", None):
     vote = CastVote.objects.get(fingerprint=request.GET.get("finger"))
     return render_template(request, 'cast_done', {'election': election,
@@ -1199,10 +1199,7 @@ def trustee_upload_decryption(request, election, trustee_uuid):
   # each proof needs to be deserialized
   decryption_proofs = [[datatypes.LDObject.fromDict(proof, type_hint='legacy/EGZKProof').wrapped_obj for proof in one_q_proofs] for one_q_proofs in factors_and_proofs['decryption_proofs']]
 
-  try:
-    election.add_trustee_factors(trustee, decryption_factors, decryption_proofs)
-  except Exception, e:
-    print e
+  election.add_trustee_factors(trustee, decryption_factors, decryption_proofs)
 
   try:
     # send a note to admin
