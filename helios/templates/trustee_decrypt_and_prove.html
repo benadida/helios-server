@@ -115,7 +115,7 @@ function batch_complete_callback(batch, batch_index, time, median_time,
     $(".progress .meter").css({'width': percentage + '%'});
 
     var time_msg = parseInt(time_remaining/1000) + " δευτερόλεπτα.";
-    if (time_remaining/1000 > 60) {
+    if (time_remaining/1000 > 120) {
       time_msg = parseInt(time_remaining/1000/60) + " λεπτά.";
     }
 
