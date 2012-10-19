@@ -506,7 +506,6 @@ ElGamal.encrypt = function(pk, plaintext, r, encode_message) {
     }
   }
   
-  console.log(m, "ENC");
   var alpha = pk.g.modPow(r, pk.p);
   var beta = (pk.y.modPow(r, pk.p)).multiply(m).mod(pk.p);
   

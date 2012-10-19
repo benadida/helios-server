@@ -515,10 +515,10 @@ HELIOS.EncryptedAnswer = Class.extend({
     
     // store answer
     // CHANGE 2008-08-06: answer is now an *array* of answers, not just a single integer
-    this.answer = answer;
+    this.answer = [];
     
     if (question.tally_type == "stv") {
-        answer[0] = STV.to_relative_answers(answer[0], question.answers.length);
+        this.answer[0] = STV.to_relative_answers(answer[0], question.answers.length);
     }
 
     // do the encryption
