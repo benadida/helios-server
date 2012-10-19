@@ -74,10 +74,9 @@ class ElectionForm(forms.Form):
   institution = forms.CharField(max_length=100, label=_('Institution'),
                                help_text=_('Election institution'))
 
-  name = forms.CharField( max_length=100,label=_('Election name'),
+  name = forms.CharField( max_length=50,label=_('Election name'),
                          widget=forms.TextInput(attrs={'size':60}),
                          initial="",
-                         max_length=50,
                          help_text=_('the name of the election (e.g. University of Piraeus 2014 elections).'))
   description = forms.CharField(widget=forms.Textarea,
                   initial="",
