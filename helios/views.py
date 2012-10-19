@@ -1188,8 +1188,8 @@ def trustee_upload_decryption(request, election, trustee_uuid):
 
   trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
 
-  #if trustee.decryption_factors and trustee.decryption_proofs:
-    #raise PermissionDenied
+  if trustee.decryption_factors and trustee.decryption_proofs:
+    raise PermissionDenied
 
   factors_and_proofs = utils.from_json(request.POST['factors_and_proofs'])
 
@@ -1200,15 +1200,6 @@ def trustee_upload_decryption(request, election, trustee_uuid):
   decryption_proofs = [[datatypes.LDObject.fromDict(proof, type_hint='legacy/EGZKProof').wrapped_obj for proof in one_q_proofs] for one_q_proofs in factors_and_proofs['decryption_proofs']]
 
   election.add_trustee_factors(trustee, decryption_factors, decryption_proofs)
-
-  try:
-    # send a note to admin
-    for admin in election.admins.all():
-      admin.send_message("%s - trustee partial decryption" % election.name, "trustee %s (%s) did their partial decryption." % (trustee.name, trustee.email))
-  except:
-    return FAILURE
-    # ah well
-    pass
 
   return SUCCESS
 
