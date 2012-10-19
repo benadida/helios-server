@@ -9,10 +9,13 @@
 
 {% block content %}
 <p>
-Συγχαρητήρια, η ψήφος σας καταχωρήθηκε.
+Η ψήφος σας καταχωρήθηκε με επιτυχία.
+Ευχαριστούμε για τη συμμετοχή σας.
 
+<br>
+Το
 <a target="_blank" href="{% url helios.views.one_election_download_signature election.uuid cast_vote.fingerprint %}"
-  >download signature</a>
+  >αρχείο με την απόδειξη</a> της ψήφου σας έχει σταλεί στο ηλεκτρονικό σας ταχυδρομείο.
 </p>
 
 {% comment %}
