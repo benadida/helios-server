@@ -97,6 +97,7 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
 @task()
 def election_compute_tally(election_id):
     election = Election.objects.get(id = election_id)
+    election.zeus_election.validate_voting()
     election.compute_tally()
     bad_mixnet = election.bad_mixnet()
     if bad_mixnet:
