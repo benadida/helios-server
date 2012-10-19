@@ -13,6 +13,8 @@ from django.conf import settings
 from helios.crypto import electionalgs
 from helios.crypto import utils
 
+from django.db import connection
+
 
 MIXNET_NR_PARALLEL = getattr(settings, 'ZEUS_MIXNET_NR_PARALLEL', 2)
 
@@ -94,6 +96,8 @@ class HeliosElection(ZeusCoreElection):
 
     def do_index_vote(self, fingerprint):
         # TODO: READ FOR UPDATE
+        c = connection.cursor()
+        c.execute("SELECT pg_advisory_lock(1)")
         index = self.model.election.castvote_set.filter(verified_at__isnull=False).count()
         return index
 
@@ -102,7 +106,7 @@ class HeliosElection(ZeusCoreElection):
 
     def do_get_vote_index(self):
         votes = []
-        for vote in self.model.election.castvote_set.filter(index__isnull=False).order_by('pk'):
+        for vote in self.model.election.castvote_set.filter(index__isnull=False).order_by('index'):
             votes.append(vote.fingerprint)
         return votes
 
@@ -198,6 +202,8 @@ class HeliosElection(ZeusCoreElection):
         if vote['previous']:
             vobj.previous = vote['previous']
         vobj.save()
+        c = connection.cursor()
+        c.execute("SELECT pg_advisory_unlock(1)")
 
         voter = self._get_voter_object(vote['voter'])
         voter.vote = enc_vote
