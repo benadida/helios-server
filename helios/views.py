@@ -11,6 +11,7 @@ from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.http import *
+from django.utils.encoding import smart_str, smart_unicode
 from django.db import transaction
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
@@ -256,6 +257,31 @@ def election_new(request):
   return render_template(request, "election_new", {'election_form': election_form, 'error': error})
 
 @election_admin()
+def voters_csv(request, election):
+  voters = election.voter_set.all()
+  response = HttpResponse(mimetype='text/csv')
+  filename = smart_unicode("voters-%s.csv" % election.short_name)
+  response['Content-Dispotition'] = 'attachment; filename="%s"' % filename
+  writer = csv.writer(response)
+  for voter in voters:
+    writer.writerow([voter.voter_email, voter.voter_name, voter.voter_surname,
+               voter.voter_fathername or '', "Ναί" if voter.vote else "Όχι"])
+  return response
+
+@election_admin()
+def voters_clear(request, election):
+  if election.frozen_at:
+    return HttpResponseRedirect(reverse(voters_list_pretty,
+                                        args=(election.uuid,)))
+  else:
+    for voter in election.voter_set.all():
+      if not voter.vote:
+        voter.delete()
+
+  return HttpResponseRedirect(reverse(voters_list_pretty,
+                                        args=(election.uuid,)))
+
+@election_admin()
 def election_post_ecounting(request, election):
     if not election.result:
         raise PermissionDenied
@@ -339,8 +365,9 @@ def one_election_view(request, election):
   if voter:
     # cast any votes?
     votes = CastVote.get_by_voter(voter)
-    if not election.frozen_at:
+    if election.frozen_at:
         voter.last_visit = datetime.datetime.now()
+        voter.save()
   else:
     votes = None
 
@@ -810,7 +837,7 @@ def one_election_cast_confirm(request, election):
 def one_election_download_signature(request, election, fingerprint):
   vote = CastVote.objects.get(fingerprint=fingerprint)
   response = HttpResponse(content_type='application/binary')
-  response['Content-Dispotition'] = 'attachment:filename=signature.txt'
+  response['Content-Dispotition'] = 'attachment; filename=signature.txt'
   response.write(vote.signature)
   return response
 

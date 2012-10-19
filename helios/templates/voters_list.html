@@ -19,6 +19,8 @@
   <div class="columns five">
   {% if election.frozen_at %}
   <a style="float: right" class="button small" href="{% url helios.views.voters_email election.uuid %}">Αποστολή email</a>
+  <a style="float: right; margin-right: 10px;" class="button small" 
+    href="{% url helios.views.voters_csv election.uuid %}">CSV</a>
   {% else %}
   <a style="float: right" class="button small disabled" href="#">Αποστολή email</a>
   {% endif %}
@@ -69,6 +71,7 @@
       {% endif %}
       <th>Διαγραφή</th>
       <th>Τελευταία αποστολή email στις</th>
+      <th>Τελευταία επίσκεψη</th>
       {% endif %}
     </tr>
   </thead>
@@ -88,7 +91,7 @@
       {{ voter.voter_email }}
     </td>
     <td>
-      {% if voter.vote_hash %}
+      {% if voter.vote %}
       Ναι
       {% else %}
       Όχι
@@ -112,10 +115,19 @@
 <td>
   {{ voter.last_email_send_at }}
 </td>
+    <td>
+      {{ voter.last_visit }}
+    </td>
   {% endif %}
   </tr>
   {% endfor %}
 </tbody>
 </table>
+{% if admin_p %}
+
+<a style="float: right" class="button small alert" 
+    onclick="return confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε όλους τους ψηφοφόρους;')",
+    href="{% url helios.views.voters_clear election.uuid %}">Διαγραφή όλων</a>
+  {% endif %}
 {% endif %}
 {% endblock %}

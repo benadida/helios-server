@@ -75,6 +75,8 @@ urlpatterns = patterns('',
 
     # managing voters
     (r'^/voters/$', voter_list),
+    (r'^/voters/csv$', voters_csv),
+    (r'^/voters/clear$', voters_clear),
     (r'^/voters/upload$', voters_upload),
     (r'^/voters/upload-cancel$', voters_upload_cancel),
     (r'^/voters/list$', voters_list_pretty),
