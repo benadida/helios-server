@@ -129,6 +129,12 @@ BOOTH.setup_election = function(raw_json) {
   // appears to be safer.
   BOOTH.election = HELIOS.Election.fromJSONString(raw_json);
 
+    if ($.browser.msie) {
+            alert("Το πρόγραμμα πλοήγησης που χρησιμοποιείτε δεν υποστηρίζεται από την πλατφόρμα \"Ζευς\". Χρησιμοποιήστε τις νέες εκδόσεις των προγραμμάτων (browser) Mozilla Firefox ή Google Chrome.\n\nΓια περισσότερες πληροφορίες επικοινωνήστε μαζί μας\n\n" + BOOTH.election.help_phone);
+            window.location = '/auth/logout';
+        }
+
+
   // FIXME: we shouldn't need to set both, but right now we are doing so
   // because different code uses each one. Bah. Need fixing.
   BOOTH.election.hash = b64_sha256(raw_json);
