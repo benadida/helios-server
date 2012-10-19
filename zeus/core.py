@@ -1571,6 +1571,7 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS,
     q = ciphers_for_mixing['order']
     y = ciphers_for_mixing['public']
 
+    Random.atfork()
     original_ciphers = ciphers_for_mixing['mixed_ciphers']
     nr_ciphers = len(original_ciphers)
 
@@ -2923,6 +2924,7 @@ class ZeusCoreElection(object):
         teller.finish()
 
     def compute_zeus_factors(self):
+        Random.atfork()
         teller = self.teller
         mixed_ballots = self.get_mixed_ballots()
         modulus, generator, order = self.do_get_cryptosystem()
