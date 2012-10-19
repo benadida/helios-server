@@ -339,6 +339,8 @@ def one_election_view(request, election):
   if voter:
     # cast any votes?
     votes = CastVote.get_by_voter(voter)
+    if not election.frozen_at:
+        voter.last_visit = datetime.datetime.now()
   else:
     votes = None
 

@@ -160,8 +160,8 @@ class Election(HeliosModel):
   # later versions, at some point will upgrade to "2011/01/Election"
   datatype = models.CharField(max_length=250, null=False, default="legacy/Election")
 
-  short_name = models.CharField(max_length=100)
-  name = models.CharField(max_length=110)
+  short_name = models.CharField(max_length=255)
+  name = models.CharField(max_length=255)
 
   candidates = JSONField(default="{}")
   departments = JSONField(default="[]")
@@ -1252,6 +1252,7 @@ class Voter(HeliosModel):
   audit_passwords = models.CharField(max_length=200, null=True)
 
   last_email_send_at = models.DateTimeField(null=True)
+  last_visit = models.DateTimeField(null=True)
 
   class Meta:
     unique_together = (('election', 'voter_login_id'))
