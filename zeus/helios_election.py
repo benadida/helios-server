@@ -459,6 +459,9 @@ class HeliosElection(ZeusCoreElection):
         e.result = get_datatype('phoebus/Result', [results])
         e.save()
 
+    def do_get_results(self):
+        return self.model.election.result[0]
+
     @classmethod
     def mk_random(cls, *args, **kwargs):
         helios_models.Election.objects.create(uuid=kwargs.get('uuid'))
