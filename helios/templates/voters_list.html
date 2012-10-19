@@ -20,7 +20,7 @@
   {% if election.frozen_at %}
   <a style="float: right" class="button small" href="{% url helios.views.voters_email election.uuid %}">Αποστολή email</a>
   <a style="float: right; margin-right: 10px;" class="button small" 
-    href="{% url helios.views.voters_csv election.uuid %}">CSV</a>
+    href="{% url helios.views.voters_csv election.uuid %}">Λίστα σε CSV</a>
   {% else %}
   <a style="float: right" class="button small disabled" href="#">Αποστολή email</a>
   {% endif %}
