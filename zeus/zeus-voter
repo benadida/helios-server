@@ -22,7 +22,8 @@ def generate_voter_file(nr, domain='zeus.minedu.gov.gr'):
 
 def generate_vote(p, g, q, y, nr_candidates):
     selection = get_random_selection(nr_candidates, full=0)
-    ct = encrypt(gamma_encode(selection, nr_candidates), p, g, q, y)
+    encoded = gamma_encode(selection, nr_candidates)
+    ct = encrypt(encoded, p, g, q, y)
     alpha, beta, rand = ct
     proof = prove_encryption(p, g, q, alpha, rand)
     commitment, challenge, response = proof
@@ -33,16 +34,16 @@ def generate_vote(p, g, q, y, nr_candidates):
     encrypted_vote['answers'] = [answer]
     encrypted_vote['election_uuid'] = ''
     encrypted_vote['election_hash'] = ''
-    return encrypted_vote
+    return encrypted_vote, encoded
 
 def get_http_connection(url):
     parsed = urlparse(url)
     if parsed.scheme == 'https':
-	    default_port = '443'
-	    Conn = HTTPSConnection
+            default_port = '443'
+            Conn = HTTPSConnection
     else:
-	    default_port = '80'
-	    Conn = HTTPConnection
+            default_port = '80'
+            Conn = HTTPConnection
     host, sep, port = parsed.netloc.partition(':')
     if not port:
         port = default_port
@@ -59,7 +60,7 @@ def cast_vote(voter_url):
     response.read()
     cookie = response.getheader('Set-Cookie')
     if not cookie:
-	raise RuntimeError("Cannot get cookie")
+        raise RuntimeError("Cannot get cookie")
     cookie = cookie.split(';')[0]
     cast_path = '/'.join(voter_path.split('/')[:-3]) + '/cast'
     headers = {'Cookie': cookie}
@@ -75,7 +76,7 @@ def cast_vote(voter_url):
     y = int(pk['y'])
     nr_candidates = len(election['questions'][0]['answers'])
 
-    vote = generate_vote(p, g, q, y, nr_candidates)
+    vote, encoded = generate_vote(p, g, q, y, nr_candidates)
     body = urlencode({'encrypted_vote': dumps(vote)})
     conn.request('POST', cast_path, headers=headers, body=body)
     response = conn.getresponse()
@@ -83,54 +84,66 @@ def cast_vote(voter_url):
     if response.status != 200:
         print response.status
     conn.close()
+    return encoded
 
 def main_generate(nr, domain, voters_file):
     if exists(voters_file):
-        m = "%s: file exists, will not overwrite"
+        m = "%s: file exists, will not overwrite" % (voters_file,)
         raise ValueError(m)
 
     with open(voters_file, "w") as f:
         f.write(generate_voter_file(nr, domain=domain).encode('utf-8'))
 
-def main_cast_thread(queue):
+def main_cast_thread(inqueue, outqueue):
     while 1:
         try:
-            o = queue.get_nowait()
+            o = inqueue.get_nowait()
             if not o:
                 break
         except Empty, e:
             break
         i, total, voter_url = o
         print "%d/%d" % (i, total)
-        cast_vote(voter_url)
+        encoded = cast_vote(voter_url)
+        outqueue.put(encoded)
 
-def main_cast(voter_url_file, nr_threads=2):
+def main_cast(voter_url_file, plaintexts_file, nr_threads=2):
+    if exists(plaintexts_file):
+	m = "%s: file exists, will not overwrite" % (plaintexts_file,)
+	raise ValueError(m)
+    f = open(plaintexts_file, "w")
+
     voter_urls = open(voter_url_file).read().splitlines()
     total = len(voter_urls)
-    queue = Queue(maxsize=total)
+    inqueue = Queue(maxsize=total)
+    outqueue = Queue(maxsize=total)
     for i, voter_url in enumerate(voter_urls):
-        queue.put((i, total, voter_url))
+        inqueue.put((i, total, voter_url))
 
     #main_cast_thread(queue)
-    threads = [Thread(target=main_cast_thread, args=(queue,))
+    threads = [Thread(target=main_cast_thread, args=(inqueue, outqueue))
                for _ in xrange(nr_threads)]
 
     for t in threads:
         t.start()
+
+    plaintexts = [outqueue.get() for _ in xrange(total)]
+    f.write(repr(plaintexts))
+    f.close()
 
     for t in threads:
         t.join()
 
 def main_help():
     usage = ("Usage: ./zeus-voter generate <nr> <domain> <voters.csv>\n"
-             "       ./zeus-voter cast <voter_url_file> [nr_threads]\n")
+             "       ./zeus-voter cast <voter_url_file> <plaintexts_file> [nr_threads]\n")
     stderr.write(usage)
     raise SystemExit
 
 def main():
     argc = len(argv)
 
-    if argc < 3:
+    if argc < 4:
         main_help()
 
     if argv[1] == 'generate':
@@ -140,8 +153,8 @@ def main():
         main_generate(int(argv[2]), argv[3], argv[4])
 
     elif argv[1] == 'cast':
-        nr_threads=int(argv[3]) if argc > 3 else 2
-        main_cast(argv[2], nr_threads=nr_threads)
+        nr_threads=int(argv[4]) if argc > 4 else 2
+        main_cast(argv[2], argv[3], nr_threads=nr_threads)
     else:
         main_help()
 
