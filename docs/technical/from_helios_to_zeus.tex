@@ -1,0 +1,112 @@
+\documentclass[runningheads,a4paper]{llncs}
+
+\usepackage{amssymb}
+\setcounter{tocdepth}{3}
+\usepackage{graphicx}
+
+\usepackage{url}
+\urldef{\mails}\path|{gtsouk, kpap, louridas, tsanakas}@grnet.gr|
+
+\newcommand{\keywords}[1]{\par\addvspace\baselineskip
+\noindent\keywordname\enspace\ignorespaces#1}
+
+\begin{document}
+
+\mainmatter  % start of an individual contribution
+
+% first the title is needed
+\title{From Helios to Zeus}
+
+\titlerunning{From Helios to Zeus}
+
+\author{Georgios Tsoukalas%
+\and Kostas Papadimitriou%
+\and Panos Louridas%
+\and Panayiotis Tsanakas}
+
+\authorrunning{Tsoukalas, Papadimitriou, Louridas and Tsanakas}
+
+\institute{Greek Reseach and Education Network,\\
+56 Mesogeion Avenue, Athens, Greece\\
+\mails\\
+\url{http://www.grnet.gr}}
+
+\maketitle
+
+\begin{abstract}
+  We present Zeus, an Internet ballot casting and counting system
+  based on Helios that allows elections in which ballots cannot be
+  tallied homomorphically. Zeus separates the production of election
+  results from voting and counting, thus allowing any type of
+  elections to be carried out, while maintaining the main features of
+  the original Helios system in terms of anonymity and verifiability.
+  \keywords{Internet voting, voting systems, electronic ballots}
+\end{abstract}
+
+
+\section{Introduction}
+
+Helios is a well known system for Internet voting, in which the whole
+process is carried out through digital means---there is no paper
+trace, nor ballots in physical forms. It has been used in several real
+world elections and its basic architectural design has proven robust.
+
+In this paper we present Zeus, a system based on Helios, which extends
+Helios's range of applications while reducing the actual work
+performed by Helios and its role in the election process. Helios is a
+system that performs \emph{ballot casting}, \emph{ballot counting},
+and \emph{production of election results}. Zeus performs only the
+first two, leaving the production of election results to other
+systems. In this way, it can accommodate more voting systems than
+Helios, which currently supports only approval-like voting.
+
+\section{Roots and Rationale}
+
+Zeus was initiated after the use of electronic vote was permitted by
+decree for the election of the Governing Councils of Higher Education
+Institutions in Greece. In each institution the Governing Council is
+directly elected by its faculty and is its main governing body. The
+election uses the Single Transferable Vote (STV) system, in which
+voters do not simply indicate the candidates of their preference, but
+also rank them in order of preference. 
+
+When we were charged with providing an implementation of a system
+implementing electronic voting we decided to investigate Helios's
+suitability, as we needed a mature system with a proven record in real
+world elections and published open source code. The current version of
+Helios (version 3) allows internet election from end-to-end: from the
+moment the voter casts a ballot through a web browser to the
+publication of election results. It does that by never actually
+decrypting the ballots but performing a series of homomorphic
+calculations on them. In the end, the results of the calculations are
+decrypted and published. 
+
+Although using a single system for the whole process is appealing, the
+use of homomorphic counting in Helios cannot accommodate voting
+systems in which not just the individual choices on the ballot matter,
+but the whole ballot itself. In STV, homorphical tallying could pass
+to the STV algorithm the information that a certain candidate has been
+selected in rank $r$ by $n$ voters, but this is not enough, as the whole
+ballot and not just each rank separately is passed around during STV's
+counting rounds.
+
+We realised, however, that it is not necessary to use Helios's
+homomorphic counting capabilities. We decided to use Helios for
+\emph{counting the ballots}, not for producing the election results.
+Once we do have a veriable ballots count, this can be fed to an STV
+calculator, or indeed to a calculator of any voting system. Since the
+ballots are published, and the algorithm is also published, a third
+party can always verify that the results are correct.
+
+Interestingly, the original publication of Helios~\cite{adida:2008}
+did not use homomorphic tallying, but relied on mixnets for
+guaranteeing voter anonymity. 
+
+\section{Implementation Considerations}
+
+\bibliographystyle{splncs}
+\bibliography{zeus}
+
+\end{document}
+
+
