@@ -102,6 +102,30 @@ Interestingly, the original publication of Helios~\cite{adida:2008}
 did not use homomorphic tallying, but relied on mixnets for
 guaranteeing voter anonymity. 
 
+\section{Ballot Casting and Encoding}
+
+In Helios, ballots consist of answers to binary ``yes'' or ``no''
+questions, framed in the appropriate way. For instance, a voter
+indicates $k$ out of $n$ candidates on a ballot by selecting them, in
+which case the answer ``Would you like X as a Y?'' gets a yes (1),
+otherwise a no (0). In STV, as in any system in which we would need
+the whole ballot to be decrypted in the end, the ballot must be
+encoded in some way. We encode each ballot as a integer by assigning a
+unique number to each possible candidate selection and ranking. The
+total number of possible ballots is $p _{n1} + p_{n2} + \cdots + p
+_{nk}$, where $p_{nk}$ is the number of sequences of $k$ objects out
+of $n$, that is $p_{nk} = n(n - 1)\cdots(n - k + 1)$\footnote{The
+  number $p_{nk}$ is also written $n^{\underline{k}}$, or $(n)_k$,
+  called ``Pochhammer's symbol''~\cite[p.\ 48]{graham:1994}. In closed
+  form it is $p_{nk} = \sum_{k=0}^{n} (-1)^{n-k}\left\{n \atop
+    k\right\}x^k$, where $\left\{n \atop k\right\}$ is the Stirling
+  number of the first kind~\cite{weisstein:pochhammer}.}. As each
+ballot is sent in encrypted form to the Zeus server, for its encoding
+number $b$ we must have $b \in [0, 10^p]$, where $p$ is the order of
+the group used in the ElGamal encryption scheme, so the encoding does
+not present a practical limit in real elections (it it did, we could
+always break the number in parts and send them separately).
+
 \section{Election Verification}
 
 \section{Implementation Considerations}
