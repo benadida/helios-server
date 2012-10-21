@@ -270,6 +270,9 @@ def election_zeus_proofs(request, election):
   if not election.result:
     raise PermissionDenied()
 
+  if not os.path.exists(election.zeus_proofs_path()):
+    election.store_zeus_proofs()
+
   zip_data = file(election.zeus_proofs_path())
   response = HttpResponse(zip_data.read(), mimetype='application/zip')
   zip_data.close()
