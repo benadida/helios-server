@@ -669,7 +669,7 @@ def one_election_cast(request, election):
     return HttpResponse('{"audit": 1}', mimetype="application/json")
   else:
     # notify user
-    tasks.send_cast_vote_email(election, voter, signature)
+    tasks.send_cast_vote_email.delay(election, voter, signature)
     url = "%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_cast_done,
                                                       args=[election.uuid]))
     return HttpResponse('{"cast_url": "%s"}' % url, mimetype="application/json")
@@ -1267,7 +1267,7 @@ def trustee_upload_decryption(request, election, trustee_uuid):
   # each proof needs to be deserialized
   decryption_proofs = [[datatypes.LDObject.fromDict(proof, type_hint='legacy/EGZKProof').wrapped_obj for proof in one_q_proofs] for one_q_proofs in factors_and_proofs['decryption_proofs']]
 
-  election.add_trustee_factors(trustee, decryption_factors, decryption_proofs)
+  tasks.add_trustee_factors.delay(election.pk, trustee.pk, decryption_factors, decryption_proofs)
 
   return SUCCESS
 
@@ -1463,6 +1463,7 @@ def voters_upload(request, election):
 
         return render_template(request, 'voters_upload_confirm', {'election': election,
                                                                   'voters': voters,
+                                                                  'count': len(voters),
                                                                   'admin_p': True,
                                                                   'error': error,
                                                                   'menu_active': 'voters' })
@@ -1491,8 +1492,7 @@ def voters_email(request, election):
 
   TEMPLATES = [
     ('vote', _('Time to Vote')),
-    ('info', _('Additional Info')),
-    ('result', _('Election Result'))
+    ('info', _('Additional Info'))
   ]
 
   template = request.REQUEST.get('template', 'vote')

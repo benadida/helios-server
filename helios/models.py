@@ -268,7 +268,7 @@ class Election(HeliosModel):
 
   def post_ecounting(self):
     from helios import tasks
-    tasks.election_post_ecounting(self.pk, self.get_ecounting_admin_user())
+    tasks.election_post_ecounting.delay(self.pk, self.get_ecounting_admin_user())
 
   @property
   def pretty_type(self):
@@ -811,7 +811,7 @@ class Election(HeliosModel):
 
     if self.ready_for_decryption_combination():
       from helios import tasks
-      tasks.tally_decrypt(self.pk)
+      tasks.tally_decrypt.delay(self.pk)
 
   def _get_zeus_vote(self, enc_vote, voter=None, audit_password=None):
     answer = enc_vote.encrypted_answers[0]
@@ -1679,7 +1679,7 @@ class Trustee(HeliosModel):
                 _(u'Επιβεβαίωση Κωδικού Ψηφοφορίας'),
                 _(u'Αποκρυπτογράφηση ψήφων')]
 
-  def send_url_via_mail(self):
+  def send_url_via_mail(self, msg=''):
 
     url = self.get_login_url()
 
@@ -1690,11 +1690,14 @@ class Trustee(HeliosModel):
 
       %(url)s
 
+      %(msg)s
+
     --
-    Helios
+    Zeus
              """) % {
                  'election_name': self.election.name,
                  'url': url,
+                 'msg': msg,
                  'step': self.get_step(),
                  'step_text': self.STEP_TEXTS[self.get_step()-1]}
 

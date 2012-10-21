@@ -124,11 +124,32 @@ error: %s
 The encrypted tally for election %s has been computed.
 
 --
-Helios
+Zeus
 """ % election.name)
         tally_helios_decrypt.delay(election_id=election.id)
     else:
         election_compute_tally.delay(election_id=election_id)
+
+@task()
+def add_trustee_factors(election_id, trustee_id, factors, proofs):
+  election = Election.objects.get(pk=election_id)
+  trustee = election.trustee_set.get(pk=trustee_id)
+  try:
+    election.add_trustee_factors(trustee, factors, proofs)
+  except Exception, e:
+    election_notify_admin.delay(election_id = election_id,
+                                subject = 'Error uploading factors and proofs',
+                                body = """
+%s
+
+%s
+--
+Zeus
+""" % (election.name, traceback.format_exc()))
+    try:
+      trustee.send_url_via_mail(msg=_('Invalid partial decryption send. Please try again.'))
+    except:
+      pass
 
 @task()
 def tally_decrypt(election_id):
@@ -146,7 +167,7 @@ def tally_decrypt(election_id):
                                 body = """
 Result decrypted for election %s.
 --
-Helios
+Zeus
 """ % election.name)
 
 
@@ -165,11 +186,11 @@ def tally_helios_decrypt(election_id):
     election_notify_admin.delay(election_id = election_id,
                                 subject = 'Helios Decrypt',
                                 body = """
-Helios has decrypted its portion of the tally
+Zeus has decrypted its portion of the tally
 for election %s.
 
 --
-Helios
+Zeus
 """ % election.name)
 
 @task()
@@ -185,7 +206,7 @@ has been processed.
 %s voters have been created.
 
 --
-Helios
+Zeus
 """ % (voter_file.election.name, voter_file.num_voters))
 
 @task()

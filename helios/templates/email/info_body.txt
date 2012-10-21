@@ -2,7 +2,7 @@
 
 {{custom_message|safe}}
 
-Σύνδεσμος ψηφοφορίας: {{election_vote_url}}
+Σύνδεσμος ψηφοφορίας: {{voter.get_quick_login_url}}
 
 --
 Ψηφιακή κάλπη «Ζευς»
