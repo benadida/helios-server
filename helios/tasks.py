@@ -139,6 +139,7 @@ def tally_decrypt(election_id):
     election = Election.objects.get(id = election_id)
     election.zeus_election.decrypt_ballots()
 
+    election.store_zeus_proofs()
     election.post_ecounting()
     election_notify_admin.delay(election_id = election_id,
                                 subject = 'Election Decrypt',

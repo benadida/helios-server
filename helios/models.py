@@ -15,6 +15,8 @@ import StringIO
 import copy
 import json as json_module
 import base64
+import zipfile
+import os
 
 import helios.views
 
@@ -995,6 +997,27 @@ class Election(HeliosModel):
     assumes that if there is a max to the question, that's how many winners there are.
     """
     return [self.one_question_winner(self.questions[i], self.result[i], self.num_cast_votes) for i in range(len(self.questions))]
+
+  def zeus_proofs_path(self):
+    return os.path.join(settings.ZEUS_PROOFS_PATH, '%s.zip' % self.uuid)
+
+  def store_zeus_proofs(self):
+    if not self.result:
+      return None
+
+    zip_path = self.zeus_proofs_path()
+    if os.path.exists(zip_path):
+      os.unlink(zip_path)
+
+    zeus_data = json_module.dumps(self.zeus_election.export())
+    zf = zipfile.ZipFile(zip_path, mode='w')
+    data_info = zipfile.ZipInfo('%s_proofs.txt' % self.uuid)
+    data_info.compress_type = zipfile.ZIP_DEFLATED
+    data_info.comment = "Election %s zeus proofs" % self.uuid
+    data_info.date_time = datetime.datetime.now().timetuple()
+    data_info.external_attr = 0777 << 16L
+    zf.writestr(data_info, zeus_data)
+    zf.close()
 
   @property
   def pretty_result(self):

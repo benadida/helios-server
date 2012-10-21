@@ -117,6 +117,8 @@ release results
 <a href="{% url helios.views.election_post_ecounting election.uuid %}">Αποστολή δεδομένων στην
 πλατφόρμα ecounting</a>
 {% endif %}
+<br /><br />
+<a href="{% url helios.views.election_zeus_proofs election.uuid  %}">Αποθήκευση κρυπτογραφικών δεδομένων</a>
 {% endif %}
 {% else %}
 

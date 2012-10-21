@@ -266,6 +266,17 @@ def election_new(request):
 
 
 @election_admin()
+def election_zeus_proofs(request, election):
+  if not election.result:
+    raise PermissionDenied()
+
+  zip_data = file(election.zeus_proofs_path())
+  response = HttpResponse(zip_data.read(), mimetype='application/zip')
+  zip_data.close()
+  response['Content-Dispotition'] = 'attachment; filename=%s_proofs.zip' % election.uuid
+  return response
+
+@election_admin()
 def voters_csv(request, election):
   voters = election.voter_set.all()
   response = HttpResponse(mimetype='text/csv')
