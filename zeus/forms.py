@@ -138,15 +138,17 @@ class ElectionForm(forms.Form):
 
   def clean(self, *args, **kwargs):
       cleaned_data = super(ElectionForm, self).clean(*args, **kwargs)
-      slug = slughifi(cleaned_data['name'])
 
-      from django.db.models import Q
-      q = Q()
-      if self.election and self.election.pk:
-        q = ~Q(pk=self.election.pk)
+      if 'name' in cleaned_data:
+          slug = slughifi(cleaned_data['name'])
 
-      if Election.objects.filter(q, short_name=slug):
-        raise forms.ValidationError(_("Another election with the same name exists"))
+          from django.db.models import Q
+          q = Q()
+          if self.election and self.election.pk:
+            q = ~Q(pk=self.election.pk)
+
+          if Election.objects.filter(q, short_name=slug):
+            raise forms.ValidationError(_("Another election with the same name exists"))
 
       dfrom = cleaned_data['voting_starts_at']
       dto = cleaned_data['voting_ends_at']
