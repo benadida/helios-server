@@ -37,11 +37,13 @@
   <a style="" class="foundicon-down-arrow"
     href="{% url helios.views.voters_csv election.uuid %}"> &nbsp;Αποθήκευση σε CSV</a>
   </li>
+  {% if not election.frozen_at %}
             <li>
 <a class="foundicon-remove alert" 
     onclick="return confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε όλους τους ψηφοφόρους;')",
     href="{% url helios.views.voters_clear election.uuid %}"> &nbsp;Διαγραφή όλων</a>
   </li>
+  {% endif %}
           </ul>
         </div>
 
