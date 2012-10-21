@@ -14,8 +14,10 @@ import Crypto.Util.number as number
 inverse = number.inverse
 from Crypto import Random
 from operator import mul as mul_operator
-from multiprocessing import Pool, Queue as PoolQueue
-from time import time
+from Queue import Queue, Empty, Full
+from thread import start_new_thread
+import inspect
+from time import time, sleep
 from gmpy import mpz
 
 _pow = pow
@@ -134,6 +136,173 @@ def sk_from_args(p, g, q, x, y, t, c, f):
 
 def get_timestamp():
     return datetime.strftime(datetime.utcnow(), "%Y-%m-%dT%H:%M:%S.%fZ")
+
+
+class AsyncArgs(object):
+    __slots__ = ('func', 'args', 'kw')
+
+    def __init__(self, func, args, kw):
+        self.func = func
+        self.args = args
+        self.kw = kw
+
+def async_call(func, args, kw, channel):
+    argspec = inspect.getargspec(func)
+    if argspec.keywords or 'async_channel' in argspec.args:
+        kw['async_channel'] = channel
+    return func(*args, **kw)
+
+def async_thread(controller):
+    while 1:
+        channel = controller.get_channel(wait=1)
+        if channel is None:
+            break
+
+        while 1:
+            inp = channel.get_input(wait=0)
+            if inp is None:
+                break
+
+            if not isinstance(inp, AsyncArgs):
+                m = "%x: first input is type '%s' not 'AsyncArgs'" % (type(inp),)
+                raise ValueError(m)
+            func = inp.func
+            args = inp.args
+            kw = inp.kw
+            try:
+                ret = async_call(func, args, kw, channel)
+            except Exception, e:
+                controller.put_shared(e, wait=1)
+                channel.put_output(e, wait=1)
+                break
+            channel.put_output(ret, wait=1)
+
+    raise SystemExit
+
+class AsyncChannel(object):
+    def __init__(self, controller):
+        self.controller = controller
+        self.reset()
+
+    def reset(self):
+        self.input_queue = Queue()
+        self.output_queue = Queue()
+
+    def put_input(self, value, wait=1):
+        try:
+            self.input_queue.put(value, block=wait)
+            return True
+        except Full:
+            return False
+
+    def get_input(self, wait=1):
+        try:
+            val = self.input_queue.get(block=wait)
+            if isinstance(val, BaseException):
+                raise val
+            return val
+        except Empty:
+            return None
+
+    def put_output(self, value, wait=1):
+        try:
+            self.output_queue.put(value, block=wait)
+            return True
+        except Full:
+            return False
+
+    def get_output(self, wait=1):
+        try:
+            val = self.output_queue.get(block=wait)
+            if isinstance(val, BaseException):
+                raise val
+            return val
+        except Empty:
+            return None
+
+    def put_shared(self, value, wait=1):
+        return self.controller.put_shared(value, wait=wait)
+
+    def get_shared(self, wait=1):
+        val = self.controller.get_shared(wait=wait)
+        return val
+
+class AsyncFunc(object):
+    def __init__(self, controller, func, args, kw):
+        self.controller = controller
+        self.func = func
+        self.args = args
+        self.kw = kw
+
+    def __call__(self, *args, **kw):
+        call_kw = dict(self.kw)
+        call_kw.update(kw)
+        call_args = self.args + args
+        call_func = self.func
+        controller = self.controller
+        async_args = AsyncArgs(call_func, call_args, call_kw)
+        channel = AsyncChannel(controller)
+        if controller.parallel:
+            channel.put_input(async_args, wait=1)
+            controller.put_channel(channel, wait=1)
+        else:
+            ret = async_call(call_func, call_args, call_kw, channel)
+            channel.put_output(ret)
+        return channel
+
+class AsyncController(object):
+    serial = 0
+    parallel = 0
+    channel_queue = None
+    shared_queue = None
+    dead = 1
+
+    def __new__(cls, *args, **kw):
+        parallel = int(kw.get('parallel', 2))
+        serial = cls.serial
+        cls.serial = serial + 1
+        self = object.__new__(cls)
+        self.serial = serial
+        self.channel_queue = Queue()
+        self.shared_queue = Queue()
+        self.spawn(parallel)
+        self.dead = 0
+        return self
+
+    def spawn(self, nr=1):
+        for _ in xrange(nr):
+            start_new_thread(async_thread, (self,))
+        self.parallel += nr
+
+    def shutdown(self):
+        for _ in xrange(self.parallel):
+            self.put_channel(None)
+        del self.dead
+
+    def put_channel(self, channel, wait=1):
+        self.channel_queue.put(channel, block=wait)
+
+    def get_channel(self, wait=1):
+        return self.channel_queue.get(block=wait)
+
+    def get_shared(self, wait=1):
+        try:
+            ret = self.shared_queue.get(block=wait)
+            if isinstance(ret, BaseException):
+                raise ret
+            return ret
+        except Empty:
+            return None
+
+    def put_shared(self, value, wait=1):
+        try:
+            self.shared_queue.put(value, block=wait)
+            return True
+        except Full:
+            return False
+
+    def make_async(self, func, *args, **kw):
+        return AsyncFunc(self, func, args, kw)
 
 
 class TellerStream(object):
@@ -533,7 +702,7 @@ def validate_cryptosystem(modulus, generator, order, teller=_teller):
 
     with task("is the ElGamal group, the modulus quadratic residues?"):
         if 2*q + 1 != p:
-            m = "ELGAMAL GROUP IS NOT THE MODULUS QUADRATIC RESIDUES"
+            m = "ELGAMAL GROUP IS NOT THE MODULUS' QUADRATIC RESIDUES"
             raise AssertionError(m)
 
     with task("is the generator size >= 2000 bits?"):
@@ -1527,13 +1696,8 @@ def get_random_permutation_gamma(nr_elements):
     selection = gamma_decode(rand, nr_elements)
     return selection
 
-_queue = None
-_report_thresh = 4
-
 def shuffle_ciphers(modulus, generator, order, public, ciphers,
-                    teller=None, nr_parallel=0):
-    if nr_parallel:
-        Random.atfork()
+                    teller=None, report_thresh=8, async_channel=None):
     nr_ciphers = len(ciphers)
     mixed_offsets = get_random_permutation(nr_ciphers)
     mixed_ciphers = [None] * nr_ciphers
@@ -1548,21 +1712,19 @@ def shuffle_ciphers(modulus, generator, order, public, ciphers,
         o = mixed_offsets[i]
         mixed_ciphers[o] = (alpha, beta)
         count += 1
-        if (count >= _report_thresh):
-            if nr_parallel and _queue is not None:
-                _queue.put(count)
+        if count >= report_thresh:
             if teller:
                 teller.advance(count)
+            if async_channel:
+                async_channel.put_shared(count, wait=1)
             count = 0
 
-    if nr_parallel and _queue is not None and count:
-        _queue.put(count)
-    if teller:
-        teller.advance(count)
+    if count:
+        if teller:
+            teller.advance(count)
+        if async_channel:
+            async_channel.put_shared(count, wait=1)
     return [mixed_ciphers, mixed_offsets, mixed_randoms]
-
-def shuffle_map(args):
-    return shuffle_ciphers(*args[0], **args[1])
 
 def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS,
                 teller=_teller, nr_parallel=0):
@@ -1571,9 +1733,12 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS,
     q = ciphers_for_mixing['order']
     y = ciphers_for_mixing['public']
 
-    Random.atfork()
     original_ciphers = ciphers_for_mixing['mixed_ciphers']
     nr_ciphers = len(original_ciphers)
+
+    Random.atfork()
+    async = AsyncController(parallel=nr_parallel)
+    async_shuffle_ciphers = async.make_async(shuffle_ciphers)
 
     teller.task('Mixing %d ciphers for %d rounds' % (nr_ciphers, nr_rounds))
 
@@ -1581,47 +1746,34 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS,
     cipher_mix['original_ciphers'] = original_ciphers
 
     with teller.task('Producing final mixed ciphers', total=nr_ciphers):
-        shuffled = shuffle_ciphers(p, g, q, y, original_ciphers, teller=teller)
+        channel = async_shuffle_ciphers(p, g, q, y, original_ciphers,
+                                        teller=None)
+        count = 0
+        while count < nr_ciphers:
+            nr = async.get_shared(wait=1)
+            teller.advance(nr)
+            count += nr
+
+        shuffled = channel.get_output(wait=1)
         mixed_ciphers, mixed_offsets, mixed_randoms = shuffled
         cipher_mix['mixed_ciphers'] = mixed_ciphers
 
     total = nr_ciphers * nr_rounds
     with teller.task('Producing ciphers for proof', total=total):
-        if nr_parallel:
-            global _queue
-            _queue = PoolQueue()
-            WorkerPool = Pool(processes=nr_parallel)
-            args_collection = repeat(((p, g, q, y, original_ciphers),
-                                      {'nr_parallel': nr_parallel}),
-                                      nr_rounds)
-            result = WorkerPool.map_async(shuffle_map, args_collection)
-            Random.atfork()
-            count = nr_ciphers * nr_rounds
-            while count > 0:
-                n = _queue.get()
-                teller.advance(n)
-                count -= n
-            mixed = result.get()
-        else:
-            args = ((p, g, q, y, original_ciphers, teller),{})
-            args_collection = repeat(args, nr_rounds)
-            mixed = map(shuffle_map, args_collection)
-        unzipped = [list(x) for x in izip(*mixed)]
-        cipher_collections, offset_collections, random_collections = unzipped
+        channels = [async_shuffle_ciphers(p, g, q, y, original_ciphers,
+                                          teller=None)
+                    for _ in xrange(nr_rounds)]
 
-        ## single process
-        #
-        #cipher_collections = []
-        #random_collections = []
-        #offset_collections = []
-        #
-        #for _ in xrange(nr_rounds):
-        #    shuffled = shuffle_ciphers(p, g, q, y, original_ciphers)
-        #    ciphers, offsets, randoms = shuffled
-        #    cipher_collections.append(ciphers)
-        #    offset_collections.append(offsets)
-        #    random_collections.append(randoms)
-        #    teller.advance()
+        count = 0
+        while count < total:
+            nr = async.get_shared()
+            teller.advance(nr)
+            count += nr
+
+        collections = [channel.get_output(wait=1) for channel in channels]
+        async.shutdown()
+        unzipped = [list(x) for x in zip(*collections)]
+        cipher_collections, offset_collections, random_collections = unzipped
 
         cipher_mix['cipher_collections'] = cipher_collections
         cipher_mix['random_collections'] = random_collections
@@ -1676,7 +1828,63 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS,
     return cipher_mix
 
 
-def verify_cipher_mix(cipher_mix, teller=_teller):
+def verify_mix_round(i, bit, original_ciphers, mixed_ciphers,
+                     ciphers, randoms, offsets,
+                     teller=None, report_thresh=8, async_channel=None):
+    nr_ciphers = len(original_ciphers)
+    count = 0
+    if bit == 0:
+        for j in xrange(nr_ciphers):
+            original_cipher = original_ciphers[j]
+            a = original_cipher[ALPHA]
+            b = original_cipher[BETA]
+            r = randoms[j]
+            new_a, new_b = reencrypt(p, g, q, y, a, b, r)
+            o = offsets[j]
+            cipher = ciphers[o]
+            if new_a != cipher[ALPHA] or new_b != cipher[BETA]:
+                m = ('MIXING VERIFICATION FAILED AT '
+                     'ROUND %d CIPHER %d' % (i, j))
+                raise AssertionError(m)
+            count += 1
+            if count >= report_thresh:
+                if async_channel:
+                    async_channel.put_shared(count)
+                if teller:
+                    teller.advance(count)
+                count = 0
+    elif bit == 1:
+        for j in xrange(nr_ciphers):
+            cipher = ciphers[j]
+            a = cipher[ALPHA]
+            b = cipher[BETA]
+            r = randoms[j]
+            new_a, new_b = reencrypt(p, g, q, y, a, b, r)
+            o = offsets[j]
+            mixed_cipher = mixed_ciphers[o]
+            if new_a != mixed_cipher[ALPHA] or new_b != cipher[BETA]:
+                m = ('MIXING VERIFICATION FAILED AT '
+                     'ROUND %d CIPHER %d' % (i, j))
+                raise AssertionError(m)
+            count += 1
+            if count >= report_thresh:
+                if async_channel:
+                    async_channel.put_shared(count)
+                if teller:
+                    teller.advance(count)
+                count = 0
+    else:
+        m = "This should be impossible. Something is broken."
+        raise AssertionError(m)
+
+    if count:
+        if async_channel:
+            async_channel.put_shared(count)
+        if teller:
+            teller.advance(count)
+
+
+def verify_cipher_mix(cipher_mix, teller=_teller, nr_parallel=0):
     try:
         p = cipher_mix['modulus']
         g = cipher_mix['generator']
@@ -1707,44 +1915,31 @@ def verify_cipher_mix(cipher_mix, teller=_teller):
     #    m = "Invalid cryptosystem"
     #    raise AssertionError(m)
 
-    teller.task('Verifying ciphers', total=nr_rounds*nr_ciphers)
-    for i, bit in zip(xrange(nr_rounds), bit_iterator(int(challenge, 16))):
-        ciphers = cipher_collections[i]
-        randoms = random_collections[i]
-        offsets = offset_collections[i]
+    async = AsyncController(parallel=nr_parallel)
+    async_verify_mix_round = async.make_async(verify_mix_round)
 
-        if bit == 0:
-            for j in xrange(nr_ciphers):
-                original_cipher = original_ciphers[j]
-                a = original_cipher[ALPHA]
-                b = original_cipher[BETA]
-                r = randoms[j]
-                new_a, new_b = reencrypt(p, g, q, y, a, b, r)
-                o = offsets[j]
-                cipher = ciphers[o]
-                if new_a != cipher[ALPHA] or new_b != cipher[BETA]:
-                    m = ('MIXING VERIFICATION FAILED AT '
-                         'ROUND %d CIPHER %d' % (i, j))
-                    raise AssertionError(m)
-                teller.advance()
-        elif bit == 1:
-            for j in xrange(nr_ciphers):
-                cipher = ciphers[j]
-                a = cipher[ALPHA]
-                b = cipher[BETA]
-                r = randoms[j]
-                new_a, new_b = reencrypt(p, g, q, y, a, b, r)
-                o = offsets[j]
-                mixed_cipher = mixed_ciphers[o]
-                if new_a != mixed_cipher[ALPHA] or new_b != cipher[BETA]:
-                    m = ('MIXING VERIFICATION FAILED AT '
-                         'ROUND %d CIPHER %d' % (i, j))
-                    raise AssertionError(m)
-                teller.advance()
-        else:
-            m = "This should be impossible. Something is broken."
-            raise AssertionError(m)
-    teller.finish('Verifying ciphers')
+    total = nr_rounds * nr_ciphers
+    with teller.task('Verifying ciphers', total=total):
+        channels = []
+        append = channels.append
+        for i, bit in zip(xrange(nr_rounds), bit_iterator(int(challenge, 16))):
+            ciphers = cipher_collections[i]
+            randoms = random_collections[i]
+            offsets = offset_collections[i]
+            append(async_verify_mix_round(i, bit,
+                                          original_ciphers,
+                                          mixed_ciphers,
+                                          ciphers, randoms, offsets,
+                                          teller=None))
+        count = 0
+        while count < total:
+            nr = async.get_shared(wait=1)
+            teller.advance(nr)
+            count += nr
+
+        for channel in channels:
+            channel.get_output(wait=1)
+
     teller.finish('Verifying mixing')
     return 1
 
@@ -2262,7 +2457,8 @@ class ZeusCoreElection(object):
             m = "Cannot transition from stage '%s' to 'VOTING'" % (stage,)
             raise ZeusError(m)
 
-        self.validate_creating()
+        if not self.get_option('novalidate'):
+            self.validate_creating()
         self.do_set_stage('VOTING')
 
     @classmethod
@@ -2688,7 +2884,8 @@ class ZeusCoreElection(object):
             m = "Cannot transition from stage '%s' to 'MIXING'" % (stage,)
             raise ZeusError(m)
 
-        self.validate_voting()
+        if not self.get_option('novalidate'):
+            self.validate_voting()
         votes_for_mixing = self.extract_votes_for_mixing()
         self.do_store_mix(votes_for_mixing)
         self.do_set_stage('MIXING')
@@ -2719,6 +2916,7 @@ class ZeusCoreElection(object):
 
     def validate_mix(self, mix):
         teller = self.teller
+        nr_parallel = self.get_option('parallel') or 0
         modulus = mix['modulus']
         generator = mix['generator']
         order = mix['order']
@@ -2745,7 +2943,7 @@ class ZeusCoreElection(object):
             m = "Invalid mix: not a mix of latest ciphers!"
             raise ZeusError(m)
 
-        if not verify_cipher_mix(mix, teller=teller):
+        if not verify_cipher_mix(mix, teller=teller, nr_parallel=nr_parallel):
             m = "Invalid mix: proof verification failed!"
             raise ZeusError(m)
 
@@ -2756,6 +2954,7 @@ class ZeusCoreElection(object):
 
     def validate_mixing(self):
         teller = self.teller
+        nr_parallel = self.get_option('parallel') or 0
         teller.task("Validating state: 'MIXING'")
 
         crypto = self.do_get_cryptosystem()
@@ -2781,7 +2980,8 @@ class ZeusCoreElection(object):
                             % (i+1, nr_mixes))
                         raise AssertionError(m)
 
-                    if not verify_cipher_mix(mix, teller=teller):
+                    if not verify_cipher_mix(mix, teller=teller,
+                                             nr_parallel=nr_parallel):
                         m = "Invalid mix proof"
                         raise AssertionError(m)
 
@@ -2817,7 +3017,8 @@ class ZeusCoreElection(object):
             m = "Cannot transition from stage '%s' to 'DECRYPTING'" % (stage,)
             raise ZeusError(m)
 
-        self.validate_mixing()
+        if not self.get_option('novalidate'):
+            self.validate_mixing()
         self.compute_zeus_factors()
         self.do_set_stage('DECRYPTING')
 
@@ -2965,7 +3166,8 @@ class ZeusCoreElection(object):
             m = "Cannot transition from stage '%s' to 'FINISHED'" % (stage,)
             raise ZeusError(m)
 
-        self.validate_decrypting()
+        if not self.get_option('novalidate'):
+            self.validate_decrypting()
         old_results = self.do_get_results()
         results = self.decrypt_ballots()
         if old_results and old_results != results:
@@ -3233,6 +3435,8 @@ class ZeusCoreElection(object):
         if stage == 'CREATING':
             return self
 
+        self.set_option(parallel=nr_parallel)
+
         self.set_voting()
         with teller.task("Voting", total=nr_votes):
             self.mk_stage_voting(teller)
@@ -3313,7 +3517,7 @@ def main():
                         dest='nr_mixes',
                         help="Generate: Number of times to mix")
 
-    parser.add_argument('--rounds', type=int, default=3,
+    parser.add_argument('--rounds', type=int, default=MIN_MIX_ROUNDS,
                         dest='nr_rounds',
                         help="Generate or Mix: Number of mix rounds")
 
@@ -3339,11 +3543,12 @@ def main():
         with open(filename, "w") as f:
             json.dump(exported, f, indent=2)
 
-    def main_validate(args, teller=_teller):
+    def main_validate(args, teller=_teller, nr_parallel=0):
         filename = args.validate
         with open(filename, "r") as f:
             finished = json.load(f)
         election = ZeusCoreElection.new_at_finished(finished, teller=teller)
+        return election
 
     def main_mix(args, teller=_teller, nr_parallel=0):
         infile, outfile = args.mix
@@ -3445,9 +3650,12 @@ def test_decryption():
     if sorted(pts) != sorted(texts):
         raise AssertionError("ZZ")
 
+retval = []
+
 if __name__ == '__main__':
     #verify_gamma_encoding(7)
     #cross_check_encodings(7)
     #test_decryption()
-    main()
+    retval.append(main())
+    raise KeyboardInterrupt
 
