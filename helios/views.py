@@ -958,6 +958,10 @@ def one_election_audited_ballots(request, election):
   UI to show election audited ballots
   """
 
+  user = get_user(request)
+  admin_p = security.user_can_admin_election(user, election)
+  voter = get_voter(request, user, election)
+
   if request.GET.has_key('vote_hash'):
     b = AuditedBallot.get(election, request.GET['vote_hash'])
     return HttpResponse(b.raw_vote, mimetype="text/plain")
@@ -978,6 +982,7 @@ def one_election_audited_ballots(request, election):
   return render_template(request, 'election_audited_ballots', {
     'menu_active': 'audits',
     'election': election, 'audited_ballots': audited_ballots,
+    'admin_p': admin_p,
     'next_after': next_after,
     'offset': offset,
     'limit': limit,
