@@ -1690,7 +1690,7 @@ class Trustee(HeliosModel):
 
     url = self.get_login_url()
 
-    body = _("""
+    body = _(u"""
     Ως μέλος της εφορευτικής επιτροπής της ψηφοφορίας
 
       %(election_name)s
