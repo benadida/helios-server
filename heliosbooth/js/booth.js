@@ -447,6 +447,7 @@ BOOTH.load_and_setup_election = function(election_url) {
         'data': {}, 
         'success': function(result) {
           sjcl.random.addEntropy(result.randomness);
+          BOOTH.csrf = result.token;
         }, 
         'error': function(err){ 
           window.location = '/';
@@ -653,6 +654,7 @@ BOOTH.cast_ballot = function() {
 
     // submit the form
     var data = $('#send_ballot_form').serialize();
+    data = data + "&csrf_token=" + BOOTH.csrf;
     var url = $('#send_ballot_form').attr("action");
 
     $.ajax({

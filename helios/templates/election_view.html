@@ -65,7 +65,7 @@ if (!navigator.javaEnabled()) {
 
 {% if not election.tallied %}
 {% if election.tallying_started_at %}
-Η διαδικασία μίξης έχει ξεκινήσει. Παρακαλούμε ανανεώστε τη σελίδα
+Η διαδικασία μείξης έχει ξεκινήσει. Παρακαλούμε ανανεώστε τη σελίδα
 ανά τακτά χρονικά διαστήματα μέχρι να ολοκληρωθεί η διαδικασία.
 {% else %}
 {% if election.num_cast_votes %}
@@ -89,8 +89,12 @@ release results
 {% else %}
 {% endif %}
 {% else %}
+{% if election.encrypted_tally %}
 <a class="button success" href="{% url helios.views.list_trustees_view election.uuid %}">
-Τα μέλη της εφορευτικής επιτροπής πρέπει να αποκρυπτογραφήσουν τα τελικά ψηφοδέλτια</a>
+  Τα μέλη της εφορευτικής επιτροπής πρέπει να αποκρυπτογραφήσουν τα τελικά ψηφοδέλτια</a>
+{% else %}
+Παρακαλούμε περιμένετε για την επαλήθευση της διαδικασίας της μείξης.
+{% endif %}
 {% endif %}
 
 {% endif %}

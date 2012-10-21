@@ -178,7 +178,9 @@ def election_shortcut(request, election_short_name):
 # a hidden view behind the shortcut that performs the actual perm check
 @election_view()
 def _election_vote_shortcut(request, election):
-  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url' : reverse(one_election, args=[election.uuid])}))
+  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({
+    'token': request.session.get('csrf_token'),
+    'election_url' : reverse(one_election, args=[election.uuid])}))
 
   test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : vote_url}))
 
@@ -382,7 +384,9 @@ def one_election_view(request, election):
   election_badge_url = get_election_badge_url(election)
   status_update_message = None
 
-  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url' : reverse(one_election, args=[election.uuid])}))
+  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({
+    'token': request.session.get('csrf_token'),
+    'election_url' : reverse(one_election, args=[election.uuid])}))
 
   test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : vote_url}))
 
@@ -596,9 +600,14 @@ def get_randomness(request, election):
   """
   get some randomness to sprinkle into the sjcl entropy pool
   """
+  if not request.session.get('helios_trustee_uuid') and not \
+    request.session.get('CURRENT_VOTER'):
+      raise PermissionDenied
+
   return {
     # back to urandom, it's fine
-    "randomness" : base64.b64encode(os.urandom(32))
+    "randomness" : base64.b64encode(os.urandom(32)),
+    "token": request.session.get('csrf_token')
     #"randomness" : base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
     }
 
@@ -643,6 +652,8 @@ def one_election_cast(request, election):
   if request.method == "GET":
     return HttpResponseRedirect("%s%s" % (settings.URL_HOST, reverse(one_election_view, args = [election.uuid])))
 
+  check_csrf(request)
+
   user = get_user(request)
   voter = get_voter(request, user, election)
 
@@ -666,7 +677,9 @@ def one_election_cast(request, election):
   if signature['m'].startswith("AUDIT REQUEST"):
     request.session['audit_request'] = encrypted_vote
     request.session['audit_password'] = audit_password
-    return HttpResponse('{"audit": 1}', mimetype="application/json")
+    token = request.session.get('csrf_token')
+    return HttpResponse('{"audit": 1, "token":"%s"}' % token,
+                        mimetype="application/json")
   else:
     # notify user
     tasks.send_cast_vote_email.delay(election, voter, signature)
