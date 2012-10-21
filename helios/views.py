@@ -1094,15 +1094,38 @@ def one_election_questions(request, election):
 
     fields = ['surname', 'name', 'father_name', 'department']
 
-    surnames = filter(bool, request.POST.getlist('candidates_lastname'))
-    names = filter(bool, request.POST.getlist('candidates_name'))
-    fathernames = filter(bool, request.POST.getlist('candidates_fathers_name'))
-    departments = filter(bool, request.POST.getlist('candidates_department'))
+    surnames = request.POST.getlist('candidates_lastname')
+    names = request.POST.getlist('candidates_name')
+    fathernames = request.POST.getlist('candidates_fathers_name')
+    departments = request.POST.getlist('candidates_department')
+
+    def filled(c):
+      return c['name'] or c['surname'] or c['father_name']
 
     candidates_data = zip(surnames, names, fathernames, departments)
-    candidates = [dict(zip(fields, d)) for d in candidates_data]
-    candidates = sorted(candidates, key=lambda c: c['surname'])
+    candidates = filter(filled, [dict(zip(fields, d)) for d in candidates_data])
 
+    error = None
+    errors = []
+    for cand in candidates:
+      for key in cand.keys():
+        if not cand[key]:
+          error = "Invalid entry"
+          errors.append(cand)
+
+    empty_inputs = range(5) if len(candidates) else range(15)
+
+    if error:
+      return render_template(request, 'election_questions', {
+        'election': election, 'questions_json' : questions_json,
+        'candidates': candidates,
+        'error': error,
+        'departments': election.departments,
+        'empty_inputs': empty_inputs,
+        'menu_active': 'candidates',
+        'admin_p': admin_p})
+
+    candidates = sorted(candidates, key=lambda c: c['surname'])
     question = {}
     question['answer_urls'] = [None for x in range(len(candidates))]
     question['choice_type'] = 'stv'
