@@ -2960,7 +2960,7 @@ class ZeusCoreElection(object):
         crypto = self.do_get_cryptosystem()
         previous = None
         mixes = self.do_get_all_mixes()
-        min_mixes = self.get_option('min_mixes') or 2
+        min_mixes = self.get_option('min_mixes') or 1
         nr_mixes = len(mixes) - 1
         if nr_mixes < min_mixes:
             m = "Not enough mixes: %d. Minimum %d." % (nr_mixes, min_mixes)
