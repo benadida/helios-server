@@ -927,7 +927,7 @@ def one_election_audited_ballots(request, election):
 
   after = request.GET.get('after', None)
   offset= int(request.GET.get('offset', 0))
-  limit = int(request.GET.get('limit', 50))
+  limit = int(request.GET.get('limit', 100))
 
   audited_ballots = AuditedBallot.get_by_election(election, after=after, limit=limit+1)
 
@@ -938,8 +938,14 @@ def one_election_audited_ballots(request, election):
   else:
     next_after = None
 
-  return render_template(request, 'election_audited_ballots', {'election': election, 'audited_ballots': audited_ballots, 'next_after': next_after,
-                'offset': offset, 'limit': limit, 'offset_plus_one': offset+1, 'offset_plus_limit': offset+limit})
+  return render_template(request, 'election_audited_ballots', {
+    'menu_active': 'audits',
+    'election': election, 'audited_ballots': audited_ballots,
+    'next_after': next_after,
+    'offset': offset,
+    'limit': limit,
+    'offset_plus_one': offset+1,
+    'offset_plus_limit': offset+limit})
 
 @election_admin()
 def voter_delete(request, election, voter_uuid):

@@ -632,7 +632,9 @@ BOOTH.audit_ballot = function() {
 
 BOOTH.post_audited_ballot = function() {
   $.post(BOOTH.election_url + "/post-audited-ballot", {'audited_ballot': BOOTH.audit_trail}, function(result) {
-    alert('This audited ballot has been posted.\nRemember, this vote will only be used for auditing and will not be tallied.\nClick "back to voting" and cast a new ballot to make sure your vote counts.');
+    alert('Η ψήφος ελέγχου αποθηκευτικε. Μεταφόρα στην σελίδα επιλογών.');
+    BOOTH.reset_ciphertexts();
+    BOOTH.show_question(0);
   });
 };
 
