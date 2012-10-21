@@ -254,7 +254,7 @@ def election_new(request):
         return HttpResponseRedirect(reverse(one_election_questions, args=[election.uuid]))
 
 
-  return render_template(request, "election_new", {'election_form': election_form, 'error': error})
+  return render_template(request, "election_new", {'election_form': election_form, 'election': None, 'error': error})
 
 @election_admin()
 def voters_csv(request, election):
