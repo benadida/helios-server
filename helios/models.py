@@ -277,6 +277,10 @@ class Election(HeliosModel):
     return self.voter_set.exclude(vote=None).count()
 
   @property
+  def audits_casted(self):
+    return self.auditedballot_set.filter(is_request=False).count()
+
+  @property
   def num_voters(self):
     return self.voter_set.count()
 
@@ -702,6 +706,7 @@ class Election(HeliosModel):
     # log it
     self.append_log(ElectionLog.FROZEN)
     self.frozen_at = datetime.datetime.utcnow()
+    self.voting_started_at = datetime.datetime.utcnow()
     self.generate_voters_hash()
     self.set_eligibility()
     self.save()

@@ -137,9 +137,8 @@ BOOTH.setup_election = function(raw_json) {
 
   // FIXME: we shouldn't need to set both, but right now we are doing so
   // because different code uses each one. Bah. Need fixing.
-  BOOTH.election.hash = b64_sha256(raw_json);
+  BOOTH.election.hash = UTILS.election_hash_from_json(raw_json);
   BOOTH.election.election_hash = BOOTH.election.hash
-
   // async?
   BOOTH.setup_workers(raw_json);
 

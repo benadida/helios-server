@@ -920,7 +920,6 @@ def one_election_audited_ballots(request, election):
   """
   UI to show election audited ballots
   """
-  return dummy_view(request)
 
   if request.GET.has_key('vote_hash'):
     b = AuditedBallot.get(election, request.GET['vote_hash'])
