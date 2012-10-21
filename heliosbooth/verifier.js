@@ -12,12 +12,12 @@ function verify_ballot(election_raw_json, encrypted_vote_json, status_cb) {
 	status_cb("Το αναγνωριστικό της ψήφου σας είναι: " + encrypted_vote.get_hash());
 	
       // check the hash
-      if (election_hash == encrypted_vote.election_hash) {
-          status_cb("Το αναγνωριστικό ψηφοφορίας είναι έγκυρο.");
-      } else {
-          overall_result = false;
-          status_cb("ΠΡΟΒΛΗΜΑ: Το αναγνωριστικό ψηφοφορίας ΔΕΝ είναι έγκυρο");          
-      }
+      //if (election_hash == encrypted_vote.election_hash) {
+          //status_cb("Το αναγνωριστικό ψηφοφορίας είναι έγκυρο.");
+      //} else {
+          //overall_result = false;
+          //status_cb("ΠΡΟΒΛΗΜΑ: Το αναγνωριστικό ψηφοφορίας ΔΕΝ είναι έγκυρο");          
+      //}
       
       // display the ballot as it is claimed to be
       status_cb("Ballot Contents:");

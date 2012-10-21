@@ -2,7 +2,8 @@ import datetime
 import uuid
 import json
 
-from zeus.core import ZeusCoreElection, Teller, sk_from_args, mix_ciphers
+from zeus.core import ZeusCoreElection, Teller, sk_from_args, \
+    mix_ciphers, TellerStream
 from zeus.core import V_CAST_VOTE, V_PUBLIC_AUDIT, V_AUDIT_REQUEST
 
 from zeus.models import ElectionInfo
@@ -45,6 +46,7 @@ class HeliosElection(ZeusCoreElection):
                                   ELGAMAL_PARAMS.q)
         kwargs['teller'] = Teller(outstream=NullStream())
         super(HeliosElection, self).__init__(*args, **kwargs)
+        self.set_option(parallel=MIXNET_NR_PARALLEL)
 
     def _get_zeus_vote(self, enc_vote, voter=None, audit_password=None):
         return self.model.election._get_zeus_vote(enc_vote, voter=voter,
@@ -234,9 +236,14 @@ class HeliosElection(ZeusCoreElection):
         vobj = helios_models.AuditedBallot.objects.get(election=self.model.election,
                                                        fingerprint=vote['fingerprint'],
                                                        is_request=True)
+
         vobj.pk = None
         vobj.signature = vote['signature']
         vobj.fingerprint = vote['fingerprint']
+        new_vote = vobj.vote
+        new_vote.encrypted_answers[0].randomness = [vote['voter_secret']]
+        new_vote.encrypted_answers[0].answer = vote['plain_answer']
+        vobj.raw_vote = json.dumps(new_vote.toJSONDict(with_randomness=True))
         vobj.is_request = False
         vobj.voter = None
         vobj.save()
@@ -414,8 +421,8 @@ class HeliosElection(ZeusCoreElection):
         return mixes
 
     def mix(self, ciphers):
-        return mix_ciphers(ciphers, teller=self.teller,
-                           nr_parallel=MIXNET_NR_PARALLEL)
+      return mix_ciphers(ciphers, teller=self.teller,
+                           nr_parallel=self.get_option('parallel'))
 
     def _get_zeus_factors(self, trustee):
         trustee_factors = []
@@ -456,7 +463,7 @@ class HeliosElection(ZeusCoreElection):
 
     def do_store_results(self, results):
         e = self.model.election
-        e.result = get_datatype('phoebus/Result', [results])
+        e.result = [results]
         e.save()
 
     def do_get_results(self):

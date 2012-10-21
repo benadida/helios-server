@@ -839,6 +839,7 @@ class Election(HeliosModel):
 
     if hasattr(answer, 'answer') and answer.answer:
       zeus_vote['audit_code'] = audit_password
+      zeus_vote['plain_answer'] = answer.answer
       zeus_vote['voter_secret'] = answer.randomness[0]
 
     if audit_password:
@@ -1595,7 +1596,8 @@ class AuditedBallot(models.Model):
 
   @classmethod
   def get(cls, election, vote_hash):
-    return cls.objects.get(election = election, vote_hash = vote_hash)
+    return cls.objects.get(election = election, vote_hash = vote_hash,
+                           is_request=False)
 
   @classmethod
   def get_by_election(cls, election, after=None, limit=None):
@@ -1605,11 +1607,16 @@ class AuditedBallot(models.Model):
     if after:
       query = query.filter(vote_hash__gt = after)
 
+    query = query.filter(is_request=False)
     if limit:
       query = query[:limit]
 
     return query
 
+  @property
+  def vote(self):
+    return electionalgs.EncryptedVote.fromJSONDict(
+                utils.from_json(self.raw_vote))
   class Meta:
     unique_together = (('election','is_request','fingerprint'))
 
