@@ -114,7 +114,8 @@ class ElectionMixnet(HeliosModel):
     if not self.mix:
       self.mix = new_mix
 
-    if not self.second_mix:
+    MIXNET_SECOND_MIX = getattr(settings, 'ZEUS_MIXNET_SECOND_MIX', False)
+    if not self.second_mix and MIXNET_SECOND_MIX:
       self.second_mix = self.election.zeus_election.mix(self.mix)
 
     self.status = 'finished'
@@ -594,7 +595,7 @@ class Election(HeliosModel):
       raise Exception("Another mixing in process")
 
     if self.mixing_finished:
-      raise Exception("Mixing finished")
+        return None
 
     next_mixnet = self.mixnets.filter(status="pending")[0]
     next_mixnet.mix_ciphers()
@@ -606,6 +607,8 @@ class Election(HeliosModel):
     self.mix_next_mixnet()
     if self.mixing_finished and not self.encrypted_tally:
       self.zeus_election.validate_mixing()
+      from helios import tasks
+      tasks.election_notify_admin.delay(election_id=self.pk, subject="Mixing validated")
       self.store_encrypted_tally()
       self.save()
 
