@@ -145,7 +145,7 @@ class EncryptedAnswer(HeliosObject):
       'choices': [c.to_dict() for c in self.choices]
     }
 
-    value['encryption_proof'] = self.encryption_proof
+    value['encryption_proof'] = [str(r) for r in self.encryption_proof]
 
     if with_randomness:
       value['randomness'] = [str(r) for r in self.randomness]
