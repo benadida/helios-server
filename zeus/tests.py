@@ -213,7 +213,7 @@ class TestHeliosElection(TestCase):
                         type_hint='phoebus/EncryptedVote').wrapped_obj
 
                 if cast_audit:
-                    enc_vote.answers[0].answers = [selection]
+                    enc_vote.answers[0].answer = [selection]
                     enc_vote.answers[0].randomness = [randomness]
                     # mess with original audit password, to force auditing vote to be
                     # get cast
