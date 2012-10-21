@@ -18,6 +18,7 @@ from django.db import connection
 
 
 MIXNET_NR_PARALLEL = getattr(settings, 'ZEUS_MIXNET_NR_PARALLEL', 2)
+MIXNET_NR_ROUNDS = getattr(settings, 'ZEUS_MIXNET_NR_ROUNDS', 128)
 
 class NullStream(object):
     def read(*args):
@@ -422,6 +423,7 @@ class HeliosElection(ZeusCoreElection):
 
     def mix(self, ciphers):
       return mix_ciphers(ciphers, teller=self.teller,
+                            nr_rounds=MIXNET_NR_ROUNDS,
                            nr_parallel=self.get_option('parallel'))
 
     def _get_zeus_factors(self, trustee):
