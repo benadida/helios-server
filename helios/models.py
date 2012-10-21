@@ -1691,17 +1691,19 @@ class Trustee(HeliosModel):
     url = self.get_login_url()
 
     body = _("""
-    You are a trustee for %(election_name)s.
+    Ως μέλος της εφορευτικής επιτροπής της ψηφοφορίας
 
-    Your trustee dashboard is at
+      %(election_name)s
+
+    παρακαλούμε επισκεφθείτε τον πίνακα ελέγχου και ακολουθήστε τις οδηγίες
 
       %(url)s
 
       %(msg)s
 
     --
-    Zeus
-             """) % {
+    Ψηφιακή Κάλπη «Ζευς»
+ """) % {
                  'election_name': self.election.name,
                  'url': url,
                  'msg': msg,

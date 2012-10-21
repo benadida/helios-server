@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-21 20:22+0300\n"
+"POT-Creation-Date: 2012-10-22 01:24+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -117,42 +117,29 @@ msgstr "Δεν έχετε ορίσει τη λίστα των ψηφοφόρων
 msgid "setup election mixnets"
 msgstr "ρυθμίστε τη μίξη των ψηφοδελτίων"
 
-#: models.py:1157
+#: models.py:1158
 msgid "Name cannot be empty"
 msgstr "Το όνομα δεν μπορεί να είναι κενό"
 
-#: models.py:1164
+#: models.py:1165
 msgid "Surname cannot be empty"
 msgstr "Το επώνυμο δεν μπορεί να είναι κενό"
 
-#: models.py:1678
+#: models.py:1685
 msgid "Δημιουργία κωδικού ψηφοφορίας"
 msgstr ""
 
-#: models.py:1679
+#: models.py:1686
 msgid "Επιβεβαίωση Κωδικού Ψηφοφορίας"
 msgstr ""
 
-#: models.py:1680
+#: models.py:1687
 msgid "Αποκρυπτογράφηση ψήφων"
 msgstr ""
 
-#: models.py:1686
+#: models.py:1693
 #, python-format
 msgid ""
-"\n"
-"    You are a trustee for %(election_name)s.\n"
-"\n"
-"    Your trustee dashboard is at\n"
-"\n"
-"      %(url)s\n"
-"\n"
-"      %(msg)s\n"
-"\n"
-"    --\n"
-"    Zeus\n"
-"             "
-msgstr ""
 "\n"
 "    Ως μέλος της εφορευτικής επιτροπής της ψηφοφορίας\n"
 "\n"
@@ -166,23 +153,24 @@ msgstr ""
 "\n"
 "    --\n"
 "    Ψηφιακή Κάλπη «Ζευς»\n"
-"             "
+" "
+msgstr ""
 
-#: models.py:1704
+#: models.py:1713
 #, python-format
 msgid "your trustee homepage for %(election_name)s %(step)s"
 msgstr "%(election_name)s: παρακαλούμε για τις ενέργειές σας, #%(step)s"
 
-#: tasks.py:141
+#: tasks.py:150
 msgid "Invalid partial decryption send. Please try again."
 msgstr "Η μερική αποκρυπτογράφηση είναι εσφαλμένη. Παρακαλούμε δοκιμάστε ξανά."
 
-#: tasks.py:218
+#: tasks.py:228
 #, python-format
 msgid "%(election_name)s - vote cast"
 msgstr "%(election_name)s - Ψήφος ελήφθη"
 
-#: tasks.py:220
+#: tasks.py:230
 #, python-format
 msgid ""
 "\n"
@@ -199,11 +187,11 @@ msgstr ""
 "\n"
 "Μπορείτε να βρείτε συνημμένη την απόδειξη της ψήφου σας.\n"
 
-#: views.py:1495
+#: views.py:1512
 msgid "Time to Vote"
 msgstr "Συμμετοχή σας σε ψηφοφορία"
 
-#: views.py:1496
+#: views.py:1513
 msgid "Additional Info"
 msgstr "Περισσότερες Πληροφορίες"
 
@@ -212,6 +200,36 @@ msgid ""
 "Σε αυτό το σημείο εισάγετε πληροφορίες απαραίτητες για την δημιουργία της "
 "ψηφοφορίας."
 msgstr ""
+
+#~ msgid ""
+#~ "\n"
+#~ "    You are a trustee for %(election_name)s.\n"
+#~ "\n"
+#~ "    Your trustee dashboard is at\n"
+#~ "\n"
+#~ "      %(url)s\n"
+#~ "\n"
+#~ "      %(msg)s\n"
+#~ "\n"
+#~ "    --\n"
+#~ "    Zeus\n"
+#~ "             "
+#~ msgstr ""
+#~ "\n"
+#~ "    Ως μέλος της εφορευτικής επιτροπής της ψηφοφορίας\n"
+#~ "\n"
+#~ "      %(election_name)s\n"
+#~ "\n"
+#~ "    παρακαλούμε επισκεφθείτε τον πίνακα ελέγχου και ακολουθήστε τις "
+#~ "οδηγίες\n"
+#~ "\n"
+#~ "      %(url)s\n"
+#~ "\n"
+#~ "      %(msg)s\n"
+#~ "\n"
+#~ "    --\n"
+#~ "    Ψηφιακή Κάλπη «Ζευς»\n"
+#~ "             "
 
 #~ msgid "Election Result"
 #~ msgstr "Αποτέλεσμα ψηφοφορίας"
