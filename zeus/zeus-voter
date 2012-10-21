@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import re
+
 from zeus.core import ( c2048, get_random_selection,
                         gamma_encode,
                         encrypt, prove_encryption )
@@ -65,6 +67,12 @@ def cast_vote(voter_url):
     cast_path = '/'.join(voter_path.split('/')[:-3]) + '/cast'
     headers = {'Cookie': cookie}
 
+    # where csrf token lives
+    election_view = response.getheader('location')
+    conn.request('GET', "/" + election_view.split("/", 3)[3], headers=headers)
+    response = conn.getresponse()
+    token = re.findall(".*token\%3D(.*)\%26", response.read())[0]
+
     election_path = '/'.join(voter_path.split('/')[:-3])
     conn.request('GET', election_path, headers=headers)
     response = conn.getresponse()
@@ -77,7 +85,7 @@ def cast_vote(voter_url):
     nr_candidates = len(election['questions'][0]['answers'])
 
     vote, encoded = generate_vote(p, g, q, y, nr_candidates)
-    body = urlencode({'encrypted_vote': dumps(vote)})
+    body = urlencode({'encrypted_vote': dumps(vote), 'csrf_token': token})
     conn.request('POST', cast_path, headers=headers, body=body)
     response = conn.getresponse()
     body = response.read()
@@ -125,6 +133,7 @@ def main_cast(voter_url_file, plaintexts_file, nr_threads=2):
                for _ in xrange(nr_threads)]
 
     for t in threads:
+        t.daemon = True
         t.start()
 
     plaintexts = [outqueue.get() for _ in xrange(total)]
