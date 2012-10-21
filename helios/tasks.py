@@ -97,8 +97,15 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
 @task()
 def election_compute_tally(election_id):
     election = Election.objects.get(id = election_id)
-    election.zeus_election.validate_voting()
+    try:
+        election.zeus_election.validate_voting()
+    except:
+        election.tallying_started_at = None
+        election.save()
+        return
+    election_notify_admin.delay(election_id=election_id, subject="Voting validated")
     election.compute_tally()
+    election_notify_admin.delay(election_id=election_id, subject="Mixing finished")
     bad_mixnet = election.bad_mixnet()
     if bad_mixnet:
         election_notify_admin.delay(election_id = election_id,
@@ -160,6 +167,7 @@ def tally_decrypt(election_id):
     election = Election.objects.get(id = election_id)
     election.zeus_election.decrypt_ballots()
 
+    election = Election.objects.get(id=election_id)
     election.store_zeus_proofs()
     election.post_ecounting()
     election_notify_admin.delay(election_id = election_id,
@@ -210,11 +218,12 @@ Zeus
 """ % (voter_file.election.name, voter_file.num_voters))
 
 @task()
-def election_notify_admin(election_id, subject, body):
+def election_notify_admin(election_id, subject, body=""):
     election = Election.objects.get(id = election_id)
     #for admin in election.admins.all():
       #admin.send_message(subject, body)
     for admin, admin_email in settings.ELECTION_ADMINS:
+        subject = "[%s] %s" % (election.uuid, subject)
         message = EmailMessage(subject,
                                body,
                                settings.SERVER_EMAIL,
