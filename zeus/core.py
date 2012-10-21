@@ -2246,7 +2246,7 @@ class ZeusCoreElection(object):
     ### GENERIC IMPLEMENTATION ###
 
     def set_option(self, **kw):
-        self.do_assert_stage('CREATING')
+        #self.do_assert_stage('CREATING')
         return self.do_set_option(kw)
 
     def get_option(self, name):
