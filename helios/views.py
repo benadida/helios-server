@@ -60,6 +60,12 @@ ELGAMAL_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(ELGAMAL_PARAMS, dataty
 # single election server? Load the single electionfrom models import Election
 from django.conf import settings
 
+def force_utf8(s):
+  if isinstance(s, unicode):
+    return s.encode('utf8')
+  else:
+    return s
+
 def dummy_view(request):
   return HttpResponseRedirect("/")
 
@@ -258,6 +264,7 @@ def election_new(request):
 
   return render_template(request, "election_new", {'election_form': election_form, 'election': None, 'error': error})
 
+
 @election_admin()
 def voters_csv(request, election):
   voters = election.voter_set.all()
@@ -266,8 +273,11 @@ def voters_csv(request, election):
   response['Content-Dispotition'] = 'attachment; filename="%s"' % filename
   writer = csv.writer(response)
   for voter in voters:
-    writer.writerow(map(smart_unicode,[voter.voter_email, voter.voter_name, voter.voter_surname,
-               voter.voter_fathername or '', "Ναί" if voter.vote else "Όχι"]))
+    writer.writerow(map(force_utf8, [voter.voter_email,
+                                       voter.voter_name,
+                                       voter.voter_surname,
+                                       voter.voter_fathername or '',
+                                   u"ΝΑΙ" if voter.vote else u"ΟΧΙ"]))
   return response
 
 @election_admin()
