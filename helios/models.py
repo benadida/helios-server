@@ -830,7 +830,7 @@ class Election(HeliosModel):
       }
     }
 
-    if hasattr(answer, 'answers'):
+    if hasattr(answer, 'answer') and answer.answer:
       zeus_vote['audit_code'] = audit_password
       zeus_vote['voter_secret'] = answer.randomness[0]
 

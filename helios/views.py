@@ -41,6 +41,8 @@ from models import *
 
 import forms, signals
 
+import json as jsonlib
+
 
 # Parameters for everything
 ELGAMAL_PARAMS = elgamal.Cryptosystem()
@@ -591,12 +593,22 @@ def encrypt_ballot(request, election):
 
 @election_view(frozen=True)
 def post_audited_ballot(request, election):
+  user = get_user(request)
+  voter = get_voter(request, user, election)
+
   if request.method == "POST":
     raw_vote = request.POST['audited_ballot']
-    encrypted_vote = electionalgs.EncryptedVote.fromJSONDict(utils.from_json(raw_vote))
-    vote_hash = encrypted_vote.get_hash()
-    audited_ballot = AuditedBallot(raw_vote = raw_vote, vote_hash = vote_hash, election = election)
-    audited_ballot.save()
+    encrypted_vote = utils.from_json(raw_vote)
+    audit_request = utils.from_json(request.session['audit_request'])
+    audit_password = request.session['audit_password']
+    if not audit_password:
+        raise Exception("Auditing with no password")
+    # fill in the answers and randomness
+    audit_request['answers'][0]['randomness'] = encrypted_vote['answers'][0]['randomness']
+    audit_request['answers'][0]['answer'] = [encrypted_vote['answers'][0]['answer'][0]]
+    encrypted_vote = electionalgs.EncryptedVote.fromJSONDict(audit_request)
+    del request.session['audit_request']
+    election.cast_vote(voter, encrypted_vote, audit_password)
     return SUCCESS
 
 @election_view(frozen=True)
@@ -623,9 +635,13 @@ def one_election_cast(request, election):
         type_hint='phoebus/EncryptedVote').wrapped_obj
   audit_password = request.POST.get('audit_password', None)
   signature = election.cast_vote(voter, vote, audit_password)
-  del request.session['encrypted_vote']
+
+  if 'audit_request' in request.session:
+      del request.session['audit_request']
 
   if signature['m'].startswith("AUDIT REQUEST"):
+    request.session['audit_request'] = encrypted_vote
+    request.session['audit_password'] = audit_password
     return HttpResponse('{"audit": 1}', mimetype="application/json")
   else:
     # notify user
