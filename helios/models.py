@@ -272,11 +272,6 @@ class Election(HeliosModel):
     tasks.election_post_ecounting.delay(self.pk, self.get_ecounting_admin_user())
 
   @property
-  def freeze_confirm_fields(self):
-    fields = ['institution', 'name', '']
-    return fields
-
-  @property
   def pretty_type(self):
     return dict(self.ELECTION_TYPES)[self.election_type]
 
