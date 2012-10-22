@@ -4,7 +4,7 @@ import sys
 PYTHON_MAJOR = sys.version_info[0]
 from datetime import datetime
 from random import randint, shuffle, choice
-from collections import defaultdict
+from collections import deque
 from hashlib import sha256, sha1
 from itertools import izip, repeat
 from functools import partial
@@ -14,8 +14,11 @@ import Crypto.Util.number as number
 inverse = number.inverse
 from Crypto import Random
 from operator import mul as mul_operator
-from Queue import Queue, Empty, Full
-from thread import start_new_thread
+from Queue import Empty, Full
+from multiprocessing import Queue
+from os import fork, kill, getpid
+from signal import SIGKILL
+from errno import ESRCH
 import inspect
 from time import time, sleep
 from gmpy import mpz
@@ -152,80 +155,158 @@ def async_call(func, args, kw, channel):
         kw['async_channel'] = channel
     return func(*args, **kw)
 
-def async_thread(controller):
+def async_worker(link):
     while 1:
-        channel = controller.get_channel(wait=1)
-        if channel is None:
+        inp = link.receive()
+        if inp is None:
             break
-
-        while 1:
-            inp = channel.get_input(wait=0)
-            if inp is None:
-                break
-
+        try:
             if not isinstance(inp, AsyncArgs):
                 m = "%x: first input is type '%s' not 'AsyncArgs'" % (type(inp),)
                 raise ValueError(m)
             func = inp.func
             args = inp.args
             kw = inp.kw
-            try:
-                ret = async_call(func, args, kw, channel)
-            except Exception, e:
-                controller.put_shared(e, wait=1)
-                channel.put_output(e, wait=1)
-                break
-            channel.put_output(ret, wait=1)
+            ret = async_call(func, args, kw, link)
+            link.send(ret)
+        except Exception, e:
+            #import traceback
+            #traceback.print_exc()
+            link.send(e)
+            link.send_shared(e)
+            raise
+        finally:
+            link.disconnect()
 
-    raise SystemExit
+class NullAsyncWorkerLink(object):
+    def __init__(self):
+        self.to_receive = deque()
+        self.to_send = deque()
+        self.to_send_shared = deque()
+
+    def submit(self, data_to_receive):
+        q = self.to_receive
+        for d in data_to_receive:
+            q.appendleft(d)
+
+    def receive(self, wait=None):
+        q = self.to_receive
+        if not q:
+            return None
+        return q.pop()
+
+    def send(self, data, wait=None):
+        self.to_send.appendleft(data)
+
+    def send_shared(self, data, wait=None):
+        self.to_send_shared.appendleft(data)
+
+    def disconnect(self):
+        pass
+
+_nwl = NullAsyncWorkerLink()
+
+class NullAsyncChannel(object):
+    def __init__(self, null_worker_link):
+        self.null_worker_link = null_worker_link
+
+    def send(self, data):
+        m = "NullAsyncChannel does not support send()"
+        raise ValueError(m)
+
+    def receive(self, wait=None):
+        q = self.null_worker_link.to_send
+        if not q:
+            return None
+        return q.pop()
+
+    def receive_shared(self, wait=None):
+        q = self.null_worker_link.to_send_shared
+        if not q:
+            return None
+        return q.pop()
+
+_nac = NullAsyncChannel(_nwl)
+
+class MultiprocessingAsyncWorkerLink(object):
+    def __init__(self, pool, index):
+        self.pool = pool
+        self.index = index
+
+    def send(self, data, wait=1):
+        self.pool.master_queue.put((self.index, data), block=wait)
+
+    def receive(self, wait=1):
+        ret = self.pool.worker_queues[self.index].get(block=wait)
+        if isinstance(ret, BaseException):
+            raise ret
+        return ret
+
+    def send_shared(self, data, wait=1):
+        self.pool.master_queue.put((0, data), block=wait)
+
+    def disconnect(self, wait=1):
+        self.pool.master_queue.put((self.index, None), block=wait)
+
+class MultiprocessingAsyncWorkerPool(object):
+    def __init__(self, nr_parallel, worker_func):
+        master_queue = Queue()
+        self.master_queue = master_queue
+        self.worker_queues = [master_queue] + [Queue()
+                              for _ in xrange(nr_parallel)]
+        worker_pids = []
+        self.worker_pids = worker_pids
+        append = worker_pids.append
+
+        for i in xrange(nr_parallel):
+            pid = fork()
+            Random.atfork()
+            if not pid:
+                try:
+                    worker_link = MultiprocessingAsyncWorkerLink(self, i+1)
+                    worker_func(worker_link)
+                finally:
+                    kill(getpid(), SIGKILL)
+                    while 1:
+                        sleep(1)
+            append(pid)
+
+    def kill(self):
+        for pid in self.worker_pids:
+            try:
+                kill(pid, SIGKILL)
+            except OSError, e:
+                if e.errno != ESRCH:
+                    raise
+
+    def send(self, worker, data):
+        if not worker:
+            m = "Controller attempt to write to master link"
+            raise AssertionError(m)
+        self.worker_queues[worker].put(data)
+
+    def receive(self, wait=1):
+        try:
+            val = self.master_queue.get(block=wait, timeout=1)
+        except Empty:
+            if wait:
+                import pdb; pdb.set_trace()
+            val = None
+        return val
 
 class AsyncChannel(object):
     def __init__(self, controller):
         self.controller = controller
-        self.reset()
+        self.channel_no = controller.get_channel()
 
-    def reset(self):
-        self.input_queue = Queue()
-        self.output_queue = Queue()
+    def send(self, data):
+        return self.controller.send(self.channel_no, data)
 
-    def put_input(self, value, wait=1):
-        try:
-            self.input_queue.put(value, block=wait)
-            return True
-        except Full:
-            return False
-
-    def get_input(self, wait=1):
-        try:
-            val = self.input_queue.get(block=wait)
-            if isinstance(val, BaseException):
-                raise val
-            return val
-        except Empty:
-            return None
-
-    def put_output(self, value, wait=1):
-        try:
-            self.output_queue.put(value, block=wait)
-            return True
-        except Full:
-            return False
-
-    def get_output(self, wait=1):
-        try:
-            val = self.output_queue.get(block=wait)
-            if isinstance(val, BaseException):
-                raise val
-            return val
-        except Empty:
-            return None
-
-    def put_shared(self, value, wait=1):
-        return self.controller.put_shared(value, wait=wait)
-
-    def get_shared(self, wait=1):
-        val = self.controller.get_shared(wait=wait)
-        return val
+    def receive(self, wait=1):
+        data = self.controller.receive(self.channel_no, wait=wait)
+        if isinstance(data, BaseException):
+            raise data
+        return data
 
 class AsyncFunc(object):
     def __init__(self, controller, func, args, kw):
@@ -241,65 +322,144 @@ class AsyncFunc(object):
         call_func = self.func
         controller = self.controller
         async_args = AsyncArgs(call_func, call_args, call_kw)
-        channel = AsyncChannel(controller)
         if controller.parallel:
-            channel.put_input(async_args, wait=1)
-            controller.put_channel(channel, wait=1)
+            channel = AsyncChannel(controller)
+            controller.submit(channel.channel_no, async_args)
         else:
-            ret = async_call(call_func, call_args, call_kw, channel)
-            channel.put_output(ret)
+            _nwl.submit([async_args])
+            async_worker(_nwl)
+            channel = _nac
         return channel
+
+AsyncWorkerPool = MultiprocessingAsyncWorkerPool
 
 class AsyncController(object):
     serial = 0
     parallel = 0
     channel_queue = None
     shared_queue = None
-    dead = 1
 
     def __new__(cls, *args, **kw):
         parallel = int(kw.get('parallel', 2))
-        serial = cls.serial
-        cls.serial = serial + 1
         self = object.__new__(cls)
-        self.serial = serial
-        self.channel_queue = Queue()
-        self.shared_queue = Queue()
-        self.spawn(parallel)
-        self.dead = 0
+        master_link = AsyncWorkerPool(parallel, async_worker)
+        self.master_link = master_link
+        self.idle_workers = set(xrange(1, parallel + 1))
+        self.worker_to_channel = [0] + [None] * (parallel)
+        self.channel_to_worker = {0: 0}
+        self.pending = deque()
+        self.channels = {0: deque()}
+        self.parallel = parallel
         return self
 
-    def spawn(self, nr=1):
-        for _ in xrange(nr):
-            start_new_thread(async_thread, (self,))
-        self.parallel += nr
-
     def shutdown(self):
-        for _ in xrange(self.parallel):
-            self.put_channel(None)
-        del self.dead
+        master_link = self.master_link
+        for i in xrange(1, self.parallel + 1):
+            master_link.send(i, None)
+        sleep(0.3)
+        self.master_link.kill()
 
-    def put_channel(self, channel, wait=1):
-        self.channel_queue.put(channel, block=wait)
+    def get_channel(self):
+        channel = self.serial + 1
+        self.serial = channel
+        return channel
 
-    def get_channel(self, wait=1):
-        return self.channel_queue.get(block=wait)
+    def process(self, wait=0):
+        master_link = self.master_link
+        idle_workers = self.idle_workers
+        pending = self.pending
+        channel_to_worker = self.channel_to_worker
+        worker_to_channel = self.worker_to_channel
+        channels = self.channels
 
-    def get_shared(self, wait=1):
-        try:
-            ret = self.shared_queue.get(block=wait)
-            if isinstance(ret, BaseException):
-                raise ret
-            return ret
-        except Empty:
+        _wait = wait
+        while 1:
+            blocked = []
+            while pending:
+                channel, data = pending.pop()
+                if channel in channel_to_worker:
+                    worker = channel_to_worker[channel]
+                    master_link.send(worker, data)
+                elif not idle_workers:
+                    blocked.append((channel, data))
+                else:
+                    worker = idle_workers.pop()
+                    channel_to_worker[channel] = worker
+                    worker_to_channel[worker] = channel
+                    master_link.send(worker, data)
+            for b in blocked:
+                pending.appendleft(b)
+
+            data = master_link.receive(wait=_wait)
+            if data is None:
+                break
+            _wait = 0
+
+            worker, data = data
+            channel = worker_to_channel[worker]
+            if channel is None:
+                continue
+
+            if data is None:
+                if worker > 0:
+                    worker_to_channel[worker] = None
+                else:
+                    m = "Attempt to disconnect master link"
+                    raise AssertionError(m)
+                if channel > 0:
+                    del channel_to_worker[channel]
+                else:
+                    m = "Attempt to close master channel"
+                    raise AssertionError(m)
+
+                idle_workers.add(worker)
+            else:
+                channels[channel].appendleft(data)
+
+    def send(self, channel_no, data):
+        channels = self.channels
+        channel_to_worker = self.channel_to_worker
+        if channel not in channel_to_worker:
+            return
+        worker = channel_to_worker[channel]
+        self.master_link.send(worker, data)
+
+    def receive(self, channel_no, wait=1):
+        channels = self.channels
+        if channel_no not in channels:
             return None
 
-    def put_shared(self, value, wait=1):
-        try:
-            self.shared_queue.put(value, block=wait)
-            return True
-        except Full:
-            return False
+        self.process(wait=0)
+        while 1:
+            if not channels[channel_no]:
+                if (channel_no is not None and
+                    channel_no not in self.channel_to_worker):
+                    del channels[channel_no]
+                    return None
+
+                if not wait:
+                    return None
+
+                self.process(wait=1)
+            else:
+                val = channels[channel_no].pop()
+                return val
+
+    def receive_shared(self, wait=1):
+        if not self.parallel:
+            return _nac.receive_shared(wait=wait)
+
+        val = self.receive(0, wait=wait)
+        return val
+
+    def submit(self, channel_no, async_args):
+        channels = self.channels
+        if channel_no in channels:
+            m = "Channel already in use"
+            raise ValueError(m)
+        channels[channel_no] = deque()
+        self.pending.appendleft((channel_no, async_args))
+        self.process(wait=0)
 
     def make_async(self, func, *args, **kw):
         return AsyncFunc(self, func, args, kw)
@@ -1716,14 +1876,14 @@ def shuffle_ciphers(modulus, generator, order, public, ciphers,
             if teller:
                 teller.advance(count)
             if async_channel:
-                async_channel.put_shared(count, wait=1)
+                async_channel.send_shared(count, wait=1)
             count = 0
 
     if count:
         if teller:
             teller.advance(count)
         if async_channel:
-            async_channel.put_shared(count, wait=1)
+            async_channel.send_shared(count, wait=1)
     return [mixed_ciphers, mixed_offsets, mixed_randoms]
 
 def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS,
@@ -1750,11 +1910,11 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS,
                                         teller=None)
         count = 0
         while count < nr_ciphers:
-            nr = async.get_shared(wait=1)
+            nr = async.receive_shared(wait=1)
             teller.advance(nr)
             count += nr
 
-        shuffled = channel.get_output(wait=1)
+        shuffled = channel.receive(wait=1)
         mixed_ciphers, mixed_offsets, mixed_randoms = shuffled
         cipher_mix['mixed_ciphers'] = mixed_ciphers
 
@@ -1766,11 +1926,11 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS,
 
         count = 0
         while count < total:
-            nr = async.get_shared()
+            nr = async.receive_shared()
             teller.advance(nr)
             count += nr
 
-        collections = [channel.get_output(wait=1) for channel in channels]
+        collections = [channel.receive(wait=1) for channel in channels]
         async.shutdown()
         unzipped = [list(x) for x in zip(*collections)]
         cipher_collections, offset_collections, random_collections = unzipped
@@ -1849,7 +2009,7 @@ def verify_mix_round(i, bit, original_ciphers, mixed_ciphers,
             count += 1
             if count >= report_thresh:
                 if async_channel:
-                    async_channel.put_shared(count)
+                    async_channel.send_shared(count)
                 if teller:
                     teller.advance(count)
                 count = 0
@@ -1869,7 +2029,7 @@ def verify_mix_round(i, bit, original_ciphers, mixed_ciphers,
             count += 1
             if count >= report_thresh:
                 if async_channel:
-                    async_channel.put_shared(count)
+                    async_channel.send_shared(count)
                 if teller:
                     teller.advance(count)
                 count = 0
@@ -1879,7 +2039,7 @@ def verify_mix_round(i, bit, original_ciphers, mixed_ciphers,
 
     if count:
         if async_channel:
-            async_channel.put_shared(count)
+            async_channel.send_shared(count)
         if teller:
             teller.advance(count)
 
@@ -1933,12 +2093,12 @@ def verify_cipher_mix(cipher_mix, teller=_teller, nr_parallel=0):
                                           teller=None))
         count = 0
         while count < total:
-            nr = async.get_shared(wait=1)
+            nr = async.receive_shared(wait=1)
             teller.advance(nr)
             count += nr
 
         for channel in channels:
-            channel.get_output(wait=1)
+            channel.receive(wait=1)
 
     teller.finish('Verifying mixing')
     return 1
