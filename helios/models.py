@@ -1713,7 +1713,7 @@ class Trustee(HeliosModel):
                  'step': self.get_step(),
                  'step_text': self.STEP_TEXTS[self.get_step()-1]}
 
-    subject = _('your trustee homepage for %(election_name)s %(step)s') % {
+    subject = _(u'%(election_name)s: παρακαλούμε για τις ενέργειές σας, #%(step)s') % {
         'election_name': self.election.name,
         'step_text': self.STEP_TEXTS[self.get_step()-1],
         'step': self.get_step()}
