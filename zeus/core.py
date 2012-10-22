@@ -287,10 +287,8 @@ class MultiprocessingAsyncWorkerPool(object):
 
     def receive(self, wait=1):
         try:
-            val = self.master_queue.get(block=wait, timeout=1)
+            val = self.master_queue.get(block=wait)
         except Empty:
-            if wait:
-                import pdb; pdb.set_trace()
             val = None
         return val
 
