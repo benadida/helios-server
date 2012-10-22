@@ -608,7 +608,7 @@ class Election(HeliosModel):
     if self.mixing_finished and not self.encrypted_tally:
       self.zeus_election.validate_mixing()
       from helios import tasks
-      tasks.election_notify_admin.delay(election_id=self.pk, subject="Mixing validated", "")
+      tasks.election_notify_admin.delay(election_id=self.pk, subject="Mixing validated", body="")
       self.store_encrypted_tally()
       self.save()
 

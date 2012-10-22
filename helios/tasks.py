@@ -103,9 +103,9 @@ def election_compute_tally(election_id):
         election.tallying_started_at = None
         election.save()
         return
-    election_notify_admin.delay(election_id=election_id, subject="Voting validated", "")
+    election_notify_admin.delay(election_id=election_id, subject="Voting validated", body="")
     election.compute_tally()
-    election_notify_admin.delay(election_id=election_id, subject="Mixing finished", "")
+    election_notify_admin.delay(election_id=election_id, subject="Mixing finished", body="")
     bad_mixnet = election.bad_mixnet()
     if bad_mixnet:
         election_notify_admin.delay(election_id = election_id,
