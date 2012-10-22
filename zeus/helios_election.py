@@ -132,6 +132,13 @@ class HeliosElection(ZeusCoreElection):
             zeus_vote['fingerprint'] = audited.fingerprint
             zeus_vote['signature'] = audited.signature
             votes[audited.fingerprint] = zeus_vote
+        for audited in self.model.election.auditedballot_set.filter(is_request=True):
+            try:
+                self.model.election.auditedballot_set.get(fingerprint=audited.fingerprint,
+                                                        is_request=False)
+            except helios_models.AuditedBallot.DoesNotExist:
+                votes.append(audited)
+
         return votes
 
     def _casted_votes(self):
