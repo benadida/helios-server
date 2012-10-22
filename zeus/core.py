@@ -142,11 +142,38 @@ def sk_from_args(p, g, q, x, y, t, c, f):
 def get_timestamp():
     return datetime.strftime(datetime.utcnow(), "%Y-%m-%dT%H:%M:%S.%fZ")
 
+def canonical(obj):
+    if isinstance(obj, dict):
+        c = {}
+        for key, value in obj.iteritems():
+            c[canonical(key)] = canonical(value)
+        return c
+    elif isinstance(obj, tuple) or isinstance(obj, list):
+        return [canonical(val) for val in obj]
+    elif isinstance(obj, unicode):
+        return canonical(obj.encode('utf-8'))
+    elif isinstance(obj, str):
+        if not obj:
+            return obj
+        if obj.isdigit():
+            return canonical(int(obj))
+        if ord(max(obj)) > 127 or "'" in obj:
+            return '"%s"' % (hexlify(obj),)
+        return "'%s'" % (obj,)
+    elif isinstance(obj, int) or isinstance(obj, long):
+        return "%x" % obj
+    elif obj is None:
+        return 'null'
+    else:
+        m = "canonical: invalid object type '%s'" % type(obj)
+        raise AssertionError(m)
+
 def strcanonical(obj, out=None):
     toplevel = 0
     if out is None:
         toplevel = 1
         out = StringIO()
+        obj = canonical(obj)
 
     if isinstance(obj, dict):
         out.write('{')
@@ -156,39 +183,23 @@ def strcanonical(obj, out=None):
             strcanonical(value, out)
             out.write(',')
         out.write('}')
-    elif isinstance(obj, tuple) or isinstance(obj, list):
+    elif isinstance(obj, list):
         out.write('[')
         for val in obj:
             strcanonical(val, out)
             out.write(',')
         out.write(']')
-    elif isinstance(obj, unicode):
-        strcanonical(obj.encode('utf-8'), out)
     elif isinstance(obj, str):
-        if obj.isdigit():
-            strcanonical(int(obj), out)
-        else:
-            if obj and (ord(max(obj)) > 127 or "'" in obj):
-                out.write('"')
-                out.write(hexlify(obj))
-                out.write('"')
-            else:
-                out.write("'")
-                out.write(obj)
-                out.write("'")
-    elif isinstance(obj, int) or isinstance(obj, long):
-        out.write("%x" % obj)
-    elif obj is None:
-        out.write('null')
+        out.write(obj)
     else:
-        m = "Invalid object type '%s'" % type(obj)
+        m = "strcanonical: invalid object type '%s'" % type(obj)
         raise AssertionError(m)
 
     if toplevel:
         out.seek(0)
         s = out.read()
-        with open("zzz", "w") as f:
-            f.write(s)
+        #with open("zzz", "w") as f:
+        #    f.write(s)
         return s
 
 
