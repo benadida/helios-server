@@ -531,7 +531,7 @@ class Election(HeliosModel):
     or failing that the date voting was extended until, or failing that the date voting is scheduled to end at.
     """
     voting_end = self.voting_ended_at or self.voting_extended_until or self.voting_ends_at
-    return (voting_end != None and datetime.datetime.utcnow() >= voting_end) or \
+    return (voting_end != None and datetime.datetime.now() >= voting_end) or \
         self.tallied
 
   def bad_mixnet(self):
