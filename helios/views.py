@@ -326,6 +326,9 @@ def one_election_edit(request, election):
   if not can_create_election(request):
     return HttpResponseForbidden('only an administrator can create an election')
 
+  if election.voting_has_stopped:
+    return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+
   error = None
 
   if request.method == "GET":
