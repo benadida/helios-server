@@ -412,6 +412,9 @@ class AsyncController(object):
         self.parallel = parallel
         return self
 
+    def __del__(self):
+        self.shutdown()
+
     def shutdown(self):
         master_link = self.master_link
         for i in xrange(1, self.parallel + 1):
@@ -2478,8 +2481,10 @@ class ZeusCoreElection(object):
         self.do_set_stage('CREATING')
 
     @classmethod
-    def new_at_creating(cls, cryptosystem=_default_crypto, teller=_teller):
+    def new_at_creating(cls, cryptosystem=_default_crypto,
+                             teller=_teller, nr_parallel=0):
         self = cls(cryptosystem, teller=teller)
+        self.set_option(parallel=nr_parallel)
         return self
 
     def create_zeus_key(self, secret_key=None):
@@ -2654,7 +2659,7 @@ class ZeusCoreElection(object):
             raise ZeusError(m)
 
         creating = {}
-        creating['options'] = self.do_get_options()
+        #creating['options'] = self.do_get_options()
         creating['candidates'] = self.do_get_candidates()
         creating['voters'] = self.do_get_voters()
         creating['audit_codes'] = self.do_get_all_voter_audit_codes()
@@ -2682,9 +2687,9 @@ class ZeusCoreElection(object):
         self.do_set_stage('VOTING')
 
     @classmethod
-    def new_at_voting(cls, voting, teller=_teller):
-        self = cls.new_at_creating(teller=teller)
-        self.do_set_option(voting['options'])
+    def new_at_voting(cls, voting, teller=_teller, nr_parallel=0):
+        self = cls.new_at_creating(teller=teller, nr_parallel=nr_parallel)
+        #self.do_set_option(voting.get('options', {}))
         self.do_store_candidates(voting['candidates'])
         self.do_store_cryptosystem(*voting['cryptosystem'])
         self.do_store_zeus_key(voting['zeus_secret'],
@@ -3111,8 +3116,8 @@ class ZeusCoreElection(object):
         self.do_set_stage('MIXING')
 
     @classmethod
-    def new_at_mixing(cls, mixing, teller=_teller):
-        self = cls.new_at_voting(mixing, teller=teller)
+    def new_at_mixing(cls, mixing, teller=_teller, nr_parallel=0):
+        self = cls.new_at_voting(mixing, teller=teller, nr_parallel=nr_parallel)
         self.do_store_votes(mixing['votes'])
         for fingerprint in mixing['cast_vote_index']:
             self.do_index_vote(fingerprint)
@@ -3256,8 +3261,9 @@ class ZeusCoreElection(object):
         return decrypting
 
     @classmethod
-    def new_at_decrypting(cls, decrypting, teller=_teller):
-        self = cls.new_at_mixing(decrypting, teller=teller)
+    def new_at_decrypting(cls, decrypting, teller=_teller, nr_parallel=0):
+        self = cls.new_at_mixing(decrypting, teller=teller,
+                                 nr_parallel=nr_parallel)
         for mix in decrypting['mixes']:
             self.do_store_mix(mix)
         if 'trustee_factors' in decrypting:
@@ -3427,16 +3433,19 @@ class ZeusCoreElection(object):
         return getattr(self, method_name)(), stage
 
     @classmethod
-    def new_at_finished(cls, finished, teller=_teller):
-        self = cls.new_at_decrypting(finished, teller=teller)
+    def new_at_finished(cls, finished, teller=_teller, nr_parallel=0):
+        self = cls.new_at_decrypting(finished, teller=teller,
+                                     nr_parallel=nr_parallel)
         self.do_store_zeus_factors(finished['zeus_decryption_factors'])
         self.do_store_results(finished['results'])
         fingerprint = finished.pop('election_fingerprint', None)
+        _fingerprint = sha256(strcanonical(finished)).hexdigest()
         if fingerprint is not None:
-            _fingerprint = sha256(strcanonical(finished)).hexdigest()
             if fingerprint != _fingerprint:
                 m = "Election fingerprint mismatch!"
                 raise AssertionError(m)
+        fingerprint = _fingerprint
+        self.election_fingerprint = fingerprint
         self.set_finished()
         return self
 
@@ -3775,7 +3784,10 @@ def main():
         filename = args.validate
         with open(filename, "r") as f:
             finished = json.load(f)
-        election = ZeusCoreElection.new_at_finished(finished, teller=teller)
+        election = ZeusCoreElection.new_at_finished(finished, teller=teller,
+                                                    nr_parallel=nr_parallel)
+        sys.stderr.write('election_fingerprint: %s\n' 
+                        % (election.election_fingerprint,))
         return election
 
     def main_mix(args, teller=_teller, nr_parallel=0):
