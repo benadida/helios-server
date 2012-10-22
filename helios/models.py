@@ -943,7 +943,11 @@ class Election(HeliosModel):
       # assumes that anything non-absolute is relative
       return [counts[0][0]]
 
+  def get_ecounting_hash(self):
+    return self.hash
+
   def ecounting_dict(self):
+    election_hash = self.get_ecounting_hash()
     schools = []
     for school in self.departments:
       candidates = []
@@ -984,6 +988,7 @@ class Election(HeliosModel):
 
     data = {
       'elName': self.name,
+      'hash': election_hash,
       'elDescription': self.description,
       'numOfRegisteredVoters': self.voter_set.count(),
       'numOfCandidates': len(self.candidates),
