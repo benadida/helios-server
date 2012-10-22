@@ -19,6 +19,8 @@ from multiprocessing import Queue
 from os import fork, kill, getpid
 from signal import SIGKILL
 from errno import ESRCH
+from cStringIO import StringIO
+from binascii import hexlify
 import inspect
 from time import time, sleep
 from gmpy import mpz
@@ -139,6 +141,55 @@ def sk_from_args(p, g, q, x, y, t, c, f):
 
 def get_timestamp():
     return datetime.strftime(datetime.utcnow(), "%Y-%m-%dT%H:%M:%S.%fZ")
+
+def strcanonical(obj, out=None):
+    toplevel = 0
+    if out is None:
+        toplevel = 1
+        out = StringIO()
+
+    if isinstance(obj, dict):
+        out.write('{')
+        for key, value in sorted(obj.iteritems()):
+            strcanonical(key, out)
+            out.write(':')
+            strcanonical(value, out)
+            out.write(',')
+        out.write('}')
+    elif isinstance(obj, tuple) or isinstance(obj, list):
+        out.write('[')
+        for val in obj:
+            strcanonical(val, out)
+            out.write(',')
+        out.write(']')
+    elif isinstance(obj, unicode):
+        strcanonical(obj.encode('utf-8'), out)
+    elif isinstance(obj, str):
+        if obj.isdigit():
+            strcanonical(int(obj), out)
+        else:
+            if obj and (ord(max(obj)) > 127 or "'" in obj):
+                out.write('"')
+                out.write(hexlify(obj))
+                out.write('"')
+            else:
+                out.write("'")
+                out.write(obj)
+                out.write("'")
+    elif isinstance(obj, int) or isinstance(obj, long):
+        out.write("%x" % obj)
+    elif obj is None:
+        out.write('null')
+    else:
+        m = "Invalid object type '%s'" % type(obj)
+        raise AssertionError(m)
+
+    if toplevel:
+        out.seek(0)
+        s = out.read()
+        with open("zzz", "w") as f:
+            f.write(s)
+        return s
 
 
 class AsyncArgs(object):
@@ -3344,6 +3395,8 @@ class ZeusCoreElection(object):
         finished = self.export_decrypting()
         finished['zeus_decryption_factors'] = self.do_get_zeus_factors()
         finished['results'] = self.do_get_results()
+        fingerprint = sha256(strcanonical(finished)).hexdigest()
+        finished['election_fingerprint'] = fingerprint
         return finished
 
     _export_methods = {
@@ -3367,6 +3420,12 @@ class ZeusCoreElection(object):
         self = cls.new_at_decrypting(finished, teller=teller)
         self.do_store_zeus_factors(finished['zeus_decryption_factors'])
         self.do_store_results(finished['results'])
+        fingerprint = finished.pop('election_fingerprint', None)
+        if fingerprint is not None:
+            _fingerprint = sha256(strcanonical(finished)).hexdigest()
+            if fingerprint != _fingerprint:
+                m = "Election fingerprint mismatch!"
+                raise AssertionError(m)
         self.set_finished()
         return self
 
