@@ -156,6 +156,7 @@ class Election(HeliosModel):
   canceled_at = models.DateTimeField(default=None, null=True)
   cancel_msg = models.TextField(default="")
   uuid = models.CharField(max_length=50, null=False)
+  zeus_fingerprint = models.TextField(null=True, default=None)
 
   # keep track of the type and version of election, which will help dispatch to the right
   # code, both for crypto and serialization
@@ -944,7 +945,11 @@ class Election(HeliosModel):
       return [counts[0][0]]
 
   def get_ecounting_hash(self):
-    return self.hash
+    if not self.zeus_fingerprint:
+        self.zeus_fingerprint = self.zeus_election.export()[0]['election_fingerprint']
+        self.save()
+
+    return self.zeus_fingerprint
 
   def ecounting_dict(self):
     election_hash = self.get_ecounting_hash()
@@ -1019,7 +1024,8 @@ class Election(HeliosModel):
     if os.path.exists(zip_path):
       os.unlink(zip_path)
 
-    zeus_data = json_module.dumps(self.zeus_election.export())
+    export_data = self.zeus_election.export()
+    zeus_data = json_module.dumps(export_data)
     zf = zipfile.ZipFile(zip_path, mode='w')
     data_info = zipfile.ZipInfo('%s_proofs.txt' % self.uuid)
     data_info.compress_type = zipfile.ZIP_DEFLATED
