@@ -77,13 +77,12 @@ if (!navigator.javaEnabled()) {
 {% else %}
 
 {% if election.ready_for_decryption_combination %}
-<a class="button success" href="{% url helios.views.combine_decryptions election.uuid %}">
 {% if election.num_trustees == 1 %}
 release results
 {% else %}
-Αποκρυπτογράφηση τελικών ψηφοδελτίων.
+Αποκρυπτογράφηση τελικών ψηφοδελτίων......
 {% endif %}
-</a><br />
+<br />
 {% if election.num_trustees == 1 %}
 Τα τελικά ψηφοδέλτια έχουν αποκρυπτογραφηθεί.
 {% else %}
