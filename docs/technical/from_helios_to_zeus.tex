@@ -126,9 +126,73 @@ the group used in the ElGamal encryption scheme, so the encoding does
 not present a practical limit in real elections (it it did, we could
 always break the number in parts and send them separately).
 
+% gtsouk: describe the exact encoding / decoding algorithm for the
+% ballots. 
+
+\section{Ballot Submission}
+
+%gtsouk: describe the conntents of the submitted ballot
+A submitted ballot is a JSON object of the form:
+\begin{verbatim}
+{
+  answers : [];
+  election_hash : ;
+  election_uuid : ;
+} 
+\end{verbatim}
+
 \section{Election Verification}
 
+%gtsouk: describe the election verification algorithm
+
+\section{The Election Workflow in Zeus}
+
+The election workflow in Zeus comprises the steps:
+
+\begin{enumerate}
+
+\item The election authority compiles the list of candidates and the
+  voters' registry, and apponts the election committee, the poll
+  opening date and time and its closing date and time.
+
+\item The voters receive at their mailboxes a message inviting them to
+  cast their vote. The message contains a link that leads them to the
+  ``voting booth'', where they can compile their ballot. The voting
+  booth opens at the date and time appointed by the election
+  authority; if the voters visit the link before, they are informed
+  accordingly. After casting their vote, voters receive via e-mail a
+  proof of their ballot cast.
+
+\item When the poll closes, the election committee starts the ballot
+  tallying process.
+
+\end{enumerate}
+
+The whole process is explained in more detail below.
+
+\subsection{Preparing the Election}
+
+\subsubsection{Notifications to the Election Committee}
+
+\subsubsection{Generation of Election Keys}
+
+\subsubsection{Candidates Addition}
+
+\subsubsection{Voters Addition}
+
+\subsubsection{Election Freeze}
+
+\subsection{Voting}
+
+\subsection{Tallying}
+
 \section{Implementation Considerations}
+
+% gtsouk: Including timing measurements, especially wrt differen versions of
+% Python, GMP, etc.
+
+% gtsouk: also instances where existing implementations were not up to
+% par from a cryptographic point of view
 
 \bibliographystyle{splncs}
 \bibliography{zeus}
