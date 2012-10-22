@@ -1025,11 +1025,15 @@ class Election(HeliosModel):
       os.unlink(zip_path)
 
     export_data = self.zeus_election.export()
+    self.zeus_fingerprint = export_data[0]['election_fingerprint']
+    self.save()
+
     zeus_data = json_module.dumps(export_data)
     zf = zipfile.ZipFile(zip_path, mode='w')
-    data_info = zipfile.ZipInfo('%s_proofs.txt' % self.uuid)
+    data_info = zipfile.ZipInfo('%s_proofs.txt' % self.zeus_fingerprint)
     data_info.compress_type = zipfile.ZIP_DEFLATED
-    data_info.comment = "Election %s zeus proofs" % self.uuid
+    data_info.comment = "Election %s (%s) zeus proofs" % (self.zeus_fingerprint,
+                                                          self.uuid)
     data_info.date_time = datetime.datetime.now().timetuple()
     data_info.external_attr = 0777 << 16L
     zf.writestr(data_info, zeus_data)
