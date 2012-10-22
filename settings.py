@@ -218,6 +218,8 @@ ECOUNTING_SECRET = "xxxxx"
 
 HELIOS_VOTER_EMAIL_RATE = '30/m'
 
+ZEUS_PROOFS_PATH = os.path.join('/', 'usr', 'share', 'zeus_proofs')
+
 # useful trick for custom settings
 try:
     from local_settings import *

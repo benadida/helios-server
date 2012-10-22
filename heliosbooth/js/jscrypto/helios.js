@@ -392,8 +392,8 @@ HELIOS.Election = Class.extend({
     return UTILS.object_sort_keys(json_obj);
   },
   
-  get_hash: function() {
-    if (this.election_hash)
+  get_hash: function(do_compute) {
+    if (this.election_hash && do_compute == undefined)
       return this.election_hash;
     
     // otherwise  
@@ -407,12 +407,28 @@ HELIOS.Election = Class.extend({
   }
 });
 
+UTILS.election_hash_from_json = function(raw_json) {
+    jo = JSON.parse(raw_json);
+    pk = UTILS.object_sort_keys(jo.public_key);
+    var hash_data = {
+    uuid : jo.uuid,
+    description : jo.description, short_name : jo.short_name, name : jo.name,
+    public_key: pk, questions : jo.questions,
+    cast_url: jo.cast_url, frozen_at: jo.frozen_at,
+    openreg: jo.openreg, voters_hash: jo.voters_hash,
+    use_voter_aliases: jo.use_voter_aliases,
+    voting_starts_at: jo.voting_starts_at,
+    voting_ends_at: jo.voting_ends_at};
+    hash_data = UTILS.object_sort_keys(hash_data);
+    return b64_sha256(JSON.stringify(hash_data));
+}
+
 HELIOS.Election.fromJSONString = function(raw_json) {
   var json_object = JSON.parse(raw_json);
   
   // let's hash the raw_json
   var election = HELIOS.Election.fromJSONObject(json_object);
-  election.election_hash = b64_sha256(raw_json);
+  //election.election_hash = b64_sha256(raw_json);
   
   return election;
 };
@@ -515,7 +531,7 @@ HELIOS.EncryptedAnswer = Class.extend({
     
     // store answer
     // CHANGE 2008-08-06: answer is now an *array* of answers, not just a single integer
-    this.answer = answer[0];
+    this.answer = [];
     
     if (question.tally_type == "stv") {
         this.answer[0] = STV.to_relative_answers(answer[0], question.answers.length);

@@ -3,22 +3,21 @@
 
 function verify_ballot(election_raw_json, encrypted_vote_json, status_cb) {
     var overall_result = true;
-    try {
 	election = HELIOS.Election.fromJSONString(election_raw_json);
 	var election_hash = election.get_hash();
-	status_cb("election fingerprint is " + election_hash);
+	status_cb("Αναγνωριστικό ψηφοφορίας: " + election_hash);
 	
 	// display ballot fingerprint
 	encrypted_vote = HELIOS.EncryptedVote.fromJSONObject(encrypted_vote_json, election);
-	status_cb("smart ballot tracker is " + encrypted_vote.get_hash());
+	status_cb("Το αναγνωριστικό της ψήφου σας είναι: " + encrypted_vote.get_hash());
 	
       // check the hash
-      if (election_hash == encrypted_vote.election_hash) {
-          status_cb("election fingerprint matches ballot");
-      } else {
-          overall_result = false;
-          status_cb("PROBLEM = election fingerprint does not match");          
-      }
+      //if (election_hash == encrypted_vote.election_hash) {
+          //status_cb("Το αναγνωριστικό ψηφοφορίας είναι έγκυρο.");
+      //} else {
+          //overall_result = false;
+          //status_cb("ΠΡΟΒΛΗΜΑ: Το αναγνωριστικό ψηφοφορίας ΔΕΝ είναι έγκυρο");          
+      //}
       
       // display the ballot as it is claimed to be
       status_cb("Ballot Contents:");
@@ -40,10 +39,10 @@ function verify_ballot(election_raw_json, encrypted_vote_json, status_cb) {
       
       // verify the encryption
       if (encrypted_vote.verifyEncryption(election.questions, election.public_key)) {
-          status_cb("Encryption Verified");
+          status_cb("Η κρυπτογράφηση είναι έγκυρη.");
       } else {
           overall_result = false;
-          status_cb("PROBLEM = Encryption doesn't match.");
+          status_cb("ΠΡΟΒΛΗΜΑ = Η κρυπτογράφηση ΔΕΝ είναι έγκυρη.");
       }
       
       // verify the proofs
@@ -56,10 +55,6 @@ function verify_ballot(election_raw_json, encrypted_vote_json, status_cb) {
             status_cb("PROBLEM = Proofs don't work.");
         }
       }
-    } catch (e) {
-      status_cb('problem parsing election or ballot data structures, malformed inputs: ' + e.toString());
-      overall_result=false;
-    }
 
     return overall_result;
 }

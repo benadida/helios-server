@@ -137,6 +137,8 @@ body {
 
   }
 
+  .dropdown .alert { color: $alertColor !important; font-weight: bold !important;}
+
   label {
     font-weight: bold;
     color: $mainColor;

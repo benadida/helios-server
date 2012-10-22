@@ -9,8 +9,16 @@
 {% if admin_p and not election.frozen_at %}
 <div class="columns twelve">
   <form action="./questions" method="post">
-    <p>Ανανεώστε την λίστα υποψηφίων και πατήστε αποθήκευση.</p>
-
+    <p>Ανανεώστε την λίστα υποψηφίων και πατήστε αποθήκευση.
+    <br /><br />
+    <b>Όλα τα πεδία των υποψηφίων είναι υποχρεωτικά.</b>
+    </p>
+    {% if error %}
+    <div class="alert-box alert">
+      Προέκυψε σφάλμα στην αποθήκευση των δεδομένων, παρακαλούμε ελέγξτε οτι όλα
+      τα πεδία είναι συμπληρωμένα.
+    </div>
+    {% endif %}
     <div class="row labels">
       <div class="columns four">
         <label>Επώνυμο</label>

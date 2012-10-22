@@ -131,15 +131,14 @@ BOOTH.setup_election = function(raw_json) {
 
     if ($.browser.msie) {
             alert("Το πρόγραμμα πλοήγησης που χρησιμοποιείτε δεν υποστηρίζεται από την πλατφόρμα \"Ζευς\". Χρησιμοποιήστε τις νέες εκδόσεις των προγραμμάτων (browser) Mozilla Firefox ή Google Chrome.\n\nΓια περισσότερες πληροφορίες επικοινωνήστε μαζί μας\n\n" + BOOTH.election.help_phone);
-            window.location = '/auth/logout';
+            window.location = '/auth/logout?return_url=/faqs/voter/#iesupport';
         }
 
 
   // FIXME: we shouldn't need to set both, but right now we are doing so
   // because different code uses each one. Bah. Need fixing.
-  BOOTH.election.hash = b64_sha256(raw_json);
+  BOOTH.election.hash = UTILS.election_hash_from_json(raw_json);
   BOOTH.election.election_hash = BOOTH.election.hash
-
   // async?
   BOOTH.setup_workers(raw_json);
 
@@ -448,6 +447,7 @@ BOOTH.load_and_setup_election = function(election_url) {
         'data': {}, 
         'success': function(result) {
           sjcl.random.addEntropy(result.randomness);
+          BOOTH.csrf = result.token;
         }, 
         'error': function(err){ 
           window.location = '/';
@@ -633,7 +633,9 @@ BOOTH.audit_ballot = function() {
 
 BOOTH.post_audited_ballot = function() {
   $.post(BOOTH.election_url + "/post-audited-ballot", {'audited_ballot': BOOTH.audit_trail}, function(result) {
-    alert('This audited ballot has been posted.\nRemember, this vote will only be used for auditing and will not be tallied.\nClick "back to voting" and cast a new ballot to make sure your vote counts.');
+    alert('Η ψήφος ελέγχου αποθηκευτικε. Μεταφόρα στην σελίδα επιλογών.');
+    BOOTH.reset_ciphertexts();
+    BOOTH.show_question(0);
   });
 };
 
@@ -652,6 +654,7 @@ BOOTH.cast_ballot = function() {
 
     // submit the form
     var data = $('#send_ballot_form').serialize();
+    data = data + "&csrf_token=" + BOOTH.csrf;
     var url = $('#send_ballot_form').attr("action");
 
     $.ajax({

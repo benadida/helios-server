@@ -2,7 +2,8 @@ import datetime
 import uuid
 import json
 
-from zeus.core import ZeusCoreElection, Teller, sk_from_args, mix_ciphers
+from zeus.core import ZeusCoreElection, Teller, sk_from_args, \
+    mix_ciphers, TellerStream
 from zeus.core import V_CAST_VOTE, V_PUBLIC_AUDIT, V_AUDIT_REQUEST
 
 from zeus.models import ElectionInfo
@@ -17,6 +18,7 @@ from django.db import connection
 
 
 MIXNET_NR_PARALLEL = getattr(settings, 'ZEUS_MIXNET_NR_PARALLEL', 2)
+MIXNET_NR_ROUNDS = getattr(settings, 'ZEUS_MIXNET_NR_ROUNDS', 128)
 
 class NullStream(object):
     def read(*args):
@@ -45,6 +47,7 @@ class HeliosElection(ZeusCoreElection):
                                   ELGAMAL_PARAMS.q)
         kwargs['teller'] = Teller(outstream=NullStream())
         super(HeliosElection, self).__init__(*args, **kwargs)
+        self.set_option(parallel=MIXNET_NR_PARALLEL)
 
     def _get_zeus_vote(self, enc_vote, voter=None, audit_password=None):
         return self.model.election._get_zeus_vote(enc_vote, voter=voter,
@@ -67,6 +70,20 @@ class HeliosElection(ZeusCoreElection):
         try:
             audited = self.model.election.auditedballot_set.get(
                 fingerprint=fingerprint, is_request=False)
+            helios_vote = electionalgs.EncryptedVote.fromJSONDict(
+                utils.from_json(audited.raw_vote))
+            zeus_vote = self._get_zeus_vote(
+                helios_vote,
+                audit_password=audited.audit_code)
+            zeus_vote['fingerprint'] = audited.fingerprint
+            zeus_vote['signature'] = audited.signature
+            return zeus_vote
+        except helios_models.AuditedBallot.DoesNotExist:
+            pass
+        # then AuditedBallot requests
+        try:
+            audited = self.model.election.auditedballot_set.get(
+                fingerprint=fingerprint, is_request=True)
             helios_vote = electionalgs.EncryptedVote.fromJSONDict(
                 utils.from_json(audited.raw_vote))
             zeus_vote = self._get_zeus_vote(
@@ -129,6 +146,20 @@ class HeliosElection(ZeusCoreElection):
             zeus_vote['fingerprint'] = audited.fingerprint
             zeus_vote['signature'] = audited.signature
             votes[audited.fingerprint] = zeus_vote
+        for audited in self.model.election.auditedballot_set.filter(is_request=True):
+            try:
+                self.model.election.auditedballot_set.get(fingerprint=audited.fingerprint,
+                                                        is_request=False)
+            except helios_models.AuditedBallot.DoesNotExist:
+                helios_vote = electionalgs.EncryptedVote.fromJSONDict(
+                    utils.from_json(audited.raw_vote))
+                zeus_vote = self._get_zeus_vote(
+                    helios_vote,
+                    audit_password=audited.audit_code)
+                zeus_vote['fingerprint'] = audited.fingerprint
+                zeus_vote['signature'] = audited.signature
+                votes[audited.fingerprint] = zeus_vote
+
         return votes
 
     def _casted_votes(self):
@@ -234,9 +265,14 @@ class HeliosElection(ZeusCoreElection):
         vobj = helios_models.AuditedBallot.objects.get(election=self.model.election,
                                                        fingerprint=vote['fingerprint'],
                                                        is_request=True)
+
         vobj.pk = None
         vobj.signature = vote['signature']
         vobj.fingerprint = vote['fingerprint']
+        new_vote = vobj.vote
+        new_vote.encrypted_answers[0].randomness = [vote['voter_secret']]
+        new_vote.encrypted_answers[0].answer = vote['plain_answer']
+        vobj.raw_vote = json.dumps(new_vote.toJSONDict(with_randomness=True))
         vobj.is_request = False
         vobj.voter = None
         vobj.save()
@@ -260,7 +296,7 @@ class HeliosElection(ZeusCoreElection):
         return self.model.election.voter_set.get(uuid=voter_uuid)
 
     def do_get_voter(self, voter_uuid):
-	v = self._get_voter_object(voter_uuid)
+        v = self._get_voter_object(voter_uuid)
         return v.voter_name + u" " + v.voter_surname
 
     def do_get_voters(self):
@@ -414,8 +450,9 @@ class HeliosElection(ZeusCoreElection):
         return mixes
 
     def mix(self, ciphers):
-        return mix_ciphers(ciphers, teller=self.teller,
-                           nr_parallel=MIXNET_NR_PARALLEL)
+      return mix_ciphers(ciphers, teller=self.teller,
+                            nr_rounds=MIXNET_NR_ROUNDS,
+                           nr_parallel=self.get_option('parallel'))
 
     def _get_zeus_factors(self, trustee):
         trustee_factors = []
@@ -456,7 +493,7 @@ class HeliosElection(ZeusCoreElection):
 
     def do_store_results(self, results):
         e = self.model.election
-        e.result = get_datatype('phoebus/Result', [results])
+        e.result = [results]
         e.save()
 
     def do_get_results(self):

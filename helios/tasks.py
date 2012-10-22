@@ -97,8 +97,15 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
 @task()
 def election_compute_tally(election_id):
     election = Election.objects.get(id = election_id)
-    election.zeus_election.validate_voting()
+    try:
+        election.zeus_election.validate_voting()
+    except:
+        election.tallying_started_at = None
+        election.save()
+        return
+    election_notify_admin.delay(election_id=election_id, subject="Voting validated", body="")
     election.compute_tally()
+    election_notify_admin.delay(election_id=election_id, subject="Mixing finished", body="")
     bad_mixnet = election.bad_mixnet()
     if bad_mixnet:
         election_notify_admin.delay(election_id = election_id,
@@ -124,11 +131,32 @@ error: %s
 The encrypted tally for election %s has been computed.
 
 --
-Helios
+Zeus
 """ % election.name)
         tally_helios_decrypt.delay(election_id=election.id)
     else:
         election_compute_tally.delay(election_id=election_id)
+
+@task()
+def add_trustee_factors(election_id, trustee_id, factors, proofs):
+  election = Election.objects.get(pk=election_id)
+  trustee = election.trustee_set.get(pk=trustee_id)
+  try:
+    election.add_trustee_factors(trustee, factors, proofs)
+  except Exception, e:
+    election_notify_admin.delay(election_id = election_id,
+                                subject = 'Error uploading factors and proofs',
+                                body = """
+%s
+
+%s
+--
+Zeus
+""" % (election.name, traceback.format_exc()))
+    try:
+      trustee.send_url_via_mail(msg=_('Invalid partial decryption send. Please try again.'))
+    except:
+      pass
 
 @task()
 def tally_decrypt(election_id):
@@ -139,13 +167,23 @@ def tally_decrypt(election_id):
     election = Election.objects.get(id = election_id)
     election.zeus_election.decrypt_ballots()
 
-    election.post_ecounting()
+    election = Election.objects.get(id=election_id)
+    try:
+        election.store_zeus_proofs()
+    except:
+        election_notify_admin.delay(election_id, "Failed to store zeus proofs",
+                                   traceback.format_exc())
+    try:
+        election.post_ecounting()
+    except:
+        election_notify_admin.delay(election_id, "Failed to post to ecounting",
+                                   traceback.format_exc())
     election_notify_admin.delay(election_id = election_id,
                                 subject = 'Election Decrypt',
                                 body = """
 Result decrypted for election %s.
 --
-Helios
+Zeus
 """ % election.name)
 
 
@@ -164,11 +202,11 @@ def tally_helios_decrypt(election_id):
     election_notify_admin.delay(election_id = election_id,
                                 subject = 'Helios Decrypt',
                                 body = """
-Helios has decrypted its portion of the tally
+Zeus has decrypted its portion of the tally
 for election %s.
 
 --
-Helios
+Zeus
 """ % election.name)
 
 @task()
@@ -184,15 +222,16 @@ has been processed.
 %s voters have been created.
 
 --
-Helios
+Zeus
 """ % (voter_file.election.name, voter_file.num_voters))
 
 @task()
-def election_notify_admin(election_id, subject, body):
+def election_notify_admin(election_id, subject, body=""):
     election = Election.objects.get(id = election_id)
     #for admin in election.admins.all():
       #admin.send_message(subject, body)
     for admin, admin_email in settings.ELECTION_ADMINS:
+        subject = "[%s] %s" % (election.uuid, subject)
         message = EmailMessage(subject,
                                body,
                                settings.SERVER_EMAIL,

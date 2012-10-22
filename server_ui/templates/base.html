@@ -8,8 +8,12 @@
     <title>{% block title %}{% endblock %} Ηλεκτρονική κάλπη "Ζευς"</title>
     <meta charset="utf-8">
 
+    <!--[if lt IE 8]>
+    <link href="/static/helios/phoebus/stylesheets/general_foundicons_ie7.css" media="screen" rel="stylesheet" type="text/css" />
+    <![endif]-->
     <!--foundation styles and js-->
     <link rel="stylesheet" href="/static/helios/phoebus/stylesheets/app.css">
+    <link rel="stylesheet" href="/static/helios/phoebus/stylesheets/general_foundicons.css">
     <link rel="stylesheet" href="/static/helios/phoebus/stylesheets/ui-lightness/jquery-ui-1.8.23.custom.css">
     <script src="/static/helios/phoebus/javascripts/foundation/modernizr.foundation.js"></script>
     <script src="/static/helios/phoebus/javascripts/foundation/jquery.js"></script>
@@ -21,6 +25,7 @@
     <script language="javascript" src="/static/helios/helios/jquery.json.min.js"></script>
     <script src="/static/helios/phoebus/javascripts/foundation/jquery.foundation.reveal.js"></script>
     <script src="/static/helios/phoebus/javascripts/foundation/jquery.foundation.forms.js"></script>
+    <script src="/static/helios/phoebus/javascripts/foundation/jquery.foundation.buttons.js"></script>
     <script src="/static/helios/phoebus/javascripts/jquery-ui-1.8.23.custom.min.js"></script>
 
     {% block js %}
@@ -28,7 +33,10 @@
 
     {% block extra-head %}{% endblock %}
     <script>
-      $(document).foundationCustomForms();
+      $(document).ready(function(){
+        $(document).foundationCustomForms();
+        $(document).foundationButtons();
+      })
     </script>
   </head>
 

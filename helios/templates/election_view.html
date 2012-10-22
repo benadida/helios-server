@@ -65,7 +65,7 @@ if (!navigator.javaEnabled()) {
 
 {% if not election.tallied %}
 {% if election.tallying_started_at %}
-Η διαδικασία μίξης έχει ξεκινήσει. Παρακαλούμε ανανεώστε τη σελίδα
+Η διαδικασία μείξης έχει ξεκινήσει. Παρακαλούμε ανανεώστε τη σελίδα
 ανά τακτά χρονικά διαστήματα μέχρι να ολοκληρωθεί η διαδικασία.
 {% else %}
 {% if election.num_cast_votes %}
@@ -77,20 +77,23 @@ if (!navigator.javaEnabled()) {
 {% else %}
 
 {% if election.ready_for_decryption_combination %}
-<a class="button success" href="{% url helios.views.combine_decryptions election.uuid %}">
 {% if election.num_trustees == 1 %}
 release results
 {% else %}
-Αποκρυπτογράφηση τελικών ψηφοδελτίων.
+Αποκρυπτογράφηση τελικών ψηφοδελτίων......
 {% endif %}
-</a><br />
+<br />
 {% if election.num_trustees == 1 %}
 Τα τελικά ψηφοδέλτια έχουν αποκρυπτογραφηθεί.
 {% else %}
 {% endif %}
 {% else %}
+{% if election.encrypted_tally %}
 <a class="button success" href="{% url helios.views.list_trustees_view election.uuid %}">
-Τα μέλη της εφορευτικής επιτροπής πρέπει να αποκρυπτογραφήσουν τα τελικά ψηφοδέλτια</a>
+  Τα μέλη της εφορευτικής επιτροπής πρέπει να αποκρυπτογραφήσουν τα τελικά ψηφοδέλτια</a>
+{% else %}
+Παρακαλούμε περιμένετε για την επαλήθευση της διαδικασίας της μείξης.
+{% endif %}
 {% endif %}
 
 {% endif %}
@@ -117,6 +120,10 @@ release results
 <a href="{% url helios.views.election_post_ecounting election.uuid %}">Αποστολή δεδομένων στην
 πλατφόρμα ecounting</a>
 {% endif %}
+<br /><br />
+{% comment %}
+<a href="{% url helios.views.election_zeus_proofs election.uuid  %}">Αποθήκευση κρυπτογραφικών δεδομένων</a>
+{% endcomment %}
 {% endif %}
 {% else %}
 

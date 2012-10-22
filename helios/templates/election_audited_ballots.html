@@ -1,41 +1,39 @@
-{% extends TEMPLATE_BASE %}
+{% extends "election_page.html" %}
 
-{% block title %}Audited Ballots for {{election.name}}{% endblock %}
-
+{% block title %}{{election.name}}: Ψηφοφόροι{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Audited Ballots <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election_uuid=election.uuid %}">back to election</a>]</span></h2>
+
 
 <p>
-When you prepare a ballot with Helios, you immediately receive a smart ballot tracker. Before you choose to cast that ballot, you have the option to ask Helios to "break open" that encrypted ballot and verify that Helios encrypted your ballot correctly. Once that's done, you can post that opened ballot here, on the audited ballots' list, for everyone to verify (your identity is not included). Once you've done this, you have to re-encrypt your choices and obtain a different smart ballot tracker. This helps reduce the chance that someone might coerce you to vote differently from your true choice.
-</p>
-
-<p>
-These ballots are <em>not cast</em>, and they will not be counted. They are just here for auditing purposes, to spot-check that Helios is properly encrypting voter's choices.
-</p>
-
-<p>
-  To verify an audited ballot, copy its entire content and paste it in the <a target="_new" href="/booth/single-ballot-verify.html?election_url={% url helios.views.one_election election.uuid %}">single ballot verifier</a>.
+Για να ελέγξετε μια ψήφο ελέγχου, ανοίξτε τον <a target="_new"
+  href="/booth/single-ballot-verify.html?election_url={% url helios.views.one_election election.uuid %}">Επαληθευτή ψήφου ελέγχου</a> 
+και επικολλήστε τα περιεχόμενα της ψήφου στο αντίστοιχο πεδίο.
 </p>
 
 {% if audited_ballots %}
 <p>
-Audited Ballots {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
+Εμφάνιση ψήφων ελέγχου: {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
 </p>
-
-{% if next_after %}
-<a href="?after={{next_after}}&offset={{offset_plus_limit}}">next {{limit}}</a> &nbsp;&nbsp;
-{% endif %}
 
 {% ifequal offset 0 %}
 {% else %}
-<a href="?">back to start</a> &nbsp;&nbsp;
+<a href="?">αρχική</a> &nbsp;&nbsp;
 {% endifequal %}
-{% if more_p %}
-<a href="?after={{next_after}}&offset={{next_offset}}">next {{limit}}</a>
+{% if next_after %}
+<a href="?after={{next_after}}&offset={{offset_plus_limit}}">επόμενες {{limit}}</a> &nbsp;&nbsp;
 {% endif %}
+
+{% if more_p %}
+<a href="?after={{next_after}}&offset={{next_offset}}">επόμενες {{limit}}</a>
+{% endif %}
+<br /><br />
 <table class="pretty">
 {% for b in audited_ballots %}
-<tr><td><tt style="font-size: 1.4em;">{{b.vote_hash}}</tt> [<a target="_blank" href="?vote_hash={{b.vote_hash|urlencode}}">view</a>]</td></tr>
+<tr><td><tt style="font-size: 1.4em;">{{b.vote_hash}}</tt> [<a target="_blank"
+      href="?vote_hash={{b.vote_hash|urlencode}}">προβολή περιεχομένων</a>]</td></tr>
 {% endfor %}
 </table>
 {% else %}

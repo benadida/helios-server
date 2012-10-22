@@ -9,7 +9,15 @@
 {% endblock %}
 
 {% block content %}
-
+<div class="row">
+<div class="columns twelve">
+<p>
+Η φόρμα αφορά την σύνδεση των διαχειριστών της πλατφόρμας "Ζευς". Σε περίπτωση που θέλετε να συνδεθείτε ως ψηφοφόρος, ακολουθήστε τον 
+σύνδεσμο που σας έχει σταλεί στην ηλεκτρονική σας διεύθυνση.
+</p>
+</div>
+</div>
+<div class="row">
 <div class="columns six">
 {% if error %}
 <div class="alert-box alert">
@@ -26,5 +34,6 @@
 <input class="button" type="submit" value="Σύνδεση" />
 </div>
 </form>
+</div>
 </div>
 {% endblock %}

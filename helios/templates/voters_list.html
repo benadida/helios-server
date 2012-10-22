@@ -17,14 +17,40 @@
     </div>
   </div>
   <div class="columns five">
+
+{% if admin_p %}
+
+        <div href="#" class="button medium dropdown" style="float:right;">
+          Ενέργειες λίστας&nbsp;
+          <ul>
+            <li>
+  <a style="" class="foundicon-plus" href="{% url helios.views.voters_upload election.uuid %}"> &nbsp;Προσθήκη</a>
+  </li>
+  <li>
   {% if election.frozen_at %}
-  <a style="float: right" class="button small" href="{% url helios.views.voters_email election.uuid %}">Αποστολή email</a>
-  <a style="float: right; margin-right: 10px;" class="button small" 
-    href="{% url helios.views.voters_csv election.uuid %}">Λίστα σε CSV</a>
+  <a style="" class="foundicon-mail" href="{% url helios.views.voters_email election.uuid %}"> &nbsp;Αποστολή email</a>
   {% else %}
-  <a style="float: right" class="button small disabled" href="#">Αποστολή email</a>
+  <a style="" class="foundicon-mail" href="#"> &nbsp;Αποστολή email</a>
   {% endif %}
-  <a style="float: right; margin-right: 10px;" class="button small" href="{% url helios.views.voters_upload election.uuid %}">Προσθήκη</a>
+  </li>
+  <li>
+  <a style="" class="foundicon-down-arrow"
+    href="{% url helios.views.voters_csv election.uuid %}"> &nbsp;Αποθήκευση σε CSV</a>
+  </li>
+  {% if not election.frozen_at %}
+            <li>
+<a class="foundicon-remove alert" 
+    onclick="return confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε όλους τους ψηφοφόρους;')",
+    href="{% url helios.views.voters_clear election.uuid %}"> &nbsp;Διαγραφή όλων</a>
+  </li>
+  {% endif %}
+          </ul>
+        </div>
+
+  {% endif %}
+
+
+
 
 </div>
 </div>
@@ -60,35 +86,24 @@
 <table class="voters" width="100%">
   <thead>
     <tr>
-      <th>Επώνυμο</th>
-      <th>Όνομα</th>
-      <th>Πατρώνυμο</th>
       <th>Email</th>
-      <th>Έχει ψηφίσει</th>
+      <th>Επώνυμο , Όνομα , Πατρώνυμο</th>
       {% if admin_p %}
-      {% if election.frozen_at %}
-      <th>Αποστολή email</th>
-      {% endif %}
-      <th>Διαγραφή</th>
+      <th>Έχει ψηφίσει</th>
       <th>Τελευταία αποστολή email στις</th>
       <th>Τελευταία επίσκεψη</th>
+      <th>Ενέργειες</th>
       {% endif %}
     </tr>
   </thead>
   <tbody>
   {% for voter in voters %}
   <tr>
-    <td width="100%">
-      {{ voter.voter_surname }}
-    </td>
-    <td>
-      {{ voter.name }}
-    </td>
-    <td>
-      {{ voter.voter_fathername }}
-    </td>
     <td>
       {{ voter.voter_email }}
+    </td>
+    <td width="100%">
+      {{ voter.voter_surname }} , {{ voter.name }} {% if voter.voter_fathername %}, {{ voter.voter_fathername }}{% endif %}
     </td>
     <td>
       {% if voter.vote %}
@@ -98,36 +113,38 @@
       {% endif %}
 
     </td>
-{% if admin_p %}
-      {% if election.frozen_at %}
-    <td>
-<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}">Αποστολή email</a>
-</td>
-{% endif %}
-<td>
-    {% if not voter.vote %}
-<a onclick="return confirm('επιβεβαιώστε τη διαγραφή ψηφοφόρου: {{voter.name}} ?');" 
-  href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">
-  Διαγραφή
-  </a>
-  {% endif %}
-</td>
+    {% if admin_p %}
 <td>
   {{ voter.last_email_send_at }}
 </td>
     <td>
       {{ voter.last_visit }}
     </td>
+    {% endif %}
+{% if admin_p %}
+      {% if election.frozen_at %}
+      <td>
+        <div href="#" class="tiny button dropdown">
+          Ενέργειες&nbsp;
+          <ul>
+            <li>
+<a class="foundicon-mail" href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}"> &nbsp;Αποστολή email</a>
+            </li>
+    {% if not voter.vote %}
+            <li>
+<a class="alert foundicon-remove" onclick="return confirm('επιβεβαιώστε τη διαγραφή ψηφοφόρου: {{voter.name}} ?');" 
+  href="{% url helios.views.voter_delete election.uuid, voter.uuid %}"> &nbsp;Διαγραφή
+  </a>
+            </li>
+  {% endif %}
+          </ul>
+        </div>
+</td>
+{% endif %}
   {% endif %}
   </tr>
   {% endfor %}
 </tbody>
 </table>
-{% if admin_p %}
-
-<a style="float: right" class="button small alert" 
-    onclick="return confirm('Είστε σίγουρος ότι θέλετε να διαγράψετε όλους τους ψηφοφόρους;')",
-    href="{% url helios.views.voters_clear election.uuid %}">Διαγραφή όλων</a>
-  {% endif %}
 {% endif %}
 {% endblock %}

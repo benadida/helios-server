@@ -25,7 +25,6 @@
   <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
   <script language="javascript" src="js/jquery.json.min.js"></script>
   <script language="javascript" src="js/jquery-jtemplates.js"></script>
-  <script language="javascript" src="js/json2.js"></script>
   <script language="javascript" src="js/texts.js"></script>
 
   <script language="javascript">
@@ -107,8 +106,10 @@ function verify_single_ballot(election_url, audit_trail) {
           return after_computation(event.data.result);
       };
 
+      raw_json = JSON.stringify(raw_json);
       verifier_worker.postMessage({'type':'verify', 'election':raw_json, 'vote':encrypted_vote_json});
     } else {
+      raw_json = JSON.stringify(raw_json);
       var overall_result = verify_ballot(raw_json, encrypted_vote_json, result_append);
       after_computation(overall_result);
     }

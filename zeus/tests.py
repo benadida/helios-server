@@ -31,8 +31,8 @@ VOTES_COUNT = 10
 MIXNETS_COUNT = 1
 
 TRUSTEES_COUNT = 5
-VOTERS_COUNT = 4
-VOTES_COUNT = 12
+VOTERS_COUNT = 3
+VOTES_COUNT = 3
 
 #class TestZeusElection(TestCase):
 
@@ -213,7 +213,7 @@ class TestHeliosElection(TestCase):
                         type_hint='phoebus/EncryptedVote').wrapped_obj
 
                 if cast_audit:
-                    enc_vote.answers[0].answers = [selection]
+                    enc_vote.answers[0].answer = [selection]
                     enc_vote.answers[0].randomness = [randomness]
                     # mess with original audit password, to force auditing vote to be
                     # get cast
@@ -224,11 +224,14 @@ class TestHeliosElection(TestCase):
 
                     signature = self.election.cast_vote(voter_obj, session_enc_vote,
                                             audit_password)
+                    print "VOTER", voter, "AUDIT REQUEST", selection
 
                     enc_vote = enc_vote.ld_object.includeRandomness().wrapped_obj
-                    signature = self.election.cast_vote(voter_obj, enc_vote,
-                                            audit_password)
-                    print "VOTER", voter, "AUDIT BALLOT", selection
+                    if choice([0,1]) == 0:
+
+                        signature = self.election.cast_vote(voter_obj, enc_vote,
+                                                audit_password)
+                        print "VOTER", voter, "AUDIT BALLOT", selection
                     continue
 
                 if cast_audit and range(10) > 9:
@@ -240,6 +243,10 @@ class TestHeliosElection(TestCase):
 
         self.election.zeus_election.validate_voting()
 
+        for a in AuditedBallot.objects.filter(is_request=False):
+          assert a.vote.encrypted_answers[0].answer != None
+          assert a.vote.encrypted_answers[0].randomness != None
+
         e = self.election
         e.workflow_type = 'mixnet'
         e.save()
@@ -250,7 +257,11 @@ class TestHeliosElection(TestCase):
             e.generate_helios_mixnet()
 
         self.assertEqual(self.election.zeus_election.do_get_stage(), "MIXING")
+
         tasks.election_compute_tally(e.pk)
+
+        self.assertEqual(self.election.bad_mixnet(), None)
+        self.assertTrue(self.election.encrypted_tally)
         self.assertEqual(self.election.encrypted_tally.num_tallied, len(SELECTIONS.values()))
 
         e = self.election
@@ -266,6 +277,7 @@ class TestHeliosElection(TestCase):
             e.add_trustee_factors(trustee, decryption_factors,
                                 decryption_proofs)
 
+        self.election.zeus_election.validate_mixing()
         e = self.election
         self.assertTrue(self.election.result)
 

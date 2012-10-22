@@ -15,6 +15,8 @@ import StringIO
 import copy
 import json as json_module
 import base64
+import zipfile
+import os
 
 import helios.views
 
@@ -112,7 +114,8 @@ class ElectionMixnet(HeliosModel):
     if not self.mix:
       self.mix = new_mix
 
-    if not self.second_mix:
+    MIXNET_SECOND_MIX = getattr(settings, 'ZEUS_MIXNET_SECOND_MIX', False)
+    if not self.second_mix and MIXNET_SECOND_MIX:
       self.second_mix = self.election.zeus_election.mix(self.mix)
 
     self.status = 'finished'
@@ -266,7 +269,7 @@ class Election(HeliosModel):
 
   def post_ecounting(self):
     from helios import tasks
-    tasks.election_post_ecounting(self.pk, self.get_ecounting_admin_user())
+    tasks.election_post_ecounting.delay(self.pk, self.get_ecounting_admin_user())
 
   @property
   def pretty_type(self):
@@ -275,6 +278,10 @@ class Election(HeliosModel):
   @property
   def num_cast_votes(self):
     return self.voter_set.exclude(vote=None).count()
+
+  @property
+  def audits_casted(self):
+    return self.auditedballot_set.filter(is_request=False).count()
 
   @property
   def num_voters(self):
@@ -524,7 +531,7 @@ class Election(HeliosModel):
     or failing that the date voting was extended until, or failing that the date voting is scheduled to end at.
     """
     voting_end = self.voting_ended_at or self.voting_extended_until or self.voting_ends_at
-    return (voting_end != None and datetime.datetime.utcnow() >= voting_end) or \
+    return (voting_end != None and datetime.datetime.now() >= voting_end) or \
         self.tallied
 
   def bad_mixnet(self):
@@ -588,7 +595,7 @@ class Election(HeliosModel):
       raise Exception("Another mixing in process")
 
     if self.mixing_finished:
-      raise Exception("Mixing finished")
+        return None
 
     next_mixnet = self.mixnets.filter(status="pending")[0]
     next_mixnet.mix_ciphers()
@@ -600,6 +607,8 @@ class Election(HeliosModel):
     self.mix_next_mixnet()
     if self.mixing_finished and not self.encrypted_tally:
       self.zeus_election.validate_mixing()
+      from helios import tasks
+      tasks.election_notify_admin.delay(election_id=self.pk, subject="Mixing validated", body="")
       self.store_encrypted_tally()
       self.save()
 
@@ -702,6 +711,7 @@ class Election(HeliosModel):
     # log it
     self.append_log(ElectionLog.FROZEN)
     self.frozen_at = datetime.datetime.utcnow()
+    self.voting_started_at = datetime.datetime.utcnow()
     self.generate_voters_hash()
     self.set_eligibility()
     self.save()
@@ -804,7 +814,7 @@ class Election(HeliosModel):
 
     if self.ready_for_decryption_combination():
       from helios import tasks
-      tasks.tally_decrypt(self.pk)
+      tasks.tally_decrypt.delay(self.pk)
 
   def _get_zeus_vote(self, enc_vote, voter=None, audit_password=None):
     answer = enc_vote.encrypted_answers[0]
@@ -830,8 +840,9 @@ class Election(HeliosModel):
       }
     }
 
-    if hasattr(answer, 'answers'):
+    if hasattr(answer, 'answer') and answer.answer:
       zeus_vote['audit_code'] = audit_password
+      zeus_vote['plain_answer'] = answer.answer
       zeus_vote['voter_secret'] = answer.randomness[0]
 
     if audit_password:
@@ -990,6 +1001,27 @@ class Election(HeliosModel):
     assumes that if there is a max to the question, that's how many winners there are.
     """
     return [self.one_question_winner(self.questions[i], self.result[i], self.num_cast_votes) for i in range(len(self.questions))]
+
+  def zeus_proofs_path(self):
+    return os.path.join(settings.ZEUS_PROOFS_PATH, '%s.zip' % self.uuid)
+
+  def store_zeus_proofs(self):
+    if not self.result:
+      return None
+
+    zip_path = self.zeus_proofs_path()
+    if os.path.exists(zip_path):
+      os.unlink(zip_path)
+
+    zeus_data = json_module.dumps(self.zeus_election.export())
+    zf = zipfile.ZipFile(zip_path, mode='w')
+    data_info = zipfile.ZipInfo('%s_proofs.txt' % self.uuid)
+    data_info.compress_type = zipfile.ZIP_DEFLATED
+    data_info.comment = "Election %s zeus proofs" % self.uuid
+    data_info.date_time = datetime.datetime.now().timetuple()
+    data_info.external_attr = 0777 << 16L
+    zf.writestr(data_info, zeus_data)
+    zf.close()
 
   @property
   def pretty_result(self):
@@ -1567,7 +1599,8 @@ class AuditedBallot(models.Model):
 
   @classmethod
   def get(cls, election, vote_hash):
-    return cls.objects.get(election = election, vote_hash = vote_hash)
+    return cls.objects.get(election = election, vote_hash = vote_hash,
+                           is_request=False)
 
   @classmethod
   def get_by_election(cls, election, after=None, limit=None):
@@ -1577,11 +1610,16 @@ class AuditedBallot(models.Model):
     if after:
       query = query.filter(vote_hash__gt = after)
 
+    query = query.filter(is_request=False)
     if limit:
       query = query[:limit]
 
     return query
 
+  @property
+  def vote(self):
+    return electionalgs.EncryptedVote.fromJSONDict(
+                utils.from_json(self.raw_vote))
   class Meta:
     unique_together = (('election','is_request','fingerprint'))
 
@@ -1651,26 +1689,31 @@ class Trustee(HeliosModel):
                 _(u'Επιβεβαίωση Κωδικού Ψηφοφορίας'),
                 _(u'Αποκρυπτογράφηση ψήφων')]
 
-  def send_url_via_mail(self):
+  def send_url_via_mail(self, msg=''):
 
     url = self.get_login_url()
 
-    body = _("""
-    You are a trustee for %(election_name)s.
+    body = _(u"""
+    Ως μέλος της εφορευτικής επιτροπής της ψηφοφορίας
 
-    Your trustee dashboard is at
+      %(election_name)s
+
+    παρακαλούμε επισκεφθείτε τον πίνακα ελέγχου και ακολουθήστε τις οδηγίες
 
       %(url)s
 
+      %(msg)s
+
     --
-    Helios
-             """) % {
+    Ψηφιακή Κάλπη «Ζευς»
+ """) % {
                  'election_name': self.election.name,
                  'url': url,
+                 'msg': msg,
                  'step': self.get_step(),
                  'step_text': self.STEP_TEXTS[self.get_step()-1]}
 
-    subject = _('your trustee homepage for %(election_name)s %(step)s') % {
+    subject = _(u'%(election_name)s: παρακαλούμε για τις ενέργειές σας, #%(step)s') % {
         'election_name': self.election.name,
         'step_text': self.STEP_TEXTS[self.get_step()-1],
         'step': self.get_step()}

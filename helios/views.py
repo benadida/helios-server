@@ -41,6 +41,8 @@ from models import *
 
 import forms, signals
 
+import json as jsonlib
+
 
 # Parameters for everything
 ELGAMAL_PARAMS = elgamal.Cryptosystem()
@@ -57,6 +59,12 @@ ELGAMAL_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(ELGAMAL_PARAMS, dataty
 
 # single election server? Load the single electionfrom models import Election
 from django.conf import settings
+
+def force_utf8(s):
+  if isinstance(s, unicode):
+    return s.encode('utf8')
+  else:
+    return s
 
 def dummy_view(request):
   return HttpResponseRedirect("/")
@@ -170,7 +178,9 @@ def election_shortcut(request, election_short_name):
 # a hidden view behind the shortcut that performs the actual perm check
 @election_view()
 def _election_vote_shortcut(request, election):
-  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url' : reverse(one_election, args=[election.uuid])}))
+  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({
+    'token': request.session.get('csrf_token'),
+    'election_url' : reverse(one_election, args=[election.uuid])}))
 
   test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : vote_url}))
 
@@ -254,7 +264,22 @@ def election_new(request):
         return HttpResponseRedirect(reverse(one_election_questions, args=[election.uuid]))
 
 
-  return render_template(request, "election_new", {'election_form': election_form, 'error': error})
+  return render_template(request, "election_new", {'election_form': election_form, 'election': None, 'error': error})
+
+
+@election_admin()
+def election_zeus_proofs(request, election):
+  if not election.result:
+    raise PermissionDenied()
+
+  if not os.path.exists(election.zeus_proofs_path()):
+    election.store_zeus_proofs()
+
+  zip_data = file(election.zeus_proofs_path())
+  response = HttpResponse(zip_data.read(), mimetype='application/zip')
+  zip_data.close()
+  response['Content-Dispotition'] = 'attachment; filename=%s_proofs.zip' % election.uuid
+  return response
 
 @election_admin()
 def voters_csv(request, election):
@@ -264,8 +289,11 @@ def voters_csv(request, election):
   response['Content-Dispotition'] = 'attachment; filename="%s"' % filename
   writer = csv.writer(response)
   for voter in voters:
-    writer.writerow(map(smart_unicode,[voter.voter_email, voter.voter_name, voter.voter_surname,
-               voter.voter_fathername or '', "Ναί" if voter.vote else "Όχι"]))
+    writer.writerow(map(force_utf8, [voter.voter_email,
+                                       voter.voter_name,
+                                       voter.voter_surname,
+                                       voter.voter_fathername or '',
+                                   u"ΝΑΙ" if voter.vote else u"ΟΧΙ"]))
   return response
 
 @election_admin()
@@ -297,6 +325,9 @@ def one_election_edit(request, election):
 
   if not can_create_election(request):
     return HttpResponseForbidden('only an administrator can create an election')
+
+  if election.voting_has_stopped():
+    return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
 
   error = None
 
@@ -356,7 +387,9 @@ def one_election_view(request, election):
   election_badge_url = get_election_badge_url(election)
   status_update_message = None
 
-  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url' : reverse(one_election, args=[election.uuid])}))
+  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({
+    'token': request.session.get('csrf_token'),
+    'election_url' : reverse(one_election, args=[election.uuid])}))
 
   test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : vote_url}))
 
@@ -570,9 +603,14 @@ def get_randomness(request, election):
   """
   get some randomness to sprinkle into the sjcl entropy pool
   """
+  if not request.session.get('helios_trustee_uuid') and not \
+    request.session.get('CURRENT_VOTER'):
+      raise PermissionDenied
+
   return {
     # back to urandom, it's fine
-    "randomness" : base64.b64encode(os.urandom(32))
+    "randomness" : base64.b64encode(os.urandom(32)),
+    "token": request.session.get('csrf_token')
     #"randomness" : base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
     }
 
@@ -591,12 +629,22 @@ def encrypt_ballot(request, election):
 
 @election_view(frozen=True)
 def post_audited_ballot(request, election):
+  user = get_user(request)
+  voter = get_voter(request, user, election)
+
   if request.method == "POST":
     raw_vote = request.POST['audited_ballot']
-    encrypted_vote = electionalgs.EncryptedVote.fromJSONDict(utils.from_json(raw_vote))
-    vote_hash = encrypted_vote.get_hash()
-    audited_ballot = AuditedBallot(raw_vote = raw_vote, vote_hash = vote_hash, election = election)
-    audited_ballot.save()
+    encrypted_vote = utils.from_json(raw_vote)
+    audit_request = utils.from_json(request.session['audit_request'])
+    audit_password = request.session['audit_password']
+    if not audit_password:
+        raise Exception("Auditing with no password")
+    # fill in the answers and randomness
+    audit_request['answers'][0]['randomness'] = encrypted_vote['answers'][0]['randomness']
+    audit_request['answers'][0]['answer'] = [encrypted_vote['answers'][0]['answer'][0]]
+    encrypted_vote = electionalgs.EncryptedVote.fromJSONDict(audit_request)
+    del request.session['audit_request']
+    election.cast_vote(voter, encrypted_vote, audit_password)
     return SUCCESS
 
 @election_view(frozen=True)
@@ -606,6 +654,8 @@ def one_election_cast(request, election):
   """
   if request.method == "GET":
     return HttpResponseRedirect("%s%s" % (settings.URL_HOST, reverse(one_election_view, args = [election.uuid])))
+
+  check_csrf(request)
 
   user = get_user(request)
   voter = get_voter(request, user, election)
@@ -623,13 +673,19 @@ def one_election_cast(request, election):
         type_hint='phoebus/EncryptedVote').wrapped_obj
   audit_password = request.POST.get('audit_password', None)
   signature = election.cast_vote(voter, vote, audit_password)
-  del request.session['encrypted_vote']
+
+  if 'audit_request' in request.session:
+      del request.session['audit_request']
 
   if signature['m'].startswith("AUDIT REQUEST"):
-    return HttpResponse('{"audit": 1}', mimetype="application/json")
+    request.session['audit_request'] = encrypted_vote
+    request.session['audit_password'] = audit_password
+    token = request.session.get('csrf_token')
+    return HttpResponse('{"audit": 1, "token":"%s"}' % token,
+                        mimetype="application/json")
   else:
     # notify user
-    tasks.send_cast_vote_email(election, voter, signature)
+    tasks.send_cast_vote_email.delay(election, voter, signature)
     url = "%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_cast_done,
                                                       args=[election.uuid]))
     return HttpResponse('{"cast_url": "%s"}' % url, mimetype="application/json")
@@ -904,7 +960,10 @@ def one_election_audited_ballots(request, election):
   """
   UI to show election audited ballots
   """
-  return dummy_view(request)
+
+  user = get_user(request)
+  admin_p = security.user_can_admin_election(user, election)
+  voter = get_voter(request, user, election)
 
   if request.GET.has_key('vote_hash'):
     b = AuditedBallot.get(election, request.GET['vote_hash'])
@@ -912,7 +971,7 @@ def one_election_audited_ballots(request, election):
 
   after = request.GET.get('after', None)
   offset= int(request.GET.get('offset', 0))
-  limit = int(request.GET.get('limit', 50))
+  limit = int(request.GET.get('limit', 100))
 
   audited_ballots = AuditedBallot.get_by_election(election, after=after, limit=limit+1)
 
@@ -923,8 +982,15 @@ def one_election_audited_ballots(request, election):
   else:
     next_after = None
 
-  return render_template(request, 'election_audited_ballots', {'election': election, 'audited_ballots': audited_ballots, 'next_after': next_after,
-                'offset': offset, 'limit': limit, 'offset_plus_one': offset+1, 'offset_plus_limit': offset+limit})
+  return render_template(request, 'election_audited_ballots', {
+    'menu_active': 'audits',
+    'election': election, 'audited_ballots': audited_ballots,
+    'admin_p': admin_p,
+    'next_after': next_after,
+    'offset': offset,
+    'limit': limit,
+    'offset_plus_one': offset+1,
+    'offset_plus_limit': offset+limit})
 
 @election_admin()
 def voter_delete(request, election, voter_uuid):
@@ -1049,15 +1115,38 @@ def one_election_questions(request, election):
 
     fields = ['surname', 'name', 'father_name', 'department']
 
-    surnames = filter(bool, request.POST.getlist('candidates_lastname'))
-    names = filter(bool, request.POST.getlist('candidates_name'))
-    fathernames = filter(bool, request.POST.getlist('candidates_fathers_name'))
-    departments = filter(bool, request.POST.getlist('candidates_department'))
+    surnames = request.POST.getlist('candidates_lastname')
+    names = request.POST.getlist('candidates_name')
+    fathernames = request.POST.getlist('candidates_fathers_name')
+    departments = request.POST.getlist('candidates_department')
+
+    def filled(c):
+      return c['name'] or c['surname'] or c['father_name']
 
     candidates_data = zip(surnames, names, fathernames, departments)
-    candidates = [dict(zip(fields, d)) for d in candidates_data]
-    candidates = sorted(candidates, key=lambda c: c['surname'])
+    candidates = filter(filled, [dict(zip(fields, d)) for d in candidates_data])
 
+    error = None
+    errors = []
+    for cand in candidates:
+      for key in cand.keys():
+        if not cand[key]:
+          error = "Invalid entry"
+          errors.append(cand)
+
+    empty_inputs = range(5) if len(candidates) else range(15)
+
+    if error:
+      return render_template(request, 'election_questions', {
+        'election': election, 'questions_json' : questions_json,
+        'candidates': candidates,
+        'error': error,
+        'departments': election.departments,
+        'empty_inputs': empty_inputs,
+        'menu_active': 'candidates',
+        'admin_p': admin_p})
+
+    candidates = sorted(candidates, key=lambda c: c['surname'])
     question = {}
     question['answer_urls'] = [None for x in range(len(candidates))]
     question['choice_type'] = 'stv'
@@ -1199,7 +1288,7 @@ def trustee_upload_decryption(request, election, trustee_uuid):
   # each proof needs to be deserialized
   decryption_proofs = [[datatypes.LDObject.fromDict(proof, type_hint='legacy/EGZKProof').wrapped_obj for proof in one_q_proofs] for one_q_proofs in factors_and_proofs['decryption_proofs']]
 
-  election.add_trustee_factors(trustee, decryption_factors, decryption_proofs)
+  tasks.add_trustee_factors.delay(election.pk, trustee.pk, decryption_factors, decryption_proofs)
 
   return SUCCESS
 
@@ -1395,6 +1484,7 @@ def voters_upload(request, election):
 
         return render_template(request, 'voters_upload_confirm', {'election': election,
                                                                   'voters': voters,
+                                                                  'count': len(voters),
                                                                   'admin_p': True,
                                                                   'error': error,
                                                                   'menu_active': 'voters' })
@@ -1423,8 +1513,7 @@ def voters_email(request, election):
 
   TEMPLATES = [
     ('vote', _('Time to Vote')),
-    ('info', _('Additional Info')),
-    ('result', _('Election Result'))
+    ('info', _('Additional Info'))
   ]
 
   template = request.REQUEST.get('template', 'vote')
