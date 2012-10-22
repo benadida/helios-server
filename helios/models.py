@@ -260,6 +260,7 @@ class Election(HeliosModel):
   # no longer needed since it's all trustees
   result_proof = JSONField(null=True)
   ecounting_request_send = models.DateTimeField(auto_now_add=False, null=True, default=None)
+  ecounting_request_error = models.TextField(null=True)
 
   def get_ecounting_admin_user(self):
     try:

@@ -283,5 +283,9 @@ def election_post_ecounting(election_id, user=None):
     if ecount_response['success']:
         e.ecounting_request_send = datetime.datetime.now()
         e.save()
-
+    else:
+        json_resp = json.dumps(ecount_response)
+        election_notify_admin.delay(election_id, "Failed to post to ecounting", json_resp)
+        e.ecounting_request_error = json_resp
+        e.save()
 
