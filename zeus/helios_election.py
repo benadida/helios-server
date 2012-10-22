@@ -79,6 +79,20 @@ class HeliosElection(ZeusCoreElection):
             zeus_vote['signature'] = audited.signature
             return zeus_vote
         except helios_models.AuditedBallot.DoesNotExist:
+            pass
+        # then AuditedBallot requests
+        try:
+            audited = self.model.election.auditedballot_set.get(
+                fingerprint=fingerprint, is_request=True)
+            helios_vote = electionalgs.EncryptedVote.fromJSONDict(
+                utils.from_json(audited.raw_vote))
+            zeus_vote = self._get_zeus_vote(
+                helios_vote,
+                audit_password=audited.audit_code)
+            zeus_vote['fingerprint'] = audited.fingerprint
+            zeus_vote['signature'] = audited.signature
+            return zeus_vote
+        except helios_models.AuditedBallot.DoesNotExist:
             return None
         return None
 
@@ -137,7 +151,14 @@ class HeliosElection(ZeusCoreElection):
                 self.model.election.auditedballot_set.get(fingerprint=audited.fingerprint,
                                                         is_request=False)
             except helios_models.AuditedBallot.DoesNotExist:
-                votes.append(audited)
+                helios_vote = electionalgs.EncryptedVote.fromJSONDict(
+                    utils.from_json(audited.raw_vote))
+                zeus_vote = self._get_zeus_vote(
+                    helios_vote,
+                    audit_password=audited.audit_code)
+                zeus_vote['fingerprint'] = audited.fingerprint
+                zeus_vote['signature'] = audited.signature
+                votes[audited.fingerprint] = zeus_vote
 
         return votes
 
@@ -275,7 +296,7 @@ class HeliosElection(ZeusCoreElection):
         return self.model.election.voter_set.get(uuid=voter_uuid)
 
     def do_get_voter(self, voter_uuid):
-	v = self._get_voter_object(voter_uuid)
+        v = self._get_voter_object(voter_uuid)
         return v.voter_name + u" " + v.voter_surname
 
     def do_get_voters(self):
