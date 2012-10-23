@@ -3,6 +3,7 @@
 \usepackage{amssymb}
 \setcounter{tocdepth}{3}
 \usepackage{graphicx}
+\usepackage{amsmath}
 
 \usepackage{url}
 \urldef{\mails}\path|{gtsouk, kpap, louridas, tsanakas}@grnet.gr|
@@ -126,11 +127,136 @@ the group used in the ElGamal encryption scheme, so the encoding does
 not present a practical limit in real elections (it it did, we could
 always break the number in parts and send them separately).
 
+We encode each ballot as an integer by enumerating the set
+$\mathcal{E}$ of all possible ballots.
+Our method is, take $s$ candidates out of $N$,
+for $0\leq s \leq C$, where $C$ is the maximum choices allowed
+in the ballots \footnote{$N=C$ for the elections we hosted},
+and then take their $s!$ permutations.
+Summing it up, all the possible ballots are
+\begin{equation}
+\label{eq:max_encoded}
+|\mathcal{E}| = \sum^{s}_{k=0}\binom{N}{k}k! \quad
+\hbox{\small where} \quad 0\leq s \leq C
+\end{equation}
+In the enumeration, we first count the smaller selections
+(i.e. take \textit{zero} candidates,
+      then \textit{one}, then \textit{two}, \ldots)
+so that for small candidate selection sets the encoded
+ballot will have a small value, thus saving valuable bit-space.
+\footnote{
+For example, selecting up to all of 300 candidates needs 2048 bits,
+while selecting 10 out of 1000 candidates needs only 100 bits.}
+
 % gtsouk: describe the exact encoding / decoding algorithm for the
 % ballots. 
 
+\section{the Cryptographic Model}
+
+We have collected all cryptographic aspects of Zeus elections
+and implemented them into a generic, standalone, and extensible software module.
+\footnote{\texttt{zeus.core}}
+This module implements an abstract version of the election workflow,
+all the required cryptographic functions, and all validations of data
+and the workflow itself.
+This module is fitted into the production environment by software extensions
+(i.e. subclassing) where the web application uses it as needed.
+
+\subsection{Software Dependencies}
+Random number generation \emph{(Fortuna)},
+primality testing \emph{(Miller-Rabin)} and modulo inversion from
+\texttt{PyCrypto}. Exponentiation from \texttt{libgmp} via \texttt{gmpy}
+(really faster than Python's builtin \texttt{pow}).
+We implement all other operations in native Python and
+the Python standard library, including hashing.
+We have studied \texttt{Helios}, \texttt{PloneVoteCryptoLib},
+\texttt{PyCrypto} for our implementation.
+
+\subsection{Cryptosystem}
+Zeus uses the ElGamal cryptosystem on the prime-order-$q$ subgroup
+$\mathcal{G}$ of the quadratic residues of a safe prime $p = 2q + 1$,
+such that
+$$m \in \mathcal{G} \longleftrightarrow \mathcal{L}(m) = m^q = 1 \mod p$$
+$\mathcal{L}$ being the \emph{Legendre} symbol.
+For reference, we reproduce all the primitives we use in a table.
+All base numbers are in $\mathcal{G}$, all exponents in $\mathbb{Z}^{*}_q$,
+and all operations are $\mod p$, unless explicitly noted.
+We group $x=a, y=b, \ldots$ as $(x,y,\ldots)\equiv(a,b,\ldots)$.
+
+\begin{tabular}{rl}
+\textbf{modulus}       \, & $p \equiv 3(\mod 4)$ \hfill\textit{\small(safe prime)}\\
+\textbf{generator}     \, & $g: g^q = 1$      \\
+\textbf{order}         \, & $q = (q-1)/2$\hfill\textit{\small(ElGamal group prime order)}\\
+\textbf{secret}        \, & $x$               \\
+\textbf{public}        \, & $y = g^x$         \\
+\textbf{committment}   \, & $t$               \\
+\textbf{challenge}     \, & $c$               \\
+\textbf{response}      \, & $f$     \hfill\textit{\small(from proof)} \\
+\textbf{\parbox{7em}
+    {\setlength{\baselineskip}{.85\baselineskip}
+     \raggedleft
+     group \\
+     encoding}}        \, & $T: x \mapsto \left\{
+                            \begin{matrix}  x &,&\quad x^q=1 \\
+                                           -x &,&\quad x^q\neq 1
+                            \end{matrix}\right.\quad
+                            T^{-1}: e \mapsto \left\{
+                            \begin{matrix}  e &,&\quad e \leq q \\
+                                           -e &,&\quad e > q \\
+                            \end{matrix}\right.
+                            $ \\
+\textbf{secret nonce}  \, & $r, w$  \hfill\textit{\small(in encryptions and proofs)} \\
+\textbf{ciphertext}    \, & $(a, b)\equiv(g^r, y^r m$)
+                                    \hfill\textit{\small(encryption)} \\
+\textbf{plaintext}     \, & $m = a^{-x}b$
+                                    \hfill\textit{\small(decryption)} \\
+\textbf{reencryption}  \, & $(a',b')\equiv(g^{r'}a, y^{r'}b)$ \\
+\textbf{hashing}       \, & $\mathcal{H}(n_0n_1n_2\ldots)$
+                            \hfill\textit{\small(hash textual representation of numbers)} \\
+\textbf{discrete log}  \, & $y = g^x \Rightarrow \log_gy=x \;\leadsto\;$
+                                    \textbf{\small prove you know} $x$ \\
+                       \, & $(t, c, f) \equiv (g^w, \mathcal{H}(t), w+xc)$
+                                    \hfill\textit{\small(prove knowledge)} \\
+                       \, & $g^f \overset{?}{=} ty^c$
+                                    \hfill\textit{\small(verify knowledge)} \\
+                       \, & $g, y, u, v \;\leadsto\;$
+                                    \textbf{\small prove} $\:log_gu = log_yv = w$
+                                    i.e. $(g, y, g^w, y^w)$ \\
+                       \, & $(t_g,t_y,c,f) \equiv (g^w, y^w, \mathcal{H}(t_gt_y), w+xc)$
+                                    \hfill\textit{\small(prove equality)} \\
+                       \, & $g^f \overset{?}{=} t_gu^c \wedge
+                             y^f \overset{?}{=} t_yv^c$
+                                    \hfill\textit{\small(verify equality)} \\
+\textbf{signature}     \, & $(z, s)\equiv\big(g^{w}, w^{-1}(m-zx)\mod (p-1)\big)
+                                    \quad w = 2w'-1,\: 3\leq w'\leq q$ \\
+                       \, & $m^s \overset{?}{=} y^zz^s$
+                                    \hfill\textit{\small(verify signature)} \\
+% TODO: cite Fiat-Shamir, Schnorr, Chaum-Pedersen, HAC in this table
+\end{tabular}
+
+\subsection{Creating}
+\subsection{Voting}
+\subsection{Mixing}
+\subsection{Decrypting}
+\subsection{Validation}
+
+\section{Election User Interface}
+A significant design goal was \emph{interface},
+and \emph{workflow} simplicity,
+since voters are not required to understand cryptography
+or information flow on computer systems.
+At the same time,
+the informed voter needed access to all information and functions needed
+to both understand and verify the process.
+
+\subsection{Administrator View}
+\subsection{Voting Booth}
+\subsection{Auditing}
+
+
 \section{Ballot Submission}
 
+The submitted ballot contains
 %gtsouk: describe the conntents of the submitted ballot
 A submitted ballot is a JSON object of the form:
 \begin{verbatim}
@@ -138,7 +264,7 @@ A submitted ballot is a JSON object of the form:
   answers : [];
   election_hash : ;
   election_uuid : ;
-} 
+}
 \end{verbatim}
 
 \section{Election Verification}
@@ -152,7 +278,7 @@ The election workflow in Zeus comprises the steps:
 \begin{enumerate}
 
 \item The election authority compiles the list of candidates and the
-  voters' registry, and apponts the election committee, the poll
+  voters' registry, and appoints the election committee, the poll
   opening date and time and its closing date and time.
 
 \item The voters receive at their mailboxes a message inviting them to
