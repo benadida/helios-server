@@ -139,6 +139,7 @@ class TestHeliosElection(TestCase):
         for i in range(VOTERS_COUNT):
             voter_uuid = str(uuid.uuid4())
             voter_id = email = name = "voter%d@testvoter.com" % i
+            voter_name = "Ψηφοφόρος %d" % i
             voter = Voter(uuid= voter_uuid, user = None, voter_login_id =
                           voter_id,voter_surname=name,
                           voter_name = name, voter_email = email, election = self.election)

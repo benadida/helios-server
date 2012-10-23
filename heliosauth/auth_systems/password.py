@@ -15,6 +15,7 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_str, smart_unicode
+from helios.utils import force_utf8
 
 import logging
 
@@ -45,7 +46,7 @@ class LoginForm(forms.Form):
 
 def check_ecounting_credentials(username, password):
   url = settings.ECOUNTING_LOGIN_URL
-  username, password = map(smart_unicode, [username, password])
+  username, password = map(force_utf8, [username, password])
   params = urllib.urlencode({'username': username, 'password': password})
   response = urllib.urlopen(url, params)
   data = {}
