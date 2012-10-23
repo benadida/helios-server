@@ -16,6 +16,12 @@ from django.conf import settings
 import random, logging
 import hashlib, hmac, base64
 
+def force_utf8(s):
+  if isinstance(s, unicode):
+    return s.encode('utf8')
+  else:
+    return s
+
 def do_hmac(k,s):
   """
   HMAC a value with a key, hex output

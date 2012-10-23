@@ -24,6 +24,7 @@ from heliosauth.security import get_user, save_in_session_across_logouts
 from helios.crypto import algs, electionalgs, elgamal
 from helios.crypto import utils as cryptoutils
 from helios import security
+from helios.utils import force_utf8
 from heliosauth import views as auth_views
 from helios import utils as helios_utils
 from helios.workflows import homomorphic
@@ -59,12 +60,6 @@ ELGAMAL_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(ELGAMAL_PARAMS, dataty
 
 # single election server? Load the single electionfrom models import Election
 from django.conf import settings
-
-def force_utf8(s):
-  if isinstance(s, unicode):
-    return s.encode('utf8')
-  else:
-    return s
 
 def dummy_view(request):
   return HttpResponseRedirect("/")
