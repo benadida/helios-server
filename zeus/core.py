@@ -1700,7 +1700,7 @@ def verify_reencryption(modulus, generator, order, public,
     return verify_ddh_tuple(*args)
 
 def sign_element(element, modulus, generator, order, key):
-    """Produce ElGamal signature"""
+    """Compute ElGamal signature"""
     while 1:
         w = 2 * get_random_int(3, order) - 1
         r = pow(generator, w, modulus)
