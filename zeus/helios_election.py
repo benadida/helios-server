@@ -442,9 +442,12 @@ class HeliosElection(ZeusCoreElection):
 
         return mixnet[0].zeus_mix()
 
+    def do_store_mix(self, mix):
+      pass
+
     def do_get_all_mixes(self):
         mixes = [self.extract_votes_for_mixing()]
-        for mixnet in self.model.election.mixnets.filter():
+        for mixnet in self.model.election.mixnets.filter().order_by('mix_order'):
           mixes.append(mixnet.mix)
           if mixnet.second_mix:
             mixes.append(mixnet.second_mix)

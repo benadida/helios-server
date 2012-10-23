@@ -15,7 +15,8 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_str, smart_unicode
-from helios.utils import force_utf8
+
+from heliosauth.utils import force_utf8
 
 import logging
 

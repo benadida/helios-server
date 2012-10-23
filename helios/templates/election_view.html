@@ -89,10 +89,24 @@ release results
 {% endif %}
 {% else %}
 {% if election.encrypted_tally %}
-<a class="button success" href="{% url helios.views.list_trustees_view election.uuid %}">
-  Τα μέλη της εφορευτικής επιτροπής πρέπει να αποκρυπτογραφήσουν τα τελικά ψηφοδέλτια</a>
+Έχει σταλεί ειδοποίηση στα μέλη της εφορευτικής επιτροπής
+ώστε να υπολογίσουν και να αποστείλουν την μερική κρυπτογράφηση τους.
+<br /<br />
+Όταν το σύστημα "Ζευς" παραλάβει και την τελευταία μερική αποκρυπτογράφηση 
+θα προχωρήσει αυτόματα στην διαδικασία αποκρυπτογράφησης.
+{% else %}
+{% if election.mixing_finished %}
+{% if election.mix_key %}
+{% if not election.remote_mixnets_finished_at %}
+{% include "_remote_mixing_details.html" %}
 {% else %}
 Παρακαλούμε περιμένετε για την επαλήθευση της διαδικασίας της μείξης.
+{% endif %}
+{% else %}
+Παρακαλούμε περιμένετε για την επαλήθευση της διαδικασίας της μείξης.
+{% endif %}
+{% else %}
+{% endif %}
 {% endif %}
 {% endif %}
 
@@ -127,8 +141,10 @@ release results
 
 {% if election.voting_has_stopped %}
 <span class="highlight-box round">
+{% if not admin_p %}
 Η ψηφοφορία έχει λήξει οριστικά.
 </span><br />
+{% endif %}
 {% else %}
 
 {% if election.voting_has_started and not admin_p %}

@@ -262,7 +262,7 @@ def election_new(request):
   return render_template(request, "election_new", {'election_form': election_form, 'election': None, 'error': error})
 
 
-@election_admin()
+@election_admin(frozen=True)
 def election_zeus_proofs(request, election):
   if not election.result:
     raise PermissionDenied()
@@ -275,6 +275,38 @@ def election_zeus_proofs(request, election):
   zip_data.close()
   response['Content-Dispotition'] = 'attachment; filename=%s_proofs.zip' % election.uuid
   return response
+
+@election_admin(frozen=True)
+def election_stop_mixing(request, election):
+  if not election.remote_mixnets_finished_at:
+    election.remote_mixnets_finished_at = datetime.datetime.now()
+    election.save()
+    tasks.validate_mixing.delay(election.pk)
+  return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+
+def election_remote_mix(request, election_uuid, mix_key):
+  pass
+
+def election_remote_mix(request, election_uuid, mix_key):
+  election = Election.objects.get(uuid=election_uuid)
+
+  if not election.zeus_stage == 'MIXING':
+      raise PermissionDenied
+
+  if not mix_key or not election.mix_key or not mix_key == election.mix_key:
+      raise PermissionDenied
+
+  resp = {}
+  if request.method == "GET":
+      return HttpResponse(jsonlib.dumps(election.zeus_election.get_last_mix()))
+
+  mix_id = request.POST.get('mix_id', "remote mix")
+  mix = jsonlib.loads(request.POST.get('mix'))
+
+  election.add_remote_mix(mix, mix_id)
+  return HttpResponse(jsonlib.dumps({'status':'success'}),
+                          content_type="application/json")
+
 
 @election_admin()
 def voters_csv(request, election):
@@ -337,6 +369,7 @@ def one_election_edit(request, election):
       'trustees': election.trustees_string,
       'eligibles_count': election.eligibles_count,
       'has_department_limit': election.has_department_limit,
+      'remote_mix': bool(election.mix_key) or False,
       'description': election.description})
   else:
     election_form = ElectionForm(election, institution, request.POST)

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-19 10:36+0300\n"
+"POT-Creation-Date: 2012-10-23 22:35+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -133,23 +133,31 @@ msgstr ""
 "οι ψηφοφόροι θα μπορούν να επικοινωνούν σε αυτά τα τηλέφωνα για υποστήριξη "
 "σε θέματα της ψηφοφορίας"
 
-#: forms.py:149
+#: forms.py:121
+msgid "Remote mix"
+msgstr "Ενεργοποίηση πολλαπλών σταδίων μίξης"
+
+#: forms.py:122
+msgid "Whether or not to allow remote mixing."
+msgstr "Επιλέξτε αν θέλετε να παρέχετε εξωτερικά στάδια μίξης μετά την ψηφοφορία -- αφήστε κενό εάν δεν είστε σίγουρος"
+
+#: forms.py:158
 msgid "Another election with the same name exists"
 msgstr ""
 
-#: forms.py:158
+#: forms.py:167
 msgid "Invalid voting dates"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:161
+#: forms.py:170
 msgid "Invalid voting extension date"
 msgstr "Λάθος ημερομηνία και ώρα λήξης της ψηφοφορίας"
 
-#: forms.py:172 forms.py:177
+#: forms.py:181 forms.py:186
 msgid "Invalid trustess"
 msgstr "Οι Κωδικοί Ψηφοφορίας είναι άκυροι"
 
-#: forms.py:206
+#: forms.py:220
 msgid ""
 "Election candidates changed due to election institution department changes"
 msgstr "Κάποιοι υποψήφιοι αφαιρέθηκαν λόγω αλλαγών στις Σχολές"

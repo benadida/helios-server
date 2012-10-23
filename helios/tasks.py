@@ -86,13 +86,23 @@ def single_voter_email(voter_uuid, subject_template, body_template,
 @task()
 def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
     voter = Voter.objects.get(uuid = voter_uuid)
-
     the_vars = copy.copy(extra_vars)
     the_vars.update({'voter' : voter})
-
     notification = render_template_raw(None, notification_template, the_vars)
-
     voter.user.send_notification(notification)
+
+@task()
+def validate_mixing(election_id):
+  election = Election.objects.get(id=election_id)
+  election.zeus_election.validate_mixing()
+  election_notify_admin.delay(election_id=election_id,
+                                    subject="Mixing validated",
+                                    body="Mixing validated")
+  election.mixing_validated_at = datetime.datetime.now()
+  election.save()
+  election.store_encrypted_tally()
+  tally_helios_decrypt.delay(election_id=election.id)
+
 
 @task()
 def election_compute_tally(election_id):
@@ -103,6 +113,7 @@ def election_compute_tally(election_id):
         election.tallying_started_at = None
         election.save()
         return
+
     election_notify_admin.delay(election_id=election_id, subject="Voting validated", body="")
     election.compute_tally()
     election_notify_admin.delay(election_id=election_id, subject="Mixing finished", body="")
@@ -124,16 +135,16 @@ error: %s
         election.save()
         return
 
-    if election.mixing_finished and election.has_helios_trustee():
+    if election.mixing_finished:
         election_notify_admin.delay(election_id = election_id,
-                                subject = "encrypted tally computed",
+                                subject = "local mixing finished",
                                 body = """
 The encrypted tally for election %s has been computed.
 
 --
 Zeus
 """ % election.name)
-        tally_helios_decrypt.delay(election_id=election.id)
+
     else:
         election_compute_tally.delay(election_id=election_id)
 
@@ -193,7 +204,6 @@ def tally_helios_decrypt(election_id):
     if not election.mixing_finished:
       raise Exception("Mixing not finished cannot decrypt")
 
-    #election.zeus_election.validate_mixing()
     election.helios_trustee_decrypt()
 
     for t in election.trustee_set.filter(secret_key__isnull=True):

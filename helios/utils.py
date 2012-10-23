@@ -9,7 +9,7 @@ import urllib, re, sys, datetime, urlparse, string
 import threading
 
 # utils from auth, too
-from heliosauth.utils import *
+from heliosauth.utils import from_json, to_json, JSONtoDict, JSONFiletoDict
 
 from django.conf import settings
 

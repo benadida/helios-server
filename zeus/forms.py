@@ -118,6 +118,13 @@ class ElectionForm(forms.Form):
   help_email = forms.EmailField(label=_('Help email'), help_text=_('Voters can contact this email for election suport'))
   help_phone = forms.CharField(label=_('Help phone'), help_text=_('Voters can contact this phone for election suport'))
 
+  remote_mix = forms.BooleanField(label=_('Remote mix'),
+                                  help_text=_('Whether or not to'
+                                              ' allow remote'
+                                              ' mixing.'),
+                                 initial=False,
+                                 required=False)
+
 
   def __init__(self, election=None, institution=None, *args, **kwargs):
     self.election = election
@@ -230,6 +237,12 @@ class ElectionForm(forms.Form):
 
     if 'voting_extended_until' in data:
       e.voting_extended_until = data['voting_extended_until']
+
+    if is_new or not e.voting_has_stopped():
+      if data['remote_mix']:
+        e.generate_mix_key()
+      else:
+        e.mix_key = ''
 
     e.eligibles_count = data['eligibles_count']
     e.has_department_limit = data['has_department_limit']

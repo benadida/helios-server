@@ -50,10 +50,12 @@ class HeliosModel(models.Model, datatypes.LDObjectContainer):
 class ElectionMixnet(HeliosModel):
 
   MIXNET_REMOTE_TYPE_CHOICES = (('helios', 'Helios'),
-                                ('verificatum', 'Verificatum'))
+                                ('verificatum', 'Verificatum'),
+                                ('zeus_client', 'Zeus server'))
   MIXNET_TYPE_CHOICES = (('local', 'Local'), ('remote', 'Remote'))
   MIXNET_STATUS_CHOICES = (('pending', 'Pending'), ('mixing', 'Mixing'),
-                           ('error', 'Error'), ('finished', 'Finished'))
+                           ('validating', 'Validating'), ('error', 'Error'),
+                           ('finished', 'Finished'))
 
   name = models.CharField(max_length=255, null=False, default='Helios mixnet')
   mixnet_type = models.CharField(max_length=255, choices=MIXNET_TYPE_CHOICES,
@@ -63,8 +65,7 @@ class ElectionMixnet(HeliosModel):
 
   remote_ip = models.CharField(max_length=255, null=True, blank=True)
   remote_protocol = models.CharField(max_length=255, choices=MIXNET_REMOTE_TYPE_CHOICES,
-      default='helios')
-
+      default='zeus_client')
   mixing_started_at = models.DateTimeField(null=True)
   mixing_finished_at = models.DateTimeField(null=True)
   status = models.CharField(max_length=255, choices=MIXNET_STATUS_CHOICES, default='pending')
@@ -103,7 +104,7 @@ class ElectionMixnet(HeliosModel):
     if self.mix_order == 0:
       return self.election.zeus_election.extract_votes_for_mixing()
     else:
-      prev_mixnet = Mixnet.objects.get(election=election, mix_order=self.mix_order-1)
+      prev_mixnet = Mixnet.objects.get(election=election, mix_order__lt=self.mix_order)
       return prev_mixnet.mixed_answers.get().zeus_mix()
 
   @transaction.commit_on_success
@@ -157,6 +158,9 @@ class Election(HeliosModel):
   cancel_msg = models.TextField(default="")
   uuid = models.CharField(max_length=50, null=False)
   zeus_fingerprint = models.TextField(null=True, default=None)
+  mix_key = models.CharField(max_length=50)
+  remote_mixnets_finished_at = models.DateTimeField(null=True, default=None)
+  mixing_finished_at = models.DateTimeField(null=True, default=None)
 
   # keep track of the type and version of election, which will help dispatch to the right
   # code, both for crypto and serialization
@@ -321,6 +325,14 @@ class Election(HeliosModel):
     helios_trustee = self.get_helios_trustee()
     trustees = [(t.name, t.email) for t in self.trustee_set.all() if t != helios_trustee]
     return "\n".join(["%s,%s" % (t[0], t[1]) for t in trustees])
+
+  def generate_mix_key(self):
+    if self.mix_key:
+      return self.mix_key
+    else:
+      self.mix_key = heliosutils.random_string(20)
+
+    return self.mix_key
 
   def update_answers(self):
     cands = sorted(self.candidates, key=lambda c: c['surname'])
@@ -592,6 +604,19 @@ class Election(HeliosModel):
   def ready_for_tallying(self):
     return datetime.datetime.utcnow() >= self.tallying_starts_at
 
+  def add_remote_mix(self, mix, mix_name="Remote mix"):
+    self.zeus_election.add_mix(mix)
+    mixnet = self.mixnets.create(name=mix_name,
+                                    mix_order=self.mixes_count(),
+                                    mixnet_type='zeus',
+                                    mixing_started_at=datetime.datetime.now(),
+                                    mixing_finished_at=datetime.datetime.now(),
+                                    status="finished",
+                                    mix=mix)
+    mixnet.status = "finished"
+    if not Election.objects.get(pk=self.pk).remote_mixnets_finished_at:
+      mixnet.save()
+
   def mix_next_mixnet(self):
     if self.is_mixing:
       raise Exception("Another mixing in process")
@@ -602,17 +627,23 @@ class Election(HeliosModel):
     next_mixnet = self.mixnets.filter(status="pending")[0]
     next_mixnet.mix_ciphers()
 
+  @property
+  def remote_mixes(self):
+    return self.mixnets.filter(mixnet_type='zeus')
+
   def compute_tally(self):
     """
     tally the election, assuming votes already verified
     """
     self.mix_next_mixnet()
-    if self.mixing_finished and not self.encrypted_tally:
-      self.zeus_election.validate_mixing()
-      from helios import tasks
-      tasks.election_notify_admin.delay(election_id=self.pk, subject="Mixing validated", body="")
-      self.store_encrypted_tally()
+
+    if self.mixing_finished and not self.mixing_finished_at:
+      self.mixing_finished_at = datetime.datetime.now()
       self.save()
+
+    if self.mixing_finished and not self.encrypted_tally and not self.mix_key:
+      from helios import tasks
+      tasks.validate_mixing.delay(self.pk)
 
   def store_encrypted_tally(self):
     ciphers = self.zeus_election.get_mixed_ballots()
@@ -731,6 +762,11 @@ class Election(HeliosModel):
   def is_mixing(self):
       return bool(self.mixnets.filter(status="mixing").count())
 
+  def get_mix_url(self):
+    if not self.mix_key:
+      return ''
+    return settings.URL_HOST + "/helios/elections/%s/mix/%s" % (self.uuid, self.mix_key)
+
   def generate_helios_mixnet(self, params={}):
     if self.tallied:
       raise Exception("Election tallied, cannot add additional mixnet")
@@ -738,11 +774,18 @@ class Election(HeliosModel):
     if self.is_mixing:
       raise Exception("Mixing already started, cannot add additional mixnet")
 
+    mixnets_count = self.mixes_count()
     params.update({'election': self})
-    mixnets_count = self.mixnets.count()
     params.update({'mix_order':mixnets_count})
     mixnet = ElectionMixnet(**params)
     mixnet.save()
+
+  def mixes_count(self):
+    mixnets_count = self.mixnets.filter(mix__isnull=False,
+                                       second_mix__isnull=False).count() * 2
+    mixnets_count += self.mixnets.filter(mix__isnull=False,
+                                       second_mix__isnull=True).count()
+    return mixnets_count
 
   @property
   def zeus_stage(self):
@@ -753,6 +796,9 @@ class Election(HeliosModel):
       return 'VOTING'
 
     if not self.mixing_finished:
+      return 'MIXING'
+
+    if self.mix_key and not self.remote_mixnets_finished_at:
       return 'MIXING'
 
     if not self.result:
@@ -1028,9 +1074,9 @@ class Election(HeliosModel):
     self.zeus_fingerprint = export_data[0]['election_fingerprint']
     self.save()
 
-    zeus_data = json_module.dumps(export_data)
+    zeus_data = json_module.dumps(export_data[0])
     zf = zipfile.ZipFile(zip_path, mode='w')
-    data_info = zipfile.ZipInfo('%s_proofs.txt' % self.zeus_fingerprint)
+    data_info = zipfile.ZipInfo('%s_proofs.txt' % self.short_name)
     data_info.compress_type = zipfile.ZIP_DEFLATED
     data_info.comment = "Election %s (%s) zeus proofs" % (self.zeus_fingerprint,
                                                           self.uuid)

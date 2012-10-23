@@ -61,6 +61,8 @@ urlpatterns = patterns('',
 
     # computing tally
     (r'^/compute_tally$', one_election_compute_tally),
+    (r'^/mix/(?P<mix_key>.*)$', election_remote_mix),
+    (r'^/stop-mixing$', election_stop_mixing),
     (r'^/combine_decryptions$', combine_decryptions),
 
     # casting a ballot before we know who the voter is
