@@ -297,7 +297,8 @@ class HeliosElection(ZeusCoreElection):
 
     def do_get_voter(self, voter_uuid):
         v = self._get_voter_object(voter_uuid)
-        return v.voter_name + u" " + v.voter_surname
+        return u"%s %s %s <%s" % (v.voter_name, v.voter_surname, v.voter_fathername or '',
+                                  v.voter_email)
 
     def do_get_voters(self):
         voters = {}
