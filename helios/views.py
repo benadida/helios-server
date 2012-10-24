@@ -1451,6 +1451,7 @@ def voters_eligibility(request, election):
   """
   set eligibility for voters
   """
+  return dummy_view(request)
   user = get_user(request)
 
   if request.method == "GET":
@@ -1495,7 +1496,13 @@ def voters_upload(request, election):
   #if election.frozen_at and not election.openreg:
   #  raise PermissionDenied()
 
+  if election.voting_has_stopped():
+      raise PermissionDenied
+
   if request.method == "GET":
+    if 'voter_file_id' in request.session:
+        del request.session['voter_file_id']
+
     return render_template(request, 'voters_upload', {'menu_active': 'voters',
                                                       'admin_p': True,
                                                       'election': election,
@@ -1684,6 +1691,7 @@ def one_voter(request, election, voter_uuid):
   """
   View a single voter's info as JSON.
   """
+  return dummy_view(request)
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
   if not voter:
     raise Http404
