@@ -216,9 +216,9 @@ class ElectionForm(forms.Form):
           if cand['department'] in e.departments:
             new_cands.append(cand)
 
-        if len(new_cands) != len(e.candidates):
-          messages.warning(_("Election candidates changed due to election"
-                             " institution department changes"))
+        #if len(new_cands) != len(e.candidates):
+          #messages.warning(_("Election candidates changed due to election"
+                             #" institution department changes"))
         e.candidates = new_cands
 
 
