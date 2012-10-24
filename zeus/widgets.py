@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import datetime
+
 from time import strptime, strftime
 from django import forms
 from django.db import models
@@ -7,6 +9,7 @@ from django import forms
 from django.db import models
 from django.template.loader import render_to_string
 from django.forms.widgets import Select, MultiWidget, DateInput, TextInput
+
 from time import strftime
 
 
@@ -77,7 +80,8 @@ class JqSplitDateTimeField(fields.MultiValueField):
                 raise forms.ValidationError("Field is missing data.")
             input_time = strptime("%s:00"%(data_list[1]), "%H:%M")
             datetime_string = "%s %s" % (data_list[0], strftime('%H:%M', input_time))
-            return datetime_string
+            return datetime.datetime(*strptime(datetime_string,
+                                               "%Y-%m-%d %H:00")[0:6])
         return None
 
 

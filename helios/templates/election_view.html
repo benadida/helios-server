@@ -55,6 +55,9 @@ if (!navigator.javaEnabled()) {
   </li>
   {% endfor %}
 </ul>
+{% if not election.voting_has_started %}
+    <a class="button alert" href="{% url helios.views.one_election_cancel election.uuid %}">Ακύρωση ψηφοφορίας</a><br />
+{% endif %}
 {% else %}
 <a class="button medium success" href="{% url helios.views.one_election_freeze election.uuid %}">
 Οριστικοποίηση ψηφοφορίας</a>
@@ -68,22 +71,36 @@ if (!navigator.javaEnabled()) {
 Η διαδικασία μείξης έχει ξεκινήσει. Παρακαλούμε ανανεώστε τη σελίδα
 ανά τακτά χρονικά διαστήματα μέχρι να ολοκληρωθεί η διαδικασία.
 {% else %}
+<div class="row">
 {% if election.num_cast_votes %}
-<a class="button success" href="{% url helios.views.one_election_compute_tally election.uuid %}">Λήξη της ψηφοφορίας</a><br />
+{% if election.voting_can_stop %}
+<div class="column four">
+    <a class="button success" href="{% url helios.views.one_election_compute_tally election.uuid %}">Λήξη της ψηφοφορίας</a><br />
+</div>
 {% else %}
-<a class="button success disabled secondary">Λήξη της ψηφοφορίας</a><br />
+<div class="column four">
+    <a class="button disabled secondary" href="#">Λήξη της ψηφοφορίας</a><br />
+</div>
 {% endif %}
+<div class="column four">
+    <a class="button alert" href="{% url helios.views.one_election_cancel election.uuid %}">Ακύρωση ψηφοφορίας</a><br />
+</div>
+{% else %}
+<div class="column four">
+  <a class="button success disabled secondary">Λήξη της ψηφοφορίας</a><br />
+</div>
+{% endif %}
+</div>
 {% endif %}
 {% else %}
 
 {% if election.ready_for_decryption_combination %}
 {% if election.num_trustees == 1 %}
-release results
 {% else %}
 Αποκρυπτογράφηση τελικών ψηφοδελτίων......
 {% endif %}
 <br />
-{% if election.num_trustees == 1 %}
+{% if election.num_trustees == 1 and not election.result %}
 Τα τελικά ψηφοδέλτια έχουν αποκρυπτογραφηθεί.
 {% else %}
 {% endif %}

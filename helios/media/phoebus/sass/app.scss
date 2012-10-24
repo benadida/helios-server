@@ -22,7 +22,9 @@ body {
     .required-to-cast { float: left; }
     .submit { display: none; }
   }
-
+  
+  .field-readonly { background-color: #ddd;}
+  .field-readonly:focus { background-color: #ddd;}
   .clearfix { 
     @include clearfix();
   }

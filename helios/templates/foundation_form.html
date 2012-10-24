@@ -23,7 +23,7 @@
     {{ field.help_text|safe }}
   </div>
   {% endif %}
-  {{ field }}           
+  {{ field }}   
   {% for error in field.errors %}
   <div class="alert label small">{{ error }}</div>
   {% endfor %}

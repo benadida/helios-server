@@ -219,6 +219,11 @@ for election %s.
 Zeus
 """ % election.name)
 
+    # no remote trustees
+    if election.trustee_set.count() == 1 and election.has_helios_trustee():
+        tally_decrypt.delay(election.pk)
+
+
 @task()
 def voter_file_process(voter_file_id):
     voter_file = VoterFile.objects.get(id = voter_file_id)

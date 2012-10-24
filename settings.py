@@ -220,6 +220,8 @@ HELIOS_VOTER_EMAIL_RATE = '30/m'
 
 ZEUS_PROOFS_PATH = os.path.join('/', 'usr', 'share', 'zeus_proofs')
 
+ZEUS_ELECTION_FORCE_VOTING_END = True
+
 # useful trick for custom settings
 try:
     from local_settings import *

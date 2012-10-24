@@ -16,7 +16,7 @@
 <div class="extra-election-actions">
   {% block extra_title %}
   {% if admin_p %}
-  {% if not election.voting_has_stopped %}
+  {% if not election.voting_ended_at %}
   <a class="button small" href="{% url helios.views.one_election_edit election.uuid %}">Επεξεργασία</a>
   {% endif %}
 <a class="button small" href="{% url helios.views.one_election_view election.uuid %}">

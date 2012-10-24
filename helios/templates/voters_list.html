@@ -122,17 +122,19 @@
     </td>
     {% endif %}
 {% if admin_p %}
-      {% if election.frozen_at %}
       <td>
         <div href="#" class="tiny button dropdown">
           Ενέργειες&nbsp;
           <ul>
+      {% if election.frozen_at %}
             <li>
 <a class="foundicon-mail" href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}"> &nbsp;Αποστολή email</a>
-            </li>
+</li>
+{% endif %}
     {% if not voter.vote %}
             <li>
-<a class="alert foundicon-remove" onclick="return confirm('επιβεβαιώστε τη διαγραφή ψηφοφόρου: {{voter.name}} ?');" 
+            <a class="alert foundicon-remove" 
+                onclick="return confirm('Eπιβεβαιώστε τη διαγραφή ψηφοφόρου: {{ voter.voter_name}} {{ voter.voter_surname }} {{ voter.voter_fathername }} ({{voter.voter_email}}) ?');" 
   href="{% url helios.views.voter_delete election.uuid, voter.uuid %}"> &nbsp;Διαγραφή
   </a>
             </li>
@@ -140,7 +142,6 @@
           </ul>
         </div>
 </td>
-{% endif %}
   {% endif %}
   </tr>
   {% endfor %}

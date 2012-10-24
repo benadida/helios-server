@@ -101,6 +101,7 @@ class ElectionForm(forms.Form):
                                           help_text = _('Voting extension date'))
 
   trustees = forms.CharField(label=_('Trustees'), widget=forms.Textarea,
+                             required=True,
         help_text=_('Trustees list. e.g. <br/><br/> Giannhs Gianopoulos, '
                     'giannhs@email.com<br /> Kwstas Kwstopoulos, kwstas@email.com<br />'))
   departments = forms.CharField(label=_('Schools and Departments'),
@@ -134,12 +135,15 @@ class ElectionForm(forms.Form):
     self.fields['institution'].widget.attrs['readonly'] = True
     self.fields['institution'].initial = institution.name
 
+    if self.election and self.election.pk and self.election.trustee_set.count() == 1:
+      self.fields['trustees'].required = False
+
     if self.election and self.election.frozen_at:
       self.fields['voting_starts_at'].widget.attrs['readonly'] = True
       self.fields['voting_ends_at'].widget.attrs['readonly'] = True
       self.fields['name'].widget.attrs['readonly'] = True
-      del self.fields['trustees']
-      del self.fields['departments']
+      self.fields['trustees'].widget.attrs['readonly'] = True
+      self.fields['departments'].widget.attrs['readonly'] = True
     else:
       del self.fields['voting_extended_until']
 
@@ -159,6 +163,7 @@ class ElectionForm(forms.Form):
 
       dfrom = cleaned_data['voting_starts_at']
       dto = cleaned_data['voting_ends_at']
+
       dextend = None
       if 'voting_extended_until' in cleaned_data:
           dextend = cleaned_data['voting_extended_until']

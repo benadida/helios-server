@@ -29,8 +29,9 @@
 </div>
 
 <script>
-    $(function() {
-   $(".datepicker").datepicker({ dateFormat: 'yy-mm-dd' });
+$(function() {
+  $(".datepicker[readonly!=readonly]").datepicker({ dateFormat: 'yy-mm-dd' });
+  $("[readonly]").addClass("field-readonly");
 });
 </script>
   </form>

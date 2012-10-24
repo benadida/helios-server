@@ -284,8 +284,6 @@ def election_stop_mixing(request, election):
     tasks.validate_mixing.delay(election.pk)
   return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
 
-def election_remote_mix(request, election_uuid, mix_key):
-  pass
 
 def election_remote_mix(request, election_uuid, mix_key):
   election = Election.objects.get(uuid=election_uuid)
@@ -306,6 +304,28 @@ def election_remote_mix(request, election_uuid, mix_key):
   election.add_remote_mix(mix, mix_id)
   return HttpResponse(jsonlib.dumps({'status':'success'}),
                           content_type="application/json")
+
+
+@election_admin()
+def one_election_cancel(request, election):
+
+  if election.canceled_at or election.tallied or election.voting_has_stopped():
+    print election.canceled_at
+    raise PermissionDenied
+
+  if request.method == "GET":
+    return render_template(request, 'election_cancel', {'election': election})
+
+  check_csrf(request)
+
+  cancel_msg = request.POST.get('cancel_msg', '')
+  cancel_date = datetime.datetime.now()
+
+  election.canceled_at = cancel_date
+  election.cancel_msg = cancel_msg
+
+  election.save()
+  return HttpResponseRedirect('/admin/')
 
 
 @election_admin()
@@ -353,7 +373,7 @@ def one_election_edit(request, election):
   if not can_create_election(request):
     return HttpResponseForbidden('only an administrator can create an election')
 
-  if election.voting_has_stopped():
+  if election.voting_ended_at:
     return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
 
   error = None
@@ -363,6 +383,7 @@ def one_election_edit(request, election):
       'name': election.name,
       'voting_starts_at': election.voting_starts_at,
       'voting_ends_at': election.voting_ends_at,
+      'voting_extended_until': election.voting_extended_until,
       'help_phone': election.help_phone,
       'help_email': election.help_email,
       'departments': election.departments_string,
@@ -689,7 +710,7 @@ def one_election_cast(request, election):
   voter = get_voter(request, user, election)
 
   if (not election.voting_has_started()) or election.voting_has_stopped():
-    return HttpResponseRedirect(settings.URL_HOST)
+    raise PermissionDenied
 
   # if user is not logged in
   # bring back to the confirmation page to let him know
@@ -1273,6 +1294,9 @@ def one_election_compute_tally(request, election):
   """
   tallying is done all at a time now
   """
+  if not election.voting_can_stop():
+      raise PermissionDenied
+
   if not _check_election_tally_type(election):
     return HttpResponseRedirect(reverse(one_election_view,args=[election.election_id]))
 
@@ -1480,9 +1504,16 @@ def voters_upload(request, election):
   if request.method == "POST":
     if bool(request.POST.get('confirm_p', 0)):
       # launch the background task to parse that file
-      voter_file = VoterFile.objects.get(id = request.session['voter_file_id'])
-      voter_file.process()
-      del request.session['voter_file_id']
+      try:
+          voter_file = VoterFile.objects.get(id = request.session['voter_file_id'])
+          voter_file.process()
+      except VoterFile.DoesNotExist:
+          pass
+      except KeyError:
+          pass
+
+      if 'voter_file_id' in request.session:
+          del request.session['voter_file_id']
 
       if not election.questions or not len(election.questions):
         return HttpResponseRedirect(reverse(one_election_questions,
@@ -1496,7 +1527,6 @@ def voters_upload(request, election):
         voters_file = request.FILES['voters_file']
         voter_file_obj = election.add_voters_file(voters_file)
 
-        request.session['voter_file_id'] = voter_file_obj.id
 
         # import the first few lines to check
         voters = []
@@ -1509,6 +1539,9 @@ def voters_upload(request, election):
             error = str(e)
         except Exception, e:
           error = str(e)
+
+        if not error:
+            request.session['voter_file_id'] = voter_file_obj.id
 
         return render_template(request, 'voters_upload_confirm', {'election': election,
                                                                   'voters': voters,

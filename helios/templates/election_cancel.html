@@ -1,0 +1,28 @@
+{% extends "election_page.html" %}
+
+{% block tabs_menu %}
+<dd class="active"><a 
+  href="{% url helios.views.one_election_view election.uuid %}">Ακύρωση της ψηφοφορίας</a></dd>
+{% endblock %}
+
+{% block content %}
+
+<div id="instructions">
+<p>
+Είστε σίγουρος οτι θέλετε να ακυρώσετε οριστικά την ψηφοφορία <b>{{election.name}}</b>;
+</p>
+
+<form method="post" action="" class="pretty">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+<br />
+<label>Μήνυμα ακύρωσης</label>
+<br />
+<textarea name="cancel_msg"></textarea>
+<input class="button success pretty small" type="submit" value="Επιβεβαίωση ακύρωσης" />
+<button class="button alert small" onclick="document.location='./view'; return false;">Ματαίωση ακύρωσης</button>
+</form>
+</div>
+
+<br /><br />
+{% endblock %}
+

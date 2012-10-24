@@ -533,6 +533,15 @@ class Election(HeliosModel):
 
       return return_val
 
+  def voting_can_stop(self):
+    if settings.ZEUS_ELECTION_FORCE_VOTING_END:
+      return self.get_voting_end_date() <= datetime.datetime.now()
+    else:
+      return True
+
+  def get_voting_end_date(self):
+      return self.voting_ends_at
+
   def voting_has_started(self):
     """
     has voting begun? voting begins if the election is frozen, at the prescribed date or at the date that voting was forced to start

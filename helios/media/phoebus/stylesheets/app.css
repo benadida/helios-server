@@ -5072,6 +5072,14 @@ body #cast_form .submit {
   display: none;
 }
 /* line 26, ../sass/app.scss */
+body .field-readonly {
+  background-color: #ddd;
+}
+/* line 27, ../sass/app.scss */
+body .field-readonly:focus {
+  background-color: #ddd;
+}
+/* line 28, ../sass/app.scss */
 body .clearfix {
   *zoom: 1;
 }
@@ -5084,76 +5092,76 @@ body .clearfix:before, body .clearfix:after {
 body .clearfix:after {
   clear: both;
 }
-/* line 30, ../sass/app.scss */
+/* line 32, ../sass/app.scss */
 body .header {
   padding: 0;
 }
-/* line 31, ../sass/app.scss */
+/* line 33, ../sass/app.scss */
 body .header h4, body .header h1 {
   font-family: 'Didact Gothic', Helvetica, Arial, sans-serif !important;
   display: none;
 }
-/* line 33, ../sass/app.scss */
+/* line 35, ../sass/app.scss */
 body .header h4 span, body .header h1 span {
   font-family: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif !important;
 }
-/* line 36, ../sass/app.scss */
+/* line 38, ../sass/app.scss */
 body .header h4 {
   font-size: 26px;
   display: block;
   padding: 0 15px;
 }
-/* line 40, ../sass/app.scss */
+/* line 42, ../sass/app.scss */
 body .loginbox {
   padding: 0;
   margin-bottom: 20px;
   margin-top: -2px;
 }
-/* line 40, ../sass/app.scss */
+/* line 42, ../sass/app.scss */
 body .loginbox .panel {
   margin: 0;
   background-color: #FFC36D;
   border: none;
 }
-/* line 41, ../sass/app.scss */
+/* line 43, ../sass/app.scss */
 body .loginbox .panel a {
   color: #fff;
   font-weight: bold;
 }
-/* line 42, ../sass/app.scss */
+/* line 44, ../sass/app.scss */
 body #header {
   margin-bottom: 30px;
 }
-/* line 47, ../sass/app.scss */
+/* line 49, ../sass/app.scss */
 body #footer {
   padding: 10px 0;
   border-top: 1px solid #dddddd;
   margin-top: 20px;
   border-bottom: 1px solid #dddddd;
 }
-/* line 53, ../sass/app.scss */
+/* line 55, ../sass/app.scss */
 body #footer .footer-icons {
   float: right;
 }
-/* line 56, ../sass/app.scss */
+/* line 58, ../sass/app.scss */
 body .start-voting {
   float: left;
   margin-top: 20px;
 }
-/* line 62, ../sass/app.scss */
+/* line 64, ../sass/app.scss */
 body ol li.step {
   margin-bottom: 10px;
 }
-/* line 63, ../sass/app.scss */
+/* line 65, ../sass/app.scss */
 body ol li.step .step-title {
   font-weight: bold;
 }
-/* line 64, ../sass/app.scss */
+/* line 66, ../sass/app.scss */
 body ol li.step .step-desc {
   font-style: italic;
   display: block;
 }
-/* line 66, ../sass/app.scss */
+/* line 68, ../sass/app.scss */
 body span.election-desc-toggle {
   cursor: pointer;
   position: absolute;
@@ -5162,186 +5170,186 @@ body span.election-desc-toggle {
   padding: 5px;
   margin-top: 2px;
 }
-/* line 75, ../sass/app.scss */
+/* line 77, ../sass/app.scss */
 body h4 .elname {
   display: block;
 }
-/* line 76, ../sass/app.scss */
+/* line 78, ../sass/app.scss */
 body h4 .inst {
   display: block;
   font-size: 0.4em;
   font-weight: bold;
 }
-/* line 77, ../sass/app.scss */
+/* line 79, ../sass/app.scss */
 body .panel.confirm-vote {
   padding-top: 0;
   padding-bottom: 0;
 }
-/* line 82, ../sass/app.scss */
+/* line 84, ../sass/app.scss */
 body .row.labels {
   margin-bottom: 10px !important;
 }
-/* line 86, ../sass/app.scss */
+/* line 88, ../sass/app.scss */
 body .form-field ul {
   list-style: none;
 }
-/* line 90, ../sass/app.scss */
+/* line 92, ../sass/app.scss */
 body p.alert {
   color: red;
 }
-/* line 91, ../sass/app.scss */
+/* line 93, ../sass/app.scss */
 body .green {
   color: #5DA423;
 }
-/* line 93, ../sass/app.scss */
+/* line 95, ../sass/app.scss */
 body .vote-hash {
   text-align: left;
   font-weight: bold;
   font-size: 1.2em;
 }
-/* line 94, ../sass/app.scss */
+/* line 96, ../sass/app.scss */
 body .vote-hash-actions {
   float: right;
   margin-top: -2px !important;
 }
-/* line 96, ../sass/app.scss */
+/* line 98, ../sass/app.scss */
 body ul.stv-list {
   list-style: none;
 }
-/* line 98, ../sass/app.scss */
+/* line 100, ../sass/app.scss */
 body ul.stv-list li {
   margin-bottom: 10px;
 }
-/* line 99, ../sass/app.scss */
+/* line 101, ../sass/app.scss */
 body ul.stv-list .button {
   width: 100%;
 }
-/* line 100, ../sass/app.scss */
+/* line 102, ../sass/app.scss */
 body ul.stv-list a span.index-num {
   font-size: 0.8em;
   float: left;
 }
-/* line 101, ../sass/app.scss */
+/* line 103, ../sass/app.scss */
 body ul.stv-list .stv-ballot-choice a {
   text-align: right;
 }
-/* line 102, ../sass/app.scss */
+/* line 104, ../sass/app.scss */
 body ul.stv-list .stv-ballot-choice a span:hover {
   background-color: transparent !important;
 }
-/* line 104, ../sass/app.scss */
+/* line 106, ../sass/app.scss */
 body #stv_answer {
   display: none;
 }
-/* line 105, ../sass/app.scss */
+/* line 107, ../sass/app.scss */
 body h4#election-name span.label {
   padding: 4px;
   margin-top: 5px;
 }
-/* line 107, ../sass/app.scss */
+/* line 109, ../sass/app.scss */
 body ul.confirm-choices {
   list-style: none;
   margin-bottom: 10px;
   margin-top: 10px;
 }
-/* line 108, ../sass/app.scss */
+/* line 110, ../sass/app.scss */
 body #confirm-vote {
   margin-left: 10px;
 }
-/* line 109, ../sass/app.scss */
+/* line 111, ../sass/app.scss */
 body #percent_done_container {
   margin-bottom: 10px;
 }
-/* line 111, ../sass/app.scss */
+/* line 113, ../sass/app.scss */
 body .audit-info {
   font-size: 0.5em;
 }
-/* line 111, ../sass/app.scss */
+/* line 113, ../sass/app.scss */
 body .audit-info h4 {
   font-size: 1em;
   color: #aaa;
 }
-/* line 112, ../sass/app.scss */
+/* line 114, ../sass/app.scss */
 body #auditbody {
   display: none;
 }
-/* line 114, ../sass/app.scss */
+/* line 116, ../sass/app.scss */
 body .audit-button {
   float: right;
   margin-top: -32px;
 }
-/* line 115, ../sass/app.scss */
+/* line 117, ../sass/app.scss */
 body form .form-row.checked label {
   color: green !important;
 }
-/* line 116, ../sass/app.scss */
+/* line 118, ../sass/app.scss */
 body form .form-row {
   margin-left: 25px;
   margin-bottom: 10px;
 }
-/* line 116, ../sass/app.scss */
+/* line 118, ../sass/app.scss */
 body form .form-row label {
   text-indent: -25px;
   font-size: 0.9em;
   color: red;
   font-weight: bold;
 }
-/* line 119, ../sass/app.scss */
+/* line 121, ../sass/app.scss */
 body .cast-actions .cancel {
   float: right;
 }
-/* line 120, ../sass/app.scss */
+/* line 122, ../sass/app.scss */
 body .cast-actions .submit {
   float: left;
 }
-/* line 121, ../sass/app.scss */
+/* line 123, ../sass/app.scss */
 body .election-description {
   display: none;
 }
-/* line 124, ../sass/app.scss */
+/* line 126, ../sass/app.scss */
 body table.voters thead th, body table.elections thead th {
   font-size: 11px;
 }
-/* line 125, ../sass/app.scss */
+/* line 127, ../sass/app.scss */
 body table.voters tbody td, body table.elections tbody td {
   font-size: 12px;
 }
-/* line 128, ../sass/app.scss */
+/* line 130, ../sass/app.scss */
 body a.show-audit-form {
   color: #aaa;
 }
-/* line 129, ../sass/app.scss */
+/* line 131, ../sass/app.scss */
 body a.show-audit-form.active {
   color: #000;
 }
-/* line 134, ../sass/app.scss */
+/* line 136, ../sass/app.scss */
 body .audit-form {
   display: none;
 }
-/* line 140, ../sass/app.scss */
+/* line 142, ../sass/app.scss */
 body .dropdown .alert {
   color: #c60f13 !important;
   font-weight: bold !important;
 }
-/* line 142, ../sass/app.scss */
+/* line 144, ../sass/app.scss */
 body label {
   font-weight: bold;
   color: #2ba6cb;
 }
 
-/* line 153, ../sass/app.scss */
+/* line 155, ../sass/app.scss */
 body > .row {
   border-right: 1px solid #dddddd;
   border-left: 1px solid #dddddd;
   background-color: #fff;
 }
 
-/* line 160, ../sass/app.scss */
+/* line 162, ../sass/app.scss */
 body {
   margin-top: 20px !important;
 }
 
-/* line 164, ../sass/app.scss */
+/* line 166, ../sass/app.scss */
 body .bg-wrapper {
   margin-top: 20px;
   width: 768px;
