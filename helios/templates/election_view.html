@@ -89,6 +89,9 @@ if (!navigator.javaEnabled()) {
 <div class="column four">
   <a class="button success disabled secondary">Λήξη της ψηφοφορίας</a><br />
 </div>
+<div class="column four">
+    <a class="button alert" href="{% url helios.views.one_election_cancel election.uuid %}">Ακύρωση ψηφοφορίας</a><br />
+</div>
 {% endif %}
 </div>
 {% endif %}
