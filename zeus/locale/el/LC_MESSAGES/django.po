@@ -155,7 +155,7 @@ msgstr "Λάθος ημερομηνία και ώρα λήξης της ψηφο
 
 #: forms.py:181 forms.py:186
 msgid "Invalid trustess"
-msgstr "Οι Κωδικοί Ψηφοφορίας είναι άκυροι"
+msgstr "Μη έγκυρη λίστα μελών εφορευτικής επιτροπής."
 
 #: forms.py:220
 msgid ""
