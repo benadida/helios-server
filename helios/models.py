@@ -537,7 +537,7 @@ class Election(HeliosModel):
     """
     has voting begun? voting begins if the election is frozen, at the prescribed date or at the date that voting was forced to start
     """
-    return self.frozen_at != None and (self.voting_starts_at == None or (datetime.datetime.now() >= (self.voting_started_at or self.voting_starts_at)))
+    return self.frozen_at != None and (self.voting_starts_at == None or (datetime.datetime.now() >= self.voting_starts_at))
 
   def voting_has_stopped(self):
     """
@@ -744,7 +744,8 @@ class Election(HeliosModel):
     # log it
     self.append_log(ElectionLog.FROZEN)
     self.frozen_at = datetime.datetime.utcnow()
-    self.voting_started_at = datetime.datetime.utcnow()
+    # do not use forced voting started ad
+    #self.voting_started_at = datetime.datetime.utcnow()
     self.generate_voters_hash()
     self.set_eligibility()
     self.save()
