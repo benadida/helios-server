@@ -569,7 +569,8 @@ class Election(HeliosModel):
   @property
   def issues_before_freeze(self):
     issues = []
-    if self.questions == None or len(self.questions) == 0:
+    if self.questions == None or len(self.questions) == 0 or \
+        len(self.questions[0]['answers']) == 0:
       issues.append(
         {'type': 'questions',
          'action': _("Add candidates to the election")}
