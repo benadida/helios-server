@@ -572,7 +572,7 @@ def delete_trustee(request, election):
   return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
 
 
-@election_view(frozen=False)
+@election_view()
 def trustee_verify_key(request, election, trustee_uuid):
   if trustee_uuid != request.session.get('helios_trustee_uuid', None):
     raise PermissionDenied()
