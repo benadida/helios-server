@@ -36,5 +36,5 @@ class Command(BaseCommand):
         print "voting_extended_until:", extended_until and extended_until.strftime("%Y-%m-%d %H:%M:%S")
         print "voting_ended_at:      ", ended_at and ended_at.strftime("%Y-%m-%d %H:%M:%S")
         print "voters:               ", election.voter_set.count()
-        print "cast votes:           ", election.castvote_set.count()
+        print "counted votes:         %d/%d" % (election.voted_count(), election.castvote_set.count())
 
