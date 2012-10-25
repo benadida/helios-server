@@ -32,6 +32,7 @@
 $(function() {
   $(".datepicker[readonly!=readonly]").datepicker({ dateFormat: 'yy-mm-dd' });
   $("[readonly]").addClass("field-readonly");
+  $("select[readonly] option[selected!=selected]").remove();
 });
 </script>
   </form>
