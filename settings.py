@@ -222,6 +222,8 @@ ZEUS_PROOFS_PATH = os.path.join('/', 'usr', 'share', 'zeus_proofs')
 
 ZEUS_ELECTION_FORCE_VOTING_END = True
 
+CANDIDATES_CHANGE_TIME_MARGIN = 1
+
 # useful trick for custom settings
 try:
     from local_settings import *

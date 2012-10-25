@@ -1160,6 +1160,9 @@ def one_election_questions(request, election):
       election.questions[0]['answers']
 
   if admin_p and request.method == "POST":
+    if not election.can_change_candidates():
+        raise PermissionDenied
+
     questions = []
 
     fields = ['surname', 'name', 'father_name', 'department']

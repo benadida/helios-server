@@ -6,7 +6,7 @@
 {% endblock %}
 {% block content %}
 
-{% if admin_p and not election.frozen_at %}
+{% if admin_p and election.can_change_candidates %}
 <div class="columns twelve">
   <form action="./questions" method="post">
     <p>Ανανεώστε την λίστα υποψηφίων και πατήστε αποθήκευση.

@@ -20,6 +20,8 @@ import os
 
 import helios.views
 
+from datetime import timedelta
+
 from django.db import models, transaction
 from django.utils import simplejson
 from django.conf import settings
@@ -541,6 +543,15 @@ class Election(HeliosModel):
 
   def get_voting_end_date(self):
       return self.voting_ends_at
+
+  def can_change_candidates(self):
+      votes_cast = self.castvote_set.count()
+      # force if votes already cast for some reason
+      if votes_cast:
+          return False
+
+      return not self.frozen_at or self.voting_starts_at >= (datetime.datetime.now() + \
+                                                     timedelta(hours=settings.CANDIDATES_CHANGE_TIME_MARGIN))
 
   def voting_has_started(self):
     """
