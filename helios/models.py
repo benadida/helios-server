@@ -493,6 +493,15 @@ class Election(HeliosModel):
     OPTIONAL_STEPS = ['voters_not_voted_notified', 'extended']
 
 
+  def last_voter_visit(self):
+      try:
+          return self.voter_set.filter(last_visit__isnull=False).order_by('-last_visit')[0].last_visit
+      except IndexError:
+          return None
+
+  def voters_visited_count(self):
+      return self.voter_set.filter(last_visit__isnull=False).count()
+
   def voted_count(self):
     return self.voter_set.filter(vote__isnull=False).count()
 

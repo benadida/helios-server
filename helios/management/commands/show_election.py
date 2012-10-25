@@ -4,6 +4,7 @@ import datetime
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
+from django.utils.timesince import timesince
 
 from helios import utils as helios_utils
 from helios.models import *
@@ -24,6 +25,9 @@ class Command(BaseCommand):
         ends_at = election.voting_ends_at
         extended_until = election.voting_extended_until
         ended_at = election.voting_ended_at
+        last_visit_at = election.last_voter_visit()
+        last_visit_text = last_visit_at.strftime("%Y-%m-%d %H:%M:%S") + \
+                " (%s ago)" % (timesince(last_visit_at))
 
         print "uuid:                 ", election.uuid
         print "admin:                ", election.admins.all()[0].pretty_name
@@ -37,4 +41,7 @@ class Command(BaseCommand):
         print "voting_ended_at:      ", ended_at and ended_at.strftime("%Y-%m-%d %H:%M:%S")
         print "voters:               ", election.voter_set.count()
         print "counted votes:         %d/%d" % (election.voted_count(), election.castvote_set.count())
+        print "voters visits:        ", election.voters_visited_count()
+        print "last voter visit:     ", last_visit_text
+
 
