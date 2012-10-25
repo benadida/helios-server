@@ -12,6 +12,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin import widgets
 from django.db import transaction
 from django.conf import settings
+from django.db.models import Q
 
 from helios.models import Election, Trustee
 from heliosauth.models import User
@@ -153,14 +154,6 @@ class ElectionForm(forms.Form):
       if 'name' in cleaned_data:
           slug = slughifi(cleaned_data['name'])
 
-          from django.db.models import Q
-          q = Q()
-          if self.election and self.election.pk:
-            q = ~Q(pk=self.election.pk)
-
-          if Election.objects.filter(q, short_name=slug):
-            raise forms.ValidationError(_("Another election with the same name exists"))
-
       dfrom = cleaned_data['voting_starts_at']
       dto = cleaned_data['voting_ends_at']
 
@@ -220,6 +213,7 @@ class ElectionForm(forms.Form):
           #messages.warning(_("Election candidates changed due to election"
                              #" institution department changes"))
         e.candidates = new_cands
+        e.update_answers()
 
 
       if not e.uuid:
@@ -231,9 +225,18 @@ class ElectionForm(forms.Form):
 
       e.short_name = data['slug']
       count = 0
-      while Election.objects.filter(short_name=e.short_name).count() > 0:
-        count += 1
-        e.short_name = e.short_name + "-" + str(count)
+
+      q = Q(short_name=e.short_name)
+      if e.pk:
+          q = ~Q(pk=self.election.pk) & Q(short_name=e.short_name)
+
+      short_name = e.short_name
+      while Election.objects.filter(q).count() > 0:
+            count += 1
+            e.short_name = short_name + "-" + str(count)
+            q = Q(short_name=e.short_name)
+            if e.pk:
+                q = ~Q(pk=self.election.pk) & Q(short_name=e.short_name)
 
       e.description = data['description']
       e.voting_starts_at = data['voting_starts_at']
