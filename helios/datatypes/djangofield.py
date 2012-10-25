@@ -57,7 +57,7 @@ class LDObjectField(models.TextField):
         else:
             return None
 
-    def get_prep_value(self, value):
+    def get_prep_value(self, value, *args, **kwargs):
         """Convert our JSON object to a string before we save"""
         if isinstance(value, basestring):
             return value

@@ -53,7 +53,7 @@ class JSONField(models.TextField):
     # we should never look up by JSON field anyways.
     # def get_prep_lookup(self, lookup_type, value)
 
-    def get_prep_value(self, value):
+    def get_prep_value(self, value, *args, **kwargs):
         """Convert our JSON object to a string before we save"""
         if isinstance(value, basestring):
             return value
