@@ -1575,7 +1575,9 @@ def voters_upload_cancel(request, election):
   if voter_file_id:
     vf = VoterFile.objects.get(id = voter_file_id)
     vf.delete()
-  del request.session['voter_file_id']
+
+  if 'voter_file_id' in request.session:
+    del request.session['voter_file_id']
 
   return HttpResponseRedirect(reverse(voters_upload, args=[election.uuid]))
 
