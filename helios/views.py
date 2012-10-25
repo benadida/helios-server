@@ -567,6 +567,9 @@ def delete_trustee(request, election):
 
   election.zeus_election.invalidate_election_public()
   trustee = Trustee.get_by_election_and_uuid(election, request.GET['uuid'])
+  if trustee.secret_key:
+      raise PermissionDenied
+
   trustee.delete()
   election.zeus_election.compute_election_public()
   return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
