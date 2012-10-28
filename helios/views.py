@@ -724,12 +724,12 @@ def one_election_cast(request, election):
   vote = datatypes.LDObject.fromDict(utils.from_json(encrypted_vote),
         type_hint='phoebus/EncryptedVote').wrapped_obj
   audit_password = request.POST.get('audit_password', None)
-  signature = election.cast_vote(voter, vote, audit_password)
+  signature = {'signature': election.cast_vote(voter, vote, audit_password)}
 
   if 'audit_request' in request.session:
       del request.session['audit_request']
 
-  if signature['m'].startswith("AUDIT REQUEST"):
+  if signature['signature'].startswith("AUDIT REQUEST"):
     request.session['audit_request'] = encrypted_vote
     request.session['audit_password'] = audit_password
     token = request.session.get('csrf_token')
@@ -933,7 +933,7 @@ def one_election_download_signature(request, election, fingerprint):
   vote = CastVote.objects.get(fingerprint=fingerprint)
   response = HttpResponse(content_type='application/binary')
   response['Content-Dispotition'] = 'attachment; filename=signature.txt'
-  response.write(vote.signature)
+  response.write(vote.signature['signature'])
   return response
 
 @election_view(allow_logins=True)

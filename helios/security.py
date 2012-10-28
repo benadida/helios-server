@@ -121,7 +121,12 @@ def election_view(**checks):
                   'return_url' : return_url
                   })))
 
-      return func(request, election, *args, **kw)
+      try:
+        return func(request, election, *args, **kw)
+      except Exception, e:
+        import traceback
+        traceback.print_exc()
+        raise
 
     return update_wrapper(election_view_wrapper, func)
 
