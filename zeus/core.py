@@ -51,13 +51,23 @@ V_CAST_VOTE     =   'CAST VOTE'
 V_PUBLIC_AUDIT  =   'PUBLIC AUDIT'
 V_AUDIT_REQUEST =   'AUDIT REQUEST'
 
-V_ELECTION      =   'ELECTION: '
 V_FINGERPRINT   =   'FINGERPRINT: '
 V_INDEX         =   'INDEX: '
 V_PREVIOUS      =   'PREVIOUS VOTE: '
-V_ZEUS_PUBLIC   =   'ZEUS PUBLIC KEY: '
+V_VOTER         =   'VOTER: '
+V_ELECTION      =   'ELECTION PUBLIC: '
+V_ZEUS_PUBLIC   =   'ZEUS PUBLIC: '
+V_TRUSTEES      =   'TRUSTEE PUBLICS: '
+V_CANDIDATES    =   'CANDIDATES: '
+V_MODULUS       =   'MODULUS: '
+V_GENERATOR     =   'GENERATOR: '
+V_ORDER         =   'ORDER: '
+V_ALPHA         =   'ALPHA: '
+V_BETA          =   'BETA: '
+V_COMMITMENT   =    'COMMITMENT: '
+V_CHALLENGE     =   'CHALLENGE: '
+V_RESPONSE      =   'RESPONSE: '
 V_COMMENTS      =   'COMMENTS: '
-V_VOTE_DATA     =   'VOTE DATA: '
 
 _random_generator_file = Random.new()
 
@@ -330,6 +340,7 @@ class MultiprocessingAsyncWorkerPool(object):
                 finally:
                     kill(getpid(), SIGKILL)
                     while 1:
+                        print "PLEASE KILL ME"
                         sleep(1)
             append(pid)
 
@@ -400,7 +411,7 @@ class AsyncController(object):
     shared_queue = None
 
     def __new__(cls, *args, **kw):
-        parallel = int(kw.get('parallel', 2))
+        parallel = int(kw.get('nr_parallel', 2))
         self = object.__new__(cls)
         master_link = AsyncWorkerPool(parallel, async_worker)
         self.master_link = master_link
@@ -1787,8 +1798,8 @@ def vote_from_encoded(modulus, generator, order, public,
 
     return vote
 
-
-def sign_vote(vote, comments, modulus, generator, order, public, secret):
+def sign_vote(vote, trustees, comments,
+              modulus, generator, order, public, secret):
     eb = vote['encrypted_ballot']
     election = eb['public']
     fingerprint = vote['fingerprint']
@@ -1796,59 +1807,102 @@ def sign_vote(vote, comments, modulus, generator, order, public, secret):
     index = vote['index']
     status = vote['status']
 
-    m0 = status
-    m1 = (V_ELECTION + "%x") % election
-    m2 = (V_FINGERPRINT + "%s") % fingerprint
-    m3 = (V_INDEX + "%s") % (("%x" % index) if index is not None else 'NONE')
-    m4 = (V_PREVIOUS + "%s") % previous_vote
-    m5 = (V_ZEUS_PUBLIC + "%x") % public
-    m6 = (V_COMMENTS + "%s") % comments
-    m7 = (V_VOTE_DATA + "%r") % eb
-    message = '\n'.join((m0, m1, m2, m3, m4, m5, m6, m7))
-    return sign_text_message(message, modulus, generator, order, secret)
+    m00 = status
+    m01 = (V_FINGERPRINT + "%s") % fingerprint
+    m02 = (V_INDEX + "%s") % (("%x" % index) if index is not None else 'NONE')
+    m03 = (V_PREVIOUS + "%s") % (previous_vote,)
+    m04 = (V_ELECTION + "%x") % election
+    m05 = (V_ZEUS_PUBLIC + "%x") % public
+    m06 = (V_TRUSTEES + "%s") % (' '.join(("%x" % t) for t in trustees),)
+    m07 = (V_MODULUS + "%x") % modulus
+    m08 = (V_GENERATOR + "%x") % generator
+    m09 = (V_ORDER + "%x") % order
+    m10 = (V_ALPHA + "%x") % eb['alpha']
+    m11 = (V_BETA + "%x") % eb['beta']
+    m12 = (V_COMMITMENT + "%x") % eb['commitment']
+    m13 = (V_CHALLENGE + "%x") % eb['challenge']
+    m14 = (V_RESPONSE + "%x") % eb['response']
+    m15 = (V_COMMENTS + "%s") % (comments,)
+    message = '\n'.join((m00, m01, m02, m03, m04, m05, m06, m07,
+                         m08, m09, m10, m11, m12, m13, m14, m15))
+    signature = sign_text_message(message, modulus, generator, order, secret)
+    text = signature['m']
+    text += '\n-----------------\n'
+    text += '%x\n%x\n%x\n' % (signature['e'], signature['r'], signature['s'])
+    return text
 
-def validate_vote_info(vote_signature_message):
-    m0, m1, m2, m3, m4, m5, m6 = vote_signature_message.split('\n', 6)
-    if (not (m0.startswith(V_CAST_VOTE)
-             or m0.startswith(V_AUDIT_REQUEST)
-             or m0.startswith(V_PUBLIC_AUDIT))
-        or not m1.startswith(V_ELECTION)
-        or not m2.startswith(V_FINGERPRINT)
-        or not m3.startswith(V_INDEX)
-        or not m4.startswith(V_PREVIOUS)
-        or not m5.startswith(V_ZEUS_PUBLIC)):
+def verify_vote_signature(vote_signature):
+    message, sep, e, r, s, null = vote_signature.rsplit('\n', 5)
+    e = int(e, 16)
+    r = int(r, 16)
+    s = int(s, 16)
+    (m00, m01, m02, m03, m04, m05, m06, m07,
+     m08, m09, m10, m11, m12, m13, m14, m15) = message.split('\n', 15)
+    if (not (m00.startswith(V_CAST_VOTE)
+             or m00.startswith(V_AUDIT_REQUEST)
+             or m00.startswith(V_PUBLIC_AUDIT))
+        or not m01.startswith(V_FINGERPRINT)
+        or not m02.startswith(V_INDEX)
+        or not m03.startswith(V_PREVIOUS)
+        or not m04.startswith(V_ELECTION)
+        or not m05.startswith(V_ZEUS_PUBLIC)
+        or not m06.startswith(V_TRUSTEES)
+        or not m07.startswith(V_MODULUS)
+        or not m08.startswith(V_GENERATOR)
+        or not m09.startswith(V_ORDER)
+        or not m10.startswith(V_ALPHA)
+        or not m11.startswith(V_BETA)
+        or not m12.startswith(V_COMMITMENT)
+        or not m13.startswith(V_CHALLENGE)
+        or not m14.startswith(V_RESPONSE)
+        or not m15.startswith(V_COMMENTS)):
 
         m = "Invalid vote signature structure!"
         raise ZeusError(m)
 
-    election = m1[len(V_ELECTION):]
-    fingerprint = m2[len(V_FINGERPRINT):]
-    index = m3[len(V_INDEX):]
-    previous = m4[len(V_PREVIOUS):]
-    zeus_public = m5[len(V_ZEUS_PUBLIC):]
-
-    election = int(election, 16)
+    status = m00
+    fingerprint = m01[len(V_FINGERPRINT):]
     try:
-        index = int(index, 16)
+        index       = int(m02[len(V_INDEX):])
     except ValueError:
-        index = None
-    zeus_public = int(zeus_public, 16)
-    return [election, fingerprint, index, previous, zeus_public]
+        index       = None
+    previous    = m03[len(V_PREVIOUS):]
+    public      = int(m04[len(V_ELECTION):], 16)
+    zeus_public = int(m05[len(V_ZEUS_PUBLIC):], 16)
+    _m06 = m06[len(V_TRUSTEES):]
+    trustees    = [int(x, 16) for x in _m06.split(' ')] if _m06 else []
+    modulus     = int(m07[len(V_MODULUS):], 16)
+    generator   = int(m08[len(V_GENERATOR):], 16)
+    order       = int(m09[len(V_ORDER):], 16)
+    alpha       = int(m10[len(V_ALPHA):], 16)
+    beta        = int(m11[len(V_BETA):], 16)
+    commitment  = int(m12[len(V_COMMITMENT):], 16)
+    challenge   = int(m13[len(V_CHALLENGE):], 16)
+    response    = int(m14[len(V_RESPONSE):], 16)
+    comments    = m15[len(V_COMMENTS):]
 
-def verify_vote_signature(signature, modulus, generator, order, public):
-    if 'm' not in signature:
-        m = "No message in signature!"
-        raise ZeusError(m)
-    message = signature['m']
-    vote_info = validate_vote_info(message)
-    election, fingerprint, index, previous, zeus_public = vote_info
-    if zeus_public != public:
-        m = "Public key mismatch in signature! %x != %x" % (zeus_public, public)
-        raise ZeusError(m)
-    if not verify_text_signature(signature, modulus, generator, order, public):
+    signature = {'m': message, 'r': r, 's': s, 'e': e}
+    if not verify_text_signature(signature, modulus, generator, order,
+                                 zeus_public):
         m = "Invalid vote signature!"
         raise ZeusError(m)
-    return [election, fingerprint, index, previous]
+
+    crypto = [modulus, generator, order]
+
+    eb = {'alpha': alpha, 'beta': beta,
+          'public': public,
+          'commitment': commitment,
+          'challenge': challenge,
+          'response': response}
+
+    vote = {'status': status,
+            'fingerprint': fingerprint,
+            'previous': previous,
+            'index': index,
+            'public': public,
+            'encrypted_ballot': eb}
+
+    return vote, crypto, trustees, comments
 
 def to_relative_answers(choices, nr_candidates):
     """
@@ -2439,7 +2493,7 @@ class ZeusCoreElection(object):
 
     def do_init_decrypting(self):
         self.trustee_factors = {}
-        self.zeus_decryption_factors = None
+        self.zeus_decryption_factors = []
 
     def do_store_trustee_factors(self, trustee_factors):
         trustee_public = trustee_factors['trustee_public']
@@ -2482,9 +2536,9 @@ class ZeusCoreElection(object):
 
     @classmethod
     def new_at_creating(cls, cryptosystem=_default_crypto,
-                             teller=_teller, nr_parallel=0):
+                             teller=_teller, **kw):
         self = cls(cryptosystem, teller=teller)
-        self.set_option(parallel=nr_parallel)
+        self.set_option(**kw)
         return self
 
     def create_zeus_key(self, secret_key=None):
@@ -2687,8 +2741,8 @@ class ZeusCoreElection(object):
         self.do_set_stage('VOTING')
 
     @classmethod
-    def new_at_voting(cls, voting, teller=_teller, nr_parallel=0):
-        self = cls.new_at_creating(teller=teller, nr_parallel=nr_parallel)
+    def new_at_voting(cls, voting, teller=_teller, **kw):
+        self = cls.new_at_creating(teller=teller, **kw)
         #self.do_set_option(voting.get('options', {}))
         self.do_store_candidates(voting['candidates'])
         self.do_store_cryptosystem(*voting['cryptosystem'])
@@ -2778,10 +2832,31 @@ class ZeusCoreElection(object):
         modulus, generator, order = self.do_get_cryptosystem()
         public = self.do_get_zeus_public()
         secret = self.do_get_zeus_secret()
-        signature = sign_vote(vote, comments,
+        trustees = list(self.do_get_trustees())
+        trustees.sort()
+        signature = sign_vote(vote, trustees, comments,
                               modulus, generator, order, public, secret)
-        verify_vote_signature(signature, modulus, generator, order, public)
+        self.verify_vote_signature(signature)
         return signature
+
+    def verify_vote_signature(self, vote_signature):
+        vote_info = verify_vote_signature(vote_signature)
+        vote, vote_crypto, vote_trustees, comments = vote_info
+        trustees = list(self.do_get_trustees())
+        trustees.sort()
+        crypto = self.do_get_cryptosystem()
+        public = self.do_get_election_public()
+        eb = vote['encrypted_ballot']
+        if crypto != vote_crypto:
+            m = "Cannot verify vote signature: Cryptosystem mismatch!"
+            raise ZeusError(m)
+        if public != eb['public']:
+            m = "Cannot verify vote signature: Election public mismatch!"
+            raise ZeusError(m)
+        if set(trustees) != set(vote_trustees):
+            m = "Vote signature: trustee mismatch!"
+            raise AssertionError(m)
+        return vote
 
     def verify_vote(self, vote):
         if 'signature' not in vote:
@@ -2789,10 +2864,12 @@ class ZeusCoreElection(object):
             raise ZeusError(m)
         signature = vote['signature']
 
-        modulus, generator, order = self.do_get_cryptosystem()
-        public = self.do_get_zeus_public()
-        info = verify_vote_signature(signature, modulus, generator, order, public)
-        election, fingerprint, index, previous = info
+        signed_vote = self.verify_vote_signature(signature)
+
+        election = signed_vote['public']
+        fingerprint = signed_vote['fingerprint']
+        index = signed_vote['index']
+        previous = signed_vote['previous']
 
         if election != self.do_get_election_public():
             m = "Election mismatch in vote!"
@@ -3004,7 +3081,7 @@ class ZeusCoreElection(object):
                     raise AssertionError(m)
                 vote = all_votes[audit_vote]
                 self.verify_vote(vote)
-                msg = vote['signature']['m']
+                msg = vote['signature']
                 if msg.startswith(V_PUBLIC_AUDIT):
                     if vote['fingerprint'] not in all_audit_requests:
                         m = "Public audit vote not found in requests!"
@@ -3116,8 +3193,8 @@ class ZeusCoreElection(object):
         self.do_set_stage('MIXING')
 
     @classmethod
-    def new_at_mixing(cls, mixing, teller=_teller, nr_parallel=0):
-        self = cls.new_at_voting(mixing, teller=teller, nr_parallel=nr_parallel)
+    def new_at_mixing(cls, mixing, teller=_teller, **kw):
+        self = cls.new_at_voting(mixing, teller=teller, **kw)
         self.do_store_votes(mixing['votes'])
         for fingerprint in mixing['cast_vote_index']:
             self.do_index_vote(fingerprint)
@@ -3179,7 +3256,7 @@ class ZeusCoreElection(object):
 
     def validate_mixing(self):
         teller = self.teller
-        nr_parallel = self.get_option('parallel') or 0
+        nr_parallel = self.get_option('nr_parallel') or 0
         teller.task("Validating state: 'MIXING'")
 
         crypto = self.do_get_cryptosystem()
@@ -3244,7 +3321,7 @@ class ZeusCoreElection(object):
 
         if not self.get_option('novalidate'):
             self.validate_mixing()
-        self.compute_zeus_factors()
+            self.compute_zeus_factors()
         self.do_set_stage('DECRYPTING')
 
     def export_decrypting(self):
@@ -3258,18 +3335,22 @@ class ZeusCoreElection(object):
         trustee_factors = [{'trustee_public': k, 'decryption_factors': v}
                            for k, v in all_factors.iteritems()]
         decrypting['trustee_factors'] = trustee_factors
+        zeus_factors = self.do_get_zeus_factors()
+        decrypting['zeus_decryption_factors'] = zeus_factors
         return decrypting
 
     @classmethod
-    def new_at_decrypting(cls, decrypting, teller=_teller, nr_parallel=0):
-        self = cls.new_at_mixing(decrypting, teller=teller,
-                                 nr_parallel=nr_parallel)
+    def new_at_decrypting(cls, decrypting, teller=_teller, **kw):
+        self = cls.new_at_mixing(decrypting, teller=teller, **kw)
         for mix in decrypting['mixes']:
             self.do_store_mix(mix)
         if 'trustee_factors' in decrypting:
             all_trustee_factors = decrypting['trustee_factors']
             for trustee_factors in all_trustee_factors:
                 self.do_store_trustee_factors(trustee_factors)
+        if 'zeus_decryption_factors' in decrypting:
+            zeus_factors = decrypting['zeus_decryption_factors']
+            self.do_store_zeus_factors(decrypting['zeus_decryption_factors'])
         self.set_decrypting()
         return self
 
@@ -3348,6 +3429,14 @@ class ZeusCoreElection(object):
                 m = "Invalid trustee factors proof!"
                 raise ZeusError(m)
 
+        zeus_factors = self.do_get_zeus_factors()
+        zeus_public = self.do_get_zeus_public()
+        if not verify_decryption_factors(modulus, generator, order,
+                                         zeus_public, mixed_ballots,
+                                         zeus_factors, teller=teller):
+                m = "Invalid zeus factors proof!"
+                raise ZeusError(m)
+
         teller.finish()
 
     def compute_zeus_factors(self):
@@ -3394,12 +3483,16 @@ class ZeusCoreElection(object):
 
         if not self.get_option('novalidate'):
             self.validate_decrypting()
-        old_results = self.do_get_results()
-        results = self.decrypt_ballots()
-        if old_results and old_results != results:
-            m = "Old results did not match new results!"
-            raise AssertionError(m)
 
+        old_results = self.do_get_results()
+        if old_results:
+            if not self.get_option('novalidate'):
+                results = self.decrypt_ballots()
+                if old_results and old_results != results:
+                    m = "Old results did not match new results!"
+                    raise AssertionError(m)
+        else:
+            results = self.decrypt_ballots()
         self.do_set_stage('FINISHED')
 
     def export_finished(self):
@@ -3410,7 +3503,6 @@ class ZeusCoreElection(object):
             raise ZeusError(m)
 
         finished = self.export_decrypting()
-        finished['zeus_decryption_factors'] = self.do_get_zeus_factors()
         finished['results'] = self.do_get_results()
         fingerprint = sha256(strcanonical(finished)).hexdigest()
         finished['election_fingerprint'] = fingerprint
@@ -3433,10 +3525,8 @@ class ZeusCoreElection(object):
         return getattr(self, method_name)(), stage
 
     @classmethod
-    def new_at_finished(cls, finished, teller=_teller, nr_parallel=0):
-        self = cls.new_at_decrypting(finished, teller=teller,
-                                     nr_parallel=nr_parallel)
-        self.do_store_zeus_factors(finished['zeus_decryption_factors'])
+    def new_at_finished(cls, finished, teller=_teller, **kw):
+        self = cls.new_at_decrypting(finished, teller=teller, **kw)
         self.do_store_results(finished['results'])
         fingerprint = finished.pop('election_fingerprint', None)
         _fingerprint = sha256(strcanonical(finished)).hexdigest()
@@ -3559,7 +3649,7 @@ class ZeusCoreElection(object):
                 plaintexts[vote['voter']] = encoded
             votes.append(vote)
             signature = self.cast_vote(vote)
-            if not signature['m'].startswith(V_CAST_VOTE):
+            if not signature.startswith(V_CAST_VOTE):
                 m = "Invalid cast vote signature!"
                 raise AssertionError(m)
             teller.advance()
@@ -3570,7 +3660,7 @@ class ZeusCoreElection(object):
         with teller.task("Casting a valid audit vote"):
             vote, selection, encoded, rnd = self.mk_random_vote(audit_code=1)
             signature = self.cast_vote(vote)
-            if not signature['m'].startswith(V_AUDIT_REQUEST):
+            if not signature.startswith(V_AUDIT_REQUEST):
                 m = "Invalid audit request reply!"
                 raise AssertionError(m)
 
@@ -3582,7 +3672,7 @@ class ZeusCoreElection(object):
         with teller.task("Casting an invalid audit vote"):
             vote, selection, encoded, rnd = self.mk_random_vote(audit_code=1)
             signature = self.cast_vote(vote)
-            if not signature['m'].startswith(V_AUDIT_REQUEST):
+            if not signature.startswith(V_AUDIT_REQUEST):
                 m = "Invalid audit request reply!"
                 raise AssertionError(m)
 
@@ -3601,7 +3691,7 @@ class ZeusCoreElection(object):
                 m = "This should have failed"
                 raise AssertionError(m)
             signature = self.cast_vote(vote)
-            if not signature['m'].startswith(V_PUBLIC_AUDIT):
+            if not signature.startswith(V_PUBLIC_AUDIT):
                 m = "Invalid public audit reply!"
                 raise AssertionError(m)
 
@@ -3718,8 +3808,13 @@ def main():
         help=("Buffer output newlines according to --oms "
               "instead of sending them out immediately"))
 
-    parser.add_argument('--validate', metavar='infile',
-        help="Read a FINISHED election from a JSON file and validate it")
+    parser.add_argument('--verify-election', metavar='infile',
+        help="Read a FINISHED election from a JSON file and verify it")
+
+    parser.add_argument('--verify-signature', nargs='*',
+        metavar=('election_file', 'signature_file'),
+        help="Read an election and a signature from a JSON file "
+             "and verify the signature")
 
     parser.add_argument('--mix', nargs=2, metavar=('infile', 'outfile'),
         help=("Read a MIXING election from the input file, mix it, "
@@ -3727,6 +3822,9 @@ def main():
 
     parser.add_argument('--parallel', dest='nr_procs', default=2,
         help="Use multiple processes for parallel mixing")
+
+    parser.add_argument('--novalidate', action='store_true', default=False,
+                        help="Do not validate elections")
 
     parser.add_argument('--generate', nargs='*', metavar='outfile',
         help="Generate a random election and write it out in JSON")
@@ -3763,6 +3861,7 @@ def main():
     def main_generate(args, teller=_teller, nr_parallel=0):
         filename = args.generate
         filename = filename[0] if filename else None
+        novalidate = args.novalidate
 
         election = ZeusCoreElection.mk_random(
                             nr_candidates   =   args.nr_candidates,
@@ -3771,7 +3870,8 @@ def main():
                             nr_votes        =   args.nr_votes,
                             nr_rounds       =   args.nr_rounds,
                             stage           =   args.stage,
-                            teller=teller, nr_parallel=nr_parallel)
+                            teller=teller, nr_parallel=nr_parallel,
+                            novalidate=novalidate)
         exported, stage = election.export()
         if not filename:
             name = ("%x" % election.do_get_election_public())[:16]
@@ -3780,15 +3880,41 @@ def main():
         with open(filename, "w") as f:
             json.dump(exported, f, indent=2)
 
-    def main_validate(args, teller=_teller, nr_parallel=0):
-        filename = args.validate
+    def main_verify_election(args, teller=_teller, nr_parallel=0):
+        novalidate = args.novalidate
+        filename = args.verify_election
+        sys.stderr.write("loading election from '%s'\n" % (filename,))
         with open(filename, "r") as f:
             finished = json.load(f)
         election = ZeusCoreElection.new_at_finished(finished, teller=teller,
-                                                    nr_parallel=nr_parallel)
+                                                    nr_parallel=nr_parallel,
+                                                    novalidate=novalidate)
         sys.stderr.write('election_fingerprint: %s\n' 
                         % (election.election_fingerprint,))
         return election
+
+    def main_verify_signature(args, teller=_teller, nr_parallel=0):
+        novalidate = args.novalidate
+        args = args.verify_signature
+        if len(args) < 2:
+            m = ("cannot verify signature without an election file "
+                 "and at least one signature file")
+            raise ValueError(m)
+
+        filename = args[0]
+        sys.stderr.write("loading election from '%s'\n" % (filename,))
+        with open(filename, "r") as f:
+            finished = json.load(f)
+        election = ZeusCoreElection.new_at_finished(finished, teller=teller,
+                                                    nr_parallel=nr_parallel,
+                                                    novalidate=novalidate)
+        sigfiles = args[1:]
+        with teller.task("Verifying signatures", total=len(sigfiles)):
+            for sigfile in sigfiles:
+                with open(sigfile, "r") as f:
+                    signature = f.read()
+                election.verify_vote_signature(signature)
+                teller.advance()
 
     def main_mix(args, teller=_teller, nr_parallel=0):
         infile, outfile = args.mix
@@ -3829,8 +3955,12 @@ def main():
 
     if args.generate is not None:
         return main_generate(args, teller=teller, nr_parallel=nr_parallel)
-    elif args.validate:
-        return main_validate(args, teller=teller, nr_parallel=nr_parallel)
+    elif args.verify_election:
+        return main_verify_election(args, teller=teller,
+                                    nr_parallel=nr_parallel)
+    elif args.verify_signature:
+        return main_verify_signature(args, teller=teller,
+                                     nr_parallel=nr_parallel)
     elif args.mix:
         return main_mix(args, teller=teller, nr_parallel=nr_parallel)
     else:
@@ -3897,5 +4027,4 @@ if __name__ == '__main__':
     #cross_check_encodings(7)
     #test_decryption()
     retval.append(main())
-    raise KeyboardInterrupt
 

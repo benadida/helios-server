@@ -59,7 +59,7 @@ class HeliosElection(ZeusCoreElection):
             vote = self.model.election.castvote_set.get(fingerprint=fingerprint)
             zeus_vote = self._get_zeus_vote(vote.vote)
             zeus_vote['fingerprint'] = vote.fingerprint
-            zeus_vote['signature'] = vote.signature
+            zeus_vote['signature'] = vote.signature['signature']
             zeus_vote['previous'] = vote.previous
             zeus_vote['voter'] = vote.voter.uuid
             zeus_vote['index'] = vote.index
@@ -76,7 +76,7 @@ class HeliosElection(ZeusCoreElection):
                 helios_vote,
                 audit_password=audited.audit_code)
             zeus_vote['fingerprint'] = audited.fingerprint
-            zeus_vote['signature'] = audited.signature
+            zeus_vote['signature'] = audited.signature['signature']
             return zeus_vote
         except helios_models.AuditedBallot.DoesNotExist:
             pass
@@ -90,7 +90,7 @@ class HeliosElection(ZeusCoreElection):
                 helios_vote,
                 audit_password=audited.audit_code)
             zeus_vote['fingerprint'] = audited.fingerprint
-            zeus_vote['signature'] = audited.signature
+            zeus_vote['signature'] = audited.signature['signature']
             return zeus_vote
         except helios_models.AuditedBallot.DoesNotExist:
             return None
@@ -144,7 +144,7 @@ class HeliosElection(ZeusCoreElection):
                 helios_vote,
                 audit_password=audited.audit_code)
             zeus_vote['fingerprint'] = audited.fingerprint
-            zeus_vote['signature'] = audited.signature
+            zeus_vote['signature'] = audited.signature['signature']
             votes[audited.fingerprint] = zeus_vote
         for audited in self.model.election.auditedballot_set.filter(is_request=True):
             try:
@@ -157,7 +157,7 @@ class HeliosElection(ZeusCoreElection):
                     helios_vote,
                     audit_password=audited.audit_code)
                 zeus_vote['fingerprint'] = audited.fingerprint
-                zeus_vote['signature'] = audited.signature
+                zeus_vote['signature'] = audited.signature['signature']
                 votes[audited.fingerprint] = zeus_vote
 
         return votes
@@ -167,7 +167,7 @@ class HeliosElection(ZeusCoreElection):
         for vote in self.model.election.castvote_set.filter(verified_at__isnull=False):
             zeus_vote = self._get_zeus_vote(vote.vote, voter=vote.voter)
             zeus_vote['fingerprint'] = vote.fingerprint
-            zeus_vote['signature'] = vote.signature
+            zeus_vote['signature'] = vote.signature['signature']
             zeus_vote['previous'] = vote.previous
             zeus_vote['voter'] = vote.voter.uuid
             zeus_vote['index'] = vote.index
@@ -226,7 +226,7 @@ class HeliosElection(ZeusCoreElection):
         vobj.cast_at = datetime.datetime.now()
         vobj.verified_at = datetime.datetime.now()
         vobj.fingerprint = vote['fingerprint']
-        vobj.signature = vote['signature']
+        vobj.signature = {'signature': vote['signature']}
         vobj.index = vote['index']
         if 'audit_code' in vote:
             vobj.audit_code = vote['audit_code']
@@ -256,7 +256,7 @@ class HeliosElection(ZeusCoreElection):
         vobj.fingerprint = vote['fingerprint']
         vobj.is_request = True
         vobj.audit_code = vote['audit_code']
-        vobj.signature = vote['signature']
+        vobj.signature = {'signature': vote['signature']}
         vobj.voter = self._get_voter_object(vote['voter'])
 
         vobj.save()
@@ -267,7 +267,7 @@ class HeliosElection(ZeusCoreElection):
                                                        is_request=True)
 
         vobj.pk = None
-        vobj.signature = vote['signature']
+        vobj.signature = {'signature': vote['signature']}
         vobj.fingerprint = vote['fingerprint']
         new_vote = vobj.vote
         new_vote.encrypted_answers[0].randomness = [vote['voter_secret']]

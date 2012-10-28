@@ -267,7 +267,7 @@ you can find your encrypted vote attached in this mail.
 """) % {'election_name': election.name }
 
   # send it via the notification system associated with the auth system
-  attachments = [('vote.signature', signature['m'], 'text/plain')]
+  attachments = [('vote.signature', signature['signature'], 'text/plain')]
   message = EmailMessage(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (voter.voter_name,
                                                                 voter.voter_email)])
   for attachment in attachments:
