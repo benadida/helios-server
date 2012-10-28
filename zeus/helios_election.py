@@ -48,6 +48,7 @@ class HeliosElection(ZeusCoreElection):
         kwargs['teller'] = Teller(outstream=NullStream())
         super(HeliosElection, self).__init__(*args, **kwargs)
         self.set_option(parallel=MIXNET_NR_PARALLEL)
+        self.set_option(nr_parallel=MIXNET_NR_PARALLEL)
         self.set_option(min_mix_rounds=MIXNET_NR_ROUNDS)
 
     def _get_zeus_vote(self, enc_vote, voter=None, audit_password=None):
