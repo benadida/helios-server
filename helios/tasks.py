@@ -310,8 +310,10 @@ def election_post_ecounting(election_id, user=None):
         e.save()
 
 @task()
-def add_remote_mix(election_id, mix, mix_id=None):
+def add_remote_mix(election_id, mix_tmp_file, mix_id=None):
     e = Election.objects.get(pk=election_id)
+    tmp_file = file(mix_tmp_file)
+    mix = json.loads(tmp_file.read())
     error = e.add_remote_mix(mix, mix_id)
     if error:
         election_notify_admin.delay(election_id=election_id,

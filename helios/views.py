@@ -5,7 +5,7 @@ Helios Django Views
 Ben Adida (ben@adida.net)
 """
 
-import csv, urllib, os, base64
+import csv, urllib, os, base64, tempfile
 
 from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
@@ -312,9 +312,13 @@ def election_remote_mix(request, election_uuid, mix_key):
       response.write(mixnet.mix_file.read())
       return response
 
-  mix_id = request.POST.get('mix_id', "remote mix")
-  mix = jsonlib.loads(request.POST.get('mix'))
-  tasks.add_remote_mix.delay(election.pk, mix, mix_id)
+  mix_id = "remote mix"
+  fd, mix_tmp_file = tempfile.mkstemp(prefix=request.META.get('REMOTE_ADDR', 'UNKNOWN')+'-',
+                                      dir=settings.ZEUS_CELERY_TEMPDIR)
+  os.write(fd, request.body)
+  os.close(fd)
+  os.chmod(mix_tmp_file, 0666)
+  tasks.add_remote_mix.delay(election.pk, mix_tmp_file, mix_id)
 
   return HttpResponse(jsonlib.dumps({'status':'processing'}),
                           content_type="application/json")
