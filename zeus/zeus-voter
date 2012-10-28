@@ -4,8 +4,8 @@
 import re
 
 from zeus.core import ( c2048, get_random_selection,
-                        gamma_encode,
-                        encrypt, prove_encryption )
+                        gamma_encode, to_relative_answers,
+                        encrypt, prove_encryption)
 
 from httplib import HTTPConnection, HTTPSConnection
 from urlparse import urlparse
@@ -22,8 +22,13 @@ def generate_voter_file(nr, domain='zeus.minedu.gov.gr'):
     return '\n'.join((u'voter-%d@%s, Ψηφοφόρος, %d' % (i, domain, i))
                      for i in xrange(nr))
 
-def generate_vote(p, g, q, y, nr_candidates):
-    selection = get_random_selection(nr_candidates, full=0)
+def generate_vote(p, g, q, y, choices):
+    if isinstance(choices, int):
+        nr_candidates = choices
+        selection = get_random_selection(nr_candidates, full=0)
+    else:
+        nr_candidates = max(choices) + 1
+        selection = to_relative_answers(choices, nr_candidates)
     encoded = gamma_encode(selection, nr_candidates)
     ct = encrypt(encoded, p, g, q, y)
     alpha, beta, rand = ct
@@ -54,7 +59,7 @@ def get_http_connection(url):
     conn.path = parsed.path
     return conn
 
-def cast_vote(voter_url):
+def get_election(voter_url):
     conn = get_http_connection(voter_url)
     voter_path = conn.path
     conn.request('GET', voter_path)
@@ -71,7 +76,11 @@ def cast_vote(voter_url):
     election_view = response.getheader('location')
     conn.request('GET', "/" + election_view.split("/", 3)[3], headers=headers)
     response = conn.getresponse()
-    token = re.findall(".*token\%3D(.*)\%26", response.read())[0]
+    try:
+        token = re.findall(".*token\%3D(.*)\%26", response.read())[0]
+    except Exception:
+        m = "Cannot vote"
+        raise RuntimeError(m)
 
     election_path = '/'.join(voter_path.split('/')[:-3])
     conn.request('GET', election_path, headers=headers)
@@ -82,9 +91,10 @@ def cast_vote(voter_url):
     g = int(pk['g'])
     q = int(pk['q'])
     y = int(pk['y'])
-    nr_candidates = len(election['questions'][0]['answers'])
+    answers = election['questions'][0]['answers']
+    return conn, cast_path, token, headers, answers, p, g, q, y
 
-    vote, encoded = generate_vote(p, g, q, y, nr_candidates)
+def do_cast_vote(conn, cast_path, token, headers, vote):
     body = urlencode({'encrypted_vote': dumps(vote), 'csrf_token': token})
     conn.request('POST', cast_path, headers=headers, body=body)
     response = conn.getresponse()
@@ -92,6 +102,13 @@ def cast_vote(voter_url):
     if response.status != 200:
         print response.status
     conn.close()
+
+def cast_vote(voter_url, choices=None):
+    election_info = get_election(voter_url)
+    conn, cast_path, token, headers, answers, p, g, q, y = election_info
+    choices = choices if choices is not None else len(answers)
+    vote, encoded = generate_vote(p, g, q, y, choices)
+    do_cast_vote(conn, cast_path, token, headers, vote)
     return encoded
 
 def main_generate(nr, domain, voters_file):
@@ -102,7 +119,7 @@ def main_generate(nr, domain, voters_file):
     with open(voters_file, "w") as f:
         f.write(generate_voter_file(nr, domain=domain).encode('utf-8'))
 
-def main_cast_thread(inqueue, outqueue):
+def main_random_cast_thread(inqueue, outqueue):
     while 1:
         try:
             o = inqueue.get_nowait()
@@ -115,10 +132,10 @@ def main_cast_thread(inqueue, outqueue):
         encoded = cast_vote(voter_url)
         outqueue.put(encoded)
 
-def main_cast(voter_url_file, plaintexts_file, nr_threads=2):
+def main_random_cast(voter_url_file, plaintexts_file, nr_threads=2):
     if exists(plaintexts_file):
-	m = "%s: file exists, will not overwrite" % (plaintexts_file,)
-	raise ValueError(m)
+        m = "%s: file exists, will not overwrite" % (plaintexts_file,)
+        raise ValueError(m)
     f = open(plaintexts_file, "w")
 
     voter_urls = open(voter_url_file).read().splitlines()
@@ -128,8 +145,8 @@ def main_cast(voter_url_file, plaintexts_file, nr_threads=2):
     for i, voter_url in enumerate(voter_urls):
         inqueue.put((i, total, voter_url))
 
-    #main_cast_thread(queue)
-    threads = [Thread(target=main_cast_thread, args=(inqueue, outqueue))
+    #main_random_cast_thread(queue)
+    threads = [Thread(target=main_random_cast_thread, args=(inqueue, outqueue))
                for _ in xrange(nr_threads)]
 
     for t in threads:
@@ -143,27 +160,50 @@ def main_cast(voter_url_file, plaintexts_file, nr_threads=2):
     for t in threads:
         t.join()
 
+def main_show(url):
+    conn, cast_path, token, answers, p, g, q, y = get_election(url)
+    for i, c in enumerate(answers):
+        if isinstance(c, unicode):
+            c = c.encode('utf-8')
+        print "%d: %s" % (i, c)
+
+def main_vote(url, choice_str):
+    choices = [int(x) for x in choice_str.split(',')]
+    print cast_vote(url, choices)
+
 def main_help():
     usage = ("Usage: ./zeus-voter generate <nr> <domain> <voters.csv>\n"
-             "       ./zeus-voter cast <voter_url_file> <plaintexts_file> [nr_threads]\n")
+             "       ./zeus-voter random_cast <voter_url_file> <plaintexts_file> [nr_threads]\n"
+             "       ./zeus-voter show <voter_url>\n"
+             "       ./zeus-voter vote <voter_url> <1st>,<2nd>,... (e.g.)\n")
     stderr.write(usage)
     raise SystemExit
 
 def main():
     argc = len(argv)
 
-    if argc < 4:
-        main_help()
-
-    if argv[1] == 'generate':
+    cmd = argv[1]
+    if cmd == 'generate':
         if argc < 5:
             main_help()
-
         main_generate(int(argv[2]), argv[3], argv[4])
 
-    elif argv[1] == 'cast':
+    elif cmd == 'random_cast':
+        if argc < 4:
+            main_help()
         nr_threads=int(argv[4]) if argc > 4 else 2
-        main_cast(argv[2], argv[3], nr_threads=nr_threads)
+        main_random_cast(argv[2], argv[3], nr_threads=nr_threads)
+    elif cmd == 'show':
+        if argc < 3:
+            main_help()
+        main_show(argv[2])
+    elif cmd == 'vote':
+        if argc < 3:
+            main_help()
+        if argc == 3:
+            main_show(argv[2])
+        else:
+            main_vote(argv[2], ''.join(argv[3:]))
     else:
         main_help()
 
