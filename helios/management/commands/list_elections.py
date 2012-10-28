@@ -15,5 +15,5 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         for e in Election.objects.all():
-            print (e.uuid, e.name, '--', e.admins.all()[0].pretty_name,
-                   '--', e.institution.name)
+            print e.uuid, e.name, '--', e.admins.all()[0].pretty_name,
+            print '--', e.institution.name
