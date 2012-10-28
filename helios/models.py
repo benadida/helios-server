@@ -611,7 +611,7 @@ class Election(HeliosModel):
 
   @property
   def finished_mixnets(self):
-      return self.mixnets.filter(status='finished')
+      return self.mixnets.filter(status='finished').defer('mix')
 
   @property
   def issues_before_freeze(self):
@@ -663,7 +663,7 @@ class Election(HeliosModel):
 
   def mixing_errors(self):
       errors = []
-      for e in self.mixnets.filter(mix_error__isnull=False, status='error'):
+      for e in self.mixnets.filter(mix_error__isnull=False, status='error').defer('mix'):
           errors.append(e.mix_error)
       return errors
 
@@ -705,13 +705,13 @@ class Election(HeliosModel):
     if self.mixing_finished:
         return None
 
-    next_mixnet = self.mixnets.filter(status="pending")[0]
+    next_mixnet = self.mixnets.filter(status="pending").defer('mix')[0]
     next_mixnet.mix_ciphers()
 
   @property
   def remote_mixes(self):
     return self.mixnets.filter(mixnet_type='remote',
-                    status='finished')
+                               status='finished').defer("mix")
 
   def compute_tally(self):
     """
