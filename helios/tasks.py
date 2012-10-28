@@ -257,7 +257,7 @@ def election_notify_admin(election_id, subject, body=""):
         message.send(fail_silently=False)
 
 
-@task()
+@task(rate_limit=getattr(settings, 'HELIOS_VOTER_EMAIL_RATE', '20/m'))
 def send_cast_vote_email(election, voter, signature):
   from django.utils import translation
   translation.activate('el')
