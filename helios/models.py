@@ -551,7 +551,7 @@ class Election(HeliosModel):
       return True
 
   def get_voting_end_date(self):
-      return self.voting_ends_at
+      return self.voting_extended_until or self.voting_ends_at
 
   def can_change_candidates(self):
       votes_cast = self.castvote_set.count()
@@ -585,6 +585,10 @@ class Election(HeliosModel):
 
   def mixnets_count(self):
       return self.mixnets.count()
+
+  @property
+  def finished_mixnets(self):
+      return self.mixnets.filter(status='finished')
 
   @property
   def issues_before_freeze(self):
@@ -634,18 +638,41 @@ class Election(HeliosModel):
   def ready_for_tallying(self):
     return datetime.datetime.utcnow() >= self.tallying_starts_at
 
+  def mixing_errors(self):
+      errors = []
+      for e in self.mixnets.filter(mix_error__isnull=False, status='error'):
+          errors.append(e.mix_error)
+      return errors
+
   def add_remote_mix(self, mix, mix_name="Remote mix"):
-    self.zeus_election.add_mix(mix)
-    mixnet = self.mixnets.create(name=mix_name,
-                                    mix_order=self.mixes_count(),
-                                    mixnet_type='zeus',
-                                    mixing_started_at=datetime.datetime.now(),
-                                    mixing_finished_at=datetime.datetime.now(),
-                                    status="finished",
-                                    mix=mix)
-    mixnet.status = "finished"
+    error = ''
+    status = 'finished'
+    mix_order = int(self.mixes_count())
+
+    try:
+        self.zeus_election.add_mix(mix)
+    except Exception, e:
+        status = 'error'
+        error = traceback.format_exc()
+
+    try:
+      mixnet = self.mixnets.create(name=mix_name,
+                                   mix_order=mix_order,
+                                   mixnet_type='remote',
+                                   mixing_started_at=datetime.datetime.now(),
+                                   mixing_finished_at=datetime.datetime.now(),
+                                   status=status,
+                                   mix_error=error if error else None,
+                                   mix=mix)
+    except Exception, e:
+      return e
+
     if not Election.objects.get(pk=self.pk).remote_mixnets_finished_at:
       mixnet.save()
+    else:
+      return "Mixing finished"
+
+    return error
 
   def mix_next_mixnet(self):
     if self.is_mixing:
@@ -659,7 +686,8 @@ class Election(HeliosModel):
 
   @property
   def remote_mixes(self):
-    return self.mixnets.filter(mixnet_type='zeus')
+    return self.mixnets.filter(mixnet_type='remote',
+                    status='finished')
 
   def compute_tally(self):
     """
@@ -782,8 +810,15 @@ class Election(HeliosModel):
 
   @property
   def mixing_finished(self):
-    mixnets = self.mixnets.filter(status="finished").count()
-    return (mixnets > 0) and (mixnets == self.mixnets.count())
+    mixnets = self.mixnets.filter(mixnet_type="local", status="finished").count()
+    return (mixnets > 0) and (mixnets == self.mixnets.filter(mixnet_type="local").count())
+
+  @property
+  def remote_mixing_finished(self):
+    if not self.mix_key:
+        return True
+    else:
+        return bool(self.remote_mixnets_finished_at)
 
   @property
   def completed(self):
@@ -813,9 +848,11 @@ class Election(HeliosModel):
 
   def mixes_count(self):
     mixnets_count = self.mixnets.filter(mix__isnull=False,
-                                       second_mix__isnull=False).count() * 2
+                        status="finished",
+                        second_mix__isnull=False).count() * 2
     mixnets_count += self.mixnets.filter(mix__isnull=False,
-                                       second_mix__isnull=True).count()
+                                         status="finished",
+                                         second_mix__isnull=True).count()
     return mixnets_count
 
   @property

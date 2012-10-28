@@ -109,9 +109,12 @@ def election_compute_tally(election_id):
     election = Election.objects.get(id = election_id)
     try:
         election.zeus_election.validate_voting()
-    except:
+    except Exception, e:
         election.tallying_started_at = None
         election.save()
+        election_notify_admin.delay(election_id=election_id,
+                                    subject="Validate voting failed",
+                                    body=traceback.format_exc())
         return
 
     election_notify_admin.delay(election_id=election_id, subject="Voting validated", body="")

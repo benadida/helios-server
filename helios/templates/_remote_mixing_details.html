@@ -13,6 +13,12 @@
 <div class="panel">
   Έχουν προστεθεί <b> {{ election.remote_mixes.count }}</b> απομακρυσμένες μίξεις.
 </div>
+{% if election.remote_mixes %}
+<a class="button small alert" style="float: right" href="{% url helios.views.election_remove_last_mix election.uuid %}">
+  Αφαίρεση τελευταίας απομακρυσμένης μίξης.
+</a>
+<br /><br />
+{% endif %}
 
 <br /<br />
 <a class="button medium success"

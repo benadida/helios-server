@@ -48,6 +48,7 @@ class HeliosElection(ZeusCoreElection):
         kwargs['teller'] = Teller(outstream=NullStream())
         super(HeliosElection, self).__init__(*args, **kwargs)
         self.set_option(parallel=MIXNET_NR_PARALLEL)
+        self.set_option(min_mix_rounds=MIXNET_NR_ROUNDS)
 
     def _get_zeus_vote(self, enc_vote, voter=None, audit_password=None):
         return self.model.election._get_zeus_vote(enc_vote, voter=voter,
@@ -447,7 +448,7 @@ class HeliosElection(ZeusCoreElection):
 
     def do_get_all_mixes(self):
         mixes = [self.extract_votes_for_mixing()]
-        for mixnet in self.model.election.mixnets.filter().order_by('mix_order'):
+        for mixnet in self.model.election.mixnets.filter(status='finished').order_by('mix_order'):
           mixes.append(mixnet.mix)
           if mixnet.second_mix:
             mixes.append(mixnet.second_mix)
