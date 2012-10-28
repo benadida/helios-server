@@ -246,7 +246,7 @@ class ElectionForm(forms.Form):
     if 'voting_extended_until' in data:
       e.voting_extended_until = data['voting_extended_until']
 
-    if is_new or not e.voting_has_stopped():
+    if is_new or not e.voting_ended_at:
       if data['remote_mix']:
         e.generate_mix_key()
       else:
