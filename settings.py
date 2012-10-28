@@ -48,7 +48,7 @@ USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = ''
+MEDIA_ROOT = '/home/zeus/'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
@@ -111,7 +111,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 ## HELIOS
 ##
 
-MEDIA_ROOT = ROOT_PATH + "media/"
+MEDIA_ROOT = MEDIA_ROOT
 
 # a relative path where voter upload files are stored
 VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
@@ -219,7 +219,7 @@ ECOUNTING_SECRET = "xxxxx"
 HELIOS_VOTER_EMAIL_RATE = '30/m'
 
 ZEUS_PROOFS_PATH = os.path.join('/', 'usr', 'share', 'zeus_proofs')
-
+ZEUS_MIXES_PATH = 'zeus_mixes'
 ZEUS_ELECTION_FORCE_VOTING_END = True
 
 CANDIDATES_CHANGE_TIME_MARGIN = 1

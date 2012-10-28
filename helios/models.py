@@ -17,6 +17,7 @@ import json as json_module
 import base64
 import zipfile
 import os
+import tempfile
 
 import helios.views
 
@@ -26,6 +27,7 @@ from django.db import models, transaction
 from django.utils import simplejson
 from django.conf import settings
 from django.core.mail import send_mail
+from django.core.files import File
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import validate_email
 from django.forms import ValidationError
@@ -74,11 +76,20 @@ class ElectionMixnet(HeliosModel):
   mix_error = models.TextField(null=True, blank=True)
   mix = JSONField(null=True)
   second_mix = JSONField(null=True)
+  mix_file = models.FileField(upload_to=settings.ZEUS_MIXES_PATH)
 
 
   class Meta:
     ordering = ['-mix_order']
     unique_together = [('election', 'mix_order')]
+
+  def store_mix_file(self):
+    fname = str(self.pk) + ".mix"
+    fd = tempfile.NamedTemporaryFile()
+    fd.write(json_module.dumps(self.mix))
+    self.mix_file.save(fname, File(fd), save=True)
+    self.save()
+    fd.close()
 
   def can_mix(self):
     return self.status in ['pending'] and not self.election.tallied
@@ -144,6 +155,12 @@ class ElectionMixnet(HeliosModel):
         self.mix_error = traceback.format_exc()
         self.save()
         self.notify_admin_for_mixing_error()
+        return
+
+    try:
+        self.store_mix_file()
+    except:
+        pass
 
   def notify_admin_for_mixing_error(self):
     pass
@@ -268,6 +285,9 @@ class Election(HeliosModel):
   result_proof = JSONField(null=True)
   ecounting_request_send = models.DateTimeField(auto_now_add=False, null=True, default=None)
   ecounting_request_error = models.TextField(null=True)
+
+  def get_last_mix(self):
+    return self.mixnets.filter(status="finished").order_by("-mix_order")[0]
 
   def get_ecounting_admin_user(self):
     try:
@@ -573,6 +593,9 @@ class Election(HeliosModel):
     has voting stopped? if tally computed, yes, otherwise if we have passed the date voting was manually stopped at,
     or failing that the date voting was extended until, or failing that the date voting is scheduled to end at.
     """
+    if not self.frozen_at:
+        return False
+
     voting_end = self.voting_ended_at or self.voting_extended_until or self.voting_ends_at
     return (voting_end != None and datetime.datetime.now() >= voting_end) or \
         self.tallied
@@ -669,6 +692,7 @@ class Election(HeliosModel):
 
     if not Election.objects.get(pk=self.pk).remote_mixnets_finished_at:
       mixnet.save()
+      mixnet.store_remote_file()
     else:
       return "Mixing finished"
 
