@@ -181,6 +181,8 @@ def main_help():
 
 def main():
     argc = len(argv)
+    if argc < 2:
+        main_help()
 
     cmd = argv[1]
     if cmd == 'generate':
