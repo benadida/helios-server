@@ -256,6 +256,8 @@ def election_notify_admin(election_id, subject, body=""):
 
 @task()
 def send_cast_vote_email(election, voter, signature):
+  from django.utils import translation
+  translation.activate('el')
   subject = _("%(election_name)s - vote cast") % {'election_name': election.name}
 
   body = _(u"""
@@ -267,7 +269,10 @@ you can find your encrypted vote attached in this mail.
 """) % {'election_name': election.name }
 
   # send it via the notification system associated with the auth system
-  attachments = [('vote.signature', signature['m'], 'text/plain')]
+  if not isinstance(signature, basestring):
+      signature = unicode(signature)
+
+  attachments = [('vote.signature', signature, 'text/plain')]
   message = EmailMessage(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (voter.voter_name,
                                                                 voter.voter_email)])
   for attachment in attachments:
@@ -303,4 +308,18 @@ def election_post_ecounting(election_id, user=None):
         election_notify_admin.delay(election_id, "Failed to post to ecounting", json_resp)
         e.ecounting_request_error = json_resp
         e.save()
+
+@task()
+def add_remote_mix(election_id, mix, mix_id=None):
+    e = Election.objects.get(pk=election_id)
+    error = e.add_remote_mix(mix, mix_id)
+    if error:
+        election_notify_admin.delay(election_id=election_id,
+                                    subject="Remote mix failed to add",
+                                    body=error)
+        return
+
+    election_notify_admin.delay(election_id=election_id,
+                                subject="Remote mix added to election",
+                                body=traceback.format_exc())
 
