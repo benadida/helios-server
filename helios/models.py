@@ -287,7 +287,7 @@ class Election(HeliosModel):
   ecounting_request_error = models.TextField(null=True)
 
   def get_last_mix(self):
-    return self.mixnets.filter(status="finished").order_by("-mix_order")[0]
+    return self.mixnets.filter(status="finished").defer("mix").order_by("-mix_order")[0]
 
   def get_ecounting_admin_user(self):
     try:
