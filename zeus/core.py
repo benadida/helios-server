@@ -16,7 +16,7 @@ from Crypto import Random
 from operator import mul as mul_operator
 from Queue import Empty, Full
 from multiprocessing import Queue
-from os import fork, kill, getpid
+from os import fork, kill, getpid, waitpid
 from signal import SIGKILL
 from errno import ESRCH
 from cStringIO import StringIO
@@ -351,6 +351,7 @@ class MultiprocessingAsyncWorkerPool(object):
         for pid in self.worker_pids:
             try:
                 kill(pid, SIGKILL)
+                waitpid(pid, 0)
             except OSError, e:
                 if e.errno != ESRCH:
                     raise
