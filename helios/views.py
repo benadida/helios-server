@@ -285,6 +285,17 @@ def election_stop_mixing(request, election):
   return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
 
 
+@election_admin(frozen=True)
+def election_remove_last_mix(request, election):
+  try:
+      mix = election.mixnets.filter(status='finished',
+                                    mixnet_type='remote').order_by('-mix_order')[0]
+  except IndexError, e:
+      raise PermissionDenied
+
+  return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+
+
 def election_remote_mix(request, election_uuid, mix_key):
   election = Election.objects.get(uuid=election_uuid)
 
@@ -300,9 +311,9 @@ def election_remote_mix(request, election_uuid, mix_key):
 
   mix_id = request.POST.get('mix_id', "remote mix")
   mix = jsonlib.loads(request.POST.get('mix'))
+  tasks.add_remote_mix.delay(election.pk, mix, mix_id)
 
-  election.add_remote_mix(mix, mix_id)
-  return HttpResponse(jsonlib.dumps({'status':'success'}),
+  return HttpResponse(jsonlib.dumps({'status':'processing'}),
                           content_type="application/json")
 
 
@@ -310,7 +321,6 @@ def election_remote_mix(request, election_uuid, mix_key):
 def one_election_cancel(request, election):
 
   if election.canceled_at or election.tallied or election.voting_has_stopped():
-    print election.canceled_at
     raise PermissionDenied
 
   if request.method == "GET":
@@ -1313,7 +1323,6 @@ def one_election_compute_tally(request, election):
 
   if not election.voting_ended_at:
     election.voting_ended_at = datetime.datetime.utcnow()
-
   election.tallying_started_at = datetime.datetime.utcnow()
   election.save()
 
@@ -1656,7 +1665,10 @@ def voters_email(request, election):
       voter_constraints_exclude = None
 
       if voter:
-        tasks.single_voter_email.delay(voter_uuid = voter.uuid, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars)
+        tasks.single_voter_email.delay(voter_uuid=voter.uuid,
+                                       subject_template=subject_template,
+                                       body_template=body_template,
+                                       extra_vars=extra_vars)
       else:
         # exclude those who have not voted
         if email_form.cleaned_data['send_to'] == 'voted':
@@ -1666,7 +1678,12 @@ def voters_email(request, election):
         if email_form.cleaned_data['send_to'] == 'not-voted':
           voter_constraints_include = {'vote_hash': None}
 
-        tasks.voters_email.delay(election_id = election.id, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars, voter_constraints_include = voter_constraints_include, voter_constraints_exclude = voter_constraints_exclude)
+        tasks.voters_email.delay(election_id=election.id,
+                                 subject_template=subject_template,
+                                 body_template=body_template,
+                                 extra_vars=extra_vars,
+                                 voter_constraints_include=voter_constraints_include,
+                                 voter_constraints_exclude=voter_constraints_exclude)
 
       # this batch process is all async, so we can return a nice note
       messages.info(request, "Η αποστολή των email έχει ξεκινήσει.")
