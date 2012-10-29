@@ -106,7 +106,7 @@
       {{ voter.voter_surname }} , {{ voter.name }} {% if voter.voter_fathername %}, {{ voter.voter_fathername }}{% endif %}
     </td>
     <td>
-      {% if voter.vote %}
+      {% if voter.castvote_set.count > 0 %}
       Ναι
       {% else %}
       Όχι

@@ -357,7 +357,7 @@ def voters_csv(request, election):
                                        voter.voter_name,
                                        voter.voter_surname,
                                        voter.voter_fathername or '',
-                                   u"ΝΑΙ" if voter.vote else u"ΟΧΙ"]))
+                                   u"ΝΑΙ" if voter.castvote_set.count() else u"ΟΧΙ"]))
   return response
 
 @election_admin()
@@ -367,7 +367,7 @@ def voters_clear(request, election):
                                         args=(election.uuid,)))
   else:
     for voter in election.voter_set.all():
-      if not voter.vote:
+      if not voter.castvote_set.count():
         voter.delete()
 
   return HttpResponseRedirect(reverse(voters_list_pretty,
@@ -739,11 +739,12 @@ def one_election_cast(request, election):
   if not voter:
     return HttpResponseRedirect(reverse(one_election_cast_confirm, args=[election.uuid]))
 
-  encrypted_vote = request.POST['encrypted_vote']
-  vote = datatypes.LDObject.fromDict(utils.from_json(encrypted_vote),
-        type_hint='phoebus/EncryptedVote').wrapped_obj
-  audit_password = request.POST.get('audit_password', None)
-  signature = {'signature': election.cast_vote(voter, vote, audit_password)}
+  with transaction.commit_on_success():
+    encrypted_vote = request.POST['encrypted_vote']
+    vote = datatypes.LDObject.fromDict(utils.from_json(encrypted_vote),
+          type_hint='phoebus/EncryptedVote').wrapped_obj
+    audit_password = request.POST.get('audit_password', None)
+    signature = {'signature': election.cast_vote(voter, vote, audit_password)}
 
   if 'audit_request' in request.session:
       del request.session['audit_request']
@@ -837,6 +838,7 @@ def password_voter_login(request, election):
 
 @election_view(frozen=True)
 def one_election_cast_confirm(request, election):
+  return dummy_view(request)
   user = get_user(request)
 
   # if no encrypted vote, the user is reloading this page or otherwise getting here in a bad way
@@ -1082,7 +1084,7 @@ def voter_delete(request, election, voter_uuid):
     raise PermissionDenied()
 
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
-  if voter.vote:
+  if voter.castvote_set.count():
       raise PermissionDenied
 
   if voter:
@@ -1456,7 +1458,7 @@ def voters_list_pretty(request, election):
   voters_page = voter_paginator.page(page)
 
   total_voters = voter_paginator.count
-  voters_voted = voters.filter(vote__isnull=False)
+  voters_voted = elections.voted_count()
 
   return render_template(request, 'voters_list',
                          {'election': election, 'voters_page': voters_page,
@@ -1466,7 +1468,7 @@ def voters_list_pretty(request, election):
                           'upload_p': helios.VOTERS_UPLOAD, 'q' : q,
                           'menu_active': 'voters',
                           'voter_files': voter_files,
-                          'voted_count': voters_voted.count(),
+                          'voted_count': voters_voted,
                           'hash_valid': hash_valid,
                           'validate_hash': validate_hash,
                           'hash_invalid': hash_invalid,

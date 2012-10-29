@@ -523,7 +523,7 @@ class Election(HeliosModel):
       return self.voter_set.filter(last_visit__isnull=False).count()
 
   def voted_count(self):
-    return self.voter_set.filter(vote__isnull=False).count()
+    return self.castvote_set.distinct('voter').count()
 
   def step_created_completed(self):
     return bool(self.pk)
