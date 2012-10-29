@@ -174,9 +174,9 @@ def main_vote(url, choice_str):
     choices = [int(x) for x in choice_str.split(',')]
     encoded, rand = cast_vote(url, choices)
     print "encoded selection:", encoded
-    print "encryption randomness: 0x%x" % rand
+    print "encryption randomness:", rand
 
-def main_verify(sigfile, randomness=None):
+def main_verify(sigfile, randomness=None, plaintext=None):
     with open(sigfile) as f:
         signature = f.read()
 
@@ -187,31 +187,43 @@ def main_verify(sigfile, randomness=None):
     public = eb['public']
     modulus, generator, order = crypto
     beta = eb['beta']
-    print 'Verified'
+    print 'VERIFIED: Authentic Signature'
     if randomness is None:
         return
 
     nr_candidates = len(candidates)
     encoded = decrypt_with_randomness(modulus, generator, order,
                                       public, beta, randomness)
+    if plaintext is not None:
+        if plaintext != encoded:
+            print 'FAILED: Plaintext Mismatch'
+
+        ct = encrypt(plaintext, modulus, generator, order, randomness)
+        _alpha, _beta, _randomness = ct
+        alpha = eb['alpha']
+        if (alpha, beta) != (_alpha, _beta):
+            print 'FAILED: Invalid Encryption'
+
     max_encoded = gamma_encoding_max(nr_candidates) + 1
-    print "encoded selection: %d" % encoded
-    print "max encoded:       %d" % max_encoded
+    print "plaintext:       %d" % encoded
+    print "max plaintext:   %d" % max_encoded
     if encoded > max_encoded:
-        print "Cannot decode invalid vote"
+        print "FAILED: Invalid Vote. Cannot decode."
         return
 
     selection = gamma_decode(encoded, nr_candidates)
     choices = to_absolute_answers(selection, nr_candidates)
+    print ""
     for i, o in enumerate(choices):
         print "%d: [%d] %s" % (i, o, candidates[o])
+    print ""
 
 def main_help():
     usage = ("Usage: ./zeus-voter generate <nr> <domain> <voters.csv>\n"
              "       ./zeus-voter random_cast <voter_url_file> <plaintexts_file> [nr_threads]\n"
              "       ./zeus-voter show <voter_url>\n"
              "       ./zeus-voter vote <voter_url> <1st>,<2nd>,... (e.g.)\n"
-             "       ./zeus-voter verify <vote_signature_file> [randomness]\n")
+             "       ./zeus-voter verify <vote_signature_file> [randomness [plaintext]]\n")
     stderr.write(usage)
     raise SystemExit
 
@@ -245,8 +257,9 @@ def main():
     elif cmd == 'verify':
         if argc < 3:
             main_help()
-        randomness = None if argc == 3 else int(argv[3], 16)
-        main_verify(argv[2], randomness)
+        randomness = None if argc < 4 else int(argv[3])
+        plaintext = None if argc < 5 else int(argv[4])
+        main_verify(argv[2], randomness, plaintext)
     else:
         main_help()
 
