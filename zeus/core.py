@@ -2893,14 +2893,7 @@ class ZeusCoreElection(object):
             raise AssertionError(m)
         return vote
 
-    def verify_vote(self, vote):
-        if 'signature' not in vote:
-            m = "No signature found in vote!"
-            raise ZeusError(m)
-        signature = vote['signature']
-
-        signed_vote = self.verify_vote_signature(signature)
-
+    def validate_vote(self, signed_vote):
         election = signed_vote['encrypted_ballot']['public']
         fingerprint = signed_vote['fingerprint']
         index = signed_vote['index']
@@ -2927,6 +2920,14 @@ class ZeusCoreElection(object):
         if previous and self.do_get_vote(previous) is None:
             m = "Cannot find valid previous vote [%s] in store!" % (previous,)
             raise AssertionError(m)
+
+    def verify_vote(self, vote):
+        if 'signature' not in vote:
+            m = "No signature found in vote!"
+            raise ZeusError(m)
+        signature = vote['signature']
+        signed_vote = self.verify_vote_signature(signature)
+        return self.validate_vote(signed_vote)
 
     def cast_vote(self, vote):
         self.do_assert_stage('VOTING')
@@ -3162,7 +3163,9 @@ class ZeusCoreElection(object):
 
     def extract_votes_for_mixing(self):
         vote_index = self.do_get_vote_index()
-        scratch = [None] * len(vote_index)
+        nr_votes = len(vote_index)
+        scratch = [None] * nr_votes
+        counted = [None] * nr_votes
         do_get_vote = self.do_get_vote
         vote_count = 0
 
@@ -3175,6 +3178,7 @@ class ZeusCoreElection(object):
             eb = vote['encrypted_ballot']
             _vote = [eb['alpha'], eb['beta']]
             scratch[i] = _vote
+            counted[i] = fingerprint
             previous = vote['previous']
             if not previous:
                 vote_count += 1
@@ -3191,8 +3195,10 @@ class ZeusCoreElection(object):
                 raise AssertionError(m)
 
             scratch[previous_index] = None
+            counted[previous_index] = None
 
         votes_for_mixing = [v for v in scratch if v is not None]
+        counted_list = [c for c in counted if c is not None]
         nr_votes = len(votes_for_mixing)
         if nr_votes != vote_count:
             m = ("Vote count mismatch %d != %d. Corrupt index!"
@@ -3208,7 +3214,7 @@ class ZeusCoreElection(object):
                 'public': public,
                 'original_ciphers': votes_for_mixing,
                 'mixed_ciphers' : votes_for_mixing }
-        return mix
+        return mix, counted_list
 
     def set_mixing(self):
         stage = self.do_get_stage()
@@ -3221,7 +3227,7 @@ class ZeusCoreElection(object):
 
         if not self.get_option('novalidate'):
             self.validate_voting()
-        votes_for_mixing = self.extract_votes_for_mixing()
+        votes_for_mixing, counted_list = self.extract_votes_for_mixing()
         self.do_store_mix(votes_for_mixing)
         self.do_set_stage('MIXING')
 
@@ -3326,8 +3332,12 @@ class ZeusCoreElection(object):
 
                     teller.advance()
                 else:
-                    votes_for_mixing = self.extract_votes_for_mixing()
+                    t = self.extract_votes_for_mixing()
+                    votes_for_mixing, counted_list = t
                     original_ciphers = mix['original_ciphers']
+                    if len(original_ciphers) != len(counted_list):
+                        m = "Invalid extraction for mixing!"
+                        raise AssertionError(m)
                     if original_ciphers != votes_for_mixing['original_ciphers']:
                         m = "Invalid first mix: Does not mix votes in archive!"
                         raise AssertionError(m)
@@ -3544,14 +3554,16 @@ class ZeusCoreElection(object):
         fingerprint = sha256(strcanonical(finished)).hexdigest()
         finished['election_fingerprint'] = fingerprint
         crypto_report = ''
-        crypto_report += 'ZEUS ELECTION FINGERPRINT: %s\n' % (fingerprint,)
         trustees = list(self.do_get_trustees())
         trustees.sort()
         for i, trustee in enumerate(trustees):
             crypto_report += 'TRUSTEE %d: %x\n' % (i, trustee)
         candidates = self.do_get_candidates()
+        crypto_report += '\n'
         for i, candidate in enumerate(candidates):
             crypto_report += 'CANDIDATE %d: %s\n' % (i, candidate)
+        crypto_report += '\n'
+        crypto_report += 'ZEUS ELECTION FINGERPRINT: %s\n' % (fingerprint,)
 
         finished['election_crypto_report'] = crypto_report
         return finished
@@ -3852,7 +3864,7 @@ def main():
         help=("Be quiet. Cancel --verbose"))
 
     parser.add_argument('--oms', '--output-interval-ms', type=int,
-        metavar='millisec', default=100, dest='oms',
+        metavar='millisec', default=200, dest='oms',
         help=("Set the output update interval"))
 
     parser.add_argument('--buffer-feeds', action='store_true', default=False,
@@ -3879,6 +3891,12 @@ def main():
 
     parser.add_argument('--report', action='store_true', default=False,
                         help="Display election crypto report")
+
+    parser.add_argument('--counted-votes', action='store_true', default=False,
+                        help="Display election counted votes fingerprints")
+
+    parser.add_argument('--extract-signatures', metavar='prefix',
+                        help="Write election signatures for counted votes")
 
     parser.add_argument('--generate', nargs='*', metavar='outfile',
         help="Generate a random election and write it out in JSON")
@@ -3912,6 +3930,36 @@ def main():
 
     args = parser.parse_args()
 
+    def do_extract_signatures(election, prefix='election', teller=_teller):
+        vfm, counted_list = election.extract_votes_for_mixing()
+        count = 0
+        total = len(counted_list)
+
+        with teller.task("Extracting signatures"):
+            for fingerprint in counted_list:
+                vote = election.do_get_vote(fingerprint)
+                signature = vote['signature']
+                filename = prefix + '_' + fingerprint
+                with open(filename, "w") as f:
+                    f.write(signature)
+                count += 1
+                teller.status("%d/%d '%s'", count, total, filename, tell=1)
+
+        return vfm, counted_list
+
+    def do_counted_votes(election):
+        vfm, counted_list = election.extract_votes_for_mixing()
+        for i, fingerprint in enumerate(counted_list):
+            print 'COUNTED VOTE %d: %s' % (i, fingerprint)
+        print ""
+        return vfm, counted_list
+
+    def do_report(election):
+        exported, stage = election.export()
+        if 'election_crypto_report' in exported:
+            print exported['election_crypto_report']
+        return exported, stage
+
     def main_generate(args, teller=_teller, nr_parallel=0):
         filename = args.generate
         filename = filename[0] if filename else None
@@ -3933,6 +3981,11 @@ def main():
             sys.stderr.write("writing out to '%s'\n" % (filename,))
         with open(filename, "w") as f:
             json.dump(exported, f, indent=2)
+        if args.extract_signatures:
+            do_extract_signatures(election, args.extract_signatures,
+                                  teller=teller)
+        if args.counted_votes:
+            do_counted_votes(election)
         if args.report and 'election_crypto_report' in exported:
             print exported['election_crypto_report']
 
@@ -3945,10 +3998,15 @@ def main():
         election = ZeusCoreElection.new_at_finished(finished, teller=teller,
                                                     nr_parallel=nr_parallel,
                                                     novalidate=novalidate)
+        if args.extract_signatures:
+            do_extract_signatures(election, args.extract_signatures,
+                                  teller=teller)
+
+        if args.counted_votes:
+            do_counted_votes(election)
+
         if args.report:
-            exported, stage = election.export()
-            if 'election_crypto_report' in exported:
-                print exported['election_crypto_report']
+            do_report(election)
 
         return election
 
@@ -3969,16 +4027,15 @@ def main():
                                                     nr_parallel=nr_parallel,
                                                     novalidate=novalidate)
         if report:
-            exported, stage = election.export()
-            if 'election_crypto_report' in exported:
-                print exported['election_crypto_report']
+            do_report()
 
         sigfiles = args[1:]
         with teller.task("Verifying signatures", total=len(sigfiles)):
             for sigfile in sigfiles:
                 with open(sigfile, "r") as f:
                     signature = f.read()
-                election.verify_vote_signature(signature)
+                signed_vote = election.verify_vote_signature(signature)
+                election.validate_vote(signed_vote)
                 teller.advance()
 
     def main_mix(args, teller=_teller, nr_parallel=0):
