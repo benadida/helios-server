@@ -1496,6 +1496,15 @@ def encrypt(message, modulus, generator, order, public, randomness=None):
     beta = (message * pow(public, randomness, modulus)) % modulus
     return [alpha, beta, randomness]
 
+def decrypt_with_randomness(modulus, generator, order, public,
+                            beta, secret):
+    encoded = pow(public, secret, modulus)
+    encoded = inverse(encoded, modulus)
+    encoded = (encoded * beta) % modulus
+    if encoded >= order:
+        encoded = -encoded % modulus
+    return encoded
+
 def decrypt_with_decryptor(modulus, generator, order, beta, decryptor):
     decryptor = inverse(decryptor, modulus)
     message = (decryptor * beta) % modulus
@@ -1802,7 +1811,7 @@ def vote_from_encoded(modulus, generator, order, public,
 
     return vote
 
-def sign_vote(vote, trustees, comments,
+def sign_vote(vote, trustees, candidates, comments,
               modulus, generator, order, public, secret):
     eb = vote['encrypted_ballot']
     election = eb['public']
@@ -1818,17 +1827,18 @@ def sign_vote(vote, trustees, comments,
     m04 = (V_ELECTION + "%x") % election
     m05 = (V_ZEUS_PUBLIC + "%x") % public
     m06 = (V_TRUSTEES + "%s") % (' '.join(("%x" % t) for t in trustees),)
-    m07 = (V_MODULUS + "%x") % modulus
-    m08 = (V_GENERATOR + "%x") % generator
-    m09 = (V_ORDER + "%x") % order
-    m10 = (V_ALPHA + "%x") % eb['alpha']
-    m11 = (V_BETA + "%x") % eb['beta']
-    m12 = (V_COMMITMENT + "%x") % eb['commitment']
-    m13 = (V_CHALLENGE + "%x") % eb['challenge']
-    m14 = (V_RESPONSE + "%x") % eb['response']
-    m15 = (V_COMMENTS + "%s") % (comments,)
+    m07 = (V_CANDIDATES + "%s") % (' % '.join(("%s" % c) for c in candidates),)
+    m08 = (V_MODULUS + "%x") % modulus
+    m09 = (V_GENERATOR + "%x") % generator
+    m10 = (V_ORDER + "%x") % order
+    m11 = (V_ALPHA + "%x") % eb['alpha']
+    m12 = (V_BETA + "%x") % eb['beta']
+    m13 = (V_COMMITMENT + "%x") % eb['commitment']
+    m14 = (V_CHALLENGE + "%x") % eb['challenge']
+    m15 = (V_RESPONSE + "%x") % eb['response']
+    m16 = (V_COMMENTS + "%s") % (comments,)
     message = '\n'.join((m00, m01, m02, m03, m04, m05, m06, m07,
-                         m08, m09, m10, m11, m12, m13, m14, m15))
+                         m08, m09, m10, m11, m12, m13, m14, m15, m16))
     signature = sign_text_message(message, modulus, generator, order, secret)
     text = signature['m']
     text += '\n-----------------\n'
@@ -1841,7 +1851,7 @@ def verify_vote_signature(vote_signature):
     r = int(r, 16)
     s = int(s, 16)
     (m00, m01, m02, m03, m04, m05, m06, m07,
-     m08, m09, m10, m11, m12, m13, m14, m15) = message.split('\n', 15)
+     m08, m09, m10, m11, m12, m13, m14, m15, m16) = message.split('\n', 16)
     if (not (m00.startswith(V_CAST_VOTE)
              or m00.startswith(V_AUDIT_REQUEST)
              or m00.startswith(V_PUBLIC_AUDIT))
@@ -1851,15 +1861,16 @@ def verify_vote_signature(vote_signature):
         or not m04.startswith(V_ELECTION)
         or not m05.startswith(V_ZEUS_PUBLIC)
         or not m06.startswith(V_TRUSTEES)
-        or not m07.startswith(V_MODULUS)
-        or not m08.startswith(V_GENERATOR)
-        or not m09.startswith(V_ORDER)
-        or not m10.startswith(V_ALPHA)
-        or not m11.startswith(V_BETA)
-        or not m12.startswith(V_COMMITMENT)
-        or not m13.startswith(V_CHALLENGE)
-        or not m14.startswith(V_RESPONSE)
-        or not m15.startswith(V_COMMENTS)):
+        or not m07.startswith(V_CANDIDATES)
+        or not m08.startswith(V_MODULUS)
+        or not m09.startswith(V_GENERATOR)
+        or not m10.startswith(V_ORDER)
+        or not m11.startswith(V_ALPHA)
+        or not m12.startswith(V_BETA)
+        or not m13.startswith(V_COMMITMENT)
+        or not m14.startswith(V_CHALLENGE)
+        or not m15.startswith(V_RESPONSE)
+        or not m16.startswith(V_COMMENTS)):
 
         m = "Invalid vote signature structure!"
         raise ZeusError(m)
@@ -1879,21 +1890,29 @@ def verify_vote_signature(vote_signature):
     zeus_public = int(m05[len(V_ZEUS_PUBLIC):], 16)
     _m06 = m06[len(V_TRUSTEES):]
     trustees    = [int(x, 16) for x in _m06.split(' ')] if _m06 else []
-    modulus     = int(m07[len(V_MODULUS):], 16)
-    generator   = int(m08[len(V_GENERATOR):], 16)
-    order       = int(m09[len(V_ORDER):], 16)
-    alpha       = int(m10[len(V_ALPHA):], 16)
-    beta        = int(m11[len(V_BETA):], 16)
-    commitment  = int(m12[len(V_COMMITMENT):], 16)
-    challenge   = int(m13[len(V_CHALLENGE):], 16)
-    response    = int(m14[len(V_RESPONSE):], 16)
-    comments    = m15[len(V_COMMENTS):]
+    _m07 = m07[len(V_CANDIDATES):]
+    candidates  = _m07.split(' % ')
+    modulus     = int(m08[len(V_MODULUS):], 16)
+    generator   = int(m09[len(V_GENERATOR):], 16)
+    order       = int(m10[len(V_ORDER):], 16)
+    alpha       = int(m11[len(V_ALPHA):], 16)
+    beta        = int(m12[len(V_BETA):], 16)
+    commitment  = int(m13[len(V_COMMITMENT):], 16)
+    challenge   = int(m14[len(V_CHALLENGE):], 16)
+    response    = int(m15[len(V_RESPONSE):], 16)
+    comments    = m16[len(V_COMMENTS):]
 
     signature = {'m': message, 'r': r, 's': s, 'e': e}
     if not verify_text_signature(signature, modulus, generator, order,
                                  zeus_public):
         m = "Invalid vote signature!"
         raise ZeusError(m)
+
+    if (index is not None and
+        not verify_encryption(modulus, generator, order, alpha,
+                             commitment, challenge, response)):
+        m = "Invalid vote encryption proof in valid signature!"
+        raise AssertionError(m)
 
     crypto = [modulus, generator, order]
 
@@ -1910,7 +1929,7 @@ def verify_vote_signature(vote_signature):
             'public': public,
             'encrypted_ballot': eb}
 
-    return vote, crypto, trustees, comments
+    return vote, crypto, trustees, candidates, comments
 
 def to_relative_answers(choices, nr_candidates):
     """
@@ -2604,6 +2623,9 @@ class ZeusCoreElection(object):
             if name in candidates:
                 m = "Candidate '%s' already exists!"
                 raise ZeusError(m)
+            if '%' in name:
+                m = "Candidate name cannot contain character '%%'"
+                raise ZeusError(m)
 
         self.do_store_candidates(names)
 
@@ -2838,18 +2860,19 @@ class ZeusCoreElection(object):
 
     def sign_vote(self, vote, comments):
         modulus, generator, order = self.do_get_cryptosystem()
+        candidates = self.do_get_candidates()
         public = self.do_get_zeus_public()
         secret = self.do_get_zeus_secret()
         trustees = list(self.do_get_trustees())
         trustees.sort()
-        signature = sign_vote(vote, trustees, comments,
+        signature = sign_vote(vote, trustees, candidates, comments,
                               modulus, generator, order, public, secret)
         self.verify_vote_signature(signature)
         return signature
 
     def verify_vote_signature(self, vote_signature):
         vote_info = verify_vote_signature(vote_signature)
-        vote, vote_crypto, vote_trustees, comments = vote_info
+        vote, vote_crypto, vote_trustees, vote_candidates, comments = vote_info
         trustees = list(self.do_get_trustees())
         trustees.sort()
         crypto = self.do_get_cryptosystem()
@@ -2862,7 +2885,11 @@ class ZeusCoreElection(object):
             m = "Cannot verify vote signature: Election public mismatch!"
             raise ZeusError(m)
         if set(trustees) != set(vote_trustees):
-            m = "Vote signature: trustee mismatch!"
+            m = "Vote signature: trustees mismatch!"
+            raise AssertionError(m)
+        candidates = self.do_get_candidates()
+        if candidates != vote_candidates:
+            m = "Vote signature: candidates mismatch!"
             raise AssertionError(m)
         return vote
 
@@ -2874,7 +2901,7 @@ class ZeusCoreElection(object):
 
         signed_vote = self.verify_vote_signature(signature)
 
-        election = signed_vote['public']
+        election = signed_vote['encrypted_ballot']['public']
         fingerprint = signed_vote['fingerprint']
         index = signed_vote['index']
         previous = signed_vote['previous']
@@ -3040,11 +3067,9 @@ class ZeusCoreElection(object):
                     teller.advance()
                     continue
 
-                encoded = pow(public, voter_secret, modulus)
-                encoded = inverse(encoded, modulus)
-                encoded = (encoded * eb['beta']) % modulus
-                if encoded >= order:
-                    encoded = -encoded % modulus
+                beta = eb['beta']
+                encoded = decrypt_with_randomness(modulus, generator, order,
+                                                  public, beta, voter_secret)
                 if encoded > max_encoded:
                     m = "[%s] invalid plaintext!"
                     teller.notice(m, vote['fingerprint'])
@@ -3523,7 +3548,10 @@ class ZeusCoreElection(object):
         trustees = list(self.do_get_trustees())
         trustees.sort()
         for i, trustee in enumerate(trustees):
-            crypto_report += 'TRUSTEE %d: %x\n' % (i+1, trustee)
+            crypto_report += 'TRUSTEE %d: %x\n' % (i, trustee)
+        candidates = self.do_get_candidates()
+        for i, candidate in enumerate(candidates):
+            crypto_report += 'CANDIDATE %d: %s\n' % (i, candidate)
 
         finished['election_crypto_report'] = crypto_report
         return finished

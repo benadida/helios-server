@@ -4,8 +4,11 @@
 import re
 
 from zeus.core import ( c2048, get_random_selection,
-                        gamma_encode, to_relative_answers,
-                        encrypt, prove_encryption)
+                        gamma_encode, gamma_decode, gamma_encoding_max,
+                        to_relative_answers, to_absolute_answers,
+                        encrypt, prove_encryption,
+                        decrypt_with_randomness,
+                        verify_vote_signature)
 
 from httplib import HTTPConnection, HTTPSConnection
 from urlparse import urlparse
@@ -41,7 +44,7 @@ def generate_vote(p, g, q, y, choices):
     encrypted_vote['answers'] = [answer]
     encrypted_vote['election_uuid'] = ''
     encrypted_vote['election_hash'] = ''
-    return encrypted_vote, encoded
+    return encrypted_vote, encoded, rand
 
 def get_http_connection(url):
     parsed = urlparse(url)
@@ -107,9 +110,9 @@ def cast_vote(voter_url, choices=None):
     election_info = get_election(voter_url)
     conn, cast_path, token, headers, answers, p, g, q, y = election_info
     choices = choices if choices is not None else len(answers)
-    vote, encoded = generate_vote(p, g, q, y, choices)
+    vote, encoded, rand = generate_vote(p, g, q, y, choices)
     do_cast_vote(conn, cast_path, token, headers, vote)
-    return encoded
+    return encoded, rand
 
 def main_generate(nr, domain, voters_file):
     if exists(voters_file):
@@ -129,7 +132,7 @@ def main_random_cast_thread(inqueue, outqueue):
             break
         i, total, voter_url = o
         print "%d/%d" % (i, total)
-        encoded = cast_vote(voter_url)
+        encoded, rand = cast_vote(voter_url)
         outqueue.put(encoded)
 
 def main_random_cast(voter_url_file, plaintexts_file, nr_threads=2):
@@ -161,7 +164,7 @@ def main_random_cast(voter_url_file, plaintexts_file, nr_threads=2):
         t.join()
 
 def main_show(url):
-    conn, cast_path, token, answers, p, g, q, y = get_election(url)
+    conn, cast_path, token, headers, answers, p, g, q, y = get_election(url)
     for i, c in enumerate(answers):
         if isinstance(c, unicode):
             c = c.encode('utf-8')
@@ -169,13 +172,46 @@ def main_show(url):
 
 def main_vote(url, choice_str):
     choices = [int(x) for x in choice_str.split(',')]
-    print cast_vote(url, choices)
+    encoded, rand = cast_vote(url, choices)
+    print "encoded selection:", encoded
+    print "encryption randomness: 0x%x" % rand
+
+def main_verify(sigfile, randomness=None):
+    with open(sigfile) as f:
+        signature = f.read()
+
+    vote_info = verify_vote_signature(signature)
+    signed_vote, crypto, trustees, candidates, comments = vote_info
+
+    eb = signed_vote['encrypted_ballot']
+    public = eb['public']
+    modulus, generator, order = crypto
+    beta = eb['beta']
+    print 'Verified'
+    if randomness is None:
+        return
+
+    nr_candidates = len(candidates)
+    encoded = decrypt_with_randomness(modulus, generator, order,
+                                      public, beta, randomness)
+    max_encoded = gamma_encoding_max(nr_candidates) + 1
+    print "encoded selection: %d" % encoded
+    print "max encoded:       %d" % max_encoded
+    if encoded > max_encoded:
+        print "Cannot decode invalid vote"
+        return
+
+    selection = gamma_decode(encoded, nr_candidates)
+    choices = to_absolute_answers(selection, nr_candidates)
+    for i, o in enumerate(choices):
+        print "%d: [%d] %s" % (i, o, candidates[o])
 
 def main_help():
     usage = ("Usage: ./zeus-voter generate <nr> <domain> <voters.csv>\n"
              "       ./zeus-voter random_cast <voter_url_file> <plaintexts_file> [nr_threads]\n"
              "       ./zeus-voter show <voter_url>\n"
-             "       ./zeus-voter vote <voter_url> <1st>,<2nd>,... (e.g.)\n")
+             "       ./zeus-voter vote <voter_url> <1st>,<2nd>,... (e.g.)\n"
+             "       ./zeus-voter verify <vote_signature_file> [randomness]\n")
     stderr.write(usage)
     raise SystemExit
 
@@ -206,6 +242,11 @@ def main():
             main_show(argv[2])
         else:
             main_vote(argv[2], ''.join(argv[3:]))
+    elif cmd == 'verify':
+        if argc < 3:
+            main_help()
+        randomness = None if argc == 3 else int(argv[3], 16)
+        main_verify(argv[2], randomness)
     else:
         main_help()
 
