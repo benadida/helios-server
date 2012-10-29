@@ -1458,7 +1458,7 @@ def voters_list_pretty(request, election):
   voters_page = voter_paginator.page(page)
 
   total_voters = voter_paginator.count
-  voters_voted = elections.voted_count()
+  voters_voted = election.voted_count()
 
   return render_template(request, 'voters_list',
                          {'election': election, 'voters_page': voters_page,
