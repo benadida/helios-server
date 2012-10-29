@@ -9,7 +9,7 @@
 {% endif %}
 <dd class="{% if menu_active == "trustees" %}active{% endif %}"><a 
   href="{% url helios.views.list_trustees_view election.uuid %}">Εφορευτική επιτροπή</a></dd>
-{% if election.voting_started_at and election.audits_casted > 0 %}
+{% if election.audits_casted > 0 %}
 <dd class="{% if menu_active == "audits" %}active{% endif %}"><a 
   href="{% url helios.views.one_election_audited_ballots election.uuid %}">Ψήφοι ελέγχου</a></dd>
 {% endif %}

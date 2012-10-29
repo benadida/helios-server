@@ -276,7 +276,6 @@ class HeliosElection(ZeusCoreElection):
         new_vote.encrypted_answers[0].answer = vote['plain_answer']
         vobj.raw_vote = json.dumps(new_vote.toJSONDict(with_randomness=True))
         vobj.is_request = False
-        vobj.voter = None
         vobj.save()
 
     def do_store_votes(self, votes):

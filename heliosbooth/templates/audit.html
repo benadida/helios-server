@@ -3,32 +3,24 @@
 
 <div class="alert-box alert">
 Η επιλογή σας έχει επιλεχθεί ως "Ψήφος Ελέγχου" και δεν θα καταμετρηθεί.
-  </div>
+</div>
 
 
 <p>
-Για να ελέγξετε την ψήφο σας 
-<a onclick="$('#audit_trail').select(); return false;" href="#">επιλέξτε τα
-  περιεχόμενα του παρακάτω πεδίου</a> και
-επικολλήστε τα στο αντίστοιχο πεδίο του <a target="_blank"
-  href="single-ballot-verify.html?election_url={$T.election_url}">"Επαληθευτή
-  ψήφου ελέγχου"</a>.
 </p>
 
 <form action="#">
-<textarea name="audit_trail" id="audit_trail" cols="80" rows="10" wrap="soft">
+<textarea style="display:none" name="audit_trail" id="audit_trail" cols="80" rows="10" wrap="soft">
 {$T.audit_trail}
 </textarea>
 
-<p>
-Μπορείτε να αποθηκευσετε την "Ψήφο Ελέγχου" στο σύστημα "Ζεύς" ώστε να μπορεί 
-να χρησιμοποιηθεί για επαλύθευση και απο άλλους ψηφοφόρους της συγκεκριμένης
-ψηφοφορίας.
+<p class="audited_ballot_recipe">
 </p>
+
 <p>
 Πατήστε "επιστροφή" για να μεταφερθείτε στη σελίδα επιλογής ψήφου.
 </p>
-<input type="button" class="button medium success" value="Αποθήκευση" onclick="$(this).attr('disabled', 'disabled');BOOTH.post_audited_ballot();" id="post_audited_ballot_button" class="pretty" />
+<input type="button" class="button medium success" value="Επιβεβαίωση" onclick="$(this).attr('disabled', 'disabled');BOOTH.post_audited_ballot();" id="post_audited_ballot_button" class="pretty" />
 &nbsp;&nbsp; &nbsp;
 <a class="button medium alert"
   onclick="BOOTH.reset_ciphertexts();BOOTH.show_question(0);return false;">

@@ -1751,14 +1751,21 @@ class AuditedBallot(models.Model):
   is_request = models.BooleanField(default=True)
   signature = JSONField(null=True)
 
+  @property
+  def choices(self):
+    answers = self.election.questions[0]['answers']
+    choices = self.vote.encrypted_answers[0].answer[0]
+    return map(lambda x:answers[x], to_absolute_answers(choices, len(answers)))
+
   @classmethod
   def get(cls, election, vote_hash):
     return cls.objects.get(election = election, vote_hash = vote_hash,
                            is_request=False)
 
   @classmethod
-  def get_by_election(cls, election, after=None, limit=None):
-    query = cls.objects.filter(election = election).order_by('vote_hash')
+  def get_by_election(cls, election, after=None, limit=None, extra={}):
+    query = cls.objects.filter(election =
+                               election).order_by('-pk').filter(**extra)
 
     # if we want the list after a certain UUID, add the inequality here
     if after:

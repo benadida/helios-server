@@ -714,7 +714,9 @@ def post_audited_ballot(request, election):
     encrypted_vote = electionalgs.EncryptedVote.fromJSONDict(audit_request)
     del request.session['audit_request']
     election.cast_vote(voter, encrypted_vote, audit_password)
-    return SUCCESS
+    vote_pk = AuditedBallot.objects.filter(voter=voter).order_by('-pk')[0].pk
+    return HttpResponse(json_module.dumps({'audit_id': vote_pk }),
+                        content_type="application/json")
 
 @election_view(frozen=True)
 def one_election_cast(request, election):
@@ -1043,6 +1045,8 @@ def one_election_audited_ballots(request, election):
   limit = int(request.GET.get('limit', 100))
 
   audited_ballots = AuditedBallot.get_by_election(election, after=after, limit=limit+1)
+  voter_audited_ballots = AuditedBallot.get_by_election(election,
+                                                        extra={'voter':voter})
 
   more_p = len(audited_ballots) > limit
   if more_p:
@@ -1054,6 +1058,7 @@ def one_election_audited_ballots(request, election):
   return render_template(request, 'election_audited_ballots', {
     'menu_active': 'audits',
     'election': election, 'audited_ballots': audited_ballots,
+    'voter_audited_ballots': voter_audited_ballots,
     'admin_p': admin_p,
     'next_after': next_after,
     'offset': offset,

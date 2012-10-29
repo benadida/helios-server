@@ -7,12 +7,16 @@
 {% block content %}
 
 
-<p>
-Για να ελέγξετε μια ψήφο ελέγχου, ανοίξτε τον <a target="_new"
-  href="/booth/single-ballot-verify.html?election_url={% url helios.views.one_election election.uuid %}">Επαληθευτή ψήφου ελέγχου</a> 
-και επικολλήστε τα περιεχόμενα της ψήφου στο αντίστοιχο πεδίο.
-</p>
+{% if voter_audited_ballots %}
+<h4>Προσωπικές ψήφοι ελέγχου</h4>
+<table class="pretty" width="100%">
+{% for b in voter_audited_ballots %}
+{% include "_audit_ballots_list.html" %}
+{% endfor %}
+</table>
+{% endif %}
 
+<h4>Όλες οι ψήφοι ελέγχου</h4>
 {% if audited_ballots %}
 <p>
 Εμφάνιση ψήφων ελέγχου: {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
@@ -29,13 +33,12 @@
 {% if more_p %}
 <a href="?after={{next_after}}&offset={{next_offset}}">επόμενες {{limit}}</a>
 {% endif %}
-<br /><br />
-<table class="pretty">
+<table class="pretty" width="100%">
 {% for b in audited_ballots %}
-<tr><td><tt style="font-size: 1.4em;">{{b.vote_hash}}</tt> [<a target="_blank"
-      href="?vote_hash={{b.vote_hash|urlencode}}">προβολή περιεχομένων</a>]</td></tr>
+{% include "_audit_ballots_list.html" %}
 {% endfor %}
 </table>
+
 {% else %}
 <em>no audited ballots yet</em>
 {% endif %}

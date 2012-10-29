@@ -633,9 +633,11 @@ BOOTH.audit_ballot = function() {
 
 BOOTH.post_audited_ballot = function() {
   $.post(BOOTH.election_url + "/post-audited-ballot", {'audited_ballot': BOOTH.audit_trail}, function(result) {
-    alert('Η ψήφος ελέγχου αποθηκευτικε. Μεταφόρα στην σελίδα επιλογών.');
+    var recipe_text = 'Η ψήφος ελέγχου αποθηκεύτηκε. Αναγνωριστικό ψήφου ελέγχου: <b>' + result.audit_id + '</b>';
+    recipe_text += "<br />Μπορείτε να επισκεφθείτε την σελίδα της ψηφοφορίας στην ενότητα \"Ψήφοι ελέγχου\", και ελέγξετε τις επιλογές σας .";
+    $(".audited_ballot_recipe").html(recipe_text);
     BOOTH.reset_ciphertexts();
-    BOOTH.show_question(0);
+    //BOOTH.show_question(0);
   });
 };
 
