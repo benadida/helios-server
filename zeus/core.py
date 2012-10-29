@@ -6,7 +6,7 @@ from datetime import datetime
 from random import randint, shuffle, choice
 from collections import deque
 from hashlib import sha256, sha1
-from itertools import izip, repeat
+from itertools import izip, cycle
 from functools import partial
 from math import log
 from bisect import bisect_right
@@ -3690,8 +3690,10 @@ class ZeusCoreElection(object):
         selections = []
         plaintexts = {}
         votes = []
-        for i in xrange(self._nr_votes):
+        voters = list(self.do_get_voters())
+        for i, voter in zip(xrange(self._nr_votes), cycle(voters)):
             kw = {'audit_code': -1} if (i & 1) else {}
+            kw['voter'] = voter
             vote, selection, encoded, rnd = self.mk_random_vote(**kw)
             selections.append(selection)
             if encoded is not None:
