@@ -10,7 +10,25 @@ from zeus.core import ( c2048, get_random_selection,
                         encrypt, prove_encryption,
                         mix_ciphers)
 from os.path import exists
-import urllib, urllib2
+from httplib import HTTPSConnection, HTTPConnection
+from urlparse import urlparse
+import urllib
+
+def get_http_connection(url):
+    parsed = urlparse(url)
+    if parsed.scheme == 'https':
+            default_port = '443'
+            Conn = HTTPSConnection
+    else:
+            default_port = '80'
+            Conn = HTTPConnection
+    host, sep, port = parsed.netloc.partition(':')
+    if not port:
+        port = default_port
+    netloc = host + ':' + port
+    conn = Conn(netloc)
+    conn.path = parsed.path
+    return conn
 
 def do_download(url, mixfile):
     if exists(mixfile):
@@ -40,23 +58,23 @@ def do_mix(mixfile, newfile, nr_rounds, nr_parallel):
 
 def do_upload(mixfile, url):
     with open(mixfile) as f:
-        mix_data = json.load(f)
-    data = {'mix': mix_data}
-    values = urllib.urlencode(data)
-    req = urllib2.Request(url, values)
-    response = urllib2.urlopen(req)
-    print reponse
+        mix_data = f.read()
+    conn = get_http_connection(url)
+    conn.request('POST', conn.path, body=mix_data)
+    response = conn.getresponse()
+    print response.status, response.read()
+
 
 def main_help():
     usage = ("Usage: ./zeus-mixer <url> <nr_rounds> <nr_parallel>\n"
-             "       ./zeus-mixer download <url> <mixfile>\n"
-             "       ./zeus-mixer mix      <mixfile> <mixfile.new> <nr_rounds> <nr_parallel>\n"
-             "       ./zeus-mixer upload   <mixfile.new> <url>\n")
+             "       ./zeus-mixer download <url> <input.mix>\n"
+             "       ./zeus-mixer mix      <input.mix> <output.mix> <nr_rounds> <nr_parallel>\n"
+             "       ./zeus-mixer upload   <output.mix> <url>\n")
     sys.stderr.write(usage)
     raise SystemExit
 
 def main():
-    from sys import argv
+    from sys import argv, stderr
     argc = len(argv)
     if argc < 4:
         main_help()
@@ -71,13 +89,16 @@ def main():
     elif cmd == 'upload':
         do_upload(argv[2], argv[3])
     else:
-        mixfile = argv[4] if argc > 4 else "mixfile"
-        newfile = mixfile + '.new'
+        mixfile = argv[4] if argc > 4 else "mix.input"
+        newfile = mixfile.split('.', 1)[0] + '.output'
         url = argv[1]
         nr_rounds = int(argv[2])
         nr_parallel = int(argv[3])
+	stderr.write('zeus-mixer: downloading votes...\n')
         do_download(url, mixfile)
+	stderr.write('zeus-mixer: mixing votes...\n')
         do_mix(mixfile, newfile, nr_rounds, nr_parallel)
+	stderr.write('zeus-mixer: uploading votes...\n')
         do_upload(newfile, url)
 
 if __name__ == '__main__':
