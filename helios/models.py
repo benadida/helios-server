@@ -1574,7 +1574,7 @@ class Voter(HeliosModel):
 
   @property
   def name(self):
-    return self.user.name
+    return self.voter_name
 
   @property
   def voter_id(self):
