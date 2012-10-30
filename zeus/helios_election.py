@@ -15,6 +15,7 @@ from helios.crypto import electionalgs
 from helios.crypto import utils
 
 from django.db import connection
+from hashlib import sha256
 
 
 MIXNET_NR_PARALLEL = getattr(settings, 'ZEUS_MIXNET_NR_PARALLEL', 2)
@@ -299,13 +300,13 @@ class HeliosElection(ZeusCoreElection):
     def do_get_voter(self, voter_uuid):
         v = self._get_voter_object(voter_uuid)
         return u"%s %s %s <%s>" % (v.voter_name, v.voter_surname, v.voter_fathername or '',
-                                  v.voter_email)
+                                   sha256(v.voter_email).hexdigest())
 
     def do_get_voters(self):
         voters = {}
         for v in self.model.election.voter_set.all():
             voters[v.uuid] = u"%s %s %s <%s>" % (v.voter_name, v.voter_surname, v.voter_fathername or '',
-                                  v.voter_email)
+                                  sha256(v.voter_email).hexdigest())
 
         return voters
 
