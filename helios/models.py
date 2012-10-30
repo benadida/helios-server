@@ -692,7 +692,7 @@ class Election(HeliosModel):
 
     if not Election.objects.get(pk=self.pk).remote_mixnets_finished_at:
       mixnet.save()
-      mixnet.store_remote_file()
+      mixnet.store_mix_file()
     else:
       return "Mixing finished"
 
