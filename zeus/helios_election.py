@@ -441,7 +441,7 @@ class HeliosElection(ZeusCoreElection):
             status='finished').order_by('-mix_order')
 
         if mixnet.count() == 0:
-            return self.extract_votes_for_mixing()
+            return self.extract_votes_for_mixing()[0]
 
         return mixnet[0].zeus_mix()
 
@@ -449,7 +449,7 @@ class HeliosElection(ZeusCoreElection):
       pass
 
     def do_get_all_mixes(self):
-        mixes = [self.extract_votes_for_mixing()]
+        mixes = [self.extract_votes_for_mixing()[0]]
         for mixnet in self.model.election.mixnets.filter(status='finished').order_by('mix_order'):
           mixes.append(mixnet.mix)
           if mixnet.second_mix:

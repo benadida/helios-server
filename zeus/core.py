@@ -1504,7 +1504,7 @@ def decrypt_with_randomness(modulus, generator, order, public,
     encoded = (encoded * beta) % modulus
     if encoded >= order:
         encoded = -encoded % modulus
-    return encoded
+    return encoded - 1
 
 def decrypt_with_decryptor(modulus, generator, order, beta, decryptor):
     decryptor = inverse(decryptor, modulus)
