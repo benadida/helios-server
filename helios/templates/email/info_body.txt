@@ -1,4 +1,4 @@
-Αγαπητέ {{voter.name}},
+Αγαπητέ {{voter.voter_name}},
 
 {{custom_message|safe}}
 

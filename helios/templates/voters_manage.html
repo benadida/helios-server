@@ -26,10 +26,10 @@ Voters {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
 <table class="pretty">
 <tr><th>Alias</th><th>Name</th><th>Username</th></tr>
 {% for voter in voters %}
-<tr><td>{{voter.alias}}</td><td>{{voter.name}}</td><td>{{voter.voter_id}}
+<tr><td>{{voter.alias}}</td><td>{{voter.voter_surname}}{{voter.voter_name}}</td><td>{{voter.voter_id}}
 {% if election.frozen_at %}
 {% else %}
-[<a onclick="return confirm('επιβεβαιώστε τη διαγραφή ψηφοφόρου: {{voter.name}} ?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">x</a>]
+[<a onclick="return confirm('επιβεβαιώστε τη διαγραφή ψηφοφόρου: {{voter.voter_surname}} {{voter.voter_name}} ?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">x</a>]
 {% endif %}
 </td></tr>
 {% endfor %}

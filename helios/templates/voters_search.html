@@ -4,7 +4,7 @@
   <h2 class="title">{{election.name}} &mdash; Search Voters for '{{search_term}}' <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
 
 {% if voter %}
-Voter Found: {{voter.name}} ({{voter.voter_id}})<br /><br />
+Voter Found: {{voter.voter_surname}} ({{voter.voter_id}})<br /><br />
 {% if election.frozen_at %}
 <a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_id}}">email this voter</a>
 {% else %}

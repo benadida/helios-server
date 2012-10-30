@@ -1,4 +1,4 @@
-Νόμιμος παραλήπτης: {{voter.voter_surname}} {{voter.name}}
+Νόμιμος παραλήπτης: {{voter.voter_surname}} {{voter.voter_name}}
 
 Αξιότιμε/η κ. εκλέκτορα,{% if custom_message %}
 
