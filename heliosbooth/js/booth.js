@@ -1,4 +1,7 @@
-$("title, #banner h1").content('PAGE_TITLE');
+
+$(document).ready(function(){
+  $("title, #banner h1").content('PAGE_TITLE');
+});
 
 BOOTH = {};
 BOOTH.debug = true;
@@ -131,7 +134,7 @@ BOOTH.setup_election = function(raw_json) {
 
     if ($.browser.msie) {
             alert("Το πρόγραμμα πλοήγησης που χρησιμοποιείτε δεν υποστηρίζεται από την πλατφόρμα \"Ζευς\". Χρησιμοποιήστε τις νέες εκδόσεις των προγραμμάτων (browser) Mozilla Firefox ή Google Chrome.\n\nΓια περισσότερες πληροφορίες επικοινωνήστε μαζί μας\n\n" + BOOTH.election.help_phone);
-            window.location = '/auth/logout?return_url=/faqs/voter/#iesupport';
+            window.location = '/auth/logout?return_url=/faqs/voter/#browser-support';
         }
 
 
