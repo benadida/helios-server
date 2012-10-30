@@ -44,8 +44,8 @@ from heliosauth.models import User, AUTH_SYSTEMS
 from heliosauth.jsonfield import JSONField
 from helios.datatypes import LDObject
 
-from zeus.core import numbers_hash, mix_ciphers, gamma_decode, \
-    to_absolute_answers
+from zeus.core import (numbers_hash, mix_ciphers,
+                       gamma_decode, to_absolute_answers)
 
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
   class Meta:
@@ -982,7 +982,6 @@ class Election(HeliosModel):
 
     if hasattr(answer, 'answer') and answer.answer:
       zeus_vote['audit_code'] = audit_password
-      zeus_vote['plain_answer'] = answer.answer
       zeus_vote['voter_secret'] = answer.randomness[0]
 
     if audit_password:
