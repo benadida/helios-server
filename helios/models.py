@@ -76,7 +76,7 @@ class ElectionMixnet(HeliosModel):
   mix_error = models.TextField(null=True, blank=True)
   mix = JSONField(null=True)
   second_mix = JSONField(null=True)
-  mix_file = models.FileField(upload_to=settings.ZEUS_MIXES_PATH)
+  mix_file = models.FileField(upload_to=settings.ZEUS_MIXES_PATH, null=True, default=None)
 
 
   class Meta:
@@ -1657,6 +1657,9 @@ class CastVote(HeliosModel):
   fingerprint = models.CharField(max_length=255)
   signature = JSONField(null=True)
   index = models.PositiveIntegerField(null=True)
+
+  class Meta:
+    unique_together = (('election', 'index'),)
 
   @property
   def datatype(self):
