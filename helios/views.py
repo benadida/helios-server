@@ -12,7 +12,7 @@ from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.http import *
 from django.utils.encoding import smart_str, smart_unicode
-from django.db import transaction
+from django.db import transaction, connection
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
 
@@ -739,12 +739,20 @@ def one_election_cast(request, election):
   if not voter:
     return HttpResponseRedirect(reverse(one_election_cast_confirm, args=[election.uuid]))
 
-  with transaction.commit_on_success():
-    encrypted_vote = request.POST['encrypted_vote']
-    vote = datatypes.LDObject.fromDict(utils.from_json(encrypted_vote),
-          type_hint='phoebus/EncryptedVote').wrapped_obj
-    audit_password = request.POST.get('audit_password', None)
-    signature = {'signature': election.cast_vote(voter, vote, audit_password)}
+  encrypted_vote = request.POST['encrypted_vote']
+  vote = datatypes.LDObject.fromDict(utils.from_json(encrypted_vote),
+        type_hint='phoebus/EncryptedVote').wrapped_obj
+  audit_password = request.POST.get('audit_password', None)
+
+  cursor = connection.cursor()
+  try:
+    cursor.execute("SELECT pg_advisory_lock(1)")
+    with transaction.commit_on_success():
+      cast_result = election.cast_vote(voter, vote, audit_password)
+  finally:
+    cursor.execute("SELECT pg_advisory_unlock(1)")
+
+  signature = {'signature': cast_result}
 
   if 'audit_request' in request.session:
       del request.session['audit_request']

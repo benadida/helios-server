@@ -116,8 +116,6 @@ class HeliosElection(ZeusCoreElection):
 
     def do_index_vote(self, fingerprint):
         # TODO: READ FOR UPDATE
-        c = connection.cursor()
-        c.execute("SELECT pg_advisory_lock(1)")
         index = self.model.election.castvote_set.filter(verified_at__isnull=False).count()
         return index
 
@@ -236,8 +234,6 @@ class HeliosElection(ZeusCoreElection):
         if vote['previous']:
             vobj.previous = vote['previous']
         vobj.save()
-        c = connection.cursor()
-        c.execute("SELECT pg_advisory_unlock(1)")
 
         voter = self._get_voter_object(vote['voter'])
         voter.vote = enc_vote
