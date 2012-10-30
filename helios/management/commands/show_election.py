@@ -26,8 +26,11 @@ class Command(BaseCommand):
         extended_until = election.voting_extended_until
         ended_at = election.voting_ended_at
         last_visit_at = election.last_voter_visit()
-        last_visit_text = last_visit_at.strftime("%Y-%m-%d %H:%M:%S") + \
-                " (%s ago)" % (timesince(last_visit_at))
+        if last_visit_at is not None:
+            last_visit_text = last_visit_at.strftime("%Y-%m-%d %H:%M:%S") + \
+                    " (%s ago)" % (timesince(last_visit_at))
+        else:
+            last_visit_text = 'none'
 
         print "uuid:                 ", election.uuid
         print "admin:                ", election.admins.all()[0].pretty_name
