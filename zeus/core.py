@@ -49,6 +49,7 @@ MIN_MIX_ROUNDS = 3
 
 V_CAST_VOTE     =   'CAST VOTE'
 V_PUBLIC_AUDIT  =   'PUBLIC AUDIT'
+V_PUBLIC_AUDIT_FAILED = 'PUBLIC AUDIT FAILED'
 V_AUDIT_REQUEST =   'AUDIT REQUEST'
 
 V_FINGERPRINT   =   'FINGERPRINT: '
@@ -1854,7 +1855,8 @@ def verify_vote_signature(vote_signature):
      m08, m09, m10, m11, m12, m13, m14, m15, m16) = message.split('\n', 16)
     if (not (m00.startswith(V_CAST_VOTE)
              or m00.startswith(V_AUDIT_REQUEST)
-             or m00.startswith(V_PUBLIC_AUDIT))
+             or m00.startswith(V_PUBLIC_AUDIT)
+             or m00.startswith(V_PUBLIC_AUDIT_FAILED))
         or not m01.startswith(V_FINGERPRINT)
         or not m02.startswith(V_INDEX)
         or not m03.startswith(V_PREVIOUS)
@@ -2961,6 +2963,12 @@ class ZeusCoreElection(object):
             vote['previous'] = ''
             vote['index'] = None
             vote['status'] = V_PUBLIC_AUDIT
+            missing, failed = self.verify_audit_votes(votes=[vote])
+            if missing:
+                m = "This should have been impossible"
+                raise AssertionError(m)
+            if failed:
+                vote['status'] = V_PUBLIC_AUDIT_FAILED
             comments = self.custom_audit_publication_message(vote)
             signature = self.sign_vote(vote, comments)
             vote['signature'] = signature
@@ -3025,17 +3033,21 @@ class ZeusCoreElection(object):
         # DANGER: commit all data to disk before giving a signature out!
         return signature
 
-    def verify_audit_votes(self):
+    def verify_audit_votes(self, votes=None):
         teller = self.teller
-        audit_reqs = self.do_get_audit_requests()
-        get_vote = self.do_get_vote
-        votes = [dict(get_vote(f)) for f in audit_reqs]
+        if not votes:
+            audit_reqs = self.do_get_audit_requests()
+            get_vote = self.do_get_vote
+            votes = [dict(get_vote(f)) for f in audit_reqs]
+            add_plaintext = 0
+        else:
+            add_plaintext = 1
         failed = []
         missing = []
         modulus, generator, order = self.do_get_cryptosystem()
         public = self.do_get_election_public()
         nr_candidates = len(self.do_get_candidates())
-        max_encoded = gamma_encoding_max(nr_candidates) + 1
+        max_encoded = gamma_encoding_max(nr_candidates)
 
         with teller.task("Verifying audit votes", total=len(votes)):
             for vote in votes:
@@ -3075,6 +3087,8 @@ class ZeusCoreElection(object):
                     m = "[%s] invalid plaintext!"
                     teller.notice(m, vote['fingerprint'])
                     failed.append(vote)
+                if add_plaintext:
+                    vote['plaintext'] = encoded
                 teller.advance()
 
         return missing, failed
@@ -3896,7 +3910,10 @@ def main():
                         help="Display election counted votes fingerprints")
 
     parser.add_argument('--extract-signatures', metavar='prefix',
-                        help="Write election signatures for counted votes")
+        help="Write election signatures for counted votes to files")
+
+    parser.add_argument('--extract-audits', metavar='prefix',
+                        help="Write election public audits to files")
 
     parser.add_argument('--generate', nargs='*', metavar='outfile',
         help="Generate a random election and write it out in JSON")
@@ -3930,7 +3947,7 @@ def main():
 
     args = parser.parse_args()
 
-    def do_extract_signatures(election, prefix='election', teller=_teller):
+    def do_extract_signatures(election, prefix='counted', teller=_teller):
         vfm, counted_list = election.extract_votes_for_mixing()
         count = 0
         total = len(counted_list)
@@ -3946,6 +3963,21 @@ def main():
                 teller.status("%d/%d '%s'", count, total, filename, tell=1)
 
         return vfm, counted_list
+
+    def do_extract_audits(election, prefix='audit', teller=_teller):
+        audits = election.do_get_audit_publications()
+        count = 0
+        total = len(audits)
+
+        with teller.task("Extracting audit publications"):
+            for fingerprint in audits:
+                vote = election.do_get_vote(fingerprint)
+                signature = vote['signature']
+                filename = prefix + '_' + fingerprint
+                with open(filename, "w") as f:
+                    f.write(signature)
+                count += 1
+                teller.status("%d/%d '%s'", count, total, filename, tell=1)
 
     def do_counted_votes(election):
         vfm, counted_list = election.extract_votes_for_mixing()
@@ -3984,6 +4016,9 @@ def main():
         if args.extract_signatures:
             do_extract_signatures(election, args.extract_signatures,
                                   teller=teller)
+        if args.extract_audits:
+            do_extract_audits(election, args, args.extract_audits,
+                              teller=teller)
         if args.counted_votes:
             do_counted_votes(election)
         if args.report and 'election_crypto_report' in exported:
@@ -4001,6 +4036,10 @@ def main():
         if args.extract_signatures:
             do_extract_signatures(election, args.extract_signatures,
                                   teller=teller)
+
+        if args.extract_audits:
+            do_extract_audits(election, args.extract_audits,
+                              teller=teller)
 
         if args.counted_votes:
             do_counted_votes(election)

@@ -44,7 +44,7 @@ from heliosauth.models import User, AUTH_SYSTEMS
 from heliosauth.jsonfield import JSONField
 from helios.datatypes import LDObject
 
-from zeus.core import (numbers_hash, mix_ciphers,
+from zeus.core import (numbers_hash, mix_ciphers, gamma_encoding_max,
                        gamma_decode, to_absolute_answers)
 
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
@@ -1753,8 +1753,15 @@ class AuditedBallot(models.Model):
   @property
   def choices(self):
     answers = self.election.questions[0]['answers']
-    choices = self.vote.encrypted_answers[0].answer[0]
-    return map(lambda x:answers[x], to_absolute_answers(choices, len(answers)))
+    nr_answers = len(answers)
+    encoded = self.vote.encrypted_answers[0].answer
+    max_encoded = gamma_encoding_max(nr_answers)
+    if encoded > max_encoded:
+        choices = []
+    else:
+        selection = gamma_decode(encoded, nr_answers)
+        choices = to_absolute_answers(selection, nr_answers)
+    return map(lambda x:answers[x], choices)
 
   @classmethod
   def get(cls, election, vote_hash):

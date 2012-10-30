@@ -273,6 +273,7 @@ class HeliosElection(ZeusCoreElection):
         vobj.fingerprint = vote['fingerprint']
         new_vote = vobj.vote
         new_vote.encrypted_answers[0].randomness = [vote['voter_secret']]
+        new_vote.encrypted_answers[0].answer = vote['plaintext']
         vobj.raw_vote = json.dumps(new_vote.toJSONDict(with_randomness=True))
         vobj.is_request = False
         vobj.save()
