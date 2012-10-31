@@ -1244,6 +1244,7 @@ def one_election_questions(request, election):
     questions.append(question)
     election.questions = questions
     election.candidates = candidates
+    election.sort_candidates()
     election.save()
     election.update_answers()
 

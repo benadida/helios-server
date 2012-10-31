@@ -356,11 +356,14 @@ class Election(HeliosModel):
 
     return self.mix_key
 
+  def sort_candidates(self):
+    self.candidates = sorted(self.candidates, key=lambda c: unicode(c['surname']),
+                   cmp=heliosutils.locale_comparator(settings.COLLATION_LOCALE))
+
   def update_answers(self):
-    cands = sorted(self.candidates, key=lambda c: c['surname'])
-    self.cands = cands
+    self.sort_candidates()
     answers = []
-    for cand in cands:
+    for cand in self.candidates:
       answers.append(u"%s %s %s [%s]" % (cand['surname'], cand['name'], cand['father_name'],
                              cand['department'].strip()))
 

@@ -7,6 +7,9 @@ Ben Adida - ben@adida.net
 
 import urllib, re, sys, datetime, urlparse, string
 import threading
+import PyICU
+
+from PyICU import Collator
 
 # utils from auth, too
 from heliosauth.utils import from_json, to_json, JSONtoDict, JSONFiletoDict
@@ -15,6 +18,9 @@ from django.conf import settings
 
 import random, logging
 import hashlib, hmac, base64
+
+def locale_comparator(locale='el_GR.UTF-8'):
+    return Collator.createInstance(PyICU.Locale(locale)).compare
 
 def force_utf8(s):
   if isinstance(s, unicode):
