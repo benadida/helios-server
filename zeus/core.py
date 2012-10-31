@@ -999,10 +999,10 @@ def validate_choices(choices, nr_candidates=None, max_choices=None):
 
 def permutation_to_selection(permutation):
     nr_elements = len(permutation)
-    lefts = [None] * nr_elements
-    rights = [None] * nr_elements
-    offsets = [None] * nr_elements
-    shifts = [0] * nr_elements
+    lefts = list([None]) * nr_elements
+    rights = list([None]) * nr_elements
+    offsets = list([None]) * nr_elements
+    shifts = list([0]) * nr_elements
     maxdepth = 0
 
     iter_permutation = iter(permutation)
@@ -1068,9 +1068,9 @@ def get_random_selection(nr_elements, full=1):
 
 def selection_to_permutation(selection):
     nr_elements = len(selection)
-    lefts = [None] * nr_elements
-    rights = [None] * nr_elements
-    leftpops = [0] * nr_elements
+    lefts = list([None]) * nr_elements
+    rights = list([None]) * nr_elements
+    leftpops = list([0]) * nr_elements
     pop = 1
 
     iter_selection = iter(reversed(selection))
@@ -1107,7 +1107,7 @@ def selection_to_permutation(selection):
     append = stack.append
     pop = stack.pop
 
-    permutation = [None] * nr_elements
+    permutation = list([None]) * nr_elements
     offset = 0
     max_offset = nr_elements - 1
 
@@ -1994,7 +1994,7 @@ def compute_mix_challenge(cipher_mix):
 def get_random_permutation_gamma(nr_elements):
     if nr_elements <= 0:
         return []
-    low = [0] * nr_elements
+    low = list([0]) * nr_elements
     high = range(nr_elements - 1, -1, -1)
     max_low = gamma_encode(low, nr_elements)
     max_high = gamma_encode(high, nr_elements)
@@ -2006,8 +2006,8 @@ def shuffle_ciphers(modulus, generator, order, public, ciphers,
                     teller=None, report_thresh=128, async_channel=None):
     nr_ciphers = len(ciphers)
     mixed_offsets = get_random_permutation(nr_ciphers)
-    mixed_ciphers = [None] * nr_ciphers
-    mixed_randoms = [None] * nr_ciphers
+    mixed_ciphers = list([None]) * nr_ciphers
+    mixed_randoms = list([None]) * nr_ciphers
     count = 0
 
     for i in xrange(nr_ciphers):
@@ -2108,8 +2108,8 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS,
                 # original_ciphers -> image
                 # original_ciphers -> mixed_ciphers
                 # Provide image -> mixed_ciphers
-                new_offsets = [None] * nr_ciphers
-                new_randoms = [None] * nr_ciphers
+                new_offsets = list([None]) * nr_ciphers
+                new_randoms = list([None]) * nr_ciphers
 
                 for j in xrange(nr_ciphers):
                     cipher_random = randoms[j]
@@ -2432,6 +2432,7 @@ class ZeusCoreElection(object):
         self.cast_votes = {}
         self.audit_requests = {}
         self.audit_publications = []
+        self.excluded_voters = {}
 
     def do_store_audit_publication(self, fingerprint):
         self.audit_publications.append(fingerprint)
@@ -2492,6 +2493,12 @@ class ZeusCoreElection(object):
 
     def do_get_all_cast_votes(self):
         return dict(self.cast_votes)
+
+    def do_store_excluded_voter(self, voter_key, reason):
+        self.excluded_voters[voter_key] = reason
+
+    def do_get_excluded_voters(self):
+        return dict(self.excluded_voters)
 
     def custom_audit_publication_message(self, vote):
         return ''
@@ -2785,6 +2792,8 @@ class ZeusCoreElection(object):
             trustee_public_key, trustee_key_proof = t
             trustee_public_key = int(trustee_public_key)
             self.do_store_trustee(trustee_public_key, *trustee_key_proof)
+        for voter_key, reason in voting['excluded_voters'].iteritems():
+            self.do_store_excluded_voter(voter_key, reason)
         self.do_store_voters(voting['voters'])
         self.do_store_voter_audit_codes(voting['voter_audit_codes'])
         self.set_voting()
@@ -3066,7 +3075,7 @@ class ZeusCoreElection(object):
                                          eb['challenge'],
                                          eb['response']):
                     failed.append(vote)
-                    m = "[%s] cannot verify encryption"
+                    m = "failed audit [%s]"
                     teller.notice(m, vote['fingerprint'])
                     teller.advance()
                     continue
@@ -3091,6 +3100,13 @@ class ZeusCoreElection(object):
                 teller.advance()
 
         return missing, failed
+
+    def exclude_voter(self, voter_key, reason=''):
+        stage = self.do_get_stage()
+        if stage in ('FINISHED', 'DECRYPTING', 'MIXING'):
+            m = "Cannot exclude voter in stage '%s'!" % (stage,)
+            raise ZeusError(m)
+        self.do_store_excluded_voter(voter_key, reason)
 
     def validate_voting(self):
         teller = self.teller
@@ -3157,6 +3173,17 @@ class ZeusCoreElection(object):
         if all_votes:
             m = "%d unaccounted votes in archive!" % len(all_votes)
             raise AssertionError(m)
+
+        excluded = self.do_get_excluded_voters()
+        nr_excluded = len(excluded)
+        with teller.task("Validating excluded voters", total=nr_excluded):
+            for voter_key, reason in excluded.iteritems():
+                voter = self.do_get_voter(voter_key)
+                if voter is None:
+                    m = "Nonexistent excluded voter '%s'!"
+                    raise AssertionError(m)
+                teller.advance()
+
         teller.finish('Validating state')
 
     def export_voting(self):
@@ -3172,15 +3199,21 @@ class ZeusCoreElection(object):
         voting['cast_votes'] = self.do_get_all_cast_votes()
         voting['audit_requests'] = self.do_get_audit_requests()
         voting['audit_publications'] = self.do_get_audit_publications()
+        voting['excluded_voters'] = self.do_get_excluded_voters()
         return voting
 
     def extract_votes_for_mixing(self):
         vote_index = self.do_get_vote_index()
         nr_votes = len(vote_index)
-        scratch = [None] * nr_votes
-        counted = [None] * nr_votes
+        scratch = list([None]) * nr_votes
+        counted = list([None]) * nr_votes
         do_get_vote = self.do_get_vote
         vote_count = 0
+        excluded_voters = self.do_get_excluded_voters()
+        excluded_votes = set()
+        update = excluded_votes.update
+        for voter_key, reason in excluded_voters.iteritems():
+            update(self.do_get_cast_votes(voter_key))
 
         for i, fingerprint in enumerate(vote_index):
             vote = dict(do_get_vote(fingerprint))
@@ -3188,6 +3221,10 @@ class ZeusCoreElection(object):
             if i != index:
                 m = "Index mismatch %d != %d. Corrupt index!" % (i, index)
                 raise AssertionError(m)
+
+            if fingerprint in excluded_votes:
+                continue
+
             eb = vote['encrypted_ballot']
             _vote = [eb['alpha'], eb['beta']]
             scratch[i] = _vote
@@ -3334,6 +3371,7 @@ class ZeusCoreElection(object):
                     previous_mixed = previous['mixed_ciphers']
                     original_ciphers = mix['original_ciphers']
                     if original_ciphers != previous_mixed:
+                        import pdb; pdb.set_trace()
                         m = ("Invalid mix %d/%d: Does not mix previous one"
                             % (i+1, nr_mixes))
                         raise AssertionError(m)
@@ -3354,6 +3392,21 @@ class ZeusCoreElection(object):
                     if original_ciphers != votes_for_mixing['original_ciphers']:
                         m = "Invalid first mix: Does not mix votes in archive!"
                         raise AssertionError(m)
+
+                    counted_set = set(counted_list)
+                    del counted_list
+
+                    excluded = self.do_get_excluded_voters()
+                    for voter_key, reason in excluded.iteritems():
+                        cast_votes = self.do_get_cast_votes(voter_key)
+                        for fingerprint in cast_votes:
+                            if fingerprint in counted_set:
+                                m = ("Invalid extraction for mixing: "
+                                     "vote [%s] from voter '%s' not excluded!"
+                                     % (fingerprint, voter_key))
+                                raise AssertionError(m)
+                    del votes_for_mixing
+                    del excluded
 
                 previous = mix
 
@@ -3566,19 +3619,28 @@ class ZeusCoreElection(object):
         finished['results'] = self.do_get_results()
         fingerprint = sha256(strcanonical(finished)).hexdigest()
         finished['election_fingerprint'] = fingerprint
-        crypto_report = ''
+
+        report = ''
+
         trustees = list(self.do_get_trustees())
         trustees.sort()
         for i, trustee in enumerate(trustees):
-            crypto_report += 'TRUSTEE %d: %x\n' % (i, trustee)
+            report += 'TRUSTEE %d: %x\n' % (i, trustee)
         candidates = self.do_get_candidates()
-        crypto_report += '\n'
-        for i, candidate in enumerate(candidates):
-            crypto_report += 'CANDIDATE %d: %s\n' % (i, candidate)
-        crypto_report += '\n'
-        crypto_report += 'ZEUS ELECTION FINGERPRINT: %s\n' % (fingerprint,)
+        report += '\n'
 
-        finished['election_crypto_report'] = crypto_report
+        for i, candidate in enumerate(candidates):
+            report += 'CANDIDATE %d: %s\n' % (i, candidate)
+        report += '\n'
+
+        excluded = self.do_get_excluded_voters()
+        for i, (voter, reason) in enumerate(excluded.iteritems()):
+            report += 'EXCLUDED VOTER %d: %s (%s)\n' % (i, voter, reason)
+
+        report += '\n'
+        report += 'ZEUS ELECTION FINGERPRINT: %s\n' % (fingerprint,)
+
+        finished['election_report'] = report
         return finished
 
     _export_methods = {
@@ -3601,7 +3663,7 @@ class ZeusCoreElection(object):
     def new_at_finished(cls, finished, teller=_teller, **kw):
         self = cls.new_at_decrypting(finished, teller=teller, **kw)
         self.do_store_results(finished['results'])
-        finished.pop('election_crypto_report', None)
+        finished.pop('election_report', None)
         fingerprint = finished.pop('election_fingerprint', None)
         _fingerprint = sha256(strcanonical(finished)).hexdigest()
         if fingerprint is not None:
@@ -3720,15 +3782,28 @@ class ZeusCoreElection(object):
             kw = {'audit_code': -1} if (i & 1) else {}
             kw['voter'] = voter
             vote, selection, encoded, rnd = self.mk_random_vote(**kw)
+            if vote['voter'] != voter:
+                m = "Vote has wrong voter!"
+                raise AssertionError(m)
             selections.append(selection)
             if encoded is not None:
-                plaintexts[vote['voter']] = encoded
+                plaintexts[voter] = encoded
             votes.append(vote)
             signature = self.cast_vote(vote)
             if not signature.startswith(V_CAST_VOTE):
                 m = "Invalid cast vote signature!"
                 raise AssertionError(m)
             teller.advance()
+
+        with teller.task("Excluding last voter"):
+            cast_votes = self.do_get_cast_votes(voter)
+            if not cast_votes:
+                m = "Voter has no votes!"
+                raise AssertionError(m)
+            self.exclude_voter(voter)
+            del selections[-1]
+            del plaintexts[voter]
+
         self._selections = selections
         self._plaintexts = plaintexts
         self._votes = votes
@@ -3805,6 +3880,10 @@ class ZeusCoreElection(object):
     def mk_stage_finished(self, teller=_teller):
         with teller.task("Validating results"):
             results = self.get_results()
+            if len(results) != self._nr_votes -1:
+                m = "Vote exclusion was not performed!"
+                raise AssertionError(m)
+
             if sorted(results) != sorted(self._plaintexts.values()):
                 m = ("Invalid Election! "
                      "Casted plaintexts do not match plaintext results!")
@@ -3905,6 +3984,9 @@ def main():
     parser.add_argument('--report', action='store_true', default=False,
                         help="Display election crypto report")
 
+    parser.add_argument('--results', action='store_true', default=False,
+                        help="Display election plaintext results")
+
     parser.add_argument('--counted-votes', action='store_true', default=False,
                         help="Display election counted votes fingerprints")
 
@@ -3934,7 +4016,7 @@ def main():
 
     parser.add_argument('--votes', type=int, default=10,
                         dest='nr_votes',
-                        help="Generate: Number of votes")
+                        help="Generate: Number of valid votes to cast")
 
     parser.add_argument('--mixes', type=int, default=2,
                         dest='nr_mixes',
@@ -3987,9 +4069,13 @@ def main():
 
     def do_report(election):
         exported, stage = election.export()
-        if 'election_crypto_report' in exported:
-            print exported['election_crypto_report']
+        if 'election_report' in exported:
+            print exported['election_report']
         return exported, stage
+
+    def do_results(election):
+        results = election.do_get_results()
+        print 'RESULTS: %s\n' % (' '.join(str(n) for n in results),)
 
     def main_generate(args, teller=_teller, nr_parallel=0):
         filename = args.generate
@@ -4009,9 +4095,12 @@ def main():
         if not filename:
             name = ("%x" % election.do_get_election_public())[:16]
             filename = 'election-%s-%s.json' % (name, stage)
-            sys.stderr.write("writing out to '%s'\n" % (filename,))
+            sys.stderr.write("writing out to '%s'\n\n" % (filename,))
         with open(filename, "w") as f:
             json.dump(exported, f, indent=2)
+        report = exported.get('election_report', '')
+        del exported
+
         if args.extract_signatures:
             do_extract_signatures(election, args.extract_signatures,
                                   teller=teller)
@@ -4020,8 +4109,12 @@ def main():
                               teller=teller)
         if args.counted_votes:
             do_counted_votes(election)
-        if args.report and 'election_crypto_report' in exported:
-            print exported['election_crypto_report']
+
+        if args.results:
+            do_results(election)
+
+        if args.report:
+            print report
 
     def main_verify_election(args, teller=_teller, nr_parallel=0):
         novalidate = args.novalidate
@@ -4042,6 +4135,9 @@ def main():
 
         if args.counted_votes:
             do_counted_votes(election)
+
+        if args.results:
+            do_results(election)
 
         if args.report:
             do_report(election)
