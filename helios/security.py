@@ -171,6 +171,9 @@ def election_admin(**checks):
     def election_admin_wrapper(request, election_uuid=None, *args, **kw):
       election = get_election_by_uuid(election_uuid)
 
+      if not election:
+        raise Http404
+
       if election.canceled_at:
         from helios.views import render_template
         return render_template(request, 'election_canceled',
@@ -194,6 +197,9 @@ def trustee_check(func):
     election = get_election_by_uuid(election_uuid)
 
     trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
+
+    if not election:
+      raise Http404
 
     if election.canceled_at:
       from helios.views import render_template
