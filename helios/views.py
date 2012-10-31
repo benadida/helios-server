@@ -355,11 +355,15 @@ def voters_csv(request, election):
   response['Content-Dispotition'] = 'attachment; filename="%s"' % filename
   writer = csv.writer(response)
   for voter in voters:
+    vote_field = u"ΝΑΙ" if voter.castvote_set.count() else u"ΟΧΙ"
+    if voter.excluded_at:
+        vote_field += u"(ΕΞΑΙΡΕΘΗΚΕ)"
     writer.writerow(map(force_utf8, [voter.voter_email,
                                        voter.voter_name,
                                        voter.voter_surname,
                                        voter.voter_fathername or '',
-                                   u"ΝΑΙ" if voter.castvote_set.count() else u"ΟΧΙ"]))
+                                       vote_field
+                                   ]))
   return response
 
 @election_admin()
