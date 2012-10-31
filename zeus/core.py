@@ -3371,7 +3371,6 @@ class ZeusCoreElection(object):
                     previous_mixed = previous['mixed_ciphers']
                     original_ciphers = mix['original_ciphers']
                     if original_ciphers != previous_mixed:
-                        import pdb; pdb.set_trace()
                         m = ("Invalid mix %d/%d: Does not mix previous one"
                             % (i+1, nr_mixes))
                         raise AssertionError(m)

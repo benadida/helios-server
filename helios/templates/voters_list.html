@@ -106,10 +106,10 @@
       {{ voter.voter_surname }} , {{ voter.voter_name }} {% if voter.voter_fathername %}, {{ voter.voter_fathername }}{% endif %}
     </td>
     <td>
-      {% if voter.castvote_set.count > 0 %}
-      Ναι
+      {% if voter.voted %}
+      ΝΑΙ {% if voter.excluded_at %}<b style="color:red">(ΕΞΑΙΡΕΘΗΚΕ)</b>{% endif %}
       {% else %}
-      Όχι
+      ΟΧΙ
       {% endif %}
 
     </td>
@@ -131,14 +131,25 @@
 <a class="foundicon-mail" href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}"> &nbsp;Αποστολή email</a>
 </li>
 {% endif %}
-    {% if not voter.vote %}
+    {% if not voter.voted %}
             <li>
             <a class="alert foundicon-remove" 
-                onclick="return confirm('Eπιβεβαιώστε τη διαγραφή ψηφοφόρου: {{ voter.voter_name}} {{ voter.voter_surname }} {{ voter.voter_fathername }} ({{voter.voter_email}}) ?');" 
+              onclick="return confirm('Eπιβεβαιώστε τη διαγραφή ψηφοφόρου: '+
+              '{{ voter.voter_name}} {{ voter.voter_surname }} ' +
+              '{{voter.voter_fathername }} ({{voter.voter_email}}) ;');" 
   href="{% url helios.views.voter_delete election.uuid, voter.uuid %}"> &nbsp;Διαγραφή
   </a>
             </li>
-  {% endif %}
+            {% else %}
+            {% if not election.mixing_started and not voter.excluded_at %}
+            <li>
+            <a class="alert foundicon-remove" 
+  href="{% url helios.views.voter_exclude election.uuid, voter.uuid %}">
+  &nbsp;Εξαίρεση
+  </a>
+            </li>
+            {% endif %}
+            {% endif %}
           </ul>
         </div>
 </td>

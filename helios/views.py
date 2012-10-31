@@ -1081,6 +1081,40 @@ def one_election_audited_ballots(request, election):
     'offset_plus_limit': offset+limit})
 
 @election_admin()
+def voter_exclude(request, election, voter_uuid):
+
+  user = get_user(request)
+  admin_p = security.user_can_admin_election(user, election)
+
+  if not election.frozen_at or datetime.datetime.now() <= election.voting_starts_at:
+    raise PermissionDenied()
+
+  # admin requested mixing to start
+  if election.mixing_started:
+    raise PermissionDenied()
+
+  voter = Voter.get_by_election_and_uuid(election, voter_uuid)
+  if not voter:
+    raise PermissionDenied()
+
+  if voter.excluded_at:
+    raise PermissionDenied()
+
+  if request.method == 'POST' and request.POST.get('confirm') == '1':
+    election.zeus_election.exclude_voter(voter.uuid,
+                                         request.POST.get('reason', ''))
+    return HttpResponseRedirect(reverse(voters_list_pretty,
+                                        args=[election.uuid]))
+
+  return render_template(request, 'voter_exclude', {
+      'election': election,
+      'voter_o': voter,
+      'menu_active': 'voters',
+      'admin_p': admin_p
+  })
+
+
+@election_admin()
 def voter_delete(request, election, voter_uuid):
   """
   Two conditions under which a voter can be deleted:
@@ -1092,7 +1126,7 @@ def voter_delete(request, election, voter_uuid):
   #if election.frozen_at and (not election.openreg):
   #  raise PermissionDenied()
 
-  if election.tallied:
+  if election.tallied or election.mixing_started:
     raise PermissionDenied()
 
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
@@ -1322,7 +1356,8 @@ def one_election_freeze(request, election):
       election.freeze()
     except Exception, e:
       error = str(e)
-      return render_template(request, 'election_freeze', {'error': error, 'election': election, 'issues' : issues, 'issues_p' : len(issues) > 0})
+      return render_template(request, 'election_freeze',
+                             {'error': error, 'election': election, 'issues' : issues, 'issues_p' : len(issues) > 0})
 
     if get_user(request):
       return HttpResponseRedirect(reverse(voters_email, args=[election.uuid]))
@@ -1350,6 +1385,7 @@ def one_election_compute_tally(request, election):
 
   if not election.voting_ended_at:
     election.voting_ended_at = datetime.datetime.now()
+
   election.tallying_started_at = datetime.datetime.now()
   election.save()
 

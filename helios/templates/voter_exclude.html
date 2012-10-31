@@ -1,0 +1,44 @@
+{% extends "election_page.html" %}
+
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
+
+{% block title %}
+{{election.name}}: εξαίρεση ψηφοφόρου 
+<b>{{ voter_o.full_name }}</b>
+{% endblock %}
+
+{% block content %}
+<h5>
+{{election.name}}: Εξαίρεση ψηφοφόρου 
+<b>{{ voter_o.full_name }}</b>
+</h5>
+<p>
+Παρακαλούμε επιβεβαιώστε την εξαίρεση του ψηφοφόρου 
+"{{ voter_o.full_name }}" και δηλώστε την αιτία εξαίρεσης 
+στο παρακάτω πεδίο.
+</p>
+<p>
+Μετά το βήμα αυτό ο ψηφοφόρος δεν θα 
+μπορεί να ψηφίσει και η επανενεργοποίηση της δυνατότητας 
+ψήφου δεν θα είναι δυνατή.
+  </p>
+  <form class="prettyform" 
+    action="{% url helios.views.voter_exclude election.uuid voter_o.uuid %}" 
+    method="POST" id="exclude_form">
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+    <input type="hidden" name="confirm" value="1" />
+    <label>Αιτία εξαίρεσης</label>
+    <textarea name="reason"></textarea>
+  <div>
+  <label for="">&nbsp;</label><input class="button alert medium" type="submit" value="Εξαίρεση" id="send_button" />
+  <br /><Br /><a 
+    href="{% url helios.views.voters_list_pretty election.uuid %}" 
+    class="button alert medium">Επιστροφή</a>
+  </div>
+  </form>
+  
+
+{% endblock %}
+

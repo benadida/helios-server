@@ -514,3 +514,16 @@ class HeliosElection(ZeusCoreElection):
                 #'result_type': 'absolute', 'tally_type': 'stv'}]
             #e.save()
 
+    def do_store_excluded_voter(self, voter_key, reason):
+        voter = self.model.election.voter_set.get(uuid=voter_key)
+        voter.excluded_at = datetime.datetime.now()
+        voter.exclude_reason = reason
+        voter.save()
+
+    def do_get_excluded_voters(self):
+        excluded_voters = {}
+        for voter in self.model.election.voter_set.filter(excluded_at__isnull=False):
+            excluded_voters[voter.uuid] = voter.exclude_reason
+        return excluded_voters
+
+

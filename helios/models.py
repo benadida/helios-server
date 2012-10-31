@@ -112,6 +112,7 @@ class ElectionMixnet(HeliosModel):
     self.status = 'pending'
     self.mix_error = None
     self.save()
+    self.parts.all().delete()
     return True
 
   def zeus_mix(self):
@@ -408,7 +409,7 @@ class Election(HeliosModel):
 
   @property
   def tallied(self):
-    return self.workflow.tallied(self)
+    return self.mixing_finished
 
   @property
   def encrypted_tally_hash(self):
@@ -551,7 +552,7 @@ class Election(HeliosModel):
       return self.voter_set.filter(last_visit__isnull=False).count()
 
   def voted_count(self):
-    return self.castvote_set.distinct('voter').count()
+    return self.castvote_set.filter(voter__excluded_at__isnull=True).distinct('voter').count()
 
   def step_created_completed(self):
     return bool(self.pk)
@@ -862,6 +863,10 @@ class Election(HeliosModel):
     self.generate_voters_hash()
     self.set_eligibility()
     self.save()
+
+  @property
+  def mixing_started(self):
+      return self.tallying_started_at
 
   @property
   def mixing_finished(self):
@@ -1469,6 +1474,9 @@ class Voter(HeliosModel):
   last_email_send_at = models.DateTimeField(null=True)
   last_visit = models.DateTimeField(null=True)
 
+  excluded_at = models.DateTimeField(null=True, default=None)
+  exclude_reason = models.TextField(default='')
+
   class Meta:
     unique_together = (('election', 'voter_login_id'))
 
@@ -1480,6 +1488,13 @@ class Voter(HeliosModel):
       self.user = User(user_type='password', user_id=self.voter_email,
                        name=u"%s %s" % (self.voter_name, self.voter_surname))
 
+  def voted(self):
+      return self.castvote_set.count() > 0
+
+  @property
+  def full_name(self):
+    return u"%s %s %s (%s)" % (self.voter_name, self.voter_surname,
+                               self.voter_fathername or '', self.voter_email)
 
   def init_audit_passwords(self):
     if not self.audit_passwords:

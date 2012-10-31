@@ -28,6 +28,12 @@ def get_voter(request, user, election):
   voter = None
   if request.session.has_key('CURRENT_VOTER'):
     voter = request.session['CURRENT_VOTER']
+    voter = Voter.get_by_election_and_uuid(election, voter.uuid)
+
+    if not voter or voter.excluded_at:
+      del request.session['CURRENT_VOTER']
+      raise PermissionDenied
+
     if voter.election != election:
       voter = None
 
