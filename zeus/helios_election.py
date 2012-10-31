@@ -430,15 +430,12 @@ class HeliosElection(ZeusCoreElection):
           factors[trustee.public_key.y] = self._get_zeus_factors(trustee)
         return factors
 
-
     def do_get_last_mix(self):
         mixnet = helios_models.ElectionMixnet.objects.filter(
             election=self.model.election,
             status='finished').order_by('-mix_order')
-
         if mixnet.count() == 0:
             return self.extract_votes_for_mixing()[0]
-
         return mixnet[0].zeus_mix()
 
     def do_store_mix(self, mix):
@@ -447,7 +444,7 @@ class HeliosElection(ZeusCoreElection):
     def do_get_all_mixes(self):
         mixes = [self.extract_votes_for_mixing()[0]]
         for mixnet in self.model.election.mixnets.filter(status='finished').order_by('mix_order'):
-          mixes.append(mixnet.mix)
+          mixes.append(mixnet.zeus_mix())
           if mixnet.second_mix:
             mixes.append(mixnet.second_mix)
         return mixes

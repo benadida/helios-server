@@ -309,7 +309,9 @@ def election_remote_mix(request, election_uuid, mix_key):
   if request.method == "GET":
       mixnet = election.get_last_mix()
       response = HttpResponse(mimetype="application/json")
-      response.write(mixnet.mix_file.read())
+      fp = file(mixnet.mix_file.path)
+      response.write(fp.read())
+      fp.close()
       return response
 
   mix_id = "remote mix"

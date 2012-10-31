@@ -18,6 +18,7 @@ import base64
 import zipfile
 import os
 import tempfile
+import marshal
 
 import helios.views
 
@@ -37,7 +38,9 @@ from helios import utils as heliosutils
 from helios import datatypes
 from helios.datatypes.djangofield import LDObjectField
 from helios.workflows import get_workflow_module
+from helios.byte_fields import ByteaField
 
+logger = logging.getLogger(__name__)
 
 # useful stuff in auth
 from heliosauth.models import User, AUTH_SYSTEMS
@@ -83,13 +86,17 @@ class ElectionMixnet(HeliosModel):
     ordering = ['-mix_order']
     unique_together = [('election', 'mix_order')]
 
-  def store_mix_file(self):
-    fname = str(self.pk) + ".mix"
-    fd = tempfile.NamedTemporaryFile()
-    fd.write(json_module.dumps(self.mix))
-    self.mix_file.save(fname, File(fd), save=True)
-    self.save()
+  def store_mix_in_file(self, mix):
+    """
+    Expects mix dict object
+    """
+    fname = str(self.pk) + ".json"
+    fpath = settings.MEDIA_ROOT + "/" + settings.ZEUS_MIXES_PATH + "/" + fname
+    fd = file(fpath, "w")
+    json_module.dump(mix, fd)
     fd.close()
+    self.mix_file = settings.ZEUS_MIXES_PATH + "/" + fname
+    self.save()
 
   def can_mix(self):
     return self.status in ['pending'] and not self.election.tallied
@@ -108,10 +115,14 @@ class ElectionMixnet(HeliosModel):
     return True
 
   def zeus_mix(self):
-    if self.second_mix:
-      return self.second_mix
+    if self.mix:
+      return self.mix
 
-    return self.mix
+    filled_mix = ""
+    for part in self.parts.order_by("pk"):
+      filled_mix += part.mix
+
+    return marshal.loads(filled_mix)
 
   def get_original_ciphers(self):
     if self.mix_order == 0:
@@ -120,17 +131,30 @@ class ElectionMixnet(HeliosModel):
       prev_mixnet = Mixnet.objects.get(election=election, mix_order__lt=self.mix_order)
       return prev_mixnet.mixed_answers.get().zeus_mix()
 
+  def mix_parts_iter(self, mix):
+    size = len(mix)
+    index = 0
+    while index < size:
+      yield buffer(mix, index, settings.MIX_PART_SIZE)
+      index += settings.MIX_PART_SIZE
+
+  def store_mix(self, mix):
+    """
+    mix is a dict object
+    """
+    self.parts.all().delete()
+    mix = marshal.dumps(mix)
+
+    for part in self.mix_parts_iter(mix):
+      self.parts.create(mix=part)
+
   @transaction.commit_on_success
   def _do_mix(self):
     zeus_mix = self.election.zeus_election.get_last_mix()
     new_mix = self.election.zeus_election.mix(zeus_mix)
 
-    if not self.mix:
-      self.mix = new_mix
-
-    MIXNET_SECOND_MIX = getattr(settings, 'ZEUS_MIXNET_SECOND_MIX', False)
-    if not self.second_mix and MIXNET_SECOND_MIX:
-      self.second_mix = self.election.zeus_election.mix(self.mix)
+    self.store_mix(new_mix)
+    self.store_mix_in_file(new_mix)
 
     self.status = 'finished'
     self.save()
@@ -153,17 +177,18 @@ class ElectionMixnet(HeliosModel):
     except Exception, e:
         self.status = 'error'
         self.mix_error = traceback.format_exc()
+        self.parts.all().delete()
         self.save()
         self.notify_admin_for_mixing_error()
+        logger.exception("Mixing failed (mixnet pk:%d)", self.pk)
         return
-
-    try:
-        self.store_mix_file()
-    except:
-        pass
 
   def notify_admin_for_mixing_error(self):
     pass
+
+class MixParts(models.Model):
+    mixnet = models.ForeignKey(ElectionMixnet, related_name="parts")
+    mix = ByteaField()
 
 class Election(HeliosModel):
   admins = models.ManyToManyField(User, related_name="elections")
@@ -678,24 +703,27 @@ class Election(HeliosModel):
     try:
         self.zeus_election.add_mix(mix)
     except Exception, e:
+        logging.exception("Remote mix failed")
         status = 'error'
         error = traceback.format_exc()
 
     try:
-      mixnet = self.mixnets.create(name=mix_name,
-                                   mix_order=mix_order,
-                                   mixnet_type='remote',
-                                   mixing_started_at=datetime.datetime.now(),
-                                   mixing_finished_at=datetime.datetime.now(),
-                                   status=status,
-                                   mix_error=error if error else None,
-                                   mix=mix)
+      with transaction.commit_on_success():
+        mixnet = self.mixnets.create(name=mix_name,
+                                     mix_order=mix_order,
+                                     mixnet_type='remote',
+                                     mixing_started_at=datetime.datetime.now(),
+                                     mixing_finished_at=datetime.datetime.now(),
+                                     status=status,
+                                     mix_error=error if error else None)
+        mixnet.store_mix(mix)
+        mixnet.store_mix_in_file(mix)
     except Exception, e:
+      logging.exception("Remote mix creation failed.")
       return e
 
     if not Election.objects.get(pk=self.pk).remote_mixnets_finished_at:
       mixnet.save()
-      mixnet.store_mix_file()
     else:
       return "Mixing finished"
 
@@ -874,11 +902,9 @@ class Election(HeliosModel):
     mixnet.save()
 
   def mixes_count(self):
-    mixnets_count = self.mixnets.filter(mix__isnull=False,
-                        status="finished",
+    mixnets_count = self.mixnets.filter(status="finished",
                         second_mix__isnull=False).count() * 2
-    mixnets_count += self.mixnets.filter(mix__isnull=False,
-                                         status="finished",
+    mixnets_count += self.mixnets.filter(status="finished",
                                          second_mix__isnull=True).count()
     return mixnets_count
 

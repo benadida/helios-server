@@ -227,6 +227,8 @@ CANDIDATES_CHANGE_TIME_MARGIN = 1
 
 COLLATION_LOCALE = 'el_GR.UTF-8'
 
+MIX_PART_SIZE = 104857600
+
 # useful trick for custom settings
 try:
     from local_settings import *

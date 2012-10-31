@@ -2016,7 +2016,7 @@ def shuffle_ciphers(modulus, generator, order, public, ciphers,
                                         public, alpha, beta)
         mixed_randoms[i] = secret
         o = mixed_offsets[i]
-        mixed_ciphers[o] = (alpha, beta)
+        mixed_ciphers[o] = [alpha, beta]
         count += 1
         if count >= report_thresh:
             if teller:
