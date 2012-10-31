@@ -1349,8 +1349,8 @@ def one_election_compute_tally(request, election):
   check_csrf(request)
 
   if not election.voting_ended_at:
-    election.voting_ended_at = datetime.datetime.utcnow()
-  election.tallying_started_at = datetime.datetime.utcnow()
+    election.voting_ended_at = datetime.datetime.now()
+  election.tallying_started_at = datetime.datetime.now()
   election.save()
 
   tasks.election_compute_tally.delay(election_id = election.id)
