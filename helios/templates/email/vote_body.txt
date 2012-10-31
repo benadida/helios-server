@@ -34,7 +34,7 @@
 
     {{ election.help_email }}
 
-{% if voter.audit_passwords %}* Εάν βρίσκεστε σε διαδικασία υποβολής ψήφου ελέγχου,
+{% if voter.audit_passwords %}* Εάν θέλετε να κινήσετε διαδικασία υποβολής ψήφου ελέγχου,
   οι έγκυροι κωδικοί ελέγχου είναι οι
   {% for pass in voter.get_audit_passwords %}{{ pass }}  {% endfor %}
   σε άλλη περίπτωση αγνοήστε τους.{% endif %}
