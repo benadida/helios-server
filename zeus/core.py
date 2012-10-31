@@ -3634,10 +3634,11 @@ class ZeusCoreElection(object):
         report += '\n'
 
         excluded = self.do_get_excluded_voters()
-        for i, (voter, reason) in enumerate(excluded.iteritems()):
-            report += 'EXCLUDED VOTER %d: %s (%s)\n' % (i, voter, reason)
+        if excluded:
+            for i, (voter, reason) in enumerate(excluded.iteritems()):
+                report += 'EXCLUDED VOTER %d: %s (%s)\n' % (i, voter, reason)
+            report += '\n'
 
-        report += '\n'
         report += 'ZEUS ELECTION FINGERPRINT: %s\n' % (fingerprint,)
 
         finished['election_report'] = report
