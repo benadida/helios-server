@@ -319,7 +319,7 @@ class FunctionalZeusTest(TestCase):
         self.assertTrue(mixnets.filter(status='finished').count() > 0)
         for mix in mixnets:
             assert mix.mix == None
-            assert mix.parts.count() > 1
+            assert mix.parts.count() > 0
 
         if election.mix_key:
             self.add_remote_mixes(election.uuid)
@@ -327,6 +327,12 @@ class FunctionalZeusTest(TestCase):
 
         self.trustees_decrypt(kps)
 
+        self.assertEqual(Election.objects.get(uuid=election.uuid).ecounting_request_send,
+                        None)
+        admin1.post('/helios/elections/%s/post-ecounting' % election.uuid, {'csrf_token':
+                                                            admin1.session.get('csrf_token')})
+        self.assertTrue(Election.objects.get(uuid=election.uuid).ecounting_request_send,
+                        None)
         election = Election.objects.get(uuid=election.uuid)
         vote_results = filter(lambda x:x is not False, map(lambda x:x['encoded'] if not x['audit'] else False,
                            votes))

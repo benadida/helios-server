@@ -380,7 +380,9 @@ def election_post_ecounting(request, election):
     if not election.result:
         raise PermissionDenied
 
-    election.post_ecounting()
+    election.ecounting_request_send = datetime.datetime.now()
+    election.save()
+    tasks.election_post_ecounting.delay(election.pk, election.get_ecounting_admin_user())
     return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
 
 @election_admin()

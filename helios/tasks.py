@@ -187,19 +187,6 @@ def tally_decrypt(election_id):
     except:
         election_notify_admin.delay(election_id, "Failed to store zeus proofs",
                                    traceback.format_exc())
-    try:
-        election.post_ecounting()
-    except:
-        election_notify_admin.delay(election_id, "Failed to post to ecounting",
-                                   traceback.format_exc())
-    election_notify_admin.delay(election_id = election_id,
-                                subject = 'Election Decrypt',
-                                body = """
-Result decrypted for election %s.
---
-Zeus
-""" % election.name)
-
 
 @task()
 def tally_helios_decrypt(election_id):

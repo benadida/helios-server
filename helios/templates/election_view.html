@@ -150,8 +150,8 @@ if (!navigator.javaEnabled()) {
         href="http://e-counting.minedu.gov.gr">σύστημα
         e-counting</a></b>
 {% else %}
-<a href="{% url helios.views.election_post_ecounting election.uuid %}">Αποστολή δεδομένων στην 
-πλατφόρμα ecounting</a>
+<a href="{% url helios.views.election_post_ecounting election.uuid %}"
+    class="button success">Αποστολή δεδομένων στην πλατφόρμα ecounting</a>
 {% endif %}
 <br /><br />
 <a href="{% url helios.views.election_zeus_proofs election.uuid  %}">Αποθήκευση κρυπτογραφικών δεδομένων</a>
