@@ -18,7 +18,29 @@ $(document).ready(function() {
     });
 });
 
+function save_decryptions() {
+    try {
+        var filetype = "text/plain;charset=utf-8";
+        if ($.browser.mozilla) {
+        }
 
+        var data = $("#result_textarea").val();
+        if (!data) { 
+            alert("Το περιεχόμενο της αποκρυπτογράφησης είναι κενό");
+            return false;
+        }
+        bb = new BlobBuilder;
+        bb.append(jQuery.toJSON(data));
+        saveAs(bb.getBlob(filetype), "Μερική αποκρυπτογράφηση {{ trustee.name }}.txt");
+        } catch (err) {
+        UTILS.open_window_with_content(data, "application/json");
+    }
+
+    return false;
+}
+
+var BATCH_SIZE = 5;
+var TOTAL_VOTES = 0;
 function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
     // we need to keep track of the values of g^{voter_num} for decryption
     var DISCRETE_LOGS = {};
@@ -46,9 +68,9 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
     var computed_perc = 0;
 
     var batches = [];
-    var BATCH_SIZE = 5;
     var batch_med_time = 0;
     var batches_completed = 0;
+    window.TOTAL_VOTES = tally.num_tallied;
 
     _.each(_.range(tally.num_tallied/BATCH_SIZE), function(i){
         var from, to, batch;
@@ -109,7 +131,7 @@ function batch_complete_callback(batch, batch_index, time, median_time,
                 //" finished in ", time/1000, "seconds. Approx. time:", 
                 //time_remaining, " Percentage:", percentage);
     
-    if (batch_index > 1) {
+    if (batch_index > 3) {
       $(".progress-message").show();
     }
     $(".progress .meter").css({'width': percentage + '%'});
@@ -117,7 +139,9 @@ function batch_complete_callback(batch, batch_index, time, median_time,
     var time_msg = parseInt(time_remaining/1000) + " δευτερόλεπτα.";
     if (time_remaining/1000 > 120) {
       time_msg = parseInt(time_remaining/1000/60) + " λεπτά.";
-    }
+  }
+
+  time_msg += " (" + batch_index*BATCH_SIZE + "/" + TOTAL_VOTES + ")";
 
     $(".progress-message .time").text(time_msg);
 }
@@ -164,7 +188,7 @@ function do_tally() {
       // display the result in a text area.
       $('#waiting_div').hide();
       
-      $('#result_textarea').html(factors_and_proofs_json);
+      $('#result_textarea').val(factors_and_proofs_json);
       $('#result_div').show();
       $('#first-step-success').show();
   }
@@ -180,6 +204,7 @@ function submit_result() {
   $.ajax({
       type: 'POST',
       url: "./upload-decryption",
+      timeout: 300000,
       data: {'factors_and_proofs': result},
       success: function(result) {
         $('#waiting_submit_div').hide();
@@ -212,7 +237,7 @@ function reset() {
   $('#first-step-success').hide();
 }
 
-var opts = {
+var get_public_opts = {
     dragClass: "drag",
     accept: false,
     readAsMap: {
@@ -221,24 +246,57 @@ var opts = {
     readAsDefault: 'Text',
     on: {
         load: function(e, file) {
-          // Native ProgressEvent
-          if (e.srcElement && e.srcElement.result) {
-            $("textarea#sk_textarea").val(e.srcElement.result);
-          }
-          if (e.currentTarget && e.currentTarget.result) {
-            $("textarea#sk_textarea").val(e.currentTarget.result);
-          }
-    	},
+            // Native ProgressEvent
+            if (e.srcElement && e.srcElement.result) {
+                $("textarea#sk_textarea").val(e.srcElement.result);
+            }
+            if (e.currentTarget && e.currentTarget.result) {
+                $("textarea#sk_textarea").val(e.currentTarget.result);
+            }
+        },
     }
-  };
+};
 
-  $(document).ready(function(){
-    try {
-      $("#file-input").fileReaderJS(opts);
-      } catch (err) {
-      console.log(err);
+var get_stored_decryption_opts = {
+    dragClass: "drag",
+    accept: false,
+    readAsMap: {
+        'text/*' : 'Text'
+    },
+    readAsDefault: 'Text',
+    on: {
+        beforestart: function() {
+            $(".local_loading").show();
+        },
+        load: function(e, file) {
+            $(".local_loading").hide();
+            // Native ProgressEvent
+            if (e.srcElement && e.srcElement.result) {
+                $("textarea#result_textarea").val(e.srcElement.result);
+            }
+            if (e.currentTarget && e.currentTarget.result) {
+                $("textarea#result_textarea").val(e.currentTarget.result);
+            }
+        },
     }
-  })
+};
+
+function show_decrypt_results() {
+    $("textarea#result_textarea").toggle();
+}
+
+$(document).ready(function(){
+    try {
+        $("#file-input").fileReaderJS(get_public_opts);
+    } catch (err) {
+        console.log(err);
+    }
+    try {
+        $("#stored-decryption-input").fileReaderJS(get_stored_decryption_opts);
+    } catch (err) {
+        console.log(err);
+    }
+})
 </script>
   <h4 class="title">{{trustee.name}} &mdash; Αποκρυπτογράφηση
       ψηφοδελτίων για την {{election.name}}</h4>
@@ -255,8 +313,10 @@ var opts = {
   <div id="sk_section" style="display:none;">
 
       <form onsubmit="return false;">
-          <h3>Βήμα πρώτο: εισάγετε το μυστικό κλειδί σας</h3>
+          <h5>Βήμα πρώτο: εισάγετε το μυστικό κλειδί σας</h5>
+          <br />
           <input type="file" id="file-input" />
+          <br /><br />
           <textarea id="sk_textarea" cols="60" rows="5"></textarea>
       </form>
       <p id="tally_section">
@@ -292,15 +352,33 @@ var opts = {
   </div>
   
   <div id="result_div">
-      <h3>Βήμα δεύτερο: αποστολή της μερικής αποκρυπτογράφησης</h3>
+      <h5>Βήμα δεύτερο: αποστολή της μερικής αποκρυπτογράφησης</h5>
+      <p>
+          Σας προτέινουνε πρίν την αποστολή να αποθηκευσετε το περιεχόμενο 
+          της μερικής αποκρυπτογράφησης σας.
+          <br /><br />
+          <label>Χρησιμοποίηση αρχείου:</label><input type="file" id="stored-decryption-input" />
+      </p>
       <p id="first-step-success" style="display: none;">
           Τα μερικώς αποκρυπτογράφημενα ψηφοδέλτια εμφανίζονται παρακάτω:<br />
           Ο Κωδικός Ψηφοφορίας σας έχει διαγραφεί από την μνήμη.<br />
           Όταν είστε έτοιμοι, υποβάλετε τα αποτελέσματα στον εξυπηρετητή.
       </p>
-      Η μερική αποκρυπτογράφηση σας:<br />
+      <a href="#"
+          onclick="show_decrypt_results();">προβολή περεχομένων μερικής αποκρυπτογράφησης</a><br /><br />
       <form action="javascript:submit_result();">
-          <textarea id="result_textarea" cols="60" rows="5" wrap="soft"></textarea><br /><br />
+          <p class="local_loading" style="display:none">Παρακαλούμε περιμένετε....</p>
+          <textarea id="result_textarea" cols="60" rows="5" wrap="soft"
+              style="display:none"></textarea>
+          <br /><br />
+          <p>
+          Σας προτέινουνε πρίν την αποστολή να αποθηκευσετε το περιεχόμενο 
+          της μερικής αποκρυπτογράφησης σας. Σε περίπτωση που αποτύχει η
+          αποστολή θα μπορέσετε να την επαναχρησιμοποιήσετε παραλείπωντας την 
+          διαδικασία επαναυπολογισμού.
+          </p>
+          <a class="button small" href="#" onclick="return save_decryptions();">Αποθηκευση μερικής αποκρυπτογράφησης</a>
+          <br /><br />
           <input class="button medium success" type="submit" value="Αποστολή αποκρυπτογράφησης στο σύστημα «Ζευς»" />
       </form>
       <br />
@@ -313,7 +391,7 @@ var opts = {
     <a class="button medium alert" href="{% url heliosauth.views.logout %}">Έξοδος</a>
   </div>
   
-  <div id="error_div">
+  <div id="error_div" style="color:red">
       Προέκυψε σφάλμα στην αποστολή της αποκρυπτογράφησης. Παρακαλούμε δοκιμάστε ξανά. 
       Σε περίπτωση που το πρόβλημα συνεχίσει
       να παρουσιάζεται επικοινωνήστε με τον διαχειριστή της ψηφοφορίας.
