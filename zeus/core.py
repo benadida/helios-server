@@ -404,6 +404,8 @@ def async_worker(link):
             mv, func, args, kw = inp
             func = globals()[func]
             ret = async_call(func, args, kw, link)
+            if ret == [1]:
+                import pdb; pdb.set_trace()
             link.send(ret)
         except Exception, e:
             #import traceback
@@ -414,57 +416,7 @@ def async_worker(link):
         finally:
             link.disconnect()
 
-class NullAsyncWorkerLink(object):
-    def __init__(self):
-        self.to_receive = deque()
-        self.to_send = deque()
-        self.to_send_shared = deque()
-
-    def submit(self, data_to_receive):
-        q = self.to_receive
-        for d in data_to_receive:
-            q.appendleft(d)
-
-    def receive(self, wait=None):
-        q = self.to_receive
-        if not q:
-            return None
-        return q.pop()
-
-    def send(self, data, wait=None):
-        self.to_send.appendleft(data)
-
-    def send_shared(self, data, wait=None):
-        self.to_send_shared.appendleft(data)
-
-    def disconnect(self):
-        pass
-
-_nwl = NullAsyncWorkerLink()
-
-class NullAsyncChannel(object):
-    def __init__(self, null_worker_link):
-        self.null_worker_link = null_worker_link
-
-    def send(self, data):
-        m = "NullAsyncChannel does not support send()"
-        raise ValueError(m)
-
-    def receive(self, wait=None):
-        q = self.null_worker_link.to_send
-        if not q:
-            return None
-        return q.pop()
-
-    def receive_shared(self, wait=None):
-        q = self.null_worker_link.to_send_shared
-        if not q:
-            return None
-        return q.pop()
-
-_nac = NullAsyncChannel(_nwl)
-
-class MultiprocessingAsyncWorkerLink(object):
+class AsyncWorkerLink(object):
     def __init__(self, pool, index):
         self.pool = pool
         self.index = index
@@ -484,7 +436,7 @@ class MultiprocessingAsyncWorkerLink(object):
     def disconnect(self, wait=1):
         self.pool.master_queue.put((self.index, None), block=wait)
 
-class MultiprocessingAsyncWorkerPool(object):
+class AsyncWorkerPool(object):
     def __init__(self, nr_parallel, worker_func):
         master_queue = Queue()
         self.master_queue = master_queue
@@ -500,7 +452,7 @@ class MultiprocessingAsyncWorkerPool(object):
             CheapQueue.atfork()
             if not pid:
                 try:
-                    worker_link = MultiprocessingAsyncWorkerLink(self, i+1)
+                    worker_link = AsyncWorkerLink(self, i+1)
                     worker_func(worker_link)
                 finally:
                     try:
@@ -562,16 +514,9 @@ class AsyncFunc(object):
         call_func = self.func
         controller = self.controller
         async_args = (MV_ASYNCARGS, call_func.__name__, call_args, call_kw)
-        if controller.parallel:
-            channel = AsyncChannel(controller)
-            controller.submit(channel.channel_no, async_args)
-        else:
-            _nwl.submit([async_args])
-            async_worker(_nwl)
-            channel = _nac
+        channel = AsyncChannel(controller)
+        controller.submit(channel.channel_no, async_args)
         return channel
-
-AsyncWorkerPool = MultiprocessingAsyncWorkerPool
 
 class AsyncController(object):
     serial = 0
@@ -689,9 +634,6 @@ class AsyncController(object):
                 return val
 
     def receive_shared(self, wait=1):
-        if not self.parallel:
-            return _nac.receive_shared(wait=wait)
-
         val = self.receive(0, wait=wait)
         if isinstance(val, tuple) and val and val[0] == MV_EXCEPTION:
             raise Exception(val[1])
@@ -704,6 +646,8 @@ class AsyncController(object):
             raise ValueError(m)
         channels[channel_no] = deque()
         self.pending.appendleft((channel_no, async_args))
+        if self.parallel <= 0:
+            async_worker
         self.process(wait=0)
 
     def make_async(self, func, *args, **kw):
@@ -2212,9 +2156,10 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS,
     original_ciphers = ciphers_for_mixing['mixed_ciphers']
     nr_ciphers = len(original_ciphers)
 
-    Random.atfork()
-    async = AsyncController(parallel=nr_parallel)
-    async_shuffle_ciphers = async.make_async(shuffle_ciphers)
+    if nr_parallel > 0:
+        Random.atfork()
+        async = AsyncController(parallel=nr_parallel)
+        async_shuffle_ciphers = async.make_async(shuffle_ciphers)
 
     teller.task('Mixing %d ciphers for %d rounds' % (nr_ciphers, nr_rounds))
 
@@ -2222,35 +2167,32 @@ def mix_ciphers(ciphers_for_mixing, nr_rounds=MIN_MIX_ROUNDS,
     cipher_mix['original_ciphers'] = original_ciphers
 
     with teller.task('Producing final mixed ciphers', total=nr_ciphers):
-        channel = async_shuffle_ciphers(p, g, q, y, original_ciphers,
-                                        teller=None)
-        count = 0
-        while count < nr_ciphers:
-            nr = async.receive_shared(wait=1)
-            teller.advance(nr)
-            count += nr
-
-        shuffled = channel.receive(wait=1)
+        shuffled = shuffle_ciphers(p, g, q, y, original_ciphers, teller=teller)
         mixed_ciphers, mixed_offsets, mixed_randoms = shuffled
         cipher_mix['mixed_ciphers'] = mixed_ciphers
 
     total = nr_ciphers * nr_rounds
     with teller.task('Producing ciphers for proof', total=total):
-        channels = [async_shuffle_ciphers(p, g, q, y, original_ciphers,
-                                          teller=None)
-                    for _ in xrange(nr_rounds)]
+        if nr_parallel > 0:
+            channels = [async_shuffle_ciphers(p, g, q, y, original_ciphers,
+                                              teller=None)
+                        for _ in xrange(nr_rounds)]
 
-        count = 0
-        while count < total:
-            nr = async.receive_shared()
-            teller.advance(nr)
-            count += nr
+            count = 0
+            while count < total:
+                nr = async.receive_shared()
+                teller.advance(nr)
+                count += nr
 
-        collections = [channel.receive(wait=1) for channel in channels]
-        async.shutdown()
+            collections = [channel.receive(wait=1) for channel in channels]
+            async.shutdown()
+        else:
+            collections = [shuffle_ciphers(p, g, q, y,
+                                           original_ciphers, teller=teller)
+                           for _ in xrange(nr_rounds)]
+
         unzipped = [list(x) for x in zip(*collections)]
         cipher_collections, offset_collections, random_collections = unzipped
-
         cipher_mix['cipher_collections'] = cipher_collections
         cipher_mix['random_collections'] = random_collections
         cipher_mix['offset_collections'] = offset_collections
@@ -2391,8 +2333,9 @@ def verify_cipher_mix(cipher_mix, teller=_teller, nr_parallel=0):
     #    m = "Invalid cryptosystem"
     #    raise AssertionError(m)
 
-    async = AsyncController(parallel=nr_parallel)
-    async_verify_mix_round = async.make_async(verify_mix_round)
+    if nr_parallel > 0:
+        async = AsyncController(parallel=nr_parallel)
+        async_verify_mix_round = async.make_async(verify_mix_round)
 
     total = nr_rounds * nr_ciphers
     with teller.task('Verifying ciphers', total=total):
@@ -2402,31 +2345,40 @@ def verify_cipher_mix(cipher_mix, teller=_teller, nr_parallel=0):
             ciphers = cipher_collections[i]
             randoms = random_collections[i]
             offsets = offset_collections[i]
-            append(async_verify_mix_round(i, bit,
-                                          original_ciphers,
-                                          mixed_ciphers,
-                                          ciphers, randoms, offsets,
-                                          teller=None))
-        count = 0
-        while count < total:
-            nr = async.receive_shared(wait=1)
-            teller.advance(nr)
-            count += nr
+            if nr_parallel <= 0:
+                verify_mix_round(i, bit, original_ciphers,
+                                 mixed_ciphers, ciphers,
+                                 randoms, offsets,
+                                 teller=teller)
+            else:
+                append(async_verify_mix_round(i, bit,
+                                              original_ciphers,
+                                              mixed_ciphers,
+                                              ciphers, randoms, offsets,
+                                              teller=None))
+        if nr_parallel > 0:
+            count = 0
+            while count < total:
+                nr = async.receive_shared(wait=1)
+                teller.advance(nr)
+                count += nr
 
-        for channel in channels:
-            channel.receive(wait=1)
+            for channel in channels:
+                channel.receive(wait=1)
+
+            async.shutdown()
 
     teller.finish('Verifying mixing')
     return 1
 
 
-def compute_decryption_factors(modulus, generator, order, secret, ciphers,
-                               teller=_teller):
+def compute_decryption_factors1(modulus, generator, order, secret, ciphers,
+                                teller=_teller):
     factors = []
     public = pow(generator, secret, modulus)
     append = factors.append
     nr_ciphers = len(ciphers)
-    with teller.task("Calculating decryption factors", total=nr_ciphers):
+    with teller.task("Computing decryption factors", total=nr_ciphers):
         for alpha, beta in ciphers:
             factor = pow(alpha, secret, modulus)
             proof = prove_ddh_tuple(modulus, generator, order,
@@ -2435,8 +2387,70 @@ def compute_decryption_factors(modulus, generator, order, secret, ciphers,
             teller.advance()
     return factors
 
-def verify_decryption_factors(modulus, generator, order, public,
-                              ciphers, factors, teller=_teller):
+def compute_some_decryption_factors(modulus, generator, order,
+                                    secret, public, ciphers,
+                                    teller=None, async_channel=None,
+                                    report_thresh=16):
+    count = 0
+    factors = []
+    append = factors.append
+
+    for alpha, beta in ciphers:
+        factor = pow(alpha, secret, modulus)
+        proof = prove_ddh_tuple(modulus, generator, order,
+                                alpha, public, factor, secret)
+        append([factor, proof])
+        count += 1
+        if count >= report_thresh:
+            if teller is not None:
+                teller.advance(count)
+            if async_channel is not None:
+                async_channel.send_shared(count)
+            count = 0
+
+    if count:
+        if teller is not None:
+            teller.advance(count)
+        if async_channel is not None:
+            async_channel.send_shared(count)
+
+    return factors
+
+def compute_decryption_factors(modulus, generator, order, secret, ciphers,
+                               teller=_teller, nr_parallel=0):
+    if nr_parallel <= 0:
+        return compute_decryption_factors1(modulus, generator, order,
+                                           secret, ciphers, teller=teller)
+
+    public = pow(generator, secret, modulus)
+    nr_ciphers = len(ciphers)
+    async = AsyncController(parallel=nr_parallel)
+    compute_some = async.make_async(compute_some_decryption_factors)
+
+    d, q = divmod(nr_ciphers, nr_parallel)
+    index = range(0, nr_ciphers, d)
+    with teller.task("Computing decryption factors", total=nr_ciphers):
+        channels = [compute_some(modulus, generator, order,
+                                 secret, public, ciphers[i:i+d])
+                    for i in index]
+        count = 0
+        while count < nr_ciphers:
+            nr = async.receive_shared(wait=1)
+            teller.advance(nr)
+            count += nr
+
+        factors = []
+        for c in channels:
+            r = c.receive(wait=1)
+            if not isinstance(r, list):
+                import pdb; pdb.set_trace()
+            factors.extend(r)
+
+    async.shutdown()
+    return factors
+
+def verify_decryption_factors1(modulus, generator, order, public,
+                               ciphers, factors, teller=_teller):
     nr_ciphers = len(ciphers)
     if nr_ciphers != len(factors):
         return 0
@@ -2450,6 +2464,73 @@ def verify_decryption_factors(modulus, generator, order, public,
                 teller.fail()
                 return 0
             teller.advance()
+    return 1
+
+def verify_some_decryption_factors(modulus, generator, order,
+                                   public, ciphers, factors,
+                                   teller=None, async_channel=None,
+                                   report_thresh=16):
+    count = 0
+    for cipher, factor in izip(ciphers, factors):
+        alpha, beta = cipher
+        factor, proof = factor
+        if not verify_ddh_tuple(modulus, generator, order, alpha, public,
+                                factor, *proof):
+            if async_channel is not None:
+                async_channel.send_shared(-1)
+            if teller is not None:
+                teller.fail()
+            return 0
+
+        count += 1
+        if count >= report_thresh:
+            if teller is not None:
+                teller.advance(count)
+            if async_channel is not None:
+                async_channel.send_shared(count)
+            count = 0
+
+    if count:
+        if teller is not None:
+            teller.advance(count)
+        if async_channel is not None:
+            async_channel.send_shared(count)
+
+    return 1
+
+def verify_decryption_factors(modulus, generator, order, public,
+                              ciphers, factors, teller=_teller,
+                              nr_parallel=0):
+    if nr_parallel <= 0:
+        return verify_decryption_factors1(modulus, generator, order, public,
+                                          ciphers, factors, teller=teller)
+
+    nr_ciphers = len(ciphers)
+    if nr_ciphers != len(factors):
+        return 0
+
+    async = AsyncController(parallel=nr_parallel)
+    verify_some = async.make_async(verify_some_decryption_factors)
+
+    d, q = divmod(nr_ciphers, nr_parallel)
+
+    index = range(0, nr_ciphers, d)
+    with teller.task("Verifying decryption factors", total=nr_ciphers):
+        channels = [verify_some(modulus, generator, order,
+                                public, ciphers[i:i+d], factors[i:i+d])
+                    for i in index]
+
+        count = 0
+        while count < nr_ciphers:
+            nr = async.receive_shared(wait=1)
+            if nr < 0:
+                async.shutdown()
+                teller.fail()
+                return 0
+            teller.advance(nr)
+            count += nr
+
+    async.shutdown()
     return 1
 
 def combine_decryption_factors(modulus, factor_collection):
@@ -2477,6 +2558,8 @@ class ZeusCoreElection(object):
         self.do_init_decrypting()
         self.do_init_finished()
         self.init_creating(cryptosystem)
+        if 'nr_parallel' not in kw:
+            kw['nr_parallel'] = 0
         self.set_option(**kw)
 
     def do_set_stage(self, stage):
@@ -3668,9 +3751,12 @@ class ZeusCoreElection(object):
 
         factors = trustee_factors['decryption_factors']
         ciphers = self.get_mixed_ballots()
+        nr_parallel = self.get_option('nr_parallel')
         if not verify_decryption_factors(modulus, generator, order,
                                          trustee_public,
-                                         ciphers, factors, teller=teller):
+                                         ciphers, factors,
+                                         teller=teller,
+                                         nr_parallel=nr_parallel):
             m = "Invalid trustee factor proof!"
             raise ZeusError(m)
 
@@ -3706,10 +3792,12 @@ class ZeusCoreElection(object):
                 m = "Invalid decryption factors: trustee mismatch!"
                 raise AssertionError(m)
 
+            nr_parallel = self.get_option('nr_parallel')
             factors = all_factors[trustee]
             if not verify_decryption_factors(modulus, generator, order,
                                              trustee, mixed_ballots, factors,
-                                             teller=teller):
+                                             teller=teller,
+                                             nr_parallel=nr_parallel):
                 m = "Invalid trustee factors proof!"
                 raise ZeusError(m)
 
@@ -3729,10 +3817,12 @@ class ZeusCoreElection(object):
         mixed_ballots = self.get_mixed_ballots()
         modulus, generator, order = self.do_get_cryptosystem()
         secret = self.do_get_zeus_secret()
+        nr_parallel = self.get_option('nr_parallel')
         with teller.task("Computing Zeus factors"):
             zeus_factors = compute_decryption_factors(modulus, generator, order,
                                                       secret, mixed_ballots,
-                                                      teller=teller)
+                                                      teller=teller,
+                                                      nr_parallel=nr_parallel)
         self.do_store_zeus_factors(zeus_factors)
 
     def decrypt_ballots(self):
@@ -4031,8 +4121,6 @@ class ZeusCoreElection(object):
         for _ in xrange(self._nr_mixes):
             cipher_collection = self.get_last_mix()
             nr_parallel = self.get_option('nr_parallel')
-            if nr_parallel is None:
-                nr_parallel = 2
             mixed_collection = mix_ciphers(cipher_collection,
                                            nr_rounds=self._nr_rounds,
                                            teller=teller,
@@ -4042,6 +4130,7 @@ class ZeusCoreElection(object):
 
     def mk_stage_decrypting(self, teller=_teller):
         modulus, generator, order = self.do_get_cryptosystem()
+        nr_parallel = self.get_option('nr_parallel')
         ciphers = self.get_mixed_ballots()
         with teller.task("Calculating and adding decryption factors",
                          total=self._nr_trustees):
@@ -4049,7 +4138,7 @@ class ZeusCoreElection(object):
                 factors = compute_decryption_factors(
                                     modulus, generator, order,
                                     key_secret(trustee), ciphers,
-                                    teller=teller)
+                                    teller=teller, nr_parallel=nr_parallel)
                 trustee_factors = {'trustee_public': key_public(trustee),
                                    'decryption_factors': factors,
                                    'modulus': modulus,
