@@ -30,7 +30,7 @@ function save_decryptions() {
             return false;
         }
         bb = new BlobBuilder;
-        bb.append(jQuery.toJSON(data));
+        bb.append(data);
         saveAs(bb.getBlob(filetype), "Μερική αποκρυπτογράφηση {{ trustee.name }}.txt");
         } catch (err) {
         UTILS.open_window_with_content(data, "application/json");
