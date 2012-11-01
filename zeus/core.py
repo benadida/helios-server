@@ -14,12 +14,16 @@ import Crypto.Util.number as number
 inverse = number.inverse
 from Crypto import Random
 from operator import mul as mul_operator
-from Queue import Empty, Full
-from multiprocessing import Queue
-from os import fork, kill, getpid, waitpid
+from os import (fork, kill, getpid, waitpid, ftruncate, 
+                read, write, unlink, open as os_open, close,
+                O_CREAT, O_RDWR, O_APPEND, SEEK_SET)
+from fcntl import flock, LOCK_EX, LOCK_UN
+from multiprocessing import Semaphore
+from select import select
 from signal import SIGKILL
 from errno import ESRCH
 from cStringIO import StringIO
+from marshal import loads as marshal_loads, dumps as marshal_dumps
 from binascii import hexlify
 import inspect
 from time import time, sleep
@@ -214,13 +218,173 @@ def strcanonical(obj, out=None):
         return s
 
 
-class AsyncArgs(object):
-    __slots__ = ('func', 'args', 'kw')
+class Empty(Exception):
+    pass
+class Full(Exception):
+    pass
+class EOF(Exception):
+    pass
 
-    def __init__(self, func, args, kw):
-        self.func = func
-        self.args = args
-        self.kw = kw
+MV_ASYNCARGS = '=ASYNCARGS='
+MV_EXCEPTION = '=EXCEPTION='
+
+def wait_read(fd, block=True, timeout=0):
+    if block:
+        timeout = None
+    while 1:
+        r, w, x = select([fd], [], [], timeout)
+        if not r:
+            if not block:
+                raise Empty()
+            else:
+                raise EOF("Select Error")
+        if block:
+            st = fstat(fd)
+            if not st.st_size:
+                sleep(0.01)
+                continue
+
+def read_all(fd, size):
+    got = 0
+    s = ''
+    while got < size:
+        r = read(fd, size-got)
+        if not r:
+            break
+        got += len(r)
+        s += r
+    return s
+
+def wait_write(fd, block=True, timeout=0):
+    if block:
+        timeout = None
+    r, w, x = select([], [fd], [], timeout)
+    if not w:
+        if not block:
+            raise Full()
+        else:
+            raise EOF("Write Error")
+
+def write_all(fd, data):
+    size = len(data)
+    written = 0
+    while written < size:
+        w = write(fd, buffer(data, written, size-written))
+        if not w:
+            m = "Write EOF"
+            raise EOF(m)
+        written += w
+    return written
+
+once = 0
+
+class CheapQueue(object):
+    _initpid = getpid()
+    _pid = _initpid
+    _serial = 0
+
+    @classmethod
+    def atfork(cls):
+        cls._pid = getpid()
+
+    def __init__(self):
+        serial = CheapQueue._serial + 1
+        CheapQueue._serial = serial
+        pid = CheapQueue._pid
+        self.serial = serial
+        self.frontfile = '/dev/shm/cheapQ.%s.%s.front' % (pid, serial)
+        self.backfile = '/dev/shm/cheapQ.%s.%s.back' % (pid, serial)
+        self.front_fd = None
+        self.back_fd = None
+        self.front_sem = Semaphore(0)
+        self.back_sem = Semaphore(0)
+        self.getcount = 0
+        self.putcount = 0
+        self.get_input = self.init_input
+        self.get_output = self.init_output
+
+    def init(self):
+        frontfile = self.frontfile
+        self.front_fd = os_open(frontfile, O_RDWR|O_CREAT|O_APPEND, 0600)
+        backfile = self.backfile
+        self.back_fd = os_open(backfile, O_RDWR|O_CREAT|O_APPEND, 0600)
+        del self.get_output
+        del self.get_input
+
+    def __del__(self):
+        unlink(self.frontfile)
+        unlink(self.backfile)
+
+    def init_input(self):
+        self.init()
+        return self.get_input()
+
+    def init_output(self):
+        self.init()
+        return self.get_output()
+
+    def get_input(self):
+        if self._pid == self._initpid:
+            return self.front_sem, self.front_fd
+        else:
+            return self.back_sem, self.back_fd
+
+    def get_output(self):
+        if self._pid == self._initpid:
+            return self.back_sem, self.back_fd
+        else:
+            return self.front_sem, self.front_fd
+
+    def down(self, sema, timeout=0):
+        return sema.acquire(timeout=timeout)
+
+    def up(self, sema, timeout=None):
+        return sema.release()
+
+    def put(self, obj, block=True, timeout=0):
+        data = marshal_dumps(obj)
+        sema, fd = self.get_output()
+        #if self._pid == self._initpid:
+        #    print "> PUT  ", getpid(), self.serial, self.putcount, '-'
+        #else:
+        #    print "  PUT <", getpid(), self.serial, self.putcount, '-'
+        chk = sha256(data).digest()
+        flock(fd, LOCK_EX)
+        try:
+            write_all(fd, "%016x%s" % (len(data), chk))
+            write_all(fd, data)
+        finally:
+            flock(fd, LOCK_UN)
+            self.up(sema)
+        self.putcount += 1
+
+    def get(self, block=True, timeout=0):
+        if block:
+            timeout=None
+        sema, fd = self.get_input()
+        #if self._pid == self._initpid:
+        #    print "< GET  ", getpid(), self.serial, self.getcount, '-'
+        #else:
+        #    print "  GET >", getpid(), self.serial, self.getcount, '-'
+        if not self.down(sema, timeout=timeout):
+            raise Empty()
+        flock(fd, LOCK_EX)
+        try:
+            header = read_all(fd, 48)
+            chk = header[16:]
+            header = header[:16]
+            size = int(header, 16)
+            data = read_all(fd, size)
+        finally:
+            flock(fd, LOCK_UN)
+        _chk = sha256(data).digest()
+        if chk != _chk:
+            raise AssertionError("Corrupt Data!")
+        obj = marshal_loads(data)
+        self.getcount += 1
+        return obj
+
+Queue = CheapQueue
 
 def async_call(func, args, kw, channel):
     argspec = inspect.getargspec(func)
@@ -234,18 +398,17 @@ def async_worker(link):
         if inp is None:
             break
         try:
-            if not isinstance(inp, AsyncArgs):
-                m = "%x: first input is type '%s' not 'AsyncArgs'" % (type(inp),)
+            if not isinstance(inp, tuple) and inp and inp[0] != MV_ASYNCARGS:
+                m = "%x: first input not in MV_ASYNCARGS format: '%s'" % (inp,)
                 raise ValueError(m)
-            func = inp.func
-            args = inp.args
-            kw = inp.kw
+            mv, func, args, kw = inp
+            func = globals()[func]
             ret = async_call(func, args, kw, link)
             link.send(ret)
         except Exception, e:
             #import traceback
             #traceback.print_exc()
-            link.send(e)
+            e = (MV_EXCEPTION, str(e))
             link.send_shared(e)
             raise
         finally:
@@ -311,8 +474,8 @@ class MultiprocessingAsyncWorkerLink(object):
 
     def receive(self, wait=1):
         ret = self.pool.worker_queues[self.index].get(block=wait)
-        if isinstance(ret, BaseException):
-            raise ret
+        if isinstance(ret, tuple) and ret and ret[0] == MV_EXCEPTION:
+            raise Exception(ret[1])
         return ret
 
     def send_shared(self, data, wait=1):
@@ -334,6 +497,7 @@ class MultiprocessingAsyncWorkerPool(object):
         for i in xrange(nr_parallel):
             pid = fork()
             Random.atfork()
+            CheapQueue.atfork()
             if not pid:
                 try:
                     worker_link = MultiprocessingAsyncWorkerLink(self, i+1)
@@ -380,8 +544,8 @@ class AsyncChannel(object):
 
     def receive(self, wait=1):
         data = self.controller.receive(self.channel_no, wait=wait)
-        if isinstance(data, BaseException):
-            raise data
+        if isinstance(data, tuple) and data and data[0] == MV_EXCEPTION:
+            raise Exception(data[1])
         return data
 
 class AsyncFunc(object):
@@ -397,7 +561,7 @@ class AsyncFunc(object):
         call_args = self.args + args
         call_func = self.func
         controller = self.controller
-        async_args = AsyncArgs(call_func, call_args, call_kw)
+        async_args = (MV_ASYNCARGS, call_func.__name__, call_args, call_kw)
         if controller.parallel:
             channel = AsyncChannel(controller)
             controller.submit(channel.channel_no, async_args)
@@ -529,6 +693,8 @@ class AsyncController(object):
             return _nac.receive_shared(wait=wait)
 
         val = self.receive(0, wait=wait)
+        if isinstance(val, tuple) and val and val[0] == MV_EXCEPTION:
+            raise Exception(val[1])
         return val
 
     def submit(self, channel_no, async_args):
@@ -721,16 +887,20 @@ class Teller(object):
         if outstream is None or self.disabled:
             return
 
-        text += self.eol
+        feeder = self.feed
+        eol = self.eol
+        text += eol
         last_line = self.last_line
-        clear_line = ' ' * len(last_line[0]) + '\r'
+        if eol.endswith('\r'):
+            clear_line = ' ' * len(last_line[0]) + '\r'
+        else:
+            clear_line = ''
         text = clear_line + text
 
         last_teller = self.last_teller
         teller = last_teller[0]
         last_ejected = self.last_ejected
         ejected = last_ejected[0]
-        feeder = self.feed
         if not ejected and (feed or teller != self):
             text = feeder + text
         if eject:
@@ -2710,13 +2880,14 @@ class ZeusCoreElection(object):
             secret = self.do_get_zeus_secret()
             public = self.do_get_zeus_public()
             key_proof = self.do_get_zeus_key_proof()
-            if not validate_element(modulus, generator, order, secret):
-                m = "Invalid Secret Key"
-                raise AssertionError(m)
-            _public = pow(generator, secret, modulus)
-            if _public != public:
-                m = "Invalid Public Key"
-                raise AssertionError(m)
+            if secret is not None:
+                if not validate_element(modulus, generator, order, secret):
+                    m = "Invalid Secret Key"
+                    raise AssertionError(m)
+                _public = pow(generator, secret, modulus)
+                if _public != public:
+                    m = "Invalid Public Key"
+                    raise AssertionError(m)
             if not validate_public_key(modulus, generator, order,
                                        public, *key_proof):
                 m = "Invalid Key Proof"
@@ -2751,13 +2922,11 @@ class ZeusCoreElection(object):
             raise ZeusError(m)
 
         creating = {}
-        #creating['options'] = self.do_get_options()
         creating['candidates'] = self.do_get_candidates()
         creating['voters'] = self.do_get_voters()
         creating['audit_codes'] = self.do_get_all_voter_audit_codes()
         creating['cryptosystem'] = self.do_get_cryptosystem()
         creating['zeus_public'] = self.do_get_zeus_public()
-        creating['zeus_secret'] = self.do_get_zeus_secret()
         creating['zeus_key_proof'] = self.do_get_zeus_key_proof()
         creating['election_public'] = self.do_get_election_public()
         creating['trustees'] = self.do_get_trustees()
@@ -2784,7 +2953,7 @@ class ZeusCoreElection(object):
         #self.do_set_option(voting.get('options', {}))
         self.do_store_candidates(voting['candidates'])
         self.do_store_cryptosystem(*voting['cryptosystem'])
-        self.do_store_zeus_key(voting['zeus_secret'],
+        self.do_store_zeus_key(None,
                                voting['zeus_public'],
                                *voting['zeus_key_proof'])
         self.do_store_election_public(voting['election_public'])
@@ -2796,7 +2965,7 @@ class ZeusCoreElection(object):
             self.do_store_excluded_voter(voter_key, reason)
         self.do_store_voters(voting['voters'])
         self.do_store_voter_audit_codes(voting['voter_audit_codes'])
-        self.set_voting()
+        self.do_set_stage('VOTING')
         return self
 
     def validate_submitted_vote(self, vote):
@@ -3294,7 +3463,9 @@ class ZeusCoreElection(object):
             self.do_store_audit_request(fingerprint, voter_key)
         for fingerprint in mixing['audit_publications']:
             self.do_store_audit_publication(fingerprint)
-        self.set_mixing()
+        votes_for_mixing, counted_list = self.extract_votes_for_mixing()
+        self.do_store_mix(votes_for_mixing)
+        self.do_set_stage('MIXING')
         return self
 
     def get_last_mix(self):
@@ -3433,7 +3604,8 @@ class ZeusCoreElection(object):
 
         if not self.get_option('novalidate'):
             self.validate_mixing()
-            self.compute_zeus_factors()
+
+        self.compute_zeus_factors()
         self.do_set_stage('DECRYPTING')
 
     def export_decrypting(self):
@@ -3463,7 +3635,7 @@ class ZeusCoreElection(object):
         if 'zeus_decryption_factors' in decrypting:
             zeus_factors = decrypting['zeus_decryption_factors']
             self.do_store_zeus_factors(decrypting['zeus_decryption_factors'])
-        self.set_decrypting()
+        self.do_set_stage('DECRYPTING')
         return self
 
     def get_mixed_ballots(self):
@@ -3584,6 +3756,15 @@ class ZeusCoreElection(object):
         self.do_store_results(plaintexts)
         return plaintexts
 
+    def validate_finished(self):
+        teller = self.teller
+        with teller.task("Validating STAGE: 'FINISHED'"):
+            old_results = self.do_get_results()
+            results = self.decrypt_ballots()
+            if old_results and old_results != results:
+                m = "Old results did not match new results!"
+                raise AssertionError(m)
+
     def set_finished(self):
         stage = self.do_get_stage()
         if stage == 'FINISHED':
@@ -3596,15 +3777,7 @@ class ZeusCoreElection(object):
         if not self.get_option('novalidate'):
             self.validate_decrypting()
 
-        old_results = self.do_get_results()
-        if old_results:
-            if not self.get_option('novalidate'):
-                results = self.decrypt_ballots()
-                if old_results and old_results != results:
-                    m = "Old results did not match new results!"
-                    raise AssertionError(m)
-        else:
-            results = self.decrypt_ballots()
+        self.decrypt_ballots()
         self.do_set_stage('FINISHED')
 
     def export_finished(self):
@@ -3643,6 +3816,27 @@ class ZeusCoreElection(object):
         finished['election_report'] = report
         return finished
 
+    @classmethod
+    def new_at_finished(cls, finished, teller=_teller, **kw):
+        self = cls.new_at_decrypting(finished, teller=teller, **kw)
+        self.do_store_results(finished['results'])
+        finished.pop('election_report', None)
+        fingerprint = finished.pop('election_fingerprint', None)
+        _fingerprint = sha256(strcanonical(finished)).hexdigest()
+        if fingerprint is not None:
+            if fingerprint != _fingerprint:
+                m = "Election fingerprint mismatch!"
+                raise AssertionError(m)
+        fingerprint = _fingerprint
+        self.election_fingerprint = fingerprint
+        self.do_set_stage('FINISHED')
+        return self
+
+    def get_results(self):
+        self.do_assert_stage('FINISHED')
+        results = self.do_get_results()
+        return results
+
     _export_methods = {
         'CREATING': None,
         'VOTING': 'export_creating',
@@ -3659,26 +3853,13 @@ class ZeusCoreElection(object):
             raise ValueError(m)
         return getattr(self, method_name)(), stage
 
-    @classmethod
-    def new_at_finished(cls, finished, teller=_teller, **kw):
-        self = cls.new_at_decrypting(finished, teller=teller, **kw)
-        self.do_store_results(finished['results'])
-        finished.pop('election_report', None)
-        fingerprint = finished.pop('election_fingerprint', None)
-        _fingerprint = sha256(strcanonical(finished)).hexdigest()
-        if fingerprint is not None:
-            if fingerprint != _fingerprint:
-                m = "Election fingerprint mismatch!"
-                raise AssertionError(m)
-        fingerprint = _fingerprint
-        self.election_fingerprint = fingerprint
-        self.set_finished()
-        return self
-
-    def get_results(self):
-        self.do_assert_stage('FINISHED')
-        results = self.do_get_results()
-        return results
+    def validate(self):
+        self.validate_creating()
+        self.validate_voting()
+        self.validate_mixing()
+        self.validate_decrypting()
+        self.validate_finished()
+        return 1
 
     ### CLIENT REFERENCE ###
 
@@ -3948,21 +4129,6 @@ def main():
     epilog="Try 'zeus --generate'"
     parser = argparse.ArgumentParser(description=description, epilog=epilog)
 
-    parser.add_argument('--verbose', action='store_true', default=True,
-        help=("Write validation, verification, and notice messages "
-              "to standard error"))
-
-    parser.add_argument('--quiet', action='store_false', dest='verbose',
-        help=("Be quiet. Cancel --verbose"))
-
-    parser.add_argument('--oms', '--output-interval-ms', type=int,
-        metavar='millisec', default=200, dest='oms',
-        help=("Set the output update interval"))
-
-    parser.add_argument('--buffer-feeds', action='store_true', default=False,
-        help=("Buffer output newlines according to --oms "
-              "instead of sending them out immediately"))
-
     parser.add_argument('--verify-election', metavar='infile',
         help="Read a FINISHED election from a JSON file and verify it")
 
@@ -3971,10 +4137,6 @@ def main():
         help="Read an election and a signature from a JSON file "
              "and verify the signature")
 
-    parser.add_argument('--mix', nargs=2, metavar=('infile', 'outfile'),
-        help=("Read a MIXING election from the input file, mix it, "
-              "and write the mix to the output file"))
-
     parser.add_argument('--parallel', dest='nr_procs', default=2,
         help="Use multiple processes for parallel mixing")
 
@@ -3982,18 +4144,21 @@ def main():
                         help="Do not validate elections")
 
     parser.add_argument('--report', action='store_true', default=False,
-                        help="Display election crypto report")
+                        help="Display election report")
+
+    parser.add_argument('--counted', action='store_true', default=False,
+                        help="Display election counted votes fingerprints")
 
     parser.add_argument('--results', action='store_true', default=False,
                         help="Display election plaintext results")
-
-    parser.add_argument('--counted-votes', action='store_true', default=False,
-                        help="Display election counted votes fingerprints")
 
     parser.add_argument('--extract-signatures', metavar='prefix',
         help="Write election signatures for counted votes to files")
 
     parser.add_argument('--extract-audits', metavar='prefix',
+                        help="Write election public audits to files")
+
+    parser.add_argument('--extract-mixed', metavar='prefix',
                         help="Write election public audits to files")
 
     parser.add_argument('--generate', nargs='*', metavar='outfile',
@@ -4025,6 +4190,25 @@ def main():
     parser.add_argument('--rounds', type=int, default=MIN_MIX_ROUNDS,
                         dest='nr_rounds',
                         help="Generate or Mix: Number of mix rounds")
+
+    parser.add_argument('--verbose', action='store_true', default=True,
+        help=("Write validation, verification, and notice messages "
+              "to standard error"))
+
+    parser.add_argument('--quiet', action='store_false', dest='verbose',
+        help=("Be quiet. Cancel --verbose"))
+
+    parser.add_argument('--oms', '--output-interval-ms', type=int,
+        metavar='millisec', default=200, dest='oms',
+        help=("Set the output update interval"))
+
+    parser.add_argument('--no-buffer', action='store_true', default=False,
+        help=("Do not keep output in buffer. "
+              "Keep only the last one to display as per --oms."))
+
+    parser.add_argument('--buffer-feeds', action='store_true', default=False,
+        help=("Buffer output newlines according to --oms "
+              "instead of sending them out immediately"))
 
     args = parser.parse_args()
 
@@ -4107,7 +4291,7 @@ def main():
         if args.extract_audits:
             do_extract_audits(election, args, args.extract_audits,
                               teller=teller)
-        if args.counted_votes:
+        if args.counted:
             do_counted_votes(election)
 
         if args.results:
@@ -4123,8 +4307,10 @@ def main():
         with open(filename, "r") as f:
             finished = json.load(f)
         election = ZeusCoreElection.new_at_finished(finished, teller=teller,
-                                                    nr_parallel=nr_parallel,
-                                                    novalidate=novalidate)
+                                                    nr_parallel=nr_parallel)
+        if not novalidate:
+            election.validate()
+
         if args.extract_signatures:
             do_extract_signatures(election, args.extract_signatures,
                                   teller=teller)
@@ -4133,7 +4319,7 @@ def main():
             do_extract_audits(election, args.extract_audits,
                               teller=teller)
 
-        if args.counted_votes:
+        if args.counted:
             do_counted_votes(election)
 
         if args.results:
@@ -4172,26 +4358,6 @@ def main():
                 election.validate_vote(signed_vote)
                 teller.advance()
 
-    def main_mix(args, teller=_teller, nr_parallel=0):
-        infile, outfile = args.mix
-        with open(infile, "r") as f:
-            mixing = json.load(f)
-
-        #election = ZeusCoreElection.new_at_mixing(mixing, teller=teller)
-        #cipher_collection = election.get_last_mix()
-        #mixed_collection = mix_ciphers(cipher_collection, teller=teller)
-        #election.add_mix(mixed_collection)
-        #mixed_ballots = election.get_mixed_ballots()
-
-        last_mix = mixing['mixes'][-1]
-        ciphers_to_mix = pk_noproof_from_args(*pk_args(last_mix))
-        ciphers_to_mix['mixed_ciphers'] = last_mix['mixed_ciphers']
-        mixed_ciphers = mix_ciphers(ciphers_to_mix, nr_rounds=args.nr_rounds,
-                                    teller=teller, nr_parallel=nr_parallel)
-        teller_stream.flush()
-        with open(outfile, "w") as f:
-            json.dump(mixed_ciphers, f, indent=2)
-
     class Nullstream(object):
         def write(*args):
             return
@@ -4201,8 +4367,12 @@ def main():
     outstream = sys.stderr if args.verbose else Nullstream()
     teller_stream = TellerStream(outstream=outstream,
                                  output_interval_ms=args.oms,
+                                 buffering=not args.no_buffer,
                                  buffer_feeds=args.buffer_feeds)
     teller = Teller(outstream=teller_stream)
+    if args.no_buffer:
+        Teller.eol = '\n'
+        Teller.feed = '\n'
     import json
 
     nr_parallel = 0
