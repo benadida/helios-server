@@ -28,6 +28,7 @@ class Command(BaseCommand):
             ends_at = election.voting_ends_at
             extended_until = election.voting_extended_until
             ended_at = election.voting_ended_at
+            canceled_at = election.canceled_at
             last_visit_at = election.last_voter_visit()
             if last_visit_at is not None:
                 last_visit_text = last_visit_at.strftime("%Y-%m-%d %H:%M:%S") + \
@@ -45,8 +46,10 @@ class Command(BaseCommand):
             print "voting_ends_at:       ", ends_at and ends_at.strftime("%Y-%m-%d %H:%M:%S")
             print "voting_extended_until:", extended_until and extended_until.strftime("%Y-%m-%d %H:%M:%S")
             print "voting_ended_at:      ", ended_at and ended_at.strftime("%Y-%m-%d %H:%M:%S")
+            print "canceled_at:          ", canceled_at and canceled_at.strftime("%Y-%m-%d %H:%M:%S")
             print "voters:               ", election.voter_set.count()
             print "counted votes:         %d/%d" % (election.voted_count(), election.castvote_set.count())
             print "voters visits:        ", election.voters_visited_count()
             print "last voter visit:     ", last_visit_text
+
 
