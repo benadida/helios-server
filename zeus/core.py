@@ -312,8 +312,11 @@ class CheapQueue(object):
         del self.get_input
 
     def __del__(self):
-        unlink(self.frontfile)
-        unlink(self.backfile)
+        try:
+            unlink(self.frontfile)
+            unlink(self.backfile)
+        except:
+            pass
 
     def init_input(self):
         self.init()

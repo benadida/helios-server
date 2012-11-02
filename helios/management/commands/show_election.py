@@ -51,5 +51,5 @@ class Command(BaseCommand):
             print "counted votes:         %d/%d" % (election.voted_count(), election.castvote_set.count())
             print "voters visits:        ", election.voters_visited_count()
             print "last voter visit:     ", last_visit_text
-
+            print ""
 
