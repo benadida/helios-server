@@ -12,6 +12,7 @@ import logging, requests
 
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = False
+LOGIN_MESSAGE = "Log in with my Email"
 
 
 def create_user(username, password, name = None):
