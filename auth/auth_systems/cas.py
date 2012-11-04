@@ -187,7 +187,7 @@ def get_user_info_after_auth(request):
 
   return user_info
     
-def do_logout(user):
+def do_logout(request, user):
   """
   Perform logout of CAS by redirecting to the CAS logout URL
   """

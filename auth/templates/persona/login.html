@@ -1,0 +1,39 @@
+{% extends TEMPLATE_BASE %}
+
+{% block js %}
+<script src="https://login.persona.org/include.js"></script>
+<script>
+navigator.id.watch({
+  loggedInUser: null,
+  onlogin: function(assertion) {
+    $('#assertion_field').val(assertion);
+    $('#login_form').submit();
+  },
+  onlogout: function() {
+  }
+});
+</script>
+{% endblock %}
+
+{% block header %}
+<h2>{{ settings.SITE_TITLE }} &mdash; Login</h2>
+{% endblock %}
+
+
+{% block content %}
+
+{% if error %}
+<p style="border: 1px solid black; padding: 5px;">
+    {{error}}
+</p>
+{% endif %}
+
+<a href="javascript:navigator.id.request();">log in</a>
+
+<p>
+<form class="prettyform" action="" method="POST" id="login_form">
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+    <input type="hidden" name="assertion" id="assertion_field" />
+</form>
+</p>
+{% endblock %}

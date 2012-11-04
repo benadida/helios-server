@@ -1,0 +1,37 @@
+{% extends TEMPLATE_BASE %}
+
+{% block js %}
+<script src="https://login.persona.org/include.js"></script>
+<script>
+navigator.id.watch({
+  loggedInUser: "{{current_user}}",
+  onlogin: function(assertion) {
+    alert('logging in');
+  },
+  onlogout: function() {
+    window.location = "{{return_url}}";
+  },
+  onready: function() {
+  }
+});
+
+window.onload = function() {
+  navigator.id.logout();
+};
+</script>
+{% endblock %}
+
+{% block header %}
+<h2>{{ settings.SITE_TITLE }} &mdash; Login</h2>
+{% endblock %}
+
+
+{% block content %}
+
+{% if error %}
+<p style="border: 1px solid black; padding: 5px;">
+    {{error}}
+</p>
+{% endif %}
+
+{% endblock %}

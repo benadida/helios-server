@@ -151,7 +151,7 @@ HELIOS_PRIVATE_DEFAULT = False
 
 # authentication systems enabled
 #AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
-AUTH_ENABLED_AUTH_SYSTEMS = ['google']
+AUTH_ENABLED_AUTH_SYSTEMS = ['persona']
 AUTH_DEFAULT_AUTH_SYSTEM = None
 
 # facebook

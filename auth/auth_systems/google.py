@@ -45,7 +45,7 @@ def get_user_info_after_auth(request):
 
   return {'type' : 'google', 'user_id': email, 'name': name , 'info': {'email': email}, 'token':{}}
     
-def do_logout(user):
+def do_logout(request, user):
   """
   logout of Google
   """
