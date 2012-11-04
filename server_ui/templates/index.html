@@ -38,12 +38,13 @@
     </th>
   </thead>
   <tbody>
-    {% for election in user.elections.all %}
+    {% for election in elections_administered %}
     <tr>
         <td>
             <b style="color:red">{% if election.canceled_at %}
                 [ΕΧΕΙ ΑΚΥΡΩΘΕΙ]
-                {%endif %}</b><a href="{% url helios.views.one_election_view election.uuid %}">{{ election.name }}
+                {% endif %}</b><a href="{% url helios.views.one_election_view election.uuid %}">
+                {{ election.name }}
 </a>
         </td>
         <td>
