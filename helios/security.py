@@ -186,7 +186,11 @@ def election_admin(**checks):
                            {'election': election})
 
       user = get_user(request)
-      if not user_can_admin_election(user, election):
+      skip_admin_check = False
+      if user and user.superadmin_p and checks.get('allow_superadmin', False):
+        skip_admin_check = True
+
+      if not user_can_admin_election(user, election) and not skip_admin_check:
         raise PermissionDenied()
 
       # do checks
