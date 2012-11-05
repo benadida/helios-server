@@ -16,7 +16,7 @@ navigator.id.watch({
 });
 
 window.onload = function() {
-  navigator.id.logout();
+  window.setTimeout(function() {navigator.id.logout();}, 3000);
 };
 </script>
 {% endblock %}
