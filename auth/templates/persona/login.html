@@ -6,8 +6,10 @@
 navigator.id.watch({
   loggedInUser: null,
   onlogin: function(assertion) {
-    $('#assertion_field').val(assertion);
-    $('#login_form').submit();
+    if (assertion) {
+      $('#assertion_field').val(assertion);
+      $('#login_form').submit();
+    }
   },
   onlogout: function() {
   }
@@ -28,8 +30,14 @@ navigator.id.watch({
 </p>
 {% endif %}
 
+<p>
+As a first step, you need to log in with an email address you own.
+</p>
+
+<p>
 <a href="javascript:navigator.id.request();">
 <img src="/static/auth/login-icons/persona.png" /></a>
+</p>
 
 <p>
 <form class="prettyform" action="" method="POST" id="login_form">

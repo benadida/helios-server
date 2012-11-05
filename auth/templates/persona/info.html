@@ -1,0 +1,25 @@
+{% extends TEMPLATE_BASE %}
+
+{% block header %}
+<h2>{{ settings.SITE_TITLE }} &mdash; User Info</h2>
+{% endblock %}
+
+
+{% block content %}
+
+<p>Your Email: <b><tt>{{email}}</tt></b></p>
+
+<p>
+We need a little bit more information to let you vote:
+</p>
+
+<form class="prettyform" action="" method="POST" id="user_info_form">
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+    
+    <table>
+    {{form.as_table}}
+    </table>
+<input type="submit" value="go" />
+</form>
+
+{% endblock %}

@@ -22,11 +22,15 @@ window.onload = function() {
 {% endblock %}
 
 {% block header %}
-<h2>{{ settings.SITE_TITLE }} &mdash; Login</h2>
+<h2>{{ settings.SITE_TITLE }} &mdash; Logout</h2>
 {% endblock %}
 
 
 {% block content %}
+
+<p>
+logging you out...
+</p>
 
 {% if error %}
 <p style="border: 1px solid black; padding: 5px;">

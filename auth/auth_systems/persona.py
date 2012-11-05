@@ -57,14 +57,48 @@ def persona_login_view(request):
 
       if result['status'] == 'okay':
         email = result['email']
-        request.session['persona_user'] = {'user_id': email , 'info': {'email': email}, 'name': None}
+        request.session['persona_user'] = {'email': email , 'info': None, 'name': email}
 
-        return HttpResponseRedirect(reverse(after))
+        # figure out if we have this user
+        try:
+          user = User.get_by_type_and_id('persona', email)
+          if user.info:
+            request.session['persona_user'] = {'email': email , 'info': user.info, 'name': email}
+            # we got what we need
+            return HttpResponseRedirect(reverse(after))
+        except User.DoesNotExist:
+          # no user, let's keep going we're going to prompt for info
+          pass
+
+        return HttpResponseRedirect(reverse(persona_user_info_view))
 
       # otherwise
       error = 'Bad Assertion'
   
   return render_template(request, 'persona/login', {'form': form, 'error': error})
+
+class PersonaUserInfoForm(forms.Form):
+  last_name = forms.CharField(max_length = 80)
+  first_names = forms.CharField(max_length = 80, label="First Name(s)")
+  zip_code = forms.CharField(max_length = 5)
+  street_address = forms.CharField(max_length = 250)
+
+def persona_user_info_view(request):
+  from auth.view_utils import render_template
+  from auth.views import after
+
+  user = request.session['persona_user']
+  if request.method == "GET":
+    form = PersonaUserInfoForm()
+  else:
+    form = PersonaUserInfoForm(request.POST)
+
+    if form.is_valid():
+      user['info'] = form.cleaned_data
+      request.session['persona_user'] = user
+      return HttpResponseRedirect(reverse(after))
+
+  return render_template(request, 'persona/info', {'form': form, 'email': user['email']})
       
 def get_auth_url(request, redirect_url = None):
   return reverse(persona_login_view)
@@ -72,9 +106,8 @@ def get_auth_url(request, redirect_url = None):
 def get_user_info_after_auth(request):
   user = request.session['persona_user']
   del request.session['persona_user']
-  user_info = user['info']
-  
-  return {'type': 'persona', 'user_id' : user['user_id'], 'name': user['name'], 'info': user['info'], 'token': None}
+
+  return {'type': 'persona', 'user_id' : user['email'], 'name': user['name'], 'info': user['info'], 'token': None}
     
 def update_status(token, message):
   pass
