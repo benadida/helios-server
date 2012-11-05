@@ -1404,6 +1404,13 @@ def trustee_decrypt_and_prove(request, election, trustee):
 
   return render_template(request, 'trustee_decrypt_and_prove', {'election': election, 'trustee': trustee})
 
+@trustee_check
+def trustee_download_ciphers(request, election, trustee):
+    if not _check_election_tally_type(election) or not election.tallied:
+        return HttpResponseRedirect(reverse(one_election_view,args=[election.uuid]))
+
+    return HttpResponse(election.encrypted_tally.toJSON())
+
 @election_view(frozen=True)
 def trustee_upload_decryption(request, election, trustee_uuid):
   if not _check_election_tally_type(election) or not election.tallied:
