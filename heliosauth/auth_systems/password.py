@@ -90,6 +90,7 @@ def get_ecounting_user(username, password):
     user.institution = get_institution(user_data)
     user.info['name'] = username
     user.info['password'] = password
+    user.ecounting_account = True
     user.save()
   except User.DoesNotExist:
     if is_valid:
@@ -97,6 +98,7 @@ def get_ecounting_user(username, password):
       user.admin_p = True
       user.info['name'] = user.user_id
       user.info['password'] = password
+      user.ecounting_account = True
       user.institution = get_institution(user_data)
       user.save()
 
@@ -129,6 +131,8 @@ def password_login_view(request):
       password = form.cleaned_data['password'].strip()
       try:
         user = get_ecounting_user(username, password)
+        if not user:
+            user = User.objects.get(user_id=username, ecounting_account=False)
         if password_check(user, password):
           request.session['password_user'] = user
           return HttpResponseRedirect(reverse(after))

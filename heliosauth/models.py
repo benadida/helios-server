@@ -35,6 +35,7 @@ class User(models.Model):
   # administrator
   admin_p = models.BooleanField(default=False)
   superadmin_p = models.BooleanField(default=False)
+  ecounting_account = models.BooleanField(default=True)
 
   class Meta:
     unique_together = (('user_type', 'user_id'),)
