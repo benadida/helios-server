@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+
+from os.path import dirname, realpath
+from sys import argv, path as syspath
+
+directory = dirname(realpath(argv[0] + '/..'))
+if not directory:
+    directory = "."
+if directory not in syspath:
+    syspath.append(directory)
+
+from zeus.client import main
+main(argv)
