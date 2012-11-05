@@ -27,11 +27,14 @@ from marshal import loads as marshal_loads, dumps as marshal_dumps
 from binascii import hexlify
 import inspect
 from time import time, sleep
-from gmpy import mpz
 
-_pow = pow
-def pow(b, e, m):
-    return int(_pow(mpz(b), e, m))
+try:
+    from gmpy import mpz
+    _pow = pow
+    def pow(b, e, m):
+        return int(_pow(mpz(b), e, m))
+except ImportError:
+    print "Warning: Could not import gmpy. Falling back to SLOW crypto."
 
 bit_length = lambda num: num.bit_length()
 if sys.version_info < (2, 7):
