@@ -4479,8 +4479,6 @@ def main():
     elif args.verify_signature:
         return main_verify_signature(args, teller=teller,
                                      nr_parallel=nr_parallel)
-    elif args.mix:
-        return main_mix(args, teller=teller, nr_parallel=nr_parallel)
     else:
         parser.print_help()
 
