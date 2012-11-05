@@ -2420,7 +2420,7 @@ def compute_some_decryption_factors(modulus, generator, order,
     return factors
 
 def compute_decryption_factors(modulus, generator, order, secret, ciphers,
-                               teller=_teller, nr_parallel=0):
+                               teller=_teller, nr_parallel=1):
     if nr_parallel <= 0:
         return compute_decryption_factors1(modulus, generator, order,
                                            secret, ciphers, teller=teller)
@@ -2431,6 +2431,8 @@ def compute_decryption_factors(modulus, generator, order, secret, ciphers,
     compute_some = async.make_async(compute_some_decryption_factors)
 
     d, q = divmod(nr_ciphers, nr_parallel)
+    if not d:
+        d = nr_ciphers
     index = range(0, nr_ciphers, d)
     with teller.task("Computing decryption factors", total=nr_ciphers):
         channels = [compute_some(modulus, generator, order,
@@ -2503,7 +2505,7 @@ def verify_some_decryption_factors(modulus, generator, order,
 
 def verify_decryption_factors(modulus, generator, order, public,
                               ciphers, factors, teller=_teller,
-                              nr_parallel=0):
+                              nr_parallel=1):
     if nr_parallel <= 0:
         return verify_decryption_factors1(modulus, generator, order, public,
                                           ciphers, factors, teller=teller)
@@ -2516,7 +2518,8 @@ def verify_decryption_factors(modulus, generator, order, public,
     verify_some = async.make_async(verify_some_decryption_factors)
 
     d, q = divmod(nr_ciphers, nr_parallel)
-
+    if not d:
+        d = nr_ciphers
     index = range(0, nr_ciphers, d)
     with teller.task("Verifying decryption factors", total=nr_ciphers):
         channels = [verify_some(modulus, generator, order,
