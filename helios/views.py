@@ -1664,8 +1664,11 @@ def voters_upload_cancel(request, election):
 
   return HttpResponseRedirect(reverse(voters_upload, args=[election.uuid]))
 
-@election_admin(frozen=True)
+@election_admin()
 def voters_email(request, election):
+
+  user = get_user(request)
+  admin_p = security.user_can_admin_election(user, election)
 
   if not helios.VOTERS_EMAIL:
     return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
@@ -1675,7 +1678,12 @@ def voters_email(request, election):
     ('info', _('Additional Info'))
   ]
 
-  template = request.REQUEST.get('template', 'vote')
+  default_template = 'vote'
+  if not election.frozen_at:
+    TEMPLATES.pop(0)
+    default_template = 'info'
+
+  template = request.REQUEST.get('template', default_template)
 
   if not template in [t[0] for t in TEMPLATES]:
     raise Exception("bad template")
@@ -1703,6 +1711,7 @@ def voters_email(request, election):
       'custom_message': '&lt;BODY&gt;',
       'voter': {'vote_hash' : '<SMART_TRACKER>',
                 'name': '<VOTER_NAME>',
+                'voter_name': '<VOTER_NAME>',
                 'voter_surname': '<VOTER_SURNAME>',
                 'voter_login_id': '<VOTER_LOGIN_ID>',
                 'voter_password': '<VOTER_PASSWORD>',
@@ -1767,6 +1776,7 @@ def voters_email(request, election):
   return render_template(request, "voters_email", {
       'email_form': email_form, 'election': election,
       'voter_o': voter,
+      'admin_p': admin_p,
       'default_subject': default_subject,
       'default_body' : default_body,
       'template' : template,

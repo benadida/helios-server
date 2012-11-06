@@ -30,7 +30,7 @@
   {% if election.frozen_at %}
   <a style="" class="foundicon-mail" href="{% url helios.views.voters_email election.uuid %}"> &nbsp;Αποστολή email</a>
   {% else %}
-  <a style="" class="foundicon-mail" href="#"> &nbsp;Αποστολή email</a>
+  <a style="" class="foundicon-mail" href="{% url helios.views.voters_email election.uuid %}"> &nbsp;Αποστολή email</a>
   {% endif %}
   </li>
   <li>
@@ -128,6 +128,10 @@
           <ul>
       {% if election.frozen_at %}
             <li>
+<a class="foundicon-mail" href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}"> &nbsp;Αποστολή email</a>
+</li>
+{% else %}
+<li>
 <a class="foundicon-mail" href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}"> &nbsp;Αποστολή email</a>
 </li>
 {% endif %}

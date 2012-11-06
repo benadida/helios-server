@@ -1,1 +1,1 @@
-Συμπληρωματικές πληροφορίες: {{custom_subject|safe}}
+{{custom_subject|safe}}
