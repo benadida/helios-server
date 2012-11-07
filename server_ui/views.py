@@ -37,14 +37,14 @@ def home(request):
   else:
     elections_administered = None
 
-  if user.superadmin_p:
-    elections_administered = Election.objects.all()
-
   if user:
     elections_voted = Election.get_by_user_as_voter(user, limit=5)
   else:
     return HttpResponseRedirect("/auth/?return_url=/")
     elections_voted = None
+
+  if user.superadmin_p:
+    elections_administered = Election.objects.all()
 
   if user and not user.election:
     return HttpResponseRedirect(reverse("helios.views.election_new"))
