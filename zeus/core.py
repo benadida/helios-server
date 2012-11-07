@@ -18,8 +18,8 @@ from os import (fork, kill, getpid, waitpid, ftruncate,
                 read, write, unlink, open as os_open, close,
                 O_CREAT, O_RDWR, O_APPEND, SEEK_SET)
 from fcntl import flock, LOCK_EX, LOCK_UN
-from multiprocessing import Semaphore, Queue
-from Queue import Empty, Full
+from multiprocessing import Semaphore#, Queue as mpQueue
+#from Queue import Empty, Full
 from select import select
 from signal import SIGKILL
 from errno import ESRCH
@@ -222,12 +222,12 @@ def strcanonical(obj, out=None):
         return s
 
 
-#class Empty(Exception):
-#    pass
-#class Full(Exception):
-#    pass
-#class EOF(Exception):
-#    pass
+class Empty(Exception):
+    pass
+class Full(Exception):
+    pass
+class EOF(Exception):
+    pass
 
 MV_ASYNCARGS = '=ASYNCARGS='
 MV_EXCEPTION = '=EXCEPTION='
@@ -283,7 +283,7 @@ def write_all(fd, data):
 once = 0
 
 class CheapQueue(object):
-    _initpid = getpid()
+    _initpid = None
     _pid = _initpid
     _serial = 0
 
@@ -292,6 +292,8 @@ class CheapQueue(object):
         cls._pid = getpid()
 
     def __init__(self):
+        self._initpid = getpid()
+        self._pid = None
         serial = CheapQueue._serial + 1
         CheapQueue._serial = serial
         pid = CheapQueue._pid
@@ -312,6 +314,7 @@ class CheapQueue(object):
         self.front_fd = os_open(frontfile, O_RDWR|O_CREAT|O_APPEND, 0600)
         backfile = self.backfile
         self.back_fd = os_open(backfile, O_RDWR|O_CREAT|O_APPEND, 0600)
+	self._pid = getpid()
         del self.get_output
         del self.get_input
 
@@ -342,11 +345,23 @@ class CheapQueue(object):
         else:
             return self.front_sem, self.front_fd
 
-    def down(self, sema, timeout=0):
-        return sema.acquire(timeout=timeout)
+    def down(self, sema, timeout=None):
+        #if timeout is None:
+        #    print ("REQ DOWN %d %d %d [%d %d]"
+        #            % (self.serial, getpid(), sema._semlock.handle,
+        #               self.front_sem._semlock.handle,
+        #               self.back_sem._semlock.handle))
+        ret = sema.acquire(True, timeout=timeout)
+        #if ret:
+        #    print "DOWN %d %d" % (self.serial, getpid())
+        return ret
 
     def up(self, sema, timeout=None):
-        return sema.release()
+        sema.release()
+        #print ("UP %d %d %d [%d %d]"
+        #        % (self.serial, getpid(), sema._semlock.handle,
+        #           self.front_sem._semlock.handle,
+        #           self.back_sem._semlock.handle))
 
     def put(self, obj, block=True, timeout=0):
         data = marshal_dumps(obj)
@@ -392,7 +407,8 @@ class CheapQueue(object):
         self.getcount += 1
         return obj
 
-#Queue = CheapQueue
+#Queue = mpQueue
+Queue = CheapQueue
 
 def async_call(func, args, kw, channel):
     argspec = inspect.getargspec(func)
