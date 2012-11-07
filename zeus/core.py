@@ -18,7 +18,8 @@ from os import (fork, kill, getpid, waitpid, ftruncate,
                 read, write, unlink, open as os_open, close,
                 O_CREAT, O_RDWR, O_APPEND, SEEK_SET)
 from fcntl import flock, LOCK_EX, LOCK_UN
-from multiprocessing import Semaphore
+from multiprocessing import Semaphore, Queue
+from Queue import Empty, Full
 from select import select
 from signal import SIGKILL
 from errno import ESRCH
@@ -221,12 +222,12 @@ def strcanonical(obj, out=None):
         return s
 
 
-class Empty(Exception):
-    pass
-class Full(Exception):
-    pass
-class EOF(Exception):
-    pass
+#class Empty(Exception):
+#    pass
+#class Full(Exception):
+#    pass
+#class EOF(Exception):
+#    pass
 
 MV_ASYNCARGS = '=ASYNCARGS='
 MV_EXCEPTION = '=EXCEPTION='
@@ -359,6 +360,7 @@ class CheapQueue(object):
         try:
             write_all(fd, "%016x%s" % (len(data), chk))
             write_all(fd, data)
+            
         finally:
             flock(fd, LOCK_UN)
             self.up(sema)
@@ -390,7 +392,7 @@ class CheapQueue(object):
         self.getcount += 1
         return obj
 
-Queue = CheapQueue
+#Queue = CheapQueue
 
 def async_call(func, args, kw, channel):
     argspec = inspect.getargspec(func)
