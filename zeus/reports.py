@@ -1,6 +1,6 @@
 from helios.models import *
 from zeus.core import gamma_decode
-from django.utils.datastructures import SortedDict as OrderedDict
+
 try:
   from collections import OrderedDict
 except ImportError:
@@ -36,7 +36,7 @@ def election_report(elections, votes_report=True):
             entry.update(OrderedDict([
                 ('excluded_count', e.voter_set.filter(excluded_at__isnull=False).count()),
                 ('audit_requests_count', e.auditedballot_set.filter(is_request=True).count()),
-                ('audit_votes_count', e.auditedballot_set.filter(is_request=False).count()),
+                ('audit_cast_count', e.auditedballot_set.filter(is_request=False).count()),
                 ('voters_count', e.voter_set.count()),
                 ('voters_cast_count', e.castvote_set.filter(voter__excluded_at__isnull=True).distinct('voter').count()),
                 ('cast_count', e.castvote_set.count()),

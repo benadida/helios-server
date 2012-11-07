@@ -31,6 +31,11 @@ from helios.workflows import homomorphic
 from helios.workflows import mixnet
 from helios.view_utils import *
 
+try:
+  from collections import OrderedDict
+except ImportError:
+  from django.utils.datastructures import SortedDict as OrderedDict
+
 from zeus import reports
 from django.forms import ValidationError
 
@@ -353,7 +358,7 @@ def one_election_cancel(request, election):
 def election_report(request, election, format="html"):
   reports_list = request.GET.get('report', 'election,voters,votes').split(",")
 
-  _reports = {}
+  _reports = OrderedDict()
   if 'election' in reports_list:
     _reports['election'] = list(reports.election_report([election]))
   if 'voters' in reports_list:
@@ -368,13 +373,18 @@ def election_report(request, election, format="html"):
     })
 
   if format == "json":
-    return HttpResponse(utils.to_json(_reports), mimetype="application/json")
+    def handler(obj):
+      if hasattr(obj, 'isoformat'):
+        return obj.isoformat()
+      raise TypeError
+
+    return HttpResponse(json_module.dumps(_reports, default=handler),
+                        mimetype="application/json")
 
   if format == "csv":
     pass
 
   raise PermissionDenied
-
 
 
 @election_admin()
