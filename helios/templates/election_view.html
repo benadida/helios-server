@@ -28,6 +28,14 @@ if (!navigator.javaEnabled()) {
 
 
 <div class="row">
+  <div class="columns twelve">
+{% if election.voting_extended_until %}
+<div class="alert-box alert">
+H ψηφοφορία ήταν προγραμματισμένη αρχικά να λήξει στις {{election.voting_ends_at}},<br />
+αλλά παρατάθηκε μέχρι τις {{ election.voting_extended_until }}.
+</div>
+{% endif %}
+  </div>
   <div class="columns six"><i>Έναρξη ψηφοφορίας στις:</i> <b>{{ election.voting_starts_at }}</b></div>
   <div class="columns six"><i>Λήξη ψηφοφορίας στις:</i> <b>
       {% if election.voting_extended_until %}
@@ -167,10 +175,13 @@ if (!navigator.javaEnabled()) {
 {% else %}
 
 {% if election.voting_has_started and not admin_p %}
+{% if voter.voted %}
+<p class="panel success">Έχετε ήδη συμμετάσχει στην ψηφοφορία. <br />
+Συμμετέχοντας ξανά μπορείτε να ακυρώσετε την προηγούμενη ψήφο σας.</p>
+{% endif %}
 <span class="highlight-box round" style="font-size: 1.6em; margin-right: 10px;" id="votelink">
 <a class="button success large" href="{{test_cookie_url}}">Συμμετοχή στην ψηφοφορία</a>
 </span><br />
-<br />
 {% else %}
 <span class="highlight-box round">
   {% if not admin_p %}
@@ -196,10 +207,6 @@ if (!navigator.javaEnabled()) {
 {% endif %}
 
 {% if election.voting_extended_until %}
-<div class="alert-box alert">
-H ψηφοφορία ήταν προγραμματισμένη αρχικά να λήξει στις {{election.voting_ends_at}},<br />
-αλλά παρατάθηκε μέχρι τις {{ election.voting_extended_until }}.
-</div>
 {% else %}
 {% if election.voting_ends_at %}
 <br />
