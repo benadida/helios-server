@@ -35,7 +35,7 @@ def csv_reader(csv_data, **kwargs):
             encodings.pop()
             continue
 
-    for line in data.splitlines():
+    for i, line in enumerate(data.splitlines()):
         line = line.strip()
         if not line:
             continue
@@ -43,8 +43,8 @@ def csv_reader(csv_data, **kwargs):
         if len(cells) < 3:
             cells = line.split(';')
             if len(cells) < 3:
-                m = ("CSV must have at least 3 fields "
-                     "(email, last_name, name)")
+                m = ("line %d: CSV must have at least 3 fields "
+                     "(email, last_name, name)" % (i+1))
                 raise ValueError(m)
         cells += [u''] * (4 - len(cells))
         append(cells)
