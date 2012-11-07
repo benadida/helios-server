@@ -63,6 +63,7 @@ urlpatterns = patterns('',
     # computing tally
     (r'^/compute_tally$', one_election_compute_tally),
     (r'^/cancel$', one_election_cancel),
+    (r'^/report\.(?P<format>[a-z]+)$', election_report),
     (r'^/mix/(?P<mix_key>.*)$', election_remote_mix),
     (r'^/remove_last_mix$', election_remove_last_mix),
     (r'^/stop-mixing$', election_stop_mixing),

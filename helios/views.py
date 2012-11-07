@@ -30,6 +30,8 @@ from helios import utils as helios_utils
 from helios.workflows import homomorphic
 from helios.workflows import mixnet
 from helios.view_utils import *
+
+from zeus import reports
 from django.forms import ValidationError
 
 import tasks
@@ -345,6 +347,34 @@ def one_election_cancel(request, election):
 
   election.save()
   return HttpResponseRedirect('/admin/')
+
+
+@election_admin(allow_superadmin=True)
+def election_report(request, election, format="html"):
+  reports_list = request.GET.get('report', 'election,voters,votes').split(",")
+
+  _reports = {}
+  if 'election' in reports_list:
+    _reports['election'] = list(reports.election_report([election]))
+  if 'voters' in reports_list:
+    _reports['voters'] = list(reports.election_voters_report([election]))
+  if 'votes' in reports_list:
+    _reports['votes'] = list(reports.election_votes_report([election], False))
+
+  if format == "html":
+    return render_template(request, "election_report", {
+        'election': election,
+        'reports': _reports,
+    })
+
+  if format == "json":
+    return HttpResponse(utils.to_json(_reports), mimetype="application/json")
+
+  if format == "csv":
+    pass
+
+  raise PermissionDenied
+
 
 
 @election_admin()

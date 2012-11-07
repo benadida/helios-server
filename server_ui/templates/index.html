@@ -40,12 +40,22 @@
   <tbody>
     {% for election in elections_administered %}
     <tr>
-        <td>
+      <td>  
+            {% if election.result %}
+            <b style="color:green">[ΕΧΕΙ ΟΛΟΚΛΗΡΩΘΕΙ]</b>
+            {% endif %}
             <b style="color:red">{% if election.canceled_at %}
-                [ΕΧΕΙ ΑΚΥΡΩΘΕΙ]
-                {% endif %}</b><a href="{% url helios.views.one_election_view election.uuid %}">
-                {{ election.name }}
-</a>
+            [ΕΧΕΙ ΑΚΥΡΩΘΕΙ]
+            {% endif %}
+            </b>
+            <a href="{% url helios.views.one_election_view election.uuid %}">
+            {{ election.name }}
+            </a>
+            {% if user.superadmin_p %}[
+            <a href="{% url helios.views.election_report election.uuid "html" %}">
+              report
+            </a>]
+            {% endif %}
         </td>
         <td>
         </td>

@@ -1,0 +1,27 @@
+{% load helios_tags %}<html>
+  <body>
+    <h1>{{ election.name }}</h1>
+    <hr />
+    {% if 'election' in reports %}
+    <div class="panel" id="election">
+    <h2>Στοιχεία ψηφοφορίας</h2>
+    {{ reports.election.0|as_dl|safe }}
+    </div>
+    {% endif %}
+    
+    {% if 'voters' in reports %}
+    <div class="panel" id="voters">
+    <h2>Ψηφοφόροι</h2>
+    {{ reports.voters|as_table|safe }}
+    </div>
+    {% endif %}
+    
+    {% if 'votes' in reports %}
+    <div class="panel" id="votes">
+    <h2>Ψηφοι</h2>
+    {{ reports.votes|as_table|safe }}
+    </div>
+    {% endif %}
+
+  </body>
+</html>
