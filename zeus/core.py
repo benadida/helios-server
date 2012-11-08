@@ -27,6 +27,7 @@ from cStringIO import StringIO
 from marshal import loads as marshal_loads, dumps as marshal_dumps
 from binascii import hexlify
 import inspect
+import re
 from time import time, sleep
 
 try:
@@ -161,65 +162,183 @@ def sk_from_args(p, g, q, x, y, t, c, f):
 def get_timestamp():
     return datetime.strftime(datetime.utcnow(), "%Y-%m-%dT%H:%M:%S.%fZ")
 
-def canonical(obj):
-    if isinstance(obj, dict):
-        c = {}
-        for key, value in obj.iteritems():
-            c[canonical(key)] = canonical(value)
-        return c
-    elif isinstance(obj, tuple) or isinstance(obj, list):
-        return [canonical(val) for val in obj]
-    elif isinstance(obj, unicode):
-        return canonical(obj.encode('utf-8'))
-    elif isinstance(obj, str):
-        if not obj:
-            return obj
-        if obj.isdigit():
-            return canonical(int(obj))
-        if ord(max(obj)) > 127 or "'" in obj:
-            return '"%s"' % (hexlify(obj),)
-        return "'%s'" % (obj,)
-    elif isinstance(obj, int) or isinstance(obj, long):
-        return "%x" % obj
-    elif obj is None:
-        return 'null'
-    else:
-        m = "canonical: invalid object type '%s'" % type(obj)
-        raise AssertionError(m)
-
-def strcanonical(obj, out=None):
+def to_canonical(obj, out=None):
     toplevel = 0
     if out is None:
         toplevel = 1
         out = StringIO()
-        obj = canonical(obj)
-
-    if isinstance(obj, dict):
-        out.write('{')
-        for key, value in sorted(obj.iteritems()):
-            strcanonical(key, out)
-            out.write(':')
-            strcanonical(value, out)
-            out.write(',')
-        out.write('}')
-    elif isinstance(obj, list):
-        out.write('[')
-        for val in obj:
-            strcanonical(val, out)
-            out.write(',')
-        out.write(']')
-    elif isinstance(obj, str):
+    if isinstance(obj, basestring):
+        if isinstance(obj, unicode):
+            obj = obj.encode('utf-8')
+        z = len(obj)
+        x = "%x" % z
+        w = ("%02x" % len(x))[:2]
+        out.write("%s%s_" % (w, x))
         out.write(obj)
+    elif isinstance(obj, int) or isinstance(obj, long):
+        out.write("%x" % obj)
+    elif isinstance(obj, dict):
+        out.write('{\x0a')
+        cobj = {}
+        for k, v in obj.iteritems():
+            if not isinstance(k, str):
+                if isinstance(k, unicode):
+                    k = k.encode('utf-8')
+                elif isinstance(k, int) or isinstance(k, long):
+                    k = str(k)
+                else:
+                    m = "Unsupported dict key type '%s'" % (type(k),)
+            cobj[k] = v
+	del obj
+	keys = cobj.keys()
+        keys.sort()
+        prev = None
+        for k in keys:
+            if prev is not None:
+                out.write(',\x0a')
+            if k == prev:
+                tail = '...' if len(k) > 64 else ''
+                m = "duplicate key '%s' in dict" % (k[:64] + tail,)
+                raise AssertionError(m)
+            to_canonical(k, out=out)
+            out.write(': ')
+            to_canonical(cobj[k], out=out)
+            prev = k
+        out.write('}\x0a')
+    elif isinstance(obj, list) or isinstance(obj, tuple):
+        out.write('[\x0a')
+        iterobj = iter(obj)
+        for o in iterobj:
+            to_canonical(o, out=out)
+            break
+        for o in iterobj:
+            out.write(',\x0a')
+            to_canonical(o, out=out)
+        out.write(']\x0a')
+    elif obj is None:
+        out.write('null')
     else:
-        m = "strcanonical: invalid object type '%s'" % type(obj)
+        m = "to_canonical: invalid object type '%s'" % (type(obj),)
         raise AssertionError(m)
 
     if toplevel:
         out.seek(0)
-        s = out.read()
-        #with open("zzz", "w") as f:
-        #    f.write(s)
-        return s
+        return out.read()
+
+_digitpat = re.compile('[0-9a-f]+')
+
+def from_canonical(string, index=0, _digitpat=_digitpat):
+    eof = len(string)
+    if index >= eof:
+        return None, 0
+
+    m = _digitpat.match(string, index)
+    if m:
+        end = m.end()
+        start = end + 1
+        c = string[end:start]
+        if c == '_':
+            sep = index + 2
+            w = int(string[index:sep], 16)
+            z = int(string[sep:end], 16)
+            if w != (end - sep):
+                m = ("byte %d: corrupt string header '%s'!"
+                    % (index, string[index:end]))
+                raise ValueError(m)
+            index = start
+            end = index + z
+            s = string[index:end]
+            return s, end
+        else:
+            num = int(string[index:end], 16)
+            return num, end
+
+    end = index + 2
+    s = string[index:end]
+    if s == 'nu':
+        end = index + 4
+        if string[index:end] == 'null':
+            return None, end
+        else:
+            m = "byte %d: invalid token '%s' instead of 'null'" % index
+            raise ValueError(m)
+
+    if s == '[\x0a':
+        obj = []
+        append = obj.append
+        while 1:
+            index = end
+            if index >= eof:
+                m = "byte %d: eof while scanning for list item" % index 
+                raise ValueError(m)
+
+            end = index + 2
+            s = string[index:end]
+            if s == ']\x0a':
+                return obj, end
+
+            item, index = from_canonical(string, index=index)
+            if index >= eof:
+                m = "byte %d: eof while scanning for list ',' or ']'" % index 
+                raise ValueError(m)
+
+            append(item)
+
+            end = index + 2
+            s = string[index:end]
+            if s == ']\x0a':
+                return obj, end
+
+            if s != ',\x0a':
+                m = ("byte %d: illegal token '%s' in list instead of ',\\n'"
+                    % (index, s))
+                raise ValueError(m)
+
+    if s == '{\x0a':
+        obj = {}
+        while 1:
+            index = end
+
+            if index >= eof:
+                m = "byte %d: eof while scanning for dict item" % index 
+                raise ValueError(m)
+
+            end = index + 2
+            s = string[index:end]
+            if s == '}\x0a':
+                return obj, end
+
+            key, index = from_canonical(string, index=index)
+            if index >= eof:
+                m = "byte %d: eof while scanning for dict ':'" % index 
+                raise ValueError(m)
+
+            end = index + 2
+            s = string[index:end]
+            if s != ': ':
+                m = "byte %d: invalid token '%s' instead of ': '" % (index, s)
+                raise ValueError(m)
+
+            index = end
+            value, index = from_canonical(string, index=index)
+            if index >= eof:
+                m = "byte %d: eof while scanning for dict ',' or '}'" % index 
+                raise ValueError(m)
+
+            obj[key] = value # allow key TypeError rise through
+
+            end = index + 2
+            s = string[index:end]
+            if s == '}\x0a':
+                return obj, end
+
+            if s != ',\x0a':
+                m = ("byte %d: illegal token '%s' in dict instead of ',\\n'"
+                    % (index, s))
+                raise ValueError(m)
+
+    m = "byte %d: invalid token '%s'" % (index, s)
+    raise ValueError(m)
 
 
 class Empty(Exception):
@@ -314,7 +433,7 @@ class CheapQueue(object):
         self.front_fd = os_open(frontfile, O_RDWR|O_CREAT|O_APPEND, 0600)
         backfile = self.backfile
         self.back_fd = os_open(backfile, O_RDWR|O_CREAT|O_APPEND, 0600)
-	self._pid = getpid()
+        self._pid = getpid()
         del self.get_output
         del self.get_input
 
@@ -428,8 +547,6 @@ def async_worker(link):
             mv, func, args, kw = inp
             func = globals()[func]
             ret = async_call(func, args, kw, link)
-            if ret == [1]:
-                import pdb; pdb.set_trace()
             link.send(ret)
         except Exception, e:
             #import traceback
@@ -2468,8 +2585,6 @@ def compute_decryption_factors(modulus, generator, order, secret, ciphers,
         factors = []
         for c in channels:
             r = c.receive(wait=1)
-            if not isinstance(r, list):
-                import pdb; pdb.set_trace()
             factors.extend(r)
 
     async.shutdown()
@@ -3906,7 +4021,7 @@ class ZeusCoreElection(object):
 
         finished = self.export_decrypting()
         finished['results'] = self.do_get_results()
-        fingerprint = sha256(strcanonical(finished)).hexdigest()
+        fingerprint = sha256(to_canonical(finished)).hexdigest()
         finished['election_fingerprint'] = fingerprint
 
         report = ''
@@ -3939,7 +4054,7 @@ class ZeusCoreElection(object):
         self.do_store_results(finished['results'])
         finished.pop('election_report', None)
         fingerprint = finished.pop('election_fingerprint', None)
-        _fingerprint = sha256(strcanonical(finished)).hexdigest()
+        _fingerprint = sha256(to_canonical(finished)).hexdigest()
         if fingerprint is not None:
             if fingerprint != _fingerprint:
                 m = "Election fingerprint mismatch!"
