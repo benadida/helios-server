@@ -189,8 +189,8 @@ def to_canonical(obj, out=None):
                 else:
                     m = "Unsupported dict key type '%s'" % (type(k),)
             cobj[k] = v
-	del obj
-	keys = cobj.keys()
+        del obj
+        keys = cobj.keys()
         keys.sort()
         prev = None
         for k in keys:
@@ -227,7 +227,7 @@ def to_canonical(obj, out=None):
 
 _digitpat = re.compile('[0-9a-f]+')
 
-def from_canonical(string, index=0, _digitpat=_digitpat):
+def from_canonical(string, index=0, unicode_strings=0, _digitpat=_digitpat):
     eof = len(string)
     if index >= eof:
         return None, 0
@@ -248,6 +248,11 @@ def from_canonical(string, index=0, _digitpat=_digitpat):
             index = start
             end = index + z
             s = string[index:end]
+            if unicode_strings:
+                try:
+                    s = s.decode('utf-8')
+                except UnicodeDecodeError:
+                    pass
             return s, end
         else:
             num = int(string[index:end], 16)
@@ -4058,6 +4063,7 @@ class ZeusCoreElection(object):
         if fingerprint is not None:
             if fingerprint != _fingerprint:
                 m = "Election fingerprint mismatch!"
+		#print "WARNING: " + m
                 raise AssertionError(m)
         fingerprint = _fingerprint
         self.election_fingerprint = fingerprint
@@ -4509,10 +4515,10 @@ def main():
         exported, stage = election.export()
         if not filename:
             name = ("%x" % election.do_get_election_public())[:16]
-            filename = 'election-%s-%s.json' % (name, stage)
+            filename = 'election-%s-%s.zeus' % (name, stage)
             sys.stderr.write("writing out to '%s'\n\n" % (filename,))
         with open(filename, "w") as f:
-            json.dump(exported, f, indent=2)
+            f.write(to_canonical(exported))
         report = exported.get('election_report', '')
         del exported
 
@@ -4536,7 +4542,13 @@ def main():
         filename = args.verify_election
         sys.stderr.write("loading election from '%s'\n" % (filename,))
         with open(filename, "r") as f:
-            finished = json.load(f)
+            s = f.read()
+        try:
+            finished, index = from_canonical(s, unicode_strings=1)
+        except ValueError:
+            import json
+            finished = json.loads(s)
+
         election = ZeusCoreElection.new_at_finished(finished, teller=teller,
                                                     nr_parallel=nr_parallel)
         if not novalidate:
@@ -4573,7 +4585,13 @@ def main():
         filename = args[0]
         sys.stderr.write("loading election from '%s'\n" % (filename,))
         with open(filename, "r") as f:
+            s = f.read()
+        try:
+            finished, index = from_canonical(s)
+        except ValueError:
+            import json
             finished = json.load(f)
+
         election = ZeusCoreElection.new_at_finished(finished, teller=teller,
                                                     nr_parallel=nr_parallel,
                                                     novalidate=novalidate)
@@ -4604,7 +4622,6 @@ def main():
     if args.no_buffer:
         Teller.eol = '\n'
         Teller.feed = '\n'
-    import json
 
     nr_parallel = 0
     if args.nr_procs > 0:
