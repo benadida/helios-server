@@ -25,6 +25,7 @@ from signal import SIGKILL
 from errno import ESRCH
 from cStringIO import StringIO
 from marshal import loads as marshal_loads, dumps as marshal_dumps
+from json import load as json_load
 from binascii import hexlify
 import inspect
 import re
@@ -176,7 +177,11 @@ def to_canonical(obj, out=None):
         out.write("%s%s_" % (w, x))
         out.write(obj)
     elif isinstance(obj, int) or isinstance(obj, long):
-        out.write("%x" % obj)
+        s = "%x" % obj
+        z = len(s)
+        x = "%x" % z
+        w = ("%02x" % len(x))[:2]
+        out.write("%s%s0%s" % (w, x, s))
     elif isinstance(obj, dict):
         out.write('{\x0a')
         cobj = {}
@@ -225,125 +230,111 @@ def to_canonical(obj, out=None):
         out.seek(0)
         return out.read()
 
-_digitpat = re.compile('[0-9a-f]+')
+def from_canonical(inp, unicode_strings=0, s=''):
+    if isinstance(inp, str):
+        inp = StringIO(inp)
 
-def from_canonical(string, index=0, unicode_strings=0, _digitpat=_digitpat):
-    eof = len(string)
-    if index >= eof:
-        return None, 0
+    read = inp.read
+    if not s:
+        s = read(2)
 
-    m = _digitpat.match(string, index)
-    if m:
-        end = m.end()
-        start = end + 1
-        c = string[end:start]
-        if c == '_':
-            sep = index + 2
-            w = int(string[index:sep], 16)
-            z = int(string[sep:end], 16)
-            if w != (end - sep):
-                m = ("byte %d: corrupt string header '%s'!"
-                    % (index, string[index:end]))
-                raise ValueError(m)
-            index = start
-            end = index + z
-            s = string[index:end]
-            if unicode_strings:
-                try:
-                    s = s.decode('utf-8')
-                except UnicodeDecodeError:
-                    pass
-            return s, end
-        else:
-            num = int(string[index:end], 16)
-            return num, end
-
-    end = index + 2
-    s = string[index:end]
     if s == 'nu':
-        end = index + 4
-        if string[index:end] == 'null':
-            return None, end
+        s += read(2)
+        if s == 'null':
+            return None
         else:
-            m = "byte %d: invalid token '%s' instead of 'null'" % index
+            m = ("byte %d: invalid token '%s' instead of 'null'"
+                % (inp.tell(), s))
             raise ValueError(m)
 
     if s == '[\x0a':
         obj = []
         append = obj.append
         while 1:
-            index = end
-            if index >= eof:
-                m = "byte %d: eof while scanning for list item" % index 
+            s = read(2)
+            if not s:
+                m = "byte %d: eof within a list" % inp.tell() 
                 raise ValueError(m)
 
-            end = index + 2
-            s = string[index:end]
             if s == ']\x0a':
-                return obj, end
+                return obj
 
-            item, index = from_canonical(string, index=index)
-            if index >= eof:
-                m = "byte %d: eof while scanning for list ',' or ']'" % index 
-                raise ValueError(m)
-
+            item = from_canonical(inp, unicode_strings=unicode_strings, s=s)
             append(item)
 
-            end = index + 2
-            s = string[index:end]
+            s = read(2)
             if s == ']\x0a':
-                return obj, end
+                return obj
 
             if s != ',\x0a':
-                m = ("byte %d: illegal token '%s' in list instead of ',\\n'"
-                    % (index, s))
+                m = ("byte %d: in list: illegal token '%s' instead of ',\\n'"
+                    % (inp.tell(), s))
                 raise ValueError(m)
 
     if s == '{\x0a':
         obj = {}
         while 1:
-            index = end
-
-            if index >= eof:
-                m = "byte %d: eof while scanning for dict item" % index 
+            s = read(2)
+            if not s:
+                m = "byte %d: eof within dict" % inp.tell() 
                 raise ValueError(m)
 
-            end = index + 2
-            s = string[index:end]
             if s == '}\x0a':
-                return obj, end
+                return obj
 
-            key, index = from_canonical(string, index=index)
-            if index >= eof:
-                m = "byte %d: eof while scanning for dict ':'" % index 
-                raise ValueError(m)
-
-            end = index + 2
-            s = string[index:end]
+            key = from_canonical(inp, unicode_strings=unicode_strings, s=s)
+            s = read(2)
             if s != ': ':
-                m = "byte %d: invalid token '%s' instead of ': '" % (index, s)
+                m = ("byte %d: invalid token '%s' instead of ': '"
+                    % (inp.tell(), s))
                 raise ValueError(m)
 
-            index = end
-            value, index = from_canonical(string, index=index)
-            if index >= eof:
-                m = "byte %d: eof while scanning for dict ',' or '}'" % index 
-                raise ValueError(m)
-
+            value = from_canonical(inp, unicode_strings=unicode_strings)
             obj[key] = value # allow key TypeError rise through
 
-            end = index + 2
-            s = string[index:end]
+            s = read(2)
+            if not s:
+                m = "byte %d: eof inside dict" % inp.tell()
+                raise ValueError(m)
+
             if s == '}\x0a':
-                return obj, end
+                return obj
 
             if s != ',\x0a':
                 m = ("byte %d: illegal token '%s' in dict instead of ',\\n'"
-                    % (index, s))
+                    % (inp.tell(), s))
                 raise ValueError(m)
 
-    m = "byte %d: invalid token '%s'" % (index, s)
-    raise ValueError(m)
+    w = int(s, 16)
+    s = read(w)
+    if len(s) != w:
+        m = "byte %d: eof while reading header size %d" % (inp.tell(), w)
+        raise ValueError(m)
+
+    z = int(s, 16)
+    c = read(1)
+    if not c:
+        m = "byte %d: eof while reading object tag" % inp.tell()
+        raise ValueError(m)
+
+    s = read(z)
+    if len(s) != z:
+        m = "byte %d: eof while reading object size %d" % (inp.tell(), z)
+        raise ValueError(m)
+
+    if c == '_':
+        if unicode_strings:
+            try:
+                s = s.decode('utf-8')
+            except UnicodeDecodeError:
+                pass
+        return s
+    elif c == '0':
+        num = int(s, 16)
+        return num
+    else:
+        m = "byte %d: invalid object tag '%d'" % (inp.tell()-z, c)
+        raise ValueError(m)
 
 
 class Empty(Exception):
@@ -4063,7 +4054,7 @@ class ZeusCoreElection(object):
         if fingerprint is not None:
             if fingerprint != _fingerprint:
                 m = "Election fingerprint mismatch!"
-		#print "WARNING: " + m
+                #print "WARNING: " + m
                 raise AssertionError(m)
         fingerprint = _fingerprint
         self.election_fingerprint = fingerprint
@@ -4542,12 +4533,10 @@ def main():
         filename = args.verify_election
         sys.stderr.write("loading election from '%s'\n" % (filename,))
         with open(filename, "r") as f:
-            s = f.read()
-        try:
-            finished, index = from_canonical(s, unicode_strings=1)
-        except ValueError:
-            import json
-            finished = json.loads(s)
+            try:
+                finished = from_canonical(f, unicode_strings=1)
+            except ValueError:
+                finished = json_load(f)
 
         election = ZeusCoreElection.new_at_finished(finished, teller=teller,
                                                     nr_parallel=nr_parallel)
@@ -4585,12 +4574,10 @@ def main():
         filename = args[0]
         sys.stderr.write("loading election from '%s'\n" % (filename,))
         with open(filename, "r") as f:
-            s = f.read()
-        try:
-            finished, index = from_canonical(s)
-        except ValueError:
-            import json
-            finished = json.load(f)
+            try:
+                finished = from_canonical(f, unicode_strings=1)
+            except ValueError:
+                finished = json_load(f)
 
         election = ZeusCoreElection.new_at_finished(finished, teller=teller,
                                                     nr_parallel=nr_parallel,
