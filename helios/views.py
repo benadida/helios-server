@@ -31,6 +31,8 @@ from helios.workflows import homomorphic
 from helios.workflows import mixnet
 from helios.view_utils import *
 
+import json as json_module
+
 try:
   from collections import OrderedDict
 except ImportError:
