@@ -14,9 +14,9 @@ import Crypto.Util.number as number
 inverse = number.inverse
 from Crypto import Random
 from operator import mul as mul_operator
-from os import (fork, kill, getpid, waitpid, ftruncate, 
+from os import (fork, kill, getpid, waitpid, ftruncate, lseek, fstat,
                 read, write, unlink, open as os_open, close,
-                O_CREAT, O_RDWR, O_APPEND, SEEK_SET)
+                O_CREAT, O_RDWR, O_APPEND, SEEK_CUR, SEEK_SET)
 from fcntl import flock, LOCK_EX, LOCK_UN
 from multiprocessing import Semaphore#, Queue as mpQueue
 #from Queue import Empty, Full
@@ -490,7 +490,6 @@ class CheapQueue(object):
         try:
             write_all(fd, "%016x%s" % (len(data), chk))
             write_all(fd, data)
-            
         finally:
             flock(fd, LOCK_UN)
             self.up(sema)
@@ -513,6 +512,12 @@ class CheapQueue(object):
             header = header[:16]
             size = int(header, 16)
             data = read_all(fd, size)
+            pos = lseek(fd, 0, SEEK_CUR)
+            if pos > 1048576:
+                st = fstat(fd)
+                if pos >= st.st_size:
+                    ftruncate(fd, 0)
+                    lseek(fd, 0, SEEK_SET)
         finally:
             flock(fd, LOCK_UN)
         _chk = sha256(data).digest()
