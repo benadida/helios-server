@@ -356,6 +356,10 @@ def one_election_cancel(request, election):
 
 @election_admin(allow_superadmin=True)
 def election_report(request, election, format="html"):
+  user = get_user(request)
+  if not user.superadmin_p and not election.result:
+    raise PermissionDenied
+
   reports_list = request.GET.get('report', 'election,voters,votes').split(",")
 
   _reports = OrderedDict()
