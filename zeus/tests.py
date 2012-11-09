@@ -28,13 +28,14 @@ from helios import tasks
 from zeus.helios_election import *
 from zeus.models import *
 from zeus.core import get_random_selection, encode_selection, \
-    prove_encryption, to_absolute_answers, gamma_encode, to_relative_answers
+    prove_encryption, to_absolute_answers, gamma_encode, to_relative_answers, \
+    from_canonical, to_canonical
 
 TRUSTEES_COUNT = 3
-VOTERS_COUNT = 50
-VOTES_COUNT = 5
+VOTERS_COUNT = 20
+VOTES_COUNT = 3
 MIXNETS_COUNT = 1
-REMOTE_MIXES_COUNT = 2
+REMOTE_MIXES_COUNT = 1
 CAST_AUDITS = False
 CAST_WITH_AUDIT_SECRET = False
 DO_REMOTE_MIXES = True
@@ -283,10 +284,10 @@ class FunctionalZeusTest(TestCase):
             mixer = self.get_client()
             mix_url = election.get_mix_url()
             mix = mixer.get(mix_url)
-            mix = json.loads(mix.content)
+            mix = from_canonical(mix.content)
             new_mix = mix_ciphers(mix, nr_rounds=128, nr_parallel=4)
-            mixer.post(mix_url, data=json.dumps(new_mix),
-                       content_type="application/json")
+            mixer.post(mix_url, data=to_canonical(new_mix),
+                       content_type="application/binary")
 
             self.assertEqual(election.mixnets.count(), count+1)
 

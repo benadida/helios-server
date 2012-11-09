@@ -13,11 +13,11 @@ import uuid
 import random
 import StringIO
 import copy
-import json as json_module
 import base64
 import zipfile
 import os
 import tempfile
+import mmap
 import marshal
 
 import helios.views
@@ -25,7 +25,6 @@ import helios.views
 from datetime import timedelta
 
 from django.db import models, transaction
-from django.utils import simplejson
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.files import File
@@ -48,7 +47,7 @@ from heliosauth.jsonfield import JSONField
 from helios.datatypes import LDObject
 
 from zeus.core import (numbers_hash, mix_ciphers, gamma_encoding_max,
-                       gamma_decode, to_absolute_answers)
+                       gamma_decode, to_absolute_answers, to_canonical)
 
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
   class Meta:
@@ -90,11 +89,10 @@ class ElectionMixnet(HeliosModel):
     """
     Expects mix dict object
     """
-    fname = str(self.pk) + ".json"
+    fname = str(self.pk) + ".canonical"
     fpath = settings.MEDIA_ROOT + "/" + settings.ZEUS_MIXES_PATH + "/" + fname
-    fd = file(fpath, "w")
-    json_module.dump(mix, fd)
-    fd.close()
+    with open(fpath, "w") as f:
+        to_canonical(mix, out=f)
     self.mix_file = settings.ZEUS_MIXES_PATH + "/" + fname
     self.save()
 
@@ -1199,7 +1197,6 @@ class Election(HeliosModel):
     self.zeus_fingerprint = export_data[0]['election_fingerprint']
     self.save()
 
-    zeus_data = json_module.dumps(export_data[0])
     zf = zipfile.ZipFile(zip_path, mode='w')
     data_info = zipfile.ZipInfo('%s_proofs.txt' % self.short_name)
     data_info.compress_type = zipfile.ZIP_DEFLATED
@@ -1207,8 +1204,16 @@ class Election(HeliosModel):
                                                           self.uuid)
     data_info.date_time = datetime.datetime.now().timetuple()
     data_info.external_attr = 0777 << 16L
+
+    tmpf = tempfile.TemporaryFile(mode="w", suffix='.zeus',
+                                  prefix='tmp', dir='/tmp')
+    to_canonical(export_data[0], out=tmpf)
+    tmpf.flush()
+    size = tmpf.tell()
+    zeus_data = mmap.mmap(tmpf.fileno(), 0, mmap.MAP_SHARED, mmap.PROT_READ)
     zf.writestr(data_info, zeus_data)
     zf.close()
+    tmpf.close()
 
   @property
   def pretty_result(self):

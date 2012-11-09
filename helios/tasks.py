@@ -20,6 +20,8 @@ from helios.view_utils import render_template_raw
 from django.utils.translation import ugettext_lazy as _
 from django.core.mail import send_mail, EmailMessage
 
+from zeus.core import from_canonical
+
 @task()
 def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
     cast_vote = CastVote.objects.get(id = cast_vote_id)
@@ -301,7 +303,7 @@ def election_post_ecounting(election_id, user=None):
 def add_remote_mix(election_id, mix_tmp_file, mix_id=None):
     e = Election.objects.get(pk=election_id)
     tmp_file = file(mix_tmp_file)
-    mix = json.loads(tmp_file.read())
+    mix = from_canonical(tmp_file)
     error = e.add_remote_mix(mix, mix_id)
     if error:
         election_notify_admin.delay(election_id=election_id,
