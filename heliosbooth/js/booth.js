@@ -1,6 +1,8 @@
 
 $(document).ready(function(){
-  $("title, #banner h1").content('PAGE_TITLE');
+  try {
+    $("title, #banner h1").content('PAGE_TITLE');
+  } catch (err) {}
 });
 
 BOOTH = {};
