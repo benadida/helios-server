@@ -3,11 +3,11 @@
 
 import re
 import sys
-import json
 
 from zeus.core import ( c2048, get_random_selection,
                         gamma_encode, gamma_decode, gamma_encoding_max,
                         to_relative_answers, to_absolute_answers,
+                        to_canonical, from_canonical,
                         encrypt, prove_encryption,
                         decrypt_with_randomness,
                         compute_decryption_factors,
@@ -19,7 +19,7 @@ from urlparse import urlparse
 from urllib import urlencode
 from os.path import exists
 from sys import argv, stderr
-from json import loads, dumps
+from json import loads, dumps, load, dump
 from Queue import Queue, Empty
 from threading import Thread
 
@@ -283,12 +283,12 @@ def do_mix(mixfile, newfile, nr_rounds, nr_parallel):
         raise ValueError(m)
 
     with open(mixfile) as f:
-        mix = json.load(f)
+        mix = from_canonical(f)
 
     new_mix = mix_ciphers(mix, nr_rounds=nr_rounds,
                           nr_parallel=nr_parallel)
     with open(newfile, "w") as f:
-        json.dump(new_mix, f)
+        to_canonical(new_mix, out=f)
 
     return new_mix
 
@@ -298,7 +298,7 @@ def do_decrypt(savefile, outfile, keyfile, nr_parallel):
         raise ValueError(m)
 
     with open(keyfile) as f:
-        key = json.load(f)
+        key = load(f)
 
     secret = int(key['x'])
     pk = key['public_key']
@@ -309,7 +309,7 @@ def do_decrypt(savefile, outfile, keyfile, nr_parallel):
     del key
 
     with open(savefile) as f:
-        tally = json.load(f)
+        tally = load(f)
 
     ciphers = [(int(ct['alpha']), int(ct['beta']))
                for ct in tally['tally'][0]]
@@ -323,18 +323,18 @@ def do_decrypt(savefile, outfile, keyfile, nr_parallel):
 
     for factor, proof in factors:
         factor_append(factor)
-	f = {}
+        f = {}
         f['commitment'] = {'A': proof[0], 'B': proof[1]}
-	f['challenge'] = proof[2]
-	f['response'] = proof[3]
-	proof_append(f)
+        f['challenge'] = proof[2]
+        f['response'] = proof[3]
+        proof_append(f)
 
     factors_and_proofs = {
             'decryption_factors': [decryption_factors],
             'decryption_proofs': [decryption_proofs] }
 
     with open(outfile, "w") as f:
-        json.dump(factors_and_proofs, f)
+        dump(factors_and_proofs, f)
 
     return factors
 
