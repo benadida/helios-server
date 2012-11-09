@@ -37,6 +37,7 @@ def election_report(elections, votes_report=True):
             ('candidates', e.candidates),
         ])
         if votes_report:
+            voters_added = e.voter_set.count()
             entry.update(OrderedDict([
                 ('excluded_count', e.voter_set.filter(excluded_at__isnull=False).count()),
                 ('audit_requests_count', e.auditedballot_set.filter(is_request=True).count()),
@@ -44,7 +45,9 @@ def election_report(elections, votes_report=True):
                 ('voters_count', e.voter_set.count()),
                 ('voters_cast_count', e.castvote_set.filter(voter__excluded_at__isnull=True).distinct('voter').count()),
                 ('cast_count', e.castvote_set.count()),
-                ('last_view_at', e.voter_set.order_by('-last_visit')[0].last_visit)
+                ('voters_visited_count', e.voter_set.filter(last_visit__isnull=False).count()),
+                ('last_view_at',
+                 e.voter_set.order_by('-last_visit')[0].last_visit if voters_added else None)
             ]))
         yield entry
 
