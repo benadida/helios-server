@@ -131,7 +131,7 @@ def election_view(**checks):
         return func(request, election, *args, **kw)
       except Exception, e:
         import traceback
-        traceback.print_exc()
+        #traceback.print_exc()
         raise
 
     return update_wrapper(election_view_wrapper, func)
