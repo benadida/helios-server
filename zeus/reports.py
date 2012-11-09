@@ -21,6 +21,8 @@ def election_report(elections, votes_report=True):
         entry = OrderedDict([
             ('name', e.name),
             ('uuid', e.uuid),
+            ('admin_user', e.admins.filter().values('user_id',
+                                                        'ecounting_account')[0]),
             ('institution', e.institution.name),
             ('voting_started_at', e.voting_starts_at),
             ('voting_ended_at', e.voting_ended_at),
