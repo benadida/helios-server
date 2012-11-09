@@ -1,4 +1,7 @@
 {% load helios_tags %}<html>
+  <style>
+    table td dt { font-weight: bold; float: left }
+  </style>
   <body>
     <h1>{{ election.name }}</h1>
     <hr />
@@ -20,6 +23,13 @@
     <div class="panel" id="votes">
     <h2>Ψηφοι</h2>
     {{ reports.votes|as_table|safe }}
+    </div>
+    {% endif %}
+
+    {% if 'results' in reports %}
+    <div class="panel" id="votes">
+    <h2>Αποτελέσματα</h2>
+    {{ reports.results|as_table|safe }}
     </div>
     {% endif %}
 

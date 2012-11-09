@@ -1,4 +1,5 @@
 from helios.models import *
+from collections import defaultdict
 from zeus.core import gamma_decode
 
 try:
@@ -76,8 +77,21 @@ def election_voters_report(elections):
             entry['election'] = vote.election.name
         yield entry
 
+
 def _single_votes(results, clen):
     return filter(lambda sel: len(gamma_decode(sel, clen)) == 1, results)
+
+
+def _get_choices_sums(results, choices_len):
+    data = OrderedDict()
+    for i in range(choices_len+1):
+      data[str(i)] = 0
+
+    for encoded in results:
+        chosen_len = len(gamma_decode(encoded, choices_len))
+        data[str(chosen_len)] = data[str(chosen_len)] + 1
+
+    return data
 
 
 def election_results_report(elections):
@@ -86,12 +100,13 @@ def election_results_report(elections):
             entry = {}
         else:
             entry = OrderedDict([
-                ('protest_votes_count', election.result.count(0)),
-                ('total_count', len(election.result)),
-                ('single_votes_count', len(_single_votes(election.result,
-                                                         len(election.candidates))))
+                ('choices', len(election.questions[0]['answers'])),
+                ('protest_votes_count', election.result[0].count(0)),
+                ('total_count', len(election.result[0])),
+                ('choices_sums', _get_choices_sums(election.result[0],
+                                                   len(election.questions[0]['answers'])))
             ])
-        if elections.count() > 1:
+        if len(elections) > 1:
             entry['election'] = vote.election.name
         yield entry
 

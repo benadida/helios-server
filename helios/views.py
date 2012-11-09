@@ -370,11 +370,12 @@ def one_election_cancel(request, election):
 
 @election_admin(allow_superadmin=True)
 def election_report(request, election, format="html"):
+
   user = get_user(request)
   if not user.superadmin_p and not election.result:
     raise PermissionDenied
 
-  reports_list = request.GET.get('report', 'election,voters,votes').split(",")
+  reports_list = request.GET.get('report', 'election,voters,votes,results').split(",")
 
   _reports = OrderedDict()
   if 'election' in reports_list:
@@ -383,6 +384,8 @@ def election_report(request, election, format="html"):
     _reports['voters'] = list(reports.election_voters_report([election]))
   if 'votes' in reports_list:
     _reports['votes'] = list(reports.election_votes_report([election], False))
+  if 'results' in reports_list:
+    _reports['results'] = list(reports.election_results_report([election]))
 
   if format == "html":
     return render_template(request, "election_report", {

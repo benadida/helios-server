@@ -38,6 +38,8 @@ def _l_to_table(l):
   for entry in values:
     html += u"<tr>"
     for v in entry.values():
+      if isinstance(v, dict):
+        v = _d_to_dl(v)
       html += u"<td>%s</td>" % v
     html += u"</tr>"
 
