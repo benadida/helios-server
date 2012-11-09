@@ -30,6 +30,7 @@ def election_report(elections, votes_report=True):
             ('voting_extended', bool(e.voting_extended_until)),
             ('voting_extended_until', e.voting_extended_until),
             ('has_department_limit', e.has_department_limit),
+            ('eligibles_count', e.eligibles_count),
             ('departments', e.departments),
             ('trustees', list(e.trustee_set.filter(secret_key__isnull=True).values('name',
                                                                              'email'))),
