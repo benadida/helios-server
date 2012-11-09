@@ -21,11 +21,22 @@ function show_key_reuse() {
 SECRET_KEY = null;
 
 function reuse_key(secret_key_text) {
-    SECRET_KEY = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(secret_key_text));
+    try {
+      SECRET_KEY = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(secret_key_text));
+    } catch (err) {
+      alert("Μη έγκυρος κωδικός ψηφοφορίας.");
+      return;
+    }
 
     $('#reuse').hide();
     setup_public_key_and_proof();
-    show_pk();
+    show_sk();
+    check_confirm();
+    $('#pk_link').show();
+    $('.reuse_key').hide();
+    $('#clear_button').hide();
+    $('#save_key').removeClass('success').addClass('secondary');
+    $('#save_key').hide();
 }
 
 // start collecting some local randomness
@@ -114,7 +125,7 @@ function upload_show_pk() {
         window.location = '{% url heliosauth.views.logout %}'
       },
       error: function() {
-        alert("Σφάλμα ενεργοποίησης. Παρακαλούμε δοκιμάστε ξανά.");
+        alert("Σφάλμα ενεργοποίησης.");
       }
     })
 
@@ -139,6 +150,31 @@ $(document).ready(function(){
   })
 })
 
+$(document).ready(function(){
+    var get_secret_reader_opts = {
+        dragClass: "drag",
+        accept: false,
+        readAsMap: {
+            'text/*' : 'Text'
+        },
+        readAsDefault: 'Text',
+        on: {
+            load: function(e, file) {
+                if (e.srcElement && e.srcElement.result) {
+                    $("textarea#reuse_secret").val(e.srcElement.result);
+                }
+                if (e.currentTarget && e.currentTarget.result) {
+                    $("textarea#reuse_secret").val(e.currentTarget.result);
+                }
+            },
+        }
+    };
+    try {
+        $("#reuse-file").fileReaderJS(get_secret_reader_opts);
+    } catch (err) {
+        console.log(err);
+    }
+})
 </script>
 
 <p style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
@@ -195,11 +231,12 @@ $(document).ready(function(){
 <p>
 Εισάγετε τον Κωδικό Ψηφοφορίας σας παρακάτω:
 </p>
+<input type="file" id="reuse-file" />
 <form onsubmit="reuse_key(this.secret_key.value); return false;">
-<textarea cols="80" rows="5" wrap="soft" name="secret_key">
+<textarea cols="80" rows="5" wrap="soft" name="secret_key" id="reuse_secret">
 </textarea>
 <br />
-<input type="submit" value="reuse" />
+<input type="submit" class="button medium success" value="Συνέχεια" />
 </form>
 </div>
 
