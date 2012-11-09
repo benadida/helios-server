@@ -25,6 +25,9 @@
       Διαχειριστής
     </th>
     <th>
+      Δημιουργία
+    </th>
+    <th>
       Έναρξη
     </th>
     <th>
@@ -58,9 +61,13 @@
             {% endif %}
         </td>
         <td>
+          {{ election.institution.name }}
         </td>
         <td>
             {{ election.admins.all.0.info.name }}
+        </td>
+        <td>
+          {{ election.created_at }}
         </td>
         <td>
             {{ election.voting_starts_at }}
