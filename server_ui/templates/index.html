@@ -51,14 +51,9 @@
             [ΕΧΕΙ ΑΚΥΡΩΘΕΙ]
             {% endif %}
             </b>
-            <a href="{% url helios.views.one_election_view election.uuid %}">
+            <a href="{% if not user.superadmin_p %}{% url helios.views.one_election_view election.uuid %}{% else %}{% url helios.views.election_report election.uuid "html" %}{% endif %}">
             {{ election.name }}
             </a>
-            {% if user.superadmin_p %}[
-            <a href="{% url helios.views.election_report election.uuid "html" %}">
-              report
-            </a>]
-            {% endif %}
         </td>
         <td>
           {{ election.institution.name }}

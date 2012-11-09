@@ -44,7 +44,7 @@ def home(request):
     elections_voted = None
 
   if user.superadmin_p:
-    elections_administered = Election.objects.all()
+    elections_administered = Election.objects.all().order_by('-created_at')
 
   if user and not user.election:
     return HttpResponseRedirect(reverse("helios.views.election_new"))
