@@ -277,11 +277,17 @@ def election_zeus_proofs(request, election):
   if not os.path.exists(election.zeus_proofs_path()):
     election.store_zeus_proofs()
 
-  zip_data = file(election.zeus_proofs_path())
-  response = HttpResponse(zip_data.read(), mimetype='application/zip')
-  zip_data.close()
-  response['Content-Dispotition'] = 'attachment; filename=%s_proofs.zip' % election.uuid
-  return response
+  if settings.USE_X_SENDFILE:
+    response = HttpResponse()
+    response['Content-Type'] = ''
+    response['X-Sendfile'] = election.zeus_proofs_path()
+    return response
+  else:
+    zip_data = file(election.zeus_proofs_path())
+    response = HttpResponse(zip_data.read(), mimetype='application/zip')
+    zip_data.close()
+    response['Content-Dispotition'] = 'attachment; filename=%s_proofs.zip' % election.uuid
+    return response
 
 @election_admin(frozen=True)
 def election_stop_mixing(request, election):
@@ -314,12 +320,18 @@ def election_remote_mix(request, election_uuid, mix_key):
 
   resp = {}
   if request.method == "GET":
-      mixnet = election.get_last_mix()
-      response = HttpResponse(mimetype="application/json")
-      fp = file(mixnet.mix_file.path)
-      response.write(fp.read())
-      fp.close()
-      return response
+      if settings.USE_X_SENDFILE:
+        response = HttpResponse()
+        response['Content-Type'] = ''
+        response['X-Sendfile'] = mixnet.mix_file.path
+        return response
+      else:
+        mixnet = election.get_last_mix()
+        response = HttpResponse(mimetype="application/json")
+        fp = file(mixnet.mix_file.path)
+        response.write(fp.read())
+        fp.close()
+        return response
 
   mix_id = "remote mix"
   fd, mix_tmp_file = tempfile.mkstemp(prefix=request.META.get('REMOTE_ADDR', 'UNKNOWN')+'-',
