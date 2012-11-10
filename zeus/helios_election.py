@@ -527,19 +527,19 @@ class HeliosElection(ZeusCoreElection):
         return excluded_voters
 
 
-    def _custom_vote_message(self, vote):
-      content = u""
-      for k,v in vote.get('__extra_comments', {}).iteritems():
-        content += u"%s: %s" % (k, v)
+    #def _custom_vote_message(self, vote):
+      #content = u""
+      #for k,v in vote.get('__extra_comments', {}).iteritems():
+        #content += u"%s: %s" % (k, v)
 
-      vote.remove('__extra_comments')
-      return content
+      #vote.remove('__extra_comments')
+      #return content
 
-    def custom_audit_publication_message(self, vote):
-        return self._custom_vote_message(vote)
+    #def custom_audit_publication_message(self, vote):
+        #return self._custom_vote_message(vote)
 
-    def custom_audit_request_message(self, vote):
-        return self._custom_vote_message(vote)
+    #def custom_audit_request_message(self, vote):
+        #return self._custom_vote_message(vote)
 
-    def custom_cast_vote_message(self, vote):
-        return self._custom_vote_message(vote)
+    #def custom_cast_vote_message(self, vote):
+        #return self._custom_vote_message(vote)
