@@ -321,6 +321,7 @@ def election_remote_mix(request, election_uuid, mix_key):
       raise PermissionDenied
 
   resp = {}
+  mixnet = election.get_last_mix()
   if request.method == "GET":
       if settings.USE_X_SENDFILE:
         response = HttpResponse()
@@ -328,7 +329,6 @@ def election_remote_mix(request, election_uuid, mix_key):
         response['X-Sendfile'] = mixnet.mix_file.path
         return response
       else:
-        mixnet = election.get_last_mix()
         response = HttpResponse(mimetype="application/json")
         fp = file(mixnet.mix_file.path)
         response.write(fp.read())
