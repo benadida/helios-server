@@ -1,6 +1,7 @@
 from helios.models import *
 from collections import defaultdict
 from zeus.core import gamma_decode
+from django.db.models import Count
 
 try:
   from collections import OrderedDict
@@ -29,6 +30,7 @@ def election_report(elections, votes_report=True):
             ('voting_ended_at', e.voting_ended_at),
             ('voting_extended', bool(e.voting_extended_until)),
             ('voting_extended_until', e.voting_extended_until),
+            ('voting_ends_at', e.voting_ends_at),
             ('has_department_limit', e.has_department_limit),
             ('eligibles_count', e.eligibles_count),
             ('departments', e.departments),
@@ -54,10 +56,11 @@ def election_report(elections, votes_report=True):
 
 def election_votes_report(elections, include_names=False):
     for vote in CastVote.objects.filter(election__in=elections,
-                                    voter__excluded_at__isnull=True).order_by('-cast_at'):
+                                    voter__excluded_at__isnull=True).values('voter__alias',
+                                                                           'cast_at').order_by('-cast_at'):
         entry = OrderedDict([
-            ('name', vote.voter.alias),
-            ('date', vote.cast_at)
+            ('name', vote['voter__alias']),
+            ('date', vote['cast_at'])
         ])
         if include_names:
             entry['name'] = vote.voter.full_name
@@ -68,14 +71,14 @@ def election_votes_report(elections, include_names=False):
 
 def election_voters_report(elections):
     for voter in Voter.objects.filter(election__in=elections,
-                                      excluded_at__isnull=True).order_by('voter_surname'):
+                                      excluded_at__isnull=True).annotate(cast_count=Count('castvote')).order_by('voter_surname'):
         entry = OrderedDict([
             ('name', voter.voter_name),
             ('surname', voter.voter_surname),
             ('fathername', voter.voter_fathername),
             ('email', voter.voter_email),
             ('visited', bool(voter.last_visit)),
-            ('votes_count', voter.castvote_set.count())
+            ('votes_count', voter.cast_count)
         ])
         if len(elections) > 1:
             entry['election'] = vote.election.name
