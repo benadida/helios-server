@@ -25,29 +25,31 @@ def get_election():
 
 def home(request):
   # load the featured elections
-  featured_elections = Election.get_featured()
+  featured_elections = None
 
   user = get_user(request)
   create_p = can_create_election(request)
-
-  if create_p:
-    elections_administered = Election.get_by_user_as_admin(user,
-                                                           archived_p=None,
-                                                           limit=None)
-  else:
-    elections_administered = None
-
-  if user:
-    elections_voted = Election.get_by_user_as_voter(user, limit=5)
-  else:
-    return HttpResponseRedirect("/auth/?return_url=/")
-    elections_voted = None
+  elections_voted = None
 
   if user.superadmin_p:
-    elections_administered = Election.objects.all().order_by('-created_at')
+    elections_administered = Election.objects.filter().select_related().order_by('-created_at')
+  else:
+    if create_p:
+      elections_administered = Election.get_by_user_as_admin(user,
+                                                             archived_p=None,
+                                                             limit=None)
+    else:
+      elections_administered = None
 
-  if user and not user.election:
-    return HttpResponseRedirect(reverse("helios.views.election_new"))
+    if user:
+      elections_voted = Election.get_by_user_as_voter(user, limit=5)
+    else:
+      return HttpResponseRedirect("/auth/?return_url=/")
+      elections_voted = None
+
+
+    if user and not user.election:
+      return HttpResponseRedirect(reverse("helios.views.election_new"))
 
   auth_systems = copy.copy(settings.AUTH_ENABLED_AUTH_SYSTEMS)
   try:

@@ -33,12 +33,14 @@
     <th>
       Λήξη
     </th>
+    {% if not user.superadmin_p %}
     <th>
       Ψηφοφόροι
     </th>
     <th>
       Έχουν ψηφίσει
     </th>
+    {% endif %}
   </thead>
   <tbody>
     {% for election in elections_administered %}
@@ -70,12 +72,14 @@
         <td>
             {{ election.voting_ends_at }}
         </td>
+        {% if not user.superadmin_p %}
         <td>
             {{ election.voter_set.all.count }}
         </td>
         <td>
             {{ election.voted_count }}
         </td>
+        {% endif %}
     </tr>
     {% endfor %}
   </tbody>
