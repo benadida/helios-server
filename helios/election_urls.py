@@ -53,6 +53,7 @@ urlpatterns = patterns('',
     (r'^/encrypt-ballot$', encrypt_ballot),
 
     # construct election
+    (r'^/candidates$', one_election_candidates),
     (r'^/questions$', one_election_questions),
     (r'^/set_reg$', one_election_set_reg),
     (r'^/set_featured$', one_election_set_featured),

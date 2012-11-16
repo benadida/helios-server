@@ -1,7 +1,7 @@
 <dd class="{% if menu_active == "overview" %}active{% endif %}"><a 
   href="{% url helios.views.one_election_view election.uuid %}">{% if admin_p %}Ενέργειες{% else %}Πληροφορίες{% endif %}</a></dd>
 <dd class="{% if menu_active == "candidates" %}active{% endif %}"><a 
-  href="{% url helios.views.one_election_questions election.uuid %}">Υποψήφιοι</a></dd>
+  href="{{ election.questions_url }}">{{ election.type_params.questions_title }}</a></dd>
 {% if admin_p %}
 <dd class="{% if menu_active == "voters" %}active{% endif %}"><a 
   href="{% url helios.views.voters_list_pretty election.uuid %}">Λίστα ψηφοφόρων</a></dd>

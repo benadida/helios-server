@@ -13,6 +13,7 @@ from django.contrib.admin import widgets
 from django.db import transaction
 from django.conf import settings
 from django.db.models import Q
+from django.utils.safestring import mark_safe
 
 from helios.models import Election, Trustee
 from heliosauth.models import User
@@ -72,6 +73,9 @@ def initial_voting_ends_at():
     return datetime.now() + timedelta(hours=12)
 
 class ElectionForm(forms.Form):
+
+  election_type = 'ecounting'
+
   institution = forms.CharField(max_length=100, label=_('Institution'),
                                help_text=_('Election institution'))
 
@@ -167,6 +171,9 @@ class ElectionForm(forms.Form):
       if dextend and cleaned_data['voting_extended_until'] < dto:
           raise forms.ValidationError(_("Invalid voting extension date"))
 
+      if not 'departments' in cleaned_data:
+        cleaned_data['departments'] = ''
+
       return cleaned_data
 
   def clean_trustees(self):
@@ -193,6 +200,7 @@ class ElectionForm(forms.Form):
     data['slug'] = slughifi(data['name'])
 
     e = election
+    e.election_type = self.election_type
     if is_new or not election.frozen_at:
       e.name = data.get('name')
       e.use_voter_aliases = True
@@ -252,8 +260,11 @@ class ElectionForm(forms.Form):
       else:
         e.mix_key = ''
 
-    e.eligibles_count = data['eligibles_count']
-    e.has_department_limit = data['has_department_limit']
+    if 'eligibles_count' in data:
+      e.eligibles_count = data['eligibles_count']
+    if 'has_department_limit' in data:
+      e.has_department_limit = data['has_department_limit']
+
     e.save()
 
     if is_new:
@@ -263,8 +274,9 @@ class ElectionForm(forms.Form):
       e.generate_trustee()
 
     if is_new or not election.frozen_at:
-      existing_trustees = [] if is_new else list(e.trustee_set.all())
-      trustees = [t.split(",") for t in data['trustees'].split("\n")]
+      trustees = []
+      if data['trustees']:
+        trustees = [t.split(",") for t in data['trustees'].split("\n")]
 
       for t in trustees:
         name, email = t[0], t[1]
@@ -280,3 +292,77 @@ class ElectionForm(forms.Form):
             trustee.send_url_via_mail()
 
     return e
+
+
+class ReferendumForm(ElectionForm):
+
+      election_type = 'election'
+
+      def __init__(self, *args, **kwargs):
+          super(ReferendumForm, self).__init__(*args, **kwargs)
+          del self.fields['has_department_limit']
+          del self.fields['eligibles_count']
+          del self.fields['departments']
+          self.fields['name'].help_text = _('Election title (e.g. Memorandum'
+                                            ' referendum)')
+
+
+def election_form_cls(user, force_type=None):
+    from zeus.forms import ElectionForm, ReferendumForm
+    if user.ecounting_account:
+        if force_type:
+          pass
+        return ElectionForm
+    return ReferendumForm
+
+
+class AnswerWidget(forms.TextInput):
+
+  def render(self, *args, **kwargs):
+    html = super(AnswerWidget, self).render(*args, **kwargs)
+    html = u"""
+    <div class="row">
+    <div class="columns eleven">
+    %s
+    </div>
+    <div class="columns one">
+    <a href="#" style="font-weight: bold; color:red" class="remove_answer">X</a>
+    </div>
+    </div>
+    """ % html
+    return mark_safe(html)
+
+
+DEFAULT_ANSWERS_COUNT = 2
+
+class QuestionForm(forms.Form):
+  choice_type = forms.ChoiceField(choices=(
+    ('choice', _('Choice')),
+    ('ranked', _('Ranked')),))
+  question = forms.CharField(max_length=255, required=True)
+  max_answers = forms.ChoiceField()
+
+
+  def __init__(self, *args, **kwargs):
+    super(QuestionForm, self).__init__(*args, **kwargs)
+    answers = len(filter(lambda k: k.startswith("%s-answer_" %
+                                                self.prefix), self.data))
+    if not answers:
+      answers = len(filter(lambda k: k.startswith("answer_"), self.initial))
+    if answers == 0:
+      answers = DEFAULT_ANSWERS_COUNT
+
+    for ans in range(answers):
+      field_key = 'answer_%d' % ans
+      self.fields[field_key] = forms.CharField(max_length=100,
+                                              required=True,
+                                              widget=AnswerWidget)
+      self.fields[field_key].widget.attrs = {'class': 'answer_input'}
+
+    max_choices = map(lambda x: (x,x), range(1, answers+1))
+    self.fields['max_answers'].choices = max_choices
+    self.fields['max_answers'].initial = answers
+    if len(self.fields['choice_type'].choices) == 1:
+      self.fields['choice_type'].widget = forms.HiddenInput()
+      self.fields['choice_type'].initial = 'choice'
+

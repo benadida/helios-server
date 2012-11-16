@@ -3392,7 +3392,7 @@ div.orbit-wrapper span.rotator {
   position: absolute;
   top: 0;
   left: -20px;
-  background: url('/images/foundation/orbit/rotator-black.png?1350647219') no-repeat;
+  background: url('/images/foundation/orbit/rotator-black.png?1351702577') no-repeat;
   z-index: 3;
 }
 
@@ -3417,7 +3417,7 @@ div.orbit-wrapper span.rotator.move {
 div.orbit-wrapper span.mask.move {
   width: 40px;
   left: 0;
-  background: url('/images/foundation/orbit/timer-black.png?1350647219') repeat 0 0;
+  background: url('/images/foundation/orbit/timer-black.png?1351702577') repeat 0 0;
 }
 
 /* line 82, ../../../../../../../../../var/lib/gems/1.8/gems/zurb-foundation-3.1.0.rc1/scss/foundation/components/modules/_orbit.scss */
@@ -3428,14 +3428,14 @@ div.orbit-wrapper span.pause {
   position: absolute;
   top: 0;
   left: 0;
-  background: url('/images/foundation/orbit/pause-black.png?1350647219') no-repeat;
+  background: url('/images/foundation/orbit/pause-black.png?1351702577') no-repeat;
   z-index: 4;
   opacity: 0;
 }
 
 /* line 93, ../../../../../../../../../var/lib/gems/1.8/gems/zurb-foundation-3.1.0.rc1/scss/foundation/components/modules/_orbit.scss */
 div.orbit-wrapper span.pause.active {
-  background: url('/images/foundation/orbit/pause-black.png?1350647219') no-repeat 0 -40px;
+  background: url('/images/foundation/orbit/pause-black.png?1351702577') no-repeat 0 -40px;
 }
 
 /* line 97, ../../../../../../../../../var/lib/gems/1.8/gems/zurb-foundation-3.1.0.rc1/scss/foundation/components/modules/_orbit.scss */
@@ -3487,25 +3487,25 @@ div.orbit-wrapper div.slider-nav span {
 
 /* line 134, ../../../../../../../../../var/lib/gems/1.8/gems/zurb-foundation-3.1.0.rc1/scss/foundation/components/modules/_orbit.scss */
 div.orbit-wrapper div.slider-nav span.right {
-  background: url('/images/foundation/orbit/right-arrow.png?1350647219');
+  background: url('/images/foundation/orbit/right-arrow.png?1351702577');
   background-size: 100%;
   right: 0;
 }
 
 /* line 139, ../../../../../../../../../var/lib/gems/1.8/gems/zurb-foundation-3.1.0.rc1/scss/foundation/components/modules/_orbit.scss */
 div.orbit-wrapper div.slider-nav span.left {
-  background: url('/images/foundation/orbit/left-arrow.png?1350647219');
+  background: url('/images/foundation/orbit/left-arrow.png?1351702577');
   background-size: 100%;
   left: 0;
 }
 
 /* line 145, ../../../../../../../../../var/lib/gems/1.8/gems/zurb-foundation-3.1.0.rc1/scss/foundation/components/modules/_orbit.scss */
 .lt-ie9 div.orbit-wrapper div.slider-nav span.right {
-  background: url('/images/foundation/orbit/right-arrow-small.png?1350647219');
+  background: url('/images/foundation/orbit/right-arrow-small.png?1351702577');
 }
 /* line 146, ../../../../../../../../../var/lib/gems/1.8/gems/zurb-foundation-3.1.0.rc1/scss/foundation/components/modules/_orbit.scss */
 .lt-ie9 div.orbit-wrapper div.slider-nav span.left {
-  background: url('/images/foundation/orbit/left-arrow-small.png?1350647219');
+  background: url('/images/foundation/orbit/left-arrow-small.png?1351702577');
 }
 
 /* Bullet Nav ---------------------- */
@@ -3527,7 +3527,7 @@ ul.orbit-bullets li {
   cursor: pointer;
   color: #999;
   text-indent: -9999px;
-  background: url('/images/foundation/orbit/bullets.jpg?1350647219') no-repeat 4px 0;
+  background: url('/images/foundation/orbit/bullets.jpg?1351702577') no-repeat 4px 0;
   width: 13px;
   height: 12px;
   overflow: hidden;
@@ -3584,7 +3584,7 @@ ul.orbit-bullets li {
   cursor: pointer;
   color: #999;
   text-indent: -9999px;
-  background: url('/images/foundation/orbit/bullets.jpg?1350647219') no-repeat 4px 0;
+  background: url('/images/foundation/orbit/bullets.jpg?1351702577') no-repeat 4px 0;
   width: 13px;
   height: 12px;
   overflow: hidden;
@@ -5133,35 +5133,43 @@ body #header {
   margin-bottom: 30px;
 }
 /* line 49, ../sass/app.scss */
+body dl.tabs dd.error {
+  border-top-color: #c60f13;
+}
+/* line 51, ../sass/app.scss */
+body dl.tabs dd.error a {
+  color: #c60f13;
+}
+/* line 56, ../sass/app.scss */
 body #footer {
   padding: 10px 0;
   border-top: 1px solid #dddddd;
   margin-top: 20px;
   border-bottom: 1px solid #dddddd;
 }
-/* line 55, ../sass/app.scss */
+/* line 62, ../sass/app.scss */
 body #footer .footer-icons {
   float: right;
 }
-/* line 58, ../sass/app.scss */
+/* line 65, ../sass/app.scss */
 body .start-voting {
   float: left;
   margin-top: 20px;
 }
-/* line 64, ../sass/app.scss */
+/* line 71, ../sass/app.scss */
 body ol li.step {
   margin-bottom: 10px;
 }
-/* line 65, ../sass/app.scss */
+/* line 72, ../sass/app.scss */
 body ol li.step .step-title {
   font-weight: bold;
 }
-/* line 66, ../sass/app.scss */
+/* line 73, ../sass/app.scss */
 body ol li.step .step-desc {
   font-style: italic;
   display: block;
 }
-/* line 68, ../sass/app.scss */
+/* line 75, ../sass/app.scss */
 body span.election-desc-toggle {
   cursor: pointer;
   position: absolute;
@@ -5170,186 +5178,186 @@ body span.election-desc-toggle {
   padding: 5px;
   margin-top: 2px;
 }
-/* line 77, ../sass/app.scss */
+/* line 84, ../sass/app.scss */
 body h4 .elname {
   display: block;
 }
-/* line 78, ../sass/app.scss */
+/* line 85, ../sass/app.scss */
 body h4 .inst {
   display: block;
   font-size: 0.4em;
   font-weight: bold;
 }
-/* line 79, ../sass/app.scss */
+/* line 86, ../sass/app.scss */
 body .panel.confirm-vote {
   padding-top: 0;
   padding-bottom: 0;
 }
-/* line 84, ../sass/app.scss */
+/* line 91, ../sass/app.scss */
 body .row.labels {
   margin-bottom: 10px !important;
 }
-/* line 88, ../sass/app.scss */
+/* line 95, ../sass/app.scss */
 body .form-field ul {
   list-style: none;
 }
-/* line 92, ../sass/app.scss */
+/* line 99, ../sass/app.scss */
 body p.alert {
   color: red;
 }
-/* line 93, ../sass/app.scss */
+/* line 100, ../sass/app.scss */
 body .green {
   color: #5DA423;
 }
-/* line 95, ../sass/app.scss */
+/* line 102, ../sass/app.scss */
 body .vote-hash {
   text-align: left;
   font-weight: bold;
   font-size: 1.2em;
 }
-/* line 96, ../sass/app.scss */
+/* line 103, ../sass/app.scss */
 body .vote-hash-actions {
   float: right;
   margin-top: -2px !important;
 }
-/* line 98, ../sass/app.scss */
+/* line 105, ../sass/app.scss */
 body ul.stv-list {
   list-style: none;
 }
-/* line 100, ../sass/app.scss */
+/* line 107, ../sass/app.scss */
 body ul.stv-list li {
   margin-bottom: 10px;
 }
-/* line 101, ../sass/app.scss */
+/* line 108, ../sass/app.scss */
 body ul.stv-list .button {
   width: 100%;
 }
-/* line 102, ../sass/app.scss */
+/* line 109, ../sass/app.scss */
 body ul.stv-list a span.index-num {
   font-size: 0.8em;
   float: left;
 }
-/* line 103, ../sass/app.scss */
+/* line 110, ../sass/app.scss */
 body ul.stv-list .stv-ballot-choice a {
   text-align: right;
 }
-/* line 104, ../sass/app.scss */
+/* line 111, ../sass/app.scss */
 body ul.stv-list .stv-ballot-choice a span:hover {
   background-color: transparent !important;
 }
-/* line 106, ../sass/app.scss */
+/* line 113, ../sass/app.scss */
 body #stv_answer {
   display: none;
 }
-/* line 107, ../sass/app.scss */
+/* line 114, ../sass/app.scss */
 body h4#election-name span.label {
   padding: 4px;
   margin-top: 5px;
 }
-/* line 109, ../sass/app.scss */
+/* line 116, ../sass/app.scss */
 body ul.confirm-choices {
   list-style: none;
   margin-bottom: 10px;
   margin-top: 10px;
 }
-/* line 110, ../sass/app.scss */
+/* line 117, ../sass/app.scss */
 body #confirm-vote {
   margin-left: 10px;
 }
-/* line 111, ../sass/app.scss */
+/* line 118, ../sass/app.scss */
 body #percent_done_container {
   margin-bottom: 10px;
 }
-/* line 113, ../sass/app.scss */
+/* line 120, ../sass/app.scss */
 body .audit-info {
   font-size: 0.5em;
 }
-/* line 113, ../sass/app.scss */
+/* line 120, ../sass/app.scss */
 body .audit-info h4 {
   font-size: 1em;
   color: #aaa;
 }
-/* line 114, ../sass/app.scss */
+/* line 121, ../sass/app.scss */
 body #auditbody {
   display: none;
 }
-/* line 116, ../sass/app.scss */
+/* line 123, ../sass/app.scss */
 body .audit-button {
   float: right;
   margin-top: -32px;
 }
-/* line 117, ../sass/app.scss */
+/* line 124, ../sass/app.scss */
 body form .form-row.checked label {
   color: green !important;
 }
-/* line 118, ../sass/app.scss */
+/* line 125, ../sass/app.scss */
 body form .form-row {
   margin-left: 25px;
   margin-bottom: 10px;
 }
-/* line 118, ../sass/app.scss */
+/* line 125, ../sass/app.scss */
 body form .form-row label {
   text-indent: -25px;
   font-size: 0.9em;
   color: red;
   font-weight: bold;
 }
-/* line 121, ../sass/app.scss */
+/* line 128, ../sass/app.scss */
 body .cast-actions .cancel {
   float: right;
 }
-/* line 122, ../sass/app.scss */
+/* line 129, ../sass/app.scss */
 body .cast-actions .submit {
   float: left;
 }
-/* line 123, ../sass/app.scss */
+/* line 130, ../sass/app.scss */
 body .election-description {
   display: none;
 }
-/* line 126, ../sass/app.scss */
+/* line 133, ../sass/app.scss */
 body table.voters thead th, body table.elections thead th {
   font-size: 11px;
 }
-/* line 127, ../sass/app.scss */
+/* line 134, ../sass/app.scss */
 body table.voters tbody td, body table.elections tbody td {
   font-size: 12px;
 }
-/* line 130, ../sass/app.scss */
+/* line 137, ../sass/app.scss */
 body a.show-audit-form {
   color: #aaa;
 }
-/* line 131, ../sass/app.scss */
+/* line 138, ../sass/app.scss */
 body a.show-audit-form.active {
   color: #000;
 }
-/* line 136, ../sass/app.scss */
+/* line 143, ../sass/app.scss */
 body .audit-form {
   display: none;
 }
-/* line 142, ../sass/app.scss */
+/* line 149, ../sass/app.scss */
 body .dropdown .alert {
   color: #c60f13 !important;
   font-weight: bold !important;
 }
-/* line 144, ../sass/app.scss */
+/* line 151, ../sass/app.scss */
 body label {
   font-weight: bold;
   color: #2ba6cb;
 }
 
-/* line 155, ../sass/app.scss */
+/* line 162, ../sass/app.scss */
 body > .row {
   border-right: 1px solid #dddddd;
   border-left: 1px solid #dddddd;
   background-color: #fff;
 }
 
-/* line 162, ../sass/app.scss */
+/* line 169, ../sass/app.scss */
 body {
   margin-top: 20px !important;
 }
 
-/* line 166, ../sass/app.scss */
+/* line 173, ../sass/app.scss */
 body .bg-wrapper {
   margin-top: 20px;
   width: 768px;

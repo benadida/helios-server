@@ -15,6 +15,11 @@ from django.utils.encoding import smart_str, smart_unicode
 from django.db import transaction, connection
 from django.contrib import messages
 from django.utils.translation import ugettext_lazy as _
+from django.utils.safestring import mark_safe
+from django.forms import ValidationError
+
+from zeus.forms import election_form_cls
+from django.forms.formsets import formset_factory
 
 from heliosauth.security import *
 from heliosauth.auth_systems import AUTH_SYSTEMS, can_list_categories
@@ -239,7 +244,7 @@ def elections_voted(request):
 
 @login_required
 def election_new(request):
-  from zeus.forms import ElectionForm
+
   user = get_user(request)
   institution = user.institution
 
@@ -252,6 +257,7 @@ def election_new(request):
 
   error = None
 
+  ElectionForm = election_form_cls(user, request.REQUEST.get('election_type'))
   if request.method == "GET":
     election_form = ElectionForm(None, institution,
                                  initial={
@@ -265,7 +271,7 @@ def election_new(request):
         election = Election()
         election = election_form.save(election, user.institution, ELGAMAL_PARAMS)
         election.admins.add(user)
-        return HttpResponseRedirect(reverse(one_election_questions, args=[election.uuid]))
+        return HttpResponseRedirect(election.questions_url())
 
 
   return render_template(request, "election_new", {'election_form': election_form, 'election': None, 'error': error})
@@ -452,9 +458,9 @@ def election_post_ecounting(request, election):
 
 @election_admin()
 def one_election_edit(request, election):
-  from zeus.forms import ElectionForm
   user = get_user(request)
   institution = user.institution
+  ElectionForm = election_form_cls(user, election.election_type)
 
   if not can_create_election(request):
     return HttpResponseForbidden('only an administrator can create an election')
@@ -1285,12 +1291,57 @@ def check_election_permission(request, election,
 
 
 
-# changed from admin to view because
-# anyone can see the questions, the administration aspect is now
-# built into the page
-@election_view()
+@election_view(require_type='election')
 def one_election_questions(request, election):
+  from zeus.forms import QuestionForm, DEFAULT_ANSWERS_COUNT
+  extra = 1
+  if election.questions_data:
+    extra = 0
 
+  questions_formset = formset_factory(QuestionForm, extra=0, can_delete=True,
+                                      can_order=True)
+
+  user = get_user(request)
+  admin_p = security.user_can_admin_election(user, election)
+
+  if request.method == "POST":
+      if not election.can_change_questions():
+        raise PermissionDenied
+
+      formset = questions_formset(request.POST)
+      if formset.is_valid():
+        questions_data = []
+        for question in formset.cleaned_data:
+          answers = dict(filter(lambda i: i[0].startswith('answer_'),
+                          question.iteritems())).values()
+          answers.reverse()
+          question['answers'] = answers
+          for k in question.keys():
+            if k in ['DELETE', 'ORDER']:
+              del question[k]
+
+          questions_data.append(question)
+
+        election.questions_data = questions_data
+        election.update_answers()
+        election.save()
+        return HttpResponseRedirect(reverse(one_election_questions,
+                                            args=[election.uuid])+"#q1")
+
+  else:
+      data = election.questions_data or None
+      formset = questions_formset(initial=election.questions_data)
+
+  return render_template(request, 'election_questions', {
+    'menu_active': 'candidates',
+    'default_answers_count': DEFAULT_ANSWERS_COUNT,
+    'formset': formset,
+    'election': election,
+    'admin_p': admin_p})
+
+
+@election_view(require_type='ecounting')
+def one_election_candidates(request, election):
   questions_json = utils.to_json(election.questions)
   user = get_user(request)
   admin_p = security.user_can_admin_election(user, election)
@@ -1398,8 +1449,8 @@ def one_election_register(request, election):
 
 @election_admin(frozen=False)
 def one_election_save_questions(request, election):
+  dummy_view()
   check_csrf(request)
-
   election.questions = utils.from_json(request.POST['questions_json'])
   election.save()
 
@@ -1673,8 +1724,7 @@ def voters_upload(request, election):
           del request.session['voter_file_id']
 
       if not election.questions or not len(election.questions):
-        return HttpResponseRedirect(reverse(one_election_questions,
-                                            args=[election.uuid]))
+        return HttpResponseRedirect(election.questions_url())
 
       return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
     else:

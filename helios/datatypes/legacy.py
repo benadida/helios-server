@@ -19,7 +19,7 @@ class Election(LegacyObject):
     FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description', 'voters_hash', 'openreg',
               'frozen_at', 'public_key', 'cast_url', 'use_voter_aliases',
               'voting_starts_at', 'voting_ends_at', 'workflow_type',
-              'help_email', 'help_phone']
+              'help_email', 'help_phone', 'questions_data', 'election_type']
 
     STRUCTURED_FIELDS = {
         'public_key' : 'legacy/EGPublicKey',

@@ -19,7 +19,7 @@ import os
 import tempfile
 import mmap
 import marshal
-
+import itertools
 import helios.views
 
 from datetime import timedelta
@@ -31,6 +31,7 @@ from django.core.files import File
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import validate_email
 from django.forms import ValidationError
+from django.core.urlresolvers import reverse
 
 from helios.crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
@@ -219,6 +220,7 @@ class Election(HeliosModel):
   departments = JSONField(default="[]")
 
   ELECTION_TYPES = (
+    ('ecounting', 'E-Counting election'),
     ('election', 'Election'),
     ('referendum', 'Referendum')
     )
@@ -228,7 +230,8 @@ class Election(HeliosModel):
     ('mixnet', 'Mixnet')
   )
 
-  election_type = models.CharField(max_length=250, null=False, default='election', choices = ELECTION_TYPES)
+  election_type = models.CharField(max_length=250, null=False,
+                                   default='ecounting', choices = ELECTION_TYPES)
   workflow_type = models.CharField(max_length=250, null=False, default='homomorphic',
       choices = WORKFLOW_TYPES)
   private_p = models.BooleanField(default=False, null=False)
@@ -241,6 +244,8 @@ class Election(HeliosModel):
 
   questions = LDObjectField(type_hint = 'legacy/Questions',
                             null=True)
+
+  questions_data = JSONField(null=True)
 
   # eligibility is a JSON field, which lists auth_systems and eligibility details for that auth_system, e.g.
   # [{'auth_system': 'cas', 'constraint': [{'year': 'u12'}, {'year':'u13'}]}, {'auth_system' : 'password'}, {'auth_system' : 'openid', 'constraint': [{'host':'http://myopenid.com'}]}]
@@ -309,6 +314,27 @@ class Election(HeliosModel):
   result_proof = JSONField(null=True)
   ecounting_request_send = models.DateTimeField(auto_now_add=False, null=True, default=None)
   ecounting_request_error = models.TextField(null=True)
+
+  ELECTION_TYPE_PARAMS = {
+    'election': {
+      'questions_title': _('Questions'),
+      'questions_view': 'helios.views.one_election_questions',
+      'questions_empty_issue': _("Add questions to the election")
+    },
+    'ecounting': {
+      'questions_title': _('Candidates'),
+      'questions_view': 'helios.views.one_election_candidates',
+      'questions_empty_issue': _("Add candidates to the election")
+    }
+  }
+
+
+  @property
+  def type_params(self):
+    return self.ELECTION_TYPE_PARAMS[self.election_type]
+
+  def questions_url(self):
+    return reverse(self.type_params.get('questions_view'), args=(self.uuid,))
 
   def get_last_mix(self):
     return self.mixnets.filter(status="finished").defer("mix").order_by("-mix_order")[0]
@@ -384,26 +410,42 @@ class Election(HeliosModel):
     self.candidates = sorted(self.candidates, key=lambda c: unicode(c['surname']),
                    cmp=heliosutils.locale_comparator(settings.COLLATION_LOCALE))
 
-  def update_answers(self):
+  def _init_helios_questions(self, answers_count):
+    if not self.questions:
+        question = {}
+        question['answer_urls'] = [None for x in range(answers_count)]
+        question['choice_type'] = 'stv'
+        question['question'] = 'Questions choices'
+        question['answers'] = []
+        question['result_type'] = 'absolute'
+        question['tally_type'] = 'stv'
+        self.questions = [question]
+
+  def update_answers_from_candidates(self):
     self.sort_candidates()
     answers = []
     for cand in self.candidates:
       answers.append(u"%s %s %s [%s]" % (cand['surname'], cand['name'], cand['father_name'],
                              cand['department'].strip()))
 
-    if not self.questions:
-        question = {}
-        question['answer_urls'] = [None for x in range(len(answers))]
-        question['choice_type'] = 'stv'
-        question['question'] = 'Candidates choice'
-        question['answers'] = []
-        question['result_type'] = 'absolute'
-        question['tally_type'] = 'stv'
-        self.questions = []
-        self.questions.append(question)
-
+    self._init_helios_questions(len(answers))
     self.questions[0]['answers'] = answers
-    self.save()
+
+  def update_answers_from_questions(self):
+    answers = []
+    questions_data = self.questions_data or []
+    answers = list(itertools.chain(*map(lambda e:e['answers'],
+                                       questions_data)))
+    self._init_helios_questions(len(answers))
+    self.questions[0]['answers'] = answers
+
+  def update_answers(self):
+    if self.election_type == "ecounting":
+      self.update_answers_from_candidates()
+      self.save()
+    else:
+      self.update_answers_from_questions()
+      self.save()
 
   @property
   def tallied(self):
@@ -600,6 +642,10 @@ class Election(HeliosModel):
   def get_voting_end_date(self):
       return self.voting_extended_until or self.voting_ends_at
 
+  def can_change_questions(self):
+      return True
+      return self.can_change_candidates()
+
   def can_change_candidates(self):
       votes_cast = self.castvote_set.count()
       # force if votes already cast for some reason
@@ -647,7 +693,7 @@ class Election(HeliosModel):
         len(self.questions[0]['answers']) == 0:
       issues.append(
         {'type': 'questions',
-         'action': _("Add candidates to the election")}
+         'action': self.type_params.get('questions_empty_issue')}
         )
 
     trustees = Trustee.get_by_election(self)

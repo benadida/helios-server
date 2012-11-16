@@ -7,11 +7,13 @@ $(document).ready(function(){
 
 BOOTH = {};
 BOOTH.debug = true;
-BOOTH.setup_templates = function() {
+BOOTH.setup_templates = function(election) {
     if (BOOTH.templates_setup_p)
         return;
 
     var cache_bust = "?cb=" + new Date().getTime();
+    
+    var tpldata = election.type_params;
 
     $('#header').setTemplateURL("templates/header.html" + cache_bust);
     $('#election_div').setTemplateURL("templates/election.html" + cache_bust);
@@ -149,6 +151,7 @@ BOOTH.setup_election = function(raw_json) {
 
   document.title += ' - ' + BOOTH.election.name;
 
+  BOOTH.setup_templates(BOOTH.election);
   // escape election fields
   $(['description', 'name']).each(function(i, field) {
     BOOTH.election[field] = escape_html(BOOTH.election[field]);
@@ -477,7 +480,6 @@ BOOTH.show_progress = function(step_num) {
 
 BOOTH.so_lets_go = function () {
     BOOTH.hide_progress();
-    BOOTH.setup_templates();
 
     // election URL
     var election_url = $.query.get('election_url');

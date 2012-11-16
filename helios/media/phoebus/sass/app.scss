@@ -45,6 +45,13 @@ body {
   #banner {
     //border-bottom: $customBorder;
   }
+  
+  dl.tabs dd.error {
+    border-top-color: $alertColor;
+    a {
+      color: $alertColor;
+    }
+  }
 
   #footer {
     padding: 10px 0;
