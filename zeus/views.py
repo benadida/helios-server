@@ -32,17 +32,19 @@ def stats(request):
     election = None
 
     if uuid:
-      if user.superadmin_p:
-        election = Election.objects.get(uuid=uuid)
-      else:
-        election = Election.objects.get(uuid=uuid, is_completed=True)
+        election = Election.objects.filter(uuid=uuid)
+        if not user or not user.superadmin_p:
+          election = election.filter(is_completed=True)
+
+        election = election.defer('encrypted_tally', 'result')[0]
 
     if user.superadmin_p:
       elections = Election.objects.filter(is_completed=True)
     else:
       elections = Election.objects.filter(is_completed=True)
 
-    elections = elections.order_by('-created_at')
+    elections = elections.order_by('-created_at').defer('encrypted_tally',
+                                                        'result')
 
     return render_template(request, 'zeus/stats', {'menu_active': 'stats',
                                                    'election': election,

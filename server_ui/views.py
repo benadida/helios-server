@@ -32,7 +32,8 @@ def home(request):
   elections_voted = None
 
   if user.superadmin_p:
-    elections_administered = Election.objects.filter().select_related().order_by('-created_at')
+    elections_administered = Election.objects.filter().select_related().order_by('-created_at').defer('encrypted_tally',
+                                                                            'result')
   else:
     if create_p:
       elections_administered = Election.get_by_user_as_admin(user,
