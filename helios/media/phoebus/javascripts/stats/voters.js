@@ -253,7 +253,7 @@ var VoterStats = function (data, cont_width, cont_height, margin) {
       .attr("dy", ".71em")
       .style("text-anchor", "end")
       .text("Votes at " + minutesDiff + "' interval");
-
+  
   svg.append("g")
       .attr("class", "y axis")
       .attr("transform", "translate(" + width + ")")
@@ -263,8 +263,8 @@ var VoterStats = function (data, cont_width, cont_height, margin) {
       .attr("dy", "-0.7em")
       .attr("dx", "-1em")
       .style("text-anchor", "end")
-      .text("Voters (" + votes[votes.length - 1].total
-            + "/" + y.domain()[1] +")");
+      .text("Voters (" + data.election[0].cast_count
+            + "/" + data.election[0].voters_count +")");
 
   svg.selectAll(".bar")
       .data(intervals)
