@@ -25,7 +25,7 @@
     <div href="#" class="small button split dropdown">
       <a href="#">Επιλογή ψηφοφορίας</a>
         <span></span>
-        <ul>
+        <ul class="election-stats-list">
           {% for election in elections %}
           <li>
           <a href="{% url zeus.views.stats %}?uuid={{ election.uuid }}">{{ election.institution.name }}
