@@ -10,6 +10,7 @@ urlpatterns = patterns(
     (r'^faqs/voter/$', 'zeus.views.faqs_voter'),
     (r'^faqs/trustee/$', 'zeus.views.faqs_trustee'),
     (r'^resources/$', 'zeus.views.resources'),
+    (r'^stats/$', 'zeus.views.stats'),
     (r'^auth/', include('heliosauth.urls')),
     (r'^helios/', include('helios.urls')),
 

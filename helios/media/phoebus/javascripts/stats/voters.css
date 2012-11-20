@@ -1,0 +1,43 @@
+svg text { font-size: 0.8em; }
+.axis path,
+.axis line {
+    fill: none;
+    stroke: #000;
+    shape-rendering: crispEdges;
+}
+
+.x.axis path {
+    display: none;
+}
+
+.line {
+    fill: none;
+    stroke: red;
+    stroke-width: 1.5px;
+}
+
+.trace-area {
+    fill: white;
+    stroke: white;
+    opacity: 0;
+}
+
+.bar {
+    fill: steelblue;
+}
+
+.active {
+    fill: red;
+}
+
+.line-trace {
+    fill: darkorange;
+    stroke: darkorange;
+    opacity: 0.5;
+}
+
+text {
+    fill: black;
+}
+
+

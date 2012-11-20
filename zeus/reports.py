@@ -18,7 +18,9 @@ def zeus_report(elections):
     }
 
 
-def election_report(elections, votes_report=True):
+SENSITIVE_DATA = ['admin_user', 'trustees', 'last_view_at']
+
+def election_report(elections, votes_report=True, filter_sensitive=True):
     for e in elections:
         entry = OrderedDict([
             ('name', e.name),
@@ -51,21 +53,28 @@ def election_report(elections, votes_report=True):
                 ('last_view_at',
                  e.voter_set.order_by('-last_visit')[0].last_visit if voters_added else None)
             ]))
+
+        if filter_sensitive:
+          for key in [k for k in entry if k in SENSITIVE_DATA]:
+            del entry[key]
+
         yield entry
 
 
-def election_votes_report(elections, include_names=False):
+def election_votes_report(elections, include_alias=False, filter_sensitive=True):
     for vote in CastVote.objects.filter(election__in=elections,
-                                    voter__excluded_at__isnull=True).values('voter__alias',
+                                    voter__excluded_at__isnull=True).values('voter__alias','voter',
                                                                            'cast_at').order_by('-cast_at'):
         entry = OrderedDict([
-            ('name', vote['voter__alias']),
-            ('date', vote['cast_at'])
         ])
-        if include_names:
-            entry['name'] = vote.voter.full_name
+        if include_alias:
+            entry['name'] = vote['voter__alias'],
+        if not filter_sensitive:
+            entry['name'] = Voter.objects.get(pk=vote['voter']).full_name
         if len(elections) > 1:
             entry['election'] = vote.election.name
+
+        entry['date'] = vote['cast_at']
         yield entry
 
 

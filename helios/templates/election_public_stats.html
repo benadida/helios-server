@@ -1,0 +1,17 @@
+<script>
+  var ELECTION = '{{ election.uuid }}';
+
+  $(document).ready(function(){
+    if (window.ELECTION) {
+      var client = new ZeusStats(window.ELECTION);
+      client.load();
+    }
+  });
+
+</script>
+<br />
+<h4>{{ election.institution.name }}</h4>
+<h5 class="subheader">{{ election.name }}</h5>
+
+<div class="stats">
+</div>

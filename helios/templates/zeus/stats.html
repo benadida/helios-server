@@ -1,0 +1,45 @@
+
+{% extends "server_ui/templates/base.html" %}
+
+{% block tabs_menu %}
+<dd id="" class="{% if menu_active == "home" %}active{% endif %}"><a
+  href="/">Αρχική σελίδα</a></dd>
+<dd id="" class="{% if menu_active == "faqs" %}active{% endif %}"><a 
+  href="{% url zeus.views.faqs_voter %}">Συχνές ερωτήσεις</a></dd>
+<dd id="" class="{% if menu_active == "resources" %}active{% endif %}"><a 
+  href="{% url zeus.views.resources %}">Υλικό</a></dd>
+<dd id="" class="{% if menu_active == "stats" %}active{% endif %}"><a 
+  href="{% url zeus.views.stats %}">Στατιστικά</a></dd>
+{% endblock %}
+
+{% block extra-head %}
+{{ block.super }}
+<script src="/static/helios/phoebus/javascripts/d3.v2.min.js"></script>
+<script src="/static/helios/phoebus/javascripts/election_stats.js"></script>
+<script src="/static/helios/phoebus/javascripts/stats/voters.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="columns twelve">
+    <div href="#" class="small button split dropdown">
+      <a href="#">Επιλογή ψηφοφορίας</a>
+        <span></span>
+        <ul>
+          {% for election in elections %}
+          <li>
+          <a href="{% url zeus.views.stats %}?uuid={{ election.uuid }}">{{ election.institution.name }}
+          </a>
+          <a style="font-size: 0.8em; color:#aaa; padding-top:0" href="{% url zeus.views.stats %}?uuid={{ election.uuid }}">
+            {{ election.name }}
+          </a>
+          </li>
+          {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="columns twelve election-public-stats">
+    {% include "election_public_stats.html" %}
+  </div>
+</div>
+{% endblock %}

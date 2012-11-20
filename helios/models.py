@@ -243,7 +243,8 @@ class Election(HeliosModel):
                             null=True)
 
   # eligibility is a JSON field, which lists auth_systems and eligibility details for that auth_system, e.g.
-  # [{'auth_system': 'cas', 'constraint': [{'year': 'u12'}, {'year':'u13'}]}, {'auth_system' : 'password'}, {'auth_system' : 'openid', 'constraint': [{'host':'http://myopenid.com'}]}]
+  # [{'auth_system': 'cas', 'constraint': [{'year': 'u12'}, {'year':'u13'}]},
+  # {'auth_system' : 'password'}, {'auth_system' : 'openid', 'constraint': [{'host':'http://myopenid.com'}]}]
   eligibility = LDObjectField(type_hint = 'legacy/Eligibility',
                               null=True)
 
@@ -269,6 +270,8 @@ class Election(HeliosModel):
   # dates at which things happen for the election
   frozen_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
   archived_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+
+  is_completed = models.BooleanField(default=False)
 
   # dates for the election steps, as scheduled
   # these are always UTC
