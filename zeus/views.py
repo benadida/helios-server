@@ -33,12 +33,12 @@ def stats(request):
 
     if uuid:
         election = Election.objects.filter(uuid=uuid)
-        if not user or not user.superadmin_p:
+        if not (user and user.superadmin_p):
           election = election.filter(is_completed=True)
 
         election = election.defer('encrypted_tally', 'result')[0]
 
-    if user.superadmin_p:
+    if user and user.superadmin_p:
       elections = Election.objects.filter(is_completed=True)
     else:
       elections = Election.objects.filter(is_completed=True)
