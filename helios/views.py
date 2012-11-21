@@ -417,7 +417,7 @@ def one_election_public_stats(request, election_uuid):
 
   stats = {}
   stats['election'] = list(reports.election_report([election], True, True))
-  stats['votes'] = list(reports.election_votes_report([election], False, True))
+  stats['votes'] = list(reports.election_votes_report([election], True, True))
   stats['results'] = list(reports.election_results_report([election]))
 
   def handler(obj):

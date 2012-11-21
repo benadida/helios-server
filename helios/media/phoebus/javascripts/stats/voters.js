@@ -263,7 +263,7 @@ var VoterStats = function (data, cont_width, cont_height, margin) {
       .attr("dy", "-0.7em")
       .attr("dx", "-1em")
       .style("text-anchor", "end")
-      .text("Voters (" + data.election[0].cast_count
+      .text("Voters (" + data.election[0].voters_cast_count
             + "/" + data.election[0].voters_count +")");
 
   svg.selectAll(".bar")
