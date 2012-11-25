@@ -10,9 +10,9 @@ urlpatterns = patterns(
     (r'^faqs/voter/$', 'zeus.views.faqs_voter'),
     (r'^faqs/trustee/$', 'zeus.views.faqs_trustee'),
     (r'^resources/$', 'zeus.views.resources'),
+    (r'^stats/$', 'zeus.views.stats'),
     (r'^auth/', include('heliosauth.urls')),
     (r'^helios/', include('helios.urls')),
-    (r'^ekpa/', include('ekpa.urls')),
 
     # SHOULD BE REPLACED BY APACHE STATIC PATH
     (r'booth/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.BOOTH_STATIC_PATH}),

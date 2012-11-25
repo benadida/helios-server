@@ -36,6 +36,8 @@ from helios.workflows import homomorphic
 from helios.workflows import mixnet
 from helios.view_utils import *
 
+from django.views.decorators.cache import cache_page
+
 import json as json_module
 
 try:
@@ -375,21 +377,80 @@ def one_election_cancel(request, election):
 
 
 @election_admin(allow_superadmin=True)
+def one_election_set_completed(request, election):
+  user = get_user(request)
+  admin_p = security.user_can_admin_election(user, election) or user.superadmin_p
+  if not user.superadmin_p:
+    raise PermissionDenied
+
+  election.is_completed = not election.is_completed
+  election.save()
+
+  return HttpResponseRedirect('/admin/')
+
+
+@election_admin(frozen=True)
+def one_election_stats(request, election):
+  user = get_user(request)
+  admin_p = security.user_can_admin_election(user, election) or user.superadmin_p
+
+  stats_data = {'stats': {'election': list(reports.election_report([election]))[0],
+                          'votes': list(reports.election_votes_report([election],
+                                                                 False))}}
+
+  if request.GET.get('json', None):
+    def handler(obj):
+      if hasattr(obj, 'isoformat'):
+        return obj.isoformat()
+      raise TypeError
+
+    return HttpResponse(json_module.dumps(stats_data, default=handler),
+                        mimetype="application/json")
+
+  return render_template(request, "election_stats", {
+      'election': election,
+      'admin_p': admin_p,
+      'user': user,
+      'menu_active': 'stats',
+      'STATS_UPDATE_INTERVAL': getattr(settings, 'HELIOS_STATS_UPDATE_INTERVAL',
+                                      2000)
+  })
+
+
+@cache_page(getattr(settings,'HELIOS_STATS_CACHE_TIMEOUT', 60*10))
+def one_election_public_stats(request, election_uuid):
+  election = Election.objects.get(uuid=election_uuid, is_completed=True)
+
+  stats = {}
+  stats['election'] = list(reports.election_report([election], True, True))
+  stats['votes'] = list(reports.election_votes_report([election], True, True))
+  stats['results'] = list(reports.election_results_report([election]))
+
+  def handler(obj):
+    if hasattr(obj, 'isoformat'):
+      return obj.isoformat()
+    raise TypeError
+
+  return HttpResponse(json_module.dumps(stats, default=handler),
+                      mimetype="application/json")
+
+@election_admin(allow_superadmin=True)
 def election_report(request, election, format="html"):
 
   user = get_user(request)
-  if not user.superadmin_p and not election.result:
+  if not user.superadmin_p:
     raise PermissionDenied
 
   reports_list = request.GET.get('report', 'election,voters,votes,results').split(",")
 
   _reports = OrderedDict()
   if 'election' in reports_list:
-    _reports['election'] = list(reports.election_report([election]))
+    _reports['election'] = list(reports.election_report([election], True, False))
   if 'voters' in reports_list:
     _reports['voters'] = list(reports.election_voters_report([election]))
   if 'votes' in reports_list:
-    _reports['votes'] = list(reports.election_votes_report([election], False))
+    _reports['votes'] = list(reports.election_votes_report([election], True,
+                                                           True))
   if 'results' in reports_list:
     _reports['results'] = list(reports.election_results_report([election]))
 

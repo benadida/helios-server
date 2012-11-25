@@ -46,16 +46,31 @@
     {% for election in elections_administered %}
     <tr>
       <td>  
-            {% if election.result %}
-            <b style="color:green">[ΕΧΕΙ ΟΛΟΚΛΗΡΩΘΕΙ]</b>
-            {% endif %}
-            <b style="color:red">{% if election.canceled_at %}
-            [ΕΧΕΙ ΑΚΥΡΩΘΕΙ]
-            {% endif %}
-            </b>
-            <a href="{% if not user.superadmin_p %}{% url helios.views.one_election_view election.uuid %}{% else %}{% url helios.views.election_report election.uuid "html" %}{% endif %}">
-            {{ election.name }}
+          {% if election.result %}
+          <b style="color:green">[ΕΧΕΙ ΟΛΟΚΛΗΡΩΘΕΙ]</b><br />
+          {% endif %}
+          {% if election.canceled_at %}
+          <b style="color:red">[ΕΧΕΙ ΑΚΥΡΩΘΕΙ]</b><br />
+          {% endif %}
+          {% if election.is_completed %}
+          <b style="color:orange">[ΔΗΜΟΣΙΑ ΠΡΟΒΟΛΗ]</b><br />
+          {% endif %}
+          {% if user.superadmin_p %}
+            <a href="{% url helios.views.election_report election.uuid "html" %}">
+              {{ election.name }}
             </a>
+            {% if election.result %}
+            <br />
+            <a class="button small" 
+              href="{% url helios.views.one_election_set_completed election.uuid %}">
+              {% if not election.is_completed %}ΔΗΜΟΣΙΑ ΠΡΟΒΟΛΗ{% else %}ΑΚΥΡΩΣΗ ΔΗΜΟΣΙΑΣ ΠΡΟΒΟΛΗΣ{% endif %}
+            </a>
+            {% endif %}
+            {% else %}
+            <a href="{% url helios.views.one_election_view election.uuid %}">
+              {{ election.name }}
+            </a>
+            {% endif %}
         </td>
         <td>
           {{ election.institution.name }}

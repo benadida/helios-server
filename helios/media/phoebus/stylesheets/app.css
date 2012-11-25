@@ -5368,6 +5368,12 @@ body .bg-wrapper {
   background-color: #fff;
 }
 
+/* line 174, ../sass/app.scss */
+.election-stats-list {
+  max-height: 300px;
+  overflow-y: scroll;
+}
+
 /* Base Type Styles Using Modular Scale ---------------------- */
 /* line 3, ../../../../../../../../../var/lib/gems/1.8/gems/zurb-foundation-3.1.0.rc1/scss/foundation/common/_typography.scss */
 body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, p, blockquote, th, td {
