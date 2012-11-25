@@ -3,6 +3,31 @@
 {% block content %}
 <script language="javascript">
 
+if(!Array.prototype.indexOf) {
+    Array.prototype.indexOf = function(what, i) {
+        i = i || 0;
+        var L = this.length;
+        while (i < L) {
+            if(this[i] === what) return i;
+            ++i;
+        }
+        return -1;
+    };
+}
+
+Array.prototype.remove = function() {
+    var what, a = arguments, L = a.length, ax;
+    while (L && this.length) {
+        what = a[--L];
+        while ((ax = this.indexOf(what)) !== -1) {
+            this.splice(ax, 1);
+        }
+    }
+    return this;
+};
+
+var workersCount = 8;
+
 $(document).ready(function() {
     $('#result_div').hide();
     $('#waiting_div').hide();
@@ -15,6 +40,7 @@ $(document).ready(function() {
         ELECTION_PK = ElGamal.PublicKey.fromJSONObject(ELECTION_JSON['public_key']);
         TALLY = HELIOS.Tally.fromJSONObject({{election.encrypted_tally.toJSON|safe}}, ELECTION_PK);   
         $('#sk_section').show();
+
     });
 });
 
@@ -88,6 +114,7 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
     var batches_count = batches.length;
     var remaining = 0;
     var choice_num = 0;
+    
     function _decrypt(from, to) {
         var dbatch = batches.pop();
         var time = new Date
@@ -101,7 +128,7 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
         }
         $(dbatch).each(function(index, q_tally) {
           $(q_tally).each(function(choice_tally_index, choice_tally) {
-                var choice_tally = tally.tally[0][choice_num];
+              var choice_tally = tally.tally[0][choice_num];
                 var one_choice_result = secret_key.decryptionFactorAndProof(choice_tally, 
                                                 ElGamal.fiatshamir_challenge_generator);
                decryption_factors[0][choice_num] = one_choice_result.decryption_factor
@@ -118,11 +145,94 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
        batch_complete_callback(dbatch, batches_completed, batch_time, 
                                batch_med_time, time_remaining, 
                                batches_count, percentage_done);
-
+        return;
        window.setTimeout(_decrypt, 100);
         
     };
-   window.setTimeout(_decrypt, 100);
+    
+    function _init_worker(callback) {
+      var worker = new window.Worker("/static/helios/helios/jscrypto/decryptworker.js?" + (new Date()).getTime());
+      worker.onmessage = function(event) {
+        if (event && event.data && event.data.type == "result") {
+          var result = event.data.result;
+          var index = result.index;
+          var proof = ElGamal.Proof.fromJSONObject(result.proof);
+          var factor = new BigInt(result.factor, 10);
+          decryption_factors[0][index] = factor;
+          decryption_proofs[0][index] = proof;
+          _worker_decrypt(worker);
+          callback(result.time);
+        } 
+      }
+      return worker;
+    }
+    
+    var pending_indexes = [];
+    
+    function _check_workers_finished() {
+      var interval = undefined;
+      var check = function() {
+        if (pending_indexes.length == 0){
+          if (decryption_factors[0].length == tally.tally[0].length &&
+              decryption_proofs[0].length == tally.tally[0].length) {
+              callback({
+                  'decryption_factors': decryption_factors,
+                  'decryption_proofs': decryption_proofs
+                });
+              window.clearInterval(interval);
+              return;
+          }
+        }
+      }
+      interval = window.setInterval(check, 2000);
+    }
+    
+    var _sk = secret_key.toJSONObject();
+    function _worker_decrypt(worker) {
+      var index = pending_indexes.pop();
+      worker.postMessage({
+        'type': 'decrypt',
+        'sk' : _sk,
+        'choice' : tally.tally[0][index].toJSONObject(),
+        'index': index
+      });
+
+      window.setTimeout(function() {
+        if (!decryption_factors[0][index] || !decryption_proofs[0][index]) {
+          pending_indexes.push(index);
+          _worker_decrypt(worker);
+        }
+      }, 5000);
+    }
+
+  
+   var tally_size = tally.tally[0].length;
+   if (window.Worker) {
+      var batch_med_time = 0;
+      var _worker_stats_callback = function(time) {
+        if (batch_med_time == 0) { 
+          batch_med_time = time;
+        } else { 
+          batch_med_time = (batch_med_time + time) / 2;
+        };
+        var completed = tally_size - pending_indexes.length;
+        var time_remaining = pending_indexes.length * batch_med_time;
+        var percentage_done = (100*completed) / tally_size;
+        batch_complete_callback([], completed, time, batch_med_time, time_remaining,
+                               tally_size, percentage_done)
+      }
+
+      var pending_indexes = _.range(tally.tally[0].length);
+      BATCH_SIZE = 1;
+      pending_indexes.reverse();
+      _check_workers_finished();
+      for (var i=0; i<workersCount; i++) {
+        var worker = _init_worker(_worker_stats_callback);
+        _worker_decrypt(worker);
+      }
+   } else {
+     window.setTimeout(_decrypt, 100);
+   }
 }
 
 function batch_complete_callback(batch, batch_index, time, median_time, 
@@ -163,7 +273,6 @@ function do_tally() {
   
   var secret_key = get_secret_key();
   
-  decrypt_and_prove_tally(TALLY, ELECTION_PK, secret_key, callback);
 
   function callback(factors_and_proof) {
 
@@ -192,6 +301,8 @@ function do_tally() {
       $('#result_div').show();
       $('#first-step-success').show();
   }
+
+  decrypt_and_prove_tally(TALLY, ELECTION_PK, secret_key, callback);
 }
 
 function submit_result() {
