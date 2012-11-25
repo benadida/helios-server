@@ -6,7 +6,7 @@ from datetime import datetime
 from random import randint, shuffle, choice
 from collections import deque
 from hashlib import sha256, sha1
-from itertools import izip, cycle
+from itertools import izip, cycle, chain
 from functools import partial
 from math import log
 from bisect import bisect_right
@@ -18,8 +18,8 @@ from os import (fork, kill, getpid, waitpid, ftruncate, lseek, fstat,
                 read, write, unlink, open as os_open, close,
                 O_CREAT, O_RDWR, O_APPEND, SEEK_CUR, SEEK_SET)
 from fcntl import flock, LOCK_EX, LOCK_UN
-from multiprocessing import Semaphore#, Queue as mpQueue
-#from Queue import Empty, Full
+from multiprocessing import Semaphore, Queue as mpQueue
+from Queue import Empty, Full
 from select import select
 from signal import SIGKILL
 from errno import ESRCH
@@ -337,10 +337,10 @@ def from_canonical(inp, unicode_strings=0, s=''):
         raise ValueError(m)
 
 
-class Empty(Exception):
-    pass
-class Full(Exception):
-    pass
+#class Empty(Exception):
+#    pass
+#class Full(Exception):
+#    pass
 class EOF(Exception):
     pass
 
@@ -527,8 +527,8 @@ class CheapQueue(object):
         self.getcount += 1
         return obj
 
-#Queue = mpQueue
-Queue = CheapQueue
+#Queue = CheapQueue
+Queue = mpQueue
 
 def async_call(func, args, kw, channel):
     argspec = inspect.getargspec(func)
@@ -1674,6 +1674,32 @@ def cross_check_encodings(n):
                  "gamma %s, maxbase %s, factorial %s"
                  % (e, choices, maxbase_choices, factorial_choices))
             raise AssertionError(m)
+
+def gamma_decode_to_candidates(encoded, candidates):
+    nr_candidates = len(candidates)
+    choices = gamma_decode(encoded, nr_candidates)
+    return [candidates[i] for i in choices]
+
+def gamma_frequences(encoded_list, candidates):
+    encoded_list = sorted(encoded_list)
+    iter_encoded_list = iter(encoded_list)
+    lastone = None
+    freqs = []
+    append = freqs.append
+
+    for lastone in iter_encoded_list:
+        count = 1
+        break
+
+    for encoded in chain(iter_encoded_list, [None]):
+        if encoded == lastone:
+            count += 1
+        else:
+            append([count] + gamma_decode_to_candidates(lastone, candidates))
+            count = 1
+            lastone = encoded
+
+    return freqs
 
 def chooser(answers, candidates):
     candidates = list(candidates)
@@ -4493,6 +4519,12 @@ def main():
     def do_results(election):
         results = election.do_get_results()
         print 'RESULTS: %s\n' % (' '.join(str(n) for n in results),)
+        print 'FREQUENCES:'
+        freqs = gamma_frequences(results, election.do_get_candidates())
+        freqs.sort()
+        for f in freqs:
+            print '%d %s' % (f[0], f[1:])
+        print ' '
 
     def main_generate(args, teller=_teller, nr_parallel=0):
         filename = args.generate
