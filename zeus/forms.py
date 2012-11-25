@@ -148,7 +148,8 @@ class ElectionForm(forms.Form):
       self.fields['voting_ends_at'].widget.attrs['readonly'] = True
       self.fields['name'].widget.attrs['readonly'] = True
       self.fields['trustees'].widget.attrs['readonly'] = True
-      self.fields['departments'].widget.attrs['readonly'] = True
+      if 'departments' in self.fields:
+          self.fields['departments'].widget.attrs['readonly'] = True
     else:
       del self.fields['voting_extended_until']
 
@@ -338,7 +339,8 @@ DEFAULT_ANSWERS_COUNT = 2
 class QuestionForm(forms.Form):
   choice_type = forms.ChoiceField(choices=(
     ('choice', _('Choice')),
-    ('ranked', _('Ranked')),))
+    #('ranked', _('Ranked')),
+  ))
   question = forms.CharField(max_length=255, required=True)
   max_answers = forms.ChoiceField()
 

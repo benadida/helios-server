@@ -18,7 +18,7 @@ BOOTH.setup_templates = function(election) {
     $('#header').setTemplateURL("templates/header.html" + cache_bust);
     $('#election_div').setTemplateURL("templates/election.html" + cache_bust);
     $('#question_div').setTemplateURL("templates/question.html" + cache_bust);
-    $('#question_stv_div').setTemplateURL("templates/question_stv.html" + cache_bust);
+    $('#question_stv_div').setTemplateURL("templates/" + election.type_params.questions_tpl + '.html' + cache_bust);
     $('#confirm_div').setTemplateURL("templates/confirm.html" + cache_bust);
     $('#seal_div').setTemplateURL("templates/seal.html" + cache_bust);
     $('#audit_div').setTemplateURL("templates/audit.html" + cache_bust);
@@ -189,8 +189,14 @@ BOOTH.validate_question = function(question_num) {
 
       var answer = BOOTH.ballot.answers[question_num];
       var question = BOOTH.election.questions[question_num];
+      var max_choices = parseInt(BOOTH.election.questions_data[question_num].max_answers);
       
       if (answer.length > 0) {
+        
+        if (answer[0].length > max_choices) {
+          alert('You can choose up to ' + max_choices + ' answers');
+          return false;
+        }
 
         if (answer.length > question.answers.length) {
           alert('You need to select at most ' + BOOTH.election.questions[question_num].answers.length + ' answer(s).');
@@ -271,10 +277,13 @@ BOOTH.stv_handle_choice_click = function(e) {
 }
 
 BOOTH.stv_handle_candidate_click = function(e) {
+  if ($(this).hasClass('disabled')) {
+    return
+  }
   var index = $(this).parent().index();
   var answer = $("#stv_answer").val();
   var append = "";
-
+  
   if (answer != "") { append = "," }
 
   answer = answer + append + index;
@@ -303,6 +312,14 @@ BOOTH.update_stv_question = function(question_num) {
     choice.find("a").addClass("success").removeClass("disabled").removeClass("secondary").addClass("filled");
   });
   
+  try {
+    var max_choices = BOOTH.election.questions_data[0].max_answers;
+    console.log(max_choices);
+    if (choices.filter(".filled").length >= max_choices) {
+      cands.addClass("disabled").addClass("secondary");
+    }
+  } catch (err) {}
+  
 }
 
 BOOTH.show_question = function(question_num) {
@@ -324,8 +341,14 @@ BOOTH.show_question = function(question_num) {
   BOOTH.show_progress('1');
   
   if (BOOTH.election.workflow_type == "mixnet") {
+    var slots = _.range(BOOTH.election.questions[question_num].answers.length);
+    if (BOOTH.election.questions_data[question_num].max_answers) {
+      slots = _.range(BOOTH.election.questions_data[question_num].max_answers)
+    }
     BOOTH.show($('#question_stv_div')).processTemplate({'question_num' : question_num,
                         'last_question_num' : BOOTH.election.questions.length - 1,
+                        'data': BOOTH.election.questions_data[question_num],
+                        'slots': slots,
                         'question' : BOOTH.election.questions[question_num], 'show_reviewall' : BOOTH.all_questions_seen
                   });
   } else {

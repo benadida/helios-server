@@ -1359,7 +1359,7 @@ def one_election_questions(request, election):
   if election.questions_data:
     extra = 0
 
-  questions_formset = formset_factory(QuestionForm, extra=0, can_delete=True,
+  questions_formset = formset_factory(QuestionForm, extra=extra, can_delete=True,
                                       can_order=True)
 
   user = get_user(request)
@@ -1386,6 +1386,10 @@ def one_election_questions(request, election):
         election.questions_data = questions_data
         election.update_answers()
         election.save()
+
+        if election.voter_set.count() == 0:
+          return HttpResponseRedirect(reverse(voters_upload,
+                                            args=[election.uuid]))
         return HttpResponseRedirect(reverse(one_election_questions,
                                             args=[election.uuid])+"#q1")
 

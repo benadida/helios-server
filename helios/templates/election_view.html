@@ -152,14 +152,18 @@ H ψηφοφορία ήταν προγραμματισμένη αρχικά να
 <h5>Η ψηφοφορία έχει ολοκληρωθεί</h5>
 
 {% if admin_p %}
-{% if election.ecounting_request_send %}
-<p>
-Τα αποκρυπτογραφημένα ψηφοδέλτια έχουν σταλεί στο <b><a
-        href="http://e-counting.minedu.gov.gr">σύστημα
-        e-counting</a></b>
+{% if election.election_type == "ecounting" %}
+  {% if election.ecounting_request_send %}
+  <p>
+  Τα αποκρυπτογραφημένα ψηφοδέλτια έχουν σταλεί στο <b><a
+          href="http://e-counting.minedu.gov.gr">σύστημα
+          e-counting</a></b>
+  {% else %}
+  <a href="{% url helios.views.election_post_ecounting election.uuid %}"
+      class="button success">Αποστολή δεδομένων στην πλατφόρμα ecounting</a>
+    {% endif %}
 {% else %}
-<a href="{% url helios.views.election_post_ecounting election.uuid %}"
-    class="button success">Αποστολή δεδομένων στην πλατφόρμα ecounting</a>
+    {{ election.html_results}}
 {% endif %}
 <br /><br />
 <a href="{% url helios.views.election_zeus_proofs election.uuid  %}">Αποθήκευση κρυπτογραφικών δεδομένων</a>

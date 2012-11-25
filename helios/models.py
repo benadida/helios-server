@@ -322,19 +322,27 @@ class Election(HeliosModel):
     'election': {
       'questions_title': _('Questions'),
       'questions_view': 'helios.views.one_election_questions',
-      'questions_empty_issue': _("Add questions to the election")
+      'questions_empty_issue': _("Add questions to the election"),
+      'questions_tpl': 'question_plain'
     },
     'ecounting': {
       'questions_title': _('Candidates'),
       'questions_view': 'helios.views.one_election_candidates',
-      'questions_empty_issue': _("Add candidates to the election")
+      'questions_empty_issue': _("Add candidates to the election"),
+      'questions_tpl': 'question_ecounting'
     }
   }
 
 
+  def html_results(self):
+    return self.result[0]
+
   @property
   def type_params(self):
-    return self.ELECTION_TYPE_PARAMS[self.election_type]
+    params = self.ELECTION_TYPE_PARAMS[self.election_type]
+    for k, v in params.iteritems():
+      params[k] = unicode(v)
+    return params
 
   def questions_url(self):
     return reverse(self.type_params.get('questions_view'), args=(self.uuid,))
