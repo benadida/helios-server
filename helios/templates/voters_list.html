@@ -1,4 +1,5 @@
 {% extends "election_page.html" %}
+{% load pagination_tags %} 
 
 {% block title %}{{election.name}}: Ψηφοφόροι{% endblock %}
 {% block tabs_menu %}
@@ -7,6 +8,8 @@
 {% block content %}
 
 {% if admin_p %}
+
+
 <div class="row">
   <div class="columns seven">
     <div class="columns six">
@@ -18,6 +21,7 @@
   </div>
   <div class="columns five">
 
+{% autopaginate voters 100 %}
 {% if admin_p %}
 
         <div href="#" class="button medium dropdown" style="float:right;">
@@ -83,6 +87,9 @@
 {% endif %}
 
 {% if admin_p %}
+{% paginate %}
+<br />
+<br />
 <table class="voters" width="100%">
   <thead>
     <tr>

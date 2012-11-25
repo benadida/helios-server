@@ -1687,15 +1687,13 @@ def voters_list_pretty(request, election):
     else:
       voters = voters.filter(voter_name__icontains = q)
 
-  voter_paginator = Paginator(voters, 120000)
-  voters_page = voter_paginator.page(page)
-
-  total_voters = voter_paginator.count
+  total_voters = voters.count()
   voters_voted = election.voted_count()
 
   return render_template(request, 'voters_list',
-                         {'election': election, 'voters_page': voters_page,
+                         {'election': election,
                           'voters': voters, 'admin_p': admin_p,
+                          'request': request,
                           'email_voters': helios.VOTERS_EMAIL,
                           'limit': limit, 'total_voters': total_voters,
                           'upload_p': helios.VOTERS_UPLOAD, 'q' : q,
