@@ -130,12 +130,20 @@ def password_login_view(request):
       username = form.cleaned_data['username'].strip()
       password = form.cleaned_data['password'].strip()
       try:
-        user = get_ecounting_user(username, password)
-        if not user:
-            user = User.objects.get(user_id=username, ecounting_account=False)
+        try:
+            ecount_user = User.objects.get(user_id=username, ecounting_account=True)
+            user = get_ecounting_user(username, password)
+        except User.DoesNotExist:
+            try:
+                user = User.objects.get(user_id=username, ecounting_account=False)
+            except User.DoesNotExist:
+                user = get_ecounting_user(username, password)
+                if not user:
+                    raise User.DoesNotExist
+
         if password_check(user, password):
-          request.session['password_user'] = user
-          return HttpResponseRedirect(reverse(after))
+            request.session['password_user'] = user
+            return HttpResponseRedirect(reverse(after))
       except User.DoesNotExist:
         pass
       error = 'Bad Username or Password'
