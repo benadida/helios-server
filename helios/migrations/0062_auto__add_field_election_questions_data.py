@@ -78,6 +78,7 @@ class Migration(SchemaMigration):
             'help_phone': ('django.db.models.fields.CharField', [], {'max_length': '254', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'institution': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['zeus.Institution']", 'null': 'True'}),
+            'is_completed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'mix_key': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
             'mixing_finished_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'modified_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
