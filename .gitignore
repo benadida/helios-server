@@ -1,6 +1,4 @@
 deploy-latest.sh
-app.yaml
-initialization.py
 *.pyc
 .DS_Store
 *~
