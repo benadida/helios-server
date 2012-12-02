@@ -353,15 +353,17 @@ class WebTest(django_webtest.WebTest):
             assert url in response.location
         else:
             assert url in response._headers['location'][1]
-        self.assertEqual(response.status_code, 302)
+
+        if hasattr(response, 'status_code'):
+            assert response.status_code == 302
+        else:
+            assert response.status_int == 302
+
+        #self.assertEqual(response.status_code, 302)
 
         #return super(django_webtest.WebTest, self).assertRedirects(response, url)
         #if hasattr(response, 'status_code') and hasattr(response, 'location'):
 
-        #if hasattr(response, 'status_code'):
-        #    assert response.status_code == 302
-        #else:
-        #    assert response.status_int == 302
 
         #assert url in response.location, "redirected to %s instead of %s" % (response.location, url)
 
