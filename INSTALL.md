@@ -1,4 +1,3 @@
-
 * install PostgreSQL 8.3+
 
 * make sure you have virtualenv installed:
@@ -10,21 +9,30 @@ http://www.virtualenv.org/en/latest/
 
 * create a virtualenv:
 
-     virtualenv venv
+```
+virtualenv venv
+```
 
 * activate virtual environment
 
-     source venv/bin/activate
+```
+source venv/bin/activate
+````
 
 * install requirements
 
-     pip install -r requirements.txt
+```
+pip install -r requirements.txt
+```
 
-* reset
+* reset database
 
-     ./reset.sh
+```
+./reset.sh
+```
 
 * start server
 
-     python manage.py runserver
-
+```
+python manage.py runserver
+```
