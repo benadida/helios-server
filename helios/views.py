@@ -1443,7 +1443,7 @@ def one_election_candidates(request, election):
     empty_inputs = range(5) if len(candidates) else range(15)
 
     if error:
-      return render_template(request, 'election_questions', {
+      return render_template(request, 'election_candidates', {
         'election': election, 'questions_json' : questions_json,
         'candidates': candidates,
         'error': error,
@@ -1475,7 +1475,7 @@ def one_election_candidates(request, election):
                                         args=[election.uuid]))
 
   empty_inputs = range(5) if len(candidates) else range(15)
-  return render_template(request, 'election_questions', {
+  return render_template(request, 'election_candidates', {
     'election': election, 'questions_json' : questions_json,
     'candidates': election.candidates,
     'departments': election.departments,

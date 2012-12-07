@@ -150,7 +150,7 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
         
     };
     
-    function _init_worker(callback) {
+    function _init_worker(id, callback) {
       var worker = new window.Worker("/static/helios/helios/jscrypto/decryptworker.js?" + (new Date()).getTime());
       worker.onmessage = function(event) {
         if (event && event.data && event.data.type == "result") {
@@ -160,8 +160,9 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
           var factor = new BigInt(result.factor, 10);
           decryption_factors[0][index] = factor;
           decryption_proofs[0][index] = proof;
-          _worker_decrypt(worker);
+          _worker_decrypt(worker, id);
           callback(result.time);
+          //console.log("WORKER", id, "decrypted", index,".", decryption_factors[0].length, "decrypted so far", );
         } 
       }
       return worker;
@@ -188,8 +189,12 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
     }
     
     var _sk = secret_key.toJSONObject();
-    function _worker_decrypt(worker) {
-      var index = pending_indexes.pop();
+    function _worker_decrypt(worker, id) {
+        var index = pending_indexes.pop();
+        if (!tally.tally[0][index]) {
+            return;
+        }
+        //console.log("WORKER", id,  "POST", index);
       worker.postMessage({
         'type': 'decrypt',
         'sk' : _sk,
@@ -199,16 +204,19 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
 
       window.setTimeout(function() {
         if (!decryption_factors[0][index] || !decryption_proofs[0][index]) {
+            if (!tally.tally[0][index]) { return }
+           // console.log("INDEX", index, "TIMED OUT");
           pending_indexes.push(index);
-          _worker_decrypt(worker);
+          _worker_decrypt(worker, id);
         }
-      }, 5000);
+      }, 80000);
     }
 
   
    var tally_size = tally.tally[0].length;
    if (window.Worker) {
       var batch_med_time = 0;
+      var time_remaining = 0;
       var _worker_stats_callback = function(time) {
         if (batch_med_time == 0) { 
           batch_med_time = time;
@@ -216,7 +224,9 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
           batch_med_time = (batch_med_time + time) / 2;
         };
         var completed = tally_size - pending_indexes.length;
-        var time_remaining = pending_indexes.length * batch_med_time;
+        if (pending_indexes.length % 10 == 0 || time_remaining == 0) {
+            time_remaining = (pending_indexes.length * batch_med_time) / workersCount;
+        }
         var percentage_done = (100*completed) / tally_size;
         batch_complete_callback([], completed, time, batch_med_time, time_remaining,
                                tally_size, percentage_done)
@@ -226,10 +236,10 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
       BATCH_SIZE = 1;
       pending_indexes.reverse();
       _check_workers_finished();
-      for (var i=0; i<workersCount; i++) {
-        var worker = _init_worker(_worker_stats_callback);
-        _worker_decrypt(worker);
-      }
+      _.map(_.range(workersCount), function(ri,i) {
+        var worker = _init_worker(i, _worker_stats_callback);
+        _worker_decrypt(worker, i);
+      });
    } else {
      window.setTimeout(_decrypt, 100);
    }

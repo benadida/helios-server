@@ -135,6 +135,9 @@ BOOTH.setup_election = function(raw_json) {
   // the main reason for this is unicode representation: the Python approach
   // appears to be safer.
   BOOTH.election = HELIOS.Election.fromJSONString(raw_json);
+  if (!BOOTH.election.questions_data || !BOOTH.election.questions_data.length) {
+      BOOTH.election.questions_data = [{'max_answers': BOOTH.election.questions[0].answers.length}];
+  }
 
     if ($.browser.msie) {
             alert("Το πρόγραμμα πλοήγησης που χρησιμοποιείτε δεν υποστηρίζεται από την πλατφόρμα \"Ζευς\". Χρησιμοποιήστε τις νέες εκδόσεις των προγραμμάτων (browser) Mozilla Firefox ή Google Chrome.\n\nΓια περισσότερες πληροφορίες επικοινωνήστε μαζί μας\n\n" + BOOTH.election.help_phone);

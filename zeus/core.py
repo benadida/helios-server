@@ -253,7 +253,7 @@ def from_canonical(inp, unicode_strings=0, s=''):
         while 1:
             s = read(2)
             if not s:
-                m = "byte %d: eof within a list" % inp.tell() 
+                m = "byte %d: eof within a list" % inp.tell()
                 raise ValueError(m)
 
             if s == ']\x0a':
@@ -276,7 +276,7 @@ def from_canonical(inp, unicode_strings=0, s=''):
         while 1:
             s = read(2)
             if not s:
-                m = "byte %d: eof within dict" % inp.tell() 
+                m = "byte %d: eof within dict" % inp.tell()
                 raise ValueError(m)
 
             if s == '}\x0a':
@@ -527,8 +527,8 @@ class CheapQueue(object):
         self.getcount += 1
         return obj
 
-#Queue = CheapQueue
-Queue = mpQueue
+#Queue = mpQueue
+Queue = CheapQueue
 
 def async_call(func, args, kw, channel):
     argspec = inspect.getargspec(func)

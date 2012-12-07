@@ -326,7 +326,7 @@ class Election(HeliosModel):
       'questions_tpl': 'question_plain'
     },
     'ecounting': {
-      'questions_title': _('Candidates'),
+      'questions_title': _(u'Υποψήφιοι'),
       'questions_view': 'helios.views.one_election_candidates',
       'questions_empty_issue': _("Add candidates to the election"),
       'questions_tpl': 'question_ecounting'
