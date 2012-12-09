@@ -5,7 +5,10 @@
 
 {% block header %}
 {% block page_top %}
-<h3>{{ election.name }}</h3>
+<h5 class="subheader" style="margin-bottom:0; padding-bottom:0">
+{{ election_o.institution.name }}
+</h5>
+<h3 style="margin-top:0; padding-top:0" >{{ election_o.name }}</h3>
 {% endblock %}
 {% endblock %}
 
@@ -15,13 +18,17 @@
     {% if bad_code %}
     <div class="alert-box alert">
       Εσφαλμένα στοιχεία. Παρακαλούμε δοκιμάστε ξανά.
+    <div style="float: none; font-weight:normal; padding: 4px 0px 0px 0px">
+    Εάν εξακολουθείτε να αντιμετωπίζετε πρόβλημα
+    επικοινωνήστε με την εφορευτική επιτροπή της ψηφοφορίας.
+    </div>
     </div>
     {% endif %}
-    <p>help text </p>
+    <p>Εισάγετε το μυστικό κωδικό ταυτοποίησης που σας έχει αποσταλεί.</p>
     
     <form action="{% url election_email_show %}" method="post">
       <input type="hidden" name="uuid" value="{{ election_o.uuid }}">
-      <label for="secret">Κωδικός</label>
+      <label for="secret">Κωδικός Ταυτοποίησης</label>
       <div class="row">
       <div class="columns six">
         <input name="secret" type="password" />

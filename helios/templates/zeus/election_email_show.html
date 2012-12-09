@@ -5,7 +5,10 @@
 
 {% block header %}
 {% block page_top %}
-<h3>{{ election_o.name }}</h3>
+<h5 class="subheader" style="margin-bottom:0; padding-bottom:0">
+{{ election_o.institution.name }}
+</h5>
+<h3 style="margin-top:0; padding-top:0" >{{ election_o.name }}</h3>
 {% endblock %}
 {% endblock %}
 

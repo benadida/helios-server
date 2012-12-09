@@ -72,7 +72,8 @@ def election_email_show(request):
     code = request.POST.get('secret', None)
 
     if not uuid or not code:
-      raise PermissionDenied
+      return HttpResponseRedirect(reverse('zeus.views.election_email_login',
+                                          kwargs={'uuid': uuid}) + "?bad_code=1")
 
     try:
       auth_code = SecretAuthcode.objects.get(election_uuid=uuid, code=code)

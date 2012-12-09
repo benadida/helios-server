@@ -1,5 +1,8 @@
 from django.db import models
+from django.conf import settings
 from zeus.core import get_random_int
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 class Institution(models.Model):
     name = models.CharField(max_length=255)
@@ -69,4 +72,33 @@ def generate_authcode(length=12):
     if len(authcode) != length:
         raise AssertionError(s)
     return authcode
+
+
+AUTH_CODES_ELECTIONS = getattr(settings, 'ZEUS_ALTERNATIVE_LOGIN_ELECTIONS', {}).values()
+@receiver(post_save)
+def generate_authcode_for_voter(sender, instance, **kwargs):
+    from helios.models import Voter
+    if issubclass(sender, Voter):
+        voter = instance
+        if not voter.election.uuid in AUTH_CODES_ELECTIONS:
+            pass
+        
+        try:
+            voter = SecretAuthcode.objects.get(election_uuid=voter.election.uuid,
+                                               voter_login=voter.voter_login_id)
+        except SecretAuthcode.DoesNotExist:
+            generate_authcodes(voter.election.uuid, 
+                               voter_logins=(voter.voter_login_id,))
+
+
+@receiver(post_delete)
+def delete_authcode_for_voter(sender, instance, **kwargs):
+    from helios.models import Voter
+    if issubclass(sender, Voter):
+        voter = instance
+        if not voter.election.uuid in AUTH_CODES_ELECTIONS:
+            pass
+        SecretAuthcode.objects.filter(election_uuid=voter.election.uuid, 
+                                   voter_login=voter.voter_login_id).delete()
+
 
