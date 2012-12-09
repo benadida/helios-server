@@ -919,11 +919,7 @@ def voter_quick_login(request, election, voter_uuid, voter_secret):
       request.session['CURRENT_VOTER'] = voter
 
     except Voter.DoesNotExist:
-      login_url = reverse(password_voter_login, args=[election.uuid])
-      redirect_url = login_url + "?" + urllib.urlencode({
-          'bad_voter_login' : '1',
-          'return_url' : return_url
-          })
+      return_url = '/' + "?bad_login=%s" % election.uuid
 
     return HttpResponseRedirect(return_url)
 

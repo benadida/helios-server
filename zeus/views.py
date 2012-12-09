@@ -10,7 +10,8 @@ from helios.models import Election
 def home(request):
   user = get_user(request)
   return render_template(request, "zeus/home", {'menu_active': 'home',
-                                                        'user': user})
+                                                        'user': user,
+                                                'bad_login': request.GET.get('bad_login')})
 
 def faqs_trustee(request):
   user = get_user(request)
