@@ -63,13 +63,10 @@ def purge_authcodes(election_uuid, voter_logins=()):
                                       voter_login__in=voter_logins).delete()
 
 def generate_authcode(length=12):
-    alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-    s = ''
-    for x in xrange(length):
-        s += alphabet[get_random_int(0, 32)]
-
-    if len(s) != length:
-        raise AssertionError()
-
-    return s
+    #alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+    r = get_random_int(0, 10**length)
+    authcode = "%0*d" % (length, r)
+    if len(authcode) != length:
+        raise AssertionError(s)
+    return authcode
 
