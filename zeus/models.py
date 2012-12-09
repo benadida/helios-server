@@ -81,7 +81,7 @@ def generate_authcode_for_voter(sender, instance, **kwargs):
     if issubclass(sender, Voter):
         voter = instance
         if not voter.election.uuid in AUTH_CODES_ELECTIONS:
-            pass
+            return
         
         try:
             voter = SecretAuthcode.objects.get(election_uuid=voter.election.uuid,
@@ -97,7 +97,7 @@ def delete_authcode_for_voter(sender, instance, **kwargs):
     if issubclass(sender, Voter):
         voter = instance
         if not voter.election.uuid in AUTH_CODES_ELECTIONS:
-            pass
+            return
         SecretAuthcode.objects.filter(election_uuid=voter.election.uuid, 
                                    voter_login=voter.voter_login_id).delete()
 
