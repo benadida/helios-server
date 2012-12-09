@@ -104,9 +104,11 @@
       <div id="page" class="row">
         <div class="columns twelve">
           <div id="progress_div">
+            {% block page_top %}
             <dl class="tabs">
               {% block tabs_menu %}{% endblock %}
             </dl>
+            {% endblock %}
             {% if messages %}
             <div class="messages">
               {% for message in messages %}

@@ -2,7 +2,14 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
 
-urlpatterns = patterns(
+urlpatterns = patterns('')
+
+for slug, uuid in getattr(settings, 'ZEUS_ALTERNATIVE_LOGIN_ELECTIONS', {}).iteritems():
+  urlpatterns += patterns('',
+    url(r'%s/' % slug, 'zeus.views.election_email_login', kwargs={'uuid': uuid}),
+  )
+
+urlpatterns += patterns(
     '',
     (r'^$', 'zeus.views.home'),
     (r'^admin/$', 'server_ui.views.home'),
@@ -13,6 +20,8 @@ urlpatterns = patterns(
     (r'^stats/$', 'zeus.views.stats'),
     (r'^auth/', include('heliosauth.urls')),
     (r'^helios/', include('helios.urls')),
+    url(r'voter_email/$', 'zeus.views.election_email_show', name='election_email_show'),
+
 
     # SHOULD BE REPLACED BY APACHE STATIC PATH
     (r'booth/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.BOOTH_STATIC_PATH}),
@@ -24,6 +33,7 @@ urlpatterns = patterns(
 
     (r'^', include('server_ui.urls')),
 )
+
 
 if settings.DEBUG:
     from helios.devutils import quick_start_election

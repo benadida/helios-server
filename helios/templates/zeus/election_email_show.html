@@ -1,0 +1,24 @@
+{% extends "server_ui/templates/base.html" %}
+
+{% block tabs_menu %}
+{% endblock %}
+
+{% block header %}
+{% block page_top %}
+<h3>{{ election_o.name }}</h3>
+{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="columns twelve">
+    <br /><br />
+    <pre style="white-space:pre-wrap">
+    {{ email_content|urlize }}
+    </pre>
+    <a class="button medium alert" href="/">Έξοδος</a>
+  </div>
+</div>
+{% endblock %}
+
+

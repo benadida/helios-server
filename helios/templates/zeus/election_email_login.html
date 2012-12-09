@@ -1,0 +1,37 @@
+{% extends "server_ui/templates/base.html" %}
+
+{% block tabs_menu %}
+{% endblock %}
+
+{% block header %}
+{% block page_top %}
+<h3>{{ election.name }}</h3>
+{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="columns twelve">
+    {% if bad_code %}
+    <div class="alert-box alert">
+      Εσφαλμένα στοιχεία. Παρακαλούμε δοκιμάστε ξανά.
+    </div>
+    {% endif %}
+    <p>help text </p>
+    
+    <form action="{% url election_email_show %}" method="post">
+      <input type="hidden" name="uuid" value="{{ election_o.uuid }}">
+      <label for="secret">Κωδικός</label>
+      <div class="row">
+      <div class="columns six">
+        <input name="secret" type="password" />
+      </div>
+      <div class="columns twelve">
+        <input type="submit" value="Υποβολή" class="button medium success"/>
+      </div>
+    </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
