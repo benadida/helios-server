@@ -1,49 +1,73 @@
-\documentclass[runningheads,a4paper]{llncs}
+% TEMPLATE for Usenix papers, specifically to meet requirements of
+%  USENIX '05
+% originally a template for producing IEEE-format articles using LaTeX.
+%   written by Matthew Ward, CS Department, Worcester Polytechnic Institute.
+% adapted by David Beazley for his excellent SWIG paper in Proceedings,
+%   Tcl 96
+% turned into a smartass generic template by De Clarke, with thanks to
+%   both the above pioneers
+% use at your own risk.  Complaints to /dev/null.
+% make it two column with no page numbering, default is 10 point
 
+% Munged by Fred Douglis <douglis@research.att.com> 10/97 to separate
+% the .sty file from the LaTeX source template, so that people can
+% more easily include the .sty file into an existing document.  Also
+% changed to more closely follow the style guidelines as represented
+% by the Word sample file. 
+
+% Note that since 2010, USENIX does not require endnotes. If you want
+% foot of page notes, don't include the endnotes package in the 
+% usepackage command, below.
+
+% This version uses the latex2e styles, not the very ancient 2.09 stuff.
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{usenix,epsfig,endnotes}
+
+\usepackage[flushleft]{threeparttable}
 \usepackage{amssymb}
-\setcounter{tocdepth}{3}
 \usepackage{graphicx}
 \usepackage{amsmath}
 
 \usepackage{url}
-\urldef{\mails}\path|{gtsouk, kpap, louridas, tsanakas}@grnet.gr|
 
 \newcommand{\keywords}[1]{\par\addvspace\baselineskip
 \noindent\keywordname\enspace\ignorespaces#1}
 
 \begin{document}
 
-\mainmatter  % start of an individual contribution
+%don't want date printed
+\date{}
 
 % first the title is needed
-\title{From Helios to Zeus}
+\title{\Large \bf From Helios to Zeus}
 
-\titlerunning{From Helios to Zeus}
-
-\author{Georgios Tsoukalas%
-\and Kostas Papadimitriou%
-\and Panos Louridas%
-\and Panayiotis Tsanakas}
-
-\authorrunning{Tsoukalas, Papadimitriou, Louridas and Tsanakas}
-
-\institute{Greek Reseach and Education Network,\\
+\author{
+{\rm Georgios Tsoukalas}\\
+\and 
+{\rm Kostas Papadimitriou}\\
+\and 
+{\rm Panos Louridas}\\
+\and 
+{\rm Panayiotis Tsanakas}\\
+Greek Reseach and Education Network,\\
 56 Mesogeion Avenue, Athens, Greece\\
-\mails\\
-\url{http://www.grnet.gr}}
+\{gtsouk,kpap,louridas,tsanakas\}@grnet.gr
+}
 
 \maketitle
 
-\begin{abstract}
-  We present Zeus, an Internet ballot casting and counting system
-  based on Helios that allows elections in which ballots cannot be
-  tallied homomorphically. Zeus separates the production of election
-  results from voting and counting, thus allowing any type of
-  elections to be carried out, while maintaining the main features of
-  the original Helios system in terms of anonymity and verifiability.
-  \keywords{Internet voting, voting systems, electronic ballots}
-\end{abstract}
+% Use the following at camera-ready time to suppress page numbers.
+% Comment it out when you first submit the paper for review.
+\thispagestyle{empty}
 
+\subsection*{Abstract}
+
+We present Zeus, an Internet ballot casting and counting system
+based on Helios that allows elections in which ballots cannot be
+tallied homomorphically. Zeus separates the production of election
+results from voting and counting, thus allowing any type of
+elections to be carried out, while maintaining the main features of
+the original Helios system in terms of anonymity and verifiability.
 
 \section{Introduction}
 
@@ -58,8 +82,9 @@ performed by Helios and its role in the election process. Helios is a
 system that performs \emph{ballot casting}, \emph{ballot counting},
 and \emph{production of election results}. Zeus performs only the
 first two, leaving the production of election results to other
-systems. In this way, it can accommodate more voting systems than
-Helios, which currently supports only approval-like voting.
+systems, or to additional modules. In this way, it can accommodate
+more voting systems than Helios, which currently supports only
+approval-like voting.
 
 \section{Roots and Rationale}
 
@@ -101,7 +126,7 @@ party can always verify that the results are correct.
 
 Interestingly, the original publication of Helios~\cite{adida:2008}
 did not use homomorphic tallying, but relied on mixnets for
-guaranteeing voter anonymity. 
+guaranteeing voter anonymity. ~\cite{bulens:2011}
 
 \section{Ballot Casting and Encoding}
 
@@ -127,192 +152,305 @@ the group used in the ElGamal encryption scheme, so the encoding does
 not present a practical limit in real elections (if it did, we could
 always break the number in parts and send them separately).
 
-We encode each ballot as an integer by enumerating the set
-$\mathcal{E}$ of all possible ballots.
-Our method is, take $s$ candidates out of $N$,
-for $0\leq s \leq C$, where $C$ is the maximum choices allowed
-in the ballots \footnote{$N=C$ for the elections we hosted},
-and then take their $s!$ permutations.
-Summing it up, all the possible ballots are
+The implementation of the encoding follows closely the mathematical
+definition. We encode each ballot as an integer by enumerating the set
+$\mathcal{E}$ of all possible ballots. We take $k$ choices out of $n$,
+for $0\leq k \leq C$, where $C$ is the maximum choices allowed in the
+ballots \footnote{$N=C$ for the elections we hosted}, and we then take
+their $k!$ permutations. Summing it up, all the possible ballots are
 \begin{equation}
 \label{eq:max_encoded}
-|\mathcal{E}| = \sum^{s}_{k=0}\binom{N}{k}k! \quad
-\hbox{\small where} \quad 0\leq s \leq C
+|\mathcal{E}| = \sum^{s}_{k=0}\binom{n}{k}k! \quad
+\hbox{\small where} \quad 0\leq k \leq C
 \end{equation}
-In the enumeration, we first count the smaller selections
-(i.e. take \textit{zero} candidates,
-      then \textit{one}, then \textit{two}, \ldots)
-so that for small candidate selection sets the encoded
-ballot will have a small value, thus saving valuable bit-space.
-\footnote{
-For example, selecting up to all of 300 candidates needs 2048 bits,
-while selecting 10 out of 1000 candidates needs only 100 bits.}
+When enumerating, we first count the smaller selections (i.e. take
+\textit{zero} candidates, then \textit{one}, then \textit{two},
+\ldots) so that for small numbers of choices the encoded ballot will
+have a small value, thus saving valuable bit-space. \footnote{ For
+  example, selecting up to all of 300 candidates needs 2048 bits,
+  while selecting 10 out of 1000 candidates needs only 100 bits.}
 
 % gtsouk: describe the exact encoding / decoding algorithm for the
 % ballots. 
 
-\section{the Cryptographic Model}
+\section{The Cryptographic Model}
 
-We have collected all cryptographic aspects of Zeus elections
-and implemented them into a generic, standalone, and extensible software module.
-\footnote{\texttt{zeus.core}}
-This module implements an abstract version of the election workflow,
-all the required cryptographic functions, and all validations of data
-and the workflow itself.
-This module is fitted into the production environment by software extensions
-(i.e. subclassing) where the web application uses it as needed.
+We have collected all cryptographic aspects of Zeus elections and
+implemented them into a generic, standalone, and extensible software
+module. \footnote{\texttt{zeus.core}} This module implements an
+abstract version of the election workflow, all the required
+cryptographic functions, and all validations of data and the workflow
+itself. This module is fitted into the production environment by
+software extensions (i.e. subclassing) where the web application uses
+it as needed.
 
 \subsection{Software Dependencies}
-Random number generation \emph{(Fortuna)},
-primality testing \emph{(Miller-Rabin)} and modulo inversion from
-\texttt{PyCrypto}. Exponentiation from \texttt{libgmp} via \texttt{gmpy}
-(really faster than Python's builtin \texttt{pow}).
-We implement all other operations in native Python and
-the Python standard library, including hashing.
-We have studied \texttt{Helios}, \texttt{PloneVoteCryptoLib},
+Random number generation \emph{(Fortuna)}, primality testing
+\emph{(Miller-Rabin)} and modulo inversion from \texttt{PyCrypto}.
+Exponentiation from \texttt{libgmp} via \texttt{gmpy} (really faster
+than Python's builtin \texttt{pow}). We have implemented all other
+operations in native Python and the Python standard library, including
+hashing. We have studied \texttt{Helios}, \texttt{PloneVoteCryptoLib},
 \texttt{PyCrypto} for our implementation.
 
-\subsection{Cryptosystem}
-Zeus uses the ElGamal cryptosystem on the prime-order-$q$ subgroup
-$\mathcal{G}$ of the quadratic residues of a safe prime $p = 2q + 1$,
-such that
-$$m \in \mathcal{G} \longleftrightarrow \mathcal{L}(m) = m^q = 1 \mod p$$
-$\mathcal{L}$ being the \emph{Legendre} symbol.
-For reference, we reproduce all the primitives we use in a table.
-All base numbers are in $\mathcal{G}$, all exponents in $\mathbb{Z}^{*}_q$,
-and all operations are $\mod p$, unless explicitly noted.
-We group $x=a, y=b, \ldots$ as $(x,y,\ldots)\equiv(a,b,\ldots)$.
+% \subsection{Cryptosystem}
+% Zeus uses the ElGamal cryptosystem on the prime-order-$q$ subgroup
+% $\mathcal{G}$ of the quadratic residues of a safe prime $p = 2q + 1$,
+% such that
+% $$m \in \mathcal{G} \longleftrightarrow \mathcal{L}(m) = m^q = 1 \mod p$$
+% $\mathcal{L}$ being the \emph{Legendre} symbol.
+% For reference, we reproduce all the primitives we use in a table.
+% All base numbers are in $\mathcal{G}$, all exponents in $\mathbb{Z}^{*}_q$,
+% and all operations are $\mod p$, unless explicitly noted.
+% We group $x=a, y=b, \ldots$ as $(x,y,\ldots)\equiv(a,b,\ldots)$.
 
-\begin{tabular}{rl}
-\textbf{modulus}       \, & $p \equiv 3(\mod 4)$ \hfill\textit{\small(safe prime)}\\
-\textbf{generator}     \, & $g: g^q = 1$      \\
-\textbf{order}         \, & $q = (q-1)/2$\hfill\textit{\small(ElGamal group prime order)}\\
-\textbf{secret}        \, & $x$               \\
-\textbf{public}        \, & $y = g^x$         \\
-\textbf{committment}   \, & $t$               \\
-\textbf{challenge}     \, & $c$               \\
-\textbf{response}      \, & $f$     \hfill\textit{\small(from proof)} \\
-\textbf{\parbox{7em}
-    {\setlength{\baselineskip}{.85\baselineskip}
-     \raggedleft
-     group \\
-     encoding}}        \, & $T: x \mapsto \left\{
-                            \begin{matrix}  x &,&\quad x^q=1 \\
-                                           -x &,&\quad x^q\neq 1
-                            \end{matrix}\right.\quad
-                            T^{-1}: e \mapsto \left\{
-                            \begin{matrix}  e &,&\quad e \leq q \\
-                                           -e &,&\quad e > q \\
-                            \end{matrix}\right.
-                            $ \\
-\textbf{secret nonce}  \, & $r, w$  \hfill\textit{\small(in encryptions and proofs)} \\
-\textbf{ciphertext}    \, & $(a, b)\equiv(g^r, y^r m$)
-                                    \hfill\textit{\small(encryption)} \\
-\textbf{plaintext}     \, & $m = a^{-x}b$
-                                    \hfill\textit{\small(decryption)} \\
-\textbf{reencryption}  \, & $(a',b')\equiv(g^{r'}a, y^{r'}b)$ \\
-\textbf{hashing}       \, & $\mathcal{H}(n_0n_1n_2\ldots)$
-                            \hfill\textit{\small(hash textual representation of numbers)} \\
-\textbf{discrete log}  \, & $y = g^x \Rightarrow \log_gy=x \;\leadsto\;$
-                                    \textbf{\small prove you know} $x$ \\
-                       \, & $(t, c, f) \equiv (g^w, \mathcal{H}(t), w+xc)$
-                                    \hfill\textit{\small(prove knowledge)} \\
-                       \, & $g^f \overset{?}{=} ty^c$
-                                    \hfill\textit{\small(verify knowledge)} \\
-                       \, & $g, y, u, v \;\leadsto\;$
-                                    \textbf{\small prove} $\:log_gu = log_yv = w$
-                                    i.e. $(g, y, g^w, y^w)$ \\
-                       \, & $(t_g,t_y,c,f) \equiv (g^w, y^w, \mathcal{H}(t_gt_y), w+xc)$
-                                    \hfill\textit{\small(prove equality)} \\
-                       \, & $g^f \overset{?}{=} t_gu^c \wedge
-                             y^f \overset{?}{=} t_yv^c$
-                                    \hfill\textit{\small(verify equality)} \\
-\textbf{signature}     \, & $(z, s)\equiv\big(g^{w}, w^{-1}(m-zx)\mod (p-1)\big)
-                                    \quad w = 2w'-1,\: 3\leq w'\leq q$ \\
-                       \, & $m^s \overset{?}{=} y^zz^s$
-                                    \hfill\textit{\small(verify signature)} \\
-% TODO: cite Fiat-Shamir, Schnorr, Chaum-Pedersen, HAC in this table
-\end{tabular}
+% \begin{tabular}{rl}
+% \textbf{modulus}       \, & $p \equiv 3(\mod 4)$ \hfill\textit{\small(safe prime)}\\
+% \textbf{generator}     \, & $g: g^q = 1$      \\
+% \textbf{order}         \, & $q = (q-1)/2$\hfill\textit{\small(ElGamal group prime order)}\\
+% \textbf{secret}        \, & $x$               \\
+% \textbf{public}        \, & $y = g^x$         \\
+% \textbf{committment}   \, & $t$               \\
+% \textbf{challenge}     \, & $c$               \\
+% \textbf{response}      \, & $f$     \hfill\textit{\small(from proof)} \\
+% \textbf{\parbox{7em}
+%     {\setlength{\baselineskip}{.85\baselineskip}
+%      \raggedleft
+%      group \\
+%      encoding}}        \, & $T: x \mapsto \left\{
+%                             \begin{matrix}  x &,&\quad x^q=1 \\
+%                                            -x &,&\quad x^q\neq 1
+%                             \end{matrix}\right.\quad
+%                             T^{-1}: e \mapsto \left\{
+%                             \begin{matrix}  e &,&\quad e \leq q \\
+%                                            -e &,&\quad e > q \\
+%                             \end{matrix}\right.
+%                             $ \\
+% \textbf{secret nonce}  \, & $r, w$  \hfill\textit{\small(in encryptions and proofs)} \\
+% \textbf{ciphertext}    \, & $(a, b)\equiv(g^r, y^r m$)
+%                                     \hfill\textit{\small(encryption)} \\
+% \textbf{plaintext}     \, & $m = a^{-x}b$
+%                                     \hfill\textit{\small(decryption)} \\
+% \textbf{reencryption}  \, & $(a',b')\equiv(g^{r'}a, y^{r'}b)$ \\
+% \textbf{hashing}       \, & $\mathcal{H}(n_0n_1n_2\ldots)$
+%                             \hfill\textit{\small(hash textual representation of numbers)} \\
+% \textbf{discrete log}  \, & $y = g^x \Rightarrow \log_gy=x \;\leadsto\;$
+%                                     \textbf{\small prove you know} $x$ \\
+%                        \, & $(t, c, f) \equiv (g^w, \mathcal{H}(t), w+xc)$
+%                                     \hfill\textit{\small(prove knowledge)} \\
+%                        \, & $g^f \overset{?}{=} ty^c$
+%                                     \hfill\textit{\small(verify knowledge)} \\
+%                        \, & $g, y, u, v \;\leadsto\;$
+%                                     \textbf{\small prove} $\:log_gu = log_yv = w$
+%                                     i.e. $(g, y, g^w, y^w)$ \\
+%                        \, & $(t_g,t_y,c,f) \equiv (g^w, y^w, \mathcal{H}(t_gt_y), w+xc)$
+%                                     \hfill\textit{\small(prove equality)} \\
+%                        \, & $g^f \overset{?}{=} t_gu^c \wedge
+%                              y^f \overset{?}{=} t_yv^c$
+%                                     \hfill\textit{\small(verify equality)} \\
+% \textbf{signature}     \, & $(z, s)\equiv\big(g^{w}, w^{-1}(m-zx)\mod (p-1)\big)
+%                                     \quad w = 2w'-1,\: 3\leq w'\leq q$ \\
+%                        \, & $m^s \overset{?}{=} y^zz^s$
+%                                     \hfill\textit{\small(verify signature)} \\
+% % TODO: cite Fiat-Shamir, Schnorr, Chaum-Pedersen, HAC in this table
+% \end{tabular}
 
-\subsection{Creating}
-\subsection{Voting}
-\subsection{Mixing}
-\subsection{Decrypting}
-\subsection{Validation}
+% \subsection{Creating}
+% \subsection{Voting}
+% \subsection{Mixing}
+% \subsection{Decrypting}
+% \subsection{Validation}
 
 \section{Election User Interface}
-A significant design goal was \emph{interface},
-and \emph{workflow} simplicity,
-since voters are not required to understand cryptography
-or information flow on computer systems.
-At the same time,
-the informed voter needed access to all information and functions needed
-to both understand and verify the process.
 
-\subsection{Administrator View}
-\subsection{Voting Booth}
-\subsection{Auditing}
+The users of Zeus were not expected to be experts in cryptography, or
+to have any knowledge of computer science; we could only assume
+familiarity with internet browsing, since the electoral body comprises
+people with heterogeneous characteristics. A significant design goal
+was therefore \emph{interface}, and \emph{workflow} simplicity. At the
+same time, the knowledgeable voter needed access to all information
+and functions needed to both understand and verify the process.
 
+\subsection{Zeus Users}
 
-\section{Ballot Submission}
+Zeus distinguishes the following classes of users:
 
-The submitted ballot contains
-%gtsouk: describe the conntents of the submitted ballot
-A submitted ballot is a JSON object of the form:
-\begin{verbatim}
-{
-  answers : [];
-  election_hash : ;
-  election_uuid : ;
-}
-\end{verbatim}
+\begin{itemize}
+\item Election administrators
+\item Election committee members
+\item Voters
+\end{itemize}
 
-\section{Election Verification}
+Election administrators are responsible for setting up an election;
+that is, starting a new election instance in Zeus, setting the date
+for the election, entering the particulars of the election committee
+members and the list of voters. During the election the administrators
+are responsible for updaging the list of voters (i.e., adding,
+removing, or updating the details for a voter) and extending the poll
+times, if necessary. When polls close the administrators are
+responsible for starting the ballot mixing and vote count process.
+Election committee members hold the cryptographic keys for the
+election. Before the election starts they have to create their keys
+and upload the public parts to the Zeus server. During decryption each
+election committee member partially decrypts the ballots using the
+private part of the key. Voters visit the voting booth to cast their
+vote; they can vote repeatedly until polls close.
 
-%gtsouk: describe the election verification algorithm
+Election administrators access Zeus through a username and password.
+Election committee members and voters access Zeus through URL links
+that are sent to them by the system, as we see below.
+
+% \subsection{Administrator View}
+% \subsection{Voting Booth}
+% \subsection{Auditing}
+
+% \section{Ballot Submission}
+
+% The submitted ballot contains
+% %gtsouk: describe the conntents of the submitted ballot
+% A submitted ballot is a JSON object of the form:
+% \begin{verbatim}
+% {
+%   answers : [];
+%   election_hash : ;
+%   election_uuid : ;
+% }
+% \end{verbatim}
+
+% \section{Election Verification}
+
+% %gtsouk: describe the election verification algorithm
 
 \section{The Election Workflow in Zeus}
 
-The election workflow in Zeus comprises the steps:
-
-\begin{enumerate}
-
-\item The election authority compiles the list of candidates and the
-  voters' registry, and appoints the election committee, the poll
-  opening date and time and its closing date and time.
-
-\item The voters receive at their mailboxes a message inviting them to
-  cast their vote. The message contains a link that leads them to the
-  ``voting booth'', where they can compile their ballot. The voting
-  booth opens at the date and time appointed by the election
-  authority; if the voters visit the link before, they are informed
-  accordingly. After casting their vote, voters receive via e-mail a
-  proof of their ballot cast.
-
-\item When the poll closes, the election committee starts the ballot
-  tallying process.
-
-\end{enumerate}
-
-The whole process is explained in more detail below.
+The election workflow in Zeus consists of the following phases:
+election preparation, polling, and tallying.
 
 \subsection{Preparing the Election}
 
+\subsubsection{Initialisation}
+
+The election administrator initialises the election in Zeus by
+entering the polling date (or dates), the members of the election
+committee, the name of the election and any other information required
+for defining the process. The election administrator may be a member
+of the election committee.
+
 \subsubsection{Notifications to the Election Committee}
+
+The election administrator uses Zeus to send notifications to the
+election committee members. The notifications contain URLs by which
+the committee members can access the system in order to generate and
+upload their encryption keys.
 
 \subsubsection{Generation of Election Keys}
 
-\subsubsection{Candidates Addition}
+Committee members generate their encryption keys. The encryption keys
+are generated in their browsers and the members are instructed to save
+them in a secure place. They then upload the public parts of their
+keys to Zeus, to be used for encryption the voters' ballots when polls
+open. 
+
+\subsubsection{Ballot Setup}
+
+The election administrator in coordination with the election committee
+sets up the election ballots. This includes defining the number of
+ballot questions and acceptable answers, whether the order of ballot
+choices will be important (as in STV) or not (as in approval voting),
+and the contents of each ballot.
 
 \subsubsection{Voters Addition}
 
+Voters are entered to the system by the administrator and the election
+committee by means of a CSV file (typically generated through a
+spreadsheet application) containing, for each voter the voter's email
+and name.
+
 \subsubsection{Election Freeze}
+
+Finally the election is frozen; when this happens, the voters receive
+at their mailboxes a message inviting them to cast their vote. The
+message contains a link that leads them to the voting booth, where
+they can compile their ballot. The voting booth opens at the date and
+time appointed by the election authority; if the voters visit the link
+before, they are informed accordingly.
 
 \subsection{Voting}
 
+Voters access the voting booth via the link they have received. They
+compose their ballot, which they proceed to submit. All the process
+happens at the client browser, with no interaction with the server
+until the ballot has been encrypted and sent to be stored along with
+the rest of the election's ballots.
+
 \subsection{Tallying}
 
-\section{Implementation Considerations}
+% \section{Implementation Considerations}
+
+\section{Experience}
+
+From the voter's point of view, there has been a published usability
+analysis of Helios~\cite{karayumak:2011}. 
+
+Zeus was used in 23 elections that took place in 22 institutions
+around Greece (see Table~\ref{table:zeus-elections}). 
+
+\begin{table*}[t]
+  \begin{threeparttable}
+    \begin{tabular}{llllll}
+      \hline
+      Institute & Voters & Voted & Ballots & Open & Close\\
+      \hline
+      Harokopio University & 61 & 59 & 63 & 2012-10-19 10:00 & 2012-10-19 11:00\\
+      TEI Piraeus & 144 & 102 & 111 & 2012-10-22 09:00 & 2012-10-22 13:00\\
+      Ionian University & 105 & 92 & 101 & 2012-10-25 09:00 & 2012-10-25 15:00\\
+      TEI Patras & 93 & 78 & 79 & 2012-10-26 09:00 & 2012-10-26 13:00\\
+      University of Thrace & 583 & 490 & 528 & 2012-10-29 09:00 & 
+      2012-10-29 16:00\\
+      TEI Athens & 487 & 437 & 470 & 2012-10-31 08:00 & 2012-10-31 18:00\\
+      University of Thessaly & 429 & 328 & 345 & 2012-10-31 09:00 & 
+      2012-10-31 14:36\\
+      Panteion University & 239 & 181 & 183 & 2012-10-31 09:00 & 
+      2012-10-31 16:00\\
+      University of Thessaloniki & 2065 & 1580 & 1632 & 2012-11-01 09:00 
+      & 2012-11-01 16:00\\
+      Athens University of Economics and Business & 195 & 172 & 181 & 
+      2012-11-02 10:00 & 2012-11-02 17:00\\
+      Agricultural University of Athens & 182 & 102 & 110 
+      & 2012-11-05 09:00 & 2012-11-05 16:00\\
+      University of Ioanina & 536 & 426 & 443 & 2012-11-05 09:00 &
+      2012-11-05 17:00\\
+      University of Crete & 493 & 361 & 373 & 2012-11-05 09:00 & 
+      2012-11-05 18:00\\
+      University of Macedonia & 169 & 163 & 172 & 2012-11-06 10:00 & 
+      2012-11-06 18:00\\
+      University of Patras & 703 & 532 & 555 & 2012-11-07 09:00 & 
+      2012-11-07 17:00\\
+      Athens School of Fine Arts & 46 & 40 & 41 & 2012-11-08 07:00 & 
+      2012-11-08 16:00\\
+      University of the Aegean & 292 & 161 & 172 & 2012-11-09 09:00 & 
+      2012-11-09 17:00\\
+      University of Athens & 1897 & 1504 & 1618 & 2012-11-12 09:00 & 
+      2012-11-15 18:00\\
+      University of Piraeus & 183 & 180 & 199 & 2012-11-14 09:00 & 
+      2012-11-14 15:00\\
+      University of the Peloponnese & 128 & 124 & 128 &
+      2012-11-22 07:00 & 2012-11-22 17:00\\
+      Technical University of Crete & 126 & 116 & 127 & 
+      2012-12-04 10:00 & 2012-12-04 15:00\\
+      National Technical University of Athens & 536 & 351 & 363 &
+      2012-12-10 09:00 & 2012-12-10 17:00\\
+      TEI Piraeus & 143 & 104 & 105 & 2012-12-21 09:00 & 2012-12-21 17:00\\
+    \end{tabular}
+    \begin{tablenotes}
+      \small 
+      \item The number of ballots may be larger than the number of
+      people voted when voters have voted multiple times.
+      \item TEI is Technological Educational Institute. 
+    \end{tablenotes}
+  \end{threeparttable}
+  \caption{Zeus Held Elections\label{table:zeus-elections}}
+\end{table*}
 
 % gtsouk: Including timing measurements, especially wrt differen versions of
 % Python, GMP, etc.
@@ -320,8 +458,11 @@ The whole process is explained in more detail below.
 % gtsouk: also instances where existing implementations were not up to
 % par from a cryptographic point of view
 
-\bibliographystyle{splncs}
+{\footnotesize
+\bibliographystyle{acm}
 \bibliography{zeus}
+}
+
 
 \end{document}
 
