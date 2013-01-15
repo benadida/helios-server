@@ -381,9 +381,29 @@ Voters access the voting booth via the link they have received. They
 compose their ballot, which they proceed to submit. All the process
 happens at the client browser, with no interaction with the server
 until the ballot has been encrypted and sent to be stored along with
-the rest of the election's ballots.
+the rest of the election's ballots. The user then receives an e-mail
+containing a receipt for the ballot. The receipt contains the
+cryptographic data that can be used to verify that the ballot has been
+counted in the results.
 
 \subsection{Tallying}
+
+When the polls close the administrator and the election committee can
+proceed to mix and decrypt the ballots. Mixing is carried out at least
+once, on the Zeus server, and can optionally be carried out in
+additional independent servers. Independent mixing works by means of a
+command line tool to which a URL with the encrypted ballots is passed;
+the tool mixes them and returns them back to Zeus. 
+
+Once all mixes have been completed, the election committee members
+receive an e-mail notification to proceed to decrypt the ballots. The
+notification contains a URL link through which the encrypted ballots
+are downloaded to the client browser, partially decrypted there, and
+returned back to Zeus.
+
+After the decryption Zeus provides a tally of the decrypted and
+anonymised ballots, along with all the cryptographic proofs that can
+be used to verify and audit and election.
 
 % \section{Implementation Considerations}
 
@@ -393,13 +413,126 @@ From the voter's point of view, there has been a published usability
 analysis of Helios~\cite{karayumak:2011}. 
 
 Zeus was used in 23 elections that took place in 22 institutions
-around Greece (see Table~\ref{table:zeus-elections}). 
+around Greece (see Table~\ref{table:zeus-elections}). Elections were
+carried out successfully in all planned institutions. This was a
+significant success, as the stakes were particularly high and the
+voting process charged with emotions. To understand that it is
+necessary that we provide some surrounding context.
+
+The law which instuted the Governing Councils in Greek educational
+institutions met resistance from some political parties, student and
+academics unions. A widespread means of protest was to disrupt the
+election of Governing Councils, so that they could not be inaugurated.
+Successive aborted elections pushed forward the adoption of electronic
+voting, which in turn was the subject of controversy. This led to
+attacks on Zeus, and the voting process supported by Zeus. None of
+them was eventually successful. We describe them briefly in what
+follows.
+
+\subsection{University of Thrace}
+
+The elections at the University of Thrace had been planned for October
+24, 2012. Due to a coding bug, the polls opened the at the time the
+election was frozen, on October 22. This was discovered by some
+voters, who went on to vote before the official poll opening. The
+issue was publishised and the election was annulled and repeated at a
+later date. Technically, the election could have proceeded without a
+problem, since there was no way anybody could have tampered with the
+election results, but the issue was sensitive and politicised, so that
+the election committee took the most cautious route.
+
+Elections were called again for October 29, 2012, with polls opening
+at 9:00. At dawn our Networks Operations Center noticed a large number
+of connections to Zeus. Upon investigation, it was found that Zeus was
+the subject of a slowloris attack~\cite{slowloris}. The attach was
+swiftly dealt with, and apart from some initial inconvenience did not
+cause any real problems. Moreover, the attackers used static IP
+addresses and could easily be traced and blocked.
+
+\subsection{University of the Aegean}
+
+The University of the Aegean had planned its elections for November 2,
+2012. After freezing the election, and when the notifications to the
+voters had been sent, voters started receiving additional
+notifications containing bogus URLs, from a cracked university server.
+Although the bogus URLs were not functional, a number of users were
+confused. The electoral committee decided to cancel the elections and
+call new elections at a later date. To avoid similar situations in
+coming elections we recommended the use of Sender Policy Framework
+(SPF)~\cite{rfc4408} to institutions that had not been using it.
+
+The repeat elections were held on November 9, 2012. The authorities at
+the university had authorised the set up of a new mail server, to be
+used solely for the elections, in which all voter's were opened
+accounts. The mail server was hosted outside the university's
+premises. This avoided a problem that would have risen from a sit-in
+at the building housing the main mail server, which had been switched
+off by protesters at election day.
+
+\subsection{Agricultural University of Athens}
+
+On election day, November 5, 2012, protesters staged a sit-in at the
+mail server building of the Agricultural University of Athens. The
+mail server was switched off, cutting off access to e-mail, and
+depriving voters that had not downloaded the access link from voting.
+The university authorities responded by asking voters to come
+physically to a location outside the campus, where they could be
+issued with a new URL.
+
+\subsection{University of Patras}
+
+The University of Patras held its elections on November 7, 2012. Just
+prior to the opening of the polls a slowloris attack as noticed and
+dealt with.
+
+\subsection{University of Athens}
+
+A little while after polls opened at the University of Athens, on
+November 12, 2012, protesters staged a sit-in at the university's
+Network Operations Server and cut-off internet access. This took
+offline mail access to members of the university and, like in the
+Agricultural University of Athens, deprived voters that had not
+downloaded the access link from voting. More dramatically, the
+internet shutdown affected all sorts of university services, including
+internet connectivity to university hospitals.
+
+The university responded by extending polling by three days. At the
+same time, an alternative voter's notification scheme was implemented,
+via which the voters would receive instructions for voting via SMS.
+The sit-in was lifted on the last election day, as it was realised
+that the elections would go on regardless.
+
+\subsection{National Technical University of Athens}
+
+A sit-in similar to the one at the University of Athens was planned at
+the National Technical University of Athens. However, it did not last
+long, as the SMS-based infrastructure was already in place, so that it
+would be irrelevant, and the university authorities made it clear that
+they would not tolerate the disruption.
+
+A different, more insidious kind of attack was revealed later on. A
+few days before the election, one voter had contacted us complaining
+that the link he had received did not seem to be functioning at all
+(it should link to a page notifying the user about the coming
+elections; instead, the user was redirected to the main Zeus page).
+Two days before the election it was discovered that the user's e-mail
+stored in Zeus had been changed, and a new e-mail had been sent to the
+newly entered mail address. The user complained that he never used
+that adddress, so another URL was issued and sent to his institutional
+mail address. The voter voted without a problem on election day.
+
+A few days afterwards a protesters' site announced they had
+circumvented Zeus security by taking hold of a voter's URL after
+contacting the election committee and asking them to update the
+voter's contact details. That explained the e-mail change, and it
+meant that it was the result of a social engineering attack. Luckily,
+it had been caught in time---something the protesters did not let on.
 
 \begin{table*}[t]
   \begin{threeparttable}
     \begin{tabular}{llllll}
       \hline
-      Institute & Voters & Voted & Ballots & Open & Close\\
+      Institution & Voters & Voted & Ballots & Open & Close\\
       \hline
       Harokopio University & 61 & 59 & 63 & 2012-10-19 10:00 & 2012-10-19 11:00\\
       TEI Piraeus & 144 & 102 & 111 & 2012-10-22 09:00 & 2012-10-22 13:00\\
