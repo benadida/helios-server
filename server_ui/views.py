@@ -31,6 +31,9 @@ def home(request):
   create_p = can_create_election(request)
   elections_voted = None
 
+  if not user:
+    return HttpResponseRedirect('/')
+
   if user.superadmin_p:
     elections_administered = Election.objects.filter().select_related().order_by('-created_at').defer('encrypted_tally',
                                                                             'result')
