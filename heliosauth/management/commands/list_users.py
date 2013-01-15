@@ -7,6 +7,9 @@ from heliosauth.models import *
 
 import pprint
 
+user_row = "%-3d %-15s %-20s %-60s %-10s %-2d"
+user_row_header = user_row.replace("d", "s")
+
 class Command(BaseCommand):
     args = ''
     help = 'List users'
@@ -14,10 +17,13 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         info = False
-        if len(args) > 0 and args[0] == "1":
-            info = True
 
-        for u in User.objects.values("user_id","ecounting_account",
-                                     "info").order_by('user_id'):
-            print u['user_id'], u['ecounting_account'], u['info'] if info else ''
+        print user_row_header % ('ID', 'USERNAME', 'NAME', 'INSTITUTION',
+                                   'ECOUNTING', 'ELECTIONS')
+        for user in User.objects.all():
+            elections_count = user.elections.count()
+            print user_row % (user.pk, user.user_id, user.name,
+                              '%-2d - %s' % (user.institution.pk, user.institution.name),
+                              str(user.ecounting_account),
+                              elections_count)
 
