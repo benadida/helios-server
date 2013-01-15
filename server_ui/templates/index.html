@@ -13,6 +13,11 @@
 
 
 {% block content %}
+{% if password_changed %}
+<div class="alert success panel">
+    {% trans "Your new password was set." %}
+</div>
+{% endif %}
 <table class="elections">
   <thead>
     <th>

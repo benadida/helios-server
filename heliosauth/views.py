@@ -7,6 +7,7 @@ Ben Adida
 
 from django.http import *
 from django.core.urlresolvers import reverse
+from django.utils.translation import ugettext_lazy as _
 
 from view_utils import *
 from heliosauth.security import get_user
@@ -14,13 +15,13 @@ from heliosauth.security import get_user
 import auth_systems
 from auth_systems import AUTH_SYSTEMS
 from auth_systems import password
-import heliosauth
 
+import heliosauth
 import copy, urllib
 
 from models import User
-
 from security import FIELDS_TO_SAVE
+from heliosauth.forms import ChangePasswordForm
 
 def index(request):
   """
@@ -217,4 +218,25 @@ def after_intervention(request):
     return_url = request.session['auth_return_url']
     del request.session['auth_return_url']
   return HttpResponseRedirect("%s%s" % (settings.URL_HOST, return_url))
+
+
+def change_password(request):
+    user = get_user(request)
+    if not user or user.user_type != 'password':
+        return HttpResponseRedirect('/')
+
+    password_changed = request.GET.get('password_changed', None)
+    if not user.user_type == "password":
+        return HttpResponseForbidden()
+
+    form = ChangePasswordForm(user)
+    if request.method == "POST":
+        form = ChangePasswordForm(user, request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(reverse('heliosauth.views.change_password') + \
+                                        '?password_changed=1')
+
+    return render_template(request, 'change_password', {'form': form,
+                                                        'password_changed': password_changed})
 

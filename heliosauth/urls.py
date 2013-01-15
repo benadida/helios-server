@@ -14,12 +14,13 @@ urlpatterns = patterns('',
     # basic static stuff
     (r'^$', index),
     (r'^logout$', logout),
+    (r'^change_password$', change_password),
     (r'^start/(?P<system_name>.*)$', start),
     # weird facebook constraint for trailing slash
     (r'^after/$', after),
     (r'^why$', perms_why),
     (r'^after_intervention$', after_intervention),
-    
+
     ## should make the following modular
 
     # password auth

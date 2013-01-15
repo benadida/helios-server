@@ -65,6 +65,7 @@
                   <em>"{{ user.institution.name }}"</em>
                   <br /><br />
                   <a class="button tiny" href="/admin/">σελίδα διαχείρισης</a>
+                  <a class="button tiny alert" href="{% url heliosauth.views.change_password %}?return_url=/">αλλαγή κωδικού</a>
                   <a class="button tiny alert" href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
               </div>
           </div>
@@ -132,7 +133,12 @@
           {% if user and user.pk %}
           Έχετε συνδεθεί ως διαχειριστής εκλογών: {{ user.display_html_small|safe }}
           <a href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a> |
-          <a href="/admin/">διαχείριση</a><br />
+          <a href="/admin/">διαχείριση</a> 
+              {% if user.user_type == "password" %}
+              | <a href="{% url heliosauth.views.change_password %}?return_url=/">αλλαγή κωδικού</a>
+              {% endif %}
+              <br />
+
           {% else %}
           {% if voter %}
           Έχετε συνδεθεί ως ο ψηφοφόρος <u>{{ voter.voter_surname }} {{voter.voter_name}}</u> της ψηφοφορίας 
