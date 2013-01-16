@@ -1350,7 +1350,7 @@ def check_election_permission(request, election,
 
 @election_view(require_type='election')
 def one_election_questions(request, election):
-  from zeus.forms import QuestionForm, DEFAULT_ANSWERS_COUNT
+  from zeus.forms import QuestionForm, DEFAULT_ANSWERS_COUNT, MAX_QUESTIONS_LIMIT
   extra = 1
   if election.questions_data:
     extra = 0
@@ -1397,6 +1397,7 @@ def one_election_questions(request, election):
     'menu_active': 'candidates',
     'default_answers_count': DEFAULT_ANSWERS_COUNT,
     'formset': formset,
+    'max_questions_limit': MAX_QUESTIONS_LIMIT,
     'election': election,
     'admin_p': admin_p})
 

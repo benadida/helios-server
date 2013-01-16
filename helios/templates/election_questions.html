@@ -12,7 +12,7 @@
   <dd class="add_new"><a href="#" style="color: green">
     <i class="general foundicon-plus"></i></a></dd>
   {% for form in formset %}
-  <dd class="{% if forloop.counter == 1 %}active{% endif %} hide-for-small"><a href="#q{{ forloop.counter }}">{{ forloop.counter}}</a></dd>
+  <dd class="{% if forloop.counter == 1 %}active{% endif %} hide-for-small"><a href="#q{{ forloop.counter }}">{% trans "Question" %} {{ forloop.counter}}</a></dd>
   {% endfor %}
   <dd class="remove_current" style="float: right"><a href="#"
     style="color:red"><i class="general foundicon-minus"></i></a></dd>
@@ -42,6 +42,8 @@ $(document).ready(function(){
   }
   
   DEFAULT_ANSWERS_COUNT = {{ default_answers_count }};
+  MAX_QUESTIONS_LIMIT = {{ max_questions_limit }};
+
   var tabs = $("form.questions dl.tabs");
   var questions = $("form.questions ul.tabs-content>li");
 
@@ -80,6 +82,13 @@ $(document).ready(function(){
       self.remove_answer(qindex, index);
     });
 
+    if (this.forms().length >= MAX_QUESTIONS_LIMIT) {
+        this.add_button.hide()
+    }
+    if (this.forms().length == 1) {
+      this.remove_button.hide();
+    }
+
     this.check_errors();
   }
 
@@ -100,6 +109,7 @@ $(document).ready(function(){
     },
 
     update_answers_data: function(labels) {
+      var self = this;
       this.forms().each(function(qi, f){
         $(f).find(".answer_input").each(function(i, el){
           var el = $(el);
@@ -112,7 +122,7 @@ $(document).ready(function(){
           label.attr("for", "id_" + name);
 
           if (labels) {
-            label.text("Απάντηση "+ (i+1))
+            label.text(self._get_answer_title(i+1));
           }
         })
       })
@@ -147,8 +157,9 @@ $(document).ready(function(){
     },
 
     update_tabs: function() {
-      this.tabs().each(function(i,t){
-        $(t).find("a").text(i+1);
+      var self = this;
+      this.tabs().each(function(i,t) {
+        $(t).find("a").text(self._get_question_title(i+1));
       })
     },
     
@@ -175,9 +186,18 @@ $(document).ready(function(){
       this.update_tabs();
       this.update_forms();
       this.update_management_form();
+
+      if (this.forms().length == 1) {
+        this.remove_button.hide();
+      }
+
     },
     
     add_question: function() {
+      if (this.forms().length >= MAX_QUESTIONS_LIMIT) {
+          this.add_button.hide()
+          return;
+      }
       var answers = DEFAULT_ANSWERS_COUNT;
       var q = $(this.forms().filter(":visible"));
       var newq = q.clone();
@@ -185,7 +205,7 @@ $(document).ready(function(){
       var qindex = this.forms().length;
       
       newtab.removeClass("error");
-      newtab.find("a").text(parseInt(qindex)+1);
+      newtab.find("a").text(this._get_question_title(parseInt(qindex)+1));
       newtab.find("a").attr({href:"#q" + (qindex+1)});
       newtab.removeClass("active");
       var last_tab = this.tabs().last();
@@ -208,8 +228,19 @@ $(document).ready(function(){
       newq.show();
       newq.find("input:visible").first().focus();
       this.update_management_form();
+      if (this.forms().length > 1) {
+        this.remove_button.show();
+      }
     },
-      
+    
+    _get_question_title: function(index) {
+      return "{% trans "Question" %} " + index;
+    },
+
+    _get_answer_title: function(index) {
+      return "{% trans "Answer" %} " + index;
+    },
+
     _set_form_index: function(el, newindex, reset) {
       reset = reset == undefined ? true : false;
       var curindex = parseInt(/form-(\d)+-/.exec(el.find("input").attr("name"))[1]);
@@ -242,8 +273,8 @@ $(document).ready(function(){
       var label = el.find("label");
       var input = el.find("input");
       var name = 'form-' + qindex + '-answer_' + index;
-
-      label.text("Απάντηση " + (index+1))
+    
+      label.text(this._get_answer_title(index+1))
       label.attr({'for': 'id_'+name})
       input.attr({
         'name': name,

@@ -335,6 +335,7 @@ class AnswerWidget(forms.TextInput):
 
 
 DEFAULT_ANSWERS_COUNT = 2
+MAX_QUESTIONS_LIMIT = getattr(settings, 'MAX_QUESTIONS_LIMIT', 1)
 
 class QuestionForm(forms.Form):
   choice_type = forms.ChoiceField(choices=(
