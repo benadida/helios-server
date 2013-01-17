@@ -320,7 +320,7 @@ class Election(HeliosModel):
 
   ELECTION_TYPE_PARAMS = {
     'election': {
-      'questions_title': _('Questions'),
+      'questions_title': _(u'Ballot'),
       'questions_view': 'helios.views.one_election_questions',
       'questions_empty_issue': _("Add questions to the election"),
       'questions_tpl': 'question_plain'

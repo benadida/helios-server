@@ -342,8 +342,8 @@ class QuestionForm(forms.Form):
     ('choice', _('Choice')),
     #('ranked', _('Ranked')),
   ))
-  question = forms.CharField(max_length=255, required=True)
-  max_answers = forms.ChoiceField()
+  question = forms.CharField(label=_('Question'), max_length=255, required=True)
+  max_answers = forms.ChoiceField(label=_('Max answers'))
 
 
   def __init__(self, *args, **kwargs):
