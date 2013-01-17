@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-10-23 22:35+0300\n"
+"POT-Creation-Date: 2013-01-17 09:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,61 +18,61 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: forms.py:74
+#: forms.py:79
 msgid "Institution"
 msgstr "Εκπαιδευτικό ίδρυμα"
 
-#: forms.py:75
+#: forms.py:80
 msgid "Election institution"
 msgstr "Το εκπαιδευτικό ίδρυμα για το οποίο θα διεξαχθεί η ψηφοφορία"
 
-#: forms.py:77
+#: forms.py:82
 msgid "Election name"
 msgstr "Τίτλος ψηφοφορίας"
 
-#: forms.py:80
+#: forms.py:85
 msgid "the name of the election (e.g. University of Piraeus 2014 elections)."
 msgstr ""
 "δώστε τίτλο στην ψηφοφορία (π.χ. Εκλογή Εσωτερικών Μελών Συμβουλίου "
 "Διοίκησης Πανεπιστημίου Πειραιώς 2014)."
 
-#: forms.py:83
+#: forms.py:88
 msgid "Description"
 msgstr "Περιγραφή ψηφοφορίας"
 
-#: forms.py:84
+#: forms.py:89
 msgid "Election description"
 msgstr "περιγράψτε σύντομα την ψηφοφορία"
 
-#: forms.py:85
+#: forms.py:90
 msgid "Voting starts at"
 msgstr "Χρόνος έναρξης της ψηφοφορίας"
 
-#: forms.py:89
+#: forms.py:94
 msgid "When voting starts"
 msgstr "δώστε ημερομηνία και ώρα έναρξης της ψηφοφορίας"
 
-#: forms.py:90
+#: forms.py:95
 msgid "Voting ends at"
 msgstr "Λήξη της ψηφοφορίας"
 
-#: forms.py:94
+#: forms.py:99
 msgid "When voting ends"
 msgstr "δώστε ημερομηνία και ώρα για τη λήξη της ψηφοφορίας"
 
-#: forms.py:97
+#: forms.py:102
 msgid "Voting extended until"
 msgstr "Η ψηφοφορία έχει παραταθεί μέχρι"
 
-#: forms.py:101
+#: forms.py:106
 msgid "Voting extension date"
 msgstr "νέα ημερομηνία και ώρα λήξης της ψηφοφορίας"
 
-#: forms.py:103
+#: forms.py:108
 msgid "Trustees"
 msgstr "Εφορευτική επιτροπή"
 
-#: forms.py:104
+#: forms.py:110
 msgid ""
 "Trustees list. e.g. <br/><br/> Giannhs Gianopoulos, giannhs@email.com<br /> "
 "Kwstas Kwstopoulos, kwstas@email.com<br />"
@@ -81,11 +81,11 @@ msgstr ""
 "<br/><br/>Κωσταντίνος Κωστόπουλος, kwstopoulos@email.com<br/>Ιωάννης "
 "Γιαννόπουλος, giannhs@gmail.com<br/>"
 
-#: forms.py:106
+#: forms.py:112
 msgid "Schools and Departments"
 msgstr "Σχολές και Ανεξάρτητα Τμήματα του Ιδρύματος"
 
-#: forms.py:108
+#: forms.py:114
 msgid ""
 "University Schools. e.g. <br/><br/> School of Engineering <br /> School of "
 "Medicine<br />School of Informatics<br />"
@@ -94,70 +94,75 @@ msgstr ""
 "διεξάγεται η ψηφοφορία. Π.χ. <br/><br/>Σχολή Θετικών Επιστημών<br/"
 ">Φιλοσοφική Σχολή<br/>Ανεξάρτητο Παιδαγωγικό Τμήμα Δημοτικής Εκπαίδευσης<br/>"
 
-#: forms.py:110
+#: forms.py:116
 msgid "Eligibles count"
 msgstr "Πλήθος εκλεγόμενων "
 
-#: forms.py:111
+#: forms.py:117
 msgid "Set the eligibles count of the election"
 msgstr "το πλήθος των εκλεγόμενων (6 ή 8 ανάλογα με το μέγεθος της σχολής)"
 
-#: forms.py:115
+#: forms.py:121
 msgid "Has department limit"
 msgstr "Τα εσωτερικά μέλη ανά σχολή δεν μπορούν να υπερβαίνουν τα δύο"
 
-#: forms.py:116
+#: forms.py:122
 msgid "4009/2011 (A' 195)"
 msgstr ""
 "Επιλέξτε εάν εφαρμόζεται ο περιορισμός του τέταρτου εδαφίου της περίπτωσης "
 "β΄ της παραγράφου 4 του άρθρου 8 του νόμου 4009/2011 (Α΄ 195) όπως ισχύει με "
 "την τροποποίηση του άρθρου 47 του ν. 4025/2011 (Α΄228)"
 
-#: forms.py:118
+#: forms.py:124
 msgid "Help email"
 msgstr "E-mail για βοήθεια"
 
-#: forms.py:118
+#: forms.py:124
 msgid "Voters can contact this email for election suport"
 msgstr ""
 "οι ψηφοφόροι μπορούν να απευθύνονται σε αυτό το e-mail για υποστήριξη σε "
 "θέματα της ψηφοφορίας"
 
-#: forms.py:119
+#: forms.py:125
 msgid "Help phone"
 msgstr "Τηλέφωνα για βοήθεια"
 
-#: forms.py:119
+#: forms.py:125
 msgid "Voters can contact this phone for election suport"
 msgstr ""
 "οι ψηφοφόροι θα μπορούν να επικοινωνούν σε αυτά τα τηλέφωνα για υποστήριξη "
 "σε θέματα της ψηφοφορίας"
 
-#: forms.py:121
+#: forms.py:127
 msgid "Remote mix"
 msgstr "Ενεργοποίηση πολλαπλών σταδίων μίξης"
 
-#: forms.py:122
+#: forms.py:128
 msgid "Whether or not to allow remote mixing."
-msgstr "Επιλέξτε αν θέλετε να παρέχετε εξωτερικά στάδια μίξης μετά την ψηφοφορία -- αφήστε κενό εάν δεν είστε σίγουρος"
-
-#: forms.py:158
-msgid "Another election with the same name exists"
 msgstr ""
+"Επιλέξτε αν θέλετε να παρέχετε εξωτερικά στάδια μίξης μετά την ψηφοφορία -- "
+"αφήστε κενό εάν δεν είστε σίγουρος"
 
-#: forms.py:167
+#: forms.py:170
 msgid "Invalid voting dates"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:170
+#: forms.py:173
 msgid "Invalid voting extension date"
 msgstr "Λάθος ημερομηνία και ώρα λήξης της ψηφοφορίας"
 
-#: forms.py:181 forms.py:186
+#: forms.py:187 forms.py:192
 msgid "Invalid trustess"
 msgstr "Μη έγκυρη λίστα μελών εφορευτικής επιτροπής."
 
-#: forms.py:220
-msgid ""
-"Election candidates changed due to election institution department changes"
-msgstr "Κάποιοι υποψήφιοι αφαιρέθηκαν λόγω αλλαγών στις Σχολές"
+#: forms.py:307
+msgid "Election title (e.g. Memorandum referendum)"
+msgstr "Τίτλος ψηφοφορίας"
+
+#: forms.py:342
+msgid "Choice"
+msgstr "Επιλογή"
+
+#~ msgid ""
+#~ "Election candidates changed due to election institution department changes"
+#~ msgstr "Κάποιοι υποψήφιοι αφαιρέθηκαν λόγω αλλαγών στις Σχολές"
