@@ -1680,12 +1680,12 @@ def gamma_decode_to_candidates(encoded, candidates):
     choices = gamma_decode(encoded, nr_candidates)
     return [candidates[i] for i in choices]
 
-def gamma_frequences(encoded_list, candidates):
+def gamma_count_candidates(encoded_list, candidates):
     encoded_list = sorted(encoded_list)
     iter_encoded_list = iter(encoded_list)
     lastone = None
-    freqs = []
-    append = freqs.append
+    counts = []
+    append = counts.append
 
     for lastone in iter_encoded_list:
         count = 1
@@ -1699,7 +1699,127 @@ def gamma_frequences(encoded_list, candidates):
             count = 1
             lastone = encoded
 
-    return freqs
+    return counts
+
+PARTY_SEPARATOR = ': '
+
+def strforce(thing, encoding='utf8'):
+    if isinstance(thing, str):
+        return thing
+    return thing.encode(encoding)
+        
+def gamma_decode_to_party_ballot(encoded, candidates,
+                                 separator=PARTY_SEPARATOR):
+
+    nr_candidates = len(candidates)
+    choices = gamma_decode(encoded, nr_candidates)
+    names = []
+    append = names.append
+    last_index = -1
+    theparty = None
+    valid = True
+
+    for i in choices:
+        if i <= last_index:
+            valid = False
+            names = None
+            theparty = None
+            break
+
+        last_index = i
+        candidate = candidates[i]
+
+        candidate = strforce(candidate)
+        party, sep, name = candidate.partition(separator)
+        if party and not name:
+            name = party
+            party = ''
+
+        if theparty is None:
+            theparty = party
+
+        if theparty != party:
+            valid = False
+            names = None
+            theparty = None
+            break
+
+        append(name)
+
+    ballot = {'party': theparty,
+              'candidates': names,
+              'valid': valid}
+    return ballot
+
+def gamma_count_parties(encoded_list, candidates,
+                        separator=PARTY_SEPARATOR):
+    invalid_count = 0
+    candidate_counters = {}
+    party_counters = {}
+    ballots = []
+    append = ballots.append
+
+    for encoded in encoded_list:
+        ballot = gamma_decode_to_party_ballot(encoded, candidates,
+                                              separator=separator)
+        if not ballot['valid']:
+            invalid_count += 1
+            continue
+
+        append(ballot)
+
+        party = ballot['party']
+        if party not in party_counters:
+            party_counters[party] = 0
+        party_counters[party] += 1
+
+        for candidate in ballot['candidates']:
+            key = (ballot['party'], candidate)
+            if key not in candidate_counters:
+                candidate_counters[key] = 0
+            candidate_counters[key] += 1
+
+    party_counts = [(-v, k) for k, v in party_counters.iteritems()]
+    party_counts.sort()
+    fmt = "%s" + separator + "%s"
+    party_counts = [(-v, k) for v, k in party_counts]
+    candidate_counts = [(-v, fmt % k)
+                        for k, v in candidate_counters.iteritems()]
+    candidate_counts.sort()
+    candidate_counts = [(-v, k) for v, k in candidate_counts]
+
+    results = {'parties': party_counts,
+               'candidates': candidate_counts,
+               'invalid': invalid_count,
+               'ballots': ballots}
+    return results
+
+def candidates_to_parties(candidates, separator=PARTY_SEPARATOR):
+    parties = {}
+    separator = strforce(separator)
+    for candidate in candidates:
+        party, sep, name = candidate.partition(separator)
+        if not name:
+            party = ''
+            name = party
+        party = strforce(party)
+        name = strforce(name)
+        if party not in parties:
+            parties[party] = []
+        parties[party].append(name)
+
+    return parties
+
+def parties_to_candidates(parties, separtator=PARTY_SEPARATOR):
+    candidates = []
+    append = candidates.append
+    for party, name in parties.iteritems():
+        party = strforce(party)
+        separator = strforce(separator)
+        name = strforce(name)
+        append('%s%s%s' % (party, separator, name))
+
+    return candidates
 
 def chooser(answers, candidates):
     candidates = list(candidates)
@@ -4194,7 +4314,9 @@ class ZeusCoreElection(object):
 
     def mk_stage_creating(self, teller=_teller):
         candidate_range = xrange(self._nr_candidates)
-        candidates = [("Candidate-%04d" % x) for x in candidate_range]
+        parties = ['A', 'B']
+        candidates = [("Party-%s%sCandidate-%04d" % (p, PARTY_SEPARATOR, c))
+                      for p, c in zip(cycle(parties), candidate_range)]
         voter_range = xrange(self._nr_voters)
         voters = [("Voter-%08d" % x) for x in voter_range]
 
@@ -4411,6 +4533,9 @@ def main():
     parser.add_argument('--results', action='store_true', default=False,
                         help="Display election plaintext results")
 
+    parser.add_argument('--count-parties', action='store_true', default=False,
+                        help="Count results based on candidate parties")
+
     parser.add_argument('--extract-signatures', metavar='prefix',
         help="Write election signatures for counted votes to files")
 
@@ -4519,12 +4644,13 @@ def main():
     def do_results(election):
         results = election.do_get_results()
         print 'RESULTS: %s\n' % (' '.join(str(n) for n in results),)
-        print 'FREQUENCES:'
-        freqs = gamma_frequences(results, election.do_get_candidates())
-        freqs.sort()
-        for f in freqs:
-            print '%d %s' % (f[0], f[1:])
-        print ' '
+
+    def do_count_parties(election):
+        results = election.do_get_results()
+        candidates = election.do_get_candidates()
+        results = gamma_count_parties(results, candidates)
+        import json
+        print json.dumps(results, ensure_ascii=False, indent=2)
 
     def main_generate(args, teller=_teller, nr_parallel=0):
         filename = args.generate
@@ -4562,6 +4688,9 @@ def main():
         if args.results:
             do_results(election)
 
+        if args.count_parties:
+            do_count_parties(election)
+
         if args.report:
             print report
 
@@ -4593,6 +4722,9 @@ def main():
 
         if args.results:
             do_results(election)
+
+        if args.count_parties:
+            do_count_parties(election)
 
         if args.report:
             do_report(election)
