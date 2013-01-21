@@ -654,7 +654,6 @@ class Election(HeliosModel):
       return self.voting_extended_until or self.voting_ends_at
 
   def can_change_questions(self):
-      return True
       return self.can_change_candidates()
 
   def can_change_candidates(self):
