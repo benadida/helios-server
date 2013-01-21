@@ -1322,6 +1322,27 @@ def get_random_selection(nr_elements, full=1):
         append(0)
     return selection
 
+def get_random_party_selection(nr_elements, nr_parties=2):
+    selection = []
+    party = get_random_int(0, nr_parties)
+    per_party = nr_elements // nr_parties
+    low = party * per_party
+    high = (party + 1) * per_party
+    if nr_elements - high < per_party:
+        high = nr_elements
+
+    choices = []
+    append = choices.append
+    r = get_random_int(0, 2**(high - low))
+    for i in xrange(low, high):
+        skip = r & 1
+        r >>= 1
+        if skip:
+            continue
+        append(i)
+
+    return to_relative_answers(choices, nr_elements)
+
 def selection_to_permutation(selection):
     nr_elements = len(selection)
     lefts = list([None]) * nr_elements
@@ -1677,7 +1698,8 @@ def cross_check_encodings(n):
 
 def gamma_decode_to_candidates(encoded, candidates):
     nr_candidates = len(candidates)
-    choices = gamma_decode(encoded, nr_candidates)
+    selection = gamma_decode(encoded, nr_candidates)
+    choices = to_absolute_answers(selection, nr_candidates)
     return [candidates[i] for i in choices]
 
 def gamma_count_candidates(encoded_list, candidates):
@@ -1707,23 +1729,48 @@ def strforce(thing, encoding='utf8'):
     if isinstance(thing, str):
         return thing
     return thing.encode(encoding)
-        
+
+def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
+    parties = {}
+    theparty = None
+
+    for i, candidate in enumerate(candidates):
+        candidate = strforce(candidate)
+        party, sep, name = candidate.partition(separator)
+        if party and not name:
+            name = party
+            party = ''
+
+        if theparty is None or party != theparty:
+            theparty = party
+            if theparty not in parties:
+                parties[theparty] = {}
+                continue
+
+        parties[theparty][i] = name
+
+    return parties
+
 def gamma_decode_to_party_ballot(encoded, candidates,
                                  separator=PARTY_SEPARATOR):
 
     nr_candidates = len(candidates)
-    choices = gamma_decode(encoded, nr_candidates)
+    selection = gamma_decode(encoded, nr_candidates)
+    choices = to_absolute_answers(selection, nr_candidates)
     names = []
     append = names.append
     last_index = -1
     theparty = None
     valid = True
+    parties = parties_from_candidates(candidates, separator=separator)
 
     for i in choices:
         if i <= last_index:
             valid = False
             names = None
             theparty = None
+            #print ("invalid index: %d <= %d -- choices: %s"
+            #        % (i, last_index, choices))
             break
 
         last_index = i
@@ -1737,12 +1784,27 @@ def gamma_decode_to_party_ballot(encoded, candidates,
 
         if theparty is None:
             theparty = party
+            if theparty not in parties:
+                m = "Voted party list not found"
+                raise AssertionError(m)
+            continue
 
         if theparty != party:
             valid = False
             names = None
             theparty = None
             break
+
+        party_list = parties[theparty]
+        if i not in party_list:
+            m = "Candidate not found in party list"
+            raise AssertionError(m)
+
+        list_name = party_list[i]
+        if name != list_name:
+            m = "Candidate name mismatch (%s vs %s)" % (name, list_name)
+            raise AssertionError(m)
+            # name = party_list[i]
 
         append(name)
 
@@ -4283,7 +4345,12 @@ class ZeusCoreElection(object):
         candidates = self.do_get_candidates()
         nr_candidates = len(candidates)
         if selection is None:
-            selection = get_random_selection(nr_candidates, full=0)
+            r = get_random_int(0, 4)
+            if r & 1:
+                selection = get_random_selection(nr_candidates, full=0)
+            else:
+                selection = get_random_party_selection(nr_candidates, 2)
+
         voters = None
         if voter is None:
             voters = self.do_get_voters()
@@ -4313,10 +4380,13 @@ class ZeusCoreElection(object):
         return vote, selection, encoded if valid else None, rnd
 
     def mk_stage_creating(self, teller=_teller):
-        candidate_range = xrange(self._nr_candidates)
-        parties = ['A', 'B']
+        nr_candidates = self._nr_candidates
+        candidate_range = xrange(nr_candidates)
+        mid = nr_candidates // 2
+        parties = (('A' if i < mid else 'B', c)
+                   for i, c in enumerate(candidate_range))
         candidates = [("Party-%s%sCandidate-%04d" % (p, PARTY_SEPARATOR, c))
-                      for p, c in zip(cycle(parties), candidate_range)]
+                      for p, c in parties]
         voter_range = xrange(self._nr_voters)
         voters = [("Voter-%08d" % x) for x in voter_range]
 
