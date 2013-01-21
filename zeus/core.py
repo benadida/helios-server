@@ -1732,6 +1732,7 @@ def strforce(thing, encoding='utf8'):
 
 def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
     parties = {}
+    options = {}
     theparty = None
 
     for i, candidate in enumerate(candidates):
@@ -1742,16 +1743,31 @@ def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
             party = ''
 
         if theparty is None or party != theparty:
-            theparty = party
-            if theparty not in parties:
-                parties[theparty] = {}
+            if party not in parties:
+                r = name.split('-')
+                if len(r) != 2:
+                    m = ("Party %s: malformed min-max choices option '%s'"
+                         % (party, name))
+                    raise AssertionError(m)
+                min_choices, max_choices = r
+                try:
+                    min_choices = int(r[0])
+                    max_choices = int(r[1])
+                except ValueError:
+                    m = ("Party %s: malformed numbers in "
+                         "min-max choices option '%s'" % (party, name))
+                    raise AssertionError(m)
+
+                parties[party] = {'opt_min_choices': min_choices,
+                                  'opt_max_choices': max_choices}
+                theparty = party
                 continue
 
         parties[theparty][i] = name
 
     return parties
 
-def gamma_decode_to_party_ballot(encoded, candidates,
+def gamma_decode_to_party_ballot(encoded, candidates, parties,
                                  separator=PARTY_SEPARATOR):
 
     nr_candidates = len(candidates)
@@ -1761,8 +1777,8 @@ def gamma_decode_to_party_ballot(encoded, candidates,
     append = names.append
     last_index = -1
     theparty = None
+    party_list = None
     valid = True
-    parties = parties_from_candidates(candidates, separator=separator)
 
     for i in choices:
         if i <= last_index:
@@ -1782,6 +1798,8 @@ def gamma_decode_to_party_ballot(encoded, candidates,
             name = party
             party = ''
 
+        party_list = parties[party]
+
         if theparty is None:
             theparty = party
             if theparty not in parties:
@@ -1795,7 +1813,6 @@ def gamma_decode_to_party_ballot(encoded, candidates,
             theparty = None
             break
 
-        party_list = parties[theparty]
         if i not in party_list:
             m = "Candidate not found in party list"
             raise AssertionError(m)
@@ -1808,21 +1825,29 @@ def gamma_decode_to_party_ballot(encoded, candidates,
 
         append(name)
 
+    if choices and valid:
+        nr_choices = len(names)
+        if (nr_choices < party_list['opt_min_choices'] or
+            nr_choices > party_list['opt_max_choices']):
+            valid = False
+            names = None
+            theparty = None
+
     ballot = {'party': theparty,
               'candidates': names,
               'valid': valid}
     return ballot
 
-def gamma_count_parties(encoded_list, candidates,
-                        separator=PARTY_SEPARATOR):
+def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
     invalid_count = 0
     candidate_counters = {}
     party_counters = {}
     ballots = []
     append = ballots.append
+    parties = parties_from_candidates(candidates, separator=separator)
 
     for encoded in encoded_list:
-        ballot = gamma_decode_to_party_ballot(encoded, candidates,
+        ballot = gamma_decode_to_party_ballot(encoded, candidates, parties,
                                               separator=separator)
         if not ballot['valid']:
             invalid_count += 1
@@ -1850,14 +1875,16 @@ def gamma_count_parties(encoded_list, candidates,
     candidate_counts.sort()
     candidate_counts = [(-v, k) for v, k in candidate_counts]
 
-    results = {'parties': party_counts,
-               'candidates': candidate_counts,
+    results = {'party_counts': party_counts,
+               'candidate_counts': candidate_counts,
+               'parties': parties,
                'invalid': invalid_count,
                'ballots': ballots}
     return results
 
 def candidates_to_parties(candidates, separator=PARTY_SEPARATOR):
     parties = {}
+    options = {}
     separator = strforce(separator)
     for candidate in candidates:
         party, sep, name = candidate.partition(separator)
@@ -1866,22 +1893,6 @@ def candidates_to_parties(candidates, separator=PARTY_SEPARATOR):
             name = party
         party = strforce(party)
         name = strforce(name)
-        if party not in parties:
-            parties[party] = []
-        parties[party].append(name)
-
-    return parties
-
-def parties_to_candidates(parties, separtator=PARTY_SEPARATOR):
-    candidates = []
-    append = candidates.append
-    for party, name in parties.iteritems():
-        party = strforce(party)
-        separator = strforce(separator)
-        name = strforce(name)
-        append('%s%s%s' % (party, separator, name))
-
-    return candidates
 
 def chooser(answers, candidates):
     candidates = list(candidates)
@@ -4381,12 +4392,23 @@ class ZeusCoreElection(object):
 
     def mk_stage_creating(self, teller=_teller):
         nr_candidates = self._nr_candidates
-        candidate_range = xrange(nr_candidates)
+        candidates = []
+        append = candidates.append
         mid = nr_candidates // 2
-        parties = (('A' if i < mid else 'B', c)
-                   for i, c in enumerate(candidate_range))
-        candidates = [("Party-%s%sCandidate-%04d" % (p, PARTY_SEPARATOR, c))
-                      for p, c in parties]
+        first = 1
+        for i in xrange(0, mid):
+            if first:
+                append("Party-A" + PARTY_SEPARATOR + "0-2")
+                first = 0
+            append("Party-A" + PARTY_SEPARATOR + "Candidate-%04d" % i)
+
+        first = 1
+        for i in xrange(mid, nr_candidates):
+            if first:
+                append("Party-B" + PARTY_SEPARATOR + "0-2")
+                first = 0
+            append("Party-B" + PARTY_SEPARATOR + "Candidate-%04d" % i)
+
         voter_range = xrange(self._nr_voters)
         voters = [("Voter-%08d" % x) for x in voter_range]
 
