@@ -445,8 +445,9 @@ class Election(HeliosModel):
   def update_answers_from_questions(self):
     answers = []
     questions_data = self.questions_data or []
-    answers = list(itertools.chain(*map(lambda e:e['answers'],
-                                       questions_data)))
+    for index, q in enumerate(questions_data):
+        q_answers = ["%s:%s" % (q['question'], ans) for ans in q['answers']]
+        answers = answers + q_answers
     self._init_helios_questions(len(answers))
     self.questions[0]['answers'] = answers
 
