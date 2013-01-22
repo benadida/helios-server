@@ -465,14 +465,14 @@ class Election(HeliosModel):
         prepend_empty_answer = True
 
     for index, q in enumerate(questions_data):
-        q_answers = ["%s:%s" % (q['question'], ans) for ans in q['answers']]
+        q_answers = ["%s: %s" % (q['question'], ans) for ans in q['answers']]
         if prepend_empty_answer:
             params_max = int(q['max_answers'])
             params_min = 1
             if self.type_params.get('count_empty_question', False):
                 params_min = 0
             params = "%d-%d" % (params_min, params_max)
-            q_answers.insert(0, "%s:%s" % (q['question'], params))
+            q_answers.insert(0, "%s: %s" % (q['question'], params))
         answers = answers + q_answers
     self._init_helios_questions(len(answers))
     self.questions[0]['answers'] = answers
