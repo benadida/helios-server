@@ -16,7 +16,11 @@
         data-question="{$T.question$index}"
         data-absolute-index="{$T.answer$index + $T.question.answers_index}"
         data-is-party="yes"
-        class="button enabled medium">{$T.question.question}</a></li>
+        class="button enabled medium">{$T.question.question}
+        <span class="question-subtitle">έως {$T.question.max_answers} επιλογές</span>
+      </a>
+      <br />
+      </li>
       {#/if}
       {#else}
       <li class="stv-choice choice-{$T.answer$index}">

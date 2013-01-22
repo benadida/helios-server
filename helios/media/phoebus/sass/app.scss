@@ -68,7 +68,11 @@ body {
   .stv-candidates {
 
     .stv-choice-party {
-      margin-bottom: 1em;
+      .question-subtitle { 
+        color: #fff !important; 
+        float: right; 
+        font-weight: normal;
+        font-size:0.8em;}
       a {
         text-align: left !important;
       }
@@ -76,7 +80,7 @@ body {
         background-color: darken($mainColor,20%) !important;
       }
     }
-    margin-bottom: 2em;
+    margin-bottom: 3em;
   }
 
   ol li.step { margin-bottom: 10px; }
