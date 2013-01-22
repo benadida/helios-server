@@ -151,7 +151,8 @@ BOOTH.setup_election = function(raw_json) {
       prepend = 1;
     }
     data['answers'].unshift("Empty Party Choice");
-    answers_index = parseInt(answers_index) + data['answers'].length + prepend ;
+    if (!BOOTH.election.count_empty_question) { prepend = 0 }
+    answers_index = parseInt(answers_index) + data['answers'].length + prepend;
   });
 
   BOOTH.ballot_module_initialized = false;
