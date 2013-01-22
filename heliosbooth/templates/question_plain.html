@@ -8,7 +8,7 @@
 <!--<h5>Επιλογή σειράς υποψηφίων</h5>-->
 <div  id="question-{$T.question$index}">
   <h5>{$T.question.question}</h5>
-  <span class="question-subtitle">έως {$T.question.max_answers} επιλογές</span>
+  <span class="question-subtitle">έως {$T.question.max_answers} {#if $T.question.max_answers == 1}επιλογή{#else}επιλογές{#/if}</span>
     <p class="stv-description">
     </p>
     <ul class="stv-candidates stv-list">
