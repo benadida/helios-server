@@ -9,6 +9,7 @@ BM.ModuleBase = {
     this.election = election;
     this.data = election.questions_data;
     this.el = {};
+    this.ranked = false;
   },
 
   init_events: function () {
@@ -64,6 +65,7 @@ BM.ModuleBase = {
       this.el.answer.val(value + "," + choice);
     }
     this.select_answer(choice);
+    this.sort_answer();
   },
 
   remove_choice: function(choice) {
@@ -71,6 +73,7 @@ BM.ModuleBase = {
     var choices = this.get_answer();
     this.set_answer(_.without(choices, choice));
     this.enable_answer(choice);
+    this.sort_answer();
   },
   
   check_disable_questions: function() {
@@ -105,6 +108,13 @@ BM.ModuleBase = {
 
   set_answer: function(choices) {
     this.el.answer.val(choices.join(","));
+  },
+
+  sort_answer: function() {
+    if (this.ranked) { return }
+    var answer = this.get_answer();
+    answer.sort();
+    this.set_answer(answer);
   },
 
   get_answer_value: function() {
