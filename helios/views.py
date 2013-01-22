@@ -476,6 +476,13 @@ def election_report(request, election, format="html"):
 
 
 @election_admin()
+@json
+def one_election_result(request, election):
+    if not election.result:
+        raise Http404
+    return election.zeus_election.get_results()
+
+@election_admin()
 def voters_csv(request, election):
   voters = election.voter_set.all()
   response = HttpResponse(mimetype='text/csv')
@@ -1125,12 +1132,6 @@ def one_election_cast_done(request, election):
 
 @election_view()
 @json
-def one_election_result(request, election):
-  return dummy_view(request)
-  return election.result
-
-@election_view()
-@json
 def one_election_result_proof(request, election):
   return election.result_proof
 
@@ -1746,6 +1747,7 @@ def voters_eligibility(request, election):
 
   election.save()
   return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
+
 
 @election_admin()
 def voters_upload(request, election):

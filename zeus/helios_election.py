@@ -1,9 +1,13 @@
+# -*- coding: utf-8 -*-
 import datetime
 import uuid
 import json
 
+from django.utils.datastructures import SortedDict
+from django.utils.translation import ugettext_lazy as _
+
 from zeus.core import ZeusCoreElection, Teller, sk_from_args, \
-    mix_ciphers, TellerStream
+    mix_ciphers, TellerStream, gamma_count_parties
 from zeus.core import V_CAST_VOTE, V_PUBLIC_AUDIT, V_AUDIT_REQUEST
 
 from zeus.models import ElectionInfo
@@ -543,3 +547,36 @@ class HeliosElection(ZeusCoreElection):
 
     #def custom_cast_vote_message(self, vote):
         #return self._custom_vote_message(vote)
+
+    def get_results(self):
+        return gamma_count_parties(self.do_get_results(), self.do_get_candidates())
+
+    def get_results_pretty(self):
+        results = self.get_results()
+        total = len(results['ballots'])
+        parties = []
+
+        for count, party in results['party_counts']:
+            candidates = filter(lambda x: isinstance(x, basestring),
+                                  results['parties'][party].values())
+            candidate_counts = SortedDict([(c, 0) for c in candidates])
+            candidate_sums = 0
+            for candidate_count, candidate in results['candidate_counts']:
+                candidate_sums += candidate_count
+                candidate = candidate.split(": ")[1]
+                if candidate in candidates:
+                    candidate_counts[candidate] = candidate_count
+
+            data = {
+                'name': party,
+                'total': count,
+                'candidates': candidate_counts
+            }
+            data['candidates']['Χωρίς επιλογή'] = count-candidate_sums
+            parties.append(data)
+
+        data = {'name': u'Λευκά',
+                'total': len(filter(lambda x:x==0, self.do_get_results()))}
+        parties.append(data)
+        return parties
+

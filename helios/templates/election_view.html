@@ -151,6 +151,14 @@ H ψηφοφορία ήταν προγραμματισμένη αρχικά να
 {% if election.result %}
 <h5>Η ψηφοφορία έχει ολοκληρωθεί</h5>
 
+{% if not admin_p %}
+{% if election.election_type == "ecounting" %}
+  {% else %}
+    {% include "election_results.html" %}
+{% endif %}
+{% endif %}
+
+
 {% if admin_p %}
 {% if election.election_type == "ecounting" %}
   {% if election.ecounting_request_send %}
@@ -162,11 +170,14 @@ H ψηφοφορία ήταν προγραμματισμένη αρχικά να
   <a href="{% url helios.views.election_post_ecounting election.uuid %}"
       class="button success">Αποστολή δεδομένων στην πλατφόρμα ecounting</a>
     {% endif %}
-{% else %}
-    {{ election.html_results}}
+    {% else %}
+    {% include "election_results.html" %}
 {% endif %}
 <br /><br />
 <a href="{% url helios.views.election_zeus_proofs election.uuid  %}">Αποθήκευση κρυπτογραφικών δεδομένων</a>
+<br />
+<br />
+<a href="{% url helios.views.one_election_result election.uuid  %}">Αποθήκευση αποτελεσμάτων</a>
 {% endif %}
 {% else %}
 
@@ -174,6 +185,7 @@ H ψηφοφορία ήταν προγραμματισμένη αρχικά να
 <span class="highlight-box round">
 {% if not admin_p %}
 Η ψηφοφορία έχει λήξει οριστικά.
+<br />
 </span><br />
 {% endif %}
 {% else %}
