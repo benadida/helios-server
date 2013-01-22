@@ -1373,6 +1373,8 @@ def one_election_questions(request, election):
       if formset.is_valid():
         questions_data = []
         for question in formset.cleaned_data:
+          if not question:
+              continue
           answers = dict(filter(lambda i: i[0].startswith('answer_'),
                           question.iteritems())).values()
           answers.reverse()

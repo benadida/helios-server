@@ -221,7 +221,7 @@ class Election(HeliosModel):
 
   ELECTION_TYPES = (
     ('election', _('Simple election with one or more questions')),
-    ('election_parties', _('Multiple ballots per party election')),
+    ('election_parties', _('Party lists election')),
     ('ecounting', _('E-Counting election'))
   )
 
