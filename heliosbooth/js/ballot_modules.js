@@ -238,7 +238,7 @@ BM.ModuleBase,
       this.el.answers.filter(".selected[data-is-party='yes']").addClass("party");
       this.el.answers.filter(".selected[data-is-party='yes']").removeClass("small").addClass("chosen");
       if (this.selected_party() !== undefined) {
-        this.el.answers.filter("[data-is-party='yes'][data-question="+this.selected_party()+"]").addClass("chosen-party").removeClass("disabled").removeClass("secondary");
+        this.el.answers.filter("[data-is-party='yes'][data-question="+this.selected_party()+"]").addClass("chosen-party").removeClass("disabled").removeClass("secondary").removeClass("enabled");
       }
   },
 
