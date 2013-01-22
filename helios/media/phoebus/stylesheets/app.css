@@ -5156,20 +5156,36 @@ body .start-voting {
   float: left;
   margin-top: 20px;
 }
-/* line 71, ../sass/app.scss */
+/* line 68, ../sass/app.scss */
+body .stv-candidates {
+  margin-bottom: 2em;
+}
+/* line 70, ../sass/app.scss */
+body .stv-candidates .stv-choice-party {
+  margin-bottom: 1em;
+}
+/* line 72, ../sass/app.scss */
+body .stv-candidates .stv-choice-party a {
+  text-align: left !important;
+}
+/* line 75, ../sass/app.scss */
+body .stv-candidates .stv-choice-party a.enabled {
+  background-color: #196177 !important;
+}
+/* line 82, ../sass/app.scss */
 body ol li.step {
   margin-bottom: 10px;
 }
-/* line 72, ../sass/app.scss */
+/* line 83, ../sass/app.scss */
 body ol li.step .step-title {
   font-weight: bold;
 }
-/* line 73, ../sass/app.scss */
+/* line 84, ../sass/app.scss */
 body ol li.step .step-desc {
   font-style: italic;
   display: block;
 }
-/* line 75, ../sass/app.scss */
+/* line 86, ../sass/app.scss */
 body span.election-desc-toggle {
   cursor: pointer;
   position: absolute;
@@ -5178,186 +5194,186 @@ body span.election-desc-toggle {
   padding: 5px;
   margin-top: 2px;
 }
-/* line 84, ../sass/app.scss */
+/* line 95, ../sass/app.scss */
 body h4 .elname {
   display: block;
 }
-/* line 85, ../sass/app.scss */
+/* line 96, ../sass/app.scss */
 body h4 .inst {
   display: block;
   font-size: 0.4em;
   font-weight: bold;
 }
-/* line 86, ../sass/app.scss */
+/* line 97, ../sass/app.scss */
 body .panel.confirm-vote {
   padding-top: 0;
   padding-bottom: 0;
 }
-/* line 91, ../sass/app.scss */
+/* line 102, ../sass/app.scss */
 body .row.labels {
   margin-bottom: 10px !important;
 }
-/* line 95, ../sass/app.scss */
+/* line 106, ../sass/app.scss */
 body .form-field ul {
   list-style: none;
 }
-/* line 99, ../sass/app.scss */
+/* line 110, ../sass/app.scss */
 body p.alert {
   color: red;
 }
-/* line 100, ../sass/app.scss */
+/* line 111, ../sass/app.scss */
 body .green {
   color: #5DA423;
 }
-/* line 102, ../sass/app.scss */
+/* line 113, ../sass/app.scss */
 body .vote-hash {
   text-align: left;
   font-weight: bold;
   font-size: 1.2em;
 }
-/* line 103, ../sass/app.scss */
+/* line 114, ../sass/app.scss */
 body .vote-hash-actions {
   float: right;
   margin-top: -2px !important;
 }
-/* line 105, ../sass/app.scss */
+/* line 116, ../sass/app.scss */
 body ul.stv-list {
   list-style: none;
 }
-/* line 107, ../sass/app.scss */
+/* line 118, ../sass/app.scss */
 body ul.stv-list li {
   margin-bottom: 10px;
 }
-/* line 108, ../sass/app.scss */
+/* line 119, ../sass/app.scss */
 body ul.stv-list .button {
   width: 100%;
 }
-/* line 109, ../sass/app.scss */
+/* line 120, ../sass/app.scss */
 body ul.stv-list a span.index-num {
   font-size: 0.8em;
   float: left;
 }
-/* line 110, ../sass/app.scss */
+/* line 121, ../sass/app.scss */
 body ul.stv-list .stv-ballot-choice a {
   text-align: right;
 }
-/* line 111, ../sass/app.scss */
+/* line 122, ../sass/app.scss */
 body ul.stv-list .stv-ballot-choice a span:hover {
   background-color: transparent !important;
 }
-/* line 113, ../sass/app.scss */
+/* line 124, ../sass/app.scss */
 body #stv_answer {
   display: none;
 }
-/* line 114, ../sass/app.scss */
+/* line 125, ../sass/app.scss */
 body h4#election-name span.label {
   padding: 4px;
   margin-top: 5px;
 }
-/* line 116, ../sass/app.scss */
+/* line 127, ../sass/app.scss */
 body ul.confirm-choices {
   list-style: none;
   margin-bottom: 10px;
   margin-top: 10px;
 }
-/* line 117, ../sass/app.scss */
+/* line 128, ../sass/app.scss */
 body #confirm-vote {
   margin-left: 10px;
 }
-/* line 118, ../sass/app.scss */
+/* line 129, ../sass/app.scss */
 body #percent_done_container {
   margin-bottom: 10px;
 }
-/* line 120, ../sass/app.scss */
+/* line 131, ../sass/app.scss */
 body .audit-info {
   font-size: 0.5em;
 }
-/* line 120, ../sass/app.scss */
+/* line 131, ../sass/app.scss */
 body .audit-info h4 {
   font-size: 1em;
   color: #aaa;
 }
-/* line 121, ../sass/app.scss */
+/* line 132, ../sass/app.scss */
 body #auditbody {
   display: none;
 }
-/* line 123, ../sass/app.scss */
+/* line 134, ../sass/app.scss */
 body .audit-button {
   float: right;
   margin-top: -32px;
 }
-/* line 124, ../sass/app.scss */
+/* line 135, ../sass/app.scss */
 body form .form-row.checked label {
   color: green !important;
 }
-/* line 125, ../sass/app.scss */
+/* line 136, ../sass/app.scss */
 body form .form-row {
   margin-left: 25px;
   margin-bottom: 10px;
 }
-/* line 125, ../sass/app.scss */
+/* line 136, ../sass/app.scss */
 body form .form-row label {
   text-indent: -25px;
   font-size: 0.9em;
   color: red;
   font-weight: bold;
 }
-/* line 128, ../sass/app.scss */
+/* line 139, ../sass/app.scss */
 body .cast-actions .cancel {
   float: right;
 }
-/* line 129, ../sass/app.scss */
+/* line 140, ../sass/app.scss */
 body .cast-actions .submit {
   float: left;
 }
-/* line 130, ../sass/app.scss */
+/* line 141, ../sass/app.scss */
 body .election-description {
   display: none;
 }
-/* line 133, ../sass/app.scss */
+/* line 144, ../sass/app.scss */
 body table.voters thead th, body table.elections thead th {
   font-size: 11px;
 }
-/* line 134, ../sass/app.scss */
+/* line 145, ../sass/app.scss */
 body table.voters tbody td, body table.elections tbody td {
   font-size: 12px;
 }
-/* line 137, ../sass/app.scss */
+/* line 148, ../sass/app.scss */
 body a.show-audit-form {
   color: #aaa;
 }
-/* line 138, ../sass/app.scss */
+/* line 149, ../sass/app.scss */
 body a.show-audit-form.active {
   color: #000;
 }
-/* line 143, ../sass/app.scss */
+/* line 154, ../sass/app.scss */
 body .audit-form {
   display: none;
 }
-/* line 149, ../sass/app.scss */
+/* line 160, ../sass/app.scss */
 body .dropdown .alert {
   color: #c60f13 !important;
   font-weight: bold !important;
 }
-/* line 151, ../sass/app.scss */
+/* line 162, ../sass/app.scss */
 body label {
   font-weight: bold;
   color: #2ba6cb;
 }
 
-/* line 162, ../sass/app.scss */
+/* line 173, ../sass/app.scss */
 body > .row {
   border-right: 1px solid #dddddd;
   border-left: 1px solid #dddddd;
   background-color: #fff;
 }
 
-/* line 169, ../sass/app.scss */
+/* line 180, ../sass/app.scss */
 body {
   margin-top: 20px !important;
 }
 
-/* line 173, ../sass/app.scss */
+/* line 184, ../sass/app.scss */
 body .bg-wrapper {
   margin-top: 20px;
   width: 768px;
@@ -5368,10 +5384,16 @@ body .bg-wrapper {
   background-color: #fff;
 }
 
-/* line 174, ../sass/app.scss */
+/* line 192, ../sass/app.scss */
 .election-stats-list {
   max-height: 300px;
   overflow-y: scroll;
+}
+
+/* line 197, ../sass/app.scss */
+table tr.party {
+  font-weight: bold;
+  background-color: #ddd !important;
 }
 
 /* Base Type Styles Using Modular Scale ---------------------- */

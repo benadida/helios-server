@@ -11,7 +11,7 @@
       {#foreach $T.question.answers as answer}
       {#if $T.answer$index == 0}
       {#if $T.election.type_params.count_empty_question}
-      <li class="stv-choice choice-{$T.answer$index}">
+      <li class="stv-choice choice-{$T.answer$index} stv-choice-party">
       <a href="#" 
         data-question="{$T.question$index}"
         data-absolute-index="{$T.answer$index + $T.question.answers_index}"
