@@ -171,7 +171,6 @@ BM.ModuleBase = {
     var ret = true;
     var self = this;
     _.each(answers, function(ans_list, q){
-      console.log(ans_list.length)
       if (ans_list.length > parseInt(self.data[q]['max_answers'])) {
         ret = "Invalid choice";
       }
@@ -259,20 +258,31 @@ BM.ModuleBase,
       }
   },
   
+  fix_party_vote: function() {
+    var answer = this.get_answer();
+    var self = this;
+    if (_.contains(this.get_answer(), this.selected_party()) && answer.length == 1) {
+      this.el.answers.filter("[data-is-candidate='yes'][data-question="+this.selected_party()+"]").each(function(e){
+        self.enable_answer($(this).data('absolute-index'));
+      });
+    }
+  },
+
   reset_answers: function() {
       var self = this;
       this.el.answers.filter("[data-is-candidate='yes']").each(function(e){
         self.disable_answer($(this).data('absolute-index'));
-      })
+      });
       this.el.answers.filter("[data-is-party='yes']").each(function(e){
         self.enable_answer($(this).data('absolute-index'));
-      })
+      });
   },
 
   update_layout: function() {
     var self = this;
     this.fix_parties();
     this.fix_parties_styles();
+    this.fix_party_vote();
   },
   
   reset: function() {
