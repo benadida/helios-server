@@ -1845,6 +1845,7 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties,
 
 def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
     invalid_count = 0
+    blank_count = 0
     candidate_counters = {}
     party_counters = {}
     ballots = []
@@ -1864,6 +1865,8 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
         if party not in party_counters:
             party_counters[party] = 0
         party_counters[party] += 1
+        if party is None:
+            blank_count += 1
 
         for candidate in ballot['candidates']:
             key = (ballot['party'], candidate)
@@ -1880,11 +1883,12 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
     candidate_counts.sort()
     candidate_counts = [(-v, k) for v, k in candidate_counts]
 
-    results = {'party_counts': party_counts,
-               'candidate_counts': candidate_counts,
+    results = {'ballots': ballots,
                'parties': parties,
-               'invalid': invalid_count,
-               'ballots': ballots}
+               'party_counts': party_counts,
+               'candidate_counts': candidate_counts,
+               'blank_count': blank_count,
+               'invalid_count': invalid_count}
     return results
 
 def candidates_to_parties(candidates, separator=PARTY_SEPARATOR):
