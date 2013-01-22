@@ -1,14 +1,10 @@
-
 <form onsubmit="return false;" class="prettyform" id="answer_form">
 <input type="hidden" name="question_num" value="{$T.question_num}" />
-
 <div class="row question-row">
   <div class="columns five stv-candidates">
 {#foreach $T.data as question}
 <!--<h5>Επιλογή σειράς υποψηφίων</h5>-->
 <div  id="question-{$T.question$index}">
-  <h5>{$T.question.question}</h5>
-  <span class="question-subtitle">έως {$T.question.max_answers} επιλογές</span>
     <p class="stv-description">
     </p>
     <ul class="stv-candidates stv-list">
@@ -19,13 +15,15 @@
       <a href="#" 
         data-question="{$T.question$index}"
         data-absolute-index="{$T.answer$index + $T.question.answers_index}"
-        class="button enabled small">{$T.answer}</a></li>
+        data-is-party="yes"
+        class="button enabled medium">{$T.question.question}</a></li>
       {#/if}
       {#else}
       <li class="stv-choice choice-{$T.answer$index}">
       <a href="#" 
         data-question="{$T.question$index}"
         data-absolute-index="{$T.answer$index + $T.question.answers_index}"
+        data-is-candidate="yes"
         class="button enabled small">{$T.answer}</a></li>
       {#/if}
       {#/foreach}

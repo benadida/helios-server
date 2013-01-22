@@ -466,6 +466,7 @@ BALLOT = {};
 BALLOT.pretty_choices = function(election, ballot) {
     var questions = election.questions;
     var answers = ballot.answers;
+    var empty_ballot_choices = _.map(election.questions_data,function(q) { return q['answers_index']});
 
     // process the answers
     var choices = _(questions).map(function(q, q_num) {
@@ -475,7 +476,14 @@ BALLOT.pretty_choices = function(election, ballot) {
         }
 
 	    return _(q_answers).map(function(ans) {
-	      return questions[q_num].answers[ans];
+	      var choice_text = questions[q_num].answers[ans];
+          if (_.contains(empty_ballot_choices, ans)) {
+            return questions[q_num].answers[ans].split(":")[0]; 
+          }
+          if (choice_text.indexOf(":") > -1) {
+            return choice_text.replace(":", ": ");
+          }
+          return choice_text;
 	    });
     });
 

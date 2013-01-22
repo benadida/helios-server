@@ -11,7 +11,8 @@
     {#foreach $T.questions as question}
     <ul class="confirm-choices">
       {#foreach $T.choices[$T.question$index] as choice}
-      <li><h6>Επιλογή {$T.choice$index+1}: {$T.choice}</h6></li>
+      <li><h6>{#if $T.election.type_params.ranked}Επιλογή{$T.choice$index+1}:{#/if}
+        {$T.choice}</h6></li>
       {#/for}
       {#if !$T.choices[$T.question$index].length }
       <li><h5>Λευκή ψήφος</h5></li>

@@ -241,6 +241,9 @@ msgstr "Ερώτηση"
 msgid "Answer"
 msgstr "Απάντηση"
 
+msgid "Party name"
+msgstr "Όνομα συνδυασμού"
+
 #~ msgid "Questions"
 #~ msgstr "Ερωτήσεις"
 

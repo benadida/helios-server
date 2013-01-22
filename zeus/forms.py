@@ -72,10 +72,14 @@ def initial_voting_starts_at():
 def initial_voting_ends_at():
     return datetime.now() + timedelta(hours=12)
 
+
 class ElectionForm(forms.Form):
 
-  election_type = 'ecounting'
+  fixed_election_type = 'ecounting'
 
+  election_type = forms.ChoiceField(label=_('Election type'),
+                                 help_text=_('Choose the type of the election'),
+                                   choices=Election.ELECTION_TYPES)
   institution = forms.CharField(max_length=100, label=_('Institution'),
                                help_text=_('Election institution'))
 
@@ -136,6 +140,12 @@ class ElectionForm(forms.Form):
     self.election = election
     self.institution = institution
     super(ElectionForm, self).__init__(*args, **kwargs)
+
+    if self.fixed_election_type:
+        del self.fields['election_type']
+    else:
+        if self.election and self.election.election_type:
+            self.fields['election_type'].initial = self.election.election_type
 
     self.fields['institution'].widget.attrs['readonly'] = True
     self.fields['institution'].initial = institution.name
@@ -201,7 +211,10 @@ class ElectionForm(forms.Form):
     data['slug'] = slughifi(data['name'])
 
     e = election
-    e.election_type = self.election_type
+
+    if self.fixed_election_type:
+        e.election_type = self.fixed_election_type
+
     if is_new or not election.frozen_at:
       e.name = data.get('name')
       e.use_voter_aliases = True
@@ -211,6 +224,12 @@ class ElectionForm(forms.Form):
       e.help_phone = data['help_phone']
       e.help_email = data['help_email']
       e.departments = [d.strip() for d in data['departments'].strip().split("\n")]
+
+      if not self.fixed_election_type:
+          prev_type = e.election_type
+          e.election_type = data.get('election_type')
+          if prev_type != e.election_type:
+              e.update_answers()
 
       if e.candidates:
         new_cands = []
@@ -236,7 +255,7 @@ class ElectionForm(forms.Form):
       count = 0
 
       q = Q(short_name=e.short_name)
-      if e.pk:
+      if e.pk and self.election:
           q = ~Q(pk=self.election.pk) & Q(short_name=e.short_name)
 
       short_name = e.short_name
@@ -297,7 +316,7 @@ class ElectionForm(forms.Form):
 
 class ReferendumForm(ElectionForm):
 
-      election_type = 'election'
+      fixed_election_type = None
 
       def __init__(self, *args, **kwargs):
           super(ReferendumForm, self).__init__(*args, **kwargs)
@@ -368,4 +387,7 @@ class QuestionForm(forms.Form):
     if len(self.fields['choice_type'].choices) == 1:
       self.fields['choice_type'].widget = forms.HiddenInput()
       self.fields['choice_type'].initial = 'choice'
+
+class PartyForm(QuestionForm):
+  question = forms.CharField(label=_('Party name'), max_length=255, required=True)
 

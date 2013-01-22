@@ -220,10 +220,10 @@ class Election(HeliosModel):
   departments = JSONField(default="[]")
 
   ELECTION_TYPES = (
-    ('ecounting', 'E-Counting election'),
-    ('election', 'Election'),
-    ('referendum', 'Referendum')
-    )
+    ('election', _('Simple election with one or more questions')),
+    ('election_parties', _('Multiple ballots per party election')),
+    ('ecounting', _('E-Counting election'))
+  )
 
   WORKFLOW_TYPES = (
     ('homomorphic', 'Homomorphic'),
@@ -321,15 +321,28 @@ class Election(HeliosModel):
   ELECTION_TYPE_PARAMS = {
     'election': {
       'questions_title': _(u'Ballot'),
+      'question_title': _(u'Ερώτηση'),
+      'answer_title': _(u'Απάντηση'),
       'questions_view': 'helios.views.one_election_questions',
       'questions_empty_issue': _("Add questions to the election"),
-      'questions_tpl': 'question_plain'
+      'auto_append_answer': True,
+      'count_empty_question': False
+    },
+    'election_parties': {
+      'questions_title': _(u'Ψηφοδέλτιο'),
+      'question_title': _(u'Συνδυασμός'),
+      'answer_title': _(u'Υποψήφιος'),
+      'questions_view': 'helios.views.one_election_questions',
+      'questions_empty_issue': _("Prepare party ballots"),
+      'auto_append_answer': True,
+      'count_empty_question': True
     },
     'ecounting': {
       'questions_title': _(u'Υποψήφιοι'),
+      'question_title': _(u'Υποψήφιοι'),
+      'answer_title': _(u'Υποψήφιος'),
       'questions_view': 'helios.views.one_election_candidates',
       'questions_empty_issue': _("Add candidates to the election"),
-      'questions_tpl': 'question_ecounting'
     }
   }
 
@@ -341,7 +354,8 @@ class Election(HeliosModel):
   def type_params(self):
     params = self.ELECTION_TYPE_PARAMS[self.election_type]
     for k, v in params.iteritems():
-      params[k] = unicode(v)
+      if hasattr(v, '__unicode__'):
+        params[k] = unicode(v)
     return params
 
   def questions_url(self):
@@ -445,8 +459,20 @@ class Election(HeliosModel):
   def update_answers_from_questions(self):
     answers = []
     questions_data = self.questions_data or []
+    prepend_empty_answer = True
+
+    if self.type_params.get('auto_append_answer', False):
+        prepend_empty_answer = True
+
     for index, q in enumerate(questions_data):
         q_answers = ["%s:%s" % (q['question'], ans) for ans in q['answers']]
+        if prepend_empty_answer:
+            params_max = int(q['max_answers'])
+            params_min = 1
+            if self.type_params.get('count_empty_question', False):
+                params_min = 0
+            params = "%d-%d" % (params_min, params_max)
+            q_answers.insert(0, "%s:%s" % (q['question'], params))
         answers = answers + q_answers
     self._init_helios_questions(len(answers))
     self.questions[0]['answers'] = answers

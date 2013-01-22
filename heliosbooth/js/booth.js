@@ -17,8 +17,7 @@ BOOTH.setup_templates = function(election) {
 
     $('#header').setTemplateURL("templates/header.html" + cache_bust);
     $('#election_div').setTemplateURL("templates/election.html" + cache_bust);
-    $('#question_div').setTemplateURL("templates/question.html" + cache_bust);
-    $('#question_stv_div').setTemplateURL("templates/" + election.type_params.questions_tpl + '.html' + cache_bust);
+    $('#question_stv_div').setTemplateURL("templates/" + BOOTH.module.tpl + '.html' + cache_bust);
     $('#confirm_div').setTemplateURL("templates/confirm.html" + cache_bust);
     $('#seal_div').setTemplateURL("templates/seal.html" + cache_bust);
     $('#audit_div').setTemplateURL("templates/audit.html" + cache_bust);
@@ -144,6 +143,19 @@ BOOTH.setup_election = function(raw_json) {
             window.location = '/auth/logout?return_url=/faqs/voter/#browser-support';
         }
 
+  var answers_index = 0;
+  _.each(BOOTH.election.questions_data, function(data, index){
+    BOOTH.election.questions_data[index]['answers_index'] = answers_index;
+    var prepend = 0;
+    if (BOOTH.election.election_type == "election") {
+      prepend = 1;
+    }
+    data['answers'].unshift("Empty Party Choice");
+    answers_index = parseInt(answers_index) + data['answers'].length + prepend ;
+  });
+
+  BOOTH.ballot_module_initialized = false;
+  BOOTH.module = new (BM.get_module(BOOTH.election.election_type))(BOOTH.election);
 
   // FIXME: we shouldn't need to set both, but right now we are doing so
   // because different code uses each one. Bah. Need fixing.
@@ -192,12 +204,12 @@ BOOTH.validate_question = function(question_num) {
 
       var answer = BOOTH.ballot.answers[question_num];
       var question = BOOTH.election.questions[question_num];
-      var max_choices = parseInt(BOOTH.election.questions_data[question_num].max_answers);
       
       if (answer.length > 0) {
         
-        if (answer[0].length > max_choices) {
-          alert('You can choose up to ' + max_choices + ' answers');
+        var message = BOOTH.module.validate();
+        if (message !== true) {
+          alert(message);
           return false;
         }
 
@@ -211,13 +223,14 @@ BOOTH.validate_question = function(question_num) {
           return false;
         }
 
-        if (_.filter(answer[0], function(choice){
+        var valid_choices = _.filter(answer[0], function(choice){
           if (choice >= question.answers.length) {
             return false;
           }
           return true;
-        }).length < answer[0].length) {
-
+        });
+        
+        if (valid_choices.length < answer[0].length) {
           alert('Invalid selection');
           return false;
         };
@@ -268,72 +281,11 @@ BOOTH.previous = function(question_num) {
 };
 
 
-BOOTH.stv_handle_choice_click = function(e) {
-  var answers = $("#question_stv_div input#stv_answer").val().split(",");
-  if (answers[0] == "") { answers = [] };
-  var index = $(this).parent().index();
-  
-  var choice_to_remove = answers[index];
-  answer = _.without(answers, choice_to_remove).join(",");
-  $("#stv_answer").val(answer);
-  BOOTH.update_stv_question();
-}
-
-BOOTH.stv_handle_candidate_click = function(e) {
-  if ($(this).hasClass('disabled')) {
-    return
-  }
-  var index = $(this).parent().index();
-  var answer = $("#stv_answer").val();
-  var append = "";
-  
-  if (answer != "") { append = "," }
-
-  answer = answer + append + index;
-  $("#stv_answer").val(answer);
-  BOOTH.update_stv_question();
-}
-
-BOOTH.update_stv_question = function(question_num) {
-  var answers = $("#question_stv_div input#stv_answer").val().split(",");
-  if (answers[0] == "") { answers = [] };
-
-  var choices = $(".stv-choices .stv-ballot-choice a");
-  var cands = $(".stv-candidates .stv-choice a");
-  
-  cands.removeClass("secondary").removeClass("disabled").addClass("active");
-  choices.find("span.value").text("Κενή");
-  choices.addClass("disabled").removeClass("success").addClass("secondary").removeClass("filled");
-
-  choices.find("a.filled").hide().text("");
-  _.each(answers, function(answer, index) {
-    var cand = $(".stv-candidates .choice-" + answer + " a");
-    cand.addClass("secondary").addClass("disabled").removeClass("active");
-    
-    var choice = $($(".stv-ballot-choice").get(index));
-    choice.find("span.value").text(cand.text());
-    choice.find("a").addClass("success").removeClass("disabled").removeClass("secondary").addClass("filled");
-  });
-  
-  try {
-    var max_choices = BOOTH.election.questions_data[0].max_answers;
-    console.log(max_choices);
-    if (choices.filter(".filled").length >= max_choices) {
-      cands.addClass("disabled").addClass("secondary");
-    }
-  } catch (err) {}
-  
-}
+BOOTH.modules = {}
 
 BOOTH.show_question = function(question_num) {
   BOOTH.audit_password = '';
 
-  if (!BOOTH.stv_handlers) {
-    $("#question_stv_div ul.stv-choices a.filled").live('click', BOOTH.stv_handle_choice_click);
-    $("#question_stv_div ul.stv-candidates .stv-choice a.active").live('click', BOOTH.stv_handle_candidate_click);
-    $("#question_stv_div li a").live('click', function(e){e.preventDefault()});
-    BOOTH.stv_handlers = true;
-  }
   BOOTH.started_p = true;
 
   // the first time we hit the last question, we enable the review all button
@@ -344,15 +296,13 @@ BOOTH.show_question = function(question_num) {
   BOOTH.show_progress('1');
   
   if (BOOTH.election.workflow_type == "mixnet") {
-    var slots = _.range(BOOTH.election.questions[question_num].answers.length);
-    if (BOOTH.election.questions_data[question_num].max_answers) {
-      slots = _.range(BOOTH.election.questions_data[question_num].max_answers)
-    }
+    var tpl_questions_data = _.clone(BOOTH.election.questions_data);
     BOOTH.show($('#question_stv_div')).processTemplate({'question_num' : question_num,
                         'last_question_num' : BOOTH.election.questions.length - 1,
-                        'data': BOOTH.election.questions_data[question_num],
-                        'slots': slots,
-                        'question' : BOOTH.election.questions[question_num], 'show_reviewall' : BOOTH.all_questions_seen
+                        'data': tpl_questions_data,
+                        'election': BOOTH.election,
+                        'question' : BOOTH.election.questions[question_num], 
+                        'show_reviewall' : BOOTH.all_questions_seen
                   });
   } else {
     BOOTH.show($('#question_div')).processTemplate({'question_num' : question_num,
@@ -376,7 +326,11 @@ BOOTH.show_question = function(question_num) {
     }
   });
 
-  BOOTH.update_stv_question(question_num);
+  if (!BOOTH.ballot_module_initialized) {
+    BOOTH.module.init_events();
+    BOOTH.ballot_module_initialized = true;
+  }
+  BOOTH.module.show();
   BOOTH.dirty[question_num] = old_dirty;
 };
 
@@ -468,7 +422,7 @@ BOOTH.load_and_setup_election = function(election_url) {
       },
       'error': function(err) {
         alert("Παρουσιάστικε σφάλμα κατα τη διαδικασία αρχικοποίησης της ψηφιακής κάλπης. Παρακαλούμε ενημερώστε τους διαχειριστές του συστήματος.");
-        window.location = 'mailto:help@heliosvoting.org';
+        window.location = 'mailto:elections@zeus.minedu.gov.gr';
       }
     });
 
@@ -599,7 +553,7 @@ BOOTH.wait_for_ciphertexts = function() {
     var percentage_done = Math.round((100 * answers_done.length) / BOOTH.encrypted_answers.length);
 
     if (BOOTH.total_cycles_waited > 250) {
-      alert('there appears to be a problem with the encryption process.\nPlease email help@heliosvoting.org and indicate that your encryption process froze at ' + percentage_done + '%');
+      alert('there appears to be a problem with the encryption process.\nPlease email elections@zeus.minedu.gov.gr and indicate that your encryption process froze at ' + percentage_done + '%');
       return;
     }
 
@@ -750,22 +704,6 @@ BOOTH.check_cast_form = function() {
   }
 }
 
-//window.setTimeout(function(){
-  //// do some js testing here
-  //$("button.start-voting").click();
-//}, 100);
-
-//window.setTimeout(function(){
-  //// do some js testing here
-  //$(".stv-choice.choice-1 a").click();
-  ////window.setTimeout(function(){
-    ////$("#submit-stv").click();
-    ////window.setTimeout(function(){
-      ////$("#confirm-vote").click();
-    ////},300);
-  ////}, 300);
-//}, 300);
-
 $("span.election-desc-toggle").live("click", function(){
   $('#election-description-modal').reveal();
 })
@@ -781,5 +719,14 @@ $(".show-audit-form").live("click", function(e) {
   $("#submit-pass-for-audit").focus();
   $("#submit-pass-for-audit").val("");
 });
+
+$(document).ready(function(){
+  window.setTimeout(function() {
+    if (/dbg=1/.exec(window.location.toString())) {
+      $(".start-voting").click();
+      $("#stv_answer").show();
+    }
+  }, 200);
+})
 
 window.BOOTH = BOOTH;

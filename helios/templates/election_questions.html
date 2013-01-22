@@ -12,7 +12,10 @@
   <dd class="add_new"><a href="#" style="color: green">
     <i class="general foundicon-plus"></i></a></dd>
   {% for form in formset %}
-  <dd class="{% if forloop.counter == 1 %}active{% endif %} hide-for-small"><a href="#q{{ forloop.counter }}">{% trans "Question" %} {{ forloop.counter}}</a></dd>
+  <dd class="{% if forloop.counter == 1 %}active{% endif %} hide-for-small"><a
+      href="#q{{ forloop.counter }}">
+      {% trans election.type_params.question_title %} 
+      {{ forloop.counter}}</a></dd>
   {% endfor %}
   <dd class="remove_current" style="float: right"><a href="#"
     style="color:red"><i class="general foundicon-minus"></i></a></dd>
@@ -234,11 +237,11 @@ $(document).ready(function(){
     },
     
     _get_question_title: function(index) {
-      return "{% trans "Question" %} " + index;
+      return "{% trans election.type_params.question_title %} " + index;
     },
 
     _get_answer_title: function(index) {
-      return "{% trans "Answer" %} " + index;
+      return "{% trans election.type_params.answer_title %} " + index;
     },
 
     _set_form_index: function(el, newindex, reset) {
@@ -366,7 +369,7 @@ $(document).ready(function(){
       {% endfor %}
     </ol>
   {% empty %}
-  <li><span class="label alert">Δεν έχουν προστεθεί ερωτήσεις</span></li>
+  <li><span class="label alert">Δεν έχουν προστεθεί ψηφοδέλτια</span></li>
   {% endfor %}
 </div>
 </div>
