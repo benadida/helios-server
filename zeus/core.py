@@ -1758,7 +1758,8 @@ def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
                          "min-max choices option '%s'" % (party, name))
                     raise AssertionError(m)
 
-                parties[party] = {'opt_min_choices': min_choices,
+                parties[party] = {'choice_index': i,
+                                  'opt_min_choices': min_choices,
                                   'opt_max_choices': max_choices}
                 theparty = party
                 continue
@@ -1779,9 +1780,10 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties,
     theparty = None
     party_list = None
     valid = True
+    no_candidates_flag = 0
 
     for i in choices:
-        if i <= last_index:
+        if i <= last_index or no_candidates_flag:
             valid = False
             names = None
             theparty = None
@@ -1805,7 +1807,9 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties,
             if theparty not in parties:
                 m = "Voted party list not found"
                 raise AssertionError(m)
-            continue
+            if i == party_list['choice_index']:
+                no_candidates_flag = 1
+            #continue
 
         if theparty != party:
             valid = False
@@ -1813,15 +1817,16 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties,
             theparty = None
             break
 
-        if i not in party_list:
-            m = "Candidate not found in party list"
-            raise AssertionError(m)
+        if not no_candidates_flag:
+            if i not in party_list:
+                m = "Candidate not found in party list"
+                raise AssertionError(m)
 
-        list_name = party_list[i]
-        if name != list_name:
-            m = "Candidate name mismatch (%s vs %s)" % (name, list_name)
-            raise AssertionError(m)
-            # name = party_list[i]
+            list_name = party_list[i]
+            if name != list_name:
+                m = "Candidate name mismatch (%s vs %s)" % (name, list_name)
+                raise AssertionError(m)
+                # name = party_list[i]
 
         append(name)
 
