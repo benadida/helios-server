@@ -4763,9 +4763,8 @@ def main():
         results = election.do_get_results()
         candidates = election.do_get_candidates()
         results = gamma_count_parties(results, candidates)
-        #import json
-        #print json.dumps(results, ensure_ascii=False, indent=2)
-        csv_from_party_results(results, sys.stdout)
+        import json
+        print json.dumps(results, ensure_ascii=False, indent=2)
 
     def main_generate(args, teller=_teller, nr_parallel=0):
         filename = args.generate
