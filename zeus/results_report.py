@@ -124,8 +124,12 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
     global styles
     global total_votes
     global blank_votes
+    global parties_results
+    global candidates_results
 
     elements = []
+    parties_results = []
+    candidates_results = {}
 
     total_votes, blank_votes = load_results(data)
     doc = SimpleDocTemplate(filename, pagesize=A4)
