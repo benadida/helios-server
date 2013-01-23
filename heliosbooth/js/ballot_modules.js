@@ -113,7 +113,7 @@ BM.ModuleBase = {
   sort_answer: function() {
     if (this.ranked) { return }
     var answer = this.get_answer();
-    answer.sort();
+    answer.sort(function(a,b){return a-b});
     this.set_answer(answer);
   },
 
