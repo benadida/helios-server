@@ -261,7 +261,7 @@ BM.ModuleBase,
   fix_party_vote: function() {
     var answer = this.get_answer();
     var self = this;
-    if (_.contains(this.get_answer(), this.selected_party()) && answer.length == 1) {
+    if (_.contains(this.get_answer(), this.party_choices[this.selected_party()]) && answer.length == 1) {
       this.el.answers.filter("[data-is-candidate='yes'][data-question="+this.selected_party()+"]").each(function(e){
         self.enable_answer($(this).data('absolute-index'));
       });
