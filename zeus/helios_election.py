@@ -563,8 +563,9 @@ class HeliosElection(ZeusCoreElection):
             candidate_sums = 0
             for candidate_count, candidate in results['candidate_counts']:
                 candidate_sums += candidate_count
-                candidate = candidate.split(": ")[1]
-                if candidate in candidates:
+                cand_party, candidate = candidate.split(": ")
+
+                if candidate in candidates and cand_party == party:
                     candidate_counts[candidate] = candidate_count
 
             data = {
@@ -577,7 +578,7 @@ class HeliosElection(ZeusCoreElection):
             if self.model.election.type_params.get('count_empty_question', False):
                 if (count - candidate_sums) > 0:
                     empty_party_count = count - candidate_sums
-                data['candidates']['Χωρίς επιλογή'] = count-candidate_sums
+                data['candidates']['Χωρίς επιλογή'] = empty_party_count
                 parties.append(data)
 
         data = {'name': u'Λευκά',
