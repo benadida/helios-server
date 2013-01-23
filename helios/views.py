@@ -284,6 +284,12 @@ def election_result_file(request, election, name, ext):
   if not election.result:
     raise PermissionDenied()
 
+  # we know csv exists
+  # this is ugly, documents generation should be included in celery task
+  # and called after result decryption
+  if not os.path.exists(election.get_result_file_path('csv', 'csv')):
+      election.generate_result_docs()
+
   if request.GET.get('gen', None):
       election.generate_result_docs()
 
