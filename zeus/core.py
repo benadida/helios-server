@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import sys
 PYTHON_MAJOR = sys.version_info[0]
@@ -29,6 +30,7 @@ from json import load as json_load
 from binascii import hexlify
 import inspect
 import re
+import csv
 from time import time, sleep
 
 try:
@@ -1726,9 +1728,9 @@ def gamma_count_candidates(encoded_list, candidates):
 PARTY_SEPARATOR = ': '
 
 def strforce(thing, encoding='utf8'):
-    if isinstance(thing, str):
-        return thing
-    return thing.encode(encoding)
+    if isinstance(thing, unicode):
+        return thing.encode(encoding)
+    return str(thing)
 
 def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
     parties = {}
@@ -1851,6 +1853,14 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
     ballots = []
     append = ballots.append
     parties = parties_from_candidates(candidates, separator=separator)
+    for party, party_candidates in parties.iteritems():
+        party_counters[party] = 0
+        for index, candidate in party_candidates.iteritems():
+            if not isinstance(index, (int, long)):
+                continue
+            candidate_counters[(party, candidate)] = 0
+
+    party_counters[None] = 0    # for blanks
 
     for encoded in encoded_list:
         ballot = gamma_decode_to_party_ballot(encoded, candidates, parties,
@@ -1863,7 +1873,8 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
 
         party = ballot['party']
         if party not in party_counters:
-            party_counters[party] = 0
+            m = "Cannot fined initialized counter at '%s'!" % (party)
+            raise AssertionError(m)
         party_counters[party] += 1
         if party is None:
             blank_count += 1
@@ -1871,7 +1882,8 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
         for candidate in ballot['candidates']:
             key = (ballot['party'], candidate)
             if key not in candidate_counters:
-                candidate_counters[key] = 0
+                m = "Cannot find initialized counter at '%s'!" % (key,)
+                raise AssertionError(m)
             candidate_counters[key] += 1
 
     party_counts = [(-v, k) for k, v in party_counters.iteritems()]
@@ -1887,6 +1899,7 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
                'parties': parties,
                'party_counts': party_counts,
                'candidate_counts': candidate_counts,
+               'ballot_count': len(ballots) + invalid_count,
                'blank_count': blank_count,
                'invalid_count': invalid_count}
     return results
@@ -1902,6 +1915,38 @@ def candidates_to_parties(candidates, separator=PARTY_SEPARATOR):
             name = party
         party = strforce(party)
         name = strforce(name)
+
+def csv_from_party_results(party_results, outfile=None): 
+    if outfile is None:
+        outfile = StringIO()
+    csvout = csv.writer(outfile, dialect='excel', delimiter=',')
+    writerow = csvout.writerow
+    invalid_count = strforce(party_results['invalid_count'])
+    blank_count = strforce(party_results['invalid_count'])
+    ballot_count = party_results['ballot_count']
+    writerow(['Αποτελέσματα Γενικά'])
+    writerow([])
+    writerow(['Σύνολο', ballot_count])
+    writerow(['Έγκυρα', int(ballot_count) - int(invalid_count)])
+    writerow(['Άκυρα', invalid_count])
+    writerow(['Λευκά', blank_count])
+
+    writerow([])
+    writerow(['Αποτελέσματα Συνδυασμών'])
+    party_counters = party_results['party_counts']
+    for count, party in party_results['party_counts']:
+        writerow([strforce(party), strforce(count)])
+
+    writerow([])
+    writerow(['Αποτελέσματα Υποψηφίων'])
+    for count, candidate in sorted(party_results['candidate_counts']):
+        writerow([strforce(candidate), strforce(count)])
+
+    try:
+        outfile.seek(0)
+        return outfile.read()
+    except:
+        return None
 
 def chooser(answers, candidates):
     candidates = list(candidates)
@@ -4750,8 +4795,9 @@ def main():
         results = election.do_get_results()
         candidates = election.do_get_candidates()
         results = gamma_count_parties(results, candidates)
-        import json
-        print json.dumps(results, ensure_ascii=False, indent=2)
+        #import json
+        #print json.dumps(results, ensure_ascii=False, indent=2)
+        csv_from_party_results(results, sys.stdout)
 
     def main_generate(args, teller=_teller, nr_parallel=0):
         filename = args.generate
