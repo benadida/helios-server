@@ -1360,9 +1360,9 @@ class Election(HeliosModel):
               self.get_result_file_path('pdf', 'pdf'))
 
     # CSV
-    from zeus.core import csv_from_party_results
+    from zeus.reports import csv_from_party_results
     csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
-    csv_from_party_results(results_json, csvfile)
+    csv_from_party_results(self, results_json, csvfile)
     csvfile.close()
 
 
