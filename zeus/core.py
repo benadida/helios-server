@@ -1916,7 +1916,7 @@ def candidates_to_parties(candidates, separator=PARTY_SEPARATOR):
         party = strforce(party)
         name = strforce(name)
 
-def csv_from_party_results(party_results, outfile=None): 
+def csv_from_party_results(party_results, outfile=None):
     if outfile is None:
         outfile = StringIO()
     csvout = csv.writer(outfile, dialect='excel', delimiter=',')

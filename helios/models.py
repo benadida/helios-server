@@ -1332,6 +1332,40 @@ class Election(HeliosModel):
             'candidates_selections': candidates_selections,
             'decoded_selections': decoded}
 
+  def get_result_file_path(self, name, ext):
+    election = self.short_name
+    return os.path.join(settings.MEDIA_ROOT, 'results', '%s-%s-results.%s' % \
+                        (election, name ,ext))
+
+  def generate_result_docs(self):
+    import json
+    results_json = self.zeus_election.get_results()
+
+    # json file
+    jsonfile = file(self.get_result_file_path('json', 'json'), 'w')
+    json.dump(results_json, jsonfile)
+    jsonfile.close()
+
+    # pdf report
+    from zeus.results_report import build_doc
+    DATE_FMT = "%d/%m/%Y %H:%S"
+    voting_start = 'Έναρξη: %s' % (self.voting_starts_at.strftime(DATE_FMT))
+    voting_end = 'Λήξη: %s' % (self.voting_ends_at.strftime(DATE_FMT))
+
+    extended_until = ""
+    if self.voting_extended_until:
+      extended_until = 'Παράταση: %s' % (self.voting_extended_until.strftime(DATE_FMT))
+    build_doc(_(u'Αποτελέσματα'), self.name, self.institution.name,
+              voting_start, voting_end, extended_until, json.dumps(results_json),
+              self.get_result_file_path('pdf', 'pdf'))
+
+    # CSV
+    from zeus.core import csv_from_party_results
+    csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
+    csv_from_party_results(results_json, csvfile)
+    csvfile.close()
+
+
 class ElectionLog(models.Model):
   """
   a log of events for an election

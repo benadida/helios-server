@@ -221,6 +221,7 @@ ECOUNTING_SECRET = "xxxxx"
 
 HELIOS_VOTER_EMAIL_RATE = '30/m'
 
+ZEUS_RESULTS_PATH = os.path.join('/', 'usr', 'share', 'zeus')
 ZEUS_PROOFS_PATH = os.path.join('/', 'usr', 'share', 'zeus_proofs')
 ZEUS_MIXES_PATH = 'zeus_mixes'
 ZEUS_ELECTION_FORCE_VOTING_END = True

@@ -280,6 +280,31 @@ def election_new(request):
 
 
 @election_admin(frozen=True)
+def election_result_file(request, election, name, ext):
+  if not election.result:
+    raise PermissionDenied()
+
+  if request.GET.get('gen', None):
+      election.generate_result_docs()
+
+  fname = election.get_result_file_path(name, ext)
+  if not os.path.exists(fname):
+    raise Http404
+
+  if settings.USE_X_SENDFILE:
+    response = HttpResponse()
+    response['Content-Type'] = ''
+    response['X-Sendfile'] = fname
+    return response
+  else:
+    zip_data = file(fname, 'r')
+    response = HttpResponse(zip_data.read(), mimetype='application/%s' % ext)
+    zip_data.close()
+    basename = os.path.basename(fname)
+    response['Content-Dispotition'] = 'attachment; filename=%s' % basename
+    return response
+
+@election_admin(frozen=True)
 def election_zeus_proofs(request, election):
   if not election.result:
     raise PermissionDenied()

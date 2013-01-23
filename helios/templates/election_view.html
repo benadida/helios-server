@@ -174,10 +174,14 @@ H ψηφοφορία ήταν προγραμματισμένη αρχικά να
     {% include "election_results.html" %}
 {% endif %}
 <br /><br />
+<a href="{% url helios.views.election_result_file election.uuid  "final" "pdf" %}">Αποθήκευση αποτελεσμάτων (PDF)</a>
+<br /><br />
+<a href="{% url helios.views.election_result_file election.uuid  "csv" "csv" %}">Αποθήκευση αποτελεσμάτων (CSV)</a>
+<br /><br />
+<a href="{% url helios.views.one_election_result election.uuid %}">Αποθήκευση αποτελεσμάτων (JSON)</a>
+<br /><br />
+<br />
 <a href="{% url helios.views.election_zeus_proofs election.uuid  %}">Αποθήκευση κρυπτογραφικών δεδομένων</a>
-<br />
-<br />
-<a href="{% url helios.views.one_election_result election.uuid  %}">Αποθήκευση αποτελεσμάτων</a>
 {% endif %}
 {% else %}
 

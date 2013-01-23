@@ -553,14 +553,22 @@ class HeliosElection(ZeusCoreElection):
 
     def get_results_pretty(self):
         results = self.get_results()
-        total = len(results['ballots'])
+        total = results['ballot_count']
         parties = []
 
         for count, party in results['party_counts']:
-            candidates = filter(lambda x: isinstance(x, basestring),
-                                  results['parties'][party].values())
-            candidate_counts = SortedDict([(c, 0) for c in candidates])
+            if party is None:
+                continue
+
+            party_candidates = results['parties'][party]
+            candidate_keys = filter(lambda x: isinstance(x, int),
+                                    party_candidates.keys())
+            candidate_keys.sort()
+            candidates = [party_candidates[c] for c in candidate_keys]
+            candidate_counts = SortedDict([(c, 0) for c in \
+                                           candidates])
             candidate_sums = 0
+
             for candidate_count, candidate in results['candidate_counts']:
                 candidate_sums += candidate_count
                 cand_party, candidate = candidate.split(": ")
@@ -579,10 +587,13 @@ class HeliosElection(ZeusCoreElection):
                 if (count - candidate_sums) > 0:
                     empty_party_count = count - candidate_sums
                 data['candidates']['Χωρίς επιλογή'] = empty_party_count
-                parties.append(data)
+            parties.append(data)
 
         data = {'name': u'Λευκά',
-                'total': len(filter(lambda x:x==0, self.do_get_results()))}
+                'total': results.get('blank_count', 0)}
+        if results.get('invalid_count', 0):
+            data = {'name': u'Άκυρα',
+                    'total': results.get('invalid_count')}
         parties.append(data)
         return parties
 

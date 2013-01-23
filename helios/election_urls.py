@@ -45,6 +45,7 @@ urlpatterns = patterns('',
     (r'^/result$', one_election_result),
     (r'^/result_proof$', one_election_result_proof),
     (r'^/zeus-proofs.zip$', election_zeus_proofs),
+    (r'^/result/results-(?P<name>[a-zA-Z0-9]+).(?P<ext>[a-z]{1,5})$', election_result_file),
     # (r'^/bboard$', one_election_bboard),
     (r'^/audited-ballots/$', one_election_audited_ballots),
 
