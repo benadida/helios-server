@@ -178,7 +178,7 @@ def csv_from_party_results(election, party_results, outfile=None):
 
     writerow([])
     writerow(['ΑΠΟΤΕΛΕΣΜΑΤΑ ΥΠΟΨΗΦΙΩΝ'])
-    for count, candidate in sorted(party_results['candidate_counts']):
+    for count, candidate in party_results['candidate_counts']:
         writerow([strforce(candidate), strforce(count)])
 
     writerow([])
