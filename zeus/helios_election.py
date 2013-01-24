@@ -570,10 +570,10 @@ class HeliosElection(ZeusCoreElection):
             candidate_sums = 0
 
             for candidate_count, candidate in results['candidate_counts']:
-                candidate_sums += candidate_count
                 cand_party, candidate = candidate.split(": ")
 
                 if candidate in candidates and cand_party == party:
+                    candidate_sums += 1
                     candidate_counts[candidate] = candidate_count
 
             data = {
