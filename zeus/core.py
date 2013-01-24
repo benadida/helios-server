@@ -1732,6 +1732,30 @@ def strforce(thing, encoding='utf8'):
         return thing.encode(encoding)
     return str(thing)
 
+class FormatError(ValueError):
+    pass
+
+def parse_party_options(optstring):
+    r = optstring.split('-')
+    if len(r) != 2:
+        m = ("Malformed min-max choices option '%s'"
+             % (optstring,))
+        raise FormatError(m)
+
+    min_choices, max_choices = r
+    try:
+        min_choices = int(min_choices)
+        max_choices = int(max_choices)
+    except ValueError:
+        m = ("Malformed numbers in "
+             "min-max choices option '%s'" % (name,))
+        raise FormatError(m)
+
+    options = {'opt_min_choices': min_choices,
+               'opt_max_choices': max_choices}
+
+    return options
+
 def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
     parties = {}
     options = {}
@@ -1746,23 +1770,9 @@ def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
 
         if theparty is None or party != theparty:
             if party not in parties:
-                r = name.split('-')
-                if len(r) != 2:
-                    m = ("Party %s: malformed min-max choices option '%s'"
-                         % (party, name))
-                    raise AssertionError(m)
-                min_choices, max_choices = r
-                try:
-                    min_choices = int(r[0])
-                    max_choices = int(r[1])
-                except ValueError:
-                    m = ("Party %s: malformed numbers in "
-                         "min-max choices option '%s'" % (party, name))
-                    raise AssertionError(m)
-
-                parties[party] = {'choice_index': i,
-                                  'opt_min_choices': min_choices,
-                                  'opt_max_choices': max_choices}
+                opts = parse_party_options(name)
+                opts['choice_index'] = i
+                parties[party] = opts
                 theparty = party
                 continue
 
@@ -1846,6 +1856,8 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties,
     return ballot
 
 def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
+    candidates = [u'\u0391\u03bd\u03b5\u03be\u03ac\u03c1\u03c4\u03b7\u03c4\u03b7 \u039a\u03af\u03bd\u03b7\u03c3\u03b7 \u039f.\u03a0.\u0391. (\u0391.\u039a.\u039f.\u03a0.\u0391.): 0-1', u'\u0391\u03bd\u03b5\u03be\u03ac\u03c1\u03c4\u03b7\u03c4\u03b7 \u039a\u03af\u03bd\u03b7\u03c3\u03b7 \u039f.\u03a0.\u0391. (\u0391.\u039a.\u039f.\u03a0.\u0391.): \u03a4\u03c3\u03b5\u03ba\u03c1\u03ad\u03ba\u03bf\u03c2 \u0391\u03bd\u03b4\u03c1\u03b9\u03b1\u03bd\u03cc\u03c2', u'\u0395\u03bd\u03cc\u03c4\u03b7\u03c4\u03b1 \u039f\u03a0\u0391: 0-4', u'\u0395\u03bd\u03cc\u03c4\u03b7\u03c4\u03b1 \u039f\u03a0\u0391: \u0393\u03b9\u03b1\u03bc\u03bf\u03c5\u03c1\u03af\u03b4\u03b7\u03c2 \u0394\u03b1\u03bd\u03b9\u03ae\u03bb', u'\u0395\u03bd\u03cc\u03c4\u03b7\u03c4\u03b1 \u039f\u03a0\u0391: \u039a\u03bf\u03ba\u03ba\u03b9\u03bd\u03ac\u03ba\u03b7 \u03a6\u03bb\u03ce\u03c1\u03b1', u'\u0395\u03bd\u03cc\u03c4\u03b7\u03c4\u03b1 \u039f\u03a0\u0391: \u039b\u03b5\u03ba\u03ac\u03ba\u03bf\u03c2 \u0393\u03b9\u03ce\u03c1\u03b3\u03bf\u03c2', u'\u0395\u03bd\u03cc\u03c4\u03b7\u03c4\u03b1 \u039f\u03a0\u0391: \u039c\u03b1\u03c4\u03c3\u03b1\u03b3\u03b3\u03ac\u03bd\u03b7\u03c2 \u039c\u03ac\u03bd\u03bf\u03c2', u'\u0395\u03bd\u03cc\u03c4\u03b7\u03c4\u03b1 \u039f\u03a0\u0391: \u039c\u03b9\u03b1\u03bf\u03cd\u03bb\u03b7 \u039d\u03b1\u03c4\u03ac\u03c3\u03b1', u'\u0395\u03bd\u03cc\u03c4\u03b7\u03c4\u03b1 \u039f\u03a0\u0391: \u03a0\u03b1\u03b3\u03bf\u03c5\u03bb\u03ac\u03c4\u03bf\u03c2 \u0393\u03b9\u03ce\u03c1\u03b3\u03bf\u03c2', u'\u0395\u03bd\u03cc\u03c4\u03b7\u03c4\u03b1 \u039f\u03a0\u0391: \u03a1\u03b7\u03b3\u03bf\u03c0\u03bf\u03cd\u03bb\u03bf\u03c5 \u0395\u03b9\u03c1\u03ae\u03bd\u03b7', u'\u03a3\u03c5\u03bd\u03b5\u03c1\u03b3\u03b1\u03c3\u03af\u03b1 \u03b3\u03b9\u03b1 \u03c4\u03bf \u0394\u03b7\u03bc\u03cc\u03c3\u03b9\u03bf \u03a0\u03b1\u03bd\u03b5\u03c0\u03b9\u03c3\u03c4\u03ae\u03bc\u03b9\u03bf: 0-4', u'\u03a3\u03c5\u03bd\u03b5\u03c1\u03b3\u03b1\u03c3\u03af\u03b1 \u03b3\u03b9\u03b1 \u03c4\u03bf \u0394\u03b7\u03bc\u03cc\u03c3\u03b9\u03bf \u03a0\u03b1\u03bd\u03b5\u03c0\u03b9\u03c3\u03c4\u03ae\u03bc\u03b9\u03bf: \u0394\u03b7\u03bc\u03ac\u03ba\u03b7 \u039a\u03b1\u03c4\u03b5\u03c1\u03af\u03bd\u03b1', u'\u03a3\u03c5\u03bd\u03b5\u03c1\u03b3\u03b1\u03c3\u03af\u03b1 \u03b3\u03b9\u03b1 \u03c4\u03bf \u0394\u03b7\u03bc\u03cc\u03c3\u03b9\u03bf \u03a0\u03b1\u03bd\u03b5\u03c0\u03b9\u03c3\u03c4\u03ae\u03bc\u03b9\u03bf: \u0394\u03b7\u03bc\u03ac\u03ba\u03b7\u03c2 \u0391\u03bd\u03c4\u03ce\u03bd\u03b7\u03c2', u'\u03a3\u03c5\u03bd\u03b5\u03c1\u03b3\u03b1\u03c3\u03af\u03b1 \u03b3\u03b9\u03b1 \u03c4\u03bf \u0394\u03b7\u03bc\u03cc\u03c3\u03b9\u03bf \u03a0\u03b1\u03bd\u03b5\u03c0\u03b9\u03c3\u03c4\u03ae\u03bc\u03b9\u03bf: \u039a\u03c9\u03c3\u03c4\u03ac\u03ba\u03b7 \u0391\u03bd\u03b1\u03c3\u03c4\u03b1\u03c3\u03af\u03b1', u'\u03a3\u03c5\u03bd\u03b5\u03c1\u03b3\u03b1\u03c3\u03af\u03b1 \u03b3\u03b9\u03b1 \u03c4\u03bf \u0394\u03b7\u03bc\u03cc\u03c3\u03b9\u03bf \u03a0\u03b1\u03bd\u03b5\u03c0\u03b9\u03c3\u03c4\u03ae\u03bc\u03b9\u03bf: \u039e\u03c5\u03bb\u03c9\u03bc\u03ad\u03bd\u03bf\u03c2 \u0393\u03b9\u03ce\u03c1\u03b3\u03bf\u03c2']
+    encoded_list = [3, 11, 1, 0, 0, 28839, 2396, 11, 2, 10354]
     invalid_count = 0
     blank_count = 0
     candidate_counters = {}
@@ -1879,11 +1891,18 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
         if party is None:
             blank_count += 1
 
-        for candidate in ballot['candidates']:
+        ballot_candidates = ballot['candidates']
+        for candidate in ballot_candidates:
             key = (ballot['party'], candidate)
             if key not in candidate_counters:
-                m = "Cannot find initialized counter at '%s'!" % (key,)
-                raise AssertionError(m)
+                try:
+                    if len(ballot_candidates) != 1:
+                        raise FormatError()
+                    opts = parse_party_options(candidate)
+                    continue
+                except FormatError:
+                    m = "Cannot find initialized counter at %s!" % (key,)
+                    raise FormatError(m)
             candidate_counters[key] += 1
 
     party_counts = [(-v, k) for k, v in party_counters.iteritems()]
@@ -1903,6 +1922,8 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
                'blank_count': blank_count,
                'invalid_count': invalid_count}
     return results
+
+
 
 def candidates_to_parties(candidates, separator=PARTY_SEPARATOR):
     parties = {}
