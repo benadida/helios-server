@@ -128,7 +128,7 @@ Interestingly, the original publication of Helios~\cite{adida:2008}
 did not use homomorphic tallying, but relied on mixnets for
 guaranteeing voter anonymity. ~\cite{bulens:2011}
 
-\section{Ballot Casting and Encoding}
+\section{Ballot Casting and Encoding for Prererence Elections}
 
 In Helios, ballots consist of answers to binary ``yes'' or ``no''
 questions, framed in the appropriate way. For instance, a voter
@@ -160,8 +160,7 @@ ballots \footnote{$N=C$ for the elections we hosted}, and we then take
 their $k!$ permutations. Summing it up, all the possible ballots are
 \begin{equation}
 \label{eq:max_encoded}
-|\mathcal{E}| = \sum^{s}_{k=0}\binom{n}{k}k! \quad
-\hbox{\small where} \quad 0\leq k \leq C
+|\mathcal{E}| = \sum^{C}_{k=0}\binom{n}{k}k!
 \end{equation}
 When enumerating, we first count the smaller selections (i.e. take
 \textit{zero} candidates, then \textit{one}, then \textit{two},
@@ -172,6 +171,36 @@ have a small value, thus saving valuable bit-space. \footnote{ For
 
 % gtsouk: describe the exact encoding / decoding algorithm for the
 % ballots. 
+
+\section{Ballot Casting and Encoding for Approval Elections}
+
+Although the prime impetus for Zeus was to support preference
+elections, it was later required of us to support simple approval
+elections, where voters simply select alternatives without specifying
+a preference. Such elections are already accommodated by the existing
+Helios implementation, and it would be possible to fallback to it,
+therefore using homomorphic encryption for approval elections and
+mixnets for preference elections.
+
+We decided to keep the mixnet model for two reasons. First,
+implementation would be easier, as we had in the meantime departed
+from the Helios implementation to a point where considerable
+refactoring would be required to re-use it. Secondly, mixnets allow us
+to guarantee anonymity by making the election authorities part of the
+anonymisation process, when they decide to ran a mixnet themselves.
+
+The encoding scheme for approval elections is the same as for
+preference voting. The voters can select a party list and pick their
+candidates from those in the selected party list. If the maximum
+number of choices in a party list is $C$ and the maximum number of
+candidates in the list is $n$, then for $m$ party lists all the
+possible ballots are:
+\begin{equation}
+\label{eq:max_encoded_approval}
+|\mathcal{E}| = m\sum^{C}_{k=0}\binom{n}{k}
+\end{equation}
+The ballots are enumerated in a manner similar to that for preference
+voting. 
 
 \section{The Cryptographic Model}
 
