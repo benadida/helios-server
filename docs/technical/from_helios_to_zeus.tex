@@ -174,33 +174,38 @@ have a small value, thus saving valuable bit-space.\footnote{ For
 
 \section{Ballot Casting and Encoding for Approval Elections}
 
-Although the prime impetus was to support preference elections,
-it was later required of Zeus to support simple approval elections,
-where voters simply select alternatives without specifying
-a preference. Such elections are already accommodated by the existing
-Helios implementation, and it would be possible to fallback to it,
-therefore using homomorphic encryption for approval elections and
-mixnets for preference elections.
+Although the prime impetus was to support preference elections, it was
+later required of Zeus to support simple approval elections, where
+voters simply select candidates from several party lists without
+specifying an order of preference. Such elections are already
+accommodated by the existing Helios implementation, and it would be
+possible to fallback to it, therefore using homomorphic encryption for
+approval elections and mixnets for preference elections.
 
 We decided to keep the mixnet model for two reasons. First,
-implementation would be easier, as we had in the meantime departed
-from the Helios implementation to a point where considerable
-refactoring would be required to re-use it. Secondly, mixnets allow us
-to guarantee anonymity by making the election authorities part of the
-anonymisation process, when they decide to ran a mixnet themselves.
+implementation would be easier and safer, as we had in the meantime
+departed from the Helios implementation to a point where considerable
+refactoring and testing would be required to re-use it. Secondly,
+mixnets allow us to guarantee anonymity by making the election
+authorities part of the anonymisation process, when they decide to
+ran a mixnet themselves.
 
-The encoding scheme for approval elections is the same as for
-preference voting. The voters can select a party list and pick their
-candidates from those in the selected party list. If the maximum
-number of choices in a party list is $C$ and the maximum number of
-candidates in the list is $n$, then for $m$ party lists all the
-possible ballots are:
-\begin{equation}
-\label{eq:max_encoded_approval}
-|\mathcal{E}| = m\sum^{C}_{k=0}\binom{n}{k}
-\end{equation}
-The ballots are enumerated in a manner similar to that for preference
-voting. 
+The encoding scheme for approval elections was derived by embedding it
+into the existing encoding for preference voting. The party lists were
+fitted each with an extra entry to denote voting for a party without
+voting for any candidates. Then each candidate name was prefixed with
+the party name and the party lists were concatenated to form the final
+candidate list. The encoding for preference voting can represent any
+ordered choices of candidates across party-lists, while approval voting
+only selects from one party list with no order. To counter this
+redundancy we enforced a canonical form for the plaintext.\footnote{The
+user interface never produces an invalid vote, but the server always
+validates this.}
+The alternative was to create a non-redundant encoding for approval
+voting, again via enumeration of possible ballots. However, the
+introduction of new cryptographic primitives would require considerably
+more time in development and testing.
+
 
 \section{The Cryptographic Model}
 
