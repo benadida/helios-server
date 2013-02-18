@@ -5,6 +5,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from heliosauth.models import *
+from heliosauth.auth_systems.password import make_password
 from zeus.models import Institution
 
 import getpass
@@ -102,7 +103,8 @@ class Command(BaseCommand):
             newuser = User()
             newuser.user_type = "password"
             newuser.admin_p = True
-            newuser.info = {'name': name or username, 'password': password}
+            newuser.info = {'name': name or username, 'password':
+                            make_password(password)}
             newuser.name = name
             newuser.user_id = username
             newuser.superadmin_p = superadmin

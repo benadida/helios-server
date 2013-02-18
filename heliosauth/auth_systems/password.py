@@ -15,6 +15,7 @@ from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import smart_str, smart_unicode
+from django.contrib.auth.hashers import check_password, make_password
 
 from heliosauth.utils import force_utf8
 
@@ -35,7 +36,7 @@ def create_user(username, password, name = None, extra_info={}):
   if user:
     raise Exception('user exists')
 
-  info = {'password' : password, 'name': name}
+  info = {'password' : make_password(password), 'name': name}
   info.update(extra_info)
   user = User.update_or_create(user_type='password', user_id=username, info=info)
   user.save()
@@ -46,7 +47,9 @@ class LoginForm(forms.Form):
   password = forms.CharField(label=_('Password'), widget=forms.PasswordInput(), max_length=100)
 
 def check_ecounting_credentials(username, password):
-  url = settings.ECOUNTING_LOGIN_URL
+  url = getattr(settings, 'ECOUNTING_LOGIN_URL', False)
+  if not url:
+    return False, {}
   username, password = map(force_utf8, [username, password])
   params = urllib.urlencode({'username': username, 'password': password})
   response = urllib.urlopen(url, params)
@@ -89,7 +92,7 @@ def get_ecounting_user(username, password):
     user = User.get_by_type_and_id('password', username)
     user.institution = get_institution(user_data)
     user.info['name'] = username
-    user.info['password'] = password
+    user.info['password'] = make_password(password)
     user.ecounting_account = True
     user.save()
   except User.DoesNotExist:
@@ -97,7 +100,7 @@ def get_ecounting_user(username, password):
       user = create_user(username, password)
       user.admin_p = True
       user.info['name'] = user.user_id
-      user.info['password'] = password
+      user.info['password'] = make_password(password)
       user.ecounting_account = True
       user.institution = get_institution(user_data)
       user.save()
@@ -105,7 +108,7 @@ def get_ecounting_user(username, password):
   return user
 
 def password_check(user, password):
-  return (user and user.info['password'] == password)
+  return (user and check_password(password, user.info['password']))
 
 # the view for logging in
 def password_login_view(request):
