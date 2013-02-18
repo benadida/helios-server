@@ -125,10 +125,10 @@ ballots are published, and the algorithm is also published, a third
 party can always verify that the results are correct.
 
 Interestingly, the original publication of Helios~\cite{adida:2008}
-did not use homomorphic tallying, but relied on mixnets for
-guaranteeing voter anonymity. ~\cite{bulens:2011}
+did not use homomorphic tallying, but relied on mixnets to
+guarantee voter anonymity. ~\cite{bulens:2011}
 
-\section{Ballot Casting and Encoding for Prererence Elections}
+\section{Ballot Casting and Encoding for Preference Elections}
 
 In Helios, ballots consist of answers to binary ``yes'' or ``no''
 questions, framed in the appropriate way. For instance, a voter
@@ -165,7 +165,7 @@ their $k!$ permutations. Summing it up, all the possible ballots are
 When enumerating, we first count the smaller selections (i.e. take
 \textit{zero} candidates, then \textit{one}, then \textit{two},
 \ldots) so that for small numbers of choices the encoded ballot will
-have a small value, thus saving valuable bit-space. \footnote{ For
+have a small value, thus saving valuable bit-space.\footnote{ For
   example, selecting up to all of 300 candidates needs 2048 bits,
   while selecting 10 out of 1000 candidates needs only 100 bits.}
 
@@ -174,9 +174,9 @@ have a small value, thus saving valuable bit-space. \footnote{ For
 
 \section{Ballot Casting and Encoding for Approval Elections}
 
-Although the prime impetus for Zeus was to support preference
-elections, it was later required of us to support simple approval
-elections, where voters simply select alternatives without specifying
+Although the prime impetus was to support preference elections,
+it was later required of Zeus to support simple approval elections,
+where voters simply select alternatives without specifying
 a preference. Such elections are already accommodated by the existing
 Helios implementation, and it would be possible to fallback to it,
 therefore using homomorphic encryption for approval elections and
@@ -221,6 +221,12 @@ than Python's builtin \texttt{pow}). We have implemented all other
 operations in native Python and the Python standard library, including
 hashing. We have studied \texttt{Helios}, \texttt{PloneVoteCryptoLib},
 \texttt{PyCrypto} for our implementation.
+
+% TODO: References to softwares
+% signed canonical representation of proof data
+% enumerated encoding: only valid votes are encoded (less than limit)
+% redundant encoding: decoded vote is checked for canonical form.
+% browser compatibility.
 
 % \subsection{Cryptosystem}
 % Zeus uses the ElGamal cryptosystem on the prime-order-$q$ subgroup
@@ -637,5 +643,4 @@ Zeus is open software, available at \url{https://github.com/grnet/zeus}.
 
 
 \end{document}
-
 
