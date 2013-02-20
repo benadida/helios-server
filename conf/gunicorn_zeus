@@ -1,0 +1,12 @@
+CONFIG = {
+    'mode': 'django',
+    'environment': {
+    },
+    'working_dir': '/srv/zeus-server/',
+    'args': (
+        '--bind=127.0.0.1:8080',
+        '--workers=4',
+        '--timeout=300',
+        'settings.py',
+    ),
+}

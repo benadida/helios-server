@@ -1,0 +1,97 @@
+<VirtualHost *:80>
+	ServerName              zeus-server.gr
+	ServerAlias             www.zeus-server.gr
+	ServerAdmin             admin@zeus-server.gr
+	ServerSignature         On
+
+	DocumentRoot /var/www
+
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride None
+	</Directory>
+
+	<Directory /var/www/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	</Directory>
+
+	CustomLog /var/log/apache2/zeus-access.log combined
+	ErrorLog /var/log/apache2/zeus-error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	RewriteEngine On
+	RewriteCond %{REQUEST_URI} !^/server-status.* [NC]
+	RewriteCond %{HTTPS} off
+	RewriteRule ^/(.*) https://zeus-server.gr/$1 [L,R]
+</VirtualHost>
+
+<VirtualHost *:443>
+	ServerName              zeus-server.gr
+	ServerAlias             www.zeus-server.gr
+	ServerAdmin             admin@zeus-server.gr
+	ServerSignature         On
+
+	DocumentRoot /var/www
+
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride None
+	</Directory>
+
+	<Directory /var/www/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	</Directory>
+
+	CustomLog /var/log/apache2/zeus-access.log combined
+	ErrorLog /var/log/apache2/zeus-error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	SSLEngine on
+	SSLCertificateFile      /etc/ssl/zeus.crt
+	SSLCACertificatePath 	/etc/ssl/certs/
+	SSLCertificateKeyFile   /etc/ssl/private/zeus.key
+
+	#RedirectMatch permanent ^/$     http://zeus.grnet.gr/zeus
+
+    	# xsendfile support
+	XSendFile On
+	XSendFilePath /
+
+	# serve static files directly
+	Proxypass /booth !
+	Proxypass /verifier !
+	Proxypass /static/helios !
+	Proxypass /static/auth !
+	Proxypass /static !
+
+	Alias /booth /srv/zeus-server/heliosbooth
+	Alias /verifier /srv/zeus-server/heliosverifier
+	Alias /static/helios /srv/zeus-server/helios/media
+	Alias /static/auth /srv/zeus-server/heliosauth/media
+	Alias /static /srv/zeus-server/server_ui/media
+
+	<Proxy *>
+		Order allow,deny
+		Allow from all
+	</Proxy>
+
+	SSLProxyEngine                  off
+	ProxyErrorOverride              off
+
+	Proxypass                       /         http://127.0.0.1:8080/ retry=0
+	ProxypassReverse                /         http://127.0.0.1:8080/
+
+</VirtualHost>
+
