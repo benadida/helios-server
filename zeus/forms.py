@@ -256,7 +256,7 @@ class ElectionForm(forms.Form):
 
       q = Q(short_name=e.short_name)
       if e.pk and self.election:
-          q = ~Q(pk=self.election.pk) & Q(short_name=e.short_name)
+          q = ~Q(pk=e.pk) & Q(short_name=e.short_name)
 
       short_name = e.short_name
       while Election.objects.filter(q).count() > 0:
