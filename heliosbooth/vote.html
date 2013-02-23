@@ -415,7 +415,7 @@ BOOTH._after_ballot_encryption = function() {
     BOOTH.encrypted_vote_json = BOOTH.encrypted_ballot_serialized || JSON.stringify(BOOTH.encrypted_ballot.toJSONObject());
 
     var do_hash = function() {
-       BOOTH.encrypted_ballot_hash = b64_sha256(BOOTH.encrypted_vote_json); // BOOTH.encrypted_ballot.get_hash();
+       BOOTH.encrypted_ballot_hash = BOOTH.encrypted_ballot.get_hash();
        window.setTimeout(show_cast, 0);
     };
 

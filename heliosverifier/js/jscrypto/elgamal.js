@@ -377,6 +377,13 @@ ElGamal.Proof = Class.extend({
     this.response = response;
   },
   
+  toString: function() {
+    return this.commitment.A.toString() + ","
+          + this.commitment.B.toString() + ","
+          + this.challenge.toString() + ","
+          + this.response.toString()
+  },
+
   toJSONObject: function() {
     return {
       challenge : this.challenge.toJSONObject(),
@@ -461,6 +468,11 @@ ElGamal.DisjunctiveProof = Class.extend({
     this.proofs = list_of_proofs;
   },
   
+  toString: function() {
+      var proof_strings = _(this.proofs).map(function(p) { return p.toString(); });
+      return proof_strings.join("/");
+  },
+
   toJSONObject: function() {
     return _(this.proofs).map(function(proof) {
       return proof.toJSONObject();

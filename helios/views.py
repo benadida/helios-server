@@ -627,12 +627,12 @@ def one_election_cast_confirm(request, election):
   if election.encrypted_tally or election.result:
     return render_template(request, 'election_tallied', {'election': election})
     
-  encrypted_vote = request.session['encrypted_vote']
-  vote_fingerprint = cryptoutils.hash_b64(encrypted_vote)
+  encrypted_vote = utils.from_json(request.session['encrypted_vote'])
+  vote_fingerprint = utils.hash_vote(encrypted_vote)
 
   # if this user is a voter, prepare some stuff
   if voter:
-    vote = datatypes.LDObject.fromDict(utils.from_json(encrypted_vote), type_hint='legacy/EncryptedVote').wrapped_obj
+    vote = datatypes.LDObject.fromDict(encrypted_vote, type_hint='legacy/EncryptedVote').wrapped_obj
 
     # prepare the vote to cast
     cast_vote_params = {
