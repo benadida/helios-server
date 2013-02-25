@@ -41,7 +41,7 @@ def getOpenIDStore(filestore_path, table_prefix):
     The result of this function should be passed to the Consumer
     constructor as the store parameter.
     """
-    if not settings.DATABASE_ENGINE:
+    if not settings.DATABASES['default'].ENGINE:
         return FileOpenIDStore(filestore_path)
 
     # Possible side-effect: create a database connection if one isn't

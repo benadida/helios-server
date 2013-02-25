@@ -267,7 +267,7 @@ class CastVoteModelTests(TestCase):
         pass
 
 class DatatypeTests(TestCase):
-    fixtures = ['election.json']
+    fixtures = ['users.json', 'election.json']
 
     def setUp(self):
         self.election = models.Election.objects.all()[0]
