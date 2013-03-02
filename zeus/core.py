@@ -3291,6 +3291,9 @@ class ZeusCoreElection(object):
             if '%' in name:
                 m = "Candidate name cannot contain character '%%'"
                 raise ZeusError(m)
+            if '\n' in name:
+                m = "Candidate name cannot contain character '\\n'"
+                raise ZeusError(m)
 
         self.do_store_candidates(names)
 
