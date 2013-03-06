@@ -13,6 +13,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
+from zeus.core import PARTY_SEPARATOR
+
 elements = []
 styles = None
 
@@ -49,7 +51,7 @@ def load_results(data):
         total_votes += result
     for candidate_result in jsondata['candidate_counts']:
         (result, full_candidate) = candidate_result
-        (party, candidate) = full_candidate.split(':')
+        (party, candidate) = full_candidate.split(PARTY_SEPARATOR, 1)
         if party in candidates_results:
             candidates_results[party].append((candidate, result))
         else:
