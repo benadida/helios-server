@@ -5,9 +5,8 @@ anyjson==0.3.1
 celery==2.3.3
 distribute==0.6.24
 django-celery==2.3.3
-django-kombu==0.9.4
 django-picklefield==0.1.9
-kombu==1.4.1
+kombu==2.5.7
 psycopg2==2.4.1
 pyparsing==1.5.6
 python-dateutil==1.5

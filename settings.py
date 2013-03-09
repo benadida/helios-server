@@ -85,7 +85,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     ## needed for queues
     'djcelery',
-    'djkombu',
+    'kombu',
     ## needed for schema migration
     'south',
     ## HELIOS stuff
@@ -188,8 +188,8 @@ logging.basicConfig(
 # set up django-celery
 import djcelery
 djcelery.setup_loader()
-BROKER_BACKEND = "djkombu.transport.DatabaseTransport"
+BROKER_BACKEND = "kombu.transport.django"
 CELERY_RESULT_DBURI = DATABASES['default']
 
 # for testing
-CELERY_ALWAYS_EAGER = True
+#CELERY_ALWAYS_EAGER = True
