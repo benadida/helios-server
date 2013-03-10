@@ -1,8 +1,6 @@
-Helios Election Protocol v4
-===========================
+# Helios Election Protocol v4
 
-Introduction
----
+## Introduction
 
 Helios is a truly verifiable voting system, which means that:
 
@@ -11,71 +9,92 @@ Helios is a truly verifiable voting system, which means that:
 * anyone can verify that the captured votes were correctly tallied.
 
 This document specifies data formats and verification protocols. Using
-this document, it should be possible for an able programmer to build a
-complete verification program in any modern programming language. For
-the sake of concreteness, instead of pseudo-code, we use Python.
+this document, it should be possible to build a complete verification
+program in any modern programming language. For the sake of
+concreteness, instead of pseudo-code, we use Python.
 
-Audit Data
----
+## Audit Data
 
-All data for an election is easily accessible using simple HTTP GET
-requests. The HTTP interface for accessing all data from a given
-election is built so as to enable static storage of this data in a
-simple filesystem made available over the web, to simplify long-term
-robustness. Consider an election with election id
-<ELECTION_ID>. Assuming a host and prefix that we denote
-{HELIOS_HOST}, the election data structure, including the election
-public key, questions, etc., can be obtained by requesting the
-following URL:
+Election data is accessible using an HTTP API. Consider an election
+with election id `<ELECTION_ID>`. Given a web origin `{HELIOS_HOST}`,
+the election core data structure can be retrieved at:
 
     {HELIOS_HOST}/elections/<ELECTION_ID>
-The list of voters, denoted <VOTER_LIST>, is available at:
+
+The list of voters, denoted `<VOTER_LIST>`, is available at:
 
     {HELIOS_HOST}/elections/<ELECTION_ID>/voters/
-Given this list, it is possible to extract individual voter identifiers, denoted <VOTER_ID>
 
-The list of cast ballots is available at, with each ballot including the <VOTER_ID> that it corresponds to:
+Given this list, it is possible to extract individual voter
+identifiers, denoted `<VOTER_ID>`.
+
+The list of cast ballots is available at, with each ballot including
+the <VOTER_ID> that it corresponds to:
 
     {HELIOS_HOST}/elections/<ELECTION_ID>/ballots/
-This call will return ballots in chronological (oldest to newest) order, and takes optional parameters limit and after.
+
+Ballots are provided in chronological (oldest to newest)
+order, and takes optional parameters limit and after.
 
 The list of all ballots cast by a voter is:
+
     {HELIOS_HOST}/elections/<ELECTION_ID>/ballots/<VOTER_ID>/all
+
 For convenience, the last cast ballot is:
+
     {HELIOS_HOST}/elections/<ELECTION_ID>/ballots/<VOTER_ID>/last
+
 The result of an election is available at:
+
     {HELIOS_HOST}/elections/<ELECTION_ID>/result
-Every election has trustees (sometimes just one), and the list of trustees, including each trustee's public key and PoK, decryption factor and proof is at:
+
+Every election has trustees (sometimes just one), and the list of trustees, including each trustee's public key and key validity proof:
+
     {HELIOS_HOST}/elections/<ELECTION_ID>/trustees/
 
 NOT YET IMPLEMENTED:
 
-While the trustee's robustness information (e.g. Lagrange coeff) is at:
+The trustee's robustness information (e.g. Lagrange coeff) is at:
+
     {HELIOS_HOST}/elections/<ELECTION_ID>/trustees/<TRUSTEE_ID>/robustness_factor
 
-Data Formats
-We begin with a description of the data types and their representations. All data made available by Helios is in JavaScript Object Notation (JSON) format, with keys in alphabetical order and no extraneous whitespace other than that specified by JSON. These two conditions are particularly important, as hashing data structures will only yield the same hash if the conditions are respected. An example of a JSON data structure with these two conditions is:
+## Data Formats
 
-Example (not an actual Helios data structure)
-{"email": ["ben@adida.net", "ben@mit.edu"], "first_name": "Ben", "last_name": "Adida"}
+All data made available by Helios is in JavaScript Object Notation
+(JSON) format. Where previous versions of Helios assumed the ability
+to canonicalize JSON with alphabetically ordered keys, Helios v4 does
+not: when a data structure is intended to be hashed for inclusion in
+cryptographic protocols, that data structure must be serialized as a
+string and provided to the other party as is. For example, a cast
+ballot is one possible JSON serialization of its abstract data
+structure, not a canonical one.
 
-Basic Cryptographic Datatypes
-All large integers are represented as base64 strings. An El-Gamal public-key is then a dictionary including the prime p, the primer-order q of its intended subgroup, the generator g, and the public-key value y (with keys in alphabetical order):
+### Basic Cryptographic Datatypes
 
+All large integers are represented as base64 strings. An El-Gamal
+public-key is then a dictionary of expected big-integer values:
+
+```
 <ELGAMAL_PUBLIC_KEY>
-{"g": "Hbb3mx34sd", "p": "mN3xc34", "q": "J3sRtxcwqlert", "y": "U8cnsvn45234wsdf"}
-An El-Gamal ciphertext is a JSON structure containing properties alpha and beta, the two components modulo p.
+{"p": "mN3xc34", "q": "J3sRtxcwqlert", "g": "Hbb3mx34sd", "y": "U8cnsvn45234wsdf"}
+```
 
-<ELGAMAL_CIPHERTEXT>
+An El-Gamal ciphertext is then:
+
+```<ELGAMAL_CIPHERTEXT>
 {"alpha": "6BtdxuEwbcs+dfs3", "beta": "nC345Xbadw3235SD" }
-In Helios, all ciphertexts are Exponential ElGamal, so alpha = g^r mod p, and beta = g^m y^r mod p.
+```
 
-In Helios, all hash values are base-64 encoded, and the hashing algorithm is always SHA256:
+In Helios, all ciphertexts are Exponential ElGamal, so `alpha = g^r mod
+p`, and `beta = g^m y^r mod p`.
 
-Hash value example
-{"election_hash": "c0D1TVR7vcIvQxuwfLXJHa5EtTHZGHpDKdulKdE1oxw"}
+In Helios, all hash values are base-64 encoded, and the hashing
+algorithm is always SHA256:
 
-Voter
+`{"election_hash": "c0D1TVR7vcIvQxuwfLXJHa5EtTHZGHpDKdulKdE1oxw"}`
+
+### Voter
+
 A single voter in Helios is represented using a few fields that identify the voter. This data structure has changed from prior versions of Helios in order to accommodate multiple types of users, not just users identified by email address.
 
 <VOTER>
