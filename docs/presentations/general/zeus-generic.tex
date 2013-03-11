@@ -35,15 +35,12 @@
 
 
 \usepackage[english,russian]{babel}
-% % or whatever
 
-\usepackage[utf8]{inputenc}
-% % or whatever
-
-\usepackage{times}
-\usepackage[T1]{fontenc}
-% Or whatever. Note that the encoding and the font should match. If T1
-% does not look nice, try deleting the line with the fontenc.
+\usepackage{fontspec}
+\defaultfontfeatures{Mapping=tex-text}
+\setmainfont{Linux Libertine}
+\setsansfont{Linux Biolinum}
+\setmonofont[Scale=0.8]{DejaVu Sans Mono}
 
 \usebackgroundtemplate%
 {%
@@ -212,7 +209,7 @@
   Joseph Stalin 
 
   In Russian: Я считаю, что совершенно неважно, кто и как будет в
-  партии голосовать; но вот что чрезвычайно важно, это - кто и как
+  партии голосовать; но вот что чрезвычайно важно, это---кто и как
   будет считать голоса. 
 
   Said in 1923, as quoted in The Memoirs of Stalin's Former Secretary
