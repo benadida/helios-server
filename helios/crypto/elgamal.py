@@ -68,7 +68,7 @@ class KeyPair(object):
       self.pk.p = p
       self.pk.q = q
       
-      self.sk.x = Utils.random_mpz_lt(p)
+      self.sk.x = Utils.random_mpz_lt(q)
       self.pk.y = pow(g, self.sk.x, p)
       
       self.sk.public_key = self.pk
