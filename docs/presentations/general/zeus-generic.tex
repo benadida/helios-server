@@ -367,12 +367,25 @@ Source of e-Voting System Requirements:
   \item Compute $M = b / a^x\pmod{p}$.
   \end{itemize}
   
-  This holds since:\\
-  $a^x = g^{xk}\pmod{p}$, $b/a^x = y^kM/a^x = g^{xk}M/g^xk =
-  M\pmod{p}$.
+  This holds since:
+  \[ a^x = g^{xk}\pmod{p} \]
+  and 
+  \[ b/a^x = y^kM/a^x = g^{xk}M/g^xk = M\pmod{p} \]
 
 \end{frame}
 
+\begin{frame}{ElGamal}{Re-encryption}
+
+  \begin{enumerate}
+  \item Take a ciphertext $c = (a, b)$.
+  \item Select $s$ such that it is less than $p$.
+  \item Compute $c' = (g^sa, y^sb)$.
+  \item If we decrupt $c'$ we get:
+    \[y^sb / (g^sa)^x = g^{xs}y^kM / g^{sx}a^x = y^kM / a^x = g^{xk}M/g^xk =
+    M\pmod{p} \]
+  \end{enumerate}
+    
+\end{frame}
 
 \section{From Helios to Zeus}
 
