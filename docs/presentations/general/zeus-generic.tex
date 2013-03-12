@@ -33,14 +33,11 @@
   % or whatever (possibly just delete it)
 }
 
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
 
-\usepackage[english,russian]{babel}
-
-\usepackage{fontspec}
-\defaultfontfeatures{Mapping=tex-text}
-\setmainfont{Linux Libertine}
-\setsansfont{Linux Biolinum}
-\setmonofont[Scale=0.8]{DejaVu Sans Mono}
+\usepackage{libertine}
+\usepackage[T1,T2A]{fontenc}
 
 \usebackgroundtemplate%
 {%
@@ -266,9 +263,9 @@ Source of e-Voting System Requirements:
 
 \end{frame}
 
-\begin{frame}[Efficiency]
+\begin{frame}{Efficiency}
 
-\begin{itemize}
+  \begin{itemize}
   \item Efficient ballot casting
   \item Efficient ballot counting
   \end{itemize}
@@ -304,13 +301,112 @@ Source of e-Voting System Requirements:
   the last one counts).
 \end{itemize}
 
+\end{frame}
+
 \section{How Does it Work?}
+
+\begin{frame}{Public Key Cryptography}
+
+ \begin{columns}[t]
+   \column{.48\textwidth}
+   Alice
+   \begin{enumerate}
+   \item<1-> Alice chooses a number, say 3, and keeps it secret. We
+     label her number $A$.
+   \item<2-> Alice puts 3 into the one-way function $y^x\pmod p =
+     7^x\pmod 11$ and works out the result of $7^3\pmod{11} = 2$.
+   \item<3-> Alice calls the result of this calculation $\alpha$ and
+     sends it to Bob.
+   \item<4-> Alice takes Bob's result and works out the result of
+     $\beta^A\pmod{11} = 9$.
+   \end{enumerate}
+
+  \column{.48\textwidth}
+  Bob
+  \begin{enumerate}
+  \item<1-> Bob chooses a number, say 6, and keeps its secret. We
+    label his number $B$.
+  \item<2-> Bob puts 6 into the one-way function and works out the
+    result of $7^6\pmod{11} = 4$.
+  \item<3-> Bob calls the result of this calculation $\beta$ and
+    sends it to Alice.
+  \item<4-> Bob takes Alice's resut, and works out the result of
+    $\alpha^B\pmod{11} = 9$.
+  \end{enumerate}  
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{ElGamal}{Key Generation}
+
+  \begin{enumerate}
+    \item Choose a prime, $p$, and two random numbers $g$ and $x$ such
+      that both $g$ and $x$ are less than $p$.
+    \item Calculate $y = g^x\pmod{p}$
+    \item The public key is $y$, $g$, and $p$. Both $g$ and $p$ can be
+      shared among a group of uses. 
+    \item The private key is $x$.
+
+  \end{enumerate}
+
+\end{frame}
+
+\begin{frame}{ElGamal}{Encryption}
+
+  \begin{enumerate}
+    \item To encrypt message $M$, first choose a random $k$, such that
+      $k$ is relatively prime to $p - 1$.
+    \item Compute $a = g^k\pmod{p}$ and $b = y^kM\pmod{p}$. The pair
+      $(a, b)$ is the cyphertext.
+    \end{enumerate}
+  \end{frame}
+
+\begin{frame}{ElGamal}{Decryption}
+
+  \begin{itemize}
+  \item Compute $M = b / a^x\pmod{p}$.
+  \end{itemize}
+  
+  This holds since:\\
+  $a^x = g^{xk}\pmod{p}$, $b/a^x = y^kM/a^x = g^{xk}M/g^xk =
+  M\pmod{p}$.
+
+\end{frame}
+
 
 \section{From Helios to Zeus}
 
-\section{Zeus Election to Date}
+\begin{frame}{Helios Combines Ballot Counting with Election Results}
+
+  \begin{itemize}
+  \item Helios combines ballot counting with producing the election
+    results.
+  \item After the first version uses homomorphic encryption, so no
+    mixnets are used.
+  \end{itemize}
 
 \end{frame}
+
+
+\begin{frame}{Zeus Separates Ballot Counting from Election Results}
+  
+  \begin{theorem}
+    We can have secure elections even when ballot counting and election
+    results are separated.
+  \end{theorem}
+
+\begin{proof}
+  \begin{enumerate}
+  \item<1-> Ballot counting can be verified, using the same mathematics
+    as in Helios.
+  \item<2-> Production of the final results can be verified since it is
+    an open process. Hence the whole elections can be verified.\qedhere
+  \end{enumerate}
+\end{proof}
+
+\end{frame}
+
+\section{Zeus Elections to Date}
 
 % \section*{Summary}
 
