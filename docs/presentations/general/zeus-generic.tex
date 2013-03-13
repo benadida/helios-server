@@ -8,6 +8,8 @@
 \usetikzlibrary{shapes}
 \usetikzlibrary{decorations.pathmorphing}
 
+\usepackage[flushleft]{threeparttable}
+
 % This file is a solution template for:
 
 % - Giving a talk on some subject.
@@ -108,12 +110,12 @@
 \begin{frame}{Why Paper Ballots?}{A lot going for them.}
 
   \begin{itemize}
-  \item Long experience (how long have we been using them?)
-  \item Low tech solution (for those running the election)
-  \item No skills required (at most reading and writing, and then
-    again not always)
-  \item There is an underlying physical asset \pause the ballot itself
-  \item People may actually enjoy election day
+  \item Long experience---how long have we been using them?
+  \item Low tech solution---good for those running the election.
+  \item No skills required---at most reading and writing, and then
+    again not always.
+  \item There is an underlying physical asset---the ballot itself.
+  \item People may actually enjoy election day.
   \end{itemize}
 
 \end{frame}
@@ -142,7 +144,7 @@
   \begin{itemize}
   \item<1->The election authorities are trustworthy and independent
   \item<2->Favourable political climate
-  \item<3->Logistics have been solved \pause or we may need to call in
+  \item<3->Logistics have been solved,  or we may need to call in
     international monitors etc.
   \end{itemize}
 
@@ -283,9 +285,19 @@ Source of e-Voting System Requirements:
   
 \end{frame}
 
-\section{The Helios Voting System and Process}
+\section{The Zeus Voting System and Process}
 
-\begin{frame}{Helios v. 1 Workflow}
+\begin{frame}{Helios}
+
+  \begin{itemize}
+  \item Verifiable online elections
+  \item Open source \url{http://heliosvoting.org/}
+  \item Version 1 of Helsion used as the basis of Zeus
+  \end{itemize}
+  
+\end{frame}
+
+\begin{frame}{Election Workflow}
 
 \begin{tikzpicture}[font=\sffamily]
   \tikzset{ballotbox/.style={cylinder, shape border rotate=90,
@@ -520,7 +532,62 @@ Source: \url{http://en.wikipedia.org/wiki/Zero-knowledge_proof}
   
 \end{frame}
 
-\section{Zeus Elections to Date}
+\section{Zeus Elections in 2012}
+
+\begin{frame}{Zeus Elections in 2012}
+
+{\tiny
+\begin{table}[t]
+  \begin{tabular}{p{4cm}lllll}
+    \hline
+    Institution & Voters & Voted & Ballots & Open & Close\\
+    \hline
+    Harokopio University & 61 & 59 & 63 & 2012-10-19 10:00 & 2012-10-19 11:00\\
+    TEI Piraeus & 144 & 102 & 111 & 2012-10-22 09:00 & 2012-10-22 13:00\\
+    Ionian University & 105 & 92 & 101 & 2012-10-25 09:00 & 2012-10-25 15:00\\
+    TEI Patras & 93 & 78 & 79 & 2012-10-26 09:00 & 2012-10-26 13:00\\
+    University of Thrace & 583 & 490 & 528 & 2012-10-29 09:00 & 
+    2012-10-29 16:00\\
+    TEI Athens & 487 & 437 & 470 & 2012-10-31 08:00 & 2012-10-31 18:00\\
+    University of Thessaly & 429 & 328 & 345 & 2012-10-31 09:00 & 
+    2012-10-31 14:36\\
+    Panteion University & 239 & 181 & 183 & 2012-10-31 09:00 & 
+    2012-10-31 16:00\\
+    University of Thessaloniki & 2065 & 1580 & 1632 & 2012-11-01 09:00 
+    & 2012-11-01 16:00\\
+    Athens University of Economics and Business & 195 & 172 & 181 & 
+    2012-11-02 10:00 & 2012-11-02 17:00\\
+    Agricultural University of Athens & 182 & 102 & 110 
+    & 2012-11-05 09:00 & 2012-11-05 16:00\\
+    University of Ioanina & 536 & 426 & 443 & 2012-11-05 09:00 &
+    2012-11-05 17:00\\
+    University of Crete & 493 & 361 & 373 & 2012-11-05 09:00 & 
+    2012-11-05 18:00\\
+    University of Macedonia & 169 & 163 & 172 & 2012-11-06 10:00 & 
+    2012-11-06 18:00\\
+    University of Patras & 703 & 532 & 555 & 2012-11-07 09:00 & 
+    2012-11-07 17:00\\
+    Athens School of Fine Arts & 46 & 40 & 41 & 2012-11-08 07:00 & 
+    2012-11-08 16:00\\
+    University of the Aegean & 292 & 161 & 172 & 2012-11-09 09:00 & 
+    2012-11-09 17:00\\
+    University of Athens & 1897 & 1504 & 1618 & 2012-11-12 09:00 & 
+    2012-11-15 18:00\\
+    University of Piraeus & 183 & 180 & 199 & 2012-11-14 09:00 & 
+    2012-11-14 15:00\\
+    University of the Peloponnese & 128 & 124 & 128 &
+    2012-11-22 07:00 & 2012-11-22 17:00\\
+    Technical University of Crete & 126 & 116 & 127 & 
+    2012-12-04 10:00 & 2012-12-04 15:00\\
+    National Technical University of Athens & 536 & 351 & 363 &
+    2012-12-10 09:00 & 2012-12-10 17:00\\
+    TEI Piraeus & 143 & 104 & 105 & 2012-12-21 09:00 & 2012-12-21 17:00\\
+  \end{tabular}
+  \caption{Zeus Held Elections\label{table:zeus-elections}}
+\end{table}
+}
+
+\end{frame}
 
 \section*{Summary}
 
@@ -541,6 +608,13 @@ Source: \url{http://en.wikipedia.org/wiki/Zero-knowledge_proof}
 
   \end{itemize}
   
+  \vskip0pt plus.5fill
+  \begin{itemize}
+  \item Zeus live at: \url{http://zeus.minedu.gov.gr}
+  \item Open source at: \url{https://github.com/grnet/zeus}
+  \end{itemize}
+
+
 \end{frame}
 
 \end{document}
