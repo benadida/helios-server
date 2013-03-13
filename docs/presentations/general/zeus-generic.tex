@@ -69,8 +69,13 @@
 % \logo{\pgfuseimage{university-logo}}
 
 
-% Delete this, if you do not want the table of contents to pop up at
-% the beginning of each subsection:
+\AtBeginSection[]
+{
+  \begin{frame}<beamer>{Outline}
+    \tableofcontents[currentsection]
+  \end{frame}
+}
+
 \AtBeginSubsection[]
 {
   \begin{frame}<beamer>{Outline}
@@ -126,7 +131,7 @@
     \pause Yes
   \item<5->It is possible to add votes?
     \pause No
-  \item<5->It is possible to falsify votes?
+  \item<6->It is possible to falsify votes?
     \pause No
   \end{itemize}
 
@@ -444,6 +449,19 @@ Source: \url{http://en.wikipedia.org/wiki/Zero-knowledge_proof}
 
 \end{frame}
 
+\begin{frame}{Mixnets}
+
+  \begin{itemize}
+  \item A mixnet is simply a network of mixers.
+  \item Ballots are re-encrypted and mixed.
+  \item This random shuffling breaks the association between voters
+    and their ballots.
+  \item Yet, voters can still verify that their ballot is counted, via
+    a Zero Knowledge Proof of Knowedge!
+  \end{itemize}
+  
+\end{frame}
+
 \section{From Helios to Zeus}
 
 \begin{frame}{Helios Combines Ballot Counting with Election Results}
@@ -457,6 +475,17 @@ Source: \url{http://en.wikipedia.org/wiki/Zero-knowledge_proof}
 
 \end{frame}
 
+\begin{frame}{Why not Helios?}
+
+  \begin{itemize}
+  \item The combination of ballot counting with the production of the
+    election results means that Helios cannot be used in voting
+    systems such as Singe Transferable Vote (STV) or any other where
+    the whole ballot, and not the individual choices, must be used in
+    counting.
+  \end{itemize}
+  
+\end{frame}
 
 \begin{frame}{Zeus Separates Ballot Counting from Election Results}
   
@@ -470,40 +499,48 @@ Source: \url{http://en.wikipedia.org/wiki/Zero-knowledge_proof}
   \item<1-> Ballot counting can be verified, using the same mathematics
     as in Helios.
   \item<2-> Production of the final results can be verified since it is
-    an open process. Hence the whole elections can be verified.\qedhere
+    an open process. Hence the whole election can be verified.\qedhere
   \end{enumerate}
 \end{proof}
 
 \end{frame}
 
+\begin{frame}{Creating Zeus}
+
+\begin{itemize}  
+  \item Uses the Helios worklow, but with substantial re-writes and
+    additions.
+  \item Can support any type of election scheme.
+  \item Improved user interface, both for voters and the election
+    committee, based on direct feedback from our users.
+  \item Has been used on lots of real elections with thousands of
+    voters, with different voting systems.
+  \item Mixing can scale easily, as it is embarrassingly parallel.
+  \end{itemize}
+  
+\end{frame}
+
 \section{Zeus Elections to Date}
 
-% \section*{Summary}
+\section*{Summary}
 
-% \begin{frame}{Summary}
+\begin{frame}{Summary}
 
-%   % Keep the summary *very short*.
-%   \begin{itemize}
-%   \item
-%     The \alert{first main message} of your talk in one or two lines.
-%   \item
-%     The \alert{second main message} of your talk in one or two lines.
-%   \item
-%     Perhaps a \alert{third message}, but not more than that.
-%   \end{itemize}
+  \begin{itemize}
+  \item
+    \alert{e-Voting is hard} but it can be done.
+  \item
+    \alert{Rely on existing, robust work whenever possible}
+    instead of re-inventing the wheel.
+  \item
+    \alert{Be prepared for serious implementation work},
+    when you have to move beyond the existing work.
+  \item
+    \alert{e-Voting requires as much attention to process and
+      organisation as it does to code and implementation}.
+
+  \end{itemize}
   
-%   % The following outlook is optional.
-%   \vskip0pt plus.5fill
-%   \begin{itemize}
-%   \item
-%     Outlook
-%     \begin{itemize}
-%     \item
-%       Something you haven't solved.
-%     \item
-%       Something else you haven't solved.
-%     \end{itemize}
-%   \end{itemize}
-% \end{frame}
+\end{frame}
 
 \end{document}
