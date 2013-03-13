@@ -289,6 +289,7 @@ Source of e-Voting System Requirements:
       minimum width=2cm,
       aspect=0.25, 
       align=center,
+      fill=orange!40,
       draw}}
   \tikzset{shuffled/.style={cylinder, shape border rotate=90,
       text width=1.5cm,
@@ -296,21 +297,23 @@ Source of e-Voting System Requirements:
       minimum width=2cm,
       aspect=0.25, 
       align=center,
+      fill=orange!40,
       decorate, 
       decoration={snake, amplitude=0.08cm, segment length=0.1cm},
       draw}}
   \tikzset{person/.style={rectangle, text width=2cm, text centered, 
-      minimum height=1.2cm, draw}}
+      minimum height=1.2cm, fill=yellow!20, draw}}
+  \tikzset{linklabel/.style={text width=2cm, text centered}}
   \tikzset{to/.style={->,font=\sffamily\footnotesize}},
   \node[person] (voter) {Voter};
-  \node[ballotbox] (ballotbox) [right=of voter]{Ballot Box};
+  \node[ballotbox] (ballotbox) [right=1.7cm of voter]{Ballot Box};
   \node[shuffled]  (shuffled) [below=of ballotbox] {Shuffled Ballots};
-  \node[person] (committee) [right=of shuffled] {Election Committee};
-  \node (results) [right=of committee] {};
-  \draw[to] (voter) -- node[midway,above]{Encrypted Ballots} (ballotbox);
-  \draw[to] (ballotbox) -- node[midway,right]{Shuffle} (shuffled);
-  \draw[to] (shuffled) -- node[midway,above]{Shuffled Ballots} (committee);
-  \draw[to] (committee) -- node[midway,above]{Decrypted Ballots} (results);
+  \node[person] (committee) [right=1.7cm of shuffled] {Election Committee};
+  \node (results) [right=1.7cm of committee] {};
+  \draw[to] (voter) -- node[linklabel,midway,above]{Encrypted Ballots} (ballotbox);
+  \draw[to] (ballotbox) -- node[linklabel,midway,right]{Shuffle} (shuffled);
+  \draw[to] (shuffled) -- node[linklabel,midway,above]{Shuffled Ballots} (committee);
+  \draw[to] (committee) -- node[linklabel,midway,above]{Decrypted Ballots} (results);
 \end{tikzpicture}
 
 \end{frame}
