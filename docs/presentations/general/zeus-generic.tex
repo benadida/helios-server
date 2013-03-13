@@ -70,9 +70,14 @@
 % \pgfdeclareimage[height=0.5cm]{university-logo}{university-logo-filename}
 % \logo{\pgfuseimage{university-logo}}
 
+\titlegraphic{
+  \includegraphics[width=2cm]{by-sa.eps}\\
+  {\tiny
+  This work is licensed under a Creative Commons
+  Attribution-ShareAlike 3.0 Unported License.}
+}
 
-\AtBeginSection[]
-{
+\AtBeginSection[] {
   \begin{frame}<beamer>{Outline}
     \tableofcontents[currentsection]
   \end{frame}
