@@ -2,6 +2,12 @@
 
 \documentclass[utf8]{beamer}
 
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes}
+\usetikzlibrary{decorations.pathmorphing}
+
 % This file is a solution template for:
 
 % - Giving a talk on some subject.
@@ -273,6 +279,41 @@ Source of e-Voting System Requirements:
 \end{frame}
 
 \section{The Helios Voting System and Process}
+
+\begin{frame}{Helios v. 1 Workflow}
+
+\begin{tikzpicture}[font=\sffamily]
+  \tikzset{ballotbox/.style={cylinder, shape border rotate=90,
+      text width=1.5cm,
+      minimum height=2.5cm,
+      minimum width=2cm,
+      aspect=0.25, 
+      align=center,
+      draw}}
+  \tikzset{shuffled/.style={cylinder, shape border rotate=90,
+      text width=1.5cm,
+      minimum height=2.5cm,
+      minimum width=2cm,
+      aspect=0.25, 
+      align=center,
+      decorate, 
+      decoration={snake, amplitude=0.08cm, segment length=0.1cm},
+      draw}}
+  \tikzset{person/.style={rectangle, text width=2cm, text centered, 
+      minimum height=1.2cm, draw}}
+  \tikzset{to/.style={->,font=\sffamily\footnotesize}},
+  \node[person] (voter) {Voter};
+  \node[ballotbox] (ballotbox) [right=of voter]{Ballot Box};
+  \node[shuffled]  (shuffled) [below=of ballotbox] {Shuffled Ballots};
+  \node[person] (committee) [right=of shuffled] {Election Committee};
+  \node (results) [right=of committee] {};
+  \draw[to] (voter) -- node[midway,above]{Encrypted Ballots} (ballotbox);
+  \draw[to] (ballotbox) -- node[midway,right]{Shuffle} (shuffled);
+  \draw[to] (shuffled) -- node[midway,above]{Shuffled Ballots} (committee);
+  \draw[to] (committee) -- node[midway,above]{Decrypted Ballots} (results);
+\end{tikzpicture}
+
+\end{frame}
 
 \begin{frame}{Basic Ideas}
 
