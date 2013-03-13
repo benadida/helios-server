@@ -2,6 +2,7 @@
 
 \documentclass[utf8]{beamer}
 
+\usepackage{amsmath}
 \usepackage{tikz}
 \usetikzlibrary{arrows}
 \usetikzlibrary{positioning}
@@ -44,7 +45,7 @@
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 
-\usepackage{libertine}
+\usepackage{dejavu}
 \usepackage[T1,T2A]{fontenc}
 
 \usebackgroundtemplate%
@@ -450,17 +451,21 @@ Schneier, Applied Cryptography, 2nd ed., 1996.
   \item Select $s$ such that it is less than $p$.
   \item Compute $c' = (g^sa, y^sb)$.
   \item If we decrupt $c'$ we get:
-    \[y^sb / (g^sa)^x = g^{xs}y^kM / g^{sx}a^x = y^kM / a^x = g^{xk}M/g^xk =
-    M\pmod{p} \]
-  \end{enumerate}
+    \begin{equation*}
+      \begin{split}
+        y^sb / (g^sa)^x = g^{xs}y^kM / g^{sx}a^x = y^kM / a^x = \\
+        g^{xk}M/g^xk = M\pmod{p}
+      \end{split}
+    \end{equation*}
+\end{enumerate}
     
 \end{frame}
 
 \begin{frame}[c]{Zero Knowledge Proof of Knowledge}
 
-  \includegraphics<1>[width=\textheight]{Zkip_alibaba1.png}
-  \includegraphics<2>[width=\textheight]{Zkip_alibaba2.png}
-  \includegraphics<3>[width=\textheight]{Zkip_alibaba3.png}
+  \includegraphics<1>[width=0.8\textheight]{Zkip_alibaba1.png}
+  \includegraphics<2>[width=0.8\textheight]{Zkip_alibaba2.png}
+  \includegraphics<3>[width=0.8\textheight]{Zkip_alibaba3.png}
 
 Source: \url{http://en.wikipedia.org/wiki/Zero-knowledge_proof}
 
