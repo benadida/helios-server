@@ -358,12 +358,14 @@ class AnswerWidget(forms.TextInput):
 DEFAULT_ANSWERS_COUNT = 2
 MAX_QUESTIONS_LIMIT = getattr(settings, 'MAX_QUESTIONS_LIMIT', 1)
 
+
 class QuestionForm(forms.Form):
   choice_type = forms.ChoiceField(choices=(
     ('choice', _('Choice')),
     #('ranked', _('Ranked')),
   ))
   question = forms.CharField(label=_('Question'), max_length=255, required=True)
+  min_answers = forms.ChoiceField(label=_('Min answers'))
   max_answers = forms.ChoiceField(label=_('Max answers'))
 
 
@@ -384,11 +386,22 @@ class QuestionForm(forms.Form):
       self.fields[field_key].widget.attrs = {'class': 'answer_input'}
 
     max_choices = map(lambda x: (x,x), range(1, answers+1))
+    min_choices = map(lambda x: (x,x), range(0, answers+1))
     self.fields['max_answers'].choices = max_choices
     self.fields['max_answers'].initial = answers
+    self.fields['min_answers'].choices = max_choices
+    self.fields['min_answers'].initial = 0
     if len(self.fields['choice_type'].choices) == 1:
       self.fields['choice_type'].widget = forms.HiddenInput()
       self.fields['choice_type'].initial = 'choice'
+
+  def clean(self):
+    max_answers = self.cleaned_data.get('max_answers')
+    min_answers = self.cleaned_data.get('min_answers')
+    if min_answers > max_answers:
+      raise forms.ValidationError(_("Max answers should be greater or equal to min answers"))
+    return self.cleaned_data
+
 
 class PartyForm(QuestionForm):
   question = forms.CharField(label=_('Party name'), max_length=255, required=True)

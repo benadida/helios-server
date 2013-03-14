@@ -170,11 +170,17 @@ BM.ModuleBase = {
     var answers = this.get_questions_answers();
     var ret = true;
     var self = this;
-    _.each(answers, function(ans_list, q){
-      if (ans_list.length > parseInt(self.data[q]['max_answers'])) {
-        ret = "Invalid choice";
+    _.each(answers, function(ans_list, q) {
+
+      var data = self.data[q];
+      if (ans_list.length && ans_list.length > parseInt(self.data[q]['max_answers'])) {
+        ret = this.election.type_params.max_limit_error.format(data.question, data.max_answers);
       }
-    });
+      if (ans_list.length && ans_list.length < parseInt(self.data[q]['min_answers'])) {
+        var q = self.data[q];
+        ret = this.election.type_params.min_limit_error.format(data.question, data.min_answers);
+      }
+    }, this);
     
     if (ret !== true) {
       return ret;

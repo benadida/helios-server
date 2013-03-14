@@ -1,7 +1,7 @@
 {% load i18n %}
 {% with election.zeus_election.get_results as zeus_results %}
 {% with election.zeus_election.get_results_pretty as results %}
-{% if zeus_results.invalid_count == 0 %}
+{% if zeus_results.invalid_count == 0 or user.superadmin_p %}
 <table class="results twelve">
   <thead>
     <tr>

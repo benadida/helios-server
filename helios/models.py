@@ -319,12 +319,15 @@ class Election(HeliosModel):
   ecounting_request_error = models.TextField(null=True)
 
   ELECTION_TYPE_PARAMS = {
+    '__common': {},
     'election': {
       'questions_title': _(u'Ballot'),
       'question_title': _(u'Ερώτηση'),
       'answer_title': _(u'Απάντηση'),
       'questions_view': 'helios.views.one_election_questions',
       'questions_empty_issue': _("Add questions to the election"),
+      'max_limit_error': _("Too many choices"),
+      'min_limit_error': _("Question '{0}' requires at least {1} choices."),
       'auto_append_answer': True,
       'count_empty_question': False
     },
@@ -334,6 +337,8 @@ class Election(HeliosModel):
       'answer_title': _(u'Υποψήφιος'),
       'questions_view': 'helios.views.one_election_questions',
       'questions_empty_issue': _("Prepare party ballots"),
+      'max_limit_error': _("Too many choices"),
+      'min_limit_error': _("Party '{0}' requires at least {1} candindates to be chosen."),
       'auto_append_answer': True,
       'count_empty_question': True
     },
@@ -352,7 +357,9 @@ class Election(HeliosModel):
 
   @property
   def type_params(self):
-    params = self.ELECTION_TYPE_PARAMS[self.election_type]
+    params = {}
+    params.update(self.ELECTION_TYPE_PARAMS['__common'])
+    params.update(self.ELECTION_TYPE_PARAMS[self.election_type])
     for k, v in params.iteritems():
       if hasattr(v, '__unicode__'):
         params[k] = unicode(v)
@@ -468,7 +475,7 @@ class Election(HeliosModel):
         q_answers = ["%s: %s" % (q['question'], ans) for ans in q['answers']]
         if prepend_empty_answer:
             params_max = int(q['max_answers'])
-            params_min = 1
+            params_min = int(q['min_answers'])
             if self.type_params.get('count_empty_question', False):
                 params_min = 0
             params = "%d-%d" % (params_min, params_max)

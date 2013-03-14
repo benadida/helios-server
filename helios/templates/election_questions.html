@@ -294,7 +294,14 @@ $(document).ready(function(){
       $(this.answers(qnum)[index]).closest('.form-field').remove();
       this.answers_num_input(qnum).val($(this.answers(qnum)).length);
       this.update_answers_data(1);
-      this.update_max_answers(qnum);
+      this.update_limit_selections(qnum);
+    },
+    
+    update_limit_selections: function(qnum) {
+      var select = this.max_answers_select(qnum);
+      this.update_limit_selection(qnum, select);
+      select = this.min_answers_select(qnum);
+      this.update_limit_selection(qnum, select);
     },
 
     add_answer: function(qindex) {
@@ -305,19 +312,17 @@ $(document).ready(function(){
       $("<br />").insertBefore(el);
       $(el).find("input").focus();
       this.update_answers_data(1);
-      this.update_max_answers(qindex);
+      this.update_limit_selections(qindex);
       this.answers_num_input(qindex).val($(this.answers(qindex)).length);
     },
 
-    update_max_answers: function(qnum) {
+    update_limit_selection: function(qnum, select) {
       var answers = this.answers(qnum).length;
-      var select = this.max_answers_select(qnum);
       if (select.find("option").length > answers) {
         var index = answers+1;
         choice = select.find("option[value=" + (index) + "]");
         i = 1;
         while(choice.length) {
-          console.log(choice);
           if (choice.attr("selected")) {
             if (choice.prev().length) {
               choice.prev().attr("selected", 1);
@@ -329,9 +334,7 @@ $(document).ready(function(){
         }
       } else {
       var last = parseInt(select.find("option").last().attr('value'));
-        console.log("LAST", last, qnum);
         while (last < answers) {
-          console.log(last, answers);
           last++;
           select.append('<option value="'+last+'">'+last+'</option>');
         }
@@ -349,6 +352,10 @@ $(document).ready(function(){
 
     max_answers_select: function(qnum) {
       return this.get_form(qnum).find("select[name*=max]")
+    },
+
+    min_answers_select: function(qnum) {
+      return this.get_form(qnum).find("select[name*=min]")
     }
 
   })

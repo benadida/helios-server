@@ -1,3 +1,15 @@
+//first, checks if it isn't implemented yet
+if (!String.prototype.format) {
+  String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) { 
+      return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+      ;
+    });
+  };
+}
 
 $(document).ready(function(){
   try {
@@ -205,7 +217,7 @@ BOOTH.validate_question = function(question_num) {
 
       var answer = BOOTH.ballot.answers[question_num];
       var question = BOOTH.election.questions[question_num];
-      
+        
       if (answer.length > 0) {
         
         var message = BOOTH.module.validate();
