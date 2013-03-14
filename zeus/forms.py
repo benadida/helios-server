@@ -264,7 +264,9 @@ class ElectionForm(forms.Form):
             e.short_name = short_name + "-" + str(count)
             q = Q(short_name=e.short_name)
             if e.pk:
-                q = ~Q(pk=self.election.pk) & Q(short_name=e.short_name)
+                q = Q(short_name=e.short_name)
+                if self.election:
+                    q = q & ~Q(pk=self.election.pk)
 
       e.description = data['description']
       e.voting_starts_at = data['voting_starts_at']
