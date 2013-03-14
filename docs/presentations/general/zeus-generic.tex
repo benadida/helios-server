@@ -56,7 +56,7 @@
 
 \title[e-Voting and Zeus]{e-Voting from the Ground Up and Zeus}
 
-\author[Panos Louridas]{Panos Louridas}
+\author[Panos Louridas]{Panos Louridas, louridas@grnet.gr}
 \date[EESTEC Workshop]{March 14, 2013 / EESTEC Govern the Way of Youth 2013}
 \institute[GRNET]{Greek Research and Technology Network (GRNET) S.A.}
 
@@ -181,10 +181,10 @@
   \end{itemize}
 
 \vfill
-
+{\tiny
 Source of e-Voting System Requirements:
 \url{http://courses.csail.mit.edu/6.897/spring04/L17.pdf}
-
+}
 \end{frame}
 
 
@@ -380,9 +380,11 @@ Source of e-Voting System Requirements:
    \begin{enumerate}
    \item<1-> Alice chooses a number, say 3, and keeps it secret. We
      label her number $A$.
-   \item<2-> Alice puts 3 into the one-way function $y^x\pmod p =
-     7^x\pmod 11$ and works out the result of $7^3\pmod{11} = 2$.
-   \item<3-> Alice calls the result of this calculation $\alpha$ and
+   \item<2-> Alice puts 3 into the one-way function\\
+         $y^x\pmod p = $ \\
+         $7^x\pmod{11} = $ \\
+         $7^3\pmod{11} = 2$.
+   \item<3-> Alice calls the result  $\alpha$ and
      sends it to Bob.
    \item<4-> Alice takes Bob's result and works out the result of
      $\beta^A\pmod{11} = 9$.
@@ -393,8 +395,8 @@ Source of e-Voting System Requirements:
   \begin{enumerate}
   \item<1-> Bob chooses a number, say 6, and keeps its secret. We
     label his number $B$.
-  \item<2-> Bob puts 6 into the one-way function and works out the
-    result of $7^6\pmod{11} = 4$.
+  \item<2-> Bob puts 6 into the one-way function and gets
+    $7^6\pmod{11} = 4$.
   \item<3-> Bob calls the result of this calculation $\beta$ and
     sends it to Alice.
   \item<4-> Bob takes Alice's resut, and works out the result of
@@ -402,6 +404,9 @@ Source of e-Voting System Requirements:
   \end{enumerate}  
 \end{columns}
 
+{\tiny
+Source: Simon Singth, The Code Book, 1999.
+}
 \end{frame}
 
 \begin{frame}{ElGamal}{Key Generation}
@@ -416,9 +421,10 @@ Source of e-Voting System Requirements:
 
   \end{enumerate}
 
+{\tiny
 Source of ElGamal key generation, encryption, decryption: Bruce
 Schneier, Applied Cryptography, 2nd ed., 1996.
-
+}
 \end{frame}
 
 \begin{frame}{ElGamal}{Encryption}
@@ -467,7 +473,9 @@ Schneier, Applied Cryptography, 2nd ed., 1996.
   \includegraphics<2>[width=0.8\textheight]{Zkip_alibaba2.png}
   \includegraphics<3>[width=0.8\textheight]{Zkip_alibaba3.png}
 
+{\tiny
 Source: \url{http://en.wikipedia.org/wiki/Zero-knowledge_proof}
+}
 
 \end{frame}
 
