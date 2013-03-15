@@ -45,7 +45,26 @@ class Command(BaseCommand):
                        dest='remove_user',
                        default=False,
                        help='Remove an existing user'),
+    make_option('--reset-password',
+                       action='store_true',
+                       dest='reset_password',
+                       default=False,
+                       help='Reset a user\'s password'),
     )
+
+    def get_user(self, pk_or_userid):
+        pk_or_userid = pk_or_userid.strip()
+
+        pk = None
+        userid = None
+        try:
+            pk = int(pk_or_userid)
+        except ValueError:
+            userid = pk_or_userid
+
+        if pk:
+            return User.objects.get(pk=pk)
+        return User.objects.get(user_id=userid)
 
     def handle(self, *args, **options):
         reload(sys)
@@ -72,6 +91,16 @@ class Command(BaseCommand):
             else:
                 exit()
             print "User removed"
+
+        if options.get("reset_password"):
+            if not len(args):
+                print "Provide a user id and a password"
+                exit()
+            user = self.get_user(args[0])
+            password = getpass.getpass("Password:")
+            password_confirm = getpass.getpass("Confirm password:")
+            user.info['password'] = make_password(password)
+            user.save()
 
         if options.get('create_user'):
             username = args[0].strip()
