@@ -3413,7 +3413,6 @@ class ZeusCoreElection(object):
         creating = {}
         creating['candidates'] = self.do_get_candidates()
         creating['voters'] = self.do_get_voters()
-        creating['audit_codes'] = self.do_get_all_voter_audit_codes()
         creating['cryptosystem'] = self.do_get_cryptosystem()
         creating['zeus_public'] = self.do_get_zeus_public()
         creating['zeus_key_proof'] = self.do_get_zeus_key_proof()
