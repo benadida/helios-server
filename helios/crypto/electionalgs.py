@@ -336,7 +336,10 @@ class EncryptedVote(HeliosObject):
     return True
     
   def get_hash(self):
-    return utils.hash_b64(utils.to_json(self.toJSONDict()))
+    if hasattr(self, "raw_json"):
+      return utils.hash_b64(self.raw_json)
+    else:
+      return utils.hash_b64(utils.to_json(self.toJSONDict()))
     
   def toJSONDict(self, with_randomness=False):
     return {
@@ -352,6 +355,18 @@ class EncryptedVote(HeliosObject):
     ev.encrypted_answers = [EncryptedAnswer.fromJSONDict(ea, pk) for ea in d['answers']]
     ev.election_hash = d['election_hash']
     ev.election_uuid = d['election_uuid']
+
+    return ev
+
+  @classmethod
+  def fromJSONString(cls, raw_json):
+    ev = cls()
+
+    d = utils.from_json(raw_json)
+    ev.encrypted_answers = [EncryptedAnswer.fromJSONDict(ea, None) for ea in d['answers']]
+    ev.election_hash = d['election_hash']
+    ev.election_uuid = d['election_uuid']
+    ev.raw_json = raw_json
 
     return ev
     

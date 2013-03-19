@@ -535,7 +535,8 @@ def encrypt_ballot(request, election):
 def post_audited_ballot(request, election):
   if request.method == "POST":
     raw_vote = request.POST['audited_ballot']
-    encrypted_vote = electionalgs.EncryptedVote.fromJSONDict(utils.from_json(raw_vote))
+    raw_json = utils.from_json(raw_vote)["encrypted_ballot"]
+    encrypted_vote = electionalgs.EncryptedVote.fromJSONString(raw_json)
     vote_hash = encrypted_vote.get_hash()
     audited_ballot = AuditedBallot(raw_vote = raw_vote, vote_hash = vote_hash, election = election)
     audited_ballot.save()
@@ -633,6 +634,7 @@ def one_election_cast_confirm(request, election):
   # if this user is a voter, prepare some stuff
   if voter:
     vote = datatypes.LDObject.fromDict(utils.from_json(encrypted_vote), type_hint='legacy/EncryptedVote').wrapped_obj
+    vote.raw_json = encrypted_vote
 
     # prepare the vote to cast
     cast_vote_params = {
