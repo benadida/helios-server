@@ -1,5 +1,6 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
+from django.contrib.auth.hashers import check_password, make_password
 
 class ChangePasswordForm(forms.Form):
     password = forms.CharField(label=_('Current password'), widget=forms.PasswordInput)
@@ -12,12 +13,14 @@ class ChangePasswordForm(forms.Form):
 
     def save(self):
         user = self.user
-        user.info['password'] = self.cleaned_data['new_password'].strip()
+        pwd = make_password(self.cleaned_data['new_password'].strip())
+        user.info['password'] = pwd
         user.save()
 
     def clean(self):
         cl = super(ChangePasswordForm, self).clean()
-        if not self.user.info['password'] == self.cleaned_data.get('password'):
+        pwd = self.cleaned_data['password'].strip()
+        if not check_password(pwd, self.user.info['password']):
             raise forms.ValidationError(_('Invalid password'))
         if not self.cleaned_data.get('new_password') == \
            self.cleaned_data.get('new_password_confirm'):
