@@ -400,16 +400,19 @@ and the randomness used to encrypt each choice's
 ciphertext. Specifically, the JSON structure for
 `<VOTE_WITH_PLAINTEXTS>` is as follows.
 
+FIXME: the vote here should probably be a string, not a JSON structure.
+
 ```
 <VOTE_WITH_PLAINTEXTS>
-{"answers": [<ENCRYPTED_ANSWER_WITH_PLAINTEXT>, <ENCRYPTED_ANSWER_WITH_PLAINTEXT>, ...], "election_hash": <B64_HASH>, "election_uuid": <ELECTION_UUID>}
+{"vote": <VOTE>,
+ "plaintext_answers": [<PLAINTEXT_ANSWER>, <PLAINTEXT_ANSWER>, ..]}
 ```
 
-And the contained `<ENCRYPTED_ANSWER_WITH_PLAINTEXT>` is as follows.
+Each `<PLAINTEXT_ANSWER>` is then:
 
 ```
-<ENCRYPTED_ANSWER_WITH_PLAINTEXT>
-{"answer": 1, "choices": [<ELGAMAL_CIPHERTEXT>, <ELGAMAL_CIPHERTEXT>, ...], "individual_proofs": [<ZK_PROOF_0..1>, <ZK_PROOF_0..1>, ...], "overall_proof": <ZK_PROOF_0..max>, "randomness": [<BIGINT_B64>, <BIGINT_B64>, <BIGINT_B64>]}
+<PLAINTEXT_ANSWER>
+{"answer": 1, "randomness": <BIGINT_B64>}
 ```
 
 ### Result
