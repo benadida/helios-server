@@ -166,6 +166,7 @@ Once a voter has cast a ballot, the encrypted vote representation is then:
 <CAST_VOTE>
 {"voter_uuid": "b7dbd90a-65e3-11de-8c90-001b63948875", "voter_hash": "2bxksdlkxnsdf", 
  "cast_at": "2009-07-15 12:23:46", "vote": <VOTE>, "vote_hash": "8bncn23nsfsdk234234"}
+```
 
 `cast_at` is the timestamp of the cast vote in UTC.
 
