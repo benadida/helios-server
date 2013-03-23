@@ -198,7 +198,7 @@ An election is represented as:
  "use_voter_aliases": false,
  "uuid": "1882f79c-65e5-11de-8c90-001b63948875",
  "voters_hash": "G6yS/dAZm5hKnCn5cRgBGdw3yGo"}
-``
+```
 
 `short_name`, `name`, and `description` describe the election. The
 short name must be a few characters without a space (almost like a
