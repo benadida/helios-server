@@ -15,9 +15,6 @@ from reportlab.pdfbase.ttfonts import TTFont
 
 from zeus.core import PARTY_SEPARATOR
 
-elements = []
-styles = None
-
 PAGE_WIDTH, PAGE_HEIGHT = A4
 
 pageinfo = "Ζευς - Αποτελέσματα Ψηφοφορίας"
@@ -32,14 +29,11 @@ linlibertineb = TTFont('LinLibertineBd',
                        '/usr/share/fonts/truetype/linux-libertine/LinLibertine_Bd.ttf')
 pdfmetrics.registerFont(linlibertineb)
 
-parties_results = []
-candidates_results = {}
-total_votes = 0
-blank_votes = 0
-
 ZEUS_LOGO = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                          'logo-positive.jpg')
 def load_results(data):
+    parties_results = []
+    candidates_results = {}
     total_votes = 0
     blank_votes = 0
     jsondata = json.loads(data)
@@ -80,62 +74,56 @@ def make_later_pages_hf(canvas, doc):
     canvas.restoreState()
 
 
-def make_heading(element, contents):
+def make_heading(elements, styles, contents):
     for x in range(0, 5):
         elements.append(Spacer(1, 12))
     for pcontent in contents:
         elements.append(Paragraph(pcontent, styles["ZeusHeading"]))
 
-def make_intro(elements, contents):
+def make_intro(elements, styles, contents):
     for pcontent in contents:
         elements.append(Paragraph(pcontent, styles["Zeus"]))
     elements.append(Spacer(1, 12))
 
-def make_totals(elements, total_votes, blank_votes):
+def make_totals(elements, styles, total_votes, blank_votes):
     elements.append(Paragraph('Σύνολο ψήφων: %d' % total_votes, styles['Zeus']))
     elements.append(Paragraph('Λευκά: %d' % blank_votes, styles['Zeus']))
     elements.append(Spacer(1, 12))
 
-def make_party_list_heading(elements, party, count):
+def make_party_list_heading(elements, styles, party, count):
     heading = '%(title)s: %(count)d' % {'title': party,
                                         'count': count}
     elements.append(Paragraph(heading, styles['Zeus']))
     elements.append(Spacer(1, 12))
 
-def make_party_list_table(elements, party_results):
+def make_party_list_table(elements, styles, party_results):
 
     table_style = TableStyle([('FONT', (0, 0), (-1, -1), 'LinLibertine')])
     t = Table(party_results, style = table_style)
     elements.append(t)
 
-def make_results(elements, parties_results, candidates_results):
+def make_results(elements, styles, total_votes, blank_votes,
+                 parties_results, candidates_results):
 
-    make_totals(elements, total_votes, blank_votes)
+    make_totals(elements, styles, total_votes, blank_votes)
     for party_result in parties_results:
         (party, count) = party_result
-        make_party_list_heading(elements, party, count)
+        make_party_list_heading(elements, styles, party, count)
         if party in candidates_results:
-            make_party_list_table(elements, candidates_results[party])
+            make_party_list_table(elements, styles, candidates_results[party])
 
 
 
 def build_doc(title, name, institution_name, voting_start, voting_end,
             extended_until, data, filename="election_results.pdf"):
 
-    global elements
-    global styles
-    global total_votes
-    global blank_votes
-    global parties_results
-    global candidates_results
-
     elements = []
+
     parties_results = []
     candidates_results = {}
 
     total_votes, blank_votes = load_results(data)
     doc = SimpleDocTemplate(filename, pagesize=A4)
-
 
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle(name='Zeus',
@@ -157,12 +145,13 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
         extended_until
         ]
 
-    make_heading(elements, [title])
+    make_heading(elements, styles, [title])
 
-    make_intro(elements, intro_contents)
+    make_intro(elements, styles, intro_contents)
 
-    make_results(elements, parties_results, candidates_results)
-
+    make_results(elements, styles, total_votes, blank_votes,
+                 parties_results, candidates_results)
+    
     doc.build(elements, onFirstPage = make_first_page_hf,
               onLaterPages = make_later_pages_hf)
 
