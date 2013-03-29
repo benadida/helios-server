@@ -1727,6 +1727,7 @@ def gamma_count_candidates(encoded_list, candidates):
     return counts
 
 PARTY_SEPARATOR = ': '
+PARTY_OPTION_SEPARATOR = ', '
 
 def strforce(thing, encoding='utf8'):
     if isinstance(thing, unicode):
@@ -1737,10 +1738,18 @@ class FormatError(ValueError):
     pass
 
 def parse_party_options(optstring):
-    r = optstring.split('-')
+    substrings = optstring.split(PARTY_OPTION_SEPARATOR)
+    if len(substrings) != 2:
+        m = ("Malformed option string '%s':"
+             "cannot split to exactly to options.") % (optstring,)
+        raise FormatError(m)
+
+    range_str, group_str = substrings
+
+    r = range_str.split('-')
     if len(r) != 2:
         m = ("Malformed min-max choices option '%s'"
-             % (optstring,))
+             % (range_str,))
         raise FormatError(m)
 
     min_choices, max_choices = r
@@ -1752,8 +1761,15 @@ def parse_party_options(optstring):
              "min-max choices option '%s'" % (name,))
         raise FormatError(m)
 
+    try:
+        group = int(group_str)
+    except ValueError:
+        m = "Malformed decimal group number in option '%s'" % (group_str,)
+        raise FormatError(m)
+
     options = {'opt_min_choices': min_choices,
-               'opt_max_choices': max_choices}
+               'opt_max_choices': max_choices,
+               'group': group}
 
     return options
 
@@ -1761,6 +1777,8 @@ def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
     parties = {}
     options = {}
     theparty = None
+    group_no = 0
+    nr_groups = 1
 
     for i, candidate in enumerate(candidates):
         candidate = strforce(candidate)
@@ -1772,6 +1790,14 @@ def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
         if theparty is None or party != theparty:
             if party not in parties:
                 opts = parse_party_options(name)
+                group = opts['group']
+                if group not in (group_no, nr_groups):
+                    m = ("Party group numbers must begin at zero and "
+                         "increase monotonically. Expected %d but got %d") % (
+                         group_no, opts['group'])
+                    raise FormatError(m)
+                group_no = group
+                nr_groups = group + 1
                 opts['choice_index'] = i
                 parties[party] = opts
                 theparty = party
@@ -1779,18 +1805,18 @@ def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
 
         parties[theparty][i] = name
 
-    return parties
+    return parties, nr_groups
 
-def gamma_decode_to_party_ballot(encoded, candidates, parties,
+def gamma_decode_to_party_ballot(encoded, candidates, parties, nr_groups,
                                  separator=PARTY_SEPARATOR):
 
     nr_candidates = len(candidates)
     selection = gamma_decode(encoded, nr_candidates)
     choices = to_absolute_answers(selection, nr_candidates)
-    names = []
-    append = names.append
+    voted_candidates = []
+    voted_parties = []
     last_index = -1
-    theparty = None
+    thegroup = None
     party_list = None
     valid = True
     no_candidates_flag = 0
@@ -1798,8 +1824,8 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties,
     for i in choices:
         if i <= last_index or no_candidates_flag:
             valid = False
-            names = None
-            theparty = None
+            voted_candidates = None
+            thegroup = None
             #print ("invalid index: %d <= %d -- choices: %s"
             #        % (i, last_index, choices))
             break
@@ -1813,21 +1839,26 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties,
             name = party
             party = ''
 
-        party_list = parties[party]
+        if party not in parties:
+            m = "Voted party list not found"
+            raise AssertionError(m)
 
-        if theparty is None:
-            theparty = party
-            if theparty not in parties:
-                m = "Voted party list not found"
-                raise AssertionError(m)
+        party_list = parties[party]
+        group = party_list['group']
+        if group >= nr_groups:
+            m = "Group number out of limits! (%d > %d)" % (group, nr_groups)
+            raise AssertionError(m)
+
+        if thegroup is None:
+            thegroup = group
             if i == party_list['choice_index']:
                 no_candidates_flag = 1
             #continue
 
-        if theparty != party:
+        if thegroup != group:
             valid = False
-            names = None
-            theparty = None
+            voted_candidates = None
+            thegroup = None
             break
 
         if not no_candidates_flag:
@@ -1841,18 +1872,21 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties,
                 raise AssertionError(m)
                 # name = party_list[i]
 
-        append(name)
+        if not voted_parties or voted_parties[-1] != party:
+            voted_parties.append(party)
+        voted_candidates.append((party, name))
 
     if choices and valid:
-        nr_choices = len(names)
+        nr_choices = len(voted_candidates)
         if (nr_choices < party_list['opt_min_choices'] or
             nr_choices > party_list['opt_max_choices']):
             valid = False
-            names = None
-            theparty = None
+            voted_candidates = None
+            thegroup = None
 
-    ballot = {'party': theparty,
-              'candidates': names,
+    ballot = {'parties': voted_parties,
+              'group': thegroup,
+              'candidates': voted_candidates,
               'valid': valid}
     return ballot
 
@@ -1863,7 +1897,8 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
     party_counters = {}
     ballots = []
     append = ballots.append
-    parties = parties_from_candidates(candidates, separator=separator)
+    parties, nr_groups = parties_from_candidates(candidates,
+                                                 separator=separator)
     for party, party_candidates in parties.iteritems():
         party_counters[party] = 0
         for index, candidate in party_candidates.iteritems():
@@ -1875,24 +1910,24 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
 
     for encoded in encoded_list:
         ballot = gamma_decode_to_party_ballot(encoded, candidates, parties,
-                                              separator=separator)
+                                              nr_groups, separator=separator)
         if not ballot['valid']:
             invalid_count += 1
             continue
 
         append(ballot)
 
-        party = ballot['party']
-        if party not in party_counters:
-            m = "Cannot fined initialized counter at '%s'!" % (party)
-            raise AssertionError(m)
-        party_counters[party] += 1
-        if party is None:
-            blank_count += 1
+        for party in ballot['parties']:
+            if party not in party_counters:
+                m = "Cannot fined initialized counter at '%s'!" % (party)
+                raise AssertionError(m)
+            party_counters[party] += 1
+            if party is None:
+                blank_count += 1
 
         ballot_candidates = ballot['candidates']
-        for candidate in ballot_candidates:
-            key = (ballot['party'], candidate)
+        for party, candidate in ballot_candidates:
+            key = (party, candidate)
             if key not in candidate_counters:
                 try:
                     if len(ballot_candidates) != 1:
@@ -4440,14 +4475,14 @@ class ZeusCoreElection(object):
         first = 1
         for i in xrange(0, mid):
             if first:
-                append("Party-A" + PARTY_SEPARATOR + "0-2")
+                append("Party-A" + PARTY_SEPARATOR + "0-2, 0")
                 first = 0
             append("Party-A" + PARTY_SEPARATOR + "Candidate-%04d" % i)
 
         first = 1
         for i in xrange(mid, nr_candidates):
             if first:
-                append("Party-B" + PARTY_SEPARATOR + "0-2")
+                append("Party-B" + PARTY_SEPARATOR + "0-2, 1")
                 first = 0
             append("Party-B" + PARTY_SEPARATOR + "Candidate-%04d" % i)
 
@@ -4638,13 +4673,6 @@ class ZeusCoreElection(object):
         return self
 
 
-def strenc(thing):
-    if isinstance(thing, unicode):
-        return thing.encode('utf-8')
-    else:
-        return str(thing)
-
-
 def main():
     import argparse
     description='Zeus Election Reference Implementation and Verifier.'
@@ -4652,7 +4680,7 @@ def main():
     parser = argparse.ArgumentParser(description=description, epilog=epilog)
 
     parser.add_argument('--election', metavar='infile',
-        help="Read a FINISHED election from a JSON file and verify it")
+        help="Read a FINISHED election from a proofs file and verify it")
 
     parser.add_argument('--verify-signatures', nargs='*',
         metavar=('election_file', 'signature_file'),
@@ -4748,7 +4776,7 @@ def main():
                 signature = vote['signature']
                 filename = prefix + fingerprint
                 with open(filename, "w") as f:
-                    f.write(strenc(signature))
+                    f.write(strforce(signature))
                 count += 1
                 teller.status("%d/%d '%s'", count, total, filename, tell=1)
 
@@ -4765,7 +4793,7 @@ def main():
                 signature = vote['signature']
                 filename = prefix + '_' + fingerprint
                 with open(filename, "w") as f:
-                    f.write(strenc(signature))
+                    f.write(strforce(signature))
                 count += 1
                 teller.status("%d/%d '%s'", count, total, filename, tell=1)
 
