@@ -1406,9 +1406,16 @@ def one_election_questions(request, election):
         for question in formset.cleaned_data:
           if not question:
               continue
-          answers = dict(filter(lambda i: i[0].startswith('answer_'),
-                          question.iteritems())).values()
-          answers.reverse()
+
+          # force sort of answers by extracting index from answer key.
+          # cast answer index to integer, otherwise answer_10 would be placed
+          # before answer_2
+          answer_index = lambda a: int(a[0].replace('answer_', ''))
+          isanswer = lambda a: a[0].startswith('answer_')
+          answer_values = filter(isanswer, question.iteritems())
+          sorted_answers = sorted(answer_values, key=answer_index)
+
+          answers = [x[1] for x in sorted_answers]
           question['answers'] = answers
           for k in question.keys():
             if k in ['DELETE', 'ORDER']:
