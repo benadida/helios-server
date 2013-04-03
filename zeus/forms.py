@@ -396,8 +396,8 @@ class QuestionForm(forms.Form):
       self.fields['choice_type'].initial = 'choice'
 
   def clean(self):
-    max_answers = self.cleaned_data.get('max_answers')
-    min_answers = self.cleaned_data.get('min_answers')
+    max_answers = int(self.cleaned_data.get('max_answers'))
+    min_answers = int(self.cleaned_data.get('min_answers'))
     if min_answers > max_answers:
       raise forms.ValidationError(_("Max answers should be greater or equal to min answers"))
     return self.cleaned_data
