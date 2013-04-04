@@ -1819,6 +1819,7 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties, nr_groups,
     thegroup = None
     party_list = None
     valid = True
+    invalid_reason = None
     no_candidates_flag = 0
 
     for i in choices:
@@ -1857,6 +1858,8 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties, nr_groups,
 
         if thegroup != group:
             valid = False
+            invalid_reason = ('Choices from different groups '
+                              '(%d, %d)') % (thegroup, group)
             voted_candidates = None
             thegroup = None
             break
@@ -1877,17 +1880,31 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties, nr_groups,
         voted_candidates.append((party, name))
 
     if choices and valid:
-        nr_choices = len(voted_candidates)
-        if (nr_choices < party_list['opt_min_choices'] or
-            nr_choices > party_list['opt_max_choices']):
-            valid = False
+        # validate each party separately
+        for partyid, party_list in parties.iteritems():
+            # how many candidates in party ?
+            party_choice_filter = lambda g: g[0] == partyid
+            nr_choices = len(filter(party_choice_filter, voted_candidates))
+
+            max_choices = party_list['opt_max_choices']
+            min_choices = party_list['opt_min_choices']
+
+            if (nr_choices < min_choices or
+                nr_choices > max_choices):
+                valid = False
+                invalid_reason = ('Invalid min/max choices (min:%d, max:%d, '
+                                  'choices:%d') % (min_choices, max_choices,
+                                                   nr_choices)
+        if not valid:
             voted_candidates = None
             thegroup = None
 
     ballot = {'parties': voted_parties,
               'group': thegroup,
               'candidates': voted_candidates,
+              'invalid_reason': invalid_reason,
               'valid': valid}
+
     return ballot
 
 def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
