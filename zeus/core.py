@@ -79,7 +79,7 @@ V_GENERATOR     =   'GENERATOR: '
 V_ORDER         =   'ORDER: '
 V_ALPHA         =   'ALPHA: '
 V_BETA          =   'BETA: '
-V_COMMITMENT    =    'COMMITMENT: '
+V_COMMITMENT    =   'COMMITMENT: '
 V_CHALLENGE     =   'CHALLENGE: '
 V_RESPONSE      =   'RESPONSE: '
 V_COMMENTS      =   'COMMENTS: '
@@ -412,11 +412,11 @@ class CheapQueue(object):
         cls._pid = getpid()
 
     def __init__(self):
-        self._initpid = getpid()
+        pid = getpid()
+        self._initpid = pid
         self._pid = None
         serial = CheapQueue._serial + 1
         CheapQueue._serial = serial
-        pid = CheapQueue._pid
         self.serial = serial
         self.frontfile = '/dev/shm/cheapQ.%s.%s.front' % (pid, serial)
         self.backfile = '/dev/shm/cheapQ.%s.%s.back' % (pid, serial)
@@ -587,8 +587,8 @@ class AsyncWorkerPool(object):
     def __init__(self, nr_parallel, worker_func):
         master_queue = Queue()
         self.master_queue = master_queue
-        self.worker_queues = [master_queue] + [Queue()
-                              for _ in xrange(nr_parallel)]
+        self.worker_queues = [master_queue] + [
+                              Queue() for _ in xrange(nr_parallel)]
         worker_pids = []
         self.worker_pids = worker_pids
         append = worker_pids.append
