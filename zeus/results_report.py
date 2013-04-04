@@ -38,11 +38,12 @@ def load_results(data):
     blank_votes = 0
     jsondata = json.loads(data)
     for result, party in jsondata['party_counts']:
-        if party is None:
-            blank_votes += result
-        else:
-            parties_results.append((party, result))
+        parties_results.append((party, result))
         total_votes += result
+
+    blank_votes = jsondata['blank_count']
+    total_votes += blank_votes
+
     for candidate_result in jsondata['candidate_counts']:
         (result, full_candidate) = candidate_result
         (party, candidate) = full_candidate.split(PARTY_SEPARATOR, 1)
@@ -50,7 +51,7 @@ def load_results(data):
             candidates_results[party].append((candidate, result))
         else:
             candidates_results[party] = [(candidate, result)]
-    return (total_votes, blank_votes)
+    return (total_votes, blank_votes, parties_results, candidates_results)
 
 def make_first_page_hf(canvas, doc):
     canvas.saveState()
@@ -122,7 +123,8 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
     parties_results = []
     candidates_results = {}
 
-    total_votes, blank_votes = load_results(data)
+    total_votes, blank_votes, parties_results, candidates_results = \
+        load_results(data)
     doc = SimpleDocTemplate(filename, pagesize=A4)
 
     styles = getSampleStyleSheet()
@@ -151,7 +153,7 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
 
     make_results(elements, styles, total_votes, blank_votes,
                  parties_results, candidates_results)
-    
+
     doc.build(elements, onFirstPage = make_first_page_hf,
               onLaterPages = make_later_pages_hf)
 

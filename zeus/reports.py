@@ -190,16 +190,21 @@ def csv_from_party_results(election, party_results, outfile=None):
     blank = 'ΛΕΥΚΟ'
     empty = '---'
     for ballot in party_results['ballots']:
+        party = empty
         counter += 1
         if not ballot['valid']:
             writerow([counter, empty, empty, invalid])
             continue
-        party = ballot['party']
-        if party is None:
+        ballot_parties = ballot['parties']
+        if not ballot_parties:
             writerow([counter, empty, empty, blank])
-            continue
         else:
-            party = strforce(party)
+            for party in ballot_parties:
+                if party is None:
+                    writerow([counter, empty, empty, empty])
+                    continue
+                else:
+                    party = strforce(party)
 
         candidates = ballot['candidates']
         if not candidates:
@@ -207,7 +212,7 @@ def csv_from_party_results(election, party_results, outfile=None):
             continue
 
         for candidate in candidates:
-            writerow([counter, party, strforce(candidate), valid])
+            writerow([counter, party, strforce(": ".join(candidate)), valid])
 
     try:
         outfile.seek(0)
