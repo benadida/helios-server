@@ -1738,13 +1738,9 @@ class FormatError(ValueError):
     pass
 
 def parse_party_options(optstring):
-    substrings = optstring.split(PARTY_OPTION_SEPARATOR)
-    if len(substrings) != 2:
-        m = ("Malformed option string '%s':"
-             "cannot split to exactly to options.") % (optstring,)
-        raise FormatError(m)
+    substrings = optstring.split(PARTY_OPTION_SEPARATOR, 1)
 
-    range_str, group_str = substrings
+    range_str = substrings[0]
 
     r = range_str.split('-')
     if len(r) != 2:
@@ -1761,11 +1757,14 @@ def parse_party_options(optstring):
              "min-max choices option '%s'" % (name,))
         raise FormatError(m)
 
-    try:
-        group = int(group_str)
-    except ValueError:
-        m = "Malformed decimal group number in option '%s'" % (group_str,)
-        raise FormatError(m)
+    group = None
+    if len(substrings) == 2:
+        group_str = substrings[1]
+        try:
+            group = int(group_str)
+        except ValueError:
+            m = "Malformed decimal group number in option '%s'" % (group_str,)
+            raise FormatError(m)
 
     options = {'opt_min_choices': min_choices,
                'opt_max_choices': max_choices,
@@ -1791,6 +1790,9 @@ def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
             if party not in parties:
                 opts = parse_party_options(name)
                 group = opts['group']
+                if group is None:
+                    group = group_no
+                    opts['group'] = group
                 if group not in (group_no, nr_groups):
                     m = ("Party group numbers must begin at zero and "
                          "increase monotonically. Expected %d but got %d") % (
@@ -1815,6 +1817,7 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties, nr_groups,
     choices = to_absolute_answers(selection, nr_candidates)
     voted_candidates = []
     voted_parties = []
+    voted_parties_counts = {}
     last_index = -1
     thegroup = None
     party_list = None
@@ -1877,27 +1880,29 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties, nr_groups,
 
         if not voted_parties or voted_parties[-1] != party:
             voted_parties.append(party)
+        if party not in voted_parties_counts:
+            voted_parties_counts[party] = 0
+        voted_parties_counts[party] += 1
         voted_candidates.append((party, name))
 
     if choices and valid:
-        # validate each party separately
-        for partyid, party_list in parties.iteritems():
-            # how many candidates in party ?
-            party_choice_filter = lambda g: g[0] == partyid
-            nr_choices = len(filter(party_choice_filter, voted_candidates))
-
+        # validate number of choices for each party separately
+        for party, nr_choices in voted_parties_counts.iteritems():
+            party_list = parties[party]
             max_choices = party_list['opt_max_choices']
             min_choices = party_list['opt_min_choices']
 
             if (nr_choices < min_choices or
                 nr_choices > max_choices):
                 valid = False
-                invalid_reason = ('Invalid min/max choices (min:%d, max:%d, '
-                                  'choices:%d') % (min_choices, max_choices,
-                                                   nr_choices)
-        if not valid:
-            voted_candidates = None
-            thegroup = None
+                invalid_reason = ("Invalid min/max choices "
+                                  "(min: %d, max: %d, 'choices: %d") % (
+                                  min_choices, max_choices, nr_choices)
+                break
+
+    if not valid:
+        voted_candidates = None
+        thegroup = None
 
     ballot = {'parties': voted_parties,
               'group': thegroup,
