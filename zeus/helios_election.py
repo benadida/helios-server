@@ -584,8 +584,9 @@ class HeliosElection(ZeusCoreElection):
 
             empty_party_count = 0
             if self.model.election.type_params.get('count_empty_question', False):
+
 		for b in results['ballots']:
-	            if len(b['candidates']) == 1 and b['party'] == party and b['candidates'][0] not in candidates:
+	            if len(b['candidates']) == 1 and party in b['parties'] and b['candidates'][0] not in candidates:
                         empty_party_count += 1
                 data['candidates']['Χωρίς επιλογή'] = empty_party_count
             parties.append(data)
