@@ -474,9 +474,9 @@ class Election(HeliosModel):
     for index, q in enumerate(questions_data):
         q_answers = ["%s: %s" % (q['question'], ans) for ans in q['answers']]
         if self.election_type == 'election_parties':
-            group = 0
-        else:
             group = index
+        else:
+            group = 0
         if prepend_empty_answer:
             params_max = int(q['max_answers'])
             params_min = int(q['min_answers'])
