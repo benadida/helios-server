@@ -1,0 +1,139 @@
+#!/bin/bash
+
+function press_enter () {
+    echo " "
+    echo -n "Press Enter to continue."
+    read c
+    echo " "
+    echo " "
+}
+
+CORE=$(dirname $0)/core.py
+
+SKIP_VERIFICATION=
+NR_CPUS=$(cat /proc/cpuinfo | grep 'processor:' | wc -l)
+NR_PARALLEL=${NR_CPUS}
+
+while true; do
+    if [ "$1" = "-k" ] || [ "$1" = "--skip-election-verification" ]; then
+        SKIP_VERIFICATION=1
+        shift
+        continue
+    fi
+
+    if [ "$1" = "-p" ] || [ "$1" = "--parallel" ]; then
+        if [ -z "$2" ]; then
+            echo "$1 needs an argument"
+            exit 1
+        fi
+        NR_PARALLEL=$2
+        shift; shift
+        continue
+    fi
+
+    break
+done
+
+if [ -z "$2" ] || [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    echo "Usage: $0 [options] <election_proofs> <voter_signature_directory>"
+    echo " "
+    echo "Options:"
+    echo " "
+    echo "-k, --skip-election-verification"
+    echo " "
+    echo "    Skip verification of election proofs."
+    echo "    This is useful if you have already verified the proofs and"
+    echo "    you need to perform the remaining validations once again."
+    echo "    Verifying the election proofs is very time consuming,"
+    echo "    but verifying once is enough."
+    echo " "
+    echo "-p <n>, --parallel <n>"
+    echo " "
+    echo "    Speed up verification using <n> parallel processes."
+    echo "    By default, it is set to the number of processors which is"
+    echo "    autodetected from /proc/cpuinfo."
+    echo "    [${NR_CPUS} for this system]"
+    echo " "
+    exit 1
+fi
+
+ELECTION_PROOFS=$1
+VOTER_SIG_DIR=$2
+
+ZEUS_COUNTED_SIG_DIR=./zeus-counted-signatures
+VOTER_REPLACED_SIG_DIR=./voter-replaced-signatures
+VOTER_COUNTED_SIG_DIR=./voter-counted-signatures
+
+if ! [ -f "${ELECTION_PROOFS}" ]; then
+    echo "Cannot find election proof file '${ELECTION_PROOFS}'"
+    exit 1
+fi
+
+if ! [ -d "${VOTER_SIG_DIR}" ]; then
+    echo "Cannot find voter signature directory '${VOTER_SIG_DIR}'"
+    exit 1
+fi
+
+echo "1. Verify election and extract proofs of counted votes"
+echo " "
+
+if ! [ -d "${ZEUS_COUNTED_SIG_DIR}" ]; then
+    mkdir -p "${ZEUS_COUNTED_SIG_DIR}"
+fi
+
+VERIFY=
+if [ -n "${SKIP_VERIFICATION}" ]; then
+    VERIFY="--no-verify"
+fi
+
+${CORE} --election "${ELECTION_PROOFS}" \
+        --extract-signatures "${ZEUS_COUNTED_SIG_DIR}/" \
+        --parallel ${NR_PARALLEL} \
+        ${VERIFY}
+
+press_enter
+
+echo "2. Verify voter signatures"
+echo " "
+
+${CORE} --election "${ELECTION_PROOFS}" \
+        --no-verify \
+        --verify-signatures "${VOTER_SIG_DIR}"/*
+
+press_enter
+
+echo "3. Split voter signatures to counted and replaced"
+echo " "
+
+if ! [ -d "${VOTER_REPLACED_SIG_DIR}" ]; then
+    mkdir -p "${VOTER_REPLACED_SIG_DIR}"
+fi
+
+if ! [ -d "${VOTER_COUNTED_SIG_DIR}" ]; then
+    mkdir -p "${VOTER_COUNTED_SIG_DIR}"
+fi
+
+for sigfile in "${VOTER_SIG_DIR}"/*; do
+    FINGERPRINT=$(grep '^FINGERPRINT: ' "${sigfile}" | cut -d' ' -f2)
+    if grep -q "^PREVIOUS: ${FINGERPRINT}" "${sigfile}"; then
+        cp "${sigfile}" "${VOTER_REPLACED_SIG_DIR}"/${FINGERPRINT}
+    else
+        cp "${sigfile}" "${VOTER_COUNTED_SIG_DIR}"/${FINGERPRINT}
+    fi
+done
+
+press_enter
+
+echo "4. Verify that all signatures presented by voters as counted were counted"
+echo " "
+
+for sigfile in "${VOTER_COUNTED_SIG_DIR}"/*; do
+    FINGERPRINT=$(grep '^FINGERPRINT: ' "${sigfile}" | cut -d' ' -f2)
+    if cmp -s "${sigfile}" ${ZEUS_COUNTED_SIG_DIR}/${FINGERPRINT}; then
+        echo "${sigfile} OK"
+    else
+        echo "${sigfile} FAILED"
+        press_enter
+    fi
+done
+

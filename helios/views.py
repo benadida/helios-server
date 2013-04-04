@@ -1564,6 +1564,16 @@ def one_election_save_questions(request, election):
   return SUCCESS
 
 @transaction.commit_on_success
+@election_admin(frozen=True)
+def one_election_force_end(request, election):
+  user = get_user(request)
+  if not user.superadmin_p:
+    raise PermissionDenied
+  election.voting_ends_at = datetime.datetime.now()
+  election.save()
+  return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+
+@transaction.commit_on_success
 @election_admin(frozen=False)
 def one_election_freeze(request, election):
   # figure out the number of questions and trustees

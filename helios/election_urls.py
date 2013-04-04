@@ -63,6 +63,7 @@ urlpatterns = patterns('',
     (r'^/save_questions$', one_election_save_questions),
     (r'^/register$', one_election_register),
     (r'^/freeze$', one_election_freeze), # includes freeze_2 as POST target
+    (r'^/endnow$', one_election_force_end), # includes freeze_2 as POST target
 
     # computing tally
     (r'^/compute_tally$', one_election_compute_tally),

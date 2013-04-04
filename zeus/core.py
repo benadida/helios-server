@@ -36,6 +36,7 @@ from time import time, sleep
 try:
     from gmpy import mpz
     _pow = pow
+
     def pow(b, e, m):
         return int(_pow(mpz(b), e, m))
 except ImportError:
@@ -47,6 +48,7 @@ if sys.version_info < (2, 7):
         s = bin(num)
         s = s.lstrip('-0b')
         return len(s)
+
 
 class ZeusError(Exception):
     pass
@@ -77,7 +79,7 @@ V_GENERATOR     =   'GENERATOR: '
 V_ORDER         =   'ORDER: '
 V_ALPHA         =   'ALPHA: '
 V_BETA          =   'BETA: '
-V_COMMITMENT   =    'COMMITMENT: '
+V_COMMITMENT    =    'COMMITMENT: '
 V_CHALLENGE     =   'CHALLENGE: '
 V_RESPONSE      =   'RESPONSE: '
 V_COMMENTS      =   'COMMENTS: '
@@ -93,6 +95,7 @@ def c2048():
     x = 1469094658184849175779600697490107440856998313689389490776822841770551060089241836869172678278809937016665355003873748036083276189561224629758766413235740137792419398556764972234641620802215276336480535455350626659186073159498839187349683464453803368381196713476682865017622180273953889824537824501190403304240471132731832092945870620932265054884989114885295452717633367777747206369772317509159592997530169042333075097870804756411795033721522447406584029422454978336174636570508703615698164528722276189939139007204305798392366034278815933412668128491320768153146364358419045059174243838675639479996053159200364750820L
     y = pow(g, x, p)
     return p, q, g, x, y
+
 
 def c4096():
     p = 989739086584899206262870941495275160824429055560857686533827330176266094758539805894052465425543742758378056898916975688830042897464663659316565658681455337631927169716594388227886841821639348093631558865282436882702647379556880510663048896169189712894445414625772725732980365633359489925655152255197807877415565545449245335018149917344244391646710898790373814092708148348289809496148127266128833710713633812316745730790666494269135285419129739194203790948402949190257625314846368819402852639076747258804218169971481348145318863502143264235860548952952629360195804480954275950242210138303839522271423213661499105830190864499755639732898861749724262040063985288535046880936634385786991760416836059387492478292392296693123148006004504907256931727674349140604415435481566616601234362361163612719971993921275099527816595952109693903651179235539510208063074745067478443861419069632592470768800311029260991453478110191856848938562584343057011570850668669874203441257913658507505815731791465642613383737548884273783647521116197224510681540408057273432623662515464447911234487758557242493633676467408119838655147603852339915225523319492414694881196888820764825261617098818167419935357949154327914941970389468946121733826997098869038220817867L
@@ -118,6 +121,7 @@ _default_public_key['public'] = y
 _default_secret_key = {}
 _default_secret_key.update(_default_crypto)
 _default_secret_key['secret'] = x
+
 
 def crypto_args(cryptosys):
     return [cryptosys['modulus'], cryptosys['generator'], cryptosys['order']]
@@ -292,7 +296,7 @@ def from_canonical(inp, unicode_strings=0, s=''):
                 raise ValueError(m)
 
             value = from_canonical(inp, unicode_strings=unicode_strings)
-            obj[key] = value # allow key TypeError rise through
+            obj[key] = value  # allow key TypeError rise through
 
             s = read(2)
             if not s:
@@ -397,7 +401,6 @@ def write_all(fd, data):
         written += w
     return written
 
-once = 0
 
 class CheapQueue(object):
     _initpid = None
@@ -873,7 +876,6 @@ class Teller(object):
     pending_status  =   '      '
     fail_status     =   '*FAIL*'
     finish_status   =   ' -OK- '
-
 
     def __init__(self, name='', total=1, current=0, depth=0,
                        parent=None, resume=False, subtask=False,
@@ -1425,7 +1427,7 @@ def get_term(n, k):
         if k in t:
             return t[k]
     else:
-        t = {n:1}
+        t = {n: 1}
         _terms[n] = t
 
     m = k
@@ -1573,7 +1575,6 @@ def verify_gamma_encoding(n, completeness=1):
         if choices in choice_set:
             m = ("Duplicate decoding for %d: %s!" % (encoded, choices))
         choice_set.add(choices)
-
 
     if not completeness:
         return
@@ -1726,6 +1727,7 @@ def gamma_count_candidates(encoded_list, candidates):
     return counts
 
 PARTY_SEPARATOR = ': '
+PARTY_OPTION_SEPARATOR = ', '
 
 def strforce(thing, encoding='utf8'):
     if isinstance(thing, unicode):
@@ -1736,10 +1738,18 @@ class FormatError(ValueError):
     pass
 
 def parse_party_options(optstring):
-    r = optstring.split('-')
+    substrings = optstring.split(PARTY_OPTION_SEPARATOR)
+    if len(substrings) != 2:
+        m = ("Malformed option string '%s':"
+             "cannot split to exactly to options.") % (optstring,)
+        raise FormatError(m)
+
+    range_str, group_str = substrings
+
+    r = range_str.split('-')
     if len(r) != 2:
         m = ("Malformed min-max choices option '%s'"
-             % (optstring,))
+             % (range_str,))
         raise FormatError(m)
 
     min_choices, max_choices = r
@@ -1751,8 +1761,15 @@ def parse_party_options(optstring):
              "min-max choices option '%s'" % (name,))
         raise FormatError(m)
 
+    try:
+        group = int(group_str)
+    except ValueError:
+        m = "Malformed decimal group number in option '%s'" % (group_str,)
+        raise FormatError(m)
+
     options = {'opt_min_choices': min_choices,
-               'opt_max_choices': max_choices}
+               'opt_max_choices': max_choices,
+               'group': group}
 
     return options
 
@@ -1760,6 +1777,8 @@ def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
     parties = {}
     options = {}
     theparty = None
+    group_no = 0
+    nr_groups = 1
 
     for i, candidate in enumerate(candidates):
         candidate = strforce(candidate)
@@ -1771,6 +1790,14 @@ def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
         if theparty is None or party != theparty:
             if party not in parties:
                 opts = parse_party_options(name)
+                group = opts['group']
+                if group not in (group_no, nr_groups):
+                    m = ("Party group numbers must begin at zero and "
+                         "increase monotonically. Expected %d but got %d") % (
+                         group_no, opts['group'])
+                    raise FormatError(m)
+                group_no = group
+                nr_groups = group + 1
                 opts['choice_index'] = i
                 parties[party] = opts
                 theparty = party
@@ -1778,18 +1805,18 @@ def parties_from_candidates(candidates, separator=PARTY_SEPARATOR):
 
         parties[theparty][i] = name
 
-    return parties
+    return parties, nr_groups
 
-def gamma_decode_to_party_ballot(encoded, candidates, parties,
+def gamma_decode_to_party_ballot(encoded, candidates, parties, nr_groups,
                                  separator=PARTY_SEPARATOR):
 
     nr_candidates = len(candidates)
     selection = gamma_decode(encoded, nr_candidates)
     choices = to_absolute_answers(selection, nr_candidates)
-    names = []
-    append = names.append
+    voted_candidates = []
+    voted_parties = []
     last_index = -1
-    theparty = None
+    thegroup = None
     party_list = None
     valid = True
     no_candidates_flag = 0
@@ -1797,8 +1824,8 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties,
     for i in choices:
         if i <= last_index or no_candidates_flag:
             valid = False
-            names = None
-            theparty = None
+            voted_candidates = None
+            thegroup = None
             #print ("invalid index: %d <= %d -- choices: %s"
             #        % (i, last_index, choices))
             break
@@ -1812,21 +1839,26 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties,
             name = party
             party = ''
 
-        party_list = parties[party]
+        if party not in parties:
+            m = "Voted party list not found"
+            raise AssertionError(m)
 
-        if theparty is None:
-            theparty = party
-            if theparty not in parties:
-                m = "Voted party list not found"
-                raise AssertionError(m)
+        party_list = parties[party]
+        group = party_list['group']
+        if group >= nr_groups:
+            m = "Group number out of limits! (%d > %d)" % (group, nr_groups)
+            raise AssertionError(m)
+
+        if thegroup is None:
+            thegroup = group
             if i == party_list['choice_index']:
                 no_candidates_flag = 1
             #continue
 
-        if theparty != party:
+        if thegroup != group:
             valid = False
-            names = None
-            theparty = None
+            voted_candidates = None
+            thegroup = None
             break
 
         if not no_candidates_flag:
@@ -1840,18 +1872,21 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties,
                 raise AssertionError(m)
                 # name = party_list[i]
 
-        append(name)
+        if not voted_parties or voted_parties[-1] != party:
+            voted_parties.append(party)
+        voted_candidates.append((party, name))
 
     if choices and valid:
-        nr_choices = len(names)
+        nr_choices = len(voted_candidates)
         if (nr_choices < party_list['opt_min_choices'] or
             nr_choices > party_list['opt_max_choices']):
             valid = False
-            names = None
-            theparty = None
+            voted_candidates = None
+            thegroup = None
 
-    ballot = {'party': theparty,
-              'candidates': names,
+    ballot = {'parties': voted_parties,
+              'group': thegroup,
+              'candidates': voted_candidates,
               'valid': valid}
     return ballot
 
@@ -1862,7 +1897,8 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
     party_counters = {}
     ballots = []
     append = ballots.append
-    parties = parties_from_candidates(candidates, separator=separator)
+    parties, nr_groups = parties_from_candidates(candidates,
+                                                 separator=separator)
     for party, party_candidates in parties.iteritems():
         party_counters[party] = 0
         for index, candidate in party_candidates.iteritems():
@@ -1874,24 +1910,24 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
 
     for encoded in encoded_list:
         ballot = gamma_decode_to_party_ballot(encoded, candidates, parties,
-                                              separator=separator)
+                                              nr_groups, separator=separator)
         if not ballot['valid']:
             invalid_count += 1
             continue
 
         append(ballot)
 
-        party = ballot['party']
-        if party not in party_counters:
-            m = "Cannot fined initialized counter at '%s'!" % (party)
-            raise AssertionError(m)
-        party_counters[party] += 1
-        if party is None:
-            blank_count += 1
+        for party in ballot['parties']:
+            if party not in party_counters:
+                m = "Cannot fined initialized counter at '%s'!" % (party)
+                raise AssertionError(m)
+            party_counters[party] += 1
+            if party is None:
+                blank_count += 1
 
         ballot_candidates = ballot['candidates']
-        for candidate in ballot_candidates:
-            key = (ballot['party'], candidate)
+        for party, candidate in ballot_candidates:
+            key = (party, candidate)
             if key not in candidate_counters:
                 try:
                     if len(ballot_candidates) != 1:
@@ -1920,8 +1956,6 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
                'blank_count': blank_count,
                'invalid_count': invalid_count}
     return results
-
-
 
 def candidates_to_parties(candidates, separator=PARTY_SEPARATOR):
     parties = {}
@@ -3431,7 +3465,7 @@ class ZeusCoreElection(object):
             m = "Cannot transition from stage '%s' to 'VOTING'" % (stage,)
             raise ZeusError(m)
 
-        if not self.get_option('novalidate'):
+        if not self.get_option('no_verify'):
             self.validate_creating()
         self.do_set_stage('VOTING')
 
@@ -3915,12 +3949,12 @@ class ZeusCoreElection(object):
         crypto = self.do_get_cryptosystem()
         modulus, generator, order = crypto
         public = self.do_get_election_public()
-        mix = { 'modulus': modulus,
-                'generator': generator,
-                'order': order,
-                'public': public,
-                'original_ciphers': votes_for_mixing,
-                'mixed_ciphers' : votes_for_mixing }
+        mix = {'modulus': modulus,
+               'generator': generator,
+               'order': order,
+               'public': public,
+               'original_ciphers': votes_for_mixing,
+               'mixed_ciphers': votes_for_mixing}
         return mix, counted_list
 
     def set_mixing(self):
@@ -3932,7 +3966,7 @@ class ZeusCoreElection(object):
             m = "Cannot transition from stage '%s' to 'MIXING'" % (stage,)
             raise ZeusError(m)
 
-        if not self.get_option('novalidate'):
+        if not self.get_option('no_verify'):
             self.validate_voting()
         votes_for_mixing, counted_list = self.extract_votes_for_mixing()
         self.do_store_mix(votes_for_mixing)
@@ -4090,7 +4124,7 @@ class ZeusCoreElection(object):
             m = "Cannot transition from stage '%s' to 'DECRYPTING'" % (stage,)
             raise ZeusError(m)
 
-        if not self.get_option('novalidate'):
+        if not self.get_option('no_verify'):
             self.validate_mixing()
 
         self.compute_zeus_factors()
@@ -4269,7 +4303,7 @@ class ZeusCoreElection(object):
             m = "Cannot transition from stage '%s' to 'FINISHED'" % (stage,)
             raise ZeusError(m)
 
-        if not self.get_option('novalidate'):
+        if not self.get_option('no_verify'):
             self.validate_decrypting()
 
         self.decrypt_ballots()
@@ -4441,14 +4475,14 @@ class ZeusCoreElection(object):
         first = 1
         for i in xrange(0, mid):
             if first:
-                append("Party-A" + PARTY_SEPARATOR + "0-2")
+                append("Party-A" + PARTY_SEPARATOR + "0-2, 0")
                 first = 0
             append("Party-A" + PARTY_SEPARATOR + "Candidate-%04d" % i)
 
         first = 1
         for i in xrange(mid, nr_candidates):
             if first:
-                append("Party-B" + PARTY_SEPARATOR + "0-2")
+                append("Party-B" + PARTY_SEPARATOR + "0-2, 1")
                 first = 0
             append("Party-B" + PARTY_SEPARATOR + "Candidate-%04d" % i)
 
@@ -4593,14 +4627,14 @@ class ZeusCoreElection(object):
                 raise AssertionError(m)
 
     @classmethod
-    def mk_random(cls,  nr_candidates   =   3,
-                        nr_trustees     =   2,
-                        nr_voters       =   10,
-                        nr_votes        =   10,
-                        nr_mixes        =   2,
-                        nr_rounds       =   8,
-                        stage           =   'FINISHED',
-                        teller=_teller, **kw):
+    def mk_random(cls, nr_candidates   =   3,
+                       nr_trustees     =   2,
+                       nr_voters       =   10,
+                       nr_votes        =   10,
+                       nr_mixes        =   2,
+                       nr_rounds       =   8,
+                       stage           =   'FINISHED',
+                       teller=_teller, **kw):
 
         self = cls(teller=teller, **kw)
         self._nr_candidates = nr_candidates
@@ -4645,10 +4679,10 @@ def main():
     epilog="Try 'zeus --generate'"
     parser = argparse.ArgumentParser(description=description, epilog=epilog)
 
-    parser.add_argument('--verify-election', metavar='infile',
-        help="Read a FINISHED election from a JSON file and verify it")
+    parser.add_argument('--election', metavar='infile',
+        help="Read a FINISHED election from a proofs file and verify it")
 
-    parser.add_argument('--verify-signature', nargs='*',
+    parser.add_argument('--verify-signatures', nargs='*',
         metavar=('election_file', 'signature_file'),
         help="Read an election and a signature from a JSON file "
              "and verify the signature")
@@ -4656,8 +4690,8 @@ def main():
     parser.add_argument('--parallel', dest='nr_procs', default=2,
         help="Use multiple processes for parallel mixing")
 
-    parser.add_argument('--novalidate', action='store_true', default=False,
-                        help="Do not validate elections")
+    parser.add_argument('--no-verify', action='store_true', default=False,
+                        help="Do not verify elections")
 
     parser.add_argument('--report', action='store_true', default=False,
                         help="Display election report")
@@ -4740,9 +4774,9 @@ def main():
             for fingerprint in counted_list:
                 vote = election.do_get_vote(fingerprint)
                 signature = vote['signature']
-                filename = prefix + '_' + fingerprint
+                filename = prefix + fingerprint
                 with open(filename, "w") as f:
-                    f.write(signature)
+                    f.write(strforce(signature))
                 count += 1
                 teller.status("%d/%d '%s'", count, total, filename, tell=1)
 
@@ -4759,7 +4793,7 @@ def main():
                 signature = vote['signature']
                 filename = prefix + '_' + fingerprint
                 with open(filename, "w") as f:
-                    f.write(signature)
+                    f.write(strforce(signature))
                 count += 1
                 teller.status("%d/%d '%s'", count, total, filename, tell=1)
 
@@ -4790,7 +4824,7 @@ def main():
     def main_generate(args, teller=_teller, nr_parallel=0):
         filename = args.generate
         filename = filename[0] if filename else None
-        novalidate = args.novalidate
+        no_verify = args.no_verify
 
         election = ZeusCoreElection.mk_random(
                             nr_candidates   =   args.nr_candidates,
@@ -4800,7 +4834,7 @@ def main():
                             nr_rounds       =   args.nr_rounds,
                             stage           =   args.stage,
                             teller=teller, nr_parallel=nr_parallel,
-                            novalidate=novalidate)
+                            no_verify=no_verify)
         exported, stage = election.export()
         if not filename:
             name = ("%x" % election.do_get_election_public())[:16]
@@ -4830,18 +4864,18 @@ def main():
             print report
 
     def main_verify_election(args, teller=_teller, nr_parallel=0):
-        novalidate = args.novalidate
-        filename = args.verify_election
+        no_verify = args.no_verify
+        filename = args.election
         sys.stderr.write("loading election from '%s'\n" % (filename,))
         with open(filename, "r") as f:
             try:
-                finished = from_canonical(f, unicode_strings=1)
+                finished = from_canonical(f, unicode_strings=0)
             except ValueError:
                 finished = json_load(f)
 
         election = ZeusCoreElection.new_at_finished(finished, teller=teller,
                                                     nr_parallel=nr_parallel)
-        if not novalidate:
+        if not no_verify:
             election.validate()
 
         if args.extract_signatures:
@@ -4867,29 +4901,31 @@ def main():
         return election
 
     def main_verify_signature(args, teller=_teller, nr_parallel=0):
-        novalidate = args.novalidate
+        no_verify = args.no_verify
         report = args.report
-        args = args.verify_signature
-        if len(args) < 2:
+        sigfiles = args.verify_signatures
+        if len(sigfiles) < 1:
+            m = "No signature files given!"
+            raise ValueError(m)
+        if not args.election:
             m = ("cannot verify signature without an election file "
                  "and at least one signature file")
             raise ValueError(m)
 
-        filename = args[0]
-        sys.stderr.write("loading election from '%s'\n" % (filename,))
-        with open(filename, "r") as f:
+        election_file = args.election
+        sys.stderr.write("loading election from '%s'\n" % (election_file,))
+        with open(election_file, "r") as f:
             try:
-                finished = from_canonical(f, unicode_strings=1)
+                finished = from_canonical(f, unicode_strings=0)
             except ValueError:
                 finished = json_load(f)
 
         election = ZeusCoreElection.new_at_finished(finished, teller=teller,
                                                     nr_parallel=nr_parallel,
-                                                    novalidate=novalidate)
+                                                    no_verify=no_verify)
         if report:
             do_report()
 
-        sigfiles = args[1:]
         with teller.task("Verifying signatures", total=len(sigfiles)):
             for sigfile in sigfiles:
                 with open(sigfile, "r") as f:
@@ -4901,6 +4937,7 @@ def main():
     class Nullstream(object):
         def write(*args):
             return
+
         def flush(*args):
             return
 
@@ -4920,12 +4957,12 @@ def main():
 
     if args.generate is not None:
         return main_generate(args, teller=teller, nr_parallel=nr_parallel)
-    elif args.verify_election:
-        return main_verify_election(args, teller=teller,
-                                    nr_parallel=nr_parallel)
-    elif args.verify_signature:
+    elif args.verify_signatures:
         return main_verify_signature(args, teller=teller,
                                      nr_parallel=nr_parallel)
+    elif args.election:
+        return main_verify_election(args, teller=teller,
+                                    nr_parallel=nr_parallel)
     else:
         parser.print_help()
 
@@ -4961,12 +4998,12 @@ def test_decryption():
     if pts != texts:
         raise AssertionError("Z")
 
-    cfm = { 'modulus': p,
-            'generator': g,
-            'order': q,
-            'public': pk,
-            'original_ciphers': cts,
-            'mixed_ciphers': cts, }
+    cfm = {'modulus': p,
+           'generator': g,
+           'order': q,
+           'public': pk,
+           'original_ciphers': cts,
+           'mixed_ciphers': cts}
 
     mix1 = mix_ciphers(cfm)
     mix = mix_ciphers(mix1)
@@ -4990,4 +5027,3 @@ if __name__ == '__main__':
     #cross_check_encodings(7)
     #test_decryption()
     retval.append(main())
-
