@@ -20,8 +20,8 @@
 % usepackage command, below.
 
 % This version uses the latex2e styles, not the very ancient 2.09 stuff.
-\documentclass[letterpaper,twocolumn,10pt]{article}
-\usepackage{usenix,epsfig,endnotes}
+\documentclass[letterpaper,10pt]{article}
+\usepackage{epsfig,endnotes}
 
 \usepackage[flushleft]{threeparttable}
 \usepackage{amssymb}
@@ -64,7 +64,7 @@ Greek Reseach and Education Network,\\
 
 We present Zeus, a verifiable Internet ballot casting and counting
 system based on Helios, in which encrypted votes are posted eponymously
-to an server, then are made anonymous via a cryptographic mixing, and
+to a server, then are anonymized via cryptographic mixing, and
 finally are decrypted using multiple trustee keys. Zeus refines the
 original Helios workflow to address a variety of practical issues, such
 as usability, parallelization, varying election types, and tallying
@@ -76,10 +76,10 @@ tallying a total of about 10000 votes.
 
 \section{Introduction}
 
-Helios \cite{HeliosOriginal} \cite{Helios3} is a well known system for
+Helios \cite{adida:2008} \cite{Helios3} is a well known system for
 Internet voting, in which the entire process is carried out through
 digital means---there is no paper trace, nor ballots in physical form.
-Instead, there is a trail of mathematical proofs linked together, which
+Instead, there is a trail of mathematical proofs linked together that
 can verify the correctness of every step in the voting process.
 Helios has been used in several real world elections and its basic
 architectural design has proven robust.
@@ -90,12 +90,12 @@ via cryptography which is vastly more complex and computationally
 expensive than just handling unencrypted ballots that do not need
 to be kept secret.
 
-The original Helios publication \cite{HeliosOriginal} proposed
-cryptographic mixing \cite{Mixnet} of votes for their anonymization.
-However, in the latest version of the software \cite{Helios3},
-homomorphic tallying \cite{Homomorphic} is used because the authors
-found that mixing had been too complicated and time-consuming for
-practical use.
+The original Helios publication \cite{adida:2008} proposed
+cryptographic mixing via Sako-Kilian mixnets~\cite{sako:1995} of
+ballots for their anonymization. However, in the latest version of the
+software \cite{Helios3}, homomorphic tallying \cite{Homomorphic} is
+used because the authors found that mixing had been too complicated
+and time-consuming for practical use.
 
 Homomorphic tallying operates directly on \emph{encrypted} votes,
 tallying them all up in a single encrypted result, which is the only
@@ -113,10 +113,25 @@ Then any method of tallying can be applied to compute results.
 
 Zeus was based on the latest version of Helios \cite{HeliosCode}, 
 which uses homomorphic tallying, but actually implements the mixing
-workflow proposed in the initial publication \cite{HeliosOriginal}.
+workflow proposed in the initial publication~\cite{adida:2008}.
 Due to this and other requirements and refinements presented below,
 the Zeus software only retains 50\% of the original source code,
 including the entire homomorphic tallying support which is unused.
+
+The contribution of this paper is not any new electronic voting
+protocols or an entirely new voting workflow; we have adopted and used
+proven systems and ideas that have already been described in the
+literature. Our contribution is then:
+\begin{itemize}
+\item A description of a working e-voting system that has been used in
+  many real-world elections, by not especially technically-savvy
+  users, in a particularly adversarial context. 
+\item An account of our experiences by using the system. Zeus has been
+  used in over 40 real-world elections involving more than 10000
+  voters in total.
+\item The usability and accessibility issues we had to tackle.
+\item The internal design and implementation choices.
+\end{itemize}
 
 In section~\ref{related},
 we discuss related works on online and electronic-only voting.
@@ -451,7 +466,7 @@ Instead, the voter is added into an exclusion list along with
 a statement justifying the decision to exclude them.
 
 The eligible encrypted votes are first mixed by Zeus itself
-according to \cite{Sako-Kilian}.
+by a Sako-Kilian mixnet~\cite{sako:1995}.
 The bulk of the computational work in mixing is to produce
 enough rounds of the probabilistic proof.
 The work is distributed to a group of parallel workers,
@@ -652,10 +667,23 @@ institutions met resistance from some political parties, student and
 academics unions. A widespread means of protest was to disrupt the
 election of Governing Councils, so that they could not be inaugurated.
 Successive aborted elections pushed forward the adoption of electronic
-voting, which in turn was the subject of controversy. This led to
-attacks on Zeus, and the voting process supported by Zeus. None of
-them was eventually successful, and none of them targeted Zeus per se.
-We describe them briefly in what follows.
+voting, which in turn was the subject of controversy. 
+
+The controversy meant that some political parties were against the use
+of Zeus, or any form of electronic voting. As a result, Zeus was the
+subject of a number of public denouncements and letters, detailing
+weaknesses of electronic voting systems in general and Helios in
+particular. These did not challenge Zeus, as the weaknesses applied to
+older versions of Helios. Altough Zeus was open sourced from the start
+and we welcomed constructive criticism or the exposure of unknown
+vulnerabilities, we did not receive any. The atmosphere was at times
+vitriolic, as when a mainstream political party called the people
+behind Zeus ``techno-fascists'', thus introducing a new term in the
+greek lexicon and bemusing the people involved in the whole effort.
+
+This led to attacks on Zeus, and the voting process supported by Zeus.
+None of them was eventually successful. We describe them briefly in
+what follows.
 
 \subsection{University of Thrace}
 
@@ -812,6 +840,27 @@ it had been caught in time---something the protesters did not let on.
   \end{threeparttable}
   \caption{Zeus Held Elections\label{table:zeus-elections}}
 \end{table*}
+
+\subsection{Recreate Greece}
+
+Encouraged by the success of Zeus in previous elections, a new
+political party, ``Recreate Greece'' (``dimiourgia, xana!'' in Greek)
+approached us and enquired whether they could use Zeus for the
+elections leading to, and during, their party congress. Although not
+among our target constituency, we decided to allow the use of Zeus in
+a ``best-effort'' basis from our part, since that entailed the
+development of new, interesting functionality---specifically, party
+list elections, elections with multiple questions and answers, and
+elections where blank votes are not allowed.
+
+It turned out that in one of their elections a voter wanted to show
+that e-voting cannot be trusted since anybody can vote with a voter's
+access credentials, if these are leaked. On April 6, 2013, the voter
+posted his voter URL on a Facebook page. The electoral committee noted
+the incident, and therefore moved to disqualify the ballots cast under
+that voter's name. This functionality is offered by Zeus as the attack
+vector had already been anticipated; it is possible to disqualify a
+vote before mixing.
 
 % gtsouk: Including timing measurements, especially wrt differen versions of
 % Python, GMP, etc.
