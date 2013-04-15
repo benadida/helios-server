@@ -62,32 +62,88 @@ Greek Reseach and Education Network,\\
 
 \subsection*{Abstract}
 
-We present Zeus, an Internet ballot casting and counting system
-based on Helios that allows elections in which ballots cannot be
-tallied homomorphically. Zeus separates the production of election
-results from voting and counting, thus allowing any type of
-elections to be carried out, while maintaining the main features of
-the original Helios system in terms of anonymity and verifiability.
+We present Zeus, a verifiable Internet ballot casting and counting
+system based on Helios, in which encrypted votes are posted eponymously
+to an server, then are made anonymous via a cryptographic mixing, and
+finally are decrypted using multiple trustee keys. Zeus refines the
+original Helios workflow to address a variety of practical issues, such
+as usability, parallelization, varying election types, and tallying
+through a separate computing system.
+In rough numbers, in the first seven months of deployment, Zeus has been
+used in about 40 elections across 30 public and private institutions,
+tallying a total of about 10000 votes.
+
 
 \section{Introduction}
 
-Helios is a well known system for Internet voting, in which the whole
-process is carried out through digital means---there is no paper
-trace, nor ballots in physical forms. It has been used in several real
-world elections and its basic architectural design has proven robust.
+Helios \cite{HeliosOriginal} \cite{Helios3} is a well known system for
+Internet voting, in which the entire process is carried out through
+digital means---there is no paper trace, nor ballots in physical form.
+Instead, there is a trail of mathematical proofs linked together, which
+can verify the correctness of every step in the voting process.
+Helios has been used in several real world elections and its basic
+architectural design has proven robust.
 
-In this paper we present Zeus, a system based on Helios, which extends
-Helios's range of applications while reducing the actual work
-performed by Helios and its role in the election process. Helios is a
-system that performs \emph{ballot casting}, \emph{ballot counting},
-and \emph{production of election results}. Zeus performs only the
-first two, leaving the production of election results to other
-systems, or to additional modules. In this way, it can accommodate
-more voting systems than Helios, which currently supports only
-approval-like voting.
+Beyond correctness, voting fundamentally needs to be anonymous,
+and this forces the ballots to be encrypted and processed indirectly
+via cryptography which is vastly more complex and computationally
+expensive than just handling unencrypted ballots that do not need
+to be kept secret.
 
-\section{Roots and Rationale}
+The original Helios publication \cite{HeliosOriginal} proposed
+cryptographic mixing \cite{Mixnet} of votes for their anonymization.
+However, in the latest version of the software \cite{Helios3},
+homomorphic tallying \cite{Homomorphic} is used because the authors
+found that mixing had been too complicated and time-consuming for
+practical use.
 
+Homomorphic tallying operates directly on \emph{encrypted} votes,
+tallying them all up in a single encrypted result, which is the only
+piece of information that is decrypted.
+This is much easier computationally but sacrifices generality because
+the tallying algorithm must be encoded in the cryptographic processing
+itself---one cannot get results in the form of individual ballots as
+they were submitted.
+
+On the other hand, mixing shuffles the set of votes in a provably
+correct but practically untraceable way, therefore anonymizing it.
+The output is the same set of unencrypted ballots as they were before
+encryption and submition, only in random, unknowable order.
+Then any method of tallying can be applied to compute results.
+
+Zeus was based on the latest version of Helios \cite{HeliosCode}, 
+which uses homomorphic tallying, but actually implements the mixing
+workflow proposed in the initial publication \cite{HeliosOriginal}.
+Due to this and other requirements and refinements presented below,
+the Zeus software only retains 50\% of the original source code,
+including the entire homomorphic tallying support which is unused.
+
+In section~\ref{related},
+we discuss related works on online and electronic-only voting.
+
+In section~\ref{challenges},
+we discuss Zeus' background and outline the practical problems we faced
+and our approach to solve them.
+
+In section~\ref{workflow},
+we go through the complete voting workflow from the users' perspective.
+
+In section~\ref{architecture},
+we elaborate on the technical details of the voting workflow and its
+implementation, from both a cryptographic and an engineering point of
+view.
+
+In section~\ref{experiences},
+we relate our experiences with deployment and use of Zeus as a service
+for elections over the internet.
+
+\section{Related Work}
+\label{related}
+
+Helios, etc.
+
+\section{Zeus Background and Challenges}
+\label{challenges}
 Zeus was initiated after the use of electronic vote was permitted by
 decree for the election of the Governing Councils of Higher Education
 Institutions in Greece. In each institution the Governing Council is
@@ -108,16 +164,16 @@ calculations on them. In the end, the results of the calculations are
 decrypted and published. 
 
 Although using a single system for the whole process is appealing, the
-use of homomorphic counting in Helios cannot accommodate voting
+use of homomorphic tallying in Helios cannot accommodate voting
 systems in which not just the individual choices on the ballot matter,
-but the whole ballot itself. In STV, homorphical tallying could pass
+but the whole ballot itself. In STV, homomorphic tallying could pass
 to the STV algorithm the information that a certain candidate has been
 selected in rank $r$ by $n$ voters, but this is not enough, as the whole
 ballot and not just each rank separately is passed around during STV's
 counting rounds.
 
 We realised, however, that it is not necessary to use Helios's
-homomorphic counting capabilities. We decided to use Helios for
+homomorphic tallying capabilities. We decided to use Helios for
 \emph{counting the ballots}, not for producing the election results.
 Once we do have a veriable ballots count, this can be fed to an STV
 calculator, or indeed to a calculator of any voting system. Since the
@@ -128,7 +184,92 @@ Interestingly, the original publication of Helios~\cite{adida:2008}
 did not use homomorphic tallying, but relied on mixnets to
 guarantee voter anonymity. ~\cite{bulens:2011}
 
-\section{Ballot Casting and Encoding for Preference Elections}
+\section{Voting Workflow}
+\label{workflow}
+
+The election workflow in Zeus consists of the following phases:
+election preparation, voting, processing, and tallying.
+
+\subsection{Preparing the Election}
+
+\subsubsection{Initialisation}
+
+The election administrator initialises the election in Zeus by
+entering the polling date (or dates), the members of the election
+committee, the name of the election and any other information required
+for defining the process. The election administrator may be a member
+of the election committee.
+
+\subsubsection{Notifications to the Election Committee}
+
+The election administrator uses Zeus to send notifications to the
+election committee members. The notifications contain URLs by which
+the committee members can access the system in order to generate and
+upload their encryption keys.
+
+\subsubsection{Generation of Election Keys}
+
+Committee members generate their encryption keys. The encryption keys
+are generated in their browsers and the members are instructed to save
+them in a secure place. They then upload the public parts of their
+keys to Zeus, to be used for encryption the voters' ballots when polls
+open. 
+
+\subsubsection{Ballot Setup}
+
+The election administrator in coordination with the election committee
+sets up the election ballots. This includes defining the number of
+ballot questions and acceptable answers, whether the order of ballot
+choices will be important (as in STV) or not (as in approval voting),
+and the contents of each ballot.
+
+\subsubsection{Voters Addition}
+
+Voters are entered to the system by the administrator and the election
+committee by means of a CSV file (typically generated through a
+spreadsheet application) containing, for each voter the voter's email
+and name.
+
+\subsubsection{Election Freeze}
+
+Finally the election is frozen; when this happens, the voters receive
+at their mailboxes a message inviting them to cast their vote. The
+message contains a link that leads them to the voting booth, where
+they can compile their ballot. The voting booth opens at the date and
+time appointed by the election authority; if the voters visit the link
+before, they are informed accordingly.
+
+\subsection{Voting}
+
+Voters access the voting booth via the link they have received. They
+compose their ballot, which they proceed to submit. All the process
+happens at the client browser, with no interaction with the server
+until the ballot has been encrypted and sent to be stored along with
+the rest of the election's ballots. The user then receives an e-mail
+containing a receipt for the ballot. The receipt contains the
+cryptographic data that can be used to verify that the ballot has been
+counted in the results.
+
+\subsection{Tallying}
+
+When the polls close the administrator and the election committee can
+proceed to mix and decrypt the ballots. Mixing is carried out at least
+once, on the Zeus server, and can optionally be carried out in
+additional independent servers. Independent mixing works by means of a
+command line tool to which a URL with the encrypted ballots is passed;
+the tool mixes them and returns them back to Zeus. 
+
+Once all mixes have been completed, the election committee members
+receive an e-mail notification to proceed to decrypt the ballots. The
+notification contains a URL link through which the encrypted ballots
+are downloaded to the client browser, partially decrypted there, and
+returned back to Zeus.
+
+After the decryption Zeus provides a tally of the decrypted and
+anonymised ballots, along with all the cryptographic proofs that can
+be used to verify and audit and election.
+
+\subsection{Ballot Casting and Encoding for Preference Elections}
 
 In Helios, ballots consist of answers to binary ``yes'' or ``no''
 questions, framed in the appropriate way. For instance, a voter
@@ -172,7 +313,7 @@ have a small value, thus saving valuable bit-space.\footnote{ For
 % gtsouk: describe the exact encoding / decoding algorithm for the
 % ballots. 
 
-\section{Ballot Casting and Encoding for Approval Elections}
+\subsection{Ballot Casting and Encoding for Approval Elections}
 
 Although the prime impetus was to support preference elections, it was
 later required of Zeus to support simple approval elections, where
@@ -207,16 +348,141 @@ introduction of new cryptographic primitives would require considerably
 more time in development and testing.
 
 
-\section{The Cryptographic Model}
+\section{Internal Architecture}
+\label{architecture}
 
-We have collected all cryptographic aspects of Zeus elections and
-implemented them into a generic, standalone, and extensible software
-module. \footnote{\texttt{zeus.core}} This module implements an
-abstract version of the election workflow, all the required
-cryptographic functions, and all validations of data and the workflow
-itself. This module is fitted into the production environment by
-software extensions (i.e. subclassing) where the web application uses
-it as needed.
+Zeus consists of a core workflow module, the web application,
+and the web user interface.
+The workflow module implements an abstract version of the complete Zeus
+workflow, along with all the required cryptographic functions and
+validations. The web application extends the abstract workflow module
+and builds a usable voting system upon a database.
+The web application handles authentication, election formulation, vote
+submission, and trustee interactions for key setup and decryption.
+The user interface offers access to the web application through
+a web browser, and localy performs vote preparation and encryption,
+as well as trustee key generation and decryption.
+
+\subsection{Poll Stages}
+The abstract workflow represents each poll as a structured document,
+and defines five consecutive stages for it, from creation to completion.
+At each stage more data are recorded into the document,
+either coming from the outside, such as votes,
+or are the results of processing existing data, such as vote mixing,
+or both, such as final ballot decryption.
+
+Once recorded in the poll document, data are never modified,
+and each stage is validated upon transition into the next one.
+
+At the final stage,
+the document represents a full account of a completed poll,
+containing everything needed to verify the process,
+from votes, to results, to proofs.
+
+\subsection{Creating}
+At this stage, the candidates, voters, and trustees are recorded
+into the document.
+
+The candidate list is just an ordered list of unique candidate names.
+The names are not important and are not interpreted. However,
+different types of elections put structure within the candidate list
+which is interpreted at tallying time to verify and count the ballot,
+as discussed in Section~\ref{poll_types}.
+
+The voters are likewise represented by uninterpreted but unique names.
+For each voter,
+Zeus generates several random numbers, the \emph{voter codes}, that can
+independently be used both for audit votes and voter authentication,
+as discussed in Section~\ref{audit_codes}.
+
+For trustees, only their public key is recorded.
+For each poll, and additionally to any external trustees,
+Zeus always creates and registers a trustee key for the poll.
+As per the Helios workflow, this allows the service operator to
+provide anonymity guarantees in addition to those provided by
+the appointed committee of trustees.
+
+\subsection{Voting}
+\label{voting}
+The poll enters the \emph{voting} stage once all the trustee public
+keys have been combined\footnote{by multiplication} to create the
+\emph{poll public key}.
+
+After that, the trustees, voters, and candidates cannot be modified.
+
+Once the poll public key is available,
+voters can encrypt and submit their votes,
+as discussed in Section~\ref{vote_preparation}.
+
+For each submitted vote, zeus generates a cryptographically signed
+receipt for the voter.
+With the receipt, the voter can later prove that his vote submission was
+acknowledged as successful, perhaps in the context of an investigation
+for a complaint.
+Receipts are detailed in Section~\ref{receipts}.
+
+Each voter may submit a vote multiple times.
+Each time, the new vote replaces the old one,
+and the new receipt explicitly states which vote it replaces.
+No vote can be replaced more than once.
+
+Apart from normal votes, voters may submit \emph{audit votes} to verify
+that their local system really does submit the vote they choose,
+and that it does not alter it in any way.
+The process is detailed in Section~\ref{audit_codes}.
+
+\subsection{Mixing}
+\label{mixing}
+After voting has ended, the poll is put into the \emph{mixing} stage,
+where the encrypted ballots are anonymized.
+Only the ballots eligible for counting are selected, by excluding
+all audit votes, all replaced votes, and all votes by excluded voters.
+
+Voter exclusion is a digital convenience due to
+the voter's identity still being known after voting has ended.
+Anonymity is achieved at the end of the mixing stage,
+and not at cast time as in traditional ballot box polls.
+
+The poll's officials may choose to disqualify a voter if
+it is discovered that he was wrongly allowed to vote, or if
+his conduct during the election was found in breach of rules.
+Neither the voter nor their votes are deleted from the poll document.
+Instead, the voter is added into an exclusion list along with
+a statement justifying the decision to exclude them.
+
+The eligible encrypted votes are first mixed by Zeus itself
+according to \cite{Sako-Kilian}.
+The bulk of the computational work in mixing is to produce
+enough rounds of the probabilistic proof.
+The work is distributed to a group of parallel workers,
+one round at a time.
+\footnote{Our deployment used 128 rounds and 16 workers.}
+Verification of mixes is likewise parallel.
+
+After the first mix is complete, additional mixes by external agent
+may be verified and added in a strict order in the mix list.
+Zeus includes a command line utility that can perform external mixes.
+
+\subsection{Decrypting}
+\label{decrypting}
+
+After mixing is complete, the final mixed ballots are exported to
+the trustees to be partialy decrypted.
+The resulting decryption factors are then verified and imported
+into the poll document.
+Zeus' own decryption factors are computed last.
+
+\subsection{Finished}
+\label{finished}
+In the transition to \emph{finished}, all decryption factors are
+distributed in parallel workers to be verified and combined together
+to yield the final decrypted ballots.
+The decrypted ballots are recorded into the poll document,
+and then the document is cast into a canonical representation in text.
+This textual representation is hashed to obtain a cryptographically
+secure identifier for it, which can be published and recorded
+in the proceedings.
+
 
 \subsection{Software Dependencies}
 Random number generation \emph{(Fortuna)}, primality testing
@@ -301,7 +567,7 @@ hashing. We have studied \texttt{Helios}, \texttt{PloneVoteCryptoLib},
 % \subsection{Decrypting}
 % \subsection{Validation}
 
-\section{Election User Interface}
+\subsection{Election User Interface}
 
 The users of Zeus were not expected to be experts in cryptography, or
 to have any knowledge of computer science; we could only assume
@@ -360,90 +626,6 @@ that are sent to them by the system, as we see below.
 % \section{Election Verification}
 
 % %gtsouk: describe the election verification algorithm
-
-\section{The Election Workflow in Zeus}
-
-The election workflow in Zeus consists of the following phases:
-election preparation, polling, and tallying.
-
-\subsection{Preparing the Election}
-
-\subsubsection{Initialisation}
-
-The election administrator initialises the election in Zeus by
-entering the polling date (or dates), the members of the election
-committee, the name of the election and any other information required
-for defining the process. The election administrator may be a member
-of the election committee.
-
-\subsubsection{Notifications to the Election Committee}
-
-The election administrator uses Zeus to send notifications to the
-election committee members. The notifications contain URLs by which
-the committee members can access the system in order to generate and
-upload their encryption keys.
-
-\subsubsection{Generation of Election Keys}
-
-Committee members generate their encryption keys. The encryption keys
-are generated in their browsers and the members are instructed to save
-them in a secure place. They then upload the public parts of their
-keys to Zeus, to be used for encryption the voters' ballots when polls
-open. 
-
-\subsubsection{Ballot Setup}
-
-The election administrator in coordination with the election committee
-sets up the election ballots. This includes defining the number of
-ballot questions and acceptable answers, whether the order of ballot
-choices will be important (as in STV) or not (as in approval voting),
-and the contents of each ballot.
-
-\subsubsection{Voters Addition}
-
-Voters are entered to the system by the administrator and the election
-committee by means of a CSV file (typically generated through a
-spreadsheet application) containing, for each voter the voter's email
-and name.
-
-\subsubsection{Election Freeze}
-
-Finally the election is frozen; when this happens, the voters receive
-at their mailboxes a message inviting them to cast their vote. The
-message contains a link that leads them to the voting booth, where
-they can compile their ballot. The voting booth opens at the date and
-time appointed by the election authority; if the voters visit the link
-before, they are informed accordingly.
-
-\subsection{Voting}
-
-Voters access the voting booth via the link they have received. They
-compose their ballot, which they proceed to submit. All the process
-happens at the client browser, with no interaction with the server
-until the ballot has been encrypted and sent to be stored along with
-the rest of the election's ballots. The user then receives an e-mail
-containing a receipt for the ballot. The receipt contains the
-cryptographic data that can be used to verify that the ballot has been
-counted in the results.
-
-\subsection{Tallying}
-
-When the polls close the administrator and the election committee can
-proceed to mix and decrypt the ballots. Mixing is carried out at least
-once, on the Zeus server, and can optionally be carried out in
-additional independent servers. Independent mixing works by means of a
-command line tool to which a URL with the encrypted ballots is passed;
-the tool mixes them and returns them back to Zeus. 
-
-Once all mixes have been completed, the election committee members
-receive an e-mail notification to proceed to decrypt the ballots. The
-notification contains a URL link through which the encrypted ballots
-are downloaded to the client browser, partially decrypted there, and
-returned back to Zeus.
-
-After the decryption Zeus provides a tally of the decrypted and
-anonymised ballots, along with all the cryptographic proofs that can
-be used to verify and audit and election.
 
 % \section{Implementation Considerations}
 
