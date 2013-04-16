@@ -106,64 +106,62 @@ literature. Our contribution is then:
   users
 \item An account of an e-voting system used in a particularly
   adversarial context.
-\item An account of our experiences by using the system. Zeus has been
-  used in over 40 real-world elections involving more than 10000
+\item An account of our experience from using the system. Zeus has
+  been used in over 40 real-world elections involving more than 10000
   voters in total.
 \item The usability and accessibility issues we had to tackle.
 \item The internal design and implementation choices.
 \end{itemize}
 
-The rest of this paper proceeds as follows. In section~\ref{related},
+The rest of this paper proceeds as follows. In section~\ref{sec:related},
 we discuss related work and the roots of Zeus. In
-section~\ref{challenges}, we discuss Zeus's background and outline the
+section~\ref{sec:challenges} we discuss Zeus's background and outline the
 practical problems we faced and our approach to solve them. In
-section~\ref{workflow}, we go through the complete voting workflow
-from the users' perspective. In section~\ref{architecture}, we
+section~\ref{sec:workflow} we go through the complete voting workflow
+from the users' perspective. In section~\ref{sec:architecture} we
 elaborate on the technical details of the voting workflow and its
 implementation, from both a cryptographic and an engineering point of
-view. In section~\ref{experiences}, we relate our experiences with
+view. In section~\ref{sec:experience} we relate our experiences with
 deployment and use of Zeus as a service for elections over the
 internet.
 
 \section{Related Work}
-\label{related}
+\label{sec:related}
 
-Beyond correctness, voting fundamentally needs to be anonymous,
-and this forces the ballots to be encrypted and processed indirectly
-via cryptography which is vastly more complex and computationally
-expensive than just handling unencrypted ballots that do not need
-to be kept secret.
-
-The original Helios publication \cite{adida:2008} proposed
-cryptographic mixing via Sako-Kilian mixnets~\cite{sako:1995} of
-ballots for their anonymization. The use of mixnets was later dropped,
-as we will see, in favour of 
-However, in the latest version of the
-software \cite{Helios3}, homomorphic tallying~\cite{Homomorphic} is
-used because the authors found that mixing had been too complicated
-and time-consuming for practical use.
+Zeus is based on Helios~\cite{adida:2008}, an electronic voting system
+developed by Ben Adida. The original Helios publication
+\cite{adida:2008} proposed cryptographic mixing via
+Sako-Kilian~\cite{sako:1995} / Benaloh~\cite{benaloh:2006}
+mixnets~\cite{sako:1995} of ballots for their anonymization. Mixnets
+were dropped in version 2 of Helios, which was used for elections at
+the Universit\'{e} Catholique de Louvain in 2008, because in the
+then-existing implementation they could not accommodate the need for
+votes having different weights according to the voter's
+category~\cite{adida:2009}. In place of mixnets homomorphic
+tallying~\cite{cohen:1985} was adopted, as it was argued that it was
+``easier to implement efficiently, and thus easier to
+verify''~\cite{adida:2009}.
 
 Homomorphic tallying operates directly on \emph{encrypted} votes,
 tallying them all up in a single encrypted result, which is the only
-piece of information that is decrypted.
-This is much easier computationally but sacrifices generality because
-the tallying algorithm must be encoded in the cryptographic processing
-itself---one cannot get results in the form of individual ballots as
-they were submitted.
+piece of information that is decrypted. This is much easier
+computationally but sacrifices generality because the tallying
+algorithm must be encoded in the cryptographic processing itself---one
+cannot get results in the form of individual ballots as they were
+submitted.
 
 On the other hand, mixing shuffles the set of votes in a provably
-correct but practically untraceable way, therefore anonymizing it.
-The output is the same set of unencrypted ballots as they were before
-encryption and submition, only in random, unknowable order.
-Then any method of tallying can be applied to compute results.
+correct but practically untraceable way, therefore anonymizing it. The
+output is the same set of unencrypted ballots as they were before
+encryption and submition, only in random, unknowable order. Then any
+method of tallying can be applied to compute results. Although Helios
+itself is not using mixnets any more, a variant has been developed
+that does~\cite{bulens:2011}; however the code is not publicly
+available (nor was it available to us in any way).
 
-Zeus is based on Helios~\cite{adida:2008} an electronic voting system
-developed by Ben Adida. Work on Helios has continued, and is currently
-at version 3. The original publication described a system in which
-anonymity was provided by the use of mixnets. Over time researchers
-have explored possible vulnerabilities in different versions of
-Helios~\cite{heiderich:2011}. To the best of our knowledge these
-attacks are not applicable to Zeus. 
+Over time researchers have explored possible vulnerabilities in
+different versions of Helios~\cite{heiderich:2011}. To the best of our
+knowledge these attacks are not applicable to Zeus.
 
 More recently, the question of endowing Helios with everlasting
 privacy has been explored~\cite{demirel:2012}. Helios's offers
@@ -175,15 +173,13 @@ can be used for both homomorphic and mixnet-based elections. Zeus,
 like Helios, relies on computational privacy and it would be possible
 to explore the adoption of an everlasting privacy approach.
 
-Zeus was based on version 3.1 of Helios, which uses homomorphic
-tallying, but actually implements the mixing workflow proposed in the
-initial publication~\cite{adida:2008}. Due to this and other
+Due to the switch from homomorphic tallying to mixnets and other
 requirements and refinements presented below, the Zeus software only
 retains 50\% of the original source code, including the entire
-homomorphic tallying support which is unused.
+homomorphic tallying support, which is unused.
 
 \section{Zeus Background and Challenges}
-\label{challenges}
+\label{sec:challenges}
 
 Zeus was initiated after the use of electronic vote was permitted by
 decree for the election of the Governing Councils of Higher Education
@@ -226,7 +222,7 @@ did not use homomorphic tallying, but relied on mixnets to
 guarantee voter anonymity. ~\cite{bulens:2011}
 
 \section{Voting Workflow}
-\label{workflow}
+\label{sec:workflow}
 
 The election workflow in Zeus consists of the following phases:
 election preparation, voting, processing, and tallying.
@@ -390,7 +386,7 @@ more time in development and testing.
 
 
 \section{Internal Architecture}
-\label{architecture}
+\label{sec:architecture}
 
 Zeus consists of a core workflow module, the web application,
 and the web user interface.
@@ -671,6 +667,7 @@ that are sent to them by the system, as we see below.
 % \section{Implementation Considerations}
 
 \section{Experience}
+\label{sec:experience}
 
 From the voter's point of view, there has been a published usability
 analysis of Helios~\cite{karayumak:2011}. From our part we did not
