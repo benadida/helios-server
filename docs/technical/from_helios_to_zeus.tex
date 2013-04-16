@@ -118,8 +118,12 @@ In section~\ref{sec:related},
 we discuss related work and the roots of Zeus.
 In section~\ref{sec:challenges} we discuss Zeus's background and outline
 the practical problems we faced and our approach to solve them.
-In section~\ref{sec:workflow} we go through the complete voting workflow
-elaborating on technical details.
+In section~\ref{sec:voting_overview} we offer an overview of the voting
+process from the user's point of view.
+In section~\ref{sec:crypto_workflow} we go through the complete
+cryptographic workflow elaborating on technical details and the
+population of the \emph{poll document}, which contains all data
+and proofs to verify the election.
 In section~\ref{sec:experience} we relate our experiences with
 deployment and use of Zeus as a service for elections over the internet.
 
@@ -219,94 +223,120 @@ Interestingly, the original publication of Helios~\cite{adida:2008}
 did not use homomorphic tallying, but relied on mixnets to
 guarantee voter anonymity. ~\cite{bulens:2011}
 
-\section{Voting Workflow}
-\label{sec:user_workflow}
+\section{Overview of the Voting Process}
+\label{sec:voting_overview}
 % Merge this with workflow below
 
-The election workflow in Zeus consists of the following phases:
-election preparation, voting, processing, and tallying.
+Each poll in Zeus has the following phases:
+poll preparation, voting, processing, and tallying.
 
-\subsection{Preparing the Election}
+\subsection{Poll Preparation}
+A Zeus account is created for the organizers of the poll.
+Logging into the system with this account enables creation of new polls
+through a submission form.
+The account holder, that is the \emph{poll administrator},
+sets the title, description, dates, and other information for the new
+poll, and chooses who the trustees are going to be.
+Next, they proceed to select the type of the election and define the
+content of the poll accordingly.
+Depending on the election type,
+the content can typically be either a single list of candidates to rank,
+or multiple party lists with candidates to select candidates from one,
+or multiple questions for each to be answered by choosing one or more of
+the provided answers.\footnote{
+    See Sections~\ref{sec:ballot_encoding} and~\ref{sec:approval_counting}
+    for details on the types of elections supported.}
+Then, the administrator uploads the list of voters that may participate
+in the poll.\footnote{a simple CSV format is used, easily exported from
+spreadsheets.}
 
-\subsubsection{Initialisation}
+Before the voting starts, each of the trustees must visit Zeus' website
+and generate and register their encryption keys for the poll.
+The trustees do not need an account to enter the system.
+Instead, upon their designation as trustees, Zeus sends them a
+confidential invitation which they can use to log in to the system
+and perform their duties.
 
-The election administrator initialises the election in Zeus by
-entering the polling date (or dates), the members of the election
-committee, the name of the election and any other information required
-for defining the process. The election administrator may be a member
-of the election committee.
+Thus far, trustees are designated by their e-mail address, and the
+invitation is send via e-mail as a secret link into Zeus' website.
+However, it is easy for Zeus to be adapted to use any system for
+designation and notification of trustees.\footnote{
+    An adaptation for notifications via mobile phones was actually
+    implemented but was never used or streamlined within the software.
+}
+See discussion in Section~\ref{sec:audit_codes}.
 
-\subsubsection{Notifications to the Trustees}
+\subsubsection{Trustee Key Generation}
+Trustees must follow their invitation and log in to generate their
+key pair. The generation takes place entirely in the web browser,
+assisted with randomness downloaded from the server itself.\footnote{
+due to poor randomness in browsers, a practice inherited from Helios.}
+After key creation, the trustee is prompted to save his private key,
+and when they acknowledge it has been saved, the public key is uploaded.
+However, the key registration is not yet complete---trustees are
+required to verify that they have indeed secured the key by
+procuring it so that it can be compared to the one uploaded.
 
-The election administrator uses Zeus to send notifications to the
-election committee members. The notifications contain URLs by which
-the committee members can access the system in order to generate and
-upload their encryption keys.
+\subsubsection{Finalizing the Pool, and Inviting Voters}
+The administrators may edit all aspects of the poll, up until they
+decide to \emph{finalize} (or \emph{freeze}) the poll.
+After that, only limited editing is possible, and most importantly,
+all registered voters are sent their confidential invitations to vote.
 
-\subsubsection{Generation of Election Keys}
-
-Committee members generate their encryption keys. The encryption keys
-are generated in their browsers and the members are instructed to save
-them in a secure place. They then upload the public parts of their
-keys to Zeus, to be used for encryption the voters' ballots when polls
-open. 
-
-\subsubsection{Ballot Setup}
-
-The election administrator in coordination with the election committee
-sets up the election ballots. This includes defining the number of
-ballot questions and acceptable answers, whether the order of ballot
-choices will be important (as in STV) or not (as in approval voting),
-and the contents of each ballot.
-
-\subsubsection{Voters Addition}
-
-Voters are entered to the system by the administrator and the election
-committee by means of a CSV file (typically generated through a
-spreadsheet application) containing, for each voter the voter's email
-and name.
-
-\subsubsection{Election Freeze}
-
-Finally the election is frozen; when this happens, the voters receive
-at their mailboxes a message inviting them to cast their vote. The
-message contains a link that leads them to the voting booth, where
-they can compile their ballot. The voting booth opens at the date and
-time appointed by the election authority; if the voters visit the link
-before, they are informed accordingly.
+As with trustees, voters do not need an account, but use the secret
+information in their invitation.
+Visiting Zeus through the invitation link will initialy display
+information about the poll along with contact details and voting dates.
+Once the appointed voting time has come, the voting booth is
+automatically enabled and visiting voters are transfered there directly.
 
 \subsection{Voting}
+The voting booth, once opened, operates entirely locally without
+further interactions with the Zeus server or any other site.
+The voter may even disconnect from the Internet while inside the booth.
+The booth appearance depends on the election type, and after vote
+selection users are asked to review and confirm their choices.
+After vote submission, a receipt (see Section~\ref{sec:receipt} is
+generated which can immediately be downloaded, but which is also sent
+to them via e-mail.\footnote{
+for \emph{audit} votes see Section~\ref{sec:audit_codes}}
 
-Voters access the voting booth via the link they have received. They
-compose their ballot, which they proceed to submit. All the process
-happens at the client browser, with no interaction with the server
-until the ballot has been encrypted and sent to be stored along with
-the rest of the election's ballots. The user then receives an e-mail
-containing a receipt for the ballot. The receipt contains the
-cryptographic data that can be used to verify that the ballot has been
-counted in the results.
+During voting, administrators have access to aggregate and detailed
+statistics for the ongoing election.
 
-\subsection{Tallying}
+Section~\ref{sec:voting} elaborates on the technical issues.
 
-When the polls close the administrator and the election committee can
-proceed to mix and decrypt the ballots. Mixing is carried out at least
-once, on the Zeus server, and can optionally be carried out in
-additional independent servers. Independent mixing works by means of a
-command line tool to which a URL with the encrypted ballots is passed;
-the tool mixes them and returns them back to Zeus. 
+\subsection{Processing and Tallying}
+After the appointed end time, voting is automatically disabled.
+However, administrators may choose to extend the voting to a new end
+time and date, even after expiration.
+For the poll to be finally closed,
+the administrator has to explicitly select so.
+Then, the first mixing by Zeus proceeds automatically.
+Once the first mix is complete, additional mixes by external agents
+may be added one by one using generated confidential links.\footnote{
+Zeus provides a command line toolkit that, among other things, can
+perform mixing given those confidential links.}
 
-Once all mixes have been completed, the election committee members
-receive an e-mail notification to proceed to decrypt the ballots. The
-notification contains a URL link through which the encrypted ballots
-are downloaded to the client browser, partially decrypted there, and
-returned back to Zeus.
+Finally, the administrator ends the mixing process\footnote{
+details in Section~\ref{sec:mixing}},
+and the trustees are notified again for the decryption process.
+Each one visits the Zeus website through the invitation link.
+The mixed encrypted ballots are downloaded to their client browser,
+and they are prompted to procure their secret poll key.
+When provided, the ballots are partially decrypted and the output
+is sent back to Zeus.
 
-After the decryption Zeus provides a tally of the decrypted and
-anonymised ballots, along with all the cryptographic proofs that can
-be used to verify and audit and election.
+When all partial decryptions are available, they are combined to produce
+the final anonymous and unencrypted ballots.
+Depending on the poll type, the ballots are either sent into another
+system for tallying and reporting on the results,
+or the ballots are tallied and reported on by Zeus itself.
+After the results are available,
+the administrator may download an archive with all generated proofs.
 
-\section{The Zeus Voting Workflow}
-\label{sec:workflow}
+\section{Cryptographic Workflow}
+\label{sec:crypto_workflow}
 % what enters the doc and what does not
 
 \subsection{Internal Architecture}
@@ -346,13 +376,13 @@ which are otherwise not important and are not interpreted.
 However, different types of elections put special structure
 within the candidate list which is interpreted at tallying time
 to verify and count the ballot,
-as discussed in Section~\ref{ballot_counting}.
+as discussed in Section~\ref{sec:ballot_counting}.
 
 Voters are likewise represented by uninterpreted but unique names.
 For each voter,
 Zeus generates several random numbers, the \emph{voter codes}, that can
 independently be used both for audit votes and voter authentication,
-as discussed in Section~\ref{audit_codes}.
+as discussed in Section~\ref{sec:audit_codes}.
 
 For trustees, only their public key is recorded.
 For each poll, and additionally to any external trustees,
@@ -362,13 +392,13 @@ provide anonymity guarantees in addition to those provided by
 the appointed committee of trustees.
 
 \subsubsection{Voting}
-\label{voting}
+\label{sec:voting}
 When all intended trustees have been recorded,
 the poll may transition to the \emph{voting} stage
 by combining\footnote{by a multiplication, actually}
 the trustees' public keys into a single \emph{poll public key}
 that the voters must use to encrypt their votes,
-as detailed in Section~\ref{vote_preparation}.
+as detailed in Section~\ref{sec:vote_preparation}.
 After the formulation of the poll public key,
 no trustees, voters, or candidates can be modified.
 
@@ -377,7 +407,7 @@ receipt for the voter.
 With the receipt the voter can later prove that
 his vote submission was acknowledged as successful,
 perhaps in the context of an investigation for a complaint.
-Receipts are detailed in Section~\ref{receipts}.
+Receipts are detailed in Section~\ref{sec:receipts}.
 
 Each voter may submit a vote multiple times.
 Each time, the new vote replaces the old one,
@@ -387,16 +417,16 @@ No vote can be replaced more than once.
 Apart from normal votes, voters may submit \emph{audit votes} to verify
 that their local system really does submit the vote they choose,
 and that it does not alter it in any way.
-The process is detailed in Section~\ref{audit_codes}.
+The process is detailed in Section~\ref{sec:audit_codes}.
 
 \subsubsection{Mixing}
-\label{mixing}
+\label{sec:mixing}
 After voting has ended, the poll is put into the \emph{mixing} stage,
 where the encrypted ballots are anonymized.
 Only the ballots eligible for counting are selected, by excluding
 all audit votes, all replaced votes, and all votes by excluded voters.
 
-Voter exclusion is a digital convenience due to
+Voter exclusion is a digital convenience owning to
 the voter's identity still being known after voting has ended.
 Anonymity is achieved at the end of the mixing stage,
 and not at cast time as in traditional ballot box polls.
@@ -422,7 +452,7 @@ may be verified and added in a strict order in the mix list.
 Zeus includes a command line utility that can perform external mixes.
 
 \subsubsection{Decrypting}
-\label{decrypting}
+\label{sec:decrypting}
 
 After mixing is complete, the final mixed ballots are exported to
 the trustees to be partialy decrypted.
@@ -431,7 +461,7 @@ into the poll document.
 Zeus' own decryption factors are computed last.
 
 \subsubsection{Finished}
-\label{finished}
+\label{sec:finished}
 In the transition to \emph{finished}, all decryption factors are
 distributed in parallel workers to be verified and combined together
 to yield the final decrypted ballots.
@@ -442,10 +472,11 @@ secure identifier for it, which can be published and recorded
 in the proceedings.
 
 \subsection{Vote Submission Receipts}
-\label{receipts}
+\label{sec:receipts}
+**what to put in receipts?
 
 \subsection{Ranked Ballot Encoding}
-\label{ballot_encoding}
+\label{sec:ballot_encoding}
 In Helios, ballots consist of answers to binary ``yes'' or ``no''
 questions, framed in the appropriate way. For instance, a voter
 indicates $k$ out of $n$ candidates on a ballot by selecting them, in
@@ -489,10 +520,10 @@ have a small value, thus saving valuable bit-space.\footnote{ For
 % ballots. 
 
 \subsection{Tallying Multi-Question Approval Polls}
-\label{approval_counting}
-In Section~\ref{ballot_encoding} we have established the encoding
-used for ballots that select a subset of the candidates and
-ranks each one in it, in a strict order.
+\label{sec:approval_counting}
+In Section~\ref{sec:ballot_encoding} we have established the encoding
+used for ballots that select a subset of the candidates and ranks each
+one in it, in a strict order.
 
 Multi-question approval ballots, however, are different.
 There is a number of questions separated into distinct groups,
@@ -546,12 +577,12 @@ and we are currently uncertain whether the redundancy in
 the encoding is a good or bad thing; it certainly is practical.
 
 \subsection{Audit codes}
-\label{audit_codes}
+\label{sec:audit_codes}
 \subsubsection{Audit votes}
 \subsubsection{Authentication}
 
 \subsection{Vote preparation}
-\label{vote_preparation}
+\label{sec:vote_preparation}
 Don't forget about randomness from server.
 
 \subsection{Software Dependencies}
