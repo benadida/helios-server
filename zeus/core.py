@@ -1558,7 +1558,7 @@ def verify_gamma_encoding(n, completeness=1):
         raise AssertionError(m)
 
     for encoded in xrange(encode_limit):
-        choices = list(gamma_decode(encoded, n))
+        choices = tuple(gamma_decode(encoded, n))
         new_encoded = gamma_encode(choices, n)
         if new_encoded != encoded:
             m = ("Incorrect encoding %s to %d instead of %d"
