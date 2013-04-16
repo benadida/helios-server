@@ -206,7 +206,7 @@ $(document).ready(function(){
       var newq = q.clone();
       var newtab = $(this.tabs()[0]).clone();
       var qindex = this.forms().length;
-      
+    
       newtab.removeClass("error");
       newtab.find("a").text(this._get_question_title(parseInt(qindex)+1));
       newtab.find("a").attr({href:"#q" + (qindex+1)});
@@ -234,6 +234,10 @@ $(document).ready(function(){
       if (this.forms().length > 1) {
         this.remove_button.show();
       }
+      if (this.forms().length >= MAX_QUESTIONS_LIMIT) {
+          this.add_button.hide()
+          return;
+      }
     },
     
     _get_question_title: function(index) {
@@ -246,7 +250,7 @@ $(document).ready(function(){
 
     _set_form_index: function(el, newindex, reset) {
       reset = reset == undefined ? true : false;
-      var curindex = parseInt(/form-(\d)+-/.exec(el.find("input").attr("name"))[1]);
+      var curindex = parseInt(/form-(\d+)-/.exec(el.find("input").attr("name"))[1]);
       var reset_field = function(f) {
         var newname = f.attr('name').replace('form-'+curindex, 'form-'+newindex);
         var newid = f.attr('id').replace('form-'+curindex, 'form-'+newindex);
