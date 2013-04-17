@@ -320,11 +320,18 @@ the administrator may download an archive with all generated proofs.
 \label{sec:crypto_workflow}
 % what enters the doc and what does not
 
-\subsection{Internal Architecture}
-The Zeus system consists of a core workflow module, the web application,
-and the web user interface.
-The workflow module implements an abstract version of the complete Zeus
-workflow, along with all the required cryptographic functions and
+Zeus uses essentially the same cryptographic workflow as in Helios
+\cite{adida:2008}.
+In this section we contribute the organisation of the Helios workflow
+around a logical document that contains every cryptographically
+significant piece of data for a poll,
+which can be stored in an interoperable textual canonical form.
+
+The handling of this \emph{poll document} has been implemented
+in a generic and standalone software module, which is then extended by
+the web application and the user interface to create a usable voting system.
+
+This core module implements all the required cryptographic functions and
 validations. The web application extends the abstract workflow module
 and builds a usable voting system upon a database
 that handles authentication, election formulation, vote submission,
@@ -463,7 +470,7 @@ as described in Section~\ref{sec:creating}.
 The ElGamal signature is according to \cite{schneier:1995}.
 
 The receipt contains a unique identification of the cast vote,
-the vote which it replaces (if any), the cryptosystem used,
+the vote (if any) which it replaces, the cryptosystem used,
 the poll's public key along with the public keys of all trustees,
 the list of candidates, the cryptographic proof that it was a valid
 encryption, and the signature itself.
