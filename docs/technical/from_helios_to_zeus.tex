@@ -626,15 +626,16 @@ with the same code, because the second time the attacker will know
 what to do. This implies that the voter can only vote securely as many
 times as the number of audit codes they receive.
 
-This processes is intentionally more obscure to the layman,
-so that its use without being certain what to do is discouraged,
-but it is intended to be easy enough for those who do understand:
-vote with a random ``wrong'' code many times and check the audits,
-then vote with a ``correct'' and be done.
+The user interface of Zeus makes this process intentionally somewhat
+obscure to the layman, so that its use without being certain what to
+do is discouraged, but it is intended to be easy enough for those who
+do understand: vote with a random ``wrong'' code many times and check
+the audits, then vote with a ``correct'' and be done.
 
 \subsubsection{Authentication}
 \label{sec:authentication}
-If Zeus is configured not to accept votes submissions without a code
+
+If Zeus is configured not to accept vote submissions without a code
 as described in Section~\ref{sec:audit_votes},
 then the audit codes for each voter become a means of authentication---
 one can only vote if they have access to them.
@@ -1073,9 +1074,9 @@ basic premises of the system.
 In the same vein, nobody bothered to use the audit vote feature,
 whereby a voter tests that their browser is not compromised. A few
 asked about it, and when they understood what it was about decided it
-was not worth the trouble. More voters found it distracting, and we
-had to visually downplay the related user interface elements in order
-not to confuse the electorate.
+was not worth the trouble. In truth, the voters that asked about it
+found it confusing, and we had to visually downplay the related user
+interface elements in order not to confuse the electorate.
 
 Finally, nobody bothered to use our support for external mixnets,
 although we did explain to those who asked that this was the only way
