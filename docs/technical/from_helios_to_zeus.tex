@@ -1,28 +1,7 @@
-% TEMPLATE for Usenix papers, specifically to meet requirements of
-%  USENIX '05
-% originally a template for producing IEEE-format articles using LaTeX.
-%   written by Matthew Ward, CS Department, Worcester Polytechnic Institute.
-% adapted by David Beazley for his excellent SWIG paper in Proceedings,
-%   Tcl 96
-% turned into a smartass generic template by De Clarke, with thanks to
-%   both the above pioneers
-% use at your own risk.  Complaints to /dev/null.
-% make it two column with no page numbering, default is 10 point
-
-% Munged by Fred Douglis <douglis@research.att.com> 10/97 to separate
-% the .sty file from the LaTeX source template, so that people can
-% more easily include the .sty file into an existing document.  Also
-% changed to more closely follow the style guidelines as represented
-% by the Word sample file. 
-
-% Note that since 2010, USENIX does not require endnotes. If you want
-% foot of page notes, don't include the endnotes package in the 
-% usepackage command, below.
-
-% This version uses the latex2e styles, not the very ancient 2.09 stuff.
 \documentclass[letterpaper,10pt]{article}
-\usepackage{epsfig,endnotes}
+\usepackage[margin=1.5in]{geometry}
 
+\usepackage{epsfig,endnotes}
 \usepackage[flushleft]{threeparttable}
 \usepackage{amssymb}
 \usepackage{graphicx}
@@ -38,7 +17,6 @@
 %don't want date printed
 \date{}
 
-% first the title is needed
 \title{\Large \bf From Helios to Zeus}
 
 \author{Georgios Tsoukalas \qquad  Kostas Papadimitriou\\ 
@@ -77,13 +55,13 @@ proofs linked together that can verify the correctness of every step
 in the voting process. Helios has been used in several real world
 elections and its basic architectural design has proven robust.
 
-In the summer of 2012 our organisation,{\sc grnet}, was asked to
-provide a system for electronic voting to be used in elections in
-universities in Greece. Based on its good track record and the body of
-work that has been published on it, we decided to see whether Helios
-could fit our needs. Unfortunately, we found that it could not,
-because of the voting system that would be used in the elections we
-were called to run.
+In the summer of 2012 our organisation, was asked to provide a system
+for electronic voting to be used in elections in universities in
+Greece. Based on its good track record and the body of work that has
+been published on it, we decided to see whether Helios could fit our
+needs. Unfortunately, we found that it could not, because of the
+voting system that would be used in the elections we were called to
+run.
 
 We therefore had the problem of creating a system that could be used
 for the required elections, to be taken in approximately three months
@@ -160,6 +138,9 @@ method of tallying can be applied to compute results. Although Helios
 itself is not using mixnets any more, a variant has been developed
 that does~\cite{bulens:2011}; however the code is not publicly
 available (nor was it available to us in any way).
+
+From the voter's point of view, there has been a published usability
+analysis of Helios~\cite{karayumak:2011}. 
 
 Over time researchers have explored possible vulnerabilities in
 different versions of Helios~\cite{heiderich:2011}. To the best of our
@@ -733,21 +714,21 @@ that are sent to them by the system, as we see below.
 \section{Experience}
 \label{sec:experience}
 
-From the voter's point of view, there has been a published usability
-analysis of Helios~\cite{karayumak:2011}. From our part we did not
-receive any particular complains from the voters, except for one: that
-the system would not work with Internet Explorer. The users were
-informed of that in the notifications they received, but apparently
-not all of them noticed it, or knew exactly how to download and
-install one of the supported browsers (recent editions of Firefox,
-Chrome).
-
-Zeus was used in 23 elections that took place in 22 institutions
-around Greece (see Table~\ref{table:zeus-elections}). Elections were
-carried out successfully in all planned institutions. This was a
+To date, Zeus has been used in 45 elections around Greece.
+Figure~\ref{fig:elections_to_date} shows the number of registered
+voters and of those who actually voted in each election. Elections
+were carried out successfully in all planned institutions. This was a
 significant success, as the stakes were particularly high and the
 voting process charged with emotions. To understand that it is
 necessary that we provide some surrounding context.
+
+\begin{figure}[ht]
+  \begin{center}
+    \includegraphics[scale=0.7]{elections_to_date.pdf}
+  \end{center}
+  \caption{Zeus Held Elections to Date.}
+  \label{fig:elections_to_date}
+\end{figure}
 
 The law that instituted the Governing Councils in Greek educational
 institutions met resistance from some political parties, student and
@@ -876,62 +857,6 @@ voter's contact details. That explained the e-mail change, and it
 meant that it was the result of a social engineering attack. Luckily,
 it had been caught in time---something the protesters did not let on.
 
-\begin{table*}[t]
-  \begin{threeparttable}
-    \begin{tabular}{llllll}
-      \hline
-      Institution & Voters & Voted & Ballots & Open & Close\\
-      \hline
-      Harokopio University & 61 & 59 & 63 & 2012-10-19 10:00 & 2012-10-19 11:00\\
-      TEI Piraeus & 144 & 102 & 111 & 2012-10-22 09:00 & 2012-10-22 13:00\\
-      Ionian University & 105 & 92 & 101 & 2012-10-25 09:00 & 2012-10-25 15:00\\
-      TEI Patras & 93 & 78 & 79 & 2012-10-26 09:00 & 2012-10-26 13:00\\
-      University of Thrace & 583 & 490 & 528 & 2012-10-29 09:00 & 
-      2012-10-29 16:00\\
-      TEI Athens & 487 & 437 & 470 & 2012-10-31 08:00 & 2012-10-31 18:00\\
-      University of Thessaly & 429 & 328 & 345 & 2012-10-31 09:00 & 
-      2012-10-31 14:36\\
-      Panteion University & 239 & 181 & 183 & 2012-10-31 09:00 & 
-      2012-10-31 16:00\\
-      University of Thessaloniki & 2065 & 1580 & 1632 & 2012-11-01 09:00 
-      & 2012-11-01 16:00\\
-      Athens University of Economics and Business & 195 & 172 & 181 & 
-      2012-11-02 10:00 & 2012-11-02 17:00\\
-      Agricultural University of Athens & 182 & 102 & 110 
-      & 2012-11-05 09:00 & 2012-11-05 16:00\\
-      University of Ioanina & 536 & 426 & 443 & 2012-11-05 09:00 &
-      2012-11-05 17:00\\
-      University of Crete & 493 & 361 & 373 & 2012-11-05 09:00 & 
-      2012-11-05 18:00\\
-      University of Macedonia & 169 & 163 & 172 & 2012-11-06 10:00 & 
-      2012-11-06 18:00\\
-      University of Patras & 703 & 532 & 555 & 2012-11-07 09:00 & 
-      2012-11-07 17:00\\
-      Athens School of Fine Arts & 46 & 40 & 41 & 2012-11-08 07:00 & 
-      2012-11-08 16:00\\
-      University of the Aegean & 292 & 161 & 172 & 2012-11-09 09:00 & 
-      2012-11-09 17:00\\
-      University of Athens & 1897 & 1504 & 1618 & 2012-11-12 09:00 & 
-      2012-11-15 18:00\\
-      University of Piraeus & 183 & 180 & 199 & 2012-11-14 09:00 & 
-      2012-11-14 15:00\\
-      University of the Peloponnese & 128 & 124 & 128 &
-      2012-11-22 07:00 & 2012-11-22 17:00\\
-      Technical University of Crete & 126 & 116 & 127 & 
-      2012-12-04 10:00 & 2012-12-04 15:00\\
-      National Technical University of Athens & 536 & 351 & 363 &
-      2012-12-10 09:00 & 2012-12-10 17:00\\
-      TEI Piraeus & 143 & 104 & 105 & 2012-12-21 09:00 & 2012-12-21 17:00\\
-    \end{tabular}
-    \begin{tablenotes}
-      \small 
-      \item The number of ballots may be larger than the number of
-      people voted when voters have voted multiple times.
-      \item TEI is Technological Educational Institute. 
-    \end{tablenotes}
-  \end{threeparttable}
-  \caption{Zeus Held Elections\label{table:zeus-elections}}
-\end{table*}
 
 \subsubsection{Recreate Greece}
 
@@ -988,6 +913,16 @@ ask us ``how things were going'', and whether we had an indication of
 the results. We were at pains to explain that there is no way we would
 have such knowledge.
 
+Doubt in whether Zeus does indeed what is purported to do manifested
+itself in a request we received twice to provide to the election
+committee a log of the exact times each voter cast a ballot. We
+explained to the election committee that if the issue at hand was to
+verify that all votes had been counted correctly, the correct
+procedure was other, and that the requested information could in fact
+be damaging in enabling fine-tuned attacks on privacy (an attacher
+would check that a voter who had been coerced to vote did not vote
+again afterwards). 
+
 Zeus gives to the election committee a full set of cryptographic
 proofs that can be used to verify the results. We had stressed that
 these proofs would be the sole arbitrer of any dispute, and the only
@@ -998,19 +933,54 @@ plain, unsigned {\sc pdf} document carries more weight than any of our
 pronouncements.
 
 In particular, we used ReportLab's open source libraries for {\sc pdf}
-creation. In one election (elections for president of the Piraeus
-Technical Educational Institute, held on March 26, 2013), a
-disgruntled candidate complained to the election committee that the
-{\sc pdf} results' creation date was before ballot closing time. It
-turned out that he was right, and that this was due to a bug with the
-{\sc pdf} libraries (which we reported to ReportLab). The fact that
-we never meant the {\sc pdf} document to be the definitive results
-record of an election seemed to matter little. The issue was resolved
-after we issued an official explanation, complete with details of the
-bug and possible fixes. The authority of the {\sc pdf} document is
-something we came up against repeatedly: people did not seem to care
-for any other kind of authority apart from that given by the printed
-matter.
+creation (\url{http://www.reportlab.com/software/opensource/}). In one
+election (elections for president of the Piraeus Technical Educational
+Institute, held on March 26, 2013), a disgruntled candidate complained
+to the election committee that the {\sc pdf} results' creation date
+was before ballot closing time. It turned out that he was right, and
+that this was due to a bug with the {\sc pdf} libraries (which we
+reported to ReportLab). The fact that we never meant the {\sc pdf}
+document to be the definitive results record of an election seemed to
+matter little. The issue was resolved after we issued an official
+explanation, complete with details of the bug and possible fixes. The
+authority of the {\sc pdf} document is something we came up against
+repeatedly: people did not seem to care for any other kind of
+authority apart from that given by the printed matter.
+
+Regarding usability, we did not receive any particular complains from
+the voters, except for one: that the system would not work with
+Internet Explorer. The users were informed of that in the
+notifications they received, but apparently not all of them noticed
+it, or knew exactly how to download and install one of the supported
+browsers (recent editions of Firefox, Chrome). The problem was pointed
+out to them when they communicated about their problem with the
+respective election committee and was thereby resolved; we did receive
+an angry e-mail, though, from a voter who felt slighted that she had
+to go through such an ordeal. At the other end of the spectrum we saw
+in an interview a mention of a voter who had voted in an airplane and
+was very happy for it.
+
+Voters were not expected to be knowledgeable about cryptography, and
+we took care to smooth the use of Zeus for them. A lack of
+understanding led to a few interesting interactions, with some voters
+trying to read and understand their voting receipts---although the
+e-mail attachments that contained them did not have a text suffix in
+order to discourage careless handling of them. They then inquired why
+they could not understand the receipt contents, and how they could be
+sure that it was a valid one. This is something that could be solved
+in time with better informational material and voter education on the
+basic premises of the system.
+
+In the same vein, nobody bothered to use the ``audit vote'' feature,
+whereby a voter tests that their browser is not compromised. A few
+asked about it, and when they understood what it was about decided it
+was not worth the trouble. More voters found it distracting, and we
+had to visually downplay the related user interface elements in order
+not to confuse the electorate.
+
+Finally, nobody bothered to use our support for external mixnets,
+although we did explain to those who asked that this was the only way
+to guarantee anonymity if they could not trust us.
 
 \subsection{Logistics}
 \label{ssec:logistics}
@@ -1080,9 +1050,38 @@ in the way they may have anticipated.
 
 \section{Discussion}
 
+Zeus was a success beyond our expectations. It carried out all the
+elections we were called to run by law. People must have been
+reasonably happy with it, since following our official mandate we were
+asked, and we continue to be asked, to help organise other elections
+around the country: appointment of representatives for university
+teachers' union congress, various elections for the selection of
+rectors, deans, and department presidents, congress election for a
+political party. We understand that the practical advantages of
+e-voting outweighs any reservations the corresponding constituencies
+may have. In a telling interchange, a member of an election committee
+expressed his gratitude in high spirits, mentioning that in previous
+elections they would have to spend the night counting, re-counting,
+and dealing with possible complaints---while with Zeus they packed up
+early in the evening.
+
+We are continuing to maintain and improve Zeus in various ways, mainly
+in allowing more kinds of elections with different ballot
+configurations and improving usability based on the feedback we
+receive. Zeus mixing is embarassingly parallel, so we can easily scale
+it up to bigger elections; decryption from the part of the election
+commitee however takes place on a local computer and may be limitted
+by the resources there. We are exploring way in which we could improve
+performance, for instance, by developing and distributing a native
+application.
+
+At the time of this writing Zeus is actively used, and new elections
+are announced that are using it. 
+
 \section{Availability}
 
-Zeus is open software, available at \url{https://github.com/grnet/zeus}.
+Zeus is open software, available at \url{XXX} (URL withheld according
+to paper submission guidelines).
 
 {\footnotesize
 \bibliographystyle{acm}
