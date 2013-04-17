@@ -615,14 +615,15 @@ If a voter distrusts their local system and wishes to verify it
 and submit their vote safely, then they should never submit
 a vote without a code.
 
-If a vote is submitted with an accompanying code, two things may
-happen. If the code is among the ones
-the voter has received, then the server considers it to be an
-audit. If the code is not among those supplied by the server, then it is
-cast as a normal vote. Two different votes must never be submitted
-with the same code, because the second time the attacker will know
-what to do. This implies that the voter can only vote securely as many
-times as the number of audit codes they receive.
+If a vote is submitted with an accompanying code, two things may happen.
+If the code is \emph{not} among the ones the voter has received, then
+the server considers it to be an audit.
+If the code \emph{is} among those supplied by the server,
+then it is cast as a normal vote.
+Two different votes must never be submitted with the same code, because
+the second time the attacker will know what to do.
+This implies that the voter can only vote securely as many times as the
+number of audit codes they receive.
 
 The user interface of Zeus makes this process intentionally somewhat
 obscure to the layman, so that its use without being certain what to
