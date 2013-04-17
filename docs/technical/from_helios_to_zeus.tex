@@ -81,6 +81,10 @@ literature. Our contribution is:
 \begin{itemize}
 \item An extension of an existing e-voting system, Helios, so as to be
   able any kind of voting systems, such as Single Transferable Vote.
+\item The organization of the Helios cryptographic workflow as a
+  process of populating a single document with all relevant
+  cryptographic content in a well-defined portable format,
+  independent of any other details of the voting system.
 \item A new use of audit votes, both as a means of checking the
   integrity of voting from the user's side, and as channel of
   authenticated communication with the user.
@@ -322,14 +326,14 @@ the administrator may download an archive with all generated proofs.
 
 Zeus uses essentially the same cryptographic workflow as in Helios
 \cite{adida:2008}.
-In this section we contribute the organisation of the Helios workflow
+In this section we contribute the organization of the Helios workflow
 around a logical document that contains every cryptographically
 significant piece of data for a poll,
-which can be stored in an interoperable textual canonical form.
+which can be stored in a portable textual canonical form.
 
-The handling of this \emph{poll document} has been implemented
-in a generic and standalone software module, which is then extended by
-the web application and the user interface to create a usable voting system.
+The handling of this \emph{poll document} has been implemented in a
+generic and standalone software module, which is then extended by the
+web application and the user interface to create a usable voting system.
 
 This core module implements all the required cryptographic functions and
 validations. The web application extends the abstract workflow module
@@ -340,8 +344,17 @@ The user interface offers access to the web application through
 a web browser, and locally performs vote preparation and encryption,
 as well as trustee key generation and (partial) ballot decryption.
 
+The core module handling the poll document is completely independent of
+the other aspects of the system, and therefore can provide much more
+accessible and reliable verification by third parties, than if they
+had to dig through irrelevant software layers to validate results.
+
+From the Zeus point of view, it does not matter where or how the poll
+document is created, one can inspect and verify the actual process
+that took place.
+
 \subsection{Poll Stages}
-The abstract workflow represents each poll as a structured document
+Zeus represents each poll as a structured document
 and defines five consecutive stages for it, from creation to completion.
 At each stage more data are recorded into the document,
 either coming from the outside, such as votes,
