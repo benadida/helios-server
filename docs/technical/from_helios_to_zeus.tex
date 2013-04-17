@@ -101,9 +101,8 @@ literature. Our contribution is:
 
 The rest of this paper proceeds as follows. 
 In Section~\ref{sec:related},
-we discuss related work and the roots of Zeus.
-In Section~\ref{sec:challenges} we discuss Zeus's background and outline
-the practical problems we faced and our approach to solve them.
+we discuss related work.
+In Section~\ref{sec:birth} we discuss the birth of Zeus.
 In Section~\ref{sec:voting_overview} we offer an overview of the voting
 process from the user's point of view.
 In Section~\ref{sec:crypto_workflow} we go through the complete
@@ -171,8 +170,8 @@ requirements and refinements presented below, the Zeus software only
 retains 50\% of the original source code, including the entire
 homomorphic tallying support, which is unused.
 
-\section{Zeus Background and Challenges}
-\label{sec:challenges}
+\section{The Birth of Zeus}
+\label{sec:birth}
 
 Zeus was initiated after the use of electronic voting was permitted by
 decree for the election of the Governing Councils of Higher Education
@@ -473,12 +472,13 @@ in the proceedings.
 
 \subsection{Vote Submission Receipts}
 \label{sec:receipts}
+
 For each vote cast a receipt is generated and returned to the voter,
 as well as registered in the poll document.
 The receipt is a text file with simple structure listing cryptographic
 information about the vote and poll.
 The receipt text is signed with the Zeus's own trustee key for the
-poll, practical because Zeus is a trustee for every poll
+poll, which is possible because Zeus is a trustee for every poll
 as described in Section~\ref{sec:creating}.
 The ElGamal signature is according to \cite{schneier:1995}.
 
@@ -488,10 +488,10 @@ the poll's public key along with the public keys of all trustees,
 the list of candidates, the cryptographic proof that it was a valid
 encryption, and the signature itself.
 
-Although private information such as user name, IPs, and times
+Although private information such as user name, {\sc ip}s, and times
 are logged in the Zeus servers, they do not appear in the receipt,
 because we need the entire poll document to be publishable if
-the poll's authority decides so.
+the election authorities decides so.
 
 \subsection{Ranked Ballot Encoding}
 \label{sec:ballot_encoding}
@@ -643,8 +643,6 @@ If the code \emph{is} among those supplied by the server,
 then it is cast as a normal vote.
 Two different votes must never be submitted with the same code, because
 the second time the attacker will know what to do.
-This implies that the voter can only vote securely as many times as the
-number of audit codes they receive.
 
 The user interface of Zeus makes this process intentionally somewhat
 obscure to the layman, so that its use without being certain what to
@@ -671,30 +669,30 @@ order to vote successfully.
 
 \subsection{Performance}
 \label{sec:performance}
-Mixing the votes both dominates the total processing time
-and exponentiation dominates mixing calculations.
+Mixing the votes dominates the total processing time
+and exponentiation dominates the mixing calculations.
+Zeus is written in Python. 
 Python as a programming language has native support for arbitrarily
 sized integers and exponentiation.
 It is quite fast but we have used a high performing implementation
-from\texttt{libgmp} via the \texttt{gmpy} python module.
-This sped our exponentiations up about 7 times.
+from \texttt{libgmp} via the \texttt{gmpy} python module.
+This sped our exponentiations by about 7 times.
 %We also noted that Python version 2.6 is significantly slower than
 %version 2.7.
 
 Still, the computational cost of mixing is so high that
-it can only became practical when we parallelized it,
-which is an algorithmically straightforward undertaking.
+it only became practical when we parallelized it,
+which was an algorithmically straightforward undertaking.
 
-Zeus in its default 2048-bit cryptosystem with a 2047-bit order,
-using 16 cores at 2.26 GHz can mix 10000 votes for 128 rounds,
-a total of 12.8 million ciphers, in about 65 minutes
+Zeus is by default a 2048-bit cryptosystem with a 2047-bit order.
+Using 16 cores at 2.26 GHz it can mix 10000 votes for 128 rounds,
+a total of 12.8 million ciphers, in about 65 minutes,
 producing about 2 billion bytes of on-disk proof text data,
 compressible to about half of it,
 since numbers are in a hexadecimal canonical form and thus
-2 bytes of text correspond to one byte of raw number data.
-
-Although not trivial, this performance is practical enough that
-we chose not to allocate more hardware so far,
+2 bytes of text correspond to 1 byte of raw number data.
+Although not negligible, this load has allowed us
+not to allocate more hardware so far,
 our biggest election tallying about 1600 votes.
 
 % \subsection{Cryptography and Proofs}
