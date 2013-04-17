@@ -77,18 +77,22 @@ will explain below.
 The contribution of this paper is not any new electronic voting
 protocols or an entirely new voting workflow; we have adopted and used
 proven systems and ideas that have already been described in the
-literature. Our contribution is rather:
+literature. Our contribution is:
 \begin{itemize}
+\item An extension of an existing e-voting system, Helios, so as to be
+  able any kind of voting systems, such as Single Transferable Vote.
+\item A new use of audit votes, both as a means of checking the
+  integrity of voting from the user's side, and as channel of
+  authenticated communication with the user.
 \item A description of a working e-voting system that has been used in
   many real-world elections, by not especially technically-savvy
   users.
-\item An account of an e-voting system used in a particularly
-  adversarial context.
-\item An account of our experience from using the system. Zeus has
-  been used in over 40 real-world elections involving more than 11000
-  voters in total.
-\item The usability and accessibility issues we had to tackle.
-\item The internal design and implementation choices.
+\item An account of the experience of using an e-voting system in a
+  particularly adversarial context, in over 40 real-world elections
+  involving more than 11000 voters in total.
+\item A description of the usability, accessibility, and logistical
+  issues we had to tackle.
+\item An outline of the internal design and implementation choices.
 \end{itemize}
 
 The rest of this paper proceeds as follows. 
@@ -1090,7 +1094,8 @@ since people exercice their basic democratic right. They must feel
 secure, and they must feel they are not slighted by their lack of
 technical knowledge.
 
-In every Zeus election we have a helpdesk in place before the election
+In every Zeus election we have a helpdesk of three persons involved
+part time (and not all of the concurrently) before the election
 starts, during the election itself, and after the ballot box closes.
 
 Before the election started the helpdesk is tasked with helping the
