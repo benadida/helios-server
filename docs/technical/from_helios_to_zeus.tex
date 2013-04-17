@@ -42,8 +42,7 @@ original Helios workflow to address a variety of practical issues, such
 as usability, parallelization, varying election types, and tallying
 through a separate computing system.
 In rough numbers, in the first seven months of deployment, Zeus has been
-used in about 40 elections across 30 public and private institutions,
-tallying a total of about 10000 votes.
+used in more than 40 elections, tallying a total of more than 11000 votes.
 
 \section{Introduction}
 
@@ -55,55 +54,56 @@ proofs linked together that can verify the correctness of every step
 in the voting process. Helios has been used in several real world
 elections and its basic architectural design has proven robust.
 
-In the summer of 2012 our organisation, was asked to provide a system
+In the summer of 2012 our organisation was asked to provide a system
 for electronic voting to be used in elections in universities in
-Greece. Based on its good track record and the body of work that has
+Greece. Based on its good track record and the body of work that had
 been published on it, we decided to see whether Helios could fit our
 needs. Unfortunately, we found that it could not, because of the
 voting system that would be used in the elections we were called to
 run.
 
 We therefore had the problem of creating a system that could be used
-for the required elections, to be taken in approximately three months
-time. Having no time to scratch from scratch, and having no intention
-to re-invent the wheel or to embark on cryptography research, we set
-out to create a system based on Helios, as much as possible, with the
-necessary modifications to suit our needs. The system came to be known
-as Zeus (thus remaining in the pantheon of Greek gods) and has been
-used with unequivocal success for many elections over several months
-now. That was especially satisfying since the use of Zeus was not
-without critics, for reasons that we will explain below.
+for the required elections, scheduled to take place in approximately
+three months time. Having no time to start from scratch, and having
+no intention to re-invent the wheel or to embark on cryptography
+research, we set out to develop a system based on Helios, as much as
+possible, with the necessary modifications to suit our needs. The
+system came to be known as Zeus (thus remaining in the pantheon of
+Greek gods) and has been used with unequivocal success for many
+elections over several months now. That was especially satisfying
+since the use of Zeus was not without critics, for reasons that we
+will explain below.
 
 The contribution of this paper is not any new electronic voting
 protocols or an entirely new voting workflow; we have adopted and used
 proven systems and ideas that have already been described in the
-literature. Our contribution is then:
+literature. Our contribution is rather:
 \begin{itemize}
 \item A description of a working e-voting system that has been used in
   many real-world elections, by not especially technically-savvy
-  users
+  users.
 \item An account of an e-voting system used in a particularly
   adversarial context.
 \item An account of our experience from using the system. Zeus has
-  been used in over 40 real-world elections involving more than 10000
+  been used in over 40 real-world elections involving more than 11000
   voters in total.
 \item The usability and accessibility issues we had to tackle.
 \item The internal design and implementation choices.
 \end{itemize}
 
 The rest of this paper proceeds as follows. 
-In section~\ref{sec:related},
+In Section~\ref{sec:related},
 we discuss related work and the roots of Zeus.
-In section~\ref{sec:challenges} we discuss Zeus's background and outline
+In Section~\ref{sec:challenges} we discuss Zeus's background and outline
 the practical problems we faced and our approach to solve them.
-In section~\ref{sec:voting_overview} we offer an overview of the voting
+In Section~\ref{sec:voting_overview} we offer an overview of the voting
 process from the user's point of view.
-In section~\ref{sec:crypto_workflow} we go through the complete
+In Section~\ref{sec:crypto_workflow} we go through the complete
 cryptographic workflow elaborating on technical details and the
 population of the \emph{poll document}, which contains all data
 and proofs to verify the election.
-In section~\ref{sec:experience} we relate our experiences with
-deployment and use of Zeus as a service for elections over the internet.
+In Section~\ref{sec:experience} we relate our experiences with the
+deployment and use of Zeus as a service for elections over the Internet.
 
 \section{Related Work}
 \label{sec:related}
@@ -140,7 +140,9 @@ that does~\cite{bulens:2011}; however the code is not publicly
 available (nor was it available to us in any way).
 
 From the voter's point of view, there has been a published usability
-analysis of Helios~\cite{karayumak:2011}. 
+analysis of Helios~\cite{karayumak:2011}. From the elections we held
+we have gathered our own experience on usability, and in fact the user
+interface of Zeus is completely re-worked.
 
 Over time researchers have explored possible vulnerabilities in
 different versions of Helios~\cite{heiderich:2011}. To the best of our
@@ -164,11 +166,11 @@ homomorphic tallying support, which is unused.
 \section{Zeus Background and Challenges}
 \label{sec:challenges}
 
-Zeus was initiated after the use of electronic vote was permitted by
+Zeus was initiated after the use of electronic voting was permitted by
 decree for the election of the Governing Councils of Higher Education
 Institutions in Greece. In each institution the Governing Council is
 directly elected by its faculty and is its main governing body. The
-election uses the Single Transferable Vote (STV) system, in which
+election uses the Single Transferable Vote ({\sc stv}) system, in which
 voters do not simply indicate the candidates of their preference, but
 also rank them in order of preference. 
 
@@ -176,7 +178,7 @@ When we were charged with providing an implementation of a system
 implementing electronic voting we decided to investigate Helios's
 suitability, as we needed a mature system with a proven record in real
 world elections and published open source code. The current version of
-Helios (version 3) allows internet election from end-to-end: from the
+Helios (version 3) allows Internet elections from end-to-end: from the
 moment the voter casts a ballot through a web browser to the
 publication of election results. It does that by never actually
 decrypting the ballots but performing a series of homomorphic
@@ -186,10 +188,10 @@ decrypted and published.
 Although using a single system for the whole process is appealing, the
 use of homomorphic tallying in Helios cannot accommodate voting
 systems in which not just the individual choices on the ballot matter,
-but the whole ballot itself. In STV, homomorphic tallying could pass
-to the STV algorithm the information that a certain candidate has been
+but the whole ballot itself. In {\sc stv}, homomorphic tallying could pass
+to the {\sc stv} algorithm the information that a certain candidate has been
 selected in rank $r$ by $n$ voters, but this is not enough, as the whole
-ballot and not just each rank separately is passed around during STV's
+ballot and not just each rank separately is passed around during {\sc stv}'s
 counting rounds.
 
 We realised, however, that it is not necessary to use Helios's
@@ -200,15 +202,11 @@ calculator, or indeed to a calculator of any voting system. Since the
 ballots are published, and the algorithm is also published, a third
 party can always verify that the results are correct.
 
-Interestingly, the original publication of Helios~\cite{adida:2008}
-did not use homomorphic tallying, but relied on mixnets to
-guarantee voter anonymity. ~\cite{bulens:2011}
-
 \section{Overview of the Voting Process}
 \label{sec:voting_overview}
 % Merge this with workflow below
 
-Each poll in Zeus has the following phases:
+Each poll in Zeus comprises the following phases:
 poll preparation, voting, processing, and tallying.
 
 \subsection{Poll Preparation}
@@ -224,14 +222,13 @@ Depending on the election type,
 the content can typically be either a single list of candidates to rank,
 or multiple party lists with candidates to select candidates from one,
 or multiple questions for each to be answered by choosing one or more of
-the provided answers.\footnote{
-    See Sections~\ref{sec:ballot_encoding} and~\ref{sec:approval_counting}
-    for details on the types of elections supported.}
-Then, the administrator uploads the list of voters that may participate
-in the poll.\footnote{a simple CSV format is used, easily exported from
-spreadsheets.}
+the provided answers; see Section~\ref{sec:ballot_encoding} 
+and Section~\ref{sec:approval_counting} for details on the types of elections 
+supported. Then, the administrator uploads the list of voters that may 
+participate in the poll. A simple {\sc csv} format is used, easily 
+exported from spreadsheets.
 
-Before the voting starts, each of the trustees must visit Zeus' website
+Before voting starts each of the trustees must visit Zeus's website
 and generate and register their encryption keys for the poll.
 The trustees do not need an account to enter the system.
 Instead, upon their designation as trustees, Zeus sends them a
@@ -239,24 +236,22 @@ confidential invitation which they can use to log in to the system
 and perform their duties.
 
 Thus far, trustees are designated by their e-mail address, and the
-invitation is send via e-mail as a secret link into Zeus' website.
+invitation is sent via e-mail as a secret link to Zeus's website.
 However, it is easy for Zeus to be adapted to use any system for
-designation and notification of trustees.\footnote{
-    An adaptation for notifications via mobile phones was actually
-    implemented but was never used or streamlined within the software.
-}
-See discussion in Section~\ref{sec:audit_codes}.
+designation and notification of trustees. Indeed, an adaptation 
+for notifications via mobile phones was actually implemented but
+has not been used or streamlined within the software yet.
 
 \subsubsection{Trustee Key Generation}
 Trustees must follow their invitation and log in to generate their
 key pair. The generation takes place entirely in the web browser,
-assisted with randomness downloaded from the server itself.\footnote{
-due to poor randomness in browsers, a practice inherited from Helios.}
-After key creation, the trustee is prompted to save his private key,
+assisted with randomness downloaded from the server itself, 
+due to poor randomness in browsers, a practice inherited from Helios.
+After key creation, the trustee is prompted to save their private key,
 and when they acknowledge it has been saved, the public key is uploaded.
 However, the key registration is not yet complete---trustees are
 required to verify that they have indeed secured the key by
-procuring it so that it can be compared to the one uploaded.
+presenting it so that it can be compared to the one uploaded.
 
 \subsubsection{Finalizing the Pool, and Inviting Voters}
 The administrators may edit all aspects of the poll, up until they
@@ -277,10 +272,9 @@ further interactions with the Zeus server or any other site.
 The voter may even disconnect from the Internet while inside the booth.
 The booth appearance depends on the election type, and after vote
 selection users are asked to review and confirm their choices.
-After vote submission, a receipt (see Section~\ref{sec:receipt} is
+After vote submission, a receipt (see Section~\ref{sec:receipt}) is
 generated which can immediately be downloaded, but which is also sent
-to them via e-mail.\footnote{
-for \emph{audit} votes see Section~\ref{sec:audit_codes}}
+to them via e-mail.
 
 During voting, administrators have access to aggregate and detailed
 statistics for the ongoing election.
@@ -295,23 +289,25 @@ For the poll to be finally closed,
 the administrator has to explicitly select so.
 Then, the first mixing by Zeus proceeds automatically.
 Once the first mix is complete, additional mixes by external agents
-may be added one by one using generated confidential links.\footnote{
+may be added one by one using generated confidential links.
 Zeus provides a command line toolkit that, among other things, can
-perform mixing given those confidential links.}
+perform mixing given these confidential links.
 
-Finally, the administrator ends the mixing process\footnote{
-details in Section~\ref{sec:mixing}},
+Finally, the administrator ends the mixing process,
 and the trustees are notified again for the decryption process.
-Each one visits the Zeus website through the invitation link.
+Each one visits the Zeus website through the invitation link they have
+just received.
 The mixed encrypted ballots are downloaded to their client browser,
-and they are prompted to procure their secret poll key.
-When provided, the ballots are partially decrypted and the output
-is sent back to Zeus.
+and they are prompted to present their secret poll key.
+When this is providedprovided, the ballots are partially decrypted 
+and the output is sent back to Zeus.
 
 When all partial decryptions are available, they are combined to produce
 the final anonymous and unencrypted ballots.
 Depending on the poll type, the ballots are either sent into another
-system for tallying and reporting on the results,
+system for tallying and reporting the results (if the tallying
+and results presentation algorithm is implemented externally, as was
+the case in the majority of elections we have run),
 or the ballots are tallied and reported on by Zeus itself.
 After the results are available,
 the administrator may download an archive with all generated proofs.
@@ -334,12 +330,12 @@ a web browser, and localy performs vote preparation and encryption,
 as well as trustee key generation and (partial) ballot decryption.
 
 \subsection{Poll Stages}
-The abstract workflow represents each poll as a structured document,
+The abstract workflow represents each poll as a structured document
 and defines five consecutive stages for it, from creation to completion.
 At each stage more data are recorded into the document,
 either coming from the outside, such as votes,
-or are the results of processing existing data, such as vote mixing,
-or both, such as final ballot decryption.
+or as results of processing existing data, such as vote mixing,
+or both, such as final ballots decryption.
 
 Once recorded in the poll document, data are never modified,
 and each stage is validated upon transition into the next one.
@@ -352,10 +348,10 @@ from votes, to results, to proofs.
 \subsubsection{Creating}
 At this stage, candidates, voters, and trustees
 are recorded into the document.
-The candidate list is just an ordered list of unique candidate names
+The candidate list is just an ordered list of unique candidate names,
 which are otherwise not important and are not interpreted.
 However, different types of elections put special structure
-within the candidate list which is interpreted at tallying time
+within the candidate list, which is used at tallying time
 to verify and count the ballot,
 as discussed in Section~\ref{sec:ballot_counting}.
 
@@ -376,14 +372,14 @@ the appointed committee of trustees.
 \label{sec:voting}
 When all intended trustees have been recorded,
 the poll may transition to the \emph{voting} stage
-by combining\footnote{by a multiplication, actually}
+by combining (by a multiplication)
 the trustees' public keys into a single \emph{poll public key}
 that the voters must use to encrypt their votes,
 as detailed in Section~\ref{sec:vote_preparation}.
 After the formulation of the poll public key,
 no trustees, voters, or candidates can be modified.
 
-For each submitted vote, zeus generates a cryptographically signed
+For each submitted vote, Zeus generates a cryptographically signed
 receipt for the voter.
 With the receipt the voter can later prove that
 his vote submission was acknowledged as successful,
@@ -411,26 +407,24 @@ Voter exclusion is a digital convenience owning to
 the voter's identity still being known after voting has ended.
 Anonymity is achieved at the end of the mixing stage,
 and not at cast time as in traditional ballot box polls.
-
-The poll's officials may choose to disqualify a voter if
-it is discovered that he was wrongly allowed to vote, or if
-his conduct during the election was found in breach of rules.
-Neither the voter nor their votes are deleted from the poll document.
-Instead, the voter is added into an exclusion list along with
-a statement justifying the decision to exclude them.
+The poll's officials may choose to disqualify voters if
+it is discovered that they were wrongly allowed to vote, or if
+their conduct during the election was found in breach of rules.
+Neither the disqualified voter nor their votes are deleted from 
+the poll document. Instead, the voter is added into an exclusion 
+list along with a statement justifying the decision to exclude them.
 
 The eligible encrypted votes are first mixed by Zeus itself
-by a Sako-Kilian mixnet~\cite{sako:1995}.
+by a Sako-Kilian mixnet.
 The bulk of the computational work in mixing is to produce
 enough rounds of the probabilistic proof.
 The work is distributed to a group of parallel workers,
-one round at a time.
-\footnote{Our deployment used 128 rounds and 16 workers.}
+one round at a time. Our deployment used 128 rounds and 16 workers.
 Verification of mixes is likewise parallel.
 
-After the first mix is complete, additional mixes by external agent
-may be verified and added in a strict order in the mix list.
-Zeus includes a command line utility that can perform external mixes.
+After the first mix is complete, additional mixes by external agents
+may be verified and added in a strict order in the mix list, using
+Zeus's command line utility.
 
 \subsubsection{Decrypting}
 \label{sec:decrypting}
@@ -462,7 +456,7 @@ In Helios, ballots consist of answers to binary ``yes'' or ``no''
 questions, framed in the appropriate way. For instance, a voter
 indicates $k$ out of $n$ candidates on a ballot by selecting them, in
 which case the answer ``Would you like X as a Y?'' gets a yes (1),
-otherwise a no (0). In STV, as in any system in which we would need
+otherwise a no (0). In {\sc stv}, as in any system in which we would need
 the whole ballot to be decrypted in the end, the ballot must be
 encoded in some way. We encode each ballot as a integer by assigning a
 unique number to each possible candidate selection and ranking. The
@@ -524,10 +518,10 @@ In order to encode this into an ElGamal plaintext we had two options;
 either create a new encoding for multi-question approval ballots,
 or translate the approval ballots into ranked ballots and use the
 existing encoding.
-Due to time constraints we used approval-to-ranking translation
-for its simplicity and malleability.
-\footnote{Now that the structure of this ballot type is more or less
-          stable, we may consider a specialized encoding in the future.}
+Due to time constraints we used approval-to-ranking translation for
+its simplicity and malleability.\footnote{Now that the structure of
+  this ballot type is more or less stable, we may consider a
+  specialized encoding in the future.}
 
 The translation works mainly by structuring the candidate names.
 Each candidate name has two parts, the question and the answer.
@@ -659,34 +653,34 @@ was therefore \emph{interface}, and \emph{workflow} simplicity. At the
 same time, the knowledgeable voter needed access to all information
 and functions needed to both understand and verify the process.
 
-\subsection{Zeus Users}
+% \subsection{Zeus Users}
 
-Zeus distinguishes the following classes of users:
+% Zeus distinguishes the following classes of users:
 
-\begin{itemize}
-\item Election administrators
-\item Election committee members
-\item Voters
-\end{itemize}
+% \begin{itemize}
+% \item Election administrators
+% \item Election committee members
+% \item Voters
+% \end{itemize}
 
-Election administrators are responsible for setting up an election;
-that is, starting a new election instance in Zeus, setting the date
-for the election, entering the particulars of the election committee
-members and the list of voters. During the election the administrators
-are responsible for updating the list of voters (i.e., adding,
-removing, or updating the details for a voter) and extending the poll
-times, if necessary. When polls close the administrators are
-responsible for starting the ballot mixing and vote count process.
-Election committee members hold the cryptographic keys for the
-election. Before the election starts they have to create their keys
-and upload the public parts to the Zeus server. During decryption each
-election committee member partially decrypts the ballots using the
-private part of the key. Voters visit the voting booth to cast their
-vote; they can vote repeatedly until polls close.
+% Election administrators are responsible for setting up an election;
+% that is, starting a new election instance in Zeus, setting the date
+% for the election, entering the particulars of the election committee
+% members and the list of voters. During the election the administrators
+% are responsible for updating the list of voters (i.e., adding,
+% removing, or updating the details for a voter) and extending the poll
+% times, if necessary. When polls close the administrators are
+% responsible for starting the ballot mixing and vote count process.
+% Election committee members hold the cryptographic keys for the
+% election. Before the election starts they have to create their keys
+% and upload the public parts to the Zeus server. During decryption each
+% election committee member partially decrypts the ballots using the
+% private part of the key. Voters visit the voting booth to cast their
+% vote; they can vote repeatedly until polls close.
 
-Election administrators access Zeus through a username and password.
-Election committee members and voters access Zeus through URL links
-that are sent to them by the system, as we see below.
+% Election administrators access Zeus through a username and password.
+% Election committee members and voters access Zeus through URL links
+% that are sent to them by the system, as we see below.
 
 % \subsection{Administrator View}
 % \subsection{Voting Booth}
@@ -742,33 +736,35 @@ context.
     voters and those who actually voted. Each box shows the upper and
     lower quartile with a line at the median. Whiskers show the values
     within 1.5 times the box quartiles.}
-  \label{fig:elections_to_date}
+  \label{fig:elections_to_date_boxplot}
 \end{figure}
 
 The law that instituted the Governing Councils in Greek educational
 institutions met resistance from some political parties, student and
 academics unions. A widespread means of protest was to disrupt the
-election of Governing Councils, so that they could not be inaugurated.
+election of Governing Councils, so that they could not be selected.
 Successive aborted elections pushed forward the adoption of electronic
-voting, which in turn was the subject of controversy. 
+voting, which then in brought Zeus into the controversy. 
 
-The controversy meant that some political parties were against the use
-of Zeus, or any form of electronic voting. As a result, Zeus was the
-subject of a number of public denouncements and letters, detailing
-weaknesses of electronic voting systems in general and Helios in
-particular. These did not challenge Zeus, as the weaknesses applied to
-older versions of Helios. Altough Zeus was open sourced from the start
-and we welcomed constructive criticism or the exposure of unknown
-vulnerabilities, we did not receive any. The atmosphere was at times
-vitriolic, as when a mainstream political party called the people
-behind Zeus ``techno-fascists'', thus introducing a new term in the
-greek lexicon and bemusing the people involved in the whole effort.
+In particular, the controversy meant that some political parties were
+against the use of Zeus, or any form of electronic voting. As a
+result, Zeus was the subject of a number of public denouncements and
+letters, detailing weaknesses of electronic voting systems in general
+and Helios in particular. These did not challenge Zeus, as the
+weaknesses applied to older versions of Helios. Altough Zeus was open
+sourced from the start and we welcomed constructive criticism or the
+exposure of unknown vulnerabilities, we did not receive any. The
+atmosphere was at times vitriolic, as when a mainstream political
+party called the people behind Zeus ``techno-fascists'', thus
+introducing a new term in the greek lexicon and bemusing the people
+involved in the whole effort.
 
 This led to attacks on Zeus, and the voting process supported by Zeus.
-None of them was eventually successful. We describe them briefly
-in~\ref{ssec:attacks}. A discussion on other security-related aspects
-follows in~\ref{ssec:security-discussion}. We round up with a
-presentation of voting logistics~\ref{ssec:logistics}.
+None of them was eventually successful. We describe them briefly in
+Section~\ref{ssec:attacks}. A discussion on other security-related
+aspects follows in Section~\ref{ssec:security-discussion}. We round up
+with a presentation of voting logistics in
+Section~\ref{ssec:logistics}.
 
 \subsection{Attacks}
 \label{ssec:attacks}
@@ -798,16 +794,16 @@ addresses and could easily be traced and blocked.
 The University of the Aegean had planned its elections for November 2,
 2012. After freezing the election, and when the notifications to the
 voters had been sent, voters started receiving additional
-notifications containing bogus URLs, from a cracked university server.
-Although the bogus URLs were not functional, a number of users were
+notifications containing bogus {\sc url}s from a cracked university server.
+Although the bogus {\sc url}s were not functional, a number of users were
 confused. The electoral committee decided to cancel the elections and
 call new elections at a later date. To avoid similar situations in
 coming elections we recommended the use of Sender Policy Framework
-(SPF)~\cite{rfc4408} to institutions that had not been using it.
+({\sc spf})~\cite{rfc4408} to institutions that had not been using it.
 
 The repeat elections were held on November 9, 2012. The authorities at
 the university had authorised the set up of a new mail server, to be
-used solely for the elections, in which all voter's were opened
+used solely for the elections, in which all voters were opened
 accounts. The mail server was hosted outside the university's
 premises. This avoided a problem that would have risen from a sit-in
 at the building housing the main mail server, which had been switched
@@ -821,28 +817,28 @@ mail server was switched off, cutting off access to e-mail, and
 depriving voters that had not downloaded the access link from voting.
 The university authorities responded by asking voters to come
 physically to a location outside the campus, where they could be
-issued with a new URL.
+issued with a new {\sc url}.
 
 \subsubsection{University of Patras}
 
 The University of Patras held its elections on November 7, 2012. Just
-prior to the opening of the polls a slowloris attack as noticed and
+prior to the opening of the polls a slowloris attack was noticed and
 dealt with.
 
 \subsubsection{University of Athens}
 
 A little while after polls opened at the University of Athens, on
 November 12, 2012, protesters staged a sit-in at the university's
-Network Operations Server and cut-off internet access. This took
+Network Operations Server and cut off Internet access. This took
 offline mail access to members of the university and, like in the
 Agricultural University of Athens, deprived voters that had not
 downloaded the access link from voting. More dramatically, the
-internet shutdown affected all sorts of university services, including
-internet connectivity to university hospitals.
+Internet shutdown affected all sorts of university services, including
+Internet connectivity to university hospitals.
 
 The university responded by extending polling by three days. At the
 same time, an alternative voter's notification scheme was implemented,
-via which the voters would receive instructions for voting via SMS.
+via which the voters would receive instructions for voting via {\sc sms}.
 The sit-in was lifted on the last election day, as it was realised
 that the elections would go on regardless.
 
@@ -850,9 +846,10 @@ that the elections would go on regardless.
 
 A sit-in similar to the one at the University of Athens was planned at
 the National Technical University of Athens. However, it did not last
-long, as the SMS-based infrastructure was already in place, so that it
-would be irrelevant, and the university authorities made it clear that
-they would not tolerate the disruption.
+long, as the {\sc sms}-based infrastructure was already in place, so
+that it would be irrelevant, and the university authorities made it
+clear that they would not tolerate the disruption. The election took
+place without problems on December 10, 2012.
 
 A different, more insidious kind of attack was revealed later on. A
 few days before the election, one voter had contacted us complaining
@@ -862,11 +859,11 @@ elections; instead, the user was redirected to the main Zeus page).
 Two days before the election it was discovered that the user's e-mail
 stored in Zeus had been changed, and a new e-mail had been sent to the
 newly entered mail address. The user complained that he never used
-that adddress, so another URL was issued and sent to his institutional
+that adddress, so another {\sc url} was issued and sent to his institutional
 mail address. The voter voted without a problem on election day.
 
 A few days afterwards a protesters' site announced they had
-circumvented Zeus security by taking hold of a voter's URL after
+circumvented Zeus security by taking hold of a voter's {\sc url} after
 contacting the election committee and asking them to update the
 voter's contact details. That explained the e-mail change, and it
 meant that it was the result of a social engineering attack. Luckily,
@@ -888,11 +885,9 @@ elections where blank votes are not allowed.
 It turned out that in one of their elections a voter wanted to show
 that e-voting cannot be trusted since anybody can vote with a voter's
 access credentials, if these are leaked. On April 6, 2013, the voter
-posted his voter URL on a Facebook page. The electoral committee noted
+posted his voter {\sc url} on a Facebook page. The electoral committee noted
 the incident, and therefore moved to disqualify the ballots cast under
-that voter's name. This functionality is offered by Zeus as the attack
-vector had already been anticipated; it is possible to disqualify a
-vote before mixing.
+that voter's name. 
 
 \subsection{General Security Issues}
 \label{ssec:security-discussion}
@@ -902,7 +897,7 @@ accompanied by much naysaying. An important argument against the
 system was that we were not to be trusted. After all, to the voters,
 as well as to each election committee, Zeus is a black box running in
 some remote virtual machine. It could be that we were really running a
-show: instead of Zeus voters were interacting with something else, and
+show: instead of Zeus, voters were interacting with something else, and
 we were putting on a pretence of anonymity and security. 
 
 As we were not aware of a practical method to verify the integrity of
@@ -925,12 +920,12 @@ we could really do would be to re-run the elections from the beginning.
 A similar veil of doubt appeared when people called us condidentially
 during elections, and shortly after the ballot box had been closed, to
 ask us ``how things were going'', and whether we had an indication of
-the results. We were at pains to explain that there is no way we would
+the results. We were at pains to explain that there is no way we could
 have such knowledge.
 
 Doubt in whether Zeus does indeed what is purported to do manifested
-itself in a request we received twice to provide to the election
-committee a log of the exact times each voter cast a ballot. We
+itself also in a request we received twice to provide to the election
+committee a log of the exact times each voter had cast a ballot. We
 explained to the election committee that if the issue at hand was to
 verify that all votes had been counted correctly, the correct
 procedure was other, and that the requested information could in fact
@@ -952,7 +947,7 @@ creation (\url{http://www.reportlab.com/software/opensource/}). In one
 election (elections for president of the Piraeus Technical Educational
 Institute, held on March 26, 2013), a disgruntled candidate complained
 to the election committee that the {\sc pdf} results' creation date
-was before ballot closing time. It turned out that he was right, and
+was before the ballot closing time. It turned out that he was right, and
 that this was due to a bug with the {\sc pdf} libraries (which we
 reported to ReportLab). The fact that we never meant the {\sc pdf}
 document to be the definitive results record of an election seemed to
@@ -968,9 +963,9 @@ Internet Explorer. The users were informed of that in the
 notifications they received, but apparently not all of them noticed
 it, or knew exactly how to download and install one of the supported
 browsers (recent editions of Firefox, Chrome). The problem was pointed
-out to them when they communicated about their problem with the
-respective election committee and was thereby resolved; we did receive
-an angry e-mail, though, from a voter who felt slighted that she had
+out to them when they contacted the respective election committee
+about their difficulties with and was thereby resolved; we did receive
+an angry e-mail, though, from a voter who felt snubbed that she had
 to go through such an ordeal. At the other end of the spectrum we saw
 in an interview a mention of a voter who had voted in an airplane and
 was very happy for it.
@@ -986,7 +981,7 @@ sure that it was a valid one. This is something that could be solved
 in time with better informational material and voter education on the
 basic premises of the system.
 
-In the same vein, nobody bothered to use the ``audit vote'' feature,
+In the same vein, nobody bothered to use the audit vote feature,
 whereby a voter tests that their browser is not compromised. A few
 asked about it, and when they understood what it was about decided it
 was not worth the trouble. More voters found it distracting, and we
@@ -1000,16 +995,16 @@ to guarantee anonymity if they could not trust us.
 \subsection{Logistics}
 \label{ssec:logistics}
 
-Zeus is offered as a hosted service by {\sc grnet}; hosting here
-entails more than just a well-endowed virtual machine. Elections are a
-sensitive matter, since people exercice their basic democratic right.
-They must feel secure, and they must feel they are not slighted by
-their lack of technical knowledge.
+Zeus is offered as a hosted service; hosting here entails more than
+just a well-endowed virtual machine. Elections are a sensitive matter,
+since people exercice their basic democratic right. They must feel
+secure, and they must feel they are not slighted by their lack of
+technical knowledge.
 
-In every Zeus election we had a helpdesk in place before the election
-started, during the election itself, and after the ballot box closed.
+In every Zeus election we have a helpdesk in place before the election
+starts, during the election itself, and after the ballot box closes.
 
-Before the election started the helpdesk was tasked with helping the
+Before the election started the helpdesk is tasked with helping the
 election committee setting up the election. Although we have produced
 manuals, for both the election committee and voters, people frequently
 requested more engagement from our part. As an aside, we should point
@@ -1017,16 +1012,17 @@ out that {\sc rtfm} rules, as always, and the more so the more
 technical a user is. We found that users with no particular computing
 experience were more careful in their use of the system and more
 consientious in their use of the manuals provided, than users who,
-emboldened by their prowess in computing went on without bothering to
+emboldened by their prowess in computing, went on without bothering to
 consult the documentation.
 
-Our helpdesk colleagues helped the election committee to generate
+Our helpdesk colleagues help the election committee to generate
 their keys and to set up the voters list, ensuring that the input
 file, a simple {\sc csv} document, was well formed---not a trivial
 matter, as it turned out, as despite our detailed instructions college
 registrars often failed to produce an up to date list of eligible
-voters with their current e-mails. Once the e-mails containing the
-voters links had been sent the helpdesk handles bounces. The bounces
+voters with their current e-mails, or to create a spreadsheet with the
+required columns. Once the e-mails containing the
+voters links are sent the helpdesk handles bounces. The bounces
 are forwarded to the election committee with the voter links removed,
 so that the election committee can contact the voters and correct
 their e-mail addresses but cannot abuse the system and start voting in
@@ -1041,19 +1037,18 @@ which point the election committee would discover that somebody else
 has been voting for them. Even if we were crooks we would not run a
 risk as high as this one.
 
-During the election the helpdesk guided the election committee when
-they were in doubt about how to correct a voter's details. This
-happened when a voter contacted the election committee asking them to
-change their e-mail address to another one. 
+During the election the helpdesk guides the election committee when
+they are in doubt about how to correct a voter's details. This happens
+when a voter contacts the election committee asking them to change
+their e-mail address to another one. Then, at the end of each election
+process, the helpdesk is sometimes asked to show the steps for the
+mixing and decryption process, as well as the presentation of the
+actual results.
 
-Then, at the end of each election process, the helpdesk was sometimes
-asked to show the steps for the mixing and decryption process, as well
-as the presentation of the actual results.
-
-In general, even though the helpdesk workload was not particularly
-high, it had special time requirements, such as working out of normal
+In general, even though the helpdesk workload is not particularly
+high, it has special time requirements, such as working out of normal
 business hours to ensure that the communication with the election
-committee and the voters was as prompt as possible. Both election
+committee and the voters is as prompt as possible. Both election
 committees and voters can get very anxious when things are not working
 in the way they may have anticipated.
 
