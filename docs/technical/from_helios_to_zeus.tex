@@ -581,8 +581,6 @@ being instructed to.
 Secondly, and optionally, they can be used to authenticate voters in close
 integration with audit votes.
 
-\subsubsection{Audit votes}
-\label{sec:audit_votes}
 Audit votes work by ruining the plans of an attacker who might otherwise
 compromise the voter's computer and alter the voter's selections.
 To ruin those plans one introduces uncertainty;
@@ -604,11 +602,6 @@ This is explicit and safe, but for Zeus it was deemed too dangerous to
 require of all voters to understand what an audit vote does,
 while a wrong button press, even accidentally,
 would cause the true intended vote to be published.
-
-Therefore, Zeus makes auditing optional, by creating the required
-uncertainty for audit votes using the audit codes.
-However, it can still be made mandatory as presented in
-Section~\ref{sec:authentication}.
 
 In Zeus, a vote can be submitted either with an accompanying code,
 or with no code at all.
@@ -632,17 +625,22 @@ do is discouraged, but it is intended to be easy enough for those who
 do understand: vote with a random ``wrong'' code many times and check
 the audits, then vote with a ``correct'' and be done.
 
-\subsubsection{Authentication}
-\label{sec:authentication}
+Therefore, Zeus makes auditing optional, by creating the required
+uncertainty for auditing using the audit codes.
+However, Zeus can be configured to \emph{require} a code with each vote
+submission in which case the audit codes provide a secondary function
+as an additional authentication factor.
 
-If Zeus is configured not to accept vote submissions without a code
-as described in Section~\ref{sec:audit_votes},
-then the audit codes for each voter become a means of authentication---
-one can only vote if they have access to them.
-Audit codes may be delivered to voters by any means deemed secure enough,
-e-mail, mobile phone, or even with a physical exchange.
-Even if the audit codes are used for authentication, auditing is still
-optional, as voters may only vote once using one of them.
+This function is very useful because it helps combine a very convenient
+but potentially unsecure means, for example the e-mail,
+with a quite secure and personalized one, for example the mobile phone.
+Invitations, notifications, and descriptions relating to voting,
+which can be voluminous texts with graphics,
+can be sent by e-mail over the internet,
+while the audit codes, which are conveniently small as a text,
+can be sent to a mobile phone.
+The voter would need both the e-mail and the mobile phone message in
+order to vote successfully.
 
 % \subsection{Performance}
 % \label{sec:performance}
