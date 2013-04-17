@@ -647,16 +647,58 @@ can be sent to a mobile phone.
 The voter would need both the e-mail and the mobile phone message in
 order to vote successfully.
 
-% \subsection{Performance}
-% \label{sec:performance}
-% \subsection{Software Dependencies}
+\subsection{Performance}
+\label{sec:performance}
+Mixing the votes both dominates the total processing time
+and exponentiation dominates mixing calculations.
+Python as a programming language has native support for arbitrarily
+sized integers and exponentiation.
+It is quite fast but we have used a high performing implementation
+from\texttt{libgmp} via the \texttt{gmpy} python module.
+This speeded our exponentiations up about 7 times.
+%We also noted that Python version 2.6 is significantly slower than
+%version 2.7.
+
+Still, the computational cost of mixing is so high that
+it can only became practical when we parallelized it,
+which is an algorithmically straightforward undertaking.
+
+Zeus in its default 2048-bit cryptosystem with a 2047-bit order,
+using 16 cores at 2.26 GHz can mix 10000 votes for 128 rounds,
+a total of 12.8 million ciphers, in about 65 minutes
+producing about 2 billion bytes of on-disk proof text data,
+compressible to about half of it,
+since numbers are in a hexadecimal canonical form and thus
+2 bytes of text correspond to one byte of raw number data.
+
+Although not trivial, this performance is practical enough that
+we chose not to allocate more hardware so far,
+our biggest election tallying about 1600 votes.
+
+% \subsection{Cryptography and Proofs}
+% \label{sec:proofs}
+% Although we have retained significant portion of the web application in
+% Helios 3 server software, we have almost entirely replaced the
+% cryptographic primitives, since everything was tuned to homomorphic
+% tallying, and thus useless to us---even the cryptosystem.
+% Fortunately, this undertaking served us well later
+% in our need to parallelize, and to software-engineer intensive
+% control and validation over primitives over a known code base,
+% especially after we discovered that primitives from widely available
+% cryptographic libraries had flaws that could hurt us.
+% % PyCrypto here?
+% 
+% For reference, our software dependencies for cryptography are
 % Random number generation \emph{(Fortuna)}, primality testing
 % \emph{(Miller-Rabin)} and modulo inversion from \texttt{PyCrypto}.
 % Exponentiation from \texttt{libgmp} via \texttt{gmpy} (really faster
-% than Python's builtin \texttt{pow}). We have implemented all other
-% operations in native Python and the Python standard library, including
-% hashing. We have studied \texttt{Helios}, \texttt{PloneVoteCryptoLib},
-% \texttt{PyCrypto} for our implementation.
+% than Python's builtin \texttt{pow}).
+% We have implemented all other operations in native Python and the Python
+% standard library, including hashing (SHA-1 and SHA-256),
+% and a textual canonical form for structured objects,
+% because JSON has no canonical form and was prohibitively slow.
+% We have studied \texttt{Helios}, \texttt{PloneVoteCryptoLib},
+% \texttt{PyCrypto} for our implementation. % citations ?
 
 % \subsection{Vote preparation}
 % \label{sec:vote_preparation}
