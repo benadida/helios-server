@@ -1,6 +1,5 @@
 import json
 import sys
-from collections import OrderedDict
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,28 +17,21 @@ voters_cast_count = []
 for election in sorted(elections_json.items(), key=order_elections_key):
     voters = election[1]['election']['voters_count']
     cast = election[1]['election']['voters_cast_count']
-    if voters < 10 or cast < 10:
-        print election[0]
-        continue
     voters_count.append(voters)
     voters_cast_count.append(cast)
-    print election[0], voters, cast
 
-print sum(voters_count)
-print sum(voters_cast_count)
+print "Total voters", sum(voters_count)
+print "Total voted", sum(voters_cast_count)
     
 num_stacks = len(voters_count)
 print num_stacks
 ind = np.arange(num_stacks)
 margin = 1.5
 width = 0.35
-print width
 
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
-voters_count_arr = np.array(voters_count)
-voters_cast_count_arr = np.array(voters_cast_count)
 registered = ax.bar(margin+ind, voters_count, width, color='c', bottom = 0)
 voted = ax.bar(margin+ind+width, voters_cast_count, width, color='m',
                bottom = 0)
@@ -47,7 +39,7 @@ voted = ax.bar(margin+ind+width, voters_cast_count, width, color='m',
 ax.set_ylabel('Voters')
 ax.set_title('Elections')
 ax.set_xticks([])
-ax.legend( (registered[0], voted[0]), ('Registered', 'Voted') )
+ax.legend((registered[0], voted[0]), ('Registered', 'Voted') )
 
 # ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%d'))
 
