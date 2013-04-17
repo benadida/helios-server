@@ -363,7 +363,7 @@ as discussed in Section~\ref{sec:audit_codes}.
 
 For trustees, only their public key is recorded.
 For each poll, and additionally to any external trustees,
-Zeus always creates and registers a trustee key for the poll.
+Zeus always creates and registers a new trustee key for each poll.
 As per the Helios workflow, this allows the service operator to
 provide anonymity guarantees in addition to those provided by
 the appointed committee of trustees.
@@ -448,7 +448,25 @@ in the proceedings.
 
 \subsection{Vote Submission Receipts}
 \label{sec:receipts}
-**what to put in receipts?
+For each vote cast a receipt is generated and returned to the voter,
+as well as registered in the poll document.
+The receipt is a text file with simple structure listing cryptographic
+information about the vote and poll.
+The receipt text is signed with the Zeus' own trustee key for the
+poll.\footnote{
+Zeus is a trustee for every poll. See Section~\ref{sec:creating}.}
+
+The receipt contains a unique identification of the casted vote,
+the vote which it replaces (if any), the cryptosystem used,
+the poll's public key along with the public keys of all trustees,
+the list of candidates, the cryptographic proof that it was a valid
+encryption,\footnote{see also Section~\ref{sec:proofs}},
+and the signature itself.
+
+Although private information such as user name, IPs, and times
+are logged in the Zeus servers, they do not appear in the receipt,
+because we need the entire poll document to be publishable if
+the poll's authority decides so.
 
 \subsection{Ranked Ballot Encoding}
 \label{sec:ballot_encoding}
