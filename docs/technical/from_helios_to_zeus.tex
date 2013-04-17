@@ -346,6 +346,7 @@ containing everything needed to verify the process,
 from votes, to results, to proofs.
 
 \subsubsection{Creating}
+\label{sec:creating}
 At this stage, candidates, voters, and trustees
 are recorded into the document.
 The candidate list is just an ordered list of unique candidate names,
@@ -452,15 +453,14 @@ as well as registered in the poll document.
 The receipt is a text file with simple structure listing cryptographic
 information about the vote and poll.
 The receipt text is signed with the Zeus' own trustee key for the
-poll.\footnote{
-Zeus is a trustee for every poll. See Section~\ref{sec:creating}.}
+poll, practical because Zeus is a trustee for every poll
+as described in Section~\ref{sec:creating}.
 
 The receipt contains a unique identification of the casted vote,
 the vote which it replaces (if any), the cryptosystem used,
 the poll's public key along with the public keys of all trustees,
 the list of candidates, the cryptographic proof that it was a valid
-encryption,\footnote{see also Section~\ref{sec:proofs}},
-and the signature itself.
+encryption, and the signature itself.
 
 Although private information such as user name, IPs, and times
 are logged in the Zeus servers, they do not appear in the receipt,
@@ -641,6 +641,17 @@ Audit codes may be delivered to voters by any means deemed secure enough,
 e-mail, mobile phone, or even with a physical exchange.
 Even if the audit codes are used for authentication, auditing is still
 optional, as voters may only vote once using one of them.
+
+% \subsection{Performance}
+% \label{sec:performance}
+% \subsection{Software Dependencies}
+% Random number generation \emph{(Fortuna)}, primality testing
+% \emph{(Miller-Rabin)} and modulo inversion from \texttt{PyCrypto}.
+% Exponentiation from \texttt{libgmp} via \texttt{gmpy} (really faster
+% than Python's builtin \texttt{pow}). We have implemented all other
+% operations in native Python and the Python standard library, including
+% hashing. We have studied \texttt{Helios}, \texttt{PloneVoteCryptoLib},
+% \texttt{PyCrypto} for our implementation.
 
 % \subsection{Vote preparation}
 % \label{sec:vote_preparation}
@@ -1169,15 +1180,6 @@ are announced that are using it.
 
 Zeus is open software, available at \url{XXX} (URL withheld according
 to paper submission guidelines).
-
-\paragraph{Software Dependencies}
-Random number generation \emph{(Fortuna)}, primality testing
-\emph{(Miller-Rabin)} and modulo inversion from \texttt{PyCrypto}.
-Exponentiation from \texttt{libgmp} via \texttt{gmpy} (really faster
-than Python's builtin \texttt{pow}). We have implemented all other
-operations in native Python and the Python standard library, including
-hashing. We have studied \texttt{Helios}, \texttt{PloneVoteCryptoLib},
-\texttt{PyCrypto} for our implementation.
 
 {\footnotesize
 \bibliographystyle{acm}
