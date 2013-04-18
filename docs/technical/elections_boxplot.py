@@ -30,7 +30,7 @@ ax = fig.add_subplot(111)
 
 ax.boxplot([voters_count, voters_cast_count], sym='gD')
 
-ax.set_xticklabels(['Registered', 'Voted'])
+ax.set_xticklabels(['Registered', 'Turnout'])
 
 ax.yaxis.grid(True, linestyle='-', which='major', color='lightgrey',
               alpha=0.5)

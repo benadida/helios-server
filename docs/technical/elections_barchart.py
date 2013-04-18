@@ -39,7 +39,7 @@ voted = ax.bar(margin+ind+width, voters_cast_count, width, color='m',
 ax.set_ylabel('Voters')
 ax.set_title('Elections')
 ax.set_xticks([])
-ax.legend((registered[0], voted[0]), ('Registered', 'Voted') )
+ax.legend((registered[0], voted[0]), ('Registered', 'Turnout') )
 
 # ax.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter('%d'))
 

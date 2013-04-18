@@ -147,9 +147,9 @@ that does~\cite{bulens:2011}; however the code is not publicly
 available (nor was it available to us in any way).
 
 From the voter's point of view, there has been a published usability
-analysis of Helios~\cite{karayumak:2011}. From the elections we held
-we have gathered our own experience on usability, and in fact the user
-interface of Zeus is completely re-worked.
+analysis of Helios~\cite{estehghari:2010,karayumak:2011}. From the
+elections we held we have gathered our own experience on usability,
+and in fact the user interface of Zeus is completely re-worked.
 
 Over time researchers have explored possible vulnerabilities in
 different versions of Helios~\cite{heiderich:2011}. To the best of our
@@ -867,7 +867,7 @@ our biggest election tallying about 1600 votes.
 
 To date, Zeus has been used in 45 elections around Greece.
 Figure~\ref{fig:elections_to_date} shows the number of registered
-voters and of those who actually voted in each election. The
+voters and the turnout in each election. The
 registered voters in all elections totaled 14171, while the voters
 that actually took part in the elections totaled 11133;
 Figure~\ref{fig:elections_to_date_boxplot} shows a boxplot of
@@ -890,7 +890,7 @@ context.
     \includegraphics[scale=0.7]{elections_to_date_boxplot.pdf}
   \end{center}
   \caption{Boxplot of Zeus held elections to date, for registered
-    voters and those who actually voted. Each box shows the upper and
+    voters and turnout. Each box shows the upper and
     lower quartile with a line at the median. Whiskers show the values
     within 1.5 times the box quartiles.}
   \label{fig:elections_to_date_boxplot}
@@ -927,6 +927,7 @@ Section~\ref{ssec:logistics}.
 \label{ssec:attacks}
 
 \subsubsection{University of Thrace}
+\label{sssec:thrace}
 
 The elections at the University of Thrace had been planned for October
 24, 2012. Due to a coding bug, the polls opened the at the time the
@@ -1143,7 +1144,11 @@ whereby a voter tests that their browser is not compromised. A few
 asked about it, and when they understood what it was about decided it
 was not worth the trouble. In truth, the voters that asked about it
 found it confusing, and we had to visually downplay the related user
-interface elements in order not to confuse the electorate.
+interface elements in order not to confuse the electorate. In more
+than one election the election committee asked us if it would be
+possible to remove any reference to audit votes from the user
+interface, as well as the audit codes from the notifications sent to
+voters (we declined).
 
 Finally, nobody bothered to use our support for external mixnets,
 although we did explain to those who asked that this was the only way
@@ -1243,8 +1248,38 @@ by the resources there. We are exploring way in which we could improve
 performance, for instance, by developing and distributing a native
 application.
 
+As explained above, Zeus was controversial, its use was actively
+opposed, and in the initial set of elections that were mandated by law
+to support there were calls to boycot the whole process by abstaining.
+We want to stress that we had no part in the political debate. We
+dealt with Zeus as a purely technical problem of implementing a system
+that would allow elections to take place even when voting in physical
+ballot boxes was infeasible. In the end, it came out that people
+wanted to vote. In these first election batch, which comprised 23
+elections, the average turnout percentage was 80.76\%, widely accepted
+as being very high. It was no small relief to know that we did not
+seem to be doing something against the will of the people.
+
+That points also to a wider application area of e-voting. E-voting is
+often presented as a adjunct to traditional voting, and no substitute
+of it. We saw that it can be used as an effective substitute when the
+conditions on the ground prohibit normal elections. It is our belief,
+though, that for this to happen any e-voting system must be based in
+compete openness, the opaqueness of many existing solutions being one
+of the main arguments against wider adoption of electronic
+elections~\cite{simons:2012,jones:2012}. We tried to be as open as
+possible. The complete Zeus code was available from the beginning of
+the project, not just released versions, but the whole repository,
+complete with all our commits and activity. So, in the issue we
+described with the University of Thrace (recall
+Section~\ref{sssec:thrace}) we were able to issue an explanation with
+an exact diagnosis to the point of highlighting the commit and the
+problematic lines of code. As we were not only the developers of the
+system, but also its administrators, we tried hard to ensure that
+nobody could doubt our professional integrity.
+
 At the time of this writing Zeus is actively used, and new elections
-are announced that are using it. 
+are announced that are using it in the coming days.
 
 \section{Availability}
 
