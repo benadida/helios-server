@@ -12,6 +12,7 @@ from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfdoc
 
 from zeus.core import PARTY_SEPARATOR
 
@@ -118,6 +119,11 @@ def make_results(elements, styles, total_votes, blank_votes,
 def build_doc(title, name, institution_name, voting_start, voting_end,
             extended_until, data, filename="election_results.pdf"):
 
+
+    # reset pdfdoc timestamp in order to force a fresh one to be used in
+    # pdf document metadata.
+    pdfdoc._NOWT = None
+
     elements = []
 
     parties_results = []
@@ -166,6 +172,7 @@ def main():
     voting_start = 'Έναρξη: 21/1/2013 9:00'
     voting_end = 'Λήξη: 21/1/2013 17:00'
     extended_until = 'Παράταση: 21/1/2013 18:00'
+
     build_doc(title, name, institution_name, voting_start, voting_end,
               extended_until, file(sys.argv[1]).read())
 
