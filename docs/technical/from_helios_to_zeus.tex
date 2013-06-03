@@ -137,7 +137,7 @@ algorithm must be encoded in the cryptographic processing itself---one
 cannot get results in the form of individual ballots as they were
 submitted.
 
-On the other hand, mixing shuffles the set of votes in a provably
+On the other hand, mixnets shuffle the set of votes in a provably
 correct but practically untraceable way, therefore anonymizing it. The
 output is the same set of unencrypted ballots as they were before
 encryption and submission, only in random, unknowable order. Then any
@@ -160,7 +160,7 @@ privacy has been explored~\cite{demirel:2012}. Helios offers
 computationally secure privacy, i.e., it is currently prohibitively
 expensive, from a computational point of view, to break voter
 anonymity. This does not preclude, however, that it will be
-impractical in several years' time. Protocols for everlasting privacy
+practical in several years' time. Protocols for everlasting privacy
 can be used for both homomorphic and mixnet-based elections. Zeus,
 like Helios, relies on computational privacy and it would be possible
 to explore the adoption of an everlasting privacy approach.
@@ -250,17 +250,23 @@ for notifications via mobile phones was actually implemented but
 has not been used or streamlined within the software yet.
 
 \subsubsection{Trustee Key Generation}
-Trustees must follow their invitation and log in to generate their
-key pair. The generation takes place entirely in the web browser,
-assisted with randomness downloaded from the server itself, 
-due to poor randomness in browsers, a practice inherited from Helios.
-After key creation, the trustee is prompted to save their private key,
-and when they acknowledge it has been saved, the public key is uploaded.
-However, the key registration is not yet complete---trustees are
-required to verify that they have indeed secured the key by
-presenting it so that it can be compared to the one uploaded.
+Trustees must follow their invitation and log in to generate their key
+pair. The generation takes place entirely in the web browser, assisted
+with randomness downloaded from the server itself, due to poor
+randomness in browsers, a practice inherited from Helios. After key
+creation, the trustee is prompted to save their private key. Once this
+is done, the trustee is automatically logged out and the browser
+session ended. Zeus then sends to the trustee a new invitation to
+verify that they do indeed have their private key. The trustee,
+following the link, starts a new browser session, in which they are
+shown the hash value of their public key, and are asked to
+locate the private key that they have saved. The browser verifies
+the key locally by comparing its hash value to the one registered by
+the server. The whole process is roughly equivalent of having to type
+a password twice, since it is important that the trustees have indeed
+saved their keys, or decryption will not be possible.
 
-\subsubsection{Finalizing the Pool, and Inviting Voters}
+\subsubsection{Finalizing the Poll, and Inviting Voters}
 The administrators may edit all aspects of the poll, up until they
 decide to \emph{finalize} (or \emph{freeze}) the poll.
 After that, only limited editing is possible, and most importantly,
@@ -447,8 +453,8 @@ one round at a time. Our deployment used 128 rounds and 16 workers.
 Verification of mixes is likewise parallel.
 
 After the first mix is complete, additional mixes by external agents
-may be verified and added in a strict order in the mix list, using
-Zeus's command line utility.
+may be verified and added in a mix list using Zeus's command line
+utility. 
 
 \subsubsection{Decrypting}
 \label{sec:decrypting}
@@ -502,40 +508,13 @@ which case the answer ``Would you like X as a Y?'' gets a yes (1),
 otherwise a no (0). In {\sc stv}, as in any system in which we would need
 the whole ballot to be decrypted in the end, the ballot must be
 encoded in some way. We encode each ballot as a integer by assigning a
-unique number to each possible candidate selection and ranking. The
-total number of possible ballots is $p _{n1} + p_{n2} + \cdots + p
-_{nk}$, where $p_{nk}$ is the number of sequences of $k$ objects out
-of $n$, that is $p_{nk} = n(n - 1)\cdots(n - k + 1)$\footnote{The
-  number $p_{nk}$ is also written $n^{\underline{k}}$, or $(n)_k$,
-  called ``Pochhammer's symbol''~\cite[p.\ 48]{graham:1994}. In closed
-  form it is $p_{nk} = \sum_{k=0}^{n} (-1)^{n-k}\left\{n \atop
-    k\right\}x^k$, where $\left\{n \atop k\right\}$ is the Stirling
-  number of the first kind~\cite{weisstein:pochhammer}.}. As each
-ballot is sent in encrypted form to the Zeus server, for its encoding
-number $b$ we must have $b \in [0, 10^p]$, where $p$ is the order of
-the group used in the ElGamal encryption scheme, so the encoding does
-not present a practical limit in real elections (if it did, we could
-always break the number in parts and send them separately).
-
-The implementation of the encoding follows closely the mathematical
-definition. We encode each ballot as an integer by enumerating the set
-$\mathcal{E}$ of all possible ballots. We take $k$ choices out of $n$,
-for $0\leq k \leq C$, where $C$ is the maximum choices allowed in the
-ballots \footnote{$N=C$ for the elections we hosted}, and we then take
-their $k!$ permutations. Summing it up, all the possible ballots are
-\begin{equation}
-\label{eq:max_encoded}
-|\mathcal{E}| = \sum^{C}_{k=0}\binom{n}{k}k!
-\end{equation}
+unique number to each possible candidate selection and ranking. 
 When enumerating, we first count the smaller selections (i.e. take
 \textit{zero} candidates, then \textit{one}, then \textit{two},
 \ldots) so that for small numbers of choices the encoded ballot will
 have a small value, thus saving valuable bit-space.\footnote{ For
   example, selecting up to all of 300 candidates needs 2043 bits,
   while selecting 10 out of 1000 candidates needs only 100 bits.}
-
-% gtsouk: describe the exact encoding / decoding algorithm for the
-% ballots. 
 
 \subsection{Tallying Multi-Question Approval Polls}
 \label{sec:approval_counting}
@@ -642,7 +621,34 @@ the server considers it to be an audit.
 If the code \emph{is} among those supplied by the server,
 then it is cast as a normal vote.
 Two different votes must never be submitted with the same code, because
-the second time the attacker will know what to do.
+the second time the attacker will know what to do. The process in
+detail is as follows:
+\begin{enumerate}
+\item The voter enters one of the audit codes they have received via e-mail.
+\item The voter proceeds to submit the vote to the server.
+\item The server receives the encrypted vote. If the encrypted vote is
+  accompanied by a correct audit code or is not accompanied by any
+  audit code, the vote is treated as a normal vote. Otherwise, that
+  is, if the vote is accompanied by an audit code but the audit code
+  is not correct, we continue with the following steps.
+\item The system stores the vote as an audit vote.
+\item The system asks the user to confirm that they have cast an
+  audit vote.
+\item If the user responds negatively, the audit process is
+  canceled and the voter is redirected to the initial ballot casting
+  view.
+\item If the user responds in the affirmative, the browser sends
+  to the system the ElGamal randomness with which the vote has
+  been encrypted.
+\item The system creates an audit vote record using the ciphertext and
+  randomness provided by the browser and it returns to the voter a
+  unique identifier of the audit ballot for future reference. 
+\item The decrypted contents of each audit vote, based on the
+  randomness sent previously by the client, are posted on an audit
+  vote bulletin board. The voter can go to the audit bulletin board
+  and look for the vote using the identifying number they have
+  received from the server.
+\end{enumerate}
 
 The user interface of Zeus makes this process intentionally somewhat
 obscure to the layman, so that its use without being certain what to
@@ -666,6 +672,17 @@ while the audit codes, which are conveniently small as a text,
 can be sent to a mobile phone.
 The voter would need both the e-mail and the mobile phone message in
 order to vote successfully.
+
+Although the use of audit codes improves confidence in the system, it
+does not make it invulnerable to attacks. Such an attack would be by a
+malware that scans the voter's email for emails coming from Zeus and
+getting the codes from there. Then the malware could know when the
+user is submitting a normal vs an audit code, and behave accordingly.
+The risk could be reduced by having the audit codes received from a
+second channel, e.g., {\sc sms}-messages, although the {\sc sms}
+channel could also be attacked, as shown in possible attacks described
+against the Norwegian system~\cite{koenig:2013}.
+
 
 \subsection{Performance}
 \label{sec:performance}
@@ -1075,7 +1092,7 @@ were to various degrees sure that somehow we would be able to ``do
 something'' about it, disregarding our assurances that the only thing
 we could really do would be to re-run the elections from the beginning.
 
-A similar veil of doubt appeared when people called us condidentially
+A similar veil of doubt appeared when people called us confidentially
 during elections, and shortly after the ballot box had been closed, to
 ask us ``how things were going'', and whether we had an indication of
 the results. We were at pains to explain that there is no way we could
@@ -1164,7 +1181,7 @@ secure, and they must feel they are not slighted by their lack of
 technical knowledge.
 
 In every Zeus election we have a helpdesk of three persons involved
-part time (and not all of the concurrently) before the election
+part time (and not all of them concurrently) before the election
 starts, during the election itself, and after the ballot box closes.
 
 Before the election started the helpdesk is tasked with helping the
