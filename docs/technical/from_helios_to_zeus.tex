@@ -289,8 +289,11 @@ After vote submission, a receipt (see Section~\ref{sec:receipts}) is
 generated which can immediately be downloaded, but which is also sent
 to them via e-mail.
 
-During voting, administrators have access to aggregate and detailed
-statistics for the ongoing election.
+During voting administrators have access to information about the
+ongoing election. The information includes the number of voters that
+have voted, and for each voter their e-mail, name, whether they have
+voted, when was the latest e-mail sent to them and the last time the
+visited the voting booth.
 
 Section~\ref{sec:voting} elaborates on the technical issues.
 
@@ -660,7 +663,10 @@ Therefore, Zeus makes auditing optional, by creating the required
 uncertainty for auditing using the audit codes.
 However, Zeus can be configured to \emph{require} a code with each vote
 submission in which case the audit codes provide a secondary function
-as an additional authentication factor.
+as an additional authentication factor. Making the audit code
+compulsory would also strengthen the system against an attack in which
+a compromised browser notices when a ballot is submitted without an
+audit code.
 
 This function is very useful because it helps combine a very convenient
 but potentially insecure means, for example the e-mail,
