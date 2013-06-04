@@ -634,18 +634,24 @@ detail is as follows:
   audit code, the vote is treated as a normal vote. Otherwise, that
   is, if the vote is accompanied by an audit code but the audit code
   is not correct, we continue with the following steps.
-\item The system stores the vote as an audit vote.
-\item The system asks the user to confirm that they have cast an
+\item The system stores the vote ciphertext as an audit vote request.
+\item The system asks the voter to confirm that they have cast an
   audit vote.
-\item If the user responds negatively, the audit process is
+\item If the voter responds negatively, the audit process is
   canceled and the voter is redirected to the initial ballot casting
-  view.
-\item If the user responds in the affirmative, the browser sends
-  to the system the ElGamal randomness with which the vote has
-  been encrypted.
-\item The system creates an audit vote record using the ciphertext and
-  randomness provided by the browser and it returns to the voter a
-  unique identifier of the audit ballot for future reference. 
+  view. The voting request remains in the system but is not displayed
+  to the users.
+\item If the voter responds in the affirmative, the browser reposts
+  the vote ciphertext along with the ElGamal randomness with which the
+  vote has been encrypted. 
+\item The system tries to match the fingerprint of the re-posted vote
+  with that of an existing vote audit request. Failure to do so
+  implies that the ciphertext initially posted is mangled and the
+  system informs the user that the audit request cannot be accepted.
+  This guards against malware that would submit an altered vote and
+  then after realising that the vote is an audit vote would send the
+  actual ciphertext. If the match succeeds the system stores the audit
+  vote and returns to the voter a unique identifier of the audit vote.
 \item The decrypted contents of each audit vote, based on the
   randomness sent previously by the client, are posted on an audit
   vote bulletin board. The voter can go to the audit bulletin board
