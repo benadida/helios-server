@@ -195,13 +195,28 @@ decrypted and published.
 Although using a single system for the whole process is appealing, the
 use of homomorphic tallying in Helios cannot accommodate voting
 systems in which not just the individual choices on the ballot matter,
-but the whole ballot itself. In {\sc stv}, homomorphic tallying could pass
-to the {\sc stv} algorithm the information that a certain candidate has been
-selected in rank $r$ by $n$ voters, but this is not enough, as the whole
-ballot and not just each rank separately is passed around during {\sc stv}'s
-counting rounds.
+but the whole ballot itself. In {\sc stv}, homomorphic tallying as
+currently implemented in Helios could pass to the {\sc stv} algorithm
+the information that a certain candidate has been selected in rank $r$
+by $n$ voters, but this is not enough, as the whole ballot and not
+just each rank separately is passed around during {\sc stv}'s counting
+rounds.
 
-We realized, however, that it is not necessary to use Helios's
+That does not mean that homomorphic tallying cannot be used with {\sc
+  stv}. It is indeed possible to do homomorphic {\sc stv} using the
+Shuffle-Sum approach~\cite{benaloh:2009}\footnote{We are grateful to
+  one of the reviewers for pointing out this work to us. We have not
+  worked out how to use Shuffle-Sum in the particular {\sc stv}
+  variant used in the elections we had to support, since in order to
+  get elected, a candidate must pass the preferences quota (similar to
+  the Droop quota) and not violate a quota of two elected candidates
+  per school of the university. A candidate that would be elected but
+  violates the per school quota is eliminated. At the end, if the STV
+  iterations result in empty seats, eliminated candidates are brought
+  back and are elected, provided the per school quota is not violated.
+}, although Helios does not provide this capability now.
+
+At that point we realized that it is not necessary to use Helios's
 homomorphic tallying capabilities. We decided to use Helios for
 \emph{counting the ballots}, not for producing the election results.
 Once we do have a verifiable ballots count, this can be fed to an STV
@@ -1134,14 +1149,23 @@ creation (\url{http://www.reportlab.com/software/opensource/}). In one
 election (elections for president of the Piraeus Technical Educational
 Institute, held on March 26, 2013), a disgruntled candidate complained
 to the election committee that the {\sc pdf} results' creation date
-was before the ballot closing time. It turned out that he was right, and
-that this was due to a bug with the {\sc pdf} libraries (which we
-reported to ReportLab). The fact that we never meant the {\sc pdf}
-document to be the definitive results record of an election seemed to
-matter little. The issue was resolved after we issued an official
-explanation, complete with details of the bug and possible fixes. The
-authority of the {\sc pdf} document is something we came up against
-repeatedly: people did not seem to care for any other kind of
+was before the ballot closing time. It turned out that he was right,
+and we found a bug with the {\sc pdf} libraries (which we reported to
+ReportLab). The fact that we never meant the {\sc pdf} document to be
+the definitive results record of an election seemed to matter little.
+To resolve the issue we issued an official explanation, complete with
+details of the bug and possible fixes. We had thought the matter
+settled, but the candidate came back to us about 20 days later saying
+that he had communicated directly with ReportLab he had been told that
+the problem we had identified could not explain the actual time
+difference he saw in the {\sc pdf}. It turned out that he was right
+again, and the actual source of the error was that the creation
+timestamp was memoized; since Zeus uses long running processes, the
+timestamp was stored with its initial value and re-used by all
+documents that were created by the same process. Again we had to issue
+an official explanation with reference to the problematic lines of
+code. The authority of the {\sc pdf} document is something we came up
+against repeatedly: people did not seem to care for any other kind of
 authority apart from that given by the printed matter.
 
 Regarding usability, we did not receive any particular complains from
@@ -1177,7 +1201,9 @@ interface elements in order not to confuse the electorate. In more
 than one election the election committee asked us if it would be
 possible to remove any reference to audit votes from the user
 interface, as well as the audit codes from the notifications sent to
-voters (we declined).
+voters. We declined; we should probably have put more effort into
+educating voters and recruiting champions among the voting
+institutions. 
 
 Finally, nobody bothered to use our support for external mixnets,
 although we did explain to those who asked that this was the only way
