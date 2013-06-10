@@ -86,7 +86,7 @@ literature. Our contribution is:
   cryptographic content in a well-defined portable format,
   independent of any other details of the voting system.
 \item A new use of audit votes, both as a means of checking the
-  integrity of voting from the user's side, and as channel of
+  integrity of voting from the user's side, and as a channel of
   authenticated communication with the user.
 \item A description of a working e-voting system that has been used in
   many real-world elections, by not especially technically-savvy
@@ -294,6 +294,22 @@ information about the poll along with contact details and voting dates.
 Once the appointed voting time has come, the voting booth is
 automatically enabled and visiting voters are transferred there directly.
 
+We decided to embed the login credentials in the confidentatial
+invitation {\sc url} for usability and logistical reasons: the users
+would not have to keep track of a personal account in Zeus, and we
+would not have to deal with users forgetting their passwords etc. This
+of course requires that users have access to their e-mails; if they do
+not have access to the link, they cannot vote. As we report in
+Section~\ref{ssec:attacks} this was used as an attack vector, but was
+dealt with by extending the duration of the attacked polls and adding
+the capability to send the links by {\sc sms} messages. A remaining
+worry is that a malicious Zeus server, knowing each voter when they
+come to vote before they cast their ballot, could target them with
+malicious code. This could be mitigated by requiring the user to
+submit with their vote audit codes received by a separate channel,
+like {\sc sms}, although this is not immune to attacks
+(see Section~\ref{sec:audit_codes}).
+
 \subsection{Voting}
 The voting booth, once opened, operates entirely locally without
 further interactions with the Zeus server or any other site.
@@ -371,6 +387,9 @@ The core module handling the poll document is completely independent of
 the other aspects of the system, and therefore can provide much more
 accessible and reliable verification by third parties, than if they
 had to dig through irrelevant software layers to validate results.
+Ideally, users of Zeus should have an {\sc api} which they could use
+to query the poll document at will. Zeus does not provide such an {\sc
+  api} right now, but it is clearly something worth implementing.
 
 From the Zeus point of view, it does not matter where or how the poll
 document is created, one can inspect and verify the actual process
@@ -427,22 +446,23 @@ that the voters must use to encrypt their votes.
 After the formulation of the poll public key,
 no trustees, voters, or candidates can be modified.
 
+The voter submits to the server the encrypted ballot, (discrete
+log knowledge) proof that they possess the randomness the ballot was
+encrypted with and optionally a voter-provided audit code, to verify
+that their local system really does submit the vote they choose,
+and that it does not alter it in any way.
+The process is detailed in Section~\ref{sec:audit_codes}.
+
 For each submitted vote, Zeus generates a cryptographically signed
-receipt for the voter.
-With the receipt the voter can later prove that
-his vote submission was acknowledged as successful,
-perhaps in the context of an investigation for a complaint.
-Receipts are detailed in Section~\ref{sec:receipts}.
+receipt for the voter. With the receipt the voter can later prove that
+his vote submission was acknowledged as successful, perhaps in the
+context of an investigation for a complaint. Receipts are detailed in
+Section~\ref{sec:receipts}.
 
 Each voter may submit a vote multiple times.
 Each time, the new vote replaces the old one,
 and the new receipt explicitly states which vote it replaces.
 No vote can be replaced more than once.
-
-Apart from normal votes, voters may submit \emph{audit votes} to verify
-that their local system really does submit the vote they choose,
-and that it does not alter it in any way.
-The process is detailed in Section~\ref{sec:audit_codes}.
 
 \subsubsection{Mixing}
 \label{sec:mixing}
@@ -472,7 +492,7 @@ Verification of mixes is likewise parallel.
 
 After the first mix is complete, additional mixes by external agents
 may be verified and added in a mix list using Zeus's command line
-utility. 
+toolkit. 
 
 \subsubsection{Decrypting}
 \label{sec:decrypting}
@@ -504,18 +524,37 @@ information about the vote and poll.
 The receipt text is signed with the Zeus's own trustee key for the
 poll, which is possible because Zeus is a trustee for every poll
 as described in Section~\ref{sec:creating}.
-The ElGamal signature is according to \cite{schneier:1995}.
+The ElGamal signature is according to~\cite{schneier:1995}.
 
 The receipt contains a unique identification of the cast vote,
 the vote (if any) which it replaces, the cryptosystem used,
 the poll's public key along with the public keys of all trustees,
 the list of candidates, the cryptographic proof that it was a valid
-encryption, and the signature itself.
+encryption, and the signature itself. The validity of the encryption
+is established by checking the discrete log proof submitted along with
+the encrypted ballot. 
+
+Note that in the current version of Zeus we do not exclude the
+submission of related ciphertexts; however this was not a major
+problem for us, as in real elections it is not forbidden for
+candidates in a party list to give their voters prepared ballots
+which they can use to vote.
 
 Although private information such as user name, {\sc ip}s, and times
 are logged in the Zeus servers, they do not appear in the receipt,
 because we need the entire poll document to be publishable if
 the election authorities decides so.
+
+The vote submission receipts are not enough to guarantee that a
+malicious Zeus server cannot submit a vote on behalf of the user, and
+then argue that the user has simply lost their receipt; or that a
+user, taking care to delete their receipt, does not come forward and
+argues that their last vote on the server is a bogus one. The problem
+could be solved by posting encrypted ballots in a bulletin board after the
+polls close and before tallying starts. However this was not possible
+in the elections we had to support, since it would add a step to the
+users' sequence of actions, and a delay in the production of results;
+the speedy announcement of results was of major importance.
 
 \subsection{Ranked Ballot Encoding}
 \label{sec:ballot_encoding}
@@ -687,7 +726,7 @@ submission in which case the audit codes provide a secondary function
 as an additional authentication factor. Making the audit code
 compulsory would also strengthen the system against an attack in which
 a compromised browser notices when a ballot is submitted without an
-audit code.
+audit code and so will cheat only then.
 
 This function is very useful because it helps combine a very convenient
 but potentially insecure means, for example the e-mail,
@@ -724,9 +763,14 @@ This sped our exponentiations by about 7 times.
 %We also noted that Python version 2.6 is significantly slower than
 %version 2.7.
 
-Still, the computational cost of mixing is so high that
-it only became practical when we parallelized it,
-which was an algorithmically straightforward undertaking.
+Still, the computational cost of mixing is so high that it only became
+practical when we parallelized it, which was an algorithmically
+straightforward undertaking. Hardware was not a problem for us (we are
+a cloud services provider, among other things), so we could deal with
+the cost in the old-fashioned way of throwing hardware at the problem.
+Had we more time in our disposal, we could have explored more
+efficient mixnet
+implementations~\cite{bayer:2012,terelius:2010,wikstrom:2009}. 
 
 Zeus is by default a 2048-bit cryptosystem with a 2047-bit order.
 Using 16 cores at 2.26 GHz it can mix 10000 votes for 128 rounds,
@@ -914,8 +958,7 @@ Figure~\ref{fig:elections_to_date} shows the number of registered
 voters and the turnout in each election. The
 registered voters in all elections totaled 14171, while the voters
 that actually took part in the elections totaled 11133;
-Figure~\ref{fig:elections_to_date_boxplot} shows a boxplot of
-election numbers. Elections were carried out successfully in all
+Elections were carried out successfully in all
 planned institutions. This was a significant success, as the stakes
 were particularly high and the voting process charged with emotions.
 To understand that it is necessary that we provide some surrounding
@@ -927,17 +970,6 @@ context.
   \end{center}
   \caption{Zeus held elections to date.}
   \label{fig:elections_to_date}
-\end{figure}
-
-\begin{figure}[ht]
-  \begin{center}
-    \includegraphics[scale=0.7]{elections_to_date_boxplot.pdf}
-  \end{center}
-  \caption{Boxplot of Zeus held elections to date, for registered
-    voters and turnout. Each box shows the upper and
-    lower quartile with a line at the median. Whiskers show the values
-    within 1.5 times the box quartiles.}
-  \label{fig:elections_to_date_boxplot}
 \end{figure}
 
 The law that instituted the Governing Councils in Greek educational
@@ -1207,7 +1239,23 @@ institutions.
 
 Finally, nobody bothered to use our support for external mixnets,
 although we did explain to those who asked that this was the only way
-to guarantee anonymity if they could not trust us.
+to guarantee anonymity if they could not trust us, otherwise a
+malicious Zeus server could break the anonymity of all the users. We
+understood there were two reasons for their reluctance: they were wary
+of adding any complexity to the voting process, even though this
+complexity would not be reflected to the voters but only to the
+election administrator and the election committee. In addition to
+that, their typical view was that they trusted us that we would do our
+job properly and take every step possible to safeguard the elections,
+and that we would not want to shoot ourselves in the foot and
+compromise the elections ourselves. Since a flattering view does not
+really solve the underlying risks, we have been investigating whether
+it would be possible to have an independent third party that would run
+an additional mixnet: in this way users would not be inconvenienced
+and they would no longer need to put their trust in us. For example,
+Bulens et al.~\cite{bulens:2011} have suggested having a set of
+servers offering mixing services around the world that could be used
+by election organizers depending on availability.
 
 \subsection{Logistics}
 \label{ssec:logistics}
@@ -1334,6 +1382,14 @@ an exact diagnosis to the point of highlighting the commit and the
 problematic lines of code. As we were not only the developers of the
 system, but also its administrators, we tried hard to ensure that
 nobody could doubt our professional integrity.
+
+In hindsight, there are two things that we wished we had done at the
+appropriate time. First, better educate the voters about e-voting, the
+concepts of Zeus itself, and vote auditing. Secondly, engage third
+parties in the process to run mixnets and audit the whole election
+process independently from us. The use of Scantegrity II at Takoma
+Park provides a good example both of working together with the local
+community and employing two independent auditors~\cite{carback:2010}.
 
 At the time of this writing Zeus is actively used, and new elections
 are announced that are using it in the coming days.
