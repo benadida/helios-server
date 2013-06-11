@@ -78,9 +78,10 @@ The contribution of this paper is not any new electronic voting
 protocols or an entirely new voting workflow; we have adopted and used
 proven systems and ideas that have already been described in the
 literature. Our contribution is:
-\begin{itemize}
+\begin{enumerate}
 \item An extension of an existing e-voting system, Helios, so as to be
-  able any kind of voting systems, such as Single Transferable Vote.
+  able to handle any kind of voting systems, such as Single
+  Transferable Vote in a completely open source implementation.
 \item The organization of the Helios cryptographic workflow as a
   process of populating a single document with all relevant
   cryptographic content in a well-defined portable format,
@@ -97,7 +98,12 @@ literature. Our contribution is:
 \item A description of the usability, accessibility, and logistical
   issues we had to tackle.
 \item An outline of the internal design and implementation choices.
-\end{itemize}
+\end{enumerate}
+
+Items 1--3 relate to technical differences with previous
+implementations of Helios and related systems. The other items relate
+to lessons from real world usage of the system in an especially
+challenging setting.
 
 The rest of this paper proceeds as follows. In
 Section~\ref{sec:related}, we discuss related work. In
@@ -142,9 +148,25 @@ correct but practically untraceable way, therefore anonymizing it. The
 output is the same set of unencrypted ballots as they were before
 encryption and submission, only in random, unknowable order. Then any
 method of tallying can be applied to compute results. Although Helios
-itself is not using mixnets any more, a variant has been developed
-that does~\cite{bulens:2011}; however the code is not publicly
-available (nor was it available to us in any way).
+itself is not using mixnets any more, a variant of Helios with mixnets
+has been developed that does~\cite{bulens:2011}; however the code is
+not publicly available. 
+
+Due to the circumstances around the birth of Zeus (see
+Section~\ref{sec:birth}) and the controversy around it (see
+Section~\ref{sec:experience}) there was no way we could have used any
+implementation whose source was not completely open source and
+freely available to the community. Hence, even if after contacting the
+developers of Helios with mixnets we were given access to the code, we
+could still not have been able to use it unless it were completely
+open sourced. Judging this unlikely, we proceeded on our own, without
+contacting them. As a result, Zeus and Helios with mixnets share
+many conceptual similarities, although we did not try to avoid the
+submission of related ballots using the Cramer-Shoup cryptosystem, as
+such behaviour is not prohibited by law. Moreover, due to time
+constraints and ample hardware at our disposal, we had the luxury of
+not having to use more efficient mixnets than the Sako-Kilian
+model. 
 
 From the voter's point of view, there has been a published usability
 analysis of Helios~\cite{karayumak:2011}. From the
@@ -277,7 +299,7 @@ following the link, starts a new browser session, in which they are
 shown the hash value of their public key, and are asked to
 locate the private key that they have saved. The browser verifies
 the key locally by comparing its hash value to the one registered by
-the server. The whole process is roughly equivalent of having to type
+the server. The whole process is roughly equivalent to having to type
 a password twice, since it is important that the trustees have indeed
 saved their keys, or decryption will not be possible.
 
@@ -554,7 +576,9 @@ could be solved by posting encrypted ballots in a bulletin board after the
 polls close and before tallying starts. However this was not possible
 in the elections we had to support, since it would add a step to the
 users' sequence of actions, and a delay in the production of results;
-the speedy announcement of results was of major importance.
+the speedy announcement of results was of major importance, especially
+as there were days where more than one election was taking place in
+different institutions.
 
 \subsection{Ranked Ballot Encoding}
 \label{sec:ballot_encoding}
@@ -1188,8 +1212,8 @@ the definitive results record of an election seemed to matter little.
 To resolve the issue we issued an official explanation, complete with
 details of the bug and possible fixes. We had thought the matter
 settled, but the candidate came back to us about 20 days later saying
-that he had communicated directly with ReportLab he had been told that
-the problem we had identified could not explain the actual time
+that when he had communicated directly with ReportLab he had been told
+that the problem we had identified could not explain the actual time
 difference he saw in the {\sc pdf}. It turned out that he was right
 again, and the actual source of the error was that the creation
 timestamp was memoized; since Zeus uses long running processes, the
@@ -1198,7 +1222,11 @@ documents that were created by the same process. Again we had to issue
 an official explanation with reference to the problematic lines of
 code. The authority of the {\sc pdf} document is something we came up
 against repeatedly: people did not seem to care for any other kind of
-authority apart from that given by the printed matter.
+authority apart from that given by the printed matter. Perhaps we
+should have followed the example of~\cite{adida:2009} where
+\emph{signed} {\sc pdf} documents were an integral part of the
+process: since they somehow assumed that role anyhow, we had better
+invest them with more substantial authority.
 
 Regarding usability, we did not receive any particular complains from
 the voters, except for one: that the system would not work with
@@ -1208,21 +1236,23 @@ it, or knew exactly how to download and install one of the supported
 browsers (recent editions of Firefox, Chrome). The problem was pointed
 out to them when they contacted the respective election committee
 about their difficulties with and was thereby resolved; we did receive
-an angry e-mail, though, from a voter who felt snubbed that she had
-to go through such an ordeal. At the other end of the spectrum we saw
-in an interview a mention of a voter who had voted in an airplane and
-was very happy for it.
+an angry e-mail, though, from a voter who felt snubbed that she had to
+go through such an ordeal. Be it as it may, we could extend the system
+to support recent versions of Internet Explorer, perhaps for the voters
+if not for the election committee. At the other end of the spectrum we
+saw in an interview a mention of a voter who had voted in an airplane
+and was very happy for it.
 
 Voters were not expected to be knowledgeable about cryptography, and
 we took care to smooth the use of Zeus for them. A lack of
 understanding led to a few interesting interactions, with some voters
-trying to read and understand their voting receipts---although the
-e-mail attachments that contained them did not have a text suffix in
-order to discourage careless handling of them. They then inquired why
-they could not understand the receipt contents, and how they could be
-sure that it was a valid one. This is something that could be solved
-in time with better informational material and voter education on the
-basic premises of the system.
+trying to read and understand their voting receipts, being simple text
+files---although the e-mail attachments that contained them did not
+have a text suffix in order to discourage careless handling of them.
+They then inquired why they could not understand the receipt contents,
+and how they could be sure that it was a valid one. This is something
+that could be solved in time with better informational material and
+voter education on the basic premises of the system.
 
 In the same vein, nobody bothered to use the audit vote feature,
 whereby a voter tests that their browser is not compromised. A few
@@ -1237,7 +1267,7 @@ voters. We declined; we should probably have put more effort into
 educating voters and recruiting champions among the voting
 institutions. 
 
-Finally, nobody bothered to use our support for external mixnets,
+Nobody bothered to use our support for external mixnets,
 although we did explain to those who asked that this was the only way
 to guarantee anonymity if they could not trust us, otherwise a
 malicious Zeus server could break the anonymity of all the users. We
@@ -1248,14 +1278,28 @@ election administrator and the election committee. In addition to
 that, their typical view was that they trusted us that we would do our
 job properly and take every step possible to safeguard the elections,
 and that we would not want to shoot ourselves in the foot and
-compromise the elections ourselves. Since a flattering view does not
-really solve the underlying risks, we have been investigating whether
-it would be possible to have an independent third party that would run
-an additional mixnet: in this way users would not be inconvenienced
-and they would no longer need to put their trust in us. For example,
+compromise the elections ourselves. An important factor may have been
+that some people in the various election committees knew us
+personally. Since a flattering view does not really solve the
+underlying risks, we have been investigating whether it would be
+possible to have an independent third party that would run an
+additional mixnet: in this way users would not be inconvenienced and
+they would no longer need to put their trust in us. For example,
 Bulens et al.~\cite{bulens:2011} have suggested having a set of
 servers offering mixing services around the world that could be used
 by election organizers depending on availability.
+
+Finally, Zeus, when used to run {\sc stv} elections, suffers from the
+Italian attack: it is easy to ``mark'' ballots, by asking voters to
+put unlikely candidates low down in their preferences, and to check
+that such ballots appear in the results. An incisive academic that
+voted in an election in a relatively small institution (so the risks
+of identification were higher) noted the danger and asked us about it,
+even though he had had no previous experience with {\sc stv}, that
+particular attack, or e-voting in general. He suggested that we could
+devise a mechanism by which only the part of each ballot that had
+actually been used in the {\sc stv} rounds would be displayed in the
+final results. 
 
 \subsection{Logistics}
 \label{ssec:logistics}
@@ -1274,12 +1318,12 @@ Before the election started the helpdesk is tasked with helping the
 election committee setting up the election. Although we have produced
 manuals, for both the election committee and voters, people frequently
 requested more engagement from our part. As an aside, we should point
-out that {\sc rtfm} rules, as always, and the more so the more
-technical a user is. We found that users with no particular computing
-experience were more careful in their use of the system and more
-conscientious in their use of the manuals provided, than users who,
-emboldened by their prowess in computing, went on without bothering to
-consult the documentation.
+out that {\sc rtfm} (Read the F* Manual) rules, as it usually does,
+and the more so the more technical a user is. We found that users with
+no particular computing experience were more careful in their use of
+the system and more conscientious in their use of the manuals
+provided, than users who, emboldened by their prowess in computing,
+went on without bothering to consult the documentation.
 
 Our helpdesk colleagues help the election committee to generate
 their keys and to set up the voters list, ensuring that the input
@@ -1372,7 +1416,9 @@ conditions on the ground prohibit normal elections. It is our belief,
 though, that for this to happen any e-voting system must be based in
 compete openness, the opaqueness of many existing solutions being one
 of the main arguments against wider adoption of electronic
-elections~\cite{simons:2012,jones:2012}. We tried to be as open as
+elections~\cite{simons:2012,jones:2012}. If Zeus had not been open
+source, we could not have been able to defend its use against
+protesters and detractors. We tried to be as open as
 possible. The complete Zeus code was available from the beginning of
 the project, not just released versions, but the whole repository,
 complete with all our commits and activity. So, in the issue we
