@@ -3,6 +3,7 @@
 
 import json
 import os
+from xml.sax.saxutils import escape
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
@@ -80,22 +81,22 @@ def make_heading(elements, styles, contents):
     for x in range(0, 5):
         elements.append(Spacer(1, 12))
     for pcontent in contents:
-        elements.append(Paragraph(pcontent, styles["ZeusHeading"]))
+        elements.append(Paragraph(escape(pcontent), styles["ZeusHeading"]))
 
 def make_intro(elements, styles, contents):
     for pcontent in contents:
-        elements.append(Paragraph(pcontent, styles["Zeus"]))
+        elements.append(Paragraph(escape(pcontent), styles["Zeus"]))
     elements.append(Spacer(1, 12))
 
 def make_totals(elements, styles, total_votes, blank_votes):
-    elements.append(Paragraph('Σύνολο ψήφων: %d' % total_votes, styles['Zeus']))
-    elements.append(Paragraph('Λευκά: %d' % blank_votes, styles['Zeus']))
+    elements.append(Paragraph(escape('Σύνολο ψήφων: %d' % total_votes), styles['Zeus']))
+    elements.append(Paragraph(escape('Λευκά: %d' % blank_votes), styles['Zeus']))
     elements.append(Spacer(1, 12))
 
 def make_party_list_heading(elements, styles, party, count):
     heading = '%(title)s: %(count)d' % {'title': party,
                                         'count': count}
-    elements.append(Paragraph(heading, styles['Zeus']))
+    elements.append(Paragraph(escape(heading), styles['Zeus']))
     elements.append(Spacer(1, 12))
 
 def make_party_list_table(elements, styles, party_results):
