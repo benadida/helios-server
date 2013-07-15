@@ -1928,8 +1928,6 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
                 continue
             candidate_counters[(party, candidate)] = 0
 
-    party_counters[None] = 0    # for blanks
-
     for encoded in encoded_list:
         ballot = gamma_decode_to_party_ballot(encoded, candidates, parties,
                                               nr_groups, separator=separator)
@@ -1939,27 +1937,33 @@ def gamma_count_parties(encoded_list, candidates, separator=PARTY_SEPARATOR):
 
         append(ballot)
 
-        for party in ballot['parties']:
+        ballot_parties = ballot['parties']
+        for party in ballot_parties:
             if party not in party_counters:
-                m = "Cannot fined initialized counter at '%s'!" % (party)
+                m = "Cannot find initialized counter at '%s'!" % (party)
                 raise AssertionError(m)
             party_counters[party] += 1
-            if party is None:
-                blank_count += 1
 
         ballot_candidates = ballot['candidates']
+        filtered_candidates = []
+        filtered_append = filtered_candidates.append
         for party, candidate in ballot_candidates:
             key = (party, candidate)
             if key not in candidate_counters:
-                try:
-                    if len(ballot_candidates) != 1:
-                        raise FormatError()
-                    opts = parse_party_options(candidate)
-                    continue
-                except FormatError:
+                if len(ballot_candidates) != 1:
                     m = "Cannot find initialized counter at %s!" % (key,)
-                    raise FormatError(m)
+                    raise FormatError()
+                opts = parse_party_options(candidate)
+                filtered_append((party, ''))
+                continue
+            else:
+                filtered_append((party, candidate))
             candidate_counters[key] += 1
+
+        ballot['candidates'] = filtered_candidates
+
+        if not ballot_parties and not ballot_candidates:
+            blank_count += 1
 
     party_counts = [(-v, k) for k, v in party_counters.iteritems()]
     party_counts.sort()

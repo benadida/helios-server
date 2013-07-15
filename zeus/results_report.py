@@ -3,6 +3,7 @@
 
 import json
 import os
+from xml.sax.saxutils import escape
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
@@ -12,6 +13,7 @@ from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfdoc
 
 from zeus.core import PARTY_SEPARATOR
 
@@ -38,11 +40,12 @@ def load_results(data):
     blank_votes = 0
     jsondata = json.loads(data)
     for result, party in jsondata['party_counts']:
-        if party is None:
-            blank_votes += result
-        else:
-            parties_results.append((party, result))
+        parties_results.append((party, result))
         total_votes += result
+
+    blank_votes = jsondata['blank_count']
+    total_votes += blank_votes
+
     for candidate_result in jsondata['candidate_counts']:
         (result, full_candidate) = candidate_result
         (party, candidate) = full_candidate.split(PARTY_SEPARATOR, 1)
@@ -50,7 +53,7 @@ def load_results(data):
             candidates_results[party].append((candidate, result))
         else:
             candidates_results[party] = [(candidate, result)]
-    return (total_votes, blank_votes)
+    return (total_votes, blank_votes, parties_results, candidates_results)
 
 def make_first_page_hf(canvas, doc):
     canvas.saveState()
@@ -78,22 +81,22 @@ def make_heading(elements, styles, contents):
     for x in range(0, 5):
         elements.append(Spacer(1, 12))
     for pcontent in contents:
-        elements.append(Paragraph(pcontent, styles["ZeusHeading"]))
+        elements.append(Paragraph(escape(pcontent), styles["ZeusHeading"]))
 
 def make_intro(elements, styles, contents):
     for pcontent in contents:
-        elements.append(Paragraph(pcontent, styles["Zeus"]))
+        elements.append(Paragraph(escape(pcontent), styles["Zeus"]))
     elements.append(Spacer(1, 12))
 
 def make_totals(elements, styles, total_votes, blank_votes):
-    elements.append(Paragraph('Σύνολο ψήφων: %d' % total_votes, styles['Zeus']))
-    elements.append(Paragraph('Λευκά: %d' % blank_votes, styles['Zeus']))
+    elements.append(Paragraph(escape('Σύνολο ψήφων: %d' % total_votes), styles['Zeus']))
+    elements.append(Paragraph(escape('Λευκά: %d' % blank_votes), styles['Zeus']))
     elements.append(Spacer(1, 12))
 
 def make_party_list_heading(elements, styles, party, count):
     heading = '%(title)s: %(count)d' % {'title': party,
                                         'count': count}
-    elements.append(Paragraph(heading, styles['Zeus']))
+    elements.append(Paragraph(escape(heading), styles['Zeus']))
     elements.append(Spacer(1, 12))
 
 def make_party_list_table(elements, styles, party_results):
@@ -117,12 +120,18 @@ def make_results(elements, styles, total_votes, blank_votes,
 def build_doc(title, name, institution_name, voting_start, voting_end,
             extended_until, data, filename="election_results.pdf"):
 
+
+    # reset pdfdoc timestamp in order to force a fresh one to be used in
+    # pdf document metadata.
+    pdfdoc._NOWT = None
+
     elements = []
 
     parties_results = []
     candidates_results = {}
 
-    total_votes, blank_votes = load_results(data)
+    total_votes, blank_votes, parties_results, candidates_results = \
+        load_results(data)
     doc = SimpleDocTemplate(filename, pagesize=A4)
 
     styles = getSampleStyleSheet()
@@ -151,7 +160,7 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
 
     make_results(elements, styles, total_votes, blank_votes,
                  parties_results, candidates_results)
-    
+
     doc.build(elements, onFirstPage = make_first_page_hf,
               onLaterPages = make_later_pages_hf)
 
@@ -164,6 +173,7 @@ def main():
     voting_start = 'Έναρξη: 21/1/2013 9:00'
     voting_end = 'Λήξη: 21/1/2013 17:00'
     extended_until = 'Παράταση: 21/1/2013 18:00'
+
     build_doc(title, name, institution_name, voting_start, voting_end,
               extended_until, file(sys.argv[1]).read())
 
