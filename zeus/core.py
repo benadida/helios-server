@@ -2135,18 +2135,22 @@ def element_from_elements_hash(modulus, generator, order, *elements):
     element = pow(generator, number, modulus)
     return element
 
-def prove_dlog_zeus(modulus, generator, order, power, dlog):
+def prove_dlog_zeus(modulus, generator, order, power, dlog,
+                    *extra_challenge_input):
     randomness = get_random_int(2, order)
     commitment = pow(generator, randomness, modulus)
     challenge = element_from_elements_hash(modulus, generator, order,
-                                           power, commitment)
+                                           power, commitment,
+                                           *extra_challenge_input)
     response = (randomness + challenge * dlog) % order
     return [commitment, challenge, response]
 
 def verify_dlog_power_zeus(modulus, generator, order, power,
-                           commitment, challenge, response):
+                           commitment, challenge, response,
+                           *extra_challenge_input):
     _challenge = element_from_elements_hash(modulus, generator, order,
-                                            power, commitment)
+                                            power, commitment,
+                                            *extra_challenge_input)
     if _challenge != challenge:
         return 0
     return (pow(generator, response, modulus)
@@ -2160,15 +2164,15 @@ def prove_dlog_helios(modulus, generator, order, power, dlog):
     return [commitment, challenge, response]
 
 def verify_dlog_power_helios(modulus, generator, order, power,
-                           commitment, challenge, response):
+                             commitment, challenge, response):
     _challenge = int(sha1(str(commitment)).hexdigest(), 16) % order
     if _challenge != challenge:
         return 0
     return (pow(generator, response, modulus)
             == ((commitment * pow(power, challenge, modulus)) % modulus))
 
-prove_dlog = prove_dlog_helios
-verify_dlog_power = verify_dlog_power_helios
+prove_dlog = prove_dlog_zeus
+verify_dlog_power = verify_dlog_power_zeus
 
 def generate_keypair(modulus, generator, order, secret_key=None):
     if secret_key is None:
@@ -2257,17 +2261,17 @@ def verify_ddh_tuple_helios(modulus, generator, order,
 prove_ddh_tuple = prove_ddh_tuple_helios
 verify_ddh_tuple = verify_ddh_tuple_helios
 
-def prove_encryption(modulus, generator, order, alpha, secret):
+def prove_encryption(modulus, generator, order, alpha, beta, secret):
     """Prove ElGamal encryption"""
-    ret = prove_dlog(modulus, generator, order, alpha, secret)
+    ret = prove_dlog(modulus, generator, order, alpha, secret, beta)
     commitment, challenge, response = ret
     return [commitment, challenge, response]
 
-def verify_encryption(modulus, generator, order, alpha,
+def verify_encryption(modulus, generator, order, alpha, beta,
                       commitment, challenge, response):
     """Verify ElGamal encryption"""
     ret = verify_dlog_power(modulus, generator, order, alpha,
-                            commitment, challenge, response)
+                            commitment, challenge, response, beta)
     return ret
 
 def reencrypt(modulus, generator, order, public, alpha, beta, secret=None):
@@ -2362,7 +2366,7 @@ def vote_from_encoded(modulus, generator, order, public,
                       audit_code=None, publish=None):
 
     alpha, beta, rnd = encrypt(encoded, modulus, generator, order, public)
-    proof = prove_encryption(modulus, generator, order, alpha, rnd)
+    proof = prove_encryption(modulus, generator, order, alpha, beta, rnd)
     commitment, challenge, response = proof
     eb = {'modulus': modulus,
           'generator': generator,
@@ -2487,8 +2491,8 @@ def verify_vote_signature(vote_signature):
         raise ZeusError(m)
 
     if (index is not None and
-        not verify_encryption(modulus, generator, order, alpha,
-                             commitment, challenge, response)):
+        not verify_encryption(modulus, generator, order, alpha, beta,
+                              commitment, challenge, response)):
         m = "Invalid vote encryption proof in valid signature!"
         raise AssertionError(m)
 
@@ -3567,7 +3571,7 @@ class ZeusCoreElection(object):
         response = eb['response']
 
         modulus, generator, order = crypto
-        if not verify_encryption(modulus, generator, order, alpha,
+        if not verify_encryption(modulus, generator, order, alpha, beta,
                                  commitment, challenge, response):
             m = "Invalid vote encryption proof!"
             raise ZeusError(m)
@@ -3787,7 +3791,7 @@ class ZeusCoreElection(object):
 
                 eb = vote['encrypted_ballot']
                 if not verify_encryption(modulus, generator, order,
-                                         eb['alpha'],
+                                         eb['alpha'], eb['beta'],
                                          eb['commitment'],
                                          eb['challenge'],
                                          eb['response']):
@@ -4592,10 +4596,11 @@ class ZeusCoreElection(object):
             self._phony = phony
             modulus, generator, order = self.do_get_cryptosystem()
             alpha = eb['alpha']
+            beta = eb['beta']
             commitment = eb['commitment']
             challenge = eb['challenge']
             response = eb['response']
-            if verify_encryption(modulus, generator, order, alpha,
+            if verify_encryption(modulus, generator, order, alpha, beta,
                                  commitment, challenge, response):
                 m = "This should have failed"
                 raise AssertionError(m)
