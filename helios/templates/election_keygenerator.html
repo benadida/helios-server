@@ -71,7 +71,7 @@ function generate_keypair() {
 
 function setup_public_key_and_proof() {    
     // generate PoK of secret key
-    PROOF = SECRET_KEY.proveKnowledge(ElGamal.fiatshamir_dlog_challenge_generator);
+    PROOF = SECRET_KEY.proveKnowledge(ElGamal.zeus_dlog_challenge_generator);
     PUBLIC_KEY = SECRET_KEY.pk;
 
     var pk_val = jQuery.toJSON({'pok': PROOF, 'public_key': PUBLIC_KEY});

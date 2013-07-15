@@ -146,19 +146,24 @@ ElGamal.SecretKey = Class.extend({
   },
   
   // generate a proof of knowledge of the secret exponent x
-  proveKnowledge: function(challenge_generator) {
+  proveKnowledge: function(challenge_generator, extra_args) {
     // generate random w
     var w = Random.getRandomInteger(this.pk.q);
 
     // compute s = g^w for random w.
+    // commitment
     var s = this.pk.g.modPow(w, this.pk.p);
     
-    // get challenge
-    var challenge = challenge_generator(s);
-    
+    if (extra_args === undefined) { extra_args = [] };
+
+    // [modulus, generator, order, public, commitment]
+    var challenge_args = [this.pk.p, this.pk.g, this.pk.q, this.pk.y, s];
+    for (var i=1; i<extra_args.length; i++) {
+      challenge_args.push(extra_args[i-1]);
+    }
+    var challenge = challenge_generator(challenge_args);
     // compute response = w +  x * challenge
     var response = w.add(this.x.multiply(challenge).mod(this.pk.q));
-    
     return new ElGamal.DLogProof(s, challenge, response);
   }
 });
@@ -506,7 +511,6 @@ ElGamal.encrypt = function(pk, plaintext, r, encode_message) {
     }
   }
   
-  console.log(m, "ENC");
   var alpha = pk.g.modPow(r, pk.p);
   var beta = (pk.y.modPow(r, pk.p)).multiply(m).mod(pk.p);
   
@@ -557,3 +561,23 @@ ElGamal.fiatshamir_challenge_generator = function(commitment) {
 ElGamal.fiatshamir_dlog_challenge_generator = function(commitment) {
   return new BigInt(hex_sha1(commitment.toJSONObject()), 16);
 };
+
+ElGamal.zeus_dlog_challenge_generator = function(arguments) {
+  var args = Array.prototype.slice.call(arguments);
+  var data = "";
+  for (var i=0; i < args.length; i++) {
+    data = data + args[i].toRadix(16) + ":";
+  }
+  var number = strbin_to_int(hex_sha256(data));
+  return args[1].modPow(number.mod(args[2]), args[0]);
+};
+
+function strbin_to_int(str) {
+  var result = new BigInt("0");
+  var base = new BigInt("1");
+  for (var i=0; i < str.length; i++) {
+    result = result.add(base.multiply(new BigInt("" + str.charCodeAt(i))));
+    base = base.multiply(new BigInt("256")); 
+  }
+  return result;
+}

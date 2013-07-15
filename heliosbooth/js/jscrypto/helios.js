@@ -65,11 +65,12 @@ UTILS.strbin_to_int = function(st) {
                                           //modulus)).mod(modulus);
   //return proof_pow.equals(cipher_pow);
 //}
-
 UTILS.get_encryption_proof = function(alpha, beta, randomness, pk) {
+  var challenge_generator = ElGamal.zeus_dlog_challenge_generator;
   var rand = Random.getRandomInteger(pk.q);
   var commitment = pk.g.modPow(rand, pk.p);
-  var challenge = new BigInt(''+hex_sha1(commitment.toString()), 16).mod(pk.q);
+  var challenge_args = [pk.p, pk.g, pk.q, alpha, commitment, beta];
+  var challenge = challenge_generator(challenge_args);
   var response = rand.add(challenge.multiply(randomness)).mod(pk.q);
   return [commitment, challenge, response];
 }

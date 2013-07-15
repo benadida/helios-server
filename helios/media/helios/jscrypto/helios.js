@@ -65,11 +65,12 @@ UTILS.strbin_to_int = function(st) {
                                           //modulus)).mod(modulus);
   //return proof_pow.equals(cipher_pow);
 //}
-
 UTILS.get_encryption_proof = function(alpha, beta, randomness, pk) {
+  var challenge_generator = ElGamal.zeus_dlog_challenge_generator;
   var rand = Random.getRandomInteger(pk.q);
   var commitment = pk.g.modPow(rand, pk.p);
-  var challenge = new BigInt(''+hex_sha1(commitment.toString()), 16).mod(pk.q);
+  var challenge_args = [pk.p, pk.g, pk.q, alpha, commitment, beta];
+  var challenge = challenge_generator(challenge_args);
   var response = rand.add(challenge.multiply(randomness)).mod(pk.q);
   return [commitment, challenge, response];
 }
@@ -392,8 +393,8 @@ HELIOS.Election = Class.extend({
     return UTILS.object_sort_keys(json_obj);
   },
   
-  get_hash: function() {
-    if (this.election_hash)
+  get_hash: function(do_compute) {
+    if (this.election_hash && do_compute == undefined)
       return this.election_hash;
     
     // otherwise  
@@ -407,12 +408,28 @@ HELIOS.Election = Class.extend({
   }
 });
 
+UTILS.election_hash_from_json = function(raw_json) {
+    jo = JSON.parse(raw_json);
+    pk = UTILS.object_sort_keys(jo.public_key);
+    var hash_data = {
+    uuid : jo.uuid,
+    description : jo.description, short_name : jo.short_name, name : jo.name,
+    public_key: pk, questions : jo.questions,
+    cast_url: jo.cast_url, frozen_at: jo.frozen_at,
+    openreg: jo.openreg, voters_hash: jo.voters_hash,
+    use_voter_aliases: jo.use_voter_aliases,
+    voting_starts_at: jo.voting_starts_at,
+    voting_ends_at: jo.voting_ends_at};
+    hash_data = UTILS.object_sort_keys(hash_data);
+    return b64_sha256(JSON.stringify(hash_data));
+}
+
 HELIOS.Election.fromJSONString = function(raw_json) {
   var json_object = JSON.parse(raw_json);
   
   // let's hash the raw_json
   var election = HELIOS.Election.fromJSONObject(json_object);
-  election.election_hash = b64_sha256(raw_json);
+  //election.election_hash = b64_sha256(raw_json);
   
   return election;
 };
@@ -450,6 +467,7 @@ BALLOT = {};
 BALLOT.pretty_choices = function(election, ballot) {
     var questions = election.questions;
     var answers = ballot.answers;
+    var empty_ballot_choices = _.map(election.questions_data,function(q) { return q['answers_index']});
 
     // process the answers
     var choices = _(questions).map(function(q, q_num) {
@@ -459,7 +477,14 @@ BALLOT.pretty_choices = function(election, ballot) {
         }
 
 	    return _(q_answers).map(function(ans) {
-	      return questions[q_num].answers[ans];
+	      var choice_text = questions[q_num].answers[ans];
+          if (_.contains(empty_ballot_choices, ans)) {
+            return questions[q_num].answers[ans].split(":")[0]; 
+          }
+          if (choice_text.indexOf(":") > -1) {
+            return choice_text.replace(":", ": ");
+          }
+          return choice_text;
 	    });
     });
 
@@ -522,7 +547,7 @@ HELIOS.EncryptedAnswer = Class.extend({
     }
 
     // do the encryption
-    var enc_result = this.doEncryption(question, answer, pk, randomness, progress);
+    var enc_result = this.doEncryption(question, this.answer, pk, randomness, progress);
 
     this.choices = enc_result.choices;
     this.randomness = enc_result.randomness;
