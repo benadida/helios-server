@@ -566,17 +566,20 @@ problem for us, as in real elections it is not forbidden for
 candidates in a party list to give their voters prepared ballots
 which they can use to vote.
 
-A related problem, indicated by one of the anonymous reviewers, is that
-``a voter who would like to compromise the privacy of another voter can
-simply copy the ciphertext of that voter, maybe modify it a bit in a
-controlled way using the homomorphic property of the encryption
-scheme, and then look for duplicate ballots (or for a pair of ballot
-with a difference matching the modification made on the ciphertext)
-after decryption''.
-We subsequently addressed this for any submited ciphertext $(g^r, c_2)$
-by including $c_2$ in the hash that produces the challenge for the proof
-of knowledge of $r$. This way, the proof of knowlegde is bound to the
-specific ciphertext and therefore is not reusable.
+A related problem, indicated by one of the anonymous reviewers, is
+that ``a voter who would like to compromise the privacy of another
+voter can simply copy the ciphertext of that voter, maybe modify it a
+bit in a controlled way using the homomorphic property of the
+encryption scheme, and then look for duplicate ballots (or for a pair
+of ballot with a difference matching the modification made on the
+ciphertext) after decryption''. It was easy to guard against that, and
+it was an oversight that we did not do it from the outset. To calm our
+worries, we checked all past elections and verified that no such
+chicanery occurred. We subsequently addressed this for any submited
+ciphertext $(g^r, c_2)$ by including $c_2$ in the hash that produces
+the challenge for the proof of knowledge of $r$. This way, the proof
+of knowlegde is bound to the specific ciphertext and therefore is not
+reusable.
 
 Although private information such as user name, {\sc ip}s, and times
 are logged in the Zeus servers, they do not appear in the receipt,
@@ -993,21 +996,21 @@ our biggest election tallying about 1600 votes.
 \section{Experience}
 \label{sec:experience}
 
-At the point of this writing, Zeus has been used in 60 elections
-around Greece. Figure~\ref{fig:elections_to_date} shows the number of
-registered voters and the turnout in each election. The registered
-voters in all elections totaled 15599, while the voters that actually
-took part in the elections totaled 12171; Elections were carried out
-successfully in all planned institutions. This was a significant
-success, as the stakes were particularly high and the voting process
-charged with emotions. To understand that it is necessary that we
-provide some surrounding context.
+At the point of this writing (June 2013), Zeus has been used in 60
+elections around Greece. Figure~\ref{fig:elections_to_date} shows the
+number of registered voters and the turnout in each election. The
+registered voters in all elections totaled 15599, while the voters
+that actually took part in the elections totaled 12171; Elections were
+carried out successfully in all planned institutions. This was a
+significant success, as the stakes were particularly high and the
+voting process charged with emotions. To understand that it is
+necessary that we provide some surrounding context.
 
 \begin{figure}[ht]
   \begin{center}
     \includegraphics[scale=0.7]{elections_to_date.pdf}
   \end{center}
-  \caption{Zeus held elections to date.}
+  \caption{Zeus held elections to June 2013.}
   \label{fig:elections_to_date}
 \end{figure}
 
