@@ -1,39 +1,40 @@
-\documentclass[letterpaper,10pt]{article}
+\documentclass[jets]{usenixjournal}
+
+\usepackage[ruled]{algorithm2e}
+\renewcommand{\algorithmcfname}{ALGORITHM}
+\SetAlFnt{\small}
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\SetAlCapHSkip{0pt}
+\IncMargin{-\parindent}
+
 \usepackage[margin=1.5in]{geometry}
 
-\usepackage{epsfig,endnotes}
-\usepackage[flushleft]{threeparttable}
-\usepackage{amssymb}
-\usepackage{graphicx}
-\usepackage{amsmath}
+\long\def\symbolfootnote[#1]#2{\begingroup%
+\def\thefootnote{\fnsymbol{footnote}}\footnote[#1]{#2}\endgroup}
+
+% \usepackage{epsfig,endnotes}
+% \usepackage[flushleft]{threeparttable}
+% \usepackage{amssymb}
+% \usepackage{graphicx}
+% \usepackage{amsmath}
 
 \usepackage{url}
 
-\newcommand{\keywords}[1]{\par\addvspace\baselineskip
-\noindent\keywordname\enspace\ignorespaces#1}
-
 \begin{document}
-
-%don't want date printed
-\date{}
 
 \title{\Large \bf From Helios to Zeus}
 
-% \author{Georgios Tsoukalas \qquad  Kostas Papadimitriou\\ 
-% Panos Louridas \qquad Panayiotis Tsanakas\\[.5cm]
-%  Greek Reseach and Education Network (GRNET),\\
-% 56 Mesogeion Avenue, Athens, Greece\\
-% \{gtsouk,kpap,louridas,tsanakas\}@grnet.gr}
+\author{GEORGIOS TSOUKALAS
+\affil{Greek Research and Education Network (GRNET)}
+KOSTAS PAPADIMITRIOU
+\affil{Greek Research and Education Network (GRNET)}
+PANOS LOURIDAS\symbolfootnote[1]{Corresponding author.}
+\affil{Greek Research and Education Network (GRNET)}
+PANAYIOTIS TSANAKAS
+\affil{National Technical University of Athens}}
 
-
-\maketitle
-
-% Use the following at camera-ready time to suppress page numbers.
-% Comment it out when you first submit the paper for review.
-\thispagestyle{empty}
-
-\subsection*{Abstract}
-
+\begin{abstract}
 We present Zeus, a verifiable internet ballot casting and counting
 system based on Helios, in which encrypted votes are posted
 eponymously to a server, then are anonymized via cryptographic mixing,
@@ -43,6 +44,9 @@ such as usability, parallelization, varying election types, and
 tallying through a separate computing system. In rough numbers, in the
 first nine months of deployment, Zeus has been used in 60 elections,
 tallying a total of more than 12000 votes.
+\end{abstract}
+
+\maketitle
 
 \section{Introduction}
 
@@ -93,8 +97,8 @@ literature. Our contribution is:
   many real-world elections, by not especially technically-savvy
   users.
 \item An account of the experience of using an e-voting system in a
-  particularly adversarial context, in over 40 real-world elections
-  involving more than 11000 voters in total.
+  particularly adversarial context, in over 60 real-world elections
+  involving more than 12000 voters in total.
 \item A description of the usability, accessibility, and logistical
   issues we had to tackle.
 \item An outline of the internal design and implementation choices.
@@ -561,6 +565,27 @@ submission of related ciphertexts; however this was not a major
 problem for us, as in real elections it is not forbidden for
 candidates in a party list to give their voters prepared ballots
 which they can use to vote.
+
+A related problem, indicated by one of the anonymous reviewers, is that
+``a voter who would like to compromise the privacy of another voter can
+simply copy the ciphertext of that voter, maybe modify it a bit in a
+controlled way using the homomorphic property of the encryption
+scheme, and then look for duplicate ballots (or for a pair of ballot
+with a difference matching the modification made on the ciphertext)
+after decryption''. It was easy to guard against that, and it was an
+oversight that we did not do it from the outset. To calm our worries,
+we checked all past elections and verified that no such chicanery
+occurred. Our fix is as follows:
+
+\begin{enumerate}
+\item If ciphertext $(c_1, c_2)$ has been submitted in an election,
+  ciphertext $(c_1, t  c_2)$ will not accepted, because it must be using
+  the same randomness, so it is to a very high probability copied and
+  altered.
+\item The discrete log proof submitted with the vote takes the hash of
+  the randomness and the ciphertext $(c_1, c_2)$, so that changing the
+  ciphertext invalidates the proof.
+\end{enumerate}
 
 Although private information such as user name, {\sc ip}s, and times
 are logged in the Zeus servers, they do not appear in the receipt,
@@ -1253,7 +1278,8 @@ and how they could be sure that it was a valid one. This is something
 that could be solved in time with better informational material and
 voter education on the basic premises of the system.
 
-In the same vein, nobody bothered to use the audit vote feature,
+Taking into account the feedback we had from our users,
+it came as no surprise that nobody bothered to use the audit vote feature,
 whereby a voter tests that their browser is not compromised. A few
 asked about it, and when they understood what it was about decided it
 was not worth the trouble. In truth, the voters that asked about it
@@ -1266,7 +1292,7 @@ voters. We declined; we should probably have put more effort into
 educating voters and recruiting champions among the voting
 institutions. 
 
-Nobody bothered to use our support for external mixnets,
+In the same vein, nobody bothered to use our support for external mixnets,
 although we did explain to those who asked that this was the only way
 to guarantee anonymity if they could not trust us, otherwise a
 malicious Zeus server could break the anonymity of all the users. We
@@ -1441,14 +1467,12 @@ are announced that are using it in the coming days.
 
 \section{Availability}
 
-Zeus is open software, available at \url{XXX} (URL withheld according
-to paper submission guidelines).
+Zeus is open software, available at \url{https://github.com/grnet/zeus}.
 
 \section{Acknowledgments}
 
-We would like to thank Professor XXX (name removed according to paper
-submission guidelines) for the interesting discussions we had in the
-start of the project.
+We would like to thank Professor Aggelos Kiayias for the interesting
+discussions we had in the start of the project.
 
 {\footnotesize
 \bibliographystyle{acm}
