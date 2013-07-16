@@ -212,7 +212,6 @@ CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 
 
 BOOTH_STATIC_PATH = ROOT_PATH + '/heliosbooth/'
-VERIFIER_STATIC_PATH = ROOT_PATH + '/heliosverifier/'
 
 ECOUNTING_LOGIN_URL = "https://x.x.x.x/checkuser.php"
 ECOUNTING_POST_URL = "https://x.x.x.x/newelection.php"

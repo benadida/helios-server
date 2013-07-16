@@ -274,7 +274,6 @@ H ψηφοφορία ήταν προγραμματισμένη αρχικά να
 {% if election.voting_has_stopped %}
 <p style="font-size: 1.2em;">
 {% if election.result %}
-Επαληθεύστε <a target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">τη διαδικασία της ψηφοφορίας</a>.
 {% endif %}
 
 δείτε <a href="{{vote_url}}">ψηφιακό παραπέτασμα</a> της ψηφοφορίας.
