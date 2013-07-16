@@ -572,20 +572,11 @@ simply copy the ciphertext of that voter, maybe modify it a bit in a
 controlled way using the homomorphic property of the encryption
 scheme, and then look for duplicate ballots (or for a pair of ballot
 with a difference matching the modification made on the ciphertext)
-after decryption''. It was easy to guard against that, and it was an
-oversight that we did not do it from the outset. To calm our worries,
-we checked all past elections and verified that no such chicanery
-occurred. Our fix is as follows:
-
-\begin{enumerate}
-\item If ciphertext $(c_1, c_2)$ has been submitted in an election,
-  ciphertext $(c_1, t  c_2)$ will not accepted, because it must be using
-  the same randomness, so it is to a very high probability copied and
-  altered.
-\item The discrete log proof submitted with the vote takes the hash of
-  the randomness and the ciphertext $(c_1, c_2)$, so that changing the
-  ciphertext invalidates the proof.
-\end{enumerate}
+after decryption''.
+We subsequently addressed this for any submited ciphertext $(g^r, c_2)$
+by including $c_2$ in the hash that produces the challenge for the proof
+of knowledge of $r$. This way, the proof of knowlegde is bound to the
+specific ciphertext and therefore is not reusable.
 
 Although private information such as user name, {\sc ip}s, and times
 are logged in the Zeus servers, they do not appear in the receipt,
