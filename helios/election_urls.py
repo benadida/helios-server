@@ -13,19 +13,10 @@ urlpatterns = patterns('',
 
     # edit election params
     (r'^/edit$', one_election_edit),
-    (r'^/schedule$', one_election_schedule),
-    (r'^/archive$', one_election_archive),
-
-    (r'^/stats$', one_election_public_stats),
-
-    # badge
-    (r'^/badge$', election_badge),
 
     # adding trustees
     (r'^/trustees/$', list_trustees),
     (r'^/trustees/view$', list_trustees_view),
-    (r'^/trustees/new$', new_trustee),
-    (r'^/trustees/add-helios$', new_trustee_helios),
     (r'^/trustees/delete$', delete_trustee),
 
     # trustee pages
@@ -52,18 +43,11 @@ urlpatterns = patterns('',
     # get randomness
     (r'^/get-randomness$', get_randomness),
 
-    # server-side encryption
-    (r'^/encrypt-ballot$', encrypt_ballot),
-
     # construct election
     (r'^/candidates$', one_election_candidates),
     (r'^/questions$', one_election_questions),
-    (r'^/set_reg$', one_election_set_reg),
-    (r'^/set_featured$', one_election_set_featured),
-    (r'^/save_questions$', one_election_save_questions),
-    (r'^/register$', one_election_register),
-    (r'^/freeze$', one_election_freeze), # includes freeze_2 as POST target
-    (r'^/endnow$', one_election_force_end), # includes freeze_2 as POST target
+    (r'^/freeze$', one_election_freeze),
+    (r'^/endnow$', one_election_force_end),
 
     # computing tally
     (r'^/compute_tally$', one_election_compute_tally),
@@ -77,8 +61,6 @@ urlpatterns = patterns('',
 
     # casting a ballot before we know who the voter is
     (r'^/cast$', one_election_cast),
-    (r'^/cast_confirm$', one_election_cast_confirm),
-    (r'^/password_voter_login$', password_voter_login),
     (r'^/l/(?P<voter_uuid>.*)/(?P<voter_secret>.*)$', voter_quick_login),
     (r'^/cast_done$', one_election_cast_done),
     (r'^/s/(?P<fingerprint>.*)$', one_election_download_signature),
@@ -93,14 +75,11 @@ urlpatterns = patterns('',
     (r'^/voters/upload$', voters_upload),
     (r'^/voters/upload-cancel$', voters_upload_cancel),
     (r'^/voters/list$', voters_list_pretty),
-    (r'^/voters/eligibility$', voters_eligibility),
     (r'^/voters/email$', voters_email),
-    (r'^/voters/(?P<voter_uuid>[^/]+)$', one_voter),
     (r'^/voters/(?P<voter_uuid>[^/]+)/delete$', voter_delete),
     (r'^/voters/(?P<voter_uuid>[^/]+)/exclude$', voter_exclude),
 
     # ballots
-    (r'^/ballots/$', ballot_list),
     (r'^/ballots/(?P<voter_uuid>[^/]+)/all$', voter_votes),
     (r'^/ballots/(?P<voter_uuid>[^/]+)/last$', voter_last_vote),
 

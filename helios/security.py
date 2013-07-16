@@ -118,15 +118,6 @@ def election_view(**checks):
       # do checks
       do_election_checks(election, checks)
 
-      # if private election, only logged in voters
-      if election.private_p and not checks.get('allow_logins',False):
-        from views import password_voter_login
-        if not user_can_see_election(request, election):
-          return_url = request.get_full_path()
-          return HttpResponseRedirect("%s?%s" % (reverse(password_voter_login, args=[election.uuid]), urllib.urlencode({
-                  'return_url' : return_url
-                  })))
-
       try:
         return func(request, election, *args, **kw)
       except Exception, e:

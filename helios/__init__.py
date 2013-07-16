@@ -1,7 +1,6 @@
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from helios.views import election_shortcut
 
 TEMPLATE_BASE = settings.HELIOS_TEMPLATE_BASE or "helios/templates/base.html"
 
