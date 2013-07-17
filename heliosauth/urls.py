@@ -15,18 +15,7 @@ urlpatterns = patterns('',
     (r'^$', index),
     (r'^logout$', logout),
     (r'^change_password$', change_password),
-    (r'^start/(?P<system_name>.*)$', start),
-    # weird facebook constraint for trailing slash
-    (r'^after/$', after),
-    (r'^why$', perms_why),
-    (r'^after_intervention$', after_intervention),
-
-    ## should make the following modular
-
-    # password auth
     (r'^password/login', password_login_view),
-    (r'^password/forgot', password_forgotten_view),
-
-    # twitter
-    (r'^twitter/follow', follow_view),
+    (r'^after/$', after),
+    (r'^after_intervention$', after_intervention)
 )

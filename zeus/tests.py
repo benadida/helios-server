@@ -15,12 +15,14 @@ import md5
 import os
 import zipfile
 import cStringIO as StringIO
+import pprint
 
 from random import choice
 from datetime import timedelta
 
 from django.test import TestCase
 from django.test.client import Client
+from django.contrib.auth.hashers import make_password
 
 from helios.crypto.elgamal import *
 from helios.crypto import algs
@@ -32,11 +34,15 @@ from zeus.helios_election import *
 from zeus.models import *
 from zeus.core import *
 
-import datetime
+from heliosauth.models import User
 
-TRUSTEES_COUNT = int(os.environ.get('ZEUS_TRUSTEES_COUNT', 3))
+import datetime
+import logging
+
+
+TRUSTEES_COUNT = int(os.environ.get('ZEUS_TRUSTEES_COUNT', 2))
 VOTERS_COUNT = int(os.environ.get('ZEUS_VOTERS_COUNT', 50))
-VOTES_COUNT = int(os.environ.get('ZEUS_VOTES_COUNT', 5))
+VOTES_COUNT = int(os.environ.get('ZEUS_VOTES_COUNT', 2))
 MIXNETS_COUNT = int(os.environ.get('ZEUS_MIXNETS_COUNT', 1))
 REMOTE_MIXES_COUNT = int(os.environ.get('ZEUS_REMOTE_MIXNETS_COUNT', 2))
 CAST_AUDITS = False
@@ -44,45 +50,60 @@ CAST_WITH_AUDIT_SECRET = False
 DO_REMOTE_MIXES = True
 
 
-def random_string(length=5, prefix=""):
-    rand = "".join([random.choice(string.ascii_uppercase + \
+def random_string(length=5, prefix="", vary=False):
+    if not vary:
+        rand = "".join([random.choice(string.ascii_uppercase + \
                                   string.ascii_lowercase) for x in \
                                   range(length)]).title()
+    else:
+        rand = "".join([random.choice(string.ascii_uppercase + \
+                                  string.ascii_lowercase) for x in \
+                                  range(choice(range(1, length)))]).title()
     if prefix:
         rand = "%s %s" % (prefix, rand)
     return rand
 
 
 def random_sentence(words=10, prefix=""):
-    return prefix + " ".join([random_string(random.choice(range(5,15))) for x in range(words)])
+    return prefix + " ".join([random_string(random.choice(range(5,15))) for \
+                              x in range(words)])
 
 
 class FunctionalZeusTest(TestCase):
 
-    def _random_questions(self, schools, count=15):
-        post_data = {
-            'candidates_lastname':[],
-            'candidates_name':[],
-            'candidates_fathers_name':[],
-            'candidates_department':[]
-        }
+    def _random_questions(self, qcount=None, ccount=None):
+        post_data = {}
+        if not qcount:
+            qcount = choice(range(1, 10))
 
-        for j in range(count):
-            school = choice(schools)
-            lastname, name, fathers_name = random_sentence(3).split(" ")
-            post_data['candidates_lastname'].append(lastname)
-            post_data['candidates_name'].append(name)
-            post_data['candidates_fathers_name'].append(fathers_name)
-            post_data['candidates_department'].append(school)
+        for q in range(qcount):
+            if not ccount:
+                choice_count = choice(range(1, 10))
+            else:
+                choice_count = ccount
 
+            post_data['form-%d-question' % q] = "Question %d %s" % (q,
+                                                            random_string(40))
+            post_data['form-%d-choice_type' % q] = "choice"
+            post_data['form-%d-min_answers' % q] = \
+                    minchoice = str(choice(range(1, choice_count+1)))
+            post_data['form-%d-max_answers' % q] = \
+                    maxchoice = str(choice(range(int(minchoice), choice_count+1)))
+            post_data['form-%d-ORDER' % q] = q
+
+            for a in range(choice_count):
+                post_data['form-%d-answer_%d' % (q, a)] = \
+                        random_string(20, "Choice ", True)
+
+        post_data['form-TOTAL_FORMS'] = qcount
+        post_data['form-INITIAL_FORMS'] = 1
+        post_data['form-MAX_NUM_FORMS'] = ""
         return post_data
 
     def _random_election_data(self, custom_data={}):
 
         trustees = "\n".join(",".join([random_sentence(2, u"Έφορος "),
                                        "eforos%d@trustee.com" % x]) for x in range(TRUSTEES_COUNT))
-        departments = "\n".join(random_sentence(2, u"Τμήμα ") for x in range(10))
-
         date1, date2 = datetime.datetime.now() + timedelta(hours=48), datetime.datetime.now() + timedelta(hours=56)
         data = {
             'institution': random_string(23),
@@ -93,9 +114,8 @@ class FunctionalZeusTest(TestCase):
             'voting_ends_at_1': date2.strftime('%H'),
             'trustees': trustees,
             'description': random_sentence(40),
-            'departments': departments,
+            'election_type': 'election_parties',
             'eligibles_count': 6,
-            'has_department_limit': 1,
             'help_email': 'test@test.com',
             'help_phone': 'phone1, phone2, 6999999999',
         }
@@ -149,9 +169,8 @@ class FunctionalZeusTest(TestCase):
         client = self.get_client()
         r = client.get('/auth/logout', follow=True)
         self.assertEqual(r.status_code, 200)
-        r = client.post('/auth/password/login', {'username': user,
-                                                     'password':pwd},
-                            follow=True)
+        r = client.post('/auth/password/login',
+                        {'username': user, 'password':pwd}, follow=True)
         self.assertContains(r, u"Έχετε συνδεθεί ως διαχειριστής")
         return client
 
@@ -162,6 +181,11 @@ class FunctionalZeusTest(TestCase):
         return Client()
 
     def setUp(self):
+        institution = Institution.objects.create(name="inst1")
+        User.objects.create(user_type="password", user_id="admin",
+                            info={"password": make_password("admin")},
+                            admin_p=True, ecounting_account=False,
+                            institution=institution)
         self.admin = self.admin_client()
         self.trustee = self.get_client()
         self.voter = self.get_client()
@@ -181,7 +205,7 @@ class FunctionalZeusTest(TestCase):
         questions_url = '/helios/elections/%s/questions' % uuid
         self.assertRedirects(r, questions_url)
 
-        q_data = self._random_questions(election.departments)
+        q_data = self._random_questions()
         r = admin.post(questions_url, q_data)
         voters_upload_url = '/helios/elections/%s/voters/upload' % uuid
         self.assertRedirects(r, voters_upload_url)
@@ -197,19 +221,24 @@ class FunctionalZeusTest(TestCase):
     def random_vote(self, voter):
         client = self.get_client()
         election = voter.election
+
+        # available answers
         selection = list(range(len(election.questions[0]['answers'])))
+
         random.shuffle(selection)
         selection = selection[:choice(range(len(selection)))]
-        cands_size =  len(election.candidates)
+        cands_size = len(election.questions[0]['answers'])
         rel_selection = to_relative_answers(selection, cands_size)
         encoded = gamma_encode(rel_selection, cands_size, cands_size)
         plaintext = algs.EGPlaintext(encoded, election.public_key)
         randomness = algs.Utils.random_mpz_lt(election.public_key.q)
-        cipher = election.public_key.encrypt_with_r(plaintext, randomness, True)
+        cipher = election.public_key.encrypt_with_r(plaintext,
+                                                    randomness, True)
 
-        modulus, generator, order = election.zeus_election.do_get_cryptosystem()
+        modulus, generator, order = \
+                election.zeus_election.do_get_cryptosystem()
         enc_proof = prove_encryption(modulus, generator, order, cipher.alpha,
-                                     randomness)
+                                     cipher.beta, randomness)
 
         client.get(voter.get_quick_login_url(), follow=True)
         cast_data = {}
@@ -243,8 +272,11 @@ class FunctionalZeusTest(TestCase):
         for voter in Election.objects.get(uuid=uuid).voter_set.all():
             if choice(range(10)) > 3:
                 voter, encoded, audit = self.random_vote(voter)
-                votes.append({'voter': voter, 'encoded': encoded, 'audit': audit})
+                votes.append({'voter': voter, 'encoded': encoded,
+                              'audit': audit})
 
+        print "VOTING"
+        pprint.pprint(votes)
         return votes
 
     def freeze_election(self, admin, uuid):
@@ -317,7 +349,7 @@ class FunctionalZeusTest(TestCase):
     def assert_anonymous_cannot_visit(self, election):
         c = self.get_client()
         r = c.get('/helios/elections/%s/view' % election.uuid, follow=True)
-        self.assertRedirects(r, '/')
+        self.assertEqual(r.status_code, 403)
 
     def assert_voter_cannot_vote(self, election, voter=None):
         v = voter or election.voter_set.filter()[choice(range(election.voter_set.count()))]
@@ -376,17 +408,6 @@ class FunctionalZeusTest(TestCase):
             self.finish_mixing(admin1, election.uuid)
 
         self.trustees_decrypt(kps)
-
-        self.assertEqual(Election.objects.get(uuid=election.uuid).ecounting_request_send,
-                        None)
-        admin1.post('/helios/elections/%s/post-ecounting' % election.uuid, {'csrf_token':
-                                                            admin1.session.get('csrf_token')})
-        self.assertTrue(Election.objects.get(uuid=election.uuid).ecounting_request_send,
-                        None)
-        election = Election.objects.get(uuid=election.uuid)
-        vote_results = filter(lambda x:x is not False, map(lambda x:x['encoded'] if not x['audit'] else False,
-                           votes))
-        self.assertEqual(sorted(election.result[0]), sorted(vote_results))
 
         r = admin1.get('/helios/elections/%s/zeus-proofs.zip' % election.uuid)
         self.assertEqual(r.status_code, 200)
