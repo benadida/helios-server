@@ -4226,6 +4226,12 @@ class ZeusCoreElection(object):
                                          ciphers, factors,
                                          teller=teller,
                                          nr_parallel=nr_parallel):
+            print "MODULUS", modulus
+            print "GENERATOR", generator
+            print "ORDER", order
+            print "CIPHERS", ciphers
+            print "FACTORS", factors
+            print "PK", trustee_public
             m = "Invalid trustee factor proof!"
             raise ZeusError(m)
 
@@ -4288,7 +4294,8 @@ class ZeusCoreElection(object):
         secret = self.do_get_zeus_secret()
         nr_parallel = self.get_option('nr_parallel')
         with teller.task("Computing Zeus factors"):
-            zeus_factors = compute_decryption_factors(modulus, generator, order,
+            zeus_factors = compute_decryption_factors(modulus, generator,
+                                                      order,
                                                       secret, mixed_ballots,
                                                       teller=teller,
                                                       nr_parallel=nr_parallel)

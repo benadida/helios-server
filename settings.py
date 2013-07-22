@@ -73,9 +73,11 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'pagination.middleware.PaginationMiddleware',
+    'zeus.middleware.AuthenticationMiddleware',
+    'zeus.middleware.CSRFMiddleware',
+    'zeus.middleware.ExceptionsMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
@@ -108,7 +110,11 @@ TEMPLATE_CONTEXT_PROCESSORS = (
   "django.core.context_processors.media",
   "django.core.context_processors.static",
   "django.core.context_processors.request",
-  "django.contrib.messages.context_processors.messages")
+  "django.contrib.messages.context_processors.messages",
+
+  "zeus.context_processors.user",
+  "zeus.context_processors.confirm_messages"
+)
 
 ##
 ## HELIOS
@@ -211,7 +217,8 @@ CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 
 
-BOOTH_STATIC_PATH = ROOT_PATH + '/heliosbooth/'
+BOOTH_STATIC_PATH = ROOT_PATH + '/zeus/static/booth/'
+print "BOOTH", BOOTH_STATIC_PATH
 
 ECOUNTING_LOGIN_URL = "https://x.x.x.x/checkuser.php"
 ECOUNTING_POST_URL = "https://x.x.x.x/newelection.php"
@@ -223,7 +230,7 @@ HELIOS_VOTER_EMAIL_RATE = '30/m'
 ZEUS_RESULTS_PATH = os.path.join('/', 'usr', 'share', 'zeus')
 ZEUS_PROOFS_PATH = os.path.join('/', 'usr', 'share', 'zeus_proofs')
 ZEUS_MIXES_PATH = 'zeus_mixes'
-ZEUS_ELECTION_FORCE_VOTING_END = True
+ZEUS_ALLOW_EARLY_ELECTION_CLOSE = True
 ZEUS_CELERY_TEMPDIR = os.path.join('/', 'var', 'run', 'zeus-celery')
 
 CANDIDATES_CHANGE_TIME_MARGIN = 1

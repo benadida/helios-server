@@ -1,0 +1,12 @@
+{% load i18n %}
+{% if election.voting_extended_until %}
+<div class="columns twelve">
+<div class="alert-box alert">
+{% blocktrans with ends_at=election.voting_ends_at extended=election.voting_extended_until %}
+H ψηφοφορία ήταν προγραμματισμένη αρχικά να λήξει στις {{ ends_at }}, <br />
+αλλά παρατάθηκε μέχρι τις {{ extended }}
+{% endblocktrans %}
+</div>
+</div>
+{% endif %}
+

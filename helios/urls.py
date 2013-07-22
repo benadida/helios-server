@@ -7,21 +7,16 @@ urlpatterns = None
 
 urlpatterns = patterns('',
   (r'^$', home),
-  (r'^testcookie$', test_cookie),
-  (r'^testcookie_2$', test_cookie_2),
-  (r'^nocookies$', nocookies),
 
   # trustee login
-  (r'^t/(?P<election_short_name>[^/]+)/(?P<trustee_email>[^/]+)/(?P<trustee_secret>[^/]+)$', trustee_login),
-
-
-  (r'^e/(?P<election_short_name>[^/]+)$', election_shortcut),
+  url(r'^t/(?P<election_uuid>[^/]+)/(?P<trustee_email>[^/]+)/(?P<trustee_secret>[^/]+)$',
+  'zeus.views.trustee.login', name="election_trustee_login"),
 
   # election
   (r'^elections/params$', election_params),
-  (r'^elections/new$', election_new),
-  (r'^elections/(?P<election_uuid>[^/]+)', include('helios.election_urls')),
-
+  url(r'^elections/new$', 'zeus.views.election.add_or_update',
+      name='election_create'),
+  url(r'^elections/(?P<election_uuid>[^/]+)', include('zeus.urls.election')),
 )
 
 

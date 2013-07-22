@@ -20,6 +20,7 @@ DEBUG = False
 CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 
+SOUTH_TESTS_MIGRATE = False
 #DATABASES = {
     #'default': {
         #'ENGINE': 'django.db.backends.sqlite3',

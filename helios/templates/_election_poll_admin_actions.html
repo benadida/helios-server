@@ -1,0 +1,18 @@
+{% load i18n %}
+{% if poll and admin %}
+<div class="row">
+    <div class="columns twelve">
+            <dl class="tabs">
+            <dd class="{% if menu_active == "voters" %}active{% endif %}"><a 
+              href="{% url election_poll_voters election.uuid poll.uuid %}">
+              {% trans "Voters" %}
+            </a></dd>
+            <dd class="{% if menu_active == "questions" %}active{% endif %}"><a 
+              href="{% url election_poll_questions election.uuid poll.uuid %}">
+              {{ poll.get_module.questions_title_message }}
+            </a></dd>
+            </dl>
+</div>
+</div>
+{% endif %}
+

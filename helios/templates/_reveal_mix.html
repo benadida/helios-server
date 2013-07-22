@@ -1,0 +1,53 @@
+{% load i18n zeus_tags %}
+
+{% if not election.feature_frozen %}
+<div id="freeze-admin-action" class="reveal-modal freeze-issues">
+<h3>{% trans "Freeze election" %}</h3>
+
+{% set_election_issues election %}
+
+{% if election_issues_list or polls_issues_list %}
+<p class="election-admin-message">
+{% trans "Please resolve the following issues in order to be able to freeze the election" %}
+</p>
+<div class="issues-lists">
+<ul class="election-issues clearfix">
+{% for issue in election_issues_list %}
+  <li>
+  {{ issue.action }}{% if forloop.last %}{% else %}{% endif %}
+  </li>
+{% endfor %}
+</ul>
+
+<ul class="election-issues poll-issues clearfix">
+{% for poll, issues in polls_issues_list.items %}
+  {% for issue in issues %}
+    <li>
+      {% if not election.single_poll %}
+      <span class="">{{ poll.name }}</span>
+      {% endif %}
+      {{ issue.action }}{% if forloop.last %}{% else %}{% endif %}
+    </li>
+  {% endfor %}
+  {% endfor %}
+</ul>
+</div>
+<a class="button close-reveal-modal small alert">{% trans "Close" %}</a>
+{% else %}
+<div class="election-action">
+  <p class="election-admin-message">
+  {% blocktrans %}Election freeze message{% endblocktrans %}
+</p>
+<div class="actions">
+  {% url election_freeze election.uuid as action %}
+  <form action="{{ action }}" method="POST" class="action-form">
+    {% csrf_token %}
+    <input type="submit" value="{% trans "Confirm freeze" %}"
+    class="button close-reveal-modal small" />
+  <a class="button close-reveal-modal small alert">{% trans "Cancel" %}</a>
+</form>
+</div>
+</div>
+{% endif %}
+</div>
+{% endif %}

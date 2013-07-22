@@ -1,15 +1,65 @@
-<dd class="{% if menu_active == "overview" %}active{% endif %}"><a 
-  href="{% url helios.views.one_election_view election.uuid %}">{% if admin_p %}Ενέργειες{% else %}Πληροφορίες{% endif %}</a></dd>
-<dd class="{% if menu_active == "candidates" %}active{% endif %}"><a 
-  href="{{ election.questions_url }}">{{ election.type_params.questions_title }}</a></dd>
-{% if admin_p %}
-<dd class="{% if menu_active == "voters" %}active{% endif %}"><a 
-  href="{% url helios.views.voters_list_pretty election.uuid %}">Λίστα ψηφοφόρων</a></dd>
-{% else %}
+{% load i18n %}
+{% if poll and voter %}
+<dd class="{% if menu_active == "election" %}active{% endif %}"><a 
+  href="{% url election_poll_index election.uuid poll.uuid %}">
+  {% trans "Election information" %}
+</a></dd>
+
+{% if election.feature_completed %}
+<dd class="{% if menu_active == "results" %}active{% endif %}"><a 
+  href="{% url election_poll_results election.uuid poll.uuid %}">
+  {% trans "Results" %}
+</a></dd>
 {% endif %}
+
+<dd class="{% if menu_active == "questions" %}active{% endif %}"><a 
+  href="{% url election_poll_questions election.uuid poll.uuid %}">
+  {{ poll.get_module.questions_title_message }}
+</a></dd>
+
 <dd class="{% if menu_active == "trustees" %}active{% endif %}"><a 
-  href="{% url helios.views.list_trustees_view election.uuid %}">Εφορευτική επιτροπή</a></dd>
-{% if election.audits_casted > 0 %}
-<dd class="{% if menu_active == "audits" %}active{% endif %}"><a 
-  href="{% url helios.views.one_election_audited_ballots election.uuid %}">Ψήφοι ελέγχου</a></dd>
+  href="{% url election_trustees_list election.uuid %}">
+  {% trans "Trustees list" %}
+</a></dd>
+
+{% if poll and poll.audits_cast > 0 %}
+<dd class="{% if menu_active == "audited_ballots" %}active{% endif %}"><a 
+  href="{% url election_poll_audited_ballots election.uuid poll.uuid %}">
+  {% trans "Audited ballots" %}
+</a></dd>
 {% endif %}
+
+{% else %}
+{% if admin and election.feature_can_edit %}
+<dd class="{% if menu_active == "election_edit" %}active{% endif %}"><a 
+  href="{% url election_edit election.uuid %}">
+  {% trans "Edit election" %}
+</a></dd>
+{% endif %}
+
+<dd class="{% if menu_active == "election" %}active{% endif %}"><a 
+  href="{% url election_index election.uuid %}">
+  {% if admin_p %}{% trans "Actions" %}{% else %}
+  {% trans "Information" %}{% endif %}
+</a></dd>
+
+
+<dd class="{% if menu_active == "polls" %}active{% endif %}"><a 
+  href="{% url election_polls_list election.uuid %}">
+  {% trans "Polls" %}
+</a>
+</dd>
+
+<dd class="{% if menu_active == "trustees" %}active{% endif %}"><a 
+  href="{% url election_trustees_list election.uuid %}">
+  {% trans "Trustees list" %}
+</a></dd>
+
+{% endif %}
+{% if poll and poll.audited_ballots.filter.confirmed.count > 0 %}
+<dd class="{% if menu_active == "audited_ballots" %}active{% endif %}"><a 
+  href="{% url election_poll_audited_ballots election.uuid poll.uuid %}">
+  {% trans "Audited ballots" %}
+</a></dd>
+{% endif %}
+

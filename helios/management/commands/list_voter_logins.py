@@ -20,12 +20,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if args:
 	    election = Election.objects.get(uuid=args[0])
-            voters = Voter.objects.filter(election=election)
+            voters = Voter.objects.filter(poll__in=election.polls.all())
         else:
             voters = Voter.objects.all()
 
         for v in voters:
-            print v.election.uuid, v.get_quick_login_url()
+            print v.poll.uuid, v.get_quick_login_url()
         # once broken out of the while loop, quit and wait for next invocation
         # this happens when there are no votes left to verify
 

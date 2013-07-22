@@ -3,6 +3,7 @@
 {% block title %}{{election.name}}: σελίδα μέλους εφορευτικής επιτροπής{% endblock %}
 
 {% block head_subtitle %}
+<div id="header" class="columns twelve">
    <h4 id="election-name" class="subheader">
       {{election.name}}<span class="button small
         election-desc-toggle">Πληροφορίες</span>
@@ -16,11 +17,12 @@
       $('#election-description-modal').reveal();
     })
 </script>
+</div>
 {% endblock %}
 
 
 {% block tabs_menu %}
 <dd class="active"><a 
-  href="{% url helios.views.one_election_view election.uuid %}">Ενέργειες μέλους
+  href="{% url election_index election.uuid %}">Ενέργειες μέλους
 εφορευτικής επιτροπής</a></dd>
 {% endblock %}

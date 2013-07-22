@@ -1,0 +1,12 @@
+{% extends "election_page.html" %}{% load i18n %}
+
+{% block title %}{{election.name}}: {% trans "Election groups" %}{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
+{% block content %}
+{% for group in groups %}
+{{ group }}
+{% endfor %}
+{% endblock %}
+

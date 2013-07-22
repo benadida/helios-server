@@ -37,25 +37,20 @@ def election_report(elections, votes_report=True, filter_sensitive=True):
             ('voting_extended', bool(e.voting_extended_until)),
             ('voting_extended_until', e.voting_extended_until),
             ('voting_ends_at', e.voting_ends_at),
-            ('has_department_limit', e.has_department_limit),
-            ('eligibles_count', e.eligibles_count),
-            ('departments', e.departments),
-            ('trustees', list(e.trustee_set.filter(secret_key__isnull=True).values('name',
-                                                                             'email'))),
-            ('candidates', e.candidates),
+            ('trustees', list(e.trustees.filter().no_secret().values('name', 'email'))),
         ])
         if votes_report:
-            voters_added = e.voter_set.count()
+            voters_added = e.voters.count()
             entry.update(OrderedDict([
-                ('excluded_count', e.voter_set.filter(excluded_at__isnull=False).count()),
-                ('audit_requests_count', e.auditedballot_set.filter(is_request=True).count()),
-                ('audit_cast_count', e.auditedballot_set.filter(is_request=False).count()),
-                ('voters_count', e.voter_set.count()),
-                ('voters_cast_count', e.castvote_set.filter(voter__excluded_at__isnull=True).distinct('voter').count()),
-                ('cast_count', e.castvote_set.count()),
-                ('voters_visited_count', e.voter_set.filter(last_visit__isnull=False).count()),
-                ('last_view_at',
-                 e.voter_set.order_by('-last_visit')[0].last_visit if voters_added else None)
+                ('excluded_count', e.voters.filter(excluded_at__isnull=False).count()),
+                ('audit_requests_count', e.audits.filter().requests().count()),
+                ('audit_cast_count', e.audits.filter().confirmed().count()),
+                ('voters_count', e.voters.count()),
+                ('voters_cast_count', e.casts.filter().countable().distinct('voter').count()),
+                ('excluded_voters_cast_count', e.casts.filter().excluded().distinct('voter').count()),
+                ('cast_count', e.casts.count()),
+                ('voters_visited_count', e.voters.filter().visited().count()),
+                ('last_view_at', e.voters.order_by('-last_visit')[0].last_visit if voters_added else None)
             ]))
 
         if filter_sensitive:
@@ -66,7 +61,7 @@ def election_report(elections, votes_report=True, filter_sensitive=True):
 
 
 def election_votes_report(elections, include_alias=False, filter_sensitive=True):
-    for vote in CastVote.objects.filter(election__in=elections,
+    for vote in CastVote.objects.filter(poll__election__in=elections,
                                     voter__excluded_at__isnull=True).values('voter__alias','voter',
                                                                            'cast_at').order_by('-cast_at'):
         entry = OrderedDict([
@@ -76,15 +71,15 @@ def election_votes_report(elections, include_alias=False, filter_sensitive=True)
         if not filter_sensitive:
             entry['name'] = Voter.objects.get(pk=vote['voter']).full_name
         if len(elections) > 1:
-            entry['election'] = vote.election.name
+            entry['poll'] = vote.poll.name
 
         entry['date'] = vote['cast_at']
         yield entry
 
 
 def election_voters_report(elections):
-    for voter in Voter.objects.filter(election__in=elections,
-                                      excluded_at__isnull=True).annotate(cast_count=Count('castvote')).order_by('voter_surname'):
+    for voter in Voter.objects.filter(poll__election__in=elections,
+                                      excluded_at__isnull=True).annotate(cast_count=Count('cast_votes')).order_by('voter_surname'):
         entry = OrderedDict([
             ('name', voter.voter_name),
             ('surname', voter.voter_surname),
@@ -105,7 +100,7 @@ def _single_votes(results, clen):
 def _get_choices_sums(results, choices_len):
     data = OrderedDict()
     for i in range(choices_len+1):
-      data[str(i)] = 0
+        data[str(i)] = 0
 
     for encoded in results:
         chosen_len = len(gamma_decode(encoded, choices_len))
@@ -116,18 +111,20 @@ def _get_choices_sums(results, choices_len):
 
 def election_results_report(elections):
     for election in elections:
-        if not election.result:
-            entry = {}
-        else:
-            entry = OrderedDict([
-                ('choices', len(election.questions[0]['answers'])),
-                ('protest_votes_count', election.result[0].count(0)),
-                ('total_count', len(election.result[0])),
-                ('choices_sums', _get_choices_sums(election.result[0],
-                                                   len(election.questions[0]['answers'])))
-            ])
-        if len(elections) > 1:
-            entry['election'] = vote.election.name
+        for poll in election.polls.all():
+            if not poll.result:
+                entry = {}
+            else:
+                entry = OrderedDict([
+                    ('choices', len(poll.questions[0]['answers'])),
+                    ('protest_votes_count', poll.result[0].count(0)),
+                    ('total_count', len(poll.result[0])),
+                    ('choices_sums', _get_choices_sums(poll.result[0],
+                                                       len(poll.questions[0]['answers'])))
+                ])
+            if len(elections) > 1:
+                entry['election'] = vote.election.name
+                entry['poll'] = vote.poll.election.name
         yield entry
 
 def strforce(thing, encoding='utf8'):
@@ -135,9 +132,10 @@ def strforce(thing, encoding='utf8'):
         return thing.encode(encoding)
     return str(thing)
 
-def csv_from_party_results(election, party_results, outfile=None):
+def csv_from_party_results(poll, party_results, outfile=None):
     if outfile is None:
         outfile = StringIO()
+    election = poll.election
     csvout = csv.writer(outfile, dialect='excel', delimiter=',')
     writerow = csvout.writerow
     invalid_count = party_results['invalid_count']
@@ -154,6 +152,7 @@ def csv_from_party_results(election, party_results, outfile=None):
               (election.voting_extended_until.strftime(DATE_FMT))
 
     writerow([strforce(election.name)])
+    writerow([strforce(poll.name)])
     writerow([strforce(election.institution.name)])
     writerow([strforce(voting_start)])
     writerow([strforce(voting_end)])

@@ -1,0 +1,134 @@
+{% extends "election_page.html" %}
+{% load pagination_tags i18n zeus_tags %} 
+
+{% block title %}
+{{ poll.name_display }} | {% trans "Voters" %}
+{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
+{% block content %}
+
+<div class="row">
+    <div class="columns seven">
+    <div class="columns six">
+        <h6>{% trans "Total voters count" %}: <span>{{ voters_count }}</span></h6>
+    </div>
+    <div class="columns six" style="padding-left:0; width: 42%;" >
+    <h6>{% trans "Voters cast count" %}: {{ voted_count }}</h6>
+    </div>
+  </div>
+  <div class="columns five">
+
+   {% autopaginate voters voters_per_page %}
+   {% if admin %}
+        <div href="#" class="button medium dropdown" style="float:right;">
+            {% trans "Voters list actions" %}&nbsp;
+            <ul>
+            {% if poll.feature_can_add_voter %}
+            <li>
+            <a style="" class="foundicon-plus" 
+                href="{% url election_poll_voters_upload election.uuid poll.uuid%}">
+                &nbsp;{% trans "Import voters" %}</a>
+            </li>
+            {% endif %}
+            {% if poll.feature_can_send_voter_mail %}
+            <li>
+            <a style="" class="foundicon-mail" 
+                href="{% url election_poll_voters_email election.uuid poll.uuid %}">
+                &nbsp;{% trans "Send voters email" %}</a>
+            </li>
+            {% endif %}
+            <li>
+            <a style="" class="foundicon-down-arrow"
+                href="{% url election_poll_voters_csv election.uuid poll.uuid poll.short_name%}">
+                &nbsp;{% trans "Export voters list to CSV" %}</a>
+            </li>
+            {% if poll.feature_can_clear_voters %}
+            {% url election_poll_voters_clear election.uuid poll.uuid as clear_url %}
+            {% trans "Delete all voters" as label %}
+            {% menu_confirm_action label clear_url voters_clear_confirm "remove" "POST" "alert"%}
+            {% endif %}
+          </ul>
+        </div>
+{% endif %}
+        </div>
+</div>
+<br /><br />
+
+{% paginate %}
+<br />
+<br />
+<table class="voters" width="100%">
+  <thead>
+    <tr>
+      <th>Email</th>
+      <th>Επώνυμο , Όνομα , Πατρώνυμο</th>
+      {% if admin %}
+      <th>Έχει ψηφίσει</th>
+      <th>{% trans "Booth invitation sent at" %}</th>
+      <th>Τελευταία επίσκεψη</th>
+      <th>Ενέργειες</th>
+      {% endif %}
+    </tr>
+  </thead>
+  <tbody>
+  {% for voter in voters %}
+  <tr>
+    <td>
+      {{ voter.voter_email }}
+    </td>
+    <td width="100%">
+      {{ voter.voter_surname }} , {{ voter.voter_name }} {% if voter.voter_fathername %}, {{ voter.voter_fathername }}{% endif %}
+    </td>
+    <td>
+      {% if voter.voted %}
+      ΝΑΙ {% if voter.excluded_at %}<b style="color:red">(ΕΞΑΙΡΕΘΗΚΕ)</b>{% endif %}
+      {% else %}
+      ΟΧΙ
+      {% endif %}
+
+    </td>
+    {% if admin %}
+    <td>
+      {{ voter.last_booth_invitation_send_at }}
+    </td>
+    <td>
+      {{ voter.last_visit }}
+    </td>
+    {% endif %}
+{% if admin %}
+      <td>
+<div href="#" class="tiny button dropdown">
+{% trans "Voter actions" %}&nbsp;
+<ul>
+
+{% if poll.feature_can_send_voter_mail %}
+    {% trans "Send voter email" as label %}
+    {% url election_poll_voter_email election.uuid poll.uuid voter.uuid as email_url %}
+    {% menu_action label email_url "mail" %}
+{% endif %}
+
+{% if not voter.voted and poll.feature_can_delete_voter %}
+    {% url election_poll_voter_delete election.uuid poll.uuid voter.uuid as delete_url %}
+    {% trans "Delete voter" as label %}
+    {% menu_confirm_action label delete_url voter_remove_confirm "remove" "POST" "alert"%}
+{% else %}
+    {% if not voter.excluded_at and poll.feature_can_exclude_voter %}
+        {% url election_poll_voter_exclude election.uuid poll.uuid voter.uuid as exclude_url%}
+        {% trans "Exclude voter" as label %}
+        {% menu_confirm_action label exclude_url voter_exclude_confirm "remove" %}
+    {% endif %}
+{% endif %}
+
+</ul>
+</div>
+</td>
+{% endif %}
+</tr>
+{% empty %}
+<tr><td colspan=6>{% trans "No voters added" %}</td></tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock %}

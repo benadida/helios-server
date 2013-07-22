@@ -13,9 +13,7 @@ from auth_systems.twitter import follow_view
 urlpatterns = patterns('',
     # basic static stuff
     (r'^$', index),
-    (r'^logout$', logout),
     (r'^change_password$', change_password),
-    (r'^password/login', password_login_view),
     (r'^after/$', after),
     (r'^after_intervention$', after_intervention)
 )

@@ -1,0 +1,30 @@
+{% load i18n zeus_tags %}
+
+<div class="admin-status">
+  <div class="panel">
+    <h4>{% trans "Election status" %}</h4>
+    {{ election.status_display }}
+  </div>
+</div>
+
+<div class="clearfix admin-actions">
+{% if election.feature_can_freeze and not election.any_poll_feature_validate_create_running %}
+{% trans "Freeze election" as label %}
+{% reveal_action label "#freeze-admin-action" "" "freeze-election" %}
+{% endif %}
+
+{% if election.feature_can_close %}
+{% trans "Close election" as label %}
+{% reveal_action label "#close-admin-action" "" "close-election"%}
+{% endif %}
+
+{% if election.feature_can_mix %}
+{% trans "Mix" as label %}
+{% reveal_action label "#compute-tally-admin-action" "" "start-mixing" %}
+{% endif %}
+
+{% if election.feature_can_cancel %}
+{% trans "Cancel election" as label %}
+{% reveal_action label "#cancel-admin-action" cls="alert cancel-election" %}
+{% endif %}
+</div>

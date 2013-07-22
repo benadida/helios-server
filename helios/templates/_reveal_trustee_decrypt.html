@@ -1,0 +1,22 @@
+{% load i18n zeus_tags %}
+
+{% if election.feature_can_compute_tally %}
+<div id="compute-tally-admin-action" class="reveal-modal freeze-issues">
+<h3>{% trans "Compute tally" %}</h3>
+
+{% url election_compute_tally election.uuid as action %}
+<form action="{{ action }}" method="POST" class="action-form">
+<p class="election-admin-message">
+{% trans "Compute tally message" %}
+</p>
+
+<div class="actions">
+{% csrf_token %}
+<input type="submit" value="{% trans "Confirm compute tally" %}" 
+class="button close-reveal-modal small" />
+<a class="button close-reveal-modal small alert">{% trans "Back" %}</a>
+</div>
+</div>
+</form>
+</div>
+{% endif %}

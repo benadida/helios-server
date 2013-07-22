@@ -1,4 +1,6 @@
- Νόμιμος παραλήπτης: {{voter.voter_surname}} {{voter.voter_name}},
+{% load i18n %}{% trans "Νόμιμος παραλήπτης" %}: {{voter.voter_surname}} {{voter.voter_name}},
+
+{% trans "Polls" %} <----
 
 {{custom_message|safe}}
 

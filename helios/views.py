@@ -39,12 +39,11 @@ from helios.utils import force_utf8
 from heliosauth import views as auth_views
 from heliosauth.security import *
 from helios import utils as helios_utils
-from helios.workflows import homomorphic
-from helios.workflows import mixnet
 from helios.view_utils import *
 from helios import forms
 from helios import tasks
 
+from zeus import auth
 from django.views.decorators.cache import cache_page
 
 try:
@@ -52,7 +51,6 @@ try:
 except ImportError:
     from django.utils.datastructures import SortedDict as OrderedDict
 
-from zeus.forms import election_form_cls
 from zeus import reports
 from django.forms import ValidationError
 
@@ -130,47 +128,12 @@ def trustee_keygenerator(request, election, trustee):
   return render_template(request, "election_keygenerator", {'eg_params_json': eg_params_json, 'election': election, 'trustee': trustee})
 
 
-@login_required
+@auth.user_required
 def elections_voted(request):
   user = get_user(request)
   elections = Election.get_by_user_as_voter(user)
 
   return render_template(request, "elections_voted", {'elections': elections})
-
-
-@login_required
-def election_new(request):
-
-  user = get_user(request)
-  institution = user.institution
-
-  # only one election per user
-  #if user.election:
-    #return HttpResponseRedirect(reverse(one_election_view, args=[user.election.uuid]))
-
-  if not can_create_election(request):
-    return HttpResponseForbidden('only an administrator can create an election')
-
-  error = None
-
-  ElectionForm = election_form_cls(user, request.REQUEST.get('election_type'))
-  if request.method == "GET":
-    election_form = ElectionForm(None, institution,
-                                 initial={
-                                     'private_p': settings.HELIOS_PRIVATE_DEFAULT
-                                 })
-  else:
-    election_form = ElectionForm(None, institution, request.POST)
-
-    if election_form.is_valid():
-      with transaction.commit_on_success():
-        election = Election()
-        election = election_form.save(election, user.institution, ELGAMAL_PARAMS)
-        election.admins.add(user)
-        return HttpResponseRedirect(election.questions_url())
-
-
-  return render_template(request, "election_new", {'election_form': election_form, 'election': None, 'error': error})
 
 
 @election_admin(frozen=True)
@@ -237,7 +200,8 @@ def election_stop_mixing(request, election):
 def election_remove_last_mix(request, election):
   try:
       mix = election.mixnets.filter(status='finished',
-                                    mixnet_type='remote').order_by('-mix_order')[0]
+                                    mixnet_type='remote').order_by(
+                                        '-mix_order')[0]
   except IndexError, e:
       raise PermissionDenied
 
@@ -449,44 +413,6 @@ def election_post_ecounting(request, election):
     tasks.election_post_ecounting.delay(election.pk, election.get_ecounting_admin_user())
     return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
 
-@election_admin()
-def one_election_edit(request, election):
-  user = get_user(request)
-  institution = user.institution
-  ElectionForm = election_form_cls(user, election.election_type)
-
-  if not can_create_election(request):
-    return HttpResponseForbidden('only an administrator can create an election')
-
-  if election.voting_ended_at:
-    return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
-
-  error = None
-
-  if request.method == "GET":
-    election_form = ElectionForm(election, institution, initial={
-      'name': election.name,
-      'voting_starts_at': election.voting_starts_at,
-      'voting_ends_at': election.voting_ends_at,
-      'voting_extended_until': election.voting_extended_until,
-      'help_phone': election.help_phone,
-      'help_email': election.help_email,
-      'departments': election.departments_string,
-      'trustees': election.trustees_string,
-      'eligibles_count': election.eligibles_count,
-      'has_department_limit': election.has_department_limit,
-      'remote_mix': bool(election.mix_key) or False,
-      'description': election.description})
-  else:
-    election_form = ElectionForm(election, institution, request.POST)
-
-    if election_form.is_valid():
-      with transaction.commit_on_success():
-        election = election_form.save(election, user.institution, ELGAMAL_PARAMS)
-        return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
-
-  return render_template(request, "election_new", {'election_form' : election_form, 'election' : election, 'error': error})
-
 
 @election_view()
 @json
@@ -619,27 +545,6 @@ def trustee_verify_key(request, election, trustee_uuid):
   trustee.last_verified_key_at = datetime.datetime.now()
   trustee.save()
   return HttpResponse("OK")
-
-
-def trustee_login(request, election_short_name, trustee_email, trustee_secret):
-  election = Election.get_by_short_name(election_short_name)
-  clear_previous_logins(request)
-
-  if election:
-    trustee = Trustee.get_by_election_and_email(election, trustee_email)
-
-    if trustee:
-      if trustee.secret == trustee_secret:
-        set_logged_in_trustee(request, trustee)
-        return HttpResponseRedirect(reverse(trustee_home, args=[election.uuid, trustee.uuid]))
-      else:
-        # bad secret, we'll let that redirect to the front page
-        pass
-    else:
-      # no such trustee
-      raise Http404
-
-  return HttpResponseRedirect("/")
 
 
 @election_admin()
@@ -1159,9 +1064,6 @@ def one_election_freeze(request, election):
     else:
       return SUCCESS
 
-def _check_election_tally_type(election):
-  return election.workflow_type in ["homomorphic", "mixnet"]
-
 @election_admin(frozen=True)
 def one_election_compute_tally(request, election):
   """
@@ -1169,9 +1071,6 @@ def one_election_compute_tally(request, election):
   """
   if not election.voting_can_stop():
       raise PermissionDenied
-
-  if not _check_election_tally_type(election):
-    return HttpResponseRedirect(reverse(one_election_view,args=[election.election_id]))
 
   if request.method == "GET":
     return render_template(request, 'election_compute_tally', {'election': election})

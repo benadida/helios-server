@@ -1,0 +1,86 @@
+{% extends "election_page.html" %}{% load i18n %}
+{% load zeus_tags %}
+{% block title %}{{election.name}}: {% trans "Election Polls" %}{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
+{% block content %}
+
+<div class="section">
+  <table class="pretty polls-table">
+    <thead>
+      <tr>
+        <th>{% trans "Poll name" %}</th>
+        <th>{% trans "Poll status" %}</th>
+        <th>{% blocktrans with label=election.get_module.questions_title_message %}Poll {{ label }} count{% endblocktrans %}</th>
+        <th>{% trans "Poll voters count" %}</th>
+        <th>{% trans "Poll voters invited count" %}</th>
+        <th>{% trans "Poll voters cast count" %}</th>
+        <th>{% trans "Poll cast count" %}</th>
+        <th>{% trans "Last cast at" %}</th>
+        <th>{% trans "Actions" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for poll in polls %}
+    <tr>
+      <td>{{ poll.name }}</td>
+      <td>{{ poll.status_display }}</td>
+      <td><a class="foundicon-edit" href="{% url election_poll_questions election.uuid poll.uuid %}">
+          {{ poll.questions_count }}
+      </a></td>
+      <td><a class="foundicon-edit" href="{% url election_poll_voters election.uuid poll.uuid %}">
+          {{ poll.voters.count }}
+      </a></td>
+      <td>{{ poll.voters.filter.invited.count }}</td>
+      <td>{{ poll.voters.filter.cast.count }}</td>
+      <td>{{ poll.cast_votes.count }}</td>
+      <td>{{ poll.last_cast_date }}</td>
+      <td>
+          <div href="#" class="button tiny dropdown" style="">
+              {% trans "Actions" %}&nbsp;
+          <ul>
+            {% url election_poll_voters election.uuid poll.uuid as manage_url %}
+            {% trans "Manage voters" as label %}
+            {% menu_action label manage_url "people" %}
+            {% if poll.feature_can_manage_questions %}
+            {% url election_poll_questions_manage election.uuid poll.uuid as manage_url %}
+            {% menu_action poll.get_module.manage_questions_title manage_url "edit" %}
+            {% endif %}
+            {% if poll.feature_can_remove %}
+            {% url election_poll_remove election.uuid poll.uuid as delete_url %}
+            {% trans "Delete poll" as label %}
+            {% menu_confirm_action label delete_url poll_delete_confirm "remove" "POST" "alert" %}
+            {% endif %}
+          </ul>
+        </div>
+      </td>
+    </tr>
+    {% endfor %}
+</tbody>
+<tfoot>
+    <td>
+    {% trans "Total" %}
+    </td>
+    <td></td>
+    <td>{{ election.questions_count }}</td>
+    <td>{{ election.voters.count }}</td>
+    <td>{{ election.voters.invited.count }}</td>
+    <td>{{ election.voters.cast.count }}</td>
+    <td>{{ election.cast_votes.count }}</td>
+    <td></td>
+    <td></td>
+</tfoot>
+
+</table>
+<div class="clearfix" style="text-align: right">
+{% if admin and election.feature_can_manage_polls %}
+<a class="button medium" 
+  href="{% url election_polls_manage election.uuid %}">
+  {% trans "Manage polls" %}
+</a>
+{% endif %}
+</div>
+</div>
+{% endblock %}
+

@@ -117,34 +117,6 @@ def do_remote_logout(request, user, return_url="/"):
     response = auth_system.do_logout(user_for_remote_logout)
     return response
 
-def do_complete_logout(request, return_url="/"):
-  do_local_logout(request)
-  user_for_remote_logout = request.session.get('user_for_remote_logout', None)
-  if user_for_remote_logout:
-    response = do_remote_logout(request, user_for_remote_logout, return_url)
-    return response
-
-  from helios.security import HELIOS_TRUSTEE_UUID
-  if request.session.has_key(HELIOS_TRUSTEE_UUID):
-    del request.session[HELIOS_TRUSTEE_UUID]
-
-  if request.session.has_key('CURRENT_VOTER'):
-    del request.session['CURRENT_VOTER']
-
-  return None
-
-def logout(request):
-  """
-  logout
-  """
-
-  return_url = request.GET.get('return_url',"/")
-  response = do_complete_logout(request, return_url)
-  if response:
-    return response
-
-  return HttpResponseRedirect(return_url)
-
 def _do_auth(request):
   # the session has the system name
   system_name = request.session['auth_system_name']
@@ -197,7 +169,7 @@ def after(request):
     # get the user and store any new data about him
     user_obj = User.update_or_create(user['type'], user['user_id'], user['name'], user['info'], user['token'])
 
-    request.session['user'] = user
+    request.session['user'] = user_obj.pk
   else:
     return HttpResponseRedirect("%s?%s" % (reverse(perms_why), urllib.urlencode({'system_name' : request.session['auth_system_name']})))
 
@@ -221,7 +193,7 @@ def after_intervention(request):
 
 
 def change_password(request):
-    user = get_user(request)
+    user = request.zeususer
     if not user or user.user_type != 'password':
         return HttpResponseRedirect('/')
 

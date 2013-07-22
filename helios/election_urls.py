@@ -9,10 +9,8 @@ from django.conf.urls.defaults import *
 from helios.views import *
 
 urlpatterns = patterns('',
-    (r'^$', one_election),
+    url(r'^$', one_election, name="election_index"),
 
-    # edit election params
-    (r'^/edit$', one_election_edit),
 
     # adding trustees
     (r'^/trustees/$', list_trustees),
@@ -68,19 +66,10 @@ urlpatterns = patterns('',
     # post audited ballot
     (r'^/post-audited-ballot', post_audited_ballot),
 
-    # managing voters
-    (r'^/voters/$', voter_list),
-    (r'^/voters/csv$', voters_csv),
-    (r'^/voters/clear$', voters_clear),
-    (r'^/voters/upload$', voters_upload),
-    (r'^/voters/upload-cancel$', voters_upload_cancel),
-    (r'^/voters/list$', voters_list_pretty),
-    (r'^/voters/email$', voters_email),
-    (r'^/voters/(?P<voter_uuid>[^/]+)/delete$', voter_delete),
-    (r'^/voters/(?P<voter_uuid>[^/]+)/exclude$', voter_exclude),
-
     # ballots
     (r'^/ballots/(?P<voter_uuid>[^/]+)/all$', voter_votes),
     (r'^/ballots/(?P<voter_uuid>[^/]+)/last$', voter_last_vote),
+
+    (r'^/polls/', include('zeus.urls.election_poll')),
 
 )

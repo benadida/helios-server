@@ -16,15 +16,21 @@ import copy
 import base64
 import zipfile
 import os
+import csv
 import tempfile
 import mmap
 import marshal
 import itertools
-import helios.views
+import urllib
 
+from functools import wraps
 from datetime import timedelta
+from collections import defaultdict
 
+from django.template.loader import render_to_string
 from django.db import models, transaction
+from django.db.models.query import QuerySet
+from django.db.models import Count
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.files import File
@@ -37,273 +43,540 @@ from helios.crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
 from helios import datatypes
 from helios.datatypes.djangofield import LDObjectField
-from helios.workflows import get_workflow_module
 from helios.byte_fields import ByteaField
+from helios.utils import force_utf8
 
-logger = logging.getLogger(__name__)
 
-# useful stuff in auth
 from heliosauth.models import User, AUTH_SYSTEMS
 from heliosauth.jsonfield import JSONField
 from helios.datatypes import LDObject
 
 from zeus.core import (numbers_hash, mix_ciphers, gamma_encoding_max,
                        gamma_decode, to_absolute_answers, to_canonical)
+from zeus.slugify import slughifi
+from zeus.election_modules import ELECTION_MODULES_CHOICES, get_poll_module, \
+    get_election_module
 
-class HeliosModel(models.Model, datatypes.LDObjectContainer):
-  class Meta:
-    abstract = True
+from zeus.model_features import ElectionFeatures, PollFeatures, \
+        TrusteeFeatures, VoterFeatures
+from zeus.model_tasks import TaskModel, PollTasks, ElectionTasks
 
-class ElectionMixnet(HeliosModel):
 
-  MIXNET_REMOTE_TYPE_CHOICES = (('helios', 'Helios'),
+logger = logging.getLogger(__name__)
+
+ELECTION_MODEL_VERSION = 1
+
+
+class HeliosModel(TaskModel, datatypes.LDObjectContainer):
+
+    class Meta:
+        abstract = True
+
+
+class PollMixQuerySet(QuerySet):
+
+    def local(self):
+        return self.filter(mix_type="local")
+
+    def finished(self):
+        return self.filter(status="finished")
+
+    def mixing(self):
+        return self.filter(status="mixing")
+
+    def pending(self):
+        return self.filter(status="pending")
+
+
+class PollMixManager(models.Manager):
+
+    def get_query_set(self):
+        return PollMixQuerySet(self.model)
+
+
+class PollMix(models.Model):
+
+    MIX_REMOTE_TYPE_CHOICES = (('helios', 'Helios'),
                                 ('verificatum', 'Verificatum'),
                                 ('zeus_client', 'Zeus server'))
-  MIXNET_TYPE_CHOICES = (('local', 'Local'), ('remote', 'Remote'))
-  MIXNET_STATUS_CHOICES = (('pending', 'Pending'), ('mixing', 'Mixing'),
+    MIX_TYPE_CHOICES = (('local', 'Local'), ('remote', 'Remote'))
+    MIX_STATUS_CHOICES = (('pending', 'Pending'), ('mixing', 'Mixing'),
                            ('validating', 'Validating'), ('error', 'Error'),
                            ('finished', 'Finished'))
 
-  name = models.CharField(max_length=255, null=False, default='Helios mixnet')
-  mixnet_type = models.CharField(max_length=255, choices=MIXNET_TYPE_CHOICES,
-      default='local')
-  election = models.ForeignKey('Election', related_name='mixnets')
-  mix_order = models.PositiveIntegerField(default=0)
+    name = models.CharField(max_length=255, null=False, default='Zeus mixnet')
+    mix_type = models.CharField(max_length=255, choices=MIX_TYPE_CHOICES,
+                              default='local')
+    poll = models.ForeignKey('Poll', related_name='mixes')
+    mix_order = models.PositiveIntegerField(default=0)
 
-  remote_ip = models.CharField(max_length=255, null=True, blank=True)
-  remote_protocol = models.CharField(max_length=255, choices=MIXNET_REMOTE_TYPE_CHOICES,
-      default='zeus_client')
-  mixing_started_at = models.DateTimeField(null=True)
-  mixing_finished_at = models.DateTimeField(null=True)
-  status = models.CharField(max_length=255, choices=MIXNET_STATUS_CHOICES, default='pending')
-  mix_error = models.TextField(null=True, blank=True)
-  mix = JSONField(null=True)
-  second_mix = JSONField(null=True)
-  mix_file = models.FileField(upload_to=settings.ZEUS_MIXES_PATH, null=True, default=None)
+    remote_ip = models.CharField(max_length=255, null=True, blank=True)
+    remote_protocol = models.CharField(max_length=255,
+                                     choices=MIX_REMOTE_TYPE_CHOICES,
+                                     default='zeus_client')
 
+    mixing_started_at = models.DateTimeField(null=True)
+    mixing_finished_at = models.DateTimeField(null=True)
 
-  class Meta:
-    ordering = ['-mix_order']
-    unique_together = [('election', 'mix_order')]
-
-  def store_mix_in_file(self, mix):
-    """
-    Expects mix dict object
-    """
-    fname = str(self.pk) + ".canonical"
-    fpath = settings.MEDIA_ROOT + "/" + settings.ZEUS_MIXES_PATH + "/" + fname
-    with open(fpath, "w") as f:
-        to_canonical(mix, out=f)
-    self.mix_file = settings.ZEUS_MIXES_PATH + "/" + fname
-    self.save()
-
-  def can_mix(self):
-    return self.status in ['pending'] and not self.election.tallied
-
-  def reset_mixing(self):
-    if self.status == 'finished' and self.mix:
-      raise Exception("Cannot reset finished mixnet")
-
-    # TODO: also reset mixnets with higher that current mix_order
-    self.mixing_started_at = None
-    self.mix = None
-    self.second_mix = None
-    self.status = 'pending'
-    self.mix_error = None
-    self.save()
-    self.parts.all().delete()
-    return True
-
-  def zeus_mix(self):
-    if self.mix:
-      return self.mix
-
-    filled_mix = ""
-    for part in self.parts.order_by("pk"):
-      filled_mix += part.mix
-
-    return marshal.loads(filled_mix)
-
-  def get_original_ciphers(self):
-    if self.mix_order == 0:
-      return self.election.zeus_election.extract_votes_for_mixing()
-    else:
-      prev_mixnet = Mixnet.objects.get(election=election, mix_order__lt=self.mix_order)
-      return prev_mixnet.mixed_answers.get().zeus_mix()
-
-  def mix_parts_iter(self, mix):
-    size = len(mix)
-    index = 0
-    while index < size:
-      yield buffer(mix, index, settings.MIX_PART_SIZE)
-      index += settings.MIX_PART_SIZE
-
-  def store_mix(self, mix):
-    """
-    mix is a dict object
-    """
-    self.parts.all().delete()
-    mix = marshal.dumps(mix)
-
-    for part in self.mix_parts_iter(mix):
-      self.parts.create(mix=part)
-
-  @transaction.commit_on_success
-  def _do_mix(self):
-    zeus_mix = self.election.zeus_election.get_last_mix()
-    new_mix = self.election.zeus_election.mix(zeus_mix)
-
-    self.store_mix(new_mix)
-    self.store_mix_in_file(new_mix)
-
-    self.status = 'finished'
-    self.save()
-    return new_mix
+    status = models.CharField(max_length=255, choices=MIX_STATUS_CHOICES,
+                            default='pending')
+    mix_error = models.TextField(null=True, blank=True)
+    mix_file = models.FileField(upload_to=settings.ZEUS_MIXES_PATH,
+                              null=True, default=None)
 
 
-  def mix_ciphers(self):
-    if not self.can_mix():
-      raise Exception("Cannot initialize mixing. Already mixed ???")
+    objects = PollMixManager()
 
-    if self.mixnet_type == "remote":
-      raise Exception("Remote mixnets not implemented yet.")
+    class Meta:
+        ordering = ['-mix_order']
+        unique_together = [('poll', 'mix_order')]
 
-    self.mixing_started_at = datetime.datetime.now()
-    self.status = 'mixing'
-    self.save()
 
-    try:
-        self._do_mix()
-    except Exception, e:
-        self.status = 'error'
-        self.mix_error = traceback.format_exc()
-        self.parts.all().delete()
+    def store_mix_in_file(self, mix):
+        """
+        Expects mix dict object
+        """
+        fname = str(self.pk) + ".canonical"
+        fpath = settings.MEDIA_ROOT + "/" + settings.ZEUS_MIXES_PATH + "/" + fname
+        with open(fpath, "w") as f:
+            to_canonical(mix, out=f)
+        self.mix_file = settings.ZEUS_MIXES_PATH + "/" + fname
         self.save()
-        self.notify_admin_for_mixing_error()
-        logger.exception("Mixing failed (mixnet pk:%d)", self.pk)
-        return
 
-  def notify_admin_for_mixing_error(self):
-    pass
+    def reset_mixing(self):
+        if self.status == 'finished' and self.mix:
+            raise Exception("Cannot reset finished mix")
+        # TODO: also reset mix with higher that current mix_order
+        self.mixing_started_at = None
+        self.mix = None
+        self.second_mix = None
+        self.status = 'pending'
+        self.mix_error = None
+        self.save()
+        self.parts.all().delete()
+        return True
 
-class MixParts(models.Model):
-    mixnet = models.ForeignKey(ElectionMixnet, related_name="parts")
-    mix = ByteaField()
+    def zeus_mix(self):
+        filled_mix = ""
+        for part in self.parts.order_by("pk"):
+            filled_mix += part.data
+        return marshal.loads(filled_mix)
 
-class Election(HeliosModel):
-  admins = models.ManyToManyField(User, related_name="elections")
-  institution = models.ForeignKey('zeus.Institution', null=True)
-  eligibles_count = models.PositiveIntegerField(default=5)
-  has_department_limit = models.BooleanField(default=1)
-  help_email = models.CharField(max_length=254, null=True, blank=True)
-  help_phone = models.CharField(max_length=254, null=True, blank=True)
-  send_email_on_cast_done = models.BooleanField(default=True)
-  canceled_at = models.DateTimeField(default=None, null=True)
-  cancel_msg = models.TextField(default="")
-  uuid = models.CharField(max_length=50, null=False)
-  zeus_fingerprint = models.TextField(null=True, default=None)
-  mix_key = models.CharField(max_length=50)
-  remote_mixnets_finished_at = models.DateTimeField(null=True, default=None)
-  mixing_finished_at = models.DateTimeField(null=True, default=None)
+    def get_original_ciphers(self):
+        if self.mix_order == 0:
+          return self.election.zeus.extract_votes_for_mixing()
+        else:
+          prev_mix = PollMix.objects.get(election=election,
+                                         mix_order__lt=self.mix_order)
+          return prev_mix.mixed_answers.get().zeus_mix()
 
-  # keep track of the type and version of election, which will help dispatch to the right
-  # code, both for crypto and serialization
-  # v3 and prior have a datatype of "legacy/Election"
-  # v3.1 will still use legacy/Election
-  # later versions, at some point will upgrade to "2011/01/Election"
-  datatype = models.CharField(max_length=250, null=False, default="legacy/Election")
+    def mix_parts_iter(self, mix):
+        size = len(mix)
+        index = 0
+        while index < size:
+            yield buffer(mix, index, settings.MIX_PART_SIZE)
+            index += settings.MIX_PART_SIZE
 
-  short_name = models.CharField(max_length=255)
+    def store_mix(self, mix):
+        """
+        mix is a dict object
+        """
+        self.parts.all().delete()
+        mix = marshal.dumps(mix)
+
+        for part in self.mix_parts_iter(mix):
+            self.parts.create(data=part)
+
+    @transaction.commit_on_success
+    def _do_mix(self):
+        zeus_mix = self.poll.zeus.get_last_mix()
+        new_mix = self.poll.zeus.mix(zeus_mix)
+
+        self.store_mix(new_mix)
+        self.store_mix_in_file(new_mix)
+
+        self.status = 'finished'
+        self.save()
+        return new_mix
+
+
+    def mix_ciphers(self):
+        if self.mix_type == "remote":
+            raise Exception("Remote mixes not implemented yet.")
+
+        self.mixing_started_at = datetime.datetime.now()
+        self.status = 'mixing'
+        self.save()
+
+        try:
+            self._do_mix()
+        except Exception, e:
+            self.status = 'error'
+            self.mix_error = traceback.format_exc()
+            self.parts.all().delete()
+            self.save()
+            self.notify_admin_for_mixing_error()
+            logger.exception("Mixing failed (mix pk:%d)", self.pk)
+            return
+
+
+class MixPart(models.Model):
+    mix = models.ForeignKey(PollMix, related_name="parts")
+    data = ByteaField()
+
+
+class ElectionManager(models.Manager):
+
+    def get_queryset(self):
+        return self.filter(deleted=False)
+
+    def administered_by(self, user):
+        if user.superadmin_p:
+            return self.filter()
+
+        return self.filter(admins__in=[user])
+
+
+_default_voting_starts_at = lambda: datetime.datetime.now()
+_default_voting_ends_at = lambda: datetime.datetime.now() + timedelta(hours=12)
+
+
+class Election(HeliosModel, ElectionFeatures):
+    election_module = models.CharField(max_length=250, null=False,
+                                       choices=ELECTION_MODULES_CHOICES,
+                                       default='simple')
+    version = models.CharField(max_length=255, default=ELECTION_MODEL_VERSION)
+    uuid = models.CharField(max_length=50, null=False)
+    name = models.CharField(max_length=255)
+    short_name = models.CharField(max_length=255)
+    help_email = models.CharField(max_length=254, null=True, blank=True)
+    help_phone = models.CharField(max_length=254, null=True, blank=True)
+
+    description = models.TextField()
+    trial = models.BooleanField(default=False)
+
+    public_key = LDObjectField(type_hint = 'legacy/EGPublicKey', null=True)
+    private_key = LDObjectField(type_hint = 'legacy/EGSecretKey', null=True)
+
+    admins = models.ManyToManyField(User, related_name="elections")
+    institution = models.ForeignKey('zeus.Institution', null=True)
+
+    mix_key = models.CharField(max_length=50, default=None, null=True)
+    remote_mixing_finished_at = models.DateTimeField(default=None, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+    canceled_at = models.DateTimeField(default=None, null=True)
+    cancelation_reason = models.TextField(default="")
+    completed_at = models.DateTimeField(default=None, null=True)
+
+    deleted = models.BooleanField(default=False)
+
+    frozen_at = models.DateTimeField(default=None, null=True)
+    voting_starts_at = models.DateTimeField(auto_now_add=False,
+                                            default=_default_voting_starts_at,
+                                            null=True)
+    voting_ends_at = models.DateTimeField(auto_now_add=False,
+                                          default=_default_voting_ends_at,
+                                          null=True)
+    voting_extended_until = models.DateTimeField(auto_now_add=False,
+                                                 default=None, blank=True,
+                                                 null=True)
+    voting_ended_at = models.DateTimeField(auto_now_add=False, default=None,
+                                           null=True)
+    archived_at = models.DateTimeField(auto_now_add=False, default=None,
+                                        null=True)
+    objects = ElectionManager()
+
+    class Meta:
+        ordering = ('-created_at', )
+
+    @property
+    def voting_end_date(self):
+        return self.voting_extended_until or self.voting_ends_at
+
+    @property
+    def zeus_stage(self):
+        if not self.pk or not self.frozen_at:
+            return 'CREATING'
+
+        if not self.voting_ended_at:
+            return 'VOTING'
+
+        if not self.tallying_finished_at:
+            return 'MIXING'
+
+        if not self.mix_finished_at:
+            return 'DECRYPTING'
+
+        return 'FINISHED'
+
+    @property
+    def zeus(self):
+        from zeus import election
+        obj = election.ZeusDjangoElection.from_election(self)
+        obj.do_set_stage(self.zeus_stage)
+        return obj
+
+    @property
+    def polls_issues_before_freeze(self):
+        issues = {}
+        for poll in self.polls.all():
+            poll_issues = poll.issues_before_freeze
+            if len(poll_issues) > 0:
+                issues[poll] = poll_issues
+        return issues
+
+    @property
+    def election_issues_before_freeze(self):
+        issues = []
+        trustees = Trustee.objects.filter(election=self)
+        if len(trustees) == 0:
+            issues.append({
+                'type': 'trustees',
+                'action': _("Add at least one trustee")
+            })
+
+        for t in trustees:
+            if t.public_key == None:
+                issues.append({
+                    'type': 'trustee-keypairs',
+                    'action': _('Have trustee %s generate a keypair') % t.name
+                })
+
+            if t.public_key and t.last_verified_key_at == None:
+                issues.append({
+                    'type': 'trustee-verification',
+                    'action': _('Have trustee %s verify his key') % t.name
+                })
+        return issues
+
+    def status_display(self):
+
+      if self.feature_canceled:
+          return _('Canceled')
+
+      if self.feature_completed:
+          return _('Completed')
+
+      if self.feature_voting:
+          return _('Voting')
+
+      if self.polls_feature_compute_results_finished:
+          return _('Results computed')
+
+      if self.any_poll_feature_compute_results_running:
+          return _('Computing results')
+
+      if self.polls_feature_decrypt_finished:
+          return _('Decryption finished')
+
+      if self.any_poll_feature_decrypt_running:
+          return _('Decrypting')
+
+      if self.polls_feature_partial_decrypt_finished:
+          return _('Partial decryptions finished')
+
+      if self.any_poll_feature_can_partial_decrypt:
+          return _('Pending completion of partial decryptions')
+
+      if self.polls_feature_mix_finished:
+          return _('Mixing finished')
+
+      if self.any_poll_feature_mix_running:
+          return _('Mixing')
+
+      if self.feature_closed:
+          return _('Election closed')
+
+      if self.feature_frozen and not self.feature_within_voting_date:
+          return _('Voting stopped. Pending close.')
+
+      if self.any_poll_feature_validate_create_running:
+          return _('Freezing')
+
+      if self.feature_frozen:
+          return _('Frozen')
+
+      return _('Election pending to freeze')
+
+    def close_voting(self):
+        self.voting_ended_at = datetime.datetime.now()
+        self.save()
+
+    def freeze(self):
+        for poll in self.polls.all():
+            poll.freeze()
+
+    def update_freeze_status(self):
+        """
+        Update frozen_at field once all polls are frozen.
+        """
+        if self.frozen_at:
+            return
+
+        if self.polls.filter(frozen_at__isnull=True).count() == 0:
+            self.frozen_at = datetime.datetime.now()
+            self.save()
+
+    def get_absolute_url(self):
+        return "%s%s" % (settings.SECURE_URL_HOST,
+                         reverse('election_index', args=(self.uuid,)))
+
+    @property
+    def cast_votes(self):
+        return CastVote.objects.filter(poll__election=self)
+
+    @property
+    def voters(self):
+        return Voter.objects.filter(poll__election=self)
+
+    @property
+    def audits(self):
+        return AuditedBallot.objects.filter(poll__election=self)
+
+    @property
+    def casts(self):
+        return CastVote.objects.filter(poll__election=self)
+
+    def questions_count(self):
+        count = 0
+        for poll in self.polls.filter().only('questions_data'):
+            count += len(poll.questions_data)
+        return count
+
+    def generate_mix_key(self):
+        if self.mix_key:
+            return self.mix_key
+        else:
+            self.mix_key = heliosutils.random_string(20)
+        return self.mix_key
+
+    def generate_trustee(self):
+        """
+        Generate the Zeus trustee.
+        """
+
+        if self.get_zeus_trustee():
+            return self.get_zeus_trustee()
+
+        self.zeus.create_zeus_key()
+        return self.get_zeus_trustee()
+
+    def get_zeus_trustee(self):
+        trustees_with_sk = self.trustees.exclude(secret_key__isnull=True)
+        if len(trustees_with_sk) > 0:
+            return trustees_with_sk[0]
+        else:
+            return None
+
+    def has_helios_trustee(self):
+        return self.get_zeus_trustee() != None
+
+    @transaction.commit_on_success
+    def update_trustees(self, trustees):
+        for name, email in trustees:
+            trustee, created = self.trustees.get_or_create(email=email)
+            # LOG TRUSTEE CREATED
+            trustee.name = name
+            trustee.save()
+        if self.trustees.count() != len(trustees):
+            emails = map(lambda t:t[1], trustees)
+            self.zeus.invalidate_election_public()
+            for trustee in self.trustees.all():
+                if not trustee.email in emails:
+                    # LOG TRUSTEE DELETED
+                    trustee.delete()
+            self.zeus.compute_election_public()
+        self.auto_notify_trustees()
+
+    def auto_notify_trustees(self, force=False):
+        for trustee in self.trustees.exclude(secret_key__isnull=False):
+            if not trustee.last_notified_at or force:
+                trustee.send_url_via_mail()
+
+    _zeus = None
+
+    @property
+    def zeus_stage(self):
+        if not self.pk or not self.feature_frozen:
+            return 'CREATING'
+
+        if not self.voting_ended_at:
+            return 'VOTING'
+
+        if not self.mixing_finished:
+            return 'MIXING'
+
+        if self.mix_key and not self.remote_mixing_finished_at:
+            return 'MIXING'
+
+        if not self.results_compute_finished:
+            return 'DECRYPTING'
+
+        return 'FINISHED'
+
+    def reprove_trustee(self, trustee):
+        public_key = trustee.public_key
+        pok = trustee.pok
+        self.zeus.reprove_trustee(public_key.y, [pok.commitment,
+                                                         pok.challenge,
+                                                         pok.response])
+
+        trustee.last_verified_key_at = datetime.datetime.now()
+        trustee.save()
+
+    def add_trustee_pk(self, trustee, public_key, pok):
+        trustee.public_key = public_key
+        trustee.pok = pok
+        trustee.public_key_hash = utils.hash_b64(
+            utils.to_json(
+                trustee.public_key.toJSONDict()))
+        trustee.last_verified_key_at = None
+        trustee.save()
+        # verify the pok
+        trustee.send_url_via_mail()
+        self.zeus.add_trustee(trustee.public_key.y, [pok.commitment,
+                                                         pok.challenge,
+                                                         pok.response])
+
+    def save(self, *args, **kwargs):
+        if not self.uuid:
+            self.uuid = unicode(uuid.uuid4())
+        if not self.short_name:
+            self.short_name = slughifi(self.name)
+            es = Election.objects.filter()
+            count = 1
+            while es.filter(short_name=self.short_name).count() > 0:
+                self.short_name = slughifi(self.name) + '-%d' % count
+                count += 1
+
+        super(Election, self).save(*args, **kwargs)
+
+    def get_module(self):
+        return get_election_module(self)
+
+
+from zeus.model_tasks import Task
+class Poll(PollTasks, HeliosModel, PollFeatures):
+
   name = models.CharField(max_length=255)
+  short_name = models.CharField(max_length=255)
 
-  candidates = JSONField(default="{}")
-  departments = JSONField(default="[]")
+  election = models.ForeignKey('Election', related_name="polls")
 
-  ELECTION_TYPES = (
-    ('election', _('Simple election with one or more questions')),
-    ('election_parties', _('Party lists election')),
-    ('ecounting', _('E-Counting election'))
-  )
-
-  WORKFLOW_TYPES = (
-    ('homomorphic', 'Homomorphic'),
-    ('mixnet', 'Mixnet')
-  )
-
-  election_type = models.CharField(max_length=250, null=False,
-                                   default='ecounting', choices = ELECTION_TYPES)
-  workflow_type = models.CharField(max_length=250, null=False, default='homomorphic',
-      choices = WORKFLOW_TYPES)
-  private_p = models.BooleanField(default=False, null=False)
-
-  description = models.TextField()
-  public_key = LDObjectField(type_hint = 'legacy/EGPublicKey',
-                             null=True)
-  private_key = LDObjectField(type_hint = 'legacy/EGSecretKey',
-                              null=True)
-
-  questions = LDObjectField(type_hint = 'legacy/Questions',
-                            null=True)
-
-  questions_data = JSONField(null=True)
-
-  # eligibility is a JSON field, which lists auth_systems and eligibility details for that auth_system, e.g.
-  # [{'auth_system': 'cas', 'constraint': [{'year': 'u12'}, {'year':'u13'}]},
-  # {'auth_system' : 'password'}, {'auth_system' : 'openid', 'constraint': [{'host':'http://myopenid.com'}]}]
-  eligibility = LDObjectField(type_hint = 'legacy/Eligibility',
-                              null=True)
-
-  # open registration?
-  # this is now used to indicate the state of registration,
-  # whether or not the election is frozen
-  openreg = models.BooleanField(default=False)
-
-  # featured election?
-  featured_p = models.BooleanField(default=False)
-
-  # voter aliases?
-  use_voter_aliases = models.BooleanField(default=False)
-  use_advanced_audit_features = models.BooleanField(default=True, null=False)
-
-  # where votes should be cast
-  cast_url = models.CharField(max_length = 500)
+  uuid = models.CharField(max_length=50, null=False, unique=True, db_index=True)
+  zeus_fingerprint = models.TextField(null=True, default=None)
 
   # dates at which this was touched
+  frozen_at = models.DateTimeField(default=None, null=True)
   created_at = models.DateTimeField(auto_now_add=True)
   modified_at = models.DateTimeField(auto_now_add=True)
 
-  # dates at which things happen for the election
-  frozen_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-  archived_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+  questions = LDObjectField(type_hint = 'legacy/Questions',
+                            null=True)
+  questions_data = JSONField(null=True)
 
-  is_completed = models.BooleanField(default=False)
-
-  # dates for the election steps, as scheduled
-  # these are always UTC
-  registration_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-  voting_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-  voting_ends_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-
-  # if this is non-null, then a complaint period, where people can cast a quarantined ballot.
-  # we do NOT call this a "provisional" ballot, since provisional implies that the voter has not
-  # been qualified. We may eventually add this, but it can't be in the same CastVote table, which
-  # is tied to a voter.
-  complaint_period_ends_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-
-  tallying_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-
-  # dates when things were forced to be performed
-  voting_started_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-  voting_extended_until = models.DateTimeField(auto_now_add=False, default=None, null=True)
-  voting_ended_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-  tallying_started_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-  tallying_finished_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-  tallies_combined_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-
-  # the hash of all voters (stored for large numbers)
-  voters_hash = models.CharField(max_length=100, null=True)
-
-  # encrypted tally, each a JSON string
   # used only for homomorphic tallies
   encrypted_tally = LDObjectField(type_hint='phoebus/Tally',
                                   null=True)
@@ -312,94 +585,218 @@ class Election(HeliosModel):
   result = LDObjectField(type_hint = 'phoebus/Result',
                          null=True)
 
-  # decryption proof, a JSON object
-  # no longer needed since it's all trustees
-  result_proof = JSONField(null=True)
-  ecounting_request_send = models.DateTimeField(auto_now_add=False, null=True, default=None)
-  ecounting_request_error = models.TextField(null=True)
+  voters_last_notified_at = models.DateTimeField(null=True, default=None)
 
-  ELECTION_TYPE_PARAMS = {
-    '__common': {},
-    'election': {
-      'questions_title': _(u'Ballot'),
-      'question_title': _(u'Ερώτηση'),
-      'answer_title': _(u'Απάντηση'),
-      'questions_view': 'helios.views.one_election_questions',
-      'questions_empty_issue': _("Add questions to the election"),
-      'max_limit_error': _("Too many choices"),
-      'min_limit_error': _("Question '{0}' requires at least {1} choices."),
-      'auto_append_answer': True,
-      'count_empty_question': False
-    },
-    'election_parties': {
-      'questions_title': _(u'Ψηφοδέλτιο'),
-      'question_title': _(u'Συνδυασμός'),
-      'answer_title': _(u'Υποψήφιος'),
-      'questions_view': 'helios.views.one_election_questions',
-      'questions_empty_issue': _("Prepare party ballots"),
-      'max_limit_error': _("Too many choices"),
-      'min_limit_error': _("Party '{0}' requires at least {1} candindates to be chosen."),
-      'auto_append_answer': True,
-      'count_empty_question': True
-    },
-    'ecounting': {
-      'questions_title': _(u'Υποψήφιοι'),
-      'question_title': _(u'Υποψήφιοι'),
-      'answer_title': _(u'Υποψήφιος'),
-      'questions_view': 'helios.views.one_election_candidates',
-      'questions_empty_issue': _("Add candidates to the election"),
-    }
-  }
+  #tallies_combined_at = models.DateTimeField(auto_now_add=False,
+                                             #default=None, null=True)
+  #tally_validated_at = models.DateTimeField(auto_now_add=False,
+                                             #default=None, null=True)
 
+  #voting_validation_started_at = models.DateTimeField(null=True, default=None)
+  #voting_validation_finished_at = models.DateTimeField(null=True, default=None)
+  #voting_validation_status = models.DateTimeField(null=True, default='pending')
+  #voting_validation_error = models.TextField(null=True, default=None)
 
-  def html_results(self):
-    return self.result[0]
+  #mixing_started_at = models.DateTimeField(null=True, default=None)
+  #mixing_finished_at = models.DateTimeField(null=True, default=None)
+  #mixing_status = models.DateTimeField(null=True, default=None)
+  #mixing_error = models.TextField(null=True, default=None)
+
+  #mixing_validation_started_at = models.DateTimeField(null=True, default=None)
+  #mixing_validation_finished_at = models.DateTimeField(null=True, default=None)
+  #mixing_validation_status = models.CharField(null=True, default='pending')
+  #mixing_validation_error = models.TextField(null=True, default=None)
+
+  #combination_started_at = models.DateTimeField(null=True, default=None)
+  #combination_finished_at = models.DateTimeField(null=True, default=None)
+
+  #results_computation_started_at = models.DateTimeField(null=True, default=None)
+  #results_computed_at = models.DateTimeField(null=True, default=None)
+  #results_computation_error = models.TextField(null=True, default=None)
+
+  class Meta:
+      ordering = ('created_at', )
 
   @property
-  def type_params(self):
-    params = {}
-    params.update(self.ELECTION_TYPE_PARAMS['__common'])
-    params.update(self.ELECTION_TYPE_PARAMS[self.election_type])
-    for k, v in params.iteritems():
-      if hasattr(v, '__unicode__'):
-        params[k] = unicode(v)
-    return params
+  def issues_before_freeze(self):
+    issues = []
+    if not self.questions:
+        issues.append({
+            "type": "questions",
+            "action": _("Prepare poll questions")
+        })
+    if self.voters.count() == 0:
+      issues.append({
+          "type" : "voters",
+          "action" : _('Import voters list')
+          })
 
-  def questions_url(self):
-    return reverse(self.type_params.get('questions_view'), args=(self.uuid,))
+    return issues
+
+  @property
+  def zeus_stage(self):
+    if not self.pk or not self.frozen_at:
+        return 'CREATING'
+
+    if not self.election.voting_ended_at:
+        return 'VOTING'
+
+    if not self.feature_mix_finished:
+        return 'MIXING'
+
+    if not self.result:
+        return 'DECRYPTING'
+
+    return 'FINISHED'
+
+  _zeus = None
+
+  @property
+  def zeus(self):
+      """
+      Retrieve zeus core django
+      """
+      from zeus import election
+      obj = election.ZeusDjangoElection.from_poll(self)
+      obj.do_set_stage(self.zeus_stage)
+      return obj
+
+  def get_booth_url(self, request):
+    vote_url = "%s/booth/vote.html?%s" % (
+            settings.SECURE_URL_HOST,
+            urllib.urlencode({
+                'token': request.session.get('csrf_token'),
+                'poll_url': "%s%s" % (settings.SECURE_URL_HOST,
+                                      self.get_absolute_url()),
+                'poll_json_url': "%s%s" % (settings.SECURE_URL_HOST,
+                                           self.get_json_url())
+            }))
+    return "%s?%s" % (reverse('test_cookie'),
+                      urllib.urlencode({'continue_url': vote_url}))
+
+  def get_absolute_url(self):
+      return reverse('election_poll_index', args=[self.election.uuid,
+                                                  self.uuid])
+
+  def get_json_url(self):
+      return reverse('election_poll_json', args=[self.election.uuid,
+                                                  self.uuid])
+
+  def get_module(self):
+    return get_poll_module(self)
+
+  def status_display(self):
+
+      if self.election.feature_canceled:
+          return _('Canceled')
+
+      if self.election.feature_completed:
+          return _('Completed')
+
+      if self.feature_compute_results_finished:
+          return _('Results computed')
+
+      if self.feature_compute_results_running:
+          return _('Computing results')
+
+      if self.feature_decrypt_finished:
+          return _('Decryption finished')
+
+      if self.feature_decrypt_running:
+          return _('Decrypting')
+
+      if self.feature_partial_decrypt_running:
+          return _('Waiting for all partial decryptions to finish')
+
+      if self.feature_partial_decrypt_finished:
+          return _('Partial decryptions finished')
+
+      if self.election.feature_closed:
+          return _('Voting closed')
+
+      if self.election.feature_voting:
+          return _('Voting')
+
+      if self.election.feature_frozen:
+          if self.election.feature_voting_date_passed:
+              return _('Pending election close')
+
+          return _('Freezed')
+
+      if not self.questions_data:
+          return _('No questions set')
+
+      if not self.feature_voters_set:
+          return _('No voters set')
+
+      if not self.election.feature_frozen:
+          return _('Ready to freeze')
+
+  def name_display(self):
+      return "%s, %s" % (self.election.name, self.name)
+
+  def shortname_display(self):
+      return "%s-%s" % (self.election.short_name, self.short_name)
 
   def get_last_mix(self):
-    return self.mixnets.filter(status="finished").defer("mix").order_by("-mix_order")[0]
+    return self.mixnets.filter(status="finished").defer("data").order_by("-mix_order")[0]
 
-  def get_ecounting_admin_user(self):
-    try:
-        return self.admins.all()[0].info['name']
-    except:
-        return None
+  def get_booth_dict(self):
+      cast_url = reverse('election_poll_cast',
+                         args=[self.election.uuid, self.uuid])
+      module = self.get_module()
+      election = self.election
 
-  def post_ecounting(self):
-    from helios import tasks
-    tasks.election_post_ecounting.delay(self.pk, self.get_ecounting_admin_user())
+      public_key = {
+        'g': str(election.public_key.g),
+        'p': str(election.public_key.p),
+        'q': str(election.public_key.q),
+        'y': str(election.public_key.y),
+      }
+
+      data = {
+          'cast_url': cast_url,
+          'description': election.description,
+          'frozen_at': self.frozen_at,
+          'help_email': election.help_email,
+          'help_phone': election.help_phone,
+          'name': self.name,
+          'election_name': election.name,
+          'public_key': public_key,
+          'questions': self.questions,
+          'questions_data': self.questions_data,
+          'election_module': module.module_id,
+          'module_params': module.params,
+          'uuid': self.uuid,
+          'election_uuid': election.uuid,
+          'voting_ends_at': election.voting_ends_at,
+          'voting_starts_at': election.voting_starts_at,
+          'voting_extended_until': election.voting_extended_until,
+      }
+      return data
 
   @property
-  def pretty_type(self):
-    return dict(self.ELECTION_TYPES)[self.election_type]
-
-  @property
-  def num_cast_votes(self):
+  def cast_votes_count(self):
     return self.voter_set.exclude(vote=None).count()
 
   @property
-  def audits_casted(self):
-    return self.auditedballot_set.filter(is_request=False).count()
+  def audit_votes_cast_count(self):
+    return self.audited_ballots.filter(is_request=False).count()
 
   @property
-  def num_voters(self):
+  def questions_count(self):
+    if not self.questions_data:
+      return 0
+    else:
+      return len(self.questions_data)
+
+  @property
+  def voters_count(self):
     return self.voter_set.count()
 
   @property
-  def num_trustees(self):
-    return self.trustee_set.count()
+  def trustees_count(self):
+    return self.trustees.filter(secret_key__isnull=True).count()
 
   @property
   def last_alias_num(self):
@@ -407,8 +804,6 @@ class Election(HeliosModel):
     FIXME: we should be tracking alias number, not the V* alias which then
     makes things a lot harder
     """
-    if not self.use_voter_aliases:
-      return None
 
     # FIXME: https://docs.djangoproject.com/en/dev/topics/db/multi-db/#database-routers
     # use database routes api to find proper database for the Voter model.
@@ -418,31 +813,19 @@ class Election(HeliosModel):
     if 'sqlite' in settings.DATABASES['default']['ENGINE']:
         SUBSTR_FUNCNAME = "substr"
 
-    return heliosutils.one_val_raw_sql("select max(cast(substr(alias, 2) as integer)) from " + Voter._meta.db_table + " where election_id = %s", [self.id]) or 0
-
-  @property
-  def departments_string(self):
-    return "\n".join(self.departments or [])
+    sql = "select max(cast(%s(alias, 2) as integer)) from %s where " \
+          "poll_id = %s"
+    sql = sql % (SUBSTR_FUNCNAME, Voter._meta.db_table, self.id or 0)
+    return heliosutils.one_val_raw_sql(sql) or 0
 
   @property
   def trustees_string(self):
-    helios_trustee = self.get_helios_trustee()
-    trustees = [(t.name, t.email) for t in self.trustee_set.all() if t != helios_trustee]
+    helios_trustee = self.get_zeus_trustee()
+    trustees = [(t.name, t.email) for t in self.trustee_set.all() if \
+                t != helios_trustee]
     return "\n".join(["%s,%s" % (t[0], t[1]) for t in trustees])
 
-  def generate_mix_key(self):
-    if self.mix_key:
-      return self.mix_key
-    else:
-      self.mix_key = heliosutils.random_string(20)
-
-    return self.mix_key
-
-  def sort_candidates(self):
-    self.candidates = sorted(self.candidates, key=lambda c: unicode(c['surname']),
-                   cmp=heliosutils.locale_comparator(settings.COLLATION_LOCALE))
-
-  def _init_helios_questions(self, answers_count):
+  def _init_questions(self, answers_count):
     if not self.questions:
         question = {}
         question['answer_urls'] = [None for x in range(answers_count)]
@@ -453,48 +836,9 @@ class Election(HeliosModel):
         question['tally_type'] = 'stv'
         self.questions = [question]
 
-  def update_answers_from_candidates(self):
-    self.sort_candidates()
-    answers = []
-    for cand in self.candidates:
-      answers.append(u"%s %s %s [%s]" % (cand['surname'], cand['name'], cand['father_name'],
-                             cand['department'].strip()))
-
-    self._init_helios_questions(len(answers))
-    self.questions[0]['answers'] = answers
-
-  def update_answers_from_questions(self):
-    answers = []
-    questions_data = self.questions_data or []
-    prepend_empty_answer = True
-
-    if self.type_params.get('auto_append_answer', False):
-        prepend_empty_answer = True
-
-    for index, q in enumerate(questions_data):
-        q_answers = ["%s: %s" % (q['question'], ans) for ans in q['answers']]
-        if self.election_type == 'election_parties':
-            group = index
-        else:
-            group = 0
-        if prepend_empty_answer:
-            params_max = int(q['max_answers'])
-            params_min = int(q['min_answers'])
-            if self.type_params.get('count_empty_question', False):
-                params_min = 0
-            params = "%d-%d, %d" % (params_min, params_max, group)
-            q_answers.insert(0, "%s: %s" % (q['question'], params))
-        answers = answers + q_answers
-    self._init_helios_questions(len(answers))
-    self.questions[0]['answers'] = answers
-
   def update_answers(self):
-    if self.election_type == "ecounting":
-      self.update_answers_from_candidates()
-      self.save()
-    else:
-      self.update_answers_from_questions()
-      self.save()
+      module = self.get_module()
+      module.update_answers()
 
   @property
   def tallied(self):
@@ -504,113 +848,20 @@ class Election(HeliosModel):
   def encrypted_tally_hash(self):
     return self.workflow.tally_hash(self)
 
-  @property
-  def is_archived(self):
-    return self.archived_at != None
-
-  @classmethod
-  def get_featured(cls):
-    return cls.objects.filter(featured_p = True).order_by('short_name')
-
-  @classmethod
-  def get_or_create(cls, **kwargs):
-    return cls.objects.get_or_create(short_name = kwargs['short_name'], defaults=kwargs)
-
-  @classmethod
-  def get_by_user_as_admin(cls, user, archived_p=None, limit=None):
-    query = cls.objects.filter(admins__in = [user])
-    if archived_p == True:
-      query = query.exclude(archived_at= None)
-    if archived_p == False:
-      query = query.filter(archived_at= None)
-    query = query.order_by('-created_at')
-    if limit:
-      return query[:limit]
-    else:
-      return query
-
-  @classmethod
-  def get_by_user_as_voter(cls, user, archived_p=None, limit=None):
-    query = cls.objects.filter(voter__user = user)
-    if archived_p == True:
-      query = query.exclude(archived_at= None)
-    if archived_p == False:
-      query = query.filter(archived_at= None)
-    query = query.order_by('-created_at')
-    if limit:
-      return query[:limit]
-    else:
-      return query
-
-  @classmethod
-  def get_by_uuid(cls, uuid):
-    try:
-      return cls.objects.select_related().get(uuid=uuid)
-    except cls.DoesNotExist:
-      return None
-
-  @classmethod
-  def get_by_short_name(cls, short_name):
-    try:
-      return cls.objects.get(short_name=short_name)
-    except cls.DoesNotExist:
-      return None
-
   def add_voters_file(self, uploaded_file):
     """
-    expects a django uploaded_file data structure, which has filename, content, size...
+    expects a django uploaded_file data structure, which has filename, content,
+    size...
     """
     # now we're just storing the content
     # random_filename = str(uuid.uuid4())
     # new_voter_file.voter_file.save(random_filename, uploaded_file)
 
-    new_voter_file = VoterFile(election = self,
-                               voter_file_content = base64.encodestring(uploaded_file.read()))
+    new_voter_file = VoterFile(poll=self,
+                               voter_file_content=\
+                               base64.encodestring(uploaded_file.read()))
     new_voter_file.save()
-
-    self.append_log(ElectionLog.VOTER_FILE_ADDED)
     return new_voter_file
-
-  def user_eligible_p(self, user):
-    """
-    Checks if a user is eligible for this election.
-    """
-    # registration closed, then eligibility doesn't come into play
-    if not self.openreg:
-      return False
-
-    if self.eligibility == None:
-      return True
-
-    # is the user eligible for one of these cases?
-    for eligibility_case in self.eligibility:
-      if user.is_eligible_for(eligibility_case):
-        return True
-
-    return False
-
-  def eligibility_constraint_for(self, user_type):
-    if not self.eligibility:
-      return []
-
-    # constraints that are relevant
-    relevant_constraints = [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type]
-    if len(relevant_constraints) > 0:
-      return relevant_constraints[0]
-    else:
-      return []
-
-  def eligibility_category_id(self, user_type):
-    "when eligibility is by category, this returns the category_id"
-    if not self.eligibility:
-      return None
-
-    constraint_for = self.eligibility_constraint_for(user_type)
-    if len(constraint_for) > 0:
-      constraint = constraint_for[0]
-      return AUTH_SYSTEMS[user_type].eligibility_category_id(constraint)
-    else:
-      return None
 
   def election_progress(self):
     PROGRESS_MESSAGES = {
@@ -631,372 +882,118 @@ class Election(HeliosModel):
     OPTIONAL_STEPS = ['voters_not_voted_notified', 'extended']
 
 
+  def voters_to_csv(self, to=None):
+    if not to:
+      to = StringIO.StringIO()
+
+    writer = csv.writer(to)
+
+    voters = self.voters.all()
+    for voter in voters:
+      vote_field = unicode(_("YES")) if voter.cast_votes.count() else \
+                       unicode(_("NO"))
+      if voter.excluded_at:
+        vote_field += unicode(_("(EXCLUDED)"))
+
+      writer.writerow(map(force_utf8, [voter.voter_email,
+                                       voter.voter_name,
+                                       voter.voter_surname,
+                                       voter.voter_fathername or '',
+                                       vote_field
+                                       ]))
+    return to
+
   def last_voter_visit(self):
       try:
-          return self.voter_set.filter(last_visit__isnull=False).order_by('-last_visit')[0].last_visit
+          return self.voter_set.filter(last_visit__isnull=False).order_by(
+              '-last_visit')[0].last_visit
       except IndexError:
           return None
+
+  def last_cast_date(self):
+      try:
+          last_cast = self.cast_votes.filter(
+                    voter__excluded_at__isnull=True).order_by('-cast_at')[0]
+      except IndexError:
+          return ""
+
+      return last_cast.cast_at
 
   def voters_visited_count(self):
       return self.voter_set.filter(last_visit__isnull=False).count()
 
-  def voted_count(self):
-    return self.castvote_set.filter(voter__excluded_at__isnull=True).distinct('voter').count()
+  def voters_cast_count(self):
+    return self.cast_votes.filter(
+        voter__excluded_at__isnull=True).distinct('voter').count()
 
-  def step_created_completed(self):
-    return bool(self.pk)
+  def total_cast_count(self):
+    return self.cast_votes.filter(
+        voter__excluded_at__isnull=True).count()
 
-  def step_candidates_added_completed(self):
-    return self.questions and len(self.questions) > 0
-
-  def step_voters_added_completed(self):
-    return self.voter_set.all().count() > 0
-
-  def step_keys_generated_completed(self):
-    return all([t.public_key for t in self.trustee_set.all()])
-
-  def step_opened_completed(self):
-    return bool(self.frozen_at)
-
-  def step_voters_notified_completed(self):
-    return bool(self.voter_set.filter(last_email_send_at__isnull=False).count())
-
-  def step_closed_completed(self):
-    return bool(self.voting_ended_at)
-
-  @property
-  def pretty_eligibility(self):
-    if not self.eligibility:
-      return "Anyone can vote."
-    else:
-      return_val = "<ul>"
-
-      for constraint in self.eligibility:
-        if constraint.has_key('constraint'):
-          for one_constraint in constraint['constraint']:
-            return_val += "<li>%s</li>" % AUTH_SYSTEMS[constraint['auth_system']].pretty_eligibility(one_constraint)
-        else:
-          return_val += "<li> any %s user</li>" % constraint['auth_system']
-
-      return_val += "</ul>"
-
-      return return_val
-
-  def voting_can_stop(self):
-    if settings.ZEUS_ELECTION_FORCE_VOTING_END:
-      return self.get_voting_end_date() <= datetime.datetime.now()
-    else:
-      return True
-
-  def get_voting_end_date(self):
-      return self.voting_extended_until or self.voting_ends_at
-
-  def can_change_questions(self):
-      return self.can_change_candidates()
-
-  def can_change_candidates(self):
-      votes_cast = self.castvote_set.count()
-      # force if votes already cast for some reason
-      if votes_cast:
-          return False
-
-      return not self.frozen_at or self.voting_starts_at >= (datetime.datetime.now() + \
-                                                     timedelta(hours=settings.CANDIDATES_CHANGE_TIME_MARGIN))
-
-  def voting_has_started(self):
-    """
-    has voting begun? voting begins if the election is frozen, at the prescribed date or at the date that voting was forced to start
-    """
-    return self.frozen_at != None and (self.voting_starts_at == None or (datetime.datetime.now() >= self.voting_starts_at))
-
-  def voting_has_stopped(self):
-    """
-    has voting stopped? if tally computed, yes, otherwise if we have passed the date voting was manually stopped at,
-    or failing that the date voting was extended until, or failing that the date voting is scheduled to end at.
-    """
-    if not self.frozen_at:
-        return False
-
-    voting_end = self.voting_ended_at or self.voting_extended_until or self.voting_ends_at
-    return (voting_end != None and datetime.datetime.now() >= voting_end) or \
-        self.tallied
-
-  def bad_mixnet(self):
+  def mix_failed(self):
     try:
-      return self.mixnets.get(status="error")
-    except ElectionMixnet.DoesNotExist:
+      return self.mixes.get(status="error")
+    except PollMix.DoesNotExist:
       return None
 
-  def mixnets_count(self):
-      return self.mixnets.count()
+  def mixes_count(self):
+      return self.mixes.count()
 
   @property
   def finished_mixnets(self):
-      return self.mixnets.filter(status='finished').defer('mix')
-
-  @property
-  def issues_before_freeze(self):
-    issues = []
-    if self.questions == None or len(self.questions) == 0 or \
-        len(self.questions[0]['answers']) == 0:
-      issues.append(
-        {'type': 'questions',
-         'action': self.type_params.get('questions_empty_issue')}
-        )
-
-    trustees = Trustee.get_by_election(self)
-    if len(trustees) == 0:
-      issues.append({
-          'type': 'trustees',
-          'action': _("add at least one trustee")
-          })
-
-    for t in trustees:
-      if t.public_key == None:
-        issues.append({
-            'type': 'trustee keypairs',
-            'action': _('have trustee %s generate a keypair') % t.name
-            })
-
-      if t.public_key and t.last_verified_key_at == None:
-        issues.append({
-            'type': 'trustee verifications',
-            'action': _('have trustee %s verify his key') % t.name
-            })
-
-    if self.voter_set.count() == 0 and not self.openreg:
-      issues.append({
-          "type" : "voters",
-          "action" : _('enter your voter list (or open registration to the public)')
-          })
-
-    if self.workflow_type == "mixnet" and not self.mixnets_count():
-      issues.append({
-          "type" : "mixnet",
-          "action" : _("setup election mixnets")
-          })
-
-
-    return issues
-
-  def ready_for_tallying(self):
-    return datetime.datetime.utcnow() >= self.tallying_starts_at
+      return self.mixnets.filter(status='finished').defer('data')
 
   def mixing_errors(self):
       errors = []
-      for e in self.mixnets.filter(mix_error__isnull=False, status='error').defer('mix'):
+      for e in self.mixnets.filter(mix_error__isnull=False,
+                                   status='error').defer('data'):
           errors.append(e.mix_error)
       return errors
 
-  def add_remote_mix(self, mix, mix_name="Remote mix"):
+  def add_remote_mix(self, remote_mix, mix_name="Remote mix"):
     error = ''
     status = 'finished'
     mix_order = int(self.mixes_count())
 
     try:
-        self.zeus_election.add_mix(mix)
+        self.zeus.add_mix(remote_mix)
     except Exception, e:
         logging.exception("Remote mix failed")
         status = 'error'
         error = traceback.format_exc()
 
     try:
-      with transaction.commit_on_success():
-        mixnet = self.mixnets.create(name=mix_name,
-                                     mix_order=mix_order,
-                                     mixnet_type='remote',
-                                     mixing_started_at=datetime.datetime.now(),
-                                     mixing_finished_at=datetime.datetime.now(),
-                                     status=status,
-                                     mix_error=error if error else None)
-        mixnet.store_mix(mix)
-        mixnet.store_mix_in_file(mix)
+        with transaction.commit_on_success():
+            mix = self.mixes.create(name=mix_name,
+                                    mix_order=mix_order,
+                                    mix_type='remote',
+                                    mixing_started_at=datetime.datetime.now(),
+                                    mixing_finished_at=datetime.datetime.now(),
+                                    status=status,
+                                    mix_error=error if error else None)
+            mix.store_mix(remote_mix)
+            mix.store_mix_in_file(remote_mix)
     except Exception, e:
-      logging.exception("Remote mix creation failed.")
-      return e
+        logging.exception("Remote mix creation failed.")
+        return e
 
-    if not Election.objects.get(pk=self.pk).remote_mixnets_finished_at:
-      mixnet.save()
-    else:
-      return "Mixing finished"
+    with transaction.commit_on_success():
+        if not Poll.objects.get(pk=self.pk).tallying_finished_at:
+            mixnet.save()
+        else:
+            return "Mixing finished"
 
     return error
 
-  def mix_next_mixnet(self):
-    if self.is_mixing:
-      raise Exception("Another mixing in process")
-
-    if self.mixing_finished:
-        return None
-
-    next_mixnet = self.mixnets.filter(status="pending").defer('mix')[0]
-    next_mixnet.mix_ciphers()
-
   @property
   def remote_mixes(self):
-    return self.mixnets.filter(mixnet_type='remote',
-                               status='finished').defer("mix")
-
-  def compute_tally(self):
-    """
-    tally the election, assuming votes already verified
-    """
-    self.mix_next_mixnet()
-
-    if self.mixing_finished and not self.mixing_finished_at:
-      self.mixing_finished_at = datetime.datetime.now()
-      self.save()
-
-    if self.mixing_finished and not self.encrypted_tally and not self.mix_key:
-      from helios import tasks
-      tasks.validate_mixing.delay(self.pk)
-
-  def store_encrypted_tally(self):
-    ciphers = self.zeus_election.get_mixed_ballots()
-    tally_dict = {'num_tallied': len(ciphers), 'tally': [
-      [{'alpha':c[0], 'beta':c[1]} for c in ciphers]]}
-    tally = LDObject.fromDict(tally_dict, type_hint='phoebus/Tally')
-    self.encrypted_tally = tally
-    self.save()
-
-  def ready_for_decryption_combination(self):
-    """
-    do we have a tally from all trustees?
-    """
-    for t in Trustee.get_by_election(self):
-      if not t.decryption_factors:
-        return False
-
-    return True
-
-  def generate_voters_hash(self):
-    """
-    look up the list of voters, make a big file, and hash it
-    """
-
-    # FIXME: for now we don't generate this voters hash:
-    return
-
-    if self.openreg:
-      self.voters_hash = None
-    else:
-      voters = Voter.get_by_election(self)
-      voters_json = utils.to_json([v.toJSONDict() for v in voters])
-      self.voters_hash = utils.hash_b64(voters_json)
-
-  def increment_voters(self):
-    ## FIXME
-    return 0
-
-  def increment_cast_votes(self):
-    ## FIXME
-    return 0
-
-  def set_eligibility(self):
-    """
-    if registration is closed and eligibility has not been
-    already set, then this call sets the eligibility criteria
-    based on the actual list of voters who are already there.
-
-    This helps ensure that the login box shows the proper options.
-
-    If registration is open but no voters have been added with password,
-    then that option is also canceled out to prevent confusion, since
-    those elections usually just use the existing login systems.
-    """
-
-    # don't override existing eligibility
-    if self.eligibility != None:
-      return
-
-    # enable this ONLY once the cast_confirm screen makes sense
-    #if self.voter_set.count() == 0:
-    #  return
-
-    auth_systems = copy.copy(settings.AUTH_ENABLED_AUTH_SYSTEMS)
-    voter_types = [r['user__user_type'] for r in self.voter_set.values('user__user_type').distinct() if r['user__user_type'] != None]
-
-    # password is now separate, not an explicit voter type
-    if self.voter_set.filter(user=None).count() > 0:
-      voter_types.append('password')
-    else:
-      # no password users, remove password from the possible auth systems
-      if 'password' in auth_systems:
-        auth_systems.remove('password')
-
-    # closed registration: limit the auth_systems to just the ones
-    # that have registered voters
-    if not self.openreg:
-      auth_systems = [vt for vt in voter_types if vt in auth_systems]
-
-    self.eligibility = [{'auth_system': auth_system} for auth_system in auth_systems]
-    self.save()
-
-  def get_short_url(self):
-      return "/helios/e/%s" % self.short_name
-
-  def get_url(self):
-      return "/helios/elections/%s/view" % self.uuid
-
-  def freeze(self):
-    """
-    election is frozen when the voter registration, questions, and trustees are finalized
-    """
-    if len(self.issues_before_freeze) > 0:
-      raise Exception("cannot freeze an election that has issues")
-
-    # voters hash
-    self.zeus_election.validate_creating()
-    # log it
-    self.append_log(ElectionLog.FROZEN)
-    self.frozen_at = datetime.datetime.utcnow()
-    # do not use forced voting started ad
-    #self.voting_started_at = datetime.datetime.utcnow()
-    self.generate_voters_hash()
-    self.set_eligibility()
-    self.save()
-
-  @property
-  def mixing_started(self):
-      return self.tallying_started_at
-
-  @property
-  def mixing_finished(self):
-    mixnets = self.mixnets.filter(mixnet_type="local", status="finished").count()
-    return (mixnets > 0) and (mixnets == self.mixnets.filter(mixnet_type="local").count())
-
-  @property
-  def remote_mixing_finished(self):
-    if not self.mix_key:
-        return True
-    else:
-        return bool(self.remote_mixnets_finished_at)
-
-  @property
-  def completed(self):
-    return bool(self.result)
-
-  @property
-  def is_mixing(self):
-      return bool(self.mixnets.filter(status="mixing").count())
+      return self.mixnets.filter(mix_type='remote',
+                               status='finished').defer("data")
 
   def get_mix_url(self):
     if not self.mix_key:
       return ''
     return settings.URL_HOST + "/helios/elections/%s/mix/%s" % (self.uuid, self.mix_key)
-
-  def generate_helios_mixnet(self, params={}):
-    if self.tallied:
-      raise Exception("Election tallied, cannot add additional mixnet")
-
-    if self.is_mixing:
-      raise Exception("Mixing already started, cannot add additional mixnet")
-
-    mixnets_count = self.mixes_count()
-    params.update({'election': self})
-    params.update({'mix_order':mixnets_count})
-    mixnet = ElectionMixnet(**params)
-    mixnet.save()
 
   def mixes_count(self):
     mixnets_count = self.mixnets.filter(status="finished",
@@ -1005,88 +1002,11 @@ class Election(HeliosModel):
                                          second_mix__isnull=True).count()
     return mixnets_count
 
-  @property
-  def zeus_stage(self):
-    if not self.pk or not self.frozen_at:
-      return 'CREATING'
-
-    if not self.voting_ended_at:
-      return 'VOTING'
-
-    if not self.mixing_finished:
-      return 'MIXING'
-
-    if self.mix_key and not self.remote_mixnets_finished_at:
-      return 'MIXING'
-
-    if not self.result:
-      return 'DECRYPTING'
-
-    return 'FINISHED'
-
-  _zeus_election = None
-
-  @property
-  def zeus_election(self):
-    if self._zeus_election and self._zeus_election.do_get_stage() == self.zeus_stage:
-      return self._zeus_election
-
-    from zeus import helios_election
-    from zeus.models import ElectionInfo
-    el_info , created = ElectionInfo.objects.get_or_create(uuid=self.uuid)
-    el_info._election = self
-    obj = helios_election.HeliosElection(uuid=self.uuid,
-                                         model=el_info)
-    obj.do_set_stage(self.zeus_stage)
-    self._zeus_election = obj
-    return obj
-
-  def reprove_trustee(self, trustee):
-      public_key = trustee.public_key
-      pok = trustee.pok
-      self.zeus_election.reprove_trustee(public_key.y, [pok.commitment,
-                                                         pok.challenge,
-                                                         pok.response])
-
-      trustee.last_verified_key_at = datetime.datetime.now()
-      trustee.save()
-
-  def add_trustee_pk(self, trustee, public_key, pok):
-    trustee.public_key = public_key
-    trustee.pok = pok
-    trustee.public_key_hash = utils.hash_b64(
-        utils.to_json(
-            trustee.public_key.toJSONDict()))
-    trustee.save()
-    # verify the pok
-    trustee.send_url_via_mail()
-    self.zeus_election.add_trustee(trustee.public_key.y, [pok.commitment,
-                                                         pok.challenge,
-                                                         pok.response])
-
-  def add_trustee_factors(self, trustee, factors, proofs):
-    trustee.decryption_factors = factors
-    trustee.decryption_proofs = proofs
-    modulus, generator, order = self.zeus_election.do_get_cryptosystem()
-    zeus_factors = self.zeus_election._get_zeus_factors(trustee)
-    # zeus add_trustee_factors requires some extra info
-    zeus_factors = {'trustee_public': trustee.public_key.y,
-                    'decryption_factors': zeus_factors,
-                    'modulus': modulus,
-                    'generator': generator,
-                    'order': order}
-    self.zeus_election.add_trustee_factors(zeus_factors)
-    trustee.save()
-
-    if self.ready_for_decryption_combination():
-      from helios import tasks
-      tasks.tally_decrypt.delay(self.pk)
-
   def _get_zeus_vote(self, enc_vote, voter=None, audit_password=None):
     answer = enc_vote.encrypted_answers[0]
     cipher = answer.choices[0]
     alpha, beta = cipher.alpha, cipher.beta
-    modulus, generator, order = self.zeus_election.do_get_cryptosystem()
+    modulus, generator, order = self.zeus.do_get_cryptosystem()
     commitment, challenge, response = enc_vote.encrypted_answers[0].encryption_proof
     fingerprint = numbers_hash((modulus, generator, alpha, beta,
                                 commitment, challenge, response))
@@ -1102,7 +1022,7 @@ class Election(HeliosModel):
           'modulus': modulus,
           'generator': generator,
           'order': order,
-          'public': self.public_key.y
+          'public': self.election.public_key.y
       }
     }
 
@@ -1120,164 +1040,11 @@ class Election(HeliosModel):
 
   def cast_vote(self, voter, enc_vote, audit_password=None):
     zeus_vote = self._get_zeus_vote(enc_vote, voter, audit_password)
-    return self.zeus_election.cast_vote(zeus_vote)
-
-  def generate_trustee(self):
-    """
-    generate a trustee including the secret key,
-    thus a helios-based trustee
-    """
-
-    if self.get_helios_trustee():
-        return self.get_helios_trustee()
-
-    self.zeus_election.create_zeus_key()
-    return self.get_helios_trustee()
-
-  def get_helios_trustee(self):
-    trustees_with_sk = self.trustee_set.exclude(secret_key = None)
-    if len(trustees_with_sk) > 0:
-      return trustees_with_sk[0]
-    else:
-      return None
-
-  @property
-  def workflow(self):
-    return get_workflow_module(self.workflow_type)
-
-  def has_helios_trustee(self):
-    return self.get_helios_trustee() != None
-
-  def helios_trustee_decrypt(self):
-    self.zeus_election.compute_zeus_factors()
-
-  def append_log(self, text):
-    item = ElectionLog(election = self, log=text, at=datetime.datetime.utcnow())
-    item.save()
-    return item
-
-  def get_log(self):
-    return self.electionlog_set.order_by('-at')
-
-  @property
-  def url(self):
-    return helios.views.get_election_url(self)
-
-  def init_encrypted_tally(self):
-      answers = self.last_mixed_mixnet.mixed_answers.get(question=0).mixed_answers.answers
-      tally = self.init_tally()
-      tally.tally = [[]]
-      tally.tally[0] = [a.choice for a in answers]
-      self.encrypted_tally = tally
-      self.save()
-
-  def init_tally(self):
-    return self.workflow.Tally(election=self)
-
-  @property
-  def registration_status_pretty(self):
-    if self.openreg:
-      return "Open"
-    else:
-      return "Closed"
-
-  @classmethod
-  def one_question_winner(cls, question, result, num_cast_votes):
-    """
-    determining the winner for one question
-    """
-    # sort the answers , keep track of the index
-    counts = sorted(enumerate(result), key=lambda(x): x[1])
-    counts.reverse()
-
-    the_max = question['max'] or 1
-    the_min = question['min'] or 0
-
-    # if there's a max > 1, we assume that the top MAX win
-    if the_max > 1:
-      return [c[0] for c in counts[:the_max]]
-
-    # if max = 1, then depends on absolute or relative
-    if question['result_type'] == 'absolute':
-      if counts[0][1] >=  (num_cast_votes/2 + 1):
-        return [counts[0][0]]
-      else:
-        return []
-    else:
-      # assumes that anything non-absolute is relative
-      return [counts[0][0]]
-
-  def get_ecounting_hash(self):
-    if not self.zeus_fingerprint:
-        self.zeus_fingerprint = self.zeus_election.export()[0]['election_fingerprint']
-        self.save()
-
-    return self.zeus_fingerprint
-
-  def ecounting_dict(self):
-    election_hash = self.get_ecounting_hash()
-    schools = []
-    for school in self.departments:
-      candidates = []
-      for i, candidate in enumerate(self.candidates):
-        if candidate['department'] != school:
-          continue
-
-        candidate_entry = {
-          'candidateTmpId': str(i+1),
-          'firstName': candidate['name'],
-          'lastName': candidate['surname'],
-          'fatherName': candidate['father_name']
-        }
-
-        candidates.append(candidate_entry)
-
-      school_entry = {
-        'Name': school,
-        'candidates': candidates
-      }
-      schools.append(school_entry)
-
-    ballots = []
-    for i, ballot in enumerate(self.pretty_result['candidates_selections']):
-      ballot_votes = []
-      for j, selection in enumerate(ballot):
-        vote_entry = {
-          'rank': j + 1,
-          'candidateTmpId': selection['selection_index']
-        }
-        ballot_votes.append(vote_entry)
-
-      ballot_entry = {
-        'ballotSerialNumber': str(i+1),
-        'votes': ballot_votes
-      }
-      ballots.append(ballot_entry)
-
-    data = {
-      'elName': self.name,
-      'hash': election_hash,
-      'elDescription': self.description,
-      'numOfRegisteredVoters': self.voter_set.count(),
-      'numOfCandidates': len(self.candidates),
-      'numOfEligibles': self.eligibles_count,
-      'hasLimit': 1 if self.has_department_limit else 0,
-      'schools': schools,
-      'ballots': ballots
-    }
-    return data
-
-  @property
-  def winners(self):
-    """
-    Depending on the type of each question, determine the winners
-    returns an array of winners for each question, aka an array of arrays.
-    assumes that if there is a max to the question, that's how many winners there are.
-    """
-    return [self.one_question_winner(self.questions[i], self.result[i], self.num_cast_votes) for i in range(len(self.questions))]
+    return self.zeus.cast_vote(zeus_vote)
 
   def zeus_proofs_path(self):
-    return os.path.join(settings.ZEUS_PROOFS_PATH, '%s.zip' % self.uuid)
+    return os.path.join(settings.ZEUS_PROOFS_PATH, '%s-%s.zip' %
+                        (self.election.uuid, self.uuid))
 
   def store_zeus_proofs(self):
     if not self.result:
@@ -1287,15 +1054,15 @@ class Election(HeliosModel):
     if os.path.exists(zip_path):
       os.unlink(zip_path)
 
-    export_data = self.zeus_election.export()
+    export_data = self.zeus.export()
     self.zeus_fingerprint = export_data[0]['election_fingerprint']
     self.save()
 
     zf = zipfile.ZipFile(zip_path, mode='w')
     data_info = zipfile.ZipInfo('%s_proofs.txt' % self.short_name)
     data_info.compress_type = zipfile.ZIP_DEFLATED
-    data_info.comment = "Election %s (%s) zeus proofs" % (self.zeus_fingerprint,
-                                                          self.uuid)
+    data_info.comment = "Election %s (%s-%s) zeus proofs" % (self.zeus_fingerprint,
+                                                          self.election.uuid, self.uuid)
     data_info.date_time = datetime.datetime.now().timetuple()
     data_info.external_attr = 0777 << 16L
 
@@ -1350,7 +1117,7 @@ class Election(HeliosModel):
 
   def generate_result_docs(self):
     import json
-    results_json = self.zeus_election.get_results()
+    results_json = self.zeus.get_results()
 
     # json file
     jsonfile = file(self.get_result_file_path('json', 'json'), 'w')
@@ -1360,13 +1127,13 @@ class Election(HeliosModel):
     # pdf report
     from zeus.results_report import build_doc
     DATE_FMT = "%d/%m/%Y %H:%S"
-    voting_start = 'Έναρξη: %s' % (self.voting_starts_at.strftime(DATE_FMT))
-    voting_end = 'Λήξη: %s' % (self.voting_ends_at.strftime(DATE_FMT))
+    voting_start = 'Έναρξη: %s' % (self.election.voting_starts_at.strftime(DATE_FMT))
+    voting_end = 'Λήξη: %s' % (self.election.voting_ends_at.strftime(DATE_FMT))
 
     extended_until = ""
-    if self.voting_extended_until:
-      extended_until = 'Παράταση: %s' % (self.voting_extended_until.strftime(DATE_FMT))
-    build_doc(_(u'Αποτελέσματα'), self.name, self.institution.name,
+    if self.election.voting_extended_until:
+      extended_until = 'Παράταση: %s' % (self.election.voting_extended_until.strftime(DATE_FMT))
+    build_doc(_(u'Αποτελέσματα'), self.name, self.election.institution.name,
               voting_start, voting_end, extended_until, json.dumps(results_json),
               self.get_result_file_path('pdf', 'pdf'))
 
@@ -1375,6 +1142,19 @@ class Election(HeliosModel):
     csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
     csv_from_party_results(self, results_json, csvfile)
     csvfile.close()
+
+  def save(self, *args, **kwargs):
+    if not self.uuid:
+      self.uuid = str(uuid.uuid4())
+    if not self.short_name:
+      self.short_name = slughifi(self.name)
+      es = self.election.polls.filter()
+      count = 1
+      while es.filter(short_name=self.short_name).count() > 0:
+        self.short_name = slughifi(self.name) + '-%d' % count
+        count += 1
+    super(Poll, self).save(*args, **kwargs)
+
 
 
 class ElectionLog(models.Model):
@@ -1440,12 +1220,13 @@ def csv_reader(csv_data, **kwargs):
 
 class VoterFile(models.Model):
   """
-  A model to store files that are lists of voters to be processed
+  A model to store files that are lists of voters to be processed.
   """
+
   # path where we store voter upload
   PATH = settings.VOTER_UPLOAD_REL_PATH
 
-  election = models.ForeignKey(Election)
+  poll = models.ForeignKey(Poll)
 
   # we move to storing the content in the DB
   voter_file = models.FileField(upload_to=PATH, max_length=250,null=True)
@@ -1498,7 +1279,7 @@ class VoterFile(models.Model):
     self.processing_started_at = datetime.datetime.utcnow()
     self.save()
 
-    election = self.election
+    poll = self.poll
 
     # now we're looking straight at the content
     if self.voter_file_content:
@@ -1508,7 +1289,7 @@ class VoterFile(models.Model):
 
     reader = csv_reader(voter_data)
 
-    last_alias_num = election.last_alias_num
+    last_alias_num = poll.last_alias_num
 
     num_voters = 0
     new_voters = []
@@ -1539,31 +1320,33 @@ class VoterFile(models.Model):
       # user = User.update_or_create(user_type='password', user_id=email, info = {'name': name})
 
       # does voter for this user already exist
-      voter = Voter.get_by_election_and_voter_id(election, voter_id)
+      voter = None
+      try:
+          voter = Voter.objects.get(poll=poll, voter_email=voter_id)
+      except Voter.DoesNotExist:
+          pass
 
       # create the voter
       if not voter:
         voter_uuid = str(uuid.uuid4())
-        voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter_id,
-                      voter_name = name, voter_email = email, election = election,
+        voter = Voter(uuid=voter_uuid, voter_login_id=voter_id,
+                      voter_name=name, voter_email=email, poll=poll,
                       voter_surname=surname, voter_fathername=fathername)
         voter.init_audit_passwords()
         voter.generate_password()
         new_voters.append(voter)
         voter.save()
-
       else:
         voter.voter_name = name
         voter.voter_surname = surname
         voter.voter_fathername = fathername
         voter.save()
 
-    if election.use_voter_aliases:
-      voter_alias_integers = range(last_alias_num+1, last_alias_num+1+num_voters)
-      random.shuffle(voter_alias_integers)
-      for i, voter in enumerate(new_voters):
-        voter.alias = 'V%s' % voter_alias_integers[i]
-        voter.save()
+    voter_alias_integers = range(last_alias_num+1, last_alias_num+1+num_voters)
+    random.shuffle(voter_alias_integers)
+    for i, voter in enumerate(new_voters):
+      voter.alias = 'V%s' % voter_alias_integers[i]
+      voter.save()
 
     self.num_voters = num_voters
     self.processing_finished_at = datetime.datetime.utcnow()
@@ -1572,15 +1355,34 @@ class VoterFile(models.Model):
     return num_voters
 
 
+class VoterQuerySet(QuerySet):
 
-class Voter(HeliosModel):
-  election = models.ForeignKey(Election)
+    def not_excluded(self):
+        return self.filter(excluded_at__isnull=True)
 
+    def excluded(self):
+        return self.filter(excluded_at__isnull=False)
+
+    def cast(self):
+        return self.filter().not_excluded().annotate(
+            num_cast=Count('cast_votes')).filter(num_cast__gte=1)
+
+    def invited(self):
+        return self.filter(last_booth_invitation_send_at__isnull=False)
+
+    def visited(self):
+        return self.filter(last_visit__isnull=False)
+
+class VoterManager(models.Manager):
+
+    def get_query_set(self):
+        return VoterQuerySet(self.model)
+
+
+class Voter(HeliosModel, VoterFeatures):
+  poll = models.ForeignKey(Poll, related_name="voters")
   uuid = models.CharField(max_length = 50)
 
-  # for users of type password, no user object is created
-  # but a dynamic user object is created automatically
-  user = models.ForeignKey('heliosauth.User', null=True)
 
   # if user is null, then you need a voter login ID and password
   voter_login_id = models.CharField(max_length = 100, null=True)
@@ -1605,13 +1407,21 @@ class Voter(HeliosModel):
   audit_passwords = models.CharField(max_length=200, null=True)
 
   last_email_send_at = models.DateTimeField(null=True)
+  last_booth_invitation_send_at = models.DateTimeField(null=True)
   last_visit = models.DateTimeField(null=True)
 
   excluded_at = models.DateTimeField(null=True, default=None)
   exclude_reason = models.TextField(default='')
 
+  objects = VoterManager()
+
   class Meta:
-    unique_together = (('election', 'voter_login_id'))
+    unique_together = ('poll', 'voter_login_id')
+
+  user = None
+
+  def get_cast_votes(self):
+      return self.cast_votes.filter()
 
   def __init__(self, *args, **kwargs):
     super(Voter, self).__init__(*args, **kwargs)
@@ -1621,8 +1431,9 @@ class Voter(HeliosModel):
       self.user = User(user_type='password', user_id=self.voter_email,
                        name=u"%s %s" % (self.voter_name, self.voter_surname))
 
+  @property
   def voted(self):
-      return self.castvote_set.count() > 0
+      return self.cast_votes.count() > 0
 
   @property
   def full_name(self):
@@ -1644,7 +1455,13 @@ class Voter(HeliosModel):
     return filter(bool, self.audit_passwords.split("|"))
 
   def get_quick_login_url(self):
-      return settings.URL_HOST + "/helios/elections/%s/l/%s/%s" % (self.election.uuid, self.uuid, self.voter_password)
+      url = reverse('election_poll_voter_booth_login', kwargs={
+          'election_uuid': self.poll.election.uuid,
+          'poll_uuid': self.poll.uuid,
+          'voter_uuid': self.uuid,
+          'voter_secret': self.voter_password
+      });
+      return settings.URL_HOST + url
 
   def check_audit_password(self, password):
     if password != "" and password not in self.get_audit_passwords():
@@ -1659,10 +1476,9 @@ class Voter(HeliosModel):
     voter = Voter(uuid= voter_uuid, user = user, election = election)
 
     # do we need to generate an alias?
-    if election.use_voter_aliases:
-      heliosutils.lock_row(Election, election.id)
-      alias_num = election.last_alias_num + 1
-      voter.alias = "V%s" % alias_num
+    heliosutils.lock_row(Election, election.id)
+    alias_num = election.last_alias_num + 1
+    voter.alias = "V%s" % alias_num
 
     voter.save()
     return voter
@@ -1707,7 +1523,7 @@ class Voter(HeliosModel):
   @classmethod
   def get_by_election_and_voter_id(cls, election, voter_id):
     try:
-      return cls.objects.get(election = election, voter_email = voter_id)
+      return cls.objects.get(poll= election, voter_email = voter_id)
     except cls.DoesNotExist:
       return None
 
@@ -1805,15 +1621,30 @@ class Voter(HeliosModel):
     return CastVote(vote = self.vote, vote_hash = self.vote_hash, cast_at = self.cast_at, voter=self)
 
 
+class CastVoteQuerySet(QuerySet):
+
+    def countable(self):
+        return self.filter(voter__excluded_at__isnull=True)
+
+    def excluded(self):
+        return self.filter(voter__excluded_at__isnull=False)
+
+
+class CastVoteManager(models.Manager):
+
+    def get_query_set(self):
+        return CastVoteQuerySet(self.model)
+
+
 class CastVote(HeliosModel):
   # the reference to the voter provides the voter_uuid
-  voter = models.ForeignKey(Voter)
-  election = models.ForeignKey(Election)
+  voter = models.ForeignKey(Voter, related_name="cast_votes")
+  poll = models.ForeignKey(Poll, related_name="cast_votes")
 
   previous = models.CharField(max_length=255, default="")
 
   # the actual encrypted vote
-  vote = LDObjectField(type_hint = 'phoebus/EncryptedVote')
+  vote = LDObjectField(type_hint='phoebus/EncryptedVote')
 
   # cache the hash of the vote
   vote_hash = models.CharField(max_length=100)
@@ -1826,7 +1657,8 @@ class CastVote(HeliosModel):
 
   # some ballots can be quarantined (this is not the same thing as provisional)
   quarantined_p = models.BooleanField(default=False, null=False)
-  released_from_quarantine_at = models.DateTimeField(auto_now_add=False, null=True)
+  released_from_quarantine_at = models.DateTimeField(auto_now_add=False,
+                                                     null=True)
 
   # when is the vote verified?
   verified_at = models.DateTimeField(null=True)
@@ -1835,8 +1667,11 @@ class CastVote(HeliosModel):
   signature = JSONField(null=True)
   index = models.PositiveIntegerField(null=True)
 
+  objects = CastVoteManager()
+
   class Meta:
-    unique_together = (('election', 'index'),)
+    unique_together = (('poll', 'index'),)
+    ordering = ('-cast_at',)
 
   @property
   def datatype(self):
@@ -1881,47 +1716,27 @@ class CastVote(HeliosModel):
 
     super(CastVote, self).save(*args, **kwargs)
 
-  @classmethod
-  def get_by_voter(cls, voter):
-    return cls.objects.filter(voter = voter).order_by('-cast_at')
 
-  def verify_and_store(self):
-    # if it's quarantined, don't let this go through
-    if self.is_quarantined:
-      raise Exception("cast vote is quarantined, verification and storage is delayed.")
+class AuditedBallotQuerySet(QuerySet):
 
-    result = self.vote.verify(self.voter.election)
+    def confirmed(self):
+        return self.filter(is_request=False)
 
-    if result:
-      self.verified_at = datetime.datetime.utcnow()
-    else:
-      self.invalidated_at = datetime.datetime.utcnow()
+    def requests(self):
+        return self.filter(is_request=True)
 
-    # save and store the vote as the voter's last cast vote
-    self.save()
 
-    if result:
-      self.voter.store_vote(self)
+class AuditedBallotManager(models.Manager):
 
-    return result
+    def get_query_set(self):
+        return AuditedBallotQuerySet(self.model)
 
-  def issues(self, election):
-    """
-    Look for consistency problems
-    """
-    issues = []
-
-    # check the election
-    if self.vote.election_uuid != election.uuid:
-      issues.append("the vote's election UUID does not match the election for which this vote is being cast")
-
-    return issues
 
 class AuditedBallot(models.Model):
   """
   ballots for auditing
   """
-  election = models.ForeignKey(Election)
+  poll = models.ForeignKey(Poll, related_name="audited_ballots")
   voter = models.ForeignKey(Voter, null=True)
   raw_vote = models.TextField()
   vote_hash = models.CharField(max_length=100)
@@ -1931,9 +1746,11 @@ class AuditedBallot(models.Model):
   is_request = models.BooleanField(default=True)
   signature = JSONField(null=True)
 
+  objects = AuditedBallotManager()
+
   @property
   def choices(self):
-    answers = self.election.questions[0]['answers']
+    answers = self.poll.questions[0]['answers']
     nr_answers = len(answers)
     encoded = self.vote.encrypted_answers[0].answer
     max_encoded = gamma_encoding_max(nr_answers)
@@ -1969,135 +1786,137 @@ class AuditedBallot(models.Model):
     return electionalgs.EncryptedVote.fromJSONDict(
                 utils.from_json(self.raw_vote))
   class Meta:
-    unique_together = (('election','is_request','fingerprint'))
+    unique_together = (('poll', 'is_request', 'fingerprint'))
 
-class Trustee(HeliosModel):
-  election = models.ForeignKey(Election)
 
-  uuid = models.CharField(max_length=50)
-  name = models.CharField(max_length=200)
-  email = models.EmailField()
-  secret = models.CharField(max_length=100)
+class TrusteeDecryptionFactorsQuerySet(QuerySet):
 
-  # public key
-  public_key = LDObjectField(type_hint = 'legacy/EGPublicKey',
-                             null=True)
-  public_key_hash = models.CharField(max_length=100)
+    def no_secret(self):
+        return self.filter(trustee__secret_key__isnull=True)
 
-  # secret key
-  # if the secret key is present, this means
-  # Helios is playing the role of the trustee.
-  secret_key = LDObjectField(type_hint = 'legacy/EGSecretKey',
-                             null=True)
+    def completed(self):
+        return self.filter(decryption_factors__isnull=False).filter(
+            decryption_proofs__isnull=False)
 
-  # proof of knowledge of secret key
-  pok = LDObjectField(type_hint = 'legacy/DLogProof',
-                      null=True)
 
-  # decryption factors
-  decryption_factors = LDObjectField(type_hint = datatypes.arrayOf(datatypes.arrayOf('core/BigInteger')),
-                                     null=True)
+class TrusteeDecryptionFactorsManager(models.Manager):
 
-  decryption_proofs = LDObjectField(type_hint = datatypes.arrayOf(datatypes.arrayOf('legacy/EGZKProof')),
-                                    null=True)
+    def get_query_set(self):
+        return TrusteeDecryptionFactorsQuerySet(self.model)
 
-  last_verified_key_at = models.DateTimeField(null=True)
 
-  def save(self, *args, **kwargs):
-    """
-    override this just to get a hook
-    """
-    # not saved yet?
-    if not self.secret:
-      self.secret = heliosutils.random_string(12)
-      self.election.append_log("Trustee %s added" % self.name)
+class TrusteeDecryptionFactors(models.Model):
 
-    super(Trustee, self).save(*args, **kwargs)
+  trustee = models.ForeignKey('Trustee', related_name='partial_decryptions')
+  poll = models.ForeignKey('Poll', related_name='partial_decryptions')
+  decryption_factors = LDObjectField(
+      type_hint=datatypes.arrayOf(datatypes.arrayOf('core/BigInteger')),
+      null=True)
+  decryption_proofs = LDObjectField(
+      type_hint=datatypes.arrayOf(datatypes.arrayOf('legacy/EGZKProof')),
+      null=True)
 
-  def get_login_url(self):
-    from django.core.urlresolvers import reverse
-    from helios.views import trustee_login
-    url = settings.SECURE_URL_HOST + reverse(trustee_login,
-                                               args=[self.election.short_name,
-                                                     self.email,
-                                                     self.secret])
-    return url
+  objects = TrusteeDecryptionFactorsManager()
 
-  def get_step(self):
-      if not self.public_key:
-          return 1
-      if not self.last_verified_key_at:
-          return 2
-      if not self.decryption_factors:
-          return 3
+  class Meta:
+      unique_together = (('trustee', 'poll'),)
 
-      return 1
 
-  STEP_TEXTS = [_(u'Δημιουργία κωδικού ψηφοφορίας'),
-                _(u'Επιβεβαίωση Κωδικού Ψηφοφορίας'),
-                _(u'Αποκρυπτογράφηση ψήφων')]
+class TrusteeQuerySet(QuerySet):
 
-  def send_url_via_mail(self, msg=''):
+    def no_secret(self):
+        return self.filter(secret_key__isnull=True)
 
-    url = self.get_login_url()
 
-    body = _(u"""
-    Ως μέλος της εφορευτικής επιτροπής της ψηφοφορίας
+class TrusteeManager(models.Manager):
 
-      %(election_name)s
+    def get_query_set(self):
+        return TrusteeQuerySet(self.model)
 
-    παρακαλούμε επισκεφθείτε τον πίνακα ελέγχου και ακολουθήστε τις οδηγίες
 
-      %(url)s
+class Trustee(HeliosModel, TrusteeFeatures):
+    election = models.ForeignKey(Election, related_name="trustees")
+    uuid = models.CharField(max_length=50)
+    name = models.CharField(max_length=200)
+    email = models.EmailField()
+    secret = models.CharField(max_length=100)
+    public_key = LDObjectField(type_hint = 'legacy/EGPublicKey', null=True)
+    public_key_hash = models.CharField(max_length=100)
+    secret_key = LDObjectField(type_hint = 'legacy/EGSecretKey', null=True)
+    pok = LDObjectField(type_hint = 'legacy/DLogProof', null=True)
+    last_verified_key_at = models.DateTimeField(null=True)
+    last_notified_at = models.DateTimeField(null=True, default=None)
 
-      %(msg)s
+    objects = TrusteeManager()
 
-    --
-    Ψηφιακή Κάλπη «Ζευς»
- """) % {
-                 'election_name': self.election.name,
-                 'url': url,
-                 'msg': msg,
-                 'step': self.get_step(),
-                 'step_text': self.STEP_TEXTS[self.get_step()-1]}
+    @property
+    def get_partial_decryptions(self):
+        for poll in self.election.polls.all():
+            try:
+                pd = poll.partial_decryptions.filter().only(
+                    'poll').get(trustee=self)
+                yield (poll, pd.decryption_factors)
+            except TrusteeDecryptionFactors.DoesNotExist:
+                yield (poll, None)
 
-    subject = _(u'%(election_name)s: παρακαλούμε για τις ενέργειές σας, #%(step)s') % {
-        'election_name': self.election.name,
-        'step_text': self.STEP_TEXTS[self.get_step()-1],
-        'step': self.get_step()}
+    def save(self, *args, **kwargs):
+        if not self.uuid:
+            self.uuid = str(uuid.uuid4())
+        # set secret password
+        if not self.secret:
+            self.secret = heliosutils.random_string(12)
+        super(Trustee, self).save(*args, **kwargs)
 
-    send_mail(subject,
-              body,
-              settings.SERVER_EMAIL,
-              ["%s <%s>" % (self.name, self.email)],
-              fail_silently=True)
+    def get_login_url(self):
+        url = settings.SECURE_URL_HOST + reverse('election_trustee_login',
+                                                 args=[self.election.uuid,
+                                                 self.email, self.secret])
+        return url
 
-  @classmethod
-  def get_by_election(cls, election):
-    return cls.objects.filter(election = election)
+    def pending_partial_decryptions(self):
+        return filter(lambda p: p[1], self.get_partial_decryptions())
 
-  @classmethod
-  def get_by_uuid(cls, uuid):
-    return cls.objects.get(uuid = uuid)
+    def get_step(self):
+        """
+        Step based on trustee/election state
+        """
+        if not self.public_key:
+            return 1
+        if not self.last_verified_key_at:
+            return 2
+        if self.pending_partial_decryptions:
+            return 3
+        return 1
 
-  @classmethod
-  def get_by_election_and_uuid(cls, election, uuid):
-    return cls.objects.get(election = election, uuid = uuid)
+    STEP_TEXTS = [_(u'Δημιουργία κωδικού ψηφοφορίας'),
+                  _(u'Επιβεβαίωση Κωδικού Ψηφοφορίας'),
+                  _(u'Αποκρυπτογράφηση ψήφων')]
 
-  @classmethod
-  def get_by_election_and_email(cls, election, email):
-    try:
-      return cls.objects.get(election = election, email = email)
-    except cls.DoesNotExist:
-      return None
+    def send_url_via_mail(self, msg=''):
+        """
+        Notify trustee
+        """
+        url = self.get_login_url()
+        context = {
+            'election_name': self.election.name,
+            'election': self.election,
+            'url': url,
+            'msg': msg,
+            'step': self.get_step(),
+            'step_text': self.STEP_TEXTS[self.get_step()-1]
+        }
 
-  @property
-  def datatype(self):
-    return self.election.datatype.replace('Election', 'Trustee')
+        body = render_to_string("trustee_email.txt", context)
+        subject = render_to_string("trustee_email_subject.txt", context)
 
-  def verify_decryption_proofs(self):
-    """
-    verify that the decryption proofs match the tally for the election
-    """
-    return self.election.workflow.verify_encryption_proof(self.election, self)
+        send_mail(subject.replace("\n", ""),
+                  body,
+                  settings.SERVER_EMAIL,
+                  ["%s <%s>" % (self.name, self.email)],
+                  fail_silently=False)
+        self.last_notified_at = datetime.datetime.now()
+        self.save()
 
+    @property
+    def datatype(self):
+        return self.election.datatype.replace('Election', 'Trustee')

@@ -16,8 +16,8 @@ from models import *
 from heliosauth.security import get_user
 
 from django.http import HttpResponseRedirect
-import urllib
 
+import urllib
 import helios
 
 # current voter
@@ -44,24 +44,6 @@ def get_voter(request, user, election):
   return voter
 
 # a function to check if the current user is a trustee
-HELIOS_TRUSTEE_UUID = 'helios_trustee_uuid'
-def get_logged_in_trustee(request):
-  if request.session.has_key(HELIOS_TRUSTEE_UUID):
-    try:
-      return Trustee.get_by_uuid(request.session[HELIOS_TRUSTEE_UUID])
-    except Trustee.DoesNotExist:
-      del request.session[HELIOS_TRUSTEE_UUID]
-  else:
-    return None
-
-def clear_previous_logins(request):
-  for sess_key in [HELIOS_TRUSTEE_UUID, 'user', 'CURRENT_VOTER']:
-    if sess_key in request.session:
-      del request.session[sess_key]
-
-def set_logged_in_trustee(request, trustee):
-  request.session[HELIOS_TRUSTEE_UUID] = trustee.uuid
-
 #
 # some common election checks
 #
@@ -128,6 +110,7 @@ def election_view(**checks):
     return update_wrapper(election_view_wrapper, func)
 
   return election_view_decorator
+
 
 def user_can_admin_election(user, election):
   if not user:

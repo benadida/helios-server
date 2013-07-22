@@ -1,0 +1,40 @@
+{% load i18n %}
+<div class="columns twelve election-info clearfix">
+  <p class="description">
+  {{ election.description }}
+  </p>
+</div>
+
+<div class="election-dates columns twelve">
+<div class="columns six top left">
+  <i>{% trans "Voting starts at" %}: </i> <b>{{ election.voting_starts_at }}</b>
+</div>
+<div class="columns six top right">
+  <i>{% trans "Voting ends at" %}: </i> <b>{{ election.voting_end_date }}</b>
+</div>
+
+{% if poll %}
+<div class="columns six bottom left">
+<i>{% trans "Voters count" %}: </i><b>{{ poll.voters.count }}</b>
+</div>
+<div class="columns six bottom left">
+  <i>&nbsp;</i>
+</div>
+{% else %}
+<div class="columns six bottom left">
+  <i>{% trans "Polls count" %}: </i><b>{{ election.polls.count }}</b>
+</div>
+<div class="columns six bottom right">
+  <i>{% trans "Voters count" %}: </i><b>{{ election.voters.filter.count }}</b>
+</div>
+{% endif %}
+</div>
+
+<div class="columns six election-contact">
+  <h5>{% trans "Support" %}</h5>
+  <ul>
+    <li><b>{% trans "Election help email" %}: </b>{{ election.help_email }}</li>
+      <li><b>{% trans "Election support phone" %}: </b>{{ election.help_phone }}</li>
+  </ul>
+</div>
+

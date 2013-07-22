@@ -1,0 +1,80 @@
+{% extends "election_page.html" %}
+{% load i18n zeus_tags %}
+{% block title %}{{election.name}}: Ψηφοφόροι{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
+{% block content %}
+
+<p>
+{% blocktrans %}
+Τα μέλη της εφορευτικής επιτροπής που εμφανίζονται στην παρακάτω λίστα 
+είναι υπεύθυνα για την αποκρυπτογράφηση του αποτελέσματος των ηλεκτρονικών
+εκλογών.
+{% endblocktrans %}
+</p>
+
+{% if not trustees|length %}
+{% else %}
+{% for t in trustees %}
+<div class="trustee-entry">
+<h5>
+{{ t.name }} 
+
+{% if admin %}
+<br /><span style="font-size:0.8em; color:#aaa">{{ t.email }}</span>
+{% if t.public_key_hash %}
+<br />
+<span class="hash-title">{% trans "Trustee election identifier" %}: </span>
+<tt style="font-size:0.8em;">{{t.public_key_hash}}</tt>
+{% if not t.last_verified_key_at %}
+<br /><br />
+<span class="label alert">{% trans "Trustee key not verified" %}</span>
+{% else %}
+<span class="label success">{% trans "key verified" %}</span>
+{% endif %}
+{% else %}
+<br />
+<br />
+<span class="label alert">{% trans "No trustee election key set" %}.</span>
+{% endif %}
+<br /><br />
+{% if election.feature_can_send_trustee_email %}
+{% url election_trustee_send_url election.uuid t.uuid as mail_url %}
+{% trans "Send trustee login url" as label %}
+{% small_action label mail_url %}
+{% endif %}
+
+{% if election.feature_delete_trustee %}
+{% url election_trustee_delete election.uuid t.uuid as delete_url %}
+{% trans "Delete trustee" as label %}
+{% small_confirm_action label delete_url trustee_remove_confirm "" "POST" "alert" inline=1%}
+{% endif %}
+{% endif %}
+</h5>
+{% if admin and election.feature_display_decryption_factors_status %}
+<p>
+{% if t.decryption_factors %}
+<span class="success label">
+    {% trans "Trustee completed partial decryption" %}
+</span>
+{% else %}
+<span class="alert label">
+    {% trans "Pending trustee to complete partialdecryption" %}
+</span>
+{% endif %}
+</p>
+{% endif %}
+</li>
+{% if not forloop.last %}
+{% if admin %}
+<br />
+{% endif %}
+{% endif %}
+</div>
+{% endfor %}
+</ul>
+
+{% endif %}
+
+{% endblock %}

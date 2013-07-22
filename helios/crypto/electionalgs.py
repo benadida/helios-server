@@ -11,7 +11,6 @@ import utils
 import uuid
 import datetime
 
-from phoebus import phoebus
 from helios.crypto.elgamal import Ciphertext
 
 class HeliosObject(object):

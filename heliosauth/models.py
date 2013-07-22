@@ -9,7 +9,6 @@ Ben Adida
 
 from django.db import models
 from jsonfield import JSONField
-from zeus import models as zeus_models
 
 import datetime, logging
 
@@ -22,7 +21,7 @@ class AuthenticationExpired(Exception):
 class User(models.Model):
   user_type = models.CharField(max_length=50)
   user_id = models.CharField(max_length=100)
-  institution = models.ForeignKey(zeus_models.Institution, null=True)
+  institution = models.ForeignKey('zeus.Institution', null=True)
 
   name = models.CharField(max_length=200, null=True)
 
@@ -36,6 +35,8 @@ class User(models.Model):
   admin_p = models.BooleanField(default=False)
   superadmin_p = models.BooleanField(default=False)
   ecounting_account = models.BooleanField(default=True)
+
+  _is_authenticated = False
 
   class Meta:
     unique_together = (('user_type', 'user_id'),)
@@ -77,6 +78,9 @@ class User(models.Model):
       obj.save()
 
     return obj
+
+  def is_authenticated(self):
+      return self._is_authenticated == True
 
   def can_update_status(self):
     if not AUTH_SYSTEMS.has_key(self.user_type):

@@ -1,0 +1,14 @@
+{% load i18n %}
+{% if poll.feature_can_cast_vote %}
+<a id="booth-link" class="foundicon-page button" href="{{ booth_url }}">&nbsp;&nbsp;{% trans "Enter voting booth" %}</a>
+{% else %}
+{% if not poll.election.feature_completed %}
+{% if not poll.election.feature_closed %}
+{% trans "Voting date passed." %}
+{% else %}
+{% trans "Voting closed. Please wait for results" %}
+{% endif %}
+{% else %}
+{% trans "Election completed." %}
+{% endif %}
+{% endif %}

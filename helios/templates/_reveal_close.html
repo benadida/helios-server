@@ -1,0 +1,22 @@
+{% load i18n zeus_tags %}
+
+{% if election.feature_can_close %}
+<div id="close-admin-action" class="reveal-modal freeze-issues">
+<h3>{% trans "Close election" %}</h3>
+
+{% url election_close election.uuid as action %}
+<form action="{{ action }}" method="POST" class="action-form">
+<p class="election-admin-message">
+{% trans "Election close message" %}
+</p>
+
+<div class="actions">
+{% csrf_token %}
+<input type="submit" value="{% trans "Confirm election close" %}" 
+class="button close-reveal-modal small" />
+<a class="button close-reveal-modal small alert">{% trans "Back" %}</a>
+</div>
+</div>
+</form>
+</div>
+{% endif %}

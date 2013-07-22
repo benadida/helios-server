@@ -1,0 +1,17 @@
+{% extends "election_page.html" %}{% load i18n %}
+
+{% block title %}{{election.name}}: {% trans "Election Polls" %}{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
+{% block content %}
+<div class="section">
+    <h4>Manage Polls</h4>
+    <form method="post" action="{% url election_polls_manage election.uuid %}">
+        {{ form.as_p }}
+        <input class="button medium success" 
+               type="submit" 
+               value="{% trans "Save polls" %}" />
+    </form>
+</div>
+{% endblock %}

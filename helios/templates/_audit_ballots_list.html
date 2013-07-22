@@ -1,12 +1,16 @@
-<tr><td width="100%"><tt style="font-size: 1.4em;">Ψήφος ελέγχου {{ b.pk }}
+{% load i18n %}
+<tr class="audit-ballot"><td width="100%"><tt style="font-size: 1.4em;">Ψήφος ελέγχου {{ b.pk }}
     <div class="choices" style="display:none">
-      <Br />
+      <br />
       <ul>
         {% for choice in b.choices %}
         <li>Επιλογή {{ forloop.counter }}: {{ choice }}</li>
+        {% empty %}
+        <li>{% trans "Blank vote" %}</li>
         {% endfor %}
     </div>
-      </tt><td>
-      <a style="cursor:pointer" onclick="$(this).parent().parent().find('div.choices').toggle(); return false;">προβολή</a></td><td>
+    </tt><td>
+    <a style="cursor:pointer" 
+      onclick="$(this).parent().parent().find('div.choices').toggle(); return false;">προβολή</a></td><td>
 </td></tr>
 

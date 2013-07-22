@@ -1,0 +1,24 @@
+{% extends TEMPLATE_BASE %}
+{% block title %}Η ψήφος σας καταχωρήθηκε{% endblock %}
+
+{% block head_subtitle %}
+{% endblock %}
+
+{% block content %}
+<p>
+Η ψήφος σας καταχωρήθηκε με επιτυχία.
+Ευχαριστούμε για τη συμμετοχή σας.
+
+<br>
+Το
+<a target="_blank" href="{% url election_poll_download_signature election_uuid poll_uuid cast_vote.fingerprint %}"
+  >αρχείο με την απόδειξη</a> της ψήφου σας έχει σταλεί στο ηλεκτρονικό σας ταχυδρομείο.
+</p>
+
+{% comment %}
+<div class="vote-hash panel">{{ vote_hash }}
+  <div class="vote-hash-actions">
+  </div>
+</div>
+{% endcomment %}
+{% endblock %}

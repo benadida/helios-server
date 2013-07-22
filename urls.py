@@ -4,37 +4,36 @@ from django.conf import settings
 
 urlpatterns = patterns('')
 
-for slug, uuid in getattr(settings, 'ZEUS_ALTERNATIVE_LOGIN_ELECTIONS', {}).iteritems():
-  urlpatterns += patterns('',
-    url(r'%s/' % slug, 'zeus.views.election_email_login', kwargs={'uuid': uuid}),
-  )
+auth_urls = patterns('zeus.views.auth',
+    url(r'^auth/logout', 'logout', name='logout'),
+    url(r'^auth/login', 'password_login_view', name='login'),
+)
+
+static_urls = patterns('',
+    (r'booth/(?P<path>.*)$', 'django.views.static.serve', {
+        'document_root' : settings.BOOTH_STATIC_PATH
+    }),
+    (r'static/zeus/(?P<path>.*)$', 'django.views.static.serve', {
+        'document_root' : settings.ROOT_PATH + '/zeus/static/zeus'
+    }),
+    (r'static/(?P<path>.*)$', 'django.views.static.serve', {
+        'document_root' : settings.ROOT_PATH + '/server_ui/media'
+    }),
+)
+
+admin_urls = patterns('zeus.views.admin',
+    url(r'^$', 'home', name='admin_home'),
+)
 
 urlpatterns += patterns(
     '',
-    (r'^$', 'zeus.views.home'),
-    (r'^admin/$', 'server_ui.views.home'),
-    (r'^faqs/$', 'zeus.views.faqs_voter'),
-    (r'^faqs/voter/$', 'zeus.views.faqs_voter'),
-    (r'^faqs/trustee/$', 'zeus.views.faqs_trustee'),
-    (r'^resources/$', 'zeus.views.resources'),
-    (r'^stats/$', 'zeus.views.stats'),
-    (r'^auth/', include('heliosauth.urls')),
-    (r'^helios/', include('helios.urls')),
-    url(r'voter_email/$', 'zeus.views.election_email_show', name='election_email_show'),
-
-
-    # SHOULD BE REPLACED BY APACHE STATIC PATH
-    (r'booth/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.BOOTH_STATIC_PATH}),
-    (r'static/auth/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.ROOT_PATH + '/heliosauth/media'}),
-    (r'static/helios/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/helios/media'}),
-    (r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/server_ui/media'}),
-
-    (r'^', include('server_ui.urls')),
+    (r'^', include('zeus.urls.site')),
+    (r'^elections/', include('zeus.urls.election')),
+    (r'^auth/', include(auth_urls)),
+    (r'^admin/', include(admin_urls)),
+    url(r'^get-randomness/', 'zeus.views.shared.get_randomness',
+        name="get_randomness"),
 )
 
-
-if settings.DEBUG:
-    from helios.devutils import quick_start_election
-    urlpatterns += patterns(
-        (r'^helios/test-create', quick_start_election),
-    )
+# SHOULD BE REPLACED BY APACHE STATIC PATH
+urlpatterns += static_urls

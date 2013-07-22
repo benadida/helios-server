@@ -1,20 +1,20 @@
 {% extends TEMPLATE_BASE %}
 
 {% block js %}
-<script language="javascript" src="{{ HELIOS_STATIC }}/underscore-min.js"></script>
-<script language="javascript" src="{{ HELIOS_STATIC }}/jquery-jtemplates.js"></script>
-<script language="javascript" src="{{ HELIOS_STATIC }}/jquery.json.min.js"></script>
-<script language="javascript" src="{{ HELIOS_STATIC }}/filesaver.js"></script>
-<script language="javascript" src="{{ HELIOS_STATIC }}/blobbuilder.js"></script>
-<script language="javascript" src="{{ HELIOS_STATIC }}/filereader.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/underscore-min.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/jquery-jtemplates.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/jquery.json.min.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/filesaver.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/blobbuilder.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/filereader.js"></script>
 
-<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/jsbn.js"></script>
-<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/jsbn2.js"></script>
-<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/sjcl.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/jscrypto/jsbn.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/jscrypto/jsbn2.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/jscrypto/sjcl.js"></script>
 
 <script language="javascript">
   // required for jscrypto library
-  var JSCRYPTO_HOME = "{{HELIOS_STATIC}}/jscrypto";
+  var JSCRYPTO_HOME = "{{ZEUS_MEDIA_URL}}/jscrypto";
 </script>
 
 <script language="javascript">
@@ -24,13 +24,13 @@
       }
   })
 </script>
-<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/class.js"></script>  
-<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/bigint.js"></script>
-<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/random.js"></script>
-<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/elgamal.js"></script>
-<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/sha1.js"></script>
-<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/sha2.js"></script>
-<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/helios.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/jscrypto/class.js"></script>  
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/jscrypto/bigint.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/jscrypto/random.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/jscrypto/elgamal.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/jscrypto/sha1.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/jscrypto/sha2.js"></script>
+<script language="javascript" src="{{ ZEUS_MEDIA_URL }}/jscrypto/helios.js"></script>
 {% endblock %}
 
 

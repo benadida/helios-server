@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-17 09:15+0200\n"
+"POT-Creation-Date: 2013-07-23 18:54+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,118 +46,166 @@ msgstr "τους ψηφοφόρους που δεν έχουν ψηφίσει α
 msgid "Voter ID"
 msgstr "Αναγνωριστικό ψηφοφόρου"
 
-#: models.py:323
+#: models.py:319
+msgid "Simple election with one or more questions"
+msgstr ""
+
+#: models.py:320
+msgid "Party lists election"
+msgstr ""
+
+#: models.py:403
 msgid "Ballot"
 msgstr "Ψηφοδέλτιο"
 
-#: models.py:325
+#: models.py:404
+msgid "Ερώτηση"
+msgstr ""
+
+#: models.py:405
+msgid "Απάντηση"
+msgstr ""
+
+#: models.py:407
 msgid "Add questions to the election"
 msgstr "Προσθήκη ερωτήσεων."
 
-#: models.py:329
+#: models.py:408 models.py:419
+msgid "Too many choices"
+msgstr ""
+
+#: models.py:409
+msgid "Question '{0}' requires at least {1} choices."
+msgstr ""
+
+#: models.py:414
+msgid "Ψηφοδέλτιο"
+msgstr ""
+
+#: models.py:415
+msgid "Συνδυασμός"
+msgstr ""
+
+#: models.py:416 models.py:427
+msgid "Υποψήφιος"
+msgstr ""
+
+#: models.py:418
+msgid "Prepare party ballots"
+msgstr ""
+
+#: models.py:420
+msgid "Party '{0}' requires at least {1} candindates to be chosen."
+msgstr ""
+
+#: models.py:425 models.py:426
 msgid "Υποψήφιοι"
 msgstr ""
 
-#: models.py:331
+#: models.py:429
 msgid "Add candidates to the election"
 msgstr "Προσθήκη υποψηφίων."
 
-#: models.py:579
+#: models.py:722
 msgid "Election initialized."
 msgstr "Η ψηφοφορία αρχικοποιήθηκε."
 
-#: models.py:580
+#: models.py:723
 msgid "Election candidates added."
 msgstr "Οι υποψήφιοι έχουν καταχωρηθεί."
 
-#: models.py:581
+#: models.py:724
 msgid "Election voters added."
 msgstr "Οι εκλέκτορες ψηφοφόροι έχουν καταχωρηθεί."
 
-#: models.py:582
+#: models.py:725
 msgid "Trustees keys generated."
 msgstr "Οι Κωδικοί της ψηφοφορίας έχουν παραχθεί."
 
-#: models.py:583
+#: models.py:726
 msgid "Election opened."
 msgstr "Η ψηφοφορία έχει αρχίσει."
 
-#: models.py:584
+#: models.py:727
 msgid "Election voters notified"
 msgstr "Οι ψηφοφόροι έχουν ειδοποιηθεί"
 
-#: models.py:585
+#: models.py:728
 msgid "Election voters which not voted notified"
 msgstr "Οι ψηφοφόροι που δεν έχουν ψηφήσει έχουν ειδοποιηθεί"
 
-#: models.py:586
+#: models.py:729
 msgid "Election extension needed."
 msgstr "Παράταση της ψηφοφορίας."
 
-#: models.py:587
+#: models.py:730
 msgid "Election closed."
 msgstr "Η ψηφοφορία έχει λήξει."
 
-#: models.py:588
+#: models.py:731
 msgid "Election tallied."
 msgstr "Τα ψηφοδέλτια έχουν αναμιχθεί"
 
-#: models.py:589
+#: models.py:732
 msgid "Trustees should decrypt results."
 msgstr ""
 "Η εφορευτική επιτροπή πρέπει να αποκρυπτογραφήσει τα τελικά ψηφοδέλτια."
 
-#: models.py:590
+#: models.py:733
 msgid "Election results where decrypted."
 msgstr "Τα τελικά ψηφοδέλτια έχουν αποκρυπτογραφηθεί."
 
-#: models.py:714
+#: models.py:857
 msgid "add at least one trustee"
 msgstr "προσθέστε τουλάχιστον ένα μέλος στην εφορευτική επιτροπή"
 
-#: models.py:721
+#: models.py:864
 #, python-format
 msgid "have trustee %s generate a keypair"
 msgstr ""
 "Το μέλος της εφορευτικής επιτροπής '%s' πρέπει να δημιουργήσει τον Κωδικό "
 "Ψηφοφορίας του"
 
-#: models.py:727
+#: models.py:870
 #, python-format
 msgid "have trustee %s verify his key"
 msgstr ""
 "Το μέλος της εφορευτικής επιτροπης '%s' πρέπει να επιβεβαιώσει τον Κωδικό "
 "Ψηφοφορίας του"
 
-#: models.py:733
+#: models.py:876
 msgid "enter your voter list (or open registration to the public)"
 msgstr "Δεν έχετε ορίσει τη λίστα των ψηφοφόρων."
 
-#: models.py:739
+#: models.py:882
 msgid "setup election mixnets"
 msgstr "ρυθμίστε τη μίξη των ψηφοδελτίων"
 
-#: models.py:1410
+#: models.py:1467
+msgid "Αποτελέσματα"
+msgstr ""
+
+#: models.py:1584
 msgid "Name cannot be empty"
 msgstr "Το όνομα δεν μπορεί να είναι κενό"
 
-#: models.py:1417
+#: models.py:1591
 msgid "Surname cannot be empty"
 msgstr "Το επώνυμο δεν μπορεί να είναι κενό"
 
-#: models.py:1965
+#: models.py:2135
 msgid "Δημιουργία κωδικού ψηφοφορίας"
 msgstr ""
 
-#: models.py:1966
+#: models.py:2136
 msgid "Επιβεβαίωση Κωδικού Ψηφοφορίας"
 msgstr ""
 
-#: models.py:1967
+#: models.py:2137
 msgid "Αποκρυπτογράφηση ψήφων"
 msgstr ""
 
-#: models.py:1973
+#: models.py:2143
 #, python-format
 msgid ""
 "\n"
@@ -176,7 +224,7 @@ msgid ""
 " "
 msgstr ""
 
-#: models.py:1993
+#: models.py:2163
 #, python-format
 msgid "%(election_name)s: παρακαλούμε για τις ενέργειές σας, #%(step)s"
 msgstr ""
@@ -193,16 +241,16 @@ msgstr ""
 msgid "STV"
 msgstr ""
 
-#: tasks.py:173
+#: tasks.py:154
 msgid "Invalid partial decryption send. Please try again."
 msgstr "Η μερική αποκρυπτογράφηση είναι εσφαλμένη. Παρακαλούμε δοκιμάστε ξανά."
 
-#: tasks.py:253
+#: tasks.py:234
 #, python-format
 msgid "%(election_name)s - vote cast"
 msgstr "%(election_name)s - Ψήφος ελήφθη"
 
-#: tasks.py:255
+#: tasks.py:236
 #, python-format
 msgid ""
 "\n"
@@ -219,13 +267,31 @@ msgstr ""
 "\n"
 "Μπορείτε να βρείτε συνημμένη την απόδειξη της ψήφου σας.\n"
 
-#: views.py:1848
+#: views.py:1310
 msgid "Time to Vote"
 msgstr "Συμμετοχή σας σε ψηφοφορία"
 
-#: views.py:1849
+#: views.py:1311
 msgid "Additional Info"
 msgstr "Περισσότερες Πληροφορίες"
+
+#: templates/_election_view_menu.html:5
+#, fuzzy
+msgid "Edit election"
+msgstr "Ψηφίστε"
+
+#: templates/_election_view_menu.html:11 templates/election_polls_list.html:23
+#, fuzzy
+msgid "Actions"
+msgstr "Ερωτήσεις"
+
+#: templates/_election_view_menu.html:12
+msgid "Information"
+msgstr ""
+
+#: templates/_election_view_menu.html:18
+msgid "Polls"
+msgstr "Ψηφοφορίες"
 
 #: templates/election_new.html:12
 msgid ""
@@ -233,19 +299,87 @@ msgid ""
 "ψηφοφορίας."
 msgstr ""
 
-#: templates/election_questions.html:15 templates/election_questions.html:237
-msgid "Question"
-msgstr "Ερώτηση"
+#: templates/election_poll_voters_list.html:5
+#, fuzzy
+msgid "Voters"
+msgstr "Αναγνωριστικό ψηφοφόρου"
 
-#: templates/election_questions.html:241
-msgid "Answer"
-msgstr "Απάντηση"
+#: templates/election_poll_voters_list.html:47
+msgid "Remove all voters confirm"
+msgstr ""
 
-msgid "Party name"
+#: templates/election_polls_list.html:3 templates/election_polls_manage.html:3
+#, fuzzy
+msgid "Election Polls"
+msgstr "Η ψηφοφορία έχει λήξει."
+
+#: templates/election_polls_list.html:13
+msgid "Edit polls"
+msgstr ""
+
+#: templates/election_polls_list.html:19
+#, fuzzy
+msgid "Poll name"
 msgstr "Όνομα συνδυασμού"
 
-#~ msgid "Questions"
-#~ msgstr "Ερωτήσεις"
+#: templates/election_polls_list.html:20
+msgid "Poll status"
+msgstr ""
+
+#: templates/election_polls_list.html:21
+#, fuzzy
+msgid "Poll voters count"
+msgstr "όλους τους ψηφοφόρους"
+
+#: templates/election_polls_list.html:22
+msgid "Poll questions count"
+msgstr ""
+
+#: templates/election_polls_list.html:39
+msgid "Are you sure you want to remove this poll?"
+msgstr ""
+
+#: templates/election_polls_list.html:40
+msgid "Remove"
+msgstr ""
+
+#: templates/election_polls_manage.html:14
+msgid "Save polls"
+msgstr ""
+
+#: templates/election_results.html:9
+msgid "Σύνολο ψήφων"
+msgstr ""
+
+#: templates/election_view.html:22
+#, python-format
+msgid ""
+"\n"
+"        H ψηφοφορία ήταν προγραμματισμένη αρχικά να λήξει στις\n"
+"        %(election.voting_ends_at)s, <br /> αλλά παρατάθηκε μέχρι τις \n"
+"        %(election.voting_extended_until)s.\n"
+"        "
+msgstr ""
+
+#: templates/groups_manage.html:3
+#, fuzzy
+msgid "Election groups"
+msgstr "Η ψηφοφορία έχει αρχίσει."
+
+#: templates/email/info_body.txt:1
+msgid "Νόμιμος παραλήπτης"
+msgstr ""
+
+#: templates/email/info_body.txt:3
+#, fuzzy
+msgid "Poll"
+msgstr "Ψηφοφορία"
+
+#~ msgid "Question"
+#~ msgstr "Ερώτηση"
+
+#~ msgid "Answer"
+#~ msgstr "Απάντηση"
 
 #~ msgid "your trustee homepage for %(election_name)s %(step)s"
 #~ msgstr "%(election_name)s: παρακαλούμε για τις ενέργειές σας, #%(step)s"
@@ -282,9 +416,6 @@ msgstr "Όνομα συνδυασμού"
 
 #~ msgid "Election Result"
 #~ msgstr "Αποτέλεσμα ψηφοφορίας"
-
-#~ msgid "Vote for election"
-#~ msgstr "Ψηφίστε"
 
 #~ msgid "Username"
 #~ msgstr "Όνομα χρήστη (email)"

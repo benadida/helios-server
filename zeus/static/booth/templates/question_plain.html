@@ -1,0 +1,77 @@
+<form onsubmit="return false;" class="prettyform" id="answer_form">
+<input type="hidden" name="question_num" value="{$T.question_num}" />
+
+<div class="row question-row">
+  <div class="columns five stv-candidates">
+{#foreach $T.data as question}
+<!--<h5>Επιλογή σειράς υποψηφίων</h5>-->
+<div  id="question-{$T.question$index}">
+  <h5>{$T.question.question}</h5>
+  {#if $T.question.max_answers == $T.question.min_answers}
+  <span class="question-subtitle">{$T.question.max_answers} {#if $T.question.max_answers == 1}επιλογή{#else}επιλογές{#/if}</span>
+  {#else}
+  <span class="question-subtitle">Απο {$T.question.min_answers} έως {$T.question.max_answers} {#if $T.question.max_answers == 1}επιλογή{#else}επιλογές{#/if}</span>
+  {#/if}
+    <p class="stv-description">
+    </p>
+    <ul class="stv-candidates stv-list">
+      {#foreach $T.question.answers as answer}
+      {#if $T.answer$index == 0}
+      {#if $T.election.module_params.count_empty_question}
+      <li class="stv-choice choice-{$T.answer$index}">
+      <a href="#" 
+        data-question="{$T.question$index}"
+        data-absolute-index="{$T.answer$index + $T.question.answers_index}"
+        class="button enabled small">{$T.answer}</a></li>
+      {#/if}
+      {#else}
+      <li class="stv-choice choice-{$T.answer$index}">
+      <a href="#" 
+        data-question="{$T.question$index}"
+        data-absolute-index="{$T.answer$index + $T.question.answers_index}"
+        class="button enabled small">{$T.answer}</a></li>
+      {#/if}
+      {#/foreach}
+    </ul>
+  </div>
+  {#/foreach}
+</div>
+  <div class="columns six stv-choices offset-by-one">
+    <h6>Συμπληρωμένο ψηφοδέλτιο</h6>
+    <ul class="stv-choices stv-list">
+      <li class="stv-ballot-choice choice-{$T.answer$index}">
+      <a class="button secondary clearfix small">
+        <span class="index-num"></span>
+        <span class="value"></span>
+      </a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<input type="text" id="stv_answer" id="stv_answer" value="" style=""/>
+
+{#if $T.show_reviewall}
+<div class="row">
+  <div class="columns twelve">
+  <input style="float:right" id="submit-stv" class="button medium success" type="button" 
+  onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Συνέχεια" />
+  <br />
+  <a class="show-audit-form" href="#">Υποβολή ψήφου ελέγχου</a>
+  {#/if}
+</div>
+</div>
+
+<div class="row audit-form">
+  <div class="columns twelve">
+    <h5>Εισαγωγή κωδικού για υποβολή ψήφου ελέγχου</h5>
+    <p>
+    Εαν βρίσκεστε σε διαδικασία υποβολής ψήφου ελέγχου, παρακαλούμε συμπληρώστε
+    το ακόλουθο πεδίο με έναν από τους "κωδικούς ελέγχου" που
+    σας έχουν αποσταλεί στην ηλεκτρονική σας διεύθυνση.
+    </p>
+    <label for="submit-pass-for-audit">Κωδικός ελέγχου</label><input id="submit-pass-for-audit" />
+  </div>
+</div>
+</form>
+

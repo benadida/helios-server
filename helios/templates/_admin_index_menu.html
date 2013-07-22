@@ -1,11 +1,6 @@
-<dd id="" class="{% if menu_active == "list" %}active{% endif %}"><a
-  href="/admin/">Λίστα ψηφοφοριών</a></dd>
+<dd id="" class="{% if menu_active == "list" %}active{% endif %}">
+<a href="/admin/">Λίστα ψηφοφοριών</a>
+</dd>
 <dd id="" class="{% if menu_active == "create" %}active{% endif %}">
-<a href="{% url helios.views.election_new %}">
-  {% if menu_active == "create" and election and election.pk %}
-  Επεξεργασία ψηφοφορίας
-  {% else %}
-  Δημιουργία ψηφοφορίας
-  {% endif %}
-</a>
+<a href="{% url election_create %}">Δημιουργία ψηφοφορίας</a>
 </dd>

@@ -1,0 +1,24 @@
+{% load i18n zeus_tags %}
+
+{% if election.feature_can_cancel %}
+<div id="cancel-admin-action" class="reveal-modal freeze-issues">
+<h3>{% trans "Cancel election" %}</h3>
+
+{% url election_cancel election.uuid as action %}
+<form action="{{ action }}" method="POST" class="action-form">
+<p class="election-admin-message">
+{% trans "Election cancel message" %}
+</p>
+<label>{% trans "Cancel reason" %}</label>
+<textarea name="cancel_msg" class="cancel-msg"></textarea>
+
+<div class="actions">
+{% csrf_token %}
+<input type="submit" value="{% trans "Confirm election cancel" %}" 
+class="button close-reveal-modal small" />
+<a class="button close-reveal-modal small alert">{% trans "Back" %}</a>
+</div>
+</div>
+</form>
+</div>
+{% endif %}

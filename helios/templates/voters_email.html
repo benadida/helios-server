@@ -61,7 +61,7 @@ Subject: {{default_subject}}
   </div>
   
   <div id="done" style="display:none;">
-    Η αποστολή ολοκληρώθηκε. <a href="{% url helios.views.one_election_view election.uuid %}">Πίσω στην ψηφοφορία</a>.
+    Η αποστολή ολοκληρώθηκε. <a href="{% url election_index election.uuid %}">Πίσω στην ψηφοφορία</a>.
   </div>
 
   <div id="error" style="display:none;">

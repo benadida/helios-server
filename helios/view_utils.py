@@ -15,8 +15,6 @@ from helios import datatypes
 # nicely update the wrapper function
 from functools import update_wrapper
 
-from heliosauth.security import get_user
-
 import helios
 
 from django.conf import settings
@@ -36,7 +34,7 @@ FAILURE = HttpResponse("FAILURE")
 ##
 def prepare_vars(request, vars):
   vars_with_user = vars.copy()
-  vars_with_user['user'] = get_user(request)
+  vars_with_user['user'] = request.zeususer
 
   # csrf protection
   if request.session.has_key('csrf_token'):
@@ -44,7 +42,7 @@ def prepare_vars(request, vars):
 
   vars_with_user['utils'] = utils
   vars_with_user['settings'] = settings
-  vars_with_user['HELIOS_STATIC'] = '/static/helios/helios'
+  vars_with_user['ZEUS_MEDIA_URL'] = '/static/zeus/booth/js'
   vars_with_user['TEMPLATE_BASE'] = helios.TEMPLATE_BASE
   vars_with_user['CURRENT_URL'] = request.path
   vars_with_user['SECURE_URL_HOST'] = settings.SECURE_URL_HOST
@@ -69,7 +67,7 @@ def prepare_vars(request, vars):
 def render_template(request, template_name, vars = {}, include_user=True):
   t = loader.get_template(template_name + '.html')
 
-  vars_with_user = prepare_vars(request, vars)
+  vars_with_user = RequestContext(request, prepare_vars(request, vars))
 
   if not include_user:
     del vars_with_user['user']

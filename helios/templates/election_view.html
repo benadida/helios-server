@@ -1,4 +1,5 @@
 {% extends "election_page.html" %}
+{% load i18n %}
 
 {% block page_css %}election-page{% endblock %}
 
@@ -10,281 +11,39 @@
 {% include "_election_view_menu.html" %}
 {% endblock %}
 
+{% block reveals %}
+{% if admin %}
+{% include "_reveal_freeze.html" %}
+{% include "_reveal_close.html" %}
+{% include "_reveal_tally.html" %}
+{% include "_reveal_cancel.html" %}
+{% include "_reveal_mix.html" %}
+{% endif %}
+{% endblock %}
 {% block content %}
-{% if election.voting_has_started %}
-<script>
-if (!navigator.javaEnabled()) {
-//
-// even if Java is not enabled, we now have a server-side solution
-//
-//  $(document).ready(function() {
-//    $('#votelink').hide();
-//    $('#nojava_message').show();    
-//  });
-//
-}
-</script>
-{% endif %}
-
-
 <div class="row">
-  <div class="columns twelve">
-{% if election.voting_extended_until %}
-<div class="alert-box alert">
-H ψηφοφορία ήταν προγραμματισμένη αρχικά να λήξει στις {{election.voting_ends_at}},<br />
-αλλά παρατάθηκε μέχρι τις {{ election.voting_extended_until }}.
+{% if not election.feature_closed %}
+{% include "_election_extended_notice.html" %}
+{% else %}
+{% if not election.feature_completed %}
+<div class="columns twelve">
+<div class="alert-box secondary">
+{% blocktrans with date=election.voting_ended_at %}
+Election closed at <em>{{ date }}</em>. Waiting for results.
+{% endblocktrans %}
+</div>
 </div>
 {% endif %}
-  </div>
-  <div class="columns six"><i>Έναρξη ψηφοφορίας στις:</i> <b>{{ election.voting_starts_at }}</b></div>
-  <div class="columns six"><i>Λήξη ψηφοφορίας στις:</i> <b>
-      {% if election.voting_extended_until %}
-      {{ election.voting_extended_until }}
-      {% else %}
-      {{ election.voting_ends_at }}
-      {% endif %}</b></div>
-
-</div>
-<br/>
-<div class="row">
-  <div class="columns six"><i>Σύνολο ψηφοφόρων:</i> <b>{{ election.voter_set.count }}</b></div>
-</div>
-<br /><br />
-{% if admin_p %}
-{% if election.result %}
-{% else %}
-{% if not election.frozen_at %}
-  <h5>Ακολουθήστε τα παρακάτω βήματα για την ολοκλήρωση της ψηφοφορίας</h5>
-{% if election.issues_before_freeze %}
-<ul>
-  {% for issue in election.issues_before_freeze %}
-  <li>
-  {{issue.action}}{% if forloop.last %}{% else %}{% endif %}
-  </li>
-  {% endfor %}
-</ul>
-{% if not election.voting_has_started %}
-    <a class="button alert" href="{% url helios.views.one_election_cancel election.uuid %}">Ακύρωση ψηφοφορίας</a><br />
-{% endif %}
-{% else %}
-<a class="button medium success" href="{% url helios.views.one_election_freeze election.uuid %}">
-Οριστικοποίηση ψηφοφορίας</a>
-<p>Η ψηφοφορία θα αρχίσει στις {{ election.voting_starts_at }}</p>
-{% endif %}
-
-{% else %}
-{% if not election.tallied %}
-{% if election.tallying_started_at %}
-Η διαδικασία μίξης έχει ξεκινήσει. Παρακαλούμε ανανεώστε τη σελίδα
-ανά τακτά χρονικά διαστήματα μέχρι να ολοκληρωθεί η διαδικασία.
-{% else %}
-<div class="row">
-{% if election.num_cast_votes %}
-{% if election.voting_can_stop %}
-<div class="column four">
-    <a class="button success" href="{% url helios.views.one_election_compute_tally election.uuid %}">Λήξη της ψηφοφορίας</a><br />
-</div>
-{% else %}
-<div class="column four">
-    <a class="button disabled secondary" href="#">Λήξη της ψηφοφορίας</a><br />
-</div>
-{% endif %}
-<div class="column four">
-    <a class="button alert" href="{% url helios.views.one_election_cancel election.uuid %}">Ακύρωση ψηφοφορίας</a><br />
-</div>
-{% else %}
-<div class="column four">
-  <a class="button success disabled secondary">Λήξη της ψηφοφορίας</a><br />
-</div>
-<div class="column four">
-    <a class="button alert" href="{% url helios.views.one_election_cancel election.uuid %}">Ακύρωση ψηφοφορίας</a><br />
-</div>
 {% endif %}
 </div>
+{% include "_election_information.html" %}
+<div class="columns five election-actions offset-by-one">
+{% if admin %}
+{% include "_election_admin_actions.html" %}
 {% endif %}
-{% else %}
-
-{% if election.ready_for_decryption_combination %}
-{% if election.num_trustees == 1 %}
-{% else %}
-Αποκρυπτογράφηση τελικών ψηφοδελτίων......
-{% endif %}
-<br />
-{% if election.num_trustees == 1 and not election.result %}
-Τα τελικά ψηφοδέλτια έχουν αποκρυπτογραφηθεί.
-{% else %}
-{% endif %}
-{% else %}
-{% if election.encrypted_tally %}
-Έχει σταλεί ειδοποίηση στα μέλη της εφορευτικής επιτροπής
-ώστε να υπολογίσουν και να αποστείλουν την μερική κρυπτογράφηση τους.
-<br /><br />
-Όταν το σύστημα "Ζευς" παραλάβει και την τελευταία μερική αποκρυπτογράφηση 
-θα προχωρήσει αυτόματα στην διαδικασία αποκρυπτογράφησης.
-{% else %}
-{% if election.mixing_finished %}
-{% if election.mix_key %}
-{% if not election.remote_mixnets_finished_at %}
-{% include "_remote_mixing_details.html" %}
-{% else %}
-Παρακαλούμε περιμένετε για την επαλήθευση της διαδικασίας της μείξης.
-{% endif %}
-{% else %}
-Παρακαλούμε περιμένετε για την επαλήθευση της διαδικασίας της μείξης.
-{% endif %}
-{% else %}
-{% endif %}
-{% endif %}
-{% endif %}
-
-{% endif %}
-
-{% endif %}
-</span>
-
-{% endif %}
-
-</p>
-
-{% endif %}
-
-{% if election.result %}
-<h5>Η ψηφοφορία έχει ολοκληρωθεί</h5>
-
-{% if not admin_p %}
-{% if election.election_type == "ecounting" %}
-  {% else %}
-    {% include "election_results.html" %}
-{% endif %}
-{% endif %}
-
-
-{% if admin_p %}
-{% if election.election_type == "ecounting" %}
-  {% if election.ecounting_request_send %}
-  <p>
-  Τα αποκρυπτογραφημένα ψηφοδέλτια έχουν σταλεί στο <b><a
-          href="http://e-counting.minedu.gov.gr">σύστημα
-          e-counting</a></b>
-  {% else %}
-  <a href="{% url helios.views.election_post_ecounting election.uuid %}"
-      class="button success">Αποστολή δεδομένων στην πλατφόρμα ecounting</a>
-    {% endif %}
-    {% else %}
-    {% include "election_results.html" %}
-{% endif %}
-<br /><br />
-<a href="{% url helios.views.election_result_file election.uuid  "pdf" "pdf" %}">Αποθήκευση αποτελεσμάτων (PDF)</a>
-<br /><br />
-<a href="{% url helios.views.election_result_file election.uuid  "csv" "csv" %}">Αποθήκευση αποτελεσμάτων (CSV)</a>
-<br /><br />
-<a href="{% url helios.views.one_election_result election.uuid %}">Αποθήκευση αποτελεσμάτων (JSON)</a>
-<br /><br />
-<br />
-<a href="{% url helios.views.election_zeus_proofs election.uuid  %}">Αποθήκευση κρυπτογραφικών δεδομένων</a>
-{% endif %}
-{% else %}
-
-{% if election.voting_has_stopped %}
-<span class="highlight-box round">
-{% if not admin_p %}
-Η ψηφοφορία έχει λήξει οριστικά.
-<br />
-</span><br />
-{% endif %}
-{% else %}
-
-{% if election.voting_has_started and not admin_p %}
-{% if voter.voted %}
-<p class="panel success">Έχετε ήδη συμμετάσχει στην ψηφοφορία. <br />
-Συμμετέχοντας ξανά μπορείτε να ακυρώσετε την προηγούμενη ψήφο σας.</p>
-{% endif %}
-<span class="highlight-box round" style="font-size: 1.6em; margin-right: 10px;" id="votelink">
-<a class="button success large" href="{{test_cookie_url}}">Συμμετοχή στην ψηφοφορία</a>
-</span><br />
-{% else %}
-<span class="highlight-box round">
-  {% if not admin_p %}
-  Η ψηφοφορία αρχίζει στις {{ election.voting_starts_at}}
-  {% endif %}
-</span> <br /><br />
-{% endif %}
-
-{% if user %}
 {% if voter %}
-<p style="padding-top:1px;">
-  Έχετε καταχωρηθεί ως ψηφοφόρος σε αυτήν την {{election.election_type}}
-{% if election.use_voter_aliases %}
-με ψευδώνυμο {{voter.alias}}
+{% include "_election_voter_actions.html" %}
 {% endif %}
-.
-</p>
-
-{% else %}
-{% endif %}
-{% endif %}
-{% endif %}
-{% endif %}
-
-{% if election.voting_extended_until %}
-{% else %}
-{% if election.voting_ends_at %}
-<br />
-{% else %}
-Ο χρόνος της λήξης αυτής της {{election.election_type}} είναι
-στη διακριτική ευχέρεια του διαχειριστή της.
-{% endif %}
-<br />
-{% endif %}
-
-
-{% if 0 %}
-<div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">
-<a href="#" onclick="$('#auditbody').slideToggle(250);">Audit Info</a>
-<div id="auditbody" style="display:none;">
-<br />Election URL:<br />
-<tt style="font-size: 1.2em;"><a href="{{election.url}}">{{election.url}}</a></tt>
-
-{% if election.frozen_at %}
-<br />
-<br />Αποτύπωμα Ψηφοφορίας<br />
-<tt style="font-size: 1.3em; font-weight: bold;">{{election.hash}}</tt>
-
-
-{% if votes %}
-<p>Το αποτύπωμα της ψήφου σας<br/>
-<tt style="font-size:14pt; font-weight: bold;">{{votes.0.vote_hash}}</tt>
-</p>
-{% endif %}
-
-<p style="font-size: 1.3em;">
-<a href="{% url helios.views.voters_list_pretty election.uuid %}">Ballot Tracking Center</a> &nbsp;| &nbsp;
-<a href="{% url helios.views.one_election_audited_ballots election.uuid %}">Audited Ballots</a>
-</p>
-
-{% if not election.voting_has_started %}
-<p style="font-size: 1.2em;">
-  <a href="{{SECURE_URL_HOST}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}"
->προεπισκόπηση του ψηφοδελτίου</a>
-</p>
-{% endif %}  
-
-{% endif %}
-
-{% if election.voting_has_stopped %}
-<p style="font-size: 1.2em;">
-{% if election.result %}
-{% endif %}
-
-δείτε <a href="{{vote_url}}">ψηφιακό παραπέτασμα</a> της ψηφοφορίας.
-</p>
-{% endif %}
-
 </div>
-</div>
-{% endif %}
-
-
-
 
 {% endblock %}

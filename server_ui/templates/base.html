@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% load i18n %}<!DOCTYPE html>
 <!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
 <!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="el"> <![endif]-->
 <!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="el"> <![endif]-->
@@ -9,27 +9,27 @@
     <meta charset="utf-8">
 
     <!--[if lt IE 8]>
-    <link href="/static/helios/phoebus/stylesheets/general_foundicons_ie7.css" media="screen" rel="stylesheet" type="text/css" />
+    <link href="/static/zeus/stylesheets/general_foundicons_ie7.css" media="screen" rel="stylesheet" type="text/css" />
     <![endif]-->
     <!--foundation styles and js-->
-    <link rel="shortcut icon" href="/static/helios/phoebus/favicon.ico">
-    <link rel="stylesheet" href="/static/helios/phoebus/stylesheets/app.css?20122410">
-    <link rel="stylesheet" href="/static/helios/phoebus/stylesheets/general_foundicons.css">
-    <link rel="stylesheet" href="/static/helios/phoebus/stylesheets/ui-lightness/jquery-ui-1.8.23.custom.css">
-    <script src="/static/helios/phoebus/javascripts/foundation/modernizr.foundation.js"></script>
-    <script src="/static/helios/phoebus/javascripts/foundation/jquery.js"></script>
+    <link rel="shortcut icon" href="/static/zeus/favicon.ico">
+    <link rel="stylesheet" href="/static/zeus/stylesheets/app.css?20122410">
+    <link rel="stylesheet" href="/static/zeus/stylesheets/general_foundicons.css">
+    <link rel="stylesheet" href="/static/zeus/stylesheets/ui-lightness/jquery-ui-1.8.23.custom.css">
+    <script src="/static/zeus/javascripts/foundation/modernizr.foundation.js"></script>
+    <script src="/static/zeus/javascripts/foundation/jquery.js"></script>
     <link href='https://fonts.googleapis.com/css?family=Didact+Gothic&subset=latin,greek' rel='stylesheet' type='text/css'>
 
     {% block css %}
     {% endblock %}
 
-    <script language="javascript" src="/static/helios/helios/jquery.json.min.js"></script>
-    <script src="/static/helios/phoebus/javascripts/foundation/jquery.foundation.reveal.js"></script>
-    <script src="/static/helios/phoebus/javascripts/foundation/jquery.foundation.forms.js"></script>
-    <script src="/static/helios/phoebus/javascripts/foundation/jquery.foundation.buttons.js"></script>
-    <script src="/static/helios/phoebus/javascripts/foundation/jquery.foundation.tabs.js"></script>
-    <script src="/static/helios/phoebus/javascripts/foundation/jquery.foundation.navigation.js"></script>
-    <script src="/static/helios/phoebus/javascripts/jquery-ui-1.8.23.custom.min.js"></script>
+    <script language="javascript" src="/static/zeus/javascripts/jquery.json.min.js"></script>
+    <script src="/static/zeus/javascripts/foundation/jquery.foundation.reveal.js"></script>
+    <script src="/static/zeus/javascripts/foundation/jquery.foundation.forms.js"></script>
+    <script src="/static/zeus/javascripts/foundation/jquery.foundation.buttons.js"></script>
+    <script src="/static/zeus/javascripts/foundation/jquery.foundation.tabs.js"></script>
+    <script src="/static/zeus/javascripts/foundation/jquery.foundation.navigation.js"></script>
+    <script src="/static/zeus/javascripts/jquery-ui-1.8.23.custom.min.js"></script>
 
     {% block js %}
     {% endblock %}
@@ -52,53 +52,18 @@
         <div id="wrapper" class="row">
                 <div class="twelve columns header">
             {% if election %}
-            <a href="{% url helios.views.one_election_view election.uuid %}">
+            <a href="{% url election_index election.uuid %}">
                 {% else %}
-                <a href="{% url zeus.views.home %}">
+                <a href="{% url home %}">
                     {% endif %}
-                <img src="/static/helios/phoebus/images/logo_bg.jpg" />
+                <img src="/static/zeus/images/logo_bg.jpg" />
             </a>
-          <div id="banner"><h1>Ηλεκτρονική κάλπη "Ζευς"</h1></div>
-          {% if user and user.admin_p %}
-          <div class="columns twelve loginbox">
-              <div class="panel warning">Έχετε συνδεθεί ως διαχειριστής εκλογών για το 
-                  <em>"{{ user.institution.name }}"</em>
-                  <br /><br />
-                  <a class="button tiny" href="/admin/">σελίδα διαχείρισης</a>
-                  <a class="button tiny alert" href="{% url heliosauth.views.change_password %}?return_url=/">αλλαγή κωδικού</a>
-                  <a class="button tiny alert" href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
-              </div>
-          </div>
-          {% endif %}
-          {% if voter %}
-          <div class="columns twelve loginbox">
-              <div class="panel warning">Έχετε συνδεθεί ως o ψηφοφόρος <u>{{ voter.voter_surname }} {{ voter.voter_name }}</u> της ψηφοφορίας
-                  <em>"<a href="{% url helios.views.one_election_view voter.election.uuid %}">{{ voter.election.name }}</a>"</em>
-                  <br /><br />
-                  <a class="button tiny" href="{% url helios.views.one_election_view voter.election.uuid %}">προβολή
-                      σελίδας ψηφοφορίας</a>
-                  <a class="button tiny alert" href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
-              </div>
-          </div>
-          {% endif %}
-          {% if trustee and trustee.election %}
-          <div class="columns twelve loginbox">
-              <div class="panel warning">Έχετε συνδεθεί ως μέλος εφορευτικής επιτροπής της ψηφοφορίας 
-                  <em>"<a href="{% url helios.views.one_election_view trustee.election.uuid %}">{{ trustee.election.name }}</a>"</em>
-                  <br /><br />
-                  <a class="button tiny" href="{% url helios.views.trustee_home trustee.election.uuid, trustee.uuid %}">σελίδα μέλους εφορευτικής</a>
-                  <a class="button tiny alert" href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
-                </div>
-                <div class="alert-box alert" style="display:none"
-                  id="invalid-browser">
-        Το πρόγραμμα πλοήγησης που χρησιμοποιείτε δεν υποστηρίζεται για τις
-        ενέργειες του μέλους της εφορευτικής επιτροπής.
-                </div>
-          </div>
-          {% endif %}
-          <div id="header">
-            {% block head_subtitle %}{% endblock %}
-          </div>
+            <div id="banner">
+                <h1>{% trans "Zeus E-voting platoform" %}</h1>
+            </div>
+            {% include "user_section.html" %}
+            {% block head_subtitle %}
+            {% endblock %}
         </div>
       </div>
 
@@ -109,6 +74,9 @@
             <dl class="tabs">
               {% block tabs_menu %}{% endblock %}
             </dl>
+            {% block extra_menu %}
+                {% include "_election_poll_admin_actions.html" %}
+            {% endblock %}
             {% endblock %}
             {% if messages %}
             <div class="messages">
@@ -130,9 +98,9 @@
             <img src="/static/footer-logo.gif" />
             {% endif %}
           </span>
-          {% if user and user.pk %}
+          {% if user and user.is_admin %}
           Έχετε συνδεθεί ως διαχειριστής εκλογών: {{ user.display_html_small|safe }}
-          <a href="{% url heliosauth.views.logout %}?return_url=/">έξοδος</a> |
+          <a href="{% url logout %}?return_url=/">έξοδος</a> |
           <a href="/admin/">διαχείριση</a> 
               {% if user.user_type == "password" %}
               | <a href="{% url heliosauth.views.change_password %}?return_url=/">αλλαγή κωδικού</a>
@@ -144,14 +112,14 @@
           Έχετε συνδεθεί ως ο ψηφοφόρος <u>{{ voter.voter_surname }} {{voter.voter_name}}</u> της ψηφοφορίας 
           <u>{{voter.election.name}}</u> | 
           <a onclick="return confirm('Είστε σίγουρος οτι θέλετε να αποσυνδεθείτε;')"
-            href="{{settings.SECURE_URL_HOST}}{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
+            href="{{settings.SECURE_URL_HOST}}{% url logout %}?return_url=/">έξοδος</a>
           {% else %}
           {% if trustee %}
           Έχετε συνδεθεί ως μέλος της εφορευτικής <u>{{trustee.name}}</u> της
           ψηφοφορίας  <u>{{ election.name }}</u>
-          <a href="{{settings.SECURE_URL_HOST}}{% url heliosauth.views.logout %}?return_url=/">έξοδος</a>
+          <a href="{{settings.SECURE_URL_HOST}}{% url logout %}?return_url=/">έξοδος</a>
           {% else %}
-          <a href="{{settings.SECURE_URL_HOST}}{% url heliosauth.auth_systems.password.password_login_view %}?return_url=/">Σύνδεση</a>
+          <a href="{{settings.SECURE_URL_HOST}}{% url login %}?next=/">Σύνδεση</a>
           {% endif %}
           {% endif %}
           <br />
@@ -160,6 +128,7 @@
 </div>
     </div>
     </div>
-
+    {% block reveals %}
+    {% endblock %}
 </body>
 </html>

@@ -1,0 +1,40 @@
+{% extends TEMPLATE_BASE %}
+
+{% block header %}
+<h2>{{ settings.SITE_TITLE }} | Σύνδεση/h2>
+{% endblock %}
+
+{% block tabs_menu %}
+<dd class="active"><a href="#">Σύνδεση</a></dd>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+<div class="columns twelve">
+<p>
+Η φόρμα αφορά την σύνδεση των διαχειριστών της πλατφόρμας "Ζευς". Σε περίπτωση που θέλετε να συνδεθείτε ως ψηφοφόρος, ακολουθήστε τον 
+σύνδεσμο που σας έχει σταλεί στην ηλεκτρονική σας διεύθυνση.
+</p>
+</div>
+</div>
+<div class="row">
+<div class="columns six">
+{% if error %}
+<div class="alert-box alert">
+  {{error}}
+</div>
+{% endif %}
+
+<form class="prettyform" action="{% url login %}" method="POST" id="login_form">
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<table>
+    {{form.as_p}}
+</table>
+<div>
+<input class="button" type="submit" value="Σύνδεση" />
+</div>
+</form>
+</div>
+</div>
+{% endblock %}
+

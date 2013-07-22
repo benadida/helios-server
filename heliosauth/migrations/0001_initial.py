@@ -13,11 +13,13 @@ class Migration(SchemaMigration):
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('user_type', self.gf('django.db.models.fields.CharField')(max_length=50)),
             ('user_id', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('faculty', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['zeus.Faculty'])),
+            ('institution', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['zeus.Institution'], null=True)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=200, null=True)),
             ('info', self.gf('heliosauth.jsonfield.JSONField')()),
             ('token', self.gf('heliosauth.jsonfield.JSONField')(null=True)),
             ('admin_p', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('superadmin_p', self.gf('django.db.models.fields.BooleanField')(default=False)),
+            ('ecounting_account', self.gf('django.db.models.fields.BooleanField')(default=True)),
         ))
         db.send_create_signal('heliosauth', ['User'])
 
@@ -37,16 +39,19 @@ class Migration(SchemaMigration):
         'heliosauth.user': {
             'Meta': {'unique_together': "(('user_type', 'user_id'),)", 'object_name': 'User'},
             'admin_p': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'faculty': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['zeus.Faculty']"}),
+            'ecounting_account': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'info': ('heliosauth.jsonfield.JSONField', [], {}),
+            'institution': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['zeus.Institution']", 'null': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True'}),
+            'superadmin_p': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'token': ('heliosauth.jsonfield.JSONField', [], {'null': 'True'}),
             'user_id': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'user_type': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
-        'zeus.faculty': {
-            'Meta': {'object_name': 'Faculty'},
+        'zeus.institution': {
+            'Meta': {'object_name': 'Institution'},
+            'ecounting_id': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
         }

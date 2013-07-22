@@ -1,0 +1,416 @@
+// You custom settings file to override Foundation defaults
+@import "settings";
+
+// Comment out this import if you are customizing you imports below
+@import "foundation";
+
+$customBorder: 1px solid #ddd;
+
+body {
+  background-image: url("../images/pattern.jpg");
+}
+
+body.booth {
+  #progress_div .tabs a { cursor: text}
+  #questions_div { margin-top: 30px; }
+  .election-desc-toggle { bottom: auto; }
+  #header { margin-top: -2px }
+  
+  .bg-wrapper {
+      width: 768px;
+  }
+}
+
+body {
+  background-color: #0A212F;
+  #progress_div {
+    margin-top: 30px; 
+  }
+  #progress_div .tabs a { font-size: 12px; }
+  .extra-election-actions { margin-top: 10px; span{ float: none !important;}}
+  #cast_form {
+    .required-to-cast { float: left; }
+    .submit { display: none; }
+  }
+  
+  .field-readonly { background-color: #ddd;}
+  .field-readonly:focus { background-color: #ddd;}
+  .clearfix { 
+    @include clearfix();
+  }
+
+  .header {
+    h4, h1 {
+        font-family: 'Didact Gothic', Helvetica, Arial, sans-serif !important;
+        span { font-family: $bodyFontFamily !important }
+        display: none;
+      }
+    h4 { font-size: 26px; display: block; padding: 0 15px;}
+    padding: 0;
+  }
+    
+  .loginbox { 
+      padding: 0; 
+      margin-top: -2px; 
+      .panel { 
+          margin:0; 
+          background-color: #FFC36D; 
+          border: none; 
+      a { 
+        color: #fff; 
+        font-weight: bold; 
+        }
+    }; 
+  }
+
+  #header { 
+    @include clearfix();
+    border-bottom: 1px solid lighten($black, 80%);
+    border-top: 1px solid lighten($black, 80%);
+    background-color: lighten($black, 95%);
+    padding: 0.5em 0;
+  }
+  #banner {
+    //border-bottom: $customBorder;
+  }
+  
+  dl.tabs dd.error {
+    border-top-color: $alertColor;
+    a {
+      color: $alertColor;
+    }
+  }
+
+  #footer {
+    padding: 10px 0;
+    border-top: $customBorder;
+    margin-top: 20px;
+    border-bottom: $customBorder;
+
+    .footer-icons { float: right; }
+  }
+
+  .start-voting { float: left; margin-top: 20px; }
+
+  
+  .stv-candidates {
+
+    .stv-choice-party {
+      .question-subtitle { 
+        color: #fff !important; 
+        float: right; 
+        font-weight: normal;
+        font-size:0.8em;}
+      a {
+        text-align: left !important;
+      }
+      a.enabled {
+        background-color: darken($mainColor,20%) !important;
+      }
+    }
+    margin-bottom: 3em;
+  }
+
+  ol li.step { margin-bottom: 10px; }
+  ol li.step .step-title { font-weight: bold;}
+  ol li.step .step-desc { font-style: italic; display:block; }
+
+  span.election-desc-toggle { 
+    cursor: pointer; 
+    position: absolute; 
+    bottom:-30px;
+    right:30px !important; 
+    padding: 5px; 
+    margin-top: 2px; 
+    z-index: 3;
+  }
+
+  .election-info .description {
+    margin-top: 1.5em 0;
+  }
+
+  .election-dates {
+    @include clearfix();
+    padding: 0;
+    border: 1px solid darken(#efefef, 15%);
+    .columns { 
+      background-color: #efefef;
+      padding: 1em;
+    }
+    .bottom {
+      background-color: darken(#efefef, 20%);
+      border-top: 1px solid darken(#efefef, 15%);
+    }
+  }
+
+  h4 .elname { 
+    display: block; 
+    font-size: 0.65em;
+    color: lighten($black, 30%);
+  }
+
+  h4 .pollname { 
+    display: block; 
+    font-size: 0.6em; 
+    color: lighten($black, 20%)
+  }
+  h4 .inst { display:block; font-size: 0.4em; font-weight: bold;}
+  .panel.confirm-vote {
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+
+  .row.labels {
+    margin-bottom: 10px !important;
+  }
+
+  .form-field ul {
+    list-style: none;
+  }
+
+  p.alert {color: red}
+  .green { color: #5DA423; }
+
+  .vote-hash { text-align: left; font-weight: bold; font-size: 1.2em;}
+  .vote-hash-actions { float: right; margin-top: -2px !important;}
+
+  ul.stv-list { 
+    list-style: none; 
+    li { margin-bottom: 10px; }
+    .button { width: 100%; }
+    a span.index-num { font-size: 0.8em; float: left; }
+    .stv-ballot-choice a { text-align: right; }
+    .stv-ballot-choice a span:hover { background-color: transparent !important; }
+  }
+  #stv_answer { display: none; }
+  h4#election-name span.label { padding:4px; margin-top:5px }
+  
+  ul.confirm-choices { list-style: none; margin-bottom: 10px; margin-top: 10px; }
+  #confirm-vote { margin-left: 10px; }
+  #percent_done_container { margin-bottom: 10px; }
+
+  .audit-info { font-size: 0.5em; h4{ font-size: 1em; color: #aaa}}
+  #auditbody { display: none; }
+
+  .audit-button { float: right; margin-top: -32px;}
+  form .form-row.checked { label { color: green !important; }}
+  form .form-row { margin-left: 25px; margin-bottom: 10px; label { text-indent: -25px; font-size: 0.9em; color:red;
+      font-weight: bold;}}
+
+  .cast-actions .cancel { float: right;}
+  .cast-actions .submit { float: left;}
+  .election-description { display: none; }
+
+  table.voters, table.elections, table.polls-table {
+      thead th { font-size: 11px; }
+      tbody td { font-size: 12px; }
+  }
+
+  .cancel-msg {
+    min-height: 100px !important;
+  }
+  
+  a.show-audit-form { 
+    &.active {
+      color: #000;
+    }
+    color: #aaa; 
+  }
+  .audit-form { display: none; }
+
+  .description p {
+
+  }
+
+  .dropdown .alert { color: $alertColor !important; font-weight: bold !important;}
+
+  label {
+    font-weight: bold;
+    color: $mainColor;
+  }
+    
+  .dropdown li form {
+      margin: 0;
+      padding: 0;
+  }
+    
+  .action-form {
+      margin:0;
+      padding:0;
+      display: inline-block;
+      margin-right: 5px;
+      line-height: 3em;
+      width: 100%;
+  }
+
+  .action-form.inline {
+    display: inline !important;
+  }
+
+  .dropdown .action-form {
+    line-height: inherit !important;
+    display: inline !important;
+  }
+
+
+  .dropdown li input {
+      &:before { display: block !important; content: "lala" !important; }
+    cursor: pointer;
+    display: block !important;
+    border: none;
+    background-color: transparent;
+    display: block; 
+    color: #555; 
+    font-size: ms(0) - 1; 
+    font-weight: $bodyFontWeight; 
+    padding: 6px 14px; 
+    text-align: $defaultFloat;
+    width: 100%; 
+    border: inherit; 
+    background: inherit; 
+    font-family: inherit; 
+    margin: inherit; 
+    -webkit-font-smoothing: $fontSmoothing;
+  }
+    
+
+  .action-right { float: right; margin-right: 0}
+  table.polls-table {
+    width: 100%;
+  }
+
+  .freeze-issues {
+
+    ul {
+      list-style: none;
+      margin:0;
+      padding:0;
+      &:last-child { margin-bottom: 1em };
+    }
+    li { padding: 5px; margin: 5px 0; }
+    li { background-color: #eee;}
+
+    li { span { font-weight: bold }}
+  }
+
+  .election-view-content {
+    margin-top: 2em;
+  }
+
+  .election-contact, .election-actions {
+    ul { list-style: none }
+    margin-top: 2em;
+  }
+
+  .election-contact {
+    background-color: #efefef;
+  }
+
+  .election-actions {
+    .admin-status {
+      h4 { font-size: 1.2em; margin-bottom: 0.5em;}
+      margin-bottom: 1em;
+    }
+  }
+
+  #booth-link {
+    width: 100%;
+    margin-top: 40px;
+    display: inline-block;
+  }
+
+  .audit-ballot ul {
+    list-style: none;
+  }
+}
+
+body.election-page {
+    //h4 span.election-desc-toggle { display: none;}
+    //.election-description { display: block; }
+}
+
+body > .row {
+  border-right: $customBorder;
+  border-left: $customBorder;
+  background-color: #fff;
+
+}
+
+body {
+  margin-top: 20px !important;
+}
+
+body .bg-wrapper {
+  margin-top: 20px;
+  width: 890px;
+  margin: 0 auto;
+  @include box-shadow(#3E5665 0px 0px 100px 0px);
+  background-color: #fff;
+}
+
+.election-stats-list {
+    max-height: 300px;
+    overflow-y: scroll;
+}
+
+table tr.party {
+    font-weight: bold;
+    background-color: #ddd !important;
+}
+
+.trustee-entry {
+    tt { font-size: 0.8em }
+    .hash-title { 
+        color: darken(#fff, 60%);
+        font-weight: normal;
+        font-size: 0.9em;
+        display: block;
+        margin-top: 8px;
+    }
+}
+
+form .field-readonly {
+    background-color: lighten(#000000, 80%) !important;
+} 
+
+// ----------------------------------------
+// Import specific parts of Foundation by commenting the import "foundation"
+// and uncommenting what you want below. You must uncomment the following if customizing
+
+@import "compass/css3";
+// @import "foundation/settings";
+// @import "foundation/functions/all";
+// @import "foundation/common/globals";
+// @import "foundation/mixins/clearfix";
+// @import "modular-scale";
+
+// Control which mixins you have access too
+
+// @import "foundation/mixins/css-triangle";
+// @import "foundation/mixins/font-size";
+
+// Must include next two for semantic grid to work
+
+// @import "foundation/mixins/respond-to";
+// @import "foundation/mixins/semantic-grid";
+
+// Must include the grid for any responsiveness
+
+// @import "foundation/components/grid";
+
+// Control which common styles get compiled
+
+@import "foundation/common/typography";
+@import "foundation/common/forms";
+
+// Control which components you get if customizing
+
+// @import "foundation/components/modules/buttons";
+// @import "foundation/components/modules/tabs";
+// @import "foundation/components/modules/ui";
+// @import "foundation/components/modules/topbar";
+// @import "foundation/components/modules/navbar";
+// @import "foundation/components/modules/orbit";
+// @import "foundation/components/modules/reveal";
+// @import "foundation/components/modules/offcanvas";
+
