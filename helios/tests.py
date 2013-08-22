@@ -395,14 +395,32 @@ class ElectionBlackboxTests(WebTest):
         self.election = models.Election.objects.all()[0]
         self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
 
+    def assertContains(self, response, text):
+        if hasattr(response, 'status_code'):
+            assert response.status_code == 200
+#            return super(django_webtest.WebTest, self).assertContains(response, text)
+        else:
+            assert response.status_int == 200
+
+        
+        if hasattr(response, "testbody"):
+            assert text in response.testbody, "missing text %s" % text
+        else:
+            if hasattr(response, "body"):
+                assert text in response.body, "missing text %s" % text        
+            else:
+                assert text in response.content, "missing text %s" % text
+
     def setup_login(self):
         # set up the session
         session = self.client.session
         session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
         session.save()
-        
+
         # set up the app, too
-        self.app.cookies['sessionid'] = self.client.cookies.get('sessionid').value
+        # this does not appear to work, boohoo
+        session = self.app.session
+        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
 
     def clear_login(self):
         session = self.client.session
@@ -732,7 +750,7 @@ class ElectionBlackboxTests(WebTest):
         # create the election
         self.client.get("/")
         self.setup_login()
-        response = self.app.post("/helios/elections/new", {
+        response = self.client.post("/helios/elections/new", {
                 "short_name" : "test-eligibility",
                 "name" : "Test Eligibility",
                 "description" : "An election test for voter eligibility",
@@ -741,22 +759,25 @@ class ElectionBlackboxTests(WebTest):
                 "use_advanced_audit_features": "1",
                 "private_p" : "0"})
 
-        election_id = re.match("(.*)/elections/(.*)/view", response.location).group(2)
+        election_id = re.match("(.*)/elections/(.*)/view", response['Location']).group(2)
         
-        # get the eligibility page
-        eligibility_page = self.app.get("/helios/elections/%s/voters/list" % election_id)
+        # update eligiblity
+        response = self.client.post("/helios/elections/%s/voters/eligibility" % election_id, {
+                "csrf_token" : self.client.session['csrf_token'],
+                "eligibility": "openreg"})
 
-        elig_form = eligibility_page.form
-        elig_form['eligibility'] = 'openreg'
-        elig_page = elig_form.submit().follow()
+        self.clear_login()
+        response = self.client.get("/helios/elections/%s/voters/list" % election_id)
+        self.assertContains(response, "Anyone can vote")
 
-        self.assertContains(elig_page, "Anyone can vote")
+        self.setup_login()
+        response = self.client.post("/helios/elections/%s/voters/eligibility" % election_id, {
+                "csrf_token" : self.client.session['csrf_token'],
+                "eligibility": "closedreg"})
 
-        elig_form = elig_page.form
-        elig_form['eligibility'] = 'closedreg'
-        elig_page = elig_form.submit().follow()
-
-        self.assertContains(elig_page, "Only the voters listed here")
+        self.clear_login()
+        response = self.client.get("/helios/elections/%s/voters/list" % election_id)
+        self.assertContains(response, "Only the voters listed here")
 
     def test_do_complete_election_with_trustees(self):
         """
