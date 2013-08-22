@@ -195,4 +195,5 @@ djcelery.setup_loader()
 
 
 # for testing
-#CELERY_ALWAYS_EAGER = True
+TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
+# this effectively does CELERY_ALWAYS_EAGER = True
