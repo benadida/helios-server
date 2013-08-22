@@ -334,8 +334,8 @@ BOOTH.load_and_setup_election = function(election_url) {
 
     if (USE_SJCL) {
       // get more randomness from server
-      $.getJSON(election_url + "/get-randomness", {}, function(result) {
-        sjcl.random.addEntropy(result.randomness);
+      $.get(election_url + "/get-randomness", {}, function(raw_json) {
+        sjcl.random.addEntropy(JSON.parse(raw_json).randomness);
       });
     }
 };
