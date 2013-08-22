@@ -473,11 +473,33 @@ HELIOS.EncryptedVote = Class.extend({
   },
   
   get_hash: function() {
-     return b64_sha256(JSON.stringify(this.toJSONObject()));
+     if (this.raw_json) {
+       return b64_sha256(this.raw_json);
+     } else {
+       return b64_sha256(JSON.stringify(this.toJSONObject()));
+     }
   },
   
   get_audit_trail: function() {
-    return this.toJSONObject(true);
+    var ballot = this.toJSONObject(true);
+    var trails = [];
+    var answers = ballot.answers;
+    // remove plaintexts and randomness from ballot
+    for (var i = 0; i < answers.length; i++) {
+      var answer = answers[i];
+      trails[i] = {
+        answer: answer.answer,
+        randomness: answer.randomness
+      };
+      answer.answer = undefined;
+      answer.randomness = undefined;
+    }
+    // the audit trail consists of a serialized ballot (for hash
+    // reproductibility) along with plaintexts and randomness
+    return {
+        encrypted_ballot: JSON.stringify(ballot),
+        audit_trail: trails
+    };
   },
   
   verifyProofs: function(pk, outcome_callback) {
@@ -536,8 +558,22 @@ HELIOS.EncryptedVote.fromJSONObject = function(d, election) {
   
   ev.election_hash = d.election_hash;
   ev.election_uuid = d.election_uuid;
+  if (d.raw_json) ev.raw_json = d.raw_json;
   
   return ev;
+};
+
+HELIOS.EncryptedVote.mergeAuditedJSON = function(audited_vote_json) {
+  var result = JSON.parse(audited_vote_json.encrypted_ballot);
+  // add plaintexts and randomness to result
+  var trails = audited_vote_json.audit_trail;
+  var answers = result.answers;
+  for (var i = trails.length-1; i >= 0; i--) {
+      answers[i].answer = trails[i].answer;
+      answers[i].randomness = trails[i].randomness;
+  }
+  result.raw_json = audited_vote_json.encrypted_ballot;
+  return result;
 };
 
 // create an encrypted vote from a set of answers

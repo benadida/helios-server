@@ -3,6 +3,7 @@
 
 function verify_ballot(election_raw_json, encrypted_vote_json, status_cb) {
     var overall_result = true;
+    encrypted_vote_json = HELIOS.EncryptedVote.mergeAuditedJSON(encrypted_vote_json);
     try {
 	election = HELIOS.Election.fromJSONString(election_raw_json);
 	var election_hash = election.get_hash();
