@@ -185,10 +185,10 @@ logging.basicConfig(
     format = '%(asctime)s %(levelname)s %(message)s'
 )
 
-# BROKER_URL = "django://"
 
 # set up django-celery
-BROKER_BACKEND = "djkombu.transport.DatabaseTransport"
+# BROKER_BACKEND = "kombu.transport.DatabaseTransport"
+BROKER_URL = "django://"
 CELERY_RESULT_DBURI = DATABASES['default']
 import djcelery
 djcelery.setup_loader()
