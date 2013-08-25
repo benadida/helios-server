@@ -1,1 +1,1 @@
-web: gunicorn django.wsgi
+web: gunicorn heliosserver.wsgi:application -b 0.0.0.0:8000
