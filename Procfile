@@ -1,1 +1,2 @@
-web: gunicorn heliosserver.wsgi:application -b 0.0.0.0:8000
+web: gunicorn wsgi:application
+worker: python manage.py celeryd -E -B --beat
