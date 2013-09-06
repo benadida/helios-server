@@ -111,12 +111,10 @@ def task(name, required_features=(), is_recurrent=False, completed_cb=None,
         def inner(self, *args, **kwargs):
             status = getattr(self, status_field)
             if status == 'finished':
-                print "CANNOT RERUN", name
                 #raise Exception('Cannot rerun')
                 return
 
             with transaction.commit_on_success():
-                print "RUNNING", name
                 setattr(self, started_field, datetime.datetime.now())
                 setattr(self, status_field, 'running')
                 self.save()
@@ -132,19 +130,16 @@ def task(name, required_features=(), is_recurrent=False, completed_cb=None,
                             finished = True
 
                     if finished:
-                        print "FINISHED", name
                         self.__setattr__(finished_field,
                                      datetime.datetime.now())
                         setattr(self, status_field, 'finished')
                     else:
-                        print "NOT YET FINISHED", name
                         setattr(self, status_field, 'waiting')
                     self.save()
                     transaction.commit()
                 except Exception, e:
                     transaction.rollback()
                     with transaction.commit_on_success():
-                        print "EXCEPTION", e
                         error = str(e)
                         setattr(self, error_field, error)
                         setattr(self, started_field, None)
