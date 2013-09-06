@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-23 18:54+0300\n"
+"POT-Creation-Date: 2013-09-06 17:24+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,81 +26,167 @@ msgstr "Εφορευτική επιτροπή"
 msgid "Multiple mixnets"
 msgstr ""
 
-#: forms.py:81
+#: forms.py:115
+#, fuzzy
+msgid "Invalid voting end date"
+msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
+
+#: forms.py:117
+msgid "Invalid voting dates"
+msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
+
+#: forms.py:119
+msgid "Invalid voting extension date"
+msgstr "Λάθος ημερομηνία και ώρα λήξης της ψηφοφορίας"
+
+#: forms.py:127
 #, fuzzy
 msgid "Invalid trustees format"
 msgstr "Μη έγκυρη λίστα μελών εφορευτικής επιτροπής."
 
-#: forms.py:123
+#: forms.py:170
 msgid "Choice"
 msgstr "Επιλογή"
 
-#: forms.py:125
+#: forms.py:172 election_modules/__init__.py:32
 msgid "Question"
 msgstr "Ερώτηση"
 
-#: forms.py:127
+#: forms.py:174
 #, fuzzy
 msgid "Min answers"
 msgstr "Μέγιστος αριθμός επιλογών"
 
-#: forms.py:128
+#: forms.py:175
 msgid "Max answers"
 msgstr "Μέγιστος αριθμός επιλογών"
 
-#: forms.py:164
+#: forms.py:210
 msgid "Max answers should be greater or equal to min answers"
 msgstr ""
 
-#: forms.py:170
+#: forms.py:216
 msgid "Party name"
 msgstr ""
 
-#: forms.py:175
+#: forms.py:221
 msgid "Username"
 msgstr ""
 
-#: forms.py:177
+#: forms.py:223
 msgid "Password"
 msgstr ""
 
-#: forms.py:188 forms.py:194
+#: forms.py:234 forms.py:240
 msgid "Invalid username or password"
 msgstr ""
 
-#: forms.py:216
-msgid "Email subject"
-msgstr ""
-
-#: forms.py:218
-msgid "Email body"
-msgstr ""
-
-#: forms.py:220
-msgid "Send To"
-msgstr ""
-
-#: forms.py:221
+#: forms.py:262
 msgid "all voters"
 msgstr ""
 
-#: forms.py:222
+#: forms.py:263
 msgid "voters who have cast a ballot"
 msgstr ""
 
-#: forms.py:223
+#: forms.py:264
 msgid "voters who have not yet cast a ballot"
 msgstr ""
 
-#: views/poll.py:223
+#: forms.py:268
+msgid "Email subject"
+msgstr ""
+
+#: forms.py:270
+msgid "Email body"
+msgstr ""
+
+#: forms.py:272
+msgid "Send To"
+msgstr ""
+
+#: messages.py:4
+msgid ""
+"Confirm voter removal: {{ voter.voter_name}} {{ voter.voter_surname }} "
+"{{ voter.voter_fathername }} ({{ voter.voter_email }})"
+msgstr ""
+
+#: messages.py:10
+msgid "Are you sure you want to delete the selected trustee ?"
+msgstr ""
+
+#: messages.py:13
+msgid "Are you sure you want to freeze the election ?"
+msgstr ""
+
+#: messages.py:14
+msgid "Are you sure you want to delete the selected poll ?"
+msgstr ""
+
+#: tasks.py:87
+#, python-format
+msgid "%(election_name)s - vote cast"
+msgstr ""
+
+#: tasks.py:91
+#, python-format
+msgid ""
+"You have successfully cast a vote in\n"
+"\n"
+"%(election_name)s\n"
+"\n"
+"you can find your encrypted vote attached in this mail.\n"
+msgstr ""
+
+#: election_modules/__init__.py:30 election_modules/simple/__init__.py:16
+msgid "Simple election with one or more questions"
+msgstr ""
+
+#: election_modules/__init__.py:31
+msgid "Ballot"
+msgstr ""
+
+#: election_modules/__init__.py:33
+msgid "Answer"
+msgstr ""
+
+#: election_modules/__init__.py:35
+msgid "Add questions to the election"
+msgstr ""
+
+#: election_modules/__init__.py:36
+msgid "Too many choices"
+msgstr ""
+
+#: election_modules/__init__.py:37
+msgid "Question '{0}' requires at least {1} choices."
+msgstr ""
+
+#: election_modules/parties/__init__.py:10
+msgid "Party lists election"
+msgstr ""
+
+#: election_modules/simple/__init__.py:21
+msgid "No questions set"
+msgstr ""
+
+#: election_modules/simple/__init__.py:22
+msgid "Manage questions"
+msgstr ""
+
+#: templatetags/zeus_tags.py:21 templatetags/zeus_tags.py:139
+msgid "Are you sure ?"
+msgstr ""
+
+#: views/poll.py:239
 msgid "Time to Vote"
 msgstr ""
 
-#: views/poll.py:224
+#: views/poll.py:240
 msgid "Additional Info"
 msgstr ""
 
-#: views/poll.py:318
+#: views/poll.py:344
 msgid "Email sending started"
 msgstr ""
 
@@ -201,12 +287,6 @@ msgstr ""
 #~ msgstr ""
 #~ "Επιλέξτε αν θέλετε να παρέχετε εξωτερικά στάδια μίξης μετά την ψηφοφορία "
 #~ "-- αφήστε κενό εάν δεν είστε σίγουρος"
-
-#~ msgid "Invalid voting dates"
-#~ msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
-
-#~ msgid "Invalid voting extension date"
-#~ msgstr "Λάθος ημερομηνία και ώρα λήξης της ψηφοφορίας"
 
 #~ msgid "Election title (e.g. Memorandum referendum)"
 #~ msgstr "Τίτλος ψηφοφορίας"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-07-23 18:54+0300\n"
+"POT-Creation-Date: 2013-09-06 17:24+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,6 +40,26 @@ msgstr ""
 "\n"
 "μπορείτε να βρείτε συνημμένη την απόδειξη της ψήφου σας.\n"
 
+#: templates/base.html:62
+msgid "Zeus E-voting platoform"
+msgstr ""
+
 #: templates/index.html:19
 msgid "Your new password was set."
 msgstr "Ο νέος σας κωδικός έχει οριστεί."
+
+#: templates/index.html:44
+msgid "Election status"
+msgstr ""
+
+#: templates/index.html:47
+msgid "Trial"
+msgstr ""
+
+#: templates/index.html:101
+msgid "YES"
+msgstr ""
+
+#: templates/index.html:103
+msgid "NO"
+msgstr ""
