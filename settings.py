@@ -155,13 +155,13 @@ HELIOS_PRIVATE_DEFAULT = False
 
 # authentication systems enabled
 #AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
-AUTH_ENABLED_AUTH_SYSTEMS = ['google']
+AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(",")
 AUTH_DEFAULT_AUTH_SYSTEM = None
 
 # facebook
-FACEBOOK_APP_ID = ''
-FACEBOOK_API_KEY = ''
-FACEBOOK_API_SECRET = ''
+FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID','')
+FACEBOOK_API_KEY = get_from_env('FACEBOOK_API_KEY','')
+FACEBOOK_API_SECRET = get_from_env('FACEBOOK_API_SECRET','')
 
 # twitter
 TWITTER_API_KEY = ''
@@ -178,7 +178,7 @@ LINKEDIN_API_SECRET = ''
 
 # email server
 EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
-EMAIL_PORT = 2525
+EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
 EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = False
