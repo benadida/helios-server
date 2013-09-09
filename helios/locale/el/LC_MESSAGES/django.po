@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-06 17:24+0300\n"
+"POT-Creation-Date: 2013-09-09 15:38+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -67,23 +67,23 @@ msgstr ""
 
 #: models.py:357 models.py:691
 msgid "Canceled"
-msgstr ""
+msgstr "Ακυρώθηκε"
 
 #: models.py:360 models.py:694
 msgid "Completed"
-msgstr ""
+msgstr "Ολοκληρώθηκε"
 
 #: models.py:363 models.py:718
 msgid "Voting"
-msgstr ""
+msgstr "Ψηφοφορία"
 
 #: models.py:366 models.py:697
 msgid "Results computed"
-msgstr ""
+msgstr "Εξήχθησαν αποτελέσματα"
 
 #: models.py:369 models.py:700
 msgid "Computing results"
-msgstr ""
+msgstr "Υπολογισμός αποτελεσμάτων"
 
 #: models.py:372 models.py:703
 #, fuzzy
@@ -92,23 +92,23 @@ msgstr "Η ψηφοφορία αρχικοποιήθηκε."
 
 #: models.py:375 models.py:706
 msgid "Decrypting"
-msgstr ""
+msgstr "Αποκρυπτογράφηση..."
 
 #: models.py:378 models.py:712
 msgid "Partial decryptions finished"
-msgstr ""
+msgstr "Οι μερικές αποκρυπτογραφήσεις ολοκληρώθηκαν"
 
 #: models.py:381
 msgid "Pending completion of partial decryptions"
-msgstr ""
+msgstr "Εκκρεμούν οι μερικές αποκρυπτογραφήσεις"
 
 #: models.py:384
 msgid "Mixing finished"
-msgstr ""
+msgstr "Η μίξη ολοκληρώθηκε"
 
 #: models.py:387
 msgid "Mixing"
-msgstr ""
+msgstr "Μίξη"
 
 #: models.py:390
 #, fuzzy
@@ -117,15 +117,15 @@ msgstr "Η ψηφοφορία έχει λήξει."
 
 #: models.py:393
 msgid "Voting stopped. Pending close."
-msgstr ""
+msgstr "Η ψηφοφορία έχει σταματήσει. Αναμένεται η οριστική λήξη της."
 
 #: models.py:396
 msgid "Freezing"
-msgstr ""
+msgstr "Οριστικοποίηση..."
 
 #: models.py:399
 msgid "Frozen"
-msgstr ""
+msgstr "Οριστικοποιημένη"
 
 #: models.py:401
 #, fuzzy
@@ -134,15 +134,15 @@ msgstr "Παράταση της ψηφοφορίας."
 
 #: models.py:626
 msgid "Prepare poll questions"
-msgstr ""
+msgstr "Ετοιμασία ερωτήσεων για κάθε κάλπη"
 
 #: models.py:631
 msgid "Import voters list"
-msgstr ""
+msgstr "Εισαγωγή ψηφοφόρων"
 
 #: models.py:709
 msgid "Waiting for all partial decryptions to finish"
-msgstr ""
+msgstr "Αναμονή για την ολοκλήρωση των μερικών αποκρυπτογραφήσεων"
 
 #: models.py:715
 #, fuzzy
@@ -156,7 +156,7 @@ msgstr "Η ψηφοφορία έχει λήξει."
 
 #: models.py:724
 msgid "Freezed"
-msgstr ""
+msgstr "Οριστικοποιημένη"
 
 #: models.py:727
 msgid "No questions set"
@@ -165,11 +165,11 @@ msgstr ""
 #: models.py:730
 #, fuzzy
 msgid "No voters set"
-msgstr "όλους τους ψηφοφόρους"
+msgstr "Δεν έχουν εισαχθεί ακόμη ψηφοφόροι"
 
 #: models.py:733
 msgid "Ready to freeze"
-msgstr ""
+msgstr "Έτοιμη προς οριστικοποίηση"
 
 #: models.py:868
 msgid "Election initialized."
@@ -222,19 +222,19 @@ msgstr "Τα τελικά ψηφοδέλτια έχουν αποκρυπτογρ
 
 #: models.py:893
 msgid "YES"
-msgstr ""
+msgstr "ΝΑΙ"
 
 #: models.py:894
 msgid "NO"
-msgstr ""
+msgstr "ΟΧΙ"
 
 #: models.py:896
 msgid "(EXCLUDED)"
-msgstr ""
+msgstr "(ΕΞΑΙΡΕΣΗ)"
 
 #: models.py:1136
 msgid "Αποτελέσματα"
-msgstr ""
+msgstr "Αποτελέσματα"
 
 #: models.py:1262
 msgid "Name cannot be empty"

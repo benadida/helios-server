@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-06 17:24+0300\n"
+"POT-Creation-Date: 2013-09-09 15:38+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -24,7 +24,7 @@ msgstr "Εφορευτική επιτροπή"
 
 #: forms.py:48
 msgid "Multiple mixnets"
-msgstr ""
+msgstr "Πολλαπλές μίξεις"
 
 #: forms.py:115
 #, fuzzy
@@ -67,39 +67,39 @@ msgstr ""
 
 #: forms.py:216
 msgid "Party name"
-msgstr ""
+msgstr "Όνομα συνδυασμού"
 
 #: forms.py:221
 msgid "Username"
-msgstr ""
+msgstr "Όνομα χρήστη"
 
 #: forms.py:223
 msgid "Password"
-msgstr ""
+msgstr "Συνθηματικό"
 
 #: forms.py:234 forms.py:240
 msgid "Invalid username or password"
-msgstr ""
+msgstr "Μη έγκυρος χρήστης ή συθηματικό"
 
 #: forms.py:262
 msgid "all voters"
-msgstr ""
+msgstr "σύνολο ψηφοφόρων"
 
 #: forms.py:263
 msgid "voters who have cast a ballot"
-msgstr ""
+msgstr "ψηφοφόροι που έχουν καταθέσει ψήφο"
 
 #: forms.py:264
 msgid "voters who have not yet cast a ballot"
-msgstr ""
+msgstr "ψηφοφόροι που δεν έχουν καταθέσει ακόμη ψήφο"
 
 #: forms.py:268
 msgid "Email subject"
-msgstr ""
+msgstr "Tίτλος μηνύματος email"
 
 #: forms.py:270
 msgid "Email body"
-msgstr ""
+msgstr "Κείμενο μηνύματος email"
 
 #: forms.py:272
 msgid "Send To"
@@ -110,23 +110,25 @@ msgid ""
 "Confirm voter removal: {{ voter.voter_name}} {{ voter.voter_surname }} "
 "{{ voter.voter_fathername }} ({{ voter.voter_email }})"
 msgstr ""
+"Επιβεβαιώστε τη διαγραφή ψηφοφόρου: {{ voter.voter_name}} {{ voter."
+"voter_surname }} {{ voter.voter_fathername }} ({{ voter.voter_email }})"
 
 #: messages.py:10
 msgid "Are you sure you want to delete the selected trustee ?"
-msgstr ""
+msgstr "Επιβεβαιώστε τη διαγραφή του επιλεγμένου μέλους της εφορευτικής"
 
 #: messages.py:13
 msgid "Are you sure you want to freeze the election ?"
-msgstr ""
+msgstr "Επιβεβαιώστε την οριστικοποίηση της ψηφοφορίας"
 
 #: messages.py:14
 msgid "Are you sure you want to delete the selected poll ?"
-msgstr ""
+msgstr "Επιβεβαιώστε τη διαγραφή της επιλεγμένης κάλπης"
 
 #: tasks.py:87
 #, python-format
 msgid "%(election_name)s - vote cast"
-msgstr ""
+msgstr "%(election_name)s - ψήφος ελήφθη"
 
 #: tasks.py:91
 #, python-format
@@ -137,58 +139,63 @@ msgid ""
 "\n"
 "you can find your encrypted vote attached in this mail.\n"
 msgstr ""
+"Η ψήφος σας καταχωρήθηκε επιτυχώς για\n"
+"\n"
+"%(election_name)s\n"
+"\n"
+"H απόδειξη της καταχώρησης βρίσκεται συνημμένη στο παρόν μήνυμα.\n"
 
 #: election_modules/__init__.py:30 election_modules/simple/__init__.py:16
 msgid "Simple election with one or more questions"
-msgstr ""
+msgstr "Απλή ψηφοφορία με μία ή περισσότερες ερωτήσεις"
 
 #: election_modules/__init__.py:31
 msgid "Ballot"
-msgstr ""
+msgstr "Ψηφοδέλτιο"
 
 #: election_modules/__init__.py:33
 msgid "Answer"
-msgstr ""
+msgstr "Απάντηση"
 
 #: election_modules/__init__.py:35
 msgid "Add questions to the election"
-msgstr ""
+msgstr "Προσθήκη ερωτήσεων στην ψηφοφορία"
 
 #: election_modules/__init__.py:36
 msgid "Too many choices"
-msgstr ""
+msgstr "Περισσότερες επιλογές από το επιτρεπτό"
 
 #: election_modules/__init__.py:37
 msgid "Question '{0}' requires at least {1} choices."
-msgstr ""
+msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
 
 #: election_modules/parties/__init__.py:10
 msgid "Party lists election"
-msgstr ""
+msgstr "Ψηφοφορία με συνδυασμούς"
 
 #: election_modules/simple/__init__.py:21
 msgid "No questions set"
-msgstr ""
+msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"
 
 #: election_modules/simple/__init__.py:22
 msgid "Manage questions"
-msgstr ""
+msgstr "Διαχείριση ερωτήσεων"
 
 #: templatetags/zeus_tags.py:21 templatetags/zeus_tags.py:139
 msgid "Are you sure ?"
-msgstr ""
+msgstr "Επιβεβαιώστε"
 
 #: views/poll.py:239
 msgid "Time to Vote"
-msgstr ""
+msgstr "Χρόνος Ψηφοφορίας"
 
 #: views/poll.py:240
 msgid "Additional Info"
-msgstr ""
+msgstr "Περισσότερες πληροφορίες"
 
 #: views/poll.py:344
 msgid "Email sending started"
-msgstr ""
+msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει"
 
 #~ msgid "Institution"
 #~ msgstr "Εκπαιδευτικό ίδρυμα"

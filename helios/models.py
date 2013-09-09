@@ -1133,7 +1133,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
     extended_until = ""
     if self.election.voting_extended_until:
       extended_until = 'Παράταση: %s' % (self.election.voting_extended_until.strftime(DATE_FMT))
-    build_doc(_(u'Αποτελέσματα'), self.name, self.election.institution.name,
+    build_doc(_(u'Results'), self.name, self.election.institution.name,
               voting_start, voting_end, extended_until, json.dumps(results_json),
               self.get_result_file_path('pdf', 'pdf'))
 
