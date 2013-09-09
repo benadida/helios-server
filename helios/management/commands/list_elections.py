@@ -24,8 +24,14 @@ class Command(BaseCommand):
             name = strforce(e.name)
             admin = strforce(e.admins.all()[0].pretty_name)
             institution = strforce(e.institution.name)
-            voted_count = str(e.voted_count())
-            voter_count = str(e.voter_set.count())
+            polls = e.polls.all()
+            voter_count = 0
+            voted_count = 0
+            for poll in e.polls.all():
+                voter_count += Voter.objects.filter(poll=poll).count()
+                voted_count += poll.voters_cast_count()
+            voter_count = str(voter_count)
+            voted_count = str(voted_count)
             start = e.voting_starts_at
             start = start.strftime("%Y-%m-%d %H:%M:%S") if start else '-'
             end = e.voting_ended_at
