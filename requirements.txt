@@ -17,3 +17,4 @@ dj_database_url==0.2.2
 django-sslify==0.2
 django_webtest==1.7.5
 webtest==2.0.7
+django-db-pool==0.0.10
