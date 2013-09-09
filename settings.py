@@ -24,6 +24,8 @@ DATABASES = {
     }
 }
 
+SOUTH_DATABASE_ADAPTERS = {'default':'south.db.postgresql_psycopg2'}
+
 # override if we have an env variable
 if get_from_env('DATABASE_URL', None):
     import dj_database_url
