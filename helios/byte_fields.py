@@ -27,7 +27,7 @@ class ByteaField(models.Field):
     def db_type(self, connection):
         return 'bytea'
 
-    def get_db_prep_value(self, value, connection, prepared=False):
+    def get_db_prep_value(self, value, connection=None, prepared=False):
         value = value if prepared else self.get_prep_value(value)
         if isinstance(value, unicode):
             value = Binary(value.encode('utf-8'))
@@ -100,7 +100,7 @@ class LargeObjectField(models.IntegerField):
     def _value_to_python(self, value):
         return value
 
-    def get_db_prep_value(self, value, connection, prepared=False):
+    def get_db_prep_value(self, value, connection=None, prepared=False):
         if not prepared:
             value = self.get_prep_value(value)
 
