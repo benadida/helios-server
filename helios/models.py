@@ -571,8 +571,13 @@ class Election(HeliosModel, ElectionFeatures):
     def get_module(self):
         return get_election_module(self)
 
+class PollManager(models.Manager):
 
-from zeus.model_tasks import Task
+    def get_query_set(self):
+        qs = super(PollManager,
+                   self).get_query_set(self).filter().defer('encrypted_tally')
+
+
 class Poll(PollTasks, HeliosModel, PollFeatures):
 
   name = models.CharField(max_length=255)
@@ -602,32 +607,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   voters_last_notified_at = models.DateTimeField(null=True, default=None)
 
-  #tallies_combined_at = models.DateTimeField(auto_now_add=False,
-                                             #default=None, null=True)
-  #tally_validated_at = models.DateTimeField(auto_now_add=False,
-                                             #default=None, null=True)
-
-  #voting_validation_started_at = models.DateTimeField(null=True, default=None)
-  #voting_validation_finished_at = models.DateTimeField(null=True, default=None)
-  #voting_validation_status = models.DateTimeField(null=True, default='pending')
-  #voting_validation_error = models.TextField(null=True, default=None)
-
-  #mixing_started_at = models.DateTimeField(null=True, default=None)
-  #mixing_finished_at = models.DateTimeField(null=True, default=None)
-  #mixing_status = models.DateTimeField(null=True, default=None)
-  #mixing_error = models.TextField(null=True, default=None)
-
-  #mixing_validation_started_at = models.DateTimeField(null=True, default=None)
-  #mixing_validation_finished_at = models.DateTimeField(null=True, default=None)
-  #mixing_validation_status = models.CharField(null=True, default='pending')
-  #mixing_validation_error = models.TextField(null=True, default=None)
-
-  #combination_started_at = models.DateTimeField(null=True, default=None)
-  #combination_finished_at = models.DateTimeField(null=True, default=None)
-
-  #results_computation_started_at = models.DateTimeField(null=True, default=None)
-  #results_computed_at = models.DateTimeField(null=True, default=None)
-  #results_computation_error = models.TextField(null=True, default=None)
+  objects = PollManager()
 
   class Meta:
       ordering = ('created_at', )
