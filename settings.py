@@ -219,7 +219,6 @@ CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 
 
 BOOTH_STATIC_PATH = ROOT_PATH + '/zeus/static/booth/'
-print "BOOTH", BOOTH_STATIC_PATH
 
 ECOUNTING_LOGIN_URL = "https://x.x.x.x/checkuser.php"
 ECOUNTING_POST_URL = "https://x.x.x.x/newelection.php"
