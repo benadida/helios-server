@@ -12,9 +12,6 @@
 {% trans "Freeze election" as label %}
 {% reveal_action label "#freeze-admin-action" "" "freeze-election" %}
 {% endif %}
-{% if not election.feature_freezed %}
-{% reveal_action label "#freeze-admin-action" "" "freeze-election" %}
-{% endif %}
 
 {% if election.feature_can_close %}
 {% trans "Close election" as label %}

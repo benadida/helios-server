@@ -7,7 +7,29 @@
 {% block content %}
 
 <div class="section">
-  {% if election.polls.count %}
+    {% if election.polls.count %}
+    <div class="row">
+  <div class="columns six">
+  </div>
+  <div class="columns twelve">
+   {% if admin and election.any_poll_feature_can_send_voter_mail %}
+        <div href="#" class="button medium dropdown" style="float:right;">
+            {% trans "Batch polls actions" %}&nbsp;
+            <ul>
+            {% url election_voters_email election.uuid as email_url %}
+            {% trans "Send voters email" as label %}
+            <li>
+            <a style="" class="foundicon-mail" 
+                href="{% url election_voters_email election.uuid %}">
+                &nbsp;{% trans "Send voters email" %}</a>
+            </li>
+          </ul>
+        </div>
+    {% endif %}
+<br /><br />
+<br /><br />
+</div>
+</div>
   <table class="pretty polls-table">
     <thead>
       <tr>

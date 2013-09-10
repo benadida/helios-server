@@ -240,8 +240,7 @@ def voters_upload_cancel(request, election, poll):
 
 
 @auth.election_admin_required
-@auth.requires_poll_features('can_send_voter_mail')
-def voters_email(request, election, poll, voter_uuid=None):
+def voters_email(request, election, poll=None, voter_uuid=None):
     user = request.admin
 
     TEMPLATES = [
@@ -250,7 +249,11 @@ def voters_email(request, election, poll, voter_uuid=None):
     ]
 
     default_template = 'vote'
-    if not poll.check_feature('can_send_voter_booth_invitation'):
+
+    if not election.any_poll_feature_can_send_voter_mail:
+        raise PermissionDenied
+
+    if not election.any_poll_feature_can_send_voter_booth_invitation:
         TEMPLATES.pop(0)
         default_template = 'info'
 
@@ -259,10 +262,18 @@ def voters_email(request, election, poll, voter_uuid=None):
     if not template in [t[0] for t in TEMPLATES]:
         raise Exception("bad template")
 
+    polls = [poll]
+    if not poll:
+        polls = election.polls.all()
+
     voter = None
     if voter_uuid:
         try:
-            voter = poll.voters.get(uuid=voter_uuid)
+            if poll:
+                voter = get_object_or_404(Voter, uuid=voter_uuid, poll=poll)
+            else:
+                voter = get_object_or_404(Voter, uuid=voter_uuid,
+                                          election=election)
         except Voter.DoesNotExist:
             raise PermissionDenied
         if not voter:
@@ -292,7 +303,6 @@ def voters_email(request, election, poll, voter_uuid=None):
                 'audit_passwords': '1',
                 'get_audit_passwords': ['pass1', 'pass2', '...'],
                 'get_quick_login_url': '<VOTER_LOGIN_URL>',
-                'voter_type': poll.voters.all()[0].voter_type,
                 'poll': poll,
                 'election' : election}
             })
@@ -307,14 +317,6 @@ def voters_email(request, election, poll, voter_uuid=None):
         email_form = EmailVotersForm(request.POST)
         if email_form.is_valid():
             # the client knows to submit only once with a specific voter_id
-            subject_template = 'email/%s_subject.txt' % template
-            body_template = 'email/%s_body.txt' % template
-            extra_vars = {
-                'custom_subject' : email_form.cleaned_data['subject'],
-                'custom_message' : email_form.cleaned_data['body'],
-                'election_url' : election_url,
-                'election' : election,
-            }
             voter_constraints_include = None
             voter_constraints_exclude = None
             update_booth_invitation_date = False
@@ -332,19 +334,39 @@ def voters_email(request, election, poll, voter_uuid=None):
             if email_form.cleaned_data['send_to'] == 'not-voted':
                 voter_constraints_include = {'vote_hash': None}
 
-            tasks.voters_email.delay(poll.pk,
-                                 subject_template=subject_template,
-                                 body_template=body_template,
-                                 extra_vars=extra_vars,
-                                 voter_constraints_include=voter_constraints_include,
-                                 voter_constraints_exclude=voter_constraints_exclude,
-                                 update_date=True,
-                                 update_booth_invitation_date=update_booth_invitation_date)
+            for _poll in polls:
+                if not _poll.feature_can_send_voter_mail:
+                    continue
 
+                if template == 'vote' and not \
+                        _poll.feature_can_send_voter_booth_invitation:
+                    continue
+
+                subject_template = 'email/%s_subject.txt' % template
+                body_template = 'email/%s_body.txt' % template
+                extra_vars = {
+                    'custom_subject' : email_form.cleaned_data['subject'],
+                    'custom_message' : email_form.cleaned_data['body'],
+                    'election_url' : election_url,
+                    'election' : election,
+                    'poll': _poll
+                }
+                task_kwargs = {
+                    'subject_template': subject_template,
+                    'body_template': body_template,
+                    'extra_vars': extra_vars,
+                    'voter_constraints_include': voter_constraints_include,
+                    'voter_constraints_exclude': voter_constraints_exclude,
+                    'update_date': True,
+                    'update_booth_invitation_date': update_booth_invitation_date,
+                }
+                tasks.voters_email.delay(_poll.pk, **task_kwargs)
 
             # this batch process is all async, so we can return a nice note
             messages.info(request, _("Email sending started"))
-            url = poll_reverse(poll, 'voters')
+            url = election_reverse(election, 'polls_list')
+            if poll:
+                url = poll_reverse(poll, 'voters')
             return HttpResponseRedirect(url)
 
     context = {
@@ -358,6 +380,8 @@ def voters_email(request, election, poll, voter_uuid=None):
         'templates': TEMPLATES
     }
     set_menu('voters', context)
+    if not poll:
+        set_menu('polls', context)
     return render_template(request, "voters_email", context)
 
 

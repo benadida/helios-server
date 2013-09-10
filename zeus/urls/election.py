@@ -24,6 +24,7 @@ election_patterns = patterns('zeus.views.election',
     url(r'^close$', 'close', name="election_close"),
     url(r'^start-mixing$', 'start_mixing', name="election_start_mixing"),
     url(r'^report$', 'report', name="election_report"),
+    url(r'^email-voters$', 'voters_email', name="election_voters_email"),
     url(r'^report.html$', 'report', name="election_report", kwargs={'format':
                                                                     'html'}),
 
