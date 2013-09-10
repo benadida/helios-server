@@ -191,7 +191,7 @@ def poll_zeus_partial_decrypt(poll_id):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     poll.zeus_partial_decrypt()
     if poll.election.polls_feature_partial_decryptions_finished:
-        election_combine_decryptions.delay(poll.election.pk)
+        election_decrypt.delay(poll.election.pk)
 
 
 @task()
