@@ -1,17 +1,10 @@
-"""
-verify cast votes that have not yet been verified
-
-Ben Adida
-ben@adida.net
-2010-05-22
-"""
 import csv, datetime
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
 from helios import utils as helios_utils
-from helios.models import *
+from helios.models import Poll, Voter
 
 class Command(BaseCommand):
     args = ''
@@ -19,8 +12,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         if args:
-	    election = Election.objects.get(uuid=args[0])
-            voters = Voter.objects.filter(election=election)
+	    poll = Poll.objects.get(uuid=args[0])
+            voters = Voter.objects.filter(poll=poll)
         else:
             voters = Voter.objects.all()
 
