@@ -10,15 +10,15 @@
   <table class="pretty polls-table">
     <thead>
       <tr>
-        <th>{% trans "Poll name" %}</th>
-        <th>{% trans "Poll status" %}</th>
-        <th>{% blocktrans with label=election.get_module.questions_title_message %}Poll {{ label }} count{% endblocktrans %}</th>
-        <th>{% trans "Poll voters count" %}</th>
-        <th>{% trans "Poll voters invited count" %}</th>
-        <th>{% trans "Poll voters cast count" %}</th>
-        <th>{% trans "Poll cast count" %}</th>
-        <th>{% trans "Last cast at" %}</th>
-        <th>{% trans "Actions" %}</th>
+        <th>{% trans "name" %}</th>
+        <th>{% trans "status" %}</th>
+        <th>{% trans "ballot size" %}</th>
+        <th>{% trans "voters registered" %}</th>
+        <th>{% trans "voters invited" %}</th>
+        <th>{% trans "voters voted" %}</th>
+        <th>{% trans "votes" %}</th>
+        <th>{% trans "last vote" %}</th>
+        <th>{% trans "select action" %}</th>
       </tr>
     </thead>
     <tbody>
@@ -60,7 +60,7 @@
 </tbody>
 <tfoot>
     <td>
-    {% trans "Total" %}
+    {% trans "Totals" %}
     </td>
     <td></td>
     <td>{{ election.questions_count }}</td>

@@ -1,12 +1,10 @@
-{% load i18n %}{% trans "Νόμιμος παραλήπτης" %}: {{voter.voter_surname}} {{voter.voter_name}},
-
-{% trans "Polls" %} <----
+{% load i18n %}{% trans "Intended recipient" %}: {{voter.voter_surname}} {{voter.voter_name}},
 
 {{custom_message|safe}}
 
 {% if election.frozen_at %}
-Σύνδεσμος ψηφοφορίας: {{voter.get_quick_login_url}}
+{% trans "Voting link" %}: {{voter.get_quick_login_url}}
 {% endif %}
 
 --
-Ψηφιακή κάλπη «Ζευς»
+{% trans Zeus Digital Elections %}

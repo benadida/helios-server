@@ -1906,9 +1906,9 @@ class Trustee(HeliosModel, TrusteeFeatures):
             return 3
         return 1
 
-    STEP_TEXTS = [_(u'Δημιουργία κωδικού ψηφοφορίας'),
-                  _(u'Επιβεβαίωση Κωδικού Ψηφοφορίας'),
-                  _(u'Αποκρυπτογράφηση ψήφων')]
+    STEP_TEXTS = [_(u'Create trustee key'),
+                  _(u'Verify trustee key'),
+                  _(u'Partially decrypt votes')]
 
     def send_url_via_mail(self, msg=''):
         """

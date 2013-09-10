@@ -1,13 +1,13 @@
 {% load i18n %}
-{% trans "Ως μέλος της εφορευτικής επιτροπής της ψηφοφορίας" %}
+{% trans "As a trustee for the election" %}
 
   {{ election_name }}
 
-{% trans "παρακαλούμε επισκεφθείτε τον πίνακα ελέγχου και ακολουθήστε τις οδηγίες" %}
+{% trans "please visit your control panel and follow the instructions" %}
     
   {{ url }}
 
   {{ msg }}
 
 --
-{% trans "Ψηφιακή Κάλπη «Ζευς»" %}
+{% trans "Zeus Digital Elections" %}
