@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-09 15:38+0300\n"
+"POT-Creation-Date: 2013-09-10 19:12+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,92 +18,145 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: forms.py:46
+#: forms.py:47
 msgid "Trustees"
 msgstr "Εφορευτική επιτροπή"
 
-#: forms.py:48
+#: forms.py:50
 msgid "Multiple mixnets"
 msgstr "Πολλαπλές μίξεις"
 
-#: forms.py:115
-#, fuzzy
+#: forms.py:118
 msgid "Invalid voting end date"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:117
+#: forms.py:120
 msgid "Invalid voting dates"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:119
+#: forms.py:122
 msgid "Invalid voting extension date"
 msgstr "Λάθος ημερομηνία και ώρα λήξης της ψηφοφορίας"
 
-#: forms.py:127
-#, fuzzy
+#: forms.py:130
 msgid "Invalid trustees format"
 msgstr "Μη έγκυρη λίστα μελών εφορευτικής επιτροπής."
 
-#: forms.py:170
+#: forms.py:173
 msgid "Choice"
 msgstr "Επιλογή"
 
-#: forms.py:172 election_modules/__init__.py:32
+#: forms.py:175 election_modules/__init__.py:32
 msgid "Question"
 msgstr "Ερώτηση"
 
-#: forms.py:174
-#, fuzzy
+#: forms.py:177
 msgid "Min answers"
 msgstr "Μέγιστος αριθμός επιλογών"
 
-#: forms.py:175
+#: forms.py:178
 msgid "Max answers"
 msgstr "Μέγιστος αριθμός επιλογών"
 
-#: forms.py:210
+#: forms.py:213
 msgid "Max answers should be greater or equal to min answers"
 msgstr ""
 
-#: forms.py:216
+#: forms.py:219
 msgid "Party name"
 msgstr "Όνομα συνδυασμού"
 
-#: forms.py:221
+#: forms.py:224
 msgid "Username"
 msgstr "Όνομα χρήστη"
 
-#: forms.py:223
+#: forms.py:226
 msgid "Password"
 msgstr "Συνθηματικό"
 
-#: forms.py:234 forms.py:240
+#: forms.py:237 forms.py:243
 msgid "Invalid username or password"
 msgstr "Μη έγκυρος χρήστης ή συθηματικό"
 
-#: forms.py:262
+#: forms.py:265
 msgid "all voters"
 msgstr "σύνολο ψηφοφόρων"
 
-#: forms.py:263
+#: forms.py:266
 msgid "voters who have cast a ballot"
 msgstr "ψηφοφόροι που έχουν καταθέσει ψήφο"
 
-#: forms.py:264
+#: forms.py:267
 msgid "voters who have not yet cast a ballot"
 msgstr "ψηφοφόροι που δεν έχουν καταθέσει ακόμη ψήφο"
 
-#: forms.py:268
+#: forms.py:271
 msgid "Email subject"
 msgstr "Tίτλος μηνύματος email"
 
-#: forms.py:270
+#: forms.py:273
 msgid "Email body"
 msgstr "Κείμενο μηνύματος email"
 
-#: forms.py:272
+#: forms.py:275
 msgid "Send To"
+msgstr "Αποστολή πρός"
+
+#: help_texts.py:3
+msgid "This is a trial election"
+msgstr "Επιλέξτε το πεδίο αν πρόκειται για δοκιμαστική ψηφοφορία"
+
+#: help_texts.py:4
+msgid "Choose the type of the election"
+msgstr "επιλέξτε τον τύπο της ψηφοφορίας"
+
+#: help_texts.py:5
+msgid ""
+"Trustees list. e.g. <br/><br/>\n"
+"Giannhs Gianopoulos, giannhs@email.com<br />\n"
+"Kwstas Kwstopoulos, kwstas@email.com<br />\n"
 msgstr ""
+"συμπληρώστε τη λίστα μελών της εφορευτικής επιτροπής με τα e-mails τους. Π.χ."
+"<br/><br/>Κωσταντίνος Κωστόπουλος, kwstopoulos@email.com<br/>Ιωάννης "
+"Γιαννόπουλος, giannhs@gmail.com<br/>\n"
+
+#: help_texts.py:9
+msgid "Election name"
+msgstr "Τίτλος ψηφοφορίας"
+
+#: help_texts.py:10
+msgid "Election description"
+msgstr "περιγράψτε σύντομα την ψηφοφορία"
+
+#: help_texts.py:11
+msgid "When voting ends"
+msgstr "δώστε ημερομηνία και ώρα για τη λήξη της ψηφοφορίας"
+
+#: help_texts.py:12
+msgid "When voting starts"
+msgstr "δώστε ημερομηνία και ώρα έναρξης της ψηφοφορίας"
+
+#: help_texts.py:13
+msgid "Voting extension date"
+msgstr "νέα ημερομηνία και ώρα λήξης της ψηφοφορίας"
+
+#: help_texts.py:14
+msgid "Voters can contact this phone for election suport"
+msgstr ""
+"οι ψηφοφόροι θα μπορούν να επικοινωνούν σε αυτά τα τηλέφωνα για υποστήριξη "
+"σε θέματα της ψηφοφορίας"
+
+#: help_texts.py:15
+msgid "Voters can contact this email for election suport"
+msgstr ""
+"οι ψηφοφόροι μπορούν να απευθύνονται σε αυτό το e-mail για υποστήριξη σε "
+"θέματα της ψηφοφορίας"
+
+#: help_texts.py:16
+msgid "Whether or not to allow remote mixing."
+msgstr ""
+"Επιλέξτε αν θέλετε να παρέχετε εξωτερικά στάδια μίξης μετά την ψηφοφορία -- "
+"αφήστε κενό εάν δεν είστε σίγουρος"
 
 #: messages.py:4
 msgid ""
@@ -203,9 +256,6 @@ msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει
 #~ msgid "Election institution"
 #~ msgstr "Το εκπαιδευτικό ίδρυμα για το οποίο θα διεξαχθεί η ψηφοφορία"
 
-#~ msgid "Election name"
-#~ msgstr "Τίτλος ψηφοφορίας"
-
 #~ msgid ""
 #~ "the name of the election (e.g. University of Piraeus 2014 elections)."
 #~ msgstr ""
@@ -215,34 +265,14 @@ msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει
 #~ msgid "Description"
 #~ msgstr "Περιγραφή ψηφοφορίας"
 
-#~ msgid "Election description"
-#~ msgstr "περιγράψτε σύντομα την ψηφοφορία"
-
 #~ msgid "Voting starts at"
 #~ msgstr "Χρόνος έναρξης της ψηφοφορίας"
-
-#~ msgid "When voting starts"
-#~ msgstr "δώστε ημερομηνία και ώρα έναρξης της ψηφοφορίας"
 
 #~ msgid "Voting ends at"
 #~ msgstr "Λήξη της ψηφοφορίας"
 
-#~ msgid "When voting ends"
-#~ msgstr "δώστε ημερομηνία και ώρα για τη λήξη της ψηφοφορίας"
-
 #~ msgid "Voting extended until"
 #~ msgstr "Η ψηφοφορία έχει παραταθεί μέχρι"
-
-#~ msgid "Voting extension date"
-#~ msgstr "νέα ημερομηνία και ώρα λήξης της ψηφοφορίας"
-
-#~ msgid ""
-#~ "Trustees list. e.g. <br/><br/> Giannhs Gianopoulos, giannhs@email.com<br /"
-#~ "> Kwstas Kwstopoulos, kwstas@email.com<br />"
-#~ msgstr ""
-#~ "συμπληρώστε τη λίστα μελών της εφορευτικής επιτροπής με τα e-mails τους. "
-#~ "Π.χ.<br/><br/>Κωσταντίνος Κωστόπουλος, kwstopoulos@email.com<br/>Ιωάννης "
-#~ "Γιαννόπουλος, giannhs@gmail.com<br/>"
 
 #~ msgid "Schools and Departments"
 #~ msgstr "Σχολές και Ανεξάρτητα Τμήματα του Ιδρύματος"
@@ -259,9 +289,6 @@ msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει
 #~ msgid "Eligibles count"
 #~ msgstr "Πλήθος εκλεγόμενων "
 
-#~ msgid "Set the eligibles count of the election"
-#~ msgstr "το πλήθος των εκλεγόμενων (6 ή 8 ανάλογα με το μέγεθος της σχολής)"
-
 #~ msgid "Has department limit"
 #~ msgstr "Τα εσωτερικά μέλη ανά σχολή δεν μπορούν να υπερβαίνουν τα δύο"
 
@@ -274,26 +301,11 @@ msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει
 #~ msgid "Help email"
 #~ msgstr "E-mail για βοήθεια"
 
-#~ msgid "Voters can contact this email for election suport"
-#~ msgstr ""
-#~ "οι ψηφοφόροι μπορούν να απευθύνονται σε αυτό το e-mail για υποστήριξη σε "
-#~ "θέματα της ψηφοφορίας"
-
 #~ msgid "Help phone"
 #~ msgstr "Τηλέφωνα για βοήθεια"
 
-#~ msgid "Voters can contact this phone for election suport"
-#~ msgstr ""
-#~ "οι ψηφοφόροι θα μπορούν να επικοινωνούν σε αυτά τα τηλέφωνα για "
-#~ "υποστήριξη σε θέματα της ψηφοφορίας"
-
 #~ msgid "Remote mix"
 #~ msgstr "Ενεργοποίηση πολλαπλών σταδίων μίξης"
-
-#~ msgid "Whether or not to allow remote mixing."
-#~ msgstr ""
-#~ "Επιλέξτε αν θέλετε να παρέχετε εξωτερικά στάδια μίξης μετά την ψηφοφορία "
-#~ "-- αφήστε κενό εάν δεν είστε σίγουρος"
 
 #~ msgid "Election title (e.g. Memorandum referendum)"
 #~ msgstr "Τίτλος ψηφοφορίας"

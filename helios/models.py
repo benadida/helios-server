@@ -60,6 +60,7 @@ from zeus.election_modules import ELECTION_MODULES_CHOICES, get_poll_module, \
 from zeus.model_features import ElectionFeatures, PollFeatures, \
         TrusteeFeatures, VoterFeatures
 from zeus.model_tasks import TaskModel, PollTasks, ElectionTasks
+from zeus import help_texts as help
 
 
 logger = logging.getLogger(__name__)
@@ -240,18 +241,27 @@ _default_voting_ends_at = lambda: datetime.datetime.now() + timedelta(hours=12)
 
 
 class Election(HeliosModel, ElectionFeatures):
-    election_module = models.CharField(max_length=250, null=False,
-                                       choices=ELECTION_MODULES_CHOICES,
-                                       default='simple')
+    election_module = models.CharField(_("Election type"), max_length=250,
+                                         null=False,
+                                         choices=ELECTION_MODULES_CHOICES,
+                                         default='simple',
+                                         help_text=help.election_module)
     version = models.CharField(max_length=255, default=ELECTION_MODEL_VERSION)
     uuid = models.CharField(max_length=50, null=False)
-    name = models.CharField(max_length=255)
+    name = models.CharField(_("Election name"), max_length=255,
+                            help_text=help.election_name)
     short_name = models.CharField(max_length=255)
-    help_email = models.CharField(max_length=254, null=True, blank=True)
-    help_phone = models.CharField(max_length=254, null=True, blank=True)
+    help_email = models.CharField(_("Help email"),
+                                  max_length=254, null=True, blank=True,
+                                  help_text=help.help_email)
+    help_phone = models.CharField(_("Help phone"),
+                                  max_length=254, null=True, blank=True,
+                                  help_text=help.help_phone)
 
-    description = models.TextField()
-    trial = models.BooleanField(default=False)
+    description = models.TextField(_("Election description"),
+                                   help_text=help.election_description)
+    trial = models.BooleanField(_("Trial election"), default=False,
+                                help_text=help.trial)
 
     public_key = LDObjectField(type_hint = 'legacy/EGPublicKey', null=True)
     private_key = LDObjectField(type_hint = 'legacy/EGSecretKey', null=True)
@@ -271,15 +281,21 @@ class Election(HeliosModel, ElectionFeatures):
     deleted = models.BooleanField(default=False)
 
     frozen_at = models.DateTimeField(default=None, null=True)
-    voting_starts_at = models.DateTimeField(auto_now_add=False,
+    voting_starts_at = models.DateTimeField(_("Voting starts at"),
+                                            auto_now_add=False,
                                             default=_default_voting_starts_at,
-                                            null=True)
-    voting_ends_at = models.DateTimeField(auto_now_add=False,
+                                            null=True,
+                                            help_text=help.voting_starts_at)
+    voting_ends_at = models.DateTimeField(_("Voting ends at"),
+                                          auto_now_add=False,
                                           default=_default_voting_ends_at,
-                                          null=True)
-    voting_extended_until = models.DateTimeField(auto_now_add=False,
+                                          null=True,
+                                          help_text=help.voting_ends_at)
+    voting_extended_until = models.DateTimeField(_("Voting extended until"),
+                                                 auto_now_add=False,
                                                  default=None, blank=True,
-                                                 null=True)
+                                                 null=True,
+                                                 help_text=help.voting_extended_until)
     voting_ended_at = models.DateTimeField(auto_now_add=False, default=None,
                                            null=True)
     archived_at = models.DateTimeField(auto_now_add=False, default=None,
@@ -462,7 +478,7 @@ class Election(HeliosModel, ElectionFeatures):
         return self.get_zeus_trustee()
 
     def get_zeus_trustee(self):
-        trustees_with_sk = self.trustees.zeus()
+        trustees_with_sk = self.trustees.filter().zeus()
         if len(trustees_with_sk) > 0:
             return trustees_with_sk[0]
         else:

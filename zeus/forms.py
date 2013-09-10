@@ -23,6 +23,7 @@ from heliosauth.models import User
 
 from zeus.utils import extract_trustees, election_trustees_to_text
 from zeus.widgets import JqSplitDateTimeField, JqSplitDateTimeWidget
+from zeus import help_texts as help
 
 from django.core.validators import validate_email
 
@@ -44,9 +45,11 @@ class ElectionForm(forms.ModelForm):
 
     formfield_callback = election_form_formfield_cb
     trustees = forms.CharField(label=_('Trustees'), required=False,
-                               widget=forms.Textarea)
+                               widget=forms.Textarea,
+                               help_text=help.trustees)
     remote_mixes = forms.BooleanField(label=_('Multiple mixnets'),
-                                      required=False)
+                                      required=False,
+                                      help_text=help.remote_mixes)
 
     FIELD_REQUIRED_FEATURES = {
         'trustees': ['edit_trustees'],
