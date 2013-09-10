@@ -8,7 +8,7 @@
 </div>
 
 <div class="clearfix admin-actions">
-{% if election.feature_can_freeze and not election.any_poll_feature_validate_create_running %}
+{% if not election.feature_frozen and not election.any_poll_feature_validate_create_running %}
 {% trans "Freeze election" as label %}
 {% reveal_action label "#freeze-admin-action" "" "freeze-election" %}
 {% endif %}

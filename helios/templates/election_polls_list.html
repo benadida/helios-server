@@ -7,6 +7,7 @@
 {% block content %}
 
 <div class="section">
+  {% if election.polls.count %}
   <table class="pretty polls-table">
     <thead>
       <tr>
@@ -24,7 +25,16 @@
     <tbody>
     {% for poll in polls %}
     <tr>
-      <td>{{ poll.name }}</td>
+      <td>
+          {% if not election.feature_can_rename_poll %}
+              {{ poll.name }}
+          {% else %}
+              {% include "_reveal_rename_poll.html" %}
+              {% with "#rename-poll-"|add:poll.short_name as htmlid %}
+              {% reveal_action poll.name htmlid "" "rename-poll nobutton" %}
+              {% endwith %}
+          {% endif %}
+      </td>
       <td>{{ poll.status_display }}</td>
       <td><a class="foundicon-edit" href="{% url election_poll_questions election.uuid poll.uuid %}">
           {{ poll.questions_count }}
@@ -71,16 +81,12 @@
     <td></td>
     <td></td>
 </tfoot>
-
 </table>
-<div class="clearfix" style="text-align: right">
-{% if admin and election.feature_can_manage_polls %}
-<a class="button medium" 
-  href="{% url election_polls_manage election.uuid %}">
-  {% trans "Manage polls" %}
-</a>
+{% else %}
 {% endif %}
-</div>
+{% if admin and election.feature_can_add_poll %}
+{% include "_election_polls_add.html" %}
+{% endif %}
 </div>
 {% endblock %}
 

@@ -6,6 +6,7 @@ from django.core.urlresolvers import reverse
 from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.db import connection
+from django.db.models.query import EmptyQuerySet
 
 from zeus.forms import ElectionForm
 from zeus import auth
@@ -35,36 +36,44 @@ from helios.utils import force_utf8
 @auth.election_admin_required
 def list(request, election):
     polls = election.polls.filter()
-    context = {'polls': polls, 'election': election}
+    extra = int(request.GET.get('extra', 3))
+    polls_formset = modelformset_factory(Poll, PollForm, extra=extra,
+                                         max_num=100, formset=PollFormSet,
+                                         can_delete=False)
+    add_polls = Poll.objects.none()
+    form = polls_formset(queryset=add_polls)
+    context = {'polls': polls, 'election': election, 'form': form}
     set_menu('polls', context)
     return render_template(request, "election_polls_list", context)
 
 
 @auth.election_admin_required
-@auth.requires_election_features('can_manage_polls')
-def manage(request, election, poll=None):
-    polls = election.polls.filter()
+@auth.requires_election_features('can_rename_poll')
+def rename(request, election, poll):
+    newname = request.POST.get('name', '').strip()
+    if newname:
+        poll.name = request.POST.get('name')
+        poll.save()
+    url = election_reverse(election, 'polls_list')
+    return HttpResponseRedirect(url)
+
+
+@auth.election_admin_required
+@auth.requires_election_features('can_add_poll')
+def add(request, election, poll=None):
+    # TODO, require post
     extra = int(request.GET.get('extra', 2))
     polls_formset = modelformset_factory(Poll, PollForm, extra=extra,
                                          max_num=100, formset=PollFormSet,
                                          can_delete=False)
-    if request.method == "GET":
-        form = polls_formset(queryset=election.polls.filter())
-    else:
-        form = polls_formset(request.POST,
-                             queryset=election.polls.filter())
-        if form.is_valid():
-            with transaction.commit_on_success():
-                new_poll = form.save(election)
-                url = election_reverse(election, 'polls_list')
-                return HttpResponseRedirect(url)
+    polls = Poll.objects.none()
+    form = polls_formset(request.POST, queryset=polls)
+    if form.is_valid():
+        with transaction.commit_on_success():
+            form.save(election)
 
-    context = {
-        'election': election,
-        'polls': polls,
-        'form': form
-    }
-    return render_template(request, "election_polls_manage", context)
+    url = election_reverse(election, 'polls_list')
+    return HttpResponseRedirect(url)
 
 
 @auth.election_admin_required

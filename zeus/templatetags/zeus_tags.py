@@ -68,8 +68,11 @@ def _action(context, label, url, icon="", cls="", extra_cls="",
     if not url:
         url = "#"
 
+    if not "nobutton" in cls:
+        cls += " button"
+
     html = """
-    <a class="button %(extra_cls)s %(cls)s foundicon-%(icon)s"
+    <a class="%(extra_cls)s %(cls)s foundicon-%(icon)s"
        href="%(url)s" %(tag_content)s> &nbsp;%(label)s</a>
     """ % {
         'label': label,

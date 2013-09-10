@@ -139,8 +139,12 @@ class ElectionFeatures(FeaturesMixin):
         return pending and self.feature_pending_polls_issues
 
     @election_feature()
-    def _feature_can_manage_polls(self):
-        return not self.feature_frozen and not self.feature_completed
+    def _feature_can_add_poll(self):
+        return not self.feature_frozen
+
+    @election_feature()
+    def _feature_can_rename_poll(self):
+        return not self.feature_closed
 
     @election_feature()
     def _feature_can_send_trustee_email(self):
