@@ -249,8 +249,7 @@ class PollFeatures(FeaturesMixin):
 
     @poll_feature()
     def _feature_can_add_voter(self):
-        return not self.election.feature_completed and not \
-               self.election.feature_frozen
+        return not self.election.feature_closed
 
     @poll_feature()
     def _feature_can_clear_voters(self):

@@ -369,7 +369,7 @@ def voters_email(request, election, poll, voter_uuid=None):
 
 
 @auth.election_admin_required
-@auth.requires_poll_features('delete_voter')
+@auth.requires_poll_features('can_delete_voter')
 def voter_delete(request, election, poll, voter_uuid):
     voter = get_object_or_404(Voter, poll=poll, uuid=voter_uuid)
     if voter.voted:
