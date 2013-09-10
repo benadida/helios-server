@@ -133,6 +133,7 @@ def task(name, required_features=(), is_recurrent=False, completed_cb=None,
                         self.__setattr__(finished_field,
                                      datetime.datetime.now())
                         setattr(self, status_field, 'finished')
+                        setattr(self, error_field, None)
                     else:
                         setattr(self, status_field, 'waiting')
                     self.save()
