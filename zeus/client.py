@@ -15,8 +15,8 @@ from zeus.core import ( c2048, get_random_selection,
                         mix_ciphers)
 
 from httplib import HTTPConnection, HTTPSConnection
-from urlparse import urlparse
-from urllib import urlencode
+from urlparse import urlparse, parse_qsl
+from urllib import urlencode, unquote
 from os.path import exists
 from sys import argv, stderr
 from json import loads, dumps, load, dump
@@ -55,7 +55,7 @@ def generate_vote(p, g, q, y, choices):
     encoded = gamma_encode(selection, nr_candidates)
     ct = encrypt(encoded, p, g, q, y)
     alpha, beta, rand = ct
-    proof = prove_encryption(p, g, q, alpha, rand)
+    proof = prove_encryption(p, g, q, alpha, beta, rand)
     commitment, challenge, response = proof
     answer = {}
     answer['encryption_proof'] = (commitment, challenge, response)
@@ -108,7 +108,7 @@ def main_verify(sigfile, randomness=None, plaintext=None):
         print "%d: [%d] %s" % (i, o, candidates[o])
     print ""
 
-def get_login(url):
+def get_poll_info(url):
     conn = get_http_connection(url)
     path = conn.path
     conn.request('GET', path)
@@ -119,36 +119,40 @@ def get_login(url):
         raise RuntimeError("Cannot get cookie")
     cookie = cookie.split(';')[0]
     headers = {'Cookie': cookie}
-    redirect = response.getheader('location')
-    redirect = '/' + redirect.split("/", 3)[3]
-    return conn, headers, redirect
+    poll_intro = response.getheader('location')
+    poll_intro = '/' + poll_intro.split("/", 3)[3]
 
-def get_form(conn, path, headers):
-    conn.request('GET', path, headers=headers)
+    conn.request('GET', poll_intro, headers=headers)
     response = conn.getresponse()
+    html = response.read()
+
     try:
-        csrf_token = re.findall(".*token\%3D(.*)\%26", response.read())[0]
-    except Exception:
-        csrf_token = None
-    return csrf_token
-
-def get_election(voter_url):
-    conn, headers, redirect = get_login(voter_url)
-    # where csrf token lives
-    csrf_token = get_form(conn, redirect, headers)
-    voter_path = conn.path
-    election_path = '/'.join(voter_path.split('/')[:-3])
-    conn.request('GET', election_path, headers=headers)
+        parsed = urlparse(html.split('<a id="booth-link"')[1].split('href="')[1].split('"')[0])
+    except:
+        print html
+        raise
+    poll_url = dict(parse_qsl(parsed.query))['continue_url']
+    parsed = urlparse(poll_url)
+    booth_path = parsed.path
+    poll_info = dict(parse_qsl(parsed.query))
+    poll_json_path = urlparse(poll_info['poll_json_url']).path
+    conn.request('GET', poll_json_path, headers=headers)
     response = conn.getresponse()
-    election = loads(response.read())
-    pk = election['public_key']
+    poll_info['poll_data'] = loads(response.read())
+    return conn, headers, poll_info
+
+def extract_poll_info(poll_info):
+    csrf_token = poll_info['token']
+    voter_path = conn.path
+    poll_data = poll_info['poll_data']
+    pk = poll_data['public_key']
     p = int(pk['p'])
     g = int(pk['g'])
     q = int(pk['q'])
     y = int(pk['y'])
-    answers = election['questions'][0]['answers']
-    cast_path = '/'.join(voter_path.split('/')[:-3]) + '/cast'
-    return conn, cast_path, csrf_token, headers, answers, p, g, q, y
+    answers = poll_data['questions'][0]['answers']
+    cast_path = poll_data['cast_url']
+    return cast_path, csrf_token, answers, p, g, q, y
 
 def do_cast_vote(conn, cast_path, token, headers, vote):
     body = urlencode({'encrypted_vote': dumps(vote), 'csrf_token': token})
@@ -160,11 +164,21 @@ def do_cast_vote(conn, cast_path, token, headers, vote):
     conn.close()
 
 def cast_vote(voter_url, choices=None):
-    election_info = get_election(voter_url)
-    conn, cast_path, token, headers, answers, p, g, q, y = election_info
+    conn, headers, poll_info = get_poll_info(voter_url)
+    csrf_token = poll_info['token']
+    voter_path = conn.path
+    poll_data = poll_info['poll_data']
+    pk = poll_data['public_key']
+    p = int(pk['p'])
+    g = int(pk['g'])
+    q = int(pk['q'])
+    y = int(pk['y'])
+    answers = poll_data['questions'][0]['answers']
+    cast_path = poll_data['cast_url']
+
     choices = choices if choices is not None else len(answers)
     vote, encoded, rand = generate_vote(p, g, q, y, choices)
-    do_cast_vote(conn, cast_path, token, headers, vote)
+    do_cast_vote(conn, cast_path, csrf_token, headers, vote)
     return encoded, rand
 
 def main_generate(nr, domain, voters_file):
