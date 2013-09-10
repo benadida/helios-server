@@ -575,7 +575,8 @@ class PollManager(models.Manager):
 
     def get_query_set(self):
         qs = super(PollManager,
-                   self).get_query_set(self).filter().defer('encrypted_tally')
+                   self).get_query_set()
+        return qs.defer('encrypted_tally')
 
 
 class Poll(PollTasks, HeliosModel, PollFeatures):
