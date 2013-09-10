@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-11 01:40+0300\n"
+"POT-Creation-Date: 2013-09-11 02:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -166,7 +166,7 @@ msgstr "Ψηφοφορία έτοιμη προς οριστικοποίηση"
 
 #: models.py:621
 msgid "Prepare poll questions"
-msgstr "Ανάθεση ερωτήσεων για κάθε κάλπη"
+msgstr "Ορισμός ερωτήσεων για κάθε κάλπη"
 
 #: models.py:626
 msgid "Import voters list"
@@ -454,12 +454,13 @@ msgid ""
 "Please resolve the following issues in order to be able to freeze the "
 "election"
 msgstr ""
-"Παρακαλώ διευθετήστε τα παρακάτω ζητήματα προκειμένου να μπορέσεινα "
-"οριστικοποιηθεί η ψηφοφορία"
+"Παρακαλώ διευθετήστε τα παρακάτω ζητήματα προκειμένου να μπορέσει να "
+"οριστικοποιηθεί η ψηφοφορία."
 
 #: templates/_reveal_freeze.html:35 templates/_reveal_mix.html:35
-msgid "Close"
-msgstr "Λήξη"
+#: templates/_reveal_mix.html.py:47
+msgid "Cancel"
+msgstr "Άκυρο"
 
 #: templates/_reveal_freeze.html:39 templates/_reveal_mix.html:39
 msgid "Election freeze message"
@@ -468,10 +469,6 @@ msgstr "Συνοδευτικό μήνυμα οριστικοποίησης ψη�
 #: templates/_reveal_freeze.html:45 templates/_reveal_mix.html:45
 msgid "Confirm freeze"
 msgstr "Επιβεβαίωση οριστικοποίησης"
-
-#: templates/_reveal_mix.html:47
-msgid "Cancel"
-msgstr "Άκυρο"
 
 #: templates/_reveal_rename_poll.html:5
 msgid "Rename poll"
@@ -704,6 +701,19 @@ msgstr ""
 "\n"
 "Η ψηφοφορία έληξε στις <em>%(date)s</em>. Αναμονή αποτελεσμάτων.\n"
 
+#: templates/trustee_email.txt:2
+msgid "As a trustee for the election"
+msgstr "Ως μέλος της εφορευτικής επιτροπής για την ψηφοφορία"
+
+#: templates/trustee_email.txt:6
+msgid "please visit your control panel and follow the instructions"
+msgstr ""
+"παρακαλούμε επισκεφθείτε τον πίνακα ελέγχου και ακολουθήστε τις οδηγίες"
+
+#: templates/trustee_email.txt:13
+msgid "Zeus Digital Elections"
+msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
+
 #: templates/voters_email.html:8
 msgid "Send email"
 msgstr "Αποστολή μηνύματος email σε ψηφοφόρους"
@@ -736,24 +746,19 @@ msgstr ""
 "\n"
 "Αποστολή μηνύματος στους ψηφοφόρους της ψηφοφορίας '%(election_name)s'\n"
 
+#: templates/email/info_body.txt:1
+msgid "Intended recipient"
+msgstr "Νόμιμος παραλήπτης"
+
+#: templates/email/info_body.txt:6
+msgid "Voting link"
+msgstr "Σύνδεσμος ψηφοφορίας"
+
 #~ msgid "Save polls"
 #~ msgstr "Αποθήκευση κάλπεων"
 
-#~ msgid "As a trustee for the election"
-#~ msgstr "Ως μέλος της εφορευτικής επιτροπής για την ψηφοφορία"
-
-#~ msgid "please visit your control panel and follow the instructions"
-#~ msgstr ""
-#~ "παρακαλούμε επισκεφθείτε τον πίνακα ελέγχου και ακολουθήστε τις οδηγίες"
-
-#~ msgid "Zeus Digital Elections"
-#~ msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
-
-#~ msgid "Intended recipient"
-#~ msgstr "Νόμιμος παραλήπτης"
-
-#~ msgid "Voting link"
-#~ msgstr "Σύνδεσμος ψηφοφορίας"
+#~ msgid "Close"
+#~ msgstr "Πίσω"
 
 #~ msgid "Poll %(label)s count"
 #~ msgstr "Σύνολο κάλπης %(label)s"
