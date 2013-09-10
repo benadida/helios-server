@@ -215,9 +215,7 @@ class PollMix(models.Model):
             self.mix_error = traceback.format_exc()
             self.parts.all().delete()
             self.save()
-            self.notify_admin_for_mixing_error()
-            logger.exception("Mixing failed (mix pk:%d)", self.pk)
-            return
+            raise
 
 
 class MixPart(models.Model):
