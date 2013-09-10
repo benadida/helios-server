@@ -322,37 +322,30 @@ def voters_email(request, election, poll, voter_uuid=None):
                 update_booth_invitation_date = True
 
             if voter:
-                tasks.single_voter_email.delay(voter_uuid=voter.uuid,
-                                       subject_template=subject_template,
-                                       body_template=body_template,
-                                       extra_vars=extra_vars,
-                                       update_date=True,
-                                       update_booth_invitation_date=update_booth_invitation_date)
-                url = poll_reverse(poll, 'voters')
-                return HttpResponseRedirect(url)
-            else:
-                # exclude those who have not voted
-                if email_form.cleaned_data['send_to'] == 'voted':
-                    voter_constraints_exclude = {'vote_hash' : None}
+                voter_constraints_include = {'uuid': voter.uuid}
 
-                # include only those who have not voted
-                if email_form.cleaned_data['send_to'] == 'not-voted':
-                    voter_constraints_include = {'vote_hash': None}
+            # exclude those who have not voted
+            if email_form.cleaned_data['send_to'] == 'voted':
+                voter_constraints_exclude = {'vote_hash' : None}
 
-                tasks.voters_email.delay(poll.pk,
-                                     subject_template=subject_template,
-                                     body_template=body_template,
-                                     extra_vars=extra_vars,
-                                     voter_constraints_include=voter_constraints_include,
-                                     voter_constraints_exclude=voter_constraints_exclude,
-                                     update_date=True,
-                                     update_booth_invitation_date=update_booth_invitation_date)
+            # include only those who have not voted
+            if email_form.cleaned_data['send_to'] == 'not-voted':
+                voter_constraints_include = {'vote_hash': None}
+
+            tasks.voters_email.delay(poll.pk,
+                                 subject_template=subject_template,
+                                 body_template=body_template,
+                                 extra_vars=extra_vars,
+                                 voter_constraints_include=voter_constraints_include,
+                                 voter_constraints_exclude=voter_constraints_exclude,
+                                 update_date=True,
+                                 update_booth_invitation_date=update_booth_invitation_date)
 
 
-                # this batch process is all async, so we can return a nice note
-                messages.info(request, _("Email sending started"))
-                url = poll_reverse(poll, 'voters')
-                return HttpResponseRedirect(url)
+            # this batch process is all async, so we can return a nice note
+            messages.info(request, _("Email sending started"))
+            url = poll_reverse(poll, 'voters')
+            return HttpResponseRedirect(url)
 
     context = {
         'email_form': email_form,
