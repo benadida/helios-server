@@ -25,17 +25,14 @@ class Command(BaseCommand):
             admin = strforce(e.admins.all()[0].pretty_name)
             institution = strforce(e.institution.name)
             polls = e.polls.all()
-            voter_count = 0
-            voted_count = 0
             for poll in e.polls.all():
-                voter_count += Voter.objects.filter(poll=poll).count()
-                voted_count += poll.voters_cast_count()
-            voter_count = str(voter_count)
-            voted_count = str(voted_count)
-            start = e.voting_starts_at
-            start = start.strftime("%Y-%m-%d %H:%M:%S") if start else '-'
-            end = e.voting_ended_at
-            end = end.strftime("%Y-%m-%d %H:%M:%S") if end else '-'
-            print ','.join((uuid, name, admin, institution,
-                            voter_count, voted_count, start, end))
+                poll_uuid = strforce(poll.uuid)
+                voter_count = str(Voter.objects.filter(poll=poll).count())
+                voted_count = str(poll.voters_cast_count())
+                start = e.voting_starts_at
+                start = start.strftime("%Y-%m-%d %H:%M:%S") if start else '-'
+                end = e.voting_ended_at
+                end = end.strftime("%Y-%m-%d %H:%M:%S") if end else '-'
+                print ','.join((uuid, name, poll_uuid, admin, institution,
+                                voter_count, voted_count, start, end))
 
