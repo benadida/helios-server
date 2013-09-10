@@ -462,7 +462,7 @@ class Election(HeliosModel, ElectionFeatures):
         return self.get_zeus_trustee()
 
     def get_zeus_trustee(self):
-        trustees_with_sk = self.trustees.exclude(secret_key__isnull=True)
+        trustees_with_sk = self.trustees.zeus()
         if len(trustees_with_sk) > 0:
             return trustees_with_sk[0]
         else:
@@ -478,14 +478,15 @@ class Election(HeliosModel, ElectionFeatures):
             # LOG TRUSTEE CREATED
             trustee.name = name
             trustee.save()
+
         if self.trustees.count() != len(trustees):
             emails = map(lambda t:t[1], trustees)
-            self.zeus.invalidate_election_public()
-            for trustee in self.trustees.all():
+            for trustee in self.trustees.filter().no_secret():
                 if not trustee.email in emails:
                     # LOG TRUSTEE DELETED
+                    self.zeus.invalidate_election_public()
                     trustee.delete()
-            self.zeus.compute_election_public()
+                    self.zeus.compute_election_public()
         self.auto_notify_trustees()
 
     def auto_notify_trustees(self, force=False):
@@ -1824,6 +1825,9 @@ class TrusteeQuerySet(QuerySet):
 
     def no_secret(self):
         return self.filter(secret_key__isnull=True)
+
+    def zeus(self):
+        return self.filter(secret_key__isnull=False)
 
 
 class TrusteeManager(models.Manager):
