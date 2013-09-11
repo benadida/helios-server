@@ -18,7 +18,7 @@
 {% reveal_action label "#close-admin-action" "" "close-election"%}
 {% endif %}
 
-{% if election.feature_can_mix %}
+{% if election.feature_can_mix and not election.any_poll_mix_running %}
 {% trans "Mix" as label %}
 {% reveal_action label "#compute-tally-admin-action" "" "start-mixing" %}
 {% endif %}

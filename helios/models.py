@@ -408,6 +408,9 @@ class Election(HeliosModel, ElectionFeatures):
       if self.feature_closed:
           return _('Election closed')
 
+      if self.feature_frozen and not self.feature_voting_started:
+          return _('Waiting for voting to start.')
+
       if self.feature_frozen and not self.feature_within_voting_date:
           return _('Voting stopped. Pending close.')
 

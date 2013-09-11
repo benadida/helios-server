@@ -91,6 +91,11 @@ class ElectionFeatures(FeaturesMixin):
             yield poll.check_features(*args)
 
     @election_feature()
+    def _feature_voting_started(self):
+      return  self.feature_frozen and \
+              self.voting_starts_at <= datetime.datetime.now()
+
+    @election_feature()
     def _feature_canceled(self):
         return self.canceled_at
 
