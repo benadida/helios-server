@@ -36,7 +36,7 @@ from helios.utils import force_utf8
 @auth.election_admin_required
 def list(request, election):
     polls = election.polls.filter()
-    extra = int(request.GET.get('extra', 3))
+    extra = int(request.GET.get('extra', 1))
     polls_formset = modelformset_factory(Poll, PollForm, extra=extra,
                                          max_num=100, formset=PollFormSet,
                                          can_delete=False)
