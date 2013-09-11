@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-11 17:37+0300\n"
+"POT-Creation-Date: 2013-09-11 17:56+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -405,14 +405,13 @@ msgstr "Είσοδος στο ηλεκτρονικό παραπέτασμα"
 
 #: templates/_election_voter_actions.html:9
 msgid "Voting date passed."
-msgstr "Η χρόνος παύσης της ψηφοφορίας έχει παρέλθει"
+msgstr "Η χρόνος λήξης της ψηφοφορίας έχει παρέλθει"
 
 #: templates/_election_voter_actions.html:11
 msgid "Voting closed. Please wait for results"
 msgstr "Η ψηφοφορία έχει λήξει. Παρακαλώ περιμένετε αποτελέσματα"
 
 #: templates/_election_voter_actions.html:15
-#, fuzzy
 msgid "Election canceled"
 msgstr "Η ψηφοφορία έχει λήξει"
 

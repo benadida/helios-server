@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-11 17:37+0300\n"
+"POT-Creation-Date: 2013-09-11 17:56+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -180,23 +180,25 @@ msgstr "Επιβεβαιώστε την οριστικοποίηση της ψη
 msgid "Are you sure you want to delete the selected poll ?"
 msgstr "Επιβεβαιώστε τη διαγραφή της επιλεγμένης κάλπης"
 
-#: tasks.py:87
+#: tasks.py:90
 #, python-format
 msgid "%(election_name)s - vote cast"
 msgstr "%(election_name)s - ψήφος ελήφθη"
 
-#: tasks.py:91
+#: tasks.py:95
 #, python-format
 msgid ""
 "You have successfully cast a vote in\n"
 "\n"
 "%(election_name)s\n"
+"%(poll_name)s\n"
 "\n"
 "you can find your encrypted vote attached in this mail.\n"
 msgstr ""
-"Η ψήφος σας καταχωρήθηκε επιτυχώς για\n"
+"Η ψήφος σας καταχωρήθηκε επιτυχώς για την ψηφοφορία\n"
 "\n"
 "%(election_name)s\n"
+"%(poll_name)s\n"
 "\n"
 "H απόδειξη της καταχώρησης βρίσκεται συνημμένη στο παρόν μήνυμα.\n"
 
