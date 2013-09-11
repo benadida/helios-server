@@ -220,7 +220,7 @@ class ZeusUser(object):
 
     def can_access_poll(self, poll):
         if self.is_voter:
-            return self._user.poll == poll
+            return self._user.poll.uuid == poll.uuid
         if self.is_admin:
             if self._user.superadmin_p:
                 return True
