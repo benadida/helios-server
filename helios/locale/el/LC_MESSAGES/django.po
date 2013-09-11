@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-11 02:02+0300\n"
+"POT-Creation-Date: 2013-09-11 12:51+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -100,35 +100,35 @@ msgstr ""
 "Το μέλος της εφορευτικής επιτροπης '%s' πρέπει να επιβεβαιώσει τον Κωδικό "
 "Ψηφοφορίας του"
 
-#: models.py:371 models.py:686
+#: models.py:371 models.py:687
 msgid "Canceled"
 msgstr "Ακυρώθηκε"
 
-#: models.py:374 models.py:689
+#: models.py:374 models.py:690
 msgid "Completed"
 msgstr "Ολοκληρώθηκε"
 
-#: models.py:377 models.py:713
+#: models.py:377 models.py:714
 msgid "Voting"
 msgstr "Ψηφοφορία"
 
-#: models.py:380 models.py:692
+#: models.py:380 models.py:693
 msgid "Results computed"
 msgstr "Εξήχθησαν αποτελέσματα"
 
-#: models.py:383 models.py:695
+#: models.py:383 models.py:696
 msgid "Computing results"
 msgstr "Υπολογισμός αποτελεσμάτων"
 
-#: models.py:386 models.py:698
+#: models.py:386 models.py:699
 msgid "Decryption finished"
 msgstr "Η αποκρυπτογράφηση ολοκληρώθηκε"
 
-#: models.py:389 models.py:701
+#: models.py:389 models.py:702
 msgid "Decrypting"
 msgstr "Αποκρυπτογράφηση"
 
-#: models.py:392 models.py:707
+#: models.py:392 models.py:708
 msgid "Partial decryptions finished"
 msgstr "Οι μερικές αποκρυπτογραφήσεις ολοκληρώθηκαν"
 
@@ -164,124 +164,128 @@ msgstr "Οριστικοποιημένη"
 msgid "Election pending to freeze"
 msgstr "Ψηφοφορία έτοιμη προς οριστικοποίηση"
 
-#: models.py:621
+#: models.py:584 templates/_trustee_decrypt.html:23
+msgid "Poll name"
+msgstr "Όνομα κάλπης"
+
+#: models.py:622
 msgid "Prepare poll questions"
 msgstr "Ορισμός ερωτήσεων για κάθε κάλπη"
 
-#: models.py:626
+#: models.py:627
 msgid "Import voters list"
 msgstr "Εισαγωγή ψηφοφόρων"
 
-#: models.py:704
+#: models.py:705
 msgid "Waiting for all partial decryptions to finish"
 msgstr "Αναμονή για την ολοκλήρωση των μερικών αποκρυπτογραφήσεων"
 
-#: models.py:710
+#: models.py:711
 msgid "Voting closed"
 msgstr "Η ψηφοφορία έχει λήξει"
 
-#: models.py:717
+#: models.py:718
 msgid "Pending election close"
 msgstr "Αναμένεται λήξη της ψηφοφορίας"
 
-#: models.py:719
+#: models.py:720
 msgid "Freezed"
 msgstr "Οριστικοποιημένη"
 
-#: models.py:722
+#: models.py:723
 msgid "No questions set"
 msgstr "Δεν έχουν ανατεθεί ακόμη ερωτήσεις"
 
-#: models.py:725
+#: models.py:726
 msgid "No voters set"
 msgstr "Δεν έχουν εισαχθεί ακόμη ψηφοφόροι"
 
-#: models.py:728
+#: models.py:729
 msgid "Ready to freeze"
 msgstr "Έτοιμη προς οριστικοποίηση"
 
-#: models.py:863
+#: models.py:864
 msgid "Election initialized."
 msgstr "Η ψηφοφορία αρχικοποιήθηκε."
 
-#: models.py:864
+#: models.py:865
 msgid "Election candidates added."
 msgstr "Οι υποψήφιοι έχουν καταχωρηθεί."
 
-#: models.py:865
+#: models.py:866
 msgid "Election voters added."
 msgstr "Οι εκλέκτορες ψηφοφόροι έχουν καταχωρηθεί."
 
-#: models.py:866
+#: models.py:867
 msgid "Trustees keys generated."
 msgstr "Οι Κωδικοί της ψηφοφορίας έχουν παραχθεί."
 
-#: models.py:867
+#: models.py:868
 msgid "Election opened."
 msgstr "Η ψηφοφορία έχει αρχίσει."
 
-#: models.py:868
+#: models.py:869
 msgid "Election voters notified"
 msgstr "Οι ψηφοφόροι έχουν ειδοποιηθεί"
 
-#: models.py:869
+#: models.py:870
 msgid "Election voters which not voted notified"
 msgstr "Οι ψηφοφόροι που δεν έχουν ψηφήσει έχουν ειδοποιηθεί"
 
-#: models.py:870
+#: models.py:871
 msgid "Election extension needed."
 msgstr "Παράταση της ψηφοφορίας."
 
-#: models.py:871
+#: models.py:872
 msgid "Election closed."
 msgstr "Η ψηφοφορία έχει λήξει."
 
-#: models.py:872
+#: models.py:873
 msgid "Election tallied."
 msgstr "Τα ψηφοδέλτια έχουν αναμιχθεί"
 
-#: models.py:873
+#: models.py:874
 msgid "Trustees should decrypt results."
 msgstr ""
 "Η εφορευτική επιτροπή πρέπει να αποκρυπτογραφήσει τα τελικά ψηφοδέλτια."
 
-#: models.py:874
+#: models.py:875
 msgid "Election results where decrypted."
 msgstr "Τα τελικά ψηφοδέλτια έχουν αποκρυπτογραφηθεί."
 
-#: models.py:888
+#: models.py:889
 msgid "YES"
 msgstr "ΝΑΙ"
 
-#: models.py:889
+#: models.py:890
 msgid "NO"
 msgstr "ΟΧΙ"
 
-#: models.py:891
+#: models.py:892
 msgid "(EXCLUDED)"
 msgstr "(ΕΞΑΙΡΕΣΗ)"
 
-#: models.py:1131 templates/_election_view_menu.html:11
+#: models.py:1132 templates/_election_view_menu.html:11
 msgid "Results"
 msgstr "Αποτελέσματα"
 
-#: models.py:1257
+#: models.py:1258
 msgid "Name cannot be empty"
 msgstr "Το όνομα δεν μπορεί να είναι κενό"
 
-#: models.py:1264
+#: models.py:1265
 msgid "Surname cannot be empty"
 msgstr "Το επώνυμο δεν μπορεί να είναι κενό"
 
-#: models.py:1889
+#: models.py:1890
 msgid "Create trustee key"
 msgstr "Δημιουργία κωδικού ψηφοφορίας"
 
-#: models.py:1890
+#: models.py:1891
 msgid "Verify trustee key"
 msgstr "Επιβεβαίωση κωδικού ψηφοφορίας"
 
-#: models.py:1891
+#: models.py:1892
 msgid "Partially decrypt votes"
 msgstr "Μερική αποκρυπτογράφηση ψήφων"
 
@@ -372,8 +376,8 @@ msgid "Voters"
 msgstr "Ψηφοφόροι"
 
 #: templates/_election_polls_add.html:2
-msgid "Add new polls"
-msgstr "Προσθήκη νέων κάλπεων"
+msgid "Add new poll"
+msgstr "Προσθήκη νέας κάλπης"
 
 #: templates/_election_polls_add.html:9 templates/_reveal_rename_poll.html:14
 msgid "Save"
@@ -493,10 +497,6 @@ msgstr "Επιβεβαίωση έναρξης υπολογισμού αποτε�
 #: templates/_trustee_decrypt.html:12
 msgid "Insert your secret key"
 msgstr "Προσκομίστε τον μυστικό κωδικό ψηφοφορίας σας"
-
-#: templates/_trustee_decrypt.html:23
-msgid "Poll name"
-msgstr "Όνομα κάλπης"
 
 #: templates/_trustee_decrypt.html:24
 msgid "Decryption status"
@@ -701,19 +701,6 @@ msgstr ""
 "\n"
 "Η ψηφοφορία έληξε στις <em>%(date)s</em>. Αναμονή αποτελεσμάτων.\n"
 
-#: templates/trustee_email.txt:2
-msgid "As a trustee for the election"
-msgstr "Ως μέλος της εφορευτικής επιτροπής για την ψηφοφορία"
-
-#: templates/trustee_email.txt:6
-msgid "please visit your control panel and follow the instructions"
-msgstr ""
-"παρακαλούμε επισκεφθείτε τον πίνακα ελέγχου και ακολουθήστε τις οδηγίες"
-
-#: templates/trustee_email.txt:13
-msgid "Zeus Digital Elections"
-msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
-
 #: templates/voters_email.html:8
 msgid "Send email"
 msgstr "Αποστολή μηνύματος email σε ψηφοφόρους"
@@ -746,13 +733,24 @@ msgstr ""
 "\n"
 "Αποστολή μηνύματος στους ψηφοφόρους της ψηφοφορίας '%(election_name)s'\n"
 
-#: templates/email/info_body.txt:1
-msgid "Intended recipient"
-msgstr "Νόμιμος παραλήπτης"
+#~ msgid "Name"
+#~ msgstr "Όνομα"
 
-#: templates/email/info_body.txt:6
-msgid "Voting link"
-msgstr "Σύνδεσμος ψηφοφορίας"
+#~ msgid "As a trustee for the election"
+#~ msgstr "Ως μέλος της εφορευτικής επιτροπής για την ψηφοφορία"
+
+#~ msgid "please visit your control panel and follow the instructions"
+#~ msgstr ""
+#~ "παρακαλούμε επισκεφθείτε τον πίνακα ελέγχου και ακολουθήστε τις οδηγίες"
+
+#~ msgid "Zeus Digital Elections"
+#~ msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
+
+#~ msgid "Intended recipient"
+#~ msgstr "Νόμιμος παραλήπτης"
+
+#~ msgid "Voting link"
+#~ msgstr "Σύνδεσμος ψηφοφορίας"
 
 #~ msgid "Save polls"
 #~ msgstr "Αποθήκευση κάλπεων"

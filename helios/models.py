@@ -581,7 +581,7 @@ class PollManager(models.Manager):
 
 class Poll(PollTasks, HeliosModel, PollFeatures):
 
-  name = models.CharField(max_length=255)
+  name = models.CharField(_('Poll name'), max_length=255)
   short_name = models.CharField(max_length=255)
 
   election = models.ForeignKey('Election', related_name="polls")
