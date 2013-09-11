@@ -32,13 +32,24 @@ function Poll(options) {
   this.post_url = options.post_url;
   this.get_url = options.get_url;
   this.secret_key = options.secret_key;
+  this.post_upload_cb = options.post_upload_cb || function() {};
+  this.input = this.el.find("td input");
   this.init();
 }
 
 Poll.prototype = {
   
   get_actions: function() {
-    return this.el.find('td a');
+    return this.el.find('td a, td input');
+  },
+
+  show_action: function(act) {
+    this.set_status('');
+    this.get_actions().filter("."+act).show();
+  },
+  
+  finished: function() {
+   return this.el.data('poll-finished') == "1";
   },
 
   init: function() {
@@ -47,10 +58,9 @@ Poll.prototype = {
     }
     var actions = this.get_actions();
     actions.filter('.decrypt').bind('click', _.bind(this.decrypt, this))
-    actions.filter('.upload').bind('click', _.bind(this.upload, this))
+    this.init_restore();
     actions.filter('.download').bind('click', _.bind(this.download, this))
-    actions.filter('.download').hide();
-    this.status = actions.filter('.download').parent().append("<span class='status'></span>");
+    this.status = this.el.find(".status");
   },
   
   set_status: function(status) {
@@ -86,37 +96,107 @@ Poll.prototype = {
   decrypt_tally: function() {
     this.set_status("Decrypting...");
     decrypt_and_prove_tally(this.tally, this.public_key, 
-                            this.secret_key, 
-                            _.bind(this.decrypt_callback, this));
+                            this.secret_key,
+                            _.bind(this.update_progress, this),
+                            _.bind(this.upload, this));
   },
   
-  decrypt_callback: function(data) {
-    this.decription = data;
+  update_progress: function(batch, batch_index, time, median_time, 
+                            time_remaining, total_batches, percentage) {
+    if (batch_index < 3) {
+      return; 
+    }
+    this.el.find(".progress .meter").css({'width': percentage + '%'});
+    var time_msg = parseInt(time_remaining/1000) + " δευτερόλεπτα.";
+    if (time_remaining/1000 > 120) {
+      time_msg = parseInt(time_remaining/1000/60) + " λεπτά.";
+    }
+    time_msg += " (" + batch_index*BATCH_SIZE + "/" + TOTAL_VOTES + ")";
+    this.set_status(time_msg);
+  },
+
+  post_decrypt: function() {
+  },
+  
+  upload: function(data) {
+    this.hide_actions();
+    this.decryption = data;
     this.set_status("Uploading...");
     
+    var post_data = $.toJSON(data);
+
     $.ajax({
       type: 'POST',
       url: this.post_url,
       timeout: 300000,
-      data: {'factors_and_proofs': $.toJSON(data)},
+      data: {'factors_and_proofs': post_data},
       success: _.bind(function(result) {
         if (result != "FAILURE") {
           this.set_status("Completed")
+          this.el.data('poll-finished', '1');
+          this.post_upload();
         } else {
           this.set_status("Invalid secret key")
+          this.el.data('poll-finished', '0');
         }
       }, this),
       error: _.bind(function() {
         this.set_status("Error uploading");
-        this.get_actions().filter('.download').show();
+        this.show_action("download");
+        this.el.data('poll-finished', '0');
+        this.post_upload();
       }, this)
     });
   },
 
-  upload: function() {
+  post_upload: function() {
+    this.post_upload_cb();
+  },
+  
+  init_restore: function() {
+    var self = this;
+    this.input.fileReaderJS({
+      dragClass: "drag",
+      accept: false,
+      readAsMap: {
+          'text/*' : 'Text'
+      },
+      readAsDefault: 'Text',
+      on: {
+          beforestart: function() {
+              $(".local_loading").show();
+          },
+          load: function(e, file) {
+              var data;
+              // Native ProgressEvent
+              if (e.srcElement && e.srcElement.result) {
+                data = e.srcElement.result;
+              } else if (e.currentTarget && e.currentTarget.result) {
+                data = e.currentTarget.result;
+              }
+              self.upload(JSON.parse(data));
+          },
+      }
+    });
   },
 
   download: function() {
+    try {
+      var filetype = "text/plain;charset=utf-8";
+      var data = $.toJSON(this.decryption);
+
+      if (!data) { 
+          alert("Το περιεχόμενο της αποκρυπτογράφησης είναι κενό");
+          return false;
+      }
+
+      bb = new BlobBuilder;
+      bb.append(data);
+      saveAs(bb.getBlob(filetype), name);
+    } catch (err) {
+      UTILS.open_window_with_content(data, "application/json");
+    }
+      return false;
   },
 
   download_ciphers: function(success, error) {
@@ -134,11 +214,53 @@ Poll.prototype = {
 function TrusteeDecrypt(options) {
   this.polls_table = $(options.table);
   this.secret_key = options.secret_key;
+  this.action = $(options.action);
+  this.action.click(_.bind(function(e) {
+    e.preventDefault();
+    this.start_decryption();
+  }, this));
   this.init_polls();
 }
 
 
 TrusteeDecrypt.prototype = {
+  
+  decrypting: false,
+  start_decryption: function() {
+    if (this.decrypting) { return }
+    this.decrypting = true;
+    var polls = this.get_available();
+    polls.reverse();
+    var do_next = function() {
+      var poll = polls.pop();
+      if (!poll) { 
+        this.action.hide();
+        this.decrypting = false;
+        return;
+      }
+      poll.post_upload_cb = _.bind(do_next, this);
+      poll.decrypt();
+    }
+    do_next.call(this);
+  },
+  
+  get_available: function() {
+    var self = this;
+    return _.filter(this.polls, function(poll) {
+      return !poll.finished();
+    })
+  },
+
+  get_next_available: function(cb) {
+    var self = this;
+    var next_poll = null;
+    _.each(this.polls, function(poll) {
+      if (!next_poll && !poll.finished()) { 
+        next_poll = poll;
+      }
+    });
+    return next_poll;
+  },
 
   init_polls: function() {
     var polls = this.polls = {};
@@ -163,6 +285,8 @@ TrusteeDecrypt.prototype = {
 function initLayout() {
   $(".polls-list").hide();
   $("#sk-textarea").hide();
+  $(".download-partial").hide();
+  $(".do-decrypt").hide();
 }
 
 $(document).ready(function() {
@@ -184,21 +308,24 @@ $(document).ready(function() {
             $(".sk-form").hide();
             window.pollsView = new TrusteeDecrypt({
               table: '.polls-list',
+              action: '.do-decrypt',
               secret_key: secret_key
             });
             $(".polls-list").show();
+            $(".do-decrypt").show();
           }
       });
       // DEBUG
       var secret_key = get_secret_key();
       if (secret_key) {
-
             $(".sk-form").hide();
             window.pollsView = new TrusteeDecrypt({
               table: '.polls-list',
+              action: '.do-decrypt',
               secret_key: secret_key
             });
             $(".polls-list").show();
+            $(".do-decrypt").show();
       }
     });
 });
@@ -222,10 +349,10 @@ function save_decryptions(name) {
     return false;
 }
 
-var BATCH_SIZE = 5;
+var BATCH_SIZE = 2;
 var TOTAL_VOTES = 0;
 
-function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
+function decrypt_and_prove_tally(tally, public_key, secret_key, progress_callback, callback) {
     // we need to keep track of the values of g^{voter_num} for decryption
     var DISCRETE_LOGS = {};
     var CURRENT_EXP = 0;
@@ -243,11 +370,6 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
     var decryption_factors= [[]];
     var decryption_proofs= [[]];
     
-    function update_progress() {
-        var met = $(".progress .meter");
-        var perc = (100 * computed) / tally.num_tallied;
-    }
-
     var computed = 0;
     var computed_perc = 0;
 
@@ -300,7 +422,10 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
        batch_med_time = (batch_med_time + batch_time) / 2;
        time_remaining = batch_med_time * (batches_count - batches_completed + 1);
        var percentage_done = (100*batches_completed) / batches_count
-       batch_complete_callback(dbatch, batches_completed, batch_time, 
+       if (!progress_callback) {
+        progress_callback = batch_complete_callback;
+       }
+       progress_callback(dbatch, batches_completed, batch_time, 
                                batch_med_time, time_remaining, 
                                batches_count, percentage_done);
         return;
@@ -347,7 +472,7 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
     }
     
     var _sk = secret_key.toJSONObject();
-    function _worker_decrypt(worker, id) {
+    function _worker_decrypt(worker, id, progress_callback) {
         var index = pending_indexes.pop();
         if (!tally.tally[0][index]) {
             return;
@@ -386,7 +511,10 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, callback) {
             time_remaining = (pending_indexes.length * batch_med_time) / decryptionWorkersCount;
         }
         var percentage_done = (100*completed) / tally_size;
-        batch_complete_callback([], completed, time, batch_med_time, time_remaining,
+        if (!progress_callback) {
+          progress_callback = batch_complete_callback;
+        }
+        progress_callback([], completed, time, batch_med_time, time_remaining,
                                tally_size, percentage_done)
       }
 
@@ -421,7 +549,6 @@ function batch_complete_callback(batch, batch_index, time, median_time,
   }
 
   time_msg += " (" + batch_index*BATCH_SIZE + "/" + TOTAL_VOTES + ")";
-
     $(".progress-message .time").text(time_msg);
 }
 
@@ -436,47 +563,6 @@ function get_secret_key() {
     }
 }
 
-
-function do_tally() {
-  $('#sk_section').hide();
-  $('#waiting_div').show();
-
-  $(".progress").show();
-  $(".progress .meter").width(10);
-  
-  var secret_key = get_secret_key();
-  if (!secret_key) { alert("Secret key error") }
-
-  function callback(factors_and_proof) {
-
-      $(".progress-message").hide();
-      $(".progress-message .time").text("");
-
-      // json'ify it
-      var factors = factors_and_proof.decryption_factors
-      var decryption_proofs = $(factors_and_proof.decryption_proofs).map(function(i, q_proof) {
-          return $(q_proof).map(function(j, a_proof){
-             return a_proof.toJSONObject(); 
-          });
-      });
-      
-      var factors_and_proofs = {'decryption_factors': factors, 'decryption_proofs': decryption_proofs};
-      var factors_and_proofs_json = $.toJSON(factors_and_proofs);
-      
-      // clear stuff
-      secret_key = null;
-      $('#sk_textarea').val("");
-      
-      // display the result in a text area.
-      $('#waiting_div').hide();
-      
-      $('#result_textarea').val(factors_and_proofs_json);
-      $('#result_div').show();
-      $('#first-step-success').show();
-  }
-
-  decrypt_and_prove_tally(TALLY, ELECTION_PK, secret_key, callback);
-}
 
 function submit_result() {
   $('#result_div').hide();
@@ -544,29 +630,6 @@ var secret_key_filereader_options = {
 };
 
 var stored_decryption_filereader_options = {
-    dragClass: "drag",
-    accept: false,
-    readAsMap: {
-        'text/*' : 'Text'
-    },
-    readAsDefault: 'Text',
-    on: {
-        beforestart: function() {
-            $(".local_loading").show();
-        },
-        load: function(e, file) {
-            $(".local_loading").hide();
-            // Native ProgressEvent
-            if (e.srcElement && e.srcElement.result) {
-              $("textarea#result_textarea").val(e.srcElement.result);
-            } else if (e.currentTarget && e.currentTarget.result) {
-              $("textarea#result_textarea").val(e.currentTarget.result);
-            } else {
-              $("textarea#result_textarea").show();
-            }
-
-        },
-    }
 };
 
 function show_decrypt_results() {

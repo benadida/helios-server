@@ -6383,78 +6383,88 @@ body table.polls-table {
 body table.polls-table th {
   text-transform: capitalize;
 }
-/* line 285, ../sass/app.scss */
+/* line 283, ../sass/app.scss */
+body .do-decrypt {
+  display: inline-block;
+  margin: 20px 0;
+  float: right;
+}
+/* line 288, ../sass/app.scss */
+body .trustee-decrypt-actions {
+  text-align: right;
+}
+/* line 293, ../sass/app.scss */
 body .freeze-issues ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-/* line 289, ../sass/app.scss */
+/* line 297, ../sass/app.scss */
 body .freeze-issues ul:last-child {
   margin-bottom: 1em;
 }
-/* line 291, ../sass/app.scss */
+/* line 299, ../sass/app.scss */
 body .freeze-issues li {
   padding: 5px;
   margin: 5px 0;
 }
-/* line 292, ../sass/app.scss */
+/* line 300, ../sass/app.scss */
 body .freeze-issues li {
   background-color: #eee;
 }
-/* line 294, ../sass/app.scss */
+/* line 302, ../sass/app.scss */
 body .freeze-issues li span {
   font-weight: bold;
 }
-/* line 297, ../sass/app.scss */
+/* line 305, ../sass/app.scss */
 body .election-view-content {
   margin-top: 2em;
 }
-/* line 301, ../sass/app.scss */
+/* line 309, ../sass/app.scss */
 body .election-contact, body .election-actions {
   margin-top: 2em;
 }
-/* line 302, ../sass/app.scss */
+/* line 310, ../sass/app.scss */
 body .election-contact ul, body .election-actions ul {
   list-style: none;
 }
-/* line 306, ../sass/app.scss */
+/* line 314, ../sass/app.scss */
 body .election-contact {
   background-color: #efefef;
 }
-/* line 311, ../sass/app.scss */
+/* line 319, ../sass/app.scss */
 body .election-actions .admin-status {
   margin-bottom: 1em;
 }
-/* line 312, ../sass/app.scss */
+/* line 320, ../sass/app.scss */
 body .election-actions .admin-status h4 {
   font-size: 1.2em;
   margin-bottom: 0.5em;
 }
-/* line 317, ../sass/app.scss */
+/* line 325, ../sass/app.scss */
 body #booth-link {
   width: 100%;
   margin-top: 40px;
   display: inline-block;
 }
-/* line 323, ../sass/app.scss */
+/* line 331, ../sass/app.scss */
 body .audit-ballot ul {
   list-style: none;
 }
 
-/* line 333, ../sass/app.scss */
+/* line 341, ../sass/app.scss */
 body > .row {
   border-right: 1px solid #dddddd;
   border-left: 1px solid #dddddd;
   background-color: #fff;
 }
 
-/* line 340, ../sass/app.scss */
+/* line 348, ../sass/app.scss */
 body {
   margin-top: 20px !important;
 }
 
-/* line 344, ../sass/app.scss */
+/* line 352, ../sass/app.scss */
 body .bg-wrapper {
   margin-top: 20px;
   width: 890px;
@@ -6465,23 +6475,23 @@ body .bg-wrapper {
   background-color: #fff;
 }
 
-/* line 352, ../sass/app.scss */
+/* line 360, ../sass/app.scss */
 .election-stats-list {
   max-height: 300px;
   overflow-y: scroll;
 }
 
-/* line 357, ../sass/app.scss */
+/* line 365, ../sass/app.scss */
 table tr.party {
   font-weight: bold;
   background-color: #ddd !important;
 }
 
-/* line 363, ../sass/app.scss */
+/* line 371, ../sass/app.scss */
 .trustee-entry tt {
   font-size: 0.8em;
 }
-/* line 364, ../sass/app.scss */
+/* line 372, ../sass/app.scss */
 .trustee-entry .hash-title {
   color: #666666;
   font-weight: normal;
@@ -6490,7 +6500,7 @@ table tr.party {
   margin-top: 8px;
 }
 
-/* line 373, ../sass/app.scss */
+/* line 381, ../sass/app.scss */
 form .field-readonly {
   background-color: #cccccc !important;
 }

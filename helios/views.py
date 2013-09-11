@@ -136,56 +136,6 @@ def elections_voted(request):
   return render_template(request, "elections_voted", {'elections': elections})
 
 
-@election_admin(frozen=True)
-def election_result_file(request, election, name, ext):
-  if not election.result:
-    raise PermissionDenied()
-
-  # we know csv exists
-  # this is ugly, documents generation should be included in celery task
-  # and called after result decryption
-  if not os.path.exists(election.get_result_file_path('csv', 'csv')):
-      election.generate_result_docs()
-
-  if request.GET.get('gen', None):
-      election.generate_result_docs()
-
-  fname = election.get_result_file_path(name, ext)
-  if not os.path.exists(fname):
-    raise Http404
-
-  if settings.USE_X_SENDFILE:
-    response = HttpResponse()
-    response['Content-Type'] = ''
-    response['X-Sendfile'] = fname
-    return response
-  else:
-    zip_data = file(fname, 'r')
-    response = HttpResponse(zip_data.read(), mimetype='application/%s' % ext)
-    zip_data.close()
-    basename = os.path.basename(fname)
-    response['Content-Dispotition'] = 'attachment; filename=%s' % basename
-    return response
-
-@election_admin(frozen=True)
-def election_zeus_proofs(request, election):
-  if not election.result:
-    raise PermissionDenied()
-
-  if not os.path.exists(election.zeus_proofs_path()):
-    election.store_zeus_proofs()
-
-  if settings.USE_X_SENDFILE:
-    response = HttpResponse()
-    response['Content-Type'] = ''
-    response['X-Sendfile'] = election.zeus_proofs_path()
-    return response
-  else:
-    zip_data = file(election.zeus_proofs_path())
-    response = HttpResponse(zip_data.read(), mimetype='application/zip')
-    zip_data.close()
-    response['Content-Dispotition'] = 'attachment; filename=%s_proofs.zip' % election.uuid
-    return response
 
 @election_admin(frozen=True)
 def election_stop_mixing(request, election):

@@ -1,3 +1,4 @@
+import os
 import csv
 import json
 
@@ -18,7 +19,7 @@ from zeus import tasks
 from django.utils.encoding import smart_unicode
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import Http404, HttpResponseRedirect, HttpResponse
 from django.core.exceptions import PermissionDenied
 from django.forms.models import modelformset_factory
 from django.template.loader import render_to_string
@@ -620,3 +621,61 @@ def results(request, election, poll):
     }
     set_menu('results', context)
     return render_template(request, 'election_poll_results', context)
+
+
+@auth.election_admin_required
+@auth.requires_poll_features('compute_results_finished')
+def results_file(request, election, poll, ext):
+    name = ext
+
+    if not os.path.exists(poll.get_result_file_path('csv', 'csv')):
+        election.generate_result_docs()
+
+    if request.GET.get('gen', None):
+        election.generate_result_docs()
+
+    fname = poll.get_result_file_path(name, ext)
+
+    if not os.path.exists(fname):
+        raise Http404
+
+    if settings.USE_X_SENDFILE:
+        response = HttpResponse()
+        response['Content-Type'] = ''
+        response['X-Sendfile'] = fname
+        return response
+    else:
+        zip_data = file(fname, 'r')
+        response = HttpResponse(zip_data.read(), mimetype='application/%s' % ext)
+        zip_data.close()
+        basename = os.path.basename(fname)
+        response['Content-Dispotition'] = 'attachment; filename=%s' % basename
+        return response
+
+
+@auth.election_admin_required
+@auth.requires_poll_features('compute_results_finished')
+def zeus_proofs(request, election, poll):
+
+    if not os.path.exists(poll.zeus_proofs_path()):
+        poll.store_zeus_proofs()
+
+    if settings.USE_X_SENDFILE:
+        response = HttpResponse()
+        response['Content-Type'] = ''
+        response['X-Sendfile'] = poll.zeus_proofs_path()
+        return response
+    else:
+        zip_data = file(poll.zeus_proofs_path())
+        response = HttpResponse(zip_data.read(), mimetype='application/zip')
+        zip_data.close()
+        response['Content-Dispotition'] = 'attachment; filename=%s_proofs.zip' % election.uuid
+        return response
+
+
+@auth.election_admin_required
+@auth.requires_poll_features('compute_results_finished')
+def results_json(request, election, poll):
+    data = poll.zeus.get_results()
+    return HttpResponse(json.dumps(data, default=common_json_handler),
+                        mimetype="application/json")

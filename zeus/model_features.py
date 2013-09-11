@@ -161,10 +161,13 @@ class ElectionFeatures(FeaturesMixin):
     def _feature_trustee_can_login(self):
         return not self.feature_completed
 
-    @election_feature('trustee_can_generate_key', 'trustee_can_upload_pk',
-                      'trustee_can_check_sk')
+    @election_feature('trustee_can_generate_key', 'trustee_can_upload_pk')
     def _feature_trustee_checks(self):
         return not self.feature_completed and not self.feature_frozen
+
+    @election_feature()
+    def _feature_trustee_can_check_sk(self):
+        return True
 
     @election_feature('trustee_can_generate_key', 'trustee_can_upload_pk')
     def _feature_trustee_checks(self):
@@ -297,7 +300,6 @@ class PollFeatures(FeaturesMixin):
 
     @poll_feature()
     def _feature_can_cast_vote(self):
-        return True
         return self.election.feature_voting
 
     @poll_feature()

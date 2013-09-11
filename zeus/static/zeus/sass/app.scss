@@ -280,6 +280,14 @@ body {
     width: 100%;
   }
 
+  .do-decrypt {
+    display: inline-block;
+    margin: 20px 0;
+    float: right;
+  }
+  .trustee-decrypt-actions {
+    text-align: right;
+  }
   .freeze-issues {
 
     ul {

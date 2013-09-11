@@ -58,7 +58,13 @@
               {% endwith %}
           {% endif %}
       </td>
-      <td>{{ poll.status_display }}</td>
+      <td>
+          {{ poll.status_display }}
+          {% if poll.feature_compute_results_finished %}
+          <a href="{% url election_poll_results election.uuid poll.uuid %}">
+              {% trans "Results" %}</a>
+          {% endif %}
+      </td>
       <td><a class="foundicon-edit" href="{% url election_poll_questions election.uuid poll.uuid %}">
           {{ poll.questions_count }}
       </a></td>

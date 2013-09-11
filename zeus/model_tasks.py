@@ -170,7 +170,7 @@ def mixing_completed_check(poll):
 
 def partial_decryptions_completed_check(poll):
     return poll.partial_decryptions.filter().no_secret().count() == \
-            poll.trustees.filter().no_secret().count()
+            poll.election.trustees.filter().no_secret().count()
 
 
 class ElectionTasks(TaskModel):
@@ -223,7 +223,8 @@ class PollTasks(TaskModel):
         self.zeus.compute_zeus_factors()
 
     @poll_task('partial_decrypt', ('validate_mixing_finished',),
-               completed_cb=partial_decryptions_completed_check)
+               completed_cb=partial_decryptions_completed_check,
+               is_recurrent=True)
     def partial_decrypt(self, trustee, factors, proofs):
         dec = self.partial_decryptions.create(trustee=trustee, poll=self)
         dec.decryption_factors = factors

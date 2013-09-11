@@ -39,6 +39,12 @@ poll_patterns += patterns('zeus.views.poll',
     url(r'^l/(?P<voter_uuid>[^/]+)/(?P<voter_secret>[^/]+)$',
         'voter_booth_login', name="election_poll_voter_booth_login"),
     url(r'^results$', 'results', name='election_poll_results'),
+    url(r'^results.json$', 'results_json', name='election_poll_results_json'),
+    url(r'^results.pdf$', 'results_file', name='election_poll_results_pdf',
+        kwargs={'ext': 'pdf'}),
+    url(r'^results.csv$', 'results_file', name='election_poll_results_csv',
+        kwargs={'ext': 'csv'}),
+    url(r'^proofs.zip$', 'zeus_proofs', name='election_poll_zeus_proofs')
 )
 
 urlpatterns = patterns('zeus.views.poll',
