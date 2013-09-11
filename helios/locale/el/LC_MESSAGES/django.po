@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-11 13:42+0300\n"
+"POT-Creation-Date: 2013-09-11 17:23+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -72,7 +72,7 @@ msgstr "Δοκιμαστική ψηφοφορία"
 
 #: models.py:284 templates/_election_information.html:10
 msgid "Voting starts at"
-msgstr "Χρόνος έναρξης της ψηφοφορίας"
+msgstr "Έναρξης της ψηφοφορίας στις"
 
 #: models.py:289 templates/_election_information.html:13
 msgid "Voting ends at"
@@ -110,7 +110,7 @@ msgstr "Ολοκληρώθηκε"
 
 #: models.py:382 models.py:722
 msgid "Voting"
-msgstr "Ψηφοφορία"
+msgstr "Ψηφοφορία σε εξέλιξη"
 
 #: models.py:385 models.py:701
 msgid "Results computed"
@@ -166,7 +166,7 @@ msgstr "Οριστικοποιημένη"
 
 #: models.py:423
 msgid "Election pending to freeze"
-msgstr "Ψηφοφορία έτοιμη προς οριστικοποίηση"
+msgstr "Αναμονή για οριστικοποίηση της ψηφοφορίας"
 
 #: models.py:592 templates/_trustee_decrypt.html:23
 msgid "Poll name"
@@ -426,7 +426,7 @@ msgstr "Η ψηφοφορία έχει ολοκληρωθεί"
 
 #: templates/_reveal_cancel.html:10
 msgid "Election cancel message"
-msgstr "Συνοδευτικό μήνυμα για την ακύρωση της ψηφοφορίας"
+msgstr "Είστε σίγουρος οτι θέλετε να ακυρώσετε οριστικά την ψηφοφορία;"
 
 #: templates/_reveal_cancel.html:12
 msgid "Cancel reason"
@@ -444,7 +444,9 @@ msgstr "Πίσω"
 
 #: templates/_reveal_close.html:10
 msgid "Election close message"
-msgstr "Συνοδευτικό μήνυμα λήξης της ψηφοφορίας"
+msgstr ""
+"Είστε σίγουρος οτι θέλετε να λήξετε οριστικά την ψηφοφορία;<br/><br/>Μετά τη "
+"λήξη της ψηφοφορίας κανένας ψηφοφόρος δεν θα μπορεί να ψηφίσει."
 
 #: templates/_reveal_close.html:15
 msgid "Confirm election close"
@@ -465,7 +467,12 @@ msgstr "Άκυρο"
 
 #: templates/_reveal_freeze.html:39 templates/_reveal_mix.html:39
 msgid "Election freeze message"
-msgstr "Συνοδευτικό μήνυμα οριστικοποίησης ψηφοφορίας"
+msgstr ""
+"Μετά την οριστικοποίηση της ψηφοφορίας, οι υποψήφιοι και τα μέλη της "
+"εφορευτικής επιτροπής δεν μπορούν να μεταβληθούν.<br /><Br />"
+"Ως διαχειριστής, θα "
+"μπορείτε να τροποποιήσετε τον κατάλογο των ψηφοφόρων καθώς εξελίσσεται η "
+"εκλογή."
 
 #: templates/_reveal_freeze.html:45 templates/_reveal_mix.html:45
 msgid "Confirm freeze"
@@ -538,7 +545,7 @@ msgstr "Σύνολο ψηφοφόρων"
 
 #: templates/election_poll_voters_list.html:18
 msgid "Voters cast count"
-msgstr "όλους τους ψηφοφόρους"
+msgstr "Έχουν ψηφίσει"
 
 #: templates/election_poll_voters_list.html:26
 msgid "Voters list actions"
@@ -607,7 +614,7 @@ msgstr "κατάσταση"
 
 #: templates/election_polls_list.html:38
 msgid "ballot size"
-msgstr "μέγεθος ψηφοδελτίου"
+msgstr "αριθμός ερωτήσεων"
 
 #: templates/election_polls_list.html:39
 msgid "voters registered"
