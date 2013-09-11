@@ -49,7 +49,7 @@ def add_or_update(request, election=None):
             if not election.has_helios_trustee():
                 election.generate_trustee()
             if election.polls.count() == 0:
-                url = election_reverse(election, 'polls_manage')
+                url = election_reverse(election, 'polls_list')
             else:
                 url = election_reverse(election, 'index')
             return HttpResponseRedirect(url)
