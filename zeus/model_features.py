@@ -199,7 +199,7 @@ class ElectionFeatures(FeaturesMixin):
     @election_feature()
     def _feature_voting(self):
         return self.feature_frozen and self.feature_within_voting_date \
-                and not self.feature_completed
+                and not self.feature_completed and not self.feature_closed
 
     @election_feature()
     def _feature_voting_finished(self):
