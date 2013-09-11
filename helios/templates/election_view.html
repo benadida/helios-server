@@ -37,7 +37,14 @@ Election closed at <em>{{ date }}</em>. Waiting for results.
 {% endif %}
 </div>
 {% include "_election_information.html" %}
-<div class="columns five election-actions offset-by-one">
+<div class="columns five election-contact">
+  <h5>{% trans "Support" %}</h5>
+  <ul>
+    <li><b>{% trans "Election help email" %}: </b>{{ election.help_email }}</li>
+      <li><b>{% trans "Election support phone" %}: </b>{{ election.help_phone }}</li>
+  </ul>
+</div>
+<div class="columns seven election-actions">
 {% if admin %}
 {% include "_election_admin_actions.html" %}
 {% endif %}
