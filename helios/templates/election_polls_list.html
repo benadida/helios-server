@@ -51,7 +51,6 @@
           {% if not election.feature_can_rename_poll %}
               {{ poll.name }}
           {% else %}
-              {% include "_reveal_rename_poll.html" %}
               {% with "#rename-poll-"|add:poll.short_name as htmlid %}
               {% reveal_action poll.name htmlid "" "rename-poll nobutton" %}
               {% endwith %}
@@ -112,3 +111,11 @@
 </div>
 {% endblock %}
 
+{% block reveals %}
+{{ block.super }}
+{% if admin %}
+{% for poll in polls %}
+{% include "_reveal_rename_poll.html" %}
+{% endfor %}
+{% endif %}
+{% endblock %}
