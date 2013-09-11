@@ -39,8 +39,10 @@
         <th>{% trans "voters registered" %}</th>
         <th>{% trans "voters invited" %}</th>
         <th>{% trans "voters voted" %}</th>
+        {% if user.superadmin_p %}
         <th>{% trans "votes" %}</th>
         <th>{% trans "last vote" %}</th>
+        {% endif %}
         <th>{% trans "select action" %}</th>
       </tr>
     </thead>
@@ -65,8 +67,10 @@
       </a></td>
       <td>{{ poll.voters.filter.invited.count }}</td>
       <td>{{ poll.voters.filter.cast.count }}</td>
+      {% if user.superadmin_p %}
       <td>{{ poll.cast_votes.count }}</td>
       <td>{{ poll.last_cast_date }}</td>
+      {% endif %}
       <td>
           <div href="#" class="button tiny dropdown" style="">
               {% trans "Actions" %}&nbsp;
@@ -97,8 +101,10 @@
     <td>{{ election.questions_count }}</td>
     <td>{{ election.voters.count }}</td>
     <td>{{ election.voters.invited.count }}</td>
+    {% if user.superadmin_p %}
     <td>{{ election.voters.cast.count }}</td>
     <td>{{ election.cast_votes.count }}</td>
+    {% endif %}
     <td></td>
     <td></td>
 </tfoot>
