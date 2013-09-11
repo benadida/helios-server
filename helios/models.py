@@ -365,6 +365,11 @@ class Election(HeliosModel, ElectionFeatures):
                 })
         return issues
 
+    def status_display_cls(self):
+        if self.feature_canceled:
+            return 'error alert'
+        return ''
+
     def status_display(self):
 
       if self.feature_canceled:

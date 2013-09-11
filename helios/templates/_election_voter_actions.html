@@ -2,6 +2,8 @@
 {% if poll.feature_can_cast_vote %}
 <a id="booth-link" class="foundicon-page button" href="{{ booth_url }}">&nbsp;&nbsp;{% trans "Enter voting booth" %}</a>
 {% else %}
+<div class="panel {{ election.status_display_cls }}">
+<h5>
 {% if not poll.election.feature_completed %}
 {% if not poll.election.feature_closed %}
 {% trans "Voting date passed." %}
@@ -9,6 +11,15 @@
 {% trans "Voting closed. Please wait for results" %}
 {% endif %}
 {% else %}
+{% if election.feature_canceled %}
+{% trans "Election canceled" %}
+{% if election.cancelation_reason %}
+{{ election.cancelation_reason }}
+{% endif %}
+{% else %}
 {% trans "Election completed." %}
 {% endif %}
 {% endif %}
+{% endif %}
+</h5>
+</div>
