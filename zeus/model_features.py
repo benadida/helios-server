@@ -297,6 +297,7 @@ class PollFeatures(FeaturesMixin):
 
     @poll_feature()
     def _feature_can_cast_vote(self):
+        return True
         return self.election.feature_voting
 
     @poll_feature()

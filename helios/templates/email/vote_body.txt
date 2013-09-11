@@ -7,6 +7,7 @@
 Καλείστε να συμμετάσχετε στην ψηφοφορία
 
   {{ election.name }}
+  {{ poll.name }}
 
 που αρχίζει στις {{election.voting_starts_at}}
 και λήγει στις {{election.voting_ends_at}}.

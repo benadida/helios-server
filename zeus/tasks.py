@@ -83,18 +83,24 @@ def voters_email(poll_id, subject_template, body_template, extra_vars={},
 
 
 @task(rate_limit=getattr(settings, 'ZEUS_VOTER_EMAIL_RATE', '20/m'))
-def send_cast_vote_email(election, voter, signature):
+def send_cast_vote_email(poll_pk, voter_pk, signature):
+    poll = Poll.objects.get(pk=poll_pk)
+    election = poll.election
+    voter = poll.voters.filter().get(pk=voter_pk)
     subject = _("%(election_name)s - vote cast") % {
-      'election_name': election.name
+      'election_name': election.name,
+      'poll_name': poll.name
     }
 
     body = _(u"""You have successfully cast a vote in
 
 %(election_name)s
+%(poll_name)s
 
 you can find your encrypted vote attached in this mail.
 """) % {
-    'election_name': election.name
+    'election_name': election.name,
+    'poll_name': poll.name
 }
 
     # send it via the notification system associated with the auth system

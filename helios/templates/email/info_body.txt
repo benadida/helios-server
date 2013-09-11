@@ -2,7 +2,7 @@
 
 {{custom_message|safe}}
 
-{% if election.frozen_at %}
+{% if election.feature_frozen %}
 {% trans "Voting link" %}: {{voter.get_quick_login_url}}
 {% endif %}
 

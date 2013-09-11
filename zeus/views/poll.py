@@ -504,7 +504,7 @@ def cast(request, election, poll):
                             mimetype="application/json")
     else:
         # notify user
-        tasks.send_cast_vote_email.delay(election, voter, signature)
+        tasks.send_cast_vote_email.delay(poll.pk, voter.pk, signature)
         fingerprint = voter.cast_votes.filter()[0].fingerprint
         url = "%s%s?f=%s" % (settings.SECURE_URL_HOST, poll_reverse(poll,
                                                                'cast_done'),
