@@ -2792,7 +2792,7 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
   position: absolute;
   top: 0;
   left: -20px;
-  background: url('/images/foundation/orbit/rotator-black.png?1375276731') no-repeat;
+  background: url('/images/foundation/orbit/rotator-black.png?1378477448') no-repeat;
   z-index: 3;
 }
 /* line 27, ../../../../../../../.rvm/gems/ruby-2.0.0-p0@zeus/gems/zurb-foundation-3.2.5/scss/foundation/components/modules/_orbit.scss */
@@ -2814,7 +2814,7 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
 .orbit-wrapper span.mask.move {
   width: 40px;
   left: 0;
-  background: url('/images/foundation/orbit/timer-black.png?1375276731') repeat 0 0;
+  background: url('/images/foundation/orbit/timer-black.png?1378477448') repeat 0 0;
 }
 /* line 32, ../../../../../../../.rvm/gems/ruby-2.0.0-p0@zeus/gems/zurb-foundation-3.2.5/scss/foundation/components/modules/_orbit.scss */
 .orbit-wrapper span.pause {
@@ -2824,13 +2824,13 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
   position: absolute;
   top: 0;
   left: 0;
-  background: url('/images/foundation/orbit/pause-black.png?1375276731') no-repeat;
+  background: url('/images/foundation/orbit/pause-black.png?1378477448') no-repeat;
   z-index: 4;
   opacity: 0;
 }
 /* line 33, ../../../../../../../.rvm/gems/ruby-2.0.0-p0@zeus/gems/zurb-foundation-3.2.5/scss/foundation/components/modules/_orbit.scss */
 .orbit-wrapper span.pause.active {
-  background: url('/images/foundation/orbit/pause-black.png?1375276731') no-repeat 0 -40px;
+  background: url('/images/foundation/orbit/pause-black.png?1378477448') no-repeat 0 -40px;
 }
 /* line 35, ../../../../../../../.rvm/gems/ruby-2.0.0-p0@zeus/gems/zurb-foundation-3.2.5/scss/foundation/components/modules/_orbit.scss */
 .orbit-wrapper .timer:hover span.pause, .orbit-wrapper .timer:focus span.pause, .orbit-wrapper span.pause.active {
@@ -2877,24 +2877,24 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
 }
 /* line 48, ../../../../../../../.rvm/gems/ruby-2.0.0-p0@zeus/gems/zurb-foundation-3.2.5/scss/foundation/components/modules/_orbit.scss */
 .orbit-wrapper .slider-nav span.right {
-  background: url('/images/foundation/orbit/right-arrow.png?1375276731');
+  background: url('/images/foundation/orbit/right-arrow.png?1378477448');
   background-size: 100%;
   right: 0;
 }
 /* line 49, ../../../../../../../.rvm/gems/ruby-2.0.0-p0@zeus/gems/zurb-foundation-3.2.5/scss/foundation/components/modules/_orbit.scss */
 .orbit-wrapper .slider-nav span.left {
-  background: url('/images/foundation/orbit/left-arrow.png?1375276731');
+  background: url('/images/foundation/orbit/left-arrow.png?1378477448');
   background-size: 100%;
   left: 0;
 }
 
 /* line 54, ../../../../../../../.rvm/gems/ruby-2.0.0-p0@zeus/gems/zurb-foundation-3.2.5/scss/foundation/components/modules/_orbit.scss */
 .lt-ie9 .orbit-wrapper .slider-nav span.right {
-  background: url('/images/foundation/orbit/right-arrow-small.png?1375276731');
+  background: url('/images/foundation/orbit/right-arrow-small.png?1378477448');
 }
 /* line 55, ../../../../../../../.rvm/gems/ruby-2.0.0-p0@zeus/gems/zurb-foundation-3.2.5/scss/foundation/components/modules/_orbit.scss */
 .lt-ie9 .orbit-wrapper .slider-nav span.left {
-  background: url('/images/foundation/orbit/left-arrow-small.png?1375276731');
+  background: url('/images/foundation/orbit/left-arrow-small.png?1378477448');
 }
 
 /* Bullet Nav ---------------------- */
@@ -2915,7 +2915,7 @@ ul.orbit-bullets li {
   cursor: pointer;
   color: #999999;
   text-indent: -9999px;
-  background: url('/images/foundation/orbit/bullets.jpg?1375276731') no-repeat 4px 0;
+  background: url('/images/foundation/orbit/bullets.jpg?1378477448') no-repeat 4px 0;
   width: 13px;
   height: 12px;
   overflow: hidden;
@@ -6379,78 +6379,82 @@ body .action-right {
 body table.polls-table {
   width: 100%;
 }
-/* line 284, ../sass/app.scss */
+/* line 279, ../sass/app.scss */
+body table.polls-table th {
+  text-transform: capitalize;
+}
+/* line 285, ../sass/app.scss */
 body .freeze-issues ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-/* line 288, ../sass/app.scss */
+/* line 289, ../sass/app.scss */
 body .freeze-issues ul:last-child {
   margin-bottom: 1em;
 }
-/* line 290, ../sass/app.scss */
+/* line 291, ../sass/app.scss */
 body .freeze-issues li {
   padding: 5px;
   margin: 5px 0;
 }
-/* line 291, ../sass/app.scss */
+/* line 292, ../sass/app.scss */
 body .freeze-issues li {
   background-color: #eee;
 }
-/* line 293, ../sass/app.scss */
+/* line 294, ../sass/app.scss */
 body .freeze-issues li span {
   font-weight: bold;
 }
-/* line 296, ../sass/app.scss */
+/* line 297, ../sass/app.scss */
 body .election-view-content {
   margin-top: 2em;
 }
-/* line 300, ../sass/app.scss */
+/* line 301, ../sass/app.scss */
 body .election-contact, body .election-actions {
   margin-top: 2em;
 }
-/* line 301, ../sass/app.scss */
+/* line 302, ../sass/app.scss */
 body .election-contact ul, body .election-actions ul {
   list-style: none;
 }
-/* line 305, ../sass/app.scss */
+/* line 306, ../sass/app.scss */
 body .election-contact {
   background-color: #efefef;
 }
-/* line 310, ../sass/app.scss */
+/* line 311, ../sass/app.scss */
 body .election-actions .admin-status {
   margin-bottom: 1em;
 }
-/* line 311, ../sass/app.scss */
+/* line 312, ../sass/app.scss */
 body .election-actions .admin-status h4 {
   font-size: 1.2em;
   margin-bottom: 0.5em;
 }
-/* line 316, ../sass/app.scss */
+/* line 317, ../sass/app.scss */
 body #booth-link {
   width: 100%;
   margin-top: 40px;
   display: inline-block;
 }
-/* line 322, ../sass/app.scss */
+/* line 323, ../sass/app.scss */
 body .audit-ballot ul {
   list-style: none;
 }
 
-/* line 332, ../sass/app.scss */
+/* line 333, ../sass/app.scss */
 body > .row {
   border-right: 1px solid #dddddd;
   border-left: 1px solid #dddddd;
   background-color: #fff;
 }
 
-/* line 339, ../sass/app.scss */
+/* line 340, ../sass/app.scss */
 body {
   margin-top: 20px !important;
 }
 
-/* line 343, ../sass/app.scss */
+/* line 344, ../sass/app.scss */
 body .bg-wrapper {
   margin-top: 20px;
   width: 890px;
@@ -6461,23 +6465,23 @@ body .bg-wrapper {
   background-color: #fff;
 }
 
-/* line 351, ../sass/app.scss */
+/* line 352, ../sass/app.scss */
 .election-stats-list {
   max-height: 300px;
   overflow-y: scroll;
 }
 
-/* line 356, ../sass/app.scss */
+/* line 357, ../sass/app.scss */
 table tr.party {
   font-weight: bold;
   background-color: #ddd !important;
 }
 
-/* line 362, ../sass/app.scss */
+/* line 363, ../sass/app.scss */
 .trustee-entry tt {
   font-size: 0.8em;
 }
-/* line 363, ../sass/app.scss */
+/* line 364, ../sass/app.scss */
 .trustee-entry .hash-title {
   color: #666666;
   font-weight: normal;
@@ -6486,7 +6490,7 @@ table tr.party {
   margin-top: 8px;
 }
 
-/* line 372, ../sass/app.scss */
+/* line 373, ../sass/app.scss */
 form .field-readonly {
   background-color: #cccccc !important;
 }

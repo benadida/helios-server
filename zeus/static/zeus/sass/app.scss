@@ -276,6 +276,7 @@ body {
 
   .action-right { float: right; margin-right: 0}
   table.polls-table {
+      th { text-transform: capitalize }
     width: 100%;
   }
 
