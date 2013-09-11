@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-11 17:23+0300\n"
+"POT-Creation-Date: 2013-09-11 17:37+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -150,7 +150,7 @@ msgstr "Η ψηφοφορία έχει λήξει"
 
 #: models.py:412
 msgid "Waiting for voting to start."
-msgstr "Αναμόνη για την έναρξη της ψηφοφορίας"
+msgstr "Αναμονή για την έναρξη της ψηφοφορίας"
 
 #: models.py:415
 msgid "Voting stopped. Pending close."
@@ -334,11 +334,7 @@ msgstr "Οριστικοποίηση ψηφοφορίας"
 msgid "Close election"
 msgstr "Λήξη ψηφοφορίας"
 
-#: templates/_election_admin_actions.html:22
-msgid "Mix"
-msgstr "Μίξη"
-
-#: templates/_election_admin_actions.html:27 templates/_reveal_cancel.html:5
+#: templates/_election_admin_actions.html:22 templates/_reveal_cancel.html:5
 msgid "Cancel election"
 msgstr "Ακύρωση ψηφοφορίας"
 
@@ -391,9 +387,9 @@ msgstr "Ψήφοι ελέγχου"
 msgid "Edit election"
 msgstr "Τροποποίηση ψηφοφορίας"
 
-#: templates/_election_view_menu.html:42 templates/election_polls_list.html:72
-msgid "Actions"
-msgstr "Επιλογές"
+#: templates/_election_view_menu.html:42
+msgid "Election admin actions"
+msgstr "Ενέργειες"
 
 #: templates/_election_view_menu.html:43
 msgid "Information"
@@ -469,10 +465,9 @@ msgstr "Άκυρο"
 msgid "Election freeze message"
 msgstr ""
 "Μετά την οριστικοποίηση της ψηφοφορίας, οι υποψήφιοι και τα μέλη της "
-"εφορευτικής επιτροπής δεν μπορούν να μεταβληθούν.<br /><Br />"
-"Ως διαχειριστής, θα "
-"μπορείτε να τροποποιήσετε τον κατάλογο των ψηφοφόρων καθώς εξελίσσεται η "
-"εκλογή."
+"εφορευτικής επιτροπής δεν μπορούν να μεταβληθούν.<br /><Br />Ως "
+"διαχειριστής, θα μπορείτε να τροποποιήσετε τον κατάλογο των ψηφοφόρων καθώς "
+"εξελίσσεται η εκλογή."
 
 #: templates/_reveal_freeze.html:45 templates/_reveal_mix.html:45
 msgid "Confirm freeze"
@@ -628,27 +623,31 @@ msgstr "έλαβαν πρόσκληση"
 msgid "voters voted"
 msgstr "ψήφισαν"
 
-#: templates/election_polls_list.html:42
+#: templates/election_polls_list.html:43
 msgid "votes"
 msgstr "σύνολο ψήφων"
 
-#: templates/election_polls_list.html:43
+#: templates/election_polls_list.html:44
 msgid "last vote"
 msgstr "τελευταία ψήφος"
 
-#: templates/election_polls_list.html:44
+#: templates/election_polls_list.html:46
 msgid "select action"
 msgstr "επιλογές"
 
-#: templates/election_polls_list.html:75
+#: templates/election_polls_list.html:76
+msgid "Actions"
+msgstr "Επιλογές"
+
+#: templates/election_polls_list.html:79
 msgid "Manage voters"
 msgstr "Διαχείριση ψηφοφόρων"
 
-#: templates/election_polls_list.html:83
+#: templates/election_polls_list.html:87
 msgid "Delete poll"
 msgstr "Διαγραφή κάλπης"
 
-#: templates/election_polls_list.html:94
+#: templates/election_polls_list.html:98
 msgid "Totals"
 msgstr "Σύνολα"
 
@@ -748,6 +747,9 @@ msgid ""
 msgstr ""
 "\n"
 "Αποστολή μηνύματος στους ψηφοφόρους της ψηφοφορίας '%(election_name)s'\n"
+
+#~ msgid "Mix"
+#~ msgstr "Μίξη"
 
 #~ msgid "Name"
 #~ msgstr "Όνομα"

@@ -39,7 +39,7 @@
 
 <dd class="{% if menu_active == "election" %}active{% endif %}"><a 
   href="{% url election_index election.uuid %}">
-  {% if admin_p %}{% trans "Actions" %}{% else %}
+  {% if user.is_admin %}{% trans "Election admin actions" %}{% else %}
   {% trans "Information" %}{% endif %}
 </a></dd>
 
