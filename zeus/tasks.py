@@ -43,7 +43,16 @@ def task(*taskargs, **taskkwargs):
     return wrapper
 
 
-@task(rate_limit=getattr(settings, 'ZEUS_VOTER_EMAIL_RATE', '20/m'))
+def poll_task(*taskargs, **taskkwargs):
+    def wrapper(func):
+        #if not 'rate_limit' in taskkwargs:
+            #taskkwargs['rate_limit'] = '5/m'
+        return task(*taskargs, **taskkwargs)(func)
+    return wrapper
+
+
+@task(rate_limit=getattr(settings, 'ZEUS_VOTER_EMAIL_RATE', '20/m'),
+      ignore_result=True)
 def single_voter_email(voter_uuid, subject_template, body_template,
                        extra_vars={}, update_date=True,
                        update_booth_invitation_date=False):
@@ -61,7 +70,7 @@ def single_voter_email(voter_uuid, subject_template, body_template,
     voter.user.send_message(subject, body)
 
 
-@task()
+@task(ignore_result=True)
 def voters_email(poll_id, subject_template, body_template, extra_vars={},
                  voter_constraints_include=None,
                  voter_constraints_exclude=None,
@@ -82,7 +91,8 @@ def voters_email(poll_id, subject_template, body_template, extra_vars={},
                                  update_booth_invitation_date)
 
 
-@task(rate_limit=getattr(settings, 'ZEUS_VOTER_EMAIL_RATE', '20/m'))
+@task(rate_limit=getattr(settings, 'ZEUS_VOTER_EMAIL_RATE', '20/m'),
+      ignore_result=True)
 def send_cast_vote_email(poll_pk, voter_pk, signature):
     poll = Poll.objects.get(pk=poll_pk)
     election = poll.election
@@ -114,13 +124,13 @@ you can find your encrypted vote attached in this mail.
     message.send(fail_silently=False)
 
 
-@task()
+@poll_task(ignore_result=True)
 def poll_validate_create(poll_id):
     poll = Poll.objects.select_for_update().get(id=poll_id)
     poll.validate_create()
 
 
-@task()
+@task(ignore_result=True)
 def election_validate_create(election_id):
     election = Election.objects.select_for_update().get(id=election_id)
     for poll in election.polls.all():
@@ -128,7 +138,7 @@ def election_validate_create(election_id):
             poll_validate_create.delay(poll.id)
 
 
-@task()
+@task(ignore_result=True)
 def election_validate_voting(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
     for poll in election.polls.all():
@@ -136,7 +146,7 @@ def election_validate_voting(election_id):
             poll_validate_voting.delay(poll.pk)
 
 
-@task()
+@poll_task(ignore_result=True)
 def poll_validate_voting(poll_id):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     poll.validate_voting()
@@ -144,7 +154,7 @@ def poll_validate_voting(poll_id):
         election_mix.delay(poll.election.pk)
 
 
-@task()
+@task(ignore_result=True)
 def election_mix(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
     for poll in election.polls.all():
@@ -152,7 +162,7 @@ def election_mix(election_id):
             poll_mix.delay(poll.pk)
 
 
-@task()
+@poll_task(ignore_result=True)
 def poll_mix(poll_id):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     poll.mix()
@@ -160,7 +170,7 @@ def poll_mix(poll_id):
         election_validate_mixing.delay(poll.election.pk)
 
 
-@task()
+@task(ignore_result=True)
 def election_validate_mixing(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
     for poll in election.polls.all():
@@ -168,31 +178,31 @@ def election_validate_mixing(election_id):
             poll_validate_mixing.delay(poll.pk)
 
 
-@task()
+@poll_task(ignore_result=True)
 def poll_validate_mixing(poll_id):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     poll.validate_mixing()
     if poll.election.polls_feature_validate_mixing_finished:
         election_zeus_partial_decrypt.delay(poll.election.pk)
-        notify_trustees.delay(poll.election.pk)
 
 
-@task()
+@task(ignore_result=True)
 def notify_trustees(election_id):
     election = Election.objects.get(pk=election_id)
     for trustee in election.trustees.filter().no_secret():
         trustee.send_url_via_mail()
 
 
-@task()
+@task(ignore_result=True)
 def election_zeus_partial_decrypt(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
+    notify_trustees.delay(election.pk)
     for poll in election.polls.all():
         if poll.feature_can_zeus_partial_decrypt:
             poll_zeus_partial_decrypt.delay(poll.pk)
 
 
-@task()
+@poll_task(ignore_result=True)
 def poll_zeus_partial_decrypt(poll_id):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     poll.zeus_partial_decrypt()
@@ -200,7 +210,7 @@ def poll_zeus_partial_decrypt(poll_id):
         election_decrypt.delay(poll.election.pk)
 
 
-@task()
+@poll_task(ignore_result=True)
 def poll_add_trustee_factors(poll_id, trustee_id, factors, proofs):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     trustee = poll.election.trustees.get(pk=trustee_id)
@@ -209,7 +219,7 @@ def poll_add_trustee_factors(poll_id, trustee_id, factors, proofs):
         election_decrypt.delay(poll.election.pk)
 
 
-@task()
+@task(ignore_result=True)
 def election_decrypt(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
     for poll in election.polls.all():
@@ -217,7 +227,7 @@ def election_decrypt(election_id):
             poll_decrypt.delay(poll.pk)
 
 
-@task()
+@poll_task(ignore_result=True)
 def poll_decrypt(poll_id):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     poll.decrypt()
@@ -225,7 +235,7 @@ def poll_decrypt(poll_id):
         election_compute_results.delay(poll.election.pk)
 
 
-@task()
+@task(ignore_result=True)
 def election_compute_results(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
     for poll in election.polls.all():
@@ -233,7 +243,7 @@ def election_compute_results(election_id):
             poll_compute_results.delay(poll.pk)
 
 
-@task()
+@poll_task(ignore_result=True)
 def poll_compute_results(poll_id):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     poll.compute_results()
