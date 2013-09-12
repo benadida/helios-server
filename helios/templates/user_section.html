@@ -3,7 +3,7 @@
       <div class="panel warning">Έχετε συνδεθεί ως διαχειριστής εκλογών για το 
           <em>"{{ user.institution.name }}"</em>
           <br /><br />
-          <a class="button tiny" href="/admin/">σελίδα διαχείρισης</a>
+          <a class="button tiny" href="{% url admin_home %}">σελίδα διαχείρισης</a>
           <a class="button tiny alert" href="{% url login %}?return_url=/">αλλαγή κωδικού</a>
           <a class="button tiny alert" href="{% url logout %}?return_url=/">έξοδος</a>
       </div>

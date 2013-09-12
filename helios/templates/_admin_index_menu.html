@@ -1,5 +1,5 @@
 <dd id="" class="{% if menu_active == "list" %}active{% endif %}">
-<a href="/admin/">Λίστα ψηφοφοριών</a>
+<a href="{% url admin_home %}">Λίστα ψηφοφοριών</a>
 </dd>
 <dd id="" class="{% if menu_active == "create" %}active{% endif %}">
 <a href="{% url election_create %}">Δημιουργία ψηφοφορίας</a>

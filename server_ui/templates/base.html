@@ -101,7 +101,7 @@
           {% if user and user.is_admin %}
           Έχετε συνδεθεί ως διαχειριστής εκλογών: {{ user.display_html_small|safe }}
           <a href="{% url logout %}">έξοδος</a> |
-          <a href="/admin/">διαχείριση</a> 
+          <a href="{% url admin_home %}">διαχείριση</a> 
               {% if user.user_type == "password" %}
               | <a href="{% url heliosauth.views.change_password %}">αλλαγή κωδικού</a>
               {% endif %}
