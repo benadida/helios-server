@@ -396,14 +396,23 @@ class Election(HeliosModel, ElectionFeatures):
       if self.polls_feature_partial_decrypt_finished:
           return _('Partial decryptions finished')
 
-      if self.any_poll_feature_can_partial_decrypt:
+      if self.any_poll_feature_can_partial_decrypt and \
+          self.polls_feature_validate_mixing_finished:
           return _('Pending completion of partial decryptions')
+
+      if self.any_poll_feature_validate_mixing_running or \
+          self.any_poll_feature_validate_mixing_finished:
+          return _('Validating mixing')
 
       if self.polls_feature_mix_finished:
           return _('Mixing finished')
 
-      if self.any_poll_feature_mix_running:
+      if self.any_poll_feature_mix_running or self.any_poll_feature_mix_finished:
           return _('Mixing')
+
+      if self.any_poll_feature_validate_voting_running or \
+          self.any_poll_feature_validate_voting_finished:
+          return _('Validating voting')
 
       if self.feature_closed:
           return _('Election closed')
