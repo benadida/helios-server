@@ -186,13 +186,15 @@ class PollTasks(TaskModel):
 
     @poll_task('validate_create', ('frozen',))
     def validate_create(self):
+        e = self.election.__class__.objects.select_for_update().get(pk=self.election.pk)
         Random.atfork()
         self.zeus.validate_creating()
         self.frozen_at = datetime.datetime.now()
         self.save()
-        with transaction.commit_on_success():
-            poll = self.__class__.objects.select_for_update().get(pk=self.pk)
-            poll.election.update_freeze_status()
+        e.save()
+        if e.polls_feature_frozen:
+            e.frozen_at = datetime.datetime.now()
+            e.save()
 
     @poll_task('mix', ('validate_voting_finished',),
                completed_cb=mixing_completed_check)

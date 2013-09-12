@@ -439,17 +439,6 @@ class Election(HeliosModel, ElectionFeatures):
         for poll in self.polls.all():
             poll.freeze()
 
-    def update_freeze_status(self):
-        """
-        Update frozen_at field once all polls are frozen.
-        """
-        if self.frozen_at:
-            return
-
-        if self.polls.filter(frozen_at__isnull=True).count() == 0:
-            self.frozen_at = datetime.datetime.now()
-            self.save()
-
     def get_absolute_url(self):
         return "%s%s" % (settings.SECURE_URL_HOST,
                          reverse('election_index', args=(self.uuid,)))
