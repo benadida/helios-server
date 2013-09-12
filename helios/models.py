@@ -577,12 +577,15 @@ class Election(HeliosModel, ElectionFeatures):
     def get_module(self):
         return get_election_module(self)
 
+
+class PollQuerySet(QuerySet):
+    pass
+
 class PollManager(models.Manager):
 
     def get_query_set(self):
-        qs = super(PollManager,
-                   self).get_query_set()
-        return qs.defer('encrypted_tally')
+        return PollQuerySet(self.model).defer('encrypted_tally')
+
 
 
 class Poll(PollTasks, HeliosModel, PollFeatures):
