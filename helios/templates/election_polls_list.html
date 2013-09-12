@@ -109,9 +109,9 @@
     <td>{{ election.voters.invited.count }}</td>
     {% if user.superadmin_p %}
     <td>{{ election.voters.cast.count }}</td>
-    <td>{{ election.cast_votes.count }}</td>
-    {% endif %}
     <td></td>
+    {% endif %}
+    <td>{{ election.cast_votes.count }}</td>
     <td></td>
 </tfoot>
 </table>
