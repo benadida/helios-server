@@ -100,10 +100,10 @@
           </span>
           {% if user and user.is_admin %}
           Έχετε συνδεθεί ως διαχειριστής εκλογών: {{ user.display_html_small|safe }}
-          <a href="{% url logout %}?return_url=/">έξοδος</a> |
+          <a href="{% url logout %}">έξοδος</a> |
           <a href="/admin/">διαχείριση</a> 
               {% if user.user_type == "password" %}
-              | <a href="{% url heliosauth.views.change_password %}?return_url=/">αλλαγή κωδικού</a>
+              | <a href="{% url heliosauth.views.change_password %}">αλλαγή κωδικού</a>
               {% endif %}
               <br />
 
@@ -112,14 +112,14 @@
           Έχετε συνδεθεί ως ο ψηφοφόρος <u>{{ voter.voter_surname }} {{voter.voter_name}}</u> της ψηφοφορίας 
           <u>{{voter.election.name}}</u> | 
           <a onclick="return confirm('Είστε σίγουρος οτι θέλετε να αποσυνδεθείτε;')"
-            href="{{settings.SECURE_URL_HOST}}{% url logout %}?return_url=/">έξοδος</a>
+            href="{{settings.SECURE_URL_HOST}}{% url logout %}">έξοδος</a>
           {% else %}
           {% if trustee %}
           Έχετε συνδεθεί ως μέλος της εφορευτικής <u>{{trustee.name}}</u> της
           ψηφοφορίας  <u>{{ election.name }}</u>
-          <a href="{{settings.SECURE_URL_HOST}}{% url logout %}?return_url=/">έξοδος</a>
+          <a href="{{settings.SECURE_URL_HOST}}{% url logout %}">έξοδος</a>
           {% else %}
-          <a href="{{settings.SECURE_URL_HOST}}{% url login %}?next=/">Σύνδεση</a>
+          <a href="{{settings.SECURE_URL_HOST}}{% url login %}">Σύνδεση</a>
           {% endif %}
           {% endif %}
           <br />

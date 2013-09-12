@@ -23,12 +23,11 @@ def password_login_view(request):
         form = LoginForm(request.POST)
 
     request.session['auth_system_name'] = 'password'
-    return_url = request.POST.get('next', None)
     # TODO: protect from openredirect
 
     if form.is_valid():
         request.session[auth.USER_SESSION_KEY] = form._user_cache.pk
-        return HttpResponseRedirect(return_url or '/')
+        return HttpResponseRedirect(reverse('admin_home'))
 
     return render_template(request,
                            'login',
@@ -36,6 +35,6 @@ def password_login_view(request):
 
 
 def logout(request):
-    return_url = request.GET.get('next',"/")
+    return_url = request.GET.get('next', reverse('home'))
     request.zeususer.logout(request)
     return HttpResponseRedirect(return_url)
