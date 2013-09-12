@@ -1,3 +1,6 @@
+var running_workers = [];
+var available_workers = [];
+
 if(!Array.prototype.indexOf) {
     Array.prototype.indexOf = function(what, i) {
         i = i || 0;
@@ -216,6 +219,7 @@ function TrusteeDecrypt(options) {
   this.secret_key = options.secret_key;
   this.action = $(options.action);
   this.action.click(_.bind(function(e) {
+    this.action.hide();
     e.preventDefault();
     this.start_decryption();
   }, this));
@@ -234,7 +238,7 @@ TrusteeDecrypt.prototype = {
     var do_next = function() {
       var poll = polls.pop();
       if (!poll) { 
-        this.action.hide();
+        this.action.show();
         this.decrypting = false;
         return;
       }
@@ -434,7 +438,11 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, progress_callbac
     };
     
     function _init_worker(id, callback) {
-      var worker = new window.Worker(TRUSTEE.worker + '?' + (new Date()).getTime());
+      var worker = available_workers.pop();
+      if (!worker) {
+        worker = new window.Worker(TRUSTEE.worker + '?' + (new Date()).getTime());
+      }
+      running_workers.push(worker);
       worker.onmessage = function(event) {
         if (event && event.data && event.data.type == "result") {
           var result = event.data.result;
@@ -463,12 +471,17 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, progress_callbac
                   'decryption_factors': decryption_factors,
                   'decryption_proofs': decryption_proofs
                 });
+              
+              var w;
+              while (w=running_workers.pop()) {
+                available_workers.push(w);
+              }
               window.clearInterval(interval);
               return;
           }
         }
       }
-      interval = window.setInterval(check, 2000);
+      interval = window.setInterval(check, 1000);
     }
     
     var _sk = secret_key.toJSONObject();

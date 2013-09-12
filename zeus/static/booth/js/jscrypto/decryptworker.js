@@ -16,11 +16,6 @@ importScripts("jsbn.js",
 	      "sha2.js",
 	      "helios.js");
 
-var console = {
-    'log' : function(msg) {
-	self.postMessage({'type':'log','msg':msg});
-    }
-};
 
 var status_update = function(msg) {
     self.postMessage({'type' : 'status', 'msg' : msg});
@@ -30,6 +25,11 @@ var ELECTION = null;
 var VOTE = null;
 
 function do_decrypt(message) {
+    var console = {
+        'log' : function(msg) {
+          self.postMessage({'type':'log','msg':msg});
+        }
+    };
     console.log("decrypting!");
     
     var d = new Date;
