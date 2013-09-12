@@ -117,6 +117,7 @@ def task(name, required_features=(), is_recurrent=False, completed_cb=None,
             with transaction.commit_on_success():
                 setattr(self, started_field, datetime.datetime.now())
                 setattr(self, status_field, 'running')
+                self.notify_task(name, 'starting')
                 self.save()
 
             with transaction.commit_manually():
@@ -134,7 +135,9 @@ def task(name, required_features=(), is_recurrent=False, completed_cb=None,
                                      datetime.datetime.now())
                         setattr(self, status_field, 'finished')
                         setattr(self, error_field, None)
+                        self.notify_task(name, 'finished')
                     else:
+                        self.notify_task(name, 'waiting')
                         setattr(self, status_field, 'waiting')
                     self.save()
                     transaction.commit()
@@ -145,6 +148,7 @@ def task(name, required_features=(), is_recurrent=False, completed_cb=None,
                         setattr(self, error_field, error)
                         setattr(self, started_field, None)
                         setattr(self, status_field, 'pending')
+                        self.notify_task(name, 'error', error)
                         self.save()
         setattr(inner, '_task', True)
         setattr(inner, '_task_name', name)
@@ -168,6 +172,7 @@ def poll_task(*args, **kwargs):
 def mixing_completed_check(poll):
     return poll.mixes.finished().count() == LOCAL_MIXES_COUNT
 
+
 def partial_decryptions_completed_check(poll):
     return poll.partial_decryptions.filter().no_secret().count() == \
             poll.election.trustees.filter().no_secret().count()
@@ -183,6 +188,11 @@ class PollTasks(TaskModel):
 
     class Meta:
         abstract = True
+
+    def notify_task(self, name, status, error=None):
+        pass
+        #print "%s task %s %s %s" % (self.shortname_display(), name, status,
+                                       #error or "")
 
     @poll_task('validate_create', ('frozen',))
     def validate_create(self):
