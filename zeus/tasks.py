@@ -133,6 +133,10 @@ def poll_validate_create(poll_id):
 @task(ignore_result=True)
 def election_validate_create(election_id):
     election = Election.objects.select_for_update().get(id=election_id)
+    if election.polls_feature_frozen:
+        election.frozen_at = datetime.datetime.now()
+        election.save()
+
     for poll in election.polls.all():
         if not poll.feature_can_validate_create:
             poll_validate_create.delay(poll.id)
