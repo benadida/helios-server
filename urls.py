@@ -13,18 +13,6 @@ auth_urls = patterns('zeus.views.auth',
     url(r'^auth/login', 'password_login_view', name='login'),
 )
 
-static_urls = patterns('',
-    (r'booth/(?P<path>.*)$', 'django.views.static.serve', {
-        'document_root' : settings.BOOTH_STATIC_PATH
-    }),
-    (r'static/zeus/(?P<path>.*)$', 'django.views.static.serve', {
-        'document_root' : settings.ROOT_PATH + '/zeus/static/zeus'
-    }),
-    (r'static/(?P<path>.*)$', 'django.views.static.serve', {
-        'document_root' : settings.ROOT_PATH + '/server_ui/media'
-    }),
-)
-
 admin_urls = patterns('zeus.views.admin',
     url(r'^$', 'home', name='admin_home'),
 )
@@ -39,10 +27,23 @@ app_patterns += patterns(
         name="get_randomness"),
 )
 
-# SHOULD BE REPLACED BY APACHE STATIC PATH
-app_patterns += static_urls
+#SHOULD BE REPLACED BY APACHE STATIC PATH
+#app_patterns += static_urls
 
 urlpatterns = patterns(
     '',
     (r'^' + SERVER_PREFIX, include(app_patterns)),
 )
+
+urlpatterns += patterns('',
+    (r'booth/(?P<path>.*)$', 'django.views.static.serve', {
+        'document_root' : settings.BOOTH_STATIC_PATH
+    }),
+    (r'static/zeus/(?P<path>.*)$', 'django.views.static.serve', {
+        'document_root' : settings.ROOT_PATH + '/zeus/static/zeus'
+    }),
+    (r'static/(?P<path>.*)$', 'django.views.static.serve', {
+        'document_root' : settings.ROOT_PATH + '/server_ui/media'
+    }),
+)
+
