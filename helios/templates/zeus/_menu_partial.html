@@ -1,5 +1,5 @@
 <dd id="" class="{% if menu_active == "home" %}active{% endif %}"><a
-  href="/">Αρχική σελίδα</a></dd>
+  href="{% url home %}">Αρχική σελίδα</a></dd>
 <dd id="" class="{% if menu_active == "faqs" %}active{% endif %}"><a 
   href="{% url faqs_voter %}">Συχνές ερωτήσεις</a></dd>
 <dd id="" class="{% if menu_active == "resources" %}active{% endif %}"><a 
