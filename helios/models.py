@@ -38,6 +38,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.validators import validate_email
 from django.forms import ValidationError
 from django.core.urlresolvers import reverse
+from django.core.context_processors import csrf
 
 from helios.crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
@@ -670,7 +671,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
     vote_url = "%s/booth/vote.html?%s" % (
             settings.SECURE_URL_HOST,
             urllib.urlencode({
-                'token': request.session.get('csrf_token'),
+                'token': csrf(request)['csrf_token'],
                 'poll_url': "%s%s" % (settings.SECURE_URL_HOST,
                                       self.get_absolute_url()),
                 'poll_json_url': "%s%s" % (settings.SECURE_URL_HOST,

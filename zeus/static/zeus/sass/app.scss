@@ -5,6 +5,7 @@
 @import "foundation";
 
 $customBorder: 1px solid #ddd;
+$red: darken(#ff0000, 20%);
 
 body {
   background-image: url("../images/pattern.jpg");
@@ -73,7 +74,17 @@ body {
   #banner {
     //border-bottom: $customBorder;
   }
-  
+
+  .errorlist {
+    list-style: none;
+    li {
+        background-color: $red;
+        color: $white;
+        margin: 0;
+        padding: 5px;
+    }
+  }
+
   dl.tabs dd.error {
     border-top-color: $alertColor;
     a {

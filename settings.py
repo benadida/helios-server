@@ -74,10 +74,10 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'pagination.middleware.PaginationMiddleware',
     'zeus.middleware.AuthenticationMiddleware',
-    'zeus.middleware.CSRFMiddleware',
     'zeus.middleware.ExceptionsMiddleware',
 )
 
@@ -112,7 +112,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
   "django.core.context_processors.static",
   "django.core.context_processors.request",
   "django.contrib.messages.context_processors.messages",
-
+  "django.core.context_processors.csrf",
   "zeus.context_processors.user",
   "zeus.context_processors.confirm_messages"
 )

@@ -433,7 +433,7 @@ BOOTH.load_and_setup_election = function(election_url) {
       // get more randomness from server
       $.ajax({
         
-        'url': election_url + "/get-randomness", 
+        'url': election_url + "/get-randomness?token=1", 
         'data': {}, 
         'success': function(result) {
           sjcl.random.addEntropy(result.randomness);
@@ -621,7 +621,11 @@ BOOTH.audit_ballot = function() {
 };
 
 BOOTH.post_audited_ballot = function() {
-  $.post(BOOTH.election_url.replace('.json', '') + "/post-audited-ballot", {'audited_ballot': BOOTH.audit_trail}, function(result) {
+  $.post(BOOTH.election_url.replace('.json', '') + "/post-audited-ballot", 
+         {
+           'csrfmiddlewaretoken': BOOTH.csrf, 
+           'audited_ballot': BOOTH.audit_trail
+         }, function(result) {
     var recipe_text = 'Η ψήφος ελέγχου αποθηκεύτηκε. Αναγνωριστικό ψήφου ελέγχου: <b>' + result.audit_id + '</b>';
     recipe_text += "<br />Μπορείτε να επισκεφθείτε την σελίδα της ψηφοφορίας στην ενότητα \"Ψήφοι ελέγχου\", και ελέγξετε τις επιλογές σας .";
     $(".audited_ballot_recipe").html(recipe_text);
@@ -645,7 +649,7 @@ BOOTH.cast_ballot = function() {
 
     // submit the form
     var data = $('#send_ballot_form').serialize();
-    data = data + "&csrf_token=" + BOOTH.csrf;
+    data = data + "&csrfmiddlewaretoken=" + BOOTH.csrf;
     var url = $('#send_ballot_form').attr("action");
 
     $.ajax({

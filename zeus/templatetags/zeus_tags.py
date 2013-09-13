@@ -30,6 +30,10 @@ def _confirm_action(context, label, url, confirm_msg="", icon="",
     confirm_msg = Template(confirm_msg).render(context)
     confirm_msg = confirm_msg.replace('\n', ' ');
 
+    confirm_code = """onsubmit="return confirm('%s');" """ % confirm_msg
+    if "noconfirm" in cls:
+        confirm_code = ""
+
     onclick = ""
     if not disabled:
         onclick = ("""onclick="$(this).closest('form').submit(); """
@@ -37,9 +41,19 @@ def _confirm_action(context, label, url, confirm_msg="", icon="",
     else:
         cls += " disabled"
 
+
+    csrf_token = ""
+    if 'csrf_token' in context:
+        csrf_token = """<input type="hidden" """ + \
+                     """value="%s" """ % context['csrf_token'] + \
+                     """name="csrfmiddlewaretoken" />"""
+    if "nocsrf" in cls:
+        csrf_token = ""
+
     html = """
     <form action="%(url)s" method="%(method)s" class="action-form %(form_cls)s"
-    onsubmit="return confirm('%(confirm_msg)s');">
+     %(confirm_code)s>
+     %(csrf_token)s
     <a href="#" %(onclick)s
     class="button foundicon-%(icon)s %(cls)s %(extra_cls)s"> &nbsp;%(label)s</a>
     </form>
@@ -51,7 +65,9 @@ def _confirm_action(context, label, url, confirm_msg="", icon="",
         'icon': icon,
         'method': method,
         'form_cls': form_cls,
+        'confirm_code': confirm_code,
         'confirm_msg': confirm_msg,
+        'csrf_token': csrf_token,
         'onclick': onclick
     }
     return html
@@ -152,10 +168,23 @@ def menu_confirm_action(context, label, url, confirm_msg="", icon="",
     if icon:
         icon_cls = "foundicon-%s" % icon
 
+    confirm_code = """onsubmit="return confirm('%s');" """ % confirm_msg
+    if "noconfirm" in cls:
+        confirm_code = ""
+
+    csrf_token = ""
+    if 'csrf_token' in context:
+        csrf_token = """<input type="hidden" """ + \
+                     """value="%s" """ % context['csrf_token'] + \
+                     """name="csrfmiddlewaretoken" />"""
+    if "nocsrf" in cls:
+        csrf_token = ""
+
     html = """
     <li>
     <form action="%(url)s" method="%(method)s" class="action-form"
-    onsubmit="return confirm('%(confirm_msg)s');">
+    %(confirm_code)s>
+    %(csrf_token)s
     <a href="#" onclick="$(this).closest('form').submit(); return false"
     class="%(icon)s %(cls)s"> &nbsp;%(label)s</a>
     </form>
@@ -166,7 +195,9 @@ def menu_confirm_action(context, label, url, confirm_msg="", icon="",
         'cls': cls,
         'icon': icon_cls,
         'method': method,
-        'confirm_msg': confirm_msg
+        'confirm_code': confirm_code,
+        'confirm_msg': confirm_msg,
+        'csrf_token': csrf_token
     }
     return html
 

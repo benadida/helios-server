@@ -25,9 +25,13 @@
 </div>
 {% endif %}
 
-<form id="login_form" class="prettyform" action="{% url login %}" method="POST" id="login_form">
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<form 
+    class="prettyform" 
+    action="{% url login %}" 
+    method="POST" 
+    id="login_form">
 <table>
+    {% csrf_token %}
     {{form.as_p}}
 </table>
 <div>

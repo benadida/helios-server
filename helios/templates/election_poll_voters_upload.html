@@ -8,6 +8,7 @@
 {% block content %}
 <h5>Μαζική προσθήκη ψηφοφόρων στην ψηφοφορία</h5>
 <form method="post" action="" id="upload_form" enctype="multipart/form-data">
+  {% csrf_token %}
   <p>
     Παρακαλούμε προετοιμάστε ένα αρχείο απλού κειμένου με τους ψηφοφόρους
     σε μορφή CSV, όπως το παρακάτω:

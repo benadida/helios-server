@@ -7,6 +7,7 @@ from zeus.utils import *
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
+from django.views.decorators.http import require_http_methods
 
 from helios.view_utils import render_template
 from zeus.forms import LoginForm
@@ -14,8 +15,8 @@ from zeus import auth
 
 
 @auth.unauthenticated_user_required
+@require_http_methods(["POST", "GET"])
 def password_login_view(request):
-
     error = None
     if request.method == "GET":
         form = LoginForm()
@@ -23,11 +24,11 @@ def password_login_view(request):
         form = LoginForm(request.POST)
 
     request.session['auth_system_name'] = 'password'
-    # TODO: protect from openredirect
 
-    if form.is_valid():
-        request.session[auth.USER_SESSION_KEY] = form._user_cache.pk
-        return HttpResponseRedirect(reverse('admin_home'))
+    if request.method == "POST":
+        if form.is_valid():
+            request.session[auth.USER_SESSION_KEY] = form._user_cache.pk
+            return HttpResponseRedirect(reverse('admin_home'))
 
     return render_template(request,
                            'login',

@@ -5923,69 +5923,69 @@ table.hide-for-medium {
     margin: 0;
   }
 }
-/* line 9, ../sass/app.scss */
+/* line 10, ../sass/app.scss */
 body {
   background-image: url("../images/pattern.jpg");
 }
 
-/* line 14, ../sass/app.scss */
+/* line 15, ../sass/app.scss */
 body.booth #progress_div .tabs a {
   cursor: text;
 }
-/* line 15, ../sass/app.scss */
+/* line 16, ../sass/app.scss */
 body.booth #questions_div {
   margin-top: 30px;
 }
-/* line 16, ../sass/app.scss */
+/* line 17, ../sass/app.scss */
 body.booth .election-desc-toggle {
   bottom: auto;
 }
-/* line 17, ../sass/app.scss */
+/* line 18, ../sass/app.scss */
 body.booth #header {
   margin-top: -2px;
 }
-/* line 19, ../sass/app.scss */
+/* line 20, ../sass/app.scss */
 body.booth .bg-wrapper {
   width: 768px;
 }
 
-/* line 24, ../sass/app.scss */
+/* line 25, ../sass/app.scss */
 body {
   background-color: #0A212F;
 }
-/* line 26, ../sass/app.scss */
+/* line 27, ../sass/app.scss */
 body #progress_div {
   margin-top: 30px;
 }
-/* line 29, ../sass/app.scss */
+/* line 30, ../sass/app.scss */
 body #progress_div .tabs a {
   font-size: 12px;
 }
-/* line 30, ../sass/app.scss */
+/* line 31, ../sass/app.scss */
 body .extra-election-actions {
   margin-top: 10px;
 }
-/* line 30, ../sass/app.scss */
+/* line 31, ../sass/app.scss */
 body .extra-election-actions span {
   float: none !important;
 }
-/* line 32, ../sass/app.scss */
+/* line 33, ../sass/app.scss */
 body #cast_form .required-to-cast {
   float: left;
 }
-/* line 33, ../sass/app.scss */
+/* line 34, ../sass/app.scss */
 body #cast_form .submit {
   display: none;
 }
-/* line 36, ../sass/app.scss */
+/* line 37, ../sass/app.scss */
 body .field-readonly {
   background-color: #ddd;
 }
-/* line 37, ../sass/app.scss */
+/* line 38, ../sass/app.scss */
 body .field-readonly:focus {
   background-color: #ddd;
 }
-/* line 38, ../sass/app.scss */
+/* line 39, ../sass/app.scss */
 body .clearfix {
   *zoom: 1;
 }
@@ -5998,42 +5998,42 @@ body .clearfix:before, body .clearfix:after {
 body .clearfix:after {
   clear: both;
 }
-/* line 42, ../sass/app.scss */
+/* line 43, ../sass/app.scss */
 body .header {
   padding: 0;
 }
-/* line 43, ../sass/app.scss */
+/* line 44, ../sass/app.scss */
 body .header h4, body .header h1 {
   font-family: 'Didact Gothic', Helvetica, Arial, sans-serif !important;
   display: none;
 }
-/* line 45, ../sass/app.scss */
+/* line 46, ../sass/app.scss */
 body .header h4 span, body .header h1 span {
   font-family: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif !important;
 }
-/* line 48, ../sass/app.scss */
+/* line 49, ../sass/app.scss */
 body .header h4 {
   font-size: 26px;
   display: block;
   padding: 0 15px;
 }
-/* line 52, ../sass/app.scss */
+/* line 53, ../sass/app.scss */
 body .loginbox {
   padding: 0;
   margin-top: -2px;
 }
-/* line 55, ../sass/app.scss */
+/* line 56, ../sass/app.scss */
 body .loginbox .panel {
   margin: 0;
   background-color: #FFC36D;
   border: none;
 }
-/* line 59, ../sass/app.scss */
+/* line 60, ../sass/app.scss */
 body .loginbox .panel a {
   color: #fff;
   font-weight: bold;
 }
-/* line 66, ../sass/app.scss */
+/* line 67, ../sass/app.scss */
 body #header {
   *zoom: 1;
   border-bottom: 1px solid #cccccc;
@@ -6050,63 +6050,74 @@ body #header:before, body #header:after {
 body #header:after {
   clear: both;
 }
-/* line 77, ../sass/app.scss */
+/* line 78, ../sass/app.scss */
+body .errorlist {
+  list-style: none;
+}
+/* line 80, ../sass/app.scss */
+body .errorlist li {
+  background-color: #990000;
+  color: white;
+  margin: 0;
+  padding: 5px;
+}
+/* line 88, ../sass/app.scss */
 body dl.tabs dd.error {
   border-top-color: #c60f13;
 }
-/* line 79, ../sass/app.scss */
+/* line 90, ../sass/app.scss */
 body dl.tabs dd.error a {
   color: #c60f13;
 }
-/* line 84, ../sass/app.scss */
+/* line 95, ../sass/app.scss */
 body #footer {
   padding: 10px 0;
   border-top: 1px solid #dddddd;
   margin-top: 20px;
   border-bottom: 1px solid #dddddd;
 }
-/* line 90, ../sass/app.scss */
+/* line 101, ../sass/app.scss */
 body #footer .footer-icons {
   float: right;
 }
-/* line 93, ../sass/app.scss */
+/* line 104, ../sass/app.scss */
 body .start-voting {
   float: left;
   margin-top: 20px;
 }
-/* line 96, ../sass/app.scss */
+/* line 107, ../sass/app.scss */
 body .stv-candidates {
   margin-bottom: 3em;
 }
-/* line 99, ../sass/app.scss */
+/* line 110, ../sass/app.scss */
 body .stv-candidates .stv-choice-party .question-subtitle {
   color: #fff !important;
   float: right;
   font-weight: normal;
   font-size: 0.8em;
 }
-/* line 104, ../sass/app.scss */
+/* line 115, ../sass/app.scss */
 body .stv-candidates .stv-choice-party a {
   text-align: left !important;
 }
-/* line 107, ../sass/app.scss */
+/* line 118, ../sass/app.scss */
 body .stv-candidates .stv-choice-party a.enabled {
   background-color: #196177 !important;
 }
-/* line 114, ../sass/app.scss */
+/* line 125, ../sass/app.scss */
 body ol li.step {
   margin-bottom: 10px;
 }
-/* line 115, ../sass/app.scss */
+/* line 126, ../sass/app.scss */
 body ol li.step .step-title {
   font-weight: bold;
 }
-/* line 116, ../sass/app.scss */
+/* line 127, ../sass/app.scss */
 body ol li.step .step-desc {
   font-style: italic;
   display: block;
 }
-/* line 118, ../sass/app.scss */
+/* line 129, ../sass/app.scss */
 body span.election-desc-toggle {
   cursor: pointer;
   position: absolute;
@@ -6116,11 +6127,11 @@ body span.election-desc-toggle {
   margin-top: 2px;
   z-index: 3;
 }
-/* line 128, ../sass/app.scss */
+/* line 139, ../sass/app.scss */
 body .election-info .description {
   margin-top: 1.5em 0;
 }
-/* line 132, ../sass/app.scss */
+/* line 143, ../sass/app.scss */
 body .election-dates {
   *zoom: 1;
   padding: 0;
@@ -6135,200 +6146,200 @@ body .election-dates:before, body .election-dates:after {
 body .election-dates:after {
   clear: both;
 }
-/* line 136, ../sass/app.scss */
+/* line 147, ../sass/app.scss */
 body .election-dates .columns {
   background-color: #efefef;
   padding: 1em;
 }
-/* line 140, ../sass/app.scss */
+/* line 151, ../sass/app.scss */
 body .election-dates .bottom {
   background-color: #bcbcbc;
   border-top: 1px solid #c9c9c9;
 }
-/* line 146, ../sass/app.scss */
+/* line 157, ../sass/app.scss */
 body h4 .elname {
   display: block;
   font-size: 0.65em;
   color: #4d4d4d;
 }
-/* line 152, ../sass/app.scss */
+/* line 163, ../sass/app.scss */
 body h4 .pollname {
   display: block;
   font-size: 0.6em;
   color: #333333;
 }
-/* line 157, ../sass/app.scss */
+/* line 168, ../sass/app.scss */
 body h4 .inst {
   display: block;
   font-size: 0.4em;
   font-weight: bold;
 }
-/* line 158, ../sass/app.scss */
+/* line 169, ../sass/app.scss */
 body .panel.confirm-vote {
   padding-top: 0;
   padding-bottom: 0;
 }
-/* line 163, ../sass/app.scss */
+/* line 174, ../sass/app.scss */
 body .row.labels {
   margin-bottom: 10px !important;
 }
-/* line 167, ../sass/app.scss */
+/* line 178, ../sass/app.scss */
 body .form-field ul {
   list-style: none;
 }
-/* line 171, ../sass/app.scss */
+/* line 182, ../sass/app.scss */
 body p.alert {
   color: red;
 }
-/* line 172, ../sass/app.scss */
+/* line 183, ../sass/app.scss */
 body .green {
   color: #5DA423;
 }
-/* line 174, ../sass/app.scss */
+/* line 185, ../sass/app.scss */
 body .vote-hash {
   text-align: left;
   font-weight: bold;
   font-size: 1.2em;
 }
-/* line 175, ../sass/app.scss */
+/* line 186, ../sass/app.scss */
 body .vote-hash-actions {
   float: right;
   margin-top: -2px !important;
 }
-/* line 177, ../sass/app.scss */
+/* line 188, ../sass/app.scss */
 body ul.stv-list {
   list-style: none;
 }
-/* line 179, ../sass/app.scss */
+/* line 190, ../sass/app.scss */
 body ul.stv-list li {
   margin-bottom: 10px;
 }
-/* line 180, ../sass/app.scss */
+/* line 191, ../sass/app.scss */
 body ul.stv-list .button {
   width: 100%;
 }
-/* line 181, ../sass/app.scss */
+/* line 192, ../sass/app.scss */
 body ul.stv-list a span.index-num {
   font-size: 0.8em;
   float: left;
 }
-/* line 182, ../sass/app.scss */
+/* line 193, ../sass/app.scss */
 body ul.stv-list .stv-ballot-choice a {
   text-align: right;
 }
-/* line 183, ../sass/app.scss */
+/* line 194, ../sass/app.scss */
 body ul.stv-list .stv-ballot-choice a span:hover {
   background-color: transparent !important;
 }
-/* line 185, ../sass/app.scss */
+/* line 196, ../sass/app.scss */
 body #stv_answer {
   display: none;
 }
-/* line 186, ../sass/app.scss */
+/* line 197, ../sass/app.scss */
 body h4#election-name span.label {
   padding: 4px;
   margin-top: 5px;
 }
-/* line 188, ../sass/app.scss */
+/* line 199, ../sass/app.scss */
 body ul.confirm-choices {
   list-style: none;
   margin-bottom: 10px;
   margin-top: 10px;
 }
-/* line 189, ../sass/app.scss */
+/* line 200, ../sass/app.scss */
 body #confirm-vote {
   margin-left: 10px;
 }
-/* line 190, ../sass/app.scss */
+/* line 201, ../sass/app.scss */
 body #percent_done_container {
   margin-bottom: 10px;
 }
-/* line 192, ../sass/app.scss */
+/* line 203, ../sass/app.scss */
 body .audit-info {
   font-size: 0.5em;
 }
-/* line 192, ../sass/app.scss */
+/* line 203, ../sass/app.scss */
 body .audit-info h4 {
   font-size: 1em;
   color: #aaa;
 }
-/* line 193, ../sass/app.scss */
+/* line 204, ../sass/app.scss */
 body #auditbody {
   display: none;
 }
-/* line 195, ../sass/app.scss */
+/* line 206, ../sass/app.scss */
 body .audit-button {
   float: right;
   margin-top: -32px;
 }
-/* line 196, ../sass/app.scss */
+/* line 207, ../sass/app.scss */
 body form .form-row.checked label {
   color: green !important;
 }
-/* line 197, ../sass/app.scss */
+/* line 208, ../sass/app.scss */
 body form .form-row {
   margin-left: 25px;
   margin-bottom: 10px;
 }
-/* line 197, ../sass/app.scss */
+/* line 208, ../sass/app.scss */
 body form .form-row label {
   text-indent: -25px;
   font-size: 0.9em;
   color: red;
   font-weight: bold;
 }
-/* line 200, ../sass/app.scss */
+/* line 211, ../sass/app.scss */
 body .cast-actions .cancel {
   float: right;
 }
-/* line 201, ../sass/app.scss */
+/* line 212, ../sass/app.scss */
 body .cast-actions .submit {
   float: left;
 }
-/* line 202, ../sass/app.scss */
+/* line 213, ../sass/app.scss */
 body .election-description {
   display: none;
 }
-/* line 205, ../sass/app.scss */
+/* line 216, ../sass/app.scss */
 body table.voters thead th, body table.elections thead th, body table.polls-table thead th {
   font-size: 11px;
 }
-/* line 206, ../sass/app.scss */
+/* line 217, ../sass/app.scss */
 body table.voters tbody td, body table.elections tbody td, body table.polls-table tbody td {
   font-size: 12px;
 }
-/* line 209, ../sass/app.scss */
+/* line 220, ../sass/app.scss */
 body .cancel-msg {
   min-height: 100px !important;
 }
-/* line 213, ../sass/app.scss */
+/* line 224, ../sass/app.scss */
 body a.show-audit-form {
   color: #aaa;
 }
-/* line 214, ../sass/app.scss */
+/* line 225, ../sass/app.scss */
 body a.show-audit-form.active {
   color: #000;
 }
-/* line 219, ../sass/app.scss */
+/* line 230, ../sass/app.scss */
 body .audit-form {
   display: none;
 }
-/* line 225, ../sass/app.scss */
+/* line 236, ../sass/app.scss */
 body .dropdown .alert {
   color: #c60f13 !important;
   font-weight: bold !important;
 }
-/* line 227, ../sass/app.scss */
+/* line 238, ../sass/app.scss */
 body label {
   font-weight: bold;
   color: #2ba6cb;
 }
-/* line 232, ../sass/app.scss */
+/* line 243, ../sass/app.scss */
 body .dropdown li form {
   margin: 0;
   padding: 0;
 }
-/* line 237, ../sass/app.scss */
+/* line 248, ../sass/app.scss */
 body .action-form {
   margin: 0;
   padding: 0;
@@ -6337,16 +6348,16 @@ body .action-form {
   line-height: 3em;
   width: 100%;
 }
-/* line 246, ../sass/app.scss */
+/* line 257, ../sass/app.scss */
 body .action-form.inline {
   display: inline !important;
 }
-/* line 250, ../sass/app.scss */
+/* line 261, ../sass/app.scss */
 body .dropdown .action-form {
   line-height: inherit !important;
   display: inline !important;
 }
-/* line 256, ../sass/app.scss */
+/* line 267, ../sass/app.scss */
 body .dropdown li input {
   cursor: pointer;
   display: block !important;
@@ -6365,106 +6376,106 @@ body .dropdown li input {
   margin: inherit;
   -webkit-font-smoothing: antialiased;
 }
-/* line 257, ../sass/app.scss */
+/* line 268, ../sass/app.scss */
 body .dropdown li input:before {
   display: block !important;
   content: "lala" !important;
 }
-/* line 277, ../sass/app.scss */
+/* line 288, ../sass/app.scss */
 body .action-right {
   float: right;
   margin-right: 0;
 }
-/* line 278, ../sass/app.scss */
+/* line 289, ../sass/app.scss */
 body table.polls-table {
   width: 100%;
 }
-/* line 279, ../sass/app.scss */
+/* line 290, ../sass/app.scss */
 body table.polls-table th {
   text-transform: capitalize;
 }
-/* line 283, ../sass/app.scss */
+/* line 294, ../sass/app.scss */
 body .do-decrypt {
   display: inline-block;
   margin: 20px 0;
   float: right;
 }
-/* line 288, ../sass/app.scss */
+/* line 299, ../sass/app.scss */
 body .trustee-decrypt-actions {
   text-align: right;
 }
-/* line 293, ../sass/app.scss */
+/* line 304, ../sass/app.scss */
 body .freeze-issues ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-/* line 297, ../sass/app.scss */
+/* line 308, ../sass/app.scss */
 body .freeze-issues ul:last-child {
   margin-bottom: 1em;
 }
-/* line 299, ../sass/app.scss */
+/* line 310, ../sass/app.scss */
 body .freeze-issues li {
   padding: 5px;
   margin: 5px 0;
 }
-/* line 300, ../sass/app.scss */
+/* line 311, ../sass/app.scss */
 body .freeze-issues li {
   background-color: #eee;
 }
-/* line 302, ../sass/app.scss */
+/* line 313, ../sass/app.scss */
 body .freeze-issues li span {
   font-weight: bold;
 }
-/* line 305, ../sass/app.scss */
+/* line 316, ../sass/app.scss */
 body .election-view-content {
   margin-top: 2em;
 }
-/* line 309, ../sass/app.scss */
+/* line 320, ../sass/app.scss */
 body .election-contact, body .election-actions {
   margin-top: 2em;
 }
-/* line 310, ../sass/app.scss */
+/* line 321, ../sass/app.scss */
 body .election-contact ul, body .election-actions ul {
   list-style: none;
 }
-/* line 314, ../sass/app.scss */
+/* line 325, ../sass/app.scss */
 body .election-contact {
   background-color: #efefef;
 }
-/* line 319, ../sass/app.scss */
+/* line 330, ../sass/app.scss */
 body .election-actions .admin-status {
   margin-bottom: 1em;
 }
-/* line 320, ../sass/app.scss */
+/* line 331, ../sass/app.scss */
 body .election-actions .admin-status h4 {
   font-size: 1.2em;
   margin-bottom: 0.5em;
 }
-/* line 325, ../sass/app.scss */
+/* line 336, ../sass/app.scss */
 body #booth-link {
   width: 100%;
   margin-top: 40px;
   display: inline-block;
 }
-/* line 331, ../sass/app.scss */
+/* line 342, ../sass/app.scss */
 body .audit-ballot ul {
   list-style: none;
 }
 
-/* line 341, ../sass/app.scss */
+/* line 352, ../sass/app.scss */
 body > .row {
   border-right: 1px solid #dddddd;
   border-left: 1px solid #dddddd;
   background-color: #fff;
 }
 
-/* line 348, ../sass/app.scss */
+/* line 359, ../sass/app.scss */
 body {
   margin-top: 20px !important;
 }
 
-/* line 352, ../sass/app.scss */
+/* line 363, ../sass/app.scss */
 body .bg-wrapper {
   margin-top: 20px;
   width: 890px;
@@ -6475,23 +6486,23 @@ body .bg-wrapper {
   background-color: #fff;
 }
 
-/* line 360, ../sass/app.scss */
+/* line 371, ../sass/app.scss */
 .election-stats-list {
   max-height: 300px;
   overflow-y: scroll;
 }
 
-/* line 365, ../sass/app.scss */
+/* line 376, ../sass/app.scss */
 table tr.party {
   font-weight: bold;
   background-color: #ddd !important;
 }
 
-/* line 371, ../sass/app.scss */
+/* line 382, ../sass/app.scss */
 .trustee-entry tt {
   font-size: 0.8em;
 }
-/* line 372, ../sass/app.scss */
+/* line 383, ../sass/app.scss */
 .trustee-entry .hash-title {
   color: #666666;
   font-weight: normal;
@@ -6500,7 +6511,7 @@ table tr.party {
   margin-top: 8px;
 }
 
-/* line 381, ../sass/app.scss */
+/* line 392, ../sass/app.scss */
 form .field-readonly {
   background-color: #cccccc !important;
 }

@@ -115,7 +115,6 @@ $(document).ready(function(){
       var self = this;
       this.forms().each(function(qi, f){
       $(f).find(".answer_input").each(function(i, el){
-              console.log(i, el);
           var el = $(el);
           var label = $(el).closest(".form-field").find("label");
           var name = 'form-' + qi + '-answer_' + i;
@@ -250,8 +249,8 @@ $(document).ready(function(){
     },
 
     _set_form_index: function(el, newindex, reset) {
-      reset = reset == undefined ? true : false;
-      var curindex = parseInt(/form-(\d+)-/.exec(el.find("input").attr("name"))[1]);
+        reset = reset == undefined ? true : false;
+      var curindex = parseInt(/form-(\d+)-/.exec(el.find("input[name!='csrfmiddlewaretoken']").attr("name"))[1]);
       var reset_field = function(f) {
         var newname = f.attr('name').replace('form-'+curindex, 'form-'+newindex);
         var newid = f.attr('id').replace('form-'+curindex, 'form-'+newindex);
@@ -264,7 +263,7 @@ $(document).ready(function(){
         })
       }
 
-      el.find("input").each(function(i,f) {
+      el.find("input[name!='csrfmiddlewaretoken']").each(function(i,f) {
         reset_field($(f));
       })
       el.find("select").each(function(i,f) {
@@ -295,6 +294,9 @@ $(document).ready(function(){
     },
 
     remove_answer: function(qnum, index) {
+      if (this.answers(qnum).length == 1) {
+        return
+      }
       $(this.answers(qnum)[index]).closest('.form-field').next('br').remove();
       $(this.answers(qnum)[index]).closest('.form-field').remove();
       this.answers_num_input(qnum).val($(this.answers(qnum)).length);

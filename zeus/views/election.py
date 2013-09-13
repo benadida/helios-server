@@ -22,6 +22,7 @@ from django.forms.models import modelformset_factory
 from django.contrib import messages
 from django.core import serializers
 from django.core.exceptions import PermissionDenied
+from django.views.decorators.http import require_http_methods
 
 from helios.view_utils import render_template
 from helios.models import Election, Poll, CastVote, Voter
@@ -29,6 +30,7 @@ from helios.models import Election, Poll, CastVote, Voter
 
 @transaction.commit_on_success
 @auth.election_admin_required
+@require_http_methods(["GET", "POST"])
 def add_or_update(request, election=None):
 
     user = request.admin
@@ -63,6 +65,7 @@ def add_or_update(request, election=None):
 
 
 @auth.election_user_required
+@require_http_methods(["GET"])
 def trustees_list(request, election):
     trustees = election.trustees.filter(election=election,
                                         secret_key__isnull=True)
@@ -87,6 +90,7 @@ def trustees_list(request, election):
 
 @auth.election_admin_required
 @auth.requires_election_features('can_send_trustee_email')
+@require_http_methods(["POST"])
 def trustee_send_url(request, election, trustee_uuid):
     trustee = election.trustees.get(uuid=trustee_uuid)
     trustee.send_url_via_mail()
@@ -97,6 +101,7 @@ def trustee_send_url(request, election, trustee_uuid):
 @auth.election_admin_required
 @auth.requires_election_features('delete_trustee')
 @transaction.commit_on_success
+@require_http_methods(["POST"])
 def trustee_delete(request, election, trustee_uuid):
     election.zeus.invalidate_election_public()
     trustee = election.trustees.get(uuid=trustee_uuid)
@@ -107,6 +112,7 @@ def trustee_delete(request, election, trustee_uuid):
 
 
 @auth.election_user_required
+@require_http_methods(["GET"])
 def index(request, election, poll=None):
     user = request.zeususer
 
@@ -151,6 +157,7 @@ def index(request, election, poll=None):
 
 @auth.election_admin_required
 @auth.requires_election_features('can_freeze')
+@require_http_methods(["POST"])
 def freeze(request, election):
     tasks.election_validate_create(election.id)
     url = election_reverse(election, 'index')
@@ -160,6 +167,7 @@ def freeze(request, election):
 @auth.election_admin_required
 @auth.requires_election_features('can_cancel')
 @transaction.commit_on_success
+@require_http_methods(["POST"])
 def cancel(request, election):
 
     cancel_msg = request.POST.get('cancel_msg', '')
@@ -174,7 +182,8 @@ def cancel(request, election):
     return HttpResponseRedirect(url)
 
 
-@auth.election_admin_required
+@auth.superadmin_required
+@require_http_methods(["POST"])
 def endnow(request, election):
     if election.voting_extended_until:
         election.voting_extended_until = datetime.datetime.now()
@@ -188,6 +197,7 @@ def endnow(request, election):
 @auth.election_admin_required
 @auth.requires_election_features('can_close')
 @transaction.commit_on_success
+@require_http_methods(["POST"])
 def close(request, election):
     election.close_voting()
     tasks.election_validate_voting(election.pk)
@@ -198,6 +208,7 @@ def close(request, election):
 @auth.election_admin_required
 @auth.requires_election_features('can_validate_voting')
 @transaction.commit_on_success
+@require_http_methods(["POST"])
 def validate_voting(request, election):
     tasks.election_validate_voting(election_id=election.id)
     url = election_reverse(election, 'index')
@@ -207,6 +218,7 @@ def validate_voting(request, election):
 @auth.election_admin_required
 @auth.requires_election_features('can_mix')
 @transaction.commit_on_success
+@require_http_methods(["POST"])
 def start_mixing(request, election):
     tasks.start_mixing.delay(election_id=election.id)
     url = election_reverse(election, 'index')
@@ -215,6 +227,7 @@ def start_mixing(request, election):
 
 @auth.election_admin_required
 @auth.election_view()
+@require_http_methods(["GET"])
 def report(request, election, format):
     reports_list = request.GET.get('report',
                                    'election,voters,votes,results').split(",")
@@ -247,6 +260,7 @@ def report(request, election, format):
 
 @auth.superadmin_required
 @auth.election_view()
+@require_http_methods(["GET"])
 def json_data(request, election):
     if not election.trial:
         raise PermissionDenied

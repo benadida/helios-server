@@ -254,6 +254,7 @@ $(document).ready(function(){
 (Το πλήρες δημόσιο κλειδί του Κωδικού σας δεν εμφανίζεται τώρα
 επειδή δεν χρειάζεται να το αποθηκεύσετε. Το αποτύπωμά του είναι επαρκές.)
 </p>
+{% csrf_token %}
 <textarea id="pk_textarea" name="public_key_json" cols="80" rows="10" style="display:none;">
 </textarea>
 <input class="button success medium" type="submit" value="Ενεργοποίηση του Κωδικού σας">

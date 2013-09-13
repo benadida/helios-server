@@ -23,26 +23,23 @@ function check_sk(sk_value) {
     $('#input').hide();
     $('#processing').show();
 
-    try {
-      var secret_key = ElGamal.SecretKey.fromJSONObject(
-                         jQuery.secureEvalJSON(sk_value));
-      var pk_hash = b64_sha256(jQuery.toJSON(secret_key.pk));
-      var key_ok_p = (pk_hash == PK_HASH);
-    } catch (e) {
-      debugger;
-      var key_ok_p = false;
-    }
+  var secret_key = ElGamal.SecretKey.fromJSONObject(
+                     jQuery.secureEvalJSON(sk_value));
+  var pk_hash = b64_sha256(jQuery.toJSON(secret_key.pk));
+  var key_ok_p = (pk_hash == PK_HASH);
     
     $('#processing').hide();
 
     var reset_link = "<br /><a href='javascript:reset();'>Προσπαθήστε ξανά</a>";
     if (key_ok_p) {
+      var data = {'verified': true}
+      data[CSRF_TOKEN_NAME] = CSRF_TOKEN;
       $.ajax({
         "url": "{% url election_trustee_verify_key election.uuid %}",
-        "data": {'verified': true},
+        "type": "post",
+        "data": data,
         "error": function() {
-          alert("Προέκυψε σφάλμα στον έλεγχο του Κωδικού σας, παρακαλούμε δοκιμάστε ξανά.");
-          window.location = '{% url logout %}';
+          $('#result').html("Προέκυψε σφάλμα στον έλεγχο του Κωδικού σας, παρακαλούμε δοκιμάστε ξανά." + reset_link);
         },
         "success": function() {
             alert("Ο Κωδικός Ψηφοφορίας σας είναι έγκυρος!");

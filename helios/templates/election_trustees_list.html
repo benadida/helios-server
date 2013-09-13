@@ -40,7 +40,7 @@ The trustees below are responsible for the decryption of the ballots
 {% if election.feature_can_send_trustee_email %}
 {% url election_trustee_send_url election.uuid t.uuid as mail_url %}
 {% trans "Send trustee login url" as label %}
-{% small_action label mail_url %}
+{% small_confirm_action label mail_url cls="noconfirm" %}
 {% endif %}
 
 {% if election.feature_delete_trustee %}

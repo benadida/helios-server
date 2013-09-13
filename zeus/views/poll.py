@@ -24,6 +24,7 @@ from django.core.exceptions import PermissionDenied
 from django.forms.models import modelformset_factory
 from django.template.loader import render_to_string
 from django.contrib import messages
+from django.views.decorators.http import require_http_methods
 
 from helios.view_utils import render_template
 from helios.models import Election, Poll, Voter, VoterFile, CastVote, \
@@ -50,6 +51,7 @@ def list(request, election):
 
 @auth.election_admin_required
 @auth.requires_election_features('can_rename_poll')
+@require_http_methods(["POST"])
 def rename(request, election, poll):
     newname = request.POST.get('name', '').strip()
     if newname:
@@ -61,6 +63,7 @@ def rename(request, election, poll):
 
 @auth.election_admin_required
 @auth.requires_election_features('can_add_poll')
+@require_http_methods(["POST"])
 def add(request, election, poll=None):
     # TODO, require post
     extra = int(request.GET.get('extra', 2))
@@ -78,6 +81,7 @@ def add(request, election, poll=None):
 
 
 @auth.election_admin_required
+@require_http_methods(["POST"])
 def remove(request, election, poll):
     # TODO: fix this
     if request.method != 'POST':
@@ -88,12 +92,14 @@ def remove(request, election, poll):
 
 @auth.election_admin_required
 @auth.requires_poll_features('can_manage_questions')
+@require_http_methods(["POST", "GET"])
 def questions_manage(request, election, poll):
     module = poll.get_module()
     return module.questions_update_view(request, election, poll)
 
 
 @auth.election_view()
+@require_http_methods(["GET"])
 def questions(request, election, poll):
     module = poll.get_module()
     if request.zeususer.is_admin:
@@ -113,6 +119,7 @@ def questions(request, election, poll):
 
 
 @auth.election_admin_required
+@require_http_methods(["GET"])
 def voters_list(request, election, poll):
     # for django pagination support
     page = int(request.GET.get('page', 1))
@@ -157,6 +164,7 @@ def voters_list(request, election, poll):
 @auth.election_admin_required
 @auth.requires_poll_features('can_clear_voters')
 @transaction.commit_on_success
+@require_http_methods(["POST"])
 def voters_clear(request, election, poll):
     for voter in poll.voters.all():
         if not voter.cast_votes.count():
@@ -167,6 +175,7 @@ def voters_clear(request, election, poll):
 
 @auth.election_admin_required
 @auth.requires_poll_features('can_add_voter')
+@require_http_methods(["POST", "GET"])
 def voters_upload(request, election, poll):
     common_context = {
         'election': election,
@@ -228,6 +237,7 @@ def voters_upload(request, election, poll):
 
 
 @auth.election_admin_required
+@require_http_methods(["POST"])
 def voters_upload_cancel(request, election, poll):
     voter_file_id = request.session.get('voter_file_id', None)
     if voter_file_id:
@@ -241,6 +251,7 @@ def voters_upload_cancel(request, election, poll):
 
 
 @auth.election_admin_required
+@require_http_methods(["POST", "GET"])
 def voters_email(request, election, poll=None, voter_uuid=None):
     user = request.admin
 
@@ -388,6 +399,7 @@ def voters_email(request, election, poll=None, voter_uuid=None):
 
 @auth.election_admin_required
 @auth.requires_poll_features('can_delete_voter')
+@require_http_methods(["POST"])
 def voter_delete(request, election, poll, voter_uuid):
     voter = get_object_or_404(Voter, poll=poll, uuid=voter_uuid)
     if voter.voted:
@@ -399,8 +411,8 @@ def voter_delete(request, election, poll, voter_uuid):
 
 @auth.election_admin_required
 @auth.requires_poll_features('can_exclude_voter')
+@require_http_methods(["POST"])
 def voter_exclude(request, election, poll, voter_uuid):
-    #TODO: ALLOW ONLY POST
     voter = get_object_or_404(Voter, uuid=voter_uuid, poll=poll)
     if not voter.excluded_at:
         reason = request.POST.get('reason', '')
@@ -409,6 +421,7 @@ def voter_exclude(request, election, poll, voter_uuid):
 
 
 @auth.election_admin_required
+@require_http_methods(["GET"])
 def voters_csv(request, election, poll, fname):
     response = HttpResponse(mimetype='text/csv')
     filename = smart_unicode("voters-%s.csv" % election.short_name)
@@ -421,6 +434,7 @@ def voters_csv(request, election, poll, fname):
 
 
 @auth.election_view(check_access=False)
+@require_http_methods(["GET"])
 def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
     voter = None
     try:
@@ -436,6 +450,7 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
 
 
 @auth.election_view(check_access=False)
+@require_http_methods(["GET"])
 def to_json(request, election, poll):
     data = poll.get_booth_dict()
     return HttpResponse(json.dumps(data, default=common_json_handler),
@@ -444,10 +459,9 @@ def to_json(request, election, poll):
 
 @auth.poll_voter_required
 @auth.requires_poll_features('can_cast_vote')
+@require_http_methods(["POST"])
 def post_audited_ballot(request, election, poll):
-    # TODO CHECK REQUEST METHOD, AND CSRF CHECK
     voter = request.voter
-
     raw_vote = request.POST['audited_ballot']
     encrypted_vote = crypto_utils.from_json(raw_vote)
     audit_request = crypto_utils.from_json(request.session['audit_request'])
@@ -475,10 +489,9 @@ def post_audited_ballot(request, election, poll):
 
 @auth.poll_voter_required
 @auth.requires_poll_features('can_cast_vote')
+@require_http_methods(["POST"])
 def cast(request, election, poll):
-    # TODO CHECK REQUEST METHOD, AND CSRF CHECK
     voter = request.voter
-
     encrypted_vote = request.POST['encrypted_vote']
     vote = datatypes.LDObject.fromDict(crypto_utils.from_json(encrypted_vote),
         type_hint='phoebus/EncryptedVote').wrapped_obj
@@ -516,6 +529,7 @@ def cast(request, election, poll):
 
 
 @auth.election_view(check_access=False)
+@require_http_methods(["GET"])
 def cast_done(request, election, poll):
     if request.zeususer.is_authenticated() and request.zeususer.is_voter:
         request.zeususer.logout(request)
@@ -534,6 +548,7 @@ def cast_done(request, election, poll):
 
 
 @auth.election_view(check_access=False)
+@require_http_methods(["GET"])
 def download_signature(request, election, poll, fingerprint):
     vote = CastVote.objects.get(voter__poll=poll, fingerprint=fingerprint)
     response = HttpResponse(content_type='application/binary')
@@ -543,8 +558,8 @@ def download_signature(request, election, poll, fingerprint):
 
 
 @auth.election_view()
+@require_http_methods(["GET"])
 def audited_ballots(request, election, poll):
-
     vote_hash = request.GET.get('vote_hash', None)
     if vote_hash:
         b = get_object_or_404(AuditedBallot, poll=poll, vote_hash=vote_hash)
@@ -578,6 +593,7 @@ def audited_ballots(request, election, poll):
 @auth.trustee_view
 @auth.requires_poll_features('can_do_partial_decrypt')
 @transaction.commit_on_success
+@require_http_methods(["POST"])
 def upload_decryption(request, election, poll, trustee):
     factors_and_proofs = crypto_utils.from_json(
         request.POST['factors_and_proofs'])
@@ -599,6 +615,7 @@ def upload_decryption(request, election, poll, trustee):
 
 @auth.election_view()
 @auth.requires_poll_features('can_do_partial_decrypt')
+@require_http_methods(["GET"])
 def get_tally(request, election, poll):
     if not request.zeususer.is_trustee:
         raise PermissionDenied
@@ -614,6 +631,7 @@ def get_tally(request, election, poll):
 
 @auth.election_view()
 @auth.requires_poll_features('compute_results_finished')
+@require_http_methods(["GET"])
 def results(request, election, poll):
     context = {
         'poll': poll,
@@ -625,6 +643,7 @@ def results(request, election, poll):
 
 @auth.election_admin_required
 @auth.requires_poll_features('compute_results_finished')
+@require_http_methods(["GET"])
 def results_file(request, election, poll, ext):
     name = ext
 
@@ -655,6 +674,7 @@ def results_file(request, election, poll, ext):
 
 @auth.election_admin_required
 @auth.requires_poll_features('compute_results_finished')
+@require_http_methods(["GET"])
 def zeus_proofs(request, election, poll):
 
     if not os.path.exists(poll.zeus_proofs_path()):
@@ -675,6 +695,7 @@ def zeus_proofs(request, election, poll):
 
 @auth.election_admin_required
 @auth.requires_poll_features('compute_results_finished')
+@require_http_methods(["GET"])
 def results_json(request, election, poll):
     data = poll.zeus.get_results()
     return HttpResponse(json.dumps(data, default=common_json_handler),

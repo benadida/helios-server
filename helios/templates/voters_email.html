@@ -63,7 +63,7 @@ Subject: {{default_subject}}
 </p>
 
   <form class="prettyform" action="" method="POST" id="email_form">
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+    {% csrf_token %}
     <input type="hidden" name="template" value="{{template}}" />
     <input type="hidden" name="voter_id" value="{{voter_o.voter_email}}" />
     <table class="pretty">
