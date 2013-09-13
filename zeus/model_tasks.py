@@ -232,7 +232,7 @@ class PollTasks(TaskModel):
 
     @poll_task('zeus_partial_decrypt', ('validate_mixing_finished',))
     def zeus_partial_decrypt(self):
-        if len(self.zeus.do_get_all_cast_votes()) == 0:
+        if len(self.zeus.extract_votes_for_mixing()[1]) == 0:
             dec = self.partial_decryptions.create(
                 trustee=self.election.get_zeus_trustee(),
                 poll=self)
@@ -253,7 +253,7 @@ class PollTasks(TaskModel):
 
         # store empty factors
         if len(factors) == 1 and len(factors[0]) == 0:
-            if len(self.zeus.do_get_all_cast_votes()) == 0:
+            if len(self.zeus.extract_votes_for_mixing()[1]) == 0:
                 trustee.save()
                 return
 
