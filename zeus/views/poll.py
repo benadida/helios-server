@@ -439,6 +439,8 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
     voter = None
     try:
         voter = Voter.objects.get(poll=poll, uuid=voter_uuid)
+        if voter.excluded_at:
+            raise PermissionDenied
     except Voter.DoesNotExist:
         raise PermissionDenied("Invalid election")
 
