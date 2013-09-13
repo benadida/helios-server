@@ -90,7 +90,7 @@ Poll.prototype = {
       this.public_key = ElGamal.PublicKey.fromJSONObject(this.poll.public_key);
       this.tally = HELIOS.Tally.fromJSONObject(content.tally, this.pk);
       this.decrypt_tally()
-      this.set_status(this.tally.num_tallied + " ciphers downloaded");
+      this.set_status(this.tally.num_tallied + ' ' + MESSAGES.ciphers_downloaded);
     }, this), _.bind(function() {
       this.show_actions();
     }, this));
@@ -126,25 +126,26 @@ Poll.prototype = {
     this.decryption = data;
     this.set_status("Uploading...");
     
-    var post_data = $.toJSON(data);
+    var post_data = {'factors_and_proofs': $.toJSON(data)};
+    post_data[CSRF_TOKEN_NAME] = CSRF_TOKEN;
 
     $.ajax({
       type: 'POST',
       url: this.post_url,
       timeout: 300000,
-      data: {'factors_and_proofs': post_data},
+      data: post_data,
       success: _.bind(function(result) {
         if (result != "FAILURE") {
-          this.set_status("Completed")
+          this.set_status(MESSAGES.decryption_completed)
           this.el.data('poll-finished', '1');
           this.post_upload();
         } else {
-          this.set_status("Invalid secret key")
+          this.set_status(MESSAGES.invalid_secret)
           this.el.data('poll-finished', '0');
         }
       }, this),
       error: _.bind(function() {
-        this.set_status("Error uploading");
+        this.set_status(MESSAGES.upload_failed);
         this.show_action("download");
         this.el.data('poll-finished', '0');
         this.post_upload();
@@ -582,13 +583,15 @@ function submit_result() {
   $('#waiting_submit_div').show();
 
   var result = $('#result_textarea').val();
-  
+    
+  data = {'factors_and_proofs': result}
+  data[CSRF_TOKEN_NAME] = CSRF_TOKEN;
   // do the post
   $.ajax({
       type: 'POST',
       url: "./upload-decryption",
       timeout: 300000,
-      data: {'factors_and_proofs': result},
+      data: data,
       success: function(result) {
         $('#waiting_submit_div').hide();
         if (result != "FAILURE") {

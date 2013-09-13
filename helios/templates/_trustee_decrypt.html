@@ -5,6 +5,15 @@
     'filename': 'Μερική αποκρυπτογράφηση {{ trustee.name }}.txt',
     'worker': '/static/zeus/booth/js/jscrypto/decryptworker.js'
   }
+
+  window.MESSAGES = {
+    'decryption_completed': '{% trans "Decryption uploaded. Decryption verification pending." %}',
+    'ciphers_downloaded': '{% trans "ciphers downloaded" %}',
+    'uploading': '{% trans "Uploading" %}',
+    'invalid_secret': '{% trans "Invalid secret key" %}',
+    'upload_failed': '{% trans "Upload failed" %}',
+    'decrpyting': '{% trans "Decrypting" %}'
+  }
 </script>
 <h5>Τα τελικά ψηφοδέλτια είναι έτοιμα για αποκρυπτογράφηση.</h5>
 
