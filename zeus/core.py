@@ -1828,10 +1828,10 @@ def gamma_decode_to_party_ballot(encoded, candidates, parties, nr_groups,
     for i in choices:
         if i <= last_index or no_candidates_flag:
             valid = False
+            invalid_reason = ("invalid index: %d <= %d -- choices: %s"
+                              % (i, last_index, choices))
             voted_candidates = None
             thegroup = None
-            #print ("invalid index: %d <= %d -- choices: %s"
-            #        % (i, last_index, choices))
             break
 
         last_index = i

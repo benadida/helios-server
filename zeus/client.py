@@ -4,15 +4,17 @@
 import re
 import sys
 
-from zeus.core import ( c2048, get_random_selection,
-                        gamma_encode, gamma_decode, gamma_encoding_max,
-                        to_relative_answers, to_absolute_answers,
-                        to_canonical, from_canonical,
-                        encrypt, prove_encryption,
-                        decrypt_with_randomness,
-                        compute_decryption_factors,
-                        verify_vote_signature,
-                        mix_ciphers)
+from zeus.core import (c2048, get_random_selection,
+                       gamma_encode, gamma_decode, gamma_encoding_max,
+                       to_relative_answers, to_absolute_answers,
+                       to_canonical, from_canonical,
+                       encrypt, prove_encryption,
+                       decrypt_with_randomness,
+                       compute_decryption_factors,
+                       verify_vote_signature,
+                       mix_ciphers,
+                       parties_from_candidates,
+                       gamma_decode_to_party_ballot)
 
 from httplib import HTTPConnection, HTTPSConnection
 from urlparse import urlparse, parse_qsl
@@ -22,6 +24,7 @@ from sys import argv, stderr
 from json import loads, dumps, load, dump
 from Queue import Queue, Empty
 from threading import Thread
+from random import choice, shuffle, randint
 
 p, g, q, x, y = c2048()
 
@@ -173,11 +176,35 @@ def cast_vote(voter_url, choices=None):
     g = int(pk['g'])
     q = int(pk['q'])
     y = int(pk['y'])
-    answers = poll_data['questions'][0]['answers']
+    candidates = poll_data['questions'][0]['answers']
     cast_path = poll_data['cast_url']
 
-    choices = choices if choices is not None else len(answers)
-    vote, encoded, rand = generate_vote(p, g, q, y, choices)
+    parties = None
+    try:
+        parties, nr_groups = parties_from_candidates(candidates)
+    except FormatError as e:
+        pass
+
+    if parties:
+        party_choice = choice(parties.keys())
+        party = parties[party_choice]
+        party_candidates = [k for k in party.keys() if isinstance(k, int)]
+        min_choices = party['opt_min_choices']
+        max_choices = party['opt_max_choices']
+        shuffle(party_candidates)
+        nr_choices = randint(min_choices, max_choices)
+        choices = party_candidates[min_choices:nr_choices + 1]
+        choices.sort()
+        vote, encoded, rand = generate_vote(p, g, q, y, choices)
+        #for c in choices:
+        #    print "Voting for", c, party[c]
+        #ballot = gamma_decode_to_party_ballot(encoded, candidates,
+        #                                      parties, nr_groups)
+        #print "valid", ballot['valid'], ballot['invalid_reason']
+        #print " "
+    else:
+        choices = choices if choices is not None else len(candidates)
+        vote, encoded, rand = generate_vote(p, g, q, y, choices)
     do_cast_vote(conn, cast_path, csrf_token, headers, vote)
     return encoded, rand
 
