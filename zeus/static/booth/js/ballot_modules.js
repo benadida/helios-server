@@ -18,16 +18,27 @@ BM.ModuleBase = {
     $(".stv-choice a.disabled").live('click', function(e){e.preventDefault()});
     if (this.post_init_events) { this.post_init_events() }
   },
+  
+  update_submit_value: function() {
+    var choices = this.get_answer();
+    if (choices.length == 0) {
+      this.el.submit.val("Λευκό");
+    } else {
+      this.el.submit.val("Συνέχεια");
+    }
+  },
 
   show: function() {
     this.el.answer = $("#stv_answer");
     this.el.answers = $("li.stv-choice a");
+    this.el.submit = $("#submit-stv");
     var ans = this.get_answer();
     var self = this;
     _.each(ans, function(choice){
       self.select_answer(choice);
     });
     this.check_disable_questions();
+    this.update_submit_value();
     if (this.post_show) { this.post_show() }
   },
   
@@ -108,6 +119,7 @@ BM.ModuleBase = {
 
   set_answer: function(choices) {
     this.el.answer.val(choices.join(","));
+    this.update_submit_value();
   },
 
   sort_answer: function() {
