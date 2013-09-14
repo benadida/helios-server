@@ -11,6 +11,7 @@ app_patterns = patterns('')
 auth_urls = patterns('zeus.views.auth',
     url(r'^auth/logout', 'logout', name='logout'),
     url(r'^auth/login', 'password_login_view', name='login'),
+    url(r'^auth/change_password', 'change_password', name='change_password'),
 )
 
 admin_urls = patterns('zeus.views.admin',

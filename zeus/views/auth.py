@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 
 from zeus import auth
 from zeus.utils import *
+from zeus.forms import ChangePasswordForm
 
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -46,3 +47,23 @@ def logout(request):
     logger.info("User %s logged out", request.zeususer.user_id)
     request.zeususer.logout(request)
     return HttpResponseRedirect(return_url)
+
+
+def change_password(request):
+    user = request.zeususer
+
+    # only admin users can change password
+    if not user.is_admin:
+        raise PermissionDenied
+
+    password_changed = request.GET.get('password_changed', None)
+    form = ChangePasswordForm(user)
+    if request.method == "POST":
+        form = ChangePasswordForm(user._user, request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponseRedirect(
+                reverse('change_password') + '?password_changed=1')
+    return render_template(request, 'change_password',
+                           {'form': form,
+                            'password_changed': password_changed})
