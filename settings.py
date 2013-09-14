@@ -201,11 +201,11 @@ EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = False
 
 # set up logging
-import logging
-logging.basicConfig(
-    level = logging.INFO if DEBUG else logging.INFO,
-    format = '%(asctime)s %(levelname)s %(message)s'
-)
+#import logging
+#logging.basicConfig(
+    #level = logging.INFO if DEBUG else logging.INFO,
+    #format = '%(asctime)s %(levelname)s %(message)s'
+#)
 
 # set up django-celery
 import djcelery
@@ -227,6 +227,7 @@ ECOUNTING_SECRET = "xxxxx"
 
 HELIOS_VOTER_EMAIL_RATE = '30/m'
 
+ZEUS_ELECTION_LOG_DIR = os.path.join('/', 'usr', 'share', 'election_logs')
 ZEUS_RESULTS_PATH = os.path.join('/', 'usr', 'share', 'zeus')
 ZEUS_PROOFS_PATH = os.path.join('/', 'usr', 'share', 'zeus_proofs')
 ZEUS_MIXES_PATH = 'zeus_mixes'
@@ -244,6 +245,22 @@ MIX_PART_SIZE = 104857600
 USE_X_SENDFILE = False
 
 SOUTH_TESTS_MIGRATE = False
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'root': {
+        'level': 'INFO',
+        'handlers': ['file']
+    },
+    'handlers': {
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': '/usr/share/zeus/zeus.log'
+        }
+    }
+}
 
 # useful trick for custom settings
 try:

@@ -106,7 +106,9 @@ def trustee_delete(request, election, trustee_uuid):
     election.zeus.invalidate_election_public()
     trustee = election.trustees.get(uuid=trustee_uuid)
     trustee.delete()
+    election.logger.info("Trustee %r deleted", trustee.email)
     election.zeus.compute_election_public()
+    election.logger.info("Public key updated")
     url = election_reverse(election, 'trustees_list')
     return HttpResponseRedirect(url)
 
@@ -159,6 +161,7 @@ def index(request, election, poll=None):
 @auth.requires_election_features('can_freeze')
 @require_http_methods(["POST"])
 def freeze(request, election):
+    election.logger.info("Starting to freeze")
     tasks.election_validate_create(election.id)
     url = election_reverse(election, 'index')
     return HttpResponseRedirect(url)
@@ -190,6 +193,7 @@ def endnow(request, election):
     else:
         election.voting_ends_at = datetime.datetime.now()
     election.save()
+    election.logger.info("Changed election dates to be able to close voting")
     url = election_reverse(election, 'index')
     return HttpResponseRedirect(url)
 

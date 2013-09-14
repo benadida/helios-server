@@ -190,9 +190,9 @@ class PollTasks(TaskModel):
         abstract = True
 
     def notify_task(self, name, status, error=None):
-        pass
-        #print "%s task %s %s %s" % (self.shortname_display(), name, status,
-                                       #error or "")
+        self.logger.info("Task %s %s", name, status)
+        if error:
+            self.logger.error("Task %s error", name, error)
 
     @poll_task('validate_create', ('frozen',))
     def validate_create(self):

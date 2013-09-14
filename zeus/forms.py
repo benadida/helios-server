@@ -28,6 +28,16 @@ from zeus import help_texts as help
 from django.core.validators import validate_email
 
 
+LOG_CHANGED_FIELDS = [
+    "name",
+    "voting_starts_at",
+    "voting_ends_at",
+    "voting_extended_until",
+    "description",
+    "help_email",
+    "help_phone"
+]
+
 def election_form_formfield_cb(f, **kwargs):
     if f.name in ['voting_starts_at', 'voting_ends_at',
                   'voting_extended_until']:
@@ -74,6 +84,14 @@ class ElectionForm(forms.ModelForm):
     def __init__(self, institution, *args, **kwargs):
         self.institution = institution
         super(ElectionForm, self).__init__(*args, **kwargs)
+
+        self.creating = True
+        self._inital_data = {}
+        if self.instance and self.instance.pk:
+            self._initial_data = {}
+            for field in LOG_CHANGED_FIELDS:
+                self._initial_data[field] = self.initial[field]
+            self.creating = False
 
         if self.instance and self.instance.pk:
             self.fields.get('trustees').initial = \
@@ -130,6 +148,15 @@ class ElectionForm(forms.ModelForm):
             raise forms.ValidationError(_("Invalid trustees format"))
         return trustees
 
+    def log_changed_fields(self, instance):
+        for field in LOG_CHANGED_FIELDS:
+            if field in self.changed_data:
+                inital = self._initial_data[field]
+                newvalue = self.cleaned_data[field]
+                instance.logger.info("Field '%s' changed from %r to %r", field,
+                                    inital, newvalue)
+
+
     def save(self, *args, **kwargs):
         remote_mixes = self.cleaned_data.get('remote_mixes')
         if remote_mixes:
@@ -143,6 +170,12 @@ class ElectionForm(forms.ModelForm):
         saved.save()
         if saved.feature_edit_trustees:
             saved.update_trustees(trustees)
+
+        if self.creating:
+            saved.logger.info("Election created")
+        else:
+            saved.logger.info("Election updated %r", self.changed_data)
+            self.log_changed_fields(saved)
         return saved
 
 

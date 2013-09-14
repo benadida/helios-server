@@ -1,4 +1,5 @@
 import uuid
+import threading
 
 from functools import wraps
 
@@ -9,9 +10,17 @@ from django.http import HttpResponseRedirect
 from helios.models import Election, Poll, Trustee, Voter
 from heliosauth.models import User
 
+from zeus.log import init_election_logger, init_poll_logger, _locals
+
 import logging
 logger = logging.getLogger(__name__)
 
+
+def get_ip(request):
+    ip = request.META.get('HTTP_X_FORWARDER_FOR', None)
+    if not ip:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 def trustee_view(func):
     @wraps(func)
@@ -31,6 +40,9 @@ def election_view(check_access=True):
         @wraps(func)
         def inner(request, *args, **kwargs):
             user = request.zeususer
+            if user.is_authenticated():
+                _locals.user_id = user.user_id
+            _locals.ip = get_ip(request)
             if 'election_uuid' in kwargs:
                 uuid = kwargs.pop('election_uuid')
                 election = get_object_or_404(Election, uuid=uuid)
@@ -188,6 +200,16 @@ class ZeusUser(object):
         if isinstance(self._user, Voter):
             if not self._user.excluded_at:
                 self.is_voter = True
+
+    @property
+    def user_id(self):
+        if self.is_admin:
+            return self._user.user_id
+        if self.is_trustee:
+            return self._user.email
+        if self.is_voter:
+            return self._user.voter_email
+        raise Exception("Unknown user")
 
     def is_authenticated(self):
         return bool(self._user)

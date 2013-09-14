@@ -1,3 +1,5 @@
+import logging
+
 from django.conf.urls.defaults import *
 from django.core.urlresolvers import reverse
 
@@ -14,6 +16,9 @@ from zeus.forms import LoginForm
 from zeus import auth
 
 
+logger = logging.getLogger(__name__)
+
+
 @auth.unauthenticated_user_required
 @require_http_methods(["POST", "GET"])
 def password_login_view(request):
@@ -28,6 +33,7 @@ def password_login_view(request):
     if request.method == "POST":
         if form.is_valid():
             request.session[auth.USER_SESSION_KEY] = form._user_cache.pk
+            logger.info("User %s logged in", form._user_cache.user_id)
             return HttpResponseRedirect(reverse('admin_home'))
 
     return render_template(request,
@@ -37,5 +43,6 @@ def password_login_view(request):
 
 def logout(request):
     return_url = request.GET.get('next', reverse('home'))
+    logger.info("User %s logged out", request.zeususer.user_id)
     request.zeususer.logout(request)
     return HttpResponseRedirect(return_url)

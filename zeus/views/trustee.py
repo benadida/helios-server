@@ -38,6 +38,7 @@ def login(request, election, trustee_email, trustee_secret):
     if trustee_secret == trustee.secret:
         user = auth.ZeusUser(trustee)
         user.authenticate(request)
+        election.logger.info("Trustee %r logged in", trustee.email)
         return HttpResponseRedirect(reverse('election_trustee_home',
                                             args=[election.uuid]))
     raise PermissionDenied
@@ -76,13 +77,12 @@ def verify_key(request, election, trustee):
         'election': election,
         'trustee': trustee
     }
-    trustee.last_verified_key_at = datetime.datetime.now()
-    trustee.save()
+    election.reprove_trustee(trustee)
     return render_template(request, 'election_trustee_check_sk', context)
 
 
 @auth.trustee_view
-@transaction.commit_on_success
+@transaction.commit_manually
 @auth.requires_election_features('trustee_can_upload_pk')
 @require_http_methods(['POST'])
 def upload_pk(request, election, trustee):
@@ -93,8 +93,9 @@ def upload_pk(request, election, trustee):
             public_key_and_proof['public_key'])
         pok = algs.DLogProof.fromJSONDict(public_key_and_proof['pok'])
         election.add_trustee_pk(trustee, public_key, pok)
+        transaction.commit()
     except Exception, e:
-        logger.exception(e)
+        election.logger.exception(e)
         transaction.rollback()
         messages.error(request, "Cannot upload public key")
 

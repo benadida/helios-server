@@ -51,12 +51,15 @@ def list(request, election):
 
 @auth.election_admin_required
 @auth.requires_election_features('can_rename_poll')
+@transaction.commit_on_success
 @require_http_methods(["POST"])
 def rename(request, election, poll):
     newname = request.POST.get('name', '').strip()
     if newname:
-        poll.name = request.POST.get('name')
+        oldname = poll.name
+        poll.name = newname
         poll.save()
+        poll.logger.info("Renamed from %s to %s", oldname, newname)
     url = election_reverse(election, 'polls_list')
     return HttpResponseRedirect(url)
 
@@ -65,7 +68,6 @@ def rename(request, election, poll):
 @auth.requires_election_features('can_add_poll')
 @require_http_methods(["POST"])
 def add(request, election, poll=None):
-    # TODO, require post
     extra = int(request.GET.get('extra', 2))
     polls_formset = modelformset_factory(Poll, PollForm, extra=extra,
                                          max_num=100, formset=PollFormSet,
@@ -74,7 +76,9 @@ def add(request, election, poll=None):
     form = polls_formset(request.POST, queryset=polls)
     if form.is_valid():
         with transaction.commit_on_success():
-            form.save(election)
+            polls = form.save(election)
+            for poll in polls:
+                poll.logger.info("Poll created")
 
     url = election_reverse(election, 'polls_list')
     return HttpResponseRedirect(url)
@@ -83,10 +87,8 @@ def add(request, election, poll=None):
 @auth.election_admin_required
 @require_http_methods(["POST"])
 def remove(request, election, poll):
-    # TODO: fix this
-    if request.method != 'POST':
-        raise PermissionDenied
     poll.delete()
+    poll.logger.info("Poll deleted")
     return HttpResponseRedirect(election_reverse(election, 'polls_list'))
 
 
@@ -169,6 +171,7 @@ def voters_clear(request, election, poll):
     for voter in poll.voters.all():
         if not voter.cast_votes.count():
             voter.delete()
+        poll.logger.info("Poll voters cleared")
     url = poll_reverse(poll, 'voters')
     return HttpResponseRedirect(url)
 
@@ -191,6 +194,7 @@ def voters_upload(request, election, poll):
             try:
                 voter_file = VoterFile.objects.get(pk=voter_file_id)
                 voter_file.process()
+                poll.logger.info("Processing voters upload")
             except VoterFile.DoesNotExist:
                 pass
             except KeyError:
@@ -360,8 +364,6 @@ def voters_email(request, election, poll=None, voter_uuid=None):
                     'custom_subject' : email_form.cleaned_data['subject'],
                     'custom_message' : email_form.cleaned_data['body'],
                     'election_url' : election_url,
-                    'election' : election,
-                    'poll': _poll
                 }
                 task_kwargs = {
                     'subject_template': subject_template,
@@ -372,6 +374,14 @@ def voters_email(request, election, poll=None, voter_uuid=None):
                     'update_date': True,
                     'update_booth_invitation_date': update_booth_invitation_date,
                 }
+                log_obj = election
+                if poll:
+                    log_obj = poll
+                if voter:
+                    log_obj.logger.info("Notifying single voter %s, [template: %s]",
+                                     voter.voter_login_id, template)
+                else:
+                    log_obj.logger.info("Notifying voters, [template: %s]", template)
                 tasks.voters_email.delay(_poll.pk, **task_kwargs)
 
             # this batch process is all async, so we can return a nice note
@@ -405,6 +415,7 @@ def voter_delete(request, election, poll, voter_uuid):
     if voter.voted:
         raise PermissionDenied
     voter.delete()
+    poll.logger.info("Poll voter '%s' removed", voter.voter_login_id)
     url = poll_reverse(poll, 'voters')
     return HttpResponseRedirect(url)
 
@@ -417,6 +428,7 @@ def voter_exclude(request, election, poll, voter_uuid):
     if not voter.excluded_at:
         reason = request.POST.get('reason', '')
         poll.zeus.exclude_voter(voter.uuid, reason)
+        poll.logger.info("Poll voter '%s' excluded", voter.voter_login_id)
     return HttpResponseRedirect(poll_reverse(poll, 'voters'))
 
 
@@ -447,6 +459,7 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
     if voter.voter_password == unicode(voter_secret):
         user = auth.ZeusUser(voter)
         user.authenticate(request)
+        poll.logger.info("Poll voter '%s' logged in", voter.voter_login_id)
         return HttpResponseRedirect(poll_reverse(poll, 'index'))
     raise PermissionDenied
 
@@ -483,6 +496,7 @@ def post_audited_ballot(request, election, poll):
     del request.session['audit_password']
 
     poll.cast_vote(voter, encrypted_vote, audit_password)
+    poll.logger.info("Poll audit ballot cast")
     vote_pk = AuditedBallot.objects.filter(voter=voter).order_by('-pk')[0].pk
 
     return HttpResponse(json.dumps({'audit_id': vote_pk }),
@@ -504,13 +518,17 @@ def cast(request, election, poll):
         cursor.execute("SELECT pg_advisory_lock(1)")
         with transaction.commit_on_success():
             cast_result = poll.cast_vote(voter, vote, audit_password)
+            poll.logger.info("Poll cast")
     finally:
         cursor.execute("SELECT pg_advisory_unlock(1)")
 
     signature = {'signature': cast_result}
 
     if 'audit_request' in request.session:
+        poll.logger.info("Poll cast audit request")
         del request.session['audit_request']
+    else:
+        poll.logger.info("Poll cast")
 
     if signature['signature'].startswith("AUDIT REQUEST"):
         request.session['audit_request'] = encrypted_vote
@@ -609,7 +627,7 @@ def upload_decryption(request, election, poll, trustee):
     proofs_data = factors_and_proofs['decryption_proofs']
     proof = lambda pd: LD.fromDict(pd, type_hint='legacy/EGZKProof').wrapped_obj
     proofs = [[proof(p) for p in proofs_data[0]]]
-
+    poll.logger.info("Poll decryption uploaded")
     tasks.poll_add_trustee_factors.delay(poll.pk, trustee.pk, factors, proofs)
 
     return HttpResponse("SUCCESS")

@@ -58,7 +58,8 @@ def single_voter_email(voter_uuid, subject_template, body_template,
                        update_booth_invitation_date=False):
     voter = Voter.objects.get(uuid=voter_uuid)
     the_vars = copy.copy(extra_vars)
-    the_vars.update({'voter' : voter})
+    the_vars.update({'voter' : voter, 'poll': voter.poll,
+                     'election': voter.poll.election})
     subject = render_template_raw(None, subject_template, the_vars)
     body = render_template_raw(None, body_template, the_vars)
     if update_date:
@@ -133,6 +134,7 @@ def poll_validate_create(poll_id):
 @task(ignore_result=True)
 def election_validate_create(election_id):
     election = Election.objects.select_for_update().get(id=election_id)
+    election.logger.info("Spawning validate create poll tasks")
     if election.polls_feature_frozen:
         election.frozen_at = datetime.datetime.now()
         election.save()
@@ -145,6 +147,7 @@ def election_validate_create(election_id):
 @task(ignore_result=True)
 def election_validate_voting(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
+    election.logger.info("Spawning validate voting poll tasks")
     for poll in election.polls.all():
         if poll.feature_can_validate_voting:
             poll_validate_voting.delay(poll.pk)
@@ -161,6 +164,7 @@ def poll_validate_voting(poll_id):
 @task(ignore_result=True)
 def election_mix(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
+    election.logger.info("Spawning mix poll tasks")
     for poll in election.polls.all():
         if poll.feature_can_mix:
             poll_mix.delay(poll.pk)
@@ -177,6 +181,7 @@ def poll_mix(poll_id):
 @task(ignore_result=True)
 def election_validate_mixing(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
+    election.logger.info("Spawning validate mix poll tasks")
     for poll in election.polls.all():
         if poll.feature_can_validate_mixing:
             poll_validate_mixing.delay(poll.pk)
@@ -200,6 +205,7 @@ def notify_trustees(election_id):
 @task(ignore_result=True)
 def election_zeus_partial_decrypt(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
+    election.logger.info("Spawning zeus partial decrypt poll tasks")
     notify_trustees.delay(election.pk)
     for poll in election.polls.all():
         if poll.feature_can_zeus_partial_decrypt:
@@ -226,6 +232,7 @@ def poll_add_trustee_factors(poll_id, trustee_id, factors, proofs):
 @task(ignore_result=True)
 def election_decrypt(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
+    election.logger.info("Spawning decrypt poll tasks")
     for poll in election.polls.all():
         if poll.feature_can_decrypt:
             poll_decrypt.delay(poll.pk)
@@ -242,6 +249,7 @@ def poll_decrypt(poll_id):
 @task(ignore_result=True)
 def election_compute_results(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
+    election.logger.info("Spawning compute results poll tasks")
     for poll in election.polls.all():
         if poll.feature_can_compute_results:
             poll_compute_results.delay(poll.pk)

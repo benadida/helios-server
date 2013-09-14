@@ -58,6 +58,7 @@ class SimpleElection(ElectionModuleBase):
 
                 poll.questions_data = questions_data
                 poll.update_answers()
+                poll.logger.info("Poll ballot updated")
                 poll.save()
 
                 url = poll_reverse(poll, 'questions')

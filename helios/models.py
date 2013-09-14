@@ -62,6 +62,7 @@ from zeus.model_features import ElectionFeatures, PollFeatures, \
         TrusteeFeatures, VoterFeatures
 from zeus.model_tasks import TaskModel, PollTasks, ElectionTasks
 from zeus import help_texts as help
+from zeus.log import init_election_logger, init_poll_logger
 
 
 logger = logging.getLogger(__name__)
@@ -306,6 +307,10 @@ class Election(HeliosModel, ElectionFeatures):
     class Meta:
         ordering = ('-created_at', )
 
+    def __init__(self, *args, **kwargs):
+        self._logger = None
+        super(Election, self).__init__(*args, **kwargs)
+
     @property
     def voting_end_date(self):
         return self.voting_extended_until or self.voting_ends_at
@@ -325,6 +330,15 @@ class Election(HeliosModel, ElectionFeatures):
             return 'DECRYPTING'
 
         return 'FINISHED'
+
+    def reset_logger(self):
+        self._logger = None
+
+    @property
+    def logger(self):
+        if not self._logger:
+            self._logger = init_election_logger(self)
+        return self._logger
 
     @property
     def zeus(self):
@@ -435,6 +449,7 @@ class Election(HeliosModel, ElectionFeatures):
     def close_voting(self):
         self.voting_ended_at = datetime.datetime.now()
         self.save()
+        self.logger.info("Voting closed")
 
     def freeze(self):
         for poll in self.polls.all():
@@ -498,6 +513,8 @@ class Election(HeliosModel, ElectionFeatures):
     def update_trustees(self, trustees):
         for name, email in trustees:
             trustee, created = self.trustees.get_or_create(email=email)
+            if created:
+                self.logger.info("Trustee %r created", trustee.email)
             # LOG TRUSTEE CREATED
             trustee.name = name
             trustee.save()
@@ -506,10 +523,11 @@ class Election(HeliosModel, ElectionFeatures):
             emails = map(lambda t:t[1], trustees)
             for trustee in self.trustees.filter().no_secret():
                 if not trustee.email in emails:
-                    # LOG TRUSTEE DELETED
                     self.zeus.invalidate_election_public()
                     trustee.delete()
+                    self.logger.info("Trustee %r deleted", trustee.email)
                     self.zeus.compute_election_public()
+                    self.logger.info("Public key updated")
         self.auto_notify_trustees()
 
     def auto_notify_trustees(self, force=False):
@@ -544,6 +562,7 @@ class Election(HeliosModel, ElectionFeatures):
         self.zeus.reprove_trustee(public_key.y, [pok.commitment,
                                                          pok.challenge,
                                                          pok.response])
+        self.logger.info("Trustee %r PK reproved", trustee.email)
 
         trustee.last_verified_key_at = datetime.datetime.now()
         trustee.save()
@@ -561,6 +580,7 @@ class Election(HeliosModel, ElectionFeatures):
         self.zeus.add_trustee(trustee.public_key.y, [pok.commitment,
                                                          pok.challenge,
                                                          pok.response])
+        self.logger.info("Trustee %r PK updated", trustee.email)
 
     def save(self, *args, **kwargs):
         if not self.uuid:
@@ -622,6 +642,19 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   class Meta:
       ordering = ('created_at', )
+
+  def __init__(self, *args, **kwargs):
+      self._logger = None
+      super(Poll, self).__init__(*args, **kwargs)
+
+  def reset_logger(self):
+      self._logger = None
+
+  @property
+  def logger(self):
+      if not self._logger:
+          self._logger = init_poll_logger(self)
+      return self._logger
 
   @property
   def issues_before_freeze(self):
@@ -1923,6 +1956,7 @@ class Trustee(HeliosModel, TrusteeFeatures):
                   settings.SERVER_EMAIL,
                   ["%s <%s>" % (self.name, self.email)],
                   fail_silently=False)
+        self.election.logger.info("Trustee %r login url send", self.email)
         self.last_notified_at = datetime.datetime.now()
         self.save()
 
