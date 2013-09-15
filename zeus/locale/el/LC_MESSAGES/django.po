@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-11 17:56+0300\n"
+"POT-Creation-Date: 2013-09-15 18:26+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,91 +18,111 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: forms.py:47
+#: forms.py:57
 msgid "Trustees"
 msgstr "Εφορευτική επιτροπή"
 
-#: forms.py:50
+#: forms.py:60
 msgid "Multiple mixnets"
 msgstr "Πολλαπλές μίξεις"
 
-#: forms.py:118
+#: forms.py:136
 msgid "Invalid voting end date"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:120
+#: forms.py:138
 msgid "Invalid voting dates"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:122
+#: forms.py:140
 msgid "Invalid voting extension date"
 msgstr "Λάθος ημερομηνία και ώρα λήξης της ψηφοφορίας"
 
-#: forms.py:130
+#: forms.py:148
 msgid "Invalid trustees format"
 msgstr "Μη έγκυρη λίστα μελών εφορευτικής επιτροπής."
 
-#: forms.py:173
+#: forms.py:206
 msgid "Choice"
 msgstr "Επιλογή"
 
-#: forms.py:175 election_modules/__init__.py:32
+#: forms.py:208 election_modules/__init__.py:32
 msgid "Question"
 msgstr "Ερώτηση"
 
-#: forms.py:177
+#: forms.py:210
 msgid "Min answers"
 msgstr "Ελάχιστος αριθμός επιλογών"
 
-#: forms.py:178
+#: forms.py:211
 msgid "Max answers"
 msgstr "Μέγιστος αριθμός επιλογών"
 
-#: forms.py:213
+#: forms.py:246
 msgid "Max answers should be greater or equal to min answers"
 msgstr ""
 "Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
 "ελάχιστου αριθμού απαντήσεων"
 
-#: forms.py:219
+#: forms.py:252
 msgid "Party name"
 msgstr "Όνομα συνδυασμού"
 
-#: forms.py:224
+#: forms.py:257
 msgid "Username"
 msgstr "Όνομα χρήστη"
 
-#: forms.py:226
+#: forms.py:259
 msgid "Password"
 msgstr "Συνθηματικό"
 
-#: forms.py:237 forms.py:243
+#: forms.py:270 forms.py:276
 msgid "Invalid username or password"
 msgstr "Μη έγκυρος χρήστης ή συθηματικό"
 
-#: forms.py:265
+#: forms.py:298
 msgid "all voters"
 msgstr "σύνολο ψηφοφόρων"
 
-#: forms.py:266
+#: forms.py:299
 msgid "voters who have cast a ballot"
 msgstr "ψηφοφόροι που έχουν καταθέσει ψήφο"
 
-#: forms.py:267
+#: forms.py:300
 msgid "voters who have not yet cast a ballot"
 msgstr "ψηφοφόροι που δεν έχουν καταθέσει ακόμη ψήφο"
 
-#: forms.py:271
+#: forms.py:304
 msgid "Email subject"
 msgstr "Tίτλος μηνύματος email"
 
-#: forms.py:273
+#: forms.py:306
 msgid "Email body"
 msgstr "Κείμενο μηνύματος email"
 
-#: forms.py:275
+#: forms.py:308
 msgid "Send To"
 msgstr "Αποστολή πρός"
+
+#: forms.py:313
+msgid "Current password"
+msgstr ""
+
+#: forms.py:314
+msgid "New password"
+msgstr "Νέος κωδικός"
+
+#: forms.py:315
+msgid "New password confirm"
+msgstr "Επιβεβαίωση νέου κωδικού"
+
+#: forms.py:331
+msgid "Invalid password"
+msgstr "Μη έγκυρος χρήστης ή κωδικός"
+
+#: forms.py:334
+msgid "Passwords don't match"
+msgstr "Οι κωδικοί δεν ταιριάζουν"
 
 #: help_texts.py:3
 msgid "This is a trial election"
@@ -180,12 +200,12 @@ msgstr "Επιβεβαιώστε την οριστικοποίηση της ψη
 msgid "Are you sure you want to delete the selected poll ?"
 msgstr "Επιβεβαιώστε τη διαγραφή της επιλεγμένης κάλπης"
 
-#: tasks.py:90
+#: tasks.py:101
 #, python-format
 msgid "%(election_name)s - vote cast"
 msgstr "%(election_name)s - ψήφος ελήφθη"
 
-#: tasks.py:95
+#: tasks.py:106
 #, python-format
 msgid ""
 "You have successfully cast a vote in\n"
@@ -238,19 +258,19 @@ msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"
 msgid "Manage questions"
 msgstr "Διαχείριση ερωτήσεων"
 
-#: templatetags/zeus_tags.py:21 templatetags/zeus_tags.py:142
+#: templatetags/zeus_tags.py:21 templatetags/zeus_tags.py:158
 msgid "Are you sure ?"
 msgstr "Επιβεβαιώστε"
 
-#: views/poll.py:247
+#: views/poll.py:263
 msgid "Time to Vote"
 msgstr "Χρόνος Ψηφοφορίας"
 
-#: views/poll.py:248
+#: views/poll.py:264
 msgid "Additional Info"
 msgstr "Περισσότερες πληροφορίες"
 
-#: views/poll.py:366
+#: views/poll.py:388
 msgid "Email sending started"
 msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει"
 

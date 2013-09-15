@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-11 17:56+0300\n"
+"POT-Creation-Date: 2013-09-15 18:26+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,14 +46,11 @@ msgstr "Όνομα χρήστη"
 msgid "Password"
 msgstr "Κωδικός χρήστη"
 
-#: templates/change_password.html:11
-msgid "Change password"
-msgstr "Αλλαγή κωδικού"
+#~ msgid "Change password"
+#~ msgstr "Αλλαγή κωδικού"
 
-#: templates/change_password.html:19
-msgid "Your new password was set."
-msgstr "Ο νέος σας κωδικός έχει οριστεί."
+#~ msgid "Your new password was set."
+#~ msgstr "Ο νέος σας κωδικός έχει οριστεί."
 
-#: templates/change_password.html:26
-msgid "SAVE"
-msgstr "Αποθήκευση"
+#~ msgid "SAVE"
+#~ msgstr "Αποθήκευση"
