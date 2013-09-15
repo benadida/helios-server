@@ -11,7 +11,7 @@ from django.db.models.query import EmptyQuerySet
 
 from zeus.forms import ElectionForm
 from zeus import auth
-from zeus.forms import PollForm, PollFormSet, EmailVotersForm
+from zeus.forms import PollVoterLoginForm, PollForm, PollFormSet, EmailVotersForm
 from zeus.utils import *
 from zeus.views.utils import *
 from zeus import tasks
@@ -444,6 +444,27 @@ def voters_csv(request, election, poll, fname):
     poll.voters_to_csv(response)
     return response
 
+
+@auth.election_view(check_access=False)
+@auth.unauthenticated_user_required
+@require_http_methods(["GET", "POST"])
+def voter_booth_credentials_login(request, election, poll):
+    form = PollVoterLoginForm(poll)
+    if request.method == 'POST':
+        form = PollVoterLoginForm(poll, request.POST)
+        if form.is_valid():
+            user = auth.ZeusUser(form._voter)
+            user.authenticate(request)
+            poll.logger.info("Poll voter '%s' logged in using credentials",
+                             form._voter.voter_login_id)
+            return HttpResponseRedirect(poll_reverse(poll, 'index'))
+
+    cntxt = {
+        'election': election,
+        'poll': poll,
+        'form': form
+    }
+    return render_template(request, 'election_poll_voter_login', cntxt)
 
 @auth.election_view(check_access=False)
 @require_http_methods(["GET"])

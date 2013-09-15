@@ -333,3 +333,24 @@ class ChangePasswordForm(forms.Form):
            self.cleaned_data.get('new_password_confirm'):
             raise forms.ValidationError(_('Passwords don\'t match'))
         return cl
+
+class PollVoterLoginForm(forms.Form):
+
+    email = forms.EmailField(label=_('Email'))
+    password = forms.CharField(label=_('Password'), widget=forms.PasswordInput)
+
+    def __init__(self, poll, *args, **kwargs):
+        self.poll = poll
+        self._voter = None
+        super(PollVoterLoginForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super(PollVoterLoginForm, self).clean()
+        email = self.cleaned_data.get('email')
+        secret = self.cleaned_data.get('password')
+        try:
+            self._voter = self.poll.voters.get(voter_email=email,
+                                               voter_password=secret)
+        except Voter.DoesNotExist:
+            raise forms.ValidationError(_("Invalid email or password"))
+        return cleaned_data
