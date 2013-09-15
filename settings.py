@@ -180,6 +180,12 @@ TWITTER_DM_TOKEN = {"oauth_token": "", "oauth_token_secret": "", "user_id": "", 
 LINKEDIN_API_KEY = ''
 LINKEDIN_API_SECRET = ''
 
+# CAS (for universities)
+CAS_USERNAME = get_from_env('CAS_USERNAME', "")
+CAS_PASSWORD = get_from_env('CAS_PASSWORD', "")
+CAS_ELIGIBILITY_URL = get_from_env('CAS_ELIGIBILITY_URL', "")
+CAS_ELIGIBILITY_REALM = get_from_env('CAS_ELIGIBILITY_REALM', "")
+
 # email server
 EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
 EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
