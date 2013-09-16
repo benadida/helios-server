@@ -334,23 +334,45 @@ class ChangePasswordForm(forms.Form):
             raise forms.ValidationError(_('Passwords don\'t match'))
         return cl
 
-class PollVoterLoginForm(forms.Form):
 
-    email = forms.EmailField(label=_('Email'))
-    password = forms.CharField(label=_('Password'), widget=forms.PasswordInput)
+class VoterLoginForm(forms.Form):
 
-    def __init__(self, poll, *args, **kwargs):
-        self.poll = poll
+    login_id = forms.CharField(label=_('Registration ID'), required=True)
+    email = forms.EmailField(label=_('Email'), required=True)
+    password = forms.CharField(label=_('Password'), widget=forms.PasswordInput,
+                               required=True)
+
+    def __init__(self, *args, **kwargs):
         self._voter = None
-        super(PollVoterLoginForm, self).__init__(*args, **kwargs)
+        super(VoterLoginForm, self).__init__(*args, **kwargs)
 
     def clean(self):
-        cleaned_data = super(PollVoterLoginForm, self).clean()
+        cleaned_data = super(VoterLoginForm, self).clean()
+
+        login_id = self.cleaned_data.get('login_id')
         email = self.cleaned_data.get('email')
         secret = self.cleaned_data.get('password')
+
+        invalid_login_id_error = _("Invalid registration ID")
+        if not login_id:
+            raise forms.ValidationError(invalid_login_id_error)
+
         try:
-            self._voter = self.poll.voters.get(voter_email=email,
-                                               voter_password=secret)
+            poll_id, registration_id = login_id.split("-", 1)
+        except ValueError:
+            raise forms.ValidationError(invalid_login_id_error)
+
+        poll = None
+        try:
+            poll = Poll.objects.get(pk=poll_id)
+        except DoesNotExist:
+            raise forms.ValidationError(invalid_login_id_error)
+
+        try:
+            self._voter = poll.voters.get(voter_login_id=registration_id,
+                                          voter_email=email,
+                                          voter_password=secret)
         except Voter.DoesNotExist:
             raise forms.ValidationError(_("Invalid email or password"))
+
         return cleaned_data

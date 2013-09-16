@@ -119,7 +119,8 @@
           ψηφοφορίας  <u>{{ election.name }}</u>
           <a href="{{settings.SECURE_URL_HOST}}{% url logout %}">έξοδος</a>
           {% else %}
-          <a href="{{settings.SECURE_URL_HOST}}{% url login %}">Σύνδεση</a>
+          <a href="{{settings.SECURE_URL_HOST}}{% url login %}">Σύνδεση</a> | 
+          <a href="{{settings.SECURE_URL_HOST}}{% url voter_login %}">Σύνδεση ψηφοφόρου</a>
           {% endif %}
           {% endif %}
           <br />

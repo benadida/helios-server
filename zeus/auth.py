@@ -204,11 +204,15 @@ class ZeusUser(object):
     @property
     def user_id(self):
         if self.is_admin:
-            return self._user.user_id
+            return "ADMIN:%s" % self._user.user_id
         if self.is_trustee:
-            return self._user.email
+            return "TRUSTEE:%s" % self._user.email
         if self.is_voter:
-            return self._user.voter_email
+            prefix = "VOTER"
+            voter = self._user
+            if voter.excluded_at:
+                prefix = "EXCLUDED_VOTER"
+            return "%s:%s" % (prefix, voter.voter_login_id)
         raise Exception("Unknown user")
 
     def is_authenticated(self):

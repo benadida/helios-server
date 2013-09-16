@@ -12,6 +12,7 @@ auth_urls = patterns('zeus.views.auth',
     url(r'^auth/logout', 'logout', name='logout'),
     url(r'^auth/login', 'password_login_view', name='login'),
     url(r'^auth/change_password', 'change_password', name='change_password'),
+    url(r'^voter-login$', 'voter_login', name="voter_login"),
 )
 
 admin_urls = patterns('zeus.views.admin',

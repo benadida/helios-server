@@ -45,7 +45,7 @@ def get_http_connection(url):
     return conn
 
 def generate_voter_file(nr, domain='zeus.minedu.gov.gr'):
-    return '\n'.join((u'voter-%d@%s, Ψηφοφόρος, %d' % (i, domain, i))
+    return '\n'.join((u'%d, voter-%d@%s, Ψηφοφόρος, %d' % (i, i, domain, i))
                      for i in xrange(nr))
 
 def generate_vote(p, g, q, y, choices):
@@ -290,7 +290,7 @@ def do_download_ciphers(url, savefile):
         m = "file '%s' already exists, will not overwrite" % (savefile,)
         raise ValueError(m)
 
-    conn, headers, redirect = get_login(url) 
+    conn, headers, redirect = get_login(url)
     get_path = redirect.rsplit('/', 1)[0] + '/download-ciphers'
     conn.request('GET', get_path, headers=headers)
     response = conn.getresponse()

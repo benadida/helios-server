@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 
 from zeus import auth
 from zeus.utils import *
-from zeus.forms import ChangePasswordForm
+from zeus.forms import ChangePasswordForm, VoterLoginForm
 
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -18,6 +18,25 @@ from zeus import auth
 
 
 logger = logging.getLogger(__name__)
+
+
+@auth.unauthenticated_user_required
+@require_http_methods(["POST", "GET"])
+def voter_login(request):
+    form_cls = VoterLoginForm
+    form = VoterLoginForm()
+    if request.method == 'POST':
+        form = VoterLoginForm(request.POST)
+        if form.is_valid():
+            poll = form._voter.poll
+            user = auth.ZeusUser(form._voter)
+            user.authenticate(request)
+            poll.logger.info("Poll voter '%s' logged in (global login view)",
+                             form._voter.voter_login_id)
+            return HttpResponseRedirect(poll_reverse(poll, 'index'))
+
+    cxt = {'form': form}
+    return render_template(request, 'voter_login', cxt)
 
 
 @auth.unauthenticated_user_required
@@ -49,6 +68,7 @@ def logout(request):
     return HttpResponseRedirect(return_url)
 
 
+@auth.user_required
 def change_password(request):
     user = request.zeususer
 
