@@ -1,0 +1,53 @@
+{% extends TEMPLATE_BASE %}
+{% load i18n %}
+
+{% block header %}
+<h2>{{ settings.SITE_TITLE }} | Σύνδεση/h2>
+{% endblock %}
+
+{% block page_top %}
+<h6>{{ election.name }}</h6>
+<h5>{{ poll.name }}</h5>
+<hr />
+<h4>
+    {% trans "Voter login" %}
+</h4>
+<hr />
+{% endblock %}
+
+{% block content %}
+<div class="row">
+<div class="columns twelve">
+<p>
+{% blocktrans %}
+Please provide your credentials to login to the election booth
+{% endblocktrans %}
+</p>
+</div>
+</div>
+<div class="row">
+<div class="columns six">
+{% if error %}
+<div class="alert-box alert">
+  {{error}}
+</div>
+{% endif %}
+
+<form 
+    class="prettyform" 
+    action="{% url election_poll_voter_booth_credentials_login election.uuid poll.uuid %}" 
+    method="POST" 
+    id="login_form">
+<table>
+    {% csrf_token %}
+    {{form.as_p}}
+</table>
+<div>
+<input class="button" type="submit" value="Σύνδεση" />
+</div>
+</form>
+</div>
+</div>
+{% endblock %}
+
+
