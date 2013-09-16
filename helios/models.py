@@ -1387,7 +1387,8 @@ class VoterFile(models.Model):
         voter_uuid = str(uuid.uuid4())
         voter = Voter(uuid=voter_uuid, voter_login_id=voter_id,
                       voter_name=name, voter_email=email, poll=poll,
-                      voter_surname=surname, voter_fathername=fathername)
+                      voter_surname=surname, voter_fathername=fathername,
+                      voter_mobile=mobile)
         voter.init_audit_passwords()
         voter.generate_password()
         new_voters.append(voter)
