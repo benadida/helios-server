@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-15 18:26+0300\n"
+"POT-Creation-Date: 2013-09-16 17:27+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -182,7 +182,7 @@ msgstr "Όνομα κάλπης"
 
 #: models.py:665
 msgid "Prepare poll questions"
-msgstr "Ορισμός ερωτήσεων για κάθε κάλπη"
+msgstr "Ορισμός των ερωτήσεων της κάλπης"
 
 #: models.py:670
 msgid "Import voters list"
@@ -206,7 +206,7 @@ msgstr "Οριστικοποιημένη"
 
 #: models.py:766
 msgid "No questions set"
-msgstr "Δεν έχουν ανατεθεί ακόμη ερωτήσεις"
+msgstr "Δεν έχουν οριστεί ακόμη ερωτήσεις"
 
 #: models.py:769
 msgid "No voters set"
@@ -277,28 +277,29 @@ msgstr "ΟΧΙ"
 msgid "(EXCLUDED)"
 msgstr "(ΕΞΑΙΡΕΣΗ)"
 
-#: models.py:1175 templates/_election_poll_admin_actions.html:17
+#: models.py:1177 templates/_election_poll_admin_actions.html:17
 #: templates/_election_view_menu.html:11 templates/election_polls_list.html:65
 msgid "Results"
 msgstr "Αποτελέσματα"
 
-#: models.py:1301
-msgid "Name cannot be empty"
-msgstr "Το όνομα δεν μπορεί να είναι κενό"
+#: models.py:1276
+msgid "There must be at least two fields, Registration ID and Email"
+msgstr ""
 
-#: models.py:1308
-msgid "Surname cannot be empty"
-msgstr "Το επώνυμο δεν μπορεί να είναι κενό"
+#: models.py:1310
+#, python-format
+msgid "Malformed mobile phone number: %s"
+msgstr ""
 
-#: models.py:1933
+#: models.py:1953
 msgid "Create trustee key"
 msgstr "Δημιουργία κωδικού ψηφοφορίας"
 
-#: models.py:1934
+#: models.py:1954
 msgid "Verify trustee key"
 msgstr "Επιβεβαίωση κωδικού ψηφοφορίας"
 
-#: models.py:1935
+#: models.py:1955
 msgid "Partially decrypt votes"
 msgstr "Μερική αποκρυπτογράφηση ψήφων"
 
@@ -318,11 +319,11 @@ msgstr "Ταξινομική"
 msgid "Invalid partial decryption send. Please try again."
 msgstr "Η μερική αποκρυπτογράφηση είναι εσφαλμένη. Παρακαλούμε δοκιμάστε ξανά."
 
-#: views.py:1260
+#: views.py:1262
 msgid "Time to Vote"
 msgstr "Συμμετοχή σας σε ψηφοφορία"
 
-#: views.py:1261
+#: views.py:1263
 msgid "Additional Info"
 msgstr "Περισσότερες Πληροφορίες"
 
@@ -570,6 +571,17 @@ msgstr "Διαχείριση ερωτήσεων"
 msgid "Total votes"
 msgstr "Σύνολο ψήφων"
 
+#: templates/election_poll_voter_login.html:13
+#, fuzzy
+msgid "Voter login"
+msgstr "Αριθμός ψηφοφόρων"
+
+#: templates/election_poll_voter_login.html:22
+msgid ""
+"\n"
+"Please provide your credentials to login to the election booth\n"
+msgstr ""
+
 #: templates/election_poll_voters_list.html:15
 msgid "Total voters count"
 msgstr "Σύνολο ψηφοφόρων"
@@ -808,6 +820,12 @@ msgstr "Νόμιμος παραλήπτης"
 #: templates/email/info_body.txt:6
 msgid "Voting link"
 msgstr "Σύνδεσμος ψηφοφορίας"
+
+#~ msgid "Name cannot be empty"
+#~ msgstr "Το όνομα δεν μπορεί να είναι κενό"
+
+#~ msgid "Surname cannot be empty"
+#~ msgstr "Το επώνυμο δεν μπορεί να είναι κενό"
 
 #~ msgid "Upload partial decryption"
 #~ msgstr "Μεταφόρτωση μερικής αποκρυπτογράφησης"

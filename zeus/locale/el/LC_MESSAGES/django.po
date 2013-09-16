@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-15 18:26+0300\n"
+"POT-Creation-Date: 2013-09-16 17:27+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -72,7 +72,7 @@ msgstr "Όνομα συνδυασμού"
 msgid "Username"
 msgstr "Όνομα χρήστη"
 
-#: forms.py:259
+#: forms.py:259 forms.py:340
 msgid "Password"
 msgstr "Συνθηματικό"
 
@@ -123,6 +123,16 @@ msgstr "Μη έγκυρος χρήστης ή κωδικός"
 #: forms.py:334
 msgid "Passwords don't match"
 msgstr "Οι κωδικοί δεν ταιριάζουν"
+
+#: forms.py:339
+#, fuzzy
+msgid "Email"
+msgstr "Κείμενο μηνύματος email"
+
+#: forms.py:355
+#, fuzzy
+msgid "Invalid email or password"
+msgstr "Μη έγκυρος χρήστης ή συθηματικό"
 
 #: help_texts.py:3
 msgid "This is a trial election"
