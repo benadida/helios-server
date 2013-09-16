@@ -1213,7 +1213,7 @@ class ElectionLog(models.Model):
 ## Craziness for CSV
 ##
 
-def csv_reader(csv_data, **kwargs):
+def csv_reader(csv_data, min_fields=2, max_fields=5, **kwargs):
     if not isinstance(csv_data, str):
         m = "Please provide string data to csv_reader, not %s" % type(csv_data)
         raise ValueError(m)
@@ -1244,24 +1244,86 @@ def csv_reader(csv_data, **kwargs):
         line = line.strip()
         if not line:
             continue
-        cells = line.split(',', 3)
-        if len(cells) < 3:
+        cells = line.split(',', max_fields)
+        if len(cells) < min_fields:
             cells = line.split(';')
-            if len(cells) < 3:
-                m = ("line %d: CSV must have at least 3 fields "
-                     "(email, last_name, name)" % (i+1))
+            if len(cells) < min_fields:
+                m = ("line %d: CSV must have at least %d fields "
+                     "(email, last_name, name)" % (i+1, min_fields))
                 raise ValueError(m)
-        cells += [u''] * (4 - len(cells))
+        cells += [u''] * (max_fields - len(cells))
         append(cells)
 
     return rows
+
+def iter_voter_data(voter_data):
+    reader = csv_reader(voter_data, min_fields=2, max_fields=5)
+
+    for voter_fields in reader:
+        # bad line
+        if len(voter_fields) < 1:
+            continue
+
+        return_dict = {}
+
+        # strip leading/trailing whitespace from all fields
+        for i, f in enumerate(voter_fields):
+            voter_fields[i] = f.strip()
+
+        if len(voter_fields) < 2:
+            m = _("There must be at least two fields, Registration ID and Email")
+            raise ValidationError(m)
+
+        return_dict['voter_id'] = voter_fields[0]
+        email = voter_fields[1]
+        validate_email(email)
+        return_dict['email'] = email
+        if len(voter_fields) == 2:
+            yield return_dict
+            continue
+
+        name = voter_fields[2]
+        return_dict['name'] = name
+        if len(voter_fields) == 3:
+            yield return_dict
+            continue
+
+        surname = voter_fields[3]
+        return_dict['surname'] = surname
+        if len(voter_fields) == 4:
+            yield return_dict
+            continue
+
+        fathername = voter_fields[4]
+        return_dict['fathername'] = fathername
+        if len(voter_fields) == 5:
+            yield return_dict
+            continue
+
+        mobile = voter_fields[5]
+        if mobile:
+            mobile = mobile.replace(' ', '')
+            if len(mobile) < 4 or not mobile[1:].isdigit or \
+                (mobile[0] != '+' and not mobile[0].isdigit()):
+                    m = _("Malformed mobile phone number: %s") % mobile
+                    raise ValidationError(m)
+        return_dict['mobile'] = mobile
+        yield return_dict
 
 
 class VoterFile(models.Model):
   """
   A model to store files that are lists of voters to be processed.
-  """
+  Format:
+     registration_id, email, name, surname, extra_name, mobile_number.
+  Note:
+     - All fields are strings, stripped from leading/trailing whitespace.
+     - There will be one vote per registration_id
+     - Multiple registration_ids can have the same email
+       (more than one votes per person)
+     - Multiple emails per registration_id will update this voters email.
 
+  """
   # path where we store voter upload
   PATH = settings.VOTER_UPLOAD_REL_PATH
 
@@ -1282,37 +1344,7 @@ class VoterFile(models.Model):
     else:
       voter_data = open(self.voter_file.path, "r").read()
 
-    reader = csv_reader(voter_data)
-
-    for voter_fields in reader:
-      # bad line
-      if len(voter_fields) < 1:
-        continue
-
-      email = voter_fields[0].strip()
-      return_dict = {'voter_id': email}
-
-      if len(voter_fields) > 0:
-        validate_email(email)
-        return_dict['email'] = email
-
-      if len(voter_fields) > 1:
-        if voter_fields[1].strip() == "":
-          raise ValidationError(_("Name cannot be empty"))
-
-        return_dict['name'] = voter_fields[1].strip()
-
-      if len(voter_fields) > 2:
-
-        if voter_fields[1].strip() == "":
-          raise ValidationError(_("Surname cannot be empty"))
-
-        return_dict['surname'] = voter_fields[2].strip()
-
-      if len(voter_fields) > 3:
-        return_dict['fathername'] = voter_fields[3].strip()
-
-      yield return_dict
+    return iter_voter_data(voter_data)
 
   def process(self):
     self.processing_started_at = datetime.datetime.utcnow()
@@ -1326,42 +1358,23 @@ class VoterFile(models.Model):
     else:
       voter_data = open(self.voter_file.path, "r").read()
 
-    reader = csv_reader(voter_data)
+    reader = iter_voter_data(voter_data)
 
     last_alias_num = poll.last_alias_num
 
     num_voters = 0
     new_voters = []
     for voter in reader:
-      # bad line
-      if len(voter) < 1:
-        continue
-
       num_voters += 1
-      voter_id = voter[0].strip()
-      name = voter_id
-      email = voter_id
-      fathername = ""
+      voter_id = voter['voter_id']
+      name = voter['name']
+      email = voter['email']
+      fathername = voter['fathername']
+      mobile = voter['mobile']
 
-      if len(voter) > 0:
-        email = voter[0].strip()
-
-      if len(voter) > 1:
-        name = voter[1].strip()
-
-      if len(voter) > 2:
-        surname = voter[2].strip()
-
-      if len(voter) > 3:
-        fathername = voter[3].strip()
-
-      # create the user -- NO MORE
-      # user = User.update_or_create(user_type='password', user_id=email, info = {'name': name})
-
-      # does voter for this user already exist
       voter = None
       try:
-          voter = Voter.objects.get(poll=poll, voter_email=voter_id)
+          voter = Voter.objects.get(poll=poll, voter_login_id=voter_id)
       except Voter.DoesNotExist:
           pass
 
@@ -1379,6 +1392,8 @@ class VoterFile(models.Model):
         voter.voter_name = name
         voter.voter_surname = surname
         voter.voter_fathername = fathername
+        voter.voter_email = email
+        voter.voter_mobile = mobile
         voter.save()
 
     voter_alias_integers = range(last_alias_num+1, last_alias_num+1+num_voters)
@@ -1430,6 +1445,7 @@ class Voter(HeliosModel, VoterFeatures):
   voter_surname = models.CharField(max_length = 200, null=True)
   voter_email = models.CharField(max_length = 250, null=True)
   voter_fathername = models.CharField(max_length = 250, null=True)
+  voter_mobile = models.CharField(max_length = 48, null=True)
 
   # if election uses aliases
   alias = models.CharField(max_length = 100, null=True)

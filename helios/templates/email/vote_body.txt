@@ -1,4 +1,4 @@
-Νόμιμος παραλήπτης: {{voter.voter_surname}} {{voter.voter_name}}
+Νόμιμος παραλήπτης: {{voter.voter_surname}} {{voter.voter_name}} {{voter.voter_fathername}}
 
 Αξιότιμε/η κ. εκλέκτορα,{% if custom_message %}
 
@@ -10,7 +10,8 @@
   {{ poll.name }}
 
 που αρχίζει στις {{election.voting_starts_at}}
-και λήγει στις {{election.voting_ends_at}}.
+και λήγει στις {{election.voting_ends_at}},
+ως ψηφοφόρος σύμφωνα με την καταχώρηση μητρώου: {{voter.voter_login_id}}.
 
 Υποβάλετε την ψήφο σας, ακολουθώντας το σύνδεσμο
 
