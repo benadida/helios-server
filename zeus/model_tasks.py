@@ -149,6 +149,7 @@ def task(name, required_features=(), is_recurrent=False, completed_cb=None,
                         setattr(self, started_field, None)
                         setattr(self, status_field, 'pending')
                         self.notify_task(name, 'error', error)
+                        self.notify_exception(e)
                         self.save()
         setattr(inner, '_task', True)
         setattr(inner, '_task_name', name)
@@ -189,10 +190,13 @@ class PollTasks(TaskModel):
     class Meta:
         abstract = True
 
+    def notify_exception(self, exc):
+        self.logger.exception(exc)
+
     def notify_task(self, name, status, error=None):
         self.logger.info("Task %s %s", name, status)
         if error:
-            self.logger.error("Task %s error", name, error)
+            self.logger.error("Task %s error, %s", name, error)
 
     @poll_task('validate_create', ('frozen',))
     def validate_create(self):
