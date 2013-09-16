@@ -1366,11 +1366,13 @@ class VoterFile(models.Model):
     new_voters = []
     for voter in reader:
       num_voters += 1
+
       voter_id = voter['voter_id']
-      name = voter['name']
       email = voter['email']
-      fathername = voter['fathername']
-      mobile = voter['mobile']
+      name = voter.get('name', '')
+      surname = voter.get('surname', '')
+      fathername = voter.get('fathername', '')
+      mobile = voter.get('mobile', '')
 
       voter = None
       try:
