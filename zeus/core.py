@@ -30,7 +30,6 @@ from json import load as json_load
 from binascii import hexlify
 import inspect
 import re
-import csv
 from time import time, sleep
 
 try:
