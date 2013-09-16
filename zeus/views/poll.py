@@ -668,10 +668,10 @@ def results_file(request, election, poll, ext):
     name = ext
 
     if not os.path.exists(poll.get_result_file_path('csv', 'csv')):
-        election.generate_result_docs()
+        poll.generate_result_docs()
 
     if request.GET.get('gen', None):
-        election.generate_result_docs()
+        poll.generate_result_docs()
 
     fname = poll.get_result_file_path(name, ext)
 

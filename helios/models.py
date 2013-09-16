@@ -1167,6 +1167,10 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
     # pdf report
     from zeus.results_report import build_doc
+    if self.name:
+        results_name = self.election.name + ', ' + self.name
+    else:
+        results_name = self.name
     DATE_FMT = "%d/%m/%Y %H:%S"
     voting_start = 'Έναρξη: %s' % (self.election.voting_starts_at.strftime(DATE_FMT))
     voting_end = 'Λήξη: %s' % (self.election.voting_ends_at.strftime(DATE_FMT))
@@ -1174,7 +1178,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
     extended_until = ""
     if self.election.voting_extended_until:
       extended_until = 'Παράταση: %s' % (self.election.voting_extended_until.strftime(DATE_FMT))
-    build_doc(_(u'Results'), self.name, self.election.institution.name,
+    build_doc(_(u'Results'), results_name, self.election.institution.name,
               voting_start, voting_end, extended_until, json.dumps(results_json),
               self.get_result_file_path('pdf', 'pdf'))
 
