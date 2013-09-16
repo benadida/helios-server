@@ -332,12 +332,14 @@ def voters_csv(request, election):
     vote_field = u"ΝΑΙ" if voter.castvote_set.count() else u"ΟΧΙ"
     if voter.excluded_at:
         vote_field += u"(ΕΞΑΙΡΕΘΗΚΕ)"
-    writer.writerow(map(force_utf8, [voter.voter_email,
-                                       voter.voter_name,
-                                       voter.voter_surname,
-                                       voter.voter_fathername or '',
-                                       vote_field
-                                   ]))
+    writer.writerow(map(force_utf8, [voter.voter_login_id,
+                                     voter.voter_email,
+                                     voter.voter_name or '',
+                                     voter.voter_surname or '',
+                                     voter.voter_fathername or '',
+                                     voter.voter_mobile or '',
+                                     vote_field
+                                    ]))
   return response
 
 @election_admin()

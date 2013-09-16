@@ -934,10 +934,12 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
       if voter.excluded_at:
         vote_field += unicode(_("(EXCLUDED)"))
 
-      writer.writerow(map(force_utf8, [voter.voter_email,
-                                       voter.voter_name,
-                                       voter.voter_surname,
+      writer.writerow(map(force_utf8, [voter.voter_login_id,
+                                       voter.voter_email,
+                                       voter.voter_name or '',
+                                       voter.voter_surname or '',
                                        voter.voter_fathername or '',
+                                       voter.voter_mobile or '',
                                        vote_field
                                        ]))
     return to
@@ -1213,7 +1215,7 @@ class ElectionLog(models.Model):
 ## Craziness for CSV
 ##
 
-def csv_reader(csv_data, min_fields=2, max_fields=5, **kwargs):
+def csv_reader(csv_data, min_fields=2, max_fields=6, **kwargs):
     if not isinstance(csv_data, str):
         m = "Please provide string data to csv_reader, not %s" % type(csv_data)
         raise ValueError(m)
@@ -1257,7 +1259,7 @@ def csv_reader(csv_data, min_fields=2, max_fields=5, **kwargs):
     return rows
 
 def iter_voter_data(voter_data):
-    reader = csv_reader(voter_data, min_fields=2, max_fields=5)
+    reader = csv_reader(voter_data, min_fields=2, max_fields=6)
 
     for voter_fields in reader:
         # bad line
