@@ -1488,13 +1488,18 @@ class Voter(HeliosModel, VoterFeatures):
 
     # stub the user so code is not full of IF statements
     if not self.user:
-      self.user = User(user_type='password', user_id=self.voter_email,
+      self.user = User(user_type='password', user_id=self.voter_login_id,
                        name=u"%s %s" % (self.voter_name, self.voter_surname))
 
   @property
   def voted(self):
       return self.cast_votes.count() > 0
 
+  @property
+  def zeus_string(self):
+    return u"%s %s %s %s <%s>" % (self.voter_name, self.voter_surname,
+                                  self.voter_fathername or '',
+                                  self.voter_mobile or '', self.voter_login_id)
   @property
   def full_name(self):
     return u"%s %s %s (%s)" % (self.voter_name, self.voter_surname,

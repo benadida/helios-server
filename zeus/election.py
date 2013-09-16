@@ -316,14 +316,12 @@ class ZeusDjangoElection(ZeusCoreElection):
 
     def do_get_voter(self, voter_uuid):
         v = self._get_voter_object(voter_uuid)
-        return u"%s %s %s <%s>" % (v.voter_name, v.voter_surname, v.voter_fathername or '',
-                                   sha256(v.voter_login_id).hexdigest())
+        return v.zeus_string
 
     def do_get_voters(self):
         voters = {}
         for v in self.poll.voters.all():
-            voters[v.uuid] = u"%s %s %s <%s>" % (v.voter_name, v.voter_surname, v.voter_fathername or '',
-                                  sha256(v.voter_login_id).hexdigest())
+            voters[v.uuid] = v.zeus_string
 
         return voters
 
