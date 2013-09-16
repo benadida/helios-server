@@ -234,7 +234,7 @@ ZEUS_MIXES_PATH = 'zeus_mixes'
 ZEUS_ALLOW_EARLY_ELECTION_CLOSE = True
 ZEUS_CELERY_TEMPDIR = os.path.join('/', 'var', 'run', 'zeus-celery')
 
-SERVER_PREFIX = '/'
+SERVER_PREFIX = ''
 
 CANDIDATES_CHANGE_TIME_MARGIN = 1
 
