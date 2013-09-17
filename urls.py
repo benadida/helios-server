@@ -29,23 +29,24 @@ app_patterns += patterns(
         name="get_randomness"),
 )
 
-static_urls = patterns('',
-    (r'booth/(?P<path>.*)$', 'django.views.static.serve', {
-        'document_root' : settings.BOOTH_STATIC_PATH
-    }),
-    (r'static/zeus/(?P<path>.*)$', 'django.views.static.serve', {
-        'document_root' : settings.ROOT_PATH + '/zeus/static/zeus'
-    }),
-    (r'static/(?P<path>.*)$', 'django.views.static.serve', {
-        'document_root' : settings.ROOT_PATH + '/server_ui/media'
-    }),
-)
-
-#SHOULD BE REPLACED BY APACHE STATIC PATH
-if getattr(settings, 'DEBUG', False):
-    app_patterns += static_urls
-
 urlpatterns = patterns(
     '',
     (r'^' + SERVER_PREFIX, include(app_patterns)),
 )
+
+#SHOULD BE REPLACED BY APACHE STATIC PATH
+if getattr(settings, 'DEBUG', False):
+    static_urls = patterns('',
+        (r'booth/(?P<path>.*)$', 'django.views.static.serve', {
+            'document_root' : settings.BOOTH_STATIC_PATH
+        }),
+        (r'static/zeus/(?P<path>.*)$', 'django.views.static.serve', {
+            'document_root' : settings.ROOT_PATH + '/zeus/static/zeus'
+        }),
+        (r'static/(?P<path>.*)$', 'django.views.static.serve', {
+            'document_root' : settings.ROOT_PATH + '/server_ui/media'
+        }),
+    )
+
+    urlpatterns += static_urls
+
