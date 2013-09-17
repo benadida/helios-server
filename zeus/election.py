@@ -431,7 +431,8 @@ class ZeusDjangoElection(ZeusCoreElection):
     def do_get_trustee(self, public):
         p, g, q = self.do_get_cryptosystem()
         pk = get_datatype('EGPublicKey', p=p, g=g, q=q, y=public)
-        t = helios_models.Trustee.objects.get(public_key_hash=pk.hash)
+        t = helios_models.Trustee.objects.get(public_key_hash=pk.hash,
+                                              election=self.election)
         return [t.pok.commitment, t.pok.challenge, t.pok.response]
 
     def do_get_trustees(self):
