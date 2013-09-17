@@ -32,7 +32,7 @@
 </div>
   <table class="pretty polls-table">
     <thead>
-      <tr>
+        <tr>
         <th>{% trans "name" %}</th>
         <th>{% trans "status" %}</th>
         <th>{% trans "ballot size" %}</th>
@@ -48,7 +48,7 @@
     </thead>
     <tbody>
     {% for poll in polls %}
-    <tr>
+    <tr data-uuid="{{ poll.uuid }}">
       <td>
           {% if not election.feature_can_rename_poll %}
               {{ poll.name }}

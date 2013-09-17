@@ -17,8 +17,7 @@ The trustees below are responsible for the decryption of the ballots
 {% for t in trustees %}
 <div class="trustee-entry">
 <h5>
-{{ t.name }} 
-
+<span class="name">{{ t.name }}</span>
 {% if admin %}
 <br /><span style="font-size:0.8em; color:#aaa">{{ t.email }}</span>
 {% if t.public_key_hash %}
