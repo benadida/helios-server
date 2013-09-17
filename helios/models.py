@@ -1470,6 +1470,7 @@ class Voter(HeliosModel, VoterFeatures):
   cast_at = models.DateTimeField(auto_now_add=False, null=True)
   audit_passwords = models.CharField(max_length=200, null=True)
 
+  last_sms_send_at = models.DateTimeField(null=True)
   last_email_send_at = models.DateTimeField(null=True)
   last_booth_invitation_send_at = models.DateTimeField(null=True)
   last_visit = models.DateTimeField(null=True)
