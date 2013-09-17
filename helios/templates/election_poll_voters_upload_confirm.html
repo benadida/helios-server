@@ -20,7 +20,13 @@
 
 <table>
   <thead>
-    <tr><th>Ηλεκτρονική διευθυνση</th><th>Όνομα</th><th>Επώνυμο</th><th>Πατρώνυμο</th></tr>
+      <tr>
+          <th>Ηλεκτρονική διευθυνση</th>
+          <th>Όνομα</th>
+          <th>Επώνυμο</th>
+          <th>Πατρώνυμο</th>
+          <th>Κινητό</th>
+      </tr>
   </thead>
   <tbody>
 {% for v in voters %}
@@ -30,7 +36,7 @@
 <tr>
 {% endif %}
     <td>{{v.email}}</td><td>{{v.name}}</td><td>{{v.surname}}</td>
-    <td>{{ v.fathername }}</td>
+    <td>{{ v.fathername }}</td><td>{{ v.mobile }}</td>
 </tr>
 {% endfor %}
 </tbody>
