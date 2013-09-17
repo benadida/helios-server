@@ -1,6 +1,6 @@
 import json
 
-from django.template import Context, Template, loader
+from django.template import Context, Template, loader, RequestContext
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
 from django.conf import settings
@@ -50,8 +50,9 @@ def render_template(request, template_name, vars = {}):
     if request.session.has_key('csrf_token'):
         vars_with_user['csrf_token'] = request.session['csrf_token']
 
+    context = RequestContext(request, vars_with_user)
     return render_to_response('server_ui/templates/%s.html' % template_name,
-                              vars_with_user)
+                              context)
 
 
 def render_json(obj):
