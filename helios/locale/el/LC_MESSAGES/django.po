@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-16 18:32+0300\n"
+"POT-Creation-Date: 2013-09-17 12:39+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -277,29 +277,29 @@ msgstr "ΟΧΙ"
 msgid "(EXCLUDED)"
 msgstr "(ΕΞΑΙΡΕΣΗ)"
 
-#: models.py:1177 templates/_election_poll_admin_actions.html:17
+#: models.py:1181 templates/_election_poll_admin_actions.html:17
 #: templates/_election_view_menu.html:11 templates/election_polls_list.html:65
 msgid "Results"
 msgstr "Αποτελέσματα"
 
-#: models.py:1276
+#: models.py:1280
 msgid "There must be at least two fields, Registration ID and Email"
 msgstr ""
 
-#: models.py:1310
+#: models.py:1314
 #, python-format
 msgid "Malformed mobile phone number: %s"
 msgstr ""
 
-#: models.py:1953
+#: models.py:1963
 msgid "Create trustee key"
 msgstr "Δημιουργία κωδικού ψηφοφορίας"
 
-#: models.py:1954
+#: models.py:1964
 msgid "Verify trustee key"
 msgstr "Επιβεβαίωση κωδικού ψηφοφορίας"
 
-#: models.py:1955
+#: models.py:1965
 msgid "Partially decrypt votes"
 msgstr "Μερική αποκρυπτογράφηση ψήφων"
 
@@ -571,17 +571,6 @@ msgstr "Διαχείριση ερωτήσεων"
 msgid "Total votes"
 msgstr "Σύνολο ψήφων"
 
-#: templates/election_poll_voter_login.html:13
-#, fuzzy
-msgid "Voter login"
-msgstr "Αριθμός ψηφοφόρων"
-
-#: templates/election_poll_voter_login.html:22
-msgid ""
-"\n"
-"Please provide your credentials to login to the election booth\n"
-msgstr ""
-
 #: templates/election_poll_voters_list.html:15
 msgid "Total voters count"
 msgstr "Σύνολο ψηφοφόρων"
@@ -781,6 +770,21 @@ msgstr ""
 msgid "Zeus Digital Elections"
 msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
 
+#: templates/voter_login.html:10
+msgid "Voter login"
+msgstr "Είσοδος ψηφοφόρου"
+
+#: templates/voter_login.html:19
+msgid ""
+"\n"
+"Please, provide your voter credentials sent to you via Email or SMS\n"
+msgstr ""
+"\n"
+"Συμπληρώστε τα στοιχεία σας για να ψηφίσετε.\n"
+"Τα απαραίτητα στοιχεία θα πρέπει να σας έχουν σταλεί μέσω Email, SMS, ή "
+"άλλου μέσου.\n"
+"Αν δεν τα έχετε λάβει, επικοινωνήστε με την εφορευτική επιτροπή.\n"
+
 #: templates/voters_email.html:8
 msgid "Send email"
 msgstr "Αποστολή μηνύματος email σε ψηφοφόρους"
@@ -820,6 +824,17 @@ msgstr "Νόμιμος παραλήπτης"
 #: templates/email/info_body.txt:6
 msgid "Voting link"
 msgstr "Σύνδεσμος ψηφοφορίας"
+
+#~ msgid "Login"
+#~ msgstr "Είσοδος"
+
+#~ msgid "Enter"
+#~ msgstr "Είσοδος"
+
+#~ msgid ""
+#~ "\n"
+#~ "Voter login description\n"
+#~ msgstr "\n"
 
 #~ msgid "Name cannot be empty"
 #~ msgstr "Το όνομα δεν μπορεί να είναι κενό"
