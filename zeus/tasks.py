@@ -11,6 +11,7 @@ from celery.decorators import task as celery_task
 from helios.models import Election, Voter, Poll
 from helios.view_utils import render_template_raw
 
+from django.template import Context, Template, loader
 from django.utils.translation import ugettext_lazy as _
 from django.utils import translation
 from django.core.mail import send_mail, EmailMessage
@@ -18,6 +19,8 @@ from django.conf import settings
 from django.db import transaction
 
 from zeus.core import from_canonical
+from zeus import mobile
+from zeus import utils
 
 
 logger = logging.getLogger(__name__)
@@ -34,8 +37,7 @@ def task(*taskargs, **taskkwargs):
             prev_language = translation.get_language()
             if prev_language != settings.LANGUAGE_CODE:
                 translation.activate(settings.LANGUAGE_CODE)
-            ret = func(*args, **kwargs)
-
+            return func(*args, **kwargs)
         # prevent magic kwargs passthrough
         if not 'accept_magic_kwargs' in taskkwargs:
             taskkwargs['accept_magic_kwargs'] = False
@@ -263,3 +265,54 @@ def poll_compute_results(poll_id):
         e = poll.election
         e.completed_at = datetime.datetime.now()
         e.save()
+
+
+@task(ignore_result=False)
+def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
+                   dry=True):
+    voter = Voter.objects.get(pk=voter_id)
+    if not voter.voter_mobile:
+        raise Exception("Voter mobile field not set")
+
+    client = mobile.get_client()
+    message = ""
+    context = Context({
+        'voter': voter,
+        'poll': voter.poll,
+        'election': voter.poll.election,
+        'reg_code': voter.login_registration_id,
+        'email': voter.voter_email,
+        'secret': voter.voter_password
+    })
+    t = Template(tpl)
+    message = t.render(context)
+
+    # identify and sanitize mobile number
+    voter_mobile = override_mobile or voter.voter_mobile
+    try:
+        voter_mobile = utils.sanitize_mobile_number(voter_mobile)
+    except Exception, e:
+        return False, "Invalid number (%s)" % str(voter_mobile)
+
+    # do not resend if asked to
+    if not resend and voter.last_sms_send_at:
+        print "Skipping. Message already sent at %r" % voter.last_sms_send_at
+
+    if dry:
+        # dry/testing mode
+        print 10 * "-"
+        print "TO: ", voter_mobile
+        print "FROM: ", client.from_mobile
+        print "MESSAGE (%d) :" % len(message)
+        print message
+        print 10 * "-"
+        sent, error = True, "FAKE_ID"
+    else:
+        # call to the API
+        sent, error = client.send(voter_mobile, message)
+        if sent:
+            # store last notification date
+            voter.last_sms_send_at = datetime.datetime.now()
+            voter.save()
+
+    return sent, error

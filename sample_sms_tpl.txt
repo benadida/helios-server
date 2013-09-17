@@ -1,0 +1,6 @@
+Τα στοιχεία της ψηφοφορίας είναι
+
+URL: https://elections.domain/auth/voter-login
+Κωδικός εγγραφής: {{ reg_code }}
+Ηλ. διευθυνση: {{ email }}
+Κωδικός: {{ secret }}

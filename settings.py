@@ -262,6 +262,11 @@ LOGGING = {
     }
 }
 
+
+ZEUS_SMS_API_USERNAME = ""
+ZEUS_SMS_API_PASSWORD = ""
+ZEUS_SMS_API_SENDER = "ZEUS"
+
 # useful trick for custom settings
 try:
     from local_settings import *

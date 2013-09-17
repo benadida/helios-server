@@ -56,3 +56,15 @@ def render_template(request, template_name, vars = {}):
 
 def render_json(obj):
   return HttpResponse(json.dumps(obj), "application/json")
+
+
+def sanitize_mobile_number(num):
+    size = len(num)
+    if size == 12:
+        return num
+    if size == 10:
+        return "30%s" % str(num)
+    if size > 12:
+        return num[-12:]
+    raise Exception("Invalid number")
+

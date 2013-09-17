@@ -63,7 +63,7 @@
   <thead>
     <tr>
       <th>Email</th>
-      <th>Επώνυμο , Όνομα , Πατρώνυμο</th>
+      <th>Επώνυμο , Όνομα , Πατρώνυμο, Κινητο</th>
       {% if admin %}
       <th>Έχει ψηφίσει</th>
       <th>{% trans "Booth invitation sent at" %}</th>
@@ -79,7 +79,9 @@
       {{ voter.voter_email }}
     </td>
     <td width="100%">
-      {{ voter.voter_surname }} , {{ voter.voter_name }} {% if voter.voter_fathername %}, {{ voter.voter_fathername }}{% endif %}
+        {{ voter.voter_surname }} , {{ voter.voter_name }} 
+        {% if voter.voter_fathername %}, {{ voter.voter_fathername }}{% endif %}
+        {% if voter.voter_mobile %}, {{ voter.voter_mobile }}{% endif %}
     </td>
     <td>
       {% if voter.voted %}
