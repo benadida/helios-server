@@ -114,7 +114,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
   "django.contrib.messages.context_processors.messages",
   "django.core.context_processors.csrf",
   "zeus.context_processors.user",
-  "zeus.context_processors.confirm_messages"
+  "zeus.context_processors.confirm_messages",
+  "zeus.context_processors.theme"
 )
 
 ##
@@ -233,6 +234,7 @@ ZEUS_PROOFS_PATH = os.path.join('/', 'usr', 'share', 'zeus_proofs')
 ZEUS_MIXES_PATH = 'zeus_mixes'
 ZEUS_ALLOW_EARLY_ELECTION_CLOSE = True
 ZEUS_CELERY_TEMPDIR = os.path.join('/', 'var', 'run', 'zeus-celery')
+ZEUS_HEADER_BG_URL = '/static/zeus/images/logo_bg.jpg'
 
 SERVER_PREFIX = ''
 

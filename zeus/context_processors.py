@@ -1,3 +1,5 @@
+from django.conf import settings
+
 from zeus import messages
 
 def user(request):
@@ -22,3 +24,9 @@ def confirm_messages(request):
         if msg.upper() == msg:
             msg_dict[msg.lower()] = getattr(messages, msg)
     return msg_dict
+
+
+def theme(request):
+    return {
+        'THEME_HEADER_BG_URL': settings.ZEUS_HEADER_BG_URL
+    }
