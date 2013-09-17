@@ -8,6 +8,7 @@ from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.db import connection
 from django.db.models.query import EmptyQuerySet
+from django.core.context_processors import csrf
 
 from zeus.forms import ElectionForm
 from zeus import auth
@@ -468,6 +469,7 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
 @require_http_methods(["GET"])
 def to_json(request, election, poll):
     data = poll.get_booth_dict()
+    data['token'] = unicode(csrf(request)['csrf_token'])
     return HttpResponse(json.dumps(data, default=common_json_handler),
                         mimetype="application/json")
 

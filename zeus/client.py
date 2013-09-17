@@ -158,7 +158,7 @@ def extract_poll_info(poll_info):
     return cast_path, csrf_token, answers, p, g, q, y
 
 def do_cast_vote(conn, cast_path, token, headers, vote):
-    body = urlencode({'encrypted_vote': dumps(vote), 'csrf_token': token})
+    body = urlencode({'encrypted_vote': dumps(vote), 'csrfmiddlewaretoken': token})
     conn.request('POST', cast_path, headers=headers, body=body)
     response = conn.getresponse()
     body = response.read()
@@ -169,6 +169,7 @@ def do_cast_vote(conn, cast_path, token, headers, vote):
 def cast_vote(voter_url, choices=None):
     conn, headers, poll_info = get_poll_info(voter_url)
     csrf_token = poll_info['token']
+    headers['Cookie'] += "; csrftoken=%s" % csrf_token
     voter_path = conn.path
     poll_data = poll_info['poll_data']
     pk = poll_data['public_key']
