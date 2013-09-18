@@ -106,6 +106,25 @@ body {
   
   .stv-candidates {
 
+    a span.checkbox {
+      display: block;
+      float: left;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #efefef;
+    }
+
+    a.selected span.checkbox {
+      background-image: url("../images/checked.png");
+      background-repeat: no-repeat;
+      background-position: 50% 1px;
+    }
+
+    a .answer_text {
+      display: inline-block;
+      margin-top: 6px;
+    }
+
     .stv-choice-party {
       .question-subtitle { 
         color: #fff !important; 

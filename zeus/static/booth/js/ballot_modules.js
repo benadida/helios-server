@@ -44,7 +44,7 @@ BM.ModuleBase = {
   
   handle_selected_click: function(e) {
     e.preventDefault();
-    var el = $(e.target);
+    var el = $(e.target).closest("a");
     var choice = parseInt(el.data('absolute-index'));
     var question = parseInt(el.data('question'));
     this.remove_choice(choice);
@@ -55,7 +55,7 @@ BM.ModuleBase = {
 
   handle_choice_click: function(e) {
     e.preventDefault();
-    var el = $(e.target);
+    var el = $(e.target).closest("a");
     var choice = parseInt(el.data('absolute-index'));
     var question = parseInt(el.data('question'));
     var max = this.data[question].max_answers;

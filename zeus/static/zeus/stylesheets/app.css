@@ -6089,35 +6089,54 @@ body .start-voting {
 body .stv-candidates {
   margin-bottom: 3em;
 }
-/* line 110, ../sass/app.scss */
+/* line 109, ../sass/app.scss */
+body .stv-candidates a span.checkbox {
+  display: block;
+  float: left;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #efefef;
+}
+/* line 117, ../sass/app.scss */
+body .stv-candidates a.selected span.checkbox {
+  background-image: url("../images/checked.png");
+  background-repeat: no-repeat;
+  background-position: 50% 1px;
+}
+/* line 123, ../sass/app.scss */
+body .stv-candidates a .answer_text {
+  display: inline-block;
+  margin-top: 6px;
+}
+/* line 129, ../sass/app.scss */
 body .stv-candidates .stv-choice-party .question-subtitle {
   color: #fff !important;
   float: right;
   font-weight: normal;
   font-size: 0.8em;
 }
-/* line 115, ../sass/app.scss */
+/* line 134, ../sass/app.scss */
 body .stv-candidates .stv-choice-party a {
   text-align: left !important;
 }
-/* line 118, ../sass/app.scss */
+/* line 137, ../sass/app.scss */
 body .stv-candidates .stv-choice-party a.enabled {
   background-color: #196177 !important;
 }
-/* line 125, ../sass/app.scss */
+/* line 144, ../sass/app.scss */
 body ol li.step {
   margin-bottom: 10px;
 }
-/* line 126, ../sass/app.scss */
+/* line 145, ../sass/app.scss */
 body ol li.step .step-title {
   font-weight: bold;
 }
-/* line 127, ../sass/app.scss */
+/* line 146, ../sass/app.scss */
 body ol li.step .step-desc {
   font-style: italic;
   display: block;
 }
-/* line 129, ../sass/app.scss */
+/* line 148, ../sass/app.scss */
 body span.election-desc-toggle {
   cursor: pointer;
   position: absolute;
@@ -6127,11 +6146,11 @@ body span.election-desc-toggle {
   margin-top: 2px;
   z-index: 3;
 }
-/* line 139, ../sass/app.scss */
+/* line 158, ../sass/app.scss */
 body .election-info .description {
   margin-top: 1.5em 0;
 }
-/* line 143, ../sass/app.scss */
+/* line 162, ../sass/app.scss */
 body .election-dates {
   *zoom: 1;
   padding: 0;
@@ -6146,200 +6165,200 @@ body .election-dates:before, body .election-dates:after {
 body .election-dates:after {
   clear: both;
 }
-/* line 147, ../sass/app.scss */
+/* line 166, ../sass/app.scss */
 body .election-dates .columns {
   background-color: #efefef;
   padding: 1em;
 }
-/* line 151, ../sass/app.scss */
+/* line 170, ../sass/app.scss */
 body .election-dates .bottom {
   background-color: #bcbcbc;
   border-top: 1px solid #c9c9c9;
 }
-/* line 157, ../sass/app.scss */
+/* line 176, ../sass/app.scss */
 body h4 .elname {
   display: block;
   font-size: 0.65em;
   color: #4d4d4d;
 }
-/* line 163, ../sass/app.scss */
+/* line 182, ../sass/app.scss */
 body h4 .pollname {
   display: block;
   font-size: 0.6em;
   color: #333333;
 }
-/* line 168, ../sass/app.scss */
+/* line 187, ../sass/app.scss */
 body h4 .inst {
   display: block;
   font-size: 0.4em;
   font-weight: bold;
 }
-/* line 169, ../sass/app.scss */
+/* line 188, ../sass/app.scss */
 body .panel.confirm-vote {
   padding-top: 0;
   padding-bottom: 0;
 }
-/* line 174, ../sass/app.scss */
+/* line 193, ../sass/app.scss */
 body .row.labels {
   margin-bottom: 10px !important;
 }
-/* line 178, ../sass/app.scss */
+/* line 197, ../sass/app.scss */
 body .form-field ul {
   list-style: none;
 }
-/* line 182, ../sass/app.scss */
+/* line 201, ../sass/app.scss */
 body p.alert {
   color: red;
 }
-/* line 183, ../sass/app.scss */
+/* line 202, ../sass/app.scss */
 body .green {
   color: #5DA423;
 }
-/* line 185, ../sass/app.scss */
+/* line 204, ../sass/app.scss */
 body .vote-hash {
   text-align: left;
   font-weight: bold;
   font-size: 1.2em;
 }
-/* line 186, ../sass/app.scss */
+/* line 205, ../sass/app.scss */
 body .vote-hash-actions {
   float: right;
   margin-top: -2px !important;
 }
-/* line 188, ../sass/app.scss */
+/* line 207, ../sass/app.scss */
 body ul.stv-list {
   list-style: none;
 }
-/* line 190, ../sass/app.scss */
+/* line 209, ../sass/app.scss */
 body ul.stv-list li {
   margin-bottom: 10px;
 }
-/* line 191, ../sass/app.scss */
+/* line 210, ../sass/app.scss */
 body ul.stv-list .button {
   width: 100%;
 }
-/* line 192, ../sass/app.scss */
+/* line 211, ../sass/app.scss */
 body ul.stv-list a span.index-num {
   font-size: 0.8em;
   float: left;
 }
-/* line 193, ../sass/app.scss */
+/* line 212, ../sass/app.scss */
 body ul.stv-list .stv-ballot-choice a {
   text-align: right;
 }
-/* line 194, ../sass/app.scss */
+/* line 213, ../sass/app.scss */
 body ul.stv-list .stv-ballot-choice a span:hover {
   background-color: transparent !important;
 }
-/* line 196, ../sass/app.scss */
+/* line 215, ../sass/app.scss */
 body #stv_answer {
   display: none;
 }
-/* line 197, ../sass/app.scss */
+/* line 216, ../sass/app.scss */
 body h4#election-name span.label {
   padding: 4px;
   margin-top: 5px;
 }
-/* line 199, ../sass/app.scss */
+/* line 218, ../sass/app.scss */
 body ul.confirm-choices {
   list-style: none;
   margin-bottom: 10px;
   margin-top: 10px;
 }
-/* line 200, ../sass/app.scss */
+/* line 219, ../sass/app.scss */
 body #confirm-vote {
   margin-left: 10px;
 }
-/* line 201, ../sass/app.scss */
+/* line 220, ../sass/app.scss */
 body #percent_done_container {
   margin-bottom: 10px;
 }
-/* line 203, ../sass/app.scss */
+/* line 222, ../sass/app.scss */
 body .audit-info {
   font-size: 0.5em;
 }
-/* line 203, ../sass/app.scss */
+/* line 222, ../sass/app.scss */
 body .audit-info h4 {
   font-size: 1em;
   color: #aaa;
 }
-/* line 204, ../sass/app.scss */
+/* line 223, ../sass/app.scss */
 body #auditbody {
   display: none;
 }
-/* line 206, ../sass/app.scss */
+/* line 225, ../sass/app.scss */
 body .audit-button {
   float: right;
   margin-top: -32px;
 }
-/* line 207, ../sass/app.scss */
+/* line 226, ../sass/app.scss */
 body form .form-row.checked label {
   color: green !important;
 }
-/* line 208, ../sass/app.scss */
+/* line 227, ../sass/app.scss */
 body form .form-row {
   margin-left: 25px;
   margin-bottom: 10px;
 }
-/* line 208, ../sass/app.scss */
+/* line 227, ../sass/app.scss */
 body form .form-row label {
   text-indent: -25px;
   font-size: 0.9em;
   color: red;
   font-weight: bold;
 }
-/* line 211, ../sass/app.scss */
+/* line 230, ../sass/app.scss */
 body .cast-actions .cancel {
   float: right;
 }
-/* line 212, ../sass/app.scss */
+/* line 231, ../sass/app.scss */
 body .cast-actions .submit {
   float: left;
 }
-/* line 213, ../sass/app.scss */
+/* line 232, ../sass/app.scss */
 body .election-description {
   display: none;
 }
-/* line 216, ../sass/app.scss */
+/* line 235, ../sass/app.scss */
 body table.voters thead th, body table.elections thead th, body table.polls-table thead th {
   font-size: 11px;
 }
-/* line 217, ../sass/app.scss */
+/* line 236, ../sass/app.scss */
 body table.voters tbody td, body table.elections tbody td, body table.polls-table tbody td {
   font-size: 12px;
 }
-/* line 220, ../sass/app.scss */
+/* line 239, ../sass/app.scss */
 body .cancel-msg {
   min-height: 100px !important;
 }
-/* line 224, ../sass/app.scss */
+/* line 243, ../sass/app.scss */
 body a.show-audit-form {
   color: #aaa;
 }
-/* line 225, ../sass/app.scss */
+/* line 244, ../sass/app.scss */
 body a.show-audit-form.active {
   color: #000;
 }
-/* line 230, ../sass/app.scss */
+/* line 249, ../sass/app.scss */
 body .audit-form {
   display: none;
 }
-/* line 236, ../sass/app.scss */
+/* line 255, ../sass/app.scss */
 body .dropdown .alert {
   color: #c60f13 !important;
   font-weight: bold !important;
 }
-/* line 238, ../sass/app.scss */
+/* line 257, ../sass/app.scss */
 body label {
   font-weight: bold;
   color: #2ba6cb;
 }
-/* line 243, ../sass/app.scss */
+/* line 262, ../sass/app.scss */
 body .dropdown li form {
   margin: 0;
   padding: 0;
 }
-/* line 248, ../sass/app.scss */
+/* line 267, ../sass/app.scss */
 body .action-form {
   margin: 0;
   padding: 0;
@@ -6348,16 +6367,16 @@ body .action-form {
   line-height: 3em;
   width: 100%;
 }
-/* line 257, ../sass/app.scss */
+/* line 276, ../sass/app.scss */
 body .action-form.inline {
   display: inline !important;
 }
-/* line 261, ../sass/app.scss */
+/* line 280, ../sass/app.scss */
 body .dropdown .action-form {
   line-height: inherit !important;
   display: inline !important;
 }
-/* line 267, ../sass/app.scss */
+/* line 286, ../sass/app.scss */
 body .dropdown li input {
   cursor: pointer;
   display: block !important;
@@ -6376,106 +6395,106 @@ body .dropdown li input {
   margin: inherit;
   -webkit-font-smoothing: antialiased;
 }
-/* line 268, ../sass/app.scss */
+/* line 287, ../sass/app.scss */
 body .dropdown li input:before {
   display: block !important;
   content: "lala" !important;
 }
-/* line 288, ../sass/app.scss */
+/* line 307, ../sass/app.scss */
 body .action-right {
   float: right;
   margin-right: 0;
 }
-/* line 289, ../sass/app.scss */
+/* line 308, ../sass/app.scss */
 body table.polls-table {
   width: 100%;
 }
-/* line 290, ../sass/app.scss */
+/* line 309, ../sass/app.scss */
 body table.polls-table th {
   text-transform: capitalize;
 }
-/* line 294, ../sass/app.scss */
+/* line 313, ../sass/app.scss */
 body .do-decrypt {
   display: inline-block;
   margin: 20px 0;
   float: right;
 }
-/* line 299, ../sass/app.scss */
+/* line 318, ../sass/app.scss */
 body .trustee-decrypt-actions {
   text-align: right;
 }
-/* line 304, ../sass/app.scss */
+/* line 323, ../sass/app.scss */
 body .freeze-issues ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-/* line 308, ../sass/app.scss */
+/* line 327, ../sass/app.scss */
 body .freeze-issues ul:last-child {
   margin-bottom: 1em;
 }
-/* line 310, ../sass/app.scss */
+/* line 329, ../sass/app.scss */
 body .freeze-issues li {
   padding: 5px;
   margin: 5px 0;
 }
-/* line 311, ../sass/app.scss */
+/* line 330, ../sass/app.scss */
 body .freeze-issues li {
   background-color: #eee;
 }
-/* line 313, ../sass/app.scss */
+/* line 332, ../sass/app.scss */
 body .freeze-issues li span {
   font-weight: bold;
 }
-/* line 316, ../sass/app.scss */
+/* line 335, ../sass/app.scss */
 body .election-view-content {
   margin-top: 2em;
 }
-/* line 320, ../sass/app.scss */
+/* line 339, ../sass/app.scss */
 body .election-contact, body .election-actions {
   margin-top: 2em;
 }
-/* line 321, ../sass/app.scss */
+/* line 340, ../sass/app.scss */
 body .election-contact ul, body .election-actions ul {
   list-style: none;
 }
-/* line 325, ../sass/app.scss */
+/* line 344, ../sass/app.scss */
 body .election-contact {
   background-color: #efefef;
 }
-/* line 330, ../sass/app.scss */
+/* line 349, ../sass/app.scss */
 body .election-actions .admin-status {
   margin-bottom: 1em;
 }
-/* line 331, ../sass/app.scss */
+/* line 350, ../sass/app.scss */
 body .election-actions .admin-status h4 {
   font-size: 1.2em;
   margin-bottom: 0.5em;
 }
-/* line 336, ../sass/app.scss */
+/* line 355, ../sass/app.scss */
 body #booth-link {
   width: 100%;
   margin-top: 40px;
   display: inline-block;
 }
-/* line 342, ../sass/app.scss */
+/* line 361, ../sass/app.scss */
 body .audit-ballot ul {
   list-style: none;
 }
 
-/* line 352, ../sass/app.scss */
+/* line 371, ../sass/app.scss */
 body > .row {
   border-right: 1px solid #dddddd;
   border-left: 1px solid #dddddd;
   background-color: #fff;
 }
 
-/* line 359, ../sass/app.scss */
+/* line 378, ../sass/app.scss */
 body {
   margin-top: 20px !important;
 }
 
-/* line 363, ../sass/app.scss */
+/* line 382, ../sass/app.scss */
 body .bg-wrapper {
   margin-top: 20px;
   width: 890px;
@@ -6486,23 +6505,23 @@ body .bg-wrapper {
   background-color: #fff;
 }
 
-/* line 371, ../sass/app.scss */
+/* line 390, ../sass/app.scss */
 .election-stats-list {
   max-height: 300px;
   overflow-y: scroll;
 }
 
-/* line 376, ../sass/app.scss */
+/* line 395, ../sass/app.scss */
 table tr.party {
   font-weight: bold;
   background-color: #ddd !important;
 }
 
-/* line 382, ../sass/app.scss */
+/* line 401, ../sass/app.scss */
 .trustee-entry tt {
   font-size: 0.8em;
 }
-/* line 383, ../sass/app.scss */
+/* line 402, ../sass/app.scss */
 .trustee-entry .hash-title {
   color: #666666;
   font-weight: normal;
@@ -6511,7 +6530,7 @@ table tr.party {
   margin-top: 8px;
 }
 
-/* line 392, ../sass/app.scss */
+/* line 411, ../sass/app.scss */
 form .field-readonly {
   background-color: #cccccc !important;
 }

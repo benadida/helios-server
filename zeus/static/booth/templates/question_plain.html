@@ -29,7 +29,8 @@
       <a href="#" 
         data-question="{$T.question$index}"
         data-absolute-index="{$T.answer$index + $T.question.answers_index}"
-        class="button enabled small">{$T.answer}</a></li>
+        class="button enabled small">
+        <span class="custom checkbox checked" /><span class="answer_text">{$T.answer}</span></a></li>
       {#/if}
       {#/foreach}
     </ul>
