@@ -6,7 +6,11 @@
 <h5>
 {% if not poll.election.feature_completed %}
 {% if not poll.election.feature_closed %}
+{% if not poll.election.feature_voting_started %}
+{% trans "Waiting for voting to start." %}
+{% else %}
 {% trans "Voting date passed." %}
+{% endif %}
 {% else %}
 {% trans "Voting closed. Please wait for results" %}
 {% endif %}
