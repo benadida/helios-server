@@ -53,7 +53,7 @@ def generate_vote(p, g, q, y, choices):
         nr_candidates = choices
         selection = get_random_selection(nr_candidates, full=0)
     else:
-        nr_candidates = max(choices) + 1
+        nr_candidates = (max(choices) if choices else 0) + 1
         selection = to_relative_answers(choices, nr_candidates)
     encoded = gamma_encode(selection, nr_candidates)
     ct = encrypt(encoded, p, g, q, y)
@@ -187,15 +187,18 @@ def cast_vote(voter_url, choices=None):
         pass
 
     if parties:
-        party_choice = choice(parties.keys())
-        party = parties[party_choice]
-        party_candidates = [k for k in party.keys() if isinstance(k, int)]
-        min_choices = party['opt_min_choices']
-        max_choices = party['opt_max_choices']
-        shuffle(party_candidates)
-        nr_choices = randint(min_choices, max_choices)
-        choices = party_candidates[min_choices:nr_choices + 1]
-        choices.sort()
+        if randint(0,19) == 0:
+            choices = []
+        else:
+            party_choice = choice(parties.keys())
+            party = parties[party_choice]
+            party_candidates = [k for k in party.keys() if isinstance(k, int)]
+            min_choices = party['opt_min_choices']
+            max_choices = party['opt_max_choices']
+            shuffle(party_candidates)
+            nr_choices = randint(min_choices, max_choices)
+            choices = party_candidates[:nr_choices]
+            choices.sort()
         vote, encoded, rand = generate_vote(p, g, q, y, choices)
         #for c in choices:
         #    print "Voting for", c, party[c]
@@ -206,6 +209,7 @@ def cast_vote(voter_url, choices=None):
     else:
         choices = choices if choices is not None else len(candidates)
         vote, encoded, rand = generate_vote(p, g, q, y, choices)
+
     do_cast_vote(conn, cast_path, csrf_token, headers, vote)
     return encoded, rand
 
