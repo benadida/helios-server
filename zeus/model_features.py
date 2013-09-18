@@ -149,7 +149,7 @@ class ElectionFeatures(FeaturesMixin):
 
     @election_feature()
     def _feature_can_rename_poll(self):
-        return not self.feature_closed
+        return not self.feature_voting_started
 
     @election_feature()
     def _feature_can_send_trustee_email(self):
