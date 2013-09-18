@@ -13,14 +13,14 @@ def Element(tag, text=None, *args, **kwargs):
 
 
 class Loco(object):
-    
+
     apiurl = "http://www.locosms.gr/xmlsend.php"
 
     def __init__(self, from_mobile, user, password):
         self.user = user
         self.password = password
         self.from_mobile = from_mobile
-    
+
     def _cosntruct(self, uid, msisdn, message, fields={}):
         msg = Element("msg")
         msg.append(Element("username", self.user))
@@ -40,11 +40,11 @@ class Loco(object):
     def send(self, mobile, msg, fields={}, uid=None):
         if not uid:
             uid = unicode(uuid.uuid4())
-        
+
         msg = self._cosntruct(uid, mobile, msg, fields)
         _msg = etree.tostring(msg)
         http_response = urllib.urlopen(self.apiurl, data=_msg)
-        
+        self._last_uid = uid
         try:
             response = etree.fromstring(http_response.read())
             status = response.find("status").text
