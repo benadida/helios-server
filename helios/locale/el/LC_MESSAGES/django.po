@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-17 12:39+0300\n"
+"POT-Creation-Date: 2013-09-19 02:53+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -156,7 +156,7 @@ msgstr "Επικύρωση ψηφοφορίας σε εξέλιξη"
 msgid "Election closed"
 msgstr "Η ψηφοφορία έχει λήξει"
 
-#: models.py:436
+#: models.py:436 templates/_election_voter_actions.html:10
 msgid "Waiting for voting to start."
 msgstr "Αναμονή για την έναρξη της ψηφοφορίας"
 
@@ -291,15 +291,15 @@ msgstr ""
 msgid "Malformed mobile phone number: %s"
 msgstr ""
 
-#: models.py:1963
+#: models.py:1968
 msgid "Create trustee key"
 msgstr "Δημιουργία κωδικού ψηφοφορίας"
 
-#: models.py:1964
+#: models.py:1969
 msgid "Verify trustee key"
 msgstr "Επιβεβαίωση κωδικού ψηφοφορίας"
 
-#: models.py:1965
+#: models.py:1970
 msgid "Partially decrypt votes"
 msgstr "Μερική αποκρυπτογράφηση ψήφων"
 
@@ -413,19 +413,19 @@ msgstr "Κάλπες"
 msgid "Enter voting booth"
 msgstr "Είσοδος στο ηλεκτρονικό παραπέτασμα"
 
-#: templates/_election_voter_actions.html:9
+#: templates/_election_voter_actions.html:12
 msgid "Voting date passed."
-msgstr "Η χρόνος λήξης της ψηφοφορίας έχει παρέλθει"
+msgstr "Ο χρόνος λήξης της ψηφοφορίας έχει παρέλθει"
 
-#: templates/_election_voter_actions.html:11
+#: templates/_election_voter_actions.html:15
 msgid "Voting closed. Please wait for results"
 msgstr "Η ψηφοφορία έχει λήξει. Παρακαλώ περιμένετε αποτελέσματα"
 
-#: templates/_election_voter_actions.html:15
+#: templates/_election_voter_actions.html:19
 msgid "Election canceled"
 msgstr "Η ψηφοφορία έχει λήξει"
 
-#: templates/_election_voter_actions.html:20
+#: templates/_election_voter_actions.html:24
 msgid "Election completed."
 msgstr "Η ψηφοφορία έχει ολοκληρωθεί"
 
@@ -604,31 +604,31 @@ msgstr "Διαγραφή όλων των ψηφοφόρων"
 msgid "Booth invitation sent at"
 msgstr "Πρόσκληση ψηφοφορίας αποστάλθηκε"
 
-#: templates/election_poll_voters_list.html:103
+#: templates/election_poll_voters_list.html:105
 msgid "Voter actions"
 msgstr "Επιλογές ψηφοφόρου"
 
-#: templates/election_poll_voters_list.html:107
+#: templates/election_poll_voters_list.html:109
 msgid "Send voter email"
 msgstr "Αποστολή μηνύματος email σε ψηφοφόρους"
 
-#: templates/election_poll_voters_list.html:114
+#: templates/election_poll_voters_list.html:116
 msgid "Delete voter"
 msgstr "Διαγραφή ψηφοφόρου"
 
-#: templates/election_poll_voters_list.html:119
+#: templates/election_poll_voters_list.html:121
 msgid "Exclude voter"
 msgstr "Εξαίρεση ψηφοφόρου"
 
-#: templates/election_poll_voters_list.html:130
+#: templates/election_poll_voters_list.html:132
 msgid "No voters added"
 msgstr "Δεν έχουν εισαχθεί ακόμη ψηφοφόροι"
 
-#: templates/election_poll_voters_upload_confirm.html:39
+#: templates/election_poll_voters_upload_confirm.html:45
 msgid "Show all voters"
 msgstr "Προβολή ολόκληρης της λίστας"
 
-#: templates/election_poll_voters_upload_confirm.html:66
+#: templates/election_poll_voters_upload_confirm.html:72
 msgid "Cancel batch voters import"
 msgstr "Ακύρωση"
 
@@ -701,37 +701,37 @@ msgstr ""
 "Τα μέλη της εφορευτικής επιτροπής παρακάτω έχουν την ευθύνη της "
 "αποκρυπτογράφησης των ψηφοδελτίων\n"
 
-#: templates/election_trustees_list.html:26
+#: templates/election_trustees_list.html:25
 msgid "Trustee election identifier"
 msgstr "Αναγνωριστικό μυστικού κωδικού ψηφοφορίας"
 
-#: templates/election_trustees_list.html:30
+#: templates/election_trustees_list.html:29
 msgid "Trustee key not verified"
 msgstr ""
 "Ο κωδικός ψηφοφορίας του μέλους της εφορευτικής επιτροπής δεν έχει "
 "επαληθευτεί"
 
-#: templates/election_trustees_list.html:32
+#: templates/election_trustees_list.html:31
 msgid "key verified"
 msgstr "Ο κωδικός ψηφοφορίας έχει επαληθευτεί"
 
-#: templates/election_trustees_list.html:37
+#: templates/election_trustees_list.html:36
 msgid "No trustee election key set"
 msgstr "Δεν έχει οριστεί ακόμη κωδικός ψηφοφορίας"
 
-#: templates/election_trustees_list.html:42
+#: templates/election_trustees_list.html:41
 msgid "Send trustee login url"
 msgstr "Αποστολή πρόσκλησης μέλους εφορευτικής επιτροπής"
 
-#: templates/election_trustees_list.html:48
+#: templates/election_trustees_list.html:47
 msgid "Delete trustee"
 msgstr "Διαγραφή μέλους εφορευτικής επιτροπής"
 
-#: templates/election_trustees_list.html:57
+#: templates/election_trustees_list.html:56
 msgid "Trustee completed partial decryption"
 msgstr "Έχει ολοκληρώσει τη μερική αποκρυπτογράφηση"
 
-#: templates/election_trustees_list.html:61
+#: templates/election_trustees_list.html:60
 msgid "Pending partial decryption from trustee"
 msgstr ""
 "Εκκρεμεί η μερική αποκρυπτογράφηση του μέλους της εφορευτικής επιτροπής"
