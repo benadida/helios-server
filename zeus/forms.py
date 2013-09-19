@@ -337,10 +337,7 @@ class ChangePasswordForm(forms.Form):
 
 class VoterLoginForm(forms.Form):
 
-    login_id = forms.CharField(label=_('Registration ID'), required=True)
-    email = forms.EmailField(label=_('Email'), required=True)
-    password = forms.CharField(label=_('Password'), widget=forms.PasswordInput,
-                               required=True)
+    login_id = forms.CharField(label=_('Login password'), required=True)
 
     def __init__(self, *args, **kwargs):
         self._voter = None
@@ -350,15 +347,13 @@ class VoterLoginForm(forms.Form):
         cleaned_data = super(VoterLoginForm, self).clean()
 
         login_id = self.cleaned_data.get('login_id')
-        email = self.cleaned_data.get('email')
-        secret = self.cleaned_data.get('password')
 
         invalid_login_id_error = _("Invalid registration ID")
         if not login_id:
             raise forms.ValidationError(invalid_login_id_error)
 
         try:
-            poll_id, registration_id = login_id.split("-", 1)
+            poll_id, secret = login_id.split("-", 1)
         except ValueError:
             raise forms.ValidationError(invalid_login_id_error)
 
@@ -369,9 +364,7 @@ class VoterLoginForm(forms.Form):
             raise forms.ValidationError(invalid_login_id_error)
 
         try:
-            self._voter = poll.voters.get(voter_login_id=registration_id,
-                                          voter_email=email,
-                                          voter_password=secret)
+            self._voter = poll.voters.get(voter_password=secret)
         except Voter.DoesNotExist:
             raise forms.ValidationError(_("Invalid email or password"))
 

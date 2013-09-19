@@ -1497,8 +1497,8 @@ class Voter(HeliosModel, VoterFeatures):
                        name=u"%s %s" % (self.voter_name, self.voter_surname))
 
   @property
-  def login_registration_id(self):
-      return "%d-%s" % (self.poll.pk, self.voter_login_id)
+  def login_code(self):
+      return "%d-%s" % (self.poll.pk, self.voter_password)
 
   @property
   def voted(self):

@@ -280,7 +280,8 @@ def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
         'voter': voter,
         'poll': voter.poll,
         'election': voter.poll.election,
-        'reg_code': voter.login_registration_id,
+        'reg_code': voter.voter_login_id,
+        'login_code': voter.login_code,
         'email': voter.voter_email,
         'secret': voter.voter_password
     })
