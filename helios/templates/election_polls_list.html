@@ -111,7 +111,7 @@
     <td>{{ election.voters.cast.count }}</td>
     <td></td>
     {% endif %}
-    <td>{{ election.cast_votes.count }}</td>
+    <td>{{ election.cast_votes.filter.distinct_voter.count }}</td>
     <td></td>
 </tfoot>
 </table>
