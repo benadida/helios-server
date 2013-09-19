@@ -1481,7 +1481,7 @@ class Voter(HeliosModel, VoterFeatures):
   objects = VoterManager()
 
   class Meta:
-    unique_together = ('poll', 'voter_login_id')
+    unique_together = (('poll', 'voter_login_id'), ('poll', 'voter_password'))
 
   user = None
 
