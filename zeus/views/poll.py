@@ -655,6 +655,9 @@ def get_tally(request, election, poll):
 @auth.requires_poll_features('compute_results_finished')
 @require_http_methods(["GET"])
 def results(request, election, poll):
+    if not request.zeususer.is_admin and not poll.feature_public_results:
+        raise PermissionDenied
+
     context = {
         'poll': poll,
         'election': election

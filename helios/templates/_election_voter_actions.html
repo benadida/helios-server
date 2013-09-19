@@ -1,6 +1,9 @@
 {% load i18n %}
 {% if poll.feature_can_cast_vote %}
-<a id="booth-link" class="foundicon-page button" href="{{ booth_url }}">&nbsp;&nbsp;{% trans "Enter voting booth" %}</a>
+<a id="booth-link" 
+  class="foundicon-page button" 
+  href="{{ booth_url }}">&nbsp;&nbsp;{% trans "Enter voting booth" %}
+</a>
 {% else %}
 <div class="panel {{ election.status_display_cls }}">
 <h5>

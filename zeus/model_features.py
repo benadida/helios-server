@@ -281,6 +281,10 @@ class PollFeatures(FeaturesMixin):
         return self.voters.count() == 0
 
     @poll_feature()
+    def _feature_public_results(self):
+        return False
+
+    @poll_feature()
     def _feature_voting_started(self):
       return bool(self.election.frozen_at) and \
               self.election.voting_starts_at <= datetime.datetime.now()
