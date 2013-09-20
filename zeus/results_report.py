@@ -78,7 +78,7 @@ def make_later_pages_hf(canvas, doc):
                      width = PAGE_WIDTH / 8,
                      height = 1.1 * cm)
     canvas.drawString(PAGE_WIDTH - 7 * cm, PAGE_HEIGHT - 2 * cm,
-                      "%s %d" % (pageinfo, doc.page))
+                      "%s" % (pageinfo, ))
     canvas.restoreState()
 
 
