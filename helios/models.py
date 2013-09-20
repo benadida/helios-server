@@ -1675,10 +1675,12 @@ class Voter(HeliosModel, VoterFeatures):
     self.user.send_message(subject, body)
 
   def generate_password(self, length=10):
-    if self.voter_password:
-      raise Exception("password already exists")
-
-    self.voter_password = heliosutils.random_string(length)
+    if not self.voter_password:
+      self.voter_password = heliosutils.random_string(12)
+      existing = Voter.objects.filter(
+          poll=self.poll).exclude(pk=self.pk)
+      while existing.filter(voter_password=self.voter_password).count() > 1:
+        self.voter_password = heliosutils.random_string(12)
 
   def store_vote(self, cast_vote):
     # only store the vote if it's cast later than the current one
@@ -1938,15 +1940,19 @@ class Trustee(HeliosModel, TrusteeFeatures):
             except TrusteeDecryptionFactors.DoesNotExist:
                 yield (poll, None)
 
+    def generate_password(self):
+        if not self.secret:
+            self.secret = heliosutils.random_string(12)
+            existing = Trustee.objects.filter(
+                election=self.election).exclude(pk=self.pk)
+            while existing.filter(secret=self.secret).count() > 1:
+                self.secret = heliosutils.random_string(12)
+
     def save(self, *args, **kwargs):
         if not self.uuid:
             self.uuid = str(uuid.uuid4())
         # set secret password
-        if not self.secret:
-            self.secret = heliosutils.random_string(12)
-            existing = Voter.objects.filter(poll=self.poll).exclude(pk=self.pk)
-            while existing.filter(secret=self.secret).count() > 1:
-                self.secret = heliosutils.random_string(12)
+        self.generate_password()
         super(Trustee, self).save(*args, **kwargs)
 
     def get_login_url(self):
