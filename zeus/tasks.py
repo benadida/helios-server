@@ -329,4 +329,10 @@ def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
             voter.last_sms_code = error_or_code
             voter.save()
 
-    return sent, error
+    return sent, error_or_code
+
+
+@task(ignore_result=False)
+def check_sms_status(code):
+    client = mobile.get_client()
+    return client.status(code)

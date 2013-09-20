@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import uuid
 import urllib
+import urlparse
 
 from xml.etree import ElementTree as etree
 
@@ -15,6 +16,15 @@ def Element(tag, text=None, *args, **kwargs):
 class Loco(object):
 
     apiurl = "http://www.locosms.gr/xmlsend.php"
+    report_apiurl = "http://www.locosms.gr/input.php"
+
+    STATUS_MAP = {
+        '0': 'Message in queue',
+        '1': 'Message Send (but still not knowing if delivered)',
+        '2': 'Message Failed',
+        '3': 'Message Delivered to Terminal',
+        '4': 'Not sent'
+    }
 
     def __init__(self, from_mobile, user, password):
         self.user = user
@@ -36,6 +46,18 @@ class Loco(object):
             recipient.append(Element(field, value))
         msg.append(recipient)
         return msg
+
+    def status(self, msgid):
+        params = {
+            'u': self.user,
+            'p': self.password,
+            'ta': 'ds',
+            'slid': msgid
+        }
+        post_data = urllib.urlencode(params)
+        http_response = urllib.urlopen(self.report_apiurl, data=post_data)
+        status_code = http_response.read().strip()
+        return self.STATUS_MAP.get(status_code)
 
     def send(self, mobile, msg, fields={}, uid=None):
         if not uid:

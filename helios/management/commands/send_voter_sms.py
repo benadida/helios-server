@@ -62,6 +62,16 @@ class Command(BaseCommand):
                        default=False,
                        help='Resend messages even if last_sms_send_at ' + \
                             'flag is set to the voter instance'),
+    make_option('--status',
+                       action='store_true',
+                       dest='status',
+                       default=False,
+                       help='Query status of the last sms sent.'),
+    make_option('--no-vote',
+                       action='store_true',
+                       dest='no_vote',
+                       default=False,
+                       help='Exclude voters who have already voted to the poll.'),
     make_option('--send-to',
                        action='store',
                        dest='send_to',
@@ -83,6 +93,7 @@ class Command(BaseCommand):
         template = options.get('template')
         send_to = options.get('send_to')
         resend = options.get('resend')
+        status = options.get('status')
 
         if not any([euuid, puuid]):
             raise CommandError("Please provide election or poll uuid")
@@ -93,7 +104,7 @@ class Command(BaseCommand):
         if not os.path.exists(template):
             raise CommandError("Template file not found")
 
-        if dry:
+        if dry and not status:
             print "Running in dry mode. No messages will be send."
 
 
@@ -111,15 +122,29 @@ class Command(BaseCommand):
             voters = voters.filter(voter_login_id=voter_id)
 
 
-        print "Will send %d messages" % voters.count()
+        if not status:
+            print "Will send %d messages" % voters.count()
+
         for voter in voters:
             if list:
                 print voter.voter_email, voter.zeus_string
                 continue
 
             task = tasks.send_voter_sms
+            if status:
+                task = tasks.check_sms_status
+
             if async:
                 task = task.delay
+
+            if status:
+                if not voter.last_sms_code:
+                    print "o SMS notification for %s" % (voter.zeus_string)
+                    continue
+
+                res = task(voter.last_sms_code)
+                print "%s: %s" % (voter.zeus_string, res)
+                continue
 
             self.stdout.write("Sending sms to %s " % (voter.zeus_string))
             if not resend and voter.last_sms_send_at:

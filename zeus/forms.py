@@ -349,7 +349,7 @@ class VoterLoginForm(forms.Form):
 
         login_id = self.cleaned_data.get('login_id')
 
-        invalid_login_id_error = _("Invalid registration ID")
+        invalid_login_id_error = _("Invalid login code")
         if not login_id:
             raise forms.ValidationError(invalid_login_id_error)
 
