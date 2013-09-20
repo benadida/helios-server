@@ -1944,6 +1944,9 @@ class Trustee(HeliosModel, TrusteeFeatures):
         # set secret password
         if not self.secret:
             self.secret = heliosutils.random_string(12)
+            existing = Voter.objects.filter(poll=self.poll).exclude(pk=self.pk)
+            while existing.filter(secret=self.secret).count() > 1:
+                self.secret = heliosutils.random_string(12)
         super(Trustee, self).save(*args, **kwargs)
 
     def get_login_url(self):
