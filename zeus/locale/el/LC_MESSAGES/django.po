@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-19 15:52+0300\n"
+"POT-Creation-Date: 2013-09-20 14:24+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -211,6 +211,10 @@ msgstr "Επιβεβαιώστε την οριστικοποίηση της ψη
 #: messages.py:14
 msgid "Are you sure you want to delete the selected poll ?"
 msgstr "Επιβεβαιώστε τη διαγραφή της επιλεγμένης κάλπης"
+
+#: model_tasks.py:209
+msgid "Results"
+msgstr "Αποτελέσματα"
 
 #: tasks.py:103
 #, python-format
