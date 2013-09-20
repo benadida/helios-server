@@ -1,10 +1,14 @@
+import os
 import datetime
+import json
 
 from Crypto import Random
 
+from django.conf import settings
 from django.db import models
 from django.db.models.base import ModelBase
 from django.db import transaction
+from django.utils.translation import ugettext_lazy as _
 
 from zeus.model_features import feature
 
@@ -96,6 +100,14 @@ class TaskModel(models.Model):
 
     __metaclass__ = TaskModelBase
 
+    def notify_exception(self, exc):
+        self.logger.exception(exc)
+
+    def notify_task(self, name, status, error=None):
+        self.logger.info("Task %s %s", name, status)
+        if error:
+            self.logger.error("Task %s error, %s", name, error)
+
     class Meta:
         abstract = True
 
@@ -184,23 +196,35 @@ class ElectionTasks(TaskModel):
     class Meta:
         abstract = True
 
+    @election_task('compute_results', ('polls_results_computed',))
+    def compute_results(self):
+        pdfpath = self.get_results_file_path('pdf')
+        polls_data = []
+
+        for poll in self.polls.filter():
+            polls_data.append((poll.name, poll.zeus.get_results()))
+
+        from zeus.results_report import build_doc
+        build_doc(_(u'Results'), self.name, self.institution.name,
+                  self.voting_starts_at, self.voting_ends_at,
+                  self.voting_extended_until, polls_data, pdfpath)
+
+        from zeus.reports import csv_from_polls
+        csvpath = self.get_results_file_path('csv')
+        csvfile = file(self.get_results_file_path('csv'), "w")
+        csv_from_polls(self, self.polls.all(), csvfile)
+        csvfile.close()
+
 
 class PollTasks(TaskModel):
 
     class Meta:
         abstract = True
 
-    def notify_exception(self, exc):
-        self.logger.exception(exc)
-
-    def notify_task(self, name, status, error=None):
-        self.logger.info("Task %s %s", name, status)
-        if error:
-            self.logger.error("Task %s error, %s", name, error)
-
     @poll_task('validate_create', ('frozen',))
     def validate_create(self):
-        e = self.election.__class__.objects.select_for_update().get(pk=self.election.pk)
+        e = self.election.__class__.objects.select_for_update().get(
+            pk=self.election.pk)
         Random.atfork()
         self.zeus.validate_creating()
         self.frozen_at = datetime.datetime.now()
@@ -283,7 +307,3 @@ class PollTasks(TaskModel):
 
     class Meta:
         abstract = True
-
-
-class ElectionTasks(object):
-    pass

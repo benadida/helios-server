@@ -242,7 +242,7 @@ _default_voting_starts_at = lambda: datetime.datetime.now()
 _default_voting_ends_at = lambda: datetime.datetime.now() + timedelta(hours=12)
 
 
-class Election(HeliosModel, ElectionFeatures):
+class Election(ElectionTasks, HeliosModel, ElectionFeatures):
     election_module = models.CharField(_("Election type"), max_length=250,
                                          null=False,
                                          choices=ELECTION_MODULES_CHOICES,
@@ -582,6 +582,10 @@ class Election(HeliosModel, ElectionFeatures):
                                                          pok.response])
         self.logger.info("Trustee %r PK updated", trustee.email)
 
+    def get_results_file_path(self, ext):
+        return os.path.join(settings.MEDIA_ROOT, 'results',
+                            '%s-results.%s' % (self.short_name, ext))
+
     def save(self, *args, **kwargs):
         if not self.uuid:
             self.uuid = unicode(uuid.uuid4())
@@ -601,6 +605,7 @@ class Election(HeliosModel, ElectionFeatures):
 
 class PollQuerySet(QuerySet):
     pass
+
 
 class PollManager(models.Manager):
 
@@ -1167,25 +1172,18 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
     # pdf report
     from zeus.results_report import build_doc
-    if self.name:
-        results_name = self.election.name + ', ' + self.name
-    else:
-        results_name = self.name
-    DATE_FMT = "%d/%m/%Y %H:%S"
-    voting_start = 'Έναρξη: %s' % (self.election.voting_starts_at.strftime(DATE_FMT))
-    voting_end = 'Λήξη: %s' % (self.election.voting_ends_at.strftime(DATE_FMT))
-
-    extended_until = ""
-    if self.election.voting_extended_until:
-      extended_until = 'Παράταση: %s' % (self.election.voting_extended_until.strftime(DATE_FMT))
-    build_doc(_(u'Results'), results_name, self.election.institution.name,
-              voting_start, voting_end, extended_until, json.dumps(results_json),
+    results_name = self.election.name
+    build_doc(_(u'Results'), self.election.name,
+              self.election.institution.name,
+              self.election.voting_starts_at, self.election.voting_ends_at,
+              self.election.voting_extended_until,
+              [(self.name, json.dumps(results_json))],
               self.get_result_file_path('pdf', 'pdf'))
 
     # CSV
-    from zeus.reports import csv_from_party_results
+    from zeus.reports import csv_from_polls
     csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
-    csv_from_party_results(self, results_json, csvfile)
+    csv_from_polls(self.election, [self], csvfile)
     csvfile.close()
 
   def save(self, *args, **kwargs):

@@ -265,6 +265,7 @@ def poll_compute_results(poll_id):
         e = poll.election
         e.completed_at = datetime.datetime.now()
         e.save()
+        e.compute_results()
 
 
 @task(ignore_result=False)

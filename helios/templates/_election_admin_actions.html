@@ -22,4 +22,11 @@
 {% trans "Cancel election" as label %}
 {% reveal_action label "#cancel-admin-action" cls="alert cancel-election" %}
 {% endif %}
+
+{% if election.feature_compute_results_finished %}
+<a href="{% url election_pdf_results election.uuid election.short_name %}">Αποθήκευση αποτελεσμάτων (PDF)</a>
+<br /><br />
+<a href="{% url election_csv_results election.uuid election.short_name %}">Αποθήκευση αποτελεσμάτων (CSV)</a>
+<br /><br />
+{% endif %}
 </div>

@@ -242,6 +242,10 @@ class ElectionFeatures(FeaturesMixin):
     def _feature_closed(self):
         return self.voting_ended_at
 
+    @election_feature()
+    def _feature_polls_results_computed(self):
+        return self.polls_feature_compute_results_finished
+
 
 class PollFeatures(FeaturesMixin):
 

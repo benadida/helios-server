@@ -132,16 +132,11 @@ def strforce(thing, encoding='utf8'):
         return thing.encode(encoding)
     return str(thing)
 
-def csv_from_party_results(poll, party_results, outfile=None):
+def csv_from_polls(election, polls, outfile=None):
     if outfile is None:
         outfile = StringIO()
-    election = poll.election
     csvout = csv.writer(outfile, dialect='excel', delimiter=',')
     writerow = csvout.writerow
-    invalid_count = party_results['invalid_count']
-    blank_count = party_results['blank_count']
-    ballot_count = party_results['ballot_count']
-
     # election details
     DATE_FMT = "%d/%m/%Y %H:%S"
     voting_start = 'Έναρξη: %s' % (election.voting_starts_at.strftime(DATE_FMT))
@@ -152,66 +147,77 @@ def csv_from_party_results(poll, party_results, outfile=None):
               (election.voting_extended_until.strftime(DATE_FMT))
 
     writerow([strforce(election.name)])
-    writerow([strforce(poll.name)])
     writerow([strforce(election.institution.name)])
     writerow([strforce(voting_start)])
     writerow([strforce(voting_end)])
+
     if extended_until:
         writerow([strforce(extended_until)])
     writerow([])
 
+    for poll in polls:
+        party_results = poll.zeus.get_results()
+        invalid_count = party_results['invalid_count']
+        blank_count = party_results['blank_count']
+        ballot_count = party_results['ballot_count']
 
-    writerow(['ΑΠΟΤΕΛΕΣΜΑΤΑ ΓΕΝΙΚΑ'])
-    writerow(['ΣΥΝΟΛΟ', strforce(ballot_count)])
-    writerow(['ΕΓΚΥΡΑ', strforce(ballot_count - invalid_count)])
-    writerow(['ΑΚΥΡΑ', strforce(invalid_count)])
-    writerow(['ΛΕΥΚΑ', strforce(blank_count)])
+        writerow([])
+        writerow([])
+        writerow([])
+        writerow([strforce(poll.name)])
+        writerow([])
+        writerow([])
+        writerow(['ΑΠΟΤΕΛΕΣΜΑΤΑ ΓΕΝΙΚΑ'])
+        writerow(['ΣΥΝΟΛΟ', strforce(ballot_count)])
+        writerow(['ΕΓΚΥΡΑ', strforce(ballot_count - invalid_count)])
+        writerow(['ΑΚΥΡΑ', strforce(invalid_count)])
+        writerow(['ΛΕΥΚΑ', strforce(blank_count)])
 
-    writerow([])
-    writerow(['ΑΠΟΤΕΛΕΣΜΑΤΑ ΣΥΝΔΥΑΣΜΩΝ'])
-    party_counters = party_results['party_counts']
-    for count, party in party_results['party_counts']:
-        if party is None:
-            continue
-        writerow([strforce(party), strforce(count)])
+        writerow([])
+        writerow(['ΑΠΟΤΕΛΕΣΜΑΤΑ ΣΥΝΔΥΑΣΜΩΝ'])
+        party_counters = party_results['party_counts']
+        for count, party in party_results['party_counts']:
+            if party is None:
+                continue
+            writerow([strforce(party), strforce(count)])
 
-    writerow([])
-    writerow(['ΑΠΟΤΕΛΕΣΜΑΤΑ ΥΠΟΨΗΦΙΩΝ'])
-    for count, candidate in party_results['candidate_counts']:
-        writerow([strforce(candidate), strforce(count)])
+        writerow([])
+        writerow(['ΑΠΟΤΕΛΕΣΜΑΤΑ ΥΠΟΨΗΦΙΩΝ'])
+        for count, candidate in party_results['candidate_counts']:
+            writerow([strforce(candidate), strforce(count)])
 
-    writerow([])
-    writerow(['ΨΗΦΟΔΕΛΤΙΑ ΑΝΑΛΥΤΙΚΑ'])
-    writerow(['Α/Α', 'ΣΥΝΔΥΑΣΜΟΣ', 'ΥΠΟΨΗΦΙΟΣ', 'ΕΓΚΥΡΟ/ΑΚΥΡΟ/ΛΕΥΚΟ'])
-    counter = 0
-    valid = 'ΕΓΚΥΡΟ'
-    invalid = 'ΑΚΥΡΟ'
-    blank = 'ΛΕΥΚΟ'
-    empty = '---'
-    for ballot in party_results['ballots']:
-        party = empty
-        counter += 1
-        if not ballot['valid']:
-            writerow([counter, empty, empty, invalid])
-            continue
-        ballot_parties = ballot['parties']
-        if not ballot_parties:
-            writerow([counter, empty, empty, blank])
-        else:
-            for party in ballot_parties:
-                if party is None:
-                    writerow([counter, empty, empty, empty])
-                    continue
-                else:
-                    party = strforce(party)
+        writerow([])
+        writerow(['ΨΗΦΟΔΕΛΤΙΑ ΑΝΑΛΥΤΙΚΑ'])
+        writerow(['Α/Α', 'ΣΥΝΔΥΑΣΜΟΣ', 'ΥΠΟΨΗΦΙΟΣ', 'ΕΓΚΥΡΟ/ΑΚΥΡΟ/ΛΕΥΚΟ'])
+        counter = 0
+        valid = 'ΕΓΚΥΡΟ'
+        invalid = 'ΑΚΥΡΟ'
+        blank = 'ΛΕΥΚΟ'
+        empty = '---'
+        for ballot in party_results['ballots']:
+            party = empty
+            counter += 1
+            if not ballot['valid']:
+                writerow([counter, empty, empty, invalid])
+                continue
+            ballot_parties = ballot['parties']
+            if not ballot_parties:
+                writerow([counter, empty, empty, blank])
+            else:
+                for party in ballot_parties:
+                    if party is None:
+                        writerow([counter, empty, empty, empty])
+                        continue
+                    else:
+                        party = strforce(party)
 
-        candidates = ballot['candidates']
-        if not candidates:
-            writerow([counter, party, empty, valid])
-            continue
+            candidates = ballot['candidates']
+            if not candidates:
+                writerow([counter, party, empty, valid])
+                continue
 
-        for candidate in candidates:
-            writerow([counter, party, strforce(": ".join(candidate)), valid])
+            for candidate in candidates:
+                writerow([counter, party, strforce(": ".join(candidate)), valid])
 
     try:
         outfile.seek(0)

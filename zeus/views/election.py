@@ -1,6 +1,7 @@
 import urllib
 import datetime
 import json
+import os
 
 try:
   from collections import OrderedDict
@@ -261,6 +262,39 @@ def report(request, election, format):
 
         return HttpResponse(json.dumps(_reports, default=handler),
                             mimetype="application/json")
+
+
+@auth.election_admin_required
+@auth.requires_election_features('polls_results_computed')
+@require_http_methods(["GET"])
+def results_file(request, election, ext='pdf', shortname=''):
+
+    fpath = election.get_results_file_path(ext)
+
+    if not os.path.exists(fpath):
+        election.compute_results_status = 'pending'
+        election.compute_results()
+
+    if request.GET.get('gen', None):
+        election.compute_results_status = 'pending'
+        election.compute_results()
+
+    if not os.path.exists(fpath):
+        raise Http404
+
+    if settings.USE_X_SENDFILE:
+        response = HttpResponse()
+        response['Content-Type'] = ''
+        response['X-Sendfile'] = fpath
+        return response
+    else:
+        data = file(fpath, 'r')
+        response = HttpResponse(data.read(), mimetype='application/%s' % ext)
+        data.close()
+        basename = os.path.basename(fpath)
+        response['Content-Dispotition'] = 'attachment; filename=%s' % basename
+        return response
+
 
 @auth.superadmin_required
 @auth.election_view()

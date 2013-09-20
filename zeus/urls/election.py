@@ -25,8 +25,15 @@ election_patterns = patterns('zeus.views.election',
     url(r'^start-mixing$', 'start_mixing', name="election_start_mixing"),
     url(r'^report$', 'report', name="election_report"),
     url(r'^email-voters$', 'voters_email', name="election_voters_email"),
-    url(r'^report.html$', 'report', name="election_report", kwargs={'format':
-                                                                    'html'}),
+    url(r'^results/(?P<shortname>.*)\.pdf$', 'results_file',
+        name="election_pdf_results",
+        kwargs={'ext': 'pdf'}),
+    url(r'^results/(?P<shortname>.*)\.csv$', 'results_file',
+        name="election_csv_results",
+        kwargs={'ext': 'csv'}),
+    url(r'^report.html$', 'report',
+        name="election_report",
+        kwargs={'format': 'html'}),
 
     # adding trustees
     #(r'^/trustees/$', list_trustees),
