@@ -56,7 +56,7 @@ def render_template(request, template_name, vars = {}):
 
 
 def render_json(obj):
-  return HttpResponse(json.dumps(obj), "application/json")
+    return HttpResponse(json.dumps(obj), "application/json")
 
 
 def sanitize_mobile_number(num):
@@ -167,5 +167,5 @@ def test_decalize():
         except ValueError as e:
             pass
         else:
-            raise AssertionError("Undecalized(%s) failed to fail" % t)
+            raise AssertionError("Undecalize(%s) failed to fail" % t)
 #
