@@ -315,15 +315,18 @@ def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
         poll = voter.poll
         poll.logger.info("Sending SMS to %s, (%s - %s)", voter_mobile,
                          voter.voter_login_id, voter.voter_mobile)
-        sent, error = client.send(voter_mobile, message)
+        sent, error_or_code = client.send(voter_mobile, message)
         msg_uid = client._last_uid
         if not sent:
-            poll.logger.error("Failed to send %r (%r, %r)", msg_uid, sent, error)
+            poll.logger.error("Failed to send %r (%r, %r)", msg_uid, sent,
+                              error_or_code)
         else:
-            poll.logger.info("SMS sent %r (%r, %r)", msg_uid, sent, error)
+            poll.logger.info("SMS sent %r (%r, %r)", msg_uid, sent,
+                             error_or_code)
         if sent:
             # store last notification date
             voter.last_sms_send_at = datetime.datetime.now()
+            voter.last_sms_code = error_or_code
             voter.save()
 
     return sent, error
