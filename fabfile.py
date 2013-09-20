@@ -32,6 +32,9 @@ def local_archive_update():
         sudo("cp local_settings.py zeus-server/")
         with cd("zeus-server"):
             sudo("chmod -R a+rx .")
-            sudo("python manage migrate helios")
+            try:
+                sudo("python manage.py migrate helios")
+            except:
+                pass
         sudo("/etc/init.d/gunicorn restart")
         sudo("/etc/init.d/python-celery restart")
