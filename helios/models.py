@@ -1307,6 +1307,7 @@ def iter_voter_data(voter_data):
         mobile = voter_fields[5]
         if mobile:
             mobile = mobile.replace(' ', '')
+            mobile = mobile.replace('-', '')
             if len(mobile) < 4 or not mobile[1:].isdigit or \
                 (mobile[0] != '+' and not mobile[0].isdigit()):
                     m = _("Malformed mobile phone number: %s") % mobile
