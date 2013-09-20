@@ -284,7 +284,8 @@ def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
         'reg_code': voter.voter_login_id,
         'login_code': voter.login_code,
         'email': voter.voter_email,
-        'secret': voter.voter_password
+        'secret': voter.voter_password,
+        'SECURE_URL_HOST': settings.SECURE_URL_HOST
     })
     t = Template(tpl)
     message = t.render(context)
