@@ -18,7 +18,7 @@ from zeus.views.poll import voters_email
 
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.forms.models import modelformset_factory
 from django.contrib import messages
 from django.core import serializers
@@ -273,10 +273,12 @@ def results_file(request, election, ext='pdf', shortname=''):
 
     if not os.path.exists(fpath):
         election.compute_results_status = 'pending'
+        election.save()
         election.compute_results()
 
     if request.GET.get('gen', None):
         election.compute_results_status = 'pending'
+        election.save()
         election.compute_results()
 
     if not os.path.exists(fpath):

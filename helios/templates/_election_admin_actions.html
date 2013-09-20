@@ -26,7 +26,11 @@
 {% if election.feature_compute_results_finished %}
 <a href="{% url election_pdf_results election.uuid election.short_name %}">Αποθήκευση αποτελεσμάτων (PDF)</a>
 <br /><br />
+{% comment %}
 <a href="{% url election_csv_results election.uuid election.short_name %}">Αποθήκευση αποτελεσμάτων (CSV)</a>
+<br /><br />
+{% endcomment %}
+<a href="{% url election_zip_results election.uuid election.short_name %}">Αποθήκευση αποτελεσμάτων (CSV)</a>
 <br /><br />
 {% endif %}
 </div>

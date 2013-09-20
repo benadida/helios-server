@@ -1,6 +1,7 @@
 import os
 import datetime
 import json
+import zipfile
 
 from Crypto import Random
 
@@ -214,6 +215,14 @@ class ElectionTasks(TaskModel):
         csvfile = file(self.get_results_file_path('csv'), "w")
         csv_from_polls(self, self.polls.all(), csvfile)
         csvfile.close()
+
+        zippath = self.get_results_file_path('zip')
+        csvzip = zipfile.ZipFile(zippath, 'w')
+        for poll in self.polls.all():
+            csvpath = poll.get_result_file_path('csv', 'csv')
+            basename = os.path.basename(csvpath)
+            csvzip.write(csvpath, basename)
+        csvzip.close()
 
 
 class PollTasks(TaskModel):
