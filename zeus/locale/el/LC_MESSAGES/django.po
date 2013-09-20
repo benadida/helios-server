@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-20 14:24+0300\n"
+"POT-Creation-Date: 2013-09-20 18:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,121 +18,121 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: forms.py:57
+#: forms.py:58
 msgid "Trustees"
 msgstr "Εφορευτική επιτροπή"
 
-#: forms.py:60
+#: forms.py:61
 msgid "Multiple mixnets"
 msgstr "Πολλαπλές μίξεις"
 
-#: forms.py:136
+#: forms.py:137
 msgid "Invalid voting end date"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:138
+#: forms.py:139
 msgid "Invalid voting dates"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:140
+#: forms.py:141
 msgid "Invalid voting extension date"
 msgstr "Λάθος ημερομηνία και ώρα λήξης της ψηφοφορίας"
 
-#: forms.py:148
+#: forms.py:149
 msgid "Invalid trustees format"
 msgstr "Μη έγκυρη λίστα μελών εφορευτικής επιτροπής."
 
-#: forms.py:206
+#: forms.py:207
 msgid "Choice"
 msgstr "Επιλογή"
 
-#: forms.py:208 election_modules/__init__.py:32
+#: forms.py:209 election_modules/__init__.py:32
 msgid "Question"
 msgstr "Ερώτηση"
 
-#: forms.py:210
+#: forms.py:211
 msgid "Min answers"
 msgstr "Ελάχιστος αριθμός επιλογών"
 
-#: forms.py:211
+#: forms.py:212
 msgid "Max answers"
 msgstr "Μέγιστος αριθμός επιλογών"
 
-#: forms.py:246
+#: forms.py:247
 msgid "Max answers should be greater or equal to min answers"
 msgstr ""
 "Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
 "ελάχιστου αριθμού απαντήσεων"
 
-#: forms.py:252
+#: forms.py:253
 msgid "Party name"
 msgstr "Όνομα συνδυασμού"
 
-#: forms.py:257
+#: forms.py:258
 msgid "Username"
 msgstr "Όνομα χρήστη"
 
-#: forms.py:259
+#: forms.py:260
 msgid "Password"
 msgstr "Συνθηματικό"
 
-#: forms.py:270 forms.py:276
+#: forms.py:271 forms.py:277
 msgid "Invalid username or password"
 msgstr "Μη έγκυρος χρήστης ή συθηματικό"
 
-#: forms.py:298
+#: forms.py:299
 msgid "all voters"
 msgstr "σύνολο ψηφοφόρων"
 
-#: forms.py:299
+#: forms.py:300
 msgid "voters who have cast a ballot"
 msgstr "ψηφοφόροι που έχουν καταθέσει ψήφο"
 
-#: forms.py:300
+#: forms.py:301
 msgid "voters who have not yet cast a ballot"
 msgstr "ψηφοφόροι που δεν έχουν καταθέσει ακόμη ψήφο"
 
-#: forms.py:304
+#: forms.py:305
 msgid "Email subject"
 msgstr "Tίτλος μηνύματος email"
 
-#: forms.py:306
+#: forms.py:307
 msgid "Email body"
 msgstr "Κείμενο μηνύματος email"
 
-#: forms.py:308
+#: forms.py:309
 msgid "Send To"
 msgstr "Αποστολή πρός"
 
-#: forms.py:313
+#: forms.py:314
 msgid "Current password"
 msgstr ""
 
-#: forms.py:314
+#: forms.py:315
 msgid "New password"
 msgstr "Νέος κωδικός"
 
-#: forms.py:315
+#: forms.py:316
 msgid "New password confirm"
 msgstr "Επιβεβαίωση νέου κωδικού"
 
-#: forms.py:331
+#: forms.py:332
 msgid "Invalid password"
 msgstr "Μη έγκυρος χρήστης ή κωδικός"
 
-#: forms.py:334
+#: forms.py:335
 msgid "Passwords don't match"
 msgstr "Οι κωδικοί δεν ταιριάζουν"
 
-#: forms.py:340
+#: forms.py:341
 msgid "Login password"
 msgstr "Κωδικός σύνδεσης"
 
-#: forms.py:351
-msgid "Invalid registration ID"
-msgstr "Μη έγκυρος κωδικός μητρώου."
+#: forms.py:352
+msgid "Invalid login code"
+msgstr "Μη έγκυρος κωδικός σύνδεσης"
 
-#: forms.py:369
+#: forms.py:371
 msgid "Invalid email or password"
 msgstr "Μη έγκυρος χρήστης ή συθηματικό"
 
@@ -289,6 +289,9 @@ msgstr "Περισσότερες πληροφορίες"
 #: views/poll.py:389
 msgid "Email sending started"
 msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει"
+
+#~ msgid "Invalid registration ID"
+#~ msgstr "Μη έγκυρος κωδικός μητρώου."
 
 #~ msgid "Registration ID"
 #~ msgstr "Αρ. Μητρώου"
