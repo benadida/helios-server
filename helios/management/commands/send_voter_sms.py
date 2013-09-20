@@ -139,7 +139,7 @@ class Command(BaseCommand):
 
             if status:
                 if not voter.last_sms_code:
-                    print "o SMS notification for %s" % (voter.zeus_string)
+                    print "No SMS notification for %s" % (voter.zeus_string)
                     continue
 
                 res = task(voter.last_sms_code)
