@@ -24,6 +24,7 @@ from heliosauth.models import User
 from zeus.utils import extract_trustees, election_trustees_to_text
 from zeus.widgets import JqSplitDateTimeField, JqSplitDateTimeWidget
 from zeus import help_texts as help
+from zeus.utils import undecalize
 
 from django.core.validators import validate_email
 
@@ -354,6 +355,7 @@ class VoterLoginForm(forms.Form):
 
         try:
             poll_id, secret = login_id.split("-", 1)
+            secret = undecalize(secret)
         except ValueError:
             raise forms.ValidationError(invalid_login_id_error)
 

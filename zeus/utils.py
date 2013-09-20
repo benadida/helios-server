@@ -5,8 +5,6 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
 from django.conf import settings
 
-from zeus import auth
-
 
 def election_trustees_to_text(election):
     content = ""

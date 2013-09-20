@@ -63,6 +63,7 @@ from zeus.model_features import ElectionFeatures, PollFeatures, \
 from zeus.model_tasks import TaskModel, PollTasks, ElectionTasks
 from zeus import help_texts as help
 from zeus.log import init_election_logger, init_poll_logger
+from zeus.utils import decalize
 
 
 logger = logging.getLogger(__name__)
@@ -1497,7 +1498,7 @@ class Voter(HeliosModel, VoterFeatures):
 
   @property
   def login_code(self):
-      return "%d-%s" % (self.poll.pk, self.voter_password)
+      return "%d-%s" % (self.poll.pk, decalize(str(self.voter_password)))
 
   @property
   def voted(self):

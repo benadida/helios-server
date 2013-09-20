@@ -14,6 +14,7 @@ from zeus.utils import *
 from zeus.views.utils import *
 from zeus import tasks
 from zeus import reports
+from zeus import auth
 from zeus.views.poll import voters_email
 
 from django.db import transaction
