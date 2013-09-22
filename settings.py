@@ -142,7 +142,7 @@ SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Election Server')
 
 # FOOTER links
 FOOTER_LINKS = json.loads(get_from_env('FOOTER_LINKS', '[]'))
-FOOTER_LOGO = False
+FOOTER_LOGO_URL = get_from_env('FOOTER_LOGO_URL', None)
 
 WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', "This is the default message")
 

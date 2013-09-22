@@ -41,8 +41,8 @@
         </div>
       <div id="footer">
 <span style="float:right;">
-{% if settings.FOOTER_LOGO %}
-<img src="/static/footer-logo.gif" />
+{% if settings.FOOTER_LOGO_URL %}
+<img src="{{settings.FOOTER_LOGO_URL}}" />
 {% endif %}
 </span>
 {% if user %}
