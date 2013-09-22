@@ -1,5 +1,5 @@
 
-import os
+import os, json
 
 # go through environment variables and override them
 def get_from_env(var, default):
@@ -141,7 +141,7 @@ SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", "http://localhost
 SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Election Server')
 
 # FOOTER links
-FOOTER_LINKS = []
+FOOTER_LINKS = json.loads(get_from_env('FOOTER_LINKS', '[]'))
 FOOTER_LOGO = False
 
 WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', "This is the default message")
