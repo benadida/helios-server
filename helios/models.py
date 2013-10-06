@@ -1087,7 +1087,10 @@ class Trustee(HeliosModel):
 
   decryption_proofs = LDObjectField(type_hint = datatypes.arrayOf(datatypes.arrayOf('legacy/EGZKProof')),
                                     null=True)
-  
+
+  class Meta:
+    unique_together = (('election', 'email'))
+    
   def save(self, *args, **kwargs):
     """
     override this just to get a hook
