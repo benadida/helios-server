@@ -130,6 +130,9 @@ class Election(HeliosModel):
   # no longer needed since it's all trustees
   result_proof = JSONField(null=True)
 
+  # help email
+  help_email = models.EmailField(null=True)
+
   @property
   def pretty_type(self):
     return dict(self.ELECTION_TYPES)[self.election_type]
