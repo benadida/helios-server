@@ -11,15 +11,15 @@ class Migration(SchemaMigration):
         # Adding model 'Election'
         db.create_table('helios_election', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('admin', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['auth.User'])),
+            ('admin', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['helios_auth.User'])),
             ('uuid', self.gf('django.db.models.fields.CharField')(max_length=50)),
             ('short_name', self.gf('django.db.models.fields.CharField')(max_length=100)),
             ('name', self.gf('django.db.models.fields.CharField')(max_length=250)),
             ('description', self.gf('django.db.models.fields.TextField')()),
-            ('public_key', self.gf('auth.jsonfield.JSONField')(null=True)),
-            ('private_key', self.gf('auth.jsonfield.JSONField')(null=True)),
-            ('questions', self.gf('auth.jsonfield.JSONField')(null=True)),
-            ('eligibility', self.gf('auth.jsonfield.JSONField')(null=True)),
+            ('public_key', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
+            ('private_key', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
+            ('questions', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
+            ('eligibility', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
             ('openreg', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('featured_p', self.gf('django.db.models.fields.BooleanField')(default=False)),
             ('use_voter_aliases', self.gf('django.db.models.fields.BooleanField')(default=False)),
@@ -39,11 +39,10 @@ class Migration(SchemaMigration):
             ('tallying_finished_at', self.gf('django.db.models.fields.DateTimeField')(default=None, null=True)),
             ('tallies_combined_at', self.gf('django.db.models.fields.DateTimeField')(default=None, null=True)),
             ('voters_hash', self.gf('django.db.models.fields.CharField')(max_length=100, null=True)),
-            ('encrypted_tally', self.gf('auth.jsonfield.JSONField')(null=True)),
-            ('result', self.gf('auth.jsonfield.JSONField')(null=True)),
-            ('result_proof', self.gf('auth.jsonfield.JSONField')(null=True)),
-            #('threshold_scheme', self.gf('auth.jsonfield.JSONField')(null=True)),
-
+            ('encrypted_tally', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
+            ('result', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
+            ('result_proof', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
+            #('threshold_scheme', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
         ))
         db.send_create_signal('helios', ['Election'])
 
@@ -77,7 +76,7 @@ class Migration(SchemaMigration):
             ('voter_id', self.gf('django.db.models.fields.CharField')(max_length=100)),
             ('uuid', self.gf('django.db.models.fields.CharField')(max_length=50)),
             ('alias', self.gf('django.db.models.fields.CharField')(max_length=100, null=True)),
-            ('vote', self.gf('auth.jsonfield.JSONField')(null=True)),
+            ('vote', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
             ('vote_hash', self.gf('django.db.models.fields.CharField')(max_length=100, null=True)),
             ('cast_at', self.gf('django.db.models.fields.DateTimeField')(null=True)),
         ))
@@ -87,7 +86,7 @@ class Migration(SchemaMigration):
         db.create_table('helios_castvote', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
             ('voter', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['helios.Voter'])),
-            ('vote', self.gf('auth.jsonfield.JSONField')()),
+            ('vote', self.gf('helios_auth.jsonfield.JSONField')()),
             ('vote_hash', self.gf('django.db.models.fields.CharField')(max_length=100)),
             ('cast_at', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('verified_at', self.gf('django.db.models.fields.DateTimeField')(null=True)),
@@ -113,20 +112,12 @@ class Migration(SchemaMigration):
             ('name', self.gf('django.db.models.fields.CharField')(max_length=200)),
             ('email', self.gf('django.db.models.fields.EmailField')(max_length=75)),
             ('secret', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('public_key', self.gf('auth.jsonfield.JSONField')(null=True)),
+            ('public_key', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
             ('public_key_hash', self.gf('django.db.models.fields.CharField')(max_length=100)),
-            ('secret_key', self.gf('auth.jsonfield.JSONField')(null=True)),
-            ('pok', self.gf('auth.jsonfield.JSONField')(null=True)),
-            ('decryption_factors', self.gf('auth.jsonfield.JSONField')(null=True)),
-            ('decryption_proofs', self.gf('auth.jsonfield.JSONField')(null=True)),
-            
-
-
-            #received_points = []
-  #prepared_mpc = False
- #points_F = []
-  #E = []
-  #i =[]
+            ('secret_key', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
+            ('pok', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
+            ('decryption_factors', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
+            ('decryption_proofs', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
         ))
         db.send_create_signal('helios', ['Trustee'])
 
@@ -156,13 +147,13 @@ class Migration(SchemaMigration):
 
 
     models = {
-        'auth.user': {
+        'helios_auth.user': {
             'Meta': {'unique_together': "(('user_type', 'user_id'),)", 'object_name': 'User'},
             'admin_p': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'info': ('auth.jsonfield.JSONField', [], {}),
+            'info': ('helios_auth.jsonfield.JSONField', [], {}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True'}),
-            'token': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'token': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'user_id': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'user_type': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
@@ -180,31 +171,31 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'invalidated_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'verified_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
-            'vote': ('auth.jsonfield.JSONField', [], {}),
+            'vote': ('helios_auth.jsonfield.JSONField', [], {}),
             'vote_hash': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'voter': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios.Voter']"})
         },
         'helios.election': {
             'Meta': {'object_name': 'Election'},
-            'admin': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['auth.User']"}),
+            'admin': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios_auth.User']"}),
             'archived_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'cast_url': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
-            'eligibility': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
-            'encrypted_tally': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'eligibility': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'encrypted_tally': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'featured_p': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'frozen_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'modified_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
             'openreg': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'private_key': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
-            'public_key': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
-            'questions': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'private_key': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'public_key': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'questions': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'registration_starts_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
-            'result': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
-            'result_proof': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'result': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'result_proof': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'short_name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'tallies_combined_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'tallying_finished_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
@@ -230,20 +221,18 @@ class Migration(SchemaMigration):
         'helios.trustee': {
             'Meta': {'object_name': 'Trustee'},
             'point_number': ('django.db.models.fields.IntegerField', [], {'null': 'True'}),
-            'decryption_factors': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
-            'decryption_proofs': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'decryption_factors': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'decryption_proofs': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'election': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios.Election']"}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200'}),
-            'pok': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
-            'public_key': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'pok': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'public_key': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'public_key_hash': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'secret': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'secret_key': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
-            'uuid': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
-     
-
+            'secret_key': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'uuid': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
         'helios.voter': {
             'Meta': {'object_name': 'Voter'},
@@ -253,7 +242,7 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True'}),
             'uuid': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
-            'vote': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'vote': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'vote_hash': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True'}),
             'voter_id': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'voter_type': ('django.db.models.fields.CharField', [], {'max_length': '100'})

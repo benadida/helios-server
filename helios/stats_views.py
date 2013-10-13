@@ -10,7 +10,7 @@ from django.db import transaction
 from django.db.models import *
 
 from security import *
-from auth.security import get_user, save_in_session_across_logouts
+from helios_auth.security import get_user, save_in_session_across_logouts
 from view_utils import *
 
 from helios import tasks

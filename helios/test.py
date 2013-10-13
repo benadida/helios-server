@@ -3,7 +3,7 @@ Testing Helios Features
 """
 
 from helios.models import *
-from auth.models import *
+from helios_auth.models import *
 import uuid
 
 def generate_voters(election, num_voters = 1000, start_with = 1):

@@ -17,7 +17,7 @@ import urllib, urllib2, cgi
 STATUS_UPDATES = False
 # STATUS_UPDATE_WORDING_TEMPLATE = "Send %s to your facebook status"
 
-from auth import utils
+from helios_auth import utils
 
 def live_url(url, params):
   if params:

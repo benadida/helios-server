@@ -8,33 +8,17 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
-        # Adding field 'VoterFile.voter_file_content'
-        db.add_column('helios_voterfile', 'voter_file_content', self.gf('django.db.models.fields.TextField')(null=True), keep_default=False)
-
-        # Changing field 'VoterFile.voter_file'
-        db.alter_column('helios_voterfile', 'voter_file', self.gf('django.db.models.fields.files.FileField')(max_length=250, null=True))
+        # Adding unique constraint on 'Trustee', fields ['election', 'email']
+        db.create_unique('helios_trustee', ['election_id', 'email'])
 
 
     def backwards(self, orm):
         
-        # Deleting field 'VoterFile.voter_file_content'
-        db.delete_column('helios_voterfile', 'voter_file_content')
-
-        # User chose to not deal with backwards NULL issues for 'VoterFile.voter_file'
-        raise RuntimeError("Cannot reverse this migration. 'VoterFile.voter_file' and its values cannot be restored.")
+        # Removing unique constraint on 'Trustee', fields ['election', 'email']
+        db.delete_unique('helios_trustee', ['election_id', 'email'])
 
 
     models = {
-        'helios_auth.user': {
-            'Meta': {'unique_together': "(('user_type', 'user_id'),)", 'object_name': 'User'},
-            'admin_p': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'info': ('helios_auth.jsonfield.JSONField', [], {}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True'}),
-            'token': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
-            'user_id': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'user_type': ('django.db.models.fields.CharField', [], {'max_length': '50'})
-        },
         'helios.auditedballot': {
             'Meta': {'object_name': 'AuditedBallot'},
             'added_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
@@ -104,7 +88,7 @@ class Migration(SchemaMigration):
             'log': ('django.db.models.fields.CharField', [], {'max_length': '500'})
         },
         'helios.trustee': {
-            'Meta': {'object_name': 'Trustee'},
+            'Meta': {'unique_together': "(('election', 'email'),)", 'object_name': 'Trustee'},
             'decryption_factors': ('helios.datatypes.djangofield.LDObjectField', [], {'null': 'True'}),
             'decryption_proofs': ('helios.datatypes.djangofield.LDObjectField', [], {'null': 'True'}),
             'election': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios.Election']"}),
@@ -143,6 +127,16 @@ class Migration(SchemaMigration):
             'uploaded_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'voter_file': ('django.db.models.fields.files.FileField', [], {'max_length': '250', 'null': 'True'}),
             'voter_file_content': ('django.db.models.fields.TextField', [], {'null': 'True'})
+        },
+        'helios_auth.user': {
+            'Meta': {'unique_together': "(('user_type', 'user_id'),)", 'object_name': 'User'},
+            'admin_p': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'info': ('helios_auth.jsonfield.JSONField', [], {}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True'}),
+            'token': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
+            'user_id': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'user_type': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         }
     }
 

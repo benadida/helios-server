@@ -78,4 +78,4 @@ class JSONField(models.TextField):
 ## basically that it's the same as its parent class
 ##
 from south.modelsinspector import add_introspection_rules
-add_introspection_rules([], ["^auth\.jsonfield\.JSONField"])
+add_introspection_rules([], ["^helios_auth\.jsonfield\.JSONField"])

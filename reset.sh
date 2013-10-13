@@ -3,6 +3,4 @@ dropdb helios
 createdb helios
 python manage.py syncdb
 python manage.py migrate
-echo "from auth.models import User; User.objects.create(user_type='password',user_id='robbert', info={'name':'robbert','password':'password'})" | python manage.py shell
-
-
+echo "from helios_auth.models import User; User.objects.create(user_type='google',user_id='robbert.coeckelbergh@gmail.com', info={'name':'Robbert Coeckelbergh'})" | python manage.py shell

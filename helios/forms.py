@@ -17,6 +17,8 @@ class ElectionForm(forms.Form):
   #private_p = forms.BooleanField(required=False, initial=False, label="Private?", help_text='a private election is only visible to registered/eligible voters', widget=forms.HiddenInput)
   private_p = forms.BooleanField(required=False, initial=False, label="Private?", help_text='A private election is only visible to registered voters.')
   use_threshold = forms.BooleanField(required=False, initial=False,label="Use threshold encryption?", help_text = 'Using threshold encryption allows a subset of k out of n trustees to decrypt the tally')
+  help_email = forms.CharField(required=False, initial="", label="Help Email Address", help_text='An email address voters should contact if they need help.')
+  
 
 class ElectionTimesForm(forms.Form):
   # times

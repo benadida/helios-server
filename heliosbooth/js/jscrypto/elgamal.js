@@ -157,7 +157,7 @@ ElGamal.SecretKey = Class.extend({
     var challenge = challenge_generator(s);
     
     // compute response = w +  x * challenge
-    var response = w.add(this.x.multiply(challenge).mod(this.pk.q));
+    var response = w.add(this.x.multiply(challenge)).mod(this.pk.q);
     
     return new ElGamal.DLogProof(s, challenge, response);
   }
@@ -431,7 +431,7 @@ ElGamal.Proof.generate = function(little_g, little_h, x, p, q, challenge_generat
   proof.challenge = challenge_generator(proof.commitment);
   
   // Compute response = w + x * challenge
-  proof.response = w.add(x.multiply(proof.challenge).mod(q));
+  proof.response = w.add(x.multiply(proof.challenge)).mod(q);
   
   return proof;
 };

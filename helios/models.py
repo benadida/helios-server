@@ -20,12 +20,13 @@ import helios.views
 from helios import datatypes
 from bulletin_board import thresholdalgs
 
-# useful stuff in auth
-from auth.models import User, AUTH_SYSTEMS
-from auth.jsonfield import JSONField
+# useful stuff in helios_auth
+from helios_auth.models import User, AUTH_SYSTEMS
+from helios_auth.jsonfield import JSONField
 from helios.datatypes.djangofield import LDObjectField
 
-import csv, copy, itertools, math
+import csv, copy, itertools
+import unicodecsv
 from operator import itemgetter
 from fractions import *
 from helios.constants import p,q,g,ground_1,ground_2
@@ -140,6 +141,9 @@ class Election(HeliosModel):
   result_proof = JSONField(null=True)
   
 
+
+  # help email
+  help_email = models.EmailField(null=True)
 
   @property
   def pretty_type(self):
@@ -263,15 +267,24 @@ class Election(HeliosModel):
     if not self.eligibility:
       return []
 
-    return [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type][0]
+    # constraints that are relevant
+    relevant_constraints = [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type]
+    if len(relevant_constraints) > 0:
+      return relevant_constraints[0]
+    else:
+      return []
 
   def eligibility_category_id(self, user_type):
     "when eligibility is by category, this returns the category_id"
     if not self.eligibility:
       return None
     
-    constraint = self.eligibility_constraint_for(user_type)[0]
-    return AUTH_SYSTEMS[user_type].eligibility_category_id(constraint)
+    constraint_for = self.eligibility_constraint_for(user_type)
+    if len(constraint_for) > 0:
+      constraint = constraint_for[0]
+      return AUTH_SYSTEMS[user_type].eligibility_category_id(constraint)
+    else:
+      return None
     
   @property
   def pretty_eligibility(self):
@@ -898,7 +911,8 @@ class VoterFile(models.Model):
     else:
       voter_stream = open(self.voter_file.path, "rU")
 
-    reader = unicode_csv_reader(voter_stream)
+    #reader = unicode_csv_reader(voter_stream)
+    reader = unicodecsv.reader(voter_stream, encoding='utf-8')
 
     for voter_fields in reader:
       # bad line
@@ -923,11 +937,12 @@ class VoterFile(models.Model):
 
     # now we're looking straight at the content
     if self.voter_file_content:
-      voter_stream = StringIO.StringIO(self.voter_file_content)
+      voter_stream = StringIO.StringIO(self.voter_file_content.encode('utf-8'))
     else:
       voter_stream = open(self.voter_file.path, "rU")
 
-    reader = unicode_csv_reader(voter_stream)
+    # reader = unicode_csv_reader(voter_stream)
+    reader = unicodecsv.reader(voter_stream, encoding='utf-8')
     
     last_alias_num = election.last_alias_num
 
@@ -992,7 +1007,7 @@ class Voter(HeliosModel):
 
   # for users of type password, no user object is created
   # but a dynamic user object is created automatically
-  user = models.ForeignKey('auth.User', null=True)
+  user = models.ForeignKey('helios_auth.User', null=True)
 
   # if user is null, then you need a voter login ID and password
   voter_login_id = models.CharField(max_length = 100, null=True)
@@ -1346,6 +1361,9 @@ class Trustee(HeliosModel):
   #added by Robbert Coeckelbergh
   
   
+  class Meta:
+    unique_together = (('election', 'email'))
+
   def save(self, *args, **kwargs):
       """
       override this just to get a hook

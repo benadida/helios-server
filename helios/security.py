@@ -13,7 +13,7 @@ from django.http import *
 from django.conf import settings
 
 from models import *
-from auth.security import get_user
+from helios_auth.security import get_user
 
 from django.http import HttpResponseRedirect
 import urllib

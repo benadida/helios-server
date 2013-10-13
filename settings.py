@@ -1,5 +1,5 @@
 
-import os
+import os, json
 
 # go through environment variables and override them
 def get_from_env(var, default):
@@ -8,7 +8,7 @@ def get_from_env(var, default):
     else:
         return default
 
-DEBUG = True
+DEBUG = (get_from_env('DEBUG', '1') == '1')
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -23,6 +23,15 @@ DATABASES = {
         'NAME': 'helios'
     }
 }
+
+SOUTH_DATABASE_ADAPTERS = {'default':'south.db.postgresql_psycopg2'}
+
+# override if we have an env variable
+if get_from_env('DATABASE_URL', None):
+    import dj_database_url
+    DATABASES['default'] =  dj_database_url.config()
+    DATABASES['default']['ENGINE'] = 'dbpool.db.backends.postgresql_psycopg2'
+    DATABASES['default']['OPTIONS'] = {'MAX_CONNS': 1}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -53,16 +62,15 @@ MEDIA_URL = ''
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/media/'
+STATIC_URL = '/media/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_from_env('SECRET_KEY', '111111111111111111111111111')
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
-#     'django.template.loaders.eggs.load_template_source',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -86,12 +94,11 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     ## needed for queues
     'djcelery',
-    #'celerytest',
-    'djkombu',
+    'kombu.transport.django',
     ## needed for schema migration
     'south',
     ## HELIOS stuff
-    'auth',
+    'helios_auth',
     'helios',
     'server_ui',
     'bulletin_board',
@@ -137,8 +144,8 @@ SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", "http://localhost
 SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Election Server')
 
 # FOOTER links
-FOOTER_LINKS = []
-FOOTER_LOGO = False
+FOOTER_LINKS = json.loads(get_from_env('FOOTER_LINKS', '[]'))
+FOOTER_LOGO_URL = get_from_env('FOOTER_LOGO_URL', None)
 
 WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', "This is the default message")
 
@@ -155,13 +162,13 @@ HELIOS_PRIVATE_DEFAULT = False
 
 # authentication systems enabled
 #AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
-AUTH_ENABLED_AUTH_SYSTEMS = ['password']
-AUTH_DEFAULT_AUTH_SYSTEM = None
+AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(",")
+AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
 
 # facebook
-FACEBOOK_APP_ID = ''
-FACEBOOK_API_KEY = ''
-FACEBOOK_API_SECRET = ''
+FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID','')
+FACEBOOK_API_KEY = get_from_env('FACEBOOK_API_KEY','')
+FACEBOOK_API_SECRET = get_from_env('FACEBOOK_API_SECRET','')
 
 # twitter
 TWITTER_API_KEY = ''
@@ -175,12 +182,19 @@ TWITTER_DM_TOKEN = {"oauth_token": "", "oauth_token_secret": "", "user_id": "", 
 # LinkedIn
 LINKEDIN_API_KEY = ''
 LINKEDIN_API_SECRET = ''
-# email serverul
-EMAIL_HOST = get_from_env('EMAIL_HOST', 'smtp.gmail.com')   #localhost
-EMAIL_PORT = 587 #2525 gmail 587
-EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', 'robbert.coeckelbergh@gmail.com') #empty
-EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', 's@L2AwJVDB') #empty
-EMAIL_USE_TLS = True
+
+# CAS (for universities)
+CAS_USERNAME = get_from_env('CAS_USERNAME', "")
+CAS_PASSWORD = get_from_env('CAS_PASSWORD', "")
+CAS_ELIGIBILITY_URL = get_from_env('CAS_ELIGIBILITY_URL', "")
+CAS_ELIGIBILITY_REALM = get_from_env('CAS_ELIGIBILITY_REALM', "")
+
+# email server
+EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
+EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
+EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = False
 
 # set up logging
 import logging
@@ -189,11 +203,15 @@ logging.basicConfig(
     format = '%(asctime)s %(levelname)s %(message)s'
 )
 
+
 # set up django-celery
+# BROKER_BACKEND = "kombu.transport.DatabaseTransport"
+BROKER_URL = "django://"
+CELERY_RESULT_DBURI = DATABASES['default']
 import djcelery
 djcelery.setup_loader()
-BROKER_BACKEND = "djkombu.transport.DatabaseTransport"
-CELERY_RESULT_DBURI = DATABASES['default']
+
 
 # for testing
-CELERY_ALWAYS_EAGER = True
+TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
+# this effectively does CELERY_ALWAYS_EAGER = True

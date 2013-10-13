@@ -68,7 +68,7 @@ class KeyPair(object):
       self.pk.p = p
       self.pk.q = q
       
-      self.sk.x = Utils.random_mpz_lt(p)
+      self.sk.x = Utils.random_mpz_lt(q)
       self.pk.y = pow(g, self.sk.x, p)
       
       self.sk.public_key = self.pk
@@ -440,6 +440,10 @@ class Ciphertext:
       
       overall_challenge is what all of the challenges combined should yield.
       """
+      if len(plaintexts) != len(proof.proofs):
+        print("bad number of proofs (expected %s, found %s)" % (len(plaintexts), len(proof.proofs)))
+        return False
+
       for i in range(len(plaintexts)):
         # if a proof fails, stop right there
         if not self.verify_encryption_proof(plaintexts[i], proof.proofs[i]):

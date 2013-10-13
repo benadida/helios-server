@@ -164,7 +164,7 @@ class EGKeyPair:
       self.sk.x = x
       
       if (self.sk.x == None):
-          self.sk.x = Utils.random_mpz_lt(p)
+          self.sk.x = Utils.random_mpz_lt(q)
       self.pk.y = pow(g, self.sk.x, p)
       
       self.sk.pk = self.pk
@@ -557,6 +557,10 @@ class EGCiphertext:
       
       overall_challenge is what all of the challenges combined should yield.
       """
+      if len(plaintexts) != len(proof.proofs):
+        print("bad number of proofs (expected %s, found %s)" % (len(plaintexts), len(proof.proofs)))
+        return False
+
       for i in range(len(plaintexts)):
         # if a proof fails, stop right there
         if not self.verify_encryption_proof(plaintexts[i], proof.proofs[i]):

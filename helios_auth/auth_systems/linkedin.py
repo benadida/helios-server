@@ -7,7 +7,7 @@ from oauthclient import client
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 
-from auth import utils
+from helios_auth import utils
 
 from xml.etree import ElementTree
 
