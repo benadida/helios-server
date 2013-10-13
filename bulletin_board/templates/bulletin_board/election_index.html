@@ -1,0 +1,37 @@
+{% extends "helios/templates/cryptobase.html" %}
+
+{% block title %}Bulletin Board {% endblock %}
+
+{% block content %}
+  <h2 class="title">Trustees of {{election.name}} <span style="font-size:0.7em;">[<a href="/bulletin_board/">back to Bulletin Board</a>]</span></h2>
+
+
+{% if trustees %}
+    <ul>
+    
+    {% for t in trustees %}
+        <li>{{t.id}}. {{t.name}} {% if t.added_encrypted_shares %} (Shares were already added) 
+        	{%else%}
+        	(Waiting for trustee to upload shares)
+        	{% endif %} 
+        	{% if election.encrypted_shares_uploaded %}
+        	(<a href="/bulletin_board/elections/{{election.id}}/download/{{t.key.id}}">Download Shares</a></\a>) 
+        	
+
+        	{%endif%}
+        	</li>    {% endfor %}
+    	
+    </ul>
+{% else %}
+    <p>There are no open elections at the moment.</p>
+{% endif %}	
+	
+<p>
+<a href="../">Back</a>
+</p>
+	
+{% endblock %}
+
+
+
+	

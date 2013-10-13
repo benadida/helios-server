@@ -25,7 +25,15 @@ function str_sha1(s){return binb2str(core_sha1(str2binb(s),s.length * chrsz));}
 function hex_hmac_sha1(key, data){ return binb2hex(core_hmac_sha1(key, data));}
 function b64_hmac_sha1(key, data){ return binb2b64(core_hmac_sha1(key, data));}
 function str_hmac_sha1(key, data){ return binb2str(core_hmac_sha1(key, data));}
-
+function encode_string_to_decimal(s){
+    var tmp = '';
+    for (var i= 0; i< s.length; i++){
+        c = s[i];
+        tmp = tmp+String(ord(c));
+        
+    return parseInt(tmp,10);
+    }
+   }
 /*
  * Perform a simple self-test to see if the VM is working
  */

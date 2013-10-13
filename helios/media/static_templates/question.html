@@ -106,6 +106,7 @@ no questions yet
 {#if $T.admin_p}
 <h4>Add a Question:</h4>
 <form id="question_form" onsubmit="question_add(this); return false;" action="#">
+{#if $T.election_type != 'ranked election'}
 <p>
 <!--
   Type of Question:
@@ -178,6 +179,7 @@ Result Type:&nbsp;
 </select>
 
 </p>
+
 
 <table id="answer_table">
   <tbody>

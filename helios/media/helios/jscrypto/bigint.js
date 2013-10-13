@@ -91,8 +91,8 @@ if (USE_SJCL) {
 	    
 	    modInverse: function(modulus) {
 		return BigInt._from_java_object(this._java_bigint.modInverse(modulus._java_bigint));
-	    }
-	    
+	    },
+	   
 	});
     
     BigInt.ready_p = false;

@@ -1,0 +1,23 @@
+{% extends "helios/templates/cryptobase.html" %}
+
+{% block title %}Bulletin Board {% endblock %}
+
+{% block content %}
+  <h2 class="title">Bulletin Board <span style="font-size:0.7em;">[<a href="/">back to Helios</a>]</span></h2>
+
+<p>
+    Trustees are responsible for decrypting the election result.<br />
+    Each trustee generates a keypair and submits the public portion to Helios.<br />
+    When it's time to decrypt, each trustee needs to provide his secret key.
+</p>
+<ul>
+	<li><a href="communication_keys/view/">Communication Keys</a></li> 
+	<li><a href="/bulletin_board/elections/">Encrypted Shares</a></li> 
+
+   
+</ul>  
+	
+{% endblock %}
+
+
+

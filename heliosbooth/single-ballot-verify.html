@@ -90,7 +90,7 @@ function verify_single_ballot(election_url, audit_trail) {
         if (event.data.type == 'result')
           return after_computation(event.data.result);
       };
-
+	
       verifier_worker.postMessage({'type':'verify', 'election':raw_json, 'vote':encrypted_vote_json});
     } else {
       var overall_result = verify_ballot(raw_json, encrypted_vote_json, result_append);

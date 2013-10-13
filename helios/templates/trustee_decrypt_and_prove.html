@@ -37,6 +37,7 @@ function decrypt_and_prove_tally(tally, public_key, secret_key) {
     var decryption_factors= [];
     var decryption_proofs= [];
     
+    var start = new Date().getTime();
     // decrypt the tallies
     $(tally.tally).each(function(q_num, q_tally) {
         decryption_factors[q_num] = [];
@@ -49,6 +50,8 @@ function decrypt_and_prove_tally(tally, public_key, secret_key) {
            decryption_proofs[q_num][choice_num] = one_choice_result.decryption_proof;
         });
     });
+    var stop = new Date().getTime();
+    console.log('Calculated decryption factors in '+ String(stop-start)+' ms');
     
     return {'decryption_factors': decryption_factors, 'decryption_proofs' : decryption_proofs};
 }

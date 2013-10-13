@@ -18,15 +18,20 @@ from helios import utils as heliosutils
 import helios.views
 
 from helios import datatypes
-
+from bulletin_board import thresholdalgs
 
 # useful stuff in auth
 from auth.models import User, AUTH_SYSTEMS
 from auth.jsonfield import JSONField
 from helios.datatypes.djangofield import LDObjectField
 
-import csv, copy
-  
+import csv, copy, itertools, math
+from operator import itemgetter
+from fractions import *
+from helios.constants import p,q,g,ground_1,ground_2
+from bulletin_board.models import Key,SecretKey
+from bulletin_board.thresholdalgs import Share
+
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
   class Meta:
     abstract = True
@@ -48,7 +53,8 @@ class Election(HeliosModel):
   
   ELECTION_TYPES = (
     ('election', 'Election'),
-    ('referendum', 'Referendum')
+    ('referendum', 'Referendum'),
+    ('ranked election', 'Ranked Election')
     )
 
   election_type = models.CharField(max_length=250, null=False, default='election', choices = ELECTION_TYPES)
@@ -89,6 +95,9 @@ class Election(HeliosModel):
   
   # dates at which things happen for the election
   frozen_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+  frozen_trustee_list = models.BooleanField(default = False)
+  use_threshold=models.BooleanField(default = True)
+  encrypted_shares_uploaded = models.BooleanField(default=False)
   archived_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
   
   # dates for the election steps, as scheduled
@@ -122,12 +131,15 @@ class Election(HeliosModel):
                                   null=True)
 
   # results of the election
-  result = LDObjectField(type_hint = 'legacy/Result',
+  result = LDObjectField(type_hint = 'legacy/Result', 
                          null=True)
+  #scheme = LDObjectField(type_hint = 'legacy/Thresholdscheme', null=True)
 
   # decryption proof, a JSON object
   # no longer needed since it's all trustees
   result_proof = JSONField(null=True)
+  
+
 
   @property
   def pretty_type(self):
@@ -346,9 +358,27 @@ class Election(HeliosModel):
     """
     do we have a tally from all trustees?
     """
-    for t in Trustee.get_by_election(self):
-      if not t.decryption_factors:
-        return False
+    count=0
+    
+    scheme = self.get_scheme()
+    if scheme:
+        k = scheme.k
+    trustees = Trustee.get_by_election(self)
+    for t in trustees:
+      if t.decryption_factors:
+        count = count +1
+    
+    if self.use_threshold:
+        if count >= k:
+            return True
+        else: 
+            return False
+    else:
+        if count == len(trustees):
+            return True
+        else:
+            return False
+      
     
     return True
     
@@ -361,12 +391,51 @@ class Election(HeliosModel):
     trustees = Trustee.get_by_election(self)
     decryption_factors = [t.decryption_factors for t in trustees]
     
+    if self.use_threshold:
+        ## ADDED FOR THRESHOLD ENCRYPTION
+        decryption_factors = []
+        scheme = self.get_scheme()
+        trustees_active = Trustee.objects.filter(election=self).exclude(decryption_factors=None)
+        x_values = [t.id for t in trustees_active]
+        if len(trustees_active)>=scheme.k:
+            for i in range(1,scheme.k+1):
+                prod=Fraction(1)
+                xi = x_values[i-1]
+                for j in range(1,scheme.k+1):
+                    xj = x_values[j-1]
+                    if xj==xi:
+                        fact=Fraction(1)
+                    else:
+                        fact = Fraction(numerator=-xj, denominator=(xi-xj))#%p
+                        
+                        #print('fact: '+str(fact))
+                    prod= (prod*fact)
+                    #print('step: '+str(j)+ 'prod :'+ str(prod))
+                    #print('prod: '+str(prod))
+                    #print(str(Fraction(pointi.y_value)))
+                    
+                   # print('step: '+str(j)+ 'total :'+ str(total))
+                
+                if prod.denominator == 1:
+                    prod= prod %(p-1)
+                    trustee= trustees_active[i-1]
+                    nof_questions = len(trustee.decryption_factors)
+                    decryption_factors.append([[pow(trustee.decryption_factors[q][a],prod.numerator,p) for a in range(len(trustee.decryption_factors[q]))] for q in range(nof_questions)])
+                    
+        
+            
+    
+            
+    
     self.result = self.encrypted_tally.decrypt_from_factors(decryption_factors, self.public_key)
+    ##postprocessing for ranking eleciton
+        
+    #raise Exception(self.result)
 
     self.append_log(ElectionLog.DECRYPTIONS_COMBINED)
 
     self.save()
-  
+
   def generate_voters_hash(self):
     """
     look up the list of voters, make a big file, and hash it
@@ -446,9 +515,53 @@ class Election(HeliosModel):
     
     # public key for trustees
     trustees = Trustee.get_by_election(self)
+    
+    ##CHANGED FOR THRESHOLDENCRYPTION
+#    combined_pk = trustees[0].public_key
+#    for t in trustees[1:]:
+#      combined_pk = combined_pk * t.public_key
+#      
+#    self.public_key = combined_pk
+#    
+#    # log it
+#    self.append_log(ElectionLog.FROZEN)
+#
+#    self.save()
+    if self.use_threshold:
+        scheme = self.get_scheme()
+        if scheme:
+            k = scheme.k
+        lambdas = []
+    
+         
+        for t in trustees[0:k]:
+            xi = t.id
+            prod = Fraction(1)
+            for j in range(k):
+                xj = trustees[j].id
+                if xi==xj:
+                    fact = Fraction(1)
+                else:
+                    fact = Fraction(numerator=-xj, denominator=(xi-xj))#%p
+                prod = (prod*fact)
+            if prod.denominator==1:
+                lambdas.append(prod.numerator%(p-1))
+            else:
+                lambda_now = prod%(p-1)
+                raise exception(lambda_now)
+                lambdas.append(prod%(p-1))
+    else:
+        #NO THRESHOLD
+        lambdas = []
+        n = len(trustees)
+        k = n
+        for i in range(n):
+            lambdas.append(1)
     combined_pk = trustees[0].public_key
-    for t in trustees[1:]:
-      combined_pk = combined_pk * t.public_key
+    combined_pk.y = pow(combined_pk.y,lambdas[0],p)
+    for i in range(1,k):
+      t = trustees[i]  
+      combined_pk.y = (combined_pk.y * pow(t.public_key.y,lambdas[i],p))%p
       
     self.public_key = combined_pk
     
@@ -463,27 +576,72 @@ class Election(HeliosModel):
     thus a helios-based trustee
     """
     # FIXME: generate the keypair
-    keypair = params.generate_keypair()
+    
 
     # create the trustee
     trustee = Trustee(election = self)
     trustee.uuid = str(uuid.uuid4())
     trustee.name = settings.DEFAULT_FROM_NAME
     trustee.email = settings.DEFAULT_FROM_EMAIL
-    trustee.public_key = keypair.pk
-    trustee.secret_key = keypair.sk
+    trustee.helios_trustee=True
     
-    # FIXME: is this at the right level of abstraction?
-    trustee.public_key_hash = datatypes.LDObject.instantiate(trustee.public_key, datatype='legacy/EGPublicKey').hash
+    if not self.use_threshold:
+        keypair = params.generate_keypair()
 
-    trustee.pok = trustee.secret_key.prove_sk(algs.DLog_challenge_generator)
-
-    trustee.save()
-
+        trustee.public_key = keypair.pk
+        trustee.secret_key = keypair.sk
+        
+        # FIXME: is this at the right level of abstraction?
+        trustee.public_key_hash = datatypes.LDObject.instantiate(trustee.public_key, datatype='legacy/EGPublicKey').hash
+    
+        trustee.pok = trustee.secret_key.prove_sk(algs.DLog_challenge_generator)
+    
+        trustee.save()
+    else:
+        if len(SecretKey.objects.all())>0:
+            sk = SecretKey.objects.all()[0]
+            key = sk.public_key
+            
+            
+        else:
+            key = Key()
+            keypair = params.generate_keypair()
+            key.name= trustee.name
+            key.email = trustee.email
+            key.public_key_encrypt = utils.to_json(keypair.pk.to_dict())
+            key.pok_encrypt = keypair.sk.prove_sk(algs.DLog_challenge_generator)
+            secret_key = SecretKey()
+            secret_key.secret_key_encrypt = utils.to_json(keypair.sk.to_dict())
+            keypair = params.generate_keypair()
+            key.public_key_signing = utils.to_json(keypair.pk.to_dict())
+            secret_key.secret_key_signing = utils.to_json(keypair.sk.to_dict())
+            key.pok_signing = keypair.sk.prove_sk(algs.DLog_challenge_generator)
+            key.save()
+            secret_key.public_key = key
+            secret_key.save()
+        
+        trustee.key = key
+        trustee.save()
+  #Added by Robbert Coeckelbergh
+  def get_scheme(self):
+      schemes = self.thresholdscheme_set.all()
+      if len(schemes)==1:
+          scheme = schemes[0]
+          return scheme
+      else:
+          return None
+      
+  def get_trustees(self): # get trustees with uploaded pk
+    trustees_with_pk = self.trustee_set.exclude(public_key = None)
+    if len(trustees_with_pk) > 0:
+      return trustees_with_pk
+    else:
+      return None
+    
   def get_helios_trustee(self):
-    trustees_with_sk = self.trustee_set.exclude(secret_key = None)
-    if len(trustees_with_sk) > 0:
-      return trustees_with_sk[0]
+    helios_trustees = Trustee.objects.filter(helios_trustee=True).filter(election=self)
+    if len(helios_trustees) > 0:
+      return helios_trustees[0]
     else:
       return None
     
@@ -568,6 +726,39 @@ class Election(HeliosModel):
     # get the winners
     winners = self.winners
 
+    if self.election_type == 'ranked election':
+    #if False:
+        answers = []
+        result_new = []
+        for q_num in range(len(self.questions)):
+            nof_answers = len(self.questions[q_num]['answers'])
+            #perm = itertools.permutations(election.questions[i]['answers'])
+            comb = itertools.combinations(range(nof_answers),2)
+            one_question_scores = [(i,0) for i in range(nof_answers)]
+            #prop_sol_array = []
+            for l in range(nof_answers*(nof_answers-1)/2):
+                    new_comb = comb.next()
+                    x = new_comb[0]
+                    y = new_comb[1]
+                    if(self.result[q_num][2*l]>self.result[q_num][2*l+1]):
+                        x_score = 1
+                        y_score = -1
+                    elif(self.result[q_num][2*l]<self.result[q_num][2*l+1]):
+                        x_score = -1
+                        y_score = 1
+                    else:
+                        x_score=0
+                        y_score=0
+                    one_question_scores[x]= (one_question_scores[x][0],one_question_scores[x][1]+x_score)
+                    one_question_scores[y] = (one_question_scores[y][0],one_question_scores[y][1]+y_score)
+            one_question_scores_sorted = sorted(one_question_scores, key=itemgetter(1), reverse = True) #Sort on scores
+            one_question_result = []
+            for index in range(len(one_question_scores_sorted)):
+                one_question_result.append(one_question_scores_sorted[index])
+            result_new.append(one_question_result)
+        
+        self.result = result_new
+
     raw_result = self.result
     prettified_result = []
 
@@ -576,15 +767,78 @@ class Election(HeliosModel):
       q = self.questions[i]
       pretty_question = []
       
-      # go through answers
-      for j in range(len(q['answers'])):
-        a = q['answers'][j]
-        count = raw_result[i][j]
-        pretty_question.append({'answer': a, 'count': count, 'winner': (j in winners[i])})
-        
-      prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
+      if self.election_type == 'ranked election':
+          # go through answers
+          scores=  []
+          for j in range(len(q['answers'])):
+              scores.append(self.result[i][j][1])
+          for j in range(len(q['answers'])):
+            a = q['answers'][self.result[i][j][0]]
+            score = self.result[i][j][1]
+            count = len([higher for higher in scores if higher > score])+1
+            pretty_question.append({'answer': a, 'count': count, 'winner': j==0, 'score': score})
+            
+          prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
+
+      else:
+          # go through answers
+          for j in range(len(q['answers'])):
+            a = q['answers'][j]
+            count = raw_result[i][j]
+            pretty_question.append({'answer': a, 'count': count, 'winner': (j in winners[i])})
+            
+          prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
 
     return prettified_result
+  
+  def create_scheme(self,n,k, ground_1, ground_2):
+      
+      if len(self.thresholdscheme_set.all())==0: 
+          scheme = Thresholdscheme(election=self)
+          scheme.n = n
+          scheme.k = k
+          scheme.ground_1= ground_1
+          scheme.ground_2 = ground_2
+          scheme.save()
+  
+  def number_trustees(self):
+        trustees= self.get_trustees()
+        for i in range(len(trustees)):
+            trustee = trustees[i]
+            trustee.point_number = i+1
+            trustee.save()
+    
+  def check_all_received_points(self):
+        trustees = self.get_trustees()
+        verification_list = []
+        for i in range(len(trustees)):
+            trustee = trustees[i]
+            for j in range(len(trustee.received_points)):
+                inner_verification_list = []
+                com_point = trustee.received_points[j]
+                point_x = com_point.point.x_value
+                trustee_sender = Trustee.get_by_pointnumber(point_x)
+                test = com_point.verify_commitments()
+                feedback_temp = Feedback(trustee_sender,test)
+                trustee.feedback.append(feedback_temp)
+                trustee.save()
+  
+  
+  def combine_received_points(self, params):
+      trustees = self.get_trustees()
+      for i in range(len(trustees)):
+          trustee = trustees[i]
+          temp_sum = 0
+          for j in range(len(trustee.received_points)):
+              com_point = trustee.received_points[j]
+              point = com_point.point
+              temp_sum = temp_sum + point.y_value
+          secret_key = temp_sum
+          keypair = params.generate_keypair(secret_key)
+          trustee.public_key = keypair.pk
+          trustee.secret_key = keypair.sk
+          trustee.save()
+                               
     
 class ElectionLog(models.Model):
   """
@@ -1075,22 +1329,42 @@ class Trustee(HeliosModel):
 
   decryption_proofs = LDObjectField(type_hint = datatypes.arrayOf(datatypes.arrayOf('legacy/EGZKProof')),
                                     null=True)
+  key = models.ForeignKey(Key, null=True)
+  helios_trustee=models.BooleanField(default = False, null = False)
+  added_encrypted_shares = models.BooleanField(default = False, null = False)
+  #point_number = models.IntegerField(null=True)
+  #committed_points = LDObjectField(type_hint = datatypes.arrayOf('legacy/Committed_Point'), null=True)
+  #committed_points = []
+  #received_points =  LDObjectField(type_hint = datatypes.arrayOf('legacy/Committed_Point'), null=True)
+ # prepared_mpc = models.BooleanField(default = False, null = False)
+  #feedback = LDObjectField(type_hint = datatypes.arrayOf('legacy/Feedback'), null=True)
+
+  #F_points = []
+  #E = []
+  #Ei =[]
+  
+  #added by Robbert Coeckelbergh
+  
   
   def save(self, *args, **kwargs):
-    """
-    override this just to get a hook
-    """
-    # not saved yet?
-    if not self.secret:
-      self.secret = heliosutils.random_string(12)
-      self.election.append_log("Trustee %s added" % self.name)
+      """
+      override this just to get a hook
+      """
+      # not saved yet?
+      if not self.secret:
+        self.secret = heliosutils.random_string(12)
+        self.election.append_log("Trustee %s added" % self.name)
       
-    super(Trustee, self).save(*args, **kwargs)
+      super(Trustee, self).save(*args, **kwargs)
   
   @classmethod
   def get_by_election(cls, election):
     return cls.objects.filter(election = election)
-
+  @classmethod
+  def get_by_pointnumber(cls, point_number):
+      if len(cls.objects.filter(point_number = point_number))>0:
+          return cls.objects.filter(point_number = point_number)[0]
+      
   @classmethod
   def get_by_uuid(cls, uuid):
     return cls.objects.get(uuid = uuid)
@@ -1117,3 +1391,102 @@ class Trustee(HeliosModel):
     # verify_decryption_proofs(self, decryption_factors, decryption_proofs, public_key, challenge_generator):
     return self.election.encrypted_tally.verify_decryption_proofs(self.decryption_factors, self.decryption_proofs, self.public_key, algs.EG_fiatshamir_challenge_generator)
     
+  
+  #def get_committed_points(self):
+      #trustee_id =trustee.id
+      #committed_points = Committed_Points.objects.get(trustee_id = trustee_id)
+      #committed_points = trustee.committed_points_set.all()
+      #return committed_points
+   
+  ##Added by RObbert Coeckelbergh  
+  def prepare_mpc(self,scheme):
+      trustees = self.election.get_trustees()
+      n = len(trustees)
+      q=self.public_key.q
+      s= self.secret_key.x
+      scheme.share_verifiably(self,s)
+      
+      self.prepared_mpc = True
+      #self.save()
+      
+      
+  def check_if_prepared_mpc(self):
+      if self.prepared_mpc == True:
+          return True
+      else:
+          return False
+  
+      
+
+class Thresholdscheme(HeliosModel):
+    
+    election =models.ForeignKey(Election)
+    n = models.IntegerField(null=True)
+    k = models.IntegerField(null=True)
+    ground_1 = LDObjectField(type_hint = 'core/BigInteger',
+                             null=True)
+    ground_2 = LDObjectField(type_hint = 'core/BigInteger',
+                             null=True)
+
+
+    def save(self, *args, **kwargs):
+    
+        # not saved yet?
+        if not self.election:
+            self.election.append_log("Thresholdscheme %s added")
+          
+        super(Thresholdscheme, self).save(*args, **kwargs)
+  
+
+        
+        #share a secret verifiably by creating a polynomial of grade k-1 and generate n points 
+        #the secret s is F(0) and can be found by interpolating the points.
+        # Commitments E contain commitments to the point
+        # Commitments Ei contain commitments to the coefficients of the polynomial
+    def share_verifiably(self, s,t, EG):
+          
+          election = self.election
+          trustees = Trustee.objects.filter(election=election).order_by('id')
+          
+          F = thresholdalgs.Polynomial(s,self, EG)
+          G= thresholdalgs.Polynomial(t,self,EG)
+          
+          #create points on polynomials from x values from 0 to n. F(0) is secret!!
+          points_F = F.create_points(trustees)
+          points_G = G.create_points(trustees)
+          
+          #create commitments
+          Ei=[]
+          for i in range(self.k):
+              commitment_loop = thresholdalgs.Commitment_E()
+              commitment_loop.generate(F.coeff[i],G.coeff[i],self.ground_1,self.ground_2,p,q,g)
+              if(commitment_loop.value>p-1):
+                  print('Ei value to big!!')
+                  sys.exit()
+              Ei.append(commitment_loop)
+          
+          shares = []
+          for i in range(1,self.n+1):
+        #     trustee_id = trustee.id
+              share = Share(points_F[i-1],points_G[i-1],Ei)
+              if share.verify_share(self,p,q,g):
+                  shares.append(share)
+              else: 
+                  return None
+              
+      
+          return shares
+                    
+            
+        
+    @classmethod
+    def get_by_election(cls, election):
+        return cls.objects.filter(election = election)
+    
+    @property
+    def datatype(self):
+        return self.election.datatype.replace('Election', 'Thresholdscheme')  
+    
+    
+ 
+        

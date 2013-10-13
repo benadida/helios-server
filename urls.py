@@ -17,5 +17,6 @@ urlpatterns = patterns(
     (r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/server_ui/media'}),
 
     (r'^', include('server_ui.urls')),
+    (r'^bulletin_board/', include('bulletin_board.urls')),
 
     )

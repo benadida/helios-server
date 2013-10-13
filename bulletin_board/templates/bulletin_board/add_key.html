@@ -1,0 +1,33 @@
+{% extends "helios/templates/cryptobase.html" %}
+
+{% block title %}Bulletin Board {% endblock %}
+
+{% block content %}
+  <h2 class="title">Bulletin Board &mdash; Add a communication key <span style="font-size:0.7em;">[<a href="/bulletin_board">Back to Bulletin Board</a>]</span></h2>
+
+<p>
+    Trustees are responsible for decrypting the election result.<br />
+    Each trustee generates a keypair and submits the public portion to Helios.<br />
+    When it's time to decrypt, each trustee needs to provide his secret key.
+</p>
+ 
+<body>
+    <form action="" method="post">
+        <li>Name: <input type="text" name="name"></li>
+        <li>Email: <input type="text" name="email"></li>
+        <li>Public Key Encrypt: <input type="text" name="public_key_encrypt"></li>
+        <li>Public Key Sign: <input type="text" name="public_key_signing"></li>
+        <li>Pok Encrypt: <input type="text" name="pok_encrypt"></li>
+        <li>Pok Sign: <input type="text" name="pok_signing"></li>
+
+        <input type="submit" value="Submit">
+    </form>
+</body>
+
+<p>
+<a href="../">Back</a>
+</p>
+
+
+
+{% endblock %}

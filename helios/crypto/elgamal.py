@@ -144,6 +144,23 @@ class PublicKey:
       
       return ((left_side == right_side) and (dlog_proof.challenge == expected_challenge))
 
+    def to_dict(self):
+        """
+        Serialize to dictionary.
+        """
+        return {'y' : str(self.y), 'p' : str(self.p), 'g' : str(self.g) , 'q' : str(self.q)}
+
+    @classmethod
+    def from_dict(cls, d):
+        """
+        Deserialize from dictionary.
+        """
+        pk = cls()
+        pk.y = int(d['y'])
+        pk.p = int(d['p'])
+        pk.g = int(d['g'])
+        pk.q = int(d['q'])
+        return pk
 
 class SecretKey:
     def __init__(self):
@@ -239,7 +256,21 @@ class SecretKey:
       
       return DLogProof(commitment, challenge, response)
       
-
+    def to_dict(self):
+        return {'x' : str(self.x), 'public_key' : self.pk.to_dict()}
+    
+    @classmethod
+    def from_dict(cls, d):
+        if not d:
+          return None
+          
+        sk = cls()
+        sk.x = int(d['x'])
+        if d.has_key('public_key'):
+          sk.public_key = PublicKey.from_dict(d['public_key'])
+        else:
+          sk.public_key = None
+        return sk 
 class Plaintext:
     def __init__(self, m = None, pk = None):
         self.m = m

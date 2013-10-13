@@ -42,6 +42,8 @@ class Migration(SchemaMigration):
             ('encrypted_tally', self.gf('auth.jsonfield.JSONField')(null=True)),
             ('result', self.gf('auth.jsonfield.JSONField')(null=True)),
             ('result_proof', self.gf('auth.jsonfield.JSONField')(null=True)),
+            #('threshold_scheme', self.gf('auth.jsonfield.JSONField')(null=True)),
+
         ))
         db.send_create_signal('helios', ['Election'])
 
@@ -117,6 +119,14 @@ class Migration(SchemaMigration):
             ('pok', self.gf('auth.jsonfield.JSONField')(null=True)),
             ('decryption_factors', self.gf('auth.jsonfield.JSONField')(null=True)),
             ('decryption_proofs', self.gf('auth.jsonfield.JSONField')(null=True)),
+            
+
+
+            #received_points = []
+  #prepared_mpc = False
+ #points_F = []
+  #E = []
+  #i =[]
         ))
         db.send_create_signal('helios', ['Trustee'])
 
@@ -207,7 +217,8 @@ class Migration(SchemaMigration):
             'voting_ends_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'voting_extended_until': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'voting_started_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
-            'voting_starts_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'})
+            'voting_starts_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
+
         },
         'helios.electionlog': {
             'Meta': {'object_name': 'ElectionLog'},
@@ -218,6 +229,7 @@ class Migration(SchemaMigration):
         },
         'helios.trustee': {
             'Meta': {'object_name': 'Trustee'},
+            'point_number': ('django.db.models.fields.IntegerField', [], {'null': 'True'}),
             'decryption_factors': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
             'decryption_proofs': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
             'election': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios.Election']"}),
@@ -229,7 +241,9 @@ class Migration(SchemaMigration):
             'public_key_hash': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'secret': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'secret_key': ('auth.jsonfield.JSONField', [], {'null': 'True'}),
-            'uuid': ('django.db.models.fields.CharField', [], {'max_length': '50'})
+            'uuid': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
+     
+
         },
         'helios.voter': {
             'Meta': {'object_name': 'Voter'},
@@ -253,7 +267,9 @@ class Migration(SchemaMigration):
             'processing_started_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'uploaded_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'voter_file': ('django.db.models.fields.files.FileField', [], {'max_length': '250'})
-        }
+        },
+    
+        
     }
 
     complete_apps = ['helios']

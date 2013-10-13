@@ -1,0 +1,15 @@
+{% if shares_list %}
+    <ul>
+    {% for share in shares_list %}
+        <li>{{share.receiver_id}}. {{share.receiver}}: <a href="{{share.id}}/">Encrypted_Share</a> </\a> (signed by {{share.signer}}) </li>    {% endfor %}
+    </ul>
+{% else %}
+    <p>No uploaded shares are available.</p>
+{% endif %}
+
+<p>
+<a href="../">Back</a>
+</p>
+<p>
+<a href="../../">Bulletin Board</a>
+</p>

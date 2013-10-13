@@ -103,7 +103,7 @@ HELIOS.Election = Class.extend({
     openreg: this.openreg, voters_hash: this.voters_hash,
     use_voter_aliases: this.use_voter_aliases,
     voting_starts_at: this.voting_starts_at,
-    voting_ends_at: this.voting_ends_at};
+    voting_ends_at: this.voting_ends_at, use_threshold: this.use_threshold};
     
     return UTILS.object_sort_keys(json_obj);
   },
@@ -119,6 +119,7 @@ HELIOS.Election = Class.extend({
   toJSON: function() {
     // FIXME: only way around the backslash thing for now.... how ugly
     //return jQuery.toJSON(this.toJSONObject()).replace(/\//g,"\\/");
+    
     return JSON.stringify(this.toJSONObject());
   }
 });

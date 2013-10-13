@@ -1,0 +1,3 @@
+{% load filetransfers %}
+{% url upload.views.download_handler pk=file.pk as fallback_url %}
+<a href="{% firstof upload.file|public_download_url fallback_url %}">Download</a>

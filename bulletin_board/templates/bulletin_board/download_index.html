@@ -1,0 +1,15 @@
+{% if key_list %}
+    <ul>
+    {% for key in key_list %}
+        <li>{{key.key_id}}. <a href="{{key.key_id}}/">{{key.name}}</a> </\a> </li>    {% endfor %}
+    </ul>
+{% else %}
+    <p>There are no Participants.</p>
+{% endif %}
+
+<p>
+<a href="../">Back</a>
+</p>
+<p>
+<a href="../">Bulletin Board</a>
+</p>

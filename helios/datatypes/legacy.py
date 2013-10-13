@@ -17,7 +17,7 @@ class LegacyObject(LDObject):
 class Election(LegacyObject):
     WRAPPED_OBJ_CLASS = models.Election
     FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description', 'voters_hash', 'openreg',
-              'frozen_at', 'public_key', 'cast_url', 'use_voter_aliases', 'voting_starts_at', 'voting_ends_at']
+              'frozen_at', 'public_key', 'cast_url', 'use_voter_aliases', 'voting_starts_at', 'voting_ends_at','election_type','use_threshold']
 
     STRUCTURED_FIELDS = {
         'public_key' : 'legacy/EGPublicKey',
@@ -32,7 +32,7 @@ class EncryptedAnswer(LegacyObject):
     STRUCTURED_FIELDS = {
         'choices': arrayOf('legacy/EGCiphertext'),
         'individual_proofs': arrayOf('legacy/EGZKDisjunctiveProof'),
-        'overall_proof' : 'legacy/EGZKDisjunctiveProof'
+        'overall_proof' : arrayOf('legacy/EGZKDisjunctiveProof')
         }
 
 class EncryptedAnswerWithRandomness(LegacyObject):
@@ -40,7 +40,7 @@ class EncryptedAnswerWithRandomness(LegacyObject):
     STRUCTURED_FIELDS = {
         'choices': arrayOf('legacy/EGCiphertext'),
         'individual_proofs': arrayOf('legacy/EGZKDisjunctiveProof'),
-        'overall_proof' : 'legacy/EGZKDisjunctiveProof',
+        'overall_proof' : arrayOf('legacy/EGZKDisjunctiveProof'),
         'randomness' : arrayOf('core/BigInteger')
         }
 
@@ -200,3 +200,10 @@ class Tally(LegacyObject):
 
 class Eligibility(ListObject, LegacyObject):
     WRAPPED_OBJ = list
+
+class Thresholdscheme(LegacyObject):
+    FIELDS = ['election_id','n','k','ground_1', 'ground_2']
+    STRUCTURED_FIELDS = {
+        'ground_1' : 'core/BigInteger',
+        'ground_2' : 'core/BigInteger',
+        }

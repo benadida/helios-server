@@ -16,7 +16,7 @@ class ElectionForm(forms.Form):
   #use_advanced_audit_features = forms.BooleanField(required=False, initial=True, help_text='disable this only if you want a simple election with reduced security but a simpler user interface')
   #private_p = forms.BooleanField(required=False, initial=False, label="Private?", help_text='a private election is only visible to registered/eligible voters', widget=forms.HiddenInput)
   private_p = forms.BooleanField(required=False, initial=False, label="Private?", help_text='A private election is only visible to registered voters.')
-  
+  use_threshold = forms.BooleanField(required=False, initial=False,label="Use threshold encryption?", help_text = 'Using threshold encryption allows a subset of k out of n trustees to decrypt the tally')
 
 class ElectionTimesForm(forms.Form):
   # times

@@ -12,6 +12,7 @@
   <script language="javascript" src="js/jquery-jtemplates.js"></script>
   <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
   <script language="javascript" src="js/jquery.json.min.js"></script>
+  <script language="javascript" src="js/underscore-min.js"></script>
 
   <script language="javascript">
     // required for jscrypto library
@@ -88,7 +89,7 @@ function load_ballot_list(election_url, ballot_list, after, final_callback) {
 }
 
 function load_election_and_ballots(election_url) {
-        
+    var start = new Date().getTime();
     result_append("<h3>Election</h3>");
     result_append("loading election...");
 
@@ -96,21 +97,25 @@ function load_election_and_ballots(election_url) {
     
     // the hash will be computed within the setup function call now
     $.get(election_url, function(raw_json) {
+    	//print('Hello: '+raw_json);
         election = HELIOS.Election.fromJSONString(raw_json);
         result_append("loaded election: " + election.name);
         result_append("election fingerprint: " + election.get_hash());
-        
+        var overall_result = true;
         var tally = [];
-
+        var init_tally = false;
+        var ranking = (election.election_type == "ranked election");
+        		
+		
         $(election.questions).each(function(qnum, q) {
             if (q.tally_type != "homomorphic") {
               result_append("PROBLEM: this election is not a straight-forward homomorphic-tally election. As a result, Helios cannot currently verify it.");
               return;
             }
-
-            tally[qnum] = $(q.answers).map(function(anum, a) {
-                return 1;
-            });
+			//tally[qnum]=1;
+            //tally[qnum] = $(q.answers).map(function(anum, a) {
+               // return 1;
+            //});
         });
 
         result_append("loading list of voters...");
@@ -133,18 +138,39 @@ function load_election_and_ballots(election_url) {
                     result_append("Voter #" + (i+1));
                     result_append("-- UUID: " + cast_vote.voter_uuid);
                     result_append("-- Ballot Tracking Number: " + vote.get_hash());
-
+					
+					if (init_tally==false) {
+						$(vote).each(function(question_num,question) {
+							tally[question_num] = $(vote.encrypted_answers[question_num]).map(function(anum, a) {
+               				 	return 1;
+               			});
+							
+						});
+						init_tally = true;
+					}
                     vote.verifyProofs(election.public_key, function(answer_num, choice_num, result, choice) {
                         overall_result = overall_result && result;
                         if (choice_num != null) {
                             // keep track of tally
+                            if (typeof(tally[answer_num][choice_num])=="undefined")
+                            	tally[answer_num][choice_num]=1;
+ 
                             tally[answer_num][choice_num] = choice.multiply(tally[answer_num][choice_num]);
+                            
+							
+							if(!ranking)
+                            	result_append("Question #" + (answer_num+1) + ", Option #" + (choice_num+1) + " -- " + pretty_result(result));                            
+                        	else
+                        		result_append("Question #" + (answer_num+1) + ", Ciphertext #" + (choice_num+1) + " -- " + pretty_result(result));                            
 
-                            result_append("Question #" + (answer_num+1) + ", Option #" + (choice_num+1) + " -- " + pretty_result(result));                            
-                        } else {
-                            result_append("Question #" + (answer_num+1) + " OVERALL -- " + pretty_result(result));            
+                        } 
+                        
+                        else {
+                        	if(true)
+                            	result_append("Question #" + (answer_num+1) + " OVERALL -- " + pretty_result(result));            
+                        	
                         }
-                    });
+                    },ranking);
 
                     result_append("");
                 });
@@ -175,56 +201,75 @@ function load_election_and_ballots(election_url) {
                               result_append("==== ERROR for PK of trustee " + trustee.email);
                               overall_result = false;
                           }
-
-                          combined_key = trustee.public_key.multiply(combined_key);
+						  if (!election.use_threshold)
+                          	combined_key = trustee.public_key.multiply(combined_key);
+                          else {
+                          	combined_key = null;
+                          }
 
                           result_append("");
                        });
 
                        // verify the combination of the keys into the final public key
-                       if (combined_key.equals(election.public_key)) {
-                           result_append("election public key CORRECTLY FORMED");
-                       } else {
-                           result_append("==== ERROR, election public key doesn't match");
-                           overall_result = false;
+                       if (combined_key){
+	                       if (combined_key.equals(election.public_key)) {
+	                          result_append("election public key CORRECTLY FORMED");
+	                       } else {
+	                           result_append("==== ERROR, election public key doesn't match");
+	                           overall_result = false;
+	                       }
                        }
 
                        result_append("<h3>Tally</h3>");
 
                        $(tally).each(function(q_num, q) {
                            result_append("Question #" + (q_num+1) + ": " + election.questions[q_num].short_name);
+                           if(ranking)
+                           	   result_append("Ranking Matrix: ");
+
                            $(q).each(function(a_num, a) {
                                var plaintext = new ElGamal.Plaintext(election.public_key.g.modPow(BigInt.fromInt(results[q_num][a_num]), election.public_key.p), election.public_key);
 
                                var check = true;
-                               result_append("Answer #" + (a_num + 1) + ": " + election.questions[q_num].answers[a_num] + " - COUNT = " + results[q_num][a_num]);
+                               if(!ranking)
+                               	result_append("Answer #" + (a_num + 1) + ": " + election.questions[q_num].answers[a_num] + " - COUNT = " + results[q_num][a_num]);
+							   else {
+							   	var comb = get_combinations(election.questions[q_num].answers.length);
+							   	if(a_num%2 == 0)
+							   		result_append(election.questions[q_num].answers[comb[a_num/2][0]]+" vs " +election.questions[q_num].answers[comb[a_num/2][1]] +" :  " + results[q_num][a_num]+" " +results[q_num][a_num+1]);
 
+							   }
                                var decryption_factors = [];
 
                                // go through the trustees' decryption factors and verify each one
                                $(trustees).each(function(t_num, trustee) {
-                                   if (trustee.public_key.verifyDecryptionFactor(a, trustee.decryption_factors[q_num][a_num],
-                                                   trustee.decryption_proofs[q_num][a_num], ElGamal.fiatshamir_challenge_generator)) {
-                                       result_append("-- Trustee " + trustee.email + ": decryption factor verifies");
-                                   } else {
-                                       result_append("==== ERROR with Trustee " + trustee.email + ": decryption factor does not verify");
-                                       check= false;
-                                       overall_result = false;
-                                   }
-
+                               	   if(!election.use_threshold||trustee.decryption_factors){
+	                                   if (trustee.public_key.verifyDecryptionFactor(a, trustee.decryption_factors[q_num][a_num],
+	                                                   trustee.decryption_proofs[q_num][a_num], ElGamal.fiatshamir_challenge_generator)) {
+	                                       result_append("-- Trustee " + trustee.name + ": decryption factor verifies");
+	                                   } else {
+	                                       result_append("==== ERROR with Trustee " + trustee.name + ": decryption factor does not verify");
+	                                       check= false;
+	                                       overall_result = false;
+	                                   }
+	                               
                                    decryption_factors.push(trustee.decryption_factors[q_num][a_num]);
+                                   }
                                });
 
                                // recheck decryption factors
+                               if(!election.use_threshold){
                                var expected_value = election.public_key.g.modPow(BigInt.fromInt(results[q_num][a_num]), election.public_key.p);                        
                                var recomputed_value = a.decrypt(decryption_factors).getM();
                                if (expected_value.equals(recomputed_value)) {
                                } else {
                                    check = false;
                                    overall_result = false;
+
                                }
 
                                result_append("-" + pretty_result(check));
+                               }
                            });
 
                        });
@@ -233,6 +278,8 @@ function load_election_and_ballots(election_url) {
         
                        if (overall_result) {
                          result_append("ELECTION FULLY VERIFIED -- SUCCESS!");
+                         var stop = new Date().getTime();
+    	 				 result_append("verification took "+ String(stop-start)+ ' ms');
                        } else {
                          result_append("VERIFICATION FAILED");
                        }
@@ -241,10 +288,20 @@ function load_election_and_ballots(election_url) {
             });
             
         });
+         
     });
-        
+    
 }
 
+function get_combinations(l) {
+	var output = [];
+	for(var i = 1; i<l+1 ; i++){
+		for(var j = i+1; j<l+1; j++){
+			output.push([i,j]);
+	}		
+	}
+	return output;
+}
 $(document).ready(function() {
    var election_url = $.query.get('election_url');
    $('#election_url').val(election_url); 

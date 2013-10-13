@@ -38,14 +38,19 @@ import uuid, datetime
 from models import *
 
 import forms, signals
-
+from bulletin_board import thresholdalgs
+from bulletin_board.models import Signed_Encrypted_Share,Ei, Incorrect_share, Signature
+from helios.constants import p,g,q,ground_1,ground_2
 # Parameters for everything
+#ELGAMAL_PARAMS = elgamal.Cryptosystem()
+
 ELGAMAL_PARAMS = elgamal.Cryptosystem()
 
 # trying new ones from OlivierP
-ELGAMAL_PARAMS.p = 16328632084933010002384055033805457329601614771185955389739167309086214800406465799038583634953752941675645562182498120750264980492381375579367675648771293800310370964745767014243638518442553823973482995267304044326777047662957480269391322789378384619428596446446984694306187644767462460965622580087564339212631775817895958409016676398975671266179637898557687317076177218843233150695157881061257053019133078545928983562221396313169622475509818442661047018436264806901023966236718367204710755935899013750306107738002364137917426595737403871114187750804346564731250609196846638183903982387884578266136503697493474682071L
-ELGAMAL_PARAMS.q = 61329566248342901292543872769978950870633559608669337131139375508370458778917L
-ELGAMAL_PARAMS.g = 14887492224963187634282421537186040801304008017743492304481737382571933937568724473847106029915040150784031882206090286938661464458896494215273989547889201144857352611058572236578734319505128042602372864570426550855201448111746579871811249114781674309062693442442368697449970648232621880001709535143047913661432883287150003429802392229361583608686643243349727791976247247948618930423866180410558458272606627111270040091203073580238905303994472202930783207472394578498507764703191288249547659899997131166130259700604433891232298182348403175947450284433411265966789131024573629546048637848902243503970966798589660808533L
+ELGAMAL_PARAMS.p = p
+ELGAMAL_PARAMS.q = q
+
+ELGAMAL_PARAMS.g = g
 
 # object ready for serialization
 ELGAMAL_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(ELGAMAL_PARAMS, datatype='legacy/EGParams')
@@ -184,6 +189,7 @@ def castvote_shortcut(request, vote_tinyhash):
     raise Http404
 
   return _castvote_shortcut_by_election(request, election_uuid = cast_vote.voter.election.uuid, cast_vote=cast_vote)
+
 
 @trustee_check
 def trustee_keygenerator(request, election, trustee):
@@ -348,13 +354,16 @@ def one_election_view(request, election):
   socialbuttons_url = get_socialbuttons_url(election_url, status_update_message)
 
   trustees = Trustee.get_by_election(election)
-
+  if(election.questions):
+      question_numbers = range(len(election.questions))
+  else:
+      question_numbers = []
   return render_template(request, 'election_view',
                          {'election' : election, 'trustees': trustees, 'admin_p': admin_p, 'user': user,
                           'voter': voter, 'votes': votes, 'notregistered': notregistered, 'eligible_p': eligible_p,
                           'can_feature_p': can_feature_p, 'election_url' : election_url, 
                           'vote_url': vote_url, 'election_badge_url' : election_badge_url,
-                          'test_cookie_url': test_cookie_url, 'socialbuttons_url' : socialbuttons_url})
+                          'test_cookie_url': test_cookie_url, 'socialbuttons_url' : socialbuttons_url, 'question_numbers': question_numbers})
 
 def test_cookie(request):
   continue_url = request.GET['continue_url']
@@ -399,35 +408,146 @@ def list_trustees_view(request, election):
   trustees = Trustee.get_by_election(election)
   user = get_user(request)
   admin_p = security.user_can_admin_election(user, election)
-  
-  return render_template(request, 'list_trustees', {'election': election, 'trustees': trustees, 'admin_p':admin_p})
-  
+  signed_encrypted_shares = Signed_Encrypted_Share.objects.filter(election_id=election.id)
+  scheme = None
+  if (election.use_threshold):
+      if(election.frozen_trustee_list):
+          scheme=election.get_scheme()
+          if scheme:
+              n = scheme.n
+          if len(signed_encrypted_shares) == n*n:
+              election.encrypted_shares_uploaded = True
+          else:
+              election.encrypted_shares_uploaded = False
+          election.save()
+      if election.has_helios_trustee():
+          helios_trustee = election.get_helios_trustee()
+          if((helios_trustee.public_key==None)and(helios_trustee.secret_key==None)and(election.encrypted_shares_uploaded)):
+             
+              #calculate helios key
+                helios_key = Key.objects.get(id = helios_trustee.key_id)
+                helios_secret_key_string = SecretKey.objects.get(public_key = helios_key).secret_key_encrypt
+                helios_secret_key = elgamal.SecretKey.from_dict(utils.from_json(helios_secret_key_string))
+                receiver_id = helios_key.id
+                election_id = election.id
+                scheme = Thresholdscheme.objects.get(election = election)
+                n=scheme.n
+                k=scheme.k
+                
+                #WRITE data_receiver
+                signed_encrypted_shares_strings =  Signed_Encrypted_Share.objects.filter(receiver_id=receiver_id).filter(election_id=election.id).order_by('signer_id')
+                signed_encrypted_shares = []
+                receiver_ids = []
+                signer_ids = []
+                for share in signed_encrypted_shares_strings:
+                    signed_encrypted_shares.append(thresholdalgs.Signed_Encrypted_Share.from_dict(utils.from_json(share.share)))
+                    receiver_ids.append(share.receiver_id)
+                    signer_ids.append(share.signer_id)
+                correct_secret_shares = []   
+                if(len(signed_encrypted_shares)==n):
+                    for j in range(len(signed_encrypted_shares)):
+                        element= signed_encrypted_shares[j]
+                        receiver_id_share = receiver_ids[j]
+                        signer_id_share = signer_ids[j]
+                        pk_signer_signing = elgamal.PublicKey.from_dict(utils.from_json(Key.objects.get(id = signer_id_share).public_key_signing))
+
+                        #print(encrypted_shares[i])
+                        encry_share = element.encr_share
+                        sig = element.sig
+                        share = encry_share.decrypt(helios_secret_key)
+                        share_string = utils.to_json_js(share.to_dict())
+
+                        #print(share_string)
+                        correct_share = False
+                        if sig.verify(share_string,pk_signer_signing,p,q,g):
+                            if share.verify_share(scheme,p,q,g):
+                                correct_secret_shares.append(share)
+                                correct_share = True
+                            else:
+                                share_string = utils.to_json(share.to_dict())
+                                incorrect_share = Incorrect_share(share_string,election.id,sig,signer_id,receiver_id,'invalid commitments')
+                                incorrect_share.save()
+                        else:
+                            share_string = utils.to_json(share.to_dict())
+                            incorrect_share = Incorrect_share()
+                            incorrect_share.share = share_string
+                            incorrect_share.election_id = election_id
+                            incorrect_share.sig = sig
+                           
+                            incorrect_share.signer_id = signer_id_share
+                            incorrect_share.receiver_id = receiver_id_share
+                            incorrect_share.explanation = 'invalid signature'
+                            incorrect_share.save()
+                            
+                            
+                        
+                            
+                if len(correct_secret_shares) == n:
+                    s_value = 0
+                    t_value = 0    
+                    share = correct_secret_shares[0]
+                    for i in range(1,len(correct_secret_shares)):
+                        share.add(correct_secret_shares[i],p,q,g)
+                        #print('s_temp_value: '+str(s_temp.y_value))
+                    
+                    if share.verify_share(scheme,p,q,g):
+                        
+                        final_public_key = elgamal.PublicKey()
+                        final_public_key.q = q
+                        final_public_key.g = g
+                        final_public_key.p = p
+                        final_public_key.y = pow(g,share.point_s.y_value,p)
+                        final_secret_key = elgamal.SecretKey()
+                        final_secret_key.public_key = final_public_key
+                        final_secret_key.x = share.point_s.y_value
+                        
+                        helios_trustee.public_key = final_public_key
+                        helios_trustee.secret_key = final_secret_key
+                        helios_trustee.public_key_hash = datatypes.LDObject.instantiate(helios_trustee.public_key, datatype='legacy/EGPublicKey').hash
+                        helios_trustee.pok = helios_trustee.secret_key.prove_sk(algs.DLog_challenge_generator)
+                        helios_trustee.save()
+                    
+                
+                
+    
+  return render_template(request, 'list_trustees', {'election': election, 'trustees': trustees, 'admin_p':admin_p, 'scheme': scheme})
+    
+    
+
+
+    
+     
 @election_admin(frozen=False)
 def new_trustee(request, election):
-  if request.method == "GET":
-    return render_template(request, 'new_trustee', {'election' : election})
-  else:
-    # get the public key and the hash, and add it
-    name = request.POST['name']
-    email = request.POST['email']
-    
-    trustee = Trustee(uuid = str(uuid.uuid1()), election = election, name=name, email=email)
-    trustee.save()
-    return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
-
+    if not (election.frozen_trustee_list):
+        if request.method == "GET":
+          return render_template(request, 'new_trustee', {'election' : election})
+        else:
+          # get the public key and the hash, and add it
+          name = request.POST['name']
+          email = request.POST['email']
+          
+          trustee = Trustee(uuid = str(uuid.uuid1()), election = election, name=name, email=email)
+          trustee.save()
+          return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
+    else:
+          return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
+   
 @election_admin(frozen=False)
 def new_trustee_helios(request, election):
   """
   Make Helios a trustee of the election
   """
-  election.generate_trustee(ELGAMAL_PARAMS)
+  if not (election.frozen_trustee_list):
+      election.generate_trustee(ELGAMAL_PARAMS)
   return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
   
 @election_admin(frozen=False)
 def delete_trustee(request, election):
-  trustee = Trustee.get_by_election_and_uuid(election, request.GET['uuid'])
-  trustee.delete()
-  return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
+    if not (election.frozen_trustee_list):
+        trustee = Trustee.get_by_election_and_uuid(election, request.GET['uuid'])
+        trustee.delete()
+    return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
   
 def trustee_login(request, election_short_name, trustee_email, trustee_secret):
   election = Election.get_by_short_name(election_short_name)
@@ -472,8 +592,128 @@ Helios
 
 @trustee_check
 def trustee_home(request, election, trustee):
-  return render_template(request, 'trustee_home', {'election': election, 'trustee':trustee})
-  
+    if not (election.use_threshold):
+          return render_template(request, 'trustee_home', {'election': election, 'trustee':trustee})
+
+    election_id = election.id
+    scheme = Thresholdscheme.objects.get(election = election)
+    
+
+    if(trustee.added_encrypted_shares):
+        if (trustee.public_key):
+            step= 5
+            wait = 0
+        else:
+            step = 3
+            if(election.encrypted_shares_uploaded):
+                wait = 0
+            else:
+                wait = 1
+    else:
+        step = 1
+        if (scheme):
+            wait = 0
+        else:
+            wait = 1
+        
+    
+        
+    #election = Election.objects.get(id=election_id)
+    signer_id = trustee.key.id
+    trustees = Trustee.objects.filter(election = election).order_by('id')
+    SCHEME_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(scheme, datatype = 'legacy/Thresholdscheme')
+    scheme_params_json = utils.to_json(SCHEME_PARAMS_LD_OBJECT.toJSONDict())
+   
+   #if request.method == 'POST':
+       
+       
+    #Create dictionary with all public_keys
+    eg_params_json = utils.to_json(ELGAMAL_PARAMS_LD_OBJECT.toJSONDict())
+    pk_encrypt_dict = {}
+    pk_signing_dict = {}
+    name_dict = {}
+    id_dict = {}
+    trustee_ids_dict = {}
+    email_dict = {}
+    pok_encrypt_dict = {}
+    pok_signing_dict = {}
+    pk_encrypt_hash_dict = {}
+    pk_signing_hash_dict = {}
+    for i in range(len(trustees)):
+        key = Key.objects.get(id=trustees[i].key_id)
+        id_dict[str(i)] = key.id
+        corresponding_trustee = Trustee.objects.filter(key = key)[0]
+        trustee_ids_dict[str(i)] = corresponding_trustee.id
+        name_dict[str(i)] = key.name
+        email_dict[str(i)]= key.email
+        pok_encrypt_dict[str(i)] = key.pok_encrypt
+        pok_signing_dict[str(i)] = key.pok_signing
+        pk_encrypt_hash_dict[str(i)] = key.public_key_encrypt_hash
+        pk_signing_hash_dict[str(i)] = key.public_key_signing_hash
+        pk_encrypt_dict[str(i)] = key.public_key_encrypt
+        pk_signing_dict[str(i)] = key.public_key_signing
+        
+    #pass encrypted shares if there are any
+    encry_shares= Signed_Encrypted_Share.objects.filter(election_id = election_id).filter(receiver_id = trustee.key.id).order_by('trustee_signer_id')
+    encry_shares_dict = {}
+    if(encry_shares):
+        for i in range(len(encry_shares)):
+            item = encry_shares[i]
+            encry_share = thresholdalgs.Signed_Encrypted_Share.from_dict(utils.from_json(item.share))
+            
+            encry_shares_dict[str(i)] = utils.to_json(encry_share.to_dict())
+        
+    return render_template(request, 'trustee_home', {"election_id": election_id, "trustee": trustee, "step": step, "wait":wait, "signer_id": signer_id, "election": election, "trustees": trustees, "trustee_ids_dict": trustee_ids_dict,
+                                                                             "scheme_params_json": scheme_params_json , "id_dict": id_dict, "name_dict": utils.to_json(name_dict), "email_dict": utils.to_json(email_dict), 
+                                                                             "pok_encrypt_dict": utils.to_json(pok_encrypt_dict), "pok_signing_dict": utils.to_json(pok_signing_dict),"pk_encrypt_hash_dict": utils.to_json(pk_encrypt_hash_dict), 
+                                                                             "pk_signing_hash_dict": utils.to_json(pk_signing_hash_dict), "pk_encrypt_dict": utils.to_json(pk_encrypt_dict), "pk_signing_dict": utils.to_json(pk_signing_dict), 
+                                                                             "eg_params_json": eg_params_json, 'encry_shares_dict': encry_shares_dict})
+@trustee_check    
+def trustee_upload_encrypted_shares(request, election, trustee):
+   election_id = election.id
+   signer_key = trustee.key
+   signer_id = signer_key.id
+   trustees = Trustee.objects.filter(election = election).order_by('id')
+   scheme = Thresholdscheme.objects.get(election = election)
+   signer_key = Key.objects.get(id = signer_id)
+   signer_trustee = Trustee.objects.filter(key=signer_key)[0]
+   n=scheme.n
+   
+   encry_shares_dict = utils.from_json(request.POST['encry_shares'])
+   encry_shares = []
+   for i in range(n):
+       dict = encry_shares_dict[str(i)]
+       item = thresholdalgs.Signed_Encrypted_Share.from_dict(dict)
+       encry_shares.append(item)
+   
+   if len(encry_shares) == n:
+       for i in range(n):
+           receiver_id = trustees[i].key.id
+           receiver = trustees[i].key.name
+           encry_share_model = Signed_Encrypted_Share()
+           encry_share_model.election_id = election_id
+           encry_share_model.share = utils.to_json(encry_shares[i].to_dict())
+           encry_share_model.signer = signer_key.name
+           encry_share_model.signer_id = signer_id
+           encry_share_model.receiver = receiver
+           encry_share_model.receiver_id = receiver_id
+           encry_share_model.trustee_signer_id = trustee.id
+           encry_share_model.trustee_receiver_id = trustees[i].id
+           encry_share_model.save()
+
+    
+   if (len(Signed_Encrypted_Share.objects.filter(election_id= election.id).filter(signer_id = signer_id)) == n):
+       trustee.added_encrypted_shares = True
+       trustee.save()
+   try:
+      # send a note to admin
+      election.admin.send_message("%s - encrypted shares uploaded by " % election.name, "trustee %s (%s)" % (signer_trustee.name, signer_trustee.email))
+   except:
+      # ah well
+      pass
+    
+   return SUCCESS
+    
 @trustee_check
 def trustee_check_sk(request, election, trustee):
   return render_template(request, 'trustee_check_sk', {'election': election, 'trustee':trustee})
@@ -506,6 +746,16 @@ def trustee_upload_pk(request, election, trustee):
 ##
 ## Ballot Management
 ##
+@json
+def get_publicrandomness(request):
+  """
+  get some randomness to sprinkle into the sjcl entropy pool
+  """
+  return {
+    # back to urandom, it's fine
+    "randomness" : base64.b64encode(os.urandom(32))
+    #"randomness" : base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
+    }
 
 @json
 @election_view()
@@ -721,6 +971,7 @@ def one_election_cast_confirm(request, election):
       status_update_message = None
 
     # launch the verification task
+    
     tasks.cast_vote_verify_and_store.delay(
       cast_vote_id = cast_vote.id,
       status_update_message = status_update_message)

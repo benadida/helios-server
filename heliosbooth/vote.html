@@ -134,12 +134,13 @@ BOOTH.setup_workers = function(election_raw_json) {
 
            // result of encryption
            if (event.data.type == 'result') {
-             console.log("got encrypted answer " + q_num);
              
+            
              // this check ensures that race conditions
              // don't screw up votes.
              if (event.data.id == BOOTH.answer_timestamps[q_num]) {
                 BOOTH.encrypted_answers[q_num] = HELIOS.EncryptedAnswer.fromJSONObject(event.data.encrypted_answer, BOOTH.election);
+             	console.log("encrypted_answers.answer: "+BOOTH.encrypted_answers[q_num].answer)
              } else {
                 console.log("no way jose");
              }
@@ -197,6 +198,7 @@ BOOTH.launch_async_encryption_answer = function(question_num) {
    BOOTH.answer_timestamps[question_num] = new Date().getTime();
    BOOTH.encrypted_answers[question_num] = null;
    BOOTH.dirty[question_num] = false;
+   //console.log("encrypted_answers.answer_input: "+BOOTH.ballot.answers[question_num])
    BOOTH.workers[question_num].postMessage({
       'type' : 'encrypt',
       'answer' : BOOTH.ballot.answers[question_num],
@@ -208,7 +210,6 @@ BOOTH.launch_async_encryption_answer = function(question_num) {
 BOOTH.validate_question = function(question_num) {
     // check if enough answers are checked
     if (BOOTH.ballot.answers[question_num].length < BOOTH.election.questions[question_num].min) {
-        alert('You need to select at least ' + BOOTH.election.questions[question_num].min + ' answer(s).');
         return false;
     }
     
@@ -220,7 +221,7 @@ BOOTH.validate_question = function(question_num) {
        if (BOOTH.dirty[question_num]) {
          BOOTH.launch_async_encryption_answer(question_num);
        }
-    }						    
+    }		
     return true;
 };
 
@@ -252,22 +253,43 @@ BOOTH.show_question = function(question_num) {
   BOOTH.show_progress('1');
   BOOTH.show($('#question_div')).processTemplate({'question_num' : question_num, 
                       'last_question_num' : BOOTH.election.questions.length - 1,
-                      'question' : BOOTH.election.questions[question_num], 'show_reviewall' : BOOTH.all_questions_seen
+                      'question' : BOOTH.election.questions[question_num], 'show_reviewall' : BOOTH.all_questions_seen, 'election_type': BOOTH.election.election_type, 'answers': BOOTH.ballot.answers[question_num]
                 });
   
   // fake clicking through the answers, to trigger the disabling if need be
   // first we remove the answers array
   var answer_array = BOOTH.ballot.answers[question_num];
   BOOTH.ballot.answers[question_num] = [];
+  
 
   // we should not set the dirty bit here, so we save it away
   var old_dirty = BOOTH.dirty[question_num];
-  $(answer_array).each(function(i, ans) {
+  	$(answer_array).each(function(i, ans) {
     BOOTH.click_checkbox_script(question_num, ans, true);
   });
   BOOTH.dirty[question_num] = old_dirty;
 };
 
+BOOTH.read_ranked_form = function(form, question_num){ 
+	BOOTH.ballot.answers[question_num]=[];
+	var valid_form = true;
+	for (var i=1 ; i<BOOTH.election.questions[question_num].answers.length+1;i++ ) {
+		//if(form.elements[i].type == 'range'){
+			if(+form.elements[i].value>0 && +form.elements[i].value<BOOTH.election.questions[question_num].answers.length+1){
+			BOOTH.ballot.answers[question_num].push(+form.elements[i].value);
+			}
+			else {
+				valid_form = false;
+			}
+    		
+	}
+	if (valid_form)
+		alert ('Valid input: Click proceed to continue');
+	else
+		alert('Invalid input! Please fill in values between 1 and '+BOOTH.election.questions[question_num].answers.length);
+
+
+}	
 
 
 BOOTH.click_checkbox_script = function(question_num, answer_num) {
@@ -282,11 +304,12 @@ BOOTH.click_checkbox = function(question_num, answer_num, checked_p) {
      // multiple click events shouldn't screw this up
      if ($(BOOTH.ballot.answers[question_num]).index(answer_num) == -1)
         BOOTH.ballot.answers[question_num].push(answer_num);
-
-     $('#answer_label_' + question_num + "_" + answer_num).addClass('selected');
+   	 
+	$('#answer_label_' + question_num + "_" + answer_num).addClass('selected');
   } else {
      BOOTH.ballot.answers[question_num] = UTILS.array_remove_value(BOOTH.ballot.answers[question_num], answer_num);
      $('#answer_label_' + question_num + "_" + answer_num).removeClass('selected');
+     
   }
 
   if (BOOTH.election.questions[question_num].max != null && BOOTH.ballot.answers[question_num].length >= BOOTH.election.questions[question_num].max) {
@@ -315,7 +338,6 @@ BOOTH.show_processing_before = function(str_to_execute) {
 
 BOOTH.show_encryption_message_before = function(func_to_execute) {
     BOOTH.show($('#encrypting_div'));
-
     func_to_execute();
 };
 
@@ -393,9 +415,13 @@ $(document).ready(function() {
 
 BOOTH.show_confirm = function() {
     // process the answers
-    var choices = BALLOT.pretty_choices(BOOTH.election, BOOTH.ballot);
-
-    BOOTH.show($('#confirm_div')).processTemplate({'questions' : BOOTH.election.questions, 'choices' : choices});
+    if(BOOTH.election.election_type != 'ranked election'){
+    	var choices = BALLOT.pretty_choices(BOOTH.election, BOOTH.ballot);
+    }
+    else{
+    	var choices = BALLOT.ranked_choices(BOOTH.election, BOOTH.ballot);
+    }
+    BOOTH.show($('#confirm_div')).processTemplate({'election_type': BOOTH.election.election_type, 'questions' : BOOTH.election.questions, 'choices' : choices});
 };
 
 BOOTH.check_encryption_status = function() {
@@ -452,14 +478,15 @@ BOOTH.seal_ballot_raw = function() {
     } else {
       BOOTH.wait_for_ciphertexts();
     }
+    
 };
 
 BOOTH.request_ballot_encryption = function() {
+	//encryption on server side
     $.post(BOOTH.election_url + "/encrypt-ballot", {'answers_json': $.toJSON(BOOTH.ballot.answers)}, function(result) {
       //BOOTH.encrypted_ballot = HELIOS.EncryptedVote.fromJSONObject($.secureEvalJSON(result), BOOTH.election);
       // rather than deserialize and reserialize, which is inherently slow on browsers
       // that already need to do network requests, just remove the plaintexts
-
       BOOTH.encrypted_ballot_with_plaintexts_serialized = result;
       var ballot_json_obj = $.secureEvalJSON(BOOTH.encrypted_ballot_with_plaintexts_serialized);
       var answers = ballot_json_obj.answers;
@@ -495,7 +522,6 @@ BOOTH.audit_ballot = function() {
 
 BOOTH.post_audited_ballot = function() {
   $.post(BOOTH.election_url + "/post-audited-ballot", {'audited_ballot': BOOTH.audit_trail}, function(result) {
-    alert('This audited ballot has been posted.\nRemember, this vote will only be used for auditing and will not be tallied.\nClick "back to voting" and cast a new ballot to make sure your vote counts.');
   });
 };
 

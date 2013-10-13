@@ -1,0 +1,26 @@
+{% extends TEMPLATE_BASE %}
+
+{% block js %}
+<script language="javascript" src="{{ HELIOS_STATIC }}/underscore-min.js"></script>
+<script language="javascript" src="{{ HELIOS_STATIC }}/jquery-jtemplates.js"></script>
+<script language="javascript" src="{{ HELIOS_STATIC }}/jquery.json.min.js"></script>
+
+<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/jsbn.js"></script>
+<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/jsbn2.js"></script>
+<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/sjcl.js"></script>
+
+<script language="javascript">
+  // required for jscrypto library
+  var JSCRYPTO_HOME = "{{HELIOS_STATIC}}/jscrypto";
+</script>
+
+<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/class.js"></script>  
+<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/bigint.js"></script>
+<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/random.js"></script>
+<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/elgamal.js"></script>
+<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/sha1.js"></script>
+<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/sha2.js"></script>
+<script language="javascript" src="{{ HELIOS_STATIC }}/jscrypto/helios.js"></script>
+{% endblock %}
+
+

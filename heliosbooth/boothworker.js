@@ -26,6 +26,7 @@ var ELECTION = null;
 var Q_NUM = null;
 
 function do_setup(message) {
+	
     console.log("setting up worker " + message.question_num);
 
     ELECTION = HELIOS.Election.fromJSONString(message.election);
@@ -33,11 +34,16 @@ function do_setup(message) {
 }
 
 function do_encrypt(message) {
-    console.log("encrypting answer for question " + ELECTION.questions[Q_NUM]);
-
-    var encrypted_answer = new HELIOS.EncryptedAnswer(ELECTION.questions[Q_NUM], message.answer, ELECTION.public_key);
-
-    console.log("done encrypting");
+    console.log("encrypting answer for question ");
+    var ranking = false;
+	if(ELECTION.election_type == 'ranked election'){
+		ranking = true;
+	}
+	var start = new Date().getTime();
+    var encrypted_answer = new HELIOS.EncryptedAnswer(ELECTION.questions[Q_NUM], message.answer, ELECTION.public_key, null, ranking);
+	var end = new Date().getTime();
+	var encrypting_time = end-start;
+    console.log("done encrypting in "+String(encrypting_time)+" ms");
 
     // send the result back
     self.postMessage({

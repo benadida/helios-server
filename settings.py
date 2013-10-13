@@ -12,7 +12,7 @@ DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    ('Ben Adida', 'ben@adida.net'),
+    ('Robbert Coeckelbergh', 'robbert.coeckelbergh@gmail.com'),
 )
 
 MANAGERS = ADMINS
@@ -56,7 +56,7 @@ MEDIA_URL = ''
 ADMIN_MEDIA_PREFIX = '/media/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
+SECRET_KEY = get_from_env('SECRET_KEY', '111111111111111111111111111')
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
@@ -86,6 +86,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     ## needed for queues
     'djcelery',
+    #'celerytest',
     'djkombu',
     ## needed for schema migration
     'south',
@@ -93,6 +94,9 @@ INSTALLED_APPS = (
     'auth',
     'helios',
     'server_ui',
+    'bulletin_board',
+    
+
 )
 
 ##
@@ -107,8 +111,8 @@ VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
 
 
 # Change your email settings
-DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'ben@adida.net')
-DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Ben for Helios')
+DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'robbert.coeckelbergh@gmail.com')
+DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME','Robbert for Helios')
 SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 
 LOGIN_URL = '/auth/'
@@ -151,7 +155,7 @@ HELIOS_PRIVATE_DEFAULT = False
 
 # authentication systems enabled
 #AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
-AUTH_ENABLED_AUTH_SYSTEMS = ['google']
+AUTH_ENABLED_AUTH_SYSTEMS = ['password']
 AUTH_DEFAULT_AUTH_SYSTEM = None
 
 # facebook
@@ -171,13 +175,12 @@ TWITTER_DM_TOKEN = {"oauth_token": "", "oauth_token_secret": "", "user_id": "", 
 # LinkedIn
 LINKEDIN_API_KEY = ''
 LINKEDIN_API_SECRET = ''
-
-# email server
-EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
-EMAIL_PORT = 2525
-EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
-EMAIL_USE_TLS = False
+# email serverul
+EMAIL_HOST = get_from_env('EMAIL_HOST', 'smtp.gmail.com')   #localhost
+EMAIL_PORT = 587 #2525 gmail 587
+EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', 'robbert.coeckelbergh@gmail.com') #empty
+EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', 's@L2AwJVDB') #empty
+EMAIL_USE_TLS = True
 
 # set up logging
 import logging

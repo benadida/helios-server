@@ -134,3 +134,22 @@ Helios
 def election_notify_admin(election_id, subject, body):
     election = Election.objects.get(id = election_id)
     election.admin.send_message(subject, body)
+
+
+### Own tasks####
+@task()
+def add(x, y):
+    return x + y
+
+@task()
+def change_name(election_id, name):
+    election = Election.objects.get(id = election_id)
+    election.name = name
+    election.save() #save object in database
+    return election
+
+
+    
+    
+    
+

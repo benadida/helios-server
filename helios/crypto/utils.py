@@ -16,9 +16,19 @@ def hash_b64(s):
   hasher = sha256(s)
   result= base64.b64encode(hasher.digest())[:-1]
   return result
-
+  
+def encode_string_to_decimal(s):
+    tmp = ''
+    for i in range(len(s)):
+        c = s[i]
+        tmp = tmp+str(ord(c))
+        
+    return int(tmp)
 def to_json(d):
   return simplejson.dumps(d, sort_keys=True)
+
+def to_json_js(d):
+  return simplejson.dumps(d, sort_keys=True, separators=(',',':'))
 
 def from_json(json_str):
   if not json_str: return None

@@ -6,10 +6,12 @@ Ben Adida
 """
 
 import algs
+from algs import Utils
 import logging
 import utils
 import uuid
 import datetime
+#Added by Robbert coeckelbergh
 
 class HeliosObject(object):
   """
@@ -201,7 +203,7 @@ class EncryptedAnswer(HeliosObject):
     }
     
     if self.overall_proof:
-      value['overall_proof'] = self.overall_proof.to_dict()
+      value['overall_proof'] = [p.to_dict() for p in self.overall_proof]
     else:
       value['overall_proof'] = None
 
@@ -219,7 +221,8 @@ class EncryptedAnswer(HeliosObject):
     ea.individual_proofs = [algs.EGZKDisjunctiveProof.from_dict(p) for p in d['individual_proofs']]
     
     if d['overall_proof']:
-      ea.overall_proof = algs.EGZKDisjunctiveProof.from_dict(d['overall_proof'])
+      ea.overall_proof = [algs.EGZKDisjunctiveProof.from_dict(p) for p in d['overall_proof']]
+
     else:
       ea.overall_proof = None
 
@@ -322,16 +325,17 @@ class EncryptedVote(HeliosObject):
       return False
       
     # check proofs on all of answers
-    for question_num in range(len(election.questions)):
-      ea = self.encrypted_answers[question_num]
-
-      question = election.questions[question_num]
-      min_answers = 0
-      if question.has_key('min'):
-        min_answers = question['min']
-        
-      if not ea.verify(election.public_key, min=min_answers, max=question['max']):
-        return False
+    if not (election.election_type == 'ranked election'):
+        for question_num in range(len(election.questions)):
+          ea = self.encrypted_answers[question_num]
+    
+          question = election.questions[question_num]
+          min_answers = 0
+          if question.has_key('min'):
+            min_answers = question['min']
+            
+          if not ea.verify(election.public_key, min=min_answers, max=question['max']):
+            return False
         
     return True
     
@@ -392,7 +396,7 @@ class Election(HeliosObject):
       'frozen_at', 'public_key', 'private_key', 'cast_url', 'result', 'result_proof', 'use_voter_aliases', 'voting_starts_at', 'voting_ends_at', 'election_type']
 
   JSON_FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description', 'voters_hash', 'openreg',
-      'frozen_at', 'public_key', 'cast_url', 'use_voter_aliases', 'voting_starts_at', 'voting_ends_at']
+      'frozen_at', 'public_key', 'cast_url', 'use_voter_aliases', 'voting_starts_at','election_type', 'voting_ends_at']
 
   # need to add in v3.1: use_advanced_audit_features, election_type, and probably more
 
@@ -403,12 +407,16 @@ class Election(HeliosObject):
     if field_name == 'frozen_at' or field_name == 'voting_starts_at' or field_name == 'voting_ends_at':
       if type(field_value) == str or type(field_value) == unicode:
         return datetime.datetime.strptime(field_value, '%Y-%m-%d %H:%M:%S')
-      
+    
+    if field_name == 'elecion_type':
+        return field_value  
+    
     if field_name == 'public_key':
       return algs.EGPublicKey.fromJSONDict(field_value)
-      
+    
     if field_name == 'private_key':
       return algs.EGSecretKey.fromJSONDict(field_value)
+    
     
   def _process_value_out(self, field_name, field_value):
     # the date
@@ -417,6 +425,9 @@ class Election(HeliosObject):
 
     if field_name == 'public_key' or field_name == 'private_key':
       return field_value.toJSONDict()
+  
+    if field_name == 'election_type':
+        return str(field_value)
     
   @property
   def registration_status_pretty(self):
@@ -460,6 +471,8 @@ class Election(HeliosObject):
 
     return prettified_result
 
+        
+
     
 class Voter(HeliosObject):
   """
@@ -491,7 +504,7 @@ class Trustee(HeliosObject):
   """
   a trustee
   """
-  FIELDS = ['uuid', 'public_key', 'public_key_hash', 'pok', 'decryption_factors', 'decryption_proofs', 'email']
+  FIELDS = ['uuid', 'public_key', 'public_key_hash', 'pok', 'decryption_factors', 'decryption_proofs', 'email', 'committed_points','received_points', 'prepared_mpc']
 
   def _process_value_in(self, field_name, field_value):
     if field_name == 'public_key':
@@ -652,7 +665,8 @@ class Tally(HeliosObject):
       answers = question['answers']
       
       # for each possible answer to each question
-      for answer_num in range(len(answers)):
+      
+      for answer_num in range(len(encrypted_vote.encrypted_answers[question_num].choices)):
         # do the homomorphic addition into the tally
         enc_vote_choice = encrypted_vote.encrypted_answers[question_num].choices[answer_num]
         enc_vote_choice.pk = self.public_key
@@ -755,7 +769,7 @@ class Tally(HeliosObject):
     
     # go through each one
     for q_num, q in enumerate(self.tally):
-      q_result = []
+      q_result =[]
 
       for a_num, a in enumerate(q):
         # coalesce the decryption factors into one list
@@ -775,4 +789,201 @@ class Tally(HeliosObject):
   def _process_value_out(self, field_name, field_value):
     if field_name == 'tally':
       return [[a.toJSONDict() for a in q] for q in field_value]    
+        
+
+##Added by Robbert Coeckelbergh
+class Thresholdscheme(HeliosObject):
+    FIELDS = ['election', 'n','k','ground_1','ground_2']
+
+    def __init__(self,election,n,k, ground_1, ground_2):
+        self.ground_1=ground_1
+        self.ground_2=ground_2
+        #self.election=election
+        #self.trustees = self.election.get_trustees()
+        #self.q = self.trustees[0].public_key.q
+        #self.n = len(self.trustees)  #len(self.trustees)
+        #self.k = self.n   #nog aan te passen
+        self.n = n
+        self.k = k
+        self.election = election
+   
+    
+
+    @classmethod
+    def fromJSONDict(cls, d):
+        if not d:
+          return None
+          
+        scheme = cls()
+        if d.has_key('election'):
+            scheme.election = Election._process_value_in('election',d)
+        else:
+            scheme.election = None
+        scheme.n = d['n']
+        scheme.q = d['q']
+        scheme.k = d['k']
+        scheme.ground_1 = d['ground_1']
+        scheme.ground_2 = d['ground_2']
+        
+        return scheme
+        
+          
+class Polynomial(HeliosObject):
+    #c0 is the free term and is equal to coeff[0]
+    #grade is k-1
+    def __init__(self,c0=None,scheme=None,EG=None):
+        self.coeff = []
+        self.coeff.append(c0)
+        self.EG=EG
+        self.scheme = scheme
+        self.grade = self.scheme.k-1
+        p = self.EG.p
+        for i in range(self.grade):
+            self.coeff.append(Utils.random_mpz_lt(p)) # Dit moet p zijn!!? werkt niet met p..? fout?
+            #shares mogen niet groter dan p worden, de modulus mag hier niet van genomen worden
+    
+    
+    def set(self,coeff):
+        self.coeff=coeff
+        
+    
+    def evaluate(self,x):
+        p = self.EG.p
+        value = 0
+        for i in range(self.grade+1):
+            value = (value+(self.coeff[i]*pow(x,i,p)))%(p-1)   
+        return value
+    def create_points(self,trustees):
+        n = len(trustees)
+        points = []
+        for i in trustees:
+            point = Point(i.id,self.evaluate(i.id))
+            #point_JSON = point.toJSONdict()
+            points.append(point)
+        return points
+    
+class Point(HeliosObject):
+    FIELDS = ['x_value', 'y_value']
+
+    def __init__(self, x, y):
+        self.x_value = x        
+        self.y_value = y
+        
+    def on_polynomial(self,polynom):
+        if polynom.evaluate(self.x_value) == self.y_value:
+            return True
+        else:
+            return False
+    def toJSONDict(u):
+        value = {
+        'x_value': self.x_value,
+        'y_value' : self.y_value}
+    
+        return value
+        
+        
+class Commitment_E():
+
+    def __init__(self,ground_1=None,ground_2=None,value=None):
+        #self.s = None
+        #self.t = None
+        self.ground_1 = ground_1
+        self.ground_2 = ground_2
+        self.value = value
+        
+
+    
+    def generate(self,s, t, ground_1, ground_2,p):
+        #self.t = t
+        #self.s = s
+        
+        self.ground_1 = ground_1
+        self.ground_2 = ground_2
+        self.value = (pow(self.ground_1, s,p)* pow(self.ground_2,t,p)) % p
+
+    
+    @classmethod
+    def from_dict(cls, d):
+        """
+        Deserialize from dictionary.
+        """
+        ground_1 = int(d['ground_1'])
+        ground_2 = int(d['ground_2'])
+        value = int(d['value'])
+        com =Commitment_E(ground_1,ground_2,value)
+
+        return com
+    
+            
+    def to_dict(self):
+        """
+        Serialize to dictionary.
+        """
+        return {'ground_1' : str(self.ground_1), 'ground_2' : str(self.ground_2), 'value' : str(self.value)}
+           
+class Committed_Point(HeliosObject):
+    FIELDS = ['trustee_id', 'point', 'E','Ei']
+
+    def __init__(self,trustee_id, point, E,Ei):
+        self.trustee_id = trustee_id
+        self.point = point
+        
+        #self.sender_trustee=sender_trustee
+        #self.receiver_trustee = receiver_trustee
+        self.E = E
+        self.Ei = Ei  # list of commitments
+    
+    def toJSONDict(self):
+        
+        #create json of list Ei
+        Ei_JSON = []
+        for i in range(len(self.Ei)):
+            Ei_JSON.append(self.Ei[i].toJSONDict())
+        value = {
+        'trustee_id': self.trustee_id.toJSONDict(),
+        'point': self.point.toJSONDict(),
+        'E' : self.E.toJSONDict(),
+        'Ei': Ei_JSON
+        }
+    
+        return value
+    
+    def verify_commitments(self):
+        #election = self.election
+        #if self.receiver_trustee.point_number != None:
+            #point_number = self.receiver_trustee.point_number
+        q = self.E.q
+        point_number = self.point.x_value
+        result = 1
+        for j in range(len(self.Ei)):
+                i=point_number
+                interm = pow(i,j,q)
+                result = (result*pow(self.Ei[j].value,interm, q)) % q
+                if result != self.E.value:
+                    return False
+                else:
+                    return True
+        #else:
+         #   return False
+         
+class Feedback():
+    Fields = ['trustee_id','feedback']
+    def __init__(self,trustee_id,feedback):
+        self.trustee_id=trustee_id
+        self.feedback = feedback
+        
+    def set_feedback(self, feedback):
+        self.feedback = feedback
+
+    
+    #@property
+    #def datatype(self):
+        #return 'legacy/Feedback' 
+    
+    def _process_value_in(self, field_name, field_value):
+            return field_value
+      
+    #def _process_value_out(self, field_name, field_value):
+        #if field_name == '':
+            #return [[a.toJSONDict() for a in q] for q in field_value]    
         

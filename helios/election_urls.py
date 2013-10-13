@@ -34,7 +34,8 @@ urlpatterns = patterns('',
     (r'^/trustees/(?P<trustee_uuid>[^/]+)/upoad-pk$', trustee_upload_pk),
     (r'^/trustees/(?P<trustee_uuid>[^/]+)/decrypt-and-prove$', trustee_decrypt_and_prove),
     (r'^/trustees/(?P<trustee_uuid>[^/]+)/upload-decryption$', trustee_upload_decryption),
-    
+    (r'^/trustees/(?P<trustee_uuid>[^/]+)/upload-encrypted-shares$', trustee_upload_encrypted_shares),
+
     # election voting-process actions
     (r'^/view$', one_election_view),
     (r'^/result$', one_election_result),

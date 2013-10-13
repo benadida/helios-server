@@ -1,0 +1,27 @@
+{% if trustee_list %}
+    <ul>
+    {% for trustee in trustee_list %}
+        <li>{{trustee.id}}. <a href="{{trustee.id}}/">{{trustee.name}}</a> </\a> </li>    {% endfor %}
+    </ul>
+{% else %}
+    <p>There are no trustees for this election.</p>
+{% endif %}
+
+<p>
+<a href="add/">Add a Trustee</a>
+</p>
+<p>
+<a href="remove/">Remove a Trustee</a>
+</p>
+
+<p>
+<a href="freeze_trustees_list/">Freeze the list of trustees</a>
+</p>
+
+<p>
+<a href="../">Back</a>
+</p>
+
+<p>
+<a href="../../../">Bulletin Board</a>
+</p>

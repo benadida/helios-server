@@ -9,7 +9,7 @@ ben@adida.net
 
 import math, hashlib, logging
 import randpool, number
-
+import fractions
 import numtheory
 
 # some utilities
@@ -40,6 +40,14 @@ class Utils:
     def random_prime(cls, n_bits):
         return number.getPrime(n_bits, cls.RAND.get_bytes)
     
+    @classmethod
+    def random_k_relative_prime_p_1(cls,p=None):
+        while True:
+            k = cls.random_mpz_lt(p-1)
+            if fractions.gcd(k,p-1)==1:
+                return k
+            
+  
     @classmethod
     def is_prime(cls, mpz):
         #return numtheory.miller_rabin(mpz)
@@ -120,13 +128,13 @@ class ElGamal:
 
       return EG
 
-    def generate_keypair(self):
+    def generate_keypair(self, sk = None):
       """
       generates a keypair in the setting
       """
       
       keypair = EGKeyPair()
-      keypair.generate(self.p, self.q, self.g)
+      keypair.generate(self.p, self.q, self.g, sk)
   
       return keypair
       
@@ -146,15 +154,17 @@ class EGKeyPair:
       self.pk = EGPublicKey()
       self.sk = EGSecretKey()
 
-    def generate(self, p, q, g):
+    def generate(self, p, q, g, x = None):
       """
       Generate an ElGamal keypair
       """
       self.pk.g = g
       self.pk.p = p
       self.pk.q = q
+      self.sk.x = x
       
-      self.sk.x = Utils.random_mpz_lt(p)
+      if (self.sk.x == None):
+          self.sk.x = Utils.random_mpz_lt(p)
       self.pk.y = pow(g, self.sk.x, p)
       
       self.sk.pk = self.pk
@@ -726,4 +736,39 @@ def EG_fiatshamir_challenge_generator(commitment):
 def DLog_challenge_generator(commitment):
   string_to_hash = str(commitment)
   return int(hashlib.sha1(string_to_hash).hexdigest(),16)
+  
+  
+##Added By Robbert
 
+class Commitment_E(object):
+    FIELDS = ['s', 't', 'ground_1', 'ground_2','value']
+
+    def __init__(self):
+        self.s = None
+        self.t = None
+        self.ground_1 = None
+        self.ground_2 = None
+        self.value = None
+        
+    def toJSONDict(self):
+        value = {
+        's': self.s,
+        't' : self.t,
+        'ground_1' : self.ground_1,
+        'ground_2' : self.ground_2,
+        'value': self.value
+        }
+    
+        return value
+    
+    def generate(self,s, t, ground_1, ground_2,q):
+        self.t = t
+        self.s = s
+        self.q = q
+        self.ground_1 = ground_1
+        self.ground_2 = ground_2
+        self.value = (pow(self.ground_1, self.s,self.q)* pow(self.ground_2,self.t,self.q)) % self.q
+        
+        
+        
+        

@@ -117,6 +117,8 @@ class LDObject(object):
         self.wrapped_obj = wrapped_obj
         self.structured_fields = {}
 
+    def get_fields(self):
+        return FIELDS
     @classmethod
     def instantiate(cls, obj, datatype=None):
         "FIXME: should datatype override the object's internal datatype? probably not"

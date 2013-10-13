@@ -58,10 +58,12 @@ class EncryptedAnswer(WorkflowObject):
     
     return False
     
-  def verify(self, pk, min=0, max=1):
-    possible_plaintexts = self.generate_plaintexts(pk)
+  def verify(self,election, pk, min=0, max=1):
+    possible_plaintexts = self.generate_plaintexts(pk) #2 plaintexts: g^0 and g^1
     homomorphic_sum = 0
-      
+    homomorphic_array_of_two = []
+    homomorphic_sums = []
+          
     for choice_num in range(len(self.choices)):
       choice = self.choices[choice_num]
       choice.pk = pk
@@ -70,17 +72,41 @@ class EncryptedAnswer(WorkflowObject):
       # verify the proof on the encryption of that choice
       if not choice.verify_disjunctive_encryption_proof(possible_plaintexts, individual_proof, algs.EG_disjunctive_challenge_generator):
         return False
-
+    
+      
       # compute homomorphic sum if needed
-      if max != None:
-        homomorphic_sum = choice * homomorphic_sum
+      count = 0
+      if election.election_type == 'ranked election':
+          if count == 1:
+                homomorphic_sum = choice * homomorphic_sum
+                homomorphic_sums.append(homomorphic_sum)
+                homomorphoc_sum = 0
+                count = 0
+          else:
+                homomorphic_sum = choice * homomorphic_sum
+                count = count+1
+                    
+      else:
+          if max != None:
+            homomorphic_sum = choice * homomorphic_sum
     
     if max != None:
       # determine possible plaintexts for the sum
       sum_possible_plaintexts = self.generate_plaintexts(pk, min=min, max=max)
-
-      # verify the sum
-      return homomorphic_sum.verify_disjunctive_encryption_proof(sum_possible_plaintexts, self.overall_proof, algs.EG_disjunctive_challenge_generator)
+      
+      #if not ranked election just one verify
+      if election.election_type != 'ranked election':
+          # verify the sum
+          return homomorphic_sum.verify_disjunctive_encryption_proof(sum_possible_plaintexts, self.overall_proof[0], algs.EG_disjunctive_challenge_generator)
+      
+      #if ranked election check all sums
+      else:
+          check_total = True
+          sum_possible_plaintexts = self.generate_plaintexts(pk,0,1)
+          for index in range(len(homomorphic_sums)):
+                check = homomorphic_sums[index].verify_disjunctive_encryption_proof(sum_possible_plaintexts, self.overall_proof[index], algs.EG_disjunctive_challenge_generator)
+                check_total = check and check_total
+          return check_total
     else:
       # approval voting, no need for overall proof verification
       return True
@@ -192,7 +218,8 @@ class EncryptedVote(WorkflowObject):
     # check ID
     if self.election_uuid != election.uuid:
       return False
-      
+    
+    
     # check proofs on all of answers
     for question_num in range(len(election.questions)):
       ea = self.encrypted_answers[question_num]
@@ -202,7 +229,7 @@ class EncryptedVote(WorkflowObject):
       if question.has_key('min'):
         min_answers = question['min']
         
-      if not ea.verify(election.public_key, min=min_answers, max=question['max']):
+      if not ea.verify(election, election.public_key, min=min_answers, max=question['max']):
         return False
         
     return True
@@ -273,7 +300,12 @@ class Tally(WorkflowObject):
 
     if election:
       self.init_election(election)
-      self.tally = [[0 for a in q['answers']] for q in self.questions]
+      if election.election_type == 'ranked election':
+          
+          self.tally = [[0 for a in range((len(q['answers'])*(len(q['answers'])-1))*2/2  )] for q in self.questions]
+      else:
+          self.tally = [[0 for a in q['answers']] for q in self.questions]
+
     else:
       self.questions = None
       self.public_key = None
@@ -307,7 +339,7 @@ class Tally(WorkflowObject):
       answers = question['answers']
       
       # for each possible answer to each question
-      for answer_num in range(len(answers)):
+      for answer_num in range(len(encrypted_vote.encrypted_answers[question_num].choices)):
         # do the homomorphic addition into the tally
         enc_vote_choice = encrypted_vote.encrypted_answers[question_num].choices[answer_num]
         enc_vote_choice.pk = self.public_key
@@ -329,7 +361,7 @@ class Tally(WorkflowObject):
       question_factors = []
       question_proof = []
 
-      for answer_num, answer in enumerate(answers):
+      for answer_num in range(len(self.tally[question_num])):
         # do decryption and proof of it
         dec_factor, proof = sk.decryption_factor_and_proof(self.tally[question_num][answer_num])
 
@@ -362,7 +394,7 @@ class Tally(WorkflowObject):
       question_tally = []
       question_proof = []
 
-      for answer_num in range(len(answers)):
+      for answer_num in range(len(self.tally[question_num])):
         # do decryption and proof of it
         plaintext, proof = sk.prove_decryption(self.tally[question_num][answer_num])
 
@@ -385,6 +417,7 @@ class Tally(WorkflowObject):
     # go through each one
     for q_num, q in enumerate(self.tally):
       for a_num, answer_tally in enumerate(q):
+        #answer_tally = q[a_num]
         # parse the proof
         #proof = algs.EGZKProof.fromJSONDict(decryption_proofs[q_num][a_num])
         proof = decryption_proofs[q_num][a_num]
@@ -413,12 +446,18 @@ class Tally(WorkflowObject):
     for q_num, q in enumerate(self.tally):
       q_result = []
 
-      for a_num, a in enumerate(q):
+      for a_num in range(len(self.tally[q_num])):
         # coalesce the decryption factors into one list
         dec_factor_list = [df[q_num][a_num] for df in decryption_factors]
+        #raise Exception(dec_factor_list)
+
         raw_value = self.tally[q_num][a_num].decrypt(dec_factor_list, public_key)
-        
+        #raise Exception(raw_value)
+
         q_result.append(dlog_table.lookup(raw_value))
+        #raise Exception(self.result)
+
+        #raise Exception(q_result)
 
       result.append(q_result)
     
