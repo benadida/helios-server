@@ -56,7 +56,7 @@ class Election(HeliosModel):
     ('election', 'Election'),
     ('referendum', 'Referendum'),
     ('ranked election', 'Ranked Election')
-    )
+  )
 
   election_type = models.CharField(max_length=250, null=False, default='election', choices = ELECTION_TYPES)
   private_p = models.BooleanField(default=False, null=False)
@@ -96,8 +96,8 @@ class Election(HeliosModel):
   
   # dates at which things happen for the election
   frozen_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-  frozen_trustee_list = models.BooleanField(default = False)
-  use_threshold=models.BooleanField(default = True)
+  frozen_trustee_list = models.BooleanField(default=False)
+  use_threshold=models.BooleanField(default=True)
   encrypted_shares_uploaded = models.BooleanField(default=False)
   archived_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
   
@@ -140,8 +140,6 @@ class Election(HeliosModel):
   # no longer needed since it's all trustees
   result_proof = JSONField(null=True)
   
-
-
   # help email
   help_email = models.EmailField(null=True)
 
@@ -1351,7 +1349,7 @@ class Trustee(HeliosModel):
   #committed_points = LDObjectField(type_hint = datatypes.arrayOf('legacy/Committed_Point'), null=True)
   #committed_points = []
   #received_points =  LDObjectField(type_hint = datatypes.arrayOf('legacy/Committed_Point'), null=True)
- # prepared_mpc = models.BooleanField(default = False, null = False)
+  #prepared_mpc = models.BooleanField(default = False, null = False)
   #feedback = LDObjectField(type_hint = datatypes.arrayOf('legacy/Feedback'), null=True)
 
   #F_points = []

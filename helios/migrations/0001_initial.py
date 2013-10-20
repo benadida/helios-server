@@ -7,7 +7,7 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding model 'Election'
         db.create_table('helios_election', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -42,7 +42,7 @@ class Migration(SchemaMigration):
             ('encrypted_tally', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
             ('result', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
             ('result_proof', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
-            #('threshold_scheme', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
+            ('help_email', self.gf('django.db.models.fields.EmailField')(null=True)),
         ))
         db.send_create_signal('helios', ['Election'])
 
@@ -123,7 +123,7 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-        
+
         # Deleting model 'Election'
         db.delete_table('helios_election')
 
@@ -209,7 +209,7 @@ class Migration(SchemaMigration):
             'voting_extended_until': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'voting_started_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'voting_starts_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
-
+            'help_email': ('django.db.models.fields.EmailField', [], {'null': 'True'}),
         },
         'helios.electionlog': {
             'Meta': {'object_name': 'ElectionLog'},
@@ -257,8 +257,6 @@ class Migration(SchemaMigration):
             'uploaded_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'voter_file': ('django.db.models.fields.files.FileField', [], {'max_length': '250'})
         },
-    
-        
     }
 
     complete_apps = ['helios']
