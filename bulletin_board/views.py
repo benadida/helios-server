@@ -465,7 +465,7 @@ def download_index(request, election_id):
         return HttpResponse(template.render(context))
     
     else:
-        return HttpResponse('Download not yet available \nTry again when all shares are uploaded.')
+        return HttpResponse('Download not yet available.\nTry again when all shares are uploaded.')
     
 def download_data(request,election_id, receiver_id):
     election = Election.objects.get(id=election_id)
@@ -497,11 +497,11 @@ def download_data(request,election_id, receiver_id):
         
         string = string + '\n'
     
-    file = open('/home/robbert/Documenten/Thesis/helios-server-robbert/bulletin_board/files/data_receiver_'+str(receiver_id)+'.txt',"w")
+    file = open('bulletin_board/files/data_receiver_'+str(receiver_id)+'.txt',"w")
     file.write(string)
     file.close()
     
-    file = open('/home/robbert/Documenten/Thesis/helios-server-robbert/bulletin_board/files/data_receiver_'+str(receiver_id)+'.txt',"r")
+    file = open('bulletin_board/files/data_receiver_'+str(receiver_id)+'.txt',"r")
     mimetype = mimetypes.guess_type('data_receiver_'+str(receiver_id)+'.txt')[0]
     if not mimetype: mimetype = "application/octet-stream"
 

@@ -12,7 +12,7 @@ DEBUG = (get_from_env('DEBUG', '1') == '1')
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    ('Robbert Coeckelbergh', 'robbert.coeckelbergh@gmail.com'),
+    ('Pieter Maene', 'p.maene@gmail.com'),
 )
 
 MANAGERS = ADMINS
@@ -116,8 +116,8 @@ VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
 
 
 # Change your email settings
-DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'robbert.coeckelbergh@gmail.com')
-DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME','Robbert for Helios')
+DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'helios@heliosvoting.org')
+DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME','Helios')
 SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 
 LOGIN_URL = '/helios_auth/'

@@ -633,7 +633,7 @@ class Election(HeliosModel):
         
         trustee.key = key
         trustee.save()
-  #Added by Robbert Coeckelbergh
+
   def get_scheme(self):
       schemes = self.thresholdscheme_set.all()
       if len(schemes)==1:
@@ -1356,8 +1356,6 @@ class Trustee(HeliosModel):
   #E = []
   #Ei =[]
   
-  #added by Robbert Coeckelbergh
-  
   
   class Meta:
     unique_together = (('election', 'email'))
@@ -1414,7 +1412,6 @@ class Trustee(HeliosModel):
       #committed_points = trustee.committed_points_set.all()
       #return committed_points
    
-  ##Added by RObbert Coeckelbergh  
   def prepare_mpc(self,scheme):
       trustees = self.election.get_trustees()
       n = len(trustees)

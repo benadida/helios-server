@@ -11,7 +11,6 @@ import logging
 import utils
 import uuid
 import datetime
-#Added by Robbert coeckelbergh
 
 class HeliosObject(object):
   """
@@ -791,7 +790,6 @@ class Tally(HeliosObject):
       return [[a.toJSONDict() for a in q] for q in field_value]    
         
 
-##Added by Robbert Coeckelbergh
 class Thresholdscheme(HeliosObject):
     FIELDS = ['election', 'n','k','ground_1','ground_2']
 
