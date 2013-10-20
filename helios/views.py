@@ -84,7 +84,7 @@ def get_socialbuttons_url(url, text):
   
 
 ##
-## remote auth utils
+## remote helios_auth utils
 
 def user_reauth(request, user):
   # FIXME: should we be wary of infinite redirects here, and

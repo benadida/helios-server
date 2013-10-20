@@ -483,7 +483,7 @@ class ElectionBlackboxTests(WebTest):
                 "use_advanced_audit_features": "1",
                 "private_p" : "0"})
 
-        self.assertRedirects(response, "/auth/?return_url=/helios/elections/new")
+        self.assertRedirects(response, "/helios_auth/?return_url=/helios/elections/new")
     
     def test_election_edit(self):
         # a bogus call to set up the session

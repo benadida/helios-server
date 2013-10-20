@@ -104,11 +104,11 @@ class User(models.Model):
     if not eligibility_case.has_key('constraint'):
       return True
     
-    # from here on we know we match the auth system, but do we match one of the constraints?  
+    # from here on we know we match the helios_auth system, but do we match one of the constraints?  
 
     auth_system = AUTH_SYSTEMS[self.user_type]
 
-    # does the auth system allow for checking a constraint?
+    # does the helios_auth system allow for checking a constraint?
     if not hasattr(auth_system, 'check_constraint'):
       return False
       
@@ -153,7 +153,7 @@ class User(models.Model):
     else:
       name_display = self.pretty_name
 
-    return """<img border="0" height="%s" src="/static/auth/login-icons/%s.png" alt="%s" /> %s""" % (
+    return """<img border="0" height="%s" src="/static/helios_auth/login-icons/%s.png" alt="%s" /> %s""" % (
       str(int(size)), self.user_type, self.user_type, name_display)
 
   @property

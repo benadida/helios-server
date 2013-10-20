@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from models import *
 from helios.models import Election, Trustee, Thresholdscheme
 from django.template import Context, loader
-from auth.security import *
+from helios_auth.security import *
 from helios.crypto import algs,elgamal
 from helios import utils
 from helios.crypto import utils as cryptoutils

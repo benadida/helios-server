@@ -1,5 +1,5 @@
 """
-Generic Security -- for the auth system
+Generic Security -- for the helios_auth system
 
 Ben Adida (ben@adida.net)
 """
