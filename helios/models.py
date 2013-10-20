@@ -653,7 +653,7 @@ class VoterFile(models.Model):
 
   def itervoters(self):
     if self.voter_file_content:
-      voter_stream = io.StringIO(self.voter_file_content, newline=None)
+      voter_stream = io.StringIO(unicode(self.voter_file_content), newline=None)
     else:
       voter_stream = open(self.voter_file.path, "rU")
 
@@ -683,7 +683,7 @@ class VoterFile(models.Model):
 
     # now we're looking straight at the content
     if self.voter_file_content:
-      voter_stream = io.StringIO(self.voter_file_content.encode('utf-8'), newline=None)
+      voter_stream = io.StringIO(unicode(self.voter_file_content), newline=None)
     else:
       voter_stream = open(self.voter_file.path, "rU")
 
