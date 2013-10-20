@@ -11,7 +11,7 @@ from django.utils import simplejson
 from django.conf import settings
 from django.core.mail import send_mail
 
-import datetime, logging, uuid, random, StringIO
+import datetime, logging, uuid, random, StringIO, io
 
 from crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
@@ -653,7 +653,7 @@ class VoterFile(models.Model):
 
   def itervoters(self):
     if self.voter_file_content:
-      voter_stream = StringIO.StringIO(self.voter_file_content)
+      voter_stream = io.StringIO(self.voter_file_content, newline=None)
     else:
       voter_stream = open(self.voter_file.path, "rU")
 
@@ -683,7 +683,7 @@ class VoterFile(models.Model):
 
     # now we're looking straight at the content
     if self.voter_file_content:
-      voter_stream = StringIO.StringIO(self.voter_file_content.encode('utf-8'))
+      voter_stream = io.StringIO(self.voter_file_content.encode('utf-8'), newline=None)
     else:
       voter_stream = open(self.voter_file.path, "rU")
 
