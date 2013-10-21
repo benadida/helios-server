@@ -22,9 +22,9 @@ BM.ModuleBase = {
   update_submit_value: function() {
     var choices = this.get_answer();
     if (choices.length == 0) {
-      this.el.submit.val("Λευκό");
+      this.el.submit.val("Blank");
     } else {
-      this.el.submit.val("Συνέχεια");
+      this.el.submit.val("Continue");
     }
   },
 

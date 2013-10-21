@@ -1,6 +1,6 @@
 {% extends "election_page.html" %}{% load i18n %}
 
-{% block title %}{{election.name}}: Υποψήφιοι{% endblock %}
+{% block title %}{{election.name}}: Candidates{% endblock %}
 {% block tabs_menu %}
 {% include "_election_view_menu.html" %}
 {% endblock %}
@@ -33,7 +33,7 @@
   </li>
   {% endfor %}
   </ul>
-  <input class="button" type="submit" value="Αποθήκευση" id="next_button" />
+  <input class="button" type="submit" value="Save" id="next_button" />
 </form>
 <script>
 $(document).ready(function(){

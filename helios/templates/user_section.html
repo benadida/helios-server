@@ -1,42 +1,39 @@
   {% if user and user.is_admin %}
   <div class="columns twelve loginbox">
-      <div class="panel warning">Έχετε συνδεθεί ως διαχειριστής εκλογών για το 
+      <div class="panel warning">You are connected as election administrator for
           <em>"{{ user.institution.name }}"</em>
           <br /><br />
-          <a class="button tiny" href="{% url admin_home %}">σελίδα διαχείρισης</a>
-          <a class="button tiny alert" href="{% url change_password %}?return_url=/">αλλαγή κωδικού</a>
-          <a class="button tiny alert" href="{% url logout %}?return_url=/">έξοδος</a>
+          <a class="button tiny" href="{% url admin_home %}">control panel</a>
+          <a class="button tiny alert" href="{% url change_password %}?return_url=/">change password</a>
+          <a class="button tiny alert" href="{% url logout %}?return_url=/">logout</a>
       </div>
   </div>
   {% endif %}
   {% if voter %}
   <div class="columns twelve loginbox">
-      <div class="panel warning">Έχετε συνδεθεί ως o ψηφοφόρος 
-          <u>{{ voter.voter_surname }} {{ voter.voter_name }}</u> της ψηφοφορίας
-          <em>"<a 
-href="{% url election_poll_index voter.poll.election.uuid voter.poll.uuid %}">
-{{ voter.poll.name_display }}
-</a>"</em>
+      <div class="panel warning">You are connected as voter
+          <u>{{ voter.voter_surname }} {{ voter.voter_name }}</u> for
+          <em>"<a href="{% url election_poll_index voter.poll.election.uuid voter.poll.uuid %}">
+            {{ voter.poll.name_display }}</a>"</em>
           <br /><br />
-          <a class="button tiny" href="{% url election_poll_index voter.poll.election.uuid voter.poll.uuid %}">προβολή
-              σελίδας ψηφοφορίας</a>
-          <a class="button tiny alert" href="{% url logout %}?return_url=/">έξοδος</a>
+          <a class="button tiny" href="{% url election_poll_index voter.poll.election.uuid voter.poll.uuid %}">
+              proceed to election site</a>
+          <a class="button tiny alert" href="{% url logout %}?return_url=/">logout</a>
       </div>
   </div>
   {% endif %}
   {% if trustee and trustee.election %}
   <div class="columns twelve loginbox">
-      <div class="panel warning">Έχετε συνδεθεί ως μέλος εφορευτικής επιτροπής της ψηφοφορίας 
+      <div class="panel warning">You are connected as trustee for 
           <em>"<a href="{% url election_index trustee.election.uuid %}">{{ trustee.election.name }}</a>"</em>
           <br /><br />
           <a class="button tiny" 
-              href="{% url election_trustee_home trustee.election.uuid %}">σελίδα μέλους εφορευτικής</a>
-          <a class="button tiny alert" href="{% url logout %}?return_url=/">έξοδος</a>
+              href="{% url election_trustee_home trustee.election.uuid %}">trustee dashboard</a>
+          <a class="button tiny alert" href="{% url logout %}?return_url=/">logout</a>
         </div>
         <div class="alert-box alert" style="display:none"
           id="invalid-browser">
-Το πρόγραμμα πλοήγησης που χρησιμοποιείτε δεν υποστηρίζεται για τις
-ενέργειες του μέλους της εφορευτικής επιτροπής.
+Your web browser is not supported for trustee functions.
         </div>
   </div>
   {% endif %}

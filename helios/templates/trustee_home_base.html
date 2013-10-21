@@ -1,6 +1,6 @@
 {% extends "helios/templates/cryptobase.html" %}
 
-{% block title %}{{election.name}}: σελίδα μέλους εφορευτικής επιτροπής{% endblock %}
+{% block title %}{{election.name}}: trustee dashboard{% endblock %}
 {% block head_subtitle %}
 <script>
     var CSRF_TOKEN = "{{ csrf_token }}";
@@ -25,5 +25,5 @@
 
 {% block tabs_menu %}
 <dd class="active"><a 
-  href="{% url election_index election.uuid %}">Ενέργειες μέλους εφορευτικής επιτροπής</a></dd>
+  href="{% url election_index election.uuid %}">Trustee actions</a></dd>
 {% endblock %}

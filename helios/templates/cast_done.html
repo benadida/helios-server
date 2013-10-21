@@ -1,5 +1,5 @@
 {% extends TEMPLATE_BASE %}
-{% block title %}Η ψήφος σας καταχωρήθηκε{% endblock %}
+{% block title %}Your vote has been submitted{% endblock %}
 
 {% block head_subtitle %}
 <div id="header" class="columns twelve">
@@ -11,13 +11,13 @@
 
 {% block content %}
 <p>
-Η ψήφος σας καταχωρήθηκε με επιτυχία.
-Ευχαριστούμε για τη συμμετοχή σας.
+Your vote has been successfully submitted.
+Thank you for participating.
 
 <br>
-Το
+The
 <a target="_blank" href="{% url election_poll_download_signature election.uuid poll.uuid cast_vote.fingerprint %}"
-  >αρχείο με την απόδειξη</a> της ψήφου σας έχει σταλεί στο ηλεκτρονικό σας ταχυδρομείο.
+  >submission receipt</a> for your vote has been sent to you.
 </p>
 
 {% comment %}

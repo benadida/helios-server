@@ -11,28 +11,23 @@
 {% block content %}
 <p>
 {% if trustee.public_key_hash %}
-Το δημόσιο κλειδί του Κωδικού σας μεταφορτώθηκε με επιτυχία.<br />
-<a href="{% url election_trustee_check_sk election.uuid %}" id="check_sk_link">
-Επαληθεύστε ότι έχετε το σωστό Κωδικό Ψηφοφορίας</a>, αν δεν το έχετε ήδη κάνει.
+The public part of your trustee key has been successfully uploaded.<br />
+Please,<a href="{% url election_trustee_check_sk election.uuid %}" id="check_sk_link">
+confirm you indeed possess the trustee key</a>, if you haven't.
 {% else %}
-<a href="{% url election_trustee_keygen election.uuid %}">ρυθμίστε τον Κωδικό Ψηφοφορίας</a>
+<a href="{% url election_trustee_keygen election.uuid %}">generate trustee key</a>
 {% endif %}
 </p>
 
 <p>
 {% if election.any_poll_feature_can_partial_decrypt %}
 {% if trustee.partial_decryptions_finished %}
-Έχετε αποστείλει τη μερική αποκρυπτογράφησή σας με επιτυχία.
+Your partial decryption has been successfully uploaded.
 {% else %}
 {% include "_trustee_decrypt.html" %}
 {% endif %}
 {% else %}
-Μετά την ολοκλήρωση της καταμέτρησης μπορείτε να επιστρέψετε εδώ για την
-αποκρυπτογράφηση των αποτελεσμάτων.<br />
-Πρέπει να κρατήσετε το μήνυμα του συστήματος 
-&laquo;Ζευς&raquo; στο ηλεκτρονικό
-ταχυδρομείο σας με τον σύνδεσμο στην αρχική 
-σελίδα σας.
+After voting is over, you must revisit this page for decryption of the results.
 {% endif %}
 </p>
 

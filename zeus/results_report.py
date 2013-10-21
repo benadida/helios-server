@@ -21,7 +21,7 @@ from zeus.core import PARTY_SEPARATOR
 
 PAGE_WIDTH, PAGE_HEIGHT = A4
 
-pageinfo = "Ζευς - Αποτελέσματα Ψηφοφορίας"
+pageinfo = "Zeus Elections - Poll Results"
 
 linlibertine = TTFont('LinLibertine',
 #                      '/Users/Panos/Library/Fonts/LinLibertine_Rah.ttf')
@@ -99,8 +99,8 @@ def make_intro(elements, styles, contents):
     elements.append(Spacer(1, 12))
 
 def make_totals(elements, styles, total_votes, blank_votes):
-    elements.append(Paragraph(escape('Σύνολο ψήφων: %d' % total_votes), styles['Zeus']))
-    elements.append(Paragraph(escape('Λευκά: %d' % blank_votes), styles['Zeus']))
+    elements.append(Paragraph(escape('Total votes: %d' % total_votes), styles['Zeus']))
+    elements.append(Paragraph(escape('Blank: %d' % blank_votes), styles['Zeus']))
     elements.append(Spacer(1, 12))
 
 def make_party_list_heading(elements, styles, party, count):
@@ -134,13 +134,13 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
 
     DATE_FMT = "%d/%m/%Y %H:%S"
     if isinstance(voting_start, datetime.datetime):
-        voting_start = 'Έναρξη: %s' % (voting_start.strftime(DATE_FMT))
+        voting_start = 'Start: %s' % (voting_start.strftime(DATE_FMT))
 
     if isinstance(voting_end, datetime.datetime):
-        voting_end = 'Λήξη: %s' % (voting_end.strftime(DATE_FMT))
+        voting_end = 'End: %s' % (voting_end.strftime(DATE_FMT))
 
     if extended_until and isinstance(extended_until, datetime.datetime):
-        extended_until = 'Παράταση: %s' % (extended_until.strftime(DATE_FMT))
+        extended_until = 'Extension: %s' % (extended_until.strftime(DATE_FMT))
     else:
         extended_until = ""
 

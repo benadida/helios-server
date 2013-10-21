@@ -1,1 +1,1 @@
-{{ election.name }}: παρακαλούμε για τις ενέργειές σας, #{{ step }}
+{{ election.name }}: actions required, step #{{ step }}

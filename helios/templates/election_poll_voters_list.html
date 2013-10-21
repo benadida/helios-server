@@ -23,7 +23,7 @@
    {% autopaginate voters voters_per_page %}
    {% if admin %}
         <div href="#" class="button medium dropdown" style="float:right;">
-            {% trans "Voters list actions" %}&nbsp;
+            {% trans "Voter list actions" %}&nbsp;
             <ul>
             {% if poll.feature_can_add_voter %}
             <li>
@@ -42,7 +42,7 @@
             <li>
             <a style="" class="foundicon-down-arrow"
                 href="{% url election_poll_voters_csv election.uuid poll.uuid poll.short_name%}">
-                &nbsp;{% trans "Export voters list to CSV" %}</a>
+                &nbsp;{% trans "Export voter list to CSV" %}</a>
             </li>
             {% if poll.feature_can_clear_voters %}
             {% url election_poll_voters_clear election.uuid poll.uuid as clear_url %}
@@ -63,12 +63,12 @@
   <thead>
     <tr>
       <th>Email</th>
-      <th>Επώνυμο , Όνομα , Πατρώνυμο, Κινητο</th>
+      <th>Surname , Given name , Middle name , Mobile phone</th>
       {% if admin %}
-      <th>Έχει ψηφίσει</th>
+      <th>Has voted</th>
       <th>{% trans "Booth invitation sent at" %}</th>
-      <th>Τελευταία επίσκεψη</th>
-      <th>Ενέργειες</th>
+      <th>Last visit</th>
+      <th>Actions</th>
       {% endif %}
     </tr>
   </thead>
@@ -85,9 +85,9 @@
     </td>
     <td>
       {% if voter.voted %}
-      ΝΑΙ {% if voter.excluded_at %}<b style="color:red">(ΕΞΑΙΡΕΘΗΚΕ)</b>{% endif %}
+      YES {% if voter.excluded_at %}<b style="color:red">(Excluded)</b>{% endif %}
       {% else %}
-      ΟΧΙ
+      NO
       {% endif %}
 
     </td>

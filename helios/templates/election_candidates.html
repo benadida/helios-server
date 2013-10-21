@@ -1,6 +1,6 @@
 {% extends "election_page.html" %}
 
-{% block title %}{{election.name}}: Υποψήφιοι{% endblock %}
+{% block title %}{{election.name}}: Candidates{% endblock %}
 {% block tabs_menu %}
 {% include "_election_view_menu.html" %}
 {% endblock %}
@@ -9,43 +9,42 @@
 {% if admin_p and election.can_change_candidates %}
 <div class="columns twelve">
   <form action="./candidates" method="post">
-    <p>Ανανεώστε την λίστα υποψηφίων και πατήστε αποθήκευση.
+    <p>Edit the candidate list and press 'Save'.
     <br /><br />
-    <b>Όλα τα πεδία των υποψηφίων είναι υποχρεωτικά.</b>
+    <b>All form fields for candidates are mandatory.</b>
     </p>
     {% if error %}
     <div class="alert-box alert">
-      Προέκυψε σφάλμα στην αποθήκευση των δεδομένων, παρακαλούμε ελέγξτε οτι όλα
-      τα πεδία είναι συμπληρωμένα.
+      Error in saving data. Please check that all fields are filled in.
     </div>
     {% endif %}
     <div class="row labels">
       <div class="columns four">
-        <label>Επώνυμο</label>
+        <label>Surname</label>
       </div>
       <div class="columns two">
-        <label>Όνομα</label>
+        <label>Given name</label>
       </div>
       <div class="columns two">
-        <label>Πατρώνυμο</label>
+        <label>Middle name</label>
       </div>
       <div class="columns four">
-        <label>Σχολή</label>
+        <label>Affiliation</label>
       </div>
       </div>
       {% for cand in candidates %}
     <div class="row">
       <div class="columns four">
         <input type="text" value="{{ cand.surname }}" name="candidates_lastname"  
-        placeholder="Επώνυμο" />
+        placeholder="Surname" />
       </div>
       <div class="columns two">
         <input type="text" value="{{ cand.name }}" name="candidates_name"  
-        placeholder="Όνομα" />
+        placeholder="Given name" />
       </div>
       <div class="columns two">
         <input type="text" value="{{ cand.father_name }}" name="candidates_fathers_name"
-        placeholder="Πατρώνυμο" />
+        placeholder="Middle name" />
       </div>
       <div class="columns four">
         <select type="text" name="candidates_department">
@@ -61,15 +60,15 @@
     <div class="row">
       <div class="columns four">
         <input type="text" value="{{ cand }}" name="candidates_lastname"  
-        placeholder="Επώνυμο" />
+        placeholder="Surname" />
       </div>
       <div class="columns two">
         <input type="text" value="{{ cand }}" name="candidates_name"  
-        placeholder="Όνομα" />
+        placeholder="Given name" />
       </div>
       <div class="columns two">
         <input type="text" value="{{ cand }}" name="candidates_fathers_name"
-        placeholder="Πατρώνυμο" />
+        placeholder="Middle name" />
       </div>
       <div class="columns four">
         <select type="text" value="{{ cand }}" name="candidates_department">
@@ -81,7 +80,7 @@
     </div>
     {% endfor %}
     <div class="row">
-    <input type="submit" class="button success" value="Αποθήκευση">
+    <input type="submit" class="button success" value="Save">
     </div>
 </form>
 </div>
@@ -97,7 +96,7 @@
       {{ a }}
       </li>
   {% empty %}
-  <li><span class="label alert">Δεν έχουν προστεθεί υποψήφιοι</span></li>
+  <li><span class="label alert">No candidates entered yet.</span></li>
   {% endfor %}
 </ol>
 </div>

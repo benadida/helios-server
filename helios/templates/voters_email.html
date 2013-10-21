@@ -35,13 +35,13 @@ Send email to election '{{ election_name }}' voters
 
 {% if voter_o %}  
   <p>
-    Το μήνυμα αυτό θα αποσταλεί μόνο στον συγκεκριμένο ψηφοφόρο:
+    The message will only be sent to the following voter:
     <b>{{ voter_o.voter_surname }} {{voter_o.name}} ({{voter_o.voter_id}})</b>
   </p>
 {% endif %}
 
 <p>
-<b>Πρότυπα</b>:
+<b>Templates</b>:
 
 {% for template_option in templates %}
 {% if template_option.0 == template %}
@@ -59,7 +59,7 @@ Subject: {{default_subject}}
 </pre>
 
 <p>
-Μπορείτε να παραμετροποιήσετε τα περιεχόμενα του email χρησιμοποιώντας τα πεδία της παρακάτω φόρμας.
+You can edit the contents of the message using the following form.
 </p>
 
   <form class="prettyform" action="" method="POST" id="email_form">
@@ -70,7 +70,7 @@ Subject: {{default_subject}}
      {{email_form.as_table}}
      </table>
   <div>
-  <label for="">&nbsp;</label><input class="button success" type="submit" value="Αποστολή" id="send_button" />
+  <label for="">&nbsp;</label><input class="button success" type="submit" value="Send" id="send_button" />
   </div>
   </form>
   
@@ -78,7 +78,7 @@ Subject: {{default_subject}}
   </div>
   
   <div id="done" style="display:none;">
-    Η αποστολή ολοκληρώθηκε. <a href="{% url election_index election.uuid %}">Πίσω στην ψηφοφορία</a>.
+    Sending complete. <a href="{% url election_index election.uuid %}">Back to the polls</a>.
   </div>
 
   <div id="error" style="display:none;">

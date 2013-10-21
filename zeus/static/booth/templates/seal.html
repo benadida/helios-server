@@ -2,10 +2,8 @@
 <div class="row">
   <div class="columns twelve">
     <p>
-    Η  κρυπτογράφηση της ψήφου σας έχει ολοκληρωθεί. Σε αυτό το σημείο
-    επιβεβαιώστε ότι οι επιλογές σας αντιστοιχούν στην παρακάτω λίστα.  Σε
-    περίπτωση που θέλετε να αλλάξετε την σειρά επιλογής των υποψηφίων πατήστε
-    στο κουμπί <b>"Επιστροφή στην επιλογή ψηφοδελτίου"</b> για να επεξεργαστείτε τις επιλογές σας.
+    Your vote has been encrypted. Confirm your choices displayed below.
+    If you want to revise them press <b>"Back to ballot selection"</b>.
   </p>
   <div class="panel confirm-vote">
     {#foreach $T.questions as question}
@@ -15,14 +13,14 @@
         {$T.choice}</h6></li>
       {#/for}
       {#if !$T.choices[$T.question$index].length }
-      <li><h5>Λευκή ψήφος</h5></li>
+      <li><h5>Blank vote</h5></li>
       {#/if}
     </ul>
   </div>
 </div>
 <div class="columns twelve">
   <a onclick="BOOTH.show_question({$T.question$index}); return false;"
-    class="button medium">Επιστροφή στην επιλογή υποψηφίων</a>
+    class="button medium">Back to ballot selection</a>
   {#/for}
 </div>
 </div>
@@ -31,9 +29,7 @@
 <br />
 <div class="row">
   <div class="columns twelve">
-  <p>Σε περίπτωση που δεν θέλετε να κάνετε αλλαγές στις επιλογές σας
-  παρακαλούμε πατήστε το κουμπί
-  <b>"Υποβολή ψήφου"</b> για να προχωρήσετε στο τελικό βήμα υποβολής της ψήφου σας.
+  <p>Press <b>"Submit vote"</b> to continue.
   </p>
 </div>
 </div>
@@ -45,15 +41,14 @@
       <input type="checkbox" id="required-to-cast-2" style=""
       onclick="BOOTH.check_cast_form()">
       <span class="custom checkbox" onclick="BOOTH.check_cast_form()"></span>
-      Επιβεβαιώνω ότι αυτή τη στιγμή είμαι μόνος 
-      στο τερματικό μου, και κανένας άλλος δεν έχει παρακολουθήσει τις επιλογές μου.
+      I confirm that I am in private and noone else has watched over my choices.
     </label>
   </div>
 </div>
 </form>
 
 <button id="proceed_button" class="button success medium secondary cast-ballot"
-  onclick="BOOTH.cast_ballot();">Υποβολή ψήφου</button><br />
+  onclick="BOOTH.cast_ballot();">Submit vote</button><br />
 <div id="loading_div"></div>
 
 <form method="post" action="{$T.cast_url}" id="send_ballot_form" class="prettyform">

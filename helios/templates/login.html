@@ -1,19 +1,19 @@
 {% extends TEMPLATE_BASE %}
 
 {% block header %}
-<h2>{{ settings.SITE_TITLE }} | Σύνδεση/h2>
+<h2>{{ settings.SITE_TITLE }} | Login/h2>
 {% endblock %}
 
 {% block tabs_menu %}
-<dd class="active"><a href="#">Σύνδεση</a></dd>
+<dd class="active"><a href="#">Login</a></dd>
 {% endblock %}
 
 {% block content %}
 <div class="row">
 <div class="columns twelve">
 <p>
-Η φόρμα αφορά την σύνδεση των διαχειριστών της πλατφόρμας "Ζευς". Σε περίπτωση που θέλετε να συνδεθείτε ως ψηφοφόρος, ακολουθήστε τον 
-σύνδεσμο που σας έχει σταλεί στην ηλεκτρονική σας διεύθυνση.
+This is a login form for election administrators only.
+Voters have to use the link sent to them via Email or SMS.
 </p>
 </div>
 </div>
@@ -35,7 +35,7 @@
     {{form.as_p}}
 </table>
 <div>
-<input class="button" type="submit" value="Σύνδεση" />
+<input class="button" type="submit" value="Login" />
 </div>
 </form>
 </div>

@@ -1,18 +1,18 @@
 {% extends TEMPLATE_BASE %}
-{% block title %}Η ψήφος σας καταχωρήθηκε{% endblock %}
+{% block title %}Your vote has been cast{% endblock %}
 
 {% block head_subtitle %}
 {% endblock %}
 
 {% block content %}
 <p>
-Η ψήφος σας καταχωρήθηκε με επιτυχία.
-Ευχαριστούμε για τη συμμετοχή σας.
+Your vote has been successfully cast.
+Thank you for participating.
 
 <br>
-Το
+A
 <a target="_blank" href="{% url election_poll_download_signature election_uuid poll_uuid cast_vote.fingerprint %}"
-  >αρχείο με την απόδειξη</a> της ψήφου σας έχει σταλεί στο ηλεκτρονικό σας ταχυδρομείο.
+  >submission receipt</a> for your vote has been sent to your Email address.
 </p>
 
 {% comment %}

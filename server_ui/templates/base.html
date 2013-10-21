@@ -5,7 +5,7 @@
 <!--[if IE 8]>    <html class="no-js lt-ie9" lang="el"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="el"> <!--<![endif]-->
 <head>
-    <title>{% block title %}{% endblock %} Ηλεκτρονική κάλπη "Ζευς"</title>
+    <title>{% block title %}{% endblock %} Zeus Elections</title>
     <meta charset="utf-8">
 
     <!--[if lt IE 8]>
@@ -99,28 +99,28 @@
             {% endif %}
           </span>
           {% if user and user.is_admin %}
-          Έχετε συνδεθεί ως διαχειριστής εκλογών: {{ user.display_html_small|safe }}
-          <a href="{% url logout %}">έξοδος</a> |
-          <a href="{% url admin_home %}">διαχείριση</a> 
+          You are connected as election administrator: {{ user.display_html_small|safe }}
+          <a href="{% url logout %}">logout</a> |
+          <a href="{% url admin_home %}">manage</a> 
               {% if user.user_type == "password" %}
-              | <a href="{% url heliosauth.views.change_password %}">αλλαγή κωδικού</a>
+              | <a href="{% url heliosauth.views.change_password %}">change password</a>
               {% endif %}
               <br />
 
           {% else %}
           {% if voter %}
-          Έχετε συνδεθεί ως ο ψηφοφόρος <u>{{ voter.voter_surname }} {{voter.voter_name}}</u> της ψηφοφορίας 
-          <u>{{voter.election.name}}</u> | 
-          <a onclick="return confirm('Είστε σίγουρος οτι θέλετε να αποσυνδεθείτε;')"
-            href="{{settings.SECURE_URL_HOST}}{% url logout %}">έξοδος</a>
+	  You are connected as voter <u>{{ voter.voter_surname }} {{voter.voter_name}}</u>
+	  for <u>{{voter.election.name}}</u> | 
+          <a onclick="return confirm('Are you sure you want to log out?')"
+            href="{{settings.SECURE_URL_HOST}}{% url logout %}">logout</a>
           {% else %}
           {% if trustee %}
-          Έχετε συνδεθεί ως μέλος της εφορευτικής <u>{{trustee.name}}</u> της
-          ψηφοφορίας  <u>{{ election.name }}</u>
-          <a href="{{settings.SECURE_URL_HOST}}{% url logout %}">έξοδος</a>
+	  You are connected as trustee <u>{{trustee.name}}</u> for
+	  <u>{{ election.name }}</u>.
+          <a href="{{settings.SECURE_URL_HOST}}{% url logout %}">Logout</a>
           {% else %}
-          <a href="{{settings.SECURE_URL_HOST}}{% url login %}">Σύνδεση</a> | 
-          <a href="{{settings.SECURE_URL_HOST}}{% url voter_login %}">Σύνδεση ψηφοφόρου</a>
+          <a href="{{settings.SECURE_URL_HOST}}{% url login %}">Login</a> | 
+          <a href="{{settings.SECURE_URL_HOST}}{% url voter_login %}">Voter Login</a>
           {% endif %}
           {% endif %}
           <br />

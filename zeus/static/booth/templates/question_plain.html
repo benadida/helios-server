@@ -8,9 +8,9 @@
 <div  id="question-{$T.question$index}">
   <h5>{$T.question.question}</h5>
   {#if $T.question.max_answers == $T.question.min_answers}
-  <span class="question-subtitle">{$T.question.max_answers} {#if $T.question.max_answers == 1}επιλογή{#else}επιλογές{#/if}</span>
+  <span class="question-subtitle">{$T.question.max_answers} {#if $T.question.max_answers == 1}choice{#else}choices{#/if}</span>
   {#else}
-  <span class="question-subtitle">Απο {$T.question.min_answers} έως {$T.question.max_answers} {#if $T.question.max_answers == 1}επιλογή{#else}επιλογές{#/if}</span>
+  <span class="question-subtitle">{$T.question.min_answers} to {$T.question.max_answers} {#if $T.question.max_answers == 1}choice{#else}choices{#/if}</span>
   {#/if}
     <p class="stv-description">
     </p>
@@ -38,7 +38,7 @@
   {#/foreach}
 </div>
   <div class="columns six stv-choices offset-by-one">
-    <h6>Συμπληρωμένο ψηφοδέλτιο</h6>
+    <h6>Selected ballot</h6>
     <ul class="stv-choices stv-list">
       <li class="stv-ballot-choice choice-{$T.answer$index}">
       <a class="button secondary clearfix small">
@@ -58,20 +58,18 @@
   <input style="float:right" id="submit-stv" class="button medium success" type="button" 
   onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Λευκό" />
   <br />
-  <a class="show-audit-form" href="#">Υποβολή ψήφου ελέγχου</a>
+  <a class="show-audit-form" href="#">Audit vote submission</a>
   {#/if}
 </div>
 </div>
 
 <div class="row audit-form">
   <div class="columns twelve">
-    <h5>Εισαγωγή κωδικού για υποβολή ψήφου ελέγχου</h5>
+    <h5>Enter code for audit vote submission</h5>
     <p>
-    Εαν βρίσκεστε σε διαδικασία υποβολής ψήφου ελέγχου, παρακαλούμε συμπληρώστε
-    το ακόλουθο πεδίο με έναν από τους "κωδικούς ελέγχου" που
-    σας έχουν αποσταλεί στην ηλεκτρονική σας διεύθυνση.
-    </p>
-    <label for="submit-pass-for-audit">Κωδικός ελέγχου</label><input id="submit-pass-for-audit" />
+    If you are submitting an audit vote, please provide one of the audit codes
+    that were included in your invitation.
+    <label for="submit-pass-for-audit">Audit code</label><input id="submit-pass-for-audit" />
   </div>
 </div>
 </form>

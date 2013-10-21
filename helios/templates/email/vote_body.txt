@@ -1,59 +1,55 @@
-Νόμιμος παραλήπτης: {{voter.voter_surname}} {{voter.voter_name}} {{voter.voter_fathername}}
+Legitimate recipient: {{voter.voter_surname}} {{voter.voter_name}} {{voter.voter_fathername}}
 
-Αξιότιμε/η κ. εκλέκτορα,{% if custom_message %}
+Dear voter,{% if custom_message %}
 
 {{custom_message|safe}}{% endif %}
 
-Καλείστε να συμμετάσχετε στην ψηφοφορία
+You are invited to vote in the poll:
 
   {{ election.name }}
   {{ poll.name }}
 
-που αρχίζει στις {{election.voting_starts_at}}
-και λήγει στις {{election.voting_ends_at}},
-ως ψηφοφόρος σύμφωνα με την καταχώρηση μητρώου: {{voter.voter_login_id}}.
+starting {{election.voting_starts_at}},
+and ending {{election.voting_ends_at}}
+Your registration ID is: {{voter.voter_login_id}}.
 
-Υποβάλετε την ψήφο σας, ακολουθώντας το σύνδεσμο
+To submit your vote, follow the link below
 
 {{ voter.get_quick_login_url }}
 
 
-Ενημερωτικά:
+Information:
 
-{% if voter.vote_hash %}* Έχει καταγραφεί επιτυχώς η ψήφος σας με το αποτύπωμα:
-
-  {{voter.vote_hash}}
-
-  Εάν επιθυμείτε, έχετε την δυνατότητα να ψηφίσετε ξανά.
-  Θα καταμετρηθεί μόνο η τελευταία ψήφος σας.
+* You can vote more than once. Only your last vote will be counted.
   
-{% endif %}* Για πληροφορίες σχετικά με τη διαδικασία των εκλογών μπορείτε να 
-  επικοινωνείτε με την εφορευτική επιτροπή, τηλεφωνικώς
+* For information about the voting you can contact the trustees by phone,
 
     {{ election.help_phone }}
 
-  ή μέσω ηλεκτρονικού ταχυδρομείου στη διεύθυνση 
+  or by Email,
 
     {{ election.help_email }}
 
-{% if voter.audit_passwords %}* Εάν θέλετε να κινήσετε διαδικασία υποβολής ψήφου ελέγχου,
+{% if voter.audit_passwords %}* If you want to initiate an audit vote,
+  the valid audit codes are
   οι έγκυροι κωδικοί ελέγχου είναι οι
   {% for pass in voter.get_audit_passwords %}{{ pass }}  {% endfor %}
-  σε άλλη περίπτωση αγνοήστε τους.{% endif %}
+  Otherwise ignore those codes above.{% endif %}
 
-Η ψηφοφορία γίνεται μέσω φυλλομετρητή (browser) του υπολογιστή σας, στον
-οποίο γίνεται η επεξεργασία και η κρυπτογράφηση του ψηφοδελτίου σας.
-Για την καλύτερη ασφάλεια αυτή τη στιγμή υποστηρίζονται οι φυλλομετρητές:
+The voting takes place in the web browser in your computer,
+where your choices are recorded and encrypted before being submitted.
+We recommend the following browsers:
 
-- Mozilla Firefox (έκδοση 10 ή νεώτερη)
-- Google Chrome (έκδοση 8.0 ή νεώτερη)
+- Mozilla Firefox (version 10 or newer)
+- Google Chrome (version 8.0 or newer)
 
-Προσοχή:
-Το παρόν μήνυμα είναι αυστηρώς προσωπικό και εξατομικευμένο.
-Δεν επιτρεπεται η προώθηση και η επίδειξή του σε τρίτους.
-Εάν δεν είστε ο νόμιμος παραλήπτης, παρακαλούμε να το
-διαγράψετε αμέσως και να επικοινωνήσετε στην ηλεκτρονική διεύθυνση
-helpdesk@zeus.grnet.gr
+Important:
+
+The present message is strictly personal and confidential.
+Do not forward or show it to others.
+Do not reply to it, you can write to {{ election.help_email }} instead.
+If you are not the legitimate recipient, please delete this message
+and contact helpdesk@zeus.grnet.gr
 
 --
-Ψηφιακή κάλπη «Ζευς»
+Zeus Elections

@@ -2,7 +2,7 @@
 <script>
   window.TRUSTEE = {
     'name': 'trustee.name',
-    'filename': 'Μερική αποκρυπτογράφηση {{ trustee.name }}.txt',
+    'filename': 'Partial decryption {{ trustee.name }}.txt',
     'worker': '/static/zeus/booth/js/jscrypto/decryptworker.js'
   }
 
@@ -15,10 +15,10 @@
     'decrpyting': '{% trans "Decrypting" %}'
   }
 </script>
-<h5>Τα τελικά ψηφοδέλτια είναι έτοιμα για αποκρυπτογράφηση.</h5>
+<h5>The final ballots are ready to be decrypted.</h5>
 
 <div class="sk-form decryption-section">
-<h5>{% trans "Insert your secret key" %}</h5>
+<h5>{% trans "Insert your trustee key" %}</h5>
 <br />
 <input type="file" id="sk-file-input" />
 <textarea id="sk-textarea" cols="60" rows="5">
