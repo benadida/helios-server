@@ -80,7 +80,7 @@ class ElectionFeatures(FeaturesMixin):
         return FeaturesMixin.__getattr__(self, name, *args, **kwargs)
 
     def polls_feature(self, *args, **kwargs):
-        result = True
+        result = False
         for poll in self.polls.all():
             result = result and poll.check_features(*args)
         return result
