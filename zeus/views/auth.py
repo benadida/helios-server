@@ -74,7 +74,7 @@ def change_password(request):
 
     # only admin users can change password
     if not user.is_admin:
-        raise PermissionDenied
+        raise PermissionDenied('32')
 
     password_changed = request.GET.get('password_changed', None)
     form = ChangePasswordForm(user)

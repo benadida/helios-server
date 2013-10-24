@@ -304,7 +304,7 @@ def results_file(request, election, ext='pdf', shortname=''):
 @require_http_methods(["GET"])
 def json_data(request, election):
     if not election.trial:
-        raise PermissionDenied
+        raise PermissionDenied('33')
     election_json = serializers.serialize("json", [election])
     polls_json = serializers.serialize("json", election.polls.all())
     trustees_json = serializers.serialize("json", election.trustees.all())

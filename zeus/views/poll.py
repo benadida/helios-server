@@ -268,7 +268,7 @@ def voters_email(request, election, poll=None, voter_uuid=None):
     default_template = 'vote'
 
     if not election.any_poll_feature_can_send_voter_mail:
-        raise PermissionDenied
+        raise PermissionDenied('34')
 
     if not election.any_poll_feature_can_send_voter_booth_invitation:
         TEMPLATES.pop(0)
@@ -292,7 +292,7 @@ def voters_email(request, election, poll=None, voter_uuid=None):
                 voter = get_object_or_404(Voter, uuid=voter_uuid,
                                           election=election)
         except Voter.DoesNotExist:
-            raise PermissionDenied
+            raise PermissionDenied('35')
         if not voter:
             url = election_reverse(election, 'index')
             return HttpResponseRedirect(url)
@@ -414,7 +414,7 @@ def voters_email(request, election, poll=None, voter_uuid=None):
 def voter_delete(request, election, poll, voter_uuid):
     voter = get_object_or_404(Voter, poll=poll, uuid=voter_uuid)
     if voter.voted:
-        raise PermissionDenied
+        raise PermissionDenied('36')
     voter.delete()
     poll.logger.info("Poll voter '%s' removed", voter.voter_login_id)
     url = poll_reverse(poll, 'voters')
@@ -453,7 +453,7 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
     try:
         voter = Voter.objects.get(poll=poll, uuid=voter_uuid)
         if voter.excluded_at:
-            raise PermissionDenied
+            raise PermissionDenied('37')
     except Voter.DoesNotExist:
         raise PermissionDenied("Invalid election")
 
@@ -462,7 +462,7 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
         user.authenticate(request)
         poll.logger.info("Poll voter '%s' logged in", voter.voter_login_id)
         return HttpResponseRedirect(poll_reverse(poll, 'index'))
-    raise PermissionDenied
+    raise PermissionDenied('38')
 
 
 @auth.election_view(check_access=False)
@@ -558,7 +558,7 @@ def cast_done(request, election, poll):
 
     fingerprint = request.GET.get('f')
     if not request.GET.get('f', None):
-        raise PermissionDenied()
+        raise PermissionDenied('39')
 
     vote = get_object_or_404(CastVote, fingerprint=fingerprint)
 
@@ -640,7 +640,7 @@ def upload_decryption(request, election, poll, trustee):
 @require_http_methods(["GET"])
 def get_tally(request, election, poll):
     if not request.zeususer.is_trustee:
-        raise PermissionDenied
+        raise PermissionDenied('40')
 
     params = poll.get_booth_dict()
     tally = poll.encrypted_tally.toJSONDict()
@@ -656,7 +656,7 @@ def get_tally(request, election, poll):
 @require_http_methods(["GET"])
 def results(request, election, poll):
     if not request.zeususer.is_admin and not poll.feature_public_results:
-        raise PermissionDenied
+        raise PermissionDenied('41')
 
     context = {
         'poll': poll,

@@ -32,7 +32,7 @@ def get_voter(request, user, election):
 
     if not voter or voter.excluded_at:
       del request.session['CURRENT_VOTER']
-      raise PermissionDenied
+      raise PermissionDenied('1')
 
     if voter.election != election:
       voter = None
@@ -63,14 +63,14 @@ def do_election_checks(election, props):
   # frozen check
   if frozen != None:
     if frozen and not election.frozen_at:
-      raise PermissionDenied()
+      raise PermissionDenied('2')
     if not frozen and election.frozen_at:
-      raise PermissionDenied()
+      raise PermissionDenied('3')
 
   # open for new voters check
   if newvoters != None:
     if election.can_add_voters() != newvoters:
-      raise PermissionDenied()
+      raise PermissionDenied('4')
 
 
 def get_election_by_uuid(uuid):
@@ -165,7 +165,7 @@ def election_admin(**checks):
         skip_admin_check = True
 
       if not user_can_admin_election(user, election) and not skip_admin_check:
-        raise PermissionDenied()
+        raise PermissionDenied('5')
 
       # do checks
       do_election_checks(election, checks)
@@ -193,7 +193,7 @@ def trustee_check(func):
     if trustee == get_logged_in_trustee(request):
       return func(request, election, trustee, *args, **kwargs)
     else:
-      raise PermissionDenied()
+      raise PermissionDenied('6')
 
   return update_wrapper(trustee_check_wrapper, func)
 

@@ -153,7 +153,7 @@ def election_remove_last_mix(request, election):
                                     mixnet_type='remote').order_by(
                                         '-mix_order')[0]
   except IndexError, e:
-      raise PermissionDenied
+      raise PermissionDenied('7')
 
   return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
 
@@ -162,10 +162,10 @@ def election_remote_mix(request, election_uuid, mix_key):
   election = Election.objects.get(uuid=election_uuid)
 
   if not election.zeus_stage == 'MIXING':
-      raise PermissionDenied
+      raise PermissionDenied('8')
 
   if not mix_key or not election.mix_key or not mix_key == election.mix_key:
-      raise PermissionDenied
+      raise PermissionDenied('9')
 
   resp = {}
   mixnet = election.get_last_mix()
@@ -198,7 +198,7 @@ def election_remote_mix(request, election_uuid, mix_key):
 def one_election_cancel(request, election):
 
   if election.canceled_at or election.tallied or election.voting_has_stopped():
-    raise PermissionDenied
+    raise PermissionDenied('10')
 
   if request.method == "GET":
     return render_template(request, 'election_cancel', {'election': election})
@@ -220,7 +220,7 @@ def one_election_set_completed(request, election):
   user = get_user(request)
   admin_p = security.user_can_admin_election(user, election) or user.superadmin_p
   if not user.superadmin_p:
-    raise PermissionDenied
+    raise PermissionDenied('11')
 
   election.is_completed = not election.is_completed
   election.save()
@@ -278,7 +278,7 @@ def election_report(request, election, format="html"):
 
   user = get_user(request)
   if not user.superadmin_p:
-    raise PermissionDenied
+    raise PermissionDenied('12')
 
   reports_list = request.GET.get('report', 'election,voters,votes,results').split(",")
 
@@ -311,7 +311,7 @@ def election_report(request, election, format="html"):
   if format == "csv":
     pass
 
-  raise PermissionDenied
+  raise PermissionDenied('13')
 
 
 @election_admin()
@@ -358,7 +358,7 @@ def voters_clear(request, election):
 @election_admin()
 def election_post_ecounting(request, election):
     if not election.result:
-        raise PermissionDenied
+        raise PermissionDenied('14')
 
     election.ecounting_request_send = datetime.datetime.now()
     election.save()
@@ -409,10 +409,10 @@ def one_election_view(request, election):
         trustee = Trustee.objects.get(election=election,
                     uuid=request.session.get('helios_trustee_uuid', None))
     except:
-        raise PermissionDenied()
+        raise PermissionDenied('15')
 
   if not voter and not user and not trustee:
-    raise PermissionDenied()
+    raise PermissionDenied('16')
 
   # status update message?
   if election.openreg:
@@ -481,7 +481,7 @@ def delete_trustee(request, election):
   election.zeus_election.invalidate_election_public()
   trustee = Trustee.get_by_election_and_uuid(election, request.GET['uuid'])
   if trustee.secret_key:
-      raise PermissionDenied
+      raise PermissionDenied('16')
 
   trustee.delete()
   election.zeus_election.compute_election_public()
@@ -491,7 +491,7 @@ def delete_trustee(request, election):
 @election_view()
 def trustee_verify_key(request, election, trustee_uuid):
   if trustee_uuid != request.session.get('helios_trustee_uuid', None):
-    raise PermissionDenied()
+    raise PermissionDenied('17')
 
   trustee = Trustee.objects.get(election=election, uuid=trustee_uuid)
   trustee.last_verified_key_at = datetime.datetime.now()
@@ -549,7 +549,7 @@ def get_randomness(request, election):
   """
   if not request.session.get('helios_trustee_uuid') and not \
     request.session.get('CURRENT_VOTER'):
-      raise PermissionDenied
+      raise PermissionDenied('18')
 
   return {
     # back to urandom, it's fine
@@ -595,7 +595,7 @@ def one_election_cast(request, election):
   voter = get_voter(request, user, election)
 
   if (not election.voting_has_started()) or election.voting_has_stopped():
-    raise PermissionDenied
+    raise PermissionDenied('19')
 
   # if user is not logged in
   # bring back to the confirmation page to let him know
@@ -770,18 +770,18 @@ def voter_exclude(request, election, voter_uuid):
   admin_p = security.user_can_admin_election(user, election)
 
   if not election.frozen_at or datetime.datetime.now() <= election.voting_starts_at:
-    raise PermissionDenied()
+    raise PermissionDenied('20')
 
   # admin requested mixing to start
   if election.mixing_started:
-    raise PermissionDenied()
+    raise PermissionDenied('21')
 
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
   if not voter:
-    raise PermissionDenied()
+    raise PermissionDenied('22')
 
   if voter.excluded_at:
-    raise PermissionDenied()
+    raise PermissionDenied('23')
 
   if request.method == 'POST' and request.POST.get('confirm') == '1':
     election.zeus_election.exclude_voter(voter.uuid,
@@ -810,11 +810,11 @@ def voter_delete(request, election, voter_uuid):
   #  raise PermissionDenied()
 
   if election.tallied or election.mixing_started:
-    raise PermissionDenied()
+    raise PermissionDenied('24')
 
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
   if voter.castvote_set.count():
-      raise PermissionDenied
+      raise PermissionDenied('25')
 
   if voter:
     voter.delete()
@@ -844,7 +844,7 @@ def one_election_questions(request, election):
 
   if request.method == "POST":
       if not election.can_change_questions():
-        raise PermissionDenied
+        raise PermissionDenied('26')
 
       formset = questions_formset(request.POST)
       if formset.is_valid():
@@ -902,7 +902,7 @@ def one_election_candidates(request, election):
 
   if admin_p and request.method == "POST":
     if not election.can_change_candidates():
-        raise PermissionDenied
+        raise PermissionDenied('26')
 
     questions = []
 
@@ -988,7 +988,7 @@ def _register_voter(election, user):
 def one_election_force_end(request, election):
   user = get_user(request)
   if not user.superadmin_p:
-    raise PermissionDenied
+    raise PermissionDenied('27')
   election.voting_ends_at = datetime.datetime.now()
   election.save()
   return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
@@ -1022,7 +1022,7 @@ def one_election_compute_tally(request, election):
   tallying is done all at a time now
   """
   if not election.voting_can_stop():
-      raise PermissionDenied
+      raise PermissionDenied('28')
 
   if request.method == "GET":
     return render_template(request, 'election_compute_tally', {'election': election})
@@ -1061,7 +1061,7 @@ def trustee_upload_decryption(request, election, trustee_uuid):
   trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
 
   if trustee.decryption_factors and trustee.decryption_proofs:
-    raise PermissionDenied
+    raise PermissionDenied('29')
 
   factors_and_proofs = utils.from_json(request.POST['factors_and_proofs'])
 
@@ -1172,7 +1172,7 @@ def voters_upload(request, election):
   #  raise PermissionDenied()
 
   if election.voting_has_stopped():
-      raise PermissionDenied
+      raise PermissionDenied('30')
 
   if request.method == "GET":
     if 'voter_file_id' in request.session:

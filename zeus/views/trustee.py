@@ -41,7 +41,7 @@ def login(request, election, trustee_email, trustee_secret):
         election.logger.info("Trustee %r logged in", trustee.email)
         return HttpResponseRedirect(reverse('election_trustee_home',
                                             args=[election.uuid]))
-    raise PermissionDenied
+    raise PermissionDenied('42')
 
 
 @auth.trustee_view
