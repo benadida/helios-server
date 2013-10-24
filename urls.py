@@ -50,3 +50,4 @@ if getattr(settings, 'DEBUG', False):
 
     urlpatterns += static_urls
 
+handler403 = 'zeus.handler403.handler'
