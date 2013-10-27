@@ -1,0 +1,12 @@
+
+- direct DB changes
+
+migrate-to-3.5.sql
+
+- fake a migration
+
+heroku run python manage.py migrate helios_auth --fake
+
+- do the rest of the migrations
+
+heroku run python manage.py migrate
