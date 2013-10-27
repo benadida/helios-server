@@ -1,4 +1,5 @@
 
+{#if $T.election_metadata.use_advanced_audit_features}
 <div style="float: right; background: lightyellow; margin-left: 20px; padding: 0px 10px 10px 10px; border: 1px solid #ddd; width:200px;">
 <h4><a onclick="$('#auditbody').slideToggle(250);" href="#">Audit</a> <span style="font-size: 0.8em; color: #444">[optional]</span></h4>
 <div id="auditbody" style="display:none;">
@@ -12,6 +13,7 @@ You will then be guided to re-encrypt your choices for final casting.
 </p>
 </div>
 </div>
+{#/if}
 
 <h3>Your ballot is ready to be submitted</h3>
 
@@ -26,15 +28,9 @@ You will then be guided to re-encrypt your choices for final casting.
 </p>
 
 <p>
-To protect your privacy:
-<ul>
-  <li> Helios has not yet asked for your identity.</li>
-  <li> Once you click "Proceed", Helios will remember only your encrypted vote.</li>
-  <li> Thus, only you know your vote.</li>
-</ul>
-</p>
+To protect your privacy, once you click "Proceed", Helios will remember only your encrypted vote. Thus, only you know your vote.</p>
 
-<button id="proceed_button" onclick="BOOTH.cast_ballot();">Proceed to Cast</button><br />
+<button id="proceed_button" onclick="BOOTH.cast_ballot();">Proceed to Submission</button><br />
 <div id="loading_div"></div>
 
 

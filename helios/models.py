@@ -138,6 +138,7 @@ class Election(HeliosModel):
   def metadata(self):
     return {
       'help_email': self.help_email or 'help@heliosvoting.org',
+      'private_p': self.private_p,
       'use_advanced_audit_features': self.use_advanced_audit_features
       }
 

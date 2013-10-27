@@ -318,6 +318,7 @@ BOOTH.show_processing_before = function(str_to_execute) {
 };
 
 BOOTH.show_encryption_message_before = function(func_to_execute) {
+    BOOTH.show_progress('3');
     BOOTH.show($('#encrypting_div'));
 
     func_to_execute();
@@ -404,6 +405,7 @@ BOOTH.show_confirm = function() {
     var choices = BALLOT.pretty_choices(BOOTH.election, BOOTH.ballot);
 
     BOOTH.show($('#confirm_div')).processTemplate({'questions' : BOOTH.election.questions, 'choices' : choices});
+    BOOTH.show_progress('2');
 };
 
 BOOTH.check_encryption_status = function() {
@@ -429,9 +431,9 @@ BOOTH._after_ballot_encryption = function() {
         'encrypted_vote_hash' : BOOTH.encrypted_ballot_hash,
         'election_uuid' : BOOTH.election.uuid,
         'election_hash' : BOOTH.election_hash,
-        'election': BOOTH.election});
+        'election': BOOTH.election,
+        'election_metadata': BOOTH.election_metadata});
       BOOTH.show($('#seal_div'));
-      BOOTH.show_progress('3');
       BOOTH.encrypted_vote_json = null;
     };
 
@@ -558,7 +560,7 @@ BOOTH.do_done = function() {
 <div id="page">
   <div id="progress_div" style="display:none; width: 500px; margin:auto;">
       <table width="100%">
-          <tr><td id="progress_1">(1) Select</td><td id="progress_2">(2) Encrypt</td><td id="progress_3">(3) Submit</td></tr>
+          <tr><td id="progress_1">(1) Select</td><td id="progress_2">(2) Confirm</td><td id="progress_3">(3) Submit</td></tr>
       </table>
   </div>
   <div id="election_div" class="panel">
