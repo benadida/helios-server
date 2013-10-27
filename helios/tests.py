@@ -312,6 +312,10 @@ class DataFormatBlackboxTests(object):
         response = self.client.get("/helios/elections/%s" % self.election.uuid, follow=False)
         self.assertEqualsToFile(response, self.EXPECTED_ELECTION_FILE)
 
+    def test_election_metadata(self):
+        response = self.client.get("/helios/elections/%s/meta" % self.election.uuid, follow=False)
+        self.assertEqualsToFile(response, self.EXPECTED_ELECTION_METADATA_FILE)
+
     def test_voters_list(self):
         response = self.client.get("/helios/elections/%s/voters/" % self.election.uuid, follow=False)
         self.assertEqualsToFile(response, self.EXPECTED_VOTERS_FILE)
@@ -331,6 +335,7 @@ class DataFormatBlackboxTests(object):
 class LegacyElectionBlackboxTests(DataFormatBlackboxTests, TestCase):
     fixtures = ['legacy-data.json']
     EXPECTED_ELECTION_FILE = 'helios/fixtures/legacy-election-expected.json'
+    EXPECTED_ELECTION_METADATA_FILE = 'helios/fixtures/legacy-election-metadata-expected.json'
     EXPECTED_VOTERS_FILE = 'helios/fixtures/legacy-election-voters-expected.json'
     EXPECTED_TRUSTEES_FILE = 'helios/fixtures/legacy-trustees-expected.json'
     EXPECTED_BALLOTS_FILE = 'helios/fixtures/legacy-ballots-expected.json'

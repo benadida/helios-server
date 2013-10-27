@@ -133,6 +133,14 @@ class Election(HeliosModel):
   # help email
   help_email = models.EmailField(null=True)
 
+  # metadata for the election
+  @property
+  def metadata(self):
+    return {
+      'help_email': self.help_email or 'help@heliosvoting.org',
+      'use_advanced_audit_features': self.use_advanced_audit_features
+      }
+
   @property
   def pretty_type(self):
     return dict(self.ELECTION_TYPES)[self.election_type]

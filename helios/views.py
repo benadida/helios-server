@@ -291,6 +291,13 @@ def one_election(request, election):
   return election.toJSONDict(complete=True)
 
 @election_view()
+@json
+def one_election_meta(request, election):
+  if not election:
+    raise Http404
+  return election.metadata
+
+@election_view()
 def election_badge(request, election):
   election_url = get_election_url(election)
   params = {'election': election, 'election_url': election_url}

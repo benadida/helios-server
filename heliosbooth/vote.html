@@ -182,8 +182,8 @@ BOOTH.setup_election = function(raw_json) {
     BOOTH.election[field] = escape_html(BOOTH.election[field]);
   });
 
-  $('#header').processTemplate({'election' : BOOTH.election});
-  $('#footer').processTemplate({'election' : BOOTH.election});
+  $('#header').processTemplate({'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
+  $('#footer').processTemplate({'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
   BOOTH.setup_ballot();
 };
 
@@ -326,9 +326,13 @@ BOOTH.show_encryption_message_before = function(func_to_execute) {
 BOOTH.load_and_setup_election = function(election_url) {
     // the hash will be computed within the setup function call now
     $.get(election_url, function(raw_json) {
-        BOOTH.setup_election(raw_json);
-        BOOTH.show_election();
-        BOOTH.election_url = election_url;
+        // let's also get the metadata
+        $.getJSON(election_url + "/meta", {}, function(election_metadata) {
+          BOOTH.election_metadata = election_metadata;
+          BOOTH.setup_election(raw_json);
+          BOOTH.show_election();
+          BOOTH.election_url = election_url;
+        });
     });
 
 
