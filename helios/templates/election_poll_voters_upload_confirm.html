@@ -28,6 +28,7 @@
           <th>{% trans "Surname" %}</th>
           <th>{% trans "Middle or other name" %}</th>
           <th>{% trans "Mobile phone" %}</th>
+          <th>{% trans "Vote weight" %}</th>
       </tr>
   </thead>
   <tbody>
@@ -40,6 +41,7 @@
     <td>{{v.voter_id}}</td><td>{{v.email}}</td>
     <td>{{v.name}}</td><td>{{v.surname}}</td>
     <td>{{ v.fathername }}</td><td>{{ v.mobile }}</td>
+    <td>{{ v.weight }}</td>
 </tr>
 {% endfor %}
 </tbody>

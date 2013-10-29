@@ -263,7 +263,7 @@ LOGGING = {
     'handlers': {
         'file': {
             'class': 'logging.FileHandler',
-            'filename': '/usr/share/zeus/zeus.log'
+            'filename': '/usr/share/zeus/ase.log'
         }
     }
 }

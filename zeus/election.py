@@ -91,6 +91,7 @@ class ZeusDjangoElection(ZeusCoreElection):
             zeus_vote['previous'] = vote.previous
             zeus_vote['voter'] = vote.voter.uuid
             zeus_vote['index'] = vote.index
+            zeus_vote['weight'] = vote.voter.voter_weight
             return zeus_vote
         except helios_models.CastVote.DoesNotExist:
             pass
@@ -321,12 +322,12 @@ class ZeusDjangoElection(ZeusCoreElection):
 
     def do_get_voter(self, voter_uuid):
         v = self._get_voter_object(voter_uuid)
-        return v.zeus_string
+        return v.zeus_string, v.voter_weight
 
     def do_get_voters(self):
         voters = {}
         for v in self.poll.voters.all():
-            voters[v.uuid] = v.zeus_string
+            voters[v.uuid] = v.zeus_string, v.voter_weight
 
         return voters
 

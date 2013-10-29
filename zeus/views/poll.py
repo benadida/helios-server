@@ -1,4 +1,5 @@
 import yaml
+import copy
 import os
 import csv
 import json
@@ -336,9 +337,13 @@ def voters_list(request, election, poll):
         voters_per_page = default_voters_per_page
     order_by = request.GET.get('order', 'voter_login_id')
     order_type = request.GET.get('order_type', 'desc')
-
-    if not order_by in VOTER_TABLE_HEADERS: 
+    
+    table_headers = copy.copy(VOTER_TABLE_HEADERS)
+    if not order_by in table_headers: 
         order_by = 'voter_login_id'
+    
+    if not voters.filter(weight__gt=1).count():
+        table_headers.pop('weight')
 
     validate_hash = request.GET.get('vote_hash', "").strip()
     hash_invalid = None
