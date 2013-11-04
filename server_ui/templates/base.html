@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>{% block title %}{% endblock %} - Helios</title>
+  <title>Helios: {% block title %}{% endblock %}</title>
   
   
   <link rel="stylesheet" href="/static/foundation/css/foundation.css">
@@ -40,6 +40,8 @@
     <section class="top-bar-section">
       <!-- Right Nav Section -->
       <ul>
+        <li><a href="/">{{settings.SITE_TITLE}}</a></li>
+	{% if settings.MASTER_HELIOS %}
         <li class="divider"></li>
         <li><a href="/about">about</a></li>
         <li class="divider"></li>
@@ -48,7 +50,7 @@
         <li><a href="/docs">docs</a></li>
         <li class="divider"></li>
         <li><a href="/faq">FAQ</a></li>
-        <li class="divider"></li>
+	{% endif %}
       </ul>
     </section>
   </nav>

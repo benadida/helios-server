@@ -54,5 +54,11 @@ def home(request):
                                             'login_box' : login_box})
   
 def about(request):
-  return HttpResponse(request, "about")
+  return render_template(request, "about")
+
+def docs(request):
+  return render_template(request, "docs")
+
+def faq(request):
+  return render_template(request, "faq")
     

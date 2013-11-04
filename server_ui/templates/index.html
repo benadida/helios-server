@@ -8,8 +8,30 @@
 {% block content %}
 
 <div class="row"><div class="large-5 columns large-centered"><a href="/"><img border="0" src="/static/logo.png" /></a></div></div>
-
+<div class="row">&nbsp;</div>
 <div class="large-9 columns">
+  {% if settings.MASTER_HELIOS %}
+<p>Helios offers <b>verifiable online elections</b>.</p>
+
+<p>We believe democracy is important, whether it’s your book club, parent-teacher association, student government, workers’ union, or state. So we’ve made truly verifiable elections as easy as everything else on the Web.</p>
+
+<p>
+Helios elections are:
+<ul class="disc">
+<li><b>private</b>: no one knows how you voted.</li>
+<li><b>verifiable</b>: each voter gets a tracking number.</li>
+<li><b>proven</b>: Helios is open-source, vetted by top-tier experts, and in use by major organizations.</li>
+</ul>
+
+<p>
+More than <b>100,000 votes</b> have been cast using Helios.
+</p>
+
+{% if create_p %}
+<a class="button" href="{% url helios.views.election_new %}">create an election</a>
+{% endif %}
+
+  {% else %}
   <p style="font-size: 1.4em;">
     {{settings.WELCOME_MESSAGE|safe}}
   </p>
@@ -28,6 +50,7 @@
   {% else %}
   <h4>no featured elections at the moment</h4>
   {% endif %}
+{% endif %}
   
 </div>
 
