@@ -2,7 +2,7 @@
 
 {% block title %}Voters &amp; Ballot Tracking Center for {{election.name}}{% endblock %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Voters and Ballot Tracking Center <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
+  <h3 class="title">{{election.name}} &mdash; Voters and Ballot Tracking Center <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h3>
 
 <p>
 <b>Who can vote?</b>
@@ -37,7 +37,7 @@ You can change this setting:
 {% endif %}
 
 {% if email_voters and election.frozen_at and admin_p %}
-<p><a href="{% url helios.views.voters_email election.uuid %}">email voters</a></p>
+<p><a class="button" href="{% url helios.views.voters_email election.uuid %}">email voters</a></p>
 {% endif %}
 
 {% if election.num_voters > 20 %}
@@ -54,7 +54,7 @@ You can change this setting:
 <!-- Add a Voter: WORK HERE-->
 {% if upload_p and not election.openreg %}
 <p>
-<a href="{% url helios.views.voters_upload election_uuid=election.uuid %}">bulk upload voters</a>
+<a class="button" href="{% url helios.views.voters_upload election_uuid=election.uuid %}">bulk upload voters</a>
 </p>
 
 {% if voter_files %}

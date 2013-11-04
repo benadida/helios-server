@@ -2,34 +2,20 @@
 
 {% block title %}{{election.name}}{% endblock %}
 {% block content %}
-{% if election.voting_has_started %}
-<script>
-if (!navigator.javaEnabled()) {
-//
-// even if Java is not enabled, we now have a server-side solution
-//
-//  $(document).ready(function() {
-//    $('#votelink').hide();
-//    $('#nojava_message').show();    
-//  });
-//
-}
-</script>
-{% endif %}
 <div style="float: left; margin-right: 50px;">
-  <h2 class="title">{{ election.name }}
+  <h3 class="title">{{ election.name }}
 {% if admin_p %}
 {% if not election.frozen_at %}
-<span class="adminaction"><a href="{% url helios.views.one_election_edit election.uuid %}">edit</a></span>
+<a class="small button" href="{% url helios.views.one_election_edit election.uuid %}">edit</a>
 {% endif %}
-{% endif %}</h2>
+{% endif %}</h3>
 <p style="padding-top:0px; margin-top:0px">
 <em>{% if election.private_p %}private{%else%}public{% endif %}</em> {{ election.election_type }} created by <u><b>{{election.admin.display_html_small|safe}}</b></u>
 {% if election.is_archived %}
 [archived]
 {% endif %}
 {% if admin_p %}
-&nbsp;[{% if election.is_archived %}<a href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=0">unarchive it</a>{% else %}<a href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=1">archive it</a>{% endif %}]
+&nbsp;{% if election.is_archived %}<a class="small button" href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=0">unarchive it</a>{% else %}<a class="small button" href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=1">archive it</a>{% endif %}
 {% endif %}
 <br />
 {% if admin_p %}
@@ -182,9 +168,8 @@ all voters will be notified that the tally is ready.
 {% else %}
 
 {% if election.voting_has_started %}
-<span class="highlight-box round" style="font-size: 1.6em; margin-right: 10px;" id="votelink">
-<a href="{{test_cookie_url}}">Vote in this {{election.election_type}} </a>
-</span><br />
+<a class="button" href="{{test_cookie_url}}">Vote in this {{election.election_type}} </a>
+<br />
 <br />
 {% if election.voting_extended_until %}
 This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />

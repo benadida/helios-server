@@ -27,3 +27,35 @@ table.pretty th, td {
   margin-right: 300px;
 }
 
+.small-logo {
+  height: 15px;
+}
+
+.big-logo {
+  height: 25px;
+}
+
+/* sticky footer */
+#footer {
+ width: 100%;
+ border-top: 1px solid black;
+ padding: 5px;
+ background: #ddd;
+}
+
+* {
+ margin:0
+}
+
+html, body {
+height: 100%;
+}
+.wrapper {
+min-height: 100%;
+height: auto !important;
+height: 100%;
+margin: 0 auto -4.5em;
+}
+.footer, .push {
+height: 4.5em;
+}
