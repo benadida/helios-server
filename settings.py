@@ -18,7 +18,7 @@ ADMINS = (
 MANAGERS = ADMINS
 
 # is this the master Helios web site?
-MASTER_HELIOS = (get_from_env('MASTER_HELIOS', '1') == '1')
+MASTER_HELIOS = (get_from_env('MASTER_HELIOS', '0') == '1')
 
 DATABASES = {
     'default': {
