@@ -90,34 +90,6 @@ def user_reauth(request, user):
                                                request.get_full_path()}))
   return HttpResponseRedirect(login_url)
 
-##
-
-# simple static views
-def home(request):
-  user = get_user(request)
-  if user:
-    elections = Election.get_by_user_as_admin(user, archived_p = False)
-  else:
-    elections = []
-  
-  return render_template(request, "index", {'elections' : elections})
-  
-def stats(request):
-  user = get_user(request)
-  if not user or not user.admin_p:
-    raise PermissionDenied()
-
-  page = int(request.GET.get('page', 1))
-  limit = int(request.GET.get('limit', 25))
-
-  elections = Election.objects.all().order_by('-created_at')
-  elections_paginator = Paginator(elections, limit)
-  elections_page = elections_paginator.page(page)
-
-  return render_template(request, "stats", {'elections' : elections_page.object_list, 'elections_page': elections_page,
-                                            'limit' : limit})
-
-
 ## 
 ## simple admin for development
 ##
