@@ -6,7 +6,7 @@
   <h3 class="title">{{ election.name }}
 {% if admin_p %}
 {% if not election.frozen_at %}
-<a class="small button" href="{% url helios.views.one_election_edit election.uuid %}">edit</a>
+<small><a class="small button" href="{% url helios.views.one_election_edit election.uuid %}">edit</a></small>
 {% endif %}
 {% endif %}</h3>
 <p style="padding-top:0px; margin-top:0px">

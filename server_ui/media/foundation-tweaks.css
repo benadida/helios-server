@@ -59,3 +59,7 @@ margin: 0 auto -4.5em;
 .footer, .push {
 height: 4.5em;
 }
+
+select {
+    width: auto;
+}

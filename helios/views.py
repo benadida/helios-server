@@ -367,8 +367,8 @@ def socialbuttons(request):
 ##
 ## As of July 2009, there are always trustees for a Helios election: one trustee is acceptable, for simple elections.
 ##
-@json
 @election_view()
+@json
 def list_trustees(request, election):
   trustees = Trustee.get_by_election(election)
   return [t.toJSONDict(complete=True) for t in trustees]
@@ -486,8 +486,8 @@ def trustee_upload_pk(request, election, trustee):
 ## Ballot Management
 ##
 
-@json
 @election_view()
+@json
 def get_randomness(request, election):
   """
   get some randomness to sprinkle into the sjcl entropy pool
@@ -498,8 +498,8 @@ def get_randomness(request, election):
     #"randomness" : base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
     }
 
-@json
 @election_view(frozen=True)
+@json
 def encrypt_ballot(request, election):
   """
   perform the ballot encryption given answers_json, a JSON'ified list of list of answers
