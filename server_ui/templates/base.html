@@ -39,20 +39,32 @@
  
     <section class="top-bar-section">
       <!-- Right Nav Section -->
+      <ul class="right">
+	{% if user and user.admin_p %}
+	<li><a href="{% url helios.stats_views.home %}">Admin</a></li>
+	<li class="divider"></li>
+	{% endif %}
+	{% if not settings.MASTER_HELIOS %}
+	<li><a href="http://heliosvoting.org">About Helios</a></li>
+	{% endif %}
+      </ul>
+      
       <ul>
         <li><a href="/">{{settings.SITE_TITLE}}</a></li>
 	{% if settings.MASTER_HELIOS %}
         <li class="divider"></li>
-        <li><a href="/about">about</a></li>
+        <li><a href="/about">About</a></li>
         <li class="divider"></li>
-        <li><a href="https://github.com/benadida/helios-server">code</a></li>
+        <li><a target="_new" href="https://github.com/benadida/helios-server">Code</a></li>
         <li class="divider"></li>
-        <li><a href="/docs">docs</a></li>
+        <li><a href="/docs">Docs</a></li>
         <li class="divider"></li>
         <li><a href="/faq">FAQ</a></li>
         <li class="divider"></li>
         <li><a href="/privacy">Privacy</a></li>
 	{% endif %}
+        <li class="divider"></li>
+        <li><a href="mailto:{{settings.HELP_EMAIL_ADDRESS}}">Help!</a></li>
       </ul>
     </section>
   </nav>
@@ -82,16 +94,7 @@
     {% else %}
     not logged in. <a class="tiny button" href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.index %}?return_url={{CURRENT_URL}}">log in</a>
     {% endif %}
-    <br />
-      {% endif %}
-      <a href="http://heliosvoting.org">About Helios</a>
-      {% for footer_link in settings.FOOTER_LINKS %}
-      | <a href="{{ footer_link.url }}">{{footer_link.text}}</a>
-      {% endfor %}
-      | <a href="mailto:{{settings.HELP_EMAIL_ADDRESS}}">Help!</a>
-      {% if user and user.admin_p %}
-      | <a href="{% url helios.stats_views.home %}">Statistics</a>
-      {% endif %}
+    {% endif %}
       <br clear="right" />
     </div>
   
