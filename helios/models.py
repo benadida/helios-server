@@ -265,7 +265,7 @@ class Election(HeliosModel):
       return []
 
     # constraints that are relevant
-    relevant_constraints = [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type]
+    relevant_constraints = [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type and constraint.has_key('constraint')]
     if len(relevant_constraints) > 0:
       return relevant_constraints[0]
     else:
