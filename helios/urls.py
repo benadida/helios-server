@@ -8,8 +8,6 @@ from views import *
 urlpatterns = None
 
 urlpatterns = patterns('',
-  (r'^$', home),
-  (r'^get-randomness$',get_publicrandomness ),
   (r'^autologin$', admin_autologin),
   (r'^testcookie$', test_cookie),
   (r'^testcookie_2$', test_cookie_2),

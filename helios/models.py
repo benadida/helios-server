@@ -11,7 +11,7 @@ from django.utils import simplejson
 from django.conf import settings
 from django.core.mail import send_mail
 
-import datetime, logging, uuid, random, StringIO
+import datetime, logging, uuid, random, StringIO, io
 
 from crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
@@ -143,6 +143,15 @@ class Election(HeliosModel):
   # help email
   help_email = models.EmailField(null=True)
 
+  # metadata for the election
+  @property
+  def metadata(self):
+    return {
+      'help_email': self.help_email or 'help@heliosvoting.org',
+      'private_p': self.private_p,
+      'use_advanced_audit_features': self.use_advanced_audit_features
+      }
+
   @property
   def pretty_type(self):
     return dict(self.ELECTION_TYPES)[self.election_type]
@@ -266,7 +275,7 @@ class Election(HeliosModel):
       return []
 
     # constraints that are relevant
-    relevant_constraints = [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type]
+    relevant_constraints = [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type and constraint.has_key('constraint')]
     if len(relevant_constraints) > 0:
       return relevant_constraints[0]
     else:
@@ -905,7 +914,7 @@ class VoterFile(models.Model):
 
   def itervoters(self):
     if self.voter_file_content:
-      voter_stream = StringIO.StringIO(self.voter_file_content)
+      voter_stream = io.StringIO(unicode(self.voter_file_content), newline=None)
     else:
       voter_stream = open(self.voter_file.path, "rU")
 
@@ -935,7 +944,7 @@ class VoterFile(models.Model):
 
     # now we're looking straight at the content
     if self.voter_file_content:
-      voter_stream = StringIO.StringIO(self.voter_file_content.encode('utf-8'))
+      voter_stream = io.StringIO(unicode(self.voter_file_content), newline=None)
     else:
       voter_stream = open(self.voter_file.path, "rU")
 

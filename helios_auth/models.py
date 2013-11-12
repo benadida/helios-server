@@ -153,13 +153,13 @@ class User(models.Model):
     else:
       name_display = self.pretty_name
 
-    return """<img border="0" height="%s" src="/static/helios_auth/login-icons/%s.png" alt="%s" /> %s""" % (
-      str(int(size)), self.user_type, self.user_type, name_display)
+    return """<img class="%s-logo" src="/static/auth/login-icons/%s.png" alt="%s" /> %s""" % (
+      size, self.user_type, self.user_type, name_display)
 
   @property
   def display_html_small(self):
-    return self._display_html(15)
+    return self._display_html('small')
 
   @property
   def display_html_big(self):
-    return self._display_html(25)
+    return self._display_html('big')

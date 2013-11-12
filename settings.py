@@ -17,10 +17,14 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+# is this the master Helios web site?
+MASTER_HELIOS = (get_from_env('MASTER_HELIOS', '0') == '1')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'helios'
+        'NAME': 'helios',
+        'HOST': '127.0.0.1'
     }
 }
 
@@ -139,7 +143,7 @@ SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", "http://localhost:8000")
 SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", "http://localhost:8000")
 
 # election stuff
-SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Election Server')
+SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Voting')
 
 # FOOTER links
 FOOTER_LINKS = json.loads(get_from_env('FOOTER_LINKS', '[]'))

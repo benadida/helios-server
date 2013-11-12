@@ -95,34 +95,6 @@ def user_reauth(request, user):
                                                request.get_full_path()}))
   return HttpResponseRedirect(login_url)
 
-##
-
-# simple static views
-def home(request):
-  user = get_user(request)
-  if user:
-    elections = Election.get_by_user_as_admin(user, archived_p = False)
-  else:
-    elections = []
-  
-  return render_template(request, "index", {'elections' : elections})
-  
-def stats(request):
-  user = get_user(request)
-  if not user or not user.admin_p:
-    raise PermissionDenied()
-
-  page = int(request.GET.get('page', 1))
-  limit = int(request.GET.get('limit', 25))
-
-  elections = Election.objects.all().order_by('-created_at')
-  elections_paginator = Paginator(elections, limit)
-  elections_page = elections_paginator.page(page)
-
-  return render_template(request, "stats", {'elections' : elections_page.object_list, 'elections_page': elections_page,
-                                            'limit' : limit})
-
-
 ## 
 ## simple admin for development
 ##
@@ -263,7 +235,7 @@ def election_new(request):
 def one_election_edit(request, election):
 
   error = None
-  RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases', 'election_type', 'private_p']
+  RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases', 'election_type', 'private_p', 'help_email']
   # RELEVANT_FIELDS += ['use_advanced_audit_features']
   
   if request.method == "GET":
@@ -295,6 +267,13 @@ def one_election(request, election):
   if not election:
     raise Http404
   return election.toJSONDict(complete=True)
+
+@election_view()
+@json
+def one_election_meta(request, election):
+  if not election:
+    raise Http404
+  return election.metadata
 
 @election_view()
 def election_badge(request, election):
@@ -397,8 +376,8 @@ def socialbuttons(request):
 ##
 ## As of July 2009, there are always trustees for a Helios election: one trustee is acceptable, for simple elections.
 ##
-@json
 @election_view()
+@json
 def list_trustees(request, election):
   trustees = Trustee.get_by_election(election)
   return [t.toJSONDict(complete=True) for t in trustees]
@@ -757,8 +736,8 @@ def get_publicrandomness(request):
     #"randomness" : base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
     }
 
-@json
 @election_view()
+@json
 def get_randomness(request, election):
   """
   get some randomness to sprinkle into the sjcl entropy pool
@@ -769,8 +748,8 @@ def get_randomness(request, election):
     #"randomness" : base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
     }
 
-@json
 @election_view(frozen=True)
+@json
 def encrypt_ballot(request, election):
   """
   perform the ballot encryption given answers_json, a JSON'ified list of list of answers

@@ -9,7 +9,11 @@ from django.conf.urls.defaults import *
 from helios.views import *
 
 urlpatterns = patterns('',
+    # election data that is cryptographically verified
     (r'^$', one_election),
+
+    # metadata that need not be verified
+    (r'^/meta$', one_election_meta),
     
     # edit election params
     (r'^/edit$', one_election_edit),
