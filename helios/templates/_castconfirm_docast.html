@@ -2,7 +2,7 @@
   {% if not election.voting_has_stopped %}
 
 <div id="cast_form">
-<form method="post" action="" onsubmit="show_waiting()">
+<form id="cast_confirm_form" method="post" action="" onsubmit="show_waiting()">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
 {% if status_update_label %}
@@ -16,20 +16,16 @@
 <br />
 {% endif %}
 
-    <button type="submit" style="font-size: 1.5em; height: 50px;">I am <u>{{voter.display_html_big|safe}}</u>, cast this ballot</button>
+    <button type="submit" class="medium">I am <u>{{voter.display_html_big|safe}}</u>, cast this ballot</button>
     <span style="font-size:0.8em;"><br />You can cast as many ballots as you want.<br />Only the last one counts.</span>
 </form>
 
 <p>
-    <button style="font-size: 1.5em;" onclick="document.location='./view';">cancel</button><br />
+    <button class="tiny" onclick="document.location='./view';">cancel</button><br />
     <span style="font-size:0.8em;">If you cancel now, your ballot will <em>NOT</em> be recorded.<br />
     You can start the voting process over again, of course.</span>
 </p>
 
-</div>
-<div id="waiting_div">
-    Verifying and Casting your ballot<br />
-    <img src="/static/helios/loading.gif" />
 </div>
   {% else %}
 <p style="font-size:1.4em;">

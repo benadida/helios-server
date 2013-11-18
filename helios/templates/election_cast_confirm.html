@@ -8,7 +8,7 @@ $(document).ready(function() {
 });
 
 function show_waiting() {
-  $('#cast_form').hide();
+  $('#all_forms').hide();
   $('#waiting_div').show();
 }
 
@@ -42,6 +42,13 @@ Your smart ballot tracker is:<br /><br />
     <tt style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</tt>
 </p>
 
+<div id="waiting_div">
+    Verifying and Casting your ballot<br />
+    <img src="/static/helios/loading.gif" />
+</div>
+
+<div id="all_forms">
+
 {% if voter %}
 
 {% include "_castconfirm_docast.html" %}
@@ -55,7 +62,9 @@ You are logged in as <u>{{user.display_html_small|safe}}</u>, but this election<
 requires election-specific credentials.
 </p>
 {% endif %}
+{% with cast_ballot="1" %}
 {% include "_castconfirm_password.html" %}
+{% endwith %}
 
 {% else %}
 
@@ -96,5 +105,7 @@ Don't worry, we'll remember your ballot while you log in.
 
 {# this closes the IF ELSE of this being password_only #}
 {% endif %}
+
+</div>
 
 {% endblock %}

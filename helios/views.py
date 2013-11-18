@@ -542,7 +542,7 @@ def password_voter_login(request, election):
   """
   This is used to log in as a voter for a particular election
   """
-  
+
   # the URL to send the user to after they've logged in
   return_url = request.REQUEST.get('return_url', reverse(one_election_cast_confirm, args=[election.uuid]))
   bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
@@ -578,6 +578,11 @@ def password_voter_login(request, election):
                                      voter_password = password_login_form.cleaned_data['password'].strip())
 
       request.session['CURRENT_VOTER'] = voter
+
+      # if we're asked to cast, let's do it
+      if request.POST.get('cast_ballot') == "1":
+        return one_election_cast_confirm(request, election.uuid)
+      
     except Voter.DoesNotExist:
       redirect_url = login_url + "?" + urllib.urlencode({
           'bad_voter_login' : '1',
