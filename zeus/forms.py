@@ -69,7 +69,6 @@ class ElectionForm(forms.ModelForm):
         'election_module': ['edit_type'],
         'voting_starts_at': ['edit_voting_starts_at'],
         'voting_ends_at': ['edit_voting_ends_at'],
-        'voting_ends_at': ['edit_voting_ends_at'],
         'voting_extended_until': ['edit_voting_extended_until'],
         'remote_mixes': ['edit_remote_mixes'],
         'trial': ['edit_trial'],
