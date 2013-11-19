@@ -13,8 +13,15 @@ from django.forms.widgets import Select, MultiWidget, DateInput, TextInput
 from time import strftime
 
 
-hour_selections = [('','')] + [(str(t), "%02d:00" % t) for t in range(24)]
+hour_selections = [('','')]
+for t in range(24):
+    hour_selections.extend([("%02d:00" % t, "%02d:00" % t),
+                            ("%02d:15" % t, "%02d:15" % t),
+                            ("%02d:30" % t, "%02d:30" % t),
+                            ("%02d:45" % t, "%02d:45" % t)])
 hour_selections.append(('23:59', '23:59'))
+
+
 class JqSplitDateTimeWidget(MultiWidget):
 
     def __init__(self, attrs=None, date_format=None, time_format=None):
@@ -36,8 +43,8 @@ class JqSplitDateTimeWidget(MultiWidget):
     def decompress(self, value):
         if value:
             d = strftime("%Y-%m-%d", value.timetuple())
-            hour = strftime("%H", value.timetuple())
-            return (d, str(int(hour)))
+            timeofday = strftime("%H:%M", value.timetuple())
+            return (d, timeofday)
         else:
             return (None, None, None, None)
 
@@ -65,7 +72,7 @@ class JqSplitDateTimeField(fields.MultiValueField):
         """
         all_fields = (
             fields.CharField(max_length=10),
-            fields.CharField(max_length=2),
+            fields.CharField(max_length=5),
             )
 
         super(JqSplitDateTimeField, self).__init__(all_fields, *args, **kwargs)
@@ -79,10 +86,8 @@ class JqSplitDateTimeField(fields.MultiValueField):
         if data_list:
             if not (data_list[0] and data_list[1]):
                 raise forms.ValidationError("Field is missing data.")
-            input_time = strptime("%s:00"%(data_list[1]), "%H:%M")
+            input_time = strptime("%s" %(data_list[1]), "%H:%M")
             datetime_string = "%s %s" % (data_list[0], strftime('%H:%M', input_time))
             return datetime.datetime(*strptime(datetime_string,
-                                               "%Y-%m-%d %H:00")[0:6])
+                                               "%Y-%m-%d %H:%M")[0:6])
         return None
-
-
