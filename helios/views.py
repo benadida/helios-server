@@ -125,7 +125,7 @@ def election_single_ballot_verifier(request):
 def election_shortcut(request, election_short_name):
   election = Election.get_by_short_name(election_short_name)
   if election:
-    return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
   else:
     raise Http404
 
@@ -217,7 +217,7 @@ def election_new(request):
           # add Helios as a trustee by default
           election.generate_trustee(ELGAMAL_PARAMS)
           
-          return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+          return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
         else:
           error = "An election with short name %s already exists" % election_params['short_name']
       else:
@@ -247,7 +247,7 @@ def one_election_edit(request, election):
 
       election.save()
         
-      return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
   
   return render_template(request, "election_edit", {'election_form' : election_form, 'election' : election, 'error': error})
 
@@ -339,13 +339,13 @@ def test_cookie(request):
   continue_url = request.GET['continue_url']
   request.session.set_test_cookie()
   next_url = "%s?%s" % (reverse(test_cookie_2), urllib.urlencode({'continue_url': continue_url}))
-  return HttpResponseRedirect(next_url)  
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + next_url)  
 
 def test_cookie_2(request):
   continue_url = request.GET['continue_url']
 
   if not request.session.test_cookie_worked():
-    return HttpResponseRedirect("%s?%s" % (reverse(nocookies), urllib.urlencode({'continue_url': continue_url})))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + ("%s?%s" % (reverse(nocookies), urllib.urlencode({'continue_url': continue_url}))))
 
   request.session.delete_test_cookie()
   return HttpResponseRedirect(continue_url)  
@@ -392,7 +392,7 @@ def new_trustee(request, election):
     
     trustee = Trustee(uuid = str(uuid.uuid1()), election = election, name=name, email=email)
     trustee.save()
-    return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(list_trustees_view, args=[election.uuid]))
 
 @election_admin(frozen=False)
 def new_trustee_helios(request, election):
@@ -400,13 +400,13 @@ def new_trustee_helios(request, election):
   Make Helios a trustee of the election
   """
   election.generate_trustee(ELGAMAL_PARAMS)
-  return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(list_trustees_view, args=[election.uuid]))
   
 @election_admin(frozen=False)
 def delete_trustee(request, election):
   trustee = Trustee.get_by_election_and_uuid(election, request.GET['uuid'])
   trustee.delete()
-  return HttpResponseRedirect(reverse(list_trustees_view, args=[election.uuid]))
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(list_trustees_view, args=[election.uuid]))
   
 def trustee_login(request, election_short_name, trustee_email, trustee_secret):
   election = Election.get_by_short_name(election_short_name)
@@ -416,7 +416,7 @@ def trustee_login(request, election_short_name, trustee_email, trustee_secret):
     if trustee:
       if trustee.secret == trustee_secret:
         set_logged_in_trustee(request, trustee)
-        return HttpResponseRedirect(reverse(trustee_home, args=[election.uuid, trustee.uuid]))
+        return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustee_home, args=[election.uuid, trustee.uuid]))
       else:
         # bad secret, we'll let that redirect to the front page
         pass
@@ -424,7 +424,7 @@ def trustee_login(request, election_short_name, trustee_email, trustee_secret):
       # no such trustee
       raise Http404
 
-  return HttpResponseRedirect("/")
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + "/")
 
 @election_admin()
 def trustee_send_url(request, election, trustee_uuid):
@@ -447,7 +447,7 @@ Helios
   send_mail('your trustee homepage for %s' % election.name, body, settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], fail_silently=True)
 
   logging.info("URL %s " % url)
-  return HttpResponseRedirect(reverse(list_trustees_view, args = [election.uuid]))
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(list_trustees_view, args = [election.uuid]))
 
 @trustee_check
 def trustee_home(request, election, trustee):
@@ -480,7 +480,7 @@ def trustee_upload_pk(request, election, trustee):
       # oh well, no message sent
       pass
     
-  return HttpResponseRedirect(reverse(trustee_home, args=[election.uuid, trustee.uuid]))
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustee_home, args=[election.uuid, trustee.uuid]))
 
 ##
 ## Ballot Management
@@ -528,7 +528,7 @@ def one_election_cast(request, election):
   on a GET, this is a cancellation, on a POST it's a cast
   """
   if request.method == "GET":
-    return HttpResponseRedirect("%s%s" % (settings.URL_HOST, reverse(one_election_view, args = [election.uuid])))
+    return HttpResponseRedirect("%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_view, args = [election.uuid])))
     
   user = get_user(request)    
   encrypted_vote = request.POST['encrypted_vote']
@@ -551,7 +551,7 @@ def password_voter_login(request, election):
     # if user logged in somehow in the interim, e.g. using the login link for administration,
     # then go!
     if user_can_see_election(request, election):
-      return HttpResponseRedirect(reverse(one_election_view, args = [election.uuid]))
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args = [election.uuid]))
 
     password_login_form = forms.VoterPasswordForm()
     return render_template(request, 'password_voter_login',
@@ -589,9 +589,9 @@ def password_voter_login(request, election):
           'return_url' : return_url
           })
 
-      return HttpResponseRedirect(redirect_url)
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + redirect_url)
   
-  return HttpResponseRedirect(return_url)
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + return_url)
 
 @election_view(frozen=True)
 def one_election_cast_confirm(request, election):
@@ -693,7 +693,7 @@ def one_election_cast_confirm(request, election):
     # if user is not logged in
     # bring back to the confirmation page to let him know
     if not voter:
-      return HttpResponseRedirect(reverse(one_election_cast_confirm, args=[election.uuid]))
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_confirm, args=[election.uuid]))
     
     # don't store the vote in the voter's data structure until verification
     cast_vote.save()
@@ -854,7 +854,7 @@ def voter_delete(request, election, voter_uuid):
     # log it
     election.append_log("Voter %s/%s removed after election frozen" % (voter.voter_type,voter.voter_id))
     
-  return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
 
 @election_admin(frozen=False)
 def one_election_set_reg(request, election):
@@ -867,7 +867,7 @@ def one_election_set_reg(request, election):
     election.openreg = open_p
     election.save()
   
-  return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
 
 @election_admin()
 def one_election_set_featured(request, election):
@@ -883,7 +883,7 @@ def one_election_set_featured(request, election):
   election.featured_p = featured_p
   election.save()
   
-  return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
 
 @election_admin()
 def one_election_archive(request, election):
@@ -897,7 +897,7 @@ def one_election_archive(request, election):
     
   election.save()
 
-  return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
 
 # changed from admin to view because 
 # anyone can see the questions, the administration aspect is now
@@ -936,7 +936,7 @@ def one_election_register(request, election):
   if not voter:
     voter = _register_voter(election, user)
     
-  return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
 
 @election_admin(frozen=False)
 def one_election_save_questions(request, election):
@@ -962,7 +962,7 @@ def one_election_freeze(request, election):
     election.freeze()
 
     if get_user(request):
-      return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
     else:
       return SUCCESS    
 
@@ -978,7 +978,7 @@ def one_election_compute_tally(request, election):
   tallying is done all at a time now
   """
   if not _check_election_tally_type(election):
-    return HttpResponseRedirect(reverse(one_election_view,args=[election.election_id]))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view,args=[election.election_id]))
 
   if request.method == "GET":
     return render_template(request, 'election_compute_tally', {'election': election})
@@ -993,12 +993,12 @@ def one_election_compute_tally(request, election):
 
   tasks.election_compute_tally.delay(election_id = election.id)
 
-  return HttpResponseRedirect(reverse(one_election_view,args=[election.uuid]))
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view,args=[election.uuid]))
 
 @trustee_check
 def trustee_decrypt_and_prove(request, election, trustee):
   if not _check_election_tally_type(election) or election.encrypted_tally == None:
-    return HttpResponseRedirect(reverse(one_election_view,args=[election.uuid]))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view,args=[election.uuid]))
     
   return render_template(request, 'trustee_decrypt_and_prove', {'election': election, 'trustee': trustee})
   
@@ -1045,7 +1045,7 @@ def combine_decryptions(request, election):
     election.combine_decryptions()
     election.save()
 
-    return HttpResponseRedirect("%s?%s" % (reverse(voters_email, args=[election.uuid]), urllib.urlencode({'template': 'result'})))
+    return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_email, args=[election.uuid]), urllib.urlencode({'template': 'result'})))
 
   # if just viewing the form or the form is not valid
   return render_template(request, 'combine_decryptions', {'election': election})
@@ -1053,7 +1053,7 @@ def combine_decryptions(request, election):
 @election_admin(frozen=True)
 def one_election_set_result_and_proof(request, election):
   if election.tally_type != "homomorphic" or election.encrypted_tally == None:
-    return HttpResponseRedirect(reverse(one_election_view,args=[election.election_id]))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view,args=[election.election_id]))
 
   # FIXME: check csrf
   
@@ -1062,7 +1062,7 @@ def one_election_set_result_and_proof(request, election):
   election.save()
 
   if get_user(request):
-    return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
   else:
     return SUCCESS
   
@@ -1139,7 +1139,7 @@ def voters_eligibility(request, election):
 
   # for now, private elections cannot change eligibility
   if election.private_p:
-    return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
 
   # eligibility
   eligibility = request.POST['eligibility']
@@ -1160,7 +1160,7 @@ def voters_eligibility(request, election):
     election.eligibility = None
 
   election.save()
-  return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
   
 @election_admin()
 def voters_upload(request, election):
@@ -1184,7 +1184,7 @@ def voters_upload(request, election):
       tasks.voter_file_process.delay(voter_file_id = request.session['voter_file_id'])
       del request.session['voter_file_id']
 
-      return HttpResponseRedirect(reverse(voters_list_pretty, args=[election.uuid]))
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
     else:
       # we need to confirm
       if request.FILES.has_key('voters_file'):
@@ -1198,7 +1198,7 @@ def voters_upload(request, election):
 
         return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters})
       else:
-        return HttpResponseRedirect("%s?%s" % (reverse(voters_upload, args=[election.uuid]), urllib.urlencode({'e':'no voter file specified, try again'})))
+        return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_upload, args=[election.uuid]), urllib.urlencode({'e':'no voter file specified, try again'})))
 
 @election_admin()
 def voters_upload_cancel(request, election):
@@ -1211,12 +1211,12 @@ def voters_upload_cancel(request, election):
     vf.delete()
   del request.session['voter_file_id']
 
-  return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
 
 @election_admin(frozen=True)
 def voters_email(request, election):
   if not helios.VOTERS_EMAIL:
-    return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
   TEMPLATES = [
     ('vote', 'Time to Vote'),
     ('info', 'Additional Info'),
@@ -1292,7 +1292,7 @@ def voters_email(request, election):
         tasks.voters_email.delay(election_id = election.id, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars, voter_constraints_include = voter_constraints_include, voter_constraints_exclude = voter_constraints_exclude)
 
       # this batch process is all async, so we can return a nice note
-      return HttpResponseRedirect(reverse(one_election_view, args=[election.uuid]))
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
     
   return render_template(request, "voters_email", {
       'email_form': email_form, 'election': election,
