@@ -17,19 +17,27 @@ class Command(BaseCommand):
     help = 'List elections'
 
     def handle(self, *args, **options):
-        print ','.join(('uuid', 'όνομα', 'διαχειριστής', 'ίδρυμα',
-                        'εκλέκτορες', 'ψηφίσαντες', 'έναρξη', 'λήξη'))
+        print ','.join(('uuid ψηφοφορίας', 'όνομα ψηφοφορίας',
+                        'uuid κάλπης', 'όνομα κάλπης',
+                        'διαχειριστής', 'ίδρυμα', 'εκλέκτορες',
+                        'ψηφίσαντες', 'έναρξη', 'λήξη'))
         for e in Election.objects.all():
             uuid = strforce(e.uuid)
             name = strforce(e.name)
-            admin = strforce(e.admins.all()[0].pretty_name)
+            admins = list(e.admins.all())
+            admin = strforce(admins[0].pretty_name) if admins else ''
             institution = strforce(e.institution.name)
-            voted_count = str(e.voted_count())
-            voter_count = str(e.voter_set.count())
-            start = e.voting_starts_at
-            start = start.strftime("%Y-%m-%d %H:%M:%S") if start else '-'
-            end = e.voting_ended_at
-            end = end.strftime("%Y-%m-%d %H:%M:%S") if end else '-'
-            print ','.join((uuid, name, admin, institution,
-                            voter_count, voted_count, start, end))
+            polls = e.polls.all()
+            for poll in e.polls.all():
+                poll_name = strforce(poll.name)
+                poll_uuid = strforce(poll.uuid)
+                voter_count = str(Voter.objects.filter(poll=poll).count())
+                voted_count = str(poll.voters_cast_count())
+                start = e.voting_starts_at
+                start = start.strftime("%Y-%m-%d %H:%M:%S") if start else '-'
+                end = e.voting_ended_at
+                end = end.strftime("%Y-%m-%d %H:%M:%S") if end else '-'
+                print ','.join((uuid, name, poll_uuid, poll_name,
+                                admin, institution, voter_count, voted_count,
+                                start, end))
 

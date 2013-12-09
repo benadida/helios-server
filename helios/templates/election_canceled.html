@@ -3,12 +3,14 @@
 
 
 {% block head_subtitle %}
+<div id="header" class="columns twelve">
    <h4 id="election-name" class="subheader">
        <span class="inst">{{ election.institution.name }}</span>
        <span class="elname">
            {{election.name}}
          </span>
        </h4>
+   </div>
 {% endblock %}
 
 {% block tabs_menu %}

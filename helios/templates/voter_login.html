@@ -1,0 +1,50 @@
+{% extends TEMPLATE_BASE %}
+{% load i18n %}
+
+{% block header %}
+<h2>{{ settings.SITE_TITLE }} | Σύνδεση/h2>
+{% endblock %}
+
+{% block page_top %}
+<h4>
+    {% trans "Voter login" %}
+</h4>
+<hr />
+{% endblock %}
+
+{% block content %}
+<div class="row">
+<div class="columns twelve">
+<p>
+{% blocktrans %}
+Please, provide your voter credentials sent to you via Email or SMS
+{% endblocktrans %}
+</p>
+</div>
+</div>
+<div class="row">
+<div class="columns six">
+{% if error %}
+<div class="alert-box alert">
+  {{error}}
+</div>
+{% endif %}
+
+<form 
+    class="prettyform" 
+    action="{% url voter_login %}" 
+    method="POST" 
+    id="login_form">
+<table>
+    {% csrf_token %}
+    {{form.as_p}}
+</table>
+<div>
+<input class="button" type="submit" value="Σύνδεση" />
+</div>
+</form>
+</div>
+</div>
+{% endblock %}
+
+

@@ -2,7 +2,9 @@
 
 for d in zeus helios heliosauth server_ui; do
 cd $d;
-django-admin.py makemessages -l el;
-django-admin.py compilemessages;
+DJANGO_SETTINGS_MODULE=settings;
+PYTHONPATH=..;
+django-admin makemessages -l el -e .html -e .txt;
+django-admin compilemessages;
 cd ..;
 done;

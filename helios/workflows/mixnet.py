@@ -193,12 +193,10 @@ class EncryptedVote(EncryptedVote):
 
     ballot = phoebus.Ballot.from_dict(
         {'encrypted_ballot': phoebus_enc,
-          'nr_candidates': nr_candidates,
-          'max_choices': max_choices,
-          'public_key': election.public_key
-        })
+         'nr_candidates': nr_candidates,
+         'max_choices': max_choices,
+         'public_key': election.public_key})
     return ballot
-
 
   def get_cipher(self):
     """

@@ -69,9 +69,9 @@ class LDObjectField(models.TextField):
         ld_object = LDObject.instantiate(value, datatype=self.type_hint)
         return ld_object.serialize()
 
-    def value_to_string(self, obj):
+    def value_to_string(self, obj, *args, **kwargs):
         value = self._get_val_from_obj(obj)
-        return self.get_db_prep_value(value)
+        return self.get_prep_value(value, *args, **kwargs)
 
 ##
 ## for schema migration, we have to tell South about JSONField

@@ -58,7 +58,8 @@ MEDIA_URL = ''
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/media/'
+#ADMIN_MEDIA_PREFIX = '/media/'
+STATIC_URL = '/media/'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
@@ -73,9 +74,11 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'pagination.middleware.PaginationMiddleware',
+    'zeus.middleware.AuthenticationMiddleware',
+    'zeus.middleware.ExceptionsMiddleware',
 )
 
 ROOT_URLCONF = 'urls'
@@ -108,7 +111,12 @@ TEMPLATE_CONTEXT_PROCESSORS = (
   "django.core.context_processors.media",
   "django.core.context_processors.static",
   "django.core.context_processors.request",
-  "django.contrib.messages.context_processors.messages")
+  "django.contrib.messages.context_processors.messages",
+  "django.core.context_processors.csrf",
+  "zeus.context_processors.user",
+  "zeus.context_processors.confirm_messages",
+  "zeus.context_processors.theme"
+)
 
 ##
 ## HELIOS
@@ -194,11 +202,11 @@ EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = False
 
 # set up logging
-import logging
-logging.basicConfig(
-    level = logging.INFO if DEBUG else logging.INFO,
-    format = '%(asctime)s %(levelname)s %(message)s'
-)
+#import logging
+#logging.basicConfig(
+    #level = logging.INFO if DEBUG else logging.INFO,
+    #format = '%(asctime)s %(levelname)s %(message)s'
+#)
 
 # set up django-celery
 import djcelery
@@ -211,8 +219,7 @@ CELERY_ALWAYS_EAGER = True
 CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 
 
-BOOTH_STATIC_PATH = ROOT_PATH + '/heliosbooth/'
-VERIFIER_STATIC_PATH = ROOT_PATH + '/heliosverifier/'
+BOOTH_STATIC_PATH = ROOT_PATH + '/zeus/static/booth/'
 
 ECOUNTING_LOGIN_URL = "https://x.x.x.x/checkuser.php"
 ECOUNTING_POST_URL = "https://x.x.x.x/newelection.php"
@@ -221,11 +228,15 @@ ECOUNTING_SECRET = "xxxxx"
 
 HELIOS_VOTER_EMAIL_RATE = '30/m'
 
+ZEUS_ELECTION_LOG_DIR = os.path.join('/', 'usr', 'share', 'zeus', 'election_logs')
 ZEUS_RESULTS_PATH = os.path.join('/', 'usr', 'share', 'zeus')
 ZEUS_PROOFS_PATH = os.path.join('/', 'usr', 'share', 'zeus_proofs')
 ZEUS_MIXES_PATH = 'zeus_mixes'
-ZEUS_ELECTION_FORCE_VOTING_END = True
+ZEUS_ALLOW_EARLY_ELECTION_CLOSE = True
 ZEUS_CELERY_TEMPDIR = os.path.join('/', 'var', 'run', 'zeus-celery')
+ZEUS_HEADER_BG_URL = '/static/zeus/images/logo_bg.jpg'
+
+SERVER_PREFIX = ''
 
 CANDIDATES_CHANGE_TIME_MARGIN = 1
 
@@ -233,8 +244,30 @@ COLLATION_LOCALE = 'el_GR.UTF-8'
 
 MIX_PART_SIZE = 104857600
 
-
 USE_X_SENDFILE = False
+
+SOUTH_TESTS_MIGRATE = False
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'root': {
+        'level': 'INFO',
+        'handlers': ['file']
+    },
+    'handlers': {
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': '/usr/share/zeus/zeus.log'
+        }
+    }
+}
+
+
+ZEUS_SMS_API_USERNAME = ""
+ZEUS_SMS_API_PASSWORD = ""
+ZEUS_SMS_API_SENDER = "ZEUS"
 
 # useful trick for custom settings
 try:

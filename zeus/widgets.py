@@ -14,6 +14,7 @@ from time import strftime
 
 
 hour_selections = [('','')] + [(str(t), "%02d:00" % t) for t in range(24)]
+hour_selections.append(('23:59', '23:59'))
 class JqSplitDateTimeWidget(MultiWidget):
 
     def __init__(self, attrs=None, date_format=None, time_format=None):

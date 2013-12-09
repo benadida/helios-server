@@ -1,0 +1,2 @@
+ZEUS ELECTION {{ election.name|truncatechars:10 }}: VOTER WITH REG CODE {{ voter.voter_login_id }}
+VOTES TO {{ SECURE_URL_HOST }}{% url voter_login %} - LOGIN CODE: {{ voter.login_code }}

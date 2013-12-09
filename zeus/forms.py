@@ -3,6 +3,7 @@
 Forms for Zeus
 """
 import uuid
+import copy
 
 from datetime import datetime, timedelta
 
@@ -14,345 +15,187 @@ from django.db import transaction
 from django.conf import settings
 from django.db.models import Q
 from django.utils.safestring import mark_safe
+from django.contrib.auth.hashers import check_password, make_password
+from django.forms.models import BaseModelFormSet
 
-from helios.models import Election, Trustee
+from helios.models import Election, Poll, Trustee, Voter
 from heliosauth.models import User
 
-from zeus.slugify import slughifi
-
+from zeus.utils import extract_trustees, election_trustees_to_text
 from zeus.widgets import JqSplitDateTimeField, JqSplitDateTimeWidget
+from zeus import help_texts as help
+from zeus.utils import undecalize
 
 from django.core.validators import validate_email
 
 
-def _in_two_days():
-        return datetime.now() + timedelta(days=2)
-
-def _in_one_day():
-        return datetime.now() + timedelta(days=1)
-
-INITIAL_CANDIDATES = """
-Onoma epwnymo 1
-Onoma epwnymo 2
-Onoma epwnymo 3
-Onoma epwnymo 4
-Onoma epwnymo 5
-"""
-
-def add_test_voters(election):
-    from helios.models import Voter
-    import random
-
-    new_voters = []
-    for v in range(50):
-        voter_id = email = "voter_%d@dispostable.com" % (v, )
-        voter_uuid = str(uuid.uuid4())
-        name = "Voter %d" % v
-
-        voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter_id,
-                      voter_name = name, voter_email = email, election = election)
-        voter.generate_password()
-        new_voters.append(voter)
-        voter.save()
-
-    last_alias_num = 0
-    num_voters = 50
-    voter_alias_integers = range(last_alias_num+1, last_alias_num+1+num_voters)
-    random.shuffle(voter_alias_integers)
-    for i, voter in enumerate(new_voters):
-        voter.alias = 'V%s' % voter_alias_integers[i]
-        voter.init_audit_passwords()
-        voter.save()
-
-    return new_voters
-
-def initial_voting_starts_at():
-    return datetime.now()
-
-def initial_voting_ends_at():
-    return datetime.now() + timedelta(hours=12)
-
-
-class ElectionForm(forms.Form):
-
-  fixed_election_type = 'ecounting'
-
-  election_type = forms.ChoiceField(label=_('Election type'),
-                                 help_text=_('Choose the type of the election'),
-                                   choices=Election.ELECTION_TYPES)
-  institution = forms.CharField(max_length=100, label=_('Institution'),
-                               help_text=_('Election institution'))
-
-  name = forms.CharField( max_length=50,label=_('Election name'),
-                         widget=forms.TextInput(attrs={'size':60}),
-                         initial="",
-                         help_text=_('the name of the election (e.g. University of Piraeus 2014 elections).'))
-  description = forms.CharField(widget=forms.Textarea,
-                  initial="",
-                  label=_('Description'),
-                 help_text=_('Election description'))
-  voting_starts_at = JqSplitDateTimeField(label=_('Voting starts at'),
-                                          initial=initial_voting_starts_at,
-                                          widget=JqSplitDateTimeWidget(
-                                            attrs={'date_class':'datepicker','time_class':'timepicker'}),
-                                          help_text = _('When voting starts'))
-  voting_ends_at = JqSplitDateTimeField(label=_('Voting ends at'),
-                                        initial=initial_voting_ends_at,
-                                          widget=JqSplitDateTimeWidget(
-                                            attrs={'date_class':'datepicker','time_class':'timepicker'}),
-                                          help_text = _('When voting ends'))
-
-  #create_test_voters = forms.BooleanField(required=False)
-  voting_extended_until = JqSplitDateTimeField(label=_('Voting extended until'),
-                                               required=False,
-                                          widget=JqSplitDateTimeWidget(
-                                            attrs={'date_class':'datepicker','time_class':'timepicker'}),
-                                          help_text = _('Voting extension date'))
-
-  trustees = forms.CharField(label=_('Trustees'), widget=forms.Textarea,
-                             required=True,
-        help_text=_('Trustees list. e.g. <br/><br/> Giannhs Gianopoulos, '
-                    'giannhs@email.com<br /> Kwstas Kwstopoulos, kwstas@email.com<br />'))
-  departments = forms.CharField(label=_('Schools and Departments'),
-                                widget=forms.Textarea,
-        help_text=_('University Schools. e.g. <br/><br/> School of Engineering <br /> School of Medicine<br />School of Informatics<br />'))
-
-  eligibles_count = forms.ChoiceField(label=_('Eligibles count'),
-                                      help_text=_('Set the eligibles count of the election'),
-                                      choices = [('6','6'),('8','8')],
-                                      initial='6',
-                                      widget=forms.RadioSelect)
-  has_department_limit = forms.BooleanField(label=_('Has department limit'), required=False, initial=True,
-                                            help_text=_('4009/2011 (A\' 195)'))
-
-  help_email = forms.EmailField(label=_('Help email'), help_text=_('Voters can contact this email for election suport'))
-  help_phone = forms.CharField(label=_('Help phone'), help_text=_('Voters can contact this phone for election suport'))
-
-  remote_mix = forms.BooleanField(label=_('Remote mix'),
-                                  help_text=_('Whether or not to'
-                                              ' allow remote'
-                                              ' mixing.'),
-                                 initial=False,
-                                 required=False)
-
-
-  def __init__(self, election=None, institution=None, *args, **kwargs):
-    self.election = election
-    self.institution = institution
-    super(ElectionForm, self).__init__(*args, **kwargs)
-
-    if self.fixed_election_type:
-        del self.fields['election_type']
-    else:
-        if self.election and self.election.election_type:
-            self.fields['election_type'].initial = self.election.election_type
-
-    self.fields['institution'].widget.attrs['readonly'] = True
-    self.fields['institution'].initial = institution.name
-
-    if self.election and self.election.pk and self.election.trustee_set.count() == 1:
-      self.fields['trustees'].required = False
-
-    if self.election and self.election.frozen_at:
-      self.fields['voting_starts_at'].widget.attrs['readonly'] = True
-      self.fields['voting_ends_at'].widget.attrs['readonly'] = True
-      self.fields['name'].widget.attrs['readonly'] = True
-      self.fields['trustees'].widget.attrs['readonly'] = True
-      if 'departments' in self.fields:
-          self.fields['departments'].widget.attrs['readonly'] = True
-    else:
-      del self.fields['voting_extended_until']
-
-  def clean(self, *args, **kwargs):
-      cleaned_data = super(ElectionForm, self).clean(*args, **kwargs)
-
-      if 'name' in cleaned_data:
-          slug = slughifi(cleaned_data['name'])
-
-      dfrom = cleaned_data['voting_starts_at']
-      dto = cleaned_data['voting_ends_at']
-
-      dextend = None
-      if 'voting_extended_until' in cleaned_data:
-          dextend = cleaned_data['voting_extended_until']
-
-      if dfrom >= dto and (self.election and not self.election.frozen_at):
-          raise forms.ValidationError(_("Invalid voting dates"))
-
-      if dextend and cleaned_data['voting_extended_until'] < dto:
-          raise forms.ValidationError(_("Invalid voting extension date"))
-
-      if not 'departments' in cleaned_data:
-        cleaned_data['departments'] = ''
-
-      return cleaned_data
-
-  def clean_trustees(self):
-    trustees_list = []
-    try:
-      trustees = self.cleaned_data['trustees'].strip()
-      trustees = trustees.split("\n")
-      trustees_list = [[f.strip() for f in t.split(",")] for t in trustees if t.strip()]
-    except:
-      raise forms.ValidationError(_("Invalid trustess"))
-
-    try:
-      validations = [validate_email(t[1].strip()) for t in trustees_list]
-    except Exception, e:
-      raise forms.ValidationError(_("Invalid trustess"))
-
-    return "\n".join(["%s,%s" % (t[0], t[1]) for t in trustees_list])
-
-  def save(self, election, institution, params):
-    is_new = not bool(election.pk)
-    institution = self.institution
-
-    data = self.cleaned_data
-    data['slug'] = slughifi(data['name'])
-
-    e = election
-
-    if self.fixed_election_type:
-        e.election_type = self.fixed_election_type
-
-    if is_new or not election.frozen_at:
-      e.name = data.get('name')
-      e.use_voter_aliases = True
-      e.workflow_type = 'mixnet'
-      e.private_p = True
-      e.institution = institution
-      e.help_phone = data['help_phone']
-      e.help_email = data['help_email']
-      e.departments = [d.strip() for d in data['departments'].strip().split("\n")]
-
-      if not self.fixed_election_type:
-          prev_type = e.election_type
-          e.election_type = data.get('election_type')
-          if prev_type != e.election_type:
-              e.update_answers()
-
-      if e.candidates:
-        new_cands = []
-        for cand in e.candidates:
-          if cand['department'] in e.departments:
-            new_cands.append(cand)
-
-        #if len(new_cands) != len(e.candidates):
-          #messages.warning(_("Election candidates changed due to election"
-                             #" institution department changes"))
-        e.candidates = new_cands
-        e.update_answers()
-
-
-      if not e.uuid:
-        e.uuid = str(uuid.uuid1())
-
-      if is_new or not election.frozen_at:
-        e.cast_url = settings.SECURE_URL_HOST + \
-            reverse('helios.views.one_election_cast', args=[e.uuid])
-
-      e.short_name = data['slug']
-      count = 0
-
-      q = Q(short_name=e.short_name)
-      if e.pk and self.election:
-          q = ~Q(pk=e.pk) & Q(short_name=e.short_name)
-
-      short_name = e.short_name
-      while Election.objects.filter(q).count() > 0:
-            count += 1
-            e.short_name = short_name + "-" + str(count)
-            q = Q(short_name=e.short_name)
-            if e.pk:
-                q = Q(short_name=e.short_name)
-                if self.election:
-                    q = q & ~Q(pk=self.election.pk)
-
-      e.description = data['description']
-      e.voting_starts_at = data['voting_starts_at']
-      e.voting_ends_at = data['voting_ends_at']
-
-
-    if 'voting_extended_until' in data:
-      e.voting_extended_until = data['voting_extended_until']
-
-    if is_new or not e.voting_ended_at:
-      if data['remote_mix']:
-        e.generate_mix_key()
-      else:
-        e.mix_key = ''
-
-    if 'eligibles_count' in data:
-      e.eligibles_count = data['eligibles_count']
-    if 'has_department_limit' in data:
-      e.has_department_limit = data['has_department_limit']
-
-    e.save()
-
-    if is_new:
-      e.generate_helios_mixnet({"name":"zeus mixnet %d" % 1})
-
-    if not e.get_helios_trustee():
-      e.generate_trustee()
-
-    if is_new or not election.frozen_at:
-      trustees = []
-      if data['trustees']:
-        trustees = [t.split(",") for t in data['trustees'].split("\n")]
-
-      for t in trustees:
-        name, email = t[0], t[1]
-        trustee, created = Trustee.objects.get_or_create(election=e,
-                                   email=email)
-        trustee.name = name
-        if created:
-          trustee.uuid = str(uuid.uuid1())
-
-        trustee.save()
-
-        if created:
-            trustee.send_url_via_mail()
-
-    return e
-
-
-class ReferendumForm(ElectionForm):
-
-      fixed_election_type = None
-
-      def __init__(self, *args, **kwargs):
-          super(ReferendumForm, self).__init__(*args, **kwargs)
-          del self.fields['has_department_limit']
-          del self.fields['eligibles_count']
-          del self.fields['departments']
-          self.fields['name'].help_text = _('Election title (e.g. Memorandum'
-                                            ' referendum)')
-
-
-def election_form_cls(user, force_type=None):
-    from zeus.forms import ElectionForm, ReferendumForm
-    if user.ecounting_account:
-        if force_type:
-          pass
-        return ElectionForm
-    return ReferendumForm
+LOG_CHANGED_FIELDS = [
+    "name",
+    "voting_starts_at",
+    "voting_ends_at",
+    "voting_extended_until",
+    "description",
+    "help_email",
+    "help_phone"
+]
+
+def election_form_formfield_cb(f, **kwargs):
+    if f.name in ['voting_starts_at', 'voting_ends_at',
+                  'voting_extended_until']:
+        widget = JqSplitDateTimeWidget(attrs={'date_class': 'datepicker',
+                                              'time_class': 'timepicker'})
+        return JqSplitDateTimeField(label=f.verbose_name,
+                                    initial=f.default,
+                                    widget=widget,
+                                    required=not f.blank,
+                                    help_text=f.help_text)
+    return f.formfield()
+
+
+class ElectionForm(forms.ModelForm):
+
+    formfield_callback = election_form_formfield_cb
+    trustees = forms.CharField(label=_('Trustees'), required=False,
+                               widget=forms.Textarea,
+                               help_text=help.trustees)
+    remote_mixes = forms.BooleanField(label=_('Multiple mixnets'),
+                                      required=False,
+                                      help_text=help.remote_mixes)
+
+    FIELD_REQUIRED_FEATURES = {
+        'trustees': ['edit_trustees'],
+        'name': ['edit_name'],
+        'description': ['edit_description'],
+        'election_module': ['edit_type'],
+        'voting_starts_at': ['edit_voting_starts_at'],
+        'voting_ends_at': ['edit_voting_ends_at'],
+        'voting_ends_at': ['edit_voting_ends_at'],
+        'voting_extended_until': ['edit_voting_extended_until'],
+        'remote_mixes': ['edit_remote_mixes'],
+        'trial': ['edit_trial'],
+    }
+
+    class Meta:
+        model = Election
+        fields = ('trial', 'election_module', 'name', 'description',
+                  'voting_starts_at', 'voting_ends_at',
+                  'voting_extended_until',
+                  'trustees', 'help_email', 'help_phone')
+
+    def __init__(self, institution, *args, **kwargs):
+        self.institution = institution
+        super(ElectionForm, self).__init__(*args, **kwargs)
+
+        self.creating = True
+        self._inital_data = {}
+        if self.instance and self.instance.pk:
+            self._initial_data = {}
+            for field in LOG_CHANGED_FIELDS:
+                self._initial_data[field] = self.initial[field]
+            self.creating = False
+
+        if self.instance and self.instance.pk:
+            self.fields.get('trustees').initial = \
+                election_trustees_to_text(self.instance)
+            self.fields.get('remote_mixes').initial = \
+                bool(self.instance.mix_key)
+
+        for field, features in self.FIELD_REQUIRED_FEATURES.iteritems():
+            editable = all([self.instance.check_feature(f) for \
+                            f in features])
+
+            widget = self.fields.get(field).widget
+            if not editable:
+                self.fields.get(field).widget.attrs['readonly'] = True
+                if isinstance(widget, forms.CheckboxInput):
+                    self.fields.get(field).widget.attrs['disabled'] = True
+
+    def clean(self):
+        data = super(ElectionForm, self).clean()
+        self.clean_voting_dates(data.get('voting_starts_at'),
+                                data.get('voting_ends_at'),
+                                data.get('voting_extended_until'))
+
+        for field, features in self.FIELD_REQUIRED_FEATURES.iteritems():
+            if not self.instance.pk:
+                continue
+            editable = all([self.instance.check_feature(f) for \
+                            f in features])
+            if not editable and field in self.cleaned_data:
+                if field == 'trustees':
+                    self.cleaned_data[field] = \
+                        election_trustees_to_text(self.instance)
+                elif field == 'remote_mixes':
+                    self.cleaned_data[field] = bool(self.instance.mix_key)
+                else:
+                    self.cleaned_data[field] = getattr(self.instance, field)
+
+        return data
+
+    def clean_voting_dates(self, starts, ends, extension):
+        if ends < datetime.now() and self.instance.feature_edit_voting_ends_at:
+            raise forms.ValidationError(_("Invalid voting end date"))
+        if starts >= ends:
+            raise forms.ValidationError(_("Invalid voting dates"))
+        if extension and extension <= ends:
+            raise forms.ValidationError(_("Invalid voting extension date"))
+
+    def clean_trustees(self):
+        trustees = self.cleaned_data.get('trustees')
+        try:
+            for tname, temail in extract_trustees(trustees):
+                validate_email(temail)
+        except:
+            raise forms.ValidationError(_("Invalid trustees format"))
+        return trustees
+
+    def log_changed_fields(self, instance):
+        for field in LOG_CHANGED_FIELDS:
+            if field in self.changed_data:
+                inital = self._initial_data[field]
+                newvalue = self.cleaned_data[field]
+                instance.logger.info("Field '%s' changed from %r to %r", field,
+                                    inital, newvalue)
+
+
+    def save(self, *args, **kwargs):
+        remote_mixes = self.cleaned_data.get('remote_mixes')
+        if remote_mixes:
+            self.instance.generate_mix_key()
+        else:
+            self.instance.mix_key = None
+
+        saved = super(ElectionForm, self).save(*args, **kwargs)
+        trustees = extract_trustees(self.cleaned_data.get('trustees'))
+        saved.institution = self.institution
+        saved.save()
+        if saved.feature_edit_trustees:
+            saved.update_trustees(trustees)
+
+        if self.creating:
+            saved.logger.info("Election created")
+        else:
+            saved.logger.info("Election updated %r", self.changed_data)
+            self.log_changed_fields(saved)
+        return saved
 
 
 class AnswerWidget(forms.TextInput):
 
-  def render(self, *args, **kwargs):
-    html = super(AnswerWidget, self).render(*args, **kwargs)
-    html = u"""
-    <div class="row">
-    <div class="columns eleven">
-    %s
-    </div>
-    <div class="columns one">
-    <a href="#" style="font-weight: bold; color:red" class="remove_answer">X</a>
-    </div>
-    </div>
-    """ % html
-    return mark_safe(html)
+    def render(self, *args, **kwargs):
+        html = super(AnswerWidget, self).render(*args, **kwargs)
+        html = u"""
+        <div class="row">
+        <div class="columns eleven">
+        %s
+        </div>
+        <div class="columns one">
+        <a href="#" style="font-weight: bold; color:red"
+        class="remove_answer">X</a>
+        </div>
+        </div>
+        """ % html
+        return mark_safe(html)
 
 
 DEFAULT_ANSWERS_COUNT = 2
@@ -360,49 +203,171 @@ MAX_QUESTIONS_LIMIT = getattr(settings, 'MAX_QUESTIONS_LIMIT', 1)
 
 
 class QuestionForm(forms.Form):
-  choice_type = forms.ChoiceField(choices=(
-    ('choice', _('Choice')),
-    #('ranked', _('Ranked')),
-  ))
-  question = forms.CharField(label=_('Question'), max_length=255, required=True)
-  min_answers = forms.ChoiceField(label=_('Min answers'))
-  max_answers = forms.ChoiceField(label=_('Max answers'))
+    choice_type = forms.ChoiceField(choices=(
+        ('choice', _('Choice')),
+    ))
+    question = forms.CharField(label=_("Question"), max_length=255,
+                               required=True)
+    min_answers = forms.ChoiceField(label=_("Min answers"))
+    max_answers = forms.ChoiceField(label=_("Max answers"))
 
-
-  def __init__(self, *args, **kwargs):
-    super(QuestionForm, self).__init__(*args, **kwargs)
-    answers = len(filter(lambda k: k.startswith("%s-answer_" %
+    def __init__(self, *args, **kwargs):
+        super(QuestionForm, self).__init__(*args, **kwargs)
+        answers = len(filter(lambda k: k.startswith("%s-answer_" %
                                                 self.prefix), self.data))
-    if not answers:
-      answers = len(filter(lambda k: k.startswith("answer_"), self.initial))
-    if answers == 0:
-      answers = DEFAULT_ANSWERS_COUNT
+        if not answers:
+            answers = len(filter(lambda k: k.startswith("answer_"),
+                                 self.initial))
+        if answers == 0:
+            answers = DEFAULT_ANSWERS_COUNT
 
-    for ans in range(answers):
-      field_key = 'answer_%d' % ans
-      self.fields[field_key] = forms.CharField(max_length=100,
+        for ans in range(answers):
+            field_key = 'answer_%d' % ans
+            self.fields[field_key] = forms.CharField(max_length=100,
                                               required=True,
                                               widget=AnswerWidget)
-      self.fields[field_key].widget.attrs = {'class': 'answer_input'}
+            self.fields[field_key].widget.attrs = {'class': 'answer_input'}
 
-    max_choices = map(lambda x: (x,x), range(1, answers+1))
-    min_choices = map(lambda x: (x,x), range(0, answers+1))
-    self.fields['max_answers'].choices = max_choices
-    self.fields['max_answers'].initial = answers
-    self.fields['min_answers'].choices = max_choices
-    self.fields['min_answers'].initial = 0
-    if len(self.fields['choice_type'].choices) == 1:
-      self.fields['choice_type'].widget = forms.HiddenInput()
-      self.fields['choice_type'].initial = 'choice'
+        max_choices = map(lambda x: (x,x), range(1, answers+1))
+        min_choices = map(lambda x: (x,x), range(0, answers+1))
 
-  def clean(self):
-    max_answers = int(self.cleaned_data.get('max_answers'))
-    min_answers = int(self.cleaned_data.get('min_answers'))
-    if min_answers > max_answers:
-      raise forms.ValidationError(_("Max answers should be greater or equal to min answers"))
-    return self.cleaned_data
+        self.fields['max_answers'].choices = max_choices
+        self.fields['max_answers'].initial = answers
+        self.fields['min_answers'].choices = max_choices
+        self.fields['min_answers'].initial = 0
+
+        if len(self.fields['choice_type'].choices) == 1:
+            self.fields['choice_type'].widget = forms.HiddenInput()
+            self.fields['choice_type'].initial = 'choice'
+
+    def clean(self):
+        max_answers = int(self.cleaned_data.get('max_answers'))
+        min_answers = int(self.cleaned_data.get('min_answers'))
+        if min_answers > max_answers:
+            raise forms.ValidationError(_("Max answers should be greater "
+                                          "or equal to min answers"))
+        return self.cleaned_data
 
 
 class PartyForm(QuestionForm):
-  question = forms.CharField(label=_('Party name'), max_length=255, required=True)
+    question = forms.CharField(label=_("Party name"), max_length=255,
+                               required=True)
 
+
+class LoginForm(forms.Form):
+    username = forms.CharField(label=_('Username'),
+                               max_length=50)
+    password = forms.CharField(label=_('Password'),
+                               widget=forms.PasswordInput(),
+                               max_length=100)
+
+    def clean(self):
+        self._user_cache = None
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+        try:
+            user = User.objects.get(user_id=username)
+        except User.DoesNotExist:
+            raise forms.ValidationError(_("Invalid username or password"))
+
+        if check_password(password, user.info['password']):
+            self._user_cache = user
+            return self.cleaned_data
+        else:
+            raise forms.ValidationError(_("Invalid username or password"))
+
+
+class PollForm(forms.ModelForm):
+
+    class Meta:
+        model = Poll
+        fields = ('name', )
+
+
+class PollFormSet(BaseModelFormSet):
+    def save(self, election, *args, **kwargs):
+        instances = super(PollFormSet, self).save(*args, commit=False,
+                                                  **kwargs)
+        for instance in instances:
+            instance.election = election
+            instance.save()
+
+        return instances
+
+
+SEND_TO_CHOICES = [
+    ('all', _('all voters')),
+    ('voted', _('voters who have cast a ballot')),
+    ('not-voted', _('voters who have not yet cast a ballot'))
+]
+
+class EmailVotersForm(forms.Form):
+    subject = forms.CharField(label=_('Email subject'), max_length=80,
+                              required=False)
+    body = forms.CharField(label=_('Email body'), max_length=2000,
+                           widget=forms.Textarea, required=False)
+    send_to = forms.ChoiceField(label=_("Send To"), initial="all",
+                                choices=SEND_TO_CHOICES)
+
+
+class ChangePasswordForm(forms.Form):
+    password = forms.CharField(label=_('Current password'), widget=forms.PasswordInput)
+    new_password = forms.CharField(label=_('New password'), widget=forms.PasswordInput)
+    new_password_confirm = forms.CharField(label=_('New password confirm'), widget=forms.PasswordInput)
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super(ChangePasswordForm, self).__init__(*args, **kwargs)
+
+    def save(self):
+        user = self.user
+        pwd = make_password(self.cleaned_data['new_password'].strip())
+        user.info['password'] = pwd
+        user.save()
+
+    def clean(self):
+        cl = super(ChangePasswordForm, self).clean()
+        pwd = self.cleaned_data['password'].strip()
+        if not check_password(pwd, self.user.info['password']):
+            raise forms.ValidationError(_('Invalid password'))
+        if not self.cleaned_data.get('new_password') == \
+           self.cleaned_data.get('new_password_confirm'):
+            raise forms.ValidationError(_('Passwords don\'t match'))
+        return cl
+
+
+class VoterLoginForm(forms.Form):
+
+    login_id = forms.CharField(label=_('Login password'), required=True)
+
+    def __init__(self, *args, **kwargs):
+        self._voter = None
+        super(VoterLoginForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super(VoterLoginForm, self).clean()
+
+        login_id = self.cleaned_data.get('login_id')
+
+        invalid_login_id_error = _("Invalid login code")
+        if not login_id:
+            raise forms.ValidationError(invalid_login_id_error)
+
+        try:
+            poll_id, secret = login_id.split("-", 1)
+            secret = undecalize(secret)
+        except ValueError:
+            raise forms.ValidationError(invalid_login_id_error)
+
+        poll = None
+        try:
+            poll = Poll.objects.get(pk=poll_id)
+        except DoesNotExist:
+            raise forms.ValidationError(invalid_login_id_error)
+
+        try:
+            self._voter = poll.voters.get(voter_password=secret)
+        except Voter.DoesNotExist:
+            raise forms.ValidationError(_("Invalid email or password"))
+
+        return cleaned_data

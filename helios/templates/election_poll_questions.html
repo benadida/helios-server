@@ -1,0 +1,41 @@
+{% extends "election_page.html" %}{% load i18n %}
+{% load zeus_tags %}
+
+{% block title %}
+{{ election.name }}: {{ module.questions_title_message }}
+{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
+
+{% block extra_menu %}
+{% include "_election_poll_admin_actions.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="columns twelve">
+  <div class="panel">
+    {% for q in poll.questions_data %}
+    <h5>{{ q.question }}</h5>
+    <ol>
+      {% for a in q.answers %}
+        <li>
+        {{ a }}
+        </li>
+      {% endfor %}
+    </ol>
+    {% empty %}
+    <span class="label alert">
+        {{ module.no_questions_added_message }}
+    </span>
+    {% endfor %}
+</div>
+<div style="text-align: right">
+{% if admin and poll.feature_can_manage_questions %}
+{% trans "Manage questions" as label %}
+{% url election_poll_questions_manage election.uuid poll.uuid as manage_url %}
+{% action label manage_url %}
+{% endif %}
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+<div class="columns twelve">
+{% if error %}
+<div class="panel alert">
+    {{ error }}
+</div>
+{% endif %}
+  
+  <form class="prettyform" action="" method="POST" id="create_election_form">
+    <table class="pretty">
+      {% with form=election_form %}
+      {% include "foundation_form.html" %}
+      {% endwith %}
+     </table>
+  <div>
+  <input class="button" type="submit" value="Αποθήκευση" id="next_button" />
+</div>
+
+<script>
+$(function() {
+  $(".datepicker[readonly!=readonly]").datepicker({ dateFormat: 'yy-mm-dd' });
+  $("[readonly]").addClass("field-readonly");
+  $("select[readonly] option[selected!=selected]").remove();
+});
+</script>
+  </form>
+</div>
+

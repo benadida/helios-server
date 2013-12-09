@@ -1,3 +1,0 @@
-[submodule "js/jscrypto"]
-	path = js/jscrypto
-	url = git://github.com/benadida/jscrypto

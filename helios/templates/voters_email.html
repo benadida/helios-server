@@ -1,10 +1,11 @@
 {% extends "election_page.html" %}
+{% load i18n %}
 
 {% block tabs_menu %}
 {% include "_election_view_menu.html" %}
 {% endblock %}
 
-{% block title %}{{election.name}}: αποστολή email στους ψηφοφόρους{% endblock %}
+{% block title %}{% trans "Send email" %}{% endblock %}
 
 {% block content %}
 <script>
@@ -14,7 +15,23 @@ voter_id = '{{voter_o.voter_id}}';
 {% endif %}
 </script>
 
-<h5>Αποστολή email</h5>
+<h5>
+{% if voter_o %}
+{% blocktrans with voter_name=voter_o.name %}
+Send email to voter {{ voter_name }} ( voter.voter_id)
+{% endblocktrans %}
+{% else %}
+{% if poll %}
+{% blocktrans with poll_name=poll.name %}
+Send email to poll '{{ poll_name }}' voters
+{% endblocktrans %}
+{% else %}
+{% blocktrans with election_name=election.name voters_count=election.voters_count %}
+Send email to election '{{ election_name }}' voters
+{% endblocktrans %}
+{% endif %}
+{% endif %}
+</h5>
 
 {% if voter_o %}  
   <p>
@@ -46,7 +63,7 @@ Subject: {{default_subject}}
 </p>
 
   <form class="prettyform" action="" method="POST" id="email_form">
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+    {% csrf_token %}
     <input type="hidden" name="template" value="{{template}}" />
     <input type="hidden" name="voter_id" value="{{voter_o.voter_email}}" />
     <table class="pretty">
@@ -61,7 +78,7 @@ Subject: {{default_subject}}
   </div>
   
   <div id="done" style="display:none;">
-    Η αποστολή ολοκληρώθηκε. <a href="{% url helios.views.one_election_view election.uuid %}">Πίσω στην ψηφοφορία</a>.
+    Η αποστολή ολοκληρώθηκε. <a href="{% url election_index election.uuid %}">Πίσω στην ψηφοφορία</a>.
   </div>
 
   <div id="error" style="display:none;">

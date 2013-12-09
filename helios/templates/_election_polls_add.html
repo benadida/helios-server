@@ -1,0 +1,12 @@
+{% load i18n %}<div class="election_polls_form">
+  <h5>{% trans "Add new poll" %}</h5><span>
+    {% for choice in polls_add_count_choices %}
+    <a href="./?extra={{ choice }}">{{ choice }}</a>
+    {% endfor %}
+  </span>
+  <form action="{% url election_polls_add election.uuid %}" method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <input type="submit" class="button small" value="{% trans "Save" %}" />
+    </form>
+</div>

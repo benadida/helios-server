@@ -133,7 +133,7 @@ random.seed()
 
 def random_string(length=20):
     random.seed()
-    ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    ALPHABET = 'abcdefghkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
     r_string = ''
     for i in range(length):
         r_string += random.choice(ALPHABET)

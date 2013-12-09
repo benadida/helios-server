@@ -1,0 +1,32 @@
+{% extends "election_page.html" %}
+{% load pagination_tags i18n zeus_tags %} 
+
+{% block title %}{{election.name}}: Ψηφοφόροι{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
+{% block content %}
+
+{% autopaginate audited_ballots per_page %}
+
+{% if voter_audited_ballots %}
+<h4>Προσωπικές ψήφοι ελέγχου</h4>
+<table class="pretty" width="100%">
+{% for b in voter_audited_ballots %}
+{% include "_audit_ballots_list.html" %}
+{% endfor %}
+</table>
+{% endif %}
+
+<h4>Όλες οι ψήφοι ελέγχου</h4>
+{% if audited_ballots %}
+<table class="pretty" width="100%">
+{% for b in audited_ballots %}
+{% include "_audit_ballots_list.html" %}
+{% endfor %}
+</table>
+{% paginate %}
+{% else %}
+<em>{% trans "No audited ballots posted yet" %}</em>
+{% endif %}
+{% endblock %}

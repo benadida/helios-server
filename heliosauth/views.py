@@ -43,15 +43,17 @@ def index(request):
 
   #form = password.LoginForm()
 
-  return render_template(request,'index', {'return_url' : request.GET.get('return_url', '/'),
+  return render_template(request,'index', {'return_url' : request.GET.get('return_url', reverse('home')),
                                            'enabled_auth_systems' : auth.ENABLED_AUTH_SYSTEMS,
                                            'default_auth_system': auth.DEFAULT_AUTH_SYSTEM,
                                            'default_auth_system_obj': default_auth_system_obj})
 
-def login_box_raw(request, return_url='/', auth_systems = None):
+def login_box_raw(request, return_url=None, auth_systems = None):
   """
   a chunk of HTML that shows the various login options
   """
+  if return_url is None:
+      return_url = reverse('home')
   default_auth_system_obj = None
   if auth.DEFAULT_AUTH_SYSTEM:
     default_auth_system_obj = AUTH_SYSTEMS[auth.DEFAULT_AUTH_SYSTEM]
@@ -106,8 +108,10 @@ def do_local_logout(request):
 
   request.session['user_for_remote_logout'] = user
 
-def do_remote_logout(request, user, return_url="/"):
+def do_remote_logout(request, user, return_url=None):
   # FIXME: do something with return_url
+  if return_url is None:
+      return_url = reverse('home')
   auth_system = AUTH_SYSTEMS[user['type']]
 
   # does the auth system have a special logout procedure?
@@ -116,34 +120,6 @@ def do_remote_logout(request, user, return_url="/"):
   if hasattr(auth_system, 'do_logout'):
     response = auth_system.do_logout(user_for_remote_logout)
     return response
-
-def do_complete_logout(request, return_url="/"):
-  do_local_logout(request)
-  user_for_remote_logout = request.session.get('user_for_remote_logout', None)
-  if user_for_remote_logout:
-    response = do_remote_logout(request, user_for_remote_logout, return_url)
-    return response
-
-  from helios.security import HELIOS_TRUSTEE_UUID
-  if request.session.has_key(HELIOS_TRUSTEE_UUID):
-    del request.session[HELIOS_TRUSTEE_UUID]
-
-  if request.session.has_key('CURRENT_VOTER'):
-    del request.session['CURRENT_VOTER']
-
-  return None
-
-def logout(request):
-  """
-  logout
-  """
-
-  return_url = request.GET.get('return_url',"/")
-  response = do_complete_logout(request, return_url)
-  if response:
-    return response
-
-  return HttpResponseRedirect(return_url)
 
 def _do_auth(request):
   # the session has the system name
@@ -186,7 +162,7 @@ def after(request):
   # which auth system were we using?
   if not request.session.has_key('auth_system_name'):
     do_local_logout(request)
-    return HttpResponseRedirect("/")
+    return HttpResponseRedirect(reverse('home'))
 
   system = AUTH_SYSTEMS[request.session['auth_system_name']]
 
@@ -197,7 +173,7 @@ def after(request):
     # get the user and store any new data about him
     user_obj = User.update_or_create(user['type'], user['user_id'], user['name'], user['info'], user['token'])
 
-    request.session['user'] = user
+    request.session['user'] = user_obj.pk
   else:
     return HttpResponseRedirect("%s?%s" % (reverse(perms_why), urllib.urlencode({'system_name' : request.session['auth_system_name']})))
 
@@ -213,7 +189,7 @@ def after(request):
   return HttpResponseRedirect(reverse(after_intervention))
 
 def after_intervention(request):
-  return_url = "/"
+  return_url = reverse('home')
   if request.session.has_key('auth_return_url'):
     return_url = request.session['auth_return_url']
     del request.session['auth_return_url']
@@ -221,9 +197,9 @@ def after_intervention(request):
 
 
 def change_password(request):
-    user = get_user(request)
+    user = request.zeususer
     if not user or user.user_type != 'password':
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect(reverse('home'))
 
     password_changed = request.GET.get('password_changed', None)
     if not user.user_type == "password":

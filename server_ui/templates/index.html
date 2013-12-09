@@ -41,10 +41,10 @@
     </th>
     {% if not user.superadmin_p %}
     <th>
-      Ψηφοφόροι
+      {% trans "Election status" %}
     </th>
     <th>
-      Έχουν ψηφίσει
+      {% trans "Trial" %}
     </th>
     {% endif %}
   </thead>
@@ -73,7 +73,7 @@
             </a>
             {% endif %}
             {% else %}
-            <a href="{% url helios.views.one_election_view election.uuid %}">
+            <a href="{% url election_index election.uuid %}">
               {{ election.name }}
             </a>
             {% endif %}
@@ -93,14 +93,16 @@
         <td>
             {{ election.voting_ends_at }}
         </td>
-        {% if not user.superadmin_p %}
-        <td>
-            {{ election.voter_set.all.count }}
+        <td class="{% if election.feature_canceled %}alert{% endif %}">
+          {{ election.status_display }}
         </td>
         <td>
-            {{ election.voted_count }}
+          {% if election.trial %}
+            {% trans "YES" %}
+          {% else %}
+            {% trans "NO" %}
+          {% endif %}
         </td>
-        {% endif %}
     </tr>
     {% endfor %}
   </tbody>

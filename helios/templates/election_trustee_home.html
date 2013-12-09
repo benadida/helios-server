@@ -1,0 +1,39 @@
+{% extends "helios/templates/trustee_home_base.html" %}
+{% load i18n zeus_tags %}
+
+{% if election.feature_trustee_decrypt %}
+{% block js %}
+{{ block.super }}
+<script src="/static/zeus/javascript/trustee_decrypt.js"></script>
+{% endblock %}
+{% endif %}
+
+{% block content %}
+<p>
+{% if trustee.public_key_hash %}
+Το δημόσιο κλειδί του Κωδικού σας μεταφορτώθηκε με επιτυχία.<br />
+<a href="{% url election_trustee_check_sk election.uuid %}" id="check_sk_link">
+Επαληθεύστε ότι έχετε το σωστό Κωδικό Ψηφοφορίας</a>, αν δεν το έχετε ήδη κάνει.
+{% else %}
+<a href="{% url election_trustee_keygen election.uuid %}">ρυθμίστε τον Κωδικό Ψηφοφορίας</a>
+{% endif %}
+</p>
+
+<p>
+{% if election.any_poll_feature_can_partial_decrypt %}
+{% if trustee.partial_decryptions_finished %}
+Έχετε αποστείλει τη μερική αποκρυπτογράφησή σας με επιτυχία.
+{% else %}
+{% include "_trustee_decrypt.html" %}
+{% endif %}
+{% else %}
+Μετά την ολοκλήρωση της καταμέτρησης μπορείτε να επιστρέψετε εδώ για την
+αποκρυπτογράφηση των αποτελεσμάτων.<br />
+Πρέπει να κρατήσετε το μήνυμα του συστήματος 
+&laquo;Ζευς&raquo; στο ηλεκτρονικό
+ταχυδρομείο σας με τον σύνδεσμο στην αρχική 
+σελίδα σας.
+{% endif %}
+</p>
+
+{% endblock %}

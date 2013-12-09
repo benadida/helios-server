@@ -3,12 +3,14 @@
 
 import json
 import os
+import datetime
+
 from xml.sax.saxutils import escape
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
-from reportlab.platypus import Spacer, Image
+from reportlab.platypus import Spacer, Image, PageBreak
 from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
@@ -38,7 +40,10 @@ def load_results(data):
     candidates_results = {}
     total_votes = 0
     blank_votes = 0
-    jsondata = json.loads(data)
+    if isinstance(data, basestring):
+        jsondata = json.loads(data)
+    else:
+        jsondata = data
     for result, party in jsondata['party_counts']:
         parties_results.append((party, result))
         total_votes += result
@@ -73,7 +78,7 @@ def make_later_pages_hf(canvas, doc):
                      width = PAGE_WIDTH / 8,
                      height = 1.1 * cm)
     canvas.drawString(PAGE_WIDTH - 7 * cm, PAGE_HEIGHT - 2 * cm,
-                      "%s %d" % (pageinfo, doc.page))
+                      "%s" % (pageinfo, ))
     canvas.restoreState()
 
 
@@ -82,6 +87,11 @@ def make_heading(elements, styles, contents):
         elements.append(Spacer(1, 12))
     for pcontent in contents:
         elements.append(Paragraph(escape(pcontent), styles["ZeusHeading"]))
+
+def make_subheading(elements, styles, contents):
+    for pcontent in contents:
+        elements.append(Paragraph(escape(pcontent), styles["ZeusSubHeading"]))
+    elements.append(Spacer(1, 12))
 
 def make_intro(elements, styles, contents):
     for pcontent in contents:
@@ -111,15 +121,31 @@ def make_results(elements, styles, total_votes, blank_votes,
     make_totals(elements, styles, total_votes, blank_votes)
     for party_result in parties_results:
         (party, count) = party_result
-        make_party_list_heading(elements, styles, party, count)
+        if (len(parties_results) > 1):
+            make_party_list_heading(elements, styles, party, count)
         if party in candidates_results:
             make_party_list_table(elements, styles, candidates_results[party])
 
 
-
 def build_doc(title, name, institution_name, voting_start, voting_end,
-            extended_until, data, filename="election_results.pdf"):
+              extended_until, data, filename="election_results.pdf",
+              new_page=True):
 
+
+    DATE_FMT = "%d/%m/%Y %H:%S"
+    if isinstance(voting_start, datetime.datetime):
+        voting_start = 'Έναρξη: %s' % (voting_start.strftime(DATE_FMT))
+
+    if isinstance(voting_end, datetime.datetime):
+        voting_end = 'Λήξη: %s' % (voting_end.strftime(DATE_FMT))
+
+    if extended_until and isinstance(extended_until, datetime.datetime):
+        extended_until = 'Παράταση: %s' % (extended_until.strftime(DATE_FMT))
+    else:
+        extended_until = ""
+
+    if not isinstance(data, list):
+        data = [(name, data)]
 
     # reset pdfdoc timestamp in order to force a fresh one to be used in
     # pdf document metadata.
@@ -127,11 +153,6 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
 
     elements = []
 
-    parties_results = []
-    candidates_results = {}
-
-    total_votes, blank_votes, parties_results, candidates_results = \
-        load_results(data)
     doc = SimpleDocTemplate(filename, pagesize=A4)
 
     styles = getSampleStyleSheet()
@@ -141,25 +162,47 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
                               leading=16,
                               alignment=TA_JUSTIFY))
 
+    styles.add(ParagraphStyle(name='ZeusSubHeading',
+                              fontName='LinLibertineBd',
+                              fontSize=14,
+                              alignment=TA_JUSTIFY,
+                              spaceAfter=16))
+
     styles.add(ParagraphStyle(name='ZeusHeading',
                               fontName='LinLibertineBd',
                               fontSize=16,
                               alignment=TA_CENTER,
                               spaceAfter=16))
     intro_contents = [
-        name,
-        institution_name,
         voting_start,
         voting_end,
         extended_until
-        ]
+    ]
 
-    make_heading(elements, styles, [title])
 
+    make_heading(elements, styles, [title, name, institution_name])
     make_intro(elements, styles, intro_contents)
 
-    make_results(elements, styles, total_votes, blank_votes,
-                 parties_results, candidates_results)
+    for poll_name, poll_results in data:
+        poll_intro_contents = [
+            poll_name
+        ]
+        parties_results = []
+        candidates_results = {}
+
+        total_votes, blank_votes, parties_results, candidates_results = \
+            load_results(poll_results)
+        if new_page:
+            elements.append(PageBreak())
+        elements.append(Spacer(1, 12))
+        elements.append(Spacer(1, 12))
+        elements.append(Spacer(1, 12))
+        make_subheading(elements, styles, poll_intro_contents)
+        elements.append(Spacer(1, 12))
+        make_intro(elements, styles, intro_contents)
+        elements.append(Spacer(1, 12))
+        make_results(elements, styles, total_votes, blank_votes,
+                     parties_results, candidates_results)
 
     doc.build(elements, onFirstPage = make_first_page_hf,
               onLaterPages = make_later_pages_hf)

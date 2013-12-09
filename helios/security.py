@@ -16,8 +16,8 @@ from models import *
 from heliosauth.security import get_user
 
 from django.http import HttpResponseRedirect
-import urllib
 
+import urllib
 import helios
 
 # current voter
@@ -44,24 +44,6 @@ def get_voter(request, user, election):
   return voter
 
 # a function to check if the current user is a trustee
-HELIOS_TRUSTEE_UUID = 'helios_trustee_uuid'
-def get_logged_in_trustee(request):
-  if request.session.has_key(HELIOS_TRUSTEE_UUID):
-    try:
-      return Trustee.get_by_uuid(request.session[HELIOS_TRUSTEE_UUID])
-    except Trustee.DoesNotExist:
-      del request.session[HELIOS_TRUSTEE_UUID]
-  else:
-    return None
-
-def clear_previous_logins(request):
-  for sess_key in [HELIOS_TRUSTEE_UUID, 'user', 'CURRENT_VOTER']:
-    if sess_key in request.session:
-      del request.session[sess_key]
-
-def set_logged_in_trustee(request, trustee):
-  request.session[HELIOS_TRUSTEE_UUID] = trustee.uuid
-
 #
 # some common election checks
 #
@@ -118,15 +100,6 @@ def election_view(**checks):
       # do checks
       do_election_checks(election, checks)
 
-      # if private election, only logged in voters
-      if election.private_p and not checks.get('allow_logins',False):
-        from views import password_voter_login
-        if not user_can_see_election(request, election):
-          return_url = request.get_full_path()
-          return HttpResponseRedirect("%s?%s" % (reverse(password_voter_login, args=[election.uuid]), urllib.urlencode({
-                  'return_url' : return_url
-                  })))
-
       try:
         return func(request, election, *args, **kw)
       except Exception, e:
@@ -137,6 +110,7 @@ def election_view(**checks):
     return update_wrapper(election_view_wrapper, func)
 
   return election_view_decorator
+
 
 def user_can_admin_election(user, election):
   if not user:

@@ -1,0 +1,74 @@
+{% extends "election_page.html" %}
+{% load i18n %}
+
+{% block title %}{{election.name}}: Ψηφοφόροι{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
+
+{% block content %}
+<h5>Μαζική μεταφόρτωση χρηστών</h5>
+
+{% if error %}
+<div class="panel alert-box alert">
+  Προέκυψε σφάλμα στην ανάγνωση του αρχείου. ({{ error }})
+</div>
+{% else %}
+<p>
+Στο αρχείο που μόλις μεταφορτώσατε εντοπίσαμε τις ακόλουθες <b>{{ count }}</b> εγγραφές.
+</p>
+
+<table>
+  <thead>
+      <tr>
+          <th>Ηλεκτρονική διευθυνση</th>
+          <th>Όνομα</th>
+          <th>Επώνυμο</th>
+          <th>Πατρώνυμο</th>
+          <th>Κινητό</th>
+      </tr>
+  </thead>
+  <tbody>
+{% for v in voters %}
+{% if forloop.counter > 7 %}
+<tr style="display:none">
+{% else %}
+<tr>
+{% endif %}
+    <td>{{v.email}}</td><td>{{v.name}}</td><td>{{v.surname}}</td>
+    <td>{{ v.fathername }}</td><td>{{ v.mobile }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<span class="button tiny more-voters" style="display:none">
+    {% trans "Show all voters" %}
+</span>
+<script>
+    $(document).ready(function(){
+        if ($("tr:hidden").length > 0) {
+            $(".more-voters").show();
+        }
+        $(".more-voters").click(function(){
+            $("tr").show();
+            $(".more-voters").hide();
+        })
+    })
+</script>
+<p></p>
+<form method="post" action="" id="upload_form">
+  {% csrf_token %}
+  Παρακαλούμε επιβεβαιώστε ότι η λίστα ψηφοφόρων είναι σωστή.
+  <input type="hidden" name="confirm_p" value="1" />
+  <Br /><br />
+  <input class="button success" type="submit" value="Επιβεβαίωση" />
+</form>
+{% endif %}
+<form 
+    method="post"
+    action="{% url election_poll_voters_upload_cancel election.uuid poll.uuid %}">
+    {% csrf_token %}
+    <input type="submit" class="button alert small" 
+    value="{% trans "Cancel batch voters import" %}" />
+</form>
+{% endblock %}

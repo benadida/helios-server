@@ -1,0 +1,21 @@
+{% load i18n zeus_tags %}
+
+{% if election.feature_can_rename_poll %}
+<div id="rename-poll-{{ poll.short_name }}" class="reveal-modal rename-poll">
+<h3>{% trans "Rename poll" %}</h3>
+
+{% url election_poll_rename election.uuid poll.uuid as action %}
+<form action="{{ action }}" method="POST" class="action-form">
+<label>{% trans "New name" %}</label>
+<input type="text" name="name" value="{{ poll.name }}" />
+
+<div class="actions">
+{% csrf_token %}
+<input type="submit" value="{% trans "Save" %}" 
+class="button close-reveal-modal small" />
+<a class="button close-reveal-modal small alert">{% trans "Back" %}</a>
+</div>
+</div>
+</form>
+</div>
+{% endif %}

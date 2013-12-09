@@ -1,0 +1,265 @@
+{% extends "helios/templates/trustee_home_base.html" %}
+
+{% block content %}
+<script language="javascript">
+
+var PUBLIC_KEY, PROOF;
+
+function clear_keys() {
+    $('#sk_download').hide();
+    $('#pk_form').hide();
+    $('#buttons').show();
+    $('#clear_button').hide();
+    $('#reuse').hide();
+}
+
+function show_key_reuse() {
+    $('#generator').hide();
+    $('#reuse').show();
+}
+
+SECRET_KEY = null;
+
+function reuse_key(secret_key_text) {
+    try {
+      SECRET_KEY = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(secret_key_text));
+    } catch (err) {
+      alert("Μη έγκυρος κωδικός ψηφοφορίας.");
+      return;
+    }
+
+    $('#reuse').hide();
+    setup_public_key_and_proof();
+    show_sk();
+    check_confirm();
+    $('#pk_link').show();
+    $('.reuse_key').hide();
+    $('#clear_button').hide();
+    $('#save_key').removeClass('success').addClass('secondary');
+    $('#save_key').hide();
+}
+
+// start collecting some local randomness
+sjcl.random.startCollectors();
+
+$(document).ready(function() {
+    clear_keys();
+    $('#generator').hide();
+
+    // get some more server-side randomness for keygen
+    $.getJSON('{% url get_randomness %}', function(result) {
+       sjcl.random.addEntropy(result.randomness);
+       BigInt.setup(function() {
+          ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
+          $('#waiting_message').hide();
+          $('#generator').show();
+       });
+    });
+});
+
+
+function generate_keypair() {
+    $('#buttons').hide();
+    
+    try {
+        SECRET_KEY = ELGAMAL_PARAMS.generate();
+    } catch (e) {
+        alert(e);
+    }
+    setup_public_key_and_proof();
+}
+
+function setup_public_key_and_proof() {    
+    // generate PoK of secret key
+    PROOF = SECRET_KEY.proveKnowledge(ElGamal.zeus_dlog_challenge_generator);
+    PUBLIC_KEY = SECRET_KEY.pk;
+
+    var pk_val = jQuery.toJSON({'pok': PROOF, 'public_key': PUBLIC_KEY});
+    $('#pk_textarea').val(pk_val);
+    $('#pk_hash').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY)));
+
+    $('#clear_button').show();
+    $('.reuse_key').hide();
+    show_sk();
+}
+
+function show_sk() {
+    $('#sk_download').show();
+}
+
+function download_sk() {
+  try {
+    var filetype = "text/plain;charset=utf-8";
+    if ($.browser.mozilla) {
+    }
+
+    bb = new BlobBuilder;
+    bb.append(jQuery.toJSON(SECRET_KEY));
+    saveAs(bb.getBlob(filetype), "Κωδικός Ψηφοφορίας {{ trustee.name }}.txt");
+  } catch (err) {
+    UTILS.open_window_with_content(jQuery.toJSON(SECRET_KEY), "application/json");
+  }
+  
+  check_confirm();
+  $('#pk_link').show();
+  $('.reuse_key').hide();
+  $('#clear_button').hide();
+  $('#save_key').removeClass('success').addClass('secondary');
+  $('#save_key').hide();
+}
+
+function upload_show_pk() {
+    if (!$(".confirm-check").is(":checked")) {
+      alert("Παρακαλούμε αποδεχθείτε οτι έχετε αποθηκεύσει τον κωδικό ψηφοφορίας σας.")
+      return;
+    }
+
+    var data = $("#pk_form").serialize();
+    $.ajax({
+      url: $("#pk_form").attr("action"),
+      type: 'post',
+      data: data,
+
+      success: function() {
+        alert("O κωδικός σας ενεργοποιήθηκε.");
+        window.location = '{% url logout %}'
+      },
+      error: function() {
+        alert("Σφάλμα ενεργοποίησης.");
+      }
+    })
+
+    $('#sk_download').hide();
+    //$('#pk_hash').show();
+    //$('#pk_form').show();
+}
+
+function check_confirm() {
+  if ($(".confirm-check").is(":checked")) {
+    $('#pk_link a.button').removeClass("disabled").removeClass("secondary");
+    $('#pk_link a.button').addClass("success");
+  } else {
+    $('#pk_link a.button').addClass("disabled").addClass("secondary");
+    $('#pk_link a.button').removeClass("success");
+  }
+}
+
+$(document).ready(function(){
+  $(".confirm-check").click(function(){
+    check_confirm();
+  })
+})
+
+$(document).ready(function(){
+    var get_secret_reader_opts = {
+        dragClass: "drag",
+        accept: false,
+        readAsMap: {
+            'text/*' : 'Text'
+        },
+        readAsDefault: 'Text',
+        on: {
+            load: function(e, file) {
+                if (e.srcElement && e.srcElement.result) {
+                    $("textarea#reuse_secret").val(e.srcElement.result);
+                }
+                if (e.currentTarget && e.currentTarget.result) {
+                    $("textarea#reuse_secret").val(e.currentTarget.result);
+                }
+            },
+        }
+    };
+    try {
+        $("#reuse-file").fileReaderJS(get_secret_reader_opts);
+    } catch (err) {
+        console.log(err);
+    }
+})
+</script>
+
+<p style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
+Ως μέλος της εφορευτικής επιτροπής πρέπει να δημιουργήστε τον δικό σας 
+<a href="/faqs/trustee/#secret-key">Κωδικό Ψηφοφορίας</a>.
+</p>
+
+<p id="waiting_message">
+  Παρακαλώ περιμένετε...
+</p>
+
+<p id="generator">
+
+<span id="buttons"><button class="button success medium" onclick="generate_keypair(); return false;" id="generate_button">
+Δημιουργία του Κωδικού Ψηφοφορίας σας</button></span>
+<div id="sk_download">
+  <div id="pk_link" style="display: none;">
+    <p>
+    <em><input class="confirm-check" type="checkbox" />Ο Κωδικός είναι αποθηκευμένος και ασφαλής. Ας συνεχίσει η διαδικασία.</em><br />
+    </p>
+    <a class="button success medium" id="activate_key" href="javascript:upload_show_pk();">Ενεργοποίηση Κωδικού</a>
+    <Br /><Br />
+    <p>
+    Μετά την επιτυχή ενεργοποίηση του κωδικού σας θα αποσυνδεθείτε αυτόματα
+    απο το σύστημα. 
+    </p>
+  </div>
+  <p>
+  <button id="save_key" class="button success medium" style="" onclick="download_sk();">
+    Αποθηκεύστε τον Κωδικό σας</button>
+  <br />
+  <u>
+Σε περίπτωση που το πρόγραμμα πλοήγησης σας εμφανίσει τα περιεχόμενα του Κωδικού σας σε νέο παράθυρο, αποθηκεύστε την νέα αυτή σελίδα 
+πατώντας ctrl+s. Το αρχείο που θα αποθηκευτεί θα περιέχει τον 
+Κωδικό Ψηφοφορίας σας.
+  </u>
+  </p>
+  <span id="clear_button" style="color:#aaa">
+    Ο κωδικός σας έχει παραχθεί αλλά εάν θέλετε μπορείτε να τον
+    <a href="javascript:clear_keys();">
+      διαγράψετε από την μνήμη και να ξεκινήσετε από την αρχή.</a><br/>
+  </span>
+</div>
+
+<div class="reuse_key">
+Εάν έχετε ήδη Κωδικό Ψηφοφορίας μπορείτε να τον
+<a href="javascript:show_key_reuse()">επαναχρησιμοποιήσετε</a>.
+</div>
+</p>
+
+<div id="reuse">
+<h3>Επαναχρησιμοποίηση Κωδικού Ψηφοφορίας</h3>
+
+<p>
+Εισάγετε τον Κωδικό Ψηφοφορίας σας παρακάτω:
+</p>
+<input type="file" id="reuse-file" />
+<form onsubmit="reuse_key(this.secret_key.value); return false;">
+<textarea cols="80" rows="5" wrap="soft" name="secret_key" id="reuse_secret">
+</textarea>
+<br />
+<input type="submit" class="button medium success" value="Συνέχεια" />
+</form>
+</div>
+
+
+<form method="post" id="pk_form" action="{% url election_trustee_upload_pk election.uuid %}">
+<h3>Το δημόσιο κλειδί του Κωδικού σας</h3>
+<p>
+Τώρα πρέπει να μεταφορτώσετε το δημόσιο κλειδί σας στο σύστημα «Ζευς»
+</p>
+<p>
+Το αποτύπωμα του δημόσιου κλειδιού του Κωδικού σας είναι:
+<tt id="pk_hash" style="font-size: 1.5em; font-weight: bold;"></tt>.<br />
+Μπορεί να θέλετε να αποθηκεύσετε το αποτύπωμα και να επιβεβαιώσετε ότι
+το δημόσιο κλειδί του Κωδικού σας έχει αποθηκευτεί σωστά από το διακομιστή.<br />
+(Το πλήρες δημόσιο κλειδί του Κωδικού σας δεν εμφανίζεται τώρα
+επειδή δεν χρειάζεται να το αποθηκεύσετε. Το αποτύπωμά του είναι επαρκές.)
+</p>
+{% csrf_token %}
+<textarea id="pk_textarea" name="public_key_json" cols="80" rows="10" style="display:none;">
+</textarea>
+<input class="button success medium" type="submit" value="Ενεργοποίηση του Κωδικού σας">
+</form>
+
+<div id="applet_div"></div>
+<br /><br />
+{% endblock %}

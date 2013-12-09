@@ -107,9 +107,6 @@ def get_ecounting_user(username, password):
 
   return user
 
-def password_check(user, password):
-  return (user and check_password(password, user.info['password']))
-
 # the view for logging in
 def password_login_view(request):
   from heliosauth.view_utils import render_template

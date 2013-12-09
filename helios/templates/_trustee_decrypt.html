@@ -1,0 +1,63 @@
+{% load zeus_tags i18n %}
+<script>
+  window.TRUSTEE = {
+    'name': 'trustee.name',
+    'filename': 'Μερική αποκρυπτογράφηση {{ trustee.name }}.txt',
+    'worker': '/static/zeus/booth/js/jscrypto/decryptworker.js'
+  }
+
+  window.MESSAGES = {
+    'decryption_completed': '{% trans "Decryption uploaded. Decryption verification pending." %}',
+    'ciphers_downloaded': '{% trans "ciphers downloaded" %}',
+    'uploading': '{% trans "Uploading" %}',
+    'invalid_secret': '{% trans "Invalid secret key" %}',
+    'upload_failed': '{% trans "Upload failed" %}',
+    'decrpyting': '{% trans "Decrypting" %}'
+  }
+</script>
+<h5>Τα τελικά ψηφοδέλτια είναι έτοιμα για αποκρυπτογράφηση.</h5>
+
+<div class="sk-form decryption-section">
+<h5>{% trans "Insert your secret key" %}</h5>
+<br />
+<input type="file" id="sk-file-input" />
+<textarea id="sk-textarea" cols="60" rows="5">
+</textarea>
+</div>
+<div class="trustee-decrypt-actions">
+{% trans "Perform partial decryption" as label %}
+{% action label "#decrypt-tally-admin-action" cls="small do-decrypt" %}
+</div>
+<div class="polls-list clearfix">
+<table class="polls-table">
+<thead>
+<tr>
+<th>{% trans "Poll name" %}</th>
+<th width="35%">{% trans "Decryption status" %}</th>
+</tr>
+</thead>
+</thead>
+<tbody>
+{% for poll, factors in trustee.get_partial_decryptions %}
+<tr class="poll" 
+  data-poll-uuid="{{ poll.uuid }}"
+  data-poll-finished="{% if factors %}1{% else %}0{% endif %}"
+  data-poll-url="{% url election_poll_index election.uuid poll.uuid %}">
+  <td>{{ poll.name }}</td>
+  <td>
+<span class="status">    
+{% if factors %}
+{% trans "Partial decryption finished" %}
+{% else %}
+</span>
+
+<input type="file" class="upload" />
+
+{% trans "Download partial decryption" as label %}
+{% action label "#decrypt-tally-admin-action" cls="hidden small download download-partial" %}
+{% endif %}
+</td></tr>
+{% endfor %}
+</tbody>
+</table>
+</div>

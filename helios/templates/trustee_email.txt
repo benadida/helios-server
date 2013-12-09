@@ -1,0 +1,13 @@
+{% load i18n %}
+{% trans "As a trustee for the election" %}
+
+  {{ election_name }}
+
+{% trans "please visit your control panel and follow the instructions" %}
+    
+  {{ url }}
+
+  {{ msg }}
+
+--
+{% trans "Zeus Digital Elections" %}

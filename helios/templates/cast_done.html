@@ -2,9 +2,11 @@
 {% block title %}Η ψήφος σας καταχωρήθηκε{% endblock %}
 
 {% block head_subtitle %}
+<div id="header" class="columns twelve">
 <h4 id="election-name" class="subheader">
   {{election.name}}<span class="button small
     election-desc-toggle">Πληροφορίες</span></h4>
+</div>
 {% endblock %}
 
 {% block content %}
@@ -14,7 +16,7 @@
 
 <br>
 Το
-<a target="_blank" href="{% url helios.views.one_election_download_signature election.uuid cast_vote.fingerprint %}"
+<a target="_blank" href="{% url election_poll_download_signature election.uuid poll.uuid cast_vote.fingerprint %}"
   >αρχείο με την απόδειξη</a> της ψήφου σας έχει σταλεί στο ηλεκτρονικό σας ταχυδρομείο.
 </p>
 

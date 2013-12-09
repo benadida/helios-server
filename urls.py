@@ -2,41 +2,51 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
 
-urlpatterns = patterns('')
+SERVER_PREFIX = getattr(settings, 'SERVER_PREFIX', '')
+if SERVER_PREFIX:
+    SERVER_PREFIX = SERVER_PREFIX.rstrip('/') + '/'
 
-for slug, uuid in getattr(settings, 'ZEUS_ALTERNATIVE_LOGIN_ELECTIONS', {}).iteritems():
-  urlpatterns += patterns('',
-    url(r'%s/' % slug, 'zeus.views.election_email_login', kwargs={'uuid': uuid}),
-  )
+app_patterns = patterns('')
 
-urlpatterns += patterns(
-    '',
-    (r'^$', 'zeus.views.home'),
-    (r'^admin/$', 'server_ui.views.home'),
-    (r'^faqs/$', 'zeus.views.faqs_voter'),
-    (r'^faqs/voter/$', 'zeus.views.faqs_voter'),
-    (r'^faqs/trustee/$', 'zeus.views.faqs_trustee'),
-    (r'^resources/$', 'zeus.views.resources'),
-    (r'^stats/$', 'zeus.views.stats'),
-    (r'^auth/', include('heliosauth.urls')),
-    (r'^helios/', include('helios.urls')),
-    url(r'voter_email/$', 'zeus.views.election_email_show', name='election_email_show'),
-
-
-    # SHOULD BE REPLACED BY APACHE STATIC PATH
-    (r'booth/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.BOOTH_STATIC_PATH}),
-    (r'verifier/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.VERIFIER_STATIC_PATH}),
-
-    (r'static/auth/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.ROOT_PATH + '/heliosauth/media'}),
-    (r'static/helios/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/helios/media'}),
-    (r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/server_ui/media'}),
-
-    (r'^', include('server_ui.urls')),
+auth_urls = patterns('zeus.views.auth',
+    url(r'^auth/logout', 'logout', name='logout'),
+    url(r'^auth/login', 'password_login_view', name='login'),
+    url(r'^auth/change_password', 'change_password', name='change_password'),
+    url(r'^voter-login$', 'voter_login', name="voter_login"),
 )
 
+admin_urls = patterns('zeus.views.admin',
+    url(r'^$', 'home', name='admin_home'),
+)
 
-if settings.DEBUG:
-    from helios.devutils import quick_start_election
-    urlpatterns += patterns(
-        (r'^helios/test-create', quick_start_election),
+app_patterns += patterns(
+    '',
+    (r'^', include('zeus.urls.site')),
+    (r'^elections/', include('zeus.urls.election')),
+    (r'^auth/', include(auth_urls)),
+    (r'^admin/', include(admin_urls)),
+    url(r'^get-randomness/', 'zeus.views.shared.get_randomness',
+        name="get_randomness"),
+)
+
+urlpatterns = patterns(
+    '',
+    (r'^' + SERVER_PREFIX, include(app_patterns)),
+)
+
+#SHOULD BE REPLACED BY APACHE STATIC PATH
+if getattr(settings, 'DEBUG', False):
+    static_urls = patterns('',
+        (r'booth/(?P<path>.*)$', 'django.views.static.serve', {
+            'document_root' : settings.BOOTH_STATIC_PATH
+        }),
+        (r'static/zeus/(?P<path>.*)$', 'django.views.static.serve', {
+            'document_root' : settings.ROOT_PATH + '/zeus/static/zeus'
+        }),
+        (r'static/(?P<path>.*)$', 'django.views.static.serve', {
+            'document_root' : settings.ROOT_PATH + '/server_ui/media'
+        }),
     )
+
+    urlpatterns += static_urls
+
