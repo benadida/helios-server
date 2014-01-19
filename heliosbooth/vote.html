@@ -159,7 +159,7 @@ function escape_html(content) {
   return $('<div/>').text(content).html();
 }
 
-BOOTH.setup_election = function(raw_json) {
+BOOTH.setup_election = function(raw_json, election_metadata) {
   // IMPORTANT: we use the raw JSON for safer hash computation
   // so that we are using the JSON serialization of the SERVER
   // to compute the hash, not the JSON serialization in JavaScript.
@@ -180,6 +180,26 @@ BOOTH.setup_election = function(raw_json) {
   // escape election fields
   $(['description', 'name']).each(function(i, field) {
     BOOTH.election[field] = escape_html(BOOTH.election[field]);
+  });
+
+  // TODO: escape question and answers
+
+  // whether the election wants candidate order randomization or not
+  // we set up an ordering array so that the rest of the code is
+  // less error-prone. 
+  BOOTH.election.question_answer_orderings = [];
+  $(BOOTH.election.questions).each(function(i, question) {
+    var ordering = new Array(question.answers.length);
+
+    // initialize array so it is the identity permutation
+    $(ordering).each(function(j, answer) {ordering[j]=j;});
+
+    // if we want reordering, then we shuffle the array
+    if (election_metadata && election_metadata.randomize_answer_order) {
+      shuffleArray(ordering);
+    }
+
+    BOOTH.election.question_answer_orderings[i] = ordering;
   });
 
   $('#header').processTemplate({'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
@@ -246,6 +266,28 @@ BOOTH.previous = function(question_num) {
     }
 };
 
+// http://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+function shuffleArray(array) {
+  var currentIndex = array.length
+    , temporaryValue
+    , randomIndex
+    ;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+     // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
 BOOTH.show_question = function(question_num) {
   BOOTH.started_p = true;
 
@@ -256,7 +298,8 @@ BOOTH.show_question = function(question_num) {
   BOOTH.show_progress('1');
   BOOTH.show($('#question_div')).processTemplate({'question_num' : question_num,
                       'last_question_num' : BOOTH.election.questions.length - 1,
-                      'question' : BOOTH.election.questions[question_num], 'show_reviewall' : BOOTH.all_questions_seen
+                      'question' : BOOTH.election.questions[question_num], 'show_reviewall' : BOOTH.all_questions_seen,
+		      'answer_ordering': BOOTH.election.question_answer_orderings[question_num]
                 });
 
   // fake clicking through the answers, to trigger the disabling if need be
@@ -330,7 +373,7 @@ BOOTH.load_and_setup_election = function(election_url) {
         // let's also get the metadata
         $.getJSON(election_url + "/meta", {}, function(election_metadata) {
           BOOTH.election_metadata = election_metadata;
-          BOOTH.setup_election(raw_json);
+          BOOTH.setup_election(raw_json, election_metadata);
           BOOTH.show_election();
           BOOTH.election_url = election_url;
         });
