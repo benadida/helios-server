@@ -79,7 +79,12 @@ class Election(HeliosModel):
     
   # voter aliases?
   use_voter_aliases = models.BooleanField(default=False)
+
+  # auditing is not for everyone
   use_advanced_audit_features = models.BooleanField(default=True, null=False)
+
+  # randomize candidate order?
+  randomize_answer_order = models.BooleanField(default=False, null=False)
   
   # where votes should be cast
   cast_url = models.CharField(max_length = 500)
@@ -139,7 +144,8 @@ class Election(HeliosModel):
     return {
       'help_email': self.help_email or 'help@heliosvoting.org',
       'private_p': self.private_p,
-      'use_advanced_audit_features': self.use_advanced_audit_features
+      'use_advanced_audit_features': self.use_advanced_audit_features,
+      'randomize_answer_order': self.randomize_answer_order
       }
 
   @property
