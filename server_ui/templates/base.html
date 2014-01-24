@@ -99,7 +99,7 @@
             {% endif %}
           </span>
           {% if user and user.is_admin %}
-          You are connected as election administrator: {{ user.display_html_small|safe }}
+          You are logged in as election administrator: {{ user.display_html_small|safe }}
           <a href="{% url logout %}">logout</a> |
           <a href="{% url admin_home %}">manage</a> 
               {% if user.user_type == "password" %}
@@ -109,13 +109,13 @@
 
           {% else %}
           {% if voter %}
-	  You are connected as voter <u>{{ voter.voter_surname }} {{voter.voter_name}}</u>
+	  You are logged in as voter <u>{{ voter.voter_surname }} {{voter.voter_name}}</u>
 	  for <u>{{voter.election.name}}</u> | 
           <a onclick="return confirm('Are you sure you want to log out?')"
             href="{{settings.SECURE_URL_HOST}}{% url logout %}">logout</a>
           {% else %}
           {% if trustee %}
-	  You are connected as trustee <u>{{trustee.name}}</u> for
+	  You are logged in as trustee <u>{{trustee.name}}</u> for
 	  <u>{{ election.name }}</u>.
           <a href="{{settings.SECURE_URL_HOST}}{% url logout %}">Logout</a>
           {% else %}

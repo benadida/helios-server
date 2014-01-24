@@ -36,7 +36,10 @@
 {% else %}
 <div class="election-action">
   <p class="election-admin-message">
-  {% blocktrans %}Election freeze message{% endblocktrans %}
+  {% blocktrans %}The election is about to be frozen.
+  It will be made ready for voting,
+  and most changes will not be possible.
+  Are you certain?{% endblocktrans %}
 </p>
 <div class="actions">
   {% url election_freeze election.uuid as action %}

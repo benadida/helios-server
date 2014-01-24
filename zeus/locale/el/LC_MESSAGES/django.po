@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-20 18:02+0300\n"
+"POT-Creation-Date: 2014-01-24 14:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -175,19 +175,19 @@ msgid "Voting extension date"
 msgstr "νέα ημερομηνία και ώρα λήξης της ψηφοφορίας"
 
 #: help_texts.py:14
-msgid "Voters can contact this phone for election suport"
+msgid "Voters can contact this email for election support"
 msgstr ""
-"οι ψηφοφόροι θα μπορούν να επικοινωνούν σε αυτά τα τηλέφωνα για υποστήριξη "
-"σε θέματα της ψηφοφορίας"
-
-#: help_texts.py:15
-msgid "Voters can contact this email for election suport"
-msgstr ""
-"οι ψηφοφόροι μπορούν να απευθύνονται σε αυτό το e-mail για υποστήριξη σε "
+"Οι ψηφοφόροι μπορούν να απευθύνονται σε αυτό το e-mail για υποστήριξη σε "
 "θέματα της ψηφοφορίας"
 
+#: help_texts.py:15
+msgid "Voters can contact this phone for election support"
+msgstr ""
+"Οι ψηφοφόροι θα μπορούν να επικοινωνούν σε αυτά τα τηλέφωνα για υποστήριξη "
+"σε θέματα της ψηφοφορίας"
+
 #: help_texts.py:16
-msgid "Whether or not to allow remote mixing."
+msgid "Whether or not to allow remote mixing"
 msgstr ""
 "Επιλέξτε αν θέλετε να παρέχετε εξωτερικά στάδια μίξης μετά την ψηφοφορία -- "
 "αφήστε κενό εάν δεν είστε σίγουρος"

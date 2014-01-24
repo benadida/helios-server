@@ -254,10 +254,10 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
     name = models.CharField(_("Election name"), max_length=255,
                             help_text=help.election_name)
     short_name = models.CharField(max_length=255)
-    help_email = models.CharField(_("Help email"),
+    help_email = models.CharField(_("Support email"),
                                   max_length=254, null=True, blank=True,
                                   help_text=help.help_email)
-    help_phone = models.CharField(_("Help phone"),
+    help_phone = models.CharField(_("Support phone"),
                                   max_length=254, null=True, blank=True,
                                   help_text=help.help_phone)
 

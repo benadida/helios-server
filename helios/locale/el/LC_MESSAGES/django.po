@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-20 18:02+0300\n"
+"POT-Creation-Date: 2014-01-24 14:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -55,12 +55,12 @@ msgid "Election name"
 msgstr "Τίτλος ψηφοφορίας"
 
 #: models.py:257
-msgid "Help email"
-msgstr "E-mail για βοήθεια"
+msgid "Support email"
+msgstr "Email υποστήριξης"
 
 #: models.py:260
-msgid "Help phone"
-msgstr "Τηλέφωνο για βοήθεια"
+msgid "Support phone"
+msgstr "Τηλέφωνο υποστήριξης"
 
 #: models.py:264
 msgid "Election description"
@@ -442,7 +442,7 @@ msgid "Confirm election cancel"
 msgstr "Επιβεβαιώστε την ακύρωση της ψηφοφορίας"
 
 #: templates/_reveal_cancel.html:19 templates/_reveal_close.html:17
-#: templates/_reveal_freeze.html:47 templates/_reveal_rename_poll.html:16
+#: templates/_reveal_freeze.html:50 templates/_reveal_rename_poll.html:16
 #: templates/_reveal_tally.html:17 templates/_reveal_trustee_decrypt.html:17
 msgid "Back"
 msgstr "Πίσω"
@@ -466,21 +466,34 @@ msgstr ""
 "οριστικοποιηθεί η ψηφοφορία."
 
 #: templates/_reveal_freeze.html:35 templates/_reveal_mix.html:35
-#: templates/_reveal_mix.html.py:47
+#: templates/_reveal_mix.html.py:49
 msgid "Cancel"
 msgstr "Άκυρο"
 
-#: templates/_reveal_freeze.html:39 templates/_reveal_mix.html:39
-msgid "Election freeze message"
+#: templates/_reveal_freeze.html:39
+msgid ""
+"The election is about to be frozen.\n"
+"  It will be made ready for voting,\n"
+"  and most changes will not be possible.\n"
+"  Are you certain?"
 msgstr ""
-"Μετά την οριστικοποίηση της ψηφοφορίας, οι υποψήφιοι και τα μέλη της "
-"εφορευτικής επιτροπής δεν μπορούν να μεταβληθούν.<br /><Br />Ως "
-"διαχειριστής, θα μπορείτε να τροποποιήσετε τον κατάλογο των ψηφοφόρων καθώς "
-"εξελίσσεται η εκλογή."
+"Η ψηφοφορία θα οριστικοποιηθεί.\n"
+"  Θα ετοιμαστεί για το κοινό και δεν θα γίνονται δεκτές αλλαγές\n"
+"  πλην ελαχίστων εξαιρέσεων."
 
-#: templates/_reveal_freeze.html:45 templates/_reveal_mix.html:45
+#: templates/_reveal_freeze.html:48 templates/_reveal_mix.html:47
 msgid "Confirm freeze"
 msgstr "Επιβεβαίωση οριστικοποίησης"
+
+#: templates/_reveal_mix.html:39
+msgid ""
+"About to freeze election.\n"
+"  After this, most changes will not be possible.\n"
+"  Are you certain?"
+msgstr ""
+"Η ψηφοφορία θα οριστικοποιηθεί.\n"
+"  Δεν θα γίνονται πλέον δεκτές αλλαγές\n"
+"  πλην ελαχίστων εξαιρέσεων."
 
 #: templates/_reveal_rename_poll.html:5
 msgid "Rename poll"
@@ -523,7 +536,7 @@ msgid "Upload failed"
 msgstr "Η αποστολή απέτυχε"
 
 #: templates/_trustee_decrypt.html:21
-msgid "Insert your secret key"
+msgid "Insert your trustee key"
 msgstr "Προσκομίστε τον μυστικό κωδικό ψηφοφορίας σας"
 
 #: templates/_trustee_decrypt.html:28
@@ -576,11 +589,11 @@ msgid "Total voters count"
 msgstr "Σύνολο ψηφοφόρων"
 
 #: templates/election_poll_voters_list.html:18
-msgid "Voters cast count"
+msgid "Votes cast"
 msgstr "Έχουν ψηφίσει"
 
 #: templates/election_poll_voters_list.html:26
-msgid "Voters list actions"
+msgid "Voter list actions"
 msgstr "Επιλογές λίστας ψηφοφόρων"
 
 #: templates/election_poll_voters_list.html:32
@@ -593,7 +606,7 @@ msgid "Send voters email"
 msgstr "Αποστολή μηνύματος email στους ψηφοφόρους"
 
 #: templates/election_poll_voters_list.html:45
-msgid "Export voters list to CSV"
+msgid "Export voter list to CSV"
 msgstr "Εξαγωγή λίστας ψηφοφόρων σε αρχείο CSV"
 
 #: templates/election_poll_voters_list.html:49
@@ -628,8 +641,8 @@ msgstr "Δεν έχουν εισαχθεί ακόμη ψηφοφόροι"
 msgid "Show all voters"
 msgstr "Προβολή ολόκληρης της λίστας"
 
-#: templates/election_poll_voters_upload_confirm.html:72
-msgid "Cancel batch voters import"
+#: templates/election_poll_voters_upload_confirm.html:73
+msgid "Cancel voter enrollment"
 msgstr "Ακύρωση"
 
 #: templates/election_polls_list.html:3
@@ -750,8 +763,8 @@ msgid "Support"
 msgstr "Υποστήριξη"
 
 #: templates/election_view.html:43
-msgid "Election help email"
-msgstr "Email επικοινωνίας"
+msgid "Election support email"
+msgstr "Email υποστήριξης"
 
 #: templates/election_view.html:44
 msgid "Election support phone"
@@ -824,38 +837,3 @@ msgstr "Νόμιμος παραλήπτης"
 #: templates/email/info_body.txt:6
 msgid "Voting link"
 msgstr "Σύνδεσμος ψηφοφορίας"
-
-#~ msgid "Login"
-#~ msgstr "Είσοδος"
-
-#~ msgid "Enter"
-#~ msgstr "Είσοδος"
-
-#~ msgid ""
-#~ "\n"
-#~ "Voter login description\n"
-#~ msgstr "\n"
-
-#~ msgid "Name cannot be empty"
-#~ msgstr "Το όνομα δεν μπορεί να είναι κενό"
-
-#~ msgid "Surname cannot be empty"
-#~ msgstr "Το επώνυμο δεν μπορεί να είναι κενό"
-
-#~ msgid "Upload partial decryption"
-#~ msgstr "Μεταφόρτωση μερικής αποκρυπτογράφησης"
-
-#~ msgid "Mix"
-#~ msgstr "Μίξη"
-
-#~ msgid "Name"
-#~ msgstr "Όνομα"
-
-#~ msgid "Save polls"
-#~ msgstr "Αποθήκευση κάλπεων"
-
-#~ msgid "Close"
-#~ msgstr "Πίσω"
-
-#~ msgid "Poll %(label)s count"
-#~ msgstr "Σύνολο κάλπης %(label)s"

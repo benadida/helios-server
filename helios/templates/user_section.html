@@ -1,6 +1,6 @@
   {% if user and user.is_admin %}
   <div class="columns twelve loginbox">
-      <div class="panel warning">You are connected as election administrator for
+      <div class="panel warning">You are logged in as election administrator for
           <em>"{{ user.institution.name }}"</em>
           <br /><br />
           <a class="button tiny" href="{% url admin_home %}">control panel</a>
@@ -11,7 +11,7 @@
   {% endif %}
   {% if voter %}
   <div class="columns twelve loginbox">
-      <div class="panel warning">You are connected as voter
+      <div class="panel warning">You are logged in as voter
           <u>{{ voter.voter_surname }} {{ voter.voter_name }}</u> for
           <em>"<a href="{% url election_poll_index voter.poll.election.uuid voter.poll.uuid %}">
             {{ voter.poll.name_display }}</a>"</em>
@@ -24,7 +24,7 @@
   {% endif %}
   {% if trustee and trustee.election %}
   <div class="columns twelve loginbox">
-      <div class="panel warning">You are connected as trustee for 
+      <div class="panel warning">You are logged in as trustee for 
           <em>"<a href="{% url election_index trustee.election.uuid %}">{{ trustee.election.name }}</a>"</em>
           <br /><br />
           <a class="button tiny" 
