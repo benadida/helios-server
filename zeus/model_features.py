@@ -141,7 +141,7 @@ class ElectionFeatures(FeaturesMixin):
     @election_feature()
     def _feature_pending_issues(self):
         pending = len(self.election_issues_before_freeze) > 0
-        return pending and self.feature_pending_polls_issues
+        return pending or self.feature_pending_polls_issues
 
     @election_feature()
     def _feature_can_add_poll(self):
