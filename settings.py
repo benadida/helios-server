@@ -70,6 +70,21 @@ STATIC_URL = '/media/'
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
 
+# Secure Stuff
+if (get_from_env('SSL', '0') == '1'):
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+
+SESSION_COOKIE_HTTPONLY = True
+
+# one week HSTS seems like a good balance for MITM prevention
+if (get_from_env('HSTS', '0') == '1'):
+    SECURE_HSTS_SECONDS = 3600 * 24 * 7
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -78,7 +93,10 @@ TEMPLATE_LOADERS = (
 
 MIDDLEWARE_CLASSES = (
     # make all things SSL
-    'sslify.middleware.SSLifyMiddleware',
+    #'sslify.middleware.SSLifyMiddleware',
+
+    # secure a bunch of things
+    'djangosecure.middleware.SecurityMiddleware',
 
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -96,6 +114,7 @@ TEMPLATE_DIRS = (
 INSTALLED_APPS = (
 #    'django.contrib.auth',
 #    'django.contrib.contenttypes',
+    'djangosecure',
     'django.contrib.sessions',
     'django.contrib.sites',
     ## needed for queues
