@@ -74,6 +74,7 @@ SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
 if (get_from_env('SSL', '0') == '1'):
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTOCOL", "https")
 
 SESSION_COOKIE_HTTPONLY = True
 
