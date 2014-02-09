@@ -544,6 +544,9 @@ class ElectionBlackboxTests(WebTest):
         self.assertContains(response, "Trustee #1")
 
         # add a few voters, via file upload
+        # this file now includes a UTF-8 encoded unicode character
+        # yes I know that's not how you spell Ernesto.
+        # I just needed some unicode quickly.
         FILE = "helios/fixtures/voter-file.csv"
         voters_file = open(FILE)
         response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'voters_file': voters_file})
