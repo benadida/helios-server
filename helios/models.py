@@ -673,7 +673,7 @@ class VoterFile(models.Model):
       else:
         content = self.voter_file_content
 
-      voter_stream = io.BytesIO(content, newline=None)
+      voter_stream = io.BytesIO(content)
     else:
       voter_stream = open(self.voter_file.path, "rU")
 
