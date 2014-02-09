@@ -7,9 +7,10 @@
 
 from django.core.management import setup_environ
 import settings, sys, csv
-from helios.models import *
 
 setup_environ(settings)
+
+from helios.models import *
 
 election_uuid = sys.argv[1]
 email = sys.argv[2]
