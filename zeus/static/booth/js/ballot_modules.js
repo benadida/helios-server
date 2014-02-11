@@ -364,9 +364,141 @@ BM.ModuleBase,
 });
 
 
+BM.ScoreElection = function(election) {
+  this._init(election);
+
+  // initalize score_map with empty questions
+  this.score_map = {};
+  _.each(this.data, function(q, qindex) {
+    this.score_map[qindex] = {};
+    _.each(q.answers, function(a, aindex) {
+      this.score_map[qindex][aindex] = undefined;
+    }, this);
+  }, this);
+}
+
+_.extend(BM.ScoreElection.prototype,
+BM.ModuleBase,
+{
+  tpl: 'question_score',
+  
+  post_init_events: function() {
+    $(".stv-candidates").removeClass("five").addClass("twelve");
+  },
+
+  post_show: function() {
+    $(".stv-choices").hide();
+    $(".stv-candidates").removeClass("five").addClass("twelve");
+    this.update_layout();
+  },
+  
+  reset: function() {
+    $(".stv-choice a").removeClass().addClass("button small enabled");
+  },
+
+  update_layout: function() {
+    _.each(this.score_map, function(q, index) { this.update_question(index) }, this);
+  },
+  
+  answer_els: function(qindex) {
+    return $("#question-" + qindex).find(".score-answer")
+  },
+
+  update_question: function(qindex) {
+    var available_scores = this.available_scores(qindex);
+    _.each(this.score_map[qindex], function(score, index) {
+      this.update_question_answer(qindex, parseInt(index), score, available_scores);
+    }, this);
+  },
+
+  update_question_answer: function(qindex, ansindex, score, available) {
+    var answer_el = $(this.answer_els(qindex).filter(".score-answer-"+(ansindex)));
+    
+    answer_el.find("input").attr("disabled", true).attr("checked", false);
+    answer_el.find("label").addClass("disabled");
+
+    _.each(available, function(s) {
+      var input = answer_el.find("input[data-score="+s+"]");
+      input.prev().removeClass("disabled");
+      input.attr("disabled", false);
+    });
+    
+    if (score !== undefined) {
+      var score_input = answer_el.find("input[data-score="+score+"]");
+      score_input.attr("disabled", false).attr("checked", true);
+      score_input.prev().removeClass("disabled");
+    }
+  },
+
+  question_scores: function(qindex) {
+    return _.map(this.data[qindex].scores, function(s,i) { return parseInt(s) });
+  },
+
+  unavailable_scores: function(qindex) {
+    var scores = this.question_scores(qindex);
+    var available = scores;
+    _.each(this.score_map[qindex], function(score) {
+      available = _.without(available, score)
+    });
+    return available;
+  },
+
+  available_scores: function(qindex) {
+    var scores = this.question_scores(qindex);
+    var available = scores;
+    _.each(this.score_map[qindex], function(score) {
+      available = _.without(available, score)
+    });
+    return available;
+  },
+
+  handle_choice_click: function(e) {
+    
+    var score_el = $(e.target);
+    if (score_el.prop("tagName") == "LABEL") {
+      score_el = $(e.target).next();
+    }
+    if (score_el.is("disabled")) { return };
+    
+    var answer_el = score_el.closest(".score-choice");
+    var answer_index = parseInt(answer_el.data('relative-index'));
+    var score = parseInt(answer_el.data('score'));
+    var question = parseInt(answer_el.data('question'));
+    var checked = score_el.attr("checked");
+
+    if (checked) {
+      this.handle_score_select(question, answer_index, score);
+    } else {
+      this.handle_score_deselect(question, answer_index, score);
+    }
+  },
+
+  handle_score_select: function(question, answer, score) {
+    // deselect score
+    _.each(this.score_map[question], function(s, index) {
+      if (score === s) {
+        this.score_map[question][index] = undefined;
+      }
+    }, this);
+    this.score_map[question][answer] = score;
+    this.update_layout();
+  },
+
+  handle_score_deselect: function(question, answer) {
+    this.score_map[question][answer] = undefined;
+    this.update_layout();
+  },
+
+  init_events: function () {
+    $(".stv-choice input").live('click', _.bind(this.handle_choice_click, this));
+    if (this.post_init_events) { this.post_init_events() }
+  },
+});
+
 BM.registry = {
   simple: BM.SimpleElection,
   parties: BM.PartiesElection,
+  score: BM.ScoreElection,
   //ecounting: BM.EcountingElection
 }
 

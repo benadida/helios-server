@@ -124,6 +124,15 @@ body {
       display: inline-block;
       margin-top: 6px;
     }
+    
+    .score-choice-label {
+        &.disabled {
+            color: #ddd !important;
+        }
+        width: 2%;
+        margin-right: 0;
+    }
+
 
     .stv-choice-party {
       .question-subtitle { 
