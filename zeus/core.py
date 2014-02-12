@@ -1838,7 +1838,6 @@ def gamma_decode_to_range_ballot(encoded, candidates_and_points):
             ballot['candidates'] = counts
             valid = True
         else:
-            import pdb; pdb.set_trace()
             valid = False
 
     ballot['valid'] = valid
