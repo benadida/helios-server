@@ -383,7 +383,7 @@ BM.ScoreElection = function(election) {
   this.scores_indexes = _.map(this.data, function(q, i) {
     var scores = {};
     _.each(q.scores, function(s) {
-      scores[s] = _.indexOf(answers, s) + 1;
+      scores[s] = _.indexOf(answers, ''+(parseInt(s)+100*i)) ;
     });
     return scores;
   });
@@ -391,7 +391,7 @@ BM.ScoreElection = function(election) {
   this.answers_indexes = _.map(this.data, function(q, i) {
     var _answers = {};
     _.each(q.answers, function(s) {
-      _answers[s] = _.indexOf(answers, q.question + ": " + s) + 1;
+      _answers[s] = _.indexOf(answers, q.question + ": " + s);
     });
     return _answers;
   });
@@ -441,8 +441,6 @@ BM.ModuleBase,
         if (score !== undefined) {
           var answer = this.data[parseInt(qindex)].answers[parseInt(aindex)];
           var answer_index = this.answers_indexes[qindex][answer];
-          console.log("INDEXES", this.answers_indexes[qindex]);
-          console.log("ANSWER INDEX", answer, answer_index, "FOR QUESTION", qindex);
           var score_index = this.scores_indexes[qindex][score];
           if (answer_index >= 0 && score_index >= 0 ) {
             _answers.push(answer_index);
@@ -451,7 +449,20 @@ BM.ModuleBase,
         }
       }, this);
     }, this);
-    this.set_answer(_answers);
+  
+    var e_answers = this.election.questions[0].answers;
+
+    var scores = [];
+    _.each(_answers, function(index, i) {
+      if (_.isNumber(parseInt(e_answers[index]))) {
+        scores[parseInt(e_answers[index])] = [_answers[i-1], index];
+      }
+    });
+    var keys = _.map(_.keys(scores), function(i) { return parseInt(i) });
+    keys = keys.sort(function(a,b) { return parseInt(a) > parseInt(b)} ).reverse();
+    
+    var sorted_answers = _.flatten(_.map(keys, function(s) { return scores[s] }));
+    this.set_answer(sorted_answers);
   },
 
   answer_els: function(qindex) {
@@ -551,6 +562,28 @@ BM.ModuleBase,
     $(".stv-choice input").live('click', _.bind(this.handle_choice_click, this));
     if (this.post_init_events) { this.post_init_events() }
   },
+
+  pretty_choices: function(ballot) {
+    var _choices = [];
+    var choices = ballot.answers[0][0];
+    _.each(this.data, function(q, qi) {
+      _.each(q.answers, function(a, ai) {
+        var ans_index = this.answers_indexes[qi][a];
+        var chosen = _.indexOf(choices, ans_index);
+        if (chosen >= 0) {
+          var score_index = choices[chosen+1];
+          var score = _.filter(_.keys(this.scores_indexes[qi]), function(key, score) { 
+            return this.scores_indexes[qi][parseInt(key)] == score_index;
+          }, this)[0];
+          _choices.push(q.question + ": " + a + ": " + score);
+        }
+      }, this);
+    }, this);
+
+    return [_choices]
+  },
+
+  seal_tpl: 'seal_score.html'
 });
 
 BM.registry = {

@@ -31,7 +31,11 @@ BOOTH.setup_templates = function(election) {
     $('#election_div').setTemplateURL("templates/election.html" + cache_bust);
     $('#question_stv_div').setTemplateURL("templates/" + BOOTH.module.tpl + '.html' + cache_bust);
     $('#confirm_div').setTemplateURL("templates/confirm.html" + cache_bust);
-    $('#seal_div').setTemplateURL("templates/seal.html" + cache_bust);
+    if (BOOTH.module.seal_tpl) {
+      $('#seal_div').setTemplateURL("templates/" + BOOTH.module.seal_tpl + cache_bust);
+    } else {
+      $('#seal_div').setTemplateURL("templates/seal.html" + cache_bust);
+    }
     $('#audit_div').setTemplateURL("templates/audit.html" + cache_bust);
     $('#footer .content').setTemplateURL("templates/footer.html" + cache_bust);
 
@@ -524,7 +528,13 @@ BOOTH._after_ballot_encryption = function() {
        BOOTH.encrypted_ballot_hash = b64_sha256(BOOTH.encrypted_vote_json); // BOOTH.encrypted_ballot.get_hash();
        window.setTimeout(show_cast, 0);
     };
-    var choices = BALLOT.pretty_choices(BOOTH.election, BOOTH.ballot);
+    
+    var choices;
+    if (BOOTH.module.pretty_choices) {
+      choices = BOOTH.module.pretty_choices(BOOTH.ballot);
+    } else {
+      choices = BALLOT.pretty_choices(BOOTH.election, BOOTH.ballot);
+    }
       
     var show_cast = function() {
       $('#seal_div').processTemplate({'cast_url': BOOTH.election.cast_url,

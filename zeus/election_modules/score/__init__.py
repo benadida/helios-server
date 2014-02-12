@@ -91,19 +91,28 @@ class ScoreBallotElection(ElectionModuleBase):
             q_answers = []
             for answer in q['answers']:
                 q_answers.append("%s: %s" % (q['question'], answer))
+            scores += map(lambda x: str(100 * index+int(x)), q['scores'])
             answers = answers + q_answers
-            scores += q['scores']
-        scores = sorted(set(scores))
 
         poll_answers = []
+        scores = reversed(scores)
         for answer, score in izip_longest(answers, scores):
             if answer is not None:
                 poll_answers.append(answer)
             if score is not None:
                 poll_answers.append(score)
 
-        self.poll._init_questions(len(answers))
+        self.poll._init_questions(len(poll_answers))
         self.poll.questions[0]['answers'] = poll_answers 
+
+        # save index references
+        for index, q in enumerate(self.poll.questions_data):
+            q['answer_indexes'] = {}
+            q['score_indexes'] = {}
+            for answer in q['answers']:
+                q['answer_indexes'][answer] = poll_answers.index("%s: %s" % (q['question'], answer))
+            for score in q['scores']:
+                q['score_indexes'][score] = poll_answers.index(str(100 * index+int(score)))
 
     def calculate_results(self, request):
         raise NotImplemented
@@ -111,3 +120,5 @@ class ScoreBallotElection(ElectionModuleBase):
     def get_booth_template(self, request):
         raise NotImplemented
 
+    def compute_results(self):
+        self.poll.generate_result_docs()
