@@ -255,6 +255,7 @@ BM.ModuleBase,
       this.el.answers.filter("[data-is-party='yes']").removeClass("small").addClass("medium");
       this.el.answers.filter(".selected[data-is-party='yes']").addClass("party");
       this.el.answers.filter(".selected[data-is-party='yes']").removeClass("small").addClass("chosen");
+
       if (this.selected_party() !== undefined) {
         this.el.answers.filter("[data-is-party='yes'][data-question="+this.selected_party()+"]").addClass("chosen-party").removeClass("disabled").removeClass("secondary").removeClass("enabled");
       }
@@ -365,6 +366,7 @@ BM.ModuleBase,
 
 
 BM.ScoreElection = function(election) {
+
   this._init(election);
 
   // initalize score_map with empty questions
@@ -381,7 +383,7 @@ BM.ScoreElection = function(election) {
   this.scores_indexes = _.map(this.data, function(q, i) {
     var scores = {};
     _.each(q.scores, function(s) {
-      scores[s] = _.indexOf(answers, q.question + ": " + s) + 1;
+      scores[s] = _.indexOf(answers, s) + 1;
     });
     return scores;
   });
@@ -400,6 +402,18 @@ BM.ModuleBase,
 {
   tpl: 'question_score',
   
+  get_answers_map: function() {
+    var map = {};
+    _.each(this.answers_indexes, function(indexes, i) {
+      _.each(indexes, function(i) {
+        map[i] = i;
+      });
+    });
+    return map;
+  },
+
+  validate: function() { return true },
+
   post_init_events: function() {
     $(".stv-candidates").removeClass("five").addClass("twelve");
   },
@@ -427,8 +441,10 @@ BM.ModuleBase,
         if (score !== undefined) {
           var answer = this.data[parseInt(qindex)].answers[parseInt(aindex)];
           var answer_index = this.answers_indexes[qindex][answer];
+          console.log("INDEXES", this.answers_indexes[qindex]);
+          console.log("ANSWER INDEX", answer, answer_index, "FOR QUESTION", qindex);
           var score_index = this.scores_indexes[qindex][score];
-          if (answer_index && score_index) {
+          if (answer_index >= 0 && score_index >= 0 ) {
             _answers.push(answer_index);
             _answers.push(score_index);
           }
@@ -437,7 +453,7 @@ BM.ModuleBase,
     }, this);
     this.set_answer(_answers);
   },
-  
+
   answer_els: function(qindex) {
     return $("#question-" + qindex).find(".score-answer")
   },
@@ -451,7 +467,7 @@ BM.ModuleBase,
 
   update_question_answer: function(qindex, ansindex, score, available) {
     var answer_el = $(this.answer_els(qindex).filter(".score-answer-"+(ansindex)));
-    
+
     answer_el.find("input").attr("disabled", true).attr("checked", false);
     answer_el.find("label").addClass("disabled");
 
@@ -460,7 +476,7 @@ BM.ModuleBase,
       input.prev().removeClass("disabled");
       input.attr("disabled", false);
     });
-    
+
     if (score !== undefined) {
       var score_input = answer_el.find("input[data-score="+score+"]");
       score_input.attr("disabled", false).attr("checked", true);
@@ -498,7 +514,7 @@ BM.ModuleBase,
     }
     if (score_el.is("disabled")) { return };
     
-    var answer_el = score_el.closest(".score-choice");
+    var answer_el = score_el.prev().prev();
     var answer_index = parseInt(answer_el.data('relative-index'));
     var score = parseInt(answer_el.data('score'));
     var question = parseInt(answer_el.data('question'));
@@ -520,6 +536,10 @@ BM.ModuleBase,
     }, this);
     this.score_map[question][answer] = score;
     this.update_layout();
+  },
+
+  check_disable_question: function(q) {
+    return;
   },
 
   handle_score_deselect: function(question, answer) {

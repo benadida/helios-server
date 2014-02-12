@@ -5,7 +5,7 @@
   <div class="columns five stv-candidates">
 {#foreach $T.data as question}
 <!--<h5>Επιλογή σειράς υποψηφίων</h5>-->
-<div  id="question-{$T.question$index}">
+<div class="clearfix" id="question-{$T.question$index}">
   <h5>SCORE QUESTION: {$T.question.question}</h5>
   {#if $T.question.max_answers == $T.question.min_answers}
   <span class="question-subtitle">{$T.question.max_answers} {#if $T.question.max_answers == 1}choice{#else}choices{#/if}</span>
@@ -16,40 +16,40 @@
     </p>
     <ul class="stv-candidates stv-list">
       {#foreach $T.question.answers as answer}
-      {#if $T.answer$index == 0}
-      {#if $T.election.module_params.count_empty_question}
-      <li class="stv-choice choice-{$T.answer$index}">
-      <span 
-        data-question="{$T.question$index}"
-        data-absolute-index="{$T.answer$index + $T.question.answers_index}"
-        class="button enabled small">{$T.answer}</span></li>
-      {#/if}
-      {#else}
+        {#if $T.answer$index == 0}
+        {#if $T.election.module_params.count_empty_question}
+        <li class="stv-choice choice-{$T.answer$index}">
+        <span 
+          data-question="{$T.question$index}"
+          data-absolute-index="{$T.answer$index + $T.question.answers_index}"
+          class="button enabled small">{$T.answer}</span></li>
+        {#/if}
+        {#else}
       <li class="stv-choice column seven choice-{$T.answer$index}">
       <span
         data-question="{$T.question$index}"
         data-absolute-index="{$T.answer$index + $T.question.answers_index}"
         class="button enabled small">
         <span class="answer_text">{$T.answer}</span></span></li>
-      <li class="stv-choice column five last choice-{$T.answer$index}-scores">
-      {#foreach $T.question.scores as score}
-      <span 
-        data-question="{$T.question$index}"
-        data-absolute-index="{$T.answer$index + $T.question.answers_index}"
-        data-relative-index="{$T.answer$index}"
-        data-score="{$T.score}"
-        class="score-answer-{$T.answer$index} score-answer score-choice" data-question="{$T.question$index}" data-score="{$T.score}">
-        <label for="score-choice-{$T.question$index}-{$T.answer$index}-{$T.score}" 
-        class="score-choice-label column one">{$T.score}</label>
-      <input 
-        data-score="{$T.score}"
-        type="checkbox" id="score-choice-{$T.question$index}-{$T.answer$index}-{$T.score}" 
-        class="score-choice-input column one"/>
-      <span>
-      {#/foreach}
-      <div class="column one"></div>
-      </li>
-      {#/if}
+        <li class="score-answer-{$T.answer$index} score-answer stv-choice column five last choice-{$T.answer$index}-scores">
+        {#foreach $T.question.scores as score}
+        <span 
+          data-question="{$T.question$index}"
+          data-absolute-index="{$T.answer$index + $T.question.answers_index}"
+          data-relative-index="{$T.answer$index}"
+          data-score="{$T.score}"
+          class="score-choice" data-question="{$T.question$index}" data-score="{$T.score}">
+        </span>
+          <label for="score-choice-{$T.question$index}-{$T.answer$index}-{$T.score}" 
+          class="score-choice-label column one">{$T.score}</label>
+          <input 
+            data-score="{$T.score}"
+            type="checkbox" id="score-choice-{$T.question$index}-{$T.answer$index}-{$T.score}" 
+            class="score-choice-input column one"/>
+        {#/foreach}
+        <div class="column one"></div>
+        </li>
+        {#/if}
       {#/foreach}
     </ul>
   </div>

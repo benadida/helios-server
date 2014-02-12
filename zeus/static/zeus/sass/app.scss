@@ -103,7 +103,6 @@ body {
 
   .start-voting { float: left; margin-top: 20px; }
 
-  
   .stv-candidates {
 
     a span.checkbox {
@@ -124,7 +123,7 @@ body {
       display: inline-block;
       margin-top: 6px;
     }
-    
+
     .score-choice-label {
         &.disabled {
             color: #ddd !important;

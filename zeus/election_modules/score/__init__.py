@@ -6,6 +6,8 @@ from zeus.election_modules import ElectionModuleBase, election_module
 from zeus.views.utils import set_menu
 from helios.view_utils import render_template
 
+from itertools import izip_longest
+
 
 @election_module
 class ScoreBallotElection(ElectionModuleBase):
@@ -43,14 +45,14 @@ class ScoreBallotElection(ElectionModuleBase):
                     answer_values = filter(isanswer, question.iteritems())
                     sorted_answers = sorted(answer_values, key=answer_index)
 
-                    answers = [x[1] for x in sorted_answers]
-                    question['answers'] = answers
+                    question['answers'] = [x[1] for x in sorted_answers]
+                    question['scores'] = filter(lambda p: p is not None, question['scores'])
+                    question['question_subtitle'] = ",".join(question['scores'])
+
                     for k in question.keys():
                         if k in ['DELETE', 'ORDER']:
                             del question[k]
 
-                    question['scores'] = filter(lambda p: p is not None, question['scores'])
-                    question['answers'] = filter(lambda p: p is not None, question['answers'])
                     questions_data.append(question)
 
                 poll.questions_data = questions_data
@@ -71,12 +73,14 @@ class ScoreBallotElection(ElectionModuleBase):
             'poll': poll,
             'module': self
         }
+
         set_menu('questions', context)
         tpl = 'election_modules/simple/election_poll_questions_manage'
         return render_template(request, tpl, context)
 
     def update_answers(self):
         answers = []
+        scores = []
         questions_data = self.poll.questions_data or []
         prepend_empty_answer = True
 
@@ -84,24 +88,22 @@ class ScoreBallotElection(ElectionModuleBase):
             prepend_empty_answer = True
 
         for index, q in enumerate(questions_data):
-            maxsize = max(len(q['answers']), len(q['scores']))
-            sparelist = q['answers'] if len(q['scores']) == maxsize else q['scores']
-            for i in range(len(sparelist), maxsize):
-                sparelist.append(None)
-
             q_answers = []
-            for answer, score in zip(q['answers'], q['scores']):
-                if answer is not None:
-                    q_answers.append("%s: %s" % (q['question'], answer))
-                if score is not None:
-                    q_answers.append("%s: %s" % (q['question'], score))
+            for answer in q['answers']:
+                q_answers.append("%s: %s" % (q['question'], answer))
             answers = answers + q_answers
-        
-            q['scores'] = filter(lambda p: p is not None, q['scores'])
-            q['answers'] = filter(lambda p: p is not None, q['answers'])
+            scores += q['scores']
+        scores = sorted(set(scores))
+
+        poll_answers = []
+        for answer, score in izip_longest(answers, scores):
+            if answer is not None:
+                poll_answers.append(answer)
+            if score is not None:
+                poll_answers.append(score)
 
         self.poll._init_questions(len(answers))
-        self.poll.questions[0]['answers'] = answers
+        self.poll.questions[0]['answers'] = poll_answers 
 
     def calculate_results(self, request):
         raise NotImplemented
