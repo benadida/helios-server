@@ -16,6 +16,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfdoc
+from django.conf import settings
 
 from zeus.core import PARTY_SEPARATOR
 
@@ -23,14 +24,16 @@ PAGE_WIDTH, PAGE_HEIGHT = A4
 
 pageinfo = "Zeus Elections - Poll Results"
 
+default_path = '/usr/share/fonts/truetype/linux-libertine/LinLibertine_Re.ttf'
 linlibertine = TTFont('LinLibertine',
 #                      '/Users/Panos/Library/Fonts/LinLibertine_Rah.ttf')
-                      '/usr/share/fonts/truetype/linux-libertine/LinLibertine_Re.ttf')
+                      getattr(settings, 'ZEUS_RESULTS_FONT_REGULAR_PATH', default_path))
 pdfmetrics.registerFont(linlibertine)
 
+default_path = '/usr/share/fonts/truetype/linux-libertine/LinLibertine_Bd.ttf'
 linlibertineb = TTFont('LinLibertineBd',
 #                       '/Users/Panos/Library/Fonts/LinLibertine_RBah.ttf')
-                       '/usr/share/fonts/truetype/linux-libertine/LinLibertine_Bd.ttf')
+                        getattr(settings, 'ZEUS_RESULTS_FONT_BOLD_PATH', default_path))
 pdfmetrics.registerFont(linlibertineb)
 
 ZEUS_LOGO = os.path.join(os.path.abspath(os.path.dirname(__file__)),
