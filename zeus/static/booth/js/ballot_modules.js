@@ -375,6 +375,24 @@ BM.ScoreElection = function(election) {
       this.score_map[qindex][aindex] = undefined;
     }, this);
   }, this);
+  
+  var answers = election.questions[0].answers;
+  var pos = 0;
+  this.scores_indexes = _.map(this.data, function(q, i) {
+    var scores = {};
+    _.each(q.scores, function(s) {
+      scores[s] = _.indexOf(answers, q.question + ": " + s) + 1;
+    });
+    return scores;
+  });
+
+  this.answers_indexes = _.map(this.data, function(q, i) {
+    var _answers = {};
+    _.each(q.answers, function(s) {
+      _answers[s] = _.indexOf(answers, q.question + ": " + s) + 1;
+    });
+    return _answers;
+  });
 }
 
 _.extend(BM.ScoreElection.prototype,
@@ -397,7 +415,27 @@ BM.ModuleBase,
   },
 
   update_layout: function() {
+    this.el.answer.show();
     _.each(this.score_map, function(q, index) { this.update_question(index) }, this);
+    this._update_answer();
+  },
+
+  _update_answer: function() {
+    var _answers = [];
+    _.each(this.score_map, function(answers, qindex) {
+      _.each(answers, function(score, aindex) {
+        if (score !== undefined) {
+          var answer = this.data[parseInt(qindex)].answers[parseInt(aindex)];
+          var answer_index = this.answers_indexes[qindex][answer];
+          var score_index = this.scores_indexes[qindex][score];
+          if (answer_index && score_index) {
+            _answers.push(answer_index);
+            _answers.push(score_index);
+          }
+        }
+      }, this);
+    }, this);
+    this.set_answer(_answers);
   },
   
   answer_els: function(qindex) {

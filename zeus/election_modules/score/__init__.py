@@ -50,6 +50,7 @@ class ScoreBallotElection(ElectionModuleBase):
                             del question[k]
 
                     question['scores'] = filter(lambda p: p is not None, question['scores'])
+                    question['answers'] = filter(lambda p: p is not None, question['answers'])
                     questions_data.append(question)
 
                 poll.questions_data = questions_data
@@ -83,8 +84,6 @@ class ScoreBallotElection(ElectionModuleBase):
             prepend_empty_answer = True
 
         for index, q in enumerate(questions_data):
-
-            import pdb; pdb.set_trace()
             maxsize = max(len(q['answers']), len(q['scores']))
             sparelist = q['answers'] if len(q['scores']) == maxsize else q['scores']
             for i in range(len(sparelist), maxsize):
@@ -95,11 +94,11 @@ class ScoreBallotElection(ElectionModuleBase):
                 if answer is not None:
                     q_answers.append("%s: %s" % (q['question'], answer))
                 if score is not None:
-                    q_answers.append(score)
+                    q_answers.append("%s: %s" % (q['question'], score))
             answers = answers + q_answers
         
-        q['scores'] = filter(lambda p: p is not None, q['scores'])
-        q['answers'] = filter(lambda p: p is not None, q['answers'])
+            q['scores'] = filter(lambda p: p is not None, q['scores'])
+            q['answers'] = filter(lambda p: p is not None, q['answers'])
 
         self.poll._init_questions(len(answers))
         self.poll.questions[0]['answers'] = answers
