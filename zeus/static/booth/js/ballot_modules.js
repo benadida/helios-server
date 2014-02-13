@@ -429,7 +429,6 @@ BM.ModuleBase,
   },
 
   update_layout: function() {
-    this.el.answer.show();
     _.each(this.score_map, function(q, index) { this.update_question(index) }, this);
     this._update_answer();
   },
