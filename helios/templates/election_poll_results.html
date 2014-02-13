@@ -13,6 +13,9 @@
 {% endblock %}
 
 {% block content %}
+{% if poll.get_module.results_template %}
+{% include poll.get_module.results_template %}
+{% else %}
 {% with poll.zeus.get_results as zeus_results %}
 {% with poll.zeus.get_results_pretty as results %}
 {% if zeus_results.invalid_count == 0 or user.superadmin_p %}
@@ -41,15 +44,28 @@
 {% endif %}
 {% endwith %}
 {% endwith %}
+{% endif %}
 {% if user.is_admin %}
+{% with poll.get_module as module %}
+
+{% if not module.no_pdf_result %}
 <br /><br />
 <a href="{% url election_poll_results_pdf election.uuid poll.uuid %}">Αποθήκευση αποτελεσμάτων (PDF)</a>
+{% endif %}
+
+{% if not module.no_csv_result %}
 <br /><br />
 <a href="{% url election_poll_results_csv election.uuid poll.uuid %}">Αποθήκευση αποτελεσμάτων (CSV)</a>
+{% endif %}
+
+{% if not module.no_json_result %}
 <br /><br />
 <a href="{% url election_poll_results_json election.uuid poll.uuid %}">Αποθήκευση αποτελεσμάτων (JSON)</a>
+{% endif %}
+
 <br /><br />
 <a href="{% url election_poll_zeus_proofs election.uuid poll.uuid %}">Αποθήκευση κρυπτογραφικών δεδομένων</a>
+{% endwith %}
 {% endif %}
 {% endblock %}
 
