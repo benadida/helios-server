@@ -1188,6 +1188,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
         csv_from_polls(self.election, [self], csvfile)
         csvfile.close()
 
+
   def save(self, *args, **kwargs):
     if not self.uuid:
       self.uuid = str(uuid.uuid4())

@@ -18,8 +18,7 @@ class ScoreBallotElection(ElectionModuleBase):
     auto_append_answer = True
     count_empty_question = False
     results_template = "election_modules/score/results.html"
-    no_pdf_result = True
-    no_csv_result = True
+    csv_result = False 
 
     def questions_update_view(self, request, election, poll):
         from zeus.utils import poll_reverse

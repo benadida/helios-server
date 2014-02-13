@@ -673,7 +673,12 @@ def results_file(request, election, poll, ext):
     name = ext
 
     if not os.path.exists(poll.get_result_file_path('csv', 'csv')):
-        poll.generate_result_docs()
+        if poll.get_module().csv_result:
+            poll.generate_result_docs()
+
+    if not os.path.exists(poll.get_result_file_path('pdf', 'pdf')):
+        if poll.get_module().pdf_result:
+            poll.generate_result_docs()
 
     if request.GET.get('gen', None):
         poll.generate_result_docs()

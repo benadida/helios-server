@@ -25,6 +25,10 @@ def get_poll_module(poll):
 class ElectionModuleBase(object):
 
     module_id =  None
+    
+    pdf_result = True
+    csv_result = True
+    json_result = True
 
     default_messages = {
         'description': _('Simple election with one or more questions'),
