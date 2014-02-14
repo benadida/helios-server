@@ -1,0 +1,33 @@
+
+<h3>Υποβολή Ψήφου Ελέγχου</h3>
+
+<div class="alert-box alert">
+Η επιλογή σας έχει επιλεχθεί ως "Ψήφος Ελέγχου" και δεν θα καταμετρηθεί.
+</div>
+
+
+<p>
+</p>
+
+<form action="#">
+<textarea style="display:none" name="audit_trail" id="audit_trail" cols="80" rows="10" wrap="soft">
+{$T.audit_trail}
+</textarea>
+
+<p class="audited_ballot_recipe">
+</p>
+
+<p>
+Πατήστε "επιστροφή" για να μεταφερθείτε στη σελίδα επιλογής ψήφου.
+</p>
+<input type="button" class="button medium success" value="Επιβεβαίωση" onclick="$(this).attr('disabled', 'disabled');BOOTH.post_audited_ballot();" id="post_audited_ballot_button" class="pretty" />
+&nbsp;&nbsp; &nbsp;
+<a class="button medium alert"
+  onclick="BOOTH.reset_ciphertexts();BOOTH.show_question(0);return false;">
+  Επιστροφή
+</a>
+</form>
+
+
+
+

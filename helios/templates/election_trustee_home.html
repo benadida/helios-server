@@ -11,23 +11,23 @@
 {% block content %}
 <p>
 {% if trustee.public_key_hash %}
-The public part of your trustee key has been successfully uploaded.<br />
-Please,<a href="{% url election_trustee_check_sk election.uuid %}" id="check_sk_link">
-confirm you indeed possess the trustee key</a>, if you haven't.
+{% trans "The public part of your trustee key has been successfully uploaded." %}<br />
+{% trans "Please," %}<a href="{% url election_trustee_check_sk election.uuid %}" id="check_sk_link">
+{% trans "confirm you indeed possess the trustee key" %}</a>, {% trans "if you haven't." %}
 {% else %}
-<a href="{% url election_trustee_keygen election.uuid %}">generate trustee key</a>
+<a href="{% url election_trustee_keygen election.uuid %}">{% trans "generate trustee key" %}</a>
 {% endif %}
 </p>
 
 <p>
 {% if election.any_poll_feature_can_partial_decrypt %}
 {% if trustee.partial_decryptions_finished %}
-Your partial decryption has been successfully uploaded.
+{% trans "Your partial decryption has been successfully uploaded." %}
 {% else %}
 {% include "_trustee_decrypt.html" %}
 {% endif %}
 {% else %}
-After voting is over, you must revisit this page to decrypt the results.
+{% trans "After voting is over, you must revisit this page to decrypt the results." %}
 {% endif %}
 </p>
 

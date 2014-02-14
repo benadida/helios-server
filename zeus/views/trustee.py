@@ -4,6 +4,7 @@ import datetime
 
 from django.conf.urls.defaults import *
 from django.core.urlresolvers import reverse
+from django.core.exceptions import PermissionDenied
 from django.contrib import messages
 
 from zeus.forms import ElectionForm
@@ -41,7 +42,7 @@ def login(request, election, trustee_email, trustee_secret):
         election.logger.info("Trustee %r logged in", trustee.email)
         return HttpResponseRedirect(reverse('election_trustee_home',
                                             args=[election.uuid]))
-    raise PermissionDenied('42')
+    raise PermissionDenied()
 
 
 @auth.trustee_view

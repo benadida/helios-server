@@ -59,7 +59,7 @@ Subject: {{default_subject}}
 </pre>
 
 <p>
-You can edit the contents of the message using the following form.
+{% trans "You can edit the contents of the message using the following form." %}
 </p>
 
   <form class="prettyform" action="" method="POST" id="email_form">
@@ -70,7 +70,7 @@ You can edit the contents of the message using the following form.
      {{email_form.as_table}}
      </table>
   <div>
-  <label for="">&nbsp;</label><input class="button success" type="submit" value="Send" id="send_button" />
+  <label for="">&nbsp;</label><input class="button success" type="submit" value="{% trans "Send" %}" id="send_button" />
   </div>
   </form>
   
@@ -78,11 +78,11 @@ You can edit the contents of the message using the following form.
   </div>
   
   <div id="done" style="display:none;">
-    Sending complete. <a href="{% url election_index election.uuid %}">Back to the polls</a>.
+    {% trans "Sending complete." %} <a href="{% url election_index election.uuid %}">{% trans "Back to the polls" %}</a>.
   </div>
 
   <div id="error" style="display:none;">
-    Error emailing participants. Check server settings, make sure there's an SMTP server.
+    {% trans "Error emailing voters" %}
   </div>
 
 {% endblock %}

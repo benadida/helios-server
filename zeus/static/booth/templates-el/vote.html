@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="el"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="el"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="el"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="el"> <!--<![endif]-->
+<head>
+  
+  <title></title>
+  <meta charset="utf-8">
+
+  <!--foundation styles and js-->
+  <link rel="stylesheet" href="stylesheets/app.css?d=20130106">
+  <script src="javascripts/foundation/modernizr.foundation.js"></script>
+  <script src="javascripts/foundation/jquery.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Didact+Gothic&subset=latin,greek' rel='stylesheet' type='text/css'>
+
+
+  <script language="javascript" src="js/jscrypto/class.js"></script>
+  <script language="javascript" src="js/jscrypto/bigint.dummy.js"></script>
+  <script language="javascript" src="js/jscrypto/jsbn.js"></script>
+  <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
+  <script language="javascript" src="js/jscrypto/sjcl.js"></script>
+  <script language="javascript" src="js/underscore-min.js"></script>
+  <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
+  <script language="javascript" src="js/jquery.json.min.js"></script>
+  <script language="javascript" src="js/jquery-jtemplates.js"></script>
+  <script language="javascript" src="js/json2.js"></script>
+  <script language="javascript" src="js/texts.js"></script>
+
+  <script language="javascript">
+    // required for jscrypto library
+    var JSCRYPTO_HOME = document.location.pathname.replace("vote.html", "js/jscrypto");
+  </script>
+
+  <script language="javascript" src="js/jscrypto/class.js"></script>
+  <script language="javascript" src="js/jscrypto/bigint.js?d=20111004"></script>
+  <script language="javascript" src="js/jscrypto/bigint.dummy.js"></script>
+  <script language="javascript" src="js/jscrypto/random.js"></script>
+  <script language="javascript" src="js/jscrypto/elgamal.js?d=20111004"></script>
+  <script language="javascript" src="js/jscrypto/sha1.js"></script>
+  <script language="javascript" src="js/jscrypto/sha2.js"></script>
+  <script language="javascript" src="js/jscrypto/helios.js?d=20121019"></script>
+  <script src="javascripts/foundation/jquery.foundation.reveal.js"></script>
+</head>
+<body class="booth">
+  
+  <style>
+    a.chosen-party {
+      background-color: #5E9245 !important;
+    }
+  </style>
+  <div class="bg-wrapper">
+  <div id="wrapper" class="row">
+    <div class="twelve columns header">
+      <img src="images/logo_bg.jpg" />
+      <div id="banner"><h1></h1></div>
+      <div id="header">
+      </div>
+      <div id="content">
+      </div>
+    </div>
+  </div>
+
+  <script language="javascript" src="js/ballot_modules.js?d=20130107"></script>
+  <script language="javascript" src="js/booth.js?d=20130917"></script>
+
+  <div id="page" class="row">
+    <div class="columns twelve">
+      <div id="progress_div">
+        <dl class="tabs">
+          <dd id="progress_1" class="active"><a href="#">Βήμα 1: Επιλογές ψηφοδελτίου</a></dd>
+          <dd id="progress_2"><a href="#">Βήμα 2: Υποβολή ψηφοδελτίου</a></dd>
+        </dl>
+      </div>
+
+    <div id="election_div" class="booth-panel">
+      <h3>Αρχικοποίηση παραπετάσματος ...</h3>
+      <div align="center"><img src="loading.gif" /><br />Εκτιμώμενος χρόνος 10 δευτερόλεπτα</div>
+    </div>
+
+    <div id="question_stv_div" class="booth-panel">
+    </div>
+
+    <div id="confirm_div" class="booth-panel">
+    </div>
+
+    <div id="processing_div" class="booth-panel" style="display:none;">
+      <h3 align="center">Επεξεργασία, παρακαλούμε περιμένετε...</h3>
+    </div>
+
+    <div id="encrypting_div" class="booth-panel" style="display:none;">
+      <h4>Η ψήφος σας κρυπτογραφείται, παρακαλούμε περιμένετε...</h4>
+      <img src="encrypting.gif" /> 
+      <span id="percent_done_container">(<span id="percent_done">0</span>%)</span>
+      <br /><br />
+      <p>
+      Η κρυπτογράφηση της ψήφου ενδέχεται να διαρκέσει έως 2 λεπτά.
+      </p>
+    </div>
+
+    <div id="seal_div" class="booth-panel">
+    </div>
+
+    <div id="audit_div" class="booth-panel">
+    </div>
+
+    <div class="columns twelve">
+  </div>
+
+  <br clear="both" />
+  <div class="row" id="footer">
+  
+    <div class="twelve columns">
+      <span class="footer-icons">
+      <a class="help" href="#help">Βοήθεια</a> 
+      </span>
+      <div class="content">
+      </div>
+      </div>
+  <div id="applet_div">
+  </div>
+</div>
+</body>
+</html>

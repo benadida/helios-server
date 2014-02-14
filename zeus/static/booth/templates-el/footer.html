@@ -1,0 +1,7 @@
+{#if $T.election.BOGUS_P}
+Election key not initialized: system in test mode.
+{#else}
+Αναγνωριστικό κάλπης: <span id="election_hash" style="font-weight:bold;">{$T.election.hash}</span>
+{#/if}
+</div>
+

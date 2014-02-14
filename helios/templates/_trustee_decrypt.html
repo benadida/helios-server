@@ -2,7 +2,7 @@
 <script>
   window.TRUSTEE = {
     'name': 'trustee.name',
-    'filename': 'Partial decryption {{ trustee.name }}.txt',
+    'filename': '{% trans "Partial decryption" %} {{ trustee.name }}.txt',
     'worker': '/static/zeus/booth/js/jscrypto/decryptworker.js'
   }
 
@@ -15,7 +15,7 @@
     'decrpyting': '{% trans "Decrypting" %}'
   }
 </script>
-<h5>The final ballots are ready to be decrypted.</h5>
+<h5>{% trans "The final ballots are ready to be decrypted." %}</h5>
 
 <div class="sk-form decryption-section">
 <h5>{% trans "Insert your trustee key" %}</h5>

@@ -1,6 +1,7 @@
 {% extends "helios/templates/cryptobase.html" %}
+{% load i18n %}
 
-{% block title %}{{election.name}}: trustee dashboard{% endblock %}
+{% block title %}{{election.name}}: {% trans "trustee dashboard" %}{% endblock %}
 {% block head_subtitle %}
 <script>
     var CSRF_TOKEN = "{{ csrf_token }}";
@@ -25,5 +26,5 @@
 
 {% block tabs_menu %}
 <dd class="active"><a 
-  href="{% url election_index election.uuid %}">Trustee actions</a></dd>
+  href="{% url election_index election.uuid %}">{% trans "Trustee actions" %}</a></dd>
 {% endblock %}

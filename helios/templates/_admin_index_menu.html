@@ -1,6 +1,7 @@
+{% load i18n %}
 <dd id="" class="{% if menu_active == "list" %}active{% endif %}">
-<a href="{% url admin_home %}">Election list</a>
+<a href="{% url admin_home %}">{% trans "Election list" %}</a>
 </dd>
 <dd id="" class="{% if menu_active == "create" %}active{% endif %}">
-<a href="{% url election_create %}">Create election</a>
+<a href="{% url election_create %}">{% trans "Create election" %}</a>
 </dd>

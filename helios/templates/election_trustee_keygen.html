@@ -1,4 +1,5 @@
 {% extends "helios/templates/trustee_home_base.html" %}
+{% load i18n %}
 
 {% block content %}
 <script language="javascript">
@@ -24,7 +25,7 @@ function reuse_key(secret_key_text) {
     try {
       SECRET_KEY = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(secret_key_text));
     } catch (err) {
-      alert("Invalid trustee key.");
+      alert("{% trans "Invalid trustee key." %}");
       return;
     }
 
@@ -95,7 +96,7 @@ function download_sk() {
 
     bb = new BlobBuilder;
     bb.append(jQuery.toJSON(SECRET_KEY));
-    saveAs(bb.getBlob(filetype), "Trustee key {{ trustee.name }}.txt");
+    saveAs(bb.getBlob(filetype), "{% trans "Trustee Key" %} {{ trustee.name }}.txt");
   } catch (err) {
     UTILS.open_window_with_content(jQuery.toJSON(SECRET_KEY), "application/json");
   }
@@ -110,7 +111,7 @@ function download_sk() {
 
 function upload_show_pk() {
     if (!$(".confirm-check").is(":checked")) {
-      alert("Please confirm that you have saved your trustee key.")
+      alert("{% trans "Please confirm that you have saved your trustee key." %}")
       return;
     }
 
@@ -121,11 +122,11 @@ function upload_show_pk() {
       data: data,
 
       success: function() {
-        alert("Your trustee key has been activated.");
+        alert("{% trans "Your trustee key has been activated." %}");
         window.location = '{% url logout %}'
       },
       error: function() {
-        alert("Error in trustee key activation.");
+        alert(" {% trans "Error in trustee key activation." %}");
       }
     })
 
@@ -178,8 +179,8 @@ $(document).ready(function(){
 </script>
 
 <p style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
-As an election trustee you have to generate your
-<a href="/faqs/trustee/#secret-key">trustee key</a>.
+{% trans "As an election trustee you have to generate your" %}
+<a href="/faqs/trustee/#secret-key">{% trans "trustee key" %}</a>.
 </p>
 
 <p id="waiting_message">
@@ -189,71 +190,75 @@ As an election trustee you have to generate your
 <p id="generator">
 
 <span id="buttons"><button class="button success medium" onclick="generate_keypair(); return false;" id="generate_button">
-Generate trustee key</button></span>
+{% trans "Generate trustee key" %}</button></span>
 <div id="sk_download">
   <div id="pk_link" style="display: none;">
     <p>
-    <em><input class="confirm-check" type="checkbox" />My trustee key has been saved and secured. Please continue.</em><br />
+    <em><input class="confirm-check" type="checkbox" />{% trans "My trustee key has been saved and secured. Please continue." %}</em><br />
     </p>
-    <a class="button success medium" id="activate_key" href="javascript:upload_show_pk();">Activate trustee key</a>
+    <a class="button success medium" id="activate_key" href="javascript:upload_show_pk();">{% trans "Activate trustee key" %}</a>
     <Br /><Br />
     <p>
+    {% blocktrans %}
     After your trustee key has been activated successfully,
     you will be automatically logged out.
+    {% endblocktrans %}
     </p>
   </div>
   <p>
   <button id="save_key" class="button success medium" style="" onclick="download_sk();">
-    Save your trustee key</button>
+    {% trans "Save your trustee key" %}</button>
   <br />
   <u>
+          {% blocktrans %}
 	  If your web browser displays the contents of your trustee key in a new window,
 	  switch to the new window and press Ctrl+S to save it.
+          {% endblocktrans %}
   </u>
   </p>
   <span id="clear_button" style="color:#aaa">
-    Your trustee key has been generated. If you want, you can
+    {% trans "Your trustee key has been generated. If you want, you can" %}
     <a href="javascript:clear_keys();">
-      remove it from memory and start over.</a><br/>
+      {% trans "remove it from memory and start over." %}</a><br/>
   </span>
 </div>
 
 <div class="reuse_key">
-If you already have a trustee key you can
-<a href="javascript:show_key_reuse()">reuse it</a>.
+{% trans "If you already have a trustee key you can" %}
+<a href="javascript:show_key_reuse()">{% trans "reuse it" %}</a>.
 </div>
 </p>
 
 <div id="reuse">
-<h3>Reuse trustee key</h3>
+<h3>{% trans "Reuse trustee key" %}</h3>
 
 <p>
-Insert your trustee key below:
+{% trans "Insert your trustee key below" %}:
 </p>
 <input type="file" id="reuse-file" />
 <form onsubmit="reuse_key(this.secret_key.value); return false;">
 <textarea cols="80" rows="5" wrap="soft" name="secret_key" id="reuse_secret">
 </textarea>
 <br />
-<input type="submit" class="button medium success" value="Continue" />
+<input type="submit" class="button medium success" value="{% trans "Continue" %}" />
 </form>
 </div>
 
 
 <form method="post" id="pk_form" action="{% url election_trustee_upload_pk election.uuid %}">
-<h3>The public part of your trustee key</h3>
+<h3>{% trans "The public part of your trustee key" %}</h3>
 <p>
-Now you have to upload the public part of your trustee key to the Zeus servers.
+{% trans "Now you have to upload the public part of your trustee key to the Zeus servers." %}
 </p>
 <p>
 Your public key fingerprint is:
 <tt id="pk_hash" style="font-size: 1.5em; font-weight: bold;"></tt>.<br />
-You can save the fingerprint for reference.
+{% trans "You can save the fingerprint for reference." %}
 </p>
 {% csrf_token %}
 <textarea id="pk_textarea" name="public_key_json" cols="80" rows="10" style="display:none;">
 </textarea>
-<input class="button success medium" type="submit" value="Activate trustee key">
+<input class="button success medium" type="submit" value="{% trans "Activate trustee key" %}">
 </form>
 
 <div id="applet_div"></div>

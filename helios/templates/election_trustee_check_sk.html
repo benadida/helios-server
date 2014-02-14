@@ -1,4 +1,5 @@
 {% extends "helios/templates/trustee_home_base.html" %}
+{% load i18n %}
 
 {% block content %}
 <script>
@@ -30,7 +31,7 @@ function check_sk(sk_value) {
     
     $('#processing').hide();
 
-    var reset_link = "<br /><a href='javascript:reset();'>Please try again</a>";
+    var reset_link = "<br /><a href='javascript:reset();'>{% trans "Please try again" %}</a>";
     if (key_ok_p) {
       var data = {'verified': true}
       data[CSRF_TOKEN_NAME] = CSRF_TOKEN;
@@ -39,15 +40,15 @@ function check_sk(sk_value) {
         "type": "post",
         "data": data,
         "error": function() {
-          $('#result').html("Error in verifying your trustee key, please try again." + reset_link);
+          $('#result').html("{% trans "Error in verifying your trustee key, please try again." %}" + reset_link);
         },
         "success": function() {
-            alert("Your trustee key has been verified!");
+            alert("{% trans "Your trustee key has been verified!" %}");
             window.location = '{% url logout %}';
         }
       })
     } else {
-      $('#result').html("Your trustee key could not be verified." + reset_link);
+      $('#result').html("{% trans "Your trustee key could not be verified." %}" + reset_link);
     }
   }
 
@@ -89,23 +90,23 @@ var opts = {
 </script>
 
 <p>
-The fingerprint for the public part of your trustee key is: <b>{{trustee.public_key_hash}}</b>
+{% trans "The fingerprint for the public part of your trustee key is:" %} <b>{{trustee.public_key_hash}}</b>
 </p>
 
 <div id="loading">
-Loading cryptographic functions...
+{% trans "Loading cryptographic functions..." %}
 </div>
 
 <div id="input" style="display:none;">
 <div class="select-file-option">
 <p>
-Select your trustee key file and press 'Verify'.
+{% trans "Select your trustee key file and press 'Verify'." %}
 <p>
 <input type="file" id="file-input" />
 </div>
 <div class="paste-file-option">
 <p>
-To verify your trustee key, paste it here:
+{% trans "To verify your trustee key, paste it here:" %}
 <p>
 <form onsubmit="check_sk(this.secret_key.value); this.secret_key.value=''; return false;">
 <textarea name="secret_key" cols="60" rows ="5" wrap="soft">
@@ -113,15 +114,17 @@ To verify your trustee key, paste it here:
 </div>
 <br/><br/>
     <p>
+    {% blocktrans %}
     After your trustee key has been successfully verified
     you will be automatically logged out.
+    {% endblocktrans %}
     </p>
-<input class="button success medium" type="submit" value="Verify" />
+<input class="button success medium" type="submit" value="{% trans "Verify" %}" />
 </form>
 </div>
 
 <div id="processing" style="display:none;">
-Verifying private trustee key...
+{% trans "Verifying private trustee key..." %}
 </div>
 
 <div id="result">

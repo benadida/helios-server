@@ -129,9 +129,10 @@ def voters_list(request, election, poll):
     limit = int(request.GET.get('limit', 10))
     q = request.GET.get('q','')
     voters_per_page = getattr(settings, 'ELECTION_VOTERS_PER_PAGE', 100)
-    order_by = request.GET.get('order', 'surname')
-    if not order_by in ['surname', 'email', 'name']:
-        order_by = 'surname'
+    order_by = 'login_id'
+    #order_by = request.GET.get('order', 'login_id')
+    #if not order_by in ['login_id', 'surname', 'email', 'name']:
+    #    order_by = 'login_id'
 
     validate_hash = request.GET.get('vote_hash', "").strip()
     hash_invalid = None
@@ -206,21 +207,24 @@ def voters_upload(request, election, poll):
             return HttpResponseRedirect(url)
         else:
             # we need to confirm
+            voters = []
             error = None
             if request.FILES.has_key('voters_file'):
                 voters_file = request.FILES['voters_file']
                 voter_file_obj = poll.add_voters_file(voters_file)
-            # import the first few lines to check
-            voters = []
-            try:
-                voters = [v for v in voter_file_obj.itervoters()]
-            except ValidationError, e:
-                if hasattr(e, 'messages') and e.messages:
-                    error = e.messages[0]
-                else:
+
+                # import the first few lines to check
+                try:
+                    voters = [v for v in voter_file_obj.itervoters()]
+                except ValidationError, e:
+                    if hasattr(e, 'messages') and e.messages:
+                        error = e.messages[0]
+                    else:
+                        error = "error."
+                except Exception, e:
                     error = str(e)
-            except Exception, e:
-                error = str(e)
+            else:
+                error = _("No file uploaded")
             if not error:
                 request.session['voter_file_id'] = voter_file_obj.id
             count = len(voters)

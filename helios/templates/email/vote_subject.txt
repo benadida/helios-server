@@ -1,1 +1,1 @@
-Zeus Elections -- {{custom_subject|safe}}
+{% load i18n %}{% trans "Zeus Elections" %} -- {{custom_subject|safe}}

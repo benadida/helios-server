@@ -1,19 +1,22 @@
 {% extends TEMPLATE_BASE %}
+{% load i18n %}
 
 {% block header %}
-<h2>{{ settings.SITE_TITLE }} | Login/h2>
+<h2>{{ settings.SITE_TITLE }} | {% trans "Login" %}/h2>
 {% endblock %}
 
 {% block tabs_menu %}
-<dd class="active"><a href="#">Login</a></dd>
+<dd class="active"><a href="#">{% trans "Login" %}</a></dd>
 {% endblock %}
 
 {% block content %}
 <div class="row">
 <div class="columns twelve">
 <p>
+{% blocktrans %}
 This is a login form for election administrators only.
-Voters have to use the link sent to them via Email or SMS.
+Voters have to use the link sent to them via email or SMS.
+{% endblocktrans %}
 </p>
 </div>
 </div>
@@ -35,7 +38,7 @@ Voters have to use the link sent to them via Email or SMS.
     {{form.as_p}}
 </table>
 <div>
-<input class="button" type="submit" value="Login" />
+<input class="button" type="submit" value={% trans "Login" %} />
 </div>
 </form>
 </div>

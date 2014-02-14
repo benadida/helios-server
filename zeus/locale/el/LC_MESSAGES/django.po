@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-24 14:26+0200\n"
+"POT-Creation-Date: 2014-02-14 15:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,93 +46,97 @@ msgstr "Μη έγκυρη λίστα μελών εφορευτικής επιτ�
 msgid "Choice"
 msgstr "Επιλογή"
 
-#: forms.py:209 election_modules/__init__.py:32
+#: forms.py:209 election_modules/__init__.py:36
 msgid "Question"
 msgstr "Ερώτηση"
 
-#: forms.py:211
+#: forms.py:238
 msgid "Min answers"
 msgstr "Ελάχιστος αριθμός επιλογών"
 
-#: forms.py:212
+#: forms.py:239
 msgid "Max answers"
 msgstr "Μέγιστος αριθμός επιλογών"
 
-#: forms.py:247
+#: forms.py:256
 msgid "Max answers should be greater or equal to min answers"
 msgstr ""
 "Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
 "ελάχιστου αριθμού απαντήσεων"
 
-#: forms.py:253
+#: forms.py:262
 msgid "Party name"
 msgstr "Όνομα συνδυασμού"
 
-#: forms.py:258
+#: forms.py:271
+msgid "Scores"
+msgstr "Βαθμοί"
+
+#: forms.py:275
 msgid "Username"
 msgstr "Όνομα χρήστη"
 
-#: forms.py:260
+#: forms.py:277
 msgid "Password"
 msgstr "Συνθηματικό"
 
-#: forms.py:271 forms.py:277
+#: forms.py:288 forms.py:294
 msgid "Invalid username or password"
 msgstr "Μη έγκυρος χρήστης ή συθηματικό"
 
-#: forms.py:299
+#: forms.py:316
 msgid "all voters"
 msgstr "σύνολο ψηφοφόρων"
 
-#: forms.py:300
+#: forms.py:317
 msgid "voters who have cast a ballot"
 msgstr "ψηφοφόροι που έχουν καταθέσει ψήφο"
 
-#: forms.py:301
+#: forms.py:318
 msgid "voters who have not yet cast a ballot"
 msgstr "ψηφοφόροι που δεν έχουν καταθέσει ακόμη ψήφο"
 
-#: forms.py:305
+#: forms.py:322
 msgid "Email subject"
 msgstr "Tίτλος μηνύματος email"
 
-#: forms.py:307
+#: forms.py:324
 msgid "Email body"
 msgstr "Κείμενο μηνύματος email"
 
-#: forms.py:309
+#: forms.py:326
 msgid "Send To"
 msgstr "Αποστολή πρός"
 
-#: forms.py:314
+#: forms.py:331
 msgid "Current password"
-msgstr ""
+msgstr "Τρέχων κωδικός"
 
-#: forms.py:315
+#: forms.py:332
 msgid "New password"
 msgstr "Νέος κωδικός"
 
-#: forms.py:316
+#: forms.py:333
 msgid "New password confirm"
 msgstr "Επιβεβαίωση νέου κωδικού"
 
-#: forms.py:332
+#: forms.py:349
 msgid "Invalid password"
 msgstr "Μη έγκυρος χρήστης ή κωδικός"
 
-#: forms.py:335
+#: forms.py:352
 msgid "Passwords don't match"
 msgstr "Οι κωδικοί δεν ταιριάζουν"
 
-#: forms.py:341
+#: forms.py:358
 msgid "Login password"
 msgstr "Κωδικός σύνδεσης"
 
-#: forms.py:352
+#: forms.py:369
 msgid "Invalid login code"
 msgstr "Μη έγκυρος κωδικός σύνδεσης"
 
-#: forms.py:371
+#: forms.py:388
 msgid "Invalid email or password"
 msgstr "Μη έγκυρος χρήστης ή συθηματικό"
 
@@ -238,33 +242,37 @@ msgstr ""
 "\n"
 "H απόδειξη της καταχώρησης βρίσκεται συνημμένη στο παρόν μήνυμα.\n"
 
-#: election_modules/__init__.py:30 election_modules/simple/__init__.py:16
+#: election_modules/__init__.py:34 election_modules/simple/__init__.py:16
 msgid "Simple election with one or more questions"
 msgstr "Απλή ψηφοφορία με μία ή περισσότερες ερωτήσεις"
 
-#: election_modules/__init__.py:31
+#: election_modules/__init__.py:35
 msgid "Ballot"
 msgstr "Ψηφοδέλτιο"
 
-#: election_modules/__init__.py:33
+#: election_modules/__init__.py:37
 msgid "Answer"
 msgstr "Απάντηση"
 
-#: election_modules/__init__.py:35
+#: election_modules/__init__.py:39
 msgid "Add questions to the election"
 msgstr "Προσθήκη ερωτήσεων στην ψηφοφορία"
 
-#: election_modules/__init__.py:36
+#: election_modules/__init__.py:40
 msgid "Too many choices"
 msgstr "Περισσότερες επιλογές από το επιτρεπτό"
 
-#: election_modules/__init__.py:37
+#: election_modules/__init__.py:41
 msgid "Question '{0}' requires at least {1} choices."
 msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
 
 #: election_modules/parties/__init__.py:10
 msgid "Party lists election"
 msgstr "Ψηφοφορία με συνδυασμούς"
+
+#: election_modules/score/__init__.py:16
+msgid "Score voting election"
+msgstr "Ψηφοφορία με βαθμολογία"
 
 #: election_modules/simple/__init__.py:21
 msgid "No questions set"
@@ -278,88 +286,69 @@ msgstr "Διαχείριση ερωτήσεων"
 msgid "Are you sure ?"
 msgstr "Επιβεβαιώστε"
 
-#: views/poll.py:264
+#: views/poll.py:227
+msgid "No file uploaded"
+msgstr "Δεν βρέθηκε αρχείο"
+
+#: views/poll.py:268
 msgid "Time to Vote"
 msgstr "Χρόνος Ψηφοφορίας"
 
-#: views/poll.py:265
+#: views/poll.py:269
 msgid "Additional Info"
 msgstr "Περισσότερες πληροφορίες"
 
-#: views/poll.py:389
+#: views/poll.py:393
 msgid "Email sending started"
 msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει"
 
-#~ msgid "Invalid registration ID"
-#~ msgstr "Μη έγκυρος κωδικός μητρώου."
-
-#~ msgid "Registration ID"
-#~ msgstr "Αρ. Μητρώου"
-
-#, fuzzy
-#~ msgid "Email"
-#~ msgstr "Κείμενο μηνύματος email"
-
-#~ msgid "Institution"
-#~ msgstr "Εκπαιδευτικό ίδρυμα"
-
-#~ msgid "Election institution"
-#~ msgstr "Το εκπαιδευτικό ίδρυμα για το οποίο θα διεξαχθεί η ψηφοφορία"
+#~ msgid "Welcome to the electronic voting booth by Zeus Elections."
+#~ msgstr ""
+#~ "Καλωσήρθατε στο ηλεκτρονικό παραπέτασμα του συστήματος ψηφοφοριών «Ζευς»"
 
 #~ msgid ""
-#~ "the name of the election (e.g. University of Piraeus 2014 elections)."
+#~ "At this point you must have followed the secret invitation sent to you\n"
+#~ "    by Email or SMS for the poll"
 #~ msgstr ""
-#~ "δώστε τίτλο στην ψηφοφορία (π.χ. Εκλογή Εσωτερικών Μελών Συμβουλίου "
-#~ "Διοίκησης Πανεπιστημίου Πειραιώς 2014)."
-
-#~ msgid "Description"
-#~ msgstr "Περιγραφή ψηφοφορίας"
-
-#~ msgid "Voting starts at"
-#~ msgstr "Χρόνος έναρξης της ψηφοφορίας"
-
-#~ msgid "Voting ends at"
-#~ msgstr "Λήξη της ψηφοφορίας"
-
-#~ msgid "Voting extended until"
-#~ msgstr "Η ψηφοφορία έχει παραταθεί μέχρι"
-
-#~ msgid "Schools and Departments"
-#~ msgstr "Σχολές και Ανεξάρτητα Τμήματα του Ιδρύματος"
+#~ "Για να βρίσκεστε στη σελίδα αυτή, σημαίνει ότι ακολουθήσατε το μυστικό "
+#~ "σύνδεσμο\n"
+#~ "που σας έχει αποσταλεί με email ή SMS."
 
 #~ msgid ""
-#~ "University Schools. e.g. <br/><br/> School of Engineering <br /> School "
-#~ "of Medicine<br />School of Informatics<br />"
+#~ "To submit your vote follow the instructions.\n"
+#~ "    Your current progress and relevant information will be displayed,\n"
+#~ "    at the top of the page."
 #~ msgstr ""
-#~ "συμπληρώστε τις σχολές και τα ανεξάρτητα τμήματα του ιδρύματος για το "
-#~ "οποίο διεξάγεται η ψηφοφορία. Π.χ. <br/><br/>Σχολή Θετικών Επιστημών<br/"
-#~ ">Φιλοσοφική Σχολή<br/>Ανεξάρτητο Παιδαγωγικό Τμήμα Δημοτικής "
-#~ "Εκπαίδευσης<br/>"
+#~ "Για να υποβάλετε ψήφο ακολουθήστε τις οδηγίες.\n"
+#~ "    Στην κορυφή της σελίδας θα σημειώνεται η πρόοδός σας,\n"
+#~ "    καθώς και άλλες σχετικές πληροφορίες."
 
-#~ msgid "Eligibles count"
-#~ msgstr "Πλήθος εκλεγόμενων "
+#~ msgid "Fill in ballot."
+#~ msgstr "Συμπλήρωση ψηφοδελτίου."
 
-#~ msgid "Has department limit"
-#~ msgstr "Τα εσωτερικά μέλη ανά σχολή δεν μπορούν να υπερβαίνουν τα δύο"
+#~ msgid "In this step, you fill in the ballot with your choices."
+#~ msgstr "Σε αυτό το βήμα σημειώνετε τις επιλογές σας στο ψηφοδέλτιο."
 
-#~ msgid "4009/2011 (A' 195)"
-#~ msgstr ""
-#~ "Επιλέξτε εάν εφαρμόζεται ο περιορισμός του τέταρτου εδαφίου της "
-#~ "περίπτωσης β΄ της παραγράφου 4 του άρθρου 8 του νόμου 4009/2011 (Α΄ 195) "
-#~ "όπως ισχύει με την τροποποίηση του άρθρου 47 του ν. 4025/2011 (Α΄228)"
-
-#~ msgid "Help email"
-#~ msgstr "E-mail για βοήθεια"
-
-#~ msgid "Help phone"
-#~ msgstr "Τηλέφωνα για βοήθεια"
-
-#~ msgid "Remote mix"
-#~ msgstr "Ενεργοποίηση πολλαπλών σταδίων μίξης"
-
-#~ msgid "Election title (e.g. Memorandum referendum)"
-#~ msgstr "Τίτλος ψηφοφορίας"
+#~ msgid "Ballot encryption and submission."
+#~ msgstr "Κρυπτογράφηση και υποβολή ψηφοδελτίου."
 
 #~ msgid ""
-#~ "Election candidates changed due to election institution department changes"
-#~ msgstr "Κάποιοι υποψήφιοι αφαιρέθηκαν λόγω αλλαγών στις Σχολές"
+#~ "The choices you made in the previous step will be encrypted\n"
+#~ "              in your own computer by the web browser itself. A "
+#~ "submission receipt will\n"
+#~ "              be sent to your email address."
+#~ msgstr ""
+#~ "Οι επιλογές σας στο προηγούμενο βήμα θα κρυπτογραφηθούν\n"
+#~ "              στον υπολογιστή σας από τον ίδιο τον φυλλομετρητή "
+#~ "(browser).\n"
+#~ "              Θα σας σταλεί αποδεικτικό υποβολής ψήφου με email."
+
+#~ msgid ""
+#~ "You can use your invitation to submit another vote.\n"
+#~ "    Each time, the new vote replaces your previous one."
+#~ msgstr ""
+#~ "Μπορείτε να χρησιμοποιήσετε το σύνδεσμο για να καταχωρήσετε νέα ψήφο.\n"
+#~ "    Κάθε φορά, η νέα ψήφος αντικαθιστά την προηγούμενη."
+
+#~ msgid "Start"
+#~ msgstr "Εκκίνηση"

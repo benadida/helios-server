@@ -62,19 +62,23 @@
 <table class="voters" width="100%">
   <thead>
     <tr>
-      <th>Email</th>
-      <th>Surname , Given name , Middle name , Mobile phone</th>
+      <th>{% trans "Registration ID" %}</th>
+      <th>{% trans "Email" %}</th>
+      <th>{% trans "Surname , Given name , Middle name , Mobile phone" %}</th>
       {% if admin %}
-      <th>Has voted</th>
+      <th>{% trans "Has voted" %}</th>
       <th>{% trans "Booth invitation sent at" %}</th>
-      <th>Last visit</th>
-      <th>Actions</th>
+      <th>{% trans "Last visit" %}</th>
+      <th>{% trans "Actions" %}</th>
       {% endif %}
     </tr>
   </thead>
   <tbody>
   {% for voter in voters %}
   <tr>
+    <td>
+      {{ voter.voter_login_id }}
+    </td>
     <td>
       {{ voter.voter_email }}
     </td>
@@ -85,9 +89,9 @@
     </td>
     <td>
       {% if voter.voted %}
-      YES {% if voter.excluded_at %}<b style="color:red">(Excluded)</b>{% endif %}
+      {% trans "YES" %} {% if voter.excluded_at %}<b style="color:red">{% trans "(Excluded)" %}</b>{% endif %}
       {% else %}
-      NO
+      {% trans "NO" %}
       {% endif %}
 
     </td>
