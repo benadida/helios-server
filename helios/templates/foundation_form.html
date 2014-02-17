@@ -1,7 +1,8 @@
+{% load i18n %}
 {% csrf_token %}
 {% if form.errors %}
 <div class="alert-box alert has_errors">
-  Error saving form.
+  {% trans "Error saving form." %}
 </div>
 {% endif %}
 {% if form.non_field_errors %}
