@@ -225,3 +225,83 @@ def csv_from_polls(election, polls, outfile=None):
     except:
         return None
 
+
+def csv_from_score_polls(election, polls, outfile=None):
+    if outfile is None:
+        outfile = StringIO()
+    csvout = csv.writer(outfile, dialect='excel', delimiter=',')
+    writerow = csvout.writerow
+    # election details
+    DATE_FMT = "%d/%m/%Y %H:%S"
+    voting_start = 'Έναρξη: %s' % (election.voting_starts_at.strftime(DATE_FMT))
+    voting_end = 'Λήξη: %s' % (election.voting_ends_at.strftime(DATE_FMT))
+    extended_until = ""
+    if election.voting_extended_until:
+      extended_until = 'Παράταση: %s' % \
+              (election.voting_extended_until.strftime(DATE_FMT))
+
+    writerow([strforce(election.name)])
+    writerow([strforce(election.institution.name)])
+    writerow([strforce(voting_start)])
+    writerow([strforce(voting_end)])
+
+    if extended_until:
+        writerow([strforce(extended_until)])
+    writerow([])
+
+    for poll in polls:
+        score_results = poll.zeus.get_results()
+        invalid_count = len([b for b in score_results['ballots']
+                             if b['valid'] == False])
+        blank_count = len([b for b in score_results['ballots']
+                           if not b['candidates']])
+        ballot_count = len(score_results['ballots'])
+
+        writerow([])
+        writerow([])
+        writerow([])
+        writerow([strforce(poll.name)])
+        writerow([])
+        writerow([])
+        writerow(['ΑΠΟΤΕΛΕΣΜΑΤΑ ΓΕΝΙΚΑ'])
+        writerow(['ΣΥΝΟΛΟ', strforce(ballot_count)])
+        writerow(['ΕΓΚΥΡΑ', strforce(ballot_count - invalid_count)])
+        writerow(['ΑΚΥΡΑ', strforce(invalid_count)])
+        writerow(['ΛΕΥΚΑ', strforce(blank_count)])
+
+        writerow([])
+        writerow(['ΒΑΘΜΟΛΟΓΙΚΗ ΚΑΤΑΤΑΞΗ'])
+        for score, candidate in sorted(score_results['totals']):
+            writerow([strforce(score), strforce(candidate)])
+
+        writerow([])
+        writerow(['ΒΑΘΜΟΛΟΓΙΕΣ ΑΝΑΛΥΤΙΚΑ'])
+        pointlist = list(sorted(score_results['points']))
+        pointlist.reverse()
+        writerow(['ΥΠΟΨΗΦΙΟΣ', 'ΒΑΘΜΟΙ:'] + pointlist)
+        for candidate, points in sorted(score_results['detailed'].iteritems()):
+            writerow([strforce(candidate), ''] +
+                     [strforce(points[p]) for p in pointlist])
+
+        writerow([])
+        writerow(['ΨΗΦΟΔΕΛΤΙΑ ΑΝΑΛΥΤΙΚΑ'])
+        writerow(['Α/Α', 'ΥΠΟΨΗΦΙΟΣ', 'ΒΑΘΜΟΙ', 'ΕΓΚΥΡΟ/ΑΚΥΡΟ/ΛΕΥΚΟ'])
+        counter = 0
+        valid = 'ΕΓΚΥΡΟ'
+        invalid = 'ΑΚΥΡΟ'
+        blank = 'ΛΕΥΚΟ'
+        empty = '---'
+        for ballot in score_results['ballots']:
+            counter += 1
+            if not ballot['valid']:
+                writerow([counter, empty, empty, invalid])
+                continue
+            points = sorted(ballot['candidates'].iteritems())
+            for candidate, score in points:
+                writerow([strforce(counter), strforce(candidate),
+                          strforce(score), valid])
+    try:
+        outfile.seek(0)
+        return outfile.read()
+    except:
+        return None
