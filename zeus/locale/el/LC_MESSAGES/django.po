@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-17 10:46+0200\n"
+"POT-Creation-Date: 2014-02-17 14:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -220,6 +220,34 @@ msgstr "Επιβεβαιώστε τη διαγραφή της επιλεγμέν
 msgid "Results"
 msgstr "Αποτελέσματα"
 
+#: results_report.py:30
+msgid "Zeus Elections - Results"
+msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
+
+#: results_report.py:124
+msgid "Total ballots:"
+msgstr "Σύνολο ψηφοδελτίων:"
+
+#: results_report.py:125
+msgid "Blanks:"
+msgstr "Λευκά"
+
+#: results_report.py:157
+msgid "%Y-%m-%d %H:%M"
+msgstr "%d/%m/%Y %H:%M"
+
+#: results_report.py:162
+msgid "End:"
+msgstr "Τέλος"
+
+#: results_report.py:165
+msgid "Extension:"
+msgstr "Παράταση:"
+
+#: results_report.py:159
+msgid "Start:"
+msgstr "Έναρξη:"
+
 #: tasks.py:103
 #, python-format
 msgid "%(election_name)s - vote cast"
@@ -349,6 +377,3 @@ msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει
 #~ msgstr ""
 #~ "Μπορείτε να χρησιμοποιήσετε το σύνδεσμο για να καταχωρήσετε νέα ψήφο.\n"
 #~ "    Κάθε φορά, η νέα ψήφος αντικαθιστά την προηγούμενη."
-
-#~ msgid "Start"
-#~ msgstr "Εκκίνηση"

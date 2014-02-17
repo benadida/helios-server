@@ -4,6 +4,11 @@
 import json
 import os
 import datetime
+try:
+    from django.utils.translation import ugettext as _
+except ImportError:
+    def _(x):
+        return x
 
 from xml.sax.saxutils import escape
 
@@ -22,7 +27,7 @@ from zeus.core import PARTY_SEPARATOR
 
 PAGE_WIDTH, PAGE_HEIGHT = A4
 
-pageinfo = "Ηλεκτρονικές Ψηφοφορίες «Ζευς» - Αποτελέσματα"
+pageinfo = _("Zeus Elections - Results")
 
 default_path = '/usr/share/fonts/truetype/linux-libertine/LinLibertine_Re.ttf'
 linlibertine = TTFont('LinLibertine',
@@ -94,7 +99,7 @@ def make_later_pages_hf(canvas, doc):
                      y = PAGE_HEIGHT - 2 * cm,
                      width = PAGE_WIDTH / 8,
                      height = 1.1 * cm)
-    canvas.drawString(PAGE_WIDTH - 7 * cm, PAGE_HEIGHT - 2 * cm,
+    canvas.drawString(PAGE_WIDTH - 9 * cm, PAGE_HEIGHT - 2 * cm,
                       "%s" % (pageinfo, ))
     canvas.restoreState()
 
@@ -116,8 +121,8 @@ def make_intro(elements, styles, contents):
     elements.append(Spacer(1, 12))
 
 def make_totals(elements, styles, total_votes, blank_votes):
-    elements.append(Paragraph(escape('Σύνολο ψηφοδελτίων: %d' % total_votes), styles['Zeus']))
-    elements.append(Paragraph(escape('Λευκά: %d' % blank_votes), styles['Zeus']))
+    elements.append(Paragraph(escape(_("Total ballots:" + " %d" % total_votes)), styles['Zeus']))
+    elements.append(Paragraph(escape(_("Blanks:") + " %d" % blank_votes), styles['Zeus']))
     elements.append(Spacer(1, 12))
 
 def make_party_list_heading(elements, styles, party, count):
@@ -149,15 +154,15 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
               new_page=True, score=False):
 
 
-    DATE_FMT = "%d/%m/%Y %H:%S"
+    DATE_FMT = _("%Y-%m-%d %H:%M")
     if isinstance(voting_start, datetime.datetime):
-        voting_start = 'Έναρξη: %s' % (voting_start.strftime(DATE_FMT))
+        voting_start = _("Start:") + " %s" % (voting_start.strftime(DATE_FMT))
 
     if isinstance(voting_end, datetime.datetime):
-        voting_end = 'Λήξη: %s' % (voting_end.strftime(DATE_FMT))
+        voting_end = _("End:") + " %s" % (voting_end.strftime(DATE_FMT))
 
     if extended_until and isinstance(extended_until, datetime.datetime):
-        extended_until = 'Παράταση: %s' % (extended_until.strftime(DATE_FMT))
+        extended_until = _("Extension:") + " %s" % (extended_until.strftime(DATE_FMT))
     else:
         extended_until = ""
 

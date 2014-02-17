@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-17 10:46+0200\n"
+"POT-Creation-Date: 2014-02-17 14:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -277,7 +277,8 @@ msgstr "ΟΧΙ"
 msgid "(EXCLUDED)"
 msgstr "(ΕΞΑΙΡΕΣΗ)"
 
-#: models.py:1191 templates/_election_poll_admin_actions.html:17
+#: models.py:1177 models.py:1191
+#: templates/_election_poll_admin_actions.html:17
 #: templates/_election_view_menu.html:11 templates/election_polls_list.html:65
 msgid "Results"
 msgstr "Αποτελέσματα"
