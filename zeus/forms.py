@@ -263,7 +263,7 @@ class PartyForm(QuestionForm):
                                required=True)
 
 
-SCORES_CHOICES = [(x,x) for x in range(1, 13)]
+SCORES_CHOICES = [(x,x) for x in range(1, 10)]
 class ScoresForm(QuestionBaseForm):
     scores = forms.MultipleChoiceField(required=True,
                                        widget=forms.CheckboxSelectMultiple,

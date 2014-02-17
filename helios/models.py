@@ -1173,13 +1173,13 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
     # pdf report
     if self.get_module().module_id =='score':
-        #from zeus.results_report import build_score_doc
-        #build_doc(_(u'Results'), self.election.name,
-        #          self.election.institution.name,
-        #          self.election.voting_starts_at, self.election.voting_ends_at,
-        #          self.election.voting_extended_until,
-        #          [(self.name, json.dumps(results_json))],
-        #          self.get_result_file_path('pdf', 'pdf'))
+        from zeus.results_report import build_doc
+        build_doc(_(u'Results'), self.election.name,
+                  self.election.institution.name,
+                  self.election.voting_starts_at, self.election.voting_ends_at,
+                  self.election.voting_extended_until,
+                  [(self.name, json.dumps(results_json))],
+                  self.get_result_file_path('pdf', 'pdf'), score=True)
 
         from zeus.reports import csv_from_score_polls
         csvfile = file(self.get_result_file_path('csv', 'csv'), "w")

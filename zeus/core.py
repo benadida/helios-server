@@ -1877,7 +1877,10 @@ def gamma_count_range(encoded_list, candidates_and_points):
     results = {}
     results['candidates'] = candidates
     results['points'] = pointlist
-    results['totals'] = sorted((v, k) for k, v in totals.iteritems())
+    totals = [(v, k) for k, v in totals.iteritems()]
+    totals.sort()
+    totals.reverse()
+    results['totals'] = totals
     results['detailed'] = detailed
     results['ballots'] = ballots
     return results
