@@ -42,7 +42,6 @@ class Migration(SchemaMigration):
             ('encrypted_tally', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
             ('result', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
             ('result_proof', self.gf('helios_auth.jsonfield.JSONField')(null=True)),
-            ('help_email', self.gf('django.db.models.fields.EmailField')(null=True)),
         ))
         db.send_create_signal('helios', ['Election'])
 
@@ -209,7 +208,6 @@ class Migration(SchemaMigration):
             'voting_extended_until': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'voting_started_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'voting_starts_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
-            'help_email': ('django.db.models.fields.EmailField', [], {'null': 'True'}),
         },
         'helios.electionlog': {
             'Meta': {'object_name': 'ElectionLog'},
