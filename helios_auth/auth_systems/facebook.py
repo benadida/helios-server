@@ -57,7 +57,7 @@ def get_user_info_after_auth(request):
 
   info = utils.from_json(facebook_get('/me', {'access_token':access_token}))
 
-  return {'type': 'facebook', 'user_id' : info['id'], 'name': info['name'], 'email': info['email'], 'info': info, 'token': {'access_token': access_token}}
+  return {'type': 'facebook', 'user_id' : info['id'], 'name': info.get('name'), 'email': info.get('email'), 'info': info, 'token': {'access_token': access_token}}
     
 def update_status(user_id, user_info, token, message):
   """

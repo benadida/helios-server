@@ -71,6 +71,24 @@ STATIC_URL = '/media/'
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_from_env('SECRET_KEY', '111111111111111111111111111')
 
+# Secure Stuff
+if (get_from_env('SSL', '0') == '1'):
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+
+    # tuned for Heroku
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+SESSION_COOKIE_HTTPONLY = True
+
+# one week HSTS seems like a good balance for MITM prevention
+if (get_from_env('HSTS', '0') == '1'):
+    SECURE_HSTS_SECONDS = 3600 * 24 * 7
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
     'django.template.loaders.filesystem.Loader',
@@ -78,9 +96,15 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    # make all things SSL
+    #'sslify.middleware.SSLifyMiddleware',
+
+    # secure a bunch of things
+    'djangosecure.middleware.SecurityMiddleware',
+
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware'
 )
 
 ROOT_URLCONF = 'urls'
@@ -94,6 +118,7 @@ TEMPLATE_DIRS = (
 INSTALLED_APPS = (
 #    'django.contrib.helios_auth',
 #    'django.contrib.contenttypes',
+    'djangosecure',
     'django.contrib.sessions',
     'django.contrib.sites',
     ## needed for queues
@@ -196,7 +221,7 @@ EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
 EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
 EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
-EMAIL_USE_TLS = False
+EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
 
 # set up logging
 import logging

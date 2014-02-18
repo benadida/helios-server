@@ -11,7 +11,7 @@ from django.utils import simplejson
 from django.conf import settings
 from django.core.mail import send_mail
 
-import datetime, logging, uuid, random, StringIO, io
+import datetime, logging, uuid, random, io
 
 from crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
@@ -85,7 +85,12 @@ class Election(HeliosModel):
     
   # voter aliases?
   use_voter_aliases = models.BooleanField(default=False)
+
+  # auditing is not for everyone
   use_advanced_audit_features = models.BooleanField(default=True, null=False)
+
+  # randomize candidate order?
+  randomize_answer_order = models.BooleanField(default=False, null=False)
   
   # where votes should be cast
   cast_url = models.CharField(max_length = 500)
@@ -149,7 +154,8 @@ class Election(HeliosModel):
     return {
       'help_email': self.help_email or 'help@heliosvoting.org',
       'private_p': self.private_p,
-      'use_advanced_audit_features': self.use_advanced_audit_features
+      'use_advanced_audit_features': self.use_advanced_audit_features,
+      'randomize_answer_order': self.randomize_answer_order
       }
 
   @property
@@ -914,7 +920,18 @@ class VoterFile(models.Model):
 
   def itervoters(self):
     if self.voter_file_content:
-      voter_stream = io.StringIO(unicode(self.voter_file_content), newline=None)
+      if type(self.voter_file_content) == unicode:
+        content = self.voter_file_content.encode('utf-8')
+      else:
+        content = self.voter_file_content
+
+      # now we have to handle non-universal-newline stuff
+      # we do this in a simple way: replace all \r with \n
+      # then, replace all double \n with single \n
+      # this should leave us with only \n
+      content = content.replace('\r','\n').replace('\n\n','\n')
+
+      voter_stream = io.BytesIO(content)
     else:
       voter_stream = open(self.voter_file.path, "rU")
 
@@ -926,13 +943,13 @@ class VoterFile(models.Model):
       if len(voter_fields) < 1:
         continue
     
-      return_dict = {'voter_id': voter_fields[0]}
+      return_dict = {'voter_id': voter_fields[0].strip()}
 
       if len(voter_fields) > 1:
-        return_dict['email'] = voter_fields[1]
+        return_dict['email'] = voter_fields[1].strip()
 
       if len(voter_fields) > 2:
-        return_dict['name'] = voter_fields[2]
+        return_dict['name'] = voter_fields[2].strip()
 
       yield return_dict
     
@@ -940,51 +957,25 @@ class VoterFile(models.Model):
     self.processing_started_at = datetime.datetime.utcnow()
     self.save()
 
-    election = self.election
-
-    # now we're looking straight at the content
-    if self.voter_file_content:
-      voter_stream = io.StringIO(unicode(self.voter_file_content), newline=None)
-    else:
-      voter_stream = open(self.voter_file.path, "rU")
-
-    # reader = unicode_csv_reader(voter_stream)
-    reader = unicodecsv.reader(voter_stream, encoding='utf-8')
-    
+    election = self.election    
     last_alias_num = election.last_alias_num
 
     num_voters = 0
     new_voters = []
-    for voter in reader:
-      # bad line
-      if len(voter) < 1:
-        continue
-    
+    for voter in self.itervoters():
       num_voters += 1
-      voter_id = voter[0].strip()
-      name = voter_id
-      email = voter_id
-    
-      if len(voter) > 1:
-        email = voter[1].strip()
-    
-      if len(voter) > 2:
-        name = voter[2].strip()
-    
-      # create the user -- NO MORE
-      # user = User.update_or_create(user_type='password', user_id=email, info = {'name': name})
     
       # does voter for this user already exist
-      voter = Voter.get_by_election_and_voter_id(election, voter_id)
+      existing_voter = Voter.get_by_election_and_voter_id(election, voter['voter_id'])
     
       # create the voter
-      if not voter:
+      if not existing_voter:
         voter_uuid = str(uuid.uuid4())
-        voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter_id,
-                      voter_name = name, voter_email = email, election = election)
-        voter.generate_password()
-        new_voters.append(voter)
-        voter.save()
+        existing_voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter['voter_id'],
+                      voter_name = voter['name'], voter_email = voter['email'], election = election)
+        existing_voter.generate_password()
+        new_voters.append(existing_voter)
+        existing_voter.save()
 
     if election.use_voter_aliases:
       voter_alias_integers = range(last_alias_num+1, last_alias_num+1+num_voters)

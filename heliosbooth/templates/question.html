@@ -24,26 +24,12 @@ as many of the choices as you approve of
 
 {#if $T.election_type != 'ranked election'}<br />
 {#foreach $T.question.answers as answer}
+<div id="answer_label_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}"><input type="checkbox" class="ballot_answer" id="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}" name="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}" value="yes" onclick="BOOTH.click_checkbox({$T.question_num}, {$T.answer_ordering[$T.answer$index]}, this.checked);" /> {$T.question.answers[$T.answer_ordering[$T.answer$index]]}
 
-<div id="answer_label_{$T.question_num}_{$T.answer$index}"><input type="checkbox" class="ballot_answer" id="answer_{$T.question_num}_{$T.answer$index}" name="answer_{$T.question_num}_{$T.answer$index}" value="yes" onclick="BOOTH.click_checkbox({$T.question_num}, {$T.answer$index}, this.checked);" /> {$T.answer}
-{#/for}
-  
-{#else}
-<FORM NAME="ranking" ACTION="" METHOD="GET">
-{#foreach $T.question.answers as answer}
-{$T.answer}:<INPUT TYPE="number" min = "1" max = "{$T.question.answers.length}" NAME="answer" VALUE=""> <br>
-{#/for}
-<INPUT TYPE="button" NAME="button" Value="Submit" onClick="BOOTH.read_ranked_form(this.form, {$T.question_num})">
-</FORM>
-{#/if}
-
-
-{#foreach $T.question.answers as answer}
-
-{#if $T.question.answer_urls && $T.question.answer_urls[$T.answer$index] && $T.question.answer_urls[$T.answer$index] != ""}
+{#if $T.question.answer_urls && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] != ""}
 &nbsp;&nbsp;
 <span style="font-size: 12pt;">
-[<a target="_blank" href="{$T.question.answer_urls[$T.answer$index]}">more info</a>]
+[<a target="_blank" href="{$T.question.answer_urls[$T.answer_ordering[$T.answer$index]]}">more info</a>]
 </span>
 {#/if}
 {#/for}
