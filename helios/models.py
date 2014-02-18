@@ -673,6 +673,12 @@ class VoterFile(models.Model):
       else:
         content = self.voter_file_content
 
+      # now we have to handle non-universal-newline stuff
+      # we do this in a simple way: replace all \r with \n
+      # then, replace all double \n with single \n
+      # this should leave us with only \n
+      content = content.replace('\r','\n').replace('\n\n','\n')
+
       voter_stream = io.BytesIO(content)
     else:
       voter_stream = open(self.voter_file.path, "rU")
