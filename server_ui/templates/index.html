@@ -2,78 +2,77 @@
 {% block title %}{{ settings.SITE_TITLE }}{% endblock %}
 
 {% block header %}
-<h2>{{ settings.SITE_TITLE }}</h2>
+  <h2>{{ settings.SITE_TITLE }}</h2>
 {% endblock %}
 
 {% block content %}
-
-<div class="row"><div class="large-5 columns large-centered"><a href="/"><img border="0" src="/static/logo.png" /></a></div></div>
-<div class="row">&nbsp;</div>
-<div class="large-9 columns">
-  <p style="font-size: 1.4em;">
-    {{settings.WELCOME_MESSAGE|safe}}
-  </p>
-  
-  <h3>Bulletin Board</h3>
-  <p>Check out the <a href="bulletin_board/">bulletin board</a>.</p>
-
-  {% if elections|length %}
-  <h3>Current Featured Elections</h3>
-  <p>
-    {% for election in elections %}
-    <div class="panel">
-      <a style="font-size: 1.4em;" href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a> by {{election.admin.display_html_small|safe}}<br />
-      {{election.description}}
+  <div class="row" style="margin-top: 20px;">
+    <div class="large-5 columns large-centered">
+      <a href="/"><img border="0" src="/static/logo.png" /></a>
     </div>
-    <br />
-    {% endfor %}
-  </p>
-  {% else %}
-  <h4>No featured elections at the moment!</h4>
-  {% endif %}
-  
-</div>
+  </div>
 
-<div class="large-3 columns" id="mystuff">
-<div class="row">&nbsp;</div>
-<div class="panel row">
-{% if user %}
-<!--<div class="row right">{{user.display_html_big|safe}}</div>-->
-{% if create_p %}
-<a class="small button" href="{% url helios.views.election_new %}">create election</a>
-<h5 class="subheader">Administration</h5>
-{% if elections_administered %}
-<ul>
-{% for election in elections_administered %}
-<li> <a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
-{% endfor %}
-</ul>
-{% else %}
-<em>none yet</em>
-{% endif %}
-<div class="row right">
-<a class="tiny button" href="{% url helios.views.elections_administered %}">see all</a>
-</div>
-<div class="row"></div>
-{% endif %}
+  <div class="row" style="margin-top: 20px;">
+    <div class="large-9 columns">
+      <p>{{settings.WELCOME_MESSAGE|safe}}</p>
 
-<h5 class="subheader">Recent Votes</h5>
-{% if elections_voted %}
-<ul>
-{% for election in elections_voted %}
-<li><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
-{% endfor %}
-</ul>
-{% else %}
-<em>none yet</em>
-{% endif %}
-<div class="row right"><a class="tiny button" href="{% url helios.views.elections_voted %}">see all</a></div>
-<div class="row"></div>
-{% else %}
-<h5>Log In to Start Voting</h5>
-{{login_box|safe}}
-{% endif %}
-<br /><br />
-</div>
+      <h3>Bulletin Board</h3>
+      <p>Check out the <a href="bulletin_board/">bulletin board</a>.</p>
 
+      {% if elections|length %}
+        <h3>Current Featured Elections</h3>
+        <p>
+          {% for election in elections %}
+            <div class="panel">
+              <a style="font-size: 1.4em;" href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a> by {{election.admin.display_html_small|safe}}<br />
+              {{election.description}}
+            </div>
+
+            <br />
+          {% endfor %}
+        </p>
+      {% else %}
+        <h4>No featured elections at the moment!</h4>
+      {% endif %}
+    </div>
+
+    <div class="large-3 columns panel">
+      {% if user %}
+        {% if create_p %}
+          <a class="small button" href="{% url helios.views.election_new %}">Create Election</a>
+
+          <h5 class="subheader">Administration</h5>
+          {% if elections_administered %}
+            <ul>
+              {% for election in elections_administered %}
+                <li> <a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <em>None</em>
+          {% endif %}
+
+          <a class="tiny button right" href="{% url helios.views.elections_administered %}">See All</a>
+
+          <div class="row"></div>
+        {% endif %}
+
+        <h5 class="subheader">Recent Votes</h5>
+        {% if elections_voted %}
+          <ul>
+            {% for election in elections_voted %}
+              <li><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <em>None</em>
+        {% endif %}
+
+        <a class="tiny button right" href="{% url helios.views.elections_voted %}">See All</a>
+      {% else %}
+        <h5>Log In to Start Voting</h5>
+        {{login_box|safe}}
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}

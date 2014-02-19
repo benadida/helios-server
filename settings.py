@@ -1,7 +1,6 @@
-
 import os, json
 
-# go through environment variables and override them
+# Go through environment variables and override them
 def get_from_env(var, default):
     if os.environ.has_key(var):
         return os.environ[var]
@@ -17,7 +16,7 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-# is this the master Helios web site?
+# Is this the master Helios web site?
 MASTER_HELIOS = (get_from_env('MASTER_HELIOS', '0') == '1')
 
 DATABASES = {
@@ -30,22 +29,25 @@ DATABASES = {
 
 SOUTH_DATABASE_ADAPTERS = {'default':'south.db.postgresql_psycopg2'}
 
-# override if we have an env variable
+# Override if we have an environment variable
 if get_from_env('DATABASE_URL', None):
     import dj_database_url
     DATABASES['default'] =  dj_database_url.config()
     DATABASES['default']['ENGINE'] = 'dbpool.db.backends.postgresql_psycopg2'
     DATABASES['default']['OPTIONS'] = {'MAX_CONNS': 1}
 
-# Local time zone for this installation. Choices can be found here:
-# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
-# although not all choices may be available on all operating systems.
+# Local time zone for this installation.
+#
+# Choices can be found here on
+# http://en.wikipedia.org/wiki/List_of_tz_zones_by_name,
+# lthough not all choices may be available on all operating systems.
+#
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
 TIME_ZONE = 'Europe/Brussels'
 
 # Language code for this installation. All choices can be found here:
-# http://www.i18nguy.com/unicode/language-identifiers.html
+# http://www.i18nguy.com/unicode/language-identifiers.html.
 LANGUAGE_CODE = 'en-us'
 
 SITE_ID = 1
@@ -55,17 +57,14 @@ SITE_ID = 1
 USE_I18N = True
 
 # Absolute path to the directory that holds media.
-# Example: "/home/media/media.lawrence.com/"
 MEDIA_ROOT = ''
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
-# Examples: "http://media.lawrence.com", "http://example.com/media/"
 MEDIA_URL = ''
 
-# URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
+# URL prefix for admin media such as CSS, JavaScript and images. Make sure to use a
 # trailing slash.
-# Examples: "http://foo.com/media/", "/media/".
 STATIC_URL = '/media/'
 
 # Make this unique, and don't share it with anybody.
@@ -76,12 +75,12 @@ if (get_from_env('SSL', '0') == '1'):
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
 
-    # tuned for Heroku
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    # Tuned for Heroku
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 SESSION_COOKIE_HTTPONLY = True
 
-# one week HSTS seems like a good balance for MITM prevention
+# One week HSTS seems like a good balance for MITM prevention
 if (get_from_env('HSTS', '0') == '1'):
     SECURE_HSTS_SECONDS = 3600 * 24 * 7
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
@@ -96,10 +95,7 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    # make all things SSL
-    #'sslify.middleware.SSLifyMiddleware',
-
-    # secure a bunch of things
+    # Secure a bunch of things
     'djangosecure.middleware.SecurityMiddleware',
 
     'django.middleware.common.CommonMiddleware',
@@ -116,17 +112,18 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-#    'django.contrib.helios_auth',
-#    'django.contrib.contenttypes',
     'djangosecure',
     'django.contrib.sessions',
     'django.contrib.sites',
-    ## needed for queues
+
+    # Needed for queues
     'djcelery',
     'kombu.transport.django',
-    ## needed for schema migration
+
+    # Needed for schema migration
     'south',
-    ## HELIOS stuff
+
+    # Helios
     'helios_auth',
     'helios',
     'server_ui',
@@ -137,12 +134,10 @@ INSTALLED_APPS = (
 ## HELIOS
 ##
 
+MEDIA_ROOT = ROOT_PATH + 'media/'
 
-MEDIA_ROOT = ROOT_PATH + "media/"
-
-# a relative path where voter upload files are stored
-VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
-
+# Relative path where voter upload files are stored
+VOTER_UPLOAD_REL_PATH = 'voters/%Y/%m/%d'
 
 # Change your email settings
 DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'helios@heliosvoting.org')
@@ -154,91 +149,87 @@ LOGOUT_ON_CONFIRMATION = True
 
 # The two hosts are here so the main site can be over plain HTTP
 # while the voting URLs are served over SSL.
-URL_HOST = get_from_env("URL_HOST", "http://localhost:8000")
+URL_HOST = get_from_env('URL_HOST', 'http://localhost:8000')
 
-# IMPORTANT: you should not change this setting once you've created
+# IMPORTANT
+# You should not change this setting once you've created
 # elections, as your elections' cast_url will then be incorrect.
-# SECURE_URL_HOST = "https://localhost:8443"
-SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", "http://localhost:8000")
+SECURE_URL_HOST = get_from_env('SECURE_URL_HOST', 'http://localhost:8000')
 
-# this additional host is used to iframe-isolate the social buttons,
+# This additional host is used to iframe-isolate the social buttons,
 # which usually involve hooking in remote JavaScript, which could be
 # a security issue. Plus, if there's a loading issue, it blocks the whole
 # page. Not cool.
-SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", "http://localhost:8000")
+SOCIALBUTTONS_URL_HOST = get_from_env('SOCIALBUTTONS_URL_HOST', 'http://localhost:8000')
 
-# election stuff
 SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Voting')
 
-# FOOTER links
+# Footer links
 FOOTER_LINKS = json.loads(get_from_env('FOOTER_LINKS', '[]'))
 FOOTER_LOGO_URL = get_from_env('FOOTER_LOGO_URL', None)
 
-WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', "This is the default message")
+WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', 'This is the default message')
 
 HELP_EMAIL_ADDRESS = get_from_env('HELP_EMAIL_ADDRESS', 'help@heliosvoting.org')
 
-AUTH_TEMPLATE_BASE = "server_ui/templates/base.html"
-HELIOS_TEMPLATE_BASE = "server_ui/templates/base.html"
+AUTH_TEMPLATE_BASE = 'server_ui/templates/base.html'
+HELIOS_TEMPLATE_BASE = 'server_ui/templates/base.html'
 HELIOS_ADMIN_ONLY = False
 HELIOS_VOTERS_UPLOAD = True
 HELIOS_VOTERS_EMAIL = True
 
-# are elections private by default?
+# Are elections private by default?
 HELIOS_PRIVATE_DEFAULT = False
 
-# authentication systems enabled
+# The authentication systems that should be enabled.
 #AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
-AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(",")
+AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(',')
 AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
 
-# facebook
+# Facebook
 FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID','')
 FACEBOOK_API_KEY = get_from_env('FACEBOOK_API_KEY','')
 FACEBOOK_API_SECRET = get_from_env('FACEBOOK_API_SECRET','')
 
-# twitter
+# Twitter
 TWITTER_API_KEY = ''
 TWITTER_API_SECRET = ''
 TWITTER_USER_TO_FOLLOW = 'heliosvoting'
-TWITTER_REASON_TO_FOLLOW = "we can direct-message you when the result has been computed in an election in which you participated"
+TWITTER_REASON_TO_FOLLOW = 'We can DM you when the result has been computed in an election in which you participated.'
 
-# the token for Helios to do direct messaging
-TWITTER_DM_TOKEN = {"oauth_token": "", "oauth_token_secret": "", "user_id": "", "screen_name": ""}
+# The token for Helios to do direct messaging.
+TWITTER_DM_TOKEN = {'oauth_token': '', 'oauth_token_secret': '', 'user_id': '', 'screen_name': ''}
 
 # LinkedIn
 LINKEDIN_API_KEY = ''
 LINKEDIN_API_SECRET = ''
 
-# CAS (for universities)
-CAS_USERNAME = get_from_env('CAS_USERNAME', "")
-CAS_PASSWORD = get_from_env('CAS_PASSWORD', "")
-CAS_ELIGIBILITY_URL = get_from_env('CAS_ELIGIBILITY_URL', "")
-CAS_ELIGIBILITY_REALM = get_from_env('CAS_ELIGIBILITY_REALM', "")
+# CAS
+CAS_USERNAME = get_from_env('CAS_USERNAME', '')
+CAS_PASSWORD = get_from_env('CAS_PASSWORD', '')
+CAS_ELIGIBILITY_URL = get_from_env('CAS_ELIGIBILITY_URL', '')
+CAS_ELIGIBILITY_REALM = get_from_env('CAS_ELIGIBILITY_REALM', '')
 
-# email server
+# Email
 EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
-EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
+EMAIL_PORT = int(get_from_env('EMAIL_PORT', '2525'))
 EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
 
-# set up logging
+# Logging
 import logging
 logging.basicConfig(
     level = logging.DEBUG,
     format = '%(asctime)s %(levelname)s %(message)s'
 )
 
-
-# set up django-celery
-# BROKER_BACKEND = "kombu.transport.DatabaseTransport"
-BROKER_URL = "django://"
+# django-celery
+BROKER_URL = 'django://'
 CELERY_RESULT_DBURI = DATABASES['default']
 import djcelery
 djcelery.setup_loader()
 
-
-# for testing
+# Testing
+# This effectively does CELERY_ALWAYS_EAGER = True
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
-# this effectively does CELERY_ALWAYS_EAGER = True
