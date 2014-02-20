@@ -30,6 +30,8 @@ class ElectionModuleBase(object):
     csv_result = True
     json_result = True
 
+    module_params = {}
+
     default_messages = {
         'description': _('Simple election with one or more questions'),
         'questions_title': _(u'Ballot'),
@@ -84,6 +86,8 @@ class ElectionModuleBase(object):
             'auto_append_answer': self.auto_append_answer,
             'count_empty_question': self.count_empty_question
         })
+        if self.module_params:
+            data.update(self.module_params)
         return data
 
 from zeus.election_modules.simple import *

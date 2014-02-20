@@ -1,3 +1,10 @@
+// Take the difference between one array and a number of other arrays.
+// Only the elements present in just the first array will remain.
+_.difference = function(array) {
+  var rest = Array.prototype.concat.apply(Array.prototype, Array.prototype.slice.call(arguments, 1));
+  return _.filter(array, function(value){ return !_.contains(rest, value); });
+};
+
 var BM = {};
 
 BM.get_module = function(m) {
@@ -411,8 +418,43 @@ BM.ModuleBase,
     });
     return map;
   },
+  
+  remaining_scores: function() {
+    return _.map(this.data, function(q, i) {
+      var remaining = [];
+      var scores_chosen = _.filter(_.values(this.score_map[i]), function(s) { return s });
+      scores_chosen = _.map(scores_chosen, function(s) { return s+"" });
+      var scores = q.scores;
+      remaining = _.difference(scores, scores_chosen).join(",");
+      return remaining;
+    }, this);
+  },
 
-  validate: function() { return true },
+  all_scores_chosen: function() {
+    return _.filter(this.remaining_scores(), function(i) { return i.length > 0 }).length === 0;
+  },
+
+  validate: function() {
+    if (!this.all_scores_chosen() && this.election.module_params.all_scores_required) {
+      var remaining = this.remaining_scores()[0];
+      return this.election.module_params.invalid_scores_selection.format(remaining);
+    }
+    return true;
+  },
+
+  update_submit_value: function() {
+    var choices = this.get_answer();
+    if (choices.length == 0) {
+      this.el.submit.val("Λευκό");
+    } else {
+      this.el.submit.val("Συνέχεια");
+    }
+    if (!this.all_scores_chosen() && this.get_answer().length > 0) {
+      this.el.submit.addClass("disabled").removeClass("success");
+    } else {
+      this.el.submit.removeClass("disabled").addClass("success");
+    }
+  },
 
   post_init_events: function() {
     $(".stv-candidates").removeClass("five").addClass("twelve");

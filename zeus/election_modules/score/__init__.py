@@ -22,6 +22,14 @@ class ScoreBallotElection(ElectionModuleBase):
     csv_result = False 
     pdf_result = False
 
+    module_params = {
+        'all_scores_required': True
+    }
+
+    messages = {
+        'invalid_scores_selection': _('Please assign the remaining choices: {0}')
+    }
+
     def questions_update_view(self, request, election, poll):
         from zeus.utils import poll_reverse
         from zeus.forms import ScoresForm, DEFAULT_ANSWERS_COUNT, \
