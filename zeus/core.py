@@ -1844,6 +1844,17 @@ def gamma_decode_to_range_ballot(encoded, candidates_and_points):
     return ballot
 
 
+def combine_candidates_and_points(candidates, points):
+      candidates_and_points = []
+      append = candidates_and_points.append
+      for c, p in izip_longest(candidates, points):
+          if c is not None:
+              append(c)
+          if p is not None:
+              append(str(p))
+      return candidates_and_points
+
+
 def gamma_count_range(encoded_list, candidates_and_points):
     candidates, pointlist = range_split_candidates(candidates_and_points)
     stats = {}
@@ -1861,6 +1872,7 @@ def gamma_count_range(encoded_list, candidates_and_points):
         totals[c] = 0
 
     for e in encoded_list:
+        assert isinstance(e, (int, long))
         if e > max_encoded:
             ballot = {'valid': False}
         else:
@@ -1869,7 +1881,14 @@ def gamma_count_range(encoded_list, candidates_and_points):
         if not ballot['valid']:
             continue
 
-        for candidate, points in ballot['candidates'].iteritems():
+        ballot_scores = ballot['candidates']
+
+        # enforce exhaustion of all choices
+        if ballot_scores and len(ballot_scores) != len(pointlist):
+            ballot['valid'] = False
+            continue
+
+        for candidate, points in ballot_scores.iteritems():
             assert candidate in candidates
             totals[candidate] += points
             detailed[candidate][points] += 1
