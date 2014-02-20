@@ -18,6 +18,7 @@ class ScoreBallotElection(ElectionModuleBase):
     auto_append_answer = True
     count_empty_question = False
     results_template = "election_modules/score/results.html"
+    manage_questions_title = _('Manage questions')
     csv_result = False 
     pdf_result = False
 

@@ -121,7 +121,7 @@ def make_intro(elements, styles, contents):
     elements.append(Spacer(1, 12))
 
 def make_totals(elements, styles, total_votes, blank_votes):
-    elements.append(Paragraph(escape(_("Total ballots:" + " %d" % total_votes)), styles['Zeus']))
+    elements.append(Paragraph(escape(_("Total ballots:") + " %d" % total_votes), styles['Zeus']))
     elements.append(Paragraph(escape(_("Blanks:") + " %d" % blank_votes), styles['Zeus']))
     elements.append(Spacer(1, 12))
 

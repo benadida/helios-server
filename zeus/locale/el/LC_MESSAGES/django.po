@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-17 14:50+0200\n"
+"POT-Creation-Date: 2014-02-20 17:17+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -230,23 +230,23 @@ msgstr "Σύνολο ψηφοδελτίων:"
 
 #: results_report.py:125
 msgid "Blanks:"
-msgstr "Λευκά"
+msgstr "Λευκά:"
 
 #: results_report.py:157
 msgid "%Y-%m-%d %H:%M"
 msgstr "%d/%m/%Y %H:%M"
 
+#: results_report.py:159
+msgid "Start:"
+msgstr "Έναρξη:"
+
 #: results_report.py:162
 msgid "End:"
-msgstr "Τέλος"
+msgstr "Τέλος:"
 
 #: results_report.py:165
 msgid "Extension:"
 msgstr "Παράταση:"
-
-#: results_report.py:159
-msgid "Start:"
-msgstr "Έναρξη:"
 
 #: tasks.py:103
 #, python-format
@@ -302,13 +302,14 @@ msgstr "Ψηφοφορία με συνδυασμούς"
 msgid "Score voting election"
 msgstr "Ψηφοφορία με βαθμολογία"
 
-#: election_modules/simple/__init__.py:21
-msgid "No questions set"
-msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"
-
+#: election_modules/score/__init__.py:21
 #: election_modules/simple/__init__.py:22
 msgid "Manage questions"
 msgstr "Διαχείριση ερωτήσεων"
+
+#: election_modules/simple/__init__.py:21
+msgid "No questions set"
+msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"
 
 #: templatetags/zeus_tags.py:21 templatetags/zeus_tags.py:158
 msgid "Are you sure ?"
