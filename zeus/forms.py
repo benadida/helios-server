@@ -240,6 +240,7 @@ class QuestionForm(QuestionBaseForm):
 
     def __init__(self, *args, **kwargs):
         super(QuestionForm, self).__init__(*args, **kwargs)
+        answers = self._answers
         max_choices = map(lambda x: (x,x), range(1, answers+1))
         min_choices = map(lambda x: (x,x), range(0, answers+1))
 
