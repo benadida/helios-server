@@ -556,7 +556,6 @@ class ZeusDjangoElection(ZeusCoreElection):
             entry = copy.copy(q)
             entry['results'] = SortedDict()
             scores = filter(lambda a: a[1].startswith("%s:" % q['question']), results['totals'])
-            scores = reversed(scores)
             for score, answer in scores:
                 qanswer = answer.replace("%s:" % q['question'], "")
                 entry['results'][qanswer] = {
