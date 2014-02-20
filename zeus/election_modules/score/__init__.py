@@ -72,7 +72,7 @@ class ScoreBallotElection(ElectionModuleBase):
         context = {
             'default_answers_count': DEFAULT_ANSWERS_COUNT,
             'formset': formset,
-            'max_questions_limit': MAX_QUESTIONS_LIMIT,
+            'max_questions_limit': 1,
             'election': election,
             'poll': poll,
             'module': self
