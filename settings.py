@@ -70,7 +70,7 @@ STATIC_URL = '/media/'
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_from_env('SECRET_KEY', '111111111111111111111111111')
 
-# Secure Stuff
+# Secure stuff
 if (get_from_env('SSL', '0') == '1'):
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
@@ -131,7 +131,7 @@ INSTALLED_APPS = (
 )
 
 ##
-## HELIOS
+## Helios
 ##
 
 MEDIA_ROOT = ROOT_PATH + 'media/'

@@ -1,42 +1,23 @@
 {% extends 'server_ui/templates/base.html' %}
 {% block title %}{{ settings.SITE_TITLE }}{% endblock %}
 
-{% block header %}
-{% endblock %}
-
 {% block content %}
+  <div class="large-12-columns">
+    <h2>Documentation</h2>
 
-<div class="large-12-columns">
+    <p>The Helios Voting technology is based on advanced peer-reviewed cryptographic techniques that enable your vote to remain secret while providing an intelligent ballot tracker to let you verify that your ballot was received and counted properly:</p>
 
-<div class="row"><h2>Documentation</h2></div>
+    <ul>
+      <li><a href="http://documentation.heliosvoting.org/">Technical documentation</a></li>
+      <li><a href="http://www.usenix.org/events/sec08/tech/full_papers/adida/adida.pdf">Original peer-reviewed paper (Usenix Security 2008)</a></li>
+      <li><a href="http://www.uclouvain.be/crypto/electionmonitor/default/about">Helios Election Monitor</a>, produced by the Universite Catholique de Louvain.</li>
+    </ul>
 
-<div class="row">
-
-<p>
-The Helios Voting technology is based on advanced peer-reviewed
-cryptographic techniques that enable your vote to remain secret while
-providing an intelligent ballot tracker to let you verify that your
-ballot was received and counted properly:
-</p>
-
-<ul>
-<li> <a href="http://documentation.heliosvoting.org/">technical documentation</a></li>
-<li> <a href="http://www.usenix.org/events/sec08/tech/full_papers/adida/adida.pdf">original peer-reviewed (Usenix Security 2008)</a></li>
-<li> <a href="http://www.uclouvain.be/crypto/electionmonitor/default/about">Helios Election Monitor</a>, produced by the Universite catholique de Louvain.</li>
-</ul>
-
-<p>
-Helios has been covered in the press:
-</p>
-
-<ul>
-<li> <a href="http://www.kcbs.com/bayareanews/Tracking-Votes-During-Elections/7161136">KCBS News Interview, May 2010</a></li>
-<li> <a href="http://harvardmagazine.com/2010/05/secret-ballots-verifiable-votes">Harvard Magazine, April 2010</a></li>
-<li> <a href="http://www.ynet.co.il/articles/0,7340,L-3720204,00.html">Ynet, Israeli Press, June 2009</a></li>
-
-
-</div>
-
-</div>
-
+    <p>Helios has been covered in the press:</p>
+    <ul>
+      <li><a href="http://www.kcbs.com/bayareanews/Tracking-Votes-During-Elections/7161136">KCBS News Interview, May 2010</a></li>
+      <li><a href="http://harvardmagazine.com/2010/05/secret-ballots-verifiable-votes">Harvard Magazine, April 2010</a></li>
+      <li><a href="http://www.ynet.co.il/articles/0,7340,L-3720204,00.html">Ynet, Israeli Press, June 2009</a></li>
+    </ul>
+  </div>
 {% endblock %}

@@ -1,86 +1,34 @@
 {% extends 'server_ui/templates/base.html' %}
-{% block title %}{{ settings.SITE_TITLE }}{% endblock %}
-
-{% block header %}
-{% endblock %}
+{% block title %}{{ settings.SITE_TITLE }}&mdash;About{% endblock %}
 
 {% block content %}
+  <div class="large-12-columns">
+    <h2>About Helios Voting</h2>
+    <p>Helios is a non-partisan organization led by <a href="http://ben.adida.net">Ben Adida</a>.</p>
 
-<div class="large-12-columns">
+    <h5>Code Contributors</h5>
+    <p>Ben Adida, Olivier de Marneffe, Olivier Pereira</p>
 
-<div class="row"><h2>About Helios Voting</h2></div>
+    <h5>Advisors</h5>
 
-<div class="row">
-<p>Helios is a non-partisan organization led by <a href="http://ben.adida.net">Ben Adida</a>.</p>
-</div>
+    <h6 class="subheader">Jim Adler</h6>
+    <p>Jim is a business executive, entrepreneur, and thought leader on big data, privacy, security, and voting systems. He’s founded companies, defined vision and strategy, led teams, developed technology, and built products.</p>
 
-<div class="row">&nbsp;</div>
+    <p>Currently, Jim is Vice President of Products at Metanautix, a big data analytics startup. He also serves on the The Department of Homeland Security (DHS) Data Privacy and Integrity Advisory Committee (DPIAC) providing advice at the request of the Secretary of Homeland Security and the DHS Chief Privacy Officer. [<a href="http://jimadler.me/about">more</a>]</p>
 
-<div class="row">
-<h5>Code Contributors</h5>
+    <h6 class="subheader">Lawrence Lessig</h6>
+    <p>Lawrence Lessig is the Director of the Edmond J. Safra Foundation Center for Ethics at Harvard University, and a Professor of Law at Harvard Law School. For much of his academic career, Lessig has focused on law and technology, especially as it affects copyright. His current academic work addresses the question of “institutional corruption” — roughly, influences within an economy of influence that weaken the effectiveness of an institution, or weaken public trust. His current work at the EJ Safra Lab oversees a 5 year research project addressing institutional corruption in a number of institutional contexts. [<a href="http://www.lessig.org/info/bio/">more</a>]</p>
 
-Ben Adida, Olivier de Marneffe, Olivier Pereira
-</div>
-<div class="row">&nbsp;</div>
-<div class="row">
-<h5>Advisors</h5>
-</div>
+    <h6 class="subheader">Josh Benaloh</h6>
+    <p>Dr. Benaloh is Senior Cryptographer at Microsoft Research and an elected director of the International Association for Cryptologic Research. He earned his S.B degree from the Massachusetts Institute of Technology and M.S., M.Phil., and Ph.D. degrees from Yale University where his 1987 doctoral dissertation, Verifiable Secret-Ballot Elections, introduced the use of homomorphic encryption to enable end-to-end verifiable election technologies. Dr. Benaloh’s numerious research publications in cryptography and voting have pioneered new tehnologies including the “cast or cancel” paradigm which brings voters into the verification process with minimal burden. He has served on the program committees of dozens of cryptography and election-related conferences and workshops and is a frequent speaker on the history, development, and mechanisms behind verifiable voting.</p>
 
-<div class="row"><h6 class="subheader">Jim Adler</h6>
-<p>
-Jim is a business executive, entrepreneur, and thought leader on big
-data, privacy, security, and voting systems. He’s founded companies,
-defined vision and strategy, led teams, developed technology, and
-built products.
-</p>
-<p>
-Currently, Jim is Vice President of Products at Metanautix, a big data
-analytics startup. He also serves on the The Department of Homeland
-Security (DHS) Data Privacy and Integrity Advisory Committee (DPIAC)
-providing advice at the request of the Secretary of Homeland Security
-and the DHS Chief Privacy Officer. [<a href="http://jimadler.me/about">more</a>]
-</p>
-</div>
+    <h6 class="subheader">Andy Neff</h6>
+    <p>Dr. Neff is the author of several ground-breaking contributions to the study of computer algorithms, specifically as they apply to voting protocols. At VoteHere, where he was CTO, Dr. Neff created the first ballot mixing and anonymization technique efficient enough for practical use, developed a new ballot representation which allows for a reduction in ballot size by several factors with privacy intact, and led the technical vision of the VoteHere election product. Dr. Neff regularly serves on the program committees of top voting conferences and holds a PhD in Mathematics from Princeton University.</p>
 
-<div class="row">&nbsp;</div>
+    <h6 class="subheader">Olivier Pereira</h6>
+    <p>Olivier Pereira is a research associate of the Belgian science foundation F.R.S.-FNRS and an associate professor at Université Catholique de Louvain. His research interests lie in the area of cryptography and distributed computing, addressing the issue of enabling people to jointly realize tasks in a secure way. He has been leading the development, integration and deployment of Helios in several large scale elections, and gave invited presentations and keynote talks about verifiable elections in a dozen of leading institutions around the world. He is a co-author of the Bevoting study on electronic voting systems produced for the Belgian Federal and Regional Administrations.</p>
 
-<div class="row"><h6 class="subheader">Lawrence Lessig</h6>
-<p>
-Lawrence Lessig is the Director of the Edmond J. Safra Foundation Center for Ethics at Harvard University, and a Professor of Law at Harvard Law School. For much of his academic career, Lessig has focused on law and technology, especially as it affects copyright. His current academic work addresses the question of “institutional corruption” — roughly, influences within an economy of influence that weaken the effectiveness of an institution, or weaken public trust. His current work at the EJ Safra Lab oversees a 5 year research project addressing institutional corruption in a number of institutional contexts. [<a href="http://www.lessig.org/info/bio/">more</a>]
-</p>
-</div>
-
-<div class="row">&nbsp;</div>
-
-<div class="row"><h6 class="subheader">Josh Benaloh</h6>
-<p>
-Dr. Benaloh is Senior Cryptographer at Microsoft Research and an elected director of the International Association for Cryptologic Research. He earned his S.B degree from the Massachusetts Institute of Technology and M.S., M.Phil., and Ph.D. degrees from Yale University where his 1987 doctoral dissertation, Verifiable Secret-Ballot Elections, introduced the use of homomorphic encryption to enable end-to-end verifiable election technologies. Dr. Benaloh’s numerious research publications in cryptography and voting have pioneered new tehnologies including the “cast or cancel” paradigm which brings voters into the verification process with minimal burden. He has served on the program committees of dozens of cryptography and election-related conferences and workshops and is a frequent speaker on the history, development, and mechanisms behind verifiable voting.
-</p>
-</div>
-
-<div class="row">&nbsp;</div>
-
-<div class="row"><h6 class="subheader">Andy Neff</h6>
-<p>
-Dr. Neff is the author of several ground-breaking contributions to the study of computer algorithms, specifically as they apply to voting protocols. At VoteHere, where he was CTO, Dr. Neff created the first ballot mixing and anonymization technique efficient enough for practical use, developed a new ballot representation which allows for a reduction in ballot size by several factors with privacy intact, and led the technical vision of the VoteHere election product. Dr. Neff regularly serves on the program committees of top voting conferences and holds a PhD in Mathematics from Princeton University.
-</p>
-</div>
-
-<div class="row">&nbsp;</div>
-
-<div class="row"><h6 class="subheader">Olivier Pereira</h6>
-<p>
-Olivier Pereira is a research associate of the Belgian science foundation F.R.S.-FNRS and an associate professor at Université catholique de Louvain. His research interests lie in the area of cryptography and distributed computing, addressing the issue of enabling people to jointly realize tasks in a secure way. He has been leading the development, integration and deployment of Helios in several large scale elections, and gave invited presentations and keynote talks about verifiable elections in a dozen of leading institutions around the world. He is a co-author of the Bevoting study on electronic voting systems produced for the Belgian Federal and Regional Administrations.
-</p>
-</div>
-
-<div class="row"><h6 class="subheader">Dan Wallach</h6>
-<p>
-Dan Wallach is an associate professor in the Department of Computer Science at Rice University in Houston, Texas and is the director of NSF’s ACCURATE (A Center for Correct, Usable, Reliable, Auditable and Transparent Elections). His research involves computer security and the issues of building secure and robust software systems for the Internet. He has testified about voting security issues before government bodies in the U.S., Mexico, and the European Union, has served as an expert witness in a number of voting technology lawsuits, and participated in California’s “top-to-bottom” audit of its voting systems.
-</p>
-</div>
-
-</div>
-
-
+    <h6 class="subheader">Dan Wallach</h6>
+    <p>Dan Wallach is an associate professor in the Department of Computer Science at Rice University in Houston, Texas and is the director of NSF’s ACCURATE (A Center for Correct, Usable, Reliable, Auditable and Transparent Elections). His research involves computer security and the issues of building secure and robust software systems for the Internet. He has testified about voting security issues before government bodies in the U.S., Mexico, and the European Union, has served as an expert witness in a number of voting technology lawsuits, and participated in California’s “top-to-bottom” audit of its voting systems.</p>
+  </div>
 {% endblock %}
