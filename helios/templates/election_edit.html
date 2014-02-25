@@ -1,22 +1,23 @@
 {% extends TEMPLATE_BASE %}
 
+{% load foundation %}
+
 {% block content %}
+  <h2 class="title">{{election.name}} &mdash; Update <small>[<a href="{% url helios.views.one_election_view election.uuid %}">cancel</a>]</small></h2>
 
-  <h2 class="title">{{election.name}} &mdash; Update <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">cancel</a>]</span></h2>
-  
-{% if error %}
-<p style="color: red;">
-    {{error}}
-</p>
-{% endif %}
-  
-  <form class="prettyform" action="" method="POST" id="edit_election_form">
-    <table class="pretty">
-     {{election_form.as_table}}
-     </table>
-  <div>
-  <label for="">&nbsp;</label><input type="submit" value="Update" id="update_button" />
-  </div>
+  {% if error %}
+    <p style="color: red;">
+      {{error}}
+    </p>
+  {% endif %}
+
+  <form method="POST" id="create_election_form">
+    {{ election_form|foundationinline }}
+
+    <div class="row">
+      <div class="large-9 large-offset-3 columns">
+        <input type="submit" class="small button" value="Update" id="update_button" />
+      </div>
+    </div>
   </form>
-
 {% endblock %}

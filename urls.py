@@ -18,5 +18,4 @@ urlpatterns = patterns(
 
     (r'^', include('server_ui.urls')),
     (r'^bulletin_board/', include('bulletin_board.urls')),
-
-    )
+)

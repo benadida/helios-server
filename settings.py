@@ -123,6 +123,9 @@ INSTALLED_APPS = (
     # Needed for schema migration
     'south',
 
+    # Foundation forms
+    'foundationform',
+
     # Helios
     'helios_auth',
     'helios',
@@ -168,7 +171,7 @@ SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Voting')
 FOOTER_LINKS = json.loads(get_from_env('FOOTER_LINKS', '[]'))
 FOOTER_LOGO_URL = get_from_env('FOOTER_LOGO_URL', None)
 
-WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', 'This is the default message')
+WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', 'This is the default message.')
 
 HELP_EMAIL_ADDRESS = get_from_env('HELP_EMAIL_ADDRESS', 'help@heliosvoting.org')
 

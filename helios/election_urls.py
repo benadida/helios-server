@@ -88,5 +88,4 @@ urlpatterns = patterns('',
     (r'^/ballots/$', ballot_list),
     (r'^/ballots/(?P<voter_uuid>[^/]+)/all$', voter_votes),
     (r'^/ballots/(?P<voter_uuid>[^/]+)/last$', voter_last_vote),
-
 )

@@ -56,6 +56,11 @@ html, body {
   height: 2.5em;
 }
 
+input[type="checkbox"] {
+  margin: 10px 0 0 0;
+}
+
 select {
   width: auto;
+  margin: 7px 0 0 0;
 }
