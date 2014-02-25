@@ -1,55 +1,65 @@
 {% extends TEMPLATE_BASE %}
-
 {% block title %}{{election.name}}{% endblock %}
+
 {% block content %}
-<div style="float: left; margin-right: 50px;">
-  <h3 class="title">{{ election.name }}
-{% if admin_p %}
-{% if not election.frozen_at %}
-<small><a class="small button" href="{% url helios.views.one_election_edit election.uuid %}">edit</a></small>
-{% endif %}
-{% endif %}</h3>
-<p style="padding-top:0px; margin-top:0px">
-<em>{% if election.private_p %}private{%else%}public{% endif %}</em> {{ election.election_type }} created by <u><b>{{election.admin.display_html_small|safe}}</b></u>
-{% if election.is_archived %}
-	[archived]
-{% endif %}
-{% if admin_p %}
-&nbsp;{% if election.is_archived %}<a class="small button" href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=0">unarchive it</a>{% else %}<a class="small button" href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=1">archive it</a>{% endif %}
-{% endif %}
-<br />
-{% if admin_p %}
-	{% if not election.private_p %}
-		{% if election.featured_p %}
-			this {{election.election_type}} is featured on the front page.
-			{% if can_feature_p %}
-				[<a href="{% url helios.views.one_election_set_featured election.uuid %}?featured_p=0">unfeature it</a>]
-			{% endif %}
-			{% else %}
-			this {{election.election_type}} is <u>not</u> featured on the front page.
-			{% if can_feature_p %}
-				[<a href="{% url helios.views.one_election_set_featured election.uuid %}?featured_p=1">feature it</a>]
-			{% endif %}
-		{% endif %}
-	{% endif %}
-{% endif %}
-</p>
+	<div class="row">
+		<div class="large-12 columns">
+			<h2 class="title">
+				{{ election.name }}
+				{% if admin_p %}
+					{% if not election.frozen_at %}
+						<small>[<a href="{% url helios.views.one_election_edit election.uuid %}">Edit</a>]</small>
+					{% endif %}
+				{% endif %}
 
-</div>
+				{% if admin_p %}
+					{% if not election.private_p %}
+						{% if can_feature_p %}
+							{% if election.featured_p %}
+								<small>[<a href="{% url helios.views.one_election_set_featured election.uuid %}?featured_p=0">Unfeature It</a>]</small>
+							{% else %}
+								<small>[<a href="{% url helios.views.one_election_set_featured election.uuid %}?featured_p=1">Feature It</a>]</small>
+							{% endif %}
+						{% endif %}
+					{% endif %}
+				{% endif %}
 
+				{% if admin_p %}
+					{% if election.is_archived %}
+						<small>[<a href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=0">Unarchive It</a>]</small>
+					{% else %}
+						<small>[<a href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=1">Archive It</a>]</small>
+					{% endif %}
+				{% endif %}
+			</h2>
 
-<br /><br />
-{% if socialbuttons_url %}
-	<iframe src="{{socialbuttons_url}}" frameborder="0" border="0" style="width: 300px; height:100px;"></iframe>
-{% endif %}
+			<div class="row">
+				<div class="large-9 columns">
+					<dl>
+						<dt>Created By</dt>
+						<dd>{{election.admin.display_html_small|safe}}</dd>
 
+						<dt>Description</dt>
+						<dd>{{election.description}}</dd>
+					</dl>
+				</div>
 
-<br clear="left" />
+				<div class="large-3 columns">
+					{% if socialbuttons_url %}
+						<iframe src="{{socialbuttons_url}}" frameborder="0" border="0" style="width: 300px; height:100px;"></iframe>
+					{% endif %}
 
-<div style="margin-bottom: 25px;margin-left: 15px; border-left: 1px solid #aaa; padding-left: 5px; font-size:1.3em; ">
-{{election.description}}
-</div>
+					<dl>
+						<dt>Private</dt>
+						<dd>{% if election.private_p %}Yes{% else %}No{% endif %}</dd>
 
+						<dt>Featured</dt>
+						<dd>{% if election.featured_p %}Yes{% else %}No{% endif %}</dd>
+					</dl>
+				</div>
+			</div>
+		</div>
+	</div>
 
 <p align="center" style="font-size: 1.5em;">
 <a href="{% url helios.views.one_election_questions election.uuid %}">questions ({% if election.questions %}{{election.questions|length}}{% else %}0{% endif %})</a>

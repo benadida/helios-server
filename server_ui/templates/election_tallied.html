@@ -1,10 +1,14 @@
 {% extends 'server_ui/templates/base.html' %}
 
 {% block content %}
-  <h2 class="title">Election {{election.name}} Already Tallied</h2>
+  <div class="row">
+    <div class="large-12-columns">
+      <h2 class="title">Election {{election.name}} Already Tallied</h2>
 
-  <p>This election has already been tallied (or at least the tally has begun), so you can no longer cast a vote.</p>
-  <p>
-    <a href="{% url helios.views.one_election_view election.uuid %}">View the Election</a>
-  </p>
+      <p>This election has already been tallied (or at least the tally has begun), so you can no longer cast a vote.</p>
+      <p>
+        <a href="{% url helios.views.one_election_view election.uuid %}">View the Election</a>
+      </p>
+    </div>
+  </div>
 {% endblock %}

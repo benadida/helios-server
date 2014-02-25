@@ -49,18 +49,17 @@ html, body {
   min-height: 100%;
   height: auto !important;
   height: 100%;
-  margin: 0 auto -2.5em;
+  margin: 0 auto -2em;
 }
 
 .footer, .push {
-  height: 2.5em;
+  height: 2em;
 }
 
 input[type="checkbox"] {
-  margin: 10px 0 0 0;
+  margin: 15px 0 0 0;
 }
 
 select {
   width: auto;
-  margin: 7px 0 0 0;
 }
