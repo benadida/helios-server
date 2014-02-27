@@ -337,27 +337,27 @@ class Election(HeliosModel):
     if self.questions == None or len(self.questions) == 0:
       issues.append(
         {'type': 'questions',
-         'action': "add questions to the ballot"}
+         'action': "Add questions to the ballot."}
         )
   
     trustees = Trustee.get_by_election(self)
     if len(trustees) == 0:
       issues.append({
           'type': 'trustees',
-          'action': "add at least one trustee"
+          'action': "Add at least one trustee."
           })
 
     for t in trustees:
       if t.public_key == None:
         issues.append({
             'type': 'trustee keypairs',
-            'action': 'have trustee %s generate a keypair' % t.name
+            'action': 'Have trustee %s generate a keypair.' % t.name
             })
 
     if self.voter_set.count() == 0 and not self.openreg:
       issues.append({
           "type" : "voters",
-          "action" : 'enter your voter list (or open registration to the public)'
+          "action" : 'Enter your voter list (or open registration to the public).'
           })
 
     return issues    
@@ -963,13 +963,13 @@ class VoterFile(models.Model):
     num_voters = 0
     new_voters = []
     for voter in self.itervoters():
-      num_voters += 1
-    
       # does voter for this user already exist
       existing_voter = Voter.get_by_election_and_voter_id(election, voter['voter_id'])
     
       # create the voter
       if not existing_voter:
+        num_voters += 1
+
         voter_uuid = str(uuid.uuid4())
         existing_voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter['voter_id'],
                       voter_name = voter['name'], voter_email = voter['email'], election = election)

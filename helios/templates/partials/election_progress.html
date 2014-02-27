@@ -1,0 +1,18 @@
+<div class="row">
+    <div class="large-12 columns">
+      <ul class="breadcrumbs">
+        <li {% if current == "create" %}class="current"{% else %}class="unavailable"{% endif %}><a href="{% url helios.views.election_new %}">Create</a></li>
+
+        {% if uuid %}
+          {% if use_threshold %}
+          {% else %}
+            <li {% if current == "questions" %}class="current"{% endif %}><a href="{% url helios.views.one_election_questions uuid %}">Questions</a></li>
+          {% endif %}
+
+          <li {% if current == "view" %}class="current"{% endif %}><a href="{% url helios.views.one_election_view uuid %}">View</a></li>
+        {% else %}
+          <li {% if current == "view" %}class="current"{% else %}class="unavailable"{% endif %}>View</li>
+        {% endif %}
+      </ul>
+    </div>
+</div>

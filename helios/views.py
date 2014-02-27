@@ -1359,16 +1359,17 @@ def voters_list_pretty(request, election):
     else:
       voters = voters.filter(voter_name__icontains = q)
 
-  voter_paginator = Paginator(voters, limit)
-  voters_page = voter_paginator.page(page)
-
-  total_voters = voter_paginator.count
+  voters_paginator = Paginator(voters, limit)
+  voters_page = voters_paginator.page(page)
     
   return render_template(request, 'voters_list', 
-                         {'election': election, 'voters_page': voters_page,
-                          'voters': voters_page.object_list, 'admin_p': admin_p, 
+                         {'election': election, 
+                          'voters_paginator': voters_paginator,
+                          'voters_page': voters_page,
+                          'voters': voters_page.object_list,
+                          'admin_p': admin_p, 
                           'email_voters': helios.VOTERS_EMAIL,
-                          'limit': limit, 'total_voters': total_voters,
+                          'limit': limit,
                           'upload_p': helios.VOTERS_UPLOAD, 'q' : q,
                           'voter_files': voter_files,
                           'categories': categories,
@@ -1446,7 +1447,7 @@ def voters_upload(request, election):
 
         return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters})
       else:
-        return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_upload, args=[election.uuid]), urllib.urlencode({'e':'no voter file specified, try again'})))
+        return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_upload, args=[election.uuid]), urllib.urlencode({'e':'No voter file specified, please try again.'})))
 
 @election_admin()
 def voters_upload_cancel(request, election):

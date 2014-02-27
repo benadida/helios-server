@@ -4,8 +4,10 @@
 {% load foundation %}
 
 {% block content %}
+  {% include "partials/election_progress.html" with current="create" %}
+
   <div class="row">
-    <div class="large-12-columns">
+    <div class="large-12 columns">
       <h2 class="title">Create a New Election</h2>
 
       {% if error %}

@@ -1,16 +1,3 @@
-table.pretty {
-  margin: 0.5em 0.5em 0.5em 0.5em;
-  background: whitesmoke;
-  border-collapse: collapse;
-  width: 100%;
-}
-
-table.pretty th, td {
-  border: 1px silver solid;
-  padding: 0.3em;
-  vertical-align: top;
-}
-
 .highlight-box {
   background:#eee;
   padding: 10px;
@@ -62,4 +49,20 @@ input[type="checkbox"] {
 
 select {
   width: auto;
+}
+
+.breadcrumbs > *:before {
+  content: "/";
+}
+
+.alert-box b {
+  padding-right: 5px;
+}
+
+.panel .button.no-margin {
+  margin-bottom: 0;
+}
+
+table {
+  width: 100%;
 }

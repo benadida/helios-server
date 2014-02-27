@@ -2,6 +2,8 @@
 {% block title %}{{election.name}}{% endblock %}
 
 {% block content %}
+	{% include "partials/election_progress.html" with current="view" uuid=election.uuid %}
+
 	<div class="row">
 		<div class="large-12 columns">
 			<h2 class="title">
@@ -34,16 +36,6 @@
 			</h2>
 
 			<div class="row">
-				<div class="large-9 columns">
-					<dl>
-						<dt>Created By</dt>
-						<dd>{{election.admin.display_html_small|safe}}</dd>
-
-						<dt>Description</dt>
-						<dd>{{election.description}}</dd>
-					</dl>
-				</div>
-
 				<div class="large-3 columns">
 					{% if socialbuttons_url %}
 						<iframe src="{{socialbuttons_url}}" frameborder="0" border="0" style="width: 300px; height:100px;"></iframe>
@@ -57,7 +49,135 @@
 						<dd>{% if election.featured_p %}Yes{% else %}No{% endif %}</dd>
 					</dl>
 				</div>
+
+				<div class="large-9 columns">
+					<dl>
+						<dt>Created By</dt>
+						<dd>{{election.admin.display_html_small|safe}}</dd>
+
+						{% if election.description %}
+							<dt>Description</dt>
+							<dd>{{election.description}}</dd>
+						{% endif %}
+					</dl>
+				</div>
 			</div>
+
+			{% if admin_p %}
+				<div class="row">
+					<div class="large-12 columns">
+						<div data-alert class="alert-box">
+					  	<b>Next</b>
+
+				  		{% if election.use_threshold %}
+								{% if not election.encrypted_shares_uploaded %}
+									{% if not election.frozen_trustee_list %}
+										Add trustees from the communication keys list or add more communication keys.
+									{% else %}
+										Wait for the trustees to generate the encrypted shares.
+									{% endif %}
+								{% else %}
+									{% if not election.result %}
+										{% if not election.frozen_at %}
+											{% if election.issues_before_freeze %}
+												{% if election.issues_before_freeze|length > 1 %}
+													{% for issue in election.issues_before_freeze %}
+														{{forloop.counter}}. {{issue.action}}{% if not forloop.last %}<span style="padding-left: 10px"></span>{% endif %}
+													{% endfor %}
+												{% else %}
+													{{issue.action}}
+												{% endif %}
+											{% else %}
+												<a href="{% url helios.views.one_election_freeze election.uuid %}">Freeze ballot and open election.</a>
+												{% if election.voting_starts_at %}
+													Once you do this, the election will be ready for voting and will open automatically at {{election.voting_starts_at}}, as per your settings.
+												{% else %}
+													Once you do this, the election will be immediately open for voting.
+												{% endif %}
+											{% endif %}
+										{% else %}
+											{% if not election.encrypted_tally %}
+												{% if election.tallying_started_at %}
+													Tally computation is under way. Reload this page in a couple of minutes.
+												{% else %}
+													<a href="{% url helios.views.one_election_compute_tally election.uuid %}">Compute encrypted tally.</a>
+													The encrypted votes will be combined into an encrypted tally. Once this is done, trustees will be asked to provide their share of the decryption.
+												{% endif %}
+											{% else %}
+												{% if election.ready_for_decryption_combination %}
+													<a href="{% url helios.views.combine_decryptions election.uuid %}">
+														{% ifequal election.num_trustees 1 %}
+															Release results.
+														{% else %}
+															Combine trustee decryptions and release results.
+														{% endifequal %}
+													</a>
+
+													{% ifequal election.num_trustees 1 %}
+														The result is released and all voters are notified.
+													{% else %}
+														The decryption shares from the trustees are combined and the tally is decrypted. Once you do this, the tally will be immediately available for all to see, and all voters will be notified that the tally is ready.
+													{% endifequal %}
+												{% else %}
+													<a href="{% url helios.views.list_trustees_view election.uuid %}">List of trustees (for decryption).</a>
+												{% endif %}
+											{% endif %}
+										{% endif %}
+									{% endif %}
+								{% endif %}
+							{% else %}
+								{% if not election.result %}
+									{% if not election.frozen_at %}
+										{% if election.issues_before_freeze %}
+											{% if election.issues_before_freeze|length > 1 %}
+												{% for issue in election.issues_before_freeze %}
+													{{forloop.counter}}. {{issue.action}}{% if not forloop.last %}<span style="padding-left: 10px"></span>{% endif %}
+												{% endfor %}
+											{% else %}
+												{{issue.action}}
+											{% endif %}
+										{% else %}
+											<a href="{% url helios.views.one_election_freeze election.uuid %}">Freeze ballot and open election.</a>
+											{% if election.voting_starts_at %}
+												Once you do this, the election will be ready for voting and will open automatically at {{election.voting_starts_at}}, as per your settings.
+											{% else %}
+												Once you do this, the election will be immediately open for voting.
+											{% endif %}
+										{% endif %}
+									{% else %}
+										{% if not election.encrypted_tally %}
+											{% if election.tallying_started_at %}
+												Tally computation is under way. Reload this page in a couple of minutes.
+											{% else %}
+												<a href="{% url helios.views.one_election_compute_tally election.uuid %}">Compute encrypted tally.</a>
+												The encrypted votes will be combined into an encrypted tally. Once this is done, trustees will be asked to provide their share of the decryption.
+											{% endif %}
+										{% else %}
+											{% if election.ready_for_decryption_combination %}
+												<a href="{% url helios.views.combine_decryptions election.uuid %}">
+													{% ifequal election.num_trustees 1 %}
+														Release results.
+													{% else %}
+														Combine trustee decryptions and release results.
+													{% endifequal %}
+												</a>
+
+												{% ifequal election.num_trustees 1 %}
+													The result is released and all voters are notified.
+												{% else %}
+													The decryption shares from the trustees are combined and the tally is decrypted. Once you do this, the tally will be immediately available for all to see, and all voters will be notified that the tally is ready.
+												{% endifequal %}
+											{% else %}
+												<a href="{% url helios.views.list_trustees_view election.uuid %}">List of trustees (for decryption).</a>
+											{% endif %}
+										{% endif %}
+									{% endif %}
+								{% endif %}
+							{% endif %}
+						</div>
+					</div>
+				</div>
+			{% endif %}
 		</div>
 	</div>
 
@@ -72,9 +192,9 @@
 {% if admin_p %}
 	{% if election.frozen_p %}
 		<div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">
-		<a href="#" onclick="$('#badgebody').slideToggle(250);">Embed an Election Badge</a>
-		<div id="badgebody" style="display:none;">
-		<br />
+			<a href="#" onclick="$('#badgebody').slideToggle(250);">Embed an Election Badge</a>
+				<div id="badgebody" style="display:none;">
+				<br />
 		<form action="#">
 		<textarea cols="90" rows="4" wrap="soft">&lt;iframe src="{{election_badge_url}}" frameborder="0" style="border: 1px solid black" height="75" width="200"&gt;
 		&lt;/iframe&gt;</textarea><br />
@@ -83,163 +203,7 @@
 		</div>
 		</div>
 	{% endif %}
-	<p>
-	
-	{% if election.use_threshold %}
-		<!-- WHEN THRESHOLD IS USED -->
-		<b>Next Step:</b>
-		<span style="font-size: 1.3em;">
-		{% if not election.encrypted_shares_uploaded %}
-			{% if not election.frozen_trustee_list %}
-				Add trustees from the communication keys list or add more communication keys.
-			{% else %}
-				Wait for the trustees to generate the encrypted shares.
-			{% endif %}
-		{% else %}
-			
-			{% if election.result %}
-			
-				<!-- election complete, no next step -->
-			
-			{% else %}
-				<span style="font-size: 1.3em;">
-				{% if not election.frozen_at %}
-					{% if election.issues_before_freeze %}
-						{% for issue in election.issues_before_freeze %}
-						{{issue.action}}{% if forloop.last %}{% else %}, and{% endif %}<br />
-						{% endfor %}
-					{% else %}
-						<a href="{% url helios.views.one_election_freeze election.uuid %}">freeze ballot and open election.</a>
-						<br />
-						{% if election.voting_starts_at %}
-							once you do this, the election will be ready for voting and will open automatically<br />
-							at {{election.voting_starts_at}}, as per your settings.
-							{% else %}
-							once you do this, the election will be immediately open for voting.
-						{% endif %}
-					{% endif %}
-				
-				{% else %}
-					
-					{% if not election.encrypted_tally %}
-						{% if election.tallying_started_at %}
-							Tally computation is under way.<br />
-							Reload this page in a couple of minutes.
-						{% else %}
-							<a href="{% url helios.views.one_election_compute_tally election.uuid %}">compute encrypted tally</a><br />
-							The encrypted votes will be combined into an encrypted tally. Once this is done,<br />
-							trustees will be asked to provide their share of the decryption.
-						{% endif %}
-					{% else %}
-						
-						{% if election.ready_for_decryption_combination %}
-							<a href="{% url helios.views.combine_decryptions election.uuid %}">
-							{% if election.num_trustees == 1 %}
-								release results
-							{% else %}
-								combine trustee decryptions and release results
-							{% endif %}
-							</a><br />
-							{% if election.num_trustees == 1 %}
-								The result is released and all voters are notified.
-							{% else %}
-								The decryption shares from the trustees are combined and the tally is decrypted.<br />
-								Once you do this, the tally will be immediately available for all to see, and
-								all voters will be notified that the tally is ready.
-							{% endif %}
-						{% else %}
-							<a href="{% url helios.views.list_trustees_view election.uuid %}">trustees (for decryption)</a>
-						{% endif %}
-					
-					{% endif %}
-				
-				{% endif %}
-				</span>
-			
-			{% endif %}
-			
-			</p>
-		
-		{% endif %}
-		
-		<br /><br />
-	
-	
-	
-	<!-- WHEN NO THRESHOLD IS USED -->
-	
-	{% else %}
-	
-	
-		{% if election.result %}
-		
-			<!-- election complete, no next step -->
-		
-		{% else %}
-			<b>Next Step:</b>
-			<span style="font-size: 1.3em;">
-			{% if not election.frozen_at %}
-				{% if election.issues_before_freeze %}
-					{% for issue in election.issues_before_freeze %}
-					{{issue.action}}{% if forloop.last %}{% else %}, and{% endif %}<br />
-					{% endfor %}
-				{% else %}
-					<a href="{% url helios.views.one_election_freeze election.uuid %}">freeze ballot and open election.</a>
-					<br />
-					{% if election.voting_starts_at %}
-						once you do this, the election will be ready for voting and will open automatically<br />
-						at {{election.voting_starts_at}}, as per your settings.
-					{% else %}
-						once you do this, the election will be immediately open for voting.
-					{% endif %}
-				{% endif %}
-			
-			{% else %}
-			
-				{% if not election.encrypted_tally %}
-					{% if election.tallying_started_at %}
-						Tally computation is under way.<br />
-						Reload this page in a couple of minutes.
-					{% else %}
-						<a href="{% url helios.views.one_election_compute_tally election.uuid %}">compute encrypted tally</a><br />
-						The encrypted votes will be combined into an encrypted tally. Once this is done,<br />
-						trustees will be asked to provide their share of the decryption.
-					{% endif %}
-				{% else %}
-					
-					{% if election.ready_for_decryption_combination %}
-						<a href="{% url helios.views.combine_decryptions election.uuid %}">
-						{% if election.num_trustees == 1 %}
-							release results
-						{% else %}
-							combine trustee decryptions and release results
-						{% endif %}
-						</a><br />
-						{% if election.num_trustees == 1 %}
-							The result is released and all voters are notified.
-						{% else %}
-							The decryption shares from the trustees are combined and the tally is decrypted.<br />
-							Once you do this, the tally will be immediately available for all to see, and
-							all voters will be notified that the tally is ready.
-						{% endif %}
-					{% else %}
-						<a href="{% url helios.views.list_trustees_view election.uuid %}">trustees (for decryption)</a>
-					{% endif %}
-				
-				{% endif %}
-			
-			{% endif %}
-			</span>
-		
-		{% endif %}
-		
-		</p>
-	
-	{% endif %}
-	<!-- END NO THRESHOLD -->
-	
-{% endif %} <!--if admin_p-->	
-<br /><br />
+{% endif %}
 
 {% if election.result %}
 	<span class="highlight-box round">

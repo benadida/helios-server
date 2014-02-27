@@ -1,146 +1,201 @@
 {% extends TEMPLATE_BASE %}
+{% block title %}Voters and Ballot Tracking Center for {{election.name}}{% endblock %}
 
-{% block title %}Voters &amp; Ballot Tracking Center for {{election.name}}{% endblock %}
 {% block content %}
-  <h3 class="title">{{election.name}} &mdash; Voters and Ballot Tracking Center <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h3>
+  <div class="row">
+    <div class="large-12 columns">
+      <h2 class="title">
+        {{election.name}}&mdash;Voters and Ballot Tracking Center <small>[<a href="{% url helios.views.one_election_view election.uuid %}">Back</a>]</small>
+      </h2>
 
-<p>
-<b>Who can vote?</b>
-{% if election.openreg %}
-{{election.pretty_eligibility|safe}}
-{% else %}
-<em>Only the voters listed here</em>.
-{% endif %}
-</p>
+      <div data-alert class="alert-box info">
+        <b>Who can vote?</b>
 
-{% if admin_p and not election.frozen_at %}
-{% if election.private_p %}
-<em>Your election is marked private, which means you cannot open registration up more widely</em>.<br />
-{% else %}
-You can change this setting:
-<form method="post" action="{% url helios.views.voters_eligibility election.uuid %}">
-<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-<input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> anyone can vote<br />
-<input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> only voters listed explicitly below can vote<br />
-{% if categories %}
-<input type="radio" name="eligibility" value="limitedreg" {% if election.eligibility %}CHECKED{% endif %} /> only voters who are members of 
-<select name="category_id">
-{% for category in categories %}
-<option value="{{category.id}}" {% if eligibility_category_id == category.id %}SELECTED{% endif %}> {{category.name}}</option>
-{% endfor %}
-</select>
-<br />
-{% endif %}
-<input type="submit" value="update" />
-</form>
-{% endif %}
-{% endif %}
+        {% if election.openreg %}
+          {{election.pretty_eligibility|safe}}
+        {% else %}
+          Only the voters listed here.
+        {% endif %}
+      </div>
 
-{% if email_voters and election.frozen_at and admin_p %}
-<p><a class="button" href="{% url helios.views.voters_email election.uuid %}">email voters</a></p>
-{% endif %}
+      <div class="panel">
+        {% if admin_p and not election.frozen_at %}
+          {% if election.private_p %}
+            <h5>Your election is marked private, which means you cannot open registration up more widely.</h5>
+          {% else %}
+            <form method="post" action="{% url helios.views.voters_eligibility election.uuid %}">
+              <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 
-{% if election.num_voters > 20 %}
-<p>
-{% if q %}
-<p><em>searching for <u>{{q}}</u>.</em> [<a href="?">clear search</a>]</p>
-{% else %}
-<form method="get" action="{% url helios.views.voters_list_pretty election.uuid %}"><b>search</b>: <input type="text" name="q" /> <input type="submit" value="search" /></form>
-{% endif %}
-</p>
-{% endif %}
+              <div class="row">
+                <div class="large-12 columns">
+                  <h5>You can change this setting.</h5>
 
-{% if admin_p %}
-<!-- Add a Voter: WORK HERE-->
-{% if upload_p and not election.openreg %}
-<p>
-<a class="button" href="{% url helios.views.voters_upload election_uuid=election.uuid %}">bulk upload voters</a>
-</p>
+                  <input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}checked{% endif %} id="openreg" />
+                  <label for="openreg">Anyone can vote</label>
 
-{% if voter_files %}
-Prior Bulk Uploads:
-<ul>
-{% for vf in voter_files %}
-<li>
-{% if vf.voter_file %}
-{{vf.voter_file.size}}
-{% else %}
-{{vf.voter_file_content|length}}
-{% endif %}
- bytes, at {{vf.uploaded_at}}:
-{% if vf.processing_finished_at %}
-<em>done processing: {{vf.num_voters}} voters loaded</em>
-{% else %}
+                  <input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}checked{% endif %} id="closedreg" />
+                  <label for="closedreg">Only voters listed explicitly below can vote</label>
 
-{% if vf.processing_started_at %}
-<em>currently processing</em>
-{% else %}
-<em>not yet processed</em>
-{% endif %}
+                  {% if categories %}
+                    <input type="radio" name="eligibility" value="limitedreg" {% if election.eligibility %}checked{% endif %} id="limitedreg" />
+                    <label for="limitedreg">
+                      Only voters who are members of
+                      <select name="category_id" style="margin-left: 4px;">
+                        {% for category in categories %}
+                          <option value="{{category.id}}" {% if eligibility_category_id == category.id %}selected{% endif %}>{{category.name}}</option>
+                        {% endfor %}
+                      </select>
+                    </label>
+                  {% endif %}
+                </div>
+              </div>
 
-{% endif %}
-</li>
-{% endfor %}
-</ul>
-{% endif %}
-{% endif %}
-{% endif %}
+              <input type="submit" class="tiny button no-margin" value="Update" />
+            </form>
+          {% endif %}
+        {% endif %}
+      </div>
 
-{% if voters %}
+      {% if admin_p %}
+        {% if upload_p and not election.openreg %}
+          <h3 class="title">Voters</h3>
 
-<p>
-<b>
-{% if election.num_cast_votes %}
-{{election.num_cast_votes}} cast vote{% ifequal election.num_cast_votes 1 %}{% else %}s{% endifequal %}
-{% else %}
-no votes yet
-{% endif %}
-</b>
-</p>
+          <a class="button" href="{% url helios.views.voters_upload election_uuid=election.uuid %}">Bulk Upload Voters</a>
 
-{% if voters_page.has_previous %}
-<a href="./list?page={{voters_page.previous_page_number}}&limit={{limit}}&q={{q|urlencode}}">previous {{limit}}</a> &nbsp;&nbsp;
-{% endif %}
+          {% if voter_files %}
+            <h5>Prior Bulk Uploads</h5>
 
+            <table>
+              <thead>
+                <tr>
+                  <td>Date</td>
+                  <td>Size (Bytes)</td>
+                  <td>Processing Status</td>
+                  <td>New Voters</td>
+                </tr>
+              </thead>
 
-Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voters}})&nbsp;&nbsp;
+              <tbody>
+                {% for vf in voter_files %}
+                  <tr>
+                    <td>{{vf.uploaded_at}}</td>
+                    <td>{% if vf.voter_file %}{{vf.voter_file.size}}{% else %}{{vf.voter_file_content|length}}{% endif %}</td>
+                    <td>
+                      {% if vf.processing_finished_at %}
+                        <i>Done</i>
+                      {% else %}
+                        {% if vf.processing_started_at %}
+                          <i>Currently Processing</i>
+                        {% else %}
+                          <i>Waiting</i>
+                        {% endif %}
+                      {% endif %}
+                    </td>
+                    <td>{% if vf.processing_finished_at %}{{vf.num_voters}}{% endif %}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          {% endif %}
+        {% endif %}
+      {% endif %}
 
-{% if voters_page.has_next %}
-<a href="./list?page={{voters_page.next_page_number}}&limit={{limit}}&q={{q|urlencode}}">next {{limit}}</a> &nbsp;&nbsp;
-{% endif %}
+      <h3 class="title">
+        Ballot Tracking Center {% if email_voters and election.frozen_at and admin_p %}<small>[<a href="{% url helios.views.voters_email election.uuid %}">E-mail All</a>]</small>{% endif %}
+      </h3>
 
-<table class="pretty">
-<tr>
-{% if admin_p or not election.use_voter_aliases %}
-<th>Name</th>
-{% endif %}
+      {% if voters %}
+        <div data-alert class="alert-box info">
+          {% if election.num_cast_votes %}
+            {{election.num_cast_votes}} vote{% ifnotequal election.num_cast_votes 1 %}s{% endifnotequal %} were cast
+          {% else %}
+            No votes were cast yet.
+          {% endif %}
+        </div>
+      {% endif %}
 
-{% if election.use_voter_aliases %}
-<th>Alias</th>
-{% endif %}
-<th>Smart Ballot Tracker</th>
-</tr>
-{% for voter in voters %}
-<tr>
-{% if admin_p or not election.use_voter_aliases %}
-<td>
-{% if admin_p %}
-[<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}">email</a>]
-[<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">x</a>]
-{% endif %}
-<img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}</td>
-{% endif %}
-{% if election.use_voter_aliases %}
-<td>{{voter.alias}}</td>
-{% endif %}
-<td><tt style="font-size: 1.4em;;">{% if voter.vote_hash %}{{voter.vote_hash}} <span style="font-size:0.8em;">[<a href="{% url helios.views.castvote_shortcut vote_tinyhash=voter.vote_tinyhash %}">view</a>]</span>{% else %}&mdash;{% endif %}</tt></td>
-</tr>
-{% endfor %}
-</table>
+      {% if election.num_voters > 20 %}
+        <form method="get" action="{% url helios.views.voters_list_pretty election.uuid %}">
+          <div class="row">
+            <div class="large-12 columns">
+              <div class="row collapse">
+                <div class="small-10 columns">
+                  <input type="text" name="q" {% if q %}value={{q}}{% endif %} placeholder="Search" />
+                </div>
+                <div class="small-1 columns">
+                  <input type="submit" class="button postfix" value="Search" />
+                </div>
+                <div class="small-1 columns">
+                  <a class="button secondary postfix" href="?">Clear</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      {% endif %}
 
-{% else %}
-<br /><br />
-<em>no voters.</em>
-{% endif %}
+      <table>
+        <thead>
+          <tr>
+            {% if admin_p or not election.use_voter_aliases %}
+              <th>Name</th>
+            {% endif %}
 
+            {% if election.use_voter_aliases %}
+              <th width="20%">Alias</th>
+            {% endif %}
+
+            <th width="40%">Smart Ballot Tracker</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% if voters %}
+            {% for voter in voters %}
+              <tr>
+                {% if admin_p or not election.use_voter_aliases %}
+                  <td>
+                    {% if admin_p %}
+                      {% if email_voters and election.frozen_at %}[<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}">E-mail</a>]{% endif %}
+                      [<a onclick="return confirm('Are you sure you want to remove {{voter.name}}?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">&times;</a>]
+                    {% endif %}
+
+                    <img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}
+                  </td>
+                {% endif %}
+
+                {% if election.use_voter_aliases %}
+                  <td>{{voter.alias}}</td>
+                {% endif %}
+
+                <td>
+                  <tt>{% if voter.vote_hash %}{{voter.vote_hash}}</tt> [<a href="{% url helios.views.castvote_shortcut vote_tinyhash=voter.vote_tinyhash %}">View</a>]{% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <td class="text-center" colspan="{% if admin_p and election.use_voter_aliases %}3{% else %}2{% endif %}"><i>No voters were uploaded yet.</i></td>
+          {% endif %}
+        </tbody>
+      </table>
+
+      {% if voters %}
+        <div class="pagination-centered">
+          <ul class="pagination">
+            <li class="arrow {% if not voters_page.has_previous %}unavailable{% endif %}">
+              <a href="?page={{voters_page.previous_page_number}}&limit={{limit}}&q={{q|urlencode}}">&laquo;</a>
+            </li>
+
+            {% for page in voters_paginator.page_range %}
+              <li {% ifequal page voters_page.number %}class="current"{% endifequal %}><a href="?page={{page}}&limit={{limit}}&q={{q|urlencode}}">{{page}}</a></li>
+            {% endfor %}
+
+            <li class="arrow {% if not voters_page.has_next %}unavailable{% endif %}">
+              <a href="?page={{voters_page.next_page_number}}&limit={{limit}}&q={{q|urlencode}}">&raquo;</a>
+            </li>
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}
