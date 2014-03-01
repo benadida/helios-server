@@ -2,9 +2,11 @@
 {% block title %}Voters and Ballot Tracking Center for {{election.name}}{% endblock %}
 
 {% block content %}
+  {% include "partials/election_progress.html" with current="voters" uuid=election.uuid %}
+
   <div class="row">
     <div class="large-12 columns">
-      <h2 class="title">
+      <h2>
         {{election.name}}&mdash;Voters and Ballot Tracking Center <small>[<a href="{% url helios.views.one_election_view election.uuid %}">Back</a>]</small>
       </h2>
 
@@ -14,7 +16,7 @@
         {% if election.openreg %}
           {{election.pretty_eligibility|safe}}
         {% else %}
-          Only the voters listed here.
+          Only voters listed explicitly below can vote.
         {% endif %}
       </div>
 
@@ -30,14 +32,14 @@
                 <div class="large-12 columns">
                   <h5>You can change this setting.</h5>
 
-                  <input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}checked{% endif %} id="openreg" />
+                  <input type="radio" name="eligibility" id="openreg" value="openreg" {% if election.openreg and not election.eligibility %}checked{% endif %} id="openreg" />
                   <label for="openreg">Anyone can vote</label>
 
-                  <input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}checked{% endif %} id="closedreg" />
+                  <input type="radio" name="eligibility" id="closedreg" value="closedreg" {% if not election.openreg %}checked{% endif %} id="closedreg" />
                   <label for="closedreg">Only voters listed explicitly below can vote</label>
 
                   {% if categories %}
-                    <input type="radio" name="eligibility" value="limitedreg" {% if election.eligibility %}checked{% endif %} id="limitedreg" />
+                    <input type="radio" name="eligibility" id="limitedreg" value="limitedreg" {% if election.eligibility %}checked{% endif %} id="limitedreg" />
                     <label for="limitedreg">
                       Only voters who are members of
                       <select name="category_id" style="margin-left: 4px;">
@@ -58,7 +60,7 @@
 
       {% if admin_p %}
         {% if upload_p and not election.openreg %}
-          <h3 class="title">Voters</h3>
+          <h3>Voters</h3>
 
           <a class="button" href="{% url helios.views.voters_upload election_uuid=election.uuid %}">Bulk Upload Voters</a>
 
@@ -100,7 +102,7 @@
         {% endif %}
       {% endif %}
 
-      <h3 class="title">
+      <h3>
         Ballot Tracking Center {% if email_voters and election.frozen_at and admin_p %}<small>[<a href="{% url helios.views.voters_email election.uuid %}">E-mail All</a>]</small>{% endif %}
       </h3>
 
