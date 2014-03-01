@@ -181,14 +181,6 @@
 		</div>
 	</div>
 
-<p align="center" style="font-size: 1.5em;">
-<a href="{% url helios.views.one_election_questions election.uuid %}">questions ({% if election.questions %}{{election.questions|length}}{% else %}0{% endif %})</a>
-&nbsp;&nbsp;|&nbsp;&nbsp;
-<a href="{% url helios.views.voters_list_pretty election.uuid %}">voters &amp; ballots</a>
-&nbsp;&nbsp;|&nbsp;&nbsp;
-<a href="{% url helios.views.list_trustees_view election.uuid %}">trustees ({{trustees|length}})</a>
-</p>
-
 {% if admin_p %}
 	{% if election.frozen_p %}
 		<div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">
