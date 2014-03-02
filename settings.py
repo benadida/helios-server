@@ -20,6 +20,10 @@ MANAGERS = ADMINS
 # is this the master Helios web site?
 MASTER_HELIOS = (get_from_env('MASTER_HELIOS', '0') == '1')
 
+# show ability to log in? (for example, if the site is mostly used by voters)
+# if turned off, the admin will need to know to go to /auth/login manually
+SHOW_LOGIN_OPTIONS = (get_from_env('SHOW_LOGIN_OPTIONS', '1') == '1')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',

@@ -90,10 +90,15 @@ More than <b>100,000 votes</b> have been cast using Helios.
 <div class="row right"><a class="tiny button" href="{% url helios.views.elections_voted %}">see all</a></div>
 <div class="row"></div>
 {% else %}
+{% if settings.SHOW_LOGIN_OPTIONS %}
 <h5>Log In to Start Voting</h5>
 {{login_box|safe}}
+{% else %}
+<p>
+Select an election to start voting. You will be asked for your voting credentials after you complete a ballot.
+</p>
 {% endif %}
-<br /><br />
+{% endif %}
 </div>
 </div>
 
