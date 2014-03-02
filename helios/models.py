@@ -138,6 +138,9 @@ class Election(HeliosModel):
   # help email
   help_email = models.EmailField(null=True)
 
+  # downloadable election info
+  election_info_url = models.CharField(max_length=300, null=True)
+
   # metadata for the election
   @property
   def metadata(self):
