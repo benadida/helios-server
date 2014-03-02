@@ -265,13 +265,13 @@ Anyone can vote in this election.
 <a href="{% url helios.views.one_election_audited_ballots election.uuid %}">Audited Ballots</a>
 </p>
 
+{% endif %}
+
 {% if not election.voting_has_started %}
 <p style="font-size: 1.2em;">
   <a href="{{SECURE_URL_HOST}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">preview booth</a>
 </p>
 {% endif %}  
-
-{% endif %}
 
 {% if election.voting_has_stopped %}
 <p style="font-size: 1.2em;">
