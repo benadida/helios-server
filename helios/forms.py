@@ -6,6 +6,8 @@ from django import forms
 from models import Election
 from widgets import *
 from fields import *
+from django.conf import settings
+
 
 class ElectionForm(forms.Form):
   short_name = forms.SlugField(max_length=25, help_text='no spaces, will be part of the URL for your election, e.g. my-club-2010')
@@ -17,6 +19,9 @@ class ElectionForm(forms.Form):
   randomize_answer_order = forms.BooleanField(required=False, initial=False, help_text='enable this if you want the answers to questions to appear in random order for each voter')
   private_p = forms.BooleanField(required=False, initial=False, label="Private?", help_text='A private election is only visible to registered voters.')
   help_email = forms.CharField(required=False, initial="", label="Help Email Address", help_text='An email address voters should contact if they need help.')
+  
+  if settings.ALLOW_ELECTION_INFO_URL:
+    election_info_url = forms.CharField(required=False, initial="", label="Election Info Download URL", help_text="the URL of a PDF document that contains extra election information, e.g. candidate bios and statements")
   
 
 class ElectionTimesForm(forms.Form):

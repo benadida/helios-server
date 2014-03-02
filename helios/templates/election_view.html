@@ -50,6 +50,9 @@ this {{election.election_type}} is <u>not</u> featured on the front page.
 {{election.description}}
 </div>
 
+{% if election.election_info_url %}
+<p style="font-size:1.5em;">[<a href="{{election.election_info_url}}">download election info</a>]</p>
+{% endif %}
 
 <p align="center" style="font-size: 1.5em;">
 <a href="{% url helios.views.one_election_questions election.uuid %}">questions ({% if election.questions %}{{election.questions|length}}{% else %}0{% endif %})</a>
