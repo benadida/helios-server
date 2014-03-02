@@ -1,27 +1,49 @@
 {% extends TEMPLATE_BASE %}
+{% block title %}Vote {{cast_vote.vote_tinyhash}} for {{election.name}}{% endblock %}
 
-{% block title %}{{cast_vote.vote_tinyhash}} &mdash; {{election.name}}{% endblock %}
 {% block content %}
-<h2 class="title">Cast Vote {{cast_vote.vote_tinyhash}}</h2>
-cast in <a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a><br />
-Fingerprint: <tt>{{cast_vote.vote_hash}}</tt><br />
-by <b><u>
-{% if the_voter.alias %}
-{{the_voter.alias}}
-{% else %}
-{{the_voter.name}}
-{% endif %}
-</u></b>
-<br /><br />
-<a href="#" onclick="$('#castvote_content').slideToggle(250); return false;">details</a><br /><br />
-<div style="display:none;" id="castvote_content">
-<textarea cols="100" rows="10">
-{{vote_content}}
-</textarea>
-</div>
-<br /><br />
+  <div class="row">
+    <div class="large-12 column">
+      <h2>
+        {{election.name}}&mdash;Cast Vote {{cast_vote.vote_tinyhash}} <small>[<a href="{% url helios.views.voters_list_pretty election.uuid %}">Back</a>]</small>
+      </h2>
 
+      <div class="row">
+        <div class="large-3 columns">
+          <dl>
+            <dt>Cast In</dt>
+            <dd><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></dd>
+          </dl>
+        </div>
 
+        <div class="large-6 columns">
+          <dl>
+            <dt>Fingerprint</dt>
+            <dd><tt>{{cast_vote.vote_hash}}</tt></dd>
+          </dl>
+        </div>
 
+        <div class="large-3 columns">
+          <dl>
+            <dt>Cast By</dt>
+            <dd>
+              {% if the_voter.alias %}
+                {{the_voter.alias}}
+              {% else %}
+                {{the_voter.name}}
+              {% endif %}
+            </dd>
+          </dl>
+        </div>
+      </div>
 
+      <div class="panel callout">
+        <a href="#" onclick="$('#castvote_content').slideToggle(250); return false;">Details</a>
+
+        <div id="castvote_content" style="margin-top: 20px; display: none;">
+          <textarea class="no-margin" style="height: 200px !important;">{{vote_content}}</textarea>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

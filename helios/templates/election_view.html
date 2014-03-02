@@ -2,7 +2,9 @@
 {% block title %}{{election.name}}{% endblock %}
 
 {% block content %}
-	{% include "partials/election_progress.html" with current="view" uuid=election.uuid %}
+	{% if admin_p %}
+		{% include "partials/election_progress.html" with current="view" uuid=election.uuid %}
+	{% endif %}
 
 	<div class="row">
 		<div class="large-12 columns">
@@ -37,10 +39,6 @@
 
 			<div class="row">
 				<div class="large-3 columns">
-					{% if socialbuttons_url %}
-						<iframe src="{{socialbuttons_url}}" frameborder="0" border="0" style="width: 300px; height:100px;"></iframe>
-					{% endif %}
-
 					<dl>
 						<dt>Private</dt>
 						<dd>{% if election.private_p %}Yes{% else %}No{% endif %}</dd>
@@ -64,9 +62,9 @@
 			</div>
 
 			{% if admin_p %}
-				<div class="row">
+				<div class="row" id="next-help">
 					<div class="large-12 columns">
-						<div data-alert class="alert-box">
+						<div data-alert class="alert-box info">
 					  	<b>Next</b>
 
 				  		{% if election.use_threshold %}
@@ -82,10 +80,10 @@
 											{% if election.issues_before_freeze %}
 												{% if election.issues_before_freeze|length > 1 %}
 													{% for issue in election.issues_before_freeze %}
-														{{forloop.counter}}. {{issue.action}}{% if not forloop.last %}<span style="padding-left: 10px"></span>{% endif %}
+														{{forloop.counter}}. {{issue.action}}{% if not forloop.last %}<i class="spacer"></i>{% endif %}
 													{% endfor %}
 												{% else %}
-													{{issue.action}}
+													{{election.issues_before_freeze.0.action}}
 												{% endif %}
 											{% else %}
 												<a href="{% url helios.views.one_election_freeze election.uuid %}">Freeze ballot and open election.</a>
@@ -131,10 +129,10 @@
 										{% if election.issues_before_freeze %}
 											{% if election.issues_before_freeze|length > 1 %}
 												{% for issue in election.issues_before_freeze %}
-													{{forloop.counter}}. {{issue.action}}{% if not forloop.last %}<span style="padding-left: 10px"></span>{% endif %}
+													{{forloop.counter}}. {{issue.action}}{% if not forloop.last %}<i class="spacer"></i>{% endif %}
 												{% endfor %}
 											{% else %}
-												{{issue.action}}
+												{{election.issues_before_freeze.0.action}}
 											{% endif %}
 										{% else %}
 											<a href="{% url helios.views.one_election_freeze election.uuid %}">Freeze ballot and open election.</a>
@@ -181,173 +179,183 @@
 		</div>
 	</div>
 
-{% if admin_p %}
-	{% if election.frozen_p %}
-		<div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">
-			<a href="#" onclick="$('#badgebody').slideToggle(250);">Embed an Election Badge</a>
-				<div id="badgebody" style="display:none;">
-				<br />
-		<form action="#">
-		<textarea cols="90" rows="4" wrap="soft">&lt;iframe src="{{election_badge_url}}" frameborder="0" style="border: 1px solid black" height="75" width="200"&gt;
-		&lt;/iframe&gt;</textarea><br />
-		<p style="font-size:0.8em;">adding this HTML to your site displays a thin banner with direct links to voting.</p>
-		</form>
+	<div class="row">
+		<div class="large-12 columns">
+			{% if admin_p %}
+				{% if election.frozen_at %}
+					<div class="panel callout">
+						<a href="#" onclick="$('#badgebody').slideToggle(250);">Embed an Election Badge</a>
+
+						<div id="badgebody" style="margin-top: 20px; display: none;">
+							<p>Adding the following HTML to your site displays a thin banner with direct links to vote.</p>
+							<textarea class="no-margin" cols="90" wrap="soft">&lt;iframe src="{{election_badge_url}}" frameborder="0" style="border: 1px solid black" height="75" width="200"&gt;&lt;/iframe&gt;</textarea>
+						</div>
+					</div>
+				{% endif %}
+			{% endif %}
+
+			<hr />
+
+			{% if election.result %}
+				<div data-alert class="alert-box info">
+	    		This election is complete.
+				</div>
+
+				<h3>Tally</h3>
+				{% for question in election.pretty_result %}
+					<h4>{{forloop.counter}}. {{question.question}}</h4>
+					<table>
+						<thead>
+							<tr>
+								<td>
+									Answer
+								</td>
+								<td>
+									Count
+								</td>
+							</tr>
+						</thead>
+
+						<tbody>
+							{% if election.election_type == 'ranked election' %}
+								{% for answer in question.answers %}
+									<tr>
+										<td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td><td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.score}}</td>
+										<td style="{% if answer.winner %}font-weight: bold;{% endif %}">{{answer.count}}</td>
+									</tr>
+								{% endfor %}
+							{% else %}
+								{% for answer in question.answers %}
+									<tr>
+										<td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td>
+										<td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.count}}</td>
+									</tr>
+								{% endfor %}
+							{% endif %}
+						</tbody>
+					</table>
+				{% endfor %}
+			{% else %}
+				{% if election.voting_has_stopped %}
+					<div data-alert class="alert-box info">
+						This election is closed. The tally will be computed soon.
+					</div>
+				{% else %}
+					{% if election.voting_has_started %}
+						<a class="button" href="{{test_cookie_url}}">Vote in This {{election.election_type|title}}</a>
+
+						<dl>
+							<dt>End</dt>
+							<dd>
+								{% if election.voting_extended_until %}
+									This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC), but has been extended until {{ election.voting_extended_until }} (UTC).
+								{% else %}
+									{% if election.voting_ends_at %}
+										This {{election.election_type}} is scheduled to end at {{election.voting_ends_at}} (UTC).
+									{% else %}
+										This {{election.election_type}} ends at the administrator's discretion.
+									{% endif %}
+								{% endif %}
+							</dd>
+						</dl>
+
+						{% if election.private_p and voter %}
+							<p>This election is <b>private</b>. You are signed in as eligible voter <i>{{voter.name}}</i>.</p>
+						{% endif %}
+					{% else %}
+						<div data-alert class="alert-box info">
+  						Voting is not yet open.
+						</div>
+					{% endif %}
+
+					{% if user %}
+						{% if voter %}
+							<p>
+  							You are registered to vote in this {{election.election_type}}.
+								{% if election.use_voter_aliases %}
+									Your voter alias is {{voter.alias}}.
+								{% endif %}
+							</p>
+						{% else %}
+							{% if not election.result %}
+								<p>
+									{% if election.openreg %}
+										{% if eligible_p %}
+											You are eligible to vote in this election.
+										{% else %}
+											You are <i>not eligible</i> to vote in this {{election.election_type}}.
+										{% endif %}
+									{% else %}
+										You are <i>not eligible</i> to vote in this {{election.election_type}}.
+									{% endif %}
+								</p>
+							{% endif %}
+						{% endif %}
+					{% else %}
+						{% if election.openreg %}
+							<div data-alert class="alert-box info">
+								<b>Who can vote?</b>
+
+								{% if election.eligibility %}
+									{{election.pretty_eligibility|safe}}
+								{% else %}
+									Anyone can vote in this election.
+								{% endif %}
+							</div>
+						{% endif %}
+					{% endif %}
+				{% endif %}
+			{% endif %}
+
+			<div class="panel callout">
+				<a href="#" onclick="$('#auditbody').slideToggle(250);">Audit Info</a>
+
+				<div id="auditbody" style="margin-top: 20px; display: none;">
+					<dl>
+						<dt>Election URL</dt>
+						<dd><a href="{{election.url}}">{{election.url}}</a></dd>
+
+						{% if election.frozen_at %}
+							<dt>Election Fingerprint</dt>
+							<dd><tt style="font-weight: bold;">{{election.hash}}</tt></dd>
+
+							{% if votes %}
+								<dt>Your Smart Ballot Tracker</dt>
+								<dd><tt style="font-weight: bold;">{{votes.0.vote_hash}}</tt></dd>
+							{% endif %}
+						{% endif %}
+					</dl>
+
+					{% if election.frozen_at %}
+						<a class="button no-margin" href="{% url helios.views.voters_list_pretty election.uuid %}">Ballot Tracking Center</a>
+						<a class="button no-margin" href="{% url helios.views.one_election_audited_ballots election.uuid %}">Audited Ballots</a>
+
+						{% if not election.voting_has_started %}
+			  			<a class="button no-margin" href="{{SECURE_URL_HOST}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">
+			  					Preview Booth
+			  			</a>
+						{% endif %}
+					{% endif %}
+
+
+					{% if election.voting_has_stopped %}
+						{% if election.result %}
+							<a class="button no-margin" target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">
+								Verify Election Tally
+							</a>
+						{% endif %}
+
+						<a class="button no-margin" href="{{vote_url}}">Review the Voting Booth</a>
+					{% endif %}
+				</div>
+			</div>
 		</div>
-		</div>
-	{% endif %}
-{% endif %}
+	</div>
 
-{% if election.result %}
-	<span class="highlight-box round">
-	    This election is complete.
-	</span><br />
-	
-	<br />
-	<h3 class="highlight-box">Tally</h3>
-	{% for question in election.pretty_result %}
-	<b><span style="font-size:0.8em;">Question #{{forloop.counter}}</span><br />{{question.question}}</b><br />
-	<table class="pretty" style="width: auto;">
-	{% if election.election_type == 'ranked election' %}
-		{% for answer in question.answers %}
-		<tr><td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.count}}</td><td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td><td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.score}}</td></tr>
-		{% endfor %}
-	{% else %}
-		{% for answer in question.answers %}
-		<tr><td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td><td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.count}}</td></tr>
-		{% endfor %}
-	{% endif %}
-	</table>
-	{% endfor %}
-
-{% else %}
-	
-	{% if election.voting_has_stopped %}
-		<span class="highlight-box round">
-		    Election closed. Tally will be computed soon.
-		</span><br />
-	{% else %}
-		
-		{% if election.voting_has_started %}
-<a class="button" href="{{test_cookie_url}}">Vote in this {{election.election_type}}</a>
-<br />
-<br />
-{% if election.voting_extended_until %}
-This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
-but has been extended until {{ election.voting_extended_until }} (UTC).
-{% else %}
-{% if election.voting_ends_at %}
-<br />
-This {{election.election_type}} is scheduled to end at {{election.voting_ends_at}} (UTC).
-{% else %}
-This {{election.election_type}} ends at the administrator's discretion.
-{% endif %}
-<br />
-{% endif %}
-
-{% if election.private_p and voter %}
-<br />
-This election is <em>private</em>. You are signed in as eligible voter <em>{{voter.name}}</em>.
-{% endif %}
-
-<div class="highlight-box round" style="font-size: 1.2em; margin-right: 400px; display:none;" id="nojava_message">
-  You do not have Java installed in your browser.<br />At this time, Helios requires Java.<br />
-  Visit <a target="_new" href="http://java.sun.com">java.sun.com</a> to install it.
-</div>
-<br />
-{% else %}
-<span class="highlight-box round">
-  voting is not yet open
-</span> <br /><br />
-{% endif %}
-
-{% if user %}
-{% if voter %}
-<p style="padding-top:1px;">
-  You are registered to vote in this {{election.election_type}}.
-{% if election.use_voter_aliases %}
-Your voter alias is {{voter.alias}}.
-{% endif %}
-</p>
-
-{% else %}
-{% if election.result %}
-{% else %}
-{% if election.openreg %}
-{% if eligible_p %}
-You are eligible to vote in this election.
-{% else %}
-You are <em>not eligible</em> to vote in this {{election.election_type}}.
-{% endif %}
-{% else %}
-You are <em>not eligible</em> to vote in this {{election.election_type}}.
-<br />
-{% endif %}
-{% endif %}
-{% endif %}
-{% else %}
-
-{% if election.openreg %}
-{% if election.eligibility %}
-This election is open to: {{election.pretty_eligibility|safe}}
-<a href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.index %}?return_url={{CURRENT_URL}}">Log in</a> to check your eligibility.
-{% else %}
-Anyone can vote in this election.
-{% endif %}
-{% endif %}
-
-{% endif %}
-
-{% endif %}
-	
-{% endif %} <!--end Threshold-->
-
-
-<div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">
-<a href="#" onclick="$('#auditbody').slideToggle(250);">Audit Info</a>
-<div id="auditbody" style="display:none;">
-<br />Election URL:<br />
-<tt style="font-size: 1.2em;"><a href="{{election.url}}">{{election.url}}</a></tt>
-
-{% if election.frozen_at %}
-	<br />
-	<br />Election Fingerprint:<br />
-	<tt style="font-size: 1.3em; font-weight: bold;">{{election.hash}}</tt>
-	
-	
-	{% if votes %}
-		<p>Your smart ballot tracker:<br />
-		<tt style="font-size:14pt; font-weight: bold;">{{votes.0.vote_hash}}</tt>
-		</p>
-	{% endif %}
-	
-	<p style="font-size: 1.3em;">
-	<a href="{% url helios.views.voters_list_pretty election.uuid %}">Ballot Tracking Center</a> &nbsp;| &nbsp;
-	<a href="{% url helios.views.one_election_audited_ballots election.uuid %}">Audited Ballots</a>
-	</p>
-	
-	{% if not election.voting_has_started %}
-		<p style="font-size: 1.2em;">
-		  <a href="{{SECURE_URL_HOST}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">preview booth</a>
-		</p>
-	{% endif %}  
-
-{% endif %}
-
-{% if election.voting_has_stopped %}
-	<p style="font-size: 1.2em;">
-	{% if election.result %}
-		verify <a target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">election tally</a>.
-	{% endif %}
-	
-	review the <a href="{{vote_url}}">voting booth</a>.
-	</p>
-
-{% endif %}
-
-</div>
-</div>
-
-
-
-
+	<script language="javascript">
+		$(document).ready(function (){
+			if ($('#next-help .alert-box').html().trim() == '<b>Next</b>')
+			 	$('#next-help').remove();
+		});
+	</script>
 {% endblock %}

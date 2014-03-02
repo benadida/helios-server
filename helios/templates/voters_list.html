@@ -20,8 +20,8 @@
         {% endif %}
       </div>
 
-      <div class="panel">
-        {% if admin_p and not election.frozen_at %}
+      {% if admin_p and not election.frozen_at %}
+        <div class="panel">
           {% if election.private_p %}
             <h5>Your election is marked private, which means you cannot open registration up more widely.</h5>
           {% else %}
@@ -55,8 +55,8 @@
               <input type="submit" class="tiny button no-margin" value="Update" />
             </form>
           {% endif %}
-        {% endif %}
-      </div>
+        </div>
+      {% endif %}
 
       {% if admin_p %}
         {% if upload_p and not election.openreg %}
@@ -103,13 +103,13 @@
       {% endif %}
 
       <h3>
-        Ballot Tracking Center {% if email_voters and election.frozen_at and admin_p %}<small>[<a href="{% url helios.views.voters_email election.uuid %}">E-mail All</a>]</small>{% endif %}
+        Ballot Tracking Center {% if voters and email_voters and election.frozen_at and admin_p %}<small>[<a href="{% url helios.views.voters_email election.uuid %}">E-mail All</a>]</small>{% endif %}
       </h3>
 
       {% if voters %}
         <div data-alert class="alert-box info">
           {% if election.num_cast_votes %}
-            {{election.num_cast_votes}} vote{% ifnotequal election.num_cast_votes 1 %}s{% endifnotequal %} were cast
+            {{election.num_cast_votes}} vote{% ifnotequal election.num_cast_votes 1 %}s{% endifnotequal %} {% ifequal election.num_cast_votes 1 %}was{% else %} were{% endifequal %} cast.
           {% else %}
             No votes were cast yet.
           {% endif %}
@@ -162,7 +162,7 @@
                       [<a onclick="return confirm('Are you sure you want to remove {{voter.name}}?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">&times;</a>]
                     {% endif %}
 
-                    <img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}
+                    <img class="small-logo" src="/static/helios_auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}
                   </td>
                 {% endif %}
 
@@ -176,7 +176,13 @@
               </tr>
             {% endfor %}
           {% else %}
-            <td class="text-center" colspan="{% if admin_p and election.use_voter_aliases %}3{% else %}2{% endif %}"><i>No voters were uploaded yet.</i></td>
+            <td class="text-center" colspan="{% if admin_p and election.use_voter_aliases %}3{% else %}2{% endif %}">
+              {% if election.open_reg %}
+                <i>No voters were uploaded yet.</i>
+              {% else %}
+                <i>No votes were cast yet.</i>
+              {% endif %}
+            </td>
           {% endif %}
         </tbody>
       </table>

@@ -1,44 +1,50 @@
 {% extends TEMPLATE_BASE %}
+{% block title %}Freeze Ballot for {{election.name}}{% endblock %}
 
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Freeze Ballot</h2>
-<p>
-Once the ballot is frozen, the questions and options can no longer be modified.<br />
-The list of trustees and their public keys will also be frozen.
-</p>
+  <div class="row">
+    <div class="large-12 columns">
+      <h2 class="title">{{election.name}}&mdash;Freeze Ballot</h2>
+      <p>
+        Once the ballot is frozen, the questions and options can no longer be modified. The list of trustees and their public keys will also be frozen.
+      </p>
 
-<p>
-{% if election.openreg %}
-Registration for your election is currently <b>open</b>, which means anyone can vote, even after you freeze the ballot.
-{% else %}
-Registration for your election is currently <b>closed</b>, which means only the voters you designate will be able to cast a ballot. As the administrator, you will still be able to modify that voter list as the election progresses.
-{% endif %}
-</p>    
+      <p>
+        {% if election.openreg %}
+          Registration for your election is currently <b>open</b>, which means anyone can vote, even after you freeze the ballot.
+        {% else %}
+          Registration for your election is currently <b>closed</b>, which means only the voters you designate will be able to cast a ballot. As the administrator, you will still be able to modify that voter list as the election progresses.
+        {% endif %}
+      </p>
 
-{% if helios.VOTERS_EMAIL %}
-<p>
-You must freeze the ballot before you can contact voters.
-</p>
-{% endif %}
+      {% if helios.VOTERS_EMAIL %}
+        <div data-alert class="alert-box info">
+          You must freeze the ballot before you can contact voters.
+        </div>
+      {% endif %}
 
-{% if issues_p %}
-<p>
-    Before you can freeze the election, you will need to:
-    <ul>
-        {% for issue in issues %}
-        <li>{{issue.action}}</li>
-        {% endfor %}
-    </ul>
-    <a href="{% url helios.views.one_election_view election.uuid %}">go back to the election</a>
-</p>
-{% else %}
-<form method="post" action="">
-<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    
-<input class="button" type="submit" value="Freeze the ballot" />
-<button onclick="document.location='./view'; return false;">never mind</button>
-</form>
-{% endif %}
+      {% if issues_p %}
+        <div data-alert class="alert-box warning">
+          <b>Next</b>
 
-<br /><br />
+          {% if issues|length > 1 %}
+            {% for issue in issues %}
+              {{forloop.counter}}. {{issue.action}}{% if not forloop.last %}<i class="spacer"></i>{% endif %}
+            {% endfor %}
+          {% else %}
+            {{issues.0.action}}
+          {% endif %}
+        </div>
+
+        <a class="small button" href="{% url helios.views.one_election_view election.uuid %}">Back to the Election</a>
+      {% else %}
+        <form method="post">
+          <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+
+          <input class="button" type="submit" value="Freeze the ballot" />
+          <a class="secondary button" href="./view">Back to Election</a>
+        </form>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}

@@ -1,11 +1,18 @@
 {% extends TEMPLATE_BASE %}
+{% block title %}Administered Elections{% endblock %}
 
 {% block content %}
-  <h2 class="title">Elections you Administer <span style="font-size:0.7em;">[<a href="/">back to home</a>]</span></h2>
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>
+        Administered Elections <small>[<a href="/">Back</a>]</small>
+      </h2>
 
-<ul>
-{% for election in elections %}
-<li> <a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
-{% endfor %}
-</ul>
+      <ul>
+        {% for election in elections %}
+          <li><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
 {% endblock %}

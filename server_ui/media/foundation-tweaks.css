@@ -1,18 +1,3 @@
-.highlight-box {
-  background:#eee;
-  padding: 10px;
-  color: black;
-  border: 1px solid #888;
-}
-
-.highlight-box-margin {
-  background:#eee;
-  padding: 10px;
-  color: black;
-  border: 1px solid #888;
-  margin-right: 300px;
-}
-
 .small-logo {
   height: 15px;
 }
@@ -59,10 +44,26 @@ select {
   padding-right: 5px;
 }
 
-.panel .button.no-margin {
+.panel .no-margin {
   margin-bottom: 0;
+}
+
+.panel p {
+  margin-bottom: 5px;
+}
+
+.panel.callout a.button {
+  color: #fff;
+}
+
+.panel.callout a.button.secondary {
+  color: #000;
 }
 
 table {
   width: 100%;
+}
+
+i.spacer {
+  padding-left: 10px;
 }
