@@ -1063,21 +1063,16 @@ def one_election_audited_ballots(request, election):
     b = AuditedBallot.get(election, request.GET['vote_hash'])
     return HttpResponse(b.raw_vote, mimetype="text/plain")
     
-  after = request.GET.get('after', None)
-  offset= int(request.GET.get('offset', 0))
+  page = int(request.GET.get('page', 1))
   limit = int(request.GET.get('limit', 50))
   
-  audited_ballots = AuditedBallot.get_by_election(election, after=after, limit=limit+1)
+  audited_ballots = AuditedBallot.get_by_election(election)
+
+  audited_ballots_paginator = Paginator(audited_ballots, limit)
+  audited_ballots_page = audited_ballots_paginator.page(page)
     
-  more_p = len(audited_ballots) > limit
-  if more_p:
-    audited_ballots = audited_ballots[0:limit]
-    next_after = audited_ballots[limit-1].vote_hash
-  else:
-    next_after = None
-    
-  return render_template(request, 'election_audited_ballots', {'election': election, 'audited_ballots': audited_ballots, 'next_after': next_after,
-                'offset': offset, 'limit': limit, 'offset_plus_one': offset+1, 'offset_plus_limit': offset+limit})
+  return render_template(request, 'election_audited_ballots', {'election': election, 'audited_ballots_paginator': audited_ballots_paginator,
+                'audited_ballots_page': audited_ballots_page, 'audited_ballots': audited_ballots_page.object_list, 'page': page, 'limit': limit})
 
 @election_admin()
 def voter_delete(request, election, voter_uuid):

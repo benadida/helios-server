@@ -39,10 +39,16 @@
 
         <div class="pagination-centered">
           <ul class="pagination">
-            <li class="arrow {% ifequal offset 0 %}unavailable{% endifequal %}"><a href="?">&larr;</a></li>
-            <li>{{offset_plus_one}} - {{offset_plus_limit}}</li>
-            <li class="arrow {% if not next_after %}unavailable{% endif %}">
-              <a href="{% if not next_after %}?{% else %}?after={{next_after}}&offset={{offset_plus_limit}}{% endif %}">&raquo;</a>
+            <li class="arrow {% if not audited_ballots_page.has_previous %}unavailable{% endif %}">
+              <a href="?page={{audited_ballots_page.previous_page_number}}&limit={{limit}}">&laquo;</a>
+            </li>
+
+            {% for page in audited_ballots_paginator.page_range %}
+              <li {% ifequal page audited_ballots_page.number %}class="current"{% endifequal %}><a href="?page={{page}}&limit={{limit}}">{{page}}</a></li>
+            {% endfor %}
+
+            <li class="arrow {% if not audited_ballots_page.has_next %}unavailable{% endif %}">
+              <a href="?page={{audited_ballots_page.next_page_number}}&limit={{limit}}">&raquo;</a>
             </li>
           </ul>
         </div>
