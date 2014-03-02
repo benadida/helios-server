@@ -24,6 +24,10 @@ MASTER_HELIOS = (get_from_env('MASTER_HELIOS', '0') == '1')
 # if turned off, the admin will need to know to go to /auth/login manually
 SHOW_LOGIN_OPTIONS = (get_from_env('SHOW_LOGIN_OPTIONS', '1') == '1')
 
+# sometimes, when the site is not that social, it's not helpful
+# to display who created the election
+SHOW_USER_INFO = (get_from_env('SHOW_USER_INFO', '1') == '1')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
