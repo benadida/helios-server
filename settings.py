@@ -172,6 +172,8 @@ SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", "http://localhost
 # election stuff
 SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Voting')
 
+MAIN_LOGO_URL = get_from_env('MAIN_LOGO_URL', '/static/logo.png')
+
 # FOOTER links
 FOOTER_LINKS = json.loads(get_from_env('FOOTER_LINKS', '[]'))
 FOOTER_LOGO_URL = get_from_env('FOOTER_LOGO_URL', None)
