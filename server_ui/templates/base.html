@@ -7,19 +7,20 @@
   <meta name="viewport" content="width=device-width">
   <title>{% block title %}{% endblock %}</title>
   
-  
   <link rel="stylesheet" href="/static/foundation/css/foundation.css">
-
   <link rel="stylesheet" href="/static/foundation-tweaks.css">
-  
 
+{% if settings.DEBUG %}  
   <script src="/static/foundation/js/vendor/custom.modernizr.js"></script>
-
   <script language="javascript" src="/static/helios/js/jquery-1.4.2.min.js"></script>
   <script language="javascript" src="/static/helios/js/jquery-ui-1.8.1.custom.min.js"></script>
   <script language="javascript" src="/static/helios/js/jqsplitdatetime.js"></script>
-  
   <script language="javascript" src="/static/helios/helios/jquery.json.min.js"></script>
+  <script language="javascript" src="/static/foundation/js/foundation.min.js"></script>
+
+{% else %}
+<script language="javascript" src="/static/20140302-helios-combined.js"></script>
+{% endif %}
   
   {% block js %}
   {% endblock %}
@@ -103,16 +104,8 @@ powered by <a href="http://heliosvoting.org">Helios Voting</a>.
     </div>
   
   </div>
-  <script>
-    document.write('<script src=' +
-      ('__proto__' in {} ? '/static/foundation/js/vendor/zepto' : '/static/foundation/js/vendor/jquery') +
-	'.js><\/script>')
-  </script>
-  
-      <script src="/static/foundation/js/foundation.min.js"></script>
       <script>
 	$(document).foundation();
-      </script>
-     
+      </script>     
 </body>
 </html>
