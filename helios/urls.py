@@ -14,6 +14,7 @@ urlpatterns = patterns('',
   (r'^nocookies$', nocookies),
   (r'^socialbuttons$', socialbuttons),
   (r'^stats/', include('helios.stats_urls')),
+  (r'^get-randomness$',get_publicrandomness),
 
   # election shortcut by shortname
   (r'^e/(?P<election_short_name>[^/]+)$', election_shortcut),
