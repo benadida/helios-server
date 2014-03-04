@@ -382,7 +382,7 @@ class Election(HeliosModel):
             })
 
         for t in trustees:
-            if t.public_key == None:
+            if not self.use_threshold and t.public_key == None:
                 issues.append({
                     'type': 'trustee keypairs',
                     'action': 'Have trustee %s generate a keypair.' % t.name

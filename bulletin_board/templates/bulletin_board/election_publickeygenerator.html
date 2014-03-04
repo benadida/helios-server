@@ -83,10 +83,16 @@ function show_sk() {
 }
 
 function download_sk_enc() {
-    UTILS.open_window_with_content(jQuery.toJSON(SECRET_KEY_ENC), "application/json");
+    var blob = new Blob([jQuery.toJSON(SECRET_KEY_ENC)], {type: 'application/json'});
+    var url = URL.createObjectURL(blob);
+
+    saveAs(blob, 'encryption_key.json');
 }
 function download_sk_sign() {
-    UTILS.open_window_with_content(jQuery.toJSON(SECRET_KEY_SIGN), "application/json");
+    var blob = new Blob([jQuery.toJSON(SECRET_KEY_SIGN)], {type: 'application/json'});
+    var url = URL.createObjectURL(blob);
+
+    saveAs(blob, 'signing_key.json');
 }
 
 function show_pk() {
