@@ -8,7 +8,9 @@ FB_MESSAGE_STATUS = (
     (2, 'Success'),
 )
 
+
 class MessageManager(models.Manager):
+
     def get_and_delete_all(self, uid):
         messages = []
         for m in self.filter(uid=uid):
@@ -16,7 +18,9 @@ class MessageManager(models.Manager):
             m.delete()
         return messages
 
+
 class Message(models.Model):
+
     """Represents a message for a Facebook user."""
     uid = models.CharField(max_length=25)
     status = models.IntegerField(choices=FB_MESSAGE_STATUS)

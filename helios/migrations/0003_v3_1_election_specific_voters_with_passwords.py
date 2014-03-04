@@ -4,6 +4,7 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 
+
 class Migration(DataMigration):
 
     def forwards(self, orm):
@@ -19,7 +20,8 @@ class Migration(DataMigration):
         # use the .iterator() call to reduce caching and make this more efficient
         # so as not to trigger a memory error
         for v in orm.Voter.objects.all().iterator():
-            user = orm['helios_auth.User'].objects.get(user_type = v.voter_type, user_id = v.voter_id)
+            user = orm['helios_auth.User'].objects.get(
+                user_type=v.voter_type, user_id=v.voter_id)
 
             if v.voter_type == 'password':
                 v.voter_login_id = v.voter_id
@@ -36,23 +38,22 @@ class Migration(DataMigration):
         for cv in orm.CastVote.objects.all().iterator():
             safe_hash = cv.vote_hash
             for c in ['/', '+']:
-                safe_hash = safe_hash.replace(c,'')
-    
+                safe_hash = safe_hash.replace(c, '')
+
             length = 8
             while True:
                 vote_tinyhash = safe_hash[:length]
-                if orm.CastVote.objects.filter(vote_tinyhash = vote_tinyhash).count() == 0:
+                if orm.CastVote.objects.filter(vote_tinyhash=vote_tinyhash).count() == 0:
                     break
                 length += 1
-      
+
             cv.vote_tinyhash = vote_tinyhash
             cv.save()
 
-
     def backwards(self, orm):
         "Write your backwards methods here."
-        raise Exception("can't revert to system-wide user passwords, rather than election specific")
-
+        raise Exception(
+            "can't revert to system-wide user passwords, rather than election specific")
 
     models = {
         'helios_auth.user': {

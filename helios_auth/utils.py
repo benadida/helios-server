@@ -7,23 +7,26 @@ Some basic utils
 
 from django.utils import simplejson
 
-## JSON
+# JSON
+
+
 def to_json(d):
-  return simplejson.dumps(d, sort_keys=True)
-  
+    return simplejson.dumps(d, sort_keys=True)
+
+
 def from_json(json_str):
-  if not json_str: return None
-  return simplejson.loads(json_str)
-  
+    if not json_str:
+        return None
+    return simplejson.loads(json_str)
+
+
 def JSONtoDict(json):
-    x=simplejson.loads(json)
+    x = simplejson.loads(json)
     return x
-    
+
+
 def JSONFiletoDict(filename):
-  f = open(filename, 'r')
-  content = f.read()
-  f.close()
-  return JSONtoDict(content)
-    
-
-
+    f = open(filename, 'r')
+    content = f.read()
+    f.close()
+    return JSONtoDict(content)

@@ -15,18 +15,19 @@ PAPE_POLICIES = [
     'AUTH_PHISHING_RESISTANT',
     'AUTH_MULTI_FACTOR',
     'AUTH_MULTI_FACTOR_PHYSICAL',
-    ]
+]
 
 AX_REQUIRED_FIELDS = {
-    'firstname' : 'http://axschema.org/namePerson/first',
-    'lastname' : 'http://axschema.org/namePerson/last',
-    'fullname' : 'http://axschema.org/namePerson',
-    'email' : 'http://axschema.org/contact/email'
+    'firstname': 'http://axschema.org/namePerson/first',
+    'lastname': 'http://axschema.org/namePerson/last',
+    'fullname': 'http://axschema.org/namePerson',
+    'email': 'http://axschema.org/contact/email'
 }
 
 # List of (name, uri) for use in generating the request form.
 POLICY_PAIRS = [(p, getattr(pape, p))
                 for p in PAPE_POLICIES]
+
 
 def getOpenIDStore():
     """
@@ -35,11 +36,13 @@ def getOpenIDStore():
     """
     return util.getOpenIDStore('/tmp/djopenid_c_store', 'c_')
 
+
 def get_consumer(session):
     """
     Get a Consumer object to perform OpenID authentication.
     """
     return consumer.Consumer(session, getOpenIDStore())
+
 
 def start_openid(session, openid_url, trust_root, return_to):
     """
@@ -66,7 +69,8 @@ def start_openid(session, openid_url, trust_root, return_to):
         error = "OpenID discovery error: %s" % (str(e),)
 
     if error:
-        import pdb; pdb.set_trace()
+        import pdb
+        pdb.set_trace()
         raise Exception("error in openid")
 
     # Add Simple Registration request information.  Some fields
@@ -86,7 +90,7 @@ def start_openid(session, openid_url, trust_root, return_to):
         ax_request.add(ax.AttrInfo(v, required=True))
 
     auth_request.addExtension(ax_request)
-                
+
     # Compute the trust root and return URL values to build the
     # redirect information.
     # trust_root = util.getViewURL(request, startOpenID)
@@ -96,6 +100,7 @@ def start_openid(session, openid_url, trust_root, return_to):
     # URL or by generating a POST form.
     url = auth_request.redirectURL(trust_root, return_to)
     return url
+
 
 def finish_openid(session, request_args, return_to):
     """
@@ -145,7 +150,7 @@ def finish_openid(session, request_args, return_to):
             {'url': response.getDisplayIdentifier(),
              'sreg': sreg_response and sreg_response.items(),
              'ax': ax_items}
-            }
+        }
 
         result = results[response.status]
 
@@ -157,4 +162,3 @@ def finish_openid(session, request_args, return_to):
             result['failure_reason'] = response.message
 
     return result
-

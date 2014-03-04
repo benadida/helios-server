@@ -6,7 +6,9 @@
 #
 
 from django.core.management import setup_environ
-import settings, sys, csv
+import settings
+import sys
+import csv
 
 setup_environ(settings)
 
@@ -17,8 +19,8 @@ email = sys.argv[2]
 
 csv_output = csv.writer(sys.stdout)
 
-voters = Election.objects.get(uuid=election_uuid).voter_set.filter(voter_email=email)
+voters = Election.objects.get(
+    uuid=election_uuid).voter_set.filter(voter_email=email)
 
 for voter in voters:
     csv_output.writerow([voter.voter_login_id, voter.voter_password])
-

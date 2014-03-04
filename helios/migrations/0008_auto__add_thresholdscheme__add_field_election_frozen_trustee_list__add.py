@@ -4,42 +4,52 @@ from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
+
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding model 'Thresholdscheme'
         db.create_table('helios_thresholdscheme', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('election', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['helios.Election'])),
+            ('id', self.gf('django.db.models.fields.AutoField')
+             (primary_key=True)),
+            ('election', self.gf('django.db.models.fields.related.ForeignKey')
+             (to=orm['helios.Election'])),
             ('n', self.gf('django.db.models.fields.IntegerField')(null=True)),
             ('k', self.gf('django.db.models.fields.IntegerField')(null=True)),
-            ('ground_1', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True)),
-            ('ground_2', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True)),
+            ('ground_1', self.gf(
+                'helios.datatypes.djangofield.LDObjectField')(null=True)),
+            ('ground_2', self.gf(
+                'helios.datatypes.djangofield.LDObjectField')(null=True)),
         ))
         db.send_create_signal('helios', ['Thresholdscheme'])
 
         # Adding field 'Election.frozen_trustee_list'
-        db.add_column('helios_election', 'frozen_trustee_list', self.gf('django.db.models.fields.BooleanField')(default=False), keep_default=False)
+        db.add_column('helios_election', 'frozen_trustee_list', self.gf(
+            'django.db.models.fields.BooleanField')(default=False), keep_default=False)
 
         # Adding field 'Election.use_threshold'
-        db.add_column('helios_election', 'use_threshold', self.gf('django.db.models.fields.BooleanField')(default=True), keep_default=False)
+        db.add_column('helios_election', 'use_threshold', self.gf(
+            'django.db.models.fields.BooleanField')(default=True), keep_default=False)
 
         # Adding field 'Election.encrypted_shares_uploaded'
-        db.add_column('helios_election', 'encrypted_shares_uploaded', self.gf('django.db.models.fields.BooleanField')(default=False), keep_default=False)
+        db.add_column('helios_election', 'encrypted_shares_uploaded', self.gf(
+            'django.db.models.fields.BooleanField')(default=False), keep_default=False)
 
         # Adding field 'Trustee.key'
-        db.add_column('helios_trustee', 'key', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['bulletin_board.Key'], null=True), keep_default=False)
+        db.add_column('helios_trustee', 'key', self.gf('django.db.models.fields.related.ForeignKey')(
+            to=orm['bulletin_board.Key'], null=True), keep_default=False)
 
         # Adding field 'Trustee.helios_trustee'
-        db.add_column('helios_trustee', 'helios_trustee', self.gf('django.db.models.fields.BooleanField')(default=False), keep_default=False)
+        db.add_column('helios_trustee', 'helios_trustee', self.gf(
+            'django.db.models.fields.BooleanField')(default=False), keep_default=False)
 
         # Adding field 'Trustee.added_encrypted_shares'
-        db.add_column('helios_trustee', 'added_encrypted_shares', self.gf('django.db.models.fields.BooleanField')(default=False), keep_default=False)
-
+        db.add_column('helios_trustee', 'added_encrypted_shares', self.gf(
+            'django.db.models.fields.BooleanField')(default=False), keep_default=False)
 
     def backwards(self, orm):
-        
+
         # Deleting model 'Thresholdscheme'
         db.delete_table('helios_thresholdscheme')
 
@@ -60,7 +70,6 @@ class Migration(SchemaMigration):
 
         # Deleting field 'Trustee.added_encrypted_shares'
         db.delete_column('helios_trustee', 'added_encrypted_shares')
-
 
     models = {
         'helios_auth.user': {

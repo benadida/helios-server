@@ -10,14 +10,13 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Election.randomize_answer_order'
         db.add_column('helios_election', 'randomize_answer_order',
-                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      self.gf('django.db.models.fields.BooleanField')(
+                          default=False),
                       keep_default=False)
-
 
     def backwards(self, orm):
         # Deleting field 'Election.randomize_answer_order'
         db.delete_column('helios_election', 'randomize_answer_order')
-
 
     models = {
         'helios.auditedballot': {

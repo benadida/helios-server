@@ -7,6 +7,7 @@ register = Library()
 
 _hidden_data_field = '<input type="hidden" name="%s" value="%s" />'
 
+
 @register.simple_tag
 def render_upload_data(data):
     inputs = ''.join(_hidden_data_field % item for item in data.items())

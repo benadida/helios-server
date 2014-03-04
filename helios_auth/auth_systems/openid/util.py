@@ -19,6 +19,7 @@ from openid.store.filestore import FileOpenIDStore
 from openid.store import sqlstore
 from openid.yadis.constants import YADIS_CONTENT_TYPE
 
+
 def getOpenIDStore(filestore_path, table_prefix):
     """
     Returns an OpenID association store object based on the database
@@ -57,22 +58,22 @@ def getOpenIDStore(filestore_path, table_prefix):
     tablenames = {
         'associations_table': table_prefix + 'openid_associations',
         'nonces_table': table_prefix + 'openid_nonces',
-        }
+    }
 
     types = {
         'postgresql': sqlstore.PostgreSQLStore,
         'postgresql_psycopg2': sqlstore.PostgreSQLStore,
         'mysql': sqlstore.MySQLStore,
         'sqlite3': sqlstore.SQLiteStore,
-        }
+    }
 
     try:
         s = types[db_engine](connection.connection,
-                                            **tablenames)
+                             **tablenames)
     except KeyError:
         raise ImproperlyConfigured, \
-              "Database engine %s not supported by OpenID library" % \
-              (db_engine,)
+            "Database engine %s not supported by OpenID library" % \
+            (db_engine,)
 
     try:
         s.createTables()
@@ -91,10 +92,12 @@ def getOpenIDStore(filestore_path, table_prefix):
 
     return s
 
+
 def getViewURL(req, view_name_or_obj, args=None, kwargs=None):
     relative_url = reverseURL(view_name_or_obj, args=args, kwargs=kwargs)
     full_path = req.META.get('SCRIPT_NAME', '') + relative_url
     return urljoin(getBaseURL(req), full_path)
+
 
 def getBaseURL(req):
     """
@@ -130,6 +133,7 @@ def getBaseURL(req):
     url = "%s://%s%s/" % (proto, name, port)
     return url
 
+
 def normalDict(request_data):
     """
     Converts a django request MutliValueDict (e.g., request.GET,
@@ -141,6 +145,7 @@ def normalDict(request_data):
     """
     return dict((k, v[0]) for k, v in request_data.iteritems())
 
+
 def renderXRDS(request, type_uris, endpoint_urls):
     """Render an XRDS page with the specified type URIs and endpoint
     URLs in one service block, and return a response with the
@@ -148,6 +153,6 @@ def renderXRDS(request, type_uris, endpoint_urls):
     """
     response = direct_to_template(
         request, 'xrds.xml',
-        {'type_uris':type_uris, 'endpoint_urls':endpoint_urls,})
+        {'type_uris': type_uris, 'endpoint_urls': endpoint_urls, })
     response['Content-Type'] = YADIS_CONTENT_TYPE
     return response

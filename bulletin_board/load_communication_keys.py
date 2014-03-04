@@ -1,4 +1,4 @@
-from helios.constants import p,q,g
+from helios.constants import p, q, g
 from bulletin_board.models import *
 
 key = Key()

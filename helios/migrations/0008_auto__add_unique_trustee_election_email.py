@@ -4,19 +4,18 @@ from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
+
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding unique constraint on 'Trustee', fields ['election', 'email']
         db.create_unique('helios_trustee', ['election_id', 'email'])
 
-
     def backwards(self, orm):
-        
+
         # Removing unique constraint on 'Trustee', fields ['election', 'email']
         db.delete_unique('helios_trustee', ['election_id', 'email'])
-
 
     models = {
         'helios.auditedballot': {

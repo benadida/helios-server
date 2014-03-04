@@ -15,11 +15,13 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 from . import LDObject
 
+
 class LDObjectField(models.TextField):
+
     """
     LDObject is a generic textfield that neatly serializes/unserializes
     JSON objects seamlessly.
-    
+
     deserialization_params added on 2011-01-09 to provide additional hints at deserialization time
     """
 
@@ -37,7 +39,7 @@ class LDObjectField(models.TextField):
         if not isinstance(value, basestring):
             return value
 
-        if  value == None:
+        if value == None:
             return None
 
         # in some cases, we're loading an existing array or dict,
@@ -51,8 +53,9 @@ class LDObjectField(models.TextField):
             parsed_value = value
 
         if parsed_value != None:
-            "we give the wrapped object back because we're not dealing with serialization types"            
-            return_val = LDObject.fromDict(parsed_value, type_hint = self.type_hint).wrapped_obj
+            "we give the wrapped object back because we're not dealing with serialization types"
+            return_val = LDObject.fromDict(
+                parsed_value, type_hint=self.type_hint).wrapped_obj
             return return_val
         else:
             return None
@@ -74,8 +77,8 @@ class LDObjectField(models.TextField):
         return self.get_db_prep_value(value)
 
 ##
-## for schema migration, we have to tell South about JSONField
-## basically that it's the same as its parent class
+# for schema migration, we have to tell South about JSONField
+# basically that it's the same as its parent class
 ##
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^helios\.datatypes\.djangofield.LDObjectField"])

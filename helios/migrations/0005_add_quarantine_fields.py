@@ -4,22 +4,25 @@ from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
 
+
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
+
         # Adding field 'Election.complaint_period_ends_at'
-        db.add_column('helios_election', 'complaint_period_ends_at', self.gf('django.db.models.fields.DateTimeField')(default=None, null=True), keep_default=False)
+        db.add_column('helios_election', 'complaint_period_ends_at', self.gf(
+            'django.db.models.fields.DateTimeField')(default=None, null=True), keep_default=False)
 
         # Adding field 'CastVote.quarantined_p'
-        db.add_column('helios_castvote', 'quarantined_p', self.gf('django.db.models.fields.BooleanField')(default=False), keep_default=False)
+        db.add_column('helios_castvote', 'quarantined_p', self.gf(
+            'django.db.models.fields.BooleanField')(default=False), keep_default=False)
 
         # Adding field 'CastVote.released_from_quarantine_at'
-        db.add_column('helios_castvote', 'released_from_quarantine_at', self.gf('django.db.models.fields.DateTimeField')(null=True), keep_default=False)
-
+        db.add_column('helios_castvote', 'released_from_quarantine_at', self.gf(
+            'django.db.models.fields.DateTimeField')(null=True), keep_default=False)
 
     def backwards(self, orm):
-        
+
         # Deleting field 'Election.complaint_period_ends_at'
         db.delete_column('helios_election', 'complaint_period_ends_at')
 
@@ -28,7 +31,6 @@ class Migration(SchemaMigration):
 
         # Deleting field 'CastVote.released_from_quarantine_at'
         db.delete_column('helios_castvote', 'released_from_quarantine_at')
-
 
     models = {
         'helios_auth.user': {

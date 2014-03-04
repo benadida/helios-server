@@ -1,6 +1,9 @@
-import os, json
+import os
+import json
 
 # Go through environment variables and override them
+
+
 def get_from_env(var, default):
     if os.environ.has_key(var):
         return os.environ[var]
@@ -27,12 +30,12 @@ DATABASES = {
     }
 }
 
-SOUTH_DATABASE_ADAPTERS = {'default':'south.db.postgresql_psycopg2'}
+SOUTH_DATABASE_ADAPTERS = {'default': 'south.db.postgresql_psycopg2'}
 
 # Override if we have an environment variable
 if get_from_env('DATABASE_URL', None):
     import dj_database_url
-    DATABASES['default'] =  dj_database_url.config()
+    DATABASES['default'] = dj_database_url.config()
     DATABASES['default']['ENGINE'] = 'dbpool.db.backends.postgresql_psycopg2'
     DATABASES['default']['OPTIONS'] = {'MAX_CONNS': 1}
 
@@ -134,7 +137,7 @@ INSTALLED_APPS = (
 )
 
 ##
-## Helios
+# Helios
 ##
 
 MEDIA_ROOT = ROOT_PATH + 'media/'
@@ -143,8 +146,9 @@ MEDIA_ROOT = ROOT_PATH + 'media/'
 VOTER_UPLOAD_REL_PATH = 'voters/%Y/%m/%d'
 
 # Change your email settings
-DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'helios@heliosvoting.org')
-DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME','Helios')
+DEFAULT_FROM_EMAIL = get_from_env(
+    'DEFAULT_FROM_EMAIL', 'helios@heliosvoting.org')
+DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Helios')
 SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 
 LOGIN_URL = '/helios_auth/'
@@ -163,7 +167,8 @@ SECURE_URL_HOST = get_from_env('SECURE_URL_HOST', 'http://localhost:8000')
 # which usually involve hooking in remote JavaScript, which could be
 # a security issue. Plus, if there's a loading issue, it blocks the whole
 # page. Not cool.
-SOCIALBUTTONS_URL_HOST = get_from_env('SOCIALBUTTONS_URL_HOST', 'http://localhost:8000')
+SOCIALBUTTONS_URL_HOST = get_from_env(
+    'SOCIALBUTTONS_URL_HOST', 'http://localhost:8000')
 
 SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Voting')
 
@@ -171,9 +176,11 @@ SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Voting')
 FOOTER_LINKS = json.loads(get_from_env('FOOTER_LINKS', '[]'))
 FOOTER_LOGO_URL = get_from_env('FOOTER_LOGO_URL', None)
 
-WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', 'This is the default message.')
+WELCOME_MESSAGE = get_from_env(
+    'WELCOME_MESSAGE', 'This is the default message.')
 
-HELP_EMAIL_ADDRESS = get_from_env('HELP_EMAIL_ADDRESS', 'help@heliosvoting.org')
+HELP_EMAIL_ADDRESS = get_from_env(
+    'HELP_EMAIL_ADDRESS', 'help@heliosvoting.org')
 
 AUTH_TEMPLATE_BASE = 'server_ui/templates/base.html'
 HELIOS_TEMPLATE_BASE = 'server_ui/templates/base.html'
@@ -186,13 +193,14 @@ HELIOS_PRIVATE_DEFAULT = False
 
 # The authentication systems that should be enabled.
 #AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
-AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(',')
+AUTH_ENABLED_AUTH_SYSTEMS = get_from_env(
+    'AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(',')
 AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
 
 # Facebook
-FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID','')
-FACEBOOK_API_KEY = get_from_env('FACEBOOK_API_KEY','')
-FACEBOOK_API_SECRET = get_from_env('FACEBOOK_API_SECRET','')
+FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID', '')
+FACEBOOK_API_KEY = get_from_env('FACEBOOK_API_KEY', '')
+FACEBOOK_API_SECRET = get_from_env('FACEBOOK_API_SECRET', '')
 
 # Twitter
 TWITTER_API_KEY = ''
@@ -201,7 +209,8 @@ TWITTER_USER_TO_FOLLOW = 'heliosvoting'
 TWITTER_REASON_TO_FOLLOW = 'We can DM you when the result has been computed in an election in which you participated.'
 
 # The token for Helios to do direct messaging.
-TWITTER_DM_TOKEN = {'oauth_token': '', 'oauth_token_secret': '', 'user_id': '', 'screen_name': ''}
+TWITTER_DM_TOKEN = {
+    'oauth_token': '', 'oauth_token_secret': '', 'user_id': '', 'screen_name': ''}
 
 # LinkedIn
 LINKEDIN_API_KEY = ''
@@ -223,8 +232,8 @@ EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
 # Logging
 import logging
 logging.basicConfig(
-    level = logging.DEBUG,
-    format = '%(asctime)s %(levelname)s %(message)s'
+    level=logging.DEBUG,
+    format='%(asctime)s %(levelname)s %(message)s'
 )
 
 # django-celery

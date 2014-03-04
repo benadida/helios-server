@@ -7,7 +7,12 @@ from django.http import *
 from django.core.mail import send_mail
 from django.conf import settings
 
-import sys, os, cgi, urllib, urllib2, re
+import sys
+import os
+import cgi
+import urllib
+import urllib2
+import re
 from xml.etree import ElementTree
 
 from openid import view_helpers
@@ -23,48 +28,58 @@ OPENID_ENDPOINT = 'https://www.google.com/accounts/o8/id'
 # TRUST_ROOT = 'http://localhost:8000'
 # RETURN_TO = 'http://localhost:8000/helios_auth/after'
 
+
 def get_auth_url(request, redirect_url):
-  # FIXME?? TRUST_ROOT should be diff than return_url?
-  request.session['google_redirect_url'] = redirect_url
-  url = view_helpers.start_openid(request.session, OPENID_ENDPOINT, redirect_url, redirect_url)
-  return url
+    # FIXME?? TRUST_ROOT should be diff than return_url?
+    request.session['google_redirect_url'] = redirect_url
+    url = view_helpers.start_openid(
+        request.session, OPENID_ENDPOINT, redirect_url, redirect_url)
+    return url
+
 
 def get_user_info_after_auth(request):
-  data = view_helpers.finish_openid(request.session, request.GET, request.session['google_redirect_url'])
+    data = view_helpers.finish_openid(
+        request.session, request.GET, request.session['google_redirect_url'])
 
-  if not data.has_key('ax'):
+    if not data.has_key('ax'):
+        return None
+
+    email = data['ax']['email'][0]
+
+    # do we have a firstname/lastname?
+    if data['ax'].has_key('firstname') and data['ax'].has_key('lastname'):
+        name = "%s %s" % (
+            data['ax']['firstname'][0], data['ax']['lastname'][0])
+    else:
+        name = email
+
+    return {'type': 'google', 'user_id': email, 'name': name, 'info': {'email': email}, 'token': {}}
+
+
+def do_logout(user):
+    """
+    logout of Google
+    """
     return None
 
-  email = data['ax']['email'][0]
 
-  # do we have a firstname/lastname?
-  if data['ax'].has_key('firstname') and data['ax'].has_key('lastname'):
-    name = "%s %s" % (data['ax']['firstname'][0], data['ax']['lastname'][0])
-  else:
-    name = email
-
-  return {'type' : 'google', 'user_id': email, 'name': name , 'info': {'email': email}, 'token':{}}
-    
-def do_logout(user):
-  """
-  logout of Google
-  """
-  return None
-  
 def update_status(token, message):
-  """
-  simple update
-  """
-  pass
+    """
+    simple update
+    """
+    pass
+
 
 def send_message(user_id, name, user_info, subject, body):
-  """
-  send email to google users. user_id is the email for google.
-  """
-  send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, user_id)], fail_silently=False)
-  
+    """
+    send email to google users. user_id is the email for google.
+    """
+    send_mail(subject, body, settings.SERVER_EMAIL,
+              ["%s <%s>" % (name, user_id)], fail_silently=False)
+
+
 def check_constraint(constraint, user_info):
-  """
-  for eligibility
-  """
-  pass
+    """
+    for eligibility
+    """
+    pass

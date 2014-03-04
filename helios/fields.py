@@ -5,6 +5,7 @@ from django.db import models
 from django.forms import fields
 from widgets import SplitSelectDateTimeWidget
 
+
 class SplitDateTimeField(fields.MultiValueField):
     widget = SplitSelectDateTimeWidget
 
@@ -27,4 +28,3 @@ class SplitDateTimeField(fields.MultiValueField):
                 raise forms.ValidationError("Field is missing data.")
             return datetime.datetime.combine(*data_list)
         return None
-
