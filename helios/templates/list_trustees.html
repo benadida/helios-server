@@ -39,7 +39,7 @@
           </div>
         {% endif %}
 
-        {% if election.use_threshold %}
+        {% if election.use_threshold and not election.frozen_trustee_list %}
           <div data-alert class="alert-box info">
             <b>Next</b> After freezing the trustee list, the threshold scheme can be defined.
           </div>
@@ -50,7 +50,9 @@
         <thead>
           <tr>
             <td>Trustee</td>
-            <td>Public Key Fingerprint</td>
+            {% if not election.use_threshold %}
+              <td>Public Key Fingerprint</td>
+            {% endif %}
             {% if election.encrypted_tally %}
               <td>Tally Status</td>
             {% endif %}
@@ -81,13 +83,15 @@
 
                 {{t.name}} {% if admin_p %}({{t.email}}){% endif %}
               </td>
-              <td>
-                {% if t.public_key_hash %}
-                  <tt>{{t.public_key_hash}}</tt>
-                {% else %}
-                  <i>No public key was uploaded yet.</i>
-                {% endif %}
-              </td>
+              {% if not election.use_threshold %}
+                <td>
+                  {% if t.public_key_hash %}
+                    <tt>{{t.public_key_hash}}</tt>
+                  {% else %}
+                    <i>No public key was uploaded yet.</i>
+                  {% endif %}
+                </td>
+              {% endif %}
               {% if election.encrypted_tally %}
                 <td>
                   {% if t.decryption_factors %}

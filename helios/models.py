@@ -1537,7 +1537,7 @@ class Thresholdscheme(HeliosModel):
             commitment_loop.generate(
                 F.coeff[i], G.coeff[i], self.ground_1, self.ground_2, p, q, g)
             if(commitment_loop.value > p - 1):
-                print('Ei value to big!!')
+                print('Ei value too big!')
                 sys.exit()
             Ei.append(commitment_loop)
 
