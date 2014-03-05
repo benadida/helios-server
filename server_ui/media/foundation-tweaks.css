@@ -60,6 +60,10 @@ select {
   color: #000;
 }
 
+.panel.callout dl dd:last-of-type {
+  margin-bottom: 0;
+}
+
 table {
   width: 100%;
 }
