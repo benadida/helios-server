@@ -44,7 +44,7 @@
       $('#generator').hide();
 
       // Get some more server-side randomness for keygen
-      $.getJSON('{% url helios.views.get_randomness election.uuid %}', function(result) {
+      $.getJSON('{% url helios.views.get_randomness %}', function(result) {
         sjcl.random.addEntropy(result.randomness);
         BigInt.setup(function() {
           ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
@@ -67,7 +67,7 @@
     }
 
     function setup_public_key_and_proof() {
-      // Generate PoK of secret key
+      // Generate proof of secret key
       PROOF = SECRET_KEY.proveKnowledge(ElGamal.fiatshamir_dlog_challenge_generator);
       PUBLIC_KEY = SECRET_KEY.pk;
 
@@ -106,7 +106,7 @@
 
   <div class="row">
     <div class="large-12 columns">
-      <h2>{{election.name}}&mdash;Key Setup for {{trustee.name}}</h2>
+      <h2>{{election.name}}&mdash;Key Generator for {{trustee.name}}</h2>
 
       <p>
         As a trustee, it's time to set up your key pair for this election.
@@ -171,7 +171,7 @@
 
         <form method="post" action="{% url helios.views.trustee_upload_pk election.uuid, trustee.uuid %}">
           <textarea id="pk_textarea" name="public_key_json" style="height: 100px; display: none;"></textarea>
-          <input class="button" type="submit" value="Upload your Public Key">
+          <input class="button" type="submit" value="Upload Your Public Key">
         </form>
       </div>
 

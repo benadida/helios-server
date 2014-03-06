@@ -1,0 +1,180 @@
+{% extends "helios/templates/cryptobase.html" %}
+{% block title %}Key Generator for {{trustee.name}}{% endblock %}
+
+{% block content %}
+  <script language="javascript">
+    var PUBLIC_KEY_ENC, PROOF_ENC, PUBLIC_KEY_SIGN, PROOF_SIGN;
+
+    function clear_keys() {
+      $('#sk_download').hide();
+      $('#pk_form').hide();
+      $('#buttons').show();
+      $('#clear_button').hide();
+    }
+
+    SECRET_KEY_ENC = null;
+    SECRET_KEY_SIGN= null;
+
+    // Start collecting some local randomness
+    sjcl.random.startCollectors();
+
+    $(document).ready(function() {
+      clear_keys();
+      $('#generator').hide();
+
+      // Get some more server-side randomness for keygen
+      $.getJSON('{% url helios.views.get_randomness %}', function(result) {
+        sjcl.random.addEntropy(result.randomness);
+        BigInt.setup(function() {
+          ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
+          $('#waiting_message').hide();
+          $('#generator').show();
+        });
+      });
+    });
+
+    function generate_keypair() {
+      $('#buttons').hide();
+
+      try {
+        SECRET_KEY_ENC = ELGAMAL_PARAMS.generate();
+        SECRET_KEY_SIGN= ELGAMAL_PARAMS.generate();
+      } catch (e) {
+        alert(e);
+      }
+
+      setup_public_key_and_proof();
+    }
+
+    function setup_public_key_and_proof() {
+      // Generate proof of secret key
+      PROOF_ENC = SECRET_KEY_ENC.proveKnowledge(ElGamal.fiatshamir_dlog_challenge_generator);
+      PUBLIC_KEY_ENC = SECRET_KEY_ENC.pk;
+      PROOF_SIGN = SECRET_KEY_SIGN.proveKnowledge(ElGamal.fiatshamir_dlog_challenge_generator);
+      PUBLIC_KEY_SIGN = SECRET_KEY_SIGN.pk;
+
+      var pk_val_enc = jQuery.toJSON({'pok': PROOF_ENC, 'public_key': PUBLIC_KEY_ENC});
+      var pk_val_sign = jQuery.toJSON({'pok': PROOF_SIGN, 'public_key': PUBLIC_KEY_SIGN});
+      $('#pk_textarea_enc').val(pk_val_enc);
+      $('#pk_textarea_sign').val(pk_val_sign);
+
+      $('#pk_hash_enc').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY_ENC)));
+      $('#pk_hash_sign').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY_SIGN)));
+      $('#clear_button').show();
+
+      show_sk();
+    }
+
+    function show_sk() {
+      $('#sk_download').show();
+    }
+
+    function hide_sk() {
+      clear_keys();
+
+      $('#sk_download').hide();
+      $('#generator').show();
+    }
+
+    function download_sk_enc() {
+      var blob = new Blob([jQuery.toJSON(SECRET_KEY_ENC)], {type: 'application/json'});
+      var url = URL.createObjectURL(blob);
+
+      saveAs(blob, 'encryption_key.json');
+    }
+
+    function download_sk_sign() {
+      var blob = new Blob([jQuery.toJSON(SECRET_KEY_SIGN)], {type: 'application/json'});
+      var url = URL.createObjectURL(blob);
+
+      saveAs(blob, 'signing_key.json');
+    }
+
+    var SK_ENC_DOWNLOADED = false;
+    var SK_SIGN_DOWNLOADED = false;
+
+    function show_pk_link(sk_downloaded) {
+      if (sk_downloaded == 'enc') {
+        $('#sk_enc_link').addClass('secondary');
+        SK_ENC_DOWNLOADED = true;
+      }
+
+      if (sk_downloaded == 'sign') {
+        $('#sk_sign_link').addClass('secondary');
+        SK_SIGN_DOWNLOADED = true;
+      }
+
+      if (SK_ENC_DOWNLOADED && SK_SIGN_DOWNLOADED)
+        $('#pk_link').show();
+    }
+
+    function show_pk() {
+      $('#sk_download').hide();
+      $('#name').show();
+      $('#email').show();
+
+      $('#pk_hash_enc').show();
+      $('#pk_hash_sign').show();
+
+      $('#pk_form').show();
+    }
+  </script>
+
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>{{election.name}}&mdash;Key Generator for {{trustee.name}}</h2>
+
+      <p>
+        As a trustee, it's time to set up your key pairs for this election.
+      </p>
+
+      <div data-alert class="alert-box info" id="waiting_message">
+        Please wait for the generator to load...
+      </div>
+
+      <div id="generator">
+        <span id="buttons">
+          <button onclick="generate_keypair(); return false;" id="generate_button">Generate Key Pairs</button>
+        </span>
+      </div>
+
+      <div id="sk_download">
+        <h3>Your Generated Key Pairs <small>[<a href="javascript:hide_sk()">Back</a>]</small></h3>
+
+        <p>
+          <span id="clear_button">
+            Your key has been generated, but you may choose to <a href="javascript:clear_keys();">clear it from memory and start from scratch</a> if you prefer.
+          </span>
+        </p>
+
+        <button id="sk_enc_link" onclick="download_sk_enc(); show_pk_link('enc'); return false;">Save Your Secret Key for Encryption</button>
+        <button id="sk_sign_link" onclick="download_sk_sign(); show_pk_link('sign'); return false;">Save Your Secret Key for Signing</button>
+        <button id="pk_link" onclick="show_pk(); return false;" style="display: none;">Upload Public Keys</button>
+      </div>
+
+      <div id="pk_form">
+        <h3>Upload Your Public Keys</h3>
+
+        <p>
+          It's time to upload the public key to the server.
+        </p>
+
+        <p>
+          The fingerprint of your public key for encryption is <tt id="pk_hash_enc"></tt>. The fingerprint of your public key for signing is <tt id="pk_hash_sign"></tt>. You may want to save these to confirm that your public key was properly stored by the server.
+        </p>
+
+        <p>
+          <i>Your public keys are not currently being displayed because you do not need to save it, the fingerprint is sufficient.</i>
+        </p>
+
+        <form method="post">
+          <textarea id="pk_textarea_enc" name="public_key_json_enc" cols="80" rows="10" style="height: 100px; display: none;"></textarea>
+          <textarea id="pk_textarea_sign" name="public_key_json_sign" cols="80" rows="10" style="height: 100px; display: none;"></textarea>
+          <input class="button" type="submit" value="Upload Your Public Keys">
+        </form>
+
+        <div id="applet_div"></div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

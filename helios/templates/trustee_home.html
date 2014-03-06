@@ -431,24 +431,35 @@
       <h2>{{election.name}}&mdash;Trustee Home for {{trustee.name}}</h2>
 
       <p>
-        This is your trustee homepage. As a trustee, you are responsible for decrypting the result of the election when all votes have been cast.
+        This is your trustee homepage. As a trustee, you are responsible for decrypting the result of the election when all votes have been cast. {% if not election.use_threshold %}In order to encrypt the votes, the system needs you to generate a key pair.{% else %}Since this election uses threshold encryption, the system requires you to generate two key pairs that will be used to communicate with the other trustees.{% endif %}
+      </p>
+
+      <p>
+        A key generator is provided that runs entirely in your browser, so that the generated secret key will not leave your machine. {% if not election.use_threshold %}However, it is also possible to reuse an existing pair.{% endif %}
       </p>
 
       {% if not election.use_threshold %}
         {% if trustee.public_key_hash %}
-        <p>
-          You have successfully uploaded your public key, with fingerprint <tt>{{trustee.public_key_hash}}</tt>.
-        </p>
+          <p>
+            You have successfully uploaded your public key, with fingerprint <tt>{{trustee.public_key_hash}}</tt>.
+          </p>
 
-        <a class="button" href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">Verify Your Secret Key</a>
+          <a class="button" href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">Verify Your Secret Key</a>
+        {% else %}
+          <div data-alert class="alert-box info">
+            You have not yet uploaded your public key.
+          </div>
+
+          <a class="button" href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">Upload Your Public Key</a>
+        {% endif %}
       {% else %}
-        <div data-alert class="alert-box info">
-          You have not yet uploaded your public key.
-        </div>
+        {% if not trustee.key %}
+          <div data-alert class="alert-box info">
+            You have not yet uploaded your public keys.
+          </div>
 
-        <a class="button" href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">Upload Your Public Key</a>
-      {% endif %}
-    {% else %}
+          <a class="button" href="{% url helios.views.trustee_keygenerator_threshold election.uuid, trustee.uuid %}">Upload Your Public Keys</a>
+        {% else %}
 
 <p>
 Welcome, this is your trustee homepage. <br />
@@ -605,7 +616,7 @@ You should keep the email with your trustee homepage link, which contains the cr
 {% endif %}
 </p>
 {% endif %}
-
+{% endif %}
 
 </div>
 </div>

@@ -152,38 +152,38 @@
         </thead>
 
         <tbody>
-          {% if voters %}
-            {% for voter in voters %}
-              <tr>
-                {% if admin_p or not election.use_voter_aliases %}
-                  <td>
-                    {% if admin_p %}
-                      {% if email_voters and election.frozen_at %}[<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}">E-mail</a>]{% endif %}
-                      [<a onclick="return confirm('Are you sure you want to remove {{voter.name}}?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">&times;</a>]
-                    {% endif %}
-
-                    <img class="small-logo" src="/static/helios_auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}
-                  </td>
-                {% endif %}
-
-                {% if election.use_voter_aliases %}
-                  <td>{{voter.alias}}</td>
-                {% endif %}
-
+          {% for voter in voters %}
+            <tr>
+              {% if admin_p or not election.use_voter_aliases %}
                 <td>
-                  <tt>{% if voter.vote_hash %}{{voter.vote_hash}}</tt> [<a href="{% url helios.views.castvote_shortcut vote_tinyhash=voter.vote_tinyhash %}">View</a>]{% endif %}
+                  {% if admin_p %}
+                    {% if email_voters and election.frozen_at %}[<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}">E-mail</a>]{% endif %}
+                    [<a onclick="return confirm('Are you sure you want to remove {{voter.name}}?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">&times;</a>]
+                  {% endif %}
+
+                  <img class="small-logo" src="/static/helios_auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}
                 </td>
-              </tr>
-            {% endfor %}
-          {% else %}
-            <td class="text-center" colspan="{% if admin_p and election.use_voter_aliases %}3{% else %}2{% endif %}">
-              {% if election.open_reg %}
-                <i>No voters were uploaded yet.</i>
-              {% else %}
-                <i>No votes were cast yet.</i>
               {% endif %}
-            </td>
-          {% endif %}
+
+              {% if election.use_voter_aliases %}
+                <td>{{voter.alias}}</td>
+              {% endif %}
+
+              <td>
+                <tt>{% if voter.vote_hash %}{{voter.vote_hash}}</tt> [<a href="{% url helios.views.castvote_shortcut vote_tinyhash=voter.vote_tinyhash %}">View</a>]{% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td class="text-center" colspan="{% if admin_p and election.use_voter_aliases %}3{% else %}2{% endif %}">
+                {% if election.open_reg %}
+                  <i>No voters were uploaded yet.</i>
+                {% else %}
+                  <i>No votes were cast yet.</i>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
         </tbody>
       </table>
 

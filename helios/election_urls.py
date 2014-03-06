@@ -29,6 +29,7 @@ urlpatterns = patterns('',
                        (r'^/trustees/create$', trustees_create),
                        (r'^/trustees/create-helios$', trustees_create_helios),
                        (r'^/trustees/delete$', trustees_delete),
+                       (r'^/trustees/freeze$', trustees_freeze),
 
                        # trustee pages
                        (r'^/trustees/(?P<trustee_uuid>[^/]+)/home$',
@@ -37,6 +38,8 @@ urlpatterns = patterns('',
                         trustee_send_url),
                        (r'^/trustees/(?P<trustee_uuid>[^/]+)/keygenerator$',
                         trustee_keygenerator),
+                       (r'^/trustees/(?P<trustee_uuid>[^/]+)/keygenerator-threshold$',
+                        trustee_keygenerator_threshold),
                        (r'^/trustees/(?P<trustee_uuid>[^/]+)/check-sk$',
                         trustee_check_sk),
                        (r'^/trustees/(?P<trustee_uuid>[^/]+)/upload-pk$',
@@ -52,11 +55,7 @@ urlpatterns = patterns('',
                        (r'^/view$', one_election_view),
                        (r'^/result$', one_election_result),
                        (r'^/result_proof$', one_election_result_proof),
-                       # (r'^/bboard$', one_election_bboard),
                        (r'^/audited-ballots/$', one_election_audited_ballots),
-
-                       # get randomness
-                       (r'^/get-randomness$', get_randomness),
 
                        # server-side encryption
                        (r'^/encrypt-ballot$', encrypt_ballot),
