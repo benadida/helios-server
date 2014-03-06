@@ -71,3 +71,7 @@ table {
 i.spacer {
   padding-left: 10px;
 }
+
+tt {
+  font-weight: bold;
+}

@@ -1,499 +1,454 @@
 {% extends "helios/templates/cryptobase.html" %}
+{% block title %}Trustee Home for {{trustee.name}}{% endblock %}
 
 {% block content %}
-<head>
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8" /> 
-  <title>Helios Threshold Encryption Tool</title>
- 
-  <script language="javascript" src="js/jscrypto/class.js"></script>
-  <script language="javascript" src="js/jscrypto/bigint.dummy.js"></script>
-  <script language="javascript" src="js/jscrypto/jsbn.js"></script>
-  <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
-  <script language="javascript" src="js/jscrypto/sjcl.js"></script>
-  <script language="javascript" src="js/underscore-min.js"></script>
-  <script language="javascript" src="js/jquery-1.2.2.min.js"></script>
-  <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
-  <script language="javascript" src="js/jquery-jtemplates.js"></script>
-  <script language="javascript" src="js/jquery.json.min.js"></script>
- <script language="javascript" src="js/jquery.json.min.js"></script>
-
-
   <script language="javascript">
-    // required for jscrypto library
-    //var JSCRYPTO_HOME = document.location.pathname.replace("create_encrypted_shares.html", "js/jscrypto");
-  	var JSCRYPTO_HOME = document.location.pathname.replace("create_encrypted_shares.html", "js/jscrypto");
+    $(document).ready(function() {
+      $('#result_div').hide();
+      $('#waiting_div').hide();
+      $('#waiting_submit_div').hide();
+      $('#done_div').hide();
+      $('#error_div').hide();
+      $('#first_step_div').hide();
+      $('#first_step_wait_div').hide();
+      $('#second_step_div').hide();
+      $('#third_step_div').hide();
+      $('#third_step_wait_div').hide();
+      $('#pk_form').hide();
+      $('#sk_download').hide();
+      $('#reuse').hide();
+
+      if ({{election.use_threshold|yesno:"true,false"}}){
+  	    if({{step}}==1){
+  	    	if({{wait}} == 0){
+  	    		$('#first_step_div').show();
+  	    	}
+  	    	else{
+  	    		$('#first_step_wait_div').show();
+
+  	    	}
+  	    }
+  	    if({{step}}==3){
+  	    	if({{wait}}==0) {
+  	    		$('#third_step_div').show();
+  	    	}
+  	    	else {
+  	    		$('#third_step_wait_div').show();
+
+  	    	}
+  	    }
+      }
+
+      BigInt.setup(function() {
+          ELECTION_JSON = {{election.toJSON|safe}};
+      });
+    });
+
+  	function get_secret_key() {
+      return ElGamal.SecretKey.fromJSONObject($.secureEvalJSON($('#sk_textarea').val()));
+    }
+
+    function get_variables() {
+      ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
+      var p = ELGAMAL_PARAMS.p;
+      var g = ELGAMAL_PARAMS.g;
+      var q = ELGAMAL_PARAMS.q;
+
+      SCHEME_PARAMS = Thresholdalgs.Thresholdscheme.fromJSONObject({{scheme_params_json|safe}});
+      var n = SCHEME_PARAMS.n;
+      var k = SCHEME_PARAMS.k;
+      var ground_1 = SCHEME_PARAMS.ground_1;
+      var ground_2 = SCHEME_PARAMS.ground_2;
+
+      var id_array=[];
+      var name_array = [];
+      var email_array = [];
+      var pok_encrypt_array = [];
+      var pok_signing_array = [];
+      var pk_encrypt_array = [];
+      var pk_signing_array = [];
+      var pk_encrypt_hash_array = []
+      var pk_signing_hash_array = [];
+      var encry_shares = [];
+
+      var dict, pk, proof;
+      var id_dict = {{id_dict|safe}};
+      var trustee_ids_dict = {{trustee_ids_dict|safe}}
+      var name_dict = JSON.parse(JSON.stringify({{name_dict|safe}}));
+      var email_dict = JSON.parse(JSON.stringify({{email_dict|safe}}));
+      var pk_encrypt_dict = JSON.parse(JSON.stringify({{pk_encrypt_dict|safe}}));
+      var pk_signing_dict = JSON.parse(JSON.stringify({{pk_signing_dict|safe}}));
+      var pk_encrypt_hash_dict = JSON.parse(JSON.stringify({{pk_encrypt_hash_dict|safe}}));
+      var pk_signing_hash_dict = JSON.parse(JSON.stringify({{pk_signing_hash_dict|safe}}));
+      var encry_shares_dict = JSON.parse(JSON.stringify({{encry_shares_dict|safe}}));
+
+      var i = 0;
+
+      var trustee_ids_array = [];
+
+      while (String(i) in id_dict) {
+        dict = id_dict[String(i)];
+
+        var id_value = parseInt(dict);
+        if (id_value == parseInt({{signer_id}}))
+    		  var trustee_index = i;
+
+        id_array.push(id_value);
+
+        dict = trustee_ids_dict[String(i)];
+        var trustee_id_value = parseInt(dict);
+        trustee_ids_array.push(trustee_id_value);
+
+        dict = name_dict[String(i)];
+        name_array.push(String(dict));
+
+        dict = email_dict[String(i)];
+        email_array.push(String(dict));
+
+        dict = pk_encrypt_dict[String(i)];
+        pk = ElGamal.PublicKey.fromJSONObject(jQuery.secureEvalJSON(dict));
+        pk_encrypt_array.push(pk);
+
+        dict = pk_signing_dict[String(i)];
+        pk = ElGamal.PublicKey.fromJSONObject(jQuery.secureEvalJSON(dict));
+        pk_signing_array.push(pk);
+
+        dict = pk_encrypt_hash_dict[String(i)];
+        pk_encrypt_hash_array.push(String(dict));
+
+        dict = pk_signing_hash_dict[String(i)];
+        pk_signing_hash_array.push(String(dict));
+
+        i++;
+      }
+
+      var i = 0;
+      var test = BigInt.fromInt(5);
+      var test_big = BigInt.fromInt(test);
+      var result_check = test_big.toJSONObject();
+
+      while (String(i) in encry_shares_dict) {
+        var dict = encry_shares_dict[String(i)];
+        var encry_share = Thresholdalgs.Signed_Encrypted_Share.fromJSONObject(JSON.parse(dict));
+        encry_shares.push(encry_share);
+        i++;
+      }
+
+      return [id_array, name_array, email_array, pk_encrypt_array, pk_signing_array, trustee_index,encry_shares, trustee_ids_array];
+    }
+
+    function calculate_shares() {
+      ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
+      var p = ELGAMAL_PARAMS.p;
+      var g = ELGAMAL_PARAMS.g;
+      var q = ELGAMAL_PARAMS.q;
+
+      SCHEME_PARAMS = Thresholdalgs.Thresholdscheme.fromJSONObject({{scheme_params_json|safe}});
+      var n = SCHEME_PARAMS.n;
+      var k = SCHEME_PARAMS.k;
+      var ground_1 = SCHEME_PARAMS.ground_1;
+      var ground_2 = SCHEME_PARAMS.ground_2;
+      var id_array, name_array, email_array, pk_encrypt_array, pk_signing_array, trustee_index, encry_shares, trustee_ids_array;
+      var data = get_variables();
+      id_array = data[0];
+      name_array = data[1];
+      email_array = data[2];
+      pk_encrypt_array = data[3];
+      pk_signing_array = data[4];
+      trustee_index = data[5];
+      encry_shares = data[6];
+      trustee_ids_array = data[7];
+
+      $('#first_step_div').hide();
+      $('#waiting_div').show();
+
+      var secret_key_sig = get_secret_key();
+      var signer_index = trustee_index;
+      var correct_shares = true;
+      if ((g.modPow(secret_key_sig.x,p).toString()) == (pk_signing_array[signer_index].y.toString())) {
+        var signer = name_array[signer_index];
+        var pk_signer = pk_signing_array[signer_index];
+        var scheme = new Thresholdalgs.Thresholdscheme({{election_id}},n,k,ground_1,ground_2);
+        var s = Random.getRandomInteger(q);
+        var t = Random.getRandomInteger(q);
+        var s_str = s.toJSONObject(s);
+        var q_str = q.toJSONObject(q);
+
+        // Also give the id's from the trustees (trustee.id)
+        var shares = scheme.share_verifiably(s,t,ELGAMAL_PARAMS, trustee_ids_array);
+        if (id_array.length == shares.length) {
+    		  var encry_shares = [];
+
+    		  for (var i = 0; i < n; i++) {
+      			var receiver_id = id_array[i];
+      			var trustee_receiver_id = trustee_ids_array[i];
+      			var receiver = name_array[i];
+      			var pk_encrypt_receiver = pk_encrypt_array[i];
+      			var pk_check = pk_encrypt_receiver.y.toJSONObject();
+
+      			var share = shares[i];
+
+      			var share_string = JSON.stringify(share.toJSONObject());
+      			if (share.point_s.x_value != trustee_receiver_id)
+      				correct_shares = false;
+
+      			var encry_share = share.encrypt(pk_encrypt_receiver);
+      			var encry_share_string = JSON.stringify(encry_share.toJSONObject());
+      			var sig  = share.sign(secret_key_sig,p,q,g);
+      			var signed_encry_share = new Thresholdalgs.Signed_Encrypted_Share(sig, encry_share);
+      			var signed_encry_share_string = JSON.stringify(signed_encry_share.toJSONObject());
+
+      			if (sig.verify(share_string,pk_signer,p,q,g)) {
+      				console.log(signer + ' created correct share ' + String(i));
+      				encry_shares.push(signed_encry_share);
+      			} else {
+      				console.log(signer + ' created incorrect share ' + String(i));
+      			}
+      		}
+      	}
+
+        if (encry_shares.length == n) {
+          var encry_shares_text = '';
+          var item;
+          var dict = {};
+
+          for (var i = 0; i < n; i++) {
+      		  item = encry_shares[i];
+      		  dict[String(i)] = item.toJSONObject();
+          }
+
+          encry_shares_text = JSON.stringify(dict);
+
+          $('#waiting_div').hide();
+          $('#second_step_div').show();
+          $('#encry_shares_textarea').val(encry_shares_text);
+        }
+      } else {
+      	$('#error_div').show();
+      }
+    }
+
+    function submit_result() {
+      $('#second_step_div').hide();
+      $('#waiting_submit_div').show();
+
+      var result = $('#encry_shares_textarea').val();
+
+      $.ajax({
+        type: 'POST',
+        url: "./upload-encrypted-shares",
+        data: {'encry_shares': result},
+        success: function(result) {
+          $('#waiting_submit_div').hide();
+          if (result != "FAILURE") {
+            $('#done_div').show();
+          } else {
+            alert('verification failed, you probably used the wrong key.');
+            reset();
+          }
+        },
+        error: function(error) {
+            $('#waiting_submit_div').hide();
+            $('#error_div').show();
+        }
+      });
+    }
+
+    function skip_to_second_step() {
+      $('#first_step_div').hide();
+      $('#second_step_div').show();
+      $('#encry_shares_textarea').html('');
+      $('#skip_to_second_step_instructions').hide();
+    }
+
+    function reset() {
+      $('#second_step_div').hide();
+      $('#skip_to_second_step_instructions').show();
+      $('#first_step_div').show();
+      $('#encry_shares_textarea').html('');
+      $('#first-step-success').hide();
+    }
+
+    function get_secret_key_decrypt() {
+      return ElGamal.SecretKey.fromJSONObject($.secureEvalJSON($('#sk_textarea_decrypt').val()));
+    }
+
+    function reuse_key(secret_key_text) {
+      SECRET_KEY = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(secret_key_text));
+
+      $('#reuse').hide();
+      setup_public_key_and_proof();
+      show_pk();
+    }
+
+    function setup_public_key_and_proof() {
+      // Generate PoK of secret key
+      PROOF = SECRET_KEY.proveKnowledge(ElGamal.fiatshamir_dlog_challenge_generator);
+      PUBLIC_KEY = SECRET_KEY.pk;
+
+      var pk_val = jQuery.toJSON({'pok': PROOF, 'public_key': PUBLIC_KEY});
+      $('#pk_textarea').val(pk_val);
+      $('#pk_hash').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY)));
+
+      $('#clear_button').show();
+      show_sk();
+    }
+
+    function calculate_keypair() {
+      $('#third_step_div').hide();
+      $('#waiting_div').show();
+
+      ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
+      var p = ELGAMAL_PARAMS.p;
+      var g = ELGAMAL_PARAMS.g;
+      var q = ELGAMAL_PARAMS.q;
+
+      SCHEME_PARAMS = Thresholdalgs.Thresholdscheme.fromJSONObject({{scheme_params_json|safe}});
+      var n = SCHEME_PARAMS.n;
+      var k = SCHEME_PARAMS.k;
+      var ground_1 = SCHEME_PARAMS.ground_1;
+      var ground_2 = SCHEME_PARAMS.ground_2;
+
+      var id_array, name_array, email_array, pk_encrypt_array, pk_signing_array, trustee_index, encry_shares, trustee_ids_array;
+    	var data = get_variables();
+    	id_array = data[0];
+    	name_array = data[1];
+    	email_array = data[2];
+    	pk_encrypt_array = data[3];
+    	pk_signing_array = data[4];
+    	trustee_index = data[5];
+    	encry_shares = data[6];
+    	trustee_ids_array = data[7];
+
+   		var sk_decrypt = get_secret_key_decrypt();
+  		var pk_trustee = pk_encrypt_array[trustee_index];
+  		var y_cal = g.modPow(sk_decrypt.x,p).mod(p);
+
+  		if (y_cal.equals(pk_trustee.y)) {
+  			console.log('Correct keypair for decryption');
+  		} else {
+  			console.log('Incorrect keypair for decryption');
+  		}
+
+  		// Test for encyrption
+  		var plaintext = new ElGamal.Plaintext(BigInt.fromInt(999), pk_trustee);
+  		var r = Random.getRandomInteger(pk_trustee.q);
+
+  		var ciph = ElGamal.encrypt(pk_trustee, plaintext,r);
+  		var plain = sk_decrypt.decrypt(ciph);
+
+  		// Loop over all trustees
+  		if (encry_shares.length == n) {
+  			var secret_shares = [];
+  			var trustee_id = trustee_ids_array[trustee_index];
+
+  			for (var i = 0; i < n; i++) {
+  				var pk_sender_sig = pk_signing_array[i];
+  				var sig_encry_share = encry_shares[i];
+  				var encry_share = sig_encry_share.encr_share;
+  				var sig = sig_encry_share.sig;
+  				var share = encry_share.decrypt(sk_decrypt);
+  				var share_string = JSON.stringify(share.toJSONObject());
+  				var correct_share = false;
+
+  				if ((share.point_s.x_value == trustee_id) && (share.point_t.x_value == trustee_id)) {
+  					if (sig.verify(share_string,pk_sender_sig,p,q,g)) {
+  						console.log(name_array[trustee_index] + ' verified signature of his share created by ' + name_array[i] + ': CORRECT SIGNATURE');
+
+  						if (share.verify_share(SCHEME_PARAMS,p,q,g)) {
+  							console.log(name_array[trustee_index] + ' verified commitments of his share created by ' + name_array[i] + ': CORRECT COMMITMENTS');
+
+  							secret_shares.push(share);
+  							correct_share = true;
+
+  							console.log(name_array[trustee_index] + ' accepted share number ' + String(i) + ' from ' + name_array[i]);
+  						} else{
+  							console.log(name_array[trustee_index] + ' verified commitments of his share created by ' + name_array[i] + ': WRONG COMMITMENTS');
+  						}
+  					} else {
+              console.log(name_array[trustee_index] + ' verified signature of his share created by ' + name_array[i] + ': WRONG SIGNATURE');
+            }
+  				} else {
+  				  console.log(name_array[trustee_index] + ' spotted a share with wrong x-coordinates of ' + name_array[i]);
+          }
+  			}
+  		} else {
+  		  console.log(name_array[trustee_index]+ ' received '+ String(encry_shares.length) + ' shares, instead of '+String(n)+' shares');
+      }
+
+      if (secret_shares.length == n) {
+        var share = secret_shares[0];
+        var share_string = share.toJSONObject();
+
+        for (var i = 1 ; i < n ; i++) {
+  		    var share_string = secret_shares[i].toJSONObject();
+  		    var succes = share.add(secret_shares[i],p,q,g,SCHEME_PARAMS);
+        }
+
+        var fin_share_string = share.toJSONObject();
+        var fin_com = share.Ei;
+        var q_str = q.toJSONObject();
+        if (share.verify_share(SCHEME_PARAMS,p,q,g)) {
+  		    console.log('Final secret share has commitment: ' + fin_com);
+        } else {
+  		    console.log('Final secret share: WRONG COMMITMENTS');
+        }
+
+        var sk_val = share.point_s.y_value;
+        var pk_val = g.modPow(sk_val,p).mod(p);
+        PUBLIC_KEY = new ElGamal.PublicKey(p,q,g,pk_val);
+        SECRET_KEY = new ElGamal.SecretKey(sk_val,PUBLIC_KEY);
+        PROOF = SECRET_KEY.proveKnowledge(ElGamal.fiatshamir_dlog_challenge_generator);
+        var pk_val = jQuery.toJSON({'pok': PROOF, 'public_key': PUBLIC_KEY});
+        $('#pk_textarea').val(pk_val);
+        $('#pk_hash').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY)));
+
+        $('#waiting_div').hide();
+        show_sk();
+      }
+    }
+
+    function show_sk() {
+      $('#sk_download').show();
+    }
+
+    function download_sk() {
+      var blob = new Blob([jQuery.toJSON(SECRET_KEY)], {type: 'application/json'});
+      var url = URL.createObjectURL(blob);
+
+      saveAs(blob, 'secret_key.json');
+    }
+
+    function show_pk() {
+      $('#sk_download').hide();
+      $('#pk_hash').show();
+      $('#pk_form').show();
+    }
   </script>
 
-  <script language="javascript" src="js/jscrypto/class.js"></script>  
-  <script language="javascript" src="js/jscrypto/bigint.js?d=20111004"></script>
-  <!-- this script is a dummy wrapper for bigint when client-side crypto is not possible
-  <script language="javascript" src="js/jscrypto/bigint.dummy.js"></script>-->
-  <script language="javascript" src="js/jscrypto/random.js"></script>
-  <script language="javascript" src="js/jscrypto/elgamal.js?d=20111004"></script>
-  <script language="javascript" src="js/jscrypto/sha1.js"></script>
-  <script language="javascript" src="js/jscrypto/sha2.js"></script>
-  <script language="javascript" src="js/jscrypto/helios.js?d=20111004"></script>
-  <script language="javascript" src="js/jscrypto/thresholdalgs.js"></script>
-  <script language="javascript" src="js/jscrypto/trustee_home_js.js"></script>
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>{{election.name}}&mdash;Trustee Home for {{trustee.name}}</h2>
 
-<script language="javascript">
-$(document).ready(function() {
-	
-    $('#result_div').hide();
-    $('#waiting_div').hide();
-    $('#waiting_submit_div').hide();
-    $('#done_div').hide();
-    $('#error_div').hide();
-    $('#first_step_div').hide();    
-    $('#first_step_wait_div').hide();
-    $('#second_step_div').hide();
-    $('#third_step_div').hide();
-    $('#third_step_wait_div').hide();
-    $('#pk_form').hide();
-    $('#sk_download').hide();
-    $('#reuse').hide();
+      <p>
+        This is your trustee homepage. As a trustee, you are responsible for decrypting the result of the election when all votes have been cast.
+      </p>
 
+      {% if not election.use_threshold %}
+        {% if trustee.public_key_hash %}
+        <p>
+          You have successfully uploaded your public key, with fingerprint <tt>{{trustee.public_key_hash}}</tt>.
+        </p>
 
+        <a class="button" href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">Verify Your Secret Key</a>
+      {% else %}
+        <div data-alert class="alert-box info">
+          You have not yet uploaded your public key.
+        </div>
 
-	if({{ election.use_threshold|yesno:"true,false" }}){
-	    if({{step}}==1){
-	    	if({{wait}} == 0){
-	    		$('#first_step_div').show();
-	    	}
-	    	else{
-	    		$('#first_step_wait_div').show();
-	
-	    	}
-	    }
-	    if({{step}}==3){
-	    	if({{wait}}==0) {
-	    		$('#third_step_div').show();
-	    	}
-	    	else {
-	    		$('#third_step_wait_div').show();
-	
-	    	}
-	    }
-	 else {
-	 	
-	 }
-    }
-    BigInt.setup(function() {
-        ELECTION_JSON = {{election.toJSON|safe}};
-        //ELECTION_PK = ElGamal.PublicKey.fromJSONObject(ELECTION_JSON['public_key']);
-        
-        
-    });
-}); 
-	
-	
-	function get_secret_key() {
-  return ElGamal.SecretKey.fromJSONObject($.secureEvalJSON($('#sk_textarea').val()));
-}
-
-function get_variables() {
-	//var n = {{scheme.n}};
-  //var k = {{scheme.k}}; 
-  //var ground_1 = BigInteger.fromJSONObject({{ground_1}});
-  //var ground_2 = JSON.stringify({{ground_2}});
-  ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
-  var p = ELGAMAL_PARAMS.p;
-  var g = ELGAMAL_PARAMS.g;
-  var q = ELGAMAL_PARAMS.q;
-  SCHEME_PARAMS = Thresholdalgs.Thresholdscheme.fromJSONObject({{scheme_params_json|safe}});
-  var n = SCHEME_PARAMS.n;
-    var k = SCHEME_PARAMS.k;
-  var ground_1 = SCHEME_PARAMS.ground_1;
-  var ground_2 = SCHEME_PARAMS.ground_2;
-
-   
-  var id_array=[];
-  var name_array = [];
-  var email_array = [];
-  var pok_encrypt_array = [];
-  var pok_signing_array = [];
-  var pk_encrypt_array = [];
-  var pk_signing_array = [];
-  var pk_encrypt_hash_array = []
-  var pk_signing_hash_array = [];
-  var encry_shares = [];
-  
-  var dict, pk, proof;
-  var id_dict = {{id_dict|safe}};
-  var trustee_ids_dict = {{trustee_ids_dict|safe}}
-  var name_dict = JSON.parse(JSON.stringify({{name_dict|safe}}));
-  var email_dict = JSON.parse(JSON.stringify({{email_dict|safe}}));
-  //var pok_encrypt_dict = JSON.parse(JSON.stringify({{pok_encrypt_dict|safe}}));
-  //var pok_signing_dict = JSON.parse(JSON.stringify({{pok_signing_dict|safe}}));
-  var pk_encrypt_dict = JSON.parse(JSON.stringify({{pk_encrypt_dict|safe}}));
-  var pk_signing_dict = JSON.parse(JSON.stringify({{pk_signing_dict|safe}}));
-  var pk_encrypt_hash_dict = JSON.parse(JSON.stringify({{pk_encrypt_hash_dict|safe}}));
-  var pk_signing_hash_dict = JSON.parse(JSON.stringify({{pk_signing_hash_dict|safe}}));
-  var encry_shares_dict = JSON.parse(JSON.stringify({{encry_shares_dict|safe}}));
-
-  var i = 0;
-  
-  var trustee_ids_array = [];
-  
-  while (String(i) in id_dict) {
-  	dict = id_dict[String(i)];
-  	var id_value = parseInt(dict);
-  	if (id_value == parseInt({{signer_id}})) {
-  		var trustee_index = i;
-  		
-  	}
-  	id_array.push(id_value);
-  	
-  	dict = trustee_ids_dict[String(i)];
-  	var trustee_id_value = parseInt(dict);
-  	trustee_ids_array.push(trustee_id_value);
-  	
-  	dict = name_dict[String(i)];
-  	name_array.push(String(dict));
-  	
-  	dict = email_dict[String(i)];
-  	email_array.push(String(dict));
-  	
-  	//dict = pok_encrypt_dict[String(i)];
-  	//proof = ElGamal.Proof.fromJSONObject(dict);
-  	//pok_encrypt_array.push(proof);
-
-  	//dict = pok_signing_dict[String(i)];
-  	//proof = ElGamal.Proof.fromJSONObject(dict);
-  	//pok_signing_array.push(proof);
-  	
-  	dict = pk_encrypt_dict[String(i)];
-  	pk = ElGamal.PublicKey.fromJSONObject(jQuery.secureEvalJSON(dict));
-  	pk_encrypt_array.push(pk);
-  	
-  	dict = pk_signing_dict[String(i)];
-  	pk = ElGamal.PublicKey.fromJSONObject(jQuery.secureEvalJSON(dict));
-  	pk_signing_array.push(pk);
-  	
-  	dict = pk_encrypt_hash_dict[String(i)];
-  	pk_encrypt_hash_array.push(String(dict));
-  	
-  	dict = pk_signing_hash_dict[String(i)];
-  	pk_signing_hash_array.push(String(dict));
-  	
-  	i++;  
-  	
-  }
-  var i = 0;
-  var test = BigInt.fromInt(5);
-  var test_big = BigInt.fromInt(test);
-  var result_check = test_big.toJSONObject();
-  while (String(i) in encry_shares_dict) {
-  	var dict = encry_shares_dict[String(i)];
-  	var encry_share = Thresholdalgs.Signed_Encrypted_Share.fromJSONObject(JSON.parse(dict));
-  	encry_shares.push(encry_share);
-  	i++;
-  }
-  return  [id_array, name_array, email_array, pk_encrypt_array, pk_signing_array,trustee_index,encry_shares, trustee_ids_array];
-  
-}
-function calculate_shares() {
-   ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
-  var p = ELGAMAL_PARAMS.p;
-  var g = ELGAMAL_PARAMS.g;
-  var q = ELGAMAL_PARAMS.q;
-  SCHEME_PARAMS = Thresholdalgs.Thresholdscheme.fromJSONObject({{scheme_params_json|safe}});
-  var n = SCHEME_PARAMS.n;
-    var k = SCHEME_PARAMS.k;
-  var ground_1 = SCHEME_PARAMS.ground_1;
-  var ground_2 = SCHEME_PARAMS.ground_2;
-  		var id_array, name_array, email_array, pk_encrypt_array, pk_signing_array, trustee_index, encry_shares, trustee_ids_array;
-  		var data = get_variables();
-  		id_array = data[0];
-  		name_array = data[1];
-  		email_array = data[2];
-  		pk_encrypt_array = data[3];
-  		pk_signing_array = data[4];
-  		trustee_index = data[5];
-  		encry_shares = data[6];
-  		trustee_ids_array = data[7];
-  		
-  $('#first_step_div').hide();
-  $('#waiting_div').show();
-  var secret_key_sig = get_secret_key();
-  var signer_index = trustee_index;
-  var correct_shares = true;
-  if ((g.modPow(secret_key_sig.x,p).toString())==(pk_signing_array[signer_index].y.toString())) {
-  	var signer = name_array[signer_index];
-  	var pk_signer = pk_signing_array[signer_index];
-  	var scheme = new Thresholdalgs.Thresholdscheme({{election_id}},n,k,ground_1,ground_2);
-  	var s = Random.getRandomInteger(q);
-  	var t = Random.getRandomInteger(q);
-  	var s_str = s.toJSONObject(s);
-  	var q_str = q.toJSONObject(q);
-  	//Also give the id's from the trustees (trustee.id)
-  	var shares = scheme.share_verifiably(s,t,ELGAMAL_PARAMS, trustee_ids_array);
-  	if(id_array.length == shares.length){
-  		var encry_shares = [];
-  		for(var i =0; i< n; i++) {
-  			var receiver_id = id_array[i];
-  			var trustee_receiver_id = trustee_ids_array[i];
-  			var receiver = name_array[i];
-  			var pk_encrypt_receiver = pk_encrypt_array[i];
-  			var pk_check = pk_encrypt_receiver.y.toJSONObject();
-  			
-  			var share = shares[i];
-  			
-  			var share_string = JSON.stringify(share.toJSONObject());
-  			if(share.point_s.x_value != trustee_receiver_id) {
-  				correct_shares = false;
-  			}
-
-  			var encry_share = share.encrypt(pk_encrypt_receiver);
-  			var encry_share_string = JSON.stringify(encry_share.toJSONObject());
-  			var sig  = share.sign(secret_key_sig,p,q,g);
-  			var signed_encry_share = new Thresholdalgs.Signed_Encrypted_Share(sig, encry_share);
-  			var signed_encry_share_string = JSON.stringify(signed_encry_share.toJSONObject());
-  			//var signed_encry_share_dict = signed_encry_share.toJSONObject();
-  			if(sig.verify(share_string,pk_signer,p,q,g)){
-  				
-  				
-  		
-  				console.log(signer+ ' created correct share '+String(i));
-  				encry_shares.push(signed_encry_share);
-  				
-  			}
-  			else {
-  				console.log(signer + ' created incorrect share '+String(i));
-  			}
-  		}
-  		
-  	}
-  if(encry_shares.length == n){
-  	var encry_shares_text = '';
-  	var item;
-  	var dict = {};
-  	for(var i = 0; i<n; i++){
-  		item = encry_shares[i];
-  		dict[String(i)] = item.toJSONObject();
-  	}
-  	encry_shares_text = JSON.stringify(dict);
-	$('#waiting_div').hide();
-  	$('#second_step_div').show();
-  	$('#encry_shares_textarea').val(encry_shares_text);
-  }
-  }
-  else {
-  	$('#error_div').show();
-  }
-   
-
-
-	
-}
-
-function submit_result() {
-  $('#second_step_div').hide();
-  $('#waiting_submit_div').show();
-
-  var result = $('#encry_shares_textarea').val();
-  
-  // do the post
-  $.ajax({
-      type: 'POST',
-      url: "./upload-encrypted-shares",
-      data: {'encry_shares': result},
-      success: function(result) {
-        $('#waiting_submit_div').hide();
-        if (result != "FAILURE") {
-          $('#done_div').show();
-        } else {
-          alert('verification failed, you probably used the wrong key.');
-          reset();
-        }
-      },
-      error: function(error) {
-          $('#waiting_submit_div').hide();
-          $('#error_div').show();
-      }
-  });
-}
-
-function skip_to_second_step() {
-  $('#first_step_div').hide();
-  $('#second_step_div').show();
-  $('#encry_shares_textarea').html('');
-  $('#skip_to_second_step_instructions').hide();
-}
-
-function reset() {
-  $('#second_step_div').hide();
-  $('#skip_to_second_step_instructions').show();
-  $('#first_step_div').show();
-  $('#encry_shares_textarea').html('');
-  $('#first-step-success').hide();
-}
-
-function get_secret_key_decrypt() {
-  return ElGamal.SecretKey.fromJSONObject($.secureEvalJSON($('#sk_textarea_decrypt').val()));
-}
-function reuse_key(secret_key_text) {
-    SECRET_KEY = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(secret_key_text));
-
-    $('#reuse').hide();
-    setup_public_key_and_proof();
-    show_pk();
-}
-
-function setup_public_key_and_proof() {    
-    // generate PoK of secret key
-    PROOF = SECRET_KEY.proveKnowledge(ElGamal.fiatshamir_dlog_challenge_generator);
-    PUBLIC_KEY = SECRET_KEY.pk;
-
-    var pk_val = jQuery.toJSON({'pok': PROOF, 'public_key': PUBLIC_KEY});
-    $('#pk_textarea').val(pk_val);
-    $('#pk_hash').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY)));
-
-    $('#clear_button').show();
-    show_sk();
-}
-function calculate_keypair() {
-  $('#third_step_div').hide();
-  $('#waiting_div').show();
-
-
-  ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
-  var p = ELGAMAL_PARAMS.p;
-  var g = ELGAMAL_PARAMS.g;
-  var q = ELGAMAL_PARAMS.q;
-  SCHEME_PARAMS = Thresholdalgs.Thresholdscheme.fromJSONObject({{scheme_params_json|safe}});
-  var n = SCHEME_PARAMS.n;
-    var k = SCHEME_PARAMS.k;
-  var ground_1 = SCHEME_PARAMS.ground_1;
-  var ground_2 = SCHEME_PARAMS.ground_2;
-  		var id_array, name_array, email_array, pk_encrypt_array, pk_signing_array, trustee_index, encry_shares, trustee_ids_array;
-  		var data = get_variables();
-  		id_array = data[0];
-  		name_array = data[1];
-  		email_array = data[2];
-  		pk_encrypt_array = data[3];
-  		pk_signing_array = data[4];
-  		trustee_index = data[5];
-  		encry_shares = data[6];
-  		trustee_ids_array = data[7];
-
- 		var sk_decrypt = get_secret_key_decrypt();
-		var pk_trustee = pk_encrypt_array[trustee_index];
-		var y_cal = g.modPow(sk_decrypt.x,p).mod(p);
-		if(y_cal.equals(pk_trustee.y)) {
-			console.log('Correct keypair for decryption');
-		}
-		else {
-			console.log('Incorrect keypair for decryption');
-		}
-		
-		//TEST FOR ENCRYPTION
-		var plaintext = new ElGamal.Plaintext(BigInt.fromInt(999), pk_trustee);
-		var r = Random.getRandomInteger(pk_trustee.q);
-
-		var ciph = ElGamal.encrypt(pk_trustee, plaintext,r);
-		var plain = sk_decrypt.decrypt(ciph);
-		
-		
-		
-		//LOOP ALL THE TRUSTEES
-		if(encry_shares.length == n){
-			var secret_shares = [];
-			var trustee_id = trustee_ids_array[trustee_index];
-			for(var i = 0; i< n; i++) {
-				var pk_sender_sig = pk_signing_array[i];
-				var sig_encry_share = encry_shares[i];
-				var encry_share = sig_encry_share.encr_share;
-				var sig = sig_encry_share.sig;
-				var share = encry_share.decrypt(sk_decrypt);
-				var share_string = JSON.stringify(share.toJSONObject());
-				var correct_share = false;
-				if((share.point_s.x_value == trustee_id)&&(share.point_t.x_value==trustee_id)){
-					if (sig.verify(share_string,pk_sender_sig,p,q,g)){
-						console.log(name_array[trustee_index]+ ' verified signature of his share created by '+name_array[i] + ': CORRECT SIGNATURE');
-						if(share.verify_share(SCHEME_PARAMS,p,q,g)){
-							console.log(name_array[trustee_index]+ ' verified commitments of his share created by '+name_array[i] + ': CORRECT COMMITMENTS');
-							secret_shares.push(share);
-							correct_share = true;
-							console.log(name_array[trustee_index]+ ' accepted share number '+String(i) +' from '+name_array[i]);
-
-						}
-						else{
-							console.log(name_array[trustee_index]+ ' verified commitments of his share created by '+name_array[i] + ': WRONG COMMITMENTS');
-						}
-					}
-					else
-					console.log(name_array[trustee_index]+ ' verified signature of his share created by '+name_array[i] + ': WRONG SIGNATURE');
-
-				}
-				else
-				console.log(name_array[trustee_index]+ ' spotted a share with wrong x-coordinates of '+name_array[i]);
-
-			}
-
-		}
-		else
-		console.log(name_array[trustee_index]+ ' received '+ String(encry_shares.length) + ' shares, instead of '+String(n)+' shares');
-if(secret_shares.length == n){
-	var share = secret_shares[0];
-	var share_string = share.toJSONObject();
-	for(var i = 1 ; i<n ; i++) {
-		var share_string = secret_shares[i].toJSONObject();
-		var succes = share.add(secret_shares[i],p,q,g,SCHEME_PARAMS);
-		
-	}
-	var fin_share_string = share.toJSONObject();
-	var fin_com = share.Ei;
-	var q_str = q.toJSONObject();
-	if (share.verify_share(SCHEME_PARAMS,p,q,g)) {
-		console.log('Final secret share has commitment: '+fin_com);
-	}
-	else
-		console.log('Final secret share: WRONG COMMITMENTS');
-
-	var sk_val = share.point_s.y_value;
-	var pk_val = g.modPow(sk_val,p).mod(p);
-	PUBLIC_KEY = new ElGamal.PublicKey(p,q,g,pk_val);
-	SECRET_KEY = new ElGamal.SecretKey(sk_val,PUBLIC_KEY);
-	PROOF = SECRET_KEY.proveKnowledge(ElGamal.fiatshamir_dlog_challenge_generator);
-	var pk_val = jQuery.toJSON({'pok': PROOF, 'public_key': PUBLIC_KEY});
-    $('#pk_textarea').val(pk_val);
-    $('#pk_hash').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY)));
-
-	$('#waiting_div').hide();
-    show_sk();
-}
-}
-function show_sk() {
-    $('#sk_download').show();
-}
-function download_sk() {
-    UTILS.open_window_with_content(jQuery.toJSON(SECRET_KEY), "application/json");
-}
-
-function show_pk() {
-    $('#sk_download').hide();
-    $('#pk_hash').show();
-    $('#pk_form').show();
-}
-
-
-</script>
-</head>
-  <h2 class="title">{{election.name}} &mdash; Trustee {{trustee.name}} Home</span></h2>
-
-<p>
-{% if not election.use_threshold %}
-	{% if trustee.public_key_hash %}
-	You have successfully uploaded your public key.<br />
-	Your public key fingerprint is: <b>{{trustee.public_key_hash}}</b>.<br />
-	You can <a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">verify that you have the right secret key</a>.
-	{% else %}
-	<a href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">setup your key</a>
-	{% endif %}
-	
-<!--Steps for threshold encryption-->
-{% else %}
+        <a class="button" href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">Upload Your Public Key</a>
+      {% endif %}
+    {% else %}
 
 <p>
 Welcome, this is your trustee homepage. <br />
@@ -502,9 +457,9 @@ Therefor you will have to agree on a secret with the other trustees and you will
 First Step: Generete encrypted shares for the other trustees. <br />
 Second Step: Upload the shares. <br />
 Third Step: Decrypt the shares of the other trustees. (This is only available when all the trustees uploaded their shares) <br />
-Fourth Step: Save your secret key and upload your public key. 
+Fourth Step: Save your secret key and upload your public key.
 </p>
- 
+
 <body>
     <div id="first_step_div" >
 
@@ -521,7 +476,7 @@ Fourth Step: Save your secret key and upload your public key.
         (you need to have already computed your encrypted shares.)
       </p>
     </div>
-  
+
   <div id="first_step_wait_div" >
   	 <h3>FIRST STEP: Generate your encrypted shares</h3>
           <p>Wait for the administrator to define the threshold scheme. <br /> Please come back later.</p>
@@ -536,7 +491,7 @@ Fourth Step: Save your secret key and upload your public key.
       Submitting and checking your decryption factors and proofs...<br />
       <img src="/static/helios/loading.gif" />
   </div>
-  
+
 
   <div id="second_step_div">
       <h3>SECOND STEP: upload your encrypted shares</h3>
@@ -554,7 +509,7 @@ Fourth Step: Save your secret key and upload your public key.
       <a href="javascript:reset()">reset and restart decryption process</a>
       <br />
   </div>
-  
+
   <div id="third_step_div" >
 
       <form onsubmit="return false;">
@@ -569,13 +524,13 @@ Fourth Step: Save your secret key and upload your public key.
         <a href="javascript:skip_to_fourth_step();">skip to the fourth step</a><br />
         (you need to have already decrypted your encrypted shares.)
       </p>
-   </div>      
+   </div>
 
  <div id="third_step_wait_div" >
           <h3>THIRD STEP: Decrypt shares and calculate keypair.</h3>
           <p>Wait for the other trustees to calculate the encrypted shares. <br /> Please come back later.</p>
   </div>
-  
+
   <div id="reuse">
 <h3>Reusing a Key</h3>
 
@@ -589,7 +544,7 @@ Enter your complete secret key below:
 <input type="submit" value="reuse" />
 </form>
 </div>
-  
+
   <div id="sk_download">
 <h3>Fourth Step: Save your secret key and upload your public key</h3>
 
@@ -618,11 +573,11 @@ Enter your complete secret key below:
 </form>
 
 
-  
+
   <div id="done_div">
       Done! <a href="/">Back to helios</a>
   </div>
-  
+
 
   <div id="error_div">
       Error: your secret key was likely incorrect.
@@ -652,6 +607,7 @@ You should keep the email with your trustee homepage link, which contains the cr
 {% endif %}
 
 
-
+</div>
+</div>
 {% endblock %}
 

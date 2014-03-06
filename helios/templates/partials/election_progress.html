@@ -8,7 +8,7 @@
           {% else %}
             <li {% if current == "questions" %}class="current"{% endif %}><a href="{% url helios.views.one_election_questions uuid %}">Questions</a></li>
             <li {% if current == "voters" %}class="current"{% endif %}><a href="{% url helios.views.voters_list_pretty uuid %}">Voters</a></li>
-            <li {% if current == "trustees" %}class="current"{% endif %}><a href="{% url helios.views.list_trustees_view uuid %}">Trustees</a></li>
+            <li {% if current == "trustees" %}class="current"{% endif %}><a href="{% url helios.views.trustees_list_view uuid %}">Trustees</a></li>
           {% endif %}
 
           <li {% if current == "view" %}class="current"{% endif %}><a href="{% url helios.views.one_election_view uuid %}">View</a></li>

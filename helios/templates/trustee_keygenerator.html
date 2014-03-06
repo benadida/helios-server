@@ -1,0 +1,181 @@
+{% extends "helios/templates/cryptobase.html" %}
+{% block title %}Key Generator for {{trustee.name}}{% endblock %}
+
+{% block content %}
+  <script language="javascript">
+    var PUBLIC_KEY;
+    var PROOF;
+
+    function clear_keys() {
+      $('#sk_download').hide();
+      $('#pk_form').hide();
+      $('#buttons').show();
+      $('#clear_button').hide();
+      $('#reuse').hide();
+    }
+
+    function show_key_reuse() {
+      $('#generator').hide();
+      $('#reuse').show();
+    }
+
+    function hide_key_reuse() {
+      clear_keys();
+
+      $('#reuse').hide();
+      $('#generator').show();
+    }
+
+    var SECRET_KEY;
+
+    function reuse_key(secret_key_text) {
+      SECRET_KEY = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(secret_key_text));
+
+      $('#reuse').hide();
+      setup_public_key_and_proof();
+      show_pk();
+    }
+
+    // Start collecting some local randomness
+    sjcl.random.startCollectors();
+
+    $(document).ready(function() {
+      clear_keys();
+      $('#generator').hide();
+
+      // Get some more server-side randomness for keygen
+      $.getJSON('{% url helios.views.get_randomness election.uuid %}', function(result) {
+        sjcl.random.addEntropy(result.randomness);
+        BigInt.setup(function() {
+          ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
+          $('#waiting_message').hide();
+          $('#generator').show();
+        });
+      });
+    });
+
+    function generate_keypair() {
+      $('#generator').hide();
+
+      try {
+        SECRET_KEY = ELGAMAL_PARAMS.generate();
+      } catch (e) {
+        alert(e);
+      }
+
+      setup_public_key_and_proof();
+    }
+
+    function setup_public_key_and_proof() {
+      // Generate PoK of secret key
+      PROOF = SECRET_KEY.proveKnowledge(ElGamal.fiatshamir_dlog_challenge_generator);
+      PUBLIC_KEY = SECRET_KEY.pk;
+
+      var pk_val = jQuery.toJSON({'pok': PROOF, 'public_key': PUBLIC_KEY});
+      $('#pk_textarea').val(pk_val);
+      $('#pk_hash').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY)));
+
+      $('#clear_button').show();
+      show_sk();
+    }
+
+    function show_sk() {
+      $('#sk_download').show();
+    }
+
+    function hide_sk() {
+      clear_keys();
+
+      $('#sk_download').hide();
+      $('#generator').show();
+    }
+
+    function download_sk() {
+      var blob = new Blob([jQuery.toJSON(SECRET_KEY)], {type: 'application/json'});
+      var url = URL.createObjectURL(blob);
+
+      saveAs(blob, 'secret_key.json');
+    }
+
+    function show_pk() {
+      $('#sk_download').hide();
+      $('#pk_hash').show();
+      $('#pk_form').show();
+    }
+  </script>
+
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>{{election.name}}&mdash;Key Setup for {{trustee.name}}</h2>
+
+      <p>
+        As a trustee, it's time to set up your key pair for this election.
+      </p>
+
+      <div data-alert class="alert-box info" id="waiting_message">
+        Please wait for the generator to load...
+      </div>
+
+      <div id="generator">
+        <span id="buttons">
+          <button onclick="generate_keypair(); return false;" id="generate_button">Generate a Key Pair</button>
+        </span>
+
+        <p>
+          If you've already generated a keypair, it is possible to use it again for this election.
+        </p>
+
+        <button onclick="show_key_reuse(); return false;" id="generate_button">Reuse a Key Pair</button>
+      </div>
+
+      <div id="reuse">
+        <h3>Reuse a Key Pair <small>[<a href="javascript:hide_key_reuse()">Back</a>]</small></h3>
+
+        <p>
+          Enter your complete secret key in the field below.
+        </p>
+
+        <form onsubmit="reuse_key(this.secret_key.value); return false;">
+          <textarea name="secret_key" style="height: 100px;"></textarea>
+          <input class="button" type="submit" value="Reuse" />
+        </form>
+      </div>
+
+      <div id="sk_download">
+        <h3>Your Generated Key Pair <small>[<a href="javascript:hide_sk()">Back</a>]</small></h3>
+
+        <p>
+          <span id="clear_button">
+            Your key has been generated, but you may choose to <a href="javascript:clear_keys();">clear it from memory and start from scratch</a> if you prefer.
+          </span>
+        </p>
+
+        <button id="sk_link" onclick="download_sk(); $('#pk_link').show(); $('#sk_link').addClass('secondary'); return false;">Save Your Secret Key</button>
+        <button id="pk_link" onclick="show_pk(); return false;" style="display: none;">Upload Public Key</button>
+      </div>
+
+      <div id="pk_form">
+        <h3>Upload Your Public Key</h3>
+
+        <p>
+          It's time to upload the public key to the server.
+        </p>
+
+        <p>
+          The fingerprint of your public key is <tt id="pk_hash"></tt>. You may want to save this to confirm that your public key was properly stored by the server.
+        </p>
+
+        <p>
+          <i>Your public key is not currently being displayed because you do not need to save it, the fingerprint is sufficient.</i>
+        </p>
+
+        <form method="post" action="{% url helios.views.trustee_upload_pk election.uuid, trustee.uuid %}">
+          <textarea id="pk_textarea" name="public_key_json" style="height: 100px; display: none;"></textarea>
+          <input class="button" type="submit" value="Upload your Public Key">
+        </form>
+      </div>
+
+      <div id="applet_div"></div>
+    </div>
+  </div>
+{% endblock %}

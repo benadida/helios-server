@@ -120,7 +120,7 @@
 														The decryption shares from the trustees are combined and the tally is decrypted. Once you do this, the tally will be immediately available for all to see, and all voters will be notified that the tally is ready.
 													{% endifequal %}
 												{% else %}
-													<a href="{% url helios.views.list_trustees_view election.uuid %}">List of trustees (for decryption).</a>
+													<a href="{% url helios.views.trustees_list_view election.uuid %}">List of trustees (for decryption).</a>
 												{% endif %}
 											{% endif %}
 										{% endif %}
@@ -169,7 +169,7 @@
 													The decryption shares from the trustees are combined and the tally is decrypted. Once you do this, the tally will be immediately available for all to see, and all voters will be notified that the tally is ready.
 												{% endifequal %}
 											{% else %}
-												<a href="{% url helios.views.list_trustees_view election.uuid %}">List of trustees (for decryption).</a>
+												<a href="{% url helios.views.trustees_list_view election.uuid %}">List of trustees (for decryption).</a>
 											{% endif %}
 										{% endif %}
 									{% endif %}

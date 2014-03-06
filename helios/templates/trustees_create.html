@@ -5,7 +5,7 @@
   <div class="row">
     <div class="large-12 columns">
       <h2>
-        {{election.name}}&mdash;New Trustee <small>[<a href="{% url helios.views.list_trustees_view election.uuid %}">Cancel</a>]</small>
+        {{election.name}}&mdash;New Trustee <small>[<a href="{% url helios.views.trustees_list_view election.uuid %}">Cancel</a>]</small>
       </h2>
 
       <form method="post">
