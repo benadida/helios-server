@@ -272,7 +272,7 @@ Anyone can vote in this election.
 
 {% if not election.voting_has_started %}
 <p style="font-size: 1.2em;">
-  <a href="{{SECURE_URL_HOST}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">preview booth</a>
+  <a href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">preview booth</a>
 </p>
 {% endif %}  
 
