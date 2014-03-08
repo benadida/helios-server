@@ -563,7 +563,7 @@ BOOTH.post_audited_ballot = function() {
 
 BOOTH.cast_ballot = function() {
     // show progress spinner
-    $('#loading_div').html('<img src="loading.gif" id="proceed_loading_img" />');
+    $('#loading_div').show();
     $('#proceed_button').attr('disabled', 'disabled');
 
     // at this point, we delete the plaintexts by resetting the ballot

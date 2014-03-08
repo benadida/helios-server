@@ -103,4 +103,7 @@ h3 {
 #election_hash {
   font-family: courier;
 }
+
+#loading_div {
+  display: none;
 }
