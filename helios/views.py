@@ -44,7 +44,7 @@ from models import *
 import forms
 import signals
 from bulletin_board import thresholdalgs
-from bulletin_board.models import *
+from bulletin_board.models import Signed_Encrypted_Share, Ei, Incorrect_share, Signature
 from helios.constants import p, g, q, ground_1, ground_2
 
 # parameters for everything
@@ -574,7 +574,7 @@ def trustees_delete(request, election):
 @election_admin(frozen=False)
 def trustees_freeze(request, election):
     if request.method == 'POST':
-        form = kForm(request.POST)
+        form = ThresholdSchemeForm(request.POST)
         if form.is_valid():
             # process the data in form.cleaned_data
             trustees = Trustee.objects.filter(election=election)

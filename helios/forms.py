@@ -38,10 +38,14 @@ class ElectionTimesForm(forms.Form):
         help_text='UTC date and time when voting ends', widget=SplitSelectDateTimeWidget)
 
 
+class ThresholdSchemeForm(forms.Form):
+    k = forms.IntegerField(label='Number of Trustees')
+
+
 class EmailVotersForm(forms.Form):
     subject = forms.CharField(max_length=80)
     body = forms.CharField(max_length=2000, widget=forms.Textarea)
-    send_to = forms.ChoiceField(label="Send To", initial="all", choices=[('all', 'All Voters'), (
+    send_to = forms.ChoiceField(label='Send To', initial='all', choices=[('all', 'All Voters'), (
         'voted', 'Voters Who Have Cast a Ballot'), ('not-voted', 'Voters Who Have Not Yet Cast a Ballot')])
 
 
@@ -49,10 +53,10 @@ class TallyNotificationEmailForm(forms.Form):
     subject = forms.CharField(max_length=80)
     body = forms.CharField(
         max_length=2000, widget=forms.Textarea, required=False)
-    send_to = forms.ChoiceField(label="Send To", choices=[('all', 'all voters'), (
+    send_to = forms.ChoiceField(label='Send To', choices=[('all', 'all voters'), (
         'voted', 'only voters who cast a ballot'), ('none', 'no one -- are you sure about this?')])
 
 
 class VoterPasswordForm(forms.Form):
-    voter_id = forms.CharField(max_length=50, label="Voter ID")
+    voter_id = forms.CharField(max_length=50, label='Voter ID')
     password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
