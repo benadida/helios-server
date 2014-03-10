@@ -35,7 +35,7 @@ Send email to election '{{ election_name }}' voters
 
 {% if voter_o %}  
   <p>
-    The message will only be sent to the following voter:
+    {% trans "The message will only be sent to the following voter:" %}
     <b>{{ voter_o.voter_surname }} {{voter_o.name}} ({{voter_o.voter_id}})</b>
   </p>
 {% endif %}

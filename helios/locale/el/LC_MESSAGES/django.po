@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-02-20 17:17+0200\n"
+"POT-Creation-Date: 2014-03-10 11:50+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -535,7 +535,7 @@ msgstr "Μερική αποκρυπτογράφηση"
 
 #: templates/_trustee_decrypt.html:10
 msgid "Decryption uploaded. Decryption verification pending."
-msgstr "Η αποκρυπτογράφιση καταχωρήθηκε."
+msgstr "Η αποκρυπτογράφηση καταχωρήθηκε."
 
 #: templates/_trustee_decrypt.html:11
 msgid "ciphers downloaded"
@@ -555,7 +555,7 @@ msgstr "Η αποστολή απέτυχε"
 
 #: templates/_trustee_decrypt.html:18
 msgid "The final ballots are ready to be decrypted."
-msgstr "Τα τελικά ψηφοδέλτια είναι έτοιμα προς αποκρυπτογράφιση."
+msgstr "Τα τελικά ψηφοδέλτια είναι έτοιμα προς αποκρυπτογράφηση."
 
 #: templates/_trustee_decrypt.html:21
 msgid "Insert your trustee key"
@@ -997,7 +997,7 @@ msgstr "επιβεβαιώστε ότι πράγματι κατέχετε τον
 
 #: templates/election_trustee_home.html:16
 msgid "if you haven't."
-msgstr "εαν δε το έχετε κάνει ήδη."
+msgstr "εαν δεν το έχετε κάνει ήδη."
 
 #: templates/election_trustee_home.html:18
 msgid "generate trustee key"
@@ -1260,6 +1260,10 @@ msgstr "έξοδος"
 msgid "You are logged in as voter"
 msgstr "Συδεθήκατε ως ψηφοφόρος"
 
+#: templates/user_section.html:21
+msgid "proceed to election site"
+msgstr "είσοδος στη σελίδα της ψηφοφορίας"
+
 #: templates/user_section.html:28
 msgid "You are logged in as trustee"
 msgstr "Συνδεθήκατε ως μέλος εφορευτικής"
@@ -1316,6 +1320,10 @@ msgid ""
 msgstr ""
 "\n"
 "Αποστολή μηνύματος στους ψηφοφόρους της ψηφοφορίας '%(election_name)s'\n"
+
+#: templates/voters_email.html:38
+msgid "The message will only be sent to the following voter:"
+msgstr "Το μήνυμα θα σταλεί μόνο στον ακόλουθο ψηφοφόρο:"
 
 #: templates/voters_email.html:62
 msgid "You can edit the contents of the message using the following form."
@@ -1380,11 +1388,11 @@ msgstr "Προσκαλείστε να συμμετάσχετε στην ψηφο
 
 #: templates/email/vote_body.txt:12
 msgid "starting"
-msgstr "που αρχίζει"
+msgstr "με ημ/νία έναρξης"
 
 #: templates/email/vote_body.txt:13
 msgid "and ending"
-msgstr "και τελειώνει"
+msgstr "και λήξης"
 
 #: templates/email/vote_body.txt:14
 msgid "Your registration ID is:"
@@ -1435,22 +1443,26 @@ msgstr ""
 "Προτείνουμε τους παρακάτω φυλλομετρητές:"
 
 #: templates/email/vote_body.txt:45
-#, python-format
 msgid ""
 "Important:\n"
 "\n"
 "The present message is strictly personal and confidential.\n"
-"Do not forward or show it to others.\n"
-"Do not reply to it, you can write to %(election.help_email)s instead.\n"
-"If you are not the legitimate recipient, please delete this message\n"
-"and contact helpdesk@zeus.grnet.gr"
+"Do not forward or show it to others. Do not reply to this."
 msgstr ""
 "Προσοχή:\n"
 "\n"
 "Το παρόν μήνυμα είναι αυστηρά προσωπικό και εμπιστευτικό.\n"
-"Μην το προωθείτε ή το δείχνετε σε άλλους.\n"
-"Μην απαντάτε σε αυτό. Μπορείτε να επικοινωνήσετε στο "
-"%(election.help_email)s.\n"
+"Μην το προωθείτε ή το δείχνετε σε άλλους. Μην απαντάτε στον παρόν."
+
+#: templates/email/vote_body.txt:49
+msgid "Instead, you can write to"
+msgstr "Μπορείτε να επικοινωνήσετε στο"
+
+#: templates/email/vote_body.txt:50
+msgid ""
+"If you are not the legitimate recipient, please delete this message\n"
+"and contact helpdesk@zeus.grnet.gr"
+msgstr ""
 "Εάν δεν είστε ο νόμιμος παραλήπτης, παρακαλούμε διαγράψτε το μήνυμα αυτό\n"
 "και επικοινωνήστε με το helpdesk@zeus.grnet.gr"
 

@@ -18,7 +18,7 @@
             {{ voter.poll.name_display }}</a>"</em>
           <br /><br />
           <a class="button tiny" href="{% url election_poll_index voter.poll.election.uuid voter.poll.uuid %}">
-              proceed to election site</a>
+		  {% trans "proceed to election site" %}</a>
           <a class="button tiny alert" href="{% url logout %}?return_url=/">{% trans "logout" %}</a>
       </div>
   </div>

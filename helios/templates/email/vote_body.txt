@@ -45,9 +45,9 @@ We recommend the following browsers:{% endblocktrans %}
 {% blocktrans %}Important:
 
 The present message is strictly personal and confidential.
-Do not forward or show it to others.
-Do not reply to it, you can write to {{ election.help_email }} instead.
-If you are not the legitimate recipient, please delete this message
+Do not forward or show it to others. Do not reply to this.{% endblocktrans %}
+{% trans "Instead, you can write to" %} {{ election.help_email }}.
+{% blocktrans %}If you are not the legitimate recipient, please delete this message
 and contact helpdesk@zeus.grnet.gr{% endblocktrans %}
 
 --
