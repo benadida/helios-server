@@ -1,0 +1,38 @@
+{% extends "server_ui/templates/base.html" %}
+{% load i18n %}
+
+{% block tabs_menu %}
+
+{% if bad_login %}
+{% include "zeus/bad_login_warning.html" %}
+{% endif %}
+
+{% include "zeus/_menu_partial.html" %}
+{% endblock %}
+
+{% block page_top %}
+{% include "zeus/intro_announcements.html" %}
+{{ block.super }}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="columns twelve">
+    <p>Intro content</p>
+  </div>
+</div>
+<div class="row">
+<div class="columns four">
+  <h3>Column 1</h3>
+  <p>Column 1 content</p>
+</div>
+<div class="columns four">
+  <h3>Column 2</h3>
+  <p>Column 2 content</p>
+</div>
+<div class="columns four">
+  <h3>Column 3</h3>
+  <p>Column 3 content</p>
+</div>
+</div>
+{% endblock %}

@@ -66,12 +66,21 @@ def prepare_vars(request, vars):
 
 def render_template(request, template_name, vars = {}, include_user=True):
   vars_with_user = RequestContext(request, prepare_vars(request, vars))
-
+  
+  language = request.LANGUAGE_CODE
   if not include_user:
     del vars_with_user['user']
-
-  return render_to_response('helios/templates/%s.html' % template_name,
-                          vars_with_user)
+    
+  i18n_tpl = 'helios/templates/i18n/%s/%s.html' % (language, template_name)
+  template_name = 'helios/templates/%s.html' % template_name
+    
+  try:
+    loader.get_template(i18n_tpl)
+    template_name = i18n_tpl
+  except:
+    pass
+    
+  return render_to_response(template_name, vars_with_user)
 
 def render_template_raw(request, template_name, vars={}):
   t = loader.get_template(template_name)
