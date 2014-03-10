@@ -59,6 +59,9 @@
                     <img src="{{ THEME_HEADER_BG_URL }}" />
             </a>
             <div id="banner">
+                <div class="lang-menu">
+                    {% include "lang_select.html" %}
+                </div>
                 <h1>{% trans "Zeus Electronic Voting" %}</h1>
             </div>
             {% include "user_section.html" %}

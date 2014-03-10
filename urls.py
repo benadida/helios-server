@@ -32,6 +32,7 @@ app_patterns += patterns(
 urlpatterns = patterns(
     '',
     (r'^' + SERVER_PREFIX, include(app_patterns)),
+    (r'^i18n/', include('django.conf.urls.i18n')),
 )
 
 #SHOULD BE REPLACED BY APACHE STATIC PATH
