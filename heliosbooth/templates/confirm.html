@@ -8,6 +8,10 @@
 <b style="font-size:1.4em;">{#foreach $T.choices[$T.question$index] as choice}
 {$T.choice}{#if !$T.choice$last}, {#/if}
 {#/for}</b>
+{#if $T.choices[$T.question$index].length < $T.question.max}
+&nbsp;&nbsp;&nbsp;
+[you selected only {$T.choices[$T.question$index].length}, you may select up to {$T.question.max}]
+{#/if}
 &nbsp;&nbsp;&nbsp;
 [<a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#">edit</a>]
 </p>
