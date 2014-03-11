@@ -4,6 +4,7 @@ Forms for Helios
 
 from django import forms
 from models import Election
+from bulletin_board.models import Signature
 from widgets import *
 from fields import *
 
@@ -38,15 +39,16 @@ class ElectionTimesForm(forms.Form):
         help_text='UTC date and time when voting ends', widget=SplitSelectDateTimeWidget)
 
 
-class ThresholdSchemeForm(forms.Form):
-    k = forms.IntegerField(label='Number of Trustees')
-
-
 class EmailVotersForm(forms.Form):
     subject = forms.CharField(max_length=80)
     body = forms.CharField(max_length=2000, widget=forms.Textarea)
     send_to = forms.ChoiceField(label='Send To', initial='all', choices=[('all', 'All Voters'), (
         'voted', 'Voters Who Have Cast a Ballot'), ('not-voted', 'Voters Who Have Not Yet Cast a Ballot')])
+
+
+class SignatureForm(forms.ModelForm):
+    class Meta:
+        model = Signature
 
 
 class TallyNotificationEmailForm(forms.Form):
@@ -55,6 +57,10 @@ class TallyNotificationEmailForm(forms.Form):
         max_length=2000, widget=forms.Textarea, required=False)
     send_to = forms.ChoiceField(label='Send To', choices=[('all', 'all voters'), (
         'voted', 'only voters who cast a ballot'), ('none', 'no one -- are you sure about this?')])
+
+
+class ThresholdSchemeForm(forms.Form):
+    k = forms.IntegerField(label='Number of Trustees')
 
 
 class VoterPasswordForm(forms.Form):

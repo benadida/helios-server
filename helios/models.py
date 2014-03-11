@@ -682,6 +682,10 @@ class Election(HeliosModel):
                     keypair.sk.to_dict())
                 key.pok_signing = keypair.sk.prove_sk(
                     algs.DLog_challenge_generator)
+                key.public_key_encrypt_hash = utils.hash_b64(
+                    key.public_key_encrypt)
+                key.public_key_signing_hash = utils.hash_b64(
+                    key.public_key_signing)
                 key.save()
                 secret_key.public_key = key
                 secret_key.save()
