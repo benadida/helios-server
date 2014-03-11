@@ -63,3 +63,7 @@ height: 2.5em;
 select {
     width: auto;
 }
+
+ul {
+    margin-left: 20px;
+}
