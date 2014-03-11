@@ -337,7 +337,11 @@ BOOTH.click_checkbox = function(question_num, answer_num, checked_p) {
         if (!checkbox.checked)
             checkbox.disabled = true;
      });
-     $('#warning_box').html("Maximum number of options selected.<br />To change your selection, please de-select a current selection first.");
+
+     // do the warning only if the question allows more than one option, otherwise it's confusing
+     if (BOOTH.election.questions[question_num].max > 1) {
+        $('#warning_box').html("Maximum number of options selected.<br />To change your selection, please de-select a current selection first.");
+     }
   } else {
      // enable the other checkboxes
      $('.ballot_answer').each(function(i, checkbox) {
