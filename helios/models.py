@@ -192,7 +192,7 @@ class Election(HeliosModel):
 
   @property
   def description_bleached(self):
-    return bleach.clean(self.description)
+    return bleach.clean(self.description, tags = bleach.ALLOWED_TAGS + ['p'])
 
   @classmethod
   def get_featured(cls):
