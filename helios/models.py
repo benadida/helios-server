@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 
 import datetime, logging, uuid, random, io
+import bleach
 
 from crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
@@ -188,6 +189,10 @@ class Election(HeliosModel):
   @property
   def is_archived(self):
     return self.archived_at != None
+
+  @property
+  def description_bleached(self):
+    return bleach.clean(self.description)
 
   @classmethod
   def get_featured(cls):

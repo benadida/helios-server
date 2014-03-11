@@ -1,5 +1,4 @@
 {% extends TEMPLATE_BASE %}
-
 {% block title %}{{election.name}}{% endblock %}
 {% block content %}
 <div style="float: left; margin-right: 50px;">
@@ -47,7 +46,7 @@ this {{election.election_type}} is <u>not</u> featured on the front page.
 <br clear="left" />
 
 <div style="margin-bottom: 25px;margin-left: 15px; border-left: 1px solid #aaa; padding-left: 5px; font-size:1.3em; ">
-{{election.description}}
+{{election.description_bleached|safe}}
 </div>
 
 {% if election.election_info_url %}
