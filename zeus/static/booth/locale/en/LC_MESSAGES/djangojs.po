@@ -1,0 +1,93 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-03-13 00:44+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: js/booth.js:59
+msgid ""
+"If you leave this page with an in-progress ballot, your ballot will be lost."
+msgstr ""
+
+#: js/booth.js:69
+msgid ""
+"Are you sure you want to exit the booth and lose all information about your "
+"current ballot?"
+msgstr ""
+
+#: js/booth.js:157
+msgid "BROWSER_NOT_SUPPORTED_ALERT"
+msgstr ""
+"Το πρόγραμμα πλοήγησης που χρησιμοποιείτε δεν υποστηρίζεται από την "
+"πλατφόρμα \"Ζευς\". Χρησιμοποιήστε τις νέες εκδόσεις των προγραμμάτων "
+"(browser) Mozilla Firefox ή Google Chrome.\n"
+"\n"
+"Για περισσότερες πληροφορίες επικοινωνήστε μαζί μας"
+
+#: js/booth.js:412
+msgid "HELP_EMAIL_SUBJECT"
+msgstr ""
+
+#: js/booth.js:413
+msgid "HELP_EMAIL_BODY"
+msgstr ""
+
+#: js/booth.js:437
+msgid "ELECTION_INIT_ERROR"
+msgstr ""
+
+#: js/booth.js:577
+msgid "ENCRYPTION_PROCESS_FAILED"
+msgstr ""
+
+#: js/booth.js:650
+msgid "AUDIT_BALLOT_CAST_COMPLETE"
+msgstr ""
+
+#: js/booth.js:661
+msgid "ELECTION_TERMS_ACCEPT_REQUIRED"
+msgstr ""
+
+#: js/booth.js:704
+msgid "BALLOT_CAST_FAILED"
+msgstr ""
+
+#: js/booth.js:711
+msgid "CAST_VOTE_ID"
+msgstr ""
+
+#: templates-el/election.html:4
+msgid "ELECTION_INTRO_BODY"
+msgstr ""
+
+#: templates-el/election.html:8
+msgid "START"
+msgstr ""
+
+#: templates-el/header.html:8
+msgid "CONTACT_DETAILS"
+msgstr "Contact details"
+
+#: templates-el/header.html:11
+msgid "EMAIL"
+msgstr ""
+
+#: templates-el/header.html:12
+msgid "PHONE"
+msgstr "Phone"
+
+#~ msgid "TEST_MSG"
+#~ msgstr "Η ερώτηση '%s' απαιτεί τουλάχιστον %s επιλογές."
