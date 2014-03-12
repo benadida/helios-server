@@ -270,7 +270,11 @@ class ScoresForm(QuestionBaseForm):
                                        choices=SCORES_CHOICES,
                                        label=_('Scores'))
 
-
+#testing stv
+class StvForm(forms.Form):
+    candidate = forms.CharField(label=('Candidate'), max_length=255,
+                                required=True)
+    
 class LoginForm(forms.Form):
     username = forms.CharField(label=_('Username'),
                                max_length=50)

@@ -117,7 +117,7 @@
 </table>
 {% else %}
 {% endif %}
-{% if admin and election.feature_can_add_poll %}
+{% if request.admin and election.feature_can_add_poll %}
 {% include "_election_polls_add.html" %}
 {% endif %}
 </div>

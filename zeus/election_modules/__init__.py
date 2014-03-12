@@ -93,3 +93,5 @@ class ElectionModuleBase(object):
 from zeus.election_modules.simple import *
 from zeus.election_modules.parties import *
 from zeus.election_modules.score import *
+from zeus.election_modules.stv import *
+
