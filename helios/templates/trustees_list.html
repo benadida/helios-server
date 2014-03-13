@@ -129,7 +129,7 @@
       </table>
 
       {% if election.use_threshold %}
-        {% if election.frozen_trustee_list%}
+        {% if election.frozen_trustee_list %}
           <h3>Encrypted Shares</h3>
 
           <table>
@@ -155,6 +155,38 @@
                       {% endif %}
                     {% else %}
                       <i>Waiting</i>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+      {% endif %}
+
+      {% if election.use_threshold %}
+        {% if election.encrypted_shares_uploaded %}
+          <h3>Encryption Keys</h3>
+
+          <table>
+            <thead>
+              <tr>
+                <td width="25%">Trustee</td>
+                <td>Public Key</td>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for t in trustees %}
+                <tr>
+                  <td>
+                    {% if admin_p %}<span title="{{t.email}}">{% endif %}{{t.name}}{% if admin_p %}</span>{% endif %}
+                  </td>
+                  <td>
+                    {% if t.public_key_hash %}
+                      <tt>{{t.public_key_hash}}</tt>
+                    {% else %}
+                      <i>Not uploaded yet.</i>
                     {% endif %}
                   </td>
                 </tr>

@@ -420,14 +420,14 @@ def socialbuttons(request):
 # As of July 2009, there are always trustees for a Helios election: one trustee is acceptable, for simple elections.
 ##
 
-@election_admin(frozen=False)
+@election_admin(frozen=None)
 @json
 def trustees_list(request, election):
     trustees = Trustee.get_by_election(election)
     return [t.toJSONDict(complete=True) for t in trustees]
 
 
-@election_admin(frozen=False)
+@election_admin(frozen=None)
 def trustees_list_view(request, election):
     trustees = Trustee.get_by_election(election)
     user = get_user(request)
@@ -591,6 +591,16 @@ def trustees_freeze(request, election):
             scheme.k = form.cleaned_data['k']
             scheme.save()
             election.frozen_trustee_list = True
+
+            if election.has_helios_trustee():
+                if scheme.n == 1:
+                    helios_trustee = election.get_helios_trustee()
+                    key = helios_trustee.key
+                    sk = SecretKey.objects.filter(public_key=key)[0]
+                    sk_signature = sk.secret_key_signing
+                    add_encrypted_shares(request, election, sk_signature)
+                    election.encrypted_shares_uploaded = True
+
             election.save()
 
             return HttpResponseRedirect(reverse(trustees_list_view, args=[election.uuid]))
@@ -943,7 +953,6 @@ def trustee_upload_encrypted_shares(request, election, trustee):
             sk = SecretKey.objects.filter(public_key=key)[0]
             sk_signature = sk.secret_key_signing
             add_encrypted_shares(request, election, sk_signature)
-
             election.encrypted_shares_uploaded = True
             election.save()
 
@@ -1282,7 +1291,7 @@ def one_election_cast_done(request, election):
 
     # remote logout is happening asynchronously in an iframe to be modular given the logout mechanism
     # include_user is set to False if logout is happening
-    return render_template(request, 'cast_done', {'election': election,
+    return render_template(request, 'election_cast_done', {'election': election,
                                                   'vote_hash': vote_hash, 'logout': logout,
                                                   'socialbuttons_url': socialbuttons_url},
                            include_user=(not logout))

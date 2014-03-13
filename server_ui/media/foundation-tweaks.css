@@ -79,3 +79,7 @@ i.spacer {
 tt {
   font-weight: bold;
 }
+
+tt.big {
+  font-size: 1.8em;
+}
