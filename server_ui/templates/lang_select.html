@@ -1,5 +1,5 @@
 {% load i18n %}
-<form id="lang-switch" action="/{{ settings.SERVER_PREFIX }}/i18n/setlang/" method="post">
+<form id="lang-switch" action="{% url django.views.i18n.set_language %}" method="post">
 {% csrf_token %}
 <input name="next" type="hidden" value="{{ redirect_to }}" />
 <ul class="languages">
