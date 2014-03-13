@@ -415,7 +415,8 @@ BOOTH.setup_help_link = function() {
 
     $("#footer .help").attr("href", mailto)
 }
-BOOTH.load_and_setup_election = function(election_url) {
+BOOTH.load_and_setup_election = function(election_url, messages_url) {
+    BOOTH.messages_url = messages_url;
     // the hash will be computed within the setup function call now
     $.ajax({
       'url': election_url,
@@ -469,7 +470,19 @@ BOOTH.so_lets_go = function () {
 
     // election URL
     var election_url = $.query.get('poll_json_url');
-    BOOTH.load_and_setup_election(election_url);
+    var messages_url = $.query.get('messages_url');
+    $.getScript(messages_url, function() {
+      // gettext is loaded. vote.html content gets directly rendered to the browser.
+      // There are many ugly ways to apply the content translations. Here is one of them
+      $("[data-trans]").each(function() {
+        var content = $(this).html();
+        var translated = eval.call(window, content);
+        $(this).html(translated);
+      });
+      $("#election_div").css("display", "block");
+      $("#progress_div").css("display", "block");
+      BOOTH.load_and_setup_election(election_url, messages_url);
+    });
 };
 
 BOOTH.nojava = function() {

@@ -714,7 +714,10 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
                 'poll_url': "%s%s" % (settings.SECURE_URL_HOST,
                                       self.get_absolute_url()),
                 'poll_json_url': "%s%s" % (settings.SECURE_URL_HOST,
-                                           self.get_json_url())
+                                           self.get_json_url()),
+                'messages_url': "%s%s" % (settings.SECURE_URL_HOST,
+                                          self.get_js_messages_url()),
+                'language': "%s" % (request.LANGUAGE_CODE)
             }))
     return "%s?%s" % (reverse('test_cookie'),
                       urllib.urlencode({'continue_url': vote_url}))
@@ -722,6 +725,9 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
   def get_absolute_url(self):
       return reverse('election_poll_index', args=[self.election.uuid,
                                                   self.uuid])
+
+  def get_js_messages_url(self):
+      return reverse('js_messages')
 
   def get_json_url(self):
       return reverse('election_poll_json', args=[self.election.uuid,
