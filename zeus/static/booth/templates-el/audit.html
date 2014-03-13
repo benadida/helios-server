@@ -1,10 +1,8 @@
-
-<h3>Υποβολή Ψήφου Ελέγχου</h3>
+<h3>{gettext("AUDIT_BALLOT_SUBMIT")}</h3>
 
 <div class="alert-box alert">
-Η επιλογή σας έχει επιλεχθεί ως "Ψήφος Ελέγχου" και δεν θα καταμετρηθεί.
+{gettext("AUDIT_BALLOT_SET")}
 </div>
-
 
 <p>
 </p>
@@ -18,13 +16,13 @@
 </p>
 
 <p>
-Πατήστε "επιστροφή" για να μεταφερθείτε στη σελίδα επιλογής ψήφου.
+{gettext("AUDIT_BALLOT_BACK_PROMPT")}
 </p>
-<input type="button" class="button medium success" value="Επιβεβαίωση" onclick="$(this).attr('disabled', 'disabled');BOOTH.post_audited_ballot();" id="post_audited_ballot_button" class="pretty" />
+<input type="button" class="button medium success" value="{gettext("AUDIT_BALLOT_CONFIRM_BUTTON")}" onclick="$(this).attr('disabled', 'disabled');BOOTH.post_audited_ballot();" id="post_audited_ballot_button" class="pretty" />
 &nbsp;&nbsp; &nbsp;
 <a class="button medium alert"
   onclick="BOOTH.reset_ciphertexts();BOOTH.show_question(0);return false;">
-  Επιστροφή
+  {gettext("AUDIT_BALLOT_BACK_BUTTON")}
 </a>
 </form>
 

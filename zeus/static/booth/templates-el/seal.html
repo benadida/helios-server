@@ -2,9 +2,7 @@
 <div class="row">
   <div class="columns twelve">
     <p>
-    Η ψήφος σας κρυπτογραφήθηκε.
-    Επιβεβαιώστε τις επιλογές σας όπως παρουσιάζονται παρακάτω.
-    Εάν επιθυμείτε να αλλάξετε τις επιλογές σας πιέστε <b>"Πίσω στην επιλογή ψηφοδελτίου"</b>.
+    {gettext("BALLOT_ENCRYPTED_SUCCESS")}
   </p>
   <div class="panel confirm-vote">
     {#foreach $T.questions as question}
@@ -14,14 +12,14 @@
         {$T.choice}</h6></li>
       {#/for}
       {#if !$T.choices[$T.question$index].length }
-      <li><h5>Λευκή ψήφος</h5></li>
+      <li><h5>{gettext("BLANK_BALLOT")}</h5></li>
       {#/if}
     </ul>
   </div>
 </div>
 <div class="columns twelve">
   <a onclick="BOOTH.show_question({$T.question$index}); return false;"
-    class="button medium">Πίσω στην επιλογή ψηφοδελτίου</a>
+    class="button medium">{gettext("BACK_TO_BALLOT_CHOICES")}</a>
   {#/for}
 </div>
 </div>
@@ -30,7 +28,7 @@
 <br />
 <div class="row">
   <div class="columns twelve">
-  <p>Πιέστε <b>"Υποβολή ψήφου"</b> για συνέχεια.
+    <p>{gettext("SUBMIT_BALLOT_PROMPT")}
   </p>
 </div>
 </div>
@@ -42,14 +40,14 @@
       <input type="checkbox" id="required-to-cast-2" style=""
       onclick="BOOTH.check_cast_form()">
       <span class="custom checkbox" onclick="BOOTH.check_cast_form()"></span>
-      Επιβεβαιώνω ότι είμαι μόνος ή μόνη και κανείς άλλος δεν παρακολούθησε τις επιλογές μου.
+      {gettext("ELECTION_TERMS_LABEL")}
     </label>
   </div>
 </div>
 </form>
 
 <button id="proceed_button" class="button success medium secondary cast-ballot"
-  onclick="BOOTH.cast_ballot();">Υποβολή ψήφου</button><br />
+  onclick="BOOTH.cast_ballot();">{gettext("SUBMIT_BALLOT")}</button><br />
 <div id="loading_div"></div>
 
 <form method="post" action="{$T.cast_url}" id="send_ballot_form" class="prettyform">

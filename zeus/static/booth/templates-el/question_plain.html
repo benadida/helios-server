@@ -4,7 +4,6 @@
 <div class="row question-row">
   <div class="columns five stv-candidates">
 {#foreach $T.data as question}
-<!--<h5>Επιλογή σειράς υποψηφίων</h5>-->
 <div  id="question-{$T.question$index}">
   <h5>{$T.question.question}</h5>
   {#if $T.question.max_answers == $T.question.min_answers}
@@ -58,19 +57,18 @@
   <input style="float:right" id="submit-stv" class="button medium success" type="button" 
   onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Λευκό" />
   <br />
-  <a class="show-audit-form" href="#">Audit vote submission</a>
+  <a class="show-audit-form" href="#">{gettext("AUDIT_VOTE_SUBMISSION_BUTTON")}</a>
   {#/if}
 </div>
 </div>
 
 <div class="row audit-form">
   <div class="columns twelve">
-    <h5>Enter code for audit vote submission</h5>
+    <h5>{gettext("AUDIT_VOTE_CODE_PROMPT")}</h5>
     <p>
-    If you are submitting an audit vote, please provide one of the audit codes
-    that were included in your invitation.
-    <label for="submit-pass-for-audit">Audit code</label><input id="submit-pass-for-audit" />
+    {gettext("AUDIT_VOTE_INSTRUCTIONS")}
+    </p>
+    <label for="submit-pass-for-audit">{gettext("AUDIT_VOTE_CODE_LABEL")}</label><input id="submit-pass-for-audit" />
   </div>
 </div>
 </form>
-
