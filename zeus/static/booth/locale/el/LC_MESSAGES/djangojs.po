@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-13 00:44+0200\n"
+"POT-Creation-Date: 2014-03-13 23:26+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,47 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: vote.html:71 templates-el/vote.html:71
+msgid "STEP_1_TITLE"
+msgstr ""
+
+#: vote.html:72 templates-el/vote.html:72
+msgid "STEP_2_TITLE"
+msgstr ""
+
+#: vote.html:77 templates-el/vote.html:77
+msgid "INITIALIZING_BOOTH"
+msgstr ""
+
+#: vote.html:78 templates-el/vote.html:78
+msgid "INIT_BOOTH_ESTIMATED_TIME"
+msgstr ""
+
+#: vote.html:88 templates-el/vote.html:88
+msgid "PLEASE_WAIT"
+msgstr ""
+
+#: vote.html:92 templates-el/vote.html:92
+msgid "BALLOT_ENCRYPTION_IN_PROGRESS"
+msgstr ""
+
+#: vote.html:96 templates-el/vote.html:96
+msgid "BALLOT_ENCRYPTION_ESTIMATED_TIME"
+msgstr ""
+
+#: vote.html:113 templates-el/vote.html:113
+msgid "HELP"
+msgstr ""
+
+#: js/ballot_modules.js:32 templates-el/ballot_modules.js:32
+#: templates-el/seal.html:15 templates-el/seal_score.html:14
+msgid "BLANK_BALLOT"
+msgstr ""
+
+#: js/ballot_modules.js:34 templates-el/ballot_modules.js:34
+msgid "BALLOT_CONTINUE_BUTTON"
+msgstr ""
 
 #: js/booth.js:59
 msgid ""
@@ -29,7 +70,7 @@ msgid ""
 "current ballot?"
 msgstr ""
 
-#: js/booth.js:157
+#: js/booth.js:154
 msgid "BROWSER_NOT_SUPPORTED_ALERT"
 msgstr ""
 "Το πρόγραμμα πλοήγησης που χρησιμοποιείτε δεν υποστηρίζεται από την "
@@ -38,45 +79,82 @@ msgstr ""
 "\n"
 "Για περισσότερες πληροφορίες επικοινωνήστε μαζί μας"
 
-#: js/booth.js:412
+#: js/booth.js:409
 msgid "HELP_EMAIL_SUBJECT"
 msgstr ""
 
-#: js/booth.js:413
+#: js/booth.js:410
 msgid "HELP_EMAIL_BODY"
 msgstr ""
 
-#: js/booth.js:437
+#: js/booth.js:432
 msgid "ELECTION_INIT_ERROR"
 msgstr ""
 
-#: js/booth.js:577
+#: js/booth.js:584
 msgid "ENCRYPTION_PROCESS_FAILED"
 msgstr ""
 
-#: js/booth.js:650
+#: js/booth.js:657
 msgid "AUDIT_BALLOT_CAST_COMPLETE"
 msgstr ""
 
-#: js/booth.js:661
+#: js/booth.js:668
 msgid "ELECTION_TERMS_ACCEPT_REQUIRED"
 msgstr ""
 
-#: js/booth.js:704
+#: js/booth.js:711
 msgid "BALLOT_CAST_FAILED"
 msgstr ""
 
-#: js/booth.js:711
+#: js/booth.js:718
 msgid "CAST_VOTE_ID"
+msgstr ""
+
+#: templates-el/audit.html:1
+msgid "AUDIT_BALLOT_SUBMIT"
+msgstr ""
+
+#: templates-el/audit.html:4
+msgid "AUDIT_BALLOT_SET"
+msgstr ""
+
+#: templates-el/audit.html:19
+msgid "AUDIT_BALLOT_BACK_PROMPT"
+msgstr ""
+
+#: templates-el/audit.html:25
+msgid "AUDIT_BALLOT_BACK_BUTTON"
+msgstr ""
+
+#: templates-el/done.html:2
+msgid "BALLOT_SUBMISSION_IN_PROGRESS"
+msgstr ""
+
+#: templates-el/done.html:5
+msgid "BALLOT_SUBMISSION_PLEASE_WAIT"
 msgstr ""
 
 #: templates-el/election.html:4
 msgid "ELECTION_INTRO_BODY"
-msgstr ""
+msgstr "Hello"
 
 #: templates-el/election.html:8
 msgid "START"
 msgstr ""
+
+#: templates-el/footer.html:2
+msgid "ELECTION_KEY_NOT_INITIALIZED"
+msgstr ""
+
+#: templates-el/footer.html:4
+msgid "POLL_IDENTIFIER"
+msgstr ""
+
+#: templates-el/header.html:2
+#, fuzzy
+msgid "ELECTION_INFO_BUTTON"
+msgstr "Hello"
 
 #: templates-el/header.html:8
 msgid "CONTACT_DETAILS"
@@ -88,4 +166,41 @@ msgstr ""
 
 #: templates-el/header.html:12
 msgid "PHONE"
+msgstr ""
+
+#: templates-el/question_plain.html:60
+msgid "AUDIT_VOTE_SUBMISSION_BUTTON"
+msgstr ""
+
+#: templates-el/question_plain.html:67
+msgid "AUDIT_VOTE_CODE_PROMPT"
+msgstr ""
+
+#: templates-el/question_plain.html:69
+msgid "AUDIT_VOTE_INSTRUCTIONS"
+msgstr ""
+
+#: templates-el/question_plain.html:71
+msgid "AUDIT_VOTE_CODE_LABEL"
+msgstr ""
+
+#: templates-el/seal.html:5 templates-el/seal_score.html:5
+msgid "BALLOT_ENCRYPTED_SUCCESS"
+msgstr ""
+
+#: templates-el/seal.html:22 templates-el/seal_score.html:21
+msgid "BACK_TO_BALLOT_CHOICES"
+msgstr ""
+
+#: templates-el/seal.html:31 templates-el/seal_score.html:30
+msgid "SUBMIT_BALLOT_PROMPT"
+msgstr ""
+
+#: templates-el/seal.html:43 templates-el/seal_score.html:41
+#, fuzzy
+msgid "ELECTION_TERMS_LABEL"
+msgstr "Hello"
+
+#: templates-el/seal.html:50 templates-el/seal_score.html:48
+msgid "SUBMIT_BALLOT"
 msgstr ""
