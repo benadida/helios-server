@@ -183,7 +183,7 @@ def demo(request):
     _demo_addresses[client_address] = now_seconds
 
     msg = _("An email with demo credentials has been sent to %s") % email_address
-    messages.info(request, msg)
+    messages.success(request, msg)
     logger.info("DEMO::%s::%s::%s" % (
                 email_address, client_address, demo_user.user_id))
     send_mail(mail_subject, mail_body, mail_from, [email_address])
