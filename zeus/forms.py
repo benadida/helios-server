@@ -58,6 +58,8 @@ class ElectionForm(forms.ModelForm):
     trustees = forms.CharField(label=_('Trustees'), required=False,
                                widget=forms.Textarea,
                                help_text=help.trustees)
+
+
     remote_mixes = forms.BooleanField(label=_('Multiple mixnets'),
                                       required=False,
                                       help_text=help.remote_mixes)
@@ -77,14 +79,13 @@ class ElectionForm(forms.ModelForm):
     class Meta:
         model = Election
         fields = ('trial', 'election_module', 'name', 'description',
-                  'voting_starts_at', 'voting_ends_at',
+                  'departments', 'voting_starts_at', 'voting_ends_at',
                   'voting_extended_until',
                   'trustees', 'help_email', 'help_phone')
 
     def __init__(self, institution, *args, **kwargs):
         self.institution = institution
         super(ElectionForm, self).__init__(*args, **kwargs)
-
         self.creating = True
         self._inital_data = {}
         if self.instance and self.instance.pk:
@@ -92,7 +93,9 @@ class ElectionForm(forms.ModelForm):
             for field in LOG_CHANGED_FIELDS:
                 self._initial_data[field] = self.initial[field]
             self.creating = False
-
+        if 'election_module' in self.data:
+            if self.data['election_module'] != 'stv':
+                self.fields['departments'].required = False
         if self.instance and self.instance.pk:
             self.fields.get('trustees').initial = \
                 election_trustees_to_text(self.instance)
@@ -114,7 +117,6 @@ class ElectionForm(forms.ModelForm):
         self.clean_voting_dates(data.get('voting_starts_at'),
                                 data.get('voting_ends_at'),
                                 data.get('voting_extended_until'))
-
         for field, features in self.FIELD_REQUIRED_FEATURES.iteritems():
             if not self.instance.pk:
                 continue
@@ -163,7 +165,6 @@ class ElectionForm(forms.ModelForm):
             self.instance.generate_mix_key()
         else:
             self.instance.mix_key = None
-
         saved = super(ElectionForm, self).save(*args, **kwargs)
         trustees = extract_trustees(self.cleaned_data.get('trustees'))
         saved.institution = self.institution
@@ -210,11 +211,9 @@ class QuestionBaseForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(QuestionBaseForm, self).__init__(*args, **kwargs)
-
         if len(self.fields['choice_type'].choices) == 1:
             self.fields['choice_type'].widget = forms.HiddenInput()
             self.fields['choice_type'].initial = 'choice'
-
         answers = len(filter(lambda k: k.startswith("%s-answer_" %
                                                 self.prefix), self.data))
         if not answers:
@@ -225,9 +224,11 @@ class QuestionBaseForm(forms.Form):
 
         for ans in range(answers):
             field_key = 'answer_%d' % ans
+            field_key1 = 'department_%d' % ans
             self.fields[field_key] = forms.CharField(max_length=100,
                                               required=True,
                                               widget=AnswerWidget)
+            self.fields[field_key1] = forms.CharField()
             self.fields[field_key].widget.attrs = {'class': 'answer_input'}
 
         self._answers = answers
@@ -271,9 +272,25 @@ class ScoresForm(QuestionBaseForm):
                                        label=_('Scores'))
 
 #testing stv
-class StvForm(forms.Form):
-    candidate = forms.CharField(label=('Candidate'), max_length=255,
-                                required=True)
+class StvForm(QuestionBaseForm):
+    def __init__(self, *args, **kwargs):
+        super(StvForm, self).__init__(*args, **kwargs)
+        self.fields.pop('question')
+        DEFAULT_ANSWERS_COUNT = 4
+        answers = DEFAULT_ANSWERS_COUNT
+        for ans in range(answers):
+            field_key = 'answer_%d' % ans
+            self.fields[field_key] = forms.CharField(max_length=100,
+                                              required=True,
+                                              widget=AnswerWidget,
+                                              label=('Candidate'))
+            self.fields[field_key].widget.attrs = {'class': 'answer_input'}
+
+
+    #remove fields that aren't needed from base form
+    min_answers = None
+    max_answers = None
+    
     
 class LoginForm(forms.Form):
     username = forms.CharField(label=_('Username'),
