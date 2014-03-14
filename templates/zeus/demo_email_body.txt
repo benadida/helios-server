@@ -1,0 +1,19 @@
+{% load i18n %}{% blocktrans %}Greetings,
+
+You can use the following credentials to access a demo account as an
+election operator at:
+
+{% endblocktrans %}{{ settings.URL_HOST }}{% url home %}
+username: {{ username }}
+password: {{ password }}
+
+{% trans "You can create up to" %} {{ settings.DEMO_MAX_ELECTIONS }} {% trans "elections, up to" %} {{ settings.DEMO_MAX_VOTERS }} {% trans "voters each" %}.
+{% blocktrans %}Demo accounts are periodically purged.
+
+If you need a normal account, or have any questions,
+please contact us at helpdesk@zeus.grnet.gr.
+
+--
+https://zeus.grnet.gr/
+Zeus Elections
+{% endblocktrans %}

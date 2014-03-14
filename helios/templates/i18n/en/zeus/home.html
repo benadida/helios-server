@@ -7,7 +7,9 @@
 {% include "zeus/bad_login_warning.html" %}
 {% endif %}
 
+{% comment %}
 {% include "zeus/_menu_partial.html" %}
+{% endcomment %}
 {% endblock %}
 
 {% block page_top %}
@@ -16,23 +18,34 @@
 {% endblock %}
 
 {% block content %}
+</br>
 <div class="row">
   <div class="columns twelve">
-    <p>Intro content</p>
+    <h3>Zeus Elections</h3>
+    <p>Hold verifiable elections with one or more polls.
+       Several different ballot types are supported,
+       such as simple questions with predefined answers,
+       party lists, score voting, or single transferable vote (STV).
+       Zeus was initially forked from <a href="http://heliosvoting.org">Helios</a>
+       and maintains the general workflow but has since significantly diverged.</p>
   </div>
 </div>
 <div class="row">
-<div class="columns four">
-  <h3>Column 1</h3>
-  <p>Column 1 content</p>
+<div class="columns five">
+  <h5><a href="{{settings.URL_HOST}}{% url login %}">Election operators login here</a></h5>
+  <h5><a href="{{settings.URL_HOST}}{% url voter_login %}">Voters login here</a></h5>
+</div>
+<div class="columns five">
+  <h5>Zeus Demo</h5>
+  <p>Check out Zeus with a demo account.
+     Credentials will be sent to your email address below, immediately.</p>
+  <form class="prettyform" method="post"
+          action="{{settings.URL_HOST}}{% url site_demo %}">
+    Your email address: <input type="text" value="" name="email"/>
+    <input class="button" type="submit" value="Send me a demo account" />
+  </form>
 </div>
 <div class="columns four">
-  <h3>Column 2</h3>
-  <p>Column 2 content</p>
-</div>
-<div class="columns four">
-  <h3>Column 3</h3>
-  <p>Column 3 content</p>
 </div>
 </div>
 {% endblock %}

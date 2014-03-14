@@ -272,6 +272,11 @@ ZEUS_SMS_API_USERNAME = ""
 ZEUS_SMS_API_PASSWORD = ""
 ZEUS_SMS_API_SENDER = "ZEUS"
 
+DEMO_MAX_ELECTIONS = 5
+DEMO_MAX_VOTERS = 5
+DEMO_SUBMIT_INTERVAL_SECONDS = 10
+DEMO_EMAILS_PER_IP = 1
+
 # useful trick for custom settings
 try:
     from local_settings import *
