@@ -37,10 +37,8 @@ window.onbeforeunload = function(evt) {
 <h1>{{election.name}} &mdash; Submit your Vote</h1>
 
 <p>
-  We have received, <b><u>but not yet recorded</u></b>, your encrypted ballot.<br />
-Your smart ballot tracker is:<br /><br />
-    <tt style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</tt>
-</p>
+  We have <b><u>not yet recorded</u></b> your encrypted ballot. Click below to cast your ballot.<br />
+  
 
 <div id="waiting_div">
     Verifying and Casting your ballot<br />
@@ -102,7 +100,10 @@ Don't worry, we'll remember your ballot while you log in.
 {% endif %}
 
 {% endif %}
-
+<br />
+Your smart ballot tracker is:<br /><br />
+    <tt style="font-size:1.3em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</tt>
+</p>
 {# this closes the IF ELSE of this being password_only #}
 {% endif %}
 
