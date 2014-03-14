@@ -119,9 +119,9 @@ def xss_strip_all_tags(s):
  
 random.seed()
 
-def random_string(length=20):
+def random_string(length=20, alphabet=None):
     random.seed()
-    ALPHABET = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    ALPHABET = alphabet or 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     r_string = ''
     for i in range(length):
         r_string += random.choice(ALPHABET)
