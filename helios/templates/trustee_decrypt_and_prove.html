@@ -3,21 +3,6 @@
 
 {% block content %}
   <script language="javascript">
-    $(document).ready(function() {
-      $('#result_div').hide();
-      $('#waiting_div').hide();
-      $('#waiting_submit_div').hide();
-      $('#done_div').hide();
-      $('#error_div').hide();
-
-      BigInt.setup(function() {
-        ELECTION_JSON = {{election.toJSON|safe}};
-        ELECTION_PK = ElGamal.PublicKey.fromJSONObject(ELECTION_JSON['public_key']);
-        TALLY = HELIOS.Tally.fromJSONObject({{election.encrypted_tally.toJSON|safe}}, ELECTION_PK);
-        $('#sk_section').show();
-      });
-    });
-
     function decrypt_and_prove_tally(tally, public_key, secret_key) {
       // we need to keep track of the values of g^{voter_num} for decryption
       var DISCRETE_LOGS = {};
@@ -85,12 +70,12 @@
       $('#waiting_div').hide();
 
       $('#result_textarea').html(factors_and_proofs_json);
-      $('#result_div').show();
-      $('#first-step-success').show();
+      $('#result').show();
+      $('#first_step_success').show();
     }
 
     function submit_result() {
-      $('#result_div').hide();
+      $('#result').hide();
       $('#waiting_submit_div').show();
 
       var result = $('#result_textarea').val();
@@ -103,7 +88,7 @@
         success: function(result) {
           $('#waiting_submit_div').hide();
           if (result != "FAILURE") {
-            $('#done_div').show();
+            $('#done').show();
           } else {
             alert('Verification failed, you probably used the wrong key.');
             reset();
@@ -111,113 +96,160 @@
         },
         error: function(error) {
           $('#waiting_submit_div').hide();
-          $('#error_div').show();
+          $('#error').show();
         }
       });
     }
 
     function skip_to_second_step() {
       $('#sk_section').hide();
-      $('#result_div').show();
+      $('#result').show();
       $('#result_textarea').html('');
       $('#skip_to_second_step_instructions').hide();
     }
 
     function reset() {
-      $('#result_div').hide();
+      $('#result').hide();
       $('#skip_to_second_step_instructions').show();
       $('#sk_section').show();
       $('#result_textarea').html('');
-      $('#first-step-success').hide();
+      $('#first_step_success').hide();
     }
+
+    function handleFileSelect(e) {
+      var file = e.target.files[0];
+      var jsonType = /application\/json/;
+
+      var output = $('#' + $(e.target).data('output'));
+
+      if (file.type.match(jsonType)) {
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+          output.val(reader.result);
+        }
+
+        reader.readAsText(file);
+      } else {
+        output.addClass('error');
+        output.parent().find('.error').show();
+      }
+    }
+
+    $(document).ready(function() {
+      $('#result').hide();
+      $('#waiting_div').hide();
+      $('#waiting_submit_div').hide();
+      $('#done').hide();
+      $('#error').hide();
+
+      $('.sk_upload').change(handleFileSelect);
+
+      BigInt.setup(function() {
+        ELECTION_JSON = {{election.toJSON|safe}};
+        ELECTION_PK = ElGamal.PublicKey.fromJSONObject(ELECTION_JSON['public_key']);
+        TALLY = HELIOS.Tally.fromJSONObject({{election.encrypted_tally.toJSON|safe}}, ELECTION_PK);
+        $('#sk_section').show();
+      });
+    });
   </script>
 
   <div class="row">
     <div class="large-12 columns">
       <h2>{{election.name}}&mdash;Decrypt Result for {{trustee.name}}</h2>
 
-      <div class="row">
-        <div class="large-6 columns">
-          <dl>
-            <dt>Public Key</dt>
-            <dd><tt>{{trustee.public_key_hash}}</tt></dd>
-          </dl>
-        </div>
+      <p>
+        The encrypted tally for your election has been computed. Now it's time to compute and submit your partial decryption.
+      </p>
 
-        <div class="large-6 columns">
-          <dl>
-            <dt>Encrypted Tally</dt>
-            <dd><tt>{{election.encrypted_tally_hash}}</tt></dd>
-          </dl>
-        </div>
+      <p>
+        This process is performed in two steps:
+
+        <ol>
+          <li>Your secret key is used to decrypt the tally <i>inside</i> your browser.</li>
+          <li>Once your decryption factors have been computed, you will need to submit them to the server.</li>
+        </ol>
+      </p>
+
+      <div id="sk_section" style="display:none;">
+        <h3>Generate Partial Decryption</h3>
+
+        <p>
+          To generate your partial decryption, you first have to enter your secret key. If you created your key pair with our generator, it was stored in a file called <tt>secret_key.json</tt>.
+        </p>
+
+        <form>
+          <div class="row">
+            <div class="large-3 columns">
+              <label for="sk_upload" class="right inline">Secret Key</label>
+            </div>
+            <div class="large-9 columns">
+              <input type="file" name="sk_upload" class="sk_upload" data-output="sk_textarea" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="large-9 large-offset-3 columns">
+              <textarea id="sk_textarea" style="height: 100px;" disabled></textarea>
+              <small class="error" style="display: none;">The file must be formatted as JSON.</small>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="large-9 large-offset-3 columns">
+              <button onclick="do_tally(); return false;">Generate Partial Decryption</button>
+            </div>
+          </div>
+        </form>
       </div>
 
-    <p>
-      The encrypted tally for your election has been computed.<br />
-      Now it's time to compute and submit your partial decryption.
-    </p>
+      <div id="waiting_div">
+        <h3>Generate Partial Decryption</h3>
 
-    <p>
-      This process is performed in two steps.<br /><br />
-      <u>First</u>, your secret key is used to decrypt the tally <em>inside</em> your browser, without connecting to the network.<br />
-      You can choose to take your browser "offline" for this step, if you'd like.<br /><br />
-      <u>Second</u>, once your decryption factors have been computed, your browser will need to be "online" to submit them to the server.<br />
-      If you'd like, you can compute your decryption factors, copy them to your clipboard, restart your browser, and<br />
-      skip to the second step so that your browser is never online when you enter your secret key.
-    </p>
+        <p>
+          Generating partial decryption factors and proofs...
+        </p>
 
-  <div id="sk_section" style="display:none;">
+        <p class="text-center">
+          <img src="/static/helios/loading.gif" />
+        </p>
+      </div>
 
-      <form onsubmit="return false;">
-          <h3>FIRST STEP: enter your secret key</h3>
-          <textarea id="sk_textarea" cols="60" rows="5"></textarea>
-      </form>
-      <p id="tally_section">
-          <button onclick="do_tally();">Generate partial decryption</button>
-      </p>
+      <div id="result">
+        <h3>Upload Your Partial Decryption</h3>
 
-      <p id="skip_to_second_step_instructions">
-        <a href="javascript:skip_to_second_step();">skip to the second step</a><br />
-        (you need to have already computed your decryption factors.)
-      </p>
+        <p id="first_step_success" style="display: none;">
+          Your partial decryption factors and proofs have been generated. Your secret key has been cleared from memory. When you're ready, you can submit this result to the server.
+        </p>
+
+        <form action="javascript:submit_result();">
+          <textarea id="result_textarea" style="display: none;"></textarea>
+          <input class="button" type="submit" value="Upload Your Partial Decryption" />
+          <a class="secondary button" href="javascript:reset();">Cancel</a>
+        </form>
+      </div>
+
+      <div id="waiting_submit_div">
+        <p>
+          Submitting and checking your decryption factors and proofs...
+        </p>
+
+        <p class="text-center">
+          <img src="/static/helios/loading.gif" />
+        </p>
+      </div>
+
+      <div id="done">
+        <h3>Done</h3>
+
+        <a class="button" href="{% url helios.views.one_election_view election.uuid %}">Back to Election</a>
+      </div>
+
+      <div data-alert class="alert-box warning" id="error">
+        <b>Error</b> Your secret key was likely incorrect.
+      </div>
+
+      <div id="applet_div"></div>
+    </div>
   </div>
-
-  <div id="waiting_div">
-      Generating partial decryption factors and proofs...<br />
-      <img src="/static/helios/loading.gif" />
-  </div>
-
-  <div id="waiting_submit_div">
-      Submitting and checking your decryption factors and proofs...<br />
-      <img src="/static/helios/loading.gif" />
-  </div>
-
-  <div id="result_div">
-      <h3>SECOND STEP: upload your partial decryption</h3>
-      <p id="first-step-success" style="display: none;">
-          Your partial decryption factors and proofs have been generated below.<br />
-          Your secret key has been cleared from memory.<br />
-          When you're ready, you can submit this result to the server.
-      </p>
-      Your partial decryption:<br />
-      <form action="javascript:submit_result();">
-          <textarea id="result_textarea" cols="60" rows="5" wrap="soft"></textarea><br /><br />
-          <input type="submit" value="Upload decryption factors to server" />
-      </form>
-      <br />
-      <a href="javascript:reset()">reset and restart decryption process</a>
-      <br />
-  </div>
-
-  <div id="done_div">
-      Done! <a href="{% url helios.views.one_election_view election.uuid %}">Back to election</a>
-  </div>
-
-  <div id="error_div">
-      Error: your secret key was likely incorrect.
-  </div>
-
-  <div id="applet_div">
-  </div>
-
 {% endblock %}

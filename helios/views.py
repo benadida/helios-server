@@ -983,7 +983,7 @@ def trustee_upload_pk(request, election, trustee):
 
         # verify the pok
         if not trustee.public_key.verify_sk_proof(trustee.pok, algs.DLog_challenge_generator):
-            raise Exception("bad pok for this public key")
+            raise Exception('Bad proof for this public key')
 
         trustee.public_key_hash = utils.hash_b64(
             utils.to_json(trustee.public_key.toJSONDict()))

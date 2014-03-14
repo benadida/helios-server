@@ -314,20 +314,22 @@
 				<a href="#" onclick="$('#auditbody').slideToggle(250);">Audit Info</a>
 
 				<div id="auditbody" style="margin-top: 20px; display: none;">
-					<dl class="no-margin">
-						<dt>Election URL</dt>
-						<dd><a href="{{election.url}}">{{election.url}}</a></dd>
+					<p>
+						<dl class="no-margin">
+							<dt>Election URL</dt>
+							<dd><a href="{{election.url}}">{{election.url}}</a></dd>
 
-						{% if election.frozen_at %}
-							<dt>Election Fingerprint</dt>
-							<dd><tt style="font-weight: bold;">{{election.hash}}</tt></dd>
+							{% if election.frozen_at %}
+								<dt>Election Fingerprint</dt>
+								<dd><tt style="font-weight: bold;">{{election.hash}}</tt></dd>
 
-							{% if votes %}
-								<dt>Your Smart Ballot Tracker</dt>
-								<dd><tt style="font-weight: bold;">{{votes.0.vote_hash}}</tt></dd>
+								{% if votes %}
+									<dt>Your Smart Ballot Tracker</dt>
+									<dd><tt style="font-weight: bold;">{{votes.0.vote_hash}}</tt></dd>
+								{% endif %}
 							{% endif %}
-						{% endif %}
-					</dl>
+						</dl>
+					</p>
 
 					{% if election.frozen_at %}
 						<a class="button no-margin" href="{% url helios.views.voters_list_pretty election.uuid %}">Ballot Tracking Center</a>

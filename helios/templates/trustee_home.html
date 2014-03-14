@@ -183,13 +183,13 @@
           $('#encry_shares_textarea').val(encry_shares_text);
         }
       } else {
-      	$('#error_div').show();
+      	$('#error').show();
       }
     }
 
     function submit_result() {
       $('#second_step').hide();
-      $('#second_step_waiting').show();
+      $('#second_step_waiting_div').show();
 
       var result = $('#encry_shares_textarea').val();
 
@@ -198,7 +198,7 @@
         url: '{% url helios.views.trustee_upload_encrypted_shares election.uuid, trustee.uuid %}',
         data: {'encry_shares': result},
         success: function(result) {
-          $('#second_step_waiting').hide();
+          $('#second_step_waiting_div').hide();
           if (result != 'FAILURE') {
             $('#done').show();
           } else {
@@ -207,8 +207,8 @@
           }
         },
         error: function(error) {
-            $('#second_step_waiting').hide();
-            $('#error_div').show();
+            $('#second_step_waiting_div').hide();
+            $('#error').show();
         }
       });
     }
@@ -408,13 +408,13 @@
     $(document).ready(function() {
       $('#result_div').hide();
       $('#waiting_div').hide();
-      $('#second_step_waiting').hide();
+      $('#second_step_waiting_div').hide();
       $('#done').hide();
-      $('#error_div').hide();
+      $('#error').hide();
       $('#first_step').hide();
       $('#second_step').hide();
       $('#third_step').hide();
-      $('#third_step_waiting').hide();
+      $('#third_step_waiting_div').hide();
       $('#pk_form').hide();
       $('#sk_download').hide();
       $('#reuse').hide();
@@ -429,7 +429,7 @@
           if({{wait}}==0) {
             $('#third_step').show();
           } else {
-            $('#third_step_waiting').show();
+            $('#third_step_waiting_div').show();
           }
         }
       }
@@ -495,7 +495,7 @@
               Therefore you will have to agree on a secret with the other trustees, for which you will have to complete 4 steps:
 
               <ol>
-                <li>Generete encrypted shares for the other trustees.</li>
+                <li>Generate encrypted shares for the other trustees.</li>
                 <li>Upload the shares.</li>
                 <li>
                   Decrypt the shares of the other trustees.
@@ -510,7 +510,7 @@
               <h3>Generate Your Encrypted Shares</h3>
 
               <p>
-                To generate your encrypted shares, you first have to upload your secret key for signing. If you created your key pair with our generator, it was stored in a file called <tt>signing_key.json</tt>.
+                To generate your encrypted shares, you first have to enter your secret key for signing. If you created your key pair with our generator, it was stored in a file called <tt>signing_key.json</tt>.
               </p>
 
               <form>
@@ -546,12 +546,12 @@
               </p>
 
               <form action="javascript:submit_result();">
-                <textarea id="encry_shares_textarea" style="height: 100px; display: none;"></textarea>
+                <textarea id="encry_shares_textarea" style="display: none;"></textarea>
                 <input class="button" type="submit" value="Upload Your Encrypted Shares" />
               </form>
             </div>
 
-            <div id="second_step_waiting">
+            <div id="second_step_waiting_div">
               <h3>Upload Your Encrypted Shares</h3>
 
               <p>
@@ -564,7 +564,7 @@
             </div>
 
             <div id="third_step" >
-              <h3>Decrypt Shares and Calculate Keypair</h3>
+              <h3>Decrypt Encrypted Shares and Calculate Keypair</h3>
 
               <p>
                 To decrypt your shares, you first have to upload your secret key for encryption. If you created your key pair with our generator, it was stored in a file called <tt>encryption_key.json</tt>.
@@ -589,13 +589,13 @@
 
                 <div class="row">
                   <div class="large-9 large-offset-3 columns">
-                    <button onclick="calculate_keypair(); return false;">Generate Encrypted Shares</button>
+                    <button onclick="calculate_keypair(); return false;">Decrypt Encrypted Shares</button>
                   </div>
                 </div>
               </form>
             </div>
 
-            <div id="third_step_waiting" >
+            <div id="third_step_waiting_div" >
               <h3>Decrypt Shares and Calculate Keypair</h3>
 
               <div data-alert class="alert-box info">
@@ -626,7 +626,7 @@
               </p>
 
               <form method="post" action="{% url helios.views.trustee_upload_pk election.uuid, trustee.uuid %}">
-                <textarea id="pk_textarea" name="public_key_json" style="height: 100px; display: none;"></textarea>
+                <textarea id="pk_textarea" name="public_key_json" style="display: none;"></textarea>
                 <input class="button" type="submit" value="Upload Your Public Key">
               </form>
             </div>
@@ -634,11 +634,11 @@
             <div id="done">
               <h3>Done</h3>
 
-              <a class="button" href="/">Back to Helios</a>
+              <a class="button" href="{% url helios.views.one_election_view election.uuid %}">Back to Election</a>
             </div>
 
 
-            <div data-alert class="alert-box warning" id="error_div">
+            <div data-alert class="alert-box warning" id="error">
               <b>Error</b> Your secret key was likely incorrect.
             </div>
 
@@ -661,7 +661,13 @@
             {% endif %}
           {% else %}
             <div class="alert-box info">
-              Once the tally is computed, come back here to provide your secret key for decryption purposes. You should keep the email with your trustee homepage link, which contains the credentials needed to get back here.
+              <b>Next</b> Once the tally is computed, you will need to come back here to provide your secret key for decryption purposes. You should keep the email with your trustee homepage link, which contains the credentials needed to get back here.
+            </div>
+          {% endif %}
+        {% else %}
+          {% if trustee.public_key %}
+            <div class="alert-box info">
+              <b>Next</b> You have successfully generated the key pair that will be used to encrypt the ballots. When all trustees have done this, the election administrator will freeze the election.
             </div>
           {% endif %}
         {% endif %}

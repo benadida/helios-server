@@ -382,11 +382,18 @@ class Election(HeliosModel):
             })
 
         for t in trustees:
-            if not self.use_threshold and t.public_key == None:
-                issues.append({
-                    'type': 'trustee keypairs',
-                    'action': 'Have trustee %s generate a keypair.' % t.name
-                })
+            if t.public_key == None:
+                if not self.use_threshold:
+                    issues.append({
+                        'type': 'trustee keypairs',
+                        'action': 'Have trustee %s generate a key pair.' % t.name
+                    })
+                else:
+                    if t != self.get_helios_trustee():
+                        issues.append({
+                            'type': 'trustee keypairs',
+                            'action': 'Wait for trustee %s to generate a partial decryption and upload a public key.' % t.name
+                        })
 
         if self.voter_set.count() == 0 and not self.openreg:
             issues.append({
@@ -577,17 +584,6 @@ class Election(HeliosModel):
         # public key for trustees
         trustees = Trustee.get_by_election(self)
 
-        # CHANGED FOR THRESHOLDENCRYPTION
-#    combined_pk = trustees[0].public_key
-#    for t in trustees[1:]:
-#      combined_pk = combined_pk * t.public_key
-#
-#    self.public_key = combined_pk
-#
-# log it
-#    self.append_log(ElectionLog.FROZEN)
-#
-#    self.save()
         if self.use_threshold:
             scheme = self.get_scheme()
             if scheme:
@@ -612,12 +608,12 @@ class Election(HeliosModel):
                     raise exception(lambda_now)
                     lambdas.append(prod % (p - 1))
         else:
-            # NO THRESHOLD
             lambdas = []
             n = len(trustees)
             k = n
             for i in range(n):
                 lambdas.append(1)
+
         combined_pk = trustees[0].public_key
         combined_pk.y = pow(combined_pk.y, lambdas[0], p)
         for i in range(1, k):
