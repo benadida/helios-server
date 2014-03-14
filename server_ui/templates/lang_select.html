@@ -1,7 +1,8 @@
 {% load i18n %}
 <form id="lang-switch" action="{% url django.views.i18n.set_language %}" method="post">
 {% csrf_token %}
-<input name="next" type="hidden" value="{{ redirect_to }}" />
+<input name="next" type="hidden" 
+value="{% if redirect_to %}{{ redirect_to }}{% else %}{{ request.get_full_path }}{% endif %}" />
 <ul class="languages">
 {% get_language_info_list for LANGUAGES as languages %}
 {% for language in languages %}
