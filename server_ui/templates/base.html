@@ -84,7 +84,7 @@
             {% if messages %}
             <div class="messages">
               {% for message in messages %}
-              <div class="label medium success">{{ message }}</div>
+              <div class="label medium {{ message.tags }}">{{ message }}</div>
               {% endfor %}
             </div>
             {% endif %}
