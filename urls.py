@@ -27,14 +27,14 @@ app_patterns += patterns(
     (r'^admin/', include(admin_urls)),
     url(r'^get-randomness/', 'zeus.views.shared.get_randomness',
         name="get_randomness"),
-    (r'^i18n/', include('django.conf.urls.i18n')),
+    url(r'^i18n/js', 'django.views.i18n.javascript_catalog', 
+        name='js_messages', kwargs={'packages': None}),
+    (r'^i18n/', include('django.conf.urls.i18n'))
 )
 
 urlpatterns = patterns(
     '',
     (r'^' + SERVER_PREFIX, include(app_patterns)),
-    url(r'^i18n/js', 'django.views.i18n.javascript_catalog', name='js_messages', kwargs={'packages': None}),
-    (r'^i18n/', include('django.conf.urls.i18n')),
 )
 
 #SHOULD BE REPLACED BY APACHE STATIC PATH
