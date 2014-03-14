@@ -201,17 +201,20 @@ DEFAULT_ANSWERS_COUNT = 2
 MAX_QUESTIONS_LIMIT = getattr(settings, 'MAX_QUESTIONS_LIMIT', 1)
 
 
-class QuestionForm(forms.Form):
+class QuestionBaseForm(forms.Form):
     choice_type = forms.ChoiceField(choices=(
         ('choice', _('Choice')),
     ))
     question = forms.CharField(label=_("Question"), max_length=255,
                                required=True)
-    min_answers = forms.ChoiceField(label=_("Min answers"))
-    max_answers = forms.ChoiceField(label=_("Max answers"))
 
     def __init__(self, *args, **kwargs):
-        super(QuestionForm, self).__init__(*args, **kwargs)
+        super(QuestionBaseForm, self).__init__(*args, **kwargs)
+
+        if len(self.fields['choice_type'].choices) == 1:
+            self.fields['choice_type'].widget = forms.HiddenInput()
+            self.fields['choice_type'].initial = 'choice'
+
         answers = len(filter(lambda k: k.startswith("%s-answer_" %
                                                 self.prefix), self.data))
         if not answers:
@@ -227,17 +230,24 @@ class QuestionForm(forms.Form):
                                               widget=AnswerWidget)
             self.fields[field_key].widget.attrs = {'class': 'answer_input'}
 
+        self._answers = answers
+
+
+class QuestionForm(QuestionBaseForm):
+    min_answers = forms.ChoiceField(label=_("Min answers"))
+    max_answers = forms.ChoiceField(label=_("Max answers"))
+
+    def __init__(self, *args, **kwargs):
+        super(QuestionForm, self).__init__(*args, **kwargs)
+        answers = self._answers
         max_choices = map(lambda x: (x,x), range(1, answers+1))
         min_choices = map(lambda x: (x,x), range(0, answers+1))
 
         self.fields['max_answers'].choices = max_choices
-        self.fields['max_answers'].initial = answers
+        self.fields['max_answers'].initial = self._answers
         self.fields['min_answers'].choices = max_choices
         self.fields['min_answers'].initial = 0
 
-        if len(self.fields['choice_type'].choices) == 1:
-            self.fields['choice_type'].widget = forms.HiddenInput()
-            self.fields['choice_type'].initial = 'choice'
 
     def clean(self):
         max_answers = int(self.cleaned_data.get('max_answers'))
@@ -251,6 +261,14 @@ class QuestionForm(forms.Form):
 class PartyForm(QuestionForm):
     question = forms.CharField(label=_("Party name"), max_length=255,
                                required=True)
+
+
+SCORES_CHOICES = [(x,x) for x in range(1, 10)]
+class ScoresForm(QuestionBaseForm):
+    scores = forms.MultipleChoiceField(required=True,
+                                       widget=forms.CheckboxSelectMultiple,
+                                       choices=SCORES_CHOICES,
+                                       label=_('Scores'))
 
 
 class LoginForm(forms.Form):

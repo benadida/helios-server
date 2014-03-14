@@ -1725,6 +1725,186 @@ def gamma_count_candidates(encoded_list, candidates):
 
     return counts
 
+
+def range_split_candidates(candidates_and_points):
+    candidates = []
+    pointlist = []
+    iterator = iter(candidates_and_points)
+    old_nr_points = None
+    expecting_candidate = True
+    candidates_over = False
+    points_over = False
+
+    for entry in iterator:
+        if not entry:
+            m = "Invalid candidate entry {entry!r}"
+            m = m.format(entry=entry)
+            raise FormatError(m)
+
+        while True:
+            if points_over or expecting_candidate:
+                assert not candidates_over
+                if entry[0].isdigit():
+                    if points_over:
+                        m = "Invalid candidate {entry!r}"
+                        m = m.format(entry=entry)
+                        raise FormatError(m)
+                    else:
+                        candidates_over = True
+                        expecting_candidate = False
+                        continue
+
+                candidates.append(entry)
+                if not points_over:
+                    expecting_candidate = False
+                break
+
+            if candidates_over or not expecting_candidate:
+                assert not points_over
+                if not entry.isdigit():
+                    if candidates_over:
+                        m = "Invalid points form {entry!r}"
+                        m = m.format(entry=entry)
+                        raise FormatError(m)
+                    else:
+                        points_over = True
+                        continue
+
+                nr_points = int(entry)
+                if nr_points <= 0:
+                    m = "Invalid points value {nr}"
+                    m = m.format(nr=nr_points)
+                    raise FormatError(m)
+
+                if old_nr_points is not None and nr_points >= old_nr_points:
+                    m = "Invalid points <{nr_points}> not in descending order!"
+                    m = m.format(nr_points=nr_points)
+                    raise FormatError(m)
+
+                old_nr_points = nr_points
+                pointlist.append(nr_points)
+                if not candidates_over:
+                    expecting_candidate = True
+                break
+
+            raise AssertionError()
+
+    if not candidates or not pointlist:
+        m = ("Neither candidates ({candidates}) "
+             "nor point list ({pointlist}) can be empty")
+        m = m.format(candidates=candidates, pointlist=pointlist)
+        raise FormatError(m)
+
+    return candidates, pointlist
+
+
+def gamma_decode_to_range_ballot(encoded, candidates_and_points):
+    nr_candidates = len(candidates_and_points)
+    selection = gamma_decode(encoded, nr_candidates=nr_candidates,
+                             max_choices=nr_candidates)
+    permutation = to_absolute_answers(selection, nr_candidates)
+    ballot = {}
+    counts = {}
+    valid = False
+    candidate = None
+    old_nr_points = None
+
+    for i, index in enumerate(permutation):
+        choice = candidates_and_points[index]
+        if i & 1:
+            if not choice or not choice.isdigit():
+                valid = False
+                break
+
+            nr_points = int(choice)
+            if old_nr_points is not None and nr_points >= old_nr_points:
+                valid = False
+                break
+            old_nr_points = nr_points
+            assert candidate is not None
+            assert candidate not in counts
+            counts[candidate] = nr_points
+            candidate = None
+        else:
+            assert candidate is None
+            if not choice or choice[0].isdigit():
+                valid = False
+                break
+
+            candidate = choice
+    else:
+        # no break or exception
+        if candidate is None:
+            ballot['candidates'] = counts
+            valid = True
+        else:
+            valid = False
+
+    ballot['valid'] = valid
+    return ballot
+
+
+def combine_candidates_and_points(candidates, points):
+      candidates_and_points = []
+      append = candidates_and_points.append
+      for c, p in izip_longest(candidates, points):
+          if c is not None:
+              append(c)
+          if p is not None:
+              append(str(p))
+      return candidates_and_points
+
+
+def gamma_count_range(encoded_list, candidates_and_points):
+    candidates, pointlist = range_split_candidates(candidates_and_points)
+    stats = {}
+    detailed = {}
+    totals = {}
+    ballots = []
+
+    max_encoded = gamma_encoding_max(len(candidates_and_points))
+
+    for c in candidates:
+        candidate_stats = {}
+        for points in pointlist:
+            candidate_stats[points] = 0
+        detailed[c] = candidate_stats
+        totals[c] = 0
+
+    for e in encoded_list:
+        assert isinstance(e, (int, long))
+        if e > max_encoded:
+            ballot = {'valid': False}
+        else:
+            ballot = gamma_decode_to_range_ballot(e, candidates_and_points)
+        ballots.append(ballot)
+        if not ballot['valid']:
+            continue
+
+        ballot_scores = ballot['candidates']
+
+        # enforce exhaustion of all choices
+        if ballot_scores and len(ballot_scores) != len(pointlist):
+            ballot['valid'] = False
+            continue
+
+        for candidate, points in ballot_scores.iteritems():
+            assert candidate in candidates
+            totals[candidate] += points
+            detailed[candidate][points] += 1
+
+    results = {}
+    results['candidates'] = candidates
+    results['points'] = pointlist
+    totals = [(v, k) for k, v in totals.iteritems()]
+    totals.sort()
+    totals.reverse()
+    results['totals'] = totals
+    results['detailed'] = detailed
+    results['ballots'] = ballots
+    return results
+
+
 PARTY_SEPARATOR = ': '
 PARTY_OPTION_SEPARATOR = ', '
 

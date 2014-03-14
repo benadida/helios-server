@@ -5,6 +5,11 @@ cd $d;
 DJANGO_SETTINGS_MODULE=settings;
 PYTHONPATH=..;
 django-admin makemessages -l el -e .html -e .txt;
+django-admin makemessages -l en -e .html -e .txt;
 django-admin compilemessages;
 cd ..;
 done;
+
+python manage.py makeboothmessages -l en -l el -e .html -e .js;
+cd zeus/static/booth;
+django-admin compilemessages;

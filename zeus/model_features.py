@@ -80,7 +80,8 @@ class ElectionFeatures(FeaturesMixin):
         return FeaturesMixin.__getattr__(self, name, *args, **kwargs)
 
     def polls_feature(self, *args, **kwargs):
-        results = [poll.check_features(*args) for poll in self.polls.all()]
+        results = [bool(poll.check_features(*args))
+                   for poll in self.polls.all()]
         nr_polls = len(results)
         return nr_polls > 0 and sum(results) == nr_polls
 
@@ -140,7 +141,7 @@ class ElectionFeatures(FeaturesMixin):
     @election_feature()
     def _feature_pending_issues(self):
         pending = len(self.election_issues_before_freeze) > 0
-        return pending and self.feature_pending_polls_issues
+        return pending or self.feature_pending_polls_issues
 
     @election_feature()
     def _feature_can_add_poll(self):

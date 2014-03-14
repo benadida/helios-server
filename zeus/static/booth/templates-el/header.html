@@ -1,0 +1,15 @@
+<div class="election-header">
+  <h4 id="election-name" class="subheader">{$T.election.full_name}<span class="button small election-desc-toggle">{gettext("ELECTION_INFO_BUTTON")}</span></h4>
+
+<div id="election-description-modal" class="reveal-modal">
+  <h4>{$T.election.full_name}</h4>
+  <p class="election-description">{$T.election.description}</p>
+  <br /><br />
+  <u>{gettext("CONTACT_DETAILS")}</u>
+  <br /><br />
+  <ul>
+    <li><b>{gettext("EMAIL")}: </b>{$T.election.help_email}</li>
+    <li><b>{gettext("PHONE")}: </b>{$T.election.help_phone}</li>
+  </ul>
+</div>
+</div>

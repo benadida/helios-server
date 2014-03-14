@@ -1,47 +1,48 @@
 {% extends "election_page.html" %}
+{% load i18n %}
 
-{% block title %}{{election.name}}: Ψηφοφόροι{% endblock %}
+{% block title %}{{election.name}}: {% trans "Voters" %}{% endblock %}
 {% block tabs_menu %}
 {% include "_election_view_menu.html" %}
 {% endblock %}
 
 {% block content %}
-<h5>Μαζική προσθήκη ψηφοφόρων στην ψηφοφορία</h5>
+<h5>{% trans "Enroll voters for poll" %}</h5>
 <form method="post" action="" id="upload_form" enctype="multipart/form-data">
   {% csrf_token %}
   <p>
-    Παρακαλούμε προετοιμάστε ένα αρχείο απλού κειμένου με τους ψηφοφόρους
-    σε μορφή CSV, όπως το παρακάτω:
+  {% trans "Please, prepare a simple text file with the voters in CSV form, as in the example:" %}
   </p>
-  <pre>
-      1,psifoforos1@idrima.minedu.gov.gr,Όνομα1,Επώνυμο1,Πατρώνυμο1,+306971234567
-      2,psifoforos2@idrima.minedu.gov.gr,Όνομα2,Επώνυμο2,Πατρώνυμο2,+306971234568
-      3,psifoforos3@idrima.minedu.gov.gr,Όνομα3,Επώνυμο3,Πατρώνυμο3,+306971234569
-      ...
+  <pre>{% blocktrans %}
+      1,john.doe@email.tld,John,Doe,F.,+306971234567
+      2,miles@email.tld,Richard,Miles,Allan,+306971234568
+      3,j.m.roe@email.tld,Jenny,Roe,M,+306971234569
+      ...{% endblocktrans %}
   </pre> 
-  <u style="float:right">* Το πατρώνυμο και το κινητό τηλέφωνο είναι προαιρετικά</u>
+  <u style="float:right">{% trans "*The last two fields (middle name and mobile phone) are optional" %}</u>
   <br /><br />
   <p>
-  Τα πεδία είναι με τη σειρά τα εξής:
+  {% trans "The fields are, in order:" %}
   <ol>
-    <li>Αριθμός μητρώου. Κάθε αριθμός αντιστοιχεί σε μία ψήφο.
-        Δεν απαιτείται να είναι συνεχόμενοι. Εάν δεν υπάρχει μητρώο,
-        απλά αριθμήστε τους ψηφοφόρους στον κατάλογό σας.
+    <li>{% blocktrans %}Registration number. Each such number corresponds to one vote.
+    The numbering is not required to be sequential. If no registration numbers
+    are available or you do not wish to use them, simply enumerate the voters
+    using 1, 2, 3, ..., etc.{% endblocktrans %}
     </li>
-    <li>E-mail του ψηφοφόρου στο οποίο θα λάβει πρόσκληση για να ψηφίσει.
-        Ο ίδιος ψηφοφόρος (δηλαδή η ίδια διεύθυνση email) μπορεί να έχει
-        παραπάνω από μία ψήφο εάν η διεύθυνσή του εμφανίζεται παραπάνω από
-        μία φορά (με διαφορετικό αριθμό μητρώου, βέβαια).
+    <li>{% blocktrans %}Personal email of the voter where they will receive the secret invitation to vote.
+    Multiple registered entries may have the same email address,
+    if the same person is eligiible to more than one votes
+    (e.g. when representing multiple parties separately).{% endblocktrans %}
     </li>
-    <li>Όνομα του ψηφοφόρου</li>
-    <li>Επώνυμο του ψηφοφόρου</li>
-    <li>Πατρώνυμο ή άλλη επωνυμία του ψηφοφόρου (προαιρετικό)</li>
-    <li>Κινητό τηλέφωνο του ψηφοφόρου (προαιρετικό)</li>
+    <li>{% trans "The voter's given name" %}</li>
+    <li>{% trans "The voter's surname" %}</li>
+    <li>{% trans "The voter's middle name, or other title or name (optional)" %}</li>
+    <li>{% trans "A personal mobile phone number of the voter (optional)" %}</li>
   </ol>
   </p>
   <p>
-    Ο ευκολότερος τρόπος για να προετοιμάσετε ένα τέτοιο αρχείο είναι 
-    να χρησιμοποιήσετε ένα πρόγραμμα υπολογιστικών φύλλων και να το εξάγετε σε μορφή CSV.
+    {% blocktrans %}The easiest way to prepare such a file is to first prepare it
+    as a spreadsheet and then export it in CSV form.{% endblocktrans %}
   </p>
   {% if error %}
   <div style="color: red;">{{error}}</div>
@@ -50,15 +51,15 @@
     
     <input type="file" name="voters_file" />
     <br /><br />
-    <input class="button success" type="submit" value="Μεταφόρτωση αρχείου"/>
+    <input class="button success" type="submit" value="{% trans "Upload file" %}"/>
 </form>
 
 <div id="processing">
 </div>
 
 <div id="done" style="display:none;">
-  Η μεταφόρτωση ολοκληρώθηκε.<br />
-  Μπορείτε τώρα να <a href="./manage">δείτε την λίστα των ψηφοφόρων</a>.
+  {% trans "Upload complete." %}<br />
+  {% trans "You can now" %} <a href="./manage">{% trans "review the voter list" %}</a>.
 </div>
 
 {% endblock %}

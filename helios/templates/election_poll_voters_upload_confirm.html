@@ -1,31 +1,32 @@
 {% extends "election_page.html" %}
 {% load i18n %}
 
-{% block title %}{{election.name}}: Ψηφοφόροι{% endblock %}
+{% block title %}{{election.name}}: Voters{% endblock %}
 {% block tabs_menu %}
 {% include "_election_view_menu.html" %}
 {% endblock %}
 
 {% block content %}
-<h5>Μαζική μεταφόρτωση χρηστών</h5>
+<h5>{% trans "Bulk upload voters" %}</h5>
 
 {% if error %}
 <div class="panel alert-box alert">
-  Προέκυψε σφάλμα στην ανάγνωση του αρχείου. ({{ error }})
+  {% trans "Error in reading file." %} ({{ error }})
 </div>
 {% else %}
 <p>
-Στο αρχείο που μόλις μεταφορτώσατε εντοπίσαμε τις ακόλουθες <b>{{ count }}</b> εγγραφές.
+{% trans "There were" %} <b>{{ count }}</b> {% trans "entries read from the uploaded file." %}
 </p>
 
 <table>
   <thead>
       <tr>
-          <th>Ηλεκτρονική διευθυνση</th>
-          <th>Όνομα</th>
-          <th>Επώνυμο</th>
-          <th>Πατρώνυμο</th>
-          <th>Κινητό</th>
+          <th>{% trans "Registration ID" %}</th>
+          <th>{% trans "Email" %}</th>
+          <th>{% trans "Given name" %}</th>
+          <th>{% trans "Surname" %}</th>
+          <th>{% trans "Middle or other name" %}</th>
+          <th>{% trans "Mobile phone" %}</th>
       </tr>
   </thead>
   <tbody>
@@ -35,7 +36,8 @@
 {% else %}
 <tr>
 {% endif %}
-    <td>{{v.email}}</td><td>{{v.name}}</td><td>{{v.surname}}</td>
+    <td>{{v.voter_id}}</td><td>{{v.email}}</td>
+    <td>{{v.name}}</td><td>{{v.surname}}</td>
     <td>{{ v.fathername }}</td><td>{{ v.mobile }}</td>
 </tr>
 {% endfor %}
@@ -58,10 +60,11 @@
 <p></p>
 <form method="post" action="" id="upload_form">
   {% csrf_token %}
-  Παρακαλούμε επιβεβαιώστε ότι η λίστα ψηφοφόρων είναι σωστή.
+  {% blocktrans %}The voters above will be enrolled. Note that you can also review and
+  edit the complete voter list from the control panel.{% endblocktrans %}
   <input type="hidden" name="confirm_p" value="1" />
-  <Br /><br />
-  <input class="button success" type="submit" value="Επιβεβαίωση" />
+  <br /><br />
+  <input class="button success" type="submit" value="{% trans "Confirm voters" %}" />
 </form>
 {% endif %}
 <form 
@@ -69,6 +72,6 @@
     action="{% url election_poll_voters_upload_cancel election.uuid poll.uuid %}">
     {% csrf_token %}
     <input type="submit" class="button alert small" 
-    value="{% trans "Cancel batch voters import" %}" />
+    value="{% trans "Cancel voter enrollment" %}" />
 </form>
 {% endblock %}

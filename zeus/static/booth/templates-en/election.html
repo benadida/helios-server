@@ -1,0 +1,45 @@
+<div id="questions_div">
+
+  <div class="election-quick-guide panel">
+    <p>Welcome to the electronic voting booth by Zeus Elections.</p>
+    <p>
+    At this point you must have followed the secret invitation sent to you
+    by Email or SMS for the poll
+    <b>"{$T.election.full_name}"</b>.</p>
+
+    <p>
+    To submit your vote follow the instructions.
+    Your current progress and relevant information will be displayed,
+    at the top of the page.
+    </p>
+
+    <ol>
+      <li class="step"> 
+      <span class="step-title">
+        Fill in ballot.
+      </span>
+      <span class="step-desc">
+        In this step, you fill in the ballot with your choices.
+      </span>
+      </li>
+      <li class="step"> 
+      <span class="step-title">
+        Ballot encryption and submission.
+      </span>
+      <span class="step-desc">
+              The choices you made in the previous step will be encrypted
+              in your own computer by the web browser itself. A submission receipt will
+              be sent to your email address.
+      </span>
+      </li>
+    </ol>
+    <p>
+    You can use your invitation to submit another vote.
+    Each time, the new vote replaces your previous one.
+    </p>
+  </div>
+
+  <button class="start-voting button success medium button-submit"
+    onclick="BOOTH.show_question(0);">Start</button>
+</div>
+

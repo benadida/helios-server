@@ -165,6 +165,12 @@ def index(request, election, poll=None):
 def freeze(request, election):
     election.logger.info("Starting to freeze")
     tasks.election_validate_create(election.id)
+    
+    # hacky delay. Hopefully validate create task will start running
+    # before the election view redirect.
+    import time
+    time.sleep(4)
+
     url = election_reverse(election, 'index')
     return HttpResponseRedirect(url)
 
@@ -304,7 +310,7 @@ def results_file(request, election, ext='pdf', shortname=''):
 @require_http_methods(["GET"])
 def json_data(request, election):
     if not election.trial:
-        raise PermissionDenied
+        raise PermissionDenied('33')
     election_json = serializers.serialize("json", [election])
     polls_json = serializers.serialize("json", election.polls.all())
     trustees_json = serializers.serialize("json", election.trustees.all())

@@ -5,7 +5,7 @@
 <!--[if IE 8]>    <html class="no-js lt-ie9" lang="el"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="el"> <!--<![endif]-->
 <head>
-    <title>{% block title %}{% endblock %} Ηλεκτρονική κάλπη "Ζευς"</title>
+    <title>{% block title %}{% endblock %} {% trans "Zeus Electronic Voting" %}</title>
     <meta charset="utf-8">
 
     <!--[if lt IE 8]>
@@ -59,7 +59,10 @@
                     <img src="{{ THEME_HEADER_BG_URL }}" />
             </a>
             <div id="banner">
-                <h1>{% trans "Zeus E-voting platform" %}</h1>
+                <div class="lang-menu">
+                    {% include "lang_select.html" %}
+                </div>
+                <h1>{% trans "Zeus Electronic Voting" %}</h1>
             </div>
             {% include "user_section.html" %}
             {% block head_subtitle %}
@@ -81,8 +84,9 @@
             {% if messages %}
             <div class="messages">
               {% for message in messages %}
-              <div class="label medium success">{{ message }}</div>
+              <div class="label medium {{ message.tags }}">{{ message }}</div>
               {% endfor %}
+              <br />
             </div>
             {% endif %}
           </div>
@@ -99,28 +103,28 @@
             {% endif %}
           </span>
           {% if user and user.is_admin %}
-          Έχετε συνδεθεί ως διαχειριστής εκλογών: {{ user.display_html_small|safe }}
-          <a href="{% url logout %}">έξοδος</a> |
-          <a href="{% url admin_home %}">διαχείριση</a> 
+          {% trans "You are logged in as election administrator" %}: {{ user.display_html_small|safe }}
+          <a href="{% url logout %}">{% trans "logout" %}</a> |
+          <a href="{% url admin_home %}">{% trans "manage" %}</a> 
               {% if user.user_type == "password" %}
-              | <a href="{% url heliosauth.views.change_password %}">αλλαγή κωδικού</a>
+              | <a href="{% url heliosauth.views.change_password %}">{% trans "change password" %}</a>
               {% endif %}
               <br />
 
           {% else %}
           {% if voter %}
-          Έχετε συνδεθεί ως ο ψηφοφόρος <u>{{ voter.voter_surname }} {{voter.voter_name}}</u> της ψηφοφορίας 
-          <u>{{voter.election.name}}</u> | 
-          <a onclick="return confirm('Είστε σίγουρος οτι θέλετε να αποσυνδεθείτε;')"
-            href="{{settings.SECURE_URL_HOST}}{% url logout %}">έξοδος</a>
+	  {% trans "You are logged in as voter" %} <u>{{ voter.voter_surname }} {{voter.voter_name}}</u>:
+	  <u>{{voter.election.name}}</u> | 
+          <a onclick="return confirm('Επιθυμείτε να αποσυνδεθείτε;')"
+            href="{{settings.SECURE_URL_HOST}}{% url logout %}">{% trans "logout" %}</a>
           {% else %}
           {% if trustee %}
-          Έχετε συνδεθεί ως μέλος της εφορευτικής <u>{{trustee.name}}</u> της
-          ψηφοφορίας  <u>{{ election.name }}</u>
-          <a href="{{settings.SECURE_URL_HOST}}{% url logout %}">έξοδος</a>
+	  {% trans "You are logged in as trustee" %} <u>{{trustee.name}}</u>:
+	  <u>{{ election.name }}</u>.
+	  <a href="{{settings.SECURE_URL_HOST}}{% url logout %}">{% trans "Logout" %}</a>
           {% else %}
-          <a href="{{settings.SECURE_URL_HOST}}{% url login %}">Σύνδεση</a> | 
-          <a href="{{settings.SECURE_URL_HOST}}{% url voter_login %}">Σύνδεση ψηφοφόρου</a>
+	  <a href="{{settings.SECURE_URL_HOST}}{% url login %}">{% trans "Login" %}</a> | 
+	  <a href="{{settings.SECURE_URL_HOST}}{% url voter_login %}">{% trans "Voter Login" %}</a>
           {% endif %}
           {% endif %}
           <br />

@@ -31,7 +31,11 @@ BOOTH.setup_templates = function(election) {
     $('#election_div').setTemplateURL("templates/election.html" + cache_bust);
     $('#question_stv_div').setTemplateURL("templates/" + BOOTH.module.tpl + '.html' + cache_bust);
     $('#confirm_div').setTemplateURL("templates/confirm.html" + cache_bust);
-    $('#seal_div').setTemplateURL("templates/seal.html" + cache_bust);
+    if (BOOTH.module.seal_tpl) {
+      $('#seal_div').setTemplateURL("templates/" + BOOTH.module.seal_tpl + cache_bust);
+    } else {
+      $('#seal_div').setTemplateURL("templates/seal.html" + cache_bust);
+    }
     $('#audit_div').setTemplateURL("templates/audit.html" + cache_bust);
     $('#footer .content').setTemplateURL("templates/footer.html" + cache_bust);
 
@@ -52,7 +56,7 @@ window.onbeforeunload = function(evt) {
     evt = window.event;
   }
 
-  var message = "If you leave this page with an in-progress ballot, your ballot will be lost.";
+  var message = gettext("If you leave this page with an in-progress ballot, your ballot will be lost.");
 
   if (evt) {
     evt.returnValue = message;
@@ -62,7 +66,8 @@ window.onbeforeunload = function(evt) {
 };
 
 BOOTH.exit = function() {
-    if (confirm("Are you sure you want to exit the booth and lose all information about your current ballot?")) {
+    var msg = gettext("Are you sure you want to exit the booth and lose all information about your current ballot?")
+    if (confirm(msg)) {
         BOOTH.started_p = false;
         window.location = BOOTH.election.cast_url;
     }
@@ -123,10 +128,7 @@ BOOTH.setup_workers = function(election_raw_json) {
              // don't screw up votes.
              if (event.data.id == BOOTH.answer_timestamps[q_num]) {
                 BOOTH.encrypted_answers[q_num] = HELIOS.EncryptedAnswer.fromJSONObject(event.data.encrypted_answer, BOOTH.election);
-                BOOTH.log("got encrypted answer " + q_num);
-             } else {
-                BOOTH.log("no way jose");
-             }
+             } else {}
            }
         };
         BOOTH.workers[q_num] = new_worker;
@@ -148,9 +150,10 @@ BOOTH.setup_election = function(raw_json) {
   if (!BOOTH.election.questions_data || !BOOTH.election.questions_data.length) {
       BOOTH.election.questions_data = [{'max_answers': BOOTH.election.questions[0].answers.length}];
   }
-
+    
+    var msg = gettext("BROWSER_NOT_SUPPORTED_ALERT");
     if ($.browser.msie) {
-            alert("Το πρόγραμμα πλοήγησης που χρησιμοποιείτε δεν υποστηρίζεται από την πλατφόρμα \"Ζευς\". Χρησιμοποιήστε τις νέες εκδόσεις των προγραμμάτων (browser) Mozilla Firefox ή Google Chrome.\n\nΓια περισσότερες πληροφορίες επικοινωνήστε μαζί μας\n\n" + BOOTH.election.help_phone);
+            alert(interpolate(msg, BOOTH.election.help_phone));
             window.location = '/auth/logout?return_url=/faqs/voter/#browser-support';
         }
 
@@ -403,28 +406,31 @@ BOOTH.show_encryption_message_before = function(func_to_execute) {
 
 BOOTH.setup_help_link = function() {
     var election = BOOTH.election;
+    var subject = interpolate(gettext("HELP_EMAIL_SUBJECT"), [election.full_name]);
+    var body = interpolate(gettext("HELP_EMAIL_BODY"), [election.full_name]);
     var mailto = "mailto:" +
       election.help_email + "?" +
-      "subject=Βοήθεια για \"" + election.full_name + "\"" +
-      "&body=" + "Χρειάζομαι βοήθεια για την ψηφοφορία \"" + election.full_name + 
+      "subject= " + subject +
+      "&body=" + body + 
       "\" (" + election.uuid + ")\n";
 
     $("#footer .help").attr("href", mailto)
 }
-BOOTH.load_and_setup_election = function(election_url) {
+BOOTH.load_and_setup_election = function(election_url, messages_url) {
+    BOOTH.messages_url = messages_url;
     // the hash will be computed within the setup function call now
     $.ajax({
       'url': election_url,
       'dataType': 'html',
       'success': function(raw_json) {
-        BOOTH.setup_election(raw_json);
-        BOOTH.show_election();
-        BOOTH.election_url = election_url;
-        BOOTH.setup_help_link()
+          BOOTH.setup_election(raw_json);
+          BOOTH.show_election();
+          BOOTH.election_url = election_url;
+          BOOTH.setup_help_link()
       },
       'error': function(err) {
-        //alert("Παρουσιάστικε σφάλμα κατα τη διαδικασία αρχικοποίησης της ψηφιακής κάλπης. Παρακαλούμε ενημερώστε τους διαχειριστές του συστήματος.");
-        //window.location = 'mailto:elections@zeus.minedu.gov.gr';
+        alert(gettext("ELECTION_INIT_ERROR"));
+        window.location = 'mailto:elections@zeus.minedu.gov.gr';
       }
     });
 
@@ -465,7 +471,19 @@ BOOTH.so_lets_go = function () {
 
     // election URL
     var election_url = $.query.get('poll_json_url');
-    BOOTH.load_and_setup_election(election_url);
+    var messages_url = $.query.get('messages_url');
+    $.getScript(messages_url, function() {
+      // gettext is loaded. vote.html content gets directly rendered to the browser.
+      // There are many ugly ways to apply the content translations. Here is one of them
+      $("[data-trans]").each(function() {
+        var content = $(this).html();
+        var translated = eval.call(window, content);
+        $(this).html(translated);
+      });
+      $("#election_div").css("display", "block");
+      $("#progress_div").css("display", "block");
+      BOOTH.load_and_setup_election(election_url, messages_url);
+    });
 };
 
 BOOTH.nojava = function() {
@@ -524,7 +542,13 @@ BOOTH._after_ballot_encryption = function() {
        BOOTH.encrypted_ballot_hash = b64_sha256(BOOTH.encrypted_vote_json); // BOOTH.encrypted_ballot.get_hash();
        window.setTimeout(show_cast, 0);
     };
-    var choices = BALLOT.pretty_choices(BOOTH.election, BOOTH.ballot);
+    
+    var choices;
+    if (BOOTH.module.pretty_choices) {
+      choices = BOOTH.module.pretty_choices(BOOTH.ballot);
+    } else {
+      choices = BALLOT.pretty_choices(BOOTH.election, BOOTH.ballot);
+    }
       
     var show_cast = function() {
       $('#seal_div').processTemplate({'cast_url': BOOTH.election.cast_url,
@@ -555,7 +579,8 @@ BOOTH.wait_for_ciphertexts = function() {
     var percentage_done = Math.round((100 * answers_done.length) / BOOTH.encrypted_answers.length);
 
     if (BOOTH.total_cycles_waited > 250) {
-      alert('there appears to be a problem with the encryption process.\nPlease email elections@zeus.minedu.gov.gr and indicate that your encryption process froze at ' + percentage_done + '%');
+
+      alert(gettext("ENCRYPTION_PROCESS_FAILED"));
       return;
     }
     
@@ -626,8 +651,9 @@ BOOTH.post_audited_ballot = function() {
            'csrfmiddlewaretoken': BOOTH.csrf, 
            'audited_ballot': BOOTH.audit_trail
          }, function(result) {
-    var recipe_text = 'Η ψήφος ελέγχου αποθηκεύτηκε. Αναγνωριστικό ψήφου ελέγχου: <b>' + result.audit_id + '</b>';
-    recipe_text += "<br />Μπορείτε να επισκεφθείτε την σελίδα της ψηφοφορίας στην ενότητα \"Ψήφοι ελέγχου\", και ελέγξετε τις επιλογές σας .";
+
+
+    var recipe_text = interpolate(gettext("AUDIT_BALLOT_CAST_COMPLETE", [result.audit_id])); 
     $(".audited_ballot_recipe").html(recipe_text);
     BOOTH.reset_ciphertexts();
     //BOOTH.show_question(0);
@@ -638,7 +664,7 @@ BOOTH.cast_ballot = function() {
 
     if ($("#required-to-cast-2:checked").length > 0) {
     } else {
-        alert("Παρακαλούμε αποδεχθείτε τους όρους της ψηφοφορίας.");
+        alert(gettext("ELECTION_TERMS_ACCEPT_REQUIRED"));
         return;
     }
 
@@ -681,15 +707,14 @@ BOOTH.cast_ballot = function() {
         }
       },
       error: function(xhr, status, error) {
-        alert("Προέκυψε σφάλμα στην καταχώρηση της ψήφου σας, παρακαλούμε" +
-              " δοκιμάστε ξανά.");
+        alert(gettext("BALLOT_CAST_FAILED"));
         BOOTH.show_question(0);
       }
     })
 };
 
 BOOTH.show_receipt = function() {
-    UTILS.open_window_with_content("Αναγνωριστικό ψήφου για την ψηφοφορία '" + BOOTH.election.full_name + "': " + BOOTH.encrypted_ballot_hash);
+    UTILS.open_window_with_content(gettext("CAST_VOTE_ID"));
 };
 
 BOOTH.do_done = function() {

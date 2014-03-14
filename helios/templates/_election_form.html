@@ -1,3 +1,4 @@
+{% load i18n %}
 <div class="columns twelve">
 {% if error %}
 <div class="panel alert">
@@ -12,7 +13,7 @@
       {% endwith %}
      </table>
   <div>
-  <input class="button" type="submit" value="Αποθήκευση" id="next_button" />
+  <input class="button" type="submit" value="{% trans "Save" %}" id="next_button" />
 </div>
 
 <script>

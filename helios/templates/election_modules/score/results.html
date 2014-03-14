@@ -1,0 +1,26 @@
+{% load i18n %}
+{% with poll.zeus.get_results_pretty as results %}
+<table class="results twelve">
+    {% for question_display, question in results.items %}
+        {% if question_display != "meta" %}
+      <thead>
+        <tr>
+            <th>{{ question_display }} ({{ results.meta.ballots|length }} {% trans "votes cast" %})
+            </th>
+            <th> {% trans "Total score" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for answer, result in question.results.items %}
+        <tr class="party">
+          <td>
+              <span class="answer">{{ answer }}</span>
+          </td>
+          <td>{{ result.score }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+      {% endif %}
+  {% endfor %}
+</table>
+{% endwith %}

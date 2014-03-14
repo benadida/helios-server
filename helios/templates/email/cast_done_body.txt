@@ -1,2 +1,2 @@
-Αναγνωριστικό ψήφου
+{% load i18n %}{% trans "Vote fingerprint" %}
 {{ vote_hash }}

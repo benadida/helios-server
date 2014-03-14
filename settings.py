@@ -84,10 +84,13 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'urls'
 
 ROOT_PATH = os.path.dirname(__file__)
+BOOTH_PATH = os.path.join('zeus', 'static', 'booth')
 TEMPLATE_DIRS = (
     ROOT_PATH,
     os.path.join(ROOT_PATH, 'templates')
 )
+
+LOCALE_PATHS = (os.path.join(BOOTH_PATH, 'locale'),)
 
 INSTALLED_APPS = (
     'django.contrib.sessions',

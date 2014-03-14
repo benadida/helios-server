@@ -1,4 +1,5 @@
 {% extends "helios/templates/trustee_home_base.html" %}
+{% load i18n %}
 
 {% block content %}
 <script language="javascript">
@@ -24,7 +25,7 @@ function reuse_key(secret_key_text) {
     try {
       SECRET_KEY = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(secret_key_text));
     } catch (err) {
-      alert("Μη έγκυρος κωδικός ψηφοφορίας.");
+      alert("{% trans "Invalid trustee key." %}");
       return;
     }
 
@@ -95,7 +96,7 @@ function download_sk() {
 
     bb = new BlobBuilder;
     bb.append(jQuery.toJSON(SECRET_KEY));
-    saveAs(bb.getBlob(filetype), "Κωδικός Ψηφοφορίας {{ trustee.name }}.txt");
+    saveAs(bb.getBlob(filetype), "{% trans "Trustee Key" %} {{ trustee.name }}.txt");
   } catch (err) {
     UTILS.open_window_with_content(jQuery.toJSON(SECRET_KEY), "application/json");
   }
@@ -110,7 +111,7 @@ function download_sk() {
 
 function upload_show_pk() {
     if (!$(".confirm-check").is(":checked")) {
-      alert("Παρακαλούμε αποδεχθείτε οτι έχετε αποθηκεύσει τον κωδικό ψηφοφορίας σας.")
+      alert("{% trans "Please confirm that you have saved your trustee key." %}")
       return;
     }
 
@@ -121,11 +122,11 @@ function upload_show_pk() {
       data: data,
 
       success: function() {
-        alert("O κωδικός σας ενεργοποιήθηκε.");
+        alert("{% trans "Your trustee key has been activated." %}");
         window.location = '{% url logout %}'
       },
       error: function() {
-        alert("Σφάλμα ενεργοποίησης.");
+        alert(" {% trans "Error in trustee key activation." %}");
       }
     })
 
@@ -178,86 +179,86 @@ $(document).ready(function(){
 </script>
 
 <p style="border-bottom: 1px solid #ddd; padding-bottom: 5px;">
-Ως μέλος της εφορευτικής επιτροπής πρέπει να δημιουργήστε τον δικό σας 
-<a href="/faqs/trustee/#secret-key">Κωδικό Ψηφοφορίας</a>.
+{% trans "As an election trustee you have to generate your" %}
+<a href="/faqs/trustee/#secret-key">{% trans "trustee key" %}</a>.
 </p>
 
 <p id="waiting_message">
-  Παρακαλώ περιμένετε...
+  Please wait...
 </p>
 
 <p id="generator">
 
 <span id="buttons"><button class="button success medium" onclick="generate_keypair(); return false;" id="generate_button">
-Δημιουργία του Κωδικού Ψηφοφορίας σας</button></span>
+{% trans "Generate trustee key" %}</button></span>
 <div id="sk_download">
   <div id="pk_link" style="display: none;">
     <p>
-    <em><input class="confirm-check" type="checkbox" />Ο Κωδικός είναι αποθηκευμένος και ασφαλής. Ας συνεχίσει η διαδικασία.</em><br />
+    <em><input class="confirm-check" type="checkbox" />{% trans "My trustee key has been saved and secured. Please continue." %}</em><br />
     </p>
-    <a class="button success medium" id="activate_key" href="javascript:upload_show_pk();">Ενεργοποίηση Κωδικού</a>
+    <a class="button success medium" id="activate_key" href="javascript:upload_show_pk();">{% trans "Activate trustee key" %}</a>
     <Br /><Br />
     <p>
-    Μετά την επιτυχή ενεργοποίηση του κωδικού σας θα αποσυνδεθείτε αυτόματα
-    απο το σύστημα. 
+    {% blocktrans %}
+    After your trustee key has been activated successfully,
+    you will be automatically logged out.
+    {% endblocktrans %}
     </p>
   </div>
   <p>
   <button id="save_key" class="button success medium" style="" onclick="download_sk();">
-    Αποθηκεύστε τον Κωδικό σας</button>
+    {% trans "Save your trustee key" %}</button>
   <br />
   <u>
-Σε περίπτωση που το πρόγραμμα πλοήγησης σας εμφανίσει τα περιεχόμενα του Κωδικού σας σε νέο παράθυρο, αποθηκεύστε την νέα αυτή σελίδα 
-πατώντας ctrl+s. Το αρχείο που θα αποθηκευτεί θα περιέχει τον 
-Κωδικό Ψηφοφορίας σας.
+          {% blocktrans %}
+	  If your web browser displays the contents of your trustee key in a new window,
+	  switch to the new window and press Ctrl+S to save it.
+          {% endblocktrans %}
   </u>
   </p>
   <span id="clear_button" style="color:#aaa">
-    Ο κωδικός σας έχει παραχθεί αλλά εάν θέλετε μπορείτε να τον
+    {% trans "Your trustee key has been generated. If you want, you can" %}
     <a href="javascript:clear_keys();">
-      διαγράψετε από την μνήμη και να ξεκινήσετε από την αρχή.</a><br/>
+      {% trans "remove it from memory and start over." %}</a><br/>
   </span>
 </div>
 
 <div class="reuse_key">
-Εάν έχετε ήδη Κωδικό Ψηφοφορίας μπορείτε να τον
-<a href="javascript:show_key_reuse()">επαναχρησιμοποιήσετε</a>.
+{% trans "If you already have a trustee key you can" %}
+<a href="javascript:show_key_reuse()">{% trans "reuse it" %}</a>.
 </div>
 </p>
 
 <div id="reuse">
-<h3>Επαναχρησιμοποίηση Κωδικού Ψηφοφορίας</h3>
+<h3>{% trans "Reuse trustee key" %}</h3>
 
 <p>
-Εισάγετε τον Κωδικό Ψηφοφορίας σας παρακάτω:
+{% trans "Insert your trustee key below" %}:
 </p>
 <input type="file" id="reuse-file" />
 <form onsubmit="reuse_key(this.secret_key.value); return false;">
 <textarea cols="80" rows="5" wrap="soft" name="secret_key" id="reuse_secret">
 </textarea>
 <br />
-<input type="submit" class="button medium success" value="Συνέχεια" />
+<input type="submit" class="button medium success" value="{% trans "Continue" %}" />
 </form>
 </div>
 
 
 <form method="post" id="pk_form" action="{% url election_trustee_upload_pk election.uuid %}">
-<h3>Το δημόσιο κλειδί του Κωδικού σας</h3>
+<h3>{% trans "The public part of your trustee key" %}</h3>
 <p>
-Τώρα πρέπει να μεταφορτώσετε το δημόσιο κλειδί σας στο σύστημα «Ζευς»
+{% trans "Now you have to upload the public part of your trustee key to the Zeus servers." %}
 </p>
 <p>
-Το αποτύπωμα του δημόσιου κλειδιού του Κωδικού σας είναι:
+Your public key fingerprint is:
 <tt id="pk_hash" style="font-size: 1.5em; font-weight: bold;"></tt>.<br />
-Μπορεί να θέλετε να αποθηκεύσετε το αποτύπωμα και να επιβεβαιώσετε ότι
-το δημόσιο κλειδί του Κωδικού σας έχει αποθηκευτεί σωστά από το διακομιστή.<br />
-(Το πλήρες δημόσιο κλειδί του Κωδικού σας δεν εμφανίζεται τώρα
-επειδή δεν χρειάζεται να το αποθηκεύσετε. Το αποτύπωμά του είναι επαρκές.)
+{% trans "You can save the fingerprint for reference." %}
 </p>
 {% csrf_token %}
 <textarea id="pk_textarea" name="public_key_json" cols="80" rows="10" style="display:none;">
 </textarea>
-<input class="button success medium" type="submit" value="Ενεργοποίηση του Κωδικού σας">
+<input class="button success medium" type="submit" value="{% trans "Activate trustee key" %}">
 </form>
 
 <div id="applet_div"></div>

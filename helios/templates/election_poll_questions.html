@@ -16,13 +16,21 @@
 <div class="columns twelve">
   <div class="panel">
     {% for q in poll.questions_data %}
-    <h5>{{ q.question }}</h5>
+    <h5>{{ q.question }} {% if q.question_subtitle %}({{ q.question_subtitle }}){% endif %}</h5>
     <ol>
-      {% for a in q.answers %}
-        <li>
-        {{ a }}
-        </li>
-      {% endfor %}
+      {% if q.answers_display %}
+          {% for a in q.answers_display%}
+            <li>
+            {{ a }}
+            </li>
+          {% endfor %}
+      {% else %}
+          {% for a in q.answers %}
+            <li>
+            {{ a }}
+            </li>
+          {% endfor %}
+      {% endif %}
     </ol>
     {% empty %}
     <span class="label alert">

@@ -25,6 +25,12 @@ def get_poll_module(poll):
 class ElectionModuleBase(object):
 
     module_id =  None
+    
+    pdf_result = True
+    csv_result = True
+    json_result = True
+
+    module_params = {}
 
     default_messages = {
         'description': _('Simple election with one or more questions'),
@@ -80,7 +86,10 @@ class ElectionModuleBase(object):
             'auto_append_answer': self.auto_append_answer,
             'count_empty_question': self.count_empty_question
         })
+        if self.module_params:
+            data.update(self.module_params)
         return data
 
 from zeus.election_modules.simple import *
 from zeus.election_modules.parties import *
+from zeus.election_modules.score import *

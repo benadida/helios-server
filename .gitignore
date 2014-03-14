@@ -8,3 +8,5 @@ media/*
 local_settings.py
 .sass-cache
 docs/install/_build
+*.swp
+*.mo

@@ -1,0 +1,33 @@
+
+<h3>Υποβολή του κρυπτογραφημένου ψηφοδελτίου σας</h3>
+
+<p>
+Όλα τα δεδομένα εκτός από το κρυπτογραφημένο ψηφοδέλτιο <br />
+έχουν διαγραφεί από τη μνήμη.
+</p>
+
+<p>
+Το αναγνωριστικό του ψηφοδελτίου σας είναι:<br />
+<b><tt style="font-size: 16pt;">{$T.encrypted_vote_hash}</tt></b>
+</p>
+
+<p>
+Το ψηφοδέλτιο θα υποβληθεί στην τοποθεσία:
+</p>
+
+<p><b><tt style="font-size:1.3em;">{$T.cast_url}</tt></b></p>
+
+</p>
+
+<form method="POST" onsubmit="BOOTH.do_done();" action="{$T.cast_url}" id="send_ballot_form" class="prettyform">
+<input type="hidden" name="election_uuid" value="{$T.election_uuid}" />
+<input type="hidden" name="election_hash" value="{$T.election_hash}" />
+<textarea name="encrypted_vote" style="display: none;">
+{$T.encrypted_vote_json}
+</textarea>
+<div id="submit_button">
+  <label for="submit">&nbsp;</label>
+  <input type="submit" value="Υποβολή ψηφοδελτίου" class="pretty" />
+</div>
+</form>
+

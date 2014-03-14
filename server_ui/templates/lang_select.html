@@ -1,0 +1,28 @@
+{% load i18n %}
+<form id="lang-switch" action="{% url django.views.i18n.set_language %}" method="post">
+{% csrf_token %}
+<input name="next" type="hidden" value="{{ redirect_to }}" />
+<ul class="languages">
+{% get_language_info_list for LANGUAGES as languages %}
+{% for language in languages %}
+<li 
+  data-code="{{ language.code }}" 
+  class="{% if language.code == LANGUAGE_CODE %}selected{% endif %}">
+  <img src="/static/zeus/images/flag_{{ language.code }}.png"
+       alt="{{ language.name_local }}"
+       title="{{ language.name_local }}"/>
+    </li>
+{% endfor %}
+</ul>
+<input type="hidden" name="language" value="{{ LANGUAGE_CODE }}" />
+<input type="submit" value="{% trans "Change language" %}" style="display: none"/>
+<script>
+$(document).ready(function() {
+  $("form#lang-switch ul.languages li").click(function(e) {
+    var code =  $(this).data("code");
+    $("input[name=language]").val(code);
+    $("form#lang-switch").submit();
+  });
+});
+</script>
+</form>

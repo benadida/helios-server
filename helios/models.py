@@ -254,10 +254,10 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
     name = models.CharField(_("Election name"), max_length=255,
                             help_text=help.election_name)
     short_name = models.CharField(max_length=255)
-    help_email = models.CharField(_("Help email"),
+    help_email = models.CharField(_("Support email"),
                                   max_length=254, null=True, blank=True,
                                   help_text=help.help_email)
-    help_phone = models.CharField(_("Help phone"),
+    help_phone = models.CharField(_("Support phone"),
                                   max_length=254, null=True, blank=True,
                                   help_text=help.help_phone)
 
@@ -714,7 +714,10 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
                 'poll_url': "%s%s" % (settings.SECURE_URL_HOST,
                                       self.get_absolute_url()),
                 'poll_json_url': "%s%s" % (settings.SECURE_URL_HOST,
-                                           self.get_json_url())
+                                           self.get_json_url()),
+                'messages_url': "%s%s" % (settings.SECURE_URL_HOST,
+                                          self.get_js_messages_url()),
+                'language': "%s" % (request.LANGUAGE_CODE)
             }))
     return "%s?%s" % (reverse('test_cookie'),
                       urllib.urlencode({'continue_url': vote_url}))
@@ -722,6 +725,9 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
   def get_absolute_url(self):
       return reverse('election_poll_index', args=[self.election.uuid,
                                                   self.uuid])
+
+  def get_js_messages_url(self):
+      return reverse('js_messages')
 
   def get_json_url(self):
       return reverse('election_poll_json', args=[self.election.uuid,
@@ -1172,20 +1178,35 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
     jsonfile.close()
 
     # pdf report
-    from zeus.results_report import build_doc
-    results_name = self.election.name
-    build_doc(_(u'Results'), self.election.name,
-              self.election.institution.name,
-              self.election.voting_starts_at, self.election.voting_ends_at,
-              self.election.voting_extended_until,
-              [(self.name, json.dumps(results_json))],
-              self.get_result_file_path('pdf', 'pdf'))
+    if self.get_module().module_id =='score':
+        from zeus.results_report import build_doc
+        build_doc(_(u'Results'), self.election.name,
+                  self.election.institution.name,
+                  self.election.voting_starts_at, self.election.voting_ends_at,
+                  self.election.voting_extended_until,
+                  [(self.name, json.dumps(results_json))],
+                  self.get_result_file_path('pdf', 'pdf'), score=True)
 
-    # CSV
-    from zeus.reports import csv_from_polls
-    csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
-    csv_from_polls(self.election, [self], csvfile)
-    csvfile.close()
+        from zeus.reports import csv_from_score_polls
+        csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
+        csv_from_score_polls(self.election, [self], csvfile)
+        csvfile.close()
+    else:
+        from zeus.results_report import build_doc
+        results_name = self.election.name
+        build_doc(_(u'Results'), self.election.name,
+                  self.election.institution.name,
+                  self.election.voting_starts_at, self.election.voting_ends_at,
+                  self.election.voting_extended_until,
+                  [(self.name, json.dumps(results_json))],
+                  self.get_result_file_path('pdf', 'pdf'))
+
+        # CSV
+        from zeus.reports import csv_from_polls
+        csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
+        csv_from_polls(self.election, [self], csvfile)
+        csvfile.close()
+
 
   def save(self, *args, **kwargs):
     if not self.uuid:

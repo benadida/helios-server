@@ -129,9 +129,10 @@ def voters_list(request, election, poll):
     limit = int(request.GET.get('limit', 10))
     q = request.GET.get('q','')
     voters_per_page = getattr(settings, 'ELECTION_VOTERS_PER_PAGE', 100)
-    order_by = request.GET.get('order', 'surname')
-    if not order_by in ['surname', 'email', 'name']:
-        order_by = 'surname'
+    order_by = 'login_id'
+    #order_by = request.GET.get('order', 'login_id')
+    #if not order_by in ['login_id', 'surname', 'email', 'name']:
+    #    order_by = 'login_id'
 
     validate_hash = request.GET.get('vote_hash', "").strip()
     hash_invalid = None
@@ -206,21 +207,24 @@ def voters_upload(request, election, poll):
             return HttpResponseRedirect(url)
         else:
             # we need to confirm
+            voters = []
             error = None
             if request.FILES.has_key('voters_file'):
                 voters_file = request.FILES['voters_file']
                 voter_file_obj = poll.add_voters_file(voters_file)
-            # import the first few lines to check
-            voters = []
-            try:
-                voters = [v for v in voter_file_obj.itervoters()]
-            except ValidationError, e:
-                if hasattr(e, 'messages') and e.messages:
-                    error = e.messages[0]
-                else:
+
+                # import the first few lines to check
+                try:
+                    voters = [v for v in voter_file_obj.itervoters()]
+                except ValidationError, e:
+                    if hasattr(e, 'messages') and e.messages:
+                        error = e.messages[0]
+                    else:
+                        error = "error."
+                except Exception, e:
                     error = str(e)
-            except Exception, e:
-                error = str(e)
+            else:
+                error = _("No file uploaded")
             if not error:
                 request.session['voter_file_id'] = voter_file_obj.id
             count = len(voters)
@@ -268,7 +272,7 @@ def voters_email(request, election, poll=None, voter_uuid=None):
     default_template = 'vote'
 
     if not election.any_poll_feature_can_send_voter_mail:
-        raise PermissionDenied
+        raise PermissionDenied('34')
 
     if not election.any_poll_feature_can_send_voter_booth_invitation:
         TEMPLATES.pop(0)
@@ -292,7 +296,7 @@ def voters_email(request, election, poll=None, voter_uuid=None):
                 voter = get_object_or_404(Voter, uuid=voter_uuid,
                                           election=election)
         except Voter.DoesNotExist:
-            raise PermissionDenied
+            raise PermissionDenied('35')
         if not voter:
             url = election_reverse(election, 'index')
             return HttpResponseRedirect(url)
@@ -414,7 +418,7 @@ def voters_email(request, election, poll=None, voter_uuid=None):
 def voter_delete(request, election, poll, voter_uuid):
     voter = get_object_or_404(Voter, poll=poll, uuid=voter_uuid)
     if voter.voted:
-        raise PermissionDenied
+        raise PermissionDenied('36')
     voter.delete()
     poll.logger.info("Poll voter '%s' removed", voter.voter_login_id)
     url = poll_reverse(poll, 'voters')
@@ -453,7 +457,7 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
     try:
         voter = Voter.objects.get(poll=poll, uuid=voter_uuid)
         if voter.excluded_at:
-            raise PermissionDenied
+            raise PermissionDenied('37')
     except Voter.DoesNotExist:
         raise PermissionDenied("Invalid election")
 
@@ -462,7 +466,7 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
         user.authenticate(request)
         poll.logger.info("Poll voter '%s' logged in", voter.voter_login_id)
         return HttpResponseRedirect(poll_reverse(poll, 'index'))
-    raise PermissionDenied
+    raise PermissionDenied('38')
 
 
 @auth.election_view(check_access=False)
@@ -558,7 +562,7 @@ def cast_done(request, election, poll):
 
     fingerprint = request.GET.get('f')
     if not request.GET.get('f', None):
-        raise PermissionDenied()
+        raise PermissionDenied('39')
 
     vote = get_object_or_404(CastVote, fingerprint=fingerprint)
 
@@ -640,7 +644,7 @@ def upload_decryption(request, election, poll, trustee):
 @require_http_methods(["GET"])
 def get_tally(request, election, poll):
     if not request.zeususer.is_trustee:
-        raise PermissionDenied
+        raise PermissionDenied('40')
 
     params = poll.get_booth_dict()
     tally = poll.encrypted_tally.toJSONDict()
@@ -656,7 +660,7 @@ def get_tally(request, election, poll):
 @require_http_methods(["GET"])
 def results(request, election, poll):
     if not request.zeususer.is_admin and not poll.feature_public_results:
-        raise PermissionDenied
+        raise PermissionDenied('41')
 
     context = {
         'poll': poll,
@@ -673,7 +677,12 @@ def results_file(request, election, poll, ext):
     name = ext
 
     if not os.path.exists(poll.get_result_file_path('csv', 'csv')):
-        poll.generate_result_docs()
+        if poll.get_module().csv_result:
+            poll.generate_result_docs()
+
+    if not os.path.exists(poll.get_result_file_path('pdf', 'pdf')):
+        if poll.get_module().pdf_result:
+            poll.generate_result_docs()
 
     if request.GET.get('gen', None):
         poll.generate_result_docs()

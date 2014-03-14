@@ -2,12 +2,13 @@
 import datetime
 import uuid
 import json
+import copy
 
 from django.utils.datastructures import SortedDict
 from django.utils.translation import ugettext_lazy as _
 
 from zeus.core import ZeusCoreElection, Teller, sk_from_args, \
-    mix_ciphers, TellerStream, gamma_count_parties
+    mix_ciphers, TellerStream, gamma_count_parties, gamma_count_range
 from zeus.core import V_CAST_VOTE, V_PUBLIC_AUDIT, V_AUDIT_REQUEST
 
 from django.conf import settings
@@ -542,9 +543,35 @@ class ZeusDjangoElection(ZeusCoreElection):
         return excluded_voters
 
     def get_results(self):
+        if self.poll.get_module().module_id == 'score':
+            return gamma_count_range(self.do_get_results(), self.do_get_candidates())
         return gamma_count_parties(self.do_get_results(), self.do_get_candidates())
 
+    def get_results_pretty_score(self):
+        pretty = SortedDict()
+
+        results = self.get_results()
+
+        for i, q in enumerate(self.poll.questions_data):
+            entry = copy.copy(q)
+            entry['results'] = SortedDict()
+            scores = filter(lambda a: a[1].startswith("%s:" % q['question']), results['totals'])
+            for score, answer in scores:
+                qanswer = answer.replace("%s:" % q['question'], "")
+                entry['results'][qanswer] = {
+                    'score': score,
+                    'scores': results['detailed'][answer] 
+                }
+            pretty[q['question']] = entry
+            
+        pretty['meta'] = results
+        results['total_cast'] = len(results['ballots'])
+        return pretty
+
     def get_results_pretty(self):
+        if self.poll.get_module().module_id == 'score':
+            return self.get_results_pretty_score()
+
         results = self.get_results()
         total = results['ballot_count']
         parties = []

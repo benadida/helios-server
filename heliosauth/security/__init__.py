@@ -83,7 +83,7 @@ def admin_required(func):
   def admin_required_wrapper(request, *args, **kw):
     user = get_user(request)
     if not user or not user.is_staff:
-      raise PermissionDenied()
+      raise PermissionDenied('31')
 
     return func(request, *args, **kw)
 

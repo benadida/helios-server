@@ -1,51 +1,37 @@
+
 <form onsubmit="return false;" class="prettyform" id="answer_form">
 <input type="hidden" name="question_num" value="{$T.question_num}" />
 
-<div class="row question-row">
-  <div class="columns five stv-candidates">
-{#foreach $T.data as question}
-<!--<h5>Επιλογή σειράς υποψηφίων</h5>-->
-<div  id="question-{$T.question$index}">
-  <h5>{$T.question.question}</h5>
-  {#if $T.question.max_answers == $T.question.min_answers}
-  <span class="question-subtitle">{$T.question.max_answers} {#if $T.question.max_answers == 1}επιλογή{#else}επιλογές{#/if}</span>
-  {#else}
-  <span class="question-subtitle">Απο {$T.question.min_answers} έως {$T.question.max_answers} {#if $T.question.max_answers == 1}επιλογή{#else}επιλογές{#/if}</span>
-  {#/if}
+<div class="row">
+  <div class="columns twelve">
+    <!--<h5>Επιλογή σειράς υποψηφίων</h5>-->
     <p class="stv-description">
+    Κάντε κλικ στο όνομα του υποψήφιου που θέλετε να επιλέξετε από τη λίστα
+    "Διαθέσιμοι Υποψήφιοι". Σε περίπτωση που δεν επιλέξετε κανέναν υποψήφιο, η
+    ψήφος σας θα καταμετρηθεί ως "Λευκή". Όταν τελειώσετε με την επιλογή των 
+    υποψηφίων πατήστε στο κουμπί "Συνέχεια" για να συνεχίσετε.
     </p>
+  </div>
+  <div class="columns five stv-candidates">
+    <h6>Διαθέσιμοι Υποψήφιοι</h6>
     <ul class="stv-candidates stv-list">
       {#foreach $T.question.answers as answer}
-      {#if $T.answer$index == 0}
-      {#if $T.election.module_params.count_empty_question}
       <li class="stv-choice choice-{$T.answer$index}">
-      <a href="#" 
-        data-question="{$T.question$index}"
-        data-absolute-index="{$T.answer$index + $T.question.answers_index}"
-        class="button enabled small">{$T.answer}</a></li>
-      {#/if}
-      {#else}
-      <li class="stv-choice choice-{$T.answer$index}">
-      <a href="#" 
-        data-question="{$T.question$index}"
-        data-absolute-index="{$T.answer$index + $T.question.answers_index}"
-        class="button enabled small">
-        <span class="custom checkbox checked" /><span class="answer_text">{$T.answer}</span></a></li>
-      {#/if}
+      <a href="#" class="button disabled secondary small">{$T.answer}</a></li>
       {#/foreach}
     </ul>
   </div>
-  {#/foreach}
-</div>
   <div class="columns six stv-choices offset-by-one">
     <h6>Συμπληρωμένο ψηφοδέλτιο</h6>
     <ul class="stv-choices stv-list">
+      {#foreach $T.question.answers as answer}
       <li class="stv-ballot-choice choice-{$T.answer$index}">
       <a class="button secondary clearfix small">
-        <span class="index-num"></span>
+        <span class="index-num">Επιλογή {$T.answer$index+1}</span>
         <span class="value"></span>
       </a>
       </li>
+      {#/foreach}
     </ul>
   </div>
 </div>
@@ -56,7 +42,7 @@
 <div class="row">
   <div class="columns twelve">
   <input style="float:right" id="submit-stv" class="button medium success" type="button" 
-  onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Λευκό" />
+  onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Συνέχεια" />
   <br />
   <a class="show-audit-form" href="#">Υποβολή ψήφου ελέγχου</a>
   {#/if}
@@ -75,4 +61,3 @@
   </div>
 </div>
 </form>
-
