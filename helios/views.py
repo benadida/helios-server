@@ -765,23 +765,6 @@ def trustee_home(request, election, trustee):
     except Thresholdscheme.DoesNotExist:
         scheme = None
 
-    if (trustee.added_encrypted_shares):
-        if (trustee.public_key):
-            step = 5
-            wait = 0
-        else:
-            step = 3
-            if (election.encrypted_shares_uploaded):
-                wait = 0
-            else:
-                wait = 1
-    else:
-        step = 1
-        if (scheme):
-            wait = 0
-        else:
-            wait = 1
-
     signer_id = trustee.key.id
     trustees = Trustee.objects.filter(election=election).order_by('id')
 
@@ -829,7 +812,7 @@ def trustee_home(request, election, trustee):
 
             encry_shares_dict[str(i)] = utils.to_json(encry_share.to_dict())
 
-    return render_template(request, 'trustee_home', {"election_id": election_id, "trustee": trustee, "step": step, "wait": wait, "signer_id": signer_id, "election": election, "trustees": trustees, "trustee_ids_dict": trustee_ids_dict,
+    return render_template(request, 'trustee_home', {"election_id": election_id, "trustee": trustee, "signer_id": signer_id, "election": election, "trustees": trustees, "trustee_ids_dict": trustee_ids_dict,
                                                      "scheme_params_json": scheme_params_json, "id_dict": id_dict, "name_dict": utils.to_json(name_dict), "email_dict": utils.to_json(email_dict),
                                                      "pok_encrypt_dict": utils.to_json(pok_encrypt_dict), "pok_signing_dict": utils.to_json(pok_signing_dict), "pk_encrypt_hash_dict": utils.to_json(pk_encrypt_hash_dict),
                                                      "pk_signing_hash_dict": utils.to_json(pk_signing_hash_dict), "pk_encrypt_dict": utils.to_json(pk_encrypt_dict), "pk_signing_dict": utils.to_json(pk_signing_dict),

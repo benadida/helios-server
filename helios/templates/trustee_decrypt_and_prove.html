@@ -114,6 +114,11 @@
       $('#sk_section').show();
       $('#result_textarea').html('');
       $('#first_step_success').hide();
+
+      $('.sk_upload').each(function() {
+        $(this).val('');
+      });
+      $('#sk_textarea').val('');
     }
 
     function handleFileSelect(e) {

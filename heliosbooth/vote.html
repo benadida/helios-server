@@ -6,7 +6,6 @@
   <link rel="stylesheet" type="text/css" href="css/booth.css" />
   <link rel="stylesheet" type="text/css" href="css/forms.css" />
 
-<!--
   <script language="javascript" src="js/jscrypto/class.js"></script>
   <script language="javascript" src="js/jscrypto/bigint.dummy.js"></script>
   <script language="javascript" src="js/jscrypto/jsbn.js"></script>
@@ -22,9 +21,9 @@
   <script language="javascript" src="js/jscrypto/elgamal.js"></script>
   <script language="javascript" src="js/jscrypto/sha1.js"></script>
   <script language="javascript" src="js/jscrypto/sha2.js"></script>
-  <script language="javascript" src="js/jscrypto/helios.js"></script>-->
-  
-  <script language="javascript" src="js/20140302-helios-booth-compressed.js"></script>
+  <script language="javascript" src="js/jscrypto/helios.js"></script>
+
+  <!--script language="javascript" src="js/20140302-helios-booth-compressed.js"></script>-->
 </head>
 <body>
 <div id="wrapper">
@@ -402,7 +401,7 @@ BOOTH.load_and_setup_election = function(election_url) {
 
     if (USE_SJCL) {
       // get more randomness from server
-      $.get(election_url + "/get-randomness", {}, function(raw_json) {
+      $.get("/helios/get-randomness", {}, function(raw_json) {
         sjcl.random.addEntropy(JSON.parse(raw_json).randomness);
       });
     }

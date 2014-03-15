@@ -89,7 +89,7 @@
                   If you cancel now, your ballot will <b>not</b> be recorded. You can start the voting process over again, of course.
                 </p>
 
-                <a class="tiny secondary button" href="{% url helios.views.one_election_view election.uuid %}">Cancel</button>
+                <a class="tiny secondary button" href="{% url helios.views.one_election_view election.uuid %}">Cancel</a>
               </div>
             {% else %}
               <div data-alert class="alert-box warning">
@@ -164,5 +164,5 @@
         {% endif %}
       </div>
     </div>
-    </div>
+  </div>
 {% endblock %}

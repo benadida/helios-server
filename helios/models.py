@@ -400,7 +400,7 @@ class Election(HeliosModel):
                     if t != self.get_helios_trustee():
                         issues.append({
                             'type': 'trustee keypairs',
-                            'action': 'Wait for trustee %s to generate a partial decryption and upload a public key.' % t.name
+                            'action': 'Wait for trustee %s to decrypt the encrypted shares and upload a public key.' % t.name
                         })
 
         if self.voter_set.count() == 0 and not self.openreg:

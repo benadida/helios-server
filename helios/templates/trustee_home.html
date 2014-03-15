@@ -97,6 +97,9 @@
     }
 
     function calculate_shares() {
+      $('#first_step').hide();
+      $('#first_step_waiting_div').show();
+
       ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
       var p = ELGAMAL_PARAMS.p;
       var g = ELGAMAL_PARAMS.g;
@@ -118,9 +121,6 @@
       encry_shares = data[6];
       trustee_ids_array = data[7];
 
-      $('#first_step').hide();
-      $('#waiting_div').show();
-
       var secret_key_sig = get_secret_key_signing();
       var signer_index = trustee_index;
       var correct_shares = true;
@@ -133,7 +133,7 @@
         var s_str = s.toJSONObject(s);
         var q_str = q.toJSONObject(q);
 
-        // Also give the id's from the trustees (trustee.id)
+        // also give the id's from the trustees (trustee.id)
         var shares = scheme.share_verifiably(s, t, ELGAMAL_PARAMS, trustee_ids_array);
         if (id_array.length == shares.length) {
     		  var encry_shares = [];
@@ -178,7 +178,7 @@
 
           encry_shares_text = JSON.stringify(dict);
 
-          $('#waiting_div').hide();
+          $('#first_step_waiting_div').hide();
           $('#second_step').show();
           $('#encry_shares_textarea').val(encry_shares_text);
         }
@@ -225,20 +225,15 @@
       $('#first_step_success').hide();
 
       $('#encry_shares_textarea').val('');
-      $('#sk_textarea').val('');
-      $('#sk_upload').val('')
+      $('#sk_textarea_encryption').val('');
+      $('#sk_textarea_signing').val('');
+      $('.sk_upload').each(function() {
+        $(this).val('');
+      });
     }
 
     function get_secret_key_encryption() {
       return ElGamal.SecretKey.fromJSONObject($.secureEvalJSON($('#sk_textarea_encryption').val()));
-    }
-
-    function reuse_key(secret_key_text) {
-      SECRET_KEY = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(secret_key_text));
-
-      $('#reuse').hide();
-      setup_public_key_and_proof();
-      show_pk();
     }
 
     function setup_public_key_and_proof() {
@@ -256,7 +251,7 @@
 
     function calculate_keypair() {
       $('#third_step').hide();
-      $('#waiting_div').show();
+      $('#third_step_waiting_div').show();
 
       ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
       var p = ELGAMAL_PARAMS.p;
@@ -313,20 +308,20 @@
 
   				if ((share.point_s.x_value == trustee_id) && (share.point_t.x_value == trustee_id)) {
   					if (sig.verify(share_string,pk_sender_sig,p,q,g)) {
-  						console.log(name_array[trustee_index] + ' verified signature of his share created by ' + name_array[i] + ': CORRECT SIGNATURE');
+  						console.log(name_array[trustee_index] + ' verified signature of his share created by ' + name_array[i] + ': correct signature');
 
   						if (share.verify_share(SCHEME_PARAMS,p,q,g)) {
-  							console.log(name_array[trustee_index] + ' verified commitments of his share created by ' + name_array[i] + ': CORRECT COMMITMENTS');
+  							console.log(name_array[trustee_index] + ' verified commitments of his share created by ' + name_array[i] + ': correct commitments');
 
   							secret_shares.push(share);
   							correct_share = true;
 
   							console.log(name_array[trustee_index] + ' accepted share number ' + String(i) + ' from ' + name_array[i]);
   						} else{
-  							console.log(name_array[trustee_index] + ' verified commitments of his share created by ' + name_array[i] + ': WRONG COMMITMENTS');
+  							console.log(name_array[trustee_index] + ' verified commitments of his share created by ' + name_array[i] + ': wrong commitments');
   						}
   					} else {
-              console.log(name_array[trustee_index] + ' verified signature of his share created by ' + name_array[i] + ': WRONG SIGNATURE');
+              console.log(name_array[trustee_index] + ' verified signature of his share created by ' + name_array[i] + ': wrong signature');
             }
   				} else {
   				  console.log(name_array[trustee_index] + ' spotted a share with wrong x-coordinates of ' + name_array[i]);
@@ -351,7 +346,7 @@
         if (share.verify_share(SCHEME_PARAMS,p,q,g)) {
   		    console.log('Final secret share has commitment: ' + fin_com);
         } else {
-  		    console.log('Final secret share: WRONG COMMITMENTS');
+  		    console.log('Final secret share: wrong commitments');
         }
 
         var sk_val = share.point_s.y_value;
@@ -363,7 +358,7 @@
         $('#pk_textarea').val(pk_val);
         $('#pk_hash').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY)));
 
-        $('#waiting_div').hide();
+        $('#third_step_waiting_div').hide();
         show_sk();
       }
     }
@@ -406,34 +401,6 @@
     }
 
     $(document).ready(function() {
-      $('#result_div').hide();
-      $('#waiting_div').hide();
-      $('#second_step_waiting_div').hide();
-      $('#done').hide();
-      $('#error').hide();
-      $('#first_step').hide();
-      $('#second_step').hide();
-      $('#third_step').hide();
-      $('#third_step_waiting_div').hide();
-      $('#pk_form').hide();
-      $('#sk_download').hide();
-      $('#reuse').hide();
-
-      if ({{election.use_threshold|yesno:"true,false"}}){
-        if({{step}} == 1){
-          if({{wait}} == 0){
-            $('#first_step').show();
-          }
-        }
-        if ({{step}}==3){
-          if({{wait}}==0) {
-            $('#third_step').show();
-          } else {
-            $('#third_step_waiting_div').show();
-          }
-        }
-      }
-
       BigInt.setup(function() {
           ELECTION_JSON = {{election.toJSON|safe}};
       });
@@ -454,16 +421,35 @@
         <p>
           TODO: Uitleg over secret sharing.
         </p>
+
+        {% if not trustee.public_key %}
+          <p>
+            Therefore you will have to agree on a secret with the other trustees, for which you will have to complete 4 steps:
+
+            <ol>
+              <li>Generate encrypted shares for the other trustees.</li>
+              <li>Upload the shares.</li>
+              <li>
+                Decrypt the shares of the other trustees.
+                <br />
+                <i>This is only available when all the trustees have uploaded their shares.</i>
+              </li>
+              <li>Save your secret key and upload your public key.</li>
+            </ol>
+          </p>
+        {% endif %}
+      {% endif %}
+
+      {% if trustee.public_key %}
+        <p>
+          You have successfully uploaded your public key, with fingerprint <tt>{{trustee.public_key_hash}}</tt>. If you want to verify whether you still have the correct secret key stored on your machine, you can do so by clicking on the following button.
+        </p>
+
+        <a class="button" href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">Verify Your Secret Key</a>
       {% endif %}
 
       {% if not election.use_threshold %}
-        {% if trustee.public_key_hash %}
-          <p>
-            You have successfully uploaded your public key, with fingerprint <tt>{{trustee.public_key_hash}}</tt>.
-          </p>
-
-          <a class="button" href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">Verify Your Secret Key</a>
-        {% else %}
+        {% if not trustee.public_key %}
           <p>
             A key generator is provided that runs entirely in your browser, so that the generated secret key will not leave your machine. However, it is also possible to reuse an existing pair.
           </p>
@@ -491,187 +477,202 @@
               <b>Next</b> You have to wait for the election administrator to define the threshold scheme before you can generate your encrypted shares.
             </div>
           {% else %}
-            <p>
-              Therefore you will have to agree on a secret with the other trustees, for which you will have to complete 4 steps:
+            {% if not trustee.added_encrypted_shares %}
+              <div id="first_step">
+                <h3>Generate Your Encrypted Shares</h3>
 
-              <ol>
-                <li>Generate encrypted shares for the other trustees.</li>
-                <li>Upload the shares.</li>
-                <li>
-                  Decrypt the shares of the other trustees.
-                  <br />
-                  <i>This is only available when all the trustees have uploaded their shares.</i>
-                </li>
-                <li>Save your secret key and upload your public key.</li>
-              </ol>
-            </p>
+                <p>
+                  To generate your encrypted shares, you first have to enter your secret key for signing. If you generated your key pair with our generator, it was stored in a file called <tt>signing_key.json</tt>.
+                </p>
 
-            <div id="first_step">
-              <h3>Generate Your Encrypted Shares</h3>
-
-              <p>
-                To generate your encrypted shares, you first have to enter your secret key for signing. If you created your key pair with our generator, it was stored in a file called <tt>signing_key.json</tt>.
-              </p>
-
-              <form>
-                <div class="row">
-                  <div class="large-3 columns">
-                    <label for="sk_upload" class="right inline">Secret Key for Signing</label>
+                <form>
+                  <div class="row">
+                    <div class="large-3 columns">
+                      <label for="sk_upload" class="right inline">Secret Key for Signing</label>
+                    </div>
+                    <div class="large-9 columns">
+                      <input type="file" name="sk_upload" class="sk_upload" data-output="sk_textarea_signing" />
+                    </div>
                   </div>
-                  <div class="large-9 columns">
-                    <input type="file" name="sk_upload" class="sk_upload" data-output="sk_textarea_signing" />
+
+                  <div class="row">
+                    <div class="large-9 large-offset-3 columns">
+                      <textarea id="sk_textarea_signing" style="height: 100px;" disabled></textarea>
+                      <small class="error" style="display: none;">The file must be formatted as JSON.</small>
+                    </div>
                   </div>
-                </div>
 
-                <div class="row">
-                  <div class="large-9 large-offset-3 columns">
-                    <textarea id="sk_textarea_signing" style="height: 100px;" disabled></textarea>
-                    <small class="error" style="display: none;">The file must be formatted as JSON.</small>
+                  <div class="row">
+                    <div class="large-9 large-offset-3 columns">
+                      <button onclick="calculate_shares(); return false;">Generate Encrypted Shares</button>
+                    </div>
                   </div>
-                </div>
-
-                <div class="row">
-                  <div class="large-9 large-offset-3 columns">
-                    <button onclick="calculate_shares(); return false;">Generate Encrypted Shares</button>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            <div id="second_step">
-              <h3>Upload Your Encrypted Shares <small>[<a href="javascript:reset()">Back</a>]</small></h3>
-
-              <p id="first_step_success">
-                Your encrypted shares have been generated and your secret key was cleared from memory. When you're ready, you can submit this result to the server.
-              </p>
-
-              <form action="javascript:submit_result();">
-                <textarea id="encry_shares_textarea" style="display: none;"></textarea>
-                <input class="button" type="submit" value="Upload Your Encrypted Shares" />
-              </form>
-            </div>
-
-            <div id="second_step_waiting_div">
-              <h3>Upload Your Encrypted Shares</h3>
-
-              <p>
-                Submitting and checking your decryption factors and proofs...
-              </p>
-
-              <p class="text-center">
-                <img src="/static/helios/loading.gif" />
-              </p>
-            </div>
-
-            <div id="third_step" >
-              <h3>Decrypt Encrypted Shares and Calculate Keypair</h3>
-
-              <p>
-                To decrypt your shares, you first have to upload your secret key for encryption. If you created your key pair with our generator, it was stored in a file called <tt>encryption_key.json</tt>.
-              </p>
-
-              <form>
-                <div class="row">
-                  <div class="large-3 columns">
-                    <label for="sk_upload" class="right inline">Secret Key for Encryption</label>
-                  </div>
-                  <div class="large-9 columns">
-                    <input type="file" name="sk_upload" class="sk_upload" data-output="sk_textarea_encryption" />
-                  </div>
-                </div>
-
-                <div class="row">
-                  <div class="large-9 large-offset-3 columns">
-                    <textarea id="sk_textarea_encryption" style="height: 100px;" disabled></textarea>
-                    <small class="error" style="display: none;">The file must be formatted as JSON.</small>
-                  </div>
-                </div>
-
-                <div class="row">
-                  <div class="large-9 large-offset-3 columns">
-                    <button onclick="calculate_keypair(); return false;">Decrypt Encrypted Shares</button>
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            <div id="third_step_waiting_div" >
-              <h3>Decrypt Shares and Calculate Keypair</h3>
-
-              <div data-alert class="alert-box info">
-                Wait for the other trustees to calculate the encrypted shares. Please come back later.
+                </form>
               </div>
-            </div>
 
-            <div id="sk_download">
-              <h3>Save Your Secret Key and Upload Your Public Key</h3>
+              <div id="first_step_waiting_div" style="display: none;">
+                <h3>Generate Your Encrypted Shares</h3>
 
-              <button id="sk_link" onclick="download_sk(); $('#pk_link').show(); $('#sk_link').addClass('secondary'); return false;">Save Your Secret Key</button>
-              <button id="pk_link" onclick="show_pk(); return false;" style="display: none;">Upload Your Public Key</button>
-            </div>
+                <p>
+                  Calculating your encrypted shares...
+                </p>
 
-            <div id="pk_form">
-              <h3>Your Public Key</h3>
+                <p class="text-center">
+                  <img src="/static/helios/loading.gif" />
+                </p>
+              </div>
 
-              <p>
-                It's time to upload the public key to the server.
-              </p>
+              <div id="second_step" style="display: none;">
+                <h3>Upload Your Encrypted Shares <small>[<a href="javascript:reset()">Back</a>]</small></h3>
 
-              <p>
-                The fingerprint of your public key is: <tt id="pk_hash"></tt>. You may want to save this to confirm that your public key was properly stored by the server.
-              </p>
+                <p id="first_step_success">
+                  Your encrypted shares have been generated and your secret key was cleared from memory. When you're ready, you can submit this result to the server.
+                </p>
 
-              <p>
-                <i>Your public key is not currently being displayed because you do not need to save it, the fingerprint is sufficient.</i>
-              </p>
+                <form action="javascript:submit_result();">
+                  <textarea id="encry_shares_textarea" style="display: none;"></textarea>
+                  <input class="button" type="submit" value="Upload Your Encrypted Shares" />
+                </form>
+              </div>
 
-              <form method="post" action="{% url helios.views.trustee_upload_pk election.uuid, trustee.uuid %}">
-                <textarea id="pk_textarea" name="public_key_json" style="display: none;"></textarea>
-                <input class="button" type="submit" value="Upload Your Public Key">
-              </form>
-            </div>
+              <div id="second_step_waiting_div" style="display: none;">
+                <h3>Upload Your Encrypted Shares</h3>
 
-            <div id="done">
+                <p>
+                  Submitting and checking your decryption factors and proofs...
+                </p>
+
+                <p class="text-center">
+                  <img src="/static/helios/loading.gif" />
+                </p>
+              </div>
+            {% else %}
+              {% if not trustee.public_key %}
+                {% if not election.encrypted_shares_uploaded %}
+                  <div id="third_step">
+                    <h3>Decrypt Encrypted Shares and Calculate Keypair</h3>
+
+                    <div data-alert class="alert-box info">
+                      Wait for the other trustees to calculate the encrypted shares. Please come back later.
+                    </div>
+                  </div>
+                {% else %}
+                  <div id="third_step">
+                    <h3>Decrypt Encrypted Shares and Calculate Keypair</h3>
+
+                    <p>
+                      To decrypt your shares, you first have to upload your secret key for encryption. If you generated your key pair with our generator, it was stored in a file called <tt>encryption_key.json</tt>.
+                    </p>
+
+                    <form>
+                      <div class="row">
+                        <div class="large-3 columns">
+                          <label for="sk_upload" class="right inline">Secret Key for Encryption</label>
+                        </div>
+                        <div class="large-9 columns">
+                          <input type="file" name="sk_upload" class="sk_upload" data-output="sk_textarea_encryption" />
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="large-9 large-offset-3 columns">
+                          <textarea id="sk_textarea_encryption" style="height: 100px;" disabled></textarea>
+                          <small class="error" style="display: none;">The file must be formatted as JSON.</small>
+                        </div>
+                      </div>
+
+                      <div class="row">
+                        <div class="large-9 large-offset-3 columns">
+                          <button onclick="calculate_keypair(); return false;">Decrypt Encrypted Shares</button>
+                        </div>
+                      </div>
+                    </form>
+                  </div>
+
+                  <div id="third_step_waiting_div" style="display: none;">
+                    <h3>Decrypt Encrypted Shares and Calculate Keypair</h3>
+
+                    <p>
+                      Decrypting encrypted shares and calculating the keypair...
+                    </p>
+
+                    <p class="text-center">
+                      <img src="/static/helios/loading.gif" />
+                    </p>
+                  </div>
+
+                  <div id="sk_download" style="display: none;">
+                    <h3>Save Your Secret Key and Upload Your Public Key</h3>
+
+                    <button id="sk_link" onclick="download_sk(); $('#pk_link').show(); $('#sk_link').addClass('secondary'); return false;">Save Your Secret Key</button>
+                    <button id="pk_link" onclick="show_pk(); return false;" style="display: none;">Upload Your Public Key</button>
+                  </div>
+
+                  <div id="pk_form" style="display: none;">
+                    <h3>Your Public Key</h3>
+
+                    <p>
+                      It's time to upload the public key to the server.
+                    </p>
+
+                    <p>
+                      The fingerprint of your public key is: <tt id="pk_hash"></tt>. You may want to save this to confirm that your public key was properly stored by the server.
+                    </p>
+
+                    <p>
+                      <i>Your public key is not currently being displayed because you do not need to save it, the fingerprint is sufficient.</i>
+                    </p>
+
+                    <form method="post" action="{% url helios.views.trustee_upload_pk election.uuid, trustee.uuid %}">
+                      <textarea id="pk_textarea" name="public_key_json" style="display: none;"></textarea>
+                      <input class="button" type="submit" value="Upload Your Public Key">
+                    </form>
+                  </div>
+                {% endif %}
+              {% endif %}
+            {% endif %}
+
+            <div id="done" style="display: none;">
               <h3>Done</h3>
 
               <a class="button" href="{% url helios.views.one_election_view election.uuid %}">Back to Election</a>
             </div>
 
 
-            <div data-alert class="alert-box warning" id="error">
+            <div data-alert class="alert-box warning" id="error" style="display: none;">
               <b>Error</b> Your secret key was likely incorrect.
-            </div>
-
-            <div id="applet_div"></div>
-          {% endif %}
-        {% endif %}
-
-        {% if election.frozen_at %}
-          {% if election.encrypted_tally %}
-            {% if trustee.decryption_factors %}
-              <div data-alert class="alert-box info">
-                You have successfully uploaded your decryption.
-              </div>
-            {% else %}
-              <div data-alert class="alert-box info">
-                The encrypted tally for this election is ready.
-              </div>
-
-              <a class="button" href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">Decrypt With Your Key</a>
-            {% endif %}
-          {% else %}
-            <div class="alert-box info">
-              <b>Next</b> Once the tally is computed, you will need to come back here to provide your secret key for decryption purposes. You should keep the email with your trustee homepage link, which contains the credentials needed to get back here.
-            </div>
-          {% endif %}
-        {% else %}
-          {% if trustee.public_key %}
-            <div class="alert-box info">
-              <b>Next</b> You have successfully generated the key pair that will be used to encrypt the ballots. When all trustees have done this, the election administrator will freeze the election.
             </div>
           {% endif %}
         {% endif %}
       {% endif %}
+
+      {% if election.frozen_at %}
+        {% if election.encrypted_tally %}
+          {% if trustee.decryption_factors %}
+            <div data-alert class="alert-box info">
+              You have successfully uploaded your decryption.
+            </div>
+          {% else %}
+            <div data-alert class="alert-box info">
+              The encrypted tally for this election is ready.
+            </div>
+
+            <a class="button" href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">Decrypt With Your Key</a>
+          {% endif %}
+        {% else %}
+          <div class="alert-box info">
+            <b>Next</b> Once the tally is computed, you will need to come back here to provide your secret key for decryption purposes. You should keep the email with your trustee homepage link, which contains the credentials needed to get back here.
+          </div>
+        {% endif %}
+      {% else %}
+        {% if trustee.public_key %}
+          <div class="alert-box info">
+            <b>Next</b> You have successfully generated the key pair that will be used to encrypt the ballots. When all trustees have done this, the election administrator will freeze the election.
+          </div>
+        {% endif %}
+      {% endif %}
+
+      <div id="applet_div"></div>
     </div>
   </div>
 {% endblock %}

@@ -1,78 +1,128 @@
 {% extends "helios/templates/cryptobase.html" %}
+{% block title %}Check Secret Key for {{trustee.name}}{% endblock %}
 
 {% block content %}
-<script>
-function reset() {
-    $('#processing').hide();
-    $('#result').html("");
-    $('#input').hide();
-    $('#loading').show();
-    BigInt.setup(function() {
+  <script>
+    function reset() {
+      $('#processing').hide();
+      $('#result').html('');
+      $('#input').hide();
+      $('#loading').show();
+
+      $('.sk_upload').each(function() {
+        $(this).val('');
+      });
+      $('#secret_key').val('');
+
+      BigInt.setup(function() {
         $('#loading').hide();
         $('#input').show();
+      });
+    }
+
+    var PK_HASH = "{{trustee.public_key_hash}}";
+
+    function check_sk(sk_value) {
+      $('#input').hide();
+      $('#processing').show();
+
+      try {
+        var secret_key = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(sk_value));
+
+        var pk_hash = b64_sha256(jQuery.toJSON(secret_key.pk));
+        var key_ok_p = (pk_hash == PK_HASH);
+      } catch (e) {
+        debugger;
+        var key_ok_p = false;
+      }
+
+      $('#processing').hide();
+
+      if (key_ok_p) {
+        $('#result').addClass('success').html('Your have the correct secret key!');
+      } else {
+        $('#result').addClass('warning').html('The given key is invalid.');
+      }
+      $('#result').show();
+    }
+
+    function handleFileSelect(e) {
+      var file = e.target.files[0];
+      var jsonType = /application\/json/;
+
+      var output = $('#' + $(e.target).data('output'));
+
+      if (file.type.match(jsonType)) {
+        var reader = new FileReader();
+
+        reader.onload = function(e) {
+          output.val(reader.result);
+        }
+
+        reader.readAsText(file);
+      } else {
+        output.addClass('error');
+        output.parent().find('.error').show();
+      }
+    }
+
+    $(document).ready(function() {
+      $('.sk_upload').change(handleFileSelect);
+      reset();
     });
-}
+  </script>
 
-$(document).ready(function() {
-    reset();
-});
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>
+        {{election.name}}&mdash;Check Secret Key for {{trustee.name}} <small>[<a href="{% url helios.views.trustee_home election.uuid trustee.uuid %}">Back</a>]</small>
+      </h2>
 
-var PK_HASH = "{{trustee.public_key_hash}}";
+      <p>
+        Your public key fingerprint is: <tt>{{trustee.public_key_hash}}</tt>.
+      </p>
 
-function check_sk(sk_value) {
-    $('#input').hide();
-    $('#processing').show();
+      <div data-alert class="alert-box info" id="loading">
+        Loading crypto functions...
+      </div>
 
-    try {
-      var secret_key = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(sk_value));
+      <div id="input" style="display: none;">
+        <p>
+          To verify that you have the right secret key, upload it here. If you created your key pair with our generator, it was stored in a file called <tt>secret_key.json</tt>.
+        <p>
 
-      var pk_hash = b64_sha256(jQuery.toJSON(secret_key.pk));
-      var key_ok_p = (pk_hash == PK_HASH);
-    } catch (e) {
-      debugger;
-      var key_ok_p = false;
-    }
-    
-    $('#processing').hide();
+        <form>
+          <div class="row">
+            <div class="large-3 columns">
+              <label for="sk_upload" class="right inline">Secret Key for Encryption</label>
+            </div>
+            <div class="large-9 columns">
+              <input type="file" name="sk_upload" class="sk_upload" data-output="secret_key" />
+            </div>
+          </div>
 
-    var reset_link = "<br /><a href='javascript:reset();'>try again</a>";
-    if (key_ok_p) {
-      $('#result').html("your secret key matches!");
-    } else {
-      $('#result').html("OH OH, your key is bad." + reset_link);
-    }
-}
-</script>
-  <h2 class="title">{{election.name}} &mdash; Trustee {{trustee.name}} &mdash; Check Secret Key <span style="font-size:0.7em;">[<a href="./home">back to trustee home</a>]</span></h2>
+          <div class="row">
+            <div class="large-9 large-offset-3 columns">
+              <textarea id="secret_key" style="height: 100px;" disabled></textarea>
+              <small class="error" style="display: none;">The file must be formatted as JSON.</small>
+            </div>
+          </div>
 
-<p>
-Your public key fingerprint is: <b>{{trustee.public_key_hash}}</b>
-</p>
+          <div class="row">
+            <div class="large-9 large-offset-3 columns">
+              <button onclick="check_sk($('#secret_key').val()); return false;">Check Secret Key</button>
+            </div>
+          </div>
+        </form>
+      </div>
 
-<div id="loading">
-loading crypto functions...
-</div>
+      <div data-alert class="alert-box info" id="processing" style="display: none;">
+        checking your secret key...
+      </div>
 
-<div id="input" style="display:none;">
-<p>
-To verify that you have the right secret key, paste it here:
-<p>
+      <div data-alert class="alert-box" id="result" style="display: none;"></div>
 
-<form onsubmit="check_sk(this.secret_key.value); this.secret_key.value=''; return false;">
-<textarea name="secret_key" cols="60" rows ="5" wrap="soft">
-</textarea>
-<br />
-<input type="submit" value="check" />
-</form>
-</div>
-
-<div id="processing" style="display:none;">
-checking your secret key...
-</div>
-
-<div id="result">
-</div>
-
-
-<div id="applet_div"></div>
+      <div id="applet_div"></div>
+    </div>
+  </div>
 {% endblock %}
