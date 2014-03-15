@@ -7,9 +7,9 @@
 <div  id="question-{$T.question$index}">
   <h5>{$T.question.question}</h5>
   {#if $T.question.max_answers == $T.question.min_answers}
-  <span class="question-subtitle">{$T.question.max_answers} {#if $T.question.max_answers == 1}choice{#else}choices{#/if}</span>
+  <span class="question-subtitle">{$T.question.max_answers} {#if $T.question.max_answers == 1}επιλογή{#else}επιλογές{#/if}</span>
   {#else}
-  <span class="question-subtitle">{$T.question.min_answers} to {$T.question.max_answers} {#if $T.question.max_answers == 1}choice{#else}choices{#/if}</span>
+  <span class="question-subtitle">{$T.question.min_answers} έως {$T.question.max_answers} {#if $T.question.max_answers == 1}επιλογή{#else}επιλογές{#/if}</span>
   {#/if}
     <p class="stv-description">
     </p>

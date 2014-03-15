@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-10 11:50+0200\n"
+"POT-Creation-Date: 2014-03-15 14:16+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,44 +40,44 @@ msgstr ""
 "\n"
 "μπορείτε να βρείτε συνημμένη την απόδειξη της ψήφου σας.\n"
 
-#: templates/base.html:8 templates/base.html.py:62
+#: templates/base.html:8 templates/base.html.py:65
 msgid "Zeus Electronic Voting"
 msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
 
-#: templates/base.html:102
+#: templates/base.html:106
 #, fuzzy
 msgid "You are logged in as election administrator"
 msgstr "Είστε συνδεδεμένοι ως μέλος εφορευτικής"
 
-#: templates/base.html:103 templates/base.html.py:115
+#: templates/base.html:107 templates/base.html.py:119
 msgid "logout"
 msgstr "έξοδος"
 
-#: templates/base.html:104
+#: templates/base.html:108
 msgid "manage"
 msgstr "διαχείριση"
 
-#: templates/base.html:106
+#: templates/base.html:110
 msgid "change password"
 msgstr "αλλαγή κωδικού"
 
-#: templates/base.html:112
+#: templates/base.html:116
 msgid "You are logged in as voter"
 msgstr "Συνδεθήκατε ως ψηφοφόρος"
 
-#: templates/base.html:118
+#: templates/base.html:122
 msgid "You are logged in as trustee"
 msgstr "Συνδεθήκατε ως μέλος εφορευτικής"
 
-#: templates/base.html:120
+#: templates/base.html:124
 msgid "Logout"
 msgstr "Έξοδος"
 
-#: templates/base.html:122
+#: templates/base.html:126
 msgid "Login"
 msgstr "Είσοδος"
 
-#: templates/base.html:123
+#: templates/base.html:127
 msgid "Voter Login"
 msgstr "Είσοδος Ψηφοφόρου"
 
@@ -100,3 +100,7 @@ msgstr "ΝΑΙ"
 #: templates/index.html:103
 msgid "NO"
 msgstr "ΟΧΙ"
+
+#: templates/lang_select.html:19
+msgid "Change language"
+msgstr ""

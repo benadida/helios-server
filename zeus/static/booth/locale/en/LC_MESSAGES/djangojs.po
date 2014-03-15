@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-13 23:26+0200\n"
+"POT-Creation-Date: 2014-03-15 14:16+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -19,149 +19,191 @@ msgstr ""
 
 #: vote.html:71 templates-el/vote.html:71
 msgid "STEP_1_TITLE"
-msgstr ""
+msgstr "Ballot selection"
 
 #: vote.html:72 templates-el/vote.html:72
 msgid "STEP_2_TITLE"
-msgstr ""
+msgstr "Ballot submission"
 
 #: vote.html:77 templates-el/vote.html:77
 msgid "INITIALIZING_BOOTH"
-msgstr ""
+msgstr "Initializing booth..."
 
 #: vote.html:78 templates-el/vote.html:78
 msgid "INIT_BOOTH_ESTIMATED_TIME"
-msgstr ""
+msgstr "Estimated time 10 seconds"
 
 #: vote.html:88 templates-el/vote.html:88
 msgid "PLEASE_WAIT"
-msgstr ""
+msgstr "Please wait..."
 
 #: vote.html:92 templates-el/vote.html:92
 msgid "BALLOT_ENCRYPTION_IN_PROGRESS"
-msgstr ""
+msgstr "Your ballot is being encrypted. Please wait..."
 
 #: vote.html:96 templates-el/vote.html:96
 msgid "BALLOT_ENCRYPTION_ESTIMATED_TIME"
-msgstr ""
+msgstr "Ballot encryption can take up to 2 minutes."
 
 #: vote.html:113 templates-el/vote.html:113
 msgid "HELP"
-msgstr ""
+msgstr "Help"
 
 #: js/ballot_modules.js:32 templates-el/ballot_modules.js:32
 #: templates-el/seal.html:15 templates-el/seal_score.html:14
 msgid "BLANK_BALLOT"
-msgstr ""
+msgstr "Blank"
 
 #: js/ballot_modules.js:34 templates-el/ballot_modules.js:34
 msgid "BALLOT_CONTINUE_BUTTON"
-msgstr ""
+msgstr "Continue"
 
 #: js/booth.js:59
 msgid ""
 "If you leave this page with an in-progress ballot, your ballot will be lost."
-msgstr ""
+msgstr "If you leave this page, your ballot selections will be lost."
 
 #: js/booth.js:69
 msgid ""
 "Are you sure you want to exit the booth and lose all information about your "
 "current ballot?"
 msgstr ""
+"Are you sure you want to exit the booth and discrard all your selections?"
 
 #: js/booth.js:154
 msgid "BROWSER_NOT_SUPPORTED_ALERT"
 msgstr ""
-"Το πρόγραμμα πλοήγησης που χρησιμοποιείτε δεν υποστηρίζεται από την "
-"πλατφόρμα \"Ζευς\". Χρησιμοποιήστε τις νέες εκδόσεις των προγραμμάτων "
-"(browser) Mozilla Firefox ή Google Chrome.\n"
+"Your web browser is not supported by Zeus. Please, use the latest versionsof "
+"Mozilla Firefox or Google Chrome.\n"
 "\n"
-"Για περισσότερες πληροφορίες επικοινωνήστε μαζί μας"
+"Contact us if you need more information."
 
 #: js/booth.js:409
 msgid "HELP_EMAIL_SUBJECT"
-msgstr ""
+msgstr "Help with Zeus voting booth"
 
 #: js/booth.js:410
 msgid "HELP_EMAIL_BODY"
-msgstr ""
+msgstr "I have this problem:"
 
 #: js/booth.js:432
 msgid "ELECTION_INIT_ERROR"
-msgstr ""
+msgstr "Error initializing election"
 
-#: js/booth.js:584
+#: js/booth.js:583
 msgid "ENCRYPTION_PROCESS_FAILED"
-msgstr ""
+msgstr "Encryption has failed."
 
-#: js/booth.js:657
+#: js/booth.js:656
 msgid "AUDIT_BALLOT_CAST_COMPLETE"
-msgstr ""
+msgstr "Your audit ballot was successfully submitted."
 
-#: js/booth.js:668
+#: js/booth.js:667
 msgid "ELECTION_TERMS_ACCEPT_REQUIRED"
-msgstr ""
+msgstr "Please accept the voting terms."
 
-#: js/booth.js:711
+#: js/booth.js:710
 msgid "BALLOT_CAST_FAILED"
-msgstr ""
+msgstr "Ballot submission failed."
 
-#: js/booth.js:718
+#: js/booth.js:717
 msgid "CAST_VOTE_ID"
-msgstr ""
+msgstr "Vote identifier"
 
 #: templates-el/audit.html:1
 msgid "AUDIT_BALLOT_SUBMIT"
-msgstr ""
+msgstr "Submit an audit ballot"
 
 #: templates-el/audit.html:4
 msgid "AUDIT_BALLOT_SET"
 msgstr ""
+"You have chosen to submit an audit ballot. Your vote will not be counted and "
+"your selections will be registered public in a public listing."
 
 #: templates-el/audit.html:19
 msgid "AUDIT_BALLOT_BACK_PROMPT"
-msgstr ""
+msgstr "Press Back to return to the voting booth."
+
+#: templates-el/audit.html:21
+msgid "AUDIT_BALLOT_CONFIRM_BUTTON"
+msgstr "Submit"
 
 #: templates-el/audit.html:25
 msgid "AUDIT_BALLOT_BACK_BUTTON"
-msgstr ""
+msgstr "Back"
 
 #: templates-el/done.html:2
 msgid "BALLOT_SUBMISSION_IN_PROGRESS"
-msgstr ""
+msgstr "Submitting ballot..."
 
 #: templates-el/done.html:5
 msgid "BALLOT_SUBMISSION_PLEASE_WAIT"
-msgstr ""
+msgstr "Your ballot is being submitted. Please wait..."
 
 #: templates-el/election.html:4
 msgid "ELECTION_INTRO_BODY"
-msgstr "Election intro body <h1>Test html</h1>"
+msgstr ""
+"    <p>Welcome to Zeus' electronic voting booth</p>\n"
+"    <p>\n"
+"    To be here you must have followed the invitation link sent to you     "
+"via email or SMS to vote for\n"
+"    <b>«%s»</b>.</p>\n"
+"\n"
+"    <p>\n"
+"    To submit a ballot follow the instructions.\n"
+"    Your progress will be shown at the top of the page,\n"
+"    along with other relevant information.\n"
+"    </p>\n"
+"\n"
+"    <ol>\n"
+"      <li class=\"step\">\n"
+"      <span class=\"step-title\">\n"
+"        Filling in your ballot.\n"
+"      </span>\n"
+"      <span class=\"step-desc\">\n"
+"        In this step you record your voting selections.\n"
+"      </span>\n"
+"      </li>\n"
+"      <li class=\"step\">\n"
+"      <span class=\"step-title\">\n"
+"        Ballot encryption and submission.\n"
+"      </span>\n"
+"      <span class=\"step-desc\">\n"
+"        Your previously recorded selections will be encrypted in\n"
+"        your computer by the web browser itself, and then they will\n"
+"        be submitted over the network to Zeus.\n"
+"        A submission receipt will be sent to you via email.\n"
+"      </span>\n"
+"      </li>\n"
+"    </ol>\n"
+"    <p>\n"
+"     You can use the invitation link, again, to submit a new ballot.\n"
+"     Each time, your new vote will replace the previous one.\n"
+"    </p>"
 
 #: templates-el/election.html:8
 msgid "START"
-msgstr ""
+msgstr "Start"
 
 #: templates-el/footer.html:2
 msgid "ELECTION_KEY_NOT_INITIALIZED"
-msgstr ""
+msgstr "The election has not been initialized"
 
 #: templates-el/footer.html:4
 msgid "POLL_IDENTIFIER"
-msgstr ""
+msgstr "Poll identifier"
 
 #: templates-el/header.html:2
-#, fuzzy
 msgid "ELECTION_INFO_BUTTON"
-msgstr "Election intro body <h1>Test html</h1>"
+msgstr "Information"
 
 #: templates-el/header.html:8
 msgid "CONTACT_DETAILS"
-msgstr "Contact details"
+msgstr "Contact"
 
 #: templates-el/header.html:11
 msgid "EMAIL"
-msgstr ""
+msgstr "Email"
 
 #: templates-el/header.html:12
 msgid "PHONE"
@@ -169,40 +211,40 @@ msgstr "Phone"
 
 #: templates-el/question_plain.html:60
 msgid "AUDIT_VOTE_SUBMISSION_BUTTON"
-msgstr ""
+msgstr "Submit audit ballot"
 
 #: templates-el/question_plain.html:67
 msgid "AUDIT_VOTE_CODE_PROMPT"
-msgstr ""
+msgstr "Audit ballot"
 
 #: templates-el/question_plain.html:69
 msgid "AUDIT_VOTE_INSTRUCTIONS"
 msgstr ""
+"The valid audit codes must have been sent to you along with the invitation "
+"to vote."
 
 #: templates-el/question_plain.html:71
 msgid "AUDIT_VOTE_CODE_LABEL"
-msgstr ""
+msgstr "Enter code:"
 
 #: templates-el/seal.html:5 templates-el/seal_score.html:5
 msgid "BALLOT_ENCRYPTED_SUCCESS"
 msgstr ""
+"Your ballot has been encrypted successfully. Confirm your selections asthey "
+"are presented below."
 
 #: templates-el/seal.html:22 templates-el/seal_score.html:21
 msgid "BACK_TO_BALLOT_CHOICES"
-msgstr ""
+msgstr "Back to ballot selections"
 
 #: templates-el/seal.html:31 templates-el/seal_score.html:30
 msgid "SUBMIT_BALLOT_PROMPT"
-msgstr ""
+msgstr " "
 
 #: templates-el/seal.html:43 templates-el/seal_score.html:41
-#, fuzzy
 msgid "ELECTION_TERMS_LABEL"
-msgstr "Election intro body <h1>Test html</h1>"
+msgstr "I confirm that I am alone and nobody else has witnessed my selections."
 
 #: templates-el/seal.html:50 templates-el/seal_score.html:48
 msgid "SUBMIT_BALLOT"
-msgstr ""
-
-#~ msgid "TEST_MSG"
-#~ msgstr "Η ερώτηση '%s' απαιτεί τουλάχιστον %s επιλογές."
+msgstr "Submit ballot"

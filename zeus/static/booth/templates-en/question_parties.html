@@ -3,7 +3,7 @@
 <div class="row question-row">
   <div class="columns five stv-candidates">
 {#foreach $T.data as question}
-<!--<h5>Επιλογή σειράς υποψηφίων</h5>-->
+<!--<h5>Select candidate preference order</h5>-->
 <div  id="question-{$T.question$index}">
     <p class="stv-description">
     </p>
@@ -54,7 +54,7 @@
 <div class="row">
   <div class="columns twelve">
   <input style="float:right" id="submit-stv" class="button medium success" type="button" 
-  onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Συνέχεια" />
+  onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Continue" />
   <br />
   <a class="show-audit-form" href="#">Submit audit vote</a>
   {#/if}

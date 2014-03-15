@@ -4,18 +4,18 @@
 {#foreach $T.questions as question}
 <ul class="confirm-choices">
 {#foreach $T.choices[$T.question$index] as choice}
-<li><h6>Επιλογή {$T.choice$index+1}: {$T.choice}</h6></li>
+<li><h6>Selection {$T.choice$index+1}: {$T.choice}</h6></li>
 {#/for}
 {#if !$T.choices[$T.question$index].length }
-<li><h5>Λευκή ψήφος</h5></li>
+<li><h5>Blank</h5></li>
 {#/if}
 </ul>
 </div>
 </div>
 <div class="columns twelve">
-<a onclick="BOOTH.show_question({$T.question$index}); return false;" class="button medium">Επεξεργασία ψηφοδελτίου</a>
+<a onclick="BOOTH.show_question({$T.question$index}); return false;" class="button medium">Edit ballot</a>
 {#/for}
 
-<button id="confirm-vote" class="button medium success" onclick="BOOTH.seal_ballot();">Αποδοχή ψήφου</button>
+<button id="confirm-vote" class="button medium success" onclick="BOOTH.seal_ballot();">Confirm</button>
 </div>
 </div>
