@@ -1374,10 +1374,17 @@ class VoterFile(models.Model):
     return iter_voter_data(voter_data)
 
   def process(self):
+    demo_voters = 0
+    poll = self.poll
+    for user in poll.election.admins.all():
+        if user.user_id.startswith('demo_'):
+            nr = sum(e.voters.count() for e in user.elections.all())
+            demo_voters += nr
+            if demo_voters >= settings.DEMO_MAX_VOTERS:
+                raise Exception("No more voters for demo account")
+
     self.processing_started_at = datetime.datetime.utcnow()
     self.save()
-
-    poll = self.poll
 
     # now we're looking straight at the content
     if self.voter_file_content:
@@ -1393,6 +1400,8 @@ class VoterFile(models.Model):
     new_voters = []
     for voter in reader:
       num_voters += 1
+      if demo_voters + num_voters > settings.DEMO_MAX_VOTERS:
+          raise Exception("No more voters for demo account")
 
       voter_id = voter['voter_id']
       email = voter['email']

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-15 14:16+0200\n"
+"POT-Creation-Date: 2014-03-15 16:34+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -293,15 +293,15 @@ msgstr ""
 msgid "Malformed mobile phone number: %s"
 msgstr "Μη έγκυρος αριθμός τηλεφώνου: %s"
 
-#: models.py:2002
+#: models.py:2011
 msgid "Create trustee key"
 msgstr "Δημιουργία κωδικού ψηφοφορίας"
 
-#: models.py:2003
+#: models.py:2012
 msgid "Verify trustee key"
 msgstr "Επιβεβαίωση κωδικού ψηφοφορίας"
 
-#: models.py:2004
+#: models.py:2013
 msgid "Partially decrypt votes"
 msgstr "Μερική αποκρυπτογράφηση ψήφων"
 
@@ -1360,6 +1360,50 @@ msgstr "Αποτύπωμα ψήφου"
 #: templates/email/cast_done_subject.txt:1
 msgid "Thank you for voting"
 msgstr "Ευχαριστούμε που ψηφίσατε"
+
+#: templates/email/demo_email_body.txt:1
+msgid ""
+"Greetings,\n"
+"\n"
+"You can use the following credentials to access a demo account as an\n"
+"election operator at:\n"
+"\n"
+msgstr ""
+"Χαίρετε,\n"
+"\n"
+"Τα ακόλουθα διαπιστευτήρια σας δίνουν πρόσβαση χειριστή ψηφοφοριών σε\n"
+"δοκιμαστικό λογαριασμό στο:\n"
+"\n"
+
+#: templates/email/demo_email_body.txt:10
+msgid "The total voters across all elections for demo accounts is limited to"
+msgstr ""
+"Το μέγιστο σύνολο ψηφοφόρων για όλες τις ψηφοφορίες\n"
+"δοκιμαστικών λόγαριασμών είναι"
+
+#: templates/email/demo_email_body.txt:11
+msgid ""
+"Demo accounts are periodically purged.\n"
+"\n"
+"If you need a normal account, or have any questions,\n"
+"please contact us at helpdesk@zeus.grnet.gr.\n"
+"\n"
+"--\n"
+"https://zeus.grnet.gr/\n"
+"Zeus Elections\n"
+msgstr ""
+"Οι δοκιμαστικοί λογαριασμοί καταργούνται περιοδικά.\n"
+"\n"
+"Εάν χρειάζεστε ένα κανονικό λογαριασμό, ή εάν έχετε ερωτήσεις,\n"
+"παρακαλούμε επικοινωνήστε μαζί μας στο helpdesk@zeus.grnet.gr.\n"
+"\n"
+"--\n"
+"https://zeus.grnet.gr/\n"
+"Ηλεκτρονικές Ψηφοφορίες «Ζευς»\n"
+
+#: templates/email/demo_email_subject.txt:1
+msgid "demo account for"
+msgstr "δοκιμαστικός λογαριασμός"
 
 #: templates/email/info_body.txt:1
 msgid "Intended recipient"
