@@ -172,9 +172,9 @@ def demo(request):
         return HttpResponseRedirect(reverse('home'))
 
     emails.add(email_address)
-    mail_subject = render_to_string('zeus/demo_email_subject.txt',
+    mail_subject = render_to_string('email/demo_email_subject.txt',
                                     {'settings': settings}).strip()
-    mail_body = render_to_string('zeus/demo_email_body.txt',
+    mail_body = render_to_string('email/demo_email_body.txt',
                                  {'settings': settings,
                                   'username': demo_user.user_id,
                                   'password': password})

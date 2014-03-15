@@ -7,7 +7,7 @@ election operator at:
 username: {{ username }}
 password: {{ password }}
 
-{% trans "You can create up to" %} {{ settings.DEMO_MAX_ELECTIONS }} {% trans "elections, up to" %} {{ settings.DEMO_MAX_VOTERS }} {% trans "voters each" %}.
+{% trans "The total voters across all elections for demo accounts is limited to" %} {{ settings.DEMO_MAX_VOTERS }}.
 {% blocktrans %}Demo accounts are periodically purged.
 
 If you need a normal account, or have any questions,
