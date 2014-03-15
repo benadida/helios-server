@@ -13,6 +13,7 @@ import signals
 
 import copy
 
+from django.conf import settings
 
 @task()
 def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
@@ -52,7 +53,17 @@ def voters_email(election_id, subject_template, body_template, extra_vars={},
         voters = voters.exclude(**voter_constraints_exclude)
 
     for voter in voters:
-        single_voter_email.delay(voter.uuid, subject_template, body_template, extra_vars)
+        if settings.QUEUE_INDIVIDUAL_EMAILS:
+            single_voter_email.delay(voter.uuid, subject_template, body_template, extra_vars)
+        else:
+            the_vars = copy.copy(extra_vars)
+            the_vars.update({'voter' : voter})
+
+            subject = render_template_raw(None, subject_template, the_vars)
+            body = render_template_raw(None, body_template, the_vars)
+
+            voter.user.send_message(subject, body)
+            
 
 @task()
 def voters_notify(election_id, notification_template, extra_vars={}):
