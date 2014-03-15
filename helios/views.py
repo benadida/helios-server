@@ -261,11 +261,13 @@ def election_new(request):
 
 @election_admin(frozen=False)
 def one_election_edit(request, election):
-
     error = None
     RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases',
                        'election_type', 'randomize_answer_order', 'private_p', 'use_threshold', 'help_email']
     # RELEVANT_FIELDS += ['use_advanced_audit_features']
+
+    if settings.ALLOW_ELECTION_INFO_URL:
+        RELEVANT_FIELDS += ['election_info_url']
 
     if request.method == "GET":
         values = {}
@@ -1045,7 +1047,8 @@ def post_audited_ballot(request, election):
         return SUCCESS
 
 
-@election_view(frozen=True)
+# we don't require frozen election to allow for ballot preview
+@election_view()
 def one_election_cast(request, election):
     """
     on a GET, this is a cancellation, on a POST it's a cast
@@ -1120,7 +1123,7 @@ def password_voter_login(request, election):
     return HttpResponseRedirect(settings.SECURE_URL_HOST + return_url)
 
 
-@election_view(frozen=True)
+@election_view()
 def one_election_cast_confirm(request, election):
     user = get_user(request)
 
@@ -1128,6 +1131,10 @@ def one_election_cast_confirm(request, election):
     # getting here in a bad way
     if not request.session.has_key('encrypted_vote'):
         return HttpResponseRedirect(settings.URL_HOST)
+
+    # election not frozen or started
+    if not election.voting_has_started():
+        return render_template(request, 'election_not_started', {'election': election})
 
     voter = get_voter(request, user, election)
 

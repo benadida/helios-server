@@ -52,6 +52,7 @@ select {
   margin-bottom: 0;
 }
 
+<<<<<<< HEAD
 .panel p {
   margin-bottom: 5px;
 }
@@ -82,4 +83,8 @@ tt {
 
 tt.big {
   font-size: 1.8em;
+}
+
+ul {
+    margin-left: 20px;
 }

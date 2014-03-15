@@ -6,16 +6,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
+
   <title>Helios&mdash;{% block title %}{% endblock %}</title>
 
   <link rel="stylesheet" href="/static/foundation/css/foundation.css">
   <link rel="stylesheet" href="/static/foundation-tweaks.css">
 
-  <script language="javascript" src="/static/helios/js/jquery-1.11.0.min.js"></script>
-  <script language="javascript" src="/static/helios/js/jquery-ui-1.8.1.custom.min.js"></script>
-  <script language="javascript" src="/static/helios/js/jqsplitdatetime.js"></script>
-
-  <script language="javascript" src="/static/helios/helios/jquery.json.min.js"></script>
+  {% if settings.DEBUG %}
+    <script languate="javascript" src="/static/foundation/js/vendor/custom.modernizr.js"></script>
+    <script language="javascript" src="/static/helios/js/jquery-1.11.0.min.js"></script>
+    <script language="javascript" src="/static/helios/js/jquery-ui-1.8.1.custom.min.js"></script>
+    <script language="javascript" src="/static/helios/js/jqsplitdatetime.js"></script>
+    <script language="javascript" src="/static/helios/helios/jquery.json.min.js"></script>
+    <script language="javascript" src="/static/foundation/js/foundation.min.js"></script>
+  {% else %}
+    <script language="javascript" src="/static/20140302-helios-combined.js"></script>
+  {% endif %}
 
   {% block js %}{% endblock %}
 </head>
@@ -79,16 +85,15 @@
       {% if voter %}
         You are logged in as voter <b>{% if voter.alias %}{{voter.alias}}{% else %}{{voter.name}}{% endif %}</b> in election <b>{{voter.election.name}}</b>. [<a href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.logout %}?return_url={{CURRENT_URL}}">Logout</a>]
       {% else %}
-        Not logged in. [<a href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.index %}?return_url={{CURRENT_URL}}">Log In</a>]
+        {% if settings.SHOW_LOGIN_OPTIONS %}
+          Not logged in. [<a href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.index %}?return_url={{CURRENT_URL}}">Log In</a>]
+        {% else %}
+          Powered by <a href="http://heliosvoting.org">Helios Voting</a>.
+        {% endif %}
       {% endif %}
     {% endif %}
   </div>
 
-  <script>
-    document.write('<script src=' + ('__proto__' in {} ? '/static/foundation/js/vendor/zepto' : '/static/foundation/js/vendor/jquery') + '.js><\/script>')
-  </script>
-
-  <script src="/static/foundation/js/foundation.min.js"></script>
   <script>
     $(document).foundation();
   </script>

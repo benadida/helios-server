@@ -5,6 +5,8 @@
   <title>Helios Voting Booth</title>
   <link rel="stylesheet" type="text/css" href="css/booth.css" />
   <link rel="stylesheet" type="text/css" href="css/forms.css" />
+
+<!--
   <script language="javascript" src="js/jscrypto/class.js"></script>
   <script language="javascript" src="js/jscrypto/bigint.dummy.js"></script>
   <script language="javascript" src="js/jscrypto/jsbn.js"></script>
@@ -15,21 +17,14 @@
   <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
   <script language="javascript" src="js/jquery-jtemplates.js"></script>
   <script language="javascript" src="js/jquery.json.min.js"></script>
-
-  <script language="javascript">
-    // required for jscrypto library
-    var JSCRYPTO_HOME = document.location.pathname.replace("vote.html", "js/jscrypto");
-  </script>
-
-  <script language="javascript" src="js/jscrypto/class.js"></script>
-  <script language="javascript" src="js/jscrypto/bigint.js?d=20111004"></script>
-  <!-- this script is a dummy wrapper for bigint when client-side crypto is not possible
-  <script language="javascript" src="js/jscrypto/bigint.dummy.js"></script>-->
+  <script language="javascript" src="js/jscrypto/bigint.js"></script>
   <script language="javascript" src="js/jscrypto/random.js"></script>
-  <script language="javascript" src="js/jscrypto/elgamal.js?d=20111004"></script>
+  <script language="javascript" src="js/jscrypto/elgamal.js"></script>
   <script language="javascript" src="js/jscrypto/sha1.js"></script>
   <script language="javascript" src="js/jscrypto/sha2.js"></script>
-  <script language="javascript" src="js/jscrypto/helios.js?d=20111004"></script>
+  <script language="javascript" src="js/jscrypto/helios.js"></script>-->
+  
+  <script language="javascript" src="js/20140302-helios-booth-compressed.js"></script>
 </head>
 <body>
 <div id="wrapper">
@@ -364,7 +359,11 @@ BOOTH.click_checkbox = function(question_num, answer_num, checked_p) {
         if (!checkbox.checked)
             checkbox.disabled = true;
      });
-     $('#warning_box').html("Maximum number of options selected.<br />To change your selection, please de-select a current selection first.");
+
+     // do the warning only if the question allows more than one option, otherwise it's confusing
+     if (BOOTH.election.questions[question_num].max > 1) {
+        $('#warning_box').html("Maximum number of options selected.<br />To change your selection, please de-select a current selection first.");
+     }
   } else {
      // enable the other checkboxes
      $('.ballot_answer').each(function(i, checkbox) {
@@ -589,7 +588,7 @@ BOOTH.post_audited_ballot = function() {
 
 BOOTH.cast_ballot = function() {
     // show progress spinner
-    $('#loading_div').html('<img src="loading.gif" id="proceed_loading_img" />');
+    $('#loading_div').show();
     $('#proceed_button').attr('disabled', 'disabled');
 
     // at this point, we delete the plaintexts by resetting the ballot
@@ -624,7 +623,7 @@ BOOTH.do_done = function() {
 <div id="page">
   <div id="progress_div" style="display:none; width: 500px; margin:auto;">
       <table width="100%">
-          <tr><td id="progress_1">(1) Select</td><td id="progress_2">(2) Confirm</td><td id="progress_3">(3) Submit</td></tr>
+          <tr><td id="progress_1">(1) Select</td><td id="progress_2">(2) Review</td><td id="progress_3">(3) Submit</td></tr>
       </table>
   </div>
   <div id="election_div" class="panel">

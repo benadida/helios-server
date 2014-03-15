@@ -53,12 +53,19 @@
 
 				<div class="large-9 columns">
 					<dl>
-						<dt>Created By</dt>
-						<dd>{{election.admin.display_html_small|safe}}</dd>
+						{% if settings.SHOW_USER_INFO %}
+							<dt>Created By</dt>
+							<dd>{{election.admin.display_html_small|safe}}</dd>
+						{% endif %}
+
+						{% if election.election_info_url %}
+							<dt>Election Info</dt>
+							<dd><a target="_blank" href="{{election.election_info_url}}">Candidate Bios and Statements</a></dd>
+						{% endif %}
 
 						{% if election.description %}
 							<dt>Description</dt>
-							<dd>{{election.description}}</dd>
+							<dd>{{election.description_bleached|safe}}</dd>
 						{% endif %}
 					</dl>
 				</div>
@@ -336,18 +343,14 @@
 						<a class="button no-margin" href="{% url helios.views.one_election_audited_ballots election.uuid %}">Audited Ballots</a>
 
 						{% if not election.voting_has_started %}
-			  			<a class="button no-margin" href="{{SECURE_URL_HOST}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">
-			  					Preview Booth
-			  			</a>
+			  				<a class="button no-margin" href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">Preview Booth</a>
 						{% endif %}
 					{% endif %}
 
 
 					{% if election.voting_has_stopped %}
 						{% if election.result %}
-							<a class="button no-margin" target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">
-								Verify Election Tally
-							</a>
+							<a class="button no-margin" target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">Verify Election Tally</a>
 						{% endif %}
 
 						<a class="button no-margin" href="{{vote_url}}">Review the Voting Booth</a>

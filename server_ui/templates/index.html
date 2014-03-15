@@ -8,28 +8,60 @@
 {% block content %}
   <div class="row" style="margin-top: 20px;">
     <div class="large-5 columns large-centered">
-      <a href="/"><img border="0" src="/static/logo.png" /></a>
+      <a href="/"><img border="0" src="{{settings.MAIN_LOGO_URL}}" /></a>
     </div>
   </div>
 
   <div class="row" style="margin-top: 20px;">
     <div class="large-9 columns">
-      <p>{{settings.WELCOME_MESSAGE|safe}}</p>
+      {% if settings.MASTER_HELIOS %}
+        <p>
+          Helios offers <b>verifiable online elections</b>.
+        </p>
 
-      {% if elections|length %}
-        <h3>Current Featured Elections</h3>
+        <p>
+          We believe democracy is important, whether it's your book club, parent-teacher association, student government, workers' union, or state. So we've made truly verifiable elections as easy as everything else on the Web.
+        </p>
+
+        <p>
+          Helios elections are:
+
+          <ul class="disc">
+            <li><b>Private</b>: no one knows how you voted.</li>
+            <li><b>Verifiable</b>: each voter gets a tracking number.</li>
+            <li><b>Proven</b>: Helios is open-source, vetted by top-tier experts, and in use by major organizations.</li>
+          </ul>
+        </p>
+
+        <p>
+          More than <b>100,000 votes</b> have been cast using Helios.
+        </p>
+
+        {% if create_p %}
+          <a class="small button center" href="{% url helios.views.election_new %}">Create Election</a>
+        {% endif %}
+      {% else %}
+        <p>
+          {{settings.WELCOME_MESSAGE|safe}}
+        </p>
+
+        <h3>Featured Elections</h3>
+
         <p>
           {% for election in elections %}
             <div class="panel">
-              <a href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a> by {{election.admin.display_html_small|safe}}<br />
-              {{election.description}}
-            </div>
+              <p>
+                <a href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a> by {{election.admin.display_html_small|safe}}
+              </p>
 
-            <br />
+              <p>
+                {{election.description}}
+              </p>
+            </div>
+          {% empty %}
+            No featured elections at the moment!
           {% endfor %}
         </p>
-      {% else %}
-        <h4>No featured elections at the moment!</h4>
       {% endif %}
     </div>
 
@@ -81,8 +113,13 @@
           </div>
         </div>
       {% else %}
-        <h5>Log In to Start Voting</h5>
-        {{login_box|safe}}
+        {% if settings.SHOW_LOGIN_OPTIONS %}
+          <h5>Log In to Start Voting</h5>
+          {{login_box|safe}}
+        {% else %}
+          <p>
+            Select an election to start voting. You will be asked for your voting credentials after you complete a ballot.
+          </p>
       {% endif %}
     </div>
   </div>

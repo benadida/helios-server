@@ -1,0 +1,14 @@
+{% extends TEMPLATE_BASE %}
+
+{% block content %}
+
+  <h2 class="title">Election {{election.name}} Not Yet Open</h2>
+
+  <p>
+      This election is not yet open. You probably got here from the Ballot Preview.
+  </p>
+  
+  <p>
+      <a href="{% url helios.views.one_election_view election.uuid %}">back to the election</a>
+  </p>
+{% endblock %}
