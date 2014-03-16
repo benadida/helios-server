@@ -1,0 +1,2 @@
+class VoterLimitReached(Exception):
+    pass

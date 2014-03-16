@@ -43,6 +43,7 @@ from django.core.context_processors import csrf
 from helios.crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
 from helios import datatypes
+from helios import exceptions 
 from helios.datatypes.djangofield import LDObjectField
 from helios.byte_fields import ByteaField
 from helios.utils import force_utf8
@@ -1381,7 +1382,7 @@ class VoterFile(models.Model):
             nr = sum(e.voters.count() for e in user.elections.all())
             demo_voters += nr
             if demo_voters >= settings.DEMO_MAX_VOTERS:
-                raise Exception("No more voters for demo account")
+                raise exceptions.VoterLimitReached("No more voters for demo account")
 
     self.processing_started_at = datetime.datetime.utcnow()
     self.save()
@@ -1396,13 +1397,9 @@ class VoterFile(models.Model):
 
     last_alias_num = poll.last_alias_num
 
-    num_voters = 0
+    num_voters = Voter.objects.filter(poll=poll).count()
     new_voters = []
     for voter in reader:
-      num_voters += 1
-      if demo_voters + num_voters > settings.DEMO_MAX_VOTERS:
-          raise Exception("No more voters for demo account")
-
       voter_id = voter['voter_id']
       email = voter['email']
       name = voter.get('name', '')
@@ -1418,6 +1415,10 @@ class VoterFile(models.Model):
 
       # create the voter
       if not voter:
+        num_voters += 1
+        if demo_voters + num_voters > settings.DEMO_MAX_VOTERS:
+          raise exceptions.VoterLimitReached("No more voters for demo account")
+
         voter_uuid = str(uuid.uuid4())
         voter = Voter(uuid=voter_uuid, voter_login_id=voter_id,
                       voter_name=name, voter_email=email, poll=poll,

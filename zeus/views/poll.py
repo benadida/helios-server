@@ -31,6 +31,7 @@ from helios.view_utils import render_template
 from helios.models import Election, Poll, Voter, VoterFile, CastVote, \
     AuditedBallot
 from helios import datatypes
+from helios import exceptions 
 from helios.crypto import utils as crypto_utils
 from helios.crypto import electionalgs
 from helios.utils import force_utf8
@@ -195,7 +196,14 @@ def voters_upload(request, election, poll):
                 raise Exception("Invalid voter file id")
             try:
                 voter_file = VoterFile.objects.get(pk=voter_file_id)
-                voter_file.process()
+                try:
+                    voter_file.process()
+                except exceptions.VoterLimitReached, e:
+                    messages.error(request, e.message)
+                    voter_file.delete()
+                    url = poll_reverse(poll, 'voters')
+                    return HttpResponseRedirect(url)
+
                 poll.logger.info("Processing voters upload")
             except VoterFile.DoesNotExist:
                 pass
