@@ -155,7 +155,7 @@ def get_prefix():
 
 
 ##
-# Datetime utilities
+# satetime utilities
 ##
 
 def string_to_datetime(str, fmt="%Y-%m-%d %H:%M"):

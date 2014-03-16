@@ -983,6 +983,8 @@ class VoterFile(models.Model):
         auto_now_add=False, null=True)
     num_voters = models.IntegerField(null=True)
 
+    confirmed_p = models.BooleanField(default=False, null=False)
+
     def itervoters(self):
         if self.voter_file_content:
             if type(self.voter_file_content) == unicode:
@@ -1016,6 +1018,9 @@ class VoterFile(models.Model):
             if len(voter_fields) > 2:
                 return_dict['name'] = voter_fields[2].strip()
 
+            if len(voter_fields) > 3:
+                return_dict['user_type'] = voter_fields[3].strip()
+
             yield return_dict
 
     def process(self):
@@ -1029,27 +1034,34 @@ class VoterFile(models.Model):
         new_voters = []
         for voter in self.itervoters():
             # does voter for this user already exist
-            existing_voter = Voter.get_by_election_and_voter_id(
-                election, voter['voter_id'])
+            existing_voter = Voter.get_by_election_and_voter_id(election, voter['voter_id'])
 
             # create the voter
             if not existing_voter:
                 num_voters += 1
 
+                user = None
+                if voter['user_type']:
+                    user = User.get_by_type_and_id(voter['user_type'], voter['voter_id'])
+                    if not user:
+                        user = User(user_type=voter['user_type'], user_id=voter['voter_id'], name=voter['name'], info={'email': voter['email']})
+
                 voter_uuid = str(uuid.uuid4())
-                existing_voter = Voter(uuid=voter_uuid, user=None, voter_login_id=voter['voter_id'],
-                                       voter_name=voter['name'], voter_email=voter['email'], election=election)
-                existing_voter.generate_password()
-                new_voters.append(existing_voter)
-                existing_voter.save()
+                new_voter = Voter(uuid=voter_uuid, user=user, voter_name=voter['name'], voter_email=voter['email'], election=election)
+
+                if not user:
+                    new_voter.voter_login_id = voter['voter_id']
+                    new_voter.generate_password()
+
+                new_voters.append(new_voter)
+                new_voter.save()
 
         if election.use_voter_aliases:
-            voter_alias_integers = range(
-                last_alias_num + 1, last_alias_num + 1 + num_voters)
+            voter_alias_integers = range(last_alias_num + 1, last_alias_num + 1 + num_voters)
             random.shuffle(voter_alias_integers)
-            for i, voter in enumerate(new_voters):
-                voter.alias = 'V%s' % voter_alias_integers[i]
-                voter.save()
+            for i, new_voter in enumerate(new_voters):
+                new_voter.alias = 'V%s' % voter_alias_integers[i]
+                new_voter.save()
 
         self.num_voters = num_voters
         self.processing_finished_at = datetime.datetime.utcnow()
@@ -1060,12 +1072,6 @@ class VoterFile(models.Model):
 
 class Voter(HeliosModel):
     election = models.ForeignKey(Election)
-
-    # let's link directly to the user now
-    # FIXME: delete this as soon as migrations are set up
-    #name = models.CharField(max_length = 200, null=True)
-    #voter_type = models.CharField(max_length = 100)
-    #voter_id = models.CharField(max_length = 100)
 
     uuid = models.CharField(max_length=50)
 
@@ -1234,7 +1240,7 @@ class Voter(HeliosModel):
 
     def generate_password(self, length=10):
         if self.voter_password:
-            raise Exception("password already exists")
+            raise Exception("Password already exists")
 
         self.voter_password = heliosutils.random_string(length, alphabet='abcdefghijkmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ23456789')
 
@@ -1419,16 +1425,6 @@ class Trustee(HeliosModel):
     key = models.ForeignKey(Key, null=True)
     helios_trustee = models.BooleanField(default=False, null=False)
     added_encrypted_shares = models.BooleanField(default=False, null=False)
-    #point_number = models.IntegerField(null=True)
-    #committed_points = LDObjectField(type_hint = datatypes.arrayOf('legacy/Committed_Point'), null=True)
-    #committed_points = []
-    #received_points =  LDObjectField(type_hint = datatypes.arrayOf('legacy/Committed_Point'), null=True)
-    #prepared_mpc = models.BooleanField(default = False, null = False)
-    #feedback = LDObjectField(type_hint = datatypes.arrayOf('legacy/Feedback'), null=True)
-
-    #F_points = []
-    #E = []
-    #Ei =[]
 
     class Meta:
         unique_together = (('election', 'email'))
@@ -1520,11 +1516,11 @@ class Thresholdscheme(HeliosModel):
 
         super(Thresholdscheme, self).save(*args, **kwargs)
 
-        # share a secret verifiably by creating a polynomial of grade k-1 and generate n points
-        # the secret s is F(0) and can be found by interpolating the points.
-        # Commitments E contain commitments to the point
-        # Commitments Ei contain commitments to the coefficients of the
-        # polynomial
+    # share a secret verifiably by creating a polynomial of grade k-1 and generate n points
+    # the secret s is F(0) and can be found by interpolating the points
+    #
+    # commitments E contain commitments to the point
+    # commitments Ei contain commitments to the coefficients of the polynomial
     def share_verifiably(self, s, t, EG):
 
         election = self.election

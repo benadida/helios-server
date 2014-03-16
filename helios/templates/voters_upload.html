@@ -2,6 +2,23 @@
 {% block title %}Bulk Upload Voters for {{election.name}}{% endblock %}
 
 {% block content %}
+  <script language="javascript">
+    function handleFileSelect(e) {
+      var file = e.target.files[0];
+      var output = $('#' + $(e.target).data('output'));
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        output.val(reader.result);
+      }
+      reader.readAsText(file);
+    }
+
+    $(document).ready(function() {
+      $('.upload').change(handleFileSelect);
+    });
+  </script>
+
   <div class="row">
     <div class="large-12 columns">
       <h2>
@@ -9,19 +26,22 @@
       </h2>
 
       <p>
-        If you would like to specify your list of voters by name and email address, you can bulk upload a list of such voters here. Please prepare a text file of comma-separated values with the fields:
+        If you would like to specify your list of voters by name and e-mail address, you can bulk upload a list of such voters here. Please prepare a text file of comma-separated values with the fields:
       </p>
 
       <pre>
-        &lt;unique_id&gt;,&lt;email&gt,&lt;full name&gt;
+        &lt;voter_id&gt;,&lt;email&gt,&lt;full name&gt;[,&lt;user_type&gt;]
       </pre>
+
+      <p>
+        The user type field is optional and can be used to specify the type of user account that should be created for the voter. If left empty, a password will be generated for the voter.
+      </p>
 
       <p>
         For example:
       </p>
 
       <pre>
-        benadida,ben@adida.net,Ben Adida
         bobsmith,bob@acme.org,Bob Smith
         ...
       </pre>
@@ -30,19 +50,36 @@
         The easiest way to prepare such a file is to use a spreadsheet program and export as "CSV".
       </p>
 
-      <div class="panel">
-        {% if error %}
-          <div data-alert class="alert-box warning">
-            <b>Error</b> {{error}}
-          </div>
-        {% endif %}
+      {% if error %}
+        <div data-alert class="alert-box warning">
+          <b>Error</b> {{error}}
+        </div>
+      {% endif %}
 
-        <form method="post" id="upload_form" enctype="multipart/form-data">
-          <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-          <input type="file" name="voters_file" />
-          <input type="submit" class="tiny button no-margin" value="Go" />
-        </form>
-      </div>
+      <form method="post" id="upload_form" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+
+        <div class="row">
+          <div class="large-3 columns">
+            <label for="voters_file" class="right inline">List of Voters</label>
+          </div>
+          <div class="large-9 columns">
+            <input type="file" name="voters_file" class="upload" data-output="preview" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="large-9 large-offset-3 columns">
+            <textarea id="preview" style="height: 150px;" disabled></textarea>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="large-9 large-offset-3 columns">
+            <input type="submit" class="tiny button no-margin" value="Upload" />
+          </div>
+        </div>
+      </form>
     </div>
   </div>
 {% endblock %}

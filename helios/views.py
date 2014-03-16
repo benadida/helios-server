@@ -1300,42 +1300,6 @@ def one_election_result_proof(request, election):
 
 
 @election_view(frozen=True)
-def one_election_bboard(request, election):
-    """
-    UI to show election bboard
-    """
-    after = request.GET.get('after', None)
-    offset = int(request.GET.get('offset', 0))
-    limit = int(request.GET.get('limit', 50))
-
-    order_by = 'voter_id'
-
-    # unless it's by alias, in which case we better go by UUID
-    if election.use_voter_aliases:
-        order_by = 'alias'
-
-    # if there's a specific voter
-    if request.GET.has_key('q'):
-        # FIXME: figure out the voter by voter_id
-        voters = []
-    else:
-        # load a bunch of voters
-        voters = Voter.get_by_election(
-            election, after=after, limit=limit + 1, order_by=order_by)
-
-    more_p = len(voters) > limit
-    if more_p:
-        voters = voters[0:limit]
-        next_after = getattr(voters[limit - 1], order_by)
-    else:
-        next_after = None
-
-    return render_template(request, 'election_bboard', {'election': election, 'voters': voters, 'next_after': next_after,
-                                                        'offset': offset, 'limit': limit, 'offset_plus_one': offset + 1, 'offset_plus_limit': offset + limit,
-                                                        'voter_id': request.GET.get('voter_id', '')})
-
-
-@election_view(frozen=True)
 def one_election_audited_ballots(request, election):
     """
     UI to show election audited ballots
@@ -1507,7 +1471,7 @@ def one_election_freeze(request, election):
 
 def _check_election_tally_type(election):
     for q in election.questions:
-        if q['tally_type'] != "homomorphic":
+        if q['tally_type'] != 'homomorphic':
             return False
     return True
 
@@ -1647,7 +1611,7 @@ def voters_list_pretty(request, election):
         return user_reauth(request, user)
 
     # files being processed
-    voter_files = election.voterfile_set.all()
+    voter_files = election.voterfile_set.exclude(confirmed_p=False)
 
     # load a bunch of voters
     # voters = Voter.get_by_election(election, order_by=order_by)
@@ -1737,6 +1701,11 @@ def voters_upload(request, election):
             # launch the background task to parse that file
             tasks.voter_file_process.delay(
                 voter_file_id=request.session['voter_file_id'])
+
+            voter_file = VoterFile.objects.get(id=request.session['voter_file_id'])
+            voter_file.confirmed_p = True
+            voter_file.save()
+
             del request.session['voter_file_id']
 
             return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))

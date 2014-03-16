@@ -97,7 +97,7 @@ def election_compute_tally(election_id):
     election.compute_tally()
 
     election_notify_admin.delay(election_id=election_id,
-                                subject="encrypted tally computed",
+                                subject="Encrypted Tally Computed",
                                 body="""
 The encrypted tally for election %s has been computed.
 
@@ -114,7 +114,7 @@ def tally_helios_decrypt(election_id):
     election = Election.objects.get(id=election_id)
     election.helios_trustee_decrypt()
     election_notify_admin.delay(election_id=election_id,
-                                subject='Helios Decrypt',
+                                subject='Helios Decryption',
                                 body="""
 Helios has decrypted its portion of the tally
 for election %s.
@@ -129,7 +129,7 @@ def voter_file_process(voter_file_id):
     voter_file = VoterFile.objects.get(id=voter_file_id)
     voter_file.process()
     election_notify_admin.delay(election_id=voter_file.election.id,
-                                subject='voter file processed',
+                                subject='Voter File Processed',
                                 body="""
 Your voter file upload for election %s
 has been processed.
@@ -147,7 +147,6 @@ def election_notify_admin(election_id, subject, body):
     election.admin.send_message(subject, body)
 
 
-### Own tasks####
 @task()
 def add(x, y):
     return x + y
