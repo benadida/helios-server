@@ -4,11 +4,6 @@
 import json
 import os
 import datetime
-try:
-    from django.utils.translation import ugettext as _
-except ImportError:
-    def _(x):
-        return x
 
 from xml.sax.saxutils import escape
 
@@ -27,7 +22,7 @@ from zeus.core import PARTY_SEPARATOR
 
 PAGE_WIDTH, PAGE_HEIGHT = A4
 
-pageinfo = _("Zeus Elections - Results")
+pageinfo = "Zeus Elections - Poll Results"
 
 default_path = '/usr/share/fonts/truetype/linux-libertine/LinLibertine_Re.ttf'
 linlibertine = TTFont('LinLibertine',
@@ -68,20 +63,6 @@ def load_results(data):
             candidates_results[party] = [(candidate, result)]
     return (total_votes, blank_votes, parties_results, candidates_results)
 
-def load_score_results(data):
-    parties_results = []
-    candidates_results = {}
-    if isinstance(data, basestring):
-        jsondata = json.loads(data)
-    else:
-        jsondata = data
-
-    parties_results = [('', len(jsondata['ballots']))]
-    total_votes = len(jsondata['ballots'])
-    blank_votes = len([b for b in jsondata['ballots'] if not b['candidates']])
-    candidates_results = {'': [(c, t) for t, c in jsondata['totals']]} 
-    return (total_votes, blank_votes, parties_results, candidates_results)
-
 def make_first_page_hf(canvas, doc):
     canvas.saveState()
     canvas.drawImage(ZEUS_LOGO,
@@ -99,7 +80,7 @@ def make_later_pages_hf(canvas, doc):
                      y = PAGE_HEIGHT - 2 * cm,
                      width = PAGE_WIDTH / 8,
                      height = 1.1 * cm)
-    canvas.drawString(PAGE_WIDTH - 9 * cm, PAGE_HEIGHT - 2 * cm,
+    canvas.drawString(PAGE_WIDTH - 7 * cm, PAGE_HEIGHT - 2 * cm,
                       "%s" % (pageinfo, ))
     canvas.restoreState()
 
@@ -121,8 +102,8 @@ def make_intro(elements, styles, contents):
     elements.append(Spacer(1, 12))
 
 def make_totals(elements, styles, total_votes, blank_votes):
-    elements.append(Paragraph(escape(_("Total ballots:") + " %d" % total_votes), styles['Zeus']))
-    elements.append(Paragraph(escape(_("Blanks:") + " %d" % blank_votes), styles['Zeus']))
+    elements.append(Paragraph(escape('Total votes: %d' % total_votes), styles['Zeus']))
+    elements.append(Paragraph(escape('Blank: %d' % blank_votes), styles['Zeus']))
     elements.append(Spacer(1, 12))
 
 def make_party_list_heading(elements, styles, party, count):
@@ -151,18 +132,18 @@ def make_results(elements, styles, total_votes, blank_votes,
 
 def build_doc(title, name, institution_name, voting_start, voting_end,
               extended_until, data, filename="election_results.pdf",
-              new_page=True, score=False):
+              new_page=True):
 
 
-    DATE_FMT = _("%Y-%m-%d %H:%M")
+    DATE_FMT = "%d/%m/%Y %H:%S"
     if isinstance(voting_start, datetime.datetime):
-        voting_start = _("Start:") + " %s" % (voting_start.strftime(DATE_FMT))
+        voting_start = 'Start: %s' % (voting_start.strftime(DATE_FMT))
 
     if isinstance(voting_end, datetime.datetime):
-        voting_end = _("End:") + " %s" % (voting_end.strftime(DATE_FMT))
+        voting_end = 'End: %s' % (voting_end.strftime(DATE_FMT))
 
     if extended_until and isinstance(extended_until, datetime.datetime):
-        extended_until = _("Extension:") + " %s" % (extended_until.strftime(DATE_FMT))
+        extended_until = 'Extension: %s' % (extended_until.strftime(DATE_FMT))
     else:
         extended_until = ""
 
@@ -212,9 +193,8 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
         parties_results = []
         candidates_results = {}
 
-        load_results_fn = load_results if not score else load_score_results
         total_votes, blank_votes, parties_results, candidates_results = \
-            load_results_fn(poll_results)
+            load_results(poll_results)
         if new_page:
             elements.append(PageBreak())
         elements.append(Spacer(1, 12))

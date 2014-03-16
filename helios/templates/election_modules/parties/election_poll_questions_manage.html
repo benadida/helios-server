@@ -13,7 +13,7 @@
   {% for form in formset %}
   <dd class="{% if forloop.counter == 1 %}active{% endif %} hide-for-small"><a
       href="#q{{ forloop.counter }}">
-      {% trans election.type_params.question_title %} 
+      {% trans module.question_title_message %} 
       {{ forloop.counter}}</a></dd>
   {% endfor %}
   <dd class="remove_current" style="float: right"><a href="#"
@@ -85,8 +85,9 @@ $(document).ready(function(){
     });
 
     if (this.forms().length >= MAX_QUESTIONS_LIMIT) {
-        this.add_button.hide()
+        this.add_button.hide();
     }
+
     if (this.forms().length == 1) {
       this.remove_button.hide();
     }
@@ -113,7 +114,7 @@ $(document).ready(function(){
     update_answers_data: function(labels) {
       var self = this;
       this.forms().each(function(qi, f){
-        $(f).find(".answer_input").each(function(i, el){
+      $(f).find(".answer_input").each(function(i, el){
           var el = $(el);
           var label = $(el).closest(".form-field").find("label");
           var name = 'form-' + qi + '-answer_' + i;
@@ -240,16 +241,16 @@ $(document).ready(function(){
     },
     
     _get_question_title: function(index) {
-      return "{% trans election.type_params.question_title %} " + index;
+        return "{{ module.question_title_message }} " + index;
     },
 
     _get_answer_title: function(index) {
-      return "{% trans election.type_params.answer_title %} " + index;
+      return "{{ module.answer_title_message }} " + index;
     },
 
     _set_form_index: function(el, newindex, reset) {
-      reset = reset == undefined ? true : false;
-      var curindex = parseInt(/form-(\d+)-/.exec(el.find("input").attr("name"))[1]);
+        reset = reset == undefined ? true : false;
+      var curindex = parseInt(/form-(\d+)-/.exec(el.find("input[name!='csrfmiddlewaretoken']").attr("name"))[1]);
       var reset_field = function(f) {
         var newname = f.attr('name').replace('form-'+curindex, 'form-'+newindex);
         var newid = f.attr('id').replace('form-'+curindex, 'form-'+newindex);
@@ -262,7 +263,7 @@ $(document).ready(function(){
         })
       }
 
-      el.find("input").each(function(i,f) {
+      el.find("input[name!='csrfmiddlewaretoken']").each(function(i,f) {
         reset_field($(f));
       })
       el.find("select").each(function(i,f) {
@@ -293,6 +294,9 @@ $(document).ready(function(){
     },
 
     remove_answer: function(qnum, index) {
+      if (this.answers(qnum).length == 1) {
+        return
+      }
       $(this.answers(qnum)[index]).closest('.form-field').next('br').remove();
       $(this.answers(qnum)[index]).closest('.form-field').remove();
       this.answers_num_input(qnum).val($(this.answers(qnum)).length);
