@@ -88,3 +88,7 @@ tt.big {
 ul {
     margin-left: 20px;
 }
+
+p {
+  text-align: justify;
+}

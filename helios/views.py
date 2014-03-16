@@ -263,7 +263,7 @@ def election_new(request):
 def one_election_edit(request, election):
     error = None
     RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases',
-                       'election_type', 'randomize_answer_order', 'private_p', 'use_threshold', 'help_email']
+                       'election_type', 'randomize_answer_order', 'private_p', 'help_email']
     # RELEVANT_FIELDS += ['use_advanced_audit_features']
 
     if settings.ALLOW_ELECTION_INFO_URL:
@@ -273,9 +273,9 @@ def one_election_edit(request, election):
         values = {}
         for attr_name in RELEVANT_FIELDS:
             values[attr_name] = getattr(election, attr_name)
-        election_form = forms.ElectionForm(values)
+        election_form = forms.ElectionEditForm(values)
     else:
-        election_form = forms.ElectionForm(request.POST)
+        election_form = forms.ElectionEditForm(request.POST)
 
         if election_form.is_valid():
             clean_data = election_form.cleaned_data
@@ -696,7 +696,6 @@ def add_encrypted_shares(request, election, signature=None):
                             key=signer_key)[0]
                         signer_trustee.added_encrypted_shares = True
                         signer_trustee.save()
-                return HttpResponseRedirect('/bulletin_board/elections/' + str(election_id) + '/')
             else:
                 return Exception('pk_list and shares do not have the same length')
 

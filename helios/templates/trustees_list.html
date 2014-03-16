@@ -10,9 +10,15 @@
         {{election.name}}&mdash;Trustees <small>[<a href="{% url helios.views.one_election_view election.uuid %}">Back</a>]</small>
       </h2>
 
-      <p>
-        Trustees are responsible for decrypting the election result. Each trustee generates a keypair and submits the public portion to Helios. {% if not election.use_threshold %}When it's time to decrypt, each trustee needs to provide his secret key.{% else %}{% if election.frozen_trustee_list%}Since this election uses threshold encryption, {{scheme.k}} of the {{scheme.n}} trustees will have to provide their secret key to decrypt the result.{% endif%}{% endif%}
-      </p>
+      {% if not election.use_threshold %}
+        <p>
+          Trustees are responsible for decrypting the election result. Each trustee generates a key pair and submits the public portion to Helios. When it's time to decrypt, each trustee needs to provide his secret key.
+        </p>
+      {% else %}
+        <p>
+          Trustees are responsible for decrypting the election result. Since this election uses threshold encryption, all trustees will have to go through a key ceremony. During this ceremony, each trustee receives part of the key that will be used to encrypt the ballots. When freezing the election, you will have to define the threshold scheme. This controls the number of trustees that will have to provide their secret key before the results can be decrypted.
+        </p>
+      {% endif %}
 
       {% if not election.frozen_at %}
         <p>
@@ -26,10 +32,10 @@
         {% endif %}
 
         {% if not election.frozen_trustee_list %}
-          <a class="button" onclick="return(confirm('Adding your own trustee requires a good bit more work to tally the election. You will need to have trustees generate keypairs and safeguard their secret key.\n\nIf you are not sure what that means, we strongly recommend clicking Cancel and letting Helios tally the election for you.'));" href="{% url helios.views.trustees_create election.uuid %}">Add a Trustee</a>
+          <a class="button" onclick="return(confirm('Adding your own trustee requires a good bit more work to tally the election. You will need to have trustees generate key pairs and safeguard their secret key.\n\nIf you are not sure what that means, we strongly recommend clicking cancel and letting Helios tally the election for you.'));" href="{% url helios.views.trustees_create election.uuid %}">Add a Trustee &raquo;</a>
 
           {% if election.use_threshold %}
-            <a class="button" onclick="return confirm('Are you sure you want to freeze the trustee list? You will not be able to add trustees after this step.');" href="{% url helios.views.trustees_freeze election.uuid %}">Freeze the Trustee List</a>
+            <a class="button" onclick="return confirm('Are you sure you want to freeze the trustee list? You will not be able to add trustees after this step.');" href="{% url helios.views.trustees_freeze election.uuid %}">Freeze the Trustee List &raquo;</a>
           {% endif %}
 
           {% if not election.has_helios_trustee %}
@@ -42,6 +48,14 @@
             </div>
           {% endif %}
         {% endif %}
+      {% endif %}
+
+      {% if election.frozen_trustee_list %}
+        <h3>Threshold Scheme</h3>
+
+        <p>
+          To decrypt the result, {% if scheme.k == scheme.n %}all{% else %}{{scheme.k}} of the {{scheme.n}}{% endif %} trustees will have to provide their secret key to decrypt the tally.
+        </p>
       {% endif %}
 
       <h3>Public Keys</h3>

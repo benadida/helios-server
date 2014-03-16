@@ -15,9 +15,10 @@
       <table>
         <thead>
           <tr>
-            <th>Voter Login</th>
+            <th>Voter ID</th>
             <th>Email Address</th>
             <th>Name</th>
+            <th>User Type</th>
           </tr>
         </thead>
 
@@ -27,6 +28,11 @@
               <td>{{v.voter_id}}</td>
               <td>{{v.email}}</td>
               <td>{{v.name}}</td>
+              {% if v.user_type %}
+                <td>{{v.user_type|capfirst}}
+              {% else %}
+                <td>Password</td>
+              {% endif %}
             </tr>
           {% endfor %}
         </tbody>

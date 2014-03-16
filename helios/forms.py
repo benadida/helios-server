@@ -25,6 +25,10 @@ class ElectionForm(forms.Form):
     if settings.ALLOW_ELECTION_INFO_URL:
         election_info_url = forms.CharField(required=False, initial='', label='Election Info Download URL', help_text='The URL of a PDF document that contains extra election information, e.g. candidate bios and statements.')
 
+class ElectionEditForm(ElectionForm):
+    def __init__(self, *args, **kwargs):
+        super(ElectionEditForm, self).__init__(*args, **kwargs)
+        self.fields.pop('use_threshold')
 
 class ElectionTimesForm(forms.Form):
     # Times

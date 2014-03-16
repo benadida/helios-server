@@ -9,18 +9,16 @@
       $('#sk_download').hide();
       $('#pk_form').hide();
       $('#buttons').show();
-      $('#clear_button').hide();
     }
 
     SECRET_KEY_ENC = null;
-    SECRET_KEY_SIGN= null;
+    SECRET_KEY_SIGN = null;
 
     // Start collecting some local randomness
     sjcl.random.startCollectors();
 
     $(document).ready(function() {
       clear_keys();
-      $('#generator').hide();
 
       // Get some more server-side randomness for keygen
       $.getJSON('{% url helios.views.get_randomness %}', function(result) {
@@ -28,17 +26,15 @@
         BigInt.setup(function() {
           ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
           $('#waiting_message').hide();
-          $('#generator').show();
+          generate_keypair();
         });
       });
     });
 
     function generate_keypair() {
-      $('#buttons').hide();
-
       try {
         SECRET_KEY_ENC = ELGAMAL_PARAMS.generate();
-        SECRET_KEY_SIGN= ELGAMAL_PARAMS.generate();
+        SECRET_KEY_SIGN = ELGAMAL_PARAMS.generate();
       } catch (e) {
         alert(e);
       }
@@ -60,20 +56,12 @@
 
       $('#pk_hash_enc').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY_ENC)));
       $('#pk_hash_sign').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY_SIGN)));
-      $('#clear_button').show();
 
       show_sk();
     }
 
     function show_sk() {
       $('#sk_download').show();
-    }
-
-    function hide_sk() {
-      clear_keys();
-
-      $('#sk_download').hide();
-      $('#generator').show();
     }
 
     function download_sk_enc() {
@@ -132,24 +120,16 @@
         Please wait for the generator to load...
       </div>
 
-      <div id="generator">
-        <span id="buttons">
-          <button onclick="generate_keypair(); return false;" id="generate_button">Generate Key Pairs</button>
-        </span>
-      </div>
-
       <div id="sk_download">
-        <h3>Your Generated Key Pairs <small>[<a href="javascript:hide_sk()">Back</a>]</small></h3>
+        <h3>Generated Key Pairs</h3>
 
         <p>
-          <span id="clear_button">
-            Your key has been generated, but you may choose to <a href="javascript:clear_keys();">clear it from memory and start from scratch</a> if you prefer.
-          </span>
+          Your key pairs have been generated and you can now save the secret keys. <b>It is important that you do not lose these files, because you will need them to complete the key ceremony.</b>
         </p>
 
-        <button id="sk_enc_link" onclick="download_sk_enc(); show_pk_link('enc'); return false;">Save Your Secret Key for Encryption</button>
-        <button id="sk_sign_link" onclick="download_sk_sign(); show_pk_link('sign'); return false;">Save Your Secret Key for Signing</button>
-        <button id="pk_link" onclick="show_pk(); return false;" style="display: none;">Upload Public Keys</button>
+        <button id="sk_enc_link" onclick="download_sk_enc(); show_pk_link('enc'); return false;">Save Secret Key for Encryption</button>
+        <button id="sk_sign_link" onclick="download_sk_sign(); show_pk_link('sign'); return false;">Save Secret Key for Signing</button>
+        <button id="pk_link" onclick="show_pk(); return false;" style="display: none;">Upload Your Public Keys &raquo;</button>
       </div>
 
       <div id="pk_form">
@@ -170,7 +150,7 @@
         <form method="post">
           <textarea id="pk_textarea_enc" name="public_key_json_enc" style="height: 100px; display: none;"></textarea>
           <textarea id="pk_textarea_sign" name="public_key_json_sign" style="height: 100px; display: none;"></textarea>
-          <input class="button" type="submit" value="Upload Your Public Keys">
+          <input class="button" type="submit" value="Upload Public Keys">
         </form>
 
         <div id="applet_div"></div>

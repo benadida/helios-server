@@ -62,7 +62,7 @@
         {% if upload_p and not election.openreg %}
           <h3>Voters</h3>
 
-          <a class="button" href="{% url helios.views.voters_upload election_uuid=election.uuid %}">Bulk Upload Voters</a>
+          <a class="button" href="{% url helios.views.voters_upload election_uuid=election.uuid %}">Bulk Upload Voters &raquo;</a>
 
           {% if voter_files %}
             <h5>Prior Bulk Uploads</h5>

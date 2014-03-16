@@ -413,30 +413,55 @@
     <div class="large-12 columns">
       <h2>{{election.name}}&mdash;Trustee Home for {{trustee.name}}</h2>
 
-      <p>
-        This is your trustee homepage. As a trustee, you are responsible for decrypting the result of the election when all votes have been cast. {% if not election.use_threshold %}In order to encrypt the votes, the system needs you to generate a key pair.{% else %}Since this election uses threshold encryption, the system requires you to generate two key pairs that will be used to communicate with the other trustees.{% endif %}
-      </p>
-
-      {% if election.use_threshold %}
+      {% if not election.use_threshold %}
         <p>
-          TODO: Uitleg over secret sharing.
+          This is your trustee homepage. As a trustee, you are responsible for decrypting the result of the election when all votes have been cast. In order to encrypt the votes, the system needs you to generate a key pair.
+        </p>
+      {% else %}
+        <p>
+          This is your trustee homepage. As a trustee, you are responsible for decrypting the result of the election when all votes have been cast. This election uses threshold encryption, which means that you will have to participate in a key ceremony. During this ceremony, you (and all other trustees) will receive part of the key that will be used to encrypt the ballots.
         </p>
 
         {% if not trustee.public_key %}
           <p>
-            Therefore you will have to agree on a secret with the other trustees, for which you will have to complete 4 steps:
+            The ceremony consists of three steps:
 
             <ol>
-              <li>Generate encrypted shares for the other trustees.</li>
-              <li>Upload the shares.</li>
+              <li>{% if trustee.key %}<s>{% endif %}Generate a key pair for encryption and for signing.{% if trustee.key %}</s>{% endif %}</li>
+              <li>{% if trustee.added_encrypted_shares %}<s>{% endif %}Generate and upload encrypted shares for the other trustees.{% if trustee.added_encrypted_shares %}</s>{% endif %}</li>
               <li>
-                Decrypt the shares of the other trustees.
+                Decrypt the shares of the other trustees and calculate your key pair.
                 <br />
                 <i>This is only available when all the trustees have uploaded their shares.</i>
               </li>
-              <li>Save your secret key and upload your public key.</li>
             </ol>
           </p>
+        {% endif %}
+      {% endif %}
+
+      {% if election.frozen_at %}
+        {% if election.encrypted_tally %}
+          {% if trustee.decryption_factors %}
+            <div data-alert class="alert-box info">
+              You have successfully uploaded your decryption.
+            </div>
+          {% else %}
+            <div data-alert class="alert-box info">
+              The encrypted tally for this election is ready.
+            </div>
+
+            <a class="button" href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">Decrypt With Your Key</a>
+          {% endif %}
+        {% else %}
+          <div class="alert-box info">
+            <b>Next</b> Once the tally is computed, you will need to come back here to provide your secret key for decryption purposes. You should keep the email with your trustee homepage link, which contains the credentials needed to get back here.
+          </div>
+        {% endif %}
+      {% else %}
+        {% if trustee.public_key %}
+          <div class="alert-box info">
+            <b>Next</b> You have obtained a key pair that will be used to encrypt the ballots. When all trustees have done this, the election administrator will freeze the election.
+          </div>
         {% endif %}
       {% endif %}
 
@@ -445,32 +470,28 @@
           You have successfully uploaded your public key, with fingerprint <tt>{{trustee.public_key_hash}}</tt>. If you want to verify whether you still have the correct secret key stored on your machine, you can do so by clicking on the following button.
         </p>
 
-        <a class="button" href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">Verify Your Secret Key</a>
+        <a class="button" href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">Verify Your Secret Key &raquo;</a>
       {% endif %}
 
       {% if not election.use_threshold %}
         {% if not trustee.public_key %}
           <p>
-            A key generator is provided that runs entirely in your browser, so that the generated secret key will not leave your machine. However, it is also possible to reuse an existing pair.
+            As a trustee, you have to generate a key pair that will be used to encrypt the ballots. A generator is provided that runs entirely in your browser, so that the generated secret key will not leave your machine.
           </p>
 
           <div data-alert class="alert-box info">
             You have not yet uploaded your public key.
           </div>
 
-          <a class="button" href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">Upload Your Public Key</a>
+          <a class="button" href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">Generate Key Pair &raquo;</a>
         {% endif %}
       {% else %}
         {% if not trustee.key %}
           <p>
-            A key generator is provided that runs entirely in your browser, so that the generated secret key will not leave your machine.
+            You will first need to generate two key pairs: one for encryption and one for signing. Both pairs will be used to secure the communication with the other trustees during the key ceremony. A generator is provided that runs entirely in your browser, so that the generated secret key will not leave your machine.
           </p>
 
-          <div data-alert class="alert-box info">
-            You have not yet uploaded your public keys.
-          </div>
-
-          <a class="button" href="{% url helios.views.trustee_keygenerator_threshold election.uuid, trustee.uuid %}">Upload Your Public Keys</a>
+          <a class="button" href="{% url helios.views.trustee_keygenerator_threshold election.uuid, trustee.uuid %}">Generate Key Pairs</a>
         {% else %}
           {% if not scheme_params_json %}
             <div data-alert class="alert-box info">
@@ -504,7 +525,7 @@
 
                   <div class="row">
                     <div class="large-9 large-offset-3 columns">
-                      <button onclick="calculate_shares(); return false;">Generate Encrypted Shares</button>
+                      <button onclick="calculate_shares(); return false;">Generate Your Encrypted Shares</button>
                     </div>
                   </div>
                 </form>
@@ -531,7 +552,7 @@
 
                 <form action="javascript:submit_result();">
                   <textarea id="encry_shares_textarea" style="display: none;"></textarea>
-                  <input class="button" type="submit" value="Upload Your Encrypted Shares" />
+                  <input class="button" type="submit" value="Upload Encrypted Shares" />
                 </form>
               </div>
 
@@ -550,7 +571,7 @@
               {% if not trustee.public_key %}
                 {% if not election.encrypted_shares_uploaded %}
                   <div id="third_step">
-                    <h3>Decrypt Encrypted Shares and Calculate Keypair</h3>
+                    <h3>Decrypt Encrypted Shares and Calculate Your Keypair</h3>
 
                     <div data-alert class="alert-box info">
                       Wait for the other trustees to calculate the encrypted shares. Please come back later.
@@ -558,7 +579,7 @@
                   </div>
                 {% else %}
                   <div id="third_step">
-                    <h3>Decrypt Encrypted Shares and Calculate Keypair</h3>
+                    <h3>Decrypt Encrypted Shares and Calculate Your Keypair</h3>
 
                     <p>
                       To decrypt your shares, you first have to upload your secret key for encryption. If you generated your key pair with our generator, it was stored in a file called <tt>encryption_key.json</tt>.
@@ -602,14 +623,18 @@
                   </div>
 
                   <div id="sk_download" style="display: none;">
-                    <h3>Save Your Secret Key and Upload Your Public Key</h3>
+                    <h3>Your Calculated Key Pair</h3>
 
-                    <button id="sk_link" onclick="download_sk(); $('#pk_link').show(); $('#sk_link').addClass('secondary'); return false;">Save Your Secret Key</button>
-                    <button id="pk_link" onclick="show_pk(); return false;" style="display: none;">Upload Your Public Key</button>
+                    <p>
+                      Your key pair has been calculated and you can now save the secret key. <b>It is important that you do not lose this file, because you will need it if you are one of the trustees asked to decrypt the tally.</b>
+                    </p>
+
+                    <button id="sk_link" onclick="download_sk(); $('#pk_link').show(); $('#sk_link').addClass('secondary'); return false;">Save Secret Key</button>
+                    <button id="pk_link" onclick="show_pk(); return false;" style="display: none;">Upload Your Public Key &raquo;</button>
                   </div>
 
                   <div id="pk_form" style="display: none;">
-                    <h3>Your Public Key</h3>
+                    <h3>Upload Your Public Key</h3>
 
                     <p>
                       It's time to upload the public key to the server.
@@ -625,7 +650,7 @@
 
                     <form method="post" action="{% url helios.views.trustee_upload_pk election.uuid, trustee.uuid %}">
                       <textarea id="pk_textarea" name="public_key_json" style="display: none;"></textarea>
-                      <input class="button" type="submit" value="Upload Your Public Key">
+                      <input class="button" type="submit" value="Upload Public Key">
                     </form>
                   </div>
                 {% endif %}
@@ -643,32 +668,6 @@
               <b>Error</b> Your secret key was likely incorrect.
             </div>
           {% endif %}
-        {% endif %}
-      {% endif %}
-
-      {% if election.frozen_at %}
-        {% if election.encrypted_tally %}
-          {% if trustee.decryption_factors %}
-            <div data-alert class="alert-box info">
-              You have successfully uploaded your decryption.
-            </div>
-          {% else %}
-            <div data-alert class="alert-box info">
-              The encrypted tally for this election is ready.
-            </div>
-
-            <a class="button" href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">Decrypt With Your Key</a>
-          {% endif %}
-        {% else %}
-          <div class="alert-box info">
-            <b>Next</b> Once the tally is computed, you will need to come back here to provide your secret key for decryption purposes. You should keep the email with your trustee homepage link, which contains the credentials needed to get back here.
-          </div>
-        {% endif %}
-      {% else %}
-        {% if trustee.public_key %}
-          <div class="alert-box info">
-            <b>Next</b> You have successfully generated the key pair that will be used to encrypt the ballots. When all trustees have done this, the election administrator will freeze the election.
-          </div>
         {% endif %}
       {% endif %}
 
