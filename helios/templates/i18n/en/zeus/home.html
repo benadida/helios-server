@@ -1,6 +1,5 @@
 {% extends "server_ui/templates/base.html" %}
 {% load i18n %}
-
 {% block tabs_menu %}
 
 {% if bad_login %}
@@ -14,11 +13,9 @@
 
 {% block page_top %}
 {% include "zeus/intro_announcements.html" %}
-{{ block.super }}
 {% endblock %}
 
 {% block content %}
-</br>
 <div class="row">
   <div class="columns twelve">
     <h3>Zeus Elections</h3>
