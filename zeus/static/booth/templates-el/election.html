@@ -1,7 +1,7 @@
 <div id="questions_div">
 
   <div class="election-quick-guide panel">
-    {gettext("ELECTION_INTRO_BODY")}
+    {interpolate(gettext("ELECTION_INTRO_BODY"), [BOOTH.election.name])}
   </div>
 
   <button class="start-voting button success medium button-submit"
