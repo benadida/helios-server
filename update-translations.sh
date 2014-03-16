@@ -5,7 +5,7 @@ cd $d;
 DJANGO_SETTINGS_MODULE=settings;
 PYTHONPATH=..;
 django-admin makemessages -l el -e .html -e .txt;
-django-admin makemessages -l en -e .html -e .txt;
+#django-admin makemessages -l en -e .html -e .txt;
 cd ..;
 done;
 
