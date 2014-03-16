@@ -155,9 +155,6 @@ DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'ben@adida.net')
 DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Ben for Helios')
 SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 
-# do we queue up each email as a job, or one job for all emails for a given election?
-QUEUE_INDIVIDUAL_EMAILS = (get_from_env('QUEUE_INDIVIDUAL_EMAILS', '1') == '1')
-
 LOGIN_URL = '/auth/'
 LOGOUT_ON_CONFIRMATION = True
 
