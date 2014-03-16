@@ -3,7 +3,7 @@ Deployment Fabric file
 
 A fabric deployment script for Helios that assumes the following:
 - locally, development is /web/helios-server
-- remotely, a number of production setups 
+- remotely, a number of production setups
 - remotely, a number of staging setups
 - all of these directories are git checkouts that have a proper origin pointer
 

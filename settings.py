@@ -2,8 +2,6 @@ import os
 import json
 
 # Go through environment variables and override them
-
-
 def get_from_env(var, default):
     if os.environ.has_key(var):
         return os.environ[var]
@@ -22,12 +20,12 @@ MANAGERS = ADMINS
 # Is this the master Helios web site?
 MASTER_HELIOS = (get_from_env('MASTER_HELIOS', '0') == '1')
 
-# show ability to log in? (for example, if the site is mostly used by voters)
-# if turned off, the admin will need to know to go to /auth/login manually
+# Show ability to log in? For example, if the site is mostly used by voters.
+# If turned off, the admin will need to know to go to /auth/login manually.
 SHOW_LOGIN_OPTIONS = (get_from_env('SHOW_LOGIN_OPTIONS', '1') == '1')
 
-# sometimes, when the site is not that social, it's not helpful
-# to display who created the election
+# Sometimes, when the site is not that social, it's not helpful
+# to display who created the election.
 SHOW_USER_INFO = (get_from_env('SHOW_USER_INFO', '1') == '1')
 
 DATABASES = {

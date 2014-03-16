@@ -21,7 +21,7 @@ from openid import view_helpers
 STATUS_UPDATES = False
 
 # display tweaks
-LOGIN_MESSAGE = "Log in with my Yahoo Account"
+LOGIN_MESSAGE = "Log In with my Yahoo Account"
 OPENID_ENDPOINT = 'yahoo.com'
 
 

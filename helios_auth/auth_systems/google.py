@@ -21,7 +21,7 @@ from openid import view_helpers
 STATUS_UPDATES = False
 
 # display tweaks
-LOGIN_MESSAGE = "Log in with my Google Account"
+LOGIN_MESSAGE = "Log In with my Google Account"
 OPENID_ENDPOINT = 'https://www.google.com/accounts/o8/id'
 
 # FIXME!
