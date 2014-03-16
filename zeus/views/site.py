@@ -146,7 +146,8 @@ def demo(request):
         messages.error(request, msg)
         return HttpResponseRedirect(reverse('home'))
 
-    client_address = request.META.get('HTTP_X_FORWARDED_FOR')
+    remote_addr = request.META.get("REMOTE_ADDR", None)
+    client_address = request.META.get('HTTP_X_FORWARDED_FOR', remote_addr)
     if not client_address:
         msg = _("Client address unavailable")
         messages.error(request, msg)
