@@ -23,6 +23,16 @@ body.booth {
 }
 
 body {
+
+  .messages {
+    .label {
+        display: block;
+        text-align: left;
+        padding: 10px;
+        &.error { background-color: $alertColor }
+    }
+  }
+
   background-color: #0A212F;
   #progress_div {
     margin-top: 30px; 
