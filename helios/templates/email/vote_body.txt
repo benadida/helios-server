@@ -26,7 +26,7 @@
 
     {{ election.help_phone }}
 
-  {% trans "or by Email," %}
+  {% trans "or by email," %}
 
     {{ election.help_email }}
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-15 14:16+0200\n"
+"POT-Creation-Date: 2014-03-17 15:35+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -82,7 +82,7 @@ msgstr "Συνθηματικό"
 
 #: forms.py:288 forms.py:294
 msgid "Invalid username or password"
-msgstr "Μη έγκυρος χρήστης ή συθηματικό"
+msgstr "Μη έγκυρος χρήστης ή συνθηματικό"
 
 #: forms.py:316
 msgid "all voters"
@@ -138,7 +138,7 @@ msgstr "Μη έγκυρος κωδικός σύνδεσης"
 
 #: forms.py:388
 msgid "Invalid email or password"
-msgstr "Μη έγκυρος χρήστης ή συθηματικό"
+msgstr "Μη έγκυρη διεύθυνση email ή συνθηματικό"
 
 #: help_texts.py:3
 msgid "This is a trial election"
@@ -220,34 +220,6 @@ msgstr "Επιβεβαιώστε τη διαγραφή της επιλεγμέν
 msgid "Results"
 msgstr "Αποτελέσματα"
 
-#: results_report.py:30
-msgid "Zeus Elections - Results"
-msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
-
-#: results_report.py:124
-msgid "Total ballots:"
-msgstr "Σύνολο ψηφοδελτίων:"
-
-#: results_report.py:125
-msgid "Blanks:"
-msgstr "Λευκά:"
-
-#: results_report.py:157
-msgid "%Y-%m-%d %H:%M"
-msgstr "%d/%m/%Y %H:%M"
-
-#: results_report.py:159
-msgid "Start:"
-msgstr "Έναρξη:"
-
-#: results_report.py:162
-msgid "End:"
-msgstr "Τέλος:"
-
-#: results_report.py:165
-msgid "Extension:"
-msgstr "Παράταση:"
-
 #: tasks.py:103
 #, python-format
 msgid "%(election_name)s - vote cast"
@@ -294,9 +266,17 @@ msgstr "Περισσότερες επιλογές από το επιτρεπτό
 msgid "Question '{0}' requires at least {1} choices."
 msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
 
-#: election_modules/parties/__init__.py:10
+#: election_modules/parties/__init__.py:16
 msgid "Party lists election"
 msgstr "Ψηφοφορία με συνδυασμούς"
+
+#: election_modules/parties/__init__.py:18
+msgid "Candidate"
+msgstr "Υποψήφιος"
+
+#: election_modules/parties/__init__.py:19
+msgid "Party"
+msgstr "Συνδυασμός"
 
 #: election_modules/score/__init__.py:16
 msgid "Score voting election"
@@ -319,47 +299,67 @@ msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"
 msgid "Are you sure ?"
 msgstr "Επιβεβαιώστε"
 
-#: views/poll.py:227
+#: views/poll.py:235
 msgid "No file uploaded"
 msgstr "Δεν βρέθηκε αρχείο"
 
-#: views/poll.py:268
+#: views/poll.py:276
 msgid "Time to Vote"
 msgstr "Χρόνος Ψηφοφορίας"
 
-#: views/poll.py:269
+#: views/poll.py:277
 msgid "Additional Info"
 msgstr "Περισσότερες πληροφορίες"
 
-#: views/poll.py:393
+#: views/poll.py:401
 msgid "Email sending started"
 msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει"
 
 #: views/site.py:145
-#, fuzzy
 msgid "Invalid email address"
-msgstr "Μη έγκυρος χρήστης ή συθηματικό"
+msgstr "Μη έγκυρη διεύθυνση email"
 
-#: views/site.py:151
+#: views/site.py:152
 msgid "Client address unavailable"
-msgstr ""
+msgstr "Μη διαθέσιμη διεύθυνση IP πελάτη"
 
-#: views/site.py:158
+#: views/site.py:159
 msgid "There are too many requests from your address"
-msgstr ""
+msgstr "Υπεράριθμες αιτήσεις από τη διεύθυνση IP σας"
 
-#: views/site.py:164
+#: views/site.py:165
 msgid "There are too many emails registered from your address"
-msgstr ""
+msgstr "Υπεράριθμες διευθύσεις email από τη διεύθυνση IP σας"
 
-#: views/site.py:170
+#: views/site.py:171
 msgid "Cannot create demo users right now. Sorry."
-msgstr ""
+msgstr "Δεν είναι δυνατή η δημιουργία δοκιμαστικών χρηστών αυτή τη στιγμή."
 
-#: views/site.py:185
+#: views/site.py:186
 #, python-format
 msgid "An email with demo credentials has been sent to %s"
-msgstr ""
+msgstr "Ο δοκιμαστικός λογαριασμός σας έχει σταλεί στη διεύθυνση email %s"
+
+#~ msgid "Zeus Elections - Results"
+#~ msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
+
+#~ msgid "Total ballots:"
+#~ msgstr "Σύνολο ψηφοδελτίων:"
+
+#~ msgid "Blanks:"
+#~ msgstr "Λευκά:"
+
+#~ msgid "%Y-%m-%d %H:%M"
+#~ msgstr "%d/%m/%Y %H:%M"
+
+#~ msgid "Start:"
+#~ msgstr "Έναρξη:"
+
+#~ msgid "End:"
+#~ msgstr "Τέλος:"
+
+#~ msgid "Extension:"
+#~ msgstr "Παράταση:"
 
 #~ msgid "Welcome to the electronic voting booth by Zeus Elections."
 #~ msgstr ""

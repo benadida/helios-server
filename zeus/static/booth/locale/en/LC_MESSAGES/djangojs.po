@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-15 14:16+0200\n"
+"POT-Creation-Date: 2014-03-17 15:35+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,44 +17,44 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: vote.html:71 templates-el/vote.html:71
+#: vote.html:71 templates/vote.html:71
 msgid "STEP_1_TITLE"
 msgstr "Ballot selection"
 
-#: vote.html:72 templates-el/vote.html:72
+#: vote.html:72 templates/vote.html:72
 msgid "STEP_2_TITLE"
 msgstr "Ballot submission"
 
-#: vote.html:77 templates-el/vote.html:77
+#: vote.html:77 templates/vote.html:77
 msgid "INITIALIZING_BOOTH"
 msgstr "Initializing booth..."
 
-#: vote.html:78 templates-el/vote.html:78
+#: vote.html:78 templates/vote.html:78
 msgid "INIT_BOOTH_ESTIMATED_TIME"
 msgstr "Estimated time 10 seconds"
 
-#: vote.html:88 templates-el/vote.html:88
+#: vote.html:88 templates/vote.html:88
 msgid "PLEASE_WAIT"
 msgstr "Please wait..."
 
-#: vote.html:92 templates-el/vote.html:92
+#: vote.html:92 templates/vote.html:92
 msgid "BALLOT_ENCRYPTION_IN_PROGRESS"
 msgstr "Your ballot is being encrypted. Please wait..."
 
-#: vote.html:96 templates-el/vote.html:96
+#: vote.html:96 templates/vote.html:96
 msgid "BALLOT_ENCRYPTION_ESTIMATED_TIME"
 msgstr "Ballot encryption can take up to 2 minutes."
 
-#: vote.html:113 templates-el/vote.html:113
+#: vote.html:113 templates/vote.html:113
 msgid "HELP"
 msgstr "Help"
 
-#: js/ballot_modules.js:32 templates-el/ballot_modules.js:32
-#: templates-el/seal.html:15 templates-el/seal_score.html:14
+#: js/ballot_modules.js:32 templates/ballot_modules.js:32
+#: templates/seal.html:15 templates/seal_score.html:14
 msgid "BLANK_BALLOT"
-msgstr "Blank"
+msgstr "Blank vote"
 
-#: js/ballot_modules.js:34 templates-el/ballot_modules.js:34
+#: js/ballot_modules.js:34 templates/ballot_modules.js:34
 msgid "BALLOT_CONTINUE_BUTTON"
 msgstr "Continue"
 
@@ -110,141 +110,155 @@ msgstr "Ballot submission failed."
 msgid "CAST_VOTE_ID"
 msgstr "Vote identifier"
 
-#: templates-el/audit.html:1
+#: templates/audit.html:1
 msgid "AUDIT_BALLOT_SUBMIT"
 msgstr "Submit an audit ballot"
 
-#: templates-el/audit.html:4
+#: templates/audit.html:4
 msgid "AUDIT_BALLOT_SET"
 msgstr ""
 "You have chosen to submit an audit ballot. Your vote will not be counted and "
 "your selections will be registered public in a public listing."
 
-#: templates-el/audit.html:19
+#: templates/audit.html:19
 msgid "AUDIT_BALLOT_BACK_PROMPT"
 msgstr "Press Back to return to the voting booth."
 
-#: templates-el/audit.html:21
+#: templates/audit.html:21
 msgid "AUDIT_BALLOT_CONFIRM_BUTTON"
 msgstr "Submit"
 
-#: templates-el/audit.html:25
+#: templates/audit.html:25
 msgid "AUDIT_BALLOT_BACK_BUTTON"
 msgstr "Back"
 
-#: templates-el/done.html:2
+#: templates/done.html:2
 msgid "BALLOT_SUBMISSION_IN_PROGRESS"
 msgstr "Submitting ballot..."
 
-#: templates-el/done.html:5
+#: templates/done.html:5
 msgid "BALLOT_SUBMISSION_PLEASE_WAIT"
 msgstr "Your ballot is being submitted. Please wait..."
 
-#: templates-el/election.html:4
-msgid "ELECTION_INTRO_BODY"
-msgstr ""
-"    <p>Welcome to Zeus' electronic voting booth</p>\n"
-"    <p>\n"
-"    To be here you must have followed the invitation link sent to you     "
-"via email or SMS to vote for\n"
-"    <b>«%s»</b>.</p>\n"
-"\n"
-"    <p>\n"
-"    To submit a ballot follow the instructions.\n"
-"    Your progress will be shown at the top of the page,\n"
-"    along with other relevant information.\n"
-"    </p>\n"
-"\n"
-"    <ol>\n"
-"      <li class=\"step\">\n"
-"      <span class=\"step-title\">\n"
-"        Filling in your ballot.\n"
-"      </span>\n"
-"      <span class=\"step-desc\">\n"
-"        In this step you record your voting selections.\n"
-"      </span>\n"
-"      </li>\n"
-"      <li class=\"step\">\n"
-"      <span class=\"step-title\">\n"
-"        Ballot encryption and submission.\n"
-"      </span>\n"
-"      <span class=\"step-desc\">\n"
-"        Your previously recorded selections will be encrypted in\n"
-"        your computer by the web browser itself, and then they will\n"
-"        be submitted over the network to Zeus.\n"
-"        A submission receipt will be sent to you via email.\n"
-"      </span>\n"
-"      </li>\n"
-"    </ol>\n"
-"    <p>\n"
-"     You can use the invitation link, again, to submit a new ballot.\n"
-"     Each time, your new vote will replace the previous one.\n"
-"    </p>"
-
-#: templates-el/election.html:8
-msgid "START"
-msgstr "Start"
-
-#: templates-el/footer.html:2
+#: templates/footer.html:2
 msgid "ELECTION_KEY_NOT_INITIALIZED"
 msgstr "The election has not been initialized"
 
-#: templates-el/footer.html:4
+#: templates/footer.html:4
 msgid "POLL_IDENTIFIER"
 msgstr "Poll identifier"
 
-#: templates-el/header.html:2
+#: templates/header.html:2
 msgid "ELECTION_INFO_BUTTON"
 msgstr "Information"
 
-#: templates-el/header.html:8
+#: templates/header.html:8
 msgid "CONTACT_DETAILS"
 msgstr "Contact"
 
-#: templates-el/header.html:11
+#: templates/header.html:11
 msgid "EMAIL"
 msgstr "Email"
 
-#: templates-el/header.html:12
+#: templates/header.html:12
 msgid "PHONE"
 msgstr "Phone"
 
-#: templates-el/question_plain.html:60
+#: templates/question_plain.html:10 templates/question_plain.html.c:12
+msgid "choice"
+msgstr "choice"
+
+#: templates/question_plain.html:10 templates/question_plain.html.c:12
+msgid "choices"
+msgstr "choices"
+
+#: templates/question_plain.html:12
+msgid "to"
+msgstr "to"
+
+#: templates/question_plain.html:58
+msgid "Blank vote"
+msgstr "Blank vote"
+
+#: templates/question_plain.html:60
 msgid "AUDIT_VOTE_SUBMISSION_BUTTON"
 msgstr "Submit audit ballot"
 
-#: templates-el/question_plain.html:67
+#: templates/question_plain.html:67
 msgid "AUDIT_VOTE_CODE_PROMPT"
 msgstr "Audit ballot"
 
-#: templates-el/question_plain.html:69
+#: templates/question_plain.html:69
 msgid "AUDIT_VOTE_INSTRUCTIONS"
 msgstr ""
 "The valid audit codes must have been sent to you along with the invitation "
 "to vote."
 
-#: templates-el/question_plain.html:71
+#: templates/question_plain.html:71
 msgid "AUDIT_VOTE_CODE_LABEL"
 msgstr "Enter code:"
 
-#: templates-el/seal.html:5 templates-el/seal_score.html:5
+#: templates/seal.html:5 templates/seal_score.html:5
 msgid "BALLOT_ENCRYPTED_SUCCESS"
 msgstr ""
 "Your ballot has been encrypted successfully. Confirm your selections asthey "
 "are presented below."
 
-#: templates-el/seal.html:22 templates-el/seal_score.html:21
+#: templates/seal.html:22 templates/seal_score.html:21
 msgid "BACK_TO_BALLOT_CHOICES"
 msgstr "Back to ballot selections"
 
-#: templates-el/seal.html:31 templates-el/seal_score.html:30
+#: templates/seal.html:31 templates/seal_score.html:30
 msgid "SUBMIT_BALLOT_PROMPT"
 msgstr " "
 
-#: templates-el/seal.html:43 templates-el/seal_score.html:41
+#: templates/seal.html:43 templates/seal_score.html:41
 msgid "ELECTION_TERMS_LABEL"
 msgstr "I confirm that I am alone and nobody else has witnessed my selections."
 
-#: templates-el/seal.html:50 templates-el/seal_score.html:48
+#: templates/seal.html:50 templates/seal_score.html:48
 msgid "SUBMIT_BALLOT"
 msgstr "Submit ballot"
+
+#~ msgid "ELECTION_INTRO_BODY"
+#~ msgstr ""
+#~ "    <p>Welcome to Zeus' electronic voting booth</p>\n"
+#~ "    <p>\n"
+#~ "    To be here you must have followed the invitation link sent to you     "
+#~ "via email or SMS to vote for\n"
+#~ "    <b>«%s»</b>.</p>\n"
+#~ "\n"
+#~ "    <p>\n"
+#~ "    To submit a ballot follow the instructions.\n"
+#~ "    Your progress will be shown at the top of the page,\n"
+#~ "    along with other relevant information.\n"
+#~ "    </p>\n"
+#~ "\n"
+#~ "    <ol>\n"
+#~ "      <li class=\"step\">\n"
+#~ "      <span class=\"step-title\">\n"
+#~ "        Filling in your ballot.\n"
+#~ "      </span>\n"
+#~ "      <span class=\"step-desc\">\n"
+#~ "        In this step you record your voting selections.\n"
+#~ "      </span>\n"
+#~ "      </li>\n"
+#~ "      <li class=\"step\">\n"
+#~ "      <span class=\"step-title\">\n"
+#~ "        Ballot encryption and submission.\n"
+#~ "      </span>\n"
+#~ "      <span class=\"step-desc\">\n"
+#~ "        Your previously recorded selections will be encrypted in\n"
+#~ "        your computer by the web browser itself, and then they will\n"
+#~ "        be submitted over the network to Zeus.\n"
+#~ "        A submission receipt will be sent to you via email.\n"
+#~ "      </span>\n"
+#~ "      </li>\n"
+#~ "    </ol>\n"
+#~ "    <p>\n"
+#~ "     You can use the invitation link, again, to submit a new ballot.\n"
+#~ "     Each time, your new vote will replace the previous one.\n"
+#~ "    </p>"
+
+#~ msgid "START"
+#~ msgstr "Start"
