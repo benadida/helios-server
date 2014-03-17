@@ -1397,9 +1397,10 @@ class VoterFile(models.Model):
 
     last_alias_num = poll.last_alias_num
 
-    num_voters = Voter.objects.filter(poll=poll).count()
+    num_voters = 0
     new_voters = []
     for voter in reader:
+      num_voters += 1
       voter_id = voter['voter_id']
       email = voter['email']
       name = voter.get('name', '')
@@ -1415,8 +1416,8 @@ class VoterFile(models.Model):
 
       # create the voter
       if not voter:
-        num_voters += 1
-        if demo_voters + num_voters > settings.DEMO_MAX_VOTERS:
+        demo_voters += 1
+        if demo_voters > settings.DEMO_MAX_VOTERS:
           raise exceptions.VoterLimitReached("No more voters for demo account")
 
         voter_uuid = str(uuid.uuid4())
