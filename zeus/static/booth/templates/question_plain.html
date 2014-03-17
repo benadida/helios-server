@@ -7,9 +7,9 @@
 <div  id="question-{$T.question$index}">
   <h5>{$T.question.question}</h5>
   {#if $T.question.max_answers == $T.question.min_answers}
-  <span class="question-subtitle">{$T.question.max_answers} {#if $T.question.max_answers == 1}επιλογή{#else}επιλογές{#/if}</span>
+  <span class="question-subtitle">{$T.question.max_answers} {#if $T.question.max_answers == 1}{gettext("choice")}{#else}{gettext("choices")}{#/if}</span>
   {#else}
-  <span class="question-subtitle">{$T.question.min_answers} έως {$T.question.max_answers} {#if $T.question.max_answers == 1}επιλογή{#else}επιλογές{#/if}</span>
+  <span class="question-subtitle">{$T.question.min_answers} {gettext("to")} {$T.question.max_answers} {#if $T.question.max_answers == 1}{gettext("choice")}{#else}{gettext("choices")}{#/if}</span>
   {#/if}
     <p class="stv-description">
     </p>
@@ -55,7 +55,7 @@
 <div class="row">
   <div class="columns twelve">
   <input style="float:right" id="submit-stv" class="button medium success" type="button" 
-  onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Λευκό" />
+  onclick="BOOTH.validate_and_confirm({$T.question_num});" value={gettext("Blank vote")} />
   <br />
   <a class="show-audit-form" href="#">{gettext("AUDIT_VOTE_SUBMISSION_BUTTON")}</a>
   {#/if}

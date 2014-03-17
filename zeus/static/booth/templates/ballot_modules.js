@@ -445,9 +445,9 @@ BM.ModuleBase,
   update_submit_value: function() {
     var choices = this.get_answer();
     if (choices.length == 0) {
-      this.el.submit.val("Λευκό");
+      this.el.submit.val("Blank vote");
     } else {
-      this.el.submit.val("Συνέχεια");
+      this.el.submit.val("Continue");
     }
     if (!this.all_scores_chosen() && this.get_answer().length > 0) {
       this.el.submit.addClass("disabled").removeClass("success");
