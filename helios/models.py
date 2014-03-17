@@ -273,7 +273,8 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
     admins = models.ManyToManyField(User, related_name="elections")
     institution = models.ForeignKey('zeus.Institution', null=True)
 
-    departments = models.TextField("Departments for STV elections", null=True ) 
+    departments = models.TextField("Departments for STV elections", null=True,
+                                   help_text="Fill if you chose STV elections.") 
 
     mix_key = models.CharField(max_length=50, default=None, null=True)
     remote_mixing_finished_at = models.DateTimeField(default=None, null=True)
