@@ -271,19 +271,59 @@ class ScoresForm(QuestionBaseForm):
                                        choices=SCORES_CHOICES,
                                        label=_('Scores'))
 
+class UpperHtml(forms.TextInput):
+    #Answer widget broken to 2 parts
+    #to include 2 form objects
+    def render(self, *args, **kwargs):
+        html = super(UpperHtml, self).render(*args, **kwargs)
+        html = u"""
+        <div class="row">
+        <div class="columns eleven">
+        %s
+        """ % html
+        return mark_safe(html)
+
+class BottomHtml(forms.widgets.Select):
+
+    def render(self, *args, **kwargs):
+        html = super(BottomHtml, self).render(*args, **kwargs)
+        html = u"""
+        %s
+        </div>
+        <div class="columns one">
+        <a href="#" style="font-weight: bold; color:red"
+        class="remove_answer">X</a>
+        </div>
+        </div>
+        """ % html
+        return mark_safe(html)
+
+
 #testing stv
 class StvForm(QuestionBaseForm):
+
     def __init__(self, *args, **kwargs):
+        deps = kwargs['initial']['departments'].split('\n')
+        DEPARTMENT_CHOICES = []
+        for dep in deps:
+            DEPARTMENT_CHOICES.append((dep,dep))
         super(StvForm, self).__init__(*args, **kwargs)
         self.fields.pop('question')
-        DEFAULT_ANSWERS_COUNT = 4
+        DEFAULT_ANSWERS_COUNT = 2 
         answers = DEFAULT_ANSWERS_COUNT
+        self.fields.clear()
+        #department_choices = 
         for ans in range(answers):
             field_key = 'answer_%d' % ans
+            field_key1 = 'department_%d' % ans
             self.fields[field_key] = forms.CharField(max_length=100,
                                               required=True,
-                                              widget=AnswerWidget,
+                                              widget=UpperHtml,
                                               label=('Candidate'))
+            self.fields[field_key1] = forms.ChoiceField(widget=BottomHtml,
+                                                      choices=DEPARTMENT_CHOICES,
+                                                      label='dep')
+                                                        
             self.fields[field_key].widget.attrs = {'class': 'answer_input'}
 
 

@@ -29,9 +29,10 @@ class StvElection(ElectionModuleBase):
                 MAX_QUESTIONS_LIMIT
 
         extra = 1
+
+        poll.questions_data = [{'departments': election.departments}]
         if poll.questions_data:
             extra = 0
-
         questions_formset = formset_factory(StvForm, extra=extra,
                                             can_delete=True, can_order=True)
         if request.method == 'POST':
@@ -67,7 +68,6 @@ class StvElection(ElectionModuleBase):
                 return HttpResponseRedirect(url)
         else:
             formset = questions_formset(initial=poll.questions_data)
-
         context = {
             'default_answers_count': DEFAULT_ANSWERS_COUNT,
             'formset': formset,
@@ -77,7 +77,8 @@ class StvElection(ElectionModuleBase):
             'module': self
         }
         set_menu('questions', context)
-        tpl = 'election_modules/simple/election_poll_questions_manage'
+
+        tpl = 'election_modules/stv/election_poll_questions_manage'
         return render_template(request, tpl, context)
 
     def update_answers(self):
@@ -103,7 +104,6 @@ class StvElection(ElectionModuleBase):
             answers = answers + q_answers
         '''
         answers = questions_data[0]['answers']
-        print answers
         self.poll._init_questions(len(answers))
         self.poll.questions[0]['answers'] = answers
 
