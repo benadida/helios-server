@@ -38,19 +38,6 @@
 			</h2>
 
 			<div class="row">
-				<div class="large-3 columns">
-					<dl>
-						<dt>Private</dt>
-						<dd>{% if election.private_p %}Yes{% else %}No{% endif %}</dd>
-
-						<dt>Featured</dt>
-						<dd>{% if election.featured_p %}Yes{% else %}No{% endif %}</dd>
-
-						<dt>Threshold Encryption</dt>
-						<dd>{% if election.use_threshold %}Yes{% else %}No{% endif %}</dd>
-					</dl>
-				</div>
-
 				<div class="large-9 columns">
 					<dl>
 						{% if settings.SHOW_USER_INFO %}
@@ -69,6 +56,21 @@
 						{% endif %}
 					</dl>
 				</div>
+
+				{% if admin_p %}
+					<div class="large-3 columns">
+						<dl>
+							<dt>Private</dt>
+							<dd>{% if election.private_p %}Yes{% else %}No{% endif %}</dd>
+
+							<dt>Featured</dt>
+							<dd>{% if election.featured_p %}Yes{% else %}No{% endif %}</dd>
+
+							<dt>Threshold Encryption</dt>
+							<dd>{% if election.use_threshold %}Yes{% else %}No{% endif %}</dd>
+						</dl>
+					</div>
+				{% endif %}
 			</div>
 
 			{% if admin_p %}
