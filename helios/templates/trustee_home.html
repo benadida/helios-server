@@ -183,7 +183,8 @@
           $('#encry_shares_textarea').val(encry_shares_text);
         }
       } else {
-      	$('#error').show();
+        $('#first_step_waiting_div').hide();
+        $('#error').show();
       }
     }
 
@@ -662,7 +663,6 @@
 
               <a class="button" href="{% url helios.views.one_election_view election.uuid %}">Back to Election</a>
             </div>
-
 
             <div data-alert class="alert-box warning" id="error" style="display: none;">
               <b>Error</b> Your secret key was likely incorrect.

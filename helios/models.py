@@ -1041,10 +1041,8 @@ class VoterFile(models.Model):
                 num_voters += 1
 
                 user = None
-                if voter['user_type']:
-                    user = User.get_by_type_and_id(voter['user_type'], voter['voter_id'])
-                    if not user:
-                        user = User(user_type=voter['user_type'], user_id=voter['voter_id'], name=voter['name'], info={'email': voter['email']})
+                if 'user_type' in voter.keys():
+                    user = User.update_or_create(voter['user_type'], voter['voter_id'], voter['name'], {'email': voter['email']})
 
                 voter_uuid = str(uuid.uuid4())
                 new_voter = Voter(uuid=voter_uuid, user=user, voter_name=voter['name'], voter_email=voter['email'], election=election)
