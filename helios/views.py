@@ -613,7 +613,7 @@ def trustees_freeze(request, election):
         return render_template(request, 'trustees_freeze', {'election': election, 'n': n})
 
 
-def add_encrypted_shares(request, election, signature=None):
+def add_encrypted_shares(request, election, signature):
     election_id = election.id
     trustees = Trustee.objects.filter(election=election).order_by('id')
     scheme = Thresholdscheme.objects.filter(election=election)[0]
@@ -625,86 +625,73 @@ def add_encrypted_shares(request, election, signature=None):
     if len(pk_list) != n:
         return Exception('The number of public keys for communication must equal: ' + str(n))
 
-    # if the form has been submitted...
-    if (signature) or (request.method == 'POST'):
-        if (signature == None):
-            form = forms.SignatureForm(request.POST)
+        secret_key_sig = algs.EGSecretKey.from_dict(utils.from_json(signature))
+        for j in range(len(pk_list)):
+            pk = pk_list[j]
+            if (pow(g, secret_key_sig.x, p) == elgamal.PublicKey.from_dict(utils.from_json(pk.public_key_signing)).y):
+                signer = pk.name
+                signer_id = pk.id
+                trustee_signer_id = trustees[j].id
+                break
 
-        if (signature) or (form.is_valid()):
-            if (signature == None):
-                instances = form.save(commit=False)
-                signature = instances.signature
-            secret_key_sig = algs.EGSecretKey.from_dict(
-                utils.from_json(signature))
-            for j in range(len(pk_list)):
-                pk = pk_list[j]
-                if (pow(g, secret_key_sig.x, p) == elgamal.PublicKey.from_dict(utils.from_json(pk.public_key_signing)).y):
-                    signer = pk.name
-                    signer_id = pk.id
-                    trustee_signer_id = trustees[j].id
-                    break
+        if not signer:
+            return Exception('Your signature does not belong to the election: ' + election.name)
 
-            if not signer:
-                return HttpResponse('Your signature does not belong to the election: ' + election.name)
+        if (len(Signed_Encrypted_Share.objects.filter(signer_id=signer_id).filter(election_id=election.id)) > 0):
+            return render_template(request, 'shares_already_uploaded', {'signer': signer, 'election': election})
 
-            if (len(Signed_Encrypted_Share.objects.filter(signer_id=signer_id).filter(election_id=election.id)) > 0):
-                return render_template(request, 'shares_already_uploaded', {'signer': signer, 'election': election})
+        s = algs.Utils.random_mpz_lt(q)
+        t = algs.Utils.random_mpz_lt(q)
 
-            s = algs.Utils.random_mpz_lt(q)
-            t = algs.Utils.random_mpz_lt(q)
+        shares = scheme.share_verifiably(s, t, ELGAMAL_PARAMS)
 
-            shares = scheme.share_verifiably(s, t, ELGAMAL_PARAMS)
+        if len(pk_list) == len(shares):
+            for i in range(len(trustees)):
+                trustee_temp = trustees[i]
+                key = trustee_temp.key
+                receiver = key.name
+                receiver_id = key.id
 
-            if len(pk_list) == len(shares):
-                for i in range(len(trustees)):
-                    trustee_temp = trustees[i]
-                    key = trustee_temp.key
-                    receiver = key.name
-                    receiver_id = key.id
+                share = shares[i]
+                share_string = cryptoutils.to_json_js(share.to_dict())
+                if(share.point_s.x_value != trustee_temp.id):
+                    return Exception('Shares have wrong x_coordinate')
 
-                    share = shares[i]
-                    share_string = cryptoutils.to_json_js(share.to_dict())
-                    if(share.point_s.x_value != trustee_temp.id):
-                        return Exception('Shares have wrong x_coordinate')
+                encry_share = share.encrypt(
+                    algs.EGPublicKey.from_dict(utils.from_json(key.public_key_encrypt)))
+                sig = share.sign(secret_key_sig, p, q, g)
+                signed_encry_share = thresholdalgs.Signed_Encrypted_Share(
+                    sig, encry_share)
 
-                    encry_share = share.encrypt(
-                        algs.EGPublicKey.from_dict(utils.from_json(key.public_key_encrypt)))
-                    sig = share.sign(secret_key_sig, p, q, g)
-                    signed_encry_share = thresholdalgs.Signed_Encrypted_Share(
-                        sig, encry_share)
+                encry_share = Signed_Encrypted_Share()
+                encry_share.share = utils.to_json(
+                    signed_encry_share.to_dict())
+                pk_sign = Key.objects.filter(id=signer_id)[0]
+                if(sig.verify(share_string, algs.EGPublicKey.from_dict(utils.from_json(pk_sign.public_key_signing)), p, q, g)):
+                    encry_share.signer = pk_sign.name
+                    encry_share.signer_id = signer_id
+                    encry_share.receiver = receiver
+                    encry_share.receiver_id = receiver_id
+                    encry_share.election_id = election_id
+                    encry_share.trustee_receiver_id = trustees[i].id
+                    encry_share.trustee_signer_id = trustee_signer_id
+                    encry_share.save()
 
-                    encry_share = Signed_Encrypted_Share()
-                    encry_share.share = utils.to_json(
-                        signed_encry_share.to_dict())
-                    pk_sign = Key.objects.filter(id=signer_id)[0]
-                    if(sig.verify(share_string, algs.EGPublicKey.from_dict(utils.from_json(pk_sign.public_key_signing)), p, q, g)):
-                        encry_share.signer = pk_sign.name
-                        encry_share.signer_id = signer_id
-                        encry_share.receiver = receiver
-                        encry_share.receiver_id = receiver_id
-                        encry_share.election_id = election_id
-                        encry_share.trustee_receiver_id = trustees[i].id
-                        encry_share.trustee_signer_id = trustee_signer_id
-                        encry_share.save()
+                else:
+                    return Exception('Wrong signature')
 
-                    else:
-                        return Exception('Wrong signature')
+                if (len(Signed_Encrypted_Share.objects.filter(signer_id=signer_id).filter(election_id=election_id)) == scheme.n):
+                    signer_key = Key.objects.get(id=signer_id)
+                    signer_trustee = Trustee.objects.filter(
+                        key=signer_key)[0]
+                    signer_trustee.added_encrypted_shares = True
+                    signer_trustee.save()
 
-                    if (len(Signed_Encrypted_Share.objects.filter(signer_id=signer_id).filter(election_id=election_id)) == scheme.n):
-                        signer_key = Key.objects.get(id=signer_id)
-                        signer_trustee = Trustee.objects.filter(
-                            key=signer_key)[0]
-                        signer_trustee.added_encrypted_shares = True
-                        signer_trustee.save()
-            else:
-                return Exception('pk_list and shares do not have the same length')
+            return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
+        else:
+            return Exception('pk_list and shares do not have the same length')
 
-            return render_template()
-
-    else:
-        form = SignatureForm()
-
-    return render_template(request, 'signature_form', {'election': election})
+        return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
 
 
 def trustee_login(request, election_short_name, trustee_email, trustee_secret):
