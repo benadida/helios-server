@@ -1,0 +1,148 @@
+/* line 3, ../sass/voting_booth.scss */
+html {
+  background: #cccccc;
+}
+
+/* line 7, ../sass/voting_booth.scss */
+body {
+  font-size: 16px;
+  line-height: 2em;
+  background: white;
+  padding: 0px;
+  margin: 0px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+/* line 16, ../sass/voting_booth.scss */
+#wrapper {
+  background: #dddddd;
+}
+
+/* line 20, ../sass/voting_booth.scss */
+#banner {
+  width: 100%;
+  text-align: center;
+  background: #cccccc;
+  text-transform: uppercase;
+}
+@media all and (max-width: 400px) {
+  /* line 20, ../sass/voting_booth.scss */
+  #banner {
+    padding-top: 2em;
+  }
+}
+
+/* line 31, ../sass/voting_booth.scss */
+#utility-nav {
+  position: absolute;
+  top: 0;
+  right: 1em;
+  margin: 0;
+}
+/* line 37, ../sass/voting_booth.scss */
+#utility-nav li {
+  display: inline-block;
+  padding-left: 1em;
+}
+
+/* line 43, ../sass/voting_booth.scss */
+#content {
+  background: white;
+  padding: 1em;
+  max-width: 750px;
+  margin: 0 auto;
+}
+
+/* line 50, ../sass/voting_booth.scss */
+#header {
+  text-align: center;
+  padding-bottom: 5px;
+}
+
+/* line 55, ../sass/voting_booth.scss */
+h1 {
+  font-size: 2em;
+  line-height: 1.6em;
+  font-weight: 700;
+}
+
+/* line 61, ../sass/voting_booth.scss */
+h2 {
+  font-size: 1.5em;
+  line-height: 100%;
+}
+
+/* line 66, ../sass/voting_booth.scss */
+h3 {
+  font-size: 1.2em;
+}
+
+/* line 70, ../sass/voting_booth.scss */
+#progress_div {
+  text-align: center;
+}
+
+/* line 74, ../sass/voting_booth.scss */
+#progress_div ul {
+  padding: 0;
+}
+/* line 77, ../sass/voting_booth.scss */
+#progress_div ul li {
+  display: inline-block;
+  padding: .5em 1em;
+  background: #cccccc;
+  color: #888888;
+}
+/* line 83, ../sass/voting_booth.scss */
+#progress_div ul li.selected {
+  background: #ffcc99;
+  color: black;
+  font-weight: 700;
+}
+
+/* line 91, ../sass/voting_booth.scss */
+#confirm_div p {
+  padding: 0.5em 1em;
+  background-color: #eeeeee;
+}
+/* line 95, ../sass/voting_booth.scss */
+#confirm_div p .choice {
+  font-weight: 700;
+}
+/* line 99, ../sass/voting_booth.scss */
+#confirm_div p .under-vote {
+  font-style: italic;
+}
+
+/* line 104, ../sass/voting_booth.scss */
+.encrypted-vote-hash {
+  text-align: center;
+  width: 100%;
+  padding: 1em;
+  background: #eee;
+  word-wrap: break-word;
+  margin: 0 2em;
+  display: block;
+}
+/* line 113, ../sass/voting_booth.scss */
+.encrypted-vote-hash .election_hash {
+  font-weight: 700;
+}
+
+/* line 118, ../sass/voting_booth.scss */
+.election_hash {
+  font-family: courier;
+}
+
+/* line 122, ../sass/voting_booth.scss */
+#footer {
+  text-align: center;
+  width: 100%;
+  background: #cccccc;
+}
+/* line 127, ../sass/voting_booth.scss */
+#footer .fingerprint {
+  word-wrap: break-word;
+  margin: 0 2em;
+  display: block;
+}

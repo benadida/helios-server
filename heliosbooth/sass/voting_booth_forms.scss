@@ -1,6 +1,34 @@
+@import "base";
+
+@mixin button-style($color:white, $bgcolor:darken(lightblue, 20%)) { 
+  position: relative;
+  display: inline-block;
+  color: $color;
+  background-color: $bgcolor;
+  border: 0;
+  text-decoration: none;
+  padding: 0.4em .6em;
+	@include border-radius(5px);
+
+  &:hover {
+	  background-color: darken($bgcolor, 20%);
+	  border: 0;
+	}	
+	&:active {
+	  top: 1px;
+	  left: 1px;
+	}
+}
+
+button, form.prettyform input.button, input.button {
+	@include button-style;
+}
+
+.button-wrapper {
+	text-align: center
+}
 
 form.prettyform {
-  font-size: 1.4em;
 }
 
 form.prettyform label,input,textarea,select {
@@ -19,19 +47,16 @@ form.prettyform br {
     clear: left;
 }
 
-form.prettyform input, form.prettyform textarea, button {
+form.prettyform input, form.prettyform textarea {
     border: 1px solid black;
     margin: 5px;
-    font-size: 16pt;
 }
 
 input.pretty {
-    font-size: 16pt;
     border: 1px solid black;
 }
 
 input.prettysmall {
-    font-size: 12pt;
     border: 1px solid black;
 }
 
@@ -56,7 +81,6 @@ table.pretty th, td {
 }
 
 #questions_div {
-    font-size: 1.4em;
 }
 
 div.selected {

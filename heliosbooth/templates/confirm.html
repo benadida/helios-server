@@ -5,16 +5,14 @@
 <p>
 {$T.question.short_name}<br />
 
-<b style="font-size:1.4em;">{#foreach $T.choices[$T.question$index] as choice}
-{$T.choice}{#if !$T.choice$last}, {#/if}
-{#/for}</b>
+{#foreach $T.choices[$T.question$index] as choice}
+<span class="choice">&#x2713; {$T.choice}</span><br />
+{#/for}
 {#if $T.choices[$T.question$index].length < $T.question.max}
-&nbsp;&nbsp;&nbsp;
-[you under-voted: you may select up to {$T.question.max}]
+<span class="under-vote">Note: You under-voted; you may select up to {$T.question.max}</span><br />
 {#/if}
-&nbsp;&nbsp;&nbsp;
-[<a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#">edit</a>]
+<a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#" class="edit">edit your selection</a>
 </p>
 {#/for}
 
-<button onclick="BOOTH.seal_ballot();">Confirm Choices and Encrypt Ballot</button>
+<div class="button-wrapper"><button onclick="BOOTH.seal_ballot();">Confirm Choices and Encrypt Ballot</button></div>

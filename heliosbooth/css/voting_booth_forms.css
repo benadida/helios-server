@@ -1,0 +1,91 @@
+/* line 23, ../sass/voting_booth_forms.scss */
+button, form.prettyform input.button, input.button {
+  position: relative;
+  display: inline-block;
+  color: white;
+  background-color: #5fb3ce;
+  border: 0;
+  text-decoration: none;
+  padding: 0.4em .6em;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+}
+/* line 13, ../sass/voting_booth_forms.scss */
+button:hover, form.prettyform input.button:hover, input.button:hover {
+  background-color: #2e7e99;
+  border: 0;
+}
+/* line 17, ../sass/voting_booth_forms.scss */
+button:active, form.prettyform input.button:active, input.button:active {
+  top: 1px;
+  left: 1px;
+}
+
+/* line 27, ../sass/voting_booth_forms.scss */
+.button-wrapper {
+  text-align: center;
+}
+
+/* line 34, ../sass/voting_booth_forms.scss */
+form.prettyform label, input, textarea, select {
+  line-height: 1.8;
+}
+
+/* line 38, ../sass/voting_booth_forms.scss */
+form.prettyform label {
+  display: block;
+  text-align: right;
+  float: left;
+  width: 200px;
+  padding-right: 10px;
+}
+
+/* line 46, ../sass/voting_booth_forms.scss */
+form.prettyform br {
+  clear: left;
+}
+
+/* line 50, ../sass/voting_booth_forms.scss */
+form.prettyform input, form.prettyform textarea {
+  border: 1px solid black;
+  margin: 5px;
+}
+
+/* line 55, ../sass/voting_booth_forms.scss */
+input.pretty {
+  border: 1px solid black;
+}
+
+/* line 59, ../sass/voting_booth_forms.scss */
+input.prettysmall {
+  border: 1px solid black;
+}
+
+/* line 64, ../sass/voting_booth_forms.scss */
+table.pretty {
+  margin: 1em 1em 1em 2em;
+  background: whitesmoke;
+  border-collapse: collapse;
+  width: 80%;
+}
+
+/* line 71, ../sass/voting_booth_forms.scss */
+table.pretty th, td {
+  border: 1px silver solid;
+  padding: 0.3em;
+}
+
+/* line 77, ../sass/voting_booth_forms.scss */
+#answers {
+  padding-left: 210px;
+  padding-top: 0px;
+  margin-top: 0px;
+}
+
+/* line 86, ../sass/voting_booth_forms.scss */
+div.selected {
+  background: lightblue;
+}
