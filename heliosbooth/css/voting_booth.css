@@ -117,30 +117,29 @@ h3 {
 /* line 104, ../sass/voting_booth.scss */
 .encrypted-vote-hash {
   text-align: center;
-  width: 100%;
   padding: 1em;
   background: #eee;
   word-wrap: break-word;
   margin: 0 2em;
   display: block;
 }
-/* line 113, ../sass/voting_booth.scss */
+/* line 112, ../sass/voting_booth.scss */
 .encrypted-vote-hash .election_hash {
   font-weight: 700;
 }
 
-/* line 118, ../sass/voting_booth.scss */
+/* line 117, ../sass/voting_booth.scss */
 .election_hash {
   font-family: courier;
 }
 
-/* line 122, ../sass/voting_booth.scss */
+/* line 121, ../sass/voting_booth.scss */
 #footer {
   text-align: center;
   width: 100%;
   background: #cccccc;
 }
-/* line 127, ../sass/voting_booth.scss */
+/* line 126, ../sass/voting_booth.scss */
 #footer .fingerprint {
   word-wrap: break-word;
   margin: 0 2em;
