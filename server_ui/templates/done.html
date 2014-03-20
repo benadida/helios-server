@@ -7,8 +7,10 @@
 <p>
     A vote was successfully cast for <b>{{voter.voter_id}}</b>, with vote fingerprint:
     <br /><br />
-    <tt style="font-size: 2em;">{{voter.vote_hash}}</tt>
 </p>
+<div class="encrypted-vote-hash">
+    <span class="election_hash">{{voter.vote_hash}}</span>
+</div>
 
 <p>
     Visit the <a href="{% url helios.views.one_election_view election.uuid %}">election homepage</a>.

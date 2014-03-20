@@ -34,13 +34,15 @@ window.onbeforeunload = function(evt) {
 };
 
 </script>
-<h1>{{election.name}} &mdash; Submit your Vote</h1>
+<div id="header"><h1>{{election.name}}<br />&#x2713; Submit your Vote</h1></div>
 
 <p>
   We have received, <b><u>but not yet recorded</u></b>, your encrypted ballot.<br />
-Your smart ballot tracker is:<br /><br />
-    <tt style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</tt>
 </p>
+
+<div class="encrypted-vote-hash">Your smart ballot tracker is:
+    <span class="election_hash">{{vote_fingerprint}}</span>
+</div>
 
 <div id="waiting_div">
     Verifying and Casting your ballot<br />

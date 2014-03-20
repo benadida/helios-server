@@ -6,9 +6,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <title>{% block title %}{% endblock %}</title>
-  
-  <link rel="stylesheet" href="/static/foundation/css/foundation.css">
-  <link rel="stylesheet" href="/static/foundation-tweaks.css">
+  <link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="/static/css/normalize.css">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="stylesheet" href="/static/css/forms.css">
 
 {% if settings.DEBUG %}  
   <script src="/static/foundation/js/vendor/custom.modernizr.js"></script>
@@ -28,52 +29,13 @@
   {% block extra-head %}{% endblock %}
 </head>
 <body>
-  <div class="wrapper">
-  <nav class="top-bar">
-    <ul class="title-area">
-      <!-- Title Area -->
-      <li class="name">
-        <h1><a href="/"><img src="/static/tinylogo.png"></a></h1>
-      </li>
-      <li class="toggle-topbar menu-icon"><a href="#"><span>menu</span></a></li>
-    </ul>
- 
-    <section class="top-bar-section">
-      <!-- Right Nav Section -->
-      <ul class="right">
-	{% if user and user.admin_p %}
-	<li><a href="{% url helios.stats_views.home %}">Admin</a></li>
-	<li class="divider"></li>
-	{% endif %}
-	{% if not settings.MASTER_HELIOS %}
-	<li><a href="http://heliosvoting.org">About Helios</a></li>
-	{% endif %}
-      </ul>
-      
-      <ul>
-        <li><a href="/">{{settings.SITE_TITLE}}</a></li>
-	{% if settings.MASTER_HELIOS %}
-        <li class="divider"></li>
-        <li><a href="/about">About</a></li>
-        <li class="divider"></li>
-        <li><a target="_new" href="https://github.com/benadida/helios-server">Code</a></li>
-        <li class="divider"></li>
-        <li><a href="/docs">Docs</a></li>
-        <li class="divider"></li>
-        <li><a href="/faq">FAQ</a></li>
-        <li class="divider"></li>
-        <li><a href="/privacy">Privacy</a></li>
-	{% endif %}
-        <li class="divider"></li>
-        <li><a href="mailto:{{settings.HELP_EMAIL_ADDRESS}}">Help!</a></li>
-      </ul>
-    </section>
-  </nav>
+  <div id="wrapper">
+  <div id="banner">Helios Voting Booth</div>
 
 
   <!-- Main Page Content and Sidebar -->
 
-  <div class="row" id="contentbody">
+  <div class="row" id="content">
       {% block content %}{% endblock %}
   </div>
   
@@ -88,13 +50,13 @@
     </span>-->
     {% if user %}
     logged in as <b>{{user.display_html_small|safe}}</b>&nbsp;&nbsp;
-    <a class="tiny button" href="{% url helios_auth.views.logout %}?return_url={{CURRENT_URL}}">logout</a><br />
+    <a class="tiny" href="{% url helios_auth.views.logout %}?return_url={{CURRENT_URL}}">logout</a><br />
     {% else %}
     {% if voter %}
     You are signed in as voter <u>{% if voter.alias %}{{voter.alias}}{% else %}{{voter.name}}{% endif %}</u> in election <u>{{voter.election.name}}</u>. [<a href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.logout %}?return_url={{CURRENT_URL}}">sign out</a>]
     {% else %}
 {% if settings.SHOW_LOGIN_OPTIONS %}
-    not logged in. <a class="tiny button" href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.index %}?return_url={{CURRENT_URL}}">log in</a>
+    not logged in. <a class="tiny" href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.index %}?return_url={{CURRENT_URL}}">log in</a>
 {% else %}
 powered by <a href="http://heliosvoting.org">Helios Voting</a>.
 {% endif %}
@@ -103,9 +65,6 @@ powered by <a href="http://heliosvoting.org">Helios Voting</a>.
       <br clear="right" />
     </div>
   
-  </div>
-      <script>
-	$(document).foundation();
-      </script>     
+  </div> 
 </body>
 </html>
