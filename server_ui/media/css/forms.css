@@ -1,4 +1,4 @@
-/* line 23, ../sass/voting_booth_forms.scss */
+/* line 23, ../sass/forms.scss */
 button, form.prettyform input.button, input.button, .button {
   position: relative;
   display: inline-block;
@@ -13,29 +13,29 @@ button, form.prettyform input.button, input.button, .button {
   -o-border-radius: 5px;
   border-radius: 5px;
 }
-/* line 13, ../sass/voting_booth_forms.scss */
+/* line 13, ../sass/forms.scss */
 button:hover, form.prettyform input.button:hover, input.button:hover, .button:hover {
   background-color: #a31920;
   border: 0;
 }
-/* line 17, ../sass/voting_booth_forms.scss */
+/* line 17, ../sass/forms.scss */
 button:active, form.prettyform input.button:active, input.button:active, .button:active {
   top: 1px;
   left: 1px;
 }
 
-/* line 27, ../sass/voting_booth_forms.scss */
+/* line 27, ../sass/forms.scss */
 .button-wrapper {
   text-align: center;
   margin: 1em;
 }
 
-/* line 35, ../sass/voting_booth_forms.scss */
+/* line 35, ../sass/forms.scss */
 form.prettyform label, input, textarea, select {
   line-height: 1.8;
 }
 
-/* line 39, ../sass/voting_booth_forms.scss */
+/* line 39, ../sass/forms.scss */
 form.prettyform label {
   display: block;
   text-align: right;
@@ -44,28 +44,28 @@ form.prettyform label {
   padding-right: 10px;
 }
 
-/* line 47, ../sass/voting_booth_forms.scss */
+/* line 47, ../sass/forms.scss */
 form.prettyform br {
   clear: left;
 }
 
-/* line 51, ../sass/voting_booth_forms.scss */
+/* line 51, ../sass/forms.scss */
 form.prettyform input, form.prettyform textarea {
   border: 1px solid black;
   margin: 5px;
 }
 
-/* line 56, ../sass/voting_booth_forms.scss */
+/* line 56, ../sass/forms.scss */
 input.pretty {
   border: 1px solid black;
 }
 
-/* line 60, ../sass/voting_booth_forms.scss */
+/* line 60, ../sass/forms.scss */
 input.prettysmall {
   border: 1px solid black;
 }
 
-/* line 65, ../sass/voting_booth_forms.scss */
+/* line 65, ../sass/forms.scss */
 table.pretty {
   margin: 1em 1em 1em 2em;
   background: whitesmoke;
@@ -73,20 +73,20 @@ table.pretty {
   width: 80%;
 }
 
-/* line 72, ../sass/voting_booth_forms.scss */
+/* line 72, ../sass/forms.scss */
 table.pretty th, td {
   border: 1px silver solid;
   padding: 0.3em;
 }
 
-/* line 78, ../sass/voting_booth_forms.scss */
+/* line 78, ../sass/forms.scss */
 #answers {
   padding-left: 210px;
   padding-top: 0px;
   margin-top: 0px;
 }
 
-/* line 87, ../sass/voting_booth_forms.scss */
+/* line 87, ../sass/forms.scss */
 div.selected {
   background: lightblue;
 }

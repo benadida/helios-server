@@ -32,7 +32,7 @@ More than <b>100,000 votes</b> have been cast using Helios.
 {% endif %}
 
   {% else %}
-  <p style="font-size: 1.4em;">
+  <p>
     {{settings.WELCOME_MESSAGE|safe}}
   </p>
   
@@ -40,7 +40,7 @@ More than <b>100,000 votes</b> have been cast using Helios.
   <p>
     {% for election in elections %}
     <div class="panel">
-      <a style="font-size: 1.4em;" href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a>{% if settings.SHOW_USER_INFO %}<br /> by {{election.admin.display_html_small|safe}}{% endif %}
+      <a href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a>{% if settings.SHOW_USER_INFO %}<br /> by {{election.admin.display_html_small|safe}}{% endif %}
     </div>
     <br />
     {% endfor %}
