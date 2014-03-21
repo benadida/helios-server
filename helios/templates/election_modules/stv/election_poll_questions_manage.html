@@ -118,15 +118,18 @@ $(document).ready(function(){
           var el = $(el);
           var label = $(el).closest(".form-field").find("label");
           var name = 'form-' + qi + '-answer_' + i;
-
-          el.data({'index': i});
-          el.attr({name:name,id:"id_" + name});
+            
+          var inputs = el.find("input,select,textarea");
+          inputs.each(function(i, el) {
+              var el = $(this);
+              el.data({'index': i});
+              el.attr({name:name + '_' + i,id:"id_" + name + '_' + i});
+          });
 
           label.attr("for", "id_" + name);
 
           if (labels) {
             label.text(self._get_answer_title(i+1));
-             
           }
         })
       })
@@ -351,7 +354,7 @@ $(document).ready(function(){
     },
   
     answers: function(qnum) {
-      return this.get_form(qnum).find("input.answer_input")
+      return this.get_form(qnum).find(".answer_input")
     },
 
     answers_num_input: function(qnum) {

@@ -4,6 +4,7 @@ Forms for Zeus
 """
 import uuid
 import copy
+import json
 
 from datetime import datetime, timedelta
 
@@ -17,6 +18,7 @@ from django.db.models import Q
 from django.utils.safestring import mark_safe
 from django.contrib.auth.hashers import check_password, make_password
 from django.forms.models import BaseModelFormSet
+from django.forms.widgets import Select, MultiWidget, DateInput, TextInput
 
 from helios.models import Election, Poll, Trustee, Voter
 from heliosauth.models import User
@@ -214,6 +216,7 @@ class QuestionBaseForm(forms.Form):
         if len(self.fields['choice_type'].choices) == 1:
             self.fields['choice_type'].widget = forms.HiddenInput()
             self.fields['choice_type'].initial = 'choice'
+
         answers = len(filter(lambda k: k.startswith("%s-answer_" %
                                                 self.prefix), self.data))
         if not answers:
@@ -297,6 +300,44 @@ class BottomHtml(forms.widgets.Select):
         return mark_safe(html)
 
 
+class CandidateWidget(MultiWidget):
+
+    def __init__(self, *args, **kwargs):
+        departments = kwargs.pop('departments', [])
+        widgets = (TextInput(),
+                   Select(choices=departments))
+        super(CandidateWidget, self).__init__(widgets, *args, **kwargs)
+
+    def decompress(self, value):
+        if not value:
+            return [None, None]
+
+        return json.loads(value)
+
+    def format_output(self, rendered_widgets):
+        """
+        Given a list of rendered widgets (as strings), it inserts an HTML
+        linebreak between them.
+
+        Returns a Unicode string representing the HTML for the whole lot.
+        """
+        return """
+        <div class="row answer_input"><div class="columns nine">%s</div>
+        <div class="columns two" placeholder="">%s</div>
+        <div class="columns one">
+        <a href="#" style="font-weight: bold; color:red"
+        class="remove_answer">X</a>
+        </div>
+        </div>
+        """ % (rendered_widgets[0], rendered_widgets[1])
+
+    def value_from_datadict(self, data, files, name):
+        datalist = [
+            widget.value_from_datadict(data, files, name + '_%s' % i)
+            for i, widget in enumerate(self.widgets)]
+        return json.dumps(datalist)
+
+
 #testing stv
 class StvForm(QuestionBaseForm):
 
@@ -305,33 +346,31 @@ class StvForm(QuestionBaseForm):
         DEPARTMENT_CHOICES = []
         for dep in deps:
             DEPARTMENT_CHOICES.append((dep.strip(),dep.strip()))
+
         super(StvForm, self).__init__(*args, **kwargs)
         self.fields.pop('question')
         answers = len(filter(lambda k: k.startswith("%s-answer_" %
-                                                self.prefix), self.data))
+                                                self.prefix), self.data)) / 2
         if not answers:
             answers = len(filter(lambda k: k.startswith("answer_"),
                                  self.initial))
         if answers == 0:
             answers = DEFAULT_ANSWERS_COUNT
-       
+
         self.fields.clear()
         for ans in range(answers):
             field_key = 'answer_%d' % ans
             field_key1 = 'department_%d' % ans
             self.fields[field_key] = forms.CharField(max_length=100,
                                               required=True,
-                                              widget=UpperHtml,
+                                              widget=CandidateWidget(departments=DEPARTMENT_CHOICES),
                                               label=('Candidate'))
-            self.fields[field_key1] = forms.ChoiceField(widget=BottomHtml,
-                                                      choices=DEPARTMENT_CHOICES,
-                                                      label='Department')
-                                                        
-            self.fields[field_key].widget.attrs = {'class': 'answer_input'}
+
+            #self.fields[field_key].widget.attrs = {'class': 'answer_input'}
     #remove fields that aren't needed from base form
     min_answers = None
     max_answers = None
-    
+
 class LoginForm(forms.Form):
     username = forms.CharField(label=_('Username'),
                                max_length=50)
