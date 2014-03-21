@@ -21,28 +21,24 @@ class StvElection(ElectionModuleBase):
     count_empty_question = False
     booth_questions_tpl = ''
     no_questions_added_message = _('No questions set')
-    manage_questions_title = _('Manage questions')
 
     def questions_update_view(self, request, election, poll):
         from zeus.utils import poll_reverse
         from zeus.forms import StvForm, DEFAULT_ANSWERS_COUNT, \
                 MAX_QUESTIONS_LIMIT
-
         extra = 1
-
-        poll.questions_data = [{'departments': election.departments}]
+        poll.questions_data[0]['departments_data'] = election.departments
         if poll.questions_data:
             extra = 0
         questions_formset = formset_factory(StvForm, extra=extra,
                                             can_delete=True, can_order=True)
         if request.method == 'POST':
-            formset = questions_formset(request.POST)
+            formset = questions_formset(request.POST, initial=poll.questions_data)
             if formset.is_valid():
                 questions_data = []
                 for question in formset.cleaned_data:
                     if not question:
                         continue
-
                     # force sort of answers by extracting index from answer key.
                     # cast answer index to integer, otherwise answer_10 would
                     # be placed before answer_2
@@ -51,8 +47,17 @@ class StvElection(ElectionModuleBase):
                     answer_values = filter(isanswer, question.iteritems())
                     sorted_answers = sorted(answer_values, key=answer_index)
 
+                    deps_index = lambda a: int(a[0].replace('department_', ''))
+                    is_dep = lambda a: a[0].startswith('department_')
+                    department_values = filter(is_dep, question.iteritems())
+                    sorted_deps = sorted(department_values, key=deps_index)
+
                     answers = [x[1] for x in sorted_answers]
-                    question['answers'] = answers
+                    departments = [x[1] for x in sorted_deps]
+                    final_answers = []
+                    for a,d in zip(answers, departments):
+                        final_answers.append(a+':'+d)
+                    question['answers'] = final_answers
                     for k in question.keys():
                         if k in ['DELETE', 'ORDER']:
                             del question[k]
@@ -82,16 +87,13 @@ class StvElection(ElectionModuleBase):
         return render_template(request, tpl, context)
 
     def update_answers(self):
-        #answers = []
+        answers = []
         questions_data = self.poll.questions_data or []
         prepend_empty_answer = True
-
         if self.auto_append_answer:
             prepend_empty_answer = True
-        print questions_data
-        '''
         for index, q in enumerate(questions_data):
-            q_answers = ["%s: %s" % (q['question'], ans) for ans in \
+            q_answers = ["%s" % (ans) for ans in \
                          q['answers']]
             group = 0
             if prepend_empty_answer:
@@ -100,13 +102,10 @@ class StvElection(ElectionModuleBase):
                 if self.count_empty_question:
                     params_min = 0
                 #params = "%d-%d, %d" % (params_min, params_max, group)
-                q_answers.insert(0, "%s: %s" % (q['question'], params))
             answers = answers + q_answers
-        '''
         answers = questions_data[0]['answers']
         self.poll._init_questions(len(answers))
         self.poll.questions[0]['answers'] = answers
-
     def compute_results(self):
         self.poll.generate_result_docs()
 

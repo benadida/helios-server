@@ -224,11 +224,9 @@ class QuestionBaseForm(forms.Form):
 
         for ans in range(answers):
             field_key = 'answer_%d' % ans
-            #field_key1 = 'department_%d' % ans
             self.fields[field_key] = forms.CharField(max_length=100,
                                               required=True,
                                               widget=AnswerWidget)
-            #self.fields[field_key1] = forms.CharField()
             self.fields[field_key].widget.attrs = {'class': 'answer_input'}
 
         self._answers = answers
@@ -303,16 +301,21 @@ class BottomHtml(forms.widgets.Select):
 class StvForm(QuestionBaseForm):
 
     def __init__(self, *args, **kwargs):
-        deps = kwargs['initial']['departments'].split('\n')
+        deps = kwargs['initial']['departments_data'].split('\n')
         DEPARTMENT_CHOICES = []
         for dep in deps:
-            DEPARTMENT_CHOICES.append((dep,dep))
+            DEPARTMENT_CHOICES.append((dep.strip(),dep.strip()))
         super(StvForm, self).__init__(*args, **kwargs)
         self.fields.pop('question')
-        DEFAULT_ANSWERS_COUNT = 2 
-        answers = DEFAULT_ANSWERS_COUNT
+        answers = len(filter(lambda k: k.startswith("%s-answer_" %
+                                                self.prefix), self.data))
+        if not answers:
+            answers = len(filter(lambda k: k.startswith("answer_"),
+                                 self.initial))
+        if answers == 0:
+            answers = DEFAULT_ANSWERS_COUNT
+       
         self.fields.clear()
-        #department_choices = 
         for ans in range(answers):
             field_key = 'answer_%d' % ans
             field_key1 = 'department_%d' % ans
@@ -322,15 +325,12 @@ class StvForm(QuestionBaseForm):
                                               label=('Candidate'))
             self.fields[field_key1] = forms.ChoiceField(widget=BottomHtml,
                                                       choices=DEPARTMENT_CHOICES,
-                                                      label='dep')
+                                                      label='Department')
                                                         
             self.fields[field_key].widget.attrs = {'class': 'answer_input'}
-
-
     #remove fields that aren't needed from base form
     min_answers = None
     max_answers = None
-    
     
 class LoginForm(forms.Form):
     username = forms.CharField(label=_('Username'),
