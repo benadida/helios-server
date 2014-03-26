@@ -9,7 +9,7 @@
     <dd class=""><a href={% url create_institution %}>{% trans "Create Institution" %}</a></dd>
 {% endblock %}
 {% block content %}
-
+{% comment %}
 <div id="languages">
 <table border="0">
     <tr>
@@ -26,6 +26,7 @@
     </tr>
 </table>     
 </div>
+{% endcomment%}
 <form action="" method="GET">
 {% csrf_token %}
 {% trans "Institution" %} <input type='textfield' name='inst_filter'>
