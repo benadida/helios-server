@@ -1377,12 +1377,15 @@ class VoterFile(models.Model):
   def process(self):
     demo_voters = 0
     poll = self.poll
+    demo_user = False
     for user in poll.election.admins.all():
         if user.user_id.startswith('demo_'):
-            nr = sum(e.voters.count() for e in user.elections.all())
-            demo_voters += nr
-            if demo_voters >= settings.DEMO_MAX_VOTERS:
-                raise exceptions.VoterLimitReached("No more voters for demo account")
+            demo_user = True
+    
+    nr = sum(e.voters.count() for e in user.elections.all())
+    demo_voters += nr
+    if demo_voters >= settings.DEMO_MAX_VOTERS and demo_user:
+        raise exceptions.VoterLimitReached("No more voters for demo account")
 
     self.processing_started_at = datetime.datetime.utcnow()
     self.save()
@@ -1417,7 +1420,7 @@ class VoterFile(models.Model):
       # create the voter
       if not voter:
         demo_voters += 1
-        if demo_voters > settings.DEMO_MAX_VOTERS:
+        if demo_voters > settings.DEMO_MAX_VOTERS and demo_user:
           raise exceptions.VoterLimitReached("No more voters for demo account")
 
         voter_uuid = str(uuid.uuid4())
