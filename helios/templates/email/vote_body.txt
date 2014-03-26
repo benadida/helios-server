@@ -39,8 +39,8 @@
 where your choices are recorded and encrypted before being submitted.
 We recommend the following browsers:{% endblocktrans %}
 
-- Mozilla Firefox (version 10 or newer)
-- Google Chrome (version 8.0 or newer)
+- Mozilla Firefox ({% trans "version" %} 10 {% trans "or newer" %})
+- Google Chrome ({% trans "version" %} 8.0 {% trans "or newer" %})
 
 {% blocktrans %}Important:
 

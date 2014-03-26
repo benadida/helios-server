@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-26 15:21+0200\n"
+"POT-Creation-Date: 2014-03-26 15:29+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1489,6 +1489,14 @@ msgstr ""
 "Η ψηφοφορία λαμβάνει χώρα στον φυλλομετρητή του υπολογιστή σας, όπου οι\n"
 "επιλογές σας καταγράφονται και κρυπτογραφούνται πριν την υποβολή της ψήφου.\n"
 "Προτείνουμε τους παρακάτω φυλλομετρητές:"
+
+#: templates/email/vote_body.txt:42 templates/email/vote_body.txt.py:43
+msgid "version"
+msgstr "έκδοση"
+
+#: templates/email/vote_body.txt:42 templates/email/vote_body.txt.py:43
+msgid "or newer"
+msgstr "ή νεότερη"
 
 #: templates/email/vote_body.txt:45
 msgid ""
