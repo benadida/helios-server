@@ -183,6 +183,8 @@ class ZeusUser(object):
     is_trustee = False
     is_voter = False
     is_admin = False
+    is_manager = False
+    is_superadmin = False
 
     @classmethod
     def from_request(self, request):
@@ -198,6 +200,10 @@ class ZeusUser(object):
         self._user = user_obj
         if isinstance(self._user, User):
             self.is_user = True
+            if self._user.superadmin_p:
+                self.is_superadmin = True
+            if self._user.management_p:
+                self.is_manager = True
             if self._user.admin_p or self._user.superadmin_p:
                 self.is_admin = True
                 self.institution = self._user.institution
@@ -247,6 +253,8 @@ class ZeusUser(object):
         self.is_voter = False
         self.is_admin = False
         self.is_trustee = False
+        self.is_manager = False
+        self.is_superadmin = False
 
     def _clear_session(self, request):
         for sess_key in [TRUSTEE_SESSION_KEY, USER_SESSION_KEY,
