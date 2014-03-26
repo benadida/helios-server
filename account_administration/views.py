@@ -7,7 +7,7 @@ from helios.view_utils import render_template
 from heliosauth.models import User
 from heliosauth.auth_systems.password import make_password
 from zeus.models.zeus_models import Institution
-from zeus.auth import manager_required, manager_or_superadmin_required
+from zeus.auth import manager_or_superadmin_required
 from account_administration.forms import userForm, institutionForm
 from generate_password import random_password
 
