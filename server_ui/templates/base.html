@@ -106,6 +106,9 @@
           {% trans "You are logged in as election administrator" %}: {{ user.display_html_small|safe }}
           <a href="{% url logout %}">{% trans "logout" %}</a> |
           <a href="{% url admin_home %}">{% trans "manage" %}</a> 
+          {% if user.is_manager or user.is_superadmin %}
+          | <a href="/account_administration">{% trans "acounts" %}</a>
+          {% endif %}
               {% if user.user_type == "password" %}
               | <a href="{% url heliosauth.views.change_password %}">{% trans "change password" %}</a>
               {% endif %}

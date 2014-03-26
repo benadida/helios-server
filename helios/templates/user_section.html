@@ -5,6 +5,10 @@
           <em>"{{ user.institution.name }}"</em>
           <br /><br />
           <a class="button tiny" href="{% url admin_home %}">{% trans "control panel" %}</a>
+          {% if user.is_manager or user.is_superadmin %}
+          <a class="button tiny" href="/account_administration">{% trans "accounts" %}
+          </a>
+          {% endif %}
           <a class="button tiny alert" href="{% url change_password %}?return_url=/">{% trans "change password" %}</a>
           <a class="button tiny alert" href="{% url logout %}?return_url=/">{% trans "logout" %}</a>
       </div>
