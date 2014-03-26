@@ -89,6 +89,16 @@ def superadmin_required(func):
         return func(request, *args, **kwargs)
     return wrapper
 
+def manager_or_superadmin_required(func):
+    @user_required
+    @wraps(func)
+    def wrapper(request, *args, **kwargs):
+        if not (request.zeususer._user.superadmin_p
+                or request.zeususer.is_manager):
+            raise PersmissionDenied("Superadmin or manager required")
+        return func(request, *args, **kwargs)
+    return wrapper
+
 def election_poll_required(func):
     @election_view(check_access=True)
     @wraps(func)
