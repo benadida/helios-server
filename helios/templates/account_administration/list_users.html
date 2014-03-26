@@ -1,0 +1,94 @@
+{% extends TEMPLATE_BASE %}
+
+{% load i18n %}
+{% load remember_filters %}
+{% block tabs_menu%}
+    <dd class="active"><a href={% url list_users %}>{% trans "Users List" %}</a></dd>
+    <dd class=""><a href={% url list_institutions %}>{% trans "Institutions List" %}</a></dd>
+    <dd class=""><a href={% url create_user %}>{% trans "Create User" %}</a></dd>
+    <dd class=""><a href={% url create_institution %}>{% trans "Create Institution" %}</a></dd>
+{% endblock %}
+{% block content %}
+
+<div id="languages">
+<table border="0">
+    <tr>
+        {% for lang in LANGUAGES %}
+            <td>
+                <form action="/account_administration/i18n/setlang/" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="language" value="{{lang.0}}"/>
+                <input id="lang_{{lang.0}}" type = "image"
+                src="/static/zeus/images/{{ lang.0 }}.png" alt="{{ lang.1}}"/>
+                </form>
+            </td>
+        {% endfor %}
+    </tr>
+</table>     
+</div>
+<form action="" method="GET">
+{% csrf_token %}
+{% trans "Institution" %} <input type='textfield' name='inst_filter'>
+User ID <input type='textfield' name='uname_filter'>
+<input type='submit' value={% trans "Filter" %}>
+</form>
+
+
+{% show_active_filters request.GET %}
+{% clear_filters_for_user request.GET %}
+</br>
+
+<table class="prettytable" border=1>
+    <tr>
+        <td><b>ID</b></td>
+        <td><b>User ID</b></td>
+        <td><b>{% trans "Name" %}</b></td>
+        <td><b>{% trans "Institution" %}</b></td>
+        <td><b>E-Counting</b></td>
+        <td><b>{% trans "Elections Held" %}</b></td>
+        <td><b>{% trans "Details" %}</b></td>
+    </tr>
+    {% for user in users %}
+    <tr>
+        <td>{{user.id}}</td>
+        <td>{{user.user_id}}</td>
+        <td>{{user.name}}</td>
+        <td>{{user.institution.name}}</td>
+        <td>
+        {% if user.ecounting_account %}
+            {% trans "Yes" %}
+        {% else %}
+            {% trans "No" %}
+        {% endif %}
+        </td>
+        <td>{{user.elections.all.count}}</td>
+        <td>
+            <a href="/account_administration/user_management/?user_id_filter={{user.id}}">
+            {% trans "Details" %}</a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td colspan=7>{% trans "No results found" %}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div class="pagination" style="text-align:center;">
+    <span class="step-links">
+            {% if users.has_previous %}
+                <a href="/account_administration/user_list/?page=
+{{users.previous_page_number}}{%get_filters_for_url request.GET%}">{% trans "previous" %}</a>
+            {% endif %}
+    <span class="current">
+       {% trans "Page" %} {{ users.number }} {% trans "of" %} {{ users.paginator.num_pages}}.
+    </span>
+
+          {% if users.has_next %}
+          <a
+          href="/account_administration/user_list/?page=
+{{users.next_page_number}}{% get_filters_for_url request.GET%}">{% trans "next" %}</a>
+          {% endif %}
+     </span>
+</div>
+{% endblock content%}

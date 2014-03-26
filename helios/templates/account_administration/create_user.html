@@ -1,0 +1,22 @@
+{% extends TEMPLATE_BASE %} 
+
+{% load remember_filters %}
+{% load i18n %}
+
+{% block tabs_menu%}
+    <dd class=""><a href={% url list_users %}>{% trans "Users List" %}</a></dd>
+    <dd class=""><a href={% url list_institutions %}>{% trans "Institutions List" %}</a></dd>
+    <dd class="active"><a href={% url create_user %}>{% trans "Create User" %}</a></dd>
+    <dd class=""><a href={% url create_institution %}>{% trans "Create Institution" %}</a></dd>
+{% endblock %}
+
+{% block content %}
+{{messages.error}}
+<form action='' method='POST'>
+{% csrf_token %}
+{{form}}
+<input type='submit' value={% trans "Create User" %}>
+</form>
+</br>
+</br>
+{% endblock content%}

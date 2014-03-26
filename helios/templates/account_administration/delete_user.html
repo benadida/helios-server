@@ -1,0 +1,27 @@
+{% extends TEMPLATE_BASE %}
+
+{% load i18n%}
+
+{% block tabs_menu %}
+<dd class=""><a href={% url list_users %}>{% trans "Users List" %}</a></dd>
+<dd class=""><a href={% url list_institutions %}>{% trans "Institutions List" %}</a></dd>
+<dd class=""><a href={% url create_user %}>{% trans "Create User" %}</a></dd>
+<dd class="active"><a href={% url create_institution %}>{% trans "Create Institution" %}</a></dd>
+{% endblock %}
+
+{% block content %}
+    
+{% if user_for_deletion %}
+
+{%trans "Please confirm the deletion of user"%} {{user_for_deletion.user_id}}.</br></br>
+        <a
+href="/account_administration/user_deletion_confirmed?id={{user_for_deletion.id}}">
+        {% trans "Yes, I confirm!" %}</a></br></br>
+        <a href="/account_administration/user_management/?user_id_filter=
+{{user_for_deletion.id}}">{% trans "Back" %}</a>
+  
+{% else %}
+        {% trans "You didn't choose a user." %}</br></br>
+        <a href="/account_administration/user_list">{% trans "Back" %}</a>
+{% endif %}
+{% endblock %}

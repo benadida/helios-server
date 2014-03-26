@@ -1,0 +1,259 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2014-01-21 12:57+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#: forms.py:14 forms.py:27 account_administration/list_institutions.html:25
+#: account_administration/list_users.html:46
+#: account_administration/user_manage.html:15
+msgid "Name"
+msgstr "'Ονομα"
+
+#: forms.py:15 account_administration/list_institutions.html:14
+#: account_administration/list_users.html:34
+#: account_administration/list_users.html:47
+#: account_administration/user_manage.html:16
+msgid "Institution"
+msgstr "Ίδρυμα"
+
+#: views.py:108
+msgid "No such institution exists."
+msgstr "Αυτό το ίδρυμα δεν υπάρχει."
+
+#: views.py:118
+#, python-format
+msgid "User %(uid)s was created with password %(password)s."
+msgstr "Δημιουργήθηκε ο χρήστης %(uid)s με κωδικό %(password)s. "
+
+#: views.py:125
+msgid "User already exists!"
+msgstr "Ο χρήστης υπάρχει ήδη!"
+
+#: views.py:156
+msgid "Institution created."
+msgstr "To ίδρυμα δημιουργήθηκε."
+
+#: views.py:184 views.py:213 views.py:307
+msgid "You didn't choose a user"
+msgstr "Δεν επιλέχθηκε χρήστης"
+
+#: views.py:194
+msgid "New password for user %(uid)s is %(new_pass)s"
+msgstr "Ο νέος κωδικός για τον χρήστη %(uid)s είναι ο %(new_pass)s"
+
+#: views.py:200
+msgid "You are not authorized to do this"
+msgstr "Δεν επιτρέπεται αυτή η ενέργεια"
+
+#: views.py:206
+#, python-format
+msgid "New password for user %(uid)s is %(new_password)s"
+msgstr "Ο νέος κωδικός για τον χρήστη %(uid)s είναι ο %(new_password)s"
+
+#: views.py:250
+msgid "Institution $(inst_name)s deleted"
+msgstr "Το ίδρυμα %(inst_name)s διαγράφηκε"
+
+#: views.py:255
+#, python-format
+msgid "Institution %(inst_name)s can't be deleted (users > 0)"
+msgstr "Το ίδρυμα %(inst_name)s δεν μπορεί να διαγραφεί (χρήστες > 0)"
+
+#: views.py:259
+msgid "No such institution"
+msgstr "Αυτό το ίδρυμα δεν υπάρχει."
+
+#: views.py:290 views.py:302
+#, python-format
+msgid "User %(ufd)s succesfuly deleted!"
+msgstr "Ο χρήστης %(ufd)s διαγράφηκε επιτυχώς!"
+
+#: views.py:298
+msgid "You are not authorized to delete that user"
+msgstr "Δεν επιτρέπεται να διαγράψετε αυτόν τον χρήστη"
+
+#: account_administration/create_institution.html:5
+#: account_administration/create_user.html:5
+#: account_administration/delete_institution.html:4
+#: account_administration/delete_user.html:5
+#: account_administration/list_institutions.html:5
+#: account_administration/list_users.html:5
+#: account_administration/user_manage.html:4
+msgid "Users List"
+msgstr "Λίστα Χρηστών"
+
+#: account_administration/create_institution.html:6
+#: account_administration/create_user.html:6
+#: account_administration/delete_institution.html:5
+#: account_administration/delete_user.html:6
+#: account_administration/list_institutions.html:6
+#: account_administration/list_users.html:6
+#: account_administration/user_manage.html:5
+msgid "Institutions List"
+msgstr "Λίστα Ιδρυμάτων"
+
+#: account_administration/create_institution.html:7
+#: account_administration/create_user.html:7
+#: account_administration/create_user.html:14
+#: account_administration/delete_institution.html:6
+#: account_administration/delete_user.html:7
+#: account_administration/list_institutions.html:7
+#: account_administration/list_users.html:7
+#: account_administration/user_manage.html:6
+msgid "Create User"
+msgstr "Δημιουργία Χρήστη"
+
+#: account_administration/create_institution.html:8
+#: account_administration/create_institution.html:14
+#: account_administration/create_user.html:8
+#: account_administration/delete_institution.html:7
+#: account_administration/delete_user.html:8
+#: account_administration/list_institutions.html:8
+#: account_administration/list_users.html:8
+#: account_administration/user_manage.html:7
+msgid "Create Institution"
+msgstr "Δημιουργία Ιδρύματος"
+
+#: account_administration/delete_institution.html:14
+msgid "Please confirm the deletion of institution"
+msgstr "Παρακαλώ επιβεβαιώστε την διαγραφή του ιδρύματος"
+
+#: account_administration/delete_institution.html:16
+#: account_administration/delete_user.html:17
+msgid "Yes, I confirm!"
+msgstr "Ναι, επιβεβαιώνω!"
+
+#: account_administration/delete_institution.html:19
+msgid "Insitution has users, can't be deleted."
+msgstr "Το ίδρυμα έχει χρήστες, δεν μπορεί να διαγραφεί."
+
+#: account_administration/delete_institution.html:20
+#: account_administration/delete_institution.html:25
+#: account_administration/delete_user.html:20
+#: account_administration/delete_user.html:24
+#: account_administration/user_manage.html:58
+msgid "Back"
+msgstr "Πίσω"
+
+#: account_administration/delete_institution.html:24
+msgid "You didn't choose an institution."
+msgstr "Δεν επιλέχθηκε ίδρυμα."
+
+#: account_administration/delete_user.html:14
+msgid "Please confirm the deletion of user"
+msgstr "Παρακαλώ επιβεβαιώστε την διαγραφή του χρήστη"
+
+#: account_administration/delete_user.html:23
+msgid "You didn't choose a user."
+msgstr "Δεν επιλέχθηκε χρήστης"
+
+#: account_administration/list_institutions.html:15
+#: account_administration/list_users.html:36
+msgid "Filter"
+msgstr "Φίλτρo"
+
+#: account_administration/list_institutions.html:26
+msgid "Users"
+msgstr "Χρήστες"
+
+#: account_administration/list_institutions.html:27
+#: account_administration/list_institutions.html:41
+msgid "Delete"
+msgstr "Διαγραφή"
+
+#: account_administration/list_institutions.html:48
+#: account_administration/list_users.html:73
+msgid "No results found"
+msgstr "Δεν βρέθηκαν αποτελέσματα"
+
+#: account_administration/list_institutions.html:57
+#: account_administration/list_users.html:82
+msgid "previous"
+msgstr "προηγούμενη"
+
+#: account_administration/list_institutions.html:60
+#: account_administration/list_users.html:85
+msgid "Page"
+msgstr "Σελίδα"
+
+#: account_administration/list_institutions.html:60
+#: account_administration/list_users.html:85
+msgid "of"
+msgstr "από"
+
+#: account_administration/list_institutions.html:67
+#: account_administration/list_users.html:91
+msgid "next"
+msgstr "επόμενη"
+
+#: account_administration/list_users.html:49
+#: account_administration/user_manage.html:18
+msgid "Elections Held"
+msgstr "Πλήθος Εκλογών"
+
+#: account_administration/list_users.html:50
+#: account_administration/list_users.html:68
+msgid "Details"
+msgstr "Λεπτομέριες"
+
+#: account_administration/list_users.html:60
+#: account_administration/user_manage.html:28
+msgid "Yes"
+msgstr "Ναι"
+
+#: account_administration/list_users.html:62
+#: account_administration/user_manage.html:30
+msgid "No"
+msgstr "Όχι"
+
+#: account_administration/user_manage.html:41
+#: account_administration/user_manage.html:51
+msgid "Change Password"
+msgstr "Αλλαγή Κωδικού"
+
+#: account_administration/user_manage.html:43
+#: account_administration/user_manage.html:53
+msgid "Delete Account"
+msgstr "Διαγραφή Λογαριασμού"
+
+#: account_administration/user_manage.html:63
+msgid "Election Name"
+msgstr "Όνομα Εκλογών"
+
+#: account_administration/user_manage.html:64
+msgid "Start date"
+msgstr "Ημερομηνία Έναρξης"
+
+#: account_administration/user_manage.html:65
+msgid "End Date"
+msgstr "Ημερομηνία Λήξης"
+
+#: account_administration/user_manage.html:66
+msgid "Results"
+msgstr "Αποτελέσματα"
+
+#: templatetags/remember_filters.py:23 templatetags/remember_filters.py:26
+msgid "Active filters => "
+msgstr "Ενεργά Φίλτρα => "
+
+#: templatetags/remember_filters.py:29
+msgid "Institution: "
+msgstr "Ίδρυμα: "
+
+#: templatetags/remember_filters.py:43 templatetags/remember_filters.py:53
+msgid "Clear Filters"
+msgstr "Καθαρισμός Φίλτρων"
