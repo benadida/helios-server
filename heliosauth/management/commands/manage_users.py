@@ -25,6 +25,11 @@ class Command(BaseCommand):
                        dest='superuser',
                        default=False,
                        help='Give superuser permissions to user'),
+    make_option('--manager',
+                        action='store_true',
+                        dest='manager',
+                        default=False,
+                        help='Give manager permissions to user'),
     make_option('--institution',
                        action='store',
                        dest='institution',
@@ -105,6 +110,7 @@ class Command(BaseCommand):
         if options.get('create_user'):
             username = args[0].strip()
             superadmin = options.get('superuser', False)
+            manager = option.get('manager', False)
             name = options.get('name', None)
 
             try:
@@ -137,6 +143,7 @@ class Command(BaseCommand):
             newuser.name = name
             newuser.user_id = username
             newuser.superadmin_p = superadmin
+            newuser.management_p = manager
             newuser.institution = inst
             newuser.ecounting_account = False
             newuser.save()
