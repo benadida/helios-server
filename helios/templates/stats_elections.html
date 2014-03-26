@@ -1,24 +1,24 @@
 {% extends TEMPLATE_BASE %}
-{% block title %}Statistics{% endblock %}
-
+{% load i18n %}
+{% block title %}{% trans "Statistics" %}{% endblock %}
 {% block content %}
-<h1>Elections</h1>
+<h1>{% trans "Elections" %}</h1>
 
 <p>
 {% if elections_page.has_previous %}
-<a href="?page={{elections_page.previous_page_number}}&limit={{limit}}">previous {{limit}}</a> &nbsp;&nbsp;
+<a href="?page={{elections_page.previous_page_number}}&limit={{limit}}"> {% trans "previous" %} {{limit}}</a> &nbsp;&nbsp;
 {% endif %}
 
-Elections {{elections_page.start_index}} - {{elections_page.end_index}}&nbsp;&nbsp;
+{% trans "Elections" %} {{elections_page.start_index}} - {{elections_page.end_index}}&nbsp;&nbsp;
 
 {% if elections_page.has_next %}
-<a href="?page={{elections_page.next_page_number}}&limit={{limit}}">next {{limit}}</a> &nbsp;&nbsp;
+<a href="?page={{elections_page.next_page_number}}&limit={{limit}}">{% trans "next" %} {{limit}}</a> &nbsp;&nbsp;
 {% endif %}
 </p>
 
 {% for election in elections %}
 <p>
-<b><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></b> by <a href="mailto:{{election.admin.info.email}}">{{election.admin.pretty_name}}</a> -- {{election.num_voters}} voters / {{election.num_cast_votes}} cast votes
+<b><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></b> by <a href="mailto:{{election.admin.info.email}}">{{election.admin.pretty_name}}</a> -- {{election.num_voters}} {% trans "voters" %} / {{election.num_cast_votes}} {% trans "cast votes" %}
 </p>
 {% endfor %}
 

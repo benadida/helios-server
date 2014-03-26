@@ -1,4 +1,5 @@
 {% extends 'server_ui/templates/base.html' %}
+{% load i18n %}
 {% block title %}{{ settings.SITE_TITLE }} &mdash; Privacy{% endblock %}
 
 {% block header %}
@@ -11,7 +12,7 @@
 <div class="row"><h2>Privacy</h2></div>
 
 <div class="row">
-
+{% blocktrans %}
 <h3>In General</h3>
 
 <ul>
@@ -25,9 +26,9 @@
 <p>
 <b>If you want to stop reading here, you can: the rest provides detail about the above principles without weakening them.</b>
 </p>
-
+{% endblocktrans %}
 <hr>
-
+{% blocktrans %}
 <h3>For Voters</h3>
 
 <p><b>About your vote:</b></p>
@@ -41,9 +42,9 @@
 <li> Helios may, at your election administrators' discretion, serve as a trustee of your election. This does <em>not</em> give Helios any power to decrypt your vote. In fact, it is probably preferable, since without Helios's collaboration, the remaining trustees cannot decrypt individual votes. It is our policy that Helios, when acting as a trustee, will only decrypt the election tally, never an individual vote.</li>
 <li> When Helios is not acting as a trustee of your election, Helios has no power to decrypt any individual vote.</li>
 </ul>
-
+{% endblocktrans %}
 <p><b>About non-vote data:</b></p>
-
+{% blocktrans %}
 <ul>
 <li> To vote, you will need to present credentials to prove your eligibility. Depending on how your election was set up, this may be a username and password that were generated for you, or a Facebook, Google, Yahoo, or Twitter login. Helios uses the appropriate login interfaces to those external services so that it never has access to your credentials at those services. </li>
 <li> For the purposes of election auditing, Helios stores your name, email address, and the minimal eligibility information needed to qualify you, for example the Facebook group that you belong to that was designated as the eligibility requirement for this election.</li>
@@ -51,7 +52,8 @@
 <li> If your election was made public by the administrator, then some core auditing information is made available to the public: the fact that you voted, the time of your vote, and its tracking number. If your administrator chose to use voter aliases, then your name will be replaced by your pseudonymous voter ID in that dataset. In all cases, Helios takes care to mask or fully hide your email address to prevent email harvesting for spam.</li>
 <li> If your election was made private, then this same information is available to only you, your fellow voters, and your election administrators.</li>
 </ul>
-
+{% endblocktrans %}
+{% blocktrans %}
 <h3>For Administrators</h3>
 
 
@@ -59,7 +61,7 @@
 <li> As an administrator, you have the power to designate who can vote, when the election starts, when the election stops, and when the results are released. Other than that, you have no power beyond what voters in your election have. This is by design.</li>
 <li> To create and administer an election, you will need to log in using Google, Facebook, Yahoo, or Twitter. Helios queries and retains only the basic information needed to authenticate you the next time around: your name, email address, and user ID. Helios will use this information to message you when your election requires attention.</li>
 </ul>
-
+{% endblocktrans %}
 </div>
 
 </div>

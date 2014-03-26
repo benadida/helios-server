@@ -1,30 +1,30 @@
 {% extends TEMPLATE_BASE %}
-
+{% load i18n %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Manage Voters <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; {% trans "Manage Voters" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
 
-<form method="get" action="{% url helios.views.voters_search election.uuid %}"><b>search</b>: <input type="text" name="q" /> <input type="submit" value="search" /></form>
+<form method="get" action="{% url helios.views.voters_search election.uuid %}"><b>{% trans "search" %}</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
 
 {% if upload_p %}
-<p><a href="{% url helios.views.voters_upload election_uuid=election.uuid %}">bulk upload voters</a></p>
+<p><a href="{% url helios.views.voters_upload election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a></p>
 {% endif %}
 
 Voters {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
 
 {% if next_after %}
-<a href="./manage?after={{next_after}}&offset={{offset_plus_limit}}">next {{limit}}</a> &nbsp;&nbsp;
+<a href="./manage?after={{next_after}}&offset={{offset_plus_limit}}">{% trans "next" %} {{limit}}</a> &nbsp;&nbsp;
 {% endif %}
 
 {% ifequal offset 0 %}
 {% else %}
-<a href="./manage">back to start</a> &nbsp;&nbsp;
+<a href="./manage">{% trans "back to start" %}</a> &nbsp;&nbsp;
 {% endifequal %}
 {% if more_p %}
-<a href="./manage?after={{next_after}}&offset={{next_offset}}">next {{limit}}</a>
+<a href="./manage?after={{next_after}}&offset={{next_offset}}">{% trans "next" %} {{limit}}</a>
 {% endif %}
 
 <table class="pretty">
-<tr><th>Alias</th><th>Name</th><th>Username</th></tr>
+<tr><th>{% trans "Alias" %}</th><th>{% trans "Name" %}</th><th>{% trans "Username" %}</th></tr>
 {% for voter in voters %}
 <tr><td>{{voter.alias}}</td><td>{{voter.name}}</td><td>{{voter.voter_id}}
 {% if election.frozen_at %}

@@ -1,21 +1,23 @@
 {% extends TEMPLATE_BASE %}
-
+{% load i18n %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Bulk Upload Voters <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; {% trans "Bulk Upload Voters" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
 
 <form method="post" action="" id="upload_form" enctype="multipart/form-data">
   <p>
+  {% blocktrans %}
     If you would like to specify your list of voters by name and email address,<br />
     you can bulk upload a list of such voters here.<br /><br />
 
     Please prepare a text file of comma-separated values with the fields:
+  {% endblocktrans %}
 </p>
 <pre>
    &lt;unique_id&gt;,&lt;email&gt,&lt;full name&gt;
 </pre>
 
 <p>
-For example:
+{% trans "For example:" %}
   </p>
   <pre>
       benadida,ben@adida.net,Ben Adida
@@ -24,7 +26,10 @@ For example:
   </pre> 
 
   <p>
+  {% blocktrans %}
     The easiest way to prepare such a file is to use a spreadsheet program and to export as "CSV".
+  {% endblocktrans %}
+  
   </p>
   {% if error %}
   <div style="color: red;">{{error}}</div>
@@ -32,15 +37,16 @@ For example:
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
     <input type="file" name="voters_file" />
-    <input type="submit" value="go" />
+    <input type="submit" value="{% trans "go" %}" />
 </form>
 
 <div id="processing">
 </div>
 
 <div id="done" style="display:none;">
-  OK, done uploading.<br />
-  You can now <a href="./manage">view the list of voters</a>.
+  {% trans "OK, done uploading.<br />
+  {% trans "You can now <a href="./manage">{% trans "view the list of voters
+
 </div>
 
 {% endblock %}

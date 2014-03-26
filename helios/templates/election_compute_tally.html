@@ -1,5 +1,5 @@
 {% extends TEMPLATE_BASE %}
-
+{% load i18n %}
 {% block title %}Compute Encryted Tally for {{election.name}}{% endblock %}
 
 {% block content %}
@@ -8,23 +8,29 @@
 <div id="instructions">
 {% if election.num_cast_votes %}
 <p>
+{% blocktrans %}
     You are about to compute the encrypted tally for election <b>{{election.name}}</b>.
+{% endblocktrans %}
 </p>
 
 <p>
+{% blocktrans %}
     Once you do this, voters will no longer be able to cast a ballot.
+{% endblocktrans %}
 </p>
 
 <form method="post" action="" onsubmit="alert('ok, tally has begun')" class="pretty">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
-<input class="pretty" type="submit" value="compute encrypted tally!" />
-<button onclick="document.location='./view'; return false;">never mind</button>
+<input class="pretty" type="submit" value="{% trans "compute encrypted tally!" %}" />
+<button onclick="document.location='./view'; return false;">{% trans "never mind" %}</button>
 </form>
 {% else %}
 <p>
+{% blocktrans %}
 No votes have been cast in this election. At least one vote must be cast before you compute the tally.<br /><br />
-<a href="./view">back to election</a>
+{% endblocktrans %}
+<a href="./view">{%trans "back to election" %}</a>
 </p>
 {% endif %}
 </div>

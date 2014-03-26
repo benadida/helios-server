@@ -1,4 +1,5 @@
 {% extends 'server_ui/templates/base.html' %}
+{% load i18n %}
 {% block title %}{{ settings.SITE_TITLE }}{% endblock %}
 
 {% block header %}
@@ -11,47 +12,61 @@
 <div class="row"><h2>FAQ</h2></div>
 
 <div class="row">
+{% blocktrans %}
 <b>What makes Helios different/better than other voting systems?</b>
 
 <p>Helios is truly verifiable. Each voter obtains a smart ballot tracker which can be checked against the Ballot Tracking Center to ensure that the ballot was received and tallied appropriately. What this means is that no one, not even the administrators of the Helios Voting system, can alter your vote.
+{% endblocktrans %}
 </p>
 </div>
 
 <div class="row">&nbsp;</div>
 
 <div class="row">
+{% blocktrans %}
 <b>I’ve heard of “voter-verifiable” before, what’s different about Helios?</b>
-<p>Many voting systems claim to be voter-verifiable. We believe voter-verifiability is critically important, and we support the efforts of other organizations to help improve the voting machines used in public-office elections. However, we believe that more extensive verifiability is needed, with voters able to ensure that the tallying process, not just the recording of their ballot, was performed correctly. We call that “true verifiability.” Others have called this concept “end-to-end verifiability” or “open-audit.”</p>
+<p>Many voting systems claim to be voter-verifiable. We believe voter-verifiability is critically important, and we support the efforts of other organizations to help improve the voting machines used in public-office elections. However, we believe that more extensive verifiability is needed, with voters able to ensure that the tallying process, not just the recording of their ballot, was performed correctly. We call that “true verifiability.” Others have called this concept “end-to-end verifiability” or “open-audit.”
+{% endblocktrans %}</p>
 </div>
 
 <div class="row">&nbsp;</div>
 
 <div class="row">
+{% endblocktrans %}
 <b>How secret is my vote on Helios?</b>
-<p>Helios takes great care to protect the secrecy of your vote. On most modern web browsers, your vote is encrypted inside your browser, before it is even sent to the server. Even on older browsers, your vote is encrypted before you log into Helios. In all cases, your vote is stored in the database only in encrypted form. Helios then uses advanced cryptographic techniques to combine all of the encrypted votes into an encrypted tally, and only the tally is decrypted. This means that your ballot is never individually decrypted. To provide for the highest level of privacy, Helios lets election administrators designate multiple trustees. All trustees must be involved in decryption, which further ensures that only the tally, never the individual votes, are decrypted.</p>
+<p>Helios takes great care to protect the secrecy of your vote. On most modern web browsers, your vote is encrypted inside your browser, before it is even sent to the server. Even on older browsers, your vote is encrypted before you log into Helios. In all cases, your vote is stored in the database only in encrypted form. Helios then uses advanced cryptographic techniques to combine all of the encrypted votes into an encrypted tally, and only the tally is decrypted. This means that your ballot is never individually decrypted. To provide for the highest level of privacy, Helios lets election administrators designate multiple trustees. All trustees must be involved in decryption, which further ensures that only the tally, never the individual votes, are decrypted.
+{% endblocktrans %}</p>
 </div>
 
 <div class="row">&nbsp;</div>
 
 <div class="row">
+{% endblocktrans %}
 <b>What’s so “smart” about the Helios Ballot Tracker?</b>
-<p>A typical tracking number, say for shipping a package, is more or less a random number: it means nothing other than the label on your package. It’s conceivable that your package gets there, tracking number intact, but its contents destroyed. In the digital world, we’re able to produce a special kind of tracking number that is far from random: it is a fingerprint of the encryption of your vote. So, if your smart ballot tracker makes it all the way to the tally, you know that not only did your ballot make it into the tally, you also know that it wasn’t tampered with in the process. That’s what makes it smart.</p>
+<p>A typical tracking number, say for shipping a package, is more or less a random number: it means nothing other than the label on your package. It’s conceivable that your package gets there, tracking number intact, but its contents destroyed. In the digital world, we’re able to produce a special kind of tracking number that is far from random: it is a fingerprint of the encryption of your vote. So, if your smart ballot tracker makes it all the way to the tally, you know that not only did your ballot make it into the tally, you also know that it wasn’t tampered with in the process. That’s what makes it smart.
+{% endblocktrans %}</p>
 </div>
 
 <div class="row">&nbsp;</div>
 
 <div class="row">
+{% endblocktrans %}
 <b>Is Helios the only system that provides this level of verifiability?</b>
-<p>No, there are other systems. Scantegrity and Punchscan provide true verifiability in paper-based voting systems. We like those systems, and we like the people behind those systems. VoteHere, a company that has since folded, was a pioneer in this area, too. The Helios System packs a number of innovations focused on enabling true verifiability for online elections to help everyone get a taste if this groundbreaking technology. But we are not the only game in town.</p>
+<p>No, there are other systems. Scantegrity and Punchscan provide true verifiability in paper-based voting systems. We like those systems, and we like the people behind those systems. VoteHere, a company that has since folded, was a pioneer in this area, too. The Helios System packs a number of innovations focused on enabling true verifiability for online elections to help everyone get a taste if this groundbreaking technology. But we are not the only game in town.
+{% endblocktrans %}</p>
 </div>
 
 <div class="row">&nbsp;</div>
 
 <div class="row">
+{% blocktrans %}
 <b>Should we start using Helios for public-office elections? Maybe US President 2016?</b>
 <p>No, you should not. Online elections are appropriate when one does not expect a large attempt at defrauding or coercing voters. For some elections, notably US Federal and State elections, the stakes are too high, and we recommend against capturing votes over the Internet. This has nothing to do with Helios itself: we just don’t trust that people’s home computers are secure enough to withstand significant attacks.</p>
+{% endblocktrans %}
 
+{% blocktrans %}
 <p>If you’d like to use a truly verifiable voting system for your public-office election, we recommend an in-person election. Helios could be adapted to the in-person, precinct voting setting, but we have not done this work yet, and we intend to focus on online elections first.</p>
+{% endblocktrans %}
 </div>
 
 

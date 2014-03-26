@@ -1,11 +1,14 @@
 {% extends TEMPLATE_BASE %}
-{% block title %}Confirm Vote{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Confirm Vote" %}{% endblock %}
 
 {% block content %}
-<h1>{{election.name}} &mdash; Vote Successfully Cast!</h1>
+<h1>{{election.name}} &mdash; {% trans "Vote Successfully Cast!" %}</h1>
 
 <p>
+{% blocktrans %}
     Congratulations, your vote has been <b><u>successfully cast</u></b>!
+{% endblocktrans %}
 </p>
 
 <p>
@@ -18,13 +21,13 @@
 </p>
 
 {% if logout %}
-<p><b>For your safety, we have logged you out.</b></p>
+<p><b>{% trans "For your safety, we have logged you out." %}</b></p>
 <iframe width="0" height="0" border="0" frameborder="0" src="/auth/logout">
 </iframe>
 {% endif %}
 
 <p style="font-size: 1.4em;">
-[ <a href="{% url helios.views.one_election_view election.uuid %}">return to election info</a> ]
+[ <a href="{% url helios.views.one_election_view election.uuid %}">{% trans "return to election info" %}</a> ]
 </p>
 
 {% endblock %}

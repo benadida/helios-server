@@ -1,5 +1,5 @@
 {% extends "helios/templates/cryptobase.html" %}
-
+{% load i18n %}
 {% block content %}
 <script language="javascript">
 
@@ -46,14 +46,20 @@ $(document).ready(function() {
 });
 </script>
 
-  <h2 class="title">Create a New Election: {{name}}</h2>
+  <h2 class="title">{% trans "Create a New Election:" %} {{name}}</h2>
 {% ifequal election_type "helios" %}
+  {% blocktrans %}
   <b>An election managed by Helios</b>.
+  {% endblocktrans %}
 {% else %}
 {% ifequal election_type "one" %}
+  {% blocktrans %}
   <b>An election managed by you, the single administrator</b>.
+  {% endblocktrans %}
 {% else %}
+  {% blocktrans %}
 <b>An election managed by multiple trustees</b>.
+  {% endblocktrans %}
 {% endifequal %}
 {% endifequal %}
   <form class="prettyform" action="{% url helios.views.election_new_3 %}" method="POST" id="create_election_form" onsubmit="return before_create();">
@@ -63,10 +69,18 @@ $(document).ready(function() {
       <input type="hidden" name="private_key" id="sk" value="" /><br />
 
 {% ifnotequal election_type "multiple" %}
-  <label for="generate_key">&nbsp;</label><button onclick="generate_keypair(); return false;" id="generate_button">Generate Election Keys</button>
+  <label for="generate_key">&nbsp;</label><button onclick="generate_keypair(); return false;" id="generate_button">
+  {% blocktrans %}
+   Generate Election Keys
+  {% endblocktrans %}
+    </button>
 {% else %}
 <div id="trustees">
-<h3>Trustees (up to 5)</h3>
+<h3> {% blocktrans %}
+  Trustees (up to 5)
+{% endblocktrans %}
+ </h3>
+
 <label for="">&nbsp;</label> <input type="text" name="trustee" /><br />
 <label for="">&nbsp;</label> <input type="text" name="trustee" /><br />
 <label for="">&nbsp;</label> <input type="text" name="trustee" /><br />
@@ -75,18 +89,22 @@ $(document).ready(function() {
 </div>
 {% endifnotequal %}
 <br /><br />
-<label for="">&nbsp;</label>  <input type="submit" value="create" id="submit" />
+<label for="">&nbsp;</label>  <input type="submit" value="{% trans "create" %}" id="submit" />
   </form>
   <br /><br />
 {% ifequal election_type "one" %}
   <form style="padding-left: 200px;" id="sk_form" onsubmit="return false;">
       <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+      {% blocktrans %}
       Your Election's Secret Key:<br />
+      {% endblocktrans %}
       <label for="">&nbsp;</label>
       <textarea id="sk_textarea" cols="60" rows="5">
       </textarea><br />
+      {% blocktrans %}
       (You need to copy and paste this key and keep it safe,<br />
       otherwise you won't be able to tally your election.)
+      {% endblocktrans %}
   </form>
 {% endifequal %}
 {% endblock %}

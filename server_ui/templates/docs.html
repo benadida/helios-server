@@ -1,4 +1,6 @@
 {% extends 'server_ui/templates/base.html' %}
+{% load i18n %}
+
 {% block title %}{{ settings.SITE_TITLE }}{% endblock %}
 
 {% block header %}
@@ -8,25 +10,27 @@
 
 <div class="large-12-columns">
 
-<div class="row"><h2>Documentation</h2></div>
+<div class="row"><h2>{% trans "Documentation" %}</h2></div>
 
 <div class="row">
 
 <p>
+{% blocktrans %}
 The Helios Voting technology is based on advanced peer-reviewed
 cryptographic techniques that enable your vote to remain secret while
 providing an intelligent ballot tracker to let you verify that your
 ballot was received and counted properly:
+{% endblocktrans %}
 </p>
 
 <ul>
-<li> <a href="http://documentation.heliosvoting.org/">technical documentation</a></li>
-<li> <a href="http://www.usenix.org/events/sec08/tech/full_papers/adida/adida.pdf">original peer-reviewed (Usenix Security 2008)</a></li>
-<li> <a href="http://www.uclouvain.be/crypto/electionmonitor/default/about">Helios Election Monitor</a>, produced by the Universite catholique de Louvain.</li>
+<li> <a href="http://documentation.heliosvoting.org/">{% trans "technical documentation" %}</a></li>
+<li> <a href="http://www.usenix.org/events/sec08/tech/full_papers/adida/adida.pdf">{% trans "original peer-reviewed" %} (Usenix Security 2008)</a></li>
+<li> <a href="http://www.uclouvain.be/crypto/electionmonitor/default/about">{% trans "Helios Election Monitor" %}</a>, {% trans "produced by the Universite catholique de Louvain." %}</li>
 </ul>
 
 <p>
-Helios has been covered in the press:
+{% trans "Helios has been covered in the press:" %}
 </p>
 
 <ul>

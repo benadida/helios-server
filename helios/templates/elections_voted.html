@@ -1,7 +1,7 @@
 {% extends TEMPLATE_BASE %}
-
+{% load i18n %}
 {% block content %}
-  <h2 class="title">Elections where you voted <span style="font-size:0.7em;">[<a href="/">back to home</a>]</span></h2>
+  <h2 class="title">{% trans "Elections where you voted" %} <span style="font-size:0.7em;">[<a href="/">{% trans "back to home" %}</a>]</span></h2>
 
 <ul>
 {% for election in elections %}

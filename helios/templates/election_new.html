@@ -1,8 +1,8 @@
 {% extends TEMPLATE_BASE %}
-
+{% load i18n %}
 {% block content %}
 
-  <h2 class="title">Create a New Election</h2>
+  <h2 class="title">{% trans "Create a New Election" %}</h2>
   
 {% if error %}
 <p style="color: red;">
@@ -15,7 +15,7 @@
      {{election_form.as_table}}
      </table>
   <div>
-  <label for="">&nbsp;</label><input type="submit" value="Next &gt;&gt;" id="next_button" />
+  <label for="">&nbsp;</label><input type="submit" value="{%trans "Next" %}" id="next_button" />
   </div>
   </form>
 

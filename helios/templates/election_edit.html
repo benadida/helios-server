@@ -1,8 +1,8 @@
 {% extends TEMPLATE_BASE %}
-
+{% load i18n %}
 {% block content %}
 
-  <h2 class="title">{{election.name}} &mdash; Update <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">cancel</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; {% trans "Update" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "cancel" %}</a>]</span></h2>
   
 {% if error %}
 <p style="color: red;">
@@ -15,7 +15,7 @@
      {{election_form.as_table}}
      </table>
   <div>
-  <label for="">&nbsp;</label><input type="submit" value="Update" id="update_button" />
+  <label for="">&nbsp;</label><input type="submit" value="{% trans "Update" %}" id="update_button" />
   </div>
   </form>
 

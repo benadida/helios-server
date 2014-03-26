@@ -1,24 +1,32 @@
-
-<h3>Submit Your Encrypted Ballot</h3>
+{% load i18n %}
+<h3>{% trans "Submit Your Encrypted Ballot" %}</h3>
 
 <p>
+{% blocktrans %}
 All information, other than your encrypted ballot,<br />
 has been removed from memory.
+{% endblocktrans %}
 </p>
 
 <p>
+{% blocktrans %}
 As a reminder, your ballot tracking number is:<br />
+{% endblocktrans %}
 <b><tt style="font-size: 16pt;">{$T.encrypted_vote_hash}</tt></b>
 </p>
 
 <p>
+{% blocktrans %}
 According to the election definition file, this ballot will be submitted to:
+{% endblocktrans %}
 </p>
 
 <p><b><tt style="font-size:1.3em;">{$T.cast_url}</tt></b></p>
 
 <p>
+{% blocktrans %}
     where you will log in to validate your eligibility to vote.
+{% endblocktrans %}
 </p>
 
 <form method="POST" onsubmit="BOOTH.do_done();" action="{$T.cast_url}" id="send_ballot_form" class="prettyform">
@@ -29,7 +37,7 @@ According to the election definition file, this ballot will be submitted to:
 </textarea>
 <div id="submit_button">
   <label for="submit">&nbsp;</label>
-  <input type="submit" value="Submit Ballot" class="pretty" />
+  <input type="submit" value="{% trans "Submit Ballot" %}" class="pretty" />
 </div>
 </form>
 

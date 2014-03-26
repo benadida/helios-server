@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
-{% block title %}Server error{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Server error" %}{% endblock %}
 
 {% block content %}
-There was an error while handling your request.
+{% trans "There was an error while handling your request." %}
 {% endblock %}

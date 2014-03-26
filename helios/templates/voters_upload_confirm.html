@@ -1,14 +1,16 @@
 {% extends TEMPLATE_BASE %}
-
+{% load i18n %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Bulk Upload Voters &mdash; Confirm<span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; {% trans "Bulk Upload Voters &mdash; Confirm" %}<span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
 
 <p>
+{% blocktrans %}
 You have uploaded a file of voters. The first few rows of this file are:
+{% endblocktrans %}
 </p>
 
 <table>
-<tr><th>Voter Login</th><th>Email Address</th><th>Name</th></tr>
+<tr><th>{% trans "Voter Login" %}</th><th>{% trans "Email Address" %}</th><th>Name</th></tr>
 {% for v in voters %}
 <tr><td>{{v.voter_id}}</td><td>{{v.email}}</td><td>{{v.name}}</td></tr>
 {% endfor %}
@@ -16,11 +18,11 @@ You have uploaded a file of voters. The first few rows of this file are:
 
 <p></p>
 <form method="post" action="" id="upload_form">
-  Does this look right to you?
+  {% trans "Does this look right to you?" %}
   <input type="hidden" name="confirm_p" value="1" />
-  <input type="submit" value="Yes, let's go" />
+  <input type="submit" value="{% trans "Yes, let's go" %}" />
 </form>
 
-<a href="{% url helios.views.voters_upload_cancel election.uuid %}">no, let me upload a different file</a>
+<a href="{% url helios.views.voters_upload_cancel election.uuid %}">{% trans "no, let me upload a different file" %}</a>
 
 {% endblock %}

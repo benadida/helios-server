@@ -1,6 +1,6 @@
 {% extends TEMPLATE_BASE %}
-
-{% block title %}Contact Voters for {{election.name}}{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Contact Voters for" %} {{election.name}}{% endblock %}
 {% block content %}
 <script>
 var voter_id = null;
@@ -9,16 +9,18 @@ voter_id = '{{voter.voter_id}}';
 {% endif %}
 </script>
 
-  <h2 class="title">{{election.name}} &mdash; Contact Voters <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; {% trans "Contact Voters" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
 
 {% if voter %}  
   <p>
+  {% blocktrans %}
     You are sending this email to a specific user: <b>{{voter.name}} ({{voter.voter_id}})</b>
+  {% endblocktrans %}
   </p>
 {% endif %}
 
 <p>
-<b>Templates</b>:
+<b>{% trans "Templates" %}</b>:
 
 {% for template_option in templates %}
 {% if template_option.0 == template %}
@@ -30,13 +32,13 @@ voter_id = '{{voter.voter_id}}';
 {% endfor %}
 
 <pre style="margin:10px; border: 1px solid #888; padding:20px">
-Subject: {{default_subject}}
+{% trans "Subject:" %} {{default_subject}}
 
 {{default_body|safe}}
 </pre>
 
 <p>
-You may tweak the subject and add a custom message using the form below.
+{% trans "You may tweak the subject and add a custom message using the form below." %}
 </p>
 
   <form class="prettyform" action="" method="POST" id="email_form">
@@ -47,7 +49,7 @@ You may tweak the subject and add a custom message using the form below.
      {{email_form.as_table}}
      </table>
   <div>
-  <label for="">&nbsp;</label><input type="submit" value="Send" id="send_button" />
+  <label for="">&nbsp;</label><input type="submit" value="{% trans "Send" %}" id="send_button" />
   </div>
   </form>
   
@@ -55,11 +57,13 @@ You may tweak the subject and add a custom message using the form below.
   </div>
   
   <div id="done" style="display:none;">
-    Done, go <a href="{% url helios.views.one_election_view election.uuid %}">back to election</a>.
+    {% trans "Done, go" %} <a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>.
   </div>
 
   <div id="error" style="display:none;">
+  {% blocktrans %}
     Error emailing participants. Check server settings, make sure there's an SMTP server.
+  {% endblocktrans %}
   </div>
 
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends 'server_ui/templates/base.html' %}
+{% load i18n %}
 {% block title %}{{ settings.SITE_TITLE }}{% endblock %}
 
 {% block header %}
@@ -11,6 +12,9 @@
 <div class="row">&nbsp;</div>
 <div class="large-9 columns">
   {% if settings.MASTER_HELIOS %}
+
+{% blocktrans %}
+
 <p>Helios offers <b>verifiable online elections</b>.</p>
 
 <p>We believe democracy is important, whether it’s your book club, parent-teacher association, student government, workers’ union, or state. So we’ve made truly verifiable elections as easy as everything else on the Web.</p>
@@ -26,9 +30,9 @@ Helios elections are:
 <p>
 More than <b>100,000 votes</b> have been cast using Helios.
 </p>
-
+{% endblocktrans %}
 {% if create_p %}
-<a class="button" href="{% url helios.views.election_new %}">create an election</a>
+<a class="button" href="{% url helios.views.election_new %}">{% trans "create an election" %}</a>
 {% endif %}
 
   {% else %}
@@ -46,7 +50,7 @@ More than <b>100,000 votes</b> have been cast using Helios.
     {% endfor %}
   </p>
   {% else %}
-  <h4>no featured elections at the moment</h4>
+  <h4>{% trans "no featured elections at the moment" %}</h4>
   {% endif %}
 {% endif %}
   
@@ -59,7 +63,7 @@ More than <b>100,000 votes</b> have been cast using Helios.
 <!--<div class="row right">{{user.display_html_big|safe}}</div>-->
 {% if create_p %}
 <a class="small button" href="{% url helios.views.election_new %}">create election</a>
-<h5 class="subheader">Administration</h5>
+<h5 class="subheader">{% trans "Administration" %}</h5>
 {% if elections_administered %}
 <ul>
 {% for election in elections_administered %}
@@ -67,15 +71,15 @@ More than <b>100,000 votes</b> have been cast using Helios.
 {% endfor %}
 </ul>
 {% else %}
-<em>none yet</em>
+<em>{% trans "none yet" %}</em>
 {% endif %}
 <div class="row right">
-<a class="tiny button" href="{% url helios.views.elections_administered %}">see all</a>
+<a class="tiny button" href="{% url helios.views.elections_administered %}">{% trans "see all" %}</a>
 </div>
 <div class="row"></div>
 {% endif %}
 
-<h5 class="subheader">Recent Votes</h5>
+<h5 class="subheader">{% trans "Recent Votes" %}</h5>
 {% if elections_voted %}
 <ul>
 {% for election in elections_voted %}
@@ -83,17 +87,19 @@ More than <b>100,000 votes</b> have been cast using Helios.
 {% endfor %}
 </ul>
 {% else %}
-<em>none yet</em>
+<em>{% trans "none yet" %}</em>
 {% endif %}
-<div class="row right"><a class="tiny button" href="{% url helios.views.elections_voted %}">see all</a></div>
+<div class="row right"><a class="tiny button" href="{% url helios.views.elections_voted %}">{% trans "see all" %}</a></div>
 <div class="row"></div>
 {% else %}
 {% if settings.SHOW_LOGIN_OPTIONS %}
-<h5>Log In to Start Voting</h5>
+<h5>{% trans "Log In to Start Voting</h5>
 {{login_box|safe}}
 {% else %}
 <p>
+{% blocktrans %}
 Select an election to start voting. You will be asked for your voting credentials after you complete a ballot.
+{% endblocktrans %}
 </p>
 {% endif %}
 {% endif %}

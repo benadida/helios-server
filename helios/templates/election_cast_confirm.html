@@ -1,4 +1,5 @@
 {% extends TEMPLATE_BASE %}
+{% load i18n %}
 {% block title %}Confirm Vote{% endblock %}
 
 {% block content %}
@@ -34,16 +35,19 @@ window.onbeforeunload = function(evt) {
 };
 
 </script>
-<h1>{{election.name}} &mdash; Submit your Vote</h1>
+<h1>{{election.name}} &mdash; {% trans "Submit your Vote" %}</h1>
 
 <p>
+{% blocktrans %}
   We have received, <b><u>but not yet recorded</u></b>, your encrypted ballot.<br />
-Your smart ballot tracker is:<br /><br />
+Your smart ballot tracker is:
+{% endblocktrans %}
+<br /><br />
     <tt style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</tt>
 </p>
 
 <div id="waiting_div">
-    Verifying and Casting your ballot<br />
+   {% trans "Verifying and Casting your ballot" %}<br />
     <img src="/static/helios/loading.gif" />
 </div>
 
@@ -58,8 +62,10 @@ Your smart ballot tracker is:<br /><br />
 {% if show_password %}
 {% if user %}
 <p>
-You are logged in as <u>{{user.display_html_small|safe}}</u>, but this election<br />
+{% blocktrans %}
+You are logged in as <u>'{{user.display_html_small|safe}}'</u>, but this election<br />
 requires election-specific credentials.
+{% endblocktrans %}
 </p>
 {% endif %}
 {% with cast_ballot="1" %}
@@ -71,9 +77,13 @@ requires election-specific credentials.
 {% if user %}
 <p>
 {% if election.openreg %}
+{% blocktrans %}
 <b>Sorry, you are <em><u>not eligible</u></em> for this election.</b><br />
+{% endblocktrans %}
 {% else %}
+{% blocktrans %}
 <b>Sorry, you are <em>not registered</em> for this election, and registration is closed.</b><br />
+{% endblocktrans %}
 {% endif %}
 </p>
 <p>
@@ -81,24 +91,32 @@ requires election-specific credentials.
 </p>
 {% else %}
 <p>
+  {% blocktrans %}
   Now, we need you to log in, so we can verify your eligibility.<br /><br />
+  {% endblocktrans %}
 {% if election.openreg %}
 
 {% if election.eligibility %}
 {% else %}
+{% blocktrans %}
  This election is open to <em>anyone</em>, so log in with your preferred account.
+ {% endblocktrans %}
 {% endif %}
 
 {% else %}
+{% blocktrans %}
 This election is only open to <em>registered voters</em>, so log in with
 the same account you registered with.
+{% endblocktrans %}
 {% endif %}
 </p>
 
 {{login_box|safe}}
 
 <br />
+{% blocktrans %}
 Don't worry, we'll remember your ballot while you log in.
+{% endblocktrans %}
 {% endif %}
 
 {% endif %}

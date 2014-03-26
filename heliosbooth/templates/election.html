@@ -1,29 +1,35 @@
-
+{% load i18n %}
 <div id="questions_div">
 <p>
+{% blocktrans %}
     To cast a vote, you will be led through the following steps.<br />
     If you have not yet logged in, you will be asked to do so at the very end of the process.
+{% endblocktrans %}
 <p>
     
 <ol>
+{% blocktrans %}
     <li> <b>Select</b> your preferred options.<br />
 <span style="font-size: 14pt;">You can easily navigate forwards and backwards.</span></li>
+{% endblocktrans %}
 <br />
-
+{% blocktrans %}
     <li> <b>Review &amp; Confirm</b> your choices.<br />
 <span style="font-size: 14pt;">
   Your choices are encrypted safely inside your browser, and you get a smart ballot tracker.<br />
 </span>
 </li>
+{% endblocktrans %}
 <br />
-
+{% blocktrans %}
     <li> <b>Submit</b> your encrypted ballot.<br />
 <span style="font-size: 14pt;">
 You will be asked to log in to submit your encrypted ballot for tallying.
 </span>
 </li>
+{% endblocktrans %}
 </ol>
 
-<div align="center"><button onclick="BOOTH.show_question(0);">Start</button></div>
+<div align="center"><button onclick="BOOTH.show_question(0);">{% trans "Start" %}</button></div>
 </div>
 

@@ -1,4 +1,5 @@
 {% extends "helios/templates/cryptobase.html" %}
+{% load i18n %}
 {% block content %}
 <script language="javascript">
 
@@ -87,66 +88,70 @@ function show_pk() {
 
 </script>
 
-<h2 class="title">{{election.name}} &mdash; Trustee {{trustee.name}} &mdash; Key Setup</h2>
+<h2 class="title">{{election.name}} &mdash; {% trans "Trustee" %}{{trustee.name}} &mdash; {% trans "Key Setup" %}</h2>
 
 <p>
-  As a trustee, it's time to set up your key for this election.
+ {% trans "As a trustee, it's time to set up your key for this election." %}
 </p>
 
 <p id="waiting_message">
-  Please wait for the generator to load...
+  {% trans "Please wait for the generator to load..." %}
 </p>
 
 <p id="generator">
 
-<span id="buttons"><button onclick="generate_keypair(); return false;" id="generate_button">Generate Election Keys</button></span>
+<span id="buttons"><button onclick="generate_keypair(); return false;" id="generate_button">{% trans "Generate Election Keys" %}</button></span>
 
 <br /><br />
-If you've already generated a keypair, you can <a href="javascript:show_key_reuse()">reuse it</a>.
+{% trans "If you've already generated a keypair, you can" %} <a href="javascript:show_key_reuse()">{% trans "reuse it" %}</a>.
 </p>
 
 <div id="reuse">
-<h3>Reusing a Key</h3>
+<h3>{% trans "Reusing a Key" %}</h3>
 
 <p>
-Enter your complete secret key below:
+{% trans "Enter your complete secret key below:" %}
 </p>
 <form onsubmit="reuse_key(this.secret_key.value); return false;">
 <textarea cols="80" rows="5" wrap="soft" name="secret_key">
 </textarea>
 <br />
-<input type="submit" value="reuse" />
+<input type="submit" value="{% trans "reuse" %}" />
 </form>
 </div>
 
 <div id="sk_download">
-<h3>Your Secret Key</h3>
+<h3>{% trans "Your Secret Key" %}</h3>
 <span id="clear_button">
-Your key has been generated, but you may choose to<br /><a href="javascript:clear_keys();">clear it from memory and start from scratch</a> if you prefer.<br />
+{% trans "Your key has been generated, but you may choose to" %}<br /><a href="javascript:clear_keys();">{% trans "clear it from memory and start from scratch</a> if you prefer." %}<br />
+
 </span>
 
 <p>
-    <button style="font-size:16pt;" onclick="download_sk(); $('#pk_link').show();">Save your secret key</button>
+    <button style="font-size:16pt;" onclick="download_sk(); $('#pk_link').show();">{% trans "Save your secret key" %}</button>
 </p>
 
 <p style="display: none;" id="pk_link">
-  <a href="javascript:show_pk();">ok, I've saved the key, let's move on</a>.
+  <a href="javascript:show_pk();">{% trans "ok, I've saved the key, let's move on" %}</a>.
 </p>
 </div>
 
 <form method="post" id="pk_form" action="{% url helios.views.trustee_upload_pk election.uuid, trustee.uuid %}">
-<h3>Your Public Key</h3>
+
+<h3>{% trans "Your Public Key" %}</h3>
 <p>
-    It's time to upload the public key to the server.
+    {% trans "It's time to upload the public key to the server." %}
 </p>
 <p>
-    The fingerprint of your public key is: <tt id="pk_hash" style="font-size: 1.5em; font-weight: bold;"></tt>.<br />
+    {% trans "The fingerprint of your public key is:" %} <tt id="pk_hash" style="font-size: 1.5em; font-weight: bold;"></tt>.<br />
+    {% blocktrans %}
     You may want to save this to confirm that your public key was properly stored by the server.<br />
     (Your public key is not currently being displayed because you do not need to save it, the fingerprint is sufficient.)
+    {% endblocktrans %}
 </p>
 <textarea id="pk_textarea" name="public_key_json" cols="80" rows="10" style="display:none;">
 </textarea>
-<input type="submit" value="Upload your public key">
+<input type="submit" value="{% trans "Upload your public key" %}">
 </form>
 
 <div id="applet_div"></div>
