@@ -1,1 +1,1 @@
-{{ election.name }}: actions required, step #{{ step }}
+{% load i18n %}{{ election.name }}: {% trans "actions required, step"%} #{{ step }}

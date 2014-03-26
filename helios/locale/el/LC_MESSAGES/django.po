@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-17 15:35+0200\n"
+"POT-Creation-Date: 2014-03-26 15:21+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -293,15 +293,15 @@ msgstr ""
 msgid "Malformed mobile phone number: %s"
 msgstr "Μη έγκυρος αριθμός τηλεφώνου: %s"
 
-#: models.py:2013
+#: models.py:2016
 msgid "Create trustee key"
 msgstr "Δημιουργία κωδικού ψηφοφορίας"
 
-#: models.py:2014
+#: models.py:2017
 msgid "Verify trustee key"
 msgstr "Επιβεβαίωση κωδικού ψηφοφορίας"
 
-#: models.py:2015
+#: models.py:2018
 msgid "Partially decrypt votes"
 msgstr "Μερική αποκρυπτογράφηση ψήφων"
 
@@ -1230,6 +1230,10 @@ msgstr ""
 #: templates/trustee_email.txt:13
 msgid "Zeus Digital Elections"
 msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
+
+#: templates/trustee_email_subject.txt:1
+msgid "actions required, step"
+msgstr "απαιτούνται ενέργειές σας, βήμα"
 
 #: templates/trustee_home_base.html:4 templates/user_section.html:32
 msgid "trustee dashboard"
