@@ -104,6 +104,7 @@ INSTALLED_APPS = (
     'helios',
     'zeus',
     'server_ui',
+    'account_administration'
 )
 
 
