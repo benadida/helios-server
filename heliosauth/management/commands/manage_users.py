@@ -110,7 +110,7 @@ class Command(BaseCommand):
         if options.get('create_user'):
             username = args[0].strip()
             superadmin = options.get('superuser', False)
-            manager = option.get('manager', False)
+            manager = options.get('manager', False)
             name = options.get('name', None)
 
             try:
