@@ -2,7 +2,7 @@
 
 export PYTHONPATH=`pwd`
 export DJANGO_SETTINGS_MODULE=settings;
-for d in zeus helios heliosauth server_ui; do
+for d in zeus helios heliosauth server_ui account_administration; do
   cd $d;
   django-admin makemessages -l el -e .html -e .txt;
   #django-admin makemessages -l en -e .html -e .txt;
