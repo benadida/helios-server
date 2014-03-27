@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-26 15:29+0200\n"
+"POT-Creation-Date: 2014-03-27 16:15+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,125 +18,125 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: forms.py:58
+#: forms.py:60
 msgid "Trustees"
 msgstr "Εφορευτική επιτροπή"
 
-#: forms.py:61
+#: forms.py:65
 msgid "Multiple mixnets"
 msgstr "Πολλαπλές μίξεις"
 
-#: forms.py:136
+#: forms.py:140
 msgid "Invalid voting end date"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:138
+#: forms.py:142
 msgid "Invalid voting dates"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:140
+#: forms.py:144
 msgid "Invalid voting extension date"
 msgstr "Λάθος ημερομηνία και ώρα λήξης της ψηφοφορίας"
 
-#: forms.py:148
+#: forms.py:152
 msgid "Invalid trustees format"
 msgstr "Μη έγκυρη λίστα μελών εφορευτικής επιτροπής."
 
-#: forms.py:206
+#: forms.py:209
 msgid "Choice"
 msgstr "Επιλογή"
 
-#: forms.py:208 election_modules/__init__.py:38
+#: forms.py:211 election_modules/__init__.py:38
 msgid "Question"
 msgstr "Ερώτηση"
 
-#: forms.py:237
+#: forms.py:239
 msgid "Min answers"
 msgstr "Ελάχιστος αριθμός επιλογών"
 
-#: forms.py:238
+#: forms.py:240
 msgid "Max answers"
 msgstr "Μέγιστος αριθμός επιλογών"
 
-#: forms.py:256
+#: forms.py:258
 msgid "Max answers should be greater or equal to min answers"
 msgstr ""
 "Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
 "ελάχιστου αριθμού απαντήσεων"
 
-#: forms.py:262
+#: forms.py:264
 msgid "Party name"
 msgstr "Όνομα συνδυασμού"
 
-#: forms.py:271
+#: forms.py:273
 msgid "Scores"
 msgstr "Βαθμοί"
 
-#: forms.py:275
+#: forms.py:375
 msgid "Username"
 msgstr "Όνομα χρήστη"
 
-#: forms.py:277
+#: forms.py:377
 msgid "Password"
 msgstr "Συνθηματικό"
 
-#: forms.py:288 forms.py:294
+#: forms.py:388 forms.py:394
 msgid "Invalid username or password"
 msgstr "Μη έγκυρος χρήστης ή συνθηματικό"
 
-#: forms.py:316
+#: forms.py:416
 msgid "all voters"
 msgstr "σύνολο ψηφοφόρων"
 
-#: forms.py:317
+#: forms.py:417
 msgid "voters who have cast a ballot"
 msgstr "ψηφοφόροι που έχουν καταθέσει ψήφο"
 
-#: forms.py:318
+#: forms.py:418
 msgid "voters who have not yet cast a ballot"
 msgstr "ψηφοφόροι που δεν έχουν καταθέσει ακόμη ψήφο"
 
-#: forms.py:322
+#: forms.py:422
 msgid "Email subject"
 msgstr "Tίτλος μηνύματος email"
 
-#: forms.py:324
+#: forms.py:424
 msgid "Email body"
 msgstr "Κείμενο μηνύματος email"
 
-#: forms.py:326
+#: forms.py:426
 msgid "Send To"
 msgstr "Αποστολή πρός"
 
-#: forms.py:331
+#: forms.py:431
 msgid "Current password"
 msgstr "Τρέχων κωδικός"
 
-#: forms.py:332
+#: forms.py:432
 msgid "New password"
 msgstr "Νέος κωδικός"
 
-#: forms.py:333
+#: forms.py:433
 msgid "New password confirm"
 msgstr "Επιβεβαίωση νέου κωδικού"
 
-#: forms.py:349
+#: forms.py:449
 msgid "Invalid password"
 msgstr "Μη έγκυρος χρήστης ή κωδικός"
 
-#: forms.py:352
+#: forms.py:452
 msgid "Passwords don't match"
 msgstr "Οι κωδικοί δεν ταιριάζουν"
 
-#: forms.py:358
+#: forms.py:458
 msgid "Login password"
 msgstr "Κωδικός σύνδεσης"
 
-#: forms.py:369
+#: forms.py:469
 msgid "Invalid login code"
 msgstr "Μη έγκυρος κωδικός σύνδεσης"
 
-#: forms.py:388
+#: forms.py:488
 msgid "Invalid email or password"
 msgstr "Μη έγκυρη διεύθυνση email ή συνθηματικό"
 
@@ -270,7 +270,7 @@ msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επι
 msgid "Party lists election"
 msgstr "Ψηφοφορία με συνδυασμούς"
 
-#: election_modules/parties/__init__.py:18
+#: election_modules/parties/__init__.py:18 election_modules/stv/__init__.py:19
 msgid "Candidate"
 msgstr "Υποψήφιος"
 
@@ -291,9 +291,18 @@ msgstr "Διαχείριση ερωτήσεων"
 msgid "Please assign the remaining choices: {0}"
 msgstr "Παρακαλούμε συμπληρώστε τις υπόλοιπες επιλογές: {0}"
 
-#: election_modules/simple/__init__.py:21
+#: election_modules/simple/__init__.py:21 election_modules/stv/__init__.py:25
 msgid "No questions set"
 msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"
+
+#: election_modules/stv/__init__.py:17
+msgid "Single Transferable Vote Elections"
+msgstr ""
+
+#: election_modules/stv/__init__.py:20
+#, fuzzy
+msgid "Candidates List"
+msgstr "Υποψήφιος"
 
 #: templatetags/zeus_tags.py:21 templatetags/zeus_tags.py:158
 msgid "Are you sure ?"
