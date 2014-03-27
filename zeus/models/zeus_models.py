@@ -11,6 +11,7 @@ from zeus.core import get_random_int
 class Institution(models.Model):
     name = models.CharField(max_length=255)
     ecounting_id = models.CharField(max_length=255)
+    is_disabled = models.BooleanField(default=False)
 
     class Meta:
         app_label = 'zeus'

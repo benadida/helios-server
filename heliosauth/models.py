@@ -37,6 +37,7 @@ class User(models.Model):
   management_p = models.BooleanField(default=False)
   ecounting_account = models.BooleanField(default=True)
 
+  is_disabled = models.BooleanField(default=False) 
   _is_authenticated = False
 
   class Meta:
