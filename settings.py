@@ -1,4 +1,7 @@
+import ldap
 import os, json
+
+from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
 
 # go through environment variables and override them
 def get_from_env(var, default):
@@ -122,8 +125,8 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-#    'django.contrib.auth',
-#    'django.contrib.contenttypes',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
     'djangosecure',
     'django.contrib.sessions',
     'django.contrib.sites',
@@ -196,7 +199,7 @@ HELIOS_PRIVATE_DEFAULT = False
 
 # authentication systems enabled
 #AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
-AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(",")
+AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'ldap').split(",")
 AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
 
 # facebook
@@ -249,3 +252,37 @@ djcelery.setup_loader()
 # for testing
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 # this effectively does CELERY_ALWAYS_EAGER = True
+
+# see configuration example in:
+# http://pythonhosted.org/django-auth-ldap/example.html
+
+AUTH_LDAP_SERVER_URI = 'ldap://localhost' # replace by your ldap URI
+
+AUTH_LDAP_BIND_DN = ""
+
+AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=Usuarios,dc=localhost",
+    ldap.SCOPE_SUBTREE, "(objectClass=groupOfNames)"
+)
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    "first_name": "givenName",
+    "last_name": "sn",
+    "email": "mail"
+}
+
+AUTH_LDAP_USER_DN_TEMPLATE = "uid=%(user)s,ou=Usuarios,dc=localhost"
+
+AUTH_LDAP_GROUP_TYPE = GroupOfNamesType(name_attr="cn")
+
+AUTH_LDAP_FIND_GROUP_PERMS = True
+
+AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = True
+AUTH_LDAP_CACHE_GROUPS = True
+AUTH_LDAP_GROUP_CACHE_TIMEOUT = 3600
+
+AUTH_LDAP_ALWAYS_UPDATE_USER = False
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'django_auth_ldap.backend.LDAPBackend',
+)

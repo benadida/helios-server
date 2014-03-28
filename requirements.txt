@@ -2,6 +2,7 @@ Django==1.4.5
 South==0.8.2
 anyjson==0.3.1
 celery==3.0.16
+django-auth-ldap==1.1.8
 django-celery==3.0.21
 django-picklefield==0.3.0
 kombu==2.5.13
