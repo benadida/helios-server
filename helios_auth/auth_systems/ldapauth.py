@@ -9,6 +9,10 @@ from django.http import HttpResponseRedirect
 
 from django_auth_ldap.backend import LDAPBackend
 
+# some parameters to indicate that status updating is possible
+STATUS_UPDATES = False
+
+
 class LoginForm(forms.Form):
 	username = forms.CharField(max_length=50)
 	password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
