@@ -6,7 +6,7 @@
 {% if user %}
 <p>
 {% blocktrans %}
-    You are currently logged in as '{{user.user_id}}' ['{{user.user_type}}']
+    You are currently logged in as {{user.user_id}} [{{user.user_type}}]
 {% endblocktrans %}
 </p>
 {% if voter %}
