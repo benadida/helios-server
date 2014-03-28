@@ -1,5 +1,5 @@
-{% load i18n %}
-<h3>{% trans "Review your Ballot" %}</h3>
+
+<h3>Review your Ballot</h3>
 
 {#foreach $T.questions as question}
 <p>
@@ -10,13 +10,11 @@
 {#/for}</b>
 {#if $T.choices[$T.question$index].length < $T.question.max}
 &nbsp;&nbsp;&nbsp;
-{% blocktrans %}
 [you under-voted: you may select up to {$T.question.max}]
-{% endblocktrans %}
 {#/if}
 &nbsp;&nbsp;&nbsp;
-[<a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#">{% trans "edit" %}</a>]
+[<a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#">edit</a>]
 </p>
 {#/for}
 
-<button onclick="BOOTH.seal_ballot();">{% trans "Confirm Choices and Encrypt Ballot" %}</button>
+<button onclick="BOOTH.seal_ballot();">Confirm Choices and Encrypt Ballot</button>

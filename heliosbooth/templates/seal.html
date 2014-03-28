@@ -1,7 +1,6 @@
-{% load i18n %}
 {#if $T.election_metadata.use_advanced_audit_features}
 <div style="float: right; background: lightyellow; margin-left: 20px; padding: 0px 10px 10px 10px; border: 1px solid #ddd; width:200px;">
-<h4><a onclick="$('#auditbody').slideToggle(250);" href="#">{% trans "Audit" %}</a> <span style="font-size: 0.8em; color: #444">{% trans "[optional]" %}</span></h4>
+<h4><a onclick="$('#auditbody').slideToggle(250);" href="#">Audit</a> <span style="font-size: 0.8em; color: #444">[optional]</span></h4>
 <div id="auditbody" style="display:none;">
 <p>
 If you choose, you can audit your ballot and reveal how your choices were encrypted.
@@ -9,32 +8,28 @@ If you choose, you can audit your ballot and reveal how your choices were encryp
 <p>
 You will then be guided to re-encrypt your choices for final casting.
 </p>
-<input type="button" value="{% trans "Verify Encryption" %}" onclick="BOOTH.audit_ballot();" class="pretty" />
+<input type="button" value="Verify Encryption" onclick="BOOTH.audit_ballot();" class="pretty" />
 </p>
 </div>
 </div>
 {#/if}
-{% blocktrans %}
+
 <h3>Your ballot is ready to be submitted</h3>
-{% endblocktrans %}
-<p>
-{% blocktrans %}
-<em>Don't forget to click "Proceed to Submission" below!</em>
-{% endblocktrans %}
-</p>
 
 <p>
-{% blocktrans %}Before submitting, you can take note of your smart ballot tracker [<a onclick="BOOTH.show_receipt(); return false;" href="#">print</a>]:<br /><br />
-{% endblocktrans %}
+<em>Don't forget to click "Proceed to Submission" below!</em>
+</p>
+
+<p>Before submitting, you can take note of your smart ballot tracker [<a onclick="BOOTH.show_receipt(); return false;" href="#">print</a>]:<br /><br />
+
 <b><tt style="font-size: 16pt;">&nbsp;&nbsp;&nbsp;{$T.encrypted_vote_hash}</tt></b><br /><br />
 
 </p>
 
 <p>
-{% blocktrans %}
 Once you click "Proceed", Helios will remember only your encrypted vote. Thus, only you know your vote.</p>
-{% endblocktrans %}
-<button id="proceed_button" onclick="BOOTH.cast_ballot();">{% trans "Proceed to Submission" %}</button><br />
+
+<button id="proceed_button" onclick="BOOTH.cast_ballot();">Proceed to Submission</button><br />
 <div id="loading_div"><img src="loading.gif" id="proceed_loading_img" /></div>
 
 

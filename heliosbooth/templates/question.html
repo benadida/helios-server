@@ -1,13 +1,12 @@
-{% load i18n %}
 <form onsubmit="return false;" class="prettyform" id="answer_form">
 <input type="hidden" name="question_num" value="{$T.question_num}" />
 
 <p>
-<br /> 
+<br />
 <b>{$T.question.question}</b>
 <br />
 <span style="font-size: 0.6em;">#{$T.question_num + 1} of {$T.last_question_num + 1} &mdash;
- vote for 
+ vote for
 {#if $T.question.min && $T.question.min > 0}
 {#if $T.question.max}
 {$T.question.min} to {$T.question.max}
@@ -18,8 +17,8 @@ at least {$T.question.min}
 {#if $T.question.max}
 {#if $T.question.max > 1}up to {#/if}{$T.question.max}
 {#else}
-{% trans "as many as you approve of" %}
-{#/if} 
+as many as you approve of
+{#/if}
 {#/if}
 </span>
 </p>
@@ -30,7 +29,7 @@ at least {$T.question.min}
 {#if $T.question.answer_urls && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] != ""}
 &nbsp;&nbsp;
 <span style="font-size: 12pt;">
-[<a target="_blank" href="{$T.question.answer_urls[$T.answer_ordering[$T.answer$index]]}">{% trans "more info" %}</a>]
+[<a target="_blank" href="{$T.question.answer_urls[$T.answer_ordering[$T.answer$index]]}">more info</a>]
 </span>
 {#/if}
 </div>
@@ -42,17 +41,17 @@ at least {$T.question.min}
 
 {#if $T.show_reviewall}
 <div style="float: right;">
-<input type="button" onclick="BOOTH.validate_and_confirm({$T.question_num});" value="{% trans "Proceed" %}" />
+<input type="button" onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Proceed" />
 </div>
 {#/if}
 
 {#if $T.question_num != 0}
-<input type="button" onclick="BOOTH.previous({$T.question_num})" value="{% trans "Previous" %}" />
+<input type="button" onclick="BOOTH.previous({$T.question_num})" value="Previous" />
 &nbsp;
 {#/if}
 
 {#if $T.question_num < $T.last_question_num}
-<input type="button" onclick="BOOTH.next({$T.question_num})" value="{% trans "Next" %}" />
+<input type="button" onclick="BOOTH.next({$T.question_num})" value="Next" />
 &nbsp;
 {#/if}
 
