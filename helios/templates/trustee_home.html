@@ -4,7 +4,8 @@
 {% block content %}
   <script language="javascript">
   	function get_secret_key_signing() {
-      return ElGamal.SecretKey.fromJSONObject($.secureEvalJSON($('#sk_textarea_signing').val()));
+      var keys = $.secureEvalJSON($('#sk_textarea_signing').val());
+      return ElGamal.SecretKey.fromJSONObject(keys.signing);
     }
 
     function get_variables() {
@@ -234,7 +235,9 @@
     }
 
     function get_secret_key_encryption() {
-      return ElGamal.SecretKey.fromJSONObject($.secureEvalJSON($('#sk_textarea_encryption').val()));
+      var keys = $.secureEvalJSON($('#sk_textarea_encryption').val());
+      console.log(keys.encryption);
+      return ElGamal.SecretKey.fromJSONObject(keys.encryption);
     }
 
     function setup_public_key_and_proof() {
@@ -329,7 +332,7 @@
           }
   			}
   		} else {
-  		  console.log(name_array[trustee_index]+ ' received '+ String(encry_shares.length) + ' shares, instead of '+String(n)+' shares');
+  		  console.log(name_array[trustee_index]+ ' received '+ String(encry_shares.length) + ' shares, instead of ' + String(n) + ' shares');
       }
 
       if (secret_shares.length == n) {
@@ -504,7 +507,7 @@
                 <h3>Generate Your Encrypted Shares</h3>
 
                 <p>
-                  To generate your encrypted shares, you first have to enter your secret key for signing. If you generated your key pair with our generator, it was stored in a file called <tt>signing_key.json</tt>.
+                  To generate your encrypted shares, you first have to enter your secret key for signing. If you generated your key pair with our generator, it was stored in a file called <tt>communication_keys.json</tt>.
                 </p>
 
                 <form>
@@ -583,7 +586,7 @@
                     <h3>Decrypt Encrypted Shares and Calculate Your Keypair</h3>
 
                     <p>
-                      To decrypt your shares, you first have to upload your secret key for encryption. If you generated your key pair with our generator, it was stored in a file called <tt>encryption_key.json</tt>.
+                      To decrypt your shares, you first have to upload your secret key for encryption. If you generated your key pair with our generator, it was stored in a file called <tt>communication_keys.json</tt>.
                     </p>
 
                     <form>

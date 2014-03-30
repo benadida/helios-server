@@ -78,6 +78,16 @@
       saveAs(blob, 'signing_key.json');
     }
 
+    function download_sk() {
+      var blob = new Blob(
+        ['{"encryption":' + jQuery.toJSON(SECRET_KEY_ENC) + ', "signing": ' + jQuery.toJSON(SECRET_KEY_SIGN) + '}'],
+        {type: 'application/json'}
+      );
+      var url = URL.createObjectURL(blob);
+
+      saveAs(blob, 'communication_keys.json');
+    }
+
     var SK_ENC_DOWNLOADED = false;
     var SK_SIGN_DOWNLOADED = false;
 
@@ -127,8 +137,7 @@
           Your key pairs have been generated and you can now save the secret keys. <b>It is important that you do not lose these files, because you will need them to complete the key ceremony.</b>
         </p>
 
-        <button id="sk_enc_link" onclick="download_sk_enc(); show_pk_link('enc'); return false;">Save Secret Key for Encryption</button>
-        <button id="sk_sign_link" onclick="download_sk_sign(); show_pk_link('sign'); return false;">Save Secret Key for Signing</button>
+        <button id="sk_link" onclick="download_sk(); $('#pk_link').show(); $('#sk_link').addClass('secondary'); return false;">Save Secret Keys</button>
         <button id="pk_link" onclick="show_pk(); return false;" style="display: none;">Upload Your Public Keys &raquo;</button>
       </div>
 
