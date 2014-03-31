@@ -20,3 +20,5 @@ webtest==2.0.7
 django-db-pool==0.0.10
 django-secure==0.1.2
 bleach==1.4
+boto==2.27.0
+django-ses==0.6.0
