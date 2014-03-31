@@ -249,6 +249,11 @@ def election_new(request):
                     # add Helios as a trustee by default
                     election.generate_trustee(ELGAMAL_PARAMS)
 
+                    election.voting_starts_at = election_params['voting_starts_at']
+                    election.voting_ends_at = election_params['voting_ends_at']
+
+                    election.save()
+
                     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
                 else:
                     error = "An election with short name %s already exists" % election_params[

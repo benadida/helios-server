@@ -41,18 +41,18 @@
 				<div class="large-9 columns">
 					<dl>
 						{% if settings.SHOW_USER_INFO %}
-							<dt>Created By</dt>
+							<dt>Created by</dt>
 							<dd>{{election.admin.display_html_small|safe}}</dd>
 						{% endif %}
 
-						{% if election.election_info_url %}
-							<dt>Election Info</dt>
-							<dd><a target="_blank" href="{{election.election_info_url}}">Candidate Bios and Statements</a></dd>
+						{% if election.voting_starts_at %}
+							<dt>Voting Starts at</dt>
+							<dd>{{election.voting_starts_at}}</dd>
 						{% endif %}
 
-						{% if election.description %}
-							<dt>Description</dt>
-							<dd>{{election.description_bleached|safe}}</dd>
+						{% if election.voting_ends_at %}
+							<dt>Voting Ends at</dt>
+							<dd>{{election.voting_ends_at}}</dd>
 						{% endif %}
 					</dl>
 				</div>
@@ -71,6 +71,20 @@
 						</dl>
 					</div>
 				{% endif %}
+			</div>
+
+			<div class="row">
+				<div class="large-12 columns">
+					{% if election.election_info_url %}
+						<dt>Election Info</dt>
+						<dd><a target="_blank" href="{{election.election_info_url}}">Candidate Bios and Statements</a></dd>
+					{% endif %}
+
+					{% if election.description %}
+						<dt>Description</dt>
+						<dd>{{election.description_bleached|safe}}</dd>
+					{% endif %}
+				</div>
 			</div>
 
 			{% if admin_p %}
@@ -276,7 +290,7 @@
 						{% endif %}
 					{% else %}
 						<div data-alert class="alert-box info">
-  						Voting is not yet open.
+  							Voting is not yet open.
 						</div>
 					{% endif %}
 

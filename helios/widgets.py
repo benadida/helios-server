@@ -14,16 +14,18 @@ from django.utils.safestring import mark_safe
 
 __all__ = ('SelectTimeWidget', 'SplitSelectDateTimeWidget')
 
-# Attempt to match many time formats:
+# Attempt to match many time formats.
+#
 # Example: "12:34:56 P.M."  matches:
 # ('12', '34', ':56', '56', 'P.M.', 'P', '.', 'M', '.')
 # ('12', '34', ':56', '56', 'P.M.')
+#
 # Note that the colon ":" before seconds is optional, but only if seconds
-# are omitted
+# are omitted.
 time_pattern = r'(\d\d?):(\d\d)(:(\d\d))? *([aApP]\.?[mM]\.?)?$'
 
 RE_TIME = re.compile(time_pattern)
-# The following are just more readable ways to access re.matched groups:
+# The following are just more readable ways to access matched groups
 HOURS = 0
 MINUTES = 1
 SECONDS = 3
@@ -31,24 +33,21 @@ MERIDIEM = 4
 
 
 class SelectTimeWidget(Widget):
-
     """
     A Widget that splits time input into <select> elements.
-    Allows form to show as 24hr: <hour>:<minute>:<second>, (default)
-    or as 12hr: <hour>:<minute>:<second> <am|pm> 
-
-    Also allows user-defined increments for minutes/seconds
     """
+
     hour_field = '%s_hour'
     minute_field = '%s_minute'
     meridiem_field = '%s_meridiem'
-    twelve_hr = False  # Default to 24hr.
+    twelve_hr = False
 
     def __init__(self, attrs=None, hour_step=None, minute_step=None, twelve_hr=False):
         """
         hour_step, minute_step, second_step are optional step values for
         for the range of values for the associated select element
-        twelve_hr: If True, forces the output to be in 12-hr format (rather than 24-hr)
+
+        twelve_hr: if True, forces the output to be in 12-hr format (rather than 24-hr)
         """
         self.attrs = attrs or {}
 
@@ -152,32 +151,29 @@ class SelectTimeWidget(Widget):
     id_for_label = classmethod(id_for_label)
 
     def value_from_datadict(self, data, files, name):
-        # if there's not h:m:s data, assume zero:
+        # if there's not h:m data, assume zero:
         h = data.get(self.hour_field % name, 0)  # hour
         m = data.get(self.minute_field % name, 0)  # minute
 
         meridiem = data.get(self.meridiem_field % name, None)
 
-        # NOTE: if meridiem is None, assume 24-hr
+        # if meridiem is None, assume 24-hr
         if meridiem is not None:
             if meridiem.lower().startswith('p') and int(h) != 12:
                 h = (int(h) + 12) % 24
             elif meridiem.lower().startswith('a') and int(h) == 12:
                 h = 0
 
-        if (int(h) == 0 or h) and m and s:
-            return '%s:%s:%s' % (h, m, s)
+        if (int(h) == 0 or h) and m:
+            return '%s:%s:00' % (h, m)
 
         return data.get(name, None)
 
 
 class SplitSelectDateTimeWidget(MultiWidget):
-
     """
-    MultiWidget = A widget that is composed of multiple widgets.
-
-    This class combines SelectTimeWidget and SelectDateWidget so we have something 
-    like SpliteDateTimeWidget (in django.forms.widgets), but with Select elements.
+    This class combines SelectTimeWidget and SelectDateWidget so we have something
+    like SplitDateTimeWidget (in django.forms.widgets), but with Select elements.
     """
 
     def __init__(self, attrs=None, hour_step=None, minute_step=None, twelve_hr=None, years=None):
@@ -193,10 +189,10 @@ class SplitSelectDateTimeWidget(MultiWidget):
 
     def format_output(self, rendered_widgets):
         """
-        Given a list of rendered widgets (as strings), it inserts an HTML
-        linebreak between them.
+        Given a list of rendered widgets (as strings), it inserts a
+        spacer between them.
 
         Returns a Unicode string representing the HTML for the whole lot.
         """
-        rendered_widgets.insert(-1, '<br />')
+        rendered_widgets.insert(-1, '<i class="spacer"></i>')
         return u''.join(rendered_widgets)
