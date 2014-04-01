@@ -4,7 +4,6 @@ Forms for Helios
 
 from django import forms
 from models import Election
-from widgets import *
 from fields import *
 from django.conf import settings
 
@@ -18,8 +17,8 @@ class ElectionForm(forms.Form):
     randomize_answer_order = forms.BooleanField(required=False, initial=False, label='Randomize Answer Order', help_text='Enable this if you want the answers to questions to appear in random order for each voter.')
     private_p = forms.BooleanField(required=False, initial=False, label='Private', help_text='A private election is only visible to registered voters.')
     use_threshold = forms.BooleanField(required=False, initial=False, label='Use Threshold Encryption', help_text='Using threshold encryption allows a subset of trustees to decrypt the tally.')
-    voting_starts_at = SplitDateTimeField(label='Voting Starts at', help_text='UTC date and time when voting begins.', widget=SplitSelectDateTimeWidget)
-    voting_ends_at = SplitDateTimeField(label='Votin Ends at', help_text='UTC date and time when voting ends.', widget=SplitSelectDateTimeWidget)
+    voting_starts_at = forms.DateTimeField(required=False, widget=forms.DateTimeInput(attrs={'class': 'datetimepicker'}), label='Voting Starts at', help_text='UTC date and time when voting begins.')
+    voting_ends_at = forms.DateTimeField(required=False, widget=forms.DateTimeInput(attrs={'class': 'datetimepicker'}), label='Votin Ends at', help_text='UTC date and time when voting ends.')
     help_email = forms.CharField(required=False, initial='', label='Help E-mail Address', help_text='An e-mail address voters should contact if they need help.')
     description = forms.CharField(max_length=2000, widget=forms.Textarea(), required=False)
     if settings.ALLOW_ELECTION_INFO_URL:

@@ -249,8 +249,8 @@ def election_new(request):
                     # add Helios as a trustee by default
                     election.generate_trustee(ELGAMAL_PARAMS)
 
-                    election.voting_starts_at = election_params['voting_starts_at']
-                    election.voting_ends_at = election_params['voting_ends_at']
+                    logging.info(election_params['voting_starts_at'])
+                    logging.info(election_params['voting_starts_at'])
 
                     election.save()
 
