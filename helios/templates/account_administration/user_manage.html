@@ -17,7 +17,6 @@
     <td><b>User ID</b></td>
     <td><b>{% trans "Name" %}</b></td>
     <td><b>{% trans "Institution" %}</b></td>
-    <td><b>E-Counting</b></td>
     <td><b>{% trans "Elections Held" %}</b></td>
 </tr>
 <tr>
@@ -26,13 +25,6 @@
     <td>{{u_data.user_id}}</td>
     <td>{{u_data.name}}</td>
     <td>{{u_data.institution.name}}</td>
-    <td>
-    {% if u_data.ecounting_account %}
-        {% trans "Yes" %}
-    {% else%}
-        {% trans "No"%}
-    {% endif %}
-    </td>
     <td>{{u_data.elections.all.count}}</td>
 </tr>
 </table>
@@ -41,6 +33,9 @@
 <br>
 <a href="/account_administration/user_management/?change_pass=yes&user_id_filter={{u_data.id}}">
 {% trans "Reset Password" %}</a>
+</br></br>
+<a href="/account_administration/user_creation?edit_id={{u_data.id}}">{% trans "Edit" %}
+</a>
 </br></br>
 {% if u_data.elections.count == 0%}
 <a href="/account_administration/delete_user/?id={{u_data.id}}">{%trans "Delete Account"%}</a>
@@ -54,7 +49,8 @@
 <a href="/account_administration/reset_password?user_id_filter={{u_data.id}}">
 {% trans "Reset Password" %}</a>
 </br></br>
-<a href="/account_administration/user_creation?edit_id={{u_data.id}}">Edit</a>
+<a href="/account_administration/user_creation?edit_id={{u_data.id}}">{% trans "Edit" %}
+</a>
 </br></br>
 {% if u_data.elections.count == 0 %}
 <a href="/account_administration/delete_user/?id={{u_data.id}}">{%trans "Delete Account"%}</a>

@@ -27,7 +27,6 @@ User ID <input type='textfield' name='uname_filter'>
         <td><b>User ID</b></td>
         <td><b>{% trans "Name" %}</b></td>
         <td><b>{% trans "Institution" %}</b></td>
-        <td><b>E-Counting</b></td>
         <td><b>{% trans "Elections Held" %}</b></td>
         <td><b>{% trans "Details" %}</b></td>
     </tr>
@@ -37,13 +36,6 @@ User ID <input type='textfield' name='uname_filter'>
         <td>{{user.user_id}}</td>
         <td>{{user.name}}</td>
         <td>{{user.institution.name}}</td>
-        <td>
-        {% if user.ecounting_account %}
-            {% trans "Yes" %}
-        {% else %}
-            {% trans "No" %}
-        {% endif %}
-        </td>
         <td>{{user.elections.all.count}}</td>
         <td>
             <a href="/account_administration/user_management/?user_id_filter={{user.id}}">
