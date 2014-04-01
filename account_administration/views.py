@@ -190,37 +190,6 @@ def manage_user(request):
         user = None
         message = _("You didn't choose a user")
         messages.error(request, message)
-    '''
-    change_pass = request.GET.get('change_pass')
-    if change_pass == "yes":
-        if user:
-            if ((user.superadmin_p or user.management_p)
-                    and request.zeususer._user.superadmin_p):
-                new_password = random_password()
-                user.info['password'] = make_password(new_password)
-                user.save()
-                message = _("New password for user %(uid)s is "
-                            "%(new_pass)s") % {'uid': user.user_id,
-                                               'new_pass': new_password}
-                messages.info(request, message)
-            elif ((user.superadmin_p or user.management_p)
-                    and request.zeususer._user.management_p):
-                message = _("You are not authorized to do this")
-                messages.error(request, message)
-            else:
-                new_password = random_password()
-                user.info['password'] = make_password(new_password)
-                user.save()
-                message = _("New password for user %(uid)s is "
-                            "%(new_pass)s") % {'uid': user.user_id,
-                                               'new_pass': new_password}
-
-                messages.info(request, message)
-
-        else:
-            message = _("You didn't choose a user")
-            messages.error(request, message)
-    '''
     context = {'u_data': user, 'user_type': user_type}
     return render_template(
         request,

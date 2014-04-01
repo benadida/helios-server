@@ -9,29 +9,11 @@
     <dd class=""><a href={% url create_institution %}>{% trans "Create Institution" %}</a></dd>
 {% endblock %}
 {% block content %}
-{% comment %}
-<div id="languages">
-<table border="0">
-    <tr>
-        {% for lang in LANGUAGES %}
-            <td>
-                <form action="/account_administration/i18n/setlang/" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="language" value="{{lang.0}}"/>
-                <input id="lang_{{lang.0}}" type = "image"
-                src="/static/zeus/images/{{ lang.0 }}.png" alt="{{ lang.1}}"/>
-                </form>
-            </td>
-        {% endfor %}
-    </tr>
-</table>     
-</div>
-{% endcomment%}
 <form action="" method="GET">
 {% csrf_token %}
 {% trans "Institution" %} <input type='textfield' name='inst_filter'>
 User ID <input type='textfield' name='uname_filter'>
-<input type='submit' value={% trans "Filter" %}>
+<input type='submit' class="button tiny" value={% trans "Filter" %}>
 </form>
 
 
