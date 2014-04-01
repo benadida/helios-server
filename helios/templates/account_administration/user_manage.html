@@ -54,6 +54,8 @@
 <a href="/account_administration/reset_password?user_id_filter={{u_data.id}}">
 {% trans "Reset Password" %}</a>
 </br></br>
+<a href="/account_administration/user_creation?edit_id={{u_data.id}}">Edit</a>
+</br></br>
 {% if u_data.elections.count == 0 %}
 <a href="/account_administration/delete_user/?id={{u_data.id}}">{%trans "Delete Account"%}</a>
 </br></br>

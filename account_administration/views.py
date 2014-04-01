@@ -2,6 +2,7 @@ from django.shortcuts import redirect
 from django.db import IntegrityError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
+from django.utils.translation import ugettext as _
 
 from helios.view_utils import render_template
 from heliosauth.models import User
@@ -11,14 +12,7 @@ from zeus.auth import manager_or_superadmin_required
 from account_administration.forms import userForm, institutionForm
 from generate_password import random_password
 
-from django.utils.translation import ugettext as _
 
-'''
-is not needed
-@manager_required
-def index(request):
-    return redirect('/account_administration/user_list')
-'''
 
 @manager_or_superadmin_required
 def list_users(request):
@@ -92,40 +86,43 @@ def list_institutions(request):
 
 @manager_or_superadmin_required
 def create_user(request):
-    if request.method == 'POST':
-        form = userForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            if User.objects.filter(user_id=user.user_id).exists():
-                message = _("User already exists!")
-                messages.error(request, message)
-                context = {'form': form}
-                return redirect('/account_administration/user_creation')
-            user.name = request.POST.get('name')
-            if not user.name:
-                user.name = None
-            password = random_password()
-            user.info = {'name': user.name or user.user_id,
-                         'password': make_password(password)}
-            inst_container = Institution.objects.filter(
-                name=request.POST['institution'])
-            if inst_container:
-                user.institution = inst_container[0]
-            else:
-                messages.error(request, _("No such institution exists."))
-                return redirect('/account_administration/user_creation')
+    
+    edit_id = request.GET.get('edit_id')
+    try:
+        instance = User.objects.get(id=edit_id)
+    except User.DoesNotExist:
+        instance = None
 
-            user.management_p = False
-            user.admin_p = True
-            user.user_type = 'password'
-            user.superadmin_p = False
-            user.ecounting_account = False
-            user.save()
-            message = _("User %(uid)s was created with"
-                        " password %(password)s.") % {'uid': user.user_id,
-                                                      'password': password}
-            messages.success(request, message)
-            return redirect('/account_administration/user_creation')
+    if request.method == 'POST':
+        form = userForm(request.POST, instance=instance)
+        if form.is_valid():
+            data = form.cleaned_data
+            if instance:
+                user = form.save()
+                message = _("Changes on user were successfully saved")
+                messages.success(request, message)
+                return redirect('/account_administration/user_management/'
+                                '?user_id_filter='+str(user.id))
+
+            else:
+                user = form.save(commit=False)
+                user.name = data.get('name')
+                password = random_password()
+                user.info = {'name': user.name or user.user_id,
+                            'password': make_password(password)}
+                user.institution = data['institution']
+                user.management_p = False
+                user.admin_p = True
+                user.user_type = 'password'
+                user.superadmin_p = False
+                user.ecounting_account = False
+                user.save()
+                message = _("User %(uid)s was created with"
+                            " password %(password)s.") % {'uid': user.user_id,
+                                                        'password': password}
+                messages.success(request, message)
+                return redirect('/account_administration/user_management/'
+                                '?user_id_filter='+str(user.id))
         else:
             context = {'form': form}
             return render_template(
@@ -144,6 +141,9 @@ def create_user(request):
             inst = None
         if inst:
             form = userForm(initial={'institution': inst.name})
+        elif instance:
+            form = userForm(initial={'institution': instance.institution.name} ,
+                            instance=instance)
         else:
             form = userForm()
         context = {'form': form}
