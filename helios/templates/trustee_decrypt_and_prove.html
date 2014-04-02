@@ -83,7 +83,7 @@
       // do the post
       $.ajax({
         type: 'POST',
-        url: "./upload-decryption",
+        url: "{% url helios.views.trustee_upload_decryption election.uuid, trustee.uuid %}",
         data: {'factors_and_proofs': result},
         success: function(result) {
           $('#waiting_submit_div').hide();
@@ -101,16 +101,8 @@
       });
     }
 
-    function skip_to_second_step() {
-      $('#sk_section').hide();
-      $('#result').show();
-      $('#result_textarea').html('');
-      $('#skip_to_second_step_instructions').hide();
-    }
-
     function reset() {
       $('#result').hide();
-      $('#skip_to_second_step_instructions').show();
       $('#sk_section').show();
       $('#result_textarea').html('');
       $('#first_step_success').hide();
@@ -224,11 +216,11 @@
         <h3>Upload Your Partial Decryption</h3>
 
         <p id="first_step_success" style="display: none;">
-          Your partial decryption factors and proofs have been generated. Your secret key has been cleared from memory. When you're ready, you can submit this result to the server.
+          Your partial decryption factors and proofs have been generated and are shown below. Your secret key has been cleared from memory. When you're ready, you can submit this result to the server.
         </p>
 
         <form action="javascript:submit_result();">
-          <textarea id="result_textarea" style="display: none;"></textarea>
+          <textarea id="result_textarea" style="height: 100px;" disabled></textarea>
           <input class="button" type="submit" value="Upload Your Partial Decryption" />
           <a class="secondary button" href="javascript:reset();">Cancel</a>
         </form>
