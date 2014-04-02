@@ -790,27 +790,39 @@ HELIOS.dejsonify_list_of_lists = function(lol, item_dejsonifier) {
 }
 
 HELIOS.Trustee = Class.extend({
-  init: function(uuid, public_key, public_key_hash, pok, decryption_factors, decryption_proofs) {
+  init: function(uuid, public_key, public_key_hash, pok, decryption_factors, decryption_proofs, email, name) {
     this.uuid = uuid;
     this.public_key = public_key;
     this.public_key_hash = public_key_hash;
     this.pok = pok;
     this.decryption_factors = decryption_factors;
     this.decryption_proofs = decryption_proofs;
+    this.email = email;
+    this.name = name;
   },
   
   toJSONObject: function() {
     return {
+      'uuid': this.uuid,
       'decryption_factors' : HELIOS.jsonify_list_of_lists(this.decryption_factors),
       'decryption_proofs' : HELIOS.jsonify_list_of_list(this.decryption_proofs),
-      'email' : this.email, 'name' : this.name, 'pok' : this.pok.toJSONObject(), 'public_key' : this.public_key.toJSONObject()
+      'pok' : this.pok.toJSONObject(),
+      'public_key' : this.public_key.toJSONObject(),
+      'email' : this.email,
+      'name' : this.name
     };
   }
 });
 
 HELIOS.Trustee.fromJSONObject = function(d) {
-  return new HELIOS.Trustee(d.uuid,
-    ElGamal.PublicKey.fromJSONObject(d.public_key), d.public_key_hash, ElGamal.DLogProof.fromJSONObject(d.pok),
+  return new HELIOS.Trustee(
+    d.uuid,
+    ElGamal.PublicKey.fromJSONObject(d.public_key),
+    d.public_key_hash,
+    ElGamal.DLogProof.fromJSONObject(d.pok),
     HELIOS.dejsonify_list_of_lists(d.decryption_factors, BigInt.fromJSONObject),
-    HELIOS.dejsonify_list_of_lists(d.decryption_proofs, ElGamal.Proof.fromJSONObject));
+    HELIOS.dejsonify_list_of_lists(d.decryption_proofs, ElGamal.Proof.fromJSONObject),
+    d.email,
+    d.name
+  );
 };
