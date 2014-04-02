@@ -16,7 +16,7 @@ from generate_password import random_password
 
 @manager_or_superadmin_required
 def list_users(request):
-    users = User.objects.all()
+    users = get_active_users()
     users = users.order_by('id')
     # filtering
     inst_filter = request.GET.get('inst_filter')
@@ -42,7 +42,7 @@ def list_users(request):
 
 @manager_or_superadmin_required
 def list_institutions(request):
-    institutions = Institution.objects.all()
+    institutions = get_active_insts()
     institutions = institutions.order_by('id')
     #filtering
     inst_filter = request.GET.get('inst_filter')
@@ -86,10 +86,11 @@ def list_institutions(request):
 
 @manager_or_superadmin_required
 def create_user(request):
-    
+    users = get_active_users() 
     edit_id = request.GET.get('edit_id')
+    edit_id = sanitize_get_param(edit_id)
     try:
-        instance = User.objects.get(id=edit_id)
+        instance = users.get(id=edit_id)
     except User.DoesNotExist:
         instance = None
 
@@ -131,12 +132,10 @@ def create_user(request):
                 context)
     else:
         inst_filter = request.GET.get('id')
+        inst_filter = sanitize_get_param(inst_filter)
         try:
-            inst_filter = int(inst_filter)
-        except(ValueError, TypeError):
-            inst_filter = None
-        try:
-            inst = Institution.objects.get(id=inst_filter)
+            insts = get_active_insts()
+            inst = insts.get(id=inst_filter)
         except(Institution.DoesNotExist):
             inst = None
         if inst:
@@ -178,14 +177,17 @@ def create_institution(request):
 
 @manager_or_superadmin_required
 def manage_user(request):
+    users = get_active_users()
     user_id_filter = request.GET.get('user_id_filter')
+    user_id_filter = sanitize_get_param(user_id_filter)
+
     if request.zeususer._user.management_p:
         user_type = 'manager'
     else:
         user_type = 'superadmin'
 
     try:
-        user = User.objects.get(id=user_id_filter)
+        user = users.get(id=user_id_filter)
     except(User.DoesNotExist):
         user = None
         message = _("You didn't choose a user")
@@ -198,10 +200,11 @@ def manage_user(request):
 
 @manager_or_superadmin_required
 def reset_password(request):
-
+    users = get_active_users()
     user_id_filter = request.GET.get('user_id_filter')
+    user_id_filter = sanitize_get_param(user_id_filter)
     try:
-        user = User.objects.get(id=user_id_filter)
+        user = users.get(id=user_id_filter)
     except(User.DoesNotExist):
         user = None
     context = {"u_data": user}
@@ -213,11 +216,12 @@ def reset_password(request):
 
 @manager_or_superadmin_required
 def reset_password_confirmed(request):
+    users = get_active_users()
     user_id_filter = request.GET.get('user_id_filter')
-    #user_logged = get_user(request)
+    user_id_filter = sanitize_get_param(user_id_filter)
     user_logged =request.zeususer
     try:
-        user = User.objects.get(id=user_id_filter)
+        user = users.get(id=user_id_filter)
     except(User.DoesNotExist):
         user = None
 
@@ -253,8 +257,10 @@ def reset_password_confirmed(request):
 @manager_or_superadmin_required
 def delete_institution(request):
     inst_id = request.GET.get('id')
+    inst_id = sanitize_get_param(inst_id) 
+    insts = get_active_insts()
     try:
-        inst = Institution.objects.get(id=inst_id)
+        inst = insts.get(id=inst_id)
     except(Institution.DoesNotExist):
         inst = None
 
@@ -265,17 +271,20 @@ def delete_institution(request):
         'account_administration/delete_institution',
         context)
 
-#FIXME use hidden fields - don't delete elements
 @manager_or_superadmin_required
 def inst_deletion_confirmed(request):
+    insts = get_active_insts()
     inst_id = request.GET.get('id')
+    inst_id = sanitize_get_param(inst_id) 
+
     try:
-        inst = Institution.objects.get(id=inst_id)
+        inst = insts.get(id=inst_id)
     except(Institution.DoesNotExist):
         inst = None
     if inst:
-        if inst.user_set.count() == 0:
-            inst.delete()
+        if inst.user_set.count() == 0 and  inst.election_set.count() == 0:
+            inst.is_disabled = True
+            inst.save()
             messages.success(
                 request,
                 (_("Institution $(inst_name)s deleted") %
@@ -294,9 +303,11 @@ def inst_deletion_confirmed(request):
 
 @manager_or_superadmin_required
 def delete_user(request):
+    users = get_active_users()
     u_id = request.GET.get('id')
+    u_id = sanitize_get_param(u_id) 
     try:
-        user_for_deletion = User.objects.get(id=u_id)
+        user_for_deletion = users.get(id=u_id)
     except(User.DoesNotExist):
         user_for_deletion = None
     context = {'user_for_deletion': user_for_deletion}
@@ -308,9 +319,12 @@ def delete_user(request):
 
 @manager_or_superadmin_required
 def user_deletion_confirmed(request):
+    users = get_active_users()
     u_id = request.GET.get('id')
+    u_id = sanitize_get_param(u_id) 
+
     try:
-        user_for_deletion = User.objects.get(id=u_id)
+        user_for_deletion = users.get(id=u_id)
     except(User.DoesNotExist):
         user_for_deletion = None
     logged_user = request.zeususer._user
@@ -318,7 +332,8 @@ def user_deletion_confirmed(request):
         if((user_for_deletion.management_p
                 or user_for_deletion.superadmin_p)
                 and logged_user.superadmin_p):
-            user_for_deletion.delete()
+            user_for_deletion.is_disabled = True
+            user_for_deletion.save()
             message = _("User %(ufd)s succesfuly "
                         "deleted!") % {'ufd': user_for_deletion.user_id}
             messages.success(request, message)
@@ -330,7 +345,8 @@ def user_deletion_confirmed(request):
                 _("You are not authorized to delete that user")
                 )
         else:
-            user_for_deletion.delete()
+            user_for_deletion.is_disabled=True
+            user_for_deletion.save()
             message = _("User %(ufd)s succesfuly "
                         "deleted!") % {'ufd': user_for_deletion.user_id}
             messages.success(request, message)
@@ -339,3 +355,15 @@ def user_deletion_confirmed(request):
         messages.error(request, _("You didn't choose a user"))
 
     return redirect('/account_administration/user_list')
+
+def get_active_users():
+    return User.objects.filter(is_disabled=False)
+def get_active_insts():
+    return Institution.objects.filter(is_disabled=False)
+def sanitize_get_param(param):
+    try:
+        param = int(param)
+    except(ValueError, TypeError):
+        param = None
+    return param
+

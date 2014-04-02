@@ -15,7 +15,7 @@
 <form action='' method = GET>
 {% csrf_token %}
 {% trans "Institution" %} <input type='textfield' name='inst_filter'>
-<input type='submit' value={% trans "Filter" %}>
+<input type='submit' class="button tiny" value={% trans "Filter" %}>
 </form>
 
 {% show_active_filters request.GET %}
