@@ -107,7 +107,7 @@
           <a href="{% url logout %}">{% trans "logout" %}</a> |
           <a href="{% url admin_home %}">{% trans "manage" %}</a> 
           {% if user.is_manager or user.is_superadmin %}
-          | <a href="/account_administration">{% trans "acounts" %}</a>
+          | <a href="/account_administration">{% trans "accounts" %}</a>
           {% endif %}
               {% if user.user_type == "password" %}
               | <a href="{% url heliosauth.views.change_password %}">{% trans "change password" %}</a>

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-27 16:15+0200\n"
+"POT-Creation-Date: 2014-04-02 12:04+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -280,7 +280,8 @@ msgstr "(ΕΞΑΙΡΕΣΗ)"
 #: models.py:1187 models.py:1201
 #: templates/_election_poll_admin_actions.html:17
 #: templates/_election_view_menu.html:11 templates/election_polls_list.html:65
-#: templates/account_administration/user_manage.html:72
+#: templates/account_administration/user_manage.html:70
+#: templates/account_administration.bak/user_manage.html:72
 msgid "Results"
 msgstr "Αποτελέσματα"
 
@@ -372,6 +373,7 @@ msgstr ""
 
 #: templates/_election_form.html:16 templates/_election_polls_add.html:10
 #: templates/_reveal_rename_poll.html:14
+#: templates/account_administration/create_user.html:18
 #: templates/election_modules/parties/election_poll_questions_manage.html:36
 #: templates/election_modules/simple/election_poll_questions_manage.html:36
 #: templates/election_modules/stv/election_poll_questions_manage.html:36
@@ -466,7 +468,14 @@ msgstr "Επιβεβαιώστε την ακύρωση της ψηφοφορία
 #: templates/account_administration/delete_user.html:25
 #: templates/account_administration/reset_password.html:20
 #: templates/account_administration/reset_password.html:23
-#: templates/account_administration/user_manage.html:64
+#: templates/account_administration/user_manage.html:62
+#: templates/account_administration.bak/delete_institution.html:23
+#: templates/account_administration.bak/delete_institution.html:28
+#: templates/account_administration.bak/delete_user.html:21
+#: templates/account_administration.bak/delete_user.html:25
+#: templates/account_administration.bak/reset_password.html:20
+#: templates/account_administration.bak/reset_password.html:23
+#: templates/account_administration.bak/user_manage.html:64
 msgid "Back"
 msgstr "Πίσω"
 
@@ -1258,7 +1267,7 @@ msgstr "πίνακας ελέγχου"
 
 #: templates/user_section.html:9
 msgid "accounts"
-msgstr ""
+msgstr "λογαριασμοί"
 
 #: templates/user_section.html:12
 msgid "change password"
@@ -1366,8 +1375,16 @@ msgstr "Σφάλμα κατά την αποστολή email στους ψηφο�
 #: templates/account_administration/list_users.html:6
 #: templates/account_administration/reset_password.html:6
 #: templates/account_administration/user_manage.html:6
+#: templates/account_administration.bak/create_institution.html:7
+#: templates/account_administration.bak/create_user.html:7
+#: templates/account_administration.bak/delete_institution.html:6
+#: templates/account_administration.bak/delete_user.html:6
+#: templates/account_administration.bak/list_institutions.html:7
+#: templates/account_administration.bak/list_users.html:7
+#: templates/account_administration.bak/reset_password.html:6
+#: templates/account_administration.bak/user_manage.html:6
 msgid "Users List"
-msgstr ""
+msgstr "Λίστα Χρηστών"
 
 #: templates/account_administration/create_institution.html:8
 #: templates/account_administration/create_user.html:8
@@ -1377,12 +1394,19 @@ msgstr ""
 #: templates/account_administration/list_users.html:7
 #: templates/account_administration/reset_password.html:7
 #: templates/account_administration/user_manage.html:7
+#: templates/account_administration.bak/create_institution.html:8
+#: templates/account_administration.bak/create_user.html:8
+#: templates/account_administration.bak/delete_institution.html:7
+#: templates/account_administration.bak/delete_user.html:7
+#: templates/account_administration.bak/list_institutions.html:8
+#: templates/account_administration.bak/list_users.html:8
+#: templates/account_administration.bak/reset_password.html:7
+#: templates/account_administration.bak/user_manage.html:7
 msgid "Institutions List"
-msgstr ""
+msgstr "Λίστα Ιδρυμάτων"
 
 #: templates/account_administration/create_institution.html:9
 #: templates/account_administration/create_user.html:9
-#: templates/account_administration/create_user.html:18
 #: templates/account_administration/delete_institution.html:8
 #: templates/account_administration/delete_user.html:8
 #: templates/account_administration/list_institutions.html:9
@@ -1391,9 +1415,17 @@ msgstr ""
 #: templates/account_administration/list_users.html:8
 #: templates/account_administration/reset_password.html:8
 #: templates/account_administration/user_manage.html:8
-#, fuzzy
+#: templates/account_administration.bak/create_institution.html:9
+#: templates/account_administration.bak/create_user.html:9
+#: templates/account_administration.bak/create_user.html:17
+#: templates/account_administration.bak/delete_institution.html:8
+#: templates/account_administration.bak/delete_user.html:8
+#: templates/account_administration.bak/list_institutions.html:9
+#: templates/account_administration.bak/list_users.html:9
+#: templates/account_administration.bak/reset_password.html:8
+#: templates/account_administration.bak/user_manage.html:8
 msgid "Create User"
-msgstr "Δημιουργία κωδικού ψηφοφορίας"
+msgstr "Δημιουργία Χρήστη"
 
 #: templates/account_administration/create_institution.html:10
 #: templates/account_administration/create_institution.html:19
@@ -1404,143 +1436,190 @@ msgstr "Δημιουργία κωδικού ψηφοφορίας"
 #: templates/account_administration/list_users.html:9
 #: templates/account_administration/reset_password.html:9
 #: templates/account_administration/user_manage.html:9
-#, fuzzy
+#: templates/account_administration.bak/create_institution.html:10
+#: templates/account_administration.bak/create_institution.html:17
+#: templates/account_administration.bak/create_user.html:10
+#: templates/account_administration.bak/delete_institution.html:9
+#: templates/account_administration.bak/delete_user.html:9
+#: templates/account_administration.bak/list_institutions.html:10
+#: templates/account_administration.bak/list_users.html:10
+#: templates/account_administration.bak/reset_password.html:9
+#: templates/account_administration.bak/user_manage.html:9
 msgid "Create Institution"
-msgstr "Δημιουργία ψηφοφορίας"
+msgstr "Δημιουργία Ιδρύματος"
 
 #: templates/account_administration/delete_institution.html:17
+#: templates/account_administration.bak/delete_institution.html:17
 msgid "Please confirm the deletion of institution"
-msgstr ""
+msgstr "Παρακαλώ επιβεβαιώστε την διαγραφή του ιδρύματος"
 
 #: templates/account_administration/delete_institution.html:19
 #: templates/account_administration/delete_user.html:19
 #: templates/account_administration/reset_password.html:17
+#: templates/account_administration.bak/delete_institution.html:19
+#: templates/account_administration.bak/delete_user.html:19
+#: templates/account_administration.bak/reset_password.html:17
 msgid "Yes, I confirm!"
-msgstr ""
+msgstr "Ναι, επιβεβαιώνω!"
 
 #: templates/account_administration/delete_institution.html:22
+#: templates/account_administration.bak/delete_institution.html:22
 msgid "Insitution has users, can't be deleted."
-msgstr ""
+msgstr "Το ίδρυμα έχει χρήστες, δεν μπορεί να διαγραφεί."
 
 #: templates/account_administration/delete_institution.html:27
+#: templates/account_administration.bak/delete_institution.html:27
 msgid "You didn't choose an institution."
-msgstr ""
+msgstr "Δεν επιλέχθηκε ίδρυμα."
 
 #: templates/account_administration/delete_user.html:16
-#, fuzzy
+#: templates/account_administration.bak/delete_user.html:16
 msgid "Please confirm the deletion of user"
-msgstr "Επιβεβαίωση λήξης της ψηφοφορίας"
+msgstr "Παρακαλώ επιβεβαιώστε την διαγραφή του χρήστη"
 
 #: templates/account_administration/delete_user.html:24
 #: templates/account_administration/reset_password.html:22
+#: templates/account_administration.bak/delete_user.html:24
+#: templates/account_administration.bak/reset_password.html:22
 msgid "You didn't choose a user."
-msgstr ""
+msgstr "Δεν επιλέχθηκε χρήστης."
 
 #: templates/account_administration/list_institutions.html:17
-#: templates/account_administration/list_users.html:32
-#: templates/account_administration/list_users.html:47
+#: templates/account_administration/list_users.html:14
+#: templates/account_administration/list_users.html:29
 #: templates/account_administration/user_manage.html:19
+#: templates/account_administration.bak/list_institutions.html:17
+#: templates/account_administration.bak/list_users.html:32
+#: templates/account_administration.bak/list_users.html:46
+#: templates/account_administration.bak/user_manage.html:19
 msgid "Institution"
-msgstr ""
+msgstr "Ίδρυμα"
 
 #: templates/account_administration/list_institutions.html:18
-#: templates/account_administration/list_users.html:34
+#: templates/account_administration/list_users.html:16
+#: templates/account_administration.bak/list_institutions.html:18
+#: templates/account_administration.bak/list_users.html:34
 msgid "Filter"
-msgstr ""
+msgstr "Φίλτρο"
 
 #: templates/account_administration/list_institutions.html:30
-#: templates/account_administration/list_users.html:46
+#: templates/account_administration/list_users.html:28
 #: templates/account_administration/user_manage.html:18
+#: templates/account_administration.bak/list_institutions.html:30
+#: templates/account_administration.bak/list_users.html:45
+#: templates/account_administration.bak/user_manage.html:18
 msgid "Name"
-msgstr ""
+msgstr "Όνομα"
 
 #: templates/account_administration/list_institutions.html:31
+#: templates/account_administration.bak/list_institutions.html:31
 msgid "Users"
-msgstr ""
+msgstr "Χρήστες"
 
 #: templates/account_administration/list_institutions.html:32
 #: templates/account_administration/list_institutions.html:45
-#, fuzzy
+#: templates/account_administration.bak/list_institutions.html:32
+#: templates/account_administration.bak/list_institutions.html:44
 msgid "Delete"
-msgstr "Διαγραφή κάλπης"
+msgstr "Διαγραφή"
 
 #: templates/account_administration/list_institutions.html:55
-#: templates/account_administration/list_users.html:73
-#, fuzzy
+#: templates/account_administration/list_users.html:47
+#: templates/account_administration.bak/list_institutions.html:51
+#: templates/account_administration.bak/list_users.html:72
 msgid "No results found"
-msgstr "Εξήχθησαν αποτελέσματα"
+msgstr "Δεν βρέθηκαν αποτελέσματα"
 
 #: templates/account_administration/list_institutions.html:65
-#: templates/account_administration/list_users.html:82
+#: templates/account_administration/list_users.html:56
+#: templates/account_administration.bak/list_institutions.html:61
+#: templates/account_administration.bak/list_users.html:81
 msgid "previous"
-msgstr ""
+msgstr "προηγούμενη"
 
 #: templates/account_administration/list_institutions.html:68
-#: templates/account_administration/list_users.html:85
+#: templates/account_administration/list_users.html:59
+#: templates/account_administration.bak/list_institutions.html:64
+#: templates/account_administration.bak/list_users.html:84
 msgid "Page"
-msgstr ""
+msgstr "Σελίδα"
 
 #: templates/account_administration/list_institutions.html:68
-#: templates/account_administration/list_users.html:85
+#: templates/account_administration/list_users.html:59
+#: templates/account_administration.bak/list_institutions.html:64
+#: templates/account_administration.bak/list_users.html:84
 msgid "of"
-msgstr ""
+msgstr "από"
 
 #: templates/account_administration/list_institutions.html:72
-#: templates/account_administration/list_users.html:91
+#: templates/account_administration/list_users.html:65
+#: templates/account_administration.bak/list_institutions.html:68
+#: templates/account_administration.bak/list_users.html:90
 msgid "next"
-msgstr ""
+msgstr "επόμενη"
 
-#: templates/account_administration/list_users.html:49
-#: templates/account_administration/user_manage.html:21
-#, fuzzy
+#: templates/account_administration/list_users.html:30
+#: templates/account_administration/user_manage.html:20
+#: templates/account_administration.bak/list_users.html:48
+#: templates/account_administration.bak/user_manage.html:21
 msgid "Elections Held"
-msgstr "Η ψηφοφορία έχει λήξει"
+msgstr "Αριθμός Εκλογών"
 
-#: templates/account_administration/list_users.html:50
-#: templates/account_administration/list_users.html:68
+#: templates/account_administration/list_users.html:31
+#: templates/account_administration/list_users.html:42
+#: templates/account_administration.bak/list_users.html:49
+#: templates/account_administration.bak/list_users.html:67
 msgid "Details"
-msgstr ""
-
-#: templates/account_administration/list_users.html:60
-#: templates/account_administration/user_manage.html:31
-msgid "Yes"
-msgstr ""
-
-#: templates/account_administration/list_users.html:62
-#: templates/account_administration/user_manage.html:33
-msgid "No"
-msgstr ""
+msgstr "Λεπτομέρειες"
 
 #: templates/account_administration/reset_password.html:14
-#, fuzzy
+#: templates/account_administration.bak/reset_password.html:14
 msgid "Please confirm the password reset of user "
-msgstr ""
-"Παρακαλούμε επιβεβαιώστε ότι έχετε αποθηκεύσει τον κωδικό ψηφοφορίας σας."
+msgstr "Παρακαλούμε επιβεβαιώστε την επανέκδοση του κωδικού του του χρήστη "
 
-#: templates/account_administration/user_manage.html:43
-#: templates/account_administration/user_manage.html:55
-#, fuzzy
+#: templates/account_administration/user_manage.html:35
+#: templates/account_administration/user_manage.html:50
+#: templates/account_administration.bak/user_manage.html:43
+#: templates/account_administration.bak/user_manage.html:55
 msgid "Reset Password"
-msgstr "Αλλαγή κωδικού"
+msgstr "Επανέκδοση κωδικού"
 
-#: templates/account_administration/user_manage.html:46
-#: templates/account_administration/user_manage.html:58
-#, fuzzy
+#: templates/account_administration/user_manage.html:37
+#: templates/account_administration/user_manage.html:52
+msgid "Edit"
+msgstr "Επεξεργασία"
+
+#: templates/account_administration/user_manage.html:41
+#: templates/account_administration/user_manage.html:56
+#: templates/account_administration.bak/user_manage.html:46
+#: templates/account_administration.bak/user_manage.html:58
 msgid "Delete Account"
-msgstr "Διαγραφή ψηφοφόρου"
+msgstr "Διαγραφή λογαριασμού"
 
-#: templates/account_administration/user_manage.html:69
-#, fuzzy
+#: templates/account_administration/user_manage.html:67
+#: templates/account_administration.bak/user_manage.html:69
 msgid "Election Name"
 msgstr "Τίτλος ψηφοφορίας"
 
-#: templates/account_administration/user_manage.html:70
+#: templates/account_administration/user_manage.html:68
+#: templates/account_administration.bak/user_manage.html:70
 msgid "Start date"
-msgstr ""
+msgstr "Ημερομηνία έναρξης"
 
-#: templates/account_administration/user_manage.html:71
+#: templates/account_administration/user_manage.html:69
+#: templates/account_administration.bak/user_manage.html:71
 msgid "End Date"
-msgstr ""
+msgstr "Ημερομηνία Λήξης"
+
+#: templates/account_administration.bak/list_users.html:59
+#: templates/account_administration.bak/user_manage.html:31
+msgid "Yes"
+msgstr "Ναι"
+
+#: templates/account_administration.bak/list_users.html:61
+#: templates/account_administration.bak/user_manage.html:33
+msgid "No"
+msgstr "Όχι"
 
 #: templates/election_modules/score/results.html:8
 msgid "votes cast"
