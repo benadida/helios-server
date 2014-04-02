@@ -363,14 +363,34 @@ class Election(HeliosModel):
         """
         has voting begun? voting begins if the election is frozen, at the prescribed date or at the date that voting was forced to start
         """
-        return self.frozen_at and ((self.voting_started_at and datetime.datetime.utcnow() >= self.voting_started_at) or (self.voting_starts_at and datetime.datetime.now() >= self.voting_starts_at))
+        voting_started_at = True
+        if self.voting_started_at:
+            voting_started_at = datetime.datetime.utcnow() >= self.voting_started_at
+
+        voting_starts_at = True
+        if self.voting_starts_at:
+            voting_starts_at = datetime.datetime.now() >= self.voting_starts_at
+
+        return self.frozen_at and (voting_started_at or voting_starts_at)
 
     def voting_has_stopped(self):
         """
         has voting stopped? if tally computed, yes, otherwise if we have passed the date voting was manually stopped at,
         or failing that the date voting was extended until, or failing that the date voting is scheduled to end at.
         """
-        return self.encrypted_tally or ((self.voting_ended_at and datetime.datetime.utcnow() >= self.voting_ended_at) or (self.voting_ends_at and datetime.datetime.now() >= self.voting_ends_at) or (self.voting_extended_until and datetime.datetime.now() >= self.voting_extended_until))
+        voting_ended_at = False
+        if self.voting_ended_at:
+            voting_ended_at = datetime.datetime.utcnow() >= self.voting_ended_at
+
+        voting_ends_at = False
+        if self.voting_ends_at:
+            voting_ends_at = datetime.datetime.now() >= self.voting_ends_at
+
+        voting_extended_until = False
+        if self.voting_extended_until:
+            voting_extended_until = datetime.datetime.now() >= self.voting_extended_until
+
+        return self.encrypted_tally or (voting_ended_at or voting_ends_at or voting_extended_until)
 
     @property
     def issues_before_freeze(self):
