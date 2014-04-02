@@ -13,6 +13,10 @@ def get_from_env(var, default):
 DEBUG = (get_from_env('DEBUG', '1') == '1')
 TEMPLATE_DEBUG = DEBUG
 
+ROOT_URLCONF = 'urls'
+
+ROOT_PATH = os.path.dirname(__file__)
+
 ADMINS = (
    ('Shirlei Chaves', 'shirlei@gmail.com'),
 )
@@ -75,7 +79,18 @@ MEDIA_URL = ''
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-STATIC_URL = '/media/'
+STATIC_URL = '/static/'
+
+STATIC_ROOT = ROOT_PATH + '/sitestatic'
+
+STATICFILES_DIRS = (
+    ROOT_PATH + '/heliosbooth',
+    ROOT_PATH + '/heliosverifier',
+    ROOT_PATH + '/helios_auth/media',
+    ROOT_PATH + '/helios/media',
+    ROOT_PATH + '/server_ui/media'
+)
+
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
@@ -114,11 +129,11 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware'
+
+   # 'flatpages_i18n.middleware.FlatpageFallbackMiddleware'
 )
 
-ROOT_URLCONF = 'urls'
 
-ROOT_PATH = os.path.dirname(__file__)
 TEMPLATE_DIRS = (
     ROOT_PATH,
     os.path.join(ROOT_PATH, 'templates')
@@ -130,6 +145,7 @@ INSTALLED_APPS = (
     'djangosecure',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
     ## needed for queues
     'djcelery',
     'kombu.transport.django',
