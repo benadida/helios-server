@@ -186,9 +186,9 @@ def start(request, system_name):
     return _do_auth(request)
 
 
-def perms_why(request):
+def why(request):
     if request.method == "GET":
-        return render_template(request, "perms_why")
+        return render_template(request, "why")
 
     return _do_auth(request)
 

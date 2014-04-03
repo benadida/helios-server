@@ -1,0 +1,19 @@
+{% extends TEMPLATE_BASE %}
+
+{% block content %}
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>Why We Need Your Information</h2>
+
+      <p>
+        It looks like you declined to grant us permission to access your information. We understand and value your privacy. We ask for this information so we can contact you with your voting tracking number and when an election in which you participated has been tallied. We promise not to use this information for any other purpose. Without this information, we unfortunately cannot help you vote.
+      </p>
+
+      <form method="POST" action="">
+        <input type="hidden" value="{{csrf_token}}" />
+        <input class="button" type="submit" value="I understand, let's do this login thing!" />
+        <a class="secondary button" href="http://google.com">Cancel</a>.
+      </form>
+    </div>
+  </div>
+{% endblock %}
