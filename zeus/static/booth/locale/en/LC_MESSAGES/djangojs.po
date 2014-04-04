@@ -201,7 +201,7 @@ msgstr "Enter code:"
 #: templates/seal.html:5 templates/seal_score.html:5
 msgid "BALLOT_ENCRYPTED_SUCCESS"
 msgstr ""
-"Your ballot has been encrypted successfully. Confirm your selections asthey "
+"Your ballot has been encrypted successfully. Confirm your selections as they "
 "are presented below."
 
 #: templates/seal.html:22 templates/seal_score.html:21
