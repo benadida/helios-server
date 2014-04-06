@@ -18,7 +18,12 @@ import random
 import io
 import bleach
 
-from crypto import electionalgs, algs, utils
+import csv
+import copy
+import itertools
+import unicodecsv
+
+from crypto import electionalgs, algs, elgamal, utils
 from helios import utils as heliosutils
 import helios.views
 
@@ -30,15 +35,21 @@ from helios_auth.models import User, AUTH_SYSTEMS
 from helios_auth.jsonfield import JSONField
 from helios.datatypes.djangofield import LDObjectField
 
-import csv
-import copy
-import itertools
-import unicodecsv
 from operator import itemgetter
 from fractions import *
 from helios.constants import p, q, g, ground_1, ground_2
-from bulletin_board.models import Key, SecretKey
+from bulletin_board.models import Key, SecretKey, Signed_Encrypted_Share
 from bulletin_board.thresholdalgs import Share
+from helios.constants import p, g, q, ground_1, ground_2
+
+# parameters for everything
+ELGAMAL_PARAMS = elgamal.Cryptosystem()
+
+# trying new ones from OlivierP
+ELGAMAL_PARAMS.p = p
+ELGAMAL_PARAMS.q = q
+
+ELGAMAL_PARAMS.g = g
 
 
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
@@ -660,7 +671,6 @@ class Election(HeliosModel):
         generate a trustee including the secret key,
         thus a helios-based trustee
         """
-        # FIXME: generate the keypair
 
         # create the trustee
         trustee = Trustee(election=self)
@@ -732,8 +742,7 @@ class Election(HeliosModel):
             return None
 
     def get_helios_trustee(self):
-        helios_trustees = Trustee.objects.filter(
-            helios_trustee=True).filter(election=self)
+        helios_trustees = Trustee.objects.filter(helios_trustee=True).filter(election=self)
         if len(helios_trustees) > 0:
             return helios_trustees[0]
         else:
@@ -753,6 +762,16 @@ class Election(HeliosModel):
         trustee.decryption_factors = factors
         trustee.decryption_proofs = proof
         trustee.save()
+
+    def trustees_added_encrypted_shares(self):
+        trustees = Trustee.get_by_election(self)
+
+        trustees_added_encrypted_shares = True
+        for trustee in trustees:
+            if not trustee.helios_trustee and not trustee.added_encrypted_shares:
+                trustees_added_encrypted_shares = False
+
+        return trustees_added_encrypted_shares
 
     def append_log(self, text):
         item = ElectionLog(
@@ -1489,15 +1508,8 @@ class Trustee(HeliosModel):
         """
         verify that the decryption proofs match the tally for the election
         """
-        # verify_decryption_proofs(self, decryption_factors, decryption_proofs,
-        # public_key, challenge_generator):
         return self.election.encrypted_tally.verify_decryption_proofs(self.decryption_factors, self.decryption_proofs, self.public_key, algs.EG_fiatshamir_challenge_generator)
 
-    # def get_committed_points(self):
-            #trustee_id =trustee.id
-            #committed_points = Committed_Points.objects.get(trustee_id = trustee_id)
-            #committed_points = trustee.committed_points_set.all()
-            # return committed_points
     def prepare_mpc(self, scheme):
         trustees = self.election.get_trustees()
         n = len(trustees)
@@ -1514,40 +1526,172 @@ class Trustee(HeliosModel):
         else:
             return False
 
+    def add_encrypted_shares(self, election):
+        trustees = Trustee.objects.filter(election=election).order_by('id')
+        scheme = Thresholdscheme.objects.get(election=election)
+
+        n = scheme.n
+
+        key_list = []
+        for i in range(len(trustees)):
+            key_list.append(trustees[i].key)
+
+        if not self.key in key_list:
+            return Exception('The trustee does not belong to the given election')
+
+        secret_key = SecretKey.objects.get(public_key=self.key)
+        secret_key_signing = algs.EGSecretKey.from_dict(utils.from_json(secret_key.secret_key_signing))
+
+        if (len(Signed_Encrypted_Share.objects.filter(signer_id=self.key.id).filter(election_id=election.id)) > 0):
+            return Exception("The trustee's shares were already uploaded")
+
+        s = algs.Utils.random_mpz_lt(q)
+        t = algs.Utils.random_mpz_lt(q)
+
+        shares = scheme.share_verifiably(s, t, ELGAMAL_PARAMS)
+
+        if len(key_list) == len(shares):
+            for i in range(len(trustees)):
+                trustee = trustees[i]
+                logging.info('Trustee: ' + trustees[i].name);
+
+                key = trustee.key
+                receiver = key.name
+                receiver_id = key.id
+
+                share = shares[i]
+                share_string = utils.to_json_js(share.to_dict())
+                if share.point_s.x_value != trustee.id:
+                    return Exception('Shares have wrong x_coordinate')
+
+                encrypted_share = share.encrypt(algs.EGPublicKey.from_dict(utils.from_json(key.public_key_encrypt)))
+                signature = share.sign(secret_key_signing, p, q, g)
+                signed_encrypted_share = thresholdalgs.Signed_Encrypted_Share(signature, encrypted_share)
+
+                encrypted_share = Signed_Encrypted_Share()
+                encrypted_share.share = utils.to_json(signed_encrypted_share.to_dict())
+                if signature.verify(share_string, algs.EGPublicKey.from_dict(utils.from_json(self.key.public_key_signing)), p, q, g):
+                    encrypted_share.signer = self.key.name
+                    encrypted_share.signer_id = self.key.id
+                    encrypted_share.receiver = receiver
+                    encrypted_share.receiver_id = receiver_id
+                    encrypted_share.election_id = election.id
+                    encrypted_share.trustee_receiver_id = trustee.id
+                    encrypted_share.trustee_signer_id = self.id
+                    encrypted_share.save()
+
+                else:
+                    return Exception('Wrong signature')
+
+            self.added_encrypted_shares = True
+
+        else:
+            return Exception('Different number of keys and shares')
+
+    def calculate_key(self, election):
+        secret_key_string = SecretKey.objects.get(public_key=self.key).secret_key_encrypt
+        secret_key = elgamal.SecretKey.from_dict(utils.from_json(secret_key_string))
+        receiver_id = self.key.id
+        scheme = Thresholdscheme.objects.get(election=election)
+        n = scheme.n
+        k = scheme.k
+
+        # write data_receiver
+        signed_encrypted_shares_strings = Signed_Encrypted_Share.objects.filter(receiver_id=receiver_id).filter(election_id=election.id).order_by('signer_id')
+        signed_encrypted_shares = []
+        receiver_ids = []
+        signer_ids = []
+
+        for share in signed_encrypted_shares_strings:
+            signed_encrypted_shares.append(thresholdalgs.Signed_Encrypted_Share.from_dict(utils.from_json(share.share)))
+            receiver_ids.append(share.receiver_id)
+            signer_ids.append(share.signer_id)
+
+        correct_secret_shares = []
+        if len(signed_encrypted_shares) == n:
+            for j in range(len(signed_encrypted_shares)):
+                element = signed_encrypted_shares[j]
+                receiver_id_share = receiver_ids[j]
+                signer_id_share = signer_ids[j]
+                pk_signer_signing = elgamal.PublicKey.from_dict(utils.from_json(Key.objects.get(id=signer_id_share).public_key_signing))
+
+                encry_share = element.encr_share
+                sig = element.sig
+                share = encry_share.decrypt(secret_key)
+                share_string = utils.to_json_js(share.to_dict())
+
+                correct_share = False
+                if sig.verify(share_string, pk_signer_signing, p, q, g):
+                    if share.verify_share(scheme, p, q, g):
+                        correct_secret_shares.append(share)
+                        correct_share = True
+                    else:
+                        share_string = utils.to_json(share.to_dict())
+                        incorrect_share = Incorrect_share(
+                            share_string, election.id, sig, signer_id, receiver_id, 'invalid commitments')
+                        incorrect_share.save()
+                else:
+                    share_string = utils.to_json(share.to_dict())
+                    incorrect_share = Incorrect_share()
+                    incorrect_share.share = share_string
+                    incorrect_share.election_id = election.id
+                    incorrect_share.sig = sig
+
+                    incorrect_share.signer_id = signer_id_share
+                    incorrect_share.receiver_id = receiver_id_share
+                    incorrect_share.explanation = 'invalid signature'
+                    incorrect_share.save()
+
+        if len(correct_secret_shares) == n:
+            s_value = 0
+            t_value = 0
+            share = correct_secret_shares[0]
+            for i in range(1, len(correct_secret_shares)):
+                share.add(correct_secret_shares[i], p, q, g)
+
+            if share.verify_share(scheme, p, q, g):
+                final_public_key = elgamal.PublicKey()
+                final_public_key.q = q
+                final_public_key.g = g
+                final_public_key.p = p
+                final_public_key.y = pow(g, share.point_s.y_value, p)
+                final_secret_key = elgamal.SecretKey()
+                final_secret_key.public_key = final_public_key
+                final_secret_key.x = share.point_s.y_value
+
+                self.public_key = final_public_key
+                self.secret_key = final_secret_key
+                self.public_key_hash = datatypes.LDObject.instantiate(self.public_key, datatype='legacy/EGPublicKey').hash
+                self.pok = self.secret_key.prove_sk(algs.DLog_challenge_generator)
+
 
 class Thresholdscheme(HeliosModel):
-
     election = models.ForeignKey(Election)
     n = models.IntegerField(null=True)
     k = models.IntegerField(null=True)
-    ground_1 = LDObjectField(type_hint='core/BigInteger',
-                             null=True)
-    ground_2 = LDObjectField(type_hint='core/BigInteger',
-                             null=True)
+    ground_1 = LDObjectField(type_hint='core/BigInteger', null=True)
+    ground_2 = LDObjectField(type_hint='core/BigInteger', null=True)
 
     def save(self, *args, **kwargs):
-
-            # not saved yet?
+        # not saved yet?
         if not self.election:
             self.election.append_log("Thresholdscheme %s added")
 
         super(Thresholdscheme, self).save(*args, **kwargs)
 
-    # share a secret verifiably by creating a polynomial of grade k-1 and generate n points
+    # hare a secret verifiably by creating a polynomial of grade k-1 and generate n points
     # the secret s is F(0) and can be found by interpolating the points
     #
     # commitments E contain commitments to the point
     # commitments Ei contain commitments to the coefficients of the polynomial
     def share_verifiably(self, s, t, EG):
-
         election = self.election
         trustees = Trustee.objects.filter(election=election).order_by('id')
 
         F = thresholdalgs.Polynomial(s, self, EG)
         G = thresholdalgs.Polynomial(t, self, EG)
 
-        # create points on polynomials from x values from 0 to n. F(0) is
-        # secret!!
+        # create points on polynomials from x values from 0 to n, where F(O) is secret
         points_F = F.create_points(trustees)
         points_G = G.create_points(trustees)
 
@@ -1564,7 +1708,6 @@ class Thresholdscheme(HeliosModel):
 
         shares = []
         for i in range(1, self.n + 1):
-        #     trustee_id = trustee.id
             share = Share(points_F[i - 1], points_G[i - 1], Ei)
             if share.verify_share(self, p, q, g):
                 shares.append(share)

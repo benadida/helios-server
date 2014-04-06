@@ -57,8 +57,7 @@ ELGAMAL_PARAMS.q = q
 ELGAMAL_PARAMS.g = g
 
 # object ready for serialization
-ELGAMAL_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(
-    ELGAMAL_PARAMS, datatype='legacy/EGParams')
+ELGAMAL_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(ELGAMAL_PARAMS, datatype='legacy/EGParams')
 
 
 ##
@@ -448,103 +447,6 @@ def trustees_list_view(request, election):
     if (election.use_threshold):
         if (election.frozen_trustee_list):
             scheme = election.get_scheme()
-            if scheme:
-                n = scheme.n
-                if len(signed_encrypted_shares) == n * n:
-                    election.encrypted_shares_uploaded = True
-                else:
-                    election.encrypted_shares_uploaded = False
-            else:
-                election.encrypted_shares_uploaded = False
-
-            election.save()
-
-        if election.has_helios_trustee():
-            helios_trustee = election.get_helios_trustee()
-            if ((helios_trustee.public_key == None)and(helios_trustee.secret_key == None)and(election.encrypted_shares_uploaded)):
-                # calculate helios key
-                helios_key = Key.objects.get(id=helios_trustee.key_id)
-                helios_secret_key_string = SecretKey.objects.get(
-                    public_key=helios_key).secret_key_encrypt
-                helios_secret_key = elgamal.SecretKey.from_dict(
-                    utils.from_json(helios_secret_key_string))
-                receiver_id = helios_key.id
-                election_id = election.id
-                scheme = Thresholdscheme.objects.get(election=election)
-                n = scheme.n
-                k = scheme.k
-
-                # write data_receiver
-                signed_encrypted_shares_strings = Signed_Encrypted_Share.objects.filter(
-                    receiver_id=receiver_id).filter(election_id=election_id).order_by('signer_id')
-                signed_encrypted_shares = []
-                receiver_ids = []
-                signer_ids = []
-                for share in signed_encrypted_shares_strings:
-                    signed_encrypted_shares.append(
-                        thresholdalgs.Signed_Encrypted_Share.from_dict(utils.from_json(share.share)))
-                    receiver_ids.append(share.receiver_id)
-                    signer_ids.append(share.signer_id)
-                correct_secret_shares = []
-                if(len(signed_encrypted_shares) == n):
-                    for j in range(len(signed_encrypted_shares)):
-                        element = signed_encrypted_shares[j]
-                        receiver_id_share = receiver_ids[j]
-                        signer_id_share = signer_ids[j]
-                        pk_signer_signing = elgamal.PublicKey.from_dict(
-                            utils.from_json(Key.objects.get(id=signer_id_share).public_key_signing))
-
-                        encry_share = element.encr_share
-                        sig = element.sig
-                        share = encry_share.decrypt(helios_secret_key)
-                        share_string = utils.to_json_js(share.to_dict())
-
-                        correct_share = False
-                        if sig.verify(share_string, pk_signer_signing, p, q, g):
-                            if share.verify_share(scheme, p, q, g):
-                                correct_secret_shares.append(share)
-                                correct_share = True
-                            else:
-                                share_string = utils.to_json(share.to_dict())
-                                incorrect_share = Incorrect_share(
-                                    share_string, election_id, sig, signer_id, receiver_id, 'invalid commitments')
-                                incorrect_share.save()
-                        else:
-                            share_string = utils.to_json(share.to_dict())
-                            incorrect_share = Incorrect_share()
-                            incorrect_share.share = share_string
-                            incorrect_share.election_id = election_id
-                            incorrect_share.sig = sig
-
-                            incorrect_share.signer_id = signer_id_share
-                            incorrect_share.receiver_id = receiver_id_share
-                            incorrect_share.explanation = 'invalid signature'
-                            incorrect_share.save()
-
-                if len(correct_secret_shares) == n:
-                    s_value = 0
-                    t_value = 0
-                    share = correct_secret_shares[0]
-                    for i in range(1, len(correct_secret_shares)):
-                        share.add(correct_secret_shares[i], p, q, g)
-
-                    if share.verify_share(scheme, p, q, g):
-                        final_public_key = elgamal.PublicKey()
-                        final_public_key.q = q
-                        final_public_key.g = g
-                        final_public_key.p = p
-                        final_public_key.y = pow(g, share.point_s.y_value, p)
-                        final_secret_key = elgamal.SecretKey()
-                        final_secret_key.public_key = final_public_key
-                        final_secret_key.x = share.point_s.y_value
-
-                        helios_trustee.public_key = final_public_key
-                        helios_trustee.secret_key = final_secret_key
-                        helios_trustee.public_key_hash = datatypes.LDObject.instantiate(
-                            helios_trustee.public_key, datatype='legacy/EGPublicKey').hash
-                        helios_trustee.pok = helios_trustee.secret_key.prove_sk(
-                            algs.DLog_challenge_generator)
-                        helios_trustee.save()
 
     return render_template(request, 'trustees_list', {'election': election, 'trustees': trustees, 'admin_p': admin_p, 'scheme': scheme})
 
@@ -600,22 +502,22 @@ def trustees_freeze(request, election):
             scheme.k = form.cleaned_data['k']
             scheme.save()
             election.frozen_trustee_list = True
+            election.save()
 
             if election.has_helios_trustee():
-                trustees_added_encrypted_shares = True
-                for trustee in trustees:
-                    if not trustee.helios_trustee and not trustee.added_encrypted_shares:
-                        trustees_added_encrypted_shares = False
+                helios_trustee = election.get_helios_trustee()
 
-                if trustees_added_encrypted_shares:
+                if election.trustees_added_encrypted_shares():
                     helios_trustee = election.get_helios_trustee()
-                    key = helios_trustee.key
-                    sk = SecretKey.objects.filter(public_key=key)[0]
-                    sk_signature = sk.secret_key_signing
-                    add_encrypted_shares(request, election, sk_signature)
-                    election.encrypted_shares_uploaded = True
+                    helios_trustee.add_encrypted_shares(election)
+                    helios_trustee.save()
 
-            election.save()
+                    election.encrypted_shares_uploaded = True
+                    election.save()
+
+                    if helios_trustee.public_key == None and helios_trustee.secret_key == None:
+                        helios_trustee.calculate_key(election)
+                        helios_trustee.save()
 
             return HttpResponseRedirect(reverse(trustees_list_view, args=[election.uuid]))
 
@@ -623,87 +525,6 @@ def trustees_freeze(request, election):
         trustees = Trustee.objects.filter(election=election)
         n = len(trustees)
         return render_template(request, 'trustees_freeze', {'election': election, 'n': n})
-
-
-def add_encrypted_shares(request, election, signature=None):
-    election_id = election.id
-    trustees = Trustee.objects.filter(election=election).order_by('id')
-    scheme = Thresholdscheme.objects.filter(election=election)[0]
-    n = scheme.n
-    pk_list = []
-    for i in range(len(trustees)):
-        pk_list.append(trustees[i].key)
-
-    if len(pk_list) != n:
-        return Exception('The number of public keys for communication must equal: ' + str(n))
-
-    secret_key_sig = algs.EGSecretKey.from_dict(utils.from_json(signature))
-    for j in range(len(pk_list)):
-        pk = pk_list[j]
-        if (pow(g, secret_key_sig.x, p) == elgamal.PublicKey.from_dict(utils.from_json(pk.public_key_signing)).y):
-            signer = pk.name
-            signer_id = pk.id
-            trustee_signer_id = trustees[j].id
-            break
-
-    if not signer:
-        return Exception('Your signature does not belong to the election: ' + election.name)
-
-    if (len(Signed_Encrypted_Share.objects.filter(signer_id=signer_id).filter(election_id=election.id)) > 0):
-        return render_template(request, 'shares_already_uploaded', {'signer': signer, 'election': election})
-
-    s = algs.Utils.random_mpz_lt(q)
-    t = algs.Utils.random_mpz_lt(q)
-
-    shares = scheme.share_verifiably(s, t, ELGAMAL_PARAMS)
-
-    if len(pk_list) == len(shares):
-        for i in range(len(trustees)):
-            trustee_temp = trustees[i]
-            key = trustee_temp.key
-            receiver = key.name
-            receiver_id = key.id
-
-            share = shares[i]
-            share_string = cryptoutils.to_json_js(share.to_dict())
-            if(share.point_s.x_value != trustee_temp.id):
-                return Exception('Shares have wrong x_coordinate')
-
-            encry_share = share.encrypt(
-                algs.EGPublicKey.from_dict(utils.from_json(key.public_key_encrypt)))
-            sig = share.sign(secret_key_sig, p, q, g)
-            signed_encry_share = thresholdalgs.Signed_Encrypted_Share(
-                sig, encry_share)
-
-            encry_share = Signed_Encrypted_Share()
-            encry_share.share = utils.to_json(
-                signed_encry_share.to_dict())
-            pk_sign = Key.objects.filter(id=signer_id)[0]
-            if(sig.verify(share_string, algs.EGPublicKey.from_dict(utils.from_json(pk_sign.public_key_signing)), p, q, g)):
-                encry_share.signer = pk_sign.name
-                encry_share.signer_id = signer_id
-                encry_share.receiver = receiver
-                encry_share.receiver_id = receiver_id
-                encry_share.election_id = election_id
-                encry_share.trustee_receiver_id = trustees[i].id
-                encry_share.trustee_signer_id = trustee_signer_id
-                encry_share.save()
-
-            else:
-                return Exception('Wrong signature')
-
-            if (len(Signed_Encrypted_Share.objects.filter(signer_id=signer_id).filter(election_id=election_id)) == scheme.n):
-                signer_key = Key.objects.get(id=signer_id)
-                signer_trustee = Trustee.objects.filter(
-                    key=signer_key)[0]
-                signer_trustee.added_encrypted_shares = True
-                signer_trustee.save()
-
-        return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
-    else:
-        return Exception('pk_list and shares do not have the same length')
-
-    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
 
 
 def trustee_login(request, election_short_name, trustee_email, trustee_secret):
@@ -740,9 +561,9 @@ You are a trustee for %s.
 Your trustee dashboard is at
 
   %s
-  
+
 --
-Helios  
+Helios
 """ % (election.name, url)
 
     send_mail('Trustee Dashboard for %s' % election.name, body, settings.SERVER_EMAIL, [
@@ -860,7 +681,7 @@ def trustee_keygenerator_threshold(request, election, trustee):
 
         # verify the proof
         if not public_key_sign.verify_sk_proof(pok_sign, algs.DLog_challenge_generator):
-            raise Exception("Bad proof for public key signing")
+            raise Exception('Bad proof for public signing key')
         key.public_key_signing = utils.to_json(public_key_sign.to_dict())
         key.pok_signing = utils.to_json(pok_sign.to_dict())
         key.public_key_signing_hash = cryptoutils.hash_b64(
@@ -874,8 +695,7 @@ def trustee_keygenerator_threshold(request, election, trustee):
 
         # send a note to admin
         try:
-            election.admin.send_message(
-                "pk upload, " + "%s uploaded a pk for communication." % (key.name))
+            election.admin.send_message("pk upload, " + "%s uploaded a pk for communication." % (key.name))
         except:
             # oh well, no message sent
             pass
@@ -925,24 +745,21 @@ def trustee_upload_encrypted_shares(request, election, trustee):
         trustee.save()
 
     if election.has_helios_trustee():
-        trustees_added_encrypted_shares = True
-        for trustee in trustees:
-            if not trustee.helios_trustee and not trustee.added_encrypted_shares:
-                trustees_added_encrypted_shares = False
-
-        if trustees_added_encrypted_shares:
+        if election.trustees_added_encrypted_shares():
             helios_trustee = election.get_helios_trustee()
-            key = helios_trustee.key
-            sk = SecretKey.objects.filter(public_key=key)[0]
-            sk_signature = sk.secret_key_signing
-            add_encrypted_shares(request, election, sk_signature)
+            helios_trustee.add_encrypted_shares(election)
+            helios_trustee.save()
+
             election.encrypted_shares_uploaded = True
             election.save()
 
+            if helios_trustee.public_key == None and helios_trustee.secret_key == None:
+                helios_trustee.calculate_key(election)
+                helios_trustee.save()
+
     try:
         # send a note to admin
-        election.admin.send_message("%s - encrypted shares uploaded by " %
-                                    election.name, "trustee %s (%s)" % (signer_trustee.name, signer_trustee.email))
+        election.admin.send_message("%s - encrypted shares uploaded by " % election.name, "trustee %s (%s)" % (signer_trustee.name, signer_trustee.email))
     except:
         # oh well, no message sent
         pass
@@ -1239,9 +1056,9 @@ def one_election_cast_confirm(request, election):
 @election_view()
 def one_election_cast_done(request, election):
     """
-    This view needs to be loaded because of the IFRAME, but then this causes 
+    This view needs to be loaded because of the iFrame, but then this causes
     problems if someone clicks "reload". So we need a strategy.
-    We store the ballot hash in the session
+    We store the ballot hash in the session.
     """
     user = get_user(request)
     voter = get_voter(request, user, election)

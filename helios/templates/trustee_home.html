@@ -236,7 +236,6 @@
 
     function get_secret_key_encryption() {
       var keys = $.secureEvalJSON($('#sk_textarea_encryption').val());
-      console.log(keys.encryption);
       return ElGamal.SecretKey.fromJSONObject(keys.encryption);
     }
 
