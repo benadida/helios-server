@@ -23,7 +23,7 @@
         });
 
         function showHelpModal(e) {
-            var modal = $('<div>', {'class': 'reveal-modal'}).attr('data-reveal', '').append(
+            var modal = $('<div>', {'class': 'reveal-modal small'}).attr('data-reveal', '').append(
                 $('<h3>').html('Help'),
                 $('<p>').html($(e.target).data('text')),
                 $('<a>', {'class': 'close-reveal-modal'}).html('&#215;')
