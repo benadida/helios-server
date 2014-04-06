@@ -14,6 +14,14 @@ You have uploaded a file of voters. The first few rows of this file are:
 {% endfor %}
 </table>
 
+{% if email_problem %}
+<p style="font-size: 1.5em;">
+<b>HOLD ON</b>: those don't look like correct email addresses. Are you sure you uploaded a file with email address as second field?<br />
+
+<a href="{% url helios.views.voters_upload_cancel election.uuid %}">no, let me upload a different file</a>
+</p>
+
+{% else %}
 <p></p>
 <form method="post" action="" id="upload_form">
   Does this look right to you?
@@ -22,5 +30,7 @@ You have uploaded a file of voters. The first few rows of this file are:
 </form>
 
 <a href="{% url helios.views.voters_upload_cancel election.uuid %}">no, let me upload a different file</a>
+
+{% endif %}
 
 {% endblock %}

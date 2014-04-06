@@ -22,3 +22,4 @@ django-secure==0.1.2
 bleach==1.4
 boto==2.27.0
 django-ses==0.6.0
+validate_email==1.2

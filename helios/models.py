@@ -703,9 +703,14 @@ class VoterFile(models.Model):
 
       if len(voter_fields) > 1:
         return_dict['email'] = voter_fields[1].strip()
+      else:
+        # assume single field means the email is the same field
+        return_dict['email'] = voter_fields[0].strip()
 
       if len(voter_fields) > 2:
         return_dict['name'] = voter_fields[2].strip()
+      else:
+        return_dict['name'] = return_dict['email']
 
       yield return_dict
     
