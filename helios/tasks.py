@@ -25,13 +25,11 @@ def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwarg
 
     if result:
         # send the signal
-        signals.vote_cast.send(
-            sender=election, election=election, user=user, voter=voter, cast_vote=cast_vote)
+        signals.vote_cast.send(sender=election, election=election, user=user, voter=voter, cast_vote=cast_vote)
 
         if status_update_message and user.can_update_status():
-            from views import get_election_url
-
             user.update_status(status_update_message)
+
     else:
         logger = cast_vote_verify_and_store.get_logger(**kwargs)
         logger.error("Failed to verify and store %d" % cast_vote_id)

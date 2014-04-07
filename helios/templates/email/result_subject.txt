@@ -1,1 +1,1 @@
-Tally Released - {{custom_subject|safe}}
+Tally Released: {{custom_subject|safe}}

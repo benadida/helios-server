@@ -1088,12 +1088,20 @@ def one_election_cast_confirm(request, election):
             request, return_url=return_url, auth_systems=auth_systems)
 
         return render_template(request, 'election_cast_confirm', {
-            'login_box': login_box, 'election': election, 'vote_fingerprint': vote_fingerprint,
-            'past_votes': past_votes, 'issues': issues, 'voter': voter,
+            'login_box': login_box,
+            'election': election,
+            'vote_fingerprint': vote_fingerprint,
+            'past_votes': past_votes,
+            'issues': issues,
+            'voter': voter,
             'return_url': return_url,
-            'status_update_label': status_update_label, 'status_update_message': status_update_message,
-            'show_password': show_password, 'password_only': password_only, 'password_login_form': password_login_form,
-            'bad_voter_login': bad_voter_login})
+            'status_update_label': status_update_label,
+            'status_update_message': status_update_message,
+            'show_password': show_password,
+            'password_only': password_only,
+            'password_login_form': password_login_form,
+            'bad_voter_login': bad_voter_login
+        })
 
     if request.method == "POST":
         check_csrf(request)
@@ -1118,9 +1126,7 @@ def one_election_cast_confirm(request, election):
 
         # launch the verification task
 
-        tasks.cast_vote_verify_and_store.delay(
-            cast_vote_id=cast_vote.id,
-            status_update_message=status_update_message)
+        tasks.cast_vote_verify_and_store.delay(cast_vote_id=cast_vote.id, status_update_message=status_update_message)
 
         # remove the vote from the store
         del request.session['encrypted_vote']

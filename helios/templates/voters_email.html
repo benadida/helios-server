@@ -33,9 +33,16 @@
         {% endfor %}
       </dl>
 
-      <div class="panel">
-        <pre>Subject: {{default_subject}}
+      <h3>Subject</h3>
 
+      <div class="panel">
+        <pre>{{default_subject}}</pre>
+      </div>
+
+      <h3>Message</h3>
+
+      <div class="panel">
+        <pre>
 {{default_body|safe}}</pre>
       </div>
 

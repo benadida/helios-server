@@ -2,28 +2,19 @@ Dear {{voter.name}},
 
 {{custom_message|safe}}
 
-Election URL:  {{election_vote_url}}
-Election Fingerprint:  {{voter.election.hash}}
+Election URL: {{election_vote_url}}
+Election Fingerprint: {{voter.election.hash}}
 {% ifequal voter.voter_type "password" %}
 Your voter ID: {{voter.voter_login_id}}
 Your password: {{voter.voter_password}}
 {% else %}
-Log in with your {{voter.voter_type}} account.
-{% endifequal %}{% if voter.vote_hash %}
-We have recorded your vote with smart tracker:
+You can login with your {{voter.voter_type|capfirst}} account to vote in this election.
+{% endifequal %}{% if election.use_voter_aliases %}
+In order to protect your privacy, this election is configured to never display your voter login ID, name, or email address to the public. Instead, the ballot tracking center will only display your alias.
 
-  {{voter.vote_hash}}
+Your voter alias: {{voter.alias}}
 
-You may re-vote if you wish: only your last vote counts.
-{% endif %}{% if election.use_voter_aliases %}
-In order to protect your privacy, this election is configured
-to never display your voter login ID, name, or email address to the public.
-Instead, the ballot tracking center will only display your alias.
-
-Your voter alias is {{voter.alias}}.
-
-IMPORTANTLY, when you are prompted to log in to vote,
-please use your *voter ID*, not your alias.
+It is important that when you are prompted to log in to vote that you use your *voter ID*, not your alias.
 {% endif %}
 --
 Helios
