@@ -35,6 +35,9 @@ class User(models.Model):
 
   class Meta:
     unique_together = (('user_type', 'user_id'),)
+
+  def __unicode__(self):
+    return self.user_id
     
   @classmethod
   def _get_type_and_id(cls, user_type, user_id):
