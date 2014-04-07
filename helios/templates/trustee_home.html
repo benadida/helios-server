@@ -496,10 +496,16 @@
 
           <a class="button" href="{% url helios.views.trustee_keygenerator_threshold election.uuid, trustee.uuid %}">Generate Key Pairs</a>
         {% else %}
-          {% if not scheme_params_json %}
-            <div data-alert class="alert-box info">
-              <b>Next</b> You have to wait for the election administrator to define the threshold scheme before you can generate your encrypted shares.
-            </div>
+            {% if not scheme_params_json or not election.trustees_added_communication_keys %}
+              {% if not scheme_params_json %}
+                <div data-alert class="alert-box info">
+                  <b>Next</b> You have to wait for the election administrator to define the threshold scheme before you can generate your encrypted shares.
+                </div>
+              {% else %}
+                <div data-alert class="alert-box info">
+                  <b>Next</b> You have to wait for the other trustees to upload their communication keys.
+                </div>
+              {% endif %}
           {% else %}
             {% if not trustee.added_encrypted_shares %}
               <div id="first_step">
@@ -577,7 +583,7 @@
                     <h3>Decrypt Encrypted Shares and Calculate Your Keypair</h3>
 
                     <div data-alert class="alert-box info">
-                      Wait for the other trustees to calculate the encrypted shares. Please come back later.
+                      <b>Next</b> Wait for the other trustees to calculate the encrypted shares. Please come back later.
                     </div>
                   </div>
                 {% else %}

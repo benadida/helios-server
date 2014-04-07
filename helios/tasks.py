@@ -53,8 +53,7 @@ def voters_email(election_id, subject_template, body_template, extra_vars={}, vo
         voters = voters.exclude(**voter_constraints_exclude)
 
     for voter in voters:
-        single_voter_email.delay(
-            voter.uuid, subject_template, body_template, extra_vars)
+        single_voter_email.delay(voter.uuid, subject_template, body_template, extra_vars)
 
 
 @task()
@@ -67,7 +66,6 @@ def voters_notify(election_id, notification_template, extra_vars={}):
 @task()
 def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={}):
     voter = Voter.objects.get(uuid=voter_uuid)
-
     the_vars = copy.copy(extra_vars)
     the_vars.update({'voter': voter})
 
@@ -125,24 +123,24 @@ def voter_file_process(voter_file_id):
     voter_file = VoterFile.objects.get(id=voter_file_id)
     voter_file.process()
 
-    body = """Your voter file upload for election %s has been processed.
+    body = """Your uploaded voter file for election %s has been processed.
 %s voters have been created.
 
 --
 Helios
 """ % (voter_file.election.name, voter_file.num_voters)
 
-    election_notify_admin.delay(voter_file.election.id, "%s - Voter File Processed" % voter_file.election.name, body)
+    admin_email.delay(voter_file.election.id, "%s - Voter File Processed" % voter_file.election.name, body)
 
 
 @task()
-def admin_notify(election_id, subject, body):
+def admin_email(election_id, subject, body):
     election = Election.objects.get(id=election_id)
     election.admin.send_message(subject, body)
 
 
 @task()
-def trustee_notify(trustee_id, subject, body):
+def single_trustee_email(trustee_id, subject, body):
     trustee = Trustee.objects.get(id=trustee_id)
     trustee.send_message(subject, body)
 

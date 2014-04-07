@@ -773,6 +773,16 @@ class Election(HeliosModel):
 
         return trustees_added_encrypted_shares
 
+    def trustees_added_communication_keys(self):
+        trustees = Trustee.get_by_election(self)
+
+        trustees_added_communication_keys = True
+        for trustee in trustees:
+            if not trustee.helios_trustee and not trustee.key:
+                trustees_added_communication_keys = False
+
+        return trustees_added_communication_keys
+
     def append_log(self, text):
         item = ElectionLog(
             election=self, log=text, at=datetime.datetime.utcnow())
