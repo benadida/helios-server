@@ -566,8 +566,7 @@ Your trustee dashboard is at
 Helios
 """ % (election.name, url)
 
-    send_mail('Trustee Dashboard for %s' % election.name, body, settings.SERVER_EMAIL, [
-              "%s <%s>" % (trustee.name, trustee.email)], fail_silently=True)
+    send_mail("%s - Trustee Dashboard" % election.name, body, settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], fail_silently=True)
 
     logging.info("URL %s " % url)
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustees_list_view, args=[election.uuid]))
@@ -695,7 +694,14 @@ def trustee_keygenerator_threshold(request, election, trustee):
 
         # send a note to admin
         try:
-            election.admin.send_message("pk upload, " + "%s uploaded a pk for communication." % (key.name))
+            body = """
+
+Trustee %s <%s> uploaded communication keys.
+
+--
+Helios""" % (trustee.name, trustee.email)
+
+            election.admin.send_message("%s - Trustee Uploaded Communication Keys" % election.name, body)
         except:
             # oh well, no message sent
             pass
@@ -759,7 +765,14 @@ def trustee_upload_encrypted_shares(request, election, trustee):
 
     try:
         # send a note to admin
-        election.admin.send_message("%s - encrypted shares uploaded by " % election.name, "trustee %s (%s)" % (signer_trustee.name, signer_trustee.email))
+        body = """
+
+Trustee %s <%s> uploaded his/her encrypted shares.
+
+--
+Helios""" % (signer_trustee.name, signer_trustee.email)
+
+        election.admin.send_message("%s - Encrypted Shares Uploaded" % election.name, body)
     except:
         # oh well, no message sent
         pass
@@ -792,8 +805,14 @@ def trustee_upload_pk(request, election, trustee):
 
         # send a note to admin
         try:
-            election.admin.send_message(
-                "%s - trustee pk upload" % election.name, "trustee %s (%s) uploaded a pk." % (trustee.name, trustee.email))
+            body = """
+
+Trustee %s <%s> uploaded a public key.
+
+--
+Helios""" % (trustee.name, trustee.email)
+
+            election.admin.send_message("%s - Trustee Uploaded Public Key" % election.name, body)
         except:
             # oh well, no message sent
             pass
@@ -1345,8 +1364,14 @@ def trustee_upload_decryption(request, election, trustee_uuid):
 
         try:
             # send a note to admin
-            election.admin.send_message("%s - trustee partial decryption" % election.name,
-                                        "trustee %s (%s) did their partial decryption." % (trustee.name, trustee.email))
+            body = """
+
+Trustee %s <%s> uploaded his/her partial decryption.
+
+--
+Helios""" % (trustee.name, trustee.email)
+
+            election.admin.send_message("%s - Trustee Uploaded Partial Decryption" % election.name, body)
         except:
             # ah well
             pass
