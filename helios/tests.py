@@ -543,6 +543,13 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.get("/helios/elections/%s/trustees/view" % election_id)
         self.assertContains(response, "Trustee #1")
 
+        # add a few voters with an improperly placed email address
+        FILE = "helios/fixtures/voter-badfile.csv"
+        voters_file = open(FILE)
+        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'voters_file': voters_file})
+        voters_file.close()
+        self.assertContains(response, "HOLD ON")
+
         # add a few voters, via file upload
         # this file now includes a UTF-8 encoded unicode character
         # yes I know that's not how you spell Ernesto.
@@ -652,7 +659,7 @@ class ElectionBlackboxTests(WebTest):
             # cast_confirm_page = cast_confirm_page.follow()
         else:
             # here we should be at the cast-confirm page and logged in
-            self.assertContains(cast_confirm_page, "I am ")
+            self.assertContains(cast_confirm_page, "CAST this ballot")
 
             # confirm the vote, now with the actual form
             cast_form = cast_confirm_page.form

@@ -12,7 +12,7 @@ from django.conf import settings
 class ElectionForm(forms.Form):
   short_name = forms.SlugField(max_length=25, help_text='no spaces, will be part of the URL for your election, e.g. my-club-2010')
   name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'size':60}), help_text='the pretty name for your election, e.g. My Club 2010 Election')
-  description = forms.CharField(max_length=2000, widget=forms.Textarea(attrs={'cols': 70, 'wrap': 'soft'}), required=False)
+  description = forms.CharField(max_length=4000, widget=forms.Textarea(attrs={'cols': 70, 'wrap': 'soft'}), required=False)
   election_type = forms.ChoiceField(label="type", choices = Election.ELECTION_TYPES)
   use_voter_aliases = forms.BooleanField(required=False, initial=False, help_text='If selected, voter identities will be replaced with aliases, e.g. "V12", in the ballot tracking center')
   #use_advanced_audit_features = forms.BooleanField(required=False, initial=True, help_text='disable this only if you want a simple election with reduced security but a simpler user interface')
@@ -34,7 +34,7 @@ class ElectionTimesForm(forms.Form):
   
 class EmailVotersForm(forms.Form):
   subject = forms.CharField(max_length=80)
-  body = forms.CharField(max_length=2000, widget=forms.Textarea)
+  body = forms.CharField(max_length=4000, widget=forms.Textarea)
   send_to = forms.ChoiceField(label="Send To", initial="all", choices= [('all', 'all voters'), ('voted', 'voters who have cast a ballot'), ('not-voted', 'voters who have not yet cast a ballot')])
 
 class TallyNotificationEmailForm(forms.Form):

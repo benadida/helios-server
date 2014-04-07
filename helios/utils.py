@@ -6,7 +6,8 @@ Ben Adida - ben@adida.net
 """
 
 import urllib, re, sys, datetime, urlparse, string
-import threading
+
+import boto.ses
 
 # utils from helios_auth, too
 from helios_auth.utils import *
@@ -154,8 +155,8 @@ from django.core import mail as django_mail
 def send_email(sender, recpt_lst, subject, body):
   # subject up until the first newline
   subject = subject.split("\n")[0]
+
   django_mail.send_mail(subject, body, sender, recpt_lst, fail_silently=True)
-  
 
   
 ##

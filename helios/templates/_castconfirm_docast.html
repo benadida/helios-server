@@ -16,7 +16,9 @@
 <br />
 {% endif %}
 
-    <button type="submit" class="medium">I am <u>{{voter.display_html_big|safe}}</u>, cast this ballot</button>
+You are logged in as <u>{{voter.display_html_big|safe}}</u><br /><br />
+
+    <button type="submit" class="large">CAST this ballot</button>
     <span style="font-size:0.8em;"><br />You can cast as many ballots as you want.<br />Only the last one counts.</span>
 </form>
 

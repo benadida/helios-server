@@ -13,6 +13,8 @@ from django.db import transaction
 
 from mimetypes import guess_type
 
+from validate_email import validate_email
+
 import csv, urllib, os, base64
 
 from crypto import algs, electionalgs, elgamal
@@ -447,7 +449,7 @@ Your trustee dashboard is at
 Helios  
 """ % (election.name, url)
 
-  send_mail('your trustee homepage for %s' % election.name, body, settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], fail_silently=True)
+  helios_utils.send_email(settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], 'your trustee homepage for %s' % election.name, body)
 
   logging.info("URL %s " % url)
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(list_trustees_view, args = [election.uuid]))
@@ -1204,7 +1206,10 @@ def voters_upload(request, election):
         # import the first few lines to check
         voters = [v for v in voter_file_obj.itervoters()][:5]
 
-        return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters})
+        # check if voter emails look like emails
+        email_problem = False in [validate_email(v['email']) for v in voters]
+
+        return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters, 'email_problem': email_problem})
       else:
         return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_upload, args=[election.uuid]), urllib.urlencode({'e':'no voter file specified, try again'})))
 
