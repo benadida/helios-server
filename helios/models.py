@@ -1504,6 +1504,9 @@ class Trustee(HeliosModel):
     def datatype(self):
         return self.election.datatype.replace('Election', 'Trustee')
 
+    def send_message(self, subject, body):
+        send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (self.name, self.email)], fail_silently=False)
+
     def verify_decryption_proofs(self):
         """
         verify that the decryption proofs match the tally for the election

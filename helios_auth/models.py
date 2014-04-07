@@ -89,8 +89,7 @@ class User(models.Model):
     def send_message(self, subject, body):
         if AUTH_SYSTEMS.has_key(self.user_type):
             subject = subject.split("\n")[0]
-            AUTH_SYSTEMS[self.user_type].send_message(
-                self.user_id, self.name, self.info, subject, body)
+            AUTH_SYSTEMS[self.user_type].send_message(self.user_id, self.name, self.info, subject, body)
 
     def send_notification(self, message):
         if AUTH_SYSTEMS.has_key(self.user_type):

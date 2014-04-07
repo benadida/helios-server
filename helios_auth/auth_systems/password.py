@@ -102,8 +102,7 @@ Your password: %s
 """ % (user.user_id, user.info['password'], settings.SITE_TITLE)
 
         # FIXME: make this a task
-        send_mail('password reminder', body, settings.SERVER_EMAIL, [
-                  "%s <%s>" % (user.info['name'], user.info['email'])], fail_silently=False)
+        send_mail('password reminder', body, settings.SERVER_EMAIL, ["%s <%s>" % (user.info['name'], user.info['email'])], fail_silently=False)
 
         return HttpResponseRedirect(return_url)
 
@@ -127,5 +126,4 @@ def update_status(token, message):
 def send_message(user_id, user_name, user_info, subject, body):
     email = user_id
     name = user_name or user_info.get('name', email)
-    send_mail(subject, body, settings.SERVER_EMAIL,
-              ["%s <%s>" % (name, email)], fail_silently=False)
+    send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, email)], fail_silently=False)

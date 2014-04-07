@@ -248,9 +248,6 @@ def election_new(request):
                     # add Helios as a trustee by default
                     election.generate_trustee(ELGAMAL_PARAMS)
 
-                    logging.info(election_params['voting_starts_at'])
-                    logging.info(election_params['voting_starts_at'])
-
                     election.save()
 
                     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
@@ -519,6 +516,38 @@ def trustees_freeze(request, election):
                         helios_trustee.calculate_key(election)
                         helios_trustee.save()
 
+            if election.use_threshold:
+                for trustee in trustees:
+                    if not trustee.helios_trustee:
+                        url = settings.SECURE_URL_HOST + reverse(trustee_login, args=[election.short_name, trustee.email, trustee.secret])
+
+                        # send message to trustee
+                        body = """Dear %s,
+
+The election administrator has defined the threshold scheme.
+""" % trustee.name
+
+                        if trustee.key:
+                            body += """
+Since you have already uploaded communication keys, you can now generate your encrypted shares.
+"""
+
+                        else:
+                            body += """
+You have not yet uploaded communication keys, which you will have to do first.
+After doing this, you will be able to generate your encrypted shares.
+"""
+
+                        body += """
+As a reminder, your trustee dashboard is at:
+
+    %s
+
+--
+Helios""" % url
+
+                        tasks.trustee_notify.delay(trustee.id, "%s - Threshold Scheme Defined" % election.name, body)
+
             return HttpResponseRedirect(reverse(trustees_list_view, args=[election.uuid]))
 
     else:
@@ -550,21 +579,19 @@ def trustee_login(request, election_short_name, trustee_email, trustee_secret):
 def trustee_send_url(request, election, trustee_uuid):
     trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
 
-    url = settings.SECURE_URL_HOST + \
-        reverse(
-            trustee_login, args=[election.short_name, trustee.email, trustee.secret])
+    url = settings.SECURE_URL_HOST + reverse(trustee_login, args=[election.short_name, trustee.email, trustee.secret])
 
-    body = """
+    body = """Dear %s,
 
 You are a trustee for %s.
 
 Your trustee dashboard is at
 
-  %s
+    %s
 
 --
 Helios
-""" % (election.name, url)
+""" % (trustee.name, election.name, url)
 
     send_mail("%s - Trustee Dashboard" % election.name, body, settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], fail_silently=True)
 
@@ -693,18 +720,12 @@ def trustee_keygenerator_threshold(request, election, trustee):
         trustee.save()
 
         # send a note to admin
-        try:
-            body = """
-
-Trustee %s <%s> uploaded communication keys.
+        body = """Trustee %s <%s> uploaded communication keys.
 
 --
 Helios""" % (trustee.name, trustee.email)
 
-            election.admin.send_message("%s - Trustee Uploaded Communication Keys" % election.name, body)
-        except:
-            # oh well, no message sent
-            pass
+        tasks.admin_notify.delay(election.id, "%s - Trustee Uploaded Communication Keys" % election.name, body)
 
         return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustee_home, args=[election.uuid, trustee.uuid]))
 
@@ -763,19 +784,13 @@ def trustee_upload_encrypted_shares(request, election, trustee):
                 helios_trustee.calculate_key(election)
                 helios_trustee.save()
 
-    try:
-        # send a note to admin
-        body = """
-
-Trustee %s <%s> uploaded his/her encrypted shares.
+    # send a note to admin
+    body = """Trustee %s <%s> uploaded his/her encrypted shares.
 
 --
 Helios""" % (signer_trustee.name, signer_trustee.email)
 
-        election.admin.send_message("%s - Encrypted Shares Uploaded" % election.name, body)
-    except:
-        # oh well, no message sent
-        pass
+    tasks.admin_notify(election.id, "%s - Encrypted Shares Uploaded" % election.name, body)
 
     return SUCCESS
 
@@ -804,18 +819,12 @@ def trustee_upload_pk(request, election, trustee):
         trustee.save()
 
         # send a note to admin
-        try:
-            body = """
-
-Trustee %s <%s> uploaded a public key.
+        body = """Trustee %s <%s> uploaded a public key.
 
 --
 Helios""" % (trustee.name, trustee.email)
 
-            election.admin.send_message("%s - Trustee Uploaded Public Key" % election.name, body)
-        except:
-            # oh well, no message sent
-            pass
+        tasks.admin_notify.delay(election.id, "%s - Trustee Uploaded Public Key" % election.name, body)
 
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustee_home, args=[election.uuid, trustee.uuid]))
 
@@ -1362,19 +1371,13 @@ def trustee_upload_decryption(request, election, trustee_uuid):
     if trustee.verify_decryption_proofs():
         trustee.save()
 
-        try:
-            # send a note to admin
-            body = """
-
-Trustee %s <%s> uploaded his/her partial decryption.
+        # send a note to admin
+        body = """Trustee %s <%s> uploaded his/her partial decryption.
 
 --
 Helios""" % (trustee.name, trustee.email)
 
-            election.admin.send_message("%s - Trustee Uploaded Partial Decryption" % election.name, body)
-        except:
-            # ah well
-            pass
+        tasks.admin_notify.delay(election.id, "%s - Trustee Uploaded Partial Decryption" % election.name, body)
 
         return SUCCESS
     else:
@@ -1522,8 +1525,7 @@ def voters_upload(request, election):
     if request.method == "POST":
         if bool(request.POST.get('confirm_p', 0)):
             # launch the background task to parse that file
-            tasks.voter_file_process.delay(
-                voter_file_id=request.session['voter_file_id'])
+            tasks.voter_file_process.delay(voter_file_id=request.session['voter_file_id'])
 
             voter_file = VoterFile.objects.get(id=request.session['voter_file_id'])
             voter_file.confirmed_p = True
