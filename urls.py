@@ -3,6 +3,8 @@ from django.conf.urls.defaults import *
 from django.contrib import admin
 from django.conf import settings
 
+admin.autodiscover()
+
 urlpatterns = patterns(
     '',
     (r'^auth/', include('helios_auth.urls')),
@@ -17,5 +19,6 @@ urlpatterns = patterns(
     (r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/server_ui/media'}),
 
     (r'^', include('server_ui.urls')),
+    (r'^admin/', include(admin.site.urls))
 
     )

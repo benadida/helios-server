@@ -128,7 +128,8 @@ MIDDLEWARE_CLASSES = (
 
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware'
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware'
 
    # 'flatpages_i18n.middleware.FlatpageFallbackMiddleware'
 )
@@ -146,6 +147,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
+    'django.contrib.messages',
+    'django.contrib.admin',
     ## needed for queues
     'djcelery',
     'kombu.transport.django',
