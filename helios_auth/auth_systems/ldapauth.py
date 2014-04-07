@@ -48,7 +48,7 @@ def ldap_login_view(request):
 			else:
 				error = _('Bad Username or Password')
 	
-	return render_template(request, 'password/login', {
+	return render_template(request, 'ldapauth/login', {
 		'form': form, 
 		'error': error,
 		'enabled_auth_systems': settings.AUTH_ENABLED_AUTH_SYSTEMS,
