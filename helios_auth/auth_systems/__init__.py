@@ -1,19 +1,22 @@
 
-AUTH_SYSTEMS = {}
-
-import twitter
-import password
 import cas
 import facebook
 import google
-import yahoo
 import linkedin
-AUTH_SYSTEMS['twitter'] = twitter
-AUTH_SYSTEMS['linkedin'] = linkedin
-AUTH_SYSTEMS['password'] = password
+import password
+import shibboleth
+import twitter
+import yahoo
+
+AUTH_SYSTEMS = {}
+
 AUTH_SYSTEMS['cas'] = cas
 AUTH_SYSTEMS['facebook'] = facebook
 AUTH_SYSTEMS['google'] = google
+AUTH_SYSTEMS['linkedin'] = linkedin
+AUTH_SYSTEMS['password'] = password
+AUTH_SYSTEMS['shibboleth'] = shibboleth
+AUTH_SYSTEMS['twitter'] = twitter
 AUTH_SYSTEMS['yahoo'] = yahoo
 
 # not ready
