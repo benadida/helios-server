@@ -850,18 +850,16 @@ def trustee_check_sk(request, election, trustee):
 @trustee_check
 def trustee_upload_pk(request, election, trustee):
     if request.method == "POST":
-    # get the public key and the hash, and add it
+        # get the public key and the hash, and add it
         public_key_and_proof = utils.from_json(request.POST['public_key_json'])
-        trustee.public_key = algs.EGPublicKey.fromJSONDict(
-            public_key_and_proof['public_key'])
+        trustee.public_key = algs.EGPublicKey.fromJSONDict(public_key_and_proof['public_key'])
         trustee.pok = algs.DLogProof.fromJSONDict(public_key_and_proof['pok'])
 
         # verify the pok
         if not trustee.public_key.verify_sk_proof(trustee.pok, algs.DLog_challenge_generator):
             raise Exception('Bad proof for this public key')
 
-        trustee.public_key_hash = utils.hash_b64(
-            utils.to_json(trustee.public_key.toJSONDict()))
+        trustee.public_key_hash = utils.hash_b64(utils.to_json(trustee.public_key.toJSONDict()))
 
         trustee.save()
 
@@ -872,6 +870,28 @@ def trustee_upload_pk(request, election, trustee):
 Helios""" % (trustee.name, trustee.email)
 
         tasks.admin_email.delay(election.id, "%s - Trustee Uploaded Public Key" % election.name, body)
+
+        if election.trustees_added_public_keys():
+            url = settings.SECURE_URL_HOST + reverse(one_election_admin, args=[election.uuid])
+
+            body = """All trustees have uploaded their public keys."""
+
+            if election.issues_before_freeze:
+                body += """
+However, there are still some other issues you have to solve before the ballot can be frozen and the election can be opened."""
+            else:
+                body += """
+It is now possible to freeze the ballot and open the election."""
+
+            body += """
+The election admin page can be found at:
+
+    %s
+
+--
+Helios""" % url
+
+            tasks.admin_email.delay(election.id, "%s - Trustees Uploaded Public Keys" % election.name, body)
 
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustee_home, args=[election.uuid, trustee.uuid]))
 
@@ -1506,18 +1526,19 @@ def voters_list_pretty(request, election):
     voters_paginator = Paginator(voters, limit)
     voters_page = voters_paginator.page(page)
 
-    return render_template(request, 'voters_list',
-                           {'election': election,
-                            'voters_paginator': voters_paginator,
-                            'voters_page': voters_page,
-                            'voters': voters_page.object_list,
-                            'admin_p': admin_p,
-                            'email_voters': helios.VOTERS_EMAIL,
-                            'limit': limit,
-                            'upload_p': helios.VOTERS_UPLOAD, 'q': q,
-                            'voter_files': voter_files,
-                            'categories': categories,
-                            'eligibility_category_id': eligibility_category_id})
+    return render_template(request, 'voters_list', {
+        'election': election,
+        'voters_paginator': voters_paginator,
+        'voters_page': voters_page,
+        'voters': voters_page.object_list,
+        'admin_p': admin_p,
+        'email_voters': helios.VOTERS_EMAIL,
+        'limit': limit,
+        'upload_p': helios.VOTERS_UPLOAD, 'q': q,
+        'voter_files': voter_files,
+        'categories': categories,
+        'eligibility_category_id': eligibility_category_id
+    })
 
 
 @election_admin()

@@ -763,6 +763,16 @@ class Election(HeliosModel):
         trustee.decryption_proofs = proof
         trustee.save()
 
+    def trustees_added_communication_keys(self):
+        trustees = Trustee.get_by_election(self)
+
+        trustees_added_communication_keys = True
+        for trustee in trustees:
+            if not trustee.helios_trustee and not trustee.key:
+                trustees_added_communication_keys = False
+
+        return trustees_added_communication_keys
+
     def trustees_added_encrypted_shares(self):
         trustees = Trustee.get_by_election(self)
 
@@ -773,15 +783,15 @@ class Election(HeliosModel):
 
         return trustees_added_encrypted_shares
 
-    def trustees_added_communication_keys(self):
+    def trustees_added_public_keys(self):
         trustees = Trustee.get_by_election(self)
 
-        trustees_added_communication_keys = True
+        trustees_added_public_keys = True
         for trustee in trustees:
-            if not trustee.helios_trustee and not trustee.key:
-                trustees_added_communication_keys = False
+            if not trustee.public_key:
+                trustees_added_public_keys = False
 
-        return trustees_added_communication_keys
+        return trustees_added_public_keys
 
     def append_log(self, text):
         item = ElectionLog(
