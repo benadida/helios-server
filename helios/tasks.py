@@ -96,7 +96,7 @@ def election_compute_tally(election_id):
 Helios
 """ % election.name
 
-    election_notify_admin.delay(election_id, "%s - Encrypted Tally Computed" % election.name, body)
+    admin_email.delay(election_id, "%s - Encrypted Tally Computed" % election.name, body)
 
     if election.has_helios_trustee():
         tally_helios_decrypt.delay(election_id=election.id)
@@ -113,7 +113,7 @@ def tally_helios_decrypt(election_id):
 Helios
 """ % election.name
 
-    election_notify_admin.delay(election_id, "%s - Helios Decryption" % election.name, body)
+    admin_email.delay(election_id, "%s - Helios Decryption" % election.name, body)
 
 
 @task()

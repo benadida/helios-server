@@ -68,8 +68,7 @@ class Election(HeliosModel):
     # v3 and prior have a datatype of "legacy/Election"
     # v3.1 will still use legacy/Election
     # later versions, at some point will upgrade to "2011/01/Election"
-    datatype = models.CharField(
-        max_length=250, null=False, default="legacy/Election")
+    datatype = models.CharField(max_length=250, null=False, default="legacy/Election")
 
     short_name = models.CharField(max_length=100)
     name = models.CharField(max_length=250)
@@ -80,23 +79,18 @@ class Election(HeliosModel):
         ('ranked election', 'Ranked Election')
     )
 
-    election_type = models.CharField(
-        max_length=250, null=False, default='election', choices=ELECTION_TYPES)
+    election_type = models.CharField(max_length=250, null=False, default='election', choices=ELECTION_TYPES)
     private_p = models.BooleanField(default=False, null=False)
 
     description = models.TextField()
-    public_key = LDObjectField(type_hint='legacy/EGPublicKey',
-                               null=True)
-    private_key = LDObjectField(type_hint='legacy/EGSecretKey',
-                                null=True)
+    public_key = LDObjectField(type_hint='legacy/EGPublicKey', null=True)
+    private_key = LDObjectField(type_hint='legacy/EGSecretKey', null=True)
 
-    questions = LDObjectField(type_hint='legacy/Questions',
-                              null=True)
+    questions = LDObjectField(type_hint='legacy/Questions', null=True)
 
     # eligibility is a JSON field, which lists auth_systems and eligibility details for that auth_system, e.g.
     # [{'auth_system': 'cas', 'constraint': [{'year': 'u12'}, {'year':'u13'}]}, {'auth_system' : 'password'}, {'auth_system' : 'openid', 'constraint': [{'host':'http://myopenid.com'}]}]
-    eligibility = LDObjectField(type_hint='legacy/Eligibility',
-                                null=True)
+    eligibility = LDObjectField(type_hint='legacy/Eligibility', null=True)
 
     # open registration?
     # this is now used to indicate the state of registration,
@@ -123,59 +117,43 @@ class Election(HeliosModel):
     modified_at = models.DateTimeField(auto_now_add=True)
 
     # dates at which things happen for the election
-    frozen_at = models.DateTimeField(
-        auto_now_add=False, default=None, null=True)
+    frozen_at = models.DateTimeField( auto_now_add=False, default=None, null=True)
     frozen_trustee_list = models.BooleanField(default=False)
     use_threshold = models.BooleanField(default=True)
     encrypted_shares_uploaded = models.BooleanField(default=False)
-    archived_at = models.DateTimeField(
-        auto_now_add=False, default=None, null=True)
+    archived_at = models.DateTimeField( auto_now_add=False, default=None, null=True)
 
     # dates for the election steps, as scheduled
     # these are always UTC
-    registration_starts_at = models.DateTimeField(
-        auto_now_add=False, default=None, null=True)
-    voting_starts_at = models.DateTimeField(
-        auto_now_add=False, default=None, null=True)
-    voting_ends_at = models.DateTimeField(
-        auto_now_add=False, default=None, null=True)
+    registration_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+    voting_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+    voting_ends_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
 
     # if this is non-null, then a complaint period, where people can cast a quarantined ballot.
     # we do NOT call this a "provisional" ballot, since provisional implies that the voter has not
     # been qualified. We may eventually add this, but it can't be in the same CastVote table, which
     # is tied to a voter.
-    complaint_period_ends_at = models.DateTimeField(
-        auto_now_add=False, default=None, null=True)
+    complaint_period_ends_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
 
-    tallying_starts_at = models.DateTimeField(
-        auto_now_add=False, default=None, null=True)
+    tallying_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
 
     # dates when things were forced to be performed
-    voting_started_at = models.DateTimeField(
-        auto_now_add=False, default=None, null=True)
-    voting_extended_until = models.DateTimeField(
-        auto_now_add=False, default=None, null=True)
-    voting_ended_at = models.DateTimeField(
-        auto_now_add=False, default=None, null=True)
-    tallying_started_at = models.DateTimeField(
-        auto_now_add=False, default=None, null=True)
-    tallying_finished_at = models.DateTimeField(
-        auto_now_add=False, default=None, null=True)
-    tallies_combined_at = models.DateTimeField(
-        auto_now_add=False, default=None, null=True)
+    voting_started_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+    voting_extended_until = models.DateTimeField(auto_now_add=False, default=None, null=True)
+    voting_ended_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+    tallying_started_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+    tallying_finished_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+    tallies_combined_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
 
     # the hash of all voters (stored for large numbers)
     voters_hash = models.CharField(max_length=100, null=True)
 
     # encrypted tally, each a JSON string
     # used only for homomorphic tallies
-    encrypted_tally = LDObjectField(type_hint='legacy/Tally',
-                                    null=True)
+    encrypted_tally = LDObjectField(type_hint='legacy/Tally', null=True)
 
     # results of the election
-    result = LDObjectField(type_hint='legacy/Result',
-                           null=True)
-    #scheme = LDObjectField(type_hint = 'legacy/Thresholdscheme', null=True)
+    result = LDObjectField(type_hint='legacy/Result', null=True)
 
     # decryption proof, a JSON object
     # no longer needed since it's all trustees
@@ -1145,8 +1123,7 @@ class Voter(HeliosModel):
     alias = models.CharField(max_length=100, null=True)
 
     # we keep a copy here for easy tallying
-    vote = LDObjectField(type_hint='legacy/EncryptedVote',
-                         null=True)
+    vote = LDObjectField(type_hint='legacy/EncryptedVote', null=True)
     vote_hash = models.CharField(max_length=100, null=True)
     cast_at = models.DateTimeField(auto_now_add=False, null=True)
 
@@ -1332,8 +1309,7 @@ class CastVote(HeliosModel):
     # some ballots can be quarantined (this is not the same thing as
     # provisional)
     quarantined_p = models.BooleanField(default=False, null=False)
-    released_from_quarantine_at = models.DateTimeField(
-        auto_now_add=False, null=True)
+    released_from_quarantine_at = models.DateTimeField(auto_now_add=False, null=True)
 
     # when is the vote verified?
     verified_at = models.DateTimeField(null=True)

@@ -30,7 +30,7 @@
         }
 
         function save_questions(callback) {
-          $.post('./save_questions', {'questions_json': $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function (result) {
+          $.post('{% url helios.views.one_election_save_questions election.uuid %}', {'questions_json': $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function (result) {
             callback();
           });
         }
