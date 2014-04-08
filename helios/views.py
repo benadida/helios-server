@@ -878,13 +878,15 @@ Helios""" % (trustee.name, trustee.email)
 
             if election.issues_before_freeze:
                 body += """
-However, there are still some other issues you have to solve before the ballot can be frozen and the election can be opened."""
+However, you have to solve some issues before the ballot can be frozen.
+"""
             else:
                 body += """
-It is now possible to freeze the ballot and open the election."""
+You can now freeze the ballot.
+"""
 
             body += """
-The election admin page can be found at:
+The election dashboard can be found at:
 
     %s
 
