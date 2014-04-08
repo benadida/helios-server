@@ -67,6 +67,14 @@
 	    		This election is complete.
 				</div>
 
+				{% if election.private_p %}
+					<h3>Participation</h3>
+
+					<p>
+						{{num_voters_cast}} out of {{num_voters}} voters cast their vote, or {{participation_percentage}}%.
+					</p>
+				{% endif %}
+
 				<h3>Tally</h3>
 
 				{% for question in election.pretty_result %}

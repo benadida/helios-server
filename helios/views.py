@@ -354,6 +354,14 @@ def one_election_view(request, election):
 
     trustees = Trustee.get_by_election(election)
 
+    num_voters = None
+    num_voters_cast = None
+    participation_percentage = None
+    if election.private_p and election.result:
+        num_voters = len(Voter.get_by_election(election))
+        num_voters_cast = len(Voter.get_by_election(election, True))
+        participation_percentage = round(float(num_voters_cast)/float(num_voters), 2)*100
+
     return render_template(request, 'election_view', {
         'election': election,
         'trustees': trustees,
@@ -366,7 +374,10 @@ def one_election_view(request, election):
         'election_url': election_url,
         'vote_url': vote_url,
         'election_badge_url': election_badge_url,
-        'test_cookie_url': test_cookie_url
+        'test_cookie_url': test_cookie_url,
+        'num_voters': num_voters,
+        'num_voters_cast': num_voters_cast,
+        'participation_percentage': participation_percentage
     })
 
 @election_admin()
