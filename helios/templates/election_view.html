@@ -8,14 +8,19 @@
 
 	<div class="row">
 		<div class="large-12 columns">
-			<h2>{{ election.name }}</h2>
+			<h2>
+				{{ election.name }}
+				{% if admin_p %}
+					<small>[<a href="{% url helios.views.one_election_admin election.uuid %}">Admin</a>]</small>
+				{% endif %}
+			</h2>
 
 			<div class="row">
 				{% if settings.SHOW_USER_INFO %}
 					<div class="large-4 columns">
 						<dl>
-								<dt>Created by</dt>
-								<dd>{{election.admin.display_html_small|safe}}</dd>
+							<dt>Created by</dt>
+							<dd>{{election.admin.display_html_small|safe}}</dd>
 						</dl>
 					</div>
 				{% endif %}

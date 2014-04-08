@@ -25,37 +25,47 @@
           Helios is automatically your first trustee and will handle its key pair generation and decryption automatically. You may add additional trustees if you want, and you can even remove the Helios trustee. However, we recommend you do this only if you have a solid understanding of the trustee's role.
         </p>
 
-        {% if election.use_threshold and not election.frozen_trustee_list %}
-          <div data-alert class="alert-box info">
-            <b>Next</b> After freezing the trustee list, the threshold scheme can be defined.
-          </div>
-        {% endif %}
-
-        {% if not election.frozen_trustee_list %}
-          <a class="button" onclick="return(confirm('Adding your own trustee requires a good bit more work to tally the election. You will need to have trustees generate key pairs and safeguard their secret key.\n\nIf you are not sure what that means, we strongly recommend clicking cancel and letting Helios tally the election for you.'));" href="{% url helios.views.trustees_create election.uuid %}">Add a Trustee &raquo;</a>
-
-          {% if election.use_threshold %}
-            <a class="button" onclick="return confirm('Are you sure you want to freeze the trustee list? You will not be able to add trustees after this step.');" href="{% url helios.views.trustees_freeze election.uuid %}">Freeze the Trustee List &raquo;</a>
-          {% endif %}
-
-          {% if not election.has_helios_trustee %}
-            <a class="secondary button" href="{% url helios.views.trustees_create_helios election.uuid %}">Add Helios as a Trustee</a>
+        {% if not election.use_threshold %}
+          {% if not election.trutees_added_public_keys %}
+            <div data-alert class="alert-box info">
+              <b>Next</b> Wait for the trustees to generate their public keys.
+            </div>
           {% endif %}
         {% else %}
-          {% if not election.encrypted_shares_uploaded %}
+          {% if not election.frozen_trustee_list %}
             <div data-alert class="alert-box info">
-              <b>Next</b> Wait for the trustees to generate the encrypted shares.
+              <b>Next</b> After freezing the trustee list, the threshold scheme can be defined.
             </div>
+          {% endif %}
+        {% endif %}
+
+        <a class="button" onclick="return(confirm('Adding your own trustee requires a good bit more work to tally the election. You will need to have trustees generate key pairs and safeguard their secret key.\n\nIf you are not sure what that means, we strongly recommend clicking cancel and letting Helios tally the election for you.'));" href="{% url helios.views.trustees_create election.uuid %}">Add a Trustee &raquo;</a>
+
+        {% if election.use_threshold %}
+          {% if not election.frozen_trustee_list %}
+            <a class="button" onclick="return confirm('Are you sure you want to freeze the trustee list? You will not be able to add trustees after this step.');" href="{% url helios.views.trustees_freeze election.uuid %}">Freeze the Trustee List &raquo;</a>
+
+            {% if not election.has_helios_trustee %}
+              <a class="secondary button" href="{% url helios.views.trustees_create_helios election.uuid %}">Add Helios as a Trustee</a>
+            {% endif %}
+          {% else %}
+            {% if not election.encrypted_shares_uploaded %}
+              <div data-alert class="alert-box info">
+                <b>Next</b> Wait for the trustees to generate their encrypted shares.
+              </div>
+            {% endif %}
           {% endif %}
         {% endif %}
       {% endif %}
 
-      {% if election.frozen_trustee_list %}
-        <h3>Threshold Scheme</h3>
+      {% if election.use_threshold %}
+        {% if election.frozen_trustee_list %}
+          <h3>Threshold Scheme</h3>
 
-        <p>
-          To decrypt the result, {% if scheme.k == scheme.n %}all{% else %}{{scheme.k}} of the {{scheme.n}}{% endif %} trustees will have to provide their secret key to decrypt the tally.
-        </p>
+          <p>
+            To decrypt the result, <b>{% if scheme.k == scheme.n %}all{% else %}{{scheme.k}} of the {{scheme.n}}{% endif %}</b> trustees will have to provide their secret key to decrypt the tally.
+          </p>
+        {% endif %}
       {% endif %}
 
       <h3>Public Keys</h3>
