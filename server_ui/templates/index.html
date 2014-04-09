@@ -62,7 +62,7 @@ More than <b>100,000 votes</b> have been cast using Helios.
 {% if user %}
 <!--<div class="row right">{{user.display_html_big|safe}}</div>-->
 {% if create_p %}
-<a class="small button" href="{% url helios.views.election_new %}">create election</a>
+<a class="small button" href="{% url helios.views.election_new %}">{% trans "create election" %}</a>
 <h5 class="subheader">{% trans "Administration" %}</h5>
 {% if elections_administered %}
 <ul>
