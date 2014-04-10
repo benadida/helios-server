@@ -173,8 +173,7 @@ SECURE_URL_HOST = get_from_env('SECURE_URL_HOST', 'http://localhost:8000')
 # which usually involve hooking in remote JavaScript, which could be
 # a security issue. Plus, if there's a loading issue, it blocks the whole
 # page. Not cool.
-SOCIALBUTTONS_URL_HOST = get_from_env(
-    'SOCIALBUTTONS_URL_HOST', 'http://localhost:8000')
+SOCIALBUTTONS_URL_HOST = get_from_env('SOCIALBUTTONS_URL_HOST', 'http://localhost:8000')
 
 SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Voting')
 MAIN_LOGO_URL = get_from_env('MAIN_LOGO_URL', '/static/logo.png')
@@ -184,11 +183,9 @@ ALLOW_ELECTION_INFO_URL = (get_from_env('ALLOW_ELECTION_INFO_URL', '0') == '1')
 FOOTER_LINKS = json.loads(get_from_env('FOOTER_LINKS', '[]'))
 FOOTER_LOGO_URL = get_from_env('FOOTER_LOGO_URL', None)
 
-WELCOME_MESSAGE = get_from_env(
-    'WELCOME_MESSAGE', 'This is the default message.')
+WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', 'This is the default message.')
 
-HELP_EMAIL_ADDRESS = get_from_env(
-    'HELP_EMAIL_ADDRESS', 'help@heliosvoting.org')
+HELP_EMAIL_ADDRESS = get_from_env('HELP_EMAIL_ADDRESS', 'help@heliosvoting.org')
 
 AUTH_TEMPLATE_BASE = 'server_ui/templates/base.html'
 HELIOS_TEMPLATE_BASE = 'server_ui/templates/base.html'
@@ -201,8 +198,7 @@ HELIOS_PRIVATE_DEFAULT = False
 
 # The authentication systems that should be enabled.
 #AUTH_ENABLED_AUTH_SYSTEMS = ['cas', 'facebook', 'google', 'linkedin', 'password', 'shibboleth', 'twitter', 'yahoo']
-AUTH_ENABLED_AUTH_SYSTEMS = get_from_env(
-    'AUTH_ENABLED_AUTH_SYSTEMS', 'google,shibboleth').split(',')
+AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google,shibboleth').split(',')
 AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
 
 # Facebook
@@ -217,8 +213,7 @@ TWITTER_USER_TO_FOLLOW = 'heliosvoting'
 TWITTER_REASON_TO_FOLLOW = 'We can DM you when the result has been computed in an election in which you participated.'
 
 # The token for Helios to do direct messaging.
-TWITTER_DM_TOKEN = {
-    'oauth_token': '', 'oauth_token_secret': '', 'user_id': '', 'screen_name': ''}
+TWITTER_DM_TOKEN = {'oauth_token': '', 'oauth_token_secret': '', 'user_id': '', 'screen_name': ''}
 
 # LinkedIn
 LINKEDIN_API_KEY = ''
