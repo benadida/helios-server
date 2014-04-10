@@ -14,8 +14,9 @@ from zeus.core import (c2048, get_random_selection,
                        verify_vote_signature,
                        mix_ciphers,
                        parties_from_candidates,
-                       gamma_decode_to_party_ballot)
-
+                       gamma_decode_to_party_ballot,
+                       FormatError)
+                        
 from httplib import HTTPConnection, HTTPSConnection
 from urlparse import urlparse, parse_qsl
 from urllib import urlencode, unquote

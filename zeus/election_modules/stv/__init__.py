@@ -104,13 +104,14 @@ class StvElection(ElectionModuleBase):
         for index, q in enumerate(questions_data):
             q_answers = ["%s" % (ans) for ans in \
                          q['answers']]
-            group = 0
+            group = index 
             if prepend_empty_answer:
-                params_max = None #int(q['max_answers'])
-                params_min = None #int(q['min_answers'])
+                params_max = len(q_answers) 
+                params_min = 0 
                 if self.count_empty_question:
                     params_min = 0
-                #params = "%d-%d, %d" % (params_min, params_max, group)
+                params = "%d-%d, %d" % (params_min, params_max, group)
+                q_answers.insert(0, "%s: %s" % (q.get('question'), params))
             answers = answers + q_answers
         answers = questions_data[0]['answers']
         self.poll._init_questions(len(answers))

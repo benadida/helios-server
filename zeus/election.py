@@ -545,6 +545,29 @@ class ZeusDjangoElection(ZeusCoreElection):
     def get_results(self):
         if self.poll.get_module().module_id == 'score':
             return gamma_count_range(self.do_get_results(), self.do_get_candidates())
+        if self.poll.get_module().module_id == 'stv':
+            seats = 2
+            droop = False
+            constituencies = {'0': 'aDep', '1': 'aDep', 
+                              '2': 'bDep', '3': 'bDep'}
+            ballots_data = self.poll.result[0]
+            print 'results:'
+            print ballots_data
+            print '-------'
+            ballots = []
+            cands_count = 4
+            from zeus.core import gamma_decode, to_absolute_answers
+            from stv_local_counting.stv import count_stv, Ballot
+            for ballot in ballots_data:
+                ballot = to_absolute_answers(gamma_decode(ballot, cands_count,cands_count),cands_count)
+                ballot = [str(i) for i in ballot]
+                print ballot
+                ballots.append(Ballot(ballot))
+            results = count_stv(ballots, seats, droop, constituencies)
+            print '***'
+            print results
+            print '***'
+            return results
         return gamma_count_parties(self.do_get_results(), self.do_get_candidates())
 
     def get_results_pretty_score(self):
