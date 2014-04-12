@@ -250,10 +250,9 @@ def election_new(request):
 
                     election.save()
 
-                    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
+                    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_admin, args=[election.uuid]))
                 else:
-                    error = "An election with short name %s already exists" % election_params[
-                        'short_name']
+                    error = "An election with short name %s already exists" % election_params['short_name']
             else:
                 error = "No special characters allowed in the short name."
 
@@ -387,11 +386,13 @@ def one_election_admin(request, election):
     can_feature_p = security.user_can_feature_election(user, election)
 
     election_badge_url = get_election_badge_url(election)
+    scheme = election.get_scheme()
     trustees = Trustee.get_by_election(election)
 
     return render_template(request, 'election_admin', {
         'election': election,
         'trustees': trustees,
+        'scheme': scheme,
         'admin_p': admin_p,
         'can_feature_p': can_feature_p,
         'election_badge_url': election_badge_url
@@ -762,7 +763,7 @@ As a reminder, your trustee dashboard is at:
 %s
 
 --
-Helios""" % url
+Helios""" % (trustee.name, url)
 
             tasks.single_trustee_email.delay(trustee.id, "%s - Communication Keys Uploaded" % election.name, body)
 

@@ -7,7 +7,7 @@
   <div class="row">
     <div class="large-12 columns">
       <h2>
-        {{election.name}}&mdash;Trustees <small>[<a href="{% url helios.views.one_election_view election.uuid %}">Back</a>]</small>
+        {{election.name}}&mdash;Trustees <small>[<a href="{% url helios.views.one_election_admin election.uuid %}">Back</a>]</small>
       </h2>
 
       {% if not election.use_threshold %}
@@ -17,6 +17,10 @@
       {% else %}
         <p>
           Trustees are responsible for decrypting the election result. Since this election uses threshold encryption, all trustees will have to go through a key ceremony. During this ceremony, each trustee receives part of the key that will be used to encrypt the ballots. When freezing the election, you will have to define the threshold scheme. This controls the number of trustees that will have to provide their secret key before the results can be decrypted.
+        </p>
+
+        <p>
+          Each trustee will be given a link to his/her personal dashboard. <b>This link is not sent to them automatically, so do not forgot to hit <i>Send Link</i> below.</b>
         </p>
       {% endif %}
 
@@ -43,7 +47,7 @@
 
         {% if election.use_threshold %}
           {% if not election.frozen_trustee_list %}
-            <a class="button" onclick="return confirm('Are you sure you want to freeze the trustee list? You will not be able to add trustees after this step.');" href="{% url helios.views.trustees_freeze election.uuid %}">Freeze the Trustee List &raquo;</a>
+            <a class="button" onclick="return confirm('Are you sure you want to freeze the trustee list? You will not be able to add trustees after this step.');" href="{% url helios.views.trustees_freeze election.uuid %}">Freeze Trustee List &raquo;</a>
 
             {% if not election.has_helios_trustee %}
               <a class="secondary button" href="{% url helios.views.trustees_create_helios election.uuid %}">Add Helios as a Trustee</a>

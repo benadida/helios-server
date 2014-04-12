@@ -336,11 +336,9 @@ class Election(HeliosModel):
 
                 if constraint.has_key('constraint'):
                     for one_constraint in constraint['constraint']:
-                        return_val += "%s" % AUTH_SYSTEMS[constraint['auth_system']
-                                                          ].pretty_eligibility(one_constraint)
+                        return_val += "%s" % AUTH_SYSTEMS[constraint['auth_system']].pretty_eligibility(one_constraint)
                 else:
-                    return_val += "Any %s user" % constraint[
-                        'auth_system'].capitalize()
+                    return_val += "Any %s user" % constraint['auth_system'].capitalize()
 
                 i += 1
                 if i < len(self.eligibility):
@@ -408,7 +406,7 @@ class Election(HeliosModel):
                     if t != self.get_helios_trustee():
                         issues.append({
                             'type': 'trustee keypairs',
-                            'action': 'Wait for trustee %s to decrypt the encrypted shares and upload a public key.' % t.name
+                            'action': 'Wait for trustee %s to complete the key ceremony.' % t.name
                         })
 
         if self.voter_set.count() == 0 and not self.openreg:
@@ -441,6 +439,7 @@ class Election(HeliosModel):
         """
         do we have a tally from all trustees?
         """
+        k = None
         count = 0
 
         scheme = self.get_scheme()
@@ -452,7 +451,7 @@ class Election(HeliosModel):
                 count = count + 1
 
         if self.use_threshold:
-            if count >= k:
+            if k and count >= k:
                 return True
             else:
                 return False
@@ -1552,7 +1551,6 @@ class Trustee(HeliosModel):
         if len(key_list) == len(shares):
             for i in range(len(trustees)):
                 trustee = trustees[i]
-                logging.info('Trustee: ' + trustees[i].name);
 
                 key = trustee.key
                 receiver = key.name

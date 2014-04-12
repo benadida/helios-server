@@ -92,3 +92,11 @@ ul {
 p {
   text-align: justify;
 }
+
+ol ol {
+  list-style: lower-alpha;
+}
+
+ol ol ol {
+  list-style: lower-roman;
+}

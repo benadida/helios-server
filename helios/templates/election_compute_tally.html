@@ -4,7 +4,9 @@
 {% block content %}
   <div class="row">
     <div class="large-12 columns">
-      <h2>{{election.name}}&mdash;Compute Tally</h2>
+      <h2>
+        {{election.name}}&mdash;Compute Tally <small>[<a href="{% url helios.views.one_election_admin election.uuid %}">Back</a>]</small>
+      </h2>
 
       {% if election.num_cast_votes %}
         <p>
@@ -19,14 +21,11 @@
           <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 
           <input class="button" type="submit" value="Compute Tally" />
-          <a class="secondary button" href="./view">Back to Election</a>
         </form>
       {% else %}
         <p>
           No votes have been cast in this election. At least one vote must be cast before you compute the tally.
         </p>
-
-        <a class="secondary button" href="./view">Back to Election</a>
       {% endif %}
     </div>
   </div>

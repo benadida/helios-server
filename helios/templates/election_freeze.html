@@ -4,7 +4,10 @@
 {% block content %}
   <div class="row">
     <div class="large-12 columns">
-      <h2 class="title">{{election.name}}&mdash;Freeze Ballot</h2>
+      <h2>
+        {{election.name}}&mdash;Freeze Ballot <small>[<a href="{% url helios.views.one_election_view election.uuid %}">Back</a>]</small>
+      </h2>
+
       <p>
         Once the ballot is frozen, the questions and options can no longer be modified. The list of trustees and their public keys will also be frozen.
       </p>
@@ -35,14 +38,11 @@
             {{issues.0.action}}
           {% endif %}
         </div>
-
-        <a class="small button" href="{% url helios.views.one_election_view election.uuid %}">Back to the Election</a>
       {% else %}
         <form method="post">
           <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 
-          <input class="button" type="submit" value="Freeze the Ballot" />
-          <a class="secondary button" href="./view">Back to Election</a>
+          <input class="button" type="submit" value="Freeze Ballot" />
         </form>
       {% endif %}
     </div>

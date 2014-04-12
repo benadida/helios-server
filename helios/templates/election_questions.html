@@ -6,7 +6,9 @@
 
   <div class="row">
     <div class="large-12 columns">
-      <h2 class="title">{{election.name}}&mdash;Questions <small>[<a href="{% url helios.views.one_election_view election.uuid %}">Back</a>]</small></h2>
+      <h2 class="title">
+        {{election.name}}&mdash;Questions <small>[<a href="{% url helios.views.one_election_admin election.uuid %}">Back</a>]</small>
+      </h2>
 
       <script language="javascript">
         {% if election.questions %}
