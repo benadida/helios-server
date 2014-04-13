@@ -7,6 +7,9 @@ from django.conf import settings
 
 import urllib
 
+LOGIN_MESSAGE = "Log In with my Shibboleth Account"
+STATUS_UPDATES = False
+
 def _get_service_url():
     # FIXME current URL
     from helios_auth.views import after
