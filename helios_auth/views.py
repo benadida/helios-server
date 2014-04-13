@@ -167,7 +167,7 @@ def _do_auth(request):
     if auth_url:
         return HttpResponseRedirect(auth_url)
     else:
-        return HttpResponse("an error occurred trying to contact " + system_name + ", try again later")
+        return HttpResponse("An error occurred trying to contact " + system_name + ", try again later")
 
 
 def start(request, system_name):
@@ -211,7 +211,7 @@ def after(request):
 
         request.session['user'] = user
     else:
-        return HttpResponseRedirect("%s?%s" % (reverse(perms_why), urllib.urlencode({'system_name': request.session['auth_system_name']})))
+        return HttpResponseRedirect(settings.SECURE_URL_HOST + "%s?%s" % (reverse(perms_why), urllib.urlencode({'system_name': request.session['auth_system_name']})))
 
     # does the helios_auth system want to present an additional view?
     # this is, for example, to prompt the user to follow @heliosvoting
@@ -223,7 +223,7 @@ def after(request):
             return intervention_response
 
     # go to the after intervention page. This is for modularity
-    return HttpResponseRedirect(reverse(after_intervention))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(after_intervention))
 
 
 def after_intervention(request):
@@ -231,4 +231,4 @@ def after_intervention(request):
     if request.session.has_key('auth_return_url'):
         return_url = request.session['auth_return_url']
         del request.session['auth_return_url']
-    return HttpResponseRedirect("%s%s" % (settings.URL_HOST, return_url))
+    return HttpResponseRedirect("%s%s" % (settings.SECURE_URL_HOST, return_url))

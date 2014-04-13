@@ -56,12 +56,10 @@ def get_auth_url(request, redirect_url):
 def get_user_info_after_auth(request):
     tok = request.session['request_token']
     login_client = _get_client_by_token(tok)
-    access_token = login_client.get_access_token(
-        verifier=request.GET.get('oauth_verifier', None))
+    access_token = login_client.get_access_token(verifier=request.GET.get('oauth_verifier', None))
     request.session['access_token'] = access_token
 
-    user_info_xml = ElementTree.fromstring(login_client.oauth_request(
-        'http://api.linkedin.com/v1/people/~:(id,first-name,last-name)', args={}, method='GET'))
+    user_info_xml = ElementTree.fromstring(login_client.oauth_request('http://api.linkedin.com/v1/people/~:(id,first-name,last-name)', args={}, method='GET'))
 
     user_id = user_info_xml.findtext('id')
     first_name = user_info_xml.findtext('first-name')

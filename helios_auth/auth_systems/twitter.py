@@ -60,8 +60,7 @@ def get_user_info_after_auth(request):
     access_token = twitter_client.get_access_token()
     request.session['access_token'] = access_token
 
-    user_info = utils.from_json(twitter_client.oauth_request(
-        'http://api.twitter.com/1/account/verify_credentials.json', args={}, method='GET'))
+    user_info = utils.from_json(twitter_client.oauth_request('http://api.twitter.com/1/account/verify_credentials.json', args={}, method='GET'))
 
     return {'type': 'twitter', 'user_id': user_info['screen_name'], 'name': user_info['name'], 'info': user_info, 'token': access_token}
 
@@ -71,8 +70,7 @@ def user_needs_intervention(user_id, user_info, token):
     check to see if user is following the users we need
     """
     twitter_client = _get_client_by_token(token)
-    friendship = utils.from_json(twitter_client.oauth_request(
-        'http://api.twitter.com/1/friendships/exists.json', args={'user_a': user_id, 'user_b': USER_TO_FOLLOW}, method='GET'))
+    friendship = utils.from_json(twitter_client.oauth_request('http://api.twitter.com/1/friendships/exists.json', args={'user_a': user_id, 'user_b': USER_TO_FOLLOW}, method='GET'))
     if friendship:
         return None
 

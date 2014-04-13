@@ -74,8 +74,7 @@ def send_message(user_id, name, user_info, subject, body):
     """
     send email to google users. user_id is the email for google.
     """
-    send_mail(subject, body, settings.SERVER_EMAIL,
-              ["%s <%s>" % (name, user_id)], fail_silently=False)
+    send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, user_id)], fail_silently=False)
 
 
 def check_constraint(constraint, user_info):

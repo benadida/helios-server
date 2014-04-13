@@ -54,8 +54,7 @@ def get_user_category(user_id):
     theurl = CAS_ELIGIBILITY_URL % user_id
 
     auth_handler = urllib2.HTTPBasicAuthHandler()
-    auth_handler.add_password(
-        realm=CAS_ELIGIBILITY_REALM, uri=theurl, user=CAS_USERNAME, passwd=CAS_PASSWORD)
+    auth_handler.add_password(realm=CAS_ELIGIBILITY_REALM, uri=theurl, user=CAS_USERNAME, passwd=CAS_PASSWORD)
     opener = urllib2.build_opener(auth_handler)
     urllib2.install_opener(opener)
 
@@ -97,13 +96,11 @@ def get_saml_info(ticket):
     response = ElementTree.fromstring(raw_response)
 
     # ugly path down the tree of attributes
-    attributes = response.findall(
-        '{http://schemas.xmlsoap.org/soap/envelope/}Body/{urn:oasis:names:tc:SAML:1.0:protocol}Response/{urn:oasis:names:tc:SAML:1.0:assertion}Assertion/{urn:oasis:names:tc:SAML:1.0:assertion}AttributeStatement/{urn:oasis:names:tc:SAML:1.0:assertion}Attribute')
+    attributes = response.findall('{http://schemas.xmlsoap.org/soap/envelope/}Body/{urn:oasis:names:tc:SAML:1.0:protocol}Response/{urn:oasis:names:tc:SAML:1.0:assertion}Assertion/{urn:oasis:names:tc:SAML:1.0:assertion}AttributeStatement/{urn:oasis:names:tc:SAML:1.0:assertion}Attribute')
 
     values = {}
     for attribute in attributes:
-        values[str(attribute.attrib['AttributeName'])] = attribute.findtext(
-            '{urn:oasis:names:tc:SAML:1.0:assertion}AttributeValue')
+        values[str(attribute.attrib['AttributeName'])] = attribute.findtext('{urn:oasis:names:tc:SAML:1.0:assertion}AttributeValue')
 
     # parse response for netid, display name, and employee type (category)
     return {'user_id': values.get('mail', None), 'name': values.get('displayName', None), 'category': values.get('employeeType', None)}
@@ -233,8 +230,7 @@ def send_message(user_id, name, user_info, subject, body):
     else:
         name = email
 
-    send_mail(subject, body, settings.SERVER_EMAIL,
-              ["%s <%s>" % (name, email)], fail_silently=False)
+    send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, email)], fail_silently=False)
 
 #
 # eligibility
@@ -257,8 +253,7 @@ def generate_constraint(category_id, user):
 
 def list_categories(user):
     current_year = datetime.datetime.now().year
-    return [{'id': str(y), 'name': 'Class of %s' % y} for y
-            in range(current_year, current_year + 5)]
+    return [{'id': str(y), 'name': 'Class of %s' % y} for y in range(current_year, current_year + 5)]
 
 
 def eligibility_category_id(constraint):

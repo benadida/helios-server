@@ -79,8 +79,7 @@ def update_status(user_id, user_info, token, message):
 
 def send_message(user_id, user_name, user_info, subject, body):
     if user_info.has_key('email'):
-        send_mail(subject, body, settings.SERVER_EMAIL, [
-                  "%s <%s>" % (user_name, user_info['email'])], fail_silently=False)
+        send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (user_name, user_info['email'])], fail_silently=False)
 
 
 ##
