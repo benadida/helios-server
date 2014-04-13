@@ -7,9 +7,6 @@ import urllib
 
 from django.conf import settings
 
-SHIBBOLETH_URL = 'https://localhost/Shibboleth.sso/Login?target=%s'
-SHIBBOLETH_LOGOUT_URL = 'https://idp.kuleuven.be/idp/logout'
-
 SHIBBOLETH_SESSION_KEY = 'Shib_Session_Index'
 SHIBBOLETH_PERSON_KEY = 'Shib_Person_uid'
 SHIBBOLETH_FIRST_NAME = 'Shib_Person_givenName'
