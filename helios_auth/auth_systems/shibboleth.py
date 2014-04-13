@@ -2,10 +2,10 @@
 Shibboleth authentication
 """
 
-import os
-import urllib
-
+from django.core.mail import send_mail
 from django.conf import settings
+
+import urllib
 
 def _get_service_url():
     # FIXME current URL

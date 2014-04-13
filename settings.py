@@ -152,8 +152,7 @@ MEDIA_ROOT = ROOT_PATH + 'media/'
 VOTER_UPLOAD_REL_PATH = 'voters/%Y/%m/%d'
 
 # Change your email settings
-DEFAULT_FROM_EMAIL = get_from_env(
-    'DEFAULT_FROM_EMAIL', 'helios@heliosvoting.org')
+DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'helios@heliosvoting.org')
 DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Helios')
 SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 
