@@ -35,6 +35,7 @@ import tasks
 
 from security import *
 from helios_auth.security import get_user, save_in_session_across_logouts
+import helios_auth.views as auth_views
 
 import uuid
 import datetime
@@ -977,8 +978,7 @@ def password_voter_login(request, election):
     """
 
     # the URL to send the user to after they've logged in
-    return_url = request.REQUEST.get(
-        'return_url', reverse(one_election_cast_confirm, args=[election.uuid]))
+    return_url = request.REQUEST.get('return_url', reverse(one_election_cast_confirm, args=[election.uuid]))
     bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
 
     if request.method == "GET":
@@ -988,11 +988,22 @@ def password_voter_login(request, election):
             return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
 
         password_login_form = forms.VoterPasswordForm()
-        return render_template(request, 'password_voter_login',
-                               {'election': election,
-                                'return_url': return_url,
-                                'password_login_form': password_login_form,
-                                'bad_voter_login': bad_voter_login})
+
+        auth_systems = copy.copy(settings.AUTH_ENABLED_AUTH_SYSTEMS)
+        try:
+            auth_systems.remove('password')
+        except:
+            pass
+
+        login_box = auth_views.login_box_raw(request, return_url='/', auth_systems=auth_systems)
+
+        return render_template(request, 'password_voter_login', {
+            'election': election,
+            'return_url': return_url,
+            'password_login_form': password_login_form,
+            'login_box': login_box,
+            'bad_voter_login': bad_voter_login
+        })
 
     login_url = request.REQUEST.get('login_url', None)
 
@@ -1002,15 +1013,13 @@ def password_voter_login(request, election):
         if election.private_p:
             login_url = reverse(password_voter_login, args=[election.uuid])
         else:
-            login_url = reverse(
-                one_election_cast_confirm, args=[election.uuid])
+            login_url = reverse(one_election_cast_confirm, args=[election.uuid])
 
     password_login_form = forms.VoterPasswordForm(request.POST)
 
     if password_login_form.is_valid():
         try:
-            voter = election.voter_set.get(voter_login_id=password_login_form.cleaned_data['voter_id'].strip(),
-                                           voter_password=password_login_form.cleaned_data['password'].strip())
+            voter = election.voter_set.get(voter_login_id=password_login_form.cleaned_data['voter_id'].strip(), voter_password=password_login_form.cleaned_data['password'].strip())
 
             request.session['CURRENT_VOTER'] = voter
 

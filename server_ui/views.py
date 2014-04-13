@@ -33,8 +33,7 @@ def home(request):
     create_p = can_create_election(request)
 
     if create_p:
-        elections_administered = Election.get_by_user_as_admin(
-            user, archived_p=False, limit=5)
+        elections_administered = Election.get_by_user_as_admin(user, archived_p=False, limit=5)
     else:
         elections_administered = None
 
@@ -49,13 +48,9 @@ def home(request):
     except:
         pass
 
-    login_box = auth_views.login_box_raw(
-        request, return_url='/', auth_systems=auth_systems)
+    login_box = auth_views.login_box_raw(request, return_url='/', auth_systems=auth_systems)
 
-    return render_template(
-        request,
-        'index',
-        {
+    return render_template(request, 'index', {
             'elections': featured_elections,
             'elections_administered': elections_administered,
             'elections_voted': elections_voted,
