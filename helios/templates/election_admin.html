@@ -73,6 +73,12 @@
                       {% else %}
                         Combine trustee decryptions and release results.
                       {% endifequal %}
+
+                      {% ifequal election.num_trustees 1 %}
+                        The result is released and all voters are notified.
+                      {% else %}
+                        The decryption shares from the trustees are combined and the tally is decrypted. Once you do this, the tally will be immediately available for all to see, and all voters will be notified that the tally is ready.
+                      {% endifequal %}
                     {% endif %}
                   {% endif %}
                 {% endif %}

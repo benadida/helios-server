@@ -170,7 +170,9 @@
               {% endif %}
 
               <td>
-                <tt>{% if voter.vote_hash %}{{voter.vote_hash}}</tt> [<a href="{% url helios.views.castvote_shortcut vote_tinyhash=voter.vote_tinyhash %}">View</a>]{% endif %}
+                {% if voter.vote_hash %}
+                  [<a href="{% url helios.views.castvote_shortcut vote_tinyhash=voter.vote_tinyhash %}">View</a>] <tt>{{voter.vote_hash}}</tt>
+                {% endif %}
               </td>
             </tr>
           {% empty %}
