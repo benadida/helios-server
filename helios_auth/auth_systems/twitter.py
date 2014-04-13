@@ -74,7 +74,7 @@ def user_needs_intervention(user_id, user_info, token):
     if friendship:
         return None
 
-    return HttpResponseRedirect(reverse(follow_view))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(follow_view))
 
 
 def _get_client_by_request(request):
@@ -128,4 +128,4 @@ def follow_view(request):
                 'http://api.twitter.com/1/friendships/create.json', args={'screen_name': USER_TO_FOLLOW}, method='POST')
 
         from helios_auth.views import after_intervention
-        return HttpResponseRedirect(reverse(after_intervention))
+        return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(after_intervention))

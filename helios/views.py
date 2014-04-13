@@ -469,9 +469,9 @@ def trustees_create(request, election):
             trustee = Trustee(
                 uuid=str(uuid.uuid1()), election=election, name=name, email=email)
             trustee.save()
-            return HttpResponseRedirect(reverse(trustees_list_view, args=[election.uuid]))
+            return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustees_list_view, args=[election.uuid]))
     else:
-        return HttpResponseRedirect(reverse(trustees_list_view, args=[election.uuid]))
+        return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustees_list_view, args=[election.uuid]))
 
 
 @election_admin(frozen=False)
@@ -562,7 +562,7 @@ Helios""" % url
 
                         tasks.single_trustee_email.delay(trustee.id, "%s - Threshold Scheme Defined" % election.name, body)
 
-            return HttpResponseRedirect(reverse(trustees_list_view, args=[election.uuid]))
+            return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustees_list_view, args=[election.uuid]))
 
     else:
         trustees = Trustee.objects.filter(election=election)

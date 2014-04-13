@@ -63,7 +63,7 @@ def password_login_view(request):
                 user = User.get_by_type_and_id('password', username)
                 if password_check(user, password):
                     request.session['password_user'] = user
-                    return HttpResponseRedirect(reverse(after))
+                    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(after))
             except User.DoesNotExist:
                 pass
             error = 'Bad Username or Password'
