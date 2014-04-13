@@ -1,1 +1,1 @@
-Tally Released: {{custom_subject|safe}}
+Tally Released{% if custom_subject %}: {{custom_subject|safe}}{% endif %}

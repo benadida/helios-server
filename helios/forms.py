@@ -31,8 +31,8 @@ class ElectionEditForm(ElectionForm):
 
 
 class EmailVotersForm(forms.Form):
-    subject = forms.CharField(max_length=80)
-    body = forms.CharField(max_length=2000, widget=forms.Textarea)
+    subject = forms.CharField(required=False, max_length=80)
+    body = forms.CharField(required=False, max_length=2000, widget=forms.Textarea)
     send_to = forms.ChoiceField(label='Send To', initial='all', choices=[('all', 'All Voters'), ('voted', 'Voters Who Have Cast a Ballot'), ('not-voted', 'Voters Who Have Not Yet Cast a Ballot')])
 
 

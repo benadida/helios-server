@@ -2,9 +2,9 @@ Dear {{voter.name}},
 
 The tally for {{election.name}} has been computed and released:
 
-  {{election_url}}
+  {{election_url}}{% if custom_messgae %}
 
-{{custom_message|safe}}
+{{custom_message|safe}}{% endif %}
 {% if voter.vote_hash %}
 Your smart ballot tracker in this election was:
 
