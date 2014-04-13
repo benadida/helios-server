@@ -22,15 +22,15 @@ def get_auth_url(request, redirect_url):
 
 
 def get_user_info_after_auth(request):
-    if not request[settings.SHIBBOLETH_SESSION_KEY]:
+    if not request.META[settings.SHIBBOLETH_SESSION_KEY]:
         return None
 
-    user_id = request[settings.SHIBBOLETH_PERSON_KEY]
-    email = request[settings.SHIBBOLETH_EMAIL]
+    user_id = request.META[settings.SHIBBOLETH_PERSON_KEY]
+    email = request.META[settings.SHIBBOLETH_EMAIL]
 
     name = ''
     if settings.SHIBBOLETH_FIRST_NAME != '' and settings.SHIBBOLETH_LAST_NAME != '':
-        name = "%s %s" % (request[settings.SHIBBOLETH_FIRST_NAME], request[settings.SHIBBOLETH_LAST_NAME])
+        name = "%s %s" % (request.META[settings.SHIBBOLETH_FIRST_NAME], request.META[settings.SHIBBOLETH_LAST_NAME])
 
     return {'type': 'shibboleth', 'user_id': user_id, 'name': name, 'info': {'email': email}, 'token': {}}
 
