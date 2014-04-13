@@ -229,12 +229,6 @@ CAS_ELIGIBILITY_REALM = get_from_env('CAS_ELIGIBILITY_REALM', '')
 SHIBBOLETH_URL = get_from_env('SHIBBOLETH_URL', '')
 SHIBBOLETH_LOGOUT_URL = get_from_env('SHIBBOLETH_LOGOUT_URL', '')
 
-SHIBBOLETH_SESSION_KEY = 'Shib_Session_Index'
-SHIBBOLETH_PERSON_KEY = 'Shib_Person_uid'
-SHIBBOLETH_FIRST_NAME = 'Shib_Person_givenName'
-SHIBBOLETH_LAST_NAME = 'Shib_Person_surname'
-SHIBBOLETH_EMAIL = 'Shib_Person_mail'
-
 # Email
 EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
 EMAIL_PORT = int(get_from_env('EMAIL_PORT', '2525'))
