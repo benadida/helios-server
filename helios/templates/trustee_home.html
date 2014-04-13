@@ -182,6 +182,10 @@
           $('#first_step_waiting_div').hide();
           $('#second_step').show();
           $('#encry_shares_textarea').val(encry_shares_text);
+
+          window.onbeforeunload = function() {
+            return 'You have not yet uploaded your encrypted shares.';
+          };
         }
       } else {
         $('#first_step_waiting_div').hide();
@@ -381,6 +385,10 @@
       $('#sk_download').hide();
       $('#pk_hash').show();
       $('#pk_form').show();
+
+      window.onbeforeunload = function() {
+        return 'You have not yet uploaded your public key.';
+      };
     }
 
     function handleFileSelect(e) {
@@ -409,6 +417,14 @@
       });
 
       $('.sk_upload').change(handleFileSelect);
+
+      $('#second_step form').submit(function() {
+        window.onbeforeunload = null;
+      });
+
+      $('#pk_form form').submit(function() {
+        window.onbeforeunload = null;
+      });
     });
   </script>
 

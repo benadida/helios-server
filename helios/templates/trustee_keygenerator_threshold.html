@@ -29,6 +29,10 @@
           generate_keypair();
         });
       });
+
+      $('#pk_form form').submit(function() {
+        window.onbeforeunload = null;
+      });
     });
 
     function generate_keypair() {
@@ -91,21 +95,6 @@
     var SK_ENC_DOWNLOADED = false;
     var SK_SIGN_DOWNLOADED = false;
 
-    function show_pk_link(sk_downloaded) {
-      if (sk_downloaded == 'enc') {
-        $('#sk_enc_link').addClass('secondary');
-        SK_ENC_DOWNLOADED = true;
-      }
-
-      if (sk_downloaded == 'sign') {
-        $('#sk_sign_link').addClass('secondary');
-        SK_SIGN_DOWNLOADED = true;
-      }
-
-      if (SK_ENC_DOWNLOADED && SK_SIGN_DOWNLOADED)
-        $('#pk_link').show();
-    }
-
     function show_pk() {
       $('#sk_download').hide();
       $('#name').show();
@@ -115,6 +104,10 @@
       $('#pk_hash_sign').show();
 
       $('#pk_form').show();
+
+      window.onbeforeunload = function() {
+        return 'You have not yet uploaded your public keys.';
+      };
     }
   </script>
 
@@ -159,7 +152,7 @@
         <form method="post">
           <textarea id="pk_textarea_enc" name="public_key_json_enc" style="height: 100px; display: none;"></textarea>
           <textarea id="pk_textarea_sign" name="public_key_json_sign" style="height: 100px; display: none;"></textarea>
-          <input class="button" type="submit" value="Upload Public Keys">
+          <input class="button" id="pk_submit" type="submit" value="Upload Public Keys">
         </form>
 
         <div id="applet_div"></div>
