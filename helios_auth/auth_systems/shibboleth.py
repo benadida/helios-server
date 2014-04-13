@@ -5,6 +5,8 @@ Shibboleth authentication
 import os
 import urllib
 
+from django.conf import settings
+
 SHIBBOLETH_URL = 'https://localhost/Shibboleth.sso/Login?target=%s'
 SHIBBOLETH_LOGOUT_URL = 'https://idp.kuleuven.be/idp/logout'
 
@@ -35,8 +37,7 @@ def get_user_info_after_auth(request):
 
     user_id = os.environ[SHIBBOLETH_PERSON_KEY]
     email = os.environ[SHIBBOLETH_EMAIL]
-    name = "%s %s" % (
-        os.environ[SHIBBOLETH_FIRST_NAME], os.environ[SHIBBOLETH_LAST_NAME])
+    name = "%s %s" % (os.environ[SHIBBOLETH_FIRST_NAME], os.environ[SHIBBOLETH_LAST_NAME])
 
     return {'type': 'shibboleth', 'user_id': user_id, 'name': name, 'info': {'email': email}, 'token': {}}
 
