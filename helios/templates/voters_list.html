@@ -23,7 +23,7 @@
       {% if admin_p and not election.frozen_at %}
         <div class="panel">
           {% if election.private_p %}
-            <h5>Your election is marked private, which means you cannot open registration up more widely.</h5>
+            <p>Your election is marked private, which means you cannot open registration up more widely.</p>
           {% else %}
             <form method="post" action="{% url helios.views.voters_eligibility election.uuid %}">
               <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
@@ -157,7 +157,7 @@
               {% if admin_p or not election.use_voter_aliases %}
                 <td>
                   {% if admin_p %}
-                    {% if email_voters and election.frozen_at %}[<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}">E-mail</a>]{% endif %}
+                    {% if email_voters and election.frozen_at %}[<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_id}}">E-mail</a>]{% endif %}
                     [<a onclick="return confirm('Are you sure you want to remove {{voter.name}}?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">&times;</a>]
                   {% endif %}
 
