@@ -25,7 +25,7 @@ def _get_service_url():
 
 def get_auth_url(request, redirect_url):
     request.session['shibboleth_redirect_url'] = redirect_url
-    return SHIBBOLETH_URL % urllib.quote(_get_service_url())
+    return settings.SHIBBOLETH_URL % urllib.quote(_get_service_url())
 
 
 def get_user_info_after_auth(request):
@@ -43,7 +43,7 @@ def do_logout(user):
     """
     perform logout of Shibboleth by redirecting to the Shibboleth logout URL
     """
-    return HttpResponseRedirect(SHIBBOLETH_LOGOUT_URL)
+    return HttpResponseRedirect(settings.SHIBBOLETH_LOGOUT_URL)
 
 
 def update_status(token, message):
