@@ -76,7 +76,7 @@
               {% if elections_administered %}
                 <ul class="no-bullet">
                   {% for election in elections_administered %}
-                    <li> <a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
+                    <li> <a href="{% url helios.views.one_election_admin election.uuid %}">{{election.name}}</a></li>
                   {% endfor %}
                 </ul>
               {% else %}
