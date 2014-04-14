@@ -102,7 +102,7 @@ Helios
         tally_helios_decrypt.delay(election_id=election.id)
 
     if election.use_threshold:
-        trustees = Trustee.objects.filter(election=election)
+        trustees = Trustee.get_by_election(election)
 
         for trustee in trustees:
             if not trustee.helios_trustee:
@@ -112,7 +112,7 @@ Helios
                 body = """Dear %s,
 
 The election administrator has computed the encrypted tally.
-Before the result can be release, you will have to decrypt your part, though.
+Before the result can be release, you will have to compute your partial encryption.
 
 As a reminder, your trustee dashboard is at:
 
@@ -121,7 +121,7 @@ As a reminder, your trustee dashboard is at:
 --
 Helios""" % (trustee.name, url)
 
-                single_trustee_email.delay(trustee.id, "%s - Threshold Scheme Defined" % election.name, body)
+                single_trustee_email.delay(trustee.id, "%s - Compute Partial Decryption" % election.name, body)
 
 
 @task()

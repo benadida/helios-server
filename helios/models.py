@@ -1450,26 +1450,21 @@ class Trustee(HeliosModel):
     secret = models.CharField(max_length=100)
 
     # public key
-    public_key = LDObjectField(type_hint='legacy/EGPublicKey',
-                               null=True)
+    public_key = LDObjectField(type_hint='legacy/EGPublicKey', null=True)
     public_key_hash = models.CharField(max_length=100)
 
     # secret key
     # if the secret key is present, this means
     # Helios is playing the role of the trustee.
-    secret_key = LDObjectField(type_hint='legacy/EGSecretKey',
-                               null=True)
+    secret_key = LDObjectField(type_hint='legacy/EGSecretKey', null=True)
 
     # proof of knowledge of secret key
-    pok = LDObjectField(type_hint='legacy/DLogProof',
-                        null=True)
+    pok = LDObjectField(type_hint='legacy/DLogProof', null=True)
 
     # decryption factors
-    decryption_factors = LDObjectField(type_hint=datatypes.arrayOf(datatypes.arrayOf('core/BigInteger')),
-                                       null=True)
+    decryption_factors = LDObjectField(type_hint=datatypes.arrayOf(datatypes.arrayOf('core/BigInteger')), null=True)
 
-    decryption_proofs = LDObjectField(type_hint=datatypes.arrayOf(datatypes.arrayOf('legacy/EGZKProof')),
-                                      null=True)
+    decryption_proofs = LDObjectField(type_hint=datatypes.arrayOf(datatypes.arrayOf('legacy/EGZKProof')), null=True)
     key = models.ForeignKey(Key, null=True)
     helios_trustee = models.BooleanField(default=False, null=False)
     added_encrypted_shares = models.BooleanField(default=False, null=False)

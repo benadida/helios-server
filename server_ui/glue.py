@@ -14,14 +14,14 @@ import views
 
 def vote_cast_send_message(user, voter, election, cast_vote, **kwargs):
     # Prepare the message
-    subject = "%s - Vote Cast" % election.name
+    subject = "%s - Cast Vote" % election.name
 
     body = """
 You have successfully cast a vote in %s.
 
 Your ballot is archived at:
 
-  %s""" % (election.name, helios.views.get_castvote_url(cast_vote))
+    %s""" % (election.name, helios.views.get_castvote_url(cast_vote))
 
     if election.use_voter_aliases:
         body += """
@@ -30,6 +30,7 @@ Your voter alias is : %s
 """ % voter.alias
 
     body += """
+
 --
 Helios
 """

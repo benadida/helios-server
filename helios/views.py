@@ -499,7 +499,7 @@ def trustees_freeze(request, election):
         form = forms.ThresholdSchemeForm(request.POST)
         if form.is_valid():
             # process the data in form.cleaned_data
-            trustees = Trustee.objects.filter(election=election)
+            trustees = Trustee.get_by_election(election)
             scheme = Thresholdscheme()
             scheme.election = election
             scheme.n = len(trustees)
@@ -567,7 +567,7 @@ Helios""" % url
             return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustees_list_view, args=[election.uuid]))
 
     else:
-        trustees = Trustee.objects.filter(election=election)
+        trustees = Trustee.get_by_election(election)
         n = len(trustees)
         return render_template(request, 'trustees_freeze', {'election': election, 'n': n})
 
