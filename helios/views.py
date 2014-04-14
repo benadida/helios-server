@@ -545,6 +545,7 @@ Since all trustees have already uploaded their communication keys, you can now g
                                 body += """
 Although you have already uploaded your communication keys, other trustees have not.
 You will therefore have to wait for them to do this, before you can generate your encrypted shares.
+When this has happened, you will be notified again.
 """
 
                         else:
@@ -760,7 +761,7 @@ All trustees have uploaded their communication keys and you can now generate you
 
 As a reminder, your trustee dashboard is at:
 
-%s
+    %s
 
 --
 Helios""" % (trustee.name, url)
@@ -1331,10 +1332,6 @@ def one_election_archive(request, election):
 
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_admin, args=[election.uuid]))
 
-# changed from admin to view because
-# anyone can see the questions, the administration aspect is now
-# built into the page
-
 
 @election_view()
 def one_election_questions(request, election):
@@ -1759,7 +1756,8 @@ def voters_email(request, election):
         'default_subject': default_subject,
         'default_body': default_body,
         'template': template,
-        'templates': TEMPLATES})
+        'templates': TEMPLATES
+    })
 
 # Individual Voters
 
