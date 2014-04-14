@@ -564,6 +564,7 @@ class ZeusDjangoElection(ZeusCoreElection):
                 print ballot
                 ballots.append(Ballot(ballot))
             results = count_stv(ballots, seats, droop, constituencies)
+            
             print '***'
             print results
             print '***'

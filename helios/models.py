@@ -645,7 +645,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
   # results of the election
   result = LDObjectField(type_hint = 'phoebus/Result',
                          null=True)
-
+  stv_results = JSONField(null=True)
   voters_last_notified_at = models.DateTimeField(null=True, default=None)
 
   objects = PollManager()
@@ -1180,7 +1180,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
     jsonfile = file(self.get_result_file_path('json', 'json'), 'w')
     json.dump(results_json, jsonfile)
     jsonfile.close()
-
+    
     # pdf report
     if self.get_module().module_id =='score':
         from zeus.results_report import build_doc
@@ -1195,6 +1195,9 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
         csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
         csv_from_score_polls(self.election, [self], csvfile)
         csvfile.close()
+    elif self.get_module().module_id == 'stv':
+        self.stv_results = json.dumps(results_json)
+        self.save()
     else:
         from zeus.results_report import build_doc
         results_name = self.election.name

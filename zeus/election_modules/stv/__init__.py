@@ -106,6 +106,7 @@ class StvElection(ElectionModuleBase):
                          q['answers']]
             group = index 
             if prepend_empty_answer:
+                #remove params and q questions
                 params_max = len(q_answers) 
                 params_min = 0 
                 if self.count_empty_question:
