@@ -5,6 +5,7 @@ Ben Adida
 2009-07-05
 """
 
+from django.conf import settings
 from django.http import *
 from django.core.urlresolvers import reverse
 
@@ -96,8 +97,7 @@ def do_local_logout(request):
     field_names_to_save = field_names_to_save - set([FIELDS_TO_SAVE])
     field_names_to_save = list(field_names_to_save)
 
-    fields_to_save = dict(
-        [(name, request.session.get(name, None)) for name in field_names_to_save])
+    fields_to_save = dict([(name, request.session.get(name, None)) for name in field_names_to_save])
 
     # let's not forget to save the list of fields to save
     fields_to_save[FIELDS_TO_SAVE] = field_names_to_save
@@ -113,23 +113,21 @@ def do_local_logout(request):
     request.session['user_for_remote_logout'] = user
 
 
-def do_remote_logout(request, user, return_url="/"):
+def do_remote_logout(request, user, return_url='/'):
     # FIXME: do something with return_url
     auth_system = AUTH_SYSTEMS[user['type']]
 
     # does the helios_auth system have a special logout procedure?
-    user_for_remote_logout = request.session.get(
-        'user_for_remote_logout', None)
+    user_for_remote_logout = request.session.get('user_for_remote_logout', None)
     del request.session['user_for_remote_logout']
     if hasattr(auth_system, 'do_logout'):
         response = auth_system.do_logout(user_for_remote_logout)
         return response
 
 
-def do_complete_logout(request, return_url="/"):
+def do_complete_logout(request, return_url='/'):
     do_local_logout(request)
-    user_for_remote_logout = request.session.get(
-        'user_for_remote_logout', None)
+    user_for_remote_logout = request.session.get('user_for_remote_logout', None)
     if user_for_remote_logout:
         response = do_remote_logout(request, user_for_remote_logout, return_url)
         return response
@@ -140,8 +138,7 @@ def logout(request):
     """
     logout
     """
-
-    return_url = request.GET.get('return_url', "/")
+    return_url = request.GET.get('return_url', '/')
     response = do_complete_logout(request, return_url)
     if response:
         return response
@@ -184,7 +181,7 @@ def start(request, system_name):
 
 def why(request):
     if request.method == "GET":
-        return render_template(request, "why")
+        return render_template(request, 'why')
 
     return _do_auth(request)
 
@@ -193,7 +190,7 @@ def after(request):
     # which helios_auth system were we using?
     if not request.session.has_key('auth_system_name'):
         do_local_logout(request)
-        return HttpResponseRedirect("/")
+        return HttpResponseRedirect('/')
 
     system = AUTH_SYSTEMS[request.session['auth_system_name']]
 
@@ -222,7 +219,7 @@ def after(request):
 
 
 def after_intervention(request):
-    return_url = "/"
+    return_url = '/'
     if request.session.has_key('auth_return_url'):
         return_url = request.session['auth_return_url']
         del request.session['auth_return_url']
