@@ -3,7 +3,7 @@
 
 {% block content %}
   {% if admin_p %}
-    {% include "partials/election_progress.html" with current="view" uuid=election.uuid %}
+    {% include "partials/election_progress.html" with current="view" election=election %}
   {% endif %}
 
   <div class="row">
@@ -226,11 +226,4 @@
       </div>
     </div>
   </div>
-
-  <script language="javascript">
-    $(document).ready(function (){
-      if ($('#next-help .alert-box').html().trim() == '<b>Next</b>')
-        $('#next-help').remove();
-    });
-  </script>
 {% endblock %}

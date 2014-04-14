@@ -2,7 +2,7 @@
 {% block title %}Voters and Ballot Tracking Center for {{election.name}}{% endblock %}
 
 {% block content %}
-  {% include "partials/election_progress.html" with current="voters" uuid=election.uuid %}
+  {% include "partials/election_progress.html" with current="voters" election=election %}
 
   <div class="row">
     <div class="large-12 columns">

@@ -2,7 +2,7 @@
 {% block title %}Admin for {{election.name}}{% endblock %}
 
 {% block content %}
-  {% include "partials/election_progress.html" with current="view" uuid=election.uuid %}
+  {% include "partials/election_progress.html" with current="admin" election=election %}
 
   <div class="row">
     <div class="large-12 columns">
@@ -30,7 +30,9 @@
         {% endif %}
       </h2>
 
-      <p>TODO: Explanation</p>
+      <p>
+        On this page you will find the procedure that has to be followed to get this election up and running. You'll notice that there are quite a few steps, but all of them are well-explained once you get there. The blue box that is shown at the top, gives you a reminder of which task is next. Below all steps you will find a button that takes you to its page.
+      </p>
 
       <h3>Procedure</h3>
 
@@ -149,7 +151,7 @@
         <li>{% if election.num_cast_votes > 0 %}<s>{% endif %}Wait for the voters to cast their ballots. {% if not election.voting_ends_at %}The election will end at your discretion.{% else %}The election will automatically end at {{election.voting_ends_at}}.{% endif %}{% if election.num_cast_votes > 0 %}</s>{% endif %}</li>
         <li>{% if election.ready_for_decryption %}<s>{% endif %}Compute encrypted tally. The encrypted votes will be combined into an encrypted tally.{% if election.ready_for_decryption %}</s>{% endif %}</li>
         <li>{% if election.ready_for_decryption_combination %}<s>{% endif %}Wait for the trustees to provide their share of the key used to encrypt the ballots.{% if election.ready_for_decryption_combination %}</s>{% endif %}</li>
-        <li>{% if election.result %}<s>{% endif %}{% ifequal election.num_trustees 1 %}Release results and notify all voters.{% else %}Combine trustee decryptions, release results and notify all voters.{% endifequal %}{% if election.result %}</s>{% endif %}</li>
+        <li>{% if election.result %}<s>{% endif %}{% ifequal election.num_trustees 1 %}Release tally and notify all voters.{% else %}Combine trustee decryptions, release results and notify all voters.{% endifequal %}{% if election.result %}</s>{% endif %}</li>
       </ol>
 
       {% if election.use_threshold %}
@@ -170,12 +172,12 @@
                 <a class="button" href="{% url helios.views.one_election_freeze election.uuid %}">Freeze Ballot &raquo;</a>
               {% else %}
                 {% if not election.ready_for_decryption_combination %}
-                  {% if not election.ready_for_decryption and election.num_cast_votes > 0 %}
+                  {% if not election.ready_for_decryption and election.num_cast_votes > 0 and not election.tallying_started_at %}
                     <a class="button" href="{% url helios.views.one_election_compute_tally election.uuid %}">Compute Tally &raquo;</a>
                   {% endif %}
                 {% else %}
                   {% if not election.result %}
-                    <a class="button" href="{% url helios.views.combine_decryptions election.uuid %}">Release Results &raquo;</a>
+                    <a class="button" href="{% url helios.views.combine_decryptions election.uuid %}">Release Tally &raquo;</a>
                   {% endif %}
                 {% endif %}
               {% endif %}

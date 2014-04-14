@@ -40,10 +40,6 @@ select {
   width: auto;
 }
 
-.breadcrumbs > *:before {
-  content: "/";
-}
-
 .alert-box b {
   padding-right: 5px;
 }
@@ -52,7 +48,6 @@ select {
   margin-bottom: 0;
 }
 
-<<<<<<< HEAD
 .panel p {
   margin-bottom: 5px;
 }
@@ -99,4 +94,72 @@ ol ol {
 
 ol ol ol {
   list-style: lower-roman;
+}
+
+li s {
+  color: #666;
+}
+
+.breadcrumbs > *:before {
+  content: "";
+  margin: 0;
+  top: 0;
+}
+
+.breadcrumbs {
+  overflow: hidden;
+}
+
+.breadcrumbs li {
+  float: left;
+}
+
+.breadcrumbs li a {
+  padding-left: 50px;
+  position: relative;
+  display: block;
+  float: left;
+}
+
+.breadcrumbs li a:after {
+  content: " ";
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 50px solid transparent;
+  border-bottom: 50px solid transparent;
+  border-left: 30px solid #f4f4f4;
+  position: absolute;
+  top: 50%;
+  margin-top: -50px;
+  left: 100%;
+  z-index: 2;
+}
+
+.breadcrumbs li a:before {
+  content: " ";
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 50px solid transparent;
+  border-bottom: 50px solid transparent;
+  border-left: 30px solid gainsboro;
+  position: absolute;
+  top: 50%;
+  margin-top: -50px;
+  margin-left: 1px;
+  left: 100%;
+  z-index: 1;
+}
+
+.breadcrumbs li:first-child a {
+  padding-left: 0;
+}
+
+.breadcrumbs li:last-child a:before {
+  border: 0;
+}
+
+.breadcrumbs li:last-child a:after {
+  border: 0;
 }

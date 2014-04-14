@@ -2,7 +2,7 @@
 {% block title %}Questions for {{election.name}}{% endblock %}
 
 {% block content %}
-  {% include "partials/election_progress.html" with current="questions" uuid=election.uuid %}
+  {% include "partials/election_progress.html" with current="questions" election=election %}
 
   <div class="row">
     <div class="large-12 columns">
@@ -26,9 +26,12 @@
         CSRF_TOKEN = '{{csrf_token}}';
         DEFAULT_NUM_ANSWERS = 5;
 
-        function refresh() {
+        function refresh(reload) {
           $('#questions').processTemplate({'questions': QUESTIONS, 'admin_p': ADMIN_P});
           add_answers($('#answers'), DEFAULT_NUM_ANSWERS);
+
+          if (reload)
+            setTimeout(location.reload(true), 2500);
         }
 
         function save_questions(callback) {
@@ -69,7 +72,7 @@
         function question_add(form) {
           var new_q = get_question_from_form(form);
           QUESTIONS.push(new_q);
-          save_questions(refresh);
+          save_questions(refresh(true));
         }
 
         function question_remove(q_num) {
@@ -81,7 +84,7 @@
               new_questions.push(q);
             });
             QUESTIONS = new_questions;
-            save_questions(refresh);
+            save_questions(refresh(true));
           }
         }
 
@@ -89,7 +92,7 @@
           $('#q_view_' + q_num).hide();
           $('#q_edit_' + q_num).show();
 
-          // Set the default values for this question
+          // set the default values for this question
           var form = $('#q_edit_' + q_num + '_form');
           var q_data = QUESTIONS[q_num];
           form[0].min.value = q_data.min;
@@ -97,7 +100,7 @@
           form[0].question.value = q_data.question;
           form[0].result_type.value = q_data.result_type;
 
-          // Add the answers
+          // add the answers
           var answers = $('#q_edit_' + q_num + '_answers');
           if (answers.find('input.answer').length < q_data.answers.length) {
             add_answers(answers, q_data.answers.length);
@@ -115,7 +118,7 @@
         function question_update(q_num, form) {
           var new_q = get_question_from_form(form);
           QUESTIONS[q_num] = new_q;
-          save_questions(refresh);
+          save_questions(refresh(false));
         }
 
         function add_answer(el) {
@@ -133,12 +136,12 @@
           var temp_q = QUESTIONS[num];
           QUESTIONS[num] = QUESTIONS[num-1];
           QUESTIONS[num-1] = temp_q;
-          save_questions(refresh);
+          save_questions(refresh(false));
         }
 
         $(document).ready(function () {
           $('#questions').setTemplateURL('/static/helios/static_templates/question.html');
-          refresh();
+          refresh(false);
         });
       </script>
 
