@@ -24,8 +24,8 @@
                   <li class="unavailable"><a href="{% url helios.views.voters_list_pretty election.uuid %}">Voters</a></li>
 
                   {% if election.issues_before_freeze|length == 0 %}
-                    <li {% if current == "view" %}class="current"{% endif %}><a href="{% url helios.views.one_election_view election.uuid %}">View</a></li>
                     <li {% if current == "admin" %}class="current"{% endif %}><a href="{% url helios.views.one_election_admin election.uuid %}">Admin</a></li>
+                    <li {% if current == "view" %}class="current"{% endif %}><a href="{% url helios.views.one_election_view election.uuid %}">View</a></li>
                   {% endif %}
                 {% endif %}
               {% endif %}

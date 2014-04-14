@@ -1664,6 +1664,7 @@ def voters_upload_cancel(request, election):
 def voters_email(request, election):
     if not helios.VOTERS_EMAIL:
         return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_admin, args=[election.uuid]))
+
     TEMPLATES = [
         ('vote', 'Time to Vote'),
         ('info', 'Additional Info'),
@@ -1693,12 +1694,14 @@ def voters_email(request, election):
         'election_vote_url': election_vote_url,
         'custom_subject': default_subject,
         'custom_message': '&lt;BODY&gt;',
-        'voter': {'vote_hash': '<SMART_TRACKER>',
-                  'name': '<VOTER_NAME>',
-                  'voter_login_id': '<VOTER_LOGIN_ID>',
-                  'voter_password': '<VOTER_PASSWORD>',
-                  'voter_type': election.voter_set.all()[0].voter_type,
-                  'election': election}
+        'voter': {
+            'vote_hash': '<SMART_TRACKER>',
+            'name': '<VOTER_NAME>',
+            'voter_login_id': '<VOTER_LOGIN_ID>',
+            'voter_password': '<VOTER_PASSWORD>',
+            'voter_type': election.voter_set.all()[0].voter_type,
+            'election': election
+        }
     })
 
     if request.method == "GET":

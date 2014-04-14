@@ -1093,8 +1093,9 @@ class VoterFile(models.Model):
                 else:
                     new_voter = Voter(uuid=voter_uuid, user=user, voter_name=voter['name'], election=election)
 
+                new_voter.voter_login_id = voter['voter_id']
+
                 if not user:
-                    new_voter.voter_login_id = voter['voter_id']
                     new_voter.generate_password()
 
                 new_voters.append(new_voter)
@@ -1279,7 +1280,10 @@ class Voter(HeliosModel):
         return self.user.display_html_big
 
     def send_message(self, subject, body):
-        self.user.send_message(subject, body)
+        if self.voter_email:
+            send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (self.name, self.voter_email)], fail_silently=False)
+        else:
+            self.user.send_message(subject, body)
 
     def generate_password(self, length=10):
         if self.voter_password:

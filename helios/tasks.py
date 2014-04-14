@@ -70,7 +70,7 @@ def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={
     subject = render_template_raw(None, subject_template, the_vars)
     body = render_template_raw(None, body_template, the_vars)
 
-    voter.user.send_message(subject, body)
+    voter.send_message(subject, body)
 
 
 @task()
