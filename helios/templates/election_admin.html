@@ -143,10 +143,10 @@
               </li>
             </ol>
           {% else %}
-            {% if election.num_trustees > 0 %}<s>{% endif %}Manage the election's trustees.{% if election.trustees|length > 0 %}</s>{% endif %}
+            {% if election.num_trustees > 1 %}<s>{% endif %}Manage the election's trustees.{% if election.trustees|length > 0 %}</s>{% endif %}
             <ol>
-              <li>{% if election.num_trustees > 0 %}<s>{% endif %}Enter their names and e-mail addresses and send them the link to their dashboard.{% if election.num_trustees > 0 %}</s>{% endif %}</li>
-              <li>{% if election.trustees_added_public_keys %}<s>{% endif %}Wait for the trustees to generate their public keys.{% if election.trustees_added_public_keys %}</s>{% endif %}</li>
+              <li>{% if election.num_trustees > 1 %}<s>{% endif %}Enter their names and e-mail addresses and send them the link to their dashboard.{% if election.num_trustees > 1 %}</s>{% endif %}</li>
+              <li>{% if election.num_trustees > 1 and election.trustees_added_public_keys %}<s>{% endif %}Wait for the trustees to generate their public keys.{% if election.trustees_added_public_keys %}</s>{% endif %}</li>
             </ol>
           {% endif %}
         </li>
@@ -190,7 +190,7 @@
           {% endif %}
         {% endif %}
       {% else %}
-        {% if not election.num_trustees > 0 %}
+        {% if not election.num_trustees > 1 %}
           <a class="button" href="{% url helios.views.trustees_list_view election.uuid %}">Trustees &raquo;</a>
         {% else %}
           {% if not election.questions %}

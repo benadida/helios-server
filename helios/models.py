@@ -311,7 +311,9 @@ class Election(HeliosModel):
             return []
 
     def eligibility_category_id(self, user_type):
-        "when eligibility is by category, this returns the category_id"
+        """
+        when eligibility is by category, this returns the category_id
+        """
         if not self.eligibility:
             return None
 
@@ -325,7 +327,7 @@ class Election(HeliosModel):
     @property
     def pretty_eligibility(self):
         if not self.eligibility:
-            return "Anyone"
+            return 'Anyone!'
         else:
             i = 0
 
