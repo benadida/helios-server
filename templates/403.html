@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block title %}{% trans "Could not complete your request" %}{% endblock %}
+
+{% block content %}
+
+{% blocktrans %}
+The action you have requested could not be performed.
+Possible reasons are that you do not have appropriate persmissions or you are trying to send email to voters of a non frozen election, for instance.
+{% endblocktrans %}
+
+{% endblock %}
