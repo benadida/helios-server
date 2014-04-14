@@ -143,15 +143,20 @@
               </li>
             </ol>
           {% else %}
+            {% if election.num_trustees > 0 %}<s>{% endif %}Manage the election's trustees.{% if election.trustees|length > 0 %}</s>{% endif %}
+            <ol>
+              <li>{% if election.num_trustees > 0 %}<s>{% endif %}Enter their names and e-mail addresses and send them the link to their dashboard.{% if election.num_trustees > 0 %}</s>{% endif %}</li>
+              <li>{% if election.trustees_added_public_keys %}<s>{% endif %}Wait for the trustees to generate their public keys.{% if election.trustees_added_public_keys %}</s>{% endif %}</li>
+            </ol>
           {% endif %}
         </li>
         <li>{% if election.questions %}<s>{% endif %}Add questions to the ballot.{% if election.questions %}</s>{% endif %}</li>
         <li>{% if election.openreg or election.num_voters > 0 %}<s>{% endif %}Enter your voter list (or open registration to the public).{% if election.openreg or election.num_voters > 0 %}</s>{% endif %}</li>
         <li>{% if election.frozen_at %}<s>{% endif %}Freeze ballot and open election. {% if election.voting_starts_at %}Once you do this, the election will be ready for voting and will open automatically at {{election.voting_starts_at}}, as per your settings.{% else %}Once you do this, the election will be immediately open for voting.{% endif %}{% if election.frozen_at %}</s>{% endif %}</li>
         <li>{% if election.num_cast_votes > 0 %}<s>{% endif %}Wait for the voters to cast their ballots. {% if not election.voting_ends_at %}The election will end at your discretion.{% else %}The election will automatically end at {{election.voting_ends_at}}.{% endif %}{% if election.num_cast_votes > 0 %}</s>{% endif %}</li>
-        <li>{% if election.ready_for_decryption %}<s>{% endif %}Compute encrypted tally. The encrypted votes will be combined into an encrypted tally.{% if election.ready_for_decryption %}</s>{% endif %}</li>
+        <li>{% if election.tallying_started_at %}<s>{% endif %}Compute encrypted tally. The encrypted votes will be combined into an encrypted tally.{% if election.tallying_started_at %}</s>{% endif %}</li>
         <li>{% if election.ready_for_decryption_combination %}<s>{% endif %}Wait for the trustees to provide their share of the key used to encrypt the ballots.{% if election.ready_for_decryption_combination %}</s>{% endif %}</li>
-        <li>{% if election.result %}<s>{% endif %}{% ifequal election.num_trustees 1 %}Release tally and notify all voters.{% else %}Combine trustee decryptions, release results and notify all voters.{% endifequal %}{% if election.result %}</s>{% endif %}</li>
+        <li>{% if election.result %}<s>{% endif %}Release tally and notify all voters.{% if election.result %}</s>{% endif %}</li>
       </ol>
 
       {% if election.use_threshold %}
@@ -161,6 +166,32 @@
           {% else %}
             <a class="button" href="{% url helios.views.trustees_freeze election.uuid %}">Freeze Trustee List &raquo;</a>
           {% endifequal %}
+        {% else %}
+          {% if not election.questions %}
+            <a class="button" href="{% url helios.views.one_election_questions election.uuid %}">Questions &raquo;</a>
+          {% else %}
+            {% if not election.openreg and election.num_voters == 0 %}
+              <a class="button" href="{% url helios.views.voters_list_pretty election.uuid %}">Voters &raquo;</a>
+            {% else %}
+              {% if not election.frozen_at and election.issues_before_freeze|length == 0 %}
+                <a class="button" href="{% url helios.views.one_election_freeze election.uuid %}">Freeze Ballot &raquo;</a>
+              {% else %}
+                {% if not election.ready_for_decryption_combination %}
+                  {% if not election.ready_for_decryption and election.num_cast_votes > 0 and not election.tallying_started_at %}
+                    <a class="button" href="{% url helios.views.one_election_compute_tally election.uuid %}">Compute Tally &raquo;</a>
+                  {% endif %}
+                {% else %}
+                  {% if not election.result %}
+                    <a class="button" href="{% url helios.views.combine_decryptions election.uuid %}">Release Tally &raquo;</a>
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% else %}
+        {% if not election.num_trustees > 0 %}
+          <a class="button" href="{% url helios.views.trustees_list_view election.uuid %}">Trustees &raquo;</a>
         {% else %}
           {% if not election.questions %}
             <a class="button" href="{% url helios.views.one_election_questions election.uuid %}">Questions &raquo;</a>

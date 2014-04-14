@@ -30,6 +30,30 @@
                 {% endif %}
               {% endif %}
             {% endif %}
+          {% else %}
+            {% if not election.num_trustees > 0 %}
+              <li {% if current == "trustees" %}class="current"{% endif %}><a href="{% url helios.views.trustees_list_view election.uuid %}">Trustees</a></li>
+            {% else %}
+              <li class="unavailable"><a href="{% url helios.views.trustees_list_view election.uuid %}">Trustees</a></li>
+              <li {% if current == "admin" %}class="current"{% endif %}><a href="{% url helios.views.one_election_admin election.uuid %}">Admin</a></li>
+
+              {% if not election.questions %}
+                <li {% if current == "questions" %}class="current"{% endif %}><a href="{% url helios.views.one_election_questions election.uuid %}">Questions</a></li>
+              {% else %}
+                <li class="unavailable"><a href="{% url helios.views.one_election_questions election.uuid %}">Questions</a></li>
+
+                {% if not election.openreg and election.num_voters == 0 %}
+                  <li {% if current == "voters" %}class="current"{% endif %}><a href="{% url helios.views.voters_list_pretty election.uuid %}">Voters</a></li>
+                {% else %}
+                  <li class="unavailable"><a href="{% url helios.views.voters_list_pretty election.uuid %}">Voters</a></li>
+
+                  {% if election.issues_before_freeze|length == 0 %}
+                    <li {% if current == "admin" %}class="current"{% endif %}><a href="{% url helios.views.one_election_admin election.uuid %}">Admin</a></li>
+                    <li {% if current == "view" %}class="current"{% endif %}><a href="{% url helios.views.one_election_view election.uuid %}">View</a></li>
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            {% endif %}
           {% endif %}
         {% endif %}
       </ul>
