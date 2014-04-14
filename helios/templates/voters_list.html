@@ -2,7 +2,9 @@
 {% block title %}Voters and Ballot Tracking Center for {{election.name}}{% endblock %}
 
 {% block content %}
-  {% include "partials/election_progress.html" with current="voters" election=election %}
+  {% if admin_p %}
+    {% include "partials/election_progress.html" with current="voters" election=election %}
+  {% endif %}
 
   <div class="row">
     <div class="large-12 columns">
