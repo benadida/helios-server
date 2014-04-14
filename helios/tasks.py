@@ -101,6 +101,28 @@ Helios
     if election.has_helios_trustee():
         tally_helios_decrypt.delay(election_id=election.id)
 
+    if election.use_threshold:
+        trustees = Trustee.objects.filter(election=election)
+
+        for trustee in trustees:
+            if not trustee.helios_trustee:
+                url = settings.SECURE_URL_HOST + reverse(trustee_login, args=[election.short_name, trustee.email, trustee.secret])
+
+                # send a note to trustee
+                body = """Dear %s,
+
+The election administrator has computed the encrypted tally.
+Before the result can be release, you will have to decrypt your part, though.
+
+As a reminder, your trustee dashboard is at:
+
+    %s
+
+--
+Helios""" % (trustee.name, url)
+
+                single_trustee_email.delay(trustee.id, "%s - Threshold Scheme Defined" % election.name, body)
+
 
 @task()
 def tally_helios_decrypt(election_id):
