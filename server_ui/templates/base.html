@@ -87,13 +87,13 @@
 
   <div class="footer" id="footer">
     {% if user %}
-      Logged in as <b>{{user.display_html_small|safe}}</b>. [<a href="{% url helios_auth.views.logout %}?return_url={{CURRENT_URL}}">Logout</a>]
+      Logged in as <b>{{user.display_html_small|safe}}</b>. [<a href="{% url helios_auth.views.logout %}?return_url={{current_url}}">Logout</a>]
     {% else %}
       {% if voter %}
-        You are logged in as voter <b>{% if voter.alias %}{{voter.alias}}{% else %}{{voter.name}}{% endif %}</b> in election <b>{{voter.election.name}}</b>. [<a href="{{settings.SECURE_URL_HOST}}/{% url helios_auth.views.logout %}?return_url={{CURRENT_URL}}">Logout</a>]
+        You are logged in as voter <b>{% if voter.alias %}{{voter.alias}}{% else %}{{voter.name}}{% endif %}</b> in election <b>{{voter.election.name}}</b>. [<a href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.logout %}?return_url={{current_url}}">Logout</a>]
       {% else %}
         {% if settings.SHOW_LOGIN_OPTIONS %}
-          Not logged in. [<a href="{{settings.SECURE_URL_HOST}}/{% url helios_auth.views.index %}?return_url={{CURRENT_URL}}">Log In</a>]
+          Not logged in. [<a href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.index %}?return_url={{current_url}}">Log In</a>]
         {% else %}
           Powered by <a href="http://heliosvoting.org">Helios Voting</a>.
         {% endif %}

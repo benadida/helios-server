@@ -131,8 +131,7 @@ def do_complete_logout(request, return_url="/"):
     user_for_remote_logout = request.session.get(
         'user_for_remote_logout', None)
     if user_for_remote_logout:
-        response = do_remote_logout(
-            request, user_for_remote_logout, return_url)
+        response = do_remote_logout(request, user_for_remote_logout, return_url)
         return response
     return None
 
@@ -147,7 +146,7 @@ def logout(request):
     if response:
         return response
 
-    return HttpResponseRedirect(return_url)
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + return_url)
 
 
 def _do_auth(request):
@@ -227,4 +226,4 @@ def after_intervention(request):
     if request.session.has_key('auth_return_url'):
         return_url = request.session['auth_return_url']
         del request.session['auth_return_url']
-    return HttpResponseRedirect("%s%s" % (settings.SECURE_URL_HOST, return_url))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + return_url)
