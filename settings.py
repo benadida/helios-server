@@ -188,7 +188,8 @@ HELP_EMAIL_ADDRESS = get_from_env('HELP_EMAIL_ADDRESS', 'help@heliosvoting.org')
 
 AUTH_TEMPLATE_BASE = 'server_ui/templates/base.html'
 HELIOS_TEMPLATE_BASE = 'server_ui/templates/base.html'
-HELIOS_ADMIN_ONLY = False
+
+HELIOS_ADMIN_ONLY = get_from_env('HELIOS_ADMIN_ONLY', False)
 HELIOS_VOTERS_UPLOAD = True
 HELIOS_VOTERS_EMAIL = True
 
