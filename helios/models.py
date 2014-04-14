@@ -23,6 +23,8 @@ import copy
 import itertools
 import unicodecsv
 
+from validate_email import validate_email
+
 from crypto import electionalgs, algs, elgamal, utils
 from helios import utils as heliosutils
 import helios.views
@@ -272,8 +274,7 @@ class Election(HeliosModel):
         # random_filename = str(uuid.uuid4())
         # new_voter_file.voter_file.save(random_filename, uploaded_file)
 
-        new_voter_file = VoterFile(
-            election=self, voter_file_content=uploaded_file.read())
+        new_voter_file = VoterFile(election=self, voter_file_content=uploaded_file.read())
         new_voter_file.save()
 
         self.append_log(ElectionLog.VOTER_FILE_ADDED)
@@ -1013,8 +1014,7 @@ class VoterFile(models.Model):
 
     uploaded_at = models.DateTimeField(auto_now_add=True)
     processing_started_at = models.DateTimeField(auto_now_add=False, null=True)
-    processing_finished_at = models.DateTimeField(
-        auto_now_add=False, null=True)
+    processing_finished_at = models.DateTimeField(auto_now_add=False, null=True)
     num_voters = models.IntegerField(null=True)
 
     confirmed_p = models.BooleanField(default=False, null=False)
@@ -1047,10 +1047,16 @@ class VoterFile(models.Model):
             return_dict = {'voter_id': voter_fields[0].strip()}
 
             if len(voter_fields) > 1:
-                return_dict['email'] = voter_fields[1].strip()
+                if validate_email(voter_fields[1].strip()):
+                    return_dict['email'] = voter_fields[1].strip()
+                else:
+                    return_dict['name'] = voter_fields[1].strip()
 
             if len(voter_fields) > 2:
-                return_dict['name'] = voter_fields[2].strip()
+                if validate_email(voter_fields[1].strip()):
+                    return_dict['name'] = voter_fields[2].strip()
+                else:
+                    return_dict['user_type'] = voter_fields[2].strip()
 
             if len(voter_fields) > 3:
                 return_dict['user_type'] = voter_fields[3].strip()
@@ -1076,10 +1082,16 @@ class VoterFile(models.Model):
 
                 user = None
                 if 'user_type' in voter.keys():
-                    user = User.update_or_create(voter['user_type'], voter['voter_id'], voter['name'], {'email': voter['email']})
+                    if 'email' in voter.keys():
+                        user = User.update_or_create(voter['user_type'], voter['voter_id'], voter['name'], {'email': voter['email']})
+                    else:
+                        user = User.update_or_create(voter['user_type'], voter['voter_id'], voter['name'], {})
 
                 voter_uuid = str(uuid.uuid4())
-                new_voter = Voter(uuid=voter_uuid, user=user, voter_name=voter['name'], voter_email=voter['email'], election=election)
+                if 'email' in voter.keys():
+                    new_voter = Voter(uuid=voter_uuid, user=user, voter_name=voter['name'], voter_email=voter['email'], election=election)
+                else:
+                    new_voter = Voter(uuid=voter_uuid, user=user, voter_name=voter['name'], election=election)
 
                 if not user:
                     new_voter.voter_login_id = voter['voter_id']

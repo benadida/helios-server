@@ -30,11 +30,11 @@
       </p>
 
       <pre>
-        &lt;voter_id&gt;,&lt;email&gt,&lt;full name&gt;[,&lt;user_type&gt;]
+        &lt;voter_id&gt;[,&lt;email&gt],&lt;full_name&gt;[,&lt;user_type&gt;]
       </pre>
 
       <p>
-        The user type field is optional and can be used to specify the type of user account that should be created for the voter. If left empty, a password will be generated for the voter.
+        If the system cannot validate the second field as an e-mail address, it will assume that it specifies the user's full name instead. The user type field is optional and can be used to specify the type of user account that should be created for the voter. If left empty, a password will be generated for the voter.
       </p>
 
       <p>

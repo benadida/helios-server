@@ -16,7 +16,7 @@
         <thead>
           <tr>
             <th>Voter ID</th>
-            <th>Email Address</th>
+            <th>E-mail Address</th>
             <th>Name</th>
             <th>User Type</th>
           </tr>
@@ -26,7 +26,7 @@
           {% for v in voters %}
             <tr>
               <td>{{v.voter_id}}</td>
-              <td>{{v.email}}</td>
+              <td>{% if v.email %}{{v.email}}{% endif %}</td>
               <td>{{v.name}}</td>
               {% if v.user_type %}
                 <td>{{v.user_type|capfirst}}
