@@ -11,6 +11,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import *
 from django.http import *
 from django.conf import settings
+from django.utils.translation import ugettext as _
 
 from models import *
 from helios_auth.security import get_user
@@ -79,7 +80,7 @@ def do_election_checks(election, props):
   
 def get_election_by_uuid(uuid):
   if not uuid:
-    raise Exception("no election ID")
+    raise Exception(_("no election ID"))
       
   return Election.get_by_uuid(uuid)
   

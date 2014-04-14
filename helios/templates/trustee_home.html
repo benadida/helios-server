@@ -10,9 +10,9 @@ You have successfully uploaded your public key.<br />
 Your public key fingerprint is: <b>
 {% endblocktrans %}
 {{trustee.public_key_hash}}</b>.<br />
-{% trans "You can" %} <a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">{% trans "verify that you have the right secret key" %}</a>.
+{% blocktrans %}You can{% endblocktrans %} <a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">{% blocktrans %}verify that you have the right secret key {% endblocktrans %}</a>.
 {% else %}
-<a href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">{% trans "setup your key" %}</a>
+<a href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">{% blocktrans %}setup your key {% endblocktrans %}</a>
 {% endif %}
 </p>
 
@@ -23,8 +23,8 @@ Your public key fingerprint is: <b>
 You have successfully uploaded your decryption.
 {% endblocktrans %}
 {% else %}
-    {% trans "The encrypted tally for this election is ready." %}<br />
-    <a href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">{% trans "decrypt with your key" %}</a>
+    {% blocktrans %}The encrypted tally for this election is ready.{% endblocktrans %}<br />
+    <a href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">{% blocktrans %}decrypt with your key{% endblocktrans %}</a>
 {% endif %}
 {% else %}
 {% blocktrans %}

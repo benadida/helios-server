@@ -13,6 +13,7 @@ import boto.ses
 from helios_auth.utils import *
 
 from django.conf import settings
+from django.utils.translation import ugettext as _
   
 import random, logging
 import hashlib, hmac, base64
@@ -75,7 +76,7 @@ def dictToURLParams(d):
 ## 
 
 def xml_escape(s):
-    raise Exception('not implemented yet')
+    raise Exception(_('not implemented yet'))
 
 def xml_unescape(s):
     new_s = s.replace('&lt;','<').replace('&gt;','>')

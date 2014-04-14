@@ -14,6 +14,8 @@ import signals
 import copy
 
 from django.conf import settings
+from django.utils.translation import ugettext as _
+
 
 @task()
 def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
@@ -90,7 +92,7 @@ def election_compute_tally(election_id):
     election.compute_tally()
 
     election_notify_admin.delay(election_id = election_id,
-                                subject = "encrypted tally computed",
+                                subject = _("encrypted tally computed"),
                                 body = """
 The encrypted tally for election %s has been computed.
 
@@ -106,7 +108,7 @@ def tally_helios_decrypt(election_id):
     election = Election.objects.get(id = election_id)
     election.helios_trustee_decrypt()
     election_notify_admin.delay(election_id = election_id,
-                                subject = 'Helios Decrypt',
+                                subject = _('Helios Decrypt'),
                                 body = """
 Helios has decrypted its portion of the tally
 for election %s.
@@ -120,7 +122,7 @@ def voter_file_process(voter_file_id):
     voter_file = VoterFile.objects.get(id = voter_file_id)
     voter_file.process()
     election_notify_admin.delay(election_id = voter_file.election.id, 
-                                subject = 'voter file processed',
+                                subject = _('voter file processed'),
                                 body = """
 Your voter file upload for election %s
 has been processed.
