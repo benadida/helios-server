@@ -21,7 +21,7 @@ class StvElection(ElectionModuleBase):
     }
     auto_append_answer = True
     count_empty_question = False
-    booth_questions_tpl = ''
+    booth_questions_tpl = 'question_ecounting'
     no_questions_added_message = _('No questions set')
 
     def questions_update_view(self, request, election, poll):

@@ -50,6 +50,7 @@ BM.ModuleBase = {
   },
   
   handle_selected_click: function(e) {
+    debugger;
     e.preventDefault();
     var el = $(e.target).closest("a");
     var choice = parseInt(el.data('absolute-index'));
@@ -179,6 +180,7 @@ BM.ModuleBase = {
   get_questions_answers: function(q) {
     var answers = _.map(this.data, function(){ return []});
     var qmaps = this.get_answers_map();
+    debugger;
     _.each(this.get_answer(), function(ans) {
       answers[qmaps[ans]].push(ans);
     });
@@ -338,6 +340,7 @@ BM.ModuleBase,
 
 
 BM.SimpleElection = function(election) {
+  election.questions_data[0].max_answers = election.questions_data[0].answers.length;
   this._init(election);
 }
 
@@ -627,10 +630,30 @@ BM.ModuleBase,
   seal_tpl: 'seal_score.html'
 });
 
+BM.STVElection = function(election) {
+  this._init(election);
+}
+
+_.extend(BM.STVElection.prototype,
+BM.ModuleBase, {
+  tpl: 'question_stv',
+  can_add: function(choice, question) {
+    return true;
+  },
+
+  enable_answer: function(choice) {
+    this.get_answer_el(choice).removeClass().addClass('button small enabled');
+  },
+  
+  select_answer: function(choice) {
+    this.get_answer_el(choice).removeClass().addClass('button small disabled');
+  },
+});
+
 BM.registry = {
   simple: BM.SimpleElection,
   parties: BM.PartiesElection,
   score: BM.ScoreElection,
-  //ecounting: BM.EcountingElection
+  stv: BM.STVElection
 }
 

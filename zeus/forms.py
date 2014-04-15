@@ -227,7 +227,7 @@ class QuestionBaseForm(forms.Form):
 
         for ans in range(answers):
             field_key = 'answer_%d' % ans
-            self.fields[field_key] = forms.CharField(max_length=100,
+            self.fields[field_key] = forms.CharField(max_length=300,
                                               required=True,
                                               widget=AnswerWidget)
             self.fields[field_key].widget.attrs = {'class': 'answer_input'}
@@ -361,7 +361,7 @@ class StvForm(QuestionBaseForm):
         for ans in range(answers):
             field_key = 'answer_%d' % ans
             field_key1 = 'department_%d' % ans
-            self.fields[field_key] = forms.CharField(max_length=100,
+            self.fields[field_key] = forms.CharField(max_length=300,
                                               required=True,
                                               widget=CandidateWidget(departments=DEPARTMENT_CHOICES),
                                               label=('Candidate'))
