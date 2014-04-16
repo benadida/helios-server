@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-02 12:04+0300\n"
+"POT-Creation-Date: 2014-04-16 16:10+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -30,51 +30,51 @@ msgstr "Ίδρυμα"
 msgid "Institution does not exist"
 msgstr "Λίστα Ιδρυμάτων"
 
-#: views.py:102
+#: views.py:103
 msgid "Changes on user were successfully saved"
 msgstr ""
 
-#: views.py:120
+#: views.py:121
 #, python-format
 msgid "User %(uid)s was created with password %(password)s."
 msgstr "Δημιουργήθηκε ο χρήστης %(uid)s με κωδικό %(password)s. "
 
-#: views.py:163
+#: views.py:162
 msgid "Institution created."
 msgstr "To ίδρυμα δημιουργήθηκε."
 
-#: views.py:191 views.py:246 views.py:339
+#: views.py:193 views.py:250 views.py:355
 msgid "You didn't choose a user"
 msgstr "Δεν επιλέχθηκε χρήστης"
 
-#: views.py:238
+#: views.py:242
 #, python-format
 msgid "New password for user %(uid)s is %(new_pass)s"
 msgstr "Ο νέος κωδικός για τον χρήστη %(uid)s είναι ο %(new_pass)s"
 
-#: views.py:243
+#: views.py:247
 msgid "You are not authorized to do this"
 msgstr "Δεν επιτρέπεται αυτή η ενέργεια"
 
-#: views.py:281
+#: views.py:290
 msgid "Institution $(inst_name)s deleted"
 msgstr "Το ίδρυμα %(inst_name)s διαγράφηκε"
 
-#: views.py:287
+#: views.py:296
 #, python-format
 msgid "Institution %(inst_name)s can't be deleted (users > 0)"
 msgstr "Το ίδρυμα %(inst_name)s δεν μπορεί να διαγραφεί (χρήστες > 0)"
 
-#: views.py:291
+#: views.py:300
 msgid "No such institution"
 msgstr "Αυτό το ίδρυμα δεν υπάρχει."
 
-#: views.py:322 views.py:334
+#: views.py:337 views.py:350
 #, python-format
 msgid "User %(ufd)s succesfuly deleted!"
 msgstr "Ο χρήστης %(ufd)s διαγράφηκε επιτυχώς!"
 
-#: views.py:330
+#: views.py:345
 msgid "You are not authorized to delete that user"
 msgstr "Δεν επιτρέπεται να διαγράψετε αυτόν τον χρήστη"
 

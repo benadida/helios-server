@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-02 12:04+0300\n"
+"POT-Creation-Date: 2014-04-16 16:10+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -216,7 +216,7 @@ msgstr "Επιβεβαιώστε την οριστικοποίηση της ψη
 msgid "Are you sure you want to delete the selected poll ?"
 msgstr "Επιβεβαιώστε τη διαγραφή της επιλεγμένης κάλπης"
 
-#: model_tasks.py:209
+#: model_tasks.py:210
 msgid "Results"
 msgstr "Αποτελέσματα"
 
@@ -296,13 +296,12 @@ msgid "No questions set"
 msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"
 
 #: election_modules/stv/__init__.py:17
-msgid "Single Transferable Vote Elections"
-msgstr ""
+msgid "Single Transferable Vote Election"
+msgstr "Ψηφοφορία με ταξινομική ψήφο"
 
 #: election_modules/stv/__init__.py:20
-#, fuzzy
 msgid "Candidates List"
-msgstr "Υποψήφιος"
+msgstr "Λίστα υποψηφίων"
 
 #: templatetags/zeus_tags.py:21 templatetags/zeus_tags.py:158
 msgid "Are you sure ?"

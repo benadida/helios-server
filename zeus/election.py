@@ -19,7 +19,7 @@ from helios.crypto import utils
 from helios import models as helios_models
 from helios.views import ELGAMAL_PARAMS
 from helios import datatypes
-from stv_local_counting.stv import count_stv, Ballot
+from stv.stv import count_stv, Ballot
 
 from django.db import connection
 from hashlib import sha256
