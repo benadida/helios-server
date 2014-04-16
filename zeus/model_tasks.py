@@ -206,23 +206,24 @@ class ElectionTasks(TaskModel):
             polls_data.append((poll.name, poll.zeus.get_results()))
 
         from zeus.results_report import build_doc
-        build_doc(_(u'Results'), self.name, self.institution.name,
-                  self.voting_starts_at, self.voting_ends_at,
-                  self.voting_extended_until, polls_data, pdfpath)
+        if self.election_module != 'stv':
+            build_doc(_(u'Results'), self.name, self.institution.name,
+                    self.voting_starts_at, self.voting_ends_at,
+                    self.voting_extended_until, polls_data, pdfpath)
 
-        from zeus.reports import csv_from_polls
-        csvpath = self.get_results_file_path('csv')
-        csvfile = file(self.get_results_file_path('csv'), "w")
-        csv_from_polls(self, self.polls.all(), csvfile)
-        csvfile.close()
+            from zeus.reports import csv_from_polls
+            csvpath = self.get_results_file_path('csv')
+            csvfile = file(self.get_results_file_path('csv'), "w")
+            csv_from_polls(self, self.polls.all(), csvfile)
+            csvfile.close()
 
-        zippath = self.get_results_file_path('zip')
-        csvzip = zipfile.ZipFile(zippath, 'w')
-        for poll in self.polls.all():
-            csvpath = poll.get_result_file_path('csv', 'csv')
-            basename = os.path.basename(csvpath)
-            csvzip.write(csvpath, basename)
-        csvzip.close()
+            zippath = self.get_results_file_path('zip')
+            csvzip = zipfile.ZipFile(zippath, 'w')
+            for poll in self.polls.all():
+                csvpath = poll.get_result_file_path('csv', 'csv')
+                basename = os.path.basename(csvpath)
+                csvzip.write(csvpath, basename)
+            csvzip.close()
 
 
 class PollTasks(TaskModel):

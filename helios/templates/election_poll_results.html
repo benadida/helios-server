@@ -48,17 +48,17 @@
 {% if user.is_admin %}
 {% with poll.get_module as module %}
 
-{% if not module.pdf_result %}
+{% if module.pdf_result %}
 <br /><br />
 <a href="{% url election_poll_results_pdf election.uuid poll.uuid %}">Αποθήκευση αποτελεσμάτων (PDF)</a>
 {% endif %}
 
-{% if not module.csv_result %}
+{% if module.csv_result %}
 <br /><br />
 <a href="{% url election_poll_results_csv election.uuid poll.uuid %}">Αποθήκευση αποτελεσμάτων (CSV)</a>
 {% endif %}
 
-{% if not module.json_result %}
+{% if module.json_result %}
 <br /><br />
 <a href="{% url election_poll_results_json election.uuid poll.uuid %}">Αποθήκευση αποτελεσμάτων (JSON)</a>
 {% endif %}

@@ -9,7 +9,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from zeus.core import ZeusCoreElection, Teller, sk_from_args, \
     mix_ciphers, TellerStream, gamma_count_parties, gamma_count_range
-from zeus.core import V_CAST_VOTE, V_PUBLIC_AUDIT, V_AUDIT_REQUEST
+from zeus.core import V_CAST_VOTE, V_PUBLIC_AUDIT, V_AUDIT_REQUEST, \
+    gamma_decode, to_absolute_answers
 
 from django.conf import settings
 
@@ -18,6 +19,7 @@ from helios.crypto import utils
 from helios import models as helios_models
 from helios.views import ELGAMAL_PARAMS
 from helios import datatypes
+from stv_local_counting.stv import count_stv, Ballot
 
 from django.db import connection
 from hashlib import sha256
@@ -546,28 +548,28 @@ class ZeusDjangoElection(ZeusCoreElection):
         if self.poll.get_module().module_id == 'score':
             return gamma_count_range(self.do_get_results(), self.do_get_candidates())
         if self.poll.get_module().module_id == 'stv':
-            seats = 2
+            if self.poll.stv_results:
+                return self.poll.stv_results
+            cands_data = self.poll.questions_data[0]['answers']
+            cands_count =  len(cands_data)
+            constituencies = {}
+            count_id = 0
+            for item in cands_data:
+                cand_and_dep = item.split(':')
+                constituencies[str(count_id)] = cand_and_dep[1]
+                count_id += 1
+            seats = 2 #no data yet, fix later
             droop = False
-            constituencies = {'0': 'aDep', '1': 'aDep', 
-                              '2': 'bDep', '3': 'bDep'}
             ballots_data = self.poll.result[0]
-            print 'results:'
-            print ballots_data
-            print '-------'
             ballots = []
-            cands_count = 4
-            from zeus.core import gamma_decode, to_absolute_answers
-            from stv_local_counting.stv import count_stv, Ballot
             for ballot in ballots_data:
                 ballot = to_absolute_answers(gamma_decode(ballot, cands_count,cands_count),cands_count)
                 ballot = [str(i) for i in ballot]
-                print ballot
                 ballots.append(Ballot(ballot))
             results = count_stv(ballots, seats, droop, constituencies)
-            
-            print '***'
-            print results
-            print '***'
+            self.poll.stv_results = results
+            self.poll.save()
+            #save here 
             return results
         return gamma_count_parties(self.do_get_results(), self.do_get_candidates())
 

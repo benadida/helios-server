@@ -1196,8 +1196,8 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
         csv_from_score_polls(self.election, [self], csvfile)
         csvfile.close()
     elif self.get_module().module_id == 'stv':
-        self.stv_results = json.dumps(results_json)
-        self.save()
+        #create docs here
+        pass
     else:
         from zeus.results_report import build_doc
         results_name = self.election.name
