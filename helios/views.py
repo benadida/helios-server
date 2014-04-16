@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.http import *
 from django.db import transaction
+from django.utils.translation import ugettext as _
 
 from mimetypes import guess_type
 
@@ -171,7 +172,7 @@ def trustee_keygenerator(request, election, trustee):
 @login_required
 def elections_administered(request):
   if not can_create_election(request):
-    return HttpResponseForbidden('only an administrator has elections to administer')
+    return HttpResponseForbidden(_('only an administrator has elections to administer'))
   
   user = get_user(request)
   elections = Election.get_by_user_as_admin(user)
@@ -189,7 +190,7 @@ def elections_voted(request):
 @login_required
 def election_new(request):
   if not can_create_election(request):
-    return HttpResponseForbidden('only an administrator can create an election')
+    return HttpResponseForbidden(_('only an administrator can create an election'))
     
   error = None
   
@@ -221,9 +222,9 @@ def election_new(request):
           
           return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
         else:
-          error = "An election with short name %s already exists" % election_params['short_name']
+          error = _("An election with short name %(short_name)s already exists") % {'short_name': election_params['short_name']}
       else:
-        error = "No special characters allowed in the short name."
+        error = _("No special characters allowed in the short name.")
     
   return render_template(request, "election_new", {'election_form': election_form, 'error': error})
   
@@ -320,13 +321,16 @@ def one_election_view(request, election):
   # status update message?
   if election.openreg:
     if election.voting_has_started:
-      status_update_message = u"Vote in %s" % election.name
+      status_update_message = _(u"Vote in %(election_name)s") % {
+      'election_name': election.name }
     else:
-      status_update_message = u"Register to vote in %s" % election.name
+      status_update_message = _(u"Register to vote in %(election_name)s") % {
+      'election_name': election.name }
 
   # result!
   if election.result:
-    status_update_message = u"Results are in for %s" % election.name
+    status_update_message = _(u"Results are in for %(election_name)s") % {
+    'election_name': election.name }
   
   # a URL for the social buttons
   socialbuttons_url = get_socialbuttons_url(election_url, status_update_message)
@@ -659,7 +663,10 @@ def one_election_cast_confirm(request, election):
     # status update this vote
     if voter and voter.user.can_update_status():
       status_update_label = voter.user.update_status_template() % "your smart ballot tracker"
-      status_update_message = "I voted in %s - my smart tracker is %s.. #heliosvoting" % (get_election_url(election),cast_vote.vote_hash[:10])
+      status_update_message = _("I voted in %(url)s - my smart tracker is %(vote_hash)s.. #heliosvoting") % {
+      'url': get_election_url(election), 
+      'vote_hash': cast_vote.vote_hash[:10]
+      }
     else:
       status_update_label = None
       status_update_message = None
@@ -936,7 +943,7 @@ def _register_voter(election, user):
 @election_view()
 def one_election_register(request, election):
   if not election.openreg:
-    return HttpResponseForbidden('registration is closed for this election')
+    return HttpResponseForbidden(_('registration is closed for this election'))
     
   check_csrf(request)
     
@@ -1231,14 +1238,14 @@ def voters_email(request, election):
   if not helios.VOTERS_EMAIL:
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
   TEMPLATES = [
-    ('vote', 'Time to Vote'),
-    ('info', 'Additional Info'),
-    ('result', 'Election Result')
+    ('vote', _('Time to Vote')),
+    ('info', _('Additional Info')),
+    ('result', _('Election Result'))
     ]
 
   template = request.REQUEST.get('template', 'vote')
   if not template in [t[0] for t in TEMPLATES]:
-    raise Exception("bad template")
+    raise Exception(_("bad template"))
 
   voter_id = request.REQUEST.get('voter_id', None)
 
