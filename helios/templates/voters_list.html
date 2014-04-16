@@ -7,7 +7,8 @@
 <p>
 <b>{% trans "Who can vote?" %}</b>
 {% if election.openreg %}
-{{election.pretty_eligibility|safe}}
+<!--{{election.pretty_eligibility|safe}}-->
+<br /><br/><ul><li><i>{% trans "Any user with credentials" %}</i></li></ul><br/>
 {% else %}
 <em>{% trans "Only the voters listed here" %}</em>.
 {% endif %}
@@ -128,7 +129,7 @@
 [<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}">{% trans "email" %}</a>]
 [<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">x</a>]
 {% endif %}
-<img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}</td>
+<!--<img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" />--> {{voter.name}}</td>
 {% endif %}
 {% if election.use_voter_aliases %}
 <td>{{voter.alias}}</td>

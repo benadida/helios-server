@@ -12,13 +12,13 @@
 </p>
 
 <p>
-  Your smart ballot tracker is:<br /><br />
+  {% trans "Your smart ballot tracker is:" %}<br /><br />
     <tt style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_hash}}</tt>
 </p>
 
-<p>
+<!--<p>
 <iframe src="{{socialbuttons_url}}" frameborder="0" border="0" style="width: 300px; height:35px;" scrolling="no" align="middle"></iframe>
-</p>
+</p>-->
 
 {% if logout %}
 <p><b>{% trans "For your safety, we have logged you out." %}</b></p>

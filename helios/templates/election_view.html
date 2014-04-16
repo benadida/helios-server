@@ -10,7 +10,7 @@
 {% endif %}
 {% endif %}</h3>
 <p style="padding-top:0px; margin-top:0px">
-<em>{% if election.private_p %}{% trans "private" %}{%else%}{% trans "public" %}{% endif %}</em> {{ election.election_type }}{% if settings.SHOW_USER_INFO %} {% trans "created by" %} <u><b>{{election.admin.display_html_small|safe}}</b></u>{% endif %}
+<em>{% if election.private_p %}{% trans "private" %}{%else%}{% trans "public" %}{% endif %}</em> {{ election.election_type }}{% if settings.SHOW_USER_INFO %} {% trans "created by" %} <u><b>{{election.admin.pretty_name}}</b></u>{% endif %}
 {% if election.is_archived %}
 [archived]
 {% endif %}
@@ -43,9 +43,9 @@ this {{election_type}} is <u>not</u> featured on the front page.
 
 
 <br /><br />
-{% if socialbuttons_url %}
+<!--{% if socialbuttons_url %}
 <iframe src="{{socialbuttons_url}}" frameborder="0" border="0" style="width: 300px; height:100px;"></iframe>
-{% endif %}
+{% endif %} -->
 
 
 <br clear="left" />
@@ -190,9 +190,7 @@ all voters will be notified that the tally is ready.
 
 {% if election.voting_has_started %}
 <a class="button" href="{{test_cookie_url}}">
-{% blocktrans with election_type=election.election_type %}
-Vote in this {{election_type}} 
-{% endblocktrans %}
+{% trans "Vote in this {{election_type}} " %}
 </a>
 <br />
 <br />
@@ -208,9 +206,7 @@ but has been extended until {{ election.voting_extended_until }} (UTC).
 This {{election_type}} is scheduled to end at {{election.voting_ends_at}} (UTC).
 {% endblocktrans %}
 {% else %}
-{% blocktrans with election_type=election.election_type %}
-This {{election_type}} ends at the administrator's discretion.
-{% endblocktrans %}
+{% trans "This {{election_type}} ends at the administrator's discretion." %}
 {% endif %}
 <br />
 {% endif %}
@@ -273,7 +269,8 @@ You are <em>not eligible</em> to vote in this {{election_type}}.
 {% if election.openreg %}
 {% if election.eligibility %}
 
-{% trans "This election is open to:" %} {{election.pretty_eligibility|safe}}
+{% trans "This election is open to:" %} <!--{{election.pretty_eligibility|safe}}-->
+<br /><br/><ul><li><i>{% trans "Any user with credentials" %}</i></li></ul><br/>
 <a href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.index %}?return_url={{CURRENT_URL}}">{% trans "Log in </a> to check your eligibility." %}
 {% else %}
 {% trans "Anyone can vote in this election." %}
