@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-14 15:26-0300\n"
-"PO-Revision-Date: 2014-04-14 15:33-0300\n"
+"POT-Creation-Date: 2014-04-16 15:39-0300\n"
+"PO-Revision-Date: 2014-04-16 15:53-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -42,7 +42,7 @@ msgid "no spaces, will be part of the URL for your election, e.g. my-club-2010"
 msgstr "sem espaços, será parte da URL da sua eleição, por ex. meu-clube-2014"
 
 #: helios/forms.py:17 helios/templates/election_bboard.html:36
-#: helios/templates/voters_list.html:115
+#: helios/templates/voters_list.html:116
 #: helios/templates/voters_manage.html:27
 msgid "Name"
 msgstr "Nome"
@@ -254,9 +254,7 @@ msgstr "Os resultados estão em %(election_name)s"
 #: helios/views.py:666
 #, python-format
 msgid "I voted in %(url)s - my smart tracker is %(vote_hash)s.. #heliosvoting"
-msgstr ""
-"Eu votei em %(url)s - meu rastreamento inteligente é %(vote_hash)s.. "
-"#heliosvoting"
+msgstr "Eu votei em %(url)s - meu rastreador é %(vote_hash)s.. #heliosvoting"
 
 #: helios/views.py:946
 msgid "registration is closed for this election"
@@ -278,13 +276,50 @@ msgstr "Resultado da Eleição"
 msgid "bad template"
 msgstr "template inválido"
 
+#: helios/templates/_castconfirm_docast.html:20
+msgid "You are logged in as"
+msgstr "Você está conectado como "
+
+#: helios/templates/_castconfirm_docast.html:22
+msgid "CAST this ballot"
+msgstr "DEPOSITAR cédula na urna"
+
+#: helios/templates/_castconfirm_docast.html:23
+msgid ""
+"You can cast as many ballots as you want.<br />Only the last one counts."
+msgstr ""
+"Você pode depositar quantos votos quiser.<br />Apenas o último será "
+"contabilizado."
+
+#: helios/templates/_castconfirm_docast.html:27
+#: helios/templates/combine_decryptions.html:5
+#: helios/templates/election_edit.html:5 helios/templates/new_trustee.html:4
+msgid "cancel"
+msgstr "cancelar"
+
+#: helios/templates/_castconfirm_docast.html:28
+msgid ""
+"If you cancel now, your ballot will <em>NOT</em> be recorded.<br />\n"
+"    You can start the voting process over again, of course."
+msgstr ""
+"Se você cancelar agora, sua cédula <em>NÃO</em> será registrada.<br />\n"
+"    Você pode reiniciar o processo de votação mais tarde."
+
+#: helios/templates/_castconfirm_docast.html:35
+msgid "voting has stopped, sorry."
+msgstr "a votação parou, desculpe-nos."
+
+#: helios/templates/_castconfirm_docast.html:40
+msgid "voting has not yet begun, sorry."
+msgstr "a votação ainda não está aberta, desculpe-nos."
+
 #: helios/templates/cast_done.html:3 server_ui/templates/done.html:3
 msgid "Confirm Vote"
 msgstr "Confirmar Voto"
 
 #: helios/templates/cast_done.html:6
 msgid "Vote Successfully Cast!"
-msgstr "Voto lançado com sucesso!"
+msgstr "Voto depositado com sucesso!"
 
 #: helios/templates/cast_done.html:9
 msgid ""
@@ -292,7 +327,11 @@ msgid ""
 "    Congratulations, your vote has been <b><u>successfully cast</u></b>!\n"
 msgstr ""
 "\n"
-"    Parabéns, seu  voto foi <b><u>lançado com sucesso</u></b>!\n"
+"    Parabéns, seu  voto foi <b><u>depositado com sucesso</u></b>!\n"
+
+#: helios/templates/cast_done.html:15
+msgid "Your smart ballot tracker is:"
+msgstr "O número do rastreador da sua cédula é:"
 
 #: helios/templates/cast_done.html:24
 msgid "For your safety, we have logged you out."
@@ -304,25 +343,24 @@ msgstr "retornar para informações da eleição"
 
 #: helios/templates/castvote.html:5
 msgid "Cast Vote"
-msgstr "Lançar Voto"
+msgstr "Voto(s) Depositado(s)"
 
 #: helios/templates/castvote.html:6
 msgid "cast in"
-msgstr "lançar em"
+msgstr "depositado em"
 
 #: helios/templates/castvote.html:7
 msgid "Fingerprint: "
-msgstr "Impressão digital:"
+msgstr "Código de Identificação: "
+
+#: helios/templates/castvote.html:16
+msgid "details"
+msgstr "detalhes"
 
 #: helios/templates/combine_decryptions.html:3
 #: helios/templates/combine_decryptions.html:5
 msgid "Release Tally"
 msgstr "Liberar Apuração"
-
-#: helios/templates/combine_decryptions.html:5
-#: helios/templates/election_edit.html:5 helios/templates/new_trustee.html:4
-msgid "cancel"
-msgstr "cancelar"
 
 #: helios/templates/combine_decryptions.html:8
 msgid "You are about to release the tally for this election"
@@ -337,7 +375,7 @@ msgid "Audited Ballots for "
 msgstr "Cédulas Auditadas para"
 
 #: helios/templates/election_audited_ballots.html:6
-#: helios/templates/election_view.html:310
+#: helios/templates/election_view.html:307
 msgid "Audited Ballots"
 msgstr "Cédulas Auditadas"
 
@@ -367,15 +405,17 @@ msgid ""
 "choice.\n"
 msgstr ""
 "\n"
-"Quando você prepara uma cédula com o Helios, imediatamente recebe um "
-"rastreador de cédula inteligente. Antes de você escolher depositar a cédula, "
-"você tem a opção de pedir ao Helios para abrir a cédula criptografada e "
-"verificar se o Helios a criptografou corretamente. Uma vez que isso seja "
-"feito, você pode postar a cédula aberta aqui, na lista de cédulas audidatas, "
-"para que qualquer um possa verificar (sua identidade não será incluída). Uma "
-"vez feito isso, você deve reencriptar suas escolhas e obter um rastreador de "
-"cédula inteligente diferente. Isso ajuda a reduzir as chances de que alguém "
-"possa coagi-lo a votar de modo diverso à sua real escolha.\n"
+"Quando você prepara uma cédula com o Helios, recebe um rastreador para "
+"posteriormente verificar se sua cédula foi contabilizada. Antes de resolver "
+"depositar a cédula na urna, você pode solicitar ao sistema que abra a cédula "
+"cifrada e verifique se a mesma foi cifrada corretamente (se realmente contém "
+"o seu voto). Depois disso, você pode postar essa cédula aberta na lista de "
+"cédulas auditadas, para que qualquer um possa verificar (sua identidade não "
+"será incluída). Você pode fazer isso quantas vezes quiser. \n"
+" Escolhendo ou não postar essa cédula auditada, você deve voltar para a "
+"cédula de votação e a cifrar novamente, obtendo então um novo rastreador. "
+"Isso ajuda a reduzir as chances de que alguém possa coagi-lo a votar de modo "
+"diverso à sua real escolha.\n"
 
 #: helios/templates/election_audited_ballots.html:15
 msgid ""
@@ -385,10 +425,10 @@ msgid ""
 "encrypting voter's choices.\n"
 msgstr ""
 "\n"
-"Essas cédulas <em>não estão depositadas</em>, e elas não serão "
+"Essas cédulas <em>não estão depositadas na urna</em>, portanto não serão "
 "contabilizadas. Elas estão aqui apenas com o propósito de auditoria, para "
-"verificar que o sistema de votação está encriptando corretamente as escolhas "
-"do eleitor.\n"
+"verificar que o sistema de votação está cifrando corretamente as escolhas do "
+"eleitor.\n"
 
 #: helios/templates/election_audited_ballots.html:22
 msgid ""
@@ -416,7 +456,7 @@ msgstr "voltar ao início"
 #: helios/templates/election_audited_ballots.html:40
 #: helios/templates/election_bboard.html:29
 #: helios/templates/stats_elections.html:15
-#: helios/templates/voters_list.html:109
+#: helios/templates/voters_list.html:110
 #: helios/templates/voters_manage.html:15
 #: helios/templates/voters_manage.html:23
 msgid "next"
@@ -424,7 +464,7 @@ msgstr "próximo"
 
 #: helios/templates/election_audited_ballots.html:44
 #: helios/templates/election_bboard.html:45
-#: helios/templates/voters_list.html:136
+#: helios/templates/voters_list.html:137
 msgid "view"
 msgstr "visualizar"
 
@@ -447,20 +487,20 @@ msgstr ""
 "rastreamento  de todas as cédulas lançadas nesta eleição. \n"
 
 #: helios/templates/election_bboard.html:18
-#: helios/templates/voters_list.html:3 helios/templates/voters_list.html:106
+#: helios/templates/voters_list.html:3 helios/templates/voters_list.html:107
 msgid "Voters"
 msgstr "Eleitores"
 
 #: helios/templates/election_bboard.html:34
-#: helios/templates/voters_list.html:119
+#: helios/templates/voters_list.html:120
 #: helios/templates/voters_manage.html:27
 msgid "Alias"
 msgstr "Pseudônimo"
 
 #: helios/templates/election_bboard.html:38
-#: helios/templates/voters_list.html:121
+#: helios/templates/voters_list.html:122
 msgid "Smart Ballot Tracker"
-msgstr "Rastreador de Cédula Inteligente"
+msgstr "Rastreador da Cédula"
 
 #: helios/templates/election_build.html:4
 #: helios/templates/election_questions.html:5
@@ -469,7 +509,7 @@ msgstr "Questões"
 
 #: helios/templates/election_cast_confirm.html:38
 msgid "Submit your Vote"
-msgstr "Enviar seu Voto"
+msgstr "Deposite seu Voto na Urna"
 
 #: helios/templates/election_cast_confirm.html:41
 msgid ""
@@ -479,13 +519,12 @@ msgid ""
 "Your smart ballot tracker is:\n"
 msgstr ""
 "\n"
-"  Nós recebemos, <b><u>mas ainda não registramos</u></b>, sua cédula "
-"criptografada.<br />\n"
-"O seu rastreador de cédula inteligente é:\n"
+"  A sua cédula cifrada <b><u>ainda não foi depositada</u></b> na urna.\n"
+"O número de rastreamento da sua cédula é:\n"
 
 #: helios/templates/election_cast_confirm.html:50
 msgid "Verifying and Casting your ballot"
-msgstr "Verificando e Lançando sua cédula"
+msgstr "Depositando sua cédula"
 
 #: helios/templates/election_cast_confirm.html:65
 #, python-format
@@ -527,8 +566,9 @@ msgid ""
 "  "
 msgstr ""
 "\n"
-"  Agora, precisamos que você se conecte, para que possamos verificar sua "
-"eligibilidade.<br /><br />\n"
+"  Para que sua cédula seja realmente depositada na urna, você deve se "
+"conectar com seu usuário e senha, para que possamos verificar se você é um "
+"eleitor válido nessa eleição.<br /><br />\n"
 "  "
 
 #: helios/templates/election_cast_confirm.html:101
@@ -560,7 +600,7 @@ msgid ""
 "Don't worry, we'll remember your ballot while you log in.\n"
 msgstr ""
 "\n"
-"Não se preocupe, nós lembraremos da sua cédula enquanto você se conecta.\n"
+"\n"
 
 #: helios/templates/election_compute_tally.html:11
 #, python-format
@@ -1108,15 +1148,10 @@ msgid "Election closed. Tally will be computed soon."
 msgstr "Eleição fechada. A apuração será computada logo."
 
 #: helios/templates/election_view.html:193
-#, python-format
-msgid ""
-"\n"
-"Vote in this %(election_type)s \n"
-msgstr ""
-"\n"
-"Vote in this %(election_type)s \n"
+msgid "Vote in this {{election_type}} "
+msgstr "Votar"
 
-#: helios/templates/election_view.html:200
+#: helios/templates/election_view.html:198
 #, python-format
 msgid ""
 "\n"
@@ -1129,7 +1164,7 @@ msgstr ""
 "%(election.voting_ends_at)s (UTC),<br />\n"
 "mas foi extendida até %(election.voting_extended_until)s (UTC).\n"
 
-#: helios/templates/election_view.html:207
+#: helios/templates/election_view.html:205
 #, python-format
 msgid ""
 "\n"
@@ -1140,16 +1175,11 @@ msgstr ""
 "Essa %(election_type)s está agendada para terminar em "
 "%(election.voting_ends_at)s (UTC).\n"
 
-#: helios/templates/election_view.html:211
-#, python-format
-msgid ""
-"\n"
-"This %(election_type)s ends at the administrator's discretion.\n"
-msgstr ""
-"\n"
-"Essa %(election_type)s termina a critério do administrador.\n"
+#: helios/templates/election_view.html:209
+msgid "This {{election_type}} ends at the administrator's discretion."
+msgstr "Essa eleição termina a critério do administrador."
 
-#: helios/templates/election_view.html:220
+#: helios/templates/election_view.html:216
 #, python-format
 msgid ""
 "\n"
@@ -1160,7 +1190,7 @@ msgstr ""
 "Essa eleição é <em>privada</em>. Você está conectado como um eleitor apto "
 "<em>%(voter.name)s</em>.\n"
 
-#: helios/templates/election_view.html:226
+#: helios/templates/election_view.html:222
 msgid ""
 "\n"
 "  You do not have Java installed in your browser.<br />At this time, Helios "
@@ -1176,11 +1206,11 @@ msgstr ""
 "para instalá-lo.\n"
 "  "
 
-#: helios/templates/election_view.html:234
+#: helios/templates/election_view.html:230
 msgid "voting is not yet open"
 msgstr "votação ainda não está aberta"
 
-#: helios/templates/election_view.html:241
+#: helios/templates/election_view.html:237
 #, python-format
 msgid ""
 "\n"
@@ -1189,7 +1219,7 @@ msgstr ""
 "\n"
 "Você <em>não está apto</em> a votar nesta(e) %(election_type)s.\n"
 
-#: helios/templates/election_view.html:245
+#: helios/templates/election_view.html:241
 #, python-format
 msgid ""
 "\n"
@@ -1198,12 +1228,12 @@ msgstr ""
 "\n"
 "Seu pseudônimo de eleitor é  %(voter.alias)s.\n"
 
-#: helios/templates/election_view.html:256
+#: helios/templates/election_view.html:252
 msgid "You are eligible to vote in this election."
 msgstr "Você está apto a votar nessa eleição."
 
-#: helios/templates/election_view.html:258
-#: helios/templates/election_view.html:263
+#: helios/templates/election_view.html:254
+#: helios/templates/election_view.html:259
 #, python-format
 msgid ""
 "\n"
@@ -1212,51 +1242,56 @@ msgstr ""
 "\n"
 "Você <em>não está apto</em> a votar nesta(e) %(election_type)s.\n"
 
-#: helios/templates/election_view.html:276
+#: helios/templates/election_view.html:272
 msgid "This election is open to:"
-msgstr "Esta eleição está aberta para:"
+msgstr "Quem pode votar nessa eleição:"
 
-#: helios/templates/election_view.html:277
+#: helios/templates/election_view.html:273
+#: helios/templates/voters_list.html:11
+msgid "Any user with credentials"
+msgstr "Eleitores com usuário e senha"
+
+#: helios/templates/election_view.html:274
 msgid "Log in </a> to check your eligibility."
-msgstr "Conecte </a> para checar sua eligibilidade."
+msgstr "Conecte-se </a> para checar se você pode votar nessa eleição."
 
-#: helios/templates/election_view.html:279
+#: helios/templates/election_view.html:276
 msgid "Anyone can vote in this election."
 msgstr "Qualquer um pode votar nessa eleição."
 
-#: helios/templates/election_view.html:291
+#: helios/templates/election_view.html:288
 msgid "Audit Info"
 msgstr "Informação de auditoria"
 
-#: helios/templates/election_view.html:293
+#: helios/templates/election_view.html:290
 msgid "Election URL:"
 msgstr "URL da Eleição:"
 
-#: helios/templates/election_view.html:298
+#: helios/templates/election_view.html:295
 msgid "Election Fingerprint:"
-msgstr "Impressão Digital da Eleição"
+msgstr "Código de Identificação da Eleição:"
 
-#: helios/templates/election_view.html:303
+#: helios/templates/election_view.html:300
 msgid "Your smart ballot tracker:"
-msgstr "Seu rastreador de cédula inteligente"
+msgstr "O rastreador da sua cédula é:"
 
-#: helios/templates/election_view.html:309
+#: helios/templates/election_view.html:306
 msgid "Ballot Tracking Center"
-msgstr "Centro de Rastreamento de Cédula"
+msgstr "Central de Rastreamento de Cédula"
 
-#: helios/templates/election_view.html:317
+#: helios/templates/election_view.html:314
 msgid "preview booth"
 msgstr "pré-visualização da urna"
 
-#: helios/templates/election_view.html:324
+#: helios/templates/election_view.html:321
 msgid "election tally"
 msgstr "apuração da eleição"
 
-#: helios/templates/election_view.html:327
+#: helios/templates/election_view.html:324
 msgid "review the"
 msgstr "revisar o"
 
-#: helios/templates/election_view.html:327
+#: helios/templates/election_view.html:324
 msgid "voting booth"
 msgstr "cabine de votação"
 
@@ -1267,7 +1302,7 @@ msgstr "Eleições que você administra"
 #: helios/templates/elections_administered.html:4
 #: helios/templates/elections_voted.html:4
 msgid "back to home"
-msgstr "voltar para inícioi"
+msgstr "voltar para início"
 
 #: helios/templates/elections_voted.html:4
 msgid "Elections where you voted"
@@ -1457,7 +1492,7 @@ msgid "Elections"
 msgstr "Eleições"
 
 #: helios/templates/stats_elections.html:9
-#: helios/templates/voters_list.html:102
+#: helios/templates/voters_list.html:103
 msgid "previous"
 msgstr "anterior"
 
@@ -1785,11 +1820,11 @@ msgstr "Centro de Rastreamento de Cédulas e Eleitores"
 msgid "Who can vote?"
 msgstr "Quem pode votar?"
 
-#: helios/templates/voters_list.html:12
+#: helios/templates/voters_list.html:13
 msgid "Only the voters listed here"
 msgstr "Somente os eleitores listados aqui"
 
-#: helios/templates/voters_list.html:18
+#: helios/templates/voters_list.html:19
 msgid ""
 "Your election is marked private, which means you cannot open registration up "
 "more widely"
@@ -1797,83 +1832,83 @@ msgstr ""
 "A sua eleição está marcada como privada, o que significa que você não pode "
 "abrir registro mais amplo"
 
-#: helios/templates/voters_list.html:20
+#: helios/templates/voters_list.html:21
 msgid "You can change this setting:"
 msgstr "Você pode mudar essa configuração:"
 
-#: helios/templates/voters_list.html:23
+#: helios/templates/voters_list.html:24
 msgid "anyone can vote"
 msgstr "qualquer um pode votar"
 
-#: helios/templates/voters_list.html:24
+#: helios/templates/voters_list.html:25
 msgid "only voters listed explicitly below can vote"
 msgstr "somente eleitores explicitamente listados abaixo podem votar"
 
-#: helios/templates/voters_list.html:26
+#: helios/templates/voters_list.html:27
 msgid "limitedreg"
 msgstr "registro limitado"
 
-#: helios/templates/voters_list.html:26
+#: helios/templates/voters_list.html:27
 msgid "only voters who are members of "
 msgstr "apenas eleitores que são membros de"
 
-#: helios/templates/voters_list.html:34
+#: helios/templates/voters_list.html:35
 msgid "update"
 msgstr "atualizar"
 
-#: helios/templates/voters_list.html:40
+#: helios/templates/voters_list.html:41
 msgid "email voters"
 msgstr "enviar email para eleitores"
 
-#: helios/templates/voters_list.html:46
+#: helios/templates/voters_list.html:47
 msgid "searching for"
 msgstr "procurando por"
 
-#: helios/templates/voters_list.html:46
+#: helios/templates/voters_list.html:47
 msgid "clear search"
 msgstr "limpar busca"
 
-#: helios/templates/voters_list.html:48 helios/templates/voters_manage.html:6
+#: helios/templates/voters_list.html:49 helios/templates/voters_manage.html:6
 msgid "search"
 msgstr "buscar"
 
-#: helios/templates/voters_list.html:57 helios/templates/voters_manage.html:9
+#: helios/templates/voters_list.html:58 helios/templates/voters_manage.html:9
 msgid "bulk upload voters"
 msgstr "carregar eleitores em massa"
 
-#: helios/templates/voters_list.html:61
+#: helios/templates/voters_list.html:62
 msgid "Prior Bulk Uploads:"
 msgstr "Carregamentos em Massa Anteriores:"
 
-#: helios/templates/voters_list.html:70
+#: helios/templates/voters_list.html:71
 msgid "bytes, at"
 msgstr "bytes, em"
 
-#: helios/templates/voters_list.html:72
+#: helios/templates/voters_list.html:73
 msgid "done processing:"
 msgstr "processamento completo:"
 
-#: helios/templates/voters_list.html:72
+#: helios/templates/voters_list.html:73
 msgid "voters loaded"
 msgstr "eleitor (es) carregados"
 
-#: helios/templates/voters_list.html:76
+#: helios/templates/voters_list.html:77
 msgid "currently processing"
 msgstr "processando"
 
-#: helios/templates/voters_list.html:78
+#: helios/templates/voters_list.html:79
 msgid "not yet processed"
 msgstr "ainda não foi processado"
 
-#: helios/templates/voters_list.html:94
+#: helios/templates/voters_list.html:95
 msgid "cast vote"
-msgstr "lançar voto"
+msgstr "voto(s) depositado(s)"
 
-#: helios/templates/voters_list.html:96
+#: helios/templates/voters_list.html:97
 msgid "no votes yet"
 msgstr "nenhum voto"
 
-#: helios/templates/voters_list.html:128
+#: helios/templates/voters_list.html:129
 msgid "email"
 msgstr "email"
 
@@ -1983,7 +2018,16 @@ msgstr "Ok, vamos lá"
 msgid "no, let me upload a different file"
 msgstr "não, deixe-me carregar um arquivo diferente"
 
-#: helios_auth/auth_systems/ldapauth.py:49
+#: helios_auth/auth_systems/ldapauth.py:16
+#: helios_auth/templates/login_box.html:11
+#: helios_auth/templates/ldapauth/login.html:4
+#: helios_auth/templates/ldapauth/login.html:23
+#: helios_auth/templates/password/login.html:4
+#: helios_auth/templates/password/login.html:23
+msgid "Login"
+msgstr "Conectar com meu usuário e senha"
+
+#: helios_auth/auth_systems/ldapauth.py:51
 msgid "Bad Username or Password"
 msgstr "Usuário ou Senha Incorretos"
 
@@ -2005,14 +2049,6 @@ msgstr ""
 #: helios_auth/templates/index.html:14 server_ui/templates/base.html:91
 msgid "logout"
 msgstr "desconectar"
-
-#: helios_auth/templates/login_box.html:9
-#: helios_auth/templates/ldapauth/login.html:4
-#: helios_auth/templates/ldapauth/login.html:23
-#: helios_auth/templates/password/login.html:4
-#: helios_auth/templates/password/login.html:23
-msgid "Login"
-msgstr "Conectar"
 
 #: helios_auth/templates/perms_why.html:4
 msgid "Why we need your information"
@@ -2085,18 +2121,17 @@ msgstr "continuar"
 msgid ""
 "\n"
 "<h3>Your Vote is Being Submitted</h3>\n"
-"\n"
 "<p>\n"
 "Please wait a few seconds while your vote is submitted to the casting "
 "server....\n"
 "</p>\n"
 msgstr ""
 "\n"
-"<h3>Seu voto está sendo submetido</h3>\n"
+"<h3>Seu voto está sendo depositado</h3>\n"
 "\n"
 "<p>\n"
-"Por favor, espere alguns segundos enquanto seu voto é submetido ao "
-"servidor....\n"
+"Por favor, espere alguns segundos enquanto sua cédula é depositada na "
+"urna....\n"
 "</p>\n"
 
 #: heliosbooth/templates/submit.html:2
@@ -2619,6 +2654,9 @@ msgstr "Erro no servidor"
 #: templates/500.html:6
 msgid "There was an error while handling your request."
 msgstr "Houve um erro durante o processamento de sua requisição."
+
+#~ msgid "Vote in this"
+#~ msgstr "Votar nessa eleição"
 
 #~ msgid "type"
 #~ msgstr "tipo"
