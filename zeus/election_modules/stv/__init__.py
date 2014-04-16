@@ -14,7 +14,7 @@ from helios.view_utils import render_template
 @election_module
 class StvElection(ElectionModuleBase):
     module_id = 'stv'
-    description = _('Single Transferable Vote Elections')
+    description = _('Single Transferable Vote Election')
     messages = {
         'answer_title': _('Candidate'),
         'question_title': _('Candidates List')

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-02 12:04+0300\n"
+"POT-Creation-Date: 2014-04-16 16:10+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -70,240 +70,252 @@ msgstr "Περιγραφή ψηφοφορίας"
 msgid "Trial election"
 msgstr "Δοκιμαστική ψηφοφορία"
 
-#: models.py:291 templates/_election_information.html:10
+#: models.py:276
+msgid "Departments"
+msgstr "Σχολές και Ανεξάρτητα Τμήματα του Ιδρύματος"
+
+#: models.py:277
+msgid ""
+"University Schools. e.g.<br/><br/> School of Engineering <br />School of "
+"Medicine<br />School ofInformatics<br />"
+msgstr ""
+"συμπληρώστε τις σχολές και τα ανεξάρτητα τμήματα του ιδρύματος για το"
+"οποίο διεξάγεται η ψηφοφορία. Π.χ. <br/><br/>Σχολή Θετικών Επιστημών<br/>"
+"Φιλοσοφική Σχολή<br/>Ανεξάρτητο Παιδαγωγικό Τμήμα ΔημοτικήςΕκπαίδευσης<br/>"
+
+#: models.py:294 templates/_election_information.html:10
 msgid "Voting starts at"
 msgstr "Έναρξη της ψηφοφορίας στις"
 
-#: models.py:296 templates/_election_information.html:13
+#: models.py:299 templates/_election_information.html:13
 msgid "Voting ends at"
 msgstr "Λήξη της ψηφοφορίας"
 
-#: models.py:301
+#: models.py:304
 msgid "Voting extended until"
 msgstr "Η ψηφοφορία έχει παραταθεί μέχρι"
 
-#: models.py:371
+#: models.py:374
 msgid "Add at least one trustee"
 msgstr "προσθέστε τουλάχιστον ένα μέλος στην εφορευτική επιτροπή"
 
-#: models.py:378
+#: models.py:381
 #, python-format
 msgid "Have trustee %s generate a keypair"
 msgstr ""
 "Το μέλος της εφορευτικής επιτροπής '%s' πρέπει να δημιουργήσει τον Κωδικό "
 "Ψηφοφορίας του"
 
-#: models.py:384
+#: models.py:387
 #, python-format
 msgid "Have trustee %s verify his key"
 msgstr ""
 "Το μέλος της εφορευτικής επιτροπης '%s' πρέπει να επιβεβαιώσει τον Κωδικό "
 "Ψηφοφορίας του"
 
-#: models.py:396 models.py:746
+#: models.py:399 models.py:749
 msgid "Canceled"
 msgstr "Ακυρώθηκε"
 
-#: models.py:399 models.py:749
+#: models.py:402 models.py:752
 msgid "Completed"
 msgstr "Ολοκληρώθηκε"
 
-#: models.py:402 models.py:773
+#: models.py:405 models.py:776
 msgid "Voting"
 msgstr "Ψηφοφορία σε εξέλιξη"
 
-#: models.py:405 models.py:752
+#: models.py:408 models.py:755
 msgid "Results computed"
 msgstr "Εξήχθησαν αποτελέσματα"
 
-#: models.py:408 models.py:755
+#: models.py:411 models.py:758
 msgid "Computing results"
 msgstr "Υπολογισμός αποτελεσμάτων"
 
-#: models.py:411 models.py:758
+#: models.py:414 models.py:761
 msgid "Decryption finished"
 msgstr "Η αποκρυπτογράφηση ολοκληρώθηκε"
 
-#: models.py:414 models.py:761 templates/_trustee_decrypt.html:15
+#: models.py:417 models.py:764 templates/_trustee_decrypt.html:15
 msgid "Decrypting"
 msgstr "Αποκρυπτογράφηση"
 
-#: models.py:417 models.py:767
+#: models.py:420 models.py:770
 msgid "Partial decryptions finished"
 msgstr "Οι μερικές αποκρυπτογραφήσεις ολοκληρώθηκαν"
 
-#: models.py:421
+#: models.py:424
 msgid "Pending completion of partial decryptions"
 msgstr "Εκκρεμούν οι μερικές αποκρυπτογραφήσεις"
 
-#: models.py:425
+#: models.py:428
 msgid "Validating mixing"
 msgstr "Επικύρωση μίξης σε εξέλιξη"
 
-#: models.py:428
+#: models.py:431
 msgid "Mixing finished"
 msgstr "Η μίξη ολοκληρώθηκε"
 
-#: models.py:431
+#: models.py:434
 msgid "Mixing"
 msgstr "Μίξη"
 
-#: models.py:435
+#: models.py:438
 msgid "Validating voting"
 msgstr "Επικύρωση ψηφοφορίας σε εξέλιξη"
 
-#: models.py:438
+#: models.py:441
 msgid "Election closed"
 msgstr "Η ψηφοφορία έχει λήξει"
 
-#: models.py:441 templates/_election_voter_actions.html:13
+#: models.py:444 templates/_election_voter_actions.html:13
 msgid "Waiting for voting to start."
 msgstr "Αναμονή για την έναρξη της ψηφοφορίας"
 
-#: models.py:444
+#: models.py:447
 msgid "Voting stopped. Pending close."
 msgstr "Η ψηφοφορία έχει σταματήσει. Αναμένεται η οριστική λήξη της."
 
-#: models.py:447
+#: models.py:450
 msgid "Freezing"
 msgstr "Οριστικοποίηση..."
 
-#: models.py:450
+#: models.py:453
 msgid "Frozen"
 msgstr "Οριστικοποιημένη"
 
-#: models.py:452
+#: models.py:455
 msgid "Election pending to freeze"
 msgstr "Αναμονή για οριστικοποίηση της ψηφοφορίας"
 
-#: models.py:624 templates/_trustee_decrypt.html:35
+#: models.py:627 templates/_trustee_decrypt.html:35
 msgid "Poll name"
 msgstr "Όνομα κάλπης"
 
-#: models.py:675
+#: models.py:678
 msgid "Prepare poll questions"
 msgstr "Ορισμός των ερωτήσεων της κάλπης"
 
-#: models.py:680
+#: models.py:683
 msgid "Import voters list"
 msgstr "Εισαγωγή ψηφοφόρων"
 
-#: models.py:764
+#: models.py:767
 msgid "Waiting for all partial decryptions to finish"
 msgstr "Αναμονή για την ολοκλήρωση των μερικών αποκρυπτογραφήσεων"
 
-#: models.py:770
+#: models.py:773
 msgid "Voting closed"
 msgstr "Η ψηφοφορία έχει λήξει"
 
-#: models.py:777
+#: models.py:780
 msgid "Pending election close"
 msgstr "Αναμένεται λήξη της ψηφοφορίας"
 
-#: models.py:779
+#: models.py:782
 msgid "Freezed"
 msgstr "Οριστικοποιημένη"
 
-#: models.py:782
+#: models.py:785
 msgid "No questions set"
 msgstr "Δεν έχουν οριστεί ακόμη ερωτήσεις"
 
-#: models.py:785
+#: models.py:788
 msgid "No voters set"
 msgstr "Δεν έχουν εισαχθεί ακόμη ψηφοφόροι"
 
-#: models.py:788
+#: models.py:791
 msgid "Ready to freeze"
 msgstr "Έτοιμη προς οριστικοποίηση"
 
-#: models.py:923
+#: models.py:926
 msgid "Election initialized."
 msgstr "Η ψηφοφορία αρχικοποιήθηκε."
 
-#: models.py:924
+#: models.py:927
 msgid "Election candidates added."
 msgstr "Οι υποψήφιοι έχουν καταχωρηθεί."
 
-#: models.py:925
+#: models.py:928
 msgid "Election voters added."
 msgstr "Οι εκλέκτορες ψηφοφόροι έχουν καταχωρηθεί."
 
-#: models.py:926
+#: models.py:929
 msgid "Trustees keys generated."
 msgstr "Οι Κωδικοί της ψηφοφορίας έχουν παραχθεί."
 
-#: models.py:927
+#: models.py:930
 msgid "Election opened."
 msgstr "Η ψηφοφορία έχει αρχίσει."
 
-#: models.py:928
+#: models.py:931
 msgid "Election voters notified"
 msgstr "Οι ψηφοφόροι έχουν ειδοποιηθεί"
 
-#: models.py:929
+#: models.py:932
 msgid "Election voters which not voted notified"
 msgstr "Οι ψηφοφόροι που δεν έχουν ψηφήσει έχουν ειδοποιηθεί"
 
-#: models.py:930
+#: models.py:933
 msgid "Election extension needed."
 msgstr "Παράταση της ψηφοφορίας."
 
-#: models.py:931
+#: models.py:934
 msgid "Election closed."
 msgstr "Η ψηφοφορία έχει λήξει."
 
-#: models.py:932
+#: models.py:935
 msgid "Election tallied."
 msgstr "Τα ψηφοδέλτια έχουν αναμιχθεί"
 
-#: models.py:933
+#: models.py:936
 msgid "Trustees should decrypt results."
 msgstr ""
 "Η εφορευτική επιτροπή πρέπει να αποκρυπτογραφήσει τα τελικά ψηφοδέλτια."
 
-#: models.py:934
+#: models.py:937
 msgid "Election results where decrypted."
 msgstr "Τα τελικά ψηφοδέλτια έχουν αποκρυπτογραφηθεί."
 
-#: models.py:948 templates/election_poll_voters_list.html:92
+#: models.py:951 templates/election_poll_voters_list.html:92
 msgid "YES"
 msgstr "ΝΑΙ"
 
-#: models.py:949 templates/election_poll_voters_list.html:94
+#: models.py:952 templates/election_poll_voters_list.html:94
 msgid "NO"
 msgstr "ΟΧΙ"
 
-#: models.py:951
+#: models.py:954
 msgid "(EXCLUDED)"
 msgstr "(ΕΞΑΙΡΕΣΗ)"
 
-#: models.py:1187 models.py:1201
+#: models.py:1190 models.py:1207
 #: templates/_election_poll_admin_actions.html:17
 #: templates/_election_view_menu.html:11 templates/election_polls_list.html:65
 #: templates/account_administration/user_manage.html:70
-#: templates/account_administration.bak/user_manage.html:72
 msgid "Results"
 msgstr "Αποτελέσματα"
 
-#: models.py:1304
+#: models.py:1310
 msgid "There must be at least two fields, Registration ID and Email"
 msgstr ""
 "Πρέπει να υπάρχουν τουλάχιστον δύο πεδία, Αριθμός Καταχώρησης και Email"
 
-#: models.py:1339
+#: models.py:1345
 #, python-format
 msgid "Malformed mobile phone number: %s"
 msgstr "Μη έγκυρος αριθμός τηλεφώνου: %s"
 
-#: models.py:2016
+#: models.py:2025
 msgid "Create trustee key"
 msgstr "Δημιουργία κωδικού ψηφοφορίας"
 
-#: models.py:2017
+#: models.py:2026
 msgid "Verify trustee key"
 msgstr "Επιβεβαίωση κωδικού ψηφοφορίας"
 
-#: models.py:2018
+#: models.py:2027
 msgid "Partially decrypt votes"
 msgstr "Μερική αποκρυπτογράφηση ψήφων"
 
@@ -469,13 +481,6 @@ msgstr "Επιβεβαιώστε την ακύρωση της ψηφοφορία
 #: templates/account_administration/reset_password.html:20
 #: templates/account_administration/reset_password.html:23
 #: templates/account_administration/user_manage.html:62
-#: templates/account_administration.bak/delete_institution.html:23
-#: templates/account_administration.bak/delete_institution.html:28
-#: templates/account_administration.bak/delete_user.html:21
-#: templates/account_administration.bak/delete_user.html:25
-#: templates/account_administration.bak/reset_password.html:20
-#: templates/account_administration.bak/reset_password.html:23
-#: templates/account_administration.bak/user_manage.html:64
 msgid "Back"
 msgstr "Πίσω"
 
@@ -1249,6 +1254,10 @@ msgstr ""
 msgid "Zeus Digital Elections"
 msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
 
+#: templates/trustee_email_subject.txt:1
+msgid "actions required, step"
+msgstr ""
+
 #: templates/trustee_home_base.html:4 templates/user_section.html:36
 msgid "trustee dashboard"
 msgstr "πίνακας ελέγχου εφορευτικής"
@@ -1375,14 +1384,6 @@ msgstr "Σφάλμα κατά την αποστολή email στους ψηφο�
 #: templates/account_administration/list_users.html:6
 #: templates/account_administration/reset_password.html:6
 #: templates/account_administration/user_manage.html:6
-#: templates/account_administration.bak/create_institution.html:7
-#: templates/account_administration.bak/create_user.html:7
-#: templates/account_administration.bak/delete_institution.html:6
-#: templates/account_administration.bak/delete_user.html:6
-#: templates/account_administration.bak/list_institutions.html:7
-#: templates/account_administration.bak/list_users.html:7
-#: templates/account_administration.bak/reset_password.html:6
-#: templates/account_administration.bak/user_manage.html:6
 msgid "Users List"
 msgstr "Λίστα Χρηστών"
 
@@ -1394,14 +1395,6 @@ msgstr "Λίστα Χρηστών"
 #: templates/account_administration/list_users.html:7
 #: templates/account_administration/reset_password.html:7
 #: templates/account_administration/user_manage.html:7
-#: templates/account_administration.bak/create_institution.html:8
-#: templates/account_administration.bak/create_user.html:8
-#: templates/account_administration.bak/delete_institution.html:7
-#: templates/account_administration.bak/delete_user.html:7
-#: templates/account_administration.bak/list_institutions.html:8
-#: templates/account_administration.bak/list_users.html:8
-#: templates/account_administration.bak/reset_password.html:7
-#: templates/account_administration.bak/user_manage.html:7
 msgid "Institutions List"
 msgstr "Λίστα Ιδρυμάτων"
 
@@ -1415,15 +1408,6 @@ msgstr "Λίστα Ιδρυμάτων"
 #: templates/account_administration/list_users.html:8
 #: templates/account_administration/reset_password.html:8
 #: templates/account_administration/user_manage.html:8
-#: templates/account_administration.bak/create_institution.html:9
-#: templates/account_administration.bak/create_user.html:9
-#: templates/account_administration.bak/create_user.html:17
-#: templates/account_administration.bak/delete_institution.html:8
-#: templates/account_administration.bak/delete_user.html:8
-#: templates/account_administration.bak/list_institutions.html:9
-#: templates/account_administration.bak/list_users.html:9
-#: templates/account_administration.bak/reset_password.html:8
-#: templates/account_administration.bak/user_manage.html:8
 msgid "Create User"
 msgstr "Δημιουργία Χρήστη"
 
@@ -1436,51 +1420,33 @@ msgstr "Δημιουργία Χρήστη"
 #: templates/account_administration/list_users.html:9
 #: templates/account_administration/reset_password.html:9
 #: templates/account_administration/user_manage.html:9
-#: templates/account_administration.bak/create_institution.html:10
-#: templates/account_administration.bak/create_institution.html:17
-#: templates/account_administration.bak/create_user.html:10
-#: templates/account_administration.bak/delete_institution.html:9
-#: templates/account_administration.bak/delete_user.html:9
-#: templates/account_administration.bak/list_institutions.html:10
-#: templates/account_administration.bak/list_users.html:10
-#: templates/account_administration.bak/reset_password.html:9
-#: templates/account_administration.bak/user_manage.html:9
 msgid "Create Institution"
 msgstr "Δημιουργία Ιδρύματος"
 
 #: templates/account_administration/delete_institution.html:17
-#: templates/account_administration.bak/delete_institution.html:17
 msgid "Please confirm the deletion of institution"
 msgstr "Παρακαλώ επιβεβαιώστε την διαγραφή του ιδρύματος"
 
 #: templates/account_administration/delete_institution.html:19
 #: templates/account_administration/delete_user.html:19
 #: templates/account_administration/reset_password.html:17
-#: templates/account_administration.bak/delete_institution.html:19
-#: templates/account_administration.bak/delete_user.html:19
-#: templates/account_administration.bak/reset_password.html:17
 msgid "Yes, I confirm!"
 msgstr "Ναι, επιβεβαιώνω!"
 
 #: templates/account_administration/delete_institution.html:22
-#: templates/account_administration.bak/delete_institution.html:22
 msgid "Insitution has users, can't be deleted."
 msgstr "Το ίδρυμα έχει χρήστες, δεν μπορεί να διαγραφεί."
 
 #: templates/account_administration/delete_institution.html:27
-#: templates/account_administration.bak/delete_institution.html:27
 msgid "You didn't choose an institution."
 msgstr "Δεν επιλέχθηκε ίδρυμα."
 
 #: templates/account_administration/delete_user.html:16
-#: templates/account_administration.bak/delete_user.html:16
 msgid "Please confirm the deletion of user"
 msgstr "Παρακαλώ επιβεβαιώστε την διαγραφή του χρήστη"
 
 #: templates/account_administration/delete_user.html:24
 #: templates/account_administration/reset_password.html:22
-#: templates/account_administration.bak/delete_user.html:24
-#: templates/account_administration.bak/reset_password.html:22
 msgid "You didn't choose a user."
 msgstr "Δεν επιλέχθηκε χρήστης."
 
@@ -1488,99 +1454,70 @@ msgstr "Δεν επιλέχθηκε χρήστης."
 #: templates/account_administration/list_users.html:14
 #: templates/account_administration/list_users.html:29
 #: templates/account_administration/user_manage.html:19
-#: templates/account_administration.bak/list_institutions.html:17
-#: templates/account_administration.bak/list_users.html:32
-#: templates/account_administration.bak/list_users.html:46
-#: templates/account_administration.bak/user_manage.html:19
 msgid "Institution"
 msgstr "Ίδρυμα"
 
 #: templates/account_administration/list_institutions.html:18
 #: templates/account_administration/list_users.html:16
-#: templates/account_administration.bak/list_institutions.html:18
-#: templates/account_administration.bak/list_users.html:34
 msgid "Filter"
 msgstr "Φίλτρο"
 
 #: templates/account_administration/list_institutions.html:30
 #: templates/account_administration/list_users.html:28
 #: templates/account_administration/user_manage.html:18
-#: templates/account_administration.bak/list_institutions.html:30
-#: templates/account_administration.bak/list_users.html:45
-#: templates/account_administration.bak/user_manage.html:18
 msgid "Name"
 msgstr "Όνομα"
 
 #: templates/account_administration/list_institutions.html:31
-#: templates/account_administration.bak/list_institutions.html:31
 msgid "Users"
 msgstr "Χρήστες"
 
 #: templates/account_administration/list_institutions.html:32
 #: templates/account_administration/list_institutions.html:45
-#: templates/account_administration.bak/list_institutions.html:32
-#: templates/account_administration.bak/list_institutions.html:44
 msgid "Delete"
 msgstr "Διαγραφή"
 
 #: templates/account_administration/list_institutions.html:55
 #: templates/account_administration/list_users.html:47
-#: templates/account_administration.bak/list_institutions.html:51
-#: templates/account_administration.bak/list_users.html:72
 msgid "No results found"
 msgstr "Δεν βρέθηκαν αποτελέσματα"
 
 #: templates/account_administration/list_institutions.html:65
 #: templates/account_administration/list_users.html:56
-#: templates/account_administration.bak/list_institutions.html:61
-#: templates/account_administration.bak/list_users.html:81
 msgid "previous"
 msgstr "προηγούμενη"
 
 #: templates/account_administration/list_institutions.html:68
 #: templates/account_administration/list_users.html:59
-#: templates/account_administration.bak/list_institutions.html:64
-#: templates/account_administration.bak/list_users.html:84
 msgid "Page"
 msgstr "Σελίδα"
 
 #: templates/account_administration/list_institutions.html:68
 #: templates/account_administration/list_users.html:59
-#: templates/account_administration.bak/list_institutions.html:64
-#: templates/account_administration.bak/list_users.html:84
 msgid "of"
 msgstr "από"
 
 #: templates/account_administration/list_institutions.html:72
 #: templates/account_administration/list_users.html:65
-#: templates/account_administration.bak/list_institutions.html:68
-#: templates/account_administration.bak/list_users.html:90
 msgid "next"
 msgstr "επόμενη"
 
 #: templates/account_administration/list_users.html:30
 #: templates/account_administration/user_manage.html:20
-#: templates/account_administration.bak/list_users.html:48
-#: templates/account_administration.bak/user_manage.html:21
 msgid "Elections Held"
 msgstr "Αριθμός Εκλογών"
 
 #: templates/account_administration/list_users.html:31
 #: templates/account_administration/list_users.html:42
-#: templates/account_administration.bak/list_users.html:49
-#: templates/account_administration.bak/list_users.html:67
 msgid "Details"
 msgstr "Λεπτομέρειες"
 
 #: templates/account_administration/reset_password.html:14
-#: templates/account_administration.bak/reset_password.html:14
 msgid "Please confirm the password reset of user "
 msgstr "Παρακαλούμε επιβεβαιώστε την επανέκδοση του κωδικού του του χρήστη "
 
 #: templates/account_administration/user_manage.html:35
 #: templates/account_administration/user_manage.html:50
-#: templates/account_administration.bak/user_manage.html:43
-#: templates/account_administration.bak/user_manage.html:55
 msgid "Reset Password"
 msgstr "Επανέκδοση κωδικού"
 
@@ -1591,35 +1528,20 @@ msgstr "Επεξεργασία"
 
 #: templates/account_administration/user_manage.html:41
 #: templates/account_administration/user_manage.html:56
-#: templates/account_administration.bak/user_manage.html:46
-#: templates/account_administration.bak/user_manage.html:58
 msgid "Delete Account"
 msgstr "Διαγραφή λογαριασμού"
 
 #: templates/account_administration/user_manage.html:67
-#: templates/account_administration.bak/user_manage.html:69
 msgid "Election Name"
 msgstr "Τίτλος ψηφοφορίας"
 
 #: templates/account_administration/user_manage.html:68
-#: templates/account_administration.bak/user_manage.html:70
 msgid "Start date"
 msgstr "Ημερομηνία έναρξης"
 
 #: templates/account_administration/user_manage.html:69
-#: templates/account_administration.bak/user_manage.html:71
 msgid "End Date"
 msgstr "Ημερομηνία Λήξης"
-
-#: templates/account_administration.bak/list_users.html:59
-#: templates/account_administration.bak/user_manage.html:31
-msgid "Yes"
-msgstr "Ναι"
-
-#: templates/account_administration.bak/list_users.html:61
-#: templates/account_administration.bak/user_manage.html:33
-msgid "No"
-msgstr "Όχι"
 
 #: templates/election_modules/score/results.html:8
 msgid "votes cast"
@@ -1820,3 +1742,15 @@ msgid ""
 "    officials.\n"
 "    "
 msgstr ""
+
+#~ msgid "Departments for STV elections"
+#~ msgstr "Τμήματα για για εκλογές ταξινομικής ψήφου"
+
+#~ msgid "Fill if you chose STV election."
+#~ msgstr "Συμπληρώστε αν επιλέξατε εκλογές ταξινομικής ψήφου"
+
+#~ msgid "Yes"
+#~ msgstr "Ναι"
+
+#~ msgid "No"
+#~ msgstr "Όχι"
