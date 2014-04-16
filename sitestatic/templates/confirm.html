@@ -1,0 +1,21 @@
+
+<h3>Revise sua Cédula</h3>
+
+{#foreach $T.questions as question}
+<p>
+{$T.question.short_name}<br />
+
+<b style="font-size:1.4em;">{#foreach $T.choices[$T.question$index] as choice}
+{$T.choice}{#if !$T.choice$last}, {#/if}
+{#/for}</b>
+{#if $T.choices[$T.question$index].length < $T.question.max}
+&nbsp;&nbsp;&nbsp;
+<!--[you under-voted: you may select up to {$T.question.max}] -->
+[você não votou corretamente: você precisa selecionar até {$T.question.max} opção ou opções.]
+{#/if}
+&nbsp;&nbsp;&nbsp;
+[<a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#">editar</a>]
+</p>
+{#/for}
+
+<button onclick="BOOTH.seal_ballot();">Confirmar escolha e cifrar cédula para depósito na urna</button>
