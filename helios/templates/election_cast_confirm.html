@@ -63,7 +63,7 @@ Your smart ballot tracker is:
 {% if user %}
 <p>
 {% blocktrans %}
-You are logged in as <u>{{user.display_html_small|safe}}</u>, but this election<br />
+You are logged in as <u>{{user.pretty_name}}</u>, but this election<br />
 requires election-specific credentials.
 {% endblocktrans %}
 </p>

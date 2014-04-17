@@ -58,14 +58,20 @@ this {{election_type}} is <u>not</u> featured on the front page.
 <p style="font-size:1.5em;">[<a target="_blank" href="{{election.election_info_url}}">
 {% blocktrans %}download candidate bios &amp; statements{% endblocktrans %}</a>]</p>
 {% endif %}
-
-<p align="center" style="font-size: 1.5em;">
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+<h4 class="page-header">
+<div class="row placeholders">
+<div class="col-xs-6 col-sm-3 placeholder">
 <a href="{% url helios.views.one_election_questions election.uuid %}">{% trans "questions" %} ({% if election.questions %}{{election.questions|length}}{% else %}0{% endif %})</a>
-&nbsp;&nbsp;|&nbsp;&nbsp;
+</div>
+<div class="col-xs-6 col-sm-3 placeholder">
 <a href="{% url helios.views.voters_list_pretty election.uuid %}">{% blocktrans %}voters &amp; ballots{% endblocktrans %}</a>
-&nbsp;&nbsp;|&nbsp;&nbsp;
+</div>
+<div class="col-xs-6 col-sm-3 placeholder">
 <a href="{% url helios.views.list_trustees_view election.uuid %}">{% trans "trustees" %} ({{trustees|length}})</a>
-</p>
+</div>
+</h4>
+</div>
 
 {% if admin_p %}
 {% if election.frozen_p %}
@@ -189,7 +195,7 @@ all voters will be notified that the tally is ready.
 {% else %}
 
 {% if election.voting_has_started %}
-<a class="button" href="{{test_cookie_url}}">
+<a class="btn btn-lg btn-primary" role="button" href="{{test_cookie_url}}">
 {% trans "Vote in this {{election_type}} " %}
 </a>
 <br />
@@ -318,7 +324,7 @@ You are <em>not eligible</em> to vote in this {{election_type}}.
 {% if election.voting_has_stopped %}
 <p style="font-size: 1.2em;">
 {% if election.result %}
-verify <a target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">{% trans "election tally" %}</a>.
+{% trans "verify" %} <a target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">{% trans "election tally" %}</a>.
 {% endif %}
 
 {% trans "review the" %} <a href="{{vote_url}}">{% trans "voting booth" %}</a>.

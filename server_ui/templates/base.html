@@ -7,8 +7,10 @@
   <meta name="viewport" content="width=device-width">
   <title>{% block title %}{% endblock %}</title>
   
-  <link rel="stylesheet" href="/static/foundation/css/foundation.css">
-  <link rel="stylesheet" href="/static/foundation-tweaks.css">
+  <!--<link rel="stylesheet" href="/static/foundation/css/foundation.css">
+  <link rel="stylesheet" href="/static/foundation-tweaks.css"> -->
+  <link rel="stylesheet" type="text/css" media="screen" href="/static/helios/bootstrap/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/static/helios/css/custom.css" />
 
 {% if settings.DEBUG %}  
   <script src="/static/foundation/js/vendor/custom.modernizr.js"></script>
@@ -28,66 +30,32 @@
   {% block extra-head %}{% endblock %}
 </head>
 <body>
-  <div class="wrapper">
-  <nav class="top-bar">
-    <ul class="title-area">
-      <!-- Title Area -->
-      <li class="name">
-        <h1><a href="/"><img src="/static/tinylogo.png"></a></h1>
-      </li>
-      <li class="toggle-topbar menu-icon"><a href="#"><span>{% trans "menu" %}</span></a></li>
-    </ul>
- 
-    <section class="top-bar-section">
-      <!-- Right Nav Section -->
-      <ul class="right">
-	{% if user and user.admin_p %}
-	<li><a href="{% url helios.stats_views.home %}">{% trans "Admin" %}</a></li>
-	<li class="divider"></li>
-	{% endif %}
-	{% if not settings.MASTER_HELIOS %}
-	<li><a href="http://heliosvoting.org">{% trans "About Helios" %}</a></li>
-	{% endif %}
-      </ul>
-      
-      <ul>
-        <li><a href="/">{{settings.SITE_TITLE}}</a></li>
-	{% if settings.MASTER_HELIOS %}
-        <li class="divider"></li>
-        <li><a href="/about">About</a></li>
-        <li class="divider"></li>
-        <li><a target="_new" href="https://github.com/benadida/helios-server">Code</a></li>
-        <li class="divider"></li>
-        <li><a href="/docs">Docs</a></li>
-        <li class="divider"></li>
-        <li><a href="/faq">FAQ</a></li>
-        <li class="divider"></li>
-        <li><a href="/privacy">Privacy</a></li>
-	{% endif %}
-        <li class="divider"></li>
-        <li><a href="mailto:{{settings.HELP_EMAIL_ADDRESS}}">{% trans "Help!" %}</a></li>
-      </ul>
-    </section>
-  </nav>
-
-
+<nav class="navbar navbar-default top-bar" role="navigation">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-right navbar-top">
+      {% if user and user.admin_p %}
+      <a class="navbar-brand" href="{% url helios.stats_views.home %}">Admin</a
+      >
+      {% endif %}
+    </div>
+  </div>
+</nav>
+  
   <!-- Main Page Content and Sidebar -->
 
-  <div class="row" id="contentbody">
+  <div class="container">
       {% block content %}{% endblock %}
   </div>
   
-  <div class="push"></div>
-  </div>
-
-  <div class="footer" id="footer">
+  <div class="panel-footer">
 <!--    <span style="float:right;">
       {% if settings.FOOTER_LOGO_URL %}
       <img src="{{settings.FOOTER_LOGO_URL}}" />
       {% endif %}
     </span>-->
     {% if user %}
-    logged in as <b>{{user.display_html_small|safe}}</b>&nbsp;&nbsp;
+    logged in as <b>{{user.pretty_name|safe}}</b>&nbsp;&nbsp;
     <a class="tiny button" href="{% url helios_auth.views.logout %}?return_url={{CURRENT_URL}}">{% trans "logout" %}</a><br />
     {% else %}
     {% if voter %}
@@ -103,9 +71,10 @@
       <br clear="right" />
     </div>
   
-  </div>
       <script>
 	$(document).foundation();
       </script>     
+
+  <script src="/static/helios/bootstrap/js/bootstrap.min.js"></script>
 </body>
 </html>

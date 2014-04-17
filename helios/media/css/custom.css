@@ -1,0 +1,11 @@
+.top-bar {
+	background-color:#4C9900;	
+	background-image:url('../img/logo.png');
+	background-repeat:no-repeat;
+	min-height:70px;
+}
+
+
+.navbar-top font{
+	color:black;
+}
