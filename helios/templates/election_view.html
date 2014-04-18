@@ -79,46 +79,48 @@
           </p>
         {% endif %}
 
-        <h3>Tally</h3>
+        {% if election.publish_tally %}
+          <h3>Tally</h3>
 
-        {% for question in election.pretty_result %}
-          {% if forloop.counter0|divisibleby:2 %}<div class="row">{% endif %}
-            <div class="large-6 columns">
-              <h4>{{forloop.counter}}. {{question.question}}</h4>
+          {% for question in election.pretty_result %}
+            {% if forloop.counter0|divisibleby:2 %}<div class="row">{% endif %}
+              <div class="large-6 columns">
+                <h4>{{forloop.counter}}. {{question.question}}</h4>
 
-              <table>
-                <thead>
-                  <tr>
-                    <td>
-                      Answer
-                    </td>
-                    <td>
-                      Count
-                    </td>
-                  </tr>
-                </thead>
+                <table>
+                  <thead>
+                    <tr>
+                      <td>
+                        Answer
+                      </td>
+                      <td>
+                        Count
+                      </td>
+                    </tr>
+                  </thead>
 
-                <tbody>
-                  {% if election.election_type == 'ranked election' %}
-                    {% for answer in question.answers %}
-                      <tr>
-                        <td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td><td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.score}}</td>
-                        <td style="{% if answer.winner %}font-weight: bold;{% endif %}">{{answer.count}}</td>
-                      </tr>
-                    {% endfor %}
-                  {% else %}
-                    {% for answer in question.answers %}
-                      <tr>
-                        <td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td>
-                        <td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.count}}</td>
-                      </tr>
-                    {% endfor %}
-                  {% endif %}
-                </tbody>
-              </table>
-            </div>
-          {% if not forloop.counter0|divisibleby:2 or forloop.last %}</div>{% endif %}
-        {% endfor %}
+                  <tbody>
+                    {% if election.election_type == 'ranked election' %}
+                      {% for answer in question.answers %}
+                        <tr>
+                          <td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td><td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.score}}</td>
+                          <td style="{% if answer.winner %}font-weight: bold;{% endif %}">{{answer.count}}</td>
+                        </tr>
+                      {% endfor %}
+                    {% else %}
+                      {% for answer in question.answers %}
+                        <tr>
+                          <td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td>
+                          <td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.count}}</td>
+                        </tr>
+                      {% endfor %}
+                    {% endif %}
+                  </tbody>
+                </table>
+              </div>
+            {% if not forloop.counter0|divisibleby:2 or forloop.last %}</div>{% endif %}
+          {% endfor %}
+        {% endif %}
       {% else %}
         {% if election.voting_has_stopped %}
           <div data-alert class="alert-box info">

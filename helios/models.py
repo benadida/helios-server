@@ -129,6 +129,7 @@ class Election(HeliosModel):
     registration_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
     voting_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
     voting_ends_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+    publish_tally_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
 
     # if this is non-null, then a complaint period, where people can cast a quarantined ballot.
     # we do NOT call this a "provisional" ballot, since provisional implies that the voter has not
@@ -346,6 +347,8 @@ class Election(HeliosModel):
                 if i < len(self.eligibility):
                     return_val += """<i class="spacer"></i>"""
 
+            logging.info(return_val)
+
             return return_val
 
     def voting_has_started(self):
@@ -380,6 +383,12 @@ class Election(HeliosModel):
             voting_extended_until = datetime.datetime.now() >= self.voting_extended_until
 
         return self.encrypted_tally or (voting_ended_at or voting_ends_at or voting_extended_until)
+
+    def publish_tally(self):
+        """
+        can we publish the tally?
+        """
+        return self.result and (self.publish_tally_at and datetime.datetime.now() >= self.publish_tally_at)
 
     @property
     def issues_before_freeze(self):

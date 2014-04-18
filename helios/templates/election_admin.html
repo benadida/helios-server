@@ -67,20 +67,20 @@
                       {% if election.tallying_started_at %}
                         Tally computation is under way. Reload this page in a couple of minutes.
                       {% else %}
-                        Compute encrypted tally. The encrypted votes will be combined into an encrypted tally. Once this is done, trustees will be asked to provide their share of the decryption.
+                        Compute encrypted tally. The encrypted votes will be combined into an encrypted tally. Once this is done, the trustees will be asked to provide their share of the decryption.
                       {% endif %}
                     {% else %}
                       {% ifequal election.num_trustees 1 %}
                         Release results.
                       {% else %}
-                        Combine trustee decryptions and release results.
+                        Combine trustee decryptions and release results. The decryption shares from the trustees are combined and the tally is decrypted.
                       {% endifequal %}
 
-                      {% ifequal election.num_trustees 1 %}
-                        The result is released and all voters are notified.
+                      {% if election.publish_tally_at %}
+                        Once you do this, the tally will be immediately available for all to see, and all voters will be notified that the tally is ready.
                       {% else %}
-                        The decryption shares from the trustees are combined and the tally is decrypted. Once you do this, the tally will be immediately available for all to see, and all voters will be notified that the tally is ready.
-                      {% endifequal %}
+                        The results will only be published at {{election.publish_tally_at}}.
+                      {% endif %}
                     {% endif %}
                   {% endif %}
                 {% endif %}
@@ -114,10 +114,16 @@
                     {% endif %}
                   {% else %}
                     {% ifequal election.num_trustees 1 %}
-                      Release results and notify all voters.
+                      Release results.
                     {% else %}
-                      The decryption shares from the trustees are combined and the tally is decrypted. Once you do this, the tally will be immediately available for all to see, and all voters will be notified that the tally is ready.
+                      The decryption shares from the trustees are combined and the tally is decrypted.
                     {% endifequal %}
+
+                    {% if election.publish_tally_at %}
+                        Once you do this, the tally will be immediately available for all to see, and all voters will be notified that the tally is ready.
+                      {% else %}
+                        The results will only be published at {{election.publish_tally_at}}.
+                      {% endif %}
                   {% endif %}
                 {% endif %}
               {% endif %}
@@ -156,7 +162,10 @@
         <li>{% if election.num_cast_votes > 0 %}<s>{% endif %}Wait for the voters to cast their ballots. {% if not election.voting_ends_at %}The election will end at your discretion.{% else %}The election will automatically end at {{election.voting_ends_at}}.{% endif %}{% if election.num_cast_votes > 0 %}</s>{% endif %}</li>
         <li>{% if election.tallying_started_at %}<s>{% endif %}Compute encrypted tally. The encrypted votes will be combined into an encrypted tally.{% if election.tallying_started_at %}</s>{% endif %}</li>
         <li>{% if election.ready_for_decryption_combination %}<s>{% endif %}Wait for the trustees to provide their share of the key used to encrypt the ballots.{% if election.ready_for_decryption_combination %}</s>{% endif %}</li>
-        <li>{% if election.result %}<s>{% endif %}Release tally and notify all voters.{% if election.result %}</s>{% endif %}</li>
+        <li>{% if election.result %}<s>{% endif %}{% if not election.publish_tally_at %}Release tally and notify all voters.{% else %}Release tally.{% endif %}{% if election.result %}</s>{% endif %}</li>
+        {% if election.publish_tally_at %}
+          <li>{% if election.publish_tally %}<s>{% endif %}The tally will be published at {{election.publish_tally_at}}.{% if election.publish_tally %}</s>{% endif %}</li>
+        {% endif %}
       </ol>
 
       {% if election.use_threshold %}
