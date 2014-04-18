@@ -467,9 +467,25 @@ def trustees_create(request, election):
             name = request.POST['name']
             email = request.POST['email']
 
-            trustee = Trustee(
-                uuid=str(uuid.uuid1()), election=election, name=name, email=email)
+            trustee = Trustee(uuid=str(uuid.uuid1()), election=election, name=name, email=email)
             trustee.save()
+
+            url = settings.SECURE_URL_HOST + reverse(trustee_login, args=[election.short_name, trustee.email, trustee.secret])
+
+            body = """Dear %s,
+
+You are a trustee for %s.
+
+Your trustee dashboard is at
+
+    %s
+
+--
+Helios
+""" % (trustee.name, election.name, url)
+
+            send_mail("%s - Trustee Dashboard" % election.name, body, settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], fail_silently=True)
+
             return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustees_list_view, args=[election.uuid]))
     else:
         return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustees_list_view, args=[election.uuid]))
