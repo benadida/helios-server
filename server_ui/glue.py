@@ -26,7 +26,7 @@ Your ballot is archived at:
     if election.use_voter_aliases:
         body += """
 This election uses voter aliases to protect your privacy.
-Your voter alias is : %s
+Your voter alias is: %s
 """ % voter.alias
 
     body += """
