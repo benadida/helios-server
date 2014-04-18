@@ -22,15 +22,13 @@
       if (ready_to_unload)
         return;
 
-      if (typeof evt == 'undefined') {
+      if (typeof evt == "undefined")
         evt = window.event;
-      }
 
       var message = "You have not yet cast your ballot! Make sure to complete the voting process if you want your vote to count.";
 
-      if (evt) {
+      if (evt)
         evt.returnValue = message;
-      }
 
       return message;
     };
@@ -84,7 +82,7 @@
 
                   <button type="submit">I am <u>{{voter.display_html_big|safe}}</u>, cast this ballot!</button>
 
-                  <div data-alert class="alert-box info">
+                  <div data-alert class="alert-box warning">
                     You can cast as many ballots as you want: only the last one counts.
                   </div>
                 </form>
