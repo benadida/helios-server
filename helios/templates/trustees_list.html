@@ -79,12 +79,12 @@
       <table>
         <thead>
           <tr>
-            <td width="20%">Trustee</td>
+            <td width="25%">Trustee</td>
             {% if not election.use_threshold %}
-              <td>Public Key</td>
+              <td width="50%">Public Key</td>
             {% else %}
-              <td>Public Key for Signing</td>
-              <td>Public Key for Encryption</td>
+              <td width="25%">Public Key for Signing</td>
+              <td width="25%">Public Key for Encryption</td>
             {% endif %}
             {% if election.encrypted_tally %}
               <td>Tally Status</td>
