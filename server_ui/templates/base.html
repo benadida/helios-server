@@ -35,7 +35,7 @@
 
 <body>
   <div class="wrapper">
-    <nav class="top-bar">
+    <nav class="top-bar {% block top-bar_style %}{% endblock %}">
       <ul class="title-area">
         <li class="name">
           <h1><a href="/"><img src="/static/tinylogo.png"></a></h1>
@@ -48,7 +48,6 @@
         <ul class="right">
           {% if user and user.admin_p %}
             <li><a href="{% url helios.stats_views.home %}">Admin</a></li>
-            <li class="divider"></li>
           {% endif %}
 
           {% if not settings.MASTER_HELIOS %}
@@ -60,19 +59,13 @@
           <li><a href="/">{{settings.SITE_TITLE}}</a></li>
 
           {% if settings.MASTER_HELIOS %}
-            <li class="divider"></li>
             <li><a href="/about">About</a></li>
-            <li class="divider"></li>
             <li><a target="_new" href="https://github.com/benadida/helios-server">Code</a></li>
-            <li class="divider"></li>
             <li><a href="/docs">Docs</a></li>
-            <li class="divider"></li>
             <li><a href="/faq">FAQ</a></li>
-            <li class="divider"></li>
             <li><a href="/privacy">Privacy</a></li>
         	{% endif %}
 
-          <li class="divider"></li>
           <li><a href="mailto:{{settings.HELP_EMAIL_ADDRESS}}">Help!</a></li>
         </ul>
       </section>
