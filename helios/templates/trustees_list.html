@@ -79,7 +79,7 @@
       <table>
         <thead>
           <tr>
-            <td width="25%">Trustee</td>
+            <td width="20%">Trustee</td>
             {% if not election.use_threshold %}
               <td>Public Key</td>
             {% else %}
@@ -157,6 +157,12 @@
           {% endfor %}
         </tbody>
       </table>
+
+      {% if public_key_hash %}
+        <p>
+          The combined public key for the election is <tt>{{public_key_hash}}</tt>.
+        </p>
+      {% endif %}
 
       {% if election.use_threshold %}
         {% if election.frozen_trustee_list %}
