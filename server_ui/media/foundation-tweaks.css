@@ -10,7 +10,7 @@
   background: #f7941e;
 }
 
-.top-bar-section li:not(.has-form) a:not(.button) {
+.top-bar.trustee .top-bar-section li:not(.has-form) a:not(.button) {
   background: #f7941e;
 }
 
