@@ -64,11 +64,15 @@
                     {% endif %}
                   {% else %}
                     {% if not election.encrypted_tally %}
-                      {% if election.tallying_started_at %}
-                        Tally computation is under way. Reload this page in a couple of minutes.
+                      {% ifequal election.num_cast_votes 0 %}
+                        Wait for the voters to cast their ballots. {% if not election.voting_ends_at %}The election will end at your discretion.{% else %}The election will automatically end at {{election.voting_ends_at}}.{% endif %}
                       {% else %}
-                        Compute encrypted tally. The encrypted votes will be combined into an encrypted tally. Once this is done, the trustees will be asked to provide their share of the decryption.
-                      {% endif %}
+                        {% if election.tallying_started_at %}
+                          Tally computation is under way. Reload this page in a couple of minutes.
+                        {% else %}
+                          Compute encrypted tally. The encrypted votes will be combined into an encrypted tally. Once this is done, the trustees will be asked to provide their share of the decryption.
+                        {% endif %}
+                      {% endifequal %}
                     {% else %}
                       {% ifequal election.num_trustees 1 %}
                         Release results.
@@ -107,11 +111,15 @@
                   {% endif %}
                 {% else %}
                   {% if not election.encrypted_tally %}
-                    {% if election.tallying_started_at %}
-                      Tally computation is under way. Reload this page in a couple of minutes.
+                    {% ifequal election.num_cast_votes 0 %}
+                      Wait for the voters to cast their ballots. {% if not election.voting_ends_at %}The election will end at your discretion.{% else %}The election will automatically end at {{election.voting_ends_at}}.{% endif %}
                     {% else %}
-                      Compute encrypted tally. The encrypted votes will be combined into an encrypted tally. Once this is done, the trustees will be asked to provide their share of the decryption key.
-                    {% endif %}
+                      {% if election.tallying_started_at %}
+                        Tally computation is under way. Reload this page in a couple of minutes.
+                      {% else %}
+                        Compute encrypted tally. The encrypted votes will be combined into an encrypted tally. Once this is done, the trustees will be asked to provide their share of the decryption key.
+                      {% endif %}
+                    {% endifequal %}
                   {% else %}
                     {% ifequal election.num_trustees 1 %}
                       Release results.
