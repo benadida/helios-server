@@ -558,7 +558,7 @@ class ZeusDjangoElection(ZeusCoreElection):
                 cand_and_dep = item.split(':')
                 constituencies[str(count_id)] = cand_and_dep[1]
                 count_id += 1
-            seats = 2 #no data yet, fix later
+            seats = 2 # TODO: election.seats
             droop = False
             ballots_data = self.poll.result[0]
             ballots = []
@@ -567,9 +567,8 @@ class ZeusDjangoElection(ZeusCoreElection):
                 ballot = [str(i) for i in ballot]
                 ballots.append(Ballot(ballot))
             results = count_stv(ballots, seats, droop, constituencies)
-            self.poll.stv_results = results
+            self.poll.stv_results = json.dumps(results)
             self.poll.save()
-            #save here 
             return results
         return gamma_count_parties(self.do_get_results(), self.do_get_candidates())
 
@@ -586,10 +585,10 @@ class ZeusDjangoElection(ZeusCoreElection):
                 qanswer = answer.replace("%s:" % q['question'], "")
                 entry['results'][qanswer] = {
                     'score': score,
-                    'scores': results['detailed'][answer] 
+                    'scores': results['detailed'][answer]
                 }
             pretty[q['question']] = entry
-            
+
         pretty['meta'] = results
         results['total_cast'] = len(results['ballots'])
         return pretty
