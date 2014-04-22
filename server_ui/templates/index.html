@@ -43,7 +43,7 @@
 
       {% for election in elections %}
  
-        <a style="font-size: 1.4em;" href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a>{% if settings.SHOW_USER_INFO %}<br /> by {{election.admin.display_html_small|safe}}{% endif %}
+        <a style="font-size: 1.4em;" href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a>{% if settings.SHOW_USER_INFO %}<br /> {% trans "by" %} {{election.admin.pretty_name}}{% endif %}
      
       <br />
       {% endfor %}
