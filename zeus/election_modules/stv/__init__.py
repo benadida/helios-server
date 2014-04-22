@@ -23,6 +23,13 @@ class StvElection(ElectionModuleBase):
     count_empty_question = False
     booth_questions_tpl = 'question_ecounting'
     no_questions_added_message = _('No questions set')
+    module_params = {
+        'ranked': True
+    }
+
+    pdf_result = False
+    csv_result = False
+    json_result = True
 
     def questions_update_view(self, request, election, poll):
         from zeus.utils import poll_reverse
