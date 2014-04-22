@@ -1,4 +1,4 @@
-<form onsubmit="return false;" class="prettyform" id="answer_form">
+<form onsubmit="return false;" class="form-horizontal" role="form" id="answer_form">
 <input type="hidden" name="question_num" value="{$T.question_num}" />
 
 <p>
@@ -41,7 +41,7 @@ as many as you approve of
 
 {#if $T.show_reviewall}
 <div style="float: right;">
-<input type="button" onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Avançar" />
+<input type="button" class="btn btn-primary" onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Avançar" />
 </div>
 {#/if}
 

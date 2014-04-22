@@ -1,5 +1,5 @@
 {#if $T.election_metadata.use_advanced_audit_features}
-<div style="float: right; background: lightyellow; margin-left: 20px; padding: 0px 10px 10px 10px; border: 1px solid #ddd; width:200px;">
+<div style="float: right; margin-left: 20px; padding: 0px 10px 10px 10px; border: 1px solid #ddd; width:200px;" class="bg-success">
 <h4><a onclick="$('#auditbody').slideToggle(250);" href="#">Auditar</a> <span style="font-size: 0.8em; color: #444">[opcional]</span></h4>
 <div id="auditbody" style="display:none;">
 <p>
@@ -10,7 +10,7 @@ Se você quiser, você pode auditar sua cédula e verificar se ela contém sua e
 <!--You will then be guided to re-encrypt your choices for final casting. -->
 Após fazer isso, você deverá cifrar seu voto novamente para depósito final na urna.
 </p>
-<input type="button" value="Verificar Cédula" onclick="BOOTH.audit_ballot();" class="pretty" />
+<input type="button" value="Verificar Cédula" onclick="BOOTH.audit_ballot();" class="btn-primary" />
 </p>
 </div>
 </div>
@@ -37,7 +37,7 @@ Após fazer isso, você deverá cifrar seu voto novamente para depósito final n
 Once you click "Proceed", Helios will remember only your encrypted vote. Thus, only you know your vote.</p> -->
 <p>Após clicar em "Depositar na Urna", o Helios vai guardar apenas seu voto cifrado. Assim, somente você conhecerá seu voto.</p>
 
-<button id="proceed_button" onclick="BOOTH.cast_ballot();">Depositar Voto na Urna</button><br />
+<button class="btn-primary" id="proceed_button" onclick="BOOTH.cast_ballot();">Depositar Voto na Urna</button><br />
 <div id="loading_div"><img src="loading.gif" id="proceed_loading_img" /></div>
 
 

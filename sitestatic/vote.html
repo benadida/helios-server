@@ -5,6 +5,8 @@
   <title>Cabine de Votação do Helios</title>
   <link rel="stylesheet" type="text/css" href="css/booth.css" />
   <link rel="stylesheet" type="text/css" href="css/forms.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="/static/helios/bootstrap/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="/static/helios/css/custom.css" />
 
 <!--
   <script language="javascript" src="js/jscrypto/class.js"></script>
@@ -609,11 +611,11 @@ BOOTH.do_done = function() {
 </script>
 <div id="page">
   <div id="progress_div" style="display:none; width: 500px; margin:auto;">
-      <table width="100%">
+      <table width="100%" class="table table-bordered">
           <tr><td id="progress_1">(1) Selecionar</td><td id="progress_2">(2) Revisar</td><td id="progress_3">(3) Depositar</td></tr>
       </table>
   </div>
-  <div id="election_div" class="panel">
+  <div id="election_div" class="panel list-group">
     <!--<h3>Checking capabilities and loading election booth...</h3>-->
     <h3>Checando os requisitos e carregando cabine de votação...</h3>
     <div align="center"><img src="loading.gif" /><br /><!--This may take up to 10 seconds --> Isso pode levar até 10 segundos</div>
@@ -651,7 +653,7 @@ BOOTH.do_done = function() {
       <p align="center"><b><!--This may take up to two minutes.-->Isso pode levar alguns minutos.</b>
   </div>
 
-  <div id="seal_div" class="panel bg-success">
+  <div id="seal_div" class="panel">
   </div>
 
   <div id="audit_div" class="panel">
