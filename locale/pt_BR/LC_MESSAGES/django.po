@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-22 15:02-0300\n"
-"PO-Revision-Date: 2014-04-22 15:29-0300\n"
+"POT-Creation-Date: 2014-04-22 16:26-0300\n"
+"PO-Revision-Date: 2014-04-22 16:27-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -276,10 +276,6 @@ msgstr "Resultado da Eleição"
 #: helios/views.py:1248
 msgid "bad template"
 msgstr "template inválido"
-
-#: helios/media/static_templates/question.html:104
-msgid "no questions yet"
-msgstr "nenhuma questão ainda"
 
 #: helios/templates/_castconfirm_docast.html:20
 msgid "You are logged in as"
@@ -2531,6 +2527,10 @@ msgstr ""
 msgid "create an election"
 msgstr "criar uma eleição"
 
+#: server_ui/templates/index.html:46
+msgid "by"
+msgstr "por"
+
 #: server_ui/templates/index.html:52
 msgid "no featured elections at the moment"
 msgstr "nenhuma votação em destaque no momento"
@@ -2711,6 +2711,9 @@ msgstr "Erro no servidor"
 #: templates/500.html:6
 msgid "There was an error while handling your request."
 msgstr "Houve um erro durante o processamento de sua requisição."
+
+#~ msgid "no questions yet"
+#~ msgstr "nenhuma questão ainda"
 
 #, fuzzy
 #~ msgid "cast ballot"
