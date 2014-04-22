@@ -487,7 +487,7 @@ BALLOT.pretty_choices = function(election, ballot) {
 
 	    return _(q_answers).map(function(ans) {
 	      var choice_text = questions[q_num].answers[ans];
-          if (_.contains(empty_ballot_choices, ans)) {
+          if (_.contains(empty_ballot_choices, ans) && election.module_params.count_empty_question) {
             return questions[q_num].answers[ans].split(":")[0]; 
           }
           if (choice_text.indexOf(":") > -1) {

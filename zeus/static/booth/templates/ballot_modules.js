@@ -16,7 +16,7 @@ BM.ModuleBase = {
     this.election = election;
     this.data = election.questions_data;
     this.el = {};
-    this.ranked = false;
+    this.ranked = election.module_params.ranked;
   },
 
   init_events: function () {
@@ -50,7 +50,6 @@ BM.ModuleBase = {
   },
   
   handle_selected_click: function(e) {
-    debugger;
     e.preventDefault();
     var el = $(e.target).closest("a");
     var choice = parseInt(el.data('absolute-index'));
@@ -180,7 +179,6 @@ BM.ModuleBase = {
   get_questions_answers: function(q) {
     var answers = _.map(this.data, function(){ return []});
     var qmaps = this.get_answers_map();
-    debugger;
     _.each(this.get_answer(), function(ans) {
       answers[qmaps[ans]].push(ans);
     });
@@ -448,9 +446,9 @@ BM.ModuleBase,
   update_submit_value: function() {
     var choices = this.get_answer();
     if (choices.length == 0) {
-      this.el.submit.val("Blank vote");
+      this.el.submit.val(gettext("BLANK_BALLOT"));
     } else {
-      this.el.submit.val("Continue");
+      this.el.submit.val(gettext("BALLOT_CONTINUE_BUTTON"));
     }
     if (!this.all_scores_chosen() && this.get_answer().length > 0) {
       this.el.submit.addClass("disabled").removeClass("success");
@@ -637,6 +635,15 @@ BM.STVElection = function(election) {
 _.extend(BM.STVElection.prototype,
 BM.ModuleBase, {
   tpl: 'question_stv',
+    
+  post_show: function() {
+    this.update_layout();
+  },
+
+  post_init_events: function() {
+    $(".stv-ballot-choice a.selected").live('click', _.bind(this.handle_selected_click, this));
+  },
+
   can_add: function(choice, question) {
     return true;
   },
@@ -648,6 +655,36 @@ BM.ModuleBase, {
   select_answer: function(choice) {
     this.get_answer_el(choice).removeClass().addClass('button small disabled');
   },
+
+  update_layout: function() {
+    var choice_els = $(".stv-ballot-choice");
+    var candidate_els = $(".stv-choice");
+
+    choice_els.find("a.button")
+        .removeClass("selected success")
+        .addClass("disabled secondary")
+        .removeData("question").removeData("absolute-index");
+    choice_els.find("span.value").text("");
+
+    candidate_els.find("a.button").removeClass("disabled")
+                 .addClass("enabled");
+
+    var self = this;
+    var choices =  this.get_answer();
+    _.each(choices, function(choice, index) {
+        var cand = candidate_els.filter(".choice-" + choice).find("a.button");
+        var choice = $(choice_els.get(index));
+
+        cand.removeClass("enabled").addClass("disabled");
+        choice.find("a.button").addClass("enabled selected success")
+            .removeClass("disabled secondary");
+        
+        choice.find("span.value").text(cand.text());
+        choice.find("a.button").data("question", cand.data("question"));
+        choice.find("a.button").data("absolute-index", cand.data("absolute-index"));
+    }, this);
+    this.update_submit_value();
+  }
 });
 
 BM.registry = {
