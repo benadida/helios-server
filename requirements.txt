@@ -1,0 +1,27 @@
+Django==1.4
+South==0.7.6
+ansicolors==1.0.2
+anyjson==0.3.3
+billiard==2.7.3.17
+celery==3.0.11
+celerymon==1.0.3
+django-celery==3.0.11
+django-eml-email-backend==0.1
+django-extensions==0.9
+django-kombu==0.9.4
+kombu==2.4.7
+pycrypto==2.6
+python-dateutil==1.5
+python-openid==2.2.5
+psycopg2==2.5.2
+PyICU==1.7
+django-pagination==1.0.7
+gmpy==1.17
+simplejson==3.4.0
+reportlab==3.0
+
+# devtools
+#selenium==2.25.0
+#trunserver==0.0.2
+#django-debug-toolbar==0.9.4
+#ipython==0.13
