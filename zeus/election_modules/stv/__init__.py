@@ -111,11 +111,11 @@ class StvElection(ElectionModuleBase):
         for index, q in enumerate(questions_data):
             q_answers = ["%s" % (ans) for ans in \
                          q['answers']]
-            group = index 
+            group = index
             if prepend_empty_answer:
                 #remove params and q questions
-                params_max = len(q_answers) 
-                params_min = 0 
+                params_max = len(q_answers)
+                params_min = 0
                 if self.count_empty_question:
                     params_min = 0
                 params = "%d-%d, %d" % (params_min, params_max, group)

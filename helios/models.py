@@ -43,7 +43,7 @@ from django.core.context_processors import csrf
 from helios.crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
 from helios import datatypes
-from helios import exceptions 
+from helios import exceptions
 from helios.datatypes.djangofield import LDObjectField
 from helios.byte_fields import ByteaField
 from helios.utils import force_utf8
@@ -69,6 +69,7 @@ from zeus.utils import decalize
 
 logger = logging.getLogger(__name__)
 
+RESULTS_PATH = getattr(settings, 'ZEUS_RESULTS_PATH', os.path.join(settings.MEDIA_ROOT, 'results'))
 ELECTION_MODEL_VERSION = 1
 
 
@@ -98,6 +99,10 @@ class PollMixManager(models.Manager):
     def get_query_set(self):
         return PollMixQuerySet(self.model)
 
+from django.core.files import storage
+default_mixes_path = settings.MEDIA_ROOT + "/zeus_mixes/"
+ZEUS_MIXES_PATH = getattr(settings, 'ZEUS_MIXES_PATH', default_mixes_path)
+zeus_mixes_storage = storage.FileSystemStorage(location=ZEUS_MIXES_PATH)
 
 class PollMix(models.Model):
 
@@ -126,8 +131,9 @@ class PollMix(models.Model):
     status = models.CharField(max_length=255, choices=MIX_STATUS_CHOICES,
                             default='pending')
     mix_error = models.TextField(null=True, blank=True)
-    mix_file = models.FileField(upload_to=settings.ZEUS_MIXES_PATH,
-                              null=True, default=None)
+    mix_file = models.FileField(upload_to=lambda x:'',
+                                storage=zeus_mixes_storage,
+                                null=True, default=None)
 
 
     objects = PollMixManager()
@@ -142,10 +148,10 @@ class PollMix(models.Model):
         Expects mix dict object
         """
         fname = str(self.pk) + ".canonical"
-        fpath = settings.MEDIA_ROOT + "/" + settings.ZEUS_MIXES_PATH + "/" + fname
+        fpath =  os.path.join(ZEUS_MIXES_PATH, fname)
         with open(fpath, "w") as f:
             to_canonical(mix, out=f)
-        self.mix_file = settings.ZEUS_MIXES_PATH + "/" + fname
+        self.mix_file = fname
         self.save()
 
     def reset_mixing(self):
@@ -277,7 +283,7 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
                                    help_text=_("University Schools. e.g."
                                    "<br/><br/> School of Engineering <br />"
                                    "School of Medicine<br />School of"
-                                   "Informatics<br />")) 
+                                   "Informatics<br />"))
 
     mix_key = models.CharField(max_length=50, default=None, null=True)
     remote_mixing_finished_at = models.DateTimeField(default=None, null=True)
@@ -591,7 +597,7 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
         self.logger.info("Trustee %r PK updated", trustee.email)
 
     def get_results_file_path(self, ext):
-        return os.path.join(settings.MEDIA_ROOT, 'results',
+        return os.path.join(RESULTS_PATH,
                             '%s-results.%s' % (self.short_name, ext))
 
     def save(self, *args, **kwargs):
@@ -1172,7 +1178,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   def get_result_file_path(self, name, ext):
     election = self.short_name
-    return os.path.join(settings.MEDIA_ROOT, 'results', '%s-%s-results.%s' % \
+    return os.path.join(RESULTS_PATH, '%s-%s-results.%s' % \
                         (election, name ,ext))
 
   def generate_result_docs(self):
@@ -1183,7 +1189,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
     jsonfile = file(self.get_result_file_path('json', 'json'), 'w')
     json.dump(results_json, jsonfile)
     jsonfile.close()
-    
+
     # pdf report
     if self.get_module().module_id =='score':
         from zeus.results_report import build_doc
@@ -1390,7 +1396,7 @@ class VoterFile(models.Model):
     for user in poll.election.admins.all():
         if user.user_id.startswith('demo_'):
             demo_user = True
-    
+
     nr = sum(e.voters.count() for e in user.elections.all())
     demo_voters += nr
     if demo_voters >= settings.DEMO_MAX_VOTERS and demo_user:
