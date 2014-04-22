@@ -7,10 +7,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-17 17:14-0300\n"
+"POT-Creation-Date: 2014-04-22 10:22-0300\n"
 "PO-Revision-Date: 2014-04-17 17:15-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -144,7 +145,8 @@ msgstr "apenas eleitores que lançaram uma cédula"
 msgid "no one -- are you sure about this?"
 msgstr "nenhum - você tem certeza disso?"
 
-#: helios/forms.py:55
+#: helios/forms.py:55 helios/templates/_castconfirm_password.html:10
+#: helios/templates/_castconfirm_password.html:11
 msgid "Voter ID"
 msgstr "ID do Eleitor"
 
@@ -317,19 +319,36 @@ msgstr "a votação ainda não está aberta, desculpe-nos."
 msgid "Please provide the voter ID and password you received by email."
 msgstr "Por favor, informe o usuário e senha que você recebeu por email."
 
-#: helios/templates/_castconfirm_password.html:12
+#: helios/templates/_castconfirm_password.html:14
+#: helios/templates/_castconfirm_password.html:15
+#: helios_auth/templates/ldapauth/login.html:18
+msgid "Password"
+msgstr "Senha"
+
+#: helios/templates/_castconfirm_password.html:20
 msgid "bad voter ID or password, please try again."
 msgstr "Usuário ou senha incorretos, por favor, tente novamente."
 
-#: helios/templates/_castconfirm_password.html:16
+#: helios/templates/_castconfirm_password.html:26
 #, fuzzy
-msgid "cast ballot"
-msgstr "voto(s) depositado(s)"
+msgid ""
+"You may cast as many ballots as you wish:<br />only the last one counts."
+msgstr ""
+"Você pode depositar quantos votos quiser.<br />Apenas o último será "
+"contabilizado."
 
-#: helios/templates/_castconfirm_password.html:18
-#: server_ui/templates/base.html:65
-msgid "log in"
-msgstr "conectar"
+#: helios/templates/_castconfirm_password.html:29
+#, fuzzy
+msgid "Vote"
+msgstr "Eleitores"
+
+#: helios/templates/_castconfirm_password.html:32
+#: helios_auth/templates/login_box.html:11
+#: helios_auth/templates/ldapauth/login.html:21
+#: helios_auth/templates/password/login.html:4
+#: helios_auth/templates/password/login.html:23
+msgid "Login"
+msgstr "Conectar com meu usuário e senha"
 
 #: helios/templates/cast_done.html:3 server_ui/templates/done.html:3
 msgid "Confirm Vote"
@@ -1478,7 +1497,7 @@ msgstr "Compartilhar"
 msgid "Tweet"
 msgstr "Tuíte"
 
-#: helios/templates/stats.html:5
+#: helios/templates/stats.html:5 server_ui/templates/base-bkp2.html:45
 msgid "Admin"
 msgstr "Admin"
 
@@ -1534,7 +1553,7 @@ msgid "Unfrozen for more than a day."
 msgstr "Desbloqueada por mais de um dia."
 
 #: helios/templates/stats_recent_votes.html:6
-#: server_ui/templates/index-bkp.html:77 server_ui/templates/index.html:77
+#: server_ui/templates/index.html:77
 msgid "Recent Votes"
 msgstr "Votos Recentes"
 
@@ -2059,16 +2078,10 @@ msgstr ""
 "    Você está atualmente conectado como<br /><b>%(user.user_id)s</b> via <b>"
 "%(user.user_type)s</b>.\n"
 
-#: helios_auth/templates/index.html:14 server_ui/templates/base.html:59
+#: helios_auth/templates/index.html:14 server_ui/templates/base-bkp2.html:91
+#: server_ui/templates/base.html:59
 msgid "logout"
 msgstr "desconectar"
-
-#: helios_auth/templates/login_box.html:11
-#: helios_auth/templates/ldapauth/login.html:21
-#: helios_auth/templates/password/login.html:4
-#: helios_auth/templates/password/login.html:23
-msgid "Login"
-msgstr "Conectar com meu usuário e senha"
 
 #: helios_auth/templates/perms_why.html:4
 msgid "Why we need your information"
@@ -2101,10 +2114,6 @@ msgstr "Ok, entendi, vamos"
 #: helios_auth/templates/perms_why.html:20
 msgid "nope, get me out of here"
 msgstr "não, tire-me daqui"
-
-#: helios_auth/templates/ldapauth/login.html:18
-msgid "Password"
-msgstr "Senha"
 
 #: helios_auth/templates/password/forgot.html:4
 msgid "Password Forgotten"
@@ -2309,23 +2318,39 @@ msgid ""
 "bottom” audit of its voting systems.\n"
 msgstr ""
 
-#: server_ui/templates/base.html:62
+#: server_ui/templates/base-bkp2.html:38
+msgid "menu"
+msgstr "menu"
+
+#: server_ui/templates/base-bkp2.html:49
+msgid "About Helios"
+msgstr "Sobre o Helios"
+
+#: server_ui/templates/base-bkp2.html:68
+msgid "Help!"
+msgstr "Ajuda!"
+
+#: server_ui/templates/base-bkp2.html:94 server_ui/templates/base.html:62
 msgid "You are signed in as voter"
 msgstr "Você está conectado como um eleitor"
 
-#: server_ui/templates/base.html:62
+#: server_ui/templates/base-bkp2.html:94 server_ui/templates/base.html:62
 msgid "in election"
 msgstr "em eleição"
 
-#: server_ui/templates/base.html:62
+#: server_ui/templates/base-bkp2.html:94 server_ui/templates/base.html:62
 msgid "sign out"
 msgstr "desconectar"
 
-#: server_ui/templates/base.html:65
+#: server_ui/templates/base-bkp2.html:97 server_ui/templates/base.html:65
 msgid "not logged in."
 msgstr "não conectado."
 
-#: server_ui/templates/base.html:67
+#: server_ui/templates/base-bkp2.html:97 server_ui/templates/base.html:65
+msgid "log in"
+msgstr "conectar"
+
+#: server_ui/templates/base-bkp2.html:99 server_ui/templates/base.html:67
 msgid "powered by"
 msgstr "powered by"
 
@@ -2456,7 +2481,7 @@ msgid ""
 "yet, and we intend to focus on online elections first.</p>\n"
 msgstr ""
 
-#: server_ui/templates/index-bkp.html:15 server_ui/templates/index.html:15
+#: server_ui/templates/index.html:15
 msgid ""
 "\n"
 "\n"
@@ -2482,37 +2507,35 @@ msgid ""
 "  "
 msgstr ""
 
-#: server_ui/templates/index-bkp.html:34 server_ui/templates/index.html:34
+#: server_ui/templates/index.html:34
 msgid "create an election"
 msgstr "criar uma eleição"
 
-#: server_ui/templates/index-bkp.html:52 server_ui/templates/index.html:52
+#: server_ui/templates/index.html:52
 msgid "no featured elections at the moment"
 msgstr "nenhuma votação em destaque no momento"
 
-#: server_ui/templates/index-bkp.html:62 server_ui/templates/index.html:62
+#: server_ui/templates/index.html:62
 msgid "create election"
 msgstr "criar eleição"
 
-#: server_ui/templates/index-bkp.html:63 server_ui/templates/index.html:63
+#: server_ui/templates/index.html:63
 msgid "Administration"
 msgstr "Administração"
 
-#: server_ui/templates/index-bkp.html:71 server_ui/templates/index-bkp.html:85
 #: server_ui/templates/index.html:71 server_ui/templates/index.html.py:85
 msgid "none yet"
 msgstr "nada ainda"
 
-#: server_ui/templates/index-bkp.html:74 server_ui/templates/index-bkp.html:87
 #: server_ui/templates/index.html:74 server_ui/templates/index.html.py:87
 msgid "see all"
 msgstr "ver todas"
 
-#: server_ui/templates/index-bkp.html:91 server_ui/templates/index.html:91
+#: server_ui/templates/index.html:91
 msgid "Log In to Start Voting"
 msgstr "Conecte-se para iniciar a votação"
 
-#: server_ui/templates/index-bkp.html:95 server_ui/templates/index.html:95
+#: server_ui/templates/index.html:95
 #, fuzzy
 msgid ""
 "\n"
@@ -2669,14 +2692,9 @@ msgstr "Erro no servidor"
 msgid "There was an error while handling your request."
 msgstr "Houve um erro durante o processamento de sua requisição."
 
-#~ msgid "menu"
-#~ msgstr "menu"
-
-#~ msgid "About Helios"
-#~ msgstr "Sobre o Helios"
-
-#~ msgid "Help!"
-#~ msgstr "Ajuda!"
+#, fuzzy
+#~ msgid "cast ballot"
+#~ msgstr "voto(s) depositado(s)"
 
 #~ msgid "Vote in this"
 #~ msgstr "Votar nessa eleição"

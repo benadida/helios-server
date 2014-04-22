@@ -1,10 +1,9 @@
-
 {#foreach $T.questions as question}
 <div id="q_view_{$T.question$index}">
 <h4>
 {#if $T.admin_p}[
 {#if $T.question$index > 0}<a href="javascript:question_move_up({$T.question$index});">^</a>]&nbsp;[{#/if}
-<a href="javascript:question_remove({$T.question$index})">x</a>] [<a href="javascript:question_edit({$T.question$index})">edit</a>] {#/if}{$T.question$index + 1}. {$T.question.question} ({$T.question.choice_type}, select between {$T.question.min} and {#if $T.question.max != null}{$T.question.max}{#else}unlimited{#/if} answers, result type {$T.question.result_type}.)</h4>
+<a href="javascript:question_remove({$T.question$index})">x</a>] [<a href="javascript:question_edit({$T.question$index})">editar</a>] {#/if}{$T.question$index + 1}. {$T.question.question} ({$T.question.choice_type}, selecionar entre {$T.question.min} e {#if $T.question.max != null}{$T.question.max}{#else}ilimitado{#/if} resposta(s), tipo de resultado {$T.question.result_type}.)</h4>
 <ul>
 {#foreach $T.question.answers as answer}
 <li> {$T.answer}</li>
@@ -17,11 +16,11 @@
 <!--
   Type of Question:
   <select name="choice_type">
-    <option selected>approval</option>
+    <option selected>aprovação</option>
   </select>
 -->
-<input type="hidden" name="choice_type" value="approval" />
-<b>{$T.question$index + 1}.</b> &nbsp;&nbsp;&nbsp;Select between &nbsp;&nbsp;
+<input type="hidden" name="choice_type" value="aprovação" />
+<b>{$T.question$index + 1}.</b> &nbsp;&nbsp;&nbsp;Selecionar entre &nbsp;&nbsp;
 <select name="min">
     <option selected>0</option>
     <option>1</option>
@@ -46,7 +45,7 @@
     <option>20</option>
 </select>
 
-&nbsp;&nbsp; and  &nbsp;&nbsp;
+&nbsp;&nbsp; e  &nbsp;&nbsp;
 
 <select name="max">
     <option>0</option>
@@ -70,51 +69,56 @@
     <option>18</option>
     <option>19</option>
     <option>20</option>
-    <option value="">- (approval)</option>
+    <option value="">- (aprovação)</option>
 </select>
 
 &nbsp;&nbsp;
-answers.
+<!--answers.-->
+respostas.
 
 &nbsp;&nbsp;
 &nbsp;&nbsp;
-Result Type:&nbsp;
+<!--Result Type:&nbsp;-->
+Tipo de Resultado:&nbsp;
 <select name="result_type">
-    <option selected>absolute</option>
-    <option>relative</option>
+    <option selected>absoluto</option>
+    <option>relativo</option>
 </select>
 
 </p>
 
 <table id="answer_table_{$T.question$index}">
   <tbody>
-    <tr><th colspan="2">Question:</th><td><input type="text" name="question" size="70" /></td></tr>
+    <tr><th colspan="2">Questão:</th><td><input type="text" name="question" size="70" /></td></tr>
     <tr><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr>
   </tbody>
   <tfoot>
-    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table_{$T.question$index}'),5)">add 5 more answers</a></th></tr>
-    <tr><td colspan="3"><input type="submit" value="update question" /> &nbsp; <input type="reset" value="cancel" onclick="question_edit_cancel({$T.question$index});" /></td></tr>
+    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table_{$T.question$index}'),5)"><!--add 5 more answers-->adicionar mais 5 questões</a></th></tr>
+    <tr><td colspan="3"><input type="submit" value="atualizar questão" /> &nbsp; <input type="reset" value="cancelar" onclick="question_edit_cancel({$T.question$index});" /></td></tr>
   </tfoot>
 
 </table>
 </form>
 </div>
 {#else}
-no questions yet
+<!-- no questions yet -->
+nenhuma questão ainda
 {#/for}
 
 {#if $T.admin_p}
-<h4>Add a Question:</h4>
+<!--<h4>Add a Question:</h4>-->
+<h4>Adicionar Questão:</h4>
 <form id="question_form" onsubmit="question_add(this); return false;" action="#">
 <p>
 <!--
   Type of Question:
   <select name="choice_type">
-    <option selected>approval</option>
+    <option selected>aprovação</option>
   </select>
 -->
-<input type="hidden" name="choice_type" value="approval" />
-&nbsp;&nbsp;&nbsp;Select between &nbsp;&nbsp;
+<input type="hidden" name="choice_type" value="aprovação" />
+<!--&nbsp;&nbsp;&nbsp;Select between &nbsp;&nbsp; -->
+&nbsp;&nbsp;&nbsp;Selecionar entre &nbsp;&nbsp;
 <select name="min">
     <option selected>0</option>
     <option>1</option>
@@ -139,7 +143,8 @@ no questions yet
     <option>20</option>
 </select>
 
-&nbsp;&nbsp; and  &nbsp;&nbsp;
+<!--&nbsp;&nbsp; and  &nbsp;&nbsp;-->
+&nbsp;&nbsp; e  &nbsp;&nbsp;
 
 <select name="max">
     <option>0</option>
@@ -163,25 +168,27 @@ no questions yet
     <option>18</option>
     <option>19</option>
     <option>20</option>
-    <option value="">- (approval)</option>
+    <option value="">- (aprovação)</option>
 </select>
 
 &nbsp;&nbsp;
-answers.
+<!--answers.-->
+resposta(s).
 
 &nbsp;&nbsp;
 &nbsp;&nbsp;
-Result Type:&nbsp;
+<!--Result Type:&nbsp; -->
+Tipo de Resultado: 
 <select name="result_type">
-    <option selected>absolute</option>
-    <option>relative</option>
+    <option selected>absoluto</option>
+    <option>relativo</option>
 </select>
 
 </p>
 
 <table id="answer_table">
   <tbody>
-    <tr><th colspan="2">Question:</th><td><input type="text" name="question" size="70" /></td></tr>
+    <tr><th colspan="2">Questão:</th><td><input type="text" name="question" size="70" /></td></tr>
     <tr><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr>
 <!--
     <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #1:</th><td><input type="text" name="answer_1" size="70" /></td></tr>
@@ -196,8 +203,8 @@ Result Type:&nbsp;
     <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #10:</th><td><input type="text" name="answer_10" size="70" /></td></tr> -->
   </tbody>
   <tfoot>
-    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table'), 5)">add 5 more answers</a></th></tr>
-    <tr><td colspan="2"><input type="submit" value="add question" /></td></tr>
+    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table'), 5)"><!--add 5 more answers--> adicionar mais 5 respostas</a></th></tr>
+    <tr><td colspan="2"><button type="submit" class="btn-primary">adicionar questão</button></td></tr>
   </tfoot>
 
 </table>

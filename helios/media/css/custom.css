@@ -1,11 +1,28 @@
 .top-bar {
-	background-color:#4C9900;	
+	background-color:#339933;	
 	background-image:url('../img/logo.png');
 	background-repeat:no-repeat;
-	min-height:70px;
+	min-height:80px;
+}
+#banner {
+	background:#4C9900;
 }
 
-
-.navbar-top font{
-	color:black;
+#footer {
+	background:#4C9900;
+}
+#progress_div td.selected {
+  background:#DFF0D8;
+}
+.btn-primary,a.btn,.btn-lg,.btn-primary {
+	background-color:#336633;
+	border-color:#336633;
+}
+.btn-primary:hover{
+	background-color:#009933;
+	border-color:#009933;
+}
+a:hover, a:focus {
+  color: #005580;
+  text-decoration: underline;
 }

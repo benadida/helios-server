@@ -2,21 +2,22 @@
 {% load i18n %}
 {% block content %}
 
-  <h2 class="title">{% trans "Create a New Election" %}</h2>
-  
-{% if error %}
-<p style="color: red;">
-    {{error}}
-</p>
-{% endif %}
-  
-  <form class="prettyform" action="" method="POST" id="create_election_form">
-    <table class="pretty">
-     {{election_form.as_table}}
-     </table>
-  <div>
-  <label for="">&nbsp;</label><input type="submit" value="{%trans "Next" %}" id="next_button" />
+<h2 class="title">{% trans "Create a New Election" %}</h2>
+<br clear="right" />
+<div class="col-md-6">
+  <form class="form-horizontal" role="form" action="" method="POST" id="create_election_form">
+  {% for field in election_form %}
+    <div class="form-group {% if field.errors %}has-error{% endif %}">
+      {{ field.errors }}
+      {{ field.label_tag }}: {{ field }}
+      <br clear="right" />
+      {{ field.help_text }}
+    </div> 
+  {% endfor %}
+  <div class="form-group">
+    <button id="next_button" type="submit" class="btn btn-primary">{% trans "Next" %}</button>
   </div>
   </form>
+</div>
 
 {% endblock %}

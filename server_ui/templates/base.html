@@ -33,9 +33,22 @@
 <nav class="navbar navbar-default top-bar" role="navigation">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
+
+    {% if user %}
+    <div class="navbar-right navbar-top">
+      <a class="navbar-brand " style="color:#FFFFFF;" href="/auth/logout?return_url=/">{% trans "Logout" %}</a>
+    </div>
+    {% else %}
+    <div class="navbar-right navbar-top">
+      <a class="navbar-brand" style="color:#FFFFFF;" href="/auth/start/ldap?return_url=">{% trans "Login" %}</a>
+    </div>
+    {% endif %}
+    <div class="navbar-right navbar-top">
+      <a class="navbar-brand" style="color:#FFFFFF;" href="/">{% trans "Home" %}</a>
+    </div>
     <div class="navbar-right navbar-top">
       {% if user and user.admin_p %}
-      <a class="navbar-brand" href="{% url helios.stats_views.home %}">Admin</a
+      <a class="navbar-brand" style="color:#FFFFFF;" href="{% url helios.stats_views.home %}">Admin</a
       >
       {% endif %}
     </div>
@@ -49,11 +62,14 @@
   </div>
   
   <div class="panel-footer">
+
+  {% block footer %}
 <!--    <span style="float:right;">
       {% if settings.FOOTER_LOGO_URL %}
       <img src="{{settings.FOOTER_LOGO_URL}}" />
       {% endif %}
     </span>-->
+    <!--
     {% if user %}
     logged in as <b>{{user.pretty_name|safe}}</b>&nbsp;&nbsp;
     <a class="tiny button" href="{% url helios_auth.views.logout %}?return_url={{CURRENT_URL}}">{% trans "logout" %}</a><br />
@@ -62,19 +78,23 @@
     {% trans "You are signed in as voter" %} <u>{% if voter.alias %}{{voter.alias}}{% else %}{{voter.name}}{% endif %}</u> {% trans "in election" %} <u>{{voter.election.name}}</u>. [<a href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.logout %}?return_url={{CURRENT_URL}}">{% trans "sign out" %}</a>]
     {% else %}
 {% if settings.SHOW_LOGIN_OPTIONS %}
-    {% trans "not logged in." %} <a class="tiny button" href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.index %}?return_url={{CURRENT_URL}}">{% trans "log in" %}</a>
+    {% trans "Not logged in." %} <a class="tiny button" href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.index %}?return_url={{CURRENT_URL}}">{% trans "Log in" %}</a>
 {% else %}
 {% trans "powered by" %} <a href="http://heliosvoting.org">Helios Voting</a>.
 {% endif %}
     {% endif %}
+    {% endif %} -->
+
+    {% if user %}
+     {% trans "logged in as" %} <b>{{user.pretty_name|safe}}</b>
     {% endif %}
       <br clear="right" />
-    </div>
+  {% endblock footer%}
+  </div>
   
       <script>
 	$(document).foundation();
       </script>     
 
-  <script src="/static/helios/bootstrap/js/bootstrap.min.js"></script>
 </body>
 </html>

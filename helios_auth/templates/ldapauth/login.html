@@ -1,27 +1,28 @@
 {% extends TEMPLATE_BASE %}
 {% load i18n %}
-{% block header %}
-<h2>{{ settings.SITE_TITLE }} &mdash; {% trans "Login" %}</h2>
-{% endblock %}
-
 
 {% block content %}
-
-{% if error %}
-<p style="border: 1px solid black; padding: 5px;">
-    {{error}}
-</p>
-{% endif %}
-
-<p>
-<form class="prettyform" action="" method="POST" id="login_form">
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-<table>
-    {{form.as_table}}
-</table>
-<div>
-<label for="">&nbsp;</label><input type="submit" value="{% trans "Login" %}"/>
+<div class="row">
+<div class="col-md-4">
+	<form class="form-horizontal" role="form" action="" method="POST" id="login_form">
+	{{ form.non_field_errors }}
+	<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+		<div class="form-group {% if form.username.errors %}has-error{% endif %}">
+		<label for="username">{% trans "Username" %}</label>
+		<input type="text" name="username" class="form-control" id="username" placeholder="{% trans "Username" %}">
+		</div> {{ form.username.errors }}
+		<div class="form-group {% if form.username.errors %}has-error{% endif %}">
+		
+		<label for="password">{% trans "Password" %}</label> 
+		<input type="password" name="password" class="form-control" id="password" placeholder="{% trans "Password" %}"> {{ form.password.errors }}
+		</div>
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary">{% trans "Login" %}</button>
+		</div>
+	</form>
 </div>
-</form>
-</p>
-{% endblock %}
+</div>
+{% endblock content %}
+{% block footer %}
+
+{% endblock footer %}
