@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-22 16:26-0300\n"
-"PO-Revision-Date: 2014-04-22 16:27-0300\n"
+"POT-Creation-Date: 2014-04-23 10:52-0300\n"
+"PO-Revision-Date: 2014-04-23 10:52-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -25,7 +25,7 @@ msgstr "Inglês"
 msgid "Brazilian Portuguese"
 msgstr "Português Brasileiro"
 
-#: settings.py:205
+#: settings.py:183 settings.py:205
 msgid "IFSC E-Voting System"
 msgstr "Sistema de Votação Eletrônica do IFSC"
 
@@ -289,7 +289,7 @@ msgstr "DEPOSITAR cédula na urna"
 msgid ""
 "You can cast as many ballots as you want.<br />Only the last one counts."
 msgstr ""
-"Você pode depositar quantos votos quiser.<br />Apenas o último será "
+"ocê pode depositar quantos votos desejar, porém somente o último será "
 "contabilizado."
 
 #: helios/templates/_castconfirm_docast.html:27
@@ -316,7 +316,8 @@ msgstr "a votação ainda não está aberta, desculpe-nos."
 
 #: helios/templates/_castconfirm_password.html:2
 msgid "Please provide the voter ID and password you received by email."
-msgstr "Por favor, informe o usuário e senha que você recebeu por email."
+msgstr ""
+"Por favor, informe o nome de usuário e senha que você recebeu por email."
 
 #: helios/templates/_castconfirm_password.html:14
 #: helios/templates/_castconfirm_password.html:15
@@ -369,11 +370,21 @@ msgstr ""
 msgid "Your smart ballot tracker is:"
 msgstr "O número do rastreador da sua cédula é:"
 
-#: helios/templates/cast_done.html:24
+#: helios/templates/cast_done.html:20
+msgid "You can use it to verify that your vote has been cast, "
+msgstr ""
+"Você pode usá-lo para confirmar que seu voto realmente foi depositado na "
+"urna, "
+
+#: helios/templates/cast_done.html:20
+msgid "clicking here"
+msgstr "clicando aqui"
+
+#: helios/templates/cast_done.html:27
 msgid "For your safety, we have logged you out."
 msgstr "Para sua segurança, você foi desconectado."
 
-#: helios/templates/cast_done.html:30
+#: helios/templates/cast_done.html:33
 msgid "return to election info"
 msgstr "retornar para informações da eleição"
 
@@ -1485,8 +1496,8 @@ msgid ""
 "can only be viewed by eligible voters.\n"
 msgstr ""
 "\n"
-"Essa eleição, com a impressão digital <tt>%(election.hash)s</tt>, é privada, "
-"e pode ser visualizada apenas por eleitores aptos.\n"
+"Esta eleição   <tt>%(election.hash)s</tt>é privada e só pode ser visualizada "
+"por eleitores cadastrados.\n"
 
 #: helios/templates/socialbuttons.html:3
 msgid "Share"
