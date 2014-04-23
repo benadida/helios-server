@@ -547,30 +547,27 @@ class ZeusDjangoElection(ZeusCoreElection):
     def get_results(self):
         if self.poll.get_module().module_id == 'score':
             return gamma_count_range(self.do_get_results(), self.do_get_candidates())
+
         if self.poll.get_module().module_id == 'stv':
-            if self.poll.stv_results:
-                return self.poll.stv_results
-            cands_data = self.poll.questions_data[0]['answers']
-            cands_count =  len(cands_data)
-            constituencies = {}
-            count_id = 0
-            for item in cands_data:
-                cand_and_dep = item.split(':')
-                constituencies[str(count_id)] = cand_and_dep[1]
-                count_id += 1
-            seats = 2 # TODO: election.seats
-            droop = False
-            ballots_data = self.poll.result[0]
-            ballots = []
-            for ballot in ballots_data:
-                ballot = to_absolute_answers(gamma_decode(ballot, cands_count,cands_count),cands_count)
-                ballot = [str(i) for i in ballot]
-                ballots.append(Ballot(ballot))
-            results = count_stv(ballots, seats, droop, constituencies)
-            self.poll.stv_results = json.dumps(results)
-            self.poll.save()
-            return results
+            # we expect cached stv results
+            return self.poll.stv_results
+
         return gamma_count_parties(self.do_get_results(), self.do_get_candidates())
+
+    def get_results_pretty_stv(self):
+        stv_results = self.poll.stv_results[0]
+        candidates = self.poll.questions_data[0]['answers']
+        results = {}
+        winners = []
+        for cand_index, round, votes_count in stv_results:
+            res = {
+                'name': candidates[int(cand_index)],
+                'round': round,
+                'count': votes_count
+            }
+            winners.append(res)
+        results['winners'] = winners
+        return results
 
     def get_results_pretty_score(self):
         pretty = SortedDict()
@@ -596,6 +593,9 @@ class ZeusDjangoElection(ZeusCoreElection):
     def get_results_pretty(self):
         if self.poll.get_module().module_id == 'score':
             return self.get_results_pretty_score()
+
+        if self.poll.get_module().module_id == 'stv':
+            return self.get_results_pretty_stv()
 
         results = self.get_results()
         total = results['ballot_count']

@@ -1,0 +1,23 @@
+{% load i18n %}
+{% with poll.zeus.get_results_pretty as results %}
+<table class="results twelve">
+    <thead>
+    <tr>
+        <th>
+            {% trans "Position" %}
+        </th>
+        <th> {% trans "Candidate" %}</th>
+    </tr>
+    </thead>
+    <tbody>
+      {% for cand in results.winners %}
+        <tr>
+          <td>
+              {{ forloop.counter }}
+          </td>
+          <td>{{ cand.name }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+</table>
+{% endwith %}

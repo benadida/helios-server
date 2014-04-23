@@ -9,6 +9,8 @@ from zeus.election_modules import ElectionModuleBase, election_module
 from zeus.views.utils import set_menu
 
 from helios.view_utils import render_template
+from stv.stv import count_stv, Ballot
+from zeus.core import gamma_decode, to_absolute_answers
 
 
 @election_module
@@ -26,6 +28,8 @@ class StvElection(ElectionModuleBase):
     module_params = {
         'ranked': True
     }
+
+    results_template = "election_modules/stv/results.html"
 
     pdf_result = False
     csv_result = False
@@ -124,7 +128,36 @@ class StvElection(ElectionModuleBase):
         answers = questions_data[0]['answers']
         self.poll._init_questions(len(answers))
         self.poll.questions[0]['answers'] = answers
+
     def compute_results(self):
+        cands_data = self.poll.questions_data[0]['answers']
+        cands_count =  len(cands_data)
+        constituencies = {}
+        count_id = 0
+
+        for item in cands_data:
+            cand_and_dep = item.split(':')
+            constituencies[str(count_id)] = cand_and_dep[1]
+            count_id += 1
+
+        seats = 2 # TODO: self.poll.election.stv_seats ???
+        droop = False # TODO: what is this ?
+        rnd_gen = None # TODO: should be generated and stored on poll freeze
+        quota_limit = 0 # TODO: self.poll.election.departments_limit ???
+
+        ballots_data = self.poll.result[0]
+        ballots = []
+        for ballot in ballots_data:
+            ballot = to_absolute_answers(gamma_decode(ballot, cands_count,cands_count),
+                                         cands_count)
+            ballot = [str(i) for i in ballot]
+            ballots.append(Ballot(ballot))
+        results = count_stv(ballots, seats, droop, constituencies, quota_limit,
+                            rnd_gen)
+        self.poll.stv_results = json.dumps(results)
+        self.poll.save()
+
+        # build docs
         self.poll.generate_result_docs()
 
     def get_booth_template(self, request):
