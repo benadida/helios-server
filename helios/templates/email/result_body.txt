@@ -1,19 +1,20 @@
-Dear {{voter.name}},
+{% load i18n %}
+{% trans "Dear" %} {{voter.name}},
 
-The tally for {{election.name}} has been computed and released:
+{% trans "The tally for {{election.name}} has been computed and released:" %}"
 
   {{election_url}}
 
 {{custom_message|safe}}
 
-{% if voter.vote_hash %}Your smart ballot tracker in this election was:
+{% if voter.vote_hash %}{% trans "Your smart ballot tracker in this election was:" %}
 
   {{voter.vote_hash}}
 
-If you believe this tracker to be in error, please contact us.
+{% trans "If you believe this tracker to be in error, please contact us." %}
 {% else %}
-It appears you did not cast a vote in this election.
-Please contact us if you believe you did.
+{% trans "It appears you did not cast a vote in this election.
+Please contact us if you believe you did." %}
 {% endif %}
 --
-Helios
+{{settings.WELCOME_MESSAGE|safe}}

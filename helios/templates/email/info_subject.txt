@@ -1,1 +1,2 @@
-Additional Information: {{custom_subject|safe}}
+{% load i18n %}
+{% trans "Additional Information:" %} {{custom_subject|safe}}

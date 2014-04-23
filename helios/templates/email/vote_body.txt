@@ -1,29 +1,32 @@
-Dear {{voter.name}},
+{% load i18n %}
+{% trans "Dear" %} {{voter.name}},
 
 {{custom_message|safe}}
 
-Election URL:  {{election_vote_url}}
-Election Fingerprint:  {{voter.election.hash}}
+{% trans "Election URL:" %}  {{election_vote_url}}
+{% trans "Election Fingerprint:" %}  {{voter.election.hash}}
 {% ifequal voter.voter_type "password" %}
-Your voter ID: {{voter.voter_login_id}}
-Your password: {{voter.voter_password}}
+{% trans "Your voter ID:" %} {{voter.voter_login_id}}
+{% trans "Your password:" %} {{voter.voter_password}}
 {% else %}
-Log in with your {{voter.voter_type}} account.
+{% trans "Log in with your {{voter.voter_type}} account." %}
 {% endifequal %}{% if voter.vote_hash %}
-We have recorded your vote with smart tracker:
+{% trans "We have recorded your vote with smart tracker:" %}
 
   {{voter.vote_hash}}
 
-You may re-vote if you wish: only your last vote counts.
+{% trans "You may re-vote if you wish: only your last vote counts." %}
 {% endif %}{% if election.use_voter_aliases %}
+{% blocktrans %}
 In order to protect your privacy, this election is configured
 to never display your voter login ID, name, or email address to the public.
 Instead, the ballot tracking center will only display your alias.
-
-Your voter alias is {{voter.alias}}.
-
+{% endblocktrans %}
+{% trans "Your voter alias is" %} {{voter.alias}}.
+{% blocktrans %}
 IMPORTANTLY, when you are prompted to log in to vote,
 please use your *voter ID*, not your alias.
+{% endblocktrans %}
 {% endif %}
 --
-Helios
+{{settings.WELCOME_MESSAGE|safe}}

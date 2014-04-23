@@ -1,8 +1,9 @@
-Dear {{voter.name}},
+{% load i18n %}
+{% trans "Dear" %}{{voter.name}},
 
 {{custom_message|safe}}
 
-Election Link: {{election_vote_url}}
+{% trans "Election Link:" %} {{election_vote_url}}
 
 --
-Helios
+{{settings.WELCOME_MESSAGE|safe}}

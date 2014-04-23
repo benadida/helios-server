@@ -1,1 +1,2 @@
-Tally Released - {{custom_subject|safe}}
+{% load i18n %}
+{% trans "Tally Released" %} - {{custom_subject|safe}}

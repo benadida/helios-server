@@ -1,1 +1,2 @@
-Vote: {{custom_subject|safe}}
+{% load i18n %}
+{% trans "Vote:" %} {{custom_subject|safe}}
