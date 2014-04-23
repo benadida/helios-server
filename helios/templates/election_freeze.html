@@ -45,8 +45,9 @@ You must freeze the ballot before you can contact voters.
 <form method="post" action="">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
-<input class="button" type="submit" value="{% trans "Freeze the ballot"%}" />
-<button onclick="document.location='./view'; return false;">{% trans "never mind" %}</button>
+
+<button class="btn btn-primary">{% trans "Freeze the ballot"%}</button>
+<button class="btn btn-primary" onclick="document.location='./view'; return false;">{% trans "never mind" %}</button>
 </form>
 {% endif %}
 

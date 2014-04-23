@@ -4,8 +4,8 @@
 
 {% block content %}
   <h3 class="title">{{election.name}} &mdash; {% trans "Trustees" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
-
 <p>
+<br>
 {% blocktrans %}
     Trustees are responsible for decrypting the election result.<br />
     Each trustee generates a keypair and submits the public portion to Helios.<br />
@@ -39,8 +39,11 @@
 {% if not trustees|length %}
 
 {% else %}
+<br><br>
+<table class="table table-striped">
 {% for t in trustees %}
-<h5> Trustee #{{forloop.counter}}: {{t.name}} 
+<tr>
+<td> Trustee #{{forloop.counter}}: {{t.name}} 
 {% if admin_p %}
 {% if t.secret_key %}
 {% if not election.frozen_at %}[<a onclick="return confirm('Are you sure you want to remove Helios as a trustee?');" href="{% url helios.views.delete_trustee election.uuid %}?uuid={{t.uuid}}">x</a>]{% endif %}
@@ -50,7 +53,6 @@
 [<a onclick="return confirm('Are you sure you want to send this trustee his/her admin URL?');" href="{% url helios.views.trustee_send_url election.uuid t.uuid %}">{% trans "send login" %}</a>]
 {% endif %}
 {% endif %}
-</h5>
 
 <p>
 {% if t.public_key_hash %}
@@ -70,7 +72,9 @@
 </li>
 {% endfor %}
 </ul>
-
+</td>
+</tr>
+</table>
 {% endif %}
 
 {% endblock %}

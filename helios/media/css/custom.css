@@ -18,7 +18,7 @@
 	background-color:#336633;
 	border-color:#336633;
 }
-.btn-primary:hover{
+.btn-primary:hover,#proceed_button{
 	background-color:#009933;
 	border-color:#009933;
 }

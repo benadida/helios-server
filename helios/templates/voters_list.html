@@ -13,7 +13,7 @@
 <em>{% trans "Only the voters listed here" %}</em>.
 {% endif %}
 </p>
-
+<br/><br/>
 {% if admin_p and not election.frozen_at %}
 {% if election.private_p %}
 <em>{% blocktrans %}Your election is marked private, which means you cannot open registration up more widely{% endblocktrans %}</em>.<br />
@@ -109,8 +109,8 @@
 {% if voters_page.has_next %}
 <a href="./list?page={{voters_page.next_page_number}}&limit={{limit}}&q={{q|urlencode}}">{% trans "next" %} {{limit}}</a> &nbsp;&nbsp;
 {% endif %}
-
-<table class="pretty">
+<br/><br/>
+<table class="table table-striped">
 <tr>
 {% if admin_p or not election.use_voter_aliases %}
 <th>{% trans "Name" %}</th>
