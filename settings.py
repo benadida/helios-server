@@ -180,7 +180,7 @@ VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
 
 # Change your email settings
 DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'shirlei@gmail.com')
-DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Shirlei for Helios')
+DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', _('IFSC E-Voting System'))
 SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 
 LOGIN_URL = '/auth/'
