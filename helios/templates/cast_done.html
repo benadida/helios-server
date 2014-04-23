@@ -16,6 +16,9 @@
     <tt style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_hash}}</tt>
 </p>
 
+<p>
+{% trans "You can use it to verify that your vote has been cast, "%}<a href="{% url helios.views.voters_list_pretty election.uuid %}">{% trans "clicking here" %}</a>.
+</p>
 <!--<p>
 <iframe src="{{socialbuttons_url}}" frameborder="0" border="0" style="width: 300px; height:35px;" scrolling="no" align="middle"></iframe>
 </p>-->
