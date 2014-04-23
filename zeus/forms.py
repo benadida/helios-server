@@ -76,6 +76,7 @@ class ElectionForm(forms.ModelForm):
         'voting_extended_until': ['edit_voting_extended_until'],
         'remote_mixes': ['edit_remote_mixes'],
         'trial': ['edit_trial'],
+        'departments': ['edit_departments'],
     }
 
     class Meta:
