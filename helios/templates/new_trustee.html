@@ -1,13 +1,18 @@
 {% extends "helios/templates/cryptobase.html" %}
 {% load i18n %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; {% trans "New Trustee" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.list_trustees_view election.uuid %}">{% trans "cancel" %}</a>]</span></h2>
-  
-<form method="post" action="">
-{% trans "Name:" %} <input type="text" name="name" size="60" /><br /><br />
-{% trans "Email:" %} <input type="text" name="email" size="60" /><br /><br />
-
-<input type="submit" value="{% trans "Add Trustee" %}" />
-</form>
-
+	<h2 class="title">{{election.name}} &mdash; {% trans "New Trustee" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.list_trustees_view election.uuid %}">{% trans "cancel" %}</a>]</span></h2>
+	<div class="col-md-4">
+	<form method="post" action="" role="form" class="form-horizontal">
+	<div class="form-group">
+	{% trans "Name:" %} <input type="text" name="name" size="60" />
+	</div>
+	<div class="form-group">
+	{% trans "Email:" %} <input type="text" name="email" size="60" />
+	</div>
+	<div class="form-group">
+	<button class="btn btn-primary">{% trans "Add Trustee" %}</button>
+	</div>
+	</form>
+	</div>
 {% endblock %}
