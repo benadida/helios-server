@@ -338,7 +338,6 @@ class CandidateWidget(MultiWidget):
         return json.dumps(datalist)
 
 
-#testing stv
 class StvForm(QuestionBaseForm):
 
     def __init__(self, *args, **kwargs):
@@ -361,7 +360,7 @@ class StvForm(QuestionBaseForm):
         for ans in range(answers):
             field_key = 'answer_%d' % ans
             field_key1 = 'department_%d' % ans
-            self.fields[field_key] = forms.CharField(max_length=300,
+            self.fields[field_key] = forms.CharField(max_length=600,
                                               required=True,
                                               widget=CandidateWidget(departments=DEPARTMENT_CHOICES),
                                               label=('Candidate'))
