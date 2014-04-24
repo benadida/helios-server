@@ -47,7 +47,6 @@ def load_results(data):
         jsondata = json.loads(data)
     else:
         jsondata = data
-    print jsondata
     for result, party in jsondata['party_counts']:
         parties_results.append((party, result))
         total_votes += result
