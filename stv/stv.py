@@ -39,10 +39,10 @@ import csv
 import argparse
 
 SVT_LOGGER = 'SVT'
+logger = logging.getLogger(SVT_LOGGER)
+
 LOGGER_FORMAT = '%(message)s'
 LOG_MESSAGE = "{action} {desc}"
-
-log_data = [] 
 
 class Action:
     COUNT_ROUND = "@ROUND"
@@ -80,8 +80,9 @@ class Ballot:
 
     def get_value(self):
         return self._value
-    
-def randomly_select_first(sequence, key, action, random_generator=None):
+
+def randomly_select_first(sequence, key, action, random_generator=None,
+                          logger=logger):
     """Selects the first item of equals in a sorted sequence of items.
 
     For the given sorted sequence, returns the first item if it
@@ -114,15 +115,13 @@ def randomly_select_first(sequence, key, action, random_generator=None):
                 print "Missing value for random selection among ", collected
                 sys.exit(1)
             selected = random_generator.pop(0)
-        logger = logging.getLogger(SVT_LOGGER)
         description = "{0} from {1} to {2}".format(selected, collected, action)
         logger.info(LOG_MESSAGE.format(action=Action.RANDOM, desc=description))
-        global log_data 
-        log_data.append(LOG_MESSAGE.format(action=Action.RANDOM, desc=description))
     return selected
-        
-    
-def redistribute_ballots(selected, weight, hopefuls, allocated, vote_count):
+
+
+def redistribute_ballots(selected, weight, hopefuls, allocated, vote_count,
+                         logger=logger):
     """Redistributes the ballots from selected to the hopefuls.
 
     Redistributes the ballots currently allocated to the selected
@@ -130,10 +129,9 @@ def redistribute_ballots(selected, weight, hopefuls, allocated, vote_count):
     The total ballot allocation is given by the allocated map, which
     is modified accordingly. The current vote count is given by
     vote_count and is adjusted according to the redistribution.
-    
+
     """
 
-    logger = logging.getLogger(SVT_LOGGER)
     transferred = []
     # Keep a hash of ballot moves for logging purposes.
     # Keys are a tuple of the form (from_recipient, to_recipient, value)
@@ -176,14 +174,13 @@ def redistribute_ballots(selected, weight, hopefuls, allocated, vote_count):
                                                             times * move[2])
         logger.debug(LOG_MESSAGE.format(action=Action.TRANSFER,
                                         desc=description))
-        log_data.append(LOG_MESSAGE.format(action=Action.TRANSFER,
-                                           desc=description))
 
     allocated[selected][:] = [x for x in allocated[selected]
                               if x not in transferred ]
 
 def elect_reject(candidate, vote_count, constituencies, quota_limit,
-                 current_round, elected, rejected, constituencies_elected):
+                 current_round, elected, rejected, constituencies_elected,
+                 logger=logger):
     """Elects or rejects the candidate, based on quota restrictions.
 
     If there are no quota limits, the candidate is elected. If there
@@ -193,9 +190,8 @@ def elect_reject(candidate, vote_count, constituencies, quota_limit,
 
     Returns true if the candidate is elected, false otherwise.
     """
-    
-    
-    logger = logging.getLogger(SVT_LOGGER)
+
+
     quota_exceeded = False
     # If there is a quota limit, check if it is exceeded
     if quota_limit > 0 and candidate in constituencies:
@@ -207,7 +203,6 @@ def elect_reject(candidate, vote_count, constituencies, quota_limit,
         rejected.append((candidate, current_round, vote_count[candidate]))
         d = candidate + " = " + str(vote_count[candidate])
         msg = LOG_MESSAGE.format(action=Action.QUOTA, desc=d)
-        log_data.append(LOG_MESSAGE.format(action=Action.QUOTA, desc=d))
         logger.info(msg)
         return False
     # Otherwise, elect the candidate
@@ -218,7 +213,6 @@ def elect_reject(candidate, vote_count, constituencies, quota_limit,
             constituencies_elected[current_constituency] += 1
         d = candidate + " = " + str(vote_count[candidate])
         msg = LOG_MESSAGE.format(action=Action.ELECT, desc=d)
-        log_data.append(LOG_MESSAGE.format(action=Action.ELECT, desc=d))
         logger.info(msg)
         return True
 
@@ -228,13 +222,13 @@ def count_description(vote_count, candidates):
     The string is of the form of {0} = {1} separated by ; where each {0}
     is a candidate and each {1} is the corresponding vote count.
     """
-    
+
     return  ';'.join(map(lambda x: "{0} = {1}".format(x, vote_count[x]),
                          candidates))
 
-   
+
 def count_stv(ballots, seats, droop = True, constituencies = None,
-              quota_limit = 0, rnd_gen=None):
+              quota_limit = 0, rnd_gen=None, logger=logger):
     """Performs a STV vote for the given ballots and number of seats.
 
     If droop is true the election threshold is calculated according to the
@@ -246,7 +240,7 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
     any. The quota_limit, if different than zero, is the limit of candidates
     that can be elected by a constituency.
     """
-     
+
     allocated = {} # The allocation of ballots to candidates
     vote_count = {} # A hash of ballot counts, indexed by candidates
     candidates = [] # All candidates
@@ -258,7 +252,7 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
     rejected = []
     # The number of candidates elected per constituency
     constituencies_elected = {}
-  
+
     for (candidate, constituency) in constituencies.iteritems():
         constituencies_elected[constituency] = 0
         if candidate not in allocated:
@@ -266,7 +260,7 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
         if candidate not in candidates: # check not really needed
             candidates.append(candidate)
             vote_count[candidate] = 0
-   
+
     seed()
 
     if droop:
@@ -274,12 +268,8 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
     else:
         threshold = int(math.ceil(1 + len(ballots) / (seats + 1.0)))
 
-    logger = logging.getLogger(SVT_LOGGER)
     logger.info(LOG_MESSAGE.format(action=Action.THRESHOLD,
                                    desc=threshold))
-    global log_data
-    log_data.append(LOG_MESSAGE.format(action=Action.THRESHOLD,
-                                       desc=threshold))
     # Do initial count
     for ballot in ballots:
         selected = ballot.candidates[0]
@@ -303,15 +293,11 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
         # Log round
         logger.info(LOG_MESSAGE.format(action=Action.COUNT_ROUND,
                                        desc=current_round))
-        log_data.append(LOG_MESSAGE.format(action=Action.COUNT_ROUND,
-                                           desc=current_round))
         # Log count
         description  = count_description(vote_count, hopefuls)
-       
+
         logger.info(LOG_MESSAGE.format(action=Action.COUNT,
                                        desc=description))
-        log_data.append(LOG_MESSAGE.format(action=Action.COUNT,
-                                           desc=description))
         hopefuls_sorted = sorted(hopefuls, key=vote_count.get, reverse=True )
         # If there is a surplus record it so that we can try to
         # redistribute the best candidate's votes according to their
@@ -323,19 +309,21 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
             best_candidate = randomly_select_first(hopefuls_sorted,
                                                    key=vote_count.get,
                                                    action=Action.ELECT,
-                                                   random_generator=rnd_gen)
+                                                   random_generator=rnd_gen,
+                                                   logger=logger)
             if best_candidate not in hopefuls:
                 print "Not a valid candidate: ",best_candidate
                 sys.exit(1)
             hopefuls.remove(best_candidate)
             was_elected = elect_reject(best_candidate, vote_count,
                                        constituencies, quota_limit,
-                                       current_round, 
+                                       current_round,
                                        elected, rejected,
-                                       constituencies_elected)
+                                       constituencies_elected,
+                                       logger=logger)
             if not was_elected:
                 redistribute_ballots(best_candidate, 1.0, hopefuls, allocated,
-                                     vote_count)
+                                     vote_count, logger=logger)
             if surplus > 0:
                 # Calculate the weight for this round
                 weight = float(surplus) / vote_count[best_candidate]
@@ -343,7 +331,7 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
                 # cast for the candidate, and transfer the vote to that
                 # candidate with its value adjusted by the correct weight.
                 redistribute_ballots(best_candidate, weight, hopefuls,
-                                     allocated, vote_count)
+                                     allocated, vote_count, logger=logger)
         # If nobody can get elected, take the least hopeful candidate
         # (i.e., the hopeful candidate with the less votes) and
         # redistribute that candidate's votes.
@@ -352,16 +340,16 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
             worst_candidate = randomly_select_first(hopefuls_sorted,
                                                     key=vote_count.get,
                                                     action=Action.ELIMINATE,
-                                                    random_generator=rnd_gen)
+                                                    random_generator=rnd_gen,
+                                                    logger=logger)
             hopefuls.remove(worst_candidate)
             eliminated.append(worst_candidate)
             d = worst_candidate + " = " + str(vote_count[worst_candidate])
             msg = LOG_MESSAGE.format(action=Action.ELIMINATE, desc=d)
-            log_data.append(LOG_MESSAGE.format(action=Action.ELIMINATE, desc=d))
             logger.info(msg)
             redistribute_ballots(worst_candidate, 1.0, hopefuls, allocated,
-                                 vote_count)
-            
+                                 vote_count, logger=logger)
+
         current_round += 1
         num_hopefuls = len(hopefuls)
         num_elected = len(elected)
@@ -371,21 +359,18 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
     while (seats - num_elected) > 0 and len(eliminated) > 0:
         logger.info(LOG_MESSAGE.format(action=Action.COUNT_ROUND,
                                        desc=current_round))
-        log_data.append(LOG_MESSAGE.format(action=Action.COUNT_ROUND,
-                                           desc=current_round))
         description  = count_description(vote_count, eliminated)
-        
+
         logger.info(LOG_MESSAGE.format(action=Action.ZOMBIES,
                                        desc=description))
-        log_data.append(LOG_MESSAGE.format(action=Action.ZOMBIES,
-                                           desc=description))
         best_candidate = eliminated.pop()
         elect_reject(best_candidate, vote_count, constituencies,
                      quota_limit, current_round,
-                     elected, rejected, constituencies_elected)
+                     elected, rejected, constituencies_elected,
+                     logger=logger)
         current_round += 1
 
-    return elected, vote_count, log_data
+    return elected, vote_count
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Perform STV')
@@ -436,11 +421,12 @@ if __name__ == "__main__":
             for candidate in constituency:
                 constituencies[candidate] = constituency_id
             constituency_id += 1
-        
+
     (elected, vote_count) = count_stv(ballots, args.seats, args.droop,
                                       constituencies,
                                       args.quota,
-                                      args.random)
+                                      args.random,
+                                      logger=logger)
 
     print "Results:"
     for result in elected:
