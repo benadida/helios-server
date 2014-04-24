@@ -1,4 +1,6 @@
 import json
+import logging
+import StringIO
 
 from django.utils.translation import ugettext_lazy as _
 from django.forms.formsets import formset_factory
@@ -152,8 +154,19 @@ class StvElection(ElectionModuleBase):
                                          cands_count)
             ballot = [str(i) for i in ballot]
             ballots.append(Ballot(ballot))
+
+        stv_stream = StringIO.StringIO()
+        stv_logger = logging.Logger(self.poll.uuid)
+        handler = logging.StreamHandler(stv_stream)
+        stv_logger.addHandler(handler)
+        stv_logger.setLevel(logging.DEBUG)
         results = count_stv(ballots, seats, droop, constituencies, quota_limit,
-                            rnd_gen)
+                            rnd_gen, logger=stv_logger)
+        results = list(results)
+        handler.close()
+        stv_stream.seek(0)
+        results.append(stv_stream.read())
+        stv_stream.close()
         self.poll.stv_results = json.dumps(results)
         self.poll.save()
 
