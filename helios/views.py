@@ -968,11 +968,9 @@ def encrypt_ballot(request, election):
 def post_audited_ballot(request, election):
     if request.method == "POST":
         raw_vote = request.POST['audited_ballot']
-        encrypted_vote = electionalgs.EncryptedVote.fromJSONDict(
-            utils.from_json(raw_vote))
+        encrypted_vote = electionalgs.EncryptedVote.fromJSONDict(utils.from_json(raw_vote))
         vote_hash = encrypted_vote.get_hash()
-        audited_ballot = AuditedBallot(
-            raw_vote=raw_vote, vote_hash=vote_hash, election=election)
+        audited_ballot = AuditedBallot(raw_vote=raw_vote, vote_hash=vote_hash, election=election)
         audited_ballot.save()
 
         return SUCCESS
