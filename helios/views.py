@@ -773,9 +773,12 @@ Helios""" % (trustee.name, trustee.email)
 
         # send a note to all trustees
         if election.frozen_trustee_list and election.trustees_added_communication_keys():
-            url = settings.SECURE_URL_HOST + reverse(trustee_login, args=[election.short_name, trustee.email, trustee.secret])
+            trustees = Trustee.get_by_election(election)
+            for email_trustee in trustees:
+                if not email_trustee.helios_trustee:
+                    url = settings.SECURE_URL_HOST + reverse(trustee_login, args=[election.short_name, email_trustee.email, email_trustee.secret])
 
-            body = """Dear %s,
+                    body = """Dear %s,
 
 All trustees have uploaded their communication keys and you can now generate your encrypted shares.
 
@@ -784,9 +787,9 @@ As a reminder, your trustee dashboard is at:
     %s
 
 --
-Helios""" % (trustee.name, url)
+Helios""" % (email_trustee.name, url)
 
-            tasks.single_trustee_email.delay(trustee.id, "%s - Communication Keys Uploaded" % election.name, body)
+                    tasks.single_trustee_email.delay(email_trustee.id, "%s - Communication Keys Uploaded" % election.name, body)
 
         return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustee_home, args=[election.uuid, trustee.uuid]))
 
