@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-16 16:10+0300\n"
+"POT-Creation-Date: 2014-04-24 16:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,76 +17,59 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: forms.py:15 forms.py:37
 msgid "Name"
 msgstr "'Ονομα"
 
-#: forms.py:16
 msgid "Institution"
 msgstr "Ίδρυμα"
 
-#: forms.py:27
 #, fuzzy
 msgid "Institution does not exist"
 msgstr "Λίστα Ιδρυμάτων"
 
-#: views.py:103
 msgid "Changes on user were successfully saved"
 msgstr ""
 
-#: views.py:121
 #, python-format
 msgid "User %(uid)s was created with password %(password)s."
 msgstr "Δημιουργήθηκε ο χρήστης %(uid)s με κωδικό %(password)s. "
 
-#: views.py:162
 msgid "Institution created."
 msgstr "To ίδρυμα δημιουργήθηκε."
 
-#: views.py:193 views.py:250 views.py:355
 msgid "You didn't choose a user"
 msgstr "Δεν επιλέχθηκε χρήστης"
 
-#: views.py:242
 #, python-format
 msgid "New password for user %(uid)s is %(new_pass)s"
 msgstr "Ο νέος κωδικός για τον χρήστη %(uid)s είναι ο %(new_pass)s"
 
-#: views.py:247
 msgid "You are not authorized to do this"
 msgstr "Δεν επιτρέπεται αυτή η ενέργεια"
 
-#: views.py:290
 msgid "Institution $(inst_name)s deleted"
 msgstr "Το ίδρυμα %(inst_name)s διαγράφηκε"
 
-#: views.py:296
 #, python-format
 msgid "Institution %(inst_name)s can't be deleted (users > 0)"
 msgstr "Το ίδρυμα %(inst_name)s δεν μπορεί να διαγραφεί (χρήστες > 0)"
 
-#: views.py:300
 msgid "No such institution"
 msgstr "Αυτό το ίδρυμα δεν υπάρχει."
 
-#: views.py:337 views.py:350
 #, python-format
 msgid "User %(ufd)s succesfuly deleted!"
 msgstr "Ο χρήστης %(ufd)s διαγράφηκε επιτυχώς!"
 
-#: views.py:345
 msgid "You are not authorized to delete that user"
 msgstr "Δεν επιτρέπεται να διαγράψετε αυτόν τον χρήστη"
 
-#: templatetags/remember_filters.py:23 templatetags/remember_filters.py:26
 msgid "Active filters => "
 msgstr "Ενεργά Φίλτρα => "
 
-#: templatetags/remember_filters.py:29
 msgid "Institution: "
 msgstr "Ίδρυμα: "
 
-#: templatetags/remember_filters.py:43 templatetags/remember_filters.py:53
 msgid "Clear Filters"
 msgstr "Καθαρισμός Φίλτρων"
 

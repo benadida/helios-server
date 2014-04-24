@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-16 16:10+0300\n"
+"POT-Creation-Date: 2014-04-24 16:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,31 +18,24 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: forms.py:6
 msgid "Current password"
 msgstr "Κωδικός χρήστη"
 
-#: forms.py:7
 msgid "New password"
 msgstr "Νέος κωδικός"
 
-#: forms.py:8
 msgid "New password confirm"
 msgstr "Επιβεβαίωση κωδικού"
 
-#: forms.py:24
 msgid "Invalid password"
 msgstr "Λάθος κωδικός"
 
-#: forms.py:27
 msgid "Passwords don't match"
 msgstr "Οι κωδικοί δεν ταιρίαζουν"
 
-#: auth_systems/password.py:46
 msgid "Username"
 msgstr "Όνομα χρήστη"
 
-#: auth_systems/password.py:47
 msgid "Password"
 msgstr "Κωδικός χρήστη"
 

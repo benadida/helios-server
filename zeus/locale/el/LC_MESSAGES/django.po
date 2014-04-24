@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-16 16:10+0300\n"
+"POT-Creation-Date: 2014-04-24 16:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,137 +18,104 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: forms.py:60
 msgid "Trustees"
 msgstr "Εφορευτική επιτροπή"
 
-#: forms.py:65
 msgid "Multiple mixnets"
 msgstr "Πολλαπλές μίξεις"
 
-#: forms.py:140
 msgid "Invalid voting end date"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:142
 msgid "Invalid voting dates"
 msgstr "Οι ημερομηνίες έναρξης/λήξης δεν είναι σωστές."
 
-#: forms.py:144
 msgid "Invalid voting extension date"
 msgstr "Λάθος ημερομηνία και ώρα λήξης της ψηφοφορίας"
 
-#: forms.py:152
 msgid "Invalid trustees format"
 msgstr "Μη έγκυρη λίστα μελών εφορευτικής επιτροπής."
 
-#: forms.py:209
 msgid "Choice"
 msgstr "Επιλογή"
 
-#: forms.py:211 election_modules/__init__.py:38
 msgid "Question"
 msgstr "Ερώτηση"
 
-#: forms.py:239
 msgid "Min answers"
 msgstr "Ελάχιστος αριθμός επιλογών"
 
-#: forms.py:240
 msgid "Max answers"
 msgstr "Μέγιστος αριθμός επιλογών"
 
-#: forms.py:258
 msgid "Max answers should be greater or equal to min answers"
 msgstr ""
 "Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
 "ελάχιστου αριθμού απαντήσεων"
 
-#: forms.py:264
 msgid "Party name"
 msgstr "Όνομα συνδυασμού"
 
-#: forms.py:273
 msgid "Scores"
 msgstr "Βαθμοί"
 
-#: forms.py:375
 msgid "Username"
 msgstr "Όνομα χρήστη"
 
-#: forms.py:377
 msgid "Password"
 msgstr "Συνθηματικό"
 
-#: forms.py:388 forms.py:394
 msgid "Invalid username or password"
 msgstr "Μη έγκυρος χρήστης ή συνθηματικό"
 
-#: forms.py:416
 msgid "all voters"
 msgstr "σύνολο ψηφοφόρων"
 
-#: forms.py:417
 msgid "voters who have cast a ballot"
 msgstr "ψηφοφόροι που έχουν καταθέσει ψήφο"
 
-#: forms.py:418
 msgid "voters who have not yet cast a ballot"
 msgstr "ψηφοφόροι που δεν έχουν καταθέσει ακόμη ψήφο"
 
-#: forms.py:422
 msgid "Email subject"
 msgstr "Tίτλος μηνύματος email"
 
-#: forms.py:424
 msgid "Email body"
 msgstr "Κείμενο μηνύματος email"
 
-#: forms.py:426
 msgid "Send To"
 msgstr "Αποστολή πρός"
 
-#: forms.py:431
 msgid "Current password"
 msgstr "Τρέχων κωδικός"
 
-#: forms.py:432
 msgid "New password"
 msgstr "Νέος κωδικός"
 
-#: forms.py:433
 msgid "New password confirm"
 msgstr "Επιβεβαίωση νέου κωδικού"
 
-#: forms.py:449
 msgid "Invalid password"
 msgstr "Μη έγκυρος χρήστης ή κωδικός"
 
-#: forms.py:452
 msgid "Passwords don't match"
 msgstr "Οι κωδικοί δεν ταιριάζουν"
 
-#: forms.py:458
 msgid "Login password"
 msgstr "Κωδικός σύνδεσης"
 
-#: forms.py:469
 msgid "Invalid login code"
 msgstr "Μη έγκυρος κωδικός σύνδεσης"
 
-#: forms.py:488
 msgid "Invalid email or password"
 msgstr "Μη έγκυρη διεύθυνση email ή συνθηματικό"
 
-#: help_texts.py:3
 msgid "This is a trial election"
 msgstr "Επιλέξτε το πεδίο αν πρόκειται για δοκιμαστική ψηφοφορία"
 
-#: help_texts.py:4
 msgid "Choose the type of the election"
 msgstr "επιλέξτε τον τύπο της ψηφοφορίας"
 
-#: help_texts.py:5
 msgid ""
 "Trustees list. e.g. <br/><br/>\n"
 "Giannhs Gianopoulos, giannhs@email.com<br />\n"
@@ -158,45 +125,36 @@ msgstr ""
 "<br/><br/>Κωσταντίνος Κωστόπουλος, kwstopoulos@email.com<br/>Ιωάννης "
 "Γιαννόπουλος, giannhs@gmail.com<br/>\n"
 
-#: help_texts.py:9
 msgid "Election name"
 msgstr "Τίτλος ψηφοφορίας"
 
-#: help_texts.py:10
 msgid "Election description"
 msgstr "περιγράψτε σύντομα την ψηφοφορία"
 
-#: help_texts.py:11
 msgid "When voting ends"
 msgstr "δώστε ημερομηνία και ώρα για τη λήξη της ψηφοφορίας"
 
-#: help_texts.py:12
 msgid "When voting starts"
 msgstr "δώστε ημερομηνία και ώρα έναρξης της ψηφοφορίας"
 
-#: help_texts.py:13
 msgid "Voting extension date"
 msgstr "νέα ημερομηνία και ώρα λήξης της ψηφοφορίας"
 
-#: help_texts.py:14
 msgid "Voters can contact this email for election support"
 msgstr ""
 "Οι ψηφοφόροι μπορούν να απευθύνονται σε αυτό το e-mail για υποστήριξη σε "
 "θέματα της ψηφοφορίας"
 
-#: help_texts.py:15
 msgid "Voters can contact this phone for election support"
 msgstr ""
 "Οι ψηφοφόροι θα μπορούν να επικοινωνούν σε αυτά τα τηλέφωνα για υποστήριξη "
 "σε θέματα της ψηφοφορίας"
 
-#: help_texts.py:16
 msgid "Whether or not to allow remote mixing"
 msgstr ""
 "Επιλέξτε αν θέλετε να παρέχετε εξωτερικά στάδια μίξης μετά την ψηφοφορία -- "
 "αφήστε κενό εάν δεν είστε σίγουρος"
 
-#: messages.py:4
 msgid ""
 "Confirm voter removal: {{ voter.voter_name}} {{ voter.voter_surname }} "
 "{{ voter.voter_fathername }} ({{ voter.voter_email }})"
@@ -204,28 +162,22 @@ msgstr ""
 "Επιβεβαιώστε τη διαγραφή ψηφοφόρου: {{ voter.voter_name}} {{ voter."
 "voter_surname }} {{ voter.voter_fathername }} ({{ voter.voter_email }})"
 
-#: messages.py:10
 msgid "Are you sure you want to delete the selected trustee ?"
 msgstr "Επιβεβαιώστε τη διαγραφή του επιλεγμένου μέλους της εφορευτικής"
 
-#: messages.py:13
 msgid "Are you sure you want to freeze the election ?"
 msgstr "Επιβεβαιώστε την οριστικοποίηση της ψηφοφορίας"
 
-#: messages.py:14
 msgid "Are you sure you want to delete the selected poll ?"
 msgstr "Επιβεβαιώστε τη διαγραφή της επιλεγμένης κάλπης"
 
-#: model_tasks.py:210
 msgid "Results"
 msgstr "Αποτελέσματα"
 
-#: tasks.py:103
 #, python-format
 msgid "%(election_name)s - vote cast"
 msgstr "%(election_name)s - ψήφος ελήφθη"
 
-#: tasks.py:108
 #, python-format
 msgid ""
 "You have successfully cast a vote in\n"
@@ -242,108 +194,83 @@ msgstr ""
 "\n"
 "H απόδειξη της καταχώρησης βρίσκεται συνημμένη στο παρόν μήνυμα.\n"
 
-#: election_modules/__init__.py:36 election_modules/simple/__init__.py:16
 msgid "Simple election with one or more questions"
 msgstr "Απλή ψηφοφορία με μία ή περισσότερες ερωτήσεις"
 
-#: election_modules/__init__.py:37
 msgid "Ballot"
 msgstr "Ψηφοδέλτιο"
 
-#: election_modules/__init__.py:39
 msgid "Answer"
 msgstr "Απάντηση"
 
-#: election_modules/__init__.py:41
 msgid "Add questions to the election"
 msgstr "Προσθήκη ερωτήσεων στην ψηφοφορία"
 
-#: election_modules/__init__.py:42
 msgid "Too many choices"
 msgstr "Περισσότερες επιλογές από το επιτρεπτό"
 
-#: election_modules/__init__.py:43
+#, python-brace-format
 msgid "Question '{0}' requires at least {1} choices."
 msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
 
-#: election_modules/parties/__init__.py:16
 msgid "Party lists election"
 msgstr "Ψηφοφορία με συνδυασμούς"
 
-#: election_modules/parties/__init__.py:18 election_modules/stv/__init__.py:19
 msgid "Candidate"
 msgstr "Υποψήφιος"
 
-#: election_modules/parties/__init__.py:19
 msgid "Party"
 msgstr "Συνδυασμός"
 
-#: election_modules/score/__init__.py:16
 msgid "Score voting election"
 msgstr "Ψηφοφορία με βαθμολογία"
 
-#: election_modules/score/__init__.py:21
-#: election_modules/simple/__init__.py:22
 msgid "Manage questions"
 msgstr "Διαχείριση ερωτήσεων"
 
-#: election_modules/score/__init__.py:30
+#, python-brace-format
 msgid "Please assign the remaining choices: {0}"
 msgstr "Παρακαλούμε συμπληρώστε τις υπόλοιπες επιλογές: {0}"
 
-#: election_modules/simple/__init__.py:21 election_modules/stv/__init__.py:25
 msgid "No questions set"
 msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"
 
-#: election_modules/stv/__init__.py:17
 msgid "Single Transferable Vote Election"
 msgstr "Ψηφοφορία με ταξινομική ψήφο"
 
-#: election_modules/stv/__init__.py:20
 msgid "Candidates List"
 msgstr "Λίστα υποψηφίων"
 
-#: templatetags/zeus_tags.py:21 templatetags/zeus_tags.py:158
 msgid "Are you sure ?"
 msgstr "Επιβεβαιώστε"
 
-#: views/poll.py:235
 msgid "No file uploaded"
 msgstr "Δεν βρέθηκε αρχείο"
 
-#: views/poll.py:276
 msgid "Time to Vote"
 msgstr "Χρόνος Ψηφοφορίας"
 
-#: views/poll.py:277
 msgid "Additional Info"
 msgstr "Περισσότερες πληροφορίες"
 
-#: views/poll.py:401
 msgid "Email sending started"
 msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει"
 
-#: views/site.py:145
 msgid "Invalid email address"
 msgstr "Μη έγκυρη διεύθυνση email"
 
-#: views/site.py:152
 msgid "Client address unavailable"
 msgstr "Μη διαθέσιμη διεύθυνση IP πελάτη"
 
-#: views/site.py:159
 msgid "There are too many requests from your address"
 msgstr "Υπεράριθμες αιτήσεις από τη διεύθυνση IP σας"
 
-#: views/site.py:165
 msgid "There are too many emails registered from your address"
 msgstr "Υπεράριθμες διευθύσεις email από τη διεύθυνση IP σας"
 
-#: views/site.py:171
 msgid "Cannot create demo users right now. Sorry."
 msgstr "Δεν είναι δυνατή η δημιουργία δοκιμαστικών χρηστών αυτή τη στιγμή."
 
-#: views/site.py:186
 #, python-format
 msgid "An email with demo credentials has been sent to %s"
 msgstr "Ο δοκιμαστικός λογαριασμός σας έχει σταλεί στη διεύθυνση email %s"

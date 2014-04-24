@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-16 16:10+0300\n"
+"POT-Creation-Date: 2014-04-24 16:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,12 +18,10 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
-#: glue.py:16
 #, python-format
 msgid "%(election_name)s - vote cast"
 msgstr "%(election_name)s - Ψήφος ελήφθη"
 
-#: glue.py:18
 #, python-format
 msgid ""
 "\n"
@@ -40,70 +38,53 @@ msgstr ""
 "\n"
 "μπορείτε να βρείτε συνημμένη την απόδειξη της ψήφου σας.\n"
 
-#: templates/base.html:8 templates/base.html.py:65
 msgid "Zeus Electronic Voting"
 msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
 
-#: templates/base.html:106
 msgid "You are logged in as election administrator"
 msgstr "Είστε συνδεδεμένοι ως χειριστής εκλογών"
 
-#: templates/base.html:107 templates/base.html.py:122
 msgid "logout"
 msgstr "έξοδος"
 
-#: templates/base.html:108
 msgid "manage"
 msgstr "διαχείριση"
 
-#: templates/base.html:110
 msgid "accounts"
 msgstr ""
 
-#: templates/base.html:113
 msgid "change password"
 msgstr "αλλαγή κωδικού"
 
-#: templates/base.html:119
 msgid "You are logged in as voter"
 msgstr "Συνδεθήκατε ως ψηφοφόρος"
 
-#: templates/base.html:125
 msgid "You are logged in as trustee"
 msgstr "Συνδεθήκατε ως μέλος εφορευτικής"
 
-#: templates/base.html:127
 msgid "Logout"
 msgstr "Έξοδος"
 
-#: templates/base.html:129
 msgid "Login"
 msgstr "Είσοδος"
 
-#: templates/base.html:130
 msgid "Voter Login"
 msgstr "Είσοδος Ψηφοφόρου"
 
-#: templates/index.html:19
 msgid "Your new password was set."
 msgstr "Ο νέος σας κωδικός έχει οριστεί."
 
-#: templates/index.html:44
 msgid "Election status"
 msgstr "Κατάσταση ψηφοφορίας"
 
-#: templates/index.html:47
 msgid "Trial"
 msgstr "Δοκιμαστική"
 
-#: templates/index.html:101
 msgid "YES"
 msgstr "ΝΑΙ"
 
-#: templates/index.html:103
 msgid "NO"
 msgstr "ΟΧΙ"
 
-#: templates/lang_select.html:19
 msgid "Change language"
 msgstr "Change language"

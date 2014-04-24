@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-22 14:45+0300\n"
+"POT-Creation-Date: 2014-04-24 16:02+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,55 +17,40 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: vote.html:71 templates/vote.html:71
 msgid "STEP_1_TITLE"
 msgstr "Επιλογές ψηφοδελτίου"
 
-#: vote.html:72 templates/vote.html:72
 msgid "STEP_2_TITLE"
 msgstr "Υποβολή ψηφοδελτίου"
 
-#: vote.html:77 templates/vote.html:77
 msgid "INITIALIZING_BOOTH"
 msgstr "Αρχικοποίηση παραπετάσματος..."
 
-#: vote.html:78 templates/vote.html:78
 msgid "INIT_BOOTH_ESTIMATED_TIME"
 msgstr "Εκτιμώμενος χρόνος 10 δευτερόλεπτα"
 
-#: vote.html:88 templates/vote.html:88
 msgid "PLEASE_WAIT"
 msgstr "Παρακαλούμε περιμένετε..."
 
-#: vote.html:92 templates/vote.html:92
 msgid "BALLOT_ENCRYPTION_IN_PROGRESS"
 msgstr "Η ψήφος σας κρυπτογραφείται, παρακαλούμε περιμένετε..."
 
-#: vote.html:96 templates/vote.html:96
 msgid "BALLOT_ENCRYPTION_ESTIMATED_TIME"
 msgstr "Η κρυπτογράφηση της ψήφου ενδέχεται να διαρκέσει έως 2 λεπτά."
 
-#: vote.html:113 templates/vote.html:113
 msgid "HELP"
 msgstr "Βοήθεια"
 
-#: js/ballot_modules.js:32 js/ballot_modules.js.c:449
-#: templates/ballot_modules.js:32 templates/ballot_modules.js.c:449
-#: templates/seal.html:15 templates/seal_score.html:14
 msgid "BLANK_BALLOT"
 msgstr "Λευκή ψήφος"
 
-#: js/ballot_modules.js:34 js/ballot_modules.js.c:451
-#: templates/ballot_modules.js:34 templates/ballot_modules.js.c:451
 msgid "BALLOT_CONTINUE_BUTTON"
 msgstr "Συνέχεια"
 
-#: js/booth.js:59
 msgid ""
 "If you leave this page with an in-progress ballot, your ballot will be lost."
 msgstr "Εάν φύγετε από την παρούσα σελίδα οι επιλογές σας θα χαθούν."
 
-#: js/booth.js:69
 msgid ""
 "Are you sure you want to exit the booth and lose all information about your "
 "current ballot?"
@@ -73,7 +58,6 @@ msgstr ""
 "Επιβεβαιώστε την έξοδο από το παραπέτασμα και την απόρριψη των μέχρι "
 "τώραεπιλογών σας."
 
-#: js/booth.js:154
 msgid "BROWSER_NOT_SUPPORTED_ALERT"
 msgstr ""
 "Το πρόγραμμα πλοήγησης που χρησιμοποιείτε δεν υποστηρίζεται από την "
@@ -82,69 +66,53 @@ msgstr ""
 "\n"
 "Για περισσότερες πληροφορίες επικοινωνήστε μαζί μας"
 
-#: js/booth.js:413
 msgid "HELP_EMAIL_SUBJECT"
 msgstr "Βοήθεια για το ηλεκτρονικό παραπέτασμα Ζευς"
 
-#: js/booth.js:414
 msgid "HELP_EMAIL_BODY"
 msgstr "Αντιμετωπίζω το εξής πρόβλημα:"
 
-#: js/booth.js:436
 msgid "ELECTION_INIT_ERROR"
 msgstr "Σφάλμα κατά την αρχικοποίηση της ψηφοφορίας"
 
-#: js/booth.js:587
 msgid "ENCRYPTION_PROCESS_FAILED"
 msgstr "Η κρυπτογράφηση απέτυχε."
 
-#: js/booth.js:660
 msgid "AUDIT_BALLOT_CAST_COMPLETE"
 msgstr "Η ψήφος ελέγχου υποβλήθηκε επιτυχώς."
 
-#: js/booth.js:671
 msgid "ELECTION_TERMS_ACCEPT_REQUIRED"
 msgstr "Παρακαλούμε, αποδεχθείτε τους όρους της ψηφοφορίας."
 
-#: js/booth.js:714
 msgid "BALLOT_CAST_FAILED"
 msgstr "Η υποβολή της ψήφου απέτυχε."
 
-#: js/booth.js:721
 msgid "CAST_VOTE_ID"
 msgstr "Αναγνωριστικό ψήφου"
 
-#: templates/audit.html:1
 msgid "AUDIT_BALLOT_SUBMIT"
 msgstr "Υποβολή Ψήφου Ελέγχου"
 
-#: templates/audit.html:4
 msgid "AUDIT_BALLOT_SET"
 msgstr ""
 "Έχετε επιλέξει ψήφο ελέγχου. Η ψήφος σας δεν θα καταμετρηθεί και οι επιλογές "
 "σας θα κοινοποιηθούν σε σχετικό πίνακα."
 
-#: templates/audit.html:19
 msgid "AUDIT_BALLOT_BACK_PROMPT"
 msgstr "Πατήστε επιστροφή για να επιστρέψετε στο παραπέτασμα."
 
-#: templates/audit.html:21
 msgid "AUDIT_BALLOT_CONFIRM_BUTTON"
 msgstr "Επιβεβαίωση"
 
-#: templates/audit.html:25
 msgid "AUDIT_BALLOT_BACK_BUTTON"
 msgstr "Επιστροφή"
 
-#: templates/done.html:2
 msgid "BALLOT_SUBMISSION_IN_PROGRESS"
 msgstr "Υποβολή της ψήφου..."
 
-#: templates/done.html:5
 msgid "BALLOT_SUBMISSION_PLEASE_WAIT"
 msgstr "Η ψήφος υποβάλλεται. Παρακαλώ περιμένετε..."
 
-#: templates/election.html:4
 msgid "ELECTION_INTRO_BODY"
 msgstr ""
 "    <p>Καλωσήρθατε στο ηλεκτρονικό παραπέτασμα του συστήματος ψηφοφοριών "
@@ -186,104 +154,80 @@ msgstr ""
 "     Κάθε φορά, η νέα ψήφος αντικαθιστά την προηγούμενη.\n"
 "    </p>"
 
-#: templates/election.html:8
 msgid "START"
 msgstr "Εκκίνηση"
 
-#: templates/footer.html:2
 msgid "ELECTION_KEY_NOT_INITIALIZED"
 msgstr "Η ψηφοφορία δεν έχει αρχικοποιηθεί"
 
-#: templates/footer.html:4
 msgid "POLL_IDENTIFIER"
 msgstr "Αναγνωριστικό κάλπης"
 
-#: templates/header.html:2
 msgid "ELECTION_INFO_BUTTON"
 msgstr "Πληροφορίες"
 
-#: templates/header.html:8
 msgid "CONTACT_DETAILS"
 msgstr "Επικοινωνία"
 
-#: templates/header.html:11
 msgid "EMAIL"
 msgstr "Email"
 
-#: templates/header.html:12
 msgid "PHONE"
 msgstr "Τηλ."
 
-#: templates/question_plain.html:10 templates/question_plain.html.c:12
 msgid "choice"
 msgstr "επιλογή"
 
-#: templates/question_plain.html:10 templates/question_plain.html.c:12
 msgid "choices"
 msgstr "επιλογές"
 
-#: templates/question_plain.html:12
 msgid "to"
 msgstr "εώς"
 
-#: templates/question_plain.html:58
 msgid "Blank vote"
 msgstr "Λευκή ψήφος"
 
-#: templates/question_plain.html:60
 msgid "AUDIT_VOTE_SUBMISSION_BUTTON"
 msgstr "Υποβολή ψήφου ελέγχου"
 
-#: templates/question_plain.html:67
 msgid "AUDIT_VOTE_CODE_PROMPT"
 msgstr "Ψήφος ελέγχου"
 
-#: templates/question_plain.html:69
 msgid "AUDIT_VOTE_INSTRUCTIONS"
 msgstr ""
 "Οι ορθοί κωδικοί θα πρέπει να σας έχουν αποσταλεί μαζί με την πρόσκλησή σας "
 "για να ψηφίσετε."
 
-#: templates/question_plain.html:71
 msgid "AUDIT_VOTE_CODE_LABEL"
 msgstr "Εισάγετε κωδικό:"
 
-#: templates/question_stv.html:8
 msgid "STV_BALLOT_HELP_TEXT"
 msgstr "STV_BALLOT_HELP_TEXT GREEK"
 
-#: templates/question_stv.html:12
 msgid "STV_BALLOT_CANDIDATES_HEADER"
 msgstr "Υποψήφιοι"
 
-#: templates/question_stv.html:22
 msgid "STV_BALLOT_CANDIDATES_SELECT_HEADER"
-msgstr "Επιλογές υποψηφίων"
+msgstr "Επιλογές "
 
-#: templates/question_stv.html:27
 msgid "STV_BALLOT_CHOICE"
-msgstr "Επιλογή"
+msgstr "Επιλογή "
 
-#: templates/seal.html:5 templates/seal_score.html:5
 msgid "BALLOT_ENCRYPTED_SUCCESS"
 msgstr ""
 "Η ψήφος σας κρυπτογραφήθηκε επιτυχώς. Επιβεβαιώστε τις επιλογές σας όπως "
 "παρουσιάζονται παρακάτω."
 
-#: templates/seal.html:22 templates/seal_score.html:21
 msgid "BACK_TO_BALLOT_CHOICES"
 msgstr "Πίσω στις επιλογές ψηφοδελτίου"
 
-#: templates/seal.html:31 templates/seal_score.html:30
 msgid "SUBMIT_BALLOT_PROMPT"
 msgstr " "
 
-#: templates/seal.html:43 templates/seal_score.html:41
 msgid "ELECTION_TERMS_LABEL"
 msgstr ""
 "Επιβεβαιώνω ότι είμαι μόνος ή μόνη και κανείς άλλος δεν παρακολούθησε τις "
 "επιλογές μου."
 
-#: templates/seal.html:50 templates/seal_score.html:48
 msgid "SUBMIT_BALLOT"
 msgstr "Υποβολή ψήφου"
