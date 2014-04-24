@@ -398,19 +398,13 @@
       var jsonType = /application\/json/;
 
       var output = $('#' + $(e.target).data('output'));
+      var reader = new FileReader();
 
-      if (file.type.match(jsonType)) {
-        var reader = new FileReader();
-
-        reader.onload = function(e) {
-          output.val(reader.result);
-        }
-
-        reader.readAsText(file);
-      } else {
-        output.addClass('error');
-        output.parent().find('.error').show();
+      reader.onload = function(e) {
+        output.val(reader.result);
       }
+
+      reader.readAsText(file);
     }
 
     $(document).ready(function() {
@@ -546,7 +540,6 @@
                   <div class="row">
                     <div class="large-9 large-offset-3 columns">
                       <textarea id="sk_textarea_signing" style="height: 100px;" disabled></textarea>
-                      <small class="error" style="display: none;">The file must be formatted as JSON.</small>
                     </div>
                   </div>
 
@@ -625,7 +618,6 @@
                       <div class="row">
                         <div class="large-9 large-offset-3 columns">
                           <textarea id="sk_textarea_encryption" style="height: 100px;" disabled></textarea>
-                          <small class="error" style="display: none;">The file must be formatted as JSON.</small>
                         </div>
                       </div>
 
