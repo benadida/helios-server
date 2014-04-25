@@ -40,19 +40,36 @@ voter_id = '{{voter.voter_id}}';
 <p>
 {% trans "You may tweak the subject and add a custom message using the form below." %}
 </p>
-
-  <form class="prettyform" action="" method="POST" id="email_form">
+<div class="col-md-10">
+  <form class="form-horizontal" role="form" action="" method="POST" id="email_form">
+    {{ email_form.non_field_errors }}
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     <input type="hidden" name="template" value="{{template}}" />
     <input type="hidden" name="voter_id" value="{{voter.voter_login_id}}" />
-    <table class="pretty">
-     {{email_form.as_table}}
-     </table>
-  <div>
-  <label for="">&nbsp;</label><input type="submit" value="{% trans "Send" %}" id="send_button" />
+    <div class="form-group {% if form.subject.errors %}has-error{% endif %}">
+    <label for="subject">{% trans "Subject" %}</label>
+    <input type="text" name="subject" class="form-control" id="id_subject" placeholder="{% trans "Subject" %}">
+    {{email_form.subject.errors}}
+    </div> 
+    <div class="form-group {% if form.body.errors %}has-error{% endif %}">
+    <label for="body">{% trans "Body" %}</label>
+    <input type="text" name="body" class="form-control" id="id_body" placeholder="{% trans "Body" %}">
+    {{email_form.body.errors}}
+    </div> 
+
+    {% if not voter %}
+      <div class="form-group {% if form.send_to.errors %}has-error{% endif %}">
+      <label for="send_to">{% trans "Send To" %}</label>
+      {{email_form.send_to}}
+      {{email_form.send_to.errors}}
+      </div>
+    {% endif %}
+   
+  <div class="form-group">
+   <button type="submit" id="send_button" class="btn btn-primary">{% trans "Send" %}</button>
   </div>
   </form>
-  
+ </div> 
   <div id="processing">
   </div>
   

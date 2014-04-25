@@ -13,50 +13,65 @@
 <em>{% trans "Only the voters listed here" %}</em>.
 {% endif %}
 </p>
-<br/><br/>
+<br />
 {% if admin_p and not election.frozen_at %}
 {% if election.private_p %}
 <em>{% blocktrans %}Your election is marked private, which means you cannot open registration up more widely{% endblocktrans %}</em>.<br />
 {% else %}
 {% trans "You can change this setting:" %}
-<form method="post" action="{% url helios.views.voters_eligibility election.uuid %}">
+<br />
+<div class="col-md-4">
+<form method="post" role="form" class="form-horizontal" action="{% url helios.views.voters_eligibility election.uuid %}">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-<input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> {% trans "anyone can vote" %}<br />
-<input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> {% trans "only voters listed explicitly below can vote" %}<br />
+<div class="form-group">
+<input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> {% trans "anyone can vote" %}
+</div>
+<div class="form-group">
+<input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> {% trans "only voters listed explicitly below can vote" %}
+</div>
 {% if categories %}
+<div class="form-group">
 <input type="radio" name="eligibility" value="{% trans "limitedreg" %}" {% if election.eligibility %}CHECKED{% endif %} /> {% trans "only voters who are members of " %}
 <select name="category_id">
 {% for category in categories %}
 <option value="{{category.id}}" {% if eligibility_category_id == category.id %}SELECTED{% endif %}> {{category.name}}</option>
 {% endfor %}
 </select>
-<br />
+</div>
 {% endif %}
-<input type="submit" value="{% trans "update" %}" />
+<div class="form-group">
+<button class="btn btn-primary">{% trans "update" %}</button>
+</div>
 </form>
+
 {% endif %}
 {% endif %}
 
 {% if email_voters and election.frozen_at and admin_p %}
 <p><a class="button" href="{% url helios.views.voters_email election.uuid %}">{% trans "email voters" %}</a></p>
 {% endif %}
-
 {% if election.num_voters > 20 %}
 <p>
 {% if q %}
 <p><em>{% trans "searching for" %} <u>{{q}}</u>.</em> [<a href="?">{% trans "clear search" %}</a>]</p>
 {% else %}
+
 <form method="get" action="{% url helios.views.voters_list_pretty election.uuid %}"><b>search</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
+
 {% endif %}
 </p>
 {% endif %}
-
+</div>
+<div class="row">
+<div class="col-md-8">
 {% if admin_p %}
 <!-- Add a Voter: WORK HERE-->
+
 {% if upload_p and not election.openreg %}
-<p>
-<a class="button" href="{% url helios.views.voters_upload election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
-</p>
+<div class="form-group">
+<a class="btn btn-primary" href="{% url helios.views.voters_upload election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
+</div>
+
 
 {% if voter_files %}
 {% trans "Prior Bulk Uploads:" %}
@@ -143,5 +158,6 @@
 <br /><br />
 <em>no voters.</em>
 {% endif %}
-
+</div>
+</div>
 {% endblock %}
