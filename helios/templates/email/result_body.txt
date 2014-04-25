@@ -1,7 +1,7 @@
 {% load i18n %}
 {% trans "Dear" %} {{voter.name}},
 
-{% trans "The tally for {{election.name}} has been computed and released:" %}"
+{% trans "The tally for" %} {{election.name}} {% trans "has been computed and released:" %}
 
   {{election_url}}
 
