@@ -18,25 +18,6 @@
 &nbsp;{% if election.is_archived %}<a class="small button" href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=0">{% trans "unarchive it" %}</a>{% else %}<a class="small button" href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=1"> {% trans "archive it" %}</a>{% endif %}
 {% endif %}
 <br />
-{% if admin_p %}
-{% if not election.private_p %}
-{% if election.featured_p %}
-{% blocktrans with pretty_type=election.pretty_type %}
-this {{pretty_type}} is featured on the front page.
-{% endblocktrans %}
-{% if can_feature_p %}
-[<a href="{% url helios.views.one_election_set_featured election.uuid %}?featured_p=0">{% trans "unfeature it" %}</a>]
-{% endif %}
-{% else %}
-{% blocktrans with pretty_type=election.pretty_type %}
-this {{pretty_type}} is <u>not</u> featured on the front page.
-{% endblocktrans %}
-{% if can_feature_p %}
-[<a href="{% url helios.views.one_election_set_featured election.uuid %}?featured_p=1">{% trans "feature it" %}</a>]
-{% endif %}
-{% endif %}
-{% endif %}
-{% endif %}
 </p>
 
 </div>
