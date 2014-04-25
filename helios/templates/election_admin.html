@@ -144,7 +144,7 @@
         <li><s>Create a new election.</s></li>
         <li>
           {% if election.use_threshold %}
-            {% if election.trustees_added_communication_keys and election.trustees_added_encrypted_shares and election.trustees_added_public_keys %}<s>{% endif %}Manage the election's trustees.{% if election.trustees_added_communication_keys and election.trustees_added_encrypted_shares and election.trustees_added_public_keys %}</s>{% endif %}
+            {% if election.trustees_added_public_keys %}<s>{% endif %}Manage the election's trustees.{% if election.trustees_added_public_keys %}</s>{% endif %}
             <ol>
               <li>{% if election.num_trustees > 1 %}<s>{% endif %}Enter their names and e-mail addresses and send them the link to their dashboard.{% if election.num_trustees > 1 %}</s>{% endif %}</li>
               <li>{% if election.frozen_trustee_list %}<s>{% endif %}Freeze the trustee list and define the threshold scheme. Once the list is frozen, it can no longer be modified. The threshold scheme determines how many trustees will need to present their keys in order to decrypt the result.{% if election.frozen_trustee_list %}</s>{% endif %}</li>

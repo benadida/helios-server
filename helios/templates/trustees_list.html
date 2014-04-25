@@ -24,11 +24,11 @@
         </p>
       {% endif %}
 
-      {% if not election.frozen_at %}
-        <p>
-          Helios is automatically your first trustee and will handle its key pair generation and decryption automatically. You may add additional trustees if you want, and you can even remove the Helios trustee. However, we recommend you do this only if you have a solid understanding of the trustee's role.
-        </p>
+      <p>
+        Helios is automatically your first trustee and will handle its key pair generation and decryption automatically. You may add additional trustees if you want, and you can even remove the Helios trustee. However, we recommend you do this only if you have a solid understanding of the trustee's role.
+      </p>
 
+      {% if not election.frozen_at %}
         {% if not election.use_threshold %}
           {% if not election.trustees_added_public_keys %}
             <div data-alert class="alert-box info">
@@ -57,6 +57,14 @@
               <div data-alert class="alert-box info">
                 <b>Next</b> Wait for the trustees to generate their encrypted shares.
               </div>
+            {% endif %}
+
+            {% if not election.trustees_added_public_keys %}
+              <p>
+                In the meantime, you can continue with the next step in the procedure.
+              </p>
+
+              <a class="button" href="{% url helios.views.one_election_admin election.uuid %}">Admin &raquo;</a>
             {% endif %}
           {% endif %}
         {% else %}
