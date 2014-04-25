@@ -147,7 +147,7 @@ class Election(HeliosModel):
   @property
   def metadata(self):
     return {
-      'help_email': self.help_email or 'help@heliosvoting.org',
+      'help_email': self.help_email or settings.HELP_EMAIL_ADDRESS,
       'private_p': self.private_p,
       'use_advanced_audit_features': self.use_advanced_audit_features,
       'randomize_answer_order': self.randomize_answer_order
