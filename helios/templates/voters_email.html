@@ -13,9 +13,9 @@ voter_id = '{{voter.voter_id}}';
 
 {% if voter %}  
   <p>
-  {% blocktrans %}
-    You are sending this email to a specific user: <b>{{voter.name}} ({{voter.voter_id}})</b>
-  {% endblocktrans %}
+ 
+  {% trans "You are sending this email to a specific user:" %} <b>{{voter.name}} ({{voter.voter_id}})</b>
+
   </p>
 {% endif %}
 

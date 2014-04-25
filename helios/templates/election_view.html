@@ -10,7 +10,7 @@
 {% endif %}
 {% endif %}</h3>
 <p style="padding-top:0px; margin-top:0px">
-<em>{% if election.private_p %}{% trans "private" %}{%else%}{% trans "public" %}{% endif %}</em> {{ election.election_type }}{% if settings.SHOW_USER_INFO %} {% trans "created by" %} <u><b>{{election.admin.pretty_name}}</b></u>{% endif %}
+<em>{% if election.private_p %}{% trans "private" %}{%else%}{% trans "public" %}{% endif %}</em> {{ election.pretty_type }}{% if settings.SHOW_USER_INFO %} {% trans "created by" %} <u><b>{{election.admin.pretty_name}}</b></u>{% endif %}
 {% if election.is_archived %}
 [archived]
 {% endif %}
@@ -21,15 +21,15 @@
 {% if admin_p %}
 {% if not election.private_p %}
 {% if election.featured_p %}
-{% blocktrans with election_type=election.election_type %}
-this {{election_type}} is featured on the front page.
+{% blocktrans with pretty_type=election.pretty_type %}
+this {{pretty_type}} is featured on the front page.
 {% endblocktrans %}
 {% if can_feature_p %}
 [<a href="{% url helios.views.one_election_set_featured election.uuid %}?featured_p=0">{% trans "unfeature it" %}</a>]
 {% endif %}
 {% else %}
-{% blocktrans with election_type=election.election_type %}
-this {{election_type}} is <u>not</u> featured on the front page.
+{% blocktrans with pretty_type=election.pretty_type %}
+this {{pretty_type}} is <u>not</u> featured on the front page.
 {% endblocktrans %}
 {% if can_feature_p %}
 [<a href="{% url helios.views.one_election_set_featured election.uuid %}?featured_p=1">{% trans "feature it" %}</a>]
@@ -99,7 +99,7 @@ this {{election_type}} is <u>not</u> featured on the front page.
 {% if not election.frozen_at %}
 {% if election.issues_before_freeze %}
 {% for issue in election.issues_before_freeze %}
-{{issue.action}}{% if forloop.last %}{% else %}, and{% endif %}<br />
+{{issue.action}}{% if forloop.last %}{% else %}, {% trans "and" %}{% endif %}<br />
 {% endfor %}
 {% else %}
 <a href="{% url helios.views.one_election_freeze election.uuid %}">{% trans "freeze ballot and open election." %}</a>
@@ -196,23 +196,23 @@ all voters will be notified that the tally is ready.
 
 {% if election.voting_has_started %}
 <a class="btn btn-lg btn-primary" role="button" href="{{test_cookie_url}}">
-{% trans "Vote in this {{election_type}} " %}
+{% trans "Vote in this" %} {{election.pretty_type}} 
 </a>
 <br />
 <br />
 {% if election.voting_extended_until %}
-{% blocktrans with election_type=election.election_type %}
-This {{election_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
+{% blocktrans with pretty_type=election.pretty_type %}
+This {{pretty_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
 but has been extended until {{ election.voting_extended_until }} (UTC).
 {% endblocktrans %}
 {% else %}
 {% if election.voting_ends_at %}
 <br />
-{% blocktrans with election_type=election.election_type %}
-This {{election_type}} is scheduled to end at {{election.voting_ends_at}} (UTC).
+{% blocktrans with pretty_type=election.pretty_type %}
+This {{pretty_type}} is scheduled to end at {{election.voting_ends_at}} (UTC).
 {% endblocktrans %}
 {% else %}
-{% trans "This {{election_type}} ends at the administrator's discretion." %}
+{% trans "This {{election.pretty_type}} ends at the administrator's discretion." %}
 {% endif %}
 <br />
 {% endif %}
@@ -240,9 +240,7 @@ This election is <em>private</em>. You are signed in as eligible voter <em>{{vot
 {% if user %}
 {% if voter %}
 <p style="padding-top:1px;">
-{% blocktrans with election_type=election.election_type %}
-  You are registered to vote in this {{election_type}}.
-{% endblocktrans %}
+{% trans "You are registered to vote in this" %} {{pretty_type}}.
 {% if election.use_voter_aliases %}
 {% blocktrans %}
 Your voter alias is {{voter.alias}}.
@@ -257,14 +255,12 @@ Your voter alias is {{voter.alias}}.
 {% if eligible_p %}
 {% trans "You are eligible to vote in this election." %}
 {% else %}
-{% blocktrans with election.election_type as election_type %}
-You are <em>not eligible</em> to vote in this {{election_type}}.
-{% endblocktrans %}
+{% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
 {% endif %}
 {% else %}
-{% blocktrans with election_type=election.election_type %}
-You are <em>not eligible</em> to vote in this {{election_type}}.
-{% endblocktrans %}
+
+{% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
+
 <br />
 
 {% endif %}
