@@ -61,18 +61,23 @@ def login_box_raw(request, return_url='/', auth_systems=None):
     # make sure that auth_systems includes only available and enabled
     # helios_auth systems
     if auth_systems != None:
-        enabled_auth_systems = set(auth_systems).intersection(
-            set(helios_auth.ENABLED_AUTH_SYSTEMS)).intersection(set(AUTH_SYSTEMS.keys()))
+        enabled_auth_systems = set(auth_systems).intersection(set(helios_auth.ENABLED_AUTH_SYSTEMS)).intersection(set(AUTH_SYSTEMS.keys()))
     else:
-        enabled_auth_systems = set(helios_auth.ENABLED_AUTH_SYSTEMS).intersection(
-            set(AUTH_SYSTEMS.keys()))
+        enabled_auth_systems = set(helios_auth.ENABLED_AUTH_SYSTEMS).intersection(set(AUTH_SYSTEMS.keys()))
+
+    auth_systems = list()
+    for auth_system in enabled_auth_systems:
+        auth_systems.append({'name': auth_system, 'display_name': AUTH_SYSTEMS[auth_system].get_name()})
 
     form = password.LoginForm()
 
     return render_template_raw(request, 'login_box', {
-        'enabled_auth_systems': enabled_auth_systems, 'return_url': return_url,
-        'default_auth_system': helios_auth.DEFAULT_AUTH_SYSTEM, 'default_auth_system_obj': default_auth_system_obj,
-        'form': form})
+        'auth_systems': auth_systems,
+        'return_url': return_url,
+        'default_auth_system': helios_auth.DEFAULT_AUTH_SYSTEM,
+        'default_auth_system_obj': default_auth_system_obj,
+        'form': form
+    })
 
 
 def do_local_logout(request):

@@ -5,12 +5,12 @@
     </h4>
   </p>
 {% else %}
-  {% for auth_system in enabled_auth_systems %}
+  {% for auth_system in auth_systems %}
     {% ifnotequal auth_system "password" %}
       <p>
         <h4>
-          <a href="{{SECURE_URL_HOST}}{% url helios_auth.views.start system_name=auth_system %}?return_url={{return_url}}">
-            <img border="0" height="35" src="/static/helios_auth/login-icons/{{auth_system}}.png" alt="{{auth_system}}" /> {{auth_system|capfirst}}
+          <a href="{{SECURE_URL_HOST}}{% url helios_auth.views.start system_name=auth_system.name %}?return_url={{return_url}}">
+            <img border="0" height="35" src="/static/helios_auth/login-icons/{{auth_system.name}}.png" alt="{{auth_system}}" /> {{auth_system.display_name}}
           </a>
         </h4>
       </p>

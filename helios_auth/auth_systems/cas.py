@@ -36,6 +36,10 @@ LOGIN_MESSAGE = "Log in with my NetID"
 STATUS_UPDATES = False
 
 
+def get_name():
+    return 'CAS'
+
+
 def _get_service_url():
     # FIXME current URL
     from helios_auth.views import after

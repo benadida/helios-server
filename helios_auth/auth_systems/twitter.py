@@ -31,6 +31,10 @@ OAUTH_PARAMS = {
 }
 
 
+def get_name():
+    return 'Twitter'
+
+
 def _get_new_client(token=None, token_secret=None):
     if token:
         return client.LoginOAuthClient(API_KEY, API_SECRET, OAUTH_PARAMS, token, token_secret)

@@ -29,6 +29,10 @@ OPENID_ENDPOINT = 'https://www.google.com/accounts/o8/id'
 # RETURN_TO = 'http://localhost:8000/helios_auth/after'
 
 
+def get_name():
+    return 'Google'
+
+
 def get_auth_url(request, redirect_url):
     # FIXME?? TRUST_ROOT should be diff than return_url?
     request.session['google_redirect_url'] = redirect_url

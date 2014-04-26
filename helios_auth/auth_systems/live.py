@@ -22,6 +22,10 @@ STATUS_UPDATES = False
 from helios_auth import utils
 
 
+def get_name():
+    return 'Live'
+
+
 def live_url(url, params):
     if params:
         return "https://graph.facebook.com%s?%s" % (url, urllib.urlencode(params))

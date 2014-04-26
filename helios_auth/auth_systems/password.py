@@ -14,6 +14,10 @@ import logging
 STATUS_UPDATES = False
 
 
+def get_name():
+    return 'Password'
+
+
 def create_user(username, password, name=None):
     from helios_auth.models import User
 

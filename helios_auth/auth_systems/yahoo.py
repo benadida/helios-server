@@ -25,6 +25,10 @@ LOGIN_MESSAGE = "Log In with my Yahoo Account"
 OPENID_ENDPOINT = 'yahoo.com'
 
 
+def get_name():
+    return 'Yahoo'
+
+
 def get_auth_url(request, redirect_url):
     request.session['yahoo_redirect_url'] = redirect_url
     url = view_helpers.start_openid(

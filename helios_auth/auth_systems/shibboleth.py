@@ -8,8 +8,13 @@ from django.conf import settings
 
 import urllib
 
-LOGIN_MESSAGE = "Log In with my Shibboleth Account"
+LOGIN_MESSAGE = "Log In with my KU Leuven Account"
 STATUS_UPDATES = False
+
+
+def get_name():
+    return 'KU Leuven'
+
 
 def _get_service_url():
     # FIXME current URL
