@@ -113,7 +113,7 @@ def election_view(**checks):
                 from views import password_voter_login
                 if not user_can_see_election(request, election):
                     return_url = request.get_full_path()
-                    return HttpResponseRedirect("%s?%s" % (reverse(password_voter_login, args=[election.uuid]), urllib.urlencode({
+                    return HttpResponseRedirect(settings.SECURE_URL_HOST + "%s?%s" % (reverse(password_voter_login, args=[election.uuid]), urllib.urlencode({
                         'return_url': return_url
                     })))
 
