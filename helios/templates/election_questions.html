@@ -26,12 +26,9 @@
         CSRF_TOKEN = '{{csrf_token}}';
         DEFAULT_NUM_ANSWERS = 5;
 
-        function refresh(reload) {
+        function refresh() {
           $('#questions').processTemplate({'questions': QUESTIONS, 'admin_p': ADMIN_P});
           add_answers($('#answers'), DEFAULT_NUM_ANSWERS);
-
-          if (reload)
-            location.reload(true);
         }
 
         function save_questions(callback) {
@@ -72,7 +69,7 @@
         function question_add(form) {
           var new_q = get_question_from_form(form);
           QUESTIONS.push(new_q);
-          save_questions(refresh(true));
+          save_questions(refresh);
         }
 
         function question_remove(q_num) {
@@ -84,7 +81,7 @@
               new_questions.push(q);
             });
             QUESTIONS = new_questions;
-            save_questions(refresh(true));
+            save_questions(refresh);
           }
         }
 
@@ -118,7 +115,7 @@
         function question_update(q_num, form) {
           var new_q = get_question_from_form(form);
           QUESTIONS[q_num] = new_q;
-          save_questions(refresh(false));
+          save_questions(refresh());
         }
 
         function add_answer(el) {
@@ -136,7 +133,7 @@
           var temp_q = QUESTIONS[num];
           QUESTIONS[num] = QUESTIONS[num-1];
           QUESTIONS[num-1] = temp_q;
-          save_questions(refresh(false));
+          save_questions(refresh);
         }
 
         $(document).ready(function () {

@@ -164,11 +164,9 @@ def _election_vote_shortcut(request, election):
     """
     a hidden view behind the shortcut that performs the actual perm check
     """
-    vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode(
-        {'election_url': reverse(one_election, args=[election.uuid])}))
+    vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url': reverse(one_election, args=[election.uuid])}))
 
-    test_cookie_url = "%s?%s" % (
-        reverse(test_cookie), urllib.urlencode({'continue_url': vote_url}))
+    test_cookie_url = "%s?%s" % (settings.SECURE_URL_HOST + reverse(test_cookie), urllib.urlencode({'continue_url': vote_url}))
 
     return HttpResponseRedirect(test_cookie_url)
 
@@ -1090,8 +1088,7 @@ def one_election_cast_confirm(request, election):
 
     # if this user is a voter, prepare some stuff
     if voter:
-        vote = datatypes.LDObject.fromDict(
-            utils.from_json(encrypted_vote), type_hint='legacy/EncryptedVote').wrapped_obj
+        vote = datatypes.LDObject.fromDict(utils.from_json(encrypted_vote), type_hint='legacy/EncryptedVote').wrapped_obj
 
         # prepare the vote to cast
         cast_vote_params = {
