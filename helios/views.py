@@ -1017,7 +1017,7 @@ def password_voter_login(request, election):
         except:
             pass
 
-        login_box = auth_views.login_box_raw(request, return_url='/', auth_systems=auth_systems)
+        login_box = auth_views.login_box_raw(request, return_url=return_url, auth_systems=auth_systems)
 
         return render_template(request, 'password_voter_login', {
             'election': election,
