@@ -1009,7 +1009,9 @@ def password_voter_login(request, election):
         if user_can_see_election(request, election):
             return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
 
-        password_login_form = forms.VoterPasswordForm()
+        password_login_form = None
+        if 'password' in settings.AUTH_ENABLED_AUTH_SYSTEMS:
+            password_login_form = forms.VoterPasswordForm()
 
         auth_systems = copy.copy(settings.AUTH_ENABLED_AUTH_SYSTEMS)
         try:
