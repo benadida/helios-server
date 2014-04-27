@@ -495,8 +495,10 @@ BOOTH._after_ballot_encryption = function() {
         'election_hash' : BOOTH.election_hash,
         'election': BOOTH.election,
         'election_metadata': BOOTH.election_metadata});
-      BOOTH.show($('#seal_div'));
+      //BOOTH.show($('#seal_div'));
       BOOTH.encrypted_vote_json = null;
+
+      BOOTH.cast_ballot();
     };
 
     window.setTimeout(do_hash, 0);
