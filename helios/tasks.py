@@ -9,8 +9,8 @@ from celery.decorators import task
 
 from models import *
 from view_utils import render_template_raw
+from django.core.urlresolvers import reverse
 import signals
-
 import copy
 
 
@@ -106,7 +106,7 @@ Helios
 
         for trustee in trustees:
             if not trustee.helios_trustee:
-                url = settings.SECURE_URL_HOST + reverse(trustee_login, args=[election.short_name, trustee.email, trustee.secret])
+                url = settings.SECURE_URL_HOST + reverse(helios.views.trustee_login, args=[election.short_name, trustee.email, trustee.secret])
 
                 # send a note to trustee
                 body = """Dear %s,
