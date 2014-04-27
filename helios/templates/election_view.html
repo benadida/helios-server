@@ -110,8 +110,8 @@
                     {% else %}
                       {% for answer in question.answers %}
                         <tr>
-                          <td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td>
-                          <td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.count}}</td>
+                          <td style="padding-right:80px;{% if answer.winner %}font-weight: bold;{% endif %}">{{answer.answer}}</td>
+                          <td align="right" style="{% if answer.winner %}font-weight: bold;{% endif %}">{{answer.count}}</td>
                         </tr>
                       {% endfor %}
                     {% endif %}
