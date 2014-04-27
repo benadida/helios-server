@@ -3,8 +3,10 @@
 <head>
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8" />
   <title>Helios Voting Booth</title>
-  <link rel="stylesheet" type="text/css" href="css/booth.css" />
-  <link rel="stylesheet" type="text/css" href="css/forms.css" />
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400italic,700italic,400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" type="text/css" href="css/normalize.css" />
+  <link rel="stylesheet" type="text/css" href="css/voting_booth.css" />
+  <link rel="stylesheet" type="text/css" href="css/voting_booth_forms.css" />
 
 <!--
   <script language="javascript" src="js/jscrypto/class.js"></script>
@@ -28,7 +30,12 @@
 </head>
 <body>
 <div id="wrapper">
-<span style="float:right; padding: 7px 15px 5px 10px;">[<a href="javascript:BOOTH.exit();">exit</a>]</span>
+	<ul id="utility-nav">
+  <li class="help">
+    <a target="_new" href="mailto:{$T.election_metadata.help_email}?subject=help%20with%20election%20{$T.election.name}&body=I%20need%20help%20with%20election%20{$T.election.uuid}">help!</a>
+  </li>
+  <li class="exit"><a href="javascript:BOOTH.exit();">exit</a></li>
+	</ul>
 <div id="banner">Helios Voting Booth</div>
 <div id="content">
 
@@ -600,10 +607,12 @@ BOOTH.do_done = function() {
 
 </script>
 <div id="page">
-  <div id="progress_div" style="display:none; width: 500px; margin:auto;">
-      <table width="100%">
-          <tr><td id="progress_1">(1) Select</td><td id="progress_2">(2) Review</td><td id="progress_3">(3) Submit</td></tr>
-      </table>
+  <div id="progress_div">
+      <ul>
+          <li id="progress_1">(1) Select</li>
+					<li id="progress_2">(2) Confirm</li>
+					<li id="progress_3">(3) Submit</li>
+      </ul>
   </div>
   <div id="election_div" class="panel">
     <h3>Checking capabilities and loading election booth...</h3>

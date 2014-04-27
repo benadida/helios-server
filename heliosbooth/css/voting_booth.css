@@ -1,0 +1,190 @@
+/* line 3, ../sass/voting_booth.scss */
+html {
+  background: #1a243c;
+}
+
+/* line 7, ../sass/voting_booth.scss */
+body {
+  font-size: 16px;
+  line-height: 2em;
+  background: white;
+  padding: 0px;
+  margin: 0px;
+  font-family: 'Open Sans', sans-serif;
+}
+
+/* line 16, ../sass/voting_booth.scss */
+a {
+  color: #cf2029;
+  text-decoration: none;
+}
+/* line 20, ../sass/voting_booth.scss */
+a:hover {
+  text-decoration: underline;
+}
+
+/* line 25, ../sass/voting_booth.scss */
+#wrapper {
+  background: #293960;
+}
+
+/* line 29, ../sass/voting_booth.scss */
+#banner {
+  width: 100%;
+  color: white;
+  text-align: center;
+  background: #1a243c;
+  text-transform: uppercase;
+}
+@media all and (max-width: 400px) {
+  /* line 29, ../sass/voting_booth.scss */
+  #banner {
+    padding-top: 2em;
+  }
+}
+
+/* line 41, ../sass/voting_booth.scss */
+#utility-nav {
+  position: absolute;
+  top: 0;
+  right: 1em;
+  margin: 0;
+}
+/* line 47, ../sass/voting_booth.scss */
+#utility-nav li {
+  display: inline-block;
+  padding-left: 1em;
+}
+/* line 52, ../sass/voting_booth.scss */
+#utility-nav a {
+  color: #fff;
+  text-decoration: underline;
+}
+/* line 56, ../sass/voting_booth.scss */
+#utility-nav a:hover {
+  color: #cf2029;
+}
+
+/* line 62, ../sass/voting_booth.scss */
+#content {
+  background-color: white;
+  padding: 1em;
+  max-width: 750px;
+  margin: 0 auto;
+}
+
+/* line 69, ../sass/voting_booth.scss */
+#header {
+  text-align: center;
+  padding-bottom: 5px;
+}
+
+/* line 74, ../sass/voting_booth.scss */
+h1 {
+  font-size: 2em;
+  line-height: 1.6em;
+  font-weight: 700;
+}
+
+/* line 80, ../sass/voting_booth.scss */
+h2 {
+  font-size: 1.5em;
+  line-height: 100%;
+}
+
+/* line 85, ../sass/voting_booth.scss */
+h3 {
+  font-size: 1.2em;
+}
+
+/* line 89, ../sass/voting_booth.scss */
+#progress_div {
+  text-align: center;
+}
+
+/* line 93, ../sass/voting_booth.scss */
+#progress_div ul {
+  padding: 0;
+}
+/* line 96, ../sass/voting_booth.scss */
+#progress_div ul li {
+  display: inline-block;
+  padding: .5em 1em;
+  background: #cccccc;
+  color: #888888;
+}
+/* line 102, ../sass/voting_booth.scss */
+#progress_div ul li.selected {
+  background: #ffcc99;
+  color: black;
+  font-weight: 700;
+}
+
+/* line 110, ../sass/voting_booth.scss */
+#confirm_div p {
+  padding: 0.5em 1em;
+  background-color: #eeeeee;
+}
+/* line 114, ../sass/voting_booth.scss */
+#confirm_div p .choice {
+  font-weight: 700;
+}
+/* line 118, ../sass/voting_booth.scss */
+#confirm_div p .under-vote {
+  font-style: italic;
+}
+
+/* line 123, ../sass/voting_booth.scss */
+.encrypted-vote-hash {
+  text-align: center;
+  padding: 1em;
+  background: #eee;
+  word-wrap: break-word;
+  margin: 0 2em;
+  display: block;
+}
+/* line 131, ../sass/voting_booth.scss */
+.encrypted-vote-hash .election_hash {
+  font-weight: 700;
+}
+
+/* line 136, ../sass/voting_booth.scss */
+.election_hash {
+  font-family: courier;
+}
+
+/* line 140, ../sass/voting_booth.scss */
+#footer {
+  background-color: #1a243c;
+  min-height: 200px;
+  text-align: center;
+  width: 100%;
+  color: white;
+}
+/* line 147, ../sass/voting_booth.scss */
+#footer .fingerprint {
+  word-wrap: break-word;
+  margin: 0 2em;
+  display: block;
+}
+/* line 153, ../sass/voting_booth.scss */
+#footer a {
+  color: #fff;
+  text-decoration: underline;
+}
+/* line 157, ../sass/voting_booth.scss */
+#footer a:hover {
+  color: #cf2029;
+}
+
+/* line 163, ../sass/voting_booth.scss */
+.social-links {
+  margin: 0 auto;
+}
+
+/* line 167, ../sass/voting_booth.scss */
+.audit-info a {
+  background: lightyellow;
+  padding: 0.5em 1em;
+  border: solid 1px #ccc;
+}

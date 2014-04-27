@@ -1,0 +1,171 @@
+@import "base";
+
+html {
+	background: $footer-bg;
+}
+
+body {
+  font-size: 16px;
+	line-height: 2em;
+  background: white;
+  padding: 0px;
+  margin: 0px;
+	font-family: 'Open Sans', sans-serif;
+}
+
+a {
+	color: $button;
+	text-decoration: none;
+	
+	&:hover {
+		text-decoration: underline;
+	}
+}
+
+#wrapper {
+  background: $wrapper-bg;
+}
+
+#banner {
+  width: 100%;
+	color: $banner-text;
+  text-align: center;
+  background: $banner-bg;
+	text-transform: uppercase;
+	
+	@media #{"all and (max-width: 400px)"} {
+		padding-top: 2em;
+	}
+}
+
+#utility-nav {
+	position: absolute;
+	top: 0;
+	right: 1em;
+	margin: 0;
+	
+	li {
+		display: inline-block;
+		padding-left: 1em;
+	}
+	
+	a {
+		color: #fff;
+		text-decoration: underline;
+		
+		&:hover {
+			color: $button;
+		}
+	}
+}
+
+#content {
+	background-color: $content-bg;
+  padding: 1em;
+	max-width: 750px;
+	margin: 0 auto;
+}
+ 
+#header {
+  text-align: center;
+  padding-bottom: 5px;
+}
+
+h1 {
+  font-size: 2em;
+	line-height: 1.6em;
+	font-weight: 700;
+}
+
+h2 {
+  font-size: 1.5em;
+  line-height: 100%;
+}
+
+h3 {
+	font-size: 1.2em;
+}
+
+#progress_div {
+  text-align: center;
+}
+
+#progress_div ul {
+	padding: 0;
+	
+	li {
+		display: inline-block;
+		padding: .5em 1em;
+	  background: $inactive-bg;
+	  color: $inactive-text;
+
+		&.selected {
+		  background: $active-bg;
+			color: $active-text;
+		  font-weight: 700;
+		}
+	}
+}
+
+#confirm_div p {
+  padding: 0.5em 1em;
+	background-color: $question-bg;
+
+	.choice {
+	  font-weight: 700;
+	}
+	
+	.under-vote {
+		font-style: italic;
+	}
+}
+
+.encrypted-vote-hash {
+	text-align: center;
+	padding: 1em;
+	background: #eee;
+	word-wrap: break-word;
+	margin: 0 2em;
+	display: block;
+	
+	.election_hash {
+		font-weight: 700;
+	}
+}
+
+.election_hash {
+  font-family: courier;
+}
+
+#footer {
+  background-color: $footer-bg;
+	min-height: 200px;
+	text-align: center;
+  width: 100%;
+	color: $footer-text;
+	
+	.fingerprint {
+		word-wrap: break-word;
+		margin: 0 2em;
+		display: block;
+	}
+	
+	a {
+		color: #fff;
+		text-decoration: underline;
+		
+		&:hover {
+			color: $button;
+		}
+	}
+}
+
+.social-links {
+	margin: 0 auto;
+}
+
+.audit-info a {
+	background: lightyellow;
+	padding: 0.5em 1em;
+	border: solid 1px #ccc;
+}

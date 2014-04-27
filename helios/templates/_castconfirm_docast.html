@@ -16,26 +16,24 @@
 <br />
 {% endif %}
 
-You are logged in as <u>{{voter.display_html_big|safe}}</u><br /><br />
-
-    <button type="submit" class="large">CAST this ballot</button>
-    <span style="font-size:0.8em;"><br />You can cast as many ballots as you want.<br />Only the last one counts.</span>
+    <div class="button-wrapper"><button type="submit" class="medium">I am <u>{{voter.display_html_big|safe}}</u>, cast this ballot</button></div>
+    <br />You can cast as many ballots as you want.<br />Only the last one counts.
 </form>
 
 <p>
     <button class="tiny" onclick="document.location='./view';">cancel</button><br />
-    <span style="font-size:0.8em;">If you cancel now, your ballot will <em>NOT</em> be recorded.<br />
-    You can start the voting process over again, of course.</span>
+   If you cancel now, your ballot will <em>NOT</em> be recorded.<br />
+   You can start the voting process over again, of course.
 </p>
 
 </div>
   {% else %}
-<p style="font-size:1.4em;">
+<p>
   voting has stopped, sorry.
 </p>
   {% endif %}
 {% else %}
-<p style="font-size:1.4em;">
+<p>
   voting has not yet begun, sorry.
 </p>
 {% endif %}

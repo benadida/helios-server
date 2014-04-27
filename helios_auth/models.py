@@ -158,8 +158,8 @@ class User(models.Model):
 
   @property
   def display_html_small(self):
-    return self._display_html('small')
+    return self.pretty_name
 
   @property
   def display_html_big(self):
-    return self._display_html('big')
+    return self.pretty_name
