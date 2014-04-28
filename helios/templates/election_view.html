@@ -79,7 +79,7 @@
           </p>
         {% endif %}
 
-        {% if election.publish_tally %}
+        {% if admin_p or election.publish_tally %}
           <h3>Tally</h3>
 
           {% for question in election.pretty_result %}
