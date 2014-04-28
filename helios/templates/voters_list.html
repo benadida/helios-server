@@ -151,7 +151,7 @@
 {% if election.use_voter_aliases %}
 <td>{{voter.alias}}</td>
 {% endif %}
-<td><tt style="font-size: 1.4em;;">{% if voter.vote_hash %}{{voter.vote_hash}} <span style="font-size:0.8em;">[<a href="{% url helios.views.castvote_shortcut vote_tinyhash=voter.vote_tinyhash %}">{% trans "view" %}</a>]</span>{% else %}&mdash;{% endif %}</tt></td>
+<td><tt style="font-size: 1.4em;;">{% if voter.vote_hash %}{{voter.vote_hash}}{% else %}&mdash;{% endif %}</tt></td>
 </tr>
 {% endfor %}
 </table>
