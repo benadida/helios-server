@@ -1218,7 +1218,7 @@ def voters_upload(request, election):
 
         return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters, 'email_problem': email_problem})
       else:
-        return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_upload, args=[election.uuid]), urllib.urlencode({'e':'no voter file specified, try again'})))
+        return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_upload, args=[election.uuid]), urllib.urlencode({'e':_('no voter file specified, try again')})))
 
 @election_admin()
 def voters_upload_cancel(request, election):
