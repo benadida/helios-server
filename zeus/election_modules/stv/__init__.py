@@ -62,7 +62,6 @@ class StvElection(ElectionModuleBase):
             if formset.is_valid():
                 questions_data = []
 
-                print formset.cleaned_data
                 for question in formset.cleaned_data:
                     if not question:
                         continue
@@ -147,14 +146,17 @@ class StvElection(ElectionModuleBase):
             constituencies[str(count_id)] = cand_and_dep[1]
             count_id += 1
 
-        seats = 2 # TODO: self.poll.election.stv_seats ???
-        droop = False # TODO: what is this ?
+        seats = self.poll.eligibles_count
+        droop = False
         rnd_gen = None # TODO: should be generated and stored on poll freeze
-        quota_limit = 0 # TODO: self.poll.election.departments_limit ???
-
+        quota_limit = 0 
+        if self.poll.has_department_limit:
+            quota_limit = 2 #FIXME (not sure if 2 is correct)
         ballots_data = self.poll.result[0]
         ballots = []
         for ballot in ballots_data:
+            if not ballot:
+                continue
             ballot = to_absolute_answers(gamma_decode(ballot, cands_count,cands_count),
                                          cands_count)
             ballot = [str(i) for i in ballot]
