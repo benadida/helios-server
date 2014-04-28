@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-24 16:02+0300\n"
+"POT-Creation-Date: 2014-04-28 15:37+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -58,6 +58,21 @@ msgstr "Όνομα συνδυασμού"
 
 msgid "Scores"
 msgstr "Βαθμοί"
+
+msgid "Set the eligibles count of the election"
+msgstr "το πλήθος των εκλεγόμενων (6 ή 8 ανάλογα με το μέγεθος της σχολής)"
+
+msgid "Eligibles count"
+msgstr "Πλήθος εκλεγόμενων"
+
+msgid "4009/2011 (A' 195)"
+msgstr ""
+"Επιλέξτε εάν εφαρμόζεται ο περιορισμός του τέταρτου εδαφίου τηςπερίπτωσης β΄ "
+"της παραγράφου 4 του άρθρου 8 του νόμου 4009/2011 (Α΄ 195) όπως ισχύει με "
+"την τροποποίηση του άρθρου 47 του ν. 4025/2011 (Α΄228)"
+
+msgid "Has department limit"
+msgstr "Τα εσωτερικά μέλη ανά σχολή δεν μπορούν να υπερβαίνουν τα δύο"
 
 msgid "Username"
 msgstr "Όνομα χρήστη"
@@ -209,7 +224,6 @@ msgstr "Προσθήκη ερωτήσεων στην ψηφοφορία"
 msgid "Too many choices"
 msgstr "Περισσότερες επιλογές από το επιτρεπτό"
 
-#, python-brace-format
 msgid "Question '{0}' requires at least {1} choices."
 msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
 
@@ -228,7 +242,6 @@ msgstr "Ψηφοφορία με βαθμολογία"
 msgid "Manage questions"
 msgstr "Διαχείριση ερωτήσεων"
 
-#, python-brace-format
 msgid "Please assign the remaining choices: {0}"
 msgstr "Παρακαλούμε συμπληρώστε τις υπόλοιπες επιλογές: {0}"
 
