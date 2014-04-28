@@ -22,8 +22,8 @@
 <form method="post" action="" onsubmit="alert('ok, tally has begun')" class="pretty">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
-<input class="pretty" type="submit" value="{% trans "compute encrypted tally!" %}" />
-<button onclick="document.location='./view'; return false;">{% trans "never mind" %}</button>
+<input class="btn btn-primary" type="submit" value="{% trans "compute encrypted tally!" %}" />
+<button class="btn btn-danger" onclick="document.location='./view'; return false;">{% trans "never mind" %}</button>
 </form>
 {% else %}
 <p>
