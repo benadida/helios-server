@@ -3,14 +3,12 @@
 {% block title %}Compute Encryted Tally for {{election.name}}{% endblock %}
 
 {% block content %}
-  <h2 class="title">Compute Tally for Election: {{election.name}}</h2>
+  <h2 class="title">{% trans "Compute Tally for Election:" %} {{election.name}}</h2>
 
 <div id="instructions">
 {% if election.num_cast_votes %}
 <p>
-{% blocktrans %}
-    You are about to compute the encrypted tally for election <b>{{election.name}}</b>.
-{% endblocktrans %}
+  {% trans "You are about to compute the encrypted tally for election" %} <b>{{election.name}}</b>.
 </p>
 
 <p>
