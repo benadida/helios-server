@@ -44,7 +44,7 @@ urlpatterns = patterns('',
     (r'^/result$', one_election_result),
     (r'^/result_proof$', one_election_result_proof),
     # (r'^/bboard$', one_election_bboard),
-    (r'^/audited-ballots/$', one_election_audited_ballots),
+#    (r'^/audited-ballots/$', one_election_audited_ballots),
 
     # get randomness
     (r'^/get-randomness$', get_randomness),

@@ -1,21 +1,3 @@
-{#if $T.election_metadata.use_advanced_audit_features}
-<div style="float: right; margin-left: 20px; padding: 0px 10px 10px 10px; border: 1px solid #ddd; width:200px;" class="bg-success">
-<h4><a onclick="$('#auditbody').slideToggle(250);" href="#">Auditar</a> <span style="font-size: 0.8em; color: #444">[opcional]</span></h4>
-<div id="auditbody" style="display:none;">
-<p>
-<!--If you choose, you can audit your ballot and reveal how your choices were encrypted. -->
-Se você quiser, você pode auditar sua cédula e verificar se ela contém sua escolha.
-</p>
-<p>
-<!--You will then be guided to re-encrypt your choices for final casting. -->
-Após fazer isso, você deverá cifrar seu voto novamente para depósito final na urna.
-</p>
-<input type="button" value="Verificar Cédula" onclick="BOOTH.audit_ballot();" class="btn-primary" />
-</p>
-</div>
-</div>
-{#/if}
-
 <!--<h3>Your ballot is ready to be submitted</h3> -->
 <h3>Sua cédula está cifrada e pronta para ser depositada na urna.</h3>
 

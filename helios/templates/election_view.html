@@ -265,54 +265,8 @@ Your voter alias is {{voter.alias}}.
 {% endif %}
 
 {% endif %}
-
-
-<div style="padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round bg-success">
-<a href="#" onclick="$('#auditbody').slideToggle(250);">{% trans "Audit Info" %}</a>
-<div id="auditbody" style="display:none;">
 <br />{% trans "Election URL:" %}<br />
-<tt style="font-size: 1.2em;"><a href="{{election.url}}">{{election.url}}</a></tt>
-
-{% if election.frozen_at %}
-<br />
+<a href="{{election.url}}">{{election.url}}</a>
 <br />{% trans "Election Fingerprint:" %}<br />
-<tt style="font-size: 1.3em; font-weight: bold;">{{election.hash}}</tt>
-
-
-{% if votes %}
-<p>{% trans "Your smart ballot tracker:" %}<br />
-<tt style="font-size:14pt; font-weight: bold;">{{votes.0.vote_hash}}</tt>
-</p>
-{% endif %}
-
-<p style="font-size: 1.3em;">
-<a href="{% url helios.views.voters_list_pretty election.uuid %}">{% trans "Ballot Tracking Center" %}</a> &nbsp;| &nbsp;
-<a href="{% url helios.views.one_election_audited_ballots election.uuid %}">{% trans "Audited Ballots" %}</a>
-</p>
-
-{% endif %}
-
-{% if not election.voting_has_started %}
-<p style="font-size: 1.2em;">
-  <a href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">{% trans "preview booth" %}</a>
-</p>
-{% endif %}  
-
-{% if election.voting_has_stopped %}
-<p style="font-size: 1.2em;">
-{% if election.result %}
-{% trans "verify" %} <a target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">{% trans "election tally" %}</a>.
-{% endif %}
-
-{% trans "review the" %} <a href="{{vote_url}}">{% trans "voting booth" %}</a>.
-</p>
-
-{% endif %}
-
-</div>
-</div>
-
-
-
-
+<label style="font-size: 1.3em; font-weight: bold;">{{election.hash}}</label>
 {% endblock %}
