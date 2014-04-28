@@ -58,8 +58,11 @@ class StvElection(ElectionModuleBase):
 
         if request.method == 'POST':
             formset = questions_formset(request.POST, initial=initial)
+            
             if formset.is_valid():
                 questions_data = []
+
+                print formset.cleaned_data
                 for question in formset.cleaned_data:
                     if not question:
                         continue
@@ -88,6 +91,8 @@ class StvElection(ElectionModuleBase):
                 poll.questions_data = questions_data
                 poll.update_answers()
                 poll.logger.info("Poll ballot updated")
+                poll.eligibles_count = int(formset.cleaned_data[0]['eligibles'])
+                poll.has_department_limit = formset.cleaned_data[0]['department_limit']
                 poll.save()
 
                 url = poll_reverse(poll, 'questions')

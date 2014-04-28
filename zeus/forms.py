@@ -340,12 +340,17 @@ class StvForm(QuestionBaseForm):
                                               label=('Candidate'))
             vals = [(i,i) for i in range(2,9)]
             elig_help_text = _("Set the eligibles count of the election")
-            self.fields.insert(0,_("Eligibles count"),forms.ChoiceField(required=True,
+            label_text = _("Eligibles count") 
+            self.fields.insert(0, 'eligibles', forms.ChoiceField(
+                                                       label=label_text,
                                                        choices=vals,
                                                        help_text=elig_help_text))
             limit_help_text = _("4009/2011 (A' 195)")
-            self.fields.insert(1,_("Has department limit"),
-                               forms.BooleanField(help_text=limit_help_text))
+            limit_label = _("Has department limit") 
+            self.fields.insert(1,'department_limit',
+                               forms.BooleanField(help_text=limit_help_text,
+                                                  label = limit_label,
+                                                  required=False))
 
             #self.fields[field_key].widget.attrs = {'class': 'answer_input'}
     min_answers = None
