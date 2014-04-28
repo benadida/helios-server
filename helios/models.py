@@ -655,6 +655,11 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
   result = LDObjectField(type_hint = 'phoebus/Result',
                          null=True)
   stv_results = JSONField(null=True)
+  
+  eligibles_count = models.PositiveIntegerField(default=5)
+  has_department_limit = models.BooleanField(default=0)
+  
+  
   voters_last_notified_at = models.DateTimeField(null=True, default=None)
 
   objects = PollManager()

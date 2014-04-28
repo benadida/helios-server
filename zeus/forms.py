@@ -320,6 +320,7 @@ class StvForm(QuestionBaseForm):
             DEPARTMENT_CHOICES.append((dep.strip(),dep.strip()))
 
         super(StvForm, self).__init__(*args, **kwargs)
+
         self.fields.pop('question')
         answers = len(filter(lambda k: k.startswith("%s-answer_" %
                                                 self.prefix), self.data)) / 2
@@ -337,9 +338,12 @@ class StvForm(QuestionBaseForm):
                                               required=True,
                                               widget=CandidateWidget(departments=DEPARTMENT_CHOICES),
                                               label=('Candidate'))
+            vals = [(i,i) for i in range(2,9)]
+            self.fields.insert(0,'eligibles',forms.ChoiceField(required=True,
+                                                       choices=vals))
+            self.fields.insert(1,'limit',forms.BooleanField())
 
             #self.fields[field_key].widget.attrs = {'class': 'answer_input'}
-    #remove fields that aren't needed from base form
     min_answers = None
     max_answers = None
 
