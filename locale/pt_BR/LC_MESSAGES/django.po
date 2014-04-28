@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-04-25 13:50-0300\n"
-"PO-Revision-Date: 2014-04-25 17:24-0300\n"
+"PO-Revision-Date: 2014-04-28 09:36-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1920,11 +1920,11 @@ msgstr "buscar"
 
 #: helios/templates/voters_list.html:72 helios/templates/voters_manage.html:9
 msgid "bulk upload voters"
-msgstr "carregar eleitores em massa"
+msgstr "carregar eleitores de arquivo .csv"
 
 #: helios/templates/voters_list.html:77
 msgid "Prior Bulk Uploads:"
-msgstr "Carregamentos em Massa Anteriores:"
+msgstr "Arquivos .csv carregados anteriormente:"
 
 #: helios/templates/voters_list.html:86
 msgid "bytes, at"
@@ -1948,7 +1948,7 @@ msgstr "ainda não foi processado"
 
 #: helios/templates/voters_list.html:110
 msgid "cast vote"
-msgstr "voto(s) depositado(s)"
+msgstr "voto depositado(s)"
 
 #: helios/templates/voters_list.html:112
 msgid "no votes yet"
