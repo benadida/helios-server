@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-04-25 13:50-0300\n"
-"PO-Revision-Date: 2014-04-25 14:20-0300\n"
+"PO-Revision-Date: 2014-04-25 17:24-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1259,11 +1259,11 @@ msgstr ""
 
 #: helios/templates/election_view.html:236
 msgid "voting is not yet open"
-msgstr "votação ainda não está aberta"
+msgstr "A votação ainda não está aberta."
 
 #: helios/templates/election_view.html:243
 msgid "You are registered to vote in this"
-msgstr "Você está apto a votar"
+msgstr "Você está apto a votar nesta"
 
 #: helios/templates/election_view.html:245
 #, python-format
@@ -1281,7 +1281,7 @@ msgstr "Você está apto a votar nessa eleição."
 #: helios/templates/election_view.html:258
 #: helios/templates/election_view.html:262
 msgid "You are <em>not eligible</em> to vote in this"
-msgstr "Você <em>não está apto</em> a votar"
+msgstr "Você <em>não está apto</em> a votar nesta"
 
 #: helios/templates/election_view.html:274
 msgid "This election is open to:"
