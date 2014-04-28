@@ -85,8 +85,10 @@ voter_id = '{{voter.voter_id}}';
   {% endblocktrans %}
   </div>
 <script language="javascript">
+{% if voter %}
   $(document).ready(function() {
     $('div#send_to').hide();
   });
+{% endif %}
 </script>
 {% endblock %}
