@@ -46,13 +46,13 @@ voter_id = '{{voter.voter_id}}';
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     <input type="hidden" name="template" value="{{template}}" />
     <input type="hidden" name="voter_id" value="{{voter.voter_login_id}}" />
-    <div class="form-group {% if form.subject.errors %}has-error{% endif %}">
-    <label for="id_subject">{% trans "Subject" %}</label>
+    <div class="form-group {% if email_form.subject.errors %}has-error{% endif %}">
+    <label for="id_subject">{% if email_form.fields.subject.required %}*{% endif %}{% trans "Subject" %}</label>
     <input type="text" name="subject" class="form-control" id="id_subject" placeholder="{% trans "Subject" %}">
 
     {{email_form.subject.errors}}
     </div> 
-    <div class="form-group {% if form.body.errors %}has-error{% endif %}">
+    <div class="form-group {% if email_form.body.errors %}has-error{% endif %}">
     <label for="body">{% trans "Body" %}</label>
     <textarea name="body" class="form-control" id="id_body" rows="4" cols="50" placeholder="{% trans "Body" %}">
     </textarea>
@@ -60,7 +60,7 @@ voter_id = '{{voter.voter_id}}';
     {{email_form.body.errors}}
     </div> 
 
-    <div id="send_to" class="form-group {% if form.send_to.errors %}has-error{% endif %}">
+    <div id="send_to" class="form-group {% if email_form.send_to.errors %}has-error{% endif %}">
     <label for="send_to">{% trans "Send To" %}</label>
     {{email_form.send_to}}
     {{email_form.send_to.errors}}

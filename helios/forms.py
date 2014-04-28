@@ -39,7 +39,7 @@ class ElectionTimesForm(forms.Form):
 
   
 class EmailVotersForm(forms.Form):
-  subject = forms.CharField(max_length=80)
+  subject = forms.CharField(max_length=80, required=True)
   body = forms.CharField(max_length=4000, widget=forms.Textarea)
   send_to = forms.ChoiceField(label=_("Send To"), initial="all", choices= [('all', _('all voters')), ('voted', _('voters who have cast a ballot')), ('not-voted', _('voters who have not yet cast a ballot'))])
 
