@@ -2,6 +2,8 @@
 {% load i18n %}
 {% block title %}{% trans "Voters" %} &amp; {% trans "Ballot Tracking Center for" %} {{election.name}}{% endblock %}
 {% block content %}
+<div class="row">
+<div class="col-md-12">
   <h3 class="title">{{election.name}} &mdash; {% trans "Voters and Ballot Tracking Center" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
 
 <p>
@@ -13,14 +15,12 @@
 <em>{% trans "Only the voters listed here" %}</em>.
 {% endif %}
 </p>
-<br />
 {% if admin_p and not election.frozen_at %}
 {% if election.private_p %}
 <em>{% blocktrans %}Your election is marked private, which means you cannot open registration up more widely{% endblocktrans %}</em>.<br />
 {% else %}
 {% trans "You can change this setting:" %}
 <br />
-<div class="col-md-4">
 <form method="post" role="form" class="form-horizontal" action="{% url helios.views.voters_eligibility election.uuid %}">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 <div class="form-group">
@@ -61,9 +61,11 @@
 {% endif %}
 </p>
 {% endif %}
-</div>
+</div> <!-- end column -->
+</div> <!-- end row -->
+
 <div class="row">
-<div class="col-md-8">
+<div class="col-md-12">
 {% if admin_p %}
 <!-- Add a Voter: WORK HERE-->
 
@@ -159,5 +161,5 @@
 <em>no voters.</em>
 {% endif %}
 </div>
-</div>
+</div> <!-- end row  -->
 {% endblock %}
