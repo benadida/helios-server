@@ -273,34 +273,6 @@ class ScoresForm(QuestionBaseForm):
                                        choices=SCORES_CHOICES,
                                        label=_('Scores'))
 
-class UpperHtml(forms.TextInput):
-    #Answer widget broken to 2 parts
-    #to include 2 form objects
-    def render(self, *args, **kwargs):
-        html = super(UpperHtml, self).render(*args, **kwargs)
-        html = u"""
-        <div class="row">
-        <div class="columns eleven">
-        %s
-        """ % html
-        return mark_safe(html)
-
-class BottomHtml(forms.widgets.Select):
-
-    def render(self, *args, **kwargs):
-        html = super(BottomHtml, self).render(*args, **kwargs)
-        html = u"""
-        %s
-        </div>
-        <div class="columns one">
-        <a href="#" style="font-weight: bold; color:red"
-        class="remove_answer">X</a>
-        </div>
-        </div>
-        """ % html
-        return mark_safe(html)
-
-
 class CandidateWidget(MultiWidget):
 
     def __init__(self, *args, **kwargs):
