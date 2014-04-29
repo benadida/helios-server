@@ -18,11 +18,8 @@
 {% if poll.election.election_module == "stv" %}
     {%trans "Eligibles count"%}: {{poll.eligibles_count}}
     <br/>
-    {%trans "Has department limit" %}: 
         {% if poll.has_department_limit %}
-            {%trans "Yes"%}
-        {% else %}
-            {%trans "No"%}
+            {%trans "Has department limit" %}: 
         {% endif %}
 {% endif %}
     {% for q in poll.questions_data %}
