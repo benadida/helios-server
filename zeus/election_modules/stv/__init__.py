@@ -18,7 +18,7 @@ from zeus.core import gamma_decode, to_absolute_answers
 @election_module
 class StvElection(ElectionModuleBase):
     module_id = 'stv'
-    description = _('Single Transferable Vote Election')
+    description = _('Single transferable vote election')
     messages = {
         'answer_title': _('Candidate'),
         'question_title': _('Candidates List')
