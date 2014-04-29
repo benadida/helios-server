@@ -528,20 +528,19 @@ def trustees_freeze(request, election):
             election.frozen_trustee_list = True
             election.save()
 
-            if election.has_helios_trustee():
-                helios_trustee = election.get_helios_trustee()
-
-                if election.trustees_added_encrypted_shares():
+            if election.trustees_added_encrypted_shares():
+                if election.has_helios_trustee():
+                    helios_trustee = election.get_helios_trustee()
                     helios_trustee = election.get_helios_trustee()
                     helios_trustee.add_encrypted_shares(election)
                     helios_trustee.save()
 
-                    election.encrypted_shares_uploaded = True
-                    election.save()
-
                     if helios_trustee.public_key == None and helios_trustee.secret_key == None:
                         helios_trustee.calculate_key(election)
                         helios_trustee.save()
+
+                election.encrypted_shares_uploaded = True
+                election.save()
 
             if election.use_threshold:
                 for trustee in trustees:
@@ -832,18 +831,18 @@ def trustee_upload_encrypted_shares(request, election, trustee):
         trustee.added_encrypted_shares = True
         trustee.save()
 
-    if election.has_helios_trustee():
-        if election.trustees_added_encrypted_shares():
+    if election.trustees_added_encrypted_shares():
+        if election.has_helios_trustee():
             helios_trustee = election.get_helios_trustee()
             helios_trustee.add_encrypted_shares(election)
             helios_trustee.save()
 
-            election.encrypted_shares_uploaded = True
-            election.save()
-
             if helios_trustee.public_key == None and helios_trustee.secret_key == None:
                 helios_trustee.calculate_key(election)
                 helios_trustee.save()
+
+        election.encrypted_shares_uploaded = True
+        election.save()
 
     # send a note to admin
     body = """Trustee %s <%s> uploaded his/her encrypted shares.

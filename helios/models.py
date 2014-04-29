@@ -388,7 +388,11 @@ class Election(HeliosModel):
         """
         can we publish the tally?
         """
-        return self.result and (self.publish_tally_at and datetime.datetime.now() >= self.publish_tally_at)
+        publish_tally_at = True
+        if self.publish_tally_at:
+            publish_tally_at = datetime.datetime.now() >= self.publish_tally_at
+
+        return self.result and publish_tally_at
 
     @property
     def issues_before_freeze(self):

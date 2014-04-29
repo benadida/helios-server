@@ -15,10 +15,10 @@
     <div class="large-12 columns">
       <div id="q_view_{$T.question$index}">
         <div class="row">
-          <div class="large-6 columns">
-            <i>Select between {$T.question.min} and {#if $T.question.max != null}{$T.question.max}{#else}unlimited{#/if} answers.</i>
+          <div class="large-8 columns">
+            <i>Voters can select between {$T.question.min} and {#if $T.question.max != null}{$T.question.max}{#else}unlimited{#/if} answers.</i>
           </div>
-          <div class="large-6 columns">
+          <div class="large-4 columns">
             <i>Result Type: {$T.question.result_type}</i>
           </div>
         </div>
@@ -42,9 +42,9 @@
             <input type="hidden" name="choice_type" value="approval" />
 
             <div class="row">
-              <div class="large-6 columns">
+              <div class="large-8 columns">
                 <h5>
-                  Select between
+                  Voters can select between
 
                   <select name="min" style="margin: 0 4px;">
                     <option selected>0</option>
@@ -101,7 +101,7 @@
                 </h5>
               </div>
 
-              <div class="large-6 columns">
+              <div class="large-4 columns">
                 <h5>
                   Result Type:
 
@@ -158,9 +158,9 @@
       <input type="hidden" name="choice_type" value="approval" />
 
       <div class="row">
-        <div class="large-6 columns">
+        <div class="large-8 columns">
           <h5>
-            Select between
+            Voters can select between
 
             <select name="min" style="margin: 0 4px;">
               <option selected>0</option>
@@ -217,7 +217,7 @@
           </h5>
         </div>
 
-        <div class="large-6 columns">
+        <div class="large-4 columns">
           <h5>
             Result Type:
 

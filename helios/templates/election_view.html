@@ -79,7 +79,7 @@
           </p>
         {% endif %}
 
-        {% if election.publish_tally %}
+        {% if admin_p or election.publish_tally %}
           <h3>Tally</h3>
 
           {% for question in election.pretty_result %}
@@ -110,8 +110,8 @@
                     {% else %}
                       {% for answer in question.answers %}
                         <tr>
-                          <td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td>
-                          <td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.count}}</td>
+                          <td style="padding-right:80px;{% if answer.winner %}font-weight: bold;{% endif %}">{{answer.answer}}</td>
+                          <td align="right" style="{% if answer.winner %}font-weight: bold;{% endif %}">{{answer.count}}</td>
                         </tr>
                       {% endfor %}
                     {% endif %}
