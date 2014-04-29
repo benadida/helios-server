@@ -87,15 +87,12 @@
       <table>
         <thead>
           <tr>
-            <td width="25%">Trustee</td>
+            <td width="30%">Trustee</td>
             {% if not election.use_threshold %}
-              <td width="50%">Public Key</td>
+              <td>Public Key</td>
             {% else %}
-              <td width="25%">Public Key for Signing</td>
-              <td width="25%">Public Key for Encryption</td>
-            {% endif %}
-            {% if election.encrypted_tally %}
-              <td>Tally Status</td>
+              <td>Public Key for Signing</td>
+              <td>Public Key for Encryption</td>
             {% endif %}
           </tr>
         </thead>
@@ -148,15 +145,6 @@
                   {% endif %}
                 </td>
               {% endif %}
-              {% if election.encrypted_tally %}
-                <td>
-                  {% if t.decryption_factors %}
-                    <i>Recorded</i>
-                  {% else %}
-                    <i>Waiting</i>
-                  {% endif %}
-                </td>
-              {% endif %}
             </tr>
           {% empty %}
             <tr>
@@ -179,7 +167,7 @@
           <table>
             <thead>
               <tr>
-                <td width="25%">Trustee</td>
+                <td width="30%">Trustee</td>
                 <td>Status</td>
               </tr>
             </thead>
@@ -215,7 +203,7 @@
           <table>
             <thead>
               <tr>
-                <td width="25%">Trustee</td>
+                <td width="30%">Trustee</td>
                 <td>Public Key</td>
               </tr>
             </thead>
@@ -238,6 +226,36 @@
             </tbody>
           </table>
         {% endif %}
+      {% endif %}
+
+      {% if election.encrypted_tally %}
+        <h3>Tally Status</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <td width="30%">Trustee</td>
+              <td>Tally Status</td>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for t in trustees %}
+              <tr>
+                <td>
+                  {% if admin_p %}<span title="{{t.email}}">{% endif %}{{t.name}}{% if admin_p %}</span>{% endif %}
+                </td>
+                <td>
+                  {% if t.decryption_factors %}
+                    <i>Recorded</i>
+                  {% else %}
+                    <i>Waiting</i>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       {% endif %}
     </div>
   </div>
