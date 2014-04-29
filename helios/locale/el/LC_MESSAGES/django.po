@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-28 15:37+0300\n"
+"POT-Creation-Date: 2014-04-29 14:23+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -482,6 +482,12 @@ msgstr "απόδειξη υποβολής"
 
 msgid "for your vote has been sent to your email address"
 msgstr "για την ψήφο σας έχει σταλεί με email"
+
+msgid "Eligibles count"
+msgstr "Πλήθος εκλεγόμενων"
+
+msgid "Has department limit"
+msgstr "Τα εσωτερικά μέλη ανά σχολή δεν μπορούν να υπερβαίνουν τα δύο"
 
 msgid "Manage questions"
 msgstr "Διαχείριση ερωτήσεων"
@@ -1153,12 +1159,8 @@ msgstr "ψηφοδέλτια"
 msgid "Total score"
 msgstr "Σύνολο ψήφων"
 
-#, fuzzy
-msgid "Position"
-msgstr "Ίδρυμα"
-
-msgid "Candidate"
-msgstr ""
+msgid "Elected"
+msgstr "Εκλεγμένοι"
 
 msgid "Vote fingerprint"
 msgstr "Αποτύπωμα ψήφου"
@@ -1316,6 +1318,10 @@ msgid ""
 "    officials.\n"
 "    "
 msgstr ""
+
+#, fuzzy
+#~ msgid "Position"
+#~ msgstr "Ίδρυμα"
 
 #~ msgid "Departments for STV elections"
 #~ msgstr "Τμήματα για για εκλογές ταξινομικής ψήφου"
