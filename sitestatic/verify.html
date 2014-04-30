@@ -204,7 +204,7 @@ function load_election_and_ballots(election_url) {
                            result_append("chave pública da eleição CORRETAMENTE FORMADA");
                        } else {
                            //result_append("==== ERROR, election public key doesn't match");
-                           result_append("==== ERRO, a chave pública da eleição não bate.");
+                           result_append("==== ERRO, a chave pública da eleição não confere.");
                            overall_result = false;
                        }
 
@@ -228,10 +228,10 @@ function load_election_and_ballots(election_url) {
                                    if (trustee.public_key.verifyDecryptionFactor(a, trustee.decryption_factors[q_num][a_num],
                                                    trustee.decryption_proofs[q_num][a_num], ElGamal.fiatshamir_challenge_generator)) {
                                        //result_append("-- Trustee " + trustee.email + ": decryption factor verifies");
-                                        result_append("-- Apurador " + trustee.email + ": fator de decifragem bate");
+                                        result_append("-- Apurador " + trustee.email + ": fator de decifragem confere");
                                    } else {
                                        //result_append("==== ERROR with Trustee " + trustee.email + ": decryption factor does not verify");
-                                       result_append("==== ERRO com o apurador " + trustee.email + ": o fator de decifragem não bate");
+                                       result_append("==== ERRO com o apurador " + trustee.email + ": o fator de decifragem não confere");
                                        check= false;
                                        overall_result = false;
                                    }
