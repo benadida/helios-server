@@ -12,24 +12,16 @@ import views
 def vote_cast_send_message(user, voter, election, cast_vote, **kwargs):
   ## FIXME: this doesn't work for voters that are not also users
   # prepare the message
-  subject = "%s - vote cast" % election.name
-  
-  body = """
-You have successfully cast a vote in
+  subject = _("%(election_name)s - vote cast") % {'election_name' : election.name}
 
-  %s
-  
-Your ballot is archived at:
+  body = _('You have successfully cast a vote in\n\n%(election_name)s') % {'election_name' : election.name}
 
-  %s
-""" % (election.name, helios.views.get_castvote_url(cast_vote))
+  body += _('Your ballot is archived at:\n\n%(cast_url)s') % {'cast_url' : helios.views.get_castvote_url(cast_vote)}
   
+ 
   if election.use_voter_aliases:
-    body += """
-
-This election uses voter aliases to protect your privacy.
-Your voter alias is : %s    
-""" % voter.alias
+    body += _('This election uses voter aliases to protect your privacy.'
+'Your voter alias is :\n\n%(voter_alias)s') % {'voter_alias' : voter.alias}
 
   body += """
 
