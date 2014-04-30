@@ -1,7 +1,7 @@
 {% extends "helios/templates/cryptobase.html" %}
 {% load i18n %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; {% trans "Trustee" %} {{trustee.name}} {% trans "Home" %}</span></h2>
+  <h2 class="title">{{election.name}} &mdash; {% trans "Trustee" %} {{trustee.name}}</span></h2>
 
 <p>
 {% if trustee.public_key_hash %}
@@ -12,7 +12,7 @@ Your public key fingerprint is: <b>
 {{trustee.public_key_hash}}</b>.<br />
 {% blocktrans %}You can{% endblocktrans %} <a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">{% blocktrans %}verify that you have the right secret key {% endblocktrans %}</a>.
 {% else %}
-<a href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">{% blocktrans %}setup your key {% endblocktrans %}</a>
+<a class="btn btn-primary" href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">{% blocktrans %}setup your key {% endblocktrans %}</a>
 {% endif %}
 </p>
 

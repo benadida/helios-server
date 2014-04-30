@@ -88,7 +88,7 @@ function show_pk() {
 
 </script>
 
-<h2 class="title">{{election.name}} &mdash; {% trans "Trustee" %}{{trustee.name}} &mdash; {% trans "Key Setup" %}</h2>
+<h2 class="title">{{election.name}} &mdash; {% trans "Trustee" %} {{trustee.name}} &mdash; {% trans "Key Setup" %}</h2>
 
 <p>
  {% trans "As a trustee, it's time to set up your key for this election." %}
@@ -100,7 +100,7 @@ function show_pk() {
 
 <p id="generator">
 
-<span id="buttons"><button onclick="generate_keypair(); return false;" id="generate_button">{% trans "Generate Election Keys" %}</button></span>
+<span id="buttons"><button class="btn btn-primary" onclick="generate_keypair(); return false;" id="generate_button">{% trans "Generate Election Keys" %}</button></span>
 
 <br /><br />
 {% trans "If you've already generated a keypair, you can" %} <a href="javascript:show_key_reuse()">{% trans "reuse it" %}</a>.

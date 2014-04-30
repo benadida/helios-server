@@ -23,27 +23,26 @@
 <br />
 <form method="post" role="form" class="form-horizontal" action="{% url helios.views.voters_eligibility election.uuid %}">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-<div class="form-group">
+<p>
 <input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> {% trans "anyone can vote" %}
-</div>
-<div class="form-group">
+</p>
 <input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> {% trans "only voters listed explicitly below can vote" %}
-</div>
 {% if categories %}
-<div class="form-group">
+<p>
 <input type="radio" name="eligibility" value="{% trans "limitedreg" %}" {% if election.eligibility %}CHECKED{% endif %} /> {% trans "only voters who are members of " %}
+</p>
+<p>
 <select name="category_id">
 {% for category in categories %}
 <option value="{{category.id}}" {% if eligibility_category_id == category.id %}SELECTED{% endif %}> {{category.name}}</option>
 {% endfor %}
 </select>
-</div>
+</p>
 {% endif %}
-<div class="form-group">
+<p>
 <button class="btn btn-primary">{% trans "update" %}</button>
-</div>
+</p>
 </form>
-
 {% endif %}
 {% endif %}
 

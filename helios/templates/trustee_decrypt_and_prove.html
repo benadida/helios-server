@@ -164,7 +164,7 @@ function reset() {
           <textarea id="sk_textarea" cols="60" rows="5"></textarea>
       </form>
       <p id="tally_section">
-          <button onclick="do_tally();">{% trans "Generate partial decryption" %}</button>
+          <button class="btn btn-primary" onclick="do_tally();">{% trans "Generate partial decryption" %}</button>
       </p>
 
       <p id="skip_to_second_step_instructions">
@@ -195,7 +195,7 @@ function reset() {
       {% trans "Your partial decryption:" %}<br />
       <form action="javascript:submit_result();">
           <textarea id="result_textarea" cols="60" rows="5" wrap="soft"></textarea><br /><br />
-          <input type="submit" value="Upload decryption factors to server" />
+          <button class="btn btn-primary">{% trans "Upload decryption factors to server" %}</button>
       </form>
       <br />
       <a href="javascript:reset()">{% trans "reset and restart decryption process" %}</a>
@@ -203,7 +203,7 @@ function reset() {
   </div>
   
   <div id="done_div">
-      {% trans "Done!" %} <a href="{% url helios.views.one_election_view election.uuid %}">{% trans "Back to election" %}</a>
+      {% trans "Done!" %} <a class="btn btn-primary" href="{% url helios.views.one_election_view election.uuid %}">{% trans "Back to election" %}</a>
   </div>
   
   <div id="error_div">
