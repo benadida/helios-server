@@ -57,6 +57,12 @@ def election_form_formfield_cb(f, **kwargs):
 class ElectionForm(forms.ModelForm):
 
     formfield_callback = election_form_formfield_cb
+
+    #add in model and use modelform
+    #mail_lang = forms.ChoiceField(required=True,
+    #                              choices=choices,
+    #                              label=_("Mail Language"))
+                                  
     trustees = forms.CharField(label=_('Trustees'), required=False,
                                widget=forms.Textarea,
                                help_text=help.trustees)
@@ -84,11 +90,14 @@ class ElectionForm(forms.ModelForm):
         fields = ('trial', 'election_module', 'name', 'description',
                   'departments', 'voting_starts_at', 'voting_ends_at',
                   'voting_extended_until',
-                  'trustees', 'help_email', 'help_phone')
+                  'trustees', 'help_email', 'help_phone', 'email_language')
 
     def __init__(self, institution, *args, **kwargs):
         self.institution = institution
         super(ElectionForm, self).__init__(*args, **kwargs)
+        choices = [('eng', _('English')),
+                   ('el', _('Greek'))]
+        self.fields['email_language'] = forms.ChoiceField(choices=choices)
         self.creating = True
         self._inital_data = {}
         if self.instance and self.instance.pk:
