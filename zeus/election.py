@@ -618,7 +618,7 @@ class ZeusDjangoElection(ZeusCoreElection):
                 cand_party, candidate = candidate.split(": ")
 
                 if candidate in candidates and cand_party == party:
-		    candidate_sums += count
+                    candidate_sums += count
                     candidate_counts[candidate] = candidate_count
 
             data = {
@@ -629,15 +629,17 @@ class ZeusDjangoElection(ZeusCoreElection):
 
             empty_party_count = 0
             if self.poll.get_module().count_empty_question:
-
-		for b in results['ballots']:
-	            if len(b['candidates']) == 1 and party in b['parties'] and b['candidates'][0] not in candidates:
-                        empty_party_count += 1
+                for b in results['ballots']:
+                    if len(b['candidates']) == 1 and \
+                       party in b['parties'] and \
+                       b['candidates'][0][1] not in candidates:
+                            empty_party_count += 1
                 data['candidates']['Χωρίς επιλογή'] = empty_party_count
-            parties.append(data)
+                parties.append(data)
 
         data = {'name': u'Λευκά',
                 'total': results.get('blank_count', 0)}
+
         if results.get('invalid_count', 0):
             data = {'name': u'Άκυρα',
                     'total': results.get('invalid_count')}
