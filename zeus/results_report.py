@@ -129,6 +129,122 @@ def make_results(elements, styles, total_votes, blank_votes,
         if party in candidates_results:
             make_party_list_table(elements, styles, candidates_results[party])
 
+def build_stv_doc(title, name, institution_name, voting_start, voting_end,
+              extended_until, data, questions, filename="election_results.pdf",
+              new_page=True):
+    DATE_FMT = "%d/%m/%Y %H:%S"
+    if isinstance(voting_start, datetime.datetime):
+        voting_start = 'Start: %s' % (voting_start.strftime(DATE_FMT))
+
+    if isinstance(voting_end, datetime.datetime):
+        voting_end = 'End: %s' % (voting_end.strftime(DATE_FMT))
+
+    if extended_until and isinstance(extended_until, datetime.datetime):
+        extended_until = 'Extension: %s' % (extended_until.strftime(DATE_FMT))
+    else:
+        extended_until = ""
+
+    if not isinstance(data, list):
+        data = [(name, data)]
+
+    # reset pdfdoc timestamp in order to force a fresh one to be used in
+    # pdf document metadata.
+    pdfdoc._NOWT = None
+
+    elements = []
+
+    doc = SimpleDocTemplate(filename, pagesize=A4)
+
+    styles = getSampleStyleSheet()
+    styles.add(ParagraphStyle(name='Zeus',
+                              fontName='LinLibertine',
+                              fontSize=12,
+                              leading=16,
+                              alignment=TA_JUSTIFY))
+
+    styles.add(ParagraphStyle(name='ZeusSubHeading',
+                              fontName='LinLibertineBd',
+                              fontSize=14,
+                              alignment=TA_JUSTIFY,
+                              spaceAfter=16))
+
+    styles.add(ParagraphStyle(name='ZeusHeading',
+                              fontName='LinLibertineBd',
+                              fontSize=16,
+                              alignment=TA_CENTER,
+                              spaceAfter=16))
+    intro_contents = [
+        voting_start,
+        voting_end,
+        extended_until
+    ]
+
+
+    make_heading(elements, styles, [title, name, institution_name])
+    make_intro(elements, styles, intro_contents)
+
+    for poll_name, poll_results in data:
+        poll_intro_contents = [
+            poll_name
+        ]
+        parties_results = []
+        candidates_results = {}
+
+        #total_votes, blank_votes, parties_results, candidates_results = \
+        #    load_results(poll_results)
+        if new_page:
+            elements.append(PageBreak())
+        elements.append(Spacer(1, 12))
+        elements.append(Spacer(1, 12))
+        elements.append(Spacer(1, 12))
+        make_subheading(elements, styles, poll_intro_contents)
+        elements.append(Spacer(1, 12))
+        make_intro(elements, styles, intro_contents)
+        elements.append(Spacer(1, 12))
+        #make_results(elements, styles, total_votes, blank_votes,
+        #             parties_results, candidates_results)
+        
+        #make dict with indexing as key and name as value
+        counter = 0
+        indexed_cands = {}
+        for item in questions[0]['answers']:
+            indexed_cands[str(counter)] = item
+            counter += 1
+        elected = [['Elected']]
+        json_data = json.loads(data[0][1])
+        for item in json_data[0]:
+            elected.append([indexed_cands[item[0]]])
+        table_style = TableStyle([('FONT', (0, 0), (-1, -1), 'LinLibertine')])
+        t = Table(elected)
+        t.setStyle(table_style)
+        elements.append(t)
+        
+        #make table with rounds
+
+        #list with each element being a round
+        import re
+        p = re.compile(r'@ROUND\s\d')
+        rounds = p.split(json_data[2])
+        
+        count = re.compile(r'.COUNT\s')
+        elect = re.compile(r'\+ELECT\s') 
+        eliminate = re.compile(r'\-ELIMINATE\s')
+        for item in rounds:
+            print item
+            count_data = count.split(item)
+            print count_data
+            if elect.match(item):
+                print 'yayyyy'
+            elect_data = elect.split(item)
+            print elect_data
+            elim_data = eliminate.split(item)
+            print elim_data
+            print '---------------------------'
+
+             
+    doc.build(elements, onFirstPage = make_first_page_hf,
+              onLaterPages = make_later_pages_hf)
+
 
 def build_doc(title, name, institution_name, voting_start, voting_end,
               extended_until, data, filename="election_results.pdf",
