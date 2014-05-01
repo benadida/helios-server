@@ -870,7 +870,7 @@ As a reminder, your trustee dashboard is at:
 --
 Helios""" % (trustee.name, url)
 
-            tasks.single_trustee_email.delay(trustee.id, "%s - Enrypted Shares Uploaded" % election.name, body)
+            tasks.single_trustee_email.delay(trustee.id, "%s - Encrypted Shares Uploaded" % election.name, body)
 
     return SUCCESS
 
