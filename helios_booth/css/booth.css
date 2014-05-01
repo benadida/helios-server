@@ -1,4 +1,3 @@
-
 body {
   font-family: Arial;
   background: white;
@@ -11,8 +10,9 @@ body {
   padding: 0px;
   background: white;
   border: 1px solid #666;
-  top: 20px;
-  margin-left: 100px;
+  top: 30px;
+  left: 50%;
+  margin-left: -500px;
   margin-top: 0px;
   width: 1000px;
 }
