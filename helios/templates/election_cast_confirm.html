@@ -7,6 +7,10 @@
   <script language="javascript">
     $(document).ready(function() {
       $('#waiting_div').hide();
+
+      $('.remove_unload').on('click', function() {
+        window.onbeforeunload = null;
+      });
     });
 
     function show_waiting() {
@@ -14,18 +18,11 @@
       $('#waiting_div').show();
     }
 
-    // FIXME: set this to false once it's clear how to set it back to true
-    // so that it's not easy to forget to cast a ballot
-    var ready_to_unload = true;
-
     window.onbeforeunload = function(evt) {
-      if (ready_to_unload)
-        return;
-
-      if (typeof evt == "undefined")
+      if (typeof evt == 'undefined')
         evt = window.event;
 
-      var message = "You have not yet cast your ballot! Make sure to complete the voting process if you want your vote to count.";
+      var message = 'You have not yet cast your ballot! Make sure to complete the voting process if you want your vote to count.';
 
       if (evt)
         evt.returnValue = message;
@@ -80,7 +77,9 @@
                     <b>To upload your encrypted ballot to the server, please click on the button below.</b>
                   </p>
 
-                  <button type="submit">I am <u>{{voter.display_html_big|safe}}</u>, cast this ballot!</button>
+                  <div align="center">
+                    <button type="submit" class="remove_unload">I am <u>{{voter.display_html_big|safe}}</u>, cast this ballot!</button>
+                  </div>
 
                   <div data-alert class="alert-box warning">
                     You can cast as many ballots as you want: only the last one counts.

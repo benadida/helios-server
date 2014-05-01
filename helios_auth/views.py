@@ -50,7 +50,7 @@ def index(request):
     })
 
 
-def login_box_raw(request, return_url='/', auth_systems=None):
+def login_box_raw(request, return_url='/', auth_systems=None, remove_unload=False):
     """
     a chunk of HTML that shows the various login options
     """
@@ -76,7 +76,8 @@ def login_box_raw(request, return_url='/', auth_systems=None):
         'return_url': return_url,
         'default_auth_system': helios_auth.DEFAULT_AUTH_SYSTEM,
         'default_auth_system_obj': default_auth_system_obj,
-        'form': form
+        'form': form,
+        'remove_unload': remove_unload
     })
 
 

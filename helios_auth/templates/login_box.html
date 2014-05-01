@@ -9,7 +9,7 @@
     {% ifnotequal auth_system "password" %}
       <p>
         <h4>
-          <a href="{{SECURE_URL_HOST}}{% url helios_auth.views.start system_name=auth_system.name %}?return_url={{return_url}}">
+          <a href="{{SECURE_URL_HOST}}{% url helios_auth.views.start system_name=auth_system.name %}?return_url={{return_url}}" {% if remove_unload %}class="remove_unload"{% endif %}>
             <img border="0" height="35" src="/static/helios_auth/login-icons/{{auth_system.name}}.png" alt="{{auth_system}}" /> {{auth_system.display_name}}
           </a>
         </h4>
