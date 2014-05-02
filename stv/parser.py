@@ -109,5 +109,8 @@ class STVParser(object):
 
             if action in ['elect', 'eliminate', 'transfer', 'quota']:
                 self.round_data['candidates'][data[0]]['actions'].append((action, data))
+        
+        if self.round_data:
+            yield self.round, self.round_data
 
 

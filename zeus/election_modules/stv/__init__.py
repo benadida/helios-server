@@ -33,7 +33,7 @@ class StvElection(ElectionModuleBase):
 
     results_template = "election_modules/stv/results.html"
 
-    pdf_result = False
+    pdf_result = True 
     csv_result = False
     json_result = True
 
