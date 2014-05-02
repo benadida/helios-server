@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.db import connection
 from django.db.models.query import EmptyQuerySet
 from django.core.context_processors import csrf
+from django.core.validators import validate_email
 
 from zeus.forms import ElectionForm
 from zeus import auth
@@ -217,20 +218,35 @@ def voters_upload(request, election, poll):
             # we need to confirm
             voters = []
             error = None
+            invalid_emails = []
+
+            def _email_validate(eml):
+                try:
+                    validate_email(eml)
+                except ValidationError:
+                    invalid_emails.append(eml)
+                return True
+
             if request.FILES.has_key('voters_file'):
                 voters_file = request.FILES['voters_file']
                 voter_file_obj = poll.add_voters_file(voters_file)
 
                 # import the first few lines to check
+                invalid_emails = []
                 try:
-                    voters = [v for v in voter_file_obj.itervoters()]
+                    voters = [v for v in voter_file_obj.itervoters(
+                                                    email_validator=_email_validate)]
                 except ValidationError, e:
                     if hasattr(e, 'messages') and e.messages:
-                        error = e.messages[0]
+                        error = "".join(e.messages)
                     else:
                         error = "error."
                 except Exception, e:
                     error = str(e)
+
+                if len(invalid_emails):
+                    error = _("Enter a valid e-mail address. ")
+                    error += ", ".join(invalid_emails)
             else:
                 error = _("No file uploaded")
             if not error:

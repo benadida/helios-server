@@ -1305,7 +1305,7 @@ def csv_reader(csv_data, min_fields=2, max_fields=6, **kwargs):
 
     return rows
 
-def iter_voter_data(voter_data):
+def iter_voter_data(voter_data, email_validator=validate_email):
     reader = csv_reader(voter_data, min_fields=2, max_fields=6)
 
     for voter_fields in reader:
@@ -1325,7 +1325,7 @@ def iter_voter_data(voter_data):
 
         return_dict['voter_id'] = voter_fields[0]
         email = voter_fields[1]
-        validate_email(email)
+        email_validator(email)
         return_dict['email'] = email
         if len(voter_fields) == 2:
             yield return_dict
@@ -1388,13 +1388,13 @@ class VoterFile(models.Model):
   processing_finished_at = models.DateTimeField(auto_now_add=False, null=True)
   num_voters = models.IntegerField(null=True)
 
-  def itervoters(self):
+  def itervoters(self, email_validator=validate_email):
     if self.voter_file_content:
       voter_data = base64.decodestring(self.voter_file_content)
     else:
       voter_data = open(self.voter_file.path, "r").read()
 
-    return iter_voter_data(voter_data)
+    return iter_voter_data(voter_data, email_validator=email_validator)
 
   def process(self):
     demo_voters = 0
