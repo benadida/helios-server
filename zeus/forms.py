@@ -94,10 +94,14 @@ class ElectionForm(forms.ModelForm):
 
     def __init__(self, institution, *args, **kwargs):
         self.institution = institution
-        lang = kwargs.pop('lang')
+        if kwargs.get('lang'):
+            lang = kwargs.pop('lang')
+        else:
+            lang = None
         super(ElectionForm, self).__init__(*args, **kwargs)
         choices = [('eng', _('English')),
                    ('el', _('Greek'))]
+        initial = None
         if lang == 'el':
             initial = 'el'
         if lang == 'en':
