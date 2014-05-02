@@ -39,6 +39,7 @@ from django.core.validators import validate_email
 from django.forms import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.context_processors import csrf
+from django.utils import translation
 
 from helios.crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
@@ -2042,27 +2043,29 @@ class Trustee(HeliosModel, TrusteeFeatures):
         """
         Notify trustee
         """
-        url = self.get_login_url()
-        context = {
-            'election_name': self.election.name,
-            'election': self.election,
-            'url': url,
-            'msg': msg,
-            'step': self.get_step(),
-            'step_text': self.STEP_TEXTS[self.get_step()-1]
-        }
+        lang = self.election.email_language
+        with translation.override(lang):
+            url = self.get_login_url()
+            context = {
+                'election_name': self.election.name,
+                'election': self.election,
+                'url': url,
+                'msg': msg,
+                'step': self.get_step(),
+                'step_text': self.STEP_TEXTS[self.get_step()-1]
+            }
 
-        body = render_to_string("trustee_email.txt", context)
-        subject = render_to_string("trustee_email_subject.txt", context)
+            body = render_to_string("trustee_email.txt", context)
+            subject = render_to_string("trustee_email_subject.txt", context)
 
-        send_mail(subject.replace("\n", ""),
-                  body,
-                  settings.SERVER_EMAIL,
-                  ["%s <%s>" % (self.name, self.email)],
-                  fail_silently=False)
-        self.election.logger.info("Trustee %r login url send", self.email)
-        self.last_notified_at = datetime.datetime.now()
-        self.save()
+            send_mail(subject.replace("\n", ""),
+                      body,
+                      settings.SERVER_EMAIL,
+                      ["%s <%s>" % (self.name, self.email)],
+                      fail_silently=False)
+            self.election.logger.info("Trustee %r login url send", self.email)
+            self.last_notified_at = datetime.datetime.now()
+            self.save()
 
     @property
     def datatype(self):

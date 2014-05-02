@@ -99,16 +99,11 @@ class ElectionForm(forms.ModelForm):
         else:
             lang = None
         super(ElectionForm, self).__init__(*args, **kwargs)
-        choices = [('eng', _('English')),
+        choices = [('en', _('English')),
                    ('el', _('Greek'))]
-        initial = None
-        if lang == 'el':
-            initial = 'el'
-        if lang == 'en':
-            initial = 'eng'
         self.fields['email_language'] = forms.ChoiceField(label=_("Email language"),
                                                           choices=choices,
-                                                          initial=initial)
+                                                          initial=lang)
         self.creating = True
         self._inital_data = {}
         if self.instance and self.instance.pk:

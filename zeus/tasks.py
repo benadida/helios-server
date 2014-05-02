@@ -59,18 +59,20 @@ def single_voter_email(voter_uuid, subject_template, body_template,
                        extra_vars={}, update_date=True,
                        update_booth_invitation_date=False):
     voter = Voter.objects.get(uuid=voter_uuid)
-    the_vars = copy.copy(extra_vars)
-    the_vars.update({'voter' : voter, 'poll': voter.poll,
-                     'election': voter.poll.election})
-    subject = render_template_raw(None, subject_template, the_vars)
-    body = render_template_raw(None, body_template, the_vars)
-    if update_date:
-        voter.last_email_send_at = datetime.datetime.now()
-        voter.save()
-    if update_booth_invitation_date:
-        voter.last_booth_invitation_send_at = datetime.datetime.now()
-        voter.save()
-    voter.user.send_message(subject, body)
+    lang = voter.poll.election.email_language
+    with translation.override(lang):
+        the_vars = copy.copy(extra_vars)
+        the_vars.update({'voter' : voter, 'poll': voter.poll,
+                         'election': voter.poll.election})
+        subject = render_template_raw(None, subject_template, the_vars)
+        body = render_template_raw(None, body_template, the_vars)
+        if update_date:
+            voter.last_email_send_at = datetime.datetime.now()
+            voter.save()
+        if update_booth_invitation_date:
+            voter.last_booth_invitation_send_at = datetime.datetime.now()
+            voter.save()
+        voter.user.send_message(subject, body)
 
 
 @task(ignore_result=True)
@@ -99,32 +101,35 @@ def voters_email(poll_id, subject_template, body_template, extra_vars={},
 def send_cast_vote_email(poll_pk, voter_pk, signature):
     poll = Poll.objects.get(pk=poll_pk)
     election = poll.election
+    lang = election.email_language
     voter = poll.voters.filter().get(pk=voter_pk)
-    subject = _("%(election_name)s - vote cast") % {
-      'election_name': election.name,
-      'poll_name': poll.name
+
+    with translation.override(lang):
+        subject = _("%(election_name)s - vote cast") % {
+          'election_name': election.name,
+          'poll_name': poll.name
     }
 
-    body = _(u"""You have successfully cast a vote in
+        body = _(u"""You have successfully cast a vote in
 
 %(election_name)s
 %(poll_name)s
-
+    
 you can find your encrypted vote attached in this mail.
 """) % {
     'election_name': election.name,
     'poll_name': poll.name
 }
+    
+        # send it via the notification system associated with the auth system
+        attachments = [('vote.signature', signature['signature'], 'text/plain')]
+        to = "%s %s <%s>" % (voter.voter_name, voter.voter_surname,
+                             voter.voter_email)
+        message = EmailMessage(subject, body, settings.SERVER_EMAIL, [to])
+        for attachment in attachments:
+            message.attach(*attachment)
 
-    # send it via the notification system associated with the auth system
-    attachments = [('vote.signature', signature['signature'], 'text/plain')]
-    to = "%s %s <%s>" % (voter.voter_name, voter.voter_surname,
-                         voter.voter_email)
-    message = EmailMessage(subject, body, settings.SERVER_EMAIL, [to])
-    for attachment in attachments:
-        message.attach(*attachment)
-
-    message.send(fail_silently=False)
+        message.send(fail_silently=False)
 
 
 @poll_task(ignore_result=True)
