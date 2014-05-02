@@ -3,9 +3,9 @@ South==0.7.6
 ansicolors==1.0.2
 anyjson==0.3.3
 billiard==2.7.3.17
-celery==3.0.11
 celerymon==1.0.3
-django-celery==3.0.11
+celery==2.5.3
+django-celery==2.5.5
 django-eml-email-backend==0.1
 django-extensions==0.9
 django-kombu==0.9.4
