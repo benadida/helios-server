@@ -209,7 +209,7 @@ def after(request):
 
         request.session['user'] = user
     else:
-        return HttpResponseRedirect(settings.SECURE_URL_HOST + "%s?%s" % (reverse(perms_why), urllib.urlencode({'system_name': request.session['auth_system_name']})))
+        return HttpResponseRedirect(settings.SECURE_URL_HOST + "%s?%s" % (reverse(why), urllib.urlencode({'system_name': request.session['auth_system_name']})))
 
     # does the helios_auth system want to present an additional view?
     # this is, for example, to prompt the user to follow @heliosvoting
