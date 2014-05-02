@@ -338,7 +338,6 @@ BM.ModuleBase,
 
 
 BM.SimpleElection = function(election) {
-  election.questions_data[0].max_answers = election.questions_data[0].answers.length;
   this._init(election);
 }
 
@@ -629,6 +628,7 @@ BM.ModuleBase,
 });
 
 BM.STVElection = function(election) {
+  election.questions_data[0].max_answers = election.questions_data[0].answers.length;
   this._init(election);
 }
 
