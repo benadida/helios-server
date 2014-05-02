@@ -218,28 +218,10 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
         t = Table(elected)
         t.setStyle(table_style)
         elements.append(t)
-        
-        #make table with rounds
-
-        #list with each element being a round
-        import re
-        p = re.compile(r'@ROUND\s\d')
-        rounds = p.split(json_data[2])
-        
-        count = re.compile(r'.COUNT\s')
-        elect = re.compile(r'\+ELECT\s') 
-        eliminate = re.compile(r'\-ELIMINATE\s')
-        for item in rounds:
-            print item
-            count_data = count.split(item)
-            print count_data
-            if elect.match(item):
-                print 'yayyyy'
-            elect_data = elect.split(item)
-            print elect_data
-            elim_data = eliminate.split(item)
-            print elim_data
-            print '---------------------------'
+         
+        from stv.parser import STVParser
+        result_data = data[2]
+        print result_data
 
              
     doc.build(elements, onFirstPage = make_first_page_hf,
