@@ -34,12 +34,12 @@ from helios.models import Election, Poll, CastVote, Voter
 @auth.election_admin_required
 @require_http_methods(["GET", "POST"])
 def add_or_update(request, election=None):
-
     user = request.admin
     institution = user.institution
 
     if request.method == "GET":
-        election_form = ElectionForm(institution, instance=election)
+        election_form = ElectionForm(institution, instance=election,
+                                     lang=request.LANGUAGE_CODE)
     else:
         election_form = ElectionForm(institution, request.POST,
                                      instance=election)
