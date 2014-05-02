@@ -220,10 +220,41 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
         elements.append(t)
          
         from stv.parser import STVParser
-        result_data = data[2]
-        print result_data
+        actions_desc = {
+            'elect': 'Elected',
+            'eliminate': 'Eliminated',
+            'quota': 'Eliminated due to quota restriction'}
+        
+        table_header = ['Candidate', 'Votes', 'Draw', 'Action']
+        
+        stv = STVParser(json_data[2])
+        rounds = list(stv.rounds())
+        from reportlab.lib import colors
+        my_table_style = TableStyle([('ALIGN',(1,1),(-2,-2),'RIGHT'),
+                                     ('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
+                                     ('BOX', (0,0), (-1,-1), 0.25, colors.black),
+                                     ])
 
-             
+        for num, round in rounds:
+            round_table = [] 
+            temp_table = []
+            temp_table.append(table_header)
+            for name, cand in round['candidates'].iteritems():
+                actions = map(lambda x: x[0], cand['actions'])
+                draw = "NO"
+                if 'random' in actions:
+                    draw = "YES"
+                action = None
+                if len(actions):
+                    action = actions_desc.get(actions[-1])
+                votes = cand['votes']
+                row = [name, votes, draw, action]
+                temp_table.append(row)
+            round_table = Table(temp_table)    
+            round_table.setStyle(my_table_style)
+            elements.append(round_table)
+            elements.append(Spacer(1, 12))
+
     doc.build(elements, onFirstPage = make_first_page_hf,
               onLaterPages = make_later_pages_hf)
 
