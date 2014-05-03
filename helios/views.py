@@ -244,9 +244,6 @@ def election_new(request):
                 election, created_p = Election.get_or_create(**election_params)
 
                 if created_p:
-                    # add Helios as a trustee by default
-                    election.generate_trustee(ELGAMAL_PARAMS)
-
                     election.save()
 
                     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_admin, args=[election.uuid]))

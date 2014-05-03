@@ -728,30 +728,39 @@ class Election(HeliosModel):
     def trustees_added_communication_keys(self):
         trustees = Trustee.get_by_election(self)
 
-        trustees_added_communication_keys = True
-        for trustee in trustees:
-            if not trustee.helios_trustee and not trustee.key:
-                trustees_added_communication_keys = False
+        if len(trustees) == 0:
+            trustees_added_communication_keys = False
+        else:
+            trustees_added_communication_keys = True
+            for trustee in trustees:
+                if not trustee.helios_trustee and not trustee.key:
+                    trustees_added_communication_keys = False
 
         return trustees_added_communication_keys
 
     def trustees_added_encrypted_shares(self):
         trustees = Trustee.get_by_election(self)
 
-        trustees_added_encrypted_shares = True
-        for trustee in trustees:
-            if not trustee.helios_trustee and not trustee.added_encrypted_shares:
-                trustees_added_encrypted_shares = False
+        if len(trustees) == 0:
+            trustees_added_encrypted_shares = False
+        else:
+            trustees_added_encrypted_shares = True
+            for trustee in trustees:
+                if not trustee.helios_trustee and not trustee.added_encrypted_shares:
+                    trustees_added_encrypted_shares = False
 
         return trustees_added_encrypted_shares
 
     def trustees_added_public_keys(self):
         trustees = Trustee.get_by_election(self)
 
-        trustees_added_public_keys = True
-        for trustee in trustees:
-            if not trustee.public_key:
-                trustees_added_public_keys = False
+        if len(trustees) == 0:
+            trustees_added_public_keys = False
+        else:
+            trustees_added_public_keys = True
+            for trustee in trustees:
+                if not trustee.public_key:
+                    trustees_added_public_keys = False
 
         return trustees_added_public_keys
 

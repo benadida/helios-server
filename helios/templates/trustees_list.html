@@ -45,13 +45,9 @@
 
         {% if election.use_threshold %}
           {% if not election.frozen_trustee_list %}
-            <a class="button" onclick="return(confirm('Adding your own trustee requires a good bit more work to tally the election. You will need to have trustees generate key pairs and safeguard their secret key.\n\nIf you are not sure what that means, we strongly recommend clicking cancel and letting Helios tally the election for you.'));" href="{% url helios.views.trustees_create election.uuid %}">Add a Trustee &raquo;</a>
+            <a class="button" href="{% url helios.views.trustees_create election.uuid %}">Add a Trustee &raquo;</a>
 
             <a class="button" onclick="return confirm('Are you sure you want to freeze the trustee list? You will not be able to add trustees after this step.');" href="{% url helios.views.trustees_freeze election.uuid %}">Freeze Trustee List &raquo;</a>
-
-            {% if not election.has_helios_trustee %}
-              <a class="secondary button" href="{% url helios.views.trustees_create_helios election.uuid %}">Add Helios as a Trustee</a>
-            {% endif %}
           {% else %}
             {% if not election.encrypted_shares_uploaded %}
               <div data-alert class="alert-box info">
@@ -68,7 +64,7 @@
             {% endif %}
           {% endif %}
         {% else %}
-          <a class="button" onclick="return(confirm('Adding your own trustee requires a good bit more work to tally the election. You will need to have trustees generate key pairs and safeguard their secret key.\n\nIf you are not sure what that means, we strongly recommend clicking cancel and letting Helios tally the election for you.'));" href="{% url helios.views.trustees_create election.uuid %}">Add a Trustee &raquo;</a>
+          <a class="button" href="{% url helios.views.trustees_create election.uuid %}">Add a Trustee &raquo;</a>
         {% endif %}
       {% endif %}
 

@@ -178,7 +178,7 @@
 
       {% if election.use_threshold %}
         {% if not election.frozen_trustee_list %}
-          {% ifequal election.num_trustees 1 %}
+          {% ifequal election.num_trustees 0 %}
             <a class="button" href="{% url helios.views.trustees_list_view election.uuid %}">Trustees &raquo;</a>
           {% else %}
             <a class="button" href="{% url helios.views.trustees_freeze election.uuid %}">Freeze Trustee List &raquo;</a>
@@ -207,7 +207,7 @@
           {% endif %}
         {% endif %}
       {% else %}
-        {% if not election.num_trustees > 1 %}
+        {% ifequal election.num_trustees 0 %}
           <a class="button" href="{% url helios.views.trustees_list_view election.uuid %}">Trustees &raquo;</a>
         {% else %}
           {% if not election.questions %}
@@ -231,7 +231,7 @@
               {% endif %}
             {% endif %}
           {% endif %}
-        {% endif %}
+        {% endifequal %}
       {% endif %}
 
       {% if election.issues_before_freeze %}
