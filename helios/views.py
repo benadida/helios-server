@@ -551,7 +551,7 @@ The election administrator has defined the threshold scheme.
 """ % trustee.name
 
                         if trustee.key:
-                            if election.trustees_added_communication_keys:
+                            if election.trustees_added_communication_keys():
                                 body += """
 Since all trustees have already uploaded their communication keys, you can now generate your encrypted shares.
 """
