@@ -166,7 +166,7 @@ class Share():
         self.Ei = Ei
 
     def add(self, addedshare, p, q, g):
-        if(self.point_s.x_value == addedshare.point_s.x_value == self.point_t.x_value == addedshare.point_t.x_value):
+        if self.point_s.x_value == addedshare.point_s.x_value == self.point_t.x_value == addedshare.point_t.x_value:
             x = self.point_s.x_value
             new_point_s = Point(x, (self.point_s.y_value + addedshare.point_s.y_value) % q)
             new_point_t = Point(x, (self.point_t.y_value + addedshare.point_t.y_value) % q)
@@ -196,23 +196,21 @@ class Share():
         k = scheme.k
         n = scheme.n
         E = Commitment_E()
-        E.generate(self.point_s.y_value, self.point_t.y_value,
-                   scheme.ground_1, scheme.ground_2, p, q, g)
-        if(E.value > p - 1):
-            print('E value to big!!')
-            sys.exit()
+        E.generate(self.point_s.y_value, self.point_t.y_value, scheme.ground_1, scheme.ground_2, p, q, g)
+        if E.value > p - 1:
+            raise Exception('E value too big')
+
         point_number = self.point_s.x_value
         result = 1
         if len(self.Ei) != k:
-            print('Ei has a wrong number of elements')
-            sys.exit()
+            raise Exception('Ei has a wrong number of elements')
+
         for j in range(len(self.Ei)):
             i = point_number
             interm = pow(i, j, p)
-            result = (result * pow(self.Ei[j].value, interm, p)) % (p)
+            result = (result * pow(self.Ei[j].value, interm, p)) % p
 
         if result != E.value:
-            print('result: ' + str(result) + ' \n E: ' + str(E.value))
             return False
         else:
             return True

@@ -298,7 +298,7 @@
   		var plaintext = new ElGamal.Plaintext(BigInt.fromInt(999), pk_trustee);
   		var r = Random.getRandomInteger(pk_trustee.q);
 
-  		var ciph = ElGamal.encrypt(pk_trustee, plaintext,r);
+  		var ciph = ElGamal.encrypt(pk_trustee, plaintext, r);
   		var plain = sk_decrypt.decrypt(ciph);
 
   		// Loop over all trustees

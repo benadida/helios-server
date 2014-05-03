@@ -123,25 +123,27 @@ Thresholdalgs.Share = Class.extend({
             for (var i = 0; i < this.Ei.length; i++) {
                 Ei_now = this.Ei[i];
                 var succes = Ei_now.add(addedshare.Ei[i], p, q, g, scheme);
-                if (!succes) {
+                if (!succes)
                     overall_succes = false;
-                }
-                new_Ei.push(Ei_now);
 
+                new_Ei.push(Ei_now);
             }
             this.point_s = new_point_s;
             this.point_t = new_point_t;
             this.Ei = new_Ei;
-            if (this.verify_share, scheme, p, q, g)
-                if (overall_succes)
-                    return true;
-                else
-                    return false;
-                else
-                    return false;
-        } else
-            return false;
 
+            if (this.verify_share(scheme, p, q, g)) {
+                if (overall_succes) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } else {
+            return false;
+        }
     },
 
     encrypt: function (public_key) {

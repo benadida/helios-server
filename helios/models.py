@@ -38,8 +38,6 @@ from helios_auth.jsonfield import JSONField
 from helios.datatypes.djangofield import LDObjectField
 
 from operator import itemgetter
-from fractions import *
-from helios.constants import p, q, g, ground_1, ground_2
 from bulletin_board.models import Key, SecretKey, Signed_Encrypted_Share
 from bulletin_board.thresholdalgs import Share
 from helios.constants import p, g, q, ground_1, ground_2
@@ -1636,8 +1634,6 @@ class Trustee(HeliosModel):
                     incorrect_share.save()
 
         if len(correct_secret_shares) == n:
-            s_value = 0
-            t_value = 0
             share = correct_secret_shares[0]
             for i in range(1, len(correct_secret_shares)):
                 share.add(correct_secret_shares[i], p, q, g)
