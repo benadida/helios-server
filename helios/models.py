@@ -488,41 +488,29 @@ class Election(HeliosModel):
         decryption_factors = [t.decryption_factors for t in trustees]
 
         if self.use_threshold:
-            # ADDED FOR THRESHOLD ENCRYPTION
             decryption_factors = []
             scheme = self.get_scheme()
-            trustees_active = Trustee.objects.filter(
-                election=self).exclude(decryption_factors=None)
+            trustees_active = Trustee.objects.filter(election=self).exclude(decryption_factors=None)
             x_values = [t.id for t in trustees_active]
+            combined_pk = None
             if len(trustees_active) >= scheme.k:
-                for i in range(1, scheme.k + 1):
-                    prod = Fraction(1)
-                    xi = x_values[i - 1]
-                    for j in range(1, scheme.k + 1):
-                        xj = x_values[j - 1]
-                        if xj == xi:
-                            fact = Fraction(1)
-                        else:
-                            fact = Fraction(
-                                numerator=-xj, denominator=(xi - xj))  # %p
+                for i in range(scheme.k):
+                    numerator = 1
+                    denominator = 1
+                    xi = x_values[i]
+                    for j in range(scheme.k):
+                        xj = x_values[j]
+                        if xi != xj:
+                            numerator = (numerator * -xj) % q
+                            denominator = (denominator * (xi - xj)) % q
 
-                            #print('fact: '+str(fact))
-                        prod = (prod * fact)
-                        #print('step: '+str(j)+ 'prod :'+ str(prod))
-                        #print('prod: '+str(prod))
-                        # print(str(Fraction(pointi.y_value)))
+                    lambda_now = numerator * algs.Utils.inverse(denominator, q)
 
-                       # print('step: '+str(j)+ 'total :'+ str(total))
+                    trustee = trustees_active[i]
+                    nof_questions = len(trustee.decryption_factors)
+                    decryption_factors.append([[pow(trustee.decryption_factors[question][answer], lambda_now, p) for answer in range(len(trustee.decryption_factors[question]))] for question in range(nof_questions)])
 
-                    if prod.denominator == 1:
-                        prod = prod % (p - 1)
-                        trustee = trustees_active[i - 1]
-                        nof_questions = len(trustee.decryption_factors)
-                        decryption_factors.append([[pow(trustee.decryption_factors[q][a], prod.numerator, p) for a in range(
-                            len(trustee.decryption_factors[q]))] for q in range(nof_questions)])
-
-        self.result = self.encrypted_tally.decrypt_from_factors(
-            decryption_factors, self.public_key)
+        self.result = self.encrypted_tally.decrypt_from_factors(decryption_factors, self.public_key)
         # postprocessing for ranking eleciton
 
         #raise Exception(self.result)
@@ -593,8 +581,7 @@ class Election(HeliosModel):
         if not self.openreg:
             auth_systems = [vt for vt in voter_types if vt in auth_systems]
 
-        self.eligibility = [{'auth_system': auth_system}
-                            for auth_system in auth_systems]
+        self.eligibility = [{'auth_system': auth_system} for auth_system in auth_systems]
         self.save()
 
     def freeze(self):
@@ -614,42 +601,35 @@ class Election(HeliosModel):
         # public key for trustees
         trustees = Trustee.get_by_election(self)
 
+        combined_pk = None
         if self.use_threshold:
             scheme = self.get_scheme()
             if scheme:
                 k = scheme.k
-            lambdas = []
 
             for t in trustees[0:k]:
                 xi = t.id
-                prod = Fraction(1)
+                numerator = 1
+                denominator = 1
                 for j in range(k):
                     xj = trustees[j].id
-                    if xi == xj:
-                        fact = Fraction(1)
-                    else:
-                        fact = Fraction(
-                            numerator=-xj, denominator=(xi - xj))  # %p
-                    prod = (prod * fact)
-                if prod.denominator == 1:
-                    lambdas.append(prod.numerator % (p - 1))
-                else:
-                    lambda_now = prod % (p - 1)
-                    raise exception(lambda_now)
-                    lambdas.append(prod % (p - 1))
-        else:
-            lambdas = []
-            n = len(trustees)
-            k = n
-            for i in range(n):
-                lambdas.append(1)
+                    if xi != xj:
+                        numerator = (numerator * -xj) % q
+                        denominator = (denominator * (xi - xj)) % q
 
-        combined_pk = trustees[0].public_key
-        combined_pk.y = pow(combined_pk.y, lambdas[0], p)
-        for i in range(1, k):
-            t = trustees[i]
-            combined_pk.y = (
-                combined_pk.y * pow(t.public_key.y, lambdas[i], p)) % p
+                lambda_t = numerator * algs.Utils.inverse(denominator, q)
+
+                if combined_pk == None:
+                    combined_pk = t.public_key
+                    combined_pk.y = pow(combined_pk.y, lambda_t, p)
+                else:
+                    combined_pk.y = (combined_pk.y * pow(t.public_key.y, lambda_t, p)) % p
+        else:
+            for t in trustees:
+                if combined_pk == None:
+                    combined_pk = t.public_key
+                else:
+                    combined_pk.y = (combined_pk.y * t.public_key.y) % p
 
         self.public_key = combined_pk
 
@@ -678,11 +658,9 @@ class Election(HeliosModel):
             trustee.secret_key = keypair.sk
 
             # FIXME: is this at the right level of abstraction?
-            trustee.public_key_hash = datatypes.LDObject.instantiate(
-                trustee.public_key, datatype='legacy/EGPublicKey').hash
+            trustee.public_key_hash = datatypes.LDObject.instantiate(trustee.public_key, datatype='legacy/EGPublicKey').hash
 
-            trustee.pok = trustee.secret_key.prove_sk(
-                algs.DLog_challenge_generator)
+            trustee.pok = trustee.secret_key.prove_sk(algs.DLog_challenge_generator)
 
             trustee.save()
         else:
@@ -696,21 +674,15 @@ class Election(HeliosModel):
                 key.name = trustee.name
                 key.email = trustee.email
                 key.public_key_encrypt = utils.to_json(keypair.pk.to_dict())
-                key.pok_encrypt = keypair.sk.prove_sk(
-                    algs.DLog_challenge_generator)
+                key.pok_encrypt = keypair.sk.prove_sk(algs.DLog_challenge_generator)
                 secret_key = SecretKey()
-                secret_key.secret_key_encrypt = utils.to_json(
-                    keypair.sk.to_dict())
+                secret_key.secret_key_encrypt = utils.to_json(keypair.sk.to_dict())
                 keypair = params.generate_keypair()
                 key.public_key_signing = utils.to_json(keypair.pk.to_dict())
-                secret_key.secret_key_signing = utils.to_json(
-                    keypair.sk.to_dict())
-                key.pok_signing = keypair.sk.prove_sk(
-                    algs.DLog_challenge_generator)
-                key.public_key_encrypt_hash = utils.hash_b64(
-                    key.public_key_encrypt)
-                key.public_key_signing_hash = utils.hash_b64(
-                    key.public_key_signing)
+                secret_key.secret_key_signing = utils.to_json(keypair.sk.to_dict())
+                key.pok_signing = keypair.sk.prove_sk(algs.DLog_challenge_generator)
+                key.public_key_encrypt_hash = utils.hash_b64(key.public_key_encrypt)
+                key.public_key_signing_hash = utils.hash_b64(key.public_key_signing)
                 key.save()
                 secret_key.public_key = key
                 secret_key.save()
@@ -1498,7 +1470,7 @@ class Trustee(HeliosModel):
 
     @classmethod
     def get_by_election(cls, election):
-        return cls.objects.filter(election=election)
+        return cls.objects.filter(election=election).order_by('id')
 
     @classmethod
     def get_by_pointnumber(cls, point_number):
@@ -1649,8 +1621,7 @@ class Trustee(HeliosModel):
                         correct_share = True
                     else:
                         share_string = utils.to_json(share.to_dict())
-                        incorrect_share = Incorrect_share(
-                            share_string, election.id, sig, signer_id, receiver_id, 'invalid commitments')
+                        incorrect_share = Incorrect_share(share_string, election.id, sig, signer_id, receiver_id, 'invalid commitments')
                         incorrect_share.save()
                 else:
                     share_string = utils.to_json(share.to_dict())
@@ -1721,11 +1692,9 @@ class Thresholdscheme(HeliosModel):
         Ei = []
         for i in range(self.k):
             commitment_loop = thresholdalgs.Commitment_E()
-            commitment_loop.generate(
-                F.coeff[i], G.coeff[i], self.ground_1, self.ground_2, p, q, g)
-            if(commitment_loop.value > p - 1):
-                print('Ei value too big!')
-                sys.exit()
+            commitment_loop.generate(F.coeff[i], G.coeff[i], self.ground_1, self.ground_2, p, q, g)
+            if commitment_loop.value > p - 1:
+                raise Exception('Ei value too big!')
             Ei.append(commitment_loop)
 
         shares = []

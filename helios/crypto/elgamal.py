@@ -510,8 +510,7 @@ class Ciphertext:
         """
         running_decryption = self.beta
         for dec_factor in decryption_factors:
-            running_decryption = (
-                running_decryption * Utils.inverse(dec_factor, public_key.p)) % public_key.p
+            running_decryption = (running_decryption * Utils.inverse(dec_factor, public_key.p)) % public_key.p
 
         return running_decryption
 

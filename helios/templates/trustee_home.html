@@ -96,7 +96,7 @@
         i++;
       }
 
-      return [id_array, name_array, email_array, pk_encrypt_array, pk_signing_array, trustee_index,encry_shares, trustee_ids_array];
+      return [id_array, name_array, email_array, pk_encrypt_array, pk_signing_array, trustee_index, encry_shares, trustee_ids_array];
     }
 
     function calculate_shares() {
@@ -294,7 +294,7 @@
   			console.log('Incorrect keypair for decryption');
   		}
 
-  		// Test for encyrption
+  		// Test for encryption
   		var plaintext = new ElGamal.Plaintext(BigInt.fromInt(999), pk_trustee);
   		var r = Random.getRandomInteger(pk_trustee.q);
 

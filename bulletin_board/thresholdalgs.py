@@ -188,10 +188,8 @@ class Share():
     def add(self, addedshare, p, q, g):
         if(self.point_s.x_value == addedshare.point_s.x_value == self.point_t.x_value == addedshare.point_t.x_value):
             x = self.point_s.x_value
-            new_point_s = Point(
-                x, (self.point_s.y_value + addedshare.point_s.y_value) % q)
-            new_point_t = Point(
-                x, (self.point_t.y_value + addedshare.point_t.y_value) % q)
+            new_point_s = Point(x, (self.point_s.y_value + addedshare.point_s.y_value) % q)
+            new_point_t = Point(x, (self.point_t.y_value + addedshare.point_t.y_value) % q)
             new_Ei = []
             for i in range(len(self.Ei)):
                 Ei_now = self.Ei[i]
@@ -202,7 +200,6 @@ class Share():
             self.Ei = new_Ei
 
     def encrypt(self, public_key):
-
         encry_point_s = self.point_s.encrypt(public_key)
         encry_point_t = self.point_t.encrypt(public_key)
         encry_share = Encrypted_Share(encry_point_s, encry_point_t, self.Ei)

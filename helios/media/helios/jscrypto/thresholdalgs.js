@@ -114,7 +114,6 @@ Thresholdalgs.Share = Class.extend({
     },
 
     add: function (addedshare, p, q, g, scheme) {
-
         if (this.point_s.x_value.equals(addedshare.point_s.x_value) && this.point_s.x_value.equals(addedshare.point_t.x_value) && this.point_s.x_value.equals(this.point_t.x_value)) {
             x = this.point_s.x_value;
             var new_point_s = new Thresholdalgs.Point(x, (this.point_s.y_value.add(addedshare.point_s.y_value)).mod(q));
@@ -142,6 +141,7 @@ Thresholdalgs.Share = Class.extend({
                     return false;
         } else
             return false;
+
     },
 
     encrypt: function (public_key) {

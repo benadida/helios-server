@@ -163,8 +163,7 @@ class EncryptedAnswer(WorkflowObject):
                 plaintexts[plaintext_index], randomness[answer_num])
 
             # generate proof
-            individual_proofs[answer_num] = choices[answer_num].generate_disjunctive_encryption_proof(plaintexts, plaintext_index,
-                                                                                                      randomness[answer_num], algs.EG_disjunctive_challenge_generator)
+            individual_proofs[answer_num] = choices[answer_num].generate_disjunctive_encryption_proof(plaintexts, plaintext_index, randomness[answer_num], algs.EG_disjunctive_challenge_generator)
 
             # sum things up homomorphically if needed
             if max_answers != None:
@@ -177,8 +176,7 @@ class EncryptedAnswer(WorkflowObject):
         # that is actually encoded
 
         if num_selected_answers < min_answers:
-            raise Exception(
-                "Need to select at least %s answer(s)" % min_answers)
+            raise Exception("Need to select at least %s answer(s)" % min_answers)
 
         if max_answers != None:
             sum_plaintexts = cls.generate_plaintexts(
@@ -317,11 +315,9 @@ class Tally(WorkflowObject):
             self.init_election(election)
             if election.election_type == 'ranked election':
 
-                self.tally = [[0 for a in range(
-                    (len(q['answers']) * (len(q['answers']) - 1)) * 2 / 2)] for q in self.questions]
+                self.tally = [[0 for a in range((len(q['answers']) * (len(q['answers']) - 1)) * 2 / 2)] for q in self.questions]
             else:
-                self.tally = [[0 for a in q['answers']]
-                              for q in self.questions]
+                self.tally = [[0 for a in q['answers']] for q in self.questions]
 
         else:
             self.questions = None
@@ -469,12 +465,10 @@ class Tally(WorkflowObject):
 
             for a_num in range(len(self.tally[q_num])):
                 # coalesce the decryption factors into one list
-                dec_factor_list = [df[q_num][a_num]
-                                   for df in decryption_factors]
+                dec_factor_list = [df[q_num][a_num] for df in decryption_factors]
                 #raise Exception(dec_factor_list)
 
-                raw_value = self.tally[q_num][a_num].decrypt(
-                    dec_factor_list, public_key)
+                raw_value = self.tally[q_num][a_num].decrypt(dec_factor_list, public_key)
                 #raise Exception(raw_value)
 
                 q_result.append(dlog_table.lookup(raw_value))
