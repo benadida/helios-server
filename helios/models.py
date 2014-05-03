@@ -1668,11 +1668,11 @@ class Thresholdscheme(HeliosModel):
     def save(self, *args, **kwargs):
         # not saved yet?
         if not self.election:
-            self.election.append_log("Thresholdscheme %s added")
+            self.election.append_log(('Thresholdscheme for %s added') % election.name)
 
         super(Thresholdscheme, self).save(*args, **kwargs)
 
-    # hare a secret verifiably by creating a polynomial of grade k-1 and generate n points
+    # share a secret verifiably by creating a polynomial of grade k-1 and generate n points
     # the secret s is F(0) and can be found by interpolating the points
     #
     # commitments E contain commitments to the point
@@ -1684,7 +1684,7 @@ class Thresholdscheme(HeliosModel):
         F = thresholdalgs.Polynomial(s, self, EG)
         G = thresholdalgs.Polynomial(t, self, EG)
 
-        # create points on polynomials from x values from 0 to n, where F(O) is secret
+        # create points on polynomials from x values from 0 to n, where F(O) is the secret
         points_F = F.create_points(trustees)
         points_G = G.create_points(trustees)
 
@@ -1698,8 +1698,8 @@ class Thresholdscheme(HeliosModel):
             Ei.append(commitment_loop)
 
         shares = []
-        for i in range(1, self.n + 1):
-            share = Share(points_F[i - 1], points_G[i - 1], Ei)
+        for i in range(self.n):
+            share = Share(points_F[i], points_G[i], Ei)
             if share.verify_share(self, p, q, g):
                 shares.append(share)
             else:

@@ -19,62 +19,45 @@ class Thresholdscheme():
     def __init__(self, n=None, k=None, ground_1=None, ground_2=None):
         self.ground_1 = ground_1
         self.ground_2 = ground_2
-        # self.election=election
-        #self.trustees = self.election.get_trustees()
-        #self.p = self.trustees[0].public_key.p
-        # self.n = len(self.trustees)  #len(self.trustees)
-        # self.k = self.n   #nog aan te passen
         self.n = n
         self.k = k
 
-    def share_verifiably(self, s, t, EG):
-
+    def share_verifiably(self, s, t, EG, trustees):
         q = EG.q
         p = EG.p
         g = EG.g
-        #t = Utils.random_mpz_lt(q)
         F = Polynomial(s, self, EG)
         G = Polynomial(t, self, EG)
 
-        # create points on polynomials from x values from 0 to n. F(0) is
-        # secret!!
-        points_F = F.create_points(self.n)
-        points_G = G.create_points(self.n)
+        # Create points on polynomials from trustee x values.
+        # F(0) is secret!
+        points_F = F.create_points(trustees)
+        points_G = G.create_points(trustees)
 
         # create commitments
         Ei = []
         for i in range(self.k):
             commitment_loop = Commitment_E()
-            commitment_loop.generate(
-                F.coeff[i], G.coeff[i], self.ground_1, self.ground_2, p, q, g)
-            if(commitment_loop.value > p - 1):
-                print('Ei value to big!!')
-                sys.exit()
+            commitment_loop.generate(F.coeff[i], G.coeff[i], self.ground_1, self.ground_2, p, q, g)
+            if commitment_loop.value > p - 1:
+                raise Exception('Ei value to big!')
+
             Ei.append(commitment_loop)
 
         shares = []
-        for i in range(1, self.n + 1):
-      #     trustee_id = trustee.id
-            share = Share(points_F[i - 1], points_G[i - 1], Ei)
+        for i in range(self.n):
+            share = Share(points_F[i], points_G[i], Ei)
             if share.verify_share(self, p, q, g):
                 shares.append(share)
             else:
                 return None
-            # com_points.append(Committed_Point(points_F[i-1],E[i-1],Ei))
-        #   com_point_x = com_point.point.x_value
-         #  trustee_dest = Trustee.get_by_pointnumber(com_point_x)
-          # if(trustee_dest.__class__.__name__ == 'Trustee'):
-           #    if(not trustee_dest.received_points):
-            #       trustee_dest.received_points = []
-             #  trustee_dest.received_points.append(com_point)
-              # trustee_dest.save()
 
         return shares
 
 
 class Polynomial():
     # c0 is the free term and is equal to coeff[0]
-    #grade is k-1
+    # grade is k-1
 
     def __init__(self, c0=None, scheme=None, EG=None):
         p = EG.p
@@ -87,10 +70,8 @@ class Polynomial():
         self.grade = self.scheme.k - 1
 
         for i in range(self.grade):
-            # Dit moet p-1 zijn!!? werkt niet met p..? fout?
+            # coefficients should be mod q
             self.coeff.append(Utils.random_mpz_lt(q))
-            # shares mogen niet groter dan p worden, de modulus mag hier niet
-            # van genomen worden
 
     def set(self, coeff):
         self.coeff = coeff
@@ -104,12 +85,11 @@ class Polynomial():
         return value
 
     def create_points(self, trustees):
-        n = len(trustees)
         points = []
-        for i in trustees:
-            point = Point(i.id, self.evaluate(i.id))
-            #point_JSON = point.toJSONdict()
+        for trustee in trustees:
+            point = Point(trustee.id, self.evaluate(trustee.id))
             points.append(point)
+
         return points
 
 
@@ -341,16 +321,10 @@ class Committed_Point():
 
     def __init__(self, point, E, Ei):
         self.point = point
-
-        # self.sender_trustee=sender_trustee
-        #self.receiver_trustee = receiver_trustee
         self.E = E
         self.Ei = Ei  # list of commitments
 
     def verify_commitments(self):
-        #election = self.election
-        # if self.receiver_trustee.point_number != None:
-            #point_number = self.receiver_trustee.point_number
         p = self.E.p
         point_number = self.point.x_value
         result = 1
@@ -362,8 +336,6 @@ class Committed_Point():
                 return False
             else:
                 return True
-        # else:
-     #   return False
 
 
 class Feedback():
@@ -379,25 +351,20 @@ class Feedback():
 class Commitment_E():
 
     def __init__(self, ground_1=None, ground_2=None, value=None):
-        #self.s = None
-        #self.t = None
         self.ground_1 = ground_1
         self.ground_2 = ground_2
         self.value = value
 
     def generate(self, s, t, ground_1, ground_2, p, q, g):
-        #self.t = t
-        #self.s = s
-        s = s % (q)
-        t = t % (q)
+        s = s % q
+        t = t % q
         self.ground_1 = ground_1
         self.ground_2 = ground_2
-        self.value = (
-            pow(self.ground_1, s, p) * pow(self.ground_2, t, p)) % (p)
+        self.value = (pow(self.ground_1, s, p) * pow(self.ground_2, t, p)) % p
 
     def add(self, addedcommitment, p, q, g):
-        if(self.ground_1 == addedcommitment.ground_1)and(self.ground_2 == addedcommitment.ground_2):
-            self.value = self.value * addedcommitment.value % p
+        if self.ground_1 == addedcommitment.ground_1 and self.ground_2 == addedcommitment.ground_2:
+            self.value = (self.value * addedcommitment.value) % p
 
     @classmethod
     def from_dict(cls, d):
@@ -441,7 +408,6 @@ class Trustee():
 
     def write_public_key(self, path):
         y = self.public_key.y
-        # ring=str(y)+'\n'
         string = utils.to_json(self.public_key.to_dict())
         f = open(path, 'w')
         f.write(string + '\n')
@@ -514,32 +480,3 @@ class Signature():
         """
         return {'r': str(self.r), 's': str(self.s)}
 
-
-def combine_points(points):
-
-    if len(points) >= k:
-        total = Fraction(0)
-        points = points[0:k]
-        for i in range(1, k + 1):
-            pointi = points[i - 1]
-            prod = Fraction(1)
-            for j in range(1, k + 1):
-                pointj = points[j - 1]
-                if j == i:
-                    fact = Fraction(1)
-                else:
-                    fact = Fraction(
-                        numerator=-pointj.x_value, denominator=(pointi.x_value - pointj.x_value))  # %p
-
-                    #print('fact: '+str(fact))
-                prod = (prod * fact)  # %p
-                #print('step: '+str(j)+ 'prod :'+ str(prod))
-                #print('prod: '+str(prod))
-            # print(str(Fraction(pointi.y_value)))
-            total = (total + pointi.y_value * prod)  # %p
-           # print('step: '+str(j)+ 'total :'+ str(total))
-        total = total % p
-        if total.denominator == 1:
-            return total.numerator
-        else:
-            return total

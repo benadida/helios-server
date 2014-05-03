@@ -289,12 +289,13 @@ Thresholdalgs.Commitment_E = Class.extend({
     },
 
     generate: function (s, t, ground_1, ground_2, p, q, g) {
-
         var s = s.mod(q)
         var t = t.mod(q)
+
         this.ground_1 = ground_1;
         this.ground_2 = ground_2;
         this.value = ((this.ground_1.modPow(s, p)).multiply(this.ground_2.modPow(t, p))).mod(p);
+
         return null;
     },
 
@@ -302,8 +303,9 @@ Thresholdalgs.Commitment_E = Class.extend({
         if ((this.ground_1.equals(addedcommitment.ground_1)) && (this.ground_2.equals(addedcommitment.ground_2))) {
             this.value = (this.value.multiply(addedcommitment.value)).mod(p);
             return true;
-        } else
+        } else {
             return false;
+        }
     },
     toJSONObject: function () {
         return {
@@ -320,7 +322,6 @@ Thresholdalgs.Commitment_E.fromJSONObject = function (d) {
     var ground_2 = BigInteger.fromJSONObject(d['ground_2']);
     var value = BigInteger.fromJSONObject(d['value']);
 
-
     var com = new Thresholdalgs.Commitment_E(ground_1, ground_2, value);
 
     return com;
@@ -330,7 +331,6 @@ Thresholdalgs.encode_string_to_decimal = function (s) {
     var tmp = '';
     for (var i = 0; i < s.length; i++) {
         var c = s[i];
-
         tmp = tmp + String(c.charCodeAt(0));
     }
     return BigInt.fromJSONObject(tmp)
@@ -339,14 +339,12 @@ Thresholdalgs.Signature = Class.extend({
     init: function (r, s) {
         this.r = r;
         this.s = s;
-
     },
 
     generate: function (m, secret_key, p, q, g) {
         while (true) {
             var p_1 = p.add(BigInt.ONE.negate());
             var hash = b64_sha256(m);
-
 
             var hash_dec = Thresholdalgs.encode_string_to_decimal(hash);
 
@@ -361,9 +359,6 @@ Thresholdalgs.Signature = Class.extend({
                 return null;
             }
         }
-
-
-
     },
 
     verify: function (m, public_key, p, q, g) {
@@ -371,9 +366,11 @@ Thresholdalgs.Signature = Class.extend({
         var y = public_key.y;
         var hash = b64_sha256(m);
         var hash_dec = Thresholdalgs.encode_string_to_decimal(hash);
+
         var val = (y.modPow(this.r, p).multiply(this.r.modPow(this.s, p))).mod(p);
         if (!g.modPow(hash_dec, p).mod(p).equals(val))
             correct = false;
+
         return correct;
     },
 
@@ -398,7 +395,6 @@ Thresholdalgs.Thresholdscheme = Class.extend({
         this.k = k;
         this.ground_1 = ground_1;
         this.ground_2 = ground_2;
-
     },
 
     share_verifiably: function (s, t, EG, ids) {
@@ -424,8 +420,8 @@ Thresholdalgs.Thresholdscheme = Class.extend({
                 return null;
             }
         }
-        return shares;
 
+        return shares;
     }
 });
 
