@@ -31,7 +31,7 @@
               {% endif %}
             {% endif %}
           {% else %}
-            {% if not election.num_trustees > 1 %}
+            {% ifequal election.num_trustees 0 %}
               <li {% if current == "trustees" %}class="current"{% endif %}><a href="{% url helios.views.trustees_list_view election.uuid %}">Trustees</a></li>
             {% else %}
               <li class="unavailable"><a href="{% url helios.views.trustees_list_view election.uuid %}">Trustees</a></li>
@@ -53,7 +53,7 @@
                   {% endif %}
                 {% endif %}
               {% endif %}
-            {% endif %}
+            {% endifequal %}
           {% endif %}
         {% endif %}
       </ul>
