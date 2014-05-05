@@ -5,7 +5,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
     dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}"
     xml:lang="{% firstof LANGUAGE_CODE 'en' %}"
-    lang="{% firstof LANGUAGE_CODE 'en' %}">
+    lang="{% firstof settings.LANGUAGE_CODE 'en' %}">
   <head>
     <title>{% block title %}{% endblock %} - Helios</title>
     {% block css %}
