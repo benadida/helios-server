@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-05 17:02+0300\n"
+"POT-Creation-Date: 2014-05-05 18:23+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -44,10 +44,6 @@ msgstr "Τύπος ψηφοφορίας"
 
 msgid "Election name"
 msgstr "Τίτλος ψηφοφορίας"
-
-#, fuzzy
-msgid "Communication language"
-msgstr "Γλώσσα ηλεκτρονικού ταχυδρομείου"
 
 msgid "Support email"
 msgstr "Email υποστήριξης"
@@ -974,7 +970,7 @@ msgid "Zeus Digital Elections"
 msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
 
 msgid "actions required, step"
-msgstr ""
+msgstr "απαιτούνται ενέργειές σας, βήμα"
 
 msgid "trustee dashboard"
 msgstr "πίνακας ελέγχου εφορευτικής"
