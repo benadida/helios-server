@@ -61,12 +61,7 @@ Your smart ballot tracker is:
 
 {% if show_password %}
 {% if user %}
-<!--<p>
-{% blocktrans %}
-You are logged in as <u>{{user.pretty_name}}</u>, but this election<br />
-requires election-specific credentials.
-{% endblocktrans %}
-</p> -->
+
 {% endif %}
 {% with cast_ballot="1" %}
 {% include "_castconfirm_password.html" %}
