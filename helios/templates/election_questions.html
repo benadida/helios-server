@@ -101,7 +101,7 @@
   function add_answer(el) {
     el = $(el);
     var num_answers = el.find('input.answer').length + 1;
-    el.find('tbody').append('<tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #' + num_answers + '</th><td><input type="text" class="answer" name="answer_' + num_answers + '" size="70" /></td></tr>');
+    el.find('tbody').append('<tr><th>&nbsp;&nbsp;&nbsp;</th><th>Resposta #' + num_answers + '</th><td><input type="text" class="answer" name="answer_' + num_answers + '" size="70" /></td></tr>');
   }
 
   function add_answers(el, num) {
