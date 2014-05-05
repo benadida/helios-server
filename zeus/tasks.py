@@ -59,7 +59,7 @@ def single_voter_email(voter_uuid, subject_template, body_template,
                        extra_vars={}, update_date=True,
                        update_booth_invitation_date=False):
     voter = Voter.objects.get(uuid=voter_uuid)
-    lang = voter.poll.election.email_language
+    lang = voter.poll.election.communication_language
     with translation.override(lang):
         the_vars = copy.copy(extra_vars)
         the_vars.update({'voter' : voter, 'poll': voter.poll,
@@ -101,7 +101,7 @@ def voters_email(poll_id, subject_template, body_template, extra_vars={},
 def send_cast_vote_email(poll_pk, voter_pk, signature):
     poll = Poll.objects.get(pk=poll_pk)
     election = poll.election
-    lang = election.email_language
+    lang = election.communication_language
     voter = poll.voters.filter().get(pk=voter_pk)
 
     with translation.override(lang):

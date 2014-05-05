@@ -262,7 +262,9 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
     name = models.CharField(_("Election name"), max_length=255,
                             help_text=help.election_name)
     short_name = models.CharField(max_length=255)
-    email_language = models.CharField(_("Email language"),max_length=5, null=True)
+    communication_language = models.CharField(_("Communication language"),
+                                              max_length=5, 
+                                              null=True)
     help_email = models.CharField(_("Support email"),
                                   max_length=254, null=True, blank=True,
                                   help_text=help.help_email)
@@ -1219,7 +1221,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
                   self.election.voting_extended_until,
                   [(self.name, json.dumps(results_json))],
                   self.questions,
-                  self.election.email_language,
+                  self.election.communication_language,
                   self.get_result_file_path('pdf', 'pdf'))
     else:
         from zeus.results_report import build_doc
@@ -2050,7 +2052,7 @@ class Trustee(HeliosModel, TrusteeFeatures):
         """
         Notify trustee
         """
-        lang = self.election.email_language
+        lang = self.election.communication_language
         with translation.override(lang):
             url = self.get_login_url()
             context = {

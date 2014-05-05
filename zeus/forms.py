@@ -90,7 +90,7 @@ class ElectionForm(forms.ModelForm):
         fields = ('trial', 'election_module', 'name', 'description',
                   'departments', 'voting_starts_at', 'voting_ends_at',
                   'voting_extended_until',
-                  'trustees', 'help_email', 'help_phone', 'email_language')
+                  'trustees', 'help_email', 'help_phone', 'communication_language')
 
     def __init__(self, institution, *args, **kwargs):
         self.institution = institution
@@ -101,9 +101,13 @@ class ElectionForm(forms.ModelForm):
         super(ElectionForm, self).__init__(*args, **kwargs)
         choices = [('en', _('English')),
                    ('el', _('Greek'))]
-        self.fields['email_language'] = forms.ChoiceField(label=_("Email language"),
-                                                          choices=choices,
-                                                          initial=lang)
+        help_text = _("Set the language that will be used for email messages "
+                      "and result documents")
+        self.fields['communication_language'] = forms.ChoiceField(label=
+                                                    _("Communication language"),
+                                                    choices=choices,
+                                                    initial=lang,
+                                                    help_text = help_text)
         self.creating = True
         self._inital_data = {}
         if self.instance and self.instance.pk:

@@ -207,8 +207,6 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
             elements.append(Spacer(1, 12))
             make_intro(elements, styles, intro_contents)
             elements.append(Spacer(1, 12))
-            #make_results(elements, styles, total_votes, blank_votes,
-            #             parties_results, candidates_results)
             
             #make dict with indexing as key and name as value
             counter = 0
@@ -220,9 +218,6 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
             json_data = json.loads(data[0][1])
             for item in json_data[0]:
                 elected.append([indexed_cands[item[0]]])
-            #table_style = TableStyle([('FONT', (0, 0), (-1, -1),
-            #'LinLibertineBd')])
-            #table_style = TableStyle([('ALIGN', (-1,-1), (-1,-1), 'LEFT')])
             table_style = TableStyle([('FONT', (0, 0), (-1, -1), 'LinLibertine')])
             t = Table(elected)
             t.setStyle(table_style)
