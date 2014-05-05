@@ -1,17 +1,20 @@
 {#foreach $T.questions as question}
 <div id="q_view_{$T.question$index}">
 <h4>
-{#if $T.admin_p}[
-{#if $T.question$index > 0}<a href="javascript:question_move_up({$T.question$index});">^</a>]&nbsp;[{#/if}
-<a href="javascript:question_remove({$T.question$index})">x</a>] [<a href="javascript:question_edit({$T.question$index})">editar</a>] {#/if}{$T.question$index + 1}. {$T.question.question} ({$T.question.choice_type}, selecionar entre {$T.question.min} e {#if $T.question.max != null}{$T.question.max}{#else}ilimitado{#/if} resposta(s), tipo de resultado {$T.question.result_type}.)</h4>
+{$T.question$index + 1}. {$T.question.question} ({$T.question.choice_type}, selecionar entre {$T.question.min} e {#if $T.question.max != null}{$T.question.max}{#else}ilimitado{#/if} resposta(s), tipo de resultado {$T.question.result_type}.)
+{#if $T.admin_p}
+{#if $T.question$index > 0} <a href="javascript:question_move_up({$T.question$index});"><i title="Mover questão para cima (reordenar)." class="glyphicon glyphicon-arrow-up"></i></a>&nbsp;{#/if}
+ <a href="javascript:question_remove({$T.question$index})"><i title="Remover Questão" class="glyphicon glyphicon-remove"></i></a> <a href="javascript:question_edit({$T.question$index})"><i title="Editar Questão" class="glyphicon glyphicon-edit"></i></a> {#/if}</h4>
 <ul>
 {#foreach $T.question.answers as answer}
 <li> {$T.answer}</li>
 {#/for}
 </ul>
 </div>
+<div class="row">
+<div class="col-md-12">
 <div id="q_edit_{$T.question$index}" style="display:none;">
-<form id="question_edit_{$T.question$index}_form" onsubmit="question_update({$T.question$index}, this); return false;" action="#">
+<form class="form form-horizontal" id="question_edit_{$T.question$index}_form" onsubmit="question_update({$T.question$index}, this); return false;" action="#">
 <p>
 <!--
   Type of Question:
@@ -75,7 +78,7 @@
 &nbsp;&nbsp;
 <!--answers.-->
 respostas.
-
+<i class="glyphicon glyphicon-question-sign"></i>
 &nbsp;&nbsp;
 &nbsp;&nbsp;
 <!--Result Type:&nbsp;-->
@@ -102,14 +105,20 @@ Tipo de Resultado:&nbsp;
 </div>
 {#else}
 <!-- no questions yet -->
-nenhuma questão ainda
+<span class="alert alert-info">nenhuma questão ainda</span>
 {#/for}
-
+</div>
+</div> <!-- end div row-->
+<br><br><br>
 {#if $T.admin_p}
+<div class="row">
+<div class="col-md-12">
+    <div class="well">
 <!--<h4>Add a Question:</h4>-->
-<h4>Adicionar Questão:</h4>
-<form id="question_form" onsubmit="question_add(this); return false;" action="#">
-<p>
+<h4><span class="label label-success">Adicionar Questão:</span></h4>
+<br><br>
+<form class="form-horizontal" role="form" id="question_form" onsubmit="question_add(this); return false;" action="#">
+<div class="form-group">
 <!--
   Type of Question:
   <select name="choice_type">
@@ -118,6 +127,7 @@ nenhuma questão ainda
 -->
 <input type="hidden" name="choice_type" value="aprovação" />
 <!--&nbsp;&nbsp;&nbsp;Select between &nbsp;&nbsp; -->
+
 &nbsp;&nbsp;&nbsp;Selecionar entre &nbsp;&nbsp;
 <select name="min">
     <option selected>0</option>
@@ -145,7 +155,6 @@ nenhuma questão ainda
 
 <!--&nbsp;&nbsp; and  &nbsp;&nbsp;-->
 &nbsp;&nbsp; e  &nbsp;&nbsp;
-
 <select name="max">
     <option>0</option>
     <option selected>1</option>
@@ -174,21 +183,24 @@ nenhuma questão ainda
 &nbsp;&nbsp;
 <!--answers.-->
 resposta(s).
-
+<i title="Quantas respostas o eleitor pode marcar para a questão. Por exemplo, se selecionar entre 1 e 1, o eleitor vai ter que marcar pelo menos uma e no máximo uma resposta." class="glyphicon glyphicon-question-sign"></i>
 &nbsp;&nbsp;
 &nbsp;&nbsp;
 <!--Result Type:&nbsp; -->
+<div id="result_type" style="display:none;">
 Tipo de Resultado: 
 <select name="result_type">
     <option selected>absoluto</option>
     <option>relativo</option>
 </select>
+ <i title="O tipo de resultado na apuração da questão. Na dúvida, escolha absoluto." class="glyphicon glyphicon-question-sign"></i>
+</div>
+</div>
 
-</p>
-
-<table id="answer_table">
+<div class="form-group">
+<table class="table table-striped" id="answer_table">
   <tbody>
-    <tr><th colspan="2">Questão:</th><td><input type="text" name="question" size="70" /></td></tr>
+    <tr><th colspan="2">Questão:</th><td><input type="text" name="question" size="70" /> <i title="A pergunta a ser feita ao eleitor." class="glyphicon glyphicon-question-sign"></i></td></tr>
     <tr><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr>
 <!--
     <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #1:</th><td><input type="text" name="answer_1" size="70" /></td></tr>
@@ -203,10 +215,14 @@ Tipo de Resultado:
     <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #10:</th><td><input type="text" name="answer_10" size="70" /></td></tr> -->
   </tbody>
   <tfoot>
-    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table'), 5)"><!--add 5 more answers--> adicionar mais 5 respostas</a></th></tr>
+    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table'), 5)"><!--add 5 more answers--> adicionar mais 5 respostas</a> <i title="Se precisar mais campos de resposta. Não vai ser necessário preencher todos." class="glyphicon glyphicon-question-sign"></i></th></tr>
     <tr><td colspan="2"><button type="submit" class="btn-primary">adicionar questão</button></td></tr>
   </tfoot>
 
 </table>
+</div>
 {#/if}
+</div>
+</div>
+</div>
 </form>
