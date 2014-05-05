@@ -35,28 +35,6 @@
     <div class="large-12 columns">
       <h2>{{election.name}}&mdash;Confirm Your Vote</h2>
 
-      <p>
-        We have received, <b>but not yet recorded</b>, your encrypted ballot.
-      </p>
-
-      <h3>Your Smart Ballot Tracker</h3>
-
-      <div class="panel callout">
-        <p class="text-center">
-          <tt class="big">{{vote_fingerprint}}</tt>
-        </p>
-      </div>
-
-      <div id="waiting_div">
-        <p>
-          Verifying and casting your ballot...
-        </p>
-
-        <p class="text-center">
-          <img src="/static/helios/loading.gif" />
-        </p>
-      </div>
-
       <div id="all_forms">
         {% if voter %}
           {% if election.voting_has_started %}
@@ -74,11 +52,21 @@
                   {% endif %}
 
                   <p>
-                    <b>To upload your encrypted ballot to the server, please click on the button below.</b>
+                    We have received, <b>but not yet recorded</b>, your encrypted ballot. <b>To upload your encrypted ballot to the server, please click on the button below.</b>
                   </p>
 
                   <div align="center">
-                    <button type="submit" class="remove_unload">I am <u>{{voter.display_html_big|safe}}</u>, cast this ballot!</button>
+                    <button type="submit" class="remove_unload">I am <u>{{voter.display_html_big|safe}}</u>, submit my vote!</button>
+                  </div>
+
+                  <div id="waiting_div">
+                    <p>
+                      Verifying and casting your ballot...
+                    </p>
+
+                    <p class="text-center">
+                      <img src="/static/helios/loading.gif" />
+                    </p>
                   </div>
 
                   <div data-alert class="alert-box warning">
@@ -163,6 +151,14 @@
             {% endif %}
           {% endif %}
         {% endif %}
+      </div>
+
+      <h3>Your Smart Ballot Tracker</h3>
+
+      <div class="panel callout">
+        <p class="text-center">
+          <tt class="big">{{vote_fingerprint}}</tt>
+        </p>
       </div>
     </div>
   </div>
