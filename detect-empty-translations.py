@@ -13,6 +13,7 @@ for po_file in po_files:
     msgstr = None
     msgid_line = 0
     fuzzy = False
+    line = None
 
     for line in open(po_file):
         msgid_line += 1
@@ -44,7 +45,8 @@ for po_file in po_files:
             msgid = None
             fuzzy = False
 
-    if (state == 0 and fuzzy) or (state == 2 and msgid is not None):
+    if None not in (line, msgid) and (state == 0 and fuzzy) \
+       or (state == 2 and msgid is not None):
         # last-in-file empty translation
         print "%s:%d: %s" % (po_file, msgid_line, msgid),
 
