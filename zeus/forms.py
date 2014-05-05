@@ -150,7 +150,18 @@ class ElectionForm(forms.ModelForm):
                     self.cleaned_data[field] = getattr(self.instance, field)
 
         return data
-
+    def clean_departments(self):
+        deps = self.cleaned_data.get('departments')
+        deps_arr = deps.split('\n')
+        cleaned_deps = []
+        for item in deps_arr:
+            item = item.strip()
+            item = item.lstrip()
+            if item:
+                cleaned_deps.append(item)
+        cleaned_deps = '\n'.join(cleaned_deps)
+        return cleaned_deps
+            
     def clean_voting_dates(self, starts, ends, extension):
         if ends < datetime.now() and self.instance.feature_edit_voting_ends_at:
             raise forms.ValidationError(_("Invalid voting end date"))
