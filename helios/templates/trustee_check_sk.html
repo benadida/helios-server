@@ -35,11 +35,11 @@ function check_sk(sk_value) {
     
     $('#processing').hide();
 
-    var reset_link = "<br /><a href='javascript:reset();'>try again</a>";
+    var reset_link = "<br /><a class='btn btn-primary' href='javascript:reset();'>try again</a><br />";
     if (key_ok_p) {
-      $('#result').html("your secret key matches!");
+      $('#result').html("<h3><span class='label label-info'>{% trans "your secret key matches!" %}</span></h3>");
     } else {
-      $('#result').html("OH OH, your key is bad." + reset_link);
+      $('#result').html("<h3><span class='label label-danger'>{% trans "OH OH, your key is bad." %}</span></h3>" + reset_link);
     }
 }
 </script>
@@ -62,7 +62,7 @@ function check_sk(sk_value) {
 <textarea name="secret_key" cols="60" rows ="5" wrap="soft">
 </textarea>
 <br />
-<input type="submit" value="{% trans "check" %}"/>
+<input class="btn btn-primary" type="submit" value="{% trans "check" %}"/>
 </form>
 </div>
 

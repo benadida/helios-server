@@ -2,145 +2,142 @@
 {% load i18n %}
 {% block title %}{% trans "Voters" %} &amp; {% trans "Ballot Tracking Center for" %} {{election.name}}{% endblock %}
 {% block content %}
-<div class="row">
 <div class="col-md-12">
   <h3 class="title">{{election.name}} &mdash; {% trans "Voters and Ballot Tracking Center" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
-<br /><br />
-<p>
-<b>{% trans "Who can vote?" %}</b>
-{% if election.openreg %}
-<!--{{election.pretty_eligibility|safe}}-->
-<label class="label label-info">{% trans "Any user with credentials" %}</label>
-{% else %}
-<label class="label label-info">{% trans "Only the voters listed here" %}.</label>
-{% endif %}
-</p>
-{% if admin_p and not election.frozen_at %}
-{% if election.private_p %}
-<em>{% blocktrans %}Your election is marked private, which means you cannot open registration up more widely{% endblocktrans %}</em>.<br />
-{% else %}
-<br />
+	<br /><br />
+	<p>
+	<b>{% trans "Who can vote?" %}</b>
+	{% if election.openreg %}
+	<!--{{election.pretty_eligibility|safe}}-->
+	<label class="label label-info">{% trans "Any user with credentials" %}</label>
+	{% else %}
+	<label class="label label-info">{% trans "Only the voters listed here" %}.</label>
+	{% endif %}
+	</p>
+	{% if admin_p and not election.frozen_at %}
+	{% if election.private_p %}
+	<em>{% blocktrans %}Your election is marked private, which means you cannot open registration up more widely{% endblocktrans %}</em>.<br />
+	{% else %}
+	<br />
+</div>
 <div class="col-md-12">
 <div class="well">
-<div class="form-group">
-<label>{% trans "You can change this setting:" %}</label>
-</div>
-<form method="post" role="form" class="form-horizontal" action="{% url helios.views.voters_eligibility election.uuid %}">
-<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-<div class="form-group">
-<input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> {% trans "anyone can vote" %}
-</div>
-<div class="form-group">
-<input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> {% trans "only voters listed explicitly below can vote" %} <i title="{% trans "Do not forget to upload voters file, using the bulk upload voters button bellow." %}" class="glyphicon glyphicon-info-sign"></i>
-</div>
-{% if categories %}
-<div class="form-group">
-<input type="radio" name="eligibility" value="{% trans "limitedreg" %}" {% if election.eligibility %}CHECKED{% endif %} /> {% trans "only voters who are members of " %}
-</div>
-<div class="form-group">
-<select name="category_id">
-{% for category in categories %}
-<option value="{{category.id}}" {% if eligibility_category_id == category.id %}SELECTED{% endif %}> {{category.name}}</option>
-{% endfor %}
-</select>
-</div>
-{% endif %}
-<div class="form-group">
-<button class="btn btn-primary">{% trans "update" %}</button>
-</div>
-</form>
-{% endif %}
-{% endif %}
-</div> <!-- end div well -->
-</div>
-{% if email_voters and election.frozen_at and admin_p %}
-<p><a class="button" href="{% url helios.views.voters_email election.uuid %}">{% trans "email voters" %}</a></p>
-{% endif %}
-{% if election.num_voters > 20 %}
-<p>
-{% if q %}
-<p><em>{% trans "searching for" %} <u>{{q}}</u>.</em> [<a href="?">{% trans "clear search" %}</a>]</p>
-{% else %}
+	<div class="form-group">
+	<label>{% trans "You can change this setting:" %}</label>
+	</div>
+	<form method="post" role="form" class="form-horizontal" action="{% url helios.views.voters_eligibility election.uuid %}">
+	<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+	<div class="form-group">
+	<input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> {% trans "anyone can vote" %}
+	</div>
+	<div class="form-group">
+	<input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> {% trans "only voters listed explicitly below can vote" %} <i title="{% trans "Do not forget to upload voters file, using the bulk upload voters button bellow." %}" class="glyphicon glyphicon-info-sign"></i>
+	</div>
+	{% if categories %}
+	<div class="form-group">
+	<input type="radio" name="eligibility" value="{% trans "limitedreg" %}" {% if election.eligibility %}CHECKED{% endif %} /> {% trans "only voters who are members of " %}
+	</div>
+	<div class="form-group">
+	<select name="category_id">
+	{% for category in categories %}
+	<option value="{{category.id}}" {% if eligibility_category_id == category.id %}SELECTED{% endif %}> {{category.name}}</option>
+	{% endfor %}
+	</select>
+	</div>
+	{% endif %}
+	<div class="form-group">
+	<button class="btn btn-primary">{% trans "update" %}</button>
+	</div>
+	</form>
+	</div>
+	{% endif %}
+	{% endif %}
+	{% if email_voters and election.frozen_at and admin_p %}
+	<p><a class="button" href="{% url helios.views.voters_email election.uuid %}">{% trans "email voters" %}</a></p>
+	{% endif %}
+	{% if election.num_voters > 20 %}
+	<p>
+	{% if q %}
+	<p><em>{% trans "searching for" %} <u>{{q}}</u>.</em> [<a href="?">{% trans "clear search" %}</a>]</p>
+	{% else %}
 
-<form method="get" action="{% url helios.views.voters_list_pretty election.uuid %}"><b>search</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
+	<form method="get" action="{% url helios.views.voters_list_pretty election.uuid %}"><b>search</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
 
-{% endif %}
-</p>
-{% endif %}
+	{% endif %}
+	</p>
+	{% endif %}
 </div> <!-- end column -->
-</div> <!-- end row -->
 
-<div class="row">
 <div class="col-md-12">
-{% if admin_p %}
-<!-- Add a Voter: WORK HERE-->
+	{% if admin_p %}
+	<!-- Add a Voter: WORK HERE-->
 
-{% if upload_p and not election.openreg %}
-<div class="form-group">
-<a class="btn btn-primary" href="{% url helios.views.voters_upload election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
+	{% if upload_p and not election.openreg %}
+	<div class="form-group">
+	<a class="btn btn-primary" href="{% url helios.views.voters_upload election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
+	</div>
+	{% endif %}
+	{% endif %}
+
+	{% if voters %}
+
+	<p>
+	<b>
+	{% if election.num_cast_votes %}
+	{{election.num_cast_votes}} {% trans "cast vote" %}{% ifequal election.num_cast_votes 1 %}{% else %}s{% endifequal %}
+	{% else %}
+	{% trans "no votes yet" %}
+	{% endif %}
+	</b>
+	</p>
+
+	{% if voters_page.has_previous %}
+	<a href="./list?page={{voters_page.previous_page_number}}&limit={{limit}}&q={{q|urlencode}}">{% trans "previous" %} {{limit}}</a> &nbsp;&nbsp;
+	{% endif %}
+
+
+	{% trans "Voters" %} {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voters}})&nbsp;&nbsp;
+
+	{% if voters_page.has_next %}
+	<a href="./list?page={{voters_page.next_page_number}}&limit={{limit}}&q={{q|urlencode}}">{% trans "next" %} {{limit}}</a> &nbsp;&nbsp;
+	{% endif %}
+	<br/><br/>
+	<table class="table table-striped">
+	<tr>
+	{% if admin_p or not election.use_voter_aliases %}
+	<th>{% trans "Name" %}</th>
+	{% endif %}
+
+	{% if election.use_voter_aliases %}
+	<th>{% trans "Alias" %}</th>
+	{% endif %}
+	<th>{% trans "Smart Ballot Tracker" %}</th>
+	</tr>
+	{% for voter in voters %}
+	<tr>
+	{% if admin_p or not election.use_voter_aliases %}
+	<td>
+	{% if admin_p %}
+	<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}"><i title="{% trans "Send email to this voter. This action will only be possible if the ballot is already frozen." %}" class="glyphicon glyphicon-envelope"></i></a>
+	<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}"><i title="{% trans "Remove voter" %}" class="glyphicon glyphicon-remove"></i></a>
+	{% endif %}
+	<!--<img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" />--> {{voter.name}}</td>
+	{% endif %}
+	{% if election.use_voter_aliases %}
+	<td>{{voter.alias}}</td>
+	{% endif %}
+	<td><tt style="font-size: 1.4em;;">{% if voter.vote_hash %}{{voter.vote_hash}}{% else %}&mdash;{% endif %}</tt></td>
+	</tr>
+	{% endfor %}
+	</table>
+
+	{% else %}
+	<br /><br />
+	<em>{% trans "no voters." %}</em>
+	{% endif %}
 </div>
-{% endif %}
-{% endif %}
 
-{% if voters %}
-
-<p>
-<b>
-{% if election.num_cast_votes %}
-{{election.num_cast_votes}} {% trans "cast vote" %}{% ifequal election.num_cast_votes 1 %}{% else %}s{% endifequal %}
-{% else %}
-{% trans "no votes yet" %}
-{% endif %}
-</b>
-</p>
-
-{% if voters_page.has_previous %}
-<a href="./list?page={{voters_page.previous_page_number}}&limit={{limit}}&q={{q|urlencode}}">{% trans "previous" %} {{limit}}</a> &nbsp;&nbsp;
-{% endif %}
-
-
-{% trans "Voters" %} {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voters}})&nbsp;&nbsp;
-
-{% if voters_page.has_next %}
-<a href="./list?page={{voters_page.next_page_number}}&limit={{limit}}&q={{q|urlencode}}">{% trans "next" %} {{limit}}</a> &nbsp;&nbsp;
-{% endif %}
-<br/><br/>
-<table class="table table-striped">
-<tr>
-{% if admin_p or not election.use_voter_aliases %}
-<th>{% trans "Name" %}</th>
-{% endif %}
-
-{% if election.use_voter_aliases %}
-<th>{% trans "Alias" %}</th>
-{% endif %}
-<th>{% trans "Smart Ballot Tracker" %}</th>
-</tr>
-{% for voter in voters %}
-<tr>
-{% if admin_p or not election.use_voter_aliases %}
-<td>
 {% if admin_p %}
-<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}"><i title="{% trans "Send email to this voter. This action will only be possible if the ballot is already frozen." %}" class="glyphicon glyphicon-envelope"></i></a>
-<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}"><i title="{% trans "Remove voter" %}" class="glyphicon glyphicon-remove"></i></a>
-{% endif %}
-<!--<img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" />--> {{voter.name}}</td>
-{% endif %}
-{% if election.use_voter_aliases %}
-<td>{{voter.alias}}</td>
-{% endif %}
-<td><tt style="font-size: 1.4em;;">{% if voter.vote_hash %}{{voter.vote_hash}}{% else %}&mdash;{% endif %}</tt></td>
-</tr>
-{% endfor %}
-</table>
-
-{% else %}
-<br /><br />
-<em>{% trans "no voters." %}</em>
-{% endif %}
-</div>
-</div> <!-- end row  -->
-
 {% if voter_files %}
 {% trans "Prior Bulk Uploads:" %}
 <ul>
@@ -166,5 +163,6 @@
 </li>
 {% endfor %}
 </ul>
+{% endif %}
 {% endif %}
 {% endblock %}
