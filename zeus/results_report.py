@@ -7,6 +7,7 @@ import datetime
 
 from xml.sax.saxutils import escape
 
+from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import cm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
@@ -21,6 +22,8 @@ from django.utils import translation
 from django.utils.translation import ugettext as _
 
 from zeus.core import PARTY_SEPARATOR
+from stv.parser import STVParser
+
 
 PAGE_WIDTH, PAGE_HEIGHT = A4
 
@@ -218,12 +221,15 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
             json_data = json.loads(data[0][1])
             for item in json_data[0]:
                 elected.append([indexed_cands[item[0]]])
-            table_style = TableStyle([('FONT', (0, 0), (-1, -1), 'LinLibertine')])
             t = Table(elected)
-            t.setStyle(table_style)
+            my_table_style = TableStyle([('FONT', (0, 0), (-1, -1),'LinLibertine'),
+                                         ('ALIGN',(1,1),(-2,-2),'LEFT'),
+                                         ('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
+                                         ('BOX', (0,0), (-1,-1), 0.25, colors.black),
+                                         ])
+            t.setStyle(my_table_style)
             elements.append(t)
              
-            from stv.parser import STVParser
             actions_desc = {
                 'elect': _('Elect'),
                 'eliminate': _('Eliminated'),
@@ -233,12 +239,6 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
             
             stv = STVParser(json_data[2])
             rounds = list(stv.rounds())
-            from reportlab.lib import colors
-            my_table_style = TableStyle([('FONT', (0, 0), (-1, -1),'LinLibertine'),
-                                         ('ALIGN',(1,1),(-2,-2),'LEFT'),
-                                         ('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
-                                         ('BOX', (0,0), (-1,-1), 0.25, colors.black),
-                                         ])
 
             for num, round in rounds:
                 round_name = _('Round ') 
