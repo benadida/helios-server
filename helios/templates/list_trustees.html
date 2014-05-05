@@ -25,7 +25,7 @@
 
 {% if admin_p %}
 <p>
-    [ <a onclick="return(confirm('Adding your own trustee requires a good bit more work to tally the election.\nYou will need to have trustees generate keypairs and safeguard their secret key.\n\nIf you are not sure what that means, we strongly recommend\nclicking Cancel and letting Helios tally the election for you.'));" href="{% url helios.views.new_trustee election.uuid %}">{% trans "add a trustee" %}</a> ]
+     <a class="btn btn-primary" id="add_trustee" href="{% url helios.views.new_trustee election.uuid %}">{% trans "add a trustee" %}</a> 
 </p>
 {% if not election.has_helios_trustee %}
 <p>
@@ -41,39 +41,51 @@
 {% else %}
 <br><br>
 <table class="table table-striped">
+  <thead>
+    <tr>
+      <th>{% trans "Trustee" %}</th>
+      <th>{% trans "Public Key Fingerprint:" %}</th>
+      <th></th>
+      <th></th>
+   </tr>
+
+  </thead>
+  <tbody>
 {% for t in trustees %}
 <tr>
-<td> {% trans "Trustee" %} #{{forloop.counter}}: {{t.name}} 
-{% if admin_p %}
-{% if t.secret_key %}
-{% if not election.frozen_at %}[<a onclick="return confirm('Are you sure you want to remove Helios as a trustee?');" href="{% url helios.views.delete_trustee election.uuid %}?uuid={{t.uuid}}">x</a>]{% endif %}
-{% else %}
-({{t.email}})
-{% if not election.frozen_at %}[<a onclick="return confirm('Are you sure you want to remove this Trustee?');" href="{% url helios.views.delete_trustee election.uuid %}?uuid={{t.uuid}}">x</a>]{% endif %}
-[<a onclick="return confirm('Are you sure you want to send this trustee his/her admin URL?');" href="{% url helios.views.trustee_send_url election.uuid t.uuid %}">{% trans "send login" %}</a>]
-{% endif %}
-{% endif %}
+<td>#{{forloop.counter}}: {{t.name}}</td>
+<td>
 
-<p>
 {% if t.public_key_hash %}
-  {% trans "Public Key Fingerprint:" %} <tt style="font-size:1.5em;">{{t.public_key_hash}}</tt>
+  <strong>{{t.public_key_hash}}</strong>
 {% else %}
 {% trans "No public key uploaded yet." %}
 {% endif %}
-</p>
 
+</td>
+<td>
 {% if election.encrypted_tally %}
 {% if t.decryption_factors %}
-<b>{% trans "tally recorded for this trustee." %}</b>
+<span title="{% trans "tally recorded for this trustee." %}" class="glyphicon glyphicon-ok-sign"></span>
 {% else %}
-<em>{% trans "waiting for this trustee's tally" %}</em>
+<span title="{% trans "waiting for this trustee's tally" %}" class="glyphicon glyphicon-info-sign"></span>
 {% endif %}
 {% endif %}
-</li>
-{% endfor %}
-</ul>
+</td>
+<td>
+  {% if admin_p %}
+{% if t.secret_key %}
+{% if not election.frozen_at %}<a id="remove_helios_as_trustee" class="glyphicon glyphicon-remove" href="{% url helios.views.delete_trustee election.uuid %}?uuid={{t.uuid}}"></a>{% endif %}
+{% else %}
+<em>{{t.email}}</em>
+{% if not election.frozen_at %}<a id="remove_trustee" class="glyphicon glyphicon-remove" href="{% url helios.views.delete_trustee election.uuid %}?uuid={{t.uuid}}"></a>{% endif %}
+<a title="{% trans "send login" %}" class="glyphicon glyphicon-envelope" id="send_trustee_url" href="{% url helios.views.trustee_send_url election.uuid t.uuid %}"></a>
+{% endif %}
+{% endif %}
 </td>
 </tr>
+{% endfor %}
+</tbody>
 </table>
 {% endif %}
 
