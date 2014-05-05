@@ -5,6 +5,8 @@ Glue some events together
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.utils.translation import ugettext as _
+
 import helios.views, helios.signals
 
 import views
