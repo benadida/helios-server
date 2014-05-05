@@ -1219,6 +1219,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
                   self.election.voting_extended_until,
                   [(self.name, json.dumps(results_json))],
                   self.questions,
+                  self.election.email_language,
                   self.get_result_file_path('pdf', 'pdf'))
     else:
         from zeus.results_report import build_doc

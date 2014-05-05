@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-02 15:22+0300\n"
+"POT-Creation-Date: 2014-05-05 16:43+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,10 +25,10 @@ msgid "Multiple mixnets"
 msgstr "Πολλαπλές μίξεις"
 
 msgid "English"
-msgstr ""
+msgstr "Αγγλικά"
 
 msgid "Greek"
-msgstr ""
+msgstr "Ελληνικά"
 
 msgid "Email language"
 msgstr ""
@@ -198,10 +198,59 @@ msgstr "Επιβεβαιώστε τη διαγραφή της επιλεγμέν
 msgid "Results"
 msgstr "Αποτελέσματα"
 
+msgid "Zeus Elections - Poll Results"
+msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
+
+#, python-format
+msgid "Start: %(date)s"
+msgstr "Έναρξη: %(date)s"
+
+#, python-format
+msgid "End: %(date)s"
+msgstr "Λήξη: %(date)s"
+
+#, python-format
+msgid "Extension: %(date)s"
+msgstr "Παράταση: %(date)s"
+
+msgid "Elected"
+msgstr "Εκλεγμένοι"
+
+msgid "Elect"
+msgstr "Εκλογή"
+
+msgid "Eliminated"
+msgstr "Αποκλεισμός"
+
+msgid "Eliminated due to quota restriction"
+msgstr "Αποκλεισμός λόγω περιορισμού"
+
+msgid "Candidate"
+msgstr "Υποψήφιος"
+
+msgid "Votes"
+msgstr "Ψήφοι"
+
+msgid "Draw"
+msgstr "Κλήρωση"
+
+msgid "Action"
+msgstr "Ενέργεια"
+
+msgid "Round "
+msgstr "Γύρος "
+
+msgid "NO"
+msgstr "ΟΧΙ"
+
+msgid "YES"
+msgstr "ΝΑΙ"
+
 #, python-format
 msgid "%(election_name)s - vote cast"
 msgstr "%(election_name)s - ψήφος ελήφθη"
 
+#, python-format
 msgid ""
 "You have successfully cast a vote in\n"
 "\n"
@@ -238,9 +287,6 @@ msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επι
 msgid "Party lists election"
 msgstr "Ψηφοφορία με συνδυασμούς"
 
-msgid "Candidate"
-msgstr "Υποψήφιος"
-
 msgid "Party"
 msgstr "Συνδυασμός"
 
@@ -264,6 +310,10 @@ msgstr "Λίστα υποψηφίων"
 
 msgid "Are you sure ?"
 msgstr "Επιβεβαιώστε"
+
+#, fuzzy
+msgid "Enter a valid e-mail address. "
+msgstr "Μη έγκυρη διεύθυνση email"
 
 msgid "No file uploaded"
 msgstr "Δεν βρέθηκε αρχείο"
@@ -296,8 +346,8 @@ msgstr "Δεν είναι δυνατή η δημιουργία δοκιμαστ�
 msgid "An email with demo credentials has been sent to %s"
 msgstr "Ο δοκιμαστικός λογαριασμός σας έχει σταλεί στη διεύθυνση email %s"
 
-#~ msgid "Zeus Elections - Results"
-#~ msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
+#~ msgid "End: %s"
+#~ msgstr "Τέλος:"
 
 #~ msgid "Total ballots:"
 #~ msgstr "Σύνολο ψηφοδελτίων:"
@@ -307,15 +357,6 @@ msgstr "Ο δοκιμαστικός λογαριασμός σας έχει στ�
 
 #~ msgid "%Y-%m-%d %H:%M"
 #~ msgstr "%d/%m/%Y %H:%M"
-
-#~ msgid "Start:"
-#~ msgstr "Έναρξη:"
-
-#~ msgid "End:"
-#~ msgstr "Τέλος:"
-
-#~ msgid "Extension:"
-#~ msgstr "Παράταση:"
 
 #~ msgid "Welcome to the electronic voting booth by Zeus Elections."
 #~ msgstr ""

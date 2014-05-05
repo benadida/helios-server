@@ -17,12 +17,14 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfdoc
 from django.conf import settings
+from django.utils import translation
+from django.utils.translation import ugettext as _
 
 from zeus.core import PARTY_SEPARATOR
 
 PAGE_WIDTH, PAGE_HEIGHT = A4
 
-pageinfo = "Zeus Elections - Poll Results"
+pageinfo = _("Zeus Elections - Poll Results")
 
 default_path = '/usr/share/fonts/truetype/linux-libertine/LinLibertine_Re.ttf'
 linlibertine = TTFont('LinLibertine',
@@ -130,214 +132,232 @@ def make_results(elements, styles, total_votes, blank_votes,
             make_party_list_table(elements, styles, candidates_results[party])
 
 def build_stv_doc(title, name, institution_name, voting_start, voting_end,
-              extended_until, data, questions, filename="election_results.pdf",
-              new_page=True):
-    DATE_FMT = "%d/%m/%Y %H:%S"
-    if isinstance(voting_start, datetime.datetime):
-        voting_start = 'Start: %s' % (voting_start.strftime(DATE_FMT))
+              extended_until, data, questions, language, filename="election_results.pdf", new_page=True):
+    with translation.override(language):
+        title = _('Results')
+        DATE_FMT = "%d/%m/%Y %H:%S"
+        if isinstance(voting_start, datetime.datetime):
+            voting_start = _('Start: %(date)s') % {'date':
+            voting_start.strftime(DATE_FMT)}
 
-    if isinstance(voting_end, datetime.datetime):
-        voting_end = 'End: %s' % (voting_end.strftime(DATE_FMT))
+        if isinstance(voting_end, datetime.datetime):
+            voting_end = _('End: %(date)s') % {'date':
+            voting_end.strftime(DATE_FMT)}
 
-    if extended_until and isinstance(extended_until, datetime.datetime):
-        extended_until = 'Extension: %s' % (extended_until.strftime(DATE_FMT))
-    else:
-        extended_until = ""
+        if extended_until and isinstance(extended_until, datetime.datetime):
+            extended_until = _('Extension: %(date)s') % {'date':
+            extended_until.strftime(DATE_FMT)}
+        else:
+            extended_until = ""
 
-    if not isinstance(data, list):
-        data = [(name, data)]
+        if not isinstance(data, list):
+            data = [(name, data)]
 
-    # reset pdfdoc timestamp in order to force a fresh one to be used in
-    # pdf document metadata.
-    pdfdoc._NOWT = None
+        # reset pdfdoc timestamp in order to force a fresh one to be used in
+        # pdf document metadata.
+        pdfdoc._NOWT = None
 
-    elements = []
+        elements = []
 
-    doc = SimpleDocTemplate(filename, pagesize=A4)
+        doc = SimpleDocTemplate(filename, pagesize=A4)
 
-    styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='Zeus',
-                              fontName='LinLibertine',
-                              fontSize=12,
-                              leading=16,
-                              alignment=TA_JUSTIFY))
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='Zeus',
+                                  fontName='LinLibertine',
+                                  fontSize=12,
+                                  leading=16,
+                                  alignment=TA_JUSTIFY))
 
-    styles.add(ParagraphStyle(name='ZeusSubHeading',
-                              fontName='LinLibertineBd',
-                              fontSize=14,
-                              alignment=TA_JUSTIFY,
-                              spaceAfter=16))
+        styles.add(ParagraphStyle(name='ZeusSubHeading',
+                                  fontName='LinLibertineBd',
+                                  fontSize=14,
+                                  alignment=TA_JUSTIFY,
+                                  spaceAfter=16))
 
-    styles.add(ParagraphStyle(name='ZeusHeading',
-                              fontName='LinLibertineBd',
-                              fontSize=16,
-                              alignment=TA_CENTER,
-                              spaceAfter=16))
-    intro_contents = [
-        voting_start,
-        voting_end,
-        extended_until
-    ]
-
-
-    make_heading(elements, styles, [title, name, institution_name])
-    make_intro(elements, styles, intro_contents)
-
-    for poll_name, poll_results in data:
-        poll_intro_contents = [
-            poll_name
+        styles.add(ParagraphStyle(name='ZeusHeading',
+                                  fontName='LinLibertineBd',
+                                  fontSize=16,
+                                  alignment=TA_CENTER,
+                                  spaceAfter=16))
+        intro_contents = [
+            voting_start,
+            voting_end,
+            extended_until
         ]
-        parties_results = []
-        candidates_results = {}
 
-        #total_votes, blank_votes, parties_results, candidates_results = \
-        #    load_results(poll_results)
-        if new_page:
-            elements.append(PageBreak())
-        elements.append(Spacer(1, 12))
-        elements.append(Spacer(1, 12))
-        elements.append(Spacer(1, 12))
-        make_subheading(elements, styles, poll_intro_contents)
-        elements.append(Spacer(1, 12))
+
+        make_heading(elements, styles, [title, name, institution_name])
         make_intro(elements, styles, intro_contents)
-        elements.append(Spacer(1, 12))
-        #make_results(elements, styles, total_votes, blank_votes,
-        #             parties_results, candidates_results)
-        
-        #make dict with indexing as key and name as value
-        counter = 0
-        indexed_cands = {}
-        for item in questions[0]['answers']:
-            indexed_cands[str(counter)] = item
-            counter += 1
-        elected = [['Elected']]
-        json_data = json.loads(data[0][1])
-        for item in json_data[0]:
-            elected.append([indexed_cands[item[0]]])
-        table_style = TableStyle([('FONT', (0, 0), (-1, -1), 'LinLibertine')])
-        t = Table(elected)
-        t.setStyle(table_style)
-        elements.append(t)
-         
-        from stv.parser import STVParser
-        actions_desc = {
-            'elect': 'Elected',
-            'eliminate': 'Eliminated',
-            'quota': 'Eliminated due to quota restriction'}
-        
-        table_header = ['Candidate', 'Votes', 'Draw', 'Action']
-        
-        stv = STVParser(json_data[2])
-        rounds = list(stv.rounds())
-        from reportlab.lib import colors
-        my_table_style = TableStyle([('ALIGN',(1,1),(-2,-2),'RIGHT'),
-                                     ('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
-                                     ('BOX', (0,0), (-1,-1), 0.25, colors.black),
-                                     ])
 
-        for num, round in rounds:
-            round_table = [] 
-            temp_table = []
-            temp_table.append(table_header)
-            for name, cand in round['candidates'].iteritems():
-                actions = map(lambda x: x[0], cand['actions'])
-                draw = "NO"
-                if 'random' in actions:
-                    draw = "YES"
-                action = None
-                if len(actions):
-                    action = actions_desc.get(actions[-1])
-                votes = cand['votes']
-                row = [name, votes, draw, action]
-                temp_table.append(row)
-            round_table = Table(temp_table)    
-            round_table.setStyle(my_table_style)
-            elements.append(round_table)
+        for poll_name, poll_results in data:
+            poll_intro_contents = [
+                poll_name
+            ]
+            parties_results = []
+            candidates_results = {}
+
+            #total_votes, blank_votes, parties_results, candidates_results = \
+            #    load_results(poll_results)
+            if new_page:
+                elements.append(PageBreak())
             elements.append(Spacer(1, 12))
+            elements.append(Spacer(1, 12))
+            elements.append(Spacer(1, 12))
+            make_subheading(elements, styles, poll_intro_contents)
+            elements.append(Spacer(1, 12))
+            make_intro(elements, styles, intro_contents)
+            elements.append(Spacer(1, 12))
+            #make_results(elements, styles, total_votes, blank_votes,
+            #             parties_results, candidates_results)
+            
+            #make dict with indexing as key and name as value
+            counter = 0
+            indexed_cands = {}
+            for item in questions[0]['answers']:
+                indexed_cands[str(counter)] = item
+                counter += 1
+            elected = [[_('Elected')]]
+            json_data = json.loads(data[0][1])
+            for item in json_data[0]:
+                elected.append([indexed_cands[item[0]]])
+            #table_style = TableStyle([('FONT', (0, 0), (-1, -1),
+            #'LinLibertineBd')])
+            #table_style = TableStyle([('ALIGN', (-1,-1), (-1,-1), 'LEFT')])
+            table_style = TableStyle([('FONT', (0, 0), (-1, -1), 'LinLibertine')])
+            t = Table(elected)
+            t.setStyle(table_style)
+            elements.append(t)
+             
+            from stv.parser import STVParser
+            actions_desc = {
+                'elect': _('Elect'),
+                'eliminate': _('Eliminated'),
+                'quota': _('Eliminated due to quota restriction')}
+            
+            table_header = [_('Candidate'), _('Votes'), _('Draw'), _('Action')]
+            
+            stv = STVParser(json_data[2])
+            rounds = list(stv.rounds())
+            from reportlab.lib import colors
+            my_table_style = TableStyle([('FONT', (0, 0), (-1, -1),'LinLibertine'),
+                                         ('ALIGN',(1,1),(-2,-2),'LEFT'),
+                                         ('INNERGRID', (0,0), (-1,-1), 0.25, colors.black),
+                                         ('BOX', (0,0), (-1,-1), 0.25, colors.black),
+                                         ])
 
-    doc.build(elements, onFirstPage = make_first_page_hf,
-              onLaterPages = make_later_pages_hf)
+            for num, round in rounds:
+                round_name = _('Round ') 
+                round_name += str(num)
+                elements.append(Paragraph(round_name,styles['Zeus']))
+                round_table = [] 
+                temp_table = []
+                temp_table.append(table_header)
+                for name, cand in round['candidates'].iteritems():
+                    actions = map(lambda x: x[0], cand['actions'])
+                    draw = _("NO")
+                    if 'random' in actions:
+                        draw = _("YES")
+                    action = None
+                    if len(actions):
+                        action = actions_desc.get(actions[-1])
+                    votes = cand['votes']
+                    cand_name = indexed_cands[str(name)]
+                    cand_name = cand_name.split(':')[0]
+                    row = [cand_name, votes, draw, action]
+                    temp_table.append(row)
+                round_table = Table(temp_table)    
+                round_table.setStyle(my_table_style)
+                elements.append(round_table)
+                elements.append(Spacer(1, 12))
 
+        doc.build(elements, onFirstPage = make_first_page_hf,
+                  onLaterPages = make_later_pages_hf)
 
+    
 def build_doc(title, name, institution_name, voting_start, voting_end,
               extended_until, data, filename="election_results.pdf",
               new_page=True):
 
+    with translation.override(language):
+        title = _('Results')
+        DATE_FMT = "%d/%m/%Y %H:%S"
+        if isinstance(voting_start, datetime.datetime):
+            voting_start = _('Start: %(date)s') % {'date':
+            voting_start.strftime(DATE_FMT)}
 
-    DATE_FMT = "%d/%m/%Y %H:%S"
-    if isinstance(voting_start, datetime.datetime):
-        voting_start = 'Start: %s' % (voting_start.strftime(DATE_FMT))
+        if isinstance(voting_end, datetime.datetime):
+            voting_end = _('End: %(date)s') % {'date':
+            voting_end.strftime(DATE_FMT)}
 
-    if isinstance(voting_end, datetime.datetime):
-        voting_end = 'End: %s' % (voting_end.strftime(DATE_FMT))
-
-    if extended_until and isinstance(extended_until, datetime.datetime):
-        extended_until = 'Extension: %s' % (extended_until.strftime(DATE_FMT))
-    else:
-        extended_until = ""
-
-    if not isinstance(data, list):
-        data = [(name, data)]
-
-    # reset pdfdoc timestamp in order to force a fresh one to be used in
-    # pdf document metadata.
-    pdfdoc._NOWT = None
-
-    elements = []
-
-    doc = SimpleDocTemplate(filename, pagesize=A4)
-
-    styles = getSampleStyleSheet()
-    styles.add(ParagraphStyle(name='Zeus',
-                              fontName='LinLibertine',
-                              fontSize=12,
-                              leading=16,
-                              alignment=TA_JUSTIFY))
-
-    styles.add(ParagraphStyle(name='ZeusSubHeading',
-                              fontName='LinLibertineBd',
-                              fontSize=14,
-                              alignment=TA_JUSTIFY,
-                              spaceAfter=16))
-
-    styles.add(ParagraphStyle(name='ZeusHeading',
-                              fontName='LinLibertineBd',
-                              fontSize=16,
-                              alignment=TA_CENTER,
-                              spaceAfter=16))
-    intro_contents = [
-        voting_start,
-        voting_end,
-        extended_until
-    ]
+        if extended_until and isinstance(extended_until, datetime.datetime):
+            extended_until = _('Extension: %(date)s') % {'date':
+            extended_until.strftime(DATE_FMT)}
+        else:
+            extended_until = ""
 
 
-    make_heading(elements, styles, [title, name, institution_name])
-    make_intro(elements, styles, intro_contents)
+        if not isinstance(data, list):
+            data = [(name, data)]
 
-    for poll_name, poll_results in data:
-        poll_intro_contents = [
-            poll_name
+        # reset pdfdoc timestamp in order to force a fresh one to be used in
+        # pdf document metadata.
+        pdfdoc._NOWT = None
+
+        elements = []
+
+        doc = SimpleDocTemplate(filename, pagesize=A4)
+
+        styles = getSampleStyleSheet()
+        styles.add(ParagraphStyle(name='Zeus',
+                                  fontName='LinLibertine',
+                                  fontSize=12,
+                                  leading=16,
+                                  alignment=TA_JUSTIFY))
+
+        styles.add(ParagraphStyle(name='ZeusSubHeading',
+                                  fontName='LinLibertineBd',
+                                  fontSize=14,
+                                  alignment=TA_JUSTIFY,
+                                  spaceAfter=16))
+
+        styles.add(ParagraphStyle(name='ZeusHeading',
+                                  fontName='LinLibertineBd',
+                                  fontSize=16,
+                                  alignment=TA_CENTER,
+                                  spaceAfter=16))
+        intro_contents = [
+            voting_start,
+            voting_end,
+            extended_until
         ]
-        parties_results = []
-        candidates_results = {}
 
-        total_votes, blank_votes, parties_results, candidates_results = \
-            load_results(poll_results)
-        if new_page:
-            elements.append(PageBreak())
-        elements.append(Spacer(1, 12))
-        elements.append(Spacer(1, 12))
-        elements.append(Spacer(1, 12))
-        make_subheading(elements, styles, poll_intro_contents)
-        elements.append(Spacer(1, 12))
+
+        make_heading(elements, styles, [title, name, institution_name])
         make_intro(elements, styles, intro_contents)
-        elements.append(Spacer(1, 12))
-        make_results(elements, styles, total_votes, blank_votes,
-                     parties_results, candidates_results)
 
-    doc.build(elements, onFirstPage = make_first_page_hf,
-              onLaterPages = make_later_pages_hf)
+        for poll_name, poll_results in data:
+            poll_intro_contents = [
+                poll_name
+            ]
+            parties_results = []
+            candidates_results = {}
+
+            total_votes, blank_votes, parties_results, candidates_results = \
+                load_results(poll_results)
+            if new_page:
+                elements.append(PageBreak())
+            elements.append(Spacer(1, 12))
+            elements.append(Spacer(1, 12))
+            elements.append(Spacer(1, 12))
+            make_subheading(elements, styles, poll_intro_contents)
+            elements.append(Spacer(1, 12))
+            make_intro(elements, styles, intro_contents)
+            elements.append(Spacer(1, 12))
+            make_results(elements, styles, total_votes, blank_votes,
+                         parties_results, candidates_results)
+
+        doc.build(elements, onFirstPage = make_first_page_hf,
+                  onLaterPages = make_later_pages_hf)
 
 
 def main():
