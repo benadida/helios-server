@@ -1,6 +1,7 @@
 from django.shortcuts import redirect
 from django.db import IntegrityError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.urlresolvers import reverse
 from django.contrib import messages
 from django.utils.translation import ugettext as _
 
@@ -102,8 +103,9 @@ def create_user(request):
                 user = form.save()
                 message = _("Changes on user were successfully saved")
                 messages.success(request, message)
-                return redirect('/account_administration/user_management/'
-                                '?user_id_filter='+str(user.id))
+                url = "%s?user_id_filter=%s" % (reverse('user_management'),
+                                                str(user.id))
+                return redirect(url)
 
             else:
                 user = form.save(commit=False)
@@ -122,8 +124,9 @@ def create_user(request):
                             " password %(password)s.") % {'uid': user.user_id,
                                                         'password': password}
                 messages.success(request, message)
-                return redirect('/account_administration/user_management/'
-                                '?user_id_filter='+str(user.id))
+                url = "%s?user_id_filter=%s" % (reverse('user_management'),
+                                                str(user.id))
+                return redirect(url)
         else:
             context = {'form': form}
             return render_template(
@@ -160,7 +163,7 @@ def create_institution(request):
             inst = form.save()
             inst.save()
             messages.success(request, _("Institution created."))
-            return redirect('/account_administration/institution_creation')
+            return redirect(reverse('create_institution'))
         else:
             return render_template(
                 request,
@@ -249,9 +252,10 @@ def reset_password_confirmed(request):
     else:
         message = _("You didn't choose a user")
         messages.error(request, message)
-        return redirect('/account_administration/user_list')
-    return redirect('/account_administration/user_management'
-                    '?user_id_filter='+str(user.id))
+        return redirect(reverse('list_users'))
+    url = "%s?user_id_filter=%s" % (reverse('user_management'),
+                                   str(user.id))
+    return redirect(url)
 
 
 @manager_or_superadmin_required
@@ -298,7 +302,7 @@ def inst_deletion_confirmed(request):
                 )
     else:
         messages.error(request, _("No such institution"))
-    return redirect('/account_administration/institution_list')
+    return redirect(reverse('list_institutions'))
 
 
 @manager_or_superadmin_required
@@ -354,7 +358,7 @@ def user_deletion_confirmed(request):
     else:
         messages.error(request, _("You didn't choose a user"))
 
-    return redirect('/account_administration/user_list')
+    return redirect(reverse('list_users'))
 
 def get_active_users():
     return User.objects.filter(is_disabled=False)
