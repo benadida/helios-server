@@ -21,6 +21,8 @@ class userForm(ModelForm):
         inst_name = self.cleaned_data['institution']
         try:
             inst = Institution.objects.get(name=inst_name)
+            if inst.is_disabled:
+                raise Institution.DoesNotExist
             self.cleaned_data['institution'] = inst
             return self.cleaned_data['institution']
         except Institution.DoesNotExist:
