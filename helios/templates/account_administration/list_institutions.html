@@ -39,13 +39,15 @@
         {% with user_num=inst.user_set.count %}
         <td>{{inst.id}}</td>
         <td>{{inst.name}}</td>
-        <td><a href="/account_administration/user_list/?inst_filter={{inst.name}}">{{user_num}}</a></td>
+        <td><a href={% url list_users%}?inst_filter={{inst.name}}>
+                                                    {{user_num}}</a></td>
         <td>
             {% if not user_num and not inst.election_set.count %}
-                <a href="/account_administration/delete_institution/?id={{inst.id}}">{% trans "Delete" %}</a>
+                <a href={% url delete_institution%}?id={{inst.id}}>
+                                            {% trans "Delete" %}</a>
             {% endif %}</td>
         {% endwith %}
-        <td><a href="/account_administration/user_creation?id={{inst.id}}">
+        <td><a href={% url create_user %}?id={{inst.id}}>
             {% trans "Create User"%} </a>
         </td>
     </tr>
@@ -59,18 +61,20 @@
 
 <div class="pagination" style="text-align:center;">
     <span class="step-links">
-            {% if institutions.has_previous %}
-                <a
-                href="/account_administration/institution_list/?page={{institutions.previous_page_number}}{%
-                get_filters_for_url request.GET%}">{% trans "previous" %}</a>
-            {% endif %}
+        {% if institutions.has_previous %}
+            <a href=
+            {%url list_institutions%}?page={{institutions.previous_page_number}}
+            {% get_filters_for_url request.GET%}>{% trans "previous" %}</a>
+        {% endif %}
     <span class="current">
        {% trans "Page" %} {{ institutions.number }} {% trans "of" %} {{ institutions.paginator.num_pages}}.
     </span>
-
-          {% if institutions.has_next %}
-          <a href="/account_administration/institution_list/?page={{institutions.next_page_number}}{% get_filters_for_url request.GET%}">{% trans "next" %}</a>
+        {% if institutions.has_next %}
+          <a href=
+         {% url list_institutions%}?page={{institutions.next_page_number}}
+         {% get_filters_for_url request.GET%}">{% trans "next" %}</a>
           {% endif %}
      </span>
 </div>
+
 {% endblock content%}

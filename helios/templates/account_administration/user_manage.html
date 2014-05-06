@@ -30,51 +30,64 @@
 </table>
 {% if u_data.management_p or u_data.superadmin_p %}
 {% if user_type == 'superadmin'%}
-<br>
-<a href="/account_administration/user_management/?change_pass=yes&user_id_filter={{u_data.id}}">
-{% trans "Reset Password" %}</a>
-</br></br>
-<a href="/account_administration/user_creation?edit_id={{u_data.id}}">{% trans "Edit" %}
-</a>
-</br></br>
+    <br>
+    
+    <a href={% url user_management %}?change_pass=yes&user_id_filter={{u_data.id}}>
+    {% trans "Reset Password" %}</a>
+    
+    </br></br>
+    
+    <a href={% url create_user %}?edit_id={{u_data.id}}>{% trans "Edit" %}</a>
+    
+    </br></br>
+
 {% if u_data.elections.count == 0%}
-<a href="/account_administration/delete_user/?id={{u_data.id}}">{%trans "Delete Account"%}</a>
-</br></br>
+    <a href={% url delete_user %}?id={{u_data.id}}>{%trans "Delete Account"%}</a>
+    </br></br>
 {% endif%}
 {% endif %}
 
 {%else%}
+
 <br>
 
-<a href="/account_administration/reset_password?user_id_filter={{u_data.id}}">
-{% trans "Reset Password" %}</a>
-</br></br>
-<a href="/account_administration/user_creation?edit_id={{u_data.id}}">{% trans "Edit" %}
-</a>
-</br></br>
+    <a href={% url reset_password %}?user_id_filter={{u_data.id}}>
+    {% trans "Reset Password" %}</a>
+    
+    </br></br>
+
+    <a href={% url create_user%}?edit_id={{u_data.id}}>{% trans "Edit" %}</a>
+
+    </br></br>
+
 {% if u_data.elections.count == 0 %}
-<a href="/account_administration/delete_user/?id={{u_data.id}}">{%trans "Delete Account"%}</a>
-</br></br>
+    <a href={% url delete_user %}?id={{u_data.id}}>{%trans "Delete Account"%}</a>
+
+    </br></br>
+
 {% endif%}
 {% endif %}
 {% endif %}
 
-<a href="/account_administration/user_list">{% trans "Back" %}</a></br></br>
+<a href={% url list_users%}>{% trans "Back" %}</a></br></br>
 
 {% if u_data %}
-<table border=1>
-<tr>
-    <td>{% trans "Election Name" %}</td>
-    <td>{% trans "Start date" %}</td>
-    <td>{% trans "End Date" %}</td>
-    <td>{% trans "Results" %}</td>
-</tr>
-    {%for el in u_data.elections.all%}
-<tr>
-    <td>{{el.name}}</td><td>{{el.voting_starts_at}}</td><td>{{el.voting_ends_at}}</td>
-</tr>
+    <table border=1>
+        <tr>
+            <td>{% trans "Election Name" %}</td>
+            <td>{% trans "Start date" %}</td>
+            <td>{% trans "End Date" %}</td>
+            <td>{% trans "Results" %}</td>
+        </tr>
+        
+        {%for el in u_data.elections.all%}
+        <tr>
+            <td>{{el.name}}</td>
+            <td>{{el.voting_starts_at}}</td>
+            <td>{{el.voting_ends_at}}</td>
+        </tr>
     {% endfor %}
-</table>
+    </table>
     
 {% endif%}
 
