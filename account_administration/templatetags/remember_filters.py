@@ -1,11 +1,11 @@
 from django import template
+from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
 register = template.Library()
 
 
 @register.simple_tag
 def get_filters_for_url(get):
-
     filters_for_url = ""
     if 'inst_filter' in get:
         if get['inst_filter']:
@@ -39,10 +39,10 @@ def read_dict(the_dict, the_key):
 @register.simple_tag
 def clear_filters_for_user(get):
     if 'inst_filter' in get or 'uname_filter' in get:
-        if get['inst_filter'] or get['uname_filter']:
+        if get.get('inst_filter') or get.get('uname_filter'):
             clear = _("Clear Filters")
-            return ("<a href='/account_administration/user_list/'>"+
-                    clear+"</a></br>")
+            url = reverse('list_users')
+            return ("<a href="+url+">"+clear+"</a></br>")
     else:
         return "</br>"
 
@@ -51,7 +51,8 @@ def clear_filters_for_institution(get):
     if 'inst_filter' in get:
         if get['inst_filter']:
             clear = _("Clear Filters")
-            return ("<a href='/account_administration/institution_list/'>"+
+            url = reverse('list_institutions')
+            return ("<a href="+url+">"+
                     clear+"</a></br>")
     else:
         return '</br>' 
