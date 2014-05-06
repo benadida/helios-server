@@ -317,7 +317,7 @@ def delete_user(request):
     context = {'user_for_deletion': user_for_deletion}
     return render_template(
         request,
-        '/account_administration/delete_user',
+        'account_administration/delete_user',
         context)
 
 
