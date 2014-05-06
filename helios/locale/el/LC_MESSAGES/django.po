@@ -1319,6 +1319,9 @@ msgid ""
 "    "
 msgstr ""
 
+#~ msgid "Communication language"
+#~ msgstr "Γλώσσα επικοινωνίας"
+
 #, fuzzy
 #~ msgid "Position"
 #~ msgstr "Ίδρυμα"
