@@ -112,7 +112,7 @@ Helios
                 body = """Dear %s,
 
 The election administrator has computed the encrypted tally.
-Before the result can be released, you will have to compute your partial encryption.
+Before the result can be released, you will have to compute your partial decryption.
 
 As a reminder, your trustee dashboard is at:
 
