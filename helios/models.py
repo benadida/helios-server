@@ -660,7 +660,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
   
   eligibles_count = models.PositiveIntegerField(default=5)
   has_department_limit = models.BooleanField(default=0)
-  
+  department_limit = models.PositiveIntegerField(default=0) 
   
   voters_last_notified_at = models.DateTimeField(null=True, default=None)
 
