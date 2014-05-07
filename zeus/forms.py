@@ -368,31 +368,51 @@ class StvForm(QuestionBaseForm):
                                               required=True,
                                               widget=CandidateWidget(departments=DEPARTMENT_CHOICES),
                                               label=('Candidate'))
-            vals = [(i,i) for i in range(1,9)]
             elig_help_text = _("Set the eligibles count of the election")
             label_text = _("Eligibles count") 
-            self.fields.insert(0, 'eligibles', forms.ChoiceField(
+            self.fields.insert(0, 'eligibles', forms.CharField(
                                                        label=label_text,
-                                                       choices=vals,
                                                        help_text=elig_help_text))
             limit_help_text = _("4009/2011 (A' 195)")
-            limit_label = _("Has department limit") 
+            limit_label = _("Limit elected per department") 
             self.fields.insert(1,'has_department_limit',
                                forms.BooleanField(help_text=limit_help_text,
                                                   label = limit_label,
                                                   required=False))
-            #FIXME labels, texts etc
-            vals.insert(0,[0,0])
             dep_lim_help_text = "department limit"
-            dep_lim_label = "department limit"
+            dep_lim_label = _("Maximum number of elected per department")
             self.fields.insert(2, 'department_limit',
-                               forms.ChoiceField(help_text=dep_lim_help_text,
+                               forms.CharField(help_text=dep_lim_help_text,
                                                label = dep_lim_label,
-                                               choices=vals,
                                                required=False))
 
     min_answers = None
     max_answers = None
+
+
+    def clean_eligibles(self):
+        message = _("Value must be a positve integer")
+        eligibles = self.cleaned_data.get('eligibles')
+        try:
+            eligibles = int(eligibles)
+            if eligibles > 0:
+                return eligibles
+            else:
+                raise forms.ValidationError(message)
+        except ValueError,TypeError:
+            raise forms.ValidationError(message)
+
+    def clean_department_limit(self):
+        message = _("Value must be a positve integer")
+        dep_limit = self.cleaned_data.get('department_limit')
+        try:
+            dep_limit = int(dep_limit)
+            if dep_limit > 0:
+                return dep_limit
+            else:
+                raise forms.ValidationError(message)
+        except ValueError,TypeError:
+            raise forms.ValidationError(message)
 
 class LoginForm(forms.Form):
     username = forms.CharField(label=_('Username'),
