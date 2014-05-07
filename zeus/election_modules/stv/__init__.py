@@ -91,7 +91,8 @@ class StvElection(ElectionModuleBase):
                 poll.update_answers()
                 poll.logger.info("Poll ballot updated")
                 poll.eligibles_count = int(formset.cleaned_data[0]['eligibles'])
-                poll.has_department_limit = formset.cleaned_data[0]['department_limit']
+                poll.has_department_limit = formset.cleaned_data[0]['has_department_limit']
+                poll.department_limit = int(formset.cleaned_data[0]['department_limit'])
                 poll.save()
 
                 url = poll_reverse(poll, 'questions')
@@ -151,7 +152,9 @@ class StvElection(ElectionModuleBase):
         rnd_gen = None # TODO: should be generated and stored on poll freeze
         quota_limit = 0 
         if self.poll.has_department_limit:
-            quota_limit = 2 #FIXME (not sure if 2 is correct)
+            quota_limit = 2
+        else:
+            quota_limit = poll.department_limit
         ballots_data = self.poll.result[0]
         ballots = []
         for ballot in ballots_data:

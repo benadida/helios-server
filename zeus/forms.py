@@ -368,7 +368,7 @@ class StvForm(QuestionBaseForm):
                                               required=True,
                                               widget=CandidateWidget(departments=DEPARTMENT_CHOICES),
                                               label=('Candidate'))
-            vals = [(i,i) for i in range(2,9)]
+            vals = [(i,i) for i in range(1,9)]
             elig_help_text = _("Set the eligibles count of the election")
             label_text = _("Eligibles count") 
             self.fields.insert(0, 'eligibles', forms.ChoiceField(
@@ -377,12 +377,20 @@ class StvForm(QuestionBaseForm):
                                                        help_text=elig_help_text))
             limit_help_text = _("4009/2011 (A' 195)")
             limit_label = _("Has department limit") 
-            self.fields.insert(1,'department_limit',
+            self.fields.insert(1,'has_department_limit',
                                forms.BooleanField(help_text=limit_help_text,
                                                   label = limit_label,
                                                   required=False))
+            #FIXME labels, texts etc
+            vals.insert(0,[0,0])
+            dep_lim_help_text = "department limit"
+            dep_lim_label = "department limit"
+            self.fields.insert(2, 'department_limit',
+                               forms.ChoiceField(help_text=dep_lim_help_text,
+                                               label = dep_lim_label,
+                                               choices=vals,
+                                               required=False))
 
-            #self.fields[field_key].widget.attrs = {'class': 'answer_input'}
     min_answers = None
     max_answers = None
 
