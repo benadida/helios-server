@@ -20,36 +20,41 @@ class Command(BaseCommand):
             args = args.values_list('uuid', flat=True)
 
         for uuid in args:
-            election = Election.objects.get(uuid=uuid)
+            try:
+                election = Election.objects.get(uuid=uuid)
+                polls = election.polls.all()
+            except Election.DoesNotExist:
+                polls = (Poll.objects.get(uuid=uuid),)
 
-            frozen_at = election.frozen_at
-            starts_at = election.voting_starts_at
-            started_at = election.voting_started_at
-            ends_at = election.voting_ends_at
-            extended_until = election.voting_extended_until
-            ended_at = election.voting_ended_at
-            canceled_at = election.canceled_at
-            last_visit_at = election.last_voter_visit()
-            if last_visit_at is not None:
-                last_visit_text = last_visit_at.strftime("%Y-%m-%d %H:%M:%S") + \
-                        " (%s ago)" % (timesince(last_visit_at))
-            else:
-                last_visit_text = 'none'
+            for poll in polls:
+                frozen_at = poll.election.frozen_at
+                starts_at = poll.election.voting_starts_at
+                ends_at = poll.election.voting_ends_at
+                extended_until = poll.election.voting_extended_until
+                ended_at = poll.election.voting_ended_at
+                canceled_at = poll.election.canceled_at
+                last_visit_at = poll.last_voter_visit()
+                if last_visit_at is not None:
+                    last_visit_text = last_visit_at.strftime("%Y-%m-%d %H:%M:%S") + \
+                            " (%s ago)" % (timesince(last_visit_at))
+                else:
+                    last_visit_text = 'none'
 
-            print "uuid:                 ", election.uuid
-            print "admin:                ", election.admins.all()[0].pretty_name
-            print "name:                 ", election.name
-            print "institution:          ", election.institution.name
-            print "frozen_at:            ", frozen_at and frozen_at.strftime("%Y-%m-%d %H:%M:%S")
-            print "voting_starts_at:     ", starts_at and starts_at.strftime("%Y-%m-%d %H:%M:%S")
-            print "voting_started_at:    ", started_at and started_at.strftime("%Y-%m-%d %H:%M:%S")
-            print "voting_ends_at:       ", ends_at and ends_at.strftime("%Y-%m-%d %H:%M:%S")
-            print "voting_extended_until:", extended_until and extended_until.strftime("%Y-%m-%d %H:%M:%S")
-            print "voting_ended_at:      ", ended_at and ended_at.strftime("%Y-%m-%d %H:%M:%S")
-            print "canceled_at:          ", canceled_at and canceled_at.strftime("%Y-%m-%d %H:%M:%S")
-            print "voters:               ", election.voter_set.count()
-            print "counted votes:         %d/%d" % (election.voted_count(), election.castvote_set.count())
-            print "voters visits:        ", election.voters_visited_count()
-            print "last voter visit:     ", last_visit_text
-            print ""
+                print "election name:        ", poll.election.name
+                print "poll name:            ", poll.name
+                print "election uuid:        ", poll.election.uuid
+                print "poll uuid:            ", poll.uuid
+                print "admin:                ", poll.election.admins.all()[0].pretty_name
+                print "institution:          ", poll.election.institution.name
+                print "frozen_at:            ", frozen_at and frozen_at.strftime("%Y-%m-%d %H:%M:%S")
+                print "voting_starts_at:     ", starts_at and starts_at.strftime("%Y-%m-%d %H:%M:%S")
+                print "voting_ends_at:       ", ends_at and ends_at.strftime("%Y-%m-%d %H:%M:%S")
+                print "voting_extended_until:", extended_until and extended_until.strftime("%Y-%m-%d %H:%M:%S")
+                print "voting_ended_at:      ", ended_at and ended_at.strftime("%Y-%m-%d %H:%M:%S")
+                print "canceled_at:          ", canceled_at and canceled_at.strftime("%Y-%m-%d %H:%M:%S")
+                print "voters:               ", poll.voters.count()
+                print "counted votes:         %d/%d" % (poll.voters_cast_count(), poll.cast_votes.count())
+                print "voters visits:        ", poll.voters_visited_count()
+                print "last voter visit:     ", last_visit_text
+                print ""
 
