@@ -829,7 +829,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   @property
   def cast_votes_count(self):
-    return self.voter_set.exclude(vote=None).count()
+    return self.voters.exclude(vote=None).count()
 
   @property
   def audit_votes_cast_count(self):
@@ -844,7 +844,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   @property
   def voters_count(self):
-    return self.voter_set.count()
+    return self.voters.count()
 
   @property
   def trustees_count(self):
@@ -959,7 +959,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   def last_voter_visit(self):
       try:
-          return self.voter_set.filter(last_visit__isnull=False).order_by(
+          return self.voters.filter(last_visit__isnull=False).order_by(
               '-last_visit')[0].last_visit
       except IndexError:
           return None
@@ -974,7 +974,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
       return last_cast.cast_at
 
   def voters_visited_count(self):
-      return self.voter_set.filter(last_visit__isnull=False).count()
+      return self.voters.filter(last_visit__isnull=False).count()
 
   def voters_cast_count(self):
     return self.cast_votes.filter(
