@@ -27,6 +27,7 @@ class StvElection(ElectionModuleBase):
     count_empty_question = False
     booth_questions_tpl = 'question_ecounting'
     no_questions_added_message = _('No questions set')
+    manage_questions_title = _('Manage questions')
     module_params = {
         'ranked': True
     }
