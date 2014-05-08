@@ -412,6 +412,9 @@ class StvForm(QuestionBaseForm):
     def clean_department_limit(self):
         message = _("Value must be a positve integer")
         dep_limit = self.cleaned_data.get('department_limit')
+        if self.cleaned_data.get('has_department_limit'):
+            if not dep_limit:
+                raise forms.ValidationError(message)
         if not dep_limit:
             return 0
         try:
