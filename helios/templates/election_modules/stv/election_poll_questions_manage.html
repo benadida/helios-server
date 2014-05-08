@@ -36,6 +36,33 @@
   <input class="button" type="submit" value="{% trans "Save" %}" id="next_button" />
 </form>
 <script>
+window.onload = function(){
+    
+    checkbox = document.getElementById("id_form-0-has_department_limit")
+    elem = document.getElementById("id_form-0-department_limit")
+
+    
+    if (checkbox.checked){
+        elem.disabled = false
+    }
+    if (elem.value == 0){
+        elem.value = ""
+    }
+}
+function enable_limit(){
+    checkbox = document.getElementById("id_form-0-has_department_limit")
+    elem = document.getElementById("id_form-0-department_limit")
+    if (checkbox.checked){
+        elem.disabled = false
+    }
+    else{
+        elem.disabled = true
+        elem.value = ""
+    }
+}
+</script>
+
+<script>
 $(document).ready(function(){
   var dohide = function(i, el) { 
     var row = $(el).closest(".form-field")

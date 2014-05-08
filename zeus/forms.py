@@ -368,23 +368,30 @@ class StvForm(QuestionBaseForm):
                                               required=True,
                                               widget=CandidateWidget(departments=DEPARTMENT_CHOICES),
                                               label=('Candidate'))
-            elig_help_text = _("Set the eligibles count of the election")
-            label_text = _("Eligibles count") 
-            self.fields.insert(0, 'eligibles', forms.CharField(
-                                                       label=label_text,
-                                                       help_text=elig_help_text))
-            limit_help_text = _("4009/2011 (A' 195)")
-            limit_label = _("Limit elected per department") 
-            self.fields.insert(1,'has_department_limit',
-                               forms.BooleanField(help_text=limit_help_text,
-                                                  label = limit_label,
-                                                  required=False))
-            dep_lim_help_text = "department limit"
-            dep_lim_label = _("Maximum number of elected per department")
-            self.fields.insert(2, 'department_limit',
-                               forms.CharField(help_text=dep_lim_help_text,
-                                               label = dep_lim_label,
-                                               required=False))
+
+        elig_help_text = _("Set the eligibles count of the election")
+        label_text = _("Eligibles count") 
+        self.fields.insert(0, 'eligibles', forms.CharField(
+                                                    label=label_text,
+                                                    help_text=elig_help_text))
+        widget=forms.CheckboxInput(attrs={'onclick':'enable_limit()'})
+        limit_help_text = _("4009/2011 (A' 195)")
+        limit_label = _("Limit elected per department") 
+        self.fields.insert(1,'has_department_limit',
+                            forms.BooleanField(
+                                                widget=widget,
+                                                help_text=limit_help_text,
+                                                label = limit_label,
+                                                required=False))
+        widget=forms.TextInput(attrs={'disabled': 'True'})
+        dep_lim_help_text = "department limit"
+        dep_lim_label = _("Maximum number of elected per department")
+        self.fields.insert(2, 'department_limit',
+                            forms.CharField(
+                                            help_text=dep_lim_help_text,
+                                            label=dep_lim_label,
+                                            widget=widget,
+                                            required=False))
 
     min_answers = None
     max_answers = None
@@ -405,13 +412,15 @@ class StvForm(QuestionBaseForm):
     def clean_department_limit(self):
         message = _("Value must be a positve integer")
         dep_limit = self.cleaned_data.get('department_limit')
+        if not dep_limit:
+            return 0
         try:
             dep_limit = int(dep_limit)
             if dep_limit > 0:
                 return dep_limit
             else:
                 raise forms.ValidationError(message)
-        except ValueError,TypeError:
+        except ValueError:
             raise forms.ValidationError(message)
 
 class LoginForm(forms.Form):
