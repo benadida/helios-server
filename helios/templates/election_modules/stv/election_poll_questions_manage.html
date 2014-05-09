@@ -225,6 +225,10 @@ $(document).ready(function(){
         this.remove_button.hide();
       }
 
+      if (this.forms().length < MAX_QUESTIONS_LIMIT) {
+          this.add_button.show()
+      }
+
     },
     
     add_question: function() {
