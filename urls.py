@@ -16,8 +16,9 @@ urlpatterns = patterns(
     (r'^helios/', include('helios.urls')),  
 
     (r'^', include('server_ui.urls')),
-    (r'^admin/', include(admin.site.urls))
-    )
+    (r'^admin/', include(admin.site.urls)),
+    (r'^jsi18n/$', javascript_catalog, js_info_dict),
+)
 
 if settings.DEBUG: # otherwise, they should be served by a webserver like apache
 
@@ -29,6 +30,5 @@ if settings.DEBUG: # otherwise, they should be served by a webserver like apache
 
         (r'static/auth/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/helios_auth/media'}),
         (r'static/helios/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/helios/media'}),
-        (r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/server_ui/media'}),
-        (r'^jsi18n/$', javascript_catalog, js_info_dict),
+        (r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/server_ui/media'})
     )
