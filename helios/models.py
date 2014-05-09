@@ -35,7 +35,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.core.files import File
 from django.utils.translation import ugettext_lazy as _
-from django.core.validators import validate_email
+from django.core.validators import validate_email as django_validate_email
 from django.forms import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.context_processors import csrf
@@ -73,6 +73,8 @@ logger = logging.getLogger(__name__)
 RESULTS_PATH = getattr(settings, 'ZEUS_RESULTS_PATH', os.path.join(settings.MEDIA_ROOT, 'results'))
 ELECTION_MODEL_VERSION = 1
 
+
+validate_email = lambda email,ln: validate_email(email)
 
 class HeliosModel(TaskModel, datatypes.LDObjectContainer):
 
@@ -657,11 +659,11 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
   result = LDObjectField(type_hint = 'phoebus/Result',
                          null=True)
   stv_results = JSONField(null=True)
-  
+
   eligibles_count = models.PositiveIntegerField(default=5)
   has_department_limit = models.BooleanField(default=0)
-  department_limit = models.PositiveIntegerField(default=0) 
-  
+  department_limit = models.PositiveIntegerField(default=0)
+
   voters_last_notified_at = models.DateTimeField(null=True, default=None)
 
   objects = PollManager()
@@ -1315,7 +1317,9 @@ def csv_reader(csv_data, min_fields=2, max_fields=6, **kwargs):
 def iter_voter_data(voter_data, email_validator=validate_email):
     reader = csv_reader(voter_data, min_fields=2, max_fields=6)
 
+    line = 0
     for voter_fields in reader:
+        line += 1
         # bad line
         if len(voter_fields) < 1:
             continue
@@ -1332,7 +1336,7 @@ def iter_voter_data(voter_data, email_validator=validate_email):
 
         return_dict['voter_id'] = voter_fields[0]
         email = voter_fields[1]
-        email_validator(email)
+        email_validator(email, line)
         return_dict['email'] = email
         if len(voter_fields) == 2:
             yield return_dict

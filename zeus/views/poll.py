@@ -10,6 +10,7 @@ from django.db import connection
 from django.db.models.query import EmptyQuerySet
 from django.core.context_processors import csrf
 from django.core.validators import validate_email
+from django.utils.html import mark_safe, escape
 
 from zeus.forms import ElectionForm
 from zeus import auth
@@ -32,7 +33,7 @@ from helios.view_utils import render_template
 from helios.models import Election, Poll, Voter, VoterFile, CastVote, \
     AuditedBallot
 from helios import datatypes
-from helios import exceptions 
+from helios import exceptions
 from helios.crypto import utils as crypto_utils
 from helios.crypto import electionalgs
 from helios.utils import force_utf8
@@ -220,11 +221,11 @@ def voters_upload(request, election, poll):
             error = None
             invalid_emails = []
 
-            def _email_validate(eml):
+            def _email_validate(eml, line):
                 try:
                     validate_email(eml)
                 except ValidationError:
-                    invalid_emails.append(eml)
+                    invalid_emails.append((eml, line))
                 return True
 
             if request.FILES.has_key('voters_file'):
@@ -235,7 +236,7 @@ def voters_upload(request, election, poll):
                 invalid_emails = []
                 try:
                     voters = [v for v in voter_file_obj.itervoters(
-                                                    email_validator=_email_validate)]
+                                            email_validator=_email_validate)]
                 except ValidationError, e:
                     if hasattr(e, 'messages') and e.messages:
                         error = "".join(e.messages)
@@ -245,8 +246,12 @@ def voters_upload(request, election, poll):
                     error = str(e)
 
                 if len(invalid_emails):
-                    error = _("Enter a valid email address. ")
-                    error += ", ".join(invalid_emails)
+                    error = _("Enter a valid email address. "
+                              "<br />")
+                    for email, line in invalid_emails:
+                        error += "<br />" + ": ".join((str(line),
+                                                     escape(email)))
+                    error = mark_safe(error)
             else:
                 error = _("No file uploaded")
             if not error:

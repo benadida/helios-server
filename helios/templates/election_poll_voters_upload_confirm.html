@@ -11,7 +11,8 @@
 
 {% if error %}
 <div class="panel alert-box alert">
-  {% trans "Error in reading file." %} ({{ error }})
+    {% trans "Error in reading file." %} {% if error %}<br /><br /><br />
+    {{ error }}{% endif %}
 </div>
 {% else %}
 <p>
