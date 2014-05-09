@@ -2,12 +2,16 @@
 
 export DJANGO_SETTINGS_MODULE=settings
 export PYTHONPATH=`pwd`
+export DJANGO_ADMIN=`which django-admin`;
+if [ -f `which django-admin.py` ]; then
+    DJANGO_ADMIN=`which django-admin.py`;
+fi
 
 for d in zeus helios heliosauth server_ui account_administration; do
   cd $d;
-  django-admin compilemessages;
+  $DJANGO_ADMIN compilemessages;
   cd ..;
 done;
 
 cd zeus/static/booth;
-django-admin compilemessages;
+$DJANGO_ADMIN compilemessages;
