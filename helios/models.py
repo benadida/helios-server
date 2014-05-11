@@ -502,7 +502,7 @@ class Election(HeliosModel):
                             numerator = (numerator * -xj) % q
                             denominator = (denominator * (xi - xj)) % q
 
-                    lambda_now = numerator * algs.Utils.inverse(denominator, q)
+                    lambda_now = (numerator * algs.Utils.inverse(denominator, q)) % q
 
                     trustee = trustees_active[i]
                     nof_questions = len(trustee.decryption_factors)
@@ -615,7 +615,7 @@ class Election(HeliosModel):
                         numerator = (numerator * -xj) % q
                         denominator = (denominator * (xi - xj)) % q
 
-                lambda_t = numerator * algs.Utils.inverse(denominator, q)
+                lambda_t = (numerator * algs.Utils.inverse(denominator, q)) % q
 
                 if combined_pk == None:
                     combined_pk = t.public_key
