@@ -395,7 +395,19 @@ class StvForm(QuestionBaseForm):
 
     min_answers = None
     max_answers = None
-
+    
+    def clean(self):
+        from django.forms.util import ErrorList
+        message = _("This field is required")
+        answers = len(filter(lambda k: k.startswith("%s-answer_" %
+                                                self.prefix), self.data)) / 2
+        for ans in range(answers):
+            field_key = 'answer_%d' % ans
+            answer = self.cleaned_data[field_key]
+            answer_lst = json.loads(answer)
+            if not answer_lst[0]:
+                self._errors[field_key] = ErrorList([message])
+        return self.cleaned_data
 
     def clean_eligibles(self):
         message = _("Value must be a positve integer")
