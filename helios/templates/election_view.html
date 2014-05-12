@@ -3,12 +3,13 @@
 {% block title %}{{election.name}}{% endblock %}
 {% block content %}
 <div class="row">
-<div class="col-md-8">
+<div class="col-md-12">
   <h3 class="title">{{ election.name }}</h3>
 </div>
 </div>
+<!-- election info -->
 <div class="row">
-<div class="col-md-8">
+<div class="col-md-12">
 {% trans "Election type" %}: <em>{% if election.private_p %}{% trans "private" %}{%else%}{% trans "public" %}{% endif %}</em> - 
 {% if settings.SHOW_USER_INFO %} {% trans "created by" %} <u><b>{{election.admin.pretty_name}}</b></u>{% endif %}
 {% if election.is_archived %}
@@ -23,7 +24,66 @@
 </div>
 </div>
 
-<br /><br />
+<div class="row">
+<div class="col-md-12">
+{% trans "Election URL:" %} <a href="{{election.url}}">{{election.url}}</a>
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+{% trans "Election Fingerprint:" %} <strong>{{election.hash}}</strong>
+</div>
+</div>
+<!-- end election info -->
+<br>
+<!-- eligibility info -->
+<div class="row">
+<div class="col-md-12">
+{% if user %}
+	{% if voter %}
+		<p style="padding-top:1px;">
+		{% trans "You are registered to vote in this" %} {{pretty_type}}.
+		{% if election.use_voter_aliases %}
+		{% blocktrans %}
+		Your voter alias is {{voter.alias}}.
+		{% endblocktrans %}
+		{% endif %} <!-- endif use voter_aliases -->
+		</p>
+	{% else %}
+		{% if election.result %}
+		{% else %}
+			{% if election.openreg %}
+				{% if eligible_p %}
+					<em>{% trans "You are eligible to vote in this election." %}</em>
+					{% else %}
+					{% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
+				{% endif %} <!-- endif elegible p -->
+				{% else %}
+
+				{% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
+				<br />
+			{% endif %} <!-- endif election openreg -->
+		{% endif %}<!-- endif election.result -->
+	{% endif %} <!-- endif if voter -->
+{% else %}
+
+{% if election.openreg %}
+	{% if election.eligibility %}
+
+	{% trans "This election is open to:" %} <!--{{election.pretty_eligibility|safe}}-->
+	<br /><br/><ul><li><i>{% trans "Any user with credentials" %}</i></li></ul><br/>
+	{% else %}
+		{% trans "Anyone can vote in this election." %}
+	{% endif %} <!-- endif eligibility -->
+{% endif %} <!-- endif election.openreg -->
+
+{% endif %} <!-- endif if user -->
+</div>
+</div>
+
+<!-- end eligibility info -->
+
+
 
 <br clear="left" />
 
@@ -220,73 +280,13 @@ This election is <em>private</em>. You are signed in as eligible voter <em>{{vot
 </div>
 </div>
 <br>
-<div class="row">
-<div class="col-md-12">
-{% if user %}
-{% if voter %}
-<p style="padding-top:1px;">
-{% trans "You are registered to vote in this" %} {{pretty_type}}.
-{% if election.use_voter_aliases %}
-{% blocktrans %}
-Your voter alias is {{voter.alias}}.
-{% endblocktrans %}
-{% endif %}
-</p>
 
-{% else %}
-{% if election.result %}
-{% else %}
-{% if election.openreg %}
-{% if eligible_p %}
-<em>{% trans "You are eligible to vote in this election." %}</em>
-{% else %}
-{% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
-{% endif %}
-{% else %}
-
-{% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
-
-<br />
-
-{% endif %}
-{% endif %}
-{% endif %}
-{% else %}
-
-{% if election.openreg %}
-{% if election.eligibility %}
-
-{% trans "This election is open to:" %} <!--{{election.pretty_eligibility|safe}}-->
-<br /><br/><ul><li><i>{% trans "Any user with credentials" %}</i></li></ul><br/>
-<a href="{{settings.SECURE_URL_HOST}}{% url helios_auth.views.index %}?return_url={{CURRENT_URL}}">{% trans "Log in </a> to check your eligibility." %}
-{% else %}
-{% trans "Anyone can vote in this election." %}
-{% endif %}
-{% endif %}
 
 {% endif %}
 
 {% endif %}
 
-{% endif %}
-</div>
-</div>
 <br>
-<div class="row">
-<div class="col-md-12">
-<table class="table table-striped">
-	<thead>
-		<th>{% trans "Election URL:" %}</th>
-		<th>{% trans "Election Fingerprint:" %}</th>
-	</thead>
-	<tbody>
-		<tr>
-			<td><a href="{{election.url}}">{{election.url}}</a></td>
-			<td><strong>{{election.hash}}</strong></td>
-		</tr>
-</tbody>
-</table>
-</div>
-</div>
+
 
 {% endblock %}

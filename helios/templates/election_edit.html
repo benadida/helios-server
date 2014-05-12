@@ -3,20 +3,23 @@
 {% block content %}
 
   <h2 class="title">{{election.name}} &mdash; {% trans "Update" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "cancel" %}</a>]</span></h2>
-  
-{% if error %}
-<p style="color: red;">
-    {{error}}
-</p>
-{% endif %}
-  
-  <form class="prettyform" action="" method="POST" id="edit_election_form">
-    <table class="pretty">
-     {{election_form.as_table}}
-     </table>
-  <div>
-  <label for="">&nbsp;</label><input type="submit" value="{% trans "Update" %}" id="update_button" />
+<br><br>
+<div class="col-md-12">
+  <form class="form-horizontal" role="form" action="" method="POST" id="create_election_form">
+  {% for field in election_form %}
+    <div class="form-group {% if field.errors %}has-error{% endif %}">
+     {{ field.errors }}
+      <label for="{{ field.label }}" class="col-sm-2 control-label">{{ field.label }}</label>
+      <div class="col-sm-10" class="form-control"> 
+      {{ field }}
+      {{ field.help_text }}
+      </div>
+    </div> 
+  {% endfor %}
+  <div class="form-group">
+    <button id="next_button" type="submit" class="btn btn-primary">{% trans "Next" %}</button>
   </div>
   </form>
+</div>
 
 {% endblock %}

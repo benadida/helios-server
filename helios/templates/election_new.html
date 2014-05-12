@@ -3,15 +3,17 @@
 {% block content %}
 
 <h2 class="title">{% trans "Create a New Election" %}</h2>
-<br clear="right" />
-<div class="col-md-6">
+<br><br>
+<div class="col-md-12">
   <form class="form-horizontal" role="form" action="" method="POST" id="create_election_form">
   {% for field in election_form %}
     <div class="form-group {% if field.errors %}has-error{% endif %}">
-      {{ field.errors }}
-      {{ field.label_tag }}: {{ field }}
-      <br clear="right" />
+     {{ field.errors }}
+      <label for="{{ field.label }}" class="col-sm-2 control-label">{{ field.label }}</label>
+      <div class="col-sm-10" class="form-control"> 
+      {{ field }}
       {{ field.help_text }}
+      </div>
     </div> 
   {% endfor %}
   <div class="form-group">
