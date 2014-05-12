@@ -10,6 +10,8 @@ sudo apt-get install libldap2-dev
 sudo apt-get install libsasl2-dev
 sudo apt-get install python-ldap
 sudo apt-get install gettext # to compile messages
+sudo apt-get install libapache2-mod-wsgi # if using apache
+pip install uwsgi
 ````
 
 * Helios original settings file come with 
