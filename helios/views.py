@@ -441,22 +441,18 @@ def trustee_send_url(request, election, trustee_uuid):
   
   url = settings.SECURE_URL_HOST + reverse(trustee_login, args=[election.short_name, trustee.email, trustee.secret])
   
-  body_message = _('You are a trustee for %(election_name)s \n\n') % {
-      'election_name': election.name }
-
-  body_message += _('Your trustee dashboard is at %(url)s') % {
-      'url': url }
-
   body = """
 
-  %s
-  
---
-%s  
-""" % (body_message, settings.DEFAULT_FROM_NAME)
+You are a trustee for %s.
 
-  helios_utils.send_email(settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], 
-    _('your trustee homepage for %(election_name)s') % {'election_name' : election.name}, body)
+Your trustee dashboard is at
+
+%s
+--
+Helios
+""" % (election.name, url)
+
+  helios_utils.send_email(settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], 'your trustee homepage for %s' % election.name, body)
 
   logging.info("URL %s " % url)
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(list_trustees_view, args = [election.uuid]))
