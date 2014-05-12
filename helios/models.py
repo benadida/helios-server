@@ -74,7 +74,7 @@ RESULTS_PATH = getattr(settings, 'ZEUS_RESULTS_PATH', os.path.join(settings.MEDI
 ELECTION_MODEL_VERSION = 1
 
 
-validate_email = lambda email,ln: validate_email(email)
+validate_email = lambda email,ln: django_validate_email(email)
 
 class HeliosModel(TaskModel, datatypes.LDObjectContainer):
 
