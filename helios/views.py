@@ -440,19 +440,15 @@ def trustee_send_url(request, election, trustee_uuid):
   trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
   
   url = settings.SECURE_URL_HOST + reverse(trustee_login, args=[election.short_name, trustee.email, trustee.secret])
+  body  = _('You are a trustee for %(election_name)s \n') % { 'election_name': election.name}
+  body += _('Your trustee dashboard is at \n%(url)s') % {'url': url}
+  body += """
+  --
+  \n
+  %s
+  """ % settings.DEFAULT_FROM_NAME
   
-  body = """
-
-You are a trustee for %s.
-
-Your trustee dashboard is at
-
-%s
---
-Helios
-""" % (election.name, url)
-
-  helios_utils.send_email(settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], 'your trustee homepage for %s' % election.name, body)
+  helios_utils.send_email(settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], _('your trustee homepage for %(election_name)s') % {'election_name': election.name}, body)
 
   logging.info("URL %s " % url)
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(list_trustees_view, args = [election.uuid]))
