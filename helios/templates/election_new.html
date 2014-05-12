@@ -4,6 +4,10 @@
 
 <h2 class="title">{% trans "Create a New Election" %}</h2>
 <br><br>
+{% if error %}
+<div style="color: red;">{{error}}</div>
+{% endif %}
+<br>
 <div class="col-md-12">
   <form class="form-horizontal" role="form" action="" method="POST" id="create_election_form">
   {% for field in election_form %}
