@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-05-11 23:50-0300\n"
-"PO-Revision-Date: 2014-05-12 09:34-0300\n"
+"PO-Revision-Date: 2014-05-12 11:11-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -35,7 +35,7 @@ msgstr "Bem Vindo ao Sistema de Votação Eletrônica do IFSC"
 
 #: helios/forms.py:14
 msgid "Short name"
-msgstr "Nome curto"
+msgstr "Nome abreviado"
 
 #: helios/forms.py:15
 msgid "no spaces, will be part of the URL for your election, e.g. my-club-2010"
