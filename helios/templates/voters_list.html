@@ -3,15 +3,16 @@
 {% block title %}{% trans "Voters" %} &amp; {% trans "Ballot Tracking Center for" %} {{election.name}}{% endblock %}
 {% block content %}
 <div class="col-md-12">
-  <h3 class="title">{{election.name}} &mdash; {% trans "Voters and Ballot Tracking Center" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
+  <h3 class="title">{% trans "Voters and Ballot Tracking Center" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
+  <h3 class="title">{{election.name}}</h3>
 	<br /><br />
 	<p>
 	<b>{% trans "Who can vote?" %}</b>
 	{% if election.openreg %}
 	<!--{{election.pretty_eligibility|safe}}-->
-	<label class="label label-info">{% trans "Any user with credentials" %}</label>
+	<label>{% trans "Any user with credentials" %}</label>
 	{% else %}
-	<label class="label label-info">{% trans "Only the voters listed here" %}.</label>
+	<label>{% trans "Only the voters listed here" %}.</label>
 	{% endif %}
 	</p>
 	{% if admin_p and not election.frozen_at %}
@@ -84,7 +85,7 @@
 	<p>
 	<b>
 	{% if election.num_cast_votes %}
-	{{election.num_cast_votes}} {% trans "cast vote" %}{% ifequal election.num_cast_votes 1 %}{% else %}s{% endifequal %}
+	{% trans "cast vote" %}: {{election.num_cast_votes}}
 	{% else %}
 	{% trans "no votes yet" %}
 	{% endif %}
@@ -133,7 +134,9 @@
 
 	{% else %}
 	<br /><br />
+	{% if not election.openreg %}
 	<em>{% trans "no voters." %}</em>
+	{% endif %}
 	{% endif %}
 </div>
 

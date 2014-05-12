@@ -5,19 +5,10 @@
 <div class="col-md-12">
 <form method="post" role="form" class="form-horizontal" action="" id="upload_form" enctype="multipart/form-data">
    <div class="form-group">
-  <h2 class="title">{{election.name}} &mdash; {% trans "Bulk Upload Voters" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
-
-
-  <p>
-  {% blocktrans %}
-    If you would like to specify your list of voters by name and email address,<br />
-    you can bulk upload a list of such voters here.<br /><br />
-
-    Please prepare a text file of comma-separated values with the fields:
-  {% endblocktrans %}
-</p>
-<pre>
-   &lt;unique_id&gt;,&lt;email&gt,&lt;full name&gt;
+  <h2 class="title">{% trans "Bulk Upload Voters" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
+  <h2 class="title">{{election.name}}</h2>
+ <pre>
+   {% trans "&lt;unique_id&gt;,&lt;email&gt,&lt;full name&gt;" %}
 </pre>
 
 <p>
@@ -29,12 +20,6 @@
       ...
   </pre> 
 
-  <p>
-  {% blocktrans %}
-    The easiest way to prepare such a file is to use a spreadsheet program and to export as "CSV".
-  {% endblocktrans %}
-  
-  </p>
   </div>
   {% if error %}
   <div style="color: red;">{{error}}</div>
