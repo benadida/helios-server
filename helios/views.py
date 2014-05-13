@@ -1232,6 +1232,7 @@ def voters_email(request, election):
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
   TEMPLATES = [
     ('vote', 'Time to Vote'),
+    ('simple', 'Simple'),
     ('info', 'Additional Info'),
     ('result', 'Election Result')
     ]
