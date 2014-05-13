@@ -784,6 +784,7 @@ class Voter(HeliosModel):
   vote_hash = models.CharField(max_length = 100, null=True)
   cast_at = models.DateTimeField(auto_now_add=False, null=True)
 
+
   class Meta:
     unique_together = (('election', 'voter_login_id'))
 
@@ -793,6 +794,9 @@ class Voter(HeliosModel):
     # stub the user so code is not full of IF statements
     if not self.user:
       self.user = User(user_type='password', user_id=self.voter_email, name=self.voter_name)
+
+  def __unicode__(self):
+    return self.user.name
 
   @classmethod
   @transaction.commit_on_success
@@ -970,6 +974,9 @@ class CastVote(HeliosModel):
   verified_at = models.DateTimeField(null=True)
   invalidated_at = models.DateTimeField(null=True)
   
+    # auditing purposes, like too many votes from the same IP, if the case
+  cast_ip = models.IPAddressField(null=True)
+
   @property
   def datatype(self):
     return self.voter.datatype.replace('Voter', 'CastVote')
