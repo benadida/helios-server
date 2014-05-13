@@ -1,32 +1,28 @@
-{% load i18n %}
-{% trans "Dear" %} {{voter.name}},
+Caro {{voter.name}},
 
 {{custom_message|safe}}
 
-{% trans "Election URL:" %}  {{election_vote_url}}
-{% trans "Election Fingerprint:" %}  {{voter.election.hash}}
+URL da Eleição: {{election_vote_url}}
+Código de Identificação da Eleição: {{voter.election.hash}}
 {% ifequal voter.voter_type "password" %}
-{% trans "Your voter ID:" %} {{voter.voter_login_id}}
-{% trans "Your password:" %} {{voter.voter_password}}
+Seu ID de eleitor: {{voter.voter_login_id}}
+Sua senha para essa eleição: {{voter.voter_password}}
 {% else %}
-{% trans "Log in with your {{voter.voter_type}} account." %}
+Conecte-se com seu usuário e senha dos sistemas do IFSC.
 {% endifequal %}{% if voter.vote_hash %}
-{% trans "We have recorded your vote with smart tracker:" %}
+O seu voto foi registrado com o seguinte código de identificação:
 
   {{voter.vote_hash}}
 
-{% trans "You may re-vote if you wish: only your last vote counts." %}
+Você pode depositar quantos votos quiser, apenas o último voto será contabilizado.
 {% endif %}{% if election.use_voter_aliases %}
 {% blocktrans %}
-In order to protect your privacy, this election is configured
-to never display your voter login ID, name, or email address to the public.
-Instead, the ballot tracking center will only display your alias.
+Para proteger a sua privacidade, essa eleição está configurada para utilizar um pseudônimo de eleitor, assim seu login, nome ou email não será mostrado para o público em geral. Portanto, ao invés de seu nome, o centro de rastreamento de cédula vai listar apenas o seu pseudônimo.
 {% endblocktrans %}
-{% trans "Your voter alias is" %} {{voter.alias}}.
-{% blocktrans %}
-IMPORTANTLY, when you are prompted to log in to vote,
-please use your *voter ID*, not your alias.
+Seu pseudônimo de eleitor: {{voter.alias}}.
+IMPORTANTE: quando você for solicitado a informar seu login para votar, informe seu *ID de eleitor* ao invés de seu pseudônimo.
 {% endblocktrans %}
 {% endif %}
+
 --
-{{settings.WELCOME_MESSAGE|safe}}
+Sistema de Votação Eletrônica do IFSC

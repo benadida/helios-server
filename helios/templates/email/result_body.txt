@@ -1,20 +1,21 @@
-{% load i18n %}
-{% trans "Dear" %} {{voter.name}},
+Caro {{voter.name}},
 
-{% trans "The tally for" %} {{election.name}} {% trans "has been computed and released:" %}
+A apuração da eleição {{election.name}} foi realizada e liberada:
 
   {{election_url}}
 
 {{custom_message|safe}}
 
-{% if voter.vote_hash %}{% trans "Your smart ballot tracker in this election was:" %}
+{% if voter.vote_hash %} O código de rastreamento de sua cédula nessa eleição foi:
 
   {{voter.vote_hash}}
 
-{% trans "If you believe this tracker to be in error, please contact us." %}
+Se você acha que esse rastreador está errado, por favor, entre em contato.
 {% else %}
-{% trans "It appears you did not cast a vote in this election.
-Please contact us if you believe you did." %}
+Parece que você não votou nessa eleição. Se você acha que votou, por favor, entre em contato.
+
 {% endif %}
+
 --
-{{settings.WELCOME_MESSAGE|safe}}
+Sistema de Votação Eletrônica do IFSC
+

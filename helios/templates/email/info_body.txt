@@ -1,9 +1,8 @@
-{% load i18n %}
-{% trans "Dear" %} {{voter.name}},
+Caro {{voter.name}},
 
 {{custom_message|safe}}
 
-{% trans "Election Link:" %} {{election_vote_url}}
+Você pode acessar a eleição através do link {{election_vote_url}}
 
 --
-{{settings.WELCOME_MESSAGE|safe}}
+Sistema de Votação Eletrônica do IFSC
