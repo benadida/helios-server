@@ -1,11 +1,11 @@
 $("document").ready(function(){
-	$("#remove_helios_as_trustee").click(function() { 
+	$(".remove_helios_as_trustee").click(function() { 
 		if (confirm(gettext('Are you sure you want to remove Helios as a trustee?'))){
 			return true;
 		}
 		return false;
 	});
-	$("#remove_trustee").click(function(){
+	$(".remove_trustee").click(function(){
 		if (confirm(gettext('Are you sure you want to remove this Trustee?'))){
 			return true;
 		}
@@ -20,7 +20,7 @@ $("document").ready(function(){
 		}
 		return false;
 	});
-	$("#send_trustee_url").click(function(){
+	$(".send_trustee_url").click(function(){
 		if (confirm(gettext('Are you sure you want to send this trustee his/her admin URL?'))) {
 			return true;
 		}
