@@ -398,7 +398,7 @@ class StvForm(QuestionBaseForm):
     
     def clean(self):
         from django.forms.util import ErrorList
-        message = _("This field is required")
+        message = _("This field is required.")
         answers = len(filter(lambda k: k.startswith("%s-answer_" %
                                                 self.prefix), self.data)) / 2
         for ans in range(answers):
