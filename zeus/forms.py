@@ -407,6 +407,8 @@ class StvForm(QuestionBaseForm):
             answer_lst = json.loads(answer)
             if not answer_lst[0]:
                 self._errors[field_key] = ErrorList([message])
+            answer_lst[0] = answer_lst[0].strip()
+            self.cleaned_data[field_key] = json.dumps(answer_lst)
         return self.cleaned_data
 
     def clean_eligibles(self):
