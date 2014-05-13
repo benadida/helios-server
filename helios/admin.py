@@ -1,11 +1,11 @@
 from django.contrib import admin
-from helios.models import Voter, Election
+from helios.models import CastVote, Election
 
 
-class VoterAdmin(admin.ModelAdmin):	
-	fields = ('user', 'vote_hash', 'cast_at', 'voter_email')
-	readonly_fields = ('user', 'vote_hash', 'cast_at', 'voter_email')
-	list_display = ('user', 'vote_hash', 'cast_at', 'voter_email')
+class CastVoteAdmin(admin.ModelAdmin):	
+	fields = ('voter', 'vote_hash', 'cast_at', 'cast_ip')
+	readonly_fields = ('voter', 'vote_hash', 'cast_at', 'cast_ip')
+	list_display = ('voter', 'vote_hash', 'cast_at', 'cast_ip')
 
 
 class ElectionAdmin(admin.ModelAdmin):
@@ -19,5 +19,5 @@ class ElectionAdmin(admin.ModelAdmin):
 	'election_info_url', 'result')
 	list_display = ('admin', 'name', 'election_type', 'featured_p')
 
-admin.site.register(Voter, VoterAdmin)
+admin.site.register(CastVote, CastVoteAdmin)
 admin.site.register(Election, ElectionAdmin)
