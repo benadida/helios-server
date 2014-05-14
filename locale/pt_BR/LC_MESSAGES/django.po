@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-12 16:26-0300\n"
-"PO-Revision-Date: 2014-05-14 11:39-0300\n"
+"POT-Creation-Date: 2014-05-14 16:48-0300\n"
+"PO-Revision-Date: 2014-05-14 16:48-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -244,20 +244,6 @@ msgstr "Registre-se para votar %(election_name)s"
 #, python-format
 msgid "Results are in for %(election_name)s"
 msgstr "Os resultados estão em %(election_name)s"
-
-#: helios/views.py:444
-#, python-format
-msgid "You are a trustee for %(election_name)s \n"
-msgstr "Você é apurador da eleição %(election_name)s.\n"
-
-#: helios/views.py:445
-#, python-format
-msgid ""
-"Your trustee dashboard is at \n"
-"%(url)s"
-msgstr ""
-"A sua página de apurador pode ser acessada no endereço \n"
-" %(url)s"
 
 #: helios/views.py:452
 #, python-format
@@ -1041,12 +1027,10 @@ msgid "archive it"
 msgstr "arquivar"
 
 #: helios/templates/election_view.html:29
-#: helios/templates/email/vote_body.txt:6
 msgid "Election URL:"
 msgstr "URL da Eleição:"
 
 #: helios/templates/election_view.html:34
-#: helios/templates/email/vote_body.txt:7
 msgid "Election Fingerprint:"
 msgstr "Código de Identificação da Eleição:"
 
@@ -1365,7 +1349,12 @@ msgstr "apuração registrada para esse apurador."
 msgid "waiting for this trustee's tally"
 msgstr "esperando pela apuração deste apurador"
 
-#: helios/templates/list_trustees.html:82
+#: helios/templates/list_trustees.html:81
+#: helios/templates/list_trustees.html:86
+msgid "Remove trustee"
+msgstr "Remover apurador"
+
+#: helios/templates/list_trustees.html:87
 msgid "send login"
 msgstr "enviar login"
 
@@ -2033,84 +2022,6 @@ msgstr "Sim, carregar"
 msgid "no, let me upload a different file"
 msgstr "Não, deixe-me carregar um arquivo diferente"
 
-#: helios/templates/email/info_body.txt:2
-#: helios/templates/email/result_body.txt:2
-#: helios/templates/email/vote_body.txt:2
-msgid "Dear"
-msgstr "Caro(a)"
-
-#: helios/templates/email/info_body.txt:6
-msgid "Election Link:"
-msgstr "Link da Eleição:"
-
-#: helios/templates/email/info_subject.txt:2
-msgid "Additional Information:"
-msgstr "Informação Adicional:"
-
-#: helios/templates/email/result_body.txt:4
-msgid "The tally for"
-msgstr "A apuração da"
-
-#: helios/templates/email/result_body.txt:4
-msgid "has been computed and released:"
-msgstr "foi computado e liberado"
-
-#: helios/templates/email/result_body.txt:10
-msgid "Your smart ballot tracker in this election was:"
-msgstr "O número do rastreador da sua cédula nesta eleição foi:"
-
-#: helios/templates/email/result_body.txt:14
-msgid "If you believe this tracker to be in error, please contact us."
-msgstr "Se você acha que esse rastreamento está errado, por favor nos informe."
-
-#: helios/templates/email/vote_body.txt:9
-msgid "Your voter ID:"
-msgstr "Seu ID de Eleitor:"
-
-#: helios/templates/email/vote_body.txt:10
-msgid "Your password:"
-msgstr "Sua Senha:"
-
-#: helios/templates/email/vote_body.txt:12
-msgid "Log in with your {{voter.voter_type}} account."
-msgstr "Conecte-se com sua conta  {{voter.voter_type}}."
-
-#: helios/templates/email/vote_body.txt:14
-msgid "We have recorded your vote with smart tracker:"
-msgstr "O seu voto foi registrado com o rastreador:"
-
-#: helios/templates/email/vote_body.txt:18
-msgid "You may re-vote if you wish: only your last vote counts."
-msgstr ""
-"Você pode votar novamente, se desejar. Apenas seu último voto será "
-"contabilizado."
-
-#: helios/templates/email/vote_body.txt:20
-msgid ""
-"\n"
-"In order to protect your privacy, this election is configured\n"
-"to never display your voter login ID, name, or email address to the public.\n"
-"Instead, the ballot tracking center will only display your alias.\n"
-msgstr ""
-"\n"
-"Para proteger sua privacidade, essa eleição está configurada para\n"
-"nunca mostrar seu login, nome, ou email para o publico.\n"
-"O centro de rastreamento de cédulas vai mostrar apenas seu apelido.\n"
-
-#: helios/templates/email/vote_body.txt:25
-msgid "Your voter alias is"
-msgstr "Usar pseudônimo de eleitor é"
-
-#: helios/templates/email/vote_body.txt:26
-msgid ""
-"\n"
-"IMPORTANTLY, when you are prompted to log in to vote,\n"
-"please use your *voter ID*, not your alias.\n"
-msgstr ""
-"\n"
-"IMPORTANTE, quando seu usuário e senha de eleitor forem solicitados,\n"
-"use o seu  *ID de Eleitor*, não o seu pseudônimo.\n"
-
 #: helios_auth/auth_systems/ldapauth.py:49
 msgid "Bad Username or Password"
 msgstr "Usuário ou Senha Incorretos"
@@ -2159,9 +2070,8 @@ msgstr ""
 "essa informação, infelizmente não podemos ajudá-lo a votar.\n"
 
 #: helios_auth/templates/perms_why.html:19
-#, fuzzy
 msgid "OK, I understand, let's do this login thing."
-msgstr "Ok, entendi, vamos"
+msgstr "Ok, entendi, vamos efetuar o login"
 
 #: helios_auth/templates/perms_why.html:20
 msgid "nope, get me out of here"
@@ -2202,10 +2112,11 @@ msgstr ""
 msgid "continue"
 msgstr "continuar"
 
-#: heliosbooth/templates/done.html:2 sitestatic/templates/done.html:2
+#: heliosbooth/templates/done.html:2
 msgid ""
 "\n"
 "<h3>Your Vote is Being Submitted</h3>\n"
+"\n"
 "<p>\n"
 "Please wait a few seconds while your vote is submitted to the casting "
 "server....\n"
@@ -2216,7 +2127,7 @@ msgstr ""
 "\n"
 "<p>\n"
 "Por favor, espere alguns segundos enquanto sua cédula é depositada na "
-"urna....\n"
+"urna...\n"
 "</p>\n"
 
 #: heliosbooth/templates/submit.html:2 sitestatic/templates/submit.html:2
@@ -2273,31 +2184,33 @@ msgstr "%(election_name)s - voto depositado"
 msgid ""
 "You have successfully cast a vote in\n"
 "\n"
-"%(election_name)s"
+"%(election_name)s\n"
 msgstr ""
 "Você depositou com sucesso um voto na eleição\n"
 "\n"
-"%(election_name)s"
+"%(election_name)s\n"
 
 #: server_ui/glue.py:21
 #, python-format
 msgid ""
 "Your ballot is archived at:\n"
 "\n"
-"%(cast_url)s"
+"%(cast_url)s\n"
 msgstr ""
 "O seu voto está guardado em:\n"
 "\n"
-"%(cast_url)s"
+"%(cast_url)s\n"
 
 #: server_ui/glue.py:25
 #, python-format
 msgid ""
+"\n"
 "This election uses voter aliases to protect your privacy.Your voter alias "
 "is :\n"
 "\n"
 "%(voter_alias)s"
 msgstr ""
+"\n"
 "Essa eleição utiliza pseudônimos, para proteger sua privacidade. O seu "
 "pseudônimo de eleitor é :\n"
 "\n"
@@ -2755,6 +2668,23 @@ msgid ""
 "</ul>\n"
 msgstr ""
 
+#: sitestatic/templates/done.html:2
+msgid ""
+"\n"
+"<h3>Your Vote is Being Submitted</h3>\n"
+"<p>\n"
+"Please wait a few seconds while your vote is submitted to the casting "
+"server....\n"
+"</p>\n"
+msgstr ""
+"\n"
+"<h3>Seu voto está sendo depositado</h3>\n"
+"\n"
+"<p>\n"
+"Por favor, espere alguns segundos enquanto sua cédula é depositada na "
+"urna....\n"
+"</p>\n"
+
 #: templates/403.html:3
 msgid "Could not complete your request"
 msgstr "Não foi possível completar sua requisição"
@@ -2788,6 +2718,79 @@ msgstr "Erro no servidor"
 msgid "There was an error while handling your request."
 msgstr "Houve um erro durante o processamento de sua requisição."
 
+#~ msgid "You are a trustee for %(election_name)s \n"
+#~ msgstr "Você é apurador da eleição %(election_name)s.\n"
+
+#~ msgid ""
+#~ "Your trustee dashboard is at \n"
+#~ "%(url)s"
+#~ msgstr ""
+#~ "A sua página de apurador pode ser acessada no endereço \n"
+#~ " %(url)s"
+
+#~ msgid "Dear"
+#~ msgstr "Caro(a)"
+
+#~ msgid "Election Link:"
+#~ msgstr "Link da Eleição:"
+
+#~ msgid "Additional Information:"
+#~ msgstr "Informação Adicional:"
+
+#~ msgid "The tally for"
+#~ msgstr "A apuração da"
+
+#~ msgid "has been computed and released:"
+#~ msgstr "foi computado e liberado"
+
+#~ msgid "Your smart ballot tracker in this election was:"
+#~ msgstr "O número do rastreador da sua cédula nesta eleição foi:"
+
+#~ msgid "If you believe this tracker to be in error, please contact us."
+#~ msgstr ""
+#~ "Se você acha que esse rastreamento está errado, por favor nos informe."
+
+#~ msgid "Your voter ID:"
+#~ msgstr "Seu ID de Eleitor:"
+
+#~ msgid "Your password:"
+#~ msgstr "Sua Senha:"
+
+#~ msgid "Log in with your {{voter.voter_type}} account."
+#~ msgstr "Conecte-se com sua conta  {{voter.voter_type}}."
+
+#~ msgid "We have recorded your vote with smart tracker:"
+#~ msgstr "O seu voto foi registrado com o rastreador:"
+
+#~ msgid "You may re-vote if you wish: only your last vote counts."
+#~ msgstr ""
+#~ "Você pode votar novamente, se desejar. Apenas seu último voto será "
+#~ "contabilizado."
+
+#~ msgid ""
+#~ "\n"
+#~ "In order to protect your privacy, this election is configured\n"
+#~ "to never display your voter login ID, name, or email address to the "
+#~ "public.\n"
+#~ "Instead, the ballot tracking center will only display your alias.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Para proteger sua privacidade, essa eleição está configurada para\n"
+#~ "nunca mostrar seu login, nome, ou email para o publico.\n"
+#~ "O centro de rastreamento de cédulas vai mostrar apenas seu apelido.\n"
+
+#~ msgid "Your voter alias is"
+#~ msgstr "Usar pseudônimo de eleitor é"
+
+#~ msgid ""
+#~ "\n"
+#~ "IMPORTANTLY, when you are prompted to log in to vote,\n"
+#~ "please use your *voter ID*, not your alias.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "IMPORTANTE, quando seu usuário e senha de eleitor forem solicitados,\n"
+#~ "use o seu  *ID de Eleitor*, não o seu pseudônimo.\n"
+
 #~ msgid "Private?"
 #~ msgstr "Privada?"
 
@@ -2796,23 +2799,6 @@ msgstr "Houve um erro durante o processamento de sua requisição."
 
 #~ msgid "Log in </a> to check your eligibility."
 #~ msgstr "Conecte-se </a> para checar se você pode votar nessa eleição."
-
-#~ msgid ""
-#~ "\n"
-#~ "<h3>Your Vote is Being Submitted</h3>\n"
-#~ "\n"
-#~ "<p>\n"
-#~ "Please wait a few seconds while your vote is submitted to the casting "
-#~ "server....\n"
-#~ "</p>\n"
-#~ msgstr ""
-#~ "\n"
-#~ "<h3>Seu voto está sendo depositado</h3>\n"
-#~ "\n"
-#~ "<p>\n"
-#~ "Por favor, espere alguns segundos enquanto sua cédula é depositada na "
-#~ "urna...\n"
-#~ "</p>\n"
 
 #~ msgid ""
 #~ "\n"
