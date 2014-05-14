@@ -17,5 +17,5 @@ Parece que você não votou nessa eleição. Se você acha que votou, por favor,
 {% endif %}
 
 --
-Sistema de Votação Eletrônica do IFSC
+Sistema de Votação Online do IFSC
 

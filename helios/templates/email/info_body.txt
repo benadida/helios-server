@@ -5,4 +5,4 @@ Caro {{voter.name}},
 Você pode acessar a eleição através do link {{election_vote_url}}
 
 --
-Sistema de Votação Eletrônica do IFSC
+Sistema de Votação Online do IFSC

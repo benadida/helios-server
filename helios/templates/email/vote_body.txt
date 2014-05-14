@@ -25,4 +25,4 @@ IMPORTANTE: quando você for solicitado a informar seu login para votar, informe
 {% endif %}
 
 --
-Sistema de Votação Eletrônica do IFSC
+Sistema de Votação Online do IFSC
