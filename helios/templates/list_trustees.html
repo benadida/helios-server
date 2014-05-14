@@ -52,38 +52,45 @@
   </thead>
   <tbody>
 {% for t in trustees %}
-<tr>
-<td>#{{forloop.counter}}: {{t.name}}</td>
-<td>
+  <tr>
+  <td>#{{forloop.counter}}: {{t.name}}</td>
+  <td>
 
-{% if t.public_key_hash %}
-  <strong>{{t.public_key_hash}}</strong>
-{% else %}
-{% trans "No public key uploaded yet." %}
-{% endif %}
+  {% if t.public_key_hash %}
+    <strong>{{t.public_key_hash}}</strong>
+  {% else %}
+  {% trans "No public key uploaded yet." %}
+  {% endif %}
 
-</td>
-<td>
-{% if election.encrypted_tally %}
-{% if t.decryption_factors %}
-<span title="{% trans "tally recorded for this trustee." %}" class="glyphicon glyphicon-ok-sign"></span>
-{% else %}
-<span title="{% trans "waiting for this trustee's tally" %}" class="glyphicon glyphicon-info-sign"></span>
-{% endif %}
-{% endif %}
-</td>
-<td>
-  {% if admin_p %}
-{% if t.secret_key %}
-{% if not election.frozen_at %}<a class="remove_helios_as_trustee" class="glyphicon glyphicon-remove" href="{% url helios.views.delete_trustee election.uuid %}?uuid={{t.uuid}}"></a>{% endif %}
-{% else %}
-<em>{{t.email}}</em>
-{% if not election.frozen_at %}<a class="remove_trustee" class="glyphicon glyphicon-remove" href="{% url helios.views.delete_trustee election.uuid %}?uuid={{t.uuid}}"></a>{% endif %}
-<a title="{% trans "send login" %}" class="glyphicon glyphicon-envelope" id="send_trustee_url" href="{% url helios.views.trustee_send_url election.uuid t.uuid %}"></a>
-{% endif %}
-{% endif %}
-</td>
-</tr>
+  </td>
+  <td>
+  {% if election.encrypted_tally %}
+  {% if t.decryption_factors %}
+  <span title="{% trans "tally recorded for this trustee." %}" class="glyphicon glyphicon-ok-sign"></span>
+  {% else %}
+  <span title="{% trans "waiting for this trustee's tally" %}" class="glyphicon glyphicon-info-sign"></span>
+  {% endif %}
+  {% endif %}
+  </td>
+  <td>
+
+  {% if admin_p %}  
+    {% if t.secret_key %}
+      {% if not election.frozen_at %}
+          <a class="remove_helios_as_trustee" class="glyphicon glyphicon-remove" href="{% url helios.views.delete_trustee election.uuid %}?uuid={{t.uuid}}">
+           <i title="{% trans "Remove trustee" %}" class="glyphicon glyphicon-remove"></i></a>
+      {% endif %}
+    {% else %}
+      {{t.email}}
+      {% if not election.frozen_at %}
+              <a class="remove_trustee" class="glyphicon glyphicon-remove" href="{% url helios.views.delete_trustee election.uuid %}?uuid={{t.uuid}}"><i title="{% trans "Remove trustee" %}" class="glyphicon glyphicon-remove"></i></a>
+               <a title="{% trans "send login" %}" class="glyphicon glyphicon-envelope" id="send_trustee_url" href="{% url helios.views.trustee_send_url election.uuid t.uuid %}"></a>
+      {% endif %}
+    
+    {% endif %}
+  {% endif %}
+  </td>
+  </tr>
 {% endfor %}
 </tbody>
 </table>
