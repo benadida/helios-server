@@ -57,4 +57,7 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['heliosauth']
+    depends_on = (
+        ("zeus", "0001_initial"),
+    )
+    complete_apps = ['heliosauth', 'zeus']
