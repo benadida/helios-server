@@ -16,12 +16,12 @@ O seu voto foi registrado com o seguinte código de identificação:
 
 Você pode depositar quantos votos quiser, apenas o último voto será contabilizado.
 {% endif %}{% if election.use_voter_aliases %}
-{% blocktrans %}
+
 Para proteger a sua privacidade, essa eleição está configurada para utilizar um pseudônimo de eleitor, assim seu login, nome ou email não será mostrado para o público em geral. Portanto, ao invés de seu nome, o centro de rastreamento de cédula vai listar apenas o seu pseudônimo.
-{% endblocktrans %}
+
 Seu pseudônimo de eleitor: {{voter.alias}}.
 IMPORTANTE: quando você for solicitado a informar seu login para votar, informe seu *ID de eleitor* ao invés de seu pseudônimo.
-{% endblocktrans %}
+
 {% endif %}
 
 --
