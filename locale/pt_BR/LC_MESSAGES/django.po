@@ -8,10 +8,9 @@ msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-05-12 16:26-0300\n"
-"PO-Revision-Date: 2014-05-12 12:02-0300\n"
+"PO-Revision-Date: 2014-05-14 11:39-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -28,11 +27,11 @@ msgstr "Português Brasileiro"
 
 #: settings.py:183 settings.py:205
 msgid "IFSC E-Voting System"
-msgstr "Sistema de Votação Eletrônica do IFSC"
+msgstr "Sistema de Votação Online do IFSC"
 
 #: settings.py:213
 msgid "Welcome to IFSC E-Voting System"
-msgstr "Bem Vindo ao Sistema de Votação Eletrônica do IFSC"
+msgstr "Bem Vindo ao Sistema de Votação Online do IFSC"
 
 #: helios/forms.py:14
 msgid "Short name"
@@ -1338,8 +1337,8 @@ msgstr ""
 "automaticamente seu primeiro apurador e irá tratar da geração de chaves e "
 "desencriptação automaticamente.<br />\n"
 "  Se você cadastrar apuradores adicionais, você pode remover o Helios como "
-"apurador, clicando no botão de excluir da opção \"Sistema de Votação "
-"Eletrônica do IFSC\" na listagem de apuradores abaixo.<br />\n"
+"apurador, clicando no botão de excluir da opção \"Sistema de Votação Online "
+"do IFSC\" na listagem de apuradores abaixo.<br />\n"
 
 #: helios/templates/list_trustees.html:28
 msgid "add a trustee"
