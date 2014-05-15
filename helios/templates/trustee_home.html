@@ -1,8 +1,8 @@
 {% extends "helios/templates/cryptobase.html" %}
 {% load i18n %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; {% trans "Trustee" %} {{trustee.name}}</span></h2>
-
+  <h2 class="title">{% trans "Trustee" %} {{trustee.name}}</span></h2>
+	<h2 class="title">{{election.name}}</h2>
 <p>
 {% if trustee.public_key_hash %}
 {% blocktrans %}
