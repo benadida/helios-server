@@ -147,10 +147,10 @@ $(document).ready(function(){
           var name = 'form-' + qi + '-answer_' + i;
             
           var inputs = el.find("input,select,textarea");
-          inputs.each(function(i, el) {
+          inputs.each(function(j, el) {
               var el = $(this);
               el.data({'index': i});
-              el.attr({name:name + '_' + i,id:"id_" + name + '_' + i});
+              el.attr({name:name + '_' + j,id:"id_" + name + '_' + j});
           });
 
           label.attr("for", "id_" + name);
