@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-14 16:48-0300\n"
-"PO-Revision-Date: 2014-05-15 17:26-0300\n"
+"POT-Creation-Date: 2014-05-15 17:32-0300\n"
+"PO-Revision-Date: 2014-05-15 17:32-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -737,7 +737,7 @@ msgid "Freeze the ballot"
 msgstr "Congelar a cédula"
 
 #: helios/templates/election_keygenerator.html:91
-#: helios/templates/list_trustees.html:46
+#: helios/templates/list_trustees.html:52
 #: helios/templates/trustee_check_sk.html:46
 #: helios/templates/trustee_decrypt_and_prove.html:134
 #: helios/templates/trustee_home.html:4
@@ -1283,7 +1283,7 @@ msgstr "Apuradores para"
 msgid "Trustees"
 msgstr "Apuradores"
 
-#: helios/templates/list_trustees.html:9
+#: helios/templates/list_trustees.html:11
 msgid ""
 "\n"
 "    Trustees are responsible for decrypting the election result.<br />\n"
@@ -1305,7 +1305,7 @@ msgstr ""
 "botão \"Enviar e-mail\", para que o apurador receba o e-mail informando que "
 "deve cadastrar sua chave.\n"
 
-#: helios/templates/list_trustees.html:19
+#: helios/templates/list_trustees.html:21
 msgid ""
 "\n"
 "  Helios is automatically your first trustee and will handle its keypair "
@@ -1323,37 +1323,42 @@ msgstr ""
 "apurador, clicando no botão de excluir da opção \"Sistema de Votação Online "
 "do IFSC\" na listagem de apuradores abaixo.<br />\n"
 
-#: helios/templates/list_trustees.html:28
+#: helios/templates/list_trustees.html:30
 msgid "add a trustee"
 msgstr "adicionar um apurador"
 
-#: helios/templates/list_trustees.html:32
+#: helios/templates/list_trustees.html:34
 msgid "add Helios as a trustee"
 msgstr "adicionar o sistema de votação como apurador"
 
-#: helios/templates/list_trustees.html:47
+#: helios/templates/list_trustees.html:42
+msgid "Below are listed the trustees for this election."
+msgstr ""
+"Aqui estão listadas as pessoas habilitadas como apuradoras desta eleição."
+
+#: helios/templates/list_trustees.html:53
 #: helios/templates/trustee_decrypt_and_prove.html:138
 msgid "Public Key Fingerprint:"
 msgstr "Código de Identificação da Chave Pública:"
 
-#: helios/templates/list_trustees.html:62
+#: helios/templates/list_trustees.html:68
 msgid "No public key uploaded yet."
 msgstr "Nenhuma chave pública carregada ainda."
 
-#: helios/templates/list_trustees.html:69
+#: helios/templates/list_trustees.html:75
 msgid "tally recorded for this trustee."
 msgstr "apuração registrada para esse apurador."
 
-#: helios/templates/list_trustees.html:71
+#: helios/templates/list_trustees.html:77
 msgid "waiting for this trustee's tally"
 msgstr "esperando pela apuração deste apurador"
 
-#: helios/templates/list_trustees.html:81
-#: helios/templates/list_trustees.html:86
+#: helios/templates/list_trustees.html:87
+#: helios/templates/list_trustees.html:92
 msgid "Remove trustee"
 msgstr "Remover apurador"
 
-#: helios/templates/list_trustees.html:87
+#: helios/templates/list_trustees.html:93
 msgid "send login"
 msgstr "enviar login"
 
@@ -2200,7 +2205,7 @@ msgstr ""
 "\n"
 "%(cast_url)s\n"
 
-#: server_ui/glue.py:25
+#: server_ui/glue.py:26
 #, python-format
 msgid ""
 "\n"
