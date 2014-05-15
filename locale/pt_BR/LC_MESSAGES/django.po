@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-05-14 16:48-0300\n"
-"PO-Revision-Date: 2014-05-14 16:48-0300\n"
+"PO-Revision-Date: 2014-05-15 17:26-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -710,10 +710,7 @@ msgid ""
 "election progresses.\n"
 msgstr ""
 "\n"
-"O registro para a sua eleição está atualmente <b>fechado</b>, o que "
-"significa que apenas eleitores que você designou serão aptos a depositar uma "
-"cédula. Como administrador, você continuará sendo apto a modificar a lista "
-"de eleitores enquanto a eleição avança.\n"
+"\n"
 
 #: helios/templates/election_freeze.html:26
 msgid ""
@@ -1162,7 +1159,9 @@ msgstr "combinar a decriptação dos apuradores e liberar resultados"
 
 #: helios/templates/election_view.html:185
 msgid "The result is released and all voters are notified."
-msgstr "O resultado está liberado e todos os eleitores estão notificados."
+msgstr ""
+"A urna foi apurada com sucesso. Você deve agora liberar os resultados e se "
+"desejar, notificar os usuários sobre o resultado da eleição."
 
 #: helios/templates/election_view.html:187
 msgid ""
