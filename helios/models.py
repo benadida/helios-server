@@ -490,7 +490,6 @@ class Election(HeliosModel):
             scheme = self.get_scheme()
             trustees_active = Trustee.objects.filter(election=self).exclude(decryption_factors=None)
             x_values = [t.id for t in trustees_active]
-            combined_pk = None
             if len(trustees_active) >= scheme.k:
                 for i in range(scheme.k):
                     numerator = 1
