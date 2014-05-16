@@ -77,7 +77,7 @@ this {{election.election_type}} is <u>not</u> featured on the front page.
 {% endif %}
 <p>
 
-{% if election.result %}
+{% if election.result_released_at %}
 
 <!-- election complete, no next step -->
 
@@ -113,23 +113,30 @@ trustees will be asked to provide their share of the decryption.
 {% endif %}
 {% else %}
 
+{% if election.result %}
+<a href="{% url helios.views.release_result election.uuid %}">release result</a><br />
+The result displayed below is visible only to you.<br />
+Once you release the result, it will be visible to everyone.
+{% else %}
+
 {% if election.ready_for_decryption_combination %}
 <a href="{% url helios.views.combine_decryptions election.uuid %}">
 {% if election.num_trustees == 1 %}
-release results
+compute results
 {% else %}
-combine trustee decryptions and release results
+combine trustee decryptions and compute results
 {% endif %}
 </a><br />
 {% if election.num_trustees == 1 %}
-The result is released and all voters are notified.
+The result will be computed and shown to you, the administrator, only.
 {% else %}
-The decryption shares from the trustees are combined and the tally is decrypted.<br />
-Once you do this, the tally will be immediately available for all to see, and
-all voters will be notified that the tally is ready.
+The decryption shares from the trustees will be combined and the tally computed.<br />
+Once you do this, the tally will visible to you, the administrator, only.
 {% endif %}
 {% else %}
 <a href="{% url helios.views.list_trustees_view election.uuid %}">trustees (for decryption)</a>
+{% endif %}
+
 {% endif %}
 
 {% endif %}
@@ -143,14 +150,15 @@ all voters will be notified that the tally is ready.
 
 {% endif %}
 
-<br /><br />
+<br />
 
-{% if election.result %}
+{% if show_result %}
+{% if election.result_released_at %}
 <span class="highlight-box round">
     This election is complete.
-</span><br />
+</span><br /><br /><br />
+{% endif %}
 
-<br />
 <h3 class="highlight-box">Tally</h3>
 {% for question in election.pretty_result %}
 <b><span style="font-size:0.8em;">Question #{{forloop.counter}}</span><br />{{question.question}}</b><br />
@@ -165,8 +173,8 @@ all voters will be notified that the tally is ready.
 
 {% if election.voting_has_stopped %}
 <span class="highlight-box round">
-    Election closed. Tally will be computed soon.
-</span><br />
+    Election closed. Results will be released soon.
+</span><br /><br />
 {% else %}
 
 {% if election.voting_has_started %}

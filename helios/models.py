@@ -391,6 +391,15 @@ class Election(HeliosModel):
     
     return True
     
+  def release_result(self):
+    """
+    release the result that should already be computed
+    """
+    if not self.result:
+      return
+
+    self.result_released_at = datetime.datetime.utcnow()
+  
   def combine_decryptions(self):
     """
     combine all of the decryption results

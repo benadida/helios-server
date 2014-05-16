@@ -63,6 +63,7 @@ urlpatterns = patterns('',
     # computing tally
     (r'^/compute_tally$', one_election_compute_tally),
     (r'^/combine_decryptions$', combine_decryptions),
+    (r'^/release_result$', release_result),
     
     # casting a ballot before we know who the voter is
     (r'^/cast$', one_election_cast),

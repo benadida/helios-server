@@ -1,16 +1,16 @@
 {% extends TEMPLATE_BASE %}
 
-{% block title %}Release Tally &mdash; {{election.name}}{% endblock %}
+{% block title %}Compute Tally &mdash; {{election.name}}{% endblock %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Release Tally <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">cancel</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; Compute Tally <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">cancel</a>]</span></h2>
 
   <p>
-    You are about to release the tally for this election
+    You are about to compute the tally for this election. You only will then see the results.
   </p>
 
   <form method="POST" action="">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    <input type="submit" value="release the tally!" />
+    <input type="submit" value="compute the tally!" />
   </form>
 
 {% endblock %}

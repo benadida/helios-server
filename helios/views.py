@@ -8,6 +8,7 @@ Ben Adida (ben@adida.net)
 from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
+from django.core.exceptions import PermissionDenied
 from django.http import *
 from django.db import transaction
 
@@ -333,11 +334,15 @@ def one_election_view(request, election):
 
   trustees = Trustee.get_by_election(election)
 
+  # should we show the result?
+  show_result = election.result_released_at or (election.result and admin_p)
+
   return render_template(request, 'election_view',
                          {'election' : election, 'trustees': trustees, 'admin_p': admin_p, 'user': user,
                           'voter': voter, 'votes': votes, 'notregistered': notregistered, 'eligible_p': eligible_p,
                           'can_feature_p': can_feature_p, 'election_url' : election_url, 
                           'vote_url': vote_url, 'election_badge_url' : election_badge_url,
+                          'show_result': show_result,
                           'test_cookie_url': test_cookie_url, 'socialbuttons_url' : socialbuttons_url})
 
 def test_cookie(request):
@@ -774,11 +779,15 @@ def one_election_cast_done(request, election):
 @election_view()
 @json
 def one_election_result(request, election):
+  if not election.result_released_at:
+    raise PermissionDenied
   return election.result
 
 @election_view()
 @json
 def one_election_result_proof(request, election):
+  if not election.result_released_at:
+    raise PermissionDenied
   return election.result_proof
   
 @election_view(frozen=True)
@@ -1040,7 +1049,25 @@ def trustee_upload_decryption(request, election, trustee_uuid):
     return SUCCESS
   else:
     return FAILURE
-  
+
+@election_admin(frozen=True)
+def release_result(request, election):
+  """
+  result is computed and now it's time to release the result
+  """
+  election_url = get_election_url(election)
+
+  if request.method == "POST":
+    check_csrf(request)
+
+    election.release_result()
+    election.save()
+
+    return HttpResponseRedirect("%s" % (settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid])))
+
+  # if just viewing the form or the form is not valid
+  return render_template(request, 'release_result', {'election': election})
+
 @election_admin(frozen=True)
 def combine_decryptions(request, election):
   """
@@ -1055,7 +1082,7 @@ def combine_decryptions(request, election):
     election.combine_decryptions()
     election.save()
 
-    return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_email, args=[election.uuid]), urllib.urlencode({'template': 'result'})))
+    return HttpResponseRedirect("%s" % (settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid])))
 
   # if just viewing the form or the form is not valid
   return render_template(request, 'combine_decryptions', {'election': election})
