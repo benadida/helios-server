@@ -120,6 +120,9 @@ class Election(HeliosModel):
   tallying_finished_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
   tallies_combined_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
 
+  # we want to explicitly release results
+  result_released_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+
   # the hash of all voters (stored for large numbers)
   voters_hash = models.CharField(max_length=100, null=True)
   
