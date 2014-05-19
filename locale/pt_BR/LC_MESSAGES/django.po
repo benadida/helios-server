@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-19 09:47-0300\n"
-"PO-Revision-Date: 2014-05-19 09:49-0300\n"
+"POT-Creation-Date: 2014-05-19 15:51-0300\n"
+"PO-Revision-Date: 2014-05-19 15:51-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -25,11 +25,11 @@ msgstr "Inglês"
 msgid "Brazilian Portuguese"
 msgstr "Português Brasileiro"
 
-#: settings.py:183 settings.py:205
+#: settings.py:187 settings.py:209
 msgid "IFSC E-Voting System"
 msgstr "Sistema de Votação Online do IFSC"
 
-#: settings.py:213
+#: settings.py:217
 msgid "Welcome to IFSC E-Voting System"
 msgstr "Bem Vindo ao Sistema de Votação Online do IFSC"
 
@@ -197,15 +197,15 @@ msgstr ""
 msgid "no election ID"
 msgstr "Nenhum ID de eleição"
 
-#: helios/tasks.py:95
+#: helios/tasks.py:96
 msgid "encrypted tally computed"
 msgstr "apuração criptografada apurada"
 
-#: helios/tasks.py:111
+#: helios/tasks.py:112
 msgid "Helios Decrypt"
 msgstr ""
 
-#: helios/tasks.py:125
+#: helios/tasks.py:126
 msgid "voter file processed"
 msgstr "arquivo de eleitores processado"
 
@@ -244,6 +244,20 @@ msgstr "Registre-se para votar %(election_name)s"
 #, python-format
 msgid "Results are in for %(election_name)s"
 msgstr "Os resultados estão em %(election_name)s"
+
+#: helios/views.py:444
+#, python-format
+msgid "You are a trustee for %(election_name)s \n"
+msgstr "Você é apurador da eleição %(election_name)s.\n"
+
+#: helios/views.py:445
+#, python-format
+msgid ""
+"Your trustee dashboard is at: \n"
+" %(url)s"
+msgstr ""
+"A sua página de apurador pode ser acessada no endereço: \n"
+" %(url)s"
 
 #: helios/views.py:452
 #, python-format
@@ -2185,12 +2199,12 @@ msgstr ""
 msgid "Submit Ballot"
 msgstr "Enviar Cédula"
 
-#: server_ui/glue.py:17
+#: server_ui/glue.py:21
 #, python-format
 msgid "%(election_name)s - vote cast"
 msgstr "%(election_name)s - voto depositado"
 
-#: server_ui/glue.py:19
+#: server_ui/glue.py:23
 #, python-format
 msgid ""
 "You have successfully cast a vote in\n"
@@ -2201,7 +2215,7 @@ msgstr ""
 "\n"
 "%(election_name)s\n"
 
-#: server_ui/glue.py:21
+#: server_ui/glue.py:25
 #, python-format
 msgid ""
 "Your ballot is archived at:\n"
@@ -2212,7 +2226,7 @@ msgstr ""
 "\n"
 "%(cast_url)s\n"
 
-#: server_ui/glue.py:26
+#: server_ui/glue.py:30
 #, python-format
 msgid ""
 "\n"
@@ -2731,16 +2745,6 @@ msgstr "Houve um erro durante o processamento de sua requisição."
 
 #~ msgid "Templates"
 #~ msgstr "Templates"
-
-#~ msgid "You are a trustee for %(election_name)s \n"
-#~ msgstr "Você é apurador da eleição %(election_name)s.\n"
-
-#~ msgid ""
-#~ "Your trustee dashboard is at \n"
-#~ "%(url)s"
-#~ msgstr ""
-#~ "A sua página de apurador pode ser acessada no endereço \n"
-#~ " %(url)s"
 
 #~ msgid "Dear"
 #~ msgstr "Caro(a)"
