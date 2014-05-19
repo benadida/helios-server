@@ -441,8 +441,8 @@ def trustee_send_url(request, election, trustee_uuid):
   trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
   
   url = settings.SECURE_URL_HOST + reverse(trustee_login, args=[election.short_name, trustee.email, trustee.secret])
-  body  = u'Você é apurador da eleição %s \n' % election.name
-  body += u'O link da sua página de apurador da eleição é: \n %s' % url
+  body  = _(u'You are a trustee for %(election_name)s \n') % {'election_name': election.name}
+  body += _(u'Your trustee dashboard is at: \n %(url)s') % {'url': url}
   body += """
   --
   \n
