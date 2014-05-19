@@ -8,8 +8,9 @@ var voter_id = null;
 voter_id = '{{voter.voter_id}}';
 {% endif %}
 </script>
-
-  <h2 class="title">{{election.name}} &mdash; {% trans "Contact Voters" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
+<div class="col-md-10">
+  <h2 class="title">{% trans "Contact Voters" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
+  <h2 class="title">{{election.name}}</h2>
 
 {% if voter %}  
   <p>
@@ -18,30 +19,34 @@ voter_id = '{{voter.voter_id}}';
 
   </p>
 {% endif %}
+<br>
 
-<p>
-<b>{% trans "Templates" %}</b>:
-
+<h3>{% trans "Choose the email type you want to send:" %}</h3>
+</div>
+<div class="col-md-6">
+<ul class="nav nav-pills nav-stacked">
 {% for template_option in templates %}
 {% if template_option.0 == template %}
-<b>{{template_option.1}}</b>
+<li class="active"><a href="?template={{template_option.1}}">{{template_option.1}}</a></li>
 {% else %}
-<a href="?template={{template_option.0}}&voter_id={{voter.voter_login_id}}">{{template_option.1}}</a>
+<li><a href="?template={{template_option.0}}&voter_id={{voter.voter_login_id}}">{{template_option.1}}</a></li>
 {% endif %}
-&nbsp;&nbsp;&nbsp;
 {% endfor %}
-
+</ul>
+</div>
+<div class="col-md-10">
 <pre style="margin:10px; border: 1px solid #888; padding:20px">
 {% trans "Subject:" %} {{default_subject}}
 
 {{default_body|safe}}
 </pre>
+</div>
 
+<div class="col-md-10">
 <p>
 {% trans "You may tweak the subject and add a custom message using the form below." %}
 </p>
-<div class="col-md-10">
-  <form class="form-horizontal" role="form" action="" method="POST" id="email_form">
+  <form class="form" role="form" action="" method="POST" id="email_form">
     {{ email_form.non_field_errors }}
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     <input type="hidden" name="template" value="{{template}}" />
@@ -53,7 +58,8 @@ voter_id = '{{voter.voter_id}}';
     {{email_form.subject.errors}}
     </div> 
     <div class="form-group {% if email_form.body.errors %}has-error{% endif %}">
-    <label for="body">{% trans "Body" %}</label>
+    <label for="body">{% trans "Body" %}</label><br>
+    {% blocktrans %} What you type in here is what you get in the BODY tag on the template above {% endblocktrans %}
     <textarea name="body" class="form-control" id="id_body" rows="4" cols="50" placeholder="{% trans "Body" %}">
     </textarea>
   

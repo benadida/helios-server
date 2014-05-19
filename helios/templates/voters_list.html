@@ -2,16 +2,20 @@
 {% load i18n %}
 {% block title %}{% trans "Voters" %} &amp; {% trans "Ballot Tracking Center for" %} {{election.name}}{% endblock %}
 {% block content %}
+
 <div class="col-md-12">
   <h3 class="title">{% trans "Voters and Ballot Tracking Center" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
   <h3 class="title">{{election.name}}</h3>
 	<br /><br />
+
 	{% if admin_p and not election.frozen_at %}
 	{% if election.private_p %}
 	<em>{% blocktrans %}Your election is marked private, which means you cannot open registration up more widely{% endblocktrans %}</em>.<br />
 	{% else %}
 	<br />
+
 </div>
+
 <div class="col-md-12">
 <div class="well">
 	<div class="form-group">
@@ -45,7 +49,7 @@
 	{% endif %}
 	{% endif %}
 	{% if email_voters and election.frozen_at and admin_p %}
-	<p><a class="button" href="{% url helios.views.voters_email election.uuid %}">{% trans "email voters" %}</a></p>
+	<p><a class="btn btn-primary" href="{% url helios.views.voters_email election.uuid %}">{% trans "email voters" %}</a></p>
 	{% endif %}
 	{% if election.num_voters > 20 %}
 	<p>
@@ -61,17 +65,6 @@
 </div> <!-- end column -->
 
 
-<!-- who can vote info -->
-<div class="col-md-12">
-	<b>{% trans "Who can vote?" %}</b>
-	{% if election.openreg %}
-	<!--{{election.pretty_eligibility|safe}}-->
-	<label>{% trans "Any user with credentials" %}</label>
-	{% else %}
-	<label>{% trans "Only the voters listed here" %}.</label>
-	{% endif %}
-</div>
-<!-- end who can vote info -->
 <div class="col-md-12">
 	{% if admin_p %}
 	<!-- Add a Voter: WORK HERE-->
@@ -82,6 +75,20 @@
 	</div>
 	{% endif %}
 	{% endif %}
+
+
+
+	<!-- who can vote info -->
+	<br>
+	<b>{% trans "Who can vote?" %}</b>
+	{% if election.openreg %}
+	<!--{{election.pretty_eligibility|safe}}-->
+	<label>{% trans "Any user with credentials" %}</label>
+	{% else %}
+	<label>{% trans "Only the voters listed here" %}.</label>
+	{% endif %}
+	<br><br>
+	<!-- end who can vote info -->
 
 	{% if voters %}
 
