@@ -12,10 +12,8 @@ $("document").ready(function(){
 		return false;
 	});
 	$("#add_trustee").click(function(){
-		if (confirm(gettext('Adding your own trustee requires a good bit more work to tally the election.\n' +
-			'You will need to have trustees generate keypairs and safeguard their secret key.\n\n' +
-			'If you are not sure what that means, we strongly recommend\n' +
-			'clicking Cancel and letting Helios tally the election for you.'))){
+		var msg = gettext('Adding your own trustee requires a good bit more work to tally the election.\nYou will need to have trustees generate keypairs and safeguard their secret key.\n\n If you are not sure what that means, we strongly recommend\n clicking Cancel and letting Helios tally the election for you.');
+		if (confirm(msg)){
 			return true;
 		}
 		return false;
@@ -25,5 +23,8 @@ $("document").ready(function(){
 			return true;
 		}
 		return false;
+	});
+	$("#begin_tally").submit(function(){
+		alert(gettext('ok, tally has begun'));
 	});
 })

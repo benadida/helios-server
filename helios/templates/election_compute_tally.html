@@ -17,7 +17,7 @@
 {% endblocktrans %}
 </p>
 
-<form method="post" action="" onsubmit="alert('ok, tally has begun')" class="pretty">
+<form id="begin_tally" method="post" action="" class="pretty">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
 <input class="btn btn-primary" type="submit" value="{% trans "compute encrypted tally!" %}" />
