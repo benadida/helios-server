@@ -15,10 +15,12 @@ import copy
 
 from django.conf import settings
 from django.utils.translation import ugettext as _
+from django.utils.translation import activate
 
 
 @task()
 def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
+    activate(settings.LANGUAGE_CODE)
     cast_vote = CastVote.objects.get(id = cast_vote_id)
     result = cast_vote.verify_and_store()
 
@@ -45,6 +47,7 @@ def voters_email(election_id, subject_template, body_template, extra_vars={},
     voter_constraints_include are conditions on including voters
     voter_constraints_exclude are conditions on excluding voters
     """
+    activate(settings.LANGUAGE_CODE)
     election = Election.objects.get(id = election_id)
 
     # select the right list of voters
@@ -59,12 +62,14 @@ def voters_email(election_id, subject_template, body_template, extra_vars={},
 
 @task()
 def voters_notify(election_id, notification_template, extra_vars={}):
+    activate(settings.LANGUAGE_CODE)
     election = Election.objects.get(id = election_id)
     for voter in election.voter_set.all():
         single_voter_notify.delay(voter.uuid, notification_template, extra_vars)
 
 @task()
 def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={}):
+    activate(settings.LANGUAGE_CODE)
     voter = Voter.objects.get(uuid = voter_uuid)
 
     the_vars = copy.copy(extra_vars)
@@ -77,6 +82,7 @@ def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={
 
 @task()
 def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
+    activate(settings.LANGUAGE_CODE)
     voter = Voter.objects.get(uuid = voter_uuid)
 
     the_vars = copy.copy(extra_vars)
@@ -88,6 +94,7 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
 
 @task()
 def election_compute_tally(election_id):
+    activate(settings.LANGUAGE_CODE)
     election = Election.objects.get(id = election_id)
     election.compute_tally()
 
@@ -105,6 +112,7 @@ Helios
 
 @task()
 def tally_helios_decrypt(election_id):
+    activate(settings.LANGUAGE_CODE)
     election = Election.objects.get(id = election_id)
     election.helios_trustee_decrypt()
     election_notify_admin.delay(election_id = election_id,
@@ -119,6 +127,7 @@ Helios
 
 @task()
 def voter_file_process(voter_file_id):
+    activate(settings.LANGUAGE_CODE)
     voter_file = VoterFile.objects.get(id = voter_file_id)
     voter_file.process()
     election_notify_admin.delay(election_id = voter_file.election.id, 
@@ -135,5 +144,6 @@ Helios
 
 @task()
 def election_notify_admin(election_id, subject, body):
+    activate(settings.LANGUAGE_CODE)
     election = Election.objects.get(id = election_id)
     election.admin.send_message(subject, body)
