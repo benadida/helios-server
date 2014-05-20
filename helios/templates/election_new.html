@@ -1,9 +1,9 @@
 {% extends TEMPLATE_BASE %}
 {% load i18n %}
 {% block content %}
-
+<div id="header">
 <h2 class="title">{% trans "Create a New Election" %}</h2>
-<br><br>
+</div>
 {% if error %}
 <div style="color: red;">{{error}}</div>
 {% endif %}

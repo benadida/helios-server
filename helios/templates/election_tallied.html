@@ -1,13 +1,13 @@
 {% extends TEMPLATE_BASE %}
 {% load i18n %}
 {% block content %}
-
+<div id="header">
   <h2 class="title">
   {% blocktrans %} 
   Election {{election.name}} Already Tallied
   {% endblocktrans %}
   </h2>
-
+</div>
   <p>
   {% blocktrans %}
       This election has already been tallied, you can no longer cast a vote.

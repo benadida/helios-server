@@ -4,10 +4,11 @@
 {% block content %}
 
 <div class="col-md-12">
+<div id="header">
   <h3 class="title">{% trans "Voters and Ballot Tracking Center" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
   <h3 class="title">{{election.name}}</h3>
 	<br /><br />
-
+</div>
 	{% if admin_p and not election.frozen_at %}
 	{% if election.private_p %}
 	<em>{% blocktrans %}Your election is marked private, which means you cannot open registration up more widely{% endblocktrans %}</em>.<br />

@@ -87,8 +87,10 @@ function show_pk() {
 }
 
 </script>
-
-<h2 class="title">{{election.name}} &mdash; {% trans "Trustee" %} {{trustee.name}} &mdash; {% trans "Key Setup" %}</h2>
+<div id="header">
+<h2 class="title">{% trans "Trustee" %} {{trustee.name}} &mdash; {% trans "Key Setup" %}</h2>
+<h3 class="title">{{election.name}}</h3>
+</div>
 
 <p>
  {% trans "As a trustee, it's time to set up your key for this election." %}

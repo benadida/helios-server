@@ -1,8 +1,9 @@
 {% extends TEMPLATE_BASE %}
 {% load i18n %}
 {% block content %}
+<div id="header">
   <h2 class="title">{% trans "Elections you Administer" %} <span style="font-size:0.7em;">[<a href="/">{% trans "back to home" %}</a>]</span></h2>
-
+</div>
 <ul>
 {% for election in elections %}
 <li> <a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>

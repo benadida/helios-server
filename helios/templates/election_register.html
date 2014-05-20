@@ -1,8 +1,10 @@
 {% extends TEMPLATE_BASE %}
 {% load i18n %}
 {% block content %}
-  <h2 class="title">{{ election.name }} – {% trans "Register" %}</h2>
-
+<div id="header">
+  <h2 class="title">{% trans "Register" %}</h2>
+<h3 class="title">{{ election.name }}</h3>
+</div>
 {% if user %}
 <p>
 {% blocktrans %}

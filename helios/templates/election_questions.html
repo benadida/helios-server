@@ -2,8 +2,10 @@
 {% load i18n %}
 {% block title %}Questions for {{election.name}}{% endblock %}
 {% block content %}
-  <h3 class="title">{% trans "Questions" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
+<div id="header">
+  <h2 class="title">{% trans "Questions" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
   <h3 class="title">{{election.name}}</h3>
+  </div>
 <br><br>
 <script language="javascript">
 {% if election.questions %}

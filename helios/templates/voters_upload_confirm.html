@@ -1,9 +1,9 @@
 {% extends TEMPLATE_BASE %}
 {% load i18n %}
 {% block content %}
-<div class="col-md-12">
+<div id="header" class="col-md-12">
   <h2 class="title">{% trans "Bulk Upload Voters &mdash; Confirm" %}<span style="font-size:0.7em;"> [<a href="{% url helios.views.one_election_view election.uuid %}"> {% trans "back to election" %}</a>]</span></h2>
-	<h2 class="title">{{election.name}}</h2>
+	<h3 class="title">{{election.name}}</h3>
 <p>
 {% blocktrans %}
 You have uploaded a file of voters. The first few rows of this file are:

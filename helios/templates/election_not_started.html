@@ -1,8 +1,10 @@
 {% extends TEMPLATE_BASE %}
 {% load i18n %}
 {% block content %}
-
-  <h2 class="title">{% trans "Election" %} {{election.name}} {% trans "Not Yet Open" %}</h2>
+<div id="header">
+  <h2 class="title">{% trans "Election Not Yet Open" %}</h2>
+  <h3 class="title">{{election.name}}</h3>
+</div>
 
   <p>
   {% blocktrans %}

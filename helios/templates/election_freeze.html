@@ -1,7 +1,10 @@
 {% extends TEMPLATE_BASE %}
 {% load i18n %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; {% trans "Freeze Ballot" %}</h2>
+<div id="header"> 
+  <h2 class="title">{% trans "Freeze Ballot" %}</h2>
+  <h3 class="title">{{election.name}}</h3>
+</div>
 <p>
 {% blocktrans %}
 Once the ballot is frozen, the questions and options can no longer be modified.<br />
