@@ -18,7 +18,7 @@ $("document").ready(function(){
 		}
 		return false;
 	});
-	$("#send_trustee_url").click(function(){
+	$(".send_trustee_url").click(function(){
 		if (confirm(gettext('Are you sure you want to send this trustee his/her admin URL?'))) {
 			return true;
 		}
