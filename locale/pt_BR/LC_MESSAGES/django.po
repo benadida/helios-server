@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-19 15:51-0300\n"
-"PO-Revision-Date: 2014-05-19 15:51-0300\n"
+"POT-Creation-Date: 2014-05-20 09:35-0300\n"
+"PO-Revision-Date: 2014-05-20 09:35-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -25,11 +25,11 @@ msgstr "Inglês"
 msgid "Brazilian Portuguese"
 msgstr "Português Brasileiro"
 
-#: settings.py:187 settings.py:209
+#: settings.py:189 settings.py:211
 msgid "IFSC E-Voting System"
 msgstr "Sistema de Votação Online do IFSC"
 
-#: settings.py:217
+#: settings.py:219
 msgid "Welcome to IFSC E-Voting System"
 msgstr "Bem Vindo ao Sistema de Votação Online do IFSC"
 
@@ -48,9 +48,12 @@ msgid "Name"
 msgstr "Nome"
 
 #: helios/forms.py:17
-msgid "the pretty name for your election, e.g. My Club 2010 Election"
+msgid ""
+"the pretty name for your election, e.g. My Club 2010 Election. Maximum of "
+"250 characters."
 msgstr ""
-"O nome apresentável para a sua eleição, p.ex.: Eleição do Meu Clube 2014"
+"O nome apresentável para a sua eleição, p.ex.: Eleição do Meu Clube 2014. "
+"Máximo de 250 caracteres."
 
 #: helios/forms.py:18
 msgid "Description"
@@ -197,15 +200,15 @@ msgstr ""
 msgid "no election ID"
 msgstr "Nenhum ID de eleição"
 
-#: helios/tasks.py:96
+#: helios/tasks.py:102
 msgid "encrypted tally computed"
 msgstr "apuração criptografada apurada"
 
-#: helios/tasks.py:112
+#: helios/tasks.py:119
 msgid "Helios Decrypt"
 msgstr ""
 
-#: helios/tasks.py:126
+#: helios/tasks.py:134
 msgid "voter file processed"
 msgstr "arquivo de eleitores processado"
 
@@ -421,11 +424,11 @@ msgstr "Código de Identificação: "
 msgid "Release Tally"
 msgstr "Liberar Apuração"
 
-#: helios/templates/combine_decryptions.html:9
+#: helios/templates/combine_decryptions.html:10
 msgid "You are about to release the tally for this election"
 msgstr "Você está prestes a liberar a apuração desta eleição"
 
-#: helios/templates/combine_decryptions.html:18
+#: helios/templates/combine_decryptions.html:19
 msgid "release the tally!"
 msgstr "liberar a apuração!"
 
@@ -2199,12 +2202,12 @@ msgstr ""
 msgid "Submit Ballot"
 msgstr "Enviar Cédula"
 
-#: server_ui/glue.py:21
+#: server_ui/glue.py:17
 #, python-format
 msgid "%(election_name)s - vote cast"
 msgstr "%(election_name)s - voto depositado"
 
-#: server_ui/glue.py:23
+#: server_ui/glue.py:19
 #, python-format
 msgid ""
 "You have successfully cast a vote in\n"
@@ -2215,7 +2218,7 @@ msgstr ""
 "\n"
 "%(election_name)s\n"
 
-#: server_ui/glue.py:25
+#: server_ui/glue.py:21
 #, python-format
 msgid ""
 "Your ballot is archived at:\n"
@@ -2226,7 +2229,7 @@ msgstr ""
 "\n"
 "%(cast_url)s\n"
 
-#: server_ui/glue.py:30
+#: server_ui/glue.py:26
 #, python-format
 msgid ""
 "\n"
