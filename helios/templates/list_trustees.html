@@ -18,11 +18,13 @@
 {% if not election.frozen_at %}
 
 <p>
+{% if election.has_helios_trustee %}
 {% blocktrans %}
   Helios is automatically your first trustee and will handle its keypair generation and decryption automatically.<br />
   You may add additional trustees if you want, and you can even remove the Helios trustee.<br />
   However, we recommend you do this only if you have a solid understanding of the trustee's role.
 {% endblocktrans %}
+{% endif %}
 </p>
 
 
