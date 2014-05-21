@@ -109,7 +109,6 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                              'commitment': pok.commitment,
                              'response': pok.response}})]}
                              
-                print post_data
                 r = self.c.post('/elections/%s/trustee/upload_pk' %
                                (e_uuid), post_data, follow=True)
                 self.assertEqual(r.status_code, 200)
@@ -124,9 +123,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.c.get(self.locations['logout'])
         r = self.c.post(self.locations['login'], self.login_data)
         freeze_location = '/elections/%s/freeze' % self.e_uuid
-        r = self.c.post(freeze_location)
-        #print e.election_issues_before_freeze[0]['action']
-        #print e.election_issues_before_freeze[0]['type']
+        r = self.c.post(freeze_location, follow=True)
+        e = Election.objects.get(uuid=self.e_uuid)
         if e.frozen_at:
             return True
             
@@ -192,7 +190,7 @@ class TestSimpleElection(TestElectionBase):
                      'form-0-min_answers': 1,
                      'form-0-max_answers': 1,
                      'form-0-answer_0': 'test answer 0',
-                     'form-0-answer_1': 'test answer 0',
+                     'form-0-answer_1': 'test answer 1',
                      'form-0-ORDER': 0,
                      }
         return post_data
@@ -211,7 +209,9 @@ class TestSimpleElection(TestElectionBase):
         pks = self.prepare_trustees(self.e_uuid)
         item = self.get_voters_file()
         self.create_poll()
-        #self.submit_voters_file()
+        self.submit_voters_file()
         self.submit_simple_questions()
-        #now all requirements are met, must freeze
+        #now all requirements are met, issues must be 0 
+        e = Election.objects.get(uuid=self.e_uuid)
+        self.assertEqual (e.election_issues_before_freeze, [])
         self.assertTrue(self.freeze_election())
