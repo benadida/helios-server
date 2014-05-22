@@ -2,12 +2,13 @@ import datetime
 import json
 
 
+from random import choice
 from datetime import timedelta
 from django.contrib.auth.hashers import make_password
 from django.test import TestCase
 from django.test.client import Client
 
-
+from zeus.core import to_relative_answers, gamma_encode, prove_encryption
 from helios.views import ELGAMAL_PARAMS
 from helios.crypto import algs
 from helios.crypto.elgamal import *
@@ -132,7 +133,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
         e = Election.objects.all()[0]
-        #there should't be any polls before we create them
+        #there shouldn't be any polls before we create them
         self.assertEqual(e.polls.all().count(), 0)
         location = '/elections/%s/polls/add' % self.e_uuid
         post_data = {'form-0-name': 'test_poll',
@@ -163,6 +164,52 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         voters = e.voters.count()
         self.assertTrue(voters > 0)
 
+    def get_voters_urls(self):
+        e = Election.objects.get(uuid=self.e_uuid)
+        voters = e.voters.all()
+        #dict where key is the id of voter and value is the url
+        voters_urls = {}
+        for v in voters:
+            voters_urls[v.id] = v.get_quick_login_url()
+        #check if we got the urls for all voters
+        self.assertEqual(len(voters_urls), len(voters))
+        return voters_urls 
+
+    def submit_vote_for_each_voter(self,voters_urls):
+        pass
+
+    def temp_cast_single_ballot(self, voters_urls):
+        the_url = voters_urls[3]
+        e = Election.objects.get(uuid=self.e_uuid)
+        selection = e.polls.all()[0].questions_data[0]['answers']
+        size = len(selection)
+        random.shuffle(selection)
+        selection = selection[:choice(range(len(selection)))]
+        selection = selection[0]
+        rel_selection = to_relative_answers(selection, size)
+        encoded = gamma_encode(rel_selection, size, size)
+        plaintext = algs.EGPlaintext(encoded, e.public_key)
+        randomness = algs.Utils.random_mpz_lt(e.public_key.q)
+        cipher = e.public_key.encrypt_with_r(plaintext, randomness, True)
+        modulus, generator, order = e.zeus.do_get_cryptosystem()
+        enc_proof = prove_encryption(modulus, generator, order, cipher.alpha,
+                                     cipher.beta, randomness)
+        self.c.get(the_url, follow=True)
+
+        cast_data = {}
+        ##############
+        ballot = {
+                  'election_hash': 'foobar',
+                  'election_uuid': e.uuid,
+                  'answers': [{
+                               'encryption_proof':enc_proof,
+                               'choices':[{'alpha': cipher.alpha, 'beta': cipher.beta}]
+                              }]
+                 }
+        ################
+        enc_vote = datatypes.LDObject.fromDict(ballot,
+                type_hint='phoebus/EncryptedVote').wrapped_obj
+        print enc_vote
 
 class TestSimpleElection(TestElectionBase):
 
@@ -211,7 +258,9 @@ class TestSimpleElection(TestElectionBase):
         self.create_poll()
         self.submit_voters_file()
         self.submit_simple_questions()
-        #now all requirements are met, issues must be 0 
+        #now all requirements are met, issues must be empty list  
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertEqual (e.election_issues_before_freeze, [])
         self.assertTrue(self.freeze_election())
+        voters_urls = self.get_voters_urls() 
+        self.temp_cast_single_ballot(voters_urls)
