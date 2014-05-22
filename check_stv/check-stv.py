@@ -3,7 +3,7 @@ import json
 import itertools
 
 
-from stv import count_stv, Ballot
+from stv.stv import count_stv, Ballot
 
 if __name__ == "__main__":
 
