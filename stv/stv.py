@@ -299,7 +299,7 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
         # Log count
         description  = count_description(vote_count, hopefuls)
 
-        #using this for testing
+        # using this for testing
         data = description.split(';')
         for item in data:
             item = item.split('=')

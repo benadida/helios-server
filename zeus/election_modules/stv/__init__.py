@@ -172,7 +172,7 @@ class StvElection(ElectionModuleBase):
         stv_logger.setLevel(logging.DEBUG)
         results = count_stv(ballots, seats, droop, constituencies, quota_limit,
                             rnd_gen, logger=stv_logger)
-        results = list(results)
+        results = list(results[0:2])
         handler.close()
         stv_stream.seek(0)
         results.append(stv_stream.read())
