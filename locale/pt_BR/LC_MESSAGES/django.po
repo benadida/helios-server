@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-05-20 13:36-0300\n"
-"PO-Revision-Date: 2014-05-20 13:41-0300\n"
+"PO-Revision-Date: 2014-05-22 10:19-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -251,7 +251,11 @@ msgstr "Os resultados estão em %(election_name)s"
 #: helios/views.py:444
 #, python-format
 msgid "You are a trustee for %(election_name)s \n"
-msgstr "Você é apurador da eleição %(election_name)s.\n"
+msgstr ""
+"Prezado (a),  \n"
+"\n"
+"Você foi designado como apurador para a eleição %(election_name)s.\n"
+"\n"
 
 #: helios/views.py:445
 #, python-format
@@ -259,13 +263,24 @@ msgid ""
 "Your trustee dashboard is at: \n"
 " %(url)s"
 msgstr ""
+"Você deve obrigatoriamente entrar no endereço abaixo para que possa carregar "
+"suas informações de apurador. Se não fizer isto, não será possível dar "
+"continuidade a eleição. Ou seja, nenhum eleitor poderá votar nesta "
+"eleição. \n"
+"\n"
 "A sua página de apurador pode ser acessada no endereço: \n"
-" %(url)s"
+"\n"
+" %(url)s \n"
+"\n"
+"ATENÇÃO: Esse e-mail deve ser guardado para referência futura, para que você "
+"possa acessar novamente sua página de apurador através do link fornecido "
+"acima."
 
 #: helios/views.py:452
 #, python-format
 msgid "your trustee homepage for %(election_name)s"
-msgstr "Sua página de apurador para a eleição  %(election_name)s"
+msgstr ""
+"ATENÇÃO: Você foi designado como apurador para a eleição  %(election_name)s"
 
 #: helios/views.py:663
 #, python-format
