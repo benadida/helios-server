@@ -371,9 +371,8 @@ class Election(HeliosModel):
     tally the election, assuming votes already verified
     """
     tally = self.init_tally()
-    for voter in self.voter_set.all():
-      if voter.vote:
-        tally.add_vote(voter.vote, verify_p=False)
+    for voter in self.voter_set.exclude(vote=None):
+      tally.add_vote(voter.vote, verify_p=False)
 
     self.encrypted_tally = tally
     self.save()    
