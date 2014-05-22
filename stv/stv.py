@@ -289,12 +289,27 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
     current_round = 1
     num_elected = len(elected)
     num_hopefuls = len(hopefuls)
+    full_data = []
+    for item in candidates:
+        full_data.append([item, []])
     while num_elected < seats and num_hopefuls > 0:
         # Log round
         logger.info(LOG_MESSAGE.format(action=Action.COUNT_ROUND,
                                        desc=current_round))
         # Log count
         description  = count_description(vote_count, hopefuls)
+
+        #using this for testing
+        data = description.split(';')
+        for item in data:
+            item = item.split('=')
+            item[0] = item[0].strip()
+            item[1] = item[1].strip()
+            for candidate in full_data:
+                if candidate[0] == item[0]:
+                    vote_no_decimal = float(item[1]) * 1000
+                    vote_rounded = int(round(vote_no_decimal))
+                    candidate[1].append([current_round, vote_rounded])
 
         logger.info(LOG_MESSAGE.format(action=Action.COUNT,
                                        desc=description))
@@ -370,7 +385,7 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
                      logger=logger)
         current_round += 1
 
-    return elected, vote_count
+    return elected, vote_count, full_data
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Perform STV')
@@ -422,7 +437,7 @@ if __name__ == "__main__":
                 constituencies[candidate] = constituency_id
             constituency_id += 1
 
-    (elected, vote_count) = count_stv(ballots, args.seats, args.droop,
+    (elected, vote_count, full_data) = count_stv(ballots, args.seats, args.droop,
                                       constituencies,
                                       args.quota,
                                       args.random,
