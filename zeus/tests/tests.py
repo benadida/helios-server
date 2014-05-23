@@ -179,13 +179,12 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         pass
 
     def temp_cast_single_ballot(self, voters_urls):
-        the_url = voters_urls[3]
+        the_url = voters_urls
         e = Election.objects.get(uuid=self.e_uuid)
-        selection = e.polls.all()[0].questions_data[0]['answers']
+        selection = list(range(len(e.polls.all()[0].questions_data[0]['answers'])))
         size = len(selection)
         random.shuffle(selection)
         selection = selection[:choice(range(len(selection)))]
-        selection = selection[0]
         rel_selection = to_relative_answers(selection, size)
         encoded = gamma_encode(rel_selection, size, size)
         plaintext = algs.EGPlaintext(encoded, e.public_key)
@@ -194,9 +193,10 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         modulus, generator, order = e.zeus.do_get_cryptosystem()
         enc_proof = prove_encryption(modulus, generator, order, cipher.alpha,
                                      cipher.beta, randomness)
-        self.c.get(the_url, follow=True)
-
+        r = self.c.get(the_url, follow=True)
+        self.assertEqual(r.status_code, 200)
         cast_data = {}
+
         ##############
         ballot = {
                   'election_hash': 'foobar',
@@ -206,10 +206,19 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                                'choices':[{'alpha': cipher.alpha, 'beta': cipher.beta}]
                               }]
                  }
-        ################
+        ##############
+
         enc_vote = datatypes.LDObject.fromDict(ballot,
                 type_hint='phoebus/EncryptedVote').wrapped_obj
-        print enc_vote
+        cast_data['encrypted_vote'] = enc_vote.toJSON()
+        p = Election.objects.get(uuid=self.e_uuid).polls.get(uuid=self.p_uuid)
+        r =self.c.post('/elections/%s/polls/%s/cast'%(self.e_uuid,self.p_uuid), cast_data)
+    
+    def close_election(self):
+        self.c.get(self.locations['logout'])
+        r = self.c.post(self.locations['login'], self.login_data)
+        self.c.post('/elections/%s/close'%self.e_uuid)
+
 
 class TestSimpleElection(TestElectionBase):
 
@@ -251,16 +260,29 @@ class TestSimpleElection(TestElectionBase):
 
     def test_election_proccess(self):
         self.admin_can_submit_election_form()
-        #can't freeze election before requirements are met
+        # can't freeze election before requirements are met
         self.assertEqual(self.freeze_election(), None)
         pks = self.prepare_trustees(self.e_uuid)
         item = self.get_voters_file()
         self.create_poll()
         self.submit_voters_file()
         self.submit_simple_questions()
-        #now all requirements are met, issues must be empty list  
+        # now all requirements are met, issues must be empty list  
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertEqual (e.election_issues_before_freeze, [])
         self.assertTrue(self.freeze_election())
+        # change starting date to now
+        e = Election.objects.get(uuid=self.e_uuid)
+        e.voting_starts_at = datetime.datetime.now()
+        e.save()
         voters_urls = self.get_voters_urls() 
-        self.temp_cast_single_ballot(voters_urls)
+        for url_value in voters_urls:
+            self.temp_cast_single_ballot(voters_urls[url_value])
+        p = Election.objects.get(uuid=self.e_uuid).polls.get(uuid=self.p_uuid)
+        self.assertEqual(p.voters_cast_count(), 3)
+        self.close_election()
+        e = Election.objects.get(uuid=self.e_uuid)
+        self.assertTrue(e.feature_closed)
+        e = Election.objects.get(uuid=self.e_uuid)
+     
+
