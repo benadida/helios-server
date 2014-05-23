@@ -33,7 +33,7 @@ class SetUpAdminAndClientMixin():
         self.c = Client()
 
 
-#subclass order is significant
+# subclass order is significant
 class TestUsersWithClient(SetUpAdminAndClientMixin, TestCase):
 
     def setUp(self):
@@ -219,6 +219,32 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         r = self.c.post(self.locations['login'], self.login_data)
         self.c.post('/elections/%s/close'%self.e_uuid)
 
+    def decrypt_with_trustees(self, pks):
+        for trustee, kp in pks.iteritems():
+            t = Trustee.objects.get(uuid=trustee)
+            self.c.get(self.locations['logout'])
+            self.c.get(t.get_login_url())
+
+            sk = kp.sk
+            decryption_factors = [[]]
+            decryption_proofs = [[]]
+            
+            p = Poll.objects.get(uuid=self.p_uuid)
+            for vote in p.encrypted_tally.tally[0]:
+                dec_factor, proof = sk.decryption_factor_and_proof(vote)
+                decryption_factors[0].append(dec_factor)
+                decryption_proofs[0].append({
+                    'commitment': proof.commitment,
+                    'response': proof.response,
+                    'challenge': proof.challenge,
+                    })
+            data = {'decryption_factors': decryption_factors,
+                        'decryption_proofs': decryption_proofs}
+            location = '/elections/%s/polls/%s/post-decryptions'% (self.e_uuid,self.p_uuid)
+            post_data = {'factors_and_proofs': json.dumps(data)}
+            r = self.c.post(location, post_data)
+            print r.status_code
+            print r.content
 
 class TestSimpleElection(TestElectionBase):
 
@@ -280,9 +306,14 @@ class TestSimpleElection(TestElectionBase):
             self.temp_cast_single_ballot(voters_urls[url_value])
         p = Election.objects.get(uuid=self.e_uuid).polls.get(uuid=self.p_uuid)
         self.assertEqual(p.voters_cast_count(), 3)
+        # close election
         self.close_election()
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_closed)
+        # check that mixing is finished
         e = Election.objects.get(uuid=self.e_uuid)
-     
-
+        self.assertTrue(e.feature_mixing_finished)
+        # decrypt with trustees
+        self.decrypt_with_trustees(pks)
+        p = Poll.objects.get(uuid=self.p_uuid)
+        print p.result
