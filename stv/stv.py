@@ -307,7 +307,7 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
             item[1] = item[1].strip()
             for candidate in full_data:
                 if candidate[0] == item[0]:
-                    vote_no_decimal = float(item[1]) * 1000
+                    vote_no_decimal = float(item[1]) * 10000
                     vote_rounded = int(round(vote_no_decimal))
                     candidate[1].append([current_round, vote_rounded])
 

@@ -40,11 +40,15 @@ if __name__ == "__main__":
         school_name = item['Name']
         for candidate in item['candidates']:
             constituencies[str(candidate['candidateTmpId'])] = school_name
-    #third item of count_result containes 'votes' 
-    count_results = count_stv(input_ballots, eligibles, False,
-                              constituencies, hasLimit)
+    #third item of count_result containes 'votes'
+    draws = [str(c) for c in el_data['draws']]
+    rnd_gen = draws if draws else None
+    count_results = count_stv(input_ballots, eligibles,
+                              droop=False,
+                              constituencies=constituencies,
+                              quota_limit=2 if hasLimit else 0,
+                              rnd_gen=rnd_gen)
 
-    
     
     #-------------------------------------------------------
     
@@ -65,10 +69,10 @@ if __name__ == "__main__":
     for item in ecounting_results:
         item[0] = str(item[0])
     
-    print '\n'
-    if ecounting_results == local_results:
-        print 'Results are exactly the same'
-    print '\n'  
+    if ecounting_results != local_results:
+        print 'Results NOT exactly the same'
+    else:
+        pass  # print 'Results are exactlu the same'
     same_candidates_elected = True
     same_rounds_of_election = True
     same_votes_on_round = True
@@ -81,17 +85,17 @@ if __name__ == "__main__":
             if rounds[0] != rounds1[0] and rounds[1] != rounds1[1]:
                 same_votes_on_round = False
 
-    if same_candidates_elected:
-        print '* Same candidated were elected'
-    else:
+    if not same_candidates_elected:
         print '- Candidates elected are different'
-
-    if same_rounds_of_election:
-        print '* Candidate rounds of election are the same'
     else:
+        pass  # print '* Same candidated were elected'
+
+    if not same_rounds_of_election:
         print '- Rounds of election are different'
-
-    if same_votes_on_round:
-        print '* Each round same number of votes were counted'
     else:
+        pass  # print '* Candidate rounds of election are the same'
+
+    if not same_votes_on_round:
         print '- Candidates took different number of votes each round'
+    else:
+        pass  # print '* Each round same number of votes were counted'
