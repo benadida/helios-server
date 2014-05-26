@@ -89,6 +89,18 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                               'communication_language': 'el',
                               'random_value': 49
                               }
+
+    def admin_can_submit_election_form(self):
+        # login with admin
+        self.c.post(self.locations['login'], self.login_data)
+
+        # fill rest of form according to simple election needs
+        self.election_form['election_module'] = self.election_type 
+        r = self.c.post(self.locations['create'], self.election_form, follow=True) 
+        e = Election.objects.all()[0]
+        self.e_uuid = e.uuid
+        self.assertIsInstance(e, Election)
+
     def prepare_trustees(self,e_uuid):
         e = Election.objects.get(uuid=e_uuid)
         pks = {}
@@ -133,7 +145,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
         e = Election.objects.all()[0]
-        #there shouldn't be any polls before we create them
+        # there shouldn't be any polls before we create them
         self.assertEqual(e.polls.all().count(), 0)
         location = '/elections/%s/polls/add' % self.e_uuid
         post_data = {'form-0-name': 'test_poll',
@@ -167,11 +179,11 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
     def get_voters_urls(self):
         e = Election.objects.get(uuid=self.e_uuid)
         voters = e.voters.all()
-        #dict where key is the id of voter and value is the url
+        # dict where key is the id of voter and value is the url
         voters_urls = {}
         for v in voters:
             voters_urls[v.id] = v.get_quick_login_url()
-        #check if we got the urls for all voters
+        # check if we got the urls for all voters
         self.assertEqual(len(voters_urls), len(voters))
         return voters_urls 
 
@@ -248,17 +260,7 @@ class TestSimpleElection(TestElectionBase):
 
     def setUp(self):
         super(TestSimpleElection, self).setUp()
-
-    def admin_can_submit_election_form(self):
-        #login with admin
-        self.c.post(self.locations['login'], self.login_data)
-
-        #fill rest of form according to simple election needs
-        self.election_form['election_module'] = 'simple'
-        r = self.c.post(self.locations['create'], self.election_form, follow=True) 
-        e = Election.objects.all()[0]
-        self.e_uuid = e.uuid
-        self.assertIsInstance(e, Election)
+        self.election_type = 'simple'
 
     def create_questions_for_simple(self):
         
@@ -320,17 +322,7 @@ class TestPartyElection(TestElectionBase):
     
     def setUp(self):
         super(TestPartyElection, self).setUp()
-
-    def admin_can_submit_election_form(self):
-        #login with admin
-        self.c.post(self.locations['login'], self.login_data)
-
-        #fill rest of form according to simple election needs
-        self.election_form['election_module'] = 'parties'
-        r = self.c.post(self.locations['create'], self.election_form, follow=True) 
-        e = Election.objects.all()[0]
-        self.e_uuid = e.uuid
-        self.assertIsInstance(e, Election)
+        self.election_type = 'parties'
 
     def create_questions_for_party(self):
 
@@ -397,17 +389,7 @@ class TestScoreElection(TestElectionBase):
     
     def setUp(self):
         super(TestScoreElection, self).setUp()
-
-    def admin_can_submit_election_form(self):
-        #login with admin
-        self.c.post(self.locations['login'], self.login_data)
-
-        #fill rest of form according to simple election needs
-        self.election_form['election_module'] = 'score'
-        r = self.c.post(self.locations['create'], self.election_form, follow=True) 
-        e = Election.objects.all()[0]
-        self.e_uuid = e.uuid
-        self.assertIsInstance(e, Election)
+        self.election_type = 'score'
 
     def create_questions_for_score(self):
 
