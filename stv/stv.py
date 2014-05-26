@@ -227,6 +227,17 @@ def count_description(vote_count, candidates):
                          candidates))
 
 
+def update_candidate_counts(full_data, current_round, vote_count, hopefuls):
+    hopeful_set = set(hopefuls)
+    for candidate, candidate_rounds in full_data:
+        if candidate not in hopeful_set:
+            continue
+
+        vote_no_decimal = float(vote_count[candidate]) * 10000
+        vote_rounded = int(round(vote_no_decimal))
+        candidate_rounds.append([current_round, vote_rounded])
+
+
 def count_stv(ballots, seats, droop = True, constituencies = None,
               quota_limit = 0, rnd_gen=None, logger=logger):
     """Performs a STV vote for the given ballots and number of seats.
@@ -300,16 +311,7 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
         description  = count_description(vote_count, hopefuls)
 
         # using this for testing
-        data = description.split(';')
-        for item in data:
-            item = item.split('=')
-            item[0] = item[0].strip()
-            item[1] = item[1].strip()
-            for candidate in full_data:
-                if candidate[0] == item[0]:
-                    vote_no_decimal = float(item[1]) * 10000
-                    vote_rounded = int(round(vote_no_decimal))
-                    candidate[1].append([current_round, vote_rounded])
+        update_candidate_counts(full_data, current_round, vote_count, hopefuls)
 
         logger.info(LOG_MESSAGE.format(action=Action.COUNT,
                                        desc=description))
@@ -379,11 +381,18 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
         logger.info(LOG_MESSAGE.format(action=Action.ZOMBIES,
                                        desc=description))
         best_candidate = eliminated.pop()
-        elect_reject(best_candidate, vote_count, constituencies,
-                     quota_limit, current_round,
-                     elected, rejected, constituencies_elected,
-                     logger=logger)
+        was_elected = elect_reject(best_candidate, vote_count, constituencies,
+                                   quota_limit, current_round,
+                                   elected, rejected, constituencies_elected,
+                                   logger=logger)
+        if was_elected:
+            update_candidate_counts(full_data, current_round, vote_count,
+                                    [best_candidate])
+            redistribute_ballots(best_candidate, 1.0, hopefuls, allocated,
+                                 vote_count, logger=logger)
+
         current_round += 1
+        num_elected = len(elected)
 
     return elected, vote_count, full_data
 

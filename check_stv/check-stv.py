@@ -70,9 +70,31 @@ if __name__ == "__main__":
         item[0] = str(item[0])
     
     if ecounting_results != local_results:
-        print 'Results NOT exactly the same'
+        if len(ecounting_results) != len(local_results):
+            print "Different number of elected candidates!"
+        else:
+            comp = ''.join([str(int(a == b)) for a, b in
+                            zip(local_results, ecounting_results)])
+            print "Round comparison: ", comp
+            for c, a, b in zip(comp, local_results, ecounting_results):
+                if c == '1':
+                    continue
+                if a[0] != b[0]:
+                    print "Different Candidates Elected!"
+                    print a
+                    print b
+                elif a[1] != b[1]:
+                    print "Different Round of Election!"
+                    print a
+                    print b
+                else:
+                    for i, aa, bb in zip(itertools.count(), a[2], b[2]):
+                        if aa == bb:
+                            continue
+                        print i, aa, bb
     else:
-        pass  # print 'Results are exactlu the same'
+        pass  # print 'Results are exactly the same'
+
     same_candidates_elected = True
     same_rounds_of_election = True
     same_votes_on_round = True
