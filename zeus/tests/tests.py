@@ -391,3 +391,72 @@ class TestPartyElection(TestElectionBase):
         self.decrypt_with_trustees(pks)
         p = Poll.objects.get(uuid=self.p_uuid)
         self.assertTrue(len(p.result) > 0) 
+
+
+class TestScoreElection(TestElectionBase):
+    
+    def setUp(self):
+        super(TestScoreElection, self).setUp()
+
+    def admin_can_submit_election_form(self):
+        #login with admin
+        self.c.post(self.locations['login'], self.login_data)
+
+        #fill rest of form according to simple election needs
+        self.election_form['election_module'] = 'score'
+        r = self.c.post(self.locations['create'], self.election_form, follow=True) 
+        e = Election.objects.all()[0]
+        self.e_uuid = e.uuid
+        self.assertIsInstance(e, Election)
+
+    def create_questions_for_score(self):
+
+        post_data = {'form-TOTAL_FORMS': 1,
+                     'form-INITIAL_FORMS': 1,
+                     'form-MAX_NUM_FORMS': "",
+                     'form-0-choice_type': 'choice',
+                     'form-0-scores': [u'2', u'3', u'4', u'6'],
+                     'form-0-question': 'test_question',
+                     'form-0-answer_0': 'test answer 0',
+                     'form-0-answer_1': 'test answer 1',
+                     'form-0-ORDER': 0,
+                     }
+        return post_data
+
+    def submit_score_questions(self):
+        post_data = self.create_questions_for_score()
+        questions_location = '/elections/%s/polls/%s/questions/manage'%(self.e_uuid, self.p_uuid)
+        r = self.c.post(questions_location, post_data)
+        p = Poll.objects.get(uuid=self.p_uuid)
+        self.assertTrue(p.questions_count > 0)
+
+    def test_election_proccess(self):
+        self.admin_can_submit_election_form()
+        self.assertEqual(self.freeze_election(), None)
+        pks = self.prepare_trustees(self.e_uuid)
+        item = self.get_voters_file()
+        self.create_poll()
+        self.submit_voters_file()
+        self.submit_score_questions()
+        e = Election.objects.get(uuid=self.e_uuid)
+        self.assertEqual (e.election_issues_before_freeze, [])
+        self.assertTrue(self.freeze_election())
+        e = Election.objects.get(uuid=self.e_uuid)
+        e.voting_starts_at = datetime.datetime.now()
+        e.save()
+        voters_urls = self.get_voters_urls() 
+        for url_value in voters_urls:
+            self.temp_cast_single_ballot(voters_urls[url_value])
+        p = Election.objects.get(uuid=self.e_uuid).polls.get(uuid=self.p_uuid)
+        self.assertEqual(p.voters_cast_count(), 3)
+        # close election
+        self.close_election()
+        e = Election.objects.get(uuid=self.e_uuid)
+        self.assertTrue(e.feature_closed)
+        # check that mixing is finished
+        e = Election.objects.get(uuid=self.e_uuid)
+        self.assertTrue(e.feature_mixing_finished)
+        # decrypt with trustees
+        self.decrypt_with_trustees(pks)
+        p = Poll.objects.get(uuid=self.p_uuid)
+        self.assertTrue(len(p.result) > 0) 
