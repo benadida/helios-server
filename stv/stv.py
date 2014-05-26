@@ -388,8 +388,6 @@ def count_stv(ballots, seats, droop = True, constituencies = None,
         if was_elected:
             update_candidate_counts(full_data, current_round, vote_count,
                                     [best_candidate])
-            redistribute_ballots(best_candidate, 1.0, hopefuls, allocated,
-                                 vote_count, logger=logger)
 
         current_round += 1
         num_elected = len(elected)
