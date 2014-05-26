@@ -87,14 +87,12 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                               'help_email': 'test@test.com',
                               'help_phone': 6988888888,
                               'communication_language': 'el',
-                              'random_value': 49
                               }
 
     def admin_can_submit_election_form(self):
         # login with admin
         self.c.post(self.locations['login'], self.login_data)
 
-        # fill rest of form according to simple election needs
         self.election_form['election_module'] = self.election_type 
         r = self.c.post(self.locations['create'], self.election_form, follow=True) 
         e = Election.objects.all()[0]
@@ -156,6 +154,13 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         e = Election.objects.all()[0]
         self.assertEqual(e.polls.all().count(), 1)
         self.p_uuid = e.polls.all()[0].uuid
+
+    def submit_questions(self):
+        post_data = self.create_questions()
+        questions_location = '/elections/%s/polls/%s/questions/manage'%(self.e_uuid, self.p_uuid)
+        r = self.c.post(questions_location, post_data)
+        p = Poll.objects.get(uuid=self.p_uuid)
+        self.assertTrue(p.questions_count > 0)
 
     def get_voters_file(self):
         data = ("1,voter1@mail.com,v1,oter1\n"
@@ -255,49 +260,18 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             location = '/elections/%s/polls/%s/post-decryptions'% (self.e_uuid,self.p_uuid)
             post_data = {'factors_and_proofs': json.dumps(data)}
             r = self.c.post(location, post_data)
-
-class TestSimpleElection(TestElectionBase):
-
-    def setUp(self):
-        super(TestSimpleElection, self).setUp()
-        self.election_type = 'simple'
-
-    def create_questions_for_simple(self):
-        
-        post_data = {'form-TOTAL_FORMS': 1,
-                     'form-INITIAL_FORMS': 1,
-                     'form-MAX_NUM_FORMS': "",
-                     'form-0-choice_type': 'choice',
-                     'form-0-question': 'test_question',
-                     'form-0-min_answers': 1,
-                     'form-0-max_answers': 1,
-                     'form-0-answer_0': 'test answer 0',
-                     'form-0-answer_1': 'test answer 1',
-                     'form-0-ORDER': 0,
-                     }
-        return post_data
-
-    def submit_simple_questions(self):
-        post_data = self.create_questions_for_simple()
-        questions_location = '/elections/%s/polls/%s/questions/manage'%(self.e_uuid, self.p_uuid)
-        r = self.c.post(questions_location, post_data)
-        p = Poll.objects.get(uuid=self.p_uuid)
-        self.assertTrue(p.questions_count > 0)
-
-    def test_election_proccess(self):
+    
+    def election_proccess(self):
         self.admin_can_submit_election_form()
-        # can't freeze election before requirements are met
         self.assertEqual(self.freeze_election(), None)
         pks = self.prepare_trustees(self.e_uuid)
         item = self.get_voters_file()
         self.create_poll()
         self.submit_voters_file()
-        self.submit_simple_questions()
-        # now all requirements are met, issues must be empty list  
+        self.submit_questions()
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertEqual (e.election_issues_before_freeze, [])
         self.assertTrue(self.freeze_election())
-        # change starting date to now
         e = Election.objects.get(uuid=self.e_uuid)
         e.voting_starts_at = datetime.datetime.now()
         e.save()
@@ -317,6 +291,30 @@ class TestSimpleElection(TestElectionBase):
         self.decrypt_with_trustees(pks)
         p = Poll.objects.get(uuid=self.p_uuid)
         self.assertTrue(len(p.result) > 0) 
+        
+class TestSimpleElection(TestElectionBase):
+
+    def setUp(self):
+        super(TestSimpleElection, self).setUp()
+        self.election_type = 'simple'
+
+    def create_questions(self):
+        
+        post_data = {'form-TOTAL_FORMS': 1,
+                     'form-INITIAL_FORMS': 1,
+                     'form-MAX_NUM_FORMS': "",
+                     'form-0-choice_type': 'choice',
+                     'form-0-question': 'test_question',
+                     'form-0-min_answers': 1,
+                     'form-0-max_answers': 1,
+                     'form-0-answer_0': 'test answer 0',
+                     'form-0-answer_1': 'test answer 1',
+                     'form-0-ORDER': 0,
+                     }
+        return post_data
+
+    def test_election_proccess(self):
+        self.election_proccess()
 
 class TestPartyElection(TestElectionBase):
     
@@ -324,7 +322,7 @@ class TestPartyElection(TestElectionBase):
         super(TestPartyElection, self).setUp()
         self.election_type = 'parties'
 
-    def create_questions_for_party(self):
+    def create_questions(self):
 
         post_data = {'form-TOTAL_FORMS': 2,
                      'form-INITIAL_FORMS': 1,
@@ -346,44 +344,8 @@ class TestPartyElection(TestElectionBase):
                      }
         return post_data
 
-    def submit_party_questions(self):
-        post_data = self.create_questions_for_party()
-        questions_location = '/elections/%s/polls/%s/questions/manage'%(self.e_uuid, self.p_uuid)
-        r = self.c.post(questions_location, post_data)
-        p = Poll.objects.get(uuid=self.p_uuid)
-        self.assertTrue(p.questions_count > 0)
-
     def test_election_proccess(self):
-        self.admin_can_submit_election_form()
-        self.assertEqual(self.freeze_election(), None)
-        pks = self.prepare_trustees(self.e_uuid)
-        item = self.get_voters_file()
-        self.create_poll()
-        self.submit_voters_file()
-        self.submit_party_questions()
-        e = Election.objects.get(uuid=self.e_uuid)
-        self.assertEqual (e.election_issues_before_freeze, [])
-        self.assertTrue(self.freeze_election())
-        e = Election.objects.get(uuid=self.e_uuid)
-        e.voting_starts_at = datetime.datetime.now()
-        e.save()
-        voters_urls = self.get_voters_urls() 
-        for url_value in voters_urls:
-            self.temp_cast_single_ballot(voters_urls[url_value])
-        p = Election.objects.get(uuid=self.e_uuid).polls.get(uuid=self.p_uuid)
-        self.assertEqual(p.voters_cast_count(), 3)
-        # close election
-        self.close_election()
-        e = Election.objects.get(uuid=self.e_uuid)
-        self.assertTrue(e.feature_closed)
-        # check that mixing is finished
-        e = Election.objects.get(uuid=self.e_uuid)
-        self.assertTrue(e.feature_mixing_finished)
-        # decrypt with trustees
-        self.decrypt_with_trustees(pks)
-        p = Poll.objects.get(uuid=self.p_uuid)
-        self.assertTrue(len(p.result) > 0) 
-
+        self.election_proccess()
 
 class TestScoreElection(TestElectionBase):
     
@@ -391,7 +353,7 @@ class TestScoreElection(TestElectionBase):
         super(TestScoreElection, self).setUp()
         self.election_type = 'score'
 
-    def create_questions_for_score(self):
+    def create_questions(self):
 
         post_data = {'form-TOTAL_FORMS': 1,
                      'form-INITIAL_FORMS': 1,
@@ -405,40 +367,7 @@ class TestScoreElection(TestElectionBase):
                      }
         return post_data
 
-    def submit_score_questions(self):
-        post_data = self.create_questions_for_score()
-        questions_location = '/elections/%s/polls/%s/questions/manage'%(self.e_uuid, self.p_uuid)
-        r = self.c.post(questions_location, post_data)
-        p = Poll.objects.get(uuid=self.p_uuid)
-        self.assertTrue(p.questions_count > 0)
-
     def test_election_proccess(self):
-        self.admin_can_submit_election_form()
-        self.assertEqual(self.freeze_election(), None)
-        pks = self.prepare_trustees(self.e_uuid)
-        item = self.get_voters_file()
-        self.create_poll()
-        self.submit_voters_file()
-        self.submit_score_questions()
-        e = Election.objects.get(uuid=self.e_uuid)
-        self.assertEqual (e.election_issues_before_freeze, [])
-        self.assertTrue(self.freeze_election())
-        e = Election.objects.get(uuid=self.e_uuid)
-        e.voting_starts_at = datetime.datetime.now()
-        e.save()
-        voters_urls = self.get_voters_urls() 
-        for url_value in voters_urls:
-            self.temp_cast_single_ballot(voters_urls[url_value])
-        p = Election.objects.get(uuid=self.e_uuid).polls.get(uuid=self.p_uuid)
-        self.assertEqual(p.voters_cast_count(), 3)
-        # close election
-        self.close_election()
-        e = Election.objects.get(uuid=self.e_uuid)
-        self.assertTrue(e.feature_closed)
-        # check that mixing is finished
-        e = Election.objects.get(uuid=self.e_uuid)
-        self.assertTrue(e.feature_mixing_finished)
-        # decrypt with trustees
-        self.decrypt_with_trustees(pks)
-        p = Poll.objects.get(uuid=self.p_uuid)
-        self.assertTrue(len(p.result) > 0) 
+        self.election_proccess()
+
+
