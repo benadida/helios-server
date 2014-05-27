@@ -143,6 +143,9 @@ class Election(HeliosModel):
   # downloadable election info
   election_info_url = models.CharField(max_length=300, null=True)
 
+  def __unicode__(self):
+    return self.name
+
   # metadata for the election
   @property
   def metadata(self):
