@@ -1,7 +1,6 @@
 import datetime
 import json
 
-
 from random import choice
 from datetime import timedelta
 from django.contrib.auth.hashers import make_password
@@ -70,6 +69,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
     
     def setUp(self):
         super(TestElectionBase, self).setUp()
+        # set the voters population that will be produced for test
+        self.voters_num = 10
         trustees = ("test1 trustee1, test_trustee1@mail.com\n"
                     "test2 trustee2, test_trustee2@mail.com")
         start_time = datetime.datetime.now()
@@ -162,24 +163,23 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         p = Poll.objects.get(uuid=self.p_uuid)
         self.assertTrue(p.questions_count > 0)
 
-    def get_voters_file(self):
-        data = ("1,voter1@mail.com,v1,oter1\n"
-                "2,voter2@mail.com,v2,oter2\n"
-                "3,voter3@mail.com,v3,oter3")
-        fname = "/tmp/voters.csv"
+    def get_random_voters_file(self):
+        fname = '/tmp/random_voters.csv'
         fp = file(fname, 'w')
-        fp.write(data)
+        for i in range(1,self.voters_num+1):
+            voter = "%s,voter%s@mail.com,test_name%s,test_surname%s\n"%(i,i,i,i)
+            fp.write(voter)
         fp.close()
         return fname
 
     def submit_voters_file(self):
-        voters_file = file(self.get_voters_file())
+        voters_file = file(self.get_random_voters_file())
         upload_voters_location = '/elections/%s/polls/%s/voters/upload' %(self.e_uuid, self.p_uuid)
         r = self.c.post(upload_voters_location, {'voters_file': voters_file})
         r = self.c.post(upload_voters_location, {'confirm_p': 1})
         e = Election.objects.get(uuid=self.e_uuid)
         voters = e.voters.count()
-        self.assertTrue(voters > 0)
+        self.assertEqual(voters, self.voters_num)
 
     def get_voters_urls(self):
         e = Election.objects.get(uuid=self.e_uuid)
@@ -279,7 +279,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         for url_value in voters_urls:
             self.temp_cast_single_ballot(voters_urls[url_value])
         p = Election.objects.get(uuid=self.e_uuid).polls.get(uuid=self.p_uuid)
-        self.assertEqual(p.voters_cast_count(), 3)
+        self.assertEqual(p.voters_cast_count(), self.voters_num)
         # close election
         self.close_election()
         e = Election.objects.get(uuid=self.e_uuid)
