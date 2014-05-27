@@ -69,10 +69,13 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
     
     def setUp(self):
         super(TestElectionBase, self).setUp()
-        # set the voters population that will be produced for test
+        # set the voters number that will be produced for test
         self.voters_num = 10
-        trustees = ("test1 trustee1, test_trustee1@mail.com\n"
-                    "test2 trustee2, test_trustee2@mail.com")
+        # set the trustees number that will be produced for the test
+        trustees_num = 3
+        trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
+                                       'test%x@mail.com' %x]) for x in range(0,trustees_num))
+
         start_time = datetime.datetime.now()
         end_time = datetime.datetime.now() + timedelta(hours=2)
         date1, date2 = datetime.datetime.now() + timedelta(hours=48),datetime.datetime.now() + timedelta(hours=56)
@@ -265,7 +268,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.admin_can_submit_election_form()
         self.assertEqual(self.freeze_election(), None)
         pks = self.prepare_trustees(self.e_uuid)
-        item = self.get_voters_file()
+        item = self.get_random_voters_file()
         self.create_poll()
         self.submit_voters_file()
         self.submit_questions()
