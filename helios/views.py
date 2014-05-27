@@ -794,17 +794,18 @@ def one_election_bboard(request, election):
   after = request.GET.get('after', None)
   offset= int(request.GET.get('offset', 0))
   limit = int(request.GET.get('limit', 50))
-  
+
   order_by = 'voter_id'
   
   # unless it's by alias, in which case we better go by UUID
   if election.use_voter_aliases:
     order_by = 'alias'
-
+  
   # if there's a specific voter
   if request.GET.has_key('q'):
     # FIXME: figure out the voter by voter_id
     voters = []
+
   else:
     # load a bunch of voters
     voters = Voter.get_by_election(election, after=after, limit=limit+1, order_by=order_by)
@@ -1120,8 +1121,10 @@ def voters_list_pretty(request, election):
   # voters = Voter.get_by_election(election, order_by=order_by)
   voters = Voter.objects.filter(election = election).order_by(order_by).defer('vote')
 
+  # if admin, lets check for name instead of alias
+  admin_p = security.user_can_admin_election(user, election)
   if q != '':
-    if election.use_voter_aliases:
+    if election.use_voter_aliases and not admin_p:
       voters = voters.filter(alias__icontains = q)
     else:
       voters = voters.filter(voter_name__icontains = q)
