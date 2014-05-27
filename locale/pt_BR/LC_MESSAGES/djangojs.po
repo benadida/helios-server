@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-27 16:21-0300\n"
-"PO-Revision-Date: 2014-05-27 16:21-0300\n"
+"POT-Creation-Date: 2014-05-27 17:22-0300\n"
+"PO-Revision-Date: 2014-05-27 17:22-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -52,7 +52,12 @@ msgstr ""
 msgid "ok, tally has begun"
 msgstr "Apuração iniciada!"
 
-#: helios/media/js/utils.js:32
+#: helios/media/js/utils.js:31
+#, c-format
+msgid "Are you sure you want to remove voter %s?"
+msgstr "Você tem certeza de que deseja remover o eleitor %s?"
+
+#: sitestatic/helios/js/utils.js:32
 msgid "Are you sure you want to remove voter "
 msgstr "Você tem certeza de que deseja remover o eleitor "
 
