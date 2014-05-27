@@ -55,16 +55,19 @@ function load_ballots(election_url, ballot_list, ballots, final_callback) {
         return;
     }
     
-    result_append("loading ballot for voter #" + (ballots.length + 1));
+    //result_append("loading ballot for voter #" + (ballots.length + 1));
+    result_append("carregando cédula para o eleitor #" + (ballots.length + 1));
         
     // get the next ballot
     $.get(election_url + "/ballots/" + ballot_list[ballots.length].uuid + '/last', function(result) {
         var new_ballot = jQuery.secureEvalJSON(result);
         ballots.push(new_ballot);
         if (new_ballot.vote == null)
-          result_append("no ballot for this voter #" + ballots.length);
+          //result_append("no ballot for this voter #" + ballots.length);
+          result_append("nenhuma cédula para esse eleitor #" + ballots.length);
         else
-          result_append("FOUND a ballot for voter #" + ballots.length);
+          //result_append("FOUND a ballot for voter #" + ballots.length);
+          result_append("cédula ENCONTRADA para o eleitor #" + ballots.length);
         load_ballots(election_url, ballot_list, ballots, final_callback);
     });
 }
@@ -112,7 +115,8 @@ function load_election_and_ballots(election_url) {
 
         $(election.questions).each(function(qnum, q) {
             if (q.tally_type != "homomorphic") {
-              result_append("PROBLEM: this election is not a straight-forward homomorphic-tally election. As a result, Helios cannot currently verify it.");
+              //result_append("PROBLEM: this election is not a straight-forward homomorphic-tally election. As a result, Helios cannot currently verify it.");
+              result_append("PROBLEMA: esta eleição não é uma eleição de apuração homomórfica direta. Portanto,o Helios não pode verificá-la.");
               return;
             }
 
@@ -177,11 +181,13 @@ function load_election_and_ballots(election_url) {
                        // the public key that we'll check
                        var combined_key = 1;
 
-                       result_append("<h3>Trustees</h3>");
+                       //result_append("<h3>Trustees</h3>");
+                       result_append("<h3>Apuradores</h3>");
                        // verify the keys
                        $(trustees).each(function(i, trustee) {
                           //result_append("Trustee #" + (i+1) + ": " + trustee.email);
-                          result_append("Apurador #" + (i+1) + ": " + trustee.email);
+                          result_append("Apurador #" + (i+1) + ": " + trustee.uuid);
+                          console.log(trustee);
                           if (trustee.public_key.verifyKnowledgeOfSecretKey(trustee.pok, ElGamal.fiatshamir_dlog_challenge_generator)) {
                               //result_append("-- PK " + trustee.public_key_hash + " -- VERIFIED.");
                               result_append("-- PK " + trustee.public_key_hash + " -- VERIFICADO.");
@@ -189,7 +195,7 @@ function load_election_and_ballots(election_url) {
                               // FIXME check the public key hash
                           } else {
                               //result_append("==== ERROR for PK of trustee " + rustee.email);
-                              result_append("==== ERRO de chave do apurador " + trustee.email);
+                              result_append("==== ERRO de chave do apurador " + trustee.uuid);
                               overall_result = false;
                           }
 
@@ -228,10 +234,10 @@ function load_election_and_ballots(election_url) {
                                    if (trustee.public_key.verifyDecryptionFactor(a, trustee.decryption_factors[q_num][a_num],
                                                    trustee.decryption_proofs[q_num][a_num], ElGamal.fiatshamir_challenge_generator)) {
                                        //result_append("-- Trustee " + trustee.email + ": decryption factor verifies");
-                                        result_append("-- Apurador " + trustee.email + ": fator de decifragem confere");
+                                        result_append("-- Apurador " + trustee.uuid + ": fator de decifragem confere");
                                    } else {
                                        //result_append("==== ERROR with Trustee " + trustee.email + ": decryption factor does not verify");
-                                       result_append("==== ERRO com o apurador " + trustee.email + ": o fator de decifragem não confere");
+                                       result_append("==== ERRO com o apurador " + trustee.uuid + ": o fator de decifragem não confere");
                                        check= false;
                                        overall_result = false;
                                    }
