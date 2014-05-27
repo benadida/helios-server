@@ -131,7 +131,7 @@
 	<td>
 	{% if admin_p %}
 	<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}"><i title="{% trans "Send email to this voter. This action will only be possible if the ballot is already frozen." %}" class="glyphicon glyphicon-envelope"></i></a>
-	<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}"><i title="{% trans "Remove voter" %}" class="glyphicon glyphicon-remove"></i></a>
+	<a href="{% url helios.views.voter_delete election.uuid, voter.uuid %}"><i data-name="{{voter.name}}" title="{% trans "Remove voter" %}" class="glyphicon glyphicon-remove remove_voter"></i></a>
 	{% endif %}
 	<!--<img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" />--> {{voter.name}}</td>
 	{% endif %}

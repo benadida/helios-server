@@ -27,4 +27,11 @@ $("document").ready(function(){
 	$("#begin_tally").submit(function(){
 		alert(gettext('ok, tally has begun'));
 	});
+	$(".remove_voter").click(function(){
+		var voter = $(this).attr("data-name");		
+		if (confirm(gettext('Are you sure you want to remove voter ' + voter + '?'))) {
+			return true;
+		}
+		return false;
+	});
 })
