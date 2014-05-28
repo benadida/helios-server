@@ -313,7 +313,6 @@ def one_election_view(request, election):
     voter = get_voter(request, user, election)
 
   if voter:
-    voter.cast_ip = request.META['HTTP_X_FORWARDED_FOR']
     # cast any votes?
     votes = CastVote.get_by_voter(voter)
   else:
