@@ -98,7 +98,7 @@ class CastVote(LegacyObject):
         return self.instantiate(self.wrapped_obj, datatype='legacy/ShortCastVote')
 
 class Trustee(LegacyObject):
-    FIELDS = ['uuid', 'public_key', 'public_key_hash', 'pok', 'decryption_factors', 'decryption_proofs', 'email']
+    FIELDS = ['uuid', 'public_key', 'public_key_hash', 'pok', 'decryption_factors', 'decryption_proofs', 'email', 'name']
 
     STRUCTURED_FIELDS = {
         'public_key' : 'legacy/EGPublicKey',

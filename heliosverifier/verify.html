@@ -186,7 +186,7 @@ function load_election_and_ballots(election_url) {
                        // verify the keys
                        $(trustees).each(function(i, trustee) {
                           //result_append("Trustee #" + (i+1) + ": " + trustee.email);
-                          result_append("Apurador #" + (i+1) + ": " + trustee.uuid);
+                          result_append("Apurador #" + (i+1) + ": " + trustee.name);
                           console.log(trustee);
                           if (trustee.public_key.verifyKnowledgeOfSecretKey(trustee.pok, ElGamal.fiatshamir_dlog_challenge_generator)) {
                               //result_append("-- PK " + trustee.public_key_hash + " -- VERIFIED.");
@@ -195,7 +195,7 @@ function load_election_and_ballots(election_url) {
                               // FIXME check the public key hash
                           } else {
                               //result_append("==== ERROR for PK of trustee " + rustee.email);
-                              result_append("==== ERRO de chave do apurador " + trustee.uuid);
+                              result_append("==== ERRO de chave do apurador " + trustee.name);
                               overall_result = false;
                           }
 
@@ -234,10 +234,10 @@ function load_election_and_ballots(election_url) {
                                    if (trustee.public_key.verifyDecryptionFactor(a, trustee.decryption_factors[q_num][a_num],
                                                    trustee.decryption_proofs[q_num][a_num], ElGamal.fiatshamir_challenge_generator)) {
                                        //result_append("-- Trustee " + trustee.email + ": decryption factor verifies");
-                                        result_append("-- Apurador " + trustee.uuid + ": fator de decifragem confere");
+                                        result_append("-- Apurador " + trustee.name + ": fator de decifragem confere");
                                    } else {
                                        //result_append("==== ERROR with Trustee " + trustee.email + ": decryption factor does not verify");
-                                       result_append("==== ERRO com o apurador " + trustee.uuid + ": o fator de decifragem não confere");
+                                       result_append("==== ERRO com o apurador " + trustee.name + ": o fator de decifragem não confere");
                                        check= false;
                                        overall_result = false;
                                    }
