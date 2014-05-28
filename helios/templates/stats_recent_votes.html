@@ -1,16 +1,28 @@
 {% extends TEMPLATE_BASE %}
 {% load i18n %}
-{% block title %}Statistics{% endblock %}
+{% block title %}{% trans "Statistics" %}{% endblock %}
 
 {% block content %}
-<h1>{% trans "Recent Votes" %}</h1>
-
-{% trans "Last 24 hours" %}
-
-{% for election in elections %}
-<p>
-<b><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></b> -- {{election.last_cast_vote}} {{election.num_recent_cast_votes}} {% trans "recently cast votes" %}
-</p>
-{% endfor %}
-
+<div class="col-md-12">
+	<h1>{% trans "Recent Votes" %}</h1>
+	{% trans "Last 24 hours" %}
+	<table class="table table-striped">
+	  <thead>
+	    <tr>
+	      <th>{% trans "Election" %}</th>
+	      <th>{% trans "last cast vote" %}</th>
+	      <th>{% trans "recently cast votes" %}</th>
+	   </tr>
+	  </thead>
+	  <tbody>	
+		{% for election in elections %}
+			<tr>
+			<td><b><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></b></td>
+			<td>{{election.last_cast_vote|date:"d/m/Y H:i"}}</td>
+			<td>{{election.num_recent_cast_votes}}</td>	
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+</div>
 {% endblock %}
