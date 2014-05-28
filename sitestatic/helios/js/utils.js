@@ -28,8 +28,9 @@ $("document").ready(function(){
 		alert(gettext('ok, tally has begun'));
 	});
 	$(".remove_voter").click(function(){
-		var voter = $(this).attr("data-name");		
-		if (confirm(gettext('Are you sure you want to remove voter ' + voter + '?'))) {
+    var textToBeFormatted2 = gettext('Are you sure you want to remove voter %s?');
+    var formattedText2 = interpolate(textToBeFormatted2, [$(this).attr("data-name")]);		
+		if (confirm(formattedText2)){
 			return true;
 		}
 		return false;

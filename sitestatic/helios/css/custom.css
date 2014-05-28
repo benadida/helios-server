@@ -23,6 +23,15 @@
 	border-color:#009933;
 }
 a:hover, a:focus {
-  color: #005580;
+  color: #009933;
   text-decoration: underline;
+}
+.nav-pills>li.active>a,.nav-pills>li.active>a:hover,.nav-pills>li.active>a:focus{
+	color:#fff;
+	background-color:#009933;
+}
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary {
+  color: #FFF;
+  background-color: #009933;
+  border-color: #336633;
 }
