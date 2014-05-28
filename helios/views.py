@@ -1229,14 +1229,21 @@ def voters_upload(request, election):
         voter_file_obj = election.add_voters_file(voters_file)
 
         request.session['voter_file_id'] = voter_file_obj.id
-        
+
+        problems = []
+
         # import the first few lines to check
-        voters = [v for v in voter_file_obj.itervoters()][:5]
+        try:
+          voters = [v for v in voter_file_obj.itervoters()][:5]
+        except:
+          voters = []
+          problems.append("your CSV file could not be processed. Please check that it is a proper CSV file.")
 
         # check if voter emails look like emails
-        email_problem = False in [validate_email(v['email']) for v in voters]
+        if False in [validate_email(v['email']) for v in voters]:
+          problems.append("those don't look like correct email addresses. Are you sure you uploaded a file with email address as second field?")
 
-        return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters, 'email_problem': email_problem})
+        return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters, 'problems': problems})
       else:
         return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_upload, args=[election.uuid]), urllib.urlencode({'e':'no voter file specified, try again'})))
 

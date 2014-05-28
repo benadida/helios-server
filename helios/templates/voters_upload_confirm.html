@@ -14,11 +14,16 @@ You have uploaded a file of voters. The first few rows of this file are:
 {% endfor %}
 </table>
 
-{% if email_problem %}
+{% if problems %}
 <p style="font-size: 1.5em;">
-<b>HOLD ON</b>: those don't look like correct email addresses. Are you sure you uploaded a file with email address as second field?<br />
+HOLD ON:<br />
+{% for problem in problems %}
+- {{problem}}<br />
+{% endfor %}
+</p>
+<br />
 
-<a href="{% url helios.views.voters_upload_cancel election.uuid %}">no, let me upload a different file</a>
+<a href="{% url helios.views.voters_upload_cancel election.uuid %}">never mind, upload a different file</a>
 </p>
 
 {% else %}
