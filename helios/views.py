@@ -313,7 +313,7 @@ def one_election_view(request, election):
     voter = get_voter(request, user, election)
 
   if voter:
-    voter.cast_ip = request.META['REMOTE_ADDR']
+    voter.cast_ip = request.META['HTTP_X_FORWARDED_FOR']
     # cast any votes?
     votes = CastVote.get_by_voter(voter)
   else:
@@ -634,7 +634,7 @@ def one_election_cast_confirm(request, election):
       'voter' : voter,
       'vote_hash': vote_fingerprint,
       'cast_at': datetime.datetime.utcnow(),
-      'cast_ip': request.META.get('REMOTE_ADDR')
+      'cast_ip': request.META.get('HTTP_X_FORWARDED_FOR')
     }
 
     cast_vote = CastVote(**cast_vote_params)
