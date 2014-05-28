@@ -16,12 +16,7 @@
 <div id="q_edit_{$T.question$index}" style="display:none;">
 <form class="form form-horizontal" id="question_edit_{$T.question$index}_form" onsubmit="question_update({$T.question$index}, this); return false;" action="#">
 <p>
-<!--
-  Type of Question:
-  <select name="choice_type">
-    <option selected>aprovação</option>
-  </select>
--->
+
 <input type="hidden" name="choice_type" value="aprovação" />
 <b>{$T.question$index + 1}.</b> &nbsp;&nbsp;&nbsp;Selecionar entre &nbsp;&nbsp;
 <select name="min">
@@ -119,12 +114,7 @@ Tipo de Resultado:&nbsp;
 <br><br>
 <form class="form-horizontal" role="form" id="question_form" onsubmit="question_add(this); return false;" action="#">
 <div class="form-group">
-<!--
-  Type of Question:
-  <select name="choice_type">
-    <option selected>aprovação</option>
-  </select>
--->
+
 <input type="hidden" name="choice_type" value="aprovação" />
 <!--&nbsp;&nbsp;&nbsp;Select between &nbsp;&nbsp; -->
 

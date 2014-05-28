@@ -1,1 +1,1 @@
-heliosbooth/verifier.js
+../heliosbooth/verifier.js

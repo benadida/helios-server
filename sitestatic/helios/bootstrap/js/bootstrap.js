@@ -1,1 +1,1 @@
-helios/media/bootstrap/js/bootstrap.js
+../../../../helios/media/bootstrap/js/bootstrap.js
