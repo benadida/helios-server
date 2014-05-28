@@ -14,7 +14,7 @@ import views
 def vote_cast_send_message(user, voter, election, cast_vote, **kwargs):
   ## FIXME: this doesn't work for voters that are not also users
   # prepare the message
-  subject = _("%(election_name)s - vote cast") % {'election_name' : election.name}
+  subject = _("vote cast - %(election_name)s") % {'election_name' : election.name}
 
   body = _('You have successfully cast a vote in\n\n%(election_name)s\n') % {'election_name' : election.name}
 
