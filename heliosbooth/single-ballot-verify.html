@@ -2,7 +2,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8" /> 
-  <title>Helios Voting System</title>
+  <!--<title>Helios Voting System</title>-->
+  <title>Sistema de Votação Helios</title>
   <link rel="stylesheet" type="text/css" href="css/booth.css" />
   <link rel="stylesheet" type="text/css" href="css/forms.css" />
   <script language="javascript" src="js/jscrypto/jsbn.js"></script>
@@ -54,11 +55,13 @@ function result_append(str) {
 function verify_single_ballot(election_url, audit_trail) {
   var encrypted_vote_json = jQuery.secureEvalJSON(audit_trail);
   
-  result_append("loading election...");
+  //result_append("loading election...");
+  result_append("carregando eleição...");
 
   // quick and dirty detection of cast ballot
   if (encrypted_vote_json['cast_at']) {
-    result_append("\n\nIt looks like you are trying to verify a cast ballot. That can't be done, only audited ballots can be verified.");
+    //result_append("\n\nIt looks like you are trying to verify a cast ballot. That can't be done, only audited ballots can be verified.");
+    result_append("\n\nParece que você está tentando verificar uma cédula depositada. Isso não é possível, somente cédulas auditadas podem ser verificadas.");
     return;
   }
   
@@ -70,9 +73,11 @@ function verify_single_ballot(election_url, audit_trail) {
     $('#loading').hide();
     
     if (overall_result) {
-       result_append('SUCCESSFUL VERIFICATION, DONE!');
+       //result_append('SUCCESSFUL VERIFICATION, DONE!');
+       result_append('VERIFICAÇÃO BEM SUCEDIDA, PRONTO!');
     } else {
-       result_append('PROBLEM - THIS BALLOT DOES NOT VERIFY.');        
+       //result_append('PROBLEM - THIS BALLOT DOES NOT VERIFY.');        
+       result_append('PROBLEMA - ESSA CÉDULA NÃO PASSOU NA VERIFICAÇÃO.');
     }
   };
 
@@ -97,11 +102,13 @@ function verify_single_ballot(election_url, audit_trail) {
       after_computation(overall_result);
     }
   }, error: function() {
-      result_append('PROBLEM LOADING election. Are you sure you have the right election URL?<br />');
+      //result_append('PROBLEM LOADING election. Are you sure you have the right election URL?<br />');
+      result_append('PROBLEMAS AO CARREGAR a eleição. Tem certeza que está acessando a URL correta?<br />');
 
       $('#loading').hide();
       
-      result_append('PROBLEM - THIS BALLOT DOES NOT VERIFY.');        
+      //result_append('PROBLEM - THIS BALLOT DOES NOT VERIFY.');        
+      result_append('PROBLEMA - ESSA CÉDULA NÃO PASSOU NA VERIFICAÇÃO.');        
   }
   });
 }
@@ -111,35 +118,41 @@ function verify_single_ballot(election_url, audit_trail) {
 <body>
 <div id="wrapper">
 <div id="banner">
-    Helios Single-Ballot Verifier
+<!--    Helios Single-Ballot Verifier -->
+    Verificador de Cédula do Helios
 </div>
 <div id="content">
 
 <div id="verifier_loading">
-Loading verifier...
+<!--Loading verifier... -->
+Carregando verificador...
 </div>
 
 <div id="dummy_bigint" style="display:none;">
-Your browser does not have the Java plugin installed.<br /><br />
-At this time, the Java plugin is required for browser-based ballot auditing, although it is not required for ballot preparation.
+<!--Your browser does not have the Java plugin installed.<br /><br />
+At this time, the Java plugin is required for browser-based ballot auditing, although it is not required for ballot preparation. -->
+O seu navegador não tem o plugin Java instalado.<br /><br />
+No momento, o plugin Java é necessário para realizar a auditoria da cédula, embora não seja necessário para o preparo da mesma.
 </div>
 
 <div id="verifier" style="display:none;">
 <p style="font-size: 16pt;">
-    This single-ballot verifier lets you enter an audited ballot<br />and verify that it was prepared correctly.
+<!--    This single-ballot verifier lets you enter an audited ballot<br />and verify that it was prepared correctly. -->
+  Este verificador de uma cédula permite que você informe uma cédula auditada <br /> e verifique se a mesma foi preparada corretamente.
 </p>
 
 <form onsubmit="try {verify_single_ballot(this.election_url.value, this.audit_trail.value);} catch (e) {E = e;} return false;">
-Enter the Election URL:
+Informe a URL da eleição:
     <input type="text" size="50" name="election_url" id="election_url" /><br />
 
 <p>
-Your Ballot:
+<!--Your Ballot:-->
+Cédula a ser verificada:
 </p>
 
 <textarea name="audit_trail" cols="80" rows="7">
 </textarea><br /><br />
-<input type="submit" class="pretty" value="Verify" />
+<input type="submit" class="pretty" value="Verificar" />
 </form>
 
 <br /><br />

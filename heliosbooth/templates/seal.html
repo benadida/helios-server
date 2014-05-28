@@ -1,35 +1,25 @@
-{#if $T.election_metadata.use_advanced_audit_features}
-<div style="float: right; background: lightyellow; margin-left: 20px; padding: 0px 10px 10px 10px; border: 1px solid #ddd; width:200px;">
-<h4><a onclick="$('#auditbody').slideToggle(250);" href="#">Audit</a> <span style="font-size: 0.8em; color: #444">[optional]</span></h4>
-<div id="auditbody" style="display:none;">
-<p>
-If you choose, you can audit your ballot and reveal how your choices were encrypted.
-</p>
-<p>
-You will then be guided to re-encrypt your choices for final casting.
-</p>
-<input type="button" value="Verify Encryption" onclick="BOOTH.audit_ballot();" class="pretty" />
-</p>
-</div>
-</div>
-{#/if}
-
-<h3>Your ballot is ready to be submitted</h3>
+<!--<h3>Your ballot is ready to be submitted</h3> -->
+<h3>Sua cédula está cifrada e pronta para ser depositada na urna.</h3>
 
 <p>
-<em>Don't forget to click "Proceed to Submission" below!</em>
+<!--<em>Don't forget to click "Proceed to Submission" below!</em> -->
+<em>Não esqueça de clicar em "Depositar Cédula na Urna"!</em>
 </p>
 
-<p>Before submitting, you can take note of your smart ballot tracker [<a onclick="BOOTH.show_receipt(); return false;" href="#">print</a>]:<br /><br />
+<!--<p>Before submitting, you can take note of your smart ballot tracker [<a onclick="BOOTH.show_receipt(); return false;" href="#">print</a>]:<br /><br /> -->
+
+<p>Antes de depositar na urna, você pode anotar seu rastreador de cédula:<br /><br />
+
 
 <b><tt style="font-size: 16pt;">&nbsp;&nbsp;&nbsp;{$T.encrypted_vote_hash}</tt></b><br /><br />
 
 </p>
 
-<p>
-Once you click "Proceed", Helios will remember only your encrypted vote. Thus, only you know your vote.</p>
+<!--<p>
+Once you click "Proceed", Helios will remember only your encrypted vote. Thus, only you know your vote.</p> -->
+<p>Sua cédula foi cifrada e ninguém conseguirá identificar as escolhas que você fez.</p>
 
-<button id="proceed_button" onclick="BOOTH.cast_ballot();">Proceed to Submission</button><br />
+<button class="btn-primary" id="proceed_button" onclick="BOOTH.cast_ballot();">Depositar Cédula na Urna</button><br />
 <div id="loading_div"><img src="loading.gif" id="proceed_loading_img" /></div>
 
 

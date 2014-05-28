@@ -1,18 +1,25 @@
 
-<h3>Your audited ballot</h3>
+<!--<h3>Your audited ballot</h3>-->
+<h3>Sua Cédula Auditada</h3>
 
 <p>
-<b><u>IMPORTANT</u></b>: this ballot, now that it has been audited, <em>will not be tallied</em>.<br />
-To cast a ballot, you must click the "Back to Voting" button below, re-encrypt it, and choose "cast" instead of "audit."
+<!--<b><u>IMPORTANT</u></b>: this ballot, now that it has been audited, <em>will not be tallied</em>.<br />
+To cast a ballot, you must click the "Back to Voting" button below, re-encrypt it, and choose "cast" instead of "audit." -->
+<b><u>IMPORTANTE</u></b>: essa cédula, agora que foi auditada, <em>não será considerada na apuração</em>.<br />
+Para depositar uma cédula, você deve clicar em "voltar para a votação", clicar em "Confirmar escolha e cifrar cédula para déposito na urna", e clicar em "Depositar na Urna" ao invés de clicar em "Auditar".
 </p>
 
 <p>
-<b>Why?</b> Helios prevents you from auditing and casting the same ballot to provide you with some protection against coercion.
+<!--<b>Why?</b> Helios prevents you from auditing and casting the same ballot to provide you with some protection against coercion. -->
+<b>Por que?</b> O Helios não deixa você auditar e depositar a mesma cédula para fornecer alguma proteção contra coerção na hora do voto.
+
 </p>
 
 <p>
-<b>Now what?</b> <a onclick="$('#audit_trail').select(); return false;" href="#">Select your ballot audit info</a>, copy it to your clipboard, then use the <a target="_blank" href="single-ballot-verify.html?election_url={$T.election_url}">ballot verifier</a> to verify it.<br />
-Once you're satisfied, click the "back to voting" button to re-encrypt and cast your ballot.
+<!--<b>Now what?</b> <a onclick="$('#audit_trail').select(); return false;" href="#">Select your ballot audit info</a>, copy it to your clipboard, then use the <a target="_blank" href="single-ballot-verify.html?election_url={$T.election_url}">ballot verifier</a> to verify it.<br />
+Once you're satisfied, click the "back to voting" button to re-encrypt and cast your ballot.-->
+<b>E agora?</b><a onclick="$('#audit_trail').select(); return false;" href="#">Selecione e copie a informação de auditoria da sua cédula abaixo</a>, e clique em <a target="_blank" href="single-ballot-verify.html?election_url={$T.election_url}">verificar cédula</a> para realizar a auditoria.<br />
+Assim que estiver satisfeito, clique em "voltar para a votação" para re-cifrar seu voto e depositá-lo na urna.
 </p>
 
 <form action="#">
@@ -20,13 +27,16 @@ Once you're satisfied, click the "back to voting" button to re-encrypt and cast 
 {$T.audit_trail}
 </textarea>
 <br /><br />
-Before going back to voting,<br />
-you can post this audited ballot to the Helios tracking center so that others might double-check the verification of this ballot.
+<!--Before going back to voting,<br />
+you can post this audited ballot to the Helios tracking center so that others might double-check the verification of this ballot. -->
+Antes de voltar para a cabine de votação, <br />
+você pode postar esta cédula auditada no centro de rastreamento do Helios, assim outros podem também checar a verificação da mesma.
 <br /><br />
-<b>Even if you post your audited ballot, you must go back to voting and choose "cast" if you want your vote to count.</b>
+<!--<b>Even if you post your audited ballot, you must go back to voting and choose "cast" if you want your vote to count.</b> -->
+<b>Mesmo postando sua cédula auditada, você deve voltar para a cabine de votação e escolher depositar se você quiser que seu voto seja contabilizado.</b>
 <br /><br />
-<input type="button" value="back to voting" onclick="BOOTH.reset_ciphertexts();BOOTH.show_confirm();" class="pretty" />
+<input type="button" value="voltar para a votação" onclick="BOOTH.reset_ciphertexts();BOOTH.show_confirm();" class="btn-primary" />
 &nbsp; &nbsp;&nbsp;
-<input type="button" value="post audited ballot to tracking center" onclick="$(this).attr('disabled', 'disabled');BOOTH.post_audited_ballot();" id="post_audited_ballot_button" class="pretty" style="font-size:0.8em;"/>
+<input type="button" value="postar cédula auditada no centro de rastreamento" onclick="$(this).attr('disabled', 'disabled');BOOTH.post_audited_ballot();" id="post_audited_ballot_button" class="btn-primary" style="font-size:0.8em;"/>
 
 </form>
