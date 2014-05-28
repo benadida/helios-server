@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-28 09:12-0300\n"
-"PO-Revision-Date: 2014-05-28 10:20-0300\n"
+"POT-Creation-Date: 2014-05-28 16:21-0300\n"
+"PO-Revision-Date: 2014-05-28 16:21-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -144,7 +144,8 @@ msgstr "nenhum - você tem certeza disso?"
 msgid "Voter ID"
 msgstr "ID do Eleitor"
 
-#: helios/models.py:53
+#: helios/models.py:53 helios/templates/stats_elections.html:21
+#: helios/templates/stats_recent_votes.html:12
 msgid "Election"
 msgstr "Eleição"
 
@@ -531,7 +532,7 @@ msgstr "voltar ao início"
 
 #: helios/templates/election_audited_ballots.html:40
 #: helios/templates/election_bboard.html:29
-#: helios/templates/stats_elections.html:15
+#: helios/templates/stats_elections.html:16
 #: helios/templates/voters_list.html:114 helios/templates/voters_list.html:154
 #: helios/templates/voters_manage.html:17
 #: helios/templates/voters_manage.html:25
@@ -1483,7 +1484,7 @@ msgstr "Compartilhar"
 msgid "Tweet"
 msgstr "Tuíte"
 
-#: helios/templates/stats.html:5
+#: helios/templates/stats.html:5 helios/templates/stats_elections.html:22
 msgid "Admin"
 msgstr "Admin"
 
@@ -1509,26 +1510,31 @@ msgstr "forçar"
 
 #: helios/templates/stats_elections.html:3
 #: helios/templates/stats_problem_elections.html:3
+#: helios/templates/stats_recent_votes.html:3
 msgid "Statistics"
 msgstr "Estatísticas"
 
-#: helios/templates/stats_elections.html:5
-#: helios/templates/stats_elections.html:12
+#: helios/templates/stats_elections.html:6
+#: helios/templates/stats_elections.html:13
 msgid "Elections"
 msgstr "Eleições"
 
-#: helios/templates/stats_elections.html:9
+#: helios/templates/stats_elections.html:10
 #: helios/templates/voters_list.html:107 helios/templates/voters_list.html:147
 msgid "previous"
 msgstr "anterior"
 
-#: helios/templates/stats_elections.html:21
+#: helios/templates/stats_elections.html:23
+msgid "voters / cast votes"
+msgstr "eleitores / votos depositados"
+
+#: helios/templates/stats_elections.html:31
 msgid "voters"
 msgstr "eleitor (es)"
 
-#: helios/templates/stats_elections.html:21
+#: helios/templates/stats_elections.html:31
 msgid "cast votes"
-msgstr "votos depositados"
+msgstr "voto (s) depositado (s)"
 
 #: helios/templates/stats_problem_elections.html:6
 msgid "Problematic Elections"
@@ -1538,7 +1544,7 @@ msgstr "Eleições Problemáticas"
 msgid "Unfrozen for more than a day."
 msgstr "Desbloqueada por mais de um dia."
 
-#: helios/templates/stats_recent_votes.html:6
+#: helios/templates/stats_recent_votes.html:7
 #: server_ui/templates/index.html:77
 msgid "Recent Votes"
 msgstr "Votos Recentes"
@@ -1547,9 +1553,13 @@ msgstr "Votos Recentes"
 msgid "Last 24 hours"
 msgstr "Últimas 24 horas"
 
-#: helios/templates/stats_recent_votes.html:12
+#: helios/templates/stats_recent_votes.html:13
+msgid "last cast vote"
+msgstr "último voto depositado"
+
+#: helios/templates/stats_recent_votes.html:14
 msgid "recently cast votes"
-msgstr "votos depositados recentemente"
+msgstr "voto (s) depositado (s) recentemente"
 
 #: helios/templates/trustee_check_sk.html:40
 msgid "your secret key matches!"
@@ -2167,11 +2177,10 @@ msgstr ""
 msgid "continue"
 msgstr "continuar"
 
-#: heliosbooth/templates/done.html:2
+#: heliosbooth/templates/done.html:2 sitestatic/templates/done.html:2
 msgid ""
 "\n"
 "<h3>Your Vote is Being Submitted</h3>\n"
-"\n"
 "<p>\n"
 "Please wait a few seconds while your vote is submitted to the casting "
 "server....\n"
@@ -2182,7 +2191,7 @@ msgstr ""
 "\n"
 "<p>\n"
 "Por favor, espere alguns segundos enquanto sua cédula é depositada na "
-"urna...\n"
+"urna....\n"
 "</p>\n"
 
 #: heliosbooth/templates/submit.html:2 sitestatic/templates/submit.html:2
@@ -2699,23 +2708,6 @@ msgid ""
 "</ul>\n"
 msgstr ""
 
-#: sitestatic/templates/done.html:2
-msgid ""
-"\n"
-"<h3>Your Vote is Being Submitted</h3>\n"
-"<p>\n"
-"Please wait a few seconds while your vote is submitted to the casting "
-"server....\n"
-"</p>\n"
-msgstr ""
-"\n"
-"<h3>Seu voto está sendo depositado</h3>\n"
-"\n"
-"<p>\n"
-"Por favor, espere alguns segundos enquanto sua cédula é depositada na "
-"urna....\n"
-"</p>\n"
-
 #: templates/403.html:3
 msgid "Could not complete your request"
 msgstr "Não foi possível completar sua requisição"
@@ -2748,6 +2740,23 @@ msgstr "Erro no servidor"
 #: templates/500.html:6
 msgid "There was an error while handling your request."
 msgstr "Houve um erro durante o processamento de sua requisição."
+
+#~ msgid ""
+#~ "\n"
+#~ "<h3>Your Vote is Being Submitted</h3>\n"
+#~ "\n"
+#~ "<p>\n"
+#~ "Please wait a few seconds while your vote is submitted to the casting "
+#~ "server....\n"
+#~ "</p>\n"
+#~ msgstr ""
+#~ "\n"
+#~ "<h3>Seu voto está sendo depositado</h3>\n"
+#~ "\n"
+#~ "<p>\n"
+#~ "Por favor, espere alguns segundos enquanto sua cédula é depositada na "
+#~ "urna...\n"
+#~ "</p>\n"
 
 #~ msgid "%(election_name)s - vote cast"
 #~ msgstr "%(election_name)s - voto depositado"
