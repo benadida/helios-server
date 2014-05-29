@@ -268,9 +268,9 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
         doc.build(elements, onFirstPage = make_first_page_hf,
                   onLaterPages = make_later_pages_hf)
 
-    
+
 def build_doc(title, name, institution_name, voting_start, voting_end,
-              extended_until, data, filename="election_results.pdf",
+              extended_until, data, language, filename="election_results.pdf",
               new_page=True):
 
     with translation.override(language):

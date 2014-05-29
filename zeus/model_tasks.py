@@ -209,7 +209,10 @@ class ElectionTasks(TaskModel):
         if self.election_module != 'stv':
             build_doc(_(u'Results'), self.name, self.institution.name,
                     self.voting_starts_at, self.voting_ends_at,
-                    self.voting_extended_until, polls_data, pdfpath)
+                    self.voting_extended_until,
+                    polls_data,
+                    self.communication_language,
+                    pdfpath)
 
             from zeus.reports import csv_from_polls
             csvpath = self.get_results_file_path('csv')
