@@ -77,7 +77,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
                                        'test%x@mail.com' %x]) for x in range(0,trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number = 3
+        self.polls_number =2 
         start_time = datetime.datetime.now()
         end_time = datetime.datetime.now() + timedelta(hours=2)
         date1, date2 = datetime.datetime.now() + timedelta(hours=48),datetime.datetime.now() + timedelta(hours=56)
@@ -262,10 +262,10 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             self.c.get(t.get_login_url())
 
             sk = kp.sk
-            decryption_factors = [[]]
-            decryption_proofs = [[]]
             for p_uuid in self.p_uuids:
                 p = Poll.objects.get(uuid=p_uuid)
+                decryption_factors = [[]]
+                decryption_proofs = [[]]
                 for vote in p.encrypted_tally.tally[0]:
                     dec_factor, proof = sk.decryption_factor_and_proof(vote)
                     decryption_factors[0].append(dec_factor)
@@ -284,7 +284,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         # check if results exist
         for p_uuid in self.p_uuids:
             p = Poll.objects.get(uuid=p_uuid)
-            print p.result
+            self.assertTrue(len(p.result[0]) > 0)
    
     def election_proccess(self):
         self.admin_can_submit_election_form()
@@ -303,20 +303,15 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         for p_uuid in voters_urls:
             for voter_url in voters_urls[p_uuid]:
                 self.temp_cast_single_ballot(voter_url, p_uuid)
-        # fix to do for every poll
-        # p = Election.objects.get(uuid=self.e_uuid).polls.get(uuid=self.p_uuid)
-        # self.assertEqual(p.voters_cast_count(), self.voters_num)
-        # close election
+        for p_uuid in self.p_uuids:
+            p = Poll.objects.get(uuid=p_uuid)
+            self.assertEqual(p.voters_cast_count(), self.voters_num)
         self.close_election()
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_closed)
-        # check that mixing is finished
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_mixing_finished)
-        # decrypt with trustees
         self.decrypt_with_trustees(pks)
-        # p = Poll.objects.get(uuid=self.p_uuid)
-        # self.assertTrue(len(p.result) > 0) 
         self.check_results()
 
 class TestSimpleElection(TestElectionBase):
@@ -343,7 +338,7 @@ class TestSimpleElection(TestElectionBase):
 
     def test_election_proccess(self):
         self.election_proccess()
-'''
+
 class TestPartyElection(TestElectionBase):
     
     def setUp(self):
@@ -397,4 +392,3 @@ class TestScoreElection(TestElectionBase):
     def test_election_proccess(self):
         self.election_proccess()
 
-'''
