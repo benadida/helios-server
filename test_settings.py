@@ -31,3 +31,5 @@ SOUTH_TESTS_MIGRATE = False
 import multiprocessing
 ZEUS_MIXNET_NR_PARALLEL = multiprocessing.cpu_count()
 ZEUS_MIXNET_NR_ROUNDS = 16
+
+ZEUS_ELECTION_STREAM_HANDLER = True
