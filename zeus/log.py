@@ -8,6 +8,7 @@ import logging
 _locals = threading.local()
 
 ELECTION_LOG_DIR = getattr(settings, 'ZEUS_ELECTION_LOG_DIR', '/tmp/')
+ELECTION_STREAM_HANDLER = getattr(settings, 'ZEUS_ELECTION_STREAM_HANDLER', False)
 
 
 def _get_user_id(user=None):
@@ -55,6 +56,14 @@ def _get_logger(uuid, obj, user, fmt, extra={}):
     formatter = logging.Formatter(_fmt)
     fh.setFormatter(formatter)
     logger.addHandler(fh)
+
+    if ELECTION_STREAM_HANDLER:
+        handler = logging.StreamHandler()
+        _fmt = '%(asctime)s - %(user)s - ' + fmt + '%(levelname)s - %(message)s'
+        formatter = logging.Formatter(_fmt)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+
     return logging.LoggerAdapter(logger, extra)
 
 
