@@ -165,11 +165,11 @@ def index(request, election, poll=None):
 def freeze(request, election):
     election.logger.info("Starting to freeze")
     tasks.election_validate_create(election.id)
-    
+
     # hacky delay. Hopefully validate create task will start running
     # before the election view redirect.
     import time
-    time.sleep(4)
+    time.sleep(getattr(settings, 'ZEUS_ELECTION_FREEZE_DELAY', 4))
 
     url = election_reverse(election, 'index')
     return HttpResponseRedirect(url)

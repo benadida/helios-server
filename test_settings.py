@@ -57,3 +57,5 @@ dirs = [ZEUS_ELECTION_LOG_DIR, ZEUS_PROOFS_PATH,
         ZEUS_RESULTS_PATH, ZEUS_MIXES_PATH]
 for dir in dirs:
     mkdir_p(dir)
+
+ZEUS_ELECTION_FREEZE_DELAY = 0
