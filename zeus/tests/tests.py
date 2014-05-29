@@ -71,13 +71,13 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
     def setUp(self):
         super(TestElectionBase, self).setUp()
         # set the voters number that will be produced for test
-        self.voters_num = 10
+        self.voters_num = 3 
         # set the trustees number that will be produced for the test
-        trustees_num = 3
+        trustees_num = 2
         trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
                                        'test%x@mail.com' %x]) for x in range(0,trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number = 5
+        self.polls_number = 3
         start_time = datetime.datetime.now()
         end_time = datetime.datetime.now() + timedelta(hours=2)
         date1, date2 = datetime.datetime.now() + timedelta(hours=48),datetime.datetime.now() + timedelta(hours=56)
@@ -145,24 +145,6 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         if e.frozen_at:
             return True
 
-    '''
-    # remove and use create_random_polls when all are set 
-    def create_poll(self):
-        self.c.get(self.locations['logout'])
-        self.c.post(self.locations['login'], self.login_data)
-        e = Election.objects.all()[0]
-        # there shouldn't be any polls before we create them
-        self.assertEqual(e.polls.all().count(), 0)
-        location = '/elections/%s/polls/add' % self.e_uuid
-        post_data = {'form-0-name': 'test_poll',
-                     'form-TOTAL_FORMS': 1,
-                     'form-INITIAL_FORMS': 0,
-                     'form-MAX_NUM_FORMS': 100}
-        self.c.post(location, post_data)
-        e = Election.objects.all()[0]
-        self.assertEqual(e.polls.all().count(), 1)
-        self.p_uuids = e.polls.all()[0].uuid
-    '''
     def create_random_polls(self):
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
@@ -266,14 +248,13 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         enc_vote = datatypes.LDObject.fromDict(ballot,
                 type_hint='phoebus/EncryptedVote').wrapped_obj
         cast_data['encrypted_vote'] = enc_vote.toJSON()
-        #p = Poll.objects.get(uuid=p_uuid)
         r =self.c.post('/elections/%s/polls/%s/cast'%(self.e_uuid,p_uuid), cast_data)
     
     def close_election(self):
         self.c.get(self.locations['logout'])
         r = self.c.post(self.locations['login'], self.login_data)
         self.c.post('/elections/%s/close'%self.e_uuid)
-
+    
     def decrypt_with_trustees(self, pks):
         for trustee, kp in pks.iteritems():
             t = Trustee.objects.get(uuid=trustee)
@@ -283,22 +264,28 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             sk = kp.sk
             decryption_factors = [[]]
             decryption_proofs = [[]]
-            
-            p = Poll.objects.get(uuid=self.p_uuid)
-            for vote in p.encrypted_tally.tally[0]:
-                dec_factor, proof = sk.decryption_factor_and_proof(vote)
-                decryption_factors[0].append(dec_factor)
-                decryption_proofs[0].append({
-                    'commitment': proof.commitment,
-                    'response': proof.response,
-                    'challenge': proof.challenge,
-                    })
-            data = {'decryption_factors': decryption_factors,
-                        'decryption_proofs': decryption_proofs}
-            location = '/elections/%s/polls/%s/post-decryptions'% (self.e_uuid,self.p_uuid)
-            post_data = {'factors_and_proofs': json.dumps(data)}
-            r = self.c.post(location, post_data)
-    
+            for p_uuid in self.p_uuids:
+                p = Poll.objects.get(uuid=p_uuid)
+                for vote in p.encrypted_tally.tally[0]:
+                    dec_factor, proof = sk.decryption_factor_and_proof(vote)
+                    decryption_factors[0].append(dec_factor)
+                    decryption_proofs[0].append({
+                        'commitment': proof.commitment,
+                        'response': proof.response,
+                        'challenge': proof.challenge,
+                        })
+                data = {'decryption_factors': decryption_factors,
+                            'decryption_proofs': decryption_proofs}
+                location = '/elections/%s/polls/%s/post-decryptions' % (self.e_uuid, p_uuid)
+                post_data = {'factors_and_proofs': json.dumps(data)}
+                r = self.c.post(location, post_data)
+
+    def check_results(self):
+        # check if results exist
+        for p_uuid in self.p_uuids:
+            p = Poll.objects.get(uuid=p_uuid)
+            print p.result
+   
     def election_proccess(self):
         self.admin_can_submit_election_form()
         self.assertEqual(self.freeze_election(), None)
@@ -308,7 +295,6 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.submit_questions()
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertEqual (e.election_issues_before_freeze, [])
-        print e.election_issues_before_freeze
         self.assertTrue(self.freeze_election())
         e = Election.objects.get(uuid=self.e_uuid)
         e.voting_starts_at = datetime.datetime.now()
@@ -325,14 +311,14 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_closed)
         # check that mixing is finished
-        '''
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_mixing_finished)
         # decrypt with trustees
         self.decrypt_with_trustees(pks)
-        p = Poll.objects.get(uuid=self.p_uuid)
-        self.assertTrue(len(p.result) > 0) 
-        '''
+        # p = Poll.objects.get(uuid=self.p_uuid)
+        # self.assertTrue(len(p.result) > 0) 
+        self.check_results()
+
 class TestSimpleElection(TestElectionBase):
 
     def setUp(self):
@@ -357,7 +343,7 @@ class TestSimpleElection(TestElectionBase):
 
     def test_election_proccess(self):
         self.election_proccess()
-
+'''
 class TestPartyElection(TestElectionBase):
     
     def setUp(self):
@@ -411,4 +397,4 @@ class TestScoreElection(TestElectionBase):
     def test_election_proccess(self):
         self.election_proccess()
 
-
+'''
