@@ -27,3 +27,7 @@ SOUTH_TESTS_MIGRATE = False
         #'NAME': ':memory:'
     #}
 #}
+
+import multiprocessing
+ZEUS_MIXNET_NR_PARALLEL = multiprocessing.cpu_count()
+ZEUS_MIXNET_NR_ROUNDS = 16
