@@ -70,14 +70,15 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
     
     def setUp(self):
         super(TestElectionBase, self).setUp()
+        self.local_verbose = True
         # set the voters number that will be produced for test
-        self.voters_num = 3 
+        self.voters_num = 2
         # set the trustees number that will be produced for the test
-        trustees_num = 2
+        trustees_num = 2 
         trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
                                        'test%x@mail.com' %x]) for x in range(0,trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number =2 
+        self.polls_number = 2
         start_time = datetime.datetime.now()
         end_time = datetime.datetime.now() + timedelta(hours=2)
         date1, date2 = datetime.datetime.now() + timedelta(hours=48),datetime.datetime.now() + timedelta(hours=56)
@@ -98,12 +99,13 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
     def admin_can_submit_election_form(self):
         # login with admin
         self.c.post(self.locations['login'], self.login_data)
-
         self.election_form['election_module'] = self.election_type 
         r = self.c.post(self.locations['create'], self.election_form, follow=True) 
         e = Election.objects.all()[0]
         self.e_uuid = e.uuid
         self.assertIsInstance(e, Election)
+        if self.local_verbose:
+            print 'Admin posted election form'
 
     def prepare_trustees(self,e_uuid):
         e = Election.objects.get(uuid=e_uuid)
@@ -133,6 +135,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 t.last_verified_key_at = datetime.datetime.now()
                 t.save()
                 pks[t.uuid] = t1_kp
+        if self.local_verbose:
+            print 'Trustees are ready'
         return pks
     
     def freeze_election(self):
@@ -143,6 +147,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         r = self.c.post(freeze_location, follow=True)
         e = Election.objects.get(uuid=self.e_uuid)
         if e.frozen_at:
+            if self.local_verbose:
+                print 'Election got frozen'
             return True
 
     def create_random_polls(self):
@@ -162,6 +168,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.c.post(location, post_data)
         e = Election.objects.all()[0]
         self.assertEqual(e.polls.all().count(), self.polls_number)
+        if self.local_verbose:
+            print 'Polls were created'
         self.p_uuids = [] 
         for poll in e.polls.all():
             self.p_uuids.append(poll.uuid)
@@ -173,8 +181,10 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             questions_location = '/elections/%s/polls/%s/questions/manage' % \
                     (self.e_uuid, p_uuid)
             r = self.c.post(questions_location, post_data)
-        p = Poll.objects.get(uuid=p_uuid)
-        self.assertTrue(p.questions_count > 0)
+            p = Poll.objects.get(uuid=p_uuid)
+            self.assertTrue(p.questions_count > 0)
+        if self.local_verbose:
+            print 'Questions were created'
 
     def get_random_voters_file(self):
         counter = 0
@@ -188,6 +198,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 fp.write(voter)
             fp.close()
             counter += 1
+            #assert here
+        if self.local_verbose:
+            print 'Voters file created'
         return voter_files
 
     def submit_voters_file(self):
@@ -199,6 +212,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         e = Election.objects.get(uuid=self.e_uuid)
         voters = e.voters.count()
         self.assertEqual(voters, self.voters_num*self.polls_number)
+        if self.local_verbose:
+            print 'Voters file submitted'
 
     def get_voters_urls(self):
         # return a dict with p_uuid as key and voters urls as a list for each poll
@@ -210,7 +225,20 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             for v in voters:
                 urls_for_this_poll.append(v.get_quick_login_url())
             voters_urls[p_uuid] = urls_for_this_poll
+        if self.local_verbose:
+            print 'Got login urls from voters'
         return voters_urls
+
+    def voter_cannot_vote_before_freeze(self):
+        voter_login_url = (Election.objects
+            .get(uuid=self.e_uuid)
+            .voters.all()[0]
+            .get_quick_login_url())
+        p_uuid = self.p_uuids[0]
+        r = self.temp_cast_single_ballot(voter_login_url, p_uuid)
+        self.assertEqual(r.status_code, 403)
+        if self.local_verbose:
+            print '..but was not allowed'
 
     def submit_vote_for_each_voter(self,voters_urls):
         pass
@@ -248,12 +276,20 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         enc_vote = datatypes.LDObject.fromDict(ballot,
                 type_hint='phoebus/EncryptedVote').wrapped_obj
         cast_data['encrypted_vote'] = enc_vote.toJSON()
-        r =self.c.post('/elections/%s/polls/%s/cast'%(self.e_uuid,p_uuid), cast_data)
+        r = self.c.post('/elections/%s/polls/%s/cast'%(self.e_uuid,p_uuid), cast_data)
+        if self.local_verbose:
+            print 'Voter voted'
+
+        return r
     
     def close_election(self):
         self.c.get(self.locations['logout'])
         r = self.c.post(self.locations['login'], self.login_data)
         self.c.post('/elections/%s/close'%self.e_uuid)
+        e = Election.objects.get(uuid=self.e_uuid)
+        self.assertTrue(e.feature_closed)
+        if self.local_verbose:
+            print 'Election is closed'
     
     def decrypt_with_trustees(self, pks):
         for trustee, kp in pks.iteritems():
@@ -279,6 +315,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 location = '/elections/%s/polls/%s/post-decryptions' % (self.e_uuid, p_uuid)
                 post_data = {'factors_and_proofs': json.dumps(data)}
                 r = self.c.post(location, post_data)
+                self.assertEqual(r.status_code, 200)
+                if self.local_verbose:
+                    print 'Trustee decrypted poll'
 
     def check_results(self):
         # check if results exist
@@ -293,6 +332,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.create_random_polls()
         self.submit_voters_file()
         self.submit_questions()
+        self.voter_cannot_vote_before_freeze()
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertEqual (e.election_issues_before_freeze, [])
         self.assertTrue(self.freeze_election())
@@ -308,8 +348,6 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             self.assertEqual(p.voters_cast_count(), self.voters_num)
         self.close_election()
         e = Election.objects.get(uuid=self.e_uuid)
-        self.assertTrue(e.feature_closed)
-        e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_mixing_finished)
         self.decrypt_with_trustees(pks)
         self.check_results()
@@ -319,6 +357,8 @@ class TestSimpleElection(TestElectionBase):
     def setUp(self):
         super(TestSimpleElection, self).setUp()
         self.election_type = 'simple'
+        if self.local_verbose:
+            print '* Starting simple election *'
 
     def create_questions(self):
         
@@ -344,6 +384,8 @@ class TestPartyElection(TestElectionBase):
     def setUp(self):
         super(TestPartyElection, self).setUp()
         self.election_type = 'parties'
+        if self.local_verbose:
+            print '* Starting party election *'
 
     def create_questions(self):
 
@@ -375,6 +417,8 @@ class TestScoreElection(TestElectionBase):
     def setUp(self):
         super(TestScoreElection, self).setUp()
         self.election_type = 'score'
+        if self.local_verbose:
+            print '* Starting score election *'
 
     def create_questions(self):
         post_data = {'form-TOTAL_FORMS': 1,
