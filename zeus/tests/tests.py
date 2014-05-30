@@ -1,7 +1,7 @@
 import datetime
 import json
 
-from random import choice
+from random import choice, sample, randint
 from datetime import timedelta
 from django.contrib.auth.hashers import make_password
 from django.test import TestCase
@@ -67,10 +67,19 @@ class TestUsersWithClient(SetUpAdminAndClientMixin, TestCase):
 
 
 class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
-    
+
     def setUp(self):
         super(TestElectionBase, self).setUp()
         self.local_verbose = True
+        self.celebration =(
+       " _________ ___  __\n"
+       "|\   __  \|\  \|\  \\\n"
+       "\ \  \ \  \ \  \/  /_\n"   
+       " \ \  \ \  \ \   ___ \\\n"
+       "  \ \  \_\  \ \  \\\ \ \\ \n"
+       "   \ \_______\ \__\\\ \_\\\n"
+       "    \|_______|\|__| \|_|\n")
+                                           
         # set the voters number that will be produced for test
         self.voters_num = 2
         # set the trustees number that will be produced for the test
@@ -97,7 +106,6 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                               }
 
     def admin_can_submit_election_form(self):
-        # login with admin
         self.c.post(self.locations['login'], self.login_data)
         self.election_form['election_module'] = self.election_type 
         r = self.c.post(self.locations['create'], self.election_form, follow=True) 
@@ -127,7 +135,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                              'pok': {'challenge': pok.challenge,
                              'commitment': pok.commitment,
                              'response': pok.response}})]}
-                             
+
                 r = self.c.post('/elections/%s/trustee/upload_pk' %
                                (e_uuid), post_data, follow=True)
                 self.assertEqual(r.status_code, 200)
@@ -138,7 +146,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         if self.local_verbose:
             print 'Trustees are ready'
         return pks
-    
+
     def freeze_election(self):
         e = Election.objects.get(uuid=self.e_uuid)
         self.c.get(self.locations['logout'])
@@ -235,21 +243,27 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             .voters.all()[0]
             .get_quick_login_url())
         p_uuid = self.p_uuids[0]
-        r = self.temp_cast_single_ballot(voter_login_url, p_uuid)
+        r = self.single_voter_cast_ballot(voter_login_url, p_uuid)
         self.assertEqual(r.status_code, 403)
         if self.local_verbose:
-            print '..but was not allowed'
+            print '...but was not allowed'
 
-    def submit_vote_for_each_voter(self,voters_urls):
-        pass
+    def submit_vote_for_each_voter(self, voters_urls):
+        for p_uuid in voters_urls:
+            for voter_url in voters_urls[p_uuid]:
+                self.single_voter_cast_ballot(voter_url, p_uuid)
+        for p_uuid in self.p_uuids:
+            p = Poll.objects.get(uuid=p_uuid)
+            self.assertEqual(p.voters_cast_count(), self.voters_num)
 
-    def temp_cast_single_ballot(self, voters_url, p_uuid):
-        the_url = voters_url
+    def single_voter_cast_ballot(self, voter_url, p_uuid):
+        # make balot returns ballot_data and size
+        data = self.make_ballot(p_uuid)
+        r = self.encrypt_ballot_and_cast(data[0], data[1], voter_url, p_uuid)
+        return r
+
+    def encrypt_ballot_and_cast(self, selection, size, the_url, p_uuid):
         e = Election.objects.get(uuid=self.e_uuid)
-        selection = list(range(len(e.polls.get(uuid=p_uuid).questions_data[0]['answers'])))
-        size = len(selection)
-        random.shuffle(selection)
-        selection = selection[:choice(range(len(selection)))]
         rel_selection = to_relative_answers(selection, size)
         encoded = gamma_encode(rel_selection, size, size)
         plaintext = algs.EGPlaintext(encoded, e.public_key)
@@ -261,7 +275,6 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         r = self.c.get(the_url, follow=True)
         self.assertEqual(r.status_code, 200)
         cast_data = {}
-
         ##############
         ballot = {
                   'election_hash': 'foobar',
@@ -272,16 +285,14 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                               }]
                  }
         ##############
-
         enc_vote = datatypes.LDObject.fromDict(ballot,
                 type_hint='phoebus/EncryptedVote').wrapped_obj
         cast_data['encrypted_vote'] = enc_vote.toJSON()
-        r = self.c.post('/elections/%s/polls/%s/cast'%(self.e_uuid,p_uuid), cast_data)
+        r = self.c.post('/elections/%s/polls/%s/cast'%(self.e_uuid, p_uuid), cast_data)
         if self.local_verbose:
             print 'Voter voted'
-
         return r
-    
+
     def close_election(self):
         self.c.get(self.locations['logout'])
         r = self.c.post(self.locations['login'], self.login_data)
@@ -290,7 +301,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.assertTrue(e.feature_closed)
         if self.local_verbose:
             print 'Election is closed'
-    
+
     def decrypt_with_trustees(self, pks):
         for trustee, kp in pks.iteritems():
             t = Trustee.objects.get(uuid=trustee)
@@ -324,7 +335,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         for p_uuid in self.p_uuids:
             p = Poll.objects.get(uuid=p_uuid)
             self.assertTrue(len(p.result[0]) > 0)
-   
+            if self.local_verbose:
+                print 'Results are generated for poll'
+
     def election_proccess(self):
         self.admin_can_submit_election_form()
         self.assertEqual(self.freeze_election(), None)
@@ -340,17 +353,14 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         e.voting_starts_at = datetime.datetime.now()
         e.save()
         voters_urls = self.get_voters_urls() 
-        for p_uuid in voters_urls:
-            for voter_url in voters_urls[p_uuid]:
-                self.temp_cast_single_ballot(voter_url, p_uuid)
-        for p_uuid in self.p_uuids:
-            p = Poll.objects.get(uuid=p_uuid)
-            self.assertEqual(p.voters_cast_count(), self.voters_num)
+        self.submit_vote_for_each_voter(voters_urls)
         self.close_election()
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_mixing_finished)
         self.decrypt_with_trustees(pks)
         self.check_results()
+        if self.local_verbose:
+            print self.celebration
 
 class TestSimpleElection(TestElectionBase):
 
@@ -361,7 +371,8 @@ class TestSimpleElection(TestElectionBase):
             print '* Starting simple election *'
 
     def create_questions(self):
-        
+
+        #make random min/max according to answers
         post_data = {'form-TOTAL_FORMS': 1,
                      'form-INITIAL_FORMS': 1,
                      'form-MAX_NUM_FORMS': "",
@@ -373,14 +384,14 @@ class TestSimpleElection(TestElectionBase):
                      'form-0-answer_1': 'test answer 1',
                      'form-0-ORDER': 0,
                      }
-
         return post_data
 
     def test_election_proccess(self):
         self.election_proccess()
 
+
 class TestPartyElection(TestElectionBase):
-    
+
     def setUp(self):
         super(TestPartyElection, self).setUp()
         self.election_type = 'parties'
@@ -412,8 +423,9 @@ class TestPartyElection(TestElectionBase):
     def test_election_proccess(self):
         self.election_proccess()
 
+
 class TestScoreElection(TestElectionBase):
-    
+
     def setUp(self):
         super(TestScoreElection, self).setUp()
         self.election_type = 'score'
@@ -425,14 +437,47 @@ class TestScoreElection(TestElectionBase):
                      'form-INITIAL_FORMS': 1,
                      'form-MAX_NUM_FORMS': "",
                      'form-0-choice_type': 'choice',
+                     # pick random scores
                      'form-0-scores': [u'2', u'3', u'4', u'6'],
                      'form-0-question': 'test_question',
+                     # pick random answers
                      'form-0-answer_0': 'test answer 0',
                      'form-0-answer_1': 'test answer 1',
+                     'form-0-answer_2': 'test answer 2',
                      'form-0-ORDER': 0,
                      }
         return post_data
 
+    def make_ballot(self, p_uuid):
+        # make ballot for score elections
+        p = Poll.objects.get(uuid=p_uuid)
+        q_data = p.questions_data[0]
+        candidates = q_data['answer_indexes']
+        scores = q_data['score_indexes']
+        size = len(candidates) + len(scores)
+        # we can pick at max candidates equal to the number of scores or equal
+        # to number of candidates if candidates are less than scores
+        at_max = len(scores)
+        if len(candidates) < len(scores):
+            at_max = len(candidates)
+        selected_candidates = sample(list(candidates.keys()), randint(1, at_max))
+        selected_scores = sample(list(scores.keys()), len(selected_candidates))
+        # match candidates and scores to a dict, then sort by key(score value)
+        # and convert to list in proper format
+        pairs = {}
+        while selected_candidates:
+            cand = choice(selected_candidates)
+            selected_candidates.remove(cand)
+            score = choice(selected_scores)
+            selected_scores.remove(score)
+            pairs[score] = candidates[cand]
+        # make ballot data
+        ballot_data = []
+        for key in sorted(list(pairs.keys())):
+            ballot_data.append(pairs[key])
+            #FIXME using score indexes from question_data here, could be wrong, crosscheck again
+            ballot_data.append(scores[key])
+        return ballot_data, size
+
     def test_election_proccess(self):
         self.election_proccess()
-
