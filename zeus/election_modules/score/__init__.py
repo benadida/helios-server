@@ -19,7 +19,7 @@ class ScoreBallotElection(ElectionModuleBase):
     count_empty_question = False
     results_template = "election_modules/score/results.html"
     manage_questions_title = _('Manage questions')
-    csv_result = False 
+    csv_result = True
     pdf_result = False
 
     module_params = {
@@ -115,7 +115,7 @@ class ScoreBallotElection(ElectionModuleBase):
                 poll_answers.append(score)
 
         self.poll._init_questions(len(poll_answers))
-        self.poll.questions[0]['answers'] = poll_answers 
+        self.poll.questions[0]['answers'] = poll_answers
 
         # save index references
         for index, q in enumerate(self.poll.questions_data):

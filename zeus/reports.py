@@ -254,7 +254,7 @@ def csv_from_score_polls(election, polls, outfile=None):
         invalid_count = len([b for b in score_results['ballots']
                              if b['valid'] == False])
         blank_count = len([b for b in score_results['ballots']
-                           if not b['candidates']])
+                           if not b.get('candidates')])
         ballot_count = len(score_results['ballots'])
 
         writerow([])

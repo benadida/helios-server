@@ -210,7 +210,7 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
             elements.append(Spacer(1, 12))
             make_intro(elements, styles, intro_contents)
             elements.append(Spacer(1, 12))
-            
+
             #make dict with indexing as key and name as value
             counter = 0
             indexed_cands = {}
@@ -229,22 +229,22 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
                                          ])
             t.setStyle(my_table_style)
             elements.append(t)
-             
+
             actions_desc = {
                 'elect': _('Elect'),
                 'eliminate': _('Eliminated'),
                 'quota': _('Eliminated due to quota restriction')}
-            
+
             table_header = [_('Candidate'), _('Votes'), _('Draw'), _('Action')]
-            
+
             stv = STVParser(json_data[2])
             rounds = list(stv.rounds())
 
             for num, round in rounds:
-                round_name = _('Round ') 
+                round_name = _('Round ')
                 round_name += str(num)
                 elements.append(Paragraph(round_name,styles['Zeus']))
-                round_table = [] 
+                round_table = []
                 temp_table = []
                 temp_table.append(table_header)
                 for name, cand in round['candidates'].iteritems():
@@ -260,7 +260,7 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
                     cand_name = cand_name.split(':')[0]
                     row = [cand_name, votes, draw, action]
                     temp_table.append(row)
-                round_table = Table(temp_table)    
+                round_table = Table(temp_table)
                 round_table.setStyle(my_table_style)
                 elements.append(round_table)
                 elements.append(Spacer(1, 12))
