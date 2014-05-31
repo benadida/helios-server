@@ -121,6 +121,9 @@ class Election(HeliosModel):
   tallying_finished_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
   tallies_combined_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
 
+  # we want to explicitly release results
+  result_released_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+
   # the hash of all voters (stored for large numbers)
   voters_hash = models.CharField(max_length=100, null=True)
   
@@ -372,9 +375,8 @@ class Election(HeliosModel):
     tally the election, assuming votes already verified
     """
     tally = self.init_tally()
-    for voter in self.voter_set.all():
-      if voter.vote:
-        tally.add_vote(voter.vote, verify_p=False)
+    for voter in self.voter_set.exclude(vote=None):
+      tally.add_vote(voter.vote, verify_p=False)
 
     self.encrypted_tally = tally
     self.save()    
@@ -392,6 +394,15 @@ class Election(HeliosModel):
     
     return True
     
+  def release_result(self):
+    """
+    release the result that should already be computed
+    """
+    if not self.result:
+      return
+
+    self.result_released_at = datetime.datetime.utcnow()
+  
   def combine_decryptions(self):
     """
     combine all of the decryption results

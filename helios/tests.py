@@ -721,9 +721,17 @@ class ElectionBlackboxTests(WebTest):
                 "csrf_token" : self.client.session['csrf_token'],
                 })
 
-        # after tallying, we now are supposed to see the email screen
-        # with the right template value of 'result'
-        self.assertRedirects(response, "/helios/elections/%s/voters/email?template=result" % election_id)
+        # after tallying, we now go back to election_view
+        self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
+
+        # check that we can't get the tally yet
+        response = self.client.get("/helios/elections/%s/result" % election_id)
+        self.assertEquals(response.status_code, 403)
+
+        # release
+        response = self.client.post("/helios/elections/%s/release_result" % election_id, {
+                "csrf_token" : self.client.session['csrf_token'],
+                })
 
         # check that tally matches
         response = self.client.get("/helios/elections/%s/result" % election_id)
