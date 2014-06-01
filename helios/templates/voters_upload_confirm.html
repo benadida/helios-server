@@ -11,7 +11,7 @@ You have uploaded a file of voters. The first few rows of this file are:
 </p>
 
 <table class="table table-striped">
-<tr><th>{% trans "Voter Login" %}</th><th>{% trans "Email Address" %}</th><th>Name</th></tr>
+<tr><th>{% trans "Voter Login" %}</th><th>{% trans "Email Address" %}</th><th>{% trans "Name" %}</th></tr>
 {% for v in voters %}
 <tr><td>{{v.voter_id}}</td><td>{{v.email}}</td><td>{{v.name}}</td></tr>
 {% endfor %}

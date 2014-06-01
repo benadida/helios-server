@@ -1,16 +1,22 @@
 {% extends TEMPLATE_BASE %}
-
-{% block title %}Release Result &mdash; {{election.name}}{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Release Result &mdash; {{election.name}}" %}{% endblock %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Release Result <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">cancel</a>]</span></h2>
-
+<div class="row">
+<div class="col-md-12">
+  <h2 class="title">{% trans "Release Result" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "cancel" %}</a>]</span></h2>
+<h2 class="title">{{election.name}}</h2>
   <p>
-    You are about to release the result for this election.
+    {% trans "You are about to release the result for this election." %}
   </p>
-
-  <form method="POST" action="">
+</div>
+</div>
+<div class="row">
+<div class="col-md-12">
+  <form class="form" method="POST" action="">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    <input type="submit" value="release result!" />
+    <input class="btn btn-primary" type="submit" value="{% trans "release result!" %}" />
   </form>
-
+</div>
+</div>
 {% endblock %}
