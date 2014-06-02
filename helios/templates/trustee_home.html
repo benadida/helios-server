@@ -17,7 +17,7 @@ Your public key fingerprint is: <b>
 <a class="btn btn-primary" href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">{% blocktrans %}setup your key {% endblocktrans %}</a>
 {% endif %}
 </p>
-
+<br /><br />
 <p>
 {% if election.encrypted_tally %}
 {% if trustee.decryption_factors %}
@@ -25,8 +25,8 @@ Your public key fingerprint is: <b>
 You have successfully uploaded your decryption.
 {% endblocktrans %}
 {% else %}
-    {% blocktrans %}The encrypted tally for this election is ready.{% endblocktrans %}<br />
-    <a href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">{% blocktrans %}decrypt with your key{% endblocktrans %}</a>
+    {% blocktrans %}The encrypted tally for this election is ready.{% endblocktrans %}<br /><br />
+    <a class="btn btn-primary" href="{% url helios.views.trustee_decrypt_and_prove election.uuid, trustee.uuid %}">{% blocktrans %}decrypt with your key{% endblocktrans %}</a>
 {% endif %}
 {% else %}
 {% blocktrans %}
