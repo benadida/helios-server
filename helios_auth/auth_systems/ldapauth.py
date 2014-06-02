@@ -10,6 +10,8 @@ from django.utils.translation import ugettext as _
 
 from django_auth_ldap.backend import LDAPBackend
 
+from helios_auth.auth_systems.ldapbackend import backend
+
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = False
 
@@ -39,7 +41,7 @@ def ldap_login_view(request):
 			username = form.cleaned_data['username'].strip()
 			password = form.cleaned_data['password'].strip()
 
-			auth = LDAPBackend()
+			auth = backend.CustomLDAPBackend()
 			user = auth.authenticate(username, password)
 
 			request.session['ldap_user'] = user
