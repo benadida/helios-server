@@ -1,11 +1,14 @@
 import datetime
 import json
-
-from random import choice, sample, randint
+from itertools import izip, chain
+from random import shuffle, sample, randint
 from datetime import timedelta
+
+
 from django.contrib.auth.hashers import make_password
 from django.test import TestCase
 from django.test.client import Client
+
 
 from zeus.core import to_relative_answers, gamma_encode, prove_encryption
 from helios.views import ELGAMAL_PARAMS
@@ -262,6 +265,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         r = self.encrypt_ballot_and_cast(data[0], data[1], voter_url, p_uuid)
         return r
 
+    def make_ballot(self, p_uuid):
+        raise Exception(NotImplemented)
+
     def encrypt_ballot_and_cast(self, selection, size, the_url, p_uuid):
         e = Election.objects.get(uuid=self.e_uuid)
         rel_selection = to_relative_answers(selection, size)
@@ -386,6 +392,11 @@ class TestSimpleElection(TestElectionBase):
                      }
         return post_data
 
+    def make_ballot(self, p_uuid):
+        pass        
+
+
+
     def test_election_proccess(self):
         self.election_proccess()
 
@@ -419,9 +430,31 @@ class TestPartyElection(TestElectionBase):
                      'form-1-ORDER': 1,
                      }
         return post_data
-
+    
     def test_election_proccess(self):
         self.election_proccess()
+
+#used for creating score elections ballot
+def make_random_range_ballot(candidates_to_index, scores_to_index):
+
+    candidate_indexes = candidates_to_index.values()
+    score_indexes = scores_to_index.values()
+    nr_scores = len(score_indexes)
+    nr_candidates = len(candidate_indexes)
+    max_nr_choices = min(nr_candidates, nr_scores)
+
+    selected_score_indexes = \
+        sample(score_indexes, randint(0, max_nr_choices))
+    selected_score_indexes.sort()
+    selected_candidate_indexes = sample(candidate_indexes,
+                                 len(selected_score_indexes))
+    shuffle(selected_candidate_indexes)
+    ballot_choices = izip(selected_candidate_indexes, selected_score_indexes)
+    ballot_choices = chain(*ballot_choices)
+    ballot_choices = list(ballot_choices)
+    max_ballot_choices = nr_scores + nr_candidates
+    
+    return ballot_choices, max_ballot_choices
 
 
 class TestScoreElection(TestElectionBase):
@@ -449,35 +482,13 @@ class TestScoreElection(TestElectionBase):
         return post_data
 
     def make_ballot(self, p_uuid):
-        # make ballot for score elections
         p = Poll.objects.get(uuid=p_uuid)
         q_data = p.questions_data[0]
-        candidates = q_data['answer_indexes']
-        scores = q_data['score_indexes']
-        size = len(candidates) + len(scores)
-        # we can pick at max candidates equal to the number of scores or equal
-        # to number of candidates if candidates are less than scores
-        at_max = len(scores)
-        if len(candidates) < len(scores):
-            at_max = len(candidates)
-        selected_candidates = sample(list(candidates.keys()), randint(1, at_max))
-        selected_scores = sample(list(scores.keys()), len(selected_candidates))
-        # match candidates and scores to a dict, then sort by key(score value)
-        # and convert to list in proper format
-        pairs = {}
-        while selected_candidates:
-            cand = choice(selected_candidates)
-            selected_candidates.remove(cand)
-            score = choice(selected_scores)
-            selected_scores.remove(score)
-            pairs[score] = candidates[cand]
-        # make ballot data
-        ballot_data = []
-        for key in sorted(list(pairs.keys())):
-            ballot_data.append(pairs[key])
-            #FIXME using score indexes from question_data here, could be wrong, crosscheck again
-            ballot_data.append(scores[key])
-        return ballot_data, size
+        candidates_to_indexes = q_data['answer_indexes']
+        scores_to_indexes = q_data['score_indexes']
+        ballot_choices, max_ballot_choices = make_random_range_ballot(
+            candidates_to_indexes, scores_to_indexes)
+        return ballot_choices, max_ballot_choices
 
     def test_election_proccess(self):
         self.election_proccess()
