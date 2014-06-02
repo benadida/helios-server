@@ -23,4 +23,5 @@ class HeliosLog(models.Model):
 		choices = ACTION_TYPES)
 
 	def __unicode__(self):
-			return self.user
+			return (self.user.name + ' - ' + self.action_type + _(' object of ')
+			 + self.model)
