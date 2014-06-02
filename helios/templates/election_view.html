@@ -183,8 +183,10 @@ Once you release the result, it will be visible to everyone.
 {% if election.num_trustees == 1 %}
 {% trans "The result will be computed and shown to you, the administrator, only." %}
 {% else %}
+{% blocktrans %}
 The decryption shares from the trustees will be combined and the tally computed.<br />
 Once you do this, the tally will visible to you, the administrator, only.
+{% endblocktrans %}
 {% endif %}
 {% else %}
 <a href="{% url helios.views.list_trustees_view election.uuid %}">{% trans "trustees (for decryption)" %}</a>
