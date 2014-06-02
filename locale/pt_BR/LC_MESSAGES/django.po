@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-02 15:28-0300\n"
-"PO-Revision-Date: 2014-06-02 15:29-0300\n"
+"POT-Creation-Date: 2014-06-02 15:52-0300\n"
+"PO-Revision-Date: 2014-06-02 15:54-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1188,31 +1188,44 @@ msgstr ""
 "O resultado será computado e exibido apenas para você, o administrador da "
 "eleição."
 
-#: helios/templates/election_view.html:190
-msgid "trustees (for decryption)"
-msgstr "apuradores (para decriptação)"
+#: helios/templates/election_view.html:186
+msgid ""
+"\n"
+"The decryption shares from the trustees will be combined and the tally "
+"computed.<br />\n"
+"Once you do this, the tally will visible to you, the administrator, only.\n"
+msgstr ""
+"\n"
+"As partes desencriptadas de cada apurador serão combinadas e a apuração será "
+"computada.<br />\n"
+"Depois de fazer isso, a apuração estará visível apenas para você, o "
+"administrador da eleição.\n"
 
-#: helios/templates/election_view.html:211
+#: helios/templates/election_view.html:192
+msgid "trustees (for decryption)"
+msgstr "apuradores (para desencriptação)"
+
+#: helios/templates/election_view.html:213
 msgid "This election is complete."
 msgstr "Essa eleição está completa."
 
-#: helios/templates/election_view.html:215
+#: helios/templates/election_view.html:217
 msgid "Tally"
 msgstr "Apuração"
 
-#: helios/templates/election_view.html:217
+#: helios/templates/election_view.html:219
 msgid "Question"
 msgstr "Questão"
 
-#: helios/templates/election_view.html:229
+#: helios/templates/election_view.html:231
 msgid "Election closed. Results will be released soon."
 msgstr "Eleição fechada. O resultado será liberado logo."
 
-#: helios/templates/election_view.html:234
+#: helios/templates/election_view.html:236
 msgid "Vote in this"
 msgstr "Votar nessa "
 
-#: helios/templates/election_view.html:238
+#: helios/templates/election_view.html:240
 #, python-format
 msgid ""
 "\n"
@@ -1225,7 +1238,7 @@ msgstr ""
 "%(election.voting_ends_at)s (UTC),<br />\n"
 "mas foi extendida até %(election.voting_extended_until)s (UTC).\n"
 
-#: helios/templates/election_view.html:245
+#: helios/templates/election_view.html:247
 #, python-format
 msgid ""
 "\n"
@@ -1236,11 +1249,11 @@ msgstr ""
 "Essa %(election.election_type)s está agendada para terminar em "
 "%(election.voting_ends_at)s (UTC).\n"
 
-#: helios/templates/election_view.html:249
+#: helios/templates/election_view.html:251
 msgid "This {{election.election_type}} ends at the administrator's discretion."
 msgstr " "
 
-#: helios/templates/election_view.html:256
+#: helios/templates/election_view.html:258
 #, python-format
 msgid ""
 "\n"
@@ -1251,7 +1264,7 @@ msgstr ""
 "Essa eleição é <em>privada</em>. Você está conectado como um eleitor apto "
 "<em>%(voter.name)s</em>.\n"
 
-#: helios/templates/election_view.html:262
+#: helios/templates/election_view.html:264
 msgid ""
 "\n"
 "  You do not have Java installed in your browser.<br />At this time, Helios "
@@ -1267,27 +1280,27 @@ msgstr ""
 "para instalá-lo.\n"
 "  "
 
-#: helios/templates/election_view.html:270
+#: helios/templates/election_view.html:272
 msgid "voting is not yet open"
 msgstr "Esta eleição ainda não está aberta para votação."
 
-#: helios/templates/election_view.html:286
+#: helios/templates/election_view.html:288
 msgid "verify"
 msgstr "Conferir a"
 
-#: helios/templates/election_view.html:286
+#: helios/templates/election_view.html:288
 msgid "election tally"
 msgstr "apuração da eleição"
 
-#: helios/templates/election_view.html:288
+#: helios/templates/election_view.html:290
 msgid "review the"
 msgstr "Visualizar a"
 
-#: helios/templates/election_view.html:288
+#: helios/templates/election_view.html:290
 msgid "voting booth"
 msgstr "cabine de votação"
 
-#: helios/templates/election_view.html:288
+#: helios/templates/election_view.html:290
 msgid "review purposes only"
 msgstr "apenas para conferência"
 
@@ -1640,7 +1653,7 @@ msgid ""
 msgstr ""
 "\n"
 "      A apuração criptografada da sua eleição foi computada.<br />\n"
-"     Agora é hora de computar e enviar sua decriptação parcial.\n"
+"     Agora é hora de computar e enviar sua desencriptação parcial.\n"
 "      "
 
 #: helios/templates/trustee_decrypt_and_prove.html:150
@@ -1680,7 +1693,7 @@ msgstr "PRIMEIRO PASSO: informe sua chave secreta"
 
 #: helios/templates/trustee_decrypt_and_prove.html:167
 msgid "Generate partial decryption"
-msgstr "Gerar descriptografia parcial"
+msgstr "Gerar minha parte da desencriptação"
 
 #: helios/templates/trustee_decrypt_and_prove.html:171
 msgid "skip to the second step"
@@ -1721,11 +1734,11 @@ msgstr ""
 
 #: helios/templates/trustee_decrypt_and_prove.html:195
 msgid "Your partial decryption:"
-msgstr "Sua decriptação parcial:"
+msgstr "Sua desencriptação parcial:"
 
 #: helios/templates/trustee_decrypt_and_prove.html:198
 msgid "Upload decryption factors to server"
-msgstr "Carregar fatores de decriptação para o servidor"
+msgstr "Carregar fatores de desencriptação para o servidor"
 
 #: helios/templates/trustee_decrypt_and_prove.html:201
 msgid "reset and restart decryption process"
@@ -1775,7 +1788,7 @@ msgstr ""
 
 #: helios/templates/trustee_home.html:28
 msgid "The encrypted tally for this election is ready."
-msgstr "A apuração encriptada dessa eleição está pronta."
+msgstr "A apuração criptografada dessa eleição está pronta."
 
 #: helios/templates/trustee_home.html:29
 msgid "decrypt with your key"
@@ -2817,21 +2830,6 @@ msgstr "Houve um erro durante o processamento de sua requisição."
 #~ msgstr ""
 #~ "A urna foi apurada com sucesso. Você deve agora liberar os resultados e "
 #~ "se desejar, notificar os usuários sobre o resultado da eleição."
-
-#~ msgid ""
-#~ "\n"
-#~ "The decryption shares from the trustees are combined and the tally is "
-#~ "decrypted.<br />\n"
-#~ "Once you do this, the tally will be immediately available for all to see, "
-#~ "and\n"
-#~ "all voters will be notified that the tally is ready.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "A parte dos apuradores  são combinadas e a apuração é descriptografada."
-#~ "<br />\n"
-#~ "Após fazer isso, a apuração será imediatamente disponibilizada para todos "
-#~ "verem, e\n"
-#~ "todos os eleitores serão notificados de que a apuração está pronta.\n"
 
 #~ msgid "voters"
 #~ msgstr "eleitor (es)"
