@@ -31,6 +31,7 @@ from helios_auth.models import AuthenticationExpired
 
 from helios import security
 from helios_auth import views as auth_views
+from helioslog.models import HeliosLog
 
 import tasks
 
@@ -872,7 +873,19 @@ def voter_delete(request, election, voter_uuid):
 
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
   if voter:
+    # prepare the log params
+    helioslog_params = {
+      'description': voter.metadata,
+      'model': 'Voter',
+      'user': get_user(request),
+      'at': datetime.datetime.utcnow(),
+      'ip': request.META.get('HTTP_X_FORWARDED_FOR'),
+      'action_type': 'DEL'
+    }
+
+    helioslog = HeliosLog(**helioslog_params)
     voter.delete()
+    helioslog.save()
 
   if election.frozen_at:
     # log it
