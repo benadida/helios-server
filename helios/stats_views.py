@@ -14,6 +14,7 @@ from helios_auth.security import get_user, save_in_session_across_logouts
 from view_utils import *
 
 from helios import tasks
+from helioslog.models import HeliosLog
 
 def require_admin(request):
   user = get_user(request)
@@ -64,3 +65,15 @@ def recent_problem_elections(request):
   elections_with_problems = Election.objects.filter(frozen_at = None, created_at__gt = datetime.datetime.utcnow() - datetime.timedelta(days=10), created_at__lt = datetime.datetime.utcnow() - datetime.timedelta(days=1) )
 
   return render_template(request, "stats_problem_elections", {'elections' : elections_with_problems})
+
+def admin_actions(request):
+  user = require_admin(request)
+  page = int(request.GET.get('page', 1))
+  limit = int(request.GET.get('limit', 25))
+  actions = HeliosLog.objects.filter(user=user).order_by('-at')
+  actions_paginator = Paginator(actions, limit)
+  actions_page = actions_paginator.page(page)
+
+  print actions
+  return render_template(request, "stats_admin_actions", {'actions' : actions_page.object_list, 'actions_page': actions_page,
+                                                      'limit' : limit})

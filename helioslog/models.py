@@ -25,3 +25,17 @@ class HeliosLog(models.Model):
 	def __unicode__(self):
 			return (self.user.name + ' - ' + self.action_type + _(' object of ')
 			 + self.model)
+
+	@property
+	def pretty_type(self):
+		return dict(self.ACTION_TYPES)[self.action_type]
+
+	@property
+	def pretty_description(self):		
+		return_val = "<ul>"
+		for key in self.description:
+			return_val += "<li>%s : %s </li>" % (key, self.description[key])
+		return_val += "</ul>"
+		return return_val
+
+	
