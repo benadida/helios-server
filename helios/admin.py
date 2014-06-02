@@ -1,5 +1,7 @@
 from django.contrib import admin
-from helios.models import CastVote, Election, Trustee
+
+from helios.models import CastVote, Election, Trustee, Voter
+
 
 
 class CastVoteAdmin(admin.ModelAdmin):	
@@ -24,7 +26,10 @@ class TrusteeAdmin(admin.ModelAdmin):
 	readonly_fields = ('uuid', 'election','name', 'email', 'secret',)
 	list_display = ('uuid', 'election', 'name', 'email', 'secret',)
 
+class VoterAdmin(admin.ModelAdmin):
+	readonly_fields = ('vote', 'vote_hash', 'user', 'cast_at')
 
 admin.site.register(CastVote, CastVoteAdmin)
 admin.site.register(Election, ElectionAdmin)
 admin.site.register(Trustee, TrusteeAdmin)
+admin.site.register(Voter, VoterAdmin)
