@@ -136,8 +136,8 @@
 {{issue.action}}{% if forloop.last %}{% else %}, {% trans "and" %}{% endif %}
 {% endfor %}
 {% else %}
-<a href="{% url helios.views.one_election_freeze election.uuid %}">freeze ballot and open election.</a>
-<br />
+<a href="{% url helios.views.one_election_freeze election.uuid %}">{% trans "freeze ballot and open election." %}</a>
+<br /><br />
 {% if election.voting_starts_at %}
 once you do this, the election will be ready for voting and will open automatically<br />
 at {{election.voting_starts_at}}, as per your settings.
@@ -231,7 +231,7 @@ Once you do this, the tally will visible to you, the administrator, only.
 {% else %}
 
 {% if election.voting_has_started %}
-<a class="button" href="{{test_cookie_url}}">Vote in this {{election.election_type}} </a>
+<a class="btn btn-lg btn-primary" role="button" href="{{test_cookie_url}}">{% trans "Vote in this" %} {{election.pretty_type}} </a>
 <br />
 <br />
 {% if election.voting_extended_until %}

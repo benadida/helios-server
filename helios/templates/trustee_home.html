@@ -3,14 +3,16 @@
 {% block content %}
   <h2 class="title">{% trans "Trustee" %} {{trustee.name}}</span></h2>
 	<h2 class="title">{{election.name}}</h2>
+<br /><br />
 <p>
 {% if trustee.public_key_hash %}
+
 {% blocktrans %}
 You have successfully uploaded your public key.<br />
 Your public key fingerprint is: <b>
 {% endblocktrans %}
-{{trustee.public_key_hash}}</b>.<br />
-{% blocktrans %}You can{% endblocktrans %} <a href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">{% blocktrans %}verify that you have the right secret key {% endblocktrans %}</a>.
+{{trustee.public_key_hash}}</b>. <br /><br />
+{% blocktrans %}You can{% endblocktrans %} <a class="btn btn-primary" href="{% url helios.views.trustee_check_sk election.uuid, trustee.uuid %}">{% blocktrans %}verify that you have the right secret key {% endblocktrans %}</a>
 {% else %}
 <a class="btn btn-primary" href="{% url helios.views.trustee_keygenerator election.uuid, trustee.uuid %}">{% blocktrans %}setup your key {% endblocktrans %}</a>
 {% endif %}
@@ -28,7 +30,7 @@ You have successfully uploaded your decryption.
 {% endif %}
 {% else %}
 {% blocktrans %}
-Once the tally is computed, come back here to provide your secret key for decryption purposes.<br />
+ATTENTION: Once the tally is computed, come back here to provide your secret key for decryption purposes.<br />
 You should keep the email with your trustee homepage link, which contains the credentials needed to get back here.
 {% endblocktrans %}
 {% endif %}

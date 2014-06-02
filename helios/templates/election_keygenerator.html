@@ -102,7 +102,7 @@ function show_pk() {
 
 <p id="generator">
 
-<span id="buttons"><button class="btn btn-primary" onclick="generate_keypair(); return false;" id="generate_button">{% trans "Generate Election Keys" %}</button></span>
+<span id="buttons"><button class="btn btn-primary" onclick="generate_keypair(); return false;" id="generate_button" class="btn btn-primary">{% trans "Generate Election Keys" %}</button></span>
 
 <br /><br />
 {% trans "If you've already generated a keypair, you can" %} <a href="javascript:show_key_reuse()">{% trans "reuse it" %}</a>.
@@ -128,9 +128,9 @@ function show_pk() {
 {% trans "Your key has been generated, but you may choose to" %}<br /><a href="javascript:clear_keys();">{% trans "clear it from memory and start from scratch</a> if you prefer." %}<br />
 
 </span>
-
+<br />
 <p>
-    <button style="font-size:16pt;" onclick="download_sk(); $('#pk_link').show();">{% trans "Save your secret key" %}</button>
+    <button class="btn btn-primary" onclick="download_sk(); $('#pk_link').show();">{% trans "Save your secret key" %}</button>
 </p>
 
 <p style="display: none;" id="pk_link">

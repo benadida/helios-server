@@ -43,7 +43,8 @@ function check_sk(sk_value) {
     }
 }
 </script>
-  <h2 class="title">{{election.name}} &mdash; {% trans "Trustee" %} {{trustee.name}} &mdash; {% trans "Check Secret Key" %} <span style="font-size:0.7em;">[<a href="./home">{% trans "back to trustee home" %}</a>]</span></h2>
+  <h2 class="title">{% trans "Trustee" %} {{trustee.name}} &mdash; {% trans "Check Secret Key" %} <span style="font-size:0.7em;">[<a href="./home">{% trans "back to trustee home" %}</a>]</span></h2>
+  <h2 class="title">{{election.name}}</h2>
 
 <p>
 {% trans "Your public key fingerprint is:" %} <b>{{trustee.public_key_hash}}</b>
