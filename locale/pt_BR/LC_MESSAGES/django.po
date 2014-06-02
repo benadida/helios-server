@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-01 10:21-0300\n"
-"PO-Revision-Date: 2014-06-01 10:22-0300\n"
+"POT-Creation-Date: 2014-06-01 21:59-0300\n"
+"PO-Revision-Date: 2014-06-01 21:59-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -18,20 +18,20 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 1.5.4\n"
 
-#: settings.py:67
+#: settings.py:68
 msgid "English"
 msgstr "Inglês"
 
-#: settings.py:68
+#: settings.py:69
 msgid "Brazilian Portuguese"
 msgstr "Português Brasileiro"
 
-#: settings.py:183
-#: settings.py:205
+#: settings.py:185
+#: settings.py:207
 msgid "IFSC E-Voting System"
 msgstr "Sistema de Votação Online do IFSC"
 
-#: settings.py:213
+#: settings.py:215
 msgid "Welcome to IFSC E-Voting System"
 msgstr "Bem Vindo ao Sistema de Votação Online do IFSC"
 
@@ -47,6 +47,7 @@ msgstr "Sem espaços, será parte da URL da sua eleição, por ex. meu-clube-201
 #: helios/templates/election_bboard.html:36
 #: helios/templates/voters_list.html:120
 #: helios/templates/voters_manage.html:29
+#: helios/templates/voters_upload_confirm.html:14
 msgid "Name"
 msgstr "Nome"
 
@@ -174,11 +175,11 @@ msgstr "não é possível congelar uma eleição com problemas"
 msgid "password already exists"
 msgstr "senha já existe"
 
-#: helios/models.py:1044
+#: helios/models.py:1057
 msgid "cast vote is quarantined, verification and storage is delayed."
 msgstr "lançamento de votos está em quarentena, verificação e armazenamento estão postergados."
 
-#: helios/models.py:1069
+#: helios/models.py:1082
 msgid "the vote's election UUID does not match the election for which this vote is being cast"
 msgstr "O UUID de eleição do voto não coincide com a eleição para a qual este voto está sendo lançado"
 
@@ -202,39 +203,39 @@ msgstr "arquivo de eleitores processado"
 msgid "not implemented yet"
 msgstr "não implementado ainda"
 
-#: helios/views.py:176
+#: helios/views.py:177
 msgid "only an administrator has elections to administer"
 msgstr "somente um administrador tem eleições para administrar"
 
-#: helios/views.py:194
+#: helios/views.py:195
 msgid "only an administrator can create an election"
 msgstr "somente um administrador pode criar uma eleição"
 
-#: helios/views.py:226
+#: helios/views.py:227
 #, python-format
 msgid "An election with short name %(short_name)s already exists"
 msgstr "Uma eleição com o nome abreviado de %(short_name)s já existe"
 
-#: helios/views.py:228
+#: helios/views.py:229
 msgid "No special characters allowed in the short name."
 msgstr "Nenhum caracter especial é permitido no nome abreviado"
 
-#: helios/views.py:325
+#: helios/views.py:326
 #, python-format
 msgid "Vote in %(election_name)s"
 msgstr "Votar em %(election_name)s"
 
-#: helios/views.py:328
+#: helios/views.py:329
 #, python-format
 msgid "Register to vote in %(election_name)s"
 msgstr "Registre-se para votar %(election_name)s"
 
-#: helios/views.py:333
+#: helios/views.py:334
 #, python-format
 msgid "Results are in for %(election_name)s"
 msgstr "Os resultados estão em %(election_name)s"
 
-#: helios/views.py:448
+#: helios/views.py:449
 #, python-format
 msgid "You are a trustee for %(election_name)s \n"
 msgstr ""
@@ -243,7 +244,7 @@ msgstr ""
 "Você foi designado como apurador para a eleição %(election_name)s.\n"
 "\n"
 
-#: helios/views.py:449
+#: helios/views.py:450
 #, python-format
 msgid ""
 "Your trustee dashboard is at: \n"
@@ -257,41 +258,41 @@ msgstr ""
 "\n"
 "ATENÇÃO: Esse e-mail deve ser guardado para referência futura, para que você possa acessar novamente sua página de apurador através do link fornecido acima."
 
-#: helios/views.py:456
+#: helios/views.py:457
 #, python-format
 msgid "your trustee homepage for %(election_name)s"
 msgstr "ATENÇÃO: Você foi designado como apurador para a eleição  %(election_name)s"
 
-#: helios/views.py:667
+#: helios/views.py:668
 #, python-format
 msgid "I voted in %(url)s - my smart tracker is %(vote_hash)s.. #heliosvoting"
 msgstr "Eu votei em %(url)s - meu rastreador é %(vote_hash)s.. #heliosvoting"
 
-#: helios/views.py:953
+#: helios/views.py:966
 msgid "registration is closed for this election"
 msgstr "registro fechado para essa eleição"
 
-#: helios/views.py:1255
+#: helios/views.py:1268
 msgid "no voter file specified, try again"
 msgstr "nenhum arquivo carregado, tente novamente"
 
-#: helios/views.py:1275
+#: helios/views.py:1288
 msgid "Time to Vote"
 msgstr "Hora de Votar"
 
-#: helios/views.py:1276
+#: helios/views.py:1289
 msgid "Simple"
 msgstr "Simples"
 
-#: helios/views.py:1277
+#: helios/views.py:1290
 msgid "Additional Info"
 msgstr "Informação Adicional"
 
-#: helios/views.py:1278
+#: helios/views.py:1291
 msgid "Election Result"
 msgstr "Resultado da Eleição"
 
-#: helios/views.py:1283
+#: helios/views.py:1296
 msgid "bad template"
 msgstr "template inválido"
 
@@ -2043,6 +2044,22 @@ msgstr ""
 #: sitestatic/templates/submit.html:40
 msgid "Submit Ballot"
 msgstr "Enviar Cédula"
+
+#: helioslog/models.py:17
+msgid "Add"
+msgstr "Adicionar"
+
+#: helioslog/models.py:18
+msgid "Delete"
+msgstr "Apagar"
+
+#: helioslog/models.py:19
+msgid "Modify"
+msgstr "Modificar"
+
+#: helioslog/models.py:26
+msgid " object of "
+msgstr " objeto de "
 
 #: server_ui/glue.py:17
 #, python-format
