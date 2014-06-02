@@ -951,6 +951,19 @@ class Voter(HeliosModel):
     
     self.voter_password = heliosutils.random_string(length, alphabet='abcdefghijkmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ23456789')
 
+  # metadata for the election
+  @property
+  def metadata(self):
+    return {
+      'voter_email': self.voter_email,
+      'uuid': self.uuid,
+      'voter_name': self.voter_name,
+      'vote_hash': self.vote_hash,
+      'cast_at': self.cast_at,
+      'alias': self.alias,
+      'user_id': self.user.user_id
+      }
+
   def store_vote(self, cast_vote):
     # only store the vote if it's cast later than the current one
     if self.cast_at and cast_vote.cast_at < self.cast_at:
