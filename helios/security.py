@@ -119,8 +119,15 @@ def user_can_admin_election(user, election):
   if not user:
     return False
 
-  # election or site administrator
-  return election.admin == user or user.admin_p
+  # election admin
+  if election and user != election.admin:
+    return False
+
+  # can create election
+  if not user.admin_p:
+    return False
+
+  return True
   
 def user_can_see_election(request, election):
   user = get_user(request)
@@ -157,7 +164,7 @@ def election_admin(**checks):
       user = get_user(request)
       if not user_can_admin_election(user, election):
         raise PermissionDenied()
-        
+      
       # do checks
       do_election_checks(election, checks)
         

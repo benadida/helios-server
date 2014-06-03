@@ -42,7 +42,7 @@ def elections(request):
   page = int(request.GET.get('page', 1))
   limit = int(request.GET.get('limit', 25))
 
-  elections = Election.objects.all().order_by('-created_at')
+  elections = Election.objects.filter(admin=user).order_by('-created_at')
   elections_paginator = Paginator(elections, limit)
   elections_page = elections_paginator.page(page)
 
@@ -54,7 +54,8 @@ def recent_votes(request):
   
   # elections with a vote in the last 24 hours, ordered by most recent cast vote time
   # also annotated with number of votes cast in last 24 hours
-  elections_with_votes_in_24hours = Election.objects.filter(voter__castvote__cast_at__gt= datetime.datetime.utcnow() - datetime.timedelta(days=1)).annotate(last_cast_vote = Max('voter__castvote__cast_at'), num_recent_cast_votes = Count('voter__castvote')).order_by('-last_cast_vote')
+  elections_with_votes_in_24hours = Election.objects.filter(voter__castvote__cast_at__gt= datetime.datetime.utcnow() - datetime.timedelta(days=1), admin=user).annotate(last_cast_vote = Max('voter__castvote__cast_at'), 
+    num_recent_cast_votes = Count('voter__castvote')).order_by('-last_cast_vote')
 
   return render_template(request, "stats_recent_votes", {'elections' : elections_with_votes_in_24hours})
 
@@ -74,6 +75,5 @@ def admin_actions(request):
   actions_paginator = Paginator(actions, limit)
   actions_page = actions_paginator.page(page)
 
-  print actions
   return render_template(request, "stats_admin_actions", {'actions' : actions_page.object_list, 'actions_page': actions_page,
                                                       'limit' : limit})
