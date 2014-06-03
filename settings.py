@@ -292,18 +292,17 @@ TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 AUTH_LDAP_SERVER_URI = 'ldap://localhost' # replace by your ldap URI
 
 AUTH_LDAP_BIND_DN = ""
+AUTH_LDAP_BIND_PASSWORD = ""
 
-AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=Usuarios,dc=localhost",
-    ldap.SCOPE_SUBTREE, "(objectClass=groupOfNames)"
+AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=User,dc=example,dc=com",
+    ldap.SCOPE_SUBTREE, "(uid=%(user)s)"
 )
 
 AUTH_LDAP_USER_ATTR_MAP = {
     "first_name": "givenName",
     "last_name": "sn",
-    "email": "mail"
+    "email": "mail",
 }
-
-AUTH_LDAP_USER_DN_TEMPLATE = "uid=%(user)s,ou=Usuarios,dc=localhost"
 
 AUTH_LDAP_GROUP_TYPE = GroupOfNamesType(name_attr="cn")
 
