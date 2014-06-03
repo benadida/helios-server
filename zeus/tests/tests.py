@@ -93,8 +93,10 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.polls_number = 2
         # set the number of max questions for simple election
         self.simple_election_max_questions_number = 3
-        #set the number of max answers for each question
+        # set the number of max answers for each question of simple election
         self.simple_election_max_answers_number = 4 
+        # set the number of max answers in score election
+        self.score_election_max_answers = 13
         start_time = datetime.datetime.now()
         end_time = datetime.datetime.now() + timedelta(hours=2)
         date1, date2 = datetime.datetime.now() + timedelta(hours=48),datetime.datetime.now() + timedelta(hours=56)
@@ -241,7 +243,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 urls_for_this_poll.append(v.get_quick_login_url())
             voters_urls[p_uuid] = urls_for_this_poll
         if self.local_verbose:
-            print 'Got login urls from voters'
+            print 'Got login urls for voters'
         return voters_urls
 
     def voter_cannot_vote_before_freeze(self):
@@ -407,7 +409,7 @@ class TestSimpleElection(TestElectionBase):
         return post_data
 
     def make_ballot(self, p_uuid):
-        pass
+        pass 
 
     def test_election_proccess(self):
         self.election_proccess()
@@ -446,7 +448,7 @@ class TestPartyElection(TestElectionBase):
     def test_election_proccess(self):
         self.election_proccess()
 
-#used for creating score elections ballot
+# used for creating score elections ballot
 def make_random_range_ballot(candidates_to_index, scores_to_index):
 
     candidate_indexes = candidates_to_index.values()
@@ -478,19 +480,23 @@ class TestScoreElection(TestElectionBase):
             print '* Starting score election *'
 
     def create_questions(self):
+        max_nr_answers = self.score_election_max_answers
+        nr_answers = randint(1, max_nr_answers)
+        available_scores = [x for x in range (1,10)]
+        nr_scores_selection = randint(1,9)
+        scores_list = sample(available_scores, nr_scores_selection)
+        scores_list.sort()
         post_data = {'form-TOTAL_FORMS': 1,
                      'form-INITIAL_FORMS': 1,
                      'form-MAX_NUM_FORMS': "",
                      'form-0-choice_type': 'choice',
-                     # pick random scores
-                     'form-0-scores': [u'2', u'3', u'4', u'6'],
+                     'form-0-scores': scores_list,
                      'form-0-question': 'test_question',
-                     # pick random answers
-                     'form-0-answer_0': 'test answer 0',
-                     'form-0-answer_1': 'test answer 1',
-                     'form-0-answer_2': 'test answer 2',
-                     'form-0-ORDER': 0,
                      }
+        extra_data = {}
+        for num in range(0, nr_answers):
+            extra_data['form-0-answer_%s'%num] = 'test answer %s'%num
+        post_data.update(extra_data)
         return post_data
 
     def make_ballot(self, p_uuid):
