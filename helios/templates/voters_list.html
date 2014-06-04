@@ -58,7 +58,7 @@
 	<p><em>{% trans "searching for" %} <u>{{q}}</u>.</em> [<a href="?">{% trans "clear search" %}</a>]</p>
 	{% else %}
 
-	<form method="get" action="{% url helios.views.voters_list_pretty election.uuid %}"><b>search</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
+	<form method="get" action="{% url helios.views.voters_list_pretty election.uuid %}"><b>	{% if not election.use_voter_aliases or admin_p %} {% trans "Voter name" %} {% else %} {% trans "Alias" %}{% endif %}</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
 
 	{% endif %}
 	</p>
@@ -140,7 +140,7 @@
 	{% if election.use_voter_aliases %}
 	<td>{{voter.alias}}</td>
 	{% endif %}
-	<td><tt style="font-size: 1.4em;;">{% if voter.vote_hash %}{{voter.vote_hash}}{% else %}&mdash;{% endif %}</tt></td>
+	<td><em>{% if voter.vote_hash %}{{voter.vote_hash}}{% else %}&mdash;{% endif %}</em></td>
 	</tr>
 	{% endfor %}
 	</table>
