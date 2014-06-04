@@ -426,7 +426,6 @@ class TestSimpleElection(TestElectionBase):
             valid_indexes = range(index, index + (len(data['answers'])))
             min, max = int(data['min_answers']), int(data['max_answers'])
             qchoice = []
-            print min 
             nr_choices = randint(min, max)
             qchoice = sample(valid_indexes, nr_choices)
             '''
@@ -439,7 +438,6 @@ class TestSimpleElection(TestElectionBase):
             choices += qchoice
             # inc index to the next question
             index += len(data['answers']) + 1
-        print choices
         return choices, max_choices
 
     def test_election_proccess(self):
@@ -482,8 +480,40 @@ class TestPartyElection(TestElectionBase):
         return post_data
 
     def make_ballot(self, p_uuid):
-        pass
-        
+        poll = Poll.objects.get(uuid=p_uuid)
+        q_d = poll.questions_data
+        max_choices = len(poll.questions[0]['answers'])
+        choices = []
+        header_index = 0
+        index = 1
+        # if vote_blank is 0, the selection will be empty = blank bote
+        vote_blank = randint(0,4)
+        for qindex, data in enumerate(q_d):
+            if vote_blank == 0:
+                break
+            qchoice = []
+            # if vote party only is 0, vote only party without candidates
+            vote_party_only = randint(0,4)
+            if vote_party_only == 0:
+                qchoice.append(header_index)
+            else:
+                # valid answer indexes
+                valid_indexes = range(index, index + (len(data['answers'])))
+                min, max = int(data['min_answers']), int(data['max_answers'])
+                nr_choices = randint(min, max)
+                qchoice = sample(valid_indexes, nr_choices)
+                '''
+                while len(qchoice) < random.randint(min, max):
+                    answer = random.choice(valid_indexes)
+                    valid_indexes.remove(answer)
+                    qchoice.append(answer)
+                '''                                       
+            qchoice = sorted(qchoice)
+            choices += qchoice
+            # inc index to the next question
+            index += len(data['answers']) + 1
+            header_index += len(data['answers']) + 1
+        return choices, max_choices
 
     def test_election_proccess(self):
         self.election_proccess()
