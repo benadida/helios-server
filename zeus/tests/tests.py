@@ -418,21 +418,28 @@ class TestSimpleElection(TestElectionBase):
         max_choices = len(poll.questions[0]['answers'])
         choices = []
         index = 1
+        vote_blank = randint(0,4)
         for qindex, data in enumerate(q_d):
+            if vote_blank == 0:
+                break
             # valid answer indexes
             valid_indexes = range(index, index + (len(data['answers'])))
             min, max = int(data['min_answers']), int(data['max_answers'])
             qchoice = []
-                         
+            print min 
+            nr_choices = randint(min, max)
+            qchoice = sample(valid_indexes, nr_choices)
+            '''
             while len(qchoice) < random.randint(min, max):
                 answer = random.choice(valid_indexes)
                 valid_indexes.remove(answer)
                 qchoice.append(answer)
-                                                      
+            '''                                       
             qchoice = sorted(qchoice)
             choices += qchoice
             # inc index to the next question
             index += len(data['answers']) + 1
+        print choices
         return choices, max_choices
 
     def test_election_proccess(self):
@@ -476,7 +483,8 @@ class TestPartyElection(TestElectionBase):
 
     def make_ballot(self, p_uuid):
         pass
-    
+        
+
     def test_election_proccess(self):
         self.election_proccess()
 
@@ -499,7 +507,7 @@ def make_random_range_ballot(candidates_to_index, scores_to_index):
     ballot_choices = chain(*ballot_choices)
     ballot_choices = list(ballot_choices)
     max_ballot_choices = nr_scores + nr_candidates
-    
+
     return ballot_choices, max_ballot_choices
 
 
