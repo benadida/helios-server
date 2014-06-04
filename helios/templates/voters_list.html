@@ -118,6 +118,7 @@
 	<tr>
 	{% if admin_p or not election.use_voter_aliases %}
 	<th>{% trans "Name" %}</th>
+	<th>{% trans "E-mail" %}</th>
 	{% endif %}
 
 	{% if election.use_voter_aliases %}
@@ -134,6 +135,7 @@
 	<a href="{% url helios.views.voter_delete election.uuid, voter.uuid %}"><i data-name="{{voter.name}}" title="{% trans "Remove voter" %}" class="glyphicon glyphicon-remove remove_voter"></i></a>
 	{% endif %}
 	<!--<img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" />--> {{voter.name}}</td>
+	<td>{{voter.voter_email}}</td>
 	{% endif %}
 	{% if election.use_voter_aliases %}
 	<td>{{voter.alias}}</td>
