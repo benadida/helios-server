@@ -97,6 +97,10 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.simple_election_max_answers_number = 4 
         # set the number of max answers in score election
         self.score_election_max_answers = 13
+        # set the number of max questions in party election
+        self.party_election_max_questions_number = 4
+        # set the number of max answers in party election
+        self.party_election_max_answers_number = 5
         start_time = datetime.datetime.now()
         end_time = datetime.datetime.now() + timedelta(hours=2)
         date1, date2 = datetime.datetime.now() + timedelta(hours=48),datetime.datetime.now() + timedelta(hours=56)
@@ -444,26 +448,34 @@ class TestPartyElection(TestElectionBase):
             print '* Starting party election *'
 
     def create_questions(self):
+        nr_questions = self.party_election_max_questions_number
+        max_nr_answers = self.party_election_max_answers_number
 
-        post_data = {'form-TOTAL_FORMS': 2,
+        post_data = {'form-TOTAL_FORMS': nr_questions,
                      'form-INITIAL_FORMS': 1,
-                     'form-MAX_NUM_FORMS': "",
-                     'form-0-choice_type': 'choice',
-                     'form-0-question': 'test_question',
-                     'form-0-min_answers': 1,
-                     'form-0-max_answers': 1,
-                     'form-0-answer_0': 'test answer 0',
-                     'form-0-answer_1': 'test answer 1',
-                     'form-0-ORDER': 0,
-                     'form-1-choice_type': 'choice',
-                     'form-1-question': 'test_question1',
-                     'form-1-min_answers': 1,
-                     'form-1-max_answers': 1,
-                     'form-1-answer_0': 'test answer 1-0',
-                     'form-1-answer_1': 'test answer 1-1',
-                     'form-1-ORDER': 1,
+                     'form-MAX_NUM_FORMS': ""
                      }
+
+        for num in range(0, nr_questions):
+            nr_answers = randint(1, max_nr_answers)
+            min_choices = randint(1, nr_answers)
+            max_choices = randint(min_choices, nr_answers)
+            extra_data = {}
+            extra_data = {
+                'form-%s-ORDER'%num: num,
+                'form-%s-choice_type'%num: 'choice',
+                'form-%s-question'%num: 'test question %s'%num,
+                'form-%s-min_answers'%num :min_choices,
+                'form-%s-max_answers'%num :max_choices,
+                }
+            for ans_num in range(0, nr_answers):
+                extra_data['form-%s-answer_%s'%(num, ans_num)] = \
+                    'testanswer %s-%s' %(num,ans_num)
+            post_data.update(extra_data) 
         return post_data
+
+    def make_ballot(self, p_uuid):
+        pass
     
     def test_election_proccess(self):
         self.election_proccess()
