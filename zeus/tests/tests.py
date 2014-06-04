@@ -409,7 +409,27 @@ class TestSimpleElection(TestElectionBase):
         return post_data
 
     def make_ballot(self, p_uuid):
-        pass 
+        poll = Poll.objects.get(uuid=p_uuid)
+        q_d = poll.questions_data
+        max_choices = len(poll.questions[0]['answers'])
+        choices = []
+        index = 1
+        for qindex, data in enumerate(q_d):
+            # valid answer indexes
+            valid_indexes = range(index, index + (len(data['answers'])))
+            min, max = int(data['min_answers']), int(data['max_answers'])
+            qchoice = []
+                         
+            while len(qchoice) < random.randint(min, max):
+                answer = random.choice(valid_indexes)
+                valid_indexes.remove(answer)
+                qchoice.append(answer)
+                                                      
+            qchoice = sorted(qchoice)
+            choices += qchoice
+            # inc index to the next question
+            index += len(data['answers']) + 1
+        return choices, max_choices
 
     def test_election_proccess(self):
         self.election_proccess()
