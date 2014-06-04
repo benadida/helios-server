@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-02 15:52-0300\n"
-"PO-Revision-Date: 2014-06-02 15:54-0300\n"
+"POT-Creation-Date: 2014-06-04 15:18-0300\n"
+"PO-Revision-Date: 2014-06-04 15:18-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -391,7 +391,9 @@ msgstr "Votar"
 msgid "Login"
 msgstr "Conectar"
 
-#: helios/templates/cast_done.html:3 server_ui/templates/done.html:3
+#: helios/templates/cast_done.html:3
+#: helios/templates/election_cast_confirm.html:3
+#: server_ui/templates/done.html:3
 msgid "Confirm Vote"
 msgstr "Confirmar Voto"
 
@@ -544,7 +546,7 @@ msgstr "voltar ao início"
 #: helios/templates/election_bboard.html:29
 #: helios/templates/stats_admin_actions.html:16
 #: helios/templates/stats_elections.html:16
-#: helios/templates/voters_list.html:114 helios/templates/voters_list.html:154
+#: helios/templates/voters_list.html:114 helios/templates/voters_list.html:156
 #: helios/templates/voters_manage.html:17
 #: helios/templates/voters_manage.html:25
 msgid "next"
@@ -575,18 +577,18 @@ msgstr ""
 
 #: helios/templates/election_bboard.html:18
 #: helios/templates/voters_list.html:3 helios/templates/voters_list.html:111
-#: helios/templates/voters_list.html:151
+#: helios/templates/voters_list.html:153
 msgid "Voters"
 msgstr "Eleitores"
 
 #: helios/templates/election_bboard.html:34
-#: helios/templates/voters_list.html:124
+#: helios/templates/voters_list.html:61 helios/templates/voters_list.html:125
 #: helios/templates/voters_manage.html:29
 msgid "Alias"
 msgstr "Pseudônimo"
 
 #: helios/templates/election_bboard.html:38
-#: helios/templates/voters_list.html:126
+#: helios/templates/voters_list.html:127
 msgid "Smart Ballot Tracker"
 msgstr "Rastreador da Cédula"
 
@@ -1497,6 +1499,13 @@ msgstr "Compartilhar"
 msgid "Tweet"
 msgstr "Tuíte"
 
+#: helios/templates/stats.html:2 helios/templates/stats_admin_actions.html:3
+#: helios/templates/stats_elections.html:3
+#: helios/templates/stats_problem_elections.html:3
+#: helios/templates/stats_recent_votes.html:3
+msgid "Statistics"
+msgstr "Estatísticas"
+
 #: helios/templates/stats.html:5 helios/templates/stats_elections.html:22
 msgid "Admin"
 msgstr "Admin"
@@ -1525,20 +1534,13 @@ msgstr "votos na fila."
 msgid "force it"
 msgstr "forçar"
 
-#: helios/templates/stats_admin_actions.html:3
-#: helios/templates/stats_elections.html:3
-#: helios/templates/stats_problem_elections.html:3
-#: helios/templates/stats_recent_votes.html:3
-msgid "Statistics"
-msgstr "Estatísticas"
-
 #: helios/templates/stats_admin_actions.html:6
 msgid "Admin Actions"
 msgstr "Ações Administrativas"
 
 #: helios/templates/stats_admin_actions.html:10
 #: helios/templates/stats_elections.html:10
-#: helios/templates/voters_list.html:107 helios/templates/voters_list.html:147
+#: helios/templates/voters_list.html:107 helios/templates/voters_list.html:149
 msgid "previous"
 msgstr "anterior"
 
@@ -1960,6 +1962,10 @@ msgstr "procurando por"
 msgid "clear search"
 msgstr "limpar busca"
 
+#: helios/templates/voters_list.html:61
+msgid "Voter name"
+msgstr "Nome do eleitor"
+
 #: helios/templates/voters_list.html:61 helios/templates/voters_manage.html:8
 msgid "search"
 msgstr "buscar"
@@ -1985,7 +1991,11 @@ msgstr "Total de votos depositados"
 msgid "no votes yet"
 msgstr "nenhum voto"
 
-#: helios/templates/voters_list.html:133
+#: helios/templates/voters_list.html:121
+msgid "E-mail"
+msgstr "E-mail:"
+
+#: helios/templates/voters_list.html:134
 msgid ""
 "Send email to this voter. This action will only be possible if the ballot is "
 "already frozen."
@@ -1993,35 +2003,35 @@ msgstr ""
 "Enviar email para esse eleitor. Essa ação só vai ser possível se você já "
 "tiver congelado a cédula de votação."
 
-#: helios/templates/voters_list.html:134
+#: helios/templates/voters_list.html:135
 msgid "Remove voter"
 msgstr "Remover eleitor"
 
-#: helios/templates/voters_list.html:160
+#: helios/templates/voters_list.html:162
 msgid "no voters."
 msgstr "nenhum eleitor."
 
-#: helios/templates/voters_list.html:168
+#: helios/templates/voters_list.html:170
 msgid "Prior Bulk Uploads:"
 msgstr "Arquivos de eleitores carregados anteriormente:"
 
-#: helios/templates/voters_list.html:177
+#: helios/templates/voters_list.html:179
 msgid "bytes, at"
 msgstr "bytes, em"
 
-#: helios/templates/voters_list.html:179
+#: helios/templates/voters_list.html:181
 msgid "done processing:"
 msgstr "processamento completo:"
 
-#: helios/templates/voters_list.html:179
+#: helios/templates/voters_list.html:181
 msgid "voters loaded"
 msgstr "eleitor (es) carregados"
 
-#: helios/templates/voters_list.html:183
+#: helios/templates/voters_list.html:185
 msgid "currently processing"
 msgstr "processando"
 
-#: helios/templates/voters_list.html:185
+#: helios/templates/voters_list.html:187
 msgid "not yet processed"
 msgstr "Recarregue a página para exibir a lista de eleitores"
 
