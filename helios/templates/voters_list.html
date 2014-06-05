@@ -52,17 +52,7 @@
 	{% if email_voters and election.frozen_at and admin_p %}
 	<p><a class="btn btn-primary" href="{% url helios.views.voters_email election.uuid %}">{% trans "email voters" %}</a></p>
 	{% endif %}
-	{% if election.num_voters > 20 %}
-	<p>
-	{% if q %}
-	<p><em>{% trans "searching for" %} <u>{{q}}</u>.</em> [<a href="?">{% trans "clear search" %}</a>]</p>
-	{% else %}
-
-	<form method="get" action="{% url helios.views.voters_list_pretty election.uuid %}"><b>	{% if not election.use_voter_aliases or admin_p %} {% trans "Voter name" %} {% else %} {% trans "Alias" %}{% endif %}</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
-
-	{% endif %}
-	</p>
-	{% endif %}
+	
 </div> <!-- end column -->
 
 
@@ -91,6 +81,21 @@
 	<br><br>
 	<!-- end who can vote info -->
 
+	<!-- search voter -->
+<div class="alert alert-info">
+	{% if election.num_voters > 20 %}
+	<p>
+	{% if q %}
+	<p><em>{% trans "searching for" %} <u>{{q}}</u>.</em> [<a href="?">{% trans "clear search" %}</a>]</p>
+	{% else %}
+
+	<form method="get" action="{% url helios.views.voters_list_pretty election.uuid %}"><b>	{% if not election.use_voter_aliases or admin_p %} {% trans "Voter name" %} {% else %} {% trans "Alias" %}{% endif %}</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
+
+	{% endif %}
+	</p>
+	{% endif %}
+</div>
+	<!-- end search voter -->
 	{% if voters %}
 
 	<p>
