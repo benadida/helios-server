@@ -82,8 +82,9 @@
 	<!-- end who can vote info -->
 
 	<!-- search voter -->
-<div class="alert alert-info">
+
 	{% if election.num_voters > 20 %}
+	<div class="alert alert-info">
 	<p>
 	{% if q %}
 	<p><em>{% trans "searching for" %} <u>{{q}}</u>.</em> [<a href="?">{% trans "clear search" %}</a>]</p>
@@ -93,8 +94,9 @@
 
 	{% endif %}
 	</p>
+	</div>
 	{% endif %}
-</div>
+
 	<!-- end search voter -->
 	{% if voters %}
 
