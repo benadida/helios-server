@@ -961,7 +961,11 @@ class Voter(HeliosModel):
       'vote_hash': self.vote_hash,
       'cast_at': self.cast_at,
       'alias': self.alias,
-      'user_id': self.user.user_id
+      'user_id': self.user.user_id,
+      'election id': self.election.id,
+      'election name': self.election.name,
+      'election url': self.election.url
+
       }
 
   def store_vote(self, cast_vote):
