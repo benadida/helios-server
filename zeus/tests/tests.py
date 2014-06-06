@@ -1,7 +1,7 @@
 import datetime
 import json
 from itertools import izip, chain
-from random import shuffle, sample, randint
+from random import shuffle, sample, randint, choice
 from datetime import timedelta
 
 
@@ -84,23 +84,25 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
        "    \|_______|\|__| \|_|\n")
                                            
         # set the voters number that will be produced for test
-        self.voters_num = 2
+        self.voters_num = 5 
         # set the trustees number that will be produced for the test
-        trustees_num = 2 
+        trustees_num = 3
         trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
                                        'test%x@mail.com' %x]) for x in range(0,trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number = 2
+        self.polls_number = 3
         # set the number of max questions for simple election
-        self.simple_election_max_questions_number = 3
+        self.simple_election_max_questions_number = 4
         # set the number of max answers for each question of simple election
-        self.simple_election_max_answers_number = 4 
+        self.simple_election_max_answers_number = 5
         # set the number of max answers in score election
-        self.score_election_max_answers = 13
+        self.score_election_max_answers = 15
         # set the number of max questions in party election
-        self.party_election_max_questions_number = 4
+        self.party_election_max_questions_number = 6
         # set the number of max answers in party election
         self.party_election_max_answers_number = 5
+        # set the number of max candidates in stv election
+        self.stv_election_max_answers_number = 10
         start_time = datetime.datetime.now()
         end_time = datetime.datetime.now() + timedelta(hours=2)
         date1, date2 = datetime.datetime.now() + timedelta(hours=48),datetime.datetime.now() + timedelta(hours=56)
@@ -119,14 +121,30 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                               }
 
     def admin_can_submit_election_form(self):
-        self.c.post(self.locations['login'], self.login_data)
         self.election_form['election_module'] = self.election_type 
+        if self.election_type == 'stv':
+            self.assertRaises(
+                IndexError,
+                self.stv_election_form_must_have_departments,
+                self.election_form)
+            if self.local_verbose:
+                print 'STV election form was not submited without departments'
+            self.election_form['departments'] = self.departments
+        self.c.post(self.locations['login'], self.login_data)
         r = self.c.post(self.locations['create'], self.election_form, follow=True) 
         e = Election.objects.all()[0]
         self.e_uuid = e.uuid
         self.assertIsInstance(e, Election)
         if self.local_verbose:
             print 'Admin posted election form'
+
+    def stv_election_form_must_have_departments(self, post_data):
+        post_data['departments'] = ''
+        self.c.get(self.locations['login'], self.login_data)
+        self.election_form['election_module'] = self.election_type
+        r = self.c.post(self.locations['create'], self.election_form, follow=True) 
+        e = Election.objects.all()[0]
+
 
     def prepare_trustees(self,e_uuid):
         e = Election.objects.get(uuid=e_uuid)
@@ -196,9 +214,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             self.p_uuids.append(poll.uuid)
 
     def submit_questions(self):
-        post_data = self.create_questions()
-        # post same questions to each poll - change later
         for p_uuid in self.p_uuids:
+            post_data = self.create_questions()
             questions_location = '/elections/%s/polls/%s/questions/manage' % \
                     (self.e_uuid, p_uuid)
             r = self.c.post(questions_location, post_data)
@@ -577,6 +594,54 @@ class TestScoreElection(TestElectionBase):
         ballot_choices, max_ballot_choices = make_random_range_ballot(
             candidates_to_indexes, scores_to_indexes)
         return ballot_choices, max_ballot_choices
+
+    def test_election_proccess(self):
+        self.election_proccess()
+
+
+class TestSTVElection(TestElectionBase):
+
+    def setUp(self):
+        super(TestSTVElection, self).setUp()
+        self.election_type = 'stv'
+        # make departments for stv election
+        departments = ''
+        for i in range(0, randint(2, 10)):
+            departments += 'test department %s\n'%i
+        self.departments = departments
+        if self.local_verbose:
+            print '* Starting stv election *'
+
+    def create_questions(self):
+
+        # choose randomly if has department limit
+        post_data = {
+            'form-MAX_NUM_FORMS': 1000,
+            'form-TOTAL_FORMS': 1,
+            'form-INITIAL_FORMS': 1,
+            'form-0-ORDER': 1,
+            'form-0-eligibles': 6,
+            }
+        e = Election.objects.get(uuid=self.e_uuid)
+        departments = e.departments.split('\n') 
+        extra_data = {}
+        nr_candidates = randint(2, self.stv_election_max_answers_number)
+        for i in range(0, nr_candidates):
+            extra_data['form-0-answer_%s_0'%i] = 'test candidate %s'%i
+            dep_choice = choice(departments)
+            extra_data['form-0-answer_%s_1'%i] = dep_choice
+        post_data.update(extra_data) 
+        return post_data
+
+
+    def make_ballot(self, p_uuid):
+        p = Poll.objects.get(uuid=p_uuid) 
+        nr_candidates = len(p.questions[0]['answers'])
+        indexed_candidates = [x for x in range(0, nr_candidates)]
+        nr_selection = randint(0, nr_candidates)
+        selection = sample(indexed_candidates, nr_selection)
+
+        return selection, nr_candidates
 
     def test_election_proccess(self):
         self.election_proccess()
