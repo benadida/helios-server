@@ -84,25 +84,25 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
        "    \|_______|\|__| \|_|\n")
                                            
         # set the voters number that will be produced for test
-        self.voters_num = 5 
+        self.voters_num = 2 
         # set the trustees number that will be produced for the test
-        trustees_num = 3
+        trustees_num = 2
         trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
                                        'test%x@mail.com' %x]) for x in range(0,trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number = 3
+        self.polls_number = 2
         # set the number of max questions for simple election
-        self.simple_election_max_questions_number = 4
+        self.simple_election_max_questions_number = 2
         # set the number of max answers for each question of simple election
-        self.simple_election_max_answers_number = 5
+        self.simple_election_max_answers_number = 3
         # set the number of max answers in score election
-        self.score_election_max_answers = 15
+        self.score_election_max_answers = 9
         # set the number of max questions in party election
-        self.party_election_max_questions_number = 6
+        self.party_election_max_questions_number = 4
         # set the number of max answers in party election
         self.party_election_max_answers_number = 5
         # set the number of max candidates in stv election
-        self.stv_election_max_answers_number = 10
+        self.stv_election_max_answers_number = 5 
         start_time = datetime.datetime.now()
         end_time = datetime.datetime.now() + timedelta(hours=2)
         date1, date2 = datetime.datetime.now() + timedelta(hours=48),datetime.datetime.now() + timedelta(hours=56)
@@ -614,22 +614,30 @@ class TestSTVElection(TestElectionBase):
 
     def create_questions(self):
 
+        nr_candidates = randint(2, self.stv_election_max_answers_number)
+        eligibles = randint(1, nr_candidates)
         # choose randomly if has department limit
         post_data = {
             'form-MAX_NUM_FORMS': 1000,
             'form-TOTAL_FORMS': 1,
             'form-INITIAL_FORMS': 1,
             'form-0-ORDER': 1,
-            'form-0-eligibles': 6,
+            'form-0-eligibles': eligibles,
             }
         e = Election.objects.get(uuid=self.e_uuid)
         departments = e.departments.split('\n') 
         extra_data = {}
-        nr_candidates = randint(2, self.stv_election_max_answers_number)
         for i in range(0, nr_candidates):
             extra_data['form-0-answer_%s_0'%i] = 'test candidate %s'%i
             dep_choice = choice(departments)
             extra_data['form-0-answer_%s_1'%i] = dep_choice
+        #randomize department limit, if 0, has limit
+        
+        limit = randint(0,4)
+        if limit == 0:
+            post_data['form-0-has_department_limit'] = 'on'
+            post_data['form-0-department_limit'] = 2
+
         post_data.update(extra_data) 
         return post_data
 
