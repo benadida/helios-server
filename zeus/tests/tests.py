@@ -84,9 +84,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
        "    \|_______|\|__| \|_|\n")
                                            
         # set the voters number that will be produced for test
-        self.voters_num = 2 
+        self.voters_num = 2
         # set the trustees number that will be produced for the test
-        trustees_num = 2
+        trustees_num = 2 
         trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
                                        'test%x@mail.com' %x]) for x in range(0,trustees_num))
         # set the polls number that will be produced for the test
@@ -122,11 +122,21 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
     def admin_can_submit_election_form(self):
         self.election_form['election_module'] = self.election_type 
+
+        self.assertRaises(
+            IndexError,
+            self.election_form_must_have_trustees,
+            self.election_form)
+        if self.local_verbose:
+            print "Election form without trustees was not accepted"
+
         if self.election_type == 'stv':
+
             self.assertRaises(
                 IndexError,
                 self.stv_election_form_must_have_departments,
                 self.election_form)
+
             if self.local_verbose:
                 print 'STV election form was not submited without departments'
             self.election_form['departments'] = self.departments
@@ -137,6 +147,16 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.assertIsInstance(e, Election)
         if self.local_verbose:
             print 'Admin posted election form'
+
+    def election_form_must_have_trustees(self, post_data):
+        post_data['trustess'] = ''
+        self.c.get(self.locations['login'], self.login_data)
+        self.election_form['election_module'] = self.election_type
+        r = self.c.post(self.locations['create'], self.election_form, follow=True) 
+        e = Election.objects.all()[0]
+
+
+        
 
     def stv_election_form_must_have_departments(self, post_data):
         post_data['departments'] = ''
@@ -503,7 +523,7 @@ class TestPartyElection(TestElectionBase):
         choices = []
         header_index = 0
         index = 1
-        # if vote_blank is 0, the selection will be empty = blank bote
+        # if vote_blank is 0, the selection will be empty
         vote_blank = randint(0,4)
         for qindex, data in enumerate(q_d):
             if vote_blank == 0:
