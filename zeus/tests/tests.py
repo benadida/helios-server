@@ -22,12 +22,12 @@ from helios.models import *
 class SetUpAdminAndClientMixin():
 
     def setUp(self):
-        institution = Institution.objects.create(name="test_inst")
+        self.institution = Institution.objects.create(name="test_inst")
         self.admin = User.objects.create(user_type="password",
                                          user_id="test_admin",
                                          info={"password": make_password("test_admin")},
                                          admin_p=True,
-                                         institution=institution)
+                                         institution=self.institution)
         self.locations = {'home': '/',
                           'logout': '/auth/auth/logout',
                           'login':'/auth/auth/login',
@@ -68,6 +68,58 @@ class TestUsersWithClient(SetUpAdminAndClientMixin, TestCase):
         r = self.c.get(self.locations['logout'], follow=True)
         self.assertRedirects(r, self.locations['home'])
 
+class TestAdminsPermissions(SetUpAdminAndClientMixin, TestCase):
+    
+    def setUp(self):
+        super(TestAdminsPermissions, self).setUp()
+        #one admin exists, we need another one
+        self.admin2 = User.objects.create(user_type="password",
+                                         user_id="test_admin2",
+                                         info={"password": make_password("test_admin2")},
+                                         admin_p=True,
+                                         institution=self.institution)
+        self.login_data2 = {'username': 'test_admin2', 'password': 'test_admin2'}
+        trustees_num = 2 
+        trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
+                                       'test%x@mail.com' %x]) for x in range(0,trustees_num))
+        date1 = datetime.datetime.now() + timedelta(hours=48)
+        date2 = datetime.datetime.now() + timedelta(hours=56)
+        self.election_form = {
+                              'trial': True,
+                              'election_module': 'simple',
+                              'name': 'test_election',
+                              'description': 'testing_election',
+                              'trustees': trustees,
+                              'voting_starts_at_0': date1.strftime('%Y-%m-%d'),
+                              'voting_starts_at_1': date1.strftime('%H:%M'),
+                              'voting_ends_at_0': date2.strftime('%Y-%m-%d'),
+                              'voting_ends_at_1': date2.strftime('%H:%M'),
+                              'help_email': 'test@test.com',
+                              'help_phone': 6988888888,
+                              'communication_language': 'el',
+                            }
+
+    def login_and_create_election(self, login_data):
+        self.c.post(self.locations['login'], login_data)
+        r = self.c.post(self.locations['create'], self.election_form, follow=True)
+        self.c.get(self.locations['logout'])
+
+    def create_elections_with_different_admins(self):
+        self.login_and_create_election(self.login_data)
+        self.login_and_create_election(self.login_data2)
+        e = Election.objects.all()
+        self.assertEqual(len(e), 2)
+        #make dict with admin and his election(uuid)
+        self.pairs = {}
+        for election in e:
+            self.pairs[election.admins.all()[0].user_id] = election.uuid
+
+    def test_admins_cannot_access_other_elections(self):
+        #login with admin2 and try to access election 1
+        self.create_elections_with_different_admins()
+        self.c.post(self.locations['login'], self.login_data2)
+        r = self.c.get('/elections/%s/edit'% self.pairs['test_admin'])
+        self.assertEqual(r.status_code, 403)
 
 class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
@@ -84,7 +136,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
        "    \|_______|\|__| \|_|\n")
                                            
         # set the voters number that will be produced for test
-        self.voters_num = 2
+        self.voters_num = 4 
         # set the trustees number that will be produced for the test
         trustees_num = 2 
         trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
@@ -105,7 +157,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.stv_election_max_answers_number = 5 
         start_time = datetime.datetime.now()
         end_time = datetime.datetime.now() + timedelta(hours=2)
-        date1, date2 = datetime.datetime.now() + timedelta(hours=48),datetime.datetime.now() + timedelta(hours=56)
+        date1 = datetime.datetime.now() + timedelta(hours=48)
+        date2 = datetime.datetime.now() + timedelta(hours=56)
+
         self.election_form = {
                               'trial': True,
                               'name': 'test_election',
@@ -155,16 +209,12 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         r = self.c.post(self.locations['create'], self.election_form, follow=True) 
         e = Election.objects.all()[0]
 
-
-        
-
     def stv_election_form_must_have_departments(self, post_data):
         post_data['departments'] = ''
         self.c.get(self.locations['login'], self.login_data)
         self.election_form['election_module'] = self.election_type
         r = self.c.post(self.locations['create'], self.election_form, follow=True) 
         e = Election.objects.all()[0]
-
 
     def prepare_trustees(self,e_uuid):
         e = Election.objects.get(uuid=e_uuid)
@@ -235,12 +285,12 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
     def submit_questions(self):
         for p_uuid in self.p_uuids:
-            post_data = self.create_questions()
+            post_data, nr_questions = self.create_questions()
             questions_location = '/elections/%s/polls/%s/questions/manage' % \
                     (self.e_uuid, p_uuid)
             r = self.c.post(questions_location, post_data)
             p = Poll.objects.get(uuid=p_uuid)
-            self.assertTrue(p.questions_count > 0)
+            self.assertTrue(p.questions_count == nr_questions)
         if self.local_verbose:
             print 'Questions were created'
 
@@ -256,7 +306,6 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 fp.write(voter)
             fp.close()
             counter += 1
-            #assert here
         if self.local_verbose:
             print 'Voters file created'
         return voter_files
@@ -447,7 +496,7 @@ class TestSimpleElection(TestElectionBase):
             for ans_num in range(0,nr_answers):
                 extra_data['form-%s-answer_%s'%(num, ans_num)] = 'test answer %s' %ans_num
             post_data.update(extra_data) 
-        return post_data
+        return post_data, nr_questions
 
     def make_ballot(self, p_uuid):
         poll = Poll.objects.get(uuid=p_uuid)
@@ -514,7 +563,7 @@ class TestPartyElection(TestElectionBase):
                 extra_data['form-%s-answer_%s'%(num, ans_num)] = \
                     'testanswer %s-%s' %(num,ans_num)
             post_data.update(extra_data) 
-        return post_data
+        return post_data, nr_questions
 
     def make_ballot(self, p_uuid):
         poll = Poll.objects.get(uuid=p_uuid)
@@ -604,7 +653,8 @@ class TestScoreElection(TestElectionBase):
         for num in range(0, nr_answers):
             extra_data['form-0-answer_%s'%num] = 'test answer %s'%num
         post_data.update(extra_data)
-        return post_data
+        # 1 is the number of questions, used for assertion
+        return post_data, 1
 
     def make_ballot(self, p_uuid):
         p = Poll.objects.get(uuid=p_uuid)
@@ -651,15 +701,15 @@ class TestSTVElection(TestElectionBase):
             extra_data['form-0-answer_%s_0'%i] = 'test candidate %s'%i
             dep_choice = choice(departments)
             extra_data['form-0-answer_%s_1'%i] = dep_choice
-        #randomize department limit, if 0, has limit
-        
+        # randomize department limit, if 0, has limit
         limit = randint(0,4)
         if limit == 0:
             post_data['form-0-has_department_limit'] = 'on'
             post_data['form-0-department_limit'] = 2
 
         post_data.update(extra_data) 
-        return post_data
+        # 1 is the number of max questions, used for assertion
+        return post_data, 1 
 
 
     def make_ballot(self, p_uuid):
