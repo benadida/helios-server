@@ -11,6 +11,7 @@ from django.db.models.query import EmptyQuerySet
 from django.core.context_processors import csrf
 from django.core.validators import validate_email
 from django.utils.html import mark_safe, escape
+from django.db.models import Q
 
 from zeus.forms import ElectionForm
 from zeus import auth
@@ -130,8 +131,15 @@ def voters_list(request, election, poll):
     # for django pagination support
     page = int(request.GET.get('page', 1))
     limit = int(request.GET.get('limit', 10))
-    q = request.GET.get('q','')
-    voters_per_page = getattr(settings, 'ELECTION_VOTERS_PER_PAGE', 100)
+    q_param = request.GET.get('q','')
+
+    default_voters_per_page = getattr(settings, 'ELECTION_VOTERS_PER_PAGE', 100)
+    voters_per_page = request.GET.get('limit', default_voters_per_page)
+    try:
+        voters_per_page = int(voters_per_page)
+    except:
+        voters_per_page = default_voters_per_page
+
     order_by = 'login_id'
     order_by = request.GET.get('order', 'login_id')
     if not order_by in ['login_id', 'surname', 'email', 'name']:
@@ -143,11 +151,11 @@ def voters_list(request, election, poll):
 
     voters = Voter.objects.filter(poll=poll).order_by('voter_%s' % order_by)
 
-    if q != '':
+    if q_param != '':
         q = Q()
         for search_field in ['name', 'surname', 'email']:
-            kwargs = {'voter__%s__icontains' % search_field: q}
-            q = q | Q(**kwargs)
+            kwargs = {'voter_%s__icontains' % search_field: q_param}
+            q = q | Q(**kwargs)	
         voters = voters.filter(q)
 
     voters_count = Voter.objects.filter(poll=poll).count()
@@ -161,7 +169,7 @@ def voters_list(request, election, poll):
         'voters': voters,
         'voters_count': voters_count,
         'voted_count': voted_count,
-        'q': q,
+        'q': q_param,
         'voters_per_page': voters_per_page
     }
     set_menu('voters', context)
