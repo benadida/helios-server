@@ -454,6 +454,7 @@ class TestPartyElection(TestElectionBase):
                      'form-INITIAL_FORMS': 1,
                      'form-MAX_NUM_FORMS': ""
                      }
+        post_data_with_duplicate_answers = post_data.copy()
 
         for num in range(0, nr_questions):
             nr_answers = randint(1, max_nr_answers)
@@ -467,11 +468,17 @@ class TestPartyElection(TestElectionBase):
                 'form-%s-min_answers'%num :min_choices,
                 'form-%s-max_answers'%num :max_choices,
                 }
+            duplicate_extra_data = extra_data.copy()
             for ans_num in range(0, nr_answers):
                 extra_data['form-%s-answer_%s'%(num, ans_num)] = \
                     'testanswer %s-%s' %(num,ans_num)
+                duplicate_extra_data['form-%s-answer_%s'%(num, ans_num)] = \
+                    'testanswer 0-0'
+                duplicate_extra_data['form-%s-answer_%s'%(num, ans_num+1)] = \
+                    'testanswer 0-0'
+            post_data_with_duplicate_answers.update(duplicate_extra_data)
             post_data.update(extra_data) 
-        return post_data, nr_questions
+        return post_data, nr_questions, post_data_with_duplicate_answers
 
     def make_ballot(self, p_uuid):
         poll = Poll.objects.get(uuid=p_uuid)
