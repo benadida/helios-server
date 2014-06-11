@@ -179,10 +179,15 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
     def submit_questions(self):
         for p_uuid in self.p_uuids:
-            post_data, nr_questions = self.create_questions()
+            post_data, nr_questions, duplicate_post_data = self.create_questions()
             questions_location = '/elections/%s/polls/%s/questions/manage' % \
                     (self.e_uuid, p_uuid)
-            r = self.c.post(questions_location, post_data)
+            self.c.post(questions_location, duplicate_post_data)
+            p = Poll.objects.get(uuid=p_uuid)
+            self.assertEqual(p.questions_count, 0)
+            if self.local_verbose:
+                print ' Duplicate answers were not allowed'
+            self.c.post(questions_location, post_data)
             p = Poll.objects.get(uuid=p_uuid)
             self.assertTrue(p.questions_count == nr_questions)
         if self.local_verbose:
@@ -375,10 +380,14 @@ class TestSimpleElection(TestElectionBase):
                      'form-INITIAL_FORMS': 1,
                      'form-MAX_NUM_FORMS': "",
                     }
+
+        post_data_with_duplicate_answers = post_data.copy()
+
         for num in range(0, nr_questions):
             nr_answers = randint(1, max_nr_answers)
             min_choices = randint(1, nr_answers)
             max_choices = randint(min_choices, nr_answers)
+            duplicate_extra_data = {}
             extra_data = {}
             extra_data = {
                 'form-%s-ORDER'%num: num,
@@ -387,10 +396,15 @@ class TestSimpleElection(TestElectionBase):
                 'form-%s-min_answers'%num: min_choices,
                 'form-%s-max_answers'%num: max_choices,
                 }
+            duplicate_extra_data = extra_data.copy()
             for ans_num in range(0,nr_answers):
                 extra_data['form-%s-answer_%s'%(num, ans_num)] = 'test answer %s' %ans_num
+                duplicate_extra_data['form-%s-answer_%s'%(num, ans_num)] = 'test answer 0'
+                #make sure we have at least 2 answers so there can be duplicate
+                duplicate_extra_data['form-%s-answer_%s'%(num, ans_num+1)] = 'test answer 0'
+            post_data_with_duplicate_answers.update(duplicate_extra_data)
             post_data.update(extra_data) 
-        return post_data, nr_questions
+        return post_data, nr_questions, post_data_with_duplicate_answers
 
     def make_ballot(self, p_uuid):
         poll = Poll.objects.get(uuid=p_uuid)
