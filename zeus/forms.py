@@ -288,6 +288,12 @@ class QuestionForm(QuestionBaseForm):
         if min_answers > max_answers:
             raise forms.ValidationError(_("Max answers should be greater "
                                           "or equal to min answers"))
+        answer_list = []
+        for key in self.cleaned_data:
+            if key.startswith('answer_'):
+                answer_list.append(self.cleaned_data[key])
+        if len(answer_list) > len(set(answer_list)):
+            raise forms.ValidationError(_("No duplicate answers allowed"))
         return self.cleaned_data
 
 
@@ -302,6 +308,15 @@ class ScoresForm(QuestionBaseForm):
                                        widget=forms.CheckboxSelectMultiple,
                                        choices=SCORES_CHOICES,
                                        label=_('Scores'))
+
+    def clean(self):
+        answer_list = []
+        for key in self.cleaned_data:
+            if key.startswith('answer_'):
+                answer_list.append(self.cleaned_data[key])
+        if len(answer_list) > len(set(answer_list)):
+            raise forms.ValidationError(_("No duplicate answers allowed"))
+        return self.cleaned_data
 
 class CandidateWidget(MultiWidget):
 
@@ -401,14 +416,22 @@ class StvForm(QuestionBaseForm):
         message = _("This field is required.")
         answers = len(filter(lambda k: k.startswith("%s-answer_" %
                                                 self.prefix), self.data)) / 2
+        #list used for checking duplicate candidates
+        candidates_list = []
+
         for ans in range(answers):
             field_key = 'answer_%d' % ans
             answer = self.cleaned_data[field_key]
             answer_lst = json.loads(answer)
+            candidates_list.append(answer_lst[0])
             if not answer_lst[0]:
                 self._errors[field_key] = ErrorList([message])
             answer_lst[0] = answer_lst[0].strip()
             self.cleaned_data[field_key] = json.dumps(answer_lst)
+
+        if len(candidates_list) > len(set(candidates_list)):
+            raise forms.ValidationError(_("No duplicate answers allowed"))
+
         return self.cleaned_data
 
     def clean_eligibles(self):
