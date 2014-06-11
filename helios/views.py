@@ -633,13 +633,18 @@ def one_election_cast_confirm(request, election):
   if voter:
     vote = datatypes.LDObject.fromDict(utils.from_json(encrypted_vote), type_hint='legacy/EncryptedVote').wrapped_obj
 
+    if 'HTTP_X_FORWARDED_FOR' in request.META:
+      cast_ip = request.META.get('HTTP_X_FORWARDED_FOR').split(',')[0].strip()
+    else:
+      cast_ip = request.META.get('REMOTE_ADDR', None) 
+
     # prepare the vote to cast
     cast_vote_params = {
       'vote' : vote,
       'voter' : voter,
       'vote_hash': vote_fingerprint,
       'cast_at': datetime.datetime.utcnow(),
-      'cast_ip': request.META.get('HTTP_X_FORWARDED_FOR')
+      'cast_ip': cast_ip
     }
 
     cast_vote = CastVote(**cast_vote_params)
