@@ -1,3 +1,2 @@
-#from zeus.tests.unit import *
-from zeus.tests.tests import *
-#from zeus.tests.old import *
+from zeus.tests.security import *
+from zeus.tests.functional import *
