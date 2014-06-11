@@ -564,12 +564,18 @@ class TestScoreElection(TestElectionBase):
                      'form-0-scores': scores_list,
                      'form-0-question': 'test_question',
                      }
+        post_data_with_duplicate_answers = post_data.copy()
         extra_data = {}
+        duplicate_extra_data = extra_data.copy()
+
         for num in range(0, nr_answers):
             extra_data['form-0-answer_%s'%num] = 'test answer %s'%num
+            extra_data['form-0-answer_%s'%num] = 'test answer 0'
+            extra_data['form-0-answer_%s'%num+1] = 'test answer 0'
+        post_data_with_duplicate_answers.update(duplicate_extra_data)
         post_data.update(extra_data)
         # 1 is the number of questions, used for assertion
-        return post_data, 1
+        return post_data, 1, post_data_with_duplicate_answers
 
     def make_ballot(self, p_uuid):
         p = Poll.objects.get(uuid=p_uuid)
