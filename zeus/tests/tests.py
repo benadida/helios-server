@@ -176,11 +176,12 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
     def admin_can_submit_election_form(self):
         self.election_form['election_module'] = self.election_type 
-
+        '''
         self.assertRaises(
             IndexError,
             self.election_form_must_have_trustees,
             self.election_form)
+        '''
         if self.local_verbose:
             print "Election form without trustees was not accepted"
 
@@ -201,14 +202,17 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.assertIsInstance(e, Election)
         if self.local_verbose:
             print 'Admin posted election form'
-
+    
+    '''
+    election can have 0 trustees
     def election_form_must_have_trustees(self, post_data):
         post_data['trustess'] = ''
-        self.c.get(self.locations['login'], self.login_data)
+        r = self.c.get(self.locations['login'], self.login_data)
+        print r.status_code
         self.election_form['election_module'] = self.election_type
-        r = self.c.post(self.locations['create'], self.election_form, follow=True) 
+        self.c.post(self.locations['create'], self.election_form, follow=True) 
         e = Election.objects.all()[0]
-
+    '''
     def stv_election_form_must_have_departments(self, post_data):
         post_data['departments'] = ''
         self.c.get(self.locations['login'], self.login_data)
