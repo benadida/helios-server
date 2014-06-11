@@ -133,9 +133,9 @@ def voters_list(request, election, poll):
     q = request.GET.get('q','')
     voters_per_page = getattr(settings, 'ELECTION_VOTERS_PER_PAGE', 100)
     order_by = 'login_id'
-    #order_by = request.GET.get('order', 'login_id')
-    #if not order_by in ['login_id', 'surname', 'email', 'name']:
-    #    order_by = 'login_id'
+    order_by = request.GET.get('order', 'login_id')
+    if not order_by in ['login_id', 'surname', 'email', 'name']:
+        order_by = 'login_id'
 
     validate_hash = request.GET.get('vote_hash', "").strip()
     hash_invalid = None
