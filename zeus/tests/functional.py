@@ -566,12 +566,13 @@ class TestScoreElection(TestElectionBase):
                      }
         post_data_with_duplicate_answers = post_data.copy()
         extra_data = {}
-        duplicate_extra_data = extra_data.copy()
+        duplicate_extra_data = {} 
 
         for num in range(0, nr_answers):
+            print type(num)
             extra_data['form-0-answer_%s'%num] = 'test answer %s'%num
-            extra_data['form-0-answer_%s'%num] = 'test answer 0'
-            extra_data['form-0-answer_%s'%num+1] = 'test answer 0'
+            duplicate_extra_data['form-0-answer_%s'%num] = 'test answer 0'
+            duplicate_extra_data['form-0-answer_%s'%(num+1)] = 'test answer 0'
         post_data_with_duplicate_answers.update(duplicate_extra_data)
         post_data.update(extra_data)
         # 1 is the number of questions, used for assertion
@@ -615,9 +616,11 @@ class TestSTVElection(TestElectionBase):
             'form-0-ORDER': 1,
             'form-0-eligibles': eligibles,
             }
+        post_data_with_duplicate_answers = post_data.copy()
         e = Election.objects.get(uuid=self.e_uuid)
         departments = e.departments.split('\n') 
         extra_data = {}
+        
         for i in range(0, nr_candidates):
             extra_data['form-0-answer_%s_0'%i] = 'test candidate %s'%i
             dep_choice = choice(departments)
