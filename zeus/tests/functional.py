@@ -620,20 +620,25 @@ class TestSTVElection(TestElectionBase):
         e = Election.objects.get(uuid=self.e_uuid)
         departments = e.departments.split('\n') 
         extra_data = {}
-        
+        duplicate_extra_data = {}
+
         for i in range(0, nr_candidates):
             extra_data['form-0-answer_%s_0'%i] = 'test candidate %s'%i
             dep_choice = choice(departments)
             extra_data['form-0-answer_%s_1'%i] = dep_choice
+            duplicate_extra_data['form-0-answer_%s_0'%i] = 'test candidate 0' 
+            duplicate_extra_data['form-0-answer_%s_1'%i] = dep_choice
+            duplicate_extra_data['form-0-answer_%s_0'%(i+1)] = 'test candidate 0'
+            duplicate_extra_data['form-0-answer_%s_1'%(i+1)] = dep_choice
         # randomize department limit, if 0, has limit
         limit = randint(0,4)
         if limit == 0:
             post_data['form-0-has_department_limit'] = 'on'
             post_data['form-0-department_limit'] = 2
-
+        post_data_with_duplicate_answers.update(duplicate_extra_data)
         post_data.update(extra_data) 
         # 1 is the number of max questions, used for assertion
-        return post_data, 1 
+        return post_data, 1, post_data_with_duplicate_answers
 
 
     def make_ballot(self, p_uuid):
