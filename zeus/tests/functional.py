@@ -154,6 +154,22 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 print 'Election got frozen'
             return True
 
+    def create_duplicate_polls(self):
+        self.c.get(self.locations['logout'])
+        self.c.post(self.locations['login'], self.login_data)
+        location = '/elections/%s/polls/add' % self.e_uuid
+        post_data = {'form-TOTAL_FORMS': 2,
+                     'form-INITIAL_FORMS': 0,
+                     'form-MAX_NUM_FORMS': 100
+                    }
+        for i in range(0, 2):
+            post_data['form-%s-name'% i] = 'test_poll'
+        self.c.post(location, post_data)
+        e = Election.objects.all()[0]
+        self.assertEqual(e.polls.all().count(), 0)
+        if self.local_verbose:
+            print 'Polls were not created - duplicate poll names'
+
     def create_random_polls(self):
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
@@ -167,7 +183,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                     }
         for i in range(0, self.polls_number):
             post_data['form-%s-name'% i] = 'test_poll%s' % i
-
+        
         self.c.post(location, post_data)
         e = Election.objects.all()[0]
         self.assertEqual(e.polls.all().count(), self.polls_number)
@@ -343,6 +359,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.admin_can_submit_election_form()
         self.assertEqual(self.freeze_election(), None)
         pks = self.prepare_trustees(self.e_uuid)
+        self.create_duplicate_polls()
         self.create_random_polls()
         self.submit_voters_file()
         self.submit_questions()
@@ -569,7 +586,6 @@ class TestScoreElection(TestElectionBase):
         duplicate_extra_data = {} 
 
         for num in range(0, nr_answers):
-            print type(num)
             extra_data['form-0-answer_%s'%num] = 'test answer %s'%num
             duplicate_extra_data['form-0-answer_%s'%num] = 'test answer 0'
             duplicate_extra_data['form-0-answer_%s'%(num+1)] = 'test answer 0'
