@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-26 15:29+0200\n"
+"POT-Creation-Date: 2014-06-16 11:23+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -101,8 +101,8 @@ msgid "Email subject"
 msgstr "Tίτλος μηνύματος email"
 
 #: forms.py:324
-msgid "Email body"
-msgstr "Κείμενο μηνύματος email"
+msgid "In place of BODY"
+msgstr "Εισαγωγή κειμένου αντί του BODY"
 
 #: forms.py:326
 msgid "Send To"
@@ -299,46 +299,49 @@ msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"
 msgid "Are you sure ?"
 msgstr "Επιβεβαιώστε"
 
-#: views/poll.py:235
+#: views/poll.py:243
 msgid "No file uploaded"
 msgstr "Δεν βρέθηκε αρχείο"
 
-#: views/poll.py:276
+#: views/poll.py:284
 msgid "Time to Vote"
 msgstr "Χρόνος Ψηφοφορίας"
 
-#: views/poll.py:277
+#: views/poll.py:285
 msgid "Additional Info"
 msgstr "Περισσότερες πληροφορίες"
 
-#: views/poll.py:401
+#: views/poll.py:409
 msgid "Email sending started"
 msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει"
 
-#: views/site.py:145
+#: views/site.py:153
 msgid "Invalid email address"
 msgstr "Μη έγκυρη διεύθυνση email"
 
-#: views/site.py:152
+#: views/site.py:160
 msgid "Client address unavailable"
 msgstr "Μη διαθέσιμη διεύθυνση IP πελάτη"
 
-#: views/site.py:159
+#: views/site.py:167
 msgid "There are too many requests from your address"
 msgstr "Υπεράριθμες αιτήσεις από τη διεύθυνση IP σας"
 
-#: views/site.py:165
+#: views/site.py:173
 msgid "There are too many emails registered from your address"
 msgstr "Υπεράριθμες διευθύσεις email από τη διεύθυνση IP σας"
 
-#: views/site.py:171
+#: views/site.py:179
 msgid "Cannot create demo users right now. Sorry."
 msgstr "Δεν είναι δυνατή η δημιουργία δοκιμαστικών χρηστών αυτή τη στιγμή."
 
-#: views/site.py:186
+#: views/site.py:194
 #, python-format
 msgid "An email with demo credentials has been sent to %s"
 msgstr "Ο δοκιμαστικός λογαριασμός σας έχει σταλεί στη διεύθυνση email %s"
+
+#~ msgid "Email body"
+#~ msgstr "Κείμενο μηνύματος email"
 
 #~ msgid "Zeus Elections - Results"
 #~ msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
