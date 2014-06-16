@@ -12,6 +12,7 @@ from django.core.context_processors import csrf
 from django.core.validators import validate_email
 from django.utils.html import mark_safe, escape
 from django.db.models import Q
+from django import forms
 
 from zeus.forms import ElectionForm
 from zeus import auth
@@ -78,13 +79,17 @@ def add(request, election, poll=None):
                                          max_num=100, formset=PollFormSet,
                                          can_delete=False)
     polls = Poll.objects.none()
-    form = polls_formset(request.POST, queryset=polls)
+    form = polls_formset(request.POST, queryset=polls, election=election)
     if form.is_valid():
         with transaction.commit_on_success():
             polls = form.save(election)
             for poll in polls:
                 poll.logger.info("Poll created")
-
+    else:
+        polls = Poll.objects.filter(election=election)
+        context = {'polls': polls, 'election': election, 'form': form}
+        set_menu('polls', context)
+        return render_template(request, "election_polls_list", context)
     url = election_reverse(election, 'polls_list')
     return HttpResponseRedirect(url)
 

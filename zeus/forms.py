@@ -491,9 +491,25 @@ class PollForm(forms.ModelForm):
     class Meta:
         model = Poll
         fields = ('name', )
-
+    
 
 class PollFormSet(BaseModelFormSet):
+
+    def __init__(self, *args, **kwargs):
+        self.election = kwargs.pop('election', None)
+        super(PollFormSet, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        forms_data = self.cleaned_data
+        for form_data in forms_data:
+            poll_name = form_data['name']
+            e = Election.objects.get(id=self.election.id)
+            election_polls = e.polls.all()
+            for poll in election_polls:
+                if poll_name == poll.name:
+                    message = _("Duplicate poll names are not allowed")
+                    raise forms.ValidationError(message)
+    
     def save(self, election, *args, **kwargs):
         instances = super(PollFormSet, self).save(*args, commit=False,
                                                   **kwargs)

@@ -7,6 +7,7 @@
   <form action="{% url election_polls_add election.uuid %}" method="post">
       {% csrf_token %}
       {{ form.as_p }}
+      {{form.non_form_errors}}
       <input type="submit" class="button small" value="{% trans "Save" %}" />
     </form>
 </div>
