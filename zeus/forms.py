@@ -501,7 +501,9 @@ class PollFormSet(BaseModelFormSet):
 
     def clean(self):
         forms_data = self.cleaned_data
+        form_poll_names = []
         for form_data in forms_data:
+            form_poll_names.append(form_data['name'])
             poll_name = form_data['name']
             e = Election.objects.get(id=self.election.id)
             election_polls = e.polls.all()
@@ -509,7 +511,10 @@ class PollFormSet(BaseModelFormSet):
                 if poll_name == poll.name:
                     message = _("Duplicate poll names are not allowed")
                     raise forms.ValidationError(message)
-    
+        if len(form_poll_names) > len(set(form_poll_names)):
+            message = _("Duplicate poll names are not allowed")
+            raise forms.ValidationError(message)
+            
     def save(self, election, *args, **kwargs):
         instances = super(PollFormSet, self).save(*args, commit=False,
                                                   **kwargs)
