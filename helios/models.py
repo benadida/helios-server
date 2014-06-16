@@ -670,6 +670,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   class Meta:
       ordering = ('created_at', )
+      unique_together = (('name', 'election'),)
 
   def __init__(self, *args, **kwargs):
       self._logger = None
