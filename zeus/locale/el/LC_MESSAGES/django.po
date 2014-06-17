@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-11 15:20+0300\n"
+"POT-Creation-Date: 2014-06-17 14:32+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -68,8 +68,8 @@ msgstr ""
 "Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
 "ελάχιστου αριθμού απαντήσεων"
 
-msgid "No duplicate answers allowed"
-msgstr "Δεν επιτρέπονται οι διπλότυπες απαντήσεις"
+msgid "No duplicate choices allowed"
+msgstr "Δεν επιτρέπονται διπλότυπες επιλογές στο ψηφοδέλτιο"
 
 msgid "Party name"
 msgstr "Όνομα συνδυασμού"
@@ -77,23 +77,23 @@ msgstr "Όνομα συνδυασμού"
 msgid "Scores"
 msgstr "Βαθμοί"
 
-msgid "Set the eligibles count of the election"
-msgstr "το πλήθος των εκλεγόμενων (6 ή 8 ανάλογα με το μέγεθος της σχολής)"
+msgid "set the eligibles count of the election"
+msgstr "το πλήθος των εκλεγόμενων"
 
 msgid "Eligibles count"
 msgstr "Πλήθος εκλεγόμενων"
 
-msgid "4009/2011 (A' 195)"
-msgstr ""
-"Επιλέξτε εάν εφαρμόζεται ο περιορισμός του τέταρτου εδαφίου τηςπερίπτωσης β΄ "
-"της παραγράφου 4 του άρθρου 8 του νόμου 4009/2011 (Α΄ 195) όπως ισχύει με "
-"την τροποποίηση του άρθρου 47 του ν. 4025/2011 (Α΄228)"
+msgid "enable limiting the elections from the same constituency"
+msgstr "ενεργοποίηση περιορισμού εκλεγόμενων από την ίδια περιφέρεια"
 
-msgid "Limit elected per department"
-msgstr "Περιορισμός εκλεγόμενων ανά τμήμα"
+msgid "Limit elected per constituency"
+msgstr "Περιορισμός εκλεγόμενων ανά περιφέρεια"
 
-msgid "Maximum number of elected per department"
-msgstr "Μέγιστον αριθμός εκλεγόμενων ανά τμήμα"
+msgid "maximum number of elected from the same constituency"
+msgstr "μέγιστος αριθμός εκλεγόμενων από την ίδια περιφέρεια"
+
+msgid "Constituency limit"
+msgstr "Όριο ανά περιφέρεια"
 
 msgid "This field is required."
 msgstr "Αυτό το πεδίο είναι απαραίτητο."
@@ -109,6 +109,9 @@ msgstr "Συνθηματικό"
 
 msgid "Invalid username or password"
 msgstr "Μη έγκυρος χρήστης ή συνθηματικό"
+
+msgid "Duplicate poll names are not allowed"
+msgstr "Δεν επιτρέπονται κάλπες με ίδιο όνομα"
 
 msgid "all voters"
 msgstr "σύνολο ψηφοφόρων"
@@ -363,8 +366,11 @@ msgstr "Δεν είναι δυνατή η δημιουργία δοκιμαστ�
 msgid "An email with demo credentials has been sent to %s"
 msgstr "Ο δοκιμαστικός λογαριασμός σας έχει σταλεί στη διεύθυνση email %s"
 
-#~ msgid "Has department limit"
-#~ msgstr "Τα εσωτερικά μέλη ανά σχολή δεν μπορούν να υπερβαίνουν τα δύο"
+#~ msgid "4009/2011 (A' 195)"
+#~ msgstr ""
+#~ "Επιλέξτε εάν εφαρμόζεται ο περιορισμός του τέταρτου εδαφίου τηςπερίπτωσης "
+#~ "β΄ της παραγράφου 4 του άρθρου 8 του νόμου 4009/2011 (Α΄ 195) όπως ισχύει "
+#~ "με την τροποποίηση του άρθρου 47 του ν. 4025/2011 (Α΄228)"
 
 #~ msgid "End: %s"
 #~ msgstr "Τέλος:"

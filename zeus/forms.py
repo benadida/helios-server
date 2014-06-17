@@ -293,7 +293,7 @@ class QuestionForm(QuestionBaseForm):
             if key.startswith('answer_'):
                 answer_list.append(self.cleaned_data[key])
         if len(answer_list) > len(set(answer_list)):
-            raise forms.ValidationError(_("No duplicate answers allowed"))
+            raise forms.ValidationError(_("No duplicate choices allowed"))
         return self.cleaned_data
 
 
@@ -315,7 +315,7 @@ class ScoresForm(QuestionBaseForm):
             if key.startswith('answer_'):
                 answer_list.append(self.cleaned_data[key])
         if len(answer_list) > len(set(answer_list)):
-            raise forms.ValidationError(_("No duplicate answers allowed"))
+            raise forms.ValidationError(_("No duplicate choices allowed"))
         return self.cleaned_data
 
 class CandidateWidget(MultiWidget):
@@ -384,14 +384,14 @@ class StvForm(QuestionBaseForm):
                                               widget=CandidateWidget(departments=DEPARTMENT_CHOICES),
                                               label=('Candidate'))
 
-        elig_help_text = _("Set the eligibles count of the election")
+        elig_help_text = _("set the eligibles count of the election")
         label_text = _("Eligibles count") 
         self.fields.insert(0, 'eligibles', forms.CharField(
                                                     label=label_text,
                                                     help_text=elig_help_text))
         widget=forms.CheckboxInput(attrs={'onclick':'enable_limit()'})
-        limit_help_text = _("4009/2011 (A' 195)")
-        limit_label = _("Limit elected per department") 
+        limit_help_text = _("enable limiting the elections from the same constituency")
+        limit_label = _("Limit elected per constituency") 
         self.fields.insert(1,'has_department_limit',
                             forms.BooleanField(
                                                 widget=widget,
@@ -399,8 +399,8 @@ class StvForm(QuestionBaseForm):
                                                 label = limit_label,
                                                 required=False))
         widget=forms.TextInput(attrs={'disabled': 'True'})
-        dep_lim_help_text = "department limit"
-        dep_lim_label = _("Maximum number of elected per department")
+        dep_lim_help_text = _("maximum number of elected from the same constituency")
+        dep_lim_label = _("Constituency limit")
         self.fields.insert(2, 'department_limit',
                             forms.CharField(
                                             help_text=dep_lim_help_text,
@@ -430,7 +430,7 @@ class StvForm(QuestionBaseForm):
             self.cleaned_data[field_key] = json.dumps(answer_lst)
 
         if len(candidates_list) > len(set(candidates_list)):
-            raise forms.ValidationError(_("No duplicate answers allowed"))
+            raise forms.ValidationError(_("No duplicate choices allowed"))
 
         return self.cleaned_data
 

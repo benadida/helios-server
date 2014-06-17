@@ -19,7 +19,7 @@
     {%trans "Eligibles count"%} : {{poll.eligibles_count}}
     <br/>
         {% if poll.has_department_limit %}
-            {%trans "Has department limit" %} : {{poll.department_limit}}
+            {%trans "Maximum elected from the same constituency" %} : {{poll.department_limit}}
         {% endif %}
 {% endif %}
     {% for q in poll.questions_data %}
