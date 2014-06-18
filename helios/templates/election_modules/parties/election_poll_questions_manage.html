@@ -11,7 +11,7 @@
   <dd class="add_new"><a href="#" style="color: green">
     <i class="general foundicon-plus"></i></a></dd>
   {% for form in formset %}
-  <dd class="{% if forloop.counter == 1 %}active{% endif %} hide-for-small"><a
+  <dd class="{% if forloop.counter == 1 %}active{% endif %}"><a
       href="#q{{ forloop.counter }}">
       {% trans module.question_title_message %} 
       {{ forloop.counter}}</a></dd>
