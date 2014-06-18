@@ -265,8 +265,9 @@ def voters_upload(request, election, poll):
                     error = _("Enter a valid email address. "
                               "<br />")
                     for email, line in invalid_emails:
-                        error += "<br />" + ": ".join((str(line),
-                                                     escape(email)))
+                        error += "<br />" + "line %d: %s " % (line,
+                            escape(email))
+
                     error = mark_safe(error)
             else:
                 error = _("No file uploaded")
