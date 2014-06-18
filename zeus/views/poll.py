@@ -72,8 +72,11 @@ def rename(request, election, poll):
 
 @auth.election_admin_required
 @auth.requires_election_features('can_add_poll')
-@require_http_methods(["POST"])
+@require_http_methods(["POST", "GET"])
 def add(request, election, poll=None):
+    if request.method == "GET":
+        url = election_reverse(election, 'polls_list')
+        return HttpResponseRedirect(url)
     extra = int(request.GET.get('extra', 2))
     polls_formset = modelformset_factory(Poll, PollForm, extra=extra,
                                          max_num=100, formset=PollFormSet,
