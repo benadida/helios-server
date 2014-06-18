@@ -244,8 +244,8 @@ but has been extended until {{ election.voting_extended_until }} (UTC).
 {% else %}
 {% if election.voting_ends_at %}
 <br />
-{% blocktrans %}
-This {{election.election_type}} is scheduled to end at {{election.voting_ends_at}} (UTC).
+{% blocktrans with pretty_type=election.pretty_type|title voting_ends_at=election.voting_ends_at|date:"d/m/Y H:i"|title%}
+This {{pretty_type}} is scheduled to end at {{voting_ends_at}} (UTC).
 {% endblocktrans %}
 {% else %}
 {% trans "This {{election.election_type}} ends at the administrator's discretion." %}
