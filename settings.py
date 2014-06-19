@@ -269,9 +269,19 @@ LOGGING = {
 }
 
 
+# default sms credentials
 ZEUS_SMS_API_USERNAME = ""
 ZEUS_SMS_API_PASSWORD = ""
 ZEUS_SMS_API_SENDER = "ZEUS"
+
+# per election uuid sms api credentials
+# '<election-uuid>': {
+#   'username': '<username>',
+#   'password': '<password>',
+#   'sender': '<sender>'
+# }
+ZEUS_SMS_API_CREDENTIALS = {}
+
 
 DEMO_MAX_ELECTIONS = 5
 DEMO_MAX_VOTERS = 5

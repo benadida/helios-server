@@ -275,11 +275,11 @@ def poll_compute_results(poll_id):
 @task(ignore_result=False)
 def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
                    dry=True):
-    voter = Voter.objects.get(pk=voter_id)
+    voter = Voter.objects.select_related().get(pk=voter_id)
     if not voter.voter_mobile and not override_mobile:
         raise Exception("Voter mobile field not set")
 
-    client = mobile.get_client()
+    client = mobile.get_client(voter.poll.election.uuid)
     message = ""
     context = Context({
         'voter': voter,

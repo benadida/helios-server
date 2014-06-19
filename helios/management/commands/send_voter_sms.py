@@ -8,8 +8,9 @@ from django.core.management.base import BaseCommand, CommandError
 
 from heliosauth.models import *
 from heliosauth.auth_systems.password import make_password
-from helios.models import Voter, csv_reader
+from helios.models import Voter, Poll, Election, csv_reader
 from zeus import utils
+from zeus import mobile as mobile_api
 
 from zeus.models import Institution
 from zeus import tasks
@@ -133,10 +134,14 @@ class Command(BaseCommand):
         tpl = tplfd.read()
         tplfd.close()
 
+        election = None
+
         if euuid:
             voters = voters.filter(poll__election__uuid=euuid)
+            election = Election.objects.get(uuid=euuid)
         if puuid:
             voters = voters.filter(poll__uuid=puuid)
+            election = Poll.objects.select_related().get(uuid=puuid).election
 
         if voter_id:
             voters = voters.filter(voter_login_id=voter_id)
@@ -188,6 +193,10 @@ class Command(BaseCommand):
                                            voter_id,
                                            email,
                                            csv_email))
+
+        if election:
+            print "Using SMS API credentials for user '%s'" % \
+                mobile_api.CREDENTIALS_DICT[election.uuid]['username']
 
         for voter in voters:
             if list:
