@@ -276,7 +276,7 @@ def poll_compute_results(poll_id):
 def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
                    dry=True):
     voter = Voter.objects.get(pk=voter_id)
-    if not voter.voter_mobile:
+    if not voter.voter_mobile and not override_mobile:
         raise Exception("Voter mobile field not set")
 
     client = mobile.get_client()
@@ -313,7 +313,7 @@ def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
         print "MESSAGE (%d) :" % len(message)
         print message
         print 10 * "-"
-        sent, error = True, "FAKE_ID"
+        sent, error_or_code = True, "FAKE_ID"
     else:
         # call to the API
         poll = voter.poll

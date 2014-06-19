@@ -20,7 +20,7 @@ class Loco(object):
 
     STATUS_MAP = {
         '0': 'Message in queue',
-        '1': 'Message Send (but still not knowing if delivered)',
+        '1': 'Message Send (delivery status unknown)',
         '2': 'Message Failed',
         '3': 'Message Delivered to Terminal',
         '4': 'Not sent'

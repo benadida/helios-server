@@ -43,7 +43,7 @@ from django.core.context_processors import csrf
 from helios.crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
 from helios import datatypes
-from helios import exceptions 
+from helios import exceptions
 from helios.datatypes.djangofield import LDObjectField
 from helios.byte_fields import ByteaField
 from helios.utils import force_utf8
@@ -1381,7 +1381,7 @@ class VoterFile(models.Model):
     for user in poll.election.admins.all():
         if user.user_id.startswith('demo_'):
             demo_user = True
-    
+
     nr = sum(e.voters.count() for e in user.elections.all())
     demo_voters += nr
     if demo_voters >= settings.DEMO_MAX_VOTERS and demo_user:
