@@ -36,7 +36,26 @@
 
     {% block extra-head %}{% endblock %}
     <script>
+    var init_form_unload_handler = function(){
+      window.FORM_DATA = null;
+      $(window).on('beforeunload',function(){
+        if (FORM_DATA !== $("form").serialize()){
+          if (!window.FORM_SUBMIT) {
+          return "{% trans "Form data have changed!" %}"
+            }
+          }
+        });
+     $(document).ready(function(){
+     window.FORM_DATA = $("form").serialize();
+    $("form").on("submit", function(){
+      window.FORM_SUBMIT = true;
+    });
+     });
+     }
       $(document).ready(function(){
+        if ($("form[data-protect=1]").length > 0) {
+            init_form_unload_handler();
+        }
         $(document).foundationCustomForms();
         $(document).foundationButtons();
         $(document).foundationTabs();
