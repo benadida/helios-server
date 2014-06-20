@@ -215,7 +215,7 @@ class Command(BaseCommand):
                     print "No SMS notification for %s" % (voter.zeus_string)
                     continue
 
-                res = task(voter.last_sms_code)
+                res = task(voter.last_sms_code, election.uuid)
                 print "%s: %s" % (voter.zeus_string, res)
                 continue
 

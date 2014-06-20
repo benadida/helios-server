@@ -337,6 +337,6 @@ def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
 
 
 @task(ignore_result=False)
-def check_sms_status(code):
-    client = mobile.get_client()
+def check_sms_status(code, election_uuid=None):
+    client = mobile.get_client(election_uuid)
     return client.status(code)
