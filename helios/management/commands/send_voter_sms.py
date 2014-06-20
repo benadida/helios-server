@@ -103,7 +103,7 @@ class Command(BaseCommand):
         list = options.get('list_voters')
         async = options.get('async')
         template = options.get('template')
-        send_to = options.get('send_to')
+        send_to_arg = options.get('send_to')
         resend = options.get('resend')
         status = options.get('status')
         voters_voted = options.get('voters_voted')
@@ -199,6 +199,7 @@ class Command(BaseCommand):
                 mobile_api.CREDENTIALS_DICT[election.uuid]['username']
 
         for voter in voters:
+            send_to = send_to_arg
             if list:
                 print voter.voter_email, voter.zeus_string
                 continue
