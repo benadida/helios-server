@@ -398,7 +398,7 @@ class StvForm(QuestionBaseForm):
                                                 help_text=limit_help_text,
                                                 label = limit_label,
                                                 required=False))
-        widget=forms.TextInput(attrs={'disabled': 'True'})
+        widget=forms.TextInput(attrs={'hidden': 'True'})
         dep_lim_help_text = _("maximum number of elected from the same constituency")
         dep_lim_label = _("Constituency limit")
         self.fields.insert(2, 'department_limit',
@@ -452,7 +452,7 @@ class StvForm(QuestionBaseForm):
         if self.cleaned_data.get('has_department_limit'):
             if not dep_limit:
                 raise forms.ValidationError(message)
-        if not dep_limit:
+        else:
             return 0
         try:
             dep_limit = int(dep_limit)
