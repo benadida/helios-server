@@ -732,8 +732,8 @@ def results_file(request, election, poll, ext):
 
     if request.GET.get('gen', None):
         poll.generate_result_docs()
-
-    fname = poll.get_result_file_path(name, ext)
+    lang = request.LANGUAGE_CODE
+    fname = poll.get_result_file_path(name, ext, lang=lang)
 
     if not os.path.exists(fname):
         raise Http404

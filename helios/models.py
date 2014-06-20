@@ -1186,53 +1186,58 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
             'candidates_selections': candidates_selections,
             'decoded_selections': decoded}
 
-  def get_result_file_path(self, name, ext):
+  def get_result_file_path(self, name, ext, lang=None):
     election = self.short_name
-    return os.path.join(RESULTS_PATH, '%s-%s-results.%s' % \
-                        (election, name ,ext))
-
+    if lang:
+        return os.path.join(RESULTS_PATH, '%s-%s-results-%s.%s' % \
+                            (election, name, lang, ext))
+    else:
+        return os.path.join(RESULTS_PATH, '%s-%s-results.%s' % \
+                            (election, name, ext))
+        
   def generate_result_docs(self):
     import json
     results_json = self.zeus.get_results()
-
+    
     # json file
     jsonfile = file(self.get_result_file_path('json', 'json'), 'w')
     json.dump(results_json, jsonfile)
     jsonfile.close()
 
-    # pdf report
-    if self.get_module().module_id =='score':
-        from zeus.reports import csv_from_score_polls
-        csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
-        csv_from_score_polls(self.election, [self], csvfile)
-        csvfile.close()
+    for lang in settings.LANGUAGES:
+        # pdf report
+        if self.get_module().module_id =='score':
+            from zeus.reports import csv_from_score_polls
+            csvfile = file(self.get_result_file_path('csv', 'csv', lang[0]), "w")
+            csv_from_score_polls(self.election, [self], csvfile)
+            csvfile.close()
 
-    elif self.get_module().module_id == 'stv':
-        from zeus.results_report import build_stv_doc
-        build_stv_doc(_(u'Results'), self.election.name,
-                  self.election.institution.name,
-                  self.election.voting_starts_at, self.election.voting_ends_at,
-                  self.election.voting_extended_until,
-                  [(self.name, json.dumps(results_json))],
-                  self.questions,
-                  self.election.communication_language,
-                  self.get_result_file_path('pdf', 'pdf'))
-    else:
-        from zeus.results_report import build_doc
-        results_name = self.election.name
-        build_doc(_(u'Results'), self.election.name,
-                  self.election.institution.name,
-                  self.election.voting_starts_at, self.election.voting_ends_at,
-                  self.election.voting_extended_until,
-                  [(self.name, json.dumps(results_json))],
-                  self.election.communication_language,
-                  self.get_result_file_path('pdf', 'pdf'))
+        elif self.get_module().module_id == 'stv':
+            from zeus.results_report import build_stv_doc
+            build_stv_doc(_(u'Results'), self.election.name,
+                    self.election.institution.name,
+                    self.election.voting_starts_at, self.election.voting_ends_at,
+                    self.election.voting_extended_until,
+                    [(self.name, json.dumps(results_json))],
+                    self.questions,
+                    lang,
+                    self.get_result_file_path('pdf', 'pdf', lang[0]))
+        else:
+            from zeus.results_report import build_doc
+            results_name = self.election.name
+            build_doc(_(u'Results'), self.election.name,
+                      self.election.institution.name,
+                      self.election.voting_starts_at, self.election.voting_ends_at,
+                      self.election.voting_extended_until,
+                      [(self.name, json.dumps(results_json))],
+                      lang,
+                      self.get_result_file_path('pdf', 'pdf'))
 
-        # CSV
-        from zeus.reports import csv_from_polls
-        csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
-        csv_from_polls(self.election, [self], csvfile)
-        csvfile.close()
+            # CSV
+            from zeus.reports import csv_from_polls
+            csvfile = file(self.get_result_file_path('csv', 'csv', lang[0]), "w")
+            csv_from_polls(self.election, [self], csvfile)
+            csvfile.close()
 
 
   def save(self, *args, **kwargs):
