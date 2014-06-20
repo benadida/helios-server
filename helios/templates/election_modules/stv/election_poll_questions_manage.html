@@ -36,6 +36,7 @@
   <input class="button" type="submit" value="{% trans "Save" %}" id="next_button" />
 </form>
 <script>
+/*
 window.onload = function(){
     
     checkbox = document.getElementById("id_form-0-has_department_limit")
@@ -60,6 +61,23 @@ function enable_limit(){
         elem.value = ""
     }
 }
+*/
+$(document).ready(function(){
+  var $checkbox = $("#id_form-0-has_department_limit")
+  function checkDepartmentLimit() {
+    var $elem = $("#id_form-0-department_limit");
+
+    if ($checkbox.is(":checked")) {
+      $elem.closest(".form-field").show();
+      $elem.focus();
+    } else {
+      $elem.closest(".form-field").hide();
+      $elem.val("");
+    }
+  }
+  checkDepartmentLimit();
+  $checkbox.click(checkDepartmentLimit);
+  });
 </script>
 
 <script>
