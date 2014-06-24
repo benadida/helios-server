@@ -1371,6 +1371,10 @@ def iter_voter_data(voter_data, email_validator=validate_email):
         return_dict['mobile'] = mobile
         yield return_dict
 
+        if len(voter_fields) > 6:
+            m = _("Invalid voter data at line %s") %line
+            raise ValidationError(m)
+
 
 class VoterFile(models.Model):
   """
