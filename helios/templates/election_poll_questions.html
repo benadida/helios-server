@@ -44,6 +44,12 @@
         {{ module.no_questions_added_message }}
     </span>
     {% endfor %}
+    {% if poll.questions_data.0.min_answers %}
+    <hr>
+    {% trans "Min answers" %} : {{ poll.questions_data.0.min_answers }}<br>
+    {% trans "Max answers" %} : {{ poll.questions_data.0.max_answers }}
+    {% endif %}
+    
 </div>
 <div style="text-align: right">
 {% if admin and poll.feature_can_manage_questions %}
