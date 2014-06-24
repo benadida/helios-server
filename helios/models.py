@@ -1451,9 +1451,10 @@ class VoterFile(models.Model):
       voter = None
       try:
           voter = Voter.objects.get(poll=poll, voter_login_id=voter_id)
+          m = _("Duplicate voter id")
+          raise exceptions.DuplicateVoterID(m) 
       except Voter.DoesNotExist:
           pass
-
       # create the voter
       if not voter:
         demo_voters += 1

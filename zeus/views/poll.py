@@ -216,7 +216,8 @@ def voters_upload(request, election, poll):
                 voter_file = VoterFile.objects.get(pk=voter_file_id)
                 try:
                     voter_file.process()
-                except exceptions.VoterLimitReached, e:
+                except (exceptions.VoterLimitReached, \
+                    exceptions.DuplicateVoterID) as e:
                     messages.error(request, e.message)
                     voter_file.delete()
                     url = poll_reverse(poll, 'voters')
