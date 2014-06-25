@@ -196,7 +196,7 @@ def voters_clear(request, election, poll):
     url = poll_reverse(poll, 'voters')
     return HttpResponseRedirect(url)
 
-@transaction.commit_on_success
+
 @auth.election_admin_required
 @auth.requires_poll_features('can_add_voter')
 @require_http_methods(["POST", "GET"])
