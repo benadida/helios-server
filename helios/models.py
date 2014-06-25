@@ -1451,7 +1451,8 @@ class VoterFile(models.Model):
       voter = None
       try:
           voter = Voter.objects.get(poll=poll, voter_login_id=voter_id)
-          m = _("Duplicate voter id")
+          m = _("Duplicate voter id"
+                " : %s"%voter_id)
           raise exceptions.DuplicateVoterID(m) 
       except Voter.DoesNotExist:
           pass
