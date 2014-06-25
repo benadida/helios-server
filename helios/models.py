@@ -1411,6 +1411,7 @@ class VoterFile(models.Model):
 
     return iter_voter_data(voter_data, email_validator=email_validator)
 
+  @transaction.commit_on_success
   def process(self):
     demo_voters = 0
     poll = self.poll
