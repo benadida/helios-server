@@ -1,4 +1,11 @@
-{% load i18n %}{% trans "Intended recipient" %}: {{voter.voter_surname}} {{voter.voter_name}},
+{% load i18n %}
+{% trans "Intended recipient" %}: {{voter.voter_surname}} {{voter.voter_name}},
+
+{% trans "Election Name" %} : {{election.name}}
+{% trans "Poll name" %} : {{voter.poll.name}}
+
+
+
 
 {{custom_message|safe}}
 
