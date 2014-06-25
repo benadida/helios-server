@@ -22,22 +22,22 @@
 <table class="elections">
   <thead>
     <th>
-      Όνομα
+        {% trans "Name" %}
     </th>
     <th>
-      Ίδρυμα
+        {% trans "Institution" %}
     </th>
     <th>
-      Διαχειριστής
+        {% trans "Administrator" %}
     </th>
     <th>
-      Δημιουργία
+        {% trans "Creation" %} 
     </th>
     <th>
-      Έναρξη
+        {% trans "Start" %} 
     </th>
     <th>
-      Λήξη
+        {% trans "End" %}
     </th>
     {% if not user.superadmin_p %}
     <th>
@@ -91,7 +91,11 @@
             {{ election.voting_starts_at }}
         </td>
         <td>
-            {{ election.voting_ends_at }}
+            {% if election.voting_extended_until %}
+                {{ election.voting_extended_until }}
+            {% else %}
+                {{ election.voting_ends_at }}
+            {% endif %}
         </td>
         <td class="{% if election.feature_canceled %}alert{% endif %}">
           {{ election.status_display }}
