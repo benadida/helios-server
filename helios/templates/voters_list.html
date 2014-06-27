@@ -123,31 +123,43 @@
 	<br/><br/>
 	<table class="table table-striped">
 	<tr>
-	{% if admin_p or not election.use_voter_aliases %}
+	{% if admin_p %}
 	<th>{% trans "Name" %}</th>
-	<th>{% trans "E-mail" %}</th>
-	{% endif %}
-
 	{% if election.use_voter_aliases %}
 	<th>{% trans "Alias" %}</th>
 	{% endif %}
+	<th>{% trans "E-mail" %}</th>
+	{% else %}
+	{% if election.use_voter_aliases %}
+	<th>{% trans "Alias" %}</th>
+	{% else %}
+	<th>{% trans "Name" %}</th>
+	{% endif %}
+  {% endif %}
 	<th>{% trans "Smart Ballot Tracker" %}</th>
 	</tr>
 	{% for voter in voters %}
 	<tr>
-	{% if admin_p or not election.use_voter_aliases %}
-	<td>
 	{% if admin_p %}
+	<td>
+
 	<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}"><i title="{% trans "Send email to this voter. This action will only be possible if the ballot is already frozen." %}" class="glyphicon glyphicon-envelope"></i></a>
 	<a href="{% url helios.views.voter_delete election.uuid, voter.uuid %}"><i data-name="{{voter.name}}" title="{% trans "Remove voter" %}" class="glyphicon glyphicon-remove remove_voter"></i></a>
-	{% endif %}
+
 	<!--<img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" />--> {{voter.name}}</td>
-	<td>{{voter.voter_email}}</td>
-	{% endif %}
 	{% if election.use_voter_aliases %}
 	<td>{{voter.alias}}</td>
 	{% endif %}
+	<td>{{voter.voter_email}}</td>
 	<td><em>{% if voter.vote_hash %}{{voter.vote_hash}}{% else %}&mdash;{% endif %}</em></td>
+  {% else %}
+	{% if election.use_voter_aliases %}
+	<td>{{voter.alias}}</td>
+	{% else %}
+	<td>{{voter.name}}</td>
+	{% endif %}
+	<td><em>{% if voter.vote_hash %}{{voter.vote_hash}}{% else %}&mdash;{% endif %}</em></td>
+	{% endif %} <!-- ifadmin -->
 	</tr>
 	{% endfor %}
 	</table>
