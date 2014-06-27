@@ -1,18 +1,18 @@
 # README - Versão em português
 
-*This README is intended for portuguese native speakers. If you are interested in the original one, see README.txt*
+*This README is intended for portuguese native speakers. If you are interested in the original one, from helios original project, see README.txt*
 
 
 Nesse tutorial descrevo alguns dos problemas enfrentados durante a customização desse projeto de modo geral, desde problemas de instalação e configuração, até algumas decisões de alteração.
 
 ** Para começar, leia o README.txt e o INSTALL.md **
 
-# Obtenção do código-fonte
+## Obtenção do código-fonte
 
 Você pode baixar um zip com o fonte, clonar o repositório ou fazer um fork. Se não está familiarizado com o Git, um bom lugar para começar é [por aqui](https://help.github.com/articles/set-up-git, "Set Up Git").
 
 
-# Configuração do ambiente de desenvolvimento
+## Configuração do ambiente de desenvolvimento
 
 No INSTALL.md, se orienta a configuração de ambiente virtual utilizando o virtualenv. Não é obrigatório, mas é uma boa prática para isolar o ambiente de desenvolvimento e não interferir em outros projetos na mesma máquina.
 
