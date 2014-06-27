@@ -321,7 +321,7 @@ SEND_TO_CHOICES = [
 class EmailVotersForm(forms.Form):
     subject = forms.CharField(label=_('Email subject'), max_length=80,
                               required=False)
-    body = forms.CharField(label=_('In place of BODY'), max_length=2000,
+    body = forms.CharField(label=_('In place of BODY'), max_length=30000,
                            widget=forms.Textarea, required=False)
     send_to = forms.ChoiceField(label=_("Send To"), initial="all",
                                 choices=SEND_TO_CHOICES)
