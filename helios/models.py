@@ -559,11 +559,11 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
         return 'FINISHED'
 
     def reprove_trustee(self, trustee):
-        public_key = trustee.public_key
-        pok = trustee.pok
-        self.zeus.reprove_trustee(public_key.y, [pok.commitment,
-                                                         pok.challenge,
-                                                         pok.response])
+        # public_key = trustee.public_key
+        # pok = trustee.pok
+        # self.zeus.reprove_trustee(public_key.y, [pok.commitment,
+        #                                                  pok.challenge,
+        #                                                  pok.response])
         self.logger.info("Trustee %r PK reproved", trustee.email)
 
         trustee.last_verified_key_at = datetime.datetime.now()
