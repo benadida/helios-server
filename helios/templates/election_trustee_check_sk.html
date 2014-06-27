@@ -3,6 +3,13 @@
 
 {% block content %}
 <script>
+
+function getURLParameter(name) {
+    return decodeURI(
+        (RegExp(name + '=' + '(.+?)(&|$)').exec(location.search)||[,null])[1]
+    );
+}
+
 function reset() {
     $('#processing').hide();
     $('#result').html("");
@@ -44,7 +51,9 @@ function check_sk(sk_value) {
         },
         "success": function() {
             alert("{% trans "Your trustee key has been verified!" %}");
-            window.location = '{% url logout %}';
+	    var redirect = getURLParameter('redirect') 
+            redirect = redirect && redirect != "null" ? redirect : '{% url logout %}';
+            window.location = redirect;
         }
       })
     } else {

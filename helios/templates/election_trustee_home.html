@@ -12,7 +12,7 @@
 <p>
 {% if trustee.public_key_hash %}
 {% trans "The public part of your trustee key has been successfully uploaded." %}<br />
-{% trans "Please," %}<a href="{% url election_trustee_check_sk election.uuid %}" id="check_sk_link">
+{% trans "Please," %}<a href="{% url election_trustee_check_sk election.uuid %}{% if election.any_poll_feature_can_partial_decrypt %}?redirect={% url election_trustee_home election.uuid %}{% endif %}" id="check_sk_link">
 {% trans "confirm you indeed possess the trustee key" %}</a>, {% trans "if you haven't." %}
 {% else %}
 <a href="{% url election_trustee_keygen election.uuid %}">{% trans "generate trustee key" %}</a>
