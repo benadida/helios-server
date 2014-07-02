@@ -91,3 +91,46 @@ Agora você pode rodar o servidor de desenvolvimento, distribuído com o django,
 Em outro terminal, coloque o celery para rodar. Essa parte é importante, pois é ele quem vai gravar os votos!
 
 `python manage.py celeryd`
+
+
+## Servidor de Produção
+
+O servidor descrito no tópico anterior é apenas para desenvolvimento, não deve ser usado em um ambiente de produção! 
+
+É possível trabalhar com diversos servidores web, porém no caso em questão optou-se pelo [Apache](https://docs.djangoproject.com/en/1.4/topics/install/#install-apache-and-mod-wsgi).
+
+
+--- Configuração apache ---
+
+sudo apt-get install apache2
+sudo apt-get install libapache2-mod-python
+
+-- instalação mod_wsgi --
+apt-get install libapache2-mod-wsgi
+
+-- ativar ssl --
+
+
+Para configurar o httpd.conf ou equivalente, siga as instruções em [How to use Django with Apache and mod_wsgi](https://docs.djangoproject.com/en/1.4/howto/deployment/wsgi/modwsgi/).
+
+
+A parte de servir os arquivos estáticos é a mais trabalhosa, mas também está descrita no tutorial acima. Essa configuração é necessária, porque no servidor de desenvolvimento, o django serve esses arquivos, porém, na produção, eles precisam ser configurados para serem servidos pelo servidor web.
+
+Os arquivos 'tradicionais' são os de css, javascript e imagens. Para coletar esses arquivos, você deve executar o comando collectstatic, conforme descrito em [Collect static app](https://docs.djangoproject.com/en/1.4/ref/contrib/staticfiles/).
+
+No caso do Helios em particular, há módulos sendo servido estaticamente (total ou parcial): o heliosbooth e o heliosverifier, os quais também precisam ser configurados.
+
+No estágio atual, optei por uma solução feia, mas simples e que atendia ao curto prazo disponível, que foi a de fazer um link simbólico dos arquivos desses módulos para o diretório no qual coletei os demais arquivos estáticos (sitestatic). E então configurei *alias* para eles na configuração do apache:
+
+Alias /booth /`<path_to_site>`/sitestatic
+
+Alias /verifier /`<path_to_site>`/sitestatic
+
+
+#### Alguns lembretes:
+
+
+LEMBRAR DE ALTERAR EM SETTINGS.PY A CONSTANTE DEBUG DE TRUE PRA FALSE!
+
+
+TROCAR [SECRET_KEY](https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY) - não usar a do repositório. Há ferramentas na web pra isso, como a disponível em [http://www.miniwebtool.com/django-secret-key-generator/](http://www.miniwebtool.com/django-secret-key-generator/)
