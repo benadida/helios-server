@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-17 14:32+0300\n"
+"POT-Creation-Date: 2014-07-02 16:32+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,6 +40,9 @@ msgstr ""
 
 msgid "Zeus Electronic Voting"
 msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
+
+msgid "Form data have changed!"
+msgstr "Τα στοιχεία της φόρμας έχουν τροποποιηθεί!"
 
 msgid "You are logged in as election administrator"
 msgstr "Είστε συνδεδεμένοι ως χειριστής εκλογών"
@@ -73,6 +76,24 @@ msgstr "Είσοδος Ψηφοφόρου"
 
 msgid "Your new password was set."
 msgstr "Ο νέος σας κωδικός έχει οριστεί."
+
+msgid "Name"
+msgstr "Όνομα"
+
+msgid "Institution"
+msgstr "Ίδρυμα"
+
+msgid "Administrator"
+msgstr "Διαχειριστής"
+
+msgid "Creation"
+msgstr "Δημιουργία"
+
+msgid "Start"
+msgstr "Έναρξη"
+
+msgid "End"
+msgstr "Λήξη"
 
 msgid "Election status"
 msgstr "Κατάσταση ψηφοφορίας"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-17 14:32+0300\n"
+"POT-Creation-Date: 2014-07-02 16:32+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,7 +46,8 @@ msgstr "Ο νέος κωδικός για τον χρήστη %(uid)s είναι
 msgid "You are not authorized to do this"
 msgstr "Δεν επιτρέπεται αυτή η ενέργεια"
 
-msgid "Institution $(inst_name)s deleted"
+#, fuzzy, python-format
+msgid "Institution %(inst_name)s deleted"
 msgstr "Το ίδρυμα %(inst_name)s διαγράφηκε"
 
 #, python-format

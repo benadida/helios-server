@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-17 14:32+0300\n"
+"POT-Creation-Date: 2014-07-02 16:32+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -235,6 +235,14 @@ msgstr ""
 #, python-format
 msgid "Malformed mobile phone number: %s"
 msgstr "Μη έγκυρος αριθμός τηλεφώνου: %s"
+
+#, python-format
+msgid "Invalid voter data at line %s"
+msgstr "Λανθασμένα στοιχεία ψηφοφόρου στην γραμμή"
+
+#, python-format
+msgid "Duplicate voter id : %s"
+msgstr "Διπλότυπο αναγνωριστικό χρήστη %s"
 
 msgid "Create trustee key"
 msgstr "Δημιουργία κωδικού ψηφοφορίας"
@@ -488,6 +496,12 @@ msgstr "Πλήθος εκλεγόμενων"
 
 msgid "Maximum elected from the same constituency"
 msgstr "Μέγιστος αριθμός εκλεγόμενων από την ίδια περιφέρεια"
+
+msgid "Min answers"
+msgstr "Ελάχιστος αριθμός επιλογών"
+
+msgid "Max answers"
+msgstr "Μέγιστος αριθμός επιλογών"
 
 msgid "Manage questions"
 msgstr "Διαχείριση ερωτήσεων"
