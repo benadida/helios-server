@@ -211,7 +211,9 @@ def voters_upload(request, election, poll):
             # launch the background task to parse that file
             voter_file_id = request.session.get('voter_file_id', None)
             if not voter_file_id:
-                raise Exception("Invalid voter file id")
+                messages.error(request, "Invalid voter file id")
+                url = poll_reverse(poll, 'voters')
+                return HttpResponseRedirect(url)
             try:
                 voter_file = VoterFile.objects.get(pk=voter_file_id)
                 try:
@@ -233,6 +235,8 @@ def voters_upload(request, election, poll):
             url = poll_reverse(poll, 'voters')
             return HttpResponseRedirect(url)
         else:
+            if 'voter_file_id' in request.session:
+                del request.session['voter_file_id']
             # we need to confirm
             voters = []
             error = None
