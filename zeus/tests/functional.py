@@ -2,7 +2,7 @@ import datetime
 import json
 from itertools import izip, chain
 from datetime import timedelta
-from django.test import TestCase
+from django.test import TransactionTestCase as TestCase
 from random import shuffle, sample, randint, choice
 
 from helios.crypto.elgamal import *
@@ -71,9 +71,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             IndexError,
             self.election_form_must_have_trustees,
             self.election_form)
-        '''
         if self.local_verbose:
             print "Election form without trustees was not accepted"
+        '''
 
         if self.election_type == 'stv':
 
@@ -170,7 +170,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         if self.local_verbose:
             print 'Polls were not created - duplicate poll names'
 
-    def create_random_polls(self):
+    def create_polls(self):
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
         e = Election.objects.all()[0]
@@ -209,7 +209,57 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         if self.local_verbose:
             print 'Questions were created'
 
-    def get_random_voters_file(self):
+    def submit_duplicate_id_voters_file(self):
+        counter = 0
+        voter_files = {}
+        for p_uuid in self.p_uuids:
+            fname = '/tmp/faulty_voters%s.csv' % counter
+            voter_files[p_uuid] = fname
+            fp = file(fname, 'w')
+            for i in range(1,self.voters_num+1):
+                voter = "1,voter%s@mail.com,test_name%s,test_surname%s\n"%(i,i,i)
+                fp.write(voter)
+            fp.close()
+            counter += 1
+        if self.local_verbose:
+            print 'Faulty voters file(duplicate ids) created'
+        for p_uuid in self.p_uuids:
+            upload_voters_location = '/elections/%s/polls/%s/voters/upload' %(self.e_uuid, p_uuid)
+            r = self.c.post(upload_voters_location, {'voters_file':file(voter_files[p_uuid])})
+            r = self.c.post(upload_voters_location, {'confirm_p': 1})
+            e = Election.objects.get(uuid=self.e_uuid)
+            nr_voters = e.voters.count()
+            self.assertEqual(nr_voters, 0)
+        if self.local_verbose:
+            print '..Voters from faulty file were not submitted'
+
+    def submit_wrong_field_number_voters_file(self):
+        counter = 0
+        voter_files = {}
+        for p_uuid in self.p_uuids:
+            fname = '/tmp/wrong_voters%s.csv' % counter
+            voter_files[p_uuid] = fname
+            fp = file(fname, 'w')
+            for i in range(1,self.voters_num+1):
+                voter = "%s,voter%s@mail.com,test_name%s,test_surname%s,fname,4444444444,lol\n"\
+                    %(i,i,i,i)
+                fp.write(voter)
+            fp.close()
+            counter += 1
+        if self.local_verbose:
+            print 'Faulty voters file(fields>6) created'
+        for p_uuid in self.p_uuids:
+            upload_voters_location = '/elections/%s/polls/%s/voters/upload' %(self.e_uuid, p_uuid)
+            r = self.c.post(upload_voters_location, {'voters_file':file(voter_files[p_uuid])})
+            r = self.c.post(upload_voters_location, {'confirm_p': 1})
+            self.assertEqual(r.status_code, 302)
+            e = Election.objects.get(uuid=self.e_uuid)
+            nr_voters = e.voters.count()
+            self.assertEqual(nr_voters, 0)
+        if self.local_verbose:
+            print '..Voters from faulty file were not submitted'
+
+    def get_voters_file(self):
         counter = 0
         voter_files = {}
         for p_uuid in self.p_uuids:
@@ -226,7 +276,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         return voter_files
 
     def submit_voters_file(self):
-        voter_files = self.get_random_voters_file()
+        voter_files = self.get_voters_file()
         for p_uuid in self.p_uuids:
             upload_voters_location = '/elections/%s/polls/%s/voters/upload' %(self.e_uuid, p_uuid)
             r = self.c.post(upload_voters_location, {'voters_file':file(voter_files[p_uuid])})
@@ -260,7 +310,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         r = self.single_voter_cast_ballot(voter_login_url, p_uuid)
         self.assertEqual(r.status_code, 403)
         if self.local_verbose:
-            print '...but was not allowed'
+            print '...but was not allowed-not frozen yet'
 
     def submit_vote_for_each_voter(self, voters_urls):
         for p_uuid in voters_urls:
@@ -360,7 +410,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.assertEqual(self.freeze_election(), None)
         pks = self.prepare_trustees(self.e_uuid)
         self.create_duplicate_polls()
-        self.create_random_polls()
+        self.create_polls()
+        self.submit_duplicate_id_voters_file()
+        self.submit_wrong_field_number_voters_file()
         self.submit_voters_file()
         self.submit_questions()
         self.voter_cannot_vote_before_freeze()
@@ -655,7 +707,6 @@ class TestSTVElection(TestElectionBase):
         post_data.update(extra_data) 
         # 1 is the number of max questions, used for assertion
         return post_data, 1, post_data_with_duplicate_answers
-
 
     def make_ballot(self, p_uuid):
         p = Poll.objects.get(uuid=p_uuid) 
