@@ -291,7 +291,7 @@ def inst_deletion_confirmed(request):
             inst.save()
             messages.success(
                 request,
-                (_("Institution $(inst_name)s deleted") %
+                (_("Institution %(inst_name)s deleted") %
                  {'inst_name': inst.name})
                 )
         else:
