@@ -16,8 +16,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if not args:
             now = datetime.datetime.now()
-            args = Election.objects.filter(voting_starts_at__lt=now, voting_ends_at__gt=now)
-            args = args.values_list('uuid', flat=True)
+            args = Election.objects.filter(
+                voting_starts_at__lt=now,
+                voting_ends_at__gt=now - datetime.timedelta(hours=48))
+
+            args = [e.uuid for e in args
+                    if e.polls.filter(result__isnull=True).count() > 0
+                    and e.institution.name not in ('HELPDESK', 'ZEUS-DEV')
+                    and e.voters.count() > 10]
 
         for uuid in args:
             try:
