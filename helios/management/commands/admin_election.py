@@ -44,7 +44,7 @@ class Command(BaseCommand):
         p(a.info['name'], a.user_id)
 
       pt("Trustees info")
-      for t in e.trustee_set.filter():
+      for t in e.trustees.filter():
         pt(t.name, 2)
         p("Name", t.name)
         p("Email", t.email)
@@ -55,7 +55,7 @@ class Command(BaseCommand):
 
       if len(args) > 1 and args[1] == "1":
         pt("Voters info")
-        for v in e.voter_set.all():
+        for v in e.voters.all():
           if "dispostable" in v.voter_email:
             p(v.voter_email, "http://www.dispostable.com/inbox/%s/" % v.voter_email.split("@")[0])
           else:
