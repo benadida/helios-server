@@ -15,5 +15,5 @@ class Command(BaseCommand):
         if args:
             polls = polls.filter(election__uuid=args[0])
 
-        for p in Poll.objects.all():
+        for p in polls:
             print p.uuid, p.short_name
