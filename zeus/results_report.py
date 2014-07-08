@@ -107,8 +107,8 @@ def make_intro(elements, styles, contents):
     elements.append(Spacer(1, 12))
 
 def make_totals(elements, styles, total_votes, blank_votes):
-    elements.append(Paragraph(escape('Total votes: %d' % total_votes), styles['Zeus']))
-    elements.append(Paragraph(escape('Blank: %d' % blank_votes), styles['Zeus']))
+    elements.append(Paragraph(escape(_('Total votes: %d') % total_votes), styles['Zeus']))
+    elements.append(Paragraph(escape(_('Blank: %d') % blank_votes), styles['Zeus']))
     elements.append(Spacer(1, 12))
 
 def make_party_list_heading(elements, styles, party, count):

@@ -50,24 +50,29 @@
 
 {% if module.pdf_result %}
 <br /><br />
-<a href="{% url election_poll_results_pdf election.uuid poll.uuid %}">Αποθήκευση αποτελεσμάτων (PDF)</a>
+<a href="{% url election_poll_results_pdf election.uuid poll.uuid %}">
+    {% trans "Save results" %} (PDF)</a>
 {% endif %}
 
 {% if module.csv_result %}
 <br /><br />
-<a href="{% url election_poll_results_csv election.uuid poll.uuid %}">Αποθήκευση αποτελεσμάτων (CSV)</a>
+<a href="{% url election_poll_results_csv election.uuid poll.uuid %}">
+    {% trans "Save results" %} (CSV)</a>
 {% endif %}
 
 {% if module.json_result %}
 <br /><br />
-<a href="{% url election_poll_results_json election.uuid poll.uuid %}">Αποθήκευση αποτελεσμάτων (JSON)</a>
+<a href="{% url election_poll_results_json election.uuid poll.uuid %}">
+    {% trans "Save results" %} (JSON)</a>
 {% endif %}
 
 <br /><br />
-<a href="{% url election_poll_zeus_proofs election.uuid poll.uuid %}">Αποθήκευση κρυπτογραφικών δεδομένων</a>
-{% endwith %}
+<a href="{% url election_poll_zeus_proofs election.uuid poll.uuid %}">
+    {% trans "Save proof data" %}</a>
+{% endwith %} 
 {% endif %}
 {% endblock %}
+
 
 
 
