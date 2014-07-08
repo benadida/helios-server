@@ -222,11 +222,11 @@ msgstr "Η ψηφοφορία αρχικοποιήθηκε."
 
 #: models.py:921
 msgid "Election candidates added."
-msgstr "Οι υποψήφιοι έχουν καταχωρηθεί."
+msgstr "Οι υποψήφιοι έχουν καταχωρισθεί."
 
 #: models.py:922
 msgid "Election voters added."
-msgstr "Οι εκλέκτορες ψηφοφόροι έχουν καταχωρηθεί."
+msgstr "Οι εκλέκτορες ψηφοφόροι έχουν καταχωρισθεί."
 
 #: models.py:923
 msgid "Trustees keys generated."
@@ -286,7 +286,7 @@ msgstr "Αποτελέσματα"
 #: models.py:1301
 msgid "There must be at least two fields, Registration ID and Email"
 msgstr ""
-"Πρέπει να υπάρχουν τουλάχιστον δύο πεδία, Αριθμός Καταχώρησης και Email"
+"Πρέπει να υπάρχουν τουλάχιστον δύο πεδία, Αριθμός Καταχώρισης και Email"
 
 #: models.py:1336
 #, python-format
@@ -583,7 +583,7 @@ msgstr "Αλλαγή κωδικού"
 
 #: templates/change_password.html:19
 msgid "Your new password was set."
-msgstr "Ο νέος κωδικός έχει καταχωρηθεί"
+msgstr "Ο νέος κωδικός έχει καταχωρισθεί"
 
 #: templates/change_password.html:26
 msgid "SAVE"
@@ -662,7 +662,7 @@ msgstr "Διαγραφή όλων των ψηφοφόρων"
 #: templates/election_poll_voters_list.html:65
 #: templates/election_poll_voters_upload_confirm.html:24
 msgid "Registration ID"
-msgstr "Αριθμός Καταχώρησης"
+msgstr "Αριθμός Καταχώρισης"
 
 #: templates/election_poll_voters_list.html:66
 #: templates/election_poll_voters_upload_confirm.html:25
@@ -757,9 +757,9 @@ msgid ""
 "voters\n"
 "    using 1, 2, 3, ..., etc."
 msgstr ""
-"Αριθμός καταχώρησης. Κάθε τέτοιος αριθμός αντιστοιχεί σε μία ψήφο.\n"
+"Αριθμός καταχώρισης. Κάθε τέτοιος αριθμός αντιστοιχεί σε μία ψήφο.\n"
 "    Η αρίθμηση δεν απαιτείται να είναι σειριακή.\n"
-"    Εάν δεν έχετε αριθμούς καταχώρησης ή δεν θέλετε να τους "
+"    Εάν δεν έχετε αριθμούς καταχώρισης ή δεν θέλετε να τους "
 "χρησιμοποιήσετε,\n"
 "    απλά απαριθμήστε τους ψηφοφόρους με 1, 2, 3, ..., κ.ο.κ."
 

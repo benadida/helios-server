@@ -240,7 +240,7 @@ msgstr ""
 "%(election_name)s\n"
 "%(poll_name)s\n"
 "\n"
-"H απόδειξη της καταχώρησης βρίσκεται συνημμένη στο παρόν μήνυμα.\n"
+"H απόδειξη της καταχώρισης βρίσκεται συνημμένη στο παρόν μήνυμα.\n"
 
 #: election_modules/__init__.py:36 election_modules/simple/__init__.py:16
 msgid "Simple election with one or more questions"
