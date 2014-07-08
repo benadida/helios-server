@@ -635,7 +635,7 @@ class ZeusDjangoElection(ZeusCoreElection):
                        b['candidates'][0][1] not in candidates:
                             empty_party_count += 1
                 data['candidates']['Χωρίς επιλογή'] = empty_party_count
-                parties.append(data)
+            parties.append(data)
 
         data = {'name': u'Λευκά',
                 'total': results.get('blank_count', 0)}
