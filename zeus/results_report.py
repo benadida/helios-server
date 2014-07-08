@@ -272,8 +272,7 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
 def build_doc(title, name, institution_name, voting_start, voting_end,
               extended_until, data, language, filename="election_results.pdf",
               new_page=True):
-
-    with translation.override(language):
+    with translation.override(language[0]):
         title = _('Results')
         DATE_FMT = "%d/%m/%Y %H:%S"
         if isinstance(voting_start, datetime.datetime):
