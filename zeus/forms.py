@@ -316,6 +316,9 @@ class ScoresForm(QuestionBaseForm):
                 answer_list.append(self.cleaned_data[key])
         if len(answer_list) > len(set(answer_list)):
             raise forms.ValidationError(_("No duplicate choices allowed"))
+        if (len(answer_list) != len(self.cleaned_data['scores'])):
+            m = _("Number of scores must be equal to number of answers")
+            raise forms.ValidationError(m)
         return self.cleaned_data
 
 class CandidateWidget(MultiWidget):
