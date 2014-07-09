@@ -25,8 +25,10 @@
 {% endif %}
     {% for q in poll.questions_data %}
     <h5>{{ q.question }} {% if q.question_subtitle %}({{ q.question_subtitle }}){% endif %}</h5>
-    {% trans "Min answers" %} : {{q.min_answers}}<br>
-    {% trans "Max answers" %} : {{q.max_answers}}<br>
+    {% if q.min_answers %}
+        {% trans "Min answers" %} : {{q.min_answers}}<br>
+        {% trans "Max answers" %} : {{q.max_answers}}<br>
+    {% endif %}
     <br>
     <ol>
       {% if q.answers_display %}
