@@ -600,9 +600,11 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
                                                          pok.response])
         self.logger.info("Trustee %r PK updated", trustee.email)
 
+    '''
     def get_results_file_path(self, ext):
         return os.path.join(RESULTS_PATH,
                             '%s-results.%s' % (self.short_name, ext))
+    '''
 
     def save(self, *args, **kwargs):
         if not self.uuid:
@@ -1186,7 +1188,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
             'candidates_selections': candidates_selections,
             'decoded_selections': decoded}
 
-       
+  '''
   def generate_result_docs(self):
     import json
     results_json = self.zeus.get_results()
@@ -1230,7 +1232,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
             csvfile = file(self.get_result_file_path('csv', 'csv', lang[0]), "w")
             csv_from_polls(self.election, [self], csvfile)
             csvfile.close()
-
+  '''
 
   def save(self, *args, **kwargs):
     if not self.uuid:
