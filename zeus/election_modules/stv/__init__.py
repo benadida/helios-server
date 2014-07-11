@@ -137,6 +137,18 @@ class StvElection(ElectionModuleBase):
         self.poll._init_questions(len(answers))
         self.poll.questions[0]['answers'] = answers
 
+    def generate_result_docs(self):
+        from zeus.results_report import build_stv_doc
+        build_stv_doc(_(u'Results'), self.election.name,
+                    self.election.institution.name,
+                    self.election.voting_starts_at, self.election.voting_ends_at,
+                    self.election.voting_extended_until,
+                    [(self.name, json.dumps(results_json))],
+                    self.questions,
+                    lang,
+                    self.get_result_file_path('pdf', 'pdf', lang[0]))
+
+
     def compute_results(self):
         cands_data = self.poll.questions_data[0]['answers']
         cands_count =  len(cands_data)
@@ -181,7 +193,9 @@ class StvElection(ElectionModuleBase):
         self.poll.save()
 
         # build docs
-        self.poll.generate_result_docs()
+        self.generate_json_file()
+        self.generate_csv_file()
+        self.generate_result_docs()
 
     def get_booth_template(self, request):
         raise NotImplemented

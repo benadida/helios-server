@@ -131,6 +131,10 @@ class ScoreBallotElection(ElectionModuleBase):
 
     def get_booth_template(self, request):
         raise NotImplemented
-
+    
     def compute_results(self):
-        self.poll.generate_result_docs()
+        self.generate_json_file()
+        self.generate_csv_file()
+
+
+

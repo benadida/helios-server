@@ -100,8 +100,21 @@ class SimpleElection(ElectionModuleBase):
             answers = answers + q_answers
         self.poll._init_questions(len(answers))
         self.poll.questions[0]['answers'] = answers
+    
+    def generate_result_docs(self):
+        from zeus.results_report import build_doc
+        results_name = self.election.name
+        build_doc(_(u'Results'), self.election.name,
+                      self.election.institution.name,
+                      self.election.voting_starts_at, self.election.voting_ends_at,
+                      self.election.voting_extended_until,
+                      [(self.name, json.dumps(results_json))],
+                      lang,
+                      self.get_result_file_path('pdf', 'pdf', lang[0]))
 
     def compute_results(self):
+        self.generate_json_file()
+        self.generate_csv_file()
         self.poll.generate_result_docs()
 
     def get_booth_template(self, request):

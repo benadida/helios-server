@@ -78,7 +78,20 @@ class PartiesListElection(ElectionModuleBase):
         tpl = 'election_modules/parties/election_poll_questions_manage'
         return render_template(request, tpl, context)
 
+    def generate_result_docs(self):
+        from zeus.results_report import build_doc
+        results_name = self.election.name
+        build_doc(_(u'Results'), self.election.name,
+                    self.election.institution.name,
+                    self.election.voting_starts_at, self.election.voting_ends_at,
+                    self.election.voting_extended_until,
+                    [(self.name, json.dumps(results_json))],
+                    lang,
+                    self.get_result_file_path('pdf', 'pdf', lang[0]))
+
     def compute_results(self):
+        self.generate_json_file()
+        self.generate_csv_file()
         self.poll.generate_result_docs()
 
     def get_booth_template(self, request):

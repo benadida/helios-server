@@ -1186,15 +1186,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
             'candidates_selections': candidates_selections,
             'decoded_selections': decoded}
 
-  def get_result_file_path(self, name, ext, lang=None):
-    election = self.short_name
-    if lang:
-        return os.path.join(RESULTS_PATH, '%s-%s-results-%s.%s' % \
-                            (election, name, lang, ext))
-    else:
-        return os.path.join(RESULTS_PATH, '%s-%s-results.%s' % \
-                            (election, name, ext))
-        
+       
   def generate_result_docs(self):
     import json
     results_json = self.zeus.get_results()
