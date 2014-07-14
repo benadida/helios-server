@@ -1,6 +1,11 @@
 import copy
+import json
+import os 
 
+from django.conf import settings 
 from django.utils.translation import ugettext_lazy as _
+
+from zeus.reports import csv_from_polls
 
 
 ELECTION_MODULES_CHOICES = []
@@ -91,7 +96,9 @@ class ElectionModuleBase(object):
         return data
 
     def get_result_file_path(self, name, ext, lang=None):
-        election = self.short_name
+        RESULTS_PATH = getattr(settings, 'ZEUS_RESULTS_PATH',\
+            os.path.join(settings.MEDIA_ROOT, 'results'))
+        election = self.election.short_name
         if lang:
             return os.path.join(RESULTS_PATH, '%s-%s-results-%s.%s' % \
                                 (election, name, lang, ext))
@@ -100,22 +107,19 @@ class ElectionModuleBase(object):
                                 (election, name, ext))
 
     def generate_json_file(self):
-        import json
         results_json = self.poll.zeus.get_results()
-        # json file
         jsonfile = file(self.get_result_file_path('json', 'json'), 'w')
         json.dump(results_json, jsonfile)
         jsonfile.close()
 
-    def generate_csv_file(self):
-        from zeus.reports import csv_from_polls
+    def generate_csv_file(self, lang):
         csvfile = file(self.get_result_file_path('csv', 'csv', lang[0]), "w")
-        csv_from_polls(self.election, [self], csvfile)
+        csv_from_polls(self.election, [self.poll], csvfile)
         csvfile.close()
 
     def generate_result_docs(self):
         raise NotImplemented
-   
+
 from zeus.election_modules.simple import *
 from zeus.election_modules.parties import *
 from zeus.election_modules.score import *
