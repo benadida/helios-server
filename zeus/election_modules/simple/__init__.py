@@ -1,7 +1,10 @@
+import json
+
 from django.utils.translation import ugettext_lazy as _
 from django.forms.formsets import formset_factory
 from django.forms import ValidationError
 from django.http import HttpResponseRedirect
+from django.conf import settings
 
 from zeus.election_modules import ElectionModuleBase, election_module
 from zeus.views.utils import set_menu
@@ -101,21 +104,24 @@ class SimpleElection(ElectionModuleBase):
         self.poll._init_questions(len(answers))
         self.poll.questions[0]['answers'] = answers
     
-    def generate_result_docs(self):
+    def generate_result_docs(self, lang):
         from zeus.results_report import build_doc
+        results_json = self.poll.zeus.get_results()
         results_name = self.election.name
         build_doc(_(u'Results'), self.election.name,
                       self.election.institution.name,
                       self.election.voting_starts_at, self.election.voting_ends_at,
                       self.election.voting_extended_until,
-                      [(self.name, json.dumps(results_json))],
+                      [(self.election.name, json.dumps(results_json))],
                       lang,
                       self.get_result_file_path('pdf', 'pdf', lang[0]))
 
     def compute_results(self):
         self.generate_json_file()
-        self.generate_csv_file()
-        self.poll.generate_result_docs()
+        for lang in settings.LANGUAGES:
+            print lang
+            self.generate_csv_file(lang)
+            self.generate_result_docs(lang)
 
     def get_booth_template(self, request):
         raise NotImplemented
