@@ -232,6 +232,10 @@ class QuestionBaseForm(forms.Form):
 
         self._answers = answers
 
+    def clean_question(self):
+        q = self.cleaned_data.get('question', '')
+        return q.replace(": ", ":\t")
+
 
 class QuestionForm(QuestionBaseForm):
     min_answers = forms.ChoiceField(label=_("Min answers"))
