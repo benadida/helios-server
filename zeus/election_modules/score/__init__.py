@@ -1,12 +1,16 @@
+import zipfile
+import os
+from itertools import izip_longest
+
 from django.utils.translation import ugettext_lazy as _
 from django.forms.formsets import formset_factory
 from django.http import HttpResponseRedirect
+from django.conf import settings
 
 from zeus.election_modules import ElectionModuleBase, election_module
 from zeus.views.utils import set_menu
 from helios.view_utils import render_template
 
-from itertools import izip_longest
 
 
 @election_module
@@ -134,7 +138,22 @@ class ScoreBallotElection(ElectionModuleBase):
     
     def compute_results(self):
         self.generate_json_file()
-        self.generate_csv_file()
+        for lang in settings.LANGUAGES:
+            self.generate_csv_file(lang)
 
+    def compute_election_results(self):
+        from zeus.reports import csv_from_score_polls
+        csvpath = self.get_result_file_path('csv', 'csv')
+        csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
+        csv_from_score_polls(self.election, self.election.polls.all(), csvfile)
+        csvfile.close()
+
+        zippath = self.get_result_file_path('zip', 'zip')
+        csvzip = zipfile.ZipFile(zippath, 'w')
+        for poll in self.election.polls.all():
+            csvpath = self.get_result_file_path('csv', 'csv')
+            basename = os.path.basename(csvpath)
+            csvzip.write(csvpath, basename)
+        csvzip.close()
 
 
