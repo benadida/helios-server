@@ -1,4 +1,5 @@
 import json
+import zipfile
 
 from django.utils.translation import ugettext_lazy as _
 from django.forms.formsets import formset_factory
@@ -122,6 +123,35 @@ class SimpleElection(ElectionModuleBase):
             print lang
             self.generate_csv_file(lang)
             self.generate_result_docs(lang)
+
+    def compute_election_results(self):
+        from zeus.results_report import build_doc
+        from zeus.reports import csv_from_polls
+        pdfpath = self.get_results_file_path('pdf')
+        polls_data = []
+
+        for poll in self.polls.filter():
+            polls_data.append((poll.name, poll.zeus.get_results()))
+
+        build_doc(_(u'Results'), self.name, self.institution.name,
+                self.voting_starts_at, self.voting_ends_at,
+                self.voting_extended_until,
+                polls_data,
+                self.communication_language,
+                pdfpath)
+        csvpath = self.get_results_file_path('csv')
+        csvfile = file(self.get_results_file_path('csv'), "w")
+        csv_from_polls(self, self.polls.all(), csvfile)
+        csvfile.close()
+        zippath = self.get_results_file_path('zip')
+        csvzip = zipfile.ZipFile(zippath, 'w')
+        for poll in self.polls.all():
+            csvpath = poll.get_result_file_path('csv', 'csv')
+            basename = os.path.basename(csvpath)
+            csvzip.write(csvpath, basename)
+        csvzip.close()
+
+
 
     def get_booth_template(self, request):
         raise NotImplemented
