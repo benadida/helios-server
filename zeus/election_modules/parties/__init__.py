@@ -1,4 +1,6 @@
 import json
+import zipfile
+import os
 
 from django.utils.translation import ugettext_lazy as _
 from django.forms.formsets import formset_factory
@@ -91,7 +93,22 @@ class PartiesListElection(ElectionModuleBase):
                     self.election.voting_extended_until,
                     [(self.election.name, json.dumps(results_json))],
                     lang,
-                    self.get_result_file_path('pdf', 'pdf', lang[0]))
+                    self.get_poll_result_file_path('pdf', 'pdf', lang[0]))
+
+    def generate_election_result_docs(self, lang):
+        from zeus.results_report import build_doc
+        pdfpath = self.get_election_result_file_path('pdf', 'pdf', lang[0])
+        polls_data = []
+
+        for poll in self.election.polls.filter():
+            polls_data.append((poll.name, poll.zeus.get_results()))
+
+        build_doc(_(u'Results'), self.election.name, self.election.institution.name,
+                self.election.voting_starts_at, self.election.voting_ends_at,
+                self.election.voting_extended_until,
+                polls_data,
+                lang,
+                pdfpath)
 
     def compute_results(self):
         self.generate_json_file()
@@ -100,32 +117,16 @@ class PartiesListElection(ElectionModuleBase):
             self.generate_result_docs(lang)
     
     def compute_election_results(self):
-        from zeus.results_report import build_doc
-        from zeus.reports import csv_from_polls
-        pdfpath = self.get_results_file_path('pdf')
-        polls_data = []
-
-        for poll in self.polls.filter():
-            polls_data.append((poll.name, poll.zeus.get_results()))
-
-        build_doc(_(u'Results'), self.name, self.institution.name,
-                self.voting_starts_at, self.voting_ends_at,
-                self.voting_extended_until,
-                polls_data,
-                self.communication_language,
-                pdfpath)
-        csvpath = self.get_results_file_path('csv')
-        csvfile = file(self.get_results_file_path('csv'), "w")
-        csv_from_polls(self, self.polls.all(), csvfile)
-        csvfile.close()
-        zippath = self.get_results_file_path('zip')
+        for lang in settings.LANGUAGES:
+            self.generate_election_csv_file(lang)   
+            self.generate_election_result_docs(lang)
+        zippath = self.get_election_result_file_path('zip', 'zip', lang[0])
         csvzip = zipfile.ZipFile(zippath, 'w')
-        for poll in self.polls.all():
-            csvpath = poll.get_result_file_path('csv', 'csv')
+        for poll in self.election.polls.all():
+            csvpath = self.get_election_result_file_path('csv', 'csv', lang[0])
             basename = os.path.basename(csvpath)
             csvzip.write(csvpath, basename)
         csvzip.close()
-
 
     def get_booth_template(self, request):
         raise NotImplemented
