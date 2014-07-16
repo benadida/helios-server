@@ -73,7 +73,7 @@ Para configurar o virtualenv, a [documentação oficial](http://virtualenv.readt
 
 Com o ambiente virtual ativado, instale os requisitos para a execução do helios:
 
-`pip install -r requirements.txt`
+`pip install -r requirements.txt`  *# Utilize o requirements.txt deste repositório, para instalar o pacote django-auth-ldap. Lembrando também que apesar de eu pretender manter este repositório atualizado com o do Ben Adida, não necessariamente vai ser simultâneo, então se você utilizar o dele, pode haver versões diferentes de pacotes.*
 
 Instalação do rabbitmq-server (https://www.rabbitmq.com/install-debian.html):
 
