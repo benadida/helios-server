@@ -95,29 +95,51 @@ class ElectionModuleBase(object):
             data.update(self.module_params)
         return data
 
-    def get_result_file_path(self, name, ext, lang=None):
+    def get_poll_result_file_path(self, name, ext, lang=None):
         RESULTS_PATH = getattr(settings, 'ZEUS_RESULTS_PATH',\
             os.path.join(settings.MEDIA_ROOT, 'results'))
         election = self.election.short_name
+        poll = self.poll.short_name
         if lang:
-            return os.path.join(RESULTS_PATH, '%s-%s-results-%s.%s' % \
-                                (election, name, lang, ext))
+            return os.path.join(RESULTS_PATH, '%s-%s-%s-results-%s.%s' % \
+                                (election, poll, name, lang, ext))
         else:
-            return os.path.join(RESULTS_PATH, '%s-%s-results.%s' % \
-                                (election, name, ext))
+            return os.path.join(RESULTS_PATH, '%s-%s-%s-results.%s' % \
+                                (election, poll, name, ext))
+
+    def get_election_result_file_path(self, name, ext, lang=None):
+            RESULTS_PATH = getattr(settings, 'ZEUS_RESULTS_PATH',\
+                os.path.join(settings.MEDIA_ROOT, 'results'))
+            election = self.election.short_name
+            if lang:
+                return os.path.join(RESULTS_PATH, '%s-%s-results-%s.%s' % \
+                                    (election, name, lang, ext))
+            else:
+                return os.path.join(RESULTS_PATH, '%s-%s-results.%s' % \
+                                    (election, name, ext))
 
     def generate_json_file(self):
         results_json = self.poll.zeus.get_results()
-        jsonfile = file(self.get_result_file_path('json', 'json'), 'w')
+        jsonfile = file(self.get_poll_result_file_path('json', 'json'), 'w')
         json.dump(results_json, jsonfile)
         jsonfile.close()
 
     def generate_csv_file(self, lang):
-        csvfile = file(self.get_result_file_path('csv', 'csv', lang[0]), "w")
+        csvfile = file(self.get_poll_result_file_path('csv', 'csv', lang[0]), "w")
         if self.module_id == "score":
             csv_from_score_polls(self.election, [self.poll], csvfile)
         else:
             csv_from_polls(self.election, [self.poll], csvfile)
+        csvfile.close()
+
+    def generate_election_csv_file(self, lang):
+        csvpath = self.get_election_result_file_path('csv', 'csv', lang[0])
+        csvfile = file(self.get_election_result_file_path('csv', 'csv', lang[0]), "w")
+        if self.module_id == "score":
+            csv_from_score_polls(self.election, self.election.polls.all(),\
+                csvfile)
+        else:
+            csv_from_polls(self.election, self.election.polls.all(), csvfile)
         csvfile.close()
 
     def generate_result_docs(self):
