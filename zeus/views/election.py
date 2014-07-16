@@ -275,8 +275,9 @@ def report(request, election, format):
 @auth.requires_election_features('polls_results_computed')
 @require_http_methods(["GET"])
 def results_file(request, election, ext='pdf', shortname=''):
-
-    fpath = election.get_results_file_path(ext)
+    el_module = election.get_module()
+    lang = request.LANGUAGE_CODE
+    fpath = el_module.get_election_result_file_path(ext, ext, lang=lang)
 
     if not os.path.exists(fpath):
         election.compute_results_status = 'pending'
