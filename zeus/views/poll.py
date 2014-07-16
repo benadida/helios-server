@@ -726,19 +726,23 @@ def results(request, election, poll):
 @require_http_methods(["GET"])
 def results_file(request, election, poll, ext):
     name = ext
-    el_module = election.get_module()
-    if not os.path.exists(m.get_result_file_path('csv', 'csv')):
-        if el_module.csv_result:
-            el_module.compute_results()
+    el_module = poll.get_module()
+    lang = request.LANGUAGE_CODE
 
-    if not os.path.exists(m.get_result_file_path('pdf', 'pdf')):
+    if not os.path.exists(el_module.get_poll_result_file_path('pdf', 'pdf',\
+        lang)):
         if el_module.pdf_result:
-            el_module.compute_results()
+            el_module.generate_result_docs((lang,lang))
+
+    if not os.path.exists(el_module.get_poll_result_file_path('csv', 'csv',\
+        lang)):
+        if el_module.csv_result:
+            el_module.generate_csv_file((lang, lang))
 
     if request.GET.get('gen', None):
         el_module.compute_results()
-    lang = request.LANGUAGE_CODE
-    fname = el_module.get_result_file_path(name, ext, lang=lang)
+
+    fname = el_module.get_poll_result_file_path(name, ext, lang=lang)
 
     if not os.path.exists(fname):
         raise Http404
