@@ -142,12 +142,8 @@ class ScoreBallotElection(ElectionModuleBase):
             self.generate_csv_file(lang)
 
     def compute_election_results(self):
-        from zeus.reports import csv_from_score_polls
-        csvpath = self.get_result_file_path('csv', 'csv')
-        csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
-        csv_from_score_polls(self.election, self.election.polls.all(), csvfile)
-        csvfile.close()
-
+        for lang in settings.LANGUAGES:
+            self.generate_election_csv_file(lang)   
         zippath = self.get_result_file_path('zip', 'zip')
         csvzip = zipfile.ZipFile(zippath, 'w')
         for poll in self.election.polls.all():
