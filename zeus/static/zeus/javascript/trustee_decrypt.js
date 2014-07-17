@@ -374,6 +374,7 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, progress_callbac
     // initialize the arrays
     var decryption_factors= [[]];
     var decryption_proofs= [[]];
+    var decrypted_count = 0;
     
     var computed = 0;
     var computed_perc = 0;
@@ -452,6 +453,7 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, progress_callbac
           var factor = new BigInt(result.factor, 10);
           decryption_factors[0][index] = factor;
           decryption_proofs[0][index] = proof;
+	  decrypted_count++;
           _worker_decrypt(worker, id);
           callback(result.time);
           //console.log("WORKER", id, "decrypted", index,".", decryption_factors[0].length, "decrypted so far", );
@@ -465,9 +467,8 @@ function decrypt_and_prove_tally(tally, public_key, secret_key, progress_callbac
     function _check_workers_finished() {
       var interval = undefined;
       var check = function() {
-        if (pending_indexes.length == 0){
-          if (decryption_factors[0].length == tally.tally[0].length &&
-              decryption_proofs[0].length == tally.tally[0].length) {
+        if (pending_indexes.length == 0) {
+          if (decrypted_count == tally.tally[0].length) {
               callback({
                   'decryption_factors': decryption_factors,
                   'decryption_proofs': decryption_proofs
