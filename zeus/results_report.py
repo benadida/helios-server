@@ -135,7 +135,7 @@ def make_results(elements, styles, total_votes, blank_votes,
             make_party_list_table(elements, styles, candidates_results[party])
 
 def build_stv_doc(title, name, institution_name, voting_start, voting_end,
-              extended_until, data, questions, language, filename="election_results.pdf", new_page=True):
+              extended_until, data, language, filename="election_results.pdf", new_page=True):
     with translation.override(language[0]):
         title = _('Results')
         DATE_FMT = "%d/%m/%Y %H:%S"
@@ -192,7 +192,8 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
         make_heading(elements, styles, [title, name, institution_name])
         make_intro(elements, styles, intro_contents)
 
-        for poll_name, poll_results in data:
+
+        for poll_name, poll_results, questions in data:
             poll_intro_contents = [
                 poll_name
             ]
@@ -210,7 +211,6 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
             elements.append(Spacer(1, 12))
             make_intro(elements, styles, intro_contents)
             elements.append(Spacer(1, 12))
-
             #make dict with indexing as key and name as value
             counter = 0
             indexed_cands = {}
@@ -218,8 +218,10 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
                 indexed_cands[str(counter)] = item
                 counter += 1
             elected = [[_('Elected')]]
-            json_data = json.loads(data[0][1])
-            for item in json_data[0]:
+            json_data = poll_results[0]
+            for item in json_data:
+                print item
+                print type(item)
                 elected.append([indexed_cands[item[0]]])
             t = Table(elected)
             my_table_style = TableStyle([('FONT', (0, 0), (-1, -1),'LinLibertine'),
@@ -237,7 +239,7 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
 
             table_header = [_('Candidate'), _('Votes'), _('Draw'), _('Action')]
 
-            stv = STVParser(json_data[2])
+            stv = STVParser(poll_results[2])
             rounds = list(stv.rounds())
 
             for num, round in rounds:
