@@ -220,8 +220,6 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
             elected = [[_('Elected')]]
             json_data = poll_results[0]
             for item in json_data:
-                print item
-                print type(item)
                 elected.append([indexed_cands[item[0]]])
             t = Table(elected)
             my_table_style = TableStyle([('FONT', (0, 0), (-1, -1),'LinLibertine'),
