@@ -9,7 +9,7 @@ from helios.crypto.elgamal import *
 from helios.views import ELGAMAL_PARAMS
 from zeus.core import to_relative_answers, gamma_encode, prove_encryption 
 from helios.models import *
-from zeus.tests.tests import SetUpAdminAndClientMixin
+from zeus.tests.utils import SetUpAdminAndClientMixin
 
 class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
