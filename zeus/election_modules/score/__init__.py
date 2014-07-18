@@ -143,11 +143,12 @@ class ScoreBallotElection(ElectionModuleBase):
 
     def compute_election_results(self):
         for lang in settings.LANGUAGES:
-            self.generate_election_csv_file(lang)   
-        zippath = self.get_result_file_path('zip', 'zip')
+            self.generate_election_csv_file(lang)
+
+        zippath = self.get_election_result_file_path('zip', 'zip', lang[0])
         csvzip = zipfile.ZipFile(zippath, 'w')
         for poll in self.election.polls.all():
-            csvpath = self.get_result_file_path('csv', 'csv')
+            csvpath = poll.get_module().get_poll_result_file_path('csv', 'csv', lang[0])
             basename = os.path.basename(csvpath)
             csvzip.write(csvpath, basename)
         csvzip.close()
