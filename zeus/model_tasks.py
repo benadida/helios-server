@@ -161,7 +161,7 @@ def task(name, required_features=(), is_recurrent=False, completed_cb=None,
                         setattr(self, error_field, error)
                         setattr(self, started_field, None)
                         setattr(self, status_field, 'pending')
-		                self.notify_task(name, 'error', error)
+                        self.notify_task(name, 'error', error)
                         self.notify_exception(e)
                         self.save()
         setattr(inner, '_task', True)
