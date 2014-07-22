@@ -621,10 +621,9 @@ class TestScoreElection(TestElectionBase):
 
     def create_questions(self):
         max_nr_answers = self.score_election_max_answers
-        nr_answers = randint(1, max_nr_answers)
+        nr_answers = randint(1, 9)
         available_scores = [x for x in range (1,10)]
-        nr_scores_selection = randint(1,9)
-        scores_list = sample(available_scores, nr_scores_selection)
+        scores_list = sample(available_scores, nr_answers)
         scores_list.sort()
         post_data = {'form-TOTAL_FORMS': 1,
                      'form-INITIAL_FORMS': 1,
