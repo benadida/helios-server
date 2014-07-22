@@ -127,9 +127,9 @@ class ElectionModuleBase(object):
     def generate_csv_file(self, lang):
         csvfile = file(self.get_poll_result_file_path('csv', 'csv', lang[0]), "w")
         if self.module_id == "score":
-            csv_from_score_polls(self.election, [self.poll], csvfile)
+            csv_from_score_polls(self.election, [self.poll], lang[0], csvfile)
         else:
-            csv_from_polls(self.election, [self.poll], csvfile)
+            csv_from_polls(self.election, [self.poll], lang[0], csvfile)
         csvfile.close()
 
     def generate_election_csv_file(self, lang):

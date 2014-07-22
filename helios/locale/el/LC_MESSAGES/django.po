@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-08 17:46+0300\n"
+"POT-Creation-Date: 2014-07-22 13:58+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -225,9 +225,6 @@ msgstr "ΟΧΙ"
 msgid "(EXCLUDED)"
 msgstr "(ΕΞΑΙΡΕΣΗ)"
 
-msgid "Results"
-msgstr "Αποτελέσματα"
-
 msgid "There must be at least two fields, Registration ID and Email"
 msgstr ""
 "Πρέπει να υπάρχουν τουλάχιστον δύο πεδία, Αριθμός Καταχώρησης και Email"
@@ -313,6 +310,9 @@ msgstr "Αριθμός κάλπεων"
 
 msgid "Voters"
 msgstr "Ψηφοφόροι"
+
+msgid "Results"
+msgstr "Αποτελέσματα"
 
 msgid "Add new poll"
 msgstr "Προσθήκη νέας κάλπης"
