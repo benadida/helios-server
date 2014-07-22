@@ -1,8 +1,10 @@
+import os
 import datetime
 import json
 from itertools import izip, chain
 from datetime import timedelta
 from django.test import TransactionTestCase as TestCase
+from django.conf import settings
 from random import shuffle, sample, randint, choice
 
 from helios.crypto.elgamal import *
@@ -32,7 +34,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
                                        'test%x@mail.com' %x]) for x in range(0,trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number = 2
+        self.polls_number = 1 
         # set the number of max questions for simple election
         self.simple_election_max_questions_number = 2
         # set the number of max answers for each question of simple election
@@ -44,7 +46,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         # set the number of max answers in party election
         self.party_election_max_answers_number = 3
         # set the number of max candidates in stv election
-        self.stv_election_max_answers_number = 3 
+        self.stv_election_max_answers_number = 3
         start_time = datetime.datetime.now()
         end_time = datetime.datetime.now() + timedelta(hours=2)
         date1 = datetime.datetime.now() + timedelta(hours=48)
@@ -405,6 +407,26 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             if self.local_verbose:
                 print 'Results are generated for poll'
 
+    def check_docs_exist(self, ext_dict):
+        e_exts = ext_dict['el']
+        p_exts = ext_dict['poll']
+        e = Election.objects.get(uuid=self.e_uuid)
+        el_module = e.get_module()
+        poll_modules = [poll.get_module() for poll in e.polls.all() ]
+        for lang in settings.LANGUAGES:
+            for ext in p_exts:
+                for p_module in poll_modules:
+                    path = p_module.get_poll_result_file_path(ext, ext, lang[0])
+                    if ext == 'json':
+                        path = p_module.get_poll_result_file_path(ext, ext)
+                    self.assertTrue(os.path.exists(path))
+            for ext in e_exts:
+                e_path = el_module.get_election_result_file_path(ext,\
+                    ext, lang[0])
+                self.assertTrue(os.path.exists(e_path))
+        if self.local_verbose:
+            print 'Docs were generated'
+
     def election_proccess(self):
         self.admin_can_submit_election_form()
         self.assertEqual(self.freeze_election(), None)
@@ -429,12 +451,17 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.assertTrue(e.feature_mixing_finished)
         self.decrypt_with_trustees(pks)
         self.check_results()
+        self.check_docs_exist(self.doc_exts)
         if self.local_verbose:
             print self.celebration
 
 class TestSimpleElection(TestElectionBase):
 
     def setUp(self):
+        self.doc_exts = {
+            'poll': ['pdf', 'csv', 'json'],
+            'el': ['pdf', 'csv']
+            }
         super(TestSimpleElection, self).setUp()
         self.election_type = 'simple'
         if self.local_verbose:
@@ -512,6 +539,10 @@ class TestPartyElection(TestElectionBase):
     def setUp(self):
         super(TestPartyElection, self).setUp()
         self.election_type = 'parties'
+        self.doc_exts = {
+            'poll': ['pdf', 'csv', 'json'],
+            'el': ['pdf', 'csv']
+            }
         if self.local_verbose:
             print '* Starting party election *'
 
@@ -615,6 +646,10 @@ class TestScoreElection(TestElectionBase):
 
     def setUp(self):
         super(TestScoreElection, self).setUp()
+        self.doc_exts = {
+            'poll': ['csv', 'json'],
+            'el': ['csv']
+            }
         self.election_type = 'score'
         if self.local_verbose:
             print '* Starting score election *'
@@ -663,6 +698,10 @@ class TestSTVElection(TestElectionBase):
     def setUp(self):
         super(TestSTVElection, self).setUp()
         self.election_type = 'stv'
+        self.doc_exts = {
+            'poll': ['pdf', 'csv', 'json'],
+            'el': ['pdf', 'csv']
+            }
         # make departments for stv election
         departments = ''
         for i in range(0, randint(2, 10)):
