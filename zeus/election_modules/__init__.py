@@ -137,9 +137,10 @@ class ElectionModuleBase(object):
         csvfile = file(self.get_election_result_file_path('csv', 'csv', lang[0]), "w")
         if self.module_id == "score":
             csv_from_score_polls(self.election, self.election.polls.all(),\
-                csvfile)
+                lang[0], csvfile)
         else:
-            csv_from_polls(self.election, self.election.polls.all(), csvfile)
+            csv_from_polls(self.election, self.election.polls.all(),\
+                lang[0], csvfile)
         csvfile.close()
 
     def generate_result_docs(self):

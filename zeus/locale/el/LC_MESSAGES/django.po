@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-22 13:58+0300\n"
+"POT-Creation-Date: 2014-07-22 14:51+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -235,22 +235,25 @@ msgid "RESULTS"
 msgstr "ΑΠΟΤΕΛΕΣΜΑΤΑ ΓΕΝΙΚΑ"
 
 msgid "TOTAL VOTES"
-msgstr "ΣΥΝΟΛΟ"
+msgstr "ΣΥΝΟΛΟ ΨΗΦΩΝ"
 
 msgid "VALID VOTES"
-msgstr "ΕΓΚΥΡΑ"
+msgstr "ΕΓΚΥΡΟΙ ΨΗΦΟΙ"
 
 msgid "INVALID VOTES"
-msgstr "ΑΚΥΡΑ"
+msgstr "ΑΚΥΡΟΙ ΨΗΦΟΙ"
 
 msgid "BLANK VOTES"
-msgstr "ΛΕΥΚΑ"
+msgstr "ΛΕΥΚΟΙ ΨΗΦΟΙ"
 
 msgid "PARTY RESULTS"
 msgstr "ΑΠΟΤΕΛΕΣΜΑΤΑ ΣΥΝΔΥΑΣΜΩΝ"
 
 msgid "CANDIDATE RESULTS"
 msgstr "ΑΠΟΤΕΛΕΣΜΑΤΑ ΥΠΟΨΗΦΙΩΝ"
+
+msgid "BALLOTS"
+msgstr "ΨΗΦΟΔΕΛΤΙΑ ΑΝΑΛΥΤΙΚΑ"
 
 msgid "ID"
 msgstr "Α/Α"
@@ -263,9 +266,6 @@ msgstr "ΥΠΟΨΗΦΙΟΣ"
 
 msgid "VALID/INVALID/BLANK"
 msgstr "ΕΓΚΥΡΟ/ΑΚΥΡΟ/ΛΕΥΚΟ"
-
-msgid "TOTAL"
-msgstr "ΣΥΝΟΛΟ"
 
 msgid "VALID"
 msgstr "ΕΓΚΥΡΟ"
@@ -285,17 +285,12 @@ msgstr "ΒΑΘΜΟΛΟΓΙΕΣ ΑΝΑΛΥΤΙΚΑ"
 msgid "SCORES:"
 msgstr "ΒΑΘΜΟΛΟΓΙΕΣ:"
 
-msgid "BALLOTS"
-msgstr "ΨΗΦΟΔΕΛΤΙΑ ΑΝΑΛΥΤΙΚΑ"
-
 msgid "Zeus Elections - Poll Results"
 msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
 
-#, python-format
 msgid "Total votes: %d"
 msgstr "Σύνολο ψηφοδελτίων: %d"
 
-#, python-format
 msgid "Blank: %d"
 msgstr "Λευκά: %d"
 
@@ -445,6 +440,9 @@ msgstr "Δεν είναι δυνατή η δημιουργία δοκιμαστ�
 #, python-format
 msgid "An email with demo credentials has been sent to %s"
 msgstr "Ο δοκιμαστικός λογαριασμός σας έχει σταλεί στη διεύθυνση email %s"
+
+#~ msgid "TOTAL"
+#~ msgstr "ΣΥΝΟΛΟ"
 
 #~ msgid "4009/2011 (A' 195)"
 #~ msgstr ""
