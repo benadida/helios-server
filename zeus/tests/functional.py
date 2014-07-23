@@ -9,7 +9,7 @@ from random import shuffle, sample, randint, choice
 
 from helios.crypto.elgamal import *
 from helios.views import ELGAMAL_PARAMS
-from zeus.core import to_relative_answers, gamma_encode, prove_encryption 
+from zeus.core import to_relative_answers, gamma_encode, prove_encryption
 from helios.models import *
 from zeus.tests.utils import SetUpAdminAndClientMixin
 
@@ -21,20 +21,20 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.celebration =(
        " _________ ___  __\n"
        "|\   __  \|\  \|\  \\\n"
-       "\ \  \ \  \ \  \/  /_\n"   
+       "\ \  \ \  \ \  \/  /_\n"
        " \ \  \ \  \ \   ___ \\\n"
        "  \ \  \_\  \ \  \\\ \ \\ \n"
        "   \ \_______\ \__\\\ \_\\\n"
        "    \|_______|\|__| \|_|\n")
-                                           
+
         # set the voters number that will be produced for test
-        self.voters_num = 2 
+        self.voters_num = 2
         # set the trustees number that will be produced for the test
         trustees_num = 1
         trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
                                        'test%x@mail.com' %x]) for x in range(0,trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number = 1 
+        self.polls_number = 1
         # set the number of max questions for simple election
         self.simple_election_max_questions_number = 2
         # set the number of max answers for each question of simple election
@@ -67,7 +67,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                               }
 
     def admin_can_submit_election_form(self):
-        self.election_form['election_module'] = self.election_type 
+        self.election_form['election_module'] = self.election_type
         '''
         self.assertRaises(
             IndexError,
@@ -88,13 +88,13 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 print 'STV election form was not submited without departments'
             self.election_form['departments'] = self.departments
         self.c.post(self.locations['login'], self.login_data)
-        r = self.c.post(self.locations['create'], self.election_form, follow=True) 
+        r = self.c.post(self.locations['create'], self.election_form, follow=True)
         e = Election.objects.all()[0]
         self.e_uuid = e.uuid
         self.assertIsInstance(e, Election)
         if self.local_verbose:
             print 'Admin posted election form'
-    
+
     '''
     election can have 0 trustees
     def election_form_must_have_trustees(self, post_data):
@@ -102,14 +102,14 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         r = self.c.get(self.locations['login'], self.login_data)
         print r.status_code
         self.election_form['election_module'] = self.election_type
-        self.c.post(self.locations['create'], self.election_form, follow=True) 
+        self.c.post(self.locations['create'], self.election_form, follow=True)
         e = Election.objects.all()[0]
     '''
     def stv_election_form_must_have_departments(self, post_data):
         post_data['departments'] = ''
         self.c.get(self.locations['login'], self.login_data)
         self.election_form['election_module'] = self.election_type
-        r = self.c.post(self.locations['create'], self.election_form, follow=True) 
+        r = self.c.post(self.locations['create'], self.election_form, follow=True)
         e = Election.objects.all()[0]
 
     def prepare_trustees(self,e_uuid):
@@ -122,13 +122,13 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 r = self.c.get(login_url)
                 self.assertEqual(r.status_code, 302)
                 t1_kp = ELGAMAL_PARAMS.generate_keypair()
-                pk = algs.EGPublicKey.from_dict(dict(p=t1_kp.pk.p, 
+                pk = algs.EGPublicKey.from_dict(dict(p=t1_kp.pk.p,
                                                      q=t1_kp.pk.q,
                                                      g=t1_kp.pk.g,
                                                      y=t1_kp.pk.y))
                 pok = t1_kp.sk.prove_sk(DLog_challenge_generator)
                 post_data = {
-                             'public_key_json':[json.dumps({'public_key': pk.toJSONDict(), 
+                             'public_key_json':[json.dumps({'public_key': pk.toJSONDict(),
                              'pok': {'challenge': pok.challenge,
                              'commitment': pok.commitment,
                              'response': pok.response}})]}
@@ -185,13 +185,13 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                     }
         for i in range(0, self.polls_number):
             post_data['form-%s-name'% i] = 'test_poll%s' % i
-        
+
         self.c.post(location, post_data)
         e = Election.objects.all()[0]
         self.assertEqual(e.polls.all().count(), self.polls_number)
         if self.local_verbose:
             print 'Polls were created'
-        self.p_uuids = [] 
+        self.p_uuids = []
         for poll in e.polls.all():
             self.p_uuids.append(poll.uuid)
 
@@ -444,7 +444,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         e = Election.objects.get(uuid=self.e_uuid)
         e.voting_starts_at = datetime.datetime.now()
         e.save()
-        voters_urls = self.get_voters_urls() 
+        voters_urls = self.get_voters_urls()
         self.submit_vote_for_each_voter(voters_urls)
         self.close_election()
         e = Election.objects.get(uuid=self.e_uuid)
@@ -471,7 +471,7 @@ class TestSimpleElection(TestElectionBase):
         max_nr_questions = self.simple_election_max_questions_number
         max_nr_answers = self.simple_election_max_answers_number
         nr_questions = randint(1, max_nr_questions)
-        
+
         post_data = {'form-TOTAL_FORMS': nr_questions,
                      'form-INITIAL_FORMS': 1,
                      'form-MAX_NUM_FORMS': "",
@@ -499,7 +499,7 @@ class TestSimpleElection(TestElectionBase):
                 #make sure we have at least 2 answers so there can be duplicate
                 duplicate_extra_data['form-%s-answer_%s'%(num, ans_num+1)] = 'test answer 0'
             post_data_with_duplicate_answers.update(duplicate_extra_data)
-            post_data.update(extra_data) 
+            post_data.update(extra_data)
         return post_data, nr_questions, post_data_with_duplicate_answers
 
     def make_ballot(self, p_uuid):
@@ -523,7 +523,7 @@ class TestSimpleElection(TestElectionBase):
                 answer = random.choice(valid_indexes)
                 valid_indexes.remove(answer)
                 qchoice.append(answer)
-            '''                                       
+            '''
             qchoice = sorted(qchoice)
             choices += qchoice
             # inc index to the next question
@@ -577,7 +577,7 @@ class TestPartyElection(TestElectionBase):
                 duplicate_extra_data['form-%s-answer_%s'%(num, ans_num+1)] = \
                     'testanswer 0-0'
             post_data_with_duplicate_answers.update(duplicate_extra_data)
-            post_data.update(extra_data) 
+            post_data.update(extra_data)
         return post_data, nr_questions, post_data_with_duplicate_answers
 
     def make_ballot(self, p_uuid):
@@ -608,7 +608,7 @@ class TestPartyElection(TestElectionBase):
                     answer = random.choice(valid_indexes)
                     valid_indexes.remove(answer)
                     qchoice.append(answer)
-                '''                                       
+                '''
             qchoice = sorted(qchoice)
             choices += qchoice
             # inc index to the next question
@@ -669,7 +669,7 @@ class TestScoreElection(TestElectionBase):
                      }
         post_data_with_duplicate_answers = post_data.copy()
         extra_data = {}
-        duplicate_extra_data = {} 
+        duplicate_extra_data = {}
 
         for num in range(0, nr_answers):
             extra_data['form-0-answer_%s'%num] = 'test answer %s'%num
@@ -724,7 +724,7 @@ class TestSTVElection(TestElectionBase):
             }
         post_data_with_duplicate_answers = post_data.copy()
         e = Election.objects.get(uuid=self.e_uuid)
-        departments = e.departments.split('\n') 
+        departments = e.departments.split('\n')
         extra_data = {}
         duplicate_extra_data = {}
 
@@ -732,7 +732,7 @@ class TestSTVElection(TestElectionBase):
             extra_data['form-0-answer_%s_0'%i] = 'test candidate %s'%i
             dep_choice = choice(departments)
             extra_data['form-0-answer_%s_1'%i] = dep_choice
-            duplicate_extra_data['form-0-answer_%s_0'%i] = 'test candidate 0' 
+            duplicate_extra_data['form-0-answer_%s_0'%i] = 'test candidate 0'
             duplicate_extra_data['form-0-answer_%s_1'%i] = dep_choice
             duplicate_extra_data['form-0-answer_%s_0'%(i+1)] = 'test candidate 0'
             duplicate_extra_data['form-0-answer_%s_1'%(i+1)] = dep_choice
@@ -742,12 +742,12 @@ class TestSTVElection(TestElectionBase):
             post_data['form-0-has_department_limit'] = 'on'
             post_data['form-0-department_limit'] = 2
         post_data_with_duplicate_answers.update(duplicate_extra_data)
-        post_data.update(extra_data) 
+        post_data.update(extra_data)
         # 1 is the number of max questions, used for assertion
         return post_data, 1, post_data_with_duplicate_answers
 
     def make_ballot(self, p_uuid):
-        p = Poll.objects.get(uuid=p_uuid) 
+        p = Poll.objects.get(uuid=p_uuid)
         nr_candidates = len(p.questions[0]['answers'])
         indexed_candidates = [x for x in range(0, nr_candidates)]
         nr_selection = randint(0, nr_candidates)
