@@ -44,7 +44,7 @@ Election closed at <em>{{ date }}</em>. Waiting for results.
       <li><b>{% trans "Election support phone" %}: </b>{{ election.help_phone }}</li>
   </ul>
 </div>
-<div class="columns seven election-actions">
+<div class="columns seven election-actions" data-status="{{election.status_display}}">
 {% if admin %}
 {% include "_election_admin_actions.html" %}
 {% endif %}
