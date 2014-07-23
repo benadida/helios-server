@@ -170,11 +170,11 @@ def task(name, required_features=(), is_recurrent=False, completed_cb=None,
                     self.save()
                     transaction.commit()
                 except Exception, e:
+                    error = str(e)
                     self.notify_task(name, 'error', error)
                     self.notify_exception(e)
                     transaction.rollback()
                     with transaction.commit_on_success():
-                        error = str(e)
                         setattr(self, error_field, error)
                         setattr(self, started_field, None)
                         setattr(self, status_field, 'pending')
