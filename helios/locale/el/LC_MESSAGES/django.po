@@ -235,7 +235,7 @@ msgstr "Μη έγκυρος αριθμός τηλεφώνου: %s"
 
 #, python-format
 msgid "Invalid voter data at line %s"
-msgstr "Λανθασμένα στοιχεία ψηφοφόρου στην γραμμή"
+msgstr "Λανθασμένα στοιχεία ψηφοφόρου στην γραμμή %s"
 
 #, python-format
 msgid "Duplicate voter id : %s"
