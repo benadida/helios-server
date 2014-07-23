@@ -189,3 +189,40 @@ def demo(request):
                 email_address, client_address, demo_user.user_id))
     send_mail(mail_subject, mail_body, mail_from, [email_address])
     return HttpResponseRedirect(reverse('home'))
+
+
+def error(request, code=None, message=None, type='error'):
+    user = request.zeususer
+    messages_len = len(messages.get_messages(request))
+    if not messages_len and not message:
+        return HttpResponseRedirect(reverse('home'))
+
+    response = render_template(request, "zeus/error", {
+        'code': code,
+        'error_message': message,
+        'error_type': type,
+        'user': user,
+    })
+    response.status_code = int(code)
+    return response
+
+
+
+def handler403(request):
+    msg = _("You do not have permission to access this page.")
+    return error(request, 403, msg)
+
+
+def handler500(request):
+    msg = _("An error has been occured. Please notify the server admin.")
+    return error(request, 500, msg)
+
+
+def handler400(request):
+    msg = _("An error has been occured. Please notify the server admin.")
+    return error(request, 400, msg)
+
+
+def handler404(request):
+    msg = _("The requested page was not found.")
+    return error(request, 404 , msg)

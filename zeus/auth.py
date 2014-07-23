@@ -10,6 +10,7 @@ from django.http import HttpResponseRedirect
 from helios.models import Election, Poll, Trustee, Voter
 from heliosauth.models import User
 
+from zeus.views.site import error as error_view
 from zeus.log import init_election_logger, init_poll_logger, _locals
 
 import logging
@@ -134,7 +135,7 @@ def unauthenticated_user_required(func):
     @wraps(func)
     def wrapper(request, *args, **kwargs):
         if request.zeususer.is_authenticated():
-            raise PermissionDenied("Please logout to access this view")
+            return error_view(request, 403, "Please logout to access this view")
         return func(request, *args, **kwargs)
     return wrapper
 

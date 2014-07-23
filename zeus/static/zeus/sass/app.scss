@@ -32,6 +32,13 @@ body {
         &.error { background-color: $alertColor }
     }
   }
+  .error-code {
+    font-size: 0.8em;
+    float: right;
+    color: #aaa;
+    margin-top: 10px;
+    display: block;
+  }
 
   background-color: #0A212F;
   #progress_div {

@@ -54,4 +54,7 @@ if getattr(settings, 'DEBUG', False):
 
     urlpatterns += static_urls
 
-handler403 = 'zeus.handler403.handler'
+handler500 = 'zeus.views.site.handler500'
+handler400 = 'zeus.views.site.handler400'
+handler403 = 'zeus.views.site.handler403'
+handler404 = 'zeus.views.site.handler404'

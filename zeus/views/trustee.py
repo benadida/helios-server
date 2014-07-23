@@ -5,6 +5,7 @@ import datetime
 from django.conf.urls.defaults import *
 from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
+from django.utils.translation import ugettext_lazy as _
 from django.contrib import messages
 
 from zeus.forms import ElectionForm
@@ -27,7 +28,6 @@ logger = logging.getLogger()
 
 
 @auth.election_view(check_access=False)
-@auth.unauthenticated_user_required
 @auth.requires_election_features('trustee_can_login')
 @require_http_methods(['GET'])
 def login(request, election, trustee_email, trustee_secret):
@@ -38,12 +38,18 @@ def login(request, election, trustee_email, trustee_secret):
 
     if trustee_secret == trustee.secret:
         user = auth.ZeusUser(trustee)
+        if request.zeususer.is_authenticated() and (
+                not request.zeususer.is_trustee or \
+                    request.zeususer._user.pk != trustee.pk):
+            messages.error(request,
+                           _("You need to logout from your current account "
+                             "to access this view."))
+            return HttpResponseRedirect(reverse('error', kwargs={'code': 403}))
+
         user.authenticate(request)
         election.logger.info("Trustee %r logged in", trustee.email)
         return HttpResponseRedirect(reverse('election_trustee_home',
                                             args=[election.uuid]))
-    raise PermissionDenied()
-
 
 @auth.trustee_view
 @auth.requires_election_features('trustee_can_generate_key')

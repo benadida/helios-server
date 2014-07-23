@@ -7,6 +7,7 @@ urlpatterns = patterns('zeus.views.site',
     url(r'^faqs/trustee/$', 'faqs_trustee', name='faqs_trustee'),
     url(r'^resources/$', 'resources', name='site_resources'),
     url(r'^stats/$', 'stats', name='site_stats'),
-    url(r'^demo$', 'demo', name='site_demo')
+    url(r'^demo$', 'demo', name='site_demo'),
+    url(r'^error/(?P<code>[0-9]+)$', 'error', name='error')
 )
 
