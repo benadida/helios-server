@@ -427,6 +427,16 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         if self.local_verbose:
             print 'Docs were generated'
 
+    def view_returns_poll_proofs_file(self, client, e_uuid, p_uuid):
+        address = '/elections/%s/polls/%s/proofs.zip' % \
+            (e_uuid, p_uuid)
+        r = client.get(address)
+        response_data = dict(r.items())
+        print response_data
+        print address
+        self.assertTrue(response_data['Content-Type'] == \
+                        'application/zip')
+
     def view_returns_result_files(self, ext_dict):
         p_exts = ext_dict['poll']
         e_exts = ext_dict['el']
@@ -435,6 +445,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         e = Election.objects.get(uuid=self.e_uuid)
         for lang in settings.LANGUAGES:
             for poll in e.polls.all():
+                self.view_returns_poll_proofs_file(self.c, e.uuid, poll.uuid)
                 for ext in p_exts:
                     if ext is not 'json':
                         address = '/elections/%s/polls/%s/results-%s.%s' % \
@@ -443,16 +454,18 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                         address = '/elections/%s/polls/%s/results.%s' % \
                             (self.e_uuid, poll.uuid, ext)
                     r = self.c.get(address)
-                    request_data = dict(r.items())
-                    self.assertTrue(request_data['Content-Type'] == \
+                    response_data = dict(r.items())
+                    self.assertTrue(response_data['Content-Type'] == \
                         'application/%s' % ext)
             for ext in e_exts:
                 address = '/elections/%s/results/%s-%s.%s' % \
                     (e.uuid, e.short_name, lang[0], ext)
                 r = self.c.get(address)
-                request_data = dict(r.items())
-                self.assertTrue(request_data['Content-Type'] == \
+                response_data = dict(r.items())
+                self.assertTrue(response_data['Content-Type'] == \
                         'application/%s' % ext)
+        if self.local_verbose:
+            print 'Requested downloadable content is available'
 
     def election_proccess(self):
         self.admin_can_submit_election_form()
