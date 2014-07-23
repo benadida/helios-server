@@ -30,7 +30,9 @@
 <a href="{% url election_csv_results election.uuid election.short_name %}">Save results (CSV)</a>
 <br /><br />
 {% endcomment %}
+{% if election.get_module.module_id != 'stv' %}
 <a href="{% url election_zip_results election.uuid election.short_name %}">Save results (ZIP)</a>
+{% endif%}
 <br /><br />
 {% endif %}
 </div>
