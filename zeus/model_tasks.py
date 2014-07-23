@@ -1,4 +1,5 @@
 import os
+import new
 import datetime
 import json
 import zipfile
@@ -69,6 +70,18 @@ def task_fields(task):
     def feat_error(self):
         return bool(getattr(self, error_field))
 
+    def reset(self):
+        self.logger.info("Resetting '%s' task state from '%s'." % \
+                         (task_name, getattr(self, status_field)))
+        setattr(self, status_field, 'pending')
+        setattr(self, started_field, None)
+        setattr(self, finished_field, None)
+        # Do not reset the error field. The error message might eventualy
+        # help in task debugging.
+        #setattr(self, error_field, '')
+        self.save()
+
+
     key = task._features_key
     extra_fields['_feature_can_%s' % task_name] = \
             feature(key, 'can_%s' % task_name)(feat_can)
@@ -80,6 +93,8 @@ def task_fields(task):
             feature(key, '%s_running' % task_name)(feat_running)
     extra_fields['_feature_%s_error' % task_name] = \
             feature(key, '%s_error' % task_name)(feat_error)
+
+    extra_fields['%s_reset' % task_name] = reset
     return extra_fields
 
 
