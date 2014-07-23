@@ -274,9 +274,10 @@ def report(request, election, format):
 @auth.election_admin_required
 @auth.requires_election_features('polls_results_computed')
 @require_http_methods(["GET"])
-def results_file(request, election, ext='pdf', shortname=''):
+def results_file(request, election, ext='pdf', shortname='',
+                 language=settings.LANGUAGE_CODE):
     el_module = election.get_module()
-    lang = request.LANGUAGE_CODE
+    lang = language
     fpath = el_module.get_election_result_file_path(ext, ext, lang=lang)
 
     if not os.path.exists(fpath):

@@ -22,16 +22,15 @@
 {% trans "Cancel election" as label %}
 {% reveal_action label "#cancel-admin-action" cls="alert cancel-election" %}
 {% endif %}
-
 {% if election.feature_compute_results_finished %}
-<a href="{% url election_pdf_results election.uuid election.short_name %}">Save results (PDF)</a>
+<a href="{% url election_pdf_results election.uuid election.short_name LANGUAGE_CODE %}">Save results (PDF)</a>
 <br /><br />
 {% comment %}
-<a href="{% url election_csv_results election.uuid election.short_name %}">Save results (CSV)</a>
+<a href="{% url election_csv_results election.uuid election.short_name LANGUAGE_CODE%}">Save results (CSV)</a>
 <br /><br />
 {% endcomment %}
 {% if election.get_module.module_id != 'stv' %}
-<a href="{% url election_zip_results election.uuid election.short_name %}">Save results (ZIP)</a>
+<a href="{% url election_zip_results election.uuid election.short_name LANGUAGE_CODE%}">Save results (ZIP)</a>
 {% endif%}
 <br /><br />
 {% endif %}

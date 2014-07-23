@@ -724,10 +724,10 @@ def results(request, election, poll):
 @auth.election_admin_required
 @auth.requires_poll_features('compute_results_finished')
 @require_http_methods(["GET"])
-def results_file(request, election, poll, ext):
+def results_file(request, election, poll, language, ext):
+    lang = language
     name = ext
     el_module = poll.get_module()
-    lang = request.LANGUAGE_CODE
 
     if not os.path.exists(el_module.get_poll_result_file_path('pdf', 'pdf',\
         lang)):

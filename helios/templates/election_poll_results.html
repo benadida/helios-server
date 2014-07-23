@@ -50,13 +50,13 @@
 
 {% if module.pdf_result %}
 <br /><br />
-<a href="{% url election_poll_results_pdf election.uuid poll.uuid %}">
+<a href="{% url election_poll_results_pdf election.uuid poll.uuid LANGUAGE_CODE %}">
     {% trans "Save results" %} (PDF)</a>
 {% endif %}
 
 {% if module.csv_result %}
 <br /><br />
-<a href="{% url election_poll_results_csv election.uuid poll.uuid %}">
+<a href="{% url election_poll_results_csv election.uuid poll.uuid LANGUAGE_CODE %}">
     {% trans "Save results" %} (CSV)</a>
 {% endif %}
 
