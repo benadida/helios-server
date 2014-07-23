@@ -512,6 +512,14 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
     except Voter.DoesNotExist:
         raise PermissionDenied("Invalid election")
 
+    if request.zeususer.is_authenticated() and (
+            not request.zeususer.is_voter or \
+                request.zeususer._user.pk != voter.pk):
+        messages.error(request,
+                        _("You need to logout from your current account "
+                            "to access this view."))
+        return HttpResponseRedirect(reverse('error', kwargs={'code': 403}))
+
     if voter.voter_password == unicode(voter_secret):
         user = auth.ZeusUser(voter)
         user.authenticate(request)
