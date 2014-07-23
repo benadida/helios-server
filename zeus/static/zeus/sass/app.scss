@@ -45,7 +45,7 @@ body {
     margin-top: 30px; 
   }
   #progress_div .tabs a { font-size: 12px; }
-  .extra-election-actions { margin-top: 10px; span{ float: none !important;}}
+  .extra-election-actions { display: block; margin-top: 10px; span{ float: none !important;}}
   #cast_form {
     .required-to-cast { float: left; }
     .submit { display: none; }

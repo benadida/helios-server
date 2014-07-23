@@ -18,12 +18,12 @@
     <link rel="stylesheet" href="/static/zeus/stylesheets/ui-lightness/jquery-ui-1.8.23.custom.css">
     <script src="/static/zeus/javascripts/foundation/modernizr.foundation.js"></script>
     <script src="/static/zeus/javascripts/foundation/jquery.js"></script>
-    <link href='https://fonts.googleapis.com/css?family=Didact+Gothic&subset=latin,greek' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Didact+Gothic&amp;subset=latin,greek' rel='stylesheet' type='text/css'>
 
     {% block css %}
     {% endblock %}
 
-    <script language="javascript" src="/static/zeus/javascripts/jquery.json.min.js"></script>
+    <script src="/static/zeus/javascripts/jquery.json.min.js"></script>
     <script src="/static/zeus/javascripts/foundation/jquery.foundation.reveal.js"></script>
     <script src="/static/zeus/javascripts/foundation/jquery.foundation.forms.js"></script>
     <script src="/static/zeus/javascripts/foundation/jquery.foundation.buttons.js"></script>
@@ -75,7 +75,7 @@
                 {% else %}
                 <a href="{% url home %}">
                     {% endif %}
-                    <img src="{{ THEME_HEADER_BG_URL }}" />
+                    <img src="{{ THEME_HEADER_BG_URL }}" alt="Zeus logo"/>
             </a>
             <div id="banner">
                 <div class="lang-menu">
@@ -118,7 +118,7 @@
         <div class="columns twelve">
           <span style="float:right;">
             {% if settings.FOOTER_LOGO %}
-            <img src="/static/footer-logo.gif" />
+            <img src="/static/footer-logo.gif" alt="Zeus logo" />
             {% endif %}
           </span>
           {% if user and user.is_admin %}
@@ -152,7 +152,6 @@
           <br />
           {% endif %}
     </div>
-</div>
     </div>
     </div>
     {% block reveals %}

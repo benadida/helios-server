@@ -1,4 +1,5 @@
 {% load i18n %}
+<dt></dt>
 {% if poll and voter %}
 <dd class="{% if menu_active == "election" %}active{% endif %}"><a 
   href="{% url election_poll_index election.uuid poll.uuid %}">

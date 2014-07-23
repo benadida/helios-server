@@ -5088,6 +5088,7 @@ body #progress_div .tabs a {
   font-size: 12px;
 }
 body .extra-election-actions {
+  display: block;
   margin-top: 10px;
 }
 body .extra-election-actions span {
