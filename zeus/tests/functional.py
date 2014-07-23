@@ -34,7 +34,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
                                        'test%x@mail.com' %x]) for x in range(0,trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number = 1
+        self.polls_number = 2 
         # set the number of max questions for simple election
         self.simple_election_max_questions_number = 2
         # set the number of max answers for each question of simple election
@@ -427,6 +427,33 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         if self.local_verbose:
             print 'Docs were generated'
 
+    def view_returns_result_files(self, ext_dict):
+        p_exts = ext_dict['poll']
+        e_exts = ext_dict['el']
+        self.c.get(self.locations['logout'])
+        self.c.post(self.locations['login'], self.login_data)
+        e = Election.objects.get(uuid=self.e_uuid)
+        for lang in settings.LANGUAGES:
+            for poll in e.polls.all():
+                for ext in p_exts:
+                    if ext is not 'json':
+                        address = '/elections/%s/polls/%s/results-%s.%s' % \
+                            (self.e_uuid, poll.uuid,lang[0], ext)
+                    else:
+                        address = '/elections/%s/polls/%s/results.%s' % \
+                            (self.e_uuid, poll.uuid, ext)
+                    r = self.c.get(address)
+                    request_data = dict(r.items())
+                    self.assertTrue(request_data['Content-Type'] == \
+                        'application/%s' % ext)
+            for ext in e_exts:
+                address = '/elections/%s/results/%s-%s.%s' % \
+                    (e.uuid, e.short_name, lang[0], ext)
+                r = self.c.get(address)
+                request_data = dict(r.items())
+                self.assertTrue(request_data['Content-Type'] == \
+                        'application/%s' % ext)
+
     def election_proccess(self):
         self.admin_can_submit_election_form()
         self.assertEqual(self.freeze_election(), None)
@@ -452,6 +479,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.decrypt_with_trustees(pks)
         self.check_results()
         self.check_docs_exist(self.doc_exts)
+        self.view_returns_result_files(self.doc_exts)
         if self.local_verbose:
             print self.celebration
 
@@ -460,7 +488,7 @@ class TestSimpleElection(TestElectionBase):
     def setUp(self):
         self.doc_exts = {
             'poll': ['pdf', 'csv', 'json'],
-            'el': ['pdf', 'csv']
+            'el': ['pdf', 'csv', 'zip']
             }
         super(TestSimpleElection, self).setUp()
         self.election_type = 'simple'
@@ -541,7 +569,7 @@ class TestPartyElection(TestElectionBase):
         self.election_type = 'parties'
         self.doc_exts = {
             'poll': ['pdf', 'csv', 'json'],
-            'el': ['pdf', 'csv']
+            'el': ['pdf', 'csv', 'zip']
             }
         if self.local_verbose:
             print '* Starting party election *'
@@ -648,7 +676,7 @@ class TestScoreElection(TestElectionBase):
         super(TestScoreElection, self).setUp()
         self.doc_exts = {
             'poll': ['csv', 'json'],
-            'el': ['csv']
+            'el': ['csv', 'zip']
             }
         self.election_type = 'score'
         if self.local_verbose:
@@ -699,8 +727,8 @@ class TestSTVElection(TestElectionBase):
         super(TestSTVElection, self).setUp()
         self.election_type = 'stv'
         self.doc_exts = {
-            'poll': ['pdf', 'csv', 'json'],
-            'el': ['pdf', 'csv']
+            'poll': ['pdf', 'json'],
+            'el': ['pdf']
             }
         # make departments for stv election
         departments = ''
