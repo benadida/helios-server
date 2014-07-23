@@ -27,7 +27,7 @@ app_patterns += patterns(
     (r'^admin/', include(admin_urls)),
     url(r'^get-randomness/', 'zeus.views.shared.get_randomness',
         name="get_randomness"),
-    url(r'^i18n/js', 'django.views.i18n.javascript_catalog', 
+    url(r'^i18n/js', 'django.views.i18n.javascript_catalog',
         name='js_messages', kwargs={'packages': None}),
     (r'^i18n/', include('django.conf.urls.i18n')),
     url(r'^account_administration/', include('account_administration.urls')),
@@ -39,7 +39,7 @@ urlpatterns = patterns(
 )
 
 #SHOULD BE REPLACED BY APACHE STATIC PATH
-if getattr(settings, 'DEBUG', False):
+if getattr(settings, 'DEBUG', False) or getattr(settings, 'ZEUS_SERVE_STATIC', False):
     static_urls = patterns('',
         (r'booth/(?P<path>.*)$', 'django.views.static.serve', {
             'document_root' : settings.BOOTH_STATIC_PATH
