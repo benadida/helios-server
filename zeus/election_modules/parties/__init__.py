@@ -120,13 +120,12 @@ class PartiesListElection(ElectionModuleBase):
         for lang in settings.LANGUAGES:
             self.generate_election_csv_file(lang)   
             self.generate_election_result_docs(lang)
-        zippath = self.get_election_result_file_path('zip', 'zip', lang[0])
-        csvzip = zipfile.ZipFile(zippath, 'w')
-        for poll in self.election.polls.all():
+            zippath = self.get_election_result_file_path('zip', 'zip', lang[0])
+            csvzip = zipfile.ZipFile(zippath, 'w')
             csvpath = self.get_election_result_file_path('csv', 'csv', lang[0])
             basename = os.path.basename(csvpath)
             csvzip.write(csvpath, basename)
-        csvzip.close()
+            csvzip.close()
 
     def get_booth_template(self, request):
         raise NotImplemented
