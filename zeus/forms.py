@@ -251,8 +251,9 @@ class QuestionBaseForm(forms.Form):
         answers = len(filter(lambda k: k.startswith("%s-answer_" %
                                                 self.prefix), self.data))
         if not answers:
-            answers = len(filter(lambda k: k.startswith("answer_"),
-                                 self.initial))
+            answers = len(filter(lambda k: k.startswith("answer_") and not "indexes" in k,
+                                 self.initial.keys()))
+
         if answers == 0:
             answers = DEFAULT_ANSWERS_COUNT
 
