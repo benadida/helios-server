@@ -230,7 +230,7 @@ ECOUNTING_POST_URL = "https://x.x.x.x/newelection.php"
 ECOUNTING_CHECK_URL = "https://x.x.x.x/newelection.php"
 ECOUNTING_SECRET = "xxxxx"
 
-HELIOS_VOTER_EMAIL_RATE = '30/m'
+ZEUS_VOTER_EMAIL_RATE = '30/m'
 
 ZEUS_ELECTION_LOG_DIR = os.path.join('/', 'usr', 'share', 'zeus', 'election_logs')
 ZEUS_RESULTS_PATH = os.path.join('/', 'usr', 'share', 'zeus')

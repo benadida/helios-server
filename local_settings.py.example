@@ -34,7 +34,7 @@ HELIOS_VOTERS_EMAIL = True
 
 # How many mails to send per minute
 # set it to a sane value to avoid mail congestion
-HELIOS_VOTER_EMAIL_RATE = '120/m'
+ZEUS_VOTER_EMAIL_RATE = '120/m'
 
 # Email and domain configuration
 EMAIL_USE_TLS = True
