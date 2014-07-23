@@ -2,7 +2,6 @@ from django.conf.urls import patterns, url, include
 
 urlpatterns = patterns(
     '',
-    url(r'^i18n/', include('django.conf.urls.i18n')),
     url(r'^$', 'account_administration.views.list_users',
         name='list_users'),
     url(r'^user_list/$', 'account_administration.views.list_users',
