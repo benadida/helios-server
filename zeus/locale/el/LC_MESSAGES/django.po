@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-22 14:51+0300\n"
+"POT-Creation-Date: 2014-07-24 14:36+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -288,9 +288,11 @@ msgstr "ΒΑΘΜΟΛΟΓΙΕΣ:"
 msgid "Zeus Elections - Poll Results"
 msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
 
+#, python-format
 msgid "Total votes: %d"
 msgstr "Σύνολο ψηφοδελτίων: %d"
 
+#, python-format
 msgid "Blank: %d"
 msgstr "Λευκά: %d"
 
@@ -440,6 +442,18 @@ msgstr "Δεν είναι δυνατή η δημιουργία δοκιμαστ�
 #, python-format
 msgid "An email with demo credentials has been sent to %s"
 msgstr "Ο δοκιμαστικός λογαριασμός σας έχει σταλεί στη διεύθυνση email %s"
+
+msgid "You do not have permission to access this page."
+msgstr ""
+
+msgid "An error has been occured. Please notify the server admin."
+msgstr ""
+
+msgid "The requested page was not found."
+msgstr ""
+
+msgid "You need to logout from your current account to access this view."
+msgstr ""
 
 #~ msgid "TOTAL"
 #~ msgstr "ΣΥΝΟΛΟ"

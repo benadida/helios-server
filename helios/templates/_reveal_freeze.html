@@ -36,6 +36,9 @@
 {% else %}
 <div class="election-action">
   <p class="election-admin-message">
+  {% if not election.trustees.count > 1 %}
+  {% trans "No trustees are set for the election." %} <br />
+  {% endif %}
   {% blocktrans %}The election is about to be frozen.
   It will be made ready for voting,
   and most changes will not be possible.
