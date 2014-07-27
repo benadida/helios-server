@@ -34,13 +34,7 @@ window.onbeforeunload = function(evt) {
 };
 
 </script>
-<h1>{{election.name}} &mdash; Submit your Vote</h1>
-
-<p>
-  We have received, <b><u>but not yet recorded</u></b>, your encrypted ballot.<br />
-Your smart ballot tracker is:<br /><br />
-    <tt style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</tt>
-</p>
+<p style="margin-top: 10px">Submitting your vote for <b>{{election.name}}</b>...</p>
 
 <div id="waiting_div">
     Verifying and Casting your ballot<br />
@@ -57,6 +51,7 @@ Your smart ballot tracker is:<br /><br />
 
 {% if show_password %}
 {% if user %}
+<h1>Wait!</h1>
 <p>
 You are logged in as <u>{{user.display_html_small|safe}}</u>, but this election<br />
 requires election-specific credentials.
@@ -69,29 +64,30 @@ requires election-specific credentials.
 {% else %}
 
 {% if user %}
-<p>
-{% if election.openreg %}
-<b>Sorry, you are <em><u>not eligible</u></em> for this election.</b><br />
-{% else %}
-<b>Sorry, you are <em>not registered</em> for this election, and registration is closed.</b><br />
-{% endif %}
-</p>
+<h1>Sorry!<h1>
+<b>Sorry, you are <em>
+  {% if election.openreg %}
+    <u>not eligible</u></em> for this election.
+  {% else %}
+    not registered</em> for this election, and registration is closed.
+  {% endif %}
+  </b><br /></p>
 <p>
     [<a href="{% url helios.views.one_election_view election.uuid %}">return to the main election page</a>]
 </p>
 {% else %}
 <p>
-  Now, we need you to log in, so we can verify your eligibility.<br /><br />
+<h1>Wait!  You need to log in.</h1>
 {% if election.openreg %}
 
-{% if election.eligibility %}
-{% else %}
- This election is open to <em>anyone</em>, so log in with your preferred account.
-{% endif %}
+  {% if election.eligibility %}
+  {% else %}
+   This election is open to <em>anyone</em>, so log in with your preferred account.
+  {% endif %}
 
 {% else %}
-This election is only open to <em>registered voters</em>, so log in with
-the same account you registered with.
+  This election is only open to <em>registered voters</em>, so log in with
+  the same account you registered with.
 {% endif %}
 </p>
 
@@ -102,7 +98,10 @@ Don't worry, we'll remember your ballot while you log in.
 {% endif %}
 
 {% endif %}
-
+<br />
+Your smart ballot tracker is:<br /><br />
+    <tt style="font-size:1.3em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</tt>
+</p>
 {# this closes the IF ELSE of this being password_only #}
 {% endif %}
 

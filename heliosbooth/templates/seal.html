@@ -15,22 +15,34 @@ You will then be guided to re-encrypt your choices for final casting.
 </div>
 {#/if}
 
-<h3>Your ballot is ready to be submitted</h3>
+<h3>Review your Ballot</h3>
+
+
+<div style="padding: 10px; margin-bottom: 10px; background-color: #eee; border: 1px #ddd solid; max-width: 340px;">
+{#foreach $T.questions as question}
+
+<b>Question #{$T.question$index + 1}: {$T.question.short_name}</b><br>
+{#if $T.choices[$T.question$index].length == 0}
+<div style="margin-left: 15px;">&#x2610; <i>No choice selected</i></div>
+{#/if}
+{#foreach $T.choices[$T.question$index] as choice}
+<div style="margin-left: 15px;">&#x2713; {$T.choice}</div>
+{#/for}
+{#if $T.choices[$T.question$index].length < $T.question.max}
+[you under-voted: you may select up to {$T.question.max}]
+{#/if}
+[<a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#">edit responses</a>]
+{#if !$T.question$last}<br><br>{#/if}
+{#/for}
+</div>
+
+
+<p><p>Your ballot tracker is <b><tt style="font-size: 11pt;">{$T.encrypted_vote_hash}</tt></b>, and you can <a onclick="BOOTH.show_receipt(); return false;" href="#">print</a> it.<br /><br /></p>
 
 <p>
-<em>Don't forget to click "Proceed to Submission" below!</em>
-</p>
+Once you click "Submit", the unencrypted version of your ballot will be destroyed, and only the encrypted version will remain.  The encrypted version will be submitted to the Helios server.</p>
 
-<p>Before submitting, you can take note of your smart ballot tracker [<a onclick="BOOTH.show_receipt(); return false;" href="#">print</a>]:<br /><br />
-
-<b><tt style="font-size: 16pt;">&nbsp;&nbsp;&nbsp;{$T.encrypted_vote_hash}</tt></b><br /><br />
-
-</p>
-
-<p>
-Once you click "Proceed", Helios will remember only your encrypted vote. Thus, only you know your vote.</p>
-
-<button id="proceed_button" onclick="BOOTH.cast_ballot();">Proceed to Submission</button><br />
+<button id="proceed_button" onclick="BOOTH.cast_ballot();">Submit this Vote!</button><br />
 <div id="loading_div"><img src="loading.gif" id="proceed_loading_img" /></div>
 
 
