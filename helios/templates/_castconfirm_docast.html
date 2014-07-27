@@ -28,7 +28,8 @@ You are logged in as <u>{{voter.display_html_big|safe}}</u><br /><br />
     You can start the voting process over again, of course.</span>
 </p>
 
-<script>$('#cast_confirm_form').submit()</script>
+<!-- for now, for CSRF protection, no auto-submit just yet (benadida) -->
+<!-- <script>$('#cast_confirm_form').submit()</script> -->
 
 </div>
   {% else %}
