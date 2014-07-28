@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-24 14:36+0300\n"
+"POT-Creation-Date: 2014-07-28 15:01+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -421,8 +421,14 @@ msgstr "Χρόνος Ψηφοφορίας"
 msgid "Additional Info"
 msgstr "Περισσότερες πληροφορίες"
 
+msgid "Voting end date extended"
+msgstr "Παράταση λήξης ψηφοφορίας"
+
 msgid "Email sending started"
 msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει"
+
+msgid "You need to logout from your current account to access this view."
+msgstr ""
 
 msgid "Invalid email address"
 msgstr "Μη έγκυρη διεύθυνση email"
@@ -450,9 +456,6 @@ msgid "An error has been occured. Please notify the server admin."
 msgstr ""
 
 msgid "The requested page was not found."
-msgstr ""
-
-msgid "You need to logout from your current account to access this view."
 msgstr ""
 
 #~ msgid "TOTAL"

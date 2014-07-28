@@ -317,8 +317,9 @@ def voters_email(request, election, poll=None, voter_uuid=None):
 
     TEMPLATES = [
         ('vote', _('Time to Vote')),
-        ('info', _('Additional Info'))
+        ('info', _('Additional Info')),
     ]
+
 
     default_template = 'vote'
 
@@ -328,6 +329,9 @@ def voters_email(request, election, poll=None, voter_uuid=None):
     if not election.any_poll_feature_can_send_voter_booth_invitation:
         TEMPLATES.pop(0)
         default_template = 'info'
+
+    if election.voting_extended_until:
+        TEMPLATES.append(('extension', _('Voting end date extended')))
 
     template = request.REQUEST.get('template', default_template)
 

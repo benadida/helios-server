@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-24 14:36+0300\n"
+"POT-Creation-Date: 2014-07-28 15:01+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1231,20 +1231,23 @@ msgstr ""
 msgid "demo account for"
 msgstr "δοκιμαστικός λογαριασμός"
 
-msgid "Intended recipient"
-msgstr "Νόμιμος παραλήπτης"
-
-msgid "Voting link"
-msgstr "Σύνδεσμος ψηφοφορίας"
-
-msgid "Zeus Elections"
-msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
-
 msgid "Legitimate recipient:"
 msgstr "Νόμιμος παραλήπτης"
 
 msgid "Dear voter,"
 msgstr "Αξιότιμε κύριε ή κυρία,"
+
+msgid "The ending date of the election has changed. New ending date is:"
+msgstr "Η ημερομηνία λήξης της ψηφοφορίας άλλαξε. Η νέα ημερομηνία είναι:"
+
+msgid "Zeus Elections"
+msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
+
+msgid "Intended recipient"
+msgstr "Νόμιμος παραλήπτης"
+
+msgid "Voting link"
+msgstr "Σύνδεσμος ψηφοφορίας"
 
 msgid "You are invited to vote in the poll:"
 msgstr "Προσκαλείστε να συμμετάσχετε στην ψηφοφορία:"
@@ -1344,6 +1347,10 @@ msgstr ""
 
 msgid "Something went wrong !!!"
 msgstr ""
+
+#, fuzzy
+#~ msgid "Election"
+#~ msgstr "Τύπος ψηφοφορίας"
 
 #~ msgid "Has department limit"
 #~ msgstr "Τα εσωτερικά μέλη ανά σχολή δεν μπορούν να υπερβαίνουν τα"

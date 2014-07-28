@@ -1,0 +1,14 @@
+{% load i18n %}
+{% trans "Legitimate recipient:" %} {{voter.voter_surname}} {{voter.voter_name}} {{voter.voter_fathername}}
+{% trans "Election name" %}: {{ election.name }}
+
+{% trans "Dear voter," %}
+{% trans "The ending date of the election has changed. New ending date is:"%}
+  
+{{election.voting_extended_until}}
+
+{% if custom_message %}
+{{custom_message|safe}}
+{% endif %}
+
+{% trans "Zeus Elections" %}
