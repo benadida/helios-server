@@ -232,6 +232,84 @@ def csv_from_polls(election, polls, lang, outfile=None):
         except:
             return None
 
+def csv_from_stv_polls(election, polls, lang, outfile=None):
+    with translation.override(lang):
+        if outfile is None:
+            outfile = StringIO()
+        csvout = csv.writer(outfile, dialect='excel', delimiter=',')
+        writerow = csvout.writerow
+        
+        # election details
+        DATE_FMT = "%d/%m/%Y %H:%S"
+        voting_start = _('Start: %s') % (election.voting_starts_at.strftime(DATE_FMT))
+        voting_end = _('End: %s') % (election.voting_ends_at.strftime(DATE_FMT))
+        extended_until = ""
+        if election.voting_extended_until:
+            extended_until = _('Extension: %s') % \
+                (election.voting_extended_until.strftime(DATE_FMT))
+
+        writerow([strforce(election.name)])
+        writerow([strforce(election.institution.name)])
+        writerow([strforce(voting_start)])
+        writerow([strforce(voting_end)])
+
+        if extended_until:
+            writerow([strforce(extended_until)])
+        writerow([])
+        # until here write election name, date etc...
+        actions_desc = {
+            'elect': _('Elect'),
+            'eliminate': _('Eliminated'),
+            'quota': _('Eliminated due to quota restriction')}
+        from stv.parser import STVParser
+        for poll in polls:
+            writerow([])
+            writerow([strforce(poll.name)])
+            writerow([])
+            questions = poll.questions
+            indexed_cands = {}
+            counter = 0
+            for item in questions[0]['answers']:
+                indexed_cands[str(counter)] = item
+                counter += 1
+
+            results_winners = poll.stv_results[0]
+            results_all = poll.stv_results[1]
+            result_steps = poll.stv_results[2] 
+            stv = STVParser(result_steps)
+            rounds = list(stv.rounds())
+            writerow([])
+            writerow([strforce(_("Elected")), strforce(_("Departments"))])
+            for winner_data in results_winners:
+                 winner_id = winner_data[0]
+                 winner = indexed_cands[str(winner_id)]
+                 winner = winner.split(':')
+                 winner_name = winner[0]
+                 winner_department = winner[1]
+                 writerow([strforce(winner_name), strforce(winner_department)])
+            for num, round in rounds:
+                round_name = _('Round ')
+                round_name +=str(num)
+                writerow([])
+                writerow([strforce(round_name)])
+                writerow([strforce(_('Candidate')), strforce(_('Votes')),\
+                    strforce(_('Draw')), strforce(_('Action'))])
+                for name, cand in round['candidates'].iteritems():
+                    actions = map(lambda x: x[0], cand['actions'])
+                    actions = map(lambda x: x[0], cand['actions'])
+                    draw = _("NO")
+                    if 'random' in actions:
+                        draw = _("YES")
+                    action = None
+                    if len(actions):
+                        action = actions_desc.get(actions[-1])
+                    votes = cand['votes']  
+                    cand_name = indexed_cands[str(name)]
+                    cand_name = cand_name.split(':')[0]
+                    writerow([strforce(cand_name),strforce(votes),\
+                    strforce(draw), strforce(action)])
+
+
 
 def csv_from_score_polls(election, polls, lang, outfile=None):
     with translation.override(lang):
