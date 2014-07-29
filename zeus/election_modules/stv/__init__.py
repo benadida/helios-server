@@ -171,6 +171,7 @@ class StvElection(ElectionModuleBase):
     def compute_election_results(self):
         for lang in settings.LANGUAGES: 
             self.generate_election_result_docs(lang)
+            self.generate_election_csv_file(lang)
 
     def compute_results(self):
         cands_data = self.poll.questions_data[0]['answers']
@@ -220,6 +221,7 @@ class StvElection(ElectionModuleBase):
         for lang in settings.LANGUAGES: 
             #self.generate_csv_file(lang)
             self.generate_result_docs(lang)
+            self.generate_csv_file(lang)
 
     def get_booth_template(self, request):
         raise NotImplemented

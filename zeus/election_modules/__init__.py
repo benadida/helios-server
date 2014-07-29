@@ -5,7 +5,8 @@ import os
 from django.conf import settings 
 from django.utils.translation import ugettext_lazy as _
 
-from zeus.reports import csv_from_polls, csv_from_score_polls
+from zeus.reports import csv_from_polls, csv_from_score_polls,\
+                         csv_from_stv_polls
 
 
 ELECTION_MODULES_CHOICES = []
@@ -128,6 +129,8 @@ class ElectionModuleBase(object):
         csvfile = file(self.get_poll_result_file_path('csv', 'csv', lang[0]), "w")
         if self.module_id == "score":
             csv_from_score_polls(self.election, [self.poll], lang[0], csvfile)
+        elif self.module_id == "stv":
+            csv_from_stv_polls(self.election, [self.poll], lang[0], csvfile)
         else:
             csv_from_polls(self.election, [self.poll], lang[0], csvfile)
         csvfile.close()
@@ -138,9 +141,12 @@ class ElectionModuleBase(object):
         if self.module_id == "score":
             csv_from_score_polls(self.election, self.election.polls.all(),\
                 lang[0], csvfile)
+        elif self.module_id == "stv":
+            csv_from_stv_polls(self.election, self.election.polls.all(),\
+                               lang[0], csvfile)
         else:
             csv_from_polls(self.election, self.election.polls.all(),\
-                lang[0], csvfile)
+                           lang[0], csvfile)
         csvfile.close()
 
     def generate_result_docs(self):
