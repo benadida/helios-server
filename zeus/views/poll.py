@@ -330,7 +330,7 @@ def voters_email(request, election, poll=None, voter_uuid=None):
         TEMPLATES.pop(0)
         default_template = 'info'
 
-    if election.voting_extended_until:
+    if election.voting_extended_until and not election.voting_ended_at:
         TEMPLATES.append(('extension', _('Voting end date extended')))
 
     template = request.REQUEST.get('template', default_template)
