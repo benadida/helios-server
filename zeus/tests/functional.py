@@ -332,6 +332,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         raise Exception(NotImplemented)
 
     def encrypt_ballot_and_cast(self, selection, size, the_url, p_uuid):
+        self.c.get(self.locations['logout'])
         e = Election.objects.get(uuid=self.e_uuid)
         rel_selection = to_relative_answers(selection, size)
         encoded = gamma_encode(rel_selection, size, size)
@@ -432,8 +433,6 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             (e_uuid, p_uuid)
         r = client.get(address)
         response_data = dict(r.items())
-        print response_data
-        print address
         self.assertTrue(response_data['Content-Type'] == \
                         'application/zip')
 
@@ -740,8 +739,8 @@ class TestSTVElection(TestElectionBase):
         super(TestSTVElection, self).setUp()
         self.election_type = 'stv'
         self.doc_exts = {
-            'poll': ['pdf', 'json'],
-            'el': ['pdf']
+            'poll': ['pdf', 'csv', 'json'],
+            'el': ['pdf', 'csv', 'zip']
             }
         # make departments for stv election
         departments = ''
