@@ -174,13 +174,7 @@ class StvElection(ElectionModuleBase):
         for lang in settings.LANGUAGES: 
             self.generate_election_result_docs(lang)
             self.generate_election_csv_file(lang)
-
-            zippath = self.get_election_result_file_path('zip', 'zip', lang[0])
-            csvzip = zipfile.ZipFile(zippath, 'w')
-            csvpath = self.get_election_result_file_path('csv', 'csv', lang[0])
-            basename = os.path.basename(csvpath)
-            csvzip.write(csvpath, basename)
-            csvzip.close()
+            self.generate_election_zip_file(lang)
 
     def compute_results(self):
         cands_data = self.poll.questions_data[0]['answers']

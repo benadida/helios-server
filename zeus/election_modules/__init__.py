@@ -149,6 +149,43 @@ class ElectionModuleBase(object):
                            lang[0], csvfile)
         csvfile.close()
 
+    def generate_election_zip_file(self, lang):
+        zippath = self.get_election_result_file_path('zip', 'zip', lang[0])
+        all_docs_zip = zipfile.ZipFile(zippath, 'w')
+
+        election_csvpath = self.get_election_result_file_path('csv', 'csv',
+                                                              lang[0])
+        if not os.path.exists(election_csvpath):
+            self.generate_electon_csv_file(lang)
+        basename = os.path.basename(election_csvpath)
+        all_docs_zip.write(election_csvpath, basename)
+        if self.module_id !='score':
+            election_pdfpath = self.get_election_result_file_path('pdf', 'pdf',
+                                                                  lang[0])
+            if not os.path.exists(election_pdfpath):
+                module.generate_election_result_docs(lang)
+            basename = os.path.basename(election_pdfpath)
+            all_docs_zip.write(election_pdfpath, basename)
+
+        poll_docpaths = []
+        for poll in self.election.polls.all():
+            module = poll.get_module()
+            poll_csvpath = module.get_poll_result_file_path('csv', 'csv', lang[0])
+            poll_docpaths.append(poll_csvpath)
+            if not os.path.exists(poll_csvpath):
+                module.generate_csv_file(lang)
+            if module.module_id !='score':
+                poll_pdfpath = module.get_poll_result_file_path('pdf', 'pdf', lang[0])
+                poll_docpaths.append(poll_pdfpath)
+                if not os.path.exists(poll_pdfpath):
+                    module.generate_result_docs(lang)
+
+        for path in poll_docpaths:
+            basename = os.path.basename(path)
+            all_docs_zip.write(path, basename)
+        
+        all_docs_zip.close()
+
     def generate_result_docs(self):
         raise NotImplemented
 
