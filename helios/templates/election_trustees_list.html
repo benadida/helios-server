@@ -43,11 +43,11 @@ The trustees below are responsible for the decryption of the ballots
             {{t.partial_decryptions.all.count}}/{{election.polls.all.count}}
             </span>
 {% else %}
-    {% if election.feature_closed %}
-        <p>
-        {% trans "No polls decrypted" %}
-        </p>
-    {% endif %}
+    <span class="label alert">
+        {% if election.feature_closed %}
+            {% trans "No polls decrypted" %}
+        {% endif %}
+    </span>
 {% endif %}
 
 
