@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-28 15:01+0300\n"
+"POT-Creation-Date: 2014-07-31 13:46+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -289,6 +289,9 @@ msgstr "Λήξη ψηφοφορίας"
 msgid "Cancel election"
 msgstr "Ακύρωση ψηφοφορίας"
 
+msgid "Save results"
+msgstr "Αποθήκευση Αποτελεσμάτων"
+
 #, python-format
 msgid ""
 "\n"
@@ -511,9 +514,6 @@ msgstr "Διαχείριση ερωτήσεων"
 
 msgid "Total votes"
 msgstr "Σύνολο ψήφων"
-
-msgid "Save results"
-msgstr "Αποθήκευση Αποτελεσμάτων"
 
 msgid "Save proof data"
 msgstr "Αποθήκευση κρυπτογραφικών δεδομένων"
@@ -931,6 +931,12 @@ msgstr ""
 
 msgid "key verified"
 msgstr "Ο κωδικός ψηφοφορίας έχει επαληθευτεί"
+
+msgid "Polls decrypted"
+msgstr "Αποκρυπτογραφημένες κάλπες"
+
+msgid "No polls decrypted"
+msgstr "Δεν έχουν αποκρυπτογραφηθεί κάλπες"
 
 msgid "No trustee election key set"
 msgstr "Δεν έχει οριστεί ακόμη κωδικός ψηφοφορίας"

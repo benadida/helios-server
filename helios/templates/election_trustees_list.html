@@ -28,7 +28,30 @@ The trustees below are responsible for the decryption of the ballots
 <br /><br />
 <span class="label alert">{% trans "Trustee key not verified" %}</span>
 {% else %}
-<span class="label success">{% trans "key verified" %}</span>
+    <span class="label success">
+        {% trans "key verified" %}
+    </span>
+        {% if t.partial_decryptions.all %}
+            <br \>
+            {% if t.partial_decryptions.all.count == election.polls.all.count %}
+                <span class="label success">
+            {% else %}
+                <span class="label warning">
+            {% endif %}
+
+            {% trans "Polls decrypted" %}
+            {{t.partial_decryptions.all.count}}/{{election.polls.all.count}}
+            </span>
+{% else %}
+    {% if election.feature_closed %}
+        <p>
+        {% trans "No polls decrypted" %}
+        </p>
+    {% endif %}
+{% endif %}
+
+
+    </span>
 {% endif %}
 {% else %}
 <br />

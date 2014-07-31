@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-07-28 15:01+0300\n"
+"POT-Creation-Date: 2014-07-31 13:46+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -276,6 +276,42 @@ msgstr "ΑΚΥΡΟ"
 msgid "BLANK"
 msgstr "ΛΕΥΚΟ"
 
+msgid "Elect"
+msgstr "Εκλογή"
+
+msgid "Eliminated"
+msgstr "Αποκλεισμός"
+
+msgid "Eliminated due to quota restriction"
+msgstr "Αποκλεισμός λόγω περιορισμού"
+
+msgid "Elected"
+msgstr "Εκλεγμένοι"
+
+msgid "Departments"
+msgstr ""
+
+msgid "Round "
+msgstr "Γύρος "
+
+msgid "Candidate"
+msgstr "Υποψήφιος"
+
+msgid "Votes"
+msgstr "Ψήφοι"
+
+msgid "Draw"
+msgstr "Κλήρωση"
+
+msgid "Action"
+msgstr "Ενέργεια"
+
+msgid "NO"
+msgstr "ΟΧΙ"
+
+msgid "YES"
+msgstr "ΝΑΙ"
+
 msgid "RANKING"
 msgstr "ΒΑΘΜΟΛΟΓΙΚΗ ΚΑΤΑΤΑΞΗ"
 
@@ -310,39 +346,6 @@ msgstr "Λήξη: %(date)s"
 #, python-format
 msgid "Extension: %(date)s"
 msgstr "Παράταση: %(date)s"
-
-msgid "Elected"
-msgstr "Εκλεγμένοι"
-
-msgid "Elect"
-msgstr "Εκλογή"
-
-msgid "Eliminated"
-msgstr "Αποκλεισμός"
-
-msgid "Eliminated due to quota restriction"
-msgstr "Αποκλεισμός λόγω περιορισμού"
-
-msgid "Candidate"
-msgstr "Υποψήφιος"
-
-msgid "Votes"
-msgstr "Ψήφοι"
-
-msgid "Draw"
-msgstr "Κλήρωση"
-
-msgid "Action"
-msgstr "Ενέργεια"
-
-msgid "Round "
-msgstr "Γύρος "
-
-msgid "NO"
-msgstr "ΟΧΙ"
-
-msgid "YES"
-msgstr "ΝΑΙ"
 
 #, python-format
 msgid "%(election_name)s - vote cast"
