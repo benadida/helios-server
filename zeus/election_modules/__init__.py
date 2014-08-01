@@ -174,12 +174,17 @@ class ElectionModuleBase(object):
             poll_docpaths.append(poll_csvpath)
             if not os.path.exists(poll_csvpath):
                 module.generate_csv_file(lang)
+            poll_jsonpath = module.get_poll_result_file_path('json', 'json')
+            poll_docpaths.append(poll_jsonpath)
+            if not os.path.exists(poll_jsonpath):
+                module.generate_json_file()
+            poll_docpaths.append(poll_jsonpath)
             if module.module_id !='score':
                 poll_pdfpath = module.get_poll_result_file_path('pdf', 'pdf', lang[0])
                 poll_docpaths.append(poll_pdfpath)
                 if not os.path.exists(poll_pdfpath):
                     module.generate_result_docs(lang)
-
+        poll_docpaths = set(poll_docpaths)
         for path in poll_docpaths:
             basename = os.path.basename(path)
             all_docs_zip.write(path, basename)
