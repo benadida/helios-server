@@ -1,6 +1,7 @@
 import os
 import datetime
 import json
+import zipfile
 from itertools import izip, chain
 from datetime import timedelta
 from django.test import TransactionTestCase as TestCase
@@ -466,6 +467,39 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         if self.local_verbose:
             print 'Requested downloadable content is available'
 
+    def zip_contains_files(self, doc_exts):
+        el_exts = doc_exts['el']
+        poll_exts = doc_exts['poll']
+        el_exts.remove('zip')
+
+        e = Election.objects.get(uuid=self.e_uuid)
+        el_module = e.get_module()
+        for lang in settings.LANGUAGES:
+            all_files_paths = []
+            for ext in el_exts:
+                    path = el_module.get_election_result_file_path(ext,ext,lang[0])
+                    all_files_paths.append(path)
+            for poll in e.polls.all():
+                p_module = poll.get_module()
+                for ext in poll_exts:
+                    if ext is not 'json':
+                        path = p_module.get_poll_result_file_path(ext,ext,lang[0])
+                        all_files_paths.append(path)
+                    else:
+                        path = el_module.get_election_result_file_path(ext,ext)
+            file_names = []
+            for path in all_files_paths:
+                name = os.path.basename(path)
+                file_names.append(name)
+            zippath = el_module.get_election_result_file_path('zip',\
+                'zip', lang[0])
+            zip_file = zipfile.ZipFile(zippath, 'r')
+            files_in_zip = zip_file.namelist()
+            for file_name in file_names:
+                self.assertTrue(bool(file_name in files_in_zip))
+            if self.local_verbose:
+                print 'Zip contains all docs'
+
     def election_proccess(self):
         self.admin_can_submit_election_form()
         self.assertEqual(self.freeze_election(), None)
@@ -492,6 +526,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.check_results()
         self.check_docs_exist(self.doc_exts)
         self.view_returns_result_files(self.doc_exts)
+        self.zip_contains_files(self.doc_exts)
         if self.local_verbose:
             print self.celebration
 
