@@ -8,7 +8,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
 "POT-Creation-Date: 2014-09-19 15:25+0300\n"
+=======
+"POT-Creation-Date: 2014-08-06 17:09+0300\n"
+>>>>>>> add order feature to voters list
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -414,6 +418,36 @@ msgstr "Λίστα υποψηφίων"
 
 msgid "Are you sure ?"
 msgstr "Επιβεβαιώστε"
+
+msgid "Registration ID"
+msgstr "Αριθμός Καταχώρησης"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "Surname"
+msgstr "Επίθετο"
+
+msgid "Given name"
+msgstr "Όνομα"
+
+msgid "Middle name"
+msgstr "Πατρώνυμο "
+
+msgid "Mobile phone"
+msgstr "Κινητό τηλ."
+
+msgid "Has voted"
+msgstr "Έχει ψηφίσει"
+
+msgid "Booth invitation sent at"
+msgstr "Αποστολή πρόσκλησης"
+
+msgid "Last visit"
+msgstr "Τελευταία είσοδος"
+
+msgid "Actions"
+msgstr "Επιλογές"
 
 msgid "Enter a valid email address. <br />"
 msgstr "Μη έγκυρη διεύθυνση email. <br />"

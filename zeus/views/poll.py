@@ -1,6 +1,7 @@
 import os
 import csv
 import json
+from collections import OrderedDict
 
 from django.conf.urls.defaults import *
 from django.core.urlresolvers import reverse
@@ -140,24 +141,40 @@ def voters_list(request, election, poll):
     page = int(request.GET.get('page', 1))
     limit = int(request.GET.get('limit', 10))
     q_param = request.GET.get('q','')
-
+    order_type = request.GET.get('order_type', None)
     default_voters_per_page = getattr(settings, 'ELECTION_VOTERS_PER_PAGE', 100)
     voters_per_page = request.GET.get('limit', default_voters_per_page)
     try:
         voters_per_page = int(voters_per_page)
     except:
         voters_per_page = default_voters_per_page
+    voter_table_header = OrderedDict([
+        ('voter_login_id', _('Registration ID')),
+        ('voter_email', _('Email')),
+        ('voter_surname', _('Surname')),
+        ('voter_name', _('Given name')),
+        ('voter_fathername', _('Middle name')),
+        ('voter_mobile', _('Mobile phone')),
+        ('cast_votes__id', _('Has voted')),
+        ('last_booth_invitation_send_at', _('Booth invitation sent at')),
+        ('last_visit', _('Last visit')),
+        ('actions', _('Actions'))
+        ])
 
-    order_by = 'login_id'
-    order_by = request.GET.get('order', 'login_id')
-    if not order_by in ['login_id', 'surname', 'email', 'name']:
-        order_by = 'login_id'
+    order_by = 'voter_login_id'
+    order_by = request.GET.get('order', 'voter_login_id')
+    if not order_by in voter_table_header.keys(): 
+        order_by = 'voter_login_id'
 
     validate_hash = request.GET.get('vote_hash', "").strip()
     hash_invalid = None
     hash_valid = None
-
-    voters = Voter.objects.filter(poll=poll).order_by('voter_%s' % order_by)
+    
+    if (order_type == 'asc') or (order_type == None) :
+        voters = Voter.objects.filter(poll=poll).order_by(order_by)
+    else:
+        order_by = '-%s' % order_by
+        voters = Voter.objects.filter(poll=poll).order_by(order_by)
 
     if q_param != '':
         q = Q()
@@ -178,7 +195,8 @@ def voters_list(request, election, poll):
         'voters_count': voters_count,
         'voted_count': voted_count,
         'q': q_param,
-        'voters_per_page': voters_per_page
+        'voters_per_page': voters_per_page,
+        'voter_table_header': voter_table_header.iteritems(),
     }
     set_menu('voters', context)
     return render_template(request, 'election_poll_voters_list', context)

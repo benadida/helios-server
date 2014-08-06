@@ -225,7 +225,6 @@ def negate(value):
     return not value
 
 
-
 @register.simple_tag(takes_context=True)
 def set_election_issues(context, election):
     context['election_issues_list'] = \
@@ -233,3 +232,24 @@ def set_election_issues(context, election):
     context['polls_issues_list'] = \
         election.polls_issues_before_freeze
     return ''
+
+
+@register.simple_tag
+def complete_voter_get_parameters(GET, new_order):
+    page_param = ''
+    page = GET.get('page', None)
+    if page:
+        page_param += "&page=%s"%page
+    order_by = GET.get('order', 'voter_login_id')
+    order_type = GET.get('order_type', 'asc')
+    order_param = ''
+    if order_by == new_order:
+        if order_type == 'asc':
+            new_order_type = 'desc'
+        else:
+            new_order_type = 'asc'
+    else:
+        new_order_type = 'asc'
+    order_param = '&order_type=%s' % new_order_type
+    params = '%s%s' % (page_param, order_param)
+    return params

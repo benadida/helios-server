@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-09-19 15:25+0300\n"
+"POT-Creation-Date: 2014-08-06 17:09+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -539,27 +539,6 @@ msgstr "Εξαγωγή λίστας ψηφοφόρων σε αρχείο CSV"
 msgid "Delete all voters"
 msgstr "Διαγραφή όλων των ψηφοφόρων"
 
-msgid "Registration ID"
-msgstr "Αριθμός Καταχώρησης"
-
-msgid "Email"
-msgstr "Email"
-
-msgid "Surname , Given name , Middle name , Mobile phone"
-msgstr "Επώνυμο , Όνομα , Πατρώνυμο , Κινητό τηλ."
-
-msgid "Has voted"
-msgstr "Έχει ψηφίσει"
-
-msgid "Booth invitation sent at"
-msgstr "Αποστολή πρόσκλησης"
-
-msgid "Last visit"
-msgstr "Τελευταία είσοδος"
-
-msgid "Actions"
-msgstr "Επιλογές"
-
 msgid "(Excluded)"
 msgstr "(Εξαίρεση)"
 
@@ -679,6 +658,12 @@ msgstr "Ανακτήθηκαν"
 msgid "entries read from the uploaded file."
 msgstr "καταχωρήσεις από το αρχείο."
 
+msgid "Registration ID"
+msgstr "Αριθμός Καταχώρησης"
+
+msgid "Email"
+msgstr "Email"
+
 msgid "Given name"
 msgstr "Όνομα"
 
@@ -740,6 +725,9 @@ msgstr "τελευταία ψήφος"
 
 msgid "select action"
 msgstr "επιλογές"
+
+msgid "Actions"
+msgstr "Επιλογές"
 
 msgid "Manage voters"
 msgstr "Διαχείριση ψηφοφόρων"
@@ -1359,6 +1347,18 @@ msgstr ""
 
 #~ msgid "Delete Account"
 #~ msgstr "Διαγραφή λογαριασμού"
+
+#~ msgid "Surname , Given name , Middle name , Mobile phone"
+#~ msgstr "Επώνυμο , Όνομα , Πατρώνυμο , Κινητό τηλ."
+
+#~ msgid "Has voted"
+#~ msgstr "Έχει ψηφίσει"
+
+#~ msgid "Booth invitation sent at"
+#~ msgstr "Αποστολή πρόσκλησης"
+
+#~ msgid "Last visit"
+#~ msgstr "Τελευταία είσοδος"
 
 #, fuzzy
 #~ msgid "Election"

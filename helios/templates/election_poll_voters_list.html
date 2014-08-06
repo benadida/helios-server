@@ -62,15 +62,15 @@
 <table class="voters" width="100%">
   <thead>
     <tr>
-      <th>{% trans "Registration ID" %}</th>
-      <th>{% trans "Email" %}</th>
-      <th>{% trans "Surname , Given name , Middle name , Mobile phone" %}</th>
-      {% if admin %}
-      <th>{% trans "Has voted" %}</th>
-      <th>{% trans "Booth invitation sent at" %}</th>
-      <th>{% trans "Last visit" %}</th>
-      <th>{% trans "Actions" %}</th>
-      {% endif %}
+      {% for key, value  in voter_table_header %}
+        <th>
+          {% if key != 'actions' %}
+            <a href="?order={{key}}{%complete_voter_get_parameters request.GET key%}">{{value}}</a>
+          {% else%}
+            {{value}}
+          {% endif%}
+        </th>
+      {% endfor %}
     </tr>
   </thead>
   <tbody>
@@ -82,9 +82,16 @@
     <td>
       {{ voter.voter_email }}
     </td>
-    <td width="100%">
-        {{ voter.voter_surname }} , {{ voter.voter_name }} 
+    <td>
+      {{ voter.voter_surname }}
+    </td>
+    <td>
+      {{ voter.voter_name }} 
+    </td>
+    <td>
         {% if voter.voter_fathername %}, {{ voter.voter_fathername }}{% endif %}
+    </td>
+    <td>
         {% if voter.voter_mobile %}, {{ voter.voter_mobile }}{% endif %}
     </td>
     <td>
