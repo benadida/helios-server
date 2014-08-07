@@ -234,8 +234,8 @@ def set_election_issues(context, election):
     return ''
 
 
-@register.simple_tag
-def complete_voter_get_parameters(GET, new_order):
+@register.simple_tag(takes_context=True)
+def complete_voter_get_parameters(context, GET, new_order):
     page_param = ''
     page = GET.get('page', None)
     if page:
@@ -244,6 +244,7 @@ def complete_voter_get_parameters(GET, new_order):
     order_type = GET.get('order_type', 'asc')
     order_param = ''
     if order_by == new_order:
+        context['ordering_cls'] = order_type
         if order_type == 'asc':
             new_order_type = 'desc'
         else:

@@ -65,10 +65,11 @@
       {% for key, value  in voter_table_header %}
         <th>
           {% if key != 'actions' %}
-            <a href="?order={{key}}{%complete_voter_get_parameters request.GET key%}">{{value}}</a>
-          {% else%}
-            {{value}}
-          {% endif%}
+          <a href="?order={{key}}{% complete_voter_get_parameters request.GET key %}" 
+             class="{{ ordering_cls }}">{{ value }}</a>
+          {% else %}
+            {{ value }}
+          {% endif %}
         </th>
       {% endfor %}
     </tr>

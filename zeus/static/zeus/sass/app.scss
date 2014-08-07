@@ -286,6 +286,27 @@ body {
   table.voters, table.elections, table.polls-table {
       thead th { font-size: 11px; }
       tbody td { font-size: 12px; }
+
+      th a {
+
+        &:after {
+          font-size: 1.5em;
+          padding-top: 5px;
+          display: block;
+          float: right;
+        }
+               
+        &.desc, &.asc {
+            color: darken($mainColor, 30%);
+        }
+
+        &.desc:after {
+          content: "\02C4";
+        }
+        &.asc:after {
+          content: "\02C5";
+        }
+      }
   }
 
   .cancel-msg {
