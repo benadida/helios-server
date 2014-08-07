@@ -140,7 +140,7 @@ def voters_list(request, election, poll):
     # for django pagination support
     page = int(request.GET.get('page', 1))
     limit = int(request.GET.get('limit', 10))
-    q_param = request.GET.get('q','')
+    q_param = request.GET.get('q', '')
     order_type = request.GET.get('order_type', None)
     default_voters_per_page = getattr(settings, 'ELECTION_VOTERS_PER_PAGE', 100)
     voters_per_page = request.GET.get('limit', default_voters_per_page)
@@ -175,12 +175,33 @@ def voters_list(request, election, poll):
     else:
         order_by = '-%s' % order_by
         voters = Voter.objects.filter(poll=poll).order_by(order_by)
+    
+    search = q_param
+    def parse_q_param(q):
+        args = []
+        for special_arg in q.split(" "):
+            if special_arg.startswith("+") or special_arg.startswith("-"):
+                q = q.replace(" " + special_arg, "")
+                q = q.replace(special_arg, "")
+                args.append(special_arg)
+        return q, args
 
     if q_param != '':
+        q_parsed, extra_filters = parse_q_param(q_param)
         q = Q()
         for search_field in ['name', 'surname', 'email']:
-            kwargs = {'voter_%s__icontains' % search_field: q_param}
+            kwargs = {'voter_%s__icontains' % search_field: q_parsed}
             q = q | Q(**kwargs)	
+        
+        keys_map = {
+            'voted': 'cast_votes__id'
+        }
+        for arg in extra_filters:
+            type = True if arg[0] == "-" else False
+            key = keys_map.get(arg[1:], arg[1:])
+            if key in voter_table_header.keys():
+                q = q & Q(**{'%s__isnull' % key: type})
+
         voters = voters.filter(q)
 
     voters_count = Voter.objects.filter(poll=poll).count()

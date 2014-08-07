@@ -5409,6 +5409,13 @@ body .cast-actions .submit {
 body .election-description {
   display: none;
 }
+body .content-header {
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
+}
+body .pagination {
+  margin: 1em 0;
+}
 body table.voters thead th, body table.elections thead th, body table.polls-table thead th {
   font-size: 11px;
 }

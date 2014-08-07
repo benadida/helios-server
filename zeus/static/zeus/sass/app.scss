@@ -283,6 +283,15 @@ body {
   .cast-actions .submit { float: left;}
   .election-description { display: none; }
 
+  .content-header {
+    margin-top: 10px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .pagination { 
+    margin: 1em 0;
+  }
+
   table.voters, table.elections, table.polls-table {
       thead th { font-size: 11px; }
       tbody td { font-size: 12px; }
