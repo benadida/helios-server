@@ -126,6 +126,19 @@ Alias /booth /`<path_to_site>`/sitestatic
 
 Alias /verifier /`<path_to_site>`/sitestatic
 
+--- Disponibilização do conteúdo em português ---
+
+Além das configurações presentes no settings.py, também é preciso compilar os arquivos de tradução (arquivos.po, presentes no diretório LOCALE).
+Para compilar os arquivos, utilize o seguinte comando:
+
+`python manage.py compilemessages`
+
+Após a compilação, arquivos .mo devem ter sido gerados em locale/pt_BR/LC_MESSAGES
+
+Maiores informações em:
+
+https://docs.djangoproject.com/en/1.4/ref/django-admin/[]
+
 #### Administração pelo site de administração do django
 
 Ao rodar o reset.sh, você deve ter sido solicitado a criar um usuário de administração do django. Isso se deve ao fato de aplicação admin estar habilitada no settings.py (django.contrib.admin), pois iremos utilizá-la em algumas customizações feitas para este *fork* do helios.
