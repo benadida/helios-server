@@ -1395,7 +1395,7 @@ def one_voter(request, election, voter_uuid):
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
   if not voter:
     raise Http404
-  return voter.toJSONDict()  
+  return voter.ld_object.toDict() 
 
 @election_view()
 @json
