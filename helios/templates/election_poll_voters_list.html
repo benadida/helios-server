@@ -44,7 +44,7 @@
             {% endif %}
             <li>
             <a style="" class="foundicon-down-arrow"
-                href="{% url election_poll_voters_csv election.uuid poll.uuid poll.short_name%}">
+            href="{% url election_poll_voters_csv election.uuid poll.uuid poll.short_name%}{% if q %}?q={{q}}{% endif %}">
                 &nbsp;{% trans "Export voter list to CSV" %}</a>
             </li>
             {% if poll.feature_can_clear_voters %}

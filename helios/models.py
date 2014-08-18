@@ -65,7 +65,7 @@ from zeus.model_features import ElectionFeatures, PollFeatures, \
 from zeus.model_tasks import TaskModel, PollTasks, ElectionTasks
 from zeus import help_texts as help
 from zeus.log import init_election_logger, init_poll_logger
-from zeus.utils import decalize
+from zeus.utils import decalize, get_filtered_voters
 
 
 logger = logging.getLogger(__name__)
@@ -953,13 +953,15 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
     OPTIONAL_STEPS = ['voters_not_voted_notified', 'extended']
 
 
-  def voters_to_csv(self, to=None):
+  def voters_to_csv(self, q_param=None, to=None):
     if not to:
       to = StringIO.StringIO()
 
     writer = csv.writer(to)
 
     voters = self.voters.all()
+    if q_param:
+        voters = get_filtered_voters(q_param, voters)
     for voter in voters:
       vote_field = unicode(_("YES")) if voter.cast_votes.count() else \
                        unicode(_("NO"))

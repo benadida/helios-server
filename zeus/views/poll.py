@@ -510,13 +510,14 @@ def voter_exclude(request, election, poll, voter_uuid):
 @auth.election_admin_required
 @require_http_methods(["GET"])
 def voters_csv(request, election, poll, fname):
+    q_param = request.GET.get('q', None)
     response = HttpResponse(mimetype='text/csv')
     filename = smart_unicode("voters-%s.csv" % election.short_name)
     if fname:
         filename = fname
     response['Content-Dispotition'] = \
             'attachment; filename="%s.csv"' % filename
-    poll.voters_to_csv(response)
+    poll.voters_to_csv(q_param, response)
     return response
 
 
