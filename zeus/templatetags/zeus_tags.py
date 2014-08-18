@@ -239,7 +239,7 @@ def complete_voter_get_parameters(context, GET, new_order):
     page_param = ''
     page = GET.get('page', None)
     if page:
-        page_param += "&page=%s"%page
+        page_param += "&page=%s" % page
     order_by = GET.get('order', 'voter_login_id')
     order_type = GET.get('order_type', 'asc')
     order_param = ''
@@ -252,5 +252,9 @@ def complete_voter_get_parameters(context, GET, new_order):
     else:
         new_order_type = 'asc'
     order_param = '&order_type=%s' % new_order_type
-    params = '%s%s' % (page_param, order_param)
+    filter_param = ''
+    q = GET.get('q', None)
+    if q:
+        filter_param = '&q=%s' % q
+    params = '%s%s%s' % (page_param, order_param, filter_param)
     return params

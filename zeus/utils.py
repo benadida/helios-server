@@ -1,5 +1,6 @@
 import json
 
+from django.db.models import Q
 from django.template import Context, Template, loader, RequestContext
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
@@ -166,4 +167,34 @@ def test_decalize():
             pass
         else:
             raise AssertionError("Undecalize(%s) failed to fail" % t)
-#
+
+def get_filtered_voters(q_param, voters):
+
+    def parse_q_param(q):
+        args = []
+        for special_arg in q.split(" "):
+            if special_arg.startswith("+") or special_arg.startswith("-"):
+                q = q.replace(" " + special_arg, "")
+                q = q.replace(special_arg, "")
+                args.append(special_arg)
+        return q, args
+
+    if q_param != '':
+        q_parsed, extra_filters = parse_q_param(q_param)
+        q = Q()
+        for search_field in ['name', 'surname', 'email']:
+            kwargs = {'voter_%s__icontains' % search_field: q_parsed}
+            q = q | Q(**kwargs)	
+        
+        keys_map = {
+            'voted': 'cast_votes__id'
+        }
+        for arg in extra_filters:
+            type = True if arg[0] == "-" else False
+            key = keys_map.get(arg[1:], arg[1:])
+            if key in voter_table_header.keys():
+                q = q & Q(**{'%s__isnull' % key: type})
+
+        voters = voters.filter(q)
+
+    return voters

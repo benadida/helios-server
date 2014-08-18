@@ -12,7 +12,6 @@ from django.db.models.query import EmptyQuerySet
 from django.core.context_processors import csrf
 from django.core.validators import validate_email
 from django.utils.html import mark_safe, escape
-from django.db.models import Q
 from django import forms
 
 from zeus.forms import ElectionForm
@@ -176,34 +175,7 @@ def voters_list(request, election, poll):
         order_by = '-%s' % order_by
         voters = Voter.objects.filter(poll=poll).order_by(order_by)
     
-    search = q_param
-    def parse_q_param(q):
-        args = []
-        for special_arg in q.split(" "):
-            if special_arg.startswith("+") or special_arg.startswith("-"):
-                q = q.replace(" " + special_arg, "")
-                q = q.replace(special_arg, "")
-                args.append(special_arg)
-        return q, args
-
-    if q_param != '':
-        q_parsed, extra_filters = parse_q_param(q_param)
-        q = Q()
-        for search_field in ['name', 'surname', 'email']:
-            kwargs = {'voter_%s__icontains' % search_field: q_parsed}
-            q = q | Q(**kwargs)	
-        
-        keys_map = {
-            'voted': 'cast_votes__id'
-        }
-        for arg in extra_filters:
-            type = True if arg[0] == "-" else False
-            key = keys_map.get(arg[1:], arg[1:])
-            if key in voter_table_header.keys():
-                q = q & Q(**{'%s__isnull' % key: type})
-
-        voters = voters.filter(q)
-
+    voters = utils.get_filtered_voters(q_param, voters)
     voters_count = Voter.objects.filter(poll=poll).count()
     voted_count = poll.voters_cast_count()
 
@@ -464,6 +436,7 @@ def voters_email(request, election, poll=None, voter_uuid=None):
                     'custom_message' : email_form.cleaned_data['body'],
                     'election_url' : election_url,
                 }
+                q_param = request.GET.get('q', None)
                 task_kwargs = {
                     'subject_template': subject_template,
                     'body_template': body_template,
@@ -472,6 +445,7 @@ def voters_email(request, election, poll=None, voter_uuid=None):
                     'voter_constraints_exclude': voter_constraints_exclude,
                     'update_date': True,
                     'update_booth_invitation_date': update_booth_invitation_date,
+                    'q_param': q_param,
                 }
                 log_obj = election
                 if poll:
@@ -488,6 +462,8 @@ def voters_email(request, election, poll=None, voter_uuid=None):
             url = election_reverse(election, 'polls_list')
             if poll:
                 url = poll_reverse(poll, 'voters')
+            if q_param:
+                url += '?q=%s' % q_param
             return HttpResponseRedirect(url)
 
     context = {

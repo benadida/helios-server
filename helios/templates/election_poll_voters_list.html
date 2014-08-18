@@ -38,7 +38,7 @@
             {% if poll.feature_can_send_voter_mail %}
             <li>
             <a style="" class="foundicon-mail" 
-                href="{% url election_poll_voters_email election.uuid poll.uuid %}">
+            href="{% url election_poll_voters_email election.uuid poll.uuid %}{% if q %}?q={{q}}{% endif %}">
                 &nbsp;{% trans "Send voters email" %}</a>
             </li>
             {% endif %}

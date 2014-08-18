@@ -80,9 +80,12 @@ def voters_email(poll_id, subject_template, body_template, extra_vars={},
                  voter_constraints_include=None,
                  voter_constraints_exclude=None,
                  update_date=True,
-                 update_booth_invitation_date=False):
+                 update_booth_invitation_date=False,
+                 q_param=None):
     election = Poll.objects.get(id=poll_id)
     voters = election.voters.all()
+    if q_param:
+        voters = utils.get_filtered_voters(q_param, voters)
     if voter_constraints_include:
         voters = voters.filter(**voter_constraints_include)
     if voter_constraints_exclude:
