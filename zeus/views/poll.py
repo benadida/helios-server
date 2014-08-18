@@ -175,7 +175,7 @@ def voters_list(request, election, poll):
         order_by = '-%s' % order_by
         voters = Voter.objects.filter(poll=poll).order_by(order_by)
     
-    voters = utils.get_filtered_voters(q_param, voters)
+    voters = get_filtered_voters(q_param, voters)
     voters_count = Voter.objects.filter(poll=poll).count()
     voted_count = poll.voters_cast_count()
 
