@@ -50,7 +50,7 @@
             {% if poll.feature_can_clear_voters %}
             {% url election_poll_voters_clear election.uuid poll.uuid as clear_url %}
             {% trans "Delete all voters" as label %}
-            {% menu_confirm_action label clear_url voters_clear_confirm "remove" "POST" "alert"%}
+            {% menu_confirm_action label clear_url voters_clear_confirm "remove" "POST" "alert" q%}
             {% endif %}
           </ul>
         </div>

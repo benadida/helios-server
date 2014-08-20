@@ -200,7 +200,12 @@ def voters_list(request, election, poll):
 @transaction.commit_on_success
 @require_http_methods(["POST"])
 def voters_clear(request, election, poll):
-    for voter in poll.voters.all():
+    q_param = request.POST.get('q_param', None)
+    voters = poll.voters.all()
+    if q_param:
+        voters = get_filtered_voters(q_param, voters)
+
+    for voter in voters:
         if not voter.cast_votes.count():
             voter.delete()
         poll.logger.info("Poll voters cleared")

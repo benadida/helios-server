@@ -153,7 +153,7 @@ def menu_action(context, label, url, icon="", cls=""):
 
 @register.simple_tag(takes_context=True)
 def menu_confirm_action(context, label, url, confirm_msg="", icon="",
-                        method="POST", cls=""):
+                        method="POST", cls="", q=None):
     if not confirm_msg:
         confirm_msg = _("Are you sure ?")
 
@@ -179,12 +179,19 @@ def menu_confirm_action(context, label, url, confirm_msg="", icon="",
                      """name="csrfmiddlewaretoken" />"""
     if "nocsrf" in cls:
         csrf_token = ""
+    
+    q_field = "" 
+    if q:
+        q_field = """<input type="hidden" """ + \
+                  """value="%s" """ % q + \
+                  """name="q_param" \>"""
 
     html = """
     <li>
     <form action="%(url)s" method="%(method)s" class="action-form"
     %(confirm_code)s>
     %(csrf_token)s
+    %(q_hidden_field)s
     <a href="#" onclick="$(this).closest('form').submit(); return false"
     class="%(icon)s %(cls)s"> &nbsp;%(label)s</a>
     </form>
@@ -197,7 +204,8 @@ def menu_confirm_action(context, label, url, confirm_msg="", icon="",
         'method': method,
         'confirm_code': confirm_code,
         'confirm_msg': confirm_msg,
-        'csrf_token': csrf_token
+        'csrf_token': csrf_token,
+        'q_hidden_field': q_field,
     }
     return html
 
