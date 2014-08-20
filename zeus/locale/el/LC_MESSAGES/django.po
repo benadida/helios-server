@@ -8,11 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2014-09-19 15:25+0300\n"
-=======
-"POT-Creation-Date: 2014-08-06 17:09+0300\n"
->>>>>>> add order feature to voters list
+"POT-Creation-Date: 2014-08-20 16:58+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -34,11 +30,9 @@ msgstr "Αγγλικά"
 msgid "Greek"
 msgstr "Ελληνικά"
 
-msgid ""
-"Set the language that will be used for email messages and result documents"
+msgid "Set the language that will be used for email messages"
 msgstr ""
-"Επιλέξτε την γλώσσα που θα χρησιμοποιηθεί για τα μηνύματα των email και για "
-"την παραγωγή των εγγράφων με τα αποτελέσματα"
+"Επιλέξτε την γλώσσα που θα χρησιμοποιηθεί για τα μηνύματα των email"
 
 msgid "Communication language"
 msgstr "Γλώσσα επικοινωνίας"

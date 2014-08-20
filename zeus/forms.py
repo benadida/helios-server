@@ -101,8 +101,7 @@ class ElectionForm(forms.ModelForm):
         super(ElectionForm, self).__init__(*args, **kwargs)
         choices = [('en', _('English')),
                    ('el', _('Greek'))]
-        help_text = _("Set the language that will be used for email messages "
-                      "and result documents")
+        help_text = _("Set the language that will be used for email messages")
         self.fields['communication_language'] = forms.ChoiceField(label=
                                                     _("Communication language"),
                                                     choices=choices,
