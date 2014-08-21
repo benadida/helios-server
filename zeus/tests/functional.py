@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import datetime
 import json
@@ -313,7 +315,27 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         r = self.single_voter_cast_ballot(voter_login_url, p_uuid)
         self.assertEqual(r.status_code, 403)
         if self.local_verbose:
-            print '...but was not allowed-not frozen yet'
+            print '...but was not allowed - not frozen yet'
+
+    def voter_cannot_vote_after_close(self):
+        self.c.get(self.locations['logout'])
+        voter_login_url = (Election.objects
+            .get(uuid=self.e_uuid)
+            .voters.all()[0]
+            .get_quick_login_url())
+        p_uuid = self.p_uuids[0]
+        r = self.c.get(voter_login_url, follow=True)
+        self.assertTrue(('Η ψηφοφορία έχει λήξει' in r.content) \
+                        or ('Voting closed' in r.content))
+        r = self.c.post('/elections/%s/polls/%s/cast' % \
+                       (self.e_uuid, p_uuid), {})
+        if self.local_verbose:
+            print '...Booth button does not appear after close'
+        r = self.c.post('/elections/%s/polls/%s/cast' % \
+                       (self.e_uuid, p_uuid), {})
+        self.assertEqual(r.status_code, 403)
+        if self.local_verbose:
+            print '...Voter cannot access cast vote view after close'
 
     def submit_vote_for_each_voter(self, voters_urls):
         for p_uuid in voters_urls:
@@ -520,6 +542,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         voters_urls = self.get_voters_urls()
         self.submit_vote_for_each_voter(voters_urls)
         self.close_election()
+        self.voter_cannot_vote_after_close()
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_mixing_finished)
         self.decrypt_with_trustees(pks)
