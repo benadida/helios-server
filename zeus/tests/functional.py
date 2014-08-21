@@ -33,7 +33,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         # set the voters number that will be produced for test
         self.voters_num = 2
         # set the trustees number that will be produced for the test
-        trustees_num = 1
+        trustees_num = 2 
         trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
                                        'test%x@mail.com' %x]) for x in range(0,trustees_num))
         # set the polls number that will be produced for the test
@@ -69,6 +69,16 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                               'communication_language': 'el',
                               }
 
+    def verbose(self, message):
+        if self.local_verbose:
+            print message
+
+    def get_voter_from_url(self, url):
+        chunks = url.split('/')
+        uuid = chunks[8]
+        voter = Voter.objects.get(uuid=uuid)
+        return voter
+
     def admin_can_submit_election_form(self):
         self.election_form['election_module'] = self.election_type
         '''
@@ -86,17 +96,18 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 IndexError,
                 self.stv_election_form_must_have_departments,
                 self.election_form)
+            message = 'STV election form was not submited \
+                       without departments'
+            self.verbose('- STV election form was not submited'
+                         'without departments')
 
-            if self.local_verbose:
-                print 'STV election form was not submited without departments'
             self.election_form['departments'] = self.departments
         self.c.post(self.locations['login'], self.login_data)
         r = self.c.post(self.locations['create'], self.election_form, follow=True)
         e = Election.objects.all()[0]
         self.e_uuid = e.uuid
         self.assertIsInstance(e, Election)
-        if self.local_verbose:
-            print 'Admin posted election form'
+        self.verbose('+ Admin posted election form')
 
     '''
     election can have 0 trustees
@@ -143,8 +154,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 t.last_verified_key_at = datetime.datetime.now()
                 t.save()
                 pks[t.uuid] = t1_kp
-        if self.local_verbose:
-            print 'Trustees are ready'
+        self.verbose('+ Trustees are ready')
         return pks
 
     def freeze_election(self):
@@ -155,8 +165,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         r = self.c.post(freeze_location, follow=True)
         e = Election.objects.get(uuid=self.e_uuid)
         if e.frozen_at:
-            if self.local_verbose:
-                print 'Election got frozen'
+            self.verbose('+ Election got frozen')
             return True
 
     def create_duplicate_polls(self):
@@ -172,8 +181,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.c.post(location, post_data)
         e = Election.objects.all()[0]
         self.assertEqual(e.polls.all().count(), 0)
-        if self.local_verbose:
-            print 'Polls were not created - duplicate poll names'
+        self.verbose('- Polls were not created - duplicate poll names')
 
     def create_polls(self):
         self.c.get(self.locations['logout'])
@@ -192,8 +200,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.c.post(location, post_data)
         e = Election.objects.all()[0]
         self.assertEqual(e.polls.all().count(), self.polls_number)
-        if self.local_verbose:
-            print 'Polls were created'
+        self.verbose('+ Polls were created')
         self.p_uuids = []
         for poll in e.polls.all():
             self.p_uuids.append(poll.uuid)
@@ -206,13 +213,12 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             self.c.post(questions_location, duplicate_post_data)
             p = Poll.objects.get(uuid=p_uuid)
             self.assertEqual(p.questions_count, 0)
-            if self.local_verbose:
-                print ' Duplicate answers were not allowed'
+            self.verbose('- Duplicate answers were not allowed in poll %s' \
+                % p.name)
             self.c.post(questions_location, post_data)
             p = Poll.objects.get(uuid=p_uuid)
             self.assertTrue(p.questions_count == nr_questions)
-        if self.local_verbose:
-            print 'Questions were created'
+        self.verbose('+ Questions were created')
 
     def submit_duplicate_id_voters_file(self):
         counter = 0
@@ -226,8 +232,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 fp.write(voter)
             fp.close()
             counter += 1
-        if self.local_verbose:
-            print 'Faulty voters file(duplicate ids) created'
+        self.verbose('- Faulty voters file(duplicate ids) created')
         for p_uuid in self.p_uuids:
             upload_voters_location = '/elections/%s/polls/%s/voters/upload' %(self.e_uuid, p_uuid)
             r = self.c.post(upload_voters_location, {'voters_file':file(voter_files[p_uuid])})
@@ -235,8 +240,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             e = Election.objects.get(uuid=self.e_uuid)
             nr_voters = e.voters.count()
             self.assertEqual(nr_voters, 0)
-        if self.local_verbose:
-            print '..Voters from faulty file were not submitted'
+        self.verbose('- Voters from faulty file were not submitted')
 
     def submit_wrong_field_number_voters_file(self):
         counter = 0
@@ -251,8 +255,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 fp.write(voter)
             fp.close()
             counter += 1
-        if self.local_verbose:
-            print 'Faulty voters file(fields>6) created'
+        self.verbose('+ Faulty voters file(fields>6) created')
         for p_uuid in self.p_uuids:
             upload_voters_location = '/elections/%s/polls/%s/voters/upload' %(self.e_uuid, p_uuid)
             r = self.c.post(upload_voters_location, {'voters_file':file(voter_files[p_uuid])})
@@ -261,8 +264,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             e = Election.objects.get(uuid=self.e_uuid)
             nr_voters = e.voters.count()
             self.assertEqual(nr_voters, 0)
-        if self.local_verbose:
-            print '..Voters from faulty file were not submitted'
+        self.verbose('- Voters from faulty file were not submitted')
 
     def get_voters_file(self):
         counter = 0
@@ -276,8 +278,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 fp.write(voter)
             fp.close()
             counter += 1
-        if self.local_verbose:
-            print 'Voters file created'
+        self.verbose('+ Voters file created')
         return voter_files
 
     def submit_voters_file(self):
@@ -289,8 +290,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         e = Election.objects.get(uuid=self.e_uuid)
         voters = e.voters.count()
         self.assertEqual(voters, self.voters_num*self.polls_number)
-        if self.local_verbose:
-            print 'Voters file submitted'
+        self.verbose('+ Voters file submitted')
 
     def get_voters_urls(self):
         # return a dict with p_uuid as key and voters urls as a list for each poll
@@ -302,8 +302,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             for v in voters:
                 urls_for_this_poll.append(v.get_quick_login_url())
             voters_urls[p_uuid] = urls_for_this_poll
-        if self.local_verbose:
-            print 'Got login urls for voters'
+        self.verbose('+ Got login urls for voters')
         return voters_urls
 
     def voter_cannot_vote_before_freeze(self):
@@ -314,8 +313,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         p_uuid = self.p_uuids[0]
         r = self.single_voter_cast_ballot(voter_login_url, p_uuid)
         self.assertEqual(r.status_code, 403)
-        if self.local_verbose:
-            print '...but was not allowed - not frozen yet'
+        self.verbose('- Voting  was not allowed - not frozen yet')
 
     def voter_cannot_vote_after_close(self):
         self.c.get(self.locations['logout'])
@@ -327,15 +325,12 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         r = self.c.get(voter_login_url, follow=True)
         self.assertTrue(('Η ψηφοφορία έχει λήξει' in r.content) \
                         or ('Voting closed' in r.content))
-        r = self.c.post('/elections/%s/polls/%s/cast' % \
-                       (self.e_uuid, p_uuid), {})
-        if self.local_verbose:
-            print '...Booth button does not appear after close'
+        self.verbose('- Voter trying to vote was informed that'
+                     ' voting is closed')
         r = self.c.post('/elections/%s/polls/%s/cast' % \
                        (self.e_uuid, p_uuid), {})
         self.assertEqual(r.status_code, 403)
-        if self.local_verbose:
-            print '...Voter cannot access cast vote view after close'
+        self.verbose('- Voter cannot access cast vote view after close')
 
     def submit_vote_for_each_voter(self, voters_urls):
         for p_uuid in voters_urls:
@@ -382,8 +377,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 type_hint='phoebus/EncryptedVote').wrapped_obj
         cast_data['encrypted_vote'] = enc_vote.toJSON()
         r = self.c.post('/elections/%s/polls/%s/cast'%(self.e_uuid, p_uuid), cast_data)
-        if self.local_verbose:
-            print 'Voter voted'
+        voter = self.get_voter_from_url(the_url)
+        p = Poll.objects.get(uuid=p_uuid)
+        self.verbose('+ Voter %s voting at poll %s' %(voter.name, p.name))
         return r
 
     def close_election(self):
@@ -392,8 +388,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.c.post('/elections/%s/close'%self.e_uuid)
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_closed)
-        if self.local_verbose:
-            print 'Election is closed'
+        self.verbose('+ Election is closed')
 
     def decrypt_with_trustees(self, pks):
         for trustee, kp in pks.iteritems():
@@ -420,16 +415,15 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 post_data = {'factors_and_proofs': json.dumps(data)}
                 r = self.c.post(location, post_data)
                 self.assertEqual(r.status_code, 200)
-                if self.local_verbose:
-                    print 'Trustee decrypted poll'
+                self.verbose('+ Trustee %s decrypted poll %s'\
+                    % (t.name, p.name))
 
     def check_results(self):
         # check if results exist
         for p_uuid in self.p_uuids:
             p = Poll.objects.get(uuid=p_uuid)
             self.assertTrue(len(p.result[0]) > 0)
-            if self.local_verbose:
-                print 'Results are generated for poll'
+            self.verbose('+ Results generated for poll %s' % p.name)
 
     def check_docs_exist(self, ext_dict):
         e_exts = ext_dict['el']
@@ -448,8 +442,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 e_path = el_module.get_election_result_file_path(ext,\
                     ext, lang[0])
                 self.assertTrue(os.path.exists(e_path))
-        if self.local_verbose:
-            print 'Docs were generated'
+        self.verbose('+ Docs generated')
 
     def view_returns_poll_proofs_file(self, client, e_uuid, p_uuid):
         address = '/elections/%s/polls/%s/proofs.zip' % \
@@ -486,8 +479,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 response_data = dict(r.items())
                 self.assertTrue(response_data['Content-Type'] == \
                         'application/%s' % ext)
-        if self.local_verbose:
-            print 'Requested downloadable content is available'
+        self.verbose('+ Requested downloadable content is available')
 
     def zip_contains_files(self, doc_exts):
         el_exts = doc_exts['el']
@@ -519,8 +511,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             files_in_zip = zip_file.namelist()
             for file_name in file_names:
                 self.assertTrue(bool(file_name in files_in_zip))
-            if self.local_verbose:
-                print 'Zip contains all docs'
+            self.verbose('+ Zip in %s contains all docs' % lang[1])
 
     def election_proccess(self):
         self.admin_can_submit_election_form()
