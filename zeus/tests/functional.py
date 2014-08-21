@@ -31,13 +31,13 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
        "    \|_______|\|__| \|_|\n")
 
         # set the voters number that will be produced for test
-        self.voters_num = 2
+        self.voters_num = 1
         # set the trustees number that will be produced for the test
-        trustees_num = 2 
+        trustees_num = 1 
         trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
                                        'test%x@mail.com' %x]) for x in range(0,trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number = 2 
+        self.polls_number = 1
         # set the number of max questions for simple election
         self.simple_election_max_questions_number = 2
         # set the number of max answers for each question of simple election
@@ -96,9 +96,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 IndexError,
                 self.stv_election_form_must_have_departments,
                 self.election_form)
-            message = 'STV election form was not submited \
-                       without departments'
-            self.verbose('- STV election form was not submited'
+            self.verbose('- STV election form was not submited '
                          'without departments')
 
             self.election_form['departments'] = self.departments
@@ -227,7 +225,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             fname = '/tmp/faulty_voters%s.csv' % counter
             voter_files[p_uuid] = fname
             fp = file(fname, 'w')
-            for i in range(1,self.voters_num+1):
+            for i in range(0,2):
                 voter = "1,voter%s@mail.com,test_name%s,test_surname%s\n"%(i,i,i)
                 fp.write(voter)
             fp.close()
