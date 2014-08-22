@@ -16,28 +16,29 @@ from zeus.core import to_relative_answers, gamma_encode, prove_encryption
 from helios.models import *
 from zeus.tests.utils import SetUpAdminAndClientMixin
 
+
 class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
     def setUp(self):
         super(TestElectionBase, self).setUp()
         self.local_verbose = True
-        self.celebration =(
-       " _________ ___  __\n"
-       "|\   __  \|\  \|\  \\\n"
-       "\ \  \ \  \ \  \/  /_\n"
-       " \ \  \ \  \ \   ___ \\\n"
-       "  \ \  \_\  \ \  \\\ \ \\ \n"
-       "   \ \_______\ \__\\\ \_\\\n"
-       "    \|_______|\|__| \|_|\n")
+        self.celebration = (
+            " _________ ___  __\n"
+            "|\   __  \|\  \|\  \\\n"
+            "\ \  \ \  \ \  \/  /_\n"
+            " \ \  \ \  \ \   ___ \\\n"
+            "  \ \  \_\  \ \  \\\ \ \\ \n"
+            "   \ \_______\ \__\\\ \_\\\n"
+            "    \|_______|\|__| \|_|\n")
 
         # set the voters number that will be produced for test
-        self.voters_num = 1
+        self.voters_num = 3
         # set the trustees number that will be produced for the test
-        trustees_num = 1 
-        trustees = "\n".join(",".join(['testName%x testSurname%x' %(x,x),
-                                       'test%x@mail.com' %x]) for x in range(0,trustees_num))
+        trustees_num = 1
+        trustees = "\n".join(",".join(['testName%x testSurname%x' % (x, x),
+                   'test%x@mail.com' % x]) for x in range(0, trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number = 1
+        self.polls_number = 2
         # set the number of max questions for simple election
         self.simple_election_max_questions_number = 2
         # set the number of max answers for each question of simple election
@@ -50,24 +51,22 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.party_election_max_answers_number = 3
         # set the number of max candidates in stv election
         self.stv_election_max_answers_number = 3
-        start_time = datetime.datetime.now()
-        end_time = datetime.datetime.now() + timedelta(hours=2)
-        date1 = datetime.datetime.now() + timedelta(hours=48)
-        date2 = datetime.datetime.now() + timedelta(hours=56)
+        start_date = datetime.datetime.now() + timedelta(hours=48)
+        end_date = datetime.datetime.now() + timedelta(hours=56)
 
         self.election_form = {
-                              'trial': True,
-                              'name': 'test_election',
-                              'description': 'testing_election',
-                              'trustees': trustees,
-                              'voting_starts_at_0': date1.strftime('%Y-%m-%d'),
-                              'voting_starts_at_1': date1.strftime('%H:%M'),
-                              'voting_ends_at_0': date2.strftime('%Y-%m-%d'),
-                              'voting_ends_at_1': date2.strftime('%H:%M'),
-                              'help_email': 'test@test.com',
-                              'help_phone': 6988888888,
-                              'communication_language': 'el',
-                              }
+            'trial': True,
+            'name': 'test_election',
+            'description': 'testing_election',
+            'trustees': trustees,
+            'voting_starts_at_0': start_date.strftime('%Y-%m-%d'),
+            'voting_starts_at_1': start_date.strftime('%H:%M'),
+            'voting_ends_at_0': end_date.strftime('%Y-%m-%d'),
+            'voting_ends_at_1': end_date.strftime('%H:%M'),
+            'help_email': 'test@test.com',
+            'help_phone': 6988888888,
+            'communication_language': 'el',
+            }
 
     def verbose(self, message):
         if self.local_verbose:
@@ -100,8 +99,10 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                          'without departments')
 
             self.election_form['departments'] = self.departments
+        # Elections number must be 0 before form submit
+        self.assertEqual(Election.objects.all().count(), 0)
         self.c.post(self.locations['login'], self.login_data)
-        r = self.c.post(self.locations['create'], self.election_form, follow=True)
+        self.c.post(self.locations['create'], self.election_form, follow=True)
         e = Election.objects.all()[0]
         self.e_uuid = e.uuid
         self.assertIsInstance(e, Election)
@@ -121,10 +122,11 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         post_data['departments'] = ''
         self.c.get(self.locations['login'], self.login_data)
         self.election_form['election_module'] = self.election_type
-        r = self.c.post(self.locations['create'], self.election_form, follow=True)
-        e = Election.objects.all()[0]
+        self.c.post(self.locations['create'], self.election_form,
+                    follow=True)
+        Election.objects.all()[0]
 
-    def prepare_trustees(self,e_uuid):
+    def prepare_trustees(self, e_uuid):
         e = Election.objects.get(uuid=e_uuid)
         pks = {}
         for t in e.trustees.all():
@@ -140,10 +142,14 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                                                      y=t1_kp.pk.y))
                 pok = t1_kp.sk.prove_sk(DLog_challenge_generator)
                 post_data = {
-                             'public_key_json':[json.dumps({'public_key': pk.toJSONDict(),
-                             'pok': {'challenge': pok.challenge,
-                             'commitment': pok.commitment,
-                             'response': pok.response}})]}
+                    'public_key_json': [
+                        json.dumps({
+                            'public_key': pk.toJSONDict(),
+                            'pok': {
+                                'challenge': pok.challenge,
+                                'commitment': pok.commitment,
+                                'response': pok.response}
+                            })]}
 
                 r = self.c.post('/elections/%s/trustee/upload_pk' %
                                (e_uuid), post_data, follow=True)
@@ -158,9 +164,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
     def freeze_election(self):
         e = Election.objects.get(uuid=self.e_uuid)
         self.c.get(self.locations['logout'])
-        r = self.c.post(self.locations['login'], self.login_data)
+        self.c.post(self.locations['login'], self.login_data)
         freeze_location = '/elections/%s/freeze' % self.e_uuid
-        r = self.c.post(freeze_location, follow=True)
+        self.c.post(freeze_location, follow=True)
         e = Election.objects.get(uuid=self.e_uuid)
         if e.frozen_at:
             self.verbose('+ Election got frozen')
@@ -170,12 +176,13 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
         location = '/elections/%s/polls/add' % self.e_uuid
-        post_data = {'form-TOTAL_FORMS': 2,
-                     'form-INITIAL_FORMS': 0,
-                     'form-MAX_NUM_FORMS': 100
-                    }
+        post_data = {
+            'form-TOTAL_FORMS': 2,
+            'form-INITIAL_FORMS': 0,
+            'form-MAX_NUM_FORMS': 100
+            }
         for i in range(0, 2):
-            post_data['form-%s-name'% i] = 'test_poll'
+            post_data['form-%s-name' % i] = 'test_poll'
         self.c.post(location, post_data)
         e = Election.objects.all()[0]
         self.assertEqual(e.polls.all().count(), 0)
@@ -188,12 +195,13 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         # there shouldn't be any polls before we create them
         self.assertEqual(e.polls.all().count(), 0)
         location = '/elections/%s/polls/add' % self.e_uuid
-        post_data = {'form-TOTAL_FORMS': self.polls_number,
-                     'form-INITIAL_FORMS': 0,
-                     'form-MAX_NUM_FORMS': 100
-                    }
+        post_data = {
+            'form-TOTAL_FORMS': self.polls_number,
+            'form-INITIAL_FORMS': 0,
+            'form-MAX_NUM_FORMS': 100
+            }
         for i in range(0, self.polls_number):
-            post_data['form-%s-name'% i] = 'test_poll%s' % i
+            post_data['form-%s-name' % i] = 'test_poll%s' % i
 
         self.c.post(location, post_data)
         e = Election.objects.all()[0]
@@ -205,14 +213,15 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
     def submit_questions(self):
         for p_uuid in self.p_uuids:
-            post_data, nr_questions, duplicate_post_data = self.create_questions()
+            post_data, nr_questions, duplicate_post_data = \
+                self.create_questions()
             questions_location = '/elections/%s/polls/%s/questions/manage' % \
-                    (self.e_uuid, p_uuid)
+                (self.e_uuid, p_uuid)
             self.c.post(questions_location, duplicate_post_data)
             p = Poll.objects.get(uuid=p_uuid)
             self.assertEqual(p.questions_count, 0)
-            self.verbose('- Duplicate answers were not allowed in poll %s' \
-                % p.name)
+            self.verbose('- Duplicate answers were not allowed in poll %s'
+                         % p.name)
             self.c.post(questions_location, post_data)
             p = Poll.objects.get(uuid=p_uuid)
             self.assertTrue(p.questions_count == nr_questions)
@@ -225,16 +234,21 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             fname = '/tmp/faulty_voters%s.csv' % counter
             voter_files[p_uuid] = fname
             fp = file(fname, 'w')
-            for i in range(0,2):
-                voter = "1,voter%s@mail.com,test_name%s,test_surname%s\n"%(i,i,i)
+            for i in range(0, 2):
+                voter = "1,voter%s@mail.com,test_name%s,test_surname%s\n" \
+                    % (i, i, i)
                 fp.write(voter)
             fp.close()
             counter += 1
         self.verbose('- Faulty voters file(duplicate ids) created')
         for p_uuid in self.p_uuids:
-            upload_voters_location = '/elections/%s/polls/%s/voters/upload' %(self.e_uuid, p_uuid)
-            r = self.c.post(upload_voters_location, {'voters_file':file(voter_files[p_uuid])})
-            r = self.c.post(upload_voters_location, {'confirm_p': 1})
+            upload_voters_location = '/elections/%s/polls/%s/voters/upload' \
+                                     % (self.e_uuid, p_uuid)
+            self.c.post(
+                upload_voters_location,
+                {'voters_file': file(voter_files[p_uuid])}
+                )
+            self.c.post(upload_voters_location, {'confirm_p': 1})
             e = Election.objects.get(uuid=self.e_uuid)
             nr_voters = e.voters.count()
             self.assertEqual(nr_voters, 0)
@@ -247,16 +261,21 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             fname = '/tmp/wrong_voters%s.csv' % counter
             voter_files[p_uuid] = fname
             fp = file(fname, 'w')
-            for i in range(1,self.voters_num+1):
-                voter = "%s,voter%s@mail.com,test_name%s,test_surname%s,fname,4444444444,lol\n"\
-                    %(i,i,i,i)
+            for i in range(1, self.voters_num+1):
+                voter = ("%s,voter%s@mail.com,test_name%s,test_surname%s,"
+                         "fname,4444444444,lol\n"
+                         % (i, i, i, i))
                 fp.write(voter)
             fp.close()
             counter += 1
         self.verbose('+ Faulty voters file(fields>6) created')
         for p_uuid in self.p_uuids:
-            upload_voters_location = '/elections/%s/polls/%s/voters/upload' %(self.e_uuid, p_uuid)
-            r = self.c.post(upload_voters_location, {'voters_file':file(voter_files[p_uuid])})
+            upload_voters_location = '/elections/%s/polls/%s/voters/upload' \
+                % (self.e_uuid, p_uuid)
+            r = self.c.post(
+                upload_voters_location,
+                {'voters_file': file(voter_files[p_uuid])}
+                )
             r = self.c.post(upload_voters_location, {'confirm_p': 1})
             self.assertEqual(r.status_code, 302)
             e = Election.objects.get(uuid=self.e_uuid)
@@ -271,8 +290,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             fname = '/tmp/random_voters%s.csv' % counter
             voter_files[p_uuid] = fname
             fp = file(fname, 'w')
-            for i in range(1,self.voters_num+1):
-                voter = "%s,voter%s@mail.com,test_name%s,test_surname%s\n"%(i,i,i,i)
+            for i in range(1, self.voters_num+1):
+                voter = "%s,voter%s@mail.com,test_name%s,test_surname%s\n" \
+                    % (i, i, i, i)
                 fp.write(voter)
             fp.close()
             counter += 1
@@ -282,16 +302,21 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
     def submit_voters_file(self):
         voter_files = self.get_voters_file()
         for p_uuid in self.p_uuids:
-            upload_voters_location = '/elections/%s/polls/%s/voters/upload' %(self.e_uuid, p_uuid)
-            r = self.c.post(upload_voters_location, {'voters_file':file(voter_files[p_uuid])})
-            r = self.c.post(upload_voters_location, {'confirm_p': 1})
+            upload_voters_location = '/elections/%s/polls/%s/voters/upload' \
+                % (self.e_uuid, p_uuid)
+            self.c.post(
+                upload_voters_location,
+                {'voters_file': file(voter_files[p_uuid])}
+                )
+            self.c.post(upload_voters_location, {'confirm_p': 1})
         e = Election.objects.get(uuid=self.e_uuid)
         voters = e.voters.count()
         self.assertEqual(voters, self.voters_num*self.polls_number)
         self.verbose('+ Voters file submitted')
 
     def get_voters_urls(self):
-        # return a dict with p_uuid as key and voters urls as a list for each poll
+        # return a dict with p_uuid as key and
+        # voters urls as a list for each poll
         voters_urls = {}
         for p_uuid in self.p_uuids:
             urls_for_this_poll = []
@@ -304,7 +329,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         return voters_urls
 
     def voter_cannot_vote_before_freeze(self):
-        voter_login_url = (Election.objects
+        voter_login_url = (
+            Election.objects
             .get(uuid=self.e_uuid)
             .voters.all()[0]
             .get_quick_login_url())
@@ -315,18 +341,19 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
     def voter_cannot_vote_after_close(self):
         self.c.get(self.locations['logout'])
-        voter_login_url = (Election.objects
+        voter_login_url = (
+            Election.objects
             .get(uuid=self.e_uuid)
             .voters.all()[0]
             .get_quick_login_url())
         p_uuid = self.p_uuids[0]
         r = self.c.get(voter_login_url, follow=True)
-        self.assertTrue(('Η ψηφοφορία έχει λήξει' in r.content) \
+        self.assertTrue(('Η ψηφοφορία έχει λήξει' in r.content)
                         or ('Voting closed' in r.content))
         self.verbose('- Voter trying to vote was informed that'
                      ' voting is closed')
-        r = self.c.post('/elections/%s/polls/%s/cast' % \
-                       (self.e_uuid, p_uuid), {})
+        r = self.c.post('/elections/%s/polls/%s/cast'
+                        % (self.e_uuid, p_uuid), {})
         self.assertEqual(r.status_code, 403)
         self.verbose('- Voter cannot access cast vote view after close')
 
@@ -363,27 +390,30 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         cast_data = {}
         ##############
         ballot = {
-                  'election_hash': 'foobar',
-                  'election_uuid': e.uuid,
-                  'answers': [{
-                               'encryption_proof':enc_proof,
-                               'choices':[{'alpha': cipher.alpha, 'beta': cipher.beta}]
-                              }]
-                 }
+            'election_hash': 'foobar',
+            'election_uuid': e.uuid,
+            'answers': [{
+                'encryption_proof': enc_proof,
+                'choices': [{
+                    'alpha': cipher.alpha,
+                    'beta': cipher.beta}]
+                }]
+            }
         ##############
-        enc_vote = datatypes.LDObject.fromDict(ballot,
-                type_hint='phoebus/EncryptedVote').wrapped_obj
+        enc_vote = datatypes.LDObject.fromDict(
+            ballot, type_hint='phoebus/EncryptedVote').wrapped_obj
         cast_data['encrypted_vote'] = enc_vote.toJSON()
-        r = self.c.post('/elections/%s/polls/%s/cast'%(self.e_uuid, p_uuid), cast_data)
+        r = self.c.post('/elections/%s/polls/%s/cast'
+                        % (self.e_uuid, p_uuid), cast_data)
         voter = self.get_voter_from_url(the_url)
         p = Poll.objects.get(uuid=p_uuid)
-        self.verbose('+ Voter %s voting at poll %s' %(voter.name, p.name))
+        self.verbose('+ Voter %s voting at poll %s' % (voter.name, p.name))
         return r
 
     def close_election(self):
         self.c.get(self.locations['logout'])
-        r = self.c.post(self.locations['login'], self.login_data)
-        self.c.post('/elections/%s/close'%self.e_uuid)
+        self.c.post(self.locations['login'], self.login_data)
+        self.c.post('/elections/%s/close' % self.e_uuid)
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_closed)
         self.verbose('+ Election is closed')
@@ -407,14 +437,17 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                         'response': proof.response,
                         'challenge': proof.challenge,
                         })
-                data = {'decryption_factors': decryption_factors,
-                            'decryption_proofs': decryption_proofs}
-                location = '/elections/%s/polls/%s/post-decryptions' % (self.e_uuid, p_uuid)
+                data = {
+                    'decryption_factors': decryption_factors,
+                    'decryption_proofs': decryption_proofs
+                    }
+                location = '/elections/%s/polls/%s/post-decryptions' \
+                    % (self.e_uuid, p_uuid)
                 post_data = {'factors_and_proofs': json.dumps(data)}
                 r = self.c.post(location, post_data)
                 self.assertEqual(r.status_code, 200)
-                self.verbose('+ Trustee %s decrypted poll %s'\
-                    % (t.name, p.name))
+                self.verbose('+ Trustee %s decrypted poll %s'
+                             % (t.name, p.name))
 
     def check_results(self):
         # check if results exist
@@ -428,17 +461,24 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         p_exts = ext_dict['poll']
         e = Election.objects.get(uuid=self.e_uuid)
         el_module = e.get_module()
-        poll_modules = [poll.get_module() for poll in e.polls.all() ]
+        poll_modules = [poll.get_module() for poll in e.polls.all()]
         for lang in settings.LANGUAGES:
             for ext in p_exts:
                 for p_module in poll_modules:
-                    path = p_module.get_poll_result_file_path(ext, ext, lang[0])
+                    path = p_module.get_poll_result_file_path(
+                        ext,
+                        ext,
+                        lang[0]
+                    )
                     if ext == 'json':
                         path = p_module.get_poll_result_file_path(ext, ext)
                     self.assertTrue(os.path.exists(path))
             for ext in e_exts:
-                e_path = el_module.get_election_result_file_path(ext,\
-                    ext, lang[0])
+                e_path = el_module.get_election_result_file_path(
+                    ext,
+                    ext,
+                    lang[0]
+                )
                 self.assertTrue(os.path.exists(e_path))
         self.verbose('+ Docs generated')
 
@@ -447,8 +487,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             (e_uuid, p_uuid)
         r = client.get(address)
         response_data = dict(r.items())
-        self.assertTrue(response_data['Content-Type'] == \
-                        'application/zip')
+        self.assertTrue(
+            response_data['Content-Type'] == 'application/zip'
+            )
 
     def view_returns_result_files(self, ext_dict):
         p_exts = ext_dict['poll']
@@ -461,22 +502,26 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 self.view_returns_poll_proofs_file(self.c, e.uuid, poll.uuid)
                 for ext in p_exts:
                     if ext is not 'json':
-                        address = '/elections/%s/polls/%s/results-%s.%s' % \
-                            (self.e_uuid, poll.uuid,lang[0], ext)
+                        address = ('/elections/%s/polls/%s/results-%s.%s'
+                                   % (self.e_uuid, poll.uuid, lang[0], ext))
                     else:
                         address = '/elections/%s/polls/%s/results.%s' % \
                             (self.e_uuid, poll.uuid, ext)
                     r = self.c.get(address)
                     response_data = dict(r.items())
-                    self.assertTrue(response_data['Content-Type'] == \
-                        'application/%s' % ext)
+                    self.assertTrue(
+                        response_data['Content-Type'] == 'application/%s'
+                        % ext
+                        )
             for ext in e_exts:
                 address = '/elections/%s/results/%s-%s.%s' % \
                     (e.uuid, e.short_name, lang[0], ext)
                 r = self.c.get(address)
                 response_data = dict(r.items())
-                self.assertTrue(response_data['Content-Type'] == \
-                        'application/%s' % ext)
+                self.assertTrue(
+                    response_data['Content-Type'] == 'application/%s'
+                    % ext
+                    )
         self.verbose('+ Requested downloadable content is available')
 
     def zip_contains_files(self, doc_exts):
@@ -489,22 +534,36 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         for lang in settings.LANGUAGES:
             all_files_paths = []
             for ext in el_exts:
-                    path = el_module.get_election_result_file_path(ext,ext,lang[0])
+                    path = el_module.get_election_result_file_path(
+                        ext,
+                        ext,
+                        lang[0]
+                        )
                     all_files_paths.append(path)
             for poll in e.polls.all():
                 p_module = poll.get_module()
                 for ext in poll_exts:
                     if ext is not 'json':
-                        path = p_module.get_poll_result_file_path(ext,ext,lang[0])
+                        path = p_module.get_poll_result_file_path(
+                            ext,
+                            ext,
+                            lang[0]
+                            )
                         all_files_paths.append(path)
                     else:
-                        path = el_module.get_election_result_file_path(ext,ext)
+                        path = el_module.get_election_result_file_path(
+                            ext,
+                            ext
+                            )
             file_names = []
             for path in all_files_paths:
                 name = os.path.basename(path)
                 file_names.append(name)
-            zippath = el_module.get_election_result_file_path('zip',\
-                'zip', lang[0])
+            zippath = el_module.get_election_result_file_path(
+                'zip',
+                'zip',
+                lang[0]
+                )
             zip_file = zipfile.ZipFile(zippath, 'r')
             files_in_zip = zip_file.namelist()
             for file_name in file_names:
@@ -523,7 +582,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.submit_questions()
         self.voter_cannot_vote_before_freeze()
         e = Election.objects.get(uuid=self.e_uuid)
-        self.assertEqual (e.election_issues_before_freeze, [])
+        self.assertEqual(e.election_issues_before_freeze, [])
         self.assertTrue(self.freeze_election())
         e = Election.objects.get(uuid=self.e_uuid)
         e.voting_starts_at = datetime.datetime.now()
@@ -542,6 +601,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         if self.local_verbose:
             print self.celebration
 
+
 class TestSimpleElection(TestElectionBase):
 
     def setUp(self):
@@ -559,10 +619,11 @@ class TestSimpleElection(TestElectionBase):
         max_nr_answers = self.simple_election_max_answers_number
         nr_questions = randint(1, max_nr_questions)
 
-        post_data = {'form-TOTAL_FORMS': nr_questions,
-                     'form-INITIAL_FORMS': 1,
-                     'form-MAX_NUM_FORMS': "",
-                    }
+        post_data = {
+            'form-TOTAL_FORMS': nr_questions,
+            'form-INITIAL_FORMS': 1,
+            'form-MAX_NUM_FORMS': "",
+            }
 
         post_data_with_duplicate_answers = post_data.copy()
 
@@ -573,18 +634,21 @@ class TestSimpleElection(TestElectionBase):
             duplicate_extra_data = {}
             extra_data = {}
             extra_data = {
-                'form-%s-ORDER'%num: num,
-                'form-%s-choice_type'%num: 'choice',
-                'form-%s-question'%num: 'test_question_%s'%num,
-                'form-%s-min_answers'%num: min_choices,
-                'form-%s-max_answers'%num: max_choices,
+                'form-%s-ORDER' % num: num,
+                'form-%s-choice_type' % num: 'choice',
+                'form-%s-question' % num: 'test_question_%s' % num,
+                'form-%s-min_answers' % num: min_choices,
+                'form-%s-max_answers' % num: max_choices,
                 }
             duplicate_extra_data = extra_data.copy()
-            for ans_num in range(0,nr_answers):
-                extra_data['form-%s-answer_%s'%(num, ans_num)] = 'test answer %s' %ans_num
-                duplicate_extra_data['form-%s-answer_%s'%(num, ans_num)] = 'test answer 0'
+            for ans_num in range(0, nr_answers):
+                extra_data['form-%s-answer_%s' % (num, ans_num)] = \
+                    'test answer %s' % ans_num
+                duplicate_extra_data['form-%s-answer_%s' % (num, ans_num)] = \
+                    'test answer 0'
                 #make sure we have at least 2 answers so there can be duplicate
-                duplicate_extra_data['form-%s-answer_%s'%(num, ans_num+1)] = 'test answer 0'
+                duplicate_extra_data['form-%s-answer_%s' % (num, ans_num+1)] =\
+                    'test answer 0'
             post_data_with_duplicate_answers.update(duplicate_extra_data)
             post_data.update(extra_data)
         return post_data, nr_questions, post_data_with_duplicate_answers
@@ -595,7 +659,7 @@ class TestSimpleElection(TestElectionBase):
         max_choices = len(poll.questions[0]['answers'])
         choices = []
         index = 1
-        vote_blank = randint(0,4)
+        vote_blank = randint(0, 4)
         for qindex, data in enumerate(q_d):
             if vote_blank == 0:
                 break
@@ -649,19 +713,20 @@ class TestPartyElection(TestElectionBase):
             max_choices = randint(min_choices, nr_answers)
             extra_data = {}
             extra_data = {
-                'form-%s-ORDER'%num: num,
-                'form-%s-choice_type'%num: 'choice',
-                'form-%s-question'%num: 'test question %s'%num,
-                'form-%s-min_answers'%num :min_choices,
-                'form-%s-max_answers'%num :max_choices,
+                'form-%s-ORDER' % num: num,
+                'form-%s-choice_type' % num: 'choice',
+                'form-%s-question' % num: 'test question %s' % num,
+                'form-%s-min_answers' % num: min_choices,
+                'form-%s-max_answers' % num: max_choices,
                 }
             duplicate_extra_data = extra_data.copy()
             for ans_num in range(0, nr_answers):
-                extra_data['form-%s-answer_%s'%(num, ans_num)] = \
-                    'testanswer %s-%s' %(num,ans_num)
-                duplicate_extra_data['form-%s-answer_%s'%(num, ans_num)] = \
+                extra_data['form-%s-answer_%s' % (num, ans_num)] = \
+                    'testanswer %s-%s' % (num, ans_num)
+                duplicate_extra_data['form-%s-answer_%s' % (num, ans_num)] = \
                     'testanswer 0-0'
-                duplicate_extra_data['form-%s-answer_%s'%(num, ans_num+1)] = \
+                ans_num += 1
+                duplicate_extra_data['form-%s-answer_%s' % (num, ans_num)] = \
                     'testanswer 0-0'
             post_data_with_duplicate_answers.update(duplicate_extra_data)
             post_data.update(extra_data)
@@ -675,13 +740,13 @@ class TestPartyElection(TestElectionBase):
         header_index = 0
         index = 1
         # if vote_blank is 0, the selection will be empty
-        vote_blank = randint(0,4)
+        vote_blank = randint(0, 4)
         for qindex, data in enumerate(q_d):
             if vote_blank == 0:
                 break
             qchoice = []
             # if vote party only is 0, vote only party without candidates
-            vote_party_only = randint(0,4)
+            vote_party_only = randint(0, 4)
             if vote_party_only == 0:
                 qchoice.append(header_index)
             else:
@@ -706,6 +771,7 @@ class TestPartyElection(TestElectionBase):
     def test_election_proccess(self):
         self.election_proccess()
 
+
 # used for creating score elections ballot
 def make_random_range_ballot(candidates_to_index, scores_to_index):
 
@@ -718,8 +784,10 @@ def make_random_range_ballot(candidates_to_index, scores_to_index):
     selected_score_indexes = \
         sample(score_indexes, randint(0, max_nr_choices))
     selected_score_indexes.sort()
-    selected_candidate_indexes = sample(candidate_indexes,
-                                 len(selected_score_indexes))
+    selected_candidate_indexes = sample(
+        candidate_indexes,
+        len(selected_score_indexes)
+        )
     shuffle(selected_candidate_indexes)
     ballot_choices = izip(selected_candidate_indexes, selected_score_indexes)
     ballot_choices = chain(*ballot_choices)
@@ -742,9 +810,10 @@ class TestScoreElection(TestElectionBase):
             print '* Starting score election *'
 
     def create_questions(self):
-        max_nr_answers = self.score_election_max_answers
+        # var bellow is not used, should it?
+        # max_nr_answers = self.score_election_max_answers
         nr_answers = randint(1, 9)
-        available_scores = [x for x in range (1,10)]
+        available_scores = [x for x in range(1, 10)]
         scores_list = sample(available_scores, nr_answers)
         scores_list.sort()
         post_data = {'form-TOTAL_FORMS': 1,
@@ -759,9 +828,10 @@ class TestScoreElection(TestElectionBase):
         duplicate_extra_data = {}
 
         for num in range(0, nr_answers):
-            extra_data['form-0-answer_%s'%num] = 'test answer %s'%num
-            duplicate_extra_data['form-0-answer_%s'%num] = 'test answer 0'
-            duplicate_extra_data['form-0-answer_%s'%(num+1)] = 'test answer 0'
+            extra_data['form-0-answer_%s' % num] = 'test answer %s' % num
+            duplicate_extra_data['form-0-answer_%s' % num] = 'test answer 0'
+            duplicate_extra_data['form-0-answer_%s' % (num+1)] = \
+                'test answer 0'
         post_data_with_duplicate_answers.update(duplicate_extra_data)
         post_data.update(extra_data)
         # 1 is the number of questions, used for assertion
@@ -792,7 +862,7 @@ class TestSTVElection(TestElectionBase):
         # make departments for stv election
         departments = ''
         for i in range(0, randint(2, 10)):
-            departments += 'test department %s\n'%i
+            departments += 'test department %s\n' % i
         self.departments = departments
         if self.local_verbose:
             print '* Starting stv election *'
@@ -816,15 +886,17 @@ class TestSTVElection(TestElectionBase):
         duplicate_extra_data = {}
 
         for i in range(0, nr_candidates):
-            extra_data['form-0-answer_%s_0'%i] = 'test candidate %s'%i
+            extra_data['form-0-answer_%s_0' % i] = 'test candidate %s' % i
             dep_choice = choice(departments)
-            extra_data['form-0-answer_%s_1'%i] = dep_choice
-            duplicate_extra_data['form-0-answer_%s_0'%i] = 'test candidate 0'
-            duplicate_extra_data['form-0-answer_%s_1'%i] = dep_choice
-            duplicate_extra_data['form-0-answer_%s_0'%(i+1)] = 'test candidate 0'
-            duplicate_extra_data['form-0-answer_%s_1'%(i+1)] = dep_choice
+            extra_data['form-0-answer_%s_1' % i] = dep_choice
+            duplicate_extra_data['form-0-answer_%s_0' % i] = \
+                'test candidate 0'
+            duplicate_extra_data['form-0-answer_%s_1' % i] = dep_choice
+            duplicate_extra_data['form-0-answer_%s_0' % (i+1)] = \
+                'test candidate 0'
+            duplicate_extra_data['form-0-answer_%s_1' % (i+1)] = dep_choice
         # randomize department limit, if 0, has limit
-        limit = randint(0,4)
+        limit = randint(0, 4)
         if limit == 0:
             post_data['form-0-has_department_limit'] = 'on'
             post_data['form-0-department_limit'] = 2
