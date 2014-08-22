@@ -5,16 +5,19 @@ import datetime
 import json
 import zipfile
 from itertools import izip, chain
+from random import shuffle, sample, randint, choice
 from datetime import timedelta
+
 from django.test import TransactionTestCase as TestCase
 from django.conf import settings
-from random import shuffle, sample, randint, choice
 
-from helios.crypto.elgamal import *
+from helios import datatypes
+from helios.crypto.elgamal import DLog_challenge_generator
+from helios.crypto import algs
 from helios.views import ELGAMAL_PARAMS
-from zeus.core import to_relative_answers, gamma_encode, prove_encryption
-from helios.models import *
+from helios.models import Election, Voter, Poll, Trustee
 from zeus.tests.utils import SetUpAdminAndClientMixin
+from zeus.core import to_relative_answers, gamma_encode, prove_encryption
 
 
 class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
@@ -29,10 +32,11 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             " \ \  \ \  \ \   ___ \\\n"
             "  \ \  \_\  \ \  \\\ \ \\ \n"
             "   \ \_______\ \__\\\ \_\\\n"
-            "    \|_______|\|__| \|_|\n")
+            "    \|_______|\|__| \|_|\n"
+            )
 
         # set the voters number that will be produced for test
-        self.voters_num = 3
+        self.voters_num = 2
         # set the trustees number that will be produced for the test
         trustees_num = 1
         trustees = "\n".join(",".join(['testName%x testSurname%x' % (x, x),
