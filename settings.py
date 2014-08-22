@@ -160,18 +160,18 @@ LOGOUT_ON_CONFIRMATION = True
 
 # The two hosts are here so the main site can be over plain HTTP
 # while the voting URLs are served over SSL.
-URL_HOST = get_from_env("URL_HOST", "http://localhost:8000")
+URL_HOST = get_from_env("URL_HOST", "http://localhost:8000").rstrip("/")
 
 # IMPORTANT: you should not change this setting once you've created
 # elections, as your elections' cast_url will then be incorrect.
 # SECURE_URL_HOST = "https://localhost:8443"
-SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", URL_HOST)
+SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", URL_HOST).rstrip("/")
 
 # this additional host is used to iframe-isolate the social buttons,
 # which usually involve hooking in remote JavaScript, which could be
 # a security issue. Plus, if there's a loading issue, it blocks the whole
 # page. Not cool.
-SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", SECURE_URL_HOST)
+SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", SECURE_URL_HOST).rstrip("/")
 
 # election stuff
 SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Voting')
