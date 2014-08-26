@@ -484,7 +484,7 @@ class LoginForm(forms.Form):
             raise forms.ValidationError(_("Invalid username or password"))
         
         if user.is_disabled:
-            raise forms.ValidationError('Your account is disabled')
+            raise forms.ValidationError(_("Your account is disabled"))
 
         if check_password(password, user.info['password']):
             self._user_cache = user
