@@ -1,7 +1,12 @@
+# -*- coding: utf-8 -*-
+
 import datetime
 from datetime import timedelta
+
 from django.test import TestCase
 from django.contrib.auth.hashers import make_password
+from django.utils import translation
+
 from heliosauth.models import User
 from zeus.models import Institution
 
@@ -79,6 +84,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         inst = Institution.objects.get(name='inst_to_del')
         self.assertTrue(inst.is_disabled)
 
+
     def test_inst_with_users_cannot_be_disabled(self):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
         # test_inst has already 2 users, 1 admin and 1 manager
@@ -92,21 +98,6 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.assertEqual(inst.is_disabled, False)
 
     def test_inst_with_election_cannot_be_disabled(self):
-        pass
-
-    def test_delete_user(self):
-        self.c.post(self.locations['login'], self.manager_creds, follow=True)
-        # current admin user has no elections and can be deleted
-        u = User.objects.get(user_id='test_admin')
-        u_id = u.id
-        self.c.get(
-            '/account_administration/user_deletion_confirmed/?id=%s'\
-                % u_id
-            )
-        u = User.objects.get(user_id='test_admin')
-        self.assertTrue(u.is_disabled)
-
-    def test_user_with_election_cannot_be_disabled(self):
         start_date = datetime.datetime.now() + timedelta(hours=48)
         end_date = datetime.datetime.now() + timedelta(hours=56)
         election_form = {
@@ -123,13 +114,27 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             'help_phone': 6988888888,
             'communication_language': 'el',
             }
+        # admin test_admin has test_inst as institution
         self.c.post(self.locations['login'], self.login_data)
         self.c.post(self.locations['create'], election_form) 
         u = User.objects.get(user_id='test_admin')
         self.assertEqual(u.elections.count(), 1)
-
         self.c.get(self.locations['logout'])
+
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        inst = Institution.objects.get(name='test_inst')
+        inst_id = inst.id
+        self.c.get(
+            '/account_administration/inst_deletion_confirmed/?id=%s'\
+                % inst_id
+            )
+        inst = Institution.objects.get(name='test_inst')
+        self.assertEqual(inst.is_disabled, False)
+
+
+    def test_delete_user(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        # current admin user has no elections and can be deleted
         u = User.objects.get(user_id='test_admin')
         u_id = u.id
         self.c.get(
@@ -137,5 +142,24 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
                 % u_id
             )
         u = User.objects.get(user_id='test_admin')
-        self.assertEqual(u.is_disabled, False)
+        self.assertTrue(u.is_disabled)
 
+    def test_disabled_user_cannot_login(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        # current admin user has no elections and can be deleted
+        u = User.objects.get(user_id='test_admin')
+        u_id = u.id
+        self.c.get(
+            '/account_administration/user_deletion_confirmed/?id=%s'\
+                % u_id
+            )
+        self.c.get(self.locations['logout'])
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+           assert_string = 'απενεργοποιημένος' 
+        elif active_lang == 'en':
+           assert_string = 'disabled' 
+        r = self.c.post(self.locations['login'], self.login_data)
+        self.assertIn(assert_string, r.content)
+        r = self.c.get(self.locations['create'], follow=True)
+        self.assertEqual(r.status_code, 403)
