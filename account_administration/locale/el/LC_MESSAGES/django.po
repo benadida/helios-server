@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-08-26 13:26+0300\n"
+"POT-Creation-Date: 2014-08-26 16:54+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,10 +21,19 @@ msgid "Name"
 msgstr "'Ονομα"
 
 msgid "Institution"
-msgstr "Ίδρυμα"
+msgstr "ίδρυμα"
+
+msgid "Institution is disabled and cannot be used"
+msgstr "Το ίδρυμα έχει απενεργοποιηθεί και δεν μπορεί να χρησιμοποιηθεί."
 
 msgid "Institution does not exist"
 msgstr "Το Ίδρυμα δεν υπάρχει"
+
+msgid "Institution already exists and it is disabled"
+msgstr "Το ίδρυμα υπάρχει ήδη και είναι απενεργοποιημένο"
+
+msgid "Institution already exists"
+msgstr "Το ίδρυμα υπάρχει ήδη"
 
 msgid "Changes on user were successfully saved"
 msgstr "Οι αλλαγές στον χρήστη αποθηκεύθηκαν επιτυχώς"
@@ -96,9 +105,6 @@ msgstr "Καθαρισμός Φίλτρων"
 
 #~ msgid "Yes, I confirm!"
 #~ msgstr "Ναι, επιβεβαιώνω!"
-
-#~ msgid "Insitution has users, can't be deleted."
-#~ msgstr "Το ίδρυμα έχει χρήστες, δεν μπορεί να διαγραφεί."
 
 #~ msgid "Back"
 #~ msgstr "Πίσω"
