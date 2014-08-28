@@ -270,6 +270,27 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         new_pass = u.info['password']
         self.assertEqual(old_pass, new_pass)
 
+    def test_reset_password_of_nonexistent_user(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        r = self.c.get(
+            '/account_administration'
+            '/reset_password_confirmed/'
+            '?user_id_filter=756',
+            follow=True,
+            )
+        messages = get_messages_from_response(r)
+        error_message =  messages[0].decode('utf-8')
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = "Δεν επιλέχθηκε χρήστης"
+        elif active_lang == 'en':
+            asrt_message = "You didn't choose a user" 
+        asrt_message = asrt_message.decode('utf-8')
+        self.assertEqual(
+            error_message,
+            asrt_message
+            )
+
     def test_manager_cannot_disable_manager_or_superadmin(self):
         user_ids = ['test_manager', 'test_superadmin']
         for user_id in user_ids:
@@ -474,6 +495,31 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
                             ' και δεν μπορεί να χρησιμοποιηθεί.')
         elif active_lang == 'en':
             asrt_message = 'Institution is disabled and cannot be used'
+        asrt_message = asrt_message.decode('utf-8')
+        self.assertEqual(
+            error_message,
+            asrt_message
+            ) 
+
+    def test_create_user_with_nonexistent_institution(self):
+        self.assertEqual(User.objects.all().count(), 3)
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        post_data = {
+            'user_id': 'test_admin2',
+            'institution': 'nonexistent_inst',
+            }
+        r = self.c.post(
+            '/account_administration/user_creation/',
+            post_data
+            ) 
+        self.assertEqual(User.objects.all().count(), 3)
+        form = r.context['form']
+        error_message = form.errors['institution'][0]
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = ('Το Ίδρυμα δεν υπάρχει')
+        elif active_lang == 'en':
+            asrt_message = 'Institution does not exist'
         asrt_message = asrt_message.decode('utf-8')
         self.assertEqual(
             error_message,
