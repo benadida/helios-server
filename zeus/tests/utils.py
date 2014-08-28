@@ -27,3 +27,8 @@ class SetUpAdminAndClientMixin():
         self.login_data = {'username': 'test_admin', 'password': 'test_admin'}
         self.c = Client()
 
+def get_messages_from_response(response):
+    messages = []
+    for item in response.context['messages']:
+        messages.append(str(item))
+    return messages
