@@ -76,7 +76,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
            follow=True
             )
         self.assertEqual(Institution.objects.all().count(), 2)
-    
+
     def test_superadmin_can_create_institution_with_post(self):
         self.c.post(self.locations['login'], self.superadmin_creds, follow=True)
         # before posting we must have only 1 institution
@@ -525,3 +525,145 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             error_message,
             asrt_message
             ) 
+    
+    def test_request_user_to_be_deleted_asks_confirmation(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        u = User.objects.get(user_id='test_admin')
+        r = self.c.get(
+            '/account_administration/delete_user?id=%s' % u.id,
+            follow=True
+            )
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = ('Παρακαλώ επιβεβαιώστε την διαγραφή του χρήστη')
+        elif active_lang == 'en':
+            asrt_message = 'Please confirm the deletion of user'
+        asrt_message = asrt_message.decode('utf-8')
+        context_user = r.context['user_for_deletion']
+        self.assertEqual(u.id, context_user.id)
+        self.assertContains(
+            r,
+            asrt_message,
+            status_code=200
+            )
+        self.assertContains(
+            r,
+            '/account_administration/user_deletion_confirmed/?id=%s'\
+                % u.id,
+             status_code=200
+             )
+
+    def test_request_nonexistent_user_to_be_deleted(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        r = self.c.get(
+            '/account_administration/delete_user?id=756',
+            follow=True
+            )
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = ('Δεν επιλέχθηκε χρήστης.')
+        elif active_lang == 'en':
+            asrt_message = "You didn't choose a user."
+        asrt_message = asrt_message.decode('utf-8')
+        context_user = r.context['user_for_deletion']
+        self.assertEqual(None, context_user)
+        self.assertContains(
+            r,
+            asrt_message,
+            status_code=200
+            )
+
+    def test_request_inst_to_be_deleted_asks_confirmation(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        inst = Institution.objects.get(name='test_inst')
+        r = self.c.get(
+            '/account_administration/delete_institution?id=%s' % inst.id,
+            follow=True
+            )
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = 'Παρακαλώ επιβεβαιώστε την διαγραφή του ιδρύματος'
+        elif active_lang == 'en':
+            asrt_message = 'Please confirm the deletion of institution'
+        asrt_message = asrt_message.decode('utf-8')
+        context_inst = r.context['inst']
+        self.assertEqual(inst.id, context_inst.id)
+        self.assertContains(
+            r,
+            asrt_message,
+            status_code=200
+            )
+        self.assertContains(
+            r,
+            '/account_administration/inst_deletion_confirmed/?id=%s'\
+                % inst.id,
+             status_code=200
+             )
+
+    def test_request_nonexistent_inst_to_be_deleted(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        r = self.c.get(
+            '/account_administration/delete_institution?id=756',
+            follow=True
+            )
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = ('Δεν επιλέχθηκε ίδρυμα.')
+        elif active_lang == 'en':
+            asrt_message = "You didn't choose an institution."
+        asrt_message = asrt_message.decode('utf-8')
+        context_inst = r.context['inst']
+        self.assertEqual(None, context_inst)
+        self.assertContains(
+            r,
+            asrt_message,
+            status_code=200
+            )
+
+    def test_request_for_passw_reset(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        u = User.objects.get(user_id='test_admin')
+        r = self.c.get(
+            '/account_administration/reset_password?user_id_filter=%s' % u.id,
+            follow=True
+            )
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = ('Παρακαλούμε επιβεβαιώστε την επανέκδοση του'
+                            ' κωδικού του του χρήστη')
+        elif active_lang == 'en':
+            asrt_message = 'Please confirm the password reset of user'
+        asrt_message = asrt_message.decode('utf-8')
+        context_user = r.context['u_data']
+        self.assertEqual(u.id, context_user.id)
+        self.assertContains(
+            r,
+            asrt_message,
+            status_code=200
+            )
+        self.assertContains(
+            r,
+            ('/account_administration/reset_password_confirmed/'
+             '?user_id_filter=%s' % u.id),
+             status_code=200
+             )
+
+    def test_request_for_passw_reset_of_nonexistent_user(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        r = self.c.get(
+            '/account_administration/reset_password?user_id_filter=756',
+            follow=True,
+            )
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = "Δεν επιλέχθηκε χρήστης."
+        elif active_lang == 'en':
+            asrt_message = "You didn't choose a user."
+        asrt_message = asrt_message.decode('utf-8')
+        context_user = r.context['u_data']
+        self.assertEqual(None, context_user)
+        self.assertContains(
+            r,
+            asrt_message,
+            status_code=200
+            )
