@@ -8,3 +8,5 @@ install: "pip install -r requirements.txt"
 script: "python manage.py test"
 addons:
   postgresql: "9.3"
+before_script:
+  - psql -c 'create database helios;' -U postgres
