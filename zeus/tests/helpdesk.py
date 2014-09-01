@@ -12,8 +12,9 @@ from zeus.models import Institution
 
 from utils import SetUpAdminAndClientMixin, get_messages_from_response
 
+
 class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
-    
+
     def setUp(self):
         super(TestHelpdeskWithClient, self).setUp()
 
@@ -60,7 +61,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
     def test_access_allowed_to_logged_superadmin(self):
         self.c.post(
             self.locations['login'],
-            self.superadmin_creds, 
+            self.superadmin_creds,
             follow=True
             )
         r = self.c.get(self.locations['helpdesk'], follow=True)
@@ -72,19 +73,23 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.assertEqual(Institution.objects.all().count(), 1)
         self.c.post(
             '/account_administration/institution_creation/',
-           data={'name': 'new_test_inst'},
-           follow=True
+            data={'name': 'new_test_inst'},
+            follow=True
             )
         self.assertEqual(Institution.objects.all().count(), 2)
 
     def test_superadmin_can_create_institution_with_post(self):
-        self.c.post(self.locations['login'], self.superadmin_creds, follow=True)
+        self.c.post(
+            self.locations['login'],
+            self.superadmin_creds,
+            follow=True
+            )
         # before posting we must have only 1 institution
         self.assertEqual(Institution.objects.all().count(), 1)
         self.c.post(
             '/account_administration/institution_creation/',
-           data={'name': 'new_test_inst'},
-           follow=True
+            data={'name': 'new_test_inst'},
+            follow=True
             )
         self.assertEqual(Institution.objects.all().count(), 2)
 
@@ -102,11 +107,14 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             )
         self.assertEqual(User.objects.all().count(), 4)
 
-
     def test_superadmin_can_create_user_with_post(self):
         # there are already 3 users
         self.assertEqual(User.objects.all().count(), 3)
-        self.c.post(self.locations['login'], self.superadmin_creds, follow=True)
+        self.c.post(
+            self.locations['login'],
+            self.superadmin_creds,
+            follow=True
+            )
         post_data = {
             'user_id': 'new_test_user',
             'institution': 'test_inst'
@@ -125,8 +133,8 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         inst = Institution.objects.create(name='inst_to_del')
         inst_id = inst.id
         self.c.get(
-            '/account_administration/inst_deletion_confirmed/?id=%s'\
-                % inst_id
+            '/account_administration/inst_deletion_confirmed/?id=%s'
+            % inst_id
             )
         inst = Institution.objects.get(name='inst_to_del')
         self.assertTrue(inst.is_disabled)
@@ -136,7 +144,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
         r = self.c.get(
             '/account_administration/inst_deletion_confirmed/?id=%s'
-                % inst_id,
+            % inst_id,
             follow=True
             )
         messages = get_messages_from_response(r)
@@ -158,8 +166,8 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         inst = Institution.objects.get(name='test_inst')
         inst_id = inst.id
         self.c.get(
-            '/account_administration/inst_deletion_confirmed/?id=%s'\
-                % inst_id
+            '/account_administration/inst_deletion_confirmed/?id=%s'
+            % inst_id
             )
         inst = Institution.objects.get(name='test_inst')
         self.assertEqual(inst.is_disabled, False)
@@ -183,7 +191,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             }
         # admin test_admin has test_inst as institution
         self.c.post(self.locations['login'], self.login_data)
-        self.c.post(self.locations['create'], election_form) 
+        self.c.post(self.locations['create'], election_form)
         u = User.objects.get(user_id='test_admin')
         self.assertEqual(u.elections.count(), 1)
         self.c.get(self.locations['logout'])
@@ -192,12 +200,11 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         inst = Institution.objects.get(name='test_inst')
         inst_id = inst.id
         self.c.get(
-            '/account_administration/inst_deletion_confirmed/?id=%s'\
-                % inst_id
+            '/account_administration/inst_deletion_confirmed/?id=%s'
+            % inst_id
             )
         inst = Institution.objects.get(name='test_inst')
         self.assertEqual(inst.is_disabled, False)
-
 
     def test_delete_user(self):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
@@ -205,8 +212,8 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         u = User.objects.get(user_id='test_admin')
         u_id = u.id
         self.c.get(
-            '/account_administration/user_deletion_confirmed/?id=%s'\
-                % u_id
+            '/account_administration/user_deletion_confirmed/?id=%s'
+            % u_id
             )
         u = User.objects.get(user_id='test_admin')
         self.assertTrue(u.is_disabled)
@@ -217,15 +224,15 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         u = User.objects.get(user_id='test_admin')
         u_id = u.id
         self.c.get(
-            '/account_administration/user_deletion_confirmed/?id=%s'\
-                % u_id
+            '/account_administration/user_deletion_confirmed/?id=%s'
+            % u_id
             )
         self.c.get(self.locations['logout'])
         active_lang = translation.get_language()
         if active_lang == 'el':
-           assert_string = 'απενεργοποιημένος' 
+            assert_string = 'απενεργοποιημένος'
         elif active_lang == 'en':
-           assert_string = 'disabled' 
+            assert_string = 'disabled'
         r = self.c.post(self.locations['login'], self.login_data)
         self.assertIn(assert_string, r.content)
         r = self.c.get(self.locations['create'], follow=True)
@@ -256,7 +263,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         u = User.objects.get(user_id='test_manager')
         new_pass = u.info['password']
         self.assertEqual(old_pass, new_pass)
-    
+
     def test_manager_cannot_reset_superadmin_pass(self):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
         u = User.objects.get(user_id='test_superadmin')
@@ -279,12 +286,12 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             follow=True,
             )
         messages = get_messages_from_response(r)
-        error_message =  messages[0].decode('utf-8')
+        error_message = messages[0].decode('utf-8')
         active_lang = translation.get_language()
         if active_lang == 'el':
             asrt_message = "Δεν επιλέχθηκε χρήστης"
         elif active_lang == 'en':
-            asrt_message = "You didn't choose a user" 
+            asrt_message = "You didn't choose a user"
         asrt_message = asrt_message.decode('utf-8')
         self.assertEqual(
             error_message,
@@ -294,18 +301,22 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
     def test_manager_cannot_disable_manager_or_superadmin(self):
         user_ids = ['test_manager', 'test_superadmin']
         for user_id in user_ids:
-            self.c.post(self.locations['login'], self.manager_creds, follow=True)
+            self.c.post(
+                self.locations['login'],
+                self.manager_creds,
+                follow=True
+                )
             u = User.objects.get(user_id=user_id)
             u_id = u.id
             r = self.c.get(
-                '/account_administration/user_deletion_confirmed/?id=%s'\
-                    % u_id,
+                '/account_administration/user_deletion_confirmed/?id=%s'
+                % u_id,
                 follow=True
                 )
             u = User.objects.get(user_id=user_id)
             self.assertFalse(u.is_disabled)
             messages = get_messages_from_response(r)
-            error_message =  messages[0].decode('utf-8')
+            error_message = messages[0].decode('utf-8')
             active_lang = translation.get_language()
             if active_lang == 'el':
                 asrt_message = 'Δεν επιτρέπεται να διαγράψετε αυτόν τον χρήστη'
@@ -315,32 +326,37 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             self.assertEqual(
                 error_message,
                 asrt_message
-                ) 
+                )
+
     def test_superadmin_can_disable_manager_or_superadmin(self):
         user_ids = ['test_manager', 'test_superadmin']
         for user_id in user_ids:
-            self.c.post(self.locations['login'], self.superadmin_creds, follow=True)
+            self.c.post(
+                self.locations['login'],
+                self.superadmin_creds,
+                follow=True
+                )
             u = User.objects.get(user_id=user_id)
             u_id = u.id
             r = self.c.get(
-                '/account_administration/user_deletion_confirmed/?id=%s'\
-                    % u_id,
+                '/account_administration/user_deletion_confirmed/?id=%s'
+                % u_id,
                 follow=True
                 )
             u = User.objects.get(user_id=user_id)
             self.assertTrue(u.is_disabled)
             messages = get_messages_from_response(r)
-            error_message =  messages[0].decode('utf-8')
+            error_message = messages[0].decode('utf-8')
             active_lang = translation.get_language()
             if active_lang == 'el':
                 asrt_message = 'Ο χρήστης %s διαγράφηκε επιτυχώς!' % user_id
             elif active_lang == 'en':
-                asrt_message = 'User %s succesfuly deleted!' %user_id
+                asrt_message = 'User %s succesfuly deleted!' % user_id
             asrt_message = asrt_message.decode('utf-8')
             self.assertEqual(
                 error_message,
                 asrt_message
-                ) 
+                )
 
     def test_disable_user_that_does_not_exist(self):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
@@ -349,7 +365,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             follow=True,
             )
         messages = get_messages_from_response(r)
-        error_message =  messages[0].decode('utf-8')
+        error_message = messages[0].decode('utf-8')
         active_lang = translation.get_language()
         if active_lang == 'el':
             asrt_message = 'Δεν επιλέχθηκε χρήστης'
@@ -362,7 +378,11 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             )
 
     def test_superamdin_can_reset_admin_pass(self):
-        self.c.post(self.locations['login'], self.superadmin_creds, follow=True)
+        self.c.post(
+            self.locations['login'],
+            self.superadmin_creds,
+            follow=True
+            )
         u = User.objects.get(user_id='test_admin')
         old_pass = u.info['password']
         self.c.get(
@@ -375,7 +395,11 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.assertNotEqual(old_pass, new_pass)
 
     def test_superadmin_can_reset_manager_pass(self):
-        self.c.post(self.locations['login'], self.superadmin_creds, follow=True)
+        self.c.post(
+            self.locations['login'],
+            self.superadmin_creds,
+            follow=True
+            )
         u = User.objects.get(user_id='test_manager')
         old_pass = u.info['password']
         self.c.get(
@@ -388,7 +412,11 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.assertNotEqual(old_pass, new_pass)
 
     def test_superadmin_can_reset_superadmin_pass(self):
-        self.c.post(self.locations['login'], self.superadmin_creds, follow=True)
+        self.c.post(
+            self.locations['login'],
+            self.superadmin_creds,
+            follow=True
+            )
         u = User.objects.get(user_id='test_superadmin')
         old_pass = u.info['password']
         self.c.get(
@@ -403,7 +431,6 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
     def test_password_after_reset(self):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
         u = User.objects.get(user_id='test_admin')
-        old_pass = u.info['password']
         r = self.c.get(
             '/account_administration'
             '/reset_password_confirmed/'
@@ -414,7 +441,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         passw = messages[0].split(' ')[-1]
 
         self.c.get(self.locations['logout'])
-        user = User.objects.get(user_id='test_admin')        
+        user = User.objects.get(user_id='test_admin')
         post_data = {
             'username': user.user_id,
             'password': passw
@@ -425,7 +452,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             )
         r = self.c.get(self.locations['create'], folow=True)
         self.assertEqual(r.status_code, 200)
-    
+
     def test_create_inst_that_exists_and_is_disabled(self):
         # test both when exists and when exists and is disabled
         inst = Institution.objects.create(
@@ -435,9 +462,9 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.assertEqual(Institution.objects.all().count(), 2)
         r = self.c.post(
             '/account_administration/institution_creation/',
-           data={'name': 'test_exists'},
-           follow=True
-           )
+            data={'name': 'test_exists'},
+            follow=True
+            )
         self.assertEqual(Institution.objects.all().count(), 2)
         form = r.context['form']
         error_message = form.errors['name'][0]
@@ -470,7 +497,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.assertEqual(
             error_message,
             asrt_message
-            ) 
+            )
 
     def test_create_user_with_disabled_inst(self):
         # current users are 3
@@ -485,7 +512,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         r = self.c.post(
             '/account_administration/user_creation/',
             post_data
-            ) 
+            )
         self.assertEqual(User.objects.all().count(), 3)
         form = r.context['form']
         error_message = form.errors['institution'][0]
@@ -499,7 +526,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.assertEqual(
             error_message,
             asrt_message
-            ) 
+            )
 
     def test_create_user_with_nonexistent_institution(self):
         self.assertEqual(User.objects.all().count(), 3)
@@ -511,7 +538,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         r = self.c.post(
             '/account_administration/user_creation/',
             post_data
-            ) 
+            )
         self.assertEqual(User.objects.all().count(), 3)
         form = r.context['form']
         error_message = form.errors['institution'][0]
@@ -524,8 +551,8 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.assertEqual(
             error_message,
             asrt_message
-            ) 
-    
+            )
+
     def test_request_user_to_be_deleted_asks_confirmation(self):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
         u = User.objects.get(user_id='test_admin')
@@ -548,10 +575,10 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             )
         self.assertContains(
             r,
-            '/account_administration/user_deletion_confirmed/?id=%s'\
-                % u.id,
-             status_code=200
-             )
+            '/account_administration/user_deletion_confirmed/?id=%s'
+            % u.id,
+            status_code=200
+            )
 
     def test_request_nonexistent_user_to_be_deleted(self):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
@@ -595,10 +622,10 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             )
         self.assertContains(
             r,
-            '/account_administration/inst_deletion_confirmed/?id=%s'\
-                % inst.id,
-             status_code=200
-             )
+            '/account_administration/inst_deletion_confirmed/?id=%s'
+            % inst.id,
+            status_code=200
+            )
 
     def test_request_nonexistent_inst_to_be_deleted(self):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
@@ -608,7 +635,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             )
         active_lang = translation.get_language()
         if active_lang == 'el':
-            asrt_message = ('Δεν επιλέχθηκε ίδρυμα.')
+            asrt_message = 'Δεν επιλέχθηκε ίδρυμα.'
         elif active_lang == 'en':
             asrt_message = "You didn't choose an institution."
         asrt_message = asrt_message.decode('utf-8')
@@ -645,8 +672,8 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             r,
             ('/account_administration/reset_password_confirmed/'
              '?user_id_filter=%s' % u.id),
-             status_code=200
-             )
+            status_code=200
+            )
 
     def test_request_for_passw_reset_of_nonexistent_user(self):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
@@ -667,3 +694,24 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             asrt_message,
             status_code=200
             )
+
+    def test_request_details_of_nonexistent_user(self):
+        self.c.post(
+            self.locations['login'],
+            self.superadmin_creds,
+            follow=True
+            )
+        r = self.c.get(
+            '/account_administration/user_management?user_id_filter=756',
+            follow=True,
+            )
+        messages = get_messages_from_response(r)
+        msg = messages[0]
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = "Δεν επιλέχθηκε χρήστης"
+        elif active_lang == 'en':
+            asrt_message = "You didn't choose a user"
+        asrt_message = asrt_message.decode('utf-8')
+        msg = msg.decode('utf-8')
+        self.assertEqual(asrt_message, msg)
