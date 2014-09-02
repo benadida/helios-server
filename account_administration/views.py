@@ -47,21 +47,6 @@ def list_institutions(request):
     inst_filter = request.GET.get('inst_filter')
     if inst_filter:
         institutions = institutions.filter(name__icontains=inst_filter)
-    #count users of institution
-    #if users 0, inst can be deleted
-    users_count = {}
-    can_be_deleted = {}
-    for inst in institutions:
-        users_count[inst.name] = (
-            User
-            .objects
-            .filter(institution__name=inst.name)
-            .count())
-        #which insts can be deleted
-        if users_count[inst.name] > 0:
-            can_be_deleted[inst.name] = False
-        else:
-            can_be_deleted[inst.name] = True
     #pagination
     page = request.GET.get('page', 1)
     paginator = Paginator(institutions, 10)
@@ -71,8 +56,6 @@ def list_institutions(request):
         institutions = paginator.page(1)
     context = {
         'institutions': institutions,
-        'users_count': users_count,
-        'can_be_deleted': can_be_deleted,
         'request': request
     }
     return render_template(
@@ -84,37 +67,41 @@ def list_institutions(request):
 def create_user(request):
     users = get_active_users() 
     insts = get_active_insts()
-    edit_id = sanitize_get_param(request.GET.get('edit_id'))
     inst_id = sanitize_get_param(request.GET.get('id'))
-    try:
-        instance = users.get(id=edit_id)
-    except User.DoesNotExist:
-        instance = None
     try:
         institution = insts.get(id=inst_id)
     except Institution.DoesNotExist:
         institution = None
-
-    if instance:
-        initial = {'institution': instance.institution.name}
+    edit_id = sanitize_get_param(request.GET.get('edit_id'))
+    try:
+        edit_user = users.get(id=edit_id)
+    except User.DoesNotExist:
+        edit_user = None
+    if edit_user:
+        initial = {'institution': edit_user.institution.name}
     elif institution:
         initial = {'institution': institution.name}
     else:
         initial = None
+    form = None
 
-    form = userForm(request.POST or None, initial=initial, instance=instance)
-    if form.is_valid():
-        user, password = form.save()
-        if instance:
-            message = _("Changes on user were successfully saved")
-        else:
-            message = _("User %(uid)s was created with"
-                        " password %(password)s.")\
-                        % {'uid': user.user_id, 'password': password}
-        messages.success(request, message)
-        url = "%s?user_id_filter=%s" % (reverse('user_management'), \
-            str(user.id))
-        return redirect(url)
+    if request.method == 'POST':
+        form = userForm(request.POST, initial=initial, instance=edit_user)
+        if form.is_valid():
+            user, password = form.save()
+            if instance:
+                message = _("Changes on user were successfully saved")
+            else:
+                message = _("User %(uid)s was created with"
+                            " password %(password)s.")\
+                            % {'uid': user.user_id, 'password': password}
+            messages.success(request, message)
+            url = "%s?user_id_filter=%s" % (reverse('user_management'), \
+                str(user.id))
+            return redirect(url)
+
+    if request.method == 'GET':
+        form = userForm(initial=initial, instance=edit_user)
 
     tpl = 'account_administration/create_user',
     context = {'form': form}
@@ -122,26 +109,21 @@ def create_user(request):
 
 @manager_or_superadmin_required
 def create_institution(request):
+    form = None
     if request.method == 'POST':
         form = institutionForm(request.POST)
         if form.is_valid():
-            inst = form.save()
-            inst.save()
+            form.save()
             messages.success(request, _("Institution created."))
             return redirect(reverse('create_institution'))
-        else:
-            return render_template(
-                request,
-                'account_administration/create_institution',
-                {'form': form})
-    else:
+    if request.method == 'GET': 
         form = institutionForm()
-        context = {'form': form}
-        return render_template(
-            request,
-            'account_administration/create_institution',
-            context)
-
+    context = {'form': form}
+    return render_template(
+        request,
+        'account_administration/create_institution',
+        context
+        )
 
 @manager_or_superadmin_required
 def manage_user(request):
@@ -232,9 +214,7 @@ def delete_institution(request):
         inst = insts.get(id=inst_id)
     except(Institution.DoesNotExist):
         inst = None
-
     context = {'inst': inst}
-
     return render_template(
         request,
         'account_administration/delete_institution',
