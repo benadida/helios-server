@@ -4,8 +4,10 @@ from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 
 from heliosauth.models import User
+from heliosauth.auth_systems.password import make_password
 from zeus.models.zeus_models import Institution
 
+from generate_password import random_password
 
 class userForm(ModelForm):
 
@@ -28,6 +30,29 @@ class userForm(ModelForm):
             return self.cleaned_data['institution']
         except Institution.DoesNotExist:
             raise ValidationError(_('Institution does not exist'))
+
+    def save(self, commit=True):
+        instance = super(userForm, self).save(commit=False)
+        try:
+            User.objects.get(id=instance.id)
+            if commit:
+                instance.save()
+            return instance, None
+        except(User.DoesNotExist):
+            instance.name = self.cleaned_data['name']
+            password = random_password()
+            instance.info = {'name': instance.name or instance.user_id,
+                        'password': make_password(password)}
+            instance.institution = self.cleaned_data['institution']
+            instance.management_p = False
+            instance.admin_p = True
+            instance.user_type = 'password'
+            instance.superadmin_p = False
+            instance.ecounting_account = False
+            if commit:
+                instance.save()
+            return instance, password
+            
 
     class Meta:
         model = User

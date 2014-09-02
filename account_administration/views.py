@@ -1,5 +1,4 @@
 from django.shortcuts import redirect
-from django.db import IntegrityError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.contrib import messages
@@ -38,8 +37,7 @@ def list_users(request):
         request,
         'account_administration/list_users',
         {'users': users},
-    )
-
+        )
 
 @manager_or_superadmin_required
 def list_institutions(request):
@@ -71,89 +69,56 @@ def list_institutions(request):
         institutions = paginator.page(page)
     except (PageNotAnInteger, EmptyPage):
         institutions = paginator.page(1)
-
     context = {
         'institutions': institutions,
         'users_count': users_count,
         'can_be_deleted': can_be_deleted,
         'request': request
     }
-
     return render_template(
         request,
         'account_administration/list_institutions',
         context)
 
-
 @manager_or_superadmin_required
 def create_user(request):
     users = get_active_users() 
-    edit_id = request.GET.get('edit_id')
-    edit_id = sanitize_get_param(edit_id)
+    insts = get_active_insts()
+    edit_id = sanitize_get_param(request.GET.get('edit_id'))
+    inst_id = sanitize_get_param(request.GET.get('id'))
     try:
         instance = users.get(id=edit_id)
     except User.DoesNotExist:
         instance = None
+    try:
+        institution = insts.get(id=inst_id)
+    except Institution.DoesNotExist:
+        institution = None
 
-    if request.method == 'POST':
-        form = userForm(request.POST, instance=instance)
-        if form.is_valid():
-            data = form.cleaned_data
-            if instance:
-                user = form.save()
-                message = _("Changes on user were successfully saved")
-                messages.success(request, message)
-                url = "%s?user_id_filter=%s" % (reverse('user_management'),
-                                                str(user.id))
-                return redirect(url)
-
-            else:
-                user = form.save(commit=False)
-                user.name = data.get('name')
-                password = random_password()
-                user.info = {'name': user.name or user.user_id,
-                            'password': make_password(password)}
-                user.institution = data['institution']
-                user.management_p = False
-                user.admin_p = True
-                user.user_type = 'password'
-                user.superadmin_p = False
-                user.ecounting_account = False
-                user.save()
-                message = _("User %(uid)s was created with"
-                            " password %(password)s.") % {'uid': user.user_id,
-                                                        'password': password}
-                messages.success(request, message)
-                url = "%s?user_id_filter=%s" % (reverse('user_management'),
-                                                str(user.id))
-                return redirect(url)
-        else:
-            context = {'form': form}
-            return render_template(
-                request,
-                'account_administration/create_user',
-                context)
+    if instance:
+        initial = {'institution': instance.institution.name}
+    elif institution:
+        initial = {'institution': institution.name}
     else:
-        inst_filter = request.GET.get('id')
-        inst_filter = sanitize_get_param(inst_filter)
-        try:
-            insts = get_active_insts()
-            inst = insts.get(id=inst_filter)
-        except(Institution.DoesNotExist):
-            inst = None
-        if inst:
-            form = userForm(initial={'institution': inst.name})
-        elif instance:
-            form = userForm(initial={'institution': instance.institution.name} ,
-                            instance=instance)
-        else:
-            form = userForm()
-        context = {'form': form}
-        return render_template(
-            request,
-            'account_administration/create_user',
-            context)
+        initial = None
 
+    form = userForm(request.POST or None, initial=initial, instance=instance)
+    if form.is_valid():
+        user, password = form.save()
+        if instance:
+            message = _("Changes on user were successfully saved")
+        else:
+            message = _("User %(uid)s was created with"
+                        " password %(password)s.")\
+                        % {'uid': user.user_id, 'password': password}
+        messages.success(request, message)
+        url = "%s?user_id_filter=%s" % (reverse('user_management'), \
+            str(user.id))
+        return redirect(url)
+
+    tpl = 'account_administration/create_user',
+    context = {'form': form}
+    return render_template(request, tpl, context)
 
 @manager_or_superadmin_required
 def create_institution(request):
@@ -362,8 +327,10 @@ def user_deletion_confirmed(request):
 
 def get_active_users():
     return User.objects.filter(is_disabled=False)
+
 def get_active_insts():
     return Institution.objects.filter(is_disabled=False)
+
 def sanitize_get_param(param):
     try:
         param = int(param)
