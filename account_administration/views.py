@@ -19,7 +19,7 @@ def list_users(request):
     users = users.order_by('id')
     # filtering
     inst = request.GET.get('inst')
-    if inst_filter:
+    if inst:
         users = users.filter(institution__name__icontains=inst)
     uid = request.GET.get('uid')
     if uid:

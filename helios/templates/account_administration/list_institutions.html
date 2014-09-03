@@ -4,10 +4,7 @@
 {% load i18n %}
 
 {% block tabs_menu%}
-    <dd class=""><a href={% url list_users %}>{% trans "Users List" %}</a></dd>
-    <dd class="active"><a href={% url list_institutions %}>{% trans "Institutions List" %}</a></dd>
-    <dd class=""><a href={% url create_user %}>{% trans "Create User" %}</a></dd>
-    <dd class=""><a href={% url create_institution %}>{% trans "Create Institution" %}</a></dd>
+{% include "account_administration/nav.html" %}
 {% endblock %}
 
 {% block content %}
@@ -18,8 +15,6 @@
 <input type='submit' class="button tiny" value={% trans "Filter" %}>
 </form>
 
-{% show_active_filters request.GET %}
-{% clear_filters_for_institution request.GET %}
 </br>
 </br>
 
@@ -64,15 +59,14 @@
         {% if institutions.has_previous %}
             <a href=
             {%url list_institutions%}?page={{institutions.previous_page_number}}
-            {% get_filters_for_url request.GET%}>{% trans "previous" %}</a>
+            >{% trans "previous" %}</a>
         {% endif %}
     <span class="current">
        {% trans "Page" %} {{ institutions.number }} {% trans "of" %} {{ institutions.paginator.num_pages}}.
     </span>
         {% if institutions.has_next %}
           <a href=
-         {% url list_institutions%}?page={{institutions.next_page_number}}
-         {% get_filters_for_url request.GET%}">{% trans "next" %}</a>
+         {% url list_institutions%}?page={{institutions.next_page_number}}>{% trans "next" %}</a>
           {% endif %}
      </span>
 </div>

@@ -1,6 +1,9 @@
+import re
+
 from django import template
 from django.core.urlresolvers import reverse
 from django.utils.translation import ugettext as _
+
 register = template.Library()
 
 @register.simple_tag
@@ -12,6 +15,12 @@ def clean_query_string(request):
         if 'page' not in item:
             query_string += '&%s' % item
     return query_string
+
+@register.simple_tag
+def active(request, location):
+    if location in request.path:
+        return 'active'
+    return ''
 
 @register.simple_tag
 def clear_filters_for_institution(get):
