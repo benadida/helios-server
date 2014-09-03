@@ -21,14 +21,3 @@ def active(request, location):
     if location in request.path:
         return 'active'
     return ''
-
-@register.simple_tag
-def clear_filters_for_institution(get):
-    if 'inst_filter' in get:
-        if get['inst_filter']:
-            clear = _("Clear Filters")
-            url = reverse('list_institutions')
-            return ("<a href="+url+">"+
-                    clear+"</a></br>")
-    else:
-        return '</br>' 

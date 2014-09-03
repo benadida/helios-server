@@ -51,9 +51,7 @@
 <div class="pagination" style="text-align:center;">
     <span class="step-links">
             {% if users.has_previous %}
-                {%comment%}
-                <a href={% url list_users %}?page={{users.previous_page_number}}{% get_filters_for_url request.GET %}>{% trans "previous" %}</a>
-                {%endcomment%}
+                <a href={% url list_users %}?page={{users.previous_page_number}}>{% trans "previous" %}</a>
                 <a href={% url
                 list_users%}?page={{users.previous_page_number}}{%clean_query_string request%}>{% trans "previous" %}</a>
             {% endif %}

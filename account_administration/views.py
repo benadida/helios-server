@@ -47,9 +47,9 @@ def list_institutions(request):
     institutions = get_active_insts()
     institutions = institutions.order_by('id')
     #filtering
-    inst_filter = request.GET.get('inst_filter')
-    if inst_filter:
-        institutions = institutions.filter(name__icontains=inst_filter)
+    inst_name = request.GET.get('inst_filter')
+    if inst_name:
+        institutions = institutions.filter(name__icontains=inst_name)
     #pagination
     page = request.GET.get('page', 1)
     paginator = Paginator(institutions, 10)
@@ -58,6 +58,7 @@ def list_institutions(request):
     except (PageNotAnInteger, EmptyPage):
         institutions = paginator.page(1)
     context = {
+        'inst_name': inst_name,
         'institutions': institutions,
         'request': request
     }
