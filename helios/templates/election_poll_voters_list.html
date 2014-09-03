@@ -58,21 +58,34 @@
         </div>
 </div>
 
-<div class="before-table row">
-    <div class="columns eight">
-        {% paginate %}
-    </div>
-    <div class="columns four filters">
-        <form action="{{ request.get_full_path }}" method="GET">
-        <label>{% trans "Filter" %}:</label>
-        <input name="q" type="text" value="{{ q }}"/>
-        <input type="submit" value="SEARCH"/>
-        <a href="{% url election_poll_voters election.uuid poll.uuid %}" />clear</a>
-    </form>
+<div class="row">
+    <div class="columns twelve">
+        <div class="before-table row">
+            <div class="columns four table-filters">
+                <form action="{{ request.get_full_path }}#voters-table" method="GET">
+                    <label>{% trans "Filter" %}:</label>
+                    <div class="row collapse">
+                        <div class="columns nine">
+                            <input class="q" name="q" type="text" value="{{ q }}"/>
+                        </div>
+                        <div class="columns two">
+                            <input class="button postfix" type="submit" value="✓"/>
+                        </div>
+                        <div class="columns one">
+                                <a class="button alert postfix" 
+                                    href="{% url election_poll_voters election.uuid poll.uuid %}" />✗</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="columns eight pagination-cont">
+                {% paginate %}
+            </div>
+        </div>
     </div>
 </div>
 
-<table class="voters" width="100%">
+<table id="voters-table" class="voters" width="100%">
   <thead>
     <tr>
       {% for key, value  in voter_table_header %}
@@ -158,5 +171,7 @@
 {% endfor %}
 </tbody>
 </table>
+<div class="pagination-cont">
 {% paginate %}
+</div>
 {% endblock %}

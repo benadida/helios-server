@@ -291,6 +291,43 @@ body {
   .pagination { 
     margin: 1em 0;
   }
+  .pagination-cont {
+      text-align: right;
+  }
+        
+  .before-table {
+    .pagination-cont {
+      margin-top: 20px;
+    }
+  }
+
+  .table-filters {
+    .button.postfix { padding: 0 !important; }
+    a.button.postfix {
+        margin-left: -1px;
+    }
+    form {
+      margin: 0;
+      label { 
+      }
+      
+      input, label { 
+      }
+
+      input.q {
+      }
+      
+      input.button {}
+      input.button, a.button {}
+      
+    }
+  }
+        
+  .before-table {
+    .columns { padding: 0 !important; }
+    margin: 20px 0 !important;
+    margin-bottom: 5px !important;
+  }
 
   table.voters, table.elections, table.polls-table {
       thead th { font-size: 11px; }

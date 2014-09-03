@@ -5416,6 +5416,28 @@ body .content-header {
 body .pagination {
   margin: 1em 0;
 }
+body .pagination-cont {
+  text-align: right;
+}
+body .before-table .pagination-cont {
+  margin-top: 20px;
+}
+body .table-filters .button.postfix {
+  padding: 0 !important;
+}
+body .table-filters a.button.postfix {
+  margin-left: -1px;
+}
+body .table-filters form {
+  margin: 0;
+}
+body .before-table {
+  margin: 20px 0 !important;
+  margin-bottom: 5px !important;
+}
+body .before-table .columns {
+  padding: 0 !important;
+}
 body table.voters thead th, body table.elections thead th, body table.polls-table thead th {
   font-size: 11px;
 }
