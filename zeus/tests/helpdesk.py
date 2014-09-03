@@ -9,6 +9,7 @@ from django.utils import translation
 
 from heliosauth.models import User
 from zeus.models import Institution
+from account_administration.forms import userForm
 
 from utils import SetUpAdminAndClientMixin, get_messages_from_response
 
@@ -466,16 +467,16 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             follow=True
             )
         self.assertEqual(Institution.objects.all().count(), 2)
-        form = r.context['form']
-        error_message = form.errors['name'][0]
         active_lang = translation.get_language()
         if active_lang == 'el':
             asrt_message = 'Το ίδρυμα υπάρχει ήδη'
         elif active_lang == 'en':
             asrt_message = 'Institution already exists'
         asrt_message = asrt_message.decode('utf-8')
-        self.assertEqual(
-            error_message,
+        self.assertFormError(
+            r,
+            'form',
+            'name',
             asrt_message
             )
         inst.is_disabled = True
@@ -486,16 +487,16 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             follow=True,
             )
         self.assertEqual(Institution.objects.all().count(), 2)
-        form = r.context['form']
-        error_message = form.errors['name'][0]
         active_lang = translation.get_language()
         if active_lang == 'el':
             asrt_message = 'Το ίδρυμα υπάρχει ήδη και είναι απενεργοποιημένο'
         elif active_lang == 'en':
             asrt_message = 'Institution already exists and it is disabled'
         asrt_message = asrt_message.decode('utf-8')
-        self.assertEqual(
-            error_message,
+        self.assertFormError(
+            r,
+            'form',
+            'name',
             asrt_message
             )
 
@@ -514,8 +515,6 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             post_data
             )
         self.assertEqual(User.objects.all().count(), 3)
-        form = r.context['form']
-        error_message = form.errors['institution'][0]
         active_lang = translation.get_language()
         if active_lang == 'el':
             asrt_message = ('Το ίδρυμα έχει απενεργοποιηθεί'
@@ -523,8 +522,10 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         elif active_lang == 'en':
             asrt_message = 'Institution is disabled and cannot be used'
         asrt_message = asrt_message.decode('utf-8')
-        self.assertEqual(
-            error_message,
+        self.assertFormError(
+            r,
+            'form',
+            'institution',
             asrt_message
             )
 
@@ -540,16 +541,16 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             post_data
             )
         self.assertEqual(User.objects.all().count(), 3)
-        form = r.context['form']
-        error_message = form.errors['institution'][0]
         active_lang = translation.get_language()
         if active_lang == 'el':
             asrt_message = ('Το Ίδρυμα δεν υπάρχει')
         elif active_lang == 'en':
             asrt_message = 'Institution does not exist'
         asrt_message = asrt_message.decode('utf-8')
-        self.assertEqual(
-            error_message,
+        self.assertFormError(
+            r,
+            'form',
+            'institution',
             asrt_message
             )
 
@@ -715,3 +716,112 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         asrt_message = asrt_message.decode('utf-8')
         msg = msg.decode('utf-8')
         self.assertEqual(asrt_message, msg)
+
+    def test_filter_institutions(self):
+        Institution.objects.create(name='test_inst2')
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        r = self.c.get(
+            '/account_administration/institution_list/?inst_filter=test',
+            follow=True,
+            )
+        contains = True
+        for item in r.context['institutions']:
+            if 'test' not in item.name:
+                contains = False
+        self.assertTrue(contains)
+
+        # test handling of wrong page number
+        r = self.c.get(
+            '/account_administration/institution_list/?page=47',
+            follow=True,
+            )
+        self.assertEqual(r.status_code, 200)
+
+    def test_filter_users(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        r = self.c.get(
+            ('/account_administration/user_list/?uname_filter=test'
+             '&inst_filter=test'),
+            follow=True,
+            )
+        contains = True
+        for item in r.context['users']:
+            if 'test' not in item.user_id:
+                contains = False
+            if 'test' not in item.institution.name:
+                contains = False
+        self.assertTrue(contains)
+
+        # test handling of wrong page number
+        r = self.c.get(
+            '/account_administration/user_list/?page=47',
+            follow=True,
+            )
+        self.assertEqual(r.status_code, 200)
+
+    def test_edit_user(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        u = User.objects.get(user_id='test_admin')
+        r = self.c.get(
+            '/account_administration/user_creation/?edit_id=%s'
+            % u.id
+            )
+        form = r.context['form']
+        data = form.initial
+        data['name'] = 'test_new_name'
+        r = self.c.post(
+            '/account_administration/user_creation/?edit_id=%s'
+            % u.id,
+            data,
+            follow=True
+        )
+        u = User.objects.get(id=u.id)
+        self.assertEqual(u.name, 'test_new_name')
+        messages = get_messages_from_response(r)
+        message = messages[0].decode('utf-8')
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = 'Οι αλλαγές στον χρήστη αποθηκεύθηκαν επιτυχώς'
+        elif active_lang == 'en':
+            asrt_message = 'Changes on user were successfully saved'
+        asrt_message = asrt_message.decode('utf-8')
+        self.assertEqual(
+            message,
+            asrt_message
+            )
+    def test_create_user_with_inst_parameter(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        inst = Institution.objects.get(name='test_inst')
+        r = self.c.get(
+            '/account_administration/user_creation/?id=%s'
+            % inst.id
+            )
+        form = r.context['form']
+        data = form.initial
+        self.assertEqual(data['institution'], 'test_inst')
+        data['user_id'] = 'param_user'
+        r = self.c.post(
+            '/account_administration/user_creation/',
+            data,
+            follow=True
+            )
+
+        User.objects.get(user_id='param_user')
+        messages = get_messages_from_response(r)
+        msg = messages[0].decode('utf-8')
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = 'Δημιουργήθηκε ο χρήστης param_user'
+        elif active_lang == 'en':
+            asrt_message = 'User param_user was created'
+        asrt_message = asrt_message.decode('utf-8')
+        self.assertTrue(asrt_message in msg)
+
+    def test_get_empty_form_for_user_creation(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        r = self.c.get(
+            '/account_administration/user_creation/',
+            follow=True,
+            )
+        form = r.context['form']
+        self.assertIsInstance(form, userForm)
