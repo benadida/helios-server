@@ -11,15 +11,15 @@
 {% block content %}
 
 <form action="" method="GET">
-{% trans "Institution" %} <input type='textfield' name='inst_filter'>
-User ID <input type='textfield' name='uname_filter'>
-<input type='submit' class="button tiny" value={% trans "Filter" %}>
+<label for="inst">{% trans "Institution" %}</label>
+<input id="inst" type='textfield' name='inst' value="{{inst|default_if_none:""}}">
+<label for="uid">User ID</label>
+<input id="uid" type='textfield' name='uid' value="{{uid|default_if_none:""}}" >
+<label for"sub_button"></label>
+<input id="sub_button" type='submit' class="button tiny" value={% trans "Filter" %}>
+<a href="{% url list_users  %}">{% trans "Clear" %}</a>
 </form>
 
-
-{% show_active_filters request.GET %}
-{% clear_filters_for_user request.GET %}
-</br>
 <table class="prettytable" border=1>
     <tr>
         <td><b>ID</b></td>
@@ -52,14 +52,18 @@ User ID <input type='textfield' name='uname_filter'>
 <div class="pagination" style="text-align:center;">
     <span class="step-links">
             {% if users.has_previous %}
+                {%comment%}
                 <a href={% url list_users %}?page={{users.previous_page_number}}{% get_filters_for_url request.GET %}>{% trans "previous" %}</a>
+                {%endcomment%}
+                <a href={% url
+                list_users%}?page={{users.previous_page_number}}{%clean_query_string request%}>{% trans "previous" %}</a>
             {% endif %}
     <span class="current">
        {% trans "Page" %} {{ users.number }} {% trans "of" %} {{ users.paginator.num_pages}}.
     </span>
 
     {% if users.has_next %}
-        <a href={% url list_users%}?page={{users.next_page_number}}{% get_filters_for_url request.GET%}>{% trans "next" %}</a>
+        <a href={% url list_users%}?page={{users.next_page_number}}{%clean_query_string request %}>{% trans "next" %}</a>
           {% endif %}
      </span>
 </div>

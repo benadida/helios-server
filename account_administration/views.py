@@ -13,18 +13,17 @@ from account_administration.forms import userForm, institutionForm
 from generate_password import random_password
 
 
-
 @manager_or_superadmin_required
 def list_users(request):
     users = get_active_users()
     users = users.order_by('id')
     # filtering
-    inst_filter = request.GET.get('inst_filter')
+    inst = request.GET.get('inst')
     if inst_filter:
-        users = users.filter(institution__name__icontains=inst_filter)
-    uname_filter = request.GET.get('uname_filter')
-    if uname_filter:
-        users = users.filter(user_id__icontains=uname_filter)
+        users = users.filter(institution__name__icontains=inst)
+    uid = request.GET.get('uid')
+    if uid:
+        users = users.filter(user_id__icontains=uid)
     # pagination
     page = request.GET.get('page', 1)
     paginator = Paginator(users, 10)
@@ -32,11 +31,15 @@ def list_users(request):
         users = paginator.page(page)
     except (PageNotAnInteger, EmptyPage):
         users = paginator.page(1)
-
+    context = {
+        'users': users,
+        'inst': inst,
+        'uid': uid,
+        }
     return render_template(
         request,
         'account_administration/list_users',
-        {'users': users},
+        context
         )
 
 @manager_or_superadmin_required
@@ -89,7 +92,7 @@ def create_user(request):
         form = userForm(request.POST, initial=initial, instance=edit_user)
         if form.is_valid():
             user, password = form.save()
-            if user_edit:
+            if edit_user:
                 message = _("Changes on user were successfully saved")
             else:
                 message = _("User %(uid)s was created with"
