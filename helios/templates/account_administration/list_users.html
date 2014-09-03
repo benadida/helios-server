@@ -19,6 +19,11 @@
 <a href="{% url list_users  %}">{% trans "Clear" %}</a>
 </form>
 
+{% with users as paged_obj%}
+{% include "account_administration/page_nav.html" %}
+{% endwith %}
+<br />
+
 <table class="prettytable" border=1>
     <tr>
         <td><b>ID</b></td>
@@ -47,21 +52,7 @@
     </tr>
     {% endfor %}
 </table>
-
-<div class="pagination" style="text-align:center;">
-    <span class="step-links">
-            {% if users.has_previous %}
-                <a href={% url list_users %}?page={{users.previous_page_number}}>{% trans "previous" %}</a>
-                <a href={% url
-                list_users%}?page={{users.previous_page_number}}{%clean_query_string request%}>{% trans "previous" %}</a>
-            {% endif %}
-    <span class="current">
-       {% trans "Page" %} {{ users.number }} {% trans "of" %} {{ users.paginator.num_pages}}.
-    </span>
-
-    {% if users.has_next %}
-        <a href={% url list_users%}?page={{users.next_page_number}}{%clean_query_string request %}>{% trans "next" %}</a>
-          {% endif %}
-     </span>
-</div>
+{% with users as paged_obj%}
+{% include "account_administration/page_nav.html" %}
+{% endwith %}
 {% endblock content%}

@@ -12,14 +12,20 @@
 <form action='' method = GET>
 {% csrf_token %}
 <label for"inst_name">{% trans "Institution" %}</label>
-<input id="inst_name" type='textfield' name='inst_filter' value="{{inst_name|default_if_none:""}}">
+<input id="inst_name" type='textfield' name='inst_name' value="{{inst_name|default_if_none:""}}">
 <label for"sub_button"></label>
 <input id="sub_button" type='submit' class="button tiny" value={% trans "Filter" %}>
 <a href="{% url list_institutions %}">{% trans "Clear" %}</a>
 </form>
 
-</br>
-</br>
+<br />
+<br />
+
+{% with institutions as paged_obj%}
+{% include "account_administration/page_nav.html" %}
+{% endwith %}
+
+<br />
 
 <table class="prettytable" border=1>
 <div id='table_head'>
@@ -37,7 +43,7 @@
         {% with user_num=inst.user_set.count %}
         <td>{{inst.id}}</td>
         <td>{{inst.name}}</td>
-        <td><a href={% url list_users%}?inst_filter={{inst.name}}>
+        <td><a href={% url list_users%}?inst={{inst.name}}>
                                                     {{user_num}}</a></td>
         <td>
             {% if not user_num and not inst.election_set.count %}
@@ -57,21 +63,9 @@
 {% endfor %}
 </table>
 
-<div class="pagination" style="text-align:center;">
-    <span class="step-links">
-        {% if institutions.has_previous %}
-            <a href=
-            {%url list_institutions%}?page={{institutions.previous_page_number}}
-            >{% trans "previous" %}</a>
-        {% endif %}
-    <span class="current">
-       {% trans "Page" %} {{ institutions.number }} {% trans "of" %} {{ institutions.paginator.num_pages}}.
-    </span>
-        {% if institutions.has_next %}
-          <a href=
-         {% url list_institutions%}?page={{institutions.next_page_number}}>{% trans "next" %}</a>
-          {% endif %}
-     </span>
-</div>
+{% with institutions as paged_obj%}
+{% include "account_administration/page_nav.html" %}
+{% endwith %}
+
 
 {% endblock content%}

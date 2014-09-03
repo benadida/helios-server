@@ -47,7 +47,7 @@ def list_institutions(request):
     institutions = get_active_insts()
     institutions = institutions.order_by('id')
     #filtering
-    inst_name = request.GET.get('inst_filter')
+    inst_name = request.GET.get('inst_name')
     if inst_name:
         institutions = institutions.filter(name__icontains=inst_name)
     #pagination
