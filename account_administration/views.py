@@ -89,7 +89,7 @@ def create_user(request):
         form = userForm(request.POST, initial=initial, instance=edit_user)
         if form.is_valid():
             user, password = form.save()
-            if instance:
+            if user_edit:
                 message = _("Changes on user were successfully saved")
             else:
                 message = _("User %(uid)s was created with"
