@@ -1,10 +1,13 @@
 import json
 
+from collections import OrderedDict
+
 from django.db.models import Q
 from django.template import Context, Template, loader, RequestContext
 from django.core.urlresolvers import reverse
 from django.shortcuts import render_to_response
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 
 
 def election_trustees_to_text(election):
@@ -167,6 +170,19 @@ def test_decalize():
             pass
         else:
             raise AssertionError("Undecalize(%s) failed to fail" % t)
+
+voter_table_header = OrderedDict([
+    ('voter_login_id', _('Registration ID')),
+    ('voter_email', _('Email')),
+    ('voter_surname', _('Surname')),
+    ('voter_name', _('Given name')),
+    ('voter_fathername', _('Middle name')),
+    ('voter_mobile', _('Mobile phone')),
+    ('cast_votes__id', _('Has voted')),
+    ('last_booth_invitation_send_at', _('Booth invitation sent at')),
+    ('last_visit', _('Last visit')),
+    ('actions', _('Actions'))
+    ])
 
 def get_filtered_voters(q_param, voters):
 
