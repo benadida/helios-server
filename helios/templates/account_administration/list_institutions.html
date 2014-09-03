@@ -1,9 +1,9 @@
 {% extends TEMPLATE_BASE %}
 
 {% load remember_filters %}
-{% load i18n %}
+{% load i18n pagination_tags %}
 
-{% block tabs_menu%}
+{% block tabs_menu %}
 {% include "account_administration/nav.html" %}
 {% endblock %}
 
@@ -19,12 +19,8 @@
 </form>
 
 <br />
-<br />
-
-{% with institutions as paged_obj%}
-{% include "account_administration/page_nav.html" %}
-{% endwith %}
-
+{% autopaginate institutions paginate_by %}
+{% paginate %}
 <br />
 
 <table class="prettytable" border=1>
@@ -63,9 +59,6 @@
 {% endfor %}
 </table>
 
-{% with institutions as paged_obj%}
-{% include "account_administration/page_nav.html" %}
-{% endwith %}
-
+{% paginate %}
 
 {% endblock content%}

@@ -1,6 +1,6 @@
 {% extends TEMPLATE_BASE %}
 
-{% load i18n %}
+{% load i18n pagination_tags %}
 {% load remember_filters %}
 
 {% block tabs_menu%}
@@ -18,11 +18,10 @@
 <input id="sub_button" type='submit' class="button tiny" value={% trans "Filter" %}>
 <a href="{% url list_users  %}">{% trans "Clear" %}</a>
 </form>
-
-{% with users as paged_obj%}
-{% include "account_administration/page_nav.html" %}
-{% endwith %}
 <br />
+
+{% autopaginate users paginate_by %}
+{% paginate %}
 
 <table class="prettytable" border=1>
     <tr>
@@ -52,7 +51,5 @@
     </tr>
     {% endfor %}
 </table>
-{% with users as paged_obj%}
-{% include "account_administration/page_nav.html" %}
-{% endwith %}
-{% endblock content%}
+{% paginate %}
+{% endblock content %}

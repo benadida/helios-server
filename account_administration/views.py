@@ -24,14 +24,8 @@ def list_users(request):
     uid = request.GET.get('uid')
     if uid:
         users = users.filter(user_id__icontains=uid)
-    # pagination
-    page = request.GET.get('page', 1)
-    paginator = Paginator(users, 10)
-    try:
-        users = paginator.page(page)
-    except (PageNotAnInteger, EmptyPage):
-        users = paginator.page(1)
     context = {
+        'paginate_by': 10,
         'users': users,
         'inst': inst,
         'uid': uid,
@@ -50,14 +44,8 @@ def list_institutions(request):
     inst_name = request.GET.get('inst_name')
     if inst_name:
         institutions = institutions.filter(name__icontains=inst_name)
-    #pagination
-    page = request.GET.get('page', 1)
-    paginator = Paginator(institutions, 10)
-    try:
-        institutions = paginator.page(page)
-    except (PageNotAnInteger, EmptyPage):
-        institutions = paginator.page(1)
     context = {
+        'paginate_by': 10,
         'inst_name': inst_name,
         'institutions': institutions,
         'request': request
