@@ -715,3 +715,114 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         asrt_message = asrt_message.decode('utf-8')
         msg = msg.decode('utf-8')
         self.assertEqual(asrt_message, msg)
+
+    def test_edit_user(self):
+        self.assertEqual(User.objects.all().count(), 3)
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        u = User.objects.get(user_id='test_admin')
+        self.assertEqual(u.name, None)
+        post_data = {
+            'user_id': 'test_admin',
+            'name': 'test_name',
+            'institution': 'test_inst'
+            }
+        r = self.c.post(
+            '/account_administration/user_creation/?edit_id=%s'\
+            % u.id,
+            post_data,
+            follow=True
+            )
+        self.assertEqual(User.objects.all().count(), 3)
+        u = User.objects.get(user_id='test_admin')
+        self.assertEqual(u.name, 'test_name')
+        messages = get_messages_from_response(r)
+        message = messages[0].decode('utf-8')
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = 'Οι αλλαγές στον χρήστη αποθηκεύθηκαν επιτυχώς'
+        elif active_lang == 'en':
+            asrt_message = 'Changes on user were successfully saved'
+        asrt_message = asrt_message.decode('utf-8')
+        self.assertEqual(
+            message,
+            asrt_message
+            )
+
+    def test_create_user_form_filled_with_institution_from_get(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        inst = Institution.objects.get(name='test_inst')
+        r = self.c.get(
+            '/account_administration/user_creation/?id=%s'\
+            % inst.id,
+            follow=True,
+            )
+        form = r.context['form']
+        self.assertEqual(form['institution'].value(), 'test_inst')
+
+    def test_create_user_form_errors(self):
+        self.assertEqual(User.objects.all().count(), 3)
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+
+        #post user withoud user_id
+        post_data = {
+            'user_id': '',
+            'name': 'test_name',
+            'institution': 'test_inst',
+            }
+        r = self.c.post(
+            '/account_administration/user_creation/',
+            post_data,
+            folow=True
+            )
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = 'Αυτό το πεδίο είναι απαραίτητο.'
+        elif active_lang == 'en':
+            asrt_message = 'This field is required.'
+        asrt_message = asrt_message.decode('utf-8')
+        self.assertEqual(User.objects.all().count(), 3)
+        self.assertFormError(
+            r,
+            'form',
+            'user_id',
+            asrt_message,
+            )
+        post_data = {
+            'user_id': 'a_user_id',
+            'name': 'test_name',
+            'institution': '',
+            }
+        r = self.c.post(
+            '/account_administration/user_creation/',
+            post_data,
+            folow=True
+            )
+        self.assertEqual(User.objects.all().count(), 3)
+        self.assertFormError(
+            r,
+            'form',
+            'institution',
+            asrt_message,
+            )
+    def test_create_institution_form_errors(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        # before posting we must have only 1 institution
+        self.assertEqual(Institution.objects.all().count(), 1)
+        r = self.c.post(
+            '/account_administration/institution_creation/',
+            data={'name': ''},
+            follow=True
+            )
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = 'Αυτό το πεδίο είναι απαραίτητο.'
+        elif active_lang == 'en':
+            asrt_message = 'This field is required.'
+        asrt_message = asrt_message.decode('utf-8')
+        self.assertEqual(Institution.objects.all().count(), 1)
+        self.assertFormError(
+            r,
+            'form',
+            'name',
+            asrt_message,
+            )
