@@ -40,7 +40,7 @@
         <td>{{user.institution.name}}</td>
         <td>{{user.elections.all.count}}</td>
         <td>
-            <a href={% url user_management %}?user_id_filter={{user.id}}>
+            <a href={% url user_management %}?uid={{user.id}}>
 
             {% trans "Details" %}</a>
         </td>

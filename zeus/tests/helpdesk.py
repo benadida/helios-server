@@ -245,7 +245,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.c.get(
             '/account_administration'
             '/reset_password_confirmed/'
-            '?user_id_filter=%s' % u.id
+            '?uid=%s' % u.id
             )
         u = User.objects.get(user_id='test_admin')
         new_pass = u.info['password']
@@ -258,7 +258,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.c.get(
             '/account_administration'
             '/reset_password_confirmed/'
-            '?user_id_filter=%s' % u.id
+            '?uid=%s' % u.id
             )
         u = User.objects.get(user_id='test_manager')
         new_pass = u.info['password']
@@ -271,7 +271,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.c.get(
             '/account_administration'
             '/reset_password_confirmed/'
-            '?user_id_filter=%s' % u.id
+            '?uid=%s' % u.id
             )
         u = User.objects.get(user_id='test_superadmin')
         new_pass = u.info['password']
@@ -282,7 +282,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         r = self.c.get(
             '/account_administration'
             '/reset_password_confirmed/'
-            '?user_id_filter=756',
+            '?uid=756',
             follow=True,
             )
         messages = get_messages_from_response(r)
@@ -388,7 +388,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.c.get(
             '/account_administration'
             '/reset_password_confirmed/'
-            '?user_id_filter=%s' % u.id
+            '?uid=%s' % u.id
             )
         u = User.objects.get(user_id='test_admin')
         new_pass = u.info['password']
@@ -405,7 +405,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.c.get(
             '/account_administration'
             '/reset_password_confirmed/'
-            '?user_id_filter=%s' % u.id
+            '?uid=%s' % u.id
             )
         u = User.objects.get(user_id='test_manager')
         new_pass = u.info['password']
@@ -422,7 +422,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.c.get(
             '/account_administration'
             '/reset_password_confirmed/'
-            '?user_id_filter=%s' % u.id
+            '?uid=%s' % u.id
             )
         u = User.objects.get(user_id='test_superadmin')
         new_pass = u.info['password']
@@ -434,7 +434,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         r = self.c.get(
             '/account_administration'
             '/reset_password_confirmed/'
-            '?user_id_filter=%s' % u.id,
+            '?uid=%s' % u.id,
             follow=True
             )
         messages = get_messages_from_response(r)
@@ -651,7 +651,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
         u = User.objects.get(user_id='test_admin')
         r = self.c.get(
-            '/account_administration/reset_password?user_id_filter=%s' % u.id,
+            '/account_administration/reset_password?uid=%s' % u.id,
             follow=True
             )
         active_lang = translation.get_language()
@@ -671,14 +671,14 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.assertContains(
             r,
             ('/account_administration/reset_password_confirmed/'
-             '?user_id_filter=%s' % u.id),
+             '?uid=%s' % u.id),
             status_code=200
             )
 
     def test_request_for_passw_reset_of_nonexistent_user(self):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
         r = self.c.get(
-            '/account_administration/reset_password?user_id_filter=756',
+            '/account_administration/reset_password?uid=756',
             follow=True,
             )
         active_lang = translation.get_language()
@@ -702,7 +702,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             follow=True
             )
         r = self.c.get(
-            '/account_administration/user_management?user_id_filter=756',
+            '/account_administration/user_management?uid=756',
             follow=True,
             )
         messages = get_messages_from_response(r)

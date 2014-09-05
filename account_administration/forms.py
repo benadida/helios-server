@@ -11,11 +11,18 @@ from generate_password import random_password
 
 class userForm(ModelForm):
 
+    class Meta:
+        model = User
+        fields = ['user_id', 'name', 'institution', 'is_disabled']
+
     def __init__(self, *args, **kwargs):
         super(userForm, self).__init__(*args, **kwargs)
         self.fields['user_id'].label = "User ID"
         self.fields['name'].label = _("Name")
         self.fields['institution'].label = _("Institution")
+        self.fields['is_disabled'].label = _("Disable account")
+        if not kwargs['instance']:
+            self.fields.pop('is_disabled') 
     name = forms.CharField(required=False)
     institution = forms.CharField(required=True)
     
@@ -53,11 +60,6 @@ class userForm(ModelForm):
                 instance.save()
             return instance, password
             
-
-    class Meta:
-        model = User
-        fields = ['user_id', 'name', 'institution']
-
 
 class institutionForm(ModelForm):
     def __init__(self, *args, **kwargs):

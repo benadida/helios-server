@@ -29,7 +29,7 @@
 {% if user_type == 'superadmin'%}
     <br>
     
-    <a href={% url user_management %}?change_pass=yes&user_id_filter={{u_data.id}}>
+    <a href={% url user_management %}?uid={{u_data.id}}>
     {% trans "Reset Password" %}</a>
     
     </br></br>
@@ -48,7 +48,7 @@
 
 <br>
 
-    <a href={% url reset_password %}?user_id_filter={{u_data.id}}>
+    <a href={% url reset_password %}?uid={{u_data.id}}>
     {% trans "Reset Password" %}</a>
     
     </br></br>

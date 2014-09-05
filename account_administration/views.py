@@ -10,12 +10,13 @@ from heliosauth.auth_systems.password import make_password
 from zeus.models.zeus_models import Institution
 from zeus.auth import manager_or_superadmin_required
 from account_administration.forms import userForm, institutionForm
-from generate_password import random_password
+from utils import random_password, can_do
 
 
 @manager_or_superadmin_required
 def list_users(request):
-    users = get_active_users()
+    # users = get_active_users()
+    users = User.objects.all()
     users = users.order_by('id')
     # filtering
     inst = request.GET.get('inst')
@@ -57,7 +58,8 @@ def list_institutions(request):
 
 @manager_or_superadmin_required
 def create_user(request):
-    users = get_active_users() 
+    # users = get_active_users() 
+    users = User.objects.all()
     insts = get_active_insts()
     inst_id = sanitize_get_param(request.GET.get('id'))
     try:
@@ -66,7 +68,10 @@ def create_user(request):
         institution = None
     edit_id = sanitize_get_param(request.GET.get('edit_id'))
     try:
+        logged_user = request.zeususer._user
         edit_user = users.get(id=edit_id)
+        if  not can_do(logged_user, edit_user):
+            edit_user = None
     except User.DoesNotExist:
         edit_user = None
     if edit_user:
@@ -88,7 +93,7 @@ def create_user(request):
                             " password %(password)s.")\
                             % {'uid': user.user_id, 'password': password}
             messages.success(request, message)
-            url = "%s?user_id_filter=%s" % (reverse('user_management'), \
+            url = "%s?uid=%s" % (reverse('user_management'), \
                 str(user.id))
             return redirect(url)
 
@@ -119,9 +124,10 @@ def create_institution(request):
 
 @manager_or_superadmin_required
 def manage_user(request):
-    users = get_active_users()
-    user_id_filter = request.GET.get('user_id_filter')
-    user_id_filter = sanitize_get_param(user_id_filter)
+    # users = get_active_users()
+    users = User.objects.all()
+    uid = request.GET.get('uid')
+    uid = sanitize_get_param(uid)
 
     if request.zeususer._user.management_p:
         user_type = 'manager'
@@ -129,7 +135,7 @@ def manage_user(request):
         user_type = 'superadmin'
 
     try:
-        user = users.get(id=user_id_filter)
+        user = users.get(id=uid)
     except(User.DoesNotExist):
         user = None
         message = _("You didn't choose a user")
@@ -142,11 +148,11 @@ def manage_user(request):
 
 @manager_or_superadmin_required
 def reset_password(request):
-    users = get_active_users()
-    user_id_filter = request.GET.get('user_id_filter')
-    user_id_filter = sanitize_get_param(user_id_filter)
+    # users = get_active_users()
+    uid = request.GET.get('uid')
+    uid = sanitize_get_param(uid)
     try:
-        user = users.get(id=user_id_filter)
+        user = User.objects.get(id=uid)
     except(User.DoesNotExist):
         user = None
     context = {"u_data": user}
@@ -158,12 +164,12 @@ def reset_password(request):
 
 @manager_or_superadmin_required
 def reset_password_confirmed(request):
-    users = get_active_users()
-    user_id_filter = request.GET.get('user_id_filter')
-    user_id_filter = sanitize_get_param(user_id_filter)
+    # users = get_active_users()
+    uid = request.GET.get('uid')
+    uid = sanitize_get_param(uid)
     user_logged =request.zeususer
     try:
-        user = users.get(id=user_id_filter)
+        user = User.objects.get(id=uid)
     except(User.DoesNotExist):
         user = None
 
@@ -192,7 +198,7 @@ def reset_password_confirmed(request):
         message = _("You didn't choose a user")
         messages.error(request, message)
         return redirect(reverse('list_users'))
-    url = "%s?user_id_filter=%s" % (reverse('user_management'),
+    url = "%s?uid=%s" % (reverse('user_management'),
                                    str(user.id))
     return redirect(url)
 
@@ -241,7 +247,6 @@ def inst_deletion_confirmed(request):
         messages.error(request, _("No such institution"))
     return redirect(reverse('list_institutions'))
 
-
 @manager_or_superadmin_required
 def delete_user(request):
     users = get_active_users()
@@ -256,8 +261,6 @@ def delete_user(request):
         request,
         'account_administration/delete_user',
         context)
-
-
 @manager_or_superadmin_required
 def user_deletion_confirmed(request):
     users = get_active_users()
