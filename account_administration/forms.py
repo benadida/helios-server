@@ -30,9 +30,6 @@ class userForm(ModelForm):
         inst_name = self.cleaned_data['institution']
         try:
             inst = Institution.objects.get(name=inst_name)
-            if inst.is_disabled:
-                message = _("Institution is disabled and cannot be used")
-                raise ValidationError(message) 
             self.cleaned_data['institution'] = inst
             return self.cleaned_data['institution']
         except Institution.DoesNotExist:
@@ -70,12 +67,8 @@ class institutionForm(ModelForm):
         name = self.cleaned_data['name']
         try:
             inst = Institution.objects.get(name=name)
-            if inst.is_disabled:
-                message = _("Institution already exists and it is disabled")
-                raise ValidationError(message) 
-            else:
-                message = _("Institution already exists")
-                raise ValidationError(message)
+            message = _("Institution already exists")
+            raise ValidationError(message)
         except Institution.DoesNotExist:
             inst = None
         if not inst:
