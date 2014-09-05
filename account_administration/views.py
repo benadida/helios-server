@@ -10,12 +10,11 @@ from heliosauth.auth_systems.password import make_password
 from zeus.models.zeus_models import Institution
 from zeus.auth import manager_or_superadmin_required
 from account_administration.forms import userForm, institutionForm
-from utils import random_password, can_do
+from utils import random_password, can_do, sanitize_get_param
 
 
 @manager_or_superadmin_required
 def list_users(request):
-    # users = get_active_users()
     users = User.objects.all()
     users = users.order_by('id')
     # filtering
@@ -39,7 +38,7 @@ def list_users(request):
 
 @manager_or_superadmin_required
 def list_institutions(request):
-    institutions = get_active_insts()
+    institutions = Institution.objects.all()
     institutions = institutions.order_by('id')
     #filtering
     inst_name = request.GET.get('inst_name')
@@ -58,12 +57,10 @@ def list_institutions(request):
 
 @manager_or_superadmin_required
 def create_user(request):
-    # users = get_active_users() 
     users = User.objects.all()
-    insts = get_active_insts()
     inst_id = sanitize_get_param(request.GET.get('id'))
     try:
-        institution = insts.get(id=inst_id)
+        institution = Institution.objects.get(id=inst_id)
     except Institution.DoesNotExist:
         institution = None
     edit_id = sanitize_get_param(request.GET.get('edit_id'))
@@ -124,7 +121,6 @@ def create_institution(request):
 
 @manager_or_superadmin_required
 def manage_user(request):
-    # users = get_active_users()
     users = User.objects.all()
     uid = request.GET.get('uid')
     uid = sanitize_get_param(uid)
@@ -148,7 +144,6 @@ def manage_user(request):
 
 @manager_or_superadmin_required
 def reset_password(request):
-    # users = get_active_users()
     uid = request.GET.get('uid')
     uid = sanitize_get_param(uid)
     try:
@@ -164,7 +159,6 @@ def reset_password(request):
 
 @manager_or_superadmin_required
 def reset_password_confirmed(request):
-    # users = get_active_users()
     uid = request.GET.get('uid')
     uid = sanitize_get_param(uid)
     user_logged =request.zeususer
@@ -201,115 +195,3 @@ def reset_password_confirmed(request):
     url = "%s?uid=%s" % (reverse('user_management'),
                                    str(user.id))
     return redirect(url)
-
-
-@manager_or_superadmin_required
-def delete_institution(request):
-    inst_id = request.GET.get('id')
-    inst_id = sanitize_get_param(inst_id) 
-    insts = get_active_insts()
-    try:
-        inst = insts.get(id=inst_id)
-    except(Institution.DoesNotExist):
-        inst = None
-    context = {'inst': inst}
-    return render_template(
-        request,
-        'account_administration/delete_institution',
-        context)
-
-@manager_or_superadmin_required
-def inst_deletion_confirmed(request):
-    insts = get_active_insts()
-    inst_id = request.GET.get('id')
-    inst_id = sanitize_get_param(inst_id) 
-
-    try:
-        inst = insts.get(id=inst_id)
-    except(Institution.DoesNotExist):
-        inst = None
-    if inst:
-        if inst.user_set.count() == 0 and  inst.election_set.count() == 0:
-            inst.is_disabled = True
-            inst.save()
-            messages.success(
-                request,
-                (_("Institution %(inst_name)s deleted") %
-                 {'inst_name': inst.name})
-                )
-        else:
-            messages.error(
-                request,
-                _("Institution %(inst_name)s can't be deleted (users > "
-                  "0)") % {'inst_name': inst.name}
-                )
-    else:
-        messages.error(request, _("No such institution"))
-    return redirect(reverse('list_institutions'))
-
-@manager_or_superadmin_required
-def delete_user(request):
-    users = get_active_users()
-    u_id = request.GET.get('id')
-    u_id = sanitize_get_param(u_id) 
-    try:
-        user_for_deletion = users.get(id=u_id)
-    except(User.DoesNotExist):
-        user_for_deletion = None
-    context = {'user_for_deletion': user_for_deletion}
-    return render_template(
-        request,
-        'account_administration/delete_user',
-        context)
-@manager_or_superadmin_required
-def user_deletion_confirmed(request):
-    users = get_active_users()
-    u_id = request.GET.get('id')
-    u_id = sanitize_get_param(u_id) 
-
-    try:
-        user_for_deletion = users.get(id=u_id)
-    except(User.DoesNotExist):
-        user_for_deletion = None
-    logged_user = request.zeususer._user
-    if user_for_deletion:
-        if((user_for_deletion.management_p
-                or user_for_deletion.superadmin_p)
-                and logged_user.superadmin_p):
-            user_for_deletion.is_disabled = True
-            user_for_deletion.save()
-            message = _("User %(ufd)s succesfuly "
-                        "deleted!") % {'ufd': user_for_deletion.user_id}
-            messages.success(request, message)
-        elif((user_for_deletion.management_p
-                or user_for_deletion.superadmin_p)
-                and logged_user.management_p):
-            messages.error(
-                request,
-                _("You are not authorized to delete that user")
-                )
-        else:
-            user_for_deletion.is_disabled=True
-            user_for_deletion.save()
-            message = _("User %(ufd)s succesfuly "
-                        "deleted!") % {'ufd': user_for_deletion.user_id}
-            messages.success(request, message)
-
-    else:
-        messages.error(request, _("You didn't choose a user"))
-
-    return redirect(reverse('list_users'))
-
-def get_active_users():
-    return User.objects.filter(is_disabled=False)
-
-def get_active_insts():
-    return Institution.objects.filter(is_disabled=False)
-
-def sanitize_get_param(param):
-    try:
-        param = int(param)
-    except(ValueError, TypeError):
-        param = None
-    return param
-

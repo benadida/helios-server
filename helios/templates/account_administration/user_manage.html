@@ -1,91 +1,60 @@
 {% extends TEMPLATE_BASE %}
-
 {% load i18n %}
-
 {% block tabs_menu %}
 {% include "account_administration/nav.html" %}
 {% endblock %}
-
 {% block content %}
 {% if u_data %}
 <table border=1>
-<tr>
+  <tr>
     <td><b>ID</b></td>
     <td><b>User ID</b></td>
     <td><b>{% trans "Name" %}</b></td>
     <td><b>{% trans "Institution" %}</b></td>
     <td><b>{% trans "Elections Held" %}</b></td>
-</tr>
-<tr>
+  </tr>
+  <tr>
     {{data}}
     <td>{{u_data.id}}</td>
     <td>{{u_data.user_id}}</td>
     <td>{{u_data.name}}</td>
     <td>{{u_data.institution.name}}</td>
     <td>{{u_data.elections.all.count}}</td>
-</tr>
+  </tr>
 </table>
 {% if u_data.management_p or u_data.superadmin_p %}
 {% if user_type == 'superadmin'%}
-    <br>
-    
-    <a href={% url user_management %}?uid={{u_data.id}}>
-    {% trans "Reset Password" %}</a>
-    
-    </br></br>
-    
-    <a href={% url create_user %}?edit_id={{u_data.id}}>{% trans "Edit" %}</a>
-    
-    </br></br>
-
-{% if u_data.elections.count == 0%}
-    <a href={% url delete_user %}?id={{u_data.id}}>{%trans "Delete Account"%}</a>
-    </br></br>
-{% endif%}
+  <br>
+  <a href={% url user_management %}?uid={{u_data.id}}>{% trans "Reset Password" %}</a>
+  </br></br>
+  <a href={% url create_user %}?edit_id={{u_data.id}}>{% trans "Edit" %}</a>
+  </br></br>
 {% endif %}
-
 {%else%}
-
-<br>
-
-    <a href={% url reset_password %}?uid={{u_data.id}}>
-    {% trans "Reset Password" %}</a>
-    
-    </br></br>
-
-    <a href={% url create_user%}?edit_id={{u_data.id}}>{% trans "Edit" %}</a>
-
-    </br></br>
-
-{% if u_data.elections.count == 0 %}
-    <a href={% url delete_user %}?id={{u_data.id}}>{%trans "Delete Account"%}</a>
-
-    </br></br>
-
-{% endif%}
+  <br>
+  <a href={% url reset_password %}?uid={{u_data.id}}>
+  {% trans "Reset Password" %}</a>
+  </br></br>
+  <a href={% url create_user%}?edit_id={{u_data.id}}>{% trans "Edit" %}</a>
+  </br></br>
 {% endif %}
 {% endif %}
-
 <a href={% url list_users%}>{% trans "Back" %}</a></br></br>
-
 {% if u_data %}
-    <table border=1>
+  <table border=1>
+    <tr>
+      <td>{% trans "Election Name" %}</td>
+      <td>{% trans "Start date" %}</td>
+      <td>{% trans "End Date" %}</td>
+      <td>{% trans "Results" %}</td>
+      </tr>
+      {%for el in u_data.elections.all%}
         <tr>
-            <td>{% trans "Election Name" %}</td>
-            <td>{% trans "Start date" %}</td>
-            <td>{% trans "End Date" %}</td>
-            <td>{% trans "Results" %}</td>
+          <td>{{el.name}}</td>
+          <td>{{el.voting_starts_at}}</td>
+          <td>{{el.voting_ends_at}}</td>
         </tr>
-        
-        {%for el in u_data.elections.all%}
-        <tr>
-            <td>{{el.name}}</td>
-            <td>{{el.voting_starts_at}}</td>
-            <td>{{el.voting_ends_at}}</td>
-        </tr>
-    {% endfor %}
-    </table>
-    
+      {% endfor %}
+  </table>    
 {% endif%}
-
 {% endblock %}

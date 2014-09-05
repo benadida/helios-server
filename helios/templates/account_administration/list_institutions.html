@@ -1,64 +1,46 @@
 {% extends TEMPLATE_BASE %}
-
 {% load remember_filters %}
 {% load i18n pagination_tags %}
-
 {% block tabs_menu %}
 {% include "account_administration/nav.html" %}
 {% endblock %}
-
 {% block content %}
-
 <form action='' method = GET>
-{% csrf_token %}
-<label for"inst_name">{% trans "Institution" %}</label>
-<input id="inst_name" type='textfield' name='inst_name' value="{{inst_name|default_if_none:""}}">
-<label for"sub_button"></label>
-<input id="sub_button" type='submit' class="button tiny" value={% trans "Filter" %}>
-<a href="{% url list_institutions %}">{% trans "Clear" %}</a>
+  {% csrf_token %}
+  <label for"inst_name">{% trans "Institution" %}</label>
+  <input id="inst_name" type='textfield' name='inst_name' value="{{inst_name|default_if_none:""}}">
+  <label for"sub_button"></label>
+  <input id="sub_button" type='submit' class="button tiny" value={% trans "Filter" %}>
+  <a href="{% url list_institutions %}">{% trans "Clear" %}</a>
 </form>
-
 <br />
 {% autopaginate institutions paginate_by %}
 {% paginate %}
 <br />
-
 <table class="prettytable" border=1>
-<div id='table_head'>
-<tr>
-    <td><b>ID</b></td>
-    <td><b>{% trans "Name" %}</b></td>
-    <td><b>{% trans "Users" %}</b></td>
-    <td><b>{% trans "Delete" %}</b></td>
-    <td><b>{% trans "Create User" %}</b></td>
-</tr>
-</div>
-
-{% for inst in institutions %}
+  <div id='table_head'>
     <tr>
-        {% with user_num=inst.user_set.count %}
+      <td><b>ID</b></td>
+      <td><b>{% trans "Name" %}</b></td>
+      <td><b>{% trans "Users" %}</b></td>
+      <td><b>{% trans "Edit" %}</b></td>
+      <td><b>{% trans "Create User" %}</b></td>
+    </tr>
+  </div>
+  {% for inst in institutions %}
+    <tr>
         <td>{{inst.id}}</td>
         <td>{{inst.name}}</td>
-        <td><a href={% url list_users%}?inst={{inst.name}}>
-                                                    {{user_num}}</a></td>
-        <td>
-            {% if not user_num and not inst.election_set.count %}
-                <a href={% url delete_institution%}?id={{inst.id}}>
-                                            {% trans "Delete" %}</a>
-            {% endif %}</td>
-        {% endwith %}
-        <td><a href={% url create_user %}?id={{inst.id}}>
-            {% trans "Create User"%} </a>
+        <td><a href={% url list_users%}?inst={{inst.name}}>{{user_num}}</a></td>
+        <td><a href="{% url create_institution %}">{% trans "Edit" %}</td>
+        <td><a href={% url create_user %}?id={{inst.id}}>{% trans "Create User"%}</a>
         </td>
     </tr>
-
-{% empty %}
-<tr>
-    <td colspan=7>{% trans "No results found" %}</td>
-</tr>
-{% endfor %}
+  {% empty %}
+    <tr>
+      <td colspan=7>{% trans "No results found" %}</td>
+    </tr>
+  {% endfor %}
 </table>
-
 {% paginate %}
-
 {% endblock content%}

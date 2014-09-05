@@ -23,3 +23,11 @@ def can_do(logged_user, user):
     else:
         can_edit = True
     return can_edit
+
+def sanitize_get_param(param):
+    try:
+        param = int(param)
+    except(ValueError, TypeError):
+        param = None
+    return param
+
