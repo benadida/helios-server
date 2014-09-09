@@ -1,5 +1,6 @@
 from random import SystemRandom
-
+from heliosauth.models import User
+from zeus.models.zeus_models import Institution
 
 system_random = SystemRandom()
 alphabet = 'abcdefghkmnpqrstuvwxyzABCDEFGHKLMNPQRSTUVWXYZ23456789'
@@ -30,4 +31,18 @@ def sanitize_get_param(param):
     except(ValueError, TypeError):
         param = None
     return param
+
+def get_user(id):
+    try:
+        user = User.objects.get(id=id)
+    except User.DoesNotExist:
+        user = None
+    return user
+
+def get_institution(id):
+    try:
+        inst = Institution.objects.get(id=id)
+    except Institution.DoesNotExist:
+        inst = None
+    return inst
 

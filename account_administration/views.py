@@ -10,7 +10,8 @@ from heliosauth.auth_systems.password import make_password
 from zeus.models.zeus_models import Institution
 from zeus.auth import manager_or_superadmin_required
 from account_administration.forms import userForm, institutionForm
-from utils import random_password, can_do, sanitize_get_param
+from utils import random_password, can_do, sanitize_get_param, \
+    get_user, get_institution
 
 
 @manager_or_superadmin_required
@@ -59,18 +60,13 @@ def list_institutions(request):
 def create_user(request):
     users = User.objects.all()
     inst_id = sanitize_get_param(request.GET.get('id'))
-    try:
-        institution = Institution.objects.get(id=inst_id)
-    except Institution.DoesNotExist:
-        institution = None
+    institution = get_institution(inst_id)
     edit_id = sanitize_get_param(request.GET.get('edit_id'))
-    try:
-        logged_user = request.zeususer._user
-        edit_user = users.get(id=edit_id)
+    edit_user = get_user(edit_id)
+    logged_user = request.zeususer._user
+    if edit_user:
         if  not can_do(logged_user, edit_user):
             edit_user = None
-    except User.DoesNotExist:
-        edit_user = None
     if edit_user:
         initial = {'institution': edit_user.institution.name}
     elif institution:
@@ -103,15 +99,21 @@ def create_user(request):
 
 @manager_or_superadmin_required
 def create_institution(request):
+    inst_id = sanitize_get_param(request.GET.get('id'))
+    edit_inst = get_institution(inst_id)
     form = None
     if request.method == 'POST':
-        form = institutionForm(request.POST)
+        form = institutionForm(request.POST, instance=edit_inst)
         if form.is_valid():
             form.save()
-            messages.success(request, _("Institution created."))
-            return redirect(reverse('create_institution'))
+            if edit_inst:
+                message = _("Changes were successfully saved")
+            else:
+                message= _("Institution created.")
+            messages.success(request, message)
+            return redirect(reverse('list_institutions'))
     if request.method == 'GET': 
-        form = institutionForm()
+        form = institutionForm(instance=edit_inst)
     context = {'form': form}
     return render_template(
         request,
@@ -129,11 +131,8 @@ def manage_user(request):
         user_type = 'manager'
     else:
         user_type = 'superadmin'
-
-    try:
-        user = users.get(id=uid)
-    except(User.DoesNotExist):
-        user = None
+    user = get_user(uid)
+    if not user:
         message = _("You didn't choose a user")
         messages.error(request, message)
     context = {'u_data': user, 'user_type': user_type}
@@ -146,10 +145,7 @@ def manage_user(request):
 def reset_password(request):
     uid = request.GET.get('uid')
     uid = sanitize_get_param(uid)
-    try:
-        user = User.objects.get(id=uid)
-    except(User.DoesNotExist):
-        user = None
+    user = get_user(uid)
     context = {"u_data": user}
     return render_template(
         request,
@@ -162,11 +158,7 @@ def reset_password_confirmed(request):
     uid = request.GET.get('uid')
     uid = sanitize_get_param(uid)
     user_logged =request.zeususer
-    try:
-        user = User.objects.get(id=uid)
-    except(User.DoesNotExist):
-        user = None
-
+    user = get_user(uid)
     if user:
         ok = False
         if user_logged._user.superadmin_p:

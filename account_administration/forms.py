@@ -7,7 +7,7 @@ from heliosauth.models import User
 from heliosauth.auth_systems.password import make_password
 from zeus.models.zeus_models import Institution
 
-from generate_password import random_password
+from utils import random_password
 
 class userForm(ModelForm):
 
@@ -59,10 +59,13 @@ class userForm(ModelForm):
             
 
 class institutionForm(ModelForm):
+
     def __init__(self, *args, **kwargs):
         super(institutionForm, self).__init__(*args, **kwargs)
         self.fields['name'].label = _("Name")
 
+    '''
+    # breakes edit
     def clean_name(self):
         name = self.cleaned_data['name']
         try:
@@ -73,6 +76,8 @@ class institutionForm(ModelForm):
             inst = None
         if not inst:
             return self.cleaned_data['name']
+    '''
+
     class Meta:
         model = Institution
         fields = ['name']
