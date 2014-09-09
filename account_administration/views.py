@@ -65,7 +65,7 @@ def create_user(request):
     edit_user = get_user(edit_id)
     logged_user = request.zeususer._user
     if edit_user:
-        if  not can_do(logged_user, edit_user):
+        if not can_do(logged_user, edit_user):
             edit_user = None
     if edit_user:
         initial = {'institution': edit_user.institution.name}
@@ -152,24 +152,14 @@ def reset_password(request):
         'account_administration/reset_password',
         context)
 
-
 @manager_or_superadmin_required
 def reset_password_confirmed(request):
     uid = request.GET.get('uid')
     uid = sanitize_get_param(uid)
-    user_logged =request.zeususer
+    logged_user = request.zeususer._user
     user = get_user(uid)
     if user:
-        ok = False
-        if user_logged._user.superadmin_p:
-            # superadmin can do
-            ok = True
-        elif user_logged._user.management_p:
-            if not (user.superadmin_p or user.management_p):
-                # manager can only do if target is not manager/superadmin
-                ok = True
-
-        if ok:
+        if can_do(logged_user, user):
             new_password = random_password()
             user.info['password'] = make_password(new_password)
             user.save()
