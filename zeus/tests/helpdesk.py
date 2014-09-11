@@ -1,8 +1,4 @@
 # -*- coding: utf-8 -*-
-
-import datetime
-from datetime import timedelta
-
 from django.test import TestCase
 from django.contrib.auth.hashers import make_password
 from django.utils import translation
@@ -126,7 +122,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         users = r.context['users']
         for u in users:
             self.assertTrue(filter_string in u.institution.name)
-            
+
     def test_user_list_view_filters_users_with_uid_and_inst(self):
         filter_string = 'test'
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
@@ -140,7 +136,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         for u in users:
             self.assertTrue(filter_string in u.user_id)
             self.assertTrue(filter_string in u.institution.name)
-    
+
     # test manage user view
 
     def test_manage_view_returns_response(self):
@@ -149,7 +145,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             '/account_administration/user_management/'
             )
         self.assertEqual(r.status_code, 200)
-        
+
     def test_manage_view_error_message_if_no_user_or_wrong_id(self):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
         r = self.c.get(
@@ -188,6 +184,43 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         context_user = r.context['u_data']
         self.assertEqual(context_user.id, u.id)
 
+    def test_reset_password_asks_confirmation(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        u = User.objects.get(user_id='test_admin')
+        r = self.c.get(
+            '/account_administration/reset_password/?uid=%s'
+            % u.id,
+            follow=True
+            )
+
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = "Παρακαλούμε επιβεβαιώστε την επανέκδοση"
+        elif active_lang == 'en':
+            asrt_message = "Please confirm the password reset"
+        asrt_message = asrt_message.decode('utf-8')
+        self.assertContains(
+            r,
+            asrt_message
+            )
+
+    def test_reset_password_confirmation_no_user(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        r = self.c.get(
+            '/account_administration/reset_password/',
+            follow=True
+            )
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = "Δεν επιλέχθηκε χρήστης"
+        elif active_lang == 'en':
+            asrt_message = "You didn't choose a user"
+        asrt_message = asrt_message.decode('utf-8')
+        self.assertContains(
+            r,
+            asrt_message
+            )
+
     def test_manager_can_reset_admin_pass(self):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
         u = User.objects.get(user_id='test_admin')
@@ -201,31 +234,37 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         new_pass = u.info['password']
         self.assertNotEqual(old_pass, new_pass)
 
-    def test_manager_cannot_reset_manager_pass(self):
-        self.c.post(self.locations['login'], self.manager_creds, follow=True)
-        u = User.objects.get(user_id='test_manager')
-        old_pass = u.info['password']
-        self.c.get(
-            '/account_administration'
-            '/reset_password_confirmed/'
-            '?uid=%s' % u.id
-            )
-        u = User.objects.get(user_id='test_manager')
-        new_pass = u.info['password']
-        self.assertEqual(old_pass, new_pass)
-
-    def test_manager_cannot_reset_superadmin_pass(self):
-        self.c.post(self.locations['login'], self.manager_creds, follow=True)
-        u = User.objects.get(user_id='test_superadmin')
-        old_pass = u.info['password']
-        self.c.get(
-            '/account_administration'
-            '/reset_password_confirmed/'
-            '?uid=%s' % u.id
-            )
-        u = User.objects.get(user_id='test_superadmin')
-        new_pass = u.info['password']
-        self.assertEqual(old_pass, new_pass)
+    def test_manager_cannot_reset_manager_and_superadmin_pass(self):
+        user_ids = ['test_manager', 'test_superadmin']
+        for user_id in user_ids:
+            self.c.post(
+                self.locations['login'],
+                self.manager_creds,
+                follow=True
+                )
+            u = User.objects.get(user_id=user_id)
+            old_pass = u.info['password']
+            r = self.c.get(
+                '/account_administration'
+                '/reset_password_confirmed/'
+                '?uid=%s' % u.id,
+                follow=True
+                )
+            u = User.objects.get(user_id=user_id)
+            new_pass = u.info['password']
+            self.assertEqual(old_pass, new_pass)
+            messages = get_messages_from_response(r)
+            error_message = messages[0].decode('utf-8')
+            active_lang = translation.get_language()
+            if active_lang == 'el':
+                asrt_message = "Δεν επιτρέπεται αυτή η ενέργεια"
+            elif active_lang == 'en':
+                asrt_message = "You are not authorized to do this"
+            asrt_message = asrt_message.decode('utf-8')
+            self.assertEqual(
+                error_message,
+                asrt_message
+                )
 
     def test_reset_password_of_nonexistent_user(self):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
@@ -280,9 +319,9 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         post_data = {
             'user_id': 'test_admin',
             'institution': 'test_inst',
-            'is_disabled': 'on', 
+            'is_disabled': 'on',
             }
-        r = self.c.post(
+        self.c.post(
             '/account_administration/user_creation/?edit_id=%s'
             % uid,
             post_data,
@@ -293,10 +332,10 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
 
     def test_manager_cannot_disable_manager_or_superadmin(self):
         self.c.post(
-                self.locations['login'],
-                self.manager_creds,
-                follow=True
-                )
+            self.locations['login'],
+            self.manager_creds,
+            follow=True
+            )
         user_ids = ['test_manager', 'test_superadmin']
         for user_id in user_ids:
             u = User.objects.get(user_id=user_id)
@@ -306,7 +345,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
                 'institution': u.institution.name,
                 'is_disabled': 'on',
             }
-            r = self.c.post(
+            self.c.post(
                 '/account_administration/user_creation/?edit_id=%s'
                 % uid,
                 post_data,
@@ -317,10 +356,10 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
 
     def test_superadmin_can_disable_manager_or_superadmin(self):
         self.c.post(
-                self.locations['login'],
-                self.superadmin_creds,
-                follow=True
-                )
+            self.locations['login'],
+            self.superadmin_creds,
+            follow=True
+            )
         user_ids = ['test_manager', 'test_superadmin']
         for user_id in user_ids:
             u = User.objects.get(user_id=user_id)
@@ -330,7 +369,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
                 'institution': u.institution.name,
                 'is_disabled': 'on',
             }
-            r = self.c.post(
+            self.c.post(
                 '/account_administration/user_creation/?edit_id=%s'
                 % uid,
                 post_data,
@@ -454,7 +493,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             'institution': 'test_inst'
             }
         r = self.c.post(
-            '/account_administration/user_creation/?edit_id=%s'\
+            '/account_administration/user_creation/?edit_id=%s'
             % u.id,
             post_data,
             follow=True
@@ -478,7 +517,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         self.c.post(self.locations['login'], self.manager_creds, follow=True)
         inst = Institution.objects.get(name='test_inst')
         r = self.c.get(
-            '/account_administration/user_creation/?id=%s'\
+            '/account_administration/user_creation/?id=%s'
             % inst.id,
             follow=True,
             )
@@ -551,7 +590,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         post_data = {
             'name': 'edited_test_inst'
             }
-        r = self.c.post(
+        self.c.post(
             ('/account_administration/institution_creation/'
              '?id=%s' % inst.id),
             post_data,
