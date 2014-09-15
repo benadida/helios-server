@@ -25,7 +25,20 @@ class userForm(ModelForm):
             self.fields.pop('is_disabled') 
     name = forms.CharField(required=False)
     institution = forms.CharField(required=True)
-    
+
+    def clean_user_id(self):
+        user_id = self.cleaned_data['user_id']
+        try:
+            if self.instance.pk:
+                user = User.objects.exclude(user_id=self.instance.user_id).get(user_id=user_id)
+            else:
+                user = User.objects.get(user_id=user_id)
+            message = _("User already exists")
+            raise ValidationError(message)
+        except User.DoesNotExist:
+            return self.cleaned_data['user_id']
+
+
     def clean_institution(self):
         inst_name = self.cleaned_data['institution']
         try:
@@ -64,19 +77,17 @@ class institutionForm(ModelForm):
         super(institutionForm, self).__init__(*args, **kwargs)
         self.fields['name'].label = _("Name")
 
-    '''
-    # breakes edit
     def clean_name(self):
         name = self.cleaned_data['name']
         try:
-            inst = Institution.objects.get(name=name)
+            if self.instance.pk:
+                inst = Institution.objects.exclude(name=self.instance.name).get(name=name)
+            else:
+                inst = Institution.objects.get(name=name)
             message = _("Institution already exists")
             raise ValidationError(message)
         except Institution.DoesNotExist:
-            inst = None
-        if not inst:
             return self.cleaned_data['name']
-    '''
 
     class Meta:
         model = Institution
