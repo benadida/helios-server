@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-08-26 16:54+0300\n"
+"POT-Creation-Date: 2014-09-15 13:58+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1095,15 +1095,6 @@ msgstr "Πίσω στις κάλπες"
 msgid "Error emailing voters"
 msgstr "Σφάλμα κατά την αποστολή email στους ψηφοφόρους"
 
-msgid "Users List"
-msgstr "Λίστα Χρηστών"
-
-msgid "Institutions List"
-msgstr "Λίστα Ιδρυμάτων"
-
-msgid "Create User"
-msgstr "Δημιουργία Χρήστη"
-
 msgid "Create Institution"
 msgstr "Δημιουργία Ιδρύματος"
 
@@ -1131,29 +1122,23 @@ msgstr "Ίδρυμα"
 msgid "Filter"
 msgstr "Φίλτρο"
 
+msgid "Clear"
+msgstr "Εκκαθάριση"
+
 msgid "Name"
 msgstr "Όνομα"
 
 msgid "Users"
 msgstr "Χρήστες"
 
-msgid "Delete"
-msgstr "Διαγραφή"
+msgid "Edit"
+msgstr "Επεξεργασία"
+
+msgid "Create User"
+msgstr "Δημιουργία Χρήστη"
 
 msgid "No results found"
 msgstr "Δεν βρέθηκαν αποτελέσματα"
-
-msgid "previous"
-msgstr "προηγούμενη"
-
-msgid "Page"
-msgstr "Σελίδα"
-
-msgid "of"
-msgstr "από"
-
-msgid "next"
-msgstr "επόμενη"
 
 msgid "Elections Held"
 msgstr "Αριθμός Εκλογών"
@@ -1161,17 +1146,14 @@ msgstr "Αριθμός Εκλογών"
 msgid "Details"
 msgstr "Λεπτομέρειες"
 
+msgid "Institutions"
+msgstr "Ιδρύματα"
+
 msgid "Please confirm the password reset of user "
-msgstr "Παρακαλούμε επιβεβαιώστε την επανέκδοση του κωδικού του του χρήστη "
+msgstr "Παρακαλούμε επιβεβαιώστε την επανέκδοση του κωδικού του χρήστη "
 
 msgid "Reset Password"
 msgstr "Επανέκδοση κωδικού"
-
-msgid "Edit"
-msgstr "Επεξεργασία"
-
-msgid "Delete Account"
-msgstr "Διαγραφή λογαριασμού"
 
 msgid "Election Name"
 msgstr "Τίτλος ψηφοφορίας"
@@ -1353,6 +1335,30 @@ msgstr ""
 
 msgid "Something went wrong !!!"
 msgstr ""
+
+#~ msgid "Users List"
+#~ msgstr "Λίστα Χρηστών"
+
+#~ msgid "Institutions List"
+#~ msgstr "Λίστα Ιδρυμάτων"
+
+#~ msgid "Delete"
+#~ msgstr "Διαγραφή"
+
+#~ msgid "previous"
+#~ msgstr "προηγούμενη"
+
+#~ msgid "Page"
+#~ msgstr "Σελίδα"
+
+#~ msgid "of"
+#~ msgstr "από"
+
+#~ msgid "next"
+#~ msgstr "επόμενη"
+
+#~ msgid "Delete Account"
+#~ msgstr "Διαγραφή λογαριασμού"
 
 #, fuzzy
 #~ msgid "Election"

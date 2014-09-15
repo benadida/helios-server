@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-08-26 16:54+0300\n"
+"POT-Creation-Date: 2014-09-15 13:58+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,14 +23,14 @@ msgstr "'Ονομα"
 msgid "Institution"
 msgstr "ίδρυμα"
 
-msgid "Institution is disabled and cannot be used"
-msgstr "Το ίδρυμα έχει απενεργοποιηθεί και δεν μπορεί να χρησιμοποιηθεί."
+msgid "Disable account"
+msgstr "Απενεργοποίηση Λογαριασμού"
+
+msgid "User already exists"
+msgstr "Ο χρήστης υπάρχει ήδη!"
 
 msgid "Institution does not exist"
 msgstr "Το Ίδρυμα δεν υπάρχει"
-
-msgid "Institution already exists and it is disabled"
-msgstr "Το ίδρυμα υπάρχει ήδη και είναι απενεργοποιημένο"
 
 msgid "Institution already exists"
 msgstr "Το ίδρυμα υπάρχει ήδη"
@@ -41,6 +41,9 @@ msgstr "Οι αλλαγές στον χρήστη αποθηκεύθηκαν ε�
 #, python-format
 msgid "User %(uid)s was created with password %(password)s."
 msgstr "Δημιουργήθηκε ο χρήστης %(uid)s με κωδικό %(password)s. "
+
+msgid "Changes were successfully saved"
+msgstr "Οι αλλαγές αποθηκεύθηκαν επιτυχώς"
 
 msgid "Institution created."
 msgstr "To ίδρυμα δημιουργήθηκε."
@@ -55,35 +58,36 @@ msgstr "Ο νέος κωδικός για τον χρήστη %(uid)s είναι
 msgid "You are not authorized to do this"
 msgstr "Δεν επιτρέπεται αυτή η ενέργεια"
 
-#, fuzzy, python-format
-msgid "Institution %(inst_name)s deleted"
-msgstr "Το ίδρυμα %(inst_name)s διαγράφηκε"
+#~ msgid "Institution is disabled and cannot be used"
+#~ msgstr "Το ίδρυμα έχει απενεργοποιηθεί και δεν μπορεί να χρησιμοποιηθεί."
 
-#, python-format
-msgid "Institution %(inst_name)s can't be deleted (users > 0)"
-msgstr "Το ίδρυμα %(inst_name)s δεν μπορεί να διαγραφεί (χρήστες > 0)"
+#~ msgid "Institution already exists and it is disabled"
+#~ msgstr "Το ίδρυμα υπάρχει ήδη και είναι απενεργοποιημένο"
 
-msgid "No such institution"
-msgstr "Αυτό το ίδρυμα δεν υπάρχει."
+#, fuzzy
+#~ msgid "Institution %(inst_name)s deleted"
+#~ msgstr "Το ίδρυμα %(inst_name)s διαγράφηκε"
 
-#, python-format
-msgid "User %(ufd)s succesfuly deleted!"
-msgstr "Ο χρήστης %(ufd)s διαγράφηκε επιτυχώς!"
+#~ msgid "Institution %(inst_name)s can't be deleted (users > 0)"
+#~ msgstr "Το ίδρυμα %(inst_name)s δεν μπορεί να διαγραφεί (χρήστες > 0)"
 
-msgid "You are not authorized to delete that user"
-msgstr "Δεν επιτρέπεται να διαγράψετε αυτόν τον χρήστη"
+#~ msgid "No such institution"
+#~ msgstr "Αυτό το ίδρυμα δεν υπάρχει."
 
-msgid "Active filters => "
-msgstr "Ενεργά Φίλτρα => "
+#~ msgid "User %(ufd)s succesfuly deleted!"
+#~ msgstr "Ο χρήστης %(ufd)s διαγράφηκε επιτυχώς!"
 
-msgid "Institution: "
-msgstr "Ίδρυμα: "
+#~ msgid "You are not authorized to delete that user"
+#~ msgstr "Δεν επιτρέπεται να διαγράψετε αυτόν τον χρήστη"
 
-msgid "Clear Filters"
-msgstr "Καθαρισμός Φίλτρων"
+#~ msgid "Active filters => "
+#~ msgstr "Ενεργά Φίλτρα => "
 
-#~ msgid "User already exists!"
-#~ msgstr "Ο χρήστης υπάρχει ήδη!"
+#~ msgid "Institution: "
+#~ msgstr "Ίδρυμα: "
+
+#~ msgid "Clear Filters"
+#~ msgstr "Καθαρισμός Φίλτρων"
 
 #~ msgid "No such institution exists."
 #~ msgstr "Αυτό το ίδρυμα δεν υπάρχει."
@@ -156,9 +160,6 @@ msgstr "Καθαρισμός Φίλτρων"
 
 #~ msgid "Change Password"
 #~ msgstr "Αλλαγή Κωδικού"
-
-#~ msgid "Delete Account"
-#~ msgstr "Διαγραφή Λογαριασμού"
 
 #~ msgid "Election Name"
 #~ msgstr "Όνομα Εκλογών"
