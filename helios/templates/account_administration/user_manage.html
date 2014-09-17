@@ -52,6 +52,7 @@
           <td>{{el.name}}</td>
           <td>{{el.voting_starts_at}}</td>
           <td>{{el.voting_ends_at}}</td>
+          <td><a href="{% url election_zip_results el.uuid el.short_name LANGUAGE_CODE %}">{% trans "Save results"%}</a></td>
         </tr>
       {% endfor %}
   </table>    
