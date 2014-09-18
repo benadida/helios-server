@@ -270,9 +270,9 @@ def report(request, election, format):
         return HttpResponse(json.dumps(_reports, default=handler),
                             mimetype="application/json")
 
-
 @auth.election_admin_required
 @auth.requires_election_features('polls_results_computed')
+@auth.allow_manager_access
 @require_http_methods(["GET"])
 def results_file(request, election, ext='pdf', shortname='',
                  language=settings.LANGUAGE_CODE):
