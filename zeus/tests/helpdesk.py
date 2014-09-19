@@ -88,7 +88,6 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             None,
             asrt_message,
             )
-        self.assertFormError
         r = self.c.get(self.locations['create'], follow=True)
         self.assertEqual(r.status_code, 403)
 
@@ -524,6 +523,33 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         form = r.context['form']
         self.assertEqual(form['institution'].value(), 'test_inst')
 
+    def test_create_user_already_exists(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        # we have 3 users in db
+        self.assertEqual(User.objects.all().count(), 3)
+        post_data = {
+            'user_id': 'test_admin',
+            'institution': 'test_inst'
+            }
+        r = self.c.post(
+            '/account_administration/user_creation/',
+            post_data,
+            follow=True
+            )
+        self.assertEqual(User.objects.all().count(), 3)
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = 'Ο χρήστης υπάρχει ήδη!'
+        elif active_lang == 'en':
+            asrt_message = 'User already exists'
+        asrt_message = asrt_message.decode('utf-8')
+        self.assertFormError(
+            r,
+            'form',
+            'user_id',
+            asrt_message,
+            )
+
     # test create institution view
 
     def test_create_institution_view_returns_response(self):
@@ -582,6 +608,33 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             'name',
             asrt_message,
             )
+
+    def test_create_inst_already_exists(self):
+        self.c.post(self.locations['login'], self.manager_creds, follow=True)
+        self.assertEqual(Institution.objects.all().count(), 1)
+        post_data = {
+            'name': 'test_inst'
+            }
+        r = self.c.post(
+            '/account_administration/institution_creation/',
+            post_data,
+            follow=True
+            )
+        self.assertEqual(Institution.objects.all().count(), 1)
+        active_lang = translation.get_language()
+        if active_lang == 'el':
+            asrt_message = 'Το ίδρυμα υπάρχει ήδη'
+        elif active_lang == 'en':
+            asrt_message = 'Institution already exists'
+        asrt_message = asrt_message.decode('utf-8')
+        self.assertFormError(
+            r,
+            'form',
+            'name',
+            asrt_message,
+            )
+
+
 
     def test_edit_institution(self):
         inst = Institution.objects.get(name='test_inst')
