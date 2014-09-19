@@ -1,80 +1,46 @@
 {% extends TEMPLATE_BASE %}
-
 {% load remember_filters %}
-{% load i18n %}
-
-{% block tabs_menu%}
-    <dd class=""><a href={% url list_users %}>{% trans "Users List" %}</a></dd>
-    <dd class="active"><a href={% url list_institutions %}>{% trans "Institutions List" %}</a></dd>
-    <dd class=""><a href={% url create_user %}>{% trans "Create User" %}</a></dd>
-    <dd class=""><a href={% url create_institution %}>{% trans "Create Institution" %}</a></dd>
+{% load i18n pagination_tags %}
+{% block tabs_menu %}
+{% include "account_administration/nav.html" %}
 {% endblock %}
-
 {% block content %}
-
 <form action='' method = GET>
-{% csrf_token %}
-{% trans "Institution" %} <input type='textfield' name='inst_filter'>
-<input type='submit' class="button tiny" value={% trans "Filter" %}>
+  {% csrf_token %}
+  <label for"inst_name">{% trans "Institution" %}</label>
+  <input id="inst_name" type='textfield' name='inst_name' value="{{inst_name|default_if_none:""}}">
+  <label for"sub_button"></label>
+  <input id="sub_button" type='submit' class="button tiny" value={% trans "Filter" %}>
+  <a href="{% url list_institutions %}">{% trans "Clear" %}</a>
 </form>
-
-{% show_active_filters request.GET %}
-{% clear_filters_for_institution request.GET %}
-</br>
-</br>
-
+<br />
+{% autopaginate institutions paginate_by %}
+{% paginate %}
+<br />
 <table class="prettytable" border=1>
-<div id='table_head'>
-<tr>
-    <td><b>ID</b></td>
-    <td><b>{% trans "Name" %}</b></td>
-    <td><b>{% trans "Users" %}</b></td>
-    <td><b>{% trans "Delete" %}</b></td>
-    <td><b>{% trans "Create User" %}</b></td>
-</tr>
-</div>
-
-{% for inst in institutions %}
+  <div id='table_head'>
     <tr>
-        {% with user_num=inst.user_set.count %}
+      <td><b>ID</b></td>
+      <td><b>{% trans "Name" %}</b></td>
+      <td><b>{% trans "Users" %}</b></td>
+      <td><b>{% trans "Edit" %}</b></td>
+      <td><b>{% trans "Create User" %}</b></td>
+    </tr>
+  </div>
+  {% for inst in institutions %}
+    <tr>
         <td>{{inst.id}}</td>
         <td>{{inst.name}}</td>
-        <td><a href={% url list_users%}?inst_filter={{inst.name}}>
-                                                    {{user_num}}</a></td>
-        <td>
-            {% if not user_num and not inst.election_set.count %}
-                <a href={% url delete_institution%}?id={{inst.id}}>
-                                            {% trans "Delete" %}</a>
-            {% endif %}</td>
-        {% endwith %}
-        <td><a href={% url create_user %}?id={{inst.id}}>
-            {% trans "Create User"%} </a>
+        <td><a href={% url list_users%}?inst={{inst.name}}>{{inst.user_set.count}}</a></td>
+        <td><a href="{% url create_institution %}?id={{inst.id}}">{% trans "Edit" %}</td>
+        <td><a href={% url create_user %}?id={{inst.id}}>{% trans "Create User"%}</a>
         </td>
     </tr>
-
-{% empty %}
-<tr>
-    <td colspan=7>{% trans "No results found" %}</td>
-</tr>
-{% endfor %}
+  {% empty %}
+    <tr>
+      <td colspan=7>{% trans "No results found" %}</td>
+    </tr>
+  {% endfor %}
 </table>
-
-<div class="pagination" style="text-align:center;">
-    <span class="step-links">
-        {% if institutions.has_previous %}
-            <a href=
-            {%url list_institutions%}?page={{institutions.previous_page_number}}
-            {% get_filters_for_url request.GET%}>{% trans "previous" %}</a>
-        {% endif %}
-    <span class="current">
-       {% trans "Page" %} {{ institutions.number }} {% trans "of" %} {{ institutions.paginator.num_pages}}.
-    </span>
-        {% if institutions.has_next %}
-          <a href=
-         {% url list_institutions%}?page={{institutions.next_page_number}}
-         {% get_filters_for_url request.GET%}">{% trans "next" %}</a>
-          {% endif %}
-     </span>
-</div>
-
+{% paginate %}
 {% endblock content%}

@@ -1,0 +1,8 @@
+{% load i18n %}
+{% load remember_filters %}
+
+    <dd class="{% active request 'user_list' %}"><a href={% url list_users %}>{% trans "Users" %}</a></dd>
+    <dd class="{% active request 'institution_list' %}"><a href={% url list_institutions %}>{% trans "Institutions" %}</a></dd>
+    <dd class="{% active request 'user_creation' %}"><a href={% url create_user %}>{% trans "Create User" %}</a></dd>
+    <dd class="{% active request 'institution_creation' %}"><a href={% url create_institution %}>{% trans "Create Institution" %}</a></dd>
+

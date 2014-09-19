@@ -40,21 +40,27 @@ def election_view(check_access=True):
     def wrapper(func):
         @wraps(func)
         def inner(request, *args, **kwargs):
+            allow_manager = getattr(func, '_allow_manager', False)
+            _check_access = check_access
             user = request.zeususer
             if user.is_authenticated():
                 _locals.user_id = user.user_id
             _locals.ip = get_ip(request)
+
+            if allow_manager and user.is_manager:
+               _check_access = False
+
             if 'election_uuid' in kwargs:
                 uuid = kwargs.pop('election_uuid')
                 election = get_object_or_404(Election, uuid=uuid)
-                if not user.can_access_election(election) and check_access:
+                if not user.can_access_election(election) and _check_access:
                     raise PermissionDenied("Election cannot be accessed by you")
                 kwargs['election'] = election
 
             if 'poll_uuid' in kwargs:
                 uuid = kwargs.pop('poll_uuid')
                 poll = get_object_or_404(Poll, uuid=uuid)
-                if not user.can_access_poll(poll) and check_access:
+                if not user.can_access_poll(poll) and _check_access:
                     raise PermissionDenied("Poll cannot be accessed by you")
                 kwargs['poll'] = poll
 
@@ -119,9 +125,9 @@ def election_user_required(func):
 
 
 def election_admin_required(func):
-    @wraps(func)
     @election_view()
     @user_required
+    @wraps(func)
     def wrapper(request, *args, **kwargs):
         user = request.zeususer
         if not user.is_admin:
@@ -203,7 +209,7 @@ class ZeusUser(object):
             self.is_user = True
             if self._user.superadmin_p:
                 self.is_superadmin = True
-            if self._user.management_p:
+            if self._user.management_p or self._user.superadmin_p:
                 self.is_manager = True
             if self._user.admin_p or self._user.superadmin_p:
                 self.is_admin = True
@@ -341,3 +347,8 @@ def get_users_from_request(request):
                 del session[USER_SESSION_KEY]
 
     return voter, trustee, admin
+
+def allow_manager_access(func):
+    func._allow_manager = True
+    func.func_globals['foo'] = 'bar'
+    return func

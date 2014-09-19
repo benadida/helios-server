@@ -1,5 +1,4 @@
 from django.shortcuts import redirect
-from django.db import IntegrityError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.contrib import messages
@@ -11,188 +10,129 @@ from heliosauth.auth_systems.password import make_password
 from zeus.models.zeus_models import Institution
 from zeus.auth import manager_or_superadmin_required
 from account_administration.forms import userForm, institutionForm
-from generate_password import random_password
-
+from utils import random_password, can_do, sanitize_get_param, \
+    get_user, get_institution
 
 
 @manager_or_superadmin_required
 def list_users(request):
-    users = get_active_users()
+    users = User.objects.all()
     users = users.order_by('id')
     # filtering
-    inst_filter = request.GET.get('inst_filter')
-    if inst_filter:
-        users = users.filter(institution__name__icontains=inst_filter)
-    uname_filter = request.GET.get('uname_filter')
-    if uname_filter:
-        users = users.filter(user_id__icontains=uname_filter)
-    # pagination
-    page = request.GET.get('page', 1)
-    paginator = Paginator(users, 10)
-    try:
-        users = paginator.page(page)
-    except (PageNotAnInteger, EmptyPage):
-        users = paginator.page(1)
-
+    inst = request.GET.get('inst')
+    if inst:
+        users = users.filter(institution__name__icontains=inst)
+    uid = request.GET.get('uid')
+    if uid:
+        users = users.filter(user_id__icontains=uid)
+    context = {
+        'paginate_by': 10,
+        'users': users,
+        'inst': inst,
+        'uid': uid,
+        }
     return render_template(
         request,
         'account_administration/list_users',
-        {'users': users},
-    )
-
+        context
+        )
 
 @manager_or_superadmin_required
 def list_institutions(request):
-    institutions = get_active_insts()
+    institutions = Institution.objects.all()
     institutions = institutions.order_by('id')
     #filtering
-    inst_filter = request.GET.get('inst_filter')
-    if inst_filter:
-        institutions = institutions.filter(name__icontains=inst_filter)
-    #count users of institution
-    #if users 0, inst can be deleted
-    users_count = {}
-    can_be_deleted = {}
-    for inst in institutions:
-        users_count[inst.name] = (
-            User
-            .objects
-            .filter(institution__name=inst.name)
-            .count())
-        #which insts can be deleted
-        if users_count[inst.name] > 0:
-            can_be_deleted[inst.name] = False
-        else:
-            can_be_deleted[inst.name] = True
-    #pagination
-    page = request.GET.get('page', 1)
-    paginator = Paginator(institutions, 10)
-    try:
-        institutions = paginator.page(page)
-    except (PageNotAnInteger, EmptyPage):
-        institutions = paginator.page(1)
-
+    inst_name = request.GET.get('inst_name')
+    if inst_name:
+        institutions = institutions.filter(name__icontains=inst_name)
     context = {
+        'paginate_by': 10,
+        'inst_name': inst_name,
         'institutions': institutions,
-        'users_count': users_count,
-        'can_be_deleted': can_be_deleted,
         'request': request
     }
-
     return render_template(
         request,
         'account_administration/list_institutions',
         context)
 
-
 @manager_or_superadmin_required
 def create_user(request):
-    users = get_active_users() 
-    edit_id = request.GET.get('edit_id')
-    edit_id = sanitize_get_param(edit_id)
-    try:
-        instance = users.get(id=edit_id)
-    except User.DoesNotExist:
-        instance = None
+    users = User.objects.all()
+    inst_id = sanitize_get_param(request.GET.get('id'))
+    institution = get_institution(inst_id)
+    edit_id = sanitize_get_param(request.GET.get('edit_id'))
+    edit_user = get_user(edit_id)
+    logged_user = request.zeususer._user
+    if edit_user:
+        if not can_do(logged_user, edit_user):
+            edit_user = None
+    if edit_user:
+        initial = {'institution': edit_user.institution.name}
+    elif institution:
+        initial = {'institution': institution.name}
+    else:
+        initial = None
+    form = None
 
     if request.method == 'POST':
-        form = userForm(request.POST, instance=instance)
+        form = userForm(request.POST, initial=initial, instance=edit_user)
         if form.is_valid():
-            data = form.cleaned_data
-            if instance:
-                user = form.save()
+            user, password = form.save()
+            if edit_user:
                 message = _("Changes on user were successfully saved")
-                messages.success(request, message)
-                url = "%s?user_id_filter=%s" % (reverse('user_management'),
-                                                str(user.id))
-                return redirect(url)
-
             else:
-                user = form.save(commit=False)
-                user.name = data.get('name')
-                password = random_password()
-                user.info = {'name': user.name or user.user_id,
-                            'password': make_password(password)}
-                user.institution = data['institution']
-                user.management_p = False
-                user.admin_p = True
-                user.user_type = 'password'
-                user.superadmin_p = False
-                user.ecounting_account = False
-                user.save()
                 message = _("User %(uid)s was created with"
-                            " password %(password)s.") % {'uid': user.user_id,
-                                                        'password': password}
-                messages.success(request, message)
-                url = "%s?user_id_filter=%s" % (reverse('user_management'),
-                                                str(user.id))
-                return redirect(url)
-        else:
-            context = {'form': form}
-            return render_template(
-                request,
-                'account_administration/create_user',
-                context)
-    else:
-        inst_filter = request.GET.get('id')
-        inst_filter = sanitize_get_param(inst_filter)
-        try:
-            insts = get_active_insts()
-            inst = insts.get(id=inst_filter)
-        except(Institution.DoesNotExist):
-            inst = None
-        if inst:
-            form = userForm(initial={'institution': inst.name})
-        elif instance:
-            form = userForm(initial={'institution': instance.institution.name} ,
-                            instance=instance)
-        else:
-            form = userForm()
-        context = {'form': form}
-        return render_template(
-            request,
-            'account_administration/create_user',
-            context)
+                            " password %(password)s.")\
+                            % {'uid': user.user_id, 'password': password}
+            messages.success(request, message)
+            url = "%s?uid=%s" % (reverse('user_management'), \
+                str(user.id))
+            return redirect(url)
 
+    if request.method == 'GET':
+        form = userForm(initial=initial, instance=edit_user)
+
+    tpl = 'account_administration/create_user',
+    context = {'form': form}
+    return render_template(request, tpl, context)
 
 @manager_or_superadmin_required
 def create_institution(request):
+    inst_id = sanitize_get_param(request.GET.get('id'))
+    edit_inst = get_institution(inst_id)
+    form = None
     if request.method == 'POST':
-        form = institutionForm(request.POST)
+        form = institutionForm(request.POST, instance=edit_inst)
         if form.is_valid():
-            inst = form.save()
-            inst.save()
-            messages.success(request, _("Institution created."))
-            return redirect(reverse('create_institution'))
-        else:
-            return render_template(
-                request,
-                'account_administration/create_institution',
-                {'form': form})
-    else:
-        form = institutionForm()
-        context = {'form': form}
-        return render_template(
-            request,
-            'account_administration/create_institution',
-            context)
-
+            form.save()
+            if edit_inst:
+                message = _("Changes were successfully saved")
+            else:
+                message= _("Institution created.")
+            messages.success(request, message)
+            return redirect(reverse('list_institutions'))
+    if request.method == 'GET': 
+        form = institutionForm(instance=edit_inst)
+    context = {'form': form}
+    return render_template(
+        request,
+        'account_administration/create_institution',
+        context
+        )
 
 @manager_or_superadmin_required
 def manage_user(request):
-    users = get_active_users()
-    user_id_filter = request.GET.get('user_id_filter')
-    user_id_filter = sanitize_get_param(user_id_filter)
+    users = User.objects.all()
+    uid = request.GET.get('uid')
+    uid = sanitize_get_param(uid)
 
     if request.zeususer._user.management_p:
         user_type = 'manager'
     else:
         user_type = 'superadmin'
-
-    try:
-        user = users.get(id=user_id_filter)
-    except(User.DoesNotExist):
-        user = None
+    user = get_user(uid)
+    if not user:
         message = _("You didn't choose a user")
         messages.error(request, message)
     context = {'u_data': user, 'user_type': user_type}
@@ -203,42 +143,23 @@ def manage_user(request):
 
 @manager_or_superadmin_required
 def reset_password(request):
-    users = get_active_users()
-    user_id_filter = request.GET.get('user_id_filter')
-    user_id_filter = sanitize_get_param(user_id_filter)
-    try:
-        user = users.get(id=user_id_filter)
-    except(User.DoesNotExist):
-        user = None
+    uid = request.GET.get('uid')
+    uid = sanitize_get_param(uid)
+    user = get_user(uid)
     context = {"u_data": user}
     return render_template(
         request,
         'account_administration/reset_password',
         context)
 
-
 @manager_or_superadmin_required
 def reset_password_confirmed(request):
-    users = get_active_users()
-    user_id_filter = request.GET.get('user_id_filter')
-    user_id_filter = sanitize_get_param(user_id_filter)
-    user_logged =request.zeususer
-    try:
-        user = users.get(id=user_id_filter)
-    except(User.DoesNotExist):
-        user = None
-
+    uid = request.GET.get('uid')
+    uid = sanitize_get_param(uid)
+    logged_user = request.zeususer._user
+    user = get_user(uid)
     if user:
-        ok = False
-        if user_logged._user.superadmin_p:
-            # superadmin can do
-            ok = True
-        elif user_logged._user.management_p:
-            if not (user.superadmin_p or user.management_p):
-                # manager can only do if target is not manager/superadmin
-                ok = True
-
-        if ok:
+        if can_do(logged_user, user):
             new_password = random_password()
             user.info['password'] = make_password(new_password)
             user.save()
@@ -253,121 +174,6 @@ def reset_password_confirmed(request):
         message = _("You didn't choose a user")
         messages.error(request, message)
         return redirect(reverse('list_users'))
-    url = "%s?user_id_filter=%s" % (reverse('user_management'),
+    url = "%s?uid=%s" % (reverse('user_management'),
                                    str(user.id))
     return redirect(url)
-
-
-@manager_or_superadmin_required
-def delete_institution(request):
-    inst_id = request.GET.get('id')
-    inst_id = sanitize_get_param(inst_id) 
-    insts = get_active_insts()
-    try:
-        inst = insts.get(id=inst_id)
-    except(Institution.DoesNotExist):
-        inst = None
-
-    context = {'inst': inst}
-
-    return render_template(
-        request,
-        'account_administration/delete_institution',
-        context)
-
-@manager_or_superadmin_required
-def inst_deletion_confirmed(request):
-    insts = get_active_insts()
-    inst_id = request.GET.get('id')
-    inst_id = sanitize_get_param(inst_id) 
-
-    try:
-        inst = insts.get(id=inst_id)
-    except(Institution.DoesNotExist):
-        inst = None
-    if inst:
-        if inst.user_set.count() == 0 and  inst.election_set.count() == 0:
-            inst.is_disabled = True
-            inst.save()
-            messages.success(
-                request,
-                (_("Institution %(inst_name)s deleted") %
-                 {'inst_name': inst.name})
-                )
-        else:
-            messages.error(
-                request,
-                _("Institution %(inst_name)s can't be deleted (users > "
-                  "0)") % {'inst_name': inst.name}
-                )
-    else:
-        messages.error(request, _("No such institution"))
-    return redirect(reverse('list_institutions'))
-
-
-@manager_or_superadmin_required
-def delete_user(request):
-    users = get_active_users()
-    u_id = request.GET.get('id')
-    u_id = sanitize_get_param(u_id) 
-    try:
-        user_for_deletion = users.get(id=u_id)
-    except(User.DoesNotExist):
-        user_for_deletion = None
-    context = {'user_for_deletion': user_for_deletion}
-    return render_template(
-        request,
-        'account_administration/delete_user',
-        context)
-
-
-@manager_or_superadmin_required
-def user_deletion_confirmed(request):
-    users = get_active_users()
-    u_id = request.GET.get('id')
-    u_id = sanitize_get_param(u_id) 
-
-    try:
-        user_for_deletion = users.get(id=u_id)
-    except(User.DoesNotExist):
-        user_for_deletion = None
-    logged_user = request.zeususer._user
-    if user_for_deletion:
-        if((user_for_deletion.management_p
-                or user_for_deletion.superadmin_p)
-                and logged_user.superadmin_p):
-            user_for_deletion.is_disabled = True
-            user_for_deletion.save()
-            message = _("User %(ufd)s succesfuly "
-                        "deleted!") % {'ufd': user_for_deletion.user_id}
-            messages.success(request, message)
-        elif((user_for_deletion.management_p
-                or user_for_deletion.superadmin_p)
-                and logged_user.management_p):
-            messages.error(
-                request,
-                _("You are not authorized to delete that user")
-                )
-        else:
-            user_for_deletion.is_disabled=True
-            user_for_deletion.save()
-            message = _("User %(ufd)s succesfuly "
-                        "deleted!") % {'ufd': user_for_deletion.user_id}
-            messages.success(request, message)
-
-    else:
-        messages.error(request, _("You didn't choose a user"))
-
-    return redirect(reverse('list_users'))
-
-def get_active_users():
-    return User.objects.filter(is_disabled=False)
-def get_active_insts():
-    return Institution.objects.filter(is_disabled=False)
-def sanitize_get_param(param):
-    try:
-        param = int(param)
-    except(ValueError, TypeError):
-        param = None
-    return param
-
