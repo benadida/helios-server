@@ -31,7 +31,7 @@
     <tr>
         <td>{{inst.id}}</td>
         <td>{{inst.name}}</td>
-        <td><a href={% url list_users%}?inst={{inst.name}}>{{user_num}}</a></td>
+        <td><a href={% url list_users%}?inst={{inst.name}}>{{inst.user_set.count}}</a></td>
         <td><a href="{% url create_institution %}?id={{inst.id}}">{% trans "Edit" %}</td>
         <td><a href={% url create_user %}?id={{inst.id}}>{% trans "Create User"%}</a>
         </td>
