@@ -277,6 +277,9 @@ DEMO_MAX_VOTERS = 5
 DEMO_SUBMIT_INTERVAL_SECONDS = 10
 DEMO_EMAILS_PER_IP = 1
 
+
+PAGINATION_DEFAULT_WINDOW = 3
+
 # useful trick for custom settings
 try:
     from local_settings import *

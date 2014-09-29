@@ -82,14 +82,10 @@ def voters_email(poll_id, subject_template, body_template, extra_vars={},
                  update_date=True,
                  update_booth_invitation_date=False,
                  q_param=None):
-    election = Poll.objects.get(id=poll_id)
-    voters = election.voters.all()
-    if q_param:
-        voters = utils.get_filtered_voters(q_param, voters)
-    if voter_constraints_include:
-        voters = voters.filter(**voter_constraints_include)
-    if voter_constraints_exclude:
-        voters = voters.exclude(**voter_constraints_exclude)
+    poll = Poll.objects.get(id=poll_id)
+    voters = poll.voters.filter(utils.get_voters_filters_with_constraints(
+        q_param, voter_constraints_include, voter_constraints_exclude
+    ))
     for voter in voters:
         single_voter_email.delay(voter.uuid,
                                  subject_template,

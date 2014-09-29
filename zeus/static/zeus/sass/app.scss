@@ -291,20 +291,39 @@ body {
   .pagination { 
     margin: 1em 0;
   }
+
   .pagination-cont {
-      text-align: right;
+      ul.pagination {
+          font-size: 0.8em;
+          float: right;
+          li {
+                font-size: 12px;
+          }
+      }
   }
         
   .before-table {
     .pagination-cont {
-      margin-top: 20px;
+      margin-top: 10px;
     }
   }
 
   .table-filters {
+    .qresult {
+      position: absolute;
+      left: 291px;
+      top: 10px;
+      color: #666;
+      font-size: 0.8em;
+      width: 130px;
+    }
     .button.postfix { padding: 0 !important; }
     a.button.postfix {
         margin-left: -1px;
+        &.alert {
+          background-color: #aaaaaa;
+          border-color: #777777;
+        }
     }
     form {
       margin: 0;

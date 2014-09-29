@@ -1,6 +1,8 @@
 import os
 import csv
 import json
+import urllib
+
 from collections import OrderedDict
 
 from django.conf.urls.defaults import *
@@ -149,7 +151,7 @@ def voters_list(request, election, poll):
         voters_per_page = default_voters_per_page
     order_by = 'voter_login_id'
     order_by = request.GET.get('order', 'voter_login_id')
-    if not order_by in voter_table_header.keys(): 
+    if not order_by in VOTER_TABLE_HEADERS.keys(): 
         order_by = 'voter_login_id'
 
     validate_hash = request.GET.get('vote_hash', "").strip()
@@ -162,7 +164,7 @@ def voters_list(request, election, poll):
         order_by = '-%s' % order_by
         voters = Voter.objects.filter(poll=poll).order_by(order_by)
     
-    voters = get_filtered_voters(q_param, voters)
+    voters = voters.filter(get_voters_filters(q_param))
     voters_count = Voter.objects.filter(poll=poll).count()
     voted_count = poll.voters_cast_count()
 
@@ -175,8 +177,9 @@ def voters_list(request, election, poll):
         'voters_count': voters_count,
         'voted_count': voted_count,
         'q': q_param,
+        'voters_list_count': voters.count(),
         'voters_per_page': voters_per_page,
-        'voter_table_header': voter_table_header.iteritems(),
+        'voter_table_headers': VOTER_TABLE_HEADERS.iteritems(),
     }
     set_menu('voters', context)
     return render_template(request, 'election_poll_voters_list', context)
@@ -190,7 +193,7 @@ def voters_clear(request, election, poll):
     q_param = request.POST.get('q_param', None)
     voters = poll.voters.all()
     if q_param:
-        voters = get_filtered_voters(q_param, voters)
+        voters = voters.filter(get_voters_filters(q_param))
 
     for voter in voters:
         if not voter.cast_votes.count():
@@ -386,6 +389,24 @@ def voters_email(request, election, poll=None, voter_uuid=None):
                 'election' : election}
             })
 
+    q_param = request.GET.get('q', None)
+
+    filtered_voters = election.voters.filter()
+    if poll:
+        filtered_voters = poll.voters.filter()
+
+    if not q_param:
+        filtered_voters = EmptyQuerySet()
+    else:
+        voters_filters = get_voters_filters(q_param)
+        filtered_voters = filtered_voters.filter(voters_filters)
+
+        if not filtered_voters.count():
+            message = _("No voters were found.")
+            messages.error(request, message)
+            url = election_reverse(election, 'polls_list')
+            return HttpResponseRedirect(url)
+
     if request.method == "GET":
         email_form = EmailVotersForm()
         email_form.fields['subject'].initial = dict(TEMPLATES)[template]
@@ -428,7 +449,6 @@ def voters_email(request, election, poll=None, voter_uuid=None):
                     'custom_message' : email_form.cleaned_data['body'],
                     'election_url' : election_url,
                 }
-                q_param = request.GET.get('q', None)
                 task_kwargs = {
                     'subject_template': subject_template,
                     'body_template': body_template,
@@ -443,19 +463,26 @@ def voters_email(request, election, poll=None, voter_uuid=None):
                 if poll:
                     log_obj = poll
                 if voter:
-                    log_obj.logger.info("Notifying single voter %s, [template: %s]",
-                                     voter.voter_login_id, template)
+                    log_obj.logger.info("Notifying single voter %s, [template: %s, filter: %s]",
+                                     voter.voter_login_id, template, q_param)
                 else:
-                    log_obj.logger.info("Notifying voters, [template: %s]", template)
+                    log_obj.logger.info("Notifying voters, [template: %s, filter: %r]", template, q_param)
                 tasks.voters_email.delay(_poll.pk, **task_kwargs)
 
-            # this batch process is all async, so we can return a nice note
-            messages.info(request, _("Email sending started"))
+            filters = get_voters_filters_with_constraints(q_param,
+                        voter_constraints_include, voter_constraints_exclude)
+            send_to = filtered_voters.filter(filters)
+            if q_param and not send_to.filter(filters).count():
+                msg = "No voters matched your filters. No emails were sent."
+                messages.error(request, _(msg))
+            else:
+                messages.info(request, _("Email sending started"))
+
             url = election_reverse(election, 'polls_list')
             if poll:
                 url = poll_reverse(poll, 'voters')
             if q_param:
-                url += '?q=%s' % q_param
+                url += '?q=%s' % urllib.quote_plus(q_param)
             return HttpResponseRedirect(url)
 
     context = {
@@ -466,6 +493,7 @@ def voters_email(request, election, poll=None, voter_uuid=None):
         'default_subject': default_subject,
         'default_body': default_body,
         'template': template,
+        'filtered_voters': filtered_voters,
         'templates': TEMPLATES
     }
     set_menu('voters', context)

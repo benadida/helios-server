@@ -1,5 +1,5 @@
 {% extends "election_page.html" %}
-{% load i18n %}
+{% load i18n zeus_tags %}
 
 {% block tabs_menu %}
 {% include "_election_view_menu.html" %}
@@ -17,17 +17,17 @@ voter_id = '{{voter_o.voter_id}}';
 
 <h5>
 {% if voter_o %}
-{% blocktrans with voter_name=voter_o.name %}
-Send email to voter {{ voter_name }} ( voter.voter_id)
+{% blocktrans with voter_name=voter_o.name voter_id=voter_o.voter_id suffix=filtered_voters.count|voters_filtered_suffix %}
+Send email to voter {{ voter_name }} ({{voter_id}})
 {% endblocktrans %}
 {% else %}
 {% if poll %}
-{% blocktrans with poll_name=poll.name %}
-Send email to poll '{{ poll_name }}' voters
+{% blocktrans with poll_name=poll.name suffix=filtered_voters.count|voters_filtered_suffix %}
+Send email to poll '{{ poll_name }}' voters {{ suffix }}
 {% endblocktrans %}
 {% else %}
-{% blocktrans with election_name=election.name voters_count=election.voters_count %}
-Send email to election '{{ election_name }}' voters
+{% blocktrans with election_name=election.name suffix=filtered_voters.count|voters_filtered_suffix %}
+Send email to election '{{ election_name }}' voters {{ suffix }}
 {% endblocktrans %}
 {% endif %}
 {% endif %}

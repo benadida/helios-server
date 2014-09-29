@@ -22,7 +22,10 @@
 
   <div class="columns five">
    
-   {% autopaginate voters voters_per_page %}
+    <script>
+      var VOTERS_Q = '{{ q|escapejs }}';
+      var VOTERS_Q_MSG = "{% blocktrans %}This action will be executed for the {{ voters_list_count }} filtered voters. Are you sure ?{% endblocktrans %}";
+    </script>
 
    {% if admin %}
         <div href="#" class="button medium dropdown" style="float:right;">
@@ -37,20 +40,20 @@
             {% endif %}
             {% if poll.feature_can_send_voter_mail %}
             <li>
-            <a style="" class="foundicon-mail" 
-            href="{% url election_poll_voters_email election.uuid poll.uuid %}{% if q %}?q={{q}}{% endif %}">
+            <a style="" class="foundicon-mail voters-action" 
+            href="{% url election_poll_voters_email election.uuid poll.uuid %}{% if q %}?q={{q|escape|escape_plus}}{% endif %}">
                 &nbsp;{% trans "Send voters email" %}</a>
             </li>
             {% endif %}
             <li>
-            <a style="" class="foundicon-down-arrow"
-            href="{% url election_poll_voters_csv election.uuid poll.uuid poll.short_name%}{% if q %}?q={{q}}{% endif %}">
+            <a style="" class="foundicon-down-arrow voters-action"
+            href="{% url election_poll_voters_csv election.uuid poll.uuid poll.short_name%}{% if q %}?q={{q|escape|escape_plus}}{% endif %}">
                 &nbsp;{% trans "Export voter list to CSV" %}</a>
             </li>
             {% if poll.feature_can_clear_voters %}
             {% url election_poll_voters_clear election.uuid poll.uuid as clear_url %}
             {% trans "Delete all voters" as label %}
-            {% menu_confirm_action label clear_url voters_clear_confirm "remove" "POST" "alert" q%}
+            {% menu_confirm_action label clear_url voters_clear_confirm "remove" "POST" "alert voters-action" q|escape|escape_plus %}
             {% endif %}
           </ul>
         </div>
@@ -67,17 +70,26 @@
                     <div class="row collapse">
                         <div class="columns nine">
                             <input class="q" name="q" type="text" value="{{ q }}"/>
+                            <span class="qresult">
+                              {% if q %}
+                                {% blocktrans count voters.count as voters_count %}
+                                {{ voters_count }} result found
+                                {% plural %}
+                                {{ voters_count }} results found
+                                {% endblocktrans %}
+                              {% endif %}</span>
                         </div>
                         <div class="columns two">
                             <input class="button postfix" type="submit" value="✓"/>
                         </div>
                         <div class="columns one">
-                                <a class="button alert postfix" 
-                                    href="{% url election_poll_voters election.uuid poll.uuid %}" />✗</a>
+                            <a class="button alert postfix" 
+                               href="{% url election_poll_voters election.uuid poll.uuid %}#voters-table" />✗</a>
                         </div>
                     </div>
                 </form>
             </div>
+            {% autopaginate voters voters_per_page %}
             <div class="columns eight pagination-cont">
                 {% paginate %}
             </div>
@@ -88,7 +100,7 @@
 <table id="voters-table" class="voters" width="100%">
   <thead>
     <tr>
-      {% for key, value  in voter_table_header %}
+      {% for key, value  in voter_table_headers %}
         <th>
           {% if key != 'actions' %}
           <a href="?order={{key}}{% complete_voter_get_parameters request.GET key %}" 

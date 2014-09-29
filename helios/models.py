@@ -65,7 +65,7 @@ from zeus.model_features import ElectionFeatures, PollFeatures, \
 from zeus.model_tasks import TaskModel, PollTasks, ElectionTasks
 from zeus import help_texts as help
 from zeus.log import init_election_logger, init_poll_logger
-from zeus.utils import decalize, get_filtered_voters
+from zeus.utils import decalize, get_voters_filters
 
 
 logger = logging.getLogger(__name__)
@@ -961,7 +961,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
     voters = self.voters.all()
     if q_param:
-        voters = get_filtered_voters(q_param, voters)
+        voters = voters.filter(get_voters_filters(q_param))
     for voter in voters:
       vote_field = unicode(_("YES")) if voter.cast_votes.count() else \
                        unicode(_("NO"))

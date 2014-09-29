@@ -5416,17 +5416,33 @@ body .content-header {
 body .pagination {
   margin: 1em 0;
 }
-body .pagination-cont {
-  text-align: right;
+body .pagination-cont ul.pagination {
+  font-size: 0.8em;
+  float: right;
+}
+body .pagination-cont ul.pagination li {
+  font-size: 12px;
 }
 body .before-table .pagination-cont {
-  margin-top: 20px;
+  margin-top: 10px;
+}
+body .table-filters .qresult {
+  position: absolute;
+  left: 291px;
+  top: 10px;
+  color: #666;
+  font-size: 0.8em;
+  width: 130px;
 }
 body .table-filters .button.postfix {
   padding: 0 !important;
 }
 body .table-filters a.button.postfix {
   margin-left: -1px;
+}
+body .table-filters a.button.postfix.alert {
+  background-color: #aaaaaa;
+  border-color: #777777;
 }
 body .table-filters form {
   margin: 0;

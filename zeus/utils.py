@@ -171,7 +171,8 @@ def test_decalize():
         else:
             raise AssertionError("Undecalize(%s) failed to fail" % t)
 
-voter_table_header = OrderedDict([
+
+VOTER_TABLE_HEADERS = OrderedDict([
     ('voter_login_id', _('Registration ID')),
     ('voter_email', _('Email')),
     ('voter_surname', _('Surname')),
@@ -184,33 +185,46 @@ voter_table_header = OrderedDict([
     ('actions', _('Actions'))
     ])
 
-def get_filtered_voters(q_param, voters):
 
-    def parse_q_param(q):
-        args = []
-        for special_arg in q.split(" "):
-            if special_arg.startswith("+") or special_arg.startswith("-"):
-                q = q.replace(" " + special_arg, "")
-                q = q.replace(special_arg, "")
-                args.append(special_arg)
-        return q, args
+def parse_q_param(q):
+    args = []
+    for special_arg in q.split(" "):
+        if special_arg.startswith("+") or special_arg.startswith("-"):
+            q = q.replace(" " + special_arg, "")
+            q = q.replace(special_arg, "")
+            args.append(special_arg)
+    return q, args
 
+
+def get_voters_filters(q_param):
+
+    q = Q()
     if q_param != '':
         q_parsed, extra_filters = parse_q_param(q_param)
-        q = Q()
         for search_field in ['name', 'surname', 'email']:
-            kwargs = {'voter_%s__icontains' % search_field: q_parsed}
-            q = q | Q(**kwargs)	
-        
+            kwargs = {'voter_%s__icontains' % search_field: q_parsed.strip()}
+            q = q | Q(**kwargs)
+
         keys_map = {
-            'voted': 'cast_votes__id'
+            'voted': 'cast_votes__id',
+            'invited': 'last_booth_invitation_send_at',
+            'excluded': 'excluded_at'
         }
         for arg in extra_filters:
             type = True if arg[0] == "-" else False
             key = keys_map.get(arg[1:], arg[1:])
-            if key in voter_table_header.keys():
+            if key in (VOTER_TABLE_HEADERS.keys() + ['excluded_at']):
                 q = q & Q(**{'%s__isnull' % key: type})
+    return q
 
-        voters = voters.filter(q)
 
-    return voters
+def get_voters_filters_with_constraints(q_param=None, constraints_include=None,
+                                        constraints_exclude=None):
+    q = Q()
+    if q_param:
+        q = q & get_voters_filters(q_param)
+    if constraints_include:
+        q = q & Q(**constraints_include)
+    if constraints_exclude:
+        q =  q & ~Q(**constraints_exclude)
+    return q

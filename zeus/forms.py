@@ -520,7 +520,7 @@ class PollFormSet(BaseModelFormSet):
         if len(form_poll_names) > len(set(form_poll_names)):
             message = _("Duplicate poll names are not allowed")
             raise forms.ValidationError(message)
-            
+ 
     def save(self, election, *args, **kwargs):
         instances = super(PollFormSet, self).save(*args, commit=False,
                                                   **kwargs)
@@ -532,9 +532,9 @@ class PollFormSet(BaseModelFormSet):
 
 
 SEND_TO_CHOICES = [
-    ('all', _('all voters')),
-    ('voted', _('voters who have cast a ballot')),
-    ('not-voted', _('voters who have not yet cast a ballot'))
+    ('all', _('all selected voters')),
+    ('voted', _('selected voters who have cast a ballot')),
+    ('not-voted', _('selected voters who have not yet cast a ballot'))
 ]
 
 class EmailVotersForm(forms.Form):

@@ -26,6 +26,33 @@ $(document).ready(function() {
     }, 3000);
   }
 
-  // update polls details
-  
+  if (window.VOTERS_Q && window.VOTERS_Q.replace(/^\s+|\s+$/g, '') != "") {
+    var form = $(document).find("form.action-form[action*=clear]");
+    form.removeAttr('onsubmit');
+    
+    function handleEvent(e) {
+      var c = confirm(VOTERS_Q_MSG);
+      if (c) { return true }
+      $("ul.show-dropdown").removeClass("show-dropdown");
+      e.preventDefault();
+      return false;
+    }
+    
+    // voters list action confirm
+    $(".voters-action").each(function(el) {
+      var el = $(this);
+      el.bind('click', function(e) {
+        return handleEvent(e);
+      });
+    });
+
+    form.find(".voters-action").unbind('click').removeAttr('onclick');
+    form.find(".voters-action").bind('click', function(e) {
+      if (handleEvent(e)){
+        form.submit();
+      }
+    });
+    
+  }
+
 });

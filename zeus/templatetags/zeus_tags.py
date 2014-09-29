@@ -1,10 +1,12 @@
 import json
+import urllib
 
 from functools import partial
 
 from django import template
 from django.template.defaultfilters import stringfilter
 from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ungettext as _n
 from django.template.loader import render_to_string
 from django.template import Template
 
@@ -229,8 +231,25 @@ def reveal_action(context, label, selector, icon="", cls="", disabled=False):
 
 
 @register.filter
+def escape_plus(value):
+    return value.replace("+", "%2B").replace(" ", "+")
+
+
+@register.filter
 def negate(value):
     return not value
+
+
+@register.filter
+def voters_filtered_suffix(value):
+    if not value:
+        value = 0
+    msg = _n(
+        '(1 voter selected)',
+        '(%(value)d voters selected)',
+        value
+    ) % {'value': value}
+    return msg if value else _('(all voters selected)')
 
 
 @register.simple_tag(takes_context=True)
@@ -263,6 +282,6 @@ def complete_voter_get_parameters(context, GET, new_order):
     filter_param = ''
     q = GET.get('q', None)
     if q:
-        filter_param = '&q=%s' % q
+        filter_param = '&q=%s' % urllib.quote_plus(q)
     params = '%s%s%s' % (page_param, order_param, filter_param)
     return params
