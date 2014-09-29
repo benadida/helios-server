@@ -11,6 +11,8 @@ import datetime
 
 DEBUG = False
 
+LANGUAGES = (('en', 'EN'), ('el', 'EL'))
+LANGUAGE_CODE = 'en'
 #DATABASES = {
     #'default': {
         #'ENGINE': 'django.db.backends.postgresql_psycopg2',

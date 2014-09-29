@@ -78,11 +78,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             self.login_data
             )
         active_lang = translation.get_language()
-        if active_lang == 'el':
-            asrt_message = 'Ο λογαριασμός είναι απενεργοποιημένος'
-        elif active_lang == 'en':
-            asrt_message = 'Your account is disabled'
-        asrt_message = asrt_message.decode('utf-8')
+        asrt_message = 'Your account is disabled'
         self.assertFormError(
             r,
             'form',
@@ -501,13 +497,8 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
         u = User.objects.get(user_id='test_admin')
         self.assertEqual(u.name, 'test_name')
         messages = get_messages_from_response(r)
-        message = messages[0].decode('utf-8')
-        active_lang = translation.get_language()
-        if active_lang == 'el':
-            asrt_message = 'Οι αλλαγές στον χρήστη αποθηκεύθηκαν επιτυχώς'
-        elif active_lang == 'en':
-            asrt_message = 'Changes on user were successfully saved'
-        asrt_message = asrt_message.decode('utf-8')
+        message = messages[0]
+        asrt_message = 'Changes on user were successfully saved'
         self.assertEqual(
             message,
             asrt_message
@@ -539,11 +530,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             )
         self.assertEqual(User.objects.all().count(), 3)
         active_lang = translation.get_language()
-        if active_lang == 'el':
-            asrt_message = 'Ο χρήστης υπάρχει ήδη!'
-        elif active_lang == 'en':
-            asrt_message = 'User already exists'
-        asrt_message = asrt_message.decode('utf-8')
+        asrt_message = 'User already exists'
         self.assertFormError(
             r,
             'form',
@@ -622,12 +609,7 @@ class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):
             follow=True
             )
         self.assertEqual(Institution.objects.all().count(), 1)
-        active_lang = translation.get_language()
-        if active_lang == 'el':
-            asrt_message = 'Το ίδρυμα υπάρχει ήδη'
-        elif active_lang == 'en':
-            asrt_message = 'Institution already exists'
-        asrt_message = asrt_message.decode('utf-8')
+        asrt_message = 'Institution already exists'
         self.assertFormError(
             r,
             'form',

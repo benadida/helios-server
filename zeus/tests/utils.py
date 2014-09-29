@@ -30,5 +30,5 @@ class SetUpAdminAndClientMixin():
 def get_messages_from_response(response):
     messages = []
     for item in response.context['messages']:
-        messages.append(str(item))
+        messages.append(unicode(item))
     return messages
