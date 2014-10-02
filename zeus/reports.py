@@ -62,6 +62,7 @@ def election_report(elections, votes_report=True, filter_sensitive=True):
 
 
 def election_votes_report(elections, include_alias=False, filter_sensitive=True):
+    from helios.models import CastVote
     for vote in CastVote.objects.filter(poll__election__in=elections,
                                     voter__excluded_at__isnull=True).values('voter__alias','voter',
                                                                            'cast_at').order_by('-cast_at'):

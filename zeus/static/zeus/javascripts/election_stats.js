@@ -2,7 +2,7 @@
 
 var ZeusStats = function(uuid) {
   this.uuid = uuid || window.ELECTION || ELECTION;
-  this.url = '/helios/elections/' + this.uuid + '/stats';
+  this.url = '/elections/' + this.uuid + '/stats';
   this.election_data = {};
   this.votes_data = [];
   this.data = {};

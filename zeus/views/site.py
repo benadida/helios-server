@@ -16,7 +16,7 @@ from django.conf import settings
 
 from helios.view_utils import render_template
 from heliosauth.auth_systems.password import make_password
-from helios.models import User
+from helios.models import User, Election
 from zeus.models import Institution
 
 
@@ -57,24 +57,28 @@ def resources(request):
 
 
 def stats(request):
-    user = request.zeususer
+    user = request.zeususer._user
+    if not request.zeususer.is_admin:
+        return HttpResponseRedirect(reverse('home'))
+
     uuid = request.GET.get('uuid', None)
     election = None
 
+    elections = Election.objects.filter()
+    if not (user and user.superadmin_p):
+        elections = Election.objects.filter(canceled_at__isnull=True, 
+                                            completed_at__isnull=False, 
+                                            voting_ended_at__isnull=False,
+                                            admins__in=[user],
+                                            trial=False)
+
+    elections = elections.order_by('-created_at')
+
     if uuid:
-        election = Election.objects.filter(uuid=uuid)
-        if not (user and user.superadmin_p):
-          election = election.filter(is_completed=True)
-
-        election = election.defer('encrypted_tally', 'result')[0]
-
-    if user and user.superadmin_p:
-        elections = Election.objects.filter(is_completed=True)
-    else:
-        elections = Election.objects.filter(is_completed=True)
-
-    elections = elections.order_by('-created_at').defer('encrypted_tally',
-                                                        'result')
+        try:
+            election = elections.get(uuid=uuid)
+        except Election.DoesNotExist:
+            return HttpResponseRedirect(reverse('home'))
 
     return render_template(request, 'zeus/stats', {
         'menu_active': 'stats',
