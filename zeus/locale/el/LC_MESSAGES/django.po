@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-08-20 16:58+0300\n"
+"POT-Creation-Date: 2014-10-02 17:36+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,8 +31,7 @@ msgid "Greek"
 msgstr "Ελληνικά"
 
 msgid "Set the language that will be used for email messages"
-msgstr ""
-"Επιλέξτε την γλώσσα που θα χρησιμοποιηθεί για τα μηνύματα των email"
+msgstr "Επιλέξτε την γλώσσα που θα χρησιμοποιηθεί για τα μηνύματα των email"
 
 msgid "Communication language"
 msgstr "Γλώσσα επικοινωνίας"
@@ -117,13 +116,13 @@ msgstr "Ο λογαριασμός είναι απενεργοποιημένος"
 msgid "Duplicate poll names are not allowed"
 msgstr "Δεν επιτρέπονται κάλπες με ίδιο όνομα"
 
-msgid "all voters"
+msgid "all selected voters"
 msgstr "σύνολο ψηφοφόρων"
 
-msgid "voters who have cast a ballot"
+msgid "selected voters who have cast a ballot"
 msgstr "ψηφοφόροι που έχουν καταθέσει ψήφο"
 
-msgid "voters who have not yet cast a ballot"
+msgid "selected voters who have not yet cast a ballot"
 msgstr "ψηφοφόροι που δεν έχουν καταθέσει ακόμη ψήφο"
 
 msgid "Email subject"
@@ -368,51 +367,6 @@ msgstr ""
 "\n"
 "H απόδειξη της καταχώρησης βρίσκεται συνημμένη στο παρόν μήνυμα.\n"
 
-msgid "Simple election with one or more questions"
-msgstr "Απλή ψηφοφορία με μία ή περισσότερες ερωτήσεις"
-
-msgid "Ballot"
-msgstr "Ψηφοδέλτιο"
-
-msgid "Answer"
-msgstr "Απάντηση"
-
-msgid "Add questions to the election"
-msgstr "Προσθήκη ερωτήσεων στην ψηφοφορία"
-
-msgid "Too many choices"
-msgstr "Περισσότερες επιλογές από το επιτρεπτό"
-
-msgid "Question '{0}' requires at least {1} choices."
-msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
-
-msgid "Party lists election"
-msgstr "Ψηφοφορία με συνδυασμούς"
-
-msgid "Party"
-msgstr "Συνδυασμός"
-
-msgid "Score voting election"
-msgstr "Ψηφοφορία με βαθμολογία"
-
-msgid "Manage questions"
-msgstr "Διαχείριση ερωτήσεων"
-
-msgid "Please assign the remaining choices: {0}"
-msgstr "Παρακαλούμε συμπληρώστε τις υπόλοιπες επιλογές: {0}"
-
-msgid "No questions set"
-msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"
-
-msgid "Single transferable vote election"
-msgstr "Ψηφοφορία με ταξινομική ψήφο"
-
-msgid "Candidates List"
-msgstr "Λίστα υποψηφίων"
-
-msgid "Are you sure ?"
-msgstr "Επιβεβαιώστε"
-
 msgid "Registration ID"
 msgstr "Αριθμός Καταχώρησης"
 
@@ -443,6 +397,56 @@ msgstr "Τελευταία είσοδος"
 msgid "Actions"
 msgstr "Επιλογές"
 
+msgid "Simple election with one or more questions"
+msgstr "Απλή ψηφοφορία με μία ή περισσότερες ερωτήσεις"
+
+msgid "Ballot"
+msgstr "Ψηφοδέλτιο"
+
+msgid "Answer"
+msgstr "Απάντηση"
+
+msgid "Add questions to the election"
+msgstr "Προσθήκη ερωτήσεων στην ψηφοφορία"
+
+msgid "Too many choices"
+msgstr "Περισσότερες επιλογές από το επιτρεπτό"
+
+#, python-brace-format
+msgid "Question '{0}' requires at least {1} choices."
+msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
+
+msgid "Party lists election"
+msgstr "Ψηφοφορία με συνδυασμούς"
+
+msgid "Party"
+msgstr "Συνδυασμός"
+
+msgid "Score voting election"
+msgstr "Ψηφοφορία με βαθμολογία"
+
+msgid "Manage questions"
+msgstr "Διαχείριση ερωτήσεων"
+
+#, python-brace-format
+msgid "Please assign the remaining choices: {0}"
+msgstr "Παρακαλούμε συμπληρώστε τις υπόλοιπες επιλογές: {0}"
+
+msgid "No questions set"
+msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"
+
+msgid "Single transferable vote election"
+msgstr "Ψηφοφορία με ταξινομική ψήφο"
+
+msgid "Candidates List"
+msgstr "Λίστα υποψηφίων"
+
+msgid "Are you sure ?"
+msgstr "Επιβεβαιώστε"
+
+msgid "(all voters selected)"
+msgstr "σύνολο ψηφοφόρων"
+
 msgid "Enter a valid email address. <br />"
 msgstr "Μη έγκυρη διεύθυνση email. <br />"
 
@@ -457,6 +461,9 @@ msgstr "Περισσότερες πληροφορίες"
 
 msgid "Voting end date extended"
 msgstr "Παράταση λήξης ψηφοφορίας"
+
+msgid "No voters were found."
+msgstr "Δεν βρέθηκαν ψηφοφόροι."
 
 msgid "Email sending started"
 msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει"

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-08-20 16:58+0300\n"
+"POT-Creation-Date: 2014-10-02 17:36+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -524,6 +524,12 @@ msgstr "Σύνολο ψηφοφόρων"
 msgid "Votes cast"
 msgstr "Έχουν ψηφίσει"
 
+#, python-format
+msgid ""
+"This action will be executed for the %(voters_list_count)s filtered voters. "
+"Are you sure ?"
+msgstr "Η ενέργεια θα εκτελεστεί ΜΟΝΟ για τους επιλεγμένους %(voters_list_count)s ψηφοφόρους. Είστε σίγουροι;"
+
 msgid "Voter list actions"
 msgstr "Επιλογές λίστας ψηφοφόρων"
 
@@ -541,6 +547,18 @@ msgstr "Διαγραφή όλων των ψηφοφόρων"
 
 msgid "Filter"
 msgstr "Φίλτρο"
+
+#, python-format
+msgid ""
+"\n"
+"                                %(voters_count)s result found\n"
+"                                "
+msgid_plural ""
+"\n"
+"                                %(voters_count)s results found\n"
+"                                "
+msgstr[0] "\n%(voters_count)s ψηφοφόρος"
+msgstr[1] "\n%(voters_count)s ψηφοφόρους"
 
 msgid "(Excluded)"
 msgstr "(Εξαίρεση)"
@@ -1043,30 +1061,30 @@ msgstr ""
 msgid "Send email"
 msgstr "Αποστολή μηνύματος email σε ψηφοφόρους"
 
-#, python-format
+#, fuzzy, python-format
 msgid ""
 "\n"
-"Send email to voter %(voter_name)s ( voter.voter_id)\n"
+"Send email to voter %(voter_name)s (%(voter_id)s)\n"
 msgstr ""
 "\n"
-"Αποστολή ηλεκτρονικού μηνύματος στον ψηφοφόρο  %(voter_name)s ( voter."
-"voter_id)\n"
+"Αποστολή ηλεκτρονικού μηνύματος στον ψηφοφόρο  %(voter_name)s (%(voter."
+"voter_id)s)\n"
 
 #, python-format
 msgid ""
 "\n"
-"Send email to poll '%(poll_name)s' voters\n"
+"Send email to poll '%(poll_name)s' voters %(suffix)s\n"
 msgstr ""
 "\n"
-"Αποστολή μηνύματος στους ψηφοφόρους της κάλπης '%(poll_name)s'\n"
+"Αποστολή μηνύματος στους ψηφοφόρους της κάλπης '%(poll_name)s' %(suffix)s\n"
 
 #, python-format
 msgid ""
 "\n"
-"Send email to election '%(election_name)s' voters\n"
+"Send email to election '%(election_name)s' voters %(suffix)s\n"
 msgstr ""
 "\n"
-"Αποστολή μηνύματος στους ψηφοφόρους της ψηφοφορίας '%(election_name)s'\n"
+"Αποστολή μηνύματος στους ψηφοφόρους της ψηφοφορίας '%(election_name)s' %(suffix)s\n"
 
 msgid "The message will only be sent to the following voter:"
 msgstr "Το μήνυμα θα σταλεί μόνο στον ακόλουθο ψηφοφόρο:"
@@ -1323,6 +1341,9 @@ msgstr ""
 
 msgid "Something went wrong !!!"
 msgstr ""
+
+msgid "Choose election"
+msgstr "Επιλογή ψηφοφορίας"
 
 #~ msgid "Users List"
 #~ msgstr "Λίστα Χρηστών"
