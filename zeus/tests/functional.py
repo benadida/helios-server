@@ -24,7 +24,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
     def setUp(self):
         super(TestElectionBase, self).setUp()
-        self.local_verbose = True
+        self.local_verbose = os.environ.get('ZEUS_TESTS_VERBOSE', None)
         self.celebration = (
             " _________ ___  __\n"
             "|\   __  \|\  \|\  \\\n"

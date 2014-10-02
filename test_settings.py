@@ -41,7 +41,7 @@ import multiprocessing
 ZEUS_MIXNET_NR_PARALLEL = multiprocessing.cpu_count()
 ZEUS_MIXNET_NR_ROUNDS = 16
 
-ZEUS_ELECTION_STREAM_HANDLER = True
+ZEUS_ELECTION_STREAM_HANDLER = os.environ.get("ZEUS_TESTS_VERBOSE", False)
 
 
 def mkdir_p(path):
@@ -54,10 +54,11 @@ def mkdir_p(path):
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'root': {
         'level': 'INFO',
-        'handlers': ['stream']
+        'handlers': ['stream'] if os.environ.get("ZEUS_TESTS_VERBOSE", False) \
+                                                                        else []
     },
     'handlers': {
         'stream': {
