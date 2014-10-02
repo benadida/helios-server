@@ -459,6 +459,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             p = Poll.objects.get(uuid=p_uuid)
             self.assertTrue(len(p.result[0]) > 0)
             self.verbose('+ Results generated for poll %s' % p.name)
+            self.assertIsNone(p.compute_results_error)
+        
 
     def check_docs_exist(self, ext_dict):
         e_exts = ext_dict['el']
