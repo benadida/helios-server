@@ -75,7 +75,7 @@ msgid "Scores"
 msgstr "Βαθμοί"
 
 msgid "Number of scores must be equal to number of answers"
-msgstr ""
+msgstr "Το πλήθος των βαθμολογιών πρέπει να είναι ίσο με το πλήθος των απαντήσεων"
 
 msgid "set the eligibles count of the election"
 msgstr "το πλήθος των εκλεγόμενων"
