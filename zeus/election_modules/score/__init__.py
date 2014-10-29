@@ -36,15 +36,18 @@ class ScoreBallotElection(ElectionModuleBase):
 
     def questions_update_view(self, request, election, poll):
         from zeus.utils import poll_reverse
-        from zeus.forms import ScoresForm, DEFAULT_ANSWERS_COUNT, \
+        from zeus.forms import ScoresForm, RequiredFormset, DEFAULT_ANSWERS_COUNT, \
                 MAX_QUESTIONS_LIMIT
 
         extra = 1
         if poll.questions_data:
             extra = 0
 
-        questions_formset = formset_factory(ScoresForm, extra=extra,
-                                            can_delete=True, can_order=True)
+        questions_formset = formset_factory(ScoresForm,
+                                            formset=RequiredFormset,
+                                            extra=extra,
+                                            can_delete=True,
+                                            can_order=True)
         if request.method == 'POST':
             formset = questions_formset(request.POST)
             if formset.is_valid():

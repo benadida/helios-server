@@ -19,6 +19,7 @@ from django.utils.safestring import mark_safe
 from django.contrib.auth.hashers import check_password, make_password
 from django.forms.models import BaseModelFormSet
 from django.forms.widgets import Select, MultiWidget, DateInput, TextInput
+from django.forms.formsets import BaseFormSet
 
 from helios.models import Election, Poll, Trustee, Voter
 from heliosauth.models import User
@@ -333,6 +334,16 @@ class ScoresForm(QuestionBaseForm):
                 m = _("Number of scores must be equal to number of answers")
                 raise forms.ValidationError(m)
         return self.cleaned_data
+
+
+class RequiredFormset(BaseFormSet):
+    
+    def __init__(self, *args, **kwargs):
+            super(RequiredFormset, self).__init__(*args, **kwargs)
+            try:
+                self.forms[0].empty_permitted = False
+            except IndexError:
+                pass
 
 class CandidateWidget(MultiWidget):
 
