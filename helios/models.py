@@ -552,7 +552,7 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
         for trustee in self.trustees.exclude(secret_key__isnull=False):
             if not trustee.last_notified_at or force:
                 trustee.send_url_via_mail()
-
+    
     _zeus = None
 
     @property
@@ -600,6 +600,30 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
                                                          pok.response])
         self.logger.info("Trustee %r PK updated", trustee.email)
 
+    def send_msg_to_admins(self, msg=''):
+        """
+        Notify admin with msg
+        """
+        lang = self.communication_language
+        with translation.override(lang):
+            election_type = self.get_module().module_id
+            trustees = self.trustees.all()
+            context = {
+                'election': self,
+                'msg': msg,
+                'election_type': election_type,
+                'trustees': trustees,
+            }
+
+            body = render_to_string("email/election_created.txt", context)
+            subject = render_to_string("email/election_created_subject.txt", {})
+            admins = settings.ADMINS
+            for admin in admins:
+                send_mail(subject.replace("\n", ""),
+                        body,
+                        settings.SERVER_EMAIL,
+                        ["%s <%s>" % (admin[0], admin[1])],
+                        fail_silently=False)
 
     def save(self, *args, **kwargs):
         if not self.uuid:
@@ -2030,6 +2054,7 @@ class Trustee(HeliosModel, TrusteeFeatures):
             self.last_notified_at = datetime.datetime.now()
             self.save()
 
+    
     @property
     def datatype(self):
         return self.election.datatype.replace('Election', 'Trustee')
