@@ -600,7 +600,7 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
                                                          pok.response])
         self.logger.info("Trustee %r PK updated", trustee.email)
 
-    def send_msg_to_admins(self, msg=''):
+    def send_msg_to_admins(self, msg='', subject=''):
         """
         Notify admin with msg
         """
@@ -613,10 +613,11 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
                 'msg': msg,
                 'election_type': election_type,
                 'trustees': trustees,
+                'subject': subject,
             }
 
-            body = render_to_string("email/election_created.txt", context)
-            subject = render_to_string("email/election_created_subject.txt", {})
+            body = render_to_string("email/admin_mail.txt", context)
+            subject = render_to_string("email/admin_mail_subject.txt", context)
             admins = settings.ADMINS
             for admin in admins:
                 send_mail(subject.replace("\n", ""),

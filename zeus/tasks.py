@@ -148,7 +148,9 @@ def election_validate_create(election_id):
     for poll in election.polls.all():
         if not poll.feature_can_validate_create:
             poll_validate_create.delay(poll.id)
-
+    subject = _("Election is frozen")
+    msg = _("Election is frozen")
+    election.send_msg_to_admins(msg=msg, subject=subject)
 
 @task(ignore_result=True)
 def election_validate_voting(election_id):
