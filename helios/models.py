@@ -468,6 +468,9 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
         self.voting_ended_at = datetime.datetime.now()
         self.save()
         self.logger.info("Voting closed")
+        subject = _("Election closed")
+        msg = _("Election closed")
+        self.send_msg_to_admins(msg=msg, subject=subject)
 
     def freeze(self):
         for poll in self.polls.all():
