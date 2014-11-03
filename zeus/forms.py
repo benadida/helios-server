@@ -207,10 +207,9 @@ class ElectionForm(forms.ModelForm):
 
         if self.creating:
             saved.logger.info("Election created")
-            if not saved.trial:
-                msg = _("New election created")
-                subject = _("New Zeus election")
-                saved.send_msg_to_admins(msg=msg, subject=subject)
+            msg = _("New election created")
+            subject = _("New Zeus election")
+            saved.send_msg_to_admins(msg=msg, subject=subject)
 
         else:
             saved.logger.info("Election updated %r", self.changed_data)

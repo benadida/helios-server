@@ -468,10 +468,9 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
         self.voting_ended_at = datetime.datetime.now()
         self.save()
         self.logger.info("Voting closed")
-        if not self.trial:
-            subject = _("Election closed")
-            msg = _("Election closed")
-            self.send_msg_to_admins(msg=msg, subject=subject)
+        subject = _("Election closed")
+        msg = _("Election closed")
+        self.send_msg_to_admins(msg=msg, subject=subject)
 
     def freeze(self):
         for poll in self.polls.all():
@@ -608,27 +607,28 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
         """
         Notify admin with msg
         """
-        lang = self.communication_language
-        with translation.override(lang):
-            election_type = self.get_module().module_id
-            trustees = self.trustees.all()
-            context = {
-                'election': self,
-                'msg': msg,
-                'election_type': election_type,
-                'trustees': trustees,
-                'subject': subject,
-            }
+        if not self.trial:
+            lang = self.communication_language
+            with translation.override(lang):
+                election_type = self.get_module().module_id
+                trustees = self.trustees.all()
+                context = {
+                    'election': self,
+                    'msg': msg,
+                    'election_type': election_type,
+                    'trustees': trustees,
+                    'subject': subject,
+                }
 
-            body = render_to_string("email/admin_mail.txt", context)
-            subject = render_to_string("email/admin_mail_subject.txt", context)
-            admins = settings.ADMINS
-            for admin in admins:
-                send_mail(subject.replace("\n", ""),
-                        body,
-                        settings.SERVER_EMAIL,
-                        ["%s <%s>" % (admin[0], admin[1])],
-                        fail_silently=False)
+                body = render_to_string("email/admin_mail.txt", context)
+                subject = render_to_string("email/admin_mail_subject.txt", context)
+                admins = settings.ADMINS
+                for admin in admins:
+                    send_mail(subject.replace("\n", ""),
+                            body,
+                            settings.SERVER_EMAIL,
+                            ["%s <%s>" % (admin[0], admin[1])],
+                            fail_silently=False)
 
     def save(self, *args, **kwargs):
         if not self.uuid:

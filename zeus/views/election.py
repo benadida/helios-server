@@ -56,8 +56,7 @@ def add_or_update(request, election=None):
                 url = election_reverse(election, 'polls_list')
             else:
                 url = election_reverse(election, 'index')
-            if election.voting_extended_until\
-                    and not election.trial:
+            if election.voting_extended_until:
                 subject = "Voting extension"
                 msg = "Voting end date extended"
                 election.send_msg_to_admins(msg=msg, subject=subject)

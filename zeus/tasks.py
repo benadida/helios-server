@@ -148,10 +148,9 @@ def election_validate_create(election_id):
     for poll in election.polls.all():
         if not poll.feature_can_validate_create:
             poll_validate_create.delay(poll.id)
-    if not election.trial:
-        subject = _("Election is frozen")
-        msg = _("Election is frozen")
-        election.send_msg_to_admins(msg=msg, subject=subject)
+    subject = _("Election is frozen")
+    msg = _("Election is frozen")
+    election.send_msg_to_admins(msg=msg, subject=subject)
 
 @task(ignore_result=True)
 def election_validate_voting(election_id):
@@ -246,10 +245,9 @@ def poll_add_trustee_factors(poll_id, trustee_id, factors, proofs):
 def election_decrypt(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
     election.logger.info("Spawning decrypt poll tasks")
-    if not election.trial:
-        subject = _("Trustees partial decryptions finished")
-        msg = _("Trustees partial decryptions finished")
-        election.send_msg_to_admins(msg=msg, subject=subject)
+    subject = _("Trustees partial decryptions finished")
+    msg = _("Trustees partial decryptions finished")
+    election.send_msg_to_admins(msg=msg, subject=subject)
     for poll in election.polls.all():
         if poll.feature_can_decrypt:
             poll_decrypt.delay(poll.pk)
@@ -267,10 +265,9 @@ def poll_decrypt(poll_id):
 def election_compute_results(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
     election.logger.info("Spawning compute results poll tasks")
-    if not election.trial:
-        subject = _("Decryption finished")
-        msg = _("Decryption finished, computing results")
-        election.send_msg_to_admins(msg=msg, subject=subject)
+    subject = _("Decryption finished")
+    msg = _("Decryption finished, computing results")
+    election.send_msg_to_admins(msg=msg, subject=subject)
     for poll in election.polls.all():
         if poll.feature_can_compute_results:
             poll_compute_results.delay(poll.pk)
