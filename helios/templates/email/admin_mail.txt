@@ -9,6 +9,7 @@
 - {% trans "Election type" %}: {{election_type}}
 - {% trans "Starting date"%}: {{election.voting_starts_at}}
 - {% trans "Ending date"%}: {{election.voting_ends_at}}
+- {% trans "Ending date with extension"%}: {{election.voting_extended_until}}
 - {% trans "Trustees" %}:
 {% for trustee in trustees %}
    * {{trustee.name}} {{trustee.email}}
