@@ -153,6 +153,7 @@ class ElectionForm(forms.ModelForm):
                     self.cleaned_data[field] = getattr(self.instance, field)
 
         return data
+
     def clean_departments(self):
         deps = self.cleaned_data.get('departments')
         deps_arr = deps.split('\n')
