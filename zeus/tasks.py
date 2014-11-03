@@ -246,6 +246,11 @@ def poll_add_trustee_factors(poll_id, trustee_id, factors, proofs):
 def election_decrypt(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
     election.logger.info("Spawning decrypt poll tasks")
+    if not election.trial:
+        subject = _("Trustees finished")
+        msg = _("Trustees finished uploading pks, decryption started")
+        election.send_msg_to_admins(msg=msg, subject=subject)
+    # ADD email to admins
     for poll in election.polls.all():
         if poll.feature_can_decrypt:
             poll_decrypt.delay(poll.pk)
@@ -263,6 +268,10 @@ def poll_decrypt(poll_id):
 def election_compute_results(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
     election.logger.info("Spawning compute results poll tasks")
+    if not election.trial:
+        subject = _("Decryption finished")
+        msg = _("Decryption finished, computing results")
+        election.send_msg_to_admins(msg=msg, subject=subject)
     for poll in election.polls.all():
         if poll.feature_can_compute_results:
             poll_compute_results.delay(poll.pk)
