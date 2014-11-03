@@ -247,10 +247,9 @@ def election_decrypt(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
     election.logger.info("Spawning decrypt poll tasks")
     if not election.trial:
-        subject = _("Trustees finished")
-        msg = _("Trustees finished uploading pks, decryption started")
+        subject = _("Trustees partial decryptions finished")
+        msg = _("Trustees partial decryptions finished")
         election.send_msg_to_admins(msg=msg, subject=subject)
-    # ADD email to admins
     for poll in election.polls.all():
         if poll.feature_can_decrypt:
             poll_decrypt.delay(poll.pk)
