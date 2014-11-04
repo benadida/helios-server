@@ -10,6 +10,7 @@ from datetime import timedelta
 
 from django.test import TransactionTestCase as TestCase
 from django.conf import settings
+from django.core import mail
 
 from helios import datatypes
 from helios.crypto.elgamal import DLog_challenge_generator
@@ -59,7 +60,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         end_date = datetime.datetime.now() + timedelta(hours=56)
 
         self.election_form = {
-            'trial': True,
+            'trial': False,
             'name': 'test_election',
             'description': 'testing_election',
             'trustees': trustees,
@@ -417,6 +418,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
     def close_election(self):
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
+        e = Election.objects.get(uuid=self.e_uuid)
+        e.voting_ends_at = datetime.datetime.now()
+        e.save()
         self.c.post('/elections/%s/close' % self.e_uuid)
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_closed)
@@ -578,6 +582,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
     def election_proccess(self):
         self.admin_can_submit_election_form()
+        e = Election.objects.get(uuid=self.e_uuid)
         self.assertEqual(self.freeze_election(), None)
         pks = self.prepare_trustees(self.e_uuid)
         self.create_duplicate_polls()
@@ -606,6 +611,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.zip_contains_files(self.doc_exts)
         if self.local_verbose:
             print self.celebration
+        for m in mail.outbox:
+            print m.subject
 
 
 class TestSimpleElection(TestElectionBase):
