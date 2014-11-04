@@ -207,8 +207,8 @@ class ElectionForm(forms.ModelForm):
 
         if self.creating:
             saved.logger.info("Election created")
-            msg = _("New election created")
-            subject = _("New Zeus election")
+            msg = "New election created"
+            subject = "New Zeus election"
             saved.send_msg_to_admins(msg=msg, subject=subject)
 
         else:
