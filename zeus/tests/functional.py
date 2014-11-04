@@ -177,6 +177,28 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             self.verbose('+ Election got frozen')
             return True
 
+    def extend_election_voting_end(self):
+        self.c.get(self.locations['logout'])
+        self.c.post(self.locations['login'], self.login_data)
+        r = self.c.get('/elections/{}/edit'.format(self.e_uuid),
+                       follow=True)
+        form = r.context['form']
+        data = form.initial
+        # need to split date and hours again for form 
+        start = data['voting_starts_at']
+        end = data['voting_ends_at']
+        data['voting_starts_at_0'] = start.strftime('%Y-%m-%d')
+        data['voting_starts_at_1'] = start.strftime('%H:%M')
+        data['voting_ends_at_0'] = end.strftime('%Y-%m-%d')
+        data['voting_ends_at_1'] = end.strftime('%H:%M')
+
+        ext_date = datetime.datetime.now() + timedelta(hours=198)
+        data['voting_extended_until_0'] = ext_date.strftime('%Y-%m-%d')
+        data['voting_extended_until_1'] = ext_date.strftime('%H:%M')
+        r = self.c.post('/elections/{}/edit'.format(self.e_uuid), data, follow=True)
+        e = Election.objects.get(uuid=self.e_uuid)
+        self.assertNotEqual(e.voting_extended_until, None)
+
     def create_duplicate_polls(self):
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
@@ -420,6 +442,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.c.post(self.locations['login'], self.login_data)
         e = Election.objects.get(uuid=self.e_uuid)
         e.voting_ends_at = datetime.datetime.now()
+        e.voting_extended_until = datetime.datetime.now()
         e.save()
         self.c.post('/elections/%s/close' % self.e_uuid)
         e = Election.objects.get(uuid=self.e_uuid)
@@ -599,6 +622,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         e.voting_starts_at = datetime.datetime.now()
         e.save()
         voters_urls = self.get_voters_urls()
+        self.extend_election_voting_end()
         self.submit_vote_for_each_voter(voters_urls)
         self.close_election()
         self.voter_cannot_vote_after_close()
@@ -611,8 +635,15 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.zip_contains_files(self.doc_exts)
         if self.local_verbose:
             print self.celebration
-        for m in mail.outbox:
-            print m.subject
+        with open('/home/tsakalos/email_data.txt', 'w') as f:
+            for m in mail.outbox:
+                if 'gtsouk@grnet.gr' in m.to:
+                    #f.write('from: {}'.format(str(m.from_email)))
+                    #f.write('to: {}'.format(str(m.to)))
+                    f.write(m.subject.encode('utf-8'))
+                    f.write(m.body.encode('utf-8'))
+                    f.write('##################################')
+                    f.write('\n')
 
 
 class TestSimpleElection(TestElectionBase):
