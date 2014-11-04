@@ -32,7 +32,7 @@ from django.db import models, transaction
 from django.db.models.query import QuerySet
 from django.db.models import Count
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail, mail_admins
 from django.core.files import File
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import validate_email as django_validate_email
@@ -608,27 +608,19 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
         Notify admin with msg
         """
         if not self.trial:
-            lang = self.communication_language
-            with translation.override(lang):
-                election_type = self.get_module().module_id
-                trustees = self.trustees.all()
-                context = {
-                    'election': self,
-                    'msg': msg,
-                    'election_type': election_type,
-                    'trustees': trustees,
-                    'subject': subject,
-                }
+            election_type = self.get_module().module_id
+            trustees = self.trustees.all()
+            context = {
+                'election': self,
+                'msg': msg,
+                'election_type': election_type,
+                'trustees': trustees,
+                'subject': subject,
+            }
 
-                body = render_to_string("email/admin_mail.txt", context)
-                subject = render_to_string("email/admin_mail_subject.txt", context)
-                admins = settings.ADMINS
-                for admin in admins:
-                    send_mail(subject.replace("\n", ""),
-                            body,
-                            settings.SERVER_EMAIL,
-                            ["%s <%s>" % (admin[0], admin[1])],
-                            fail_silently=False)
+            body = render_to_string("email/admin_mail.txt", context)
+            subject = render_to_string("email/admin_mail_subject.txt", context)
+            mail_admins(subject.replace("\n", ""), body)
 
     def save(self, *args, **kwargs):
         if not self.uuid:

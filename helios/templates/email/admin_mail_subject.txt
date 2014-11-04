@@ -1,1 +1,1 @@
-Zeus system message: {{subject}}
+{{subject}}

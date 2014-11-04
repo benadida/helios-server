@@ -4,13 +4,13 @@
 
 {% trans "ELECTION INFO" %}
 **************************
-- {% trans "Election name" %}: {{ election.name }} 
-- {% trans "Election description" %}: {{election.description}}
-- {% trans "Election type" %}: {{election_type}}
-- {% trans "Starting date"%}: {{election.voting_starts_at}}
-- {% trans "Ending date"%}: {{election.voting_ends_at}}
-- {% trans "Ending date with extension"%}: {{election.voting_extended_until}}
-- {% trans "Trustees" %}:
+- Election name: {{ election.name }} 
+- Election description: {{election.description}}
+- Election type: {{election_type}}
+- Starting date: {{election.voting_starts_at}}
+- Ending date: {{election.voting_ends_at}}
+- Ending date with extension": {{election.voting_extended_until}}
+- Trustees:
 {% for trustee in trustees %}
    * {{trustee.name}} {{trustee.email}}
 {% endfor %}
