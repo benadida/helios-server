@@ -603,11 +603,11 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
                                                          pok.response])
         self.logger.info("Trustee %r PK updated", trustee.email)
 
-    def send_msg_to_admins(self, msg='', subject=''):
+    def send_msg_to_admins(self, msg='', subject='', send_anyway=False):
         """
         Notify admin with msg
         """
-        if not self.trial:
+        if send_anyway or (not self.trial):
             election_type = self.get_module().module_id
             trustees = self.trustees.all()
             context = {
