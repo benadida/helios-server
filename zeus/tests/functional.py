@@ -716,7 +716,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                     self.assertTrue(email.subject in admin_messages)
         mail.outbox = []
 
-    def election_proccess(self):
+    def election_process(self):
         self.admin_can_submit_election_form()
         self.first_trustee_step_and_admin_mail()
         e = Election.objects.get(uuid=self.e_uuid)
@@ -756,7 +756,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         if self.local_verbose:
             print self.celebration
 
-    def broken_mix_election_proccess(self):
+    def broken_mix_election_process(self):
         self.admin_can_submit_election_form()
         self.first_trustee_step_and_admin_mail()
         e = Election.objects.get(uuid=self.e_uuid)
@@ -857,10 +857,10 @@ class TestSimpleElection(TestElectionBase):
             index += len(data['answers']) + 1
         return choices, max_choices
 
-    def test_election_proccess(self):
-        self.election_proccess()
+    def test_election_process(self):
+        self.election_process()
 
-    def test_broken_mix_election_proccess(self):
+    def test_broken_mix_election_process(self):
 
         from zeus.model_tasks import poll_task, PollTasks
         raised_error = 'Intended error'
@@ -870,7 +870,7 @@ class TestSimpleElection(TestElectionBase):
             raise Exception(raised_error)
         orig = PollTasks.mix
         PollTasks.mix = mix
-        self.broken_mix_election_proccess()
+        self.broken_mix_election_process()
         PollTasks.mix = orig
         admins = settings.ADMINS
         prefix = settings.EMAIL_SUBJECT_PREFIX
@@ -970,8 +970,8 @@ class TestPartyElection(TestElectionBase):
             header_index += len(data['answers']) + 1
         return choices, max_choices
 
-    def test_election_proccess(self):
-        self.election_proccess()
+    def test_election_process(self):
+        self.election_process()
 
 
 # used for creating score elections ballot
@@ -1048,8 +1048,8 @@ class TestScoreElection(TestElectionBase):
             candidates_to_indexes, scores_to_indexes)
         return ballot_choices, max_ballot_choices
 
-    def test_election_proccess(self):
-        self.election_proccess()
+    def test_election_process(self):
+        self.election_process()
 
 
 class TestSTVElection(TestElectionBase):
@@ -1116,5 +1116,5 @@ class TestSTVElection(TestElectionBase):
 
         return selection, nr_candidates
 
-    def test_election_proccess(self):
-        self.election_proccess()
+    def test_election_process(self):
+        self.election_process()
