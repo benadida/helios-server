@@ -714,6 +714,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             for admin in admins:
                 if admin[1] in email.to[0]:
                     self.assertTrue(email.subject in admin_messages)
+        mail.outbox = []
 
     def election_proccess(self):
         self.admin_can_submit_election_form()
@@ -754,6 +755,27 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.zip_contains_files(self.doc_exts)
         if self.local_verbose:
             print self.celebration
+
+    def broken_mix_election_proccess(self):
+        self.admin_can_submit_election_form()
+        self.first_trustee_step_and_admin_mail()
+        e = Election.objects.get(uuid=self.e_uuid)
+        self.assertEqual(self.freeze_election(), None)
+        self.prepare_trustees(self.e_uuid)
+        self.second_trustee_step_mail()
+        self.create_polls()
+        self.submit_voters_file()
+        self.submit_questions()
+        e = Election.objects.get(uuid=self.e_uuid)
+        self.assertTrue(self.freeze_election())
+        self.admin_notified_for_freeze()
+        e = Election.objects.get(uuid=self.e_uuid)
+        e.voting_starts_at = datetime.datetime.now()
+        e.save()
+        voters_urls = self.get_voters_urls()
+        self.submit_vote_for_each_voter(voters_urls)
+        self.voters_received_voting_receipt()
+        self.close_election()
 
 
 class TestSimpleElection(TestElectionBase):
@@ -837,6 +859,32 @@ class TestSimpleElection(TestElectionBase):
 
     def test_election_proccess(self):
         self.election_proccess()
+
+    def test_broken_mix_election_proccess(self):
+
+        from zeus.model_tasks import poll_task, PollTasks
+        raised_error = 'Intended error'
+
+        @poll_task('mix', ('validate_voting_finished',), completed_cb=None)
+        def mix(self, remote=None):
+            raise Exception(raised_error)
+        orig = PollTasks.mix
+        PollTasks.mix = mix
+        self.broken_mix_election_proccess()
+        PollTasks.mix = orig
+        admins = settings.ADMINS
+        prefix = settings.EMAIL_SUBJECT_PREFIX
+        admin_messages = [
+            'Election closed',
+            'Validate voting finished',
+            'Task mix error, {}'.format(raised_error),
+            raised_error,
+            ]
+        admin_messages = [prefix + s for s in admin_messages]
+        for email in mail.outbox:
+            for admin in admins:
+                if admin[1] in email.to[0]:
+                    self.assertTrue(email.subject in admin_messages)
 
 
 class TestPartyElection(TestElectionBase):
