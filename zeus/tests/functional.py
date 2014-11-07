@@ -39,11 +39,11 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         # set the voters number that will be produced for test
         self.voters_num = 2
         # set the trustees number that will be produced for the test
-        trustees_num = 1
+        trustees_num = 3 
         trustees = "\n".join(",".join(['testName%x testSurname%x' % (x, x),
                    'test%x@mail.com' % x]) for x in range(0, trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number = 2
+        self.polls_number = 3
         # set the number of max questions for simple election
         self.simple_election_max_questions_number = 2
         # set the number of max answers for each question of simple election
@@ -608,13 +608,14 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
     def first_trustee_step_and_admin_mail(self):
         trustees = Election.objects.get(uuid=self.e_uuid).trustees.all()
         admins = settings.ADMINS
-        # remove zeus trustee, does not get mail
-        mail_num = len(trustees) - 1 + len(admins)
+        # 1 zeus trustee, does not get mail
+        # 1 mail to admins with all addresses
+        mail_num = len(trustees)
         self.assertEqual(len(mail.outbox), mail_num)
 
         for email in mail.outbox:
             for admin in admins:
-                if admin[1] in email.to[0]:
+                if admin[1] in email.to:
                     prefix = settings.EMAIL_SUBJECT_PREFIX
                     message = u'New Zeus election'
                     self.assertEqual(email.subject, prefix+message)
@@ -637,11 +638,11 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
     def admin_notified_for_freeze(self):
         admins = settings.ADMINS
-        # mail must be sent to all admins
-        self.assertEqual(len(mail.outbox), len(admins))
+        # 1 mail is sent with multiple addresses in mail.to
+        self.assertEqual(len(mail.outbox), 1)
         for email in mail.outbox:
             for admin in admins:
-                if admin[1] in email.to[0]:
+                if admin[1] in email.to:
                     prefix = settings.EMAIL_SUBJECT_PREFIX
                     message = u'Election is frozen'
                     self.assertEqual(email.subject, prefix+message)
@@ -649,11 +650,11 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
     def admin_notified_for_extension(self):
         admins = settings.ADMINS
-        # mail must be sent to all admins
-        self.assertEqual(len(mail.outbox), len(admins))
+        # 1 mail is sent with multiple addresses in mail.to
+        self.assertEqual(len(mail.outbox), 1)
         for email in mail.outbox:
             for admin in admins:
-                if admin[1] in email.to[0]:
+                if admin[1] in email.to:
                     prefix = settings.EMAIL_SUBJECT_PREFIX
                     message = u'Voting extension'
                     self.assertEqual(email.subject, prefix+message)
@@ -676,7 +677,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         trustees = Election.objects.get(uuid=self.e_uuid).trustees.all()
         admins = settings.ADMINS
         # remove zeus trustee, does not get mail
-        mail_num = len(trustees) - 1 + len(admins) * 4
+        mail_num = len(trustees) + 3 # -1 zeus trustee + 4 to admins
         self.assertEqual(len(mail.outbox), mail_num)
         admin_messages = [
             'Election closed',
@@ -701,7 +702,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         # decryption finished
         # results computed - docs generated - 3 mails in total
         admins = settings.ADMINS
-        mail_num = len(admins) * 3
+        mail_num = 3
         self.assertEqual(len(mail.outbox), mail_num)
         admin_messages = [
             'Trustees partial decryptions finished',
