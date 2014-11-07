@@ -144,9 +144,6 @@ def election_validate_create(election_id):
     if election.polls_feature_frozen:
         election.frozen_at = datetime.datetime.now()
         election.save()
-        subject = "Election is frozen"
-        msg = "Election is frozen"
-        election.send_msg_to_admins(msg=msg, subject=subject)
 
     for poll in election.polls.all():
         if not poll.feature_can_validate_create:
