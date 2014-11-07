@@ -184,7 +184,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                        follow=True)
         form = r.context['form']
         data = form.initial
-        # need to split date and hours again for form 
+        # need to split date and hours again for form
         start = data['voting_starts_at']
         end = data['voting_ends_at']
         data['voting_starts_at_0'] = start.strftime('%Y-%m-%d')
@@ -195,7 +195,10 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         ext_date = datetime.datetime.now() + timedelta(hours=198)
         data['voting_extended_until_0'] = ext_date.strftime('%Y-%m-%d')
         data['voting_extended_until_1'] = ext_date.strftime('%H:%M')
-        r = self.c.post('/elections/{}/edit'.format(self.e_uuid), data, follow=True)
+        r = self.c.post('/elections/{}/edit'.format(self.e_uuid),
+                        data,
+                        follow=True
+                        )
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertNotEqual(e.voting_extended_until, None)
 
@@ -487,7 +490,6 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             self.assertTrue(len(p.result[0]) > 0)
             self.verbose('+ Results generated for poll %s' % p.name)
             self.assertIsNone(p.compute_results_error)
-        
 
     def check_docs_exist(self, ext_dict):
         e_exts = ext_dict['el']
@@ -603,11 +605,123 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 self.assertTrue(bool(file_name in files_in_zip))
             self.verbose('+ Zip in %s contains all docs' % lang[1])
 
+    def first_trustee_step_and_admin_mail(self):
+        trustees = Election.objects.get(uuid=self.e_uuid).trustees.all()
+        admins = settings.ADMINS
+        # remove zeus trustee, does not get mail
+        mail_num = len(trustees) - 1 + len(admins)
+        self.assertEqual(len(mail.outbox), mail_num)
+
+        for email in mail.outbox:
+            for admin in admins:
+                if admin[1] in email.to[0]:
+                    prefix = settings.EMAIL_SUBJECT_PREFIX
+                    message = u'New Zeus election'
+                    self.assertEqual(email.subject, prefix+message)
+            for trustee in trustees:
+                if trustee.email in email.to[0]:
+                    self.assertTrue(u'βήμα #1' in email.subject)
+        mail.outbox = []
+
+    def second_trustee_step_mail(self):
+        # admin did not get any mail yet
+        # trustees got mail for step 2
+        trustees = Election.objects.get(uuid=self.e_uuid).trustees.all()
+        mail_num = len(trustees) - 1
+        self.assertEqual(len(mail.outbox), mail_num)
+        for email in mail.outbox:
+            for trustee in trustees:
+                if trustee.email in email.to[0]:
+                    self.assertTrue(u'βήμα #2' in email.subject)
+        mail.outbox = []
+
+    def admin_notified_for_freeze(self):
+        admins = settings.ADMINS
+        # mail must be sent to all admins
+        self.assertEqual(len(mail.outbox), len(admins))
+        for email in mail.outbox:
+            for admin in admins:
+                if admin[1] in email.to[0]:
+                    prefix = settings.EMAIL_SUBJECT_PREFIX
+                    message = u'Election is frozen'
+                    self.assertEqual(email.subject, prefix+message)
+        mail.outbox = []
+
+    def admin_notified_for_extension(self):
+        admins = settings.ADMINS
+        # mail must be sent to all admins
+        self.assertEqual(len(mail.outbox), len(admins))
+        for email in mail.outbox:
+            for admin in admins:
+                if admin[1] in email.to[0]:
+                    prefix = settings.EMAIL_SUBJECT_PREFIX
+                    message = u'Voting extension'
+                    self.assertEqual(email.subject, prefix+message)
+        mail.outbox = []
+
+    def voters_received_voting_receipt(self):
+        voters = Election.objects.get(uuid=self.e_uuid).voters.all()
+        self.assertEqual(len(mail.outbox), len(voters))
+        for email in mail.outbox:
+            for voter in voters:
+                if voter.voter_email in email.to[0]:
+                    self.assertTrue(u'ψήφος ελήφθη' in email.subject)
+        mail.outbox = []
+
+    def emails_after_election_close(self):
+        # admin mails that must be sent:
+        # election closed - validate voting finished
+        # mixing finished - validate mixing finished - 4 in total
+        # mail to trustee for step 3
+        trustees = Election.objects.get(uuid=self.e_uuid).trustees.all()
+        admins = settings.ADMINS
+        # remove zeus trustee, does not get mail
+        mail_num = len(trustees) - 1 + len(admins) * 4
+        self.assertEqual(len(mail.outbox), mail_num)
+        admin_messages = [
+            'Election closed',
+            'Validate voting finished',
+            'Mixing finished',
+            'Validate mixing finished',
+            ]
+        prefix = settings.EMAIL_SUBJECT_PREFIX
+        admin_messages = [prefix + s for s in admin_messages]
+        for email in mail.outbox:
+            for admin in admins:
+                if admin[1] in email.to[0]:
+                    self.assertTrue(email.subject in admin_messages)
+            for trustee in trustees:
+                if trustee.email in email.to[0]:
+                    self.assertTrue(u'βήμα #3' in email.subject)
+        mail.outbox = []
+
+    def decryption_and_result_admin_mails(self):
+        # at this step admins get emails for
+        # trustees partial decryptions finished
+        # decryption finished
+        # results computed - docs generated - 3 mails in total
+        admins = settings.ADMINS
+        mail_num = len(admins) * 3
+        self.assertEqual(len(mail.outbox), mail_num)
+        admin_messages = [
+            'Trustees partial decryptions finished',
+            'Decryption finished',
+            'Results computed - docs generated',
+            ]
+        prefix = settings.EMAIL_SUBJECT_PREFIX
+        admin_messages = [prefix + s for s in admin_messages]
+        for email in mail.outbox:
+            for admin in admins:
+                if admin[1] in email.to[0]:
+                    self.assertTrue(email.subject in admin_messages)
+
     def election_proccess(self):
         self.admin_can_submit_election_form()
+        self.first_trustee_step_and_admin_mail()
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertEqual(self.freeze_election(), None)
         pks = self.prepare_trustees(self.e_uuid)
+        self.second_trustee_step_mail()
         self.create_duplicate_polls()
         self.create_polls()
         self.submit_duplicate_id_voters_file()
@@ -618,32 +732,28 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertEqual(e.election_issues_before_freeze, [])
         self.assertTrue(self.freeze_election())
+        self.admin_notified_for_freeze()
         e = Election.objects.get(uuid=self.e_uuid)
         e.voting_starts_at = datetime.datetime.now()
         e.save()
         voters_urls = self.get_voters_urls()
         self.extend_election_voting_end()
+        self.admin_notified_for_extension()
         self.submit_vote_for_each_voter(voters_urls)
+        self.voters_received_voting_receipt()
         self.close_election()
+        self.emails_after_election_close()
         self.voter_cannot_vote_after_close()
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_mixing_finished)
         self.decrypt_with_trustees(pks)
+        self.decryption_and_result_admin_mails()
         self.check_results()
         self.check_docs_exist(self.doc_exts)
         self.view_returns_result_files(self.doc_exts)
         self.zip_contains_files(self.doc_exts)
         if self.local_verbose:
             print self.celebration
-        with open('/home/tsakalos/email_data.txt', 'w') as f:
-            for m in mail.outbox:
-                if 'gtsouk@grnet.gr' in m.to:
-                    #f.write('from: {}'.format(str(m.from_email)))
-                    #f.write('to: {}'.format(str(m.to)))
-                    f.write(m.subject.encode('utf-8'))
-                    f.write(m.body.encode('utf-8'))
-                    f.write('##################################')
-                    f.write('\n')
 
 
 class TestSimpleElection(TestElectionBase):
