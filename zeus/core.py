@@ -439,6 +439,8 @@ class CheapQueue(object):
 
     def __del__(self):
         try:
+            close(self.front_fd)
+            close(self.back_fd)
             unlink(self.frontfile)
             unlink(self.backfile)
         except:
@@ -1933,7 +1935,7 @@ def parse_party_options(optstring):
         max_choices = int(max_choices)
     except ValueError:
         m = ("Malformed numbers in "
-             "min-max choices option '%s'" % (name,))
+             "min-max choices option in '%s'" % (optstring,))
         raise FormatError(m)
 
     group = None
