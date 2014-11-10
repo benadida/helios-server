@@ -37,25 +37,26 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             )
 
         # set the voters number that will be produced for test
-        self.voters_num = 2
+        self.voters_num = settings.TESTING_NR_VOTERS 
         # set the trustees number that will be produced for the test
-        trustees_num = 3 
+        trustees_num = settings.TESTING_NR_TRUSTEES 
         trustees = "\n".join(",".join(['testName%x testSurname%x' % (x, x),
                    'test%x@mail.com' % x]) for x in range(0, trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number = 3
+        self.polls_number = settings.TESTING_NR_POLLS
         # set the number of max questions for simple election
-        self.simple_election_max_questions_number = 2
+        self.simple_election_max_questions_number = settings.TESTING_SIMPLE_MAX_NR_QUESTIONS
         # set the number of max answers for each question of simple election
-        self.simple_election_max_answers_number = 2
+        self.simple_election_max_answers_number = settings.TESTING_SIMPLE_MAX_NR_ANSWERS
         # set the number of max answers in score election
-        self.score_election_max_answers = 3
+        self.score_election_max_answers = settings.TESTING_SCORE_MAX_NR_ANSWERS
         # set the number of max questions in party election
-        self.party_election_max_questions_number = 2
+        self.party_election_max_questions_number = settings.TESTING_PARTY_MAX_NR_QUESTIONS
         # set the number of max answers in party election
-        self.party_election_max_answers_number = 3
+        self.party_election_max_answers_number = settings.TESTING_PARTY_MAX_NR_ANSWERS
         # set the number of max candidates in stv election
-        self.stv_election_max_answers_number = 3
+        self.stv_election_max_answers_number = settings.TESTING_STV_MAX_NR_CANDIDATES
+
         start_date = datetime.datetime.now() + timedelta(hours=48)
         end_date = datetime.datetime.now() + timedelta(hours=56)
 
