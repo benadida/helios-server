@@ -322,6 +322,9 @@ class ScoresForm(QuestionBaseForm):
                                        choices=SCORES_CHOICES,
                                        label=_('Scores'))
 
+    min_answers = forms.ChoiceField(label=_("Min answers"))
+    max_answers = forms.ChoiceField(label=_("Max answers"))
+
     def clean(self):
         answer_list = []
         for key in self.cleaned_data:
