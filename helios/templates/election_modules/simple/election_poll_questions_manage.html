@@ -373,5 +373,48 @@ $(document).ready(function(){
 
   var form = window.questions_form = new QuestionsForm("form.questions");
 })
+
+
+//script that configures min/max select fields of score form
+var nr_checked = 2;
+$("input[name='form-0-scores']").change(function() {
+    if ($(this).prop("checked")){
+        nr_checked++;
+        ADD(nr_checked);
+    }
+    else {
+        REMOVE(nr_checked);
+        nr_checked--;
+    }
+    });
+function ADD(nr_checked){
+    $("#id_form-0-max_answers").append("<option value='"+nr_checked+"'>"+nr_checked+"</option>");
+    $("#id_form-0-max_answers").val(nr_checked);
+
+    $("#id_form-0-min_answers").append("<option value='"+nr_checked+"'>"+nr_checked+"</option>");
+    $("#id_form-0-min_answers").val(1);
+    }
+function REMOVE(nr_checked){
+    $("#id_form-0-max_answers").find("[value='"+nr_checked+"']").remove();
+    $("#id_form-0-max_answers").val(nr_checked-1);
+
+    $("#id_form-0-min_answers").find("[value='"+nr_checked+"']").remove();
+    $("#id_form-0-min_answers").val(1);
+    }
+$("#id_form-0-max_answers").change(function(){
+    var max_value = $(this).find("option:selected").attr("value");
+    var min_value = $("#id_form-0-min_answers").find("option:selected").attr("value");
+    if (min_value > max_value) {
+        $("#id_form-0-min_answers").val(max_value)
+    }
+});
+$("#id_form-0-min_answers").change(function(){
+    var min_value = $(this).find("option:selected").attr("value");
+    var max_value = $("#id_form-0-max_answers").find("option:selected").attr("value");
+    if (min_value > max_value) {
+        $("#id_form-0-max_answers").val(min_value);
+    }
+});
+
 </script>
 {% endblock %}

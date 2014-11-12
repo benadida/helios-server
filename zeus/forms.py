@@ -322,8 +322,15 @@ class ScoresForm(QuestionBaseForm):
                                        choices=SCORES_CHOICES,
                                        label=_('Scores'))
 
+    scores.initial = (1, 2)
     min_answers = forms.ChoiceField(label=_("Min answers"))
     max_answers = forms.ChoiceField(label=_("Max answers"))
+    
+    max_answers.choices = ((1,1), (2,2))
+    min_answers.choices = ((1,1), (2,2))
+    max_answers.initial = 2
+    min_answers.initial = 1
+
 
     def clean(self):
         answer_list = []
@@ -333,8 +340,8 @@ class ScoresForm(QuestionBaseForm):
         if len(answer_list) > len(set(answer_list)):
             raise forms.ValidationError(_("No duplicate choices allowed"))
         if 'scores' in self.cleaned_data:
-            if (len(answer_list) != len(self.cleaned_data['scores'])):
-                m = _("Number of scores must be equal to number of answers")
+            if (len(answer_list) < len(self.cleaned_data['scores'])):
+                m = _("Number of answers must be bigger than the number of scores")
                 raise forms.ValidationError(m)
         return self.cleaned_data
 
