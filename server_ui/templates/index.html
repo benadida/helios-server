@@ -1,6 +1,6 @@
 {% extends 'server_ui/templates/base.html' %}
 {% block title %}{{ settings.SITE_TITLE }}{% endblock %}
-{% load i18n %}
+{% load i18n  pagination_tags %}
 
 {% block header %}
 <h2>{{ settings.SITE_TITLE }}</h2>
@@ -19,6 +19,8 @@
     {% trans "Your new password was set." %}
 </div>
 {% endif %}
+{% autopaginate elections_administered %}
+{% paginate %}
 <table class="elections">
   <thead>
     <th>
@@ -111,5 +113,6 @@
     {% endfor %}
   </tbody>
     </table>
+{% paginate %}
 {% endblock %}
 
