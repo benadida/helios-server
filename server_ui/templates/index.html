@@ -20,7 +20,9 @@
 </div>
 {% endif %}
 {% autopaginate elections_administered %}
+<div class="columns seven pagination-cont">
 {% paginate %}
+</div>
 <table class="elections">
   <thead>
     <th>
@@ -113,6 +115,8 @@
     {% endfor %}
   </tbody>
     </table>
+<div class="columns seven pagination-cont">
 {% paginate %}
+</div>
 {% endblock %}
 
