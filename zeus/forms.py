@@ -133,6 +133,9 @@ class ElectionForm(forms.ModelForm):
                 if isinstance(widget, forms.CheckboxInput):
                     self.fields.get(field).widget.attrs['disabled'] = True
 
+        if not self.instance.frozen_at:
+            self.fields.pop('voting_extended_until')
+
     def clean(self):
         data = super(ElectionForm, self).clean()
         self.clean_voting_dates(data.get('voting_starts_at'),
