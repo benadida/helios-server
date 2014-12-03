@@ -386,6 +386,25 @@ def voters_list(request, election, poll):
     set_menu('voters', context)
     return render_template(request, 'election_poll_voters_list', context)
 
+@auth.election_admin_required
+@auth.requires_poll_features('can_manage_questions')
+def poll_settings(request, election, poll):
+    context = {
+        'election': election,
+        'poll': poll,
+        #'limit': limit,
+        #'page': page,
+        #'voters': voters,
+        #'voters_count': voters_count,
+        #'voted_count': voted_count,
+        #'q': q_param,
+        #'voters_list_count': voters.count(),
+        #'voters_per_page': voters_per_page,
+        #'voter_table_headers': VOTER_TABLE_HEADERS.iteritems(),
+    }
+    set_menu('settings', context)
+    return render_template(request, 'election_poll_settings', context)
+
 
 @auth.election_admin_required
 @auth.requires_poll_features('can_clear_voters')

@@ -11,6 +11,9 @@
               href="{% url election_poll_questions election.uuid poll.uuid %}">
               {{ poll.get_module.questions_title_message }}
             </a></dd>
+            <dd class="{% if menu_active == "settings" %}active{% endif %}"><a
+              href="{% url election_poll_settings election.uuid poll.uuid %}">
+              Settings</a></dd>
             {% if poll.feature_compute_results_finished %}
             <dd class="{% if menu_active == "results" %}active{% endif %}"><a 
               href="{% url election_poll_results election.uuid poll.uuid %}">
