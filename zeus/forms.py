@@ -569,6 +569,17 @@ class PollForm(forms.ModelForm):
        
     def clean(self):
         data = self.cleaned_data
+
+        poll_name = data['name']
+
+        try:
+            poll =  Poll.objects.get(name=poll_name)
+            if poll:
+                self._errors['name'] = "Name exists"
+        except Poll.DoesNotExist:
+            pass
+        
+        
         field_names = ['client_type', 'client_id', 'client_secret', 'url']
         field_names = ['oauth2_' + x for x in field_names]
         url_validate = URLValidator()

@@ -11,7 +11,11 @@
   {{ form.non_field_errors }}
 </p>
 <p>
-  {{form.name.errors}}
+  {% if form.name.errors %}
+    <ul class="errorlist"><li>
+      {{form.name.errors}}
+    </li></ul>
+  {% endif %}
   <label for={{form.name.id_for_labe}}>Name</label>
   {{ form.name }}
 </p>
