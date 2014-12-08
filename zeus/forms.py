@@ -10,6 +10,8 @@ from datetime import datetime, timedelta
 
 from django import forms
 from django.core.urlresolvers import reverse
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin import widgets
 from django.db import transaction
@@ -552,10 +554,45 @@ class LoginForm(forms.Form):
 
 class PollForm(forms.ModelForm):
 
+    def __init__(self, *args, **kwargs):
+        super(PollForm, self).__init__(*args, **kwargs)
+        CHOICES = (
+            ('public', 'public'),
+            ('confidential', 'confidential'),
+        )
+        self.fields['oauth2_client_type'] = forms.ChoiceField(choices=CHOICES)
+    
     class Meta:
         model = Poll
-        fields = ('name', )
-    
+        fields = ('name', 'oauth2_thirdparty', 'oauth2_client_type',
+                  'oauth2_client_id', 'oauth2_client_secret', 'oauth2_url',)
+       
+    def clean(self):
+        data = self.cleaned_data
+        field_names = ['client_type', 'client_id', 'client_secret', 'url']
+        field_names = ['oauth2_' + x for x in field_names]
+        url_validate = URLValidator()
+        if data['oauth2_thirdparty']:
+            for field_name in field_names:
+                if not data[field_name]:
+                    self._errors[field_name] = 'required!'
+            try:
+                url_validate(data['oauth2_url'])
+            except ValidationError:
+                self._errors['oauth2_url'] = "Invalid URL"
+        else:
+            for field_name in field_names:
+                data[field_name] = ''
+
+        return data
+
+    def save(self, election, *args, **kwargs):
+        instance = super(PollForm, self).save(*args, commit=False,
+                                                  **kwargs)
+        instance.election = election
+        instance.save()
+        return instance
+
 
 class PollFormSet(BaseModelFormSet):
 
