@@ -560,7 +560,8 @@ class PollForm(forms.ModelForm):
             ('public', 'public'),
             ('confidential', 'confidential'),
         )
-        self.fields['oauth2_client_type'] = forms.ChoiceField(choices=CHOICES)
+        self.fields['oauth2_client_type'] = forms.ChoiceField(required=False,
+                                                              choices=CHOICES)
     
     class Meta:
         model = Poll
@@ -569,16 +570,15 @@ class PollForm(forms.ModelForm):
        
     def clean(self):
         data = self.cleaned_data
+        if 'name' in data:
+            poll_name = data['name']
 
-        poll_name = data['name']
-
-        try:
-            poll =  Poll.objects.get(name=poll_name)
-            if poll:
-                self._errors['name'] = "Name exists"
-        except Poll.DoesNotExist:
-            pass
-        
+            try:
+                poll =  Poll.objects.get(name=poll_name)
+                if poll:
+                    self._errors['name'] = "Name exists"
+            except Poll.DoesNotExist:
+                pass
         
         field_names = ['client_type', 'client_id', 'client_secret', 'url']
         field_names = ['oauth2_' + x for x in field_names]
