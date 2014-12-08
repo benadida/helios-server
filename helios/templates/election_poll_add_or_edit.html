@@ -1,0 +1,76 @@
+{% extends "election_page.html" %}{% load i18n %}
+{% load zeus_tags %}
+{% block title %}{{election.name}}: {% trans "Election Polls" %}{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
+{% block content %}
+<form data-protect="1" class="prettyform" action="" method="POST">
+{% csrf_token %}
+<p>
+  {{ form.non_field_errors }}
+</p>
+<p>
+  {{form.name.errors}}
+  <label for={{form.name.id_for_labe}}>Name</label>
+  {{ form.name }}
+</p>
+<p>
+  <label for={{form.oauth2_thirdparty.id_for_labe}}>OAuth2 Thirdparty authentication</label>
+  {{form.oauth2_thirdparty}} 
+</p>
+<div id="hidden_fields"
+  {% if not form.oauth2_thirdparty.value %}  
+    style="display:none;" 
+  {% endif %} >
+<p>
+  {% if form.oauth2_client_type.errors %}
+    <ul class="errorlist"><li>
+      {{form.oauth2_client_type.errors}}
+    </li></ul>
+  {% endif %}
+  <label for={{form.oauth2_client_type.id_for_labe}}>Client Type</label>
+  {{ form.oauth2_client_type }}
+</p>
+<p>
+  {% if form.oauth2_client_id.errors %}
+    <ul class="errorlist"><li>
+        {{ form.oauth2_client_id.errors }}
+    </li></ul>
+  {% endif %}
+  <label for={{ form.oauth2_client_id.id_for_labe }}>Client ID</label>
+  {{ form.oauth2_client_id }}
+</p>
+<p>
+  {% if form.oauth2_client_secret.errors %}
+    <ul class="errorlist"><li>
+        {{ form.oauth2_client_secret.errors }}
+    </li></ul>
+  {% endif %}
+  <label for={{ form.oauth2_client_secret.id_for_label }}>Client Secret</label>
+  {{ form.oauth2_client_secret }}
+</p>
+
+<p>
+  {% if form.oauth2_url.errors %}
+    <ul class="errorlist"><li>
+      {{ form.oauth2_url.errors }}
+    </li></ul>
+  {% endif %}
+  <label for={{form.oauth2_url.id_for_label}}>Authentication URL</label>
+  {{ form.oauth2_url }}
+</p>
+
+</div>
+
+<a class="button" href="{% url election_polls_list  election.uuid%}">Cancel</a>
+<input class="button" type="submit" value="Save"/> 
+</form>
+<script>
+$(function(){
+    $("#id_oauth2_thirdparty").on('click', function(){
+            $("#hidden_fields").slideToggle("fast");
+   });
+});
+</script>
+{% endblock %}

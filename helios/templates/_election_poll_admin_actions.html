@@ -3,6 +3,10 @@
 <div class="row">
     <div class="columns twelve">
             <dl class="tabs">
+            <dd class="{% if menu_active == "edit_poll" %}active{% endif %}"><a
+              href="{% url election_poll_edit election.uuid poll.uuid %}">
+              Edit poll</a></dd>
+
             <dd class="{% if menu_active == "voters" %}active{% endif %}"><a 
               href="{% url election_poll_voters election.uuid poll.uuid %}">
               {% trans "Voters" %}
@@ -11,9 +15,7 @@
               href="{% url election_poll_questions election.uuid poll.uuid %}">
               {{ poll.get_module.questions_title_message }}
             </a></dd>
-            <dd class="{% if menu_active == "settings" %}active{% endif %}"><a
-              href="{% url election_poll_settings election.uuid poll.uuid %}">
-              Settings</a></dd>
+            
             {% if poll.feature_compute_results_finished %}
             <dd class="{% if menu_active == "results" %}active{% endif %}"><a 
               href="{% url election_poll_results election.uuid poll.uuid %}">

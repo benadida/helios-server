@@ -61,6 +61,9 @@
             <br />
             <em style="color: #ccc">linked</em>
           {% endif %}
+          <a href="{% url election_poll_edit election.uuid poll.uuid%}">
+            {{poll.name}}
+          </a>
       </td>
       <td>
           {{ poll.status_display }}
@@ -119,19 +122,8 @@
     <td></td>
 </tfoot>
 </table>
+<a class="button" href="{% url election_poll_add election.uuid %}">Add poll</a>
 {% else %}
 {% endif %}
-{% if request.admin and election.feature_can_add_poll %}
-{% include "_election_polls_add.html" %}
-{% endif %}
 </div>
-{% endblock %}
-
-{% block reveals %}
-{{ block.super }}
-{% if admin %}
-{% for poll in polls %}
-{% include "_reveal_rename_poll.html" %}
-{% endfor %}
-{% endif %}
 {% endblock %}

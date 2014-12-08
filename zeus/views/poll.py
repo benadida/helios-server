@@ -18,6 +18,7 @@ from django.db.models import Q, Max
 from django.core.context_processors import csrf
 from django.core.validators import validate_email
 from django.utils.html import mark_safe, escape
+from django.shortcuts import redirect
 from django import forms
 from django.template.loader import Template, Context
 
@@ -51,17 +52,12 @@ from helios.utils import force_utf8
 @auth.election_admin_required
 def list(request, election):
     polls = election.polls.filter()
-    extra = int(request.GET.get('extra', 1))
-    polls_formset = modelformset_factory(Poll, PollForm, extra=extra,
-                                         max_num=100, formset=PollFormSet,
-                                         can_delete=False)
-    add_polls = Poll.objects.none()
-    form = polls_formset(queryset=add_polls)
-    context = {'polls': polls, 'election': election, 'form': form}
+    context = {'polls': polls, 'election': election}
     set_menu('polls', context)
     return render_template(request, "election_polls_list", context)
 
 
+''' deprecated - rename is made in form now
 @auth.election_admin_required
 @auth.requires_election_features('can_rename_poll')
 @transaction.commit_on_success
@@ -75,7 +71,7 @@ def rename(request, election, poll):
         poll.logger.info("Renamed from %s to %s", oldname, newname)
     url = election_reverse(election, 'polls_list')
     return HttpResponseRedirect(url)
-
+'''
 
 @transaction.commit_on_success
 def _handle_batch(election, polls, vars, auto_link=False):
@@ -255,6 +251,25 @@ def _add_batch(request, election):
 @auth.election_admin_required
 @auth.requires_election_features('can_add_poll')
 @require_http_methods(["POST", "GET"])
+def add_or_edit(request, election, poll=None):
+    if request.method == "POST":
+        form = PollForm(request.POST, instance=poll)
+        if form.is_valid():
+            form.save(election)
+            url = election_reverse(election, 'polls_list')
+            return redirect(url)
+    if request.method == "GET":
+        form = PollForm(instance=poll)
+    context = {'election': election, 'poll': poll,  'form': form}
+    set_menu('polls', context)
+    if poll:
+        set_menu('edit_poll', context)
+    tpl = "election_poll_add_or_edit"
+    return render_template(request, tpl, context)
+'''
+@auth.election_admin_required
+@auth.requires_election_features('can_add_poll')
+@require_http_methods(["POST", "GET"])
 def add(request, election, poll=None):
     if election.linked_polls and request.FILES.has_key('batch_file'):
         return _add_batch(request, election)
@@ -281,6 +296,7 @@ def add(request, election, poll=None):
         return render_template(request, "election_polls_list", context)
     url = election_reverse(election, 'polls_list')
     return HttpResponseRedirect(url)
+'''
 
 
 @auth.election_admin_required
@@ -385,26 +401,6 @@ def voters_list(request, election, poll):
     }
     set_menu('voters', context)
     return render_template(request, 'election_poll_voters_list', context)
-
-@auth.election_admin_required
-@auth.requires_poll_features('can_manage_questions')
-def poll_settings(request, election, poll):
-    context = {
-        'election': election,
-        'poll': poll,
-        #'limit': limit,
-        #'page': page,
-        #'voters': voters,
-        #'voters_count': voters_count,
-        #'voted_count': voted_count,
-        #'q': q_param,
-        #'voters_list_count': voters.count(),
-        #'voters_per_page': voters_per_page,
-        #'voter_table_headers': VOTER_TABLE_HEADERS.iteritems(),
-    }
-    set_menu('settings', context)
-    return render_template(request, 'election_poll_settings', context)
-
 
 @auth.election_admin_required
 @auth.requires_poll_features('can_clear_voters')
