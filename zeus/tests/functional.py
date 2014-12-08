@@ -209,16 +209,20 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.c.post(self.locations['login'], self.login_data)
         location = '/elections/%s/polls/add' % self.e_uuid
         post_data = {
-            'form-TOTAL_FORMS': 2,
-            'form-INITIAL_FORMS': 0,
-            'form-MAX_NUM_FORMS': 100
+            'name': 'test_poll'
             }
-        for i in range(0, 2):
-            post_data['form-%s-name' % i] = 'test_poll'
         self.c.post(location, post_data)
         e = Election.objects.all()[0]
-        self.assertEqual(e.polls.all().count(), 0)
-        self.verbose('- Polls were not created - duplicate poll names')
+        self.assertEqual(e.polls.all().count(), 1)
+        # try to create poll with same name
+        self.c.post(location, post_data)
+        e = Election.objects.all()[0]
+        self.assertEqual(e.polls.all().count(), 1)
+        self.verbose('- Poll was not created - duplicate poll names')
+        # clean - delete polls
+        polls = Poll.objects.all()
+        for p in polls:
+            p.delete()
 
     def create_polls(self):
         self.c.get(self.locations['logout'])
@@ -227,15 +231,11 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         # there shouldn't be any polls before we create them
         self.assertEqual(e.polls.all().count(), 0)
         location = '/elections/%s/polls/add' % self.e_uuid
-        post_data = {
-            'form-TOTAL_FORMS': self.polls_number,
-            'form-INITIAL_FORMS': 0,
-            'form-MAX_NUM_FORMS': 100
-            }
         for i in range(0, self.polls_number):
-            post_data['form-%s-name' % i] = 'test_poll%s' % i
-
-        self.c.post(location, post_data)
+            post_data = {
+                'name': 'test_poll-{}'.format(i)
+            }
+            self.c.post(location, post_data)
         e = Election.objects.all()[0]
         self.assertEqual(e.polls.all().count(), self.polls_number)
         self.verbose('+ Polls were created')
