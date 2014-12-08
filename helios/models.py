@@ -707,6 +707,19 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
   voters_last_notified_at = models.DateTimeField(null=True, default=None)
   index = models.PositiveIntegerField(default=1)
 
+  # voters oauth2 authentication
+  oauth2_thirdparty = models.BooleanField(default=False)
+  oauth2_client_type = models.CharField(max_length=25, 
+                                        null=True, blank=True)
+  oauth2_client_id = models.CharField(max_length=255,
+                                      null=True, blank=True)
+  oauth2_client_secret = models.CharField(max_length=255,
+                                          null=True, blank=True)
+  oauth2_url = models.CharField(max_length=255,
+                                null=True, blank=True)
+  oauth2_extra = models.CharField(max_length=255,
+                                  null=True, blank=True)
+
   objects = PollManager()
 
   class Meta:
