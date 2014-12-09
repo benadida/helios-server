@@ -168,12 +168,13 @@ class ElectionForm(forms.ModelForm):
                 cleaned_deps.append(item)
         cleaned_deps = '\n'.join(cleaned_deps)
         return cleaned_deps
-            
+
     def clean_voting_dates(self, starts, ends, extension):
-        if ends < datetime.now() and self.instance.feature_edit_voting_ends_at:
-            raise forms.ValidationError(_("Invalid voting end date"))
-        if starts >= ends:
-            raise forms.ValidationError(_("Invalid voting dates"))
+        if starts and ends:
+            if ends < datetime.now() and self.instance.feature_edit_voting_ends_at:
+                raise forms.ValidationError(_("Invalid voting end date"))
+            if starts >= ends:
+                raise forms.ValidationError(_("Invalid voting dates"))
         if extension and extension <= ends:
             raise forms.ValidationError(_("Invalid voting extension date"))
 

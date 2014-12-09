@@ -84,6 +84,44 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         voter = Voter.objects.get(uuid=uuid)
         return voter
 
+    def election_form_with_wrong_dates(self):
+        self.election_form['election_module'] = self.election_type
+        # election number must be 0 before correct form submit
+        self.assertEqual(Election.objects.all().count(), 0)
+        self.c.post(self.locations['login'], self.login_data)
+
+        # no starting date
+        corrupted_form = self.election_form.copy()
+        corrupted_form['voting_starts_at_0'] = ""
+        r = self.c.post(self.locations['create'], corrupted_form, follow=True)
+        self.assertFormError(r, 'form', 'voting_starts_at',
+            'This field is required.') 
+        self.assertEqual(Election.objects.all().count(), 0)
+        
+        # no ending date
+        corrupted_form = self.election_form.copy()
+        corrupted_form['voting_ends_at_0'] = ""
+        r = self.c.post(self.locations['create'], corrupted_form, follow=True)
+        self.assertFormError(r, 'form', 'voting_ends_at',
+            'This field is required.') 
+        self.assertEqual(Election.objects.all().count(), 0)
+
+        # corrupted starting date
+        corrupted_form = self.election_form.copy()
+        corrupted_form['voting_starts_at_0'] = "2014-12"
+        r = self.c.post(self.locations['create'], corrupted_form, follow=True)
+        self.assertFormError(r, 'form', 'voting_starts_at',
+            'Wrong date or time format') 
+        self.assertEqual(Election.objects.all().count(), 0)
+
+        # corrupted ending date
+        corrupted_form = self.election_form.copy()
+        corrupted_form['voting_ends_at_0'] = "2014-12"
+        r = self.c.post(self.locations['create'], corrupted_form, follow=True)
+        self.assertFormError(r, 'form', 'voting_ends_at',
+            'Wrong date or time format') 
+        self.assertEqual(Election.objects.all().count(), 0)
+
     def admin_can_submit_election_form(self):
         self.election_form['election_module'] = self.election_type
         '''
@@ -719,6 +757,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         mail.outbox = []
 
     def election_process(self):
+        self.election_form_with_wrong_dates()
         self.admin_can_submit_election_form()
         self.first_trustee_step_and_admin_mail()
         e = Election.objects.get(uuid=self.e_uuid)
