@@ -58,11 +58,6 @@ class ElectionForm(forms.ModelForm):
 
     formfield_callback = election_form_formfield_cb
 
-    #add in model and use modelform
-    #mail_lang = forms.ChoiceField(required=True,
-    #                              choices=choices,
-    #                              label=_("Mail Language"))
-                                  
     trustees = forms.CharField(label=_('Trustees'), required=False,
                                widget=forms.Textarea,
                                help_text=help.trustees)
