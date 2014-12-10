@@ -279,7 +279,7 @@ select {
 
   .large-5 {
     position: relative;
-    width: 65%; }
+    width: 41.66667%; }
 
   .large-6 {
     position: relative;
@@ -1050,7 +1050,7 @@ td {
 
 /* Default Link Styles */
 a {
-  color: #1ca3bb;
+  color: #2ba6cb;
   text-decoration: none;
   line-height: inherit; }
   a:hover, a:focus {
@@ -1320,7 +1320,7 @@ blockquote p {
     display: inherit !important; } }
 button, .button {
   border-style: solid;
-  border-width: 0px;
+  border-width: 1px;
   cursor: pointer;
   font-family: inherit;
   font-weight: bold;
@@ -1335,7 +1335,7 @@ button, .button {
   padding-bottom: 0.8125em;
   padding-left: 1.5em;
   font-size: 1em;
-  background-color: #1ca3bb;
+  background-color: #2ba6cb;
   border-color: #2284a1;
   color: white; }
   button:hover, button:focus, .button:hover, .button:focus {
@@ -1515,15 +1515,13 @@ form .row textarea.columns {
 
 /* Label Styles */
 label {
-  font-size: 1em;
+  font-size: 0.875em;
   color: #4d4d4d;
   cursor: pointer;
   display: block;
   font-weight: 500;
   margin-bottom: 0.1875em;
-  /* Styles for required inputs */ 
-  margin-top: 1em;
-}
+  /* Styles for required inputs */ }
   label.right {
     float: none;
     text-align: right; }
@@ -2849,7 +2847,7 @@ label.error {
   height: 45px;
   line-height: 45px;
   position: relative;
-  background: #aaaaaa;
+  background: #111111;
   margin-bottom: 0; }
   .top-bar ul {
     margin-bottom: 0;
@@ -3040,7 +3038,7 @@ label.error {
 
 @media only screen and (min-width: 940px) {
   .top-bar {
-    background: #015968;
+    background: #111111;
     *zoom: 1;
     overflow: visible; }
     .top-bar:before, .top-bar:after {
@@ -3063,7 +3061,7 @@ label.error {
       position: relative;
       top: 8px; }
     .top-bar.expanded {
-      background: #aaaaaa; }
+      background: #111111; }
 
   .contain-to-grid .top-bar {
     max-width: 62.5em;
@@ -3089,7 +3087,7 @@ label.error {
     .top-bar-section li a:not(.button) {
       padding: 0 15px;
       line-height: 45px;
-      background: #015968; }
+      background: #111111; }
       .top-bar-section li a:not(.button):hover {
         background: black; }
     .top-bar-section .has-dropdown > a {
@@ -3136,8 +3134,8 @@ label.error {
     .top-bar-section > ul > .divider, .top-bar-section > ul > [role="separator"] {
       border-bottom: none;
       border-top: none;
-      border-right: solid 1px #015968;
-      border-left: solid 1px #015968;
+      border-right: solid 1px #2b2b2b;
+      border-left: solid 1px black;
       clear: none;
       height: 45px;
       width: 0; }
@@ -4163,13 +4161,12 @@ ul.pagination {
 
 /* Panels */
 .panel {
-	border-style: solid;
-	border-width: 0px;
-	border-color: #d9d9d9;
-	margin-bottom: 1.25em;
-	padding: 1.25em;
-	background: #eeeeee;
-}
+  border-style: solid;
+  border-width: 1px;
+  border-color: #d9d9d9;
+  margin-bottom: 1.25em;
+  padding: 1.25em;
+  background: #f2f2f2; }
   .panel > :first-child {
     margin-top: 0; }
   .panel > :last-child {
@@ -4521,7 +4518,7 @@ ul.pagination {
 table {
   background: white;
   margin-bottom: 1.25em;
-  border: solid 2px #aaaaaa; }
+  border: solid 1px #dddddd; }
   table thead,
   table tfoot {
     background: whitesmoke;
