@@ -555,6 +555,7 @@ class LoginForm(forms.Form):
 class PollForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
+        self.election = kwargs.pop('election', None)
         super(PollForm, self).__init__(*args, **kwargs)
         CHOICES = (
             ('public', 'public'),
@@ -562,6 +563,8 @@ class PollForm(forms.ModelForm):
         )
         self.fields['oauth2_client_type'] = forms.ChoiceField(required=False,
                                                               choices=CHOICES)
+        if self.election.feature_frozen:
+            self.fields['name'].widget.attrs['readonly'] = True
     
     class Meta:
         model = Poll
@@ -569,16 +572,17 @@ class PollForm(forms.ModelForm):
                   'oauth2_client_id', 'oauth2_client_secret', 'oauth2_url',)
        
     def clean(self):
-        data = self.cleaned_data
-        if 'name' in data:
-            poll_name = data['name']
 
-            try:
-                poll =  Poll.objects.get(name=poll_name)
-                if poll:
-                    self._errors['name'] = "Name exists"
-            except Poll.DoesNotExist:
-                pass
+        data = self.cleaned_data
+        election_polls = self.election.polls.all()
+        for poll in election_polls:
+            if data['name'] == poll.name and not self.instance.pk:
+                message = _("Duplicate poll names are not allowed")
+                raise forms.ValidationError(message)
+
+        if self.election.feature_frozen and\
+            (self.cleaned_data['name'] != self.instance.name):
+                raise forms.ValidationError("can't touch this")
         
         field_names = ['client_type', 'client_id', 'client_secret', 'url']
         field_names = ['oauth2_' + x for x in field_names]
@@ -597,10 +601,9 @@ class PollForm(forms.ModelForm):
 
         return data
 
-    def save(self, election, *args, **kwargs):
-        instance = super(PollForm, self).save(*args, commit=False,
-                                                  **kwargs)
-        instance.election = election
+    def save(self, *args, **kwargs):
+        instance = super(PollForm, self).save(commit=False, *args, **kwargs)
+        instance.election = self.election
         instance.save()
         return instance
 

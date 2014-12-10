@@ -249,17 +249,18 @@ def _add_batch(request, election):
 
 
 @auth.election_admin_required
-@auth.requires_election_features('can_add_poll')
 @require_http_methods(["POST", "GET"])
 def add_or_edit(request, election, poll=None):
+    if not poll and not election.feature_can_add_poll:
+        raise PermissionDenied
     if request.method == "POST":
-        form = PollForm(request.POST, instance=poll)
+        form = PollForm(request.POST, instance=poll, election=election)
         if form.is_valid():
-            form.save(election)
+            form.save()
             url = election_reverse(election, 'polls_list')
             return redirect(url)
     if request.method == "GET":
-        form = PollForm(instance=poll)
+        form = PollForm(instance=poll, election=election)
     context = {'election': election, 'poll': poll,  'form': form}
     set_menu('polls', context)
     if poll:

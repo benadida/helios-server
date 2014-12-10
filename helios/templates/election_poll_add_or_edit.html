@@ -5,6 +5,8 @@
 {% include "_election_view_menu.html" %}
 {% endblock %}
 {% block content %}
+{% if election.feature_can_add_poll or  poll%}
+
 <form data-protect="1" class="prettyform" action="" method="POST">
 {% csrf_token %}
 <p>
@@ -77,4 +79,5 @@ $(function(){
    });
 });
 </script>
+{% endif %}
 {% endblock %}

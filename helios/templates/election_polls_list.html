@@ -122,8 +122,9 @@
     <td></td>
 </tfoot>
 </table>
+{% endif %}
+{% if election.feature_can_add_poll %}
 <a class="button" href="{% url election_poll_add election.uuid %}">Add poll</a>
-{% else %}
 {% endif %}
 </div>
 {% endblock %}
