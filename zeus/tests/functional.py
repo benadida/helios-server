@@ -660,7 +660,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                     self.assertEqual(email.subject, prefix+message)
             for trustee in trustees:
                 if trustee.email in email.to[0]:
-                    self.assertTrue(u'βήμα #1' in email.subject)
+                    self.assertTrue(u'step #1' in email.subject)
         mail.outbox = []
 
     def second_trustee_step_mail(self):
@@ -672,7 +672,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         for email in mail.outbox:
             for trustee in trustees:
                 if trustee.email in email.to[0]:
-                    self.assertTrue(u'βήμα #2' in email.subject)
+                    self.assertTrue(u'step #2' in email.subject)
         mail.outbox = []
 
     def admin_notified_for_freeze(self):
@@ -705,7 +705,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         for email in mail.outbox:
             for voter in voters:
                 if voter.voter_email in email.to[0]:
-                    self.assertTrue(u'ψήφος ελήφθη' in email.subject)
+                    self.assertTrue(u'vote cast' in email.subject)
         mail.outbox = []
 
     def emails_after_election_close(self):
@@ -732,7 +732,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                     self.assertTrue(email.subject in admin_messages)
             for trustee in trustees:
                 if trustee.email in email.to[0]:
-                    self.assertTrue(u'βήμα #3' in email.subject)
+                    self.assertTrue(u'step #3' in email.subject)
         mail.outbox = []
 
     def decryption_and_result_admin_mails(self):
