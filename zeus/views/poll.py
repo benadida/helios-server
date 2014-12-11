@@ -56,10 +56,7 @@ def list(request, election):
     set_menu('polls', context)
     return render_template(request, "election_polls_list", context)
 
-
-''' deprecated - rename is made in form now
 @auth.election_admin_required
-@auth.requires_election_features('can_rename_poll')
 @transaction.commit_on_success
 @require_http_methods(["POST"])
 def rename(request, election, poll):
@@ -71,7 +68,6 @@ def rename(request, election, poll):
         poll.logger.info("Renamed from %s to %s", oldname, newname)
     url = election_reverse(election, 'polls_list')
     return HttpResponseRedirect(url)
-'''
 
 @transaction.commit_on_success
 def _handle_batch(election, polls, vars, auto_link=False):
@@ -253,10 +249,19 @@ def _add_batch(request, election):
 def add_or_edit(request, election, poll=None):
     if not poll and not election.feature_can_add_poll:
         raise PermissionDenied
+    if poll:
+        oldname = poll.name
     if request.method == "POST":
         form = PollForm(request.POST, instance=poll, election=election)
         if form.is_valid():
-            form.save()
+            new_poll = form.save()
+            newname = new_poll.name
+            # log poll edit/creation
+            if poll:
+                if oldname != newname:
+                    poll.logger.info("Renamed from %s to %s", oldname, newname)
+            else:
+                new_poll.logger.info("Poll created")
             url = election_reverse(election, 'polls_list')
             return redirect(url)
     if request.method == "GET":
@@ -267,7 +272,6 @@ def add_or_edit(request, election, poll=None):
         set_menu('edit_poll', context)
     tpl = "election_poll_add_or_edit"
     return render_template(request, tpl, context)
-'''
 @auth.election_admin_required
 @auth.requires_election_features('can_add_poll')
 @require_http_methods(["POST", "GET"])
@@ -297,8 +301,6 @@ def add(request, election, poll=None):
         return render_template(request, "election_polls_list", context)
     url = election_reverse(election, 'polls_list')
     return HttpResponseRedirect(url)
-'''
-
 
 @auth.election_admin_required
 @require_http_methods(["POST"])
