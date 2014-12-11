@@ -65,6 +65,9 @@ def add_or_update(request, election=None):
                 subject = "Voting extension"
                 msg = "Voting end date extended"
                 election.notify_admins(msg=msg, subject=subject)
+
+            election.zeus.compute_election_public()
+            election.logger.info("Public key updated")
             return HttpResponseRedirect(url)
 
     context = {'election_form': election_form, 'election': election}
