@@ -576,7 +576,7 @@ class PollForm(forms.ModelForm):
         data = self.cleaned_data
         election_polls = self.election.polls.all()
         for poll in election_polls:
-            if data['name'] == poll.name and not self.instance.pk:
+            if data.get('name') == poll.name and not self.instance.pk:
                 message = _("Duplicate poll names are not allowed")
                 raise forms.ValidationError(message)
 
