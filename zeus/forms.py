@@ -563,6 +563,7 @@ class PollForm(forms.ModelForm):
         )
         self.fields['oauth2_client_type'] = forms.ChoiceField(required=False,
                                                               choices=CHOICES)
+
         if self.election.feature_frozen:
             self.fields['name'].widget.attrs['readonly'] = True
     
@@ -576,10 +577,11 @@ class PollForm(forms.ModelForm):
         data = self.cleaned_data
         election_polls = self.election.polls.all()
         for poll in election_polls:
-            if data.get('name') == poll.name and not self.instance.pk:
+            if (data.get('name') == poll.name and
+                    ((not self.instance.pk ) or 
+                    (self.instance.pk and self.instance.name!=data.get('name')))):
                 message = _("Duplicate poll names are not allowed")
                 raise forms.ValidationError(message)
-
         if self.election.feature_frozen and\
             (self.cleaned_data['name'] != self.instance.name):
                 raise forms.ValidationError("can't touch this")
@@ -590,11 +592,11 @@ class PollForm(forms.ModelForm):
         if data['oauth2_thirdparty']:
             for field_name in field_names:
                 if not data[field_name]:
-                    self._errors[field_name] = 'required!'
+                    self._errors[field_name] = ('required!',)
             try:
                 url_validate(data['oauth2_url'])
             except ValidationError:
-                self._errors['oauth2_url'] = "Invalid URL"
+                self._errors['oauth2_url'] = ("Invalid URL",)
         else:
             for field_name in field_names:
                 data[field_name] = ''
