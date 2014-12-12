@@ -8,75 +8,43 @@
 {% if election.feature_can_add_poll or  poll%}
 
 <form data-protect="1" class="prettyform" action="" method="POST">
-{% csrf_token %}
-<p>
-  {{ form.non_field_errors }}
-</p>
-<p>
-  {% if form.name.errors %}
-    <ul class="errorlist"><li>
-      {{form.name.errors}}
-    </li></ul>
-  {% endif %}
-  <label for={{form.name.id_for_labe}}>Name</label>
-  {{ form.name }}
-</p>
-<p>
-  <label for={{form.oauth2_thirdparty.id_for_labe}}>OAuth2 Thirdparty authentication</label>
-  {{form.oauth2_thirdparty}} 
-</p>
-<div id="hidden_fields"
-  {% if not form.oauth2_thirdparty.value %}  
-    style="display:none;" 
-  {% endif %} >
-<p>
-  {% if form.oauth2_client_type.errors %}
-    <ul class="errorlist"><li>
-      {{form.oauth2_client_type.errors}}
-    </li></ul>
-  {% endif %}
-  <label for={{form.oauth2_client_type.id_for_labe}}>Client Type</label>
-  {{ form.oauth2_client_type }}
-</p>
-<p>
-  {% if form.oauth2_client_id.errors %}
-    <ul class="errorlist"><li>
-        {{ form.oauth2_client_id.errors }}
-    </li></ul>
-  {% endif %}
-  <label for={{ form.oauth2_client_id.id_for_labe }}>Client ID</label>
-  {{ form.oauth2_client_id }}
-</p>
-<p>
-  {% if form.oauth2_client_secret.errors %}
-    <ul class="errorlist"><li>
-        {{ form.oauth2_client_secret.errors }}
-    </li></ul>
-  {% endif %}
-  <label for={{ form.oauth2_client_secret.id_for_label }}>Client Secret</label>
-  {{ form.oauth2_client_secret }}
-</p>
-
-<p>
-  {% if form.oauth2_url.errors %}
-    <ul class="errorlist"><li>
-      {{ form.oauth2_url.errors }}
-    </li></ul>
-  {% endif %}
-  <label for={{form.oauth2_url.id_for_label}}>Authentication URL</label>
-  {{ form.oauth2_url }}
-</p>
-
-</div>
-
-<a class="button" href="{% url election_polls_list  election.uuid%}">Cancel</a>
-<input class="button" type="submit" value="Save"/> 
+  <table class="pretty">
+    {% with form=form%}
+      {% include "foundation_form.html" %}
+    {% endwith %}
+  </table>
+  <a class="button" href="{% url election_polls_list  election.uuid%}">Cancel</a>
+  <input class="button" type="submit" value="{% trans "Save" %}"/>
 </form>
+
 <script>
+var elems = $("input[id^=id_oauth2]:not(#id_oauth2_thirdparty), select[id^=id_oauth2]");
+
+function show_elems(time){
+    elems.parents().show(time);
+    elems.parents().siblings('br').show(time);
+}
+
+function hide_elems(time){
+    elems.parent().hide(time);
+    elems.parent().siblings('br').hide(time);
+}
+
 $(function(){
-    $("#id_oauth2_thirdparty").on('click', function(){
-            $("#hidden_fields").slideToggle("fast");
-   });
+    if ($("#id_oauth2_thirdparty").prop('checked')){
+        show_elems(300);
+    }
+    else{
+        hide_elems(0);
+    }
+    $("#id_oauth2_thirdparty").change(function(){
+        if ($("#id_oauth2_thirdparty").prop('checked')){
+            show_elems(300);
+        }
+        else{
+            hide_elems(300);
+        }
+    });
 });
 </script>
 {% endif %}
