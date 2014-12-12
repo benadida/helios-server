@@ -592,11 +592,11 @@ class PollForm(forms.ModelForm):
         if data['oauth2_thirdparty']:
             for field_name in field_names:
                 if not data[field_name]:
-                    self._errors[field_name] = ('required!',)
+                    self._errors[field_name] = ((_('This field is required.'),))
             try:
                 url_validate(data['oauth2_url'])
             except ValidationError:
-                self._errors['oauth2_url'] = ("Invalid URL",)
+                self._errors['oauth2_url'] = ((_("This URL is invalid"),))
         else:
             for field_name in field_names:
                 data[field_name] = ''
