@@ -23,12 +23,12 @@ var elems = $("input[id^=id_oauth2]:not(#id_oauth2_thirdparty), select[id^=id_oa
 
 function show_elems(time){
     elems.parents().show(time);
-    elems.parents().siblings('br').show(time);
+    elems.parents().next().show(time);
 }
 
 function hide_elems(time){
     elems.parent().hide(time);
-    elems.parent().siblings('br').hide(time);
+    elems.parent().next().hide(time);
 }
 
 $(function(){
