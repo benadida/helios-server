@@ -5,7 +5,7 @@
             <dl class="tabs">
             <dd class="{% if menu_active == "edit_poll" %}active{% endif %}"><a
               href="{% url election_poll_edit election.uuid poll.uuid %}">
-              Edit poll</a></dd>
+             {% trans "Edit poll" %}</a></dd>
 
             <dd class="{% if menu_active == "voters" %}active{% endif %}"><a 
               href="{% url election_poll_voters election.uuid poll.uuid %}">

@@ -82,6 +82,11 @@ msgstr "Βαθμοί"
 
 msgid "Number of answers must be equal or bigger than max answers"
 msgstr ""
+"Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
+"ελάχιστου αριθμού απαντήσεων"
+
+msgid "Number of scores must be equal to number of answers"
+msgstr ""
 "Ο αριθμός των καταχωρημένων απαντήσεων πρέπει να είναι ίσoς ή μεγαλύτερος "
 "απο τον μέγιστο αριθμό επιλογών"
 
@@ -123,6 +128,9 @@ msgstr "Ο λογαριασμός είναι απενεργοποιημένος"
 
 msgid "Duplicate poll names are not allowed"
 msgstr "Δεν επιτρέπονται κάλπες με ίδιο όνομα"
+
+msgid "This URL is invalid"
+msgstr "Μη έγκυρo URL"
 
 msgid "all selected voters"
 msgstr "σύνολο ψηφοφόρων"
@@ -469,7 +477,6 @@ msgstr "Προσθήκη ερωτήσεων στην ψηφοφορία"
 msgid "Too many choices"
 msgstr "Περισσότερες επιλογές από το επιτρεπτό"
 
-#, python-brace-format
 msgid "Question '{0}' requires at least {1} choices."
 msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
 
@@ -484,6 +491,9 @@ msgstr "Ψηφοφορία με βαθμολογία"
 
 msgid "Manage questions"
 msgstr "Διαχείριση ερωτήσεων"
+
+msgid "Please assign the remaining choices: {0}"
+msgstr "Παρακαλούμε συμπληρώστε τις υπόλοιπες επιλογές: {0}"
 
 msgid "No questions set"
 msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"

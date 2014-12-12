@@ -13,7 +13,8 @@
       {% include "foundation_form.html" %}
     {% endwith %}
   </table>
-  <a class="button" href="{% url election_polls_list  election.uuid%}">Cancel</a>
+  <a class="button" href="{% url election_polls_list  election.uuid%}">
+  {% trans "Cancel" %}</a>
   <input class="button" type="submit" value="{% trans "Save" %}"/>
 </form>
 

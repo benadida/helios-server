@@ -327,6 +327,9 @@ msgstr "Αριθμός ψηφοφόρων"
 msgid "Polls count"
 msgstr "Αριθμός κάλπεων"
 
+msgid "Edit poll"
+msgstr "Επεξεργασία κάλπης"
+
 msgid "Voters"
 msgstr "Ψηφοφόροι"
 
@@ -335,6 +338,9 @@ msgstr "Προσθήκη νέας κάλπης"
 
 msgid "Batch polls update"
 msgstr "Μαζική ανανέωση καλπών"
+
+msgid "Results"
+msgstr "Αποτελέσματα"
 
 msgid "Election information"
 msgstr "Πληροφορίες ψηφοφορίας"
@@ -493,6 +499,9 @@ msgstr "Αποθήκευση"
 msgid "To create a new election, enter the necessary information below."
 msgstr ""
 "Για τη δημιουργία νέας ψηφοφορίας, εισάγετε τα απαραίτητα στοιχεία παρακάτω."
+
+msgid "Election Polls"
+msgstr "Οι κάλπες της ψηφοφορίας"
 
 msgid "No audited ballots posted yet"
 msgstr "Δεν έχουν ληφθεί ακόμη ψήφοι ελέγχου"
@@ -747,9 +756,6 @@ msgstr "Επιβεβαίωση ψηφοφόρων"
 
 msgid "Cancel voter enrollment"
 msgstr "Ακύρωση εγγραφής ψηφοφόρων"
-
-msgid "Election Polls"
-msgstr "Οι κάλπες της ψηφοφορίας"
 
 msgid "Batch polls actions"
 msgstr "Μαζικές ενέργειες ψηφοφορίας"
