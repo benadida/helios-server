@@ -584,7 +584,8 @@ class PollForm(forms.ModelForm):
                 raise forms.ValidationError(message)
         if self.election.feature_frozen and\
             (self.cleaned_data['name'] != self.instance.name):
-                raise forms.ValidationError("can't touch this")
+                raise forms.ValidationError(_("Poll name cannot be changed\
+                                               after freeze"))
         
         field_names = ['client_type', 'client_id', 'client_secret', 'url']
         field_names = ['oauth2_' + x for x in field_names]
