@@ -88,6 +88,9 @@
           <div href="#" class="button tiny dropdown" style="">
               {% trans "Actions" %}&nbsp;
           <ul>
+            {% url election_poll_edit election.uuid poll.uuid as edit_url %}
+            {% trans "Edit poll" as label %}
+            {% menu_action label  edit_url "settings" %}
             {% url election_poll_voters election.uuid poll.uuid as manage_url %}
             {% trans "Manage voters" as label %}
             {% menu_action label manage_url "people" %}
@@ -124,7 +127,8 @@
 </table>
 {% endif %}
 {% if election.feature_can_add_poll %}
-<a class="button" href="{% url election_poll_add election.uuid %}">Add poll</a>
+<a class="button" href="{% url election_poll_add election.uuid %}">
+{% trans "Add poll" %}</a>
 {% endif %}
 </div>
 {% endblock %}
