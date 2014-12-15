@@ -178,6 +178,21 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         if e.frozen_at:
             self.verbose('+ Election got frozen')
             return True
+        
+    def save_poll_without_name_change(self):
+        # help track bug where saving poll without changing name
+        # ends in duplicate name form error
+        self.c.get(self.locations['logout'])
+        self.c.post(self.locations['login'], self.login_data)
+        e = Election.objects.all()[0]
+        p_uuid = self.p_uuids[0] 
+        edit_url = '/elections/{}/polls/{}/edit'.format(e.uuid, p_uuid)
+        r = self.c.get(edit_url)
+        form = r.context['form']
+        data = form.initial
+        r = self.c.post(edit_url, data)
+        expected_url = '/elections/{}/polls/'.format(self.e_uuid)
+        self.assertRedirects(r, expected_url)
 
     def extend_election_voting_end(self):
         self.c.get(self.locations['logout'])
@@ -242,6 +257,49 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.p_uuids = []
         for poll in e.polls.all():
             self.p_uuids.append(poll.uuid)
+
+    def edit_poll_name_before_freeze(self):
+        self.c.get(self.locations['logout'])
+        self.c.post(self.locations['login'], self.login_data)
+        e = Election.objects.all()[0]
+        p_uuid = self.p_uuids[0] 
+        edit_url = '/elections/{}/polls/{}/edit'.format(e.uuid, p_uuid)
+        r = self.c.get(edit_url)
+        form = r.context['form']
+        data = form.initial
+        data['name'] = 'changed_poll_name'
+        self.c.post(edit_url, data)
+        poll = Poll.objects.get(uuid=p_uuid)
+        self.assertEqual(poll.name, 'changed_poll_name')
+    
+    def create_poll_after_freeze(self):
+        self.c.get(self.locations['logout'])
+        self.c.post(self.locations['login'], self.login_data)
+        e = Election.objects.all()[0]
+        location = '/elections/%s/polls/add' % self.e_uuid
+        post_data = {
+            'name': 'test_poll_after_freeze',
+            }
+        r = self.c.post(location, post_data)
+        self.assertEqual(r.status_code, 403)
+        e = Election.objects.all()[0]
+        self.assertEqual(e.polls.all().count(), self.polls_number)
+        
+
+    def edit_poll_name_after_freeze(self):
+        self.c.get(self.locations['logout'])
+        self.c.post(self.locations['login'], self.login_data)
+        e = Election.objects.all()[0]
+        p_uuid = self.p_uuids[0] 
+        
+        edit_url = '/elections/{}/polls/{}/edit'.format(e.uuid, p_uuid)
+        r = self.c.get(edit_url)
+        form = r.context['form']
+        data = form.initial
+        data['name'] = 'changed_poll_name_after_freeze'
+        r = self.c.post(edit_url, data)
+        self.assertFormError(r, 'form', None, "Poll name cannot be changed\
+                                               after freeze") 
 
     def submit_questions(self):
         for p_uuid in self.p_uuids:
@@ -744,6 +802,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.second_trustee_step_mail()
         self.create_duplicate_polls()
         self.create_polls()
+        self.edit_poll_name_before_freeze()
+        self.save_poll_without_name_change()
         self.submit_duplicate_id_voters_file()
         self.submit_wrong_field_number_voters_file()
         self.submit_voters_file()
@@ -753,6 +813,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.assertEqual(e.election_issues_before_freeze, [])
         self.assertTrue(self.freeze_election())
         self.admin_notified_for_freeze()
+        self.create_poll_after_freeze()
+        self.edit_poll_name_after_freeze()
         e = Election.objects.get(uuid=self.e_uuid)
         e.voting_starts_at = datetime.datetime.now()
         e.save()
