@@ -799,6 +799,9 @@ msgstr "Διαγραφή κάλπης"
 msgid "Totals"
 msgstr "Σύνολα"
 
+msgid "Add poll"
+msgstr "Προσθήκη κάλπης"
+
 msgid "Please try again"
 msgstr "Παρακαλούμε δοκιμάστε ξανά"
 

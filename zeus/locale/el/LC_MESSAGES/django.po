@@ -129,6 +129,11 @@ msgstr "Ο λογαριασμός είναι απενεργοποιημένος"
 msgid "Duplicate poll names are not allowed"
 msgstr "Δεν επιτρέπονται κάλπες με ίδιο όνομα"
 
+msgid ""
+"Poll name cannot be changed                                               "
+"after freeze"
+msgstr "Το όνομα της κάλπης δεν μπορεί να αλλάξει μετά την οριστικοποίηση"
+
 msgid "This URL is invalid"
 msgstr "Μη έγκυρo URL"
 
