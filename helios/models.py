@@ -803,6 +803,13 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
       obj.do_set_stage(self.zeus_stage)
       return obj
 
+  @property
+  def get_oauth2_module(self):
+    from zeus.oauth2 import *
+    #if self.oauth2_type == 'google':
+    return Oauth2FB(self)
+      
+
   def get_booth_url(self, request):
     vote_url = "%s/%s/booth/vote.html?%s" % (
             settings.SECURE_URL_HOST,

@@ -846,23 +846,18 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
         raise PermissionDenied("Invalid secret")
 
     if poll.oauth2_thirdparty:
+        oauth2 = poll.get_oauth2_module
         request.session['oauth2_voter_email'] = voter.voter_email
         request.session['oauth2_voter_uuid'] = voter.uuid
-        data = {
-            'response_type': 'code',
-            'client_id': poll.oauth2_client_id,
-            'redirect_uri': 'http://zeus-dev.grnet.gr:8081/auth/auth/oauth2',
-            'scope': 'profile email',
-            'approval_prompt': 'force',
-            'state': poll.uuid,
-            }
-        url = "%s?%s" %(poll.oauth2_url, urllib.urlencode(data))
-        return redirect(url)
+        url = oauth2.get_code_url()
+        context = {'url': url}
+        tpl = 'voter_redirect'
+        return render_template(request, tpl, context)
     else:
-        pass
-    # should remove this?
-    raise PermissionDenied('38')
-
+        user = auth.ZeusUser(voter)
+        user.authenticate(request)
+        poll.logger.info("Poll voter '%s' logged in", voter.voter_login_id)
+        return HttpResponseRedirect(poll_reverse(poll, 'index'))
 
 @auth.election_view(check_access=False)
 @require_http_methods(["GET"])
