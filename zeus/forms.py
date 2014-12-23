@@ -561,16 +561,24 @@ class PollForm(forms.ModelForm):
             ('public', 'public'),
             ('confidential', 'confidential'),
         )
+
+        TYPES = (
+            ('google', 'google'),
+            ('facebook', 'facfebook'),
+            ('other', 'other')
+        )
+        self.fields['oauth2_type'] = forms.ChoiceField(required=False,
+                                                       choices=TYPES)
         self.fields['oauth2_client_type'] = forms.ChoiceField(required=False,
                                                               choices=CHOICES)
-
         if self.election.feature_frozen:
             self.fields['name'].widget.attrs['readonly'] = True
     
     class Meta:
         model = Poll
-        fields = ('name', 'oauth2_thirdparty', 'oauth2_client_type',
-                  'oauth2_client_id', 'oauth2_client_secret', 'oauth2_url',)
+        fields = ('name', 'oauth2_thirdparty', 'oauth2_type', 
+                  'oauth2_client_type', 'oauth2_client_id', 
+                  'oauth2_client_secret', 'oauth2_url',)
        
     def clean(self):
 
@@ -587,7 +595,7 @@ class PollForm(forms.ModelForm):
                 raise forms.ValidationError(_("Poll name cannot be changed\
                                                after freeze"))
         
-        field_names = ['client_type', 'client_id', 'client_secret', 'url']
+        field_names = ['type', 'client_type', 'client_id', 'client_secret', 'url']
         field_names = ['oauth2_' + x for x in field_names]
         url_validate = URLValidator()
         if data['oauth2_thirdparty']:

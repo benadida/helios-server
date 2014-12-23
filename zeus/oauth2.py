@@ -5,6 +5,14 @@ from django.conf import settings
 
 from helios.models import Poll
 
+OAUTH2_REGISTRY = {}
+
+def oauth2_module(cls):
+    OAUTH2_REGISTRY[cls.type_id] = cls
+    return cls
+
+def get_oauth2_module(poll):
+    return OAUTH2_REGISTRY.get(poll.oauth2_type)(poll)
 
 class Oauth2Base(object):
 
@@ -47,8 +55,10 @@ class Oauth2Base(object):
     def exchange(self, url):
         raise NotImplemented
 
-
+@oauth2_module
 class Oauth2Google(Oauth2Base):
+
+    type_id = 'google'
 
     def __init__(self, poll):
         super(Oauth2Google, self).__init__(poll)

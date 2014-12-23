@@ -709,6 +709,8 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   # voters oauth2 authentication
   oauth2_thirdparty = models.BooleanField(default=False)
+  oauth2_type = models.CharField(max_length=25,
+                                 null=True, blank=True)
   oauth2_client_type = models.CharField(max_length=25, 
                                         null=True, blank=True)
   oauth2_client_id = models.CharField(max_length=255,
@@ -805,9 +807,8 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   @property
   def get_oauth2_module(self):
-    from zeus.oauth2 import *
-    #if self.oauth2_type == 'google':
-    return Oauth2FB(self)
+    from zeus import oauth2
+    return oauth2.get_oauth2_module(self)
       
 
   def get_booth_url(self, request):
