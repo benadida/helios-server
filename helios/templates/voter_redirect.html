@@ -2,14 +2,13 @@
 {% extends TEMPLATE_BASE %}
 
 {%block title%}
-foo
+Redirecting to third party
 {%endblock title%}
 
 {% block meta_block %}
-foo
 <meta http-equiv="refresh" content="3; url={{ url }}"/>
 {% endblock meta_block %}
 
 {% block content %}
-you are being redirected
+You are being redirected to the third party for authentication
 {% endblock %}
