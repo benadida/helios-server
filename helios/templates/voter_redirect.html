@@ -1,8 +1,15 @@
-<html>
-<head>
-<meta http-equiv="refresh" content="0; url={{ url }}" />
-</head>
-<body>
+
+{% extends TEMPLATE_BASE %}
+
+{%block title%}
+foo
+{%endblock title%}
+
+{% block meta_block %}
+foo
+<meta http-equiv="refresh" content="3; url={{ url }}"/>
+{% endblock meta_block %}
+
+{% block content %}
 you are being redirected
-</body>
-</html>
+{% endblock %}
