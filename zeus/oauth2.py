@@ -103,7 +103,6 @@ class Oauth2FB(Oauth2Base):
                 self.expires = item.split('=')[1]
 
     def confirm_email(self):
-        url='https://www.googleapis.com/plus/v1/people/me'
         url = 'https://graph.facebook.com/v2.2/me'
         get_params = 'fields=email&access_token={}'.format(self.access_token)
         get_url = '{}?{}'.format(url, get_params)
