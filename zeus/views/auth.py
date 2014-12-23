@@ -98,11 +98,12 @@ def change_password(request):
 def oauth2_login(request):
 
     poll_uuid = request.GET.get('state')
-    # handle poll = None
-    poll = Poll.objects.get(uuid = poll_uuid)
+    try:
+        poll = Poll.objects.get(uuid = poll_uuid)
+    except Poll.DoesNotExist:
+        return HttpResponseBadRequest(400)
     oauth2 = poll.get_oauth2_module
     if oauth2.can_exchange(request):
-        print oauth2.get_exchange_url
         oauth2.exchange(oauth2.get_exchange_url())
         if oauth2.confirm_email():
             voter = Voter.objects.get(poll__uuid=poll_uuid,
