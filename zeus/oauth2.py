@@ -66,6 +66,9 @@ class Oauth2Google(Oauth2Base):
         self.code_post_data['approval_prompt'] = 'force'
         self.exchange_url = 'https://accounts.google.com/o/oauth2/token'
 
+    def set_login_hint(self, email):
+        self.code_post_data['login_hint'] = email
+
     def exchange(self, url):
         response = urllib2.urlopen(url[0], url[1])
         data = json.loads(response.read())
@@ -86,6 +89,8 @@ class Oauth2Google(Oauth2Base):
 
 
 class Oauth2FB(Oauth2Base):
+
+    type_id = 'facebook'
     
     def __init__(self, poll):
         super(Oauth2FB, self).__init__(poll)
