@@ -10,7 +10,7 @@ body {
   position: absolute;
   padding: 0px;
   background: white;
-  border: 2px solid #eee;
+  border: 1px solid #666;
   top: 20px;
   margin-left: 100px;
   margin-top: 0px;
@@ -46,9 +46,9 @@ body {
   width: 100%;
   text-align: center;
   padding: 2px 0px 2px 0px;
-  background: #1ca3bb;
+  background: #ccc;
   font-size: 18pt;
-  border-bottom: 4px solid #eeeeee;
+  border-bottom: 1px solid #666;
 }
 
 #progress_div {
@@ -63,18 +63,16 @@ body {
 }
 
 #progress_div td.unselected {
-  background: #015968;
-  color: #eeeeee;
-  border-left: 1px solid white;
-  border-right:  1px solid white;
+  background: #ccc;
+  color: #888;
+  border: 1px solid #333;
 }
 
 #progress_div td.selected {
-  background: #1ca3bb;
-  color: white;
+  background: #fc9;
+  color: black;
   font-weight: bold;
-  border-left: 1px solid white;
-  border-right: 1px solid white;
+  border: 1px solid black;
 }
 
 #footer {
@@ -84,8 +82,8 @@ body {
   text-align: center;
   margin-top: 10px;
   padding: 2px 0px 2px 0px;
-  background: #eeeeee;
-  border-top: 0px solid #666;
+  background: #ddd;
+  border-top: 1px solid #666;
 }
 
 #page h2 {

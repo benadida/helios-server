@@ -20,11 +20,9 @@ form.prettyform br {
 }
 
 form.prettyform input, form.prettyform textarea, button {
-    /* border: 1px solid black; */
-    background: #cfda40;
+    border: 1px solid black;
     margin: 5px;
     font-size: 16pt;
-    color: white;
 }
 
 input.pretty {
