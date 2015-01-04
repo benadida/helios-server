@@ -198,7 +198,7 @@ def election_new(request):
 
   if request.method == "GET":
     election_form = forms.ElectionForm(initial={'private_p': settings.HELIOS_PRIVATE_DEFAULT,
-                                                'help_email': user.email})
+                                                'help_email': user.info.get(email, '')})
   else:
     election_form = forms.ElectionForm(request.POST)
     
