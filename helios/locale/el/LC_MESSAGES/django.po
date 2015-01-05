@@ -622,7 +622,7 @@ msgstr "απόδειξη υποβολής"
 msgid "for your vote has been sent to your email address"
 msgstr "για την ψήφο σας έχει σταλεί με email"
 
-#: templates/election_poll_questions.html:43
+#: templates/election_poll_questions.html:44
 msgid "Manage questions"
 msgstr "Διαχείριση ερωτήσεων"
 
@@ -1534,6 +1534,10 @@ msgstr "Ερωτήσεις-Απαντήσεις"
 msgid "Resources"
 msgstr "Υλικό"
 
+#: templates/zeus/_menu_partial.html:9 templates/zeus/contact.html:11
+msgid "Contact"
+msgstr "Επικοινωνία"
+
 #: templates/zeus/bad_login_warning.html:4
 msgid "Invalid link."
 msgstr "Μη έγκυρος σύνδεσμος."
@@ -1548,3 +1552,39 @@ msgid ""
 "    officials.\n"
 "    "
 msgstr ""
+
+#: templates/zeus/contact.html:13
+msgid ""
+"For questions and comments regarding the Zeus platform you may contact us at "
+"<a href=\"mailto:helpdesk@zeus.grnet.gr\">helpdesk@zeus.grnet.gr</a>.\n"
+"    <br /> \n"
+"    <br /> \n"
+"    <br /> \n"
+"\n"
+"    <cite>\n"
+"    Notice that if you are a voter and want to report an issue related to a "
+"running election you should get in contact with the corresponding election "
+"support group. \n"
+"    You can find contact details in the election page.\n"
+"    </cite>\n"
+"    </p>\n"
+"    "
+msgstr ""
+"Για σχόλια και απορίες σχετικά με την πλατφόρμα Ζεύς μπορείτε να \n"
+" επικοινωνήσετε στο \n"
+"<a href=\"mailto:helpdesk@zeus.grnet.gr\">helpdesk@zeus.grnet.gr</a>.\n"
+"    <br /> \n"
+"    <br /> \n"
+"    <br /> \n"
+"\n"
+"    <cite>\n"
+"    Σε περίπτωση που αντιμετωπίζετε πρόβλημα σχετικά με κάποια ψηφοφορία "
+"παρακαλούμε επικοινωνήστε με την υπεύθυνη ομάδα υποστήριξης της ψηφοφορίας."
+"    Τα στοιχεία επικοινωνίας μπορείτε να τα βρείτε στην σελίδα της ψηφοφορίας.\n"
+"    </cite>\n"
+"    </p>\n"
+"    "
+
+#: templates/zeus/stats.html:19
+msgid "Choose election"
+msgstr "Επιλογή ψηφοφορίας"

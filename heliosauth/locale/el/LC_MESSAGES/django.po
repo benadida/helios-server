@@ -38,11 +38,11 @@ msgstr "Λάθος κωδικός"
 msgid "Passwords don't match"
 msgstr "Οι κωδικοί δεν ταιρίαζουν"
 
-#: auth_systems/password.py:46
+#: auth_systems/password.py:48
 msgid "Username"
 msgstr "Όνομα χρήστη"
 
-#: auth_systems/password.py:47
+#: auth_systems/password.py:49
 msgid "Password"
 msgstr "Κωδικός χρήστη"
 

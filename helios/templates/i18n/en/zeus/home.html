@@ -1,18 +1,18 @@
 {% extends "server_ui/templates/base.html" %}
 {% load i18n %}
+
 {% block tabs_menu %}
 
 {% if bad_login %}
 {% include "zeus/bad_login_warning.html" %}
 {% endif %}
 
-{% comment %}
-{% include "zeus/_menu_partial.html" %}
-{% endcomment %}
+{% include "i18n/en/zeus/_menu_partial.html" %}
 {% endblock %}
 
 {% block page_top %}
 {% include "zeus/intro_announcements.html" %}
+{{ block.super }}
 {% endblock %}
 
 {% block content %}

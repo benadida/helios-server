@@ -216,16 +216,44 @@ msgstr "Επιβεβαιώστε την οριστικοποίηση της ψη
 msgid "Are you sure you want to delete the selected poll ?"
 msgstr "Επιβεβαιώστε τη διαγραφή της επιλεγμένης κάλπης"
 
-#: model_tasks.py:209
+#: model_tasks.py:215
 msgid "Results"
 msgstr "Αποτελέσματα"
 
-#: tasks.py:103
+#: results_report.py:31
+msgid "Zeus Elections - Results"
+msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
+
+#: results_report.py:185
+msgid "Total ballots:"
+msgstr "Σύνολο ψηφοδελτίων:"
+
+#: results_report.py:186
+msgid "Blanks:"
+msgstr "Λευκά:"
+
+#: results_report.py:218
+msgid "%Y-%m-%d %H:%M"
+msgstr "%d/%m/%Y %H:%M"
+
+#: results_report.py:220
+msgid "Start:"
+msgstr "Έναρξη:"
+
+#: results_report.py:223
+msgid "End:"
+msgstr "Τέλος:"
+
+#: results_report.py:226
+msgid "Extension:"
+msgstr "Παράταση:"
+
+#: tasks.py:104
 #, python-format
 msgid "%(election_name)s - vote cast"
 msgstr "%(election_name)s - ψήφος ελήφθη"
 
-#: tasks.py:108
+#: tasks.py:109
 #, python-format
 msgid ""
 "You have successfully cast a vote in\n"
@@ -242,27 +270,28 @@ msgstr ""
 "\n"
 "H απόδειξη της καταχώρισης βρίσκεται συνημμένη στο παρόν μήνυμα.\n"
 
-#: election_modules/__init__.py:36 election_modules/simple/__init__.py:16
+#: election_modules/__init__.py:35 election_modules/simple/__init__.py:16
 msgid "Simple election with one or more questions"
 msgstr "Απλή ψηφοφορία με μία ή περισσότερες ερωτήσεις"
 
-#: election_modules/__init__.py:37
+#: election_modules/__init__.py:36
 msgid "Ballot"
 msgstr "Ψηφοδέλτιο"
 
-#: election_modules/__init__.py:39
+#: election_modules/__init__.py:38
 msgid "Answer"
 msgstr "Απάντηση"
 
-#: election_modules/__init__.py:41
+#: election_modules/__init__.py:40
 msgid "Add questions to the election"
 msgstr "Προσθήκη ερωτήσεων στην ψηφοφορία"
 
-#: election_modules/__init__.py:42
+#: election_modules/__init__.py:41
 msgid "Too many choices"
 msgstr "Περισσότερες επιλογές από το επιτρεπτό"
 
-#: election_modules/__init__.py:43
+#: election_modules/__init__.py:42
+#, python-brace-format
 msgid "Question '{0}' requires at least {1} choices."
 msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
 
@@ -288,6 +317,7 @@ msgid "Manage questions"
 msgstr "Διαχείριση ερωτήσεων"
 
 #: election_modules/score/__init__.py:30
+#, python-brace-format
 msgid "Please assign the remaining choices: {0}"
 msgstr "Παρακαλούμε συμπληρώστε τις υπόλοιπες επιλογές: {0}"
 
