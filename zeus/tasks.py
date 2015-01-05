@@ -21,6 +21,7 @@ from django.db import transaction
 from zeus.core import from_canonical
 from zeus import mobile
 from zeus import utils
+from email.Utils import formataddr
 
 
 logger = logging.getLogger(__name__)
@@ -118,8 +119,8 @@ you can find your encrypted vote attached in this mail.
 
     # send it via the notification system associated with the auth system
     attachments = [('vote.signature', signature['signature'], 'text/plain')]
-    to = "%s %s <%s>" % (voter.voter_name, voter.voter_surname,
-                         voter.voter_email)
+    name = "%s %s" % (voter.voter_name, voter.voter_surname)
+    to = formataddr((name, voter.voter_email))
     message = EmailMessage(subject, body, settings.SERVER_EMAIL, [to])
     for attachment in attachments:
         message.attach(*attachment)

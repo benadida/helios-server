@@ -8,6 +8,8 @@ import httplib
 import urllib
 import json
 
+from email.Utils import formataddr
+
 from django.core.urlresolvers import reverse
 from django import forms
 from django.core.mail import send_mail, EmailMessage
@@ -201,7 +203,8 @@ def update_status(token, message):
 def send_message(user_id, user_name, user_info, subject, body, attachments=[]):
   email = user_id
   name = user_name or user_info.get('name', email)
-  message = EmailMessage(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, email)])
+  recipient = formataddr((name, email))
+  message = EmailMessage(subject, body, settings.SERVER_EMAIL, [recipient])
   for attachment in attachments:
       message.attach(*attachment)
 
