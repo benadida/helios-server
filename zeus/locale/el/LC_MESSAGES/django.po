@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-16 11:23+0300\n"
+"POT-Creation-Date: 2015-01-05 17:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,97 +46,97 @@ msgstr "Μη έγκυρη λίστα μελών εφορευτικής επιτ�
 msgid "Choice"
 msgstr "Επιλογή"
 
-#: forms.py:208 election_modules/__init__.py:38
+#: forms.py:208 election_modules/__init__.py:37
 msgid "Question"
 msgstr "Ερώτηση"
 
-#: forms.py:237
+#: forms.py:245
 msgid "Min answers"
 msgstr "Ελάχιστος αριθμός επιλογών"
 
-#: forms.py:238
+#: forms.py:246
 msgid "Max answers"
 msgstr "Μέγιστος αριθμός επιλογών"
 
-#: forms.py:256
+#: forms.py:264
 msgid "Max answers should be greater or equal to min answers"
 msgstr ""
 "Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
 "ελάχιστου αριθμού απαντήσεων"
 
-#: forms.py:262
+#: forms.py:270
 msgid "Party name"
 msgstr "Όνομα συνδυασμού"
 
-#: forms.py:271
+#: forms.py:279
 msgid "Scores"
 msgstr "Βαθμοί"
 
-#: forms.py:275
+#: forms.py:283
 msgid "Username"
 msgstr "Όνομα χρήστη"
 
-#: forms.py:277
+#: forms.py:285
 msgid "Password"
 msgstr "Συνθηματικό"
 
-#: forms.py:288 forms.py:294
+#: forms.py:296 forms.py:302
 msgid "Invalid username or password"
 msgstr "Μη έγκυρος χρήστης ή συνθηματικό"
 
-#: forms.py:316
+#: forms.py:324
 msgid "all voters"
 msgstr "σύνολο ψηφοφόρων"
 
-#: forms.py:317
+#: forms.py:325
 msgid "voters who have cast a ballot"
 msgstr "ψηφοφόροι που έχουν καταθέσει ψήφο"
 
-#: forms.py:318
+#: forms.py:326
 msgid "voters who have not yet cast a ballot"
 msgstr "ψηφοφόροι που δεν έχουν καταθέσει ακόμη ψήφο"
 
-#: forms.py:322
+#: forms.py:330
 msgid "Email subject"
 msgstr "Tίτλος μηνύματος email"
 
-#: forms.py:324
+#: forms.py:332
 msgid "In place of BODY"
 msgstr "Εισαγωγή κειμένου αντί του BODY"
 
-#: forms.py:326
+#: forms.py:334
 msgid "Send To"
 msgstr "Αποστολή πρός"
 
-#: forms.py:331
+#: forms.py:339
 msgid "Current password"
 msgstr "Τρέχων κωδικός"
 
-#: forms.py:332
+#: forms.py:340
 msgid "New password"
 msgstr "Νέος κωδικός"
 
-#: forms.py:333
+#: forms.py:341
 msgid "New password confirm"
 msgstr "Επιβεβαίωση νέου κωδικού"
 
-#: forms.py:349
+#: forms.py:357
 msgid "Invalid password"
 msgstr "Μη έγκυρος χρήστης ή κωδικός"
 
-#: forms.py:352
+#: forms.py:360
 msgid "Passwords don't match"
 msgstr "Οι κωδικοί δεν ταιριάζουν"
 
-#: forms.py:358
+#: forms.py:366
 msgid "Login password"
 msgstr "Κωδικός σύνδεσης"
 
-#: forms.py:369
+#: forms.py:377
 msgid "Invalid login code"
 msgstr "Μη έγκυρος κωδικός σύνδεσης"
 
-#: forms.py:388
+#: forms.py:396
 msgid "Invalid email or password"
 msgstr "Μη έγκυρη διεύθυνση email ή συνθηματικό"
 
@@ -329,70 +329,49 @@ msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"
 msgid "Are you sure ?"
 msgstr "Επιβεβαιώστε"
 
-#: views/poll.py:243
+#: views/poll.py:250
 msgid "No file uploaded"
 msgstr "Δεν βρέθηκε αρχείο"
 
-#: views/poll.py:284
+#: views/poll.py:291
 msgid "Time to Vote"
 msgstr "Χρόνος Ψηφοφορίας"
 
-#: views/poll.py:285
+#: views/poll.py:292
 msgid "Additional Info"
 msgstr "Περισσότερες πληροφορίες"
 
-#: views/poll.py:409
+#: views/poll.py:416
 msgid "Email sending started"
 msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει"
 
-#: views/site.py:153
+#: views/site.py:157
 msgid "Invalid email address"
 msgstr "Μη έγκυρη διεύθυνση email"
 
-#: views/site.py:160
+#: views/site.py:164
 msgid "Client address unavailable"
 msgstr "Μη διαθέσιμη διεύθυνση IP πελάτη"
 
-#: views/site.py:167
+#: views/site.py:171
 msgid "There are too many requests from your address"
 msgstr "Υπεράριθμες αιτήσεις από τη διεύθυνση IP σας"
 
-#: views/site.py:173
+#: views/site.py:177
 msgid "There are too many emails registered from your address"
 msgstr "Υπεράριθμες διευθύσεις email από τη διεύθυνση IP σας"
 
-#: views/site.py:179
+#: views/site.py:183
 msgid "Cannot create demo users right now. Sorry."
 msgstr "Δεν είναι δυνατή η δημιουργία δοκιμαστικών χρηστών αυτή τη στιγμή."
 
-#: views/site.py:194
+#: views/site.py:198
 #, python-format
 msgid "An email with demo credentials has been sent to %s"
 msgstr "Ο δοκιμαστικός λογαριασμός σας έχει σταλεί στη διεύθυνση email %s"
 
 #~ msgid "Email body"
 #~ msgstr "Κείμενο μηνύματος email"
-
-#~ msgid "Zeus Elections - Results"
-#~ msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
-
-#~ msgid "Total ballots:"
-#~ msgstr "Σύνολο ψηφοδελτίων:"
-
-#~ msgid "Blanks:"
-#~ msgstr "Λευκά:"
-
-#~ msgid "%Y-%m-%d %H:%M"
-#~ msgstr "%d/%m/%Y %H:%M"
-
-#~ msgid "Start:"
-#~ msgstr "Έναρξη:"
-
-#~ msgid "End:"
-#~ msgstr "Τέλος:"
-
-#~ msgid "Extension:"
-#~ msgstr "Παράταση:"
 
 #~ msgid "Welcome to the electronic voting booth by Zeus Elections."
 #~ msgstr ""

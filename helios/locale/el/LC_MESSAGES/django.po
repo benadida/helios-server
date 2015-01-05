@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-11-21 16:29+0200\n"
+"POT-Creation-Date: 2015-01-05 17:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1530,38 +1530,18 @@ msgstr ""
 "Εάν δεν είστε ο νόμιμος παραλήπτης, παρακαλούμε διαγράψτε το μήνυμα αυτό\n"
 "και επικοινωνήστε με το helpdesk@zeus.grnet.gr"
 
+#: templates/i18n/en/zeus/_menu_partial.html:3
 #: templates/zeus/_menu_partial.html:3
 msgid "Home"
 msgstr "Αρχική"
 
-#: templates/zeus/_menu_partial.html:5
-msgid "FAQ"
-msgstr "Ερωτήσεις-Απαντήσεις"
-
-#: templates/zeus/_menu_partial.html:7
-msgid "Resources"
-msgstr "Υλικό"
-
-#: templates/zeus/_menu_partial.html:9 templates/zeus/contact.html:11
+#: templates/i18n/en/zeus/_menu_partial.html:5
+#: templates/i18n/en/zeus/contact.html:11 templates/zeus/_menu_partial.html:9
+#: templates/zeus/contact.html:11
 msgid "Contact"
 msgstr "Επικοινωνία"
 
-#: templates/zeus/bad_login_warning.html:4
-msgid "Invalid link."
-msgstr "Μη έγκυρος σύνδεσμος."
-
-#: templates/zeus/bad_login_warning.html:7
-msgid ""
-"\n"
-"    Please make sure that you follow exactly the same link as it was set to "
-"you\n"
-"    via email. If you continue to have this problem, please contact your "
-"election\n"
-"    officials.\n"
-"    "
-msgstr ""
-
-#: templates/zeus/contact.html:13
+#: templates/i18n/en/zeus/contact.html:13 templates/zeus/contact.html:13
 msgid ""
 "For questions and comments regarding the Zeus platform you may contact us at "
 "<a href=\"mailto:helpdesk@zeus.grnet.gr\">helpdesk@zeus.grnet.gr</a>.\n"
@@ -1587,11 +1567,35 @@ msgstr ""
 "\n"
 "    <cite>\n"
 "    Σε περίπτωση που αντιμετωπίζετε πρόβλημα σχετικά με κάποια ψηφοφορία "
-"παρακαλούμε επικοινωνήστε με την υπεύθυνη ομάδα υποστήριξης της ψηφοφορίας."
-"    Τα στοιχεία επικοινωνίας μπορείτε να τα βρείτε στην σελίδα της ψηφοφορίας.\n"
+"παρακαλούμε επικοινωνήστε με την υπεύθυνη ομάδα υποστήριξης της "
+"ψηφοφορίας.    Τα στοιχεία επικοινωνίας μπορείτε να τα βρείτε στην σελίδα "
+"της ψηφοφορίας.\n"
 "    </cite>\n"
 "    </p>\n"
 "    "
+
+#: templates/zeus/_menu_partial.html:5
+msgid "FAQ"
+msgstr "Ερωτήσεις-Απαντήσεις"
+
+#: templates/zeus/_menu_partial.html:7
+msgid "Resources"
+msgstr "Υλικό"
+
+#: templates/zeus/bad_login_warning.html:4
+msgid "Invalid link."
+msgstr "Μη έγκυρος σύνδεσμος."
+
+#: templates/zeus/bad_login_warning.html:7
+msgid ""
+"\n"
+"    Please make sure that you follow exactly the same link as it was set to "
+"you\n"
+"    via email. If you continue to have this problem, please contact your "
+"election\n"
+"    officials.\n"
+"    "
+msgstr ""
 
 #: templates/zeus/stats.html:19
 msgid "Choose election"
