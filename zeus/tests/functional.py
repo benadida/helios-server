@@ -71,7 +71,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             'voting_ends_at_1': end_date.strftime('%H:%M'),
             'help_email': 'test@test.com',
             'help_phone': 6988888888,
-            'communication_language': 'el',
+            'communication_language': 'en',
             }
 
     def verbose(self, message):
