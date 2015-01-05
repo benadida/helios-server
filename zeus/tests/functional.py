@@ -36,32 +36,34 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             "    \|_______|\|__| \|_|\n"
             )
 
+        conf = settings.TESTS_CONF
         # set the voters number that will be produced for test
-        self.voters_num = settings.TESTING_NR_VOTERS 
+        self.voters_num = conf.get('NR_VOTERS', 2)
+        print self.voters_num
         # set the trustees number that will be produced for the test
-        trustees_num = settings.TESTING_NR_TRUSTEES 
+        trustees_num = conf.get('NR_TRUSTEES', 2)
         trustees = "\n".join(",".join(['testName%x testSurname%x' % (x, x),
                    'test%x@mail.com' % x]) for x in range(0, trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number = settings.TESTING_NR_POLLS
+        self.polls_number = conf.get('NR_POLLS', 2)
         # set the number of max questions for simple election
-        self.simple_election_max_questions_number = settings.TESTING_SIMPLE_MAX_NR_QUESTIONS
+        self.simple_election_max_questions_number = conf.get('SIMPLE_MAX_NR_QUESTIONS', 2)
         # set the number of max answers for each question of simple election
-        self.simple_election_max_answers_number = settings.TESTING_SIMPLE_MAX_NR_ANSWERS
+        self.simple_election_max_answers_number = conf.get('SIMPLE_MAX_NR_ANSWERS', 2)
         # set the number of max answers in score election
-        self.score_election_max_answers = settings.TESTING_SCORE_MAX_NR_ANSWERS
+        self.score_election_max_answers = conf.get('SCORE_MAX_NR_ANSWERS', 2)
         # set the number of max questions in party election
-        self.party_election_max_questions_number = settings.TESTING_PARTY_MAX_NR_QUESTIONS
+        self.party_election_max_questions_number = conf.get('PARTY_MAX_NR_QUESTIONS', 2)
         # set the number of max answers in party election
-        self.party_election_max_answers_number = settings.TESTING_PARTY_MAX_NR_ANSWERS
+        self.party_election_max_answers_number = conf.get('PARTY_MAX_NR_ANSWERS', 2)
         # set the number of max candidates in stv election
-        self.stv_election_max_answers_number = settings.TESTING_STV_MAX_NR_CANDIDATES
+        self.stv_election_max_answers_number = conf.get('STV_MAX_NR_CANDIDATES', 2)
 
         start_date = datetime.datetime.now() + timedelta(hours=48)
         end_date = datetime.datetime.now() + timedelta(hours=56)
 
         self.election_form = {
-            'trial': False,
+            'trial': conf.get('trial', False),
             'name': 'test_election',
             'description': 'testing_election',
             'trustees': trustees,
@@ -71,7 +73,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             'voting_ends_at_1': end_date.strftime('%H:%M'),
             'help_email': 'test@test.com',
             'help_phone': 6988888888,
-            'communication_language': 'en',
+            'communication_language': conf.get('com_lang', 'en'),
             }
 
     def verbose(self, message):
