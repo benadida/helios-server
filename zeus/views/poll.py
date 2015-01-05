@@ -130,6 +130,8 @@ def voters_list(request, election, poll):
     page = int(request.GET.get('page', 1))
     limit = int(request.GET.get('limit', 10))
     q_param = request.GET.get('q','')
+    voted_param = request.GET.get('voted', None)
+    notvoted_param = request.GET.get('notvoted', None)
 
     default_voters_per_page = getattr(settings, 'ELECTION_VOTERS_PER_PAGE', 100)
     voters_per_page = request.GET.get('limit', default_voters_per_page)
@@ -155,6 +157,11 @@ def voters_list(request, election, poll):
             kwargs = {'voter_%s__icontains' % search_field: q_param}
             q = q | Q(**kwargs)
         voters = voters.filter(q)
+
+    if voted_param is not None:
+        voters = [v for v in voters if v.voted]
+    elif notvoted_param is not None:
+        voters = [v for v in voters if not v.voted]
 
     voters_count = Voter.objects.filter(poll=poll).count()
     voted_count = poll.voters_cast_count()
