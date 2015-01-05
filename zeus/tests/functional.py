@@ -36,7 +36,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             "    \|_______|\|__| \|_|\n"
             )
 
-        conf = settings.TESTS_CONF
+        conf = settings.ZEUS_TESTS_ELECTION_PARAMS
         # set the voters number that will be produced for test
         self.voters_num = conf.get('NR_VOTERS', 2)
         print self.voters_num
