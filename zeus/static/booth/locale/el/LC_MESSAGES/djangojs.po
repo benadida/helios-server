@@ -49,21 +49,23 @@ msgstr "Η κρυπτογράφηση της ψήφου ενδέχεται να 
 msgid "HELP"
 msgstr "Βοήθεια"
 
-#: js/ballot_modules.js:32 templates/ballot_modules.js:32
-#: templates/seal.html:15 templates/seal_score.html:14
+#: js/ballot_modules.js:32 js/ballot_modules.js.c:452
+#: templates/ballot_modules.js:32 templates/ballot_modules.js.c:452
+#: templates/seal.html:18 templates/seal_score.html:14
 msgid "BLANK_BALLOT"
 msgstr "Λευκή ψήφος"
 
-#: js/ballot_modules.js:34 templates/ballot_modules.js:34
+#: js/ballot_modules.js:34 js/ballot_modules.js.c:454
+#: templates/ballot_modules.js:34 templates/ballot_modules.js.c:454
 msgid "BALLOT_CONTINUE_BUTTON"
 msgstr "Συνέχεια"
 
-#: js/booth.js:59
+#: js/booth.js:63
 msgid ""
 "If you leave this page with an in-progress ballot, your ballot will be lost."
 msgstr "Εάν φύγετε από την παρούσα σελίδα οι επιλογές σας θα χαθούν."
 
-#: js/booth.js:69
+#: js/booth.js:73
 msgid ""
 "Are you sure you want to exit the booth and lose all information about your "
 "current ballot?"
@@ -71,7 +73,7 @@ msgstr ""
 "Επιβεβαιώστε την έξοδο από το παραπέτασμα και την απόρριψη των μέχρι "
 "τώραεπιλογών σας."
 
-#: js/booth.js:154
+#: js/booth.js:158
 msgid "BROWSER_NOT_SUPPORTED_ALERT"
 msgstr ""
 "Το πρόγραμμα πλοήγησης που χρησιμοποιείτε δεν υποστηρίζεται από την "
@@ -80,35 +82,39 @@ msgstr ""
 "\n"
 "Για περισσότερες πληροφορίες επικοινωνήστε μαζί μας"
 
-#: js/booth.js:409
+#: js/booth.js:171
+msgid "EMPTY_PARTY_CHOICE"
+msgstr "Χωρίς επιλογή υποψηφίου"
+
+#: js/booth.js:413
 msgid "HELP_EMAIL_SUBJECT"
 msgstr "Βοήθεια για το ηλεκτρονικό παραπέτασμα Ζευς"
 
-#: js/booth.js:410
+#: js/booth.js:414
 msgid "HELP_EMAIL_BODY"
 msgstr "Αντιμετωπίζω το εξής πρόβλημα:"
 
-#: js/booth.js:432
+#: js/booth.js:436
 msgid "ELECTION_INIT_ERROR"
 msgstr "Σφάλμα κατά την αρχικοποίηση της ψηφοφορίας"
 
-#: js/booth.js:583
+#: js/booth.js:587
 msgid "ENCRYPTION_PROCESS_FAILED"
 msgstr "Η κρυπτογράφηση απέτυχε."
 
-#: js/booth.js:656
+#: js/booth.js:660
 msgid "AUDIT_BALLOT_CAST_COMPLETE"
 msgstr "Η ψήφος ελέγχου υποβλήθηκε επιτυχώς."
 
-#: js/booth.js:667
+#: js/booth.js:671
 msgid "ELECTION_TERMS_ACCEPT_REQUIRED"
 msgstr "Παρακαλούμε, αποδεχθείτε τους όρους της ψηφοφορίας."
 
-#: js/booth.js:710
+#: js/booth.js:714
 msgid "BALLOT_CAST_FAILED"
 msgstr "Η υποβολή της ψήφου απέτυχε."
 
-#: js/booth.js:717
+#: js/booth.js:721
 msgid "CAST_VOTE_ID"
 msgstr "Αναγνωριστικό ψήφου"
 
@@ -212,6 +218,18 @@ msgstr "Email"
 msgid "PHONE"
 msgstr "Τηλ."
 
+#: templates/question_parties.html:19
+msgid "UP_TO"
+msgstr "μέχρι"
+
+#: templates/question_parties.html:19
+msgid "CHOICE"
+msgstr "επιλογή"
+
+#: templates/question_parties.html:19
+msgid "CHOICES"
+msgstr "επιλογές"
+
 #: templates/question_plain.html:10 templates/question_plain.html.c:12
 msgid "choice"
 msgstr "επιλογή"
@@ -252,35 +270,20 @@ msgstr ""
 "Η ψήφος σας κρυπτογραφήθηκε επιτυχώς. Επιβεβαιώστε τις επιλογές σας όπως "
 "παρουσιάζονται παρακάτω."
 
-#: templates/seal.html:22 templates/seal_score.html:21
+#: templates/seal.html:25 templates/seal_score.html:21
 msgid "BACK_TO_BALLOT_CHOICES"
 msgstr "Πίσω στις επιλογές ψηφοδελτίου"
 
-#: templates/seal.html:22 templates/seal_score.html:21
-msgid "UP_TO"
-msgstr "μέχρι"
-
-#: templates/seal.html:22 templates/seal_score.html:21
-msgid "CHOICES"
-msgstr "επιλογές"
-
-#: templates/seal.html:22 templates/seal_score.html:21
-msgid "CHOICE"
-msgstr "επιλογή"
-
-msgid "EMPTY_PARTY_CHOICE"
-msgstr "Χωρίς επιλογή υποψηφίου"
-
-#: templates/seal.html:31 templates/seal_score.html:30
+#: templates/seal.html:34 templates/seal_score.html:30
 msgid "SUBMIT_BALLOT_PROMPT"
 msgstr " "
 
-#: templates/seal.html:43 templates/seal_score.html:41
+#: templates/seal.html:46 templates/seal_score.html:41
 msgid "ELECTION_TERMS_LABEL"
 msgstr ""
 "Επιβεβαιώνω ότι είμαι μόνος ή μόνη και κανείς άλλος δεν παρακολούθησε τις "
 "επιλογές μου."
 
-#: templates/seal.html:50 templates/seal_score.html:48
+#: templates/seal.html:53 templates/seal_score.html:48
 msgid "SUBMIT_BALLOT"
 msgstr "Υποβολή ψήφου"
