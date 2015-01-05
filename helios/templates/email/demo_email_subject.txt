@@ -1,1 +1,1 @@
-{% load i18n %}{% trans "demo account for" %} {{ settings.SITE_DOMAIN }}
+{% load i18n %}{% trans "Demo account for" %} {{ settings.SITE_DOMAIN }}

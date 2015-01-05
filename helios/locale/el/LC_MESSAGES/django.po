@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-16 11:23+0300\n"
+"POT-Creation-Date: 2014-11-21 16:29+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -277,31 +277,31 @@ msgstr "ΟΧΙ"
 msgid "(EXCLUDED)"
 msgstr "(ΕΞΑΙΡΕΣΗ)"
 
-#: models.py:1184 models.py:1198
+#: models.py:1184 models.py:1201
 #: templates/_election_poll_admin_actions.html:17
 #: templates/_election_view_menu.html:11 templates/election_polls_list.html:65
 msgid "Results"
 msgstr "Αποτελέσματα"
 
-#: models.py:1301
+#: models.py:1306
 msgid "There must be at least two fields, Registration ID and Email"
 msgstr ""
 "Πρέπει να υπάρχουν τουλάχιστον δύο πεδία, Αριθμός Καταχώρισης και Email"
 
-#: models.py:1336
+#: models.py:1341
 #, python-format
 msgid "Malformed mobile phone number: %s"
 msgstr "Μη έγκυρος αριθμός τηλεφώνου: %s"
 
-#: models.py:2016
+#: models.py:2021
 msgid "Create trustee key"
 msgstr "Δημιουργία κωδικού ψηφοφορίας"
 
-#: models.py:2017
+#: models.py:2022
 msgid "Verify trustee key"
 msgstr "Επιβεβαίωση κωδικού ψηφοφορίας"
 
-#: models.py:2018
+#: models.py:2023
 msgid "Partially decrypt votes"
 msgstr "Μερική αποκρυπτογράφηση ψήφων"
 
@@ -936,42 +936,42 @@ msgstr "Διαγραφή κάλπης"
 msgid "Totals"
 msgstr "Σύνολα"
 
-#: templates/election_trustee_check_sk.html:34
+#: templates/election_trustee_check_sk.html:41
 msgid "Please try again"
 msgstr "Παρακαλούμε δοκιμάστε ξανά"
 
-#: templates/election_trustee_check_sk.html:43
+#: templates/election_trustee_check_sk.html:50
 msgid "Error in verifying your trustee key, please try again."
 msgstr "Σφάλμα κατά την επαλήθευση του κωδικού ψηφοφορίας."
 
-#: templates/election_trustee_check_sk.html:46
+#: templates/election_trustee_check_sk.html:53
 msgid "Your trustee key has been verified!"
 msgstr "Ο κωδικός ψηφοφορίας σας επαληθεύτηκε!"
 
-#: templates/election_trustee_check_sk.html:51
+#: templates/election_trustee_check_sk.html:60
 msgid "Your trustee key could not be verified."
 msgstr ""
 "Ο κωδικός ψηφοφορίας του μέλους της εφορευτικής επιτροπής δεν ήταν δυνατό να "
 "επαληθευτεί."
 
-#: templates/election_trustee_check_sk.html:93
+#: templates/election_trustee_check_sk.html:102
 msgid "The fingerprint for the public part of your trustee key is:"
 msgstr "Το αποτύπωμα του δημόσιου μέρους του κωδικού ψηφοφορίας είναι:"
 
-#: templates/election_trustee_check_sk.html:97
+#: templates/election_trustee_check_sk.html:106
 msgid "Loading cryptographic functions..."
 msgstr "Φόρτωση κρυπτογραφικών συναρτήσεων..."
 
-#: templates/election_trustee_check_sk.html:103
+#: templates/election_trustee_check_sk.html:112
 msgid "Select your trustee key file and press 'Verify'."
 msgstr ""
 "Επιλέξτε το αρχείο με τον κωδικό ψηφοφορίας σας και πιέστε «Επαλήθευση»."
 
-#: templates/election_trustee_check_sk.html:109
+#: templates/election_trustee_check_sk.html:118
 msgid "To verify your trustee key, paste it here:"
 msgstr "Για επαλήθευση του κωδικού ψηφοφορίας σας, επικολλήστε τον εδώ:"
 
-#: templates/election_trustee_check_sk.html:117
+#: templates/election_trustee_check_sk.html:126
 msgid ""
 "\n"
 "    After your trustee key has been successfully verified\n"
@@ -983,11 +983,11 @@ msgstr ""
 "    θα αποσυνδεθείτε αυτόματα.\n"
 "    "
 
-#: templates/election_trustee_check_sk.html:122
+#: templates/election_trustee_check_sk.html:131
 msgid "Verify"
 msgstr "Επαλήθευση"
 
-#: templates/election_trustee_check_sk.html:127
+#: templates/election_trustee_check_sk.html:136
 msgid "Verifying private trustee key..."
 msgstr "Επιβεβαίωση κωδικού ψηφοφορίας..."
 
@@ -1414,8 +1414,8 @@ msgstr ""
 "Ηλεκτρονικές Ψηφοφορίες «Ζευς»\n"
 
 #: templates/email/demo_email_subject.txt:1
-msgid "demo account for"
-msgstr "δοκιμαστικός λογαριασμός"
+msgid "Demo account for"
+msgstr "Δοκιμαστικός λογαριασμός"
 
 #: templates/email/info_body.txt:1
 msgid "Intended recipient"
@@ -1516,7 +1516,7 @@ msgstr ""
 "Προσοχή:\n"
 "\n"
 "Το παρόν μήνυμα είναι αυστηρά προσωπικό και εμπιστευτικό.\n"
-"Μην το προωθείτε ή το δείχνετε σε άλλους. Μην απαντάτε στο παρόν."
+"Μην το προωθείτε ή το δείχνετε σε άλλους. Μην απαντάτε στον παρόν."
 
 #: templates/email/vote_body.txt:49
 msgid "Instead, you can write to"
