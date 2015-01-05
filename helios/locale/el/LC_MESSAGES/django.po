@@ -358,6 +358,14 @@ msgstr "Λήξη ψηφοφορίας"
 msgid "Cancel election"
 msgstr "Ακύρωση ψηφοφορίας"
 
+#: templates/_election_admin_actions.html:27
+msgid "Save results (PDF)"
+msgstr "Αποθήκευση αποτελεσμάτων (PDF)"
+
+#: templates/_election_admin_actions.html:33
+msgid "Save results (ZIP)"
+msgstr "Αποθήκευση αποτελσμάτων (ZIP)"
+
 #: templates/_election_extended_notice.html:5
 #, python-format
 msgid ""
