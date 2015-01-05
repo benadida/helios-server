@@ -47,17 +47,23 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         # set the polls number that will be produced for the test
         self.polls_number = conf.get('NR_POLLS', 2)
         # set the number of max questions for simple election
-        self.simple_election_max_questions_number = conf.get('SIMPLE_MAX_NR_QUESTIONS', 2)
+        self.simple_election_max_questions_number =\
+            conf.get('SIMPLE_MAX_NR_QUESTIONS', 2)
         # set the number of max answers for each question of simple election
-        self.simple_election_max_answers_number = conf.get('SIMPLE_MAX_NR_ANSWERS', 2)
+        self.simple_election_max_answers_number =\
+            conf.get('SIMPLE_MAX_NR_ANSWERS', 2)
         # set the number of max answers in score election
-        self.score_election_max_answers = conf.get('SCORE_MAX_NR_ANSWERS', 2)
+        self.score_election_max_answers =\
+            conf.get('SCORE_MAX_NR_ANSWERS', 2)
         # set the number of max questions in party election
-        self.party_election_max_questions_number = conf.get('PARTY_MAX_NR_QUESTIONS', 2)
+        self.party_election_max_questions_number =\
+            conf.get('PARTY_MAX_NR_QUESTIONS', 2)
         # set the number of max answers in party election
-        self.party_election_max_answers_number = conf.get('PARTY_MAX_NR_ANSWERS', 2)
+        self.party_election_max_answers_number =\
+            conf.get('PARTY_MAX_NR_ANSWERS', 2)
         # set the number of max candidates in stv election
-        self.stv_election_max_answers_number = conf.get('STV_MAX_NR_CANDIDATES', 2)
+        self.stv_election_max_answers_number =\
+            conf.get('STV_MAX_NR_CANDIDATES', 2)
 
         start_date = datetime.datetime.now() + timedelta(hours=48)
         end_date = datetime.datetime.now() + timedelta(hours=56)
@@ -97,15 +103,15 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         corrupted_form['voting_starts_at_0'] = ""
         r = self.c.post(self.locations['create'], corrupted_form, follow=True)
         self.assertFormError(r, 'form', 'voting_starts_at',
-            'This field is required.') 
+                             'This field is required.')
         self.assertEqual(Election.objects.all().count(), 0)
-        
+
         # no ending date
         corrupted_form = self.election_form.copy()
         corrupted_form['voting_ends_at_0'] = ""
         r = self.c.post(self.locations['create'], corrupted_form, follow=True)
         self.assertFormError(r, 'form', 'voting_ends_at',
-            'This field is required.') 
+                             'This field is required.')
         self.assertEqual(Election.objects.all().count(), 0)
 
         # corrupted starting date
@@ -113,7 +119,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         corrupted_form['voting_starts_at_0'] = "2014-12"
         r = self.c.post(self.locations['create'], corrupted_form, follow=True)
         self.assertFormError(r, 'form', 'voting_starts_at',
-            'Wrong date or time format') 
+                             'Wrong date or time format')
         self.assertEqual(Election.objects.all().count(), 0)
 
         # corrupted ending date
@@ -121,7 +127,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         corrupted_form['voting_ends_at_0'] = "2014-12"
         r = self.c.post(self.locations['create'], corrupted_form, follow=True)
         self.assertFormError(r, 'form', 'voting_ends_at',
-            'Wrong date or time format') 
+                             'Wrong date or time format')
         self.assertEqual(Election.objects.all().count(), 0)
 
     def admin_can_submit_election_form(self):
@@ -718,7 +724,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         trustees = Election.objects.get(uuid=self.e_uuid).trustees.all()
         admins = settings.ADMINS
         # remove zeus trustee, does not get mail
-        mail_num = len(trustees) + 3 # -1 zeus trustee + 4 to admins
+        mail_num = len(trustees) + 3  # -1 zeus trustee + 4 to admins
         self.assertEqual(len(mail.outbox), mail_num)
         admin_messages = [
             'Election closed',
