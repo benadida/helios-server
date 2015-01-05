@@ -39,7 +39,6 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         conf = settings.ZEUS_TESTS_ELECTION_PARAMS
         # set the voters number that will be produced for test
         self.voters_num = conf.get('NR_VOTERS', 2)
-        print self.voters_num
         # set the trustees number that will be produced for the test
         trustees_num = conf.get('NR_TRUSTEES', 2)
         trustees = "\n".join(",".join(['testName%x testSurname%x' % (x, x),
