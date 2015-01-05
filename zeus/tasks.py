@@ -165,7 +165,7 @@ def poll_validate_voting(poll_id):
     if poll.election.polls_feature_validate_voting_finished:
         subject = "Validate voting finished"
         msg = "Validate voting finished"
-        poll.election.send_msg_to_admins(msg=msg, subject=subject)
+        poll.election.notify_admins(msg=msg, subject=subject)
         election_mix.delay(poll.election.pk)
 
 
@@ -185,7 +185,7 @@ def poll_mix(poll_id):
     if poll.election.polls_feature_mix_finished:
         subject = "Mixing finished"
         msg = "Mixing finished"
-        poll.election.send_msg_to_admins(msg=msg, subject=subject)
+        poll.election.notify_admins(msg=msg, subject=subject)
         election_validate_mixing.delay(poll.election.pk)
 
 
@@ -205,7 +205,7 @@ def poll_validate_mixing(poll_id):
     if poll.election.polls_feature_validate_mixing_finished:
         subject = "Validate mixing finished"
         msg = "Validate mixing finished"
-        poll.election.send_msg_to_admins(msg=msg, subject=subject)
+        poll.election.notify_admins(msg=msg, subject=subject)
         election_zeus_partial_decrypt.delay(poll.election.pk)
 
 
@@ -253,7 +253,7 @@ def election_decrypt(election_id):
     election.logger.info("Spawning decrypt poll tasks")
     subject = "Trustees partial decryptions finished"
     msg = "Trustees partial decryptions finished"
-    election.send_msg_to_admins(msg=msg, subject=subject)
+    election.notify_admins(msg=msg, subject=subject)
     for poll in election.polls.all():
         if poll.feature_can_decrypt:
             poll_decrypt.delay(poll.pk)
@@ -266,7 +266,7 @@ def poll_decrypt(poll_id):
     if poll.election.polls_feature_decrypt_finished:
         subject = "Decryption finished"
         msg = "Decryption finished"
-        poll.election.send_msg_to_admins(msg=msg, subject=subject)
+        poll.election.notify_admins(msg=msg, subject=subject)
         election_compute_results.delay(poll.election.pk)
 
 
@@ -290,7 +290,7 @@ def poll_compute_results(poll_id):
         e.compute_results()
         subject = "Results computed - docs generated"
         msg = "Results computed - docs generated"
-        e.send_msg_to_admins(msg=msg, subject=subject)
+        e.notify_admins(msg=msg, subject=subject)
 
 
 

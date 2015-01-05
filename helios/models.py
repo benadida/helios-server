@@ -470,7 +470,7 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
         self.logger.info("Voting closed")
         subject = "Election closed"
         msg = "Election closed"
-        self.send_msg_to_admins(msg=msg, subject=subject)
+        self.notify_admins(msg=msg, subject=subject)
 
     def freeze(self):
         for poll in self.polls.all():
@@ -603,9 +603,9 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
                                                          pok.response])
         self.logger.info("Trustee %r PK updated", trustee.email)
 
-    def send_msg_to_admins(self, msg='', subject='', send_anyway=False):
+    def notify_admins(self, msg='', subject='', send_anyway=False):
         """
-        Notify admin with msg
+        Notify admins with email
         """
         if send_anyway or (not self.trial):
             election_type = self.get_module().module_id
