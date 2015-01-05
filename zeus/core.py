@@ -1932,7 +1932,7 @@ def parse_party_options(optstring):
         max_choices = int(max_choices)
     except ValueError:
         m = ("Malformed numbers in "
-             "min-max choices option '%s'" % (name,))
+             "min-max choices option in '%s'" % (optstring,))
         raise FormatError(m)
 
     group = None
