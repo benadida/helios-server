@@ -475,8 +475,17 @@ BALLOT = {};
 
 BALLOT.pretty_choices = function(election, ballot) {
     var questions = election.questions;
+    var question_data = election.questions_data;
     var answers = ballot.answers;
     var empty_ballot_choices = _.map(election.questions_data,function(q) { return q['answers_index']});
+    
+    var answers_map = {};
+    _.each(question_data, function(q) {
+      var index = q.answers_index;
+      _.each(q.answers, function(a, i) {
+        answers_map[index + i] = {'question': q.question, 'answer': a};
+      });
+    });
 
     // process the answers
     var choices = _(questions).map(function(q, q_num) {
@@ -484,17 +493,20 @@ BALLOT.pretty_choices = function(election, ballot) {
         if (q.tally_type == "stv") {
             q_answers = answers[q_num][0];
         }
-
-	    return _(q_answers).map(function(ans) {
-	      var choice_text = questions[q_num].answers[ans];
-          if (_.contains(empty_ballot_choices, ans)) {
-            return questions[q_num].answers[ans].split(":")[0]; 
-          }
-          if (choice_text.indexOf(":") > -1) {
-            return choice_text.replace(":", ": ");
-          }
-          return choice_text;
-	    });
+        
+      var ret = [];
+      _(q_answers).each(function(ans, index) {
+        var choice = answers_map[ans];
+        var q_entry = _.filter(ret, function(q) { 
+          return q.question === choice.question
+        });
+        if (!q_entry[0]) {
+          ret.push({'question': choice.question, 'answers': [choice.answer]})
+        } else {
+          ret[ret.indexOf(q_entry[0])].answers.push(choice.answer);
+        }
+      });
+      return ret;
     });
 
     return choices;

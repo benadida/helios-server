@@ -16,7 +16,8 @@
 <div class="columns twelve">
   <div class="panel">
     {% for q in poll.questions_data %}
-    <h5>{{ q.question }} {% if q.question_subtitle %}({{ q.question_subtitle }}){% endif %}</h5>
+    <h5>{{ q.question|linebreaksbr }} 
+	<br />{% if q.question_subtitle %}({{ q.question_subtitle }}){% endif %}</h5>
     <ol>
       {% if q.answers_display %}
           {% for a in q.answers_display%}

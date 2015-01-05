@@ -179,6 +179,7 @@ def csv_from_polls(election, polls, outfile=None):
         for count, party in party_results['party_counts']:
             if party is None:
                 continue
+            party = party.replace("{newline}", " ")
             writerow([strforce(party), strforce(count)])
 
         writerow([])
@@ -272,6 +273,7 @@ def csv_from_score_polls(election, polls, outfile=None):
         writerow([])
         writerow(['ΒΑΘΜΟΛΟΓΙΚΗ ΚΑΤΑΤΑΞΗ'])
         for score, candidate in sorted(score_results['totals']):
+            candidate = candidate.replace("{newline}", " ")
             writerow([strforce(score), strforce(candidate)])
 
         writerow([])
@@ -280,6 +282,7 @@ def csv_from_score_polls(election, polls, outfile=None):
         pointlist.reverse()
         writerow(['ΥΠΟΨΗΦΙΟΣ', 'ΒΑΘΜΟΙ:'] + pointlist)
         for candidate, points in sorted(score_results['detailed'].iteritems()):
+            candidate = candidate.replace("{newline}", " ")
             writerow([strforce(candidate), ''] +
                      [strforce(points[p]) for p in pointlist])
 
@@ -298,6 +301,7 @@ def csv_from_score_polls(election, polls, outfile=None):
                 continue
             points = sorted(ballot['candidates'].iteritems())
             for candidate, score in points:
+                candidate = candidate.replace("{newline}", " ")
                 writerow([strforce(counter), strforce(candidate),
                           strforce(score), valid])
     try:

@@ -253,6 +253,22 @@ msgstr ""
 msgid "BACK_TO_BALLOT_CHOICES"
 msgstr "Back to ballot selections"
 
+#: templates/seal.html:22 templates/seal_score.html:21
+msgid "UP_TO"
+msgstr "up to"
+
+#: templates/seal.html:22 templates/seal_score.html:21
+msgid "CHOICES"
+msgstr "choices"
+
+#: templates/seal.html:22 templates/seal_score.html:21
+msgid "CHOICE"
+msgstr "choice"
+
+#: templates/seal.html:22 templates/seal_score.html:21
+msgid "EMPTY_PARTY_CHOICE"
+msgstr "No candidate chosen"
+
 #: templates/seal.html:31 templates/seal_score.html:30
 msgid "SUBMIT_BALLOT_PROMPT"
 msgstr " "

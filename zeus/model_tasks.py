@@ -203,17 +203,28 @@ class ElectionTasks(TaskModel):
         polls_data = []
 
         for poll in self.polls.filter():
-            polls_data.append((poll.name, poll.zeus.get_results()))
+            polls_data.append((poll.name,
+                               poll.zeus.get_results(), 
+                               poll.questions_data,
+                               poll.questions[0]['answers']))
 
         from zeus.results_report import build_doc
+        score = self.get_module().module_id == "score"
+        parties = self.get_module().module_id == "parties"
+
         build_doc(_(u'Results'), self.name, self.institution.name,
                   self.voting_starts_at, self.voting_ends_at,
-                  self.voting_extended_until, polls_data, pdfpath)
+                  self.voting_extended_until, polls_data, pdfpath,
+                  parties=parties, score=score)
 
-        from zeus.reports import csv_from_polls
+        from zeus.reports import csv_from_polls, csv_from_score_polls
         csvpath = self.get_results_file_path('csv')
         csvfile = file(self.get_results_file_path('csv'), "w")
-        csv_from_polls(self, self.polls.all(), csvfile)
+
+        _csv_gen = csv_from_polls
+        if score:
+            _csv_gen = csv_from_score_polls
+        _csv_gen(self, self.polls.all(), csvfile)
         csvfile.close()
 
         zippath = self.get_results_file_path('zip')

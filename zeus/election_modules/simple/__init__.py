@@ -87,7 +87,10 @@ class SimpleElection(ElectionModuleBase):
             prepend_empty_answer = True
 
         for index, q in enumerate(questions_data):
-            q_answers = ["%s: %s" % (q['question'], ans) for ans in \
+            question = q['question'].replace(":", "{semi}") \
+                                    .replace("\r\n","{newline}") \
+                                    .replace("\n","{newline}")
+            q_answers = ["%s: %s" % (question, ans) for ans in \
                          q['answers']]
             group = 0
             if prepend_empty_answer:
@@ -96,7 +99,7 @@ class SimpleElection(ElectionModuleBase):
                 if self.count_empty_question:
                     params_min = 0
                 params = "%d-%d, %d" % (params_min, params_max, group)
-                q_answers.insert(0, "%s: %s" % (q['question'], params))
+                q_answers.insert(0, "%s: %s" % (question, params))
             answers = answers + q_answers
         self.poll._init_questions(len(answers))
         self.poll.questions[0]['answers'] = answers

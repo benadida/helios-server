@@ -1185,7 +1185,9 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
                   self.election.institution.name,
                   self.election.voting_starts_at, self.election.voting_ends_at,
                   self.election.voting_extended_until,
-                  [(self.name, json.dumps(results_json))],
+                  [(self.name, json.dumps(results_json), 
+                    self.questions_data, 
+                    self.questions[0]['answers'])],
                   self.get_result_file_path('pdf', 'pdf'), score=True)
 
         from zeus.reports import csv_from_score_polls
@@ -1195,12 +1197,15 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
     else:
         from zeus.results_report import build_doc
         results_name = self.election.name
+        parties = self.get_module().module_id == 'parties'
         build_doc(_(u'Results'), self.election.name,
                   self.election.institution.name,
                   self.election.voting_starts_at, self.election.voting_ends_at,
                   self.election.voting_extended_until,
-                  [(self.name, json.dumps(results_json))],
-                  self.get_result_file_path('pdf', 'pdf'))
+                  [(self.name, json.dumps(results_json), 
+                    self.questions_data, 
+                    self.questions[0]['answers'])],
+                  self.get_result_file_path('pdf', 'pdf'), parties=parties)
 
         # CSV
         from zeus.reports import csv_from_polls

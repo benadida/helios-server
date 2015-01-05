@@ -6,7 +6,7 @@
 {#foreach $T.data as question}
 <!--<h5>Επιλογή υποψηφίων</h5>-->
 <div class="clearfix" id="question-{$T.question$index}">
-  <h5>{$T.question.question}</h5>
+  <h5>{show($T.question.question)}</h5>
     <p class="stv-description">
     </p>
     <ul class="stv-candidates stv-list">

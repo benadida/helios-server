@@ -394,11 +394,15 @@ BM.ScoreElection = function(election) {
     });
     return scores;
   });
-
+  
+  var answers_plain = _.map(answers, function(s) { return ''+ s});
   this.answers_indexes = _.map(this.data, function(q, i) {
     var _answers = {};
     _.each(q.answers, function(s) {
-      _answers[s] = _.indexOf(answers, q.question + ": " + s);
+      var question = q.question.replace(/\r\n/g, "{newline}");
+      question = question.replace(/\n/g, "{newline}");
+      question = question.replace(/:/g, "{semi}");
+      _answers[s] = _.indexOf(answers_plain, question + ": " + s);
     });
     return _answers;
   });
@@ -445,9 +449,9 @@ BM.ModuleBase,
   update_submit_value: function() {
     var choices = this.get_answer();
     if (choices.length == 0) {
-      this.el.submit.val("Blank vote");
+      this.el.submit.val(gettext("BLANK_BALLOT"));
     } else {
-      this.el.submit.val("Continue");
+      this.el.submit.val(gettext("BALLOT_CONTINUE_BUTTON"));
     }
     if (!this.all_scores_chosen() && this.get_answer().length > 0) {
       this.el.submit.addClass("disabled").removeClass("success");
@@ -559,7 +563,6 @@ BM.ModuleBase,
   },
 
   handle_choice_click: function(e) {
-    
     var score_el = $(e.target);
     if (score_el.prop("tagName") == "LABEL") {
       score_el = $(e.target).next();

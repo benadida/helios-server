@@ -1,4 +1,8 @@
 //first, checks if it isn't implemented yet
+function show(q) {
+  return $("<span>" + q +  "</span>").text().replace(/\n/g, "<br />");
+}
+
 if (!String.prototype.format) {
   String.prototype.format = function() {
     var args = arguments;
@@ -164,7 +168,7 @@ BOOTH.setup_election = function(raw_json) {
     if (BOOTH.election.election_module == "simple") {
       prepend = 1;
     }
-    data['answers'].unshift("Empty Party Choice");
+    data['answers'].unshift(gettext("EMPTY_PARTY_CHOICE"));
     if (!BOOTH.election.module_params.count_empty_question) { prepend = 0 }
     answers_index = parseInt(answers_index) + data['answers'].length + prepend;
   });

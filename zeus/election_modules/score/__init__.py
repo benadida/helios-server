@@ -100,9 +100,12 @@ class ScoreBallotElection(ElectionModuleBase):
             prepend_empty_answer = True
 
         for index, q in enumerate(questions_data):
+            question = q['question'].replace(":", "{semi}") \
+                                    .replace("\r\n","{newline}") \
+                                    .replace("\n","{newline}")
             q_answers = []
             for answer in q['answers']:
-                q_answers.append("%s: %s" % (q['question'], answer))
+                q_answers.append("%s: %s" % (question, answer))
             scores += map(lambda x: str(100 * index+int(x)), q['scores'])
             answers = answers + q_answers
 
@@ -119,10 +122,13 @@ class ScoreBallotElection(ElectionModuleBase):
 
         # save index references
         for index, q in enumerate(self.poll.questions_data):
+            question = q['question'].replace(":", "{semi}") \
+                                    .replace("\r\n","{newline}") \
+                                    .replace("\n","{newline}")
             q['answer_indexes'] = {}
             q['score_indexes'] = {}
             for answer in q['answers']:
-                q['answer_indexes'][answer] = poll_answers.index("%s: %s" % (q['question'], answer))
+                q['answer_indexes'][answer] = poll_answers.index("%s: %s" % (question, answer))
             for score in q['scores']:
                 q['score_indexes'][score] = poll_answers.index(str(100 * index+int(score)))
 

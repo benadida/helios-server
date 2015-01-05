@@ -256,6 +256,21 @@ msgstr ""
 msgid "BACK_TO_BALLOT_CHOICES"
 msgstr "Πίσω στις επιλογές ψηφοδελτίου"
 
+#: templates/seal.html:22 templates/seal_score.html:21
+msgid "UP_TO"
+msgstr "μέχρι"
+
+#: templates/seal.html:22 templates/seal_score.html:21
+msgid "CHOICES"
+msgstr "επιλογές"
+
+#: templates/seal.html:22 templates/seal_score.html:21
+msgid "CHOICE"
+msgstr "επιλογή"
+
+msgid "EMPTY_PARTY_CHOICE"
+msgstr "Χωρίς επιλογή υποψηφίου"
+
 #: templates/seal.html:31 templates/seal_score.html:30
 msgid "SUBMIT_BALLOT_PROMPT"
 msgstr " "

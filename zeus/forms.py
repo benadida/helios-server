@@ -206,7 +206,11 @@ class QuestionBaseForm(forms.Form):
         ('choice', _('Choice')),
     ))
     question = forms.CharField(label=_("Question"), max_length=255,
-                               required=True)
+                               required=True, 
+                               widget=forms.Textarea(attrs={
+                                'rows': 4,
+                                'class': 'textarea'
+                               }))
 
     def __init__(self, *args, **kwargs):
         super(QuestionBaseForm, self).__init__(*args, **kwargs)
