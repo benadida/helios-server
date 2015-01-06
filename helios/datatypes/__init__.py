@@ -186,7 +186,14 @@ class LDObject(object):
     
     def toDict(self, alternate_fields=None, complete=False):
         val = {}
-        for f in (alternate_fields or self.FIELDS):
+
+        fields = self.FIELDS
+
+        if not self.structured_fields:
+            if self.wrapped_obj.alias != None:
+                fields = self.ALIASED_VOTER_FIELDS
+
+        for f in (alternate_fields or fields):
             # is it a structured subfield?
             if self.structured_fields.has_key(f):
                 val[f] = recursiveToDict(self.structured_fields[f])
