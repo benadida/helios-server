@@ -43,6 +43,7 @@ ZEUS_MIXNET_NR_ROUNDS = 16
 
 ZEUS_ELECTION_STREAM_HANDLER = os.environ.get("ZEUS_TESTS_VERBOSE", False)
 
+EMAIL_SUBJECT_PREFIX = 'Zeus System Message: '
 
 def mkdir_p(path):
     try:

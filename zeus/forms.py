@@ -58,11 +58,6 @@ class ElectionForm(forms.ModelForm):
 
     formfield_callback = election_form_formfield_cb
 
-    #add in model and use modelform
-    #mail_lang = forms.ChoiceField(required=True,
-    #                              choices=choices,
-    #                              label=_("Mail Language"))
-                                  
     trustees = forms.CharField(label=_('Trustees'), required=False,
                                widget=forms.Textarea,
                                help_text=help.trustees)
@@ -133,6 +128,9 @@ class ElectionForm(forms.ModelForm):
                 if isinstance(widget, forms.CheckboxInput):
                     self.fields.get(field).widget.attrs['disabled'] = True
 
+        if not self.instance.frozen_at:
+            self.fields.pop('voting_extended_until')
+
     def clean(self):
         data = super(ElectionForm, self).clean()
         self.clean_voting_dates(data.get('voting_starts_at'),
@@ -153,6 +151,7 @@ class ElectionForm(forms.ModelForm):
                     self.cleaned_data[field] = getattr(self.instance, field)
 
         return data
+
     def clean_departments(self):
         deps = self.cleaned_data.get('departments')
         deps_arr = deps.split('\n')
@@ -164,12 +163,13 @@ class ElectionForm(forms.ModelForm):
                 cleaned_deps.append(item)
         cleaned_deps = '\n'.join(cleaned_deps)
         return cleaned_deps
-            
+
     def clean_voting_dates(self, starts, ends, extension):
-        if ends < datetime.now() and self.instance.feature_edit_voting_ends_at:
-            raise forms.ValidationError(_("Invalid voting end date"))
-        if starts >= ends:
-            raise forms.ValidationError(_("Invalid voting dates"))
+        if starts and ends:
+            if ends < datetime.now() and self.instance.feature_edit_voting_ends_at:
+                raise forms.ValidationError(_("Invalid voting end date"))
+            if starts >= ends:
+                raise forms.ValidationError(_("Invalid voting dates"))
         if extension and extension <= ends:
             raise forms.ValidationError(_("Invalid voting extension date"))
 
@@ -206,6 +206,10 @@ class ElectionForm(forms.ModelForm):
 
         if self.creating:
             saved.logger.info("Election created")
+            msg = "New election created"
+            subject = "New Zeus election"
+            saved.notify_admins(msg=msg, subject=subject)
+
         else:
             saved.logger.info("Election updated %r", self.changed_data)
             self.log_changed_fields(saved)

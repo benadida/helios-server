@@ -10,6 +10,7 @@ from datetime import timedelta
 
 from django.test import TransactionTestCase as TestCase
 from django.conf import settings
+from django.core import mail
 
 from helios import datatypes
 from helios.crypto.elgamal import DLog_challenge_generator
@@ -35,31 +36,39 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             "    \|_______|\|__| \|_|\n"
             )
 
+        conf = settings.ZEUS_TESTS_ELECTION_PARAMS
         # set the voters number that will be produced for test
-        self.voters_num = 2
+        self.voters_num = conf.get('NR_VOTERS', 2)
         # set the trustees number that will be produced for the test
-        trustees_num = 1
+        trustees_num = conf.get('NR_TRUSTEES', 2)
         trustees = "\n".join(",".join(['testName%x testSurname%x' % (x, x),
                    'test%x@mail.com' % x]) for x in range(0, trustees_num))
         # set the polls number that will be produced for the test
-        self.polls_number = 2
+        self.polls_number = conf.get('NR_POLLS', 2)
         # set the number of max questions for simple election
-        self.simple_election_max_questions_number = 2
+        self.simple_election_max_questions_number =\
+            conf.get('SIMPLE_MAX_NR_QUESTIONS', 2)
         # set the number of max answers for each question of simple election
-        self.simple_election_max_answers_number = 2
+        self.simple_election_max_answers_number =\
+            conf.get('SIMPLE_MAX_NR_ANSWERS', 2)
         # set the number of max answers in score election
-        self.score_election_max_answers = 3
+        self.score_election_max_answers =\
+            conf.get('SCORE_MAX_NR_ANSWERS', 2)
         # set the number of max questions in party election
-        self.party_election_max_questions_number = 2
+        self.party_election_max_questions_number =\
+            conf.get('PARTY_MAX_NR_QUESTIONS', 2)
         # set the number of max answers in party election
-        self.party_election_max_answers_number = 3
+        self.party_election_max_answers_number =\
+            conf.get('PARTY_MAX_NR_ANSWERS', 2)
         # set the number of max candidates in stv election
-        self.stv_election_max_answers_number = 3
+        self.stv_election_max_answers_number =\
+            conf.get('STV_MAX_NR_CANDIDATES', 2)
+
         start_date = datetime.datetime.now() + timedelta(hours=48)
         end_date = datetime.datetime.now() + timedelta(hours=56)
 
         self.election_form = {
-            'trial': True,
+            'trial': conf.get('trial', False),
             'name': 'test_election',
             'description': 'testing_election',
             'trustees': trustees,
@@ -69,7 +78,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             'voting_ends_at_1': end_date.strftime('%H:%M'),
             'help_email': 'test@test.com',
             'help_phone': 6988888888,
-            'communication_language': 'el',
+            'communication_language': conf.get('com_lang', 'en'),
             }
 
     def verbose(self, message):
@@ -81,6 +90,44 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         uuid = chunks[8]
         voter = Voter.objects.get(uuid=uuid)
         return voter
+
+    def election_form_with_wrong_dates(self):
+        self.election_form['election_module'] = self.election_type
+        # election number must be 0 before correct form submit
+        self.assertEqual(Election.objects.all().count(), 0)
+        self.c.post(self.locations['login'], self.login_data)
+
+        # no starting date
+        corrupted_form = self.election_form.copy()
+        corrupted_form['voting_starts_at_0'] = ""
+        r = self.c.post(self.locations['create'], corrupted_form, follow=True)
+        self.assertFormError(r, 'form', 'voting_starts_at',
+                             'This field is required.')
+        self.assertEqual(Election.objects.all().count(), 0)
+
+        # no ending date
+        corrupted_form = self.election_form.copy()
+        corrupted_form['voting_ends_at_0'] = ""
+        r = self.c.post(self.locations['create'], corrupted_form, follow=True)
+        self.assertFormError(r, 'form', 'voting_ends_at',
+                             'This field is required.')
+        self.assertEqual(Election.objects.all().count(), 0)
+
+        # corrupted starting date
+        corrupted_form = self.election_form.copy()
+        corrupted_form['voting_starts_at_0'] = "2014-12"
+        r = self.c.post(self.locations['create'], corrupted_form, follow=True)
+        self.assertFormError(r, 'form', 'voting_starts_at',
+                             'Wrong date or time format')
+        self.assertEqual(Election.objects.all().count(), 0)
+
+        # corrupted ending date
+        corrupted_form = self.election_form.copy()
+        corrupted_form['voting_ends_at_0'] = "2014-12"
+        r = self.c.post(self.locations['create'], corrupted_form, follow=True)
+        self.assertFormError(r, 'form', 'voting_ends_at',
+                             'Wrong date or time format')
+        self.assertEqual(Election.objects.all().count(), 0)
 
     def admin_can_submit_election_form(self):
         self.election_form['election_module'] = self.election_type
@@ -175,6 +222,31 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         if e.frozen_at:
             self.verbose('+ Election got frozen')
             return True
+
+    def extend_election_voting_end(self):
+        self.c.get(self.locations['logout'])
+        self.c.post(self.locations['login'], self.login_data)
+        r = self.c.get('/elections/{}/edit'.format(self.e_uuid),
+                       follow=True)
+        form = r.context['form']
+        data = form.initial
+        # need to split date and hours again for form
+        start = data['voting_starts_at']
+        end = data['voting_ends_at']
+        data['voting_starts_at_0'] = start.strftime('%Y-%m-%d')
+        data['voting_starts_at_1'] = start.strftime('%H:%M')
+        data['voting_ends_at_0'] = end.strftime('%Y-%m-%d')
+        data['voting_ends_at_1'] = end.strftime('%H:%M')
+
+        ext_date = datetime.datetime.now() + timedelta(hours=198)
+        data['voting_extended_until_0'] = ext_date.strftime('%Y-%m-%d')
+        data['voting_extended_until_1'] = ext_date.strftime('%H:%M')
+        r = self.c.post('/elections/{}/edit'.format(self.e_uuid),
+                        data,
+                        follow=True
+                        )
+        e = Election.objects.get(uuid=self.e_uuid)
+        self.assertNotEqual(e.voting_extended_until, None)
 
     def create_duplicate_polls(self):
         self.c.get(self.locations['logout'])
@@ -417,6 +489,10 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
     def close_election(self):
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
+        e = Election.objects.get(uuid=self.e_uuid)
+        e.voting_ends_at = datetime.datetime.now()
+        e.voting_extended_until = datetime.datetime.now()
+        e.save()
         self.c.post('/elections/%s/close' % self.e_uuid)
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_closed)
@@ -460,7 +536,6 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             self.assertTrue(len(p.result[0]) > 0)
             self.verbose('+ Results generated for poll %s' % p.name)
             self.assertIsNone(p.compute_results_error)
-        
 
     def check_docs_exist(self, ext_dict):
         e_exts = ext_dict['el']
@@ -576,10 +651,126 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 self.assertTrue(bool(file_name in files_in_zip))
             self.verbose('+ Zip in %s contains all docs' % lang[1])
 
-    def election_proccess(self):
+    def first_trustee_step_and_admin_mail(self):
+        trustees = Election.objects.get(uuid=self.e_uuid).trustees.all()
+        admins = settings.ADMINS
+        # 1 zeus trustee, does not get mail
+        # 1 mail to admins with all addresses
+        mail_num = len(trustees)
+        self.assertEqual(len(mail.outbox), mail_num)
+
+        for email in mail.outbox:
+            for admin in admins:
+                if admin[1] in email.to:
+                    prefix = settings.EMAIL_SUBJECT_PREFIX
+                    message = u'New Zeus election'
+                    self.assertEqual(email.subject, prefix+message)
+            for trustee in trustees:
+                if trustee.email in email.to[0]:
+                    self.assertTrue(u'step #1' in email.subject)
+        mail.outbox = []
+
+    def second_trustee_step_mail(self):
+        # admin did not get any mail yet
+        # trustees got mail for step 2
+        trustees = Election.objects.get(uuid=self.e_uuid).trustees.all()
+        mail_num = len(trustees) - 1
+        self.assertEqual(len(mail.outbox), mail_num)
+        for email in mail.outbox:
+            for trustee in trustees:
+                if trustee.email in email.to[0]:
+                    self.assertTrue(u'step #2' in email.subject)
+        mail.outbox = []
+
+    def admin_notified_for_freeze(self):
+        admins = settings.ADMINS
+        # 1 mail is sent with multiple addresses in mail.to
+        self.assertEqual(len(mail.outbox), 1)
+        for email in mail.outbox:
+            for admin in admins:
+                if admin[1] in email.to:
+                    prefix = settings.EMAIL_SUBJECT_PREFIX
+                    message = u'Election is frozen'
+                    self.assertEqual(email.subject, prefix+message)
+        mail.outbox = []
+
+    def admin_notified_for_extension(self):
+        admins = settings.ADMINS
+        # 1 mail is sent with multiple addresses in mail.to
+        self.assertEqual(len(mail.outbox), 1)
+        for email in mail.outbox:
+            for admin in admins:
+                if admin[1] in email.to:
+                    prefix = settings.EMAIL_SUBJECT_PREFIX
+                    message = u'Voting extension'
+                    self.assertEqual(email.subject, prefix+message)
+        mail.outbox = []
+
+    def voters_received_voting_receipt(self):
+        voters = Election.objects.get(uuid=self.e_uuid).voters.all()
+        self.assertEqual(len(mail.outbox), len(voters))
+        for email in mail.outbox:
+            for voter in voters:
+                if voter.voter_email in email.to[0]:
+                    self.assertTrue(u'vote cast' in email.subject)
+        mail.outbox = []
+
+    def emails_after_election_close(self):
+        # admin mails that must be sent:
+        # election closed - validate voting finished
+        # mixing finished - validate mixing finished - 4 in total
+        # mail to trustee for step 3
+        trustees = Election.objects.get(uuid=self.e_uuid).trustees.all()
+        admins = settings.ADMINS
+        # remove zeus trustee, does not get mail
+        mail_num = len(trustees) + 3  # -1 zeus trustee + 4 to admins
+        self.assertEqual(len(mail.outbox), mail_num)
+        admin_messages = [
+            'Election closed',
+            'Validate voting finished',
+            'Mixing finished',
+            'Validate mixing finished',
+            ]
+        prefix = settings.EMAIL_SUBJECT_PREFIX
+        admin_messages = [prefix + s for s in admin_messages]
+        for email in mail.outbox:
+            for admin in admins:
+                if admin[1] in email.to[0]:
+                    self.assertTrue(email.subject in admin_messages)
+            for trustee in trustees:
+                if trustee.email in email.to[0]:
+                    self.assertTrue(u'step #3' in email.subject)
+        mail.outbox = []
+
+    def decryption_and_result_admin_mails(self):
+        # at this step admins get emails for
+        # trustees partial decryptions finished
+        # decryption finished
+        # results computed - docs generated - 3 mails in total
+        admins = settings.ADMINS
+        mail_num = 3
+        self.assertEqual(len(mail.outbox), mail_num)
+        admin_messages = [
+            'Trustees partial decryptions finished',
+            'Decryption finished',
+            'Results computed - docs generated',
+            ]
+        prefix = settings.EMAIL_SUBJECT_PREFIX
+        admin_messages = [prefix + s for s in admin_messages]
+        for email in mail.outbox:
+            for admin in admins:
+                if admin[1] in email.to[0]:
+                    self.assertTrue(email.subject in admin_messages)
+        mail.outbox = []
+
+    def election_process(self):
+        self.election_form_with_wrong_dates()
         self.admin_can_submit_election_form()
+        self.first_trustee_step_and_admin_mail()
+        e = Election.objects.get(uuid=self.e_uuid)
         self.assertEqual(self.freeze_election(), None)
         pks = self.prepare_trustees(self.e_uuid)
+        self.second_trustee_step_mail()
         self.create_duplicate_polls()
         self.create_polls()
         self.submit_duplicate_id_voters_file()
@@ -590,22 +781,49 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertEqual(e.election_issues_before_freeze, [])
         self.assertTrue(self.freeze_election())
+        self.admin_notified_for_freeze()
         e = Election.objects.get(uuid=self.e_uuid)
         e.voting_starts_at = datetime.datetime.now()
         e.save()
         voters_urls = self.get_voters_urls()
+        self.extend_election_voting_end()
+        self.admin_notified_for_extension()
         self.submit_vote_for_each_voter(voters_urls)
+        self.voters_received_voting_receipt()
         self.close_election()
+        self.emails_after_election_close()
         self.voter_cannot_vote_after_close()
         e = Election.objects.get(uuid=self.e_uuid)
         self.assertTrue(e.feature_mixing_finished)
         self.decrypt_with_trustees(pks)
+        self.decryption_and_result_admin_mails()
         self.check_results()
         self.check_docs_exist(self.doc_exts)
         self.view_returns_result_files(self.doc_exts)
         self.zip_contains_files(self.doc_exts)
         if self.local_verbose:
             print self.celebration
+
+    def broken_mix_election_process(self):
+        self.admin_can_submit_election_form()
+        self.first_trustee_step_and_admin_mail()
+        e = Election.objects.get(uuid=self.e_uuid)
+        self.assertEqual(self.freeze_election(), None)
+        self.prepare_trustees(self.e_uuid)
+        self.second_trustee_step_mail()
+        self.create_polls()
+        self.submit_voters_file()
+        self.submit_questions()
+        e = Election.objects.get(uuid=self.e_uuid)
+        self.assertTrue(self.freeze_election())
+        self.admin_notified_for_freeze()
+        e = Election.objects.get(uuid=self.e_uuid)
+        e.voting_starts_at = datetime.datetime.now()
+        e.save()
+        voters_urls = self.get_voters_urls()
+        self.submit_vote_for_each_voter(voters_urls)
+        self.voters_received_voting_receipt()
+        self.close_election()
 
 
 class TestSimpleElection(TestElectionBase):
@@ -687,8 +905,34 @@ class TestSimpleElection(TestElectionBase):
             index += len(data['answers']) + 1
         return choices, max_choices
 
-    def test_election_proccess(self):
-        self.election_proccess()
+    def test_election_process(self):
+        self.election_process()
+
+    def test_broken_mix_election_process(self):
+
+        from zeus.model_tasks import poll_task, PollTasks
+        raised_error = 'Intended error'
+
+        @poll_task('mix', ('validate_voting_finished',), completed_cb=None)
+        def mix(self, remote=None):
+            raise Exception(raised_error)
+        orig = PollTasks.mix
+        PollTasks.mix = mix
+        self.broken_mix_election_process()
+        PollTasks.mix = orig
+        admins = settings.ADMINS
+        prefix = settings.EMAIL_SUBJECT_PREFIX
+        admin_messages = [
+            'Election closed',
+            'Validate voting finished',
+            'Task mix error, {}'.format(raised_error),
+            raised_error,
+            ]
+        admin_messages = [prefix + s for s in admin_messages]
+        for email in mail.outbox:
+            for admin in admins:
+                if admin[1] in email.to[0]:
+                    self.assertTrue(email.subject in admin_messages)
 
 
 class TestPartyElection(TestElectionBase):
@@ -774,8 +1018,8 @@ class TestPartyElection(TestElectionBase):
             header_index += len(data['answers']) + 1
         return choices, max_choices
 
-    def test_election_proccess(self):
-        self.election_proccess()
+    def test_election_process(self):
+        self.election_process()
 
 
 # used for creating score elections ballot
@@ -852,8 +1096,8 @@ class TestScoreElection(TestElectionBase):
             candidates_to_indexes, scores_to_indexes)
         return ballot_choices, max_ballot_choices
 
-    def test_election_proccess(self):
-        self.election_proccess()
+    def test_election_process(self):
+        self.election_process()
 
 
 class TestSTVElection(TestElectionBase):
@@ -920,5 +1164,5 @@ class TestSTVElection(TestElectionBase):
 
         return selection, nr_candidates
 
-    def test_election_proccess(self):
-        self.election_proccess()
+    def test_election_process(self):
+        self.election_process()

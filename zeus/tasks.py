@@ -149,7 +149,6 @@ def election_validate_create(election_id):
         if not poll.feature_can_validate_create:
             poll_validate_create.delay(poll.id)
 
-
 @task(ignore_result=True)
 def election_validate_voting(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
@@ -164,6 +163,9 @@ def poll_validate_voting(poll_id):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     poll.validate_voting()
     if poll.election.polls_feature_validate_voting_finished:
+        subject = "Validate voting finished"
+        msg = "Validate voting finished"
+        poll.election.notify_admins(msg=msg, subject=subject)
         election_mix.delay(poll.election.pk)
 
 
@@ -181,6 +183,9 @@ def poll_mix(poll_id):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     poll.mix()
     if poll.election.polls_feature_mix_finished:
+        subject = "Mixing finished"
+        msg = "Mixing finished"
+        poll.election.notify_admins(msg=msg, subject=subject)
         election_validate_mixing.delay(poll.election.pk)
 
 
@@ -198,6 +203,9 @@ def poll_validate_mixing(poll_id):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     poll.validate_mixing()
     if poll.election.polls_feature_validate_mixing_finished:
+        subject = "Validate mixing finished"
+        msg = "Validate mixing finished"
+        poll.election.notify_admins(msg=msg, subject=subject)
         election_zeus_partial_decrypt.delay(poll.election.pk)
 
 
@@ -223,9 +231,9 @@ def poll_zeus_partial_decrypt(poll_id):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     poll.zeus_partial_decrypt()
     if poll.election.trustees.filter().no_secret().count() == 0:
-	poll.partial_decrypt_started_at = datetime.datetime.now()
-	poll.partial_decrypt_finished_at = datetime.datetime.now()
-	poll.save()
+    	poll.partial_decrypt_started_at = datetime.datetime.now()
+        poll.partial_decrypt_finished_at = datetime.datetime.now()
+        poll.save()
     if poll.election.polls_feature_partial_decryptions_finished:
         election_decrypt.delay(poll.election.pk)
 
@@ -243,6 +251,9 @@ def poll_add_trustee_factors(poll_id, trustee_id, factors, proofs):
 def election_decrypt(election_id):
     election = Election.objects.select_for_update().get(pk=election_id)
     election.logger.info("Spawning decrypt poll tasks")
+    subject = "Trustees partial decryptions finished"
+    msg = "Trustees partial decryptions finished"
+    election.notify_admins(msg=msg, subject=subject)
     for poll in election.polls.all():
         if poll.feature_can_decrypt:
             poll_decrypt.delay(poll.pk)
@@ -253,6 +264,9 @@ def poll_decrypt(poll_id):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     poll.decrypt()
     if poll.election.polls_feature_decrypt_finished:
+        subject = "Decryption finished"
+        msg = "Decryption finished"
+        poll.election.notify_admins(msg=msg, subject=subject)
         election_compute_results.delay(poll.election.pk)
 
 
@@ -274,6 +288,10 @@ def poll_compute_results(poll_id):
         e.completed_at = datetime.datetime.now()
         e.save()
         e.compute_results()
+        subject = "Results computed - docs generated"
+        msg = "Results computed - docs generated"
+        e.notify_admins(msg=msg, subject=subject)
+
 
 
 @task(ignore_result=False)

@@ -32,7 +32,7 @@ from django.db import models, transaction
 from django.db.models.query import QuerySet
 from django.db.models import Count
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail, mail_admins
 from django.core.files import File
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import validate_email as django_validate_email
@@ -468,6 +468,9 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
         self.voting_ended_at = datetime.datetime.now()
         self.save()
         self.logger.info("Voting closed")
+        subject = "Election closed"
+        msg = "Election closed"
+        self.notify_admins(msg=msg, subject=subject)
 
     def freeze(self):
         for poll in self.polls.all():
@@ -552,7 +555,7 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
         for trustee in self.trustees.exclude(secret_key__isnull=False):
             if not trustee.last_notified_at or force:
                 trustee.send_url_via_mail()
-
+    
     _zeus = None
 
     @property
@@ -600,6 +603,24 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
                                                          pok.response])
         self.logger.info("Trustee %r PK updated", trustee.email)
 
+    def notify_admins(self, msg='', subject='', send_anyway=False):
+        """
+        Notify admins with email
+        """
+        if send_anyway or (not self.trial):
+            election_type = self.get_module().module_id
+            trustees = self.trustees.all()
+            context = {
+                'election': self,
+                'msg': msg,
+                'election_type': election_type,
+                'trustees': trustees,
+                'subject': subject,
+            }
+
+            body = render_to_string("email/admin_mail.txt", context)
+            subject = render_to_string("email/admin_mail_subject.txt", context)
+            mail_admins(subject.replace("\n", ""), body)
 
     def save(self, *args, **kwargs):
         if not self.uuid:
@@ -2030,6 +2051,7 @@ class Trustee(HeliosModel, TrusteeFeatures):
             self.last_notified_at = datetime.datetime.now()
             self.save()
 
+    
     @property
     def datatype(self):
         return self.election.datatype.replace('Election', 'Trustee')

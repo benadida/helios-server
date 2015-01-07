@@ -56,6 +56,10 @@ def add_or_update(request, election=None):
                 url = election_reverse(election, 'polls_list')
             else:
                 url = election_reverse(election, 'index')
+            if election.voting_extended_until:
+                subject = "Voting extension"
+                msg = "Voting end date extended"
+                election.notify_admins(msg=msg, subject=subject)
             return HttpResponseRedirect(url)
 
     context = {'election_form': election_form, 'election': election}
@@ -170,6 +174,9 @@ def freeze(request, election):
     # before the election view redirect.
     import time
     time.sleep(getattr(settings, 'ZEUS_ELECTION_FREEZE_DELAY', 4))
+    subject = "Election is frozen"
+    msg = "Election is frozen"
+    election.notify_admins(msg=msg, subject=subject)
 
     url = election_reverse(election, 'index')
     return HttpResponseRedirect(url)

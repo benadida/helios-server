@@ -1,0 +1,17 @@
+{% load i18n %}
+
+{% trans "System message" %}: {{msg}}
+
+{% trans "ELECTION INFO" %}
+**************************
+- Election name: {{ election.name }} 
+- Election description: {{election.description}}
+- Election type: {{election_type}}
+- Starting date: {{election.voting_starts_at}}
+- Ending date: {{election.voting_ends_at}}
+- Ending date with extension": {{election.voting_extended_until}}
+- Trustees:
+{% for trustee in trustees %}
+   * {{trustee.name}} {{trustee.email}}
+{% endfor %}
+
