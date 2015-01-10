@@ -17,8 +17,11 @@
         padding-bottom: 20px;
       }
       .simplepage {
-        padding: 40px;
-       }
+       padding: 40px;
+      }
+      .firstpage {
+        margin: -40px;
+      }
     </style>
 {% if settings.DEBUG %}  
   <script src="/static/foundation/js/vendor/custom.modernizr.js"></script>
@@ -83,7 +86,7 @@
 {% else %}
 {% if settings.SHOW_LOGIN_OPTIONS %}
                 <li class="active">
-                  <a href="/login">Log In</a>
+                  <a href="{% url helios_auth.views.index %}">Log In</a>
                 </li>
 {% endif %}
 {% endif %}
@@ -96,7 +99,9 @@
         <!--/.navbar-collapse -->
       </div>
     </div>
+<div class="simplepage">
       {% block content %}{% endblock %}
+</div>
     </div>
     <!-- /container -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">
