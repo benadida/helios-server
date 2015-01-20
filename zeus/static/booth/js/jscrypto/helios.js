@@ -592,7 +592,8 @@ HELIOS.EncryptedAnswer = Class.extend({
       var zero_one_plaintexts = UTILS.generate_plaintexts(pk, 0, 1);
     } else {
       var nchoices = question.answers.length;
-      plaintexts = zero_one_plaintexts = [UTILS.generate_stv_plaintext(answer[0], pk, nchoices, nchoices)];
+      var plt = UTILS.generate_stv_plaintext(answer[0], pk, nchoices, nchoices);
+      plaintexts = zero_one_plaintexts = [plt];
     }
     
     // keep track of whether we need to generate new randomness

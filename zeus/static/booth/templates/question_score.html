@@ -7,6 +7,11 @@
 <!--<h5>Επιλογή υποψηφίων</h5>-->
 <div class="clearfix" id="question-{$T.question$index}">
   <h5>{show($T.question.question)}</h5>
+  {#if $T.question.max_answers == $T.question.min_answers}
+  <span class="question-subtitle">{$T.question.max_answers} {#if $T.question.max_answers == 1}{gettext("choice")}{#else}{gettext("choices")}{#/if}</span>
+  {#else}
+  <span class="question-subtitle">{$T.question.min_answers} {gettext("to")} {$T.question.max_answers} {#if $T.question.max_answers == 1}{gettext("choice")}{#else}{gettext("choices")}{#/if}</span>
+  {#/if}
     <p class="stv-description">
     </p>
     <ul class="stv-candidates stv-list">

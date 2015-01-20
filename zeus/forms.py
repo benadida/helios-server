@@ -321,11 +321,11 @@ class ScoresForm(QuestionBaseForm):
                                        widget=forms.CheckboxSelectMultiple,
                                        choices=SCORES_CHOICES,
                                        label=_('Scores'))
-    
+
     scores.initial = (1, 2)
 
-    min_answers = forms.ChoiceField(label=_("Min answers"))
-    max_answers = forms.ChoiceField(label=_("Max answers"))
+    min_answers = forms.ChoiceField(label=_("Min answers"), required=True)
+    max_answers = forms.ChoiceField(label=_("Max answers"), required=True)
     def __init__(self, *args, **kwargs):
         super(ScoresForm, self).__init__(*args, **kwargs)
         if type(self.data) != dict:
@@ -346,9 +346,10 @@ class ScoresForm(QuestionBaseForm):
 
 
     def clean(self):
-        max_answers = int(self.cleaned_data.get('max_answers'))
-        min_answers = int(self.cleaned_data.get('min_answers'))
-        if min_answers > max_answers:
+        super(ScoresForm, self).clean()
+        max_answers = int(self.cleaned_data.get('max_answers', 0))
+        min_answers = int(self.cleaned_data.get('min_answers', 0))
+        if (min_answers and max_answers) and min_answers > max_answers:
             raise forms.ValidationError(_("Max answers should be greater "
                                           "or equal than min answers"))
         answer_list = []
@@ -365,7 +366,7 @@ class ScoresForm(QuestionBaseForm):
 
 
 class RequiredFormset(BaseFormSet):
-    
+
     def __init__(self, *args, **kwargs):
             super(RequiredFormset, self).__init__(*args, **kwargs)
             try:
