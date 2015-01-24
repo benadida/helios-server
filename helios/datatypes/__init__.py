@@ -187,7 +187,7 @@ class LDObject(object):
     def toDict(self, alternate_fields=None, complete=False):
         val = {}
 
-        fields = alternate_fields or self.FIELDS
+        fields = self.FIELDS
 
         if not self.structured_fields:
             if self.wrapped_obj.alias != None:
