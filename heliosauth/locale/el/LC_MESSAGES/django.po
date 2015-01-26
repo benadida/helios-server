@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-02 17:36+0300\n"
+"POT-Creation-Date: 2015-01-26 18:43+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,11 +33,9 @@ msgstr "Λάθος κωδικός"
 msgid "Passwords don't match"
 msgstr "Οι κωδικοί δεν ταιρίαζουν"
 
-#: auth_systems/password.py:48
 msgid "Username"
 msgstr "Όνομα χρήστη"
 
-#: auth_systems/password.py:49
 msgid "Password"
 msgstr "Κωδικός χρήστη"
 
