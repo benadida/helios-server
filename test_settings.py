@@ -14,6 +14,8 @@ DEBUG = False
 LANGUAGES = (('en', 'EN'), ('el', 'EL'))
 LANGUAGE_CODE = 'en'
 
+ZEUS_TESTS_ELECTION_PARAMS = {}
+
 if os.environ.get('ZEUS_TEST_DATABASE'):
     DATABASES = {
         'default': {
