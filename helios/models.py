@@ -254,6 +254,7 @@ _default_voting_ends_at = lambda: datetime.datetime.now() + timedelta(hours=12)
 
 
 class Election(ElectionTasks, HeliosModel, ElectionFeatures):
+    linked_polls = models.BooleanField(_('Linked polls'), default=False)
     election_module = models.CharField(_("Election type"), max_length=250,
                                          null=False,
                                          choices=ELECTION_MODULES_CHOICES,
