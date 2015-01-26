@@ -126,7 +126,7 @@ Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voter
 <td>
 {% if admin_p %}
 [<a href="{% url "helios.views.voters_email" election.uuid %}?voter_id={{voter.voter_login_id}}">email</a>]
-[<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url "helios.views.voter_delete" election.uuid, voter.uuid %}">x</a>]
+[<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url "helios.views.voter_delete" election.uuid voter.uuid %}">x</a>]
 {% endif %}
 <img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}</td>
 {% endif %}
