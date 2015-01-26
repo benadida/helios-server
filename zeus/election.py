@@ -3,6 +3,7 @@ import datetime
 import uuid
 import json
 import copy
+import re
 
 from django.utils.datastructures import SortedDict
 from django.utils.translation import ugettext_lazy as _
@@ -310,9 +311,10 @@ class ZeusDjangoElection(ZeusCoreElection):
 
     def do_get_candidates(self):
         try:
-            return self.poll.questions[0]['answers']
-        except:
-            return []
+            candidates = self.poll.questions[0]['answers']
+        except IndexError:
+            candidates = []
+        return candidates
 
     def _get_voter_object(self, voter_uuid):
         return self.poll.voters.get(uuid=voter_uuid)
@@ -546,7 +548,16 @@ class ZeusDjangoElection(ZeusCoreElection):
 
     def get_results(self):
         if self.poll.get_module().module_id == 'score':
-            return gamma_count_range(self.do_get_results(), self.do_get_candidates())
+            # last entry should be question min/max params
+            # catch untagged entries for backwards compatibility
+            candidates = self.do_get_candidates()
+            params = candidates[-1]
+            if not re.match(r"\d{1,}-\d{1,}", params):
+                params = "%d-%d" % (0, len(candidates))
+            else:
+                params = candidates.pop()
+
+            return gamma_count_range(self.do_get_results(), candidates, params)
 
         if self.poll.get_module().module_id == 'stv':
             # we expect cached stv results

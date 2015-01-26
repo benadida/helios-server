@@ -1857,13 +1857,14 @@ def combine_candidates_and_points(candidates, points):
       return candidates_and_points
 
 
-def gamma_count_range(encoded_list, candidates_and_points):
+def gamma_count_range(encoded_list, candidates_and_points, params):
     candidates, pointlist = range_split_candidates(candidates_and_points)
     stats = {}
     detailed = {}
     totals = {}
     ballots = []
 
+    min_choices, max_choices = map(int, params.strip().split("-"))
     max_encoded = gamma_encoding_max(len(candidates_and_points))
 
     for c in candidates:
@@ -1883,12 +1884,14 @@ def gamma_count_range(encoded_list, candidates_and_points):
         if not ballot['valid']:
             continue
 
-        ballot_scores = ballot['candidates']
+        # validate min/max choices
+        if ballot['valid']:
+            nr_choices = len(ballot['candidates'].keys())
+            if nr_choices != 0 and (nr_choices > max_choices or \
+                                    nr_choices < min_choices):
+                ballot['valid'] = False
 
-        # enforce exhaustion of all choices
-        if ballot_scores and len(ballot_scores) != len(pointlist):
-            ballot['valid'] = False
-            continue
+        ballot_scores = ballot['candidates']
 
         for candidate, points in ballot_scores.iteritems():
             assert candidate in candidates

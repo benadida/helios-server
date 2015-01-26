@@ -19,6 +19,7 @@ from django.utils.safestring import mark_safe
 from django.contrib.auth.hashers import check_password, make_password
 from django.forms.models import BaseModelFormSet
 from django.forms.widgets import Select, MultiWidget, DateInput, TextInput
+from django.forms.formsets import BaseFormSet
 
 from helios.models import Election, Poll, Trustee, Voter
 from heliosauth.models import User
@@ -313,7 +314,7 @@ class PartyForm(QuestionForm):
     question = forms.CharField(label=_("Party name"), max_length=255,
                                required=True)
 
-
+SCORES_DEFAULT_LEN = 2
 SCORES_CHOICES = [(x,x) for x in range(1, 10)]
 class ScoresForm(QuestionBaseForm):
     scores = forms.MultipleChoiceField(required=True,
@@ -321,7 +322,36 @@ class ScoresForm(QuestionBaseForm):
                                        choices=SCORES_CHOICES,
                                        label=_('Scores'))
 
+    scores.initial = (1, 2)
+
+    min_answers = forms.ChoiceField(label=_("Min answers"), required=True)
+    max_answers = forms.ChoiceField(label=_("Max answers"), required=True)
+    def __init__(self, *args, **kwargs):
+        super(ScoresForm, self).__init__(*args, **kwargs)
+        if type(self.data) != dict:
+            myDict = dict(self.data.iterlists())
+        else:
+            myDict = self.data
+
+        if 'form-0-scores' in myDict: 
+            self._scores_len = len(myDict['form-0-scores'])
+        elif 'scores' in self.initial:
+            self._scores_len = len(self.initial['scores'])
+        else:
+            self._scores_len = SCORES_DEFAULT_LEN
+        max_choices = map(lambda x: (x,x), range(1, self._scores_len + 1))
+        self.fields['max_answers'].choices = max_choices
+        self.fields['max_answers'].initial = self._scores_len
+        self.fields['min_answers'].choices = max_choices
+
+
     def clean(self):
+        super(ScoresForm, self).clean()
+        max_answers = int(self.cleaned_data.get('max_answers', 0))
+        min_answers = int(self.cleaned_data.get('min_answers', 0))
+        if (min_answers and max_answers) and min_answers > max_answers:
+            raise forms.ValidationError(_("Max answers should be greater "
+                                          "or equal than min answers"))
         answer_list = []
         for key in self.cleaned_data:
             if key.startswith('answer_'):
@@ -329,10 +359,20 @@ class ScoresForm(QuestionBaseForm):
         if len(answer_list) > len(set(answer_list)):
             raise forms.ValidationError(_("No duplicate choices allowed"))
         if 'scores' in self.cleaned_data:
-            if (len(answer_list) != len(self.cleaned_data['scores'])):
-                m = _("Number of scores must be equal to number of answers")
+            if (len(answer_list) < max_answers):
+                m = _("Number of answers must be equal or bigger than max answers")
                 raise forms.ValidationError(m)
         return self.cleaned_data
+
+
+class RequiredFormset(BaseFormSet):
+
+    def __init__(self, *args, **kwargs):
+            super(RequiredFormset, self).__init__(*args, **kwargs)
+            try:
+                self.forms[0].empty_permitted = False
+            except IndexError:
+                pass
 
 class CandidateWidget(MultiWidget):
 

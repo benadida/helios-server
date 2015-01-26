@@ -293,14 +293,16 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 self.create_questions()
             questions_location = '/elections/%s/polls/%s/questions/manage' % \
                 (self.e_uuid, p_uuid)
-            self.c.post(questions_location, duplicate_post_data)
+            resp = self.c.post(questions_location, duplicate_post_data)
+            self.assertTrue(resp.context['form'].errors)
             p = Poll.objects.get(uuid=p_uuid)
             self.assertEqual(p.questions_count, 0)
             self.verbose('- Duplicate answers were not allowed in poll %s'
                          % p.name)
-            self.c.post(questions_location, post_data)
+            resp = self.c.post(questions_location, post_data)
+            self.assertFalse(resp.context)
             p = Poll.objects.get(uuid=p_uuid)
-            self.assertTrue(p.questions_count == nr_questions)
+            self.assertEqual(p.questions_count, nr_questions)
         self.verbose('+ Questions were created')
 
     def submit_duplicate_id_voters_file(self):
@@ -1059,19 +1061,34 @@ class TestScoreElection(TestElectionBase):
         if self.local_verbose:
             print '* Starting score election *'
 
+    min_answers = None
+    max_answers = None
+    max_answers_limit = 9
+
     def create_questions(self):
         # var bellow is not used, should it?
         # max_nr_answers = self.score_election_max_answers
-        nr_answers = randint(1, 9)
+        nr_answers = randint(1, self.max_answers_limit)
         available_scores = [x for x in range(1, 10)]
         scores_list = sample(available_scores, nr_answers)
         scores_list.sort()
+
+        min_answers = len(scores_list)
+        max_answers = len(scores_list)
+
+        if self.min_answers is not None:
+            min_answers = self.min_answers
+        if self.max_answers is not None:
+            max_answers = self.max_answers
+
         post_data = {'form-TOTAL_FORMS': 1,
                      'form-INITIAL_FORMS': 1,
                      'form-MAX_NUM_FORMS': "",
                      'form-0-choice_type': 'choice',
                      'form-0-scores': scores_list,
                      'form-0-question': 'test_question',
+                     'form-0-max_answers': max_answers,
+                     'form-0-min_answers': min_answers
                      }
         post_data_with_duplicate_answers = post_data.copy()
         extra_data = {}

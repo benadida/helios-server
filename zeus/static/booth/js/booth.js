@@ -182,7 +182,7 @@ BOOTH.setup_election = function(raw_json) {
   BOOTH.election.hash = UTILS.election_hash_from_json(raw_json);
   BOOTH.election.election_hash = BOOTH.election.hash
   // async?
-  BOOTH.setup_workers(raw_json);
+  BOOTH.setup_workers(BOOTH.election.toJSON());
 
   document.title += ' - ' + BOOTH.election.full_name;
 

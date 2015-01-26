@@ -26,25 +26,24 @@ class ScoreBallotElection(ElectionModuleBase):
     csv_result = True
     pdf_result = False
 
-    module_params = {
-        'all_scores_required': True
-    }
+    module_params = {}
 
-    messages = {
-        'invalid_scores_selection': _('Please assign the remaining choices: {0}')
-    }
+    messages = {}
 
     def questions_update_view(self, request, election, poll):
         from zeus.utils import poll_reverse
-        from zeus.forms import ScoresForm, DEFAULT_ANSWERS_COUNT, \
+        from zeus.forms import ScoresForm, RequiredFormset, DEFAULT_ANSWERS_COUNT, \
                 MAX_QUESTIONS_LIMIT
 
         extra = 1
         if poll.questions_data:
             extra = 0
 
-        questions_formset = formset_factory(ScoresForm, extra=extra,
-                                            can_delete=True, can_order=True)
+        questions_formset = formset_factory(ScoresForm,
+                                            formset=RequiredFormset,
+                                            extra=extra,
+                                            can_delete=True,
+                                            can_order=True)
         if request.method == 'POST':
             formset = questions_formset(request.POST)
             if formset.is_valid():
@@ -68,7 +67,7 @@ class ScoreBallotElection(ElectionModuleBase):
                     for k in question.keys():
                         if k in ['DELETE', 'ORDER']:
                             del question[k]
-
+                    
                     questions_data.append(question)
 
                 poll.questions_data = questions_data
@@ -108,18 +107,28 @@ class ScoreBallotElection(ElectionModuleBase):
                                     .replace("\r\n","{newline}") \
                                     .replace("\n","{newline}")
             q_answers = []
+
             for answer in q['answers']:
                 q_answers.append("%s: %s" % (question, answer))
             scores += map(lambda x: str(100 * index+int(x)), q['scores'])
             answers = answers + q_answers
 
+        qdata = questions_data[0]
+        min, max = int(qdata['min_answers']), \
+            int(qdata['max_answers'])
+        params = "%d-%d" % (min, max)
+        answers.append("%s" % (params, ))
+
+
         poll_answers = []
         scores = reversed(scores)
-        for answer, score in izip_longest(answers, scores):
+        for answer, score in izip_longest(answers[:-1], scores):
             if answer is not None:
                 poll_answers.append(answer)
             if score is not None:
                 poll_answers.append(score)
+
+        poll_answers.append(answers[-1])
 
         self.poll._init_questions(len(poll_answers))
         self.poll.questions[0]['answers'] = poll_answers

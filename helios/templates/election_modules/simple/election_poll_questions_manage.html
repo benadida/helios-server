@@ -372,6 +372,34 @@ $(document).ready(function(){
   })
 
   var form = window.questions_form = new QuestionsForm("form.questions");
+
+  //script for score min/max choicefields
+  var max_field = "#id_form-0-max_answers";
+  var min_field = "#id_form-0-min_answers";
+  var nr_checked = $("input[name='form-0-scores']:checked").length;
+  $("input[name='form-0-scores']").change(function() {
+    if ($(this).prop("checked")){
+        nr_checked++;
+        ADD(nr_checked);
+    }
+    else {
+        REMOVE(nr_checked);
+        nr_checked--;
+    }
+    });
+
+function ADD(nr_checked){
+    $(max_field).append("<option value='"+nr_checked+"'>"+nr_checked+"</option>");
+
+    $(min_field).append("<option value='"+nr_checked+"'>"+nr_checked+"</option>");
+    }
+
+function REMOVE(nr_checked){
+    $(max_field).find("[value='"+nr_checked+"']").remove();
+    $(max_field).val(nr_checked-1);
+
+    $(min_field).find("[value='"+nr_checked+"']").remove();
+    }
 })
 </script>
 {% endblock %}
