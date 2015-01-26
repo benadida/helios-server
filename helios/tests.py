@@ -486,7 +486,7 @@ class ElectionBlackboxTests(WebTest):
                 "election_type" : "referendum",
                 "use_voter_aliases": "0",
                 "use_advanced_audit_features": "1",
-                "private_p" : "0"})
+                "private_p" : "False"})
 
         self.assertRedirects(response, "/auth/?return_url=/helios/elections/new")
     
@@ -527,7 +527,7 @@ class ElectionBlackboxTests(WebTest):
             "election_type" : "referendum",
             "use_voter_aliases": "0",
             "use_advanced_audit_features": "1",
-            "private_p" : "0"}
+            "private_p" : "False"}
 
         # override with the given
         full_election_params.update(election_params)
@@ -757,7 +757,7 @@ class ElectionBlackboxTests(WebTest):
 
     def test_do_complete_election_private(self):
         # private election
-        election_id, username, password = self._setup_complete_election({'private_p' : "1"})
+        election_id, username, password = self._setup_complete_election({'private_p' : "True"})
 
         # get the password_voter_login_form via the front page
         # (which will test that redirects are doing the right thing)
@@ -788,10 +788,10 @@ class ElectionBlackboxTests(WebTest):
                 "election_type" : "election",
                 "use_voter_aliases": "0",
                 "use_advanced_audit_features": "1",
-                "private_p" : "0"})
+                "private_p" : "False"})
 
         election_id = re.match("(.*)/elections/(.*)/view", response['Location']).group(2)
-        
+
         # update eligiblity
         response = self.client.post("/helios/elections/%s/voters/eligibility" % election_id, {
                 "csrf_token" : self.client.session['csrf_token'],
