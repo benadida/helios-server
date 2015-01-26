@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-10-02 17:36+0300\n"
+"POT-Creation-Date: 2015-01-05 17:06+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -183,10 +183,10 @@ msgid "Election initialized."
 msgstr "Η ψηφοφορία αρχικοποιήθηκε."
 
 msgid "Election candidates added."
-msgstr "Οι υποψήφιοι έχουν καταχωρηθεί."
+msgstr "Οι υποψήφιοι έχουν καταχωρισθεί."
 
 msgid "Election voters added."
-msgstr "Οι εκλέκτορες ψηφοφόροι έχουν καταχωρηθεί."
+msgstr "Οι εκλέκτορες ψηφοφόροι έχουν καταχωρισθεί."
 
 msgid "Trustees keys generated."
 msgstr "Οι Κωδικοί της ψηφοφορίας έχουν παραχθεί."
@@ -225,10 +225,18 @@ msgstr "ΟΧΙ"
 msgid "(EXCLUDED)"
 msgstr "(ΕΞΑΙΡΕΣΗ)"
 
+#: models.py:1184 models.py:1201
+#: templates/_election_poll_admin_actions.html:17
+#: templates/_election_view_menu.html:11 templates/election_polls_list.html:65
+msgid "Results"
+msgstr "Αποτελέσματα"
+
+#: models.py:1306
 msgid "There must be at least two fields, Registration ID and Email"
 msgstr ""
-"Πρέπει να υπάρχουν τουλάχιστον δύο πεδία, Αριθμός Καταχώρησης και Email"
+"Πρέπει να υπάρχουν τουλάχιστον δύο πεδία, Αριθμός Καταχώρισης και Email"
 
+#: models.py:1341
 #, python-format
 msgid "Malformed mobile phone number: %s"
 msgstr "Μη έγκυρος αριθμός τηλεφώνου: %s"
@@ -241,12 +249,15 @@ msgstr "Λανθασμένα στοιχεία ψηφοφόρου στην γρα
 msgid "Duplicate voter id : %s"
 msgstr "Διπλότυπο αναγνωριστικό χρήστη %s"
 
+#: models.py:2021
 msgid "Create trustee key"
 msgstr "Δημιουργία κωδικού ψηφοφορίας"
 
+#: models.py:2022
 msgid "Verify trustee key"
 msgstr "Επιβεβαίωση κωδικού ψηφοφορίας"
 
+#: models.py:2023
 msgid "Partially decrypt votes"
 msgstr "Μερική αποκρυπτογράφηση ψήφων"
 
@@ -292,6 +303,15 @@ msgstr "Ακύρωση ψηφοφορίας"
 msgid "Save results"
 msgstr "Αποθήκευση Αποτελεσμάτων"
 
+#: templates/_election_admin_actions.html:27
+msgid "Save results (PDF)"
+msgstr "Αποθήκευση αποτελεσμάτων (PDF)"
+
+#: templates/_election_admin_actions.html:33
+msgid "Save results (ZIP)"
+msgstr "Αποθήκευση αποτελσμάτων (ZIP)"
+
+#: templates/_election_extended_notice.html:5
 #, python-format
 msgid ""
 "\n"
@@ -466,7 +486,7 @@ msgid "Change password"
 msgstr "Αλλαγή κωδικού"
 
 msgid "Your new password was set."
-msgstr "Ο νέος κωδικός έχει καταχωρηθεί"
+msgstr "Ο νέος κωδικός έχει καταχωρισθεί"
 
 msgid "SAVE"
 msgstr "Αποθήκευση"
@@ -509,6 +529,7 @@ msgstr "Ελάχιστος αριθμός επιλογών"
 msgid "Max answers"
 msgstr "Μέγιστος αριθμός επιλογών"
 
+#: templates/election_poll_questions.html:44
 msgid "Manage questions"
 msgstr "Διαχείριση ερωτήσεων"
 
@@ -547,6 +568,32 @@ msgstr "Διαγραφή όλων των ψηφοφόρων"
 
 msgid "Filter"
 msgstr "Φίλτρο"
+
+#: templates/election_poll_voters_list.html:65
+#: templates/election_poll_voters_upload_confirm.html:24
+msgid "Registration ID"
+msgstr "Αριθμός Καταχώρισης"
+
+#: templates/election_poll_voters_list.html:66
+#: templates/election_poll_voters_upload_confirm.html:25
+msgid "Email"
+msgstr "Email"
+
+#: templates/election_poll_voters_list.html:67
+msgid "Surname , Given name , Middle name , Mobile phone"
+msgstr "Επώνυμο , Όνομα , Πατρώνυμο , Κινητό τηλ."
+
+#: templates/election_poll_voters_list.html:69
+msgid "Has voted"
+msgstr "Έχει ψηφίσει"
+
+#: templates/election_poll_voters_list.html:70
+msgid "Booth invitation sent at"
+msgstr "Αποστολή πρόσκλησης"
+
+#: templates/election_poll_voters_list.html:71
+msgid "Last visit"
+msgstr "Τελευταία είσοδος"
 
 #, python-format
 msgid ""
@@ -615,9 +662,9 @@ msgid ""
 "voters\n"
 "    using 1, 2, 3, ..., etc."
 msgstr ""
-"Αριθμός καταχώρησης. Κάθε τέτοιος αριθμός αντιστοιχεί σε μία ψήφο.\n"
+"Αριθμός καταχώρισης. Κάθε τέτοιος αριθμός αντιστοιχεί σε μία ψήφο.\n"
 "    Η αρίθμηση δεν απαιτείται να είναι σειριακή.\n"
-"    Εάν δεν έχετε αριθμούς καταχώρησης ή δεν θέλετε να τους "
+"    Εάν δεν έχετε αριθμούς καταχώρισης ή δεν θέλετε να τους "
 "χρησιμοποιήσετε,\n"
 "    απλά απαριθμήστε τους ψηφοφόρους με 1, 2, 3, ..., κ.ο.κ."
 
@@ -1222,8 +1269,8 @@ msgstr ""
 "https://zeus.grnet.gr/\n"
 "Ηλεκτρονικές Ψηφοφορίες «Ζευς»\n"
 
-msgid "demo account for"
-msgstr "δοκιμαστικός λογαριασμός"
+msgid "Demo account for"
+msgstr "Δοκιμαστικός λογαριασμός"
 
 msgid "Legitimate recipient:"
 msgstr "Νόμιμος παραλήπτης"
@@ -1320,6 +1367,45 @@ msgstr ""
 msgid "Home"
 msgstr "Αρχική"
 
+#: templates/i18n/en/zeus/_menu_partial.html:5
+#: templates/i18n/en/zeus/contact.html:11 templates/zeus/_menu_partial.html:9
+#: templates/zeus/contact.html:11
+msgid "Contact"
+msgstr "Επικοινωνία"
+
+#: templates/i18n/en/zeus/contact.html:13 templates/zeus/contact.html:13
+msgid ""
+"For questions and comments regarding the Zeus platform you may contact us at "
+"<a href=\"mailto:helpdesk@zeus.grnet.gr\">helpdesk@zeus.grnet.gr</a>.\n"
+"    <br /> \n"
+"    <br /> \n"
+"    <br /> \n"
+"\n"
+"    <cite>\n"
+"    Notice that if you are a voter and want to report an issue related to a "
+"running election you should get in contact with the corresponding election "
+"support group. \n"
+"    You can find contact details in the election page.\n"
+"    </cite>\n"
+"    </p>\n"
+"    "
+msgstr ""
+"Για σχόλια και απορίες σχετικά με την πλατφόρμα Ζεύς μπορείτε να \n"
+" επικοινωνήσετε στο \n"
+"<a href=\"mailto:helpdesk@zeus.grnet.gr\">helpdesk@zeus.grnet.gr</a>.\n"
+"    <br /> \n"
+"    <br /> \n"
+"    <br /> \n"
+"\n"
+"    <cite>\n"
+"    Σε περίπτωση που αντιμετωπίζετε πρόβλημα σχετικά με κάποια ψηφοφορία "
+"παρακαλούμε επικοινωνήστε με την υπεύθυνη ομάδα υποστήριξης της "
+"ψηφοφορίας.    Τα στοιχεία επικοινωνίας μπορείτε να τα βρείτε στην σελίδα "
+"της ψηφοφορίας.\n"
+"    </cite>\n"
+"    </p>\n"
+"    "
+
 msgid "FAQ"
 msgstr "Ερωτήσεις-Απαντήσεις"
 
@@ -1345,64 +1431,5 @@ msgstr ""
 msgid "Choose election"
 msgstr "Επιλογή ψηφοφορίας"
 
-#~ msgid "Users List"
-#~ msgstr "Λίστα Χρηστών"
-
-#~ msgid "Institutions List"
-#~ msgstr "Λίστα Ιδρυμάτων"
-
-#~ msgid "Delete"
-#~ msgstr "Διαγραφή"
-
-#~ msgid "previous"
-#~ msgstr "προηγούμενη"
-
-#~ msgid "Page"
-#~ msgstr "Σελίδα"
-
-#~ msgid "of"
-#~ msgstr "από"
-
-#~ msgid "next"
-#~ msgstr "επόμενη"
-
-#~ msgid "Delete Account"
-#~ msgstr "Διαγραφή λογαριασμού"
-
-#~ msgid "Surname , Given name , Middle name , Mobile phone"
-#~ msgstr "Επώνυμο , Όνομα , Πατρώνυμο , Κινητό τηλ."
-
-#~ msgid "Has voted"
-#~ msgstr "Έχει ψηφίσει"
-
-#~ msgid "Booth invitation sent at"
-#~ msgstr "Αποστολή πρόσκλησης"
-
-#~ msgid "Last visit"
-#~ msgstr "Τελευταία είσοδος"
-
-#, fuzzy
-#~ msgid "Election"
-#~ msgstr "Τύπος ψηφοφορίας"
-
-#~ msgid "Has department limit"
-#~ msgstr "Τα εσωτερικά μέλη ανά σχολή δεν μπορούν να υπερβαίνουν τα"
-
-#~ msgid "Communication language"
-#~ msgstr "Γλώσσα επικοινωνίας"
-
-#, fuzzy
-#~ msgid "Position"
-#~ msgstr "Ίδρυμα"
-
-#~ msgid "Departments for STV elections"
-#~ msgstr "Τμήματα για για εκλογές ταξινομικής ψήφου"
-
-#~ msgid "Fill if you chose STV election."
-#~ msgstr "Συμπληρώστε αν επιλέξατε εκλογές ταξινομικής ψήφου"
-
-#~ msgid "Yes"
-#~ msgstr "Ναι"
-
-#~ msgid "No"
-#~ msgstr "Όχι"
+msgid "Choose election"
+msgstr "Επιλογή ψηφοφορίας"

@@ -604,7 +604,7 @@ class ZeusDjangoElection(ZeusCoreElection):
         for count, party in results['party_counts']:
             if party is None:
                 continue
-
+                
             party_candidates = results['parties'][party]
             candidate_keys = filter(lambda x: isinstance(x, int),
                                     party_candidates.keys())
@@ -622,7 +622,7 @@ class ZeusDjangoElection(ZeusCoreElection):
                     candidate_counts[candidate] = candidate_count
 
             data = {
-                'name': party,
+                'name': party.replace("{newline}", "\n").replace("{semi}", ":"),
                 'total': count,
                 'candidates': candidate_counts
             }

@@ -51,15 +51,19 @@ msgstr "Μη έγκυρη λίστα μελών εφορευτικής επιτ�
 msgid "Choice"
 msgstr "Επιλογή"
 
+#: forms.py:208 election_modules/__init__.py:37
 msgid "Question"
 msgstr "Ερώτηση"
 
+#: forms.py:245
 msgid "Min answers"
 msgstr "Ελάχιστος αριθμός επιλογών"
 
+#: forms.py:246
 msgid "Max answers"
 msgstr "Μέγιστος αριθμός επιλογών"
 
+#: forms.py:264
 msgid "Max answers should be greater or equal to min answers"
 msgstr ""
 "Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
@@ -347,6 +351,10 @@ msgstr "Λήξη: %(date)s"
 msgid "Extension: %(date)s"
 msgstr "Παράταση: %(date)s"
 
+#: model_tasks.py:215
+msgid "Results"
+msgstr "Αποτελέσματα"
+
 #, python-format
 msgid "%(election_name)s - vote cast"
 msgstr "%(election_name)s - ψήφος ελήφθη"
@@ -365,7 +373,7 @@ msgstr ""
 "%(election_name)s\n"
 "%(poll_name)s\n"
 "\n"
-"H απόδειξη της καταχώρησης βρίσκεται συνημμένη στο παρόν μήνυμα.\n"
+"H απόδειξη της καταχώρισης βρίσκεται συνημμένη στο παρόν μήνυμα.\n"
 
 msgid "Registration ID"
 msgstr "Αριθμός Καταχώρησης"

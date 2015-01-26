@@ -578,11 +578,11 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
         return 'FINISHED'
 
     def reprove_trustee(self, trustee):
-        public_key = trustee.public_key
-        pok = trustee.pok
-        self.zeus.reprove_trustee(public_key.y, [pok.commitment,
-                                                         pok.challenge,
-                                                         pok.response])
+        # public_key = trustee.public_key
+        # pok = trustee.pok
+        # self.zeus.reprove_trustee(public_key.y, [pok.commitment,
+        #                                                  pok.challenge,
+        #                                                  pok.response])
         self.logger.info("Trustee %r PK reproved", trustee.email)
 
         trustee.last_verified_key_at = datetime.datetime.now()
@@ -1205,6 +1205,56 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
             'answer_selections': answer_selections,
             'candidates_selections': candidates_selections,
             'decoded_selections': decoded}
+
+  def get_result_file_path(self, name, ext):
+    election = self.short_name
+    return os.path.join(settings.MEDIA_ROOT, 'results', '%s-%s-results.%s' % \
+                        (election, name ,ext))
+
+  def generate_result_docs(self):
+    import json
+    results_json = self.zeus.get_results()
+
+    # json file
+    jsonfile = file(self.get_result_file_path('json', 'json'), 'w')
+    json.dump(results_json, jsonfile)
+    jsonfile.close()
+
+    # pdf report
+    if self.get_module().module_id =='score':
+        from zeus.results_report import build_doc
+        build_doc(_(u'Results'), self.election.name,
+                  self.election.institution.name,
+                  self.election.voting_starts_at, self.election.voting_ends_at,
+                  self.election.voting_extended_until,
+                  [(self.name, json.dumps(results_json), 
+                    self.questions_data, 
+                    self.questions[0]['answers'])],
+                  self.get_result_file_path('pdf', 'pdf'), score=True)
+
+        from zeus.reports import csv_from_score_polls
+        csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
+        csv_from_score_polls(self.election, [self], csvfile)
+        csvfile.close()
+    else:
+        from zeus.results_report import build_doc
+        results_name = self.election.name
+        parties = self.get_module().module_id == 'parties'
+        build_doc(_(u'Results'), self.election.name,
+                  self.election.institution.name,
+                  self.election.voting_starts_at, self.election.voting_ends_at,
+                  self.election.voting_extended_until,
+                  [(self.name, json.dumps(results_json), 
+                    self.questions_data, 
+                    self.questions[0]['answers'])],
+                  self.get_result_file_path('pdf', 'pdf'), parties=parties)
+
+        # CSV
+        from zeus.reports import csv_from_polls
+        csvfile = file(self.get_result_file_path('csv', 'csv'), "w")
+        csv_from_polls(self.election, [self], csvfile)
+        csvfile.close()
+
 
   def save(self, *args, **kwargs):
     if not self.uuid:

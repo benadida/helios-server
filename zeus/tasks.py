@@ -21,6 +21,7 @@ from django.db import transaction
 from zeus.core import from_canonical
 from zeus import mobile
 from zeus import utils
+from email.Utils import formataddr
 
 
 logger = logging.getLogger(__name__)
@@ -119,16 +120,15 @@ you can find your encrypted vote attached in this mail.
     'election_name': election.name,
     'poll_name': poll.name
 }
-    
-        # send it via the notification system associated with the auth system
-        attachments = [('vote.signature', signature['signature'], 'text/plain')]
-        to = "%s %s <%s>" % (voter.voter_name, voter.voter_surname,
-                             voter.voter_email)
-        message = EmailMessage(subject, body, settings.SERVER_EMAIL, [to])
-        for attachment in attachments:
-            message.attach(*attachment)
+    # send it via the notification system associated with the auth system
+    attachments = [('vote.signature', signature['signature'], 'text/plain')]
+    name = "%s %s" % (voter.voter_name, voter.voter_surname)
+    to = formataddr((name, voter.voter_email))
+    message = EmailMessage(subject, body, settings.SERVER_EMAIL, [to])
+    for attachment in attachments:
+        message.attach(*attachment)
 
-        message.send(fail_silently=False)
+    message.send(fail_silently=False)
 
 
 @poll_task(ignore_result=True)
@@ -297,11 +297,11 @@ def poll_compute_results(poll_id):
 @task(ignore_result=False)
 def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
                    dry=True):
-    voter = Voter.objects.get(pk=voter_id)
-    if not voter.voter_mobile:
+    voter = Voter.objects.select_related().get(pk=voter_id)
+    if not voter.voter_mobile and not override_mobile:
         raise Exception("Voter mobile field not set")
 
-    client = mobile.get_client()
+    client = mobile.get_client(voter.poll.election.uuid)
     message = ""
     context = Context({
         'voter': voter,
@@ -335,7 +335,7 @@ def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
         print "MESSAGE (%d) :" % len(message)
         print message
         print 10 * "-"
-        sent, error = True, "FAKE_ID"
+        sent, error_or_code = True, "FAKE_ID"
     else:
         # call to the API
         poll = voter.poll
@@ -359,6 +359,6 @@ def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
 
 
 @task(ignore_result=False)
-def check_sms_status(code):
-    client = mobile.get_client()
+def check_sms_status(code, election_uuid=None):
+    client = mobile.get_client(election_uuid)
     return client.status(code)

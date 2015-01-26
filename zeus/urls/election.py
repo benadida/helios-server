@@ -40,7 +40,6 @@ election_patterns = patterns('zeus.views.election',
     url(r'^stats$', 'public_stats',
         name="election_public_stats"),
 
-
     # adding trustees
     #(r'^/trustees/$', list_trustees),
     #(r'^/trustees/view$', list_trustees_view),

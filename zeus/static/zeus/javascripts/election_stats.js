@@ -1,8 +1,8 @@
 (function() {
 
-var ZeusStats = function(uuid) {
+var ZeusStats = function(uuid, url) {
   this.uuid = uuid || window.ELECTION || ELECTION;
-  this.url = '/elections/' + this.uuid + '/stats';
+  this.url = url || window.ELECTION_STATS_URL || ELECTION_STATS_URL;
   this.election_data = {};
   this.votes_data = [];
   this.data = {};
@@ -29,7 +29,7 @@ ZeusStats.prototype.update_stats = function() {
   var self = this;
   $.each(window.STATS, function(key, val){
     var graph_key = 'graph_' + key;
-    var entry = '<h6>'+val.title+'</h6><div id="'+graph_key+'"></div>'
+    var entry = '<h6>'+val.title+'</h6><div id="'+graph_key+'"></div>';
     var graph = val.graph(self.data, $(".election-public-stats").width(), 400);
 
     $(".stats").append(entry);
@@ -37,7 +37,7 @@ ZeusStats.prototype.update_stats = function() {
 
     if (val.css) {
       var css = $('<link rel="stylesheet" type="text/css" media="screen"' +
-          'href="/static/helios/phoebus/javascripts/stats/'+val.css+'" />')
+          'href="/static/zeus/javascripts/stats/'+val.css+'" />')
           $("head").append(css);
     }
   })

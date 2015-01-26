@@ -31,7 +31,6 @@ def get_poll_module(poll):
 class ElectionModuleBase(object):
 
     module_id =  None
-    
     pdf_result = True
     csv_result = True
     json_result = True
@@ -191,8 +190,44 @@ class ElectionModuleBase(object):
         
         all_docs_zip.close()
 
-    def generate_result_docs(self):
-        raise NotImplemented
+    def generate_result_docs(self, lang):
+        from zeus.results_report import build_doc
+        results_name = self.election.name
+        score = self.election.election_module == "score"
+        parties = self.election.election_module == "parties"
+        poll = self.poll
+        build_doc(_(u'Results'), self.election.name,
+                      self.election.institution.name,
+                      self.election.voting_starts_at, self.election.voting_ends_at,
+                      self.election.voting_extended_until,
+                      [(poll.name, 
+                        poll.zeus.get_results(),
+                        poll.questions_data,
+                        poll.questions[0]['answers'])],
+                      lang,
+                      self.get_poll_result_file_path('pdf', 'pdf', lang[0]),
+                      score=score, parties=parties)
+    
+    def generate_election_result_docs(self, lang):
+        from zeus.results_report import build_doc
+        pdfpath = self.get_election_result_file_path('pdf', 'pdf', lang[0])
+        polls_data = []
+        score = self.election.election_module == "score"
+        parties = self.election.election_module == "parties"
+
+        for poll in self.election.polls.filter():
+            polls_data.append((poll.name, 
+                               poll.zeus.get_results(),
+                               poll.questions_data,
+                               poll.questions[0]['answers']))
+
+        build_doc(_(u'Results'), self.election.name, self.election.institution.name,
+                self.election.voting_starts_at, self.election.voting_ends_at,
+                self.election.voting_extended_until,
+                polls_data,
+                lang,
+                pdfpath, score=score, parties=score)
+
 
 from zeus.election_modules.simple import *
 from zeus.election_modules.parties import *

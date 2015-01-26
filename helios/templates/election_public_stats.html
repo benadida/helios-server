@@ -2,10 +2,13 @@
   var ELECTION = '{{ election.uuid }}';
 
   $(document).ready(function(){
+    {% if election %}
     if (window.ELECTION) {
-      var client = new ZeusStats(window.ELECTION);
+      window.ELECTION_STATS_URL = "{% url election_public_stats election.uuid %}";
+      var client = new ZeusStats(window.ELECTION, "{% url election_public_stats election.uuid %}");
       client.load();
     }
+   {% endif %}
   });
 
 </script>

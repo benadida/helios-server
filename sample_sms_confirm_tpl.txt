@@ -1,0 +1,2 @@
+ZEUS ELECTION {{ election.name|truncatechars:10 }}: VOTER WITH REG CODE {{ voter.voter_login_id }}
+{% if voter.voted %}VOTED {{ voter.cast_votes.count }} TIMES. LAST VOTE AT {{ voter.last_cast_vote.cast_at|date:"d/n/Y H:i:s" }}{% else %}NO VOTE CAST{% endif %}

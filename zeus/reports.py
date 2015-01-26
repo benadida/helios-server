@@ -186,6 +186,7 @@ def csv_from_polls(election, polls, lang, outfile=None):
             for count, party in party_results['party_counts']:
                 if party is None:
                     continue
+                party = party.replace("{newline}", " ")
                 writerow([strforce(party), strforce(count)])
 
             writerow([])
@@ -359,6 +360,7 @@ def csv_from_score_polls(election, polls, lang, outfile=None):
             writerow([])
             writerow([strforce(_('RANKING'))])
             for score, candidate in sorted(score_results['totals']):
+                candidate = candidate.replace("{newline}", " ")
                 writerow([strforce(score), strforce(candidate)])
 
             writerow([])
@@ -386,6 +388,7 @@ def csv_from_score_polls(election, polls, lang, outfile=None):
                     continue
                 points = sorted(ballot['candidates'].iteritems())
                 for candidate, score in points:
+                    candidate = candidate.replace("{newline}", " ")
                     writerow([strforce(counter), strforce(candidate),
                             strforce(score), valid])
         try:
@@ -393,4 +396,3 @@ def csv_from_score_polls(election, polls, lang, outfile=None):
             return outfile.read()
         except:
             return None
-

@@ -4,6 +4,10 @@ import urllib
 import urlparse
 
 from xml.etree import ElementTree as etree
+from xml.sax.saxutils import escape, quoteattr
+
+escape_dict = {
+}
 
 
 def Element(tag, text=None, *args, **kwargs):
@@ -20,7 +24,7 @@ class Loco(object):
 
     STATUS_MAP = {
         '0': 'Message in queue',
-        '1': 'Message Send (but still not knowing if delivered)',
+        '1': 'Message Send (delivery status unknown)',
         '2': 'Message Failed',
         '3': 'Message Delivered to Terminal',
         '4': 'Not sent'
@@ -35,7 +39,9 @@ class Loco(object):
         msg = Element("msg")
         msg.append(Element("username", self.user))
         msg.append(Element("password", self.password))
-        msg.append(Element("text", message.decode('utf8')))
+        message = message.decode("utf8")
+        message = escape(message, escape_dict)
+        msg.append(Element("text", message))
         msg.append(Element("totalfields", str(len(fields.keys()))))
 
         recipient = Element("recipient")
@@ -52,23 +58,26 @@ class Loco(object):
             'u': self.user,
             'p': self.password,
             'ta': 'ds',
-            'slid': msgid
+            'slid': msgid,
         }
+	
         post_data = urllib.urlencode(params)
         http_response = urllib.urlopen(self.report_apiurl, data=post_data)
-        status_code = http_response.read().strip()
+        resp = http_response.read()
+        status_code = resp.strip()
         return self.STATUS_MAP.get(status_code)
 
     def send(self, mobile, msg, fields={}, uid=None):
         if not uid:
             uid = unicode(uuid.uuid4())
-
+        
         msg = self._cosntruct(uid, mobile, msg, fields)
         _msg = etree.tostring(msg)
         http_response = urllib.urlopen(self.apiurl, data=_msg)
         self._last_uid = uid
         try:
-            response = etree.fromstring(http_response.read())
+	    resp = http_response.read()
+            response = etree.fromstring(resp)
             status = response.find("status").text
             if status not in ['OK', 'FAIL']:
                 return False, "Invalid response status %s" % status
@@ -76,6 +85,5 @@ class Loco(object):
                 return True, response.find("smsid").text
             else:
                 return False, response.find("reason").text
-            status = response.find("status").text
         except etree.ParseError:
             return False, "Cannot parse response"

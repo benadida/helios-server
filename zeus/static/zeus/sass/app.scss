@@ -240,6 +240,20 @@ body {
   .panel.confirm-vote {
     padding-top: 0;
     padding-bottom: 0;
+     
+    h6 {
+      margin-bottom: 10px;
+    }
+    .question {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .answer {
+      display: block;
+      font-style: italic;
+      color: #2a2;
+    }
   }
 
   .row.labels {

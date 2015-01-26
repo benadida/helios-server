@@ -243,7 +243,11 @@ class QuestionBaseForm(forms.Form):
         ('choice', _('Choice')),
     ))
     question = forms.CharField(label=_("Question"), max_length=255,
-                               required=True)
+                               required=True, 
+                               widget=forms.Textarea(attrs={
+                                'rows': 4,
+                                'class': 'textarea'
+                               }))
 
     def __init__(self, *args, **kwargs):
         super(QuestionBaseForm, self).__init__(*args, **kwargs)
@@ -268,6 +272,10 @@ class QuestionBaseForm(forms.Form):
             self.fields[field_key].widget.attrs = {'class': 'answer_input'}
 
         self._answers = answers
+
+    def clean_question(self):
+        q = self.cleaned_data.get('question', '')
+        return q.replace(": ", ":\t")
 
 
 class QuestionForm(QuestionBaseForm):
@@ -545,7 +553,7 @@ SEND_TO_CHOICES = [
 class EmailVotersForm(forms.Form):
     subject = forms.CharField(label=_('Email subject'), max_length=80,
                               required=False)
-    body = forms.CharField(label=_('Email body'), max_length=2000,
+    body = forms.CharField(label=_('In place of BODY'), max_length=30000,
                            widget=forms.Textarea, required=False)
     send_to = forms.ChoiceField(label=_("Send To"), initial="all",
                                 choices=SEND_TO_CHOICES)

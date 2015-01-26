@@ -26,7 +26,7 @@
 <a href="{% url election_pdf_results election.uuid election.short_name LANGUAGE_CODE %}">{% trans "Save results" %} (PDF)</a>
 <br /><br />
 {% comment %}
-<a href="{% url election_csv_results election.uuid election.short_name LANGUAGE_CODE%}">Save results (CSV)</a>
+<a href="{% url election_csv_results election.uuid election.short_name LANGUAGE_CODE%}">{% trans "Save results" %} (CSV)</a>
 <br /><br />
 {% endcomment %}
 <a href="{% url election_zip_results election.uuid election.short_name LANGUAGE_CODE%}">

@@ -1,9 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import copy
 import json
 import os
 import datetime
+try:
+    from django.utils.translation import ugettext as _
+except ImportError:
+    def _(x):
+        return x
 
 from xml.sax.saxutils import escape
 
@@ -43,11 +49,58 @@ pdfmetrics.registerFont(linlibertineb)
 
 ZEUS_LOGO = os.path.join(os.path.abspath(os.path.dirname(__file__)),
                          'logo-positive.jpg')
-def load_results(data):
+
+def load_results(data, repr_data, qdata):
+    qdata = copy.deepcopy(qdata)
     parties_results = []
     candidates_results = {}
     total_votes = 0
     blank_votes = 0
+    parties_indexes = {}
+    candidates_indexes = {}
+
+    index = 0
+    for qi, q in enumerate(repr_data):
+        parties_indexes[index] = q['question']
+        qdata[index] = qdata[index].split(PARTY_SEPARATOR, 1)[0]
+        index = index + 1
+        for ai, a in enumerate(q['answers']):
+            candidates_indexes[index] = a
+            index = index + 1
+
+    if isinstance(data, basestring):
+        jsondata = json.loads(data)
+    else:
+        jsondata = data
+    for result, party in jsondata['party_counts']:
+        party = parties_indexes[qdata.index(party)]
+        parties_results.append((party, result))
+        total_votes += result
+
+    blank_votes = jsondata['blank_count']
+    total_votes = jsondata['ballot_count']
+
+    for candidate_result in jsondata['candidate_counts']:
+        (result, full_candidate) = candidate_result
+        (party, candidate) = full_candidate.split(PARTY_SEPARATOR, 1)
+        party = parties_indexes[qdata.index(party)]
+        candidate = candidates_indexes[qdata.index(full_candidate)]
+
+        if party in candidates_results:
+            candidates_results[party].append((candidate, result))
+        else:
+            candidates_results[party] = [(candidate, result)]
+    return (total_votes, blank_votes, parties_results, candidates_results)
+
+
+def load_parties_results(data, repr_data, qdata):
+    qdata = copy.deepcopy(qdata)
+    parties_results = []
+    candidates_results = {}
+    total_votes = 0
+    blank_votes = 0
+    parties_indexes = {}
+    candidates_indexes = {}
     if isinstance(data, basestring):
         jsondata = json.loads(data)
     else:
@@ -59,14 +112,41 @@ def load_results(data):
     blank_votes = jsondata['blank_count']
     total_votes += blank_votes
 
+    index = 0
+    for qi, q in enumerate(repr_data):
+        parties_indexes[index] = q['question']
+        qdata[index] = qdata[index].split(PARTY_SEPARATOR, 1)[0]
+        index = index + 1
+        for ai, a in enumerate(q['answers']):
+            candidates_indexes[index] = a
+            index = index + 1
+
     for candidate_result in jsondata['candidate_counts']:
         (result, full_candidate) = candidate_result
         (party, candidate) = full_candidate.split(PARTY_SEPARATOR, 1)
+        party = parties_indexes[qdata.index(party)]
+        candidate = candidates_indexes[qdata.index(full_candidate)]
         if party in candidates_results:
             candidates_results[party].append((candidate, result))
         else:
             candidates_results[party] = [(candidate, result)]
     return (total_votes, blank_votes, parties_results, candidates_results)
+
+
+def load_score_results(data, repr_data, qdata):
+    parties_results = []
+    candidates_results = {}
+    if isinstance(data, basestring):
+        jsondata = json.loads(data)
+    else:
+        jsondata = data
+
+    parties_results = [('', len(jsondata['ballots']))]
+    total_votes = len(jsondata['ballots'])
+    blank_votes = len([b for b in jsondata['ballots'] if not b['candidates']])
+    candidates_results = {'': [(c.replace("{newline}", " "), t) for t, c in jsondata['totals']]} 
+    return (total_votes, blank_votes, parties_results, candidates_results)
+
 
 def make_first_page_hf(canvas, doc):
     canvas.saveState()
@@ -85,7 +165,7 @@ def make_later_pages_hf(canvas, doc):
                      y = PAGE_HEIGHT - 2 * cm,
                      width = PAGE_WIDTH / 8,
                      height = 1.1 * cm)
-    canvas.drawString(PAGE_WIDTH - 7 * cm, PAGE_HEIGHT - 2 * cm,
+    canvas.drawString(PAGE_WIDTH - 9 * cm, PAGE_HEIGHT - 2 * cm,
                       "%s" % (pageinfo, ))
     canvas.restoreState()
 
@@ -188,10 +268,8 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
             extended_until
         ]
 
-
         make_heading(elements, styles, [title, name, institution_name])
         make_intro(elements, styles, intro_contents)
-
 
         for poll_name, poll_results, questions in data:
             poll_intro_contents = [
@@ -271,7 +349,7 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
 
 def build_doc(title, name, institution_name, voting_start, voting_end,
               extended_until, data, language, filename="election_results.pdf",
-              new_page=True):
+              new_page=True, score=False, parties=False):
     with translation.override(language[0]):
         title = _('Results')
         DATE_FMT = "%d/%m/%Y %H:%S"
@@ -325,19 +403,25 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
             extended_until
         ]
 
-
         make_heading(elements, styles, [title, name, institution_name])
         make_intro(elements, styles, intro_contents)
 
-        for poll_name, poll_results in data:
+        for poll_name, poll_results, q_repr_data, qdata in data:
             poll_intro_contents = [
                 poll_name
             ]
             parties_results = []
             candidates_results = {}
 
+            load_results_fn = load_results
+            if score:
+                load_results_fn = load_score_results
+            if parties:
+                load_results_fn = load_parties_results
+
             total_votes, blank_votes, parties_results, candidates_results = \
-                load_results(poll_results)
+                load_results_fn(poll_results, q_repr_data, qdata)
+
             if new_page:
                 elements.append(PageBreak())
             elements.append(Spacer(1, 12))

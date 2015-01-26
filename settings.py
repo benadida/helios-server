@@ -73,6 +73,7 @@ TEMPLATE_LOADERS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'zeus.middleware.ForceDefaultLanguageMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -268,9 +269,19 @@ LOGGING = {
 }
 
 
+# default sms credentials
 ZEUS_SMS_API_USERNAME = ""
 ZEUS_SMS_API_PASSWORD = ""
 ZEUS_SMS_API_SENDER = "ZEUS"
+
+# per election uuid sms api credentials
+# '<election-uuid>': {
+#   'username': '<username>',
+#   'password': '<password>',
+#   'sender': '<sender>'
+# }
+ZEUS_SMS_API_CREDENTIALS = {}
+
 
 DEMO_MAX_ELECTIONS = 5
 DEMO_MAX_VOTERS = 5

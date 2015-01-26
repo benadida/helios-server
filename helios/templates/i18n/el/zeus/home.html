@@ -17,24 +17,8 @@
 
 {% block content %}
 <div class="row">
-  <div class="columns twelve">
-    <h3>Ψηφοφορίες «Ζευς»</h3>
-    <p>Διεξάγετε ψηφοφορίες με μία ή περισσότερες κάλπες, με αξιοπιστία που
-       πιστοποιείται μαθηματικά. Υποστηρίζονται πολλαπλά είδη ψηφοδελτίων
-       και εκλογικών συστημάτων, όπως ερωτήσεις πολλαπλών επιλογών,
-       ψηφοφορίες με διαφορετικό ψηφοδέλτιο ανά συνδυασμό,
-       και ψηφοδέλτια για ταξινομική ψήφο (STV).
-       Το «Ζευς» αρχικά βασίστηκε στο <a href="http://heliosvoting.org">Helios</a>,
-       και διατηρεί τη γενική προσέγγιση, αλλά έχει έκτοτε ακολουθήσει τη δική
-       του πορεία.
-       Έχει εξυπηρετήσει πάνω από 250 ηλεκτρονικές κάλπες και 35000 ψηφοφόρους
-       για τα Ελληνικά Πανεπιστήμια και άλλους φορείς.</p>
-  </div>
-</div>
-
-<div class="row">
 <div class="columns five">
-  <h5><a href="{{settings.URL_HOST}}{% url login %}">Είσοδος για χειριστές ψηφοφοριών</a></h5>
+  <h5><a href="{{settings.URL_HOST}}{% url login %}">Είσοδος για χειριστές</a></h5>
   <h5><a href="{{settings.URL_HOST}}{% url voter_login %}">Είσοδος για ψηφοφόρους</a></h5>
 </div>
 <div class="columns five">
@@ -43,15 +27,16 @@
      τα στοιχεία ενός δοκιμαστικού λογαριασμού.</p>
   <form class="prettyform" method="post"
           action="{{settings.URL_HOST}}{% url site_demo %}">
-    Διεύθυνση email: <input type="text" value="" name="email"/>
+    Your email address: <input type="text" value="" name="email"/>
     <input class="button" type="submit" value="Δημιουργία δοκιμαστικού λογαριασμού" />
   </form>
 </div>
-</div>
+{% endblock %}
 
-<hr/>
+{% block content %}
 <div class="row">
 <div class="columns twelve">
+
   
   <ul class="disc">
     <li> <a href="#general">Γενικά</a></li>

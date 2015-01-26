@@ -245,6 +245,24 @@ def start_mixing(request, election):
 
 
 @auth.election_admin_required
+@auth.requires_election_features('completed')
+@require_http_methods(["GET"])
+def public_stats(request, election):
+    stats = {}
+    stats['election'] = list(reports.election_report([election], True, True))
+    stats['votes'] = list(reports.election_votes_report([election], True, True))
+    stats['results'] = list(reports.election_results_report([election]))
+
+    def handler(obj):
+        if hasattr(obj, 'isoformat'):
+            return obj.isoformat()
+        raise TypeError
+
+    return HttpResponse(json.dumps(stats, default=handler),
+                        mimetype="application/json")
+
+
+@auth.election_admin_required
 @auth.election_view()
 @require_http_methods(["GET"])
 def report(request, election, format):

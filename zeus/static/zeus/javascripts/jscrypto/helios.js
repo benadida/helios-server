@@ -34,36 +34,45 @@ UTILS.strbin_to_int = function(st) {
   return s;
 }
 
-UTILS.hash_to_commitment_and_challenge = function(alpha, beta) {
-  var ha, hb, commitment, challenge, and;
+//UTILS.hash_to_commitment_and_challenge = function(alpha, beta) {
+  //var ha, hb, commitment, challenge, and;
   
-  ha = UTILS.strbin_to_int(str_sha256("0x" + alpha.toString(16) + "L"));
-  hb = UTILS.strbin_to_int(str_sha256("0x" + beta.toString(16) + "L"));
+  //ha = UTILS.strbin_to_int(str_sha256("0x" + alpha.toString(16) + "L"));
+  //hb = UTILS.strbin_to_int(str_sha256("0x" + beta.toString(16) + "L"));
 
-  twopower = (new BigInt('2', 10)).pow(256).subtract(BigInt.ONE);
-  commitment = ha.shiftRight(128).or(hb.shiftLeft(128).and(twopower));
-  challenge = hb.shiftRight(128).or(ha.shiftLeft(128).and(twopower));
-  return {'commitment': commitment, 'challenge': challenge};
-}
+  //twopower = (new BigInt('2', 10)).pow(256).subtract(BigInt.ONE);
+  //commitment = ha.shiftRight(128).or(hb.shiftLeft(128).and(twopower));
+  //challenge = hb.shiftRight(128).or(ha.shiftLeft(128).and(twopower));
+  //return {'commitment': commitment, 'challenge': challenge};
+//}
 
-UTILS.get_encryption_proof = function(alpha, beta, randomness) {
-  var hash;
-  hash = UTILS.hash_to_commitment_and_challenge(alpha, beta);
-  return hash.commitment.add(hash.challenge.multiply(randomness));
-}
+//UTILS.get_encryption_proof = function(alpha, beta, randomness) {
+  //var hash;
+  //hash = UTILS.hash_to_commitment_and_challenge(alpha, beta);
+  //return hash.commitment.add(hash.challenge.multiply(randomness));
+//}
 
-UTILS.verify_encryption_proof = function(modulus, base, alpha, beta, proof) {
-  var hash, proof_pow, cipher_pow, challenge, commitment;
+//UTILS.verify_encryption_proof = function(modulus, base, alpha, beta, proof) {
+  //var hash, proof_pow, cipher_pow, challenge, commitment;
 
-  hash = UTILS.hash_to_commitment_and_challenge(alpha, beta);
-  challenge = hash.challenge;
-  commitment = hash.commitment;
+  //hash = UTILS.hash_to_commitment_and_challenge(alpha, beta);
+  //challenge = hash.challenge;
+  //commitment = hash.commitment;
   
-  proof_pow = base.modPow(proof, modulus);
-  cipher_pow = base.modPow(commitment,
-                  modulus).multiply(alpha.modPow(challenge, 
-                                          modulus)).mod(modulus);
-  return proof_pow.equals(cipher_pow);
+  //proof_pow = base.modPow(proof, modulus);
+  //cipher_pow = base.modPow(commitment,
+                  //modulus).multiply(alpha.modPow(challenge, 
+                                          //modulus)).mod(modulus);
+  //return proof_pow.equals(cipher_pow);
+//}
+UTILS.get_encryption_proof = function(alpha, beta, randomness, pk) {
+  var challenge_generator = ElGamal.zeus_dlog_challenge_generator;
+  var rand = Random.getRandomInteger(pk.q);
+  var commitment = pk.g.modPow(rand, pk.p);
+  var challenge_args = [pk.p, pk.g, pk.q, alpha, commitment, beta];
+  var challenge = challenge_generator(challenge_args);
+  var response = rand.add(challenge.multiply(randomness)).mod(pk.q);
+  return [commitment, challenge, response];
 }
 
 var STV = {};
@@ -185,7 +194,7 @@ STV.gamma_encode = function(choices, nr_candidates, max_choices) {
     nr_candidates = params.nr_candidates;
     max_choices = params.max_choices;
 
-    if (!nr_choices) { return 0 };
+    if (!nr_choices) { return new BigInt(''+0) };
     
     offsets = STV.get_offsets(nr_candidates);
 
@@ -372,20 +381,24 @@ HELIOS.Election = Class.extend({
   },
   
   toJSONObject: function() {
-    var json_obj = {uuid : this.uuid,
-    description : this.description, short_name : this.short_name, name : this.name,
-    public_key: this.public_key.toJSONObject(), questions : this.questions,
-    cast_url: this.cast_url, frozen_at: this.frozen_at,
-    openreg: this.openreg, voters_hash: this.voters_hash,
-    use_voter_aliases: this.use_voter_aliases,
-    voting_starts_at: this.voting_starts_at,
-    voting_ends_at: this.voting_ends_at};
-    
+    var json_obj = {
+      uuid : this.uuid,
+      description: this.description, 
+      name: this.name,
+      public_key: this.public_key.toJSONObject(), 
+      questions: this.questions,
+      cast_url: this.cast_url, 
+      frozen_at: this.frozen_at,
+      voters_hash: this.voters_hash,
+      use_voter_aliases: this.use_voter_aliases,
+      voting_starts_at: this.voting_starts_at,
+      voting_ends_at: this.voting_ends_at
+    };
     return UTILS.object_sort_keys(json_obj);
   },
   
-  get_hash: function() {
-    if (this.election_hash)
+  get_hash: function(do_compute) {
+    if (this.election_hash && do_compute == undefined)
       return this.election_hash;
     
     // otherwise  
@@ -399,12 +412,28 @@ HELIOS.Election = Class.extend({
   }
 });
 
+UTILS.election_hash_from_json = function(raw_json) {
+    jo = JSON.parse(raw_json);
+    pk = UTILS.object_sort_keys(jo.public_key);
+    var hash_data = {
+    uuid : jo.uuid,
+    description : jo.description, name : jo.name,
+    public_key: pk, questions : jo.questions,
+    cast_url: jo.cast_url, frozen_at: jo.frozen_at,
+    openreg: jo.openreg, voters_hash: jo.voters_hash,
+    use_voter_aliases: jo.use_voter_aliases,
+    voting_starts_at: jo.voting_starts_at,
+    voting_ends_at: jo.voting_ends_at};
+    hash_data = UTILS.object_sort_keys(hash_data);
+    return b64_sha256(JSON.stringify(hash_data));
+}
+
 HELIOS.Election.fromJSONString = function(raw_json) {
   var json_object = JSON.parse(raw_json);
   
   // let's hash the raw_json
   var election = HELIOS.Election.fromJSONObject(json_object);
-  election.election_hash = b64_sha256(raw_json);
+  //election.election_hash = b64_sha256(raw_json);
   
   return election;
 };
@@ -417,6 +446,13 @@ HELIOS.Election.fromJSONObject = function(d) {
   if (!el.questions)
     el.questions = [];
   
+  el.help_email = d.help_email;
+  el.election_module = d.election_module;
+  el.name = d.name;
+  el.election_name = d.election_name;
+  el.full_name = d.election_name + ", " + d.name;
+  el.module_params = d.module_params;
+
   if (el.public_key) {
     el.public_key = ElGamal.PublicKey.fromJSONObject(el.public_key);
   } else {
@@ -424,7 +460,8 @@ HELIOS.Election.fromJSONObject = function(d) {
     el.public_key = HELIOS.get_bogus_public_key();
     el.BOGUS_P = true;
   }
-    
+   
+  if (d.workflow_type) { el.workflow_type = d.workflow_type }
   return el;
 };
 
@@ -438,17 +475,38 @@ BALLOT = {};
 
 BALLOT.pretty_choices = function(election, ballot) {
     var questions = election.questions;
+    var question_data = election.questions_data;
     var answers = ballot.answers;
+    var empty_ballot_choices = _.map(election.questions_data,function(q) { return q['answers_index']});
+    
+    var answers_map = {};
+    _.each(question_data, function(q) {
+      var index = q.answers_index;
+      _.each(q.answers, function(a, i) {
+        answers_map[index + i] = {'question': q.question, 'answer': a};
+      });
+    });
 
     // process the answers
     var choices = _(questions).map(function(q, q_num) {
         var q_answers = answers[q_num];
         if (q.tally_type == "stv") {
-            qanswers = answers[q_num][0];
+            q_answers = answers[q_num][0];
         }
-	    return _(qanswers).map(function(ans) {
-	      return questions[q_num].answers[ans];
-	    });
+        
+      var ret = [];
+      _(q_answers).each(function(ans, index) {
+        var choice = answers_map[ans];
+        var q_entry = _.filter(ret, function(q) { 
+          return q.question === choice.question
+        });
+        if (!q_entry[0]) {
+          ret.push({'question': choice.question, 'answers': [choice.answer]})
+        } else {
+          ret[ret.indexOf(q_entry[0])].answers.push(choice.answer);
+        }
+      });
+      return ret;
     });
 
     return choices;
@@ -458,7 +516,7 @@ BALLOT.pretty_choices = function(election, ballot) {
 // open up a new window and do something with it.
 UTILS.open_window_with_content = function(content, mime_type) {
     if (!mime_type)
-	mime_type = "text/plain";
+	mime_type = "text/utf8";
     if (BigInt.is_ie) {
 	    w = window.open("");
 	    w.document.open(mime_type);
@@ -503,14 +561,14 @@ HELIOS.EncryptedAnswer = Class.extend({
     
     // store answer
     // CHANGE 2008-08-06: answer is now an *array* of answers, not just a single integer
-    this.answer = answer;
-
+    this.answer = [];
+    
     if (question.tally_type == "stv") {
-        answer[0] = STV.to_relative_answers(answer[0], question.answers.length);
+        this.answer[0] = STV.to_relative_answers(answer[0], question.answers.length);
     }
 
     // do the encryption
-    var enc_result = this.doEncryption(question, answer, pk, randomness, progress);
+    var enc_result = this.doEncryption(question, this.answer, pk, randomness, progress);
 
     this.choices = enc_result.choices;
     this.randomness = enc_result.randomness;
@@ -586,7 +644,7 @@ HELIOS.EncryptedAnswer = Class.extend({
         }
       }
 
-      encryption_proofs[i] = UTILS.get_encryption_proof(choices[i].alpha, choices[i].beta, randomness[i]);
+      encryption_proofs[i] = UTILS.get_encryption_proof(choices[i].alpha, choices[i].beta, randomness[i], pk);
       
       if (progress)
         progress.tick();
@@ -670,7 +728,9 @@ HELIOS.EncryptedAnswer = Class.extend({
         return choice.toJSONObject();
       })
     };
-
+    
+    // stv
+    this.individual_proofs = null;
     if (this.individual_proofs) {
       return_obj['individual_proofs'] = _(this.individual_proofs).map(function(disj_proof) {
         return disj_proof.toJSONObject();
@@ -680,11 +740,13 @@ HELIOS.EncryptedAnswer = Class.extend({
     if (this.overall_proof != null) {
       return_obj.overall_proof = this.overall_proof.toJSONObject();
     } else {
-      return_obj.overall_proof = null;
+      // do not return overall_proof
+      //return_obj.overall_proof = null;
     }
 
     if (this.encryption_proof) {
-      return_obj.encryption_proof = this.encryption_proof.toJSONObject();
+      var proof = this.encryption_proof;
+      return_obj.encryption_proof = [proof[0].toJSONObject(), proof[1].toJSONObject(), proof[2].toJSONObject()];
     } else {
       return_obj.encryption_proof = null;
     }
@@ -695,7 +757,6 @@ HELIOS.EncryptedAnswer = Class.extend({
         return r.toJSONObject();
       });
     }
-    
     return return_obj;
   }
 });
@@ -711,7 +772,7 @@ HELIOS.EncryptedAnswer.fromJSONObject = function(d, election) {
   });
   
   ea.overall_proof = ElGamal.DisjunctiveProof.fromJSONObject(d.overall_proof);
-  ea.encryption_proof = new BigInt(d.encryption_proof, 10);
+  ea.encryption_proof = [new BigInt(d.encryption_proof[0], 10), new BigInt(d.encryption_proof[1], 10), new BigInt(d.encryption_proof[2], 10)];
   
   // possibly load randomness and plaintext
   if (d.randomness) {

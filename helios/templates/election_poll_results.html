@@ -29,7 +29,7 @@
   <tbody>
     {% for party in results %}
     <tr class="party">
-      <td>{{ party.name }}</td>
+      <td>{{ party.name|linebreaksbr }}</td>
       <td>{{ party.total }}</td>
     </tr>
     {% for name, count in party.candidates.items %}

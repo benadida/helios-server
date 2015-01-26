@@ -11,6 +11,7 @@ from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.db import connection
 from django.db.models.query import EmptyQuerySet
+from django.db.models import Q
 from django.core.context_processors import csrf
 from django.core.validators import validate_email
 from django.utils.html import mark_safe, escape
@@ -141,8 +142,10 @@ def voters_list(request, election, poll):
     # for django pagination support
     page = int(request.GET.get('page', 1))
     limit = int(request.GET.get('limit', 10))
-    q_param = request.GET.get('q', '')
-    order_type = request.GET.get('order_type', None)
+    q_param = request.GET.get('q','')
+    voted_param = request.GET.get('voted', None)
+    notvoted_param = request.GET.get('notvoted', None)
+
     default_voters_per_page = getattr(settings, 'ELECTION_VOTERS_PER_PAGE', 100)
     voters_per_page = request.GET.get('limit', default_voters_per_page)
     try:
@@ -165,6 +168,10 @@ def voters_list(request, election, poll):
         voters = Voter.objects.filter(poll=poll).order_by(order_by)
     
     voters = voters.filter(get_voters_filters(q_param))
+    if voted_param is not None:
+        voters = [v for v in voters if v.voted]
+    elif notvoted_param is not None:
+        voters = [v for v in voters if not v.voted]
     voters_count = Voter.objects.filter(poll=poll).count()
     voted_count = poll.voters_cast_count()
 
@@ -179,7 +186,7 @@ def voters_list(request, election, poll):
         'q': q_param,
         'voters_list_count': voters.count(),
         'voters_per_page': voters_per_page,
-        'voter_table_headers': VOTER_TABLE_HEADERS.iteritems(),
+        'voter_table_headers': VOTER_TABLE_HEADERS.iteritems()
     }
     set_menu('voters', context)
     return render_template(request, 'election_poll_voters_list', context)

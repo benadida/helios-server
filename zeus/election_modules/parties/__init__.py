@@ -83,33 +83,6 @@ class PartiesListElection(ElectionModuleBase):
         tpl = 'election_modules/parties/election_poll_questions_manage'
         return render_template(request, tpl, context)
 
-    def generate_result_docs(self, lang):
-        from zeus.results_report import build_doc
-        results_json = self.poll.zeus.get_results()
-        results_name = self.election.name
-        build_doc(_(u'Results'), self.election.name,
-                    self.election.institution.name,
-                    self.election.voting_starts_at, self.election.voting_ends_at,
-                    self.election.voting_extended_until,
-                    [(self.election.name, json.dumps(results_json))],
-                    lang,
-                    self.get_poll_result_file_path('pdf', 'pdf', lang[0]))
-
-    def generate_election_result_docs(self, lang):
-        from zeus.results_report import build_doc
-        pdfpath = self.get_election_result_file_path('pdf', 'pdf', lang[0])
-        polls_data = []
-
-        for poll in self.election.polls.filter():
-            polls_data.append((poll.name, poll.zeus.get_results()))
-
-        build_doc(_(u'Results'), self.election.name, self.election.institution.name,
-                self.election.voting_starts_at, self.election.voting_ends_at,
-                self.election.voting_extended_until,
-                polls_data,
-                lang,
-                pdfpath)
-
     def compute_results(self):
         self.generate_json_file()
         for lang in settings.LANGUAGES:
@@ -134,7 +107,10 @@ class PartiesListElection(ElectionModuleBase):
             prepend_empty_answer = True
 
         for index, q in enumerate(questions_data):
-            q_answers = ["%s: %s" % (q['question'], ans) for ans in \
+            question = q['question'].replace(":", "{semi}") \
+                                    .replace("\r\n","{newline}") \
+                                    .replace("\n","{newline}")
+            q_answers = ["%s: %s" % (question, ans) for ans in \
                          q['answers']]
             group = index
             if prepend_empty_answer:
@@ -143,7 +119,7 @@ class PartiesListElection(ElectionModuleBase):
                 if self.count_empty_question:
                     params_min = 0
                 params = "%d-%d, %d" % (params_min, params_max, group)
-                q_answers.insert(0, "%s: %s" % (q['question'], params))
+                q_answers.insert(0, "%s: %s" % (question, params))
             answers = answers + q_answers
         self.poll._init_questions(len(answers))
         self.poll.questions[0]['answers'] = answers

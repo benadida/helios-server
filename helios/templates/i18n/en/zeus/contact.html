@@ -1,0 +1,26 @@
+{% extends "server_ui/templates/base.html" %}
+{% load i18n %}
+
+{% block tabs_menu %}
+{% include "i18n/en/zeus/_menu_partial.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="columns twelve">
+    <h4>{% trans "Contact" %}</h4>
+    <p>
+    {% blocktrans %}For questions and comments regarding the Zeus platform you may contact us at <a href="mailto:helpdesk@zeus.grnet.gr">helpdesk@zeus.grnet.gr</a>.
+    <br /> 
+    <br /> 
+    <br /> 
+
+    <cite>
+    Notice that if you are a voter and want to report an issue related to a running election you should get in contact with the corresponding election support group. 
+    You can find contact details in the election page.
+    </cite>
+    </p>
+    {% endblocktrans %}
+  </div>
+</div>
+{% endblock %}

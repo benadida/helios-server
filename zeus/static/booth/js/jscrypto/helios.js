@@ -475,8 +475,17 @@ BALLOT = {};
 
 BALLOT.pretty_choices = function(election, ballot) {
     var questions = election.questions;
+    var question_data = election.questions_data;
     var answers = ballot.answers;
     var empty_ballot_choices = _.map(election.questions_data,function(q) { return q['answers_index']});
+    
+    var answers_map = {};
+    _.each(question_data, function(q) {
+      var index = q.answers_index;
+      _.each(q.answers, function(a, i) {
+        answers_map[index + i] = {'question': q.question, 'answer': a};
+      });
+    });
 
     // process the answers
     var choices = _(questions).map(function(q, q_num) {
@@ -484,7 +493,6 @@ BALLOT.pretty_choices = function(election, ballot) {
         if (q.tally_type == "stv") {
             q_answers = answers[q_num][0];
         }
-
 	    return _(q_answers).map(function(ans) {
 	      var choice_text = questions[q_num].answers[ans];
           if (_.contains(empty_ballot_choices, ans) && election.module_params.count_empty_question) {
@@ -495,6 +503,7 @@ BALLOT.pretty_choices = function(election, ballot) {
           }
           return choice_text;
 	    });
+        
     });
 
     return choices;

@@ -161,8 +161,11 @@ var VoterStats = function (data, cont_width, cont_height, margin) {
   /*
    * Collect the votes cast at each specific time point.
    */
-  var previousVoteDateTime =
-      parseDate(data.votes[data.votes.length - 1].date);
+  var previousVoteDateTime = null;
+  if (data.votes && data.votes.length > 0) {
+      previousVoteDateTime =
+          parseDate(data.votes[data.votes.length - 1].date);
+  }
   var votes = [{
       cast: 0,
       total: 0,
@@ -201,7 +204,7 @@ var VoterStats = function (data, cont_width, cont_height, margin) {
   var numIntervals =
       Math.floor((dateTimeEnd - dateTimeStart) / millisDiff) + 1;
   var dateTimeLimit = new Date(2012, 10, 12, 9, 0 + minutesDiff);
-  var intervals = new Array(numIntervals);
+  var intervals = numIntervals > 0 ? new Array(numIntervals) : new Array();
   for (var i = 0; i < numIntervals; i++) {
       intervals[i] = 0;
   }

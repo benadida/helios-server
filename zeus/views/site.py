@@ -56,11 +56,18 @@ def resources(request):
     })
 
 
+def contact(request):
+    user = request.zeususer
+    return render_template(request, "zeus/contact", {
+        'menu_active': 'contact',
+        'user': user
+    })
+
+
 def stats(request):
     user = request.zeususer._user
     if not request.zeususer.is_admin:
         return HttpResponseRedirect(reverse('home'))
-
     uuid = request.GET.get('uuid', None)
     election = None
 
