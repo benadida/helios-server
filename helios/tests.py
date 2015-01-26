@@ -49,7 +49,7 @@ class ElectionModelTests(TestCase):
     
     def setUp(self):
         self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
-        self.fb_user = auth_models.User.objects.get(user_type='facebook')
+        self.fb_user = auth_models.User.objects.filter(user_type='facebook')[0]
         self.election, self.created_p = self.create_election()
 
     def test_create_election(self):
