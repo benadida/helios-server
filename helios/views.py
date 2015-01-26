@@ -591,7 +591,7 @@ def password_voter_login(request, election):
       voter = election.voter_set.get(voter_login_id = password_login_form.cleaned_data['voter_id'].strip(),
                                      voter_password = password_login_form.cleaned_data['password'].strip())
 
-      request.session['CURRENT_VOTER'] = voter
+      request.session['CURRENT_VOTER_ID'] = voter.id
 
       # if we're asked to cast, let's do it
       if request.POST.get('cast_ballot') == "1":
@@ -753,7 +753,7 @@ def one_election_cast_done(request, election):
       logout = settings.LOGOUT_ON_CONFIRMATION
     else:
       logout = False
-      del request.session['CURRENT_VOTER']
+      del request.session['CURRENT_VOTER_ID']
 
     save_in_session_across_logouts(request, 'last_vote_hash', vote_hash)
     save_in_session_across_logouts(request, 'last_vote_cv_url', cv_url)
