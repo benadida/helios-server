@@ -130,8 +130,23 @@ def index(request, election, poll=None):
         election_url = election.get_absolute_url()
 
     booth_url = None
+    linked_booth_urls = []
     if poll:
         booth_url = poll.get_booth_url(request)
+        if poll.has_linked_polls and user.is_voter:
+            for p in poll.linked_polls:
+                if p == poll:
+                    continue
+                try:
+                    voter = \
+                        p.voters.get(voter_login_id=user._user.voter_login_id)
+                except Exception, e:
+                    continue
+                burl = reverse('election_poll_voter_booth_linked_login',
+                               args=(election.uuid, poll.uuid, voter.uuid,))
+                burl = burl + "?link-to=%s" % p.uuid
+                linked_booth_urls.append((p.name, burl,
+                                          voter.cast_at))
 
     voter = None
     votes = None
@@ -154,7 +169,8 @@ def index(request, election, poll=None):
         'user': user,
         'votes': votes,
         'election_url' : election_url,
-        'booth_url': booth_url
+        'booth_url': booth_url,
+        'linked_booth_urls': linked_booth_urls
     }
     if poll:
         context['poll'] = poll

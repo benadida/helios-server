@@ -1,7 +1,9 @@
+import yaml
 import os
 import csv
 import json
 import urllib
+import base64
 
 from collections import OrderedDict
 
@@ -16,6 +18,7 @@ from django.core.context_processors import csrf
 from django.core.validators import validate_email
 from django.utils.html import mark_safe, escape
 from django import forms
+from django.template.loader import Template, Context
 
 from zeus.forms import ElectionForm
 from zeus import auth
@@ -73,13 +76,192 @@ def rename(request, election, poll):
     return HttpResponseRedirect(url)
 
 
+@transaction.commit_on_success
+def _handle_batch(election, polls, vars, auto_link=False):
+    errors = []
+    existing = election.polls.filter()
+    get_poll = lambda ref: election.polls.filter(linked_ref=ref).count() \
+        and election.polls.get(linked_ref=ref)
+
+    # Import/update/remove polls
+    polls_form_data = {}
+    refs = []
+
+    byref = {}
+    for p in polls:
+        ref = p.get('ref')
+        assert ref
+        assert ref not in byref.keys()
+        byref[ref] = p
+    existing_refs = []
+    new_refs = []
+
+    polls_form_data = {}
+    i = 0
+    initial_count = 0
+
+    refs = [p.get('ref') for p in polls]
+
+    # update existing
+    for poll in existing:
+        fields = {}
+        prefix = "form-%d-" % i
+        add_field = lambda name, val: fields.update({''+prefix+name: val})
+        poll_data = byref.get(poll.linked_ref)
+        if not poll_data:
+            poll.delete()
+            poll.logger.info("Poll deleted")
+            continue
+        add_field('name', poll_data.get('name'))
+        add_field('id', poll.pk)
+        polls_form_data.update(fields)
+        existing_refs.append(poll.linked_ref)
+        initial_count += 1
+        i = i + 1
+
+    # append new takes place in higher indexes
+    for ref, poll_data in byref.iteritems():
+        if ref in existing_refs:
+            continue
+        fields = {}
+        add_field = lambda name, val: fields.update({''+prefix+name: val})
+        prefix = "form-%d-" % i
+        add_field('name', poll_data.get('name').strip())
+        add_field('id', None)
+        polls_form_data.update(fields)
+        new_refs.append(ref)
+        i = i + 1
+    
+    polls_form_data.update({
+        'form-INITIAL_FORMS': initial_count,
+        'form-MAX_NUM_FORMS': 200,
+        'form-TOTAL_FORMS': len(polls)
+    })
+    
+    polls_formset = modelformset_factory(Poll, PollForm, extra=10,
+                                         max_num=200, can_delete=False,
+                                         formset=PollFormSet)
+
+    form = polls_formset(polls_form_data,
+                         queryset=election.polls.filter(),
+                         election=election)
+    form.save(election)
+
+    for i, poll in enumerate(election.polls.filter()):
+        if not poll.linked_ref:
+            ref = new_refs.pop(0)
+        else:
+            ref = poll.linked_ref
+        poll_data = byref.get(ref)
+        link_id = poll_data.get('linkd_id', '')
+        if not link_id and auto_link:
+            link_id = election.uuid
+
+        if not poll.linked_ref:
+            poll.logger.info("Poll created")
+        poll.link_id = link_id or ''
+        poll.linked_ref = ref
+        poll.index = refs.index(ref) + 1
+        poll.save()
+
+    # handle polls questions
+    for i, poll_data in enumerate(polls):
+        module = election.get_module()
+        ref = poll_data.get('ref')
+        questions = poll_data.get('questions')
+
+        poll = election.polls.get(linked_ref=ref)
+        formset = module.questions_formset()
+
+        questions_form_data = {}
+        poll.questions = None
+        poll.questions_data = None
+        poll.save()
+
+        for qi, q in enumerate(questions):
+            fields = {}
+            prefix = 'form-%d-' % qi
+            add_field = lambda name, val: fields.update({''+prefix+name: val})
+            question = q.get('question')
+            tpl = Template(question)
+            context = Context(vars)
+            question = tpl.render(context)
+            qanswers = q.get('answers')
+            min_choices = q.get('min', 1)
+            max_choices = q.get('max', 1)
+
+            add_field('choice_type', 'choice')
+            add_field('max_answers', max_choices)
+            add_field('min_answers', min_choices)
+            add_field('question', question.strip())
+            add_field('ORDER', '')
+
+            if isinstance(qanswers, basestring):
+                _orig = qanswers
+                qanswers = vars.get(qanswers)
+                if qanswers is None:
+                    raise Exception("Invalid var name '%s'" % _orig)
+
+            for ai, answer in enumerate(qanswers):
+                add_field('answer_%d' % ai, answer)
+            questions_form_data.update(fields)
+
+        questions_form_data.update({
+            'form-INITIAL_FORMS': 1,
+            'form-MAX_NUM_FORMS': 200,
+            'form-TOTAL_FORMS': len(questions)
+        })
+        form = formset(questions_form_data)
+        if form.is_valid():
+            qdata = module.extract_question_data(form.cleaned_data)
+            poll.questions_data = qdata
+            poll.update_answers()
+            poll.logger.info("Poll questions updated")
+            poll.save()
+            try:
+                poll.zeus._validate_candidates()
+            except Exception, e:
+                raise Exception((poll.name, unicode(e)))
+        else:
+            for f in form:
+                for field in f:
+                    for error in field.errors:
+                        errors.append(error)
+
+    return errors if errors else True
+
+
+def _add_batch(request, election):
+    batch_file = request.FILES['batch_file']
+    try:
+        data = yaml.load(batch_file)
+    except Exception:
+        messages.error(request, _("Invalid batch file contents"))
+        url = election_reverse(election, 'polls_list')
+        return HttpResponseRedirect(url)
+
+    try:
+        _handle_batch(election, data.get('polls'),
+                      data.get('vars', {}), data.get('auto_link', False))
+    except Exception, e:
+        election.logger.exception(e)
+        messages.error(request, str(e))
+
+    url = election_reverse(election, 'polls_list')
+    return HttpResponseRedirect(url)
+
+
 @auth.election_admin_required
 @auth.requires_election_features('can_add_poll')
 @require_http_methods(["POST", "GET"])
 def add(request, election, poll=None):
+    if election.linked_polls and request.FILES.has_key('batch_file'):
+        return _add_batch(request, election)
+
     if request.method == "GET":
         url = election_reverse(election, 'polls_list')
         return HttpResponseRedirect(url)
+
     extra = int(request.GET.get('extra', 2))
     polls_formset = modelformset_factory(Poll, PollForm, extra=extra,
                                          max_num=100, formset=PollFormSet,
@@ -152,8 +334,9 @@ def voters_list(request, election, poll):
         voters_per_page = int(voters_per_page)
     except:
         voters_per_page = default_voters_per_page
-    order_by = 'voter_login_id'
     order_by = request.GET.get('order', 'voter_login_id')
+    order_type = request.GET.get('order_type', 'desc')
+
     if not order_by in VOTER_TABLE_HEADERS.keys(): 
         order_by = 'voter_login_id'
 
@@ -197,15 +380,18 @@ def voters_list(request, election, poll):
 @transaction.commit_on_success
 @require_http_methods(["POST"])
 def voters_clear(request, election, poll):
+    polls = poll.linked_polls
     q_param = request.POST.get('q_param', None)
-    voters = poll.voters.all()
-    if q_param:
-        voters = voters.filter(get_voters_filters(q_param))
+    for poll in polls:
+        voters = poll.voters.all()
+        if q_param:
+            voters = voters.filter(get_voters_filters(q_param))
 
-    for voter in voters:
-        if not voter.cast_votes.count():
-            voter.delete()
-        poll.logger.info("Poll voters cleared")
+        for voter in voters:
+            if not voter.cast_votes.count():
+                voter.delete()
+            poll.logger.info("Poll voters cleared")
+
     url = poll_reverse(poll, 'voters')
     return HttpResponseRedirect(url)
 
@@ -353,7 +539,7 @@ def voters_email(request, election, poll=None, voter_uuid=None):
 
     polls = [poll]
     if not poll:
-        polls = election.polls.all()
+        polls = election.polls_by_link_id
 
     voter = None
     if voter_uuid:
@@ -513,11 +699,20 @@ def voters_email(request, election, poll=None, voter_uuid=None):
 @auth.requires_poll_features('can_delete_voter')
 @require_http_methods(["POST"])
 def voter_delete(request, election, poll, voter_uuid):
-    voter = get_object_or_404(Voter, poll=poll, uuid=voter_uuid)
-    if voter.voted:
-        raise PermissionDenied('36')
-    voter.delete()
-    poll.logger.info("Poll voter '%s' removed", voter.voter_login_id)
+    voter = get_object_or_404(Voter, uuid=voter_uuid, poll__in=poll.linked_polls)
+    voter_id = voter.voter_login_id
+    for poll in poll.linked_polls:
+        voter = None
+        try:
+            voter = Voter.objects.get(poll=poll, voter_login_id=voter_id)
+        except Voter.DoesNotExist:
+            poll.logger.error("Cannot remove voter '%s'. Does not exist.", 
+                             voter_uuid)
+        if voter and voter.voted:
+            raise PermissionDenied('36')
+        if voter:
+            voter.delete()
+            poll.logger.info("Poll voter '%s' removed", voter.voter_login_id)
     url = poll_reverse(poll, 'voters')
     return HttpResponseRedirect(url)
 
@@ -526,11 +721,17 @@ def voter_delete(request, election, poll, voter_uuid):
 @auth.requires_poll_features('can_exclude_voter')
 @require_http_methods(["POST"])
 def voter_exclude(request, election, poll, voter_uuid):
-    voter = get_object_or_404(Voter, uuid=voter_uuid, poll=poll)
-    if not voter.excluded_at:
-        reason = request.POST.get('reason', '')
-        poll.zeus.exclude_voter(voter.uuid, reason)
-        poll.logger.info("Poll voter '%s' excluded", voter.voter_login_id)
+    polls = poll.linked_polls
+    voter = get_object_or_404(Voter, uuid=voter_uuid, poll__in=polls)
+    for p in polls:
+        linked_voter = voter.linked_voters.get(poll=p)
+        if not linked_voter.excluded_at:
+            reason = request.POST.get('reason', '')
+            try:
+                p.zeus.exclude_voter(linked_voter.uuid, reason)
+                p.logger.info("Poll voter '%s' excluded", linked_voter.voter_login_id)
+            except Exception, e:
+                pass
     return HttpResponseRedirect(poll_reverse(poll, 'voters'))
 
 
@@ -547,6 +748,26 @@ def voters_csv(request, election, poll, fname):
     poll.voters_to_csv(q_param, response)
     return response
 
+
+@auth.poll_voter_required
+@auth.requires_poll_features('can_cast_vote')
+@require_http_methods(["GET"])
+def voter_booth_linked_login(request, election, poll, voter_uuid):
+    voter = request.zeususer._user
+    linked_poll = request.GET.get('link-to', None)
+    if not poll.has_linked_polls:
+        raise PermissionDenied()
+    if not linked_poll or linked_poll not in poll.linked_polls.values_list('uuid', flat=True):
+        raise PermissionDenied()
+    
+    linked_poll = election.polls.get(uuid=linked_poll)
+    linked_voter = linked_poll.voters.get(voter_login_id=voter.voter_login_id)
+    user = auth.ZeusUser(linked_voter)
+    user.authenticate(request)
+    poll.logger.info("Poll voter '%s' logged in in linked poll '%s'", 
+                     voter.voter_login_id, poll.uuid)
+    url = linked_poll.get_booth_url(request)
+    return HttpResponseRedirect(url)
 
 @auth.election_view(check_access=False)
 @require_http_methods(["GET"])
@@ -664,6 +885,18 @@ def cast(request, election, poll):
 @require_http_methods(["GET"])
 def cast_done(request, election, poll):
     if request.zeususer.is_authenticated() and request.zeususer.is_voter:
+        if poll.has_linked_polls:
+            next_poll = poll.next_linked_poll()
+            if next_poll:
+                try:
+                    voter = next_poll.voters.get(
+                        voter_login_id=request.zeususer._user.voter_login_id)
+                    user = auth.ZeusUser(voter)
+                    user.authenticate(request)
+                    url = next_poll.get_booth_url(request)
+                    return HttpResponseRedirect(url)
+                except Voter.DoesNotExist:
+                    pass
         request.zeususer.logout(request)
 
     fingerprint = request.GET.get('f')

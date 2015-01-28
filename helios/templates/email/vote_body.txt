@@ -7,7 +7,7 @@
 {% trans "You are invited to vote in the poll:" %}
 
   {{ election.name }}
-  {{ poll.name }}
+  {% block poll_name %}{{ poll.name }}{% endblock %}
 
 {% trans "starting" %} {{election.voting_starts_at}},
 {% trans "and ending" %} {{election.voting_ends_at}}
@@ -30,10 +30,10 @@
 
     {{ election.help_email }}
 
-{% if voter.audit_passwords %}* {% trans "If you want to initiate an audit vote," %}
+{% block audit_codes %}{% if voter.audit_passwords %}* {% trans "If you want to initiate an audit vote," %}
   {% trans "the valid audit codes are" %}
   {% for pass in voter.get_audit_passwords %}{{ pass }}  {% endfor %}
-  {% trans "Otherwise ignore those codes above."%}{% endif %}
+  {% trans "Otherwise ignore those codes above."%}{% endif %}{% endblock %}
 
 {% blocktrans %}The voting takes place in the web browser in your computer,
 where your choices are recorded and encrypted before being submitted.

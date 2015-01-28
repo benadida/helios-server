@@ -67,7 +67,8 @@ class ElectionForm(forms.ModelForm):
     remote_mixes = forms.BooleanField(label=_('Multiple mixnets'),
                                       required=False,
                                       help_text=help.remote_mixes)
-    linked_polls = forms.BooleanField(label=_("Linked polls (experimental)"))
+    linked_polls = forms.BooleanField(label=_("Linked polls (experimental)"),
+                                      required=False)
 
     FIELD_REQUIRED_FEATURES = {
         'trustees': ['edit_trustees'],
@@ -89,7 +90,7 @@ class ElectionForm(forms.ModelForm):
                   'departments', 'voting_starts_at', 'voting_ends_at',
                   'voting_extended_until',
                   'trustees', 'help_email', 'help_phone', 
-                  'communication_language')
+                  'communication_language', 'linked_polls')
 
     def __init__(self, institution, *args, **kwargs):
         self.institution = institution

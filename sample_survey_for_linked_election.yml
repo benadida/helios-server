@@ -1,0 +1,94 @@
+---
+auto_link: True
+
+vars:
+    courseq_prefix: >
+        Εφόσον (α) έχετε παρακολουθήσει επιτυχώς το μάθημα και (β) νομίζετε 
+        οτι χρειάζεται αλλαγές επιλέξτε μία ή περισσότερες απο τις παρακάτω διατυπώσεις
+    range_to_five_answers:
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+    course_common_answers:
+        - Η διδασκαλία δεν είναι ικανοποιητική
+        - Υπάρχει αλληλοεπικάλυψη της ύλης με άλλα μαθήματα
+        - Η γνώση που προσφέρει είναι παρωχημένη
+        - Δεν καλύπτει την ύλη που προδιαγράφεται
+        - Είναι αυξημένης δυσκολίας
+        - Χρειάζεται αναβάθμιση
+        - Χρειάζεται αλλαγή στον τρόπο διδασκαλίας
+        - Χρειάζεται αλλαγή στον τρόπο εξέτασης με προσθήκη θέματος εξαμήνου
+        - Χρειάζεται αλλαγή στον τρόπο εξέτασης με εισαγωγή προφορικής εξέτασης
+        - Χρειάζεται αλλαγή στον τρόπο εξέτασης με ασκήσεις εξαμήνου αυξημένης βαρύτητας
+        - Να αλλάξει κατηγορία (απο υποχρεωτικό σε επιλογής ή το ανάποδο)
+        - Να καταργηθεί
+
+
+polls:
+
+    - ref: course_poll1
+      name: "[1/40] Μαθήματα 1/20"
+      questions: 
+        - question: |
+            {{ courseq_prefix }}
+
+            Μαθηματική ανάλυση 2 ­ 1ο εξάμηνο ­ Υποχρεωτικό
+          max: 12
+          min: 1
+          answers: course_common_answers
+        - question: |
+            {{ courseq_prefix }}
+
+            Μαθηματική ανάλυση 3 ­ 1ο εξάμηνο ­ Υποχρεωτικό
+          max: 12
+          min: 1
+          answers: course_common_answers
+        - question: |
+            {{ courseq_prefix }}
+
+            Μαθηματική ανάλυση 4 ­ 1ο εξάμηνο ­ Υποχρεωτικό
+          max: 12
+          min: 1
+          answers: course_common_answers
+        - question: |
+            {{ courseq_prefix }}
+
+            Μαθηματική ανάλυση 5 ­ 1ο εξάμηνο ­ Υποχρεωτικό
+          max: 12
+          min: 1
+          answers: course_common_answers
+
+    - ref: course_poll2
+      name: "[2/40] Μαθήματα 1/20"
+      questions: 
+        - question: |
+            {{ courseq_prefix }}
+
+            Μαθηματική ανάλυση 6 ­ 1ο εξάμηνο ­ Υποχρεωτικό
+          max: 12
+          min: 1
+          answers: course_common_answers
+
+    - ref: general_poll6
+      name: "[0/40] Μαθήματα 1/20"
+      questions: 
+        - question: |
+            {{ courseq_prefix }}
+
+            Μαθηματική ανάλυση 1 ­ 1ο εξάμηνο ­ Υποχρεωτικό
+          max: 12
+          min: 1
+          answers: course_common_answers
+    - ref: course_poll3
+      name: "[3/40] Γενικές ερωτήσεις 2"
+      questions: 
+        - question: Ερώτηση 2
+          answers: course_common_answers
+        - question: Ερώτηση 1
+          answers: 
+            - Answer 1
+            - Answer 2
+            - Answer 3
+

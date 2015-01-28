@@ -26,6 +26,34 @@ class SimpleElection(ElectionModuleBase):
     no_questions_added_message = _('No questions set')
     manage_questions_title = _('Manage questions')
 
+    def extract_question_data(self, questions):
+        questions_data = []
+        for question in questions:
+            if not question:
+                continue
+
+            # force sort of answers by extracting index from answer key.
+            # cast answer index to integer, otherwise answer_10 would
+            # be placed before answer_2
+            answer_index = lambda a: int(a[0].replace('answer_', ''))
+            isanswer = lambda a: a[0].startswith('answer_')
+            answer_values = filter(isanswer, question.iteritems())
+            sorted_answers = sorted(answer_values, key=answer_index)
+
+            answers = [x[1] for x in sorted_answers]
+            question['answers'] = answers
+            for k in question.keys():
+                if k in ['DELETE', 'ORDER']:
+                    del question[k]
+
+            questions_data.append(question)
+        return questions_data
+
+    def questions_formset(self, extra=1):
+        from zeus.forms import QuestionForm
+        return formset_factory(QuestionForm, extra=extra,
+                               can_delete=True, can_order=True)
+
     def questions_update_view(self, request, election, poll):
         from zeus.utils import poll_reverse
         from zeus.forms import QuestionForm, DEFAULT_ANSWERS_COUNT, \
@@ -35,31 +63,12 @@ class SimpleElection(ElectionModuleBase):
         if poll.questions_data:
             extra = 0
 
-        questions_formset = formset_factory(QuestionForm, extra=extra,
-                                            can_delete=True, can_order=True)
+        questions_formset = self.questions_formset(extra)
         if request.method == 'POST':
             formset = questions_formset(request.POST)
             if formset.is_valid():
-                questions_data = []
-                for question in formset.cleaned_data:
-                    if not question:
-                        continue
-
-                    # force sort of answers by extracting index from answer key.
-                    # cast answer index to integer, otherwise answer_10 would
-                    # be placed before answer_2
-                    answer_index = lambda a: int(a[0].replace('answer_', ''))
-                    isanswer = lambda a: a[0].startswith('answer_')
-                    answer_values = filter(isanswer, question.iteritems())
-                    sorted_answers = sorted(answer_values, key=answer_index)
-
-                    answers = [x[1] for x in sorted_answers]
-                    question['answers'] = answers
-                    for k in question.keys():
-                        if k in ['DELETE', 'ORDER']:
-                            del question[k]
-
-                    questions_data.append(question)
+                cleaned_data = formset.cleaned_data
+                questions_data = self.extract_question_data(cleaned_data)
 
                 poll.questions_data = questions_data
                 poll.update_answers()

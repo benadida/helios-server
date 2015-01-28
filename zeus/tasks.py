@@ -67,12 +67,15 @@ def single_voter_email(voter_uuid, subject_template, body_template,
                          'election': voter.poll.election})
         subject = render_template_raw(None, subject_template, the_vars)
         body = render_template_raw(None, body_template, the_vars)
+        linked_voters = voter.linked_voters
         if update_date:
-            voter.last_email_send_at = datetime.datetime.now()
-            voter.save()
+            for voter in linked_voters:
+                voter.last_email_send_at = datetime.datetime.now()
+                voter.save()
         if update_booth_invitation_date:
-            voter.last_booth_invitation_send_at = datetime.datetime.now()
-            voter.save()
+            for voter in linked_voters:
+                voter.last_booth_invitation_send_at = datetime.datetime.now()
+                voter.save()
         voter.user.send_message(subject, body)
 
 
@@ -87,6 +90,10 @@ def voters_email(poll_id, subject_template, body_template, extra_vars={},
     voters = poll.voters.filter(utils.get_voters_filters_with_constraints(
         q_param, voter_constraints_include, voter_constraints_exclude
     ))
+
+    if len(poll.linked_polls) > 1 and 'vote_body' in body_template:
+        body_template = body_template.replace("_body.txt", "_linked_body.txt")
+
     for voter in voters:
         single_voter_email.delay(voter.uuid,
                                  subject_template,

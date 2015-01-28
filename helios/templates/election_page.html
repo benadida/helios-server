@@ -10,7 +10,7 @@
 <h4 id="election-name" class="subheader">
   <span class="inst">{{ election.institution.name }}</span>
   <span class="elname">{{ election.name }}</span>
-  {% if poll %}<span class="pollname">{{ poll.name }}</span>{% endif %}
+  {% if poll and not poll.has_linked_polls %}<span class="pollname">{{ poll.name }}</span>{% endif %}
   <span class="extra-election-actions"></span>
 </h4>
 </div>
