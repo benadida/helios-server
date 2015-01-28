@@ -73,7 +73,8 @@ class TestAdminsPermissions(SetUpAdminAndClientMixin, TestCase):
 
     def login_and_create_election(self, login_data):
         self.c.post(self.locations['login'], login_data)
-        r = self.c.post(self.locations['create'], self.election_form, follow=True)
+        r = self.c.post(self.locations['create'], self.election_form, follow=False)
+        self.assertEqual(r.status_code, 302)
         self.c.get(self.locations['logout'])
 
     def create_elections_with_different_admins(self):
