@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-26 18:43+0200\n"
+"POT-Creation-Date: 2015-01-28 17:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -23,6 +23,9 @@ msgstr "Εφορευτική επιτροπή"
 
 msgid "Multiple mixnets"
 msgstr "Πολλαπλές μίξεις"
+
+msgid "Linked polls (experimental)"
+msgstr "Ενεργοποίηση συνδεδεμένων καλπών (πειραματικό)"
 
 msgid "English"
 msgstr "Αγγλικά"
@@ -450,6 +453,9 @@ msgstr "Επιβεβαιώστε"
 
 msgid "(all voters selected)"
 msgstr "σύνολο ψηφοφόρων"
+
+msgid "Invalid batch file contents"
+msgstr "Μη αποδεκτό αρχείο"
 
 msgid "Enter a valid email address. <br />"
 msgstr "Μη έγκυρη διεύθυνση email. <br />"

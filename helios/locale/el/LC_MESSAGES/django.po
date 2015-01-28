@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-26 18:43+0200\n"
+"POT-Creation-Date: 2015-01-28 17:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -152,6 +152,12 @@ msgstr "Οριστικοποιημένη"
 
 msgid "Election pending to freeze"
 msgstr "Αναμονή για οριστικοποίηση της ψηφοφορίας"
+
+msgid "Poll link group"
+msgstr "Όνομα γκρούπ κάλπης"
+
+msgid "Poll reference id"
+msgstr "Όνομα αντιστοιχίας κάλπης"
 
 msgid "Poll name"
 msgstr "Όνομα κάλπης"
@@ -324,6 +330,9 @@ msgstr "Ψηφοφόροι"
 msgid "Add new poll"
 msgstr "Προσθήκη νέας κάλπης"
 
+msgid "Batch polls update"
+msgstr "Μαζική ανανέωση καλπών"
+
 msgid "Election information"
 msgstr "Πληροφορίες ψηφοφορίας"
 
@@ -347,6 +356,9 @@ msgstr "Κάλπες"
 
 msgid "Enter voting booth"
 msgstr "Είσοδος στο ηλεκτρονικό παραπέτασμα"
+
+msgid "No cast yet"
+msgstr "Χωρίς ψήφο"
 
 msgid "Voting date passed."
 msgstr "Ο χρόνος λήξης της ψηφοφορίας έχει παρέλθει"
@@ -1333,6 +1345,9 @@ msgid ""
 msgstr ""
 "Εάν δεν είστε ο νόμιμος παραλήπτης, παρακαλούμε διαγράψτε το μήνυμα αυτό\n"
 "και επικοινωνήστε με το helpdesk@zeus.grnet.gr"
+
+msgid "Audit codes only apply for poll:"
+msgstr "Οι κωδικοί αφορούν μόνο την κάλπη:"
 
 msgid "Home"
 msgstr "Αρχική"
