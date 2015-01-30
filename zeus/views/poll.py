@@ -382,15 +382,19 @@ def voters_list(request, election, poll):
 def voters_clear(request, election, poll):
     polls = poll.linked_polls
     q_param = request.POST.get('q_param', None)
-    for poll in polls:
-        voters = poll.voters.all()
+    process_linked = request.GET.get('no-linked', False) is False
+    if not process_linked:
+        polls = polls.filter(pk=poll.pk)
+
+    for p in polls:
+        voters = p.voters.all()
         if q_param:
             voters = voters.filter(get_voters_filters(q_param))
 
         for voter in voters:
             if not voter.cast_votes.count():
                 voter.delete()
-            poll.logger.info("Poll voters cleared")
+            p.logger.info("Poll voters cleared")
 
     url = poll_reverse(poll, 'voters')
     return HttpResponseRedirect(url)
@@ -404,11 +408,13 @@ def voters_upload(request, election, poll):
         'election': election,
         'poll': poll
     }
+
     set_menu('voters', common_context)
     if request.method == "POST":
         if bool(request.POST.get('confirm_p', 0)):
             # launch the background task to parse that file
             voter_file_id = request.session.get('voter_file_id', None)
+            process_linked  = request.session.get('no_link', False) is False
             if not voter_file_id:
                 messages.error(request, "Invalid voter file id")
                 url = poll_reverse(poll, 'voters')
@@ -416,7 +422,7 @@ def voters_upload(request, election, poll):
             try:
                 voter_file = VoterFile.objects.get(pk=voter_file_id)
                 try:
-                    voter_file.process()
+                    voter_file.process(process_linked)
                 except (exceptions.VoterLimitReached, \
                     exceptions.DuplicateVoterID) as e:
                     messages.error(request, e.message)
@@ -429,6 +435,8 @@ def voters_upload(request, election, poll):
                 pass
             except KeyError:
                 pass
+            if 'no_link' in request.session:
+                del request.session['no_link']
             if 'voter_file_id' in request.session:
                 del request.session['voter_file_id']
             url = poll_reverse(poll, 'voters')
@@ -490,6 +498,8 @@ def voters_upload(request, election, poll):
     else:
         if 'voter_file_id' in request.session:
             del request.session['voter_file_id']
+        no_link = request.GET.get("no-link", False) != False
+        request.session['no_link'] = no_link
         return render_template(request,
                                'election_poll_voters_upload',
                                common_context)
@@ -701,7 +711,13 @@ def voters_email(request, election, poll=None, voter_uuid=None):
 def voter_delete(request, election, poll, voter_uuid):
     voter = get_object_or_404(Voter, uuid=voter_uuid, poll__in=poll.linked_polls)
     voter_id = voter.voter_login_id
-    for poll in poll.linked_polls:
+    unlink = request.GET.get('unlink', False)
+
+    linked_polls = poll.linked_polls
+    if unlink:
+        linked_polls = linked_polls.filter(pk=poll.pk)
+
+    for poll in linked_polls:
         voter = None
         try:
             voter = Voter.objects.get(poll=poll, voter_login_id=voter_id)
@@ -713,6 +729,7 @@ def voter_delete(request, election, poll, voter_uuid):
         if voter:
             voter.delete()
             poll.logger.info("Poll voter '%s' removed", voter.voter_login_id)
+
     url = poll_reverse(poll, 'voters')
     return HttpResponseRedirect(url)
 
@@ -757,7 +774,8 @@ def voter_booth_linked_login(request, election, poll, voter_uuid):
     linked_poll = request.GET.get('link-to', None)
     if not poll.has_linked_polls:
         raise PermissionDenied()
-    if not linked_poll or linked_poll not in poll.linked_polls.values_list('uuid', flat=True):
+    if not linked_poll or linked_poll not in \
+            poll.linked_polls.values_list('uuid', flat=True):
         raise PermissionDenied()
     
     linked_poll = election.polls.get(uuid=linked_poll)
@@ -886,7 +904,8 @@ def cast(request, election, poll):
 def cast_done(request, election, poll):
     if request.zeususer.is_authenticated() and request.zeususer.is_voter:
         if poll.has_linked_polls:
-            next_poll = poll.next_linked_poll()
+            voter = request.zeususer._user
+            next_poll = poll.next_linked_poll(voter_id=voter.voter_login_id)
             if next_poll:
                 try:
                     voter = next_poll.voters.get(

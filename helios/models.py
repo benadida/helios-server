@@ -719,8 +719,10 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
         return self.election.polls.filter(link_id=self.link_id)
     return self.election.polls.filter(id=self.pk)
     
-  def next_linked_poll(self):
+  def next_linked_poll(self, voter_id=None):
       linked_next = self.linked_polls.filter(index__gte=self.index)
+      if voter_id:
+          linked_next = linked_next.filter(voters__voter_login_id=voter_login_id)
       if linked_next.count() > 1:
           return linked_next[1]
       return None
@@ -1456,7 +1458,7 @@ class VoterFile(models.Model):
     return iter_voter_data(voter_data, email_validator=email_validator)
 
   @transaction.commit_on_success
-  def process(self, check_dupes=True):
+  def process(self, linked=True, check_dupes=True):
     demo_voters = 0
     poll = self.poll
     demo_user = False
@@ -1507,8 +1509,12 @@ class VoterFile(models.Model):
         demo_voters += 1
         if demo_voters > settings.DEMO_MAX_VOTERS and demo_user:
           raise exceptions.VoterLimitReached("No more voters for demo account")
-    
-      for poll in poll.linked_polls:
+        
+      linked_polls = poll.linked_polls
+      if not linked:
+          linked_polls = linked_polls.filter(pk=poll.pk)
+
+      for poll in linked_polls:
         new_voters = []
         voter = None
         try:
