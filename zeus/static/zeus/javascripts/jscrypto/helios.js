@@ -112,8 +112,6 @@ STV.get_term = function(n, k) {
         if (m in t) {
             break;
         }
-
-        if (m > 100) { break; }
     }
 
     term = t[m];
@@ -144,7 +142,6 @@ STV.get_offsets = function(n) {
         sumus = sumus.add(new BigInt(''+STV.get_term(n, n-i), 10));
         offsets.push(sumus);
         if (i == n) { break; }
-        if (i > 100) { break;}
         i++;
     }
 
