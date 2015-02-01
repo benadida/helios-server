@@ -133,12 +133,12 @@ INSTALLED_APPS = (
 #    'django.contrib.contenttypes',
     'djangosecure',
     'django.contrib.sessions',
-    'django.contrib.sites',
+    #'django.contrib.sites',
     ## needed for queues
     'djcelery',
     'kombu.transport.django',
-    ## needed for schema migration
-    'south',
+    ## in Django 1.7 we now use built-in migrations, no more south
+    ## 'south',
     ## HELIOS stuff
     'helios_auth',
     'helios',
