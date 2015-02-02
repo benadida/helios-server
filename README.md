@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # README - Versão em português
 
 *This README is intended for portuguese native speakers. If you are interested in the original one, from helios original project, see README.txt*
@@ -164,7 +163,8 @@ Conforme indicado no settings.py, na configuração de SECURE_URL_HOST, ela não
 
 A versão do Django utilizada nesta versão do Helios é a 1.4.5, sendo esta a principal fonte de consulta pra aprendizado sobre esta versão: https://docs.djangoproject.com/en/1.4/
 
-=======
+--- Original Readme ---
+
 # Helios Election System
 
 Helios is an end-to-end verifiable voting system.
@@ -172,4 +172,3 @@ Helios is an end-to-end verifiable voting system.
 ![Travis Build Status](https://travis-ci.org/benadida/helios-server.svg?branch=master)
 
 [![Stories in Ready](https://badge.waffle.io/benadida/helios-server.png?label=ready&title=Ready)](https://waffle.io/benadida/helios-server)
->>>>>>> upstream/master
