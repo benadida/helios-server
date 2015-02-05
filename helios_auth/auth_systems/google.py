@@ -28,11 +28,13 @@ def get_flow(redirect_url=None):
 def get_auth_url(request, redirect_url):
   flow = get_flow(redirect_url)
 
-  request.session['google-flow'] = flow
+  request.session['google-redirect-url'] = redirect_url
   return flow.step1_get_authorize_url()
 
 def get_user_info_after_auth(request):
-  flow = request.session['google-flow']
+  flow = get_flow(request.session['google-redirect-url'])
+  del request.session['google-redirect-url']
+
   code = request.GET['code']
   credentials = flow.step2_exchange(code)
 

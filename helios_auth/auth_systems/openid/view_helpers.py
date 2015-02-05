@@ -1,7 +1,6 @@
 
 from django import http
 from django.http import HttpResponseRedirect
-from django.views.generic.simple import direct_to_template
 
 from openid.consumer import consumer
 from openid.consumer.discover import DiscoveryFailure
@@ -66,7 +65,6 @@ def start_openid(session, openid_url, trust_root, return_to):
         error = "OpenID discovery error: %s" % (str(e),)
 
     if error:
-        import pdb; pdb.set_trace()
         raise Exception("error in openid")
 
     # Add Simple Registration request information.  Some fields

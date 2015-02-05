@@ -57,21 +57,24 @@ import mimetypes
 
 # try to use simplejson first, otherwise fallback to XML
 RESPONSE_FORMAT = 'JSON'
-try:
-    import json as simplejson
-except ImportError:
-    try:
-        import simplejson
-    except ImportError:
-        try:
-            from django.utils import simplejson
-        except ImportError:
-            try:
-                import jsonlib as simplejson
-                simplejson.loads
-            except (ImportError, AttributeError):
-                from xml.dom import minidom
-                RESPONSE_FORMAT = 'XML'
+
+import json
+
+# try:
+#     import json as simplejson
+# except ImportError:
+#     try:
+#         import simplejson
+#     except ImportError:
+#         try:
+#             from django.utils import simplejson
+#         except ImportError:
+#             try:
+#                 import jsonlib as simplejson
+#                 simplejson.loads
+#             except (ImportError, AttributeError):
+#                 from xml.dom import minidom
+#                 RESPONSE_FORMAT = 'XML'
 
 # support Google App Engine.  GAE does not have a working urllib.urlopen.
 try:

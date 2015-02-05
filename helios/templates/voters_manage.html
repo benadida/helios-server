@@ -5,10 +5,10 @@
   <h2 class="title">{% trans "Manage Voters" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
    <h3 class="title">{{election.name}}</h3>
 </div>
-<form method="get" action="{% url helios.views.voters_search election.uuid %}"><b>{% trans "search" %}</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
+<form method="get" action="{% url "helios.views.voters_search" election.uuid %}"><b>{% trans "search" %}</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
 
 {% if upload_p %}
-<p><a href="{% url helios.views.voters_upload election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a></p>
+<p><a href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a></p>
 {% endif %}
 
 Voters {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
@@ -31,7 +31,7 @@ Voters {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
 <tr><td>{{voter.alias}}</td><td>{{voter.name}}</td><td>{{voter.voter_id}}
 {% if election.frozen_at %}
 {% else %}
-[<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">x</a>]
+[<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url "helios.views.voter_delete" election.uuid voter.uuid %}">x</a>]
 {% endif %}
 </td></tr>
 {% endfor %}

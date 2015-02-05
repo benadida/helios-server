@@ -14,7 +14,7 @@
 </p>
 
 <p>
-    {% trans "Visit the" %} <a href="{% url helios.views.one_election_view election.uuid %}">{% trans "election homepage" %}</a>.
+    {% trans "Visit the" %} <a href="{% url "helios.views.one_election_view election.uuid" %}">{% trans "election homepage" %}</a>.
 </p>
 
 {% endblock %}

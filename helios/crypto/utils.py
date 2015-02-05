@@ -2,9 +2,7 @@
 Crypto Utils
 """
 
-import hmac, base64
-
-from django.utils import simplejson
+import hmac, base64, json
 
 from hashlib import sha256
   
@@ -18,8 +16,8 @@ def hash_b64(s):
   return result
 
 def to_json(d):
-  return simplejson.dumps(d, sort_keys=True)
+  return json.dumps(d, sort_keys=True)
 
 def from_json(json_str):
   if not json_str: return None
-  return simplejson.loads(json_str)
+  return json.loads(json_str)

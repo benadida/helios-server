@@ -9,7 +9,7 @@ voter_id = '{{voter.voter_id}}';
 {% endif %}
 </script>
 <div class="col-md-10">
-  <h2 class="title">{% trans "Contact Voters" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
+  <h2 class="title">{% trans "Contact Voters" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
   <h2 class="title">{{election.name}}</h2>
 
 {% if voter %}  
@@ -82,7 +82,7 @@ voter_id = '{{voter.voter_id}}';
   </div>
   
   <div id="done" style="display:none;">
-    {% trans "Done, go" %} <a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>.
+    {% trans "Done, go" %} <a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "back to election" %}</a>.
   </div>
 
   <div id="error" style="display:none;">

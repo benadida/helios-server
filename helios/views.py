@@ -117,7 +117,7 @@ def admin_autologin(request):
 ## General election features
 ##
 
-@json
+@return_json
 def election_params(request):
   return ELGAMAL_PARAMS_LD_OBJECT.toJSONDict()
 
@@ -267,14 +267,14 @@ def one_election_schedule(request, election):
   return HttpResponse("foo")
 
 @election_view()
-@json
+@return_json
 def one_election(request, election):
   if not election:
     raise Http404
   return election.toJSONDict(complete=True)
 
 @election_view()
-@json
+@return_json
 def one_election_meta(request, election):
   if not election:
     raise Http404
@@ -386,7 +386,7 @@ def socialbuttons(request):
 ## As of July 2009, there are always trustees for a Helios election: one trustee is acceptable, for simple elections.
 ##
 @election_view()
-@json
+@return_json
 def list_trustees(request, election):
   trustees = Trustee.get_by_election(election)
   return [t.toJSONDict(complete=True) for t in trustees]
@@ -500,7 +500,7 @@ def trustee_upload_pk(request, election, trustee):
 ##
 
 @election_view()
-@json
+@return_json
 def get_randomness(request, election):
   """
   get some randomness to sprinkle into the sjcl entropy pool
@@ -512,7 +512,7 @@ def get_randomness(request, election):
     }
 
 @election_view(frozen=True)
-@json
+@return_json
 def encrypt_ballot(request, election):
   """
   perform the ballot encryption given answers_json, a JSON'ified list of list of answers
@@ -591,7 +591,7 @@ def password_voter_login(request, election):
       voter = election.voter_set.get(voter_login_id = password_login_form.cleaned_data['voter_id'].strip(),
                                      voter_password = password_login_form.cleaned_data['password'].strip())
 
-      request.session['CURRENT_VOTER'] = voter
+      request.session['CURRENT_VOTER_ID'] = voter.id
 
       # if we're asked to cast, let's do it
       if request.POST.get('cast_ballot') == "1":
@@ -763,7 +763,7 @@ def one_election_cast_done(request, election):
       logout = settings.LOGOUT_ON_CONFIRMATION
     else:
       logout = False
-      del request.session['CURRENT_VOTER']
+      del request.session['CURRENT_VOTER_ID']
 
     save_in_session_across_logouts(request, 'last_vote_hash', vote_hash)
     save_in_session_across_logouts(request, 'last_vote_cv_url', cv_url)
@@ -790,14 +790,14 @@ def one_election_cast_done(request, election):
                          include_user=(not logout))
 
 @election_view()
-@json
+@return_json
 def one_election_result(request, election):
   if not election.result_released_at:
     raise PermissionDenied
   return election.result
 
 @election_view()
-@json
+@return_json
 def one_election_result_proof(request, election):
   if not election.result_released_at:
     raise PermissionDenied
@@ -1380,7 +1380,7 @@ def voters_email(request, election):
 
 # Individual Voters
 @election_view()
-@json
+@return_json
 def voter_list(request, election):
   # normalize limit
   limit = int(request.GET.get('limit', 500))
@@ -1390,7 +1390,7 @@ def voter_list(request, election):
   return [v.ld_object.toDict() for v in voters]
   
 @election_view()
-@json
+@return_json
 def one_voter(request, election, voter_uuid):
   """
   View a single voter's info as JSON.
@@ -1401,7 +1401,7 @@ def one_voter(request, election, voter_uuid):
   return voter.toJSONDict()
 
 @election_view()
-@json
+@return_json
 def voter_votes(request, election, voter_uuid):
   """
   all cast votes by a voter
@@ -1411,7 +1411,7 @@ def voter_votes(request, election, voter_uuid):
   return [v.toJSONDict()  for v in votes]
 
 @election_view()
-@json
+@return_json
 def voter_last_vote(request, election, voter_uuid):
   """
   all cast votes by a voter
@@ -1424,7 +1424,7 @@ def voter_last_vote(request, election, voter_uuid):
 ##
 
 @election_view()
-@json
+@return_json
 def ballot_list(request, election):
   """
   this will order the ballots from most recent to oldest.

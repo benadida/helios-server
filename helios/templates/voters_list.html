@@ -5,7 +5,7 @@
 
 <div class="col-md-12">
 <div id="header">
-  <h3 class="title">{% trans "Voters and Ballot Tracking Center" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
+  <h3 class="title">{% trans "Voters and Ballot Tracking Center" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
   <h3 class="title">{{election.name}}</h3>
 	<br /><br />
 </div>
@@ -22,7 +22,7 @@
 	<div class="form-group">
 	<label>{% trans "You can change this setting:" %}</label>
 	</div>
-	<form method="post" role="form" class="form-horizontal" action="{% url helios.views.voters_eligibility election.uuid %}">
+	<form method="post" role="form" class="form-horizontal" action="{% url "helios.views.voters_eligibility" election.uuid %}">
 	<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 	<div class="form-group">
 	<input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> {% trans "anyone can vote" %}
@@ -50,7 +50,7 @@
 	{% endif %}
 	{% endif %}
 	{% if email_voters and election.frozen_at and admin_p %}
-	<p><a class="btn btn-primary" href="{% url helios.views.voters_email election.uuid %}">{% trans "email voters" %}</a></p>
+	<p><a class="btn btn-primary" href="{% url "helios.views.voters_email" election.uuid %}">{% trans "email voters" %}</a></p>
 	{% endif %}
 	
 </div> <!-- end column -->
@@ -62,7 +62,7 @@
 
 	{% if upload_p and not election.openreg %}
 	<div class="form-group">
-	<a class="btn btn-primary" href="{% url helios.views.voters_upload election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
+	<a class="btn btn-primary" href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
 	</div>
 	{% endif %}
 	{% endif %}
@@ -90,7 +90,7 @@
 	<p><em>{% trans "searching for" %} <u>{{q}}</u>.</em> [<a href="?">{% trans "clear search" %}</a>]</p>
 	{% else %}
 
-	<form method="get" action="{% url helios.views.voters_list_pretty election.uuid %}"><b>	{% if not election.use_voter_aliases or admin_p %} {% trans "Voter name" %} {% else %} {% trans "Alias" %}{% endif %}</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
+	<form method="get" action="{% url "helios.views.voters_list_pretty" election.uuid %}"><b>	{% if not election.use_voter_aliases or admin_p %} {% trans "Voter name" %} {% else %} {% trans "Alias" %}{% endif %}</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
 
 	{% endif %}
 	</p>
@@ -143,8 +143,8 @@
 	{% if admin_p %}
 	<td>
 
-	<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}"><i title="{% trans "Send email to this voter. This action will only be possible if the ballot is already frozen." %}" class="glyphicon glyphicon-envelope"></i></a>
-	<a href="{% url helios.views.voter_delete election.uuid, voter.uuid %}"><i data-name="{{voter.name}}" title="{% trans "Remove voter" %}" class="glyphicon glyphicon-remove remove_voter"></i></a>
+	<a href="{% url "helios.views.voters_email" election.uuid %}?voter_id={{voter.voter_login_id}}"><i title="{% trans "Send email to this voter. This action will only be possible if the ballot is already frozen." %}" class="glyphicon glyphicon-envelope"></i></a>
+	<a href="{% url "helios.views.voter_delete" election.uuid, voter.uuid %}"><i data-name="{{voter.name}}" title="{% trans "Remove voter" %}" class="glyphicon glyphicon-remove remove_voter"></i></a>
 
 	<!--<img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" />--> {{voter.name}}</td>
 	{% if election.use_voter_aliases %}

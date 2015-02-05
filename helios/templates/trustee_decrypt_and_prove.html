@@ -203,7 +203,7 @@ function reset() {
   </div>
   
   <div id="done_div">
-      {% trans "Done!" %} <br /><br /><a class="btn btn-primary" href="{% url helios.views.one_election_view election.uuid %}">{% trans "Back to election" %}</a>
+      {% trans "Done!" %} <br /><br /><a class="btn btn-primary" href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "Back to election" %}</a>
   </div>
   
   <div id="error_div">

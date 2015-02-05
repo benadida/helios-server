@@ -4,7 +4,7 @@ Authentication URLs
 Ben Adida (ben@adida.net)
 """
 
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 
 from views import *
 from auth_systems.password import password_login_view, password_forgotten_view

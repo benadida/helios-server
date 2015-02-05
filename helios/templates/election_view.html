@@ -18,9 +18,9 @@
 {% endif %}
 {% if admin_p %}
 {% if not election.frozen_at %}
-<a title="{% trans "edit" %}" href="{% url helios.views.one_election_edit election.uuid %}"><i class="glyphicon glyphicon-edit"></i></a>
+<a title="{% trans "edit" %}" href="{% url "helios.views.one_election_edit" election.uuid %}"><i class="glyphicon glyphicon-edit"></i></a>
 {% endif %}
-{% if election.is_archived %}<a class="small button" href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=0">{% trans "unarchive it" %}</a>{% else %}<a class="small button" href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=1"> <i title="{% trans "archive it" %}" class="glyphicon glyphicon-briefcase"></i></a>{% endif %}
+{% if election.is_archived %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=0">{% trans "unarchive it" %}</a>{% else %}<a class="small button" href="{% url helios.views.one_election_archive election_uuid=election.uuid %}?archive_p=1"> <i title="{% trans "archive it" %}" class="glyphicon glyphicon-briefcase"></i></a>{% endif %}
 {% endif %}
 </div>
 </div>
@@ -91,13 +91,13 @@
 	<h4 class="page-header">
 	<div class="row placeholders">
 		<div class="col-xs-6 col-sm-3 placeholder">
-			<a class="label label-success" href="{% url helios.views.one_election_questions election.uuid %}">{% trans "questions" %} <span class="badge">{% if election.questions %}{{election.questions|length}}{% else %}0{% endif %}</span></a>
+			<a class="label label-success" href="{% url "helios.views.one_election_questions" election.uuid %}">{% trans "questions" %} <span class="badge">{% if election.questions %}{{election.questions|length}}{% else %}0{% endif %}</span></a>
 		</div>
 		<div class="col-xs-6 col-sm-3 placeholder">
-			<a class="label label-success" href="{% url helios.views.voters_list_pretty election.uuid %}">{% blocktrans %}voters &amp; ballots{% endblocktrans %}</a>
+			<a class="label label-success" href="{% url "helios.views.voters_list_pretty" election.uuid %}">{% blocktrans %}voters &amp; ballots{% endblocktrans %}</a>
 		</div>
 		<div class="col-xs-6 col-sm-3 placeholder">
-			<a class="label label-success" href="{% url helios.views.list_trustees_view election.uuid %}">{% trans "trustees" %} <span class="badge">{{trustees|length}}</span></a>
+			<a class="label label-success" href="{% url "helios.views.list_trustees_view" election.uuid %}">{% trans "trustees" %} <span class="badge">{{trustees|length}}</span></a>
 		</div>
 		</div>
 	</h4>
@@ -136,7 +136,7 @@
 {{issue.action}}{% if forloop.last %}{% else %}, {% trans "and" %}{% endif %}
 {% endfor %}
 {% else %}
-<a href="{% url helios.views.one_election_freeze election.uuid %}">{% trans "freeze ballot and open election." %}</a>
+<a href="{% url "helios.views.one_election_freeze" election.uuid %}">{% trans "freeze ballot and open election." %}</a>
 <br /><br />
 {% if election.voting_starts_at %}
 once you do this, the election will be ready for voting and will open automatically<br />
@@ -155,7 +155,7 @@ Tally computation is under way.<br />
 Reload this page in a couple of minutes.
 {% endblocktrans %}
 {% else %}
-<a href="{% url helios.views.one_election_compute_tally election.uuid %}">
+<a href="{% url "helios.views.one_election_compute_tally" election.uuid %}">
 {%blocktrans %}
 compute encrypted tally</a><br />
 The encrypted votes will be combined into an encrypted tally. Once this is done,<br />
@@ -165,7 +165,7 @@ trustees will be asked to provide their share of the decryption.
 {% else %}
 
 {% if election.result %}
-<a href="{% url helios.views.release_result election.uuid %}">{% trans "release result" %}</a><br />
+<a href="{% url "helios.views.release_result" election.uuid %}">{% trans "release result" %}</a><br />
 {% blocktrans %}
 The result displayed below is visible only to you.<br />
 Once you release the result, it will be visible to everyone.
@@ -173,7 +173,7 @@ Once you release the result, it will be visible to everyone.
 {% else %}
 
 {% if election.ready_for_decryption_combination %}
-<a href="{% url helios.views.combine_decryptions election.uuid %}">
+<a href="{% url "helios.views.combine_decryptions" election.uuid %}">
 {% if election.num_trustees == 1 %}
 {% trans "compute results" %}
 {% else %}
@@ -189,7 +189,7 @@ Once you do this, the tally will visible to you, the administrator, only.
 {% endblocktrans %}
 {% endif %}
 {% else %}
-<a href="{% url helios.views.list_trustees_view election.uuid %}">{% trans "trustees (for decryption)" %}</a>
+<a href="{% url "helios.views.list_trustees_view" election.uuid %}">{% trans "trustees (for decryption)" %}</a>
 {% endif %}
 
 {% endif %}
@@ -273,7 +273,6 @@ This election is <em>private</em>. You are signed in as eligible voter <em>{{vot
 </span> <br /><br />
 {% endif %}
 
-
 {% endif %}
 
 {% endif %}
@@ -285,7 +284,7 @@ This election is <em>private</em>. You are signed in as eligible voter <em>{{vot
 	{% if election.voting_has_stopped %}
 		<p style="font-size: 1.2em;">
 			{% if election.result %}
-			{% trans "verify" %} <a target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">{% trans "election tally" %}</a>.
+			{% trans "verify" %} <a target="_blank" href="/verifier/verify.html?election_url={% url "helios.views.one_election" election.uuid %}">{% trans "election tally" %}</a>.
 			{% endif %}
 			{% trans "review the" %} <a href="{{vote_url}}">{% trans "voting booth" %}</a> ({% trans "review purposes only" %}).
 		</p>

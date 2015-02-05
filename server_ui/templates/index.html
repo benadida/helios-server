@@ -33,7 +33,6 @@
   {% if create_p %}
   <a class="button" href="{% url helios.views.election_new %}">{% trans "create an election" %}</a>
   {% endif %}
-
     {% else %}
     <p style="font-size: 1.4em;">
       {{settings.WELCOME_MESSAGE|safe}}
@@ -85,7 +84,6 @@
     <em>{% trans "none yet" %}</em>
     {% endif %}
  <a class="tiny button" href="{% url helios.views.elections_voted %}">{% trans "see all" %}</a>
-
     {% else %}
       <!--{% if settings.SHOW_LOGIN_OPTIONS %}
       <h5>{% trans "Log In to Start Voting" %}</h5>
