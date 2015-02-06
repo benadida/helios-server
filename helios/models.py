@@ -7,7 +7,7 @@ Ben Adida
 """
 
 from django.db import models, transaction
-from django.utils import json
+import json
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core.mail import send_mail

@@ -6,7 +6,7 @@
 {% ifequal auth_system password %}
 {% else %}
 <p>
-    <a href="{{SECURE_URL_HOST}}{% url helios_auth.views.start system_name=auth_system %}?return_url={{return_url}}" style="font-size: 1.4em;">
+    <a href="{{SECURE_URL_HOST}}{% url "helios_auth.views.start" system_name=auth_system %}?return_url={{return_url}}" style="font-size: 1.4em;">
  {% ifequal auth_system "ldap" %} 
  	{% trans "Login" %} 
  {% else %} 

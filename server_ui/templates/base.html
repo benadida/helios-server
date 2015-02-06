@@ -28,7 +28,7 @@
   
   {% block extra-head %}{% endblock %}
   <script language="javascript" src="/static/helios/js/utils.js"></script>
-  <script type="text/javascript" src="{% url django.views.i18n.javascript_catalog %}"></script>
+  <script type="text/javascript" src="{% url "django.views.i18n.javascript_catalog" %}"></script>
 </head>
 <body>
 <nav class="navbar navbar-default top-bar" role="navigation">
@@ -49,7 +49,7 @@
     </div>
     <div class="navbar-right navbar-top">
       {% if user and user.admin_p %}
-      <a class="navbar-brand" style="color:#FFFFFF;" href="{% url helios.stats_views.home %}">Admin</a
+      <a class="navbar-brand" style="color:#FFFFFF;" href="{% url "helios.stats_views.home" %}">Admin</a
       >
       {% endif %}
     </div>
