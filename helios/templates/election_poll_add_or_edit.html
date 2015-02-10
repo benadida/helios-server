@@ -22,8 +22,8 @@
 var elems = $("input[id^=id_oauth2]:not(#id_oauth2_thirdparty), select[id^=id_oauth2]");
 
 function show_elems(time){
-    elems.parents().show(time);
-    elems.parents().next().show(time);
+    elems.parent().show(time);
+    elems.parent().next().show(time);
 }
 
 function hide_elems(time){
