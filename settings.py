@@ -15,6 +15,8 @@ def get_from_env(var, default):
 DEBUG = (get_from_env('DEBUG', '1') == '1')
 TEMPLATE_DEBUG = DEBUG
 
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
 ROOT_URLCONF = 'urls'
 
 ROOT_PATH = os.path.dirname(__file__)
@@ -99,9 +101,6 @@ STATICFILES_DIRS = (
     ROOT_PATH + '/server_ui/media'
 )
 
-
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
 
 # Secure Stuff
 if (get_from_env('SSL', '0') == '1'):
