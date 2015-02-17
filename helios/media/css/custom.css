@@ -1,6 +1,6 @@
 .top-bar {
 	background-color:#339933;	
-	background-image:url('../img/logo.png');
+	background-image:url('/media/img/logo.png');
 	background-repeat:no-repeat;
 	min-height:80px;
 }
