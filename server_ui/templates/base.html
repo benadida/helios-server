@@ -2,6 +2,7 @@
 <!--[if IE 8]> 				 <html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="{% firstof settings.LANGUAGE_CODE 'en' %}"> <!--<![endif]-->
 {% load i18n %}
+{% load staticfiles %}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
@@ -9,25 +10,25 @@
   
   <!--<link rel="stylesheet" href="/static/foundation/css/foundation.css">
   <link rel="stylesheet" href="/static/foundation-tweaks.css"> -->
-  <link rel="stylesheet" type="text/css" media="screen" href="/static/helios/bootstrap/css/bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" media="screen" href="/static/helios/css/custom.css" />
+  <link rel="stylesheet" type="text/css" media="screen" href="{% static "bootstrap/css/bootstrap.min.css" %}"/>
+  <link rel="stylesheet" type="text/css" media="screen" href="{% static "css/custom.css" %}"/>
 
 {% if settings.DEBUG %}  
-  <script src="/static/foundation/js/vendor/custom.modernizr.js"></script>
-  <script language="javascript" src="/static/helios/js/jquery-1.4.2.min.js"></script>
-  <script language="javascript" src="/static/helios/js/jquery-ui-1.8.1.custom.min.js"></script>
-  <script language="javascript" src="/static/helios/js/jqsplitdatetime.js"></script>
-  <script language="javascript" src="/static/helios/helios/jquery.json.min.js"></script>
-  <script language="javascript" src="/static/foundation/js/foundation.min.js"></script>  
+  <script src={% static "foundation/js/vendor/custom.modernizr.js" %}></script>
+  <script language="javascript" src={% static "js/jquery-1.4.2.min.js" %}></script>
+  <script language="javascript" src={% static "js/jquery-ui-1.8.1.custom.min.js" %}></script>
+  <script language="javascript" src={% static "js/jqsplitdatetime.js" %}></script>
+  <script language="javascript" src={% static "helios/jquery.json.min.js" %}></script>
+  <script language="javascript" src={% static "foundation/js/foundation.min.js" %}></script>  
 {% else %}
-<script language="javascript" src="/static/20140302-helios-combined.js"></script>
+<script language="javascript" src={% static "20140302-helios-combined.js" %}></script>
 {% endif %}
   
   {% block js %}
   {% endblock %}
   
   {% block extra-head %}{% endblock %}
-  <script language="javascript" src="/static/helios/js/utils.js"></script>
+  <script language="javascript" src={% static "helios/js/utils.js" %}></script>
   <script type="text/javascript" src="{% url "django.views.i18n.javascript_catalog" %}"></script>
 </head>
 <body>
@@ -59,6 +60,7 @@
   <!-- Main Page Content and Sidebar -->
 
   <div class="container">
+ Login: {{ login_link }}
       {% block content %}{% endblock %}
   </div>
   
