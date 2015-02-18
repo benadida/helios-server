@@ -31,20 +31,51 @@ function hide_elems(time){
     elems.parent().next().hide(time);
 }
 
+function collect_urls(){
+    
+    var urls = {};
+    var types = ["google", "facebook"];
+    var subtypes = ["code", "exchange", "confirmation"]
+    for (var i = 0; i < types.length; i++) {
+        type = types[i]
+        urls_arr = []
+        for (var j = 0; j < subtypes.length; j++) {
+            subtype = subtypes[j]
+            var value = $("#id_"+type+"_"+subtype+"_url").val()
+            urls_arr.push(value)
+        }
+        urls[type] = urls_arr;
+    }
+    urls['other'] = ['', '', '']
+    return urls
+    }
+
 $(function(){
+    urls = collect_urls();
     if ($("#id_oauth2_thirdparty").prop('checked')){
-        show_elems(300);
+        show_elems(150);
     }
     else{
         hide_elems(0);
     }
     $("#id_oauth2_thirdparty").change(function(){
         if ($("#id_oauth2_thirdparty").prop('checked')){
-            show_elems(300);
+            show_elems(150);
         }
         else{
-            hide_elems(300);
+            hide_elems(150);
         }
+    });
+
+    $("#id_oauth2_type").change(function(){
+        var type = $(this).val();
+        var code_field = $("#id_oauth2_url")
+        var exchange_field = $("#id_oauth2_exchange_url")
+        var confirmation_field = $("#id_oauth2_confirmation_url")
+        code_field.val(urls[type][0])
+        exchange_field.val(urls[type][1])
+        confirmation_field.val(urls[type][2])
+        
     });
 });
 </script>
