@@ -20,7 +20,8 @@ from django.db.models import Q
 from django.utils.safestring import mark_safe
 from django.contrib.auth.hashers import check_password, make_password
 from django.forms.models import BaseModelFormSet
-from django.forms.widgets import Select, MultiWidget, DateInput, TextInput
+from django.forms.widgets import Select, MultiWidget, DateInput, TextInput,\
+    HiddenInput
 from django.forms.formsets import BaseFormSet
 
 from helios.models import Election, Poll, Trustee, Voter
@@ -571,15 +572,35 @@ class PollForm(forms.ModelForm):
                                                        choices=TYPES)
         self.fields['oauth2_client_type'] = forms.ChoiceField(required=False,
                                                               choices=CHOICES)
+        self.fields['google_code_url'] = forms.CharField(
+                                                widget=HiddenInput,
+                                                initial="https://accounts.google.com/o/oauth2/auth")
+        self.fields['google_exchange_url'] = forms.CharField(
+                                                widget=HiddenInput,
+                                                initial="https://accounts.google.com/o/oauth2/token")
+        self.fields['google_confirmation_url'] = forms.CharField(
+                                                widget=HiddenInput,
+                                                initial="https://www.googleapis.com/plus/v1/people/me")
+        self.fields['facebook_code_url'] = forms.CharField(
+                                                widget=HiddenInput,
+                                                initial="https://www.facebook.com/dialog/oauth")
+        self.fields['facebook_exchange_url'] = forms.CharField(
+                                                widget=HiddenInput,
+                                                initial="https://graph.facebook.com/oauth/access_token")
+        self.fields['facebook_confirmation_url'] = forms.CharField(
+                                                widget=HiddenInput,
+                                                initial="https://graph.facebook.com/v2.2/me")
+
         if self.election.feature_frozen:
             self.fields['name'].widget.attrs['readonly'] = True
-    
+
     class Meta:
         model = Poll
         fields = ('name', 'oauth2_thirdparty', 'oauth2_type', 
                   'oauth2_client_type', 'oauth2_client_id', 
-                  'oauth2_client_secret', 'oauth2_url',)
-       
+                  'oauth2_client_secret', 'oauth2_url',
+                  'oauth2_exchange_url', 'oauth2_confirmation_url')
+
     def clean(self):
 
         data = self.cleaned_data
@@ -595,7 +616,8 @@ class PollForm(forms.ModelForm):
                 raise forms.ValidationError(_("Poll name cannot be changed\
                                                after freeze"))
         
-        field_names = ['type', 'client_type', 'client_id', 'client_secret', 'url']
+        field_names = ['type', 'client_type', 'client_id', 'client_secret',
+                       'url', 'exchange_url', 'confirmation_url']
         field_names = ['oauth2_' + x for x in field_names]
         url_validate = URLValidator()
         if data['oauth2_thirdparty']:
