@@ -14,16 +14,19 @@ def oauth2_module(cls):
 def get_oauth2_module(poll):
     return OAUTH2_REGISTRY.get(poll.oauth2_type)(poll)
 
+
 class Oauth2Base(object):
 
     def __init__(self, poll):
         self.poll = poll
+        self.exchange_url = poll.oauth2_exchange_url
+        self.confirmation_url = self.poll.oauth2_confirmation_url
         self.code_post_data = {
             'response_type': 'code',
             'client_id': poll.oauth2_client_id,
             'redirect_uri': settings.OAUTH2_CALLBACK,
             'state': poll.uuid
-        }
+            }
 
         self.exchange_data = {
             'client_id': poll.oauth2_client_id,
@@ -55,6 +58,7 @@ class Oauth2Base(object):
     def exchange(self, url):
         raise NotImplemented
 
+
 @oauth2_module
 class Oauth2Google(Oauth2Base):
 
@@ -62,9 +66,8 @@ class Oauth2Google(Oauth2Base):
 
     def __init__(self, poll):
         super(Oauth2Google, self).__init__(poll)
-        self.code_post_data['scope'] = 'email'
-        self.code_post_data['approval_prompt'] = 'force'
-        self.exchange_url = 'https://accounts.google.com/o/oauth2/token'
+        self.code_post_data['scope'] = 'openid email'
+        self.code_post_data['approval_prompt'] = 'auto'
 
     def set_login_hint(self, email):
         self.code_post_data['login_hint'] = email
@@ -78,9 +81,8 @@ class Oauth2Google(Oauth2Base):
         self.expires_in = data['expires_in']
 
     def confirm_email(self):
-        url='https://www.googleapis.com/plus/v1/people/me'
         get_params = 'access_token={}'.format(self.access_token)
-        get_url = '{}?{}'.format(url, get_params)
+        get_url = '{}?{}'.format(self.confirmation_url, get_params)
         response = urllib2.urlopen(get_url)
         data = json.loads(response.read())
         response_email = data['emails'][0]['value']
@@ -88,6 +90,7 @@ class Oauth2Google(Oauth2Base):
             return True
 
 
+@oauth2_module
 class Oauth2FB(Oauth2Base):
 
     type_id = 'facebook'
@@ -95,7 +98,6 @@ class Oauth2FB(Oauth2Base):
     def __init__(self, poll):
         super(Oauth2FB, self).__init__(poll)
         self.code_post_data['scope'] = 'email'
-        self.exchange_url = 'https://graph.facebook.com/oauth/access_token'
 
     def exchange(self, url):
         response = urllib2.urlopen(url[0], url[1])
@@ -108,11 +110,31 @@ class Oauth2FB(Oauth2Base):
                 self.expires = item.split('=')[1]
 
     def confirm_email(self):
-        url = 'https://graph.facebook.com/v2.2/me'
         get_params = 'fields=email&access_token={}'.format(self.access_token)
-        get_url = '{}?{}'.format(url, get_params)
+        get_url = '{}?{}'.format(self.confirmation_url, get_params)
         response = urllib2.urlopen(get_url)
         data = json.loads(response.read())
         response_email = data['email']
         if response_email == self.session_email:
             return True
+
+
+@oauth2_module
+class Oauth2Other(Oauth2Base):
+    
+    type_id = 'other'
+
+    def __init__(self, poll):
+        super(Oauth2Other, self).__init__(poll)
+        self.code_post_data['scope'] = 'email'
+
+    def exchange(self):
+        response = urllib2.urlopen(url[0], url[1])
+        data = json.loads(response.read())
+        self.access_token = data['access_token']
+        self.id_token = data['id_token']
+        self.token_type = data['token_type']
+        self.expires_in = data['expires_in']
+
+    def confirm_email(self):
+        raise NotImplemented
