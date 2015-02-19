@@ -111,7 +111,7 @@ def manager_or_superadmin_required(func):
     @user_required
     @wraps(func)
     def wrapper(request, *args, **kwargs):
-        if not (request.zeususer._user.superadmin_p
+        if not (request.zeususer.is_superadmin
                 or request.zeususer.is_manager):
             raise PermissionDenied("Superadmin or manager required")
         return func(request, *args, **kwargs)
