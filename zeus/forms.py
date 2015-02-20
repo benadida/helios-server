@@ -568,28 +568,30 @@ class PollForm(forms.ModelForm):
             ('facebook', 'facfebook'),
             ('other', 'other')
         )
+
+
         self.fields['oauth2_type'] = forms.ChoiceField(required=False,
                                                        choices=TYPES)
         self.fields['oauth2_client_type'] = forms.ChoiceField(required=False,
                                                               choices=CHOICES)
         self.fields['google_code_url'] = forms.CharField(
-                                                widget=HiddenInput,
-                                                initial="https://accounts.google.com/o/oauth2/auth")
+                                    widget=HiddenInput,
+                                    initial="https://accounts.google.com/o/oauth2/auth")
         self.fields['google_exchange_url'] = forms.CharField(
-                                                widget=HiddenInput,
-                                                initial="https://accounts.google.com/o/oauth2/token")
+                                    widget=HiddenInput,
+                                    initial="https://accounts.google.com/o/oauth2/token")
         self.fields['google_confirmation_url'] = forms.CharField(
-                                                widget=HiddenInput,
-                                                initial="https://www.googleapis.com/plus/v1/people/me")
+                                    widget=HiddenInput,
+                                    initial="https://www.googleapis.com/plus/v1/people/me")
         self.fields['facebook_code_url'] = forms.CharField(
-                                                widget=HiddenInput,
-                                                initial="https://www.facebook.com/dialog/oauth")
+                                    widget=HiddenInput,
+                                    initial="https://www.facebook.com/dialog/oauth")
         self.fields['facebook_exchange_url'] = forms.CharField(
-                                                widget=HiddenInput,
-                                                initial="https://graph.facebook.com/oauth/access_token")
+                                    widget=HiddenInput,
+                                    initial="https://graph.facebook.com/oauth/access_token")
         self.fields['facebook_confirmation_url'] = forms.CharField(
-                                                widget=HiddenInput,
-                                                initial="https://graph.facebook.com/v2.2/me")
+                                    widget=HiddenInput,
+                                    initial="https://graph.facebook.com/v2.2/me")
 
         if self.election.feature_frozen:
             self.fields['name'].widget.attrs['readonly'] = True
@@ -598,7 +600,7 @@ class PollForm(forms.ModelForm):
         model = Poll
         fields = ('name', 'oauth2_thirdparty', 'oauth2_type', 
                   'oauth2_client_type', 'oauth2_client_id', 
-                  'oauth2_client_secret', 'oauth2_url',
+                  'oauth2_client_secret', 'oauth2_code_url',
                   'oauth2_exchange_url', 'oauth2_confirmation_url')
 
     def clean(self):
@@ -615,19 +617,22 @@ class PollForm(forms.ModelForm):
             (self.cleaned_data['name'] != self.instance.name):
                 raise forms.ValidationError(_("Poll name cannot be changed\
                                                after freeze"))
-        
+
         field_names = ['type', 'client_type', 'client_id', 'client_secret',
-                       'url', 'exchange_url', 'confirmation_url']
+                       'code_url', 'exchange_url', 'confirmation_url']
         field_names = ['oauth2_' + x for x in field_names]
         url_validate = URLValidator()
         if data['oauth2_thirdparty']:
             for field_name in field_names:
                 if not data[field_name]:
                     self._errors[field_name] = ((_('This field is required.'),))
-            try:
-                url_validate(data['oauth2_url'])
-            except ValidationError:
-                self._errors['oauth2_url'] = ((_("This URL is invalid"),))
+            url_types = ['code', 'exchange', 'confirmation']
+            for url_type in url_types:
+                try:
+                    url_validate(data['oauth2_{}_url'.format(url_type)])
+                except ValidationError:
+                    self._errors['oauth2_{}_url'.format(url_type)] =\
+                        ((_("This URL is invalid"),))
         else:
             for field_name in field_names:
                 data[field_name] = ''
