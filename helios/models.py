@@ -717,7 +717,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
                                       null=True, blank=True)
   oauth2_client_secret = models.CharField(max_length=255,
                                           null=True, blank=True)
-  oauth2_url = models.CharField(max_length=255,
+  oauth2_code_url = models.CharField(max_length=255,
                                 null=True, blank=True)
   oauth2_exchange_url = models.CharField(max_length=255,
                                 null=True, blank=True)

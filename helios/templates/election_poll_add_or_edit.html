@@ -52,7 +52,7 @@ function collect_urls(){
 
 function set_initial_values(urls){
     if ("{{poll}}" == "None"){
-        var code_field = $("#id_oauth2_url")
+        var code_field = $("#id_oauth2_code_url")
         var exchange_field = $("#id_oauth2_exchange_url")
         var confirmation_field = $("#id_oauth2_confirmation_url")
         console.log(confirmation_field)
@@ -85,7 +85,7 @@ $(function(){
 
     $("#id_oauth2_type").change(function(){
         var type = $(this).val();
-        var code_field = $("#id_oauth2_url")
+        var code_field = $("#id_oauth2_code_url")
         var exchange_field = $("#id_oauth2_exchange_url")
         var confirmation_field = $("#id_oauth2_confirmation_url")
         code_field.val(urls[type][0])
