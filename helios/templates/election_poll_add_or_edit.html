@@ -50,8 +50,24 @@ function collect_urls(){
     return urls
     }
 
+function set_initial_values(urls){
+    if ("{{poll}}" == "None"){
+        var code_field = $("#id_oauth2_url")
+        var exchange_field = $("#id_oauth2_exchange_url")
+        var confirmation_field = $("#id_oauth2_confirmation_url")
+        console.log(confirmation_field)
+        var type = "google";
+        code_field.val(urls[type][0])
+        exchange_field.val(urls[type][1])
+        confirmation_field.val(urls[type][2])
+
+        
+    }
+}
+
 $(function(){
     urls = collect_urls();
+    set_initial_values(urls);
     if ($("#id_oauth2_thirdparty").prop('checked')){
         show_elems(150);
     }
