@@ -35,14 +35,13 @@
 <nav class="navbar navbar-default top-bar" role="navigation">
   <div class="container-fluid">
     <!-- Brand and toggle get grouped for better mobile display -->
-
     {% if user %}
     <div class="navbar-right navbar-top">
       <a class="navbar-brand " style="color:#FFFFFF;" href="/auth/logout?return_url=/">{% trans "Logout" %}</a>
     </div>
     {% else %}
     <div class="navbar-right navbar-top">
-      <a class="navbar-brand" style="color:#FFFFFF;" href="/auth/start/ldap?return_url=">{% trans "Login" %}</a>
+    <a class="navbar-brand" style="color:#FFFFFF;" href="{{SECURE_URL_HOST}}{% url "helios_auth.views.start" system_name=auth_system %}?return_url={{return_url}}"> {% trans "Login" %}</a>
     </div>
     {% endif %}
     <div class="navbar-right navbar-top">
@@ -60,7 +59,6 @@
   <!-- Main Page Content and Sidebar -->
 
   <div class="container">
- Login: {{ login_link }}
       {% block content %}{% endblock %}
   </div>
   
