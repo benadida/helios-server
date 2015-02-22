@@ -1,0 +1,1 @@
+../../helios/media/shibboleth/idpselect_config.js

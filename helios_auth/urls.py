@@ -10,6 +10,8 @@ from views import *
 from auth_systems.password import password_login_view, password_forgotten_view
 from auth_systems.twitter import follow_view
 from auth_systems.ldapauth import ldap_login_view
+from auth_systems.shibboleth import shibboleth_login_view, shibboleth_register
+from auth_systems.shibboleth import shibboleth_meta
 
 urlpatterns = patterns('',
     # basic static stuff
@@ -32,4 +34,9 @@ urlpatterns = patterns('',
 
     # ldap
     (r'^ldap/login', ldap_login_view),
+    
+    # shibboleth
+    (r'^shib/login', shibboleth_login_view),
+    (r'^shib/register', shibboleth_register),
+    (r'^shib/meta', shibboleth_meta),
 )

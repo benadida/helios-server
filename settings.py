@@ -226,7 +226,7 @@ HELIOS_PRIVATE_DEFAULT = False
 
 # authentication systems enabled
 #AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
-AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'ldap').split(",")
+AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'shibboleth').split(",")
 AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
 
 # google
@@ -322,3 +322,15 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'django_auth_ldap.backend.LDAPBackend',
 )
+
+
+#Shibboleth
+SHIBBOLETH_ATTRIBUTE_MAP = {
+    #"Shibboleth-givenName": (True, "first_name"),
+    "Shib-inetOrgPerson-cn": (True, "common_name"),
+    "Shib-inetOrgPerson-sn": (True, "last_name"),
+    "Shib-inetOrgPerson-mail": (True, "email"),
+    "Shib-eduPerson-eduPersonPrincipalName": (True, "eppn"),
+    "Shib-eduPerson-eduPersonAffiliation": (True, "affiliation"),
+#    "Shib-Identity-Provider": (True, "identity_provider"),
+}
