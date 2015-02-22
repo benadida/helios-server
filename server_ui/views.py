@@ -25,18 +25,18 @@ def get_election():
   
 def home(request):
   # load the featured elections
-  featured_elections = Election.get_featured()
+  featured_elections = helios.models.Election.get_featured()
   
   user = get_user(request)
   create_p = can_create_election(request)
 
   if create_p:
-    elections_administered = Election.get_by_user_as_admin(user, archived_p=False, limit=5)
+    elections_administered = helios.models.Election.get_by_user_as_admin(user, archived_p=False, limit=5)
   else:
     elections_administered = None
 
   if user:
-    elections_voted = Election.get_by_user_as_voter(user, limit=5)
+    elections_voted = helios.models.Election.get_by_user_as_voter(user, limit=5)
   else:
     elections_voted = None
  
