@@ -2,7 +2,7 @@
 {% load i18n %}
 {% block content %}
 <div id="header">
-  <h2 class="title">{% trans "Manage Voters" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
+  <h2 class="title">{% trans "Manage Voters" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
    <h3 class="title">{{election.name}}</h3>
 </div>
 <form method="get" action="{% url "helios.views.voters_search" election.uuid %}"><b>{% trans "search" %}</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
