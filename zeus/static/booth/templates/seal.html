@@ -8,11 +8,20 @@
     {#foreach $T.questions as question}
     <ul class="confirm-choices">
       {#foreach $T.choices[$T.question$index] as choice}
-      <li><h6>{#if $T.election.module_params.ranked}Επιλογή {$T.choice$index+1}:{#/if}
-        <span class="question" style="margin-top:35px;">{show($T.choice.question)}:</span> 
+      <li><h6>
+          {#if !$T.election.module_params.ranked}
+          <span class="question" style="margin-top:35px;">{show($T.choice.question)}:</span> 
           {#foreach $T.choice.answers as answer}
           <span class="answer">- {$T.answer}</span>
           {#/for}</h6></li>
+          {#/if}
+
+          {#if $T.election.module_params.ranked}
+          <li><h6>
+          {#foreach $T.choice.answers as answer}
+          <span class="answer">{gettext("CHOICE_RANK")} {$T.answer$index+1}: {$T.answer}</span>
+          {#/for}</h6></li>
+          {#/if}
       {#/for}
       {#if !$T.choices[$T.question$index].length }
       <li><h5>{gettext("BLANK_BALLOT")}</h5></li>

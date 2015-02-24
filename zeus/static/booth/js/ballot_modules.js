@@ -16,7 +16,7 @@ BM.ModuleBase = {
     this.election = election;
     this.data = election.questions_data;
     this.el = {};
-    this.ranked = false;
+    this.ranked = election.module_params.ranked;
   },
 
   init_events: function () {
@@ -386,6 +386,10 @@ BM.ScoreElection = function(election) {
   }, this);
   
   var answers = election.questions[0].answers;
+  if (answers[answers.length-1].match(/\d-\d/)) {
+    election.questions[0].answers.pop();
+    answers = election.questions[0].answers;
+  }
   var pos = 0;
   this.scores_indexes = _.map(this.data, function(q, i) {
     var scores = {};
@@ -406,6 +410,9 @@ BM.ScoreElection = function(election) {
     });
     return _answers;
   });
+
+  this.min_scores = this.data[0]['min_answers'];
+  this.max_scores = this.data[0]['max_answers'];
 }
 
 _.extend(BM.ScoreElection.prototype,
@@ -434,14 +441,38 @@ BM.ModuleBase,
     }, this);
   },
 
-  all_scores_chosen: function() {
-    return _.filter(this.remaining_scores(), function(i) { return i.length > 0 }).length === 0;
+  valid_scores_chosen: function() {
+    var chosen = _.filter(_.values(this.score_map[0]), function(s) { return s }).length;
+    if (chosen > this.max_scores) {
+      return [false, this.election.module_params['max_limit_error'].format(
+        this.data[0].question, this.max_scores)];
+    } else {
+      if (chosen == this.max_scores) {
+        var answers = $("li.stv-choice");
+        _.each(answers, function(a) {
+          var answer = $(a);
+          if (answer.find("input:checked").length) {
+            return
+          }
+          answer.find("input[type=checkbox]").attr('disabled', 1);
+          answer.find("label:not(.disabled)").addClass("disabled");
+        });
+      } else {
+        // no need to update something, update_layout will take care of 
+        // checkbox handling
+      }
+    }
+    if (chosen < this.min_scores) {
+      return [false, this.election.module_params['min_limit_error'].format(
+        this.data[0].question, this.min_scores)];
+    }
+    return [true, ""];
   },
 
   validate: function() {
-    if (!this.all_scores_chosen() && this.election.module_params.all_scores_required) {
-      var remaining = this.remaining_scores()[0];
-      return this.election.module_params.invalid_scores_selection.format(remaining);
+    var valid_scores = this.valid_scores_chosen();
+    if (valid_scores[0] !== true) {
+      return valid_scores[1];
     }
     return true;
   },
@@ -453,7 +484,7 @@ BM.ModuleBase,
     } else {
       this.el.submit.val(gettext("BALLOT_CONTINUE_BUTTON"));
     }
-    if (!this.all_scores_chosen() && this.get_answer().length > 0) {
+    if (!this.valid_scores_chosen()[0] && this.get_answer().length > 0) {
       this.el.submit.addClass("disabled").removeClass("success");
     } else {
       this.el.submit.removeClass("disabled").addClass("success");
@@ -630,10 +661,110 @@ BM.ModuleBase,
   seal_tpl: 'seal_score.html'
 });
 
+BM.STVElection = function(election) {
+  election.questions_data[0].max_answers = election.questions_data[0].answers.length;
+  this._init(election);
+}
+
+_.extend(BM.STVElection.prototype,
+BM.ModuleBase, {
+  tpl: 'question_stv',
+    
+  post_show: function() {
+    this.update_layout();
+  },
+
+  post_init_events: function() {
+    $(".stv-ballot-choice a.selected").live('click', _.bind(this.handle_selected_click, this));
+  },
+
+  can_add: function(choice, question) {
+    return true;
+  },
+
+  enable_answer: function(choice) {
+    this.get_answer_el(choice).removeClass().addClass('button small enabled');
+  },
+  
+  select_answer: function(choice) {
+    this.get_answer_el(choice).removeClass().addClass('button small disabled');
+  },
+
+  update_layout: function() {
+    var choice_els = $(".stv-ballot-choice");
+    var candidate_els = $(".stv-choice");
+
+    choice_els.find("a.button")
+        .removeClass("selected success")
+        .addClass("disabled secondary")
+        .removeData("question").removeData("absolute-index");
+    choice_els.find("span.value").text("");
+
+    candidate_els.find("a.button").removeClass("disabled")
+                 .addClass("enabled");
+
+    var self = this;
+    var choices =  this.get_answer();
+    _.each(choices, function(choice, index) {
+        var cand = candidate_els.filter(".choice-" + choice).find("a.button");
+        var choice = $(choice_els.get(index));
+
+        cand.removeClass("enabled").addClass("disabled");
+        choice.find("a.button").addClass("enabled selected success")
+            .removeClass("disabled secondary");
+        
+        choice.find("span.value").text(cand.text());
+        choice.find("a.button").data("question", cand.data("question"));
+        choice.find("a.button").data("absolute-index", cand.data("absolute-index"));
+    }, this);
+    this.update_submit_value();
+  },
+
+  pretty_choices: function(ballot) {
+    var election = this.election;
+    var questions = election.questions;
+    var question_data = election.questions_data;
+    var answers = ballot.answers;
+    var empty_ballot_choices = _.map(election.questions_data,function(q) { return q['answers_index']});
+    
+    var answers_map = {};
+    _.each(question_data, function(q) {
+      var index = q.answers_index;
+      _.each(q.answers, function(a, i) {
+        if (i == 0) { return }
+        answers_map[index + i - 1] = {'question': q.question, 'answer': a};
+      });
+    });
+
+    // process the answers
+    var choices = _(questions).map(function(q, q_num) {
+        var q_answers = answers[q_num];
+        if (q.tally_type == "stv") {
+            q_answers = answers[q_num][0];
+        }
+       var ret = [];
+        _(q_answers).each(function(ans, index) {
+           var choice = answers_map[ans];
+           var q_entry = _.filter(ret, function(q) {
+              return q.question === choice.question
+            });
+           if (!q_entry[0]) {
+              ret.push({'question': choice.question, 'answers': [choice.answer]})
+            } else {
+               ret[ret.indexOf(q_entry[0])].answers.push(choice.answer);
+             }
+         });
+          return ret;
+    });
+
+    return choices;
+  }
+});
+
 BM.registry = {
   simple: BM.SimpleElection,
   parties: BM.PartiesElection,
   score: BM.ScoreElection,
-  //ecounting: BM.EcountingElection
+  stv: BM.STVElection
 }
 
