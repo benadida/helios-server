@@ -722,7 +722,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
   def next_linked_poll(self, voter_id=None):
       linked_next = self.linked_polls.filter(index__gte=self.index)
       if voter_id:
-          linked_next = linked_next.filter(voters__voter_login_id=voter_login_id)
+          linked_next = linked_next.filter(voters__voter_login_id=voter_id)
       if linked_next.count() > 1:
           return linked_next[1]
       return None
