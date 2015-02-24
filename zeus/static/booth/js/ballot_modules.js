@@ -661,9 +661,110 @@ BM.ModuleBase,
   seal_tpl: 'seal_score.html'
 });
 
+BM.STVElection = function(election) {
+  election.questions_data[0].max_answers = election.questions_data[0].answers.length;
+  this._init(election);
+}
+
+_.extend(BM.STVElection.prototype,
+BM.ModuleBase, {
+  tpl: 'question_stv',
+    
+  post_show: function() {
+    this.update_layout();
+  },
+
+  post_init_events: function() {
+    $(".stv-ballot-choice a.selected").live('click', _.bind(this.handle_selected_click, this));
+  },
+
+  can_add: function(choice, question) {
+    return true;
+  },
+
+  enable_answer: function(choice) {
+    this.get_answer_el(choice).removeClass().addClass('button small enabled');
+  },
+  
+  select_answer: function(choice) {
+    this.get_answer_el(choice).removeClass().addClass('button small disabled');
+  },
+
+  update_layout: function() {
+    var choice_els = $(".stv-ballot-choice");
+    var candidate_els = $(".stv-choice");
+
+    choice_els.find("a.button")
+        .removeClass("selected success")
+        .addClass("disabled secondary")
+        .removeData("question").removeData("absolute-index");
+    choice_els.find("span.value").text("");
+
+    candidate_els.find("a.button").removeClass("disabled")
+                 .addClass("enabled");
+
+    var self = this;
+    var choices =  this.get_answer();
+    _.each(choices, function(choice, index) {
+        var cand = candidate_els.filter(".choice-" + choice).find("a.button");
+        var choice = $(choice_els.get(index));
+
+        cand.removeClass("enabled").addClass("disabled");
+        choice.find("a.button").addClass("enabled selected success")
+            .removeClass("disabled secondary");
+        
+        choice.find("span.value").text(cand.text());
+        choice.find("a.button").data("question", cand.data("question"));
+        choice.find("a.button").data("absolute-index", cand.data("absolute-index"));
+    }, this);
+    this.update_submit_value();
+  },
+
+  pretty_choices: function(ballot) {
+    var election = this.election;
+    var questions = election.questions;
+    var question_data = election.questions_data;
+    var answers = ballot.answers;
+    var empty_ballot_choices = _.map(election.questions_data,function(q) { return q['answers_index']});
+    
+    var answers_map = {};
+    _.each(question_data, function(q) {
+      var index = q.answers_index;
+      _.each(q.answers, function(a, i) {
+        if (i == 0) { return }
+        answers_map[index + i - 1] = {'question': q.question, 'answer': a};
+      });
+    });
+
+    // process the answers
+    var choices = _(questions).map(function(q, q_num) {
+        var q_answers = answers[q_num];
+        if (q.tally_type == "stv") {
+            q_answers = answers[q_num][0];
+        }
+       var ret = [];
+        _(q_answers).each(function(ans, index) {
+           var choice = answers_map[ans];
+           var q_entry = _.filter(ret, function(q) {
+              return q.question === choice.question
+            });
+           if (!q_entry[0]) {
+              ret.push({'question': choice.question, 'answers': [choice.answer]})
+            } else {
+               ret[ret.indexOf(q_entry[0])].answers.push(choice.answer);
+             }
+         });
+          return ret;
+    });
+
+    return choices;
+  }
+});
+
 BM.registry = {
   simple: BM.SimpleElection,
   parties: BM.PartiesElection,
-  score: BM.ScoreElection
+  score: BM.ScoreElection,
+  stv: BM.STVElection
 }
 
