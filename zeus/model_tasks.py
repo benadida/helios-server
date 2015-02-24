@@ -120,14 +120,20 @@ class TaskModel(models.Model):
     def notify_exception(self, exc):
         self.logger.exception(exc)
         subject = msg = exc
-        self.election.notify_admins(msg=msg, subject=subject, send_anyway=True)
+        e = self
+        if hasattr(self, 'election'):
+            e = self.election
+        e.notify_admins(msg=msg, subject=subject, send_anyway=True)
 
     def notify_task(self, name, status, error=None):
         self.logger.info("Task %s %s", name, status)
         if error:
             self.logger.error("Task %s error, %s", name, error)
             subject = msg = "Task {} error, {}".format(name, error)
-            self.election.notify_admins(msg=msg, subject=subject, send_anyway=True)
+            e = self
+            if hasattr(self, 'election'):
+                e = self.election
+            e.notify_admins(msg=msg, subject=subject, send_anyway=True)
 
     class Meta:
         abstract = True

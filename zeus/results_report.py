@@ -73,6 +73,10 @@ def load_results(data, repr_data, qdata):
     else:
         jsondata = data
     for result, party in jsondata['party_counts']:
+        try:
+            party = party.decode('utf8')
+        except:
+            pass
         party = parties_indexes[qdata.index(party)]
         parties_results.append((party, result))
         total_votes += result
@@ -83,7 +87,15 @@ def load_results(data, repr_data, qdata):
     for candidate_result in jsondata['candidate_counts']:
         (result, full_candidate) = candidate_result
         (party, candidate) = full_candidate.split(PARTY_SEPARATOR, 1)
+        try:
+            party = party.decode('utf8')
+        except:
+            pass
         party = parties_indexes[qdata.index(party)]
+        try:
+            full_candidate = full_candidate.decode('utf8')
+        except:
+            pass
         candidate = candidates_indexes[qdata.index(full_candidate)]
 
         if party in candidates_results:

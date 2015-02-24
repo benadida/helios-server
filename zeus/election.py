@@ -11,7 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 from zeus.core import ZeusCoreElection, Teller, sk_from_args, \
     mix_ciphers, TellerStream, gamma_count_parties, gamma_count_range
 from zeus.core import V_CAST_VOTE, V_PUBLIC_AUDIT, V_AUDIT_REQUEST, \
-    gamma_decode, to_absolute_answers
+    gamma_decode, to_absolute_answers, ZeusError
 
 from django.conf import settings
 
@@ -657,3 +657,9 @@ class ZeusDjangoElection(ZeusCoreElection):
         parties.append(data)
         return parties
 
+    def _validate_candidates(self):
+        candidates = self.do_get_candidates()
+        nr_candidates = len(candidates)
+        if len(set(candidates)) != nr_candidates:
+            m = "Duplicate candidates!"
+            raise ZeusError(m)

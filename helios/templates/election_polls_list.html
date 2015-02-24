@@ -57,6 +57,10 @@
               {% reveal_action poll.name htmlid "" "rename-poll nobutton" %}
               {% endwith %}
           {% endif %}
+          {% if poll.has_linked_polls %}
+            <br />
+            <em style="color: #ccc">linked</em>
+          {% endif %}
       </td>
       <td>
           {{ poll.status_display }}

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-05 17:06+0200\n"
+"POT-Creation-Date: 2015-01-28 17:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,6 +38,10 @@ msgstr "τους ψηφοφόρους που δεν έχουν ψηφίσει α
 
 msgid "Voter ID"
 msgstr "Αναγνωριστικό ψηφοφόρου"
+
+#, fuzzy
+msgid "Linked polls"
+msgstr "Μετονομασία κάλπης"
 
 msgid "Election type"
 msgstr "Τύπος ψηφοφορίας"
@@ -149,6 +153,12 @@ msgstr "Οριστικοποιημένη"
 msgid "Election pending to freeze"
 msgstr "Αναμονή για οριστικοποίηση της ψηφοφορίας"
 
+msgid "Poll link group"
+msgstr "Όνομα γκρούπ κάλπης"
+
+msgid "Poll reference id"
+msgstr "Όνομα αντιστοιχίας κάλπης"
+
 msgid "Poll name"
 msgstr "Όνομα κάλπης"
 
@@ -225,18 +235,13 @@ msgstr "ΟΧΙ"
 msgid "(EXCLUDED)"
 msgstr "(ΕΞΑΙΡΕΣΗ)"
 
-#: models.py:1184 models.py:1201
-#: templates/_election_poll_admin_actions.html:17
-#: templates/_election_view_menu.html:11 templates/election_polls_list.html:65
 msgid "Results"
 msgstr "Αποτελέσματα"
 
-#: models.py:1306
 msgid "There must be at least two fields, Registration ID and Email"
 msgstr ""
 "Πρέπει να υπάρχουν τουλάχιστον δύο πεδία, Αριθμός Καταχώρισης και Email"
 
-#: models.py:1341
 #, python-format
 msgid "Malformed mobile phone number: %s"
 msgstr "Μη έγκυρος αριθμός τηλεφώνου: %s"
@@ -249,15 +254,12 @@ msgstr "Λανθασμένα στοιχεία ψηφοφόρου στην γρα
 msgid "Duplicate voter id : %s"
 msgstr "Διπλότυπο αναγνωριστικό χρήστη %s"
 
-#: models.py:2021
 msgid "Create trustee key"
 msgstr "Δημιουργία κωδικού ψηφοφορίας"
 
-#: models.py:2022
 msgid "Verify trustee key"
 msgstr "Επιβεβαίωση κωδικού ψηφοφορίας"
 
-#: models.py:2023
 msgid "Partially decrypt votes"
 msgstr "Μερική αποκρυπτογράφηση ψήφων"
 
@@ -303,15 +305,6 @@ msgstr "Ακύρωση ψηφοφορίας"
 msgid "Save results"
 msgstr "Αποθήκευση Αποτελεσμάτων"
 
-#: templates/_election_admin_actions.html:27
-msgid "Save results (PDF)"
-msgstr "Αποθήκευση αποτελεσμάτων (PDF)"
-
-#: templates/_election_admin_actions.html:33
-msgid "Save results (ZIP)"
-msgstr "Αποθήκευση αποτελσμάτων (ZIP)"
-
-#: templates/_election_extended_notice.html:5
 #, python-format
 msgid ""
 "\n"
@@ -334,11 +327,11 @@ msgstr "Αριθμός κάλπεων"
 msgid "Voters"
 msgstr "Ψηφοφόροι"
 
-msgid "Results"
-msgstr "Αποτελέσματα"
-
 msgid "Add new poll"
 msgstr "Προσθήκη νέας κάλπης"
+
+msgid "Batch polls update"
+msgstr "Μαζική ανανέωση καλπών"
 
 msgid "Election information"
 msgstr "Πληροφορίες ψηφοφορίας"
@@ -363,6 +356,9 @@ msgstr "Κάλπες"
 
 msgid "Enter voting booth"
 msgstr "Είσοδος στο ηλεκτρονικό παραπέτασμα"
+
+msgid "No cast yet"
+msgstr "Χωρίς ψήφο"
 
 msgid "Voting date passed."
 msgstr "Ο χρόνος λήξης της ψηφοφορίας έχει παρέλθει"
@@ -529,7 +525,6 @@ msgstr "Ελάχιστος αριθμός επιλογών"
 msgid "Max answers"
 msgstr "Μέγιστος αριθμός επιλογών"
 
-#: templates/election_poll_questions.html:44
 msgid "Manage questions"
 msgstr "Διαχείριση ερωτήσεων"
 
@@ -549,7 +544,9 @@ msgstr "Έχουν ψηφίσει"
 msgid ""
 "This action will be executed for the %(voters_list_count)s filtered voters. "
 "Are you sure ?"
-msgstr "Η ενέργεια θα εκτελεστεί ΜΟΝΟ για τους επιλεγμένους %(voters_list_count)s ψηφοφόρους. Είστε σίγουροι;"
+msgstr ""
+"Η ενέργεια θα εκτελεστεί ΜΟΝΟ για τους επιλεγμένους %(voters_list_count)s "
+"ψηφοφόρους. Είστε σίγουροι;"
 
 msgid "Voter list actions"
 msgstr "Επιλογές λίστας ψηφοφόρων"
@@ -569,32 +566,6 @@ msgstr "Διαγραφή όλων των ψηφοφόρων"
 msgid "Filter"
 msgstr "Φίλτρο"
 
-#: templates/election_poll_voters_list.html:65
-#: templates/election_poll_voters_upload_confirm.html:24
-msgid "Registration ID"
-msgstr "Αριθμός Καταχώρισης"
-
-#: templates/election_poll_voters_list.html:66
-#: templates/election_poll_voters_upload_confirm.html:25
-msgid "Email"
-msgstr "Email"
-
-#: templates/election_poll_voters_list.html:67
-msgid "Surname , Given name , Middle name , Mobile phone"
-msgstr "Επώνυμο , Όνομα , Πατρώνυμο , Κινητό τηλ."
-
-#: templates/election_poll_voters_list.html:69
-msgid "Has voted"
-msgstr "Έχει ψηφίσει"
-
-#: templates/election_poll_voters_list.html:70
-msgid "Booth invitation sent at"
-msgstr "Αποστολή πρόσκλησης"
-
-#: templates/election_poll_voters_list.html:71
-msgid "Last visit"
-msgstr "Τελευταία είσοδος"
-
 #, python-format
 msgid ""
 "\n"
@@ -604,8 +575,12 @@ msgid_plural ""
 "\n"
 "                                %(voters_count)s results found\n"
 "                                "
-msgstr[0] "\n%(voters_count)s ψηφοφόρος"
-msgstr[1] "\n%(voters_count)s ψηφοφόρους"
+msgstr[0] ""
+"\n"
+"%(voters_count)s ψηφοφόρος"
+msgstr[1] ""
+"\n"
+"%(voters_count)s ψηφοφόρους"
 
 msgid "(Excluded)"
 msgstr "(Εξαίρεση)"
@@ -1114,8 +1089,8 @@ msgid ""
 "Send email to voter %(voter_name)s (%(voter_id)s)\n"
 msgstr ""
 "\n"
-"Αποστολή ηλεκτρονικού μηνύματος στον ψηφοφόρο  %(voter_name)s (%(voter."
-"voter_id)s)\n"
+"Αποστολή ηλεκτρονικού μηνύματος στον ψηφοφόρο  %(voter_name)s "
+"(%(voter.voter_id)s)\n"
 
 #, python-format
 msgid ""
@@ -1131,7 +1106,8 @@ msgid ""
 "Send email to election '%(election_name)s' voters %(suffix)s\n"
 msgstr ""
 "\n"
-"Αποστολή μηνύματος στους ψηφοφόρους της ψηφοφορίας '%(election_name)s' %(suffix)s\n"
+"Αποστολή μηνύματος στους ψηφοφόρους της ψηφοφορίας '%(election_name)s' "
+"%(suffix)s\n"
 
 msgid "The message will only be sent to the following voter:"
 msgstr "Το μήνυμα θα σταλεί μόνο στον ακόλουθο ψηφοφόρο:"
@@ -1225,6 +1201,12 @@ msgstr "Σύνολο ψήφων"
 
 msgid "Elected"
 msgstr "Εκλεγμένοι"
+
+msgid "System message"
+msgstr ""
+
+msgid "ELECTION INFO"
+msgstr ""
 
 msgid "Vote fingerprint"
 msgstr "Αποτύπωμα ψήφου"
@@ -1364,16 +1346,15 @@ msgstr ""
 "Εάν δεν είστε ο νόμιμος παραλήπτης, παρακαλούμε διαγράψτε το μήνυμα αυτό\n"
 "και επικοινωνήστε με το helpdesk@zeus.grnet.gr"
 
+msgid "Audit codes only apply for poll:"
+msgstr "Οι κωδικοί αφορούν μόνο την κάλπη:"
+
 msgid "Home"
 msgstr "Αρχική"
 
-#: templates/i18n/en/zeus/_menu_partial.html:5
-#: templates/i18n/en/zeus/contact.html:11 templates/zeus/_menu_partial.html:9
-#: templates/zeus/contact.html:11
 msgid "Contact"
 msgstr "Επικοινωνία"
 
-#: templates/i18n/en/zeus/contact.html:13 templates/zeus/contact.html:13
 msgid ""
 "For questions and comments regarding the Zeus platform you may contact us at "
 "<a href=\"mailto:helpdesk@zeus.grnet.gr\">helpdesk@zeus.grnet.gr</a>.\n"
@@ -1431,5 +1412,20 @@ msgstr ""
 msgid "Choose election"
 msgstr "Επιλογή ψηφοφορίας"
 
-msgid "Choose election"
-msgstr "Επιλογή ψηφοφορίας"
+#~ msgid "Save results (PDF)"
+#~ msgstr "Αποθήκευση αποτελεσμάτων (PDF)"
+
+#~ msgid "Save results (ZIP)"
+#~ msgstr "Αποθήκευση αποτελσμάτων (ZIP)"
+
+#~ msgid "Surname , Given name , Middle name , Mobile phone"
+#~ msgstr "Επώνυμο , Όνομα , Πατρώνυμο , Κινητό τηλ."
+
+#~ msgid "Has voted"
+#~ msgstr "Έχει ψηφίσει"
+
+#~ msgid "Booth invitation sent at"
+#~ msgstr "Αποστολή πρόσκλησης"
+
+#~ msgid "Last visit"
+#~ msgstr "Τελευταία είσοδος"

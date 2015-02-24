@@ -14,7 +14,7 @@ importScripts("js/jscrypto/jsbn.js",
 	      "js/jscrypto/elgamal.js",
 	      "js/jscrypto/sha1.js",
 	      "js/jscrypto/sha2.js",
-	      "js/jscrypto/helios.js");
+	      "js/jscrypto/helios.js?20150129");
 
 var console = {
     'log' : function(msg) {

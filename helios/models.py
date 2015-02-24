@@ -254,6 +254,7 @@ _default_voting_ends_at = lambda: datetime.datetime.now() + timedelta(hours=12)
 
 
 class Election(ElectionTasks, HeliosModel, ElectionFeatures):
+    linked_polls = models.BooleanField(_('Linked polls'), default=False)
     election_module = models.CharField(_("Election type"), max_length=250,
                                          null=False,
                                          choices=ELECTION_MODULES_CHOICES,
@@ -328,6 +329,10 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
     def __init__(self, *args, **kwargs):
         self._logger = None
         super(Election, self).__init__(*args, **kwargs)
+
+    @property
+    def polls_by_link_id(self):
+        return self.polls.filter().distinct('link_id')
 
     @property
     def voting_end_date(self):
@@ -652,6 +657,10 @@ class PollManager(models.Manager):
 
 class Poll(PollTasks, HeliosModel, PollFeatures):
 
+  link_id = models.CharField(_('Poll link group'), max_length=255, 
+                             default='')
+  linked_ref = models.CharField(_('Poll reference id'), max_length=255, 
+                                default='')
   name = models.CharField(_('Poll name'), max_length=255)
   short_name = models.CharField(max_length=255)
 
@@ -683,11 +692,12 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
   department_limit = models.PositiveIntegerField(default=0)
 
   voters_last_notified_at = models.DateTimeField(null=True, default=None)
+  index = models.PositiveIntegerField(default=1)
 
   objects = PollManager()
 
   class Meta:
-      ordering = ('created_at', )
+      ordering = ('link_id', 'index', 'created_at', )
       unique_together = (('name', 'election'),)
 
   def __init__(self, *args, **kwargs):
@@ -696,6 +706,26 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   def reset_logger(self):
       self._logger = None
+
+  @property
+  def has_linked_polls(self):
+    if self.election.linked_polls and self.link_id.strip():
+        return self.election.polls.filter(link_id=self.link_id).count() > 1
+    return False
+
+  @property
+  def linked_polls(self):
+    if self.election.linked_polls and self.link_id.strip():
+        return self.election.polls.filter(link_id=self.link_id)
+    return self.election.polls.filter(id=self.pk)
+    
+  def next_linked_poll(self, voter_id=None):
+      linked_next = self.linked_polls.filter(index__gte=self.index)
+      if voter_id:
+          linked_next = linked_next.filter(voters__voter_login_id=voter_login_id)
+      if linked_next.count() > 1:
+          return linked_next[1]
+      return None
 
   @property
   def logger(self):
@@ -1428,7 +1458,7 @@ class VoterFile(models.Model):
     return iter_voter_data(voter_data, email_validator=email_validator)
 
   @transaction.commit_on_success
-  def process(self):
+  def process(self, linked=True, check_dupes=True):
     demo_voters = 0
     poll = self.poll
     demo_user = False
@@ -1467,10 +1497,11 @@ class VoterFile(models.Model):
 
       voter = None
       try:
-          voter = Voter.objects.get(poll=poll, voter_login_id=voter_id)
-          m = _("Duplicate voter id"
-                " : %s"%voter_id)
-          raise exceptions.DuplicateVoterID(m) 
+          if check_dupes:
+            voter = Voter.objects.get(poll=poll, voter_login_id=voter_id)
+            m = _("Duplicate voter id"
+                    " : %s"%voter_id)
+            raise exceptions.DuplicateVoterID(m)
       except Voter.DoesNotExist:
           pass
       # create the voter
@@ -1478,29 +1509,41 @@ class VoterFile(models.Model):
         demo_voters += 1
         if demo_voters > settings.DEMO_MAX_VOTERS and demo_user:
           raise exceptions.VoterLimitReached("No more voters for demo account")
+        
+      linked_polls = poll.linked_polls
+      if not linked:
+          linked_polls = linked_polls.filter(pk=poll.pk)
 
-        voter_uuid = str(uuid.uuid4())
-        voter = Voter(uuid=voter_uuid, voter_login_id=voter_id,
-                      voter_name=name, voter_email=email, poll=poll,
-                      voter_surname=surname, voter_fathername=fathername,
-                      voter_mobile=mobile)
-        voter.init_audit_passwords()
-        voter.generate_password()
-        new_voters.append(voter)
-        voter.save()
-      else:
-        voter.voter_name = name
-        voter.voter_surname = surname
-        voter.voter_fathername = fathername
-        voter.voter_email = email
-        voter.voter_mobile = mobile
-        voter.save()
+      for poll in linked_polls:
+        new_voters = []
+        voter = None
+        try:
+            voter = Voter.objects.get(poll=poll, voter_login_id=voter_id)
+        except Voter.DoesNotExist:
+            pass
+        if not voter:
+            voter_uuid = str(uuid.uuid4())
+            voter = Voter(uuid=voter_uuid, voter_login_id=voter_id,
+                        voter_name=name, voter_email=email, poll=poll,
+                        voter_surname=surname, voter_fathername=fathername,
+                        voter_mobile=mobile)
+            voter.init_audit_passwords()
+            voter.generate_password()
+            new_voters.append(voter)
+            voter.save()
+        else:
+            voter.voter_name = name
+            voter.voter_surname = surname
+            voter.voter_fathername = fathername
+            voter.voter_email = email
+            voter.voter_mobile = mobile
+            voter.save()
 
-    voter_alias_integers = range(last_alias_num+1, last_alias_num+1+num_voters)
-    random.shuffle(voter_alias_integers)
-    for i, voter in enumerate(new_voters):
-      voter.alias = 'V%s' % voter_alias_integers[i]
-      voter.save()
+        voter_alias_integers = range(last_alias_num+1, last_alias_num+1+num_voters)
+        random.shuffle(voter_alias_integers)
+        for i, voter in enumerate(new_voters):
+            voter.alias = 'V%s' % voter_alias_integers[i]
+            voter.save()
 
     self.num_voters = num_voters
     self.processing_finished_at = datetime.datetime.utcnow()
@@ -1576,6 +1619,11 @@ class Voter(HeliosModel, VoterFeatures):
     unique_together = (('poll', 'voter_login_id'), ('poll', 'voter_password'))
 
   user = None
+
+  @property
+  def linked_voters(self):
+      return Voter.objects.filter(poll__in=self.poll.linked_polls,
+                                  voter_login_id=self.voter_login_id)
 
   def get_cast_votes(self):
       return self.cast_votes.filter()

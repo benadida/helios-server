@@ -2,7 +2,7 @@
 {% trans "Intended recipient" %}: {{voter.voter_surname}} {{voter.voter_name}},
 
 {% trans "Election Name" %} : {{election.name}}
-{% trans "Poll name" %} : {{voter.poll.name}}
+{% if not voter.poll.has_linked_polls %}{% trans "Poll name" %} : {{voter.poll.name}}{% endif %}
 
 
 

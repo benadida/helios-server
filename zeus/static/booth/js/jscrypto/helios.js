@@ -112,8 +112,6 @@ STV.get_term = function(n, k) {
         if (m in t) {
             break;
         }
-
-        if (m > 100) { break; }
     }
 
     term = t[m];
@@ -144,7 +142,6 @@ STV.get_offsets = function(n) {
         sumus = sumus.add(new BigInt(''+STV.get_term(n, n-i), 10));
         offsets.push(sumus);
         if (i == n) { break; }
-        if (i > 100) { break;}
         i++;
     }
 
@@ -493,17 +490,19 @@ BALLOT.pretty_choices = function(election, ballot) {
         if (q.tally_type == "stv") {
             q_answers = answers[q_num][0];
         }
-	    return _(q_answers).map(function(ans) {
-	      var choice_text = questions[q_num].answers[ans];
-          if (_.contains(empty_ballot_choices, ans) && election.module_params.count_empty_question) {
-            return questions[q_num].answers[ans].split(":")[0]; 
-          }
-          if (choice_text.indexOf(":") > -1) {
-            return choice_text.replace(":", ": ");
-          }
-          return choice_text;
-	    });
-        
+       var ret = [];
+        _(q_answers).each(function(ans, index) {
+           var choice = answers_map[ans];
+           var q_entry = _.filter(ret, function(q) {
+              return q.question === choice.question
+            });
+           if (!q_entry[0]) {
+              ret.push({'question': choice.question, 'answers': [choice.answer]})
+            } else {
+               ret[ret.indexOf(q_entry[0])].answers.push(choice.answer);
+             }
+         });
+          return ret;
     });
 
     return choices;

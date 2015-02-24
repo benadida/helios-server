@@ -1,9 +1,25 @@
 {% load i18n %}
 {% if poll.feature_can_cast_vote %}
+{% if poll.has_linked_polls %}
+<div id="booth-link" class="button split dropdown">
+        <a href="{{ booth_url }}">{% trans "Enter voting booth" %}</a>
+        <span></span>
+        <ul class="election-stats-list">
+          {% for pname, purl, last_cast in linked_booth_urls %}
+          <li>
+          <a href="{{ purl }}">{{ pname }}
+            <em style="color: #aaa; font-size:0.9em">{% if not last_cast %}{% trans "No cast yet" %}{% else %}{{ last_cast|date }}{% endif %}</em>
+          </a>
+          </li>
+          {% endfor %}
+      </ul>
+    </div>
+    {% else %}
 <a id="booth-link" 
   class="foundicon-page button" 
   href="{{ booth_url }}">&nbsp;&nbsp;{% trans "Enter voting booth" %}
 </a>
+{% endif %}
 {% else %}
 <div class="panel {{ election.status_display_cls }}">
 <h5>

@@ -5315,6 +5315,18 @@ body .panel.confirm-vote {
   padding-top: 0;
   padding-bottom: 0;
 }
+body .panel.confirm-vote h6 {
+  margin-bottom: 10px;
+}
+body .panel.confirm-vote .question {
+  display: block;
+  margin-bottom: 5px;
+}
+body .panel.confirm-vote .answer {
+  display: block;
+  font-style: italic;
+  color: #2a2;
+}
 body .row.labels {
   margin-bottom: 10px !important;
 }

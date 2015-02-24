@@ -118,7 +118,7 @@ class ElectionFeatures(FeaturesMixin):
     @election_feature('edit_trustees', 'edit_name', 'edit_description',
                       'edit_type', 'edit_voting_starts_at',
                       'edit_voting_ends_at', 'remote_mixes',
-                      'edit_trial', 'edit_departments')
+                      'edit_linked_polls', 'edit_trial', 'edit_departments')
     def _feature_editing_fields(self):
         return not self.feature_frozen
 

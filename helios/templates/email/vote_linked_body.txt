@@ -1,0 +1,6 @@
+{% extends "email/vote_body.txt" %}
+{% load i18n %}
+{% block poll_name %}{% endblock %}
+{% block audit_codes %}{{ block.super }}
+
+* {% trans "Audit codes only apply for poll:" %} {{ poll.name }}{% endblock %}

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-01-05 17:06+0200\n"
+"POT-Creation-Date: 2015-01-28 17:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -66,60 +66,30 @@ msgstr ""
 "\n"
 "Για περισσότερες πληροφορίες επικοινωνήστε μαζί μας"
 
-msgid "HELP_EMAIL_SUBJECT"
-msgstr "Βοήθεια για το ηλεκτρονικό παραπέτασμα Ζευς"
-
-msgid "HELP_EMAIL_BODY"
-msgstr "Αντιμετωπίζω το εξής πρόβλημα:"
-
-msgid "ELECTION_INIT_ERROR"
-msgstr "Σφάλμα κατά την αρχικοποίηση της ψηφοφορίας"
-
-msgid "ENCRYPTION_PROCESS_FAILED"
-msgstr "Η κρυπτογράφηση απέτυχε."
-
-msgid "AUDIT_BALLOT_CAST_COMPLETE"
-msgstr "Η ψήφος ελέγχου υποβλήθηκε επιτυχώς."
-
-msgid "ELECTION_TERMS_ACCEPT_REQUIRED"
-msgstr "Παρακαλούμε, αποδεχθείτε τους όρους της ψηφοφορίας."
-
-msgid "BALLOT_CAST_FAILED"
-msgstr "Η υποβολή της ψήφου απέτυχε."
-
-#: js/booth.js:171
 msgid "EMPTY_PARTY_CHOICE"
 msgstr "Χωρίς επιλογή υποψηφίου"
 
-#: js/booth.js:413
 msgid "HELP_EMAIL_SUBJECT"
 msgstr "Βοήθεια για το ηλεκτρονικό παραπέτασμα Ζευς"
 
-#: js/booth.js:414
 msgid "HELP_EMAIL_BODY"
 msgstr "Αντιμετωπίζω το εξής πρόβλημα:"
 
-#: js/booth.js:436
 msgid "ELECTION_INIT_ERROR"
 msgstr "Σφάλμα κατά την αρχικοποίηση της ψηφοφορίας"
 
-#: js/booth.js:587
 msgid "ENCRYPTION_PROCESS_FAILED"
 msgstr "Η κρυπτογράφηση απέτυχε."
 
-#: js/booth.js:660
 msgid "AUDIT_BALLOT_CAST_COMPLETE"
 msgstr "Η ψήφος ελέγχου υποβλήθηκε επιτυχώς."
 
-#: js/booth.js:671
 msgid "ELECTION_TERMS_ACCEPT_REQUIRED"
 msgstr "Παρακαλούμε, αποδεχθείτε τους όρους της ψηφοφορίας."
 
-#: js/booth.js:714
 msgid "BALLOT_CAST_FAILED"
 msgstr "Η υποβολή της ψήφου απέτυχε."
 
-#: js/booth.js:721
 msgid "CAST_VOTE_ID"
 msgstr "Αναγνωριστικό ψήφου"
 
@@ -208,19 +178,15 @@ msgstr "Email"
 msgid "PHONE"
 msgstr "Τηλ."
 
-#: templates/question_parties.html:19
 msgid "UP_TO"
 msgstr "μέχρι"
 
-#: templates/question_parties.html:19
 msgid "CHOICE"
 msgstr "επιλογή"
 
-#: templates/question_parties.html:19
 msgid "CHOICES"
 msgstr "επιλογές"
 
-#: templates/question_plain.html:10 templates/question_plain.html.c:12
 msgid "choice"
 msgstr "επιλογή"
 
