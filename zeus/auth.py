@@ -315,6 +315,7 @@ def get_users_from_request(request):
         try:
             voter = Voter.objects.get(pk=voter)
         except Voter.DoesNotExist:
+            voter = None
             pass
 
         if not voter or voter.excluded_at:
