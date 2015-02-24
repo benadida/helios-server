@@ -16,7 +16,7 @@ BM.ModuleBase = {
     this.election = election;
     this.data = election.questions_data;
     this.el = {};
-    this.ranked = false;
+    this.ranked = election.module_params.ranked;
   },
 
   init_events: function () {
@@ -386,6 +386,10 @@ BM.ScoreElection = function(election) {
   }, this);
   
   var answers = election.questions[0].answers;
+  if (answers[answers.length-1].match(/\d-\d/)) {
+    election.questions[0].answers.pop();
+    answers = election.questions[0].answers;
+  }
   var pos = 0;
   this.scores_indexes = _.map(this.data, function(q, i) {
     var scores = {};
@@ -406,6 +410,9 @@ BM.ScoreElection = function(election) {
     });
     return _answers;
   });
+
+  this.min_scores = this.data[0]['min_answers'];
+  this.max_scores = this.data[0]['max_answers'];
 }
 
 _.extend(BM.ScoreElection.prototype,
@@ -434,14 +441,38 @@ BM.ModuleBase,
     }, this);
   },
 
-  all_scores_chosen: function() {
-    return _.filter(this.remaining_scores(), function(i) { return i.length > 0 }).length === 0;
+  valid_scores_chosen: function() {
+    var chosen = _.filter(_.values(this.score_map[0]), function(s) { return s }).length;
+    if (chosen > this.max_scores) {
+      return [false, this.election.module_params['max_limit_error'].format(
+        this.data[0].question, this.max_scores)];
+    } else {
+      if (chosen == this.max_scores) {
+        var answers = $("li.stv-choice");
+        _.each(answers, function(a) {
+          var answer = $(a);
+          if (answer.find("input:checked").length) {
+            return
+          }
+          answer.find("input[type=checkbox]").attr('disabled', 1);
+          answer.find("label:not(.disabled)").addClass("disabled");
+        });
+      } else {
+        // no need to update something, update_layout will take care of 
+        // checkbox handling
+      }
+    }
+    if (chosen < this.min_scores) {
+      return [false, this.election.module_params['min_limit_error'].format(
+        this.data[0].question, this.min_scores)];
+    }
+    return [true, ""];
   },
 
   validate: function() {
-    if (!this.all_scores_chosen() && this.election.module_params.all_scores_required) {
-      var remaining = this.remaining_scores()[0];
-      return this.election.module_params.invalid_scores_selection.format(remaining);
+    var valid_scores = this.valid_scores_chosen();
+    if (valid_scores[0] !== true) {
+      return valid_scores[1];
     }
     return true;
   },
@@ -453,7 +484,7 @@ BM.ModuleBase,
     } else {
       this.el.submit.val(gettext("BALLOT_CONTINUE_BUTTON"));
     }
-    if (!this.all_scores_chosen() && this.get_answer().length > 0) {
+    if (!this.valid_scores_chosen()[0] && this.get_answer().length > 0) {
       this.el.submit.addClass("disabled").removeClass("success");
     } else {
       this.el.submit.removeClass("disabled").addClass("success");
@@ -633,7 +664,6 @@ BM.ModuleBase,
 BM.registry = {
   simple: BM.SimpleElection,
   parties: BM.PartiesElection,
-  score: BM.ScoreElection,
-  //ecounting: BM.EcountingElection
+  score: BM.ScoreElection
 }
 
