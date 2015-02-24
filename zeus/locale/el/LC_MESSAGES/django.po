@@ -82,11 +82,6 @@ msgstr "Βαθμοί"
 
 msgid "Number of answers must be equal or bigger than max answers"
 msgstr ""
-"Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
-"ελάχιστου αριθμού απαντήσεων"
-
-msgid "Number of answers must be equal or bigger than max answers"
-msgstr ""
 "Ο αριθμός των καταχωρημένων απαντήσεων πρέπει να είναι ίσoς ή μεγαλύτερος "
 "απο τον μέγιστο αριθμό επιλογών"
 
