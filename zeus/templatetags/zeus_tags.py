@@ -282,6 +282,8 @@ def complete_voter_get_parameters(context, GET, new_order):
     filter_param = ''
     q = GET.get('q', None)
     if q:
+        if isinstance(q, unicode):
+            q = q.encode('utf8')
         filter_param = '&q=%s' % urllib.quote_plus(q)
     params = '%s%s%s' % (page_param, order_param, filter_param)
     return params
