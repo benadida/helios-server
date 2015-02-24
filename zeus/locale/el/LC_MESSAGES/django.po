@@ -85,7 +85,7 @@ msgstr ""
 "Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
 "ελάχιστου αριθμού απαντήσεων"
 
-msgid "Number of scores must be equal to number of answers"
+msgid "Number of answers must be equal or bigger than max answers"
 msgstr ""
 "Ο αριθμός των καταχωρημένων απαντήσεων πρέπει να είναι ίσoς ή μεγαλύτερος "
 "απο τον μέγιστο αριθμό επιλογών"
@@ -496,9 +496,6 @@ msgstr "Ψηφοφορία με βαθμολογία"
 
 msgid "Manage questions"
 msgstr "Διαχείριση ερωτήσεων"
-
-msgid "Please assign the remaining choices: {0}"
-msgstr "Παρακαλούμε συμπληρώστε τις υπόλοιπες επιλογές: {0}"
 
 msgid "No questions set"
 msgstr "Δεν υπάρχουν ερωτήσεις ακόμη"
