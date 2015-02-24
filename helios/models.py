@@ -1006,8 +1006,9 @@ class CastVote(HeliosModel):
   verified_at = models.DateTimeField(null=True)
   invalidated_at = models.DateTimeField(null=True)
   
-    # auditing purposes, like too many votes from the same IP, if the case
-  cast_ip = models.IPAddressField(null=True)
+  # auditing purposes, like too many votes from the same IP, if the case
+  # Using charfield because HTTP_X_FORWARDED_FOR may contain more than one IP 
+  cast_ip = models.CharField(max_length=200, null=True)
 
   @property
   def datatype(self):
