@@ -576,22 +576,28 @@ class PollForm(forms.ModelForm):
                                                               choices=CHOICES)
         self.fields['google_code_url'] = forms.CharField(
                                     widget=HiddenInput,
-                                    initial="https://accounts.google.com/o/oauth2/auth")
+                                    initial="https://accounts.google.com/o/oauth2/auth",
+                                    required=False)
         self.fields['google_exchange_url'] = forms.CharField(
                                     widget=HiddenInput,
-                                    initial="https://accounts.google.com/o/oauth2/token")
+                                    initial="https://accounts.google.com/o/oauth2/token",
+                                    required=False)
         self.fields['google_confirmation_url'] = forms.CharField(
                                     widget=HiddenInput,
-                                    initial="https://www.googleapis.com/plus/v1/people/me")
+                                    initial="https://www.googleapis.com/plus/v1/people/me",
+                                    required=False)
         self.fields['facebook_code_url'] = forms.CharField(
                                     widget=HiddenInput,
-                                    initial="https://www.facebook.com/dialog/oauth")
+                                    initial="https://www.facebook.com/dialog/oauth",
+                                    required=False)
         self.fields['facebook_exchange_url'] = forms.CharField(
                                     widget=HiddenInput,
-                                    initial="https://graph.facebook.com/oauth/access_token")
+                                    initial="https://graph.facebook.com/oauth/access_token",
+                                    required=False)
         self.fields['facebook_confirmation_url'] = forms.CharField(
                                     widget=HiddenInput,
-                                    initial="https://graph.facebook.com/v2.2/me")
+                                    initial="https://graph.facebook.com/v2.2/me",
+                                    required=False)
 
         if self.election.feature_frozen:
             self.fields['name'].widget.attrs['readonly'] = True
