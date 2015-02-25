@@ -2,7 +2,7 @@
 {% load i18n %}
 {% block content %}
 <div id="header" class="col-md-12"> 
-  <h2 class="title">{% trans "Update" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view election.uuid" %}">{% trans "cancel" %}</a>]</span></h2>
+  <h2 class="title">{% trans "Update" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "cancel" %}</a>]</span></h2>
   <h3 class="title">{{election.name}}</h3>
 </div>
 <div class="col-md-12">
