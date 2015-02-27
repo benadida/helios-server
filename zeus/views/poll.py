@@ -13,7 +13,7 @@ from django.forms import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.db import connection
 from django.db.models.query import EmptyQuerySet
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.core.context_processors import csrf
 from django.core.validators import validate_email
 from django.utils.html import mark_safe, escape
@@ -337,19 +337,19 @@ def voters_list(request, election, poll):
     order_by = request.GET.get('order', 'voter_login_id')
     order_type = request.GET.get('order_type', 'desc')
 
-    if not order_by in VOTER_TABLE_HEADERS.keys(): 
+    if not order_by in VOTER_TABLE_HEADERS: 
         order_by = 'voter_login_id'
 
     validate_hash = request.GET.get('vote_hash', "").strip()
     hash_invalid = None
     hash_valid = None
-    
+
     if (order_type == 'asc') or (order_type == None) :
-        voters = Voter.objects.filter(poll=poll).order_by(order_by)
+        voters = Voter.objects.filter(poll=poll).annotate(cast_votes__id=Max('cast_votes__id')).order_by(order_by)
     else:
         order_by = '-%s' % order_by
-        voters = Voter.objects.filter(poll=poll).order_by(order_by)
-    
+        voters = Voter.objects.filter(poll=poll).annotate(cast_votes__id=Max('cast_votes__id')).order_by(order_by)
+
     voters = voters.filter(get_voters_filters(q_param))
     if voted_param is not None:
         voters = [v for v in voters if v.voted]
