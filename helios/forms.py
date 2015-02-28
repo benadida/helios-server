@@ -20,7 +20,7 @@ class ElectionForm(forms.Form):
   election_type = forms.ChoiceField(label=_("Type"), choices = Election.ELECTION_TYPES)
   use_voter_aliases = forms.BooleanField(required=False, initial=False, 
     label=_("Use voter aliases"), help_text=_('If selected, voter identities will be replaced with aliases, e.g. "V12", in the ballot tracking center'))
-  #use_advanced_audit_features = forms.BooleanField(required=False, initial=True, help_text='disable this only if you want a simple election with reduced security but a simpler user interface')
+  use_advanced_audit_features = forms.BooleanField(required=False, initial=True, help_text='disable this only if you want a simple election with reduced security but a simpler user interface')
   randomize_answer_order = forms.BooleanField(required=False, initial=False, 
     label=_("Randomize answer order"), help_text=_('enable this if you want the answers to questions to appear in random order for each voter'))
   #private_p = forms.BooleanField(required=False, initial=False, label=_("Private?"), help_text=_('A private election is only visible to registered voters.'))
