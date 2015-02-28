@@ -60,22 +60,16 @@ if get_from_env('DATABASE_URL', None):
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
 TIME_ZONE = 'America/Sao_Paulo'
-USE_TZ = True
-
-# Language code for this installation. All choices can be found here:
-# http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'pt-br'
+SITE_ID = 1
+USE_I18N = True
+USE_TZ = True
 
 LANGUAGES = (
     ('en', _('English')),
     ('pt-br', _('Brazilian Portuguese')),
 )
 
-SITE_ID = 1
-
-# If you set this to False, Django will make some optimizations so as not
-# to load the internationalization machinery.
-USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
