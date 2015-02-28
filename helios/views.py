@@ -238,7 +238,7 @@ def one_election_edit(request, election):
 
   error = None
   RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases', 'election_type', 'help_email', 'randomize_answer_order']
-  # RELEVANT_FIELDS += ['use_advanced_audit_features']
+  RELEVANT_FIELDS += ['use_advanced_audit_features']
 
   if settings.ALLOW_ELECTION_INFO_URL:
     RELEVANT_FIELDS += ['election_info_url']

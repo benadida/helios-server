@@ -279,6 +279,7 @@ This election is <em>private</em>. You are signed in as eligible voter <em>{{vot
 </div>
 </div>
 <br /></br>
+
 <div class="row">
 	<div class="col-md-12">
 	{% if election.voting_has_stopped %}
@@ -291,5 +292,54 @@ This election is <em>private</em>. You are signed in as eligible voter <em>{{vot
 	{% endif %}
 	</div>
 </div>
+
+{% if election.use_advanced_audit_features %}
+<div class="row well">
+    <div class="col-md-12">
+        <a href="#" onclick="$('#auditbody').slideToggle(250);">{% trans "Audit Info" %}</a>
+        <div id="auditbody" style="display:none;">
+        <br />{% trans "Election URL:" %}<br />
+        <tt style="font-size: 1.2em;"><a href="{{election.url}}">{{election.url}}</a></tt>
+
+        {% if election.frozen_at %}
+        <br />
+        <br />{% trans "Election Fingerprint:" %}<br />
+        <tt style="font-size: 1.3em; font-weight: bold;">{{election.hash}}</tt>
+
+
+        {% if votes %}
+        <p>{% trans "Your smart ballot tracker:" %} <br />
+        <tt style="font-size:14pt; font-weight: bold;">{{votes.0.vote_hash}}</tt>
+        </p>
+        {% endif %}
+
+        <p style="font-size: 1.3em;">
+        <a href="{% url "helios.views.voters_list_pretty" election.uuid %}">{% trans "Ballot Tracking Center" %}</a> &nbsp;| &nbsp;
+        <a href="{% url "helios.views.one_election_audited_ballots" election.uuid %}">Audited Ballots</a>
+        </p>
+
+        {% endif %}
+
+        {% if not election.voting_has_started %}
+        <p style="font-size: 1.2em;">
+          <a href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url "helios.views.one_election" election.uuid %}">{% trans "preview booth" %} </a>
+          </p>
+          {% endif %}  
+
+          {% if election.voting_has_stopped %}
+          <p style="font-size: 1.2em;">
+          {% if election.result %}
+          {% trans "verify" %} <a target="_blank" href="/verifier/verify.html?election_url={% url "helios.views.one_election" election.uuid %}">{ % trans election tally" %}</a>.
+          {% endif %}
+          {% blocktrans %} 
+          review the <a href="{{vote_url}}">voting booth</a>.
+          {% endblocktrans %}
+          </p>
+
+          {% endif %}
+        </div>
+    </div>
+</div> <! -- end audito info -->
+{% endif %} 
 
 {% endblock %}
