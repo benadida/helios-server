@@ -8,7 +8,7 @@ class Institution(models.Model):
   short_name = models.CharField(max_length=100, blank=True)
   main_phone = models.CharField(max_length=25)
   sec_phone = models.CharField(max_length=25, blank=True)
-  address = models.TextField(max_length=250)
+  address = models.TextField()
   mngt_email = models.EmailField()
   
   class Meta:
