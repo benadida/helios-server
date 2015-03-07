@@ -6,7 +6,7 @@
     dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}"
     xml:lang="{% firstof LANGUAGE_CODE 'en' %}"
     lang="{% firstof LANGUAGE_CODE 'en' %}">
-    { % load staticfiles %} 
+     {% load staticfiles %} 
   <head>
     <title>{% block title %}Authentication{% endblock %} - Helios</title>
     {% block css %}
