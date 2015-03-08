@@ -1,0 +1,27 @@
+{% extends 'server_ui/templates/base.html' %}
+{% load i18n %}
+{% block content %}
+
+{% if user %}
+    <h3>{% trans "Users with roles in your institution" %}</h3>
+	<table class="table table-striped">
+	  <thead>
+	    <tr>
+	      <th>{% trans "User" %}</th>
+	      <th>{% trans "Role" %}</th>
+	      <th>{% trans "Details" %}</th>
+	      <th>{% trans "Action" %}</th>
+	   </tr>
+	  </thead>
+	  <tbody>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+      </tbody>
+    </table>
+{% else %}
+    {% include "login_box.html" %}
+{% endif %}
+
+{% endblock %}
