@@ -23,15 +23,18 @@
 {% autopaginate users paginate_by %}
 {% paginate %}
 
-<table class="prettytable" border=1>
+<table class="elections">
+  <thead>
     <tr>
-        <td><b>ID</b></td>
-        <td><b>User ID</b></td>
-        <td><b>{% trans "Name" %}</b></td>
-        <td><b>{% trans "Institution" %}</b></td>
-        <td><b>{% trans "Elections Held" %}</b></td>
-        <td><b>{% trans "Details" %}</b></td>
+        <th>ID</th>
+        <th>User ID</b></td>
+        <th>{% trans "Name" %}</th>
+        <th>{% trans "Institution" %}</th>
+        <th>{% trans "Elections Held" %}</th>
+        <th>{% trans "Details" %}</th>
     </tr>
+  </thead>
+  <tbody>
     {% for user in users %}
     <tr>
         <td>{{user.id}}</td>
@@ -50,6 +53,7 @@
         <td colspan=7>{% trans "No results found" %}</td>
     </tr>
     {% endfor %}
+  </tbody>
 </table>
 {% paginate %}
 {% endblock content %}

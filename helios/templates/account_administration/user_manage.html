@@ -5,14 +5,17 @@
 {% endblock %}
 {% block content %}
 {% if u_data %}
-<table border=1>
-  <tr>
-    <td><b>ID</b></td>
-    <td><b>User ID</b></td>
-    <td><b>{% trans "Name" %}</b></td>
-    <td><b>{% trans "Institution" %}</b></td>
-    <td><b>{% trans "Elections Held" %}</b></td>
-  </tr>
+<table class="elections">
+  <thead>
+    <tr>
+    <th>ID</b></th>
+    <th>User ID</th>
+    <th>{% trans "Name" %}</th>
+    <th>{% trans "Institution" %}</th>
+    <th>{% trans "Elections Held" %}</th>
+    </tr>
+  </thead>
+  <tbody>
   <tr>
     <td>{{u_data.id}}</td>
     <td>{{u_data.user_id}}</td>
@@ -20,6 +23,7 @@
     <td>{{u_data.institution.name}}</td>
     <td>{{u_data.elections.all.count}}</td>
   </tr>
+  </tbody>
 </table>
 {% if u_data.management_p or u_data.superadmin_p %}
 {% if user_type == 'superadmin'%}
@@ -40,13 +44,16 @@
 {% endif %}
 <a href={% url list_users%}>{% trans "Back" %}</a></br></br>
 {% if u_data %}
-  <table border=1>
-    <tr>
-      <td>{% trans "Election Name" %}</td>
-      <td>{% trans "Start date" %}</td>
-      <td>{% trans "End Date" %}</td>
-      <td>{% trans "Results" %}</td>
+  <table class="elections">
+    <thead>
+      <tr>
+       <th>{% trans "Election Name" %}</th>
+       <th>{% trans "Start date" %}</th>
+       <th>{% trans "End Date" %}</th>
+       <th>{% trans "Results" %}</th>
       </tr>
+    </thead>
+    <tbody>
       {%for el in u_data.elections.all%}
         <tr>
           <td>{{el.name}}</td>
@@ -55,6 +62,7 @@
           <td><a href="{% url election_zip_results el.uuid el.short_name LANGUAGE_CODE %}">{% trans "Save results"%}</a></td>
         </tr>
       {% endfor %}
+    </tbody>
   </table>    
 {% endif%}
 {% endblock %}
