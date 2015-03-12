@@ -17,10 +17,10 @@
   <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
   <script language="javascript" src="js/jscrypto/sjcl.js"></script>
   <script language="javascript" src="js/underscore-min.js"></script>
-  <script language="javascript" src="js/jquery-1.2.2.min.js"></script>
+  <script language="javascript" src="js/jquery-1.7.2.min.js"></script>
   <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
   <script language="javascript" src="js/jquery-jtemplates.js"></script>
-  <script language="javascript" src="js/jquery.json.min.js"></script>
+  <script language="javascript" src="js/jquery.localize.min.js"></script>
   <script language="javascript" src="js/jscrypto/bigint.js"></script>
   <script language="javascript" src="js/jscrypto/random.js"></script>
   <script language="javascript" src="js/jscrypto/elgamal.js"></script>
@@ -33,9 +33,7 @@
 
 <body>
   <div id="wrapper">
-    <span style="float:right; padding: 7px 15px 5px 10px;">[<a href="javascript:BOOTH.exit();">Exit</a>]</span>
-
-    <div id="banner">Helios Voting Booth</div>
+    <div id="banner" data-localize="banner">Helios Voting Booth</div>
 
     <div id="content">
       <div id="header"></div>
@@ -54,7 +52,6 @@
           $('#election_div').setTemplateURL('templates/election.html' + cache_bust);
           $('#question_div').setTemplateURL('templates/question.html' + cache_bust);
           $('#confirm_div').setTemplateURL('templates/confirm.html' + cache_bust);
-          $('#seal_div').setTemplateURL('templates/seal.html' + cache_bust);
           $('#audit_div').setTemplateURL('templates/audit.html' + cache_bust);
           $('#footer').setTemplateURL('templates/footer.html' + cache_bust);
 
@@ -126,8 +123,8 @@
               var new_worker = new window.Worker('boothworker.js');
               new_worker.postMessage({
                 'type': 'setup',
-                'election' : election_raw_json,
-                'question_num' : q_num
+                'election': election_raw_json,
+                'question_num': q_num
               });
 
               new_worker.onmessage = function(event) {
@@ -154,21 +151,16 @@
         };
 
         function escape_html(content) {
-          return $('<div/>').text(content).html();
+          return $('<div>').text(content).html();
         }
 
-        BOOTH.setup_election = function(raw_json, election_metadata) {
+        BOOTH.setup_election = function(raw_json, election_data) {
           // IMPORTANT: we use the raw JSON for safer hash computation
           // so that we are using the JSON serialization of the SERVER
           // to compute the hash, not the JSON serialization in JavaScript.
           // the main reason for this is unicode representation: the Python approach
           // appears to be safer.
           BOOTH.election = HELIOS.Election.fromJSONString(raw_json);
-
-          // FIXME: we shouldn't need to set both, but right now we are doing so
-          // because different code uses each one. Bah. Need fixing.
-          BOOTH.election.hash = b64_sha256(raw_json);
-          BOOTH.election.election_hash = BOOTH.election.hash
 
           // async?
           BOOTH.setup_workers(raw_json);
@@ -193,15 +185,17 @@
             $(ordering).each(function(j, answer) {ordering[j]=j;});
 
             // if we want reordering, then we shuffle the array
-            if (election_metadata && election_metadata.randomize_answer_order) {
+            if (BOOTH.election_metadata && BOOTH.election_metadata.randomize_answer_order)
               shuffleArray(ordering);
-            }
 
             BOOTH.election.question_answer_orderings[i] = ordering;
           });
 
           $('#header').processTemplate({'election': BOOTH.election, 'election_metadata': BOOTH.election_metadata});
           $('#footer').processTemplate({'election': BOOTH.election, 'election_metadata': BOOTH.election_metadata});
+
+          BOOTH.localize();
+
           BOOTH.setup_ballot();
         };
 
@@ -213,13 +207,13 @@
 
         BOOTH.show_election = function() {
           BOOTH.show($('#election_div')).processTemplate({'election' : BOOTH.election});
+          BOOTH.localize();
         };
 
         BOOTH.launch_async_encryption_answer = function(question_num) {
           BOOTH.answer_timestamps[question_num] = new Date().getTime();
           BOOTH.encrypted_answers[question_num] = null;
           BOOTH.dirty[question_num] = false;
-          //console.log("encrypted_answers.answer_input: "+BOOTH.ballot.answers[question_num])
           BOOTH.workers[question_num].postMessage({
             'type': 'encrypt',
             'answer': BOOTH.ballot.answers[question_num],
@@ -286,7 +280,7 @@
           if (question_num == BOOTH.election.questions.length -1)
             BOOTH.all_questions_seen = true;
 
-          BOOTH.show_progress('1');
+          BOOTH.show_progress(1);
           BOOTH.show($('#question_div')).processTemplate({
             'question_num': question_num,
             'last_question_num': BOOTH.election.questions.length - 1,
@@ -294,6 +288,7 @@
             'show_reviewall': BOOTH.all_questions_seen,
   		      'answer_ordering': BOOTH.election.question_answer_orderings[question_num]
           });
+          BOOTH.localize();
 
           // fake clicking through the answers, to trigger the disabling if need be
           // first we remove the answers array
@@ -306,25 +301,6 @@
             BOOTH.click_checkbox_script(question_num, ans, true);
           });
           BOOTH.dirty[question_num] = old_dirty;
-        };
-
-        BOOTH.read_ranked_form = function(form, question_num) {
-          BOOTH.ballot.answers[question_num]=[];
-          var valid_form = true;
-
-          for (var i = 1 ; i < BOOTH.election.questions[question_num].answers.length+1; i++) {
-            if (+form.elements[i].value > 0 && +form.elements[i].value < BOOTH.election.questions[question_num].answers.length+1) {
-              BOOTH.ballot.answers[question_num].push(+form.elements[i].value);
-            } else {
-  				    valid_form = false;
-            }
-          }
-
-          if (valid_form) {
-  		      alert('Valid input: click proceed to continue...');
-          } else {
-  		      alert('Invalid input! Please fill in values between 1 and ' + BOOTH.election.questions[question_num].answers.length + '.');
-          }
         };
 
         BOOTH.click_checkbox_script = function(question_num, answer_num) {
@@ -355,13 +331,13 @@
 
             // do the warning only if the question allows more than one option, otherwise it's confusing
             if (BOOTH.election.questions[question_num].max > 1)
-              $('#warning_box').html('Maximum number of options selected.<br />To change your selection, please de-select a current selection first.');
+              $('#warning_box').show();
           } else {
             // enable the other checkboxes
             $('.ballot_answer').each(function(i, checkbox) {
               checkbox.disabled = false;
             });
-            $('#warning_box').html("");
+            $('#warning_box').hide();
           }
         };
 
@@ -374,18 +350,17 @@
         };
 
         BOOTH.show_encryption_message_before = function(func_to_execute) {
-          BOOTH.show_progress('2');
           BOOTH.show($('#encrypting_div'));
           func_to_execute();
         };
 
         BOOTH.load_and_setup_election = function(election_url) {
           // the hash will be computed within the setup function call now
-          $.get(election_url, function(raw_json) {
+          $.get(election_url, function(election_data, textStatus, jqXHR) {
             // let's also get the metadata
-            $.getJSON(election_url + '/meta', {}, function(election_metadata) {
+            $.get(election_url + '/meta', {}, function(election_metadata) {
               BOOTH.election_metadata = election_metadata;
-              BOOTH.setup_election(raw_json, election_metadata);
+              BOOTH.setup_election(jqXHR.responseText, election_data);
               BOOTH.show_election();
               BOOTH.election_url = election_url;
             });
@@ -393,8 +368,8 @@
 
           if (USE_SJCL) {
             // get more randomness from server
-            $.get('/helios/get-randomness', {}, function(raw_json) {
-              sjcl.random.addEntropy(JSON.parse(raw_json).randomness);
+            $.get('/helios/get-randomness', function(raw_json) {
+              sjcl.random.addEntropy(raw_json.randomness);
             });
           }
         };
@@ -405,7 +380,7 @@
 
         BOOTH.show_progress = function(step_num) {
           $('#progress_div').show();
-          $(['1','2','3','4']).each(function(n, step) {
+          $([1, 2, 3]).each(function(n, step) {
             if (step == step_num) {
               $('#progress_' + step).attr('class', 'selected');
             } else {
@@ -428,8 +403,7 @@
           // in the case of Chrome, we get here when Java
           // is disabled, instead of detecting the problem earlier.
           // because navigator.javaEnabled() still returns true.
-          // $('#election_div').hide();
-          // $('#error_div').show();
+
           USE_SJCL = true;
           sjcl.random.startCollectors();
           BigInt.setup(BOOTH.so_lets_go);
@@ -463,8 +437,14 @@
             'choices': choices,
             'election_metadata': BOOTH.election_metadata,
             'encrypted_vote_hash': BOOTH.encrypted_ballot_hash,
+            'encrypted_vote_json': BOOTH.encrypted_vote_json,
+            'election_uuid': BOOTH.election.uuid,
+            'election_hash': BOOTH.election.hash,
+            'cast_url': BOOTH.election.cast_url,
           });
-          BOOTH.show_progress('2');
+          BOOTH.localize();
+
+          BOOTH.show_progress(2);
         };
 
         BOOTH.check_encryption_status = function() {
@@ -475,34 +455,14 @@
           $('#percent_done').html(progress);
         };
 
-        BOOTH._after_ballot_encryption = function() {
+        BOOTH.after_ballot_encryption = function() {
           // if already serialized, use that, otherwise serialize
           BOOTH.encrypted_vote_json = BOOTH.encrypted_ballot_serialized || JSON.stringify(BOOTH.encrypted_ballot.toJSONObject());
+          BOOTH.encrypted_ballot_hash = b64_sha256(BOOTH.encrypted_vote_json);
 
-          var do_hash = function() {
-            console.log(BOOTH.encrypted_vote_json);
-            BOOTH.encrypted_ballot_hash = b64_sha256(BOOTH.encrypted_vote_json);
-            window.setTimeout(show_confirm, 0);
-          };
+          BOOTH.show_confirm();
 
-          var show_confirm = function() {
-            $('#seal_div').processTemplate({
-              'cast_url': BOOTH.election.cast_url,
-              'encrypted_vote_json': BOOTH.encrypted_vote_json,
-              'encrypted_vote_hash': BOOTH.encrypted_ballot_hash,
-              'election_uuid': BOOTH.election.uuid,
-              'election_hash': BOOTH.election_hash,
-              'election': BOOTH.election,
-              'election_metadata': BOOTH.election_metadata
-            });
-
-            //BOOTH.show($('#seal_div'));
-            BOOTH.encrypted_vote_json = null;
-
-            BOOTH.show_confirm();
-          };
-
-          window.setTimeout(do_hash, 0);
+          BOOTH.encrypted_vote_json = null;
         };
 
         BOOTH.total_cycles_waited = 0;
@@ -527,45 +487,10 @@
 
           BOOTH.encrypted_ballot = HELIOS.EncryptedVote.fromEncryptedAnswers(BOOTH.election, BOOTH.encrypted_answers);
 
-          BOOTH._after_ballot_encryption();
-        };
-
-        BOOTH.seal_ballot_raw = function() {
-          if (BOOTH.synchronous) {
-            BOOTH.progress = new UTILS.PROGRESS();
-            var progress_interval = setInterval('BOOTH.check_encryption_status()', 500);
-            BOOTH.encrypted_ballot = new HELIOS.EncryptedVote(BOOTH.election, BOOTH.ballot.answers, BOOTH.progress);
-            clearInterval(progress_interval);
-            BOOTH._after_ballot_encryption();
-          } else {
-            BOOTH.total_cycles_waited = 0;
-            BOOTH.wait_for_ciphertexts();
-          }
-        };
-
-        BOOTH.request_ballot_encryption = function() {
-          // encryption on server side
-          $.post(BOOTH.election_url + "/encrypt-ballot", {'answers_json': $.toJSON(BOOTH.ballot.answers)}, function(result) {
-            //BOOTH.encrypted_ballot = HELIOS.EncryptedVote.fromJSONObject($.secureEvalJSON(result), BOOTH.election);
-            // rather than deserialize and reserialize, which is inherently slow on browsers
-            // that already need to do network requests, just remove the plaintexts
-            BOOTH.encrypted_ballot_with_plaintexts_serialized = result;
-            var ballot_json_obj = $.secureEvalJSON(BOOTH.encrypted_ballot_with_plaintexts_serialized);
-            var answers = ballot_json_obj.answers;
-            for (var i = 0; i < answers.length; i++) {
-              delete answers[i]['answer'];
-              delete answers[i]['randomness'];
-            }
-
-            BOOTH.encrypted_ballot_serialized = JSON.stringify(ballot_json_obj);
-
-            window.setTimeout(BOOTH._after_ballot_encryption, 0);
-          });
+          BOOTH.after_ballot_encryption();
         };
 
         BOOTH.seal_ballot = function() {
-          BOOTH.show_progress('2');
-
           // if we don't have the ability to do crypto in the browser,
           // we use the server
           if (!BigInt.in_browser) {
@@ -576,9 +501,41 @@
           }
         };
 
+        BOOTH.seal_ballot_raw = function() {
+          if (BOOTH.synchronous) {
+            BOOTH.progress = new UTILS.PROGRESS();
+            var progress_interval = setInterval('BOOTH.check_encryption_status()', 500);
+            BOOTH.encrypted_ballot = new HELIOS.EncryptedVote(BOOTH.election, BOOTH.ballot.answers, BOOTH.progress);
+            clearInterval(progress_interval);
+            BOOTH.after_ballot_encryption();
+          } else {
+            BOOTH.total_cycles_waited = 0;
+            BOOTH.wait_for_ciphertexts();
+          }
+        };
+
+        BOOTH.request_ballot_encryption = function() {
+          // encryption on server side
+          $.post(BOOTH.election_url + "/encrypt-ballot", {'answers_json': $.toJSON(BOOTH.ballot.answers)}, function(result) {
+            // rather than deserialize and reserialize, which is inherently slow on browsers
+            // that already need to do network requests, just remove the plaintexts
+            BOOTH.encrypted_ballot_with_plaintexts_serialized = result;
+            var ballot_json_obj = $.secureEvalJSON(BOOTH.encrypted_ballot_with_plaintexts_serialized);
+            var answers = ballot_json_obj.answers;
+            for (var i = 0; i < answers.length; i++) {
+              delete answers[i]['answer'];
+              delete answers[i]['randomness'];
+            }
+
+            BOOTH.encrypted_ballot_serialized = $.toJSON(ballot_json_obj);
+            BOOTH.after_ballot_encryption();
+          });
+        };
+
         BOOTH.audit_ballot = function() {
-          BOOTH.audit_trail = BOOTH.encrypted_ballot_with_plaintexts_serialized || $.toJSON(BOOTH.encrypted_ballot.get_audit_trail());
+          BOOTH.audit_trail = BOOTH.encrypted_ballot_with_plaintexts_serialized || JSON.stringify(BOOTH.encrypted_ballot.get_audit_trail());
           BOOTH.show($('#audit_div')).processTemplate({'audit_trail' : BOOTH.audit_trail, 'election_url' : BOOTH.election_url});
+          BOOTH.localize();
         };
 
         BOOTH.post_audited_ballot = function() {
@@ -588,7 +545,7 @@
         BOOTH.cast_ballot = function() {
           // show progress spinner
           $('#loading_div').show();
-          $('#proceed_button').attr('disabled', 'disabled');
+          $('#confirm_button').attr('disabled', 'disabled');
 
           // at this point, we delete the plaintexts by resetting the ballot
           BOOTH.setup_ballot(BOOTH.election);
@@ -617,35 +574,46 @@
         BOOTH.do_done = function() {
           BOOTH.started_p = false;
         };
+
+        BOOTH.localize = function() {
+          $(function() {
+            var options = {pathPrefix: "translations"};
+
+            if (window.location.hash) {
+              var options = {
+                language: window.location.hash.substring(1),
+                pathPrefix: "translations"
+              };
+            }
+
+            $('[data-localize]').localize('vote', options);
+          });
+        };
+
+        $(window).bind('hashchange', function() {
+          BOOTH.localize();
+        });
       </script>
 
       <div id="page">
         <div id="progress_div" style="display:none; width: 500px; margin:auto;">
           <table width="100%">
-            <tr><td id="progress_1">(1) Select</td><td id="progress_2">(2) Review</td><td id="progress_3">(3) Submit</td></tr>
+            <tr>
+              <td id="progress_1" data-localize="progress_1">(1) Select</td>
+              <td id="progress_2" data-localize="progress_2">(2) Review</td>
+              <td id="progress_3" data-localize="progress_3">(3) Submit</td>
+            </tr>
           </table>
         </div>
 
         <div id="election_div" class="panel">
           <div align="center">
-            <h3>Checking capabilities and loading election booth...</h3>
+            <h3 data-localication="checking_capabilities">Checking capabilities and loading election booth...</h3>
 
             <img src="loading.gif" />
             <br />
-            This may take up to 10 seconds.
+            <span data-localization="checking_capabilities_seconds">This may take up to 10 seconds.</span>
           </div>
-        </div>
-
-        <div id="error_div" class="panel" style="display: none;">
-          <h3>There's a problem</h3>
-
-          <p>
-            It appears that your browser does not have Java enabled. Helios needs Java to perform encryption within the browser.
-          </p>
-
-          <p>
-            You may be able to install Java by visiting <a target="_new" href="http://java.com">java.com</a>.
-          </p>
         </div>
 
         <div id="question_div" class="panel"></div>
@@ -656,17 +624,15 @@
           <h3 align="center">Processing....</h3>
         </div>
 
-        <div id="encrypting_div" class="panel" style="display:none;">
+        <div id="encrypting_div" class="panel" style="display: none;">
           <h3 align="center">
-            Helios is now encrypting your ballot...
+            <span data-localize="encrypting">Helios is now encrypting your ballot...</span>
             <br />
             <img src="encrypting.gif" /> <span style="font-size:0.7em; display:none;" id="percent_done_container">(<span id="percent_done">0</span>%)</span>
           </h3>
 
-          <p align="center"><b>This may take up to two minutes.</b>
+          <p align="center"><b data-localize="encrypting_minutes">This may take up to two minutes.</b>
         </div>
-
-        <div id="seal_div" class="panel"></div>
 
         <div id="audit_div" class="panel"></div>
       </div>
@@ -674,7 +640,7 @@
       <br clear="both" />
     </div>
 
-    <div id="footer">&nbsp;</div>
+    <div id="footer"></div>
   </div>
 
   <div id="applet_div"></div>

@@ -12,6 +12,9 @@ from view_utils import render_template_raw
 from django.core.urlresolvers import reverse
 import signals
 import copy
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
 
 
 @task()
@@ -31,7 +34,6 @@ def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwarg
             user.update_status(status_update_message)
 
     else:
-        logger = cast_vote_verify_and_store.get_logger(**kwargs)
         logger.error("Failed to verify and store %d" % cast_vote_id)
 
 

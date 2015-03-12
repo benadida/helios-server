@@ -1,38 +1,32 @@
-<h3>Your Audited Ballot</h3>
+<h3 data-localize="audit_audit">Your Audited Ballot</h3>
 
-<p>
-  <b><u>IMPORTANT</u></b>: this ballot, now that it has been audited, <em>will not be tallied</em>.
-  <br />
+<p style="color: red;" data-localize="audit_important">
+  <b>Important</b><br />This ballot, now that it has been audited, <em>will not be tallied</em>.
+</p>
+
+<p data-localize="audit_cast">
   To cast a ballot, you must click the "Back to Voting" button below, re-encrypt it, and choose "cast" instead of "audit."
 </p>
 
-<p>
+<p data-localize="audit_why">
   <b>Why?</b> Helios prevents you from auditing and casting the same ballot to provide you with some protection against coercion.
 </p>
 
 <p>
-  <b>Now what?</b> <a onclick="$('#audit_trail').select(); return false;" href="#">Select your ballot audit info</a>, copy it to your clipboard, then use the <a target="_blank" href="single-ballot-verify.html?election_url={$T.election_url}">ballot verifier</a> to verify it.<br />
-  Once you're satisfied, click the "back to voting" button to re-encrypt and cast your ballot.
+  <b data-localize="audit_now_what">Now what?</b> <a onclick="$('#audit_trail').select(); return false;" href="#" data-localize="audit_select">Select your ballot audit info</a>, <span data-localize="audit_copy">copy it to your clipboard, then use the</span> <a target="_blank" href="single-ballot-verify.html?election_url={$T.election_url}" data-localize="audit_verify">ballot verifier</a> <span data-localize="audit_verify_post">to verify it. Once you're satisfied, click the "back to voting" button to re-encrypt and cast your ballot.</span>
 </p>
 
 <form action="#">
-  <textarea name="audit_trail" id="audit_trail" cols="80" rows="10" wrap="soft">
-    {$T.audit_trail}
-  </textarea>
+  <textarea name="audit_trail" id="audit_trail" cols="80" rows="10" wrap="soft">{$T.audit_trail}</textarea>
 
-  <br />
-  <br />
+  <p data-localize="audit_going_back">
+    Before going back to voting, you can post this audited ballot to the Helios tracking center so that others might double-check the verification of this ballot.
+  </P>
 
-  Before going back to voting,<br />
-  you can post this audited ballot to the Helios tracking center so that others might double-check the verification of this ballot.
+  <p data-localize="audit_cast_reminder">
+    <b>Even if you post your audited ballot, you must go back to voting and choose "cast" if you want your vote to count.</b>
+  </p>
 
-  <br />
-  <br />
-
-  <b>Even if you post your audited ballot, you must go back to voting and choose "cast" if you want your vote to count.</b>
-
-  <br />
-  <br />
-
-  <input type="button" value="Post Audited Ballot to Tracking Center" onclick="$(this).attr('disabled', 'disabled');BOOTH.post_audited_ballot();" id="post_audited_ballot_button" class="pretty" />&nbsp;&nbsp;&nbsp;<input type="button" value="Back to Voting" onclick="BOOTH.reset_ciphertexts();BOOTH.seal_ballot();" class="pretty" />
+  <button style="margin-left: 10px;" onclick="$(this).attr('disabled', 'disabled'); BOOTH.post_audited_ballot();" id="post_audited_ballot_button" class="pretty" data-localize="audit_post">Post Audited Ballot to Tracking Center</button>
+  <button onclick="BOOTH.reset_ciphertexts();BOOTH.seal_ballot();" class="pretty" data-localize="audit_back">Back to Voting</button>
 </form>

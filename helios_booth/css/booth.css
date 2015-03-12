@@ -18,7 +18,7 @@ body {
 }
 
 #content {
-  padding: 20px 30px 20px 30px;
+  padding: 20px;
 }
 
 #header {
@@ -45,7 +45,7 @@ body {
 #banner {
   width: 100%;
   text-align: center;
-  padding: 2px 0px 2px 0px;
+  padding: 5px 0;
   background: #ccc;
   font-size: 18pt;
   border-bottom: 1px solid #666;
@@ -81,7 +81,7 @@ body {
   width: 100%;
   text-align: center;
   margin-top: 10px;
-  padding: 2px 0px 2px 0px;
+  padding: 5px 0px;
   background: #ddd;
   border-top: 1px solid #666;
 }
