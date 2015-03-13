@@ -461,7 +461,7 @@ HELIOS.EncryptedVote = Class.extend({
   },
 
   toJSONObject: function(include_plaintext) {
-      var answers = _(this.encrypted_answers).map(function(ea,i) {
+    var answers = _(this.encrypted_answers).map(function(ea,i) {
       return ea.toJSONObject(include_plaintext);
     });
 

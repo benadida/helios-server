@@ -51,17 +51,17 @@
     // set up the message when navigating away
     BOOTH.started_p = false;
 
-    window.onbeforeunload = function(evt) {
+    window.onbeforeunload = function(e) {
       if (!BOOTH.started_p)
         return;
 
-      if (typeof evt == 'undefined')
-        evt = window.event;
+      if (typeof e == 'undefined')
+        e = window.event;
 
-      var message = 'If you leave this page with an in-progress ballot, your ballot will be lost.';
+      var message = "If you leave this page with an in-progress ballot, your ballot will be lost.";
 
-      if (evt)
-        evt.returnValue = message;
+      if (e)
+        e.returnValue = message;
 
       return message;
     };

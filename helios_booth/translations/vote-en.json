@@ -41,7 +41,7 @@
   "confirm_note_tracker" : "You can take note of your <i>smart ballot tracker</i>",
   "confirm_print" : "Print",
   "confirm_choices" : "Choices",
-  "confirm_undervoted_pre" : ">You under-voted: you may select up to ",
+  "confirm_undervoted_pre" : "You under-voted: you may select up to ",
   "confirm_undervoted_post" : "",
   "confirm_edit" : "Edit",
   "confirm_confirm" : "Confirm Choices",

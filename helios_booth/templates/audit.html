@@ -27,6 +27,6 @@
     <b>Even if you post your audited ballot, you must go back to voting and choose "cast" if you want your vote to count.</b>
   </p>
 
-  <button style="margin-left: 10px;" onclick="$(this).attr('disabled', 'disabled'); BOOTH.post_audited_ballot();" id="post_audited_ballot_button" class="pretty" data-localize="audit_post">Post Audited Ballot to Tracking Center</button>
-  <button onclick="BOOTH.reset_ciphertexts();BOOTH.seal_ballot();" class="pretty" data-localize="audit_back">Back to Voting</button>
+  <button type="button" onclick="$(this).attr('disabled', 'disabled'); BOOTH.post_audited_ballot();" id="post_audited_ballot_button" class="pretty" style="margin-left: 10px;" data-localize="audit_post">Post Audited Ballot to Tracking Center</button>
+  <button type="button" onclick="BOOTH.reset_ciphertexts(); BOOTH.seal_ballot();" class="pretty" data-localize="audit_back">Back to Voting</button>
 </form>
