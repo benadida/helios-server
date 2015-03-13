@@ -226,7 +226,7 @@ class Eligibility(ListObject, LegacyObject):
     WRAPPED_OBJ = list
 
 
-class Thresholdscheme(LegacyObject):
+class ThresholdScheme(LegacyObject):
     FIELDS = ['election_id', 'n', 'k', 'ground_1', 'ground_2']
     STRUCTURED_FIELDS = {
         'ground_1': 'core/BigInteger',

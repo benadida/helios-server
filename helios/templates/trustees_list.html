@@ -176,11 +176,7 @@
                   </td>
                   <td>
                     {% if t.added_encrypted_shares %}
-                      {% if election.encrypted_shares_uploaded %}
-                        <a href="/bulletin_board/elections/{{election.id}}/download/{{t.key.id}}">Download</a>
-                      {% else %}
-                        <i>Uploaded</i>
-                      {% endif %}
+                      <i>Uploaded</i>
                     {% else %}
                       <i>Waiting</i>
                     {% endif %}

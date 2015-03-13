@@ -790,7 +790,7 @@ def DLog_challenge_generator(commitment):
     return int(hashlib.sha1(string_to_hash).hexdigest(), 16)
 
 
-class Commitment_E(object):
+class CommitmentE(object):
     FIELDS = ['s', 't', 'ground_1', 'ground_2', 'value']
 
     def __init__(self):

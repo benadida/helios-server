@@ -25,12 +25,11 @@ import unicodecsv
 
 from validate_email import validate_email
 
-from crypto import electionalgs, algs, elgamal, utils
+from crypto import algs, elgamal, utils, electionalgs, thresholdalgs
 from helios import utils as heliosutils
 import helios.views
 
 from helios import datatypes
-from bulletin_board import thresholdalgs
 
 # useful stuff in helios_auth
 from helios_auth.models import User, AUTH_SYSTEMS
@@ -38,8 +37,6 @@ from helios_auth.jsonfield import JSONField
 from helios.datatypes.djangofield import LDObjectField
 
 from operator import itemgetter
-from bulletin_board.models import Key, SecretKey, Signed_Encrypted_Share
-from bulletin_board.thresholdalgs import Share
 from helios.constants import p, g, q, ground_1, ground_2
 
 # parameters for everything
@@ -53,7 +50,6 @@ ELGAMAL_PARAMS.g = g
 
 
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
-
     class Meta:
         abstract = True
 
@@ -508,12 +504,7 @@ class Election(HeliosModel):
                     decryption_factors.append([[pow(trustee.decryption_factors[question][answer], lambda_now, p) for answer in range(len(trustee.decryption_factors[question]))] for question in range(nof_questions)])
 
         self.result = self.encrypted_tally.decrypt_from_factors(decryption_factors, self.public_key)
-        # postprocessing for ranking eleciton
-
-        #raise Exception(self.result)
-
         self.append_log(ElectionLog.DECRYPTIONS_COMBINED)
-
         self.save()
 
     def generate_voters_hash(self):
@@ -831,43 +822,6 @@ class Election(HeliosModel):
         # get the winners
         winners = self.winners
 
-        if self.election_type == 'ranked election':
-        # if False:
-            answers = []
-            result_new = []
-            for q_num in range(len(self.questions)):
-                nof_answers = len(self.questions[q_num]['answers'])
-                #perm = itertools.permutations(election.questions[i]['answers'])
-                comb = itertools.combinations(range(nof_answers), 2)
-                one_question_scores = [(i, 0) for i in range(nof_answers)]
-                #prop_sol_array = []
-                for l in range(nof_answers * (nof_answers - 1) / 2):
-                    new_comb = comb.next()
-                    x = new_comb[0]
-                    y = new_comb[1]
-                    if(self.result[q_num][2 * l] > self.result[q_num][2 * l + 1]):
-                        x_score = 1
-                        y_score = -1
-                    elif(self.result[q_num][2 * l] < self.result[q_num][2 * l + 1]):
-                        x_score = -1
-                        y_score = 1
-                    else:
-                        x_score = 0
-                        y_score = 0
-                    one_question_scores[x] = (
-                        one_question_scores[x][0], one_question_scores[x][1] + x_score)
-                    one_question_scores[y] = (
-                        one_question_scores[y][0], one_question_scores[y][1] + y_score)
-                one_question_scores_sorted = sorted(
-                    one_question_scores, key=itemgetter(1), reverse=True)  # Sort on scores
-                one_question_result = []
-                for index in range(len(one_question_scores_sorted)):
-                    one_question_result.append(
-                        one_question_scores_sorted[index])
-                result_new.append(one_question_result)
-
-            self.result = result_new
-
         raw_result = self.result
         prettified_result = []
 
@@ -876,39 +830,22 @@ class Election(HeliosModel):
             q = self.questions[i]
             pretty_question = []
 
-            if self.election_type == 'ranked election':
             # go through answers
-                scores = []
-                for j in range(len(q['answers'])):
-                    scores.append(self.result[i][j][1])
-                for j in range(len(q['answers'])):
-                    a = q['answers'][self.result[i][j][0]]
-                    score = self.result[i][j][1]
-                    count = len(
-                        [higher for higher in scores if higher > score]) + 1
-                    pretty_question.append(
-                        {'answer': a, 'count': count, 'winner': j == 0, 'score': score})
+            for j in range(len(q['answers'])):
+                a = q['answers'][j]
+                count = raw_result[i][j]
+                pretty_question.append(
+                    {'answer': a, 'count': count, 'winner': (j in winners[i])})
 
-                prettified_result.append(
-                    {'question': q['short_name'], 'answers': pretty_question})
-
-            else:
-                # go through answers
-                for j in range(len(q['answers'])):
-                    a = q['answers'][j]
-                    count = raw_result[i][j]
-                    pretty_question.append(
-                        {'answer': a, 'count': count, 'winner': (j in winners[i])})
-
-                prettified_result.append(
-                    {'question': q['short_name'], 'answers': pretty_question})
+            prettified_result.append(
+                {'question': q['short_name'], 'answers': pretty_question})
 
         return prettified_result
 
     def create_scheme(self, n, k, ground_1, ground_2):
 
         if len(self.thresholdscheme_set.all()) == 0:
-            scheme = Thresholdscheme(election=self)
+            scheme = ThresholdScheme(election=self)
             scheme.n = n
             scheme.k = k
             scheme.ground_1 = ground_1
@@ -1372,8 +1309,7 @@ class CastVote(HeliosModel):
     def verify_and_store(self):
         # if it's quarantined, don't let this go through
         if self.is_quarantined:
-            raise Exception(
-                "cast vote is quarantined, verification and storage is delayed.")
+            raise Exception("Cast vote is quarantined, verification and storage is delayed.")
 
         result = self.vote.verify(self.voter.election)
 
@@ -1430,6 +1366,54 @@ class AuditedBallot(models.Model):
             query = query[:limit]
 
         return query
+
+
+class Key(models.Model):
+    name = models.CharField(max_length=40)
+    email = models.CharField(max_length=60)
+    public_key_encrypt = models.CharField(max_length=10000)
+    public_key_signing = models.CharField(max_length=10000)
+    pok_encrypt = models.CharField(max_length=10000)
+    pok_signing = models.CharField(max_length=10000)
+    public_key_encrypt_hash = models.CharField(max_length=100)
+    public_key_signing_hash = models.CharField(max_length=100)
+
+
+class SecretKey(models.Model):
+    public_key = models.ForeignKey(Key)
+    secret_key_encrypt = models.CharField(max_length=10000, null=True)
+    secret_key_signing = models.CharField(max_length=10000, null=True)
+
+
+class SignedEncryptedShare(models.Model):
+    election_id = models.IntegerField()
+    share = models.CharField(max_length=10000000)
+    signer = models.CharField(max_length=40)
+    signer_id = models.IntegerField()
+    receiver = models.CharField(max_length=40)
+    receiver_id = models.IntegerField()
+    trustee_signer_id = models.IntegerField()
+    trustee_receiver_id = models.IntegerField()
+
+
+class Signature(models.Model):
+    signature = models.CharField(max_length=10000)
+
+
+class Ei(models.Model):
+    election_id = models.IntegerField()
+    value = models.CharField(max_length=10000)
+    signer_id = models.IntegerField()
+    signer = models.CharField(max_length=40)
+
+
+class IncorrectShare(models.Model):
+    share = models.CharField(max_length=100000)
+    election_id = models.IntegerField()
+    sig = models.CharField(max_length=100000)
+    signer_id = models.IntegerField()
+    receiver_id = models.IntegerField()
+    explanation = models.CharField(max_length=200)
 
 
 class Trustee(HeliosModel):
@@ -1529,7 +1513,7 @@ class Trustee(HeliosModel):
 
     def add_encrypted_shares(self, election):
         trustees = Trustee.objects.filter(election=election).order_by('id')
-        scheme = Thresholdscheme.objects.get(election=election)
+        scheme = ThresholdScheme.objects.get(election=election)
 
         n = scheme.n
 
@@ -1543,7 +1527,7 @@ class Trustee(HeliosModel):
         secret_key = SecretKey.objects.get(public_key=self.key)
         secret_key_signing = algs.EGSecretKey.from_dict(utils.from_json(secret_key.secret_key_signing))
 
-        if (len(Signed_Encrypted_Share.objects.filter(signer_id=self.key.id).filter(election_id=election.id)) > 0):
+        if (len(SignedEncryptedShare.objects.filter(signer_id=self.key.id).filter(election_id=election.id)) > 0):
             return Exception("The trustee's shares were already uploaded")
 
         s = algs.Utils.random_mpz_lt(q)
@@ -1566,9 +1550,9 @@ class Trustee(HeliosModel):
 
                 encrypted_share = share.encrypt(algs.EGPublicKey.from_dict(utils.from_json(key.public_key_encrypt)))
                 signature = share.sign(secret_key_signing, p, q, g)
-                signed_encrypted_share = thresholdalgs.Signed_Encrypted_Share(signature, encrypted_share)
+                signed_encrypted_share = thresholdalgs.SignedEncryptedShare(signature, encrypted_share)
 
-                encrypted_share = Signed_Encrypted_Share()
+                encrypted_share = SignedEncryptedShare()
                 encrypted_share.share = utils.to_json(signed_encrypted_share.to_dict())
                 if signature.verify(share_string, algs.EGPublicKey.from_dict(utils.from_json(self.key.public_key_signing)), p, q, g):
                     encrypted_share.signer = self.key.name
@@ -1592,18 +1576,18 @@ class Trustee(HeliosModel):
         secret_key_string = SecretKey.objects.get(public_key=self.key).secret_key_encrypt
         secret_key = elgamal.SecretKey.from_dict(utils.from_json(secret_key_string))
         receiver_id = self.key.id
-        scheme = Thresholdscheme.objects.get(election=election)
+        scheme = ThresholdScheme.objects.get(election=election)
         n = scheme.n
         k = scheme.k
 
         # write data_receiver
-        signed_encrypted_shares_strings = Signed_Encrypted_Share.objects.filter(receiver_id=receiver_id).filter(election_id=election.id).order_by('signer_id')
+        signed_encrypted_shares_strings = SignedEncryptedShare.objects.filter(receiver_id=receiver_id).filter(election_id=election.id).order_by('signer_id')
         signed_encrypted_shares = []
         receiver_ids = []
         signer_ids = []
 
         for share in signed_encrypted_shares_strings:
-            signed_encrypted_shares.append(thresholdalgs.Signed_Encrypted_Share.from_dict(utils.from_json(share.share)))
+            signed_encrypted_shares.append(thresholdalgs.SignedEncryptedShare.from_dict(utils.from_json(share.share)))
             receiver_ids.append(share.receiver_id)
             signer_ids.append(share.signer_id)
 
@@ -1627,11 +1611,11 @@ class Trustee(HeliosModel):
                         correct_share = True
                     else:
                         share_string = utils.to_json(share.to_dict())
-                        incorrect_share = Incorrect_share(share_string, election.id, sig, signer_id, receiver_id, 'invalid commitments')
-                        incorrect_share.save()
+                        IncorrectShare = IncorrectShare(share_string, election.id, sig, signer_id, receiver_id, 'invalid commitments')
+                        IncorrectShare.save()
                 else:
                     share_string = utils.to_json(share.to_dict())
-                    incorrect_share = Incorrect_share()
+                    incorrect_share = IncorrectShare()
                     incorrect_share.share = share_string
                     incorrect_share.election_id = election.id
                     incorrect_share.sig = sig
@@ -1662,7 +1646,7 @@ class Trustee(HeliosModel):
                 self.pok = self.secret_key.prove_sk(algs.DLog_challenge_generator)
 
 
-class Thresholdscheme(HeliosModel):
+class ThresholdScheme(HeliosModel):
     election = models.ForeignKey(Election)
     n = models.IntegerField(null=True)
     k = models.IntegerField(null=True)
@@ -1672,9 +1656,9 @@ class Thresholdscheme(HeliosModel):
     def save(self, *args, **kwargs):
         # not saved yet?
         if not self.election:
-            self.election.append_log(('Thresholdscheme for %s added') % election.name)
+            self.election.append_log(('ThresholdScheme for %s added') % election.name)
 
-        super(Thresholdscheme, self).save(*args, **kwargs)
+        super(ThresholdScheme, self).save(*args, **kwargs)
 
     # share a secret verifiably by creating a polynomial of grade k-1 and generate n points
     # the secret s is F(0) and can be found by interpolating the points
@@ -1695,7 +1679,7 @@ class Thresholdscheme(HeliosModel):
         # create commitments
         Ei = []
         for i in range(self.k):
-            commitment_loop = thresholdalgs.Commitment_E()
+            commitment_loop = thresholdalgs.CommitmentE()
             commitment_loop.generate(F.coeff[i], G.coeff[i], self.ground_1, self.ground_2, p, q, g)
             if commitment_loop.value > p - 1:
                 raise Exception('Ei value too big!')
@@ -1717,4 +1701,4 @@ class Thresholdscheme(HeliosModel):
 
     @property
     def datatype(self):
-        return self.election.datatype.replace('Election', 'Thresholdscheme')
+        return self.election.datatype.replace('Election', 'ThresholdScheme')

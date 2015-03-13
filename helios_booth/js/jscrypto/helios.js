@@ -7,25 +7,13 @@
 // FIXME: needs a healthy refactor/cleanup based on Class.extend()
 //
 
-// extend jquery to do object keys
-// from http://snipplr.com/view.php?codeview&id=10430
-/*
-$.extend({
-    keys: function(obj){
-        var a = [];
-        $.each(obj, function(k){ a.push(k) });
-        return a.sort();
-    }
-});
-*/
-
 var UTILS = {};
 
 UTILS.array_remove_value = function(arr, val) {
   var new_arr = [];
   _(arr).each(function(v, i) {
     if (v != val) {
-	new_arr.push(v);
+	    new_arr.push(v);
     }
   });
 
@@ -74,6 +62,7 @@ UTILS.object_sort_keys = function(obj) {
   _(_.keys(obj)).each(function(k) {
     new_obj[k] = obj[k];
   });
+
   return new_obj;
 };
 
@@ -92,36 +81,25 @@ HELIOS.get_bogus_public_key = function() {
 
 // election
 HELIOS.Election = Class.extend({
-  init: function() {
-  },
+  init: function() {},
 
   toJSONObject: function() {
-    var json_obj = {uuid : this.uuid,
-    description : this.description, short_name : this.short_name, name : this.name,
-    public_key: this.public_key.toJSONObject(), questions : this.questions,
-    cast_url: this.cast_url, frozen_at: this.frozen_at,
-    openreg: this.openreg, voters_hash: this.voters_hash,
-    use_voter_aliases: this.use_voter_aliases,
-    voting_starts_at: this.voting_starts_at,
-    voting_ends_at: this.voting_ends_at,
-    election_type : this.election_type,
-
+    var json_obj = {
+      uuid: this.uuid,
+      description: this.description, short_name : this.short_name, name : this.name,
+      public_key: this.public_key.toJSONObject(), questions : this.questions,
+      cast_url: this.cast_url, frozen_at: this.frozen_at,
+      openreg: this.openreg, voters_hash: this.voters_hash,
+      use_voter_aliases: this.use_voter_aliases,
+      voting_starts_at: this.voting_starts_at,
+      voting_ends_at: this.voting_ends_at,
+      election_type: this.election_type,
     };
 
     return UTILS.object_sort_keys(json_obj);
   },
 
-  get_hash: function() {
-    if (this.election_hash)
-      return this.election_hash;
-
-    // otherwise
-    return b64_sha256(this.toJSON());
-  },
-
   toJSON: function() {
-    // FIXME: only way around the backslash thing for now.... how ugly
-    //return jQuery.toJSON(this.toJSONObject()).replace(/\//g,"\\/");
     return JSON.stringify(this.toJSONObject());
   }
 });
@@ -141,8 +119,9 @@ HELIOS.Election.fromJSONObject = function(d) {
   _.extend(el, d);
 
   // empty questions
-  if (!el.questions)
+  if (!el.questions) {
     el.questions = [];
+  }
 
   if (el.public_key) {
     el.public_key = ElGamal.PublicKey.fromJSONObject(el.public_key);
@@ -176,38 +155,12 @@ BALLOT.pretty_choices = function(election, ballot) {
 
     return choices;
 };
-BALLOT.ranked_choices = function(election, ballot) {
-    var questions = election.questions;
-    var answers = ballot.answers;
-    //initialise choices
-
-    var choices = [];
-    for(j=0;j<questions.length;j++){
-    	var question_choices = [];
-    	for(i=1;i<=answers.length;i++){
-    		question_choices.push(0);
-    		}
-    	choices.push(question_choices);
-    }
-    for(q_num=0 ; q_num<questions.length;q_num++){
-    	for(a_num=0;a_num<questions[q_num].answers.length;a_num++){
-    		choices[q_num][answers[q_num][a_num]-1]=questions[q_num].answers[a_num];
-
-    	}
-    }
-
-
-
-
-
-    return choices;
-};
-
 
 // open up a new window and do something with it.
 UTILS.open_window_with_content = function(content, mime_type) {
     if (!mime_type)
-	mime_type = "text/plain";
+      mime_type = "text/plain";
+
     if (BigInt.is_ie) {
 	    w = window.open("");
 	    w.document.open(mime_type);
@@ -230,8 +183,10 @@ UTILS.generate_plaintexts = function(pk, min, max) {
 
   // questions with more than one possible answer, add to the array.
   for (var i=0; i<=max; i++) {
-    if (i >= min)
+    if (i >= min) {
       plaintexts.push(new ElGamal.Plaintext(last_plaintext, pk, false));
+    }
+
     last_plaintext = last_plaintext.multiply(pk.g).mod(pk.p);
   }
 
@@ -245,23 +200,17 @@ UTILS.generate_plaintexts = function(pk, min, max) {
 
 
 HELIOS.EncryptedAnswer = Class.extend({
-  init: function(question, answer, pk, progress, ranking) {
+  init: function(question, answer, pk, progress) {
     // if nothing in the constructor
     if (question == null)
       return;
+
     // store answer
     // CHANGE 2008-08-06: answer is now an *array* of answers, not just a single integer
-    this.answer_input = answer
-
-    if (ranking==true){
-		this.answer = this.ranking_processing(question,answer);
-	}
-	else{
-	this.answer = answer;
-	}
+    this.answer = answer;
 
     // do the encryption
-    var enc_result = this.doEncryption(question, this.answer, pk,null, progress, ranking);
+    var enc_result = this.doEncryption(question, this.answer, pk, null, progress);
 
     this.choices = enc_result.choices;
     this.randomness = enc_result.randomness;
@@ -269,56 +218,21 @@ HELIOS.EncryptedAnswer = Class.extend({
     this.overall_proof = enc_result.overall_proof;
   },
 
-  ranking_processing: function(question, answer) {
-  	var answer_new = []
-  	for (var i=0; i<answer.length ; i++) {
-  		if (answer.length == question.answers.length){
-  		for (var j=i+1; j<question.answers.length ; j++) {
-  			if(answer[i]<answer[j]) {
-  				answer_new.push(1);
-  				//answer_new.push(0);
-
-  				answer_new.push(0);
-  			}
-  			else if(answer[i]==answer[j]) {
-  				answer_new.push(0);
-  				//answer_new.push(1);
-  				answer_new.push(0);
-
-  			}
-  			else if(answer[i]>answer[j]){
-  				answer_new.push(0);
-  				//answer_new.push(0);
-  				answer_new.push(1);
-  			}
-  		}
-  		}
-  	}
-  	console.log('answer_new: '+answer_new);
-
-  	return answer_new;
-
-  },
-  doEncryption: function(question, answer, pk, randomness, progress, ranking) {
+  doEncryption: function(question, answer, pk, randomness, progress) {
     var choices = [];
     var individual_proofs = [];
     var overall_proof = [];
     var sum_value = [];
 
-    for(var i = 0; i<answer.length ; i=i+2){
+    for (var i=0; i<answer.length ; i=i+2) {
     	sum_value.push(answer[i]+answer[i+1]);
     }
 
     // possible plaintexts [question.min .. , question.max]
     var plaintexts = null;
-    if (ranking){
-	     plaintexts = UTILS.generate_plaintexts(pk, 0, 1);
-	    }
-	else{
-	    if (question.max != null) {
-	      plaintexts = UTILS.generate_plaintexts(pk, question.min, question.max);
-	    }
-	   }
+	  if (question.max != null) {
+	    plaintexts = UTILS.generate_plaintexts(pk, question.min, question.max);
+    }
 
     var zero_one_plaintexts = UTILS.generate_plaintexts(pk, 0, 1);
 
@@ -332,34 +246,6 @@ HELIOS.EncryptedAnswer = Class.extend({
     // keep track of number of options selected.
     var num_selected_answers = 0;
 
-
-    //Ranking
-    if(ranking){
-    	// go through each possible answer and encrypt either a g^0 or a g^1.
-    for (var i=0; i<answer.length; i++) {
-      var index, plaintext_index;
-      // if this is the answer, swap them so m is encryption 1 (g)
-	  plaintext_index = answer[i]
-      // generate randomness?
-      if (generate_new_randomness) {
-        randomness[i] = Random.getRandomInteger(pk.q);
-      }
-
-      choices[i] = ElGamal.encrypt(pk, zero_one_plaintexts[plaintext_index], randomness[i]);
-
-      // generate proof
-
-      if (generate_new_randomness) {
-        // generate proof that this ciphertext is a 0 or a 1
-        individual_proofs[i] = choices[i].generateDisjunctiveProof(zero_one_plaintexts, plaintext_index, randomness[i], ElGamal.disjunctive_challenge_generator);
-      }
-
-      if (progress)
-        progress.tick();
-    }
-
-    }
-    else{
     // go through each possible answer and encrypt either a g^0 or a g^1.
     for (var i=0; i<question.answers.length; i++) {
       var index, plaintext_index;
@@ -372,9 +258,8 @@ HELIOS.EncryptedAnswer = Class.extend({
       }
 
       // generate randomness?
-      if (generate_new_randomness) {
+      if (generate_new_randomness)
         randomness[i] = Random.getRandomInteger(pk.q);
-      }
 
       choices[i] = ElGamal.encrypt(pk, zero_one_plaintexts[plaintext_index], randomness[i]);
 
@@ -384,77 +269,54 @@ HELIOS.EncryptedAnswer = Class.extend({
         individual_proofs[i] = choices[i].generateDisjunctiveProof(zero_one_plaintexts, plaintext_index, randomness[i], ElGamal.disjunctive_challenge_generator);
       }
 
-      if (progress)
+      if (progress) {
         progress.tick();
-    }
+      }
     }
 
-    if (generate_new_randomness && (question.max != null | ranking)) {
+    if (generate_new_randomness && question.max != null) {
       // we also need proof that the whole thing sums up to the right number
       // only if max is non-null, otherwise it's full approval voting
 
       // compute the homomorphic sum of all the options
-
-      if(ranking){
-      	var nof_answ = question.answers.length;
-      	var hom_sum = [];
-      	var rand_sum = [];
-      	for(var i = 0; i < nof_answ*(nof_answ-1)/2 ; i++){
-      		var hom_sum_one = choices[2*i];
-	      	var rand_sum_one = randomness[2*i];
-      		for(var j = 1;j<2;j++){
-      			hom_sum_one = hom_sum_one.multiply(choices[2*i+j]);
-	      		rand_sum_one = rand_sum_one.add(randomness[2*i+j]).mod(pk.q);
-      		}
-      		hom_sum.push(hom_sum_one);
-      		rand_sum.push(rand_sum_one);
-      	}
-
-      }
-      else{
-      	  var hom_sum = [];
-      	  var rand_sum = [];
-	      var hom_sum_one = choices[0];
-	      var rand_sum_one = randomness[0];
-	      for (var i=1; i<question.answers.length; i++) {
-	        hom_sum_one = hom_sum_one.multiply(choices[i]);
-	        rand_sum_one = rand_sum_one.add(randomness[i]).mod(pk.q);
-	      }
-	      hom_sum.push(hom_sum_one);
-	      rand_sum.push(rand_sum_one);
-
-      }
+      var hom_sum = [];
+      var rand_sum = [];
+	    var hom_sum_one = choices[0];
+	    var rand_sum_one = randomness[0];
+	    for (var i = 1; i < question.answers.length; i++) {
+	      hom_sum_one = hom_sum_one.multiply(choices[i]);
+	      rand_sum_one = rand_sum_one.add(randomness[i]).mod(pk.q);
+	    }
+	    hom_sum.push(hom_sum_one);
+	    rand_sum.push(rand_sum_one);
 
       // prove that the sum is 0 or 1 (can be "blank vote" for this answer)
       // num_selected_answers is 0 or 1, which is the index into the plaintext that is actually encoded
       //
       // now that "plaintexts" only contains the array of plaintexts that are possible starting with min
       // and going to max, the num_selected_answers needs to be reduced by min to be the proper index
-      if(ranking){
-      	var plaintexts = zero_one_plaintexts;
-      	var overall_plaintext_index = sum_value; //compare pairs, or higher or equal or lower
-
+      var overall_plaintext_index = [num_selected_answers];
+      if (question.min) {
+        overall_plaintext_index[0] -= question.min;
       }
-      else{
-      	var overall_plaintext_index = [num_selected_answers];
-      	if (question.min)
-        	overall_plaintext_index[0] -= question.min;
-        }
+
       //var overal_proof = [];
-      for (i=0 ; i<hom_sum.length;i++){
+      for (i=0 ; i<hom_sum.length; i++) {
       	overall_proof[i] = hom_sum[i].generateDisjunctiveProof(plaintexts, overall_plaintext_index[i], rand_sum[i], ElGamal.disjunctive_challenge_generator);
-		}
+      }
+
       if (progress) {
-        for (var i=0; i<question.max; i++)
+        for (var i=0; i<question.max; i++) {
           progress.tick();
+        }
       }
     }
 
     return {
-      'choices' : choices,
-      'randomness' : randomness,
-      'individual_proofs' : individual_proofs,
-      'overall_proof' : overall_proof
+      'choices': choices,
+      'randomness': randomness,
+      'individual_proofs': individual_proofs,
+      'overall_proof': overall_proof
     };
   },
 
@@ -464,8 +326,8 @@ HELIOS.EncryptedAnswer = Class.extend({
   },
 
   // FIXME: should verifyEncryption really generate proofs? Overkill.
-  verifyEncryption: function(question, pk, ranking) {
-    var result = this.doEncryption(question, this.answer, pk, this.randomness, null, ranking);
+  verifyEncryption: function(question, pk) {
+    var result = this.doEncryption(question, this.answer, pk, this.randomness, null);
 
     // check that we have the same number of ciphertexts
     if (result.choices.length != this.choices.length) {
@@ -502,12 +364,6 @@ HELIOS.EncryptedAnswer = Class.extend({
       })
     };
 
-    //if (this.overall_proof != null) {
-      //return_obj.overall_proof = this.overall_proof.toJSONObject();
-    //} else {
-      //return_obj.overall_proof = null;
-    //}
-
     if (include_plaintext) {
       return_obj.answer = this.answer;
       return_obj.randomness = _(this.randomness).map(function(r) {
@@ -521,6 +377,7 @@ HELIOS.EncryptedAnswer = Class.extend({
 
 HELIOS.EncryptedAnswer.fromJSONObject = function(d, election) {
   var ea = new HELIOS.EncryptedAnswer();
+
   ea.choices = _(d.choices).map(function(choice) {
     return ElGamal.Ciphertext.fromJSONObject(choice, election.public_key);
   });
@@ -528,8 +385,6 @@ HELIOS.EncryptedAnswer.fromJSONObject = function(d, election) {
   ea.individual_proofs = _(d.individual_proofs).map(function (p) {
     return ElGamal.DisjunctiveProof.fromJSONObject(p);
   });
-
-
 
   ea.overall_proof = _(d.overall_proof).map(function (p) {
     return ElGamal.DisjunctiveProof.fromJSONObject(p);
@@ -549,20 +404,19 @@ HELIOS.EncryptedAnswer.fromJSONObject = function(d, election) {
 HELIOS.EncryptedVote = Class.extend({
   init: function(election, answers, progress) {
     // empty constructor
-    if (election == null)
+    if (election == null) {
       return;
+    }
+
     // keep information about the election around
     this.election_uuid = election.uuid;
-    this.election_hash = election.get_hash();
+    this.election_hash = election.hash;
     this.election = election;
     this.election_type = election.election_type;
 
-    var ranking = false;
-    if (this.election_type == 'ranked election')
-    	ranking = true;
-
-    if (answers == null)
+    if (answers == null) {
       return;
+    }
 
     var n_questions = election.questions.length;
     this.encrypted_answers = [];
@@ -572,8 +426,9 @@ HELIOS.EncryptedVote = Class.extend({
       _(election.questions).each(function(q, q_num) {
         // + 1 for the overall proof
         progress.addTicks(q.answers.length);
-        if (q.max != null)
+        if (q.max != null) {
           progress.addTicks(q.max);
+        }
       });
 
       progress.addTicks(0, n_questions);
@@ -581,15 +436,13 @@ HELIOS.EncryptedVote = Class.extend({
 
     // loop through questions
     for (var i=0; i<n_questions; i++) {
-
-      this.encrypted_answers[i] = new HELIOS.EncryptedAnswer(election.questions[i], answers[i], election.public_key, progress, ranking);
+      this.encrypted_answers[i] = new HELIOS.EncryptedAnswer(election.questions[i], answers[i], election.public_key, progress);
     }
   },
 
   toString: function() {
     // for each question, get the encrypted answer as a string
     var answer_strings = _(this.encrypted_answers).map(function(a) {return a.toString();});
-
     return answer_strings.join("//");
   },
 
@@ -599,10 +452,10 @@ HELIOS.EncryptedVote = Class.extend({
     });
   },
 
-  verifyEncryption: function(questions, pk, ranking) {
+  verifyEncryption: function(questions, pk) {
     var overall_result = true;
     _(this.encrypted_answers).each(function(ea, i) {
-      overall_result = overall_result && ea.verifyEncryption(questions[i], pk, ranking);
+      overall_result = overall_result && ea.verifyEncryption(questions[i], pk);
     });
     return overall_result;
   },
@@ -627,7 +480,7 @@ HELIOS.EncryptedVote = Class.extend({
     return this.toJSONObject(true);
   },
 
-  verifyProofs: function(pk, outcome_callback, ranking) {
+  verifyProofs: function(pk, outcome_callback) {
     var zero_or_one = UTILS.generate_plaintexts(pk, 0, 1);
 
     var VALID_P = true;
@@ -636,84 +489,46 @@ HELIOS.EncryptedVote = Class.extend({
 
     // for each question and associate encrypted answer
     _(this.encrypted_answers).each(function(enc_answer, ea_num) {
-        var overall_result = 1;
-        var overall_result_ranking = [];
-        var counter = 0;
+      var overall_result = 1;
+      var counter = 0;
 
-        // the max number of answers (decides whether this is approval or not and requires an overall proof)
-        var max = self.election.questions[ea_num].max;
+      // the max number of answers (decides whether this is approval or not and requires an overall proof)
+      var max = self.election.questions[ea_num].max;
 
-        // go through each individual proof
-        _(enc_answer.choices).each(function(choice, choice_num) {
-          var result = choice.verifyDisjunctiveProof(zero_or_one, enc_answer.individual_proofs[choice_num], ElGamal.disjunctive_challenge_generator);
-          outcome_callback(ea_num, choice_num, result, choice);
-          VALID_P = VALID_P && result;
-           //calculate homomorphic product
-          if(ranking){
-          	if(counter == 1){
-          		overall_result = choice.multiply(overall_result);
-          		overall_result_ranking.push(overall_result);
-          		overall_result = 1;
-          		counter = 0;
+      // go through each individual proof
+      _(enc_answer.choices).each(function(choice, choice_num) {
+        var result = choice.verifyDisjunctiveProof(zero_or_one, enc_answer.individual_proofs[choice_num], ElGamal.disjunctive_challenge_generator);
+        outcome_callback(ea_num, choice_num, result, choice);
+        VALID_P = VALID_P && result;
 
-
-          	}
-          	else {
-          		overall_result = choice.multiply(overall_result);
-          		counter++;
-          	}
-          }
-          else{
-          	//NOT ranked election
-          	// keep track of homomorphic product, if needed
-          if (max != null)
-            overall_result = choice.multiply(overall_result);
-          }
-
-        });
-
-
-        if (ranking){
-        	var overall_check = true;
-        	var plaintexts = zero_or_one; //overall proofs must be for g^1 or g^0
-          	if(overall_result_ranking.length==enc_answer.overall_proof.length){
-          	for (i=0;i<enc_answer.overall_proof.length;i++){
-          		var temp = overall_result_ranking[i].verifyDisjunctiveProof(plaintexts, enc_answer.overall_proof[i], ElGamal.disjunctive_challenge_generator);
-				overall_check = overall_check && temp;
-
-				}
-			}
-			else{
-				overall_check = false;
-			}
-		VALID_P = VALID_P && overall_check;
-
-
-
+      	// keep track of homomorphic product, if needed
+        if (max != null) {
+          overall_result = choice.multiply(overall_result);
         }
-        else{
-	        if (max != null) {
-	          // possible plaintexts [0, 1, .. , question.max]
-	          var plaintexts = UTILS.generate_plaintexts(pk, self.election.questions[ea_num].min, self.election.questions[ea_num].max);
+      });
 
-	          // check the proof on the overall product
-	          var overall_check = overall_result.verifyDisjunctiveProof(plaintexts, enc_answer.overall_proof[0], ElGamal.disjunctive_challenge_generator);
-	          outcome_callback(ea_num, null, overall_check, null);
-	          VALID_P = VALID_P && overall_check;
-	        } else {
-	          // check to make sure the overall_proof is null, since it's approval voting
-	          VALID_P = VALID_P && (enc_answer.overall_proof == null)
-	        }
-        }
+      if (max != null) {
+  	    // possible plaintexts [0, 1, .. , question.max]
+  	    var plaintexts = UTILS.generate_plaintexts(pk, self.election.questions[ea_num].min, self.election.questions[ea_num].max);
+
+  	    // check the proof on the overall product
+  	    var overall_check = overall_result.verifyDisjunctiveProof(plaintexts, enc_answer.overall_proof[0], ElGamal.disjunctive_challenge_generator);
+  	    outcome_callback(ea_num, null, overall_check, null);
+  	    VALID_P = VALID_P && overall_check;
+  	  } else {
+  	    // check to make sure the overall_proof is null, since it's approval voting
+  	    VALID_P = VALID_P && (enc_answer.overall_proof == null)
+  	  }
+
+      return VALID_P;
     });
-
-    return VALID_P;
   }
 });
 
 HELIOS.EncryptedVote.fromJSONObject = function(d, election) {
-  if (d == null)
+  if (d == null) {
     return null;
+  }
 
   var ev = new HELIOS.EncryptedVote(election);
 
@@ -729,12 +544,13 @@ HELIOS.EncryptedVote.fromJSONObject = function(d, election) {
 
 // create an encrypted vote from a set of answers
 HELIOS.EncryptedVote.fromEncryptedAnswers = function(election, enc_answers) {
-    var enc_vote = new HELIOS.EncryptedVote(election, null);
-    enc_vote.encrypted_answers = [];
-    _(enc_answers).each(function(enc_answer, answer_num) {
-	    enc_vote.encrypted_answers[answer_num] = enc_answer;
-	});
-    return enc_vote;
+  var enc_vote = new HELIOS.EncryptedVote(election, null);
+  enc_vote.encrypted_answers = [];
+  _(enc_answers).each(function(enc_answer, answer_num) {
+    enc_vote.encrypted_answers[answer_num] = enc_answer;
+  });
+
+  return enc_vote;
 };
 
 //
@@ -807,9 +623,9 @@ HELIOS.Trustee = Class.extend({
 
   toJSONObject: function() {
     return {
-      'decryption_factors' : HELIOS.jsonify_list_of_lists(this.decryption_factors),
-      'decryption_proofs' : HELIOS.jsonify_list_of_list(this.decryption_proofs),
-      'email' : this.email, 'name' : this.name, 'pok' : this.pok.toJSONObject(), 'public_key' : this.public_key.toJSONObject()
+      'decryption_factors': HELIOS.jsonify_list_of_lists(this.decryption_factors),
+      'decryption_proofs': HELIOS.jsonify_list_of_list(this.decryption_proofs),
+      'email': this.email, 'name' : this.name, 'pok' : this.pok.toJSONObject(), 'public_key' : this.public_key.toJSONObject()
     };
   }
 });

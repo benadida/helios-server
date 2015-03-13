@@ -44,8 +44,7 @@ from models import *
 
 import forms
 import signals
-from bulletin_board import thresholdalgs
-from bulletin_board.models import Signed_Encrypted_Share, Ei, Incorrect_share, Signature
+
 from helios.constants import p, g, q, ground_1, ground_2
 
 # parameters for everything
@@ -443,7 +442,7 @@ def trustees_list_view(request, election):
     trustees = Trustee.get_by_election(election)
     user = get_user(request)
     admin_p = security.user_can_admin_election(user, election)
-    signed_encrypted_shares = Signed_Encrypted_Share.objects.filter(election_id=election.id)
+    SignedEncryptedShares = SignedEncryptedShare.objects.filter(election_id=election.id)
     scheme = None
     if election.use_threshold:
         if election.frozen_trustee_list:
@@ -515,7 +514,7 @@ def trustees_freeze(request, election):
         if form.is_valid():
             # process the data in form.cleaned_data
             trustees = Trustee.get_by_election(election)
-            scheme = Thresholdscheme()
+            scheme = ThresholdScheme()
             scheme.election = election
             scheme.n = len(trustees)
             scheme.ground_1 = ground_1
@@ -643,7 +642,7 @@ def trustee_home(request, election, trustee):
 
     scheme_params_json = None
     if (scheme):
-        SCHEME_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(scheme, datatype='legacy/Thresholdscheme')
+        SCHEME_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(scheme, datatype='legacy/ThresholdScheme')
         scheme_params_json = utils.to_json(SCHEME_PARAMS_LD_OBJECT.toJSONDict())
 
     if not election.trustees_added_communication_keys():
@@ -676,12 +675,12 @@ def trustee_home(request, election, trustee):
         pk_signing_dict[str(i)] = key.public_key_signing
 
     # pass encrypted shares if there are any
-    encry_shares = Signed_Encrypted_Share.objects.filter(election_id=election.id).filter(receiver_id=trustee.key.id).order_by('trustee_signer_id')
+    encry_shares = SignedEncryptedShare.objects.filter(election_id=election.id).filter(receiver_id=trustee.key.id).order_by('trustee_signer_id')
     encry_shares_dict = {}
     if(encry_shares):
         for i in range(len(encry_shares)):
             item = encry_shares[i]
-            encry_share = thresholdalgs.Signed_Encrypted_Share.from_dict(utils.from_json(item.share))
+            encry_share = thresholdalgs.SignedEncryptedShare.from_dict(utils.from_json(item.share))
 
             encry_shares_dict[str(i)] = utils.to_json(encry_share.to_dict())
 
@@ -797,7 +796,7 @@ def trustee_upload_encrypted_shares(request, election, trustee):
     signer_key = trustee.key
     signer_id = signer_key.id
     trustees = Trustee.objects.filter(election=election).order_by('id')
-    scheme = Thresholdscheme.objects.get(election=election)
+    scheme = ThresholdScheme.objects.get(election=election)
     signer_key = Key.objects.get(id=signer_id)
     signer_trustee = Trustee.objects.filter(key=signer_key)[0]
     n = scheme.n
@@ -806,14 +805,14 @@ def trustee_upload_encrypted_shares(request, election, trustee):
     encry_shares = []
     for i in range(n):
         dict = encry_shares_dict[str(i)]
-        item = thresholdalgs.Signed_Encrypted_Share.from_dict(dict)
+        item = thresholdalgs.SignedEncryptedShare.from_dict(dict)
         encry_shares.append(item)
 
     if len(encry_shares) == n:
         for i in range(n):
             receiver_id = trustees[i].key.id
             receiver = trustees[i].key.name
-            encry_share_model = Signed_Encrypted_Share()
+            encry_share_model = SignedEncryptedShare()
             encry_share_model.election_id = election.id
             encry_share_model.share = utils.to_json(encry_shares[i].to_dict())
             encry_share_model.signer = signer_key.name
@@ -824,7 +823,7 @@ def trustee_upload_encrypted_shares(request, election, trustee):
             encry_share_model.trustee_receiver_id = trustees[i].id
             encry_share_model.save()
 
-    if (len(Signed_Encrypted_Share.objects.filter(election_id=election.id).filter(signer_id=signer_id)) == n):
+    if (len(SignedEncryptedShare.objects.filter(election_id=election.id).filter(signer_id=signer_id)) == n):
         trustee.added_encrypted_shares = True
         trustee.save()
 

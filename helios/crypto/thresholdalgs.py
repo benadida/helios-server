@@ -1,20 +1,18 @@
 import math
 import hashlib
 import logging
-
-from helios.crypto import randpool, number
-
-from helios.crypto import numtheory
-from helios.crypto import elgamal
 import sys
-from helios.crypto.algs import Utils
-from helios.crypto import algs
-from helios.crypto import utils
+
+import randpool, number
+import numtheory
+import elgamal
+from algs import Utils
+import algs
+import utils
 
 from fractions import *
 
-
-class Thresholdscheme():
+class ThresholdScheme():
 
     def __init__(self, n=None, k=None, ground_1=None, ground_2=None):
         self.ground_1 = ground_1
@@ -37,7 +35,7 @@ class Thresholdscheme():
         # create commitments
         Ei = []
         for i in range(self.k):
-            commitment_loop = Commitment_E()
+            commitment_loop = CommitmentE()
             commitment_loop.generate(F.coeff[i], G.coeff[i], self.ground_1, self.ground_2, p, q, g)
             if commitment_loop.value > p - 1:
                 raise Exception('Ei value to big!')
@@ -103,7 +101,7 @@ class Point():
         plain_x = algs.EGPlaintext(self.x_value, public_key)
         plain_y = algs.EGPlaintext(self.y_value, public_key)
 
-        return Encrypted_point(public_key.encrypt(plain_x), public_key.encrypt(plain_y))
+        return EncryptedPoint(public_key.encrypt(plain_x), public_key.encrypt(plain_y))
 
     def on_polynomial(self, polynom):
         if polynom.evaluate(self.x_value) == self.y_value:
@@ -129,7 +127,7 @@ class Point():
         return {'x_value': str(self.x_value), 'y_value': str(self.y_value)}
 
 
-class Encrypted_point():
+class EncryptedPoint():
 
     def __init__(self, ciph_x=None, ciph_y=None):
         self.ciph_x = ciph_x
@@ -148,7 +146,7 @@ class Encrypted_point():
         """
         ciph_x = algs.EGCiphertext.from_dict(d['ciph_x'])
         ciph_y = algs.EGCiphertext.from_dict(d['ciph_y'])
-        encr_point = Encrypted_point(ciph_x, ciph_y)
+        encr_point = EncryptedPoint(ciph_x, ciph_y)
         return encr_point
 
     def to_dict(self):
@@ -182,7 +180,7 @@ class Share():
     def encrypt(self, public_key):
         encry_point_s = self.point_s.encrypt(public_key)
         encry_point_t = self.point_t.encrypt(public_key)
-        encry_share = Encrypted_Share(encry_point_s, encry_point_t, self.Ei)
+        encry_share = EncryptedShare(encry_point_s, encry_point_t, self.Ei)
 
         return encry_share
 
@@ -195,7 +193,7 @@ class Share():
     def verify_share(self, scheme, p, q, g):
         k = scheme.k
         n = scheme.n
-        E = Commitment_E()
+        E = CommitmentE()
         E.generate(self.point_s.y_value, self.point_t.y_value, scheme.ground_1, scheme.ground_2, p, q, g)
         if E.value > p - 1:
             raise Exception('E value too big')
@@ -227,7 +225,7 @@ class Share():
         i = 0
         while Ei_dict.has_key(str(i)):
             dict = Ei_dict[str(i)]
-            com = Commitment_E().from_dict(dict)
+            com = CommitmentE().from_dict(dict)
             Ei.append(com)
             i = i + 1
 
@@ -245,7 +243,7 @@ class Share():
         return {'point_s': self.point_s.to_dict(), 'point_t': self.point_t.to_dict(), 'Ei': com_dict}
 
 
-class Encrypted_Share():
+class EncryptedShare():
 
     def __init__(self, encry_point_s=None, encry_point_t=None, Ei=None):
         self.encry_point_s = encry_point_s
@@ -265,18 +263,18 @@ class Encrypted_Share():
         """
         Deserialize from dictionary.
         """
-        encry_point_s = Encrypted_point.from_dict(d['encry_point_s'])
-        encry_point_t = Encrypted_point.from_dict(d['encry_point_t'])
+        encry_point_s = EncryptedPoint.from_dict(d['encry_point_s'])
+        encry_point_t = EncryptedPoint.from_dict(d['encry_point_t'])
         Ei_dict = d['Ei']
         Ei = []
         i = 0
         while Ei_dict.has_key(str(i)):
             dict = Ei_dict[str(i)]
-            com = Commitment_E().from_dict(dict)
+            com = CommitmentE().from_dict(dict)
             Ei.append(com)
             i = i + 1
 
-        encry_share = Encrypted_Share(encry_point_s, encry_point_t, Ei)
+        encry_share = EncryptedShare(encry_point_s, encry_point_t, Ei)
 
         return encry_share
 
@@ -291,7 +289,7 @@ class Encrypted_Share():
         return {'encry_point_s': self.encry_point_s.to_dict(), 'encry_point_t': self.encry_point_t.to_dict(), 'Ei': com_dict}
 
 
-class Signed_Encrypted_Share():
+class SignedEncryptedShare():
 
     def __init__(self, sig=None, encr_share=None):
         self.sig = sig
@@ -302,9 +300,9 @@ class Signed_Encrypted_Share():
         """
         Deserialize from dictionary.
         """
-        encr_share = Encrypted_Share.from_dict(d['encr_share'])
+        encr_share = EncryptedShare.from_dict(d['encr_share'])
         sig = Signature.from_dict(d['sig'])
-        sig_encr_share = Signed_Encrypted_Share(sig, encr_share)
+        sig_encr_share = SignedEncryptedShare(sig, encr_share)
 
         return sig_encr_share
 
@@ -315,7 +313,7 @@ class Signed_Encrypted_Share():
         return {'sig': self.sig.to_dict(), 'encr_share': self.encr_share.to_dict()}
 
 
-class Committed_Point():
+class CommittedPoint():
 
     def __init__(self, point, E, Ei):
         self.point = point
@@ -346,7 +344,7 @@ class Feedback():
         self.feedback = feedback
 
 
-class Commitment_E():
+class CommitmentE():
 
     def __init__(self, ground_1=None, ground_2=None, value=None):
         self.ground_1 = ground_1
@@ -372,7 +370,7 @@ class Commitment_E():
         ground_1 = int(d['ground_1'])
         ground_2 = int(d['ground_2'])
         value = int(d['value'])
-        com = Commitment_E(ground_1, ground_2, value)
+        com = CommitmentE(ground_1, ground_2, value)
 
         return com
 
@@ -381,8 +379,8 @@ class Commitment_E():
         i = 0
         while d.has_key(str(i)):
             dict = d[str(i)]
-            com = Commitment_E().from_dict(dict)
-            com = Commitment_E()
+            com = CommitmentE().from_dict(dict)
+            com = CommitmentE()
             i = i + 1
 
     def to_dict(self):
@@ -477,4 +475,3 @@ class Signature():
         Serialize to dictionary.
         """
         return {'r': str(self.r), 's': str(self.s)}
-

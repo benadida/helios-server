@@ -118,7 +118,6 @@
         $('#election_info').show();
         var tally = [];
         var init_tally = true;
-        var ranking = (election.election_type == 'ranked election');
 
         $(election.questions).each(function(q_num, q) {
           if (q.tally_type != 'homomorphic') {
@@ -175,17 +174,13 @@
                  	  tally[answer_num][choice_num] = 1;
 
                   tally[answer_num][choice_num] = choice.multiply(tally[answer_num][choice_num]);
-                  if (!ranking) {
-                 	  $('#ballots_result').append('          ' + pretty_result(result) + 'Option #' + (choice_num + 1) + '\n');
-                  } else {
-              		  $('#ballots_result').append('          ' + pretty_result(result) + 'Ciphertext #' + (choice_num + 1) + '\n');
-                  }
+                 	$('#ballots_result').append('          ' + pretty_result(result) + 'Option #' + (choice_num + 1) + '\n');
                 } else {
                   $('#ballots_result').append('        ' + pretty_result(result) + 'Question #' + (answer_num + 1) + '\n');
                 }
 
                 previous_answer_num = answer_num;
-              }, ranking);
+              });
             });
 
             if (overall_result) {
@@ -247,11 +242,7 @@
                   $('#tally_result').append('Question #' + (q_num + 1) + '\n');
                   $('#tally_result').append('  ' + election.questions[q_num].short_name + '\n');
 
-                  if (!ranking) {
-                    $('#tally_result').append('\n  Tally\n');
-                  } else {
-                    result_append('\n    Ranking Matrix\n');
-                  }
+                  $('#tally_result').append('\n  Tally\n');
 
                   $(q).each(function(a_num, a) {
                     var plaintext = new ElGamal.Plaintext(election.public_key.g.modPow(BigInt.fromInt(results[q_num][a_num]), election.public_key.p), election.public_key);
@@ -260,13 +251,7 @@
                       $('#tally_result').append('\n');
 
                     var check = true;
-                    if (!ranking) {
-                      $('#tally_result').append('    ' + election.questions[q_num].answers[a_num] + ': ' + results[q_num][a_num] + '\n');
-                    } else {
-                      var comb = get_combinations(election.questions[q_num].answers.length);
-                      if (a_num % 2 == 0)
-				   		          result_append('      ' + election.questions[q_num].answers[comb[a_num/2][0]] + ' vs ' + election.questions[q_num].answers[comb[a_num/2][1]] + ': ' + results[q_num][a_num] + ' ' + results[q_num][a_num+1] + '\n');
-                    }
+                    $('#tally_result').append('    ' + election.questions[q_num].answers[a_num] + ': ' + results[q_num][a_num] + '\n');
                     var decryption_factors = [];
 
                     $('#tally_result').append('      Decryption Factors\n');

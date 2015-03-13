@@ -333,7 +333,6 @@ class EncryptedVote(HeliosObject):
 
         # check hash
         if self.election_hash != election.hash:
-            # print "%s / %s " % (self.election_hash, election.hash)
             return False
 
         # check ID
@@ -341,17 +340,16 @@ class EncryptedVote(HeliosObject):
             return False
 
         # check proofs on all of answers
-        if not (election.election_type == 'ranked election'):
-            for question_num in range(len(election.questions)):
-                ea = self.encrypted_answers[question_num]
+        for question_num in range(len(election.questions)):
+            ea = self.encrypted_answers[question_num]
 
-                question = election.questions[question_num]
-                min_answers = 0
-                if question.has_key('min'):
-                    min_answers = question['min']
+            question = election.questions[question_num]
+            min_answers = 0
+            if question.has_key('min'):
+                min_answers = question['min']
 
-                if not ea.verify(election.public_key, min=min_answers, max=question['max']):
-                    return False
+            if not ea.verify(election.public_key, min=min_answers, max=question['max']):
+                return False
 
         return True
 
@@ -780,8 +778,7 @@ class Tally(HeliosObject):
         for q_num, q in enumerate(self.tally):
             for a_num, answer_tally in enumerate(q):
                 # parse the proof
-                proof = algs.EGZKProof.fromJSONDict(
-                    decryption_proofs[q_num][a_num])
+                proof = algs.EGZKProof.fromJSONDict(decryption_proofs[q_num][a_num])
 
                 # check that g, alpha, y, dec_factor is a DH tuple
                 if not proof.verify(public_key.g, answer_tally.alpha, public_key.y, int(decryption_factors[q_num][a_num]), public_key.p, public_key.q, challenge_generator):
@@ -829,7 +826,7 @@ class Tally(HeliosObject):
             return [[a.toJSONDict() for a in q] for q in field_value]
 
 
-class Thresholdscheme(HeliosObject):
+class ThresholdScheme(HeliosObject):
     FIELDS = ['election', 'n', 'k', 'ground_1', 'ground_2']
 
     def __init__(self, election, n, k, ground_1, ground_2):
@@ -921,7 +918,7 @@ class Point(HeliosObject):
         return value
 
 
-class Commitment_E():
+class CommitmentE():
 
     def __init__(self, ground_1=None, ground_2=None, value=None):
         #self.s = None
@@ -946,7 +943,7 @@ class Commitment_E():
         ground_1 = int(d['ground_1'])
         ground_2 = int(d['ground_2'])
         value = int(d['value'])
-        com = Commitment_E(ground_1, ground_2, value)
+        com = CommitmentE(ground_1, ground_2, value)
 
         return com
 
@@ -957,7 +954,7 @@ class Commitment_E():
         return {'ground_1': str(self.ground_1), 'ground_2': str(self.ground_2), 'value': str(self.value)}
 
 
-class Committed_Point(HeliosObject):
+class CommittedPoint(HeliosObject):
     FIELDS = ['trustee_id', 'point', 'E', 'Ei']
 
     def __init__(self, trustee_id, point, E, Ei):

@@ -100,21 +100,12 @@
                   </thead>
 
                   <tbody>
-                    {% if election.election_type == 'ranked election' %}
-                      {% for answer in question.answers %}
-                        <tr>
-                          <td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td><td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.score}}</td>
-                          <td style="{% if answer.winner %}font-weight: bold;{% endif %}">{{answer.count}}</td>
-                        </tr>
-                      {% endfor %}
-                    {% else %}
-                      {% for answer in question.answers %}
-                        <tr>
-                          <td style="padding-right:80px;{% if answer.winner %}font-weight: bold;{% endif %}">{{answer.answer}}</td>
-                          <td align="right" style="{% if answer.winner %}font-weight: bold;{% endif %}">{{answer.count}}</td>
-                        </tr>
-                      {% endfor %}
-                    {% endif %}
+                    {% for answer in question.answers %}
+                      <tr>
+                        <td style="padding-right:80px;{% if answer.winner %}font-weight: bold;{% endif %}">{{answer.answer}}</td>
+                        <td align="right" style="{% if answer.winner %}font-weight: bold;{% endif %}">{{answer.count}}</td>
+                      </tr>
+                    {% endfor %}
                   </tbody>
                 </table>
               </div>

@@ -16,7 +16,7 @@
       var g = ELGAMAL_PARAMS.g;
       var q = ELGAMAL_PARAMS.q;
 
-      SCHEME_PARAMS = Thresholdalgs.Thresholdscheme.fromJSONObject({{scheme_params_json|safe}});
+      SCHEME_PARAMS = thresholdalgs.ThresholdScheme.fromJSONObject({{scheme_params_json|safe}});
       var n = SCHEME_PARAMS.n;
       var k = SCHEME_PARAMS.k;
       var ground_1 = SCHEME_PARAMS.ground_1;
@@ -91,7 +91,7 @@
 
       while (String(i) in encry_shares_dict) {
         var dict = encry_shares_dict[String(i)];
-        var encry_share = Thresholdalgs.Signed_Encrypted_Share.fromJSONObject(JSON.parse(dict));
+        var encry_share = thresholdalgs.SignedEncryptedShare.fromJSONObject(JSON.parse(dict));
         encry_shares.push(encry_share);
         i++;
       }
@@ -108,7 +108,7 @@
       var g = ELGAMAL_PARAMS.g;
       var q = ELGAMAL_PARAMS.q;
 
-      SCHEME_PARAMS = Thresholdalgs.Thresholdscheme.fromJSONObject({{scheme_params_json|safe}});
+      SCHEME_PARAMS = thresholdalgs.ThresholdScheme.fromJSONObject({{scheme_params_json|safe}});
       var n = SCHEME_PARAMS.n;
       var k = SCHEME_PARAMS.k;
       var ground_1 = SCHEME_PARAMS.ground_1;
@@ -130,7 +130,7 @@
       if ((g.modPow(secret_key_sig.x,p).toString()) == (pk_signing_array[signer_index].y.toString())) {
         var signer = name_array[signer_index];
         var pk_signer = pk_signing_array[signer_index];
-        var scheme = new Thresholdalgs.Thresholdscheme({{election_id}}, n, k, ground_1, ground_2);
+        var scheme = new thresholdalgs.ThresholdScheme({{election_id}}, n, k, ground_1, ground_2);
         var s = Random.getRandomInteger(q);
         var t = Random.getRandomInteger(q);
         var s_str = s.toJSONObject(s);
@@ -157,7 +157,7 @@
       			var encry_share = share.encrypt(pk_encrypt_receiver);
       			var encry_share_string = JSON.stringify(encry_share.toJSONObject());
       			var sig  = share.sign(secret_key_sig,p,q,g);
-      			var signed_encry_share = new Thresholdalgs.Signed_Encrypted_Share(sig, encry_share);
+      			var signed_encry_share = new thresholdalgs.SignedEncryptedShare(sig, encry_share);
       			var signed_encry_share_string = JSON.stringify(signed_encry_share.toJSONObject());
 
       			if (sig.verify(share_string,pk_signer,p,q,g)) {
@@ -267,7 +267,7 @@
       var g = ELGAMAL_PARAMS.g;
       var q = ELGAMAL_PARAMS.q;
 
-      SCHEME_PARAMS = Thresholdalgs.Thresholdscheme.fromJSONObject({{scheme_params_json|safe}});
+      SCHEME_PARAMS = thresholdalgs.ThresholdScheme.fromJSONObject({{scheme_params_json|safe}});
       var n = SCHEME_PARAMS.n;
       var k = SCHEME_PARAMS.k;
       var ground_1 = SCHEME_PARAMS.ground_1;

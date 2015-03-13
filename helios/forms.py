@@ -3,7 +3,8 @@ Forms for Helios
 """
 
 from django import forms
-from models import Election
+from django.forms import ModelForm
+from models import Election, Key, Signature
 from django.conf import settings
 
 
@@ -51,3 +52,17 @@ class ThresholdSchemeForm(forms.Form):
 class VoterPasswordForm(forms.Form):
     voter_id = forms.CharField(max_length=50, label='Voter ID')
     password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
+
+
+class KeyForm(ModelForm):
+    class Meta:
+        model = Key
+
+
+class kForm(forms.Form):
+    k = forms.IntegerField()
+
+
+class SignatureForm(ModelForm):
+    class Meta:
+        model = Signature
