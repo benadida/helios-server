@@ -19,3 +19,34 @@ class Institution(models.Model):
             ("delegate_election_mngt", _("Can delegate election management tasks")),
             ("revoke_election_mngt", _("Can revoke election management tasks")),
     )
+
+    def __unicode__(self):
+        return self.name
+  
+    @property
+    def institution_admin(self):
+        try:
+            return InstitutionUserProfile.objects.get(email=self.mngt_email)
+        except InstitutionUserProfile.DoesNotExist:
+            return None
+
+
+class InstitutionUserProfile(models.Model):
+
+    user = models.ForeignKey('helios_auth.User', blank=True)
+    institution = models.ForeignKey("heliosinstitution.Institution")
+    email = models.EmailField()
+    expires_at = models.DateTimeField(auto_now_add=False, default=None, null=True, blank=True)
+    active = models.BooleanField(default=False)
+  
+    def __unicode__(self):
+        return self.user.name
+
+    @property
+    def institution_role(self):
+        if self.institution.mngt_email == self.email:
+            # institution admin
+            pass
+
+        # test if can create election -> election admin
+        # test if can delegate election mngt -> institution manager 
