@@ -318,14 +318,13 @@ AUTHENTICATION_BACKENDS = (
     'django_auth_ldap.backend.LDAPBackend',
 )
 
-
 #Shibboleth
-SHIBBOLETH_ATTRIBUTE_MAP = {
+SHIBBOLETH_ATTRIBUTE_MAP = { 
     #"Shibboleth-givenName": (True, "first_name"),
     "Shib-inetOrgPerson-cn": (True, "common_name"),
     "Shib-inetOrgPerson-sn": (True, "last_name"),
     "Shib-inetOrgPerson-mail": (True, "email"),
     "Shib-eduPerson-eduPersonPrincipalName": (True, "eppn"),
     "Shib-eduPerson-eduPersonAffiliation": (True, "affiliation"),
-#    "Shib-Identity-Provider": (True, "identity_provider"),
+    "Shib-Identity-Provider": (True, "identity_provider"),
 }
