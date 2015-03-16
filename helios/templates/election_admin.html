@@ -169,7 +169,9 @@
         <li>{% if election.frozen_at %}<s>{% endif %}Freeze ballot and open election. {% if election.voting_starts_at %}Once you do this, the election will be ready for voting and will open automatically at {{election.voting_starts_at}}, as per your settings.{% else %}Once you do this, the election will be immediately open for voting.{% endif %}{% if election.frozen_at %}</s>{% endif %}</li>
         <li>{% if election.num_cast_votes > 0 %}<s>{% endif %}Wait for the voters to cast their ballots. {% if not election.voting_ends_at %}The election will end at your discretion.{% else %}The election will automatically end at {{election.voting_ends_at}}.{% endif %}{% if election.num_cast_votes > 0 %}</s>{% endif %}</li>
         <li>{% if election.tallying_started_at %}<s>{% endif %}Compute encrypted tally. The encrypted votes will be combined into an encrypted tally.{% if election.tallying_started_at %}</s>{% endif %}</li>
-        <li>{% if election.ready_for_decryption_combination %}<s>{% endif %}Wait for the trustees to provide their share of the key used to encrypt the ballots.{% if election.ready_for_decryption_combination %}</s>{% endif %}</li>
+        {% if election.use_threshold %}
+          <li>{% if election.ready_for_decryption_combination %}<s>{% endif %}Wait for the trustees to provide their share of the key used to encrypt the ballots.{% if election.ready_for_decryption_combination %}</s>{% endif %}</li>
+        {% endif %}
         <li>{% if election.result %}<s>{% endif %}{% if not election.publish_tally_at %}Release tally and notify all voters.{% else %}Release tally.{% endif %}{% if election.result %}</s>{% endif %}</li>
         {% if election.publish_tally_at %}
           <li>{% if election.publish_tally %}<s>{% endif %}The tally will be published at {{election.publish_tally_at}}.{% if election.publish_tally %}</s>{% endif %}</li>

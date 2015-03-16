@@ -14,6 +14,10 @@
         <p>
           Trustees are responsible for decrypting the election result. Each trustee generates a key pair and submits the public portion to Helios. When it's time to decrypt, each trustee needs to provide his secret key.
         </p>
+
+        <p>
+          If you do not wish to go through this process yourself, you can add Helios as a trustee. It will handle its key pair generation and decryption automatically. Even if you do, you may still add additional trustees, and you can even remove the Helios trustee. However, we recommend you do this only if you have a solid understanding of the trustee's role.
+        </p>
       {% else %}
         <p>
           Trustees are responsible for decrypting the election result. Since this election uses threshold encryption, all trustees will have to go through a key ceremony. During this ceremony, each trustee receives part of the key that will be used to encrypt the ballots. When freezing the election, you will have to define the threshold scheme. This controls the number of trustees that will have to provide their secret key before the results can be decrypted.
@@ -23,10 +27,6 @@
           Each trustee will be given a link to his/her personal dashboard. If a trustee lost his link, you can resend it by hitting <i>Send Link</i> below.</b>
         </p>
       {% endif %}
-
-      <p>
-        Helios is automatically your first trustee and will handle its key pair generation and decryption automatically. You may add additional trustees if you want, and you can even remove the Helios trustee. However, we recommend you do this only if you have a solid understanding of the trustee's role.
-      </p>
 
       {% if not election.frozen_at %}
         {% if not election.use_threshold %}
@@ -46,7 +46,6 @@
         {% if election.use_threshold %}
           {% if not election.frozen_trustee_list %}
             <a class="button" href="{% url helios.views.trustees_create election.uuid %}">Add a Trustee &raquo;</a>
-
             <a class="button" onclick="return confirm('Are you sure you want to freeze the trustee list? You will not be able to add trustees after this step.');" href="{% url helios.views.trustees_freeze election.uuid %}">Freeze Trustee List &raquo;</a>
           {% else %}
             {% if not election.encrypted_shares_uploaded %}
@@ -65,6 +64,10 @@
           {% endif %}
         {% else %}
           <a class="button" href="{% url helios.views.trustees_create election.uuid %}">Add a Trustee &raquo;</a>
+
+          {% if not election.has_helios_trustee %}
+            <a class="secondary button" href="{% url helios.views.trustees_create_helios election.uuid %}">Add Helios as a Trustee</a>
+          {% endif %}
         {% endif %}
       {% endif %}
 

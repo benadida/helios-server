@@ -708,8 +708,7 @@ class Election(HeliosModel):
         tally.init_election(self)
 
         trustee = self.get_helios_trustee()
-        factors, proof = tally.decryption_factors_and_proofs(
-            trustee.secret_key)
+        factors, proof = tally.decryption_factors_and_proofs(trustee.secret_key)
 
         trustee.decryption_factors = factors
         trustee.decryption_proofs = proof
@@ -1687,7 +1686,7 @@ class ThresholdScheme(HeliosModel):
 
         shares = []
         for i in range(self.n):
-            share = Share(points_F[i], points_G[i], Ei)
+            share = thresholdalgs.Share(points_F[i], points_G[i], Ei)
             if share.verify_share(self, p, q, g):
                 shares.append(share)
             else:
