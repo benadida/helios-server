@@ -5,6 +5,7 @@ from heliosinstitution.models import Institution, InstitutionUserProfile
 
 class HeliosInstitutionAdmin(admin.ModelAdmin):	
 	list_display = ('name', 'short_name', 'main_phone', 'mngt_email')
+	readonly_fields = ('idp_address',)
 
 
 class InstitutionUserProfileAdmin(admin.ModelAdmin):	
