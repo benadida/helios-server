@@ -9,7 +9,7 @@ class Institution(models.Model):
     main_phone = models.CharField(max_length=25)
     sec_phone = models.CharField(max_length=25, blank=True)
     address = models.TextField()
-    mngt_email = models.EmailField()
+    mngt_email = models.EmailField(unique=True)
   
     class Meta:
         permissions = (
