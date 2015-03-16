@@ -8,18 +8,43 @@
 	  <thead>
 	    <tr>
 	      <th>{% trans "User" %}</th>
+	      <th>{% trans "E-mail" %}</th>
 	      <th>{% trans "Role" %}</th>
-	      <th>{% trans "Details" %}</th>
 	      <th>{% trans "Action" %}</th>
 	   </tr>
 	  </thead>
 	  <tbody>
+      {% for profile in users %}
+          <td>{{ profile }}</td>
+          <td>{{ profile.email }}</td>
+          <td>
+            {{ profile.institution_role }}
+          </td>
           <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
+      {% endfor %}
       </tbody>
     </table>
+    <div class="well">
+    {% trans "Delegate Institution Admin" %}
+    <form class="form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_institution_admin" institution.id %}">
+        <div class="form-group">
+            <label class="sr-only" for="inst-mngt-email">{% trans "Email address" %}</label>
+            <input type="email" class="form-control" id="inst-mngt-email" placeholder="{% trans "Enter email" %}">
+        </div>
+        <button type="submit" class="btn btn-primary">{% trans "Add" %}</button>
+    </form>
+    </div>
+    <div class="well">
+    {% trans "Add new election admin" %}
+    <form class="form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_election_admin" institution.id %} ">
+        <div class="form-group">
+            <label class="sr-only" for="election-mngt-email">{% trans "Email address" %}</label>
+            <input type="email" class="form-control" id="election-mngt-email" placeholder="{% trans "Enter email" %}">
+        </div>
+        <button type="submit" class="btn btn-primary">{% trans "Add" %}</button>
+    </form>
+    </div>
+
 {% else %}
     {% include "login_box.html" %}
 {% endif %}

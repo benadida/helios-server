@@ -1,8 +1,8 @@
 {% extends TEMPLATE_BASE %}
 {% load i18n %}
-{% block title %}{% trans "Statistics" %}{% endblock %}
+{% block title %}{% trans "Admin" %}{% endblock %}
 {% block content %}
-<h1>{% trans "Admin" %}</h1>
+<h3>{% trans "Statistics" %}</h3>
 
 <ul>
 <li> <a href="{% url "helios.stats_views.elections" %}">{% trans "elections" %}</a></li>
@@ -10,6 +10,16 @@
 <li> <a href="{% url "helios.stats_views.recent_problem_elections" %}">{% trans "recent problem elections" %}</a></li>
 <li> <a href="{% url "helios.stats_views.admin_actions" %}">{% trans "admin actions" %}</a></li>
 </ul>
+
+{% if has_institution_role %}
+
+<h3>{% trans "User Management" %}</h3>
+
+<ul>
+    <li> <a href="{% url "heliosinstitution.views.manage_users" %}">{% trans "view users" %}</a></li>
+</ul>
+
+{% endif %}
 
 <p><b>{{num_votes_in_queue}}</b> {% trans "votes in queue." %} {% if num_votes_in_queue %}[<a href="{% url "helios.stats_views.force_queue" %}">{% trans "force it" %}</a>]{% endif %}</p>
 
