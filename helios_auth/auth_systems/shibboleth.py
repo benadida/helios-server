@@ -87,6 +87,53 @@ def check_constraint(constraint, user_info):
 	"""
 	pass
 
+def user_needs_intervention(user_id, user_info, token):
+    """
+    check to see if user is following the users we need
+    """
+    from heliosinstitution.models import Institution, InstitutionUserProfile
+
+    try:
+        user = User.objects.get(user_id=user_id, user_type='shibboleth')
+        import IPython
+        IPython.embed()
+
+        institution = Institution.objects.get(mngt_email=user_info['email'])
+        if institution.idp_address != user_info['identity_provider']:
+            institution.idp_address = user_info['identity_provider']
+            institution.save()
+
+        profile, created = InstitutionUserProfile.objects.get_or_create(institution=institution, 
+            user=user, email=user_info['email'])
+        profile.active = True
+        profile.user.admin_p = True    
+        profile.user.save()
+        profile.save()
+        return None
+    except User.DoesNotExist:
+        # something went really wrong with the authentication...
+        # TODO return logout url
+        pass
+    except Institution.DoesNotExist:
+        # the given user does not manager, maybe is another type...
+        # TODO check if he/she has another role
+
+        pass
+    else:
+        return None
+
+    try:    
+        institution = Institution.objects.get(identity_provider=user_info['identity_provider'])
+        profile = InstitutionUserProfile.objects.get(institution=institution, 
+            email=user_info['email'])
+        profile.active = True
+        profile.user = user
+        profile.save()
+    except:
+        pass
+  
+    return None
+
 """
 Function obtained from 
 https://github.com/sorrison/django-shibboleth/blob/6967298fa9e659f5a08d2736e652997ae4f1d2f5/django_shibboleth/utils.py
@@ -110,6 +157,7 @@ def parse_attributes(META):
             if required:
                 error = True
     return shib_attrs, error
+
 
 def shibboleth_meta(request):
 
