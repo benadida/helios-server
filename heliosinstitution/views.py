@@ -13,12 +13,10 @@ def home(request):
 @login_required
 def manage_users(request):  
     user = get_user(request)
-    institution = user.authuserprofile_set.get().institution
-    users = InstitutionUserProfile.objects.filter(institution=institution)
+    institution = user.institutionuserprofile_set.get().institution
 
     if request.method == "GET":
         return render_template(request, "manage_users", {
-            "users": users,
             "institution": institution,
         })
 
