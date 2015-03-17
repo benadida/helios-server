@@ -14,16 +14,11 @@ class Migration(SchemaMigration):
                       keep_default=False)
 
 
-        # Changing field 'CastVote.cast_ip'
-        db.alter_column(u'helios_castvote', 'cast_ip', self.gf('django.db.models.fields.CharField')(max_length=200, null=True))
-
     def backwards(self, orm):
         # Deleting field 'Election.result_released_at'
         db.delete_column(u'helios_election', 'result_released_at')
 
 
-        # Changing field 'CastVote.cast_ip'
-        db.alter_column(u'helios_castvote', 'cast_ip', self.gf('django.db.models.fields.IPAddressField')(max_length=15, null=True))
 
     models = {
         u'helios.auditedballot': {
@@ -37,7 +32,6 @@ class Migration(SchemaMigration):
         u'helios.castvote': {
             'Meta': {'object_name': 'CastVote'},
             'cast_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'cast_ip': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True'}),
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'invalidated_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'quarantined_p': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
