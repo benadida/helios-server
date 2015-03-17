@@ -92,11 +92,10 @@ def user_needs_intervention(user_id, user_info, token):
     check to see if user is following the users we need
     """
     from heliosinstitution.models import Institution, InstitutionUserProfile
+    from helios_auth.models import User
 
     try:
         user = User.objects.get(user_id=user_id, user_type='shibboleth')
-        import IPython
-        IPython.embed()
 
         institution = Institution.objects.get(mngt_email=user_info['email'])
         if institution.idp_address != user_info['identity_provider']:
