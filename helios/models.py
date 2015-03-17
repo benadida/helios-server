@@ -1432,7 +1432,7 @@ def iter_voter_data(voter_data, email_validator=validate_email):
 
         yield return_dict
 
-        if len(voter_fields) > 6:
+        if len(voter_fields) > 7:
             m = _("Invalid voter data at line %s") %line
             raise ValidationError(m)
 

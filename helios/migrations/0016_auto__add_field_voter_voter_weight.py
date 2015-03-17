@@ -10,7 +10,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         # Adding field 'Voter.voter_weight'
         db.add_column('helios_voter', 'voter_weight',
-                      self.gf('django.db.models.fields.IntegerField')(default=1),
+                      self.gf('django.db.models.fields.PositiveIntegerField')(default=1),
                       keep_default=False)
 
 
@@ -58,6 +58,7 @@ class Migration(SchemaMigration):
             'archived_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'cancelation_reason': ('django.db.models.fields.TextField', [], {'default': "''"}),
             'canceled_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
+            'communication_language': ('django.db.models.fields.CharField', [], {'max_length': '5', 'null': 'True'}),
             'completed_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'compute_results_error': ('django.db.models.fields.TextField', [], {'default': 'None', 'null': 'True'}),
             'compute_results_finished_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
@@ -65,6 +66,7 @@ class Migration(SchemaMigration):
             'compute_results_status': ('django.db.models.fields.CharField', [], {'default': "'pending'", 'max_length': '50'}),
             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'deleted': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'departments': ('django.db.models.fields.TextField', [], {'null': 'True'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'election_module': ('django.db.models.fields.CharField', [], {'default': "'simple'", 'max_length': '250'}),
             'frozen_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
@@ -72,6 +74,7 @@ class Migration(SchemaMigration):
             'help_phone': ('django.db.models.fields.CharField', [], {'max_length': '254', 'null': 'True', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'institution': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['zeus.Institution']", 'null': 'True'}),
+            'linked_polls': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'mix_key': ('django.db.models.fields.CharField', [], {'default': 'None', 'max_length': '50', 'null': 'True'}),
             'modified_at': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
@@ -83,9 +86,9 @@ class Migration(SchemaMigration):
             'uuid': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
             'version': ('django.db.models.fields.CharField', [], {'default': '1', 'max_length': '255'}),
             'voting_ended_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
-            'voting_ends_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2013, 10, 30, 0, 0)', 'null': 'True'}),
+            'voting_ends_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2015, 3, 18, 0, 0)', 'null': 'True'}),
             'voting_extended_until': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True', 'blank': 'True'}),
-            'voting_starts_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2013, 10, 29, 0, 0)', 'null': 'True'})
+            'voting_starts_at': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime(2015, 3, 17, 0, 0)', 'null': 'True'})
         },
         'helios.electionlog': {
             'Meta': {'object_name': 'ElectionLog'},
@@ -101,7 +104,7 @@ class Migration(SchemaMigration):
             'mix': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'parts'", 'to': "orm['helios.PollMix']"})
         },
         'helios.poll': {
-            'Meta': {'ordering': "('created_at',)", 'object_name': 'Poll'},
+            'Meta': {'ordering': "('link_id', 'index', 'created_at')", 'unique_together': "(('name', 'election'),)", 'object_name': 'Poll'},
             'compute_results_error': ('django.db.models.fields.TextField', [], {'default': 'None', 'null': 'True'}),
             'compute_results_finished_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'compute_results_started_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
@@ -111,10 +114,16 @@ class Migration(SchemaMigration):
             'decrypt_finished_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'decrypt_started_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'decrypt_status': ('django.db.models.fields.CharField', [], {'default': "'pending'", 'max_length': '50'}),
+            'department_limit': ('django.db.models.fields.PositiveIntegerField', [], {'default': '0'}),
             'election': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'polls'", 'to': "orm['helios.Election']"}),
+            'eligibles_count': ('django.db.models.fields.PositiveIntegerField', [], {'default': '5'}),
             'encrypted_tally': ('helios.datatypes.djangofield.LDObjectField', [], {'null': 'True'}),
             'frozen_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
+            'has_department_limit': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'index': ('django.db.models.fields.PositiveIntegerField', [], {'default': '1'}),
+            'link_id': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255'}),
+            'linked_ref': ('django.db.models.fields.CharField', [], {'default': "''", 'max_length': '255'}),
             'mix_error': ('django.db.models.fields.TextField', [], {'default': 'None', 'null': 'True'}),
             'mix_finished_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'mix_started_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
@@ -129,6 +138,7 @@ class Migration(SchemaMigration):
             'questions_data': ('heliosauth.jsonfield.JSONField', [], {'null': 'True'}),
             'result': ('helios.datatypes.djangofield.LDObjectField', [], {'null': 'True'}),
             'short_name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'stv_results': ('heliosauth.jsonfield.JSONField', [], {'null': 'True'}),
             'uuid': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50', 'db_index': 'True'}),
             'validate_create_error': ('django.db.models.fields.TextField', [], {'default': 'None', 'null': 'True'}),
             'validate_create_finished_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
@@ -214,7 +224,7 @@ class Migration(SchemaMigration):
             'voter_name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True'}),
             'voter_password': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True'}),
             'voter_surname': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True'}),
-            'voter_weight': ('django.db.models.fields.IntegerField', [], {'default': '1'})
+            'voter_weight': ('django.db.models.fields.PositiveIntegerField', [], {'default': '1'})
         },
         'helios.voterfile': {
             'Meta': {'object_name': 'VoterFile'},
@@ -234,17 +244,19 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'info': ('heliosauth.jsonfield.JSONField', [], {}),
             'institution': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['zeus.Institution']", 'null': 'True'}),
+            'is_disabled': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'management_p': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '200', 'null': 'True'}),
             'superadmin_p': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'token': ('heliosauth.jsonfield.JSONField', [], {'null': 'True'}),
-            'user_id': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
+            'user_id': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '100'}),
             'user_type': ('django.db.models.fields.CharField', [], {'max_length': '50'})
         },
         'zeus.institution': {
             'Meta': {'object_name': 'Institution'},
             'ecounting_id': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'})
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
         }
     }
 

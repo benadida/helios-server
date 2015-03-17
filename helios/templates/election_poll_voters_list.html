@@ -133,7 +133,7 @@
     <td>
         {% if voter.voter_mobile %}, {{ voter.voter_mobile }}{% endif %}
     </td>
-    {% if 'weight' in voter_table_headers %}
+    {% if display_weight_col %}
     <td>
         {{ voter.voter_weight }}
     </td>
