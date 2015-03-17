@@ -1,48 +1,58 @@
 {% extends 'server_ui/templates/base.html' %}
 {% load i18n %}
+{% load staticfiles %}
+{% block extra-head %}
+    <script language="javascript" src="{% static "heliosinstitution/js/utils.js" %}"></script>
+{% endblock %}
 {% block content %}
 
 {% if user %}
     <h3>{% trans "Users with roles in your institution" %}</h3>
-	<table class="table table-striped">
-	  <thead>
-	    <tr>
-	      <th>{% trans "User" %}</th>
-	      <th>{% trans "E-mail" %}</th>
-	      <th>{% trans "Role" %}</th>
-	      <th>{% trans "Action" %}</th>
-	   </tr>
-	  </thead>
-	  <tbody>
-      {% for profile in users %}
-          <td>{{ profile }}</td>
-          <td>{{ profile.email }}</td>
-          <td>
-            {{ profile.institution_role }}
-          </td>
-          <td></td>
-      {% endfor %}
-      </tbody>
-    </table>
-    <div class="well">
-    {% trans "Delegate Institution Admin" %}
-    <form class="form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_institution_admin" institution.id %}">
-        <div class="form-group">
-            <label class="sr-only" for="inst-mngt-email">{% trans "Email address" %}</label>
-            <input type="email" class="form-control" id="inst-mngt-email" placeholder="{% trans "Enter email" %}">
-        </div>
-        <button type="submit" class="btn btn-primary">{% trans "Add" %}</button>
-    </form>
+    <div id="institution_users">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>{% trans "User" %}</th>
+              <th>{% trans "E-mail" %}</th>
+              <th>{% trans "Role" %}</th>
+              <th>{% trans "Active" %}</th>
+              <th>{% trans "Expires at" %}</th>
+              <th>{% trans "Action" %}</th>
+           </tr>
+          </thead>
+          <tbody>
+          {% for user in institution.institution_users %}
+          <tr>
+              <td>{{ user.user }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.role }}</td>
+              <td>{{ user.active }}</td>
+              <td>{{ user.expires_at }}</td>
+              <td></td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
     </div>
-    <div class="well">
-    {% trans "Add new election admin" %}
-    <form class="form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_election_admin" institution.id %} ">
-        <div class="form-group">
-            <label class="sr-only" for="election-mngt-email">{% trans "Email address" %}</label>
-            <input type="email" class="form-control" id="election-mngt-email" placeholder="{% trans "Enter email" %}">
-        </div>
-        <button type="submit" class="btn btn-primary">{% trans "Add" %}</button>
-    </form>
+    <div id="delegate_institution_admin" class="well">
+        {% trans "Delegate Institution Admin" %}
+        <form class="form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_institution_admin" institution.id %}">
+            <div class="form-group">
+                <label class="sr-only" for="inst-mngt-email">{% trans "Email address" %}</label>
+                <input type="email" class="form-control" name="inst_mngt_email"  id="inst_mngt_email" placeholder="{% trans "Enter email" %}">
+            </div>
+            <button type="submit" class="btn btn-primary">{% trans "Add" %}</button>
+        </form>
+    </div>
+    <div id="delegate_election_admin" class="well">
+        {% trans "Add new election admin" %}
+        <form class="form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_election_admin" institution.id %} ">
+            <div class="form-group">
+                <label class="sr-only" for="election-mngt-email">{% trans "Email address" %}</label>
+                <input type="email" class="form-control" id="election-mngt-email" placeholder="{% trans "Enter email" %}">
+            </div>
+            <button type="submit" class="btn btn-primary">{% trans "Add" %}</button>
+        </form>
     </div>
 
 {% else %}
