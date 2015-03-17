@@ -55,7 +55,7 @@ class InstitutionUserProfile(models.Model):
     active = models.BooleanField(default=False)
   
     def __unicode__(self):
-        return self.user.name
+        return self.user.name if self.user is not None else self.email
 
     @property
     def institution_role(self):
