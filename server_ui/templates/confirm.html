@@ -41,7 +41,7 @@
       </form>
 
       <p>
-        Forgot your password? <a href="{% url helios_auth.auth_systems.password.password_forgotten_view %}?return_url={% url server_ui.views.cast_confirm %}">Have it emailed to you</a>.
+        Forgot your password? <a href="{% url 'helios_auth.auth_systems.password.password_forgotten_view' %}?return_url={% url 'server_ui.views.cast_confirm' %}">Have it emailed to you</a>.
         <br />
         (Don't worry, we won't forget your vote.)
       </p>

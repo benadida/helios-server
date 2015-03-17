@@ -22,7 +22,7 @@
   <div class="row">
     <div class="large-12 columns">
       <h2>
-        {{election.name}}&mdash;Bulk Upload Voters <small>[<a href="{% url helios.views.voters_list_pretty election.uuid %}">Back</a>]</small>
+        {{election.name}}&mdash;Bulk Upload Voters <small>[<a href="{% url 'helios.views.voters_list_pretty' election.uuid %}">Back</a>]</small>
       </h2>
 
       <p>

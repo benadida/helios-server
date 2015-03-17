@@ -11,7 +11,7 @@
       <h2>
         {{ election.name }}
         {% if admin_p %}
-          <small>[<a href="{% url helios.views.one_election_admin election.uuid %}">Admin</a>]</small>
+          <small>[<a href="{% url 'helios.views.one_election_admin' election.uuid %}">Admin</a>]</small>
         {% endif %}
       </h2>
 
@@ -191,17 +191,17 @@
       <h3>Audit</h3>
 
       {% if election.frozen_at %}
-        <a class="button" href="{% url helios.views.voters_list_pretty election.uuid %}">Ballot Tracking Center</a>
-        <a class="button" href="{% url helios.views.one_election_audited_ballots election.uuid %}">Audited Ballots</a>
+        <a class="button" href="{% url 'helios.views.voters_list_pretty' election.uuid %}">Ballot Tracking Center</a>
+        <a class="button" href="{% url 'helios.views.one_election_audited_ballots' election.uuid %}">Audited Ballots</a>
 
         {% if not election.voting_has_started %}
-          <a class="button" href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url helios.views.one_election election.uuid %}">Preview Booth</a>
+          <a class="button" href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url 'helios.views.one_election' election.uuid %}">Preview Booth</a>
         {% endif %}
       {% endif %}
 
       {% if election.voting_has_stopped %}
         {% if election.result %}
-          <a class="button" target="_blank" href="/verifier/verify.html?election_url={% url helios.views.one_election election.uuid %}">Verify Election Tally</a>
+          <a class="button" target="_blank" href="/verifier/verify.html?election_url={% url 'helios.views.one_election' election.uuid %}">Verify Election Tally</a>
         {% endif %}
 
         <a class="button" href="{{vote_url}}">Review the Voting Booth</a>

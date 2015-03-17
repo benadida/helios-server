@@ -7,7 +7,7 @@
   <div class="row">
     <div class="large-12 columns">
       <h2 class="title">
-        {{election.name}}&mdash;Questions <small>[<a href="{% url helios.views.one_election_admin election.uuid %}">Back</a>]</small>
+        {{election.name}}&mdash;Questions <small>[<a href="{% url 'helios.views.one_election_admin' election.uuid %}">Back</a>]</small>
       </h2>
 
       <script language="javascript">
@@ -32,7 +32,7 @@
         }
 
         function save_questions(callback) {
-          $.post('{% url helios.views.one_election_save_questions election.uuid %}', {'questions_json': $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function (result) {
+          $.post('{% url 'helios.views.one_election_save_questions' election.uuid %}', {'questions_json': $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function (result) {
             callback();
           });
         }

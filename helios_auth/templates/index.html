@@ -11,7 +11,7 @@
           You are currently logged in as <b>{{user.user_id}}</b> via <b>{{user.user_type|capfirst}}</b>.
         </p>
 
-        <a class="button" href="{% url helios_auth.views.logout %}">Logout</a>
+        <a class="button" href="{% url 'helios_auth.views.logout' %}">Logout</a>
       {% else %}
         {% include "login_box.html" %}
       {% endif %}

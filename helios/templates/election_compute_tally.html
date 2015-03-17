@@ -5,7 +5,7 @@
   <div class="row">
     <div class="large-12 columns">
       <h2>
-        {{election.name}}&mdash;Compute Tally <small>[<a href="{% url helios.views.one_election_admin election.uuid %}">Back</a>]</small>
+        {{election.name}}&mdash;Compute Tally <small>[<a href="{% url 'helios.views.one_election_admin' election.uuid %}">Back</a>]</small>
       </h2>
 
       {% if election.num_cast_votes %}

@@ -85,7 +85,7 @@
       // do the post
       $.ajax({
         type: 'POST',
-        url: "{% url helios.views.trustee_upload_decryption election.uuid, trustee.uuid %}",
+        url: "{% url 'helios.views.trustee_upload_decryption' election.uuid, trustee.uuid %}",
         data: {'factors_and_proofs': result},
         success: function(result) {
           $('#waiting_submit_div').hide();
@@ -234,7 +234,7 @@
       <div id="done">
         <h3>Done</h3>
 
-        <a class="button" href="{% url helios.views.one_election_view election.uuid %}">Back to Election</a>
+        <a class="button" href="{% url 'helios.views.one_election_view' election.uuid %}">Back to Election</a>
       </div>
 
       <div data-alert class="alert-box warning" id="error">

@@ -5,7 +5,7 @@
   <div class="row">
     <div class="large-12 columns">
       <h2>
-        {{election.name}}&mdash;Bulk Upload Voters&mdash;Confirm <small>[<a href="{% url helios.views.voters_list_pretty election.uuid %}">Back</a>]</small>
+        {{election.name}}&mdash;Bulk Upload Voters&mdash;Confirm <small>[<a href="{% url 'helios.views.voters_list_pretty' election.uuid %}">Back</a>]</small>
       </h2>
 
       <p>
@@ -48,7 +48,7 @@
             {% endfor %}
           </ul>
 
-          <a href="{% url helios.views.voters_upload_cancel election.uuid %}" class="button secondary no-margin">Never mind, let me upload a different file.</a>
+          <a href="{% url 'helios.views.voters_upload_cancel' election.uuid %}" class="button secondary no-margin">Never mind, let me upload a different file.</a>
         {% else %}
           <form method="post" action="" id="upload_form">
             <input type="hidden" name="confirm_p" value="1" />
@@ -56,7 +56,7 @@
             <h5>Does this look right to you?</h5>
 
             <input type="submit" class="button no-margin" value="Yes, let's go!" />
-            <a href="{% url helios.views.voters_upload_cancel election.uuid %}" class="button secondary no-margin">No, let me upload a different file.</a>
+            <a href="{% url 'helios.views.voters_upload_cancel' election.uuid %}" class="button secondary no-margin">No, let me upload a different file.</a>
           </form>
         {% endif %}
       </div>

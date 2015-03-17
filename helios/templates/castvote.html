@@ -5,14 +5,14 @@
   <div class="row">
     <div class="large-12 column">
       <h2>
-        {{election.name}}&mdash;Cast Vote {{cast_vote.vote_tinyhash}} <small>[<a href="{% url helios.views.voters_list_pretty election.uuid %}">Back</a>]</small>
+        {{election.name}}&mdash;Cast Vote {{cast_vote.vote_tinyhash}} <small>[<a href="{% url 'helios.views.voters_list_pretty' election.uuid %}">Back</a>]</small>
       </h2>
 
       <div class="row">
         <div class="large-3 columns">
           <dl>
             <dt>Cast In</dt>
-            <dd><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></dd>
+            <dd><a href="{% url 'helios.views.one_election_view' election.uuid %}">{{election.name}}</a></dd>
           </dl>
         </div>
 

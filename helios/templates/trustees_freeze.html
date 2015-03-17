@@ -4,7 +4,7 @@
 {% block content %}
   <div class="row">
     <div class="large-12 columns">
-      <h2>{{election.name}}&mdash;Threshold Scheme <small>[<a href="{% url helios.views.trustees_list_view election.uuid %}">Back</a>]</small></h2>
+      <h2>{{election.name}}&mdash;Threshold Scheme <small>[<a href="{% url 'helios.views.trustees_list_view' election.uuid %}">Back</a>]</small></h2>
 
       <p>
         There are {{n}} trustees for the election {{election.name}}. You can now specify the number of trustees that is required to decrypt the result. You can submit any number between 1 and {{n}}.

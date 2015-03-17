@@ -7,7 +7,7 @@
   <div class="row">
     <div class="large-12 columns">
       <h2>
-        {{election.name}}&mdash;Trustees <small>[<a href="{% url helios.views.one_election_admin election.uuid %}">Back</a>]</small>
+        {{election.name}}&mdash;Trustees <small>[<a href="{% url 'helios.views.one_election_admin' election.uuid %}">Back</a>]</small>
       </h2>
 
       {% if not election.use_threshold %}
@@ -45,8 +45,8 @@
 
         {% if election.use_threshold %}
           {% if not election.frozen_trustee_list %}
-            <a class="button" href="{% url helios.views.trustees_create election.uuid %}">Add a Trustee &raquo;</a>
-            <a class="button" onclick="return confirm('Are you sure you want to freeze the trustee list? You will not be able to add trustees after this step.');" href="{% url helios.views.trustees_freeze election.uuid %}">Freeze Trustee List &raquo;</a>
+            <a class="button" href="{% url 'helios.views.trustees_create' election.uuid %}">Add a Trustee &raquo;</a>
+            <a class="button" onclick="return confirm('Are you sure you want to freeze the trustee list? You will not be able to add trustees after this step.');" href="{% url 'helios.views.trustees_freeze' election.uuid %}">Freeze Trustee List &raquo;</a>
           {% else %}
             {% if not election.encrypted_shares_uploaded %}
               <div data-alert class="alert-box info">
@@ -59,14 +59,14 @@
                 In the meantime, you can continue with the next step in the procedure.
               </p>
 
-              <a class="button" href="{% url helios.views.one_election_admin election.uuid %}">Admin &raquo;</a>
+              <a class="button" href="{% url 'helios.views.one_election_admin' election.uuid %}">Admin &raquo;</a>
             {% endif %}
           {% endif %}
         {% else %}
-          <a class="button" href="{% url helios.views.trustees_create election.uuid %}">Add a Trustee &raquo;</a>
+          <a class="button" href="{% url 'helios.views.trustees_create' election.uuid %}">Add a Trustee &raquo;</a>
 
           {% if not election.has_helios_trustee %}
-            <a class="secondary button" href="{% url helios.views.trustees_create_helios election.uuid %}">Add Helios as a Trustee</a>
+            <a class="secondary button" href="{% url 'helios.views.trustees_create_helios' election.uuid %}">Add Helios as a Trustee</a>
           {% endif %}
         {% endif %}
       {% endif %}
@@ -104,17 +104,17 @@
                   {% if t.helios_trustee %}
                     {%if not election.frozen_trustee_list%}
                       {% if not election.frozen_at %}
-                        [<a onclick="return confirm('Are you sure you want to remove Helios as a trustee?');" href="{% url helios.views.trustees_delete election.uuid %}?uuid={{t.uuid}}">&times;</a>]
+                        [<a onclick="return confirm('Are you sure you want to remove Helios as a trustee?');" href="{% url 'helios.views.trustees_delete' election.uuid %}?uuid={{t.uuid}}">&times;</a>]
                       {% endif %}
                     {% endif %}
                   {% else %}
                     {% if not election.frozen_trustee_list %}
                       {% if not election.frozen_at %}
-                        [<a onclick="return confirm('Are you sure you want to remove this trustee?');" href="{% url helios.views.trustees_delete election.uuid %}?uuid={{t.uuid}}">&times;</a>]
+                        [<a onclick="return confirm('Are you sure you want to remove this trustee?');" href="{% url 'helios.views.trustees_delete' election.uuid %}?uuid={{t.uuid}}">&times;</a>]
                       {% endif %}
                     {% endif %}
 
-                    [<a onclick="return confirm('Are you sure you want to send this trustee to URL to his/her trustee home?');" href="{% url helios.views.trustee_send_url election.uuid t.uuid %}">Send Login</a>]
+                    [<a onclick="return confirm('Are you sure you want to send this trustee to URL to his/her trustee home?');" href="{% url 'helios.views.trustee_send_url' election.uuid t.uuid %}">Send Login</a>]
                   {% endif %}
                 {% endif %}
 

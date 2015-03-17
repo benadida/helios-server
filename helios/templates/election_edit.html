@@ -6,7 +6,7 @@
 {% block content %}
   <div class="row">
     <div class="large-12 columns">
-      <h2>{{election.name}}&mdash;Update <small>[<a href="{% url helios.views.one_election_view election.uuid %}">Cancel</a>]</small></h2>
+      <h2>{{election.name}}&mdash;Update <small>[<a href="{% url 'helios.views.one_election_view' election.uuid %}">Cancel</a>]</small></h2>
 
       {% if error %}
         <p style="color: red;">

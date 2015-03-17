@@ -38,7 +38,7 @@
         </p>
 
         {% if create_p %}
-          <a class="small button center" href="{% url helios.views.election_new %}">Create Election</a>
+          <a class="small button center" href="{% url 'helios.views.election_new' %}">Create Election</a>
         {% endif %}
       {% else %}
         <p>
@@ -51,7 +51,7 @@
           {% for election in elections %}
             <div class="panel">
               <p>
-                <a href="{% url helios.views.election_shortcut election.short_name %}">{{election.name}}</a> by {{election.admin.display_html_small|safe}}
+                <a href="{% url 'helios.views.election_shortcut' election.short_name %}">{{election.name}}</a> by {{election.admin.display_html_small|safe}}
               </p>
 
               <p>
@@ -68,7 +68,7 @@
     <div class="large-3 columns panel">
       {% if user %}
         {% if create_p %}
-          <a class="small button center" href="{% url helios.views.election_new %}">Create Election</a>
+          <a class="small button center" href="{% url 'helios.views.election_new' %}">Create Election</a>
 
           <div class="row">
             <div class="large-12 columns">
@@ -76,7 +76,7 @@
               {% if elections_administered %}
                 <ul class="no-bullet">
                   {% for election in elections_administered %}
-                    <li> <a href="{% url helios.views.one_election_admin election.uuid %}">{{election.name}}</a></li>
+                    <li> <a href="{% url 'helios.views.one_election_admin' election.uuid %}">{{election.name}}</a></li>
                   {% endfor %}
                 </ul>
               {% else %}
@@ -87,7 +87,7 @@
 
           <div class="row">
             <div class="large-12 columns">
-              <a class="tiny button right" href="{% url helios.views.elections_administered %}">See All</a>
+              <a class="tiny button right" href="{% url 'helios.views.elections_administered' %}">See All</a>
             </div>
           </div>
         {% endif %}
@@ -98,7 +98,7 @@
             {% if elections_voted %}
               <ul class="no-bullet">
                 {% for election in elections_voted %}
-                  <li><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></li>
+                  <li><a href="{% url 'helios.views.one_election_view' election.uuid %}">{{election.name}}</a></li>
                 {% endfor %}
               </ul>
             {% else %}
@@ -109,7 +109,7 @@
 
         <div class="row">
           <div class="large-12 columns">
-            <a class="tiny button right" href="{% url helios.views.elections_voted %}">See All</a>
+            <a class="tiny button right" href="{% url 'helios.views.elections_voted' %}">See All</a>
           </div>
         </div>
       {% else %}

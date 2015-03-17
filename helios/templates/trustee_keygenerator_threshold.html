@@ -23,7 +23,7 @@
       clear_keys();
 
       // Get some more server-side randomness for keygen
-      $.getJSON('{% url helios.views.get_randomness %}', function(result) {
+      $.getJSON('{% url 'helios.views.get_randomness' %}', function(result) {
         sjcl.random.addEntropy(result.randomness);
         BigInt.setup(function() {
           ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});

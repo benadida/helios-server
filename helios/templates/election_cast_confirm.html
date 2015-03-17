@@ -78,7 +78,7 @@
                   If you cancel now, your ballot will <b>not</b> be recorded. You can start the voting process over again, of course.
                 </p>
 
-                <a class="tiny secondary button" href="{% url helios.views.one_election_view election.uuid %}">Cancel</a>
+                <a class="tiny secondary button" href="{% url 'helios.views.one_election_view' election.uuid %}">Cancel</a>
               </div>
             {% else %}
               <div data-alert class="alert-box warning">
@@ -110,7 +110,7 @@
                 </div>
               {% endif %}
 
-              <form method="post" action="{% url helios.views.password_voter_login election.uuid %}" onsubmit="show_waiting()">
+              <form method="post" action="{% url 'helios.views.password_voter_login' election.uuid %}" onsubmit="show_waiting()">
                 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
                 <input type="hidden" name="return_url" value="{{return_url}}" />
                 <input type="hidden" name="cast_ballot" value="{{cast_ballot}}" />
@@ -131,7 +131,7 @@
                 {% endif %}
               </div>
 
-              <a class="button" href="{% url helios.views.one_election_view election.uuid %}">Return to Election Info</a>
+              <a class="button" href="{% url 'helios.views.one_election_view' election.uuid %}">Return to Election Info</a>
             {% else %}
               <p>
                 Now, we need you to log in, so we can verify your eligibility. Don't worry, we'll remember your ballot while you log in.

@@ -1,21 +1,21 @@
 {% extends TEMPLATE_BASE %}
-{% block title %}Release Tally for {{election.name}}{% endblock %}
+{% block title %}Compute Tally for {{election.name}}{% endblock %}
 
 {% block content %}
   <div class="row">
     <div class="large-12 columns">
       <h2>
-        {{election.name}}&mdash;Release Tally
+        {{election.name}}&mdash;Compute Tally
       </h2>
 
       <p>
-        You are about to release the tally for this election.
+        You are about to compute the tally for this election. You only will then see the results.
       </p>
 
       <form method="post">
         <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 
-        <input class="button" type="submit" value="Release Tally" />
+        <input class="button" type="submit" value="Compute Tally" />
         <a class="secondary button" href="./view">Back to Election</a>
       </form>
     </div>

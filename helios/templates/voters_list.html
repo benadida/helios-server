@@ -9,7 +9,7 @@
   <div class="row">
     <div class="large-12 columns">
       <h2>
-        {{election.name}}&mdash;Voters and Ballot Tracking Center {% if admin_p %}<small>[<a href="{% url helios.views.one_election_admin election.uuid %}">Back</a>]</small>{% else %}<small>[<a href="{% url helios.views.one_election_view election.uuid %}">Back</a>]</small>{% endif %}
+        {{election.name}}&mdash;Voters and Ballot Tracking Center {% if admin_p %}<small>[<a href="{% url 'helios.views.one_election_admin' election.uuid %}">Back</a>]</small>{% else %}<small>[<a href="{% url 'helios.views.one_election_view' election.uuid %}">Back</a>]</small>{% endif %}
       </h2>
 
       <div data-alert class="alert-box info">
@@ -27,7 +27,7 @@
           {% if election.private_p %}
             <p>Your election is marked private, which means you cannot open registration up more widely.</p>
           {% else %}
-<form method="post" action="{% url "helios.views.voters_eligibility" election.uuid %}">
+<form method="post" action="{% url 'helios.views.voters_eligibility' election.uuid %}">
               <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 
               <div class="row">
@@ -57,13 +57,13 @@
 {% endif %}
 
 {% if email_voters and election.frozen_at and admin_p %}
-<p><a class="button" href="{% url "helios.views.voters_email" election.uuid %}">email voters</a></p>
+<p><a class="button" href="{% url 'helios.views.voters_email' election.uuid %}">email voters</a></p>
                   {% endif %}
                 </div>
               </div>
 
               <input type="submit" class="tiny button no-margin" value="Update" />
-<form method="get" action="{% url "helios.views.voters_list_pretty" election.uuid %}"><b>search</b>: <input type="text" name="q" /> <input type="submit" value="search" /></form>
+<form method="get" action="{% url 'helios.views.voters_list_pretty' election.uuid %}"><b>search</b>: <input type="text" name="q" /> <input type="submit" value="search" /></form>
           {% endif %}
         </div>
       {% endif %}
@@ -71,10 +71,10 @@
       {% if admin_p %}
         {% if upload_p and not election.openreg %}
           <h3>Voters</h3>
-<a class="button" href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">bulk upload voters</a>
+<a class="button" href="{% url 'helios.views.voters_upload' election_uuid=election.uuid %}">bulk upload voters</a>
 </p>
 
-          <a class="button" href="{% url helios.views.voters_upload election_uuid=election.uuid %}">Bulk Upload Voters &raquo;</a>
+          <a class="button" href="{% url 'helios.views.voters_upload' election_uuid=election.uuid %}">Bulk Upload Voters &raquo;</a>
 
           {% if voter_files %}
             <h5>Prior Bulk Uploads</h5>
@@ -115,7 +115,7 @@
       {% endif %}
 
       <h3>
-        Ballot Tracking Center {% if voters and email_voters and election.frozen_at and admin_p %}<small>[<a href="{% url helios.views.voters_email election.uuid %}">E-mail All</a>]</small>{% endif %}
+        Ballot Tracking Center {% if voters and email_voters and election.frozen_at and admin_p %}<small>[<a href="{% url 'helios.views.voters_email' election.uuid %}">E-mail All</a>]</small>{% endif %}
       </h3>
 
       {% if voters %}
@@ -129,7 +129,7 @@
       {% endif %}
 
       {% if election.num_voters > 20 %}
-        <form method="get" action="{% url helios.views.voters_list_pretty election.uuid %}">
+        <form method="get" action="{% url 'helios.views.voters_list_pretty' election.uuid %}">
           <div class="row">
             <div class="large-12 columns">
               <div class="row collapse">
@@ -169,8 +169,8 @@
               {% if admin_p or not election.use_voter_aliases %}
                 <td>
                   {% if admin_p %}
-                    {% if email_voters and election.frozen_at %}[<a href="{% url helios.views.voters_email election.uuid %}?voter_id={{voter.voter_login_id}}">E-mail</a>]{% endif %}
-                    [<a onclick="return confirm('Are you sure you want to remove {{voter.name}}?');" href="{% url helios.views.voter_delete election.uuid, voter.uuid %}">&times;</a>]
+                    {% if email_voters and election.frozen_at %}[<a href="{% url 'helios.views.voters_email' election.uuid %}?voter_id={{voter.voter_login_id}}">E-mail</a>]{% endif %}
+                    [<a onclick="return confirm('Are you sure you want to remove {{voter.name}}?');" href="{% url 'helios.views.voter_delete' election.uuid, voter.uuid %}">&times;</a>]
                   {% endif %}
 
                   <img class="small-logo" src="/static/helios_auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}
@@ -183,7 +183,7 @@
 
               <td>
                 {% if voter.vote_hash %}
-                  [<a href="{% url helios.views.castvote_shortcut vote_tinyhash=voter.vote_tinyhash %}">View</a>] <tt>{{voter.vote_hash}}</tt>
+                  [<a href="{% url 'helios.views.castvote_shortcut' vote_tinyhash=voter.vote_tinyhash %}">View</a>] <tt>{{voter.vote_hash}}</tt>
                 {% endif %}
               </td>
             </tr>
