@@ -11,7 +11,7 @@
 <li> <a href="{% url "helios.stats_views.admin_actions" %}">{% trans "admin actions" %}</a></li>
 </ul>
 
-{% if has_institution_role %}
+{% if user.institutionuserprofile_set.get.is_institution_admin %}
 
 <h3>{% trans "User Management" %}</h3>
 
