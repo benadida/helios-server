@@ -7,10 +7,10 @@ and adapted to LDObject
 """
 
 import datetime
+import json
 from django.db import models
 from django.db.models import signals
 from django.conf import settings
-from django.utils import simplejson as json
 from django.core.serializers.json import DjangoJSONEncoder
 
 from . import LDObject

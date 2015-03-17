@@ -195,10 +195,7 @@ class DLogProof(LegacyObject):
 
     def __init__(self, wrapped_obj):
         if isinstance(wrapped_obj, dict):
-            import pdb
-            pdb.set_trace()
-
-        super(DLogProof, self).__init__(wrapped_obj)
+            raise Exception("problem with dict")
 
 
 class Result(LegacyObject):

@@ -79,8 +79,14 @@
           </p>
         {% endif %}
 
-        {% if admin_p or election.publish_tally %}
+        {% if election.result_released_at or (election.result and admin_p) %}
           <h3>Tally</h3>
+
+          {% if election.result_released_at %}
+            <div data-alert class="alert-box info">
+              This election is complete.
+            </div>
+          {% endif %}
 
           {% for question in election.pretty_result %}
             {% if forloop.counter0|divisibleby:2 %}<div class="row">{% endif %}

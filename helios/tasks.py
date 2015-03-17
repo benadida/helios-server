@@ -16,6 +16,7 @@ from celery.utils.log import get_task_logger
 
 logger = get_task_logger(__name__)
 
+from django.conf import settings
 
 @task()
 def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
@@ -53,7 +54,7 @@ def voters_email(election_id, subject_template, body_template, extra_vars={}, vo
         voters = voters.exclude(**voter_constraints_exclude)
 
     for voter in voters:
-        single_voter_email.delay(voter.uuid, subject_template, body_template, extra_vars)
+        single_voter_email.delay(voter.uuid, subject_template, body_template, extra_vars)            
 
 
 @task()

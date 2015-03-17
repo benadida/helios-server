@@ -13,6 +13,8 @@ import urlparse
 import string
 import threading
 
+import boto.ses
+
 # utils from helios_auth, too
 from helios_auth.utils import *
 

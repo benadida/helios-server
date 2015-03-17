@@ -4,7 +4,7 @@ Helios URLs for Election related stuff
 Ben Adida (ben@adida.net)
 """
 
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 
 from helios.views import *
 
@@ -64,6 +64,7 @@ urlpatterns = patterns('',
   # computing tally
   (r'^/compute_tally$', one_election_compute_tally),
   (r'^/combine_decryptions$', combine_decryptions),
+  (r'^/release_result$', release_result),
 
   # casting a ballot before we know who the voter is
   (r'^/cast$', one_election_cast),

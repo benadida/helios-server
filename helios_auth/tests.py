@@ -127,5 +127,4 @@ class UserBlackboxTests(TestCase):
 
         self.assertEquals(len(mail.outbox), 1)
         self.assertEquals(mail.outbox[0].subject, "testing subject")
-        self.assertEquals(
-            mail.outbox[0].to[0], "Foobar User <foobar-test@adida.net>")
+        self.assertEquals(mail.outbox[0].to[0], "Foobar User <foobar-test@adida.net>")

@@ -39,14 +39,26 @@
       </table>
 
       <div class="panel">
-        <form method="post" action="" id="upload_form">
-          <input type="hidden" name="confirm_p" value="1" />
+        {% if problems %}
+          <h5>Hold On</h5>
 
-          <h5>Does this look right to you?</h5>
+          <ul>
+            {% for problem in problems %}
+              <li>{{problem}}</li>
+            {% endfor %}
+          </ul>
 
-          <input type="submit" class="button no-margin" value="Yes, let's go!" />
-          <a href="{% url helios.views.voters_upload_cancel election.uuid %}" class="button secondary no-margin">No, let me upload a different file.</a>
-        </form>
+          <a href="{% url helios.views.voters_upload_cancel election.uuid %}" class="button secondary no-margin">Never mind, let me upload a different file.</a>
+        {% else %}
+          <form method="post" action="" id="upload_form">
+            <input type="hidden" name="confirm_p" value="1" />
+
+            <h5>Does this look right to you?</h5>
+
+            <input type="submit" class="button no-margin" value="Yes, let's go!" />
+            <a href="{% url helios.views.voters_upload_cancel election.uuid %}" class="button secondary no-margin">No, let me upload a different file.</a>
+          </form>
+        {% endif %}
       </div>
     </div>
   </div>

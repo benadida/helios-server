@@ -81,7 +81,8 @@ def render_json(json_txt):
     return HttpResponse(json_txt, "application/json")
 
 
-def json(func):
+# decorator
+def return_json(func):
     """
     A decorator that serializes the output to JSON before returning to the
     web client.

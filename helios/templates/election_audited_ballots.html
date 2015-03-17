@@ -17,7 +17,7 @@
       </p>
 
       <p>
-        To verify an audited ballot, copy its entire content and paste it in the <a target="_new" href="/booth/single-ballot-verify.html?election_url={% url helios.views.one_election election.uuid %}">single ballot verifier</a>.
+        To verify an audited ballot, copy its entire content and paste it in the <a target="_new" href="/booth/single-ballot-verify.html?election_url={% url "helios.views.one_election" election.uuid %}">single ballot verifier</a>.
       </p>
 
       {% if audited_ballots %}

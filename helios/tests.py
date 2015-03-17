@@ -53,9 +53,8 @@ class ElectionModelTests(TestCase):
         self.election.save()
 
     def setUp(self):
-        self.user = auth_models.User.objects.get(
-            user_id='ben@adida.net', user_type='google')
-        self.fb_user = auth_models.User.objects.get(user_type='facebook')
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.fb_user = auth_models.User.objects.filter(user_type='facebook')[0]
         self.election, self.created_p = self.create_election()
 
     def test_create_election(self):
@@ -518,16 +517,17 @@ class ElectionBlackboxTests(WebTest):
 
     def test_election_creation_not_logged_in(self):
         response = self.client.post("/helios/elections/new", {
-            "short_name": "test-complete",
-            "name": "Test Complete",
-            "description": "A complete election test",
-            "election_type": "referendum",
+            "short_name" : "test-complete",
+            "name" : "Test Complete",
+            "description" : "A complete election test",
+            "election_type" : "referendum",
             "use_voter_aliases": "0",
             "use_advanced_audit_features": "1",
-            "private_p": "0"})
+            "private_p" : "False"
+        })
 
-        self.assertRedirects(
-            response, "/helios_auth/?return_url=/helios/elections/new")
+        self.assertRedirects(response, "/auth/?return_url=/helios/elections/new")
+
 
     def test_election_edit(self):
         # a bogus call to set up the session
@@ -569,7 +569,8 @@ class ElectionBlackboxTests(WebTest):
             "election_type": "referendum",
             "use_voter_aliases": "0",
             "use_advanced_audit_features": "1",
-            "private_p": "0"}
+            "private_p" : "False"
+        }
 
         # override with the given
         full_election_params.update(election_params)
@@ -588,6 +589,13 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.get(
             "/helios/elections/%s/trustees/view" % election_id)
         self.assertContains(response, "Trustee #1")
+
+        # add a few voters with an improperly placed email address
+        FILE = "helios/fixtures/voter-badfile.csv"
+        voters_file = open(FILE)
+        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'voters_file': voters_file})
+        voters_file.close()
+        self.assertContains(response, "HOLD ON")
 
         # add a few voters, via file upload
         # this file now includes a UTF-8 encoded unicode character
@@ -712,7 +720,7 @@ class ElectionBlackboxTests(WebTest):
             # cast_confirm_page = cast_confirm_page.follow()
         else:
             # here we should be at the cast-confirm page and logged in
-            self.assertContains(cast_confirm_page, "I am ")
+            self.assertContains(cast_confirm_page, "CAST this ballot")
 
             # confirm the vote, now with the actual form
             cast_form = cast_confirm_page.form
@@ -780,10 +788,17 @@ class ElectionBlackboxTests(WebTest):
             "csrf_token": self.client.session['csrf_token'],
         })
 
-        # after tallying, we now are supposed to see the email screen
-        # with the right template value of 'result'
-        self.assertRedirects(
-            response, "/helios/elections/%s/voters/email?template=result" % election_id)
+        # after tallying, we now go back to election_view
+        self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
+
+        # check that we can't get the tally yet
+        response = self.client.get("/helios/elections/%s/result" % election_id)
+        self.assertEquals(response.status_code, 403)
+
+        # release
+        response = self.client.post("/helios/elections/%s/release_result" % election_id, {
+            "csrf_token" : self.client.session['csrf_token'],
+        })
 
         # check that tally matches
         response = self.client.get("/helios/elections/%s/result" % election_id)
@@ -811,8 +826,7 @@ class ElectionBlackboxTests(WebTest):
 
     def test_do_complete_election_private(self):
         # private election
-        election_id, username, password = self._setup_complete_election(
-            {'private_p': "1"})
+        election_id, username, password = self._setup_complete_election({'private_p' : "True"})
 
         # get the password_voter_login_form via the front page
         # (which will test that redirects are doing the right thing)
@@ -839,16 +853,16 @@ class ElectionBlackboxTests(WebTest):
         self.client.get("/")
         self.setup_login()
         response = self.client.post("/helios/elections/new", {
-            "short_name": "test-eligibility",
-            "name": "Test Eligibility",
-            "description": "An election test for voter eligibility",
-            "election_type": "election",
+            "short_name" : "test-eligibility",
+            "name" : "Test Eligibility",
+            "description" : "An election test for voter eligibility",
+            "election_type" : "election",
             "use_voter_aliases": "0",
             "use_advanced_audit_features": "1",
-            "private_p": "0"})
+            "private_p" : "False"
+        })
 
-        election_id = re.match(
-            "(.*)/elections/(.*)/view", response['Location']).group(2)
+        election_id = re.match("(.*)/elections/(.*)/view", response['Location']).group(2)
 
         # update eligiblity
         response = self.client.post("/helios/elections/%s/voters/eligibility" % election_id, {

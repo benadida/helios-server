@@ -27,7 +27,7 @@
           {% if election.private_p %}
             <p>Your election is marked private, which means you cannot open registration up more widely.</p>
           {% else %}
-            <form method="post" action="{% url helios.views.voters_eligibility election.uuid %}">
+<form method="post" action="{% url "helios.views.voters_eligibility" election.uuid %}">
               <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 
               <div class="row">
@@ -50,12 +50,20 @@
                         {% endfor %}
                       </select>
                     </label>
+{% endif %}
+<input type="submit" value="update" />
+</form>
+{% endif %}
+{% endif %}
+
+{% if email_voters and election.frozen_at and admin_p %}
+<p><a class="button" href="{% url "helios.views.voters_email" election.uuid %}">email voters</a></p>
                   {% endif %}
                 </div>
               </div>
 
               <input type="submit" class="tiny button no-margin" value="Update" />
-            </form>
+<form method="get" action="{% url "helios.views.voters_list_pretty" election.uuid %}"><b>search</b>: <input type="text" name="q" /> <input type="submit" value="search" /></form>
           {% endif %}
         </div>
       {% endif %}
@@ -63,6 +71,8 @@
       {% if admin_p %}
         {% if upload_p and not election.openreg %}
           <h3>Voters</h3>
+<a class="button" href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">bulk upload voters</a>
+</p>
 
           <a class="button" href="{% url helios.views.voters_upload election_uuid=election.uuid %}">Bulk Upload Voters &raquo;</a>
 

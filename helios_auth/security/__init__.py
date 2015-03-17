@@ -59,8 +59,13 @@ def get_api_client(request):
 
     full_url = request.get_full_path()
 
-    oauth_request = oauth.OAuthRequest.from_request(request.method, full_url, headers=request.META,
-                                                    parameters=parameters, query_string=None)
+    oauth_request = oauth.OAuthRequest.from_request(
+      request.method,
+      full_url,
+      headers=request.META,
+      parameters=parameters,
+      query_string=None
+    )
 
     if not oauth_request:
         return None
@@ -104,7 +109,7 @@ def get_user(request):
     # request.session.set_expiry(settings.SESSION_COOKIE_AGE)
 
     # set up CSRF protection if needed
-    if not request.session.has_key('csrf_token') or type(request.session['csrf_token']) != str:
+    if not request.session.has_key('csrf_token') or type(request.session['csrf_token']) != str and type(request.session['csrf_token']) != unicode):
         request.session['csrf_token'] = str(uuid.uuid4())
 
     if request.session.has_key('user'):

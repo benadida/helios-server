@@ -7,7 +7,7 @@ Ben Adida
 """
 
 from django.db import models, transaction
-from django.utils import simplejson
+import json
 from django.conf import settings
 from django.core.mail import send_mail
 
@@ -113,10 +113,11 @@ class Election(HeliosModel):
 
     # dates at which things happen for the election
     frozen_at = models.DateTimeField( auto_now_add=False, default=None, null=True)
-    frozen_trustee_list = models.BooleanField(default=False)
-    use_threshold = models.BooleanField(default=True)
-    encrypted_shares_uploaded = models.BooleanField(default=False)
     archived_at = models.DateTimeField( auto_now_add=False, default=None, null=True)
+
+    use_threshold = models.BooleanField(default=True)
+    frozen_trustee_list = models.BooleanField(default=False)
+    encrypted_shares_uploaded = models.BooleanField(default=False)
 
     # dates for the election steps, as scheduled
     # these are always UTC
@@ -140,6 +141,9 @@ class Election(HeliosModel):
     tallying_started_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
     tallying_finished_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
     tallies_combined_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+
+    # we want to explicitly release results
+    result_released_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
 
     # the hash of all voters (stored for large numbers)
     voters_hash = models.CharField(max_length=100, null=True)
@@ -244,8 +248,6 @@ class Election(HeliosModel):
         query = query.order_by('-created_at')
         if limit:
             return query[:limit]
-        else:
-            return query
 
     @classmethod
     def get_by_uuid(cls, uuid):
@@ -298,8 +300,7 @@ class Election(HeliosModel):
             return []
 
         # constraints that are relevant
-        relevant_constraints = [constraint['constraint'] for constraint in self.eligibility if constraint[
-            'auth_system'] == user_type and constraint.has_key('constraint')]
+        relevant_constraints = [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type and constraint.has_key('constraint')]
         if len(relevant_constraints) > 0:
             return relevant_constraints[0]
         else:
@@ -434,9 +435,8 @@ class Election(HeliosModel):
         tally the election, assuming votes already verified
         """
         tally = self.init_tally()
-        for voter in self.voter_set.all():
-            if voter.vote:
-                tally.add_vote(voter.vote, verify_p=False)
+        for voter in self.voter_set.exclude(vote=None):
+          tally.add_vote(voter.vote, verify_p=False)
 
         self.encrypted_tally = tally
         self.save()
@@ -454,6 +454,7 @@ class Election(HeliosModel):
         scheme = self.get_scheme()
         if scheme:
             k = scheme.k
+
         trustees = Trustee.get_by_election(self)
         for t in trustees:
             if t.decryption_factors:
@@ -471,6 +472,15 @@ class Election(HeliosModel):
                 return False
 
         return True
+
+    def release_result(self):
+      """
+      release the result that should already be computed
+      """
+      if not self.result:
+        return
+
+      self.result_released_at = datetime.datetime.utcnow()
 
     def combine_decryptions(self):
         """
@@ -928,7 +938,6 @@ def utf_8_encoder(unicode_csv_data):
 
 
 class VoterFile(models.Model):
-
     """
     A model to store files that are lists of voters to be processed
     """
@@ -945,8 +954,6 @@ class VoterFile(models.Model):
     processing_started_at = models.DateTimeField(auto_now_add=False, null=True)
     processing_finished_at = models.DateTimeField(auto_now_add=False, null=True)
     num_voters = models.IntegerField(null=True)
-
-    confirmed_p = models.BooleanField(default=False, null=False)
 
     def itervoters(self):
         if self.voter_file_content:
@@ -980,12 +987,17 @@ class VoterFile(models.Model):
                     return_dict['email'] = voter_fields[1].strip()
                 else:
                     return_dict['name'] = voter_fields[1].strip()
+            else:
+                # assume single field means the email is the same field
+                return_dict['email'] = voter_fields[0].strip()
 
             if len(voter_fields) > 2:
                 if validate_email(voter_fields[1].strip()):
                     return_dict['name'] = voter_fields[2].strip()
                 else:
                     return_dict['user_type'] = voter_fields[2].strip()
+            else:
+                return_dict['name'] = return_dict['email']
 
             if len(voter_fields) > 3:
                 return_dict['user_type'] = voter_fields[3].strip()

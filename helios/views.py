@@ -8,6 +8,7 @@ Ben Adida (ben@adida.net)
 from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
+from django.core.exceptions import PermissionDenied
 from django.http import *
 from django.db import transaction
 
@@ -17,6 +18,10 @@ import csv
 import urllib
 import os
 import base64
+
+from validate_email import validate_email
+
+import csv, urllib, os, base64
 
 from crypto import algs, electionalgs, elgamal
 from crypto import utils as cryptoutils
@@ -137,7 +142,7 @@ def admin_autologin(request):
 ##
 
 
-@json
+@return_json
 def election_params(request):
     return ELGAMAL_PARAMS_LD_OBJECT.toJSONDict()
 
@@ -218,9 +223,13 @@ def election_new(request):
 
     error = None
 
+    user = get_user(request)
+
     if request.method == "GET":
-        election_form = forms.ElectionForm(
-            initial={'private_p': settings.HELIOS_PRIVATE_DEFAULT})
+        election_form = forms.ElectionForm(initial={
+            'private_p': settings.HELIOS_PRIVATE_DEFAULT,
+            'help_email': user.info.get("email", '')
+        })
     else:
         election_form = forms.ElectionForm(request.POST)
 
@@ -231,8 +240,7 @@ def election_new(request):
             # is the short name valid
             if helios_utils.urlencode(election_params['short_name']) == election_params['short_name']:
                 election_params['uuid'] = str(uuid.uuid1())
-                election_params['cast_url'] = settings.SECURE_URL_HOST + \
-                    reverse(one_election_cast, args=[election_params['uuid']])
+                election_params['cast_url'] = settings.SECURE_URL_HOST + reverse(one_election_cast, args=[election_params['uuid']])
 
                 # registration starts closed
                 election_params['openreg'] = False
@@ -289,7 +297,7 @@ def one_election_schedule(request, election):
 
 
 @election_view()
-@json
+@return_json
 def one_election(request, election):
     if not election:
         raise Http404
@@ -297,7 +305,7 @@ def one_election(request, election):
 
 
 @election_view()
-@json
+@return_json
 def one_election_meta(request, election):
     if not election:
         raise Http404
@@ -431,7 +439,7 @@ def socialbuttons(request):
 ##
 
 @election_admin(frozen=None)
-@json
+@return_json
 def trustees_list(request, election):
     trustees = Trustee.get_by_election(election)
     return [t.toJSONDict(complete=True) for t in trustees]
@@ -442,6 +450,7 @@ def trustees_list_view(request, election):
     trustees = Trustee.get_by_election(election)
     user = get_user(request)
     admin_p = security.user_can_admin_election(user, election)
+
     SignedEncryptedShares = SignedEncryptedShare.objects.filter(election_id=election.id)
     scheme = None
     if election.use_threshold:
@@ -932,7 +941,8 @@ Helios""" % url
 ##
 
 
-@json
+@election_view()
+@return_json
 def get_randomness(request):
     """
     get some randomness to sprinkle into the SJCL entropy pool
@@ -945,7 +955,7 @@ def get_randomness(request):
 
 
 @election_view(frozen=True)
-@json
+@return_json
 def encrypt_ballot(request, election):
     """
     perform the ballot encryption given answers_json, a JSON'ified list of list of answers
@@ -1229,28 +1239,73 @@ def one_election_cast_done(request, election):
     #   auth_views.do_local_logout(request)
 
     # tweet/fb your vote
-    socialbuttons_url = get_socialbuttons_url(
-        cv_url, 'I cast a vote in %s' % election.name)
+    socialbuttons_url = get_socialbuttons_url(cv_url, 'I cast a vote in %s' % election.name)
 
     # remote logout is happening asynchronously in an iframe to be modular given the logout mechanism
     # include_user is set to False if logout is happening
-    return render_template(request, 'election_cast_done', {'election': election,
-                                                  'vote_hash': vote_hash, 'logout': logout,
-                                                  'socialbuttons_url': socialbuttons_url},
-                           include_user=(not logout))
+    return render_template(request, 'election_cast_done',
+        {
+            'election': election,
+            'vote_hash': vote_hash,
+            'logout': logout,
+            'socialbuttons_url': socialbuttons_url
+        },
+        include_user=(not logout)
+    )
 
 
 @election_view()
-@json
+@return_json
 def one_election_result(request, election):
-    return election.result
+  if not election.result_released_at:
+    raise PermissionDenied
+
+  return election.result
 
 
 @election_view()
-@json
+@return_json
 def one_election_result_proof(request, election):
-    return election.result_proof
+  if not election.result_released_at:
+    raise PermissionDenied
 
+  return election.result_proof
+
+
+@election_view(frozen=True)
+def one_election_bboard(request, election):
+  """
+  UI to show election bboard
+  """
+  after = request.GET.get('after', None)
+  offset= int(request.GET.get('offset', 0))
+  limit = int(request.GET.get('limit', 50))
+
+  order_by = 'voter_id'
+
+  # unless it's by alias, in which case we better go by UUID
+  if election.use_voter_aliases:
+    order_by = 'alias'
+
+  # if there's a specific voter
+  if request.GET.has_key('q'):
+    # FIXME: figure out the voter by voter_id
+    voters = []
+  else:
+    # load a bunch of voters
+    voters = Voter.get_by_election(election, after=after, limit=limit+1, order_by=order_by)
+
+  more_p = len(voters) > limit
+  if more_p:
+    voters = voters[0:limit]
+    next_after = getattr(voters[limit-1], order_by)
+  else:
+    next_after = None
+
+  return render_template(request, 'election_bboard', {'election': election, 'voters': voters, 'next_after': next_after,
+                'offset': offset, 'limit': limit, 'offset_plus_one': offset+1, 'offset_plus_limit': offset+limit,
+                'voter_id': request.GET.get('voter_id', '')})
+>>>>>>> benadida/master
 
 @election_view(frozen=True)
 def one_election_audited_ballots(request, election):
@@ -1491,6 +1546,25 @@ Helios""" % (trustee.name, trustee.email)
 
 
 @election_admin(frozen=True)
+def release_result(request, election):
+    """
+    result is computed and now it's time to release the result
+    """
+    election_url = get_election_url(election)
+
+    if request.method == "POST":
+        check_csrf(request)
+
+        election.release_result()
+        election.save()
+
+        return HttpResponseRedirect("%s" % (settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid])))
+
+    # if just viewing the form or the form is not valid
+    return render_template(request, 'release_result', {'election': election})
+
+
+@election_admin(frozen=True)
 def combine_decryptions(request, election):
     """
     combine trustee decryptions
@@ -1652,10 +1726,20 @@ def voters_upload(request, election):
 
                 request.session['voter_file_id'] = voter_file_obj.id
 
-                # import the first few lines to check
-                voters = [v for v in voter_file_obj.itervoters()][:5]
+                problems = []
 
-                return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters})
+                # import the first few lines to check
+                try:
+                    voters = [v for v in voter_file_obj.itervoters()][:5]
+                except:
+                    voters = []
+                    problems.append("Your CSV file could not be processed. Please check that it is a proper CSV file.")
+
+                # check if voter emails look like emails
+                if False in [validate_email(v['email']) for v in voters]:
+                    problems.append("Those don't look like correct email addresses. Are you sure you uploaded a file with email address as second field?")
+
+                return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters, 'problems': problems})
             else:
                 return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_upload, args=[election.uuid]), urllib.urlencode({'e': 'No voter file specified, please try again.'})))
 
@@ -1681,6 +1765,7 @@ def voters_email(request, election):
 
     TEMPLATES = [
         ('vote', 'Time to Vote'),
+        ('simple', 'Simple'),
         ('info', 'Additional Info'),
         ('result', 'Election Result')
     ]
@@ -1780,7 +1865,7 @@ def voters_email(request, election):
 
 
 @election_view()
-@json
+@return_json
 def voter_list(request, election):
     # normalize limit
     limit = int(request.GET.get('limit', 500))
@@ -1793,7 +1878,7 @@ def voter_list(request, election):
 
 
 @election_view()
-@json
+@return_json
 def one_voter(request, election, voter_uuid):
     """
     View a single voter's info as JSON.
@@ -1805,7 +1890,7 @@ def one_voter(request, election, voter_uuid):
 
 
 @election_view()
-@json
+@return_json
 def voter_votes(request, election, voter_uuid):
     """
     all cast votes by a voter
@@ -1816,7 +1901,7 @@ def voter_votes(request, election, voter_uuid):
 
 
 @election_view()
-@json
+@return_json
 def voter_last_vote(request, election, voter_uuid):
     """
     all cast votes by a voter
@@ -1830,7 +1915,7 @@ def voter_last_vote(request, election, voter_uuid):
 
 
 @election_view()
-@json
+@return_json
 def ballot_list(request, election):
     """
     this will order the ballots from most recent to oldest.

@@ -160,18 +160,18 @@ LOGOUT_ON_CONFIRMATION = True
 
 # The two hosts are here so the main site can be over plain HTTP
 # while the voting URLs are served over SSL.
-URL_HOST = get_from_env('URL_HOST', 'http://localhost:8000')
+URL_HOST = get_from_env('URL_HOST', 'http://localhost:8000').rstrip('/')
 
 # IMPORTANT
 # You should not change this setting once you've created
 # elections, as your elections' cast_url will then be incorrect.
-SECURE_URL_HOST = get_from_env('SECURE_URL_HOST', 'http://localhost:8000')
+SECURE_URL_HOST = get_from_env('SECURE_URL_HOST', URL_HOST).rstrip('/')
 
 # This additional host is used to iframe-isolate the social buttons,
 # which usually involve hooking in remote JavaScript, which could be
 # a security issue. Plus, if there's a loading issue, it blocks the whole
 # page. Not cool.
-SOCIALBUTTONS_URL_HOST = get_from_env('SOCIALBUTTONS_URL_HOST', 'http://localhost:8000')
+SOCIALBUTTONS_URL_HOST= get_from_env('SOCIALBUTTONS_URL_HOST', SECURE_URL_HOST).rstrip('/')
 
 SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Voting')
 MAIN_LOGO_URL = get_from_env('MAIN_LOGO_URL', '/static/logo.png')
@@ -199,6 +199,10 @@ HELIOS_PRIVATE_DEFAULT = False
 #AUTH_ENABLED_AUTH_SYSTEMS = ['cas', 'facebook', 'google', 'linkedin', 'password', 'shibboleth', 'twitter', 'yahoo']
 AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(',')
 AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
+
+# google
+GOOGLE_CLIENT_ID = get_from_env('GOOGLE_CLIENT_ID', '')
+GOOGLE_CLIENT_SECRET = get_from_env('GOOGLE_CLIENT_SECRET', '')
 
 # Facebook
 FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID', '')
@@ -241,6 +245,11 @@ EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
 
+# To use AWS Simple Email Service, the environment should
+# contain AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
+if get_from_env('EMAIL_USE_AWS', '0') == '1':
+    EMAIL_BACKEND = 'django_ses.SESBackend'
+
 # Logging
 import logging
 logging.basicConfig(
@@ -248,7 +257,7 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)s %(message)s'
 )
 
-# django-celery
+# Celery
 BROKER_URL = 'django://'
 CELERY_RESULT_DBURI = DATABASES['default']
 import djcelery

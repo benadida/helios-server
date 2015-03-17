@@ -93,6 +93,7 @@
         {% else %}
           {% if show_password %}
             {% if user %}
+<h1>Wait!</h1>
               <p>
                 You are logged in as <u>{{user.display_html_small|safe}}</u>, but this election requires election-specific credentials.
               </p>
@@ -122,6 +123,7 @@
           {% else %}
             {% if user %}
               <div alert-box class="alert-box warning">
+<b>Sorry, you are <em>
                 {% if election.openreg %}
                   Sorry, you are <i>not eligible</i> for this election.
                 {% else %}
