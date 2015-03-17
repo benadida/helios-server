@@ -58,10 +58,7 @@ class InstitutionUserProfile(models.Model):
         return self.user.name if self.user is not None else self.email
 
     @property
-    def institution_role(self):
+    def is_institution_admin(self):
         if self.institution.mngt_email == self.email:
-            # institution admin
-            pass
-
-        # test if can create election -> election admin
-        # test if can delegate election mngt -> institution manager 
+            return True
+        return False
