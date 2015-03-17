@@ -31,6 +31,21 @@ class Institution(models.Model):
             return None
 
 
+    @property
+    def institution_users(self):
+        users = []
+        for user in self.institutionuserprofile_set.all():
+            users.append({
+                'user': user.user,
+                'email': user.email,
+                'role': user.institution_role,
+                'active': user.active,
+                'expires_at': user.expires_at,
+            })
+        
+        return users
+
+
 class InstitutionUserProfile(models.Model):
 
     user = models.ForeignKey('helios_auth.User', blank=True)
