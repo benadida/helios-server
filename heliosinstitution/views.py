@@ -1,4 +1,6 @@
 from django.views.decorators.http import require_http_methods
+from django.http import HttpResponseRedirect
+from django.core.urlresolvers import reverse
 
 
 from helios_auth.security import *
@@ -28,7 +30,14 @@ def delegate_institution_admin(request, institution_id):
     Delegate an user to administer institution
     """
     user = get_user(request)
-    pass
+    email = request.POST.get('inst_mngt_email', '') 
+    if user.institutionuserprofile_set.get().is_institution_admin:
+        institution_user_profile, created = InstitutionUserProfile.objects.get_or_create(email=email, 
+            institution=user.institutionuserprofile_set.get().institution)
+        institution_user_profile.save()
+        #TODO: add to institution admin group
+    return HttpResponseRedirect(reverse(manage_users))
+    
 
 
 @login_required
