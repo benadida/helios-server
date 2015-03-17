@@ -79,12 +79,6 @@
                       {% else %}
                         Combine trustee decryptions and release results. The decryption shares from the trustees are combined and the tally is decrypted.
                       {% endifequal %}
-
-                      {% if election.publish_tally_at %}
-                        Once you do this, the tally will be immediately available for all to see, and all voters will be notified that the tally is ready.
-                      {% else %}
-                        The results will only be published at {{election.publish_tally_at}}.
-                      {% endif %}
                     {% endif %}
                   {% endif %}
                 {% endif %}
@@ -126,12 +120,6 @@
                     {% else %}
                       The decryption shares from the trustees are combined and the tally is decrypted.
                     {% endifequal %}
-
-                    {% if election.publish_tally_at %}
-                        Once you do this, the tally will be immediately available for all to see, and all voters will be notified that the tally is ready.
-                      {% else %}
-                        The results will only be published at {{election.publish_tally_at}}.
-                      {% endif %}
                   {% endif %}
                 {% endif %}
               {% endif %}
@@ -172,10 +160,7 @@
         {% if election.use_threshold %}
           <li>{% if election.ready_for_decryption_combination %}<s>{% endif %}Wait for the trustees to provide their share of the key used to encrypt the ballots.{% if election.ready_for_decryption_combination %}</s>{% endif %}</li>
         {% endif %}
-        <li>{% if election.result %}<s>{% endif %}{% if not election.publish_tally_at %}Release tally and notify all voters.{% else %}Release tally.{% endif %}{% if election.result %}</s>{% endif %}</li>
-        {% if election.publish_tally_at %}
-          <li>{% if election.publish_tally %}<s>{% endif %}The tally will be published at {{election.publish_tally_at}}.{% if election.publish_tally %}</s>{% endif %}</li>
-        {% endif %}
+        <li>{% if election.result %}<s>{% endif %}Release tally.{% if election.result %}</s>{% endif %}</li>
       </ol>
 
       {% if election.use_threshold %}

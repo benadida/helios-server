@@ -109,7 +109,7 @@ def get_user(request):
     # request.session.set_expiry(settings.SESSION_COOKIE_AGE)
 
     # set up CSRF protection if needed
-    if not request.session.has_key('csrf_token') or type(request.session['csrf_token']) != str and type(request.session['csrf_token']) != unicode):
+    if not request.session.has_key('csrf_token') or (type(request.session['csrf_token']) != str and type(request.session['csrf_token']) != unicode):
         request.session['csrf_token'] = str(uuid.uuid4())
 
     if request.session.has_key('user'):
