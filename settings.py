@@ -92,7 +92,8 @@ STATICFILES_DIRS = (
     ROOT_PATH + '/heliosverifier',
     ROOT_PATH + '/helios_auth/media',
     ROOT_PATH + '/helios/media',
-    ROOT_PATH + '/server_ui/media'
+    ROOT_PATH + '/server_ui/media',
+    ROOT_PATH + '/heliosinstitution/media/',
 )
 
 
