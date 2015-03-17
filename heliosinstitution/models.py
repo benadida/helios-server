@@ -62,3 +62,12 @@ class InstitutionUserProfile(models.Model):
         if self.institution.mngt_email == self.email:
             return True
         return False
+    
+    @property
+    def institution_role(self):
+        #TODO: check for user group instead
+        if self.is_institution_admin:
+            return _("Admin")
+        if self.user and self.user.admin_p:
+            return _("Election Admin")
+        return _("Undefined")
