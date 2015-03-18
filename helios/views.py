@@ -1616,7 +1616,7 @@ def voters_list_pretty(request, election):
         return user_reauth(request, user)
 
     # files being processed
-    voter_files = election.voterfile_set.exclude(confirmed_p=False)
+    voter_files = election.voterfile_set.all()
 
     # load a bunch of voters
     # voters = Voter.get_by_election(election, order_by=order_by)
@@ -1706,11 +1706,6 @@ def voters_upload(request, election):
         if bool(request.POST.get('confirm_p', 0)):
             # launch the background task to parse that file
             tasks.voter_file_process.delay(voter_file_id=request.session['voter_file_id'])
-
-            voter_file = VoterFile.objects.get(id=request.session['voter_file_id'])
-            voter_file.confirmed_p = True
-            voter_file.save()
-
             del request.session['voter_file_id']
 
             return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
