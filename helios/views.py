@@ -265,7 +265,7 @@ def election_new(request):
 @election_admin(frozen=False)
 def one_election_edit(request, election):
     error = None
-    RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases', 'election_type', 'randomize_answer_order', 'private_p', 'help_email', 'voting_starts_at', 'voting_ends_at', 'publish_tally_at']
+    RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases', 'election_type', 'randomize_answer_order', 'private_p', 'help_email', 'voting_starts_at', 'voting_ends_at']
     # RELEVANT_FIELDS += ['use_advanced_audit_features']
 
     if settings.ALLOW_ELECTION_INFO_URL:
@@ -1577,10 +1577,7 @@ def combine_decryptions(request, election):
         election.combine_decryptions()
         election.save()
 
-        if election.publish_tally:
-            return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_email, args=[election.uuid]), urllib.urlencode({'template': 'result'})))
-        else:
-            return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_admin, args=[election.uuid]))
+        return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_admin, args=[election.uuid]))
 
     # if just viewing the form or the form is not valid
     return render_template(request, 'combine_decryptions', {'election': election})

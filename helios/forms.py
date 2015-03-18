@@ -19,7 +19,6 @@ class ElectionForm(forms.Form):
   use_threshold = forms.BooleanField(required=False, initial=False, label='Use Threshold Encryption', widget=forms.CheckboxInput(attrs={'data-help': 'When threshold encryption is used, only a specific number of trustees is required to present their private key to decrypt the result.'}))
   voting_starts_at = forms.DateTimeField(required=False, label='Voting Starts at', widget=forms.TextInput(attrs={'class': 'datetimepicker', 'data-help': 'Date and time when voting starts.'}))
   voting_ends_at = forms.DateTimeField(required=False, label='Voting Ends at', widget=forms.TextInput(attrs={'class': 'datetimepicker', 'data-help': 'Date and time when voting ends.'}))
-  publish_tally_at = forms.DateTimeField(required=False, label='Publish Tally at', widget=forms.TextInput(attrs={'class': 'datetimepicker', 'data-help': 'Date and time when all voters will be able to view the tally.'}))
   help_email = forms.CharField(required=False, initial='', label='Help E-mail Address', widget=forms.TextInput(attrs={'data-help': 'An e-mail address voters should contact if they need help.'}))
   description = forms.CharField(max_length=4000, widget=forms.Textarea(), required=False)
   if settings.ALLOW_ELECTION_INFO_URL:
