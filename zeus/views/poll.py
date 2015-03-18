@@ -243,12 +243,13 @@ def _add_batch(request, election):
     url = election_reverse(election, 'polls_list')
     return HttpResponseRedirect(url)
 
-
 @auth.election_admin_required
 @require_http_methods(["POST", "GET"])
-def add_or_edit(request, election, poll=None):
+def add_edit(request, election, poll=None):
     if not poll and not election.feature_can_add_poll:
         raise PermissionDenied
+    if election.linked_polls and request.FILES.has_key('batch_file'):
+        return _add_batch(request, election)
     if poll:
         oldname = poll.name
     if request.method == "POST":
@@ -272,35 +273,6 @@ def add_or_edit(request, election, poll=None):
         set_menu('edit_poll', context)
     tpl = "election_poll_add_or_edit"
     return render_template(request, tpl, context)
-@auth.election_admin_required
-@auth.requires_election_features('can_add_poll')
-@require_http_methods(["POST", "GET"])
-def add(request, election, poll=None):
-    if election.linked_polls and request.FILES.has_key('batch_file'):
-        return _add_batch(request, election)
-
-    if request.method == "GET":
-        url = election_reverse(election, 'polls_list')
-        return HttpResponseRedirect(url)
-
-    extra = int(request.GET.get('extra', 2))
-    polls_formset = modelformset_factory(Poll, PollForm, extra=extra,
-                                         max_num=100, formset=PollFormSet,
-                                         can_delete=False)
-    polls = Poll.objects.none()
-    form = polls_formset(request.POST, queryset=polls, election=election)
-    if form.is_valid():
-        with transaction.commit_on_success():
-            polls = form.save(election)
-            for poll in polls:
-                poll.logger.info("Poll created")
-    else:
-        polls = Poll.objects.filter(election=election)
-        context = {'polls': polls, 'election': election, 'form': form}
-        set_menu('polls', context)
-        return render_template(request, "election_polls_list", context)
-    url = election_reverse(election, 'polls_list')
-    return HttpResponseRedirect(url)
 
 @auth.election_admin_required
 @require_http_methods(["POST"])

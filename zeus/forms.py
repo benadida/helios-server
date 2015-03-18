@@ -646,9 +646,11 @@ class PollForm(forms.ModelForm):
         return data
 
     def save(self, *args, **kwargs):
+        commit = kwargs.pop('commit', True)
         instance = super(PollForm, self).save(commit=False, *args, **kwargs)
         instance.election = self.election
-        instance.save()
+        if commit:
+            instance.save()
         return instance
 
 
@@ -657,6 +659,10 @@ class PollFormSet(BaseModelFormSet):
     def __init__(self, *args, **kwargs):
         self.election = kwargs.pop('election', None)
         super(PollFormSet, self).__init__(*args, **kwargs)
+
+    def _construct_form(self, i, **kwargs):
+        kwargs['election'] = kwargs.get('election', self.election)
+        return super(PollFormSet, self)._construct_form(i, **kwargs)
 
     def clean(self):
         forms_data = self.cleaned_data
@@ -675,11 +681,13 @@ class PollFormSet(BaseModelFormSet):
             raise forms.ValidationError(message)
  
     def save(self, election, *args, **kwargs):
-        instances = super(PollFormSet, self).save(*args, commit=False,
+        commit = kwargs.pop('commit', True)
+        instances = super(PollFormSet, self).save(commit=False, *args,
                                                   **kwargs)
-        for instance in instances:
-            instance.election = election
-            instance.save()
+        if commit:
+            for instance in instances:
+                instance.election = election
+                instance.save()
 
         return instances
 

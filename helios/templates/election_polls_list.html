@@ -53,17 +53,12 @@
           {% if not election.feature_can_rename_poll %}
               {{ poll.name }}
           {% else %}
-              {% with "#rename-poll-"|add:poll.short_name as htmlid %}
-              {% reveal_action poll.name htmlid "" "rename-poll nobutton" %}
-              {% endwith %}
+              {% if poll.has_linked_polls %}
+                  <em style="color: #ccc">linked</em>
+              {% endif %}
+              <a href="{% url election_poll_edit election.uuid poll.uuid%}">
+                 {{poll.name}}</a>
           {% endif %}
-          {% if poll.has_linked_polls %}
-            <br />
-            <em style="color: #ccc">linked</em>
-          {% endif %}
-          <a href="{% url election_poll_edit election.uuid poll.uuid%}">
-            {{poll.name}}
-          </a>
       </td>
       <td>
           {{ poll.status_display }}
@@ -127,7 +122,7 @@
 </table>
 {% endif %}
 {% if election.feature_can_add_poll %}
-<a class="button" href="{% url election_poll_add election.uuid %}">
+<a class="button" href="{% url election_polls_add election.uuid %}">
 {% trans "Add poll" %}</a>
 {% endif %}
 </div>
