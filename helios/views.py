@@ -941,7 +941,6 @@ Helios""" % url
 ##
 
 
-@election_view()
 @return_json
 def get_randomness(request):
     """
