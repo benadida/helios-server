@@ -1,27 +1,30 @@
 {% extends TEMPLATE_BASE %}
+{% block title %}Register for {{election.name}}{% endblock %}
 
 {% block content %}
-  <h2 class="title">{{ election.name }} – Register</h2>
+  <div class="row">
+    <div class="larger-12 columns">
+      <h2 class="title">{{election.name}}&mdash;Register</h2>
 
-{% if user %}
-<p>
-    You are currently logged in as {{user.user_id}} [{{user.user_type}}]
-</p>
-{% if voter %}
-<p>
-    You are currently registered for this election.
-</p>
-{% else %}
-<p>
-    You are <em>not</em> registered for this election.
-</p>
+      {% if user %}
+        <p>
+          You are currently logged in as {{user.user_id}} [{{user.user_type}}]
+        </p>
 
-<form method="post" action="{% url 'helios.views.one_election_register' election.uuid %}">
-<input type="submit" value="register!" />
-</form>
-{% endif %}
+        {% if voter %}
+          <p>
+            You are currently registered for this election.
+          </p>
+        {% else %}
+          <p>
+            You are <em>not</em> registered for this election.
+          </p>
 
-{% else %}
-{% endif %}
-
+          <form method="post" action="{% url 'helios.views.one_election_register' election.uuid %}">
+            <input class="button" type="submit" value="Register" />
+          </form>
+        {% endif %}
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}
