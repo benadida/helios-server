@@ -18,8 +18,23 @@ class LegacyObject(LDObject):
 
 class Election(LegacyObject):
     WRAPPED_OBJ_CLASS = models.Election
-    FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description', 'voters_hash', 'openreg',
-              'frozen_at', 'public_key', 'cast_url', 'use_voter_aliases', 'voting_starts_at', 'voting_ends_at', 'election_type', 'use_threshold']
+    FIELDS = [
+        'uuid',
+        'questions',
+        'name',
+        'short_name',
+        'description',
+        'voters_hash',
+        'openreg',
+        'frozen_at',
+        'public_key',
+        'cast_url',
+        'use_voter_aliases',
+        'voting_starts_at',
+        'voting_ends_at',
+        'election_type',
+        'use_threshold'
+    ]
 
     STRUCTURED_FIELDS = {
         'public_key': 'legacy/EGPublicKey',
@@ -40,8 +55,14 @@ class EncryptedAnswer(LegacyObject):
 
 
 class EncryptedAnswerWithRandomness(LegacyObject):
-    FIELDS = ['choices', 'individual_proofs',
-              'overall_proof', 'randomness', 'answer']
+    FIELDS = [
+        'choices',
+        'individual_proofs',
+        'overall_proof',
+        'randomness',
+        'answer'
+    ]
+
     STRUCTURED_FIELDS = {
         'choices': arrayOf('legacy/EGCiphertext'),
         'individual_proofs': arrayOf('legacy/EGZKDisjunctiveProof'),
@@ -101,7 +122,8 @@ class CastVote(LegacyObject):
     FIELDS = ['vote', 'cast_at', 'voter_uuid', 'voter_hash', 'vote_hash']
     STRUCTURED_FIELDS = {
         'cast_at': 'core/Timestamp',
-        'vote': 'legacy/EncryptedVote'}
+        'vote': 'legacy/EncryptedVote'
+    }
 
     @property
     def short(self):
@@ -109,14 +131,22 @@ class CastVote(LegacyObject):
 
 
 class Trustee(LegacyObject):
-    FIELDS = ['uuid', 'public_key', 'public_key_hash', 'pok',
-              'decryption_factors', 'decryption_proofs', 'email']
+    FIELDS = [
+        'uuid',
+        'public_key',
+        'public_key_hash',
+        'pok',
+        'decryption_factors',
+        'decryption_proofs',
+        'email'
+    ]
 
     STRUCTURED_FIELDS = {
         'public_key': 'legacy/EGPublicKey',
         'pok': 'legacy/DLogProof',
         'decryption_factors': arrayOf(arrayOf('core/BigInteger')),
-        'decryption_proofs': arrayOf(arrayOf('legacy/EGZKProof'))}
+        'decryption_proofs': arrayOf(arrayOf('legacy/EGZKProof'))
+    }
 
 
 class EGParams(LegacyObject):
@@ -125,7 +155,8 @@ class EGParams(LegacyObject):
     STRUCTURED_FIELDS = {
         'p': 'core/BigInteger',
         'q': 'core/BigInteger',
-        'g': 'core/BigInteger'}
+        'g': 'core/BigInteger'
+    }
 
 
 class EGPublicKey(LegacyObject):
@@ -135,7 +166,8 @@ class EGPublicKey(LegacyObject):
         'y': 'core/BigInteger',
         'p': 'core/BigInteger',
         'q': 'core/BigInteger',
-        'g': 'core/BigInteger'}
+        'g': 'core/BigInteger'
+    }
 
 
 class EGSecretKey(LegacyObject):
@@ -143,7 +175,8 @@ class EGSecretKey(LegacyObject):
     FIELDS = ['x', 'public_key']
     STRUCTURED_FIELDS = {
         'x': 'core/BigInteger',
-        'public_key': 'legacy/EGPublicKey'}
+        'public_key': 'legacy/EGPublicKey'
+    }
 
 
 class EGCiphertext(LegacyObject):
@@ -151,14 +184,16 @@ class EGCiphertext(LegacyObject):
     FIELDS = ['alpha', 'beta']
     STRUCTURED_FIELDS = {
         'alpha': 'core/BigInteger',
-        'beta': 'core/BigInteger'}
+        'beta': 'core/BigInteger'
+    }
 
 
 class EGZKProofCommitment(DictObject, LegacyObject):
     FIELDS = ['A', 'B']
     STRUCTURED_FIELDS = {
         'A': 'core/BigInteger',
-        'B': 'core/BigInteger'}
+        'B': 'core/BigInteger'
+    }
 
 
 class EGZKProof(LegacyObject):
@@ -167,14 +202,16 @@ class EGZKProof(LegacyObject):
     STRUCTURED_FIELDS = {
         'commitment': 'legacy/EGZKProofCommitment',
         'challenge': 'core/BigInteger',
-        'response': 'core/BigInteger'}
+        'response': 'core/BigInteger'
+    }
 
 
 class EGZKDisjunctiveProof(LegacyObject):
     WRAPPED_OBJ_CLASS = crypto_elgamal.ZKDisjunctiveProof
     FIELDS = ['proofs']
     STRUCTURED_FIELDS = {
-        'proofs': arrayOf('legacy/EGZKProof')}
+        'proofs': arrayOf('legacy/EGZKProof')
+    }
 
     def loadDataFromDict(self, d):
         "hijack and make sure we add the proofs name back on"
@@ -191,7 +228,8 @@ class DLogProof(LegacyObject):
     STRUCTURED_FIELDS = {
         'commitment': 'core/BigInteger',
         'challenge': 'core/BigInteger',
-        'response': 'core/BigInteger'}
+        'response': 'core/BigInteger'
+    }
 
     def __init__(self, wrapped_obj):
         if isinstance(wrapped_obj, dict):
@@ -216,7 +254,8 @@ class Tally(LegacyObject):
     WRAPPED_OBJ_CLASS = homomorphic.Tally
     FIELDS = ['tally', 'num_tallied']
     STRUCTURED_FIELDS = {
-        'tally': arrayOf(arrayOf('legacy/EGCiphertext'))}
+        'tally': arrayOf(arrayOf('legacy/EGCiphertext'))
+    }
 
 
 class Eligibility(ListObject, LegacyObject):
