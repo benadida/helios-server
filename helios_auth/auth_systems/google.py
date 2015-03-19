@@ -20,6 +20,9 @@ STATUS_UPDATES = False
 LOGIN_MESSAGE = "Log In with my Google Account"
 
 
+def get_name():
+    return 'Google'
+
 def get_flow(redirect_url=None):
   return OAuth2WebServerFlow(
     client_id=settings.GOOGLE_CLIENT_ID,
