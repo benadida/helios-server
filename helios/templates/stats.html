@@ -2,14 +2,19 @@
 {% block title %}Statistics{% endblock %}
 
 {% block content %}
-<h1>Admin</h1>
+  <div class="row">
+    <div class="large-12 columns">
+      <h1>Statistics</h1>
 
-<ul>
-<li> <a href="{% url 'helios.stats_views.elections' %}">elections</a></li>
-<li> <a href="{% url 'helios.stats_views.recent_votes' %}">recent votes</a></li>
-<li> <a href="{% url 'helios.stats_views.recent_problem_elections' %}">recent problem elections</a></li>
-</ul>
+      <p>
+        <a class="button" href="{% url 'helios.stats_views.elections' %}">Elections</a>
+        <a class="button" href="{% url 'helios.stats_views.recent_votes' %}">Recent Votes</a>
+        <a class="button" href="{% url 'helios.stats_views.recent_problem_elections' %}">Recent Problem Elections</a>
+      </p>
 
-<p><b>{{num_votes_in_queue}}</b> votes in queue. {% if num_votes_in_queue %}[<a href="{% url 'helios.stats_views.force_queue' %}">force it</a>]{% endif %}</p>
-
+      <div class="panel">
+        <b>{{num_votes_in_queue}}</b> votes in queue. {% if num_votes_in_queue %}[<a href="{% url 'helios.stats_views.force_queue' %}">force it</a>]{% endif %}
+      </div>
+    </div>
+  </div>
 {% endblock %}
