@@ -235,6 +235,8 @@ class DLogProof(LegacyObject):
         if isinstance(wrapped_obj, dict):
             raise Exception("problem with dict")
 
+        super(DLogProof, self).__init__(wrapped_obj)
+
 
 class Result(LegacyObject):
     WRAPPED_OBJ = list
