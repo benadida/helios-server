@@ -46,7 +46,7 @@ urlpatterns = patterns('',
   # election voting-process actions
   (r'^/view$', one_election_view),
   (r'^/result$', one_election_result),
-  (r'^/result_proof$', one_election_result_proof),
+  (r'^/result-proof$', one_election_result_proof),
   (r'^/audited-ballots/$', one_election_audited_ballots),
 
   # server-side encryption
@@ -54,23 +54,23 @@ urlpatterns = patterns('',
 
   # construct election
   (r'^/questions$', one_election_questions),
-  (r'^/set_reg$', one_election_set_reg),
-  (r'^/set_featured$', one_election_set_featured),
-  (r'^/save_questions$', one_election_save_questions),
+  (r'^/set-reg$', one_election_set_reg),
+  (r'^/set-featured$', one_election_set_featured),
+  (r'^/save-questions$', one_election_save_questions),
   (r'^/register$', one_election_register),
   # includes freeze_2 as POST target
   (r'^/freeze$', one_election_freeze),
 
   # computing tally
-  (r'^/compute_tally$', one_election_compute_tally),
-  (r'^/combine_decryptions$', combine_decryptions),
-  (r'^/release_result$', release_result),
+  (r'^/compute-tally$', one_election_compute_tally),
+  (r'^/combine-decryptions$', combine_decryptions),
+  (r'^/release-result$', release_result),
 
   # casting a ballot before we know who the voter is
   (r'^/cast$', one_election_cast),
-  (r'^/cast_confirm$', one_election_cast_confirm),
-  (r'^/password_voter_login$', password_voter_login),
-  (r'^/cast_done$', one_election_cast_done),
+  (r'^/cast-confirm$', one_election_cast_confirm),
+  (r'^/password-voter-login$', password_voter_login),
+  (r'^/cast-done$', one_election_cast_done),
 
   # post audited ballot
   (r'^/post-audited-ballot', post_audited_ballot),

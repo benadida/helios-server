@@ -632,7 +632,7 @@ class ElectionBlackboxTests(WebTest):
         self.assertEquals(response.status_code, 404)
 
         # add questions
-        response = self.client.post("/helios/elections/%s/save_questions" % election_id, {
+        response = self.client.post("/helios/elections/%s/save-questions" % election_id, {
             'questions_json': utils.to_json([{"answer_urls": [None, None], "answers": ["Alice", "Bob"], "choice_type": "approval", "max": 1, "min": 0, "question": "Who should be president?", "result_type": "absolute", "short_name": "Who should be president?", "tally_type": "homomorphic"}]),
             'csrf_token': self.client.session['csrf_token']})
 
@@ -697,7 +697,7 @@ class ElectionBlackboxTests(WebTest):
         response = self.app.post("/helios/elections/%s/cast" % election_id, {
             'encrypted_vote': encrypted_vote})
         self.assertRedirects(
-            response, "%s/helios/elections/%s/cast_confirm" % (settings.SECURE_URL_HOST, election_id))
+            response, "%s/helios/elections/%s/cast-confirm" % (settings.SECURE_URL_HOST, election_id))
 
         cast_confirm_page = response.follow()
 
@@ -730,7 +730,7 @@ class ElectionBlackboxTests(WebTest):
             response = cast_form.submit()
 
         self.assertRedirects(
-            response, "%s/helios/elections/%s/cast_done" % (settings.URL_HOST, election_id))
+            response, "%s/helios/elections/%s/cast-done" % (settings.URL_HOST, election_id))
 
         # at this point an email should have gone out to the user
         # at position num_messages after, since that was the len() before we
@@ -746,7 +746,7 @@ class ElectionBlackboxTests(WebTest):
             # we need to re-login if it's a private election, because all data, including ballots
             # is otherwise private
             login_page = self.app.get(
-                "/helios/elections/%s/password_voter_login" % election_id)
+                "/helios/elections/%s/password-voter-login" % election_id)
 
             # if we redirected, that's because we can see the page, I think
             if login_page.status_int != 302:
@@ -763,7 +763,7 @@ class ElectionBlackboxTests(WebTest):
 
         # if we request the redirect to cast_done, the voter should be logged
         # out, but not the user
-        response = self.app.get("/helios/elections/%s/cast_done" % election_id)
+        response = self.app.get("/helios/elections/%s/cast-done" % election_id)
 
         # FIXME: how to check this? We can't do it by checking session that we're doign webtes
         # assert not self.client.session.has_key('CURRENT_VOTER')
@@ -773,7 +773,7 @@ class ElectionBlackboxTests(WebTest):
         self.setup_login()
 
         # encrypted tally
-        response = self.client.post("/helios/elections/%s/compute_tally" % election_id, {
+        response = self.client.post("/helios/elections/%s/compute-tally" % election_id, {
             "csrf_token": self.client.session['csrf_token']
         })
         self.assertRedirects(
@@ -784,7 +784,7 @@ class ElectionBlackboxTests(WebTest):
             uuid=election_id).get_helios_trustee().decryption_proofs, None)
 
         # combine decryptions
-        response = self.client.post("/helios/elections/%s/combine_decryptions" % election_id, {
+        response = self.client.post("/helios/elections/%s/combine-decryptions" % election_id, {
             "csrf_token": self.client.session['csrf_token'],
         })
 
@@ -796,7 +796,7 @@ class ElectionBlackboxTests(WebTest):
         self.assertEquals(response.status_code, 403)
 
         # release
-        response = self.client.post("/helios/elections/%s/release_result" % election_id, {
+        response = self.client.post("/helios/elections/%s/release-result" % election_id, {
             "csrf_token" : self.client.session['csrf_token'],
         })
 
@@ -833,7 +833,7 @@ class ElectionBlackboxTests(WebTest):
         response = self.app.get("/helios/elections/%s/view" % election_id)
 
         # ensure it redirects
-        self.assertRedirects(response, "/helios/elections/%s/password_voter_login?%s" %
+        self.assertRedirects(response, "/helios/elections/%s/password-voter-login?%s" %
                              (election_id, urllib.urlencode({"return_url": "/helios/elections/%s/view" % election_id})))
 
         login_form = response.follow().form
