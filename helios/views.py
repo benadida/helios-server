@@ -1272,40 +1272,6 @@ def one_election_result_proof(request, election):
 
 
 @election_view(frozen=True)
-def one_election_bboard(request, election):
-  """
-  UI to show election bboard
-  """
-  after = request.GET.get('after', None)
-  offset= int(request.GET.get('offset', 0))
-  limit = int(request.GET.get('limit', 50))
-
-  order_by = 'voter_id'
-
-  # unless it's by alias, in which case we better go by UUID
-  if election.use_voter_aliases:
-    order_by = 'alias'
-
-  # if there's a specific voter
-  if request.GET.has_key('q'):
-    # FIXME: figure out the voter by voter_id
-    voters = []
-  else:
-    # load a bunch of voters
-    voters = Voter.get_by_election(election, after=after, limit=limit+1, order_by=order_by)
-
-  more_p = len(voters) > limit
-  if more_p:
-    voters = voters[0:limit]
-    next_after = getattr(voters[limit-1], order_by)
-  else:
-    next_after = None
-
-  return render_template(request, 'election_bboard', {'election': election, 'voters': voters, 'next_after': next_after,
-                'offset': offset, 'limit': limit, 'offset_plus_one': offset+1, 'offset_plus_limit': offset+limit,
-                'voter_id': request.GET.get('voter_id', '')})
-
-@election_view(frozen=True)
 def one_election_audited_ballots(request, election):
     """
     UI to show election audited ballots
@@ -1323,8 +1289,14 @@ def one_election_audited_ballots(request, election):
     audited_ballots_paginator = Paginator(audited_ballots, limit)
     audited_ballots_page = audited_ballots_paginator.page(page)
 
-    return render_template(request, 'election_audited_ballots', {'election': election, 'audited_ballots_paginator': audited_ballots_paginator,
-                                                                 'audited_ballots_page': audited_ballots_page, 'audited_ballots': audited_ballots_page.object_list, 'page': page, 'limit': limit})
+    return render_template(request, 'election_audited_ballots', {
+        'election': election,
+        'audited_ballots_paginator': audited_ballots_paginator,
+        'audited_ballots_page': audited_ballots_page,
+        'audited_ballots': audited_ballots_page.object_list,
+        'page': page,
+        'limit': limit
+    })
 
 
 @election_admin()
@@ -1350,20 +1322,6 @@ def voter_delete(request, election, voter_uuid):
         # log it
         election.append_log(
             "Voter %s/%s removed after election frozen" % (voter.voter_type, voter.voter_id))
-
-    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
-
-
-@election_admin(frozen=False)
-def one_election_set_reg(request, election):
-    """
-    Set whether this is open registration or not
-    """
-    # only allow this for public elections
-    if not election.private_p:
-        open_p = bool(int(request.GET['open_p']))
-        election.openreg = open_p
-        election.save()
 
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
 
@@ -1674,10 +1632,8 @@ def voters_eligibility(request, election):
         # now process the constraint
         category_id = request.POST['category_id']
 
-        constraint = AUTH_SYSTEMS[
-            user.user_type].generate_constraint(category_id, user)
-        election.eligibility = [
-            {'auth_system': user.user_type, 'constraint': [constraint]}]
+        constraint = AUTH_SYSTEMS[user.user_type].generate_constraint(category_id, user)
+        election.eligibility = [{'auth_system': user.user_type, 'constraint': [constraint]}]
     else:
         election.eligibility = None
 

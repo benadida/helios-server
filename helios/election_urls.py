@@ -54,7 +54,6 @@ urlpatterns = patterns('',
 
   # construct election
   (r'^/questions$', one_election_questions),
-  (r'^/set-reg$', one_election_set_reg),
   (r'^/set-featured$', one_election_set_featured),
   (r'^/save-questions$', one_election_save_questions),
   (r'^/register$', one_election_register),
