@@ -203,7 +203,7 @@
 
       $.ajax({
         type: 'POST',
-        url: '{% url 'helios.views.trustee_upload_encrypted_shares' election.uuid, trustee.uuid %}',
+        url: '{% url 'helios.views.trustee_upload_encrypted_shares' election.uuid trustee.uuid %}',
         data: {'encry_shares': result},
         success: function(result) {
           $('#second_step_waiting_div').hide();
@@ -465,7 +465,7 @@
               The encrypted tally for this election is ready.
             </div>
 
-            <a class="button" href="{% url 'helios.views.trustee_decrypt_and_prove' election.uuid, trustee.uuid %}">Decrypt With Your Key</a>
+            <a class="button" href="{% url 'helios.views.trustee_decrypt_and_prove' election.uuid trustee.uuid %}">Decrypt With Your Key</a>
           {% endif %}
         {% else %}
           <div class="alert-box info">
@@ -485,7 +485,7 @@
           You have successfully uploaded your public key, with fingerprint <tt>{{trustee.public_key_hash}}</tt>. If you want to verify whether you still have the correct secret key stored on your machine, you can do so by clicking on the following button.
         </p>
 
-        <a class="button" href="{% url 'helios.views.trustee_check_sk' election.uuid, trustee.uuid %}">Verify Your Secret Key &raquo;</a>
+        <a class="button" href="{% url 'helios.views.trustee_check_sk' election.uuid trustee.uuid %}">Verify Your Secret Key &raquo;</a>
       {% endif %}
 
       {% if not election.use_threshold %}
@@ -498,7 +498,7 @@
             You have not yet uploaded your public key.
           </div>
 
-          <a class="button" href="{% url 'helios.views.trustee_keygenerator' election.uuid, trustee.uuid %}">Generate Key Pair &raquo;</a>
+          <a class="button" href="{% url 'helios.views.trustee_keygenerator' election.uuid trustee.uuid %}">Generate Key Pair &raquo;</a>
         {% endif %}
       {% else %}
         {% if not trustee.key %}
@@ -506,7 +506,7 @@
             You will first need to generate two key pairs: one for encryption and one for signing. Both pairs will be used to secure the communication with the other trustees during the key ceremony. A generator is provided that runs entirely in your browser, so that the generated secret key will not leave your machine.
           </p>
 
-          <a class="button" href="{% url 'helios.views.trustee_keygenerator_threshold' election.uuid, trustee.uuid %}">Generate Key Pairs</a>
+          <a class="button" href="{% url 'helios.views.trustee_keygenerator_threshold' election.uuid trustee.uuid %}">Generate Key Pairs</a>
         {% else %}
           {% if not scheme_params_json or not election.trustees_added_communication_keys %}
             {% if not scheme_params_json %}
@@ -667,7 +667,7 @@
                       <i>Your public key is not currently being displayed because you do not need to save it, the fingerprint is sufficient.</i>
                     </p>
 
-                    <form method="post" action="{% url 'helios.views.trustee_upload_pk' election.uuid, trustee.uuid %}">
+                    <form method="post" action="{% url 'helios.views.trustee_upload_pk' election.uuid trustee.uuid %}">
                       <textarea id="pk_textarea" name="public_key_json" style="display: none;"></textarea>
                       <input class="button" type="submit" value="Upload Public Key">
                     </form>

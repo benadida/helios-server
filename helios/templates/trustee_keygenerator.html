@@ -110,7 +110,7 @@
           <i>Your public key is not currently being displayed because you do not need to save it; its fingerprint is sufficient.</i>
         </p>
 
-        <form method="post" action="{% url 'helios.views.trustee_upload_pk' election.uuid, trustee.uuid %}">
+        <form method="post" action="{% url 'helios.views.trustee_upload_pk' election.uuid trustee.uuid %}">
           <textarea id="pk_textarea" name="public_key_json" style="height: 100px; display: none;"></textarea>
           <input class="button" type="submit" value="Upload Public Key">
         </form>
