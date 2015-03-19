@@ -67,9 +67,11 @@
   <div class="row">
     <div class="large-12 columns">
       {% if election.result %}
-        <div data-alert class="alert-box info">
-          This election is complete.
-        </div>
+        {% if election.result_released_at %}
+          <div data-alert class="alert-box info">
+            This election is complete.
+          </div>
+        {% endif %}
 
         {% if election.private_p %}
           <h3>Participation</h3>
@@ -79,14 +81,8 @@
           </p>
         {% endif %}
 
-        {% if election.result_released_at or (election.result and admin_p) %}
+        {% if election.result_released_at or election.result and admin_p %}
           <h3>Tally</h3>
-
-          {% if election.result_released_at %}
-            <div data-alert class="alert-box info">
-              This election is complete.
-            </div>
-          {% endif %}
 
           {% for question in election.pretty_result %}
             {% if forloop.counter0|divisibleby:2 %}<div class="row">{% endif %}

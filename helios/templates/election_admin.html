@@ -74,12 +74,14 @@
                         {% endif %}
                       {% endifequal %}
                     {% else %}
-                      {% ifequal election.num_trustees 1 %}
-                        Release results.
-                      {% else %}
-                        Combine trustee decryptions and release results. The decryption shares from the trustees are combined and the tally is decrypted.
-                      {% endifequal %}
+                      {% if election.ready_for_decryption_combination %}
+                        Combine trustee decryptions: the decryption shares from the trustees are combined and the tally is decrypted.
+                      {% endif %}
                     {% endif %}
+                  {% endif %}
+                {% else %}
+                  {% if not election.result_released_at %}
+                    Release the result so that everyone can see it.
                   {% endif %}
                 {% endif %}
               {% endif %}
@@ -115,12 +117,20 @@
                       {% endif %}
                     {% endifequal %}
                   {% else %}
-                    {% ifequal election.num_trustees 1 %}
-                      Release results.
+                    {% if election.ready_for_decryption_combination %}
+                      The decryption shares from the trustees are combined and the tally is decrypted.
                     {% else %}
                       The decryption shares from the trustees are combined and the tally is decrypted.
-                    {% endifequal %}
+                    {% endif %}
+
+                    {% if election.ready_for_decryption_combination %}
+                      Combine trustee decryptions and release results. The decryption shares from the trustees are combined and the tally is decrypted.
+                    {% endif %}
                   {% endif %}
+                {% endif %}
+              {% else %}
+                {% if not election.result_released_at %}
+                  Release the result so that everyone can see it.
                 {% endif %}
               {% endif %}
             {% endif %}
@@ -156,11 +166,12 @@
         <li>{% if election.openreg or election.num_voters > 0 %}<s>{% endif %}Enter your voter list (or open registration to the public).{% if election.openreg or election.num_voters > 0 %}</s>{% endif %}</li>
         <li>{% if election.frozen_at %}<s>{% endif %}Freeze ballot and open election. {% if election.voting_starts_at %}Once you do this, the election will be ready for voting and will open automatically at {{election.voting_starts_at}}, as per your settings.{% else %}Once you do this, the election will be immediately open for voting.{% endif %}{% if election.frozen_at %}</s>{% endif %}</li>
         <li>{% if election.num_cast_votes > 0 %}<s>{% endif %}Wait for the voters to cast their ballots. {% if not election.voting_ends_at %}The election will end at your discretion.{% else %}The election will automatically end at {{election.voting_ends_at}}.{% endif %}{% if election.num_cast_votes > 0 %}</s>{% endif %}</li>
-        <li>{% if election.tallying_started_at %}<s>{% endif %}Compute encrypted tally. The encrypted votes will be combined into an encrypted tally.{% if election.tallying_started_at %}</s>{% endif %}</li>
+        <li>{% if election.tallying_started_at %}<s>{% endif %}Compute encrypted tally: the encrypted votes will be combined into an encrypted tally.{% if election.tallying_started_at %}</s>{% endif %}</li>
         {% if election.use_threshold %}
           <li>{% if election.ready_for_decryption_combination %}<s>{% endif %}Wait for the trustees to provide their share of the key used to encrypt the ballots.{% if election.ready_for_decryption_combination %}</s>{% endif %}</li>
         {% endif %}
-        <li>{% if election.result %}<s>{% endif %}Release tally.{% if election.result %}</s>{% endif %}</li>
+        <li>{% if election.result %}<s>{% endif %}Decrypt tally.{% if election.result %}</s>{% endif %}</li>
+        <li>{% if election.result_released_at %}<s>{% endif %}Release result.{% if election.result_released_at %}</s>{% endif %}</li>
       </ol>
 
       {% if election.use_threshold %}
@@ -186,7 +197,11 @@
                   {% endif %}
                 {% else %}
                   {% if not election.result %}
-                    <a class="button" href="{% url 'helios.views.combine_decryptions' election.uuid %}">Release Tally &raquo;</a>
+                    <a class="button" href="{% url 'helios.views.combine_decryptions' election.uuid %}">Decrypt Tally &raquo;</a>
+                  {% else %}
+                    {% if not election.result_released_at %}
+                      <a class="button" href="{% url 'helios.views.release_result' election.uuid %}">Release Result &raquo;</a>
+                    {% endif %}
                   {% endif %}
                 {% endif %}
               {% endif %}
@@ -212,7 +227,11 @@
                   {% endif %}
                 {% else %}
                   {% if not election.result %}
-                    <a class="button" href="{% url 'helios.views.combine_decryptions' election.uuid %}">Release Tally &raquo;</a>
+                    <a class="button" href="{% url 'helios.views.combine_decryptions' election.uuid %}">Decrypt Tally &raquo;</a>
+                  {% else %}
+                    {% if not election.result_released_at %}
+                      <a class="button" href="{% url 'helios.views.release_result' election.uuid %}">Release Result &raquo;</a>
+                    {% endif %}
                   {% endif %}
                 {% endif %}
               {% endif %}
@@ -239,7 +258,7 @@
 
   <div class="row">
     <div class="large-12 columns">
-      {% if election.result %}
+      {% if election.result_released_at %}
         <div data-alert class="alert-box info">
           This election is complete.
         </div>
