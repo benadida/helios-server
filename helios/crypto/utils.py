@@ -27,7 +27,7 @@ def encode_string_to_decimal(s):
 
 
 def to_json(d):
-  return simplejson.dumps(d, sort_keys=True)
+  return json.dumps(d, sort_keys=True)
 
 
 def to_json_js(d):
