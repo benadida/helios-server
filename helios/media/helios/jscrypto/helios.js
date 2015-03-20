@@ -221,6 +221,7 @@ HELIOS.EncryptedAnswer = Class.extend({
   doEncryption: function(question, answer, pk, randomness, progress) {
     var choices = [];
     var individual_proofs = [];
+    var overall_proof = null;
     var sum_value = [];
 
     for (var i=0; i<answer.length ; i=i+2) {
@@ -475,9 +476,7 @@ HELIOS.EncryptedVote = Class.extend({
 
   verifyProofs: function(pk, outcome_callback) {
     var zero_or_one = UTILS.generate_plaintexts(pk, 0, 1);
-
     var valid_p = true;
-
     var self = this;
 
     // for each question and associate encrypted answer
@@ -512,9 +511,9 @@ HELIOS.EncryptedVote = Class.extend({
   	    // check to make sure the overall_proof is null, since it's approval voting
   	    valid_p = valid_p && (enc_answer.overall_proof == null)
   	  }
-
-      return valid_p;
     });
+
+    return valid_p;
   }
 });
 

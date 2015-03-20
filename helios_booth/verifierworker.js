@@ -5,46 +5,44 @@
 // import needed resources
 importScripts("js/underscore-min.js");
 
-importScripts("js/jscrypto/jsbn.js",
-	      "js/jscrypto/jsbn2.js",
-	      "js/jscrypto/sjcl.js",
-	      "js/jscrypto/class.js",
-	      "js/jscrypto/bigint.js",
-	      "js/jscrypto/random.js",
-	      "js/jscrypto/elgamal.js",
-	      "js/jscrypto/sha1.js",
-	      "js/jscrypto/sha2.js",
-	      "js/jscrypto/helios.js",
-	      "verifier.js");
+importScripts(
+	"js/jscrypto/jsbn.js",
+	"js/jscrypto/jsbn2.js",
+	"js/jscrypto/sjcl.js",
+	"js/jscrypto/class.js",
+	"js/jscrypto/bigint.js",
+	"js/jscrypto/random.js",
+  "js/jscrypto/elgamal.js",
+  "js/jscrypto/sha1.js",
+  "js/jscrypto/sha2.js",
+  "js/jscrypto/helios.js",
+	"verifier.js"
+);
 
 var console = {
-    'log' : function(msg) {
-	self.postMessage({'type':'log','msg':msg});
-    }
+  'log' : function(msg) {
+		self.postMessage({'type': 'log', 'msg': msg});
+  }
 };
 
 var status_update = function(msg) {
-    self.postMessage({'type' : 'status', 'msg' : msg});
+  self.postMessage({'type' : 'status', 'msg' : msg});
 };
 
 var ELECTION = null;
 var VOTE = null;
 
 function do_verify(message) {
-    console.log("verifying!");
+  // json string
+  election = message.election;
 
-    // json string
-    ELECTION = message.election;
+  // json object
+  vote = message.vote;
 
-    // json object
-    VOTE = message.vote;
+  var result = verify_ballot(election, vote, status_update);
 
-    var result = verify_ballot(ELECTION, VOTE, status_update);
-
-    // send the result back
-    self.postMessage({
-	    'type': 'result',
-		'result': result});
+  // send the result back
+  self.postMessage({'type': 'result', 'result': result});
 }
 
 // receive either
