@@ -531,6 +531,18 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 self.verbose('+ Trustee %s decrypted poll %s'
                              % (t.name, p.name))
 
+
+    def check_cast_votes(self):
+        # check validity of sums of cast votes based on voter weights
+        for p_uuid in self.p_uuids:
+            p = Poll.objects.get(uuid=p_uuid)
+            mix_input = p.zeus.extract_votes_for_mixing()[1]
+            voter_weights = p.voters.filter().\
+                exclude(excluded_at__isnull=False).\
+                values_list('voter_weight', flat=True)
+            self.assertEqual(sum(voter_weights), len(mix_input))
+            self.verbose('+ Valid cast votes sums for poll %s' % p.name)
+
     def check_results(self):
         # check if results exist
         for p_uuid in self.p_uuids:
@@ -538,6 +550,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             self.assertTrue(len(p.result[0]) > 0)
             self.verbose('+ Results generated for poll %s' % p.name)
             self.assertIsNone(p.compute_results_error)
+
 
     def check_docs_exist(self, ext_dict):
         e_exts = ext_dict['el']
@@ -799,6 +812,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.assertTrue(e.feature_mixing_finished)
         self.decrypt_with_trustees(pks)
         self.decryption_and_result_admin_mails()
+        self.check_cast_votes()
         self.check_results()
         self.check_docs_exist(self.doc_exts)
         self.view_returns_result_files(self.doc_exts)
@@ -1183,3 +1197,23 @@ class TestSTVElection(TestElectionBase):
 
     def test_election_process(self):
         self.election_process()
+
+
+class TestWeightElection(TestSimpleElection):
+
+    def get_voters_file(self):
+        counter = 0
+        voter_files = {}
+        for p_uuid in self.p_uuids:
+            fname = '/tmp/random_voters%s.csv' % counter
+            voter_files[p_uuid] = fname
+            fp = file(fname, 'w')
+            for i in range(1, self.voters_num+1):
+                weight = 1 + (i % 5)
+                voter = "%s,voter%s@mail.com,test_name%s,test_surname%s,,,%s\n" \
+                    % (i, i, i, i, weight)
+                fp.write(voter)
+            fp.close()
+            counter += 1
+        self.verbose('+ Voters file created')
+        return voter_files
