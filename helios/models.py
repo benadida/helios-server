@@ -549,8 +549,7 @@ class Election(HeliosModel):
         #  return
 
         auth_systems = copy.copy(settings.AUTH_ENABLED_AUTH_SYSTEMS)
-        voter_types = [r['user__user_type'] for r in self.voter_set.values(
-            'user__user_type').distinct() if r['user__user_type'] != None]
+        voter_types = [r['user__user_type'] for r in self.voter_set.values('user__user_type').distinct() if r['user__user_type'] != None]
 
         # password is now separate, not an explicit voter type
         if self.voter_set.filter(user=None).count() > 0:
@@ -832,11 +831,9 @@ class Election(HeliosModel):
             for j in range(len(q['answers'])):
                 a = q['answers'][j]
                 count = raw_result[i][j]
-                pretty_question.append(
-                    {'answer': a, 'count': count, 'winner': (j in winners[i])})
+                pretty_question.append({'answer': a, 'count': count, 'winner': (j in winners[i])})
 
-            prettified_result.append(
-                {'question': q['short_name'], 'answers': pretty_question})
+            prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
 
         return prettified_result
 
@@ -1333,8 +1330,7 @@ class CastVote(HeliosModel):
 
         # check the election
         if self.vote.election_uuid != election.uuid:
-            issues.append(
-                "the vote's election UUID does not match the election for which this vote is being cast")
+            issues.append("The vote's election UUID does not match the election for which this vote is being cast.")
 
         return issues
 
@@ -1655,7 +1651,7 @@ class ThresholdScheme(HeliosModel):
     def save(self, *args, **kwargs):
         # not saved yet?
         if not self.election:
-            self.election.append_log(('ThresholdScheme for %s added') % election.name)
+            self.election.append_log('ThresholdScheme for %s added' % election.name)
 
         super(ThresholdScheme, self).save(*args, **kwargs)
 

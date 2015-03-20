@@ -95,12 +95,14 @@ def get_socialbuttons_url(url, text):
     if not text:
         return None
 
-    return "%s%s?%s" % (settings.SOCIALBUTTONS_URL_HOST,
-                        reverse(socialbuttons),
-                        urllib.urlencode({
-                            'url': url,
-                            'text': text.encode('utf-8')
-                        }))
+    return "%s%s?%s" % (
+        settings.SOCIALBUTTONS_URL_HOST,
+        reverse(socialbuttons),
+        urllib.urlencode({
+            'url': url,
+            'text': text.encode('utf-8')
+        })
+    )
 
 
 ##
@@ -111,10 +113,12 @@ def get_socialbuttons_url(url, text):
 def user_reauth(request, user):
     # FIXME: should we be wary of infinite redirects here, and
     # add a parameter to prevent it? Maybe.
-    login_url = "%s%s?%s" % (settings.SECURE_URL_HOST,
-                             reverse(auth_views.start, args=[user.user_type]),
-                             urllib.urlencode({'return_url':
-                                               request.get_full_path()}))
+    login_url = "%s%s?%s" % (
+        settings.SECURE_URL_HOST,
+        reverse(auth_views.start, args=[user.user_type]),
+        urllib.urlencode({'return_url': request.get_full_path()})
+    )
+
     return HttpResponseRedirect(login_url)
 
 ##
@@ -1047,7 +1051,7 @@ def password_voter_login(request, election):
         try:
             voter = election.voter_set.get(voter_login_id=password_login_form.cleaned_data['voter_id'].strip(), voter_password=password_login_form.cleaned_data['password'].strip())
 
-            request.session['CURRENT_VOTER_ID'] = voter.id
+            request.session['current_voter_id'] = voter.id
 
             # if we're asked to cast, let's do it
             if request.POST.get('cast_ballot') == "1":
@@ -1221,7 +1225,7 @@ def one_election_cast_done(request, election):
             logout = settings.LOGOUT_ON_CONFIRMATION
         else:
             logout = False
-            del request.session['CURRENT_VOTER_ID']
+            del request.session['current_voter_id']
 
         save_in_session_across_logouts(request, 'last_vote_hash', vote_hash)
         save_in_session_across_logouts(request, 'last_vote_cv_url', cv_url)
@@ -1320,8 +1324,7 @@ def voter_delete(request, election, voter_uuid):
 
     if election.frozen_at:
         # log it
-        election.append_log(
-            "Voter %s/%s removed after election frozen" % (voter.voter_type, voter.voter_id))
+        election.append_log("Voter %s/%s removed after election frozen" % (voter.voter_type, voter.voter_id))
 
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
 
@@ -1567,8 +1570,7 @@ def voters_list_pretty(request, election):
     try:
         if admin_p and can_list_categories(user.user_type):
             categories = AUTH_SYSTEMS[user.user_type].list_categories(user)
-            eligibility_category_id = election.eligibility_category_id(
-                user.user_type)
+            eligibility_category_id = election.eligibility_category_id(user.user_type)
     except AuthenticationExpired:
         return user_reauth(request, user)
 
@@ -1577,8 +1579,7 @@ def voters_list_pretty(request, election):
 
     # load a bunch of voters
     # voters = Voter.get_by_election(election, order_by=order_by)
-    voters = Voter.objects.filter(
-        election=election).order_by(order_by).defer('vote')
+    voters = Voter.objects.filter(election=election).order_by(order_by).defer('vote')
 
     if q != '':
         if election.use_voter_aliases:
@@ -1775,8 +1776,7 @@ def voters_email(request, election):
             voter_constraints_exclude = None
 
             if voter:
-                tasks.single_voter_email.delay(
-                    voter_uuid=voter.uuid, subject_template=subject_template, body_template=body_template, extra_vars=extra_vars)
+                tasks.single_voter_email.delay(voter_uuid=voter.uuid, subject_template=subject_template, body_template=body_template, extra_vars=extra_vars)
             else:
                 # exclude those who have not voted
                 if email_form.cleaned_data['send_to'] == 'voted':
@@ -1818,8 +1818,7 @@ def voter_list(request, election):
     if limit > 500:
         limit = 500
 
-    voters = Voter.get_by_election(
-        election, order_by='uuid', after=request.GET.get('after', None), limit=limit)
+    voters = Voter.get_by_election(election, order_by='uuid', after=request.GET.get('after', None), limit=limit)
     return [v.ld_object.toDict() for v in voters]
 
 
@@ -1871,11 +1870,9 @@ def ballot_list(request, election):
     if request.GET.has_key('limit'):
         limit = int(request.GET['limit'])
     if request.GET.has_key('after'):
-        after = datetime.datetime.strptime(
-            request.GET['after'], '%Y-%m-%d %H:%M:%S')
+        after = datetime.datetime.strptime(request.GET['after'], '%Y-%m-%d %H:%M:%S')
 
-    voters = Voter.get_by_election(
-        election, cast=True, order_by='cast_at', limit=limit, after=after)
+    voters = Voter.get_by_election(election, cast=True, order_by='cast_at', limit=limit, after=after)
 
     # we explicitly cast this to a short cast vote
     return [v.last_cast_vote().ld_object.short.toDict(complete=True) for v in voters]

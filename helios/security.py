@@ -28,8 +28,8 @@ def get_voter(request, user, election):
     return the current voter
     """
     voter = None
-    if request.session.has_key('CURRENT_VOTER_ID'):
-        voter = Voter.objects.get(id=request.session['CURRENT_VOTER_ID'])
+    if request.session.has_key('current_voter_id'):
+        voter = Voter.objects.get(id=request.session['current_voter_id'])
         if voter.election != election:
             voter = None
 
