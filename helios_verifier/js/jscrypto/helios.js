@@ -221,7 +221,6 @@ HELIOS.EncryptedAnswer = Class.extend({
   doEncryption: function(question, answer, pk, randomness, progress) {
     var choices = [];
     var individual_proofs = [];
-    var overall_proof = [];
     var sum_value = [];
 
     for (var i=0; i<answer.length ; i=i+2) {
@@ -279,16 +278,12 @@ HELIOS.EncryptedAnswer = Class.extend({
       // only if max is non-null, otherwise it's full approval voting
 
       // compute the homomorphic sum of all the options
-      var hom_sum = [];
-      var rand_sum = [];
-	    var hom_sum_one = choices[0];
-	    var rand_sum_one = randomness[0];
+      var hom_sum = choices[0];
+      var rand_sum = randomness[0];
 	    for (var i = 1; i < question.answers.length; i++) {
-	      hom_sum_one = hom_sum_one.multiply(choices[i]);
-	      rand_sum_one = rand_sum_one.add(randomness[i]).mod(pk.q);
+	      hom_sum = hom_sum.multiply(choices[i]);
+	      rand_sum = rand_sum.add(randomness[i]).mod(pk.q);
 	    }
-	    hom_sum.push(hom_sum_one);
-	    rand_sum.push(rand_sum_one);
 
       // prove that the sum is 0 or 1 (can be "blank vote" for this answer)
       // num_selected_answers is 0 or 1, which is the index into the plaintext that is actually encoded
@@ -300,10 +295,7 @@ HELIOS.EncryptedAnswer = Class.extend({
         overall_plaintext_index[0] -= question.min;
       }
 
-      //var overal_proof = [];
-      for (i=0 ; i<hom_sum.length; i++) {
-      	overall_proof[i] = hom_sum[i].generateDisjunctiveProof(plaintexts, overall_plaintext_index[i], rand_sum[i], ElGamal.disjunctive_challenge_generator);
-      }
+    	overall_proof = hom_sum.generateDisjunctiveProof(plaintexts, overall_plaintext_index, rand_sum, ElGamal.disjunctive_challenge_generator);
 
       if (progress) {
         for (var i=0; i<question.max; i++) {
@@ -358,11 +350,14 @@ HELIOS.EncryptedAnswer = Class.extend({
       }),
       'individual_proofs' : _(this.individual_proofs).map(function(disj_proof) {
         return disj_proof.toJSONObject();
-      }),
-      'overall_proof' : _(this.overall_proof).map(function(disj_proof) {
-        return disj_proof.toJSONObject();
       })
     };
+
+    if (this.overall_proof != null) {
+      return_obj.overall_proof = this.overall_proof.toJSONObject();
+    } else {
+      return_obj.overall_proof = null;
+    }
 
     if (include_plaintext) {
       return_obj.answer = this.answer;
@@ -386,9 +381,7 @@ HELIOS.EncryptedAnswer.fromJSONObject = function(d, election) {
     return ElGamal.DisjunctiveProof.fromJSONObject(p);
   });
 
-  ea.overall_proof = _(d.overall_proof).map(function (p) {
-    return ElGamal.DisjunctiveProof.fromJSONObject(p);
-  });
+  ea.overall_proof = ElGamal.DisjunctiveProof.fromJSONObject(d.overall_proof);
 
   // possibly load randomness and plaintext
   if (d.randomness) {
@@ -483,7 +476,7 @@ HELIOS.EncryptedVote = Class.extend({
   verifyProofs: function(pk, outcome_callback) {
     var zero_or_one = UTILS.generate_plaintexts(pk, 0, 1);
 
-    var VALID_P = true;
+    var valid_p = true;
 
     var self = this;
 
@@ -499,7 +492,7 @@ HELIOS.EncryptedVote = Class.extend({
       _(enc_answer.choices).each(function(choice, choice_num) {
         var result = choice.verifyDisjunctiveProof(zero_or_one, enc_answer.individual_proofs[choice_num], ElGamal.disjunctive_challenge_generator);
         outcome_callback(ea_num, choice_num, result, choice);
-        VALID_P = VALID_P && result;
+        valid_p = valid_p && result;
 
       	// keep track of homomorphic product, if needed
         if (max != null) {
@@ -512,15 +505,15 @@ HELIOS.EncryptedVote = Class.extend({
   	    var plaintexts = UTILS.generate_plaintexts(pk, self.election.questions[ea_num].min, self.election.questions[ea_num].max);
 
   	    // check the proof on the overall product
-  	    var overall_check = overall_result.verifyDisjunctiveProof(plaintexts, enc_answer.overall_proof[0], ElGamal.disjunctive_challenge_generator);
+  	    var overall_check = overall_result.verifyDisjunctiveProof(plaintexts, enc_answer.overall_proof, ElGamal.disjunctive_challenge_generator);
   	    outcome_callback(ea_num, null, overall_check, null);
-  	    VALID_P = VALID_P && overall_check;
+  	    valid_p = valid_p && overall_check;
   	  } else {
   	    // check to make sure the overall_proof is null, since it's approval voting
-  	    VALID_P = VALID_P && (enc_answer.overall_proof == null)
+  	    valid_p = valid_p && (enc_answer.overall_proof == null)
   	  }
 
-      return VALID_P;
+      return valid_p;
     });
   }
 });

@@ -341,8 +341,6 @@ class Election(HeliosModel):
                 if i < len(self.eligibility):
                     return_val += """<i class="spacer"></i>"""
 
-            logging.info(return_val)
-
             return return_val
 
     def voting_has_started(self):
@@ -590,6 +588,8 @@ class Election(HeliosModel):
 
         combined_pk = None
         if self.use_threshold:
+            k = 0
+
             scheme = self.get_scheme()
             if scheme:
                 k = scheme.k
@@ -1076,8 +1076,7 @@ class Voter(HeliosModel):
 
         # stub the user so code is not full of IF statements
         if not self.user:
-            self.user = User(
-                user_type='password', user_id=self.voter_email, name=self.voter_name)
+            self.user = User(user_type='password', user_id=self.voter_email, name=self.voter_name)
 
     @classmethod
     @transaction.commit_on_success

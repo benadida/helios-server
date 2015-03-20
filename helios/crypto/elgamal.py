@@ -564,19 +564,16 @@ class ZKProof(object):
         Verify a DH tuple proof
         """
         # check that little_g^response = A * big_g^challenge
-        first_check = (pow(little_g, self.response, p) == (
-            (pow(big_g, self.challenge, p) * self.commitment['A']) % p))
+        first_check = (pow(little_g, self.response, p) == ((pow(big_g, self.challenge, p) * self.commitment['A']) % p))
 
         # check that little_h^response = B * big_h^challenge
-        second_check = (pow(little_h, self.response, p) == (
-            (pow(big_h, self.challenge, p) * self.commitment['B']) % p))
+        second_check = (pow(little_h, self.response, p) == ((pow(big_h, self.challenge, p) * self.commitment['B']) % p))
 
         # check the challenge?
         third_check = True
 
         if challenge_generator:
-            third_check = (
-                self.challenge == challenge_generator(self.commitment))
+            third_check = (self.challenge == challenge_generator(self.commitment))
 
         return (first_check and second_check and third_check)
 

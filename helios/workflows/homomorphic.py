@@ -85,7 +85,7 @@ class EncryptedAnswer(WorkflowObject):
             sum_possible_plaintexts = self.generate_plaintexts(pk, min=min, max=max)
 
             # verify the sum
-            return homomorphic_sum.verify_disjunctive_encryption_proof(sum_possible_plaintexts, self.overall_proof[0], algs.EG_disjunctive_challenge_generator)
+            return homomorphic_sum.verify_disjunctive_encryption_proof(sum_possible_plaintexts, self.overall_proof, algs.EG_disjunctive_challenge_generator)
         else:
             # approval voting, no need for overall proof verification
             return True
@@ -166,11 +166,8 @@ class EncryptedAnswer(WorkflowObject):
 
         return cls(choices, individual_proofs, overall_proof, randomness, answer_indexes)
 
-# WORK HERE
-
 
 class EncryptedVote(WorkflowObject):
-
     """
     An encrypted ballot
     """
@@ -214,7 +211,6 @@ class EncryptedVote(WorkflowObject):
                 min_answers = question['min']
 
             if not ea.verify(election, election.public_key, min=min_answers, max=question['max']):
-                print "Hello"
                 return False
 
         return True
@@ -224,8 +220,7 @@ class EncryptedVote(WorkflowObject):
         pk = election.public_key
 
         # each answer is an index into the answer array
-        encrypted_answers = [EncryptedAnswer.fromElectionAndAnswer(
-            election, answer_num, answers[answer_num]) for answer_num in range(len(answers))]
+        encrypted_answers = [EncryptedAnswer.fromElectionAndAnswer(election, answer_num, answers[answer_num]) for answer_num in range(len(answers))]
         return_val = cls()
         return_val.encrypted_answers = encrypted_answers
         return_val.election_hash = election.hash
@@ -329,8 +324,7 @@ class Tally(WorkflowObject):
             # for each possible answer to each question
             for answer_num in range(len(encrypted_vote.encrypted_answers[question_num].choices)):
                 # do the homomorphic addition into the tally
-                enc_vote_choice = encrypted_vote.encrypted_answers[
-                    question_num].choices[answer_num]
+                enc_vote_choice = encrypted_vote.encrypted_answers[question_num].choices[answer_num]
                 enc_vote_choice.pk = self.public_key
                 self.tally[question_num][answer_num] = encrypted_vote.encrypted_answers[
                     question_num].choices[answer_num] * self.tally[question_num][answer_num]

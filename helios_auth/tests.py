@@ -72,17 +72,14 @@ class UserModelTests(unittest.TestCase):
         FIXME: also test constraints on eligibility
         """
         for auth_system, auth_system_module in AUTH_SYSTEMS.iteritems():
-            u = models.User.update_or_create(
-                user_type=auth_system, user_id='foobar_status_update', info={'name': 'Foo Bar Status Update'})
+            u = models.User.update_or_create(user_type=auth_system, user_id='foobar_status_update', info={'name': 'Foo Bar Status Update'})
 
             self.assertTrue(u.is_eligible_for({'auth_system': auth_system}))
 
     def test_eq(self):
         for auth_system, auth_system_module in AUTH_SYSTEMS.iteritems():
-            u = models.User.update_or_create(
-                user_type=auth_system, user_id='foobar_eq', info={'name': 'Foo Bar Status Update'})
-            u2 = models.User.update_or_create(
-                user_type=auth_system, user_id='foobar_eq', info={'name': 'Foo Bar Status Update'})
+            u = models.User.update_or_create(user_type=auth_system, user_id='foobar_eq', info={'name': 'Foo Bar Status Update'})
+            u2 = models.User.update_or_create(user_type=auth_system, user_id='foobar_eq', info={'name': 'Foo Bar Status Update'})
 
             self.assertEquals(u, u2)
 
@@ -99,8 +96,7 @@ class UserBlackboxTests(TestCase):
 
     def setUp(self):
         # create a bogus user
-        self.test_user = models.User.objects.create(
-            user_type='password', user_id='foobar-test@adida.net', name="Foobar User", info={'password': 'foobaz'})
+        self.test_user = models.User.objects.create(user_type='password', user_id='foobar-test@adida.net', name="Foobar User", info={'password': 'foobaz'})
 
     def test_password_login(self):
         # we can't test this anymore until it's election specific
@@ -118,7 +114,7 @@ class UserBlackboxTests(TestCase):
     def test_logout(self):
         response = self.client.post(reverse(views.logout), follow=True)
 
-        self.assertContains(response, "not logged in")
+        self.assertContains(response, "Not logged in.")
         self.assertNotContains(response, "Foobar User")
 
     def test_email(self):
@@ -127,4 +123,4 @@ class UserBlackboxTests(TestCase):
 
         self.assertEquals(len(mail.outbox), 1)
         self.assertEquals(mail.outbox[0].subject, "testing subject")
-        self.assertEquals(mail.outbox[0].to[0], "Foobar User <foobar-test@adida.net>")
+        self.assertEquals(mail.outbox[0].to[0], "\"Foobar User\" <foobar-test@adida.net>")

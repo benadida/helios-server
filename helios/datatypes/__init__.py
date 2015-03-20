@@ -5,7 +5,7 @@ A datatype object wraps another object and performs serialization / de-serializa
 to and from that object. For example, a Helios election is treated as follows:
 
   helios_election = get_current_election() # returns a helios.models.Election object
-  
+
   # dispatch to the right contructor via factory pattern
   # LDObject knows about base classes like Election, Voter, CastVote, Trustee
   # and it looks for the datatype field within the wrapped object to determine
@@ -53,11 +53,10 @@ def get_class(datatype):
     parsed_datatype = datatype.split("/")
 
     # get the module
-    dynamic_module = __import__(
-        ".".join(parsed_datatype[:-1]), globals(), locals(), [], level=-1)
+    dynamic_module = __import__(".".join(parsed_datatype[:-1]), globals(), locals(), [], level=-1)
 
     if not dynamic_module:
-        raise Exception("no module for %s" % datatpye)
+        raise Exception("No module for %s" % datatpye)
 
     # go down the attributes to get to the class
     try:
@@ -66,7 +65,7 @@ def get_class(datatype):
             dynamic_ptr = getattr(dynamic_ptr, attr)
         dynamic_cls = dynamic_ptr
     except AttributeError:
-        raise Exception("no module for %s" % datatype)
+        raise Exception("No module for %s" % datatype)
 
     dynamic_cls.datatype = datatype
 
@@ -138,7 +137,7 @@ class LDObject(object):
             datatype = getattr(obj, 'datatype')
 
         if not datatype:
-            raise Exception("no datatype found")
+            raise Exception("No datatype found")
 
         # nulls
         if obj == None:
@@ -163,8 +162,7 @@ class LDObject(object):
         "load data using from the wrapped object"
         # go through the subfields and instantiate them too
         for subfield_name, subfield_type in self.STRUCTURED_FIELDS.iteritems():
-            self.structured_fields[subfield_name] = self.instantiate(
-                self._getattr_wrapped(subfield_name), datatype=subfield_type)
+            self.structured_fields[subfield_name] = self.instantiate(self._getattr_wrapped(subfield_name), datatype=subfield_type)
 
     def loadDataFromDict(self, d):
         """
@@ -179,8 +177,7 @@ class LDObject(object):
         for f in self.FIELDS:
             if f in structured_fields:
                 # a structured ld field, recur
-                sub_ld_object = self.fromDict(
-                    d[f], type_hint=self.STRUCTURED_FIELDS[f])
+                sub_ld_object = self.fromDict(d[f], type_hint=self.STRUCTURED_FIELDS[f])
                 self.structured_fields[f] = sub_ld_object
 
                 # set the field on the wrapped object too
@@ -240,8 +237,7 @@ class LDObject(object):
         wrapped_obj_cls = ld_cls.WRAPPED_OBJ_CLASS
 
         if not wrapped_obj_cls:
-            raise Exception(
-                "cannot instantiate wrapped object for %s" % ld_type)
+            raise Exception("Cannot instantiate wrapped object for %s" % ld_type)
 
         wrapped_obj = wrapped_obj_cls()
 
@@ -313,14 +309,12 @@ class BaseArrayOfObjects(LDObject):
 
     def loadData(self):
         "go through each item and LD instantiate it, as if it were a structured field"
-        self.items = [self.instantiate(
-            element, datatype=self.ELEMENT_TYPE) for element in self.wrapped_obj]
+        self.items = [self.instantiate(element, datatype=self.ELEMENT_TYPE) for element in self.wrapped_obj]
 
     def loadDataFromDict(self, d):
         "assumes that d is a list"
         # TODO: should we be using ELEMENT_TYPE_CLASS here instead of LDObject?
-        self.items = [
-            LDObject.fromDict(element, type_hint=self.ELEMENT_TYPE) for element in d]
+        self.items = [LDObject.fromDict(element, type_hint=self.ELEMENT_TYPE) for element in d]
         self.wrapped_obj = [item.wrapped_obj for item in self.items]
 
 

@@ -31,9 +31,7 @@ class Election(LegacyObject):
         'cast_url',
         'use_voter_aliases',
         'voting_starts_at',
-        'voting_ends_at',
-        'election_type',
-        'use_threshold'
+        'voting_ends_at'
     ]
 
     STRUCTURED_FIELDS = {
@@ -50,7 +48,7 @@ class EncryptedAnswer(LegacyObject):
     STRUCTURED_FIELDS = {
         'choices': arrayOf('legacy/EGCiphertext'),
         'individual_proofs': arrayOf('legacy/EGZKDisjunctiveProof'),
-        'overall_proof': arrayOf('legacy/EGZKDisjunctiveProof')
+        'overall_proof': 'legacy/EGZKDisjunctiveProof'
     }
 
 
@@ -66,7 +64,7 @@ class EncryptedAnswerWithRandomness(LegacyObject):
     STRUCTURED_FIELDS = {
         'choices': arrayOf('legacy/EGCiphertext'),
         'individual_proofs': arrayOf('legacy/EGZKDisjunctiveProof'),
-        'overall_proof': arrayOf('legacy/EGZKDisjunctiveProof'),
+        'overall_proof': 'legacy/EGZKDisjunctiveProof',
         'randomness': arrayOf('core/BigInteger')
     }
 

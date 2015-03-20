@@ -553,8 +553,7 @@ class EGCiphertext:
             return real_challenge % self.pk.q
 
         # do the real proof
-        real_proof = self.generate_encryption_proof(
-            plaintexts[real_index], randomness, real_challenge_generator)
+        real_proof = self.generate_encryption_proof(plaintexts[real_index], randomness, real_challenge_generator)
 
         # set the real proof
         proofs[real_index] = real_proof
@@ -692,8 +691,7 @@ class EGZKProof(object):
     @classmethod
     def from_dict(cls, d):
         p = cls()
-        p.commitment = {
-            'A': int(d['commitment']['A']), 'B': int(d['commitment']['B'])}
+        p.commitment = {'A': int(d['commitment']['A']), 'B': int(d['commitment']['B'])}
         p.challenge = int(d['challenge'])
         p.response = int(d['response'])
         return p
@@ -712,19 +710,16 @@ class EGZKProof(object):
         Verify a DH tuple proof
         """
         # check that little_g^response = A * big_g^challenge
-        first_check = (pow(little_g, self.response, p) == (
-            (pow(big_g, self.challenge, p) * self.commitment['A']) % p))
+        first_check = (pow(little_g, self.response, p) == ((pow(big_g, self.challenge, p) * self.commitment['A']) % p))
 
         # check that little_h^response = B * big_h^challenge
-        second_check = (pow(little_h, self.response, p) == (
-            (pow(big_h, self.challenge, p) * self.commitment['B']) % p))
+        second_check = (pow(little_h, self.response, p) == ((pow(big_h, self.challenge, p) * self.commitment['B']) % p))
 
         # check the challenge?
         third_check = True
 
         if challenge_generator:
-            third_check = (
-                self.challenge == challenge_generator(self.commitment))
+            third_check = (self.challenge == challenge_generator(self.commitment))
 
         return (first_check and second_check and third_check)
 

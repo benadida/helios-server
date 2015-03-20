@@ -197,7 +197,7 @@ HELIOS_PRIVATE_DEFAULT = False
 
 # The authentication systems that should be enabled.
 #AUTH_ENABLED_AUTH_SYSTEMS = ['cas', 'facebook', 'google', 'linkedin', 'password', 'shibboleth', 'twitter', 'yahoo']
-AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(',')
+AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google,password').split(',')
 AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
 
 # google
