@@ -238,7 +238,7 @@ def poll_zeus_partial_decrypt(poll_id):
     poll = Poll.objects.select_for_update().get(pk=poll_id)
     poll.zeus_partial_decrypt()
     if poll.election.trustees.filter().no_secret().count() == 0:
-    	poll.partial_decrypt_started_at = datetime.datetime.now()
+        poll.partial_decrypt_started_at = datetime.datetime.now()
         poll.partial_decrypt_finished_at = datetime.datetime.now()
         poll.save()
     if poll.election.polls_feature_partial_decryptions_finished:
