@@ -615,11 +615,13 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
         if send_anyway or (not self.trial):
             election_type = self.get_module().module_id
             trustees = self.trustees.all()
+            admins = self.admins.all()
             context = {
                 'election': self,
                 'msg': msg,
                 'election_type': election_type,
                 'trustees': trustees,
+                'admins': admins,
                 'subject': subject,
             }
 

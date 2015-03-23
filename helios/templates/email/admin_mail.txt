@@ -15,3 +15,7 @@
    * {{trustee.name}} {{trustee.email}}
 {% endfor %}
 
+- Election Admins
+{% for admin in admins %}
+   * {{admin.id}}  {{admin.user_id}} {{admin.institution.name}}
+{% endfor %}

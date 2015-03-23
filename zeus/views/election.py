@@ -49,6 +49,11 @@ def add_or_update(request, election=None):
             election = election_form.save()
             if not election.admins.filter(pk=user.pk).count():
                 election.admins.add(user)
+            if election_form.creating:
+                election.logger.info("Election created")
+                msg = "New election created"
+                subject = "New Zeus election"
+                election.notify_admins(msg=msg, subject=subject)
             # TODO, make this optional ?
             if not election.has_helios_trustee():
                 election.generate_trustee()
