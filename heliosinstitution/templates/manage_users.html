@@ -2,57 +2,36 @@
 {% load i18n %}
 {% load staticfiles %}
 {% block extra-head %}
-    <script language="javascript" src="{% static "heliosinstitution/js/utils.js" %}"></script>
+    <script language="javascript" src="{% static "js/institution.js" %}"></script>
 {% endblock %}
 {% block content %}
 
 {% if user %}
-    <h3>{% trans "Users with roles in your institution" %}</h3>
-    <div id="institution_users">
-        <table class="table table-striped">
-          <thead>
-            <tr>
-              <th>{% trans "User" %}</th>
-              <th>{% trans "E-mail" %}</th>
-              <th>{% trans "Role" %}</th>
-              <th>{% trans "Active" %}</th>
-              <th>{% trans "Expires at" %}</th>
-              <th>{% trans "Action" %}</th>
-           </tr>
-          </thead>
-          <tbody>
-          {% for user in institution.institution_users %}
-          <tr>
-              <td>{{ user.user }}</td>
-              <td>{{ user.email }}</td>
-              <td>{{ user.role }}</td>
-              <td>{{ user.active }}</td>
-              <td>{{ user.expires_at }}</td>
-              <td></td>
-          </tr>
-          {% endfor %}
-          </tbody>
-        </table>
+    <div id="institution_users" data-url={% url "heliosinstitution.views.users" %}>
+        {% include "institution_users.html" %} 
     </div>
-    <div id="delegate_institution_admin" class="well">
+    <div class="div_form well">
         {% trans "Delegate Institution Admin" %}
-        <form class="form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_institution_admin" institution.id %}">
+        <form class="form form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_institution_admin" institution.id %}">
             <div class="form-group">
                 <label class="sr-only" for="inst-mngt-email">{% trans "Email address" %}</label>
-                <input type="email" class="form-control" name="inst_mngt_email"  id="inst_mngt_email" placeholder="{% trans "Enter email" %}">
+                <input type="email" class="form-control" name="email" placeholder="{% trans "Enter email" %}" required>
+                <span id="add_inst_mngt_email_result"></span>
             </div>
-            <button type="submit" class="btn btn-primary">{% trans "Add" %}</button>
+            <button id="add_inst_mngt_email" type="submit" class="btn btn-primary">{% trans "Add" %}</button>
         </form>
+        <span class="add_field_result help-block"></span>
     </div>
-    <div id="delegate_election_admin" class="well">
-        {% trans "Add new election admin" %}
-        <form class="form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_election_admin" institution.id %} ">
+    <div class="div_form well">
+        {% trans "Add new Election Admin" %}
+        <form class="form form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_election_admin" institution.id %} ">
             <div class="form-group">
                 <label class="sr-only" for="election-mngt-email">{% trans "Email address" %}</label>
-                <input type="email" class="form-control" id="election-mngt-email" placeholder="{% trans "Enter email" %}">
+                <input type="email" class="form-control" name="email" placeholder="{% trans "Enter email" %}" required>
             </div>
-            <button type="submit" class="btn btn-primary">{% trans "Add" %}</button>
+            <button id="add_election_mngt_email" type="submit" class="btn btn-primary">{% trans "Add" %}</button>
         </form>
+        <span class="add_field_result help-block"></span>
     </div>
 
 {% else %}
