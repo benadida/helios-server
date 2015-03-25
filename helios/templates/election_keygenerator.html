@@ -138,7 +138,7 @@ function show_pk() {
 </p>
 </div>
 
-<form method="post" id="pk_form" action="{% url "helios.views.trustee_upload_pk" election.uuid, trustee.uuid %}">
+<form method="post" id="pk_form" action="{% url "helios.views.trustee_upload_pk" election.uuid trustee.uuid %}">
 
 <h3>{% trans "Your Public Key" %}</h3>
 <p>
