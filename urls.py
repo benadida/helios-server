@@ -29,6 +29,7 @@ app_patterns += patterns(
         name="get_randomness"),
     url(r'^i18n/js', 'django.views.i18n.javascript_catalog',
         name='js_messages', kwargs={'packages': None}),
+    (r'^i18n/setlang', 'zeus.views.site.setlang'),
     (r'^i18n/', include('django.conf.urls.i18n')),
     url(r'^account_administration/', include('account_administration.urls')),
 )

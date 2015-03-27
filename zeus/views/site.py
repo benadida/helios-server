@@ -1,8 +1,8 @@
+import logging
+
 from collections import defaultdict
 from time import time
 from random import randint
-import logging
-logger = logging.getLogger(__name__)
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect, HttpResponseNotAllowed
@@ -13,11 +13,21 @@ from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 from django.contrib import messages
 from django.conf import settings
+from django.views.i18n import set_language
 
 from helios.view_utils import render_template
 from heliosauth.auth_systems.password import make_password
 from helios.models import User, Election
 from zeus.models import Institution
+
+logger = logging.getLogger(__name__)
+
+
+def setlang(request):
+    lang = request.REQUEST.get('language')
+    if not lang in map(lambda x:x[0], settings.LANGUAGES):
+        return HttpResponseRedirect(reverse('home'))
+    return set_language(request)
 
 
 def home(request):
