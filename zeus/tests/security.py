@@ -40,6 +40,16 @@ class TestUsersWithClient(SetUpAdminAndClientMixin, TestCase):
         r = self.c.get(self.locations['logout'], follow=True)
         self.assertRedirects(r, self.locations['home'])
 
+    def test_set_language(self):
+        resp = self.c.post('/i18n/setlang/', {'language': '\x00', 'next': '/'})
+        self.assertEqual(resp.status_code, 302)
+        resp = self.c.post('/i18n/setlang/', {'language': 'el', 'next': '/'}, follow=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['LANGUAGE_CODE'], 'el')
+        resp = self.c.post('/i18n/setlang/', {'language': 'en', 'next': '/'}, follow=True)
+        self.assertEqual(resp.context['LANGUAGE_CODE'], 'en')
+
+
 class TestAdminsPermissions(SetUpAdminAndClientMixin, TestCase):
     
     def setUp(self):
@@ -69,6 +79,7 @@ class TestAdminsPermissions(SetUpAdminAndClientMixin, TestCase):
                               'help_email': 'test@test.com',
                               'help_phone': 6988888888,
                               'communication_language': 'el',
+
                             }
 
     def login_and_create_election(self, login_data):
