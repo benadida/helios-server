@@ -648,7 +648,7 @@ class VoterLoginForm(forms.Form):
         poll = None
         try:
             poll = Poll.objects.get(pk=poll_id)
-        except DoesNotExist:
+        except Poll.DoesNotExist:
             raise forms.ValidationError(invalid_login_id_error)
 
         try:
