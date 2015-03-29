@@ -10,7 +10,6 @@ class Institution(models.Model):
     main_phone = models.CharField(max_length=25)
     sec_phone = models.CharField(max_length=25, blank=True)
     address = models.TextField()
-    mngt_email = models.EmailField(unique=True)
     idp_address = models.URLField(null=True, blank=True)
   
     class Meta:
