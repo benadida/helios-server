@@ -52,7 +52,7 @@ class InstitutionUserProfile(models.Model):
     helios_user = models.ForeignKey('helios_auth.User', blank=True, default=None, null=True)
     django_user = models.ForeignKey(User, unique=True)
     institution = models.ForeignKey("heliosinstitution.Institution")
-    email = models.EmailField()
+    email = models.EmailField(max_length=254)
     expires_at = models.DateTimeField(auto_now_add=False, default=None, null=True, blank=True)
     active = models.BooleanField(default=False)
   
