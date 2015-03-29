@@ -9,7 +9,7 @@ class HeliosInstitutionAdmin(admin.ModelAdmin):
 
 
 class InstitutionUserProfileAdmin(admin.ModelAdmin):	
-    list_display = ('user', 'email', 'institution')
+    list_display = ('helios_user', 'email', 'institution')
 
 
 admin.site.register(InstitutionUserProfile, InstitutionUserProfileAdmin)

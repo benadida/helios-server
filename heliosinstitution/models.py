@@ -48,14 +48,14 @@ class Institution(models.Model):
 
 class InstitutionUserProfile(models.Model):
 
-    user = models.ForeignKey('helios_auth.User', blank=True, default=None, null=True)
+    helios_user = models.ForeignKey('helios_auth.User', blank=True, default=None, null=True)
     institution = models.ForeignKey("heliosinstitution.Institution")
     email = models.EmailField()
     expires_at = models.DateTimeField(auto_now_add=False, default=None, null=True, blank=True)
     active = models.BooleanField(default=False)
   
     def __unicode__(self):
-        return self.user.name if self.user is not None else self.email
+        return self.helios_user.name if self.helios_user is not None else self.email
 
     @property
     def is_institution_admin(self):
@@ -68,6 +68,6 @@ class InstitutionUserProfile(models.Model):
         #TODO: check for user group instead
         if self.is_institution_admin:
             return _("Admin")
-        if self.user and self.user.admin_p:
+        if self.helios_user and self.helios_user.admin_p:
             return _("Election Admin")
         return _("Undefined")
