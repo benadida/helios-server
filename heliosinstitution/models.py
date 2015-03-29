@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import ugettext as _
+from django.contrib.auth.models import User
 
 # Create your models here.
 class Institution(models.Model):
@@ -49,6 +50,7 @@ class Institution(models.Model):
 class InstitutionUserProfile(models.Model):
 
     helios_user = models.ForeignKey('helios_auth.User', blank=True, default=None, null=True)
+    django_user = models.ForeignKey(User, blank=True, null=True)
     institution = models.ForeignKey("heliosinstitution.Institution")
     email = models.EmailField()
     expires_at = models.DateTimeField(auto_now_add=False, default=None, null=True, blank=True)
