@@ -53,8 +53,7 @@ class InstitutionUserProfile(models.Model):
 
     @property
     def is_institution_admin(self):
-        #TODO: test if is in the institution admin group
-        return False
+        return self.django_user.groups.filter(name='Institution Admin').exists()
 
     @property
     def institution_role(self):

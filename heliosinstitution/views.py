@@ -8,6 +8,7 @@ from django.utils.translation import ugettext as _
 
 from helios_auth.security import *
 from heliosinstitution.models import InstitutionUserProfile
+from heliosinstitution.decorators import *
 
 
 from view_utils import *
@@ -16,6 +17,7 @@ def home(request):
     pass
 
 @login_required
+@require_institution_admin
 @require_http_methods(["GET",])
 def manage_users(request):  
     user = get_user(request)
@@ -26,7 +28,6 @@ def manage_users(request):
     })
 
 
-@login_required
 @require_http_methods(["POST",])
 def delegate_institution_admin(request, institution_id):
     """
@@ -95,6 +96,7 @@ def revoke_election_admin(request, institution_id):
 
 
 @login_required
+@require_institution_admin
 @require_http_methods(["GET",])
 def users(request):
     user = get_user(request)
