@@ -97,40 +97,24 @@ def user_needs_intervention(user_id, user_info, token):
     try:
         user = User.objects.get(user_id=user_id, user_type='shibboleth')
 
-        institution = Institution.objects.get(mngt_email=user_info['email'])
-        if institution.idp_address != user_info['identity_provider']:
-            institution.idp_address = user_info['identity_provider']
-            institution.save()
-
-        profile, created = InstitutionUserProfile.objects.get_or_create(institution=institution, 
-            user=user, email=user_info['email'])
-        profile.active = True
-        profile.user.admin_p = True    
-        profile.user.save()
+        profile = InstitutionUserProfile.objects.get(email=user_info['email'])
+        
+        # it exists, so let's check if is admin
+        profile.helios_user = user
+        profile.is_active = True
+        profile.helios_user.admin_p = True    
+        profile.helios_user.save()
         profile.save()
-        return None
+
     except User.DoesNotExist:
         # something went really wrong with the authentication...
         # TODO return logout url
         pass
-    except Institution.DoesNotExist:
+    except InstitutionUserProfile.DoesNotExist:
         # the given user does not manager, maybe is another type...
         # TODO check if he/she has another role
-
         pass
-    else:
-        return None
 
-    try:    
-        institution = Institution.objects.get(identity_provider=user_info['identity_provider'])
-        profile = InstitutionUserProfile.objects.get(institution=institution, 
-            email=user_info['email'])
-        profile.active = True
-        profile.user = user
-        profile.save()
-    except:
-        pass
-  
     return None
 
 """
