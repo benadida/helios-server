@@ -24,14 +24,6 @@ class Institution(models.Model):
         return self.name
   
     @property
-    def institution_admin(self):
-        try:
-            return InstitutionUserProfile.objects.get(email=self.mngt_email)
-        except InstitutionUserProfile.DoesNotExist:
-            return None
-
-
-    @property
     def institution_users(self):
         users = []
         for user in self.institutionuserprofile_set.all():
@@ -57,13 +49,13 @@ class InstitutionUserProfile(models.Model):
   
     def __unicode__(self):
         return self.helios_user.name if self.helios_user is not None else self.email
+        
 
     @property
     def is_institution_admin(self):
-        if self.institution.mngt_email == self.email:
-            return True
+        #TODO: test if is in the institution admin group
         return False
-    
+
     @property
     def institution_role(self):
         #TODO: check for user group instead
