@@ -745,7 +745,7 @@ def trustee_keygenerator_threshold(request, election, trustee):
 
         # verify the proof
         if not public_key_enc.verify_sk_proof(pok_enc, algs.DLog_challenge_generator):
-            raise Exception("Bad proof for public key encrypting")
+            raise Exception("Bad proof for public encryption key")
 
         key.public_key_encrypt = utils.to_json(public_key_enc.to_dict())
         key.pok_encrypt = utils.to_json(pok_enc.to_dict())
