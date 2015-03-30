@@ -29,33 +29,11 @@
   
   {% block extra-head %}{% endblock %}
   <script language="javascript" src={% static "helios/js/utils.js" %}></script>
+  <script language="javascript" src={% static "js/institution.js" %}></script>
   <script type="text/javascript" src="{% url "django.views.i18n.javascript_catalog" %}"></script>
 </head>
 <body>
-<nav class="navbar navbar-default top-bar" role="navigation">
-  <div class="container-fluid">
-    <!-- Brand and toggle get grouped for better mobile display -->
-    {% if user %}
-    <div class="navbar-right navbar-top">
-      <a class="navbar-brand " style="color:#FFFFFF;" href="/auth/logout?return_url=/">{% trans "Logout" %}</a>
-    </div>
-    {% else %}
-    <div class="navbar-right navbar-top">
-    <a class="navbar-brand" style="color:#FFFFFF;" href="{{SECURE_URL_HOST}}{% url "helios_auth.views.start" system_name=auth_system %}?return_url={{return_url}}"> {% trans "Login" %}</a>
-    </div>
-    {% endif %}
-    <div class="navbar-right navbar-top">
-      <a class="navbar-brand" style="color:#FFFFFF;" href="/">{% trans "Home" %}</a>
-    </div>
-    <div class="navbar-right navbar-top">
-      {% if user and user.admin_p %}
-      <a class="navbar-brand" style="color:#FFFFFF;" href="{% url "helios.stats_views.home" %}">Admin</a
-      >
-      {% endif %}
-    </div>
-  </div>
-</nav>
-  
+  {% include "navbar.html" %} 
   <!-- Main Page Content and Sidebar -->
 
   <div class="container">

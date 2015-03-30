@@ -1,0 +1,24 @@
+
+div.dropdown { 
+    color: #555; margin: 3px -22px 0 0; width: 143px; position: relative; height: 17px; text-align:left; 
+}
+
+div.submenu { 
+    background: #fff; position: absolute; top: -12px; left: -20px; z-index: 100; width: 135px; display: none; margin-left: 10px; padding: 40px 0 5px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45); 
+}
+
+.dropdown li a { 
+    color: #555555; display: block; font-family: arial; font-weight: bold; padding: 6px 15px; cursor: pointer; text-decoration:none; 
+ }
+
+.dropdown li a:hover { 
+    background:#155FB0; color: #FFFFFF; text-decoration: none; 
+}
+
+a.admin_menu { 
+    line-height: 16px; color: #555; position: absolute; z-index: 110; display: block; height: 28px;width: 121px; text-decoration: none; no-repeat; cursor:pointer; 
+}
+
+.root { 
+    list-style:none; margin:0px; padding:0px; font-size: 11px;padding: 11px 0 0 0px; border-top:1px solid #dedede; 
+}
