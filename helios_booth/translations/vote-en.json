@@ -60,8 +60,6 @@
   "audit_post" : "Post Audited Ballot to Tracking Center",
   "audit_back" : "Back to Voting",
 
-  "footer_dutch" : "Dutch",
-  "footer_english" : "English",
   "footer_bogus_p" : "The public key for this election is not yet ready. This election is in preview mode only.",
   "footer_fingerpint" : "Election Fingerprint",
   "footer_help" : "Help",

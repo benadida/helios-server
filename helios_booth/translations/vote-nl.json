@@ -60,8 +60,6 @@
   "audit_post" : "Audit Informatie Uploaden",
   "audit_back" : "Terug naar het Stemhokje",
 
-  "footer_dutch" : "Nederlands",
-  "footer_english" : "Engels",
   "footer_bogus_p" : "De publieke sleutel van deze verkiezing is nog niet afgeleid. Je kan de verkiezing alleen bekijken.",
   "footer_fingerpint" : "Kenmerk van de Verkiezing",
   "footer_help" : "Hulp",
