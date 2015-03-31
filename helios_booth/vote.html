@@ -437,14 +437,6 @@
       BOOTH.show_progress(2);
     };
 
-    BOOTH.check_encryption_status = function() {
-      var progress = BOOTH.progress.progress();
-      if (progress == '' || progress == null)
-        progress = '0';
-
-      $('#percent_done').html(progress);
-    };
-
     BOOTH.after_ballot_encryption = function() {
       // if already serialized, use that, otherwise serialize
       BOOTH.encrypted_vote_json = BOOTH.encrypted_ballot_serialized || JSON.stringify(BOOTH.encrypted_ballot.toJSONObject());
@@ -493,10 +485,7 @@
 
     BOOTH.seal_ballot_raw = function() {
       if (BOOTH.synchronous) {
-        BOOTH.progress = new UTILS.PROGRESS();
-        var progress_interval = setInterval('BOOTH.check_encryption_status()', 500);
-        BOOTH.encrypted_ballot = new HELIOS.EncryptedVote(BOOTH.election, BOOTH.ballot.answers, BOOTH.progress);
-        clearInterval(progress_interval);
+        BOOTH.encrypted_ballot = new HELIOS.EncryptedVote(BOOTH.election, BOOTH.ballot.answers);
         BOOTH.after_ballot_encryption();
       } else {
         BOOTH.total_cycles_waited = 0;
@@ -628,7 +617,7 @@
           <h3 align="center">
             <span data-localize="encrypting">Helios is now encrypting your ballot...</span>
             <br />
-            <img src="encrypting.gif" /> <span style="font-size:0.7em; display:none;" id="percent_done_container">(<span id="percent_done">0</span>%)</span>
+            <img src="encrypting.gif" />
           </h3>
 
           <p align="center"><b data-localize="encrypting_minutes">This may take up to two minutes.</b>

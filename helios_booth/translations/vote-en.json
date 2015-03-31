@@ -9,7 +9,7 @@
   "checking_capabilities_seconds" : "This may take up to 10 seconds.",
 
   "encrypting" : "Helios is now encrypting your ballot...",
-  "encrypting_minutes" : "This may take up to 10 seconds.",
+  "encrypting_minutes" : "This may take up to two minutes.",
 
   "election_intro" : "To cast a vote, you will be led through the following steps. If you have not yet logged in, you will be asked to do so at the very end of the process.",
   "election_1" : "<b>Select</b> your preferred options.<br /><span style=\"font-size: 14pt;\">You can easily navigate forwards and backwards.</span>",

@@ -35,7 +35,7 @@ function do_setup(message) {
 }
 
 function do_encrypt(message) {
-  console.log("Encrypting answer for question ");
+  console.log("Encrypting answer for question " + Q_NUM);
 
 	var start = new Date().getTime();
   var encrypted_answer = new HELIOS.EncryptedAnswer(ELECTION.questions[Q_NUM], message.answer, ELECTION.public_key, null);
