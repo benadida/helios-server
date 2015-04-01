@@ -262,12 +262,13 @@ def set_election_issues(context, election):
 
 
 @register.simple_tag(takes_context=True)
-def complete_voter_get_parameters(context, GET, new_order):
+def complete_get_parameters(context, GET, new_order,
+                            default_sort_key='voter_login_id'):
     page_param = ''
     page = GET.get('page', None)
     if page:
         page_param += "&page=%s" % page
-    order_by = GET.get('order', 'voter_login_id')
+    order_by = GET.get('order', default_sort_key)
     order_type = GET.get('order_type', 'asc')
     order_param = ''
     if order_by == new_order:

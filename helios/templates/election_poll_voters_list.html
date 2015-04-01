@@ -103,7 +103,7 @@
       {% for key, value  in voter_table_headers %}
         <th>
           {% if key != 'actions' %}
-          <a href="?order={{key}}{% complete_voter_get_parameters request.GET key %}" 
+          <a href="?order={{key}}{% complete_get_parameters request.GET key "voter_login_id" %}" 
              class="{{ ordering_cls }}">{{ value }}</a>
           {% else %}
             {{ value }}

@@ -186,6 +186,31 @@ VOTER_TABLE_HEADERS = OrderedDict([
     ('actions', _('Actions'))
     ])
 
+ELECTION_TABLE_HEADERS = OrderedDict([
+    ('name', _('Name')),
+    ('institution', _('Institution')),
+    ('admins', _('Administrator')),
+    ('created_at', _('Creation')),
+    ('voting_starts_at', _('Start')),
+    ('voting_ends_at', _('End')),
+    ('status_display', _('Election status')),
+    ('trial', _('Trial'))
+    ])
+
+
+VOTER_SEARCH_FIELDS = ['voter_name', 'voter_surname', 'voter_email']
+VOTER_EXTRA_HEADERS = ['excluded_at']
+VOTER_BOOL_KEYS_MAP = {
+        'voted': ('cast_votes__id', 'nullcheck'),
+        'invited': ('last_booth_invitation_send_at', 'nullcheck'),
+        'excluded': ('excluded_at', 'nullcheck'),
+     }
+
+ELECTION_SEARCH_FIELDS = ['name', 'institution__name', 'admins__user_id',]
+ELECTION_EXTRA_HEADERS = []
+ELECTION_BOOL_KEYS_MAP = {'trial': 'trial'}
+
+
 
 def parse_q_param(q):
     args = []
@@ -196,34 +221,35 @@ def parse_q_param(q):
             args.append(special_arg)
     return q, args
 
-
-def get_voters_filters(q_param):
+def get_filters(q_param, table_headers, search_fields, bool_keys_map, extra_headers=[]):
 
     q = Q()
     if q_param != '':
         q_parsed, extra_filters = parse_q_param(q_param)
-        for search_field in ['name', 'surname', 'email']:
-            kwargs = {'voter_%s__icontains' % search_field: q_parsed.strip()}
+        for search_field in search_fields:
+            kwargs = {'%s__icontains' % search_field: q_parsed.strip()}
             q = q | Q(**kwargs)
-
-        keys_map = {
-            'voted': 'cast_votes__id',
-            'invited': 'last_booth_invitation_send_at',
-            'excluded': 'excluded_at'
-        }
         for arg in extra_filters:
-            type = True if arg[0] == "-" else False
-            key = keys_map.get(arg[1:], arg[1:])
-            if key in (VOTER_TABLE_HEADERS.keys() + ['excluded_at']):
-                q = q & Q(**{'%s__isnull' % key: type})
+            arg_type = False if arg[0] == "-" else True
+            key = bool_keys_map.get(arg[1:], arg[1:])
+            nullcheck = False
+            if type(key) == tuple:
+                nullcheck = key[1] == 'nullcheck'
+                key = key[0]
+            if key in (table_headers.keys() + extra_headers):
+                flt = ''
+                if nullcheck:
+                    flt = '__isnull'
+                    arg_type = not arg_type
+                q = q & Q(**{'%s%s' % (key, flt): arg_type})
     return q
-
 
 def get_voters_filters_with_constraints(q_param=None, constraints_include=None,
                                         constraints_exclude=None):
     q = Q()
     if q_param:
-        q = q & get_voters_filters(q_param)
+        q = q & get_filters(q_param, VOTER_TABLE_HEADERS, VOTER_SEARCH_FIELDS,
+                            VOTER_BOOL_KEYS_MAP, VOTER_EXTRA_HEADERS)
     if constraints_include:
         q = q & Q(**constraints_include)
     if constraints_exclude:
