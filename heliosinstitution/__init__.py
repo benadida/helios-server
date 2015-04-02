@@ -36,10 +36,8 @@ def update_permissions_after_migration(app, **kwargs):
                 "delegate_election_mngt",
                 "revoke_election_mngt"
             ],
-#        "Election Admin": [
-#            "admin_election",
-#        ]
-            
+            "Election Admin": [
+            ],
         }
         if verbosity>0:
             print "Initialising data post_migrate"
