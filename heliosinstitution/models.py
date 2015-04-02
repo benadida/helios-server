@@ -60,6 +60,6 @@ class InstitutionUserProfile(models.Model):
         #TODO: check for user group instead
         if self.is_institution_admin:
             return _("Institution Admin")
-        if self.helios_user and self.helios_user.admin_p:
+        if self.django_user.groups.filter(name="Election Admin").exists():
             return _("Election Admin")
         return _("Undefined")
