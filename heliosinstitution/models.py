@@ -29,6 +29,7 @@ class Institution(models.Model):
         for user in self.institutionuserprofile_set.all():
             users.append({
                 'pk': user.pk,
+                'helios_user': user.helios_user,
                 'email': user.email,
                 'role': user.institution_role,
                 'active': user.active,
