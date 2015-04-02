@@ -17,8 +17,7 @@
       <td>{{ user.email }}</td>
       <td>{{ user.role }}</td>
       <td>{{ user.active }}</td>
-      <td>{{ user.expires_at }}</td>
-      <td></td>
+      <td>{{ user.expires_at|date:"d/m/Y"}}</td>
     </tr>
     {% endfor %}
  </tbody>
