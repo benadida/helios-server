@@ -12,15 +12,19 @@ $("document").ready(function(){
                 url: url,
                 data: {'email': email},
                 success: function (data) {
+                    form.parents('div.div_form').removeClass('has-error');
                     form.parents('div.div_form').addClass('has-success');
                     form.parents('div.div_form').find('span.add_field_result').text(gettext('Email successfully saved.'));
                     $('#institution_users').load($('#institution_users').attr('data-url'));
                 },
                 error: function (error) {
-                    $("div.div_form").addClass('has-error');
-                    $("div.div_form").find('span.add_field_result').text(gettext('Please, correct the provided value'));
+                    form.parents('div.div_form').removeClass('has-success');
+                    form.parents('div.div_form').addClass('has-error');
+                    form.parents('div.div_form').find('span.add_field_result').text(gettext('Please, correct the provided value'));
                 }
+                
             });
+            form.find('input[type=email]').val('');
 		}
 		return false;
 	});
