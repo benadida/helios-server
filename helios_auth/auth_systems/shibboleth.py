@@ -95,14 +95,16 @@ def user_needs_intervention(user_id, user_info, token):
     from helios_auth.models import User
 
     try:
-        user = User.objects.get(user_id=user_id, user_type='shibboleth')
+        helios_user = User.objects.get(user_id=user_id, user_type='shibboleth')
 
         profile = InstitutionUserProfile.objects.get(email=user_info['email'])
         
-        # it exists, so let's check if is admin
-        profile.helios_user = user
-        profile.is_active = True
-        profile.helios_user.admin_p = True    
+        profile.helios_user = helios_user
+        profile.active = True
+
+        # check if user has a role
+        if profile.django_user.groups.filter(name__in=['Institution Admin','Election Admin']).exists():
+            profile.helios_user.admin_p = True    
         profile.helios_user.save()
         profile.save()
 
