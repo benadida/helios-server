@@ -56,6 +56,5 @@ $("document").ready(function(){
         $(".conta_menu").attr('id', '');
     });
 
-    console.log('ola');
 })
 
