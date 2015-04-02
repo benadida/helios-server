@@ -1,6 +1,8 @@
 $("document").ready(function(){
 
 	$("form").submit(function(event) { 
+            event.preventDefault();
+            event.stopImmediatePropagation();
         var form = $(this);
 		if (confirm(gettext('Are you sure you want to add this e-mail as an institution admin?'))){
             var email = form.find('input[type=email]').val();
