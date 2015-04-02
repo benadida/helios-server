@@ -9,7 +9,7 @@
 {% if user %}
     <div class="div_form well">
         {% trans "Delegate Institution Admin" %}
-        <form class="form form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_institution_admin" institution.id %}">
+        <form id="add_inst_mngt_email" class="form form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_user" "Institution Admin" %}">
             <div class="form-group">
                 <label class="sr-only" for="inst-mngt-email">{% trans "Email address" %}</label>
                 <input type="email" class="form-control" name="email" placeholder="{% trans "Enter email" %}">
@@ -21,7 +21,7 @@
     </div>
     <div class="div_form well">
         {% trans "Add new Election Admin" %}
-        <form class="form form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_election_admin" institution.id %} ">
+        <form class="form form-inline" method="POST" action="{% url "heliosinstitution.views.delegate_user" "Election Admin" %} ">
             <div class="form-group">
                 <label class="sr-only" for="election-mngt-email">{% trans "Email address" %}</label>
                 <input type="email" class="form-control" name="email" placeholder="{% trans "Enter email" %}">

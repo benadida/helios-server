@@ -3,6 +3,7 @@ import json
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User as DjangoUser, Group
 from django.utils.translation import ugettext as _
 
 
@@ -28,8 +29,10 @@ def manage_users(request):
     })
 
 
+@login_required
+@require_institution_admin
 @require_http_methods(["POST",])
-def delegate_institution_admin(request, institution_id):
+def delegate_user(request, role):
     """
     Delegate an user to administer institution
     """
@@ -37,13 +40,24 @@ def delegate_institution_admin(request, institution_id):
     email = request.POST.get('email', '') 
     status = 200
     if email:
-        if user.institutionuserprofile_set.get().is_institution_admin:
-            institution_user_profile, created = InstitutionUserProfile.objects.get_or_create(email=email, 
+        try:
+            # let's se if we already have this email for this institution
+            institution_user_profile = InstitutionUserProfile.objects.get(email=email, 
                 institution=user.institutionuserprofile_set.get().institution)
+        except InstitutionUserProfile.DoesNotExist:
+            # no, we don't, lets create one
+            django_user = DjangoUser.objects.create(email=email,username=email)
+            django_user.save
+            institution_user_profile = InstitutionUserProfile.objects.create(email=email, 
+                institution=user.institutionuserprofile_set.get().institution,
+                django_user=django_user)
             institution_user_profile.save()
-            #TODO: add to institution admin group
-            #TODO: log error
-            response_data = {'success': _('E-mail successfully saved')}
+    
+        g = Group.objects.get(name=role)
+        g.user_set.add(institution_user_profile.django_user)
+
+        #TODO: log error
+        response_data = {'success': _('E-mail successfully saved')}
     else:
         response_data = {'error': _('An e-mail must be informed')} 
         status = 400
@@ -58,30 +72,6 @@ def revoke_institution_admin(request, institution_id):
     Revoke an user as institution admin
     """
     user = get_user(request)
-    pass
-
-
-@login_required
-@require_http_methods(["POST",])
-def delegate_election_admin(request, institution_id):
-    """
-    Enable an user to administer elections
-    """
-    user = get_user(request)
-    email = request.POST.get('email', '') 
-    status = 200
-    if email:
-        if user.institutionuserprofile_set.get().is_institution_admin:
-            institution_user_profile, created = InstitutionUserProfile.objects.get_or_create(email=email, 
-                institution=user.institutionuserprofile_set.get().institution)
-            institution_user_profile.save()
-            #TODO: add to institution admin group
-            #TODO: log error
-            response_data = {'success': _('E-mail successfully saved')}
-    else:
-        response_data = {'error': _('An e-mail must be informed')} 
-        status = 400
-    return HttpResponse(json.dumps(response_data), content_type="application/json", status=status)
     pass
 
 
