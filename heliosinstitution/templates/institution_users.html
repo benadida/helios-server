@@ -1,9 +1,9 @@
 {% load i18n %}
-<h3>{% trans "Users with roles in your institution" %}</h3>
+{% if institution.institution_users %}
+<h3>{% trans "Users with role in your institution" %}</h3>
 <table class="table table-striped">
   <thead>
     <tr>
-      <th>{% trans "User" %}</th>
       <th>{% trans "E-mail" %}</th>
       <th>{% trans "Role" %}</th>
       <th>{% trans "Active" %}</th>
@@ -14,7 +14,6 @@
   <tbody>
     {% for user in institution.institution_users %}
     <tr>
-      <td>{{ user.user }}</td>
       <td>{{ user.email }}</td>
       <td>{{ user.role }}</td>
       <td>{{ user.active }}</td>
