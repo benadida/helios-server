@@ -58,7 +58,7 @@ class InstitutionUserProfile(models.Model):
     def institution_role(self):
         #TODO: check for user group instead
         if self.is_institution_admin:
-            return _("Admin")
+            return _("Institution Admin")
         if self.helios_user and self.helios_user.admin_p:
             return _("Election Admin")
         return _("Undefined")
