@@ -1,8 +1,8 @@
 $("document").ready(function(){
 
 	$("form").submit(function(event) { 
-            event.preventDefault();
-            event.stopImmediatePropagation();
+        event.preventDefault();
+        event.stopImmediatePropagation();
         var form = $(this);
 		if (confirm(gettext('Are you sure you want to add this e-mail as an institution admin?'))){
             var email = form.find('input[type=email]').val();
@@ -22,12 +22,32 @@ $("document").ready(function(){
                     form.parents('div.div_form').addClass('has-error');
                     form.parents('div.div_form').find('span.add_field_result').text(gettext('Please, correct the provided value'));
                 }
-                
             });
             form.find('input[type=email]').val('');
 		}
 		return false;
 	});
+    
+    $('.remove_institution_user').click(function(event) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+		if (confirm(gettext('Are you sure you want to delete this user?'))){
+            var url = $(this).attr('href');
+            var element = $(this);
+            $.ajax({
+                type: "POST",
+                url: url,
+                success: function (data) {
+                    element.parents('tr').remove();
+                },
+                error: function (error) {
+                    form.parents('div.div_form').addClass('has-error');
+                    form.parents('div.div_form').find('span.add_field_result').text(gettext('Please, correct the provided value'));
+                }
+            });
+		}
+		return false;
+    });
 
 /* dropdown menu from http://www.blogwebdesignmicrocamp.com.br/webdesign/aprenda-a-fazer-um-menu-drop-down-simples/ */
 

@@ -47,7 +47,7 @@ def delegate_user(request, role):
         except InstitutionUserProfile.DoesNotExist:
             # no, we don't, lets create one
             django_user = DjangoUser.objects.create(email=email,username=email)
-            django_user.save
+            django_user.save()
             institution_user_profile = InstitutionUserProfile.objects.create(email=email, 
                 institution=user.institutionuserprofile_set.get().institution,
                 django_user=django_user)
@@ -62,27 +62,29 @@ def delegate_user(request, role):
         response_data = {'error': _('An e-mail must be informed')} 
         status = 400
     return HttpResponse(json.dumps(response_data), content_type="application/json", status=status)
-    
 
 
 @login_required
-@require_http_methods([ "POST,"])
-def revoke_institution_admin(request, institution_id):
-    """
-    Revoke an user as institution admin
-    """
-    user = get_user(request)
-    pass
-
-
-@login_required
+@require_institution_admin
 @require_http_methods(["POST",])
-def revoke_election_admin(request, institution_id):
+def revoke_user(request, user_pk):
     """
-    Revoke an user as elections admin
+    Revoke an institution user
     """
     user = get_user(request)
-    pass
+    status = 200
+    try:
+        # let's se if we already have this email for this institution
+        profile = InstitutionUserProfile.objects.get(pk=user_pk, 
+            institution=user.institutionuserprofile_set.get().institution)
+        profile.django_user.delete()
+        profile.delete()
+        response_data = {'success': _('User successfully removed')} 
+    except InstitutionUserProfile.DoesNotExist:
+        response_data = {'error': _('User not found')} 
+        status = 400
+
+    return HttpResponse(json.dumps(response_data), content_type="application/json", status=status)
 
 
 @login_required

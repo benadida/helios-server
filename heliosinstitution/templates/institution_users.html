@@ -16,9 +16,13 @@
     <tr>
       <td>{{ user.email }}</td>
       <td>{{ user.role }}</td>
-      <td>{{ user.active }}</td>
+      <td>{{ user.active }}{% if not user.active %} <i title="{% trans "User did not logged yet" %}" class="glyphicon glyphicon-exclamation-sign"></i>{% endif %} </td>
       <td>{{ user.expires_at|date:"d/m/Y"}}</td>
+      <td>
+              <a class="remove_institution_user" class="glyphicon glyphicon-remove" href="{% url "heliosinstitution.views.revoke_user" user.pk %} "><i title="{% trans "Remove user" %}" class="glyphicon glyphicon-remove"></i></a>
+        </td>
     </tr>
     {% endfor %}
  </tbody>
 </table>
+{% endif %}
