@@ -28,13 +28,12 @@ class Institution(models.Model):
         users = []
         for user in self.institutionuserprofile_set.all():
             users.append({
-                'user': user.user,
+                'user': user.helios_user,
                 'email': user.email,
                 'role': user.institution_role,
                 'active': user.active,
                 'expires_at': user.expires_at,
             })
-        
         return users
 
 
