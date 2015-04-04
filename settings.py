@@ -15,6 +15,13 @@ def get_from_env(var, default):
 DEBUG = (get_from_env('DEBUG', '1') == '1')
 TEMPLATE_DEBUG = DEBUG
 
+#If the Host header (or X-Forwarded-Host if USE_X_FORWARDED_HOST is enabled) does not match any value in this list, the django.http.HttpRequest.get_host() method will raise SuspiciousOperation.
+#When DEBUG is True or when running tests, host validation is disabled; any host will be accepted. Thus it’s usually only necessary to set it in production.
+#This validation only applies via get_host(); if your code accesses the Host header directly from request.META you are bypassing this security protection.
+#More info: https://docs.djangoproject.com/en/1.7/ref/settings/#allowed-hosts
+
+ALLOWED_HOSTS = ['sp-helios.cafeexpresso.rnp.br'] # set a value for production environment, alongside with debug set to false
+
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
 ROOT_URLCONF = 'urls'
