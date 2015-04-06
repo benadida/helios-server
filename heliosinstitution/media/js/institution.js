@@ -1,6 +1,6 @@
 $("document").ready(function(){
 
-	$("form").submit(function(event) { 
+	$("form.add_inst_email").submit(function(event) { 
         event.preventDefault();
         event.stopImmediatePropagation();
         var form = $(this);
