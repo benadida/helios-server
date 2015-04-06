@@ -15,5 +15,4 @@ urlpatterns = patterns(
     (r'^elections$', elections),
     (r'^problem-elections$', recent_problem_elections),
     (r'^recent-votes$', recent_votes),
-    (r'^admin-actions$', admin_actions),
 )
