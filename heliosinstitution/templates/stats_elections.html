@@ -1,0 +1,24 @@
+{% load i18n %}
+<div id="stats_elections" class="panel panel-primary">
+    <div class="panel-heading">{% trans "All Elections" %}</div>
+    <div class="panel-body"> 
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>{% trans "Election" %}</th>
+          <th>{% trans "Admin" %}</th>
+          <th>{% trans "Voters / cast votes" %}</th>
+       </tr>
+      </thead>
+      <tbody>
+        {% for election in institution.elections %}
+        <tr>
+	      <td><b><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></b></td>
+          <td>{{ election.admin }}</td>
+          <td>{{ election.voters }} / {{ election.cast_votes }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      </table>
+</div> <!-- panel primary -->

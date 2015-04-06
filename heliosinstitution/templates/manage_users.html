@@ -1,10 +1,7 @@
-{% extends 'server_ui/templates/base.html' %}
+{% extends 'heliosinstitution/templates/dashboard.html' %}
 {% load i18n %}
 {% load staticfiles %}
-{% block extra-head %}
-    <script language="javascript" src="{% static "js/institution.js" %}"></script>
-{% endblock %}
-{% block content %}
+{% block subcontent %}
 
 {% if user %}
     <div class="div_form well">
@@ -38,4 +35,4 @@
     {% include "login_box.html" %}
 {% endif %}
 
-{% endblock %}
+{% endblock subcontent %}

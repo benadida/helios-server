@@ -1,0 +1,16 @@
+{% extends 'server_ui/templates/base.html' %}
+{% load i18n %}
+{% load staticfiles %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-2 col-lg-2">
+            {% include "left_side_menu.html" %}
+        </div>
+
+        <div id="content" class="col-lg-10 col-sm-10">
+         {% block subcontent %}
+         {% endblock subcontent %}
+        </div>
+    </div>
+
+{% endblock content %}

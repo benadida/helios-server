@@ -1,0 +1,24 @@
+{% load i18n %}
+<div id="recent_cast_votes" class="panel panel-primary">
+    <div class="panel-heading">{% trans "Recently cast votes" %}</div>
+    <div class="panel-body"> 
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{% trans "Election" %}</th>
+                <th>{% trans "Last cast vote" %}</th>
+                <th>{% trans "Recently cast votes" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for election in institution.recently_cast_votes %}
+            <tr>
+			    <td><b><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></b></td>
+			    <td>{{election.last_cast_vote|date:"d/m/Y H:i"}}</td>
+			    <td>{{election.num_recent_cast_votes}}</td>	
+            </tr>
+         {% endfor %}
+        </tbody>
+    </table>
+</div>

@@ -1,6 +1,13 @@
+import datetime
+
+
 from django.db import models
+from django.db.models import Max, Count
 from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
+
+
+from helios.models import Election
 
 # Create your models here.
 class Institution(models.Model):
@@ -36,6 +43,39 @@ class Institution(models.Model):
                 'expires_at': user.expires_at,
             })
         return users
+
+    @property
+    def elections(self):
+        elections = []
+        for election in Election.objects.filter(admin__in=[
+            user for user in self.institutionuserprofile_set.all()]).order_by('-created_at'):
+            elections.append({
+                'pk': election.pk,
+                'uuid': election.uuid,
+                'name': election.name,
+                'admin': election.admin.pretty_name,
+                'voters': election.num_voters,
+                'cast_votes': election.num_cast_votes,
+            })
+
+        return elections
+
+    @property
+    def recently_cast_votes(self):
+        recently_cast_votes = []
+        for election in Election.objects.filter(
+            voter__castvote__cast_at__gt= datetime.datetime.utcnow() - datetime.timedelta(days=1),
+                admin__in=[user for user in self.institutionuserprofile_set.all()]).annotate(
+                    last_cast_vote = Max('voter__castvote__cast_at'),
+                        num_recent_cast_votes = Count('voter__castvote')).order_by('-last_cast_vote'):
+          recently_cast_votes.append({
+            'uuid': election.uuid,
+            'name': election.name,
+            'last_cast_vote':  election.last_cast_vote,
+            'num_recent_cast_vote': election.num_recent_cast_votes,
+          })
+
+        return recently_cast_votes
 
 
 class InstitutionUserProfile(models.Model):

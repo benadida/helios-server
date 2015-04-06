@@ -1,0 +1,41 @@
+{% extends 'heliosinstitution/templates/dashboard.html' %}
+{% load i18n %}
+{% load staticfiles %}
+{% block subcontent %}
+<div class="panel panel-primary">
+    <div class="panel-heading">{% trans "Admin actions" %}</div>
+        <div class="panel-body"> 
+            {% if actions_page.has_previous %}
+                <a href="?page={{actions_page.previous_page_number}}&limit={{limit}}"> {% trans "previous" %} {{limit}}</a> &nbsp;&nbsp;
+            {% endif %}
+
+            {% trans "Actions" %} {{actions_page.start_index}} - {{actions_page.end_index}}&nbsp;&nbsp;
+
+            {% if actions_page.has_next %}
+                <a href="?page={{actions_page.next_page_number}}&limit={{limit}}">{% trans "next" %} {{limit}}</a> &nbsp;&nbsp;
+            {% endif %}
+        </div>
+        {% if actions %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>{% trans "User" %}</th>
+              <th>{% trans "Action" %}</th>
+              <th>{% trans "Details" %}</th>
+              <th>{% trans "At" %}</th>
+           </tr>
+          </thead>
+            <tbody>
+                {% for action in actions %}
+                <tr> 
+                 <td>{{action.user}}</td>
+                 <td>{{action.pretty_type}}</td>
+                 <td>{{action.pretty_description|safe}}</td>
+                 <td>{{action.at|date:"d/m/Y H:i"}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+</div><!-- panel-primary -->
+{% endblock subcontent %}

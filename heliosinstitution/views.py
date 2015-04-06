@@ -2,6 +2,7 @@ import json
 
 from django.views.decorators.http import require_http_methods
 from django.http import HttpResponseRedirect, HttpResponse
+from django.core.paginator import Paginator
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User as DjangoUser, Group
 from django.utils.translation import ugettext as _
@@ -10,12 +11,46 @@ from django.utils.translation import ugettext as _
 from helios_auth.security import *
 from heliosinstitution.models import InstitutionUserProfile
 from heliosinstitution.decorators import *
+from helioslog.models import HeliosLog
 
 
 from view_utils import *
 
-def home(request):
-    pass
+
+@login_required
+@require_institution_admin
+def dashboard(request):
+    user = get_user(request)
+    institution = user.institutionuserprofile_set.get().institution
+
+    return render_template(request, "dashboard", {
+        "institution": institution,
+    })
+
+
+@login_required
+@require_institution_admin
+def stats(request):
+    user = get_user(request)
+    institution = user.institutionuserprofile_set.get().institution
+    num_votes_in_queue = 0
+    #TODO: actually count the number of votes in queue!
+    return render_template(request, "stats", {
+        "institution": institution,
+         "num_votes_in_queue": num_votes_in_queue,
+    })
+
+
+@login_required
+@require_institution_admin
+def recent_cast_votes(request):
+    user = get_user(request)
+    institution = user.institutionuserprofile_set.get().institution
+    
+    return render_template(request, "stats", {
+        "institution": institution,
+    })
+
 
 @login_required
 @require_institution_admin
@@ -99,3 +134,18 @@ def users(request):
     return render_template(request, "institution_users", {
         "institution": institution,
     })
+
+
+@login_required
+@require_institution_admin
+@require_http_methods(["GET",])
+def admin_actions(request):
+    user = get_user(request)
+    page = int(request.GET.get('page', 1))
+    limit = int(request.GET.get('limit', 25))
+    actions = HeliosLog.objects.filter(user=user).order_by('-at')
+    actions_paginator = Paginator(actions, limit)
+    actions_page = actions_paginator.page(page)
+
+    return render_template(request, "stats_admin_actions", {'actions' : actions_page.object_list, 'actions_page': actions_page,
+                                                      'limit' : limit})

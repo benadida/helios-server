@@ -37,7 +37,9 @@
   <!-- Main Page Content and Sidebar -->
 
   <div class="container">
-      {% block content %}{% endblock %}
+      {% block content %}
+        {% block subcontent %}{% endblock subcontent %}
+      {% endblock %}
   </div>
   
   <div class="panel-footer">
