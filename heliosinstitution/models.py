@@ -7,9 +7,6 @@ from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 
 
-from helios.models import Election
-
-# Create your models here.
 class Institution(models.Model):
   
     name = models.CharField(max_length=250)
@@ -46,6 +43,7 @@ class Institution(models.Model):
 
     @property
     def elections(self):
+        from helios.models import Election
         elections = []
         for election in Election.objects.filter(admin__in=[
             user for user in self.institutionuserprofile_set.all()]).order_by('-created_at'):
