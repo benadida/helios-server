@@ -32,13 +32,13 @@
 
   <script language="javascript">
     function result_append(str) {
-      $('#results').append(str).append("<br />");
+      $('#results').append(str).append('<br />');
     }
 
     function verify_single_ballot(election_url, audit_trail) {
       var encrypted_vote_json = jQuery.secureEvalJSON(audit_trail);
 
-      result_append("Loading election...");
+      result_append('Loading election...');
 
       // quick and dirty detection of cast ballot
       if (encrypted_vote_json['cast_at']) {
@@ -49,7 +49,7 @@
       $('#verifying_progress').show();
 
       var after_computation = function(overall_result) {
-        result_append("<br />");
+        result_append('<br />');
 
         $('#verifying_progress').hide();
 
