@@ -3,19 +3,19 @@
  */
 
 // import needed resources
-importScripts("js/underscore-min.js");
+importScripts('js/underscore.min.js');
 
 importScripts(
-	"js/jscrypto/jsbn.js",
-	"js/jscrypto/jsbn2.js",
-	"js/jscrypto/sjcl.js",
-	"js/jscrypto/class.js",
-	"js/jscrypto/bigint.js",
-	"js/jscrypto/random.js",
-	"js/jscrypto/elgamal.js",
-	"js/jscrypto/sha1.js",
-	"js/jscrypto/sha2.js",
-	"js/jscrypto/helios.js"
+	'js/jscrypto/jsbn.js',
+	'js/jscrypto/jsbn2.js',
+	'js/jscrypto/sjcl.js',
+	'js/jscrypto/class.js',
+	'js/jscrypto/bigint.js',
+	'js/jscrypto/random.js',
+	'js/jscrypto/elgamal.js',
+	'js/jscrypto/sha1.js',
+	'js/jscrypto/sha2.js',
+	'js/jscrypto/helios.js'
 );
 
 var console = {
@@ -26,23 +26,24 @@ var console = {
 
 var ELECTION = null;
 var Q_NUM = null;
+var PROGRESS = 0;
 
 function do_setup(message) {
-	console.log("Setting up worker " + message.question_num);
+	console.log('Setting up worker ' + message.question_num);
 
 	ELECTION = HELIOS.Election.fromJSONString(message.election);
 	Q_NUM = message.question_num;
 }
 
 function do_encrypt(message) {
-  console.log("Encrypting answer for question " + Q_NUM);
+  console.log('Encrypting answers for question ' + Q_NUM);
 
 	var start = new Date().getTime();
-  var encrypted_answer = new HELIOS.EncryptedAnswer(ELECTION.questions[Q_NUM], message.answer, ELECTION.public_key, null);
+  var encrypted_answer = new HELIOS.EncryptedAnswer(ELECTION.questions[Q_NUM], message.answer, ELECTION.public_key, null, self);
 	var end = new Date().getTime();
 	var encrypting_time = end-start;
 
-	console.log("Done encrypting in "+String(encrypting_time)+" ms");
+	console.log('Done encrypting in ' + String(encrypting_time) + ' ms');
 
   // send the result back
   self.postMessage({

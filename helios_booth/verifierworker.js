@@ -3,20 +3,20 @@
  */
 
 // import needed resources
-importScripts("js/underscore-min.js");
+importScripts('js/underscore.min.js');
 
 importScripts(
-	"js/jscrypto/jsbn.js",
-	"js/jscrypto/jsbn2.js",
-	"js/jscrypto/sjcl.js",
-	"js/jscrypto/class.js",
-	"js/jscrypto/bigint.js",
-	"js/jscrypto/random.js",
-  "js/jscrypto/elgamal.js",
-  "js/jscrypto/sha1.js",
-  "js/jscrypto/sha2.js",
-  "js/jscrypto/helios.js",
-	"verifier.js"
+	'js/jscrypto/jsbn.js',
+	'js/jscrypto/jsbn2.js',
+	'js/jscrypto/sjcl.js',
+	'js/jscrypto/class.js',
+	'js/jscrypto/bigint.js',
+	'js/jscrypto/random.js',
+  'js/jscrypto/elgamal.js',
+  'js/jscrypto/sha1.js',
+  'js/jscrypto/sha2.js',
+  'js/jscrypto/helios.js',
+	'verifier.js'
 );
 
 var console = {

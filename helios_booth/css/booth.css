@@ -12,8 +12,7 @@ body {
   border: 1px solid #666;
   top: 30px;
   left: 50%;
-  margin-left: -500px;
-  margin-top: 0px;
+  margin: 0 0 30px -500px;
   width: 1000px;
 }
 
@@ -106,4 +105,64 @@ h3 {
 
 #loading_div {
   display: none;
+}
+
+.progress_circle {
+  height: 120px;
+  width: 120px;
+  margin: 40px auto;
+  font-size: 1.6em;
+  font-weight: bold;
+}
+
+.progress_circle > svg {
+  height: 100%;
+  display: block;
+}
+
+.small.progress_circle {
+  height: 60px;
+  width: 60px;
+  margin: 20px auto;
+}
+
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes rotating {
+  from {
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+  }
+}
+.rotating {
+  -webkit-animation: rotating 2s linear infinite;
+  -moz-animation: rotating 2s linear infinite;
+  -ms-animation: rotating 2s linear infinite;
+  -o-animation: rotating 2s linear infinite;
+  animation: rotating 2s linear infinite;
+  transform-origin: 50% 50%;
 }

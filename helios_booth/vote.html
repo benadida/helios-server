@@ -16,7 +16,8 @@
   <script language="javascript" src="js/jscrypto/jsbn.js"></script>
   <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
   <script language="javascript" src="js/jscrypto/sjcl.js"></script>
-  <script language="javascript" src="js/underscore-min.js"></script>
+  <script language="javascript" src="js/underscore.min.js"></script>
+  <script language="javascript" src="js/progressbar.min.js"></script>
   <script language="javascript" src="js/jquery-1.7.2.min.js"></script>
   <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
   <script language="javascript" src="js/jquery-jtemplates.js"></script>
@@ -29,6 +30,9 @@
   <script language="javascript" src="js/jscrypto/helios.js"></script>
 
   <script language="javascript">
+    // progress
+    var encrypting_progress = null;
+
     // utils
     BOOTH = {};
 
@@ -58,7 +62,7 @@
       if (typeof e == 'undefined')
         e = window.event;
 
-      var message = "If you leave this page with an in-progress ballot, your ballot will be lost.";
+      var message = 'If you leave this page with an in-progress ballot, your ballot will be lost.';
 
       if (e)
         e.returnValue = message;
@@ -93,6 +97,9 @@
       _(BOOTH.encrypted_answers).each(function(enc_answer, ea_num) {
         BOOTH.launch_async_encryption_answer(ea_num);
       });
+
+      BOOTH.encrypting_progress = [];
+      encrypting_progress.set(0);
     };
 
     BOOTH.log = function(msg) {
@@ -106,6 +113,7 @@
         // prepare spots for encrypted answers
         // and one worker per question
         BOOTH.encrypted_answers = [];
+        BOOTH.encrypting_progress = [];
         BOOTH.answer_timestamps = [];
         BOOTH.workers = [];
         $(BOOTH.election.questions).each(function(q_num, q) {
@@ -122,15 +130,19 @@
             if (event.data.type == 'log')
               return BOOTH.log(event.data.msg);
 
+            // progress
+            if (event.data.type == 'progress')
+              BOOTH.encrypting_progress[q_num] = event.data.progress
+
             // result of encryption
             if (event.data.type == 'result') {
               // this check ensures that race conditions
               // don't screw up votes.
               if (event.data.id == BOOTH.answer_timestamps[q_num]) {
                 BOOTH.encrypted_answers[q_num] = HELIOS.EncryptedAnswer.fromJSONObject(event.data.encrypted_answer, BOOTH.election);
-                BOOTH.log('got encrypted answer ' + q_num);
+                BOOTH.log('Got encrypted answer ' + q_num);
               } else {
-                BOOTH.log('no way jose');
+                BOOTH.log('No way jose');
               }
             }
           };
@@ -155,7 +167,7 @@
       // async?
       BOOTH.setup_workers(raw_json);
 
-      document.title += ' - ' + BOOTH.election.name;
+      document.title += '&mdash;' + BOOTH.election.name;
 
       // escape election fields
       $(['description', 'name']).each(function(i, field) {
@@ -399,25 +411,6 @@
       BigInt.setup(BOOTH.so_lets_go);
     };
 
-    BOOTH.ready_p = false;
-
-    $(document).ready(function() {
-      if (USE_SJCL)
-        sjcl.random.startCollectors();
-
-      // we're asynchronous if we have SJCL and Worker
-      BOOTH.synchronous = !(USE_SJCL && window.Worker);
-
-      // we do in the browser only if it's asynchronous
-      BigInt.in_browser = !BOOTH.synchronous;
-
-      // set up dummy bigint for fast parsing and serialization
-      if (!BigInt.in_browser)
-        BigInt = BigIntDummy;
-
-      BigInt.setup(BOOTH.so_lets_go, BOOTH.nojava);
-    });
-
     BOOTH.show_confirm = function() {
       // process the answers
       var choices = BALLOT.pretty_choices(BOOTH.election, BOOTH.ballot);
@@ -447,23 +440,27 @@
       BOOTH.encrypted_vote_json = null;
     };
 
-    BOOTH.total_cycles_waited = 0;
-
     // wait for all workers to be done
     BOOTH.wait_for_ciphertexts = function() {
-      BOOTH.total_cycles_waited += 1;
-
       var answers_done = _.reject(BOOTH.encrypted_answers, _.isNull);
-      var percentage_done = Math.round((100 * answers_done.length) / BOOTH.encrypted_answers.length);
 
-      if (BOOTH.total_cycles_waited > 250) {
-        alert('There appears to be a problem with the encryption process.');
-        return;
+      if (answers_done.length != BOOTH.encrypted_answers.length) {
+        setTimeout(BOOTH.wait_for_ciphertexts, 250);
+
+        var total_encryptions = 0;
+        $(BOOTH.election.questions).each(function(i, question) {
+          total_encryptions += question.answers.length;
+        });
+
+        if (BOOTH.encrypting_progress.length > 0) {
+          var encryptions_done = BOOTH.encrypting_progress.reduce(function(a, b) {
+            return a + b;
+          });
       }
 
-      if (percentage_done < 100) {
-        setTimeout(BOOTH.wait_for_ciphertexts, 500);
-        $('#percent_done').html(percentage_done + '');
+        var percentage_done = encryptions_done / total_encryptions;
+
+        encrypting_progress.animate(percentage_done);
         return;
       }
 
@@ -556,7 +553,7 @@
 
     BOOTH.localize = function() {
       $(function() {
-        var options = {pathPrefix: "translations"};
+        var options = {pathPrefix: 'translations'};
 
         if (window.location.hash) {
           var options = {
@@ -570,9 +567,47 @@
     };
 
     $(window).bind('hashchange', function() {
-      if (window.location.hash.substring(1) != "") {
+      if (window.location.hash.substring(1) != '') {
         BOOTH.localize();
       }
+    });
+
+    $(document).ready(function() {
+      var checking_capabilities_progress = new ProgressBar.Circle('#checking_capabilities_progress', {
+          color: '#000',
+          trailColor: '#ddd',
+          strokeWidth: 10,
+          easing: 'easeInOut'
+      });
+      checking_capabilities_progress.set(0.25);
+
+      encrypting_progress = new ProgressBar.Circle('#encrypting_progress', {
+          color: '#000',
+          trailColor: '#ddd',
+          strokeWidth: 5,
+          easing: 'easeInOut',
+          text: {
+            value: '0%'
+          },
+          step: function(state, bar) {
+            bar.setText((bar.value() * 100).toFixed(0) + '%');
+      }
+      });
+
+      if (USE_SJCL)
+        sjcl.random.startCollectors();
+
+      // we're asynchronous if we have SJCL and Worker
+      BOOTH.synchronous = !(USE_SJCL && window.Worker);
+
+      // we do in the browser only if it's asynchronous
+      BigInt.in_browser = !BOOTH.synchronous;
+
+      // set up dummy bigint for fast parsing and serialization
+      if (!BigInt.in_browser)
+        BigInt = BigIntDummy;
+
+      BigInt.setup(BOOTH.so_lets_go, BOOTH.nojava);
     });
   </script>
 </head>
@@ -597,11 +632,12 @@
 
         <div id="election_div" class="panel">
           <div align="center">
-            <h3 data-localication="checking_capabilities">Checking capabilities and loading election booth...</h3>
+              <h3 data-localize="checking_capabilities">Checking capabilities and loading election booth...</h3>
 
-            <img src="loading.gif" />
-            <br />
-            <span data-localization="checking_capabilities_seconds">This may take up to 10 seconds.</span>
+              <p align="center">
+                <div class="rotating small progress_circle" id="checking_capabilities_progress"></div>
+                <b data-localize="checking_capabilities_seconds">This may take up to 10 seconds.</b>
+              </p>
           </div>
         </div>
 
@@ -614,13 +650,14 @@
         </div>
 
         <div id="encrypting_div" class="panel" style="display: none;">
-          <h3 align="center">
-            <span data-localize="encrypting">Helios is now encrypting your ballot...</span>
-            <br />
-            <img src="encrypting.gif" />
-          </h3>
+            <div align="center">
+              <h3 align="center" data-localize="encrypting">Helios is now encrypting your ballot...</h3>
 
-          <p align="center"><b data-localize="encrypting_minutes">This may take up to two minutes.</b>
+              <p align="center">
+                <div class="progress_circle" id="encrypting_progress"></div>
+                <b data-localize="encrypting_minutes">This may take up to two minutes.</b>
+              </p>
+            </div>
         </div>
 
         <div id="audit_div" class="panel"></div>

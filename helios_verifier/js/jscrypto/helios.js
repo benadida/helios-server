@@ -162,7 +162,7 @@ UTILS.generate_plaintexts = function(pk, min, max) {
     min = 0;
 
   // questions with more than one possible answer, add to the array.
-  for (var i=0; i<=max; i++) {
+  for (var i = 0; i <= max; i++) {
     if (i >= min) {
       plaintexts.push(new ElGamal.Plaintext(last_plaintext, pk, false));
     }
@@ -180,7 +180,7 @@ UTILS.generate_plaintexts = function(pk, min, max) {
 
 
 HELIOS.EncryptedAnswer = Class.extend({
-  init: function(question, answer, pk) {
+  init: function(question, answer, pk, progress, worker) {
     // if nothing in the constructor
     if (question == null)
       return;
@@ -190,7 +190,7 @@ HELIOS.EncryptedAnswer = Class.extend({
     this.answer = answer;
 
     // do the encryption
-    var enc_result = this.doEncryption(question, this.answer, pk, null);
+    var enc_result = this.doEncryption(question, this.answer, pk, null, worker);
 
     this.choices = enc_result.choices;
     this.randomness = enc_result.randomness;
@@ -198,13 +198,13 @@ HELIOS.EncryptedAnswer = Class.extend({
     this.overall_proof = enc_result.overall_proof;
   },
 
-  doEncryption: function(question, answer, pk, randomness) {
+  doEncryption: function(question, answer, pk, randomness, worker) {
     var choices = [];
     var individual_proofs = [];
     var overall_proof = null;
     var sum_value = [];
 
-    for (var i=0; i<answer.length ; i=i+2) {
+    for (var i = 0; i < answer.length ; i = i+2) {
     	sum_value.push(answer[i]+answer[i+1]);
     }
 
@@ -227,7 +227,7 @@ HELIOS.EncryptedAnswer = Class.extend({
     var num_selected_answers = 0;
 
     // go through each possible answer and encrypt either a g^0 or a g^1.
-    for (var i=0; i<question.answers.length; i++) {
+    for (var i = 0; i < question.answers.length; i++) {
       var index, plaintext_index;
       // if this is the answer, swap them so m is encryption 1 (g)
       if (_(answer).include(i)) {
@@ -248,6 +248,9 @@ HELIOS.EncryptedAnswer = Class.extend({
         // generate proof that this ciphertext is a 0 or a 1
         individual_proofs[i] = choices[i].generateDisjunctiveProof(zero_one_plaintexts, plaintext_index, randomness[i], ElGamal.disjunctive_challenge_generator);
       }
+
+      if (worker != null)
+        worker.postMessage({'type': 'progress', 'progress': i+1});
     }
 
     if (generate_new_randomness && question.max != null) {
@@ -298,7 +301,7 @@ HELIOS.EncryptedAnswer = Class.extend({
     }
 
     // check the ciphertexts
-    for (var i=0; i<result.choices.length; i++) {
+    for (var i = 0; i < result.choices.length; i++) {
       if (!result.choices[i].equals(this.choices[i])) {
         return false;
       }
@@ -386,7 +389,7 @@ HELIOS.EncryptedVote = Class.extend({
     this.encrypted_answers = [];
 
     // loop through questions
-    for (var i=0; i<n_questions; i++) {
+    for (var i = 0; i < n_questions; i++) {
       this.encrypted_answers[i] = new HELIOS.EncryptedAnswer(election.questions[i], answers[i], election.public_key);
     }
   },

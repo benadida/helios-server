@@ -3,7 +3,7 @@
 
 function verify_ballot(election_raw_json, encrypted_vote_json, status_cb) {
   var overall_result = true;
-  //try {
+  try {
     election = HELIOS.Election.fromJSONString(election_raw_json);
 
     var election_hash = election.hash;
@@ -50,10 +50,10 @@ function verify_ballot(election_raw_json, encrypted_vote_json, status_cb) {
       overall_result = false;
       status_cb("Problem: Proofs not OK");
     }
-  //} catch (e) {
-  //  status_cb("Problem parsing election or ballot data structures, malformed inputs: " + e.toString());
-  //  overall_result = false;
-  //}
+  } catch (e) {
+    status_cb("Problem parsing election or ballot data structures, malformed inputs: " + e.toString());
+    overall_result = false;
+  }
 
   return overall_result;
 }
