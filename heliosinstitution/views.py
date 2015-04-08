@@ -20,8 +20,9 @@ from view_utils import *
 @login_required
 @require_institution_admin
 def dashboard(request):
-    user = get_user(request)
-    institution = user.institutionuserprofile_set.get().institution
+    if request.METHODO == 'GET':
+        user = get_user(request)
+        institution = user.institutionuserprofile_set.get().institution
 
     return render_template(request, "dashboard", {
         "institution": institution,
