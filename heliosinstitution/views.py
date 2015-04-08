@@ -114,8 +114,9 @@ def revoke_user(request, user_pk):
             institution=user.institutionuserprofile_set.get().institution)
         profile.django_user.delete()
         # not deleting helios user, just removing admin_p, since it can still be a voter and so on
-        profile.helios_user.admin_p = False
-        profile.helios_user.save()
+        if profile.helios_user is not None:
+            profile.helios_user.admin_p = False
+            profile.helios_user.save()
         profile.delete()
         response_data = {'success': _('User successfully removed')} 
     except InstitutionUserProfile.DoesNotExist:
