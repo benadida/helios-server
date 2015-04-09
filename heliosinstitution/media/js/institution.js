@@ -49,6 +49,10 @@ $("document").ready(function(){
 		return false;
     });
 
+    $('.expires_at').datepicker({
+        todayBtn: "linked",
+        autoclose: true
+     });
 
 })
 

@@ -10,6 +10,7 @@
             <div class="form-group">
                 <label class="sr-only" for="inst-mngt-email">{% trans "Email address" %}</label>
                 <input type="email" class="form-control" name="email" placeholder="{% trans "Enter email" %}">
+                <input type="text" class="form-control expires_at" name="expires_at" placeholder="{% trans "Enter expiration date" %}">
                 <span id="add_inst_mngt_email_result"></span>
             </div>
             <button id="add_inst_mngt_email" type="submit" class="btn btn-primary">{% trans "Add" %}</button>
@@ -22,6 +23,7 @@
             <div class="form-group">
                 <label class="sr-only" for="election-mngt-email">{% trans "Email address" %}</label>
                 <input type="email" class="form-control" name="email" placeholder="{% trans "Enter email" %}">
+                <input type="text" class="form-control expires_at" name="expires_at" placeholder="{% trans "Enter expiration date" %}">
             </div>
             <button id="add_election_mngt_email" type="submit" class="btn btn-primary">{% trans "Add" %}</button>
         </form>
