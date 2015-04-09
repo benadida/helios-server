@@ -60,6 +60,7 @@ class Institution(models.Model):
 
     @property
     def recently_cast_votes(self):
+        from helios.models import Election
         recently_cast_votes = []
         for election in Election.objects.filter(
             voter__castvote__cast_at__gt= datetime.datetime.utcnow() - datetime.timedelta(days=1),
