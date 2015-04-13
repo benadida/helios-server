@@ -283,11 +283,7 @@ class Tally(WorkflowObject):
 
         if election:
             self.init_election(election)
-            if election.election_type == 'ed election':
-
-                self.tally = [[0 for a in range((len(q['answers']) * (len(q['answers']) - 1)) * 2 / 2)] for q in self.questions]
-            else:
-                self.tally = [[0 for a in q['answers']] for q in self.questions]
+            self.tally = [[0 for a in q['answers']] for q in self.questions]
 
         else:
             self.questions = None
