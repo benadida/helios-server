@@ -379,12 +379,7 @@ class Election(HeliosModel):
     @property
     def issues_before_freeze(self):
         issues = []
-        if self.questions == None or len(self.questions) == 0:
-            issues.append(
-                {'type': 'questions',
-                 'action': "Add questions to the ballot."}
-            )
-
+        
         trustees = Trustee.get_by_election(self)
         if len(trustees) == 0:
             issues.append({
@@ -405,6 +400,12 @@ class Election(HeliosModel):
                             'type': 'trustee keypairs',
                             'action': 'Wait for trustee %s to complete the key ceremony.' % t.name
                         })
+
+        if self.questions == None or len(self.questions) == 0:
+            issues.append(
+                {'type': 'questions',
+                 'action': "Add questions to the ballot."}
+            )
 
         if self.voter_set.count() == 0 and not self.openreg:
             issues.append({
