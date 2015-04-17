@@ -709,6 +709,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   # voters oauth2 authentication
   oauth2_thirdparty = models.BooleanField(default=False)
+
   oauth2_type = models.CharField(max_length=25,
                                  null=True, blank=True)
   oauth2_client_type = models.CharField(max_length=25, 
@@ -725,7 +726,12 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
                                 null=True, blank=True)
   oauth2_extra = models.CharField(max_length=255,
                                   null=True, blank=True)
-
+  # jwt authentication
+  jwt_auth = models.BooleanField(default=False)
+  jwt_public_key = models.TextField(null=True, default=None)
+  jwt_issuer = models.CharField(max_length=255,
+                                null=True, blank=True)
+  
   objects = PollManager()
 
   class Meta:
