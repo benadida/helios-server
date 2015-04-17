@@ -2,6 +2,7 @@ import logging
 import urllib2 
 import urllib
 import json
+import jwt
 
 from django.conf.urls.defaults import *
 from django.core.urlresolvers import reverse
@@ -120,3 +121,23 @@ def oauth2_login(request):
     else:
         return HttpResponseBadRequest(400)
 
+def jwt_login(request):
+    token = request.GET.get('jwt', None)
+    if not token:
+        return HttpResponseBadRequest(400)
+    AUDIENCE = 'zeus' # add to settings
+    data = jwt.decode(token, verify=False)   
+    aud = data['aud']
+    iss = data['iss']
+    voter_email = data['sub']
+    polls = Poll.objects.filter(jwt_auth=True, jwt_issuer=iss,
+                                voters__voter_email=voter_email)
+    allowed_polls = []
+    voting_urls = []
+    for poll in polls:
+        jwt_pk = poll.jwt_public_key
+        try:
+            jwt.decode(token, key=jwt_pk, verify=True)
+        except jwt.InvalidTokenError:
+            from django.http import HttpResponse
+            return HttpResponse('bad token')
