@@ -569,7 +569,8 @@ class PollForm(forms.ModelForm):
             ('other', 'other')
         )
 
-
+        self.fields['jwt_public_key'] = forms.CharField(required=False,
+                                                        widget=forms.Textarea)
         self.fields['oauth2_type'] = forms.ChoiceField(required=False,
                                                        choices=TYPES)
         self.fields['oauth2_client_type'] = forms.ChoiceField(required=False,
@@ -626,14 +627,15 @@ class PollForm(forms.ModelForm):
                 raise forms.ValidationError(_("Poll name cannot be changed\
                                                after freeze"))
 
-        field_names = ['type', 'client_type', 'client_id', 'client_secret',
+        oauth2_field_names = ['type', 'client_type', 'client_id', 'client_secret',
                        'code_url', 'exchange_url', 'confirmation_url']
-        field_names = ['oauth2_' + x for x in field_names]
+        oauth2_field_names = ['oauth2_' + x for x in oauth2_field_names]
+        jwt_field_names = ['jwt_issuer', 'jwt_public_key']
         url_validate = URLValidator()
         if data['oauth2_thirdparty']:
-            for field_name in field_names:
+            for field_name in oauth2_field_names:
                 if not data[field_name]:
-                    self._errors[field_name] = ((_('This field is required.'),))
+                    self._errors[field_name] = _('This field is required.'),
             url_types = ['code', 'exchange', 'confirmation']
             for url_type in url_types:
                 try:
@@ -642,9 +644,15 @@ class PollForm(forms.ModelForm):
                     self._errors['oauth2_{}_url'.format(url_type)] =\
                         ((_("This URL is invalid"),))
         else:
-            for field_name in field_names:
-                data[field_name] = ''
-
+            for field_name in oauth2_field_names:
+               data[field_name] = ''
+        if data['jwt_auth']:
+            for field_name in jwt_field_names:
+                if not data[field_name]:
+                    self._errors[field_name] = _('This field is required.'), 
+        else:
+            for field_name in jwt_field_names:
+                data[field_name]=''
         return data
 
     def save(self, *args, **kwargs):
