@@ -31,16 +31,28 @@
 {% endif %}
 
 <script>
-var elems = $("input[id^=id_oauth2]:not(#id_oauth2_thirdparty), select[id^=id_oauth2]");
+var oauth2_elems = $("input[id^=id_oauth2]:not(#id_oauth2_thirdparty), select[id^=id_oauth2]");
 
-function show_elems(time){
-    elems.parent().show(time);
-    elems.parent().next().show(time);
+function show_oauth2_elems(time){
+    oauth2_elems.parent().show(time);
+    oauth2_elems.parent().next().show(time);
 }
 
-function hide_elems(time){
-    elems.parent().hide(time);
-    elems.parent().next().hide(time);
+function hide_oauth2_elems(time){
+    oauth2_elems.parent().hide(time);
+    oauth2_elems.parent().next().hide(time);
+}
+
+var jwt_elems = $("textarea[id^=id_jwt_public_key], input[id^=id_jwt_issuer]")
+
+function show_jwt_elems(time){
+    jwt_elems.parent().show(time);
+    jwt_elems.parent().next().show(time);
+}
+
+function hide_jwt_elems(time){
+    jwt_elems.parent().hide(time);
+    jwt_elems.parent().next().hide(time);
 }
 
 function collect_urls(){
@@ -67,7 +79,6 @@ function set_initial_values(urls){
         var code_field = $("#id_oauth2_code_url")
         var exchange_field = $("#id_oauth2_exchange_url")
         var confirmation_field = $("#id_oauth2_confirmation_url")
-        console.log(confirmation_field)
         var type = "google";
         code_field.val(urls[type][0])
         exchange_field.val(urls[type][1])
@@ -78,18 +89,46 @@ function set_initial_values(urls){
 $(function(){
     urls = collect_urls();
     set_initial_values(urls);
+
+    var jwt_auth = $('#id_jwt_auth')
+
     if ($("#id_oauth2_thirdparty").prop('checked')){
-        show_elems(150);
+        show_oauth2_elems(150);
+        hide_jwt_elems(0);
+    }
+    else if($("#id_jwt_auth").prop('checked')){
+        show_jwt_elems(150);
+        hide_oauth2_elems(0);
     }
     else{
-        hide_elems(0);
+        hide_oauth2_elems(150);
+        hide_jwt_elems(0);
     }
     $("#id_oauth2_thirdparty").change(function(){
         if ($("#id_oauth2_thirdparty").prop('checked')){
-            show_elems(150);
+            hide_jwt_elems(150);
+            show_oauth2_elems(150);
+            if (jwt_auth.prop('checked')){
+                jwt_auth.prop('checked', false)
+            }
         }
         else{
-            hide_elems(150);
+            hide_oauth2_elems(150);
+        }
+
+    });
+
+    $("#id_jwt_auth").change(function(){
+        if ($("#id_jwt_auth").prop('checked')){
+                show_jwt_elems(150)
+            if ($("#id_oauth2_thirdparty").prop('checked')){
+                show_jwt_elems(150);
+                $("#id_oauth2_thirdparty").prop('checked', false)
+                hide_oauth2_elems(150);
+            }
+        }
+        else{
+            hide_jwt_elems(150);
         }
     });
 

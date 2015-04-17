@@ -604,7 +604,9 @@ class PollForm(forms.ModelForm):
 
     class Meta:
         model = Poll
-        fields = ('name', 'oauth2_thirdparty', 'oauth2_type', 
+        fields = ('name',
+                  'jwt_auth', 'jwt_issuer', 'jwt_public_key', 
+                  'oauth2_thirdparty', 'oauth2_type', 
                   'oauth2_client_type', 'oauth2_client_id', 
                   'oauth2_client_secret', 'oauth2_code_url',
                   'oauth2_exchange_url', 'oauth2_confirmation_url')
