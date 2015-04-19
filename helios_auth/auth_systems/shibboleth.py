@@ -103,8 +103,15 @@ def user_needs_intervention(user_id, user_info, token):
         profile.active = True
 
         # check if user has a role
+        # TODO: check the use of cached properties
         if profile.django_user.groups.filter(name__in=['Institution Admin','Election Admin']).exists():
             profile.helios_user.admin_p = True    
+        
+        if profile.is_institution_admin:
+            # let's check/save idp address
+            if profile.institution.idp_address != user_info['identity_provider']:
+                profile.institution.idp_address = user_info['identity_provider']
+                profile.institution.save()
         profile.helios_user.save()
         profile.save()
 
@@ -113,7 +120,7 @@ def user_needs_intervention(user_id, user_info, token):
         # TODO return logout url
         pass
     except InstitutionUserProfile.DoesNotExist:
-        # the given user does not manager, maybe is another type...
+        # the given user does not have a institution role assigned
         # TODO check if he/she has another role
         pass
 
