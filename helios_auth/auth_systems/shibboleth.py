@@ -12,7 +12,6 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext as _
 
-#from heliosinstitution.models import Institution
 
 
 # some parameters to indicate that status updating is possible
@@ -25,27 +24,21 @@ class LoginForm(forms.Form):
 
 
 def shibboleth_login_view(request):
-	#from helios_auth.view_utils import render_template
+	from helios_auth.view_utils import render_template
 	
-	#error = None
+	error = None
 
-	#return render_template(request, 'shibboleth/login_box', {
-	#	'error': error,
-	#	'enabled_auth_systems': settings.AUTH_ENABLED_AUTH_SYSTEMS,
-	#})
-    return HttpResponseRedirect(reverse(shibboleth_register))
+	return render_template(request, 'shibboleth/login_box', {
+		'error': error,
+		'enabled_auth_systems': settings.AUTH_ENABLED_AUTH_SYSTEMS,
+	})
 
 
 def shibboleth_register(request):
     from helios_auth.view_utils import render_template
     from helios_auth.views import after
 
-    #user, error = parse_attributes(request.META)
-    user = {'email': 'shirlei@gmail.com',
-    'type': 'shibboleth',
-    'common_name': 'Shirlei',
-    'identity_provider': 'https://idp1.cafeexpresso.rnp.br/idp/shibboleth',
-    'user_id': 'shirlei@gmail.com'}
+    user, error = parse_attributes(request.META)
     if user:
         request.session['shib_user'] = user
         
@@ -65,10 +58,7 @@ def get_user_info_after_auth(request):
 		'type': 'shibboleth', 
 		'user_id' : user['email'], 
 		'name': user['common_name'], 
-		'info': {
-            'email' : user['email'],
-            'identity_provider': user['identity_provider'],
-         }, 
+		'info': user, 
 		'token': None,
 		}
 
@@ -148,7 +138,9 @@ def parse_attributes(META):
         if not value or value == '':
             if required:
                 error = True
-    return shib_attrs, error
-
-
     
+    for value in META:
+        if value.lower().startswith('shib-'):
+            shib_attrs[value] = META[value]
+
+    return shib_attrs, error
