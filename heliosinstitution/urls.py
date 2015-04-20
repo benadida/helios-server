@@ -18,4 +18,5 @@ urlpatterns = patterns('',
     (r'^admin-actions$', admin_actions),
     (r'^(?P<role>[\w\ ]+)/delegate_user$', delegate_user),
     (r'^(?P<user_pk>\d+)/revoke_user$', revoke_user),
+    (r'^(?P<user_pk>\d+)/user_metadata$', user_metadata),
 )

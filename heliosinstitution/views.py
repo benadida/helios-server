@@ -161,3 +161,13 @@ def admin_actions(request):
 
     return render_template(request, "stats_admin_actions", {'actions' : actions_page.object_list, 'actions_page': actions_page,
                                                       'limit' : limit})
+
+
+@login_required
+def user_metadata(request, user_pk):
+    user = get_user(request)
+    user_metadata = {}
+    if user.pk == int(user_pk):
+        user_metadata = user.info
+
+    return render_template(request,"user_metadata",{"user_metadata": user_metadata})
