@@ -151,11 +151,4 @@ def parse_attributes(META):
     return shib_attrs, error
 
 
-def shibboleth_meta(request):
-
-    from helios_auth.view_utils import render_template
-    meta_data = request.META.items()
     
-    return render_template(request, 'shibboleth/meta', {
-        'meta_data': meta_data,
-	})
