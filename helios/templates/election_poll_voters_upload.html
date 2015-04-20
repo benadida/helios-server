@@ -13,11 +13,7 @@
   <p>
   {% trans "Please, prepare a simple text file with the voters in CSV form, as in the example:" %}
   </p>
-  <pre>{% blocktrans %}
-      1,john.doe@email.tld,John,Doe,F.,+306971234567
-      2,miles@email.tld,Richard,Miles,Allan,+306971234568
-      3,j.m.roe@email.tld,Jenny,Roe,M,+306971234569
-      ...{% endblocktrans %}
+  <pre>{% blocktrans %}EXAMPLE_CSV_INPUT_TEXT{% endblocktrans %}
   </pre> 
   <u style="float:right">{% trans "*The last two fields (middle name and mobile phone) are optional" %}</u>
   <br /><br />
@@ -38,6 +34,7 @@
     <li>{% trans "The voter's surname" %}</li>
     <li>{% trans "The voter's middle name, or other title or name (optional)" %}</li>
     <li>{% trans "A personal mobile phone number of the voter (optional)" %}</li>
+    <li>{% trans "Voters vote weight (positive integer)" %}</li>
   </ol>
   </p>
   <p>

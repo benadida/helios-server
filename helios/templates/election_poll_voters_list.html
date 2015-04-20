@@ -133,6 +133,11 @@
     <td>
         {% if voter.voter_mobile %}, {{ voter.voter_mobile }}{% endif %}
     </td>
+    {% if display_weight_col %}
+    <td>
+        {{ voter.voter_weight }}
+    </td>
+    {% endif %}
     <td>
       {% if voter.voted %}
       {% trans "YES" %} {% if voter.excluded_at %}<b style="color:red">{% trans "(Excluded)" %}</b>{% endif %}

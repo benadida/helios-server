@@ -7,7 +7,7 @@ from datetime import datetime
 from random import randint, shuffle, choice
 from collections import deque
 from hashlib import sha256, sha1
-from itertools import izip, cycle, chain
+from itertools import izip, cycle, chain, repeat
 from functools import partial
 from math import log
 from bisect import bisect_right
@@ -3545,18 +3545,18 @@ class ZeusCoreElection(object):
 
         self.do_store_candidates(names)
 
-    def add_voters(self, *names):
-        name_set = set(self.do_get_voters().values())
-        intersection = name_set.intersection(names)
+    def add_voters(self, *voters):
+        name_set = set(v[0] for v in self.do_get_voters().itervalues())
+        intersection = name_set.intersection(v[0] for v in voters)
         if intersection:
             m = "Voter '%s' already exists!" % (intersection.pop(),)
             raise ZeusError(m)
 
         new_voters = {}
         voter_audit_codes = {}
-        for name in names:
+        for name, weight in voters:
             voter_key = "%x" % get_random_int(2, VOTER_KEY_CEIL)
-            new_voters[voter_key] = name
+            new_voters[voter_key] = (name, weight)
             audit_codes = list(get_random_int(2, VOTER_SLOT_CEIL)
                                for _ in xrange(3))
             voter_audit_codes[voter_key] = audit_codes
@@ -3584,7 +3584,7 @@ class ZeusCoreElection(object):
                 m = "No voters for election!"
                 raise ZeusError(m)
             with teller.task("Validating Voter Names"):
-                names = voters.values()
+                names = [v[0] for v in voters.itervalues()]
                 nr_names = len(names)
                 if len(set(names)) != nr_names:
                     m = "Duplicate voter names!"
@@ -4085,7 +4085,7 @@ class ZeusCoreElection(object):
             for voter_key, reason in excluded.iteritems():
                 voter = self.do_get_voter(voter_key)
                 if voter is None:
-                    m = "Nonexistent excluded voter '%s'!"
+                    m = "Nonexistent excluded voter '%s'!" % voter_key
                     raise AssertionError(m)
                 teller.advance()
 
@@ -4130,8 +4130,10 @@ class ZeusCoreElection(object):
             if fingerprint in excluded_votes:
                 continue
 
+            voter_key = vote['voter']
+            voter_name, voter_weight = self.do_get_voter(voter_key)
             eb = vote['encrypted_ballot']
-            _vote = [eb['alpha'], eb['beta']]
+            _vote = [eb['alpha'], eb['beta'], voter_weight]
             scratch[i] = _vote
             counted[i] = fingerprint
             previous = vote['previous']
@@ -4152,12 +4154,24 @@ class ZeusCoreElection(object):
             scratch[previous_index] = None
             counted[previous_index] = None
 
-        votes_for_mixing = [v for v in scratch if v is not None]
-        counted_list = [c for c in counted if c is not None]
-        nr_votes = len(votes_for_mixing)
-        if nr_votes != vote_count:
+        votes_for_mixing = []
+        counted_list = []
+        counted_votes = 0
+        for c, v in izip(counted, scratch):
+            if (c, v) == (None, None):
+                continue
+            elif None in (c, v):
+                raise AssertionError()
+
+            counted_votes += 1
+            alpha, beta, weight = v
+            vote = [alpha, beta]
+            votes_for_mixing.extend(repeat(vote, weight))
+            counted_list.extend(repeat(c, weight))
+
+        if counted_votes != vote_count:
             m = ("Vote count mismatch %d != %d. Corrupt index!"
-                % (nr_votes, vote_count))
+                % (counted_votes, vote_count))
             raise AssertionError(m)
 
         crypto = self.do_get_cryptosystem()
@@ -4708,7 +4722,7 @@ class ZeusCoreElection(object):
             append("Party-B" + PARTY_SEPARATOR + "Candidate-%04d" % i)
 
         voter_range = xrange(self._nr_voters)
-        voters = [("Voter-%08d" % x) for x in voter_range]
+        voters = [(("Voter-%08d" % x), 1) for x in voter_range]
 
         self.create_zeus_key()
         self.add_candidates(*candidates)
@@ -4833,8 +4847,10 @@ class ZeusCoreElection(object):
     def mk_stage_finished(self, teller=_teller):
         with teller.task("Validating results"):
             results = self.get_results()
-            if len(results) != self._nr_votes -1:
-                m = "Vote exclusion was not performed!"
+            nr_voters = len(self.do_get_voters())
+            if len(results) != min(self._nr_votes, nr_voters) - 1:
+                m = "Vote exclusion was not performed! results: %d vs %d"
+                m = m % (len(results), self._nr_votes - 1)
                 raise AssertionError(m)
 
             if sorted(results) != sorted(self._plaintexts.values()):

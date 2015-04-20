@@ -208,13 +208,6 @@ class ElectionForm(forms.ModelForm):
         saved.save()
         if saved.feature_edit_trustees:
             saved.update_trustees(trustees)
-
-        if self.creating:
-            saved.logger.info("Election created")
-            msg = "New election created"
-            subject = "New Zeus election"
-            saved.notify_admins(msg=msg, subject=subject)
-
         else:
             saved.logger.info("Election updated %r", self.changed_data)
             self.log_changed_fields(saved)

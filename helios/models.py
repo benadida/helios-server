@@ -615,11 +615,13 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
         if send_anyway or (not self.trial):
             election_type = self.get_module().module_id
             trustees = self.trustees.all()
+            admins = self.admins.all()
             context = {
                 'election': self,
                 'msg': msg,
                 'election_type': election_type,
                 'trustees': trustees,
+                'admins': admins,
                 'subject': subject,
             }
 
@@ -778,8 +780,9 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
       return obj
 
   def get_booth_url(self, request):
-    vote_url = "%s/booth/vote.html?%s" % (
+    vote_url = "%s/%s/booth/vote.html?%s" % (
             settings.SECURE_URL_HOST,
+            settings.SERVER_PREFIX,
             urllib.urlencode({
                 'token': csrf(request)['csrf_token'],
                 'poll_url': "%s%s" % (settings.SECURE_URL_HOST,
@@ -1025,6 +1028,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
                                        voter.voter_surname or '',
                                        voter.voter_fathername or '',
                                        voter.voter_mobile or '',
+                                       str(voter.voter_weight),
                                        vote_field
                                        ]))
     return to
@@ -1361,7 +1365,7 @@ def csv_reader(csv_data, min_fields=2, max_fields=6, **kwargs):
     return rows
 
 def iter_voter_data(voter_data, email_validator=validate_email):
-    reader = csv_reader(voter_data, min_fields=2, max_fields=6)
+    reader = csv_reader(voter_data, min_fields=2, max_fields=7)
 
     line = 0
     for voter_fields in reader:
@@ -1415,9 +1419,22 @@ def iter_voter_data(voter_data, email_validator=validate_email):
                     m = _("Malformed mobile phone number: %s") % mobile
                     raise ValidationError(m)
         return_dict['mobile'] = mobile
+
+        weight = voter_fields[6]
+        if weight:
+            try:
+                weight = int(weight)
+                if weight <= 0:
+                    raise ValueError()
+            except ValueError:
+                m = _("Voter weight must be a positive integer, not %s")
+                m = m % weight
+                raise ValidationError(m)
+            return_dict['weight'] = weight
+
         yield return_dict
 
-        if len(voter_fields) > 6:
+        if len(voter_fields) > 7:
             m = _("Invalid voter data at line %s") %line
             raise ValidationError(m)
 
@@ -1494,6 +1511,7 @@ class VoterFile(models.Model):
       surname = voter.get('surname', '')
       fathername = voter.get('fathername', '')
       mobile = voter.get('mobile', '')
+      weight = voter.get('weight', 1)
 
       voter = None
       try:
@@ -1509,7 +1527,7 @@ class VoterFile(models.Model):
         demo_voters += 1
         if demo_voters > settings.DEMO_MAX_VOTERS and demo_user:
           raise exceptions.VoterLimitReached("No more voters for demo account")
-        
+
       linked_polls = poll.linked_polls
       if not linked:
           linked_polls = linked_polls.filter(pk=poll.pk)
@@ -1526,7 +1544,7 @@ class VoterFile(models.Model):
             voter = Voter(uuid=voter_uuid, voter_login_id=voter_id,
                         voter_name=name, voter_email=email, poll=poll,
                         voter_surname=surname, voter_fathername=fathername,
-                        voter_mobile=mobile)
+                        voter_mobile=mobile, voter_weight=weight)
             voter.init_audit_passwords()
             voter.generate_password()
             new_voters.append(voter)
@@ -1537,6 +1555,7 @@ class VoterFile(models.Model):
             voter.voter_fathername = fathername
             voter.voter_email = email
             voter.voter_mobile = mobile
+            voter.voter_weight = weight
             voter.save()
 
         voter_alias_integers = range(last_alias_num+1, last_alias_num+1+num_voters)
@@ -1589,6 +1608,7 @@ class Voter(HeliosModel, VoterFeatures):
   voter_email = models.CharField(max_length = 250, null=True)
   voter_fathername = models.CharField(max_length = 250, null=True)
   voter_mobile = models.CharField(max_length = 48, null=True)
+  voter_weight = models.PositiveIntegerField(default=1)
 
   # if election uses aliases
   alias = models.CharField(max_length = 100, null=True)
