@@ -15,7 +15,7 @@
           <label for="{{ field.label }}" class="col-sm-2 control-label">{{ field.label }}</label>
           <div class="col-sm-10" class="form-control"> 
           {{ field }}
-          {{ field.help_text }}
+          <p class="help-block">{{ field.help_text }}</p>
           </div>
         </div> 
       {% endfor %}
@@ -29,10 +29,11 @@
                 {% endblocktrans %}
                 </br>
                 </br>
-                <div id="attribute_0" class="cafe_attribute">
-                    <input type="text" name="cafe_attributes[]" placeholder="{% trans "Attribute name" %}"></input> = 
-                    <input type="text" name="cafe_attribute_values[]" placeholder="{% trans "Attribute value" %}"></input>
-                    <span class="add_cafe_attribute glyphicon glyphicon-plus"></span>
+                <div id="attribute_0" class="cafe_attribute input-group">
+                    <input type="text" name="cafe_attributes[]" class="form-control" placeholder="{% trans "Attribute name" %}"></input> 
+                    <span class="input-group-addon">=</span> 
+                    <input type="text" name="cafe_attribute_values[]" class="form-control" placeholder="{% trans "Comma separated attribute value. Ex. val1,val2,val3" %}"></input>
+                    <span class="add_cafe_attribute input-group-addon glyphicon glyphicon-plus"></span>
                 </div>
             </div>
         </div>

@@ -17,7 +17,7 @@ class ElectionForm(forms.Form):
     label=_("Name"), help_text=_('the pretty name for your election, e.g. My Club 2010 Election. Maximum of 250 characters.'))
   description = forms.CharField(max_length=4000, label=_("Description"), 
     help_text=_("Maximum of 4000 characters. You can use the HTML tags: <p>, <h4>, <h5>, <h3>, <h2>, <br>, <u>."), 
-    widget=forms.Textarea(attrs={'cols': 70, 'wrap': 'soft'}), required=False)
+    widget=forms.Textarea(attrs={'wrap': 'soft', 'class': 'form-control'}), required=False)
   election_type = forms.ChoiceField(label=_("Type"), choices = Election.ELECTION_TYPES)
   use_voter_aliases = forms.BooleanField(required=False, initial=False, 
     label=_("Use voter aliases"), help_text=_('If selected, voter identities will be replaced with aliases, e.g. "V12", in the ballot tracking center'))

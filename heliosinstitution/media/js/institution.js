@@ -61,7 +61,7 @@ $("document").ready(function(){
         rowNum ++;
         var row = $('#attribute_0').clone();
         $(row).attr('id','attribute_' + rowNum);
-        $(row).children('span').attr('class','remove_cafe_attribute glyphicon glyphicon-minus');
+        $(row).children('span:last').attr('class','remove_cafe_attribute input-group-addon  glyphicon glyphicon-minus');
         console.log(row);
         $(row).insertAfter('#attribute_' + (rowNum - 1));
     });
