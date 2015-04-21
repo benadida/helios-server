@@ -43,7 +43,7 @@ function hide_oauth2_elems(time){
     oauth2_elems.parent().next().hide(time);
 }
 
-var jwt_elems = $("textarea[id^=id_jwt_public_key], input[id^=id_jwt_issuer]")
+var jwt_elems = $("textarea[id^=id_jwt_public_key],input[id^=id_jwt]:not(#id_jwt_auth)")
 
 function show_jwt_elems(time){
     jwt_elems.parent().show(time);
@@ -115,8 +115,25 @@ $(function(){
         else{
             hide_oauth2_elems(150);
         }
-
     });
+
+    $("#id_jwt_file").change(function(event){
+        var output = $("#id_jwt_public_key");
+        var input = event.target;
+        reader = new FileReader();
+        reader.onload = function(){
+            text = reader.result;
+            var header = "-----BEGIN RSA PUBLIC KEY-----";
+            if (text.startsWith(header)){
+            output.val(text);
+            }
+            else{
+                alert('Invalid file');
+            }
+        };
+        reader.readAsText(input.files[0]);
+    });
+
 
     $("#id_jwt_auth").change(function(){
         if ($("#id_jwt_auth").prop('checked')){

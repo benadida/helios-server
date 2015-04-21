@@ -569,6 +569,10 @@ class PollForm(forms.ModelForm):
             ('other', 'other')
         )
 
+
+        self.fields.insert(3, 'jwt_file', forms.FileField(
+                                            label="JWT public keyfile",))
+        self.fields['jwt_file'].widget.attrs['accept'] = '.pem'
         self.fields['jwt_public_key'] = forms.CharField(required=False,
                                                         widget=forms.Textarea)
         self.fields['oauth2_type'] = forms.ChoiceField(required=False,
