@@ -56,5 +56,20 @@ $("document").ready(function(){
         dateFormat: 'dd-mm-yy'
      });
 
-})
+    var rowNum = 0;
+    $('.add_cafe_attribute').click(function(){
+        rowNum ++;
+        var row = $('#attribute_0').clone();
+        $(row).attr('id','attribute_' + rowNum);
+        $(row).children('span').attr('class','remove_cafe_attribute glyphicon glyphicon-minus');
+        console.log(row);
+        $(row).insertAfter('#attribute_' + (rowNum - 1));
+    });
 
+    $('.remove_cafe_attribute').live('click', function(){
+       $(this).parent('div').remove();    
+       rowNum --;
+       $('.cafe_attribute').each(function(index){ $(this).attr('id', 'attribute_'+ index)});
+    });
+
+})
