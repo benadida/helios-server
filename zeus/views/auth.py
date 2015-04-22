@@ -2,7 +2,13 @@ import logging
 import urllib2 
 import urllib
 import json
-import jwt
+
+JWT_SUPPORT = True
+try:
+    import jwt
+except ImportError:
+    jwt = None
+    JWT_SUPPORT = False
 
 from django.conf.urls.defaults import *
 from django.core.urlresolvers import reverse
@@ -122,6 +128,10 @@ def oauth2_login(request):
         return HttpResponseBadRequest(400)
 
 def jwt_login(request):
+    if not JWT_SUPPORT:
+        logger.error("JWT login not supported")
+        return HttpResponseRedirect(reverse("home"))
+
     token = request.GET.get('jwt', None)
     if not token:
         return HttpResponseBadRequest(400)
