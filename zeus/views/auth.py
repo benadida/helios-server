@@ -216,7 +216,6 @@ def jwt_login(request):
         return HttpResponseBadRequest(400)
     AUDIENCE = 'zeus' # add to settings
     data = jwt.decode(token, verify=False)
-    aud = data['aud']
     iss = data['iss']
     voter_email = data['sub']
     polls = Poll.objects.filter(jwt_auth=True, jwt_issuer=iss,
@@ -226,7 +225,20 @@ def jwt_login(request):
     for poll in polls:
         jwt_pk = poll.jwt_public_key
         try:
-            jwt.decode(token, key=jwt_pk, verify=True)
-        except jwt.InvalidTokenError:
+            jwt.decode(token, key=jwt_pk, audience=AUDIENCE, verify=True)
+            allowed_polls.append(poll)
+        except jwt.InvalidTokenError as e:
+            print e
             from django.http import HttpResponse
             return HttpResponse('bad token')
+    polls_data = []
+    for poll in allowed_polls:
+        data = [poll]
+        voter = poll.voters.get(voter_email=voter_email)
+        voter_link = voter.get_quick_login_url()
+        data.append(voter_link)
+        polls_data.append(data)
+
+    context = {'polls_data': polls_data}
+    tpl = 'jwt_polls_list'
+    return render_template(request, tpl, context)
