@@ -258,6 +258,4 @@ def decode_token(token, key=None, audience=None, verify=False):
         data = jwt.decode(token, key=key, audience=audience, verify=verify)
     except jwt.InvalidTokenError as e:
         message = e
-    except jwt.DecodeError as e:
-        message = e
     return data, message
