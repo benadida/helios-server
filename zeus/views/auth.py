@@ -231,6 +231,7 @@ def jwt_login(request):
     voter_email = data.get('sub', None)
     if not (iss and voter_email)
         error = "No iss or sub in token"
+        messages.error(request, error)
         return redirect('home')
     polls = Poll.objects.filter(jwt_auth=True, jwt_issuer=iss,
                                 voters__voter_email=voter_email)
