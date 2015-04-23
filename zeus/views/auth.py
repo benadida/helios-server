@@ -241,8 +241,8 @@ def jwt_login(request):
         jwt_pk = poll.jwt_public_key
         try:
             jwt.decode(token, key=jwt_pk, audience=AUDIENCE, verify=True)
-        except (jwt.IndalidTokenError, ValueError) as error:
-            messages.error(request, verif_error)
+        except (jwt.InvalidTokenError, ValueError) as error:
+            messages.error(request, error)
             return redirect('home')
         allowed_polls.append(poll)
     
