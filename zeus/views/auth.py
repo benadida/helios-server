@@ -223,13 +223,14 @@ def jwt_login(request):
 
     try:
         data = jwt.decode(token, verify=False)   
-    except jwt.InvalidTokenError, ValueError as error:
+    except (jwt.InvalidTokenError, ValueError) as error:
         messages.error(request, error)
         return redirect('home')
 
+    voter = None
     iss = data.get('iss', None)
     voter_email = data.get('sub', None)
-    if not (iss and voter_email)
+    if not (iss and voter_email):
         error = "No iss or sub in token"
         messages.error(request, error)
         return redirect('home')
@@ -240,7 +241,7 @@ def jwt_login(request):
         jwt_pk = poll.jwt_public_key
         try:
             jwt.decode(token, key=jwt_pk, audience=AUDIENCE, verify=True)
-        except jwt.IndalidTokenError, ValueError as error:
+        except (jwt.IndalidTokenError, ValueError) as error:
             messages.error(request, verif_error)
             return redirect('home')
         allowed_polls.append(poll)
