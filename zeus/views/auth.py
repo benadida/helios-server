@@ -15,6 +15,7 @@ from django.core.urlresolvers import reverse
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseBadRequest
 from django.contrib import messages
+from django.shortcuts import redirect
 
 from zeus import auth
 from zeus.utils import *
@@ -214,48 +215,43 @@ def jwt_login(request):
     token = request.GET.get('jwt', None)
     if not token:
         message = "No json web token provided"
-    from django.contrib import messages
-    voter = None
-    iss = None
-    data = None
-    polls_data = []
+        messages.error(request, message)
+        return redirect('home')
+
+
     AUDIENCE = 'zeus' # add to settings
-    if token:
-        data, e = decode_token(token)   
-        message = e
-    if data and not e:
-        iss = data['iss']
-        voter_email = data['sub']
-        polls = Poll.objects.filter(jwt_auth=True, jwt_issuer=iss,
-                                    voters__voter_email=voter_email)
-        allowed_polls = []
-        for poll in polls:
-            jwt_pk = poll.jwt_public_key
-            vdata, v_e = decode_token(token, 
-                                          key=jwt_pk, 
-                                          audience=AUDIENCE, 
-                                          verify=True)
-            message = v_e
-            if vdata and not v_e:
-                allowed_polls.append(poll)
 
-        for poll in allowed_polls:
-            data = [poll]
-            voter = poll.voters.get(voter_email=voter_email)
-            voter_link = voter.get_quick_login_url()
-            data.append(voter_link)
-            polls_data.append(data)
+    try:
+        data = jwt.decode(token, verify=False)   
+    except jwt.InvalidTokenError, ValueError as error:
+        messages.error(request, error)
+        return redirect('home')
 
-    messages.error(request, message)
+    iss = data.get('iss', None)
+    voter_email = data.get('sub', None)
+    if not (iss and voter_email)
+        error = "No iss or sub in token"
+        return redirect('home')
+    polls = Poll.objects.filter(jwt_auth=True, jwt_issuer=iss,
+                                voters__voter_email=voter_email)
+    allowed_polls = []
+    for poll in polls:
+        jwt_pk = poll.jwt_public_key
+        try:
+            jwt.decode(token, key=jwt_pk, audience=AUDIENCE, verify=True)
+        except jwt.IndalidTokenError, ValueError as error:
+            messages.error(request, verif_error)
+            return redirect('home')
+        allowed_polls.append(poll)
+    
+    polls_data = []
+    for poll in allowed_polls:
+        data = [poll]
+        voter = poll.voters.get(voter_email=voter_email)
+        voter_link = voter.get_quick_login_url()
+        data.append(voter_link)
+        polls_data.append(data)
+
     context = {'issuer': iss, 'voter_data': voter,  'polls_data': polls_data}
     tpl = 'jwt_polls_list'
     return render_template(request, tpl, context)
-
-def decode_token(token, key=None, audience=None, verify=False):
-    message = None
-    data = None
-    try:
-        data = jwt.decode(token, key=key, audience=audience, verify=verify)
-    except jwt.InvalidTokenError as e:
-        message = e
-    return data, message
