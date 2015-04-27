@@ -38,7 +38,13 @@ def shibboleth_register(request):
     from helios_auth.view_utils import render_template
     from helios_auth.views import after
 
-    user, error = parse_attributes(request.META)
+    user, errors = parse_attributes(request.META)
+
+    if errors:
+        return render_template(request, 'shibboleth/missing_attributes', {
+            'errors': errors,
+        })
+
     if user:
         request.session['shib_user'] = user
         
@@ -117,12 +123,12 @@ def user_needs_intervention(user_id, user_info, token):
     return None
 
 """
-Function obtained from 
+Function based on 
 https://github.com/sorrison/django-shibboleth/blob/6967298fa9e659f5a08d2736e652997ae4f1d2f5/django_shibboleth/utils.py
 """
 def parse_attributes(META):
     shib_attrs = {}
-    error = False
+    errors = []
     for header, attr in settings.SHIBBOLETH_ATTRIBUTE_MAP.items():
         required, name = attr
         values = META.get(header, None)
@@ -132,15 +138,14 @@ def parse_attributes(META):
             try:
                 value = values.split(';')[0]
             except:
-                value = values
-
+                pass
         shib_attrs[name] = value
-        if not value or value == '':
+        if value is None or value == '':
             if required:
-                error = True
+                errors.append(name)
     
     for value in META:
         if value.lower().startswith('shib-'):
             shib_attrs[value] = META[value]
 
-    return shib_attrs, error
+    return shib_attrs, errors
