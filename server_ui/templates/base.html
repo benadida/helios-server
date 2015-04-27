@@ -42,17 +42,17 @@
       {% endblock %}
   </div>
   
-  <div class="panel-footer">
-  {% block footer %}
-    {% if user %}
-     {% trans "logged in as" %} <b>{{user.pretty_name|safe}}</b>
-     {% if user.user_type == 'shibboleth' %}
-     ( <em><a href="{% url "heliosinstitution.views.user_metadata" user.id %}" title="{% trans "view my details" %}">{% trans "view my details" %}</a></em>)
-     {% endif %}
-    {% endif %}
-      <br clear="right" />
-  {% endblock footer%}
-  </div>
+  {% if user %}
+      <div class="panel-footer">
+      {% block footer %}
+         {% trans "logged in as" %} <b>{{user.pretty_name|safe}}</b>
+         {% if user.user_type == 'shibboleth' %}
+         ( <em><a href="{% url "heliosinstitution.views.user_metadata" user.id %}" title="{% trans "view my details" %}">{% trans "view my details" %}</a></em>)
+         {% endif %}
+          <br clear="right" />
+      {% endblock footer%}
+      </div>
+  {% endif %}
   
       <script>
 	$(document).foundation();
