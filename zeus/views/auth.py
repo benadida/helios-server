@@ -207,6 +207,7 @@ def shibboleth_login(request):
     return HttpResponseRedirect(poll_reverse(poll, 'index'))
 
 
+@auth.unauthenticated_user_required
 def jwt_login(request):
     if not JWT_SUPPORT:
         logger.error("JWT login not supported")
