@@ -77,11 +77,15 @@ def send_message(user_id, user_name, user_info, subject, body):
     pass
 
 
-def check_constraint(constraint, user_info):
-	"""
-	for eligibility
-	"""
-	pass
+def check_constraint(constraint, user):
+    """
+    for eligibility
+    """
+    for key, value in constraint.items():
+        if constraint[key] != user.info[key]:
+            return False
+    return True
+    
 
 def user_needs_intervention(user_id, user_info, token):
     """
