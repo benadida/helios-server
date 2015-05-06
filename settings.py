@@ -337,3 +337,5 @@ SHIBBOLETH_ATTRIBUTE_MAP = {
     "Shib-eduPerson-eduPersonAffiliation": (True, "affiliation"),
     "Shib-Identity-Provider": (True, "identity_provider"),
 }
+
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
