@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.contrib.sessions.models import Session
 from django.utils.translation import ugettext, ugettext_lazy as _
+from heliosinstitution.models import Institution, InstitutionUserProfile
 
 
 class SessionAdmin(admin.ModelAdmin):
