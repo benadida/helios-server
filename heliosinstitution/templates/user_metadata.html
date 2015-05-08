@@ -1,7 +1,7 @@
-{% extends 'server_ui/templates/base.html' %}
+{% extends 'heliosinstitution/templates/dashboard.html' %}
 {% load i18n %}
 {% load staticfiles %}
-{% block content %}
+{% block subcontent %}
     <div class="panel panel-primary">
         <div class="panel-heading">{% trans "User details" %}</div>
         <div class="panel-body"> 
@@ -24,4 +24,4 @@
         </tbody>
         </table>
     </div>
-{% endblock content %}
+{% endblock subcontent %}
