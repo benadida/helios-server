@@ -3,6 +3,8 @@
 {% load staticfiles %}
 
 {% block content %}
+<div class="row col-md-3"></div>
+<div class="row col-md-6">
     <div class="panel panel-danger">
         <div class="panel-heading">{% trans "Missing Attributes" %}</div>
         <div class="panel-body"> 
@@ -29,4 +31,6 @@
         <a href="/" class="btn btn-primary" role="button">{% trans "Back" %}</a>
     </div>
     <br><br>
+</div>
+<div class="row"></div>
 {% endblock content %}
