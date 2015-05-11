@@ -338,4 +338,6 @@ SHIBBOLETH_ATTRIBUTE_MAP = {
     "Shib-Identity-Provider": (True, "identity_provider"),
 }
 
+INSTITUTION_ROLE = ['Institution Admin','Election Admin']
+
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True

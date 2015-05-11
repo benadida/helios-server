@@ -107,7 +107,7 @@ def user_needs_intervention(user_id, user_info, token):
 
         # check if user has a role
         # TODO: check the use of cached properties
-        if profile.django_user.groups.filter(name__in=['Institution Admin','Election Admin']).exists():
+        if profile.django_user.groups.filter(name__in=settings.INSTITUTION_ROLE).exists():
             profile.helios_user.admin_p = True    
         
         if profile.is_institution_admin:
