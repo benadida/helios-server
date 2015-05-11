@@ -18,6 +18,11 @@ from django.utils.translation import ugettext as _
 STATUS_UPDATES = False
 
 
+SHIBBOLETH_NATIVE_SP_ATTRIBUTES = ['Shib-Application-ID', 'Shib-Session-ID',
+    'Shib-Authentication-Instant', 'Shib-Authentication-Method',
+    'Shib-AuthnContext-Class', 'Shib-Session-Index'] # excluding Shib-Identity-Provider, since we need it
+
+
 class LoginForm(forms.Form):
 	username = forms.CharField(max_length=50)
 	password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
@@ -38,15 +43,14 @@ def shibboleth_register(request):
     from helios_auth.view_utils import render_template
     from helios_auth.views import after
 
-    user, errors = parse_attributes(request.META)
-
+    shib_attrs, errors = parse_attributes(request.META)
     if errors:
         return render_template(request, 'shibboleth/missing_attributes', {
             'errors': errors,
         })
 
-    if user:
-        request.session['shib_user'] = user
+    if shib_attrs:
+        request.session['shib_attrs'] = shib_attrs
         
         return HttpResponseRedirect(reverse(after))
     else:
@@ -58,13 +62,12 @@ def shibboleth_register(request):
     
 
 def get_user_info_after_auth(request):
-    user = request.session['shib_user']
-    del request.session['shib_user']
+    shib_user = request.session['shib_attrs']
     return {
 		'type': 'shibboleth', 
-		'user_id' : user['email'], 
-		'name': user['common_name'], 
-		'info': user, 
+		'user_id' : shib_user['email'], 
+		'name': shib_user['common_name'], 
+		'info': shib_user,
 		'token': None,
 		}
 
@@ -147,9 +150,13 @@ def parse_attributes(META):
         if value is None or value == '':
             if required:
                 errors.append(name)
-    
+         
+    attributes = {}
     for value in META:
-        if value.lower().startswith('shib-'):
-            shib_attrs[value] = META[value]
+        if value.lower().startswith('shib-') and value not in SHIBBOLETH_NATIVE_SP_ATTRIBUTES:
+            attr_name = value.split('-')[-1:][0]
+            attributes[attr_name] = META[value]
+
+    shib_attrs['attributes'] = attributes        
 
     return shib_attrs, errors
