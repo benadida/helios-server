@@ -60,9 +60,9 @@ $("document").ready(function(){
     $('.add_cafe_attribute').click(function(){
         rowNum ++;
         var row = $('#attribute_0').clone();
+        $(row).children('input[name=cafe_attribute_values[]]').attr('value','');
         $(row).attr('id','attribute_' + rowNum);
         $(row).children('span:last').attr('class','remove_cafe_attribute input-group-addon  glyphicon glyphicon-minus');
-        console.log(row);
         $(row).insertAfter('#attribute_' + (rowNum - 1));
     });
 
