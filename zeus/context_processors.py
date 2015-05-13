@@ -30,3 +30,13 @@ def theme(request):
     return {
         'THEME_HEADER_BG_URL': settings.ZEUS_HEADER_BG_URL
     }
+
+
+def prefix(request):
+    prefix = getattr(settings, 'SERVER_PREFIX', '')
+    if prefix and not prefix.startswith("/"):
+        prefix = "/" + prefix
+
+    return {
+        'SERVER_PREFIX': prefix
+    }

@@ -120,7 +120,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
   "django.core.context_processors.csrf",
   "zeus.context_processors.user",
   "zeus.context_processors.confirm_messages",
-  "zeus.context_processors.theme"
+  "zeus.context_processors.theme",
+  "zeus.context_processors.prefix"
 )
 
 ##
