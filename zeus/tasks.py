@@ -122,10 +122,18 @@ def send_cast_vote_email(poll_pk, voter_pk, signature):
 %(election_name)s
 %(poll_name)s
     
+as
+
+%(voter_name)s %(voter_surname)s
+with registration ID: %(reg_id)s
+
 you can find your encrypted vote attached in this mail.
 """) % {
     'election_name': election.name,
-    'poll_name': poll.name
+    'poll_name': poll.name,
+    'voter_name': voter.voter_name,
+    'voter_surname': voter.voter_surname,
+    'reg_id': voter.voter_login_id,
 }
     # send it via the notification system associated with the auth system
     attachments = [('vote.signature', signature['signature'], 'text/plain')]
