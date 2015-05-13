@@ -11,8 +11,9 @@ then
 fi
 
 for d in zeus helios heliosauth server_ui account_administration; do
+  echo $d
   cd $d;
-  $DJANGO_ADMIN makemessages --no-location -l el -e .html -e .txt;
+  $DJANGO_ADMIN makemessages --no-location -l el -e .html -e .txt || true;
   cd ..;
 done;
 
