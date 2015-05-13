@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.utils.translation import ungettext as _n
 from django.template.loader import render_to_string
 from django.template import Template
+from django.utils.html import escape
 
 register = template.Library()
 
@@ -93,7 +94,7 @@ def _action(context, label, url, icon="", cls="", extra_cls="",
     <a class="%(extra_cls)s %(cls)s foundicon-%(icon)s"
        href="%(url)s" %(tag_content)s> &nbsp;%(label)s</a>
     """ % {
-        'label': label,
+        'label': escape(label),
         'url': url,
         'icon': icon,
         'cls': cls,
