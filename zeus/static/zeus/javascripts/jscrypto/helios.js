@@ -490,20 +490,19 @@ BALLOT.pretty_choices = function(election, ballot) {
         if (q.tally_type == "stv") {
             q_answers = answers[q_num][0];
         }
-        
-      var ret = [];
-      _(q_answers).each(function(ans, index) {
-        var choice = answers_map[ans];
-        var q_entry = _.filter(ret, function(q) { 
-          return q.question === choice.question
-        });
-        if (!q_entry[0]) {
-          ret.push({'question': choice.question, 'answers': [choice.answer]})
-        } else {
-          ret[ret.indexOf(q_entry[0])].answers.push(choice.answer);
-        }
-      });
-      return ret;
+       var ret = [];
+        _(q_answers).each(function(ans, index) {
+           var choice = answers_map[ans];
+           var q_entry = _.filter(ret, function(q) {
+              return q.question === choice.question
+            });
+           if (!q_entry[0]) {
+              ret.push({'question': choice.question, 'answers': [choice.answer]})
+            } else {
+               ret[ret.indexOf(q_entry[0])].answers.push(choice.answer);
+             }
+         });
+          return ret;
     });
 
     return choices;
@@ -592,7 +591,8 @@ HELIOS.EncryptedAnswer = Class.extend({
       var zero_one_plaintexts = UTILS.generate_plaintexts(pk, 0, 1);
     } else {
       var nchoices = question.answers.length;
-      plaintexts = zero_one_plaintexts = [UTILS.generate_stv_plaintext(answer[0], pk, nchoices, nchoices)];
+      var plt = UTILS.generate_stv_plaintext(answer[0], pk, nchoices, nchoices);
+      plaintexts = zero_one_plaintexts = [plt];
     }
     
     // keep track of whether we need to generate new randomness
