@@ -1,8 +1,8 @@
-//first, checks if it isn't implemented yet
 function show(q) {
-  return $("<span>" + q +  "</span>").text().replace(/\n/g, "<br />");
+  return $("<span></span>").text(q).text().replace(/\n/g, "<br />");
 }
 
+//first, checks if it isn't implemented yet
 if (!String.prototype.format) {
   String.prototype.format = function() {
     var args = arguments;
