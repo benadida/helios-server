@@ -319,6 +319,14 @@ def questions(request, election, poll):
     return render_template(request, tpl, context)
 
 
+voter_search_fields = ['name', 'surname', 'email']
+voter_extra_headers = ['excluded_at']
+voter_bool_keys_map = {
+        'voted': ('cast_votes__id', 'nullcheck'),
+        'invited': ('last_booth_invitation_send_at', 'nullcheck'),
+        'excluded': ('excluded_at', 'nullcheck'),
+     }
+
 @auth.election_admin_required
 @require_http_methods(["GET"])
 def voters_list(request, election, poll):
@@ -326,8 +334,6 @@ def voters_list(request, election, poll):
     page = int(request.GET.get('page', 1))
     limit = int(request.GET.get('limit', 10))
     q_param = request.GET.get('q','')
-    voted_param = request.GET.get('voted', None)
-    notvoted_param = request.GET.get('notvoted', None)
 
     default_voters_per_page = getattr(settings, 'ELECTION_VOTERS_PER_PAGE', 100)
     voters_per_page = request.GET.get('limit', default_voters_per_page)
@@ -355,19 +361,17 @@ def voters_list(request, election, poll):
     else:
         order_by = '-%s' % order_by
         voters = Voter.objects.filter(poll=poll).annotate(cast_votes__id=Max('cast_votes__id')).order_by(order_by)
-
-    voters = voters.filter(get_voters_filters(q_param))
-    if voted_param is not None:
-        voters = [v for v in voters if v.voted]
-    elif notvoted_param is not None:
-        voters = [v for v in voters if not v.voted]
+    
+    voters = voters.filter(get_filters(q_param, VOTER_TABLE_HEADERS,
+                                       VOTER_SEARCH_FIELDS,
+                                       VOTER_BOOL_KEYS_MAP,
+                                       VOTER_EXTRA_HEADERS))
     voters_count = Voter.objects.filter(poll=poll).count()
     voted_count = poll.voters_cast_count()
 
     context = {
         'election': election,
         'poll': poll,
-        'limit': limit,
         'page': page,
         'voters': voters,
         'voters_count': voters_count,
@@ -396,7 +400,10 @@ def voters_clear(request, election, poll):
     for p in polls:
         voters = p.voters.all()
         if q_param:
-            voters = voters.filter(get_voters_filters(q_param))
+            voters = voters.filter(get_filters(q_param, VOTER_TABLE_HEADERS,
+                                               VOTER_SEARCH_FIELDS,
+                                               VOTER_BOOL_KEYS_MAP,
+                                               VOTER_EXTRA_HEADERS))
 
         for voter in voters:
             if not voter.cast_votes.count():
@@ -608,7 +615,10 @@ def voters_email(request, election, poll=None, voter_uuid=None):
     if not q_param:
         filtered_voters = EmptyQuerySet()
     else:
-        voters_filters = get_voters_filters(q_param)
+        voters_filters = get_filters(q_param, VOTER_TABLE_HEADERS,
+                                     VOTER_SEARCH_FIELDS,
+                                     VOTER_BOOL_KEYS_MAP, 
+                                     VOTER_EXTRA_HEADERS)
         filtered_voters = filtered_voters.filter(voters_filters)
 
         if not filtered_voters.count():
