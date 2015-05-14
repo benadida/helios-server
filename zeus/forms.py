@@ -273,6 +273,8 @@ class QuestionBaseForm(forms.Form):
 
     def clean_question(self):
         q = self.cleaned_data.get('question', '')
+        if '%' in q:
+            raise forms.ValidationError(_("% is not a valid character."))
         return q.replace(": ", ":\t")
 
 
@@ -301,6 +303,8 @@ class QuestionForm(QuestionBaseForm):
         answer_list = []
         for key in self.cleaned_data:
             if key.startswith('answer_'):
+                if '%' in self.cleaned_data[key]:
+                    raise forms.ValidationError(_("% is not a valid character"))
                 answer_list.append(self.cleaned_data[key])
         if len(answer_list) > len(set(answer_list)):
             raise forms.ValidationError(_("No duplicate choices allowed"))
@@ -352,6 +356,8 @@ class ScoresForm(QuestionBaseForm):
         answer_list = []
         for key in self.cleaned_data:
             if key.startswith('answer_'):
+                if '%' in self.cleaned_data[key]:
+                    raise forms.ValidationError(_("% is not a valid character"))
                 answer_list.append(self.cleaned_data[key])
         if len(answer_list) > len(set(answer_list)):
             raise forms.ValidationError(_("No duplicate choices allowed"))
@@ -463,7 +469,7 @@ class StvForm(QuestionBaseForm):
 
     min_answers = None
     max_answers = None
-    
+
     def clean(self):
         from django.forms.util import ErrorList
         message = _("This field is required.")
@@ -476,6 +482,8 @@ class StvForm(QuestionBaseForm):
             field_key = 'answer_%d' % ans
             answer = self.cleaned_data[field_key]
             answer_lst = json.loads(answer)
+            if '%' in answer_lst[0]:
+                raise forms.ValidationError(_("% is not a valid character"))
             candidates_list.append(answer_lst[0])
             if not answer_lst[0]:
                 self._errors[field_key] = ErrorList([message])
