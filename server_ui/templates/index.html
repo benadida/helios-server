@@ -56,7 +56,7 @@
           {% if key == 'status_display' %}
             {{value}}
           {% else %}
-          <a href="?order={{key}}{% complete_get_parameters request.GET key "name" %}"class="{{ ordering_cls }}">{{value}}</a>
+          <a href="?order={{key}}{% complete_get_parameters request.GET key "created_at" %}"class="{{ ordering_cls }}">{{value}}</a>
           {% endif %}
         </th>
       {% endfor %}
