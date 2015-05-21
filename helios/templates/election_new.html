@@ -30,7 +30,12 @@
                 </br>
                 </br>
                 <div id="attribute_0" class="cafe_attribute input-group">
-                    <input type="text" name="cafe_attributes[]" class="form-control" placeholder="{% trans "Attribute name" %}"></input> 
+                    <select class="form-control">
+                        <option>{% trans "Attribute Name" %}</option>
+                        {% for attr in user.info.attributes %}
+                            <option> {{ attr }}</option>
+                        {% endfor %}
+                    </select>
                     <span class="input-group-addon">=</span> 
                     <input type="text" name="cafe_attribute_values[]" class="form-control" placeholder="{% trans "Comma separated attribute value. Ex. val1,val2,val3" %}"></input>
                     <span class="add_cafe_attribute input-group-addon glyphicon glyphicon-plus"></span>
