@@ -23,10 +23,16 @@
 {% reveal_action label "#cancel-admin-action" cls="alert cancel-election" %}
 {% endif %}
 {% if election.feature_compute_results_finished %}
-<a href="{% url election_pdf_results election.uuid election.short_name LANGUAGE_CODE %}">{% trans "Save results" %} (PDF)</a>
+{% with election.get_module as module %}
+  {% if module.pdf_result %}
+    <a href="{% url election_pdf_results election.uuid election.short_name LANGUAGE_CODE %}">{% trans "Save results" %} (PDF)</a>
 <br /><br />
-<a href="{% url election_zip_results election.uuid election.short_name LANGUAGE_CODE%}">
+  {% endif %}
+  {% if module.csv_result%}
+    <a href="{% url election_zip_results election.uuid election.short_name LANGUAGE_CODE%}">
 {% trans "Save results" %} (ZIP)</a>
 <br /><br />
+  {% endif %}
+{% endwith %}
 {% endif %}
 </div>
