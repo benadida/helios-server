@@ -195,9 +195,6 @@ def freeze(request, election):
     # before the election view redirect.
     import time
     time.sleep(getattr(settings, 'ZEUS_ELECTION_FREEZE_DELAY', 4))
-    subject = "Election is frozen"
-    msg = "Election is frozen"
-    election.notify_admins(msg=msg, subject=subject)
 
     url = election_reverse(election, 'index')
     return HttpResponseRedirect(url)
