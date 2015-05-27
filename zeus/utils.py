@@ -16,6 +16,46 @@ def election_trustees_to_text(election):
         content += "%s, %s\n" % (trustee.name, trustee.email)
     return content
 
+def append_ballot_to_msg(election, msg):
+    if msg[-1] != '\n':
+        msg += '\n'
+    el_type_str = "\nElection type: {}\n\n".format(election.election_module)
+    msg += el_type_str
+    msg +="Ballot info\n***********************\n"
+    for poll in election.polls.all():
+        msg += "- Poll name: {}\n".format(poll.name)
+        for ballot in poll.questions_data:
+            question = ballot.get('question', None)
+            if question:
+                msg += "- Question: {}\n".format(question)
+            answers = ballot.get('answers', None)
+            if answers:
+                msg += "- Answers\n"
+                for answer in answers:
+                    msg += "  * {}\n".format(answer)
+            scores = ballot.get('scores', None)
+            if scores:
+                msg += "- Scores: "
+                for score in scores:
+                    msg += '[{}] '.format(str(score))
+                msg += '\n'
+            min_ans = ballot.get('min_answers', None)
+            max_ans = ballot.get('max_answers', None)
+            if min_ans and max_ans:
+                msg += "- Min answers: {}\n- Max answers: {}\n".format(min_ans,
+                                                                   max_ans)
+            eligibles = ballot.get('eligibles', None)
+            if eligibles:
+                msg += "- Eligibles: {}\n".format(eligibles)
+            has_limit = ballot.get('has_department_limit', None)
+            if has_limit:
+                department_limit = ballot.get('department_limit', None)
+                msg += "- Poll has department limit of:{}\n".format(str(department_limit))
+        candidates = poll.zeus.do_get_candidates()
+        candidates = [str(x) for x in candidates]
+        candidates = str(candidates)
+        msg += "- do_get_candidates:\n{}\n\n".format(candidates)
+    return msg
 
 def election_reverse(election, view, **extra):
     kwargs = {'election_uuid': election.uuid}
