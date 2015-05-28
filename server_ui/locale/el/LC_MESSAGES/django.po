@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-13 14:54+0300\n"
+"POT-Creation-Date: 2015-05-28 17:17+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -77,29 +77,20 @@ msgstr "Είσοδος Ψηφοφόρου"
 msgid "Your new password was set."
 msgstr "Ο νέος σας κωδικός έχει οριστεί."
 
-msgid "Name"
-msgstr "Όνομα"
+msgid "Filter"
+msgstr ""
 
-msgid "Institution"
-msgstr "Ίδρυμα"
-
-msgid "Administrator"
-msgstr "Διαχειριστής"
-
-msgid "Creation"
-msgstr "Δημιουργία"
-
-msgid "Start"
-msgstr "Έναρξη"
-
-msgid "End"
-msgstr "Λήξη"
-
-msgid "Election status"
-msgstr "Κατάσταση ψηφοφορίας"
-
-msgid "Trial"
-msgstr "Δοκιμαστική"
+#, python-format
+msgid ""
+"\n"
+"                %(elections_count)s result found\n"
+"                "
+msgid_plural ""
+"\n"
+"                %(elections_count)s results found\n"
+"                "
+msgstr[0] ""
+msgstr[1] ""
 
 msgid "YES"
 msgstr "ΝΑΙ"
@@ -109,3 +100,27 @@ msgstr "ΟΧΙ"
 
 msgid "Change language"
 msgstr "Change language"
+
+#~ msgid "Name"
+#~ msgstr "Όνομα"
+
+#~ msgid "Institution"
+#~ msgstr "Ίδρυμα"
+
+#~ msgid "Administrator"
+#~ msgstr "Διαχειριστής"
+
+#~ msgid "Creation"
+#~ msgstr "Δημιουργία"
+
+#~ msgid "Start"
+#~ msgstr "Έναρξη"
+
+#~ msgid "End"
+#~ msgstr "Λήξη"
+
+#~ msgid "Election status"
+#~ msgstr "Κατάσταση ψηφοφορίας"
+
+#~ msgid "Trial"
+#~ msgstr "Δοκιμαστική"
