@@ -23,7 +23,7 @@ def home(request):
         elections_per_page = int(elections_per_page)
     except:
         elections_per_page = default_elections_per_page
-    order_by=request.GET.get('order', 'name')
+    order_by=request.GET.get('order', 'created_at')
     order_type = request.GET.get('order_type', 'desc')
     if not order_by in ELECTION_TABLE_HEADERS:
         order_by = 'name'
@@ -33,7 +33,6 @@ def home(request):
     if nr_unfiltered_elections == 0:
         return HttpResponseRedirect(reverse('election_create'))
 
-    # fix filter function
     elections = elections.filter(get_filters(q_param, ELECTION_TABLE_HEADERS,
                                              ELECTION_SEARCH_FIELDS,
                                              ELECTION_BOOL_KEYS_MAP))

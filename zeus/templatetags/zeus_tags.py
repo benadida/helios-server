@@ -261,7 +261,6 @@ def set_election_issues(context, election):
         election.polls_issues_before_freeze
     return ''
 
-
 @register.simple_tag(takes_context=True)
 def complete_get_parameters(context, GET, new_order,
                             default_sort_key='voter_login_id'):
@@ -270,7 +269,12 @@ def complete_get_parameters(context, GET, new_order,
     if page:
         page_param += "&page=%s" % page
     order_by = GET.get('order', default_sort_key)
-    order_type = GET.get('order_type', 'asc')
+    order_type = GET.get('order_type', None)
+    if order_type == None and order_by == 'created_at':
+        order_type = 'desc'
+    elif order_type == None:
+        order_type = 'asc'
+  
     order_param = ''
     if order_by == new_order:
         context['ordering_cls'] = order_type
