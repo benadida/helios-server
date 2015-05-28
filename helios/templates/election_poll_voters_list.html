@@ -13,6 +13,9 @@
     <div class="columns seven">
     <div class="columns six" style="padding-left:0;">
         <h6>{% trans "Total voters count" %}: <span>{{ voters_count }}</span></h6>
+        {% if nr_voters_excluded > 0 %}
+          <h6>{% trans "Excluded Voters" %}: <span>{{nr_voters_excluded}}<span></h6>
+        {% endif %}
     </div>
     <div class="columns six" style="padding-left:0; width: 42%;" >
     <h6>{% trans "Votes cast" %}: {{ voted_count }}</h6>
@@ -96,7 +99,6 @@
         </div>
     </div>
 </div>
-
 <table id="voters-table" class="voters" width="100%">
   <thead>
     <tr>
