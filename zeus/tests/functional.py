@@ -1068,8 +1068,8 @@ class TestScoreElection(TestElectionBase):
     def setUp(self):
         super(TestScoreElection, self).setUp()
         self.doc_exts = {
-            'poll': ['csv', 'json'],
-            'el': ['csv', 'zip']
+            'poll': ['csv', 'json', 'pdf'],
+            'el': ['csv', 'zip', 'pdf']
             }
         self.election_type = 'score'
         if self.local_verbose:
