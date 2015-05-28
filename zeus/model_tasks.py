@@ -11,7 +11,6 @@ from django.db import models
 from django.db.models.base import ModelBase
 from django.db import transaction
 from django.utils.translation import ugettext_lazy as _
-from django.core.mail import mail_admins
 
 from zeus.model_features import feature
 
