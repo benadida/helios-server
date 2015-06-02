@@ -1,32 +1,32 @@
 # -*- coding: utf-8 -*-
 import csv
+from csv_reader import CSVReader
+
 
 class ElectionReport(object):
-    
+
     def __init__(self, elections):
         self.elections = elections
         self.csvData = []
         self.objectData = []
         self.header = ["ΙΔΡΥΜΑ", "ΕΚΛΕΚΤΟΡΕΣ", "ΨΗΦΙΣΑΝΤΕΣ", "ΕΝΑΡΞΗ", "ΛΗΞΗ",
-                       "uuid", "ΟΝΟΜΑ", "ΚΑΛΠΕΣ" , "ΔΙΑΧΕΙΡΙΣΤΗΣ"]
+                       "uuid", "ΟΝΟΜΑ", "ΚΑΛΠΕΣ", "ΔΙΑΧΕΙΡΙΣΤΗΣ"]
 
-    def getElections(self):
+    def get_elections(self):
         return self.elections
 
-    def setElections(self, election_list):
+    def set_elections(self, election_list):
         self.elections = election_list
 
-    def appendElections(election_list):
+    def append_elections(self, election_list):
         self.elections += election_list
 
-
-    def parseCSV(self, csv_file_path):
+    def parse_csv(self, csv_file_path):
         data = []
         with open(csv_file_path, 'rb') as f:
-            reader = csv.reader(f)
+            reader = CSVReader(f, min_fields=2, max_fields=9)
             for row in reader:
-                if row[0] == "ΙΔΡΥΜΑ":
-                    print 'skipped header'
+                if row[0] == "ΙΔΡΥΜΑ".decode('utf-8'):
                     continue
                 keys = ('inst', 'nr_voters', 'nr_voters_voted', 'start',
                         'end', 'uuid', 'election_name', 'admin')
@@ -58,7 +58,7 @@ class ElectionReport(object):
             row['admin'] = admins
             data.append(row)
         self.objectData += data
-    
+
     def make_output(self, filename):
         data = self.csvData + self.objectData
         keys = ('inst', 'nr_voters', 'nr_voters_voted', 'start',
@@ -67,4 +67,5 @@ class ElectionReport(object):
             writer = csv.writer(f, delimiter=',')
             writer.writerow(self.header)
             for row in data:
-                writer.writerow([row[k] for k in keys])
+                writer.writerow([row[k].encode('utf-8') if type(row[k]) != int
+                                else row[k] for k in keys])
