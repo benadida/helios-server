@@ -1,4 +1,5 @@
 import copy
+import datetime
 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
@@ -61,7 +62,9 @@ def elections_report(request):
         report.parse_csv(csv_path)
     report.parse_object()
     # ext is not needed
-    filename = 'elections_report'
+    date = datetime.datetime.now()
+    str_date = date.strftime("%Y-%m-%d")
+    filename = 'elections_report_' + str_date
     report.make_output(save_path+filename)
     try:
         f = open(save_path+filename+'.csv', 'r')
