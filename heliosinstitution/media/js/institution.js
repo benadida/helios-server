@@ -72,4 +72,42 @@ $("document").ready(function(){
        $('.cafe_attribute').each(function(index){ $(this).attr('id', 'attribute_'+ index)});
     });
 
+    $('#update_voter_reg').click(function(event) {
+        user_type = $('input[name="user_type"]').val();
+        eligibility = $('input[name="eligibility"]:checked').val();
+        if (eligibility == "limitedreg" & user_type == "shibboleth") {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            categories = {}
+            var url = $('form#eligibility-form').attr('action');
+            $('div.cafe_attribute').each(function(){
+                key = $(this).find('select option:selected').text();
+                value = $(this).find('input[name="cafe_attribute_values[]"]').val();
+                categories[key] = value;
+            });          
+        }
+        data = { 
+            'eligibility': eligibility,
+            'category_id': categories,
+        }  
+        $.ajax({
+            type: "POST",
+            url: url,
+            dataType: "json",
+            data: JSON.stringify(data),   
+            success: function (data) {
+                $('div.shib-attr-panel').removeClass('has-error');
+                $('div.shib-attr-panel').addClass('has-success');
+                $('span.add_attr_result').addClass('label-success');
+                $('span.add_attr_result').text(gettext('Attributes successfully saved.'));
+            },
+            error: function (error) {
+                $('div.shib-attr-panel').removeClass('has-success');
+                $('div.shib-attr-panel').addClass('has-error');
+                $('span.add_attr_result').addClass('label-danger');
+                $('span.add_attr_result').text(gettext('Please, correct the provided values.'));
+            }
+        });
+    });
+
 })

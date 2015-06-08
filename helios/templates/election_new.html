@@ -19,29 +19,6 @@
           </div>
         </div> 
       {% endfor %}
-        <div class="panel panel-info">
-            <div class="panel-heading">{% trans "Dynamic Fields - CAFe Attributes" %}</div>
-            <div class="panel-body"> 
-                {% blocktrans %}
-                    Click the plus button to add attributes.<br>
-                    Example: affiliationType = student<br>
-                    <label class="label label-warning">Attention: all the attributes you set must be provided by your Identity Provider.</label>
-                {% endblocktrans %}
-                </br>
-                </br>
-                <div id="attribute_0" class="cafe_attribute input-group">
-                    <select class="form-control">
-                        <option>{% trans "Attribute Name" %}</option>
-                        {% for attr in user.info.attributes %}
-                            <option> {{ attr }}</option>
-                        {% endfor %}
-                    </select>
-                    <span class="input-group-addon">=</span> 
-                    <input type="text" name="cafe_attribute_values[]" class="form-control" placeholder="{% trans "Comma separated attribute value. Ex. val1,val2,val3" %}"></input>
-                    <span class="add_cafe_attribute input-group-addon glyphicon glyphicon-plus"></span>
-                </div>
-            </div>
-        </div>
         <div class="pull-right">
             <button id="next_button" type="submit" class="btn btn-primary">{% trans "Next" %}</button>
         </div>

@@ -3,7 +3,6 @@ Shibboleth Authentication
 author: Shirlei Chaves
 e-mail: shirlei@gmail.com
 version: 1.0 - 2015 
-
 """
 
 from django import forms
@@ -84,11 +83,43 @@ def check_constraint(constraint, user):
     """
     for eligibility
     """
-    for key, value in constraint.items():
-        if constraint[key] != user.info[key]:
-            return False
+    # TODO: multivalue, like affiliation = 'student,faculty,etc'
+    try:
+        for key, value in constraint.items():
+            if constraint[key] == user.info[key]:
+                pass
+    except KeyError:
+        return False
+
     return True
-    
+
+
+def pretty_eligibility(constraint):
+  pretty = _("Users with the following attributes:")
+  pretty = pretty + "<ul>"
+  for ctr in constraint:
+    pretty = pretty + "<li>%s = %s </li>" % (ctr, constraint[ctr])
+  return pretty + "</ul>" 
+
+
+def generate_constraint(category_id, user):
+  """
+  generate the proper basic data structure to express a constraint
+  based on the category string
+  """
+  constraints = {}
+  for category in category_id:
+    constraints[category] = category_id[category]
+  return constraints
+
+def eligibility_category_id(constraint):
+  return constraint
+
+def list_categories(user):
+  attributes = user.info['attributes']
+  return [{'id': str(y), 'name': '%s with the value  %s' % 
+    (y, attributes[y])} for y in attributes] 
+
 
 def user_needs_intervention(user_id, user_info, token):
     """

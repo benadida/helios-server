@@ -22,7 +22,7 @@
 	<div class="form-group">
 	<label>{% trans "You can change this setting:" %}</label>
 	</div>
-	<form method="post" role="form" class="form-horizontal" action="{% url "helios.views.voters_eligibility" election.uuid %}">
+	<form id="eligibility-form" method="post" role="form" class="form-horizontal" action="{% url "helios.views.voters_eligibility" election.uuid %}">
 	<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 	<div class="form-group">
 	<input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> {% trans "anyone can vote" %}
@@ -30,20 +30,51 @@
 	<div class="form-group">
 	<input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> {% trans "only voters listed explicitly below can vote" %} <i title="{% trans "Do not forget to upload voters file, using the bulk upload voters button bellow." %}" class="glyphicon glyphicon-info-sign"></i>
 	</div>
+
 	{% if categories %}
 	<div class="form-group">
-	<input type="radio" name="eligibility" value="{% trans "limitedreg" %}" {% if election.eligibility %}CHECKED{% endif %} /> {% trans "only voters who are members of " %}
-	</div>
-	<div class="form-group">
-	<select name="category_id">
-	{% for category in categories %}
-	<option value="{{category.id}}" {% if eligibility_category_id == category.id %}SELECTED{% endif %}> {{category.name}}</option>
-	{% endfor %}
-	</select>
+	{% if user.user_type == 'shibboleth' %}
+		<input type="hidden" name="user_type" value="shibboleth"></input>
+		<input type="radio" name="eligibility" value="limitedreg" {% if election.eligibility %}CHECKED{% endif %} /> {% trans "only voters with the following attributes" %}
+		<div class="panel panel-info shib-attr-panel">
+            <div class="panel-heading">{% trans "Dynamic Fields - CAFe Attributes" %}</div>
+            <div class="panel-body"> 
+                {% blocktrans %}
+                    Click the plus button to add attributes.<br>
+                    Example: affiliationType = student<br>
+                    <label class="label label-warning">Attention: all the attributes you set must be provided by your Identity Provider.</label>
+                {% endblocktrans %}
+                </br>
+                </br>
+                <div id="attribute_0" class="cafe_attribute input-group">
+                    <select class="form-control">
+                        <option>{% trans "Attribute Name" %}</option>
+                        {% for attr in user.info.attributes %}
+                            <option>{{ attr }}</option>
+                        {% endfor %}
+                    </select>
+                    <span class="input-group-addon">=</span> 
+                    <input type="text" name="cafe_attribute_values[]" class="form-control" placeholder="{% trans "Comma separated attribute value. Ex. val1,val2,val3" %}"></input>
+                    <span class="add_cafe_attribute input-group-addon glyphicon glyphicon-plus"></span>
+                </div>
+                <span class="add_attr_result"></span>                
+            </div>
+        </div>
+	{% else %}
+		<input type="radio" name="eligibility" value="{% trans "limitedreg" %}" {% if election.eligibility %}CHECKED{% endif %} /> {% trans "only voters who are members of " %}
+		</div>
+		<div class="form-group">
+		<select name="category_id">
+		{% for category in categories %}
+		<option value="{{category.id}}" {% if eligibility_category_id == category.id %}SELECTED{% endif %}> {{category.name}}</option>
+		{% endfor %}
+		</select>
+	{% endif %}
 	</div>
 	{% endif %}
+
 	<div class="form-group">
-	<button class="btn btn-primary">{% trans "update" %}</button>
+	<button id="update_voter_reg" class="btn btn-primary">{% trans "update" %}</button>
 	</div>
 	</form>
 	</div>
@@ -73,8 +104,8 @@
 	<br>
 	<b>{% trans "Who can vote?" %}</b>
 	{% if election.openreg %}
-	<!--{{election.pretty_eligibility|safe}}-->
-	<label>{% trans "Any user with credentials" %}</label>
+	{{election.pretty_eligibility|safe}}
+	<!-- <label>{% trans "Any user with credentials" %}</label> -->
 	{% else %}
 	<label>{% trans "Only the voters listed here" %}.</label>
 	{% endif %}

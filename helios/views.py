@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied
 from django.http import *
 from django.db import transaction
+from django.utils.datastructures import MultiValueDictKeyError
 from django.utils.translation import ugettext as _
 
 from mimetypes import guess_type
@@ -1206,8 +1207,18 @@ def voters_eligibility(request, election):
   if election.private_p:
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
 
-  # eligibility
-  eligibility = request.POST['eligibility']
+  category_id = None
+  eligibility = None
+
+  try:
+    # eligibility
+    eligibility = request.POST['eligibility']
+  except MultiValueDictKeyError:
+    if user.user_type == 'shibboleth':
+      shib_data = json.loads(request.body)
+      eligibility = shib_data['eligibility']
+      category_id = shib_data['category_id']    
+
 
   if eligibility in ['openreg', 'limitedreg']:
     election.openreg= True
@@ -1217,7 +1228,8 @@ def voters_eligibility(request, election):
 
   if eligibility == 'limitedreg':
     # now process the constraint
-    category_id = request.POST['category_id']
+    if category_id is None:
+      category_id = request.POST['category_id']
 
     constraint = AUTH_SYSTEMS[user.user_type].generate_constraint(category_id, user)
     election.eligibility = [{'auth_system': user.user_type, 'constraint': [constraint]}]
@@ -1225,6 +1237,12 @@ def voters_eligibility(request, election):
     election.eligibility = None
 
   election.save()
+
+  if user.user_type == 'shibboleth' and eligibility == 'limitedreg':
+    response_data = {'success': _('Constraints successfully saved')}
+    return HttpResponse(json.dumps(response_data), content_type="application/json", 
+      status=200)
+
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
   
 @election_admin()
