@@ -35,16 +35,16 @@ window.onbeforeunload = function(evt) {
 };
 
 </script>
-<h1>{{election.name}} &mdash; {% trans "Submit your Vote" %}</h1>
+<div id="ballot-not-cast-yet" class="container-fluid">
+<h1>{{election.name}} - {% trans "Submit your Vote" %}</h1>
 
-<p>
-{% blocktrans %}
+<div class="alert alert-warning" role="alert">
+  {% blocktrans %}
   We have received, <b><u>but not yet recorded</u></b>, your encrypted ballot.<br />
-Your smart ballot tracker is:
-{% endblocktrans %}
-<br /><br />
-    <tt style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</tt>
-</p>
+  Your smart ballot tracker is:
+  {% endblocktrans %}
+  <em style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</em>
+</div>
 
 <div id="waiting_div">
    {% trans "Verifying and Casting your ballot" %}<br />
@@ -70,7 +70,7 @@ Your smart ballot tracker is:
 {% else %}
 
 {% if user %}
-<p>
+<div class="alert alert-danger" role="alert">
 {% if election.openreg %}
 {% blocktrans %}
 <b>Sorry, you are <em><u>not eligible</u></em> for this election.</b><br />
@@ -80,9 +80,9 @@ Your smart ballot tracker is:
 <b>Sorry, you are <em>not registered</em> for this election, and registration is closed.</b><br />
 {% endblocktrans %}
 {% endif %}
-</p>
+</div>
 <p>
-    [<a href="{% url "helios.views.one_election_view" election.uuid %}">return to the main election page</a>]
+    <a class="btn-primary btn-lg pull-right" href="{% url "helios.views.one_election_view" election.uuid %}">return to the main election page</a>
 </p>
 {% else %}
 <p>
@@ -120,5 +120,6 @@ Don't worry, we'll remember your ballot while you log in.
 {% endif %}
 
 </div>
-
+</div> <!-- ballot-not-cast-yet -->
+<br>
 {% endblock %}
