@@ -200,10 +200,11 @@ class ElectionModuleBase(object):
                       self.election.institution.name,
                       self.election.voting_starts_at, self.election.voting_ends_at,
                       self.election.voting_extended_until,
-                      [(poll.name, 
+                      [(poll.name,
                         poll.zeus.get_results(),
                         poll.questions_data,
-                        poll.questions[0]['answers'])],
+                        poll.questions[0]['answers'],
+                        poll.voters.all())],
                       lang,
                       self.get_poll_result_file_path('pdf', 'pdf', lang[0]),
                       score=score, parties=parties)
@@ -219,7 +220,8 @@ class ElectionModuleBase(object):
             polls_data.append((poll.name, 
                                poll.zeus.get_results(),
                                poll.questions_data,
-                               poll.questions[0]['answers']))
+                               poll.questions[0]['answers'],
+                               poll.voters.all()))
 
         build_doc(_(u'Results'), self.election.name, self.election.institution.name,
                 self.election.voting_starts_at, self.election.voting_ends_at,

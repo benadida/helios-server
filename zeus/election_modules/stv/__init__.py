@@ -142,7 +142,8 @@ class StvElection(ElectionModuleBase):
 
     def generate_result_docs(self, lang):
         poll_data = [
-            (self.poll.name, self.poll.zeus.get_results(), self.poll.questions)
+            (self.poll.name, self.poll.zeus.get_results(), self.poll.questions,
+             self.poll.voters.all())
             ]
         from zeus.results_report import build_stv_doc
         results_json = self.poll.zeus.get_results()
@@ -160,7 +161,7 @@ class StvElection(ElectionModuleBase):
         polls_data = []
 
         for poll in self.election.polls.filter():
-            polls_data.append((poll.name, poll.zeus.get_results(), poll.questions))
+            polls_data.append((poll.name, poll.zeus.get_results(), poll.questions, poll.voters.all()))
 
         build_stv_doc(_(u'Results'), self.election.name,
             self.election.institution.name,
