@@ -199,10 +199,12 @@ def make_intro(elements, styles, contents):
     elements.append(Spacer(1, 12))
 
 def make_poll_voters(elements, styles, poll_voters):
-    elements.append(Paragraph(escape(_("Voters: %d") % poll_voters.count()),styles['Zeus']))
+    elements.append(Paragraph(escape(_("Voters") + ": " 
+        + str(poll_voters.count())),styles['Zeus']))
     if poll_voters.excluded().count() > 0:
         nr_excluded = poll_voters.excluded().count()
-        elements.append(Paragraph(escape(_("Excluded Voters: %d") % nr_excluded),styles['Zeus']))
+        elements.append(Paragraph(escape(_("Excluded voters") + ": " 
+            + str(nr_excluded)),styles['Zeus']))
 
 def make_election_voters(elements, styles, polls_data, stv=False):
     total_voters = 0
@@ -216,9 +218,11 @@ def make_election_voters(elements, styles, polls_data, stv=False):
         total_voters += poll_voters.count()
         if poll_voters.excluded().count() > 0:
             excluded_voters += poll_voters.excluded().count()
-    elements.append(Paragraph(escape(_("Voters: %d") % total_voters), styles['Zeus']))
+    elements.append(Paragraph(escape(_("Voters") + ": " 
+        + str(total_voters)), styles['Zeus']))
     if excluded_voters > 0:
-        elements.append(Paragraph(escape(_("Excluded Voters: %d") % excluded_voters), styles['Zeus']))
+        elements.append(Paragraph(escape(_("Excluded voters") + ": "
+            + str(excluded_voters)), styles['Zeus']))
 
 def make_totals(elements, styles, total_votes, blank_votes):
     elements.append(Paragraph(escape(_('Total votes: %d') % total_votes), styles['Zeus']))
