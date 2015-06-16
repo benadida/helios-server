@@ -4,6 +4,7 @@ author: Shirlei Chaves
 e-mail: shirlei@gmail.com
 version: 1.0 - 2015 
 """
+import re
 
 from django import forms
 from django.conf import settings
@@ -81,13 +82,21 @@ def send_message(user_id, user_name, user_info, subject, body):
 
 def check_constraint(constraint, user):
     """
-    for eligibility
+    Given a constraint list from the voters definition for some election,
+    those constraints are checked against user attributes. In the first non-matching
+    attribute, returns False
     """
-    # TODO: multivalue, like affiliation = 'student,faculty,etc'
     try:
         for key, value in constraint.items():
-            if constraint[key] == user.info[key]:
-                pass
+            # some user attributes may be multivalued
+            user_attrs = re.split('[,;]',user.info['attributes'][key])
+            ctr_list = re.split('[,;]',constraint[key])    
+            has_attr = False
+            for ctr in ctr_list:
+                if ctr.strip() in user_attrs:
+                    has_attr = True
+            if not has_attr: # if one attribute isn't available, return False
+                return False
     except KeyError:
         return False
 
