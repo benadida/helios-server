@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-11 14:41+0300\n"
+"POT-Creation-Date: 2015-06-16 13:00+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -236,17 +236,26 @@ msgstr "Επιβεβαιώστε την οριστικοποίηση της ψη
 msgid "Are you sure you want to delete the selected poll ?"
 msgstr "Επιβεβαιώστε τη διαγραφή της επιλεγμένης κάλπης"
 
-#, python-format
-msgid "Start: %s"
-msgstr "Έναρξη: %s"
+msgid "Institution name"
+msgstr "Ίδρυμα"
 
-#, python-format
-msgid "End: %s"
-msgstr "Λήξη: %s"
+msgid "Start"
+msgstr "Έναρξη"
 
-#, python-format
-msgid "Extension: %s"
-msgstr "Παράταση: %s"
+msgid "End"
+msgstr "Λήξη"
+
+msgid "Extension"
+msgstr "Παράταση"
+
+msgid "Voters"
+msgstr "Ψηφοφόροι"
+
+msgid "Excluded voters"
+msgstr "Εξαιρεθέντες ψηφοφόροι"
+
+msgid "Poll name"
+msgstr "Όνομα κάλπης"
 
 msgid "RESULTS"
 msgstr "ΑΠΟΤΕΛΕΣΜΑΤΑ ΓΕΝΙΚΑ"
@@ -292,6 +301,18 @@ msgstr "ΑΚΥΡΟ"
 
 msgid "BLANK"
 msgstr "ΛΕΥΚΟ"
+
+#, python-format
+msgid "Start: %s"
+msgstr "Έναρξη: %s"
+
+#, python-format
+msgid "End: %s"
+msgstr "Λήξη: %s"
+
+#, python-format
+msgid "Extension: %s"
+msgstr "Παράταση: %s"
 
 msgid "Elect"
 msgstr "Εκλογή"
@@ -340,14 +361,6 @@ msgstr "ΒΑΘΜΟΛΟΓΙΕΣ:"
 
 msgid "Zeus Elections - Poll Results"
 msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
-
-#, python-format
-msgid "Voters: %d"
-msgstr "Ψηφοφόροι: %d"
-
-#, python-format
-msgid "Excluded Voters: %d"
-msgstr "Εξαιρεθέντες ψηφοφόροι: %d"
 
 #, python-format
 msgid "Total votes: %d"
@@ -447,14 +460,6 @@ msgstr ""
 #, fuzzy
 msgid "Creation"
 msgstr "Ερώτηση"
-
-#, fuzzy
-msgid "Start"
-msgstr "Έναρξη: %s"
-
-#, fuzzy
-msgid "End"
-msgstr "Λήξη: %s"
 
 #, fuzzy
 msgid "Election status"
@@ -562,6 +567,9 @@ msgstr ""
 
 msgid "The requested page was not found."
 msgstr ""
+
+#~ msgid "Voters %d"
+#~ msgstr "Ψηφοφόροι %d"
 
 #~ msgid "Email body"
 #~ msgstr "Κείμενο μηνύματος email"
