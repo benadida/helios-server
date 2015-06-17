@@ -25,7 +25,11 @@ def get_election():
   
 def home(request):
   # load the featured elections
-  featured_elections = helios.models.Election.get_featured()
+  #featured_elections = helios.models.Election.get_featured()
+  # 2015-06-10 include elections by "status"
+  featured_elections_new = helios.models.Election.get_featured_new()
+  featured_elections_in_progress = helios.models.Election.get_featured_in_progress()
+  featured_elections_done = helios.models.Election.get_featured_done()
   
   user = get_user(request)
   create_p = can_create_election(request)
@@ -47,7 +51,10 @@ def home(request):
 
   login_box = auth_views.login_box_raw(request, return_url="/", auth_systems=auth_systems)
 
-  return render_template(request, "index", {'elections': featured_elections,
+  # include elections by "status"
+  return render_template(request, "index", {'elections_new': featured_elections_new,
+                                            'elections_in_progress': featured_elections_in_progress,
+                                            'elections_done': featured_elections_done,
                                             'elections_administered' : elections_administered,
                                             'elections_voted' : elections_voted,
                                             'create_p':create_p,

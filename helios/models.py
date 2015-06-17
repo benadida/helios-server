@@ -205,7 +205,21 @@ class Election(HeliosModel):
   @classmethod
   def get_featured(cls):
     return cls.objects.filter(featured_p = True).order_by('short_name')
-    
+
+  # init bootstrap ->
+  @classmethod
+  def get_featured_new(cls):
+    return cls.objects.filter(featured_p = True, frozen_at__isnull = True, voting_ended_at__isnull = True ).order_by('short_name')
+
+  @classmethod
+  def get_featured_in_progress(cls):
+    return cls.objects.filter(featured_p = True, frozen_at__isnull = False, voting_ended_at__isnull = True ).order_by('short_name')
+
+  @classmethod
+  def get_featured_done(cls):
+      return cls.objects.filter(featured_p = True, frozen_at__isnull = False, voting_ended_at__isnull = False ).order_by('short_name')
+  # >- end bootstrap  
+
   @classmethod
   def get_or_create(cls, **kwargs):
     return cls.objects.get_or_create(short_name = kwargs['short_name'], defaults=kwargs)

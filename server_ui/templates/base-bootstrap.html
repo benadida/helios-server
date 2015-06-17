@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<!--[if IE 8]> 				 <html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> 
+<html class="no-js" lang="{% firstof settings.LANGUAGE_CODE 'en' %}"> <!--<![endif]-->
+{% load i18n %}
+{% load staticfiles %}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>{% block title %}{% endblock %}</title>
+ 
+{% if settings.DEBUG %}  
+  <link rel="stylesheet" type="text/css" media="screen" href="{% static "bootstrap/css/bootstrap.min.css" %}"/>  
+  <script language="javascript" src={% static "js/jquery-1.11.2.min.js" %}></script>
+  <script language="javascript" src={% static "bootstrap/js/bootstrap.min.js"%}></script>
+{% else %}
+  <script language="javascript" src={% static "20140302-helios-combined.js" %}></script>
+{% endif %}
+  
+  {% block js %}
+  {% endblock %}
+  
+  {% block extra-head %}{% endblock %}
+  <script language="javascript" src={% static "js/utils.js" %}></script>
+  <script type="text/javascript" src="{% url "django.views.i18n.javascript_catalog" %}"></script>
+</head>
+<body>
+  {% include "navbar-bootstrap.html" %} 
+  <!-- Main Page Content and Sidebar -->
+
+  <div class="container-fluid">
+      {% block content %}
+        {% block subcontent %}{% endblock subcontent %}
+      {% endblock %}
+  </div>
+  
+  {% if user %}
+      <div class="panel-footer">
+      {% block footer %}
+         {% trans "logged in as" %} <b>{{user.pretty_name|safe}}</b>
+          <br clear="right" />
+      {% endblock footer%}
+      </div>
+  {% endif %}
+  
+      <script>
+	       $(document).foundation();
+      </script>     
+
+</body>
+</html>

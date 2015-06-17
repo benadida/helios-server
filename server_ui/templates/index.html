@@ -1,4 +1,4 @@
-{% extends 'server_ui/templates/base.html' %}
+{% extends 'server_ui/templates/base-bootstrap.html' %}
 {% load i18n %}
 {% block title %}{{ settings.SITE_TITLE }}{% endblock %}
 
@@ -8,82 +8,142 @@
 
 {% block content %}
 <!--<div class="row"><div class="large-5 columns large-centered"><a href="/"><img border="0" src="{{ settings.MAIN_LOGO_URL }}" /></a></div></div>-->
-<div class="row">
   <div class="col-md-8">
     {% if settings.MASTER_HELIOS %}
 
-      {% blocktrans %}
+      {% if create_p %}
+        <a class="button" href="{% url "helios.views.election_new" %}">{% trans "create an election" %}</a>
+      {% endif %}
+      {% else %}
+        <h4>
+          {{settings.WELCOME_MESSAGE|safe}}
+        </h4>
 
-        <p>Helios offers <b>verifiable online elections</b>.</p>
+        {% if elections_new|length or elections_in_progress|length or elections_done|length%}
+          <br/>
+          <form class="form-inline">
+            <div class="form-group">
+              <label for="ano">Ano:</label>
+              <select id="ano">
+                <option value="">2015</option>
+                <option value="">2014</option>
+              </select>
+            </div>
+            &nbsp;&nbsp;
+            <div class="form-group">
+              <label for="instituicao">Instituição:</label>
+              <select id="instituicao">
+                <option value="">IFSC</option>
+                <option value="">IFBA</option>
+                <option value="">IFRS</option>
+              </select>
+            </div>
+            <button type="Consultar" class="btn btn-primary btn-xs">Listar</button>
+          </form>
+          <br/>
 
-        <p>We believe democracy is important, whether it’s your book club, parent-teacher association, student government, workers’ union, or state. So we’ve made truly verifiable elections as easy as everything else on the Web.</p>
+          <div role="tabpanel">
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs" role="tablist" id="situacao">
+              <li role="presentation" class="active"><a href="#iniciar" aria-controls="home" role="tab" data-toggle="tab">A iniciar</a></li>
+              <li role="presentation"><a href="#andamento" aria-controls="profile" role="tab" data-toggle="tab">Em andamento</a></li>
+              <li role="presentation"><a href="#encerradas" aria-controls="messages" role="tab" data-toggle="tab">Encerradas</a></li>
+            </ul>
+          </div>
+          <div class="tab-content" align="center">
+            <div role="tabpanel" class="tab-pane active" id="iniciar">
+              <table class="table table-condensed table-striped table-bordered">
+                <thead>
+                  <td>Instituição</td><td>Nome</td><td>Início</td><td>Fim</td>
+                </thead>
+                <tbody>
+                {% for election in elections_new %}
+                  <tr>
+                    <td>IFSC</td>
+                    <td><a href="{% url "helios.views.election_shortcut" election.short_name %}">{{election.name}}</a></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="andamento">
+              <table class="table table-condensed table-striped table-bordered">
+                <thead>
+                  <td>Instituição</td><td>Nome</td><td>Início</td><td>Fim</td>
+                </thead>
+                <tbody>
+                {% for election in elections_in_progress %}
+                  <tr>
+                    <td>IFSC</td>
+                    <td><a href="{% url "helios.views.election_shortcut" election.short_name %}">{{election.name}}</a></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+            <div role="tabpanel" class="tab-pane" id="encerradas">
+              <table class="table table-condensed table-striped table-bordered">
+                <thead>
+                  <td>Instituição</td><td>Nome</td><td>Início</td><td>Fim</td>
+                </thead>
+                <tbody>
+                {% for election in elections_done %}
+                  <tr>
+                    <td>IFSC</td>
+                    <td><a href="{% url "helios.views.election_shortcut" election.short_name %}">{{election.name}}</a></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <nav class="text-center">
+            <ul class="pagination">
+              <li class="disabled"><a href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+              <li class="active"><a href="#">1 <span class="sr-only">(current)</span></a></li>
+              <li><a href="#">2 <span class="sr-only">(current)</span></a></li>
+              <li><a href="#">3 <span class="sr-only">(current)</span></a></li>
+              <li><a href="#">4 <span class="sr-only">(current)</span></a></li>
+              <li><a href="#" aria-label="Last"><span aria-hidden="true">&raquo;</span></a></li>
+            </ul>
+          </nav>
 
-        <p>
-  Helios elections are:
-  <ul class="disc">
-  <li><b>private</b>: no one knows how you voted.</li>
-  <li><b>verifiable</b>: each voter gets a tracking number.</li>
-  <li><b>proven</b>: Helios is open-source, vetted by top-tier experts, and in use by major organizations.</li>
-  </ul>
+          <script language="javascript">
+            $('#situacao a').click(function (e) {
+              e.preventDefault();
+              $(this).tab('show');
+            })
+          </script>
 
-  <p>
-  More than <b>100,000 votes</b> have been cast using Helios.
-  </p>
-  {% endblocktrans %}
-  {% if create_p %}
-  <a class="button" href="{% url "helios.views.election_new" %}">{% trans "create an election" %}</a>
-  {% endif %}
-    {% else %}
-    <p style="font-size: 1.4em;">
-      {{settings.WELCOME_MESSAGE|safe}}
-    </p>
-    
-    {% if elections|length %}
-
-      {% for election in elections %}
- 
-        <a style="font-size: 1.4em;" href="{% url "helios.views.election_shortcut" election.short_name %}">{{election.name}}</a>{% if settings.SHOW_USER_INFO %}<br /> {% trans "by" %} {{election.admin.pretty_name}}{% endif %}
-     
-      <br />
-      {% endfor %}
- 
-    {% else %}
-    <h4>{% trans "no featured elections at the moment" %}</h4>
+        {% else %}
+          <h4>{% trans "no featured elections at the moment" %}</h4>
+        {% endif %}
     {% endif %}
-  {% endif %}
-    
-  </div> <!-- span10 -->
+  </div> 
 
   <div class="col-md-4">
     {% if user %}
-    <!--<div class="row right">{{user.display_html_big|safe}}</div>-->
-    {% if create_p %}
-    <a class="btn btn-primary" href="{% url "helios.views.election_new" %}">{% trans "create election" %}</a>
-    <h5 class="subheader">{% trans "Administration" %}</h5>
-    {% if elections_administered %}
-    <ul>
-    {% for election in elections_administered %}
-    <li> <a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></li>
-    {% endfor %}
-    </ul>
-    {% else %}
-    <em>{% trans "none yet" %}</em>
-    {% endif %}
-
-    <a class="tiny button" href="{% url "helios.views.elections_administered" %}">{% trans "see all" %}</a>
-    {% endif %}
-
-    <h5 class="subheader">{% trans "Recent Votes" %}</h5>
-    {% if elections_voted %}
-    <ul>
-    {% for election in elections_voted %}
-    <li><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></li>
-    {% endfor %}
-    </ul>
-    {% else %}
-    <em>{% trans "none yet" %}</em>
-    {% endif %}
- <a class="tiny button" href="{% url "helios.views.elections_voted" %}">{% trans "see all" %}</a>
+      <!--<div class="row right">{{user.display_html_big|safe}}</div>-->
+      <div class="row">
+        <div class-"col-sm-12">
+          <h5 class="text-right">{% trans "Wellcome" %} <b>{{user.pretty_name|safe}}</b></h5><br/>
+          <p class="bg-info" style="padding: 15px; border-radius: 5px">
+            <b>Informações sobre contato</b><br/>
+            <br/>
+            Administrador do sistema em sua instituição é:<br/>
+            <br/>
+            Beltrano dos Santos<br/>
+            Telefone : +55<br/>
+            E-mail: beltrano@mail.com<br/>
+          </p>        
+        </div>
+      </div>
     {% else %}
       <!--{% if settings.SHOW_LOGIN_OPTIONS %}
       <h5>{% trans "Log In to Start Voting" %}</h5>
@@ -97,6 +157,5 @@
       {% endif %} -->
     {% endif %}
   </div> <!-- span2 -->
-
 </div> <!-- end row-fluid -->
 {% endblock %}
