@@ -260,7 +260,7 @@ def csv_from_stv_polls(election, polls, lang, outfile=None):
         from stv.parser import STVParser
         for poll in polls:
             writerow([])
-            writerow([strforce(poll.name)])
+            writerow([strforce(_("Poll name")), strforce(poll.name)])
             writerow([])
             questions = poll.questions
             indexed_cands = {}
