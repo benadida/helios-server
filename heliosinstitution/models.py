@@ -102,3 +102,21 @@ class InstitutionUserProfile(models.Model):
         if self.django_user.groups.filter(name="Election Admin").exists():
             return _("Election Admin")
         return _("Undefined")
+
+    @property
+    def institution_user_voter_attributes(self):
+        '''
+        Returns attributes to be used when constraining election voters.
+        These attributes are institution's election managers specific
+        '''
+        from django.conf import settings
+        attributes = self.helios_user.info['attributes']
+
+        if settings.USE_ELECTION_MANAGER_ATTRIBUTES:
+            for attribute in settings.ELECTION_MANAGER_ATTRIBUTES:
+                try:
+                    attributes.pop(attribute)
+                except KeyError:
+                    pass
+
+        return attributes

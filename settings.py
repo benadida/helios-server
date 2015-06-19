@@ -338,6 +338,11 @@ SHIBBOLETH_ATTRIBUTE_MAP = {
     "Shib-Identity-Provider": (True, "identity_provider"),
 }
 
+# To use some manager-specific attributes, like idp address
+USE_ELECTION_MANAGER_ATTRIBUTES = True
+
+ELECTION_MANAGER_ATTRIBUTES = ['Provider']
+
 INSTITUTION_ROLE = ['Institution Admin','Election Admin']
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True

@@ -118,9 +118,18 @@ def generate_constraint(category_id, user):
   based on the category string
   """
   constraints = {}
+
   for category in category_id:
     constraints[category] = category_id[category]
+
+  if settings.USE_ELECTION_MANAGER_ATTRIBUTES:
+    for em_attribute in settings.ELECTION_MANAGER_ATTRIBUTES:
+        try:
+            constraints[em_attribute] = user.info['attributes'][em_attribute]
+        except KeyError:
+            pass
   return constraints
+
 
 def eligibility_category_id(constraint):
   return constraint
@@ -201,3 +210,4 @@ def parse_attributes(META):
     shib_attrs['attributes'] = attributes        
 
     return shib_attrs, errors
+    

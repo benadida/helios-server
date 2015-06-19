@@ -49,7 +49,7 @@
                 <div id="attribute_0" class="cafe_attribute input-group">
                     <select class="form-control">
                         <option>{% trans "Attribute Name" %}</option>
-                        {% for attr in user.info.attributes %}
+                        {% for attr in user.institutionuserprofile_set.get.institution_user_voter_attributes %}
                             <option>{{ attr }}</option>
                         {% endfor %}
                     </select>
