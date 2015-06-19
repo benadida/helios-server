@@ -120,7 +120,7 @@ def generate_constraint(category_id, user):
   constraints = {}
 
   for category in category_id:
-    constraints[category] = category_id[category]
+    constraints[category] = category_id[category].lower()
 
   if settings.USE_ELECTION_MANAGER_ATTRIBUTES:
     for em_attribute in settings.ELECTION_MANAGER_ATTRIBUTES:
@@ -205,9 +205,8 @@ def parse_attributes(META):
     for value in META:
         if value.lower().startswith('shib-') and value not in SHIBBOLETH_NATIVE_SP_ATTRIBUTES:
             attr_name = value.split('-')[-1:][0]
-            attributes[attr_name] = META[value]
+            attributes[attr_name] = META[value].lower()
 
     shib_attrs['attributes'] = attributes        
 
     return shib_attrs, errors
-    
