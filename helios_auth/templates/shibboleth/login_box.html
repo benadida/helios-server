@@ -2,7 +2,7 @@
 {% load i18n %}
 {% load staticfiles %}
 {% block extra-head %}
-    <link rel="stylesheet" type="text/css" href="{% static "shibboleth/idpselect.css" %}"/>
+    <link rel="stylesheet" type="text/css" href="{% static "shibboleth-ds/idpselect.css" %}"/>
 {% endblock %}
 
 {% block content %}
@@ -11,9 +11,9 @@
  {{ meta }}
   <div id="idpSelect"></div>
 
-  <script src="{% static "shibboleth/idpselect_config.js" %}" type="text/javascript" language="javascript"></script>
+  <script src="{% static "shibboleth-ds/idpselect_config.js" %}" type="text/javascript" language="javascript"></script>
 
-  <script src="{% static "shibboleth/idpselect.js" %}" type="text/javascript" language="javascript"></script>
+  <script src="{% static "shibboleth-ds/idpselect.js" %}" type="text/javascript" language="javascript"></script>
 
 
   <noscript>
