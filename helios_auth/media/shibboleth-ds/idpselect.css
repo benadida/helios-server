@@ -4,7 +4,7 @@
     width: 389px;
     text-align: left;
     background-color: #FFFFFF;
-    border: 2px #A40000 solid;
+/*    border: 2px #A40000 solid; */
     padding: 10px;
 }
 
@@ -94,7 +94,7 @@ div.IdPSelectPreferredIdPButton div.IdPSelectTextDiv
  */
 #idpSelectInput, #idpSelectSelector
 {
-    width: 80%;
+    width: 75%;
 }
 /*
  * For some reason a <select> width includes the border and an
@@ -109,7 +109,7 @@ div.IdPSelectPreferredIdPButton div.IdPSelectTextDiv
 #idpSelectSelectButton, #idpSelectListButton
 {
     margin-left: 5px;
-    width: 16%;
+    width: 20%;
 }
 #idpSelectSelectButton
 {

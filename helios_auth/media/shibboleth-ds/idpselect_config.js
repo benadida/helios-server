@@ -6,13 +6,14 @@ function IdPSelectUIParms(){
     //
     this.alwaysShow = true;          // If true, this will show results as soon as you start typing
     this.dataSource = '/Shibboleth.sso/DiscoFeed';   // Where to get the data from
-    this.defaultLanguage = 'en';     // Language to use if the browser local doesnt have a bundle
+    this.defaultLanguage = 'pt-br';     // Language to use if the browser local doesnt have a bundle
     this.defaultLogo = 'blank.gif';  // Replace with your own logo
     this.defaultLogoWidth = 1;
     this.defaultLogoHeight = 1 ;
-    this.defaultReturn = null;       // If non null, then the default place to send users who are not
+    //this.defaultReturn = null;       // If non null, then the default place to send users who are not
                                      // Approaching via the Discovery Protocol for example
     //this.defaultReturn = "https://example.org/Shibboleth.sso/DS?SAMLDS=1&target=https://example.org/secure";
+    this.defaultReturn = 'https://$HOST/Shibboleth.sso/DS?SAMLDS=1&target=https://$HOST/auth/shib/register';
     this.defaultReturnIDParam = null;
     this.helpURL = 'https://wiki.shibboleth.net/confluence/display/SHIB2/DSRoadmap';
     this.ie6Hack = null;             // An array of structures to disable when drawing the pull down (needed to 
