@@ -10,81 +10,79 @@
 
 <!-- election info -->
 <div class="row">
-<div class="col-md-12">
-{% trans "Election type" %}: <em>{% if election.private_p %}{% trans "private" %}{%else%}{% trans "public" %}{% endif %}</em> - 
-{% if settings.SHOW_USER_INFO %} {% trans "created by" %} <u><b>{{election.admin.pretty_name}}</b></u>{% endif %}
-{% if election.is_archived %}
-[archived]
-{% endif %}
-{% if admin_p %}
-{% if not election.frozen_at %}
-<a title="{% trans "edit" %}" href="{% url "helios.views.one_election_edit" election.uuid %}"><i class="glyphicon glyphicon-edit"></i></a>
-{% endif %}
-{% if election.is_archived %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=0">{% trans "unarchive it" %}</a>{% else %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=1"> <i title="{% trans "archive it" %}" class="glyphicon glyphicon-briefcase"></i></a>{% endif %}
-{% endif %}
-</div>
-</div>
-<div class="row">
-<div class="col-md-12">
-{% trans "Election URL:" %} <a href="{{election.url}}">{{election.url}}</a>
-</div>
+  <div class="col-md-12">
+	{% trans "Election type" %}: <em>{% if election.private_p %}{% trans "private" %}{%else%}{% trans "public" %}{% endif %}</em> - 
+	{% if settings.SHOW_USER_INFO %} {% trans "created by" %} <u><b>{{election.admin.pretty_name}}</b></u>{% endif %}
+	{% if election.is_archived %}
+	[archived]
+	{% endif %}
+	{% if admin_p %}
+	{% if not election.frozen_at %}
+	  <a title="{% trans "edit" %}" href="{% url "helios.views.one_election_edit" election.uuid %}"><i class="glyphicon glyphicon-edit"></i></a>
+	{% endif %}
+	  {% if election.is_archived %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=0">{% trans "unarchive it" %}</a>{% else %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=1"> <i title="{% trans "archive it" %}" class="glyphicon glyphicon-briefcase"></i></a>{% endif %}
+	{% endif %}
+  </div>
 </div>
 <div class="row">
-<div class="col-md-12">
-{% trans "Election Fingerprint:" %} <strong>{{election.hash}}</strong>
+  <div class="col-md-12">
+	{% trans "Election URL:" %} <a href="{{election.url}}">{{election.url}}</a>
+  </div>
 </div>
+<div class="row">
+  <div class="col-md-12">
+	  {% trans "Election Fingerprint:" %} <strong>{{election.hash}}</strong>
+  </div>
 </div>
 <!-- end election info -->
 <br />
 <!-- eligibility info -->
 <div class="row">
-<div class="col-md=12">
-{% if user %}
-{% if voter %}
-<p style="padding-top:1px;">
-{% trans  "You are registered to vote in this " %}{{election.pretty_type}}.
-{% if election.use_voter_aliases %}
-{% trans "Your voter alias is " %}{{voter.alias}}.
-{% endif %}
-</p>
-
-{% else %}
-{% if election.result %}
-{% else %}
-{% if election.openreg %}
-{% if eligible_p %}
-{% trans "You are eligible to vote in this election." %}
-{% else %}
-{% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
-{% endif %}
-{% else %}
-{% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
-<br />
-{% endif %}
-{% endif %}
-{% endif %}
-{% else %}
-
-{% if election.openreg %}
-{% if election.eligibility %}
-{% trans "This election is open to:" %} <!--{{election.pretty_eligibility|safe}}-->
-<br /><br/><ul><li><i>{% trans "Any user with credentials" %}</i></li></ul><br/>
-{% else %}
-	{% trans "Anyone can vote in this election." %}
-{% endif %} <!-- endif eligibility -->
-{% endif %} <!-- endif election.openreg -->
-
-{% endif %}
-</div>
+  <div class="col-md=12">
+	{% if user %}
+	  {% if voter %}
+		<p style="padding-top:1px;">
+		  {% trans  "You are registered to vote in this " %}{{election.pretty_type}}.
+		  {% if election.use_voter_aliases %}
+			{% trans "Your voter alias is " %}{{voter.alias}}.
+		  {% endif %} <!-- election.use_voter_aliases -->
+		</p>
+	  {% else %} <!-- else if voter -->
+		{% if election.result %}
+		{% else %}
+		  {% if election.openreg %}
+			{% if eligible_p %}
+			  {% trans "You are eligible to vote in this election." %}
+			{% else %}
+				{% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
+			{% endif %} <!-- end if eligible_p -->
+		  {% else %} 
+		   {% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
+		<br />
+		{% endif %} <!-- end if election.openreg -->
+		{% endif %} <!-- end if election.result -->
+	  {% endif %} <!-- end if voter -->
+	{% else %}
+	  {% if election.openreg %}
+		{% if election.eligibility %}
+		 {% trans "This election is open to:" %} <!--{{election.pretty_eligibility|safe}}-->
+		 {% trans "Any user with credentials" %}
+		{% else %}
+			{% trans "Anyone can vote in this election." %}
+		{% endif %} <!-- endif eligibility -->
+	  {% endif %} <!-- endif election.openreg -->
+	{% endif %} <!-- end if user -->
+  </div>
 </div>
 <!-- end eligibility info -->
 
+
 <div style="margin-bottom: 25px; ">
-{{election.description_bleached|safe}}
+	{{election.description_bleached|safe}}
 </div>
 
 {% if election.election_info_url %}
-<p style="font-size:1.5em;">[<a target="_blank" href="{{election.election_info_url}}">download candidate bios &amp; statements</a>]</p>
+	<p style="font-size:1.5em;">[<a target="_blank" href="{{election.election_info_url}}">download candidate bios &amp; statements</a>]</p>
 {% endif %}
 
 <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
@@ -102,179 +100,163 @@
 		</div>
 	</h4>
 </div>
-
 <div class="row">
-<div class="col-md-12">
-<!-- admin only -->
+	<div class="col-md-12">
+	<!-- admin only -->
 
-{% if admin_p %}
-{% if election.frozen_p %}
-<div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">
-<a href="#" onclick="$('#badgebody').slideToggle(250);">Embed an Election Badge</a>
-<div id="badgebody" style="display:none;">
-<br />
-<form action="#">
-<textarea cols="90" rows="4" wrap="soft">&lt;iframe src="{{election_badge_url}}" frameborder="0" style="border: 1px solid black" height="75" width="200"&gt;
-&lt;/iframe&gt;</textarea><br />
-<p style="font-size:0.8em;">adding this HTML to your site displays a thin banner with direct links to voting.</p>
-</form>
-</div>
-</div>
+	{% if admin_p %}
+	{% if election.frozen_p %}
+	<div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">
+		<a href="#" onclick="$('#badgebody').slideToggle(250);">Embed an Election Badge</a>
+		<div id="badgebody" style="display:none;">
+		<br />
+			<form action="#">
+				<textarea cols="90" rows="4" wrap="soft">&lt;iframe src="{{election_badge_url}}" frameborder="0" style="border: 1px solid black" height="75" width="200"&gt;
+				&lt;/iframe&gt;</textarea><br />
+				<p style="font-size:0.8em;">adding this HTML to your site displays a thin banner with direct links to voting.</p>
+			</form>
+		</div>
+	</div>
 {% endif %}
 <p>
-
 {% if election.result_released_at %}
-
 <!-- election complete, no next step -->
+{% else %} <!-- election not completed -->
+	<b>{% trans "Next Step:" %}</b>
+	<span style="font-size: 1.3em;">
+	{% if not election.frozen_at %}
+		{% if election.issues_before_freeze %}
+			{% for issue in election.issues_before_freeze %}
+				{{issue.action}}{% if forloop.last %}{% else %}, {% trans "and" %}{% endif %}
+			{% endfor %}
+		{% else %}
+			<a href="{% url "helios.views.one_election_freeze" election.uuid %}">{% trans "freeze ballot and open election." %}</a>
+			<br /><br />
+			{% if election.voting_starts_at %}
+				once you do this, the election will be ready for voting and will open automatically<br />
+				at {{election.voting_starts_at}}, as per your settings.
+			{% else %}
+				{% trans "once you do this, the election will be immediately open for voting." %}
+			{% endif %}
+		{% endif %}
 
-{% else %}
-<b>{% trans "Next Step:" %}</b>
-<span style="font-size: 1.3em;">
-{% if not election.frozen_at %}
-{% if election.issues_before_freeze %}
-{% for issue in election.issues_before_freeze %}
-{{issue.action}}{% if forloop.last %}{% else %}, {% trans "and" %}{% endif %}
-{% endfor %}
-{% else %}
-<a href="{% url "helios.views.one_election_freeze" election.uuid %}">{% trans "freeze ballot and open election." %}</a>
-<br /><br />
-{% if election.voting_starts_at %}
-once you do this, the election will be ready for voting and will open automatically<br />
-at {{election.voting_starts_at}}, as per your settings.
-{% else %}
-{% trans "once you do this, the election will be immediately open for voting." %}
-{% endif %}
-{% endif %}
+	{% else %} <!-- election frozen -->
 
-{% else %}
+		{% if not election.encrypted_tally %}
+			{% if election.tallying_started_at %}
+				{% blocktrans %}
+					Tally computation is under way.<br />
+					Reload this page in a couple of minutes.
+				{% endblocktrans %}
+			{% else %}
+				<a href="{% url "helios.views.one_election_compute_tally" election.uuid %}">
+				{%blocktrans %}
+					compute encrypted tally</a><br />
+					The encrypted votes will be combined into an encrypted tally. Once this is done,<br />
+					trustees will be asked to provide their share of the decryption.
+				{% endblocktrans %}
+			{% endif %}
+		{% else %}
 
-{% if not election.encrypted_tally %}
-{% if election.tallying_started_at %}
-{% blocktrans %}
-Tally computation is under way.<br />
-Reload this page in a couple of minutes.
-{% endblocktrans %}
-{% else %}
-<a href="{% url "helios.views.one_election_compute_tally" election.uuid %}">
-{%blocktrans %}
-compute encrypted tally</a><br />
-The encrypted votes will be combined into an encrypted tally. Once this is done,<br />
-trustees will be asked to provide their share of the decryption.
-{% endblocktrans %}
-{% endif %}
-{% else %}
-
-{% if election.result %}
-<a href="{% url "helios.views.release_result" election.uuid %}">{% trans "release result" %}</a><br />
-{% blocktrans %}
-The result displayed below is visible only to you.<br />
-Once you release the result, it will be visible to everyone.
-{% endblocktrans %}
-{% else %}
-
-{% if election.ready_for_decryption_combination %}
-<a href="{% url "helios.views.combine_decryptions" election.uuid %}">
-{% if election.num_trustees == 1 %}
-{% trans "compute results" %}
-{% else %}
-{% trans "combine trustee decryptions and compute results" %}
-{% endif %}
-</a><br />
-{% if election.num_trustees == 1 %}
-{% trans "The result will be computed and shown to you, the administrator, only." %}
-{% else %}
-{% blocktrans %}
-The decryption shares from the trustees will be combined and the tally computed.<br />
-Once you do this, the tally will visible to you, the administrator, only.
-{% endblocktrans %}
-{% endif %}
-{% else %}
-<a href="{% url "helios.views.list_trustees_view" election.uuid %}">{% trans "trustees (for decryption)" %}</a>
-{% endif %}
-
-{% endif %}
-
-{% endif %}
-
-{% endif %}
-</span>
-
-{% endif %}
-
+			{% if election.result %}
+				<a href="{% url "helios.views.release_result" election.uuid %}">{% trans "release result" %}</a><br />
+				{% blocktrans %}
+					The result displayed below is visible only to you.<br />
+					Once you release the result, it will be visible to everyone.
+				{% endblocktrans %}
+			{% else %}
+				{% if election.ready_for_decryption_combination %}
+					<a href="{% url "helios.views.combine_decryptions" election.uuid %}">
+					{% if election.num_trustees == 1 %}
+						{% trans "compute results" %}
+					{% else %}
+						{% trans "combine trustee decryptions and compute results" %}
+					{% endif %}
+					</a><br />
+					{% if election.num_trustees == 1 %}
+						{% trans "The result will be computed and shown to you, the administrator, only." %}
+					{% else %}
+						{% blocktrans %}
+							The decryption shares from the trustees will be combined and the tally computed.<br />
+							Once you do this, the tally will visible to you, the administrator, only.
+						{% endblocktrans %}
+					{% endif %}
+				{% else %}<!-- election not ready for decryption combination -->
+					<a href="{% url "helios.views.list_trustees_view" election.uuid %}">{% trans "trustees (for decryption)" %}</a>
+				{% endif %}
+			{% endif %}
+		{% endif %}
+	{% endif %}
+	</span>
+{% endif %} <!-- end election not completed -->
 </p>
-
 {% endif %}
 <!-- end admin only -->
 <br />
 
 {% if show_result %}
-{% if election.result_released_at %}
-<span class="highlight-box round">
-    {% trans "This election is complete." %}
-</span><br /><br /><br />
-{% endif %}
+	{% if election.result_released_at %}
+		<span class="highlight-box round">
+		{% trans "This election is complete." %}
+		</span><br /><br /><br />
+	{% endif %}
 
-<h3 class="highlight-box">{% trans "Tally" %}</h3>
-{% for question in election.pretty_result %}
-<b><span style="font-size:0.8em;">{% trans "Question" %} #{{forloop.counter}}</span><br />{{question.question}}</b><br />
-<table class="pretty" style="width: auto;">
-{% for answer in question.answers %}
-<tr><td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td><td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.count}}</td></tr>
-{% endfor %}
-</table>
-{% endfor %}
-
+	<h3 class="highlight-box">{% trans "Tally" %}</h3>
+	{% for question in election.pretty_result %}
+		<b><span style="font-size:0.8em;">{% trans "Question" %} #{{forloop.counter}}</span><br />{{question.question}}</b><br />
+		<table class="pretty" style="width: auto;">
+		{% for answer in question.answers %}
+			<tr><td style="padding-right:80px;{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.answer}}</td><td align="right" style="{% if answer.winner %}font-weight:bold;{% endif %}">{{answer.count}}</td></tr>
+		{% endfor %}
+		</table>
+	{% endfor %}
 {% else %}
+	{% if election.voting_has_stopped %}
+		<span class="highlight-box round">
+		{% trans "Election closed. Results will be released soon." %}
+		</span><br /><br />
+	{% else %}
 
-{% if election.voting_has_stopped %}
-<span class="highlight-box round">
-    {% trans "Election closed. Results will be released soon." %}
-</span><br /><br />
-{% else %}
+		{% if election.voting_has_started %}
+			<a class="btn btn-lg btn-primary" role="button" href="{{test_cookie_url}}">{% trans "Vote in this" %} {{election.pretty_type}} </a>
+			<br />
+			<br />
+			{% if election.voting_extended_until %}
+				{% blocktrans %}
+					This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
+					but has been extended until {{ election.voting_extended_until }} (UTC).
+				{% endblocktrans %}
+			{% else %}
+				{% if election.voting_ends_at %}
+					<br />
+					{% blocktrans with pretty_type=election.pretty_type|title voting_ends_at=election.voting_ends_at|date:"d/m/Y H:i"|title%}
+						This {{pretty_type}} is scheduled to end at {{voting_ends_at}} (UTC).
+					{% endblocktrans %}
+				{% else %}
+					{% trans "This {{election.election_type}} ends at the administrator's discretion." %}
+				{% endif %}
+					<br />
+			{% endif %}
 
-{% if election.voting_has_started %}
-<a class="btn btn-lg btn-primary" role="button" href="{{test_cookie_url}}">{% trans "Vote in this" %} {{election.pretty_type}} </a>
-<br />
-<br />
-{% if election.voting_extended_until %}
-{% blocktrans %}
-This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
-but has been extended until {{ election.voting_extended_until }} (UTC).
-{% endblocktrans %}
-{% else %}
-{% if election.voting_ends_at %}
-<br />
-{% blocktrans with pretty_type=election.pretty_type|title voting_ends_at=election.voting_ends_at|date:"d/m/Y H:i"|title%}
-This {{pretty_type}} is scheduled to end at {{voting_ends_at}} (UTC).
-{% endblocktrans %}
-{% else %}
-{% trans "This {{election.election_type}} ends at the administrator's discretion." %}
-{% endif %}
-<br />
-{% endif %}
-
-{% if election.private_p and voter %}
-<br />
-{% blocktrans %}
-This election is <em>private</em>. You are signed in as eligible voter <em>{{voter.name}}</em>.
-{% endblocktrans %}
-{% endif %}
-
-<div class="highlight-box round" style="font-size: 1.2em; margin-right: 400px; display:none;" id="nojava_message">
-	{% blocktrans %}
-  You do not have Java installed in your browser.<br />At this time, Helios requires Java.<br />
-  Visit <a target="_new" href="http://java.sun.com">java.sun.com</a> to install it.
-  {% endblocktrans %}
-</div>
-<br />
-{% else %}
-<span class="highlight-box round">
-  {% trans "voting is not yet open" %}
-</span> <br /><br />
-{% endif %}
-
-{% endif %}
-
+			{% if election.private_p and voter %}
+				<br />
+				{% blocktrans %}
+					This election is <em>private</em>. You are signed in as eligible voter <em>{{voter.name}}</em>.
+				{% endblocktrans %}
+			{% endif %}
+			<div class="highlight-box round" style="font-size: 1.2em; margin-right: 400px; display:none;" id="nojava_message">
+				{% blocktrans %}
+  					You do not have Java installed in your browser.<br />At this time, Helios requires Java.<br />
+  					Visit <a target="_new" href="http://java.sun.com">java.sun.com</a> to install it.
+  				{% endblocktrans %}
+			</div>
+			<br />
+		{% else %}
+			<span class="highlight-box round">
+	  			{% trans "voting is not yet open" %}
+				</span> <br /><br />
+		{% endif %}
+	{% endif %}
 {% endif %}
 </div>
 </div>
@@ -295,51 +277,43 @@ This election is <em>private</em>. You are signed in as eligible voter <em>{{vot
 
 {% if election.use_advanced_audit_features %}
 <div class="row well">
-    <div class="col-md-12">
-        <a href="#" onclick="$('#auditbody').slideToggle(250);">{% trans "Audit Info" %}</a>
-        <div id="auditbody" style="display:none;">
-        <br />{% trans "Election URL:" %}<br />
-        <tt style="font-size: 1.2em;"><a href="{{election.url}}">{{election.url}}</a></tt>
+	<div class="col-md-12">
+		<a href="#" onclick="$('#auditbody').slideToggle(250);">{% trans "Audit Info" %}</a>
+		<div id="auditbody" style="display:none;">
+			<br />{% trans "Election URL:" %}<br />
+			<tt style="font-size: 1.2em;"><a href="{{election.url}}">{{election.url}}</a></tt>
 
-        {% if election.frozen_at %}
-        <br />
-        <br />{% trans "Election Fingerprint:" %}<br />
-        <tt style="font-size: 1.3em; font-weight: bold;">{{election.hash}}</tt>
-
-
-        {% if votes %}
-        <p>{% trans "Your smart ballot tracker:" %} <br />
-        <tt style="font-size:14pt; font-weight: bold;">{{votes.0.vote_hash}}</tt>
-        </p>
-        {% endif %}
-
-        <p style="font-size: 1.3em;">
-        <a href="{% url "helios.views.voters_list_pretty" election.uuid %}">{% trans "Ballot Tracking Center" %}</a> &nbsp;| &nbsp;
-        <a href="{% url "helios.views.one_election_audited_ballots" election.uuid %}">Audited Ballots</a>
-        </p>
-
-        {% endif %}
-
-        {% if not election.voting_has_started %}
-        <p style="font-size: 1.2em;">
-          <a href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url "helios.views.one_election" election.uuid %}">{% trans "preview booth" %} </a>
-          </p>
-          {% endif %}  
-
-          {% if election.voting_has_stopped %}
-          <p style="font-size: 1.2em;">
-          {% if election.result %}
-          {% trans "verify" %} <a target="_blank" href="/verifier/verify.html?election_url={% url "helios.views.one_election" election.uuid %}">{ % trans election tally" %}</a>.
-          {% endif %}
-          {% blocktrans %} 
-          review the <a href="{{vote_url}}">voting booth</a>.
-          {% endblocktrans %}
-          </p>
-
-          {% endif %}
-        </div>
-    </div>
-</div> <! -- end audito info -->
+			{% if election.frozen_at %}
+				<br />
+				<br />{% trans "Election Fingerprint:" %}<br />
+				<tt style="font-size: 1.3em; font-weight: bold;">{{election.hash}}</tt>
+				{% if votes %}
+					<p>{% trans "Your smart ballot tracker:" %} <br />
+					<tt style="font-size:14pt; font-weight: bold;">{{votes.0.vote_hash}}</tt>
+					</p>
+				{% endif %}
+				<p style="font-size: 1.3em;">
+					<a href="{% url "helios.views.voters_list_pretty" election.uuid %}">{% trans "Ballot Tracking Center" %}</a> &nbsp;| &nbsp;
+					<a href="{% url "helios.views.one_election_audited_ballots" election.uuid %}">Audited Ballots</a>
+				</p>
+			{% endif %}
+			{% if not election.voting_has_started %}
+				<p style="font-size: 1.2em;">
+					<a href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url "helios.views.one_election" election.uuid %}">{% trans "preview booth" %} </a>
+				</p>
+			{% endif %}
+			{% if election.voting_has_stopped %}
+				<p style="font-size: 1.2em;">
+					{% if election.result %}
+			  			{% trans "verify" %} <a target="_blank" href="/verifier/verify.html?election_url={% url "helios.views.one_election" election.uuid %}">{ % trans election tally" %}</a>.
+			  		{% endif %}
+					{% blocktrans %} 
+					review the <a href="{{vote_url}}">voting booth</a>.
+					{% endblocktrans %}
+				</p>
+			{% endif %}
+		</div>
+	</div>
+</div> <!-- end audit info -->
 {% endif %} 
-
 {% endblock %}
