@@ -7,7 +7,7 @@
 </div>
 <div class="col-md-12">
   <form class="form-horizontal" role="form" action="" method="POST" id="create_election_form">
-  {% for field in election_form %}
+  {% for field in election_form.visible_fields %}
     <div class="form-group {% if field.errors %}has-error{% endif %}">
      {{ field.errors }}
       <label for="{{ field.label }}" class="col-sm-2 control-label">{{ field.label }}</label>

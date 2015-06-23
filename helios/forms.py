@@ -18,7 +18,8 @@ class ElectionForm(forms.Form):
   description = forms.CharField(max_length=4000, label=_("Description"), 
     help_text=_("Maximum of 4000 characters. You can use the HTML tags: <p>, <h4>, <h5>, <h3>, <h2>, <br>, <u>."), 
     widget=forms.Textarea(attrs={'wrap': 'soft', 'class': 'form-control'}), required=False)
-  #election_type = forms.ChoiceField(label=_("Type"), choices = Election.ELECTION_TYPES)
+  election_type = forms.ChoiceField(label=_("Type"), choices = Election.ELECTION_TYPES,
+    widget=forms.HiddenInput(), initial=Election.ELECTION_TYPES[0][0], required=False)
   use_voter_aliases = forms.BooleanField(required=False, initial=False, 
     label=_("Use voter aliases"), help_text=_('If selected, voter identities will be replaced with aliases, e.g. "V12", in the ballot tracking center'))
   use_advanced_audit_features = forms.BooleanField(required=False, initial=True, help_text='disable this only if you want a simple election with reduced security but a simpler user interface')
@@ -32,6 +33,14 @@ class ElectionForm(forms.Form):
   if settings.ALLOW_ELECTION_INFO_URL:
     election_info_url = forms.CharField(required=False, initial="", label=_("Election Info Download URL"), help_text=_("the URL of a PDF document that contains extra election information, e.g. candidate bios and statements"))
   
+
+  def clean(self):
+    cleaned_data = super(ElectionForm, self).clean()
+    election_type = cleaned_data.get("election_type")
+    if election_type == '':
+      cleaned_data['election_type'] = self.fields['election_type'].initial
+    return cleaned_data
+
 
 class ElectionTimesForm(forms.Form):
   # times
