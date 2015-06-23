@@ -338,7 +338,8 @@ SHIBBOLETH_ATTRIBUTE_MAP = {
     "Shib-inetOrgPerson-sn": (True, "last_name"),
     "Shib-inetOrgPerson-mail": (True, "email"),
     "Shib-eduPerson-eduPersonPrincipalName": (True, "eppn"),
-    "Shib-eduPerson-eduPersonAffiliation": (True, "affiliation"),
+    "Shib-brEduPerson-brEduAffiliationType": (True, "affiliation"),
+#    "Shib-eduPerson-eduPersonAffiliation": (True, "affiliation"),
     "Shib-Identity-Provider": (True, "identity_provider"),
 }
 
