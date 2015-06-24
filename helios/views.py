@@ -12,7 +12,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import *
 from django.db import transaction
 from django.utils.datastructures import MultiValueDictKeyError
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext, ugettext_lazy as _
 
 from mimetypes import guess_type
 
@@ -208,7 +208,7 @@ def election_new(request):
     if election_form.is_valid():
       # create the election obj
       election_params = dict(election_form.cleaned_data)
-      
+      election_params['short_name'] = "%s_%s" % (election_params['short_name'], user.id)
       # is the short name valid
       if helios_utils.urlencode(election_params['short_name']) == election_params['short_name']:      
         election_params['uuid'] = str(uuid.uuid1())
@@ -238,6 +238,9 @@ def election_new(request):
 def one_election_edit(request, election):
 
   error = None
+
+  user = get_user(request)
+  
   RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases', 'election_type', 'help_email', 'randomize_answer_order']
   RELEVANT_FIELDS += ['use_advanced_audit_features']
 
@@ -254,13 +257,16 @@ def one_election_edit(request, election):
     
     if election_form.is_valid():
       clean_data = election_form.cleaned_data
-      for attr_name in RELEVANT_FIELDS:
-        setattr(election, attr_name, clean_data[attr_name])
+      clean_data['short_name'] = "%s_%s" % (clean_data['short_name'], user.id)
+      if election.get_by_short_name(clean_data['short_name']) is None:
+        for attr_name in RELEVANT_FIELDS:
+          setattr(election, attr_name, clean_data[attr_name])
 
-      election.save()
+        election.save()
         
-      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
-  
+        return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
+      else:
+        error = "An election with short name %s already exists" % clean_data['short_name']
   return render_template(request, "election_edit", {'election_form' : election_form, 'election' : election, 'error': error})
 
 @election_admin(frozen=False)
