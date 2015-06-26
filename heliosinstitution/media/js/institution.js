@@ -6,12 +6,11 @@ $("document").ready(function(){
         var form = $(this);
 		if (confirm(gettext('Are you sure you want to add this e-mail as an institution admin?'))){
             var email = form.find('input[type=email]').val();
-            var expires_at = form.find('input[name=expires_at]').val();
             var url = form.attr('action');
             $.ajax({
                 type: "POST",
                 url: url,
-                data: {'email': email, 'expires_at': expires_at},
+                data: {'email': email},
                 success: function (data) {
                     form.parents('div.div_form').removeClass('has-error');
                     form.parents('div.div_form').addClass('has-success');

@@ -74,13 +74,6 @@ def delegate_user(request, role):
     """
     user = get_user(request)
     email = request.POST.get('email', '') 
-    from datetime import datetime
-    valid_expires_at = None
-    try:
-        valid_expires_at = datetime.strptime(request.POST.get('expires_at', ''),
-            '%d-%m-%Y')
-    except ValueError:
-        error = _('Please, provide a valid expires at value')
     status = 200
     if email:
         try:
@@ -94,9 +87,6 @@ def delegate_user(request, role):
             institution_user_profile = InstitutionUserProfile.objects.create(email=email, 
                 institution=user.institutionuserprofile_set.get().institution,
                 django_user=django_user)
-        
-        if valid_expires_at:
-            institution_user_profile.expires_at = valid_expires_at 
 
         institution_user_profile.save()
         g = Group.objects.get(name=role)
@@ -107,6 +97,7 @@ def delegate_user(request, role):
     else:
         response_data = {'error': _('An e-mail must be informed')} 
         status = 400
+
     return HttpResponse(json.dumps(response_data), content_type="application/json", status=status)
 
 
