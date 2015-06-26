@@ -25,22 +25,18 @@ def get_election():
   
 def home(request):
   # load the featured elections
-  #featured_elections = helios.models.Election.get_featured()
-  # 2015-06-10 include elections by "status"
-  featured_elections_new = helios.models.Election.get_featured_new()
-  featured_elections_in_progress = helios.models.Election.get_featured_in_progress()
-  featured_elections_done = helios.models.Election.get_featured_done()
+  featured_elections = Election.get_featured()
   
   user = get_user(request)
   create_p = can_create_election(request)
 
   if create_p:
-    elections_administered = helios.models.Election.get_by_user_as_admin(user, archived_p=False, limit=5)
+    elections_administered = Election.get_by_user_as_admin(user, archived_p=False, limit=5)
   else:
     elections_administered = None
 
   if user:
-    elections_voted = helios.models.Election.get_by_user_as_voter(user, limit=5)
+    elections_voted = Election.get_by_user_as_voter(user, limit=5)
   else:
     elections_voted = None
  
@@ -51,10 +47,7 @@ def home(request):
 
   login_box = auth_views.login_box_raw(request, return_url="/", auth_systems=auth_systems)
 
-  # include elections by "status"
-  return render_template(request, "index", {'elections_new': featured_elections_new,
-                                            'elections_in_progress': featured_elections_in_progress,
-                                            'elections_done': featured_elections_done,
+  return render_template(request, "index", {'elections': featured_elections,
                                             'elections_administered' : elections_administered,
                                             'elections_voted' : elections_voted,
                                             'create_p':create_p,

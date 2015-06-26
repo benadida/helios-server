@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
 import ldap
 import os, json
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 
 from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
 
@@ -16,15 +15,6 @@ def get_from_env(var, default):
 DEBUG = (get_from_env('DEBUG', '1') == '1')
 TEMPLATE_DEBUG = DEBUG
 
-#If the Host header (or X-Forwarded-Host if USE_X_FORWARDED_HOST is enabled) does not match any value in this list, the django.http.HttpRequest.get_host() method will raise SuspiciousOperation.
-#When DEBUG is True or when running tests, host validation is disabled; any host will be accepted. Thus it’s usually only necessary to set it in production.
-#This validation only applies via get_host(); if your code accesses the Host header directly from request.META you are bypassing this security protection.
-#More info: https://docs.djangoproject.com/en/1.7/ref/settings/#allowed-hosts
-
-ALLOWED_HOSTS = ['sp-helios.cafeexpresso.rnp.br'] # set a value for production environment, alongside with debug set to false
-
-# Make this unique, and don't share it with anybody.
-SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
 ROOT_URLCONF = 'urls'
 
 ROOT_PATH = os.path.dirname(__file__)
@@ -49,10 +39,7 @@ SHOW_USER_INFO = (get_from_env('SHOW_USER_INFO', '1') == '1')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'helios',
-        'HOST': '127.0.0.1',
-        'USER': 'helios',
-        'PASSWORD': 'h3l10s'
+        'NAME': 'helios'
     }
 }
 
@@ -71,16 +58,22 @@ if get_from_env('DATABASE_URL', None):
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
 TIME_ZONE = 'America/Sao_Paulo'
-LANGUAGE_CODE = 'pt-br'
-SITE_ID = 1
-USE_I18N = True
 USE_TZ = True
+
+# Language code for this installation. All choices can be found here:
+# http://www.i18nguy.com/unicode/language-identifiers.html
+LANGUAGE_CODE = 'pt-br'
 
 LANGUAGES = (
     ('en', _('English')),
     ('pt-br', _('Brazilian Portuguese')),
 )
 
+SITE_ID = 1
+
+# If you set this to False, Django will make some optimizations so as not
+# to load the internationalization machinery.
+USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
@@ -103,10 +96,12 @@ STATICFILES_DIRS = (
     ROOT_PATH + '/heliosverifier',
     ROOT_PATH + '/helios_auth/media',
     ROOT_PATH + '/helios/media',
-    ROOT_PATH + '/server_ui/media',
-    ROOT_PATH + '/heliosinstitution/media/',
+    ROOT_PATH + '/server_ui/media'
 )
 
+
+# Make this unique, and don't share it with anybody.
+SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
 
 # Secure Stuff
 if (get_from_env('SSL', '0') == '1'):
@@ -172,7 +167,6 @@ INSTALLED_APPS = (
     'helios',
     'server_ui',
     'helioslog',
-    'heliosinstitution',
 )
 
 ##
@@ -196,18 +190,18 @@ LOGOUT_ON_CONFIRMATION = True
 
 # The two hosts are here so the main site can be over plain HTTP
 # while the voting URLs are served over SSL.
-URL_HOST = get_from_env("URL_HOST", "http://localhost:8000").rstrip("/")
+URL_HOST = get_from_env("URL_HOST", "http://localhost:8000")
 
 # IMPORTANT: you should not change this setting once you've created
 # elections, as your elections' cast_url will then be incorrect.
 # SECURE_URL_HOST = "https://localhost:8443"
-SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", URL_HOST).rstrip("/")
+SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", "http://localhost:8000")
 
 # this additional host is used to iframe-isolate the social buttons,
 # which usually involve hooking in remote JavaScript, which could be
 # a security issue. Plus, if there's a loading issue, it blocks the whole
 # page. Not cool.
-SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", SECURE_URL_HOST).rstrip("/")
+SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", "http://localhost:8000")
 
 # election stuff
 SITE_TITLE = get_from_env('SITE_TITLE', _('IFSC E-Voting System'))
@@ -233,12 +227,13 @@ HELIOS_PRIVATE_DEFAULT = False
 
 # authentication systems enabled
 #AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
-AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'shibboleth').split(",")
+AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'ldap').split(",")
 AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
 
 # google
 GOOGLE_CLIENT_ID = get_from_env('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = get_from_env('GOOGLE_CLIENT_SECRET', '')
+
 
 # facebook
 FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID','')
@@ -329,18 +324,3 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'django_auth_ldap.backend.LDAPBackend',
 )
-
-#Shibboleth
-SHIBBOLETH_ATTRIBUTE_MAP = { 
-    #"Shibboleth-givenName": (True, "first_name"),
-    "Shib-inetOrgPerson-cn": (True, "common_name"),
-    "Shib-inetOrgPerson-sn": (True, "last_name"),
-    "Shib-inetOrgPerson-mail": (True, "email"),
-    "Shib-eduPerson-eduPersonPrincipalName": (True, "eppn"),
-    "Shib-eduPerson-eduPersonAffiliation": (True, "affiliation"),
-    "Shib-Identity-Provider": (True, "identity_provider"),
-}
-
-INSTITUTION_ROLE = ['Institution Admin','Election Admin']
-
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
