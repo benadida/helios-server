@@ -1,102 +1,259 @@
-{% extends 'server_ui/templates/base.html' %}
+{% extends 'server_ui/templates/base-bootstrap.html' %}
 {% load i18n %}
 {% block title %}{{ settings.SITE_TITLE }}{% endblock %}
 
+
 {% block header %}
-<h2>{{ settings.SITE_TITLE }}</h2>
+  {% block js %}
+   <script type="text/javascript">
+    $(document).ready(function() {
+        $('#list').dataTable({
+          "language": {
+              "lengthMenu": "Exibindo _MENU_ registros por página",
+              "zeroRecords": "Não foram encontrados registros",
+              "info": "Página _PAGE_ de _PAGES_",
+              "infoEmpty": "Nenhum registro encontrado",
+              "infoFiltered": "(filtered from _MAX_ total records)",
+              "search": "Localizar:",
+              "Previous": "Anterior",
+              "next": "Próxima",
+              "paginate": {
+                  "next": "Próxima",
+                  "previous": "Anterior",
+              }
+          }});
+      });  
+    </script>
+  {% endblock %}
 {% endblock %}
 
 {% block content %}
-<!--<div class="row"><div class="large-5 columns large-centered"><a href="/"><img border="0" src="{{ settings.MAIN_LOGO_URL }}" /></a></div></div>-->
 <div class="row">
-  <div class="col-md-8">
-    {% if settings.MASTER_HELIOS %}
-
-      {% blocktrans %}
-
-        <p>Helios offers <b>verifiable online elections</b>.</p>
-
-        <p>We believe democracy is important, whether it’s your book club, parent-teacher association, student government, workers’ union, or state. So we’ve made truly verifiable elections as easy as everything else on the Web.</p>
-
-        <p>
-  Helios elections are:
-  <ul class="disc">
-  <li><b>private</b>: no one knows how you voted.</li>
-  <li><b>verifiable</b>: each voter gets a tracking number.</li>
-  <li><b>proven</b>: Helios is open-source, vetted by top-tier experts, and in use by major organizations.</li>
-  </ul>
-
-  <p>
-  More than <b>100,000 votes</b> have been cast using Helios.
-  </p>
-  {% endblocktrans %}
-  {% if create_p %}
-  <a class="button" href="{% url "helios.views.election_new" %}">{% trans "create an election" %}</a>
-  {% endif %}
-    {% else %}
-    <p style="font-size: 1.4em;">
+  <div class="col-xs-8">
+    <h3>{{ settings.SITE_TITLE }}</h3>
+    <h4>
       {{settings.WELCOME_MESSAGE|safe}}
-    </p>
-    
-    {% if elections|length %}
-
-      {% for election in elections %}
- 
-        <a style="font-size: 1.4em;" href="{% url "helios.views.election_shortcut" election.short_name %}">{{election.name}}</a>{% if settings.SHOW_USER_INFO %}<br /> {% trans "by" %} {{election.admin.pretty_name}}{% endif %}
-     
-      <br />
-      {% endfor %}
- 
-    {% else %}
-    <h4>{% trans "no featured elections at the moment" %}</h4>
-    {% endif %}
-  {% endif %}
-    
-  </div> <!-- span10 -->
-
-  <div class="col-md-4">
+    </h4>
+  </div>
+  <div class="col-xs-4">
     {% if user %}
-    <!--<div class="row right">{{user.display_html_big|safe}}</div>-->
-    {% if create_p %}
-    <a class="btn btn-primary" href="{% url "helios.views.election_new" %}">{% trans "create election" %}</a>
-    <h5 class="subheader">{% trans "Administration" %}</h5>
-    {% if elections_administered %}
-    <ul>
-    {% for election in elections_administered %}
-    <li> <a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></li>
-    {% endfor %}
-    </ul>
-    {% else %}
-    <em>{% trans "none yet" %}</em>
+      <h5 class="text-right">{% trans "Welcome" %} <b>{{user.pretty_name|safe}}</b></h5>
+      {% if create_p %}
+        <div class="text-right">
+          <a class="btn btn-primary btn-xs" href="{% url "helios.views.election_new" %}">{% trans "create an election" %}</a>
+        </div>
+      {% endif %}
     {% endif %}
-
-    <a class="tiny button" href="{% url "helios.views.elections_administered" %}">{% trans "see all" %}</a>
-    {% endif %}
-
-    <h5 class="subheader">{% trans "Recent Votes" %}</h5>
-    {% if elections_voted %}
-    <ul>
-    {% for election in elections_voted %}
-    <li><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></li>
-    {% endfor %}
-    </ul>
-    {% else %}
-    <em>{% trans "none yet" %}</em>
-    {% endif %}
- <a class="tiny button" href="{% url "helios.views.elections_voted" %}">{% trans "see all" %}</a>
-    {% else %}
-      <!--{% if settings.SHOW_LOGIN_OPTIONS %}
-      <h5>{% trans "Log In to Start Voting" %}</h5>
-      {{login_box|safe}}
-      {% else %}
-      <p>
-      {% blocktrans %}
-      Select an election to start voting. You will be asked for your voting credentials after you complete a ballot.
-      {% endblocktrans %}
+  </div>
+</div>
+{% if elections|length %}
+<div class="row">
+  <div class="col-xs-12"> 
+    <form class="form-inline">
+      <div class="form-group">
+        <label for="ano">Ano:</label>
+        <select id="ano">
+          <option value="">2015</option>
+          <option value="">2014</option>
+        </select>
+      </div>
+      &nbsp;&nbsp;
+      <div class="form-group">
+        <label for="instituicao">Instituição:</label>
+        <select id="instituicao">
+          <option value="">IFSC</option>
+          <option value="">IFBA</option>
+          <option value="">IFRS</option>
+        </select>
+      </div>
+      <button type="Consultar" class="btn btn-primary btn-xs">Listar</button>
+    </form>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8"> 
+    <div class="row" style="padding-top: 10px">
+      <div class="col-md-6">
+        <table class="table table-condensed table-striped table-bordered">
+          <thead>
+            <tr>
+              <td>{% trans "Institution" %}</td>
+              <td>{% trans "New" %}</td>
+              <td>{% trans "In progress" %}</td>
+              <td>{% trans "Done" %}</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>IFSC</td>
+              <td><a href="#" data-toggle="modal" data-target="#elections_list">5</a></td>
+              <td><a href="#">2</a></td>
+              <td><a href="#">10</a></td>
+            </tr>
+            <tr>
+              <td>IFRS</td>
+              <td><a href="#">1</a></td>
+              <td><a href="#">0</a></td>
+              <td><a href="#">40</a></td>
+            </tr>
+            <tr>
+              <td>IFBA</td>
+              <td><a href="#">2</a></td>
+              <td><a href="#">2</a></td>
+              <td><a href="#">17</a></td>
+            </tr>
+            <tr>
+              <td>UFSC</td>
+              <td><a href="#">10</a></td>
+              <td><a href="#">20</a></td>
+              <td><a href="#">30</a></td>
+            </tr>
+            <tr>
+              <td>UNICAMP</td>
+              <td><a href="#">1</a></td>
+              <td><a href="#">1</a></td>
+              <td><a href="#">1</a></td>
+            </tr>
+            <tr>
+              <td>UNIVALI</td>
+              <td><a href="#">2</a></td>
+              <td>0</td>
+              <td>0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="col-md-6">
+        <table class="table table-condensed table-striped table-bordered">
+          <thead>
+            <tr>
+              <td>{% trans "Institution" %}</td>
+              <td>{% trans "New" %}</td>
+              <td>{% trans "In progress" %}</td>
+              <td>{% trans "Done" %}</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>IFC</td>
+              <td><a href="#">15</a></td>
+              <td><a href="#">12</a></td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>IFPR</td>
+              <td><a href="#">11</a></td>
+              <td><a href="#">10</a></td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>IFRJ</td>
+              <td><a href="#">12</a></td>
+              <td><a href="#">12</a></td>
+              <td><a href="#">7</a></td>
+            </tr>
+            <tr>
+              <td>USP</td>
+              <td><a href="#">110</a></td>
+              <td><a href="#">120</a></td>
+              <td><a href="#">30</a></td>
+            </tr>
+            <tr>
+              <td>UFPR</td>
+              <td><a href="#">11</a></td>
+              <td><a href="#">11</a></td>
+              <td><a href="#">10</a></td>
+            </tr>
+            <tr>
+              <td>UFRN</td>
+              <td><a href="#">22</a></td>
+              <td><a href="#">10</a></td>
+              <td><a href="#">21</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal" id="elections_list">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title" id="gridSystemModalLabel">IFSC - News</h4>
+          </div>
+          <div class="modal-body">
+            <table id="list" class="table table-condensed table-striped table-bordered">
+              <thead>
+                <tr>
+                  <td>{% trans "Name" %}</td>
+                  <td>{% trans "Start" %}</td>
+                  <td>{% trans "End" %}</td>
+                </tr>
+              </thead>
+              <tbody>
+                {% for election in elections %}
+                  <tr>
+                    <td>
+                      <a href="{% url "helios.views.election_shortcut" election.short_name %}">{{election.name}}</a>
+                      {% if settings.SHOW_USER_INFO %}<br /> {% trans "by" %} {{election.admin.pretty_name}}{% endif %} 
+                    </td>
+                    <td>01/05/2015</td>
+                    <td>31/05/2015</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <div class="modal-footer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div> 
+{% else %}
+  <h4>{% trans "no featured elections at the moment" %}</h4>
+{% endif %}
+  <div class="col-md-4" style="padding-top: 10px">
+    {% if user %}
+  
+      <!-- deve ser acrescentando as condições para serem exibidos os itens abaixo ... -->
+      <p class="bg-info" style="padding: 3px">
+        <strong>Administração</strong>
       </p>
-      {% endif %} -->
+      <ul>
+        <li>
+          <a href="/helios/elections/6b1f7644-1b45-11e5-9fc3-005056b03c27/view">teste11</a>
+        </li>
+        <li>
+          <a href="/helios/elections/c6c0db86-151f-11e5-916d-005056b03c27/view">Eleição Identity Provider</a>
+        </li>
+      </ul>
+      <a class="tiny button" href="/helios/elections/administered">ver todas</a>
+      <br/>
+      <br/>
+      <p class="bg-info" style="padding: 3px">
+        <strong>Votos Recentes</strong>
+      </p>
+      <ul>
+        <li>
+          <a href="/helios/elections/c6c0db86-151f-11e5-916d-005056b03c27/view">Eleição Identity Provider</a>
+        </li>
+      </ul>
+      <a class="tiny button" href="/helios/elections/voted">ver todas</a>
+      <br/>
+      <br/>
+      <!-- ... até aqui! -->
+      <p class="bg-info" style="padding: 3px">
+        <b>Informações sobre contato</b><br/>
+      </p>        
+      Administrador do sistema em sua instituição é:<br/>
+      <br/>
+      Beltrano dos Santos<br/>
+      Telefone : +55<br/>
+      E-mail: beltrano@mail.com<br/>
+      <p class="bg-info" style="padding: 3px"/>
     {% endif %}
   </div> <!-- span2 -->
-
-</div> <!-- end row-fluid -->
+</div>
 {% endblock %}

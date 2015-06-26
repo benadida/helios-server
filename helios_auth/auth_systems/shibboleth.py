@@ -30,28 +30,29 @@ class LoginForm(forms.Form):
 
 
 def shibboleth_login_view(request):
-	from helios_auth.view_utils import render_template
-	
-	error = None
+  #from helios_auth.view_utils import render_template
+  
+  #error = None
 
-	return render_template(request, 'shibboleth/login_box', {
-		'error': error,
-		'enabled_auth_systems': settings.AUTH_ENABLED_AUTH_SYSTEMS,
-	})
+  #return render_template(request, 'shibboleth/login_box', {
+  # 'error': error,
+  # 'enabled_auth_systems': settings.AUTH_ENABLED_AUTH_SYSTEMS,
+  #})
+    return HttpResponseRedirect(reverse(shibboleth_register))
 
 
 def shibboleth_register(request):
     from helios_auth.view_utils import render_template
     from helios_auth.views import after
 
-    shib_attrs, errors = parse_attributes(request.META)
-    if errors:
-        return render_template(request, 'shibboleth/missing_attributes', {
-            'errors': errors,
-        })
-
-    if shib_attrs:
-        request.session['shib_attrs'] = shib_attrs
+    #user, error = parse_attributes(request.META)
+    user = {'email': 'shirlei@gmail.com',
+    'type': 'shibboleth',
+    'common_name': 'Shirlei',
+    'identity_provider': 'https://idp1.cafeexpresso.rnp.br/idp/shibboleth',
+    'user_id': 'shirlei@gmail.com'}
+    if user:
+        request.session['shib_attrs'] = user
         
         return HttpResponseRedirect(reverse(after))
     else:
@@ -59,8 +60,8 @@ def shibboleth_register(request):
 
     return render_template(request, 'shibboleth/login_box', {
         'error': error,
-	})
-    
+  })
+
 
 def get_user_info_after_auth(request):
     shib_user = request.session['shib_attrs']

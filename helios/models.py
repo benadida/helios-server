@@ -7,7 +7,7 @@ Ben Adida
 """
 
 from django.db import models, transaction
-import json
+from django.utils import simplejson
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core.mail import send_mail
@@ -1006,9 +1006,8 @@ class CastVote(HeliosModel):
   verified_at = models.DateTimeField(null=True)
   invalidated_at = models.DateTimeField(null=True)
   
-  # auditing purposes, like too many votes from the same IP, if the case
-  # Using charfield because HTTP_X_FORWARDED_FOR may contain more than one IP 
-  cast_ip = models.CharField(max_length=200, null=True)
+    # auditing purposes, like too many votes from the same IP, if the case
+  cast_ip = models.IPAddressField(null=True)
 
   @property
   def datatype(self):
