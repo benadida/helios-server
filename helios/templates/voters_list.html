@@ -20,7 +20,7 @@
 <div class="col-md-12">
 <div class="well">
 	<div class="form-group">
-	<label>{% trans "You can change this setting:" %}</label>
+		<label>{% trans "You can change this setting:" %}</label>
 	</div>
 	<form id="eligibility-form" method="post" role="form" class="form-horizontal" action="{% url "helios.views.voters_eligibility" election.uuid %}">
 	<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
@@ -28,7 +28,12 @@
 	<input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> {% trans "anyone can vote" %}
 	</div>
 	<div class="form-group">
-	<input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> {% trans "only voters listed explicitly below can vote" %} <i title="{% trans "Do not forget to upload voters file, using the bulk upload voters button bellow." %}" class="glyphicon glyphicon-info-sign"></i>
+		<input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> {% trans "only voters listed explicitly below can vote" %} <i title="{% trans "Do not forget to upload voters file, using the bulk upload voters button bellow." %}" class="glyphicon glyphicon-info-sign"></i>
+		{% if upload_p and not election.openreg %}
+		<div>
+			<a class="btn btn-primary" href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
+		</div>
+		{% endif %}
 	</div>
 
 	{% if categories %}
@@ -88,18 +93,6 @@
 
 
 <div class="col-md-12">
-	{% if admin_p %}
-	<!-- Add a Voter: WORK HERE-->
-
-	{% if upload_p and not election.openreg %}
-	<div class="form-group">
-	<a class="btn btn-primary" href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
-	</div>
-	{% endif %}
-	{% endif %}
-
-
-
 	<!-- who can vote info -->
 	<br>
 	<b>{% trans "Who can vote?" %}</b>
