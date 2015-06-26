@@ -55,6 +55,43 @@ def recent_cast_votes(request):
 
 @login_required
 @require_institution_admin
+def add_expires_at(request):
+    user = get_user(request)
+    expires_at = request.POST.get('expires_at', '') 
+    email = request.POST.get('email', '') 
+    status = 400
+    from datetime import datetime
+    valid_expires_at = None
+    
+    try:
+        valid_expires_at = datetime.strptime(request.POST.get('expires_at', ''),
+            '%d-%m-%Y')
+    except ValueError:
+        response_data = {'error': _('Please, provide a valid expires at value')}
+
+    if email:
+        try:
+            institution_user_profile = InstitutionUserProfile.objects.get(email=email, 
+                institution=user.institutionuserprofile_set.get().institution)
+
+            if valid_expires_at:
+                institution_user_profile.expires_at = valid_expires_at
+
+            institution_user_profile.save()
+            response_data = {'sucess': _('Expires at successfully saved.')}
+            status = 200
+        
+        except Exception:
+            response_data = {'error': _('Something went wrong, please try again.')}
+    else:
+        response_data = {'error': _('An e-mail must be informed')} 
+    
+    return HttpResponse(json.dumps(response_data), content_type="application/json", 
+        status=status)
+
+
+@login_required
+@require_institution_admin
 @require_http_methods(["GET",])
 def manage_users(request):  
     user = get_user(request)
