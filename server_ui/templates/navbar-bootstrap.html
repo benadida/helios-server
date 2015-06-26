@@ -2,31 +2,33 @@
 {% load staticfiles %}
 <nav class="navbar navbar-default" style="background-color: #339933" role="navigation">
   <div class="container-fluid">
-    <div class="navbar-header">
-      <a href="http://www.ifsc.edu.br">
-        <img alt="IFSC" src="/media/img/logo.png" >
-      </a>
-    </div>
-    <div class="collapse navbar-collapse">
-      <ul class="nav navbar-nav navbar-right">
-        {% if user %}
-        <li>
-          <a class="navbar-brand" style="color:#FFFFFF;" href="/">{% trans "Home" %}</a>
-        </li>
-        {% if user.institutionuserprofile_set.get.is_institution_admin %}
-        <li>
-          <a class="navbar-brand" style="color:#FFFFFF;" href="{% url "heliosinstitution.views.dashboard" %}">Admin</a>
-        </li>
-        {% endif %}
-        <li>
-          <a class="navbar-brand " style="color:#FFFFFF;" href="/auth/logout?return_url=/">{% trans "Logout" %}</a>
-        </li>
-        {% else %}
-        <li>
-          <a class="navbar-brand" style="color:#FFFFFF;" href="{{SECURE_URL_HOST}}{% url "helios_auth.views.start" system_name=auth_system %}?return_url={{return_url}}"> {% trans "Login" %}</a>
-        </li>
-        {% endif %}
-      </ul>
+    <div class="row">
+      <div class="navbar-header">
+        <a href="http://www.ifsc.edu.br">
+          <img alt="IFSC" src="/media/img/logo.png" >
+        </a>
+      </div>
+      <div class="collapse navbar-collapse">
+        <ul class="nav navbar-nav navbar-right">
+          {% if user %}
+          <li>
+            <a class="navbar-brand" style="color:#FFFFFF;" href="/">{% trans "Home" %}</a>
+          </li>
+          {% if user.institutionuserprofile_set.get.is_institution_admin %}
+          <li>
+            <a class="navbar-brand" style="color:#FFFFFF;" href="{% url "heliosinstitution.views.dashboard" %}">Admin</a>
+          </li>
+          {% endif %}
+          <li>
+            <a class="navbar-brand " style="color:#FFFFFF;" href="/auth/logout?return_url=/">{% trans "Logout" %}</a>
+          </li>
+          {% else %}
+          <li>
+            <a class="navbar-brand" style="color:#FFFFFF;" href="{{SECURE_URL_HOST}}{% url "helios_auth.views.start" system_name=auth_system %}?return_url={{return_url}}"> {% trans "Login" %}</a>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
     </div>
   </div>
 </nav>
