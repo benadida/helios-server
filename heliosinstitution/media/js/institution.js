@@ -99,6 +99,7 @@ $("document").ready(function(){
                 $('div.shib-attr-panel').addClass('has-success');
                 $('span.add_attr_result').addClass('label-success');
                 $('span.add_attr_result').text(gettext('Attributes successfully saved.'));
+                $('label.who_can_vote').html(gettext('Only voters with the specified attributes')); 
             },
             error: function (error) {
                 $('div.shib-attr-panel').removeClass('has-success');
@@ -109,4 +110,18 @@ $("document").ready(function(){
         });
     });
 
+    $('input#idp_type').click(function(){
+        $('div.shib-attr-panel').removeClass('hidden');
+        $('a#upload_voters').addClass('hidden');
+    });
+
+    $('input#csv_type').click(function(){
+        $('div.shib-attr-panel').addClass('hidden');
+        $('a#upload_voters').removeClass('hidden');
+    });
+
+    $('input#logged_type').click(function(){
+        $('div.shib-attr-panel').addClass('hidden');
+        $('a#upload_voters').addClass('hidden');
+    });
 })
