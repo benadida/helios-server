@@ -13,7 +13,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import *
 from django.db import transaction
 from django.utils.datastructures import MultiValueDictKeyError
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext as _
 
 from mimetypes import guess_type
 
