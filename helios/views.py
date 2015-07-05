@@ -4,6 +4,7 @@ Helios Django Views
 
 Ben Adida (ben@adida.net)
 """
+import json
 
 from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
