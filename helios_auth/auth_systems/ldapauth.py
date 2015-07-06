@@ -1,5 +1,12 @@
 """
 LDAP Authentication
+Author : shirlei@gmail.com
+Version: 1.0
+Requires:
+- libldap2-dev
+- django-auth-ldap 1.2.6
+Technical support from IFSC - Instituto Federal de Santa Catarina
+http://dtic.ifsc.edu.br/sistemas/sistema-de-votacao-on-line-helios/
 """
 
 from django import forms
