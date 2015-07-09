@@ -1587,6 +1587,10 @@ class VoterQuerySet(QuerySet):
         return self.filter().not_excluded().annotate(
             num_cast=Count('cast_votes')).filter(num_cast__gte=1)
 
+    def nocast(self):
+        return self.filter().not_excluded().annotate(
+            num_cast=Count('cast_votes')).filter(num_cast=0)
+
     def invited(self):
         return self.filter(last_booth_invitation_send_at__isnull=False)
 
