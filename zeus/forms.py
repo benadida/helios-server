@@ -240,7 +240,7 @@ class QuestionBaseForm(forms.Form):
     choice_type = forms.ChoiceField(choices=(
         ('choice', _('Choice')),
     ))
-    question = forms.CharField(label=_("Question"), max_length=255,
+    question = forms.CharField(label=_("Question"), max_length=5000,
                                required=True, 
                                widget=forms.Textarea(attrs={
                                 'rows': 4,
