@@ -1,0 +1,161 @@
+{% extends 'server_ui/templates/base-bootstrap.html' %}
+{% load i18n %}
+{% block title %}{{ settings.SITE_TITLE }}{% endblock %}
+{% load institution_extras %}
+{% block header %}
+  {% block js %}
+   <script type="text/javascript">
+    $(document).ready(function() {
+
+        var table = $('#list').DataTable({
+          "language": {
+              "lengthMenu": "Exibindo _MENU_ registros por página",
+              "zeroRecords": "Não foram encontrados registros",
+              "info": "Página _PAGE_ de _PAGES_",
+              "infoEmpty": "Nenhum registro encontrado",
+              "infoFiltered": "(filtered from _MAX_ total records)",
+              "search": "Localizar:",
+              "Previous": "Anterior",
+              "next": "Próxima",
+              "paginate": {
+                  "next": "Próxima",
+                  "previous": "Anterior",
+              }
+          }});
+
+          $('.get-filtered').on('click', function (e) {
+            var url = $(this).data('url');
+            table.clear();
+            $.getJSON(url, function(data) {
+                $.each( data.elections, function( i, item ) {
+                    started_at = (isNaN(Date.parse(item.started_at))) ? '' : new Date(item.start_at);
+                    ended_at = (isNaN(Date.parse(item.ended_at))) ? '' : new Date(item.ended_at);
+                    table.row.add([
+                        item.name,
+                        started_at,
+                        ended_at
+                    ]).draw();
+                });
+            });  
+        }); 
+  });
+  </script>
+  {% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-xs-8">
+    <h3>{{ settings.SITE_TITLE }}</h3>
+    <h4>
+      {{settings.WELCOME_MESSAGE|safe}}
+    </h4>
+  </div>
+  <div class="col-xs-4">
+    {% if user %}
+      <h5 class="text-right">{% trans "Welcome" %} <b>{{user.pretty_name|safe}}</b></h5>
+      {% if create_p %}
+        <div class="text-right">
+          <a class="btn btn-primary btn-xs" href="{% url "helios.views.election_new" %}">{% trans "create an election" %}</a>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% if elections %}
+<div class="row">
+  <div class="col-xs-12">
+    <form class="form-inline">
+      <div class="form-group">
+        <label for="year">{% trans "Year" %}</label>
+        {% with drop_type='year' %}
+			{% dropdown %}
+		{% endwith %}
+      </div>
+      <button data-url="{% url "heliosinstitution.views.get_elections_by_year" %}" type="Consultar" class="btn btn-primary btn-xs get-filtered">{% trans "List" %}</button>
+    </form>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-8">
+    <div class="row" style="padding-top: 10px">
+    	{% for i in "12" %}
+    		{% include "elections_summary.html" with sliced_institutions=institutions|slice_institutions:i %}
+    	{% endfor %}
+    </div>
+    <div class="modal" id="elections_list">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title" id="gridSystemModalLabel">IFSC - News</h4>
+          </div>
+          <div class="modal-body">
+            <table id="list" class="table table-condensed table-striped table-bordered display">
+              <thead>
+                <tr>
+                  <td>{% trans "Name" %}</td>
+                  <td>{% trans "Start" %}</td>
+                  <td>{% trans "End" %}</td>
+                </tr>
+              </thead>
+              <tbody id="elections_list_body">
+              </tbody>
+            </table>
+            <div class="modal-footer"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <h4>{% trans "no featured elections at the moment" %}</h4>
+{% endif %}
+  <div class="col-md-4" style="padding-top: 10px">
+    {% if user %}
+	  	{% if elections_administered %}
+	      <p class="bg-info" style="padding: 3px">
+	        <strong>{% trans "Admin" %}</strong>
+	      </p>
+	      <ul>
+	      {% for election in elections_administered %}
+		        <li>
+		          <a href="{% url "helios.views.one_election_view" election.uuid %}">{{ election.name }}1</a>
+		        </li>
+	      {% endfor %}
+	      </ul>
+	      <a class="tiny button" href="/helios/elections/administered">{% trans "See all" %}</a>
+     	 {% endif %}
+      <br/>
+      <br/>
+      {% if elections_voted %}
+	      <p class="bg-info" style="padding: 3px">
+	        <strong>{% trans "Recent Votes" %}</strong>
+	    	</p>
+	    	<ul>
+	      {% for election in elections_voted %}
+	        <li>
+	          <a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a>
+	        </li>
+	        {% endfor %}
+	      </ul>
+	      <a class="tiny button" href="{% url "helios.views.elections_voted" %}">{% trans "See all" %}</a>
+      {% endif %}
+      <br/>
+      <br/>
+      <p class="bg-info" style="padding: 3px">
+        <b>{% trans "Contact information" %}</b>
+      </p>
+    {% with institution=user.institutionuserprofile_set.get.institution %}<br/>
+	      	{% trans "Main Phone: +55" %} {{ institution.main_phone}}<br/>
+	      	{% trans "Secondary Phone: +55" %} {{ institution.sec_phone}}<br/>
+	      	{% trans "Address:" %} {{ institution.address }}<br/>
+    {% endwith %}
+    <br>
+      <p class="bg-info" style="padding: 3px"/>
+    {% endif %}
+  </div> <!-- span2 -->
+</div>
+{% endblock %}

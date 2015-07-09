@@ -1,8 +1,7 @@
 {% extends 'server_ui/templates/base-bootstrap.html' %}
 {% load i18n %}
 {% block title %}{{ settings.SITE_TITLE }}{% endblock %}
-
-
+{% load institution_extras %}
 {% block header %}
   {% block js %}
    <script type="text/javascript">
@@ -46,7 +45,7 @@
     {% endif %}
   </div>
 </div>
-{% if elections|length %}
+{% if elections %}
 <div class="row">
   <div class="col-xs-12"> 
     <form class="form-inline">
@@ -57,15 +56,6 @@
           <option value="">2014</option>
         </select>
       </div>
-      &nbsp;&nbsp;
-      <div class="form-group">
-        <label for="instituicao">Instituição:</label>
-        <select id="instituicao">
-          <option value="">IFSC</option>
-          <option value="">IFBA</option>
-          <option value="">IFRS</option>
-        </select>
-      </div>
       <button type="Consultar" class="btn btn-primary btn-xs">Listar</button>
     </form>
   </div>
@@ -73,107 +63,54 @@
 <div class="row">
   <div class="col-md-8"> 
     <div class="row" style="padding-top: 10px">
-      <div class="col-md-6">
-        <table class="table table-condensed table-striped table-bordered">
-          <thead>
+        {% with sliced_institutions=institutions|slice_in_two %}
+        <div class="col-md-6">
+            <table class="table table-condensed table-striped table-bordered">
+            <thead>
             <tr>
               <td>{% trans "Institution" %}</td>
               <td>{% trans "New" %}</td>
               <td>{% trans "In progress" %}</td>
               <td>{% trans "Done" %}</td>
             </tr>
-          </thead>
-          <tbody>
+            </thead>
+            <tbody>
+            {% for institution in sliced_institutions.0 %}
             <tr>
-              <td>IFSC</td>
+              <td>{{ institution.name }}</td>
               <td><a href="#" data-toggle="modal" data-target="#elections_list">5</a></td>
               <td><a href="#">2</a></td>
               <td><a href="#">10</a></td>
             </tr>
+            {% endfor %}
+            </tbody>
+            </table>
+        </div>
+        <div class="col-md-6">
+            <table class="table table-condensed table-striped table-bordered">
+              <thead>
+                <tr>
+                  <td>{% trans "Institution" %}</td>
+                  <td>{% trans "New" %}</td>
+                  <td>{% trans "In progress" %}</td>
+                  <td>{% trans "Done" %}</td>
+                </tr>
+              </thead>
+            <tbody>
+            {% for institution in sliced_institutions.1 %}
             <tr>
-              <td>IFRS</td>
-              <td><a href="#">1</a></td>
-              <td><a href="#">0</a></td>
-              <td><a href="#">40</a></td>
+                <td>{{ institution.name }}</td>
+                <td><a href="#" data-toggle="modal" data-target="#elections_list">5</a></td>
+                <td><a href="#">2</a></td>
+                <td><a href="#">10</a></td>
             </tr>
-            <tr>
-              <td>IFBA</td>
-              <td><a href="#">2</a></td>
-              <td><a href="#">2</a></td>
-              <td><a href="#">17</a></td>
-            </tr>
-            <tr>
-              <td>UFSC</td>
-              <td><a href="#">10</a></td>
-              <td><a href="#">20</a></td>
-              <td><a href="#">30</a></td>
-            </tr>
-            <tr>
-              <td>UNICAMP</td>
-              <td><a href="#">1</a></td>
-              <td><a href="#">1</a></td>
-              <td><a href="#">1</a></td>
-            </tr>
-            <tr>
-              <td>UNIVALI</td>
-              <td><a href="#">2</a></td>
-              <td>0</td>
-              <td>0</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="col-md-6">
-        <table class="table table-condensed table-striped table-bordered">
-          <thead>
-            <tr>
-              <td>{% trans "Institution" %}</td>
-              <td>{% trans "New" %}</td>
-              <td>{% trans "In progress" %}</td>
-              <td>{% trans "Done" %}</td>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>IFC</td>
-              <td><a href="#">15</a></td>
-              <td><a href="#">12</a></td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>IFPR</td>
-              <td><a href="#">11</a></td>
-              <td><a href="#">10</a></td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>IFRJ</td>
-              <td><a href="#">12</a></td>
-              <td><a href="#">12</a></td>
-              <td><a href="#">7</a></td>
-            </tr>
-            <tr>
-              <td>USP</td>
-              <td><a href="#">110</a></td>
-              <td><a href="#">120</a></td>
-              <td><a href="#">30</a></td>
-            </tr>
-            <tr>
-              <td>UFPR</td>
-              <td><a href="#">11</a></td>
-              <td><a href="#">11</a></td>
-              <td><a href="#">10</a></td>
-            </tr>
-            <tr>
-              <td>UFRN</td>
-              <td><a href="#">22</a></td>
-              <td><a href="#">10</a></td>
-              <td><a href="#">21</a></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+            {% endfor %}
+            </tbody>
+            </table>
+        </div>
+    {% endwith %}
     </div>
+
     <div class="modal" id="elections_list">
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
