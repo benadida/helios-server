@@ -17,6 +17,6 @@ if settings.AUTH_DEFAULT_AUTH_SYSTEM == 'shibboleth':
 		(r'^$', institution_views.home),
 	)
 else:
-	urlpatterns += patterns(
+	urlpatterns += patterns('',
 		(r'^$', home),
 	)
