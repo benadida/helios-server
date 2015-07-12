@@ -14,7 +14,6 @@ def slice_institutions(value, arg):
         if arg == '2':
         	return value[len(value)//2+1:len(value)]
     except (ValueError, TypeError):
-    	print value
         return value # Fail silently.
 
 
