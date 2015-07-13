@@ -4,6 +4,8 @@ server_ui specific views
 import copy
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
 
 from helios.security import can_create_election
 import helios_auth.views as auth_views
@@ -15,11 +17,14 @@ def get_election():
   
 def home(request):
   from helios.models import Election
+  import heliosinstitution
 
+  user = get_user(request)
+  if user.user_type == 'shibboleth':
+    return HttpResponseRedirect(reverse(heliosinstitution.views.home))
   # load the featured elections
   featured_elections = Election.get_featured()
   
-  user = get_user(request)
   create_p = can_create_election(request)
 
   if create_p:
