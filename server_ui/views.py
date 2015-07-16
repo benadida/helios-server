@@ -20,7 +20,8 @@ def home(request):
   import heliosinstitution
 
   user = get_user(request)
-  if user.user_type == 'shibboleth':
+
+  if user and user.user_type == 'shibboleth':
     return HttpResponseRedirect(reverse(heliosinstitution.views.home))
   # load the featured elections
   featured_elections = Election.get_featured()
