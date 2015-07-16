@@ -82,7 +82,7 @@ msgid "ENCRYPTION_PROCESS_FAILED"
 msgstr "Η κρυπτογράφηση απέτυχε."
 
 msgid "AUDIT_BALLOT_CAST_COMPLETE"
-msgstr "Η ψήφος ελέγχου υποβλήθηκε επιτυχώς."
+msgstr "Η ψήφος ελέγχου υποβλήθηκε επιτυχώς. Ο κωδικός της ψήφου ελέγχου είναι: %s"
 
 msgid "ELECTION_TERMS_ACCEPT_REQUIRED"
 msgstr "Παρακαλούμε, αποδεχθείτε τους όρους της ψηφοφορίας."
@@ -99,7 +99,7 @@ msgstr "Υποβολή Ψήφου Ελέγχου"
 msgid "AUDIT_BALLOT_SET"
 msgstr ""
 "Έχετε επιλέξει ψήφο ελέγχου. Η ψήφος σας δεν θα καταμετρηθεί και οι επιλογές "
-"σας θα κοινοποιηθούν σε σχετικό πίνακα."
+"σας θα κοινοποιηθούν σε σχετικό πίνακα στη σελίδα ψηφοφορίας."
 
 msgid "AUDIT_BALLOT_BACK_PROMPT"
 msgstr "Πατήστε επιστροφή για να επιστρέψετε στο παραπέτασμα."
@@ -109,6 +109,9 @@ msgstr "Επιβεβαίωση"
 
 msgid "AUDIT_BALLOT_BACK_BUTTON"
 msgstr "Επιστροφή"
+
+msgid "AUDIT_BALLOT_BACK_TO_ELECTION_BUTTON"
+msgstr "Επιστροφή στην σελίδα ψηφοφορίας"
 
 msgid "BALLOT_SUBMISSION_IN_PROGRESS"
 msgstr "Υποβολή της ψήφου..."
@@ -246,3 +249,9 @@ msgstr ""
 
 msgid "SUBMIT_BALLOT"
 msgstr "Υποβολή ψήφου"
+
+msgid "WINDOW_CLOSE_CONFIRM"
+msgstr "Ειστε σίγουρος οτι θέλετε να φύγετε απο το ηλεκτρονικό παραπέτασμα;"
+
+msgid "LOGOUT"
+msgstr "Έξοδος"
