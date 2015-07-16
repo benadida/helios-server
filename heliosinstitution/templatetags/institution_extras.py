@@ -28,4 +28,5 @@ def dropdown(context):
 			values.append(year)
 	return {
 		'values': values,
+		'drop_type': context['drop_type'],
 		}
