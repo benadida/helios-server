@@ -45,29 +45,50 @@ class Institution(models.Model):
             })
         return users
 
-    @property
-    def elections_new(self):
-        elections = Election.objects.filter(admin__in=
-            self.institutionuserprofile_set.all(),
-            frozen_at__isnull=False,
-            voting_ended_at__isnull=False).order_by("short_name")
+
+    def elections_new(self, year=None):
+        if year is None:
+            elections = Election.objects.filter(admin__in=
+                self.institutionuserprofile_set.all(),
+                frozen_at__isnull=True,
+                voting_ended_at__isnull=True).order_by("short_name")
+        else:
+            elections = Election.objects.filter(admin__in=
+                self.institutionuserprofile_set.all(),
+                created_at__year=year,
+                frozen_at__isnull=True,
+                voting_ended_at__isnull=True).order_by("short_name")
 
         return self.elections_as_json(elections)
             
-    @property
-    def elections_in_progress(self):
-        elections = Election.objects.filter(admin__in=
-            self.institutionuserprofile_set.all(),
-            frozen_at__isnull=True,
-            voting_ended_at__isnull=False).order_by("short_name")
+
+    def elections_in_progress(self, year=None):
+        if year is None:
+            elections = Election.objects.filter(admin__in=
+                self.institutionuserprofile_set.all(),
+                frozen_at__isnull=False,
+                voting_ended_at__isnull=True).order_by("short_name")
+        else:
+            elections = Election.objects.filter(admin__in=
+                self.institutionuserprofile_set.all(),
+                created_at__year=year,
+                frozen_at__isnull=False,
+                voting_ended_at__isnull=True).order_by("short_name")
         return self.elections_as_json(elections)
 
-    @property
-    def elections_done(self):
-        elections = Election.objects.filter(admin__in=
-            self.institutionuserprofile_set.all(),
-            frozen_at__isnull=True,
-            voting_ended_at__isnull=True).order_by("short_name")
+
+    def elections_done(self, year=None):
+        if year is None:
+            elections = Election.objects.filter(admin__in=
+                self.institutionuserprofile_set.all(),
+                frozen_at__isnull=False,
+                voting_ended_at__isnull=False).order_by("short_name")
+        else:
+            elections = Election.objects.filter(admin__in=
+                self.institutionuserprofile_set.all(),
+                created_at__year=year,
+                frozen_at__isnull=False,
+                voting_ended_at__isnull=False).order_by("short_name")
         return self.elections_as_json(elections)
 
     @property
