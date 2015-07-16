@@ -244,3 +244,9 @@ msgstr "I confirm that I am alone and nobody else has witnessed my selections."
 
 msgid "SUBMIT_BALLOT"
 msgstr "Submit ballot"
+
+msgid "WINDOW_CLOSE_CONFIRM"
+msgstr "Are you sure you want to exit the booth page ?"
+
+msgid "LOGOUT"
+msgstr "Exit"

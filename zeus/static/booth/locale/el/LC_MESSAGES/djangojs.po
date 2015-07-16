@@ -249,3 +249,9 @@ msgstr ""
 
 msgid "SUBMIT_BALLOT"
 msgstr "Υποβολή ψήφου"
+
+msgid "WINDOW_CLOSE_CONFIRM"
+msgstr "Ειστε σίγουρος οτι θέλετε να φύγετε απο το ηλεκτρονικό παραπέτασμα;"
+
+msgid "LOGOUT"
+msgstr "Έξοδος"

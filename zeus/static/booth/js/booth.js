@@ -149,6 +149,10 @@ function escape_html(content) {
 }
 
 BOOTH.setup_election = function(raw_json) {
+  
+  // TODO: how to resolve url dynamically ???
+  BOOTH.logout_url = '/auth/auth/logout?return_url=';
+
   // IMPORTANT: we use the raw JSON for safer hash computation
   // so that we are using the JSON serialization of the SERVER
   // to compute the hash, not the JSON serialization in JavaScript.
@@ -162,7 +166,7 @@ BOOTH.setup_election = function(raw_json) {
     var msg = gettext("BROWSER_NOT_SUPPORTED_ALERT");
     if ($.browser.msie) {
             alert(interpolate(msg, BOOTH.election.help_phone));
-            window.location = '/auth/logout?return_url=/faqs/voter/#browser-support';
+            window.location = BOOTH.logout_url + '/faqs/voter/#browser-support';
         }
 
   var answers_index = 0;
@@ -423,6 +427,7 @@ BOOTH.setup_help_link = function() {
       "\" (" + election.uuid + ")\n";
 
     $("#footer .help").attr("href", mailto)
+    $("#footer .logout").attr("href", BOOTH.logout_url + '/');
 }
 BOOTH.load_and_setup_election = function(election_url, messages_url) {
     BOOTH.messages_url = messages_url;
@@ -769,3 +774,7 @@ $(document).ready(function(){
 })
 
 window.BOOTH = BOOTH;
+$(window).on('beforeunload',function(){
+  return gettext("WINDOW_CLOSE_CONFIRM");
+});
+
