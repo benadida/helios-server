@@ -108,6 +108,9 @@ msgstr "Submit"
 msgid "AUDIT_BALLOT_BACK_BUTTON"
 msgstr "Back"
 
+msgid "AUDIT_BALLOT_BACK_TO_ELECTION_BUTTON"
+msgstr "Back to election view"
+
 msgid "BALLOT_SUBMISSION_IN_PROGRESS"
 msgstr "Submitting ballot..."
 

@@ -99,6 +99,10 @@ BOOTH.reset_ciphertexts = function() {
   });
 };
 
+BOOTH.link_to_election = function() {
+  window.location = this.election_url.replace(/\.json$/, '');
+};
+
 BOOTH.log = function(msg) {
   if (typeof(console) != undefined)
     console.log(msg);

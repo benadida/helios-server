@@ -110,6 +110,9 @@ msgstr "Επιβεβαίωση"
 msgid "AUDIT_BALLOT_BACK_BUTTON"
 msgstr "Επιστροφή"
 
+msgid "AUDIT_BALLOT_BACK_TO_ELECTION_BUTTON"
+msgstr "Επιστροφή στην σελίδα ψηφοφορίας"
+
 msgid "BALLOT_SUBMISSION_IN_PROGRESS"
 msgstr "Υποβολή της ψήφου..."
 
