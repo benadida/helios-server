@@ -80,7 +80,7 @@ msgid "ENCRYPTION_PROCESS_FAILED"
 msgstr "Encryption has failed."
 
 msgid "AUDIT_BALLOT_CAST_COMPLETE"
-msgstr "Your audit ballot was successfully submitted."
+msgstr "Your audit ballot was successfully submitted. The audit ballot id is: %s"
 
 msgid "ELECTION_TERMS_ACCEPT_REQUIRED"
 msgstr "Please accept the voting terms."

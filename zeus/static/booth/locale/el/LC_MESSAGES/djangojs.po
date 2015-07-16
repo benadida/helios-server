@@ -82,7 +82,7 @@ msgid "ENCRYPTION_PROCESS_FAILED"
 msgstr "Η κρυπτογράφηση απέτυχε."
 
 msgid "AUDIT_BALLOT_CAST_COMPLETE"
-msgstr "Η ψήφος ελέγχου υποβλήθηκε επιτυχώς."
+msgstr "Η ψήφος ελέγχου υποβλήθηκε επιτυχώς. Ο κωδικός της ψήφου ελέγχου είναι: %s"
 
 msgid "ELECTION_TERMS_ACCEPT_REQUIRED"
 msgstr "Παρακαλούμε, αποδεχθείτε τους όρους της ψηφοφορίας."

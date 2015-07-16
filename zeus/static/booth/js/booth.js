@@ -661,7 +661,7 @@ BOOTH.post_audited_ballot = function() {
          }, function(result) {
 
 
-    var recipe_text = interpolate(gettext("AUDIT_BALLOT_CAST_COMPLETE", [result.audit_id])); 
+    var recipe_text = interpolate(gettext("AUDIT_BALLOT_CAST_COMPLETE"), ['' + result.audit_id]); 
     $(".audited_ballot_recipe").html(recipe_text);
     BOOTH.reset_ciphertexts();
     //BOOTH.show_question(0);
