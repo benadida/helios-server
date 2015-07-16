@@ -49,11 +49,6 @@ $("document").ready(function(){
 		return false;
     });
 
-    $('.expires_at').datepicker({
-        todayBtn: "linked",
-        autoclose: true,
-        dateFormat: 'dd-mm-yy'
-     });
 
     var rowNum = 0;
     $('.add_cafe_attribute').click(function(){
@@ -74,10 +69,10 @@ $("document").ready(function(){
     $('#update_voter_reg').click(function(event) {
         user_type = $('input[name="user_type"]').val();
         eligibility = $('input[name="eligibility"]:checked').val();
+        categories = {}
         if (eligibility == "limitedreg" & user_type == "shibboleth") {
             event.preventDefault();
             event.stopImmediatePropagation();
-            categories = {}
             var url = $('form#eligibility-form').attr('action');
             $('div.cafe_attribute').each(function(){
                 key = $(this).find('select option:selected').text();
@@ -124,4 +119,6 @@ $("document").ready(function(){
         $('div.shib-attr-panel').addClass('hidden');
         $('a#upload_voters').addClass('hidden');
     });
+
+
 })
