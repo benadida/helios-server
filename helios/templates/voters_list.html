@@ -257,7 +257,7 @@
 	 	{% endfor %}
 	{% else %}
 		$(function(){
-			if ($('input[id="csv_type"]:checked')) {
+			if ($('input[id="csv_type"]').attr("checked")) {
 				$('a#upload_voters').removeClass('hidden');
 			}
 		});
