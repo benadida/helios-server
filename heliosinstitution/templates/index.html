@@ -25,11 +25,15 @@ $(document).ready(function() {
 
     $('.get-filtered').on('click', function (e) {
         var url = $(this).data('url');
+        var institution_name = $(this).parents('tr').data('institution');
+        var election_type = $(this).data('type');
+        console.log(url);
         table.clear();
         $.getJSON(url, function(data) {
             $.each( data.elections, function( i, item ) {
                 started_at = (isNaN(Date.parse(item.started_at))) ? '' : new Date(item.start_at);
                 ended_at = (isNaN(Date.parse(item.ended_at))) ? '' : new Date(item.ended_at);
+                $('.modal-title').text(institution_name + ' - ' + election_type);
                 table.row.add([
                     item.name,
                     started_at,
@@ -38,6 +42,16 @@ $(document).ready(function() {
             });
         });
     });
+
+    $('.get-by-year').click(function(){
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        var url = $(this).data('url');
+        var year = $('select[name=year] option:selected').val();
+        $('.slice-institutions').load($('.slice-institutions').attr('data-url')+ year);
+    });
+
+
 });
 </script>
 {% endblock %}
@@ -74,18 +88,14 @@ $(document).ready(function() {
                     {% dropdown %}
                 {% endwith %}
             </div>
-            <button data-url="{% url "heliosinstitution.views.get_elections_by_year" %}" type="Consultar" class="btn btn-primary btn-xs get-filtered">{% trans "List" %}</button>
+            <button type="Consultar" class="btn btn-primary btn-xs get-by-year" data-url="{% url "heliosinstitution.views.elections_by_year" %}">{% trans "List" %}</button>
         </form>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-8">
-        <div class="row" style="padding-top: 10px">
-            {% for i in "12" %}
-                {% include "elections_summary.html" with sliced_institutions=institutions|slice_institutions:i %}
-            {% endfor %}
-        </div>
+        {% include "elections_summary.html" %}
         <div class="modal" id="elections_list">
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
@@ -93,7 +103,7 @@ $(document).ready(function() {
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
-                        <h4 class="modal-title" id="gridSystemModalLabel">IFSC - News</h4>
+                        <h4 class="modal-title" id="gridSystemModalLabel"></h4>
                     </div>
                     <div class="modal-body">
                         <table id="list" class="table table-condensed table-striped table-bordered display">

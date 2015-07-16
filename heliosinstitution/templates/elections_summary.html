@@ -1,24 +1,32 @@
 {% load i18n %}
-
-<div class="col-md-6">
+{% load institution_extras %}
+<div class="row slice-institutions" style="padding-top: 10px" data-url="{% url "heliosinstitution.views.elections_summary" %}">
+    {% for i in "12" %}
+    {% with sliced_institutions=institutions|slice_institutions:i %}
+        {% if sliced_institutions %}
+        {% for institution in sliced_institutions %}
+        <div class="col-md-6 inst-elections-details">
             <table class="table table-condensed table-striped table-bordered">
-            <thead>
-            <tr>
-              <td>{% trans "Institution" %}</td>
-              <td>{% trans "New" %}</td>
-              <td>{% trans "In progress" %}</td>
-              <td>{% trans "Done" %}</td>
-            </tr>
-            </thead>
-            <tbody>
-            {% for institution in sliced_institutions %}
-	            <tr>
-	              <td>{{ institution.name }}</td>
-	              <td>{% if institution.elections_new|length > 0 %}<a href="#" class="get-filtered" data-url="{% url "heliosinstitution.views.new_elections" institution.pk %}" data-toggle="modal" data-target="#elections_list">{% endif %}{{ institution.elections_new|length }}</a></td>
-	              <td><a href="#">{{ institution.elections_in_progress|length }}</a></td>
-	              <td><a href="#">{{ institution.elections_done|length }}</a></td>
-	            </tr>
-            {% endfor %}
-            </tbody>
-    </table>
+                <thead>
+                    <tr>
+                        <td>{% trans "Institution" %}</td>
+                        <td>{% trans "New" %}</td>
+                        <td>{% trans "In progress" %}</td>
+                        <td>{% trans "Done" %}</td>
+                    </tr>
+                </thead>
+                <tbody id="elections_summary">
+                    <tr data-institution="{{ institution.name }}">
+                        <td>{{ institution.name }}</td>
+                        <td id="elections_new">{% if institution.elections_new > 0 %}<a href="#" class="get-filtered" data-url="{% url "heliosinstitution.views.elections_by_type_year" institution.pk "new" %}" data-type="{% trans "New" %}" data-toggle="modal" data-target="#elections_list">{{ institution.elections_new|length}}</a>{% else %} - {% endif %}</td>
+                        <td id="elections_in_progress">{% if institution.elections_in_progress|length > 0 %}<a href="#" class="get-filtered"  data-type="{% trans "In Progress" %}" data-toggle="modal" data-target="#elections_list" data-url="{% url "heliosinstitution.views.elections_by_type_year" institution.pk "in_progress" %}">{{ institution.elections_in_progress|length }}</a>{% else %} - {% endif %}</td>
+                        <td>{% if institution.elections_done|length > 0 %}<a href="#" class="get-filtered"  data-type="{% trans "Done" %}" data-toggle="modal" data-target="#elections_list" data-url="{% url "heliosinstitution.views.elections_by_type_year" institution.pk "done" %}">{{ institution.elections_done|length }}</a>{% else %} - {% endif %}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        {% endfor %}
+        {% endif %}
+    {% endwith %}
+{% endfor %}
 </div>

@@ -23,27 +23,40 @@ from view_utils import *
 
 def home(request):
 
-  # load the featured elections
-  elections = Election.objects.all().order_by('-created_at')
+    # load the featured elections
+    elections = Election.objects.all().order_by('-created_at')
   
-  user = get_user(request)
-  create_p = can_create_election(request)
+    user = get_user(request)
+    create_p = can_create_election(request)
 
-  if create_p:
-    elections_administered = Election.get_by_user_as_admin(user, archived_p=False, limit=5)
-  else:
-    elections_administered = None
+    if create_p:
+        elections_administered = Election.get_by_user_as_admin(user, archived_p=False, limit=5)
+    else:
+        elections_administered = None
 
-  if user:
-    elections_voted = Election.get_by_user_as_voter(user, limit=5)
-  else:
-    elections_voted = None
+    if user:
+        elections_voted = Election.get_by_user_as_voter(user, limit=5)
+    else:
+        elections_voted = None
 
-  return render_template(request, "index", {'elections': elections,
+    institutions = Institution.objects.all()
+ 
+    institutions_list = []
+
+    for institution in institutions:
+        institutions_list.append({
+            'pk': institution.pk,
+            'name': institution.name,
+            'elections_new': institution.elections_new,
+            'elections_in_progress' : institution.elections_in_progress,
+            'elections_done': institution.elections_done,
+        })
+
+    return render_template(request, "index", {'elections': elections,
                                             'elections_administered' : elections_administered,
                                             'elections_voted' : elections_voted,
                                             'create_p':create_p,
-                                            'institutions': Institution.objects.all()})
+                                            'institutions': institutions_list})
 
 @login_required
 @require_institution_admin
@@ -229,24 +242,57 @@ def user_metadata(request, user_pk):
     return render_template(request,"user_metadata",{"user_metadata": user_metadata})
 
 
-@require_http_methods(["GET",])
-def get_elections_by_year(request):
+def elections_by_year(request, year=None):
     user = get_user(request)
-    elections = Election.objects.filter(created_at__year=2014).order_by('-created_at')
-    return HttpResponse(json.dumps({'elections': elections}), 
+    if year is not None:
+        elections = Election.objects.filter(created_at__year=2014).order_by('-created_at')
+    else:
+        elections = Election.objects.all().order_by('-created_at')
+    return HttpResponse(json.dumps(
+        {'elections': 
+            [{'election.pk': election.pk, 'election.name': election.name} for election in elections ]
+        }), 
         content_type="application/json", status=200)
 
 
 @require_http_methods(["GET",])
-def new_elections(request, institution_pk):
+def elections_by_type_year(request, institution_pk, type=None, year=None):
     user = get_user(request)
     try:        
         institution = Institution.objects.get(pk=institution_pk)
         status = 200
-        response_data = {'success': _('Success'), 'elections': institution.elections_new }
+        if type == 'new':
+            response_data = {'success': _('Success'), 'elections': institution.elections_new() }
+        elif type =='in_progress':
+            response_data = {'success': _('Success'), 'elections': institution.elections_in_progress() }
+        elif type == 'done':
+            response_data = {'success': _('Success'), 'elections': institution.elections_done() }
+        else:
+            response_data = {'success': _('Success'), 'elections': institution.elections}
     except Institution.DoesNotExist:
         status = 400
         response_data = {'error' : _("Institution does not exist")}
 
     return HttpResponse(json.dumps(response_data), 
         content_type="application/json", status=200)
+
+
+@require_http_methods(["GET",])
+def elections_summary(request, year=None):
+    institutions = Institution.objects.all()
+    institutions_list = []
+
+    if year is None:
+        for institution in institutions:
+            institutions_list.append({
+            'pk': institution.pk,
+            'name': institution.name,
+            'elections_new': institution.elections_new,
+            'elections_in_progress' : institution.elections_in_progress,
+            'elections_done': institution.elections_done,
+        })
+
+    return render_template(request, "elections_summary", {
+        "institutions": institutions_list,
+    })
+
