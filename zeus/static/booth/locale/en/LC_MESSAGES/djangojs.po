@@ -97,7 +97,7 @@ msgstr "Submit an audit ballot"
 msgid "AUDIT_BALLOT_SET"
 msgstr ""
 "You have chosen to submit an audit ballot. Your vote will not be counted and "
-"your selections will be registered public in a public listing."
+"your selections will be registered public in a public listing in the election view."
 
 msgid "AUDIT_BALLOT_BACK_PROMPT"
 msgstr "Press Back to return to the voting booth."
