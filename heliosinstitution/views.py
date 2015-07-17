@@ -282,15 +282,14 @@ def elections_summary(request, year=None):
     institutions = Institution.objects.all()
     institutions_list = []
 
-    if year is None:
-        for institution in institutions:
-            institutions_list.append({
-            'pk': institution.pk,
-            'name': institution.name,
-            'elections_new': institution.elections_new,
-            'elections_in_progress' : institution.elections_in_progress,
-            'elections_done': institution.elections_done,
-        })
+    for institution in institutions:
+        institutions_list.append({
+        'pk': institution.pk,
+        'name': institution.name,
+        'elections_new': institution.elections_new(year),
+        'elections_in_progress' : institution.elections_in_progress(year),
+        'elections_done': institution.elections_done(year),
+    })
 
     return render_template(request, "elections_summary", {
         "institutions": institutions_list,

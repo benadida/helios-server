@@ -94,7 +94,7 @@ $(document).ready(function() {
 </div>
 
 <div class="row">
-    <div class="col-md-8">
+    <div class="col-md-8 slice-institutions" data-url="{% url "heliosinstitution.views.elections_summary" %}">
         {% include "elections_summary.html" %}
         <div class="modal" id="elections_list">
             <div class="modal-dialog modal-lg" role="document">
