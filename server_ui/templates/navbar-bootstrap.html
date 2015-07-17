@@ -19,9 +19,11 @@
             <a class="navbar-brand" style="color:#FFFFFF;" href="{% url "heliosinstitution.views.dashboard" %}">Admin</a>
           </li>
           {% endif %}
+          {% if user.user_type != 'shibboleth' %}
           <li>
             <a class="navbar-brand " style="color:#FFFFFF;" href="/auth/logout?return_url=/">{% trans "Logout" %}</a>
           </li>
+          {% endif %}
           {% else %}
           <li>
             <a class="navbar-brand" style="color:#FFFFFF;" href="{{SECURE_URL_HOST}}{% url "helios_auth.views.start" system_name=auth_system %}?return_url={{return_url}}"> {% trans "Login" %}</a>
