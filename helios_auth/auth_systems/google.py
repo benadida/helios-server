@@ -17,19 +17,27 @@ from oauth2client.client import OAuth2WebServerFlow
 STATUS_UPDATES = False
 
 # display tweaks
-LOGIN_MESSAGE = "Log in with my Google Account"
+LOGIN_MESSAGE = "Log In with my Google Account"
+
+
+def get_name():
+    return 'Google'
 
 def get_flow(redirect_url=None):
-  return OAuth2WebServerFlow(client_id=settings.GOOGLE_CLIENT_ID,
-            client_secret=settings.GOOGLE_CLIENT_SECRET,
-            scope='profile email',
-            redirect_uri=redirect_url)
+  return OAuth2WebServerFlow(
+    client_id=settings.GOOGLE_CLIENT_ID,
+    client_secret=settings.GOOGLE_CLIENT_SECRET,
+    scope='profile email',
+    redirect_uri=redirect_url
+  )
+
 
 def get_auth_url(request, redirect_url):
   flow = get_flow(redirect_url)
 
   request.session['google-redirect-url'] = redirect_url
   return flow.step1_get_authorize_url()
+
 
 def get_user_info_after_auth(request):
   flow = get_flow(request.session['google-redirect-url'])
@@ -41,44 +49,48 @@ def get_user_info_after_auth(request):
   # the email address is in the credentials, that's how we make sure it's verified
   id_token = credentials.id_token
   if not id_token['email_verified']:
-    raise Exception("email address with Google not verified")
-   
+    raise Exception('email address with Google not verified')
+
   email = id_token['email']
 
   # get the nice name
-  http = httplib2.Http(".cache")
+  http = httplib2.Http('.cache')
   http = credentials.authorize(http)
-  (resp_headers, content) = http.request("https://www.googleapis.com/plus/v1/people/me", "GET")
+  (resp_headers, content) = http.request('https://www.googleapis.com/plus/v1/people/me', 'GET')
 
   response = json.loads(content)
 
   name = response['displayName']
-  
+
   # watch out, response also contains email addresses, but not sure whether thsoe are verified or not
   # so for email address we will only look at the id_token
-  
+
   return {'type' : 'google', 'user_id': email, 'name': name , 'info': {'email': email}, 'token':{}}
-    
+
+
 def do_logout(user):
-  """
-  logout of Google
-  """
-  return None
-  
+    """
+    logout of Google
+    """
+    return None
+
+
 def update_status(token, message):
-  """
-  simple update
-  """
-  pass
+    """
+    simple update
+    """
+    pass
+
 
 def send_message(user_id, name, user_info, subject, body):
-  """
-  send email to google users. user_id is the email for google.
-  """
-  send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, user_id)], fail_silently=False)
-  
+    """
+    send email to google users. user_id is the email for google.
+    """
+    send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, user_id)], fail_silently=False)
+
+
 def check_constraint(constraint, user_info):
-  """
-  for eligibility
-  """
-  pass
+    """
+    for eligibility
+    """
+    pass

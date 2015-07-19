@@ -1,0 +1,61 @@
+<div class="row">
+    <div class="large-12 columns">
+      <ul class="breadcrumbs">
+        <li {% if current == "create" %}class="current"{% else %}class="unavailable"{% endif %}><a href="{% url 'helios.views.election_new' %}">Create</a></li>
+
+        {% if election %}
+          <li {% if current == "admin" %}class="current"{% endif %}><a href="{% url 'helios.views.one_election_admin' election.uuid %}">Admin</a></li>
+
+          {% if election.use_threshold %}
+            {% if not election.frozen_trustee_list %}
+              <li {% if current == "trustees" %}class="current"{% endif %}><a href="{% url 'helios.views.trustees_list_view' election.uuid %}">Trustees</a></li>
+            {% else %}
+              <li class="unavailable"><a href="{% url 'helios.views.trustees_list_view' election.uuid %}">Trustees</a></li>
+              <li {% if current == "admin" %}class="current"{% endif %}><a href="{% url 'helios.views.one_election_admin' election.uuid %}">Admin</a></li>
+
+              {% if not election.questions %}
+                <li {% if current == "questions" %}class="current"{% endif %}><a href="{% url 'helios.views.one_election_questions' election.uuid %}">Questions</a></li>
+              {% else %}
+                <li class="unavailable"><a href="{% url 'helios.views.one_election_questions' election.uuid %}">Questions</a></li>
+
+                {% if not election.openreg and election.num_voters == 0 %}
+                  <li {% if current == "voters" %}class="current"{% endif %}><a href="{% url 'helios.views.voters_list_pretty' election.uuid %}">Voters</a></li>
+                {% else %}
+                  <li class="unavailable"><a href="{% url 'helios.views.voters_list_pretty' election.uuid %}">Voters</a></li>
+
+                  {% if election.issues_before_freeze|length == 0 %}
+                    <li {% if current == "admin" %}class="current"{% endif %}><a href="{% url 'helios.views.one_election_admin' election.uuid %}">Admin</a></li>
+                    <li {% if current == "view" %}class="current"{% endif %}><a href="{% url 'helios.views.one_election_view' election.uuid %}">View</a></li>
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% else %}
+            {% ifequal election.num_trustees 0 %}
+              <li {% if current == "trustees" %}class="current"{% endif %}><a href="{% url 'helios.views.trustees_list_view' election.uuid %}">Trustees</a></li>
+            {% else %}
+              <li class="unavailable"><a href="{% url 'helios.views.trustees_list_view' election.uuid %}">Trustees</a></li>
+              <li {% if current == "admin" %}class="current"{% endif %}><a href="{% url 'helios.views.one_election_admin' election.uuid %}">Admin</a></li>
+
+              {% if not election.questions %}
+                <li {% if current == "questions" %}class="current"{% endif %}><a href="{% url 'helios.views.one_election_questions' election.uuid %}">Questions</a></li>
+              {% else %}
+                <li class="unavailable"><a href="{% url 'helios.views.one_election_questions' election.uuid %}">Questions</a></li>
+
+                {% if not election.openreg and election.num_voters == 0 %}
+                  <li {% if current == "voters" %}class="current"{% endif %}><a href="{% url 'helios.views.voters_list_pretty' election.uuid %}">Voters</a></li>
+                {% else %}
+                  <li class="unavailable"><a href="{% url 'helios.views.voters_list_pretty' election.uuid %}">Voters</a></li>
+
+                  {% if election.issues_before_freeze|length == 0 %}
+                    <li {% if current == "admin" %}class="current"{% endif %}><a href="{% url 'helios.views.one_election_admin' election.uuid %}">Admin</a></li>
+                    <li {% if current == "view" %}class="current"{% endif %}><a href="{% url 'helios.views.one_election_view' election.uuid %}">View</a></li>
+                  {% endif %}
+                {% endif %}
+              {% endif %}
+            {% endifequal %}
+          {% endif %}
+        {% endif %}
+      </ul>
+    </div>
+</div>

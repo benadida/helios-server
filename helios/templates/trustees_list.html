@@ -1,0 +1,257 @@
+{% extends "helios/templates/cryptobase.html" %}
+{% block title %}Trustees for {{election.name}}{% endblock %}
+
+{% block content %}
+  {% include "partials/election_progress.html" with current="trustees" uuid=election.uuid %}
+
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>
+        {{election.name}}&mdash;Trustees <small>[<a href="{% url 'helios.views.one_election_admin' election.uuid %}">Back</a>]</small>
+      </h2>
+
+      {% if not election.use_threshold %}
+        <p>
+          Trustees are responsible for decrypting the election result. Each trustee generates a key pair and submits the public portion to Helios. When it's time to decrypt, each trustee needs to provide his secret key.
+        </p>
+
+        <p>
+          If you do not wish to go through this process yourself, you can add Helios as a trustee. It will handle its key pair generation and decryption automatically. Even if you do, you may still add additional trustees, and you can even remove the Helios trustee. However, we recommend you do this only if you have a solid understanding of the trustee's role.
+        </p>
+      {% else %}
+        <p>
+          Trustees are responsible for decrypting the election result. Since this election uses threshold encryption, all trustees will have to go through a key ceremony. During this ceremony, each trustee receives part of the key that will be used to encrypt the ballots. When freezing the election, you will have to define the threshold scheme. This controls the number of trustees that will have to provide their secret key before the results can be decrypted.
+        </p>
+
+        <p>
+          Each trustee will be given a link to his/her personal dashboard. If a trustee lost his link, you can resend it by hitting <i>Send Link</i> below.</b>
+        </p>
+      {% endif %}
+
+      {% if not election.frozen_at %}
+        {% if not election.use_threshold %}
+          {% if not election.trustees_added_public_keys %}
+            <div data-alert class="alert-box info">
+              <b>Next</b> Wait for the trustees to generate their public keys.
+            </div>
+          {% endif %}
+        {% else %}
+          {% if not election.frozen_trustee_list %}
+            <div data-alert class="alert-box info">
+              <b>Next</b> After freezing the trustee list, the threshold scheme can be defined.
+            </div>
+          {% endif %}
+        {% endif %}
+
+        {% if election.use_threshold %}
+          {% if not election.frozen_trustee_list %}
+            <a class="button" href="{% url 'helios.views.trustees_create' election.uuid %}">Add a Trustee &raquo;</a>
+            <a class="button" onclick="return confirm('Are you sure you want to freeze the trustee list? You will not be able to add trustees after this step.');" href="{% url 'helios.views.trustees_freeze' election.uuid %}">Freeze Trustee List &raquo;</a>
+          {% else %}
+            {% if not election.encrypted_shares_uploaded %}
+              <div data-alert class="alert-box info">
+                <b>Next</b> Wait for the trustees to generate their encrypted shares.
+              </div>
+            {% endif %}
+
+            {% if not election.trustees_added_public_keys %}
+              <p>
+                In the meantime, you can continue with the next step in the procedure.
+              </p>
+
+              <a class="button" href="{% url 'helios.views.one_election_admin' election.uuid %}">Admin &raquo;</a>
+            {% endif %}
+          {% endif %}
+        {% else %}
+          <a class="button" href="{% url 'helios.views.trustees_create' election.uuid %}">Add a Trustee &raquo;</a>
+
+          {% if not election.has_helios_trustee %}
+            <a class="secondary button" href="{% url 'helios.views.trustees_create_helios' election.uuid %}">Add Helios as a Trustee</a>
+          {% endif %}
+        {% endif %}
+      {% endif %}
+
+      {% if election.use_threshold %}
+        {% if election.frozen_trustee_list %}
+          <h3>Threshold Scheme</h3>
+
+          <p>
+            To decrypt the result, <b>{% if scheme.k == scheme.n %}all{% else %}{{scheme.k}} of the {{scheme.n}}{% endif %}</b> trustees will have to provide their secret key to decrypt the tally.
+          </p>
+        {% endif %}
+      {% endif %}
+
+      <h3>Public Keys</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <td width="30%">Trustee</td>
+            {% if not election.use_threshold %}
+              <td>Public Key</td>
+            {% else %}
+              <td>Public Key for Signing</td>
+              <td>Public Key for Encryption</td>
+            {% endif %}
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for t in trustees %}
+            <tr>
+              <td>
+                {% if admin_p %}
+                  {% if t.helios_trustee %}
+                    {%if not election.frozen_trustee_list%}
+                      {% if not election.frozen_at %}
+                        [<a onclick="return confirm('Are you sure you want to remove Helios as a trustee?');" href="{% url 'helios.views.trustees_delete' election.uuid %}?uuid={{t.uuid}}">&times;</a>]
+                      {% endif %}
+                    {% endif %}
+                  {% else %}
+                    {% if not election.frozen_trustee_list %}
+                      {% if not election.frozen_at %}
+                        [<a onclick="return confirm('Are you sure you want to remove this trustee?');" href="{% url 'helios.views.trustees_delete' election.uuid %}?uuid={{t.uuid}}">&times;</a>]
+                      {% endif %}
+                    {% endif %}
+
+                    [<a onclick="return confirm('Are you sure you want to send this trustee to URL to his/her trustee home?');" href="{% url 'helios.views.trustee_send_url' election.uuid t.uuid %}">Send Login</a>]
+                  {% endif %}
+                {% endif %}
+
+                {% if admin_p %}<span title="{{t.email}}">{% endif %}{{t.name}}{% if admin_p %}</span>{% endif %}
+              </td>
+              {% if not election.use_threshold %}
+                <td>
+                  {% if t.public_key_hash %}
+                    <tt>{{t.public_key_hash}}</tt>
+                  {% else %}
+                    <i>Not uploaded yet.</i>
+                  {% endif %}
+                </td>
+              {% else %}
+                <td>
+                  {% if t.key.public_key_encrypt_hash %}
+                    <tt>{{t.key.public_key_encrypt_hash}}</tt>
+                  {% else %}
+                    <i>Not uploaded yet.</i>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if t.key.public_key_signing_hash %}
+                    <tt>{{t.key.public_key_signing_hash}}</tt>
+                  {% else %}
+                    <i>Not uploaded yet.</i>
+                  {% endif %}
+                </td>
+              {% endif %}
+            </tr>
+          {% empty %}
+            <tr>
+              <td><i>No trustees were added yet.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      {% if public_key_hash %}
+        <p>
+          The combined public key for the election is <tt>{{public_key_hash}}</tt>.
+        </p>
+      {% endif %}
+
+      {% if election.use_threshold %}
+        {% if election.frozen_trustee_list %}
+          <h3>Encrypted Shares</h3>
+
+          <table>
+            <thead>
+              <tr>
+                <td width="30%">Trustee</td>
+                <td>Status</td>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for t in trustees %}
+                <tr>
+                  <td>
+                    {% if admin_p %}<span title="{{t.email}}">{% endif %}{{t.name}}{% if admin_p %}</span>{% endif %}
+                  </td>
+                  <td>
+                    {% if t.added_encrypted_shares %}
+                      <i>Uploaded</i>
+                    {% else %}
+                      <i>Waiting</i>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+      {% endif %}
+
+      {% if election.use_threshold %}
+        {% if election.encrypted_shares_uploaded %}
+          <h3>Encryption Keys</h3>
+
+          <table>
+            <thead>
+              <tr>
+                <td width="30%">Trustee</td>
+                <td>Public Key</td>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for t in trustees %}
+                <tr>
+                  <td>
+                    {% if admin_p %}<span title="{{t.email}}">{% endif %}{{t.name}}{% if admin_p %}</span>{% endif %}
+                  </td>
+                  <td>
+                    {% if t.public_key_hash %}
+                      <tt>{{t.public_key_hash}}</tt>
+                    {% else %}
+                      <i>Not uploaded yet.</i>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+      {% endif %}
+
+      {% if election.encrypted_tally %}
+        <h3>Tally Status</h3>
+
+        <table>
+          <thead>
+            <tr>
+              <td width="30%">Trustee</td>
+              <td>Tally Status</td>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for t in trustees %}
+              <tr>
+                <td>
+                  {% if admin_p %}<span title="{{t.email}}">{% endif %}{{t.name}}{% if admin_p %}</span>{% endif %}
+                </td>
+                <td>
+                  {% if t.decryption_factors %}
+                    <i>Recorded</i>
+                  {% else %}
+                    <i>Waiting</i>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

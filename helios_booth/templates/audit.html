@@ -1,0 +1,32 @@
+<h3 data-localize="audit_audit">Your Audited Ballot</h3>
+
+<p style="color: red;" data-localize="audit_important">
+  <b>Important</b><br />This ballot, now that it has been audited, <em>will not be tallied</em>.
+</p>
+
+<p data-localize="audit_cast">
+  To cast a ballot, you must click the "Back to Voting" button below, re-encrypt it, and choose "cast" instead of "audit."
+</p>
+
+<p data-localize="audit_why">
+  <b>Why?</b> Helios prevents you from auditing and casting the same ballot to provide you with some protection against coercion.
+</p>
+
+<p>
+  <b data-localize="audit_now_what">Now what?</b> <a onclick="$('#audit_trail').select(); return false;" href="#" data-localize="audit_select">Select your ballot audit info</a>, <span data-localize="audit_copy">copy it to your clipboard, then use the</span> <a target="_blank" href="single-ballot-verify.html?election_url={$T.election_url}" data-localize="audit_verify">ballot verifier</a> <span data-localize="audit_verify_post">to verify it. Once you're satisfied, click the "back to voting" button to re-encrypt and cast your ballot.</span>
+</p>
+
+<form action="#">
+  <textarea name="audit_trail" id="audit_trail" cols="80" rows="10" wrap="soft">{$T.audit_trail}</textarea>
+
+  <p data-localize="audit_going_back">
+    Before going back to voting, you can post this audited ballot to the Helios tracking center so that others might double-check the verification of this ballot.
+  </P>
+
+  <p data-localize="audit_cast_reminder">
+    <b>Even if you post your audited ballot, you must go back to voting and choose "cast" if you want your vote to count.</b>
+  </p>
+
+  <button type="button" onclick="$(this).attr('disabled', 'disabled'); BOOTH.post_audited_ballot();" id="post_audited_ballot_button" class="pretty" style="margin-left: 10px;" data-localize="audit_post">Post Audited Ballot to Tracking Center</button>
+  <button type="button" onclick="BOOTH.reset_ciphertexts(); BOOTH.seal_ballot();" class="pretty" data-localize="audit_back">Back to Voting</button>
+</form>

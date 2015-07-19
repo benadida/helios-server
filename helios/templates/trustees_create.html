@@ -1,0 +1,38 @@
+{% extends "helios/templates/cryptobase.html" %}
+{% block title %}Trustees for {{election.name}}&mdash;New Trustee{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>
+        {{election.name}}&mdash;New Trustee <small>[<a href="{% url 'helios.views.trustees_list_view' election.uuid %}">Cancel</a>]</small>
+      </h2>
+
+      <form method="post">
+        <div class="row">
+          <div class="large-3 columns">
+            <label for="name" class="right inline">Name</label>
+          </div>
+          <div class="large-9 columns">
+            <input type="text" name="name" id="name" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="large-3 columns">
+            <label for="email" class="right inline">E-mail</label>
+          </div>
+          <div class="large-9 columns">
+            <input type="text" name="email" id="email" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="large-9 large-offset-3 columns">
+            <input type="submit" class="small button" value="Add Trustee" />
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

@@ -1,46 +1,85 @@
 {% extends TEMPLATE_BASE %}
+{% block title %}Bulk Upload Voters for {{election.name}}{% endblock %}
 
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Bulk Upload Voters <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">back to election</a>]</span></h2>
+  <script language="javascript">
+    function handleFileSelect(e) {
+      var file = e.target.files[0];
+      var output = $('#' + $(e.target).data('output'));
 
-<form method="post" action="" id="upload_form" enctype="multipart/form-data">
-  <p>
-    If you would like to specify your list of voters by name and email address,<br />
-    you can bulk upload a list of such voters here.<br /><br />
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        output.val(reader.result);
+      }
+      reader.readAsText(file);
+    }
 
-    Please prepare a text file of comma-separated values with the fields:
-</p>
-<pre>
-   &lt;unique_id&gt;,&lt;email&gt,&lt;full name&gt;
-</pre>
+    $(document).ready(function() {
+      $('.upload').change(handleFileSelect);
+    });
+  </script>
 
-<p>
-For example:
-  </p>
-  <pre>
-      benadida,ben@adida.net,Ben Adida
-      bobsmith,bob@acme.org,Bob Smith
-      ...
-  </pre> 
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>
+        {{election.name}}&mdash;Bulk Upload Voters <small>[<a href="{% url 'helios.views.voters_list_pretty' election.uuid %}">Back</a>]</small>
+      </h2>
 
-  <p>
-    The easiest way to prepare such a file is to use a spreadsheet program and to export as "CSV".
-  </p>
-  {% if error %}
-  <div style="color: red;">{{error}}</div>
-  {% endif %}
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    
-    <input type="file" name="voters_file" />
-    <input type="submit" value="go" />
-</form>
+      <p>
+        If you would like to specify your list of voters by name and e-mail address, you can bulk upload a list of such voters here. Please prepare a text file of comma-separated values with the fields:
+      </p>
 
-<div id="processing">
-</div>
+      <pre>
+        &lt;voter_id&gt;[,&lt;email&gt],&lt;full_name&gt;[,&lt;user_type&gt;]
+      </pre>
 
-<div id="done" style="display:none;">
-  OK, done uploading.<br />
-  You can now <a href="./manage">view the list of voters</a>.
-</div>
+      <p>
+        If the system cannot validate the second field as an e-mail address, it will assume that it specifies the user's full name instead. The user type field is optional and can be used to specify the type of user account that should be created for the voter. If left empty, a password will be generated for the voter.
+      </p>
 
+      <p>
+        For example:
+      </p>
+
+      <pre>
+        bobsmith,bob@acme.org,Bob Smith
+        ...
+      </pre>
+
+      <p>
+        The easiest way to prepare such a file is to use a spreadsheet program and export as "CSV".
+      </p>
+
+      {% if error %}
+        <div data-alert class="alert-box warning">
+          <b>Error</b> {{error}}
+        </div>
+      {% endif %}
+
+      <form method="post" id="upload_form" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+
+        <div class="row">
+          <div class="large-3 columns">
+            <label for="voters_file" class="right inline">List of Voters</label>
+          </div>
+          <div class="large-9 columns">
+            <input type="file" name="voters_file" class="upload" data-output="preview" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="large-9 large-offset-3 columns">
+            <textarea id="preview" style="height: 150px;" disabled></textarea>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="large-9 large-offset-3 columns">
+            <input type="submit" class="button no-margin" value="Upload" />
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
 {% endblock %}

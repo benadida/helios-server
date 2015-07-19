@@ -1,110 +1,165 @@
 {% extends TEMPLATE_BASE %}
-{% block title %}Confirm Vote{% endblock %}
+{% block title %}Confirm Your Vote in {{election.name}}{% endblock %}
+
+{% load foundation %}
 
 {% block content %}
-<script language="javascript">
-$(document).ready(function() {
-  $('#waiting_div').hide();
-});
+  <script language="javascript">
+    $(document).ready(function() {
+      $('#waiting_div').hide();
 
-function show_waiting() {
-  $('#all_forms').hide();
-  $('#waiting_div').show();
-}
+      $('.remove_unload').on('click', function() {
+        window.onbeforeunload = null;
+      });
+    });
 
-// FIXME: set this to false once it's clear how to set it back to true
-// so that it's not easy to forget to cast a ballot
-var ready_to_unload = true;
+    function show_waiting() {
+      $('#all_forms').hide();
+      $('#waiting_div').show();
+    }
 
-window.onbeforeunload = function(evt) {
-  if (ready_to_unload)
-    return;
+    window.onbeforeunload = function(evt) {
+      if (typeof evt == 'undefined')
+        evt = window.event;
 
-  if (typeof evt == 'undefined') {
-    evt = window.event;
-  }
-  
-  var message = "You have not yet cast your ballot! Make sure to complete the voting process if you want your vote to count.";
+      var message = 'You have not yet cast your ballot! Make sure to complete the voting process if you want your vote to count.';
 
-  if (evt) {
-    evt.returnValue = message;
-  }
-  
-  return message;
-};
+      if (evt)
+        evt.returnValue = message;
 
-</script>
-<p style="margin-top: 10px">Submitting your vote for <b>{{election.name}}</b>...</p>
+      return message;
+    };
+  </script>
 
-<div id="waiting_div">
-    Verifying and Casting your ballot<br />
-    <img src="/static/helios/loading.gif" />
-</div>
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>{{election.name}}&mdash;Confirm Your Vote</h2>
 
-<div id="all_forms">
+      <div id="all_forms">
+        {% if voter %}
+          {% if election.voting_has_started %}
+            {% if not election.voting_has_stopped %}
+              <div id="cast_form">
+                <form id="cast_confirm_form" method="post" action="" onsubmit="show_waiting()">
+                  <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 
-{% if voter %}
+                  {% if status_update_label %}
+                    <div class="panel">
+                      <input type="checkbox" name="status_update" value="1" checked />{{status_update_label}}<br />
+                      <blockquote>"{{status_update_message}}"</blockquote>
+                      <input type="hidden" name="status_update_message" value="{{status_update_message}}" />
+                    </div>
+                  {% endif %}
 
-{% include "_castconfirm_docast.html" %}
+                  <p>
+                    We have received, <b>but not yet recorded</b>, your encrypted ballot. <b>To upload your encrypted ballot to the server, please click on the button below.</b>
+                  </p>
 
-{% else %}
+                  <div align="center">
+                    <button type="submit" class="remove_unload">I am <u>{{voter.display_html_big|safe}}</u>, submit my vote!</button>
+                  </div>
 
-{% if show_password %}
-{% if user %}
-<h1>Wait!</h1>
-<p>
-You are logged in as <u>{{user.display_html_small|safe}}</u>, but this election<br />
-requires election-specific credentials.
-</p>
-{% endif %}
-{% with cast_ballot="1" %}
-{% include "_castconfirm_password.html" %}
-{% endwith %}
+                  <div id="waiting_div">
+                    <p>
+                      Verifying and casting your ballot...
+                    </p>
 
-{% else %}
+                    <p class="text-center">
+                      <img src="/static/helios/loading.gif" />
+                    </p>
+                  </div>
 
-{% if user %}
-<h1>Sorry!<h1>
-<b>Sorry, you are <em>
-  {% if election.openreg %}
-    <u>not eligible</u></em> for this election.
-  {% else %}
-    not registered</em> for this election, and registration is closed.
-  {% endif %}
-  </b><br /></p>
-<p>
-    [<a href="{% url "helios.views.one_election_view" election.uuid %}">return to the main election page</a>]
-</p>
-{% else %}
-<p>
-<h1>Wait!  You need to log in.</h1>
-{% if election.openreg %}
+                  <div data-alert class="alert-box warning">
+                    You can cast as many ballots as you want: only the last one counts.
+                  </div>
+                </form>
 
-  {% if election.eligibility %}
-  {% else %}
-   This election is open to <em>anyone</em>, so log in with your preferred account.
-  {% endif %}
+                <p>
+                  If you cancel now, your ballot will <b>not</b> be recorded. You can start the voting process over again, of course.
+                </p>
 
-{% else %}
-  This election is only open to <em>registered voters</em>, so log in with
-  the same account you registered with.
-{% endif %}
-</p>
+                <a class="tiny secondary button" href="{% url 'helios.views.one_election_view' election.uuid %}">Cancel</a>
+              </div>
+            {% else %}
+              <div data-alert class="alert-box warning">
+                Voting has stopped, sorry.
+              </div>
+            {% endif %}
+          {% else %}
+            <div data-alert class="alert-box warning">
+              Voting has not yet begun, sorry.
+            </div>
+          {% endif %}
+        {% else %}
+          {% if show_password %}
+            {% if user %}
+              <p>
+                You are logged in as <u>{{user.display_html_small|safe}}</u>, but this election requires election-specific credentials.
+              </p>
+            {% endif %}
 
-{{login_box|safe}}
+            {% with cast_ballot="1" %}
+              <p>
+                Please provide the voter ID and password you received by email.
+              </p>
 
-<br />
-Don't worry, we'll remember your ballot while you log in.
-{% endif %}
+              {% if bad_voter_login %}
+                <div data-alert class="alert-box error">
+                  Bad voter ID or password, please try again.
+                </div>
+              {% endif %}
 
-{% endif %}
-<br />
-Your smart ballot tracker is:<br /><br />
-    <tt style="font-size:1.3em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</tt>
-</p>
-{# this closes the IF ELSE of this being password_only #}
-{% endif %}
+              <form method="post" action="{% url 'helios.views.password_voter_login' election.uuid %}" onsubmit="show_waiting()">
+                <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+                <input type="hidden" name="return_url" value="{{return_url}}" />
+                <input type="hidden" name="cast_ballot" value="{{cast_ballot}}" />
 
-</div>
+                {{password_login_form|foundationinline}}
 
+                <input class="button" type="submit" value="Confirm Your Ballot" />
+              </form>
+            {% endwith %}
+          {% else %}
+            {% if user %}
+              <div alert-box class="alert-box warning">
+                {% if election.openreg %}
+                  Sorry, you are <i>not eligible</i> for this election.
+                {% else %}
+                  Sorry, you are <i>not registered</i> for this election, and registration is closed.
+                {% endif %}
+              </div>
+
+              <a class="button" href="{% url 'helios.views.one_election_view' election.uuid %}">Return to Election Info</a>
+            {% else %}
+              <p>
+                Now, we need you to log in, so we can verify your eligibility. Don't worry, we'll remember your ballot while you log in.
+              </p>
+
+              {% if election.openreg %}
+                {% if not election.eligibility %}
+                  <div data-alert class="alert-box info">
+                    This election is open to <i>anyone</i>, so log in with your preferred account.
+                  </div>
+                {% endif %}
+              {% else %}
+                <div data-alert class="alert-box info">
+                  This election is only open to <i>registered voters</i>, so log in with the same account you registered with.
+                </div>
+              {% endif %}
+
+              {{login_box|safe}}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      </div>
+
+      <h3>Your Smart Ballot Tracker</h3>
+
+      <div class="panel callout">
+        <p class="text-center">
+          <tt class="big">{{vote_fingerprint}}</tt>
+        </p>
+      </div>
+    </div>
+  </div>
 {% endblock %}

@@ -17,6 +17,8 @@ from models import User
 # access to their info. See the wiki for details on how
 # to do this.
 #@decorator_from_middleware(FacebookMiddleware)
+
+
 @facebook.require_login()
 def canvas(request):
     # Get the User object for the currently logged in user
@@ -32,6 +34,7 @@ def canvas(request):
     # the currently logged in user.
     #return direct_to_template(request, 'canvas.fbml', extra_context={'fbuser': user})
     return None
+
 
 @facebook.require_login()
 def ajax(request):

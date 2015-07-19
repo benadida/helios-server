@@ -1,14 +1,18 @@
 {% extends TEMPLATE_BASE %}
+{% block title %}{{election.name}} Already Tallied}}{% endblock %}
 
 {% block content %}
+  <div class="row">
+    <div class="large-12 columns">
+      <h2 class="title">{{election.name}}&mdash;Already Tallied</h2>
 
-  <h2 class="title">Election {{election.name}} Already Tallied</h2>
+      <p>
+        This election has already been tallied (or at least the tally has begun), so you can no longer cast a vote.
+      </p>
 
-  <p>
-      This election has already been tallied, you can no longer cast a vote.
-  </p>
-  
-  <p>
-      <a href="{% url "helios.views.one_election_view" election.uuid %}">view the election tally</a>
-  </p>
+      <p>
+        <a class="button" href="{% url 'helios.views.one_election_view' election.uuid %}">View the Election</a>
+      </p>
+    </div>
+  </div>
 {% endblock %}

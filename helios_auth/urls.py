@@ -11,21 +11,21 @@ from auth_systems.password import password_login_view, password_forgotten_view
 from auth_systems.twitter import follow_view
 
 urlpatterns = patterns('',
-    # basic static stuff
-    (r'^$', index),
-    (r'^logout$', logout),
-    (r'^start/(?P<system_name>.*)$', start),
-    # weird facebook constraint for trailing slash
-    (r'^after/$', after),
-    (r'^why$', perms_why),
-    (r'^after_intervention$', after_intervention),
-    
-    ## should make the following modular
+                       # basic static stuff
+                       (r'^$', index),
+                       (r'^logout$', logout),
+                       (r'^start/(?P<system_name>.*)$', start),
+                       # weird facebook constraint for trailing slash
+                       (r'^after/$', after),
+                       (r'^why$', why),
+                       (r'^after-intervention$', after_intervention),
 
-    # password auth
-    (r'^password/login', password_login_view),
-    (r'^password/forgot', password_forgotten_view),
+                       # should make the following modular
 
-    # twitter
-    (r'^twitter/follow', follow_view),
-)
+                       # password helios_auth
+                       (r'^password/login', password_login_view),
+                       (r'^password/forgot', password_forgotten_view),
+
+                       # twitter
+                       (r'^twitter/follow', follow_view),
+                       )

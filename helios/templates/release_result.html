@@ -1,16 +1,24 @@
 {% extends TEMPLATE_BASE %}
+{% block title %}Release Result for {{election.name}}{% endblock %}
 
-{% block title %}Release Result &mdash; {{election.name}}{% endblock %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Release Result <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">cancel</a>]</span></h2>
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>
+        {{election.name}}&mdash;Release Result
 
-  <p>
-    You are about to release the result for this election.
-  </p>
+        <small>[<a href="{% url 'helios.views.one_election_view' election.uuid %}">Cancel</a>]</small>
+      </h2>
 
-  <form method="POST" action="">
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    <input type="submit" value="release result!" />
-  </form>
+      <p>
+        You are about to release the result for this election.
+      </p>
 
+      <form method="post">
+        <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+
+        <input class="button" type="submit" value="Release Result" />
+      </form>
+    </div>
+  </div>
 {% endblock %}

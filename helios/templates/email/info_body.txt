@@ -1,6 +1,6 @@
-Dear {{voter.name}},
+Dear {{voter.name}},{% if custom_message %}
 
-{{custom_message|safe}}
+{{custom_message|safe}}{% endif %}
 
 Election Link: {{election_vote_url}}
 

@@ -1,132 +1,148 @@
 {% extends "helios/templates/cryptobase.html" %}
-
 {% block title %}Questions for {{election.name}}{% endblock %}
+
 {% block content %}
-  <h3 class="title">{{election.name}} &mdash; Questions <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">back to election</a>]</span></h3>
+  {% include "partials/election_progress.html" with current="questions" election=election %}
 
-  <script language="javascript">
-{% if election.questions %}
-  QUESTIONS = {{questions_json|safe}};
-{% else %}
-  QUESTIONS = [];
-{% endif %}
-{% if admin_p and not election.frozen_at %}
-  ADMIN_P = true;
-{% else %}
-  ADMIN_P = false;
-{% endif %}
+  <div class="row">
+    <div class="large-12 columns">
+      <h2 class="title">
+        {{election.name}}&mdash;Questions <small>[<a href="{% url 'helios.views.one_election_admin' election.uuid %}">Back</a>]</small>
+      </h2>
 
-  CSRF_TOKEN = '{{csrf_token}}';
+      <script language="javascript">
+        {% if election.questions %}
+          QUESTIONS = {{questions_json|safe}};
+        {% else %}
+          QUESTIONS = [];
+        {% endif %}
 
-  function refresh() {
-      $('#questions').processTemplate({'questions' : QUESTIONS, 'admin_p' : ADMIN_P}); 
+        {% if admin_p and not election.frozen_at %}
+          ADMIN_P = true;
+        {% else %}
+          ADMIN_P = false;
+        {% endif %}
 
-      add_answers($('#answer_table'),DEFAULT_NUM_ANSWERS);
- }
-  
-  function save_questions(callback) {
-      $.post('./save_questions', {'questions_json' : $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function(result) {
-          callback();          
-      });      
-  }
-  
-  function get_question_from_form(form) {
-      var max = null;
-      if (form.max.value != "")
-        max = parseInt(form.max.value);
-        
-      var new_q = {'question' : form.question.value, 'min': parseInt(form.min.value), 'max': max, 'short_name': form.question.value, 'answers': [], 'answer_urls': [], 'choice_type': form.choice_type.value, 'tally_type': 'homomorphic', 'result_type': form.result_type.value};
-      var i = 0;
-      while(true) {
-          i += 1;
-          if (!form['answer_' + i] || !form['answer_' + i].value)
-            break;
-          new_q.answers[i-1] = form['answer_' + i].value;
-          new_q.answer_urls[i-1] = null;
-      }
-      
-     return new_q;
-  }
+        CSRF_TOKEN = '{{csrf_token}}';
+        DEFAULT_NUM_ANSWERS = 5;
 
-  function question_add(form) {
-      var new_q = get_question_from_form(form);
-      QUESTIONS.push(new_q);
-      save_questions(refresh);
-  }
-  
-  function question_remove(q_num) {
-      var new_questions = [];
-      $(QUESTIONS).each(function(i, q) {
-          if (i == q_num)
-            return;
-          new_questions.push(q);
-      });
-      QUESTIONS = new_questions;
-      save_questions(refresh);
-  }
+        function refresh() {
+          $('#questions').processTemplate({'questions': QUESTIONS, 'admin_p': ADMIN_P});
+          add_answers($('#answers'), DEFAULT_NUM_ANSWERS);
+        }
 
-  function question_edit(q_num) {
-    $('#q_view_'+q_num).hide();
-    $('#q_edit_'+q_num).show();
+        function save_questions(callback) {
+          $.post('{% url 'helios.views.one_election_save_questions' election.uuid %}', {'questions_json': $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function (result) {
+            callback();
+          });
+        }
 
-    // set the default values for this question
-    var form = $('#question_edit_' + q_num + '_form');
-    var q_data = QUESTIONS[q_num];
-    form[0].min.value = q_data.min;
-    form[0].max.value = q_data.max;
-    form[0].question.value = q_data.question;
-    form[0].result_type.value = q_data.result_type;
+        function get_question_from_form(form) {
+          var max = null;
+          if (form.max.value != "")
+            max = parseInt(form.max.value);
 
-    // add the answers
-    var answer_table = $('#answer_table_' + q_num);
-    add_answers(answer_table, q_data.answers.length);
-    $(q_data.answers).each(function(i, a) {
-     form[0]['answer_' + (i+1)].value = a;
-    });
-  }
+          var new_q = {
+            'question' : form.question.value,
+            'min': parseInt(form.min.value),
+            'max': max,
+            'short_name': form.question.value,
+            'answers': [],
+            'answer_urls': [],
+            'choice_type': form.choice_type.value,
+            'tally_type': 'homomorphic',
+            'result_type': form.result_type.value
+          };
 
-  function question_edit_cancel(q_num) {
-    $('#q_edit_'+q_num).hide();
-    $('#q_view_'+q_num).show();
-  }
+          var i = 0;
+          while (true) {
+            i += 1;
+            if (!form['answer_' + i] || !form['answer_' + i].value)
+              break;
+            new_q.answers[i-1] = form['answer_' + i].value;
+            new_q.answer_urls[i-1] = null;
+          }
 
-  function question_update(q_num, form) {
-      var new_q = get_question_from_form(form);
-      QUESTIONS[q_num] = new_q;
-      save_questions(refresh);
-  }
+          return new_q;
+        }
 
-  var DEFAULT_NUM_ANSWERS = 5;
+        function question_add(form) {
+          var new_q = get_question_from_form(form);
+          QUESTIONS.push(new_q);
+          save_questions(refresh);
+        }
 
-  function add_answer(el) {
-    el = $(el);
-    var num_answers = el.find('input.answer').length + 1;
-    el.find('tbody').append('<tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #' + num_answers + '</th><td><input type="text" class="answer" name="answer_' + num_answers + '" size="70" /></td></tr>');
-  }
+        function question_remove(q_num) {
+          if (confirm('Are you sure you want to remove this question?')) {
+            var new_questions = [];
+            $(QUESTIONS).each(function (i, q) {
+              if (i == q_num)
+                return;
+              new_questions.push(q);
+            });
+            QUESTIONS = new_questions;
+            save_questions(refresh);
+          }
+        }
 
-  function add_answers(el, num) {
-    for (var i=0; i<num; i++)
-      add_answer(el);
-  }
+        function question_edit(q_num) {
+          $('#q_view_' + q_num).hide();
+          $('#q_edit_' + q_num).show();
 
-  function question_move_up(num) {
-    var temp_q = QUESTIONS[num];
-    QUESTIONS[num] = QUESTIONS[num-1];
-    QUESTIONS[num-1] = temp_q;
-    save_questions(refresh);
-  }
+          // set the default values for this question
+          var form = $('#q_edit_' + q_num + '_form');
+          var q_data = QUESTIONS[q_num];
+          form[0].min.value = q_data.min;
+          form[0].max.value = q_data.max;
+          form[0].question.value = q_data.question;
+          form[0].result_type.value = q_data.result_type;
 
-  $(document).ready(function() {
-      $('#questions').setTemplateURL("/static/helios/static_templates/question.html");
+          // add the answers
+          var answers = $('#q_edit_' + q_num + '_answers');
+          if (answers.find('input.answer').length < q_data.answers.length) {
+            add_answers(answers, q_data.answers.length);
+            $(q_data.answers).each(function (i, a) {
+              form[0]['answer_' + (i+1)].value = a;
+            });
+          }
+        }
 
-      refresh();
-  });
-  
+        function question_edit_cancel(q_num) {
+          $('#q_edit_' + q_num).hide();
+          $('#q_view_' + q_num).show();
+        }
 
-  </script>
+        function question_update(q_num, form) {
+          var new_q = get_question_from_form(form);
+          QUESTIONS[q_num] = new_q;
+          save_questions(refresh());
+        }
 
-  <div id="questions">
+        function add_answer(el) {
+          el = $(el);
+          var num_answers = el.find('input.answer').length + 1;
+          el.append('<div class="row"><div class="large-3 columns"><label for="answer_' + num_answers + '" class="right inline">Answer ' + num_answers + '</label></div><div class="large-9 columns"><input type="text" class="answer" name="answer_' + num_answers + '" id="answer_' + num_answers + '" /></div>');
+        }
+
+        function add_answers(el, num) {
+          for (var i = 0; i < num; i++)
+            add_answer(el);
+        }
+
+        function question_move_up(num) {
+          var temp_q = QUESTIONS[num];
+          QUESTIONS[num] = QUESTIONS[num-1];
+          QUESTIONS[num-1] = temp_q;
+          save_questions(refresh);
+        }
+
+        $(document).ready(function () {
+          $('#questions').setTemplateURL('/static/helios/static_templates/question.html');
+          refresh(false);
+        });
+      </script>
+
+      <div id="questions"></div>
+    </div>
   </div>
-					
-			<!-- end #content -->
 {% endblock %}

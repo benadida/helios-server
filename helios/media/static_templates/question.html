@@ -1,205 +1,253 @@
-
 {#foreach $T.questions as question}
-<div id="q_view_{$T.question$index}">
-<h4>
-{#if $T.admin_p}[
-{#if $T.question$index > 0}<a href="javascript:question_move_up({$T.question$index});">^</a>]&nbsp;[{#/if}
-<a href="javascript:question_remove({$T.question$index})">x</a>] [<a href="javascript:question_edit({$T.question$index})">edit</a>] {#/if}{$T.question$index + 1}. {$T.question.question} ({$T.question.choice_type}, select between {$T.question.min} and {#if $T.question.max != null}{$T.question.max}{#else}unlimited{#/if} answers, result type {$T.question.result_type}.)</h4>
-<ul>
-{#foreach $T.question.answers as answer}
-<li> {$T.answer}</li>
-{#/for}
-</ul>
-</div>
-<div id="q_edit_{$T.question$index}" style="display:none;">
-<form id="question_edit_{$T.question$index}_form" onsubmit="question_update({$T.question$index}, this); return false;" action="#">
-<p>
-<!--
-  Type of Question:
-  <select name="choice_type">
-    <option selected>approval</option>
-  </select>
--->
-<input type="hidden" name="choice_type" value="approval" />
-<b>{$T.question$index + 1}.</b> &nbsp;&nbsp;&nbsp;Select between &nbsp;&nbsp;
-<select name="min">
-    <option selected>0</option>
-    <option>1</option>
-    <option>2</option>
-    <option>3</option>
-    <option>4</option>
-    <option>5</option>
-    <option>6</option>
-    <option>7</option>
-    <option>8</option>
-    <option>9</option>
-    <option>10</option>
-    <option>11</option>
-    <option>12</option>
-    <option>13</option>
-    <option>14</option>
-    <option>15</option>
-    <option>16</option>
-    <option>17</option>
-    <option>18</option>
-    <option>19</option>
-    <option>20</option>
-</select>
+  <h4>
+    {$T.question$index + 1}. {$T.question.question}
 
-&nbsp;&nbsp; and  &nbsp;&nbsp;
+    <small>
+      {#if $T.admin_p}
+        {#if $T.question$index > 0}[<a href="javascript:question_move_up({$T.question$index});">&bigwedge;</a>]{#/if}
+        [<a href="javascript:question_remove({$T.question$index})">&times;</a>]
+        [<a href="javascript:question_edit({$T.question$index})">Edit</a>]
+      {#/if}
+    </small>
+  </h4>
 
-<select name="max">
-    <option>0</option>
-    <option selected>1</option>
-    <option>2</option>
-    <option>3</option>
-    <option>4</option>
-    <option>5</option>
-    <option>6</option>
-    <option>7</option>
-    <option>8</option>
-    <option>9</option>
-    <option>10</option>
-    <option>11</option>
-    <option>12</option>
-    <option>13</option>
-    <option>14</option>
-    <option>15</option>
-    <option>16</option>
-    <option>17</option>
-    <option>18</option>
-    <option>19</option>
-    <option>20</option>
-    <option value="">- (approval)</option>
-</select>
+  <div class="row">
+    <div class="large-12 columns">
+      <div id="q_view_{$T.question$index}">
+        <div class="row">
+          <div class="large-8 columns">
+            <i>Voters can select between {$T.question.min} and {#if $T.question.max != null}{$T.question.max}{#else}unlimited{#/if} answers.</i>
+          </div>
+          <div class="large-4 columns">
+            <i>Result Type: {$T.question.result_type}</i>
+          </div>
+        </div>
 
-&nbsp;&nbsp;
-answers.
+        <ol style="margin: 20px 40px">
+          {#foreach $T.question.answers as answer}
+            <li> {$T.answer}</li>
+          {#/for}
+        </ol>
+      </div>
 
-&nbsp;&nbsp;
-&nbsp;&nbsp;
-Result Type:&nbsp;
-<select name="result_type">
-    <option selected>absolute</option>
-    <option>relative</option>
-</select>
+      <div id="q_edit_{$T.question$index}" style="display: none;">
+        <form id="q_edit_{$T.question$index}_form" onsubmit="question_update({$T.question$index}, this); return false;" action="#">
+          <div class="panel">
+            <!--
+              Type of Question:
+              <select name="choice_type">
+                <option selected>approval</option>
+              </select>
+            -->
+            <input type="hidden" name="choice_type" value="approval" />
 
-</p>
+            <div class="row">
+              <div class="large-8 columns">
+                <h5>
+                  Voters can select between
 
-<table id="answer_table_{$T.question$index}">
-  <tbody>
-    <tr><th colspan="2">Question:</th><td><input type="text" name="question" size="70" /></td></tr>
-    <tr><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr>
-  </tbody>
-  <tfoot>
-    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table_{$T.question$index}'),5)">add 5 more answers</a></th></tr>
-    <tr><td colspan="3"><input type="submit" value="update question" /> &nbsp; <input type="reset" value="cancel" onclick="question_edit_cancel({$T.question$index});" /></td></tr>
-  </tfoot>
+                  <select name="min" style="margin: 0 4px;">
+                    <option selected>0</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                    <option>6</option>
+                    <option>7</option>
+                    <option>8</option>
+                    <option>9</option>
+                    <option>10</option>
+                    <option>11</option>
+                    <option>12</option>
+                    <option>13</option>
+                    <option>14</option>
+                    <option>15</option>
+                    <option>16</option>
+                    <option>17</option>
+                    <option>18</option>
+                    <option>19</option>
+                    <option>20</option>
+                  </select>
 
-</table>
-</form>
-</div>
+                  and
+
+                  <select name="max" style="margin: 0 4px;">
+                    <option>0</option>
+                    <option selected>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4</option>
+                    <option>5</option>
+                    <option>6</option>
+                    <option>7</option>
+                    <option>8</option>
+                    <option>9</option>
+                    <option>10</option>
+                    <option>11</option>
+                    <option>12</option>
+                    <option>13</option>
+                    <option>14</option>
+                    <option>15</option>
+                    <option>16</option>
+                    <option>17</option>
+                    <option>18</option>
+                    <option>19</option>
+                    <option>20</option>
+                    <option value="">All</option>
+                  </select>
+
+                  answers.
+                </h5>
+              </div>
+
+              <div class="large-4 columns">
+                <h5>
+                  Result Type:
+
+                  <select name="result_type" style="margin: 0 4px;">
+                    <option selected>Absolute</option>
+                    <option>Relative</option>
+                  </select>
+                </h5>
+              </div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top: 40px;">
+            <div class="large-3 columns">
+              <label for="question" class="right inline">Question</label>
+            </div>
+            <div class="large-9 columns">
+              <input type="text" name="question" id="question" />
+            </div>
+          </div>
+
+          <hr />
+
+          <div id="q_edit_{$T.question$index}_answers"></div>
+
+          <div class="row">
+            <div class="large-9 large-offset-3 columns">
+              <input type="submit" class="small button" value="Save" />
+              <input type="reset" class="small button" value="Cancel" onclick="question_edit_cancel({$T.question$index});" />
+              <a class="small secondary button" href="javascript:add_answers($('#q_edit_{$T.question$index}_answers'), 5)">Add 5 More Answers</a>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 {#else}
-no questions yet
+  <div data-alert class="alert-box info">
+    There are no questions yet.
+  </div>
 {#/for}
 
 {#if $T.admin_p}
-<h4>Add a Question:</h4>
-<form id="question_form" onsubmit="question_add(this); return false;" action="#">
-<p>
-<!--
-  Type of Question:
-  <select name="choice_type">
-    <option selected>approval</option>
-  </select>
--->
-<input type="hidden" name="choice_type" value="approval" />
-&nbsp;&nbsp;&nbsp;Select between &nbsp;&nbsp;
-<select name="min">
-    <option selected>0</option>
-    <option>1</option>
-    <option>2</option>
-    <option>3</option>
-    <option>4</option>
-    <option>5</option>
-    <option>6</option>
-    <option>7</option>
-    <option>8</option>
-    <option>9</option>
-    <option>10</option>
-    <option>11</option>
-    <option>12</option>
-    <option>13</option>
-    <option>14</option>
-    <option>15</option>
-    <option>16</option>
-    <option>17</option>
-    <option>18</option>
-    <option>19</option>
-    <option>20</option>
-</select>
+  <h3>Add a Question</h3>
 
-&nbsp;&nbsp; and  &nbsp;&nbsp;
+  <form id="question_form" onsubmit="question_add(this); return false;" action="#">
+    <div class="panel">
+      <!--
+        Type of Question:
+        <select name="choice_type">
+          <option selected>approval</option>
+        </select>
+      -->
+      <input type="hidden" name="choice_type" value="approval" />
 
-<select name="max">
-    <option>0</option>
-    <option selected>1</option>
-    <option>2</option>
-    <option>3</option>
-    <option>4</option>
-    <option>5</option>
-    <option>6</option>
-    <option>7</option>
-    <option>8</option>
-    <option>9</option>
-    <option>10</option>
-    <option>11</option>
-    <option>12</option>
-    <option>13</option>
-    <option>14</option>
-    <option>15</option>
-    <option>16</option>
-    <option>17</option>
-    <option>18</option>
-    <option>19</option>
-    <option>20</option>
-    <option value="">- (approval)</option>
-</select>
+      <div class="row">
+        <div class="large-8 columns">
+          <h5>
+            Voters can select between
 
-&nbsp;&nbsp;
-answers.
+            <select name="min" style="margin: 0 4px;">
+              <option selected>0</option>
+              <option>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+              <option>6</option>
+              <option>7</option>
+              <option>8</option>
+              <option>9</option>
+              <option>10</option>
+              <option>11</option>
+              <option>12</option>
+              <option>13</option>
+              <option>14</option>
+              <option>15</option>
+              <option>16</option>
+              <option>17</option>
+              <option>18</option>
+              <option>19</option>
+              <option>20</option>
+            </select>
 
-&nbsp;&nbsp;
-&nbsp;&nbsp;
-Result Type:&nbsp;
-<select name="result_type">
-    <option selected>absolute</option>
-    <option>relative</option>
-</select>
+            and
 
-</p>
+            <select name="max" style="margin: 0 4px;">
+              <option>0</option>
+              <option selected>1</option>
+              <option>2</option>
+              <option>3</option>
+              <option>4</option>
+              <option>5</option>
+              <option>6</option>
+              <option>7</option>
+              <option>8</option>
+              <option>9</option>
+              <option>10</option>
+              <option>11</option>
+              <option>12</option>
+              <option>13</option>
+              <option>14</option>
+              <option>15</option>
+              <option>16</option>
+              <option>17</option>
+              <option>18</option>
+              <option>19</option>
+              <option>20</option>
+              <option value="">All</option>
+            </select>
 
-<table id="answer_table">
-  <tbody>
-    <tr><th colspan="2">Question:</th><td><input type="text" name="question" size="70" /></td></tr>
-    <tr><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr>
-<!--
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #1:</th><td><input type="text" name="answer_1" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #2:</th><td><input type="text" name="answer_2" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #3:</th><td><input type="text" name="answer_3" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #4:</th><td><input type="text" name="answer_4" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #5:</th><td><input type="text" name="answer_5" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #6:</th><td><input type="text" name="answer_6" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #7:</th><td><input type="text" name="answer_7" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #8:</th><td><input type="text" name="answer_8" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #9:</th><td><input type="text" name="answer_9" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #10:</th><td><input type="text" name="answer_10" size="70" /></td></tr> -->
-  </tbody>
-  <tfoot>
-    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table'), 5)">add 5 more answers</a></th></tr>
-    <tr><td colspan="2"><input type="submit" value="add question" /></td></tr>
-  </tfoot>
+            answers.
+          </h5>
+        </div>
 
-</table>
+        <div class="large-4 columns">
+          <h5>
+            Result Type:
+
+            <select name="result_type" style="margin: 0 4px;">
+              <option selected>Absolute</option>
+              <option>Relative</option>
+            </select>
+          </h5>
+        </div>
+      </div>
+    </div>
+
+    <div class="row" style="margin-top: 40px;">
+      <div class="large-3 columns">
+        <label for="question" class="right inline">Question</label>
+      </div>
+      <div class="large-9 columns">
+        <input type="text" name="question" id="question" />
+      </div>
+    </div>
+
+    <hr />
+
+    <div id="answers"></div>
+
+    <div class="row">
+      <div class="large-9 large-offset-3 columns">
+        <input type="submit" class="small button" value="Add Question" />
+        <a class="small secondary button" href="javascript:add_answers($('#answers'), 5)">Add 5 More Answers</a>
+      </div>
+    </div>
+  </form>
 {#/if}
-</form>

@@ -5,7 +5,7 @@ A datatype object wraps another object and performs serialization / de-serializa
 to and from that object. For example, a Helios election is treated as follows:
 
   helios_election = get_current_election() # returns a helios.models.Election object
-  
+
   # dispatch to the right contructor via factory pattern
   # LDObject knows about base classes like Election, Voter, CastVote, Trustee
   # and it looks for the datatype field within the wrapped object to determine
@@ -30,8 +30,10 @@ from helios import utils
 from helios.crypto import utils as cryptoutils
 
 ##
-## utility function
+# utility function
 ##
+
+
 def recursiveToDict(obj):
     if obj == None:
         return None
@@ -41,6 +43,7 @@ def recursiveToDict(obj):
     else:
         return obj.toDict()
 
+
 def get_class(datatype):
     # already done?
     if not isinstance(datatype, basestring):
@@ -48,12 +51,12 @@ def get_class(datatype):
 
     # parse datatype string "v31/Election" --> from v31 import Election
     parsed_datatype = datatype.split("/")
-    
+
     # get the module
     dynamic_module = __import__(".".join(parsed_datatype[:-1]), globals(), locals(), [], level=-1)
-    
+
     if not dynamic_module:
-        raise Exception("no module for %s" % datatpye)
+        raise Exception("No module for %s" % datatpye)
 
     # go down the attributes to get to the class
     try:
@@ -62,18 +65,19 @@ def get_class(datatype):
             dynamic_ptr = getattr(dynamic_ptr, attr)
         dynamic_cls = dynamic_ptr
     except AttributeError:
-        raise Exception ("no module for %s" % datatype)    
+        raise Exception("No module for %s" % datatype)
 
     dynamic_cls.datatype = datatype
-        
+
     return dynamic_cls
-        
+
 
 class LDObjectContainer(object):
+
     """
     a simple container for an LD Object.
     """
-    
+
     @property
     def ld_object(self):
         if not hasattr(self, '_ld_object'):
@@ -91,7 +95,9 @@ class LDObjectContainer(object):
     def hash(self):
         return self.ld_object.hash
 
+
 class LDObject(object):
+
     """
     A linked-data object wraps another object and serializes it according to a particular
     data format. For example, a legacy election LDObject instance will wrap an Election object
@@ -110,12 +116,16 @@ class LDObject(object):
     # structured fields are other LD objects, not simple types
     STRUCTURED_FIELDS = {}
 
-    # the underlying object type, which contains algorithms, to instantiate by default
+    # the underlying object type, which contains algorithms, to instantiate by
+    # default
     WRAPPED_OBJ_CLASS = None
 
     def __init__(self, wrapped_obj):
         self.wrapped_obj = wrapped_obj
         self.structured_fields = {}
+
+    def get_fields(self):
+        return FIELDS
 
     @classmethod
     def instantiate(cls, obj, datatype=None):
@@ -127,7 +137,7 @@ class LDObject(object):
             datatype = getattr(obj, 'datatype')
 
         if not datatype:
-            raise Exception("no datatype found")
+            raise Exception("No datatype found")
 
         # nulls
         if obj == None:
@@ -152,8 +162,8 @@ class LDObject(object):
         "load data using from the wrapped object"
         # go through the subfields and instantiate them too
         for subfield_name, subfield_type in self.STRUCTURED_FIELDS.iteritems():
-            self.structured_fields[subfield_name] = self.instantiate(self._getattr_wrapped(subfield_name), datatype = subfield_type)
-        
+            self.structured_fields[subfield_name] = self.instantiate(self._getattr_wrapped(subfield_name), datatype=subfield_type)
+
     def loadDataFromDict(self, d):
         """
         load data from a dictionary
@@ -167,7 +177,7 @@ class LDObject(object):
         for f in self.FIELDS:
             if f in structured_fields:
                 # a structured ld field, recur
-                sub_ld_object = self.fromDict(d[f], type_hint = self.STRUCTURED_FIELDS[f])
+                sub_ld_object = self.fromDict(d[f], type_hint=self.STRUCTURED_FIELDS[f])
                 self.structured_fields[f] = sub_ld_object
 
                 # set the field on the wrapped object too
@@ -179,11 +189,11 @@ class LDObject(object):
                 # a simple type
                 new_val = self.process_value_in(f, d[f])
                 self._setattr_wrapped(f, new_val)
-        
+
     def serialize(self):
-        d = self.toDict(complete = True)
+        d = self.toDict(complete=True)
         return utils.to_json(d)
-    
+
     def toDict(self, alternate_fields=None, complete=False):
         val = {}
 
@@ -225,9 +235,9 @@ class LDObject(object):
         ld_cls = get_class(ld_type)
 
         wrapped_obj_cls = ld_cls.WRAPPED_OBJ_CLASS
-        
+
         if not wrapped_obj_cls:
-            raise Exception("cannot instantiate wrapped object for %s" % ld_type)
+            raise Exception("Cannot instantiate wrapped object for %s" % ld_type)
 
         wrapped_obj = wrapped_obj_cls()
 
@@ -243,20 +253,20 @@ class LDObject(object):
     def hash(self):
         s = self.serialize()
         return cryptoutils.hash_b64(s)
-    
+
     def process_value_in(self, field_name, field_value):
         """
         process some fields on the way into the object
         """
         if field_value == None:
             return None
-      
+
         val = self._process_value_in(field_name, field_value)
         if val != None:
             return val
         else:
             return field_value
-    
+
     def _process_value_in(self, field_name, field_value):
         return field_value
 
@@ -266,24 +276,25 @@ class LDObject(object):
         """
         if field_value == None:
             return None
-      
+
         val = self._process_value_out(field_name, field_value)
         if val != None:
             return val
         else:
             return field_value
-  
+
     def _process_value_out(self, field_name, field_value):
         return None
-    
+
     def __eq__(self, other):
         if not hasattr(self, 'uuid'):
-            return super(LDObject,self) == other
-    
+            return super(LDObject, self) == other
+
         return other != None and self.uuid == other.uuid
-  
+
 
 class BaseArrayOfObjects(LDObject):
+
     """
     If one type has, as a subtype, an array of things, then this is the structured field used
     """
@@ -292,20 +303,20 @@ class BaseArrayOfObjects(LDObject):
 
     def __init__(self, wrapped_obj):
         super(BaseArrayOfObjects, self).__init__(wrapped_obj)
-    
+
     def toDict(self, complete=False):
         return [item.toDict(complete=complete) for item in self.items]
 
     def loadData(self):
         "go through each item and LD instantiate it, as if it were a structured field"
-        self.items = [self.instantiate(element, datatype= self.ELEMENT_TYPE) for element in self.wrapped_obj]
+        self.items = [self.instantiate(element, datatype=self.ELEMENT_TYPE) for element in self.wrapped_obj]
 
     def loadDataFromDict(self, d):
         "assumes that d is a list"
         # TODO: should we be using ELEMENT_TYPE_CLASS here instead of LDObject?
-        self.items = [LDObject.fromDict(element, type_hint = self.ELEMENT_TYPE) for element in d]
+        self.items = [LDObject.fromDict(element, type_hint=self.ELEMENT_TYPE) for element in d]
         self.wrapped_obj = [item.wrapped_obj for item in self.items]
-        
+
 
 def arrayOf(element_type):
     """
@@ -317,18 +328,22 @@ def arrayOf(element_type):
 
     return ArrayOfTypedObjects
 
+
 class DictObject(object):
+
     "when the wrapped object is actually dictionary"
+
     def _getattr_wrapped(self, attr):
         return self.wrapped_obj[attr]
 
     def _setattr_wrapped(self, attr, val):
         self.wrapped_obj[attr] = val
 
+
 class ListObject(object):
+
     def loadDataFromDict(self, d):
         self.wrapped_obj = d
 
     def toDict(self, complete=False):
         return self.wrapped_obj
-

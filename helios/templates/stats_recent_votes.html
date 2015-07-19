@@ -1,15 +1,40 @@
 {% extends TEMPLATE_BASE %}
-{% block title %}Statistics{% endblock %}
+{% block title %}Statistics for Recent Votes{% endblock %}
 
 {% block content %}
-<h1>Recent Votes</h1>
+  <div class="row">
+    <div class="large-12 columns">
+      <h1>
+        Statistics&mdash;Recent Votes <small>[<a href="{% url 'helios.stats_views.home' %}">Back</a>]</small>
+      </h1>
 
-Last 24 hours
+      <h2>Last 24 Hours</h2>
 
-{% for election in elections %}
-<p>
-<b><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></b> -- {{election.last_cast_vote}} {{election.num_recent_cast_votes}} recently cast votes
-</p>
-{% endfor %}
+      <table>
+        <thead>
+          <tr>
+            <th>Election</th>
+            <th width="20%">Last Cast Vote</th>
+            <th width="15%">Recent Votes</th>
+          </tr>
+        </thead>
 
+        <tbody>
+          {% for election in elections %}
+            <tr>
+              <td><a href="{% url 'helios.views.one_election_view' election.uuid %}">{{election.name}}</a></td>
+              <td>{{election.last_cast_vote}}</td>
+              <td>{{election.num_recent_cast_votes}}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td class="text-center" colspan="3">
+                There are no recently cast votes.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 {% endblock %}

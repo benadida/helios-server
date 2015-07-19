@@ -1,16 +1,23 @@
 {% extends TEMPLATE_BASE %}
+{% block title %}Compute Tally for {{election.name}}{% endblock %}
 
-{% block title %}Compute Tally &mdash; {{election.name}}{% endblock %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Compute Tally <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">cancel</a>]</span></h2>
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>
+        {{election.name}}&mdash;Compute Tally
+      </h2>
 
-  <p>
-    You are about to compute the tally for this election. You only will then see the results.
-  </p>
+      <p>
+        You are about to compute the tally for this election. You only will then see the results.
+      </p>
 
-  <form method="POST" action="">
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    <input type="submit" value="compute the tally!" />
-  </form>
+      <form method="post">
+        <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 
+        <input class="button" type="submit" value="Decrypt Tally" />
+        <a class="secondary button" href="./view">Back to Election</a>
+      </form>
+    </div>
+  </div>
 {% endblock %}

@@ -1,0 +1,60 @@
+{#if $T.election_metadata.use_advanced_audit_features}
+  <div style="float: right; background: lightyellow; margin-left: 20px; padding: 0 10px 10px 10px; border: 1px solid #ddd; width: 230px;">
+    <h4 style="margin: 15px 0 10px 0;">
+      <a onclick="$('#auditbody').slideToggle(250);" href="#" data-localize="confirm_audit">Audit</a>
+      <span style="font-size: 0.8em; color: #444" data-localize="confirm_optional">(Optional)</span>
+    </h4>
+
+    <div id="auditbody" style="display:none;">
+      <p data-localize="confirm_auditbody_1">
+        If you choose, you can audit your ballot and reveal how your choices were encrypted.
+      </p>
+
+      <p data-localize="confirm_auditbody_2">
+        You will then be guided to re-encrypt your choices for final casting.
+      </p>
+
+      <button onclick="BOOTH.audit_ballot();" class="pretty" data-localize="confirm_verify">Verify Encryption</button>
+    </div>
+  </div>
+{#/if}
+
+<h3 data-localize="confirm_review">Review Your Ballot</h3>
+
+<h4>Smart Ballot Tracker</h4>
+
+<p>
+  <span data-localize="confirm_note_tracker">You can take note of your <i>smart ballot tracker</i></span> [<a onclick="BOOTH.show_receipt(); return false;" href="#" data-localize="confirm_print">Print</a>]:
+</p>
+
+<p>
+  <b><tt style="margin: 10px 0 0 40px; font-size: 16pt;">{$T.encrypted_vote_hash}</tt></b>
+</p>
+
+<h4 data-localize="confirm_choices">Choices</h4>
+
+{#foreach $T.questions as question}
+<p>
+  <u>#{$T.question$index + 1}</u>: {$T.question.short_name}<br />
+
+  <b style="font-size:1.4em;">
+    {#foreach $T.choices[$T.question$index] as choice}
+      {$T.choice}{#if !$T.choice$last}, {#/if}
+    {#/for}
+  </b>
+
+  {#if $T.choices[$T.question$index].length < $T.question.max}
+    <i style="padding-left: 10px;"><span data-localize="confirm_undervoted_pre">You under-voted: you may select up to</span>{$T.question.max}<span data-localize="confirm_undervoted_post"></span>.</i>
+  {#/if}
+
+  [<a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#" data-localize="confirm_edit">Edit</a>]
+</p>
+{#/for}
+
+<button id="confirm_button" onclick="BOOTH.cast_ballot();" data-localize="confirm_confirm">Confirm Choices</button>
+
+<form method="post" action="{$T.cast_url}" id="send_ballot_form">
+  <input type="hidden" name="election_uuid" value="{$T.election_uuid}" />
+  <input type="hidden" name="election_hash" value="{$T.election_hash}" />
+  <textarea name="encrypted_vote" style="display: none;">{$T.encrypted_vote_json}</textarea>
+</form>

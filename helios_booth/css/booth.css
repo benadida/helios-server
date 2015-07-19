@@ -1,0 +1,168 @@
+body {
+  font-family: Arial;
+  background: white;
+  padding: 0px;
+  margin: 0px;
+}
+
+#wrapper {
+  position: absolute;
+  padding: 0px;
+  background: white;
+  border: 1px solid #666;
+  top: 30px;
+  left: 50%;
+  margin: 0 0 30px -500px;
+  width: 1000px;
+}
+
+#content {
+  padding: 20px;
+}
+
+#header {
+  padding-top: 0px;
+  text-align: center;
+  padding-bottom: 5px;
+}
+
+#header h1 {
+  font-size: 28pt;
+  padding: 0px;
+  margin: 0px;
+  line-height: 120%;
+}
+
+#header h2 {
+  font-size: 20pt;
+  padding: 0px;
+  margin: 0px;
+  line-height: 100%;
+  font-weight: none;
+}
+
+#banner {
+  width: 100%;
+  text-align: center;
+  padding: 5px 0;
+  background: #ccc;
+  font-size: 18pt;
+  border-bottom: 1px solid #666;
+}
+
+#progress_div {
+  width: 100%;
+  font-size: 14pt;
+}
+
+#progress_div table {
+  border-collapse: collapse;
+  text-align: center;
+  border: 0px;
+}
+
+#progress_div td.unselected {
+  background: #ccc;
+  color: #888;
+  border: 1px solid #333;
+}
+
+#progress_div td.selected {
+  background: #fc9;
+  color: black;
+  font-weight: bold;
+  border: 1px solid black;
+}
+
+#footer {
+  position: relative;
+  bottom: 0px;
+  width: 100%;
+  text-align: center;
+  margin-top: 10px;
+  padding: 5px 0px;
+  background: #ddd;
+  border-top: 1px solid #666;
+}
+
+#page h2 {
+  background: #fc9;
+  border-bottom: 1px solid #f90;
+  padding: 5px 0px 2px 5px;
+}
+
+h3 {
+	font-size: 1.6em;
+}
+
+#election_info {
+  font-size: 16pt;
+}
+
+#election_hash {
+  font-family: courier;
+}
+
+#loading_div {
+  display: none;
+}
+
+.progress_circle {
+  height: 120px;
+  width: 120px;
+  margin: 40px auto;
+  font-size: 1.6em;
+  font-weight: bold;
+}
+
+.progress_circle > svg {
+  height: 100%;
+  display: block;
+}
+
+.small.progress_circle {
+  height: 60px;
+  width: 60px;
+  margin: 20px auto;
+}
+
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes rotating {
+  from {
+    transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+  }
+}
+.rotating {
+  -webkit-animation: rotating 2s linear infinite;
+  -moz-animation: rotating 2s linear infinite;
+  -ms-animation: rotating 2s linear infinite;
+  -o-animation: rotating 2s linear infinite;
+  animation: rotating 2s linear infinite;
+  transform-origin: 50% 50%;
+}

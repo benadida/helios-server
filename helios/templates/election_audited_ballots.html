@@ -1,45 +1,58 @@
 {% extends TEMPLATE_BASE %}
-
 {% block title %}Audited Ballots for {{election.name}}{% endblock %}
 
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Audited Ballots <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election_uuid=election.uuid %}">back to election</a>]</span></h2>
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>
+        {{election.name}}&mdash;Audited Ballots <small>[<a href="{% url 'helios.views.one_election_view' election_uuid=election.uuid %}">Back</a>]</small>
+      </h2>
 
-<p>
-When you prepare a ballot with Helios, you immediately receive a smart ballot tracker. Before you choose to cast that ballot, you have the option to ask Helios to "break open" that encrypted ballot and verify that Helios encrypted your ballot correctly. Once that's done, you can post that opened ballot here, on the audited ballots' list, for everyone to verify (your identity is not included). Once you've done this, you have to re-encrypt your choices and obtain a different smart ballot tracker. This helps reduce the chance that someone might coerce you to vote differently from your true choice.
-</p>
+      <p>
+        When you prepare a ballot with Helios, you immediately receive a smart ballot tracker. Before you choose to cast that ballot, you have the option to ask Helios to "break open" that encrypted ballot and verify that Helios encrypted your ballot correctly. Once that's done, you can post that opened ballot here, on the audited ballots' list, for everyone to verify (your identity is not included). Once you've done this, you have to re-encrypt your choices and obtain a different smart ballot tracker. This helps reduce the chance that someone might coerce you to vote differently from your true choice.
+      </p>
 
-<p>
-These ballots are <em>not cast</em>, and they will not be counted. They are just here for auditing purposes, to spot-check that Helios is properly encrypting voter's choices.
-</p>
+      <p>
+        These ballots are <i>not cast</i>, and they will not be counted. They are just here for auditing purposes, to spot-check that Helios is properly encrypting voter's choices.
+      </p>
 
-<p>
-  To verify an audited ballot, copy its entire content and paste it in the <a target="_new" href="/booth/single-ballot-verify.html?election_url={% url "helios.views.one_election" election.uuid %}">single ballot verifier</a>.
-</p>
+      <p>
+        To verify an audited ballot, copy its entire content and paste it in the <a target="_new" href="/booth/single-ballot-verify.html?election_url={% url 'helios.views.one_election' election.uuid %}">single ballot verifier</a>.
+      </p>
 
-{% if audited_ballots %}
-<p>
-Audited Ballots {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
-</p>
+      {% if audited_ballots %}
+        <table>
+          <thead>
+            <tr>
+              <td>Fingerprint</td>
+            </tr>
+          </thead>
 
-{% if next_after %}
-<a href="?after={{next_after}}&offset={{offset_plus_limit}}">next {{limit}}</a> &nbsp;&nbsp;
-{% endif %}
+          <tbody>
+            {% for audited_ballot in audited_ballots %}
+              <tr><td>[<a target="_blank" href="?vote_hash={{audited_ballot.vote_hash|urlencode}}">View</a>] <tt>{{audited_ballot.vote_hash}}</tt></td></tr>
+            {% empty %}
+              <tr><td class="text-center"><i>No audited ballots yet.</i></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
 
-{% ifequal offset 0 %}
-{% else %}
-<a href="?">back to start</a> &nbsp;&nbsp;
-{% endifequal %}
-{% if more_p %}
-<a href="?after={{next_after}}&offset={{next_offset}}">next {{limit}}</a>
-{% endif %}
-<table class="pretty">
-{% for b in audited_ballots %}
-<tr><td><tt style="font-size: 1.4em;">{{b.vote_hash}}</tt> [<a target="_blank" href="?vote_hash={{b.vote_hash|urlencode}}">view</a>]</td></tr>
-{% endfor %}
-</table>
-{% else %}
-<em>no audited ballots yet</em>
-{% endif %}
+        <div class="pagination-centered">
+          <ul class="pagination">
+            <li class="arrow {% if not audited_ballots_page.has_previous %}unavailable{% endif %}">
+              <a href="?page={{audited_ballots_page.previous_page_number}}&limit={{limit}}">&laquo;</a>
+            </li>
 
+            {% for page in audited_ballots_paginator.page_range %}
+              <li {% ifequal page audited_ballots_page.number %}class="current"{% endifequal %}><a href="?page={{page}}&limit={{limit}}">{{page}}</a></li>
+            {% endfor %}
+
+            <li class="arrow {% if not audited_ballots_page.has_next %}unavailable{% endif %}">
+              <a href="?page={{audited_ballots_page.next_page_number}}&limit={{limit}}">&raquo;</a>
+            </li>
+          </ul>
+        </div>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}

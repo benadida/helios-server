@@ -1,14 +1,19 @@
 {% if default_auth_system %}
-<p><a  style="font-size:1.3em; border: 1px solid #bbb; padding: 5px;" href="{% url "helios_auth.views.start" system_name=default_auth_system %}?return_url={{return_url}}">{{default_auth_system_obj.LOGIN_MESSAGE}}</a></p>
+  <p>
+    <h4>
+      <a href="{% url 'helios_auth.views.start' system_name=default_auth_system %}?return_url={{return_url}}">{{default_auth_system_obj.LOGIN_MESSAGE}}</a>
+    </h4>
+  </p>
 {% else %}
-{% for auth_system in enabled_auth_systems %}
-{% ifequal auth_system "password" %}
-{% else %}
-<p>
-    <a href="{{SECURE_URL_HOST}}{% url "helios_auth.views.start" system_name=auth_system %}?return_url={{return_url}}" style="font-size: 1.4em;">
-<img border="0" height="35" src="/static/auth/login-icons/{{auth_system}}.png" alt="{{auth_system}}" /> {{auth_system}}
-{% endifequal %}
-</a>
-</p>
-{% endfor %}
+  {% for auth_system in auth_systems %}
+    {% ifnotequal auth_system "password" %}
+      <p>
+        <h4>
+          <a href="{{SECURE_URL_HOST}}{% url 'helios_auth.views.start' system_name=auth_system.name %}?return_url={{return_url}}" {% if remove_unload %}class="remove_unload"{% endif %}>
+            <img border="0" height="35" src="/static/helios_auth/login-icons/{{auth_system.name}}.png" alt="{{auth_system.display_name}}" /> {{auth_system.display_name}}
+          </a>
+        </h4>
+      </p>
+    {% endifnotequal %}
+  {% endfor %}
 {% endif %}

@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if gt IE 8]><html class="no-js" lang="en" ><![endif]-->
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+
+  <title>Helios&mdash;Election Verifier</title>
+
+  <link rel="stylesheet" type="text/css" href="css/booth.css" />
+  <link rel="stylesheet" type="text/css" href="css/forms.css" />
+
+  <link rel="stylesheet" href="/static/foundation/css/foundation.css">
+  <link rel="stylesheet" href="/static/foundation-tweaks.css">
+
+  <script language="javascript" src="js/jscrypto/jsbn.js"></script>
+  <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
+  <script language="javascript" src="js/jscrypto/sjcl.js"></script>
+  <script language="javascript" src="js/underscore.min.js"></script>
+  <script language="javascript" src="js/jquery-1.2.2.min.js"></script>
+  <script language="javascript" src="js/jquery-jtemplates.js"></script>
+  <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
+  <script language="javascript" src="js/jquery.json.min.js"></script>
+  <script language="javascript" src="js/underscore-min.js"></script>
+
+  <script language="javascript">
+    // required for jscrypto library
+    var JSCRYPTO_HOME = document.location.pathname.replace("verify.html", "js/jscrypto");
+  </script>
+
+  <script language="javascript" src="js/jscrypto/class.js"></script>
+  <script language="javascript" src="js/jscrypto/bigint.js"></script>
+  <script language="javascript" src="js/jscrypto/random.js"></script>
+  <script language="javascript" src="js/jscrypto/elgamal.js"></script>
+  <script language="javascript" src="js/jscrypto/sha1.js"></script>
+  <script language="javascript" src="js/jscrypto/sha2.js"></script>
+  <script language="javascript" src="js/jscrypto/helios.js"></script>
+
+  <script language="javascript">
+    $(document).ready(function() {
+      BigInt.setup(function() {
+        $('#verifier_loading').hide();
+        $('#verifier').show();
+      }, function() {
+        alert('Sorry, in-browser verification requires Java at this time.');
+      });
+    });
+
+    function result_append(str) {
+      $('#results').append(str).append("<br />");
+    }
+
+    function pretty_result(result) {
+      return result ? '&#x2714; ' : '&#x2717; ';
+    }
+
+    function load_ballots(election_url, ballot_list, ballots, final_callback) {
+      // the ballots array is the place where we build up the list of ballots
+
+      // end of the iteration?
+      if (ballot_list.length == ballots.length) {
+        final_callback(ballots);
+        return;
+      }
+
+      // get the next ballot
+      $.get(election_url + '/ballots/' + ballot_list[ballots.length].uuid + '/last', function(result) {
+        var new_ballot = jQuery.secureEvalJSON(result);
+        ballots.push(new_ballot);
+        if (new_ballot.vote == null) {
+          $('#ballots_result').append('    &#x2717; Voter #' + ballots.length + '\n');
+        } else {
+          $('#ballots_result').append('    &#x2714; Voter #' + ballots.length + '\n');
+        }
+
+        load_ballots(election_url, ballot_list, ballots, final_callback);
+      });
+    }
+
+    // load the ballot list in increments of 50, for long ballots
+    function load_ballot_list(election_url, ballot_list, after, final_callback) {
+      var url = election_url + '/voters/?limit=50';
+      if (after)
+        url += "&after=" + after;
+
+      $.get(url, function(result) {
+        var new_ballot_list = jQuery.secureEvalJSON(result);
+
+        // done, no more ballots?
+        if (new_ballot_list.length == 0)
+          return final_callback(ballot_list);
+
+        // not done, add to the list
+        ballot_list = ballot_list.concat(new_ballot_list);
+        after = ballot_list[ballot_list.length - 1].uuid;
+
+        // and iterate
+        load_ballot_list(election_url, ballot_list, after, final_callback);
+      });
+    }
+
+    function load_election_and_ballots(election_url) {
+      $('#election').show();
+      $('#election_result').append('Loading election...\n');
+
+      var overall_result = true;
+
+      // the hash will be computed within the setup function call now
+      $.get(election_url, function(raw_json) {
+        election = HELIOS.Election.fromJSONString(raw_json);
+
+        $('#election_name').html(election.name);
+        $('#election_fingerprint').html(election.get_hash());
+        $('#election_info').show();
+        var tally = [];
+        var init_tally = true;
+
+        $(election.questions).each(function(q_num, q) {
+          if (q.tally_type != 'homomorphic') {
+            result_append('<div data-alert class="alert-box warning"><b>Problem</b> This election is not a straight-forward homomorphic-tally election. As a result, Helios cannot currently verify it.</div>');
+            return;
+          }
+        });
+
+        $('#ballots').show();
+        $('#ballots_result').append('Loading voters...\n');
+
+        // load voter list
+        load_ballot_list(election_url, [], null, function(ballot_list) {
+          $('#ballots_result').append('  Loading ballots...\n');
+
+          // load all ballots
+          load_ballots(election_url, ballot_list, [], function(ballots) {
+            $('#ballots_result').append('\n  Verifying ballots...\n');
+
+            // now load each ballot
+            $(ballots).each(function(i, cast_vote) {
+              if (cast_vote.vote == null)
+                return;
+
+              var vote = HELIOS.EncryptedVote.fromJSONObject(cast_vote.vote, election);
+              $('#ballots_result').append('\n    Voter #' + (i + 1) + '\n');
+              $('#ballots_result').append('      UUID: ' + cast_vote.voter_uuid + '\n');
+              $('#ballots_result').append('      Smart Ballot Tracker: ' + vote.get_hash() + '\n\n');
+              $('#ballots_result').append('      Questions\n');
+
+              if (init_tally) {
+                $(vote.encrypted_answers).each(function(q_num, q) {
+                  tally[q_num] = [];
+
+                  $(vote.encrypted_answers[q_num]).each(function(a_num, a) {
+                    tally[q_num][a_num] = 1;
+                  });
+                });
+
+                init_tally = false;
+              }
+
+              var previous_answer_num = null;
+
+              vote.verifyProofs(election.public_key, function(answer_num, choice_num, result, choice) {
+                overall_result = overall_result && result;
+
+                if (answer_num != previous_answer_num)
+                  $('#ballots_result').append('\n        Question #' + (answer_num + 1)  + '\n');
+
+                if (choice_num != null) {
+                  // keep track of tally
+                  if (typeof(tally[answer_num][choice_num]) == 'undefined')
+                 	  tally[answer_num][choice_num] = 1;
+
+                  tally[answer_num][choice_num] = choice.multiply(tally[answer_num][choice_num]);
+                 	$('#ballots_result').append('          ' + pretty_result(result) + 'Option #' + (choice_num + 1) + '\n');
+                } else {
+                  $('#ballots_result').append('        ' + pretty_result(result) + 'Question #' + (answer_num + 1) + '\n');
+                }
+
+                previous_answer_num = answer_num;
+              });
+            });
+
+            if (overall_result) {
+              $('#ballots_final_result').html('&#x2714; All ballots were verified.').addClass('success').show();
+            } else {
+              $('#ballots_final_result').html('&#x2717; One or more ballots failed verification.').addClass('warning').show();
+            }
+
+            // get the election result
+            $.get(election_url + '/result', function(result) {
+              var results = $.secureEvalJSON(result);
+
+              $('#trustees').show();
+              $('#trustees_result').append('Loading trustees...\n');
+
+              // get the trustees and proofs
+              $.get(election_url + '/trustees/', function(trustees_json) {
+                trustees = $.secureEvalJSON(trustees_json);
+
+                // create the Helios objects
+                trustees = $(trustees).map(function(i, trustee) {
+                  return HELIOS.Trustee.fromJSONObject(trustee)
+                });
+
+                // the public key that we'll check
+                var combined_key = 1;
+
+                // verify the keys
+                $(trustees).each(function(i, trustee) {
+                  if (i != 0)
+                    $('#trustees_result').append('\n');
+
+                  $('#trustees_result').append('  Trustee #' + (i + 1) + ' &lt;' + trustee.email + '&gt;\n');
+
+                  var result = trustee.public_key.verifyKnowledgeOfSecretKey(trustee.pok, ElGamal.fiatshamir_dlog_challenge_generator);
+                  overall_result = overall_result && result;
+
+                  $('#trustees_result').append('    ' + pretty_result(result) + 'Public Key: ' + trustee.public_key_hash + '\n');
+
+                  combined_key = election.use_threshold ? null : trustee.public_key.multiply(combined_key);
+                });
+
+                // verify the combination of the keys into the final public key
+                if (combined_key) {
+                  if (combined_key.equals(election.public_key)) {
+                    $('#trustees_final_result').html('&#x2714; The election public key was verified.').addClass('success').show();
+                  } else {
+                    $('#trustees_final_result').html('&#x2717; The election public key failed verification.').addClass('warning').show();
+                    overall_result = false;
+                  }
+                }
+
+                $('#tally').show();
+
+                $(tally).each(function(q_num, q) {
+                  if (q_num != 0)
+                    $('#tally_result').append('\n');
+
+                  $('#tally_result').append('Question #' + (q_num + 1) + '\n');
+                  $('#tally_result').append('  ' + election.questions[q_num].short_name + '\n');
+
+                  $('#tally_result').append('\n  Tally\n');
+
+                  $(q).each(function(a_num, a) {
+                    var plaintext = new ElGamal.Plaintext(election.public_key.g.modPow(BigInt.fromInt(results[q_num][a_num]), election.public_key.p), election.public_key);
+
+                    if (a_num != 0)
+                      $('#tally_result').append('\n');
+
+                    var check = true;
+                    $('#tally_result').append('    ' + election.questions[q_num].answers[a_num] + ': ' + results[q_num][a_num] + '\n');
+                    var decryption_factors = [];
+
+                    $('#tally_result').append('      Decryption Factors\n');
+
+                    // go through the trustees' decryption factors and verify each one
+                    $(trustees).each(function(t_num, trustee) {
+                      if (!election.use_threshold || trustee.decryption_factors) {
+                        if (trustee.public_key.verifyDecryptionFactor(a, trustee.decryption_factors[q_num][a_num], trustee.decryption_proofs[q_num][a_num], ElGamal.fiatshamir_challenge_generator)) {
+                          $('#tally_result').append('        &#x2714; Trustee #' + (t_num + 1) + ' &lt;' + trustee.email + '&gt;\n');
+                        } else {
+                          $('#tally_result').append('        &#x2717; Trustee #' + (t_num + 1) + ' &lt;' + trustee.email + '&gt;\n');
+                          check = false;
+                          overall_result = false;
+                        }
+
+                        decryption_factors.push(trustee.decryption_factors[q_num][a_num]);
+                      }
+                    });
+
+                    // recheck decryption factors
+                    if (!election.use_threshold) {
+                      var expected_value = election.public_key.g.modPow(BigInt.fromInt(results[q_num][a_num]), election.public_key.p);
+                      var recomputed_value = a.decrypt(decryption_factors).getM();
+                      if (!expected_value.equals(recomputed_value)) {
+                        check = false;
+                        overall_result = false;
+                      }
+                    }
+
+                    if (check) {
+                      $('#tally_final_result').html('&#x2714; The tally was verified.').addClass('success').show();
+                    } else {
+                      $('#tally_final_result').html('&#x2717; The tally failed to verify.').addClass('warning').show();
+                    }
+                  });
+                });
+
+                if (overall_result) {
+                  $('#election_final_result').html('&#x2714; The election was verified.').addClass('success').show();
+                } else {
+                  $('#election_final_result').html('&#x2717; The election failed to verify.').addClass('warning').show();
+                }
+              });
+            });
+          });
+        });
+      });
+    }
+
+    function get_combinations(l) {
+      var output = [];
+      for (var i = 1; i<l+1 ; i++) {
+	      for (var j = i+1; j<l+1; j++) {
+          output.push([i,j]);
+        }
+      }
+
+      return output;
+    }
+
+    $(document).ready(function() {
+      var election_url = $.query.get('election_url');
+      $('#election_url').val(election_url);
+    });
+
+    function verify_election() {
+      try {
+        load_election_and_ballots(this.election_url.value);
+      } catch (e) {}
+    }
+  </script>
+</head>
+
+<body>
+  <nav class="top-bar">
+    <ul class="title-area">
+      <li class="name">
+        <h1><a href="/"><img src="/static/tinylogo.png"></a></h1>
+      </li>
+    </ul>
+
+    <section class="top-bar-section">
+      <ul>
+        <li><a href="/">Helios Voting</a></li>
+      </ul>
+    </section>
+  </nav>
+
+  <div id="content" style="padding-top: 20px;">
+    <div class="row">
+      <div class="large-12 columns">
+        <h2>Election Verifier</h2>
+
+        <p>
+          This tool will verify the tally of the specified election. The required data is retrieved from the server, but all calculations are done locally in your browser.
+        </p>
+
+        <p id="verifier_loading" class="text-center">
+          <img src="/static/helios/loading.gif" />
+        </p>
+
+        <form>
+          <div class="row">
+            <div class="large-3 columns">
+              <label for="election_url" class="right inline">Election URL</label>
+            </div>
+            <div class="large-9 columns">
+              <input type="text" name="election_url" id="election_url" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="large-9 large-offset-3 columns">
+              <button onclick="verify_election(); return false;">Start</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="row" id="election" style="display: none">
+      <div class="large-12 columns">
+        <h3>Election</h3>
+
+        <div class="panel">
+          <pre id="election_result"></pre>
+        </div>
+
+        <div class="row" id="election_info" style="display: none;">
+          <div class="large-6 columns">
+            <dl>
+              <dt>Election Name</dt>
+              <dd id="election_name"></dd>
+            </dl>
+          </div>
+
+          <div class="large-6 columns">
+            <dl>
+              <dt>Election Fingerprint</dt>
+              <dd><tt id="election_fingerprint"></tt></dd>
+            </dl>
+          </div>
+        </div>
+
+        <div data-alert class="alert-box" id="election_final_result" style="display: none;"></div>
+      </div>
+    </div>
+
+    <div class="row" id="ballots" style="display: none;">
+      <div class="large-12 columns">
+        <h3>Ballots</h3>
+
+        <div class="panel">
+          <pre id="ballots_result"></pre>
+        </div>
+
+        <div data-alert class="alert-box" id="ballots_final_result" style="display: none;"></div>
+      </div>
+    </div>
+
+    <div class="row" id="trustees" style="display: none;">
+      <div class="large-12 columns">
+        <h3>Trustees</h3>
+
+        <div class="panel">
+          <pre id="trustees_result"></pre>
+        </div>
+
+        <div data-alert class="alert-box" id="trustees_final_result" style="display: none;"></div>
+      </div>
+    </div>
+
+    <div class="row" id="tally" style="display: none;">
+      <div class="large-12 columns">
+        <h3>Tally</h3>
+
+        <div class="panel">
+          <pre id="tally_result"></pre>
+        </div>
+
+        <div data-alert class="alert-box" id="tally_final_result" style="display: none;"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="applet_div"></div>
+</body>
+</html>

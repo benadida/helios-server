@@ -1,17 +1,20 @@
 {% extends TEMPLATE_BASE %}
+{% block title %}Authentication{% endblock %}
 
 {% block content %}
-<h1>Authentication</h1>
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>Authentication</h2>
 
-{% if user %}
-<p style="font-size: 1.4em;">
-    You are currently logged in as<br /><b>{{user.user_id}}</b> via <b>{{user.user_type}}</b>.
-</p>
-<p>
-    <a href="{% url "helios_auth.views.logout" %}">logout</a>
-</p>
+      {% if user %}
+        <p>
+          You are currently logged in as <b>{{user.user_id}}</b> via <b>{{user.user_type|capfirst}}</b>.
+        </p>
 
-{% else %}
-{% include "login_box.html" %}
-{% endif %}
+        <a class="button" href="{% url 'helios_auth.views.logout' %}">Logout</a>
+      {% else %}
+        {% include "login_box.html" %}
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}

@@ -31,4 +31,14 @@ Random.getRandomInteger = function(max) {
   return rand_bi.mod(max);
   return BigInt._from_java_object(random).mod(max);
 };
+Random.random_k_relative_prime_p_1= function(p) {
+        while (true){
+        	var p_1 = p.add(BigInt.ONE.negate());
+            var k = Random.getRandomInteger(p_1);
+            if (k.gcd(p_1).toString()==BigInt.ONE.toString()){
+                return k;
+                }
+           }
+         };
+            
 

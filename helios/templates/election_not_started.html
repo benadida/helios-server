@@ -1,14 +1,16 @@
 {% extends TEMPLATE_BASE %}
+{% block title %}{{election.name}} Not Yet Started{% endblock %}
 
 {% block content %}
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>
+        {{election.name}}&mdash;Not Yet Started <small>[<a href="{% url 'helios.views.one_election_view' election.uuid %}">Back</a>]</small>
+      </h2>
 
-  <h2 class="title">Election {{election.name}} Not Yet Open</h2>
-
-  <p>
-      This election is not yet open. You probably got here from the Ballot Preview.
-  </p>
-  
-  <p>
-      <a href="{% url "helios.views.one_election_view" election.uuid %}">back to the election</a>
-  </p>
+      <div data-alert class="alert-box info">
+        This election is not yet open. You probably got here from the Ballot Preview.
+      </div>
+    </div>
+  </div>
 {% endblock %}

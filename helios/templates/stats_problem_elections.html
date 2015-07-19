@@ -1,15 +1,38 @@
 {% extends TEMPLATE_BASE %}
-{% block title %}Statistics{% endblock %}
+{% block title %}Statistics for Problematic Elections{% endblock %}
 
 {% block content %}
-<h1>Problematic Elections</h1>
+<div class="row">
+    <div class="large-12 columns">
+      <h1>
+        Statistics&mdash;Problematic Elections <small>[<a href="{% url 'helios.stats_views.home' %}">Back</a>]</small>
+      </h1>
 
-Unfrozen for more than a day.
+      <h2>Unfrozen for more than a day.</h2>
 
-{% for election in elections %}
-<p>
-<b><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></b> -- {{election.num_voters}} voters
-</p>
-{% endfor %}
+      <table>
+        <thead>
+          <tr>
+            <th>Election</th>
+            <th width="10%">Voters</th>
+          </tr>
+        </thead>
 
+        <tbody>
+          {% for election in elections %}
+            <tr>
+              <td><a href="{% url 'helios.views.one_election_view' election.uuid %}">{{election.name}}</a></td>
+              <td>{{election.num_voters}}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td class="text-center" colspan="3">
+                There are no problematic elections.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 {% endblock %}

@@ -1,0 +1,1 @@
+[{"pk": 1, "model": "helios_auth.user", "fields": {"info": "{}", "user_id": "ben@adida.net", "name": "Ben Adida", "user_type": "google", "token": null, "admin_p": false}},{"pk": 2, "model": "helios_auth.user", "fields": {"info": "{}", "user_id": "12345", "name": "Ben Adida", "user_type": "facebook", "token": {"access_token":"1234"}, "admin_p": false}}]

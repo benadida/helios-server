@@ -10,11 +10,13 @@ from django.db.models import signals
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 
+
 class JSONField(models.TextField):
+
     """
     JSONField is a generic textfield that neatly serializes/unserializes
     JSON objects seamlessly.
-    
+
     deserialization_params added on 2011-01-09 to provide additional hints at deserialization time
     """
 
@@ -45,8 +47,9 @@ class JSONField(models.TextField):
             raise Exception("not JSON")
 
         if self.json_type and parsed_value:
-            parsed_value = self.json_type.fromJSONDict(parsed_value, **self.deserialization_params)
-                
+            parsed_value = self.json_type.fromJSONDict(
+                parsed_value, **self.deserialization_params)
+
         return parsed_value
 
     # we should never look up by JSON field anyways.
@@ -67,14 +70,13 @@ class JSONField(models.TextField):
 
         return json.dumps(the_dict, cls=DjangoJSONEncoder)
 
-
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
-        return self.get_db_prep_value(value)        
+        return self.get_db_prep_value(value)
 
 ##
-## for schema migration, we have to tell South about JSONField
-## basically that it's the same as its parent class
+# for schema migration, we have to tell South about JSONField
+# basically that it's the same as its parent class
 ##
 from south.modelsinspector import add_introspection_rules
 add_introspection_rules([], ["^helios_auth\.jsonfield\.JSONField"])

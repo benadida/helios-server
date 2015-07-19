@@ -1,22 +1,36 @@
 {% extends TEMPLATE_BASE %}
+{% block title %}New Election{% endblock %}
+
+{% load foundation %}
 
 {% block content %}
+  {% include "partials/election_progress.html" with current="create" %}
 
-  <h2 class="title">Create a New Election</h2>
-  
-{% if error %}
-<p style="color: red;">
-    {{error}}
-</p>
-{% endif %}
-  
-  <form class="prettyform" action="" method="POST" id="create_election_form">
-    <table class="pretty">
-     {{election_form.as_table}}
-     </table>
-  <div>
-  <label for="">&nbsp;</label><input type="submit" value="Next &gt;&gt;" id="next_button" />
+  <div class="row">
+    <div class="large-12 columns">
+      <h2>Create a New Election</h2>
+
+      {% if error %}
+        <p style="color: red;">
+          {{error}}
+        </p>
+      {% endif %}
+
+      <form method="POST" id="create_election_form">
+        {{election_form|foundationinline}}
+
+        <div class="row">
+          <div class="large-9 large-offset-3 columns">
+            <input type="submit" class="small button" value="Next" id="next_button" />
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
-  </form>
 
+  <script type="text/javascript">
+    $('#id_name').blur(function(){
+      $('#id_short_name').val($('#id_name').val().replace(/\s+/g, '-').toLowerCase());
+    });
+  </script>
 {% endblock %}

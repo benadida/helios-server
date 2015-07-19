@@ -2,49 +2,54 @@
 {% block title %}Confirm Vote{% endblock %}
 
 {% block content %}
-<script language="javascript">
-$(document).ready(function() {
-  $('#waiting_div').hide();
-});
+  <script language="javascript">
+    $(document).ready(function() {
+      $('#waiting_div').hide();
+    });
 
-function show_waiting() {
-  $('#cast_div').hide();
-  $('#waiting_div').show();
-}
-</script>
-<h1>Confirm your Vote</h1>
+    function show_waiting() {
+      $('#cast_div').hide();
+      $('#waiting_div').show();
+    }
+  </script>
 
-{% if error %}
-<p style="color: red;">{{error}}</p>
-{% endif %}
+  <div class="row">
+    <div class="large-12 columns">
+    <h1>Confirm your Vote</h1>
 
-<h3>Your Ballot</h3>
+    {% if error %}
+      <p style="color: red;">{{error}}</p>
+    {% endif %}
 
-<p style="font-size:1.6em;">
-    <tt>{{vote_fingerprint}}</tt>
-</p>
+    <h3>Your Ballot</h3>
 
-<div id="cast_div">
-<h3>Cast Your Ballot with your Credentials</h3>
+    <p style="font-size:1.6em;">
+      <tt>{{vote_fingerprint}}</tt>
+    </p>
 
-<form method="post" onsubmit="show_waiting();" action="">
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+    <div id="cast_div">
+      <h3>Cast Your Ballot with your Credentials</h3>
 
-<table>
-{{form.as_table}}
-</table><br />
+      <form method="post" onsubmit="show_waiting();" action="">
+        <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 
-    <input type="submit" value="cast this ballot" /><br /><br />
-</form>
+        <table>
+          {{form.as_table}}
+        </table>
 
-<p>
-    Forgot your password? <a href="{% url "helios_auth.auth_systems.password.password_forgotten_view" %}?return_url={% url "server_ui.views.cast_confirm" %}">Have it emailed to you</a>.<br />(don't worry, we won't forget your vote).
-</p>
-</div>
+        <input type="submit" value="Cast this Ballot" /><br /><br />
+      </form>
 
-<div id="waiting_div" align="center">
-  Verifying and Casting your ballot<br />
-  <img src="/static/helios/loading.gif" />
-</div>
+      <p>
+        Forgot your password? <a href="{% url 'helios_auth.auth_systems.password.password_forgotten_view' %}?return_url={% url 'server_ui.views.cast_confirm' %}">Have it emailed to you</a>.
+        <br />
+        (Don't worry, we won't forget your vote.)
+      </p>
+    </div>
 
+    <div id="waiting_div" align="center">
+      Verifying and Casting your Ballot...<br />
+      <img src="/static/helios/loading.gif" />
+    </div>
+  </div>
 {% endblock %}

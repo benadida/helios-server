@@ -1,37 +1,31 @@
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml"
-    dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}"
-    xml:lang="{% firstof LANGUAGE_CODE 'en' %}"
-    lang="{% firstof LANGUAGE_CODE 'en' %}">
-  <head>
-    <title>{% block title %}Authentication{% endblock %} - Helios</title>
-    {% block css %}
-      <!--
-          <link rel="stylesheet" type="text/css"  media="screen, projection" href="{{ MEDIA_URL }}combined-{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}.css" />
-      -->
-      <link rel="stylesheet" type="text/css" media="screen" href="/static/main.css">
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en"><![endif]-->
+<!--[if gt IE 8]><html class="no-js" lang="en" ><![endif]-->
 
-    {% endblock %}
+<html lang="en">
 
-    {% block js %}
-    {% endblock %}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
 
-    {% block extra-head %}{% endblock %}
-  </head>
+  <title>Helios&mdash;{% block title %}{% endblock %}</title>
+  {% block css %}
+    <link rel="stylesheet" type="text/css" media="screen" href="/static/main.css">
+  {% endblock %}
 
-  <body>
-    <div id="content">
-        <div id="header">
-        {% block header %}
-        {% endblock %}
-        </div>
-      {% block content %}{% endblock %}
-      <div id="footer">
-      </div>
+  {% block js %}{% endblock %}
+</head>
+
+<body>
+  <div id="content">
+    <div id="header">
+      {% block header %}{% endblock %}
     </div>
-    
-  </body>
+
+    {% block content %}{% endblock %}
+    <div id="footer"></div>
+  </div>
+</body>
+
 </html>

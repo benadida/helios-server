@@ -7,7 +7,8 @@ ben@adida.net
 2009-07-11
 """
 
-import logging, os
+import logging
+import os
 
 # Django 1.0
 from google.appengine.dist import use_library
@@ -33,15 +34,16 @@ import django.core.signals
 import django.db
 import django.dispatch.dispatcher
 
-def main():
-  # Create a Django application for WSGI.
-  application = django.core.handlers.wsgi.WSGIHandler()
-  
-  # if there's initialiation, run it
-  import initialization
 
-  # Run the WSGI CGI handler with that application.
-  util.run_wsgi_app(application)
+def main():
+    # Create a Django application for WSGI.
+    application = django.core.handlers.wsgi.WSGIHandler()
+
+    # if there's initialiation, run it
+    import initialization
+
+    # Run the WSGI CGI handler with that application.
+    util.run_wsgi_app(application)
 
 if __name__ == '__main__':
-  main()
+    main()
