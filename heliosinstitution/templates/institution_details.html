@@ -1,0 +1,37 @@
+{% load i18n %}
+
+<div class="panel-heading">{% trans "Institution details" %}</div>
+<div id="readonly_inst" class="panel-body">
+    <p>{% trans "Name:" %} {{ institution.name }}</p>
+    <p>{% trans "Short name:" %} {{ institution.short_name }}</p>
+    <p>{% trans "Main phone:" %} {{ institution.main_phone }}</p>
+    <p>{% trans "Sec phone:" %} {{ institution.sec_phone }}</p>
+    <p>{% trans "Address:" %} {{ institution.address }}</p>
+    <p><button id="edit_inst_button" class="btn btn-primary">{% trans "Edit" %}</button></p>    
+</div>
+<div id="edit_inst" class="hidden">
+    <form id="form_edit_inst" class="form-horizontal" action="{% url "heliosinstitution.views.institution_details" institution.pk %}" >
+    <p class="inst_data">
+        <label for="name">{% trans "Name:" %}</label>
+        <input class="form-control" name="name" type="text" value="{{ institution.name }}" maxlength="250"/>
+    </p>
+    <p class="inst_data">
+        <label for="short_name">{% trans "Short name:" %}</label>
+        <input class="form-control" type="text" name="short_name" value="{{ institution.short_name }}"/>
+    </p>
+    <p class="inst_data">
+        <label for="main_phone">{% trans "Main phone:" %}</label>
+        <input class="form-control" name="main_phone" type="text" value="{{ institution.main_phone }}"/>
+    </p>
+    <p class="inst_data">
+        <label for="main_phone">{% trans "Sec phone:" %}</label>
+        <input class="form-control" name="sec_phone" type="text" value="{{ institution.sec_phone }}"/>
+    </p>
+    <p class="inst_data">
+        <label for="address">{% trans "Address:" %}</label>
+        <textarea class="form-control" name="address" rows="4"> {{institution.address }}
+        </textarea>
+    </p>
+    <button id="save_inst_data" type="submit" class="btn btn-primary">{% trans "Save" %}</button>
+    </form>
+</div>

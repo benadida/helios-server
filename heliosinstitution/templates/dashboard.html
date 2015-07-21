@@ -1,4 +1,4 @@
-{% extends 'server_ui/templates/base.html' %}
+{% extends 'server_ui/templates/base-bootstrap.html' %}
 {% load i18n %}
 {% load staticfiles %}
 {% block content %}
@@ -8,18 +8,11 @@
         </div>
         <div id="content" class="col-lg-10 col-sm-10">
          {% block subcontent %}
-            <div class="panel panel-primary">
-                <div class="panel-heading">{% trans "Institution details" %}</div>
-                <div class="panel-body">
-                    <p>{% trans "Name:" %} {{ institution.name }}</p>
-                    <p>{% trans "Short name:" %} {{ institution.short_name }}</p>
-                    <p>{% trans "Main phone:" %} {{ institution.main_phone }}</p>
-                    <p>{% trans "Address:" %} {{ institution.address }}</p>
-                    <p><a class="btn btn-default" href="#" role="button">{% trans "Edit" %}</a></p>
-                </div>
+            <div id="inst_details" class="panel panel-primary" data-url="{% url "heliosinstitution.views.institution_details" institution.pk %}">
+                {% include "institution_details.html" %}
             </div>
          {% endblock subcontent %}
+
         </div>
     </div>
-
 {% endblock content %}

@@ -295,3 +295,14 @@ def elections_summary(request, year=None):
         "institutions": institutions_list,
     })
 
+@login_required
+@require_institution_admin
+def institution_details(request, institution_pk):
+    institution = Institution.objects.get(id=institution_pk)
+    for data in request.POST:
+        setattr(institution, data, request.POST[data])
+    institution.save()
+    return render_template(request, "institution_details", {
+        "institution": institution,
+    })
+

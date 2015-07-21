@@ -120,5 +120,30 @@ $("document").ready(function(){
         $('a#upload_voters').addClass('hidden');
     });
 
+    $('#inst_details').on('click', '#edit_inst_button', function(event){
+        $('#readonly_inst').addClass('hidden');
+        $('#edit_inst').addClass('panel-body');
+        $('#edit_inst').removeClass('hidden');
+    });
 
+    $('#inst_details').on('click', '#save_inst_data', function(event){
+        var url = $('#form_edit_inst').attr('action');
+        var inst_data = {}
+        $('p.inst_data').each(function(){
+            inst_data[$(this).children('.form-control').attr('name')] = $(this).children('.form-control').val();
+        });
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: inst_data,
+            success: function (data) {
+                $('#inst_details').load($('#inst_details').attr('data-url'));
+            },
+            error: function (error) {
+
+            }
+
+        });
+        return false;
+    });
 })
