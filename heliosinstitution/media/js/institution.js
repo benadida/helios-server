@@ -60,7 +60,7 @@ $("document").ready(function(){
         $(row).insertAfter('#attribute_' + (rowNum - 1));
     });
 
-    $('.remove_cafe_attribute').live('click', function(){
+    $('.remove_cafe_attribute').on('click', function(){
        $(this).parent('div').remove();    
        rowNum --;
        $('.cafe_attribute').each(function(index){ $(this).attr('id', 'attribute_'+ index)});
