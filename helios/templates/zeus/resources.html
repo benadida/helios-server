@@ -8,45 +8,60 @@
 <div class="row">
   <div class="columns twelve">
     <h4>Υλικό</h4>
-    <ul>
-      <li><a href="{{ STATIC_URL }}docs/election_admin.pdf">Οδηγίες</a> για τη
-      διαχείριση εκλογών μέσω του συστήματος &laquo;Ζευς&raquo;</li>
+    <ul class="disc">
+      <li>Οδηγίες για τους διαχειριστές
+        <ul>
+          {% with file="zeus_admin_manual_one_or_more_questions" %}
+          <li><a href="{{ STATIC_URL }}manuals/admin/{{ file }}.pdf">
+                Οδηγός διαχειριστή για "Απλή εκλογή"
+              </a>
+              [<a href="{{ STATIC_URL }}manuals/admin/{{ file }}.docx">doc</a>]
+          </li>
+          {% endwith %}
+          {% with file="zeus_admin_manual_stv" %}
+          <li><a href="{{ STATIC_URL }}manuals/admin/{{ file }}.pdf">
+                Οδηγός διαχειριστή για "Εκλογή ταξινομικής ψήφου"
+              </a>
+          </li>
+          {% endwith %}
+        </ul>
+      </li>
       <li>Οδηγίες για τους ψηφοφόρους
         <ul>
           {% with file="zeus_voter_manual_one_or_more_questions" %}
-          <li><a href="{{ STATIC_URL }}manuals/{{ file }}/{{ file }}.pdf">
+          <li><a href="{{ STATIC_URL }}manuals/voter/{{ file }}.pdf">
                 Οδηγός ψηφοφόρου για "Απλή εκλογή"
               </a>
-              [<a href="{{ STATIC_URL }}manuals/{{ file }}/{{ file }}.docx">doc</a>]
+              [<a href="{{ STATIC_URL }}manuals/voter/{{ file }}.docx">doc</a>]
           </li>
-          <li><a href="{{ STATIC_URL }}manuals/{{ file }}/{{ file }}_short.pdf">
+          <li><a href="{{ STATIC_URL }}manuals/voter/{{ file }}_short.pdf">
                 Σύντομος οδηγός ψηφοφόρου για "Απλή εκλογή"
               </a>
-              [<a href="{{ STATIC_URL }}manuals/{{ file }}/{{ file }}_short.docx">doc</a>]
+              [<a href="{{ STATIC_URL }}manuals/voter/{{ file }}_short.docx">doc</a>]
           </li>
           {% endwith %}
           {% with file="zeus_voter_manual_multiple_parties" %}
-          <li><a href="{{ STATIC_URL }}manuals/{{ file }}/{{ file }}.pdf">
+          <li><a href="{{ STATIC_URL }}manuals/voter/{{ file }}.pdf">
                Οδηγός ψηφοφόρου για "Εκλογή με συνδυασμούς"
               </a>
-              [<a href="{{ STATIC_URL }}manuals/{{ file }}/{{ file }}.docx">doc</a>]
+              [<a href="{{ STATIC_URL }}manuals/voter/{{ file }}.docx">doc</a>]
           </li>
-          <li><a href="{{ STATIC_URL }}manuals/{{ file }}/{{ file }}_short.pdf">
+          <li><a href="{{ STATIC_URL }}manuals/voter/{{ file }}_short.pdf">
                Σύντομος οδηγός ψηφοφόρου για "Εκλογή με συνδυασμούς"
               </a>
-              [<a href="{{ STATIC_URL }}manuals/{{ file }}/{{ file }}_short.docx">doc</a>]
+              [<a href="{{ STATIC_URL }}manuals/voter/{{ file }}_short.docx">doc</a>]
           </li>
           {% endwith %}
           {% with file="zeus_voter_manual_svt" %}
-          <li><a href="{{ STATIC_URL }}manuals/{{ file }}/{{ file }}.pdf">
+          <li><a href="{{ STATIC_URL }}manuals/voter/{{ file }}.pdf">
                 Όδηγός ψηφοφόρου για "Εκλογή ταξινομικής ψήφου"
               </a>
-              [<a href="{{ STATIC_URL }}manuals/{{ file }}/{{ file }}.docx">doc</a>]
+              [<a href="{{ STATIC_URL }}manuals/voter/{{ file }}.docx">doc</a>]
           </li>
-          <li><a href="{{ STATIC_URL }}manuals/{{ file }}/{{ file }}_short.pdf">
+          <li><a href="{{ STATIC_URL }}manuals/voter/{{ file }}_short.pdf">
                Σύντομος οδηγός ψηφοφόρου για "Εκλογή ταξινομικής ψήφου"
               </a>
-              [<a href="{{ STATIC_URL }}manuals/{{ file }}/{{ file }}_short.docx">doc</a>]
+              [<a href="{{ STATIC_URL }}manuals/voter/{{ file }}_short.docx">doc</a>]
           </li>
           {% endwith %}
         </ul>
