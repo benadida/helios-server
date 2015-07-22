@@ -13,7 +13,7 @@
   <p>
   {% trans "Please, prepare a simple text file with the voters in CSV form, as in the example:" %}
   </p>
-  <pre>{% blocktrans %}EXAMPLE_CSV_INPUT_TEXT{% endblocktrans %}
+  <pre>{% filter force_escape %}{% blocktrans %}EXAMPLE_CSV_INPUT_TEXT{% endblocktrans %}{% endfilter %}
   </pre> 
   <u style="float:right">{% trans "*The last three fields (middle name, mobile phone and vote weight) are optional" %}</u>
   <br /><br />
