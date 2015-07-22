@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-13 14:54+0300\n"
+"POT-Creation-Date: 2015-06-16 13:00+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,6 +57,10 @@ msgstr "Επιλογή"
 msgid "Question"
 msgstr "Ερώτηση"
 
+#, python-format
+msgid "% is not a valid character."
+msgstr ""
+
 msgid "Min answers"
 msgstr "Ελάχιστος αριθμός επιλογών"
 
@@ -68,6 +72,10 @@ msgstr ""
 "Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
 "ελάχιστου αριθμού απαντήσεων"
 
+#, python-format
+msgid "% is not a valid character"
+msgstr ""
+
 msgid "No duplicate choices allowed"
 msgstr "Δεν επιτρέπονται διπλότυπες επιλογές στο ψηφοδέλτιο"
 
@@ -76,6 +84,15 @@ msgstr "Όνομα συνδυασμού"
 
 msgid "Scores"
 msgstr "Βαθμοί"
+
+#, fuzzy
+msgid "Max answers should be greater or equal than min answers"
+msgstr ""
+"Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
+"ελάχιστου αριθμού απαντήσεων"
+
+msgid "Number of answers must be equal or bigger than max answers"
+msgstr ""
 
 msgid "set the eligibles count of the election"
 msgstr "το πλήθος των εκλεγόμενων"
@@ -219,17 +236,26 @@ msgstr "Επιβεβαιώστε την οριστικοποίηση της ψη
 msgid "Are you sure you want to delete the selected poll ?"
 msgstr "Επιβεβαιώστε τη διαγραφή της επιλεγμένης κάλπης"
 
-#, python-format
-msgid "Start: %s"
-msgstr "Έναρξη: %s"
+msgid "Institution name"
+msgstr "Ίδρυμα"
 
-#, python-format
-msgid "End: %s"
-msgstr "Λήξη: %s"
+msgid "Start"
+msgstr "Έναρξη"
 
-#, python-format
-msgid "Extension: %s"
-msgstr "Παράταση: %s"
+msgid "End"
+msgstr "Λήξη"
+
+msgid "Extension"
+msgstr "Παράταση"
+
+msgid "Voters"
+msgstr "Ψηφοφόροι"
+
+msgid "Excluded voters"
+msgstr "Εξαιρεθέντες ψηφοφόροι"
+
+msgid "Poll name"
+msgstr "Όνομα κάλπης"
 
 msgid "RESULTS"
 msgstr "ΑΠΟΤΕΛΕΣΜΑΤΑ ΓΕΝΙΚΑ"
@@ -275,6 +301,18 @@ msgstr "ΑΚΥΡΟ"
 
 msgid "BLANK"
 msgstr "ΛΕΥΚΟ"
+
+#, python-format
+msgid "Start: %s"
+msgstr "Έναρξη: %s"
+
+#, python-format
+msgid "End: %s"
+msgstr "Λήξη: %s"
+
+#, python-format
+msgid "Extension: %s"
+msgstr "Παράταση: %s"
 
 msgid "Elect"
 msgstr "Εκλογή"
@@ -410,6 +448,26 @@ msgstr "Τελευταία είσοδος"
 msgid "Actions"
 msgstr "Επιλογές"
 
+msgid "Name"
+msgstr ""
+
+msgid "Institution"
+msgstr ""
+
+msgid "Administrator"
+msgstr ""
+
+#, fuzzy
+msgid "Creation"
+msgstr "Ερώτηση"
+
+#, fuzzy
+msgid "Election status"
+msgstr "Τίτλος ψηφοφορίας"
+
+msgid "Trial"
+msgstr ""
+
 msgid "Simple election with one or more questions"
 msgstr "Απλή ψηφοφορία με μία ή περισσότερες ερωτήσεις"
 
@@ -425,7 +483,6 @@ msgstr "Προσθήκη ερωτήσεων στην ψηφοφορία"
 msgid "Too many choices"
 msgstr "Περισσότερες επιλογές από το επιτρεπτό"
 
-#, python-brace-format
 msgid "Question '{0}' requires at least {1} choices."
 msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
 
@@ -510,6 +567,9 @@ msgstr ""
 
 msgid "The requested page was not found."
 msgstr ""
+
+#~ msgid "Voters %d"
+#~ msgstr "Ψηφοφόροι %d"
 
 #~ msgid "Email body"
 #~ msgstr "Κείμενο μηνύματος email"

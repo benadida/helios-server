@@ -198,6 +198,32 @@ def make_intro(elements, styles, contents):
         elements.append(Paragraph(escape(pcontent), styles["Zeus"]))
     elements.append(Spacer(1, 12))
 
+def make_poll_voters(elements, styles, poll_voters):
+    elements.append(Paragraph(escape(_("Voters") + ": " 
+        + str(poll_voters.count())),styles['Zeus']))
+    if poll_voters.excluded().count() > 0:
+        nr_excluded = poll_voters.excluded().count()
+        elements.append(Paragraph(escape(_("Excluded voters") + ": " 
+            + str(nr_excluded)),styles['Zeus']))
+
+def make_election_voters(elements, styles, polls_data, stv=False):
+    total_voters = 0
+    excluded_voters = 0
+    if not stv:
+        pos = 4
+    else:
+        pos = 3
+    for poll_data in polls_data:
+        poll_voters = poll_data[pos]
+        total_voters += poll_voters.count()
+        if poll_voters.excluded().count() > 0:
+            excluded_voters += poll_voters.excluded().count()
+    elements.append(Paragraph(escape(_("Voters") + ": " 
+        + str(total_voters)), styles['Zeus']))
+    if excluded_voters > 0:
+        elements.append(Paragraph(escape(_("Excluded voters") + ": "
+            + str(excluded_voters)), styles['Zeus']))
+
 def make_totals(elements, styles, total_votes, blank_votes):
     elements.append(Paragraph(escape(_('Total votes: %d') % total_votes), styles['Zeus']))
     elements.append(Paragraph(escape(_('Blank: %d') % blank_votes), styles['Zeus']))
@@ -282,8 +308,9 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
 
         make_heading(elements, styles, [title, name, institution_name])
         make_intro(elements, styles, intro_contents)
+        make_election_voters(elements, styles, data, stv=True)
 
-        for poll_name, poll_results, questions in data:
+        for poll_name, poll_results, questions, poll_voters in data:
             poll_intro_contents = [
                 poll_name
             ]
@@ -300,6 +327,7 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
             make_subheading(elements, styles, poll_intro_contents)
             elements.append(Spacer(1, 12))
             make_intro(elements, styles, intro_contents)
+            make_poll_voters(elements, styles, poll_voters)
             elements.append(Spacer(1, 12))
             #make dict with indexing as key and name as value
             counter = 0
@@ -417,8 +445,9 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
 
         make_heading(elements, styles, [title, name, institution_name])
         make_intro(elements, styles, intro_contents)
+        make_election_voters(elements, styles, data)
 
-        for poll_name, poll_results, q_repr_data, qdata in data:
+        for poll_name, poll_results, q_repr_data, qdata, poll_voters in data:
             poll_intro_contents = [
                 poll_name
             ]
@@ -442,6 +471,7 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
             make_subheading(elements, styles, poll_intro_contents)
             elements.append(Spacer(1, 12))
             make_intro(elements, styles, intro_contents)
+            make_poll_voters(elements, styles, poll_voters)
             elements.append(Spacer(1, 12))
             make_results(elements, styles, total_votes, blank_votes,
                          parties_results, candidates_results)

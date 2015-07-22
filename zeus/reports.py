@@ -138,30 +138,35 @@ def uwriterow(uni_string, csvout):
     string = strforce(uni_string)
     write
 
+def make_csv_intro(writerow, election, lang):
+    with translation.override(lang):
+        DATE_FMT = "%d/%m/%Y %H:%S"
+        voting_start = election.voting_starts_at.strftime(DATE_FMT)
+        voting_end = election.voting_ends_at.strftime(DATE_FMT)
+        extended_until = ""
+        if election.voting_extended_until:
+            extended_until = election.voting_extended_until.strftime(DATE_FMT)
+        writerow([strforce(_("Election name")), strforce(election.name)])
+        writerow([strforce(_("Institution name")), strforce(election.institution.name)])
+        writerow([strforce(_("Start")), strforce(voting_start)])
+        writerow([strforce(_("End")), strforce(voting_end)])
+        if extended_until:
+            writerow([strforce(_("Extension")), strforce(extended_until)])
+        writerow([])
+        nr_voters = election.voters.all().count()
+        writerow([strforce(_("Voters")), strforce(nr_voters)])
+        if election.voters.all().excluded().count() > 0:
+            ex_voters = election.voters.all().excluded().count()
+            writerow([strforce(_("Excluded voters")), strforce(ex_voters)])
+        writerow([])
+
 def csv_from_polls(election, polls, lang, outfile=None):
     with translation.override(lang):
         if outfile is None:
             outfile = StringIO()
         csvout = csv.writer(outfile, dialect='excel', delimiter=',')
         writerow = csvout.writerow
-        # election details
-        DATE_FMT = "%d/%m/%Y %H:%S"
-        voting_start = _('Start: %s') % (election.voting_starts_at.strftime(DATE_FMT))
-        voting_end = _('End: %s') % (election.voting_ends_at.strftime(DATE_FMT))
-        extended_until = ""
-        if election.voting_extended_until:
-            extended_until = _('Extension: %s') % \
-                (election.voting_extended_until.strftime(DATE_FMT))
-
-        writerow([strforce(election.name)])
-        writerow([strforce(election.institution.name)])
-        writerow([strforce(voting_start)])
-        writerow([strforce(voting_end)])
-
-        if extended_until:
-            writerow([strforce(extended_until)])
-        writerow([])
-
+        make_csv_intro(writerow, election, lang)
         for poll in polls:
             party_results = poll.zeus.get_results()
             invalid_count = party_results['invalid_count']
@@ -171,8 +176,14 @@ def csv_from_polls(election, polls, lang, outfile=None):
             writerow([])
             writerow([])
             writerow([])
-            writerow([strforce(poll.name)])
+            writerow([strforce(_("Poll name")), strforce(poll.name)])
             writerow([])
+            writerow([])
+            nr_voters = poll.voters.all().count()
+            writerow([strforce(_("Voters")), strforce(nr_voters)])
+            if poll.voters.all().excluded().count() > 0:
+                ex_voters = poll.voters.all().excluded().count()
+                writerow([strforce(_("Excluded voters")), strforce(ex_voters)])
             writerow([])
             writerow([strforce(_('RESULTS'))])
             writerow([strforce(_('TOTAL VOTES')), strforce(ballot_count)])
@@ -241,24 +252,7 @@ def csv_from_stv_polls(election, polls, lang, outfile=None):
         csvout = csv.writer(outfile, dialect='excel', delimiter=',')
         writerow = csvout.writerow
         
-        # election details
-        DATE_FMT = "%d/%m/%Y %H:%S"
-        voting_start = _('Start: %s') % (election.voting_starts_at.strftime(DATE_FMT))
-        voting_end = _('End: %s') % (election.voting_ends_at.strftime(DATE_FMT))
-        extended_until = ""
-        if election.voting_extended_until:
-            extended_until = _('Extension: %s') % \
-                (election.voting_extended_until.strftime(DATE_FMT))
-
-        writerow([strforce(election.name)])
-        writerow([strforce(election.institution.name)])
-        writerow([strforce(voting_start)])
-        writerow([strforce(voting_end)])
-
-        if extended_until:
-            writerow([strforce(extended_until)])
-        writerow([])
-        # until here write election name, date etc...
+        make_csv_intro(writerow, election, lang)
         actions_desc = {
             'elect': _('Elect'),
             'eliminate': _('Eliminated'),
@@ -266,7 +260,7 @@ def csv_from_stv_polls(election, polls, lang, outfile=None):
         from stv.parser import STVParser
         for poll in polls:
             writerow([])
-            writerow([strforce(poll.name)])
+            writerow([strforce(_("Poll name")), strforce(poll.name)])
             writerow([])
             questions = poll.questions
             indexed_cands = {}
@@ -319,23 +313,7 @@ def csv_from_score_polls(election, polls, lang, outfile=None):
             outfile = StringIO()
         csvout = csv.writer(outfile, dialect='excel', delimiter=',')
         writerow = csvout.writerow
-        # election details
-        DATE_FMT = "%d/%m/%Y %H:%S"
-        voting_start = _('Start: %s') % (election.voting_starts_at.strftime(DATE_FMT))
-        voting_end = _('End: %s') % (election.voting_ends_at.strftime(DATE_FMT))
-        extended_until = ""
-        if election.voting_extended_until:
-            extended_until = _('Extension: %s') % \
-                (election.voting_extended_until.strftime(DATE_FMT))
-
-        writerow([strforce(election.name)])
-        writerow([strforce(election.institution.name)])
-        writerow([strforce(voting_start)])
-        writerow([strforce(voting_end)])
-
-        if extended_until:
-            writerow([strforce(extended_until)])
-        writerow([])
+        make_csv_intro(writerow, election, lang)
 
         for poll in polls:
             score_results = poll.zeus.get_results()

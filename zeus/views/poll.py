@@ -368,7 +368,7 @@ def voters_list(request, election, poll):
                                        VOTER_EXTRA_HEADERS))
     voters_count = Voter.objects.filter(poll=poll).count()
     voted_count = poll.voters_cast_count()
-
+    nr_voters_excluded = voters.excluded().count()
     context = {
         'election': election,
         'poll': poll,
@@ -380,7 +380,8 @@ def voters_list(request, election, poll):
         'voters_list_count': voters.count(),
         'voters_per_page': voters_per_page,
         'display_weight_col': display_weight_col,
-        'voter_table_headers': table_headers.iteritems()
+        'voter_table_headers': table_headers.iteritems(),
+        'nr_voters_excluded': nr_voters_excluded,
     }
     set_menu('voters', context)
     return render_template(request, 'election_poll_voters_list', context)
