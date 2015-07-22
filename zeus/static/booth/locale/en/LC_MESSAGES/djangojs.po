@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-16 13:00+0300\n"
+"POT-Creation-Date: 2015-07-22 16:45+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,6 +40,9 @@ msgstr "Ballot encryption can take up to 2 minutes."
 
 msgid "HELP"
 msgstr "Help"
+
+msgid "LOGOUT"
+msgstr "Exit"
 
 msgid "BLANK_BALLOT"
 msgstr "Blank vote"
@@ -80,7 +83,8 @@ msgid "ENCRYPTION_PROCESS_FAILED"
 msgstr "Encryption has failed."
 
 msgid "AUDIT_BALLOT_CAST_COMPLETE"
-msgstr "Your audit ballot was successfully submitted. The audit ballot id is: %s"
+msgstr ""
+"Your audit ballot was successfully submitted. The audit ballot id is: %s"
 
 msgid "ELECTION_TERMS_ACCEPT_REQUIRED"
 msgstr "Please accept the voting terms."
@@ -91,13 +95,17 @@ msgstr "Ballot submission failed."
 msgid "CAST_VOTE_ID"
 msgstr "Vote identifier"
 
+msgid "WINDOW_CLOSE_CONFIRM"
+msgstr "Are you sure you want to exit the booth page ?"
+
 msgid "AUDIT_BALLOT_SUBMIT"
 msgstr "Submit an audit ballot"
 
 msgid "AUDIT_BALLOT_SET"
 msgstr ""
 "You have chosen to submit an audit ballot. Your vote will not be counted and "
-"your selections will be registered public in a public listing in the election view."
+"your selections will be registered public in a public listing in the "
+"election view."
 
 msgid "AUDIT_BALLOT_BACK_PROMPT"
 msgstr "Press Back to return to the voting booth."
@@ -244,9 +252,3 @@ msgstr "I confirm that I am alone and nobody else has witnessed my selections."
 
 msgid "SUBMIT_BALLOT"
 msgstr "Submit ballot"
-
-msgid "WINDOW_CLOSE_CONFIRM"
-msgstr "Are you sure you want to exit the booth page ?"
-
-msgid "LOGOUT"
-msgstr "Exit"

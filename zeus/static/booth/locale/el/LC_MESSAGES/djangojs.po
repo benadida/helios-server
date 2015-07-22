@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-16 13:00+0300\n"
+"POT-Creation-Date: 2015-07-22 16:45+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -40,6 +40,9 @@ msgstr "Η κρυπτογράφηση της ψήφου ενδέχεται να 
 
 msgid "HELP"
 msgstr "Βοήθεια"
+
+msgid "LOGOUT"
+msgstr "Έξοδος"
 
 msgid "BLANK_BALLOT"
 msgstr "Λευκή ψήφος"
@@ -82,7 +85,8 @@ msgid "ENCRYPTION_PROCESS_FAILED"
 msgstr "Η κρυπτογράφηση απέτυχε."
 
 msgid "AUDIT_BALLOT_CAST_COMPLETE"
-msgstr "Η ψήφος ελέγχου υποβλήθηκε επιτυχώς. Ο κωδικός της ψήφου ελέγχου είναι: %s"
+msgstr ""
+"Η ψήφος ελέγχου υποβλήθηκε επιτυχώς. Ο κωδικός της ψήφου ελέγχου είναι: %s"
 
 msgid "ELECTION_TERMS_ACCEPT_REQUIRED"
 msgstr "Παρακαλούμε, αποδεχθείτε τους όρους της ψηφοφορίας."
@@ -92,6 +96,9 @@ msgstr "Η υποβολή της ψήφου απέτυχε."
 
 msgid "CAST_VOTE_ID"
 msgstr "Αναγνωριστικό ψήφου"
+
+msgid "WINDOW_CLOSE_CONFIRM"
+msgstr "Ειστε σίγουρος οτι θέλετε να φύγετε απο το ηλεκτρονικό παραπέτασμα;"
 
 msgid "AUDIT_BALLOT_SUBMIT"
 msgstr "Υποβολή Ψήφου Ελέγχου"
@@ -249,9 +256,3 @@ msgstr ""
 
 msgid "SUBMIT_BALLOT"
 msgstr "Υποβολή ψήφου"
-
-msgid "WINDOW_CLOSE_CONFIRM"
-msgstr "Ειστε σίγουρος οτι θέλετε να φύγετε απο το ηλεκτρονικό παραπέτασμα;"
-
-msgid "LOGOUT"
-msgstr "Έξοδος"

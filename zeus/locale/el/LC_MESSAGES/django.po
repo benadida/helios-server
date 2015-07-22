@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-16 13:00+0300\n"
+"POT-Creation-Date: 2015-07-22 16:45+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,9 +57,8 @@ msgstr "Επιλογή"
 msgid "Question"
 msgstr "Ερώτηση"
 
-#, python-format
-msgid "% is not a valid character."
-msgstr ""
+msgid "&#37; is not a valid character"
+msgstr "Ο χαρακτήρας % δεν επιτρέπεται"
 
 msgid "Min answers"
 msgstr "Ελάχιστος αριθμός επιλογών"
@@ -72,10 +71,6 @@ msgstr ""
 "Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
 "ελάχιστου αριθμού απαντήσεων"
 
-#, python-format
-msgid "% is not a valid character"
-msgstr ""
-
 msgid "No duplicate choices allowed"
 msgstr "Δεν επιτρέπονται διπλότυπες επιλογές στο ψηφοδέλτιο"
 
@@ -85,14 +80,10 @@ msgstr "Όνομα συνδυασμού"
 msgid "Scores"
 msgstr "Βαθμοί"
 
-#, fuzzy
-msgid "Max answers should be greater or equal than min answers"
-msgstr ""
-"Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
-"ελάχιστου αριθμού απαντήσεων"
-
 msgid "Number of answers must be equal or bigger than max answers"
 msgstr ""
+"Ο αριθμός των καταχωρημένων απαντήσεων πρέπει να είναι ίσoς ή μεγαλύτερος "
+"απο τον μέγιστο αριθμό επιλογών"
 
 msgid "set the eligibles count of the election"
 msgstr "το πλήθος των εκλεγόμενων"
@@ -302,18 +293,6 @@ msgstr "ΑΚΥΡΟ"
 msgid "BLANK"
 msgstr "ΛΕΥΚΟ"
 
-#, python-format
-msgid "Start: %s"
-msgstr "Έναρξη: %s"
-
-#, python-format
-msgid "End: %s"
-msgstr "Λήξη: %s"
-
-#, python-format
-msgid "Extension: %s"
-msgstr "Παράταση: %s"
-
 msgid "Elect"
 msgstr "Εκλογή"
 
@@ -483,6 +462,7 @@ msgstr "Προσθήκη ερωτήσεων στην ψηφοφορία"
 msgid "Too many choices"
 msgstr "Περισσότερες επιλογές από το επιτρεπτό"
 
+#, python-brace-format
 msgid "Question '{0}' requires at least {1} choices."
 msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
 
@@ -560,79 +540,12 @@ msgid "An email with demo credentials has been sent to %s"
 msgstr "Ο δοκιμαστικός λογαριασμός σας έχει σταλεί στη διεύθυνση email %s"
 
 msgid "You do not have permission to access this page."
-msgstr ""
+msgstr "Δεν έχετε δικαίωμα πρόσβασης σε αυτή τη σελίδα."
 
 msgid "An error has been occured. Please notify the server admin."
 msgstr ""
+"Προέκυψε σφάλμα διακομιστή, παρακαλούμε ενημερώστε τους διαχειριστές του "
+"συστηματος."
 
 msgid "The requested page was not found."
-msgstr ""
-
-#~ msgid "Voters %d"
-#~ msgstr "Ψηφοφόροι %d"
-
-#~ msgid "Email body"
-#~ msgstr "Κείμενο μηνύματος email"
-
-#~ msgid "Please assign the remaining choices: {0}"
-#~ msgstr "Παρακαλούμε συμπληρώστε τις υπόλοιπες επιλογές: {0}"
-
-#~ msgid "TOTAL"
-#~ msgstr "ΣΥΝΟΛΟ"
-
-#~ msgid "4009/2011 (A' 195)"
-#~ msgstr ""
-#~ "Επιλέξτε εάν εφαρμόζεται ο περιορισμός του τέταρτου εδαφίου τηςπερίπτωσης "
-#~ "β΄ της παραγράφου 4 του άρθρου 8 του νόμου 4009/2011 (Α΄ 195) όπως ισχύει "
-#~ "με την τροποποίηση του άρθρου 47 του ν. 4025/2011 (Α΄228)"
-
-#~ msgid "%Y-%m-%d %H:%M"
-#~ msgstr "%d/%m/%Y %H:%M"
-
-#~ msgid "Welcome to the electronic voting booth by Zeus Elections."
-#~ msgstr ""
-#~ "Καλωσήρθατε στο ηλεκτρονικό παραπέτασμα του συστήματος ψηφοφοριών «Ζευς»"
-
-#~ msgid ""
-#~ "At this point you must have followed the secret invitation sent to you\n"
-#~ "    by Email or SMS for the poll"
-#~ msgstr ""
-#~ "Για να βρίσκεστε στη σελίδα αυτή, σημαίνει ότι ακολουθήσατε το μυστικό "
-#~ "σύνδεσμο\n"
-#~ "που σας έχει αποσταλεί με email ή SMS."
-
-#~ msgid ""
-#~ "To submit your vote follow the instructions.\n"
-#~ "    Your current progress and relevant information will be displayed,\n"
-#~ "    at the top of the page."
-#~ msgstr ""
-#~ "Για να υποβάλετε ψήφο ακολουθήστε τις οδηγίες.\n"
-#~ "    Στην κορυφή της σελίδας θα σημειώνεται η πρόοδός σας,\n"
-#~ "    καθώς και άλλες σχετικές πληροφορίες."
-
-#~ msgid "Fill in ballot."
-#~ msgstr "Συμπλήρωση ψηφοδελτίου."
-
-#~ msgid "In this step, you fill in the ballot with your choices."
-#~ msgstr "Σε αυτό το βήμα σημειώνετε τις επιλογές σας στο ψηφοδέλτιο."
-
-#~ msgid "Ballot encryption and submission."
-#~ msgstr "Κρυπτογράφηση και υποβολή ψηφοδελτίου."
-
-#~ msgid ""
-#~ "The choices you made in the previous step will be encrypted\n"
-#~ "              in your own computer by the web browser itself. A "
-#~ "submission receipt will\n"
-#~ "              be sent to your email address."
-#~ msgstr ""
-#~ "Οι επιλογές σας στο προηγούμενο βήμα θα κρυπτογραφηθούν\n"
-#~ "              στον υπολογιστή σας από τον ίδιο τον φυλλομετρητή "
-#~ "(browser).\n"
-#~ "              Θα σας σταλεί αποδεικτικό υποβολής ψήφου με email."
-
-#~ msgid ""
-#~ "You can use your invitation to submit another vote.\n"
-#~ "    Each time, the new vote replaces your previous one."
-#~ msgstr ""
-#~ "Μπορείτε να χρησιμοποιήσετε το σύνδεσμο για να καταχωρήσετε νέα ψήφο.\n"
-#~ "    Κάθε φορά, η νέα ψήφος αντικαθιστά την προηγούμενη."
+msgstr "Η σελίδα που ζητήσατε δεν βρέθηκε."

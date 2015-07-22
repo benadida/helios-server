@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-06-16 13:00+0300\n"
+"POT-Creation-Date: 2015-07-22 16:45+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -39,9 +39,8 @@ msgstr "τους ψηφοφόρους που δεν έχουν ψηφίσει α
 msgid "Voter ID"
 msgstr "Αναγνωριστικό ψηφοφόρου"
 
-#, fuzzy
 msgid "Linked polls"
-msgstr "Μετονομασία κάλπης"
+msgstr "Συνδεδεμένες κάλπες"
 
 msgid "Election type"
 msgstr "Τύπος ψηφοφορίας"
@@ -541,9 +540,8 @@ msgstr "Αποθήκευση κρυπτογραφικών δεδομένων"
 msgid "Total voters count"
 msgstr "Σύνολο ψηφοφόρων"
 
-#, fuzzy
 msgid "Excluded Voters"
-msgstr "Εξαίρεση ψηφοφόρου"
+msgstr "Εξαιρεμένοι ψηφοφόροι"
 
 msgid "Votes cast"
 msgstr "Έχουν ψηφίσει"
@@ -1422,6 +1420,8 @@ msgstr ""
 
 msgid "Something went wrong !!!"
 msgstr ""
+"Προέκυψε σφάλμα διακομιστή, παρακαλούμε ενημερώστε τους διαχειριστές του "
+"συστήματος."
 
 msgid "Choose election"
 msgstr "Επιλογή ψηφοφορίας"
