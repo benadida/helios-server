@@ -239,20 +239,26 @@
 
 <script type="text/javascript">
 	$(document).ready(function() {
-	{% if user.user_type == 'shibboleth' and election.eligibility.0.constraint.0.items %}	
+	{% if user.user_type == 'shibboleth' and election.eligibility.0.constraint.0.items %}
 		$(function(){
-			$('div.shib-attr-panel').removeClass('hidden'); 
+			$('div.shib-attr-panel').removeClass('hidden');
 		});
 	 	{% for key, value in election.eligibility.0.constraint.0.items %}
 			$(function() {
 				var row = $('#attribute_0').clone();
 				$(row).attr('id','attribute_' + '{{forloop.counter}}');
-				if ($('select[name="attribute_name"] option[value="{{key}}"]').val() !== undefined) {
-					$(row).children('select[name="attribute_name"]').val("{{key}}");
-					$(row).children('input[name="cafe_attribute_values[]"]').val("{{value}}");
-					$(row).children('span:last').attr('class','remove_cafe_attribute input-group-addon  glyphicon glyphicon-minus');
-	        		$(row).insertAfter('#attribute_' + (parseFloat('{{ forloop.counter }}') - 1));
-        		}
+				if ('{{forloop.counter}}' == '1') {
+					$('#attribute_0').children('select[name="attribute_name"]').val("{{key}}");
+					$('#attribute_0').children('input[name="cafe_attribute_values[]"]').val("{{value}}");
+				} else {
+					if ($('select[name="attribute_name"] option[value="{{key}}"]').val() !== undefined) {
+						console.log($('select[name="attribute_name"] option[value="{{key}}"]').val());
+						$(row).children('select[name="attribute_name"]').val("{{key}}");
+						$(row).children('input[name="cafe_attribute_values[]"]').val("{{value}}");
+						$(row).children('span:last').attr('class','remove_cafe_attribute input-group-addon glyphicon glyphicon-minus');
+						 $(row).insertAfter('div.cafe_attribute:last');
+					}
+				}
 	 		});
 	 	{% endfor %}
 	{% else %}

@@ -7,33 +7,42 @@ $("document").ready(function(){
         $(row).children('input[name=cafe_attribute_values[]]').attr('value','');
         $(row).attr('id','attribute_' + rowNum);
         $(row).children('span:last').attr('class','remove_cafe_attribute input-group-addon  glyphicon glyphicon-minus');
-        $(row).insertAfter('#attribute_' + (rowNum - 1));
+        $(row).insertAfter('div.cafe_attribute:last');
     });
 
-    $('.remove_cafe_attribute').click(function(){
+    $('.remove_cafe_attribute').live('click', function(){
        $(this).parent('div').remove();    
        rowNum --;
        $('.cafe_attribute').each(function(index){ $(this).attr('id', 'attribute_'+ index)});
     });
 
     $('#update_voter_reg').click(function(event) {
-        user_type = $('input[name="user_type"]').val();
-        eligibility = $('input[name="eligibility"]:checked').val();
-        categories = {}
+        var user_type = $('input[name="user_type"]').val();
+        var eligibility = $('input[name="eligibility"]:checked').val();
+        var categories = {}
+        var has_error = false;
         if (eligibility == "limitedreg" & user_type == "shibboleth") {
             event.preventDefault();
             event.stopImmediatePropagation();
             var url = $('form#eligibility-form').attr('action');
             $('div.cafe_attribute').each(function(){
-                key = $(this).find('select option:selected').text();
+                key = $(this).find('select option:selected').val();
                 value = $(this).find('input[name="cafe_attribute_values[]"]').val();
-                categories[key] = value;
+                if (key == 'attribute_name' || value == '') {
+                    $(this).addClass('has-error');
+                    has_error = true;
+                    $('span.add_attr_result').text(gettext('Please, correct the provided values.'));
+                } else {
+                    categories[key] = value;
+                    $(this).removeClass('has-error');
+                }
             });          
         }
         data = { 
             'eligibility': eligibility,
             'category_id': categories,
-        }  
+        }
+        if (!has_error){
         $.ajax({
             type: "POST",
             url: url,
@@ -53,6 +62,7 @@ $("document").ready(function(){
                 $('span.add_attr_result').text(gettext('Please, correct the provided values.'));
             }
         });
+    }
     });
 
     $('input#idp_type').click(function(){
