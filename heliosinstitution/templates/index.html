@@ -35,7 +35,7 @@ $(document).ready(function() {
                 ended_at = (isNaN(Date.parse(item.ended_at))) ? '' : new Date(item.ended_at);
                 $('.modal-title').text(institution_name + ' - ' + election_type);
                 table.row.add([
-                    item.name,
+                    '<a href='+ item.url + '>' + item.name + '</a>',
                     started_at,
                     ended_at
                 ]).draw();

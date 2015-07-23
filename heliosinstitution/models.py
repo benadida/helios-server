@@ -105,6 +105,7 @@ class Institution(models.Model):
                  'pk': election.pk,
                  'uuid': election.uuid,
                  'name': election.name,
+                 'url': election.url,
                  'admin': election.admin.pretty_name,
                  'voters': election.num_voters,
                  'cast_votes': election.num_cast_votes,
