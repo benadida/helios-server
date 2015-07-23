@@ -1,5 +1,6 @@
 import copy
 import datetime
+import cStringIO as StringIO
 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
@@ -54,8 +55,16 @@ def home(request):
 
 @auth.manager_or_superadmin_required
 def elections_report(request):
-    elections = Election.objects.filter(include_in_reports=True)
-    save_path = getattr(settings, 'ZEUS_RESULTS_PATH', None)
+    _all = request.GET.get('full', 0)
+
+    elections = Election.objects.filter(
+        trial=False,
+        completed_at__isnull=False
+    )
+
+    if not _all:
+        elections = elections.filter(include_in_reports=True)
+
     report = ElectionReport(elections)
     csv_path = getattr(settings, 'CSV_ELECTION_REPORT', None)
     if csv_path:
@@ -65,13 +74,10 @@ def elections_report(request):
     date = datetime.datetime.now()
     str_date = date.strftime("%Y-%m-%d")
     filename = 'elections_report_' + str_date
-    report.make_output(save_path+filename)
-    try:
-        f = open(save_path+filename+'.csv', 'r')
-    except IOError:
-        message = "CSV file not found!"
-        messages.error(request, message)
-        return HttpResponseRedirect(reverse('admin_home'))
-    response = HttpResponse(f, mimetype='application/csv')
+    fd = StringIO.StringIO()
+    report.make_output(fd)
+    fd.seek(0)
+
+    response = HttpResponse(fd, mimetype='application/csv')
     response['Content-Disposition'] = 'attachment; filename=%s.csv' % filename
     return response

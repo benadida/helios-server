@@ -376,6 +376,7 @@ def csv_from_score_polls(election, polls, lang, outfile=None):
         except:
             return None
 
+
 class ElectionReport(object):
     '''
     Create CSV with data from all elections that
@@ -387,8 +388,15 @@ class ElectionReport(object):
         self.elections = elections
         self.csvData = []
         self.objectData = []
-        self.header = ["ΙΔΡΥΜΑ", "ΕΚΛΕΚΤΟΡΕΣ", "ΨΗΦΙΣΑΝΤΕΣ", "ΕΝΑΡΞΗ", "ΛΗΞΗ",
-                       "uuid", "ΟΝΟΜΑ", "ΚΑΛΠΕΣ", "ΔΙΑΧΕΙΡΙΣΤΗΣ"]
+        self.header = [_("Institution"),
+                       _("Electors"),
+                       _("Voters"),
+                       _("Start"),
+                       _("End"),
+                       _("uuid"),
+                       _("Name"),
+                       _("Polls"),
+                       _("Administrator")]
 
     def get_elections(self):
         return self.elections
@@ -404,8 +412,6 @@ class ElectionReport(object):
         with open(csv_file_path, 'rb') as f:
             reader = CSVReader(f, min_fields=2, max_fields=9)
             for row in reader:
-                if row[0] == "ΙΔΡΥΜΑ".decode('utf-8'):
-                    continue
                 keys = ('inst', 'nr_voters', 'nr_voters_voted', 'start',
                         'end', 'uuid', 'election_name', 'admin')
                 new_row = {}
@@ -441,9 +447,18 @@ class ElectionReport(object):
         data = self.csvData + self.objectData
         keys = ('inst', 'nr_voters', 'nr_voters_voted', 'start',
                 'end', 'uuid', 'election_name', 'nr_polls', 'admin')
-        with open("{}.csv".format(filename), 'wb') as f:
-            writer = csv.writer(f, delimiter=',')
-            writer.writerow(self.header)
-            for row in data:
-                writer.writerow([row[k].encode('utf-8') if type(row[k]) != int
-                                else row[k] for k in keys])
+
+        fd = filename
+        close = False
+        if isinstance(filename, basestring):
+            fd = open("{}.csv".format(filename), 'wb')
+            close = True
+
+        writer = csv.writer(fd, delimiter=',')
+        head_row = map(lambda c: c.encode('utf-8'), self.header)
+        writer.writerow(head_row)
+        for row in data:
+            writer.writerow([row[k].encode('utf-8') if type(row[k]) != int
+                            else row[k] for k in keys])
+        if close:
+            fd.close()
