@@ -68,7 +68,7 @@ def elections_report(request):
     elections = elections.order_by('completed_at')
 
     report = ElectionReport(elections)
-    csv_path = getattr(settings, 'CSV_ELECTION_REPORT', None)
+    csv_path = getattr(settings, 'ZEUS_ELECTIONS_REPORT_INCLUDE', None)
     if csv_path:
         report.parse_csv(csv_path)
     report.parse_object()
