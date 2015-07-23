@@ -18,7 +18,7 @@
                 {% for institution in sliced_institutions %}
                     <tr data-institution="{{ institution.name }}">
                         <td>{{ institution.name }}</td>
-                        <td id="elections_new">{% if institution.elections_new > 0 %}<a href="#" class="get-filtered" data-url="{% url "heliosinstitution.views.elections_by_type_year" institution.pk "new" %}" data-type="{% trans "New" %}" data-toggle="modal" data-target="#elections_list">{{ institution.elections_new|length}}</a>{% else %} - {% endif %}</td>
+                        <td id="elections_new">{% if institution.elections_new|length > 0 %}<a href="#" class="get-filtered" data-url="{% url "heliosinstitution.views.elections_by_type_year" institution.pk "new" %}" data-type="{% trans "New" %}" data-toggle="modal" data-target="#elections_list">{{ institution.elections_new|length}}</a>{% else %} - {% endif %}</td>
                         <td id="elections_in_progress">{% if institution.elections_in_progress|length > 0 %}<a href="#" class="get-filtered"  data-type="{% trans "In Progress" %}" data-toggle="modal" data-target="#elections_list" data-url="{% url "heliosinstitution.views.elections_by_type_year" institution.pk "in_progress" %}">{{ institution.elections_in_progress|length }}</a>{% else %} - {% endif %}</td>
                         <td>{% if institution.elections_done|length > 0 %}<a href="#" class="get-filtered"  data-type="{% trans "Done" %}" data-toggle="modal" data-target="#elections_list" data-url="{% url "heliosinstitution.views.elections_by_type_year" institution.pk "done" %}">{{ institution.elections_done|length }}</a>{% else %} - {% endif %}</td>
                     </tr>
