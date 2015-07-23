@@ -322,6 +322,7 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
                                            null=True)
     archived_at = models.DateTimeField(auto_now_add=False, default=None,
                                         null=True)
+    include_in_reports = models.BooleanField(default=False)
     objects = ElectionManager()
 
     class Meta:

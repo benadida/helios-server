@@ -1,9 +1,12 @@
 import copy
+import datetime
 
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.contrib import messages
 
+from zeus.reports import ElectionReport
 from zeus.utils import render_template, ELECTION_TABLE_HEADERS,\
     get_filters, ELECTION_SEARCH_FIELDS, ELECTION_BOOL_KEYS_MAP
 from zeus import auth
@@ -48,3 +51,27 @@ def home(request):
         'elections_per_page': elections_per_page,
     }
     return render_template(request, "index", context)
+
+@auth.manager_or_superadmin_required
+def elections_report(request):
+    elections = Election.objects.filter(include_in_reports=True)
+    save_path = getattr(settings, 'ZEUS_RESULTS_PATH', None)
+    report = ElectionReport(elections)
+    csv_path = getattr(settings, 'CSV_ELECTION_REPORT', None)
+    if csv_path:
+        report.parse_csv(csv_path)
+    report.parse_object()
+    # ext is not needed
+    date = datetime.datetime.now()
+    str_date = date.strftime("%Y-%m-%d")
+    filename = 'elections_report_' + str_date
+    report.make_output(save_path+filename)
+    try:
+        f = open(save_path+filename+'.csv', 'r')
+    except IOError:
+        message = "CSV file not found!"
+        messages.error(request, message)
+        return HttpResponseRedirect(reverse('admin_home'))
+    response = HttpResponse(f, mimetype='application/csv')
+    response['Content-Disposition'] = 'attachment; filename=%s.csv' % filename
+    return response
