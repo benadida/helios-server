@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-22 16:45+0300\n"
+"POT-Creation-Date: 2015-07-23 14:13+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -338,6 +338,24 @@ msgstr "ΒΑΘΜΟΛΟΓΙΕΣ ΑΝΑΛΥΤΙΚΑ"
 msgid "SCORES:"
 msgstr "ΒΑΘΜΟΛΟΓΙΕΣ:"
 
+msgid "Institution"
+msgstr "Ίδρυμα"
+
+msgid "Electors"
+msgstr "Εκλέκτορες"
+
+msgid "uuid"
+msgstr "Αναγνωριστικό"
+
+msgid "Name"
+msgstr "Όνομα"
+
+msgid "Polls"
+msgstr "Κάλπες"
+
+msgid "Administrator"
+msgstr "Διαχειριστής"
+
 msgid "Zeus Elections - Poll Results"
 msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
 
@@ -426,15 +444,6 @@ msgstr "Τελευταία είσοδος"
 
 msgid "Actions"
 msgstr "Επιλογές"
-
-msgid "Name"
-msgstr ""
-
-msgid "Institution"
-msgstr ""
-
-msgid "Administrator"
-msgstr ""
 
 #, fuzzy
 msgid "Creation"
