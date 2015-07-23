@@ -65,6 +65,8 @@ def elections_report(request):
     if not _all:
         elections = elections.filter(include_in_reports=True)
 
+    elections = elections.order_by('completed_at')
+
     report = ElectionReport(elections)
     csv_path = getattr(settings, 'CSV_ELECTION_REPORT', None)
     if csv_path:
