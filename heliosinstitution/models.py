@@ -48,13 +48,13 @@ class Institution(models.Model):
 
     def elections_new(self, year=None):
         if year is None:
-            elections = Election.objects.filter(admin__in=
-                self.institutionuserprofile_set.all(),
+            elections = Election.objects.filter(admin_id__in=[
+                profile.helios_user_id for profile in self.institutionuserprofile_set.all()],
                 frozen_at__isnull=True,
                 voting_ended_at__isnull=True).order_by("short_name")
         else:
-            elections = Election.objects.filter(admin__in=
-                self.institutionuserprofile_set.all(),
+            elections = Election.objects.filter(admin_id__in=[
+                profile.helios_user_id for profile in self.institutionuserprofile_set.all()],
                 created_at__year=year,
                 frozen_at__isnull=True,
                 voting_ended_at__isnull=True).order_by("short_name")
@@ -64,13 +64,13 @@ class Institution(models.Model):
 
     def elections_in_progress(self, year=None):
         if year is None:
-            elections = Election.objects.filter(admin__in=
-                self.institutionuserprofile_set.all(),
+            elections = Election.objects.filter(admin_id__in=[
+                profile.helios_user_id for profile in self.institutionuserprofile_set.all()],
                 frozen_at__isnull=False,
                 voting_ended_at__isnull=True).order_by("short_name")
         else:
-            elections = Election.objects.filter(admin__in=
-                self.institutionuserprofile_set.all(),
+            elections = Election.objects.filter(admin_id__in=[
+                profile.helios_user_id for profile in self.institutionuserprofile_set.all()],
                 created_at__year=year,
                 frozen_at__isnull=False,
                 voting_ended_at__isnull=True).order_by("short_name")
@@ -79,13 +79,13 @@ class Institution(models.Model):
 
     def elections_done(self, year=None):
         if year is None:
-            elections = Election.objects.filter(admin__in=
-                self.institutionuserprofile_set.all(),
+            elections = Election.objects.filter(admin_id__in=[
+                profile.helios_user_id for profile in self.institutionuserprofile_set.all()],
                 frozen_at__isnull=False,
                 voting_ended_at__isnull=False).order_by("short_name")
         else:
-            elections = Election.objects.filter(admin__in=
-                self.institutionuserprofile_set.all(),
+            elections = Election.objects.filter(admin_id__in=[
+                profile.helios_user_id for profile in self.institutionuserprofile_set.all()],
                 created_at__year=year,
                 frozen_at__isnull=False,
                 voting_ended_at__isnull=False).order_by("short_name")
