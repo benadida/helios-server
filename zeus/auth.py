@@ -353,7 +353,6 @@ def get_users_from_request(request):
             raise PermissionDenied
 
         if auth_trustee.secret == password:
-            self._clear_session(request)
             trustee = auth_trustee
             setattr(request, '_dont_enforce_csrf_checks', True)
         else:
