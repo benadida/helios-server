@@ -716,6 +716,7 @@ BOOTH.cast_ballot = function() {
 
           // we're ready to leave the site
           BOOTH.started_p = false;
+          window.CLOSE_CONFIRM = false;
           window.location = data.cast_url;
         }
       },
@@ -774,7 +775,10 @@ $(document).ready(function(){
 })
 
 window.BOOTH = BOOTH;
-$(window).on('beforeunload',function(){
-  return gettext("WINDOW_CLOSE_CONFIRM");
-});
+window.CLOSE_CONFIRM = true;
 
+$(window).on('beforeunload',function(){
+  if (window.CLOSE_CONFIRM) {
+    return gettext("WINDOW_CLOSE_CONFIRM");
+  }
+});
