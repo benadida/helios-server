@@ -24,4 +24,5 @@ election_patterns = patterns('zeus.views.trustee',
     url(r'^upload_pk$', 'upload_pk', name='election_trustee_upload_pk'),
     url(r'^check_sk$', 'check_sk', name='election_trustee_check_sk'),
     url(r'^verify_key$', 'verify_key', name='election_trustee_verify_key'),
+    url(r'^json$', 'json_data', name='trustee_json_data'),
 )

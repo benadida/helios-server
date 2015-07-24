@@ -1,6 +1,7 @@
 import simplejson
 import logging
 import datetime
+import json
 
 from django.conf.urls.defaults import *
 from django.core.urlresolvers import reverse
@@ -16,7 +17,7 @@ from zeus.views.common import *
 
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.views.decorators.http import require_http_methods
 
 from helios.view_utils import render_template
@@ -124,3 +125,103 @@ def home(request, election, trustee):
 
     set_menu('trustee', context)
     return render_template(request, 'election_trustee_home', context)
+
+
+@auth.trustee_view
+@auth.requires_election_features('trustee_can_access_election')
+@require_http_methods(["GET"])
+def json_data(request, election, trustee):
+
+    def get_obj_public_key(obj):
+        if obj.public_key:
+            public_key = {
+                'g': str(obj.public_key.g),
+                'p': str(obj.public_key.p),
+                'q': str(obj.public_key.q),
+                'y': str(obj.public_key.y),
+            }
+        else:
+            public_key = {}
+        return public_key
+    
+    def date_to_string(date):
+        if date:
+            str_date = date.isoformat()
+        else:
+            str_date = None
+        return str_date
+
+    admins = election.admins.all()
+    admins_data = []
+    for admin in admins:
+        data = {
+            'id': admin.id,
+            'user_id': admin.user_id,
+            'name': admin.name,
+        }
+        admins_data.append(data)
+
+    trustees = election.trustees.all()
+    trustees_data = []
+    for trustee in trustees:
+        data = {
+            'name': trustee.name,
+            'public_key': get_obj_public_key(trustee),
+            'email': trustee.email,
+        }
+        trustees_data.append(data)
+
+    polls = election.polls.all()
+    polls_data = []
+    for poll in polls:
+        voters = poll.voters.all()
+        nr_voters = voters.count()
+        nr_excluded = voters.excluded().count()
+        data = {
+            'uuid': poll.uuid,
+            'name': poll.name,
+            'short name': poll.short_name,
+            'nr_voters': nr_voters,
+            'nr_excluded': nr_excluded,
+            'cast_votes': poll.cast_votes_count,
+            'link_id': poll.link_id,
+            'index': poll.index if poll.link_id else None,
+            'frozen_at': date_to_string(poll.frozen_at),
+            'created_at': date_to_string(poll.created_at),
+            'modified_at': date_to_string(poll.modified_at),
+            'questions': poll.questions,
+            'questions_data': poll.questions_data,
+            'voters_last_modified': date_to_string(poll.voters_last_notified_at),
+        }
+
+        include_tally = request.GET.get('include_tally')
+        if not poll.encrypted_tally:
+            data['encrypted_tally'] = None
+        else:
+            if include_tally:
+                data['encrypted_tally'] = poll.encrypted_tally.toJSONDict()
+            else:
+                data['encrypted_tally'] = 'tally_excluded' 
+        polls_data.append(data)
+
+    data = {
+        'election':
+            {
+            'uuid': election.uuid,
+            'name': election.name,
+            'short name': election.short_name,
+            'description': election.description,
+            'institution': election.institution.name,
+            'admins': admins_data,
+            'trustees': trustees_data,
+            'public_key': get_obj_public_key(election),
+            'help_email': election.help_email,
+            'help_phone': election.help_phone,
+            'starts_at': date_to_string(election.voting_starts_at),
+            'ends_at': date_to_string(election.voting_ends_at),
+            'extended_until': date_to_string(election.voting_extended_until),
+            'polls': polls_data,
+        }
+    }
+    json_data = json.dumps(data)
+    return HttpResponse(json_data, mimetype="application/json")
