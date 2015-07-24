@@ -28,7 +28,7 @@ class ForceDefaultLanguageMiddleware(object):
         if lang:
             request.session['django_language'] = lang
             return HttpResponseRedirect('/' + settings.SERVER_PREFIX + '/')
-	
+
 
 class CSRFMiddleware(object):
 
@@ -38,9 +38,12 @@ class CSRFMiddleware(object):
         if not csrf or type(csrf) != str:
             request.session['csrf_token'] = str(uuid.uuid4())
 
+
 class AuthenticationMiddleware(object):
 
     def process_request(self, request):
+        setattr(request, 'zeususer', auth.ZeusUser(None))
+
         user = auth.ZeusUser.from_request(request)
         setattr(request, 'zeususer', user)
         if user.is_admin:
