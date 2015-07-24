@@ -143,7 +143,7 @@ def json_data(request, election, trustee):
         else:
             public_key = {}
         return public_key
-    
+
     def date_to_string(date):
         if date:
             str_date = date.isoformat()
@@ -177,6 +177,10 @@ def json_data(request, election, trustee):
         voters = poll.voters.all()
         nr_voters = voters.count()
         nr_excluded = voters.excluded().count()
+        ciphers_url = reverse('election_poll_get_tally',
+                              args=(election.uuid, poll.uuid))
+        post_decryption_url = reverse('election_poll_upload_decryption', 
+                                      args=(election.uuid, poll.uuid))
         data = {
             'uuid': poll.uuid,
             'name': poll.name,
@@ -192,6 +196,8 @@ def json_data(request, election, trustee):
             'questions': poll.questions,
             'questions_data': poll.questions_data,
             'voters_last_modified': date_to_string(poll.voters_last_notified_at),
+            'ciphers_url': ciphers_url,
+            'post_decryption_url': post_decryption_url
         }
 
         include_tally = request.GET.get('include_tally')
