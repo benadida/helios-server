@@ -5,6 +5,7 @@ author: Shirlei Chaves
 e-mail: shirlei@gmail.com
 version: 1.0 - 2015 
 """
+import datetime
 import re
 
 from django import forms
@@ -97,6 +98,11 @@ def check_constraint(constraint, user):
             for ctr in ctr_list:
                 if ctr.strip() in user_attrs:
                     has_attr = True
+
+            if settings.CHECK_EXIT_DATE:
+                if 'brExitDate' in user.info['attributes']:
+                    if datetime.datetime.now() > datetime.datetime.strptime(user.info['attributes']['brExitDate'], "%Y%m%d"):
+                        has_attr = False
             if not has_attr: # if one attribute isn't available, return False
                 return False
     except KeyError:
