@@ -8,15 +8,15 @@
 		  <h3 class="title">{% trans "Voters and Ballot Tracking Center" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
 		  <h3 class="title">{{election.name}}</h3>
 		</div>
-{% if admin_p and not election.frozen_at %}
+{% if admin_p %}
 	{% if election.private_p %}
 		<em>{% blocktrans %}Your election is marked private, which means you cannot open registration up more widely{% endblocktrans %}</em>
 	</div>
 </div> <!-- first_row -->
-	{% else %}
+{% else %}
 </div>
 </div> <!-- first_row -->
-
+{% if not election.frozen_at %}
 <div class="row"> <!-- second row -->
 <div class="col-md-10">
 <div class="panel panel-primary">
@@ -83,17 +83,13 @@
 			<button id="update_voter_reg" class="btn btn-primary pull-right">{% trans "update" %}</button>
 		</div>
 	</form>
-{% endif %}
-{% endif %}
-
-{% if email_voters and election.frozen_at and admin_p %}
-	<p><a class="btn btn-primary" href="{% url "helios.views.voters_email" election.uuid %}">{% trans "email voters" %}</a></p>	
-{% endif %}
-</div>	
-</div>
+	</div>	<!-- div panel body -->
+</div> <!-- div panel primary -->
 </div> <!-- col -->
 </div> <!-- second row -->
-
+{% endif %}
+{% endif %}
+{% endif %}
 <div id="third_row" class="row">
 <div class="col-md-12">
 	<!-- who can vote info -->
@@ -236,6 +232,13 @@
 		{% endif %}
 	</div>
 </div>
+{% if email_voters and election.frozen_at and admin_p %}
+	<div id="fifth_row" class="row">
+		<div class="col-md-12">
+			<p><a class="btn btn-primary" href="{% url "helios.views.voters_email" election.uuid %}">{% trans "email voters" %}</a></p>
+		</div>
+	</div>
+{% endif %}
 
 <script type="text/javascript">
 	$(document).ready(function() {
