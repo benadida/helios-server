@@ -201,6 +201,9 @@
 </div>
 </div>
 
+{% if election.eligibility.0.auth_system == 'shibboleth' and election.frozen_at %}
+	{{ election.pretty_eligibility|safe }}
+{% endif %}
 <div id="forth_row" class="row">
 	<div class="col-md-12">
 		{% if admin_p %}
