@@ -245,7 +245,7 @@
 
 <script type="text/javascript">
 	$(document).ready(function() {
-	{% if user.user_type == 'shibboleth' and election.eligibility.0.constraint.0.items %}
+	{% if election.eligibility.0.auth_system == 'shibboleth' and election.eligibility.0.constraint.0.items %}
 		$(function(){
 			$('div.shib-attr-panel').removeClass('hidden');
 		});
