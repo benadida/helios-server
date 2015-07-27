@@ -258,7 +258,6 @@
 					$('#attribute_0').children('input[name="cafe_attribute_values[]"]').val("{{value}}");
 				} else {
 					if ($('select[name="attribute_name"] option[value="{{key}}"]').val() !== undefined) {
-						console.log($('select[name="attribute_name"] option[value="{{key}}"]').val());
 						$(row).children('select[name="attribute_name"]').val("{{key}}");
 						$(row).children('input[name="cafe_attribute_values[]"]').val("{{value}}");
 						$(row).children('span:last').attr('class','remove_cafe_attribute input-group-addon glyphicon glyphicon-minus');
