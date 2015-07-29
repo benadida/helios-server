@@ -144,26 +144,26 @@
 
 		{% if not election.encrypted_tally %}
 			{% if election.tallying_started_at %}
-				{% blocktrans %}
-					Tally computation is under way.<br />
-					Reload this page in a couple of minutes.
-				{% endblocktrans %}
+{% blocktrans %}
+Tally computation is under way.<br />
+Reload this page in a couple of minutes.
+{% endblocktrans %}
 			{% else %}
 				<a href="{% url "helios.views.one_election_compute_tally" election.uuid %}">
-				{%blocktrans %}
-					compute encrypted tally</a><br />
-					The encrypted votes will be combined into an encrypted tally. Once this is done,<br />
-					trustees will be asked to provide their share of the decryption.
-				{% endblocktrans %}
+{%blocktrans %}
+compute encrypted tally</a><br />
+The encrypted votes will be combined into an encrypted tally. Once this is done,<br />
+trustees will be asked to provide their share of the decryption.
+{% endblocktrans %}
 			{% endif %}
 		{% else %}
 
 			{% if election.result %}
 				<a href="{% url "helios.views.release_result" election.uuid %}">{% trans "release result" %}</a><br />
-				{% blocktrans %}
-					The result displayed below is visible only to you.<br />
-					Once you release the result, it will be visible to everyone.
-				{% endblocktrans %}
+{% blocktrans %}
+The result displayed below is visible only to you.<br />
+Once you release the result, it will be visible to everyone.
+{% endblocktrans %}
 			{% else %}
 				{% if election.ready_for_decryption_combination %}
 					<a href="{% url "helios.views.combine_decryptions" election.uuid %}">
@@ -176,10 +176,10 @@
 					{% if election.num_trustees == 1 %}
 						{% trans "The result will be computed and shown to you, the administrator, only." %}
 					{% else %}
-						{% blocktrans %}
-							The decryption shares from the trustees will be combined and the tally computed.<br />
-							Once you do this, the tally will visible to you, the administrator, only.
-						{% endblocktrans %}
+{% blocktrans %}
+The decryption shares from the trustees will be combined and the tally computed.<br />
+Once you do this, the tally will visible to you, the administrator, only.
+{% endblocktrans %}
 					{% endif %}
 				{% else %}<!-- election not ready for decryption combination -->
 					<a href="{% url "helios.views.list_trustees_view" election.uuid %}">{% trans "trustees (for decryption)" %}</a>
@@ -223,15 +223,15 @@
 			<br />
 			{% if election.voting_extended_until %}
 				{% blocktrans %}
-					This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
-					but has been extended until {{ election.voting_extended_until }} (UTC).
+This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
+but has been extended until {{ election.voting_extended_until }} (UTC).
 				{% endblocktrans %}
 			{% else %}
 				{% if election.voting_ends_at %}
 					<br />
-					{% blocktrans with pretty_type=election.pretty_type|title voting_ends_at=election.voting_ends_at|date:"d/m/Y H:i"|title%}
-						This {{pretty_type}} is scheduled to end at {{voting_ends_at}} (UTC).
-					{% endblocktrans %}
+{% blocktrans with pretty_type=election.pretty_type|title voting_ends_at=election.voting_ends_at|date:"d/m/Y H:i"|title%}
+This {{pretty_type}} is scheduled to end at {{voting_ends_at}} (UTC).
+{% endblocktrans %}
 				{% else %}
 					{% trans "This {{election.election_type}} ends at the administrator's discretion." %}
 				{% endif %}
@@ -240,15 +240,15 @@
 
 			{% if election.private_p and voter %}
 				<br />
-				{% blocktrans %}
-					This election is <em>private</em>. You are signed in as eligible voter <em>{{voter.name}}</em>.
-				{% endblocktrans %}
+{% blocktrans %}
+This election is <em>private</em>. You are signed in as eligible voter <em>{{voter.name}}</em>.
+{% endblocktrans %}
 			{% endif %}
 			<div class="highlight-box round" style="font-size: 1.2em; margin-right: 400px; display:none;" id="nojava_message">
-				{% blocktrans %}
-  					You do not have Java installed in your browser.<br />At this time, Helios requires Java.<br />
-  					Visit <a target="_new" href="http://java.sun.com">java.sun.com</a> to install it.
-  				{% endblocktrans %}
+{% blocktrans %}
+You do not have Java installed in your browser.<br />At this time, Helios requires Java.<br />
+Visit <a target="_new" href="http://java.sun.com">java.sun.com</a> to install it.
+{% endblocktrans %}
 			</div>
 			<br />
 		{% else %}
@@ -307,9 +307,9 @@
 					{% if election.result %}
 			  			{% trans "verify" %} <a target="_blank" href="/verifier/verify.html?election_url={% url "helios.views.one_election" election.uuid %}">{ % trans election tally" %}</a>.
 			  		{% endif %}
-					{% blocktrans %} 
-					review the <a href="{{vote_url}}">voting booth</a>.
-					{% endblocktrans %}
+{% blocktrans %} 
+review the <a href="{{vote_url}}">voting booth</a>.
+{% endblocktrans %}
 				</p>
 			{% endif %}
 		</div>

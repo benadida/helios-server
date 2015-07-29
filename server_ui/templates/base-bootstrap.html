@@ -5,48 +5,31 @@
 {% load i18n %}
 {% load staticfiles %}
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}{% endblock %}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static "bootstrap/css/bootstrap.min.css" %}"/>  
+    <!--<link rel="stylesheet" type="text/css" media="screen" href="https://cdn.datatables.net/1.10.7/css/jquery.dataTables.css"/> -->
+    <link rel="stylesheet" type="text/css" media="screen" href="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.css"/>
+    <script language="javascript" src={% static "js/jquery-1.11.2.min.js" %}></script>
+    <script language="javascript" src={% static "bootstrap/js/bootstrap.min.js"%}></script>
+    <script language="javascript" src="https://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+    <script language="javascript" src="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+    
+    {% block js %}
+    {% endblock %}
 
-
-{% if settings.DEBUG %}  
-  <link rel="stylesheet" type="text/css" media="screen" href="{% static "bootstrap/css/bootstrap.min.css" %}"/>  
-  <!--<link rel="stylesheet" type="text/css" media="screen" href="https://cdn.datatables.net/1.10.7/css/jquery.dataTables.css"/> -->
-  <link rel="stylesheet" type="text/css" media="screen" href="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.css"/>
-
-  <script language="javascript" src={% static "js/jquery-1.11.2.min.js" %}></script>
-  <script language="javascript" src={% static "bootstrap/js/bootstrap.min.js"%}></script>
-  <script language="javascript" src="https://cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
-  <script language="javascript" src="https://cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
-
-{% else %}
-  <script language="javascript" src={% static "20140302-helios-combined.js" %}></script>
-{% endif %}
-
-  {% block css %}
-  {% endblock %}
-  
-  {% block js %}
-  {% endblock %}
-  
-  {% block extra-head %}{% endblock %}
-  <script language="javascript" src={% static "js/institution.js" %}></script>
-  <script type="text/javascript" src="{% url "django.views.i18n.javascript_catalog" %}"></script>
-
- </head>
+    {% block extra-head %}{% endblock %}
+    <script type="text/javascript" src="{% static "js/institution.js" %}"></script>
+    <script type="text/javascript" src="{% url "django.views.i18n.javascript_catalog" %}"></script>
+</head>
 <body>
-  {% include "navbar-bootstrap.html" %} 
-  <!-- Main Page Content and Sidebar -->
-
-  <div class="container-fluid">
-      {% block content %}
+    {% include "navbar-bootstrap.html" %} 
+    <!-- Main Page Content and Sidebar -->
+    <div class="container-fluid">
+        {% block content %}
         {% block subcontent %}{% endblock subcontent %}
-      {% endblock %}
-  </div>
-  <script>
-     $(document).foundation();
-  </script>     
-
+        {% endblock %}
+    </div>  
 </body>
 </html>

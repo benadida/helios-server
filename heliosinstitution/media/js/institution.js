@@ -49,60 +49,32 @@ $("document").ready(function(){
 		return false;
     });
 
-    $('.expires_at').datepicker({
-        todayBtn: "linked",
-        autoclose: true,
-        dateFormat: 'dd-mm-yy'
-     });
-
-    var rowNum = 0;
-    $('.add_cafe_attribute').click(function(){
-        rowNum ++;
-        var row = $('#attribute_0').clone();
-        $(row).children('input[name=cafe_attribute_values[]]').attr('value','');
-        $(row).attr('id','attribute_' + rowNum);
-        $(row).children('span:last').attr('class','remove_cafe_attribute input-group-addon  glyphicon glyphicon-minus');
-        $(row).insertAfter('#attribute_' + (rowNum - 1));
+    $('#inst_details').on('click', '#edit_inst_button', function(event){
+        $('#readonly_inst').addClass('hidden');
+        $('#edit_inst').addClass('panel-body');
+        $('#edit_inst').removeClass('hidden');
     });
 
-    $('#update_voter_reg').click(function(event) {
-        user_type = $('input[name="user_type"]').val();
-        eligibility = $('input[name="eligibility"]:checked').val();
-        if (eligibility == "limitedreg" & user_type == "shibboleth") {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-            categories = {}
-            var url = $('form#eligibility-form').attr('action');
-            $('div.cafe_attribute').each(function(){
-                key = $(this).find('select option:selected').text();
-                value = $(this).find('input[name="cafe_attribute_values[]"]').val();
-                categories[key] = value;
-            });          
-        }
-        data = { 
-            'eligibility': eligibility,
-            'category_id': categories,
-        }  
+    $('#inst_details').on('click', '#save_inst_data', function(event){
+        var url = $('#form_edit_inst').attr('action');
+        var inst_data = {}
+        $('p.inst_data').each(function(){
+            inst_data[$(this).children('.form-control').attr('name')] = $(this).children('.form-control').val();
+        });
         $.ajax({
             type: "POST",
             url: url,
-            dataType: "json",
-            data: JSON.stringify(data),   
+            data: inst_data,
             success: function (data) {
-                $('div.shib-attr-panel').removeClass('has-error');
-                $('div.shib-attr-panel').addClass('has-success');
-                $('span.add_attr_result').addClass('label-success');
-                $('span.add_attr_result').text(gettext('Attributes successfully saved.'));
+                $('#inst_details').load($('#inst_details').attr('data-url'));
             },
             error: function (error) {
-                $('div.shib-attr-panel').removeClass('has-success');
-                $('div.shib-attr-panel').addClass('has-error');
-                $('span.add_attr_result').addClass('label-danger');
-                $('span.add_attr_result').text(gettext('Please, correct the provided values.'));
-            }
-        });
-    });
 
+            }
+
+        });
+        return false;
+    });
     $(".date_expires_at").datepicker({
         format: "dd/mm/yyyy",
         startDate: "now",

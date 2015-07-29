@@ -188,8 +188,9 @@ VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
 
 
 # Change your email settings
-DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'shirlei@gmail.com')
-DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', _('IFSC E-Voting System'))
+DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'helios.ifsc@gmail.com')
+#DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', _('IFSC E-Voting System'))
+DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Sistema de Votação do IFSC')
 SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 
 LOGIN_URL = '/auth/'
@@ -347,6 +348,8 @@ SHIBBOLETH_ATTRIBUTE_MAP = {
 USE_ELECTION_MANAGER_ATTRIBUTES = True
 
 ELECTION_MANAGER_ATTRIBUTES = ['Provider']
+
+CHECK_EXIT_DATE = True
 
 INSTITUTION_ROLE = ['Institution Admin','Election Admin']
 

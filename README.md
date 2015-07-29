@@ -103,7 +103,6 @@ O servidor descrito no tópico anterior é apenas para desenvolvimento, não dev
 --- Configuração apache ---
 
 sudo apt-get install apache2
-sudo apt-get install libapache2-mod-python
 
 -- instalação mod_wsgi --
 apt-get install libapache2-mod-wsgi
