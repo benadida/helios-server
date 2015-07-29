@@ -109,7 +109,7 @@ class Institution(models.Model):
                  'admin': election.admin.pretty_name,
                  'voters': election.num_voters,
                  'cast_votes': election.num_cast_votes,
-                 'started_at': utils.serialize_date(election.voting_started_at),
+                 'started_at': utils.serialize_date(election.frozen_at),
                  'ended_at': utils.serialize_date(election.voting_ended_at),
             }           
             elections_as_json.append(election_dict)

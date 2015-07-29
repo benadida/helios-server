@@ -27,11 +27,10 @@ $(document).ready(function() {
         var url = $(this).data('url');
         var institution_name = $(this).parents('tr').data('institution');
         var election_type = $(this).data('type');
-        console.log(url);
         table.clear();
         $.getJSON(url, function(data) {
             $.each( data.elections, function( i, item ) {
-                started_at = (isNaN(Date.parse(item.started_at))) ? '' : new Date(item.start_at);
+                started_at = (isNaN(Date.parse(item.started_at))) ? '' : new Date(item.started_at);
                 ended_at = (isNaN(Date.parse(item.ended_at))) ? '' : new Date(item.ended_at);
                 $('.modal-title').text(institution_name + ' - ' + election_type);
                 table.row.add([
