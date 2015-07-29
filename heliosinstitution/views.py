@@ -55,30 +55,31 @@ def recent_cast_votes(request):
 
 @login_required
 @require_institution_admin
-def add_expires_at(request):
+@require_http_methods(["POST",])
+def add_expires_at(request, user_pk):
     user = get_user(request)
     expires_at = request.POST.get('expires_at', '') 
-    email = request.POST.get('email', '') 
     status = 400
     from datetime import datetime
     valid_expires_at = None
     
     try:
         valid_expires_at = datetime.strptime(request.POST.get('expires_at', ''),
-            '%d-%m-%Y')
+            '%d/%m/%Y')
     except ValueError:
         response_data = {'error': _('Please, provide a valid expires at value')}
 
-    if email:
+    if user:
         try:
-            institution_user_profile = InstitutionUserProfile.objects.get(email=email, 
+            institution_user_profile = InstitutionUserProfile.objects.get(pk=user_pk, 
                 institution=user.institutionuserprofile_set.get().institution)
 
             if valid_expires_at:
                 institution_user_profile.expires_at = valid_expires_at
 
             institution_user_profile.save()
-            response_data = {'sucess': _('Expires at successfully saved.')}
+
+            response_data = {'success': _('Expires at successfully saved.' )}
             status = 200
         
         except Exception:

@@ -8,7 +8,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}{% endblock %}</title>
- 
+
+
 {% if settings.DEBUG %}  
   <link rel="stylesheet" type="text/css" media="screen" href="{% static "bootstrap/css/bootstrap.min.css" %}"/>  
   <!--<link rel="stylesheet" type="text/css" media="screen" href="https://cdn.datatables.net/1.10.7/css/jquery.dataTables.css"/> -->
@@ -22,12 +23,15 @@
 {% else %}
   <script language="javascript" src={% static "20140302-helios-combined.js" %}></script>
 {% endif %}
+
+  {% block css %}
+  {% endblock %}
   
   {% block js %}
   {% endblock %}
   
   {% block extra-head %}{% endblock %}
-  <script language="javascript" src={% static "js/utils.js" %}></script>
+  <script language="javascript" src={% static "js/institution.js" %}></script>
   <script type="text/javascript" src="{% url "django.views.i18n.javascript_catalog" %}"></script>
 
  </head>

@@ -1,6 +1,15 @@
-{% extends 'server_ui/templates/base.html' %}
+{% extends 'server_ui/templates/base-bootstrap.html' %}
+
+
 {% load i18n %}
 {% load staticfiles %}
+{% block css %}
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static "bootstrap-datepicker/css/bootstrap-datepicker3.min.css" %}"/>  
+{% endblock %}
+
+{% block js %}
+    <script language="javascript" src={% static "bootstrap-datepicker/js/bootstrap-datepicker.min.js"%}></script>
+{% endblock %}
 {% block content %}
     <div class="row">
         <div class="col-sm-2 col-lg-2">

@@ -65,12 +65,6 @@ $("document").ready(function(){
         $(row).insertAfter('#attribute_' + (rowNum - 1));
     });
 
-    $('.remove_cafe_attribute').live('click', function(){
-       $(this).parent('div').remove();    
-       rowNum --;
-       $('.cafe_attribute').each(function(index){ $(this).attr('id', 'attribute_'+ index)});
-    });
-
     $('#update_voter_reg').click(function(event) {
         user_type = $('input[name="user_type"]').val();
         eligibility = $('input[name="eligibility"]:checked').val();
@@ -109,4 +103,50 @@ $("document").ready(function(){
         });
     });
 
+    $(".date_expires_at").datepicker({
+        format: "dd/mm/yyyy",
+        startDate: "now",
+        autoclose: true,
+        todayHighlight: true
+        })
+        .on('changeDate', function(e){
+
+            var expires_at = $(this);
+            var expires_at_text = expires_at.parent().children('.date');
+            var url= expires_at.data('url');
+
+            data = {
+                'expires_at' : expires_at.datepicker('getFormattedDate'),
+            }
+
+            $.ajax({
+                type: "POST",
+                url: url,
+                dataType: "json",
+                data: data,   
+
+                success: function (data) {
+
+                    expires_at
+                        .removeClass('text-danger')
+                        .addClass('text-success');
+
+                    expires_at_text
+                        .text(expires_at.datepicker('getFormattedDate'))
+                        .removeClass('text-danger')
+                        .addClass('text-success');
+                },
+
+                error: function (error) {
+
+                    expires_at
+                        .removeClass('text-danger')
+                        .addClass('text-danger');
+
+                    expires_at_text
+                        .removeClass('text-danger')
+                        .addClass('text-danger');
+                },
+            });
+        });
 })
