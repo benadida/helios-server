@@ -167,7 +167,7 @@
 			{% if election.use_voter_aliases %}
 				<td>{{voter.alias}}</td>
 			{% endif %}
-			<td>{{voter.voter_email}}</td>
+			<td>{% if voter.voter_email %}{{voter.voter_email}}{% else %}{{voter.user.info.email}}{% endif %}</td>
 			<td><em>{% if voter.vote_hash %}{{voter.vote_hash}}{% else %}&mdash;{% endif %}</em></td>
 		{% else %}
 			{% if election.use_voter_aliases %}
