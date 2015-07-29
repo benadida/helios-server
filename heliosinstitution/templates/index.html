@@ -42,10 +42,8 @@ $(document).ready(function() {
         });
     });
 
-    $('.get-by-year').click(function(){
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        var url = $(this).data('url');
+    $('select[name="year"]').change(function(){
+        var url = $('.get-by-year').data('url');
         var year = $('select[name=year] option:selected').val();
         $('.slice-institutions').load($('.slice-institutions').attr('data-url')+ year);
     });
@@ -80,15 +78,12 @@ $(document).ready(function() {
 {% if elections %}
 <div class="row">
     <div class="col-xs-12">
-        <form class="form-inline">
-            <div class="form-group">
+            <div class="form-group get-by-year" data-url="{% url "heliosinstitution.views.elections_by_year" %}">
                 <label for="year">{% trans "Year" %}</label>
                 {% with drop_type='year' %}
                     {% dropdown %}
                 {% endwith %}
             </div>
-            <button type="Consultar" class="btn btn-primary btn-xs get-by-year" data-url="{% url "heliosinstitution.views.elections_by_year" %}">{% trans "List" %}</button>
-        </form>
     </div>
 </div>
 
