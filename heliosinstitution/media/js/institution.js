@@ -75,7 +75,9 @@ $("document").ready(function(){
         });
         return false;
     });
-    $(".date_expires_at").datepicker({
+
+    $("#institution_users").on("click", ".date_expires_at", function(){
+        $(".date_expires_at").datepicker({
         format: "dd/mm/yyyy",
         startDate: "now",
         autoclose: true,
@@ -121,4 +123,9 @@ $("document").ready(function(){
                 },
             });
         });
+        if ($('.datepicker').length == 0 ) {
+            $('.date_expires_at').datepicker("show");
+        }
+    });
+
 })
