@@ -8,9 +8,14 @@
 <p>
     <a href="{{SECURE_URL_HOST}}{% url "helios_auth.views.start" system_name=auth_system %}?return_url={{return_url}}" style="font-size: 1.4em;">
  {% ifequal auth_system "ldap" %} 
- 	{% trans "Login" %} 
- {% else %} 
- 	<img border="0" height="35" src="/static/auth/login-icons/{{auth_system}}.png" alt="{{auth_system}}" /> {{auth_system}} {% endifequal %}
+ 	{% trans "Login" %}
+ {% else %}
+ {% ifequal auth_system "shibboleth" %}
+   	<img border="0" height="35" src="/static/auth/login-icons/{{auth_system}}.png" alt="{{auth_system}}" /> {{ settings.FEDERATION_NAME }}
+ {% else %}
+ 	<img border="0" height="35" src="/static/auth/login-icons/{{auth_system}}.png" alt="{{auth_system}}" /> {{auth_system}}
+ {% endifequal %}
+ {% endifequal %}
  {% endifequal %}
 </a>
 </p>

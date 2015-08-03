@@ -340,9 +340,10 @@ SHIBBOLETH_ATTRIBUTE_MAP = {
     "Shib-inetOrgPerson-mail": (True, "email"),
     "Shib-eduPerson-eduPersonPrincipalName": (True, "eppn"),
     "Shib-brEduPerson-brEduAffiliationType": (True, "affiliation"),
-#    "Shib-eduPerson-eduPersonAffiliation": (True, "affiliation"),
     "Shib-Identity-Provider": (True, "identity_provider"),
 }
+
+FEDERATION_NAME = "CAFe Expresso"
 
 # To use some manager-specific attributes, like idp address
 USE_ELECTION_MANAGER_ATTRIBUTES = True
