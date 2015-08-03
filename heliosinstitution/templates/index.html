@@ -1,56 +1,10 @@
-{% extends 'server_ui/templates/base-bootstrap.html' %}
+{% extends 'heliosinstitution/templates/base-bootstrap.html' %}
 {% load i18n %}
 {% block title %}{{ settings.SITE_TITLE }}{% endblock %}
 {% load institution_extras %}
 {% block header %}
 {% block js %}
-<script type="text/javascript">
-$(document).ready(function() {
 
-    var table = $('#list').DataTable({  
-        "language": {
-        "lengthMenu": "Exibindo _MENU_ registros por página",
-        "zeroRecords": "Não foram encontrados registros",
-        "info": "Página _PAGE_ de _PAGES_",
-        "infoEmpty": "Nenhum registro encontrado",
-        "infoFiltered": "(filtered from _MAX_ total records)",
-        "search": "Localizar:",
-        "Previous": "Anterior",
-        "next": "Próxima",
-        "paginate": {
-            "next": "Próxima",
-            "previous": "Anterior",
-        }
-    }});
-
-    $('.get-filtered').on('click', function (e) {
-        var url = $(this).data('url');
-        var institution_name = $(this).parents('tr').data('institution');
-        var election_type = $(this).data('type');
-        table.clear();
-        $.getJSON(url, function(data) {
-            $.each( data.elections, function( i, item ) {
-                started_at = (isNaN(Date.parse(item.started_at))) ? '' : new Date(item.started_at);
-                ended_at = (isNaN(Date.parse(item.ended_at))) ? '' : new Date(item.ended_at);
-                $('.modal-title').text(institution_name + ' - ' + election_type);
-                table.row.add([
-                    '<a href='+ item.url + '>' + item.name + '</a>',
-                    started_at,
-                    ended_at
-                ]).draw();
-            });
-        });
-    });
-
-    $('select[name="year"]').change(function(){
-        var url = $('.get-by-year').data('url');
-        var year = $('select[name=year] option:selected').val();
-        $('.slice-institutions').load($('.slice-institutions').attr('data-url')+ year);
-    });
-
-
-});
-</script>
 {% endblock %}
 {% endblock %}
 
@@ -90,32 +44,6 @@ $(document).ready(function() {
 <div class="row">
     <div class="col-md-8 slice-institutions" data-url="{% url "heliosinstitution.views.elections_summary" %}">
         {% include "elections_summary.html" %}
-        <div class="modal" id="elections_list">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                        <h4 class="modal-title" id="gridSystemModalLabel"></h4>
-                    </div>
-                    <div class="modal-body">
-                        <table id="list" class="table table-condensed table-striped table-bordered display">
-                            <thead>
-                                <tr>
-                                    <td>{% trans "Name" %}</td>
-                                    <td>{% trans "Start" %}</td>
-                                    <td>{% trans "End" %}</td>
-                                </tr>
-                            </thead>
-                            <tbody id="elections_list_body">
-                            </tbody>
-                        </table>
-                        <div class="modal-footer"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 {% else %} <!-- no elections -->
     <h4>{% trans "no featured elections at the moment" %}</h4>

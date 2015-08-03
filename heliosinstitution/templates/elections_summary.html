@@ -28,5 +28,31 @@
         </div>
         {% endif %}
     {% endwith %}
-{% endfor %}
+    {% endfor %}
+     <div class="modal" id="elections_list">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title" id="gridSystemModalLabel"></h4>
+                    </div>
+                    <div class="modal-body">
+                        <table id="list" class="table table-condensed table-striped table-bordered display">
+                            <thead>
+                                <tr>
+                                    <td>{% trans "Name" %}</td>
+                                    <td>{% trans "Start" %}</td>
+                                    <td>{% trans "End" %}</td>
+                                </tr>
+                            </thead>
+                            <tbody id="elections_list_body">
+                            </tbody>
+                        </table>
+                        <div class="modal-footer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
 </div>

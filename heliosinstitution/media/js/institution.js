@@ -128,4 +128,52 @@ $("document").ready(function(){
         }
     });
 
+    var table;
+    function draw_election_list () {
+        table = $('#list').DataTable({
+            "language": {
+                "lengthMenu": gettext("Display _MENU_ records per page"),
+                "zeroRecords": gettext("Nothing found - sorry"),
+                "info": gettext("Showing page _PAGE_ of _PAGES_"),
+                "infoEmpty": gettext("No records available"),
+                "infoFiltered": gettext("(filtered from _MAX_ total records)"),
+                "search": gettext("Search:"),
+                "Previous": gettext("Previous"),
+                "next": gettext("Next"),
+                "paginate": {
+                    "next": gettext("Next"),
+                    "previous": gettext("Previous"),
+                }
+            }
+        });
+    }
+
+    $('.slice-institutions').on('click', '.get-filtered', function (e) {
+        if (! $.fn.dataTable.isDataTable( '#list' ) ) {
+            draw_election_list();
+        }
+        var url = $(this).data('url');
+        var institution_name = $(this).parents('tr').data('institution');
+        var election_type = $(this).data('type');
+        table.clear();
+        $.getJSON(url, function(data) {
+            $.each( data.elections, function( i, item ) {
+                started_at = (isNaN(Date.parse(item.started_at))) ? '' : new Date(item.started_at);
+                ended_at = (isNaN(Date.parse(item.ended_at))) ? '' : new Date(item.ended_at);
+                $('.modal-title').text(institution_name + ' - ' + election_type);
+                table.row.add([
+                    '<a href='+ item.url + '>' + item.name + '</a>',
+                    started_at,
+                    ended_at
+                ]).draw();
+            });
+        });
+    });
+
+    $('select[name="year"]').on('change', function() {
+        var url = $('.get-by-year').data('url');
+        var year = $('select[name=year] option:selected').val();
+        $('.slice-institutions').load($('.slice-institutions').attr('data-url')+ year);
+    });
+
 })
