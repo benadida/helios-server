@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-08-03 19:17-0300\n"
-"PO-Revision-Date: 2015-08-03 19:19-0300\n"
+"PO-Revision-Date: 2015-08-03 19:21-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2629,7 +2629,7 @@ msgstr "Painel de Controle"
 
 #: heliosinstitution/templates/left_side_menu.html:4
 msgid "Manage Users"
-msgstr "Gerenciar Eleitores"
+msgstr "Gerenciar Usuários"
 
 #: heliosinstitution/templates/left_side_menu.html:6
 msgid "Logs"
