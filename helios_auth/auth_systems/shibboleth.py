@@ -5,13 +5,14 @@ author: Shirlei Chaves
 e-mail: shirlei@gmail.com
 version: 1.0 - 2015 
 """
-import datetime
 import re
 
 from django import forms
 from django.conf import settings
+from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
+from django.utils import timezone
 from django.utils.translation import ugettext as _
 
 
@@ -150,24 +151,38 @@ def user_needs_intervention(user_id, user_info, token):
     from helios_auth.models import User
 
     try:
+		# recently created/logged  helios_user
         helios_user = User.objects.get(user_id=user_id, user_type='shibboleth')
 
+		# checking if there is a institution profile with that user e-mail
         profile = InstitutionUserProfile.objects.get(email=user_info['email'])
-        
-        profile.helios_user = helios_user
-        profile.active = True
 
-        # check if user has a role
-        # TODO: check the use of cached properties
-        if profile.django_user.groups.filter(name__in=settings.INSTITUTION_ROLE).exists():
-            profile.helios_user.admin_p = True    
-        
-        if profile.is_institution_admin:
-            # let's check/save idp address
-            if profile.institution.idp_address != user_info['identity_provider']:
-                profile.institution.idp_address = user_info['identity_provider']
-                profile.institution.save()
-        profile.helios_user.save()
+		# checking if role hasn't expired
+        if profile.expires_at >= timezone.now():
+            # associating helios_user with that profile
+            profile.helios_user = helios_user
+            # activate profile
+            profile.active = True
+
+            # check if user has a role
+            # TODO: check the use of cached properties
+            if profile.django_user.groups.filter(name__in=settings.INSTITUTION_ROLE).exists():
+                profile.helios_user.admin_p = True
+            
+            if profile.is_institution_admin:
+                # let's check/save idp address
+                if profile.institution.idp_address != user_info['identity_provider']:
+                    profile.institution.idp_address = user_info['identity_provider']
+                    profile.institution.save()
+                profile.helios_user.save()
+        else:
+            for role in settings.INSTITUTION_ROLE:
+                g = Group.objects.get(name=role)
+                g.user_set.remove(profile.django_user)
+            profile.helios_user.admin_p = False
+            profile.helios_user.save()
+
+
         profile.save()
 
     except User.DoesNotExist:
