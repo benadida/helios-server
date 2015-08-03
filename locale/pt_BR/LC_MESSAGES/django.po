@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-03 11:57-0300\n"
-"PO-Revision-Date: 2015-08-03 12:56-0300\n"
+"POT-Creation-Date: 2015-08-03 19:17-0300\n"
+"PO-Revision-Date: 2015-08-03 19:19-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.8.1\n"
+"X-Generator: Poedit 1.5.4\n"
 
 #: settings.py:77
 msgid "English"
@@ -34,12 +34,12 @@ msgstr "Sistema de Votação Online do IFSC"
 msgid "Welcome to IFSC E-Voting System"
 msgstr "Bem Vindo ao Sistema de Votação Online do IFSC"
 
-#: shibboleth.py:90 helios_auth/auth_systems/ldapauth.py:64
-#: helios_auth/auth_systems/shibboleth.py:90
+#: shibboleth.py:85 helios_auth/auth_systems/ldapauth.py:64
+#: helios_auth/auth_systems/shibboleth.py:86
 msgid "Bad Username or Password"
 msgstr "Usuário ou Senha Incorretos"
 
-#: shibboleth.py:145 helios_auth/auth_systems/shibboleth.py:140
+#: shibboleth.py:140 helios_auth/auth_systems/shibboleth.py:136
 msgid "Users with the following attributes:"
 msgstr "Eleitores com os seguintes atributos:"
 
@@ -415,7 +415,7 @@ msgstr "Votar"
 #: helios_auth/templates/ldapauth/login.html:20
 #: helios_auth/templates/password/login.html:4
 #: helios_auth/templates/password/login.html:23
-#: server_ui/templates/navbar-bootstrap.html:29
+#: heliosinstitution/templates/navbar-bootstrap.html:29
 #: server_ui/templates/navbar.html:23
 msgid "Login"
 msgstr "Conectar"
@@ -454,7 +454,8 @@ msgstr "clicando aqui"
 
 #: helios/templates/cast_done.html:27
 msgid "For your safety, we have logged you out."
-msgstr "Para sua segurança, você foi desconectado."
+msgstr ""
+"Você foi desconectado. Por favor, para sua segurança, feche seu navegador."
 
 #: helios/templates/cast_done.html:33
 msgid "return to election info"
@@ -1570,6 +1571,7 @@ msgstr "Admin"
 #: helios/templates/stats_elections.html:3
 #: helios/templates/stats_problem_elections.html:3
 #: helios/templates/stats_recent_votes.html:3
+#: heliosinstitution/templates/left_side_menu.html:5
 msgid "Statistics"
 msgstr "Estatísticas"
 
@@ -2621,6 +2623,18 @@ msgstr "Usuário não logou ainda"
 msgid "Remove user"
 msgstr "Remover usuário"
 
+#: heliosinstitution/templates/left_side_menu.html:3
+msgid "Dashboard"
+msgstr "Painel de Controle"
+
+#: heliosinstitution/templates/left_side_menu.html:4
+msgid "Manage Users"
+msgstr "Gerenciar Eleitores"
+
+#: heliosinstitution/templates/left_side_menu.html:6
+msgid "Logs"
+msgstr "Registros"
+
 #: heliosinstitution/templates/left_side_menu.html:7
 msgid "View my details"
 msgstr "Ver meus detalhes"
@@ -2647,6 +2661,16 @@ msgstr "Adicionar"
 #: heliosinstitution/templates/manage_users.html:20
 msgid "Add new Election Admin"
 msgstr "Adicionar novo Administrador da Instituição"
+
+#: heliosinstitution/templates/navbar-bootstrap.html:15
+#: server_ui/templates/navbar.html:9
+msgid "Home"
+msgstr "Início"
+
+#: heliosinstitution/templates/navbar-bootstrap.html:24
+#: server_ui/templates/navbar.html:18
+msgid "Logout"
+msgstr "Desconectar"
 
 #: heliosinstitution/templates/stats_admin_actions.html:6
 msgid "Admin actions"
@@ -3032,16 +3056,6 @@ msgstr ""
 "    Selecione uma eleição para começar a votar. Suas credenciais para votar "
 "serão solicitadas após você preencher a cédula.\n"
 "    "
-
-#: server_ui/templates/navbar-bootstrap.html:15
-#: server_ui/templates/navbar.html:9
-msgid "Home"
-msgstr "Início"
-
-#: server_ui/templates/navbar-bootstrap.html:24
-#: server_ui/templates/navbar.html:18
-msgid "Logout"
-msgstr "Desconectar"
 
 #: server_ui/templates/privacy.html:15
 msgid ""
