@@ -134,6 +134,17 @@ class Institution(models.Model):
 
         return recently_cast_votes
 
+    @property
+    def admins(self):
+        admins = []
+        for user in self.institutionuserprofile_set.all():
+            if user.is_institution_admin:
+                admins.append({
+                    'name': user.helios_user.name,
+                    'email': user.email
+                    })
+        return admins
+
 
 class InstitutionUserProfile(models.Model):
 
