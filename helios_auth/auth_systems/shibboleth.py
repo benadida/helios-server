@@ -158,7 +158,7 @@ def user_needs_intervention(user_id, user_info, token):
         profile = InstitutionUserProfile.objects.get(email=user_info['email'])
 
 		# checking if role hasn't expired
-        if profile.expires_at >= timezone.now():
+        if (profile.expires_at and profile.expires_at >= timezone.now()) or (profile.expires_at is None):
             # associating helios_user with that profile
             profile.helios_user = helios_user
             # activate profile
