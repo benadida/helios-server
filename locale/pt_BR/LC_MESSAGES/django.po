@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-08-04 23:39-0300\n"
-"PO-Revision-Date: 2015-08-04 23:40-0300\n"
+"PO-Revision-Date: 2015-08-05 00:03-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2428,11 +2428,11 @@ msgstr "Pode revogar tarefas de administração da instituição"
 
 #: heliosinstitution/models.py:27
 msgid "Can delegate election management tasks"
-msgstr "Pode delegar tarefas de administração de eleição"
+msgstr "Pode delegar tarefas de gestão de eleição"
 
 #: heliosinstitution/models.py:28
 msgid "Can revoke election management tasks"
-msgstr "Pode revogar tarefas de administração de eleição"
+msgstr "Pode revogar tarefas de gestão de eleição"
 
 #: heliosinstitution/models.py:170
 msgid "Institution Admin"
@@ -2440,7 +2440,7 @@ msgstr "Administrador da Instituição"
 
 #: heliosinstitution/models.py:172
 msgid "Election Admin"
-msgstr "Administrador da Eleição"
+msgstr "Gestor de Eleição"
 
 #: heliosinstitution/models.py:173
 msgid "Undefined"
@@ -2666,7 +2666,7 @@ msgstr "Adicionar"
 
 #: heliosinstitution/templates/manage_users.html:20
 msgid "Add new Election Admin"
-msgstr "Adicionar novo Administrador de Eleição"
+msgstr "Adicionar novo Gestor de Eleição"
 
 #: heliosinstitution/templates/navbar-bootstrap.html:15
 #: server_ui/templates/navbar.html:9

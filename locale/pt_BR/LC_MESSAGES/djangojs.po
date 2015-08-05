@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-03 15:01-0300\n"
-"PO-Revision-Date: 2015-08-03 15:07-0300\n"
+"POT-Creation-Date: 2015-08-04 23:59-0300\n"
+"PO-Revision-Date: 2015-08-05 00:00-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: Helios <shirlei@gmail.com>\n"
 "Language: pt_BR\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.5.4\n"
+"X-Generator: Poedit 1.8.1\n"
 
 #: helios/media/js/utils.js:3 sitestatic/helios/js/utils.js:3
 msgid "Are you sure you want to remove Helios as a trustee?"
@@ -59,55 +59,60 @@ msgid "Are you sure you want to remove voter %s?"
 msgstr "Você tem certeza de que deseja remover o eleitor %s?"
 
 #: heliosinstitution/media/js/institution.js:7
+msgid "Are you sure you want to add this e-mail as an election admin?"
+msgstr ""
+"Você tem certeza de que deseja adicionar este e-mail como gestor de eleição?"
+
+#: heliosinstitution/media/js/institution.js:9
 msgid "Are you sure you want to add this e-mail as an institution admin?"
 msgstr ""
 "Você tem certeza de que deseja adicionar este e-mail como administrador da "
 "instituição?"
 
-#: heliosinstitution/media/js/institution.js:17
+#: heliosinstitution/media/js/institution.js:22
 msgid "Email successfully saved."
 msgstr "E-mail salvo com sucesso."
 
-#: heliosinstitution/media/js/institution.js:23
-#: heliosinstitution/media/js/institution.js:45
+#: heliosinstitution/media/js/institution.js:28
+#: heliosinstitution/media/js/institution.js:50
 msgid "Please, correct the provided value"
 msgstr "Por favor, corrija o valor informado"
 
-#: heliosinstitution/media/js/institution.js:34
+#: heliosinstitution/media/js/institution.js:39
 msgid "Are you sure you want to delete this user?"
 msgstr "Você tem certeza de que deseja remover este usuário?"
 
-#: heliosinstitution/media/js/institution.js:135
+#: heliosinstitution/media/js/institution.js:137
 msgid "Display _MENU_ records per page"
 msgstr "Exibindo _MENU_ registros por página"
 
-#: heliosinstitution/media/js/institution.js:136
+#: heliosinstitution/media/js/institution.js:138
 msgid "Nothing found - sorry"
 msgstr "Nenhum registro encontrado"
 
-#: heliosinstitution/media/js/institution.js:137
+#: heliosinstitution/media/js/institution.js:139
 msgid "Showing page _PAGE_ of _PAGES_"
 msgstr "Exibindo página _PAGE_ de _PAGES_"
 
-#: heliosinstitution/media/js/institution.js:138
+#: heliosinstitution/media/js/institution.js:140
 msgid "No records available"
 msgstr "Nenhum registro disponível"
 
-#: heliosinstitution/media/js/institution.js:139
+#: heliosinstitution/media/js/institution.js:141
 msgid "(filtered from _MAX_ total records)"
 msgstr "(filtrado de _MAX_ registros totais)"
 
-#: heliosinstitution/media/js/institution.js:140
+#: heliosinstitution/media/js/institution.js:142
 msgid "Search:"
 msgstr "Localizar:"
 
-#: heliosinstitution/media/js/institution.js:141
-#: heliosinstitution/media/js/institution.js:145
+#: heliosinstitution/media/js/institution.js:143
+#: heliosinstitution/media/js/institution.js:147
 msgid "Previous"
 msgstr "Anterior"
 
-#: heliosinstitution/media/js/institution.js:142
 #: heliosinstitution/media/js/institution.js:144
+#: heliosinstitution/media/js/institution.js:146
 msgid "Next"
 msgstr "Próxima"
 
