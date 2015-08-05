@@ -138,7 +138,7 @@ class Institution(models.Model):
     def admins(self):
         admins = []
         for user in self.institutionuserprofile_set.all():
-            if user.is_institution_admin:
+            if user.is_institution_admin and user.active:
                 admins.append({
                     'name': user.helios_user.name,
                     'email': user.email
