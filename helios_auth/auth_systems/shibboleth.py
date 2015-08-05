@@ -174,7 +174,7 @@ def user_needs_intervention(user_id, user_info, token):
                 if profile.institution.idp_address != user_info['identity_provider']:
                     profile.institution.idp_address = user_info['identity_provider']
                     profile.institution.save()
-                profile.helios_user.save()
+            profile.helios_user.save()
         else:
             for role in settings.INSTITUTION_ROLE:
                 g = Group.objects.get(name=role)
