@@ -4,7 +4,11 @@ $("document").ready(function(){
         event.preventDefault();
         event.stopImmediatePropagation();
         var form = $(this);
-		if (confirm(gettext('Are you sure you want to add this e-mail as an institution admin?'))){
+        var msg = gettext('Are you sure you want to add this e-mail as an election admin?');
+        if ($(this).attr('id') == 'add_inst_mngt_email'){
+            msg = gettext('Are you sure you want to add this e-mail as an institution admin?')
+        }
+		if (confirm(msg)){
             var email = form.find('input[type=email]').val();
             var url = form.attr('action');
             $.ajax({
