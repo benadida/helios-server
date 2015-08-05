@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-04 23:39-0300\n"
-"PO-Revision-Date: 2015-08-05 17:43-0300\n"
+"POT-Creation-Date: 2015-08-05 18:36-0300\n"
+"PO-Revision-Date: 2015-08-05 18:36-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -34,12 +34,12 @@ msgstr "Sistema de Votação Online do IFSC"
 msgid "Welcome to IFSC E-Voting System"
 msgstr "Bem Vindo ao Sistema de Votação Online do IFSC"
 
-#: shibboleth.py:90 helios_auth/auth_systems/ldapauth.py:64
-#: helios_auth/auth_systems/shibboleth.py:91
+#: shibboleth.py:85 helios_auth/auth_systems/ldapauth.py:64
+#: helios_auth/auth_systems/shibboleth.py:86
 msgid "Bad Username or Password"
 msgstr "Usuário ou Senha Incorretos"
 
-#: shibboleth.py:145 helios_auth/auth_systems/shibboleth.py:141
+#: shibboleth.py:140 helios_auth/auth_systems/shibboleth.py:136
 msgid "Users with the following attributes:"
 msgstr "Eleitores com os seguintes atributos:"
 
@@ -56,7 +56,6 @@ msgstr "Sem espaços, será parte da URL da sua eleição, por ex. meu-clube-201
 #: helios/templates/voters_manage.html:29
 #: helios/templates/voters_upload_confirm.html:14
 #: heliosinstitution/templates/elections_summary.html:45
-#: heliosinstitution/templates/index.html:86
 msgid "Name"
 msgstr "Nome"
 
@@ -2557,8 +2556,8 @@ msgid "Address:"
 msgstr "Endereço:"
 
 #: heliosinstitution/templates/index.html:84
-msgid "Admins"
-msgstr "Gestores"
+msgid "Your instituion admins are:"
+msgstr "Os gestores do sistema na sua instituição são:"
 
 #: heliosinstitution/templates/institution_details.html:3
 msgid "Institution details"
@@ -2620,6 +2619,14 @@ msgstr "Ativo"
 #: heliosinstitution/templates/institution_users.html:15
 msgid "Expires at"
 msgstr "Expira em"
+
+#: heliosinstitution/templates/institution_users.html:24
+msgid "Yes"
+msgstr ""
+
+#: heliosinstitution/templates/institution_users.html:24
+msgid "No"
+msgstr ""
 
 #: heliosinstitution/templates/institution_users.html:24
 msgid "User did not logged yet"
@@ -3207,6 +3214,9 @@ msgstr "Erro no servidor"
 #: templates/500.html:6
 msgid "There was an error while handling your request."
 msgstr "Houve um erro durante o processamento de sua requisição."
+
+#~ msgid "Admins"
+#~ msgstr "Gestores"
 
 #~ msgid "An election with short name %(short_name)s already exists"
 #~ msgstr "Uma eleição com o nome abreviado de %(short_name)s já existe"
