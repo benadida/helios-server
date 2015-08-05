@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-08-04 23:39-0300\n"
-"PO-Revision-Date: 2015-08-05 00:03-0300\n"
+"PO-Revision-Date: 2015-08-05 17:43-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 1.8.1\n"
+"X-Generator: Poedit 1.5.4\n"
 
 #: settings.py:77
 msgid "English"
@@ -2420,11 +2420,11 @@ msgstr "Você não tem permissão para acessar essa view"
 
 #: heliosinstitution/models.py:25
 msgid "Can delegate institution management tasks"
-msgstr "Pode delegar tarefas de administração da instituição"
+msgstr "Pode delegar tarefas de gestão da instituição"
 
 #: heliosinstitution/models.py:26
 msgid "Can revoke institution management tasks"
-msgstr "Pode revogar tarefas de administração da instituição"
+msgstr "Pode revogar tarefas de gestão da instituição"
 
 #: heliosinstitution/models.py:27
 msgid "Can delegate election management tasks"
@@ -2436,7 +2436,7 @@ msgstr "Pode revogar tarefas de gestão de eleição"
 
 #: heliosinstitution/models.py:170
 msgid "Institution Admin"
-msgstr "Administrador da Instituição"
+msgstr "Gestor da Instituição"
 
 #: heliosinstitution/models.py:172
 msgid "Election Admin"
@@ -2558,7 +2558,7 @@ msgstr "Endereço:"
 
 #: heliosinstitution/templates/index.html:84
 msgid "Admins"
-msgstr "Administradores"
+msgstr "Gestores"
 
 #: heliosinstitution/templates/institution_details.html:3
 msgid "Institution details"
@@ -2647,7 +2647,7 @@ msgstr "Ver meus detalhes"
 
 #: heliosinstitution/templates/manage_users.html:8
 msgid "Delegate Institution Admin"
-msgstr "Delegar Administrador da Instituição"
+msgstr "Delegar Gestor da Instituição"
 
 #: heliosinstitution/templates/manage_users.html:11
 #: heliosinstitution/templates/manage_users.html:23
