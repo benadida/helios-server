@@ -161,7 +161,8 @@ def delegate_user(request, role):
                 institution=user.institutionuserprofile_set.get().institution)
         except InstitutionUserProfile.DoesNotExist:
             # no, we don't, lets create one
-            django_user = DjangoUser.objects.create(email=email,username=email)
+            #using for username just first 30 caracteres allowed by django
+            django_user = DjangoUser.objects.create(email=email,username=email[0:30])
             django_user.save()
             institution_user_profile = InstitutionUserProfile.objects.create(email=email, 
                 institution=user.institutionuserprofile_set.get().institution,
