@@ -13,12 +13,15 @@ from django.contrib.auth.models import Group
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.utils import timezone
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy as _
 
 
 
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = False
+
+
+LOGIN_MESSAGE = '<img border="0" height="35" src="/static/auth/login-icons/%s.png" alt="%s"/> %s' % (settings.AUTH_DEFAULT_AUTH_SYSTEM, settings.AUTH_DEFAULT_AUTH_SYSTEM, settings.FEDERATION_NAME)
 
 
 SHIBBOLETH_NATIVE_SP_ATTRIBUTES = ['Shib-Application-ID', 'Shib-Session-ID',
