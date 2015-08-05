@@ -123,9 +123,6 @@ $("document").ready(function(){
                 },
             });
         });
-        if ($('.datepicker').length == 0 ) {
-            $('.date_expires_at').datepicker("show");
-        }
     });
 
     var table;
