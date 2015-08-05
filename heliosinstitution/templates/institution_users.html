@@ -21,7 +21,7 @@
         <tr {% if not user.active %} class="warning"{% else %} class="active"{% endif %}>
           <td>{{ user.email }}</td>
           <td>{{ user.role }}</td>
-          <td>{{ user.active }}{% if not user.active %} <i title="{% trans "User did not logged yet" %}" class="glyphicon glyphicon-exclamation-sign"></i>{% endif %} </td>
+          <td>{% if user.active %}{% trans "Yes" %}{% else %}{% trans "No" %} <i title="{% trans "User did not logged yet" %}" class="glyphicon glyphicon-exclamation-sign"></i>{% endif %} </td>
           <td>
           <div>
             <span style="cursor:pointer" data-url="{% url "heliosinstitution.views.add_expires_at" user.pk %}" class="glyphicon glyphicon-calendar date_expires_at">&nbsp;</span>
