@@ -81,7 +81,7 @@
             {% trans "Main Phone: +55" %} {{ institution.main_phone}}<br/>
             {% trans "Secondary Phone: +55" %} {{ institution.sec_phone}}<br/>
             {% trans "Address:" %} {{ institution.address }}<br/>
-            <br><em> {% trans "Your instituion admins are:" %}</em><br><br>
+            <br><em> {% trans "Your institution admins are:" %}</em><br><br>
             {% for admin in institution.admins %}
              	{{admin.name }}<br>
                 {% trans "E-mail" %} {{ admin.email }}<br><br>
