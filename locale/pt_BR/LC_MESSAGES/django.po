@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-05 18:36-0300\n"
-"PO-Revision-Date: 2015-08-05 18:36-0300\n"
+"POT-Creation-Date: 2015-08-06 19:12-0300\n"
+"PO-Revision-Date: 2015-08-06 19:12-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -35,11 +35,11 @@ msgid "Welcome to IFSC E-Voting System"
 msgstr "Bem Vindo ao Sistema de Votação Online do IFSC"
 
 #: shibboleth.py:85 helios_auth/auth_systems/ldapauth.py:64
-#: helios_auth/auth_systems/shibboleth.py:86
+#: helios_auth/auth_systems/shibboleth.py:89
 msgid "Bad Username or Password"
 msgstr "Usuário ou Senha Incorretos"
 
-#: shibboleth.py:140 helios_auth/auth_systems/shibboleth.py:136
+#: shibboleth.py:140 helios_auth/auth_systems/shibboleth.py:139
 msgid "Users with the following attributes:"
 msgstr "Eleitores com os seguintes atributos:"
 
@@ -668,6 +668,10 @@ msgstr ""
 "\n"
 "<b>Desculpe,  você <em>não está registrado</em> para essa eleição, e o "
 "registro está fechado.</b><br />\n"
+
+#: helios/templates/election_cast_confirm.html:85
+msgid "return to the main election page"
+msgstr "retornar para a página da eleição"
 
 #: helios/templates/election_cast_confirm.html:89
 msgid ""
@@ -1364,6 +1368,8 @@ msgid ""
 " \n"
 "review the <a href=\"%(vote_url)s\">voting booth</a>.\n"
 msgstr ""
+" \n"
+"revisar a <a href=\"%(vote_url)s\">cabine de votação</a>.\n"
 
 #: helios/templates/elections_administered.html:5
 msgid "Elections you Administer"
@@ -2234,6 +2240,10 @@ msgstr "Sim, carregar"
 msgid "no, let me upload a different file"
 msgstr "Não, deixe-me carregar um arquivo diferente"
 
+#: helios_auth/auth_systems/shibboleth.py:24
+msgid "Click here to login"
+msgstr "Clique aqui para se conectar"
+
 #: helios_auth/templates/index.html:4
 msgid "Authentication"
 msgstr "Autenticação"
@@ -2556,7 +2566,7 @@ msgid "Address:"
 msgstr "Endereço:"
 
 #: heliosinstitution/templates/index.html:84
-msgid "Your instituion admins are:"
+msgid "Your institution admins are:"
 msgstr "Os gestores do sistema na sua instituição são:"
 
 #: heliosinstitution/templates/institution_details.html:3
@@ -2622,11 +2632,11 @@ msgstr "Expira em"
 
 #: heliosinstitution/templates/institution_users.html:24
 msgid "Yes"
-msgstr ""
+msgstr "Sim"
 
 #: heliosinstitution/templates/institution_users.html:24
 msgid "No"
-msgstr ""
+msgstr "Não"
 
 #: heliosinstitution/templates/institution_users.html:24
 msgid "User did not logged yet"

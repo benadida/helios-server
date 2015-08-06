@@ -47,9 +47,9 @@ def home(request):
         institutions_list.append({
             'pk': institution.pk,
             'name': institution.name,
-            'elections_new': institution.elections_new,
-            'elections_in_progress' : institution.elections_in_progress,
-            'elections_done': institution.elections_done,
+            'elections_new': institution.elections_new(),
+            'elections_in_progress' : institution.elections_in_progress(),
+            'elections_done': institution.elections_done(),
         })
 
     return render_template(request, "index", {'elections': elections,
