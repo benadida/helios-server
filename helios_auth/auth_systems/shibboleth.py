@@ -21,7 +21,7 @@ from django.utils.translation import ugettext_lazy as _
 STATUS_UPDATES = False
 
 
-LOGIN_MESSAGE = '<img border="0" height="35" src="/static/auth/login-icons/%s.png" alt="%s"/> %s' % (settings.AUTH_DEFAULT_AUTH_SYSTEM, settings.AUTH_DEFAULT_AUTH_SYSTEM, settings.FEDERATION_NAME)
+LOGIN_MESSAGE = _("Click here to login")
 
 
 SHIBBOLETH_NATIVE_SP_ATTRIBUTES = ['Shib-Application-ID', 'Shib-Session-ID',
