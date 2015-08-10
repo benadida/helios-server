@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-08-06 19:12-0300\n"
-"PO-Revision-Date: 2015-08-06 19:12-0300\n"
+"POT-Creation-Date: 2015-08-10 12:34-0300\n"
+"PO-Revision-Date: 2015-08-10 12:35-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -55,7 +55,8 @@ msgstr "Sem espaços, será parte da URL da sua eleição, por ex. meu-clube-201
 #: helios/templates/voters_list.html:144 helios/templates/voters_list.html:153
 #: helios/templates/voters_manage.html:29
 #: helios/templates/voters_upload_confirm.html:14
-#: heliosinstitution/templates/elections_summary.html:45
+#: heliosinstitution/templates/elections_administered.html:11
+#: heliosinstitution/templates/elections_summary.html:43
 msgid "Name"
 msgstr "Nome"
 
@@ -1377,6 +1378,7 @@ msgstr "Eleições que você administra"
 
 #: helios/templates/elections_administered.html:5
 #: helios/templates/elections_voted.html:4
+#: heliosinstitution/templates/elections_administered.html:29
 msgid "back to home"
 msgstr "voltar para início"
 
@@ -1567,7 +1569,6 @@ msgid "Tweet"
 msgstr "Tuíte"
 
 #: helios/templates/stats.html:3 helios/templates/stats_elections.html:22
-#: heliosinstitution/templates/index.html:54
 #: heliosinstitution/templates/institution_elections_stats.html:14
 #: heliosinstitution/templates/stats_elections.html:10
 msgid "Admin"
@@ -2094,7 +2095,7 @@ msgid "no votes yet"
 msgstr "nenhum voto"
 
 #: helios/templates/voters_list.html:148
-#: heliosinstitution/templates/index.html:87
+#: heliosinstitution/templates/index.html:88
 #: heliosinstitution/templates/institution_users.html:12
 msgid "E-mail"
 msgstr "E-mail:"
@@ -2443,52 +2444,52 @@ msgstr "Pode delegar tarefas de gestão de eleição"
 msgid "Can revoke election management tasks"
 msgstr "Pode revogar tarefas de gestão de eleição"
 
-#: heliosinstitution/models.py:170
+#: heliosinstitution/models.py:153
 msgid "Institution Admin"
 msgstr "Gestor da Instituição"
 
-#: heliosinstitution/models.py:172
+#: heliosinstitution/models.py:155
 msgid "Election Admin"
 msgstr "Gestor de Eleição"
 
-#: heliosinstitution/models.py:173
+#: heliosinstitution/models.py:156
 msgid "Undefined"
 msgstr "Indefinido"
 
-#: heliosinstitution/views.py:111
+#: heliosinstitution/views.py:109
 msgid "Please, provide a valid expires at value"
 msgstr "Por favor, informe uma data válida de expiração"
 
-#: heliosinstitution/views.py:123
+#: heliosinstitution/views.py:121
 msgid "Expires at successfully saved."
 msgstr "Data de expiração salva com sucesso."
 
-#: heliosinstitution/views.py:127
+#: heliosinstitution/views.py:125
 msgid "Something went wrong, please try again."
 msgstr "Ocorreu um erro, por favor, tente novamente."
 
-#: heliosinstitution/views.py:129 heliosinstitution/views.py:178
+#: heliosinstitution/views.py:127 heliosinstitution/views.py:176
 msgid "An e-mail must be informed"
 msgstr "Um e-mail precisa ser informado"
 
-#: heliosinstitution/views.py:176
+#: heliosinstitution/views.py:174
 msgid "E-mail successfully saved"
 msgstr "E-mail salvo com sucesso"
 
-#: heliosinstitution/views.py:203
+#: heliosinstitution/views.py:201
 msgid "User successfully removed"
 msgstr "Usuário removido com sucesso."
 
-#: heliosinstitution/views.py:205
+#: heliosinstitution/views.py:203
 msgid "User not found"
 msgstr "Usuário não encontrado"
 
-#: heliosinstitution/views.py:267 heliosinstitution/views.py:269
-#: heliosinstitution/views.py:271 heliosinstitution/views.py:273
+#: heliosinstitution/views.py:265 heliosinstitution/views.py:267
+#: heliosinstitution/views.py:269 heliosinstitution/views.py:271
 msgid "Success"
 msgstr "Sucesso"
 
-#: heliosinstitution/views.py:276
+#: heliosinstitution/views.py:274
 msgid "Institution does not exist"
 msgstr "A instituição não existe"
 
@@ -2496,33 +2497,40 @@ msgstr "A instituição não existe"
 msgid "All"
 msgstr "Todos"
 
+#: heliosinstitution/templates/elections_administered.html:5
+msgid "Elections you are current or past admin"
+msgstr ""
+
+#: heliosinstitution/templates/elections_administered.html:12
+msgid "Started at"
+msgstr "Iníciou em"
+
+#: heliosinstitution/templates/elections_administered.html:13
+msgid "Ended at"
+msgstr "Finalizou em"
+
 #: heliosinstitution/templates/elections_summary.html:11
 msgid "Institution"
 msgstr "Instituição"
 
 #: heliosinstitution/templates/elections_summary.html:12
-#: heliosinstitution/templates/elections_summary.html:21
-msgid "New"
-msgstr "Novo"
-
-#: heliosinstitution/templates/elections_summary.html:13
 msgid "In progress"
 msgstr "Em andamento"
 
-#: heliosinstitution/templates/elections_summary.html:14
-#: heliosinstitution/templates/elections_summary.html:23
+#: heliosinstitution/templates/elections_summary.html:13
+#: heliosinstitution/templates/elections_summary.html:21
 msgid "Done"
 msgstr "Finalizadas"
 
-#: heliosinstitution/templates/elections_summary.html:22
+#: heliosinstitution/templates/elections_summary.html:20
 msgid "In Progress"
 msgstr "Em Andamento"
 
-#: heliosinstitution/templates/elections_summary.html:46
+#: heliosinstitution/templates/elections_summary.html:44
 msgid "Start"
 msgstr "Início"
 
-#: heliosinstitution/templates/elections_summary.html:47
+#: heliosinstitution/templates/elections_summary.html:45
 msgid "End"
 msgstr "  Fim"
 
@@ -2541,6 +2549,10 @@ msgstr "Ano"
 #: heliosinstitution/templates/index.html:49 server_ui/templates/index.html:51
 msgid "no featured elections at the moment"
 msgstr "nenhuma votação em destaque no momento"
+
+#: heliosinstitution/templates/index.html:54
+msgid "Your elections"
+msgstr "Sua eleições"
 
 #: heliosinstitution/templates/index.html:62
 #: heliosinstitution/templates/index.html:75
@@ -2565,9 +2577,13 @@ msgstr "Fone secundário: + 55"
 msgid "Address:"
 msgstr "Endereço:"
 
-#: heliosinstitution/templates/index.html:84
+#: heliosinstitution/templates/index.html:85
 msgid "Your institution admins are:"
 msgstr "Os gestores do sistema na sua instituição são:"
+
+#: heliosinstitution/templates/index.html:92
+msgid "No institution admin"
+msgstr "Nenhum Gestor da Instituição"
 
 #: heliosinstitution/templates/institution_details.html:3
 msgid "Institution details"
@@ -3224,6 +3240,9 @@ msgstr "Erro no servidor"
 #: templates/500.html:6
 msgid "There was an error while handling your request."
 msgstr "Houve um erro durante o processamento de sua requisição."
+
+#~ msgid "New"
+#~ msgstr "Novo"
 
 #~ msgid "Admins"
 #~ msgstr "Gestores"
