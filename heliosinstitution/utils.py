@@ -22,7 +22,8 @@ def elections_as_json(elections):
 
     return elections_as_json
 
-    # based on http://stackoverflow.com/questions/12289466/get-python-json-to-serialize-datetime
+
+# based on http://stackoverflow.com/questions/12289466/get-python-json-to-serialize-datetime
 def serialize_date(dt):
     """
     Serialize a date/time value into an ISO8601 text representation
@@ -33,8 +34,10 @@ def serialize_date(dt):
     '2012-04-10T22:38:20.604391Z'
     """
     if dt is not None and dt.tzinfo:
-        est = pytz.timezone(settings.TIME_ZONE)
-        dt = dt.astimezone(est).replace(tzinfo=None)
-        return dt.isoformat() + 'Z'
+		fmt = "%Y-%m-%d %H:%M:%S"
+		est = pytz.timezone(settings.TIME_ZONE)
+		if settings.TIME_ZONE == 'America/Sao_Paulo':
+			fmt = "%d/%m/%Y %H:%M:%S"
+		return dt.astimezone(est).strftime(fmt)
     
     return ""

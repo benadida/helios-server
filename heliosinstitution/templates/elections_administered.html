@@ -17,8 +17,8 @@
 	{% for election in elections_administered %}
 	<tr>
 		<td> <a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></td>
-		<td class="tddate">{{election.started_at|date:"d/m/Y H:i:s"}}</td>
-		<td class="tddate">{{election.ended_at|date:"d/m/Y H:i:s"}}</td>
+		<td class="tddate">{{election.started_at}}</td>
+		<td class="tddate">{{election.ended_at}}</td>
 	</tr>
 	{% endfor %}
 	<tbody>
