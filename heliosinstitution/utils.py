@@ -1,7 +1,8 @@
-import json
-from dateutil.tz import tzutc
+import pytz
 
-UTC = tzutc()
+
+from django.conf import settings
+
 
 def elections_as_json(elections):
     elections_as_json = []
@@ -20,6 +21,8 @@ def elections_as_json(elections):
         elections_as_json.append(election_dict)
 
     return elections_as_json
+
+    # based on http://stackoverflow.com/questions/12289466/get-python-json-to-serialize-datetime
 def serialize_date(dt):
     """
     Serialize a date/time value into an ISO8601 text representation
@@ -30,7 +33,8 @@ def serialize_date(dt):
     '2012-04-10T22:38:20.604391Z'
     """
     if dt is not None and dt.tzinfo:
-        dt = dt.astimezone(UTC).replace(tzinfo=None)
+        est = pytz.timezone(settings.TIME_ZONE)
+        dt = dt.astimezone(est).replace(tzinfo=None)
         return dt.isoformat() + 'Z'
     
     return ""
