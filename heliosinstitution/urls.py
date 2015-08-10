@@ -26,4 +26,5 @@ urlpatterns = patterns('',
 	(r'^(?P<user_pk>\d+)/revoke_user$', revoke_user),
 	(r'^(?P<user_pk>\d+)/user_metadata$', user_metadata),
     (r'^(?P<user_pk>\d+)/add_expires_at$', add_expires_at),
+    (r'^users/(?P<user_pk>\d+)/elections/administered$', elections_administered),
 )

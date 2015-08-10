@@ -51,7 +51,7 @@
 <div class="col-md-4" style="padding-top: 10px">
     {% if user %}
         {% if elections_administered %}
-        <p class="bg-info" style="padding: 3px"><strong>{% trans "Admin" %}</strong></p>
+        <p class="bg-info" style="padding: 3px"><strong>{% trans "Your elections" %}</strong></p>
         <ul>
             {% for election in elections_administered %}
             <li>
@@ -59,7 +59,7 @@
             </li>
             {% endfor %}
         </ul>
-        <a class="tiny button" href="/helios/elections/administered">{% trans "See all" %}</a>
+        <a class="tiny button" href="{% url "heliosinstitution.views.elections_administered" user.pk %}">{% trans "See all" %}</a>
         {% endif %} <!-- end elections administered -->
         <br/>
         <br/>
@@ -81,11 +81,16 @@
             {% trans "Main Phone: +55" %} {{ institution.main_phone}}<br/>
             {% trans "Secondary Phone: +55" %} {{ institution.sec_phone}}<br/>
             {% trans "Address:" %} {{ institution.address }}<br/>
+            {% if institution.admins %}
             <br><em> {% trans "Your institution admins are:" %}</em><br><br>
             {% for admin in institution.admins %}
              	{{admin.name }}<br>
                 {% trans "E-mail" %} {{ admin.email }}<br><br>
             {% endfor %}
+            {% else %}
+            <br>
+            <em>{% trans "No institution admin" %}</em>
+            {% endif %}
         {% endwith %}
         <br>
         <p class="bg-info" style="padding: 3px"/>

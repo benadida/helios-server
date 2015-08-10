@@ -19,6 +19,7 @@ from helioslog.models import HeliosLog
 
 
 from view_utils import *
+from heliosinstitution import utils
 
 
 def home(request):
@@ -29,10 +30,7 @@ def home(request):
     user = get_user(request)
     create_p = can_create_election(request)
 
-    if create_p:
-        elections_administered = Election.get_by_user_as_admin(user, archived_p=False, limit=5)
-    else:
-        elections_administered = None
+    elections_administered = Election.get_by_user_as_admin(user, archived_p=False, limit=5)
 
     if user:
         elections_voted = Election.get_by_user_as_voter(user, limit=5)
@@ -306,5 +304,16 @@ def institution_details(request, institution_pk):
     institution.save()
     return render_template(request, "institution_details", {
         "institution": institution,
+    })
+
+
+@login_required
+def elections_administered(request, user_pk):
+    user = get_user(request)
+    elections_administered = []
+    if user.pk == int(user_pk):
+        elections_administered = utils.elections_as_json(Election.get_by_user_as_admin(user))
+    return render_template(request, "elections_administered", {
+        "elections_administered": elections_administered,
     })
 
