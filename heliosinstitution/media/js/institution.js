@@ -159,8 +159,21 @@ $("document").ready(function(){
         table.clear();
         $.getJSON(url, function(data) {
             $.each( data.elections, function( i, item ) {
-                started_at = (isNaN(Date.parse(item.started_at))) ? '' : new Date(item.started_at);
-                ended_at = (isNaN(Date.parse(item.ended_at))) ? '' : new Date(item.ended_at);
+                if (isNaN(Date.parse(item.started_at))) {
+                    started_at = '';
+                } else {
+                    d = new Date(item.started_at);
+                    started_at = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear() +
+                    ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
+                }
+                if (isNaN(Date.parse(item.ended_at))) {
+                    ended_at = '';
+                } else {
+                    d = new Date(item.ended_at);
+                    ended_at = d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear() +
+                    ' ' + d.getHours() + ':' + d.getMinutes() + ':' + d.getSeconds();
+                }
+
                 $('.modal-title').text(institution_name + ' - ' + election_type);
                 table.row.add([
                     '<a href='+ item.url + '>' + item.name + '</a>',
