@@ -59,7 +59,7 @@ class Institution(models.Model):
                 frozen_at__isnull=True,
                 voting_ended_at__isnull=True).order_by("short_name")
 
-        return self.elections_as_json(elections)
+        return utils.elections_as_json(elections)
             
 
     def elections_in_progress(self, year=None):
@@ -74,7 +74,7 @@ class Institution(models.Model):
                 created_at__year=year,
                 frozen_at__isnull=False,
                 voting_ended_at__isnull=True).order_by("short_name")
-        return self.elections_as_json(elections)
+        return utils.elections_as_json(elections)
 
 
     def elections_done(self, year=None):
@@ -89,32 +89,15 @@ class Institution(models.Model):
                 created_at__year=year,
                 frozen_at__isnull=False,
                 voting_ended_at__isnull=False).order_by("short_name")
-        return self.elections_as_json(elections)
+        return utils.elections_as_json(elections)
 
     @property
     def elections(self):
         elections = Election.objects.filter(admin__in=[
             user for user in self.institutionuserprofile_set.all()]).order_by('-created_at')
             
-        return self.elections_as_json(elections)
+        return utils.elections_as_json(elections)
 
-    def elections_as_json(self, elections):
-        elections_as_json = []
-        for election in elections:
-            election_dict = {
-                 'pk': election.pk,
-                 'uuid': election.uuid,
-                 'name': election.name,
-                 'url': election.url,
-                 'admin': election.admin.pretty_name,
-                 'voters': election.num_voters,
-                 'cast_votes': election.num_cast_votes,
-                 'started_at': utils.serialize_date(election.frozen_at),
-                 'ended_at': utils.serialize_date(election.voting_ended_at),
-            }           
-            elections_as_json.append(election_dict)
-
-        return elections_as_json
 
     @property
     def recently_cast_votes(self):
