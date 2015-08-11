@@ -71,7 +71,7 @@ TIME_ZONE = 'America/Sao_Paulo'
 LANGUAGE_CODE = 'pt-br'
 SITE_ID = 1
 USE_I18N = True
-USE_TZ = True
+#USE_TZ = True
 
 LANGUAGES = (
     ('en', _('English')),
