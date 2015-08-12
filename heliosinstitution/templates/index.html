@@ -76,6 +76,7 @@
         {% endif %} <!-- end elections voted -->
         <br/>
         <br/>
+        {% if user.institutionuserprofile_set.get.institution %}
         <p class="bg-info" style="padding: 3px"><b>{% trans "Contact information" %}</b></p>
         {% with institution=user.institutionuserprofile_set.get.institution %}<br/>
             {% trans "Main Phone: +55" %} {{ institution.main_phone}}<br/>
@@ -94,6 +95,7 @@
         {% endwith %}
         <br>
         <p class="bg-info" style="padding: 3px"/>
+        {% endif %}
     {% endif %} <!-- end if user -->
 </div> <!-- span2 -->
 </div>
