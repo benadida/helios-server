@@ -10,6 +10,7 @@ import re
 from django import forms
 from django.conf import settings
 from django.contrib.auth.models import Group
+from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.utils import timezone
@@ -83,8 +84,11 @@ def get_auth_url(request, redirect_url = None):
   return reverse(shibboleth_login_view)
 
 
-def send_message(user_id, user_name, user_info, subject, body):
-    pass
+def send_message(user_id, name, user_info, subject, body):
+  """
+  send email to shibboleth users. user_id is the email for shibboleth.
+  """
+  send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, user_id)], fail_silently=False)
 
 
 def check_constraint(constraint, user):
