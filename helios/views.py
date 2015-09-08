@@ -970,7 +970,7 @@ def one_election_save_questions(request, election):
   # always a machine API
   return SUCCESS
 
-@transaction.commit_on_success
+@transaction.atomic
 @election_admin(frozen=False)
 def one_election_freeze(request, election):
   # figure out the number of questions and trustees
