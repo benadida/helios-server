@@ -27,14 +27,16 @@
 	<form id="eligibility-form" method="post" role="form" class="form-horizontal" action="{% url "helios.views.voters_eligibility" election.uuid %}">
 		<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 		<div class="form-group">
-			<input id="logged_type" type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> {% trans "anyone can vote" %}
+			<input id="logged_type" type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility or not user.institutionuserprofile_set.get.institution.upload_voters %}CHECKED{% endif %} /> {% trans "anyone can vote" %}
 		</div>
+		{% if user.institutionuserprofile_set.get.institution.upload_voters %}
 		<div class="form-group">
 			<input id="csv_type" type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> {% trans "only voters listed explicitly below can vote" %} <i title="{% trans "Do not forget to upload voters file, using the bulk upload voters button bellow." %}" class="glyphicon glyphicon-info-sign"></i>
 			{% if upload_p %}
 				<a id="upload_voters" class="btn btn-primary btn-xs hidden" href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
 			{% endif %}
 		</div>
+		{% endif %}
 
 		{% if categories %}
 			<div class="form-group">

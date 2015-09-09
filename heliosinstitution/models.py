@@ -19,6 +19,7 @@ class Institution(models.Model):
     sec_phone = models.CharField(max_length=25, blank=True)
     address = models.TextField()
     idp_address = models.URLField(null=True, blank=True)
+    upload_voters = models.BooleanField(default=False, null=False)
 
     def __unicode__(self):
         return self.name
