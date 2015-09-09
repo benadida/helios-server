@@ -19,14 +19,6 @@ class Institution(models.Model):
     sec_phone = models.CharField(max_length=25, blank=True)
     address = models.TextField()
     idp_address = models.URLField(null=True, blank=True)
-  
-    class Meta:
-        permissions = (
-            ("delegate_institution_mngt", _("Can delegate institution management tasks")),
-            ("revoke_institution_mngt", _("Can revoke institution management tasks")),
-            ("delegate_election_mngt", _("Can delegate election management tasks")),
-            ("revoke_election_mngt", _("Can revoke election management tasks")),
-    )
 
     def __unicode__(self):
         return self.name
@@ -137,11 +129,18 @@ class InstitutionUserProfile(models.Model):
     email = models.EmailField(max_length=254)
     expires_at = models.DateTimeField(auto_now_add=False, default=None, null=True, blank=True)
     active = models.BooleanField(default=False)
-  
+
+    class Meta:
+        permissions = (
+            ("delegate_institution_mngt", _("Can delegate institution management tasks")),
+            ("revoke_institution_mngt", _("Can revoke institution management tasks")),
+            ("delegate_election_mngt", _("Can delegate election management tasks")),
+            ("revoke_election_mngt", _("Can revoke election management tasks")),
+    )
+
     def __unicode__(self):
         return self.helios_user.name if self.helios_user is not None else self.email
         
-
     @property
     def is_institution_admin(self):
         return self.django_user.groups.filter(name='Institution Admin').exists()
