@@ -6,6 +6,7 @@ e-mail: shirlei@gmail.com
 version: 1.0 - 2015 
 """
 import re
+from urlparse import urlsplit
 
 from django import forms
 from django.conf import settings
@@ -15,7 +16,6 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-
 
 
 # some parameters to indicate that status updating is possible
@@ -36,29 +36,29 @@ class LoginForm(forms.Form):
 
 
 def shibboleth_login_view(request):
-  #from helios_auth.view_utils import render_template
-  
-  #error = None
+    from helios_auth.view_utils import render_template
+	
+    error = None
 
-  #return render_template(request, 'shibboleth/login_box', {
-  # 'error': error,
-  # 'enabled_auth_systems': settings.AUTH_ENABLED_AUTH_SYSTEMS,
-  #})
-    return HttpResponseRedirect(reverse(shibboleth_register))
+    return render_template(request, 'shibboleth/login_box', {
+        'error': error,
+	'enabled_auth_systems': settings.AUTH_ENABLED_AUTH_SYSTEMS,
+    })
 
 
 def shibboleth_register(request):
     from helios_auth.view_utils import render_template
     from helios_auth.views import after
 
-    #user, error = parse_attributes(request.META)
-    user = {'email': 'shirlei@gmail.com',
-    'type': 'shibboleth',
-    'common_name': 'Shirlei',
-    'identity_provider': 'https://idp1.cafeexpresso.rnp.br/idp/shibboleth',
-    'user_id': 'shirlei@gmail.com'}
-    if user:
-        request.session['shib_attrs'] = user
+    shib_attrs, errors = parse_attributes(request.META)
+
+    if errors:
+        return render_template(request, 'shibboleth/missing_attributes', {
+            'errors': errors,
+        })
+
+    if shib_attrs:
+        request.session['shib_attrs'] = shib_attrs
         
         return HttpResponseRedirect(reverse(after))
     else:
@@ -66,7 +66,7 @@ def shibboleth_register(request):
 
     return render_template(request, 'shibboleth/login_box', {
         'error': error,
-  })
+    })
 
 
 def get_user_info_after_auth(request):
@@ -151,54 +151,46 @@ def list_categories(user):
 
 
 def user_needs_intervention(user_id, user_info, token):
-    """
-    check to see if user is following the users we need
-    """
     from heliosinstitution.models import Institution, InstitutionUserProfile
     from helios_auth.models import User
 
     try:
-		# recently created/logged  helios_user
+		#  getting the logged user
         helios_user = User.objects.get(user_id=user_id, user_type='shibboleth')
 
-		# checking if there is a institution profile with that user e-mail
-        profile = InstitutionUserProfile.objects.get(email=user_info['email'])
+		# checking if the logged user has association with an institution
+        user_provider = urlsplit(user_info['attributes']['provider']).netloc
+       
+        institution_user_profile = InstitutionUserProfile.objects.get(email=user_info['email'],
+            institution__idp_address=user_provider)
+
+        if institution_user_profile.helios_user is None:
+            institution_user_profile.helios_user = helios_user
+            institution_user_profile.active = True
+            institution_user_profile.save()
+
 
 		# checking if role hasn't expired
-        if (profile.expires_at and profile.expires_at >= timezone.now()) or (profile.expires_at is None):
-            # associating helios_user with that profile
-            profile.helios_user = helios_user
-            # activate profile
-            profile.active = True
+        if ( institution_user_profile.expires_at and  institution_user_profile.expires_at >= timezone.now()) or (
+            institution_user_profile.expires_at is None):
 
-            # check if user has a role
+
             # TODO: check the use of cached properties
-            if profile.django_user.groups.filter(name__in=settings.INSTITUTION_ROLE).exists():
-                profile.helios_user.admin_p = True
+            if  institution_user_profile.django_user.groups.filter(
+                name__in=settings.INSTITUTION_ROLE).exists():
+                institution_user_profile.helios_user.admin_p = True
+                institution_user_profile.helios_user.save()
             
-            if profile.is_institution_admin:
-                # let's check/save idp address
-                if profile.institution.idp_address != user_info['identity_provider']:
-                    profile.institution.idp_address = user_info['identity_provider']
-                    profile.institution.save()
-            profile.helios_user.save()
         else:
             for role in settings.INSTITUTION_ROLE:
                 g = Group.objects.get(name=role)
-                g.user_set.remove(profile.django_user)
-            profile.helios_user.admin_p = False
-            profile.helios_user.save()
+                g.user_set.remove(institution_user_profile.django_user)
+            institution_user_profile.helios_user.admin_p = False
+            institution_user_profile.helios_user.save()
 
-
-        profile.save()
-
-    except User.DoesNotExist:
-        # something went really wrong with the authentication...
-        # TODO return logout url
-        pass
     except InstitutionUserProfile.DoesNotExist:
-        # the given user does not have a institution role assigned
-        # TODO check if he/she has another role
+        # the given user does not have an institution role assigned,
+        # proceeding as a normal user
         pass
 
     return None
