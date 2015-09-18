@@ -221,7 +221,7 @@ def parse_attributes(META):
     for value in META:
         if value.lower().startswith('shib-') and value not in SHIBBOLETH_NATIVE_SP_ATTRIBUTES:
             attr_name = value.split('-')[-1:][0]
-            attributes[attr_name] = META[value].lower()
+            attributes[attr_name.lower()] = META[value].lower()
 
     shib_attrs['attributes'] = attributes        
 
