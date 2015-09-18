@@ -1,0 +1,56 @@
+{% load i18n %}
+{% load institution_extras %}
+<div style="padding-top: 10px">
+    {% for i in "12" %}
+    {% with sliced_institutions=institutions|slice_institutions:i %}
+        {% if sliced_institutions %}
+        <div class="col-md-6 inst-elections-details">
+            <table class="table table-condensed table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <td>{% trans "Institution" %}</td>
+                        <td>{% trans "In progress" %}</td>
+                        <td>{% trans "Done" %}</td>
+                    </tr>
+                </thead>
+                <tbody id="elections_summary">
+                {% for institution in sliced_institutions %}
+                    <tr data-institution="{{ institution.name }}">
+                        <td>{{ institution.name }}</td>
+                        <td id="elections_in_progress">{% if institution.elections_in_progress|length > 0 %}<a href="#" class="get-filtered"  data-type="{% trans "In Progress" %}" data-toggle="modal" data-target="#elections_list" data-url="{% url "heliosinstitution.views.elections_by_type_year" institution.pk "in_progress" %}">{{ institution.elections_in_progress|length }}</a>{% else %} - {% endif %}</td>
+                        <td>{% if institution.elections_done|length > 0 %}<a href="#" class="get-filtered"  data-type="{% trans "Done" %}" data-toggle="modal" data-target="#elections_list" data-url="{% url "heliosinstitution.views.elections_by_type_year" institution.pk "done" %}">{{ institution.elections_done|length }}</a>{% else %} - {% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% endif %}
+    {% endwith %}
+    {% endfor %}
+     <div class="modal" id="elections_list">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <h4 class="modal-title" id="gridSystemModalLabel"></h4>
+                    </div>
+                    <div class="modal-body">
+                        <table id="list" class="table table-condensed table-striped table-bordered display">
+                            <thead>
+                                <tr>
+                                    <td>{% trans "Name" %}</td>
+                                    <td>{% trans "Start" %}</td>
+                                    <td>{% trans "End" %}</td>
+                                </tr>
+                            </thead>
+                            <tbody id="elections_list_body">
+                            </tbody>
+                        </table>
+                        <div class="modal-footer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+</div>

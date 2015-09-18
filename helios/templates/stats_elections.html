@@ -26,10 +26,9 @@
 	  <tbody>
 {% for election in elections %}
 <tr>
-<td><b><a href="{% url helios.views.one_election_view election.uuid %}">{{election.name}}</a></b></td> 
+<td><b><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></b></td> 
 <td><a href="mailto:{{election.admin.info.email}}">{{election.admin.pretty_name}}</a> </td>
 <td>{{election.num_voters}} / {{election.num_cast_votes}}</td>
-
 </tr>
 {% endfor %}
 </tbody>

@@ -1,0 +1,36 @@
+{% extends TEMPLATE_BASE %}
+{% load i18n %}
+{% load staticfiles %}
+
+{% block content %}
+<div class="row col-md-3"></div>
+<div class="row col-md-6">
+    <div class="panel panel-danger">
+        <div class="panel-heading">{% trans "Missing Attributes" %}</div>
+        <div class="panel-body"> 
+            <p>{% trans "Some required attributes were not released by your Identity Provider." %}</p>
+        </div>
+        <table class="table" title="{% trans "Attributes not released by your Identity Provider" %}">
+          <thead>
+            <tr>
+                <th title="{% trans "Attribute" %}">{% trans "Attribute" %}</th>
+                <th title="{% trans "Value" %}">{% trans "Value" %}</th>
+           </tr>
+          </thead>
+          <tbody>
+            {% for error in errors %}
+            <tr>
+                <td> {{ error }} </td>
+                <td> - </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+    <div class="pull-right">
+        <a href="/" class="btn btn-primary" role="button">{% trans "Back" %}</a>
+    </div>
+    <br><br>
+</div>
+<div class="row"></div>
+{% endblock content %}

@@ -1,0 +1,8 @@
+{% load i18n %}
+<ul class="nav nav-pills nav-stacked main-menu">
+    <li><a class="ajax-link" href="{% url "heliosinstitution.views.dashboard" %}"><i class="glyphicon glyphicon-home"></i><span> {% trans "Dashboard" %}</span></a> </li>
+    <li><a class="ajax-link" href="{% url "heliosinstitution.views.manage_users" %}"><i class="glyphicon glyphicon-user"></i><span> {% trans "Manage Users" %}</span></a></li>
+    <li><a class="ajax-link" href="{% url "heliosinstitution.views.stats" %}"><i class="glyphicon glyphicon-list-alt"></i><span> {% trans "Statistics" %}</span></a></li>
+    <li><a class="ajax-link" href="{% url "heliosinstitution.views.admin_actions" %}"><i class="glyphicon glyphicon-eye-open"></i><span> {% trans "Logs" %}</span></a></li>
+    <li><a href="{% url "heliosinstitution.views.user_metadata" user.id %}"><i class="glyphicon glyphicon-user"></i><span> {% trans "View my details" %}</span></a></li>
+</ul>

@@ -1,0 +1,48 @@
+
+Changed in V1.1.0
+EDS-34 Allow configuration of dropdown rather than typeahead.
+EDS-88 Allow configuration to not set focus to search box.
+EDS-32 Clip Alt txt
+EDS-53 Add pt-br messages.
+EDS-42 Move Compressor up to 2.4.8
+EDS-39 Ship non mimimized sources
+EDS-30 Use %20 as the separator for entityIDs in the cookie, but continue to understand '+'
+EDS-58 Configurable writing of the cookie.  Allows the SP to write it instead.
+EDS-33 Ordering of multiple selected IdPs is backwards.
+EDS-52 Deduplicate by entityId prior to displaying choices.
+EDS-28 Make EDS shorter if no preselected IdPs have logos
+EDS-48 Be more specific about the image size.
+EDS-59 Minify the CSS for the EDS
+EDS-40 Remove JSON from default minified code
+EDS-51 Parameter ignoreURLParams completely ignores any params and makes EDS fully standalone.
+EDS-45 Explicitly avoid protecting the EDS if mod_shib is loaded into Apache.
+EDS-43 Add a 1x1 px transparent gif for the default logo and refer to it.
+EDS-60 Move shipped localization bundles from config to the minimised source
+
+Changed in V1.0.3
+=============================================
+EDS-36 Message located in wrong place in the face of font changes.
+EDS-37 Japanese localization
+
+Changes in V1.0.2
+=============================================
+EDS-24 The embedded discovery service will fail to work with Internet Explorer when native XHR is disabled
+
+Changes in V1.0.1
+=============================================
+EDS-20 Kitting error prevents incremental search from working.
+
+Changes in V1.0
+=============================================
+The precise Cases changed are:
+
+EDS-10 The EDS should supportisPassive.
+EDS-8  Add option to hide IdPs in the EDS.
+EDS-12 Should take advantage of the <mdui:Keywords>.
+EDS-1 Globalization testing
+EDS-3 Mobile browsers
+EDS-16 Transfer Selection from typeahead to dropdown
+EDS-14 Return correct error for XMLHttpRequest Impaired browsers
+EDS-15 Not all FATAL errors in language bundles
+EDS-11 Some cosmetic suggestions
+

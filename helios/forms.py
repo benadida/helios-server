@@ -16,19 +16,31 @@ class ElectionForm(forms.Form):
   name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'size':60}), 
     label=_("Name"), help_text=_('the pretty name for your election, e.g. My Club 2010 Election. Maximum of 250 characters.'))
   description = forms.CharField(max_length=4000, label=_("Description"), 
-    widget=forms.Textarea(attrs={'cols': 70, 'wrap': 'soft'}), required=False)
-  election_type = forms.ChoiceField(label=_("Type"), choices = Election.ELECTION_TYPES)
+    help_text=_("Maximum of 4000 characters. You can use the HTML tags: <p>, <h4>, <h5>, <h3>, <h2>, <br>, <u>."), 
+    widget=forms.Textarea(attrs={'wrap': 'soft', 'class': 'form-control'}), required=False)
+  election_type = forms.ChoiceField(label=_("Type"), choices = Election.ELECTION_TYPES,
+    widget=forms.HiddenInput(), initial=Election.ELECTION_TYPES[0][0], required=False)
   use_voter_aliases = forms.BooleanField(required=False, initial=False, 
     label=_("Use voter aliases"), help_text=_('If selected, voter identities will be replaced with aliases, e.g. "V12", in the ballot tracking center'))
-  #use_advanced_audit_features = forms.BooleanField(required=False, initial=True, help_text='disable this only if you want a simple election with reduced security but a simpler user interface')
+  use_advanced_audit_features = forms.BooleanField(required=False, initial=True, help_text=_('disable this only if you want a simple election with reduced security but a simpler user interface'))
   randomize_answer_order = forms.BooleanField(required=False, initial=False, 
     label=_("Randomize answer order"), help_text=_('enable this if you want the answers to questions to appear in random order for each voter'))
   #private_p = forms.BooleanField(required=False, initial=False, label=_("Private?"), help_text=_('A private election is only visible to registered voters.'))
-  help_email = forms.CharField(required=False, initial="", label=_("Help Email Address"), help_text=_('An email address voters should contact if they need help.'))
+  help_email = forms.CharField(required=False, initial="", label=_("Help Email Address"),
+    help_text=_('An email address voters should contact if they need help.'),
+    widget=forms.TextInput(attrs={'size':60}))
   
   if settings.ALLOW_ELECTION_INFO_URL:
     election_info_url = forms.CharField(required=False, initial="", label=_("Election Info Download URL"), help_text=_("the URL of a PDF document that contains extra election information, e.g. candidate bios and statements"))
   
+
+  def clean(self):
+    cleaned_data = super(ElectionForm, self).clean()
+    election_type = cleaned_data.get("election_type")
+    if election_type == '':
+      cleaned_data['election_type'] = self.fields['election_type'].initial
+    return cleaned_data
+
 
 class ElectionTimesForm(forms.Form):
   # times

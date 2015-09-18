@@ -1,0 +1,38 @@
+{% extends 'heliosinstitution/templates/dashboard.html' %}
+{% load i18n %}
+{% load staticfiles %}
+{% block subcontent %}
+
+{% if user %}
+    <div class="div_form well">
+        {% trans "Delegate Institution Admin" %}
+        <form id="add_inst_mngt_email" class="form form-inline add_inst_email" method="POST" action="{% url "heliosinstitution.views.delegate_user" "Institution Admin" %}">
+            <div class="form-group">
+                <label class="sr-only" for="inst-mngt-email">{% trans "Email address" %}</label>
+                <input type="email" class="form-control" name="email" placeholder="{% trans "Enter email" %}">
+                <span id="add_inst_mngt_email_result"></span>
+            </div>
+            <button id="add_inst_mngt_email" type="submit" class="btn btn-primary">{% trans "Add" %}</button>
+        </form>
+        <span class="add_field_result help-block"></span>
+    </div>
+    <div class="div_form well">
+        {% trans "Add new Election Admin" %}
+        <form class="form form-inline add_inst_email" method="POST" action="{% url "heliosinstitution.views.delegate_user" "Election Admin" %} ">
+            <div class="form-group">
+                <label class="sr-only" for="election-mngt-email">{% trans "Email address" %}</label>
+                <input type="email" class="form-control" name="email" placeholder="{% trans "Enter email" %}">
+            </div>
+            <button id="add_election_mngt_email" type="submit" class="btn btn-primary">{% trans "Add" %}</button>
+        </form>
+        <span class="add_field_result help-block"></span>
+    </div>
+
+    <div id="institution_users" data-url={% url "heliosinstitution.views.users" %}>
+        {% include "institution_users.html" %} 
+    </div>
+{% else %}
+    {% include "login_box.html" %}
+{% endif %}
+
+{% endblock subcontent %}

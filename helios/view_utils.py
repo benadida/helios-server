@@ -43,7 +43,7 @@ def prepare_vars(request, vars):
     
   vars_with_user['utils'] = utils
   vars_with_user['settings'] = settings
-  vars_with_user['HELIOS_STATIC'] = '/static/helios/helios'
+  vars_with_user['HELIOS_STATIC'] = '/static/helios'
   vars_with_user['TEMPLATE_BASE'] = helios.TEMPLATE_BASE
   vars_with_user['CURRENT_URL'] = request.path
   vars_with_user['SECURE_URL_HOST'] = settings.SECURE_URL_HOST
@@ -77,7 +77,7 @@ def render_json(json_txt):
   return HttpResponse(json_txt, "application/json")
 
 # decorator
-def json(func):
+def return_json(func):
     """
     A decorator that serializes the output to JSON before returning to the
     web client.

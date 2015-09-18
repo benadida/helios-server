@@ -2,7 +2,7 @@
 {% load i18n %}
 {% block content %}
 <div id="header" class="col-md-12">
-  <h2 class="title">{% trans "Bulk Upload Voters &mdash; Confirm" %}<span style="font-size:0.7em;"> [<a href="{% url helios.views.one_election_view election.uuid %}"> {% trans "back to election" %}</a>]</span></h2>
+  <h2 class="title">{% trans "Bulk Upload Voters &mdash; Confirm" %}<span style="font-size:0.7em;"> [<a href="{% url "helios.views.one_election_view" election.uuid %}"> {% trans "back to election" %}</a>]</span></h2>
 	<h3 class="title">{{election.name}}</h3>
 <p>
 {% blocktrans %}
@@ -26,7 +26,7 @@ HOLD ON:<br />
 </p>
 <br />
 
-<a href="{% url helios.views.voters_upload_cancel election.uuid %}">never mind, upload a different file</a>
+<a href="{% url "helios.views.voters_upload_cancel" election.uuid %}">never mind, upload a different file</a>
 </p>
 </div>
 <div class="col-md-12">
@@ -42,7 +42,7 @@ HOLD ON:<br />
 </div>
 </form>
 <div class="form-group">
-<a class="btn btn-danger" href="{% url helios.views.voters_upload_cancel election.uuid %}">{% trans "no, let me upload a different file" %}</a>
+<a class="btn btn-danger" href="{% url "helios.views.voters_upload_cancel" election.uuid %}">{% trans "no, let me upload a different file" %}</a>
 </div>
 </div>
 

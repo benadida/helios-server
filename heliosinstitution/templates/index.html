@@ -1,0 +1,101 @@
+{% extends 'heliosinstitution/templates/base-bootstrap.html' %}
+{% load i18n %}
+{% block title %}{{ settings.SITE_TITLE }}{% endblock %}
+{% load institution_extras %}
+{% block header %}
+{% block js %}
+
+{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-8">
+        <h4>
+            {{settings.WELCOME_MESSAGE|safe}}
+        </h4>
+    </div>
+
+    <div class="col-xs-4">
+        {% if user %}
+            <h5 class="text-right">{% trans "Welcome" %} <b>{{user.pretty_name|safe}}</b></h5>
+            {% if create_p %}
+            <div class="text-right">
+                <a class="btn btn-primary btn-xs" href="{% url "helios.views.election_new" %}">{% trans "create an election" %}</a>
+            </div>
+            {% endif %}
+            {% endif %}
+    </div>
+</div>
+
+{% if institutions %}
+<div class="row">
+    <div class="col-xs-12">
+            <div class="form-group get-by-year" data-url="{% url "heliosinstitution.views.elections_by_year" %}">
+                <label for="year">{% trans "Year" %}</label>
+                {% with drop_type='year' %}
+                    {% dropdown %}
+                {% endwith %}
+            </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 slice-institutions" data-url="{% url "heliosinstitution.views.elections_summary" %}">
+        {% include "elections_summary.html" %}
+    </div>
+{% else %} <!-- no elections -->
+    <h4>{% trans "no featured elections at the moment" %}</h4>
+{% endif %}
+<div class="col-md-4" style="padding-top: 10px">
+    {% if user %}
+        {% if elections_administered %}
+        <p class="bg-info" style="padding: 3px"><strong>{% trans "Your elections" %}</strong></p>
+        <ul>
+            {% for election in elections_administered %}
+            <li>
+                <a href="{% url "helios.views.one_election_view" election.uuid %}">{{ election.name }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+        <a class="tiny button" href="{% url "heliosinstitution.views.elections_administered" user.pk %}">{% trans "See all" %}</a>
+        {% endif %} <!-- end elections administered -->
+        <br/>
+        <br/>
+        {% if elections_voted %}
+        <p class="bg-info" style="padding: 3px"><strong>{% trans "Recent Votes" %}</strong></p>
+        <ul>
+            {% for election in elections_voted %}
+            <li>
+                <a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a>
+            </li>
+            {% endfor %}
+        </ul>
+        <a class="tiny button" href="{% url "helios.views.elections_voted" %}">{% trans "See all" %}</a>
+        {% endif %} <!-- end elections voted -->
+        <br/>
+        <br/>
+        {% if user.institutionuserprofile_set.get.institution %}
+        <p class="bg-info" style="padding: 3px"><b>{% trans "Contact information" %}</b></p>
+        {% with institution=user.institutionuserprofile_set.get.institution %}<br/>
+            {% trans "Main Phone: +55" %} {{ institution.main_phone}}<br/>
+            {% trans "Secondary Phone: +55" %} {{ institution.sec_phone}}<br/>
+            {% trans "Address:" %} {{ institution.address }}<br/>
+            {% if institution.admins %}
+            <br><em> {% trans "Your institution admins are:" %}</em><br><br>
+            {% for admin in institution.admins %}
+             	{{admin.name }}<br>
+                {% trans "E-mail" %} {{ admin.email }}<br><br>
+            {% endfor %}
+            {% else %}
+            <br>
+            <em>{% trans "No institution admin" %}</em>
+            {% endif %}
+        {% endwith %}
+        <br>
+        <p class="bg-info" style="padding: 3px"/>
+        {% endif %}
+    {% endif %} <!-- end if user -->
+</div> <!-- span2 -->
+</div>
+{% endblock %}

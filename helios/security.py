@@ -14,6 +14,7 @@ from django.conf import settings
 from django.utils.translation import ugettext as _
 
 from models import *
+
 from helios_auth.security import get_user
 
 from django.http import HttpResponseRedirect
@@ -21,14 +22,15 @@ import urllib
 
 import helios
 
+
 # current voter
 def get_voter(request, user, election):
   """
   return the current voter
   """
   voter = None
-  if request.session.has_key('CURRENT_VOTER'):
-    voter = request.session['CURRENT_VOTER']
+  if request.session.has_key('CURRENT_VOTER_ID'):
+    voter = Voter.objects.get(id=request.session['CURRENT_VOTER_ID'])
     if voter.election != election:
       voter = None
 
@@ -82,7 +84,7 @@ def get_election_by_uuid(uuid):
   if not uuid:
     raise Exception(_("no election ID"))
       
-  return Election.get_by_uuid(uuid)
+  return helios.models.Election.get_by_uuid(uuid)
   
 # decorator for views that pertain to an election
 # takes parameters:

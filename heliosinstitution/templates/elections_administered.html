@@ -1,0 +1,34 @@
+{% extends 'heliosinstitution/templates/base-bootstrap.html' %}
+{% load i18n %}
+{% block content %}
+<div class="panel panel-primary">
+  <div class="panel-heading">{% trans "Elections you are current or past admin" %} </div>
+    <div class="panel-body"> </div>
+
+<table class="table table-condensed table-striped table-bordered">
+	<thead>
+        <tr>
+        	<th>{% trans "Name" %}</th>
+        	<th>{% trans "Started at" %}</th>
+        	<th>{% trans "Ended at" %}</th>
+		</tr>
+ 	</thead>
+ 	<tbody>
+	{% for election in elections_administered %}
+	<tr>
+		<td> <a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></td>
+		<td class="tddate">{{election.started_at}}</td>
+		<td class="tddate">{{election.ended_at}}</td>
+	</tr>
+	{% endfor %}
+	<tbody>
+ 	<tfoot>
+ 		<tr>
+ 			<td></td>
+ 			<td></td>
+ 			<td><a href="/" class="btn btn-primary pull-right">{% trans "back to home" %}</a></td>
+ 		</tr>
+ 	</tfoot>
+</table>
+</div>
+{% endblock %}

@@ -1,4 +1,5 @@
 {% extends 'server_ui/templates/base.html' %}
+{% load staticfiles %}
 {% block title %}Confirm Vote{% endblock %}
 
 {% block content %}
@@ -38,13 +39,13 @@ function show_waiting() {
 </form>
 
 <p>
-    Forgot your password? <a href="{% url helios_auth.auth_systems.password.password_forgotten_view %}?return_url={% url server_ui.views.cast_confirm %}">Have it emailed to you</a>.<br />(don't worry, we won't forget your vote).
+    Forgot your password? <a href="{% url "helios_auth.auth_systems.password.password_forgotten_view" %}?return_url={% url "server_ui.views.cast_confirm" %}">Have it emailed to you</a>.<br />(don't worry, we won't forget your vote).
 </p>
 </div>
 
 <div id="waiting_div" align="center">
   Verifying and Casting your ballot<br />
-  <img src="/static/helios/loading.gif" />
+  <img src="{% static "loading.gif" %}" />
 </div>
 
 {% endblock %}

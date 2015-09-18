@@ -3,7 +3,7 @@
 {% block title %}{% trans "Audited Ballots for "%}{{election.name}}{% endblock %}
 
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; {% trans "Audited Ballots" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election_uuid=election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; {% trans "Audited Ballots" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election_uuid=election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
 
 <p>
 {% blocktrans %}
@@ -19,13 +19,13 @@ These ballots are <em>not cast</em>, and they will not be counted. They are just
 
 <p>
 
-  {% blocktrans %}To verify an audited ballot, copy its entire content and paste it in the  {% endblocktrans %} <a target="_new" href="/booth/single-ballot-verify.html?election_url={% url helios.views.one_election election.uuid %}">{% trans "single ballot verifier" %}</a>.
+  {% blocktrans %}To verify an audited ballot, copy its entire content and paste it in the  {% endblocktrans %} <a target="_new" href="/booth/single-ballot-verify.html?election_url={% url "helios.views.one_election" election.uuid %}">{% trans "single ballot verifier" %}</a>.
 
 </p>
 
 {% if audited_ballots %}
 <p>
-{% trans "Audited Ballots " %}{{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
+{% trans "Audited Ballots " %} {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
 </p>
 
 {% if next_after %}

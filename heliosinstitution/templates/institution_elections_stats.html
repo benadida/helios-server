@@ -1,0 +1,29 @@
+{% load i18n %}
+{% load staticfiles %}
+{% block subcontent %}
+{% if institution.elections %}
+<div class="panel panel-primary">
+    <div class="panel-heading">{% trans "Elections statistics for your institution" %}</div>
+    <div class="panel-body"> 
+        <p>{% trans "Here are listed all the elections from your institution" %}</p>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>{% trans "Election" %}</th>
+          <th>{% trans "Admin" %}</th>
+          <th>{% trans "Voters / cast votes" %}</th>
+       </tr>
+      </thead>
+      <tbody>
+        {% for election in institution.elections %}
+        <tr>
+          <td>{{ election.name }}</td>
+          <td>{{ election.admin }}</td>
+          <td>{{ election.voters }} / {{ election.cast_votes }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+</div> <!-- panel primary -->
+{% endif %} 
+{% endblock subcontent %}

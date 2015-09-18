@@ -4,7 +4,7 @@
 {% block content %}
 <div class="row">
 <div class="col-md-12">
-  <h2 class="title">{% trans "Compute Tally" %} <span style="font-size:0.7em;">[<a href="{% url helios.views.one_election_view election.uuid %}">{% trans "cancel" %}</a>]</span></h2>
+  <h2 class="title">{% trans "Compute Tally" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "cancel" %}</a>]</span></h2>
   <h2 class="title">{{election.name}}</h2>
   <p>
     {% trans "You are about to compute the tally for this election. You only will then see the results." %}

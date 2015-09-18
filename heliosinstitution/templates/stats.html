@@ -1,0 +1,12 @@
+{% extends 'heliosinstitution/templates/dashboard.html' %}
+{% load i18n %}
+{% load staticfiles %}
+{% block subcontent %}
+{% if institution.recently_cast_votes %}
+    {% include "heliosinstitution/templates/stats_recent_votes.html" %}
+{% endif %}
+{% if institution.elections %}
+    {% include "heliosinstitution/templates/stats_elections.html" %}
+{% endif %} 
+<p><b>{{num_votes_in_queue}}</b> {% trans "votes in queue." %} {% if num_votes_in_queue %}[<a href="{% url "helios.stats_views.force_queue" %}">{% trans "force it" %}</a>]{% endif %}</p>
+{% endblock subcontent %}

@@ -1,0 +1,27 @@
+{% extends 'heliosinstitution/templates/dashboard.html' %}
+{% load i18n %}
+{% load staticfiles %}
+{% block subcontent %}
+    <div class="panel panel-primary">
+        <div class="panel-heading">{% trans "User details" %}</div>
+        <div class="panel-body"> 
+            <p>{% trans "Here are listed all the attributes your Identity Provider has released" %}</p>
+        </div>
+        <table class="table" title="{% trans "Released attributes by your Identity Provider" %}">
+          <thead>
+            <tr>
+                <th title="{% trans "Attribute" %}">{% trans "Attribute" %}</th>
+                <th title="{% trans "Value" %}">{% trans "Value" %}</th>
+           </tr>
+          </thead>
+          <tbody>
+            {% for key, value in user_metadata.items %}
+            <tr>
+                <td> {{ key }} </td>
+                <td> {{ value }} </td>
+            </tr>
+                {% endfor %}
+        </tbody>
+        </table>
+    </div>
+{% endblock subcontent %}

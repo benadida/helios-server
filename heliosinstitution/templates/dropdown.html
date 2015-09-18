@@ -1,0 +1,7 @@
+{% load i18n %}
+<select name="{{ drop_type }}">
+	<option value=''>{% trans "All" %} </option>
+{% for value in values %}
+	<option value="{{ value }}">{{ value }}</option>
+{% endfor %}
+</select>

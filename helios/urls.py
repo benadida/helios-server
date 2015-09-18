@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls.defaults import *
+from django.conf.urls import *
 
 from django.conf import settings
 
@@ -34,6 +34,9 @@ urlpatterns = patterns('',
   (r'^elections/voted$', elections_voted),
   
   (r'^elections/(?P<election_uuid>[^/]+)', include('helios.election_urls')),
+  
+  
+  (r'^heliosinstitution/', include('heliosinstitution.urls')),
   
 )
 

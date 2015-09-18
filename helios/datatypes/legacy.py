@@ -176,7 +176,7 @@ class DLogProof(LegacyObject):
 
     def __init__(self, wrapped_obj):
         if isinstance(wrapped_obj, dict):
-            import pdb; pdb.set_trace()
+            raise Exception("problem with dict")
 
         super(DLogProof,self).__init__(wrapped_obj)
 

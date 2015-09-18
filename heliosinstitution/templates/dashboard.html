@@ -1,0 +1,18 @@
+{% extends 'heliosinstitution/templates/base-bootstrap.html' %}
+{% load i18n %}
+{% load staticfiles %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-2 col-lg-2">
+            {% include "left_side_menu.html" %}
+        </div>
+        <div id="content" class="col-lg-10 col-sm-10">
+         {% block subcontent %}
+            <div id="inst_details" class="panel panel-primary" data-url="{% url "heliosinstitution.views.institution_details" institution.pk %}">
+                {% include "institution_details.html" %}
+            </div>
+         {% endblock subcontent %}
+
+        </div>
+    </div>
+{% endblock content %}

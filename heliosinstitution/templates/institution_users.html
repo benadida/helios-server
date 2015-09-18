@@ -1,0 +1,40 @@
+{% load i18n %}
+{% if institution.institution_users %}
+<div class="panel panel-primary">
+    <div class="panel-heading">{% trans "Users with role in your institution" %}</div>
+    <div class="panel-body"> 
+        <p>{% trans "Here are listed all the users assigned for your institution" %}</p>
+    </div>
+    <form lass="form form-inline add_inst_email">
+    <table class="table" data-post="">
+      <thead>
+        <tr>
+          <th>{% trans "E-mail" %}</th>
+          <th>{% trans "Role" %}</th>
+          <th>{% trans "Active" %}</th>
+          <th>{% trans "Expires at" %}</th>
+          <th></th>
+       </tr>
+      </thead>
+      <tbody>
+        {% for user in institution.institution_users %}
+        <tr {% if not user.active %} class="warning"{% else %} class="active"{% endif %}>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role }}</td>
+          <td>{% if user.active %}{% trans "Yes" %}{% else %}{% trans "No" %} <i title="{% trans "User did not logged yet" %}" class="glyphicon glyphicon-exclamation-sign"></i>{% endif %} </td>
+          <td>
+          <div>
+            <span style="cursor:pointer" data-url="{% url "heliosinstitution.views.add_expires_at" user.pk %}" class="glyphicon glyphicon-calendar date_expires_at">&nbsp;</span>
+            <span class="date">{{user.expires_at|date:"d/m/Y"}}</span>
+          </div>
+          </td>
+          <td>
+            <a class="remove_institution_user" class="glyphicon glyphicon-remove" href="{% url "heliosinstitution.views.revoke_user" user.pk %} "><i title="{% trans "Remove user" %}" class="glyphicon glyphicon-remove"></i></a>
+          </td>
+        </tr>
+        {% endfor %}
+     </tbody>
+    </table>
+    </form>
+</div><!-- panel primary -->
+{% endif %}

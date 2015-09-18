@@ -7,8 +7,8 @@ Ben Adida
 """
 
 from django.db import models, transaction
-from django.utils import simplejson
-from django.utils.translation import ugettext as _
+import json
+from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils.timezone import utc
@@ -47,7 +47,7 @@ class Election(HeliosModel):
   # later versions, at some point will upgrade to "2011/01/Election"
   datatype = models.CharField(max_length=250, null=False, default="legacy/Election")
   
-  short_name = models.CharField(max_length=100)
+  short_name = models.CharField(max_length=100, unique=True)
   name = models.CharField(max_length=250)
   
   ELECTION_TYPES = (
