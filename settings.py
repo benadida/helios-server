@@ -299,16 +299,12 @@ djcelery.setup_loader()
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 # this effectively does CELERY_ALWAYS_EAGER = True
 
-# see configuration example in:
-# http://pythonhosted.org/django-auth-ldap/example.html
-
-AUTH_LDAP_SERVER_URI = 'ldap://localhost' # replace by your ldap URI
-
-AUTH_LDAP_BIND_DN = ""
-AUTH_LDAP_BIND_PASSWORD = ""
-
-AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=User,dc=example,dc=com",
-    ldap.SCOPE_SUBTREE, "(uid=%(user)s)"
+# see configuration example at https://pythonhosted.org/django-auth-ldap/example.html
+AUTH_LDAP_SERVER_URI = "ldap://ldap.forumsys.com" # replace by your Ldap URI
+AUTH_LDAP_BIND_DN = "cn=read-only-admin,dc=example,dc=com"
+AUTH_LDAP_BIND_PASSWORD = "password"
+AUTH_LDAP_USER_SEARCH = LDAPSearch("dc=example,dc=com",
+    ldap.SCOPE_SUBTREE, "(cn=%(user)s)"
 )
 
 AUTH_LDAP_USER_ATTR_MAP = {
@@ -326,11 +322,6 @@ AUTH_LDAP_CACHE_GROUPS = True
 AUTH_LDAP_GROUP_CACHE_TIMEOUT = 3600
 
 AUTH_LDAP_ALWAYS_UPDATE_USER = False
-
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-    'django_auth_ldap.backend.LDAPBackend',
-)
 
 #Shibboleth
 SHIBBOLETH_ATTRIBUTE_MAP = { 
