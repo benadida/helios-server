@@ -8,14 +8,15 @@
 		  <h3 class="title">{% trans "Voters and Ballot Tracking Center" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
 		  <h3 class="title">{{election.name}}</h3>
 		</div>
-{% if admin_p %}
-	{% if election.private_p %}
-		<em>{% blocktrans %}Your election is marked private, which means you cannot open registration up more widely{% endblocktrans %}</em>
 	</div>
 </div> <!-- first_row -->
+{% if admin_p %}
+	{% if election.private_p %}
+	<div  id="private_p_row" class="row">
+		<em>{% blocktrans %}Your election is marked private, which means you cannot open registration up more widely{% endblocktrans %}</em>
+	</div> <!-- first_row -->
 {% else %}
-</div>
-</div> <!-- first_row -->
+
 {% if not election.frozen_at %}
 <div class="row"> <!-- second row -->
 <div class="col-md-10">
@@ -29,7 +30,7 @@
 		<div class="form-group">
 			<input id="logged_type" type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility or not user.institutionuserprofile_set.get.institution.upload_voters %}CHECKED{% endif %} /> {% trans "anyone can vote" %}
 		</div>
-		{% if user.institutionuserprofile_set.get.institution.upload_voters %}
+		{% if settings.AUTH_DEFAULT_AUTH_SYSTEM == 'shibboleth' and user.institutionuserprofile_set.get.institution.upload_voters or settings.AUTH_DEFAULT_AUTH_SYSTEM != 'shibboleth' and upload_p %}
 		<div class="form-group">
 			<input id="csv_type" type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> {% trans "only voters listed explicitly below can vote" %} <i title="{% trans "Do not forget to upload voters file, using the bulk upload voters button bellow." %}" class="glyphicon glyphicon-info-sign"></i>
 			{% if upload_p %}
@@ -70,7 +71,7 @@
 		        </div>
 			{% else %}
 				<input type="radio" name="eligibility" value="{% trans "limitedreg" %}" {% if election.eligibility %}CHECKED{% endif %} /> {% trans "only voters who are members of " %}
-				</div>
+			</div>
 				<div class="form-group">
 					<select name="category_id">
 					{% for category in categories %}
@@ -80,7 +81,6 @@
 				</div>
 			{% endif %}
 		{% endif %}
-		</div>
 		<div class="form-group">
 			<button id="update_voter_reg" class="btn btn-primary pull-right">{% trans "update" %}</button>
 		</div>
