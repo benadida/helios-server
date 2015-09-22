@@ -159,15 +159,17 @@ def user_needs_intervention(user_id, user_info, token):
         helios_user = User.objects.get(user_id=user_id, user_type='shibboleth')
 
 		# checking if the logged user has association with an institution
-        user_provider = urlsplit(user_info['attributes']['provider']).netloc
+        provider_url_details = urlsplit(user_info['attributes']['provider'])
+        user_provider = provider_url_details.scheme + '://' + \
+            provider_url_details.netloc + '/'
        
         institution_user_profile = InstitutionUserProfile.objects.get(email=user_info['email'],
             institution__idp_address=user_provider)
 
-        if institution_user_profile.helios_user is None:
-            institution_user_profile.helios_user = helios_user
-            institution_user_profile.active = True
-            institution_user_profile.save()
+
+        institution_user_profile.helios_user = helios_user
+        institution_user_profile.active = True
+        institution_user_profile.save()
 
 
 		# checking if role hasn't expired
