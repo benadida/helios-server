@@ -294,7 +294,9 @@ CELERY_RESULT_DBURI = DATABASES['default']
 import djcelery
 djcelery.setup_loader()
 
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
+CELERY_TASK_RESULT_EXPIRES = 5184000 # 60 days
 # for testing
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 # this effectively does CELERY_ALWAYS_EAGER = True
