@@ -4,5 +4,6 @@ deploy-latest.sh
 *~
 media/*
 venv
-celerybeat-*
+celery*.log
+*.pid
 *.mo
