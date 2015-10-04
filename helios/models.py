@@ -805,7 +805,7 @@ class Voter(HeliosModel):
       self.user = User(user_type='password', user_id=self.voter_email, name=self.voter_name)
 
   @classmethod
-  @transaction.commit_on_success
+  @transaction.atomic
   def register_user_in_election(cls, user, election):
     voter_uuid = str(uuid.uuid4())
     voter = Voter(uuid= voter_uuid, user = user, election = election)
