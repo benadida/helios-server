@@ -167,7 +167,7 @@ class InstitutionUserProfile(models.Model):
         if settings.USE_ELECTION_MANAGER_ATTRIBUTES:
             for attribute in settings.ELECTION_MANAGER_ATTRIBUTES:
                 try:
-                    attributes.pop(attribute)
+                    attributes.pop(attribute.lower())
                 except KeyError:
                     pass
 
