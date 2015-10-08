@@ -81,7 +81,10 @@ def get_user_info_after_auth(request):
 
 
 def get_auth_url(request, redirect_url = None):
-  return reverse(shibboleth_login_view)
+	if settings.USE_EMBEDDED_DS:
+		return reverse(shibboleth_login_view)
+
+	return reverse(shibboleth_register)
 
 
 def send_message(user_id, name, user_info, subject, body):

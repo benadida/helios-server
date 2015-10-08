@@ -325,7 +325,7 @@ AUTH_LDAP_GROUP_CACHE_TIMEOUT = 3600
 
 AUTH_LDAP_ALWAYS_UPDATE_USER = False
 
-#Shibboleth
+# Shibboleth auth settings
 SHIBBOLETH_ATTRIBUTE_MAP = { 
     #"Shibboleth-givenName": (True, "first_name"),
     "Shib-inetOrgPerson-cn": (True, "common_name"),
@@ -348,3 +348,6 @@ INSTITUTION_ROLE = ['Institution Admin','Election Admin']
 ATTRIBUTES_AUTOMATICALLY_CHECKED = ['brExitDate']
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+USE_EMBEDDED_DS = False
+# end shibboleth auth settings
