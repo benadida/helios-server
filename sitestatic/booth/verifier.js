@@ -1,0 +1,1 @@
+../../heliosbooth/verifier.js
