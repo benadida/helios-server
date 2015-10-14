@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-09 16:16-0300\n"
-"PO-Revision-Date: 2015-10-09 16:41-0300\n"
+"POT-Creation-Date: 2015-10-14 16:16-0300\n"
+"PO-Revision-Date: 2015-10-14 16:16-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -2362,7 +2362,7 @@ msgstr ""
 msgid "continue"
 msgstr "continuar"
 
-#: heliosbooth/templates/done.html:2 sitestatic/templates/done.html:2
+#: heliosbooth/templates/done.html:2
 msgid ""
 "\n"
 "<h3>Your Vote is Being Submitted</h3>\n"
@@ -2379,11 +2379,11 @@ msgstr ""
 "urna....\n"
 "</p>\n"
 
-#: heliosbooth/templates/submit.html:2 sitestatic/templates/submit.html:2
+#: heliosbooth/templates/submit.html:2
 msgid "Submit Your Encrypted Ballot"
 msgstr "Enviar Sua Cédula Cifrada"
 
-#: heliosbooth/templates/submit.html:5 sitestatic/templates/submit.html:5
+#: heliosbooth/templates/submit.html:5
 msgid ""
 "\n"
 "All information, other than your encrypted ballot,<br />\n"
@@ -2393,7 +2393,7 @@ msgstr ""
 "Toda a informação, exceto sua cédula cifrada,<br />\n"
 "foi removida da memória.\n"
 
-#: heliosbooth/templates/submit.html:12 sitestatic/templates/submit.html:12
+#: heliosbooth/templates/submit.html:12
 msgid ""
 "\n"
 "As a reminder, your ballot tracking number is:<br />\n"
@@ -2401,7 +2401,7 @@ msgstr ""
 "\n"
 "Como um lembrete,  seu número de rastreamento de cédula é:<br />\n"
 
-#: heliosbooth/templates/submit.html:19 sitestatic/templates/submit.html:19
+#: heliosbooth/templates/submit.html:19
 msgid ""
 "\n"
 "According to the election definition file, this ballot will be submitted "
@@ -2411,7 +2411,7 @@ msgstr ""
 "De acordo com o arquivo de definição da eleição, esta cédula será submetida "
 "para:\n"
 
-#: heliosbooth/templates/submit.html:27 sitestatic/templates/submit.html:27
+#: heliosbooth/templates/submit.html:27
 msgid ""
 "\n"
 "    where you will log in to validate your eligibility to vote.\n"
@@ -2419,7 +2419,7 @@ msgstr ""
 "\n"
 "    onde você vai conectar para validar sua eligibilidade para votar.\n"
 
-#: heliosbooth/templates/submit.html:40 sitestatic/templates/submit.html:40
+#: heliosbooth/templates/submit.html:40
 msgid "Submit Ballot"
 msgstr "Enviar Cédula"
 
@@ -2718,6 +2718,10 @@ msgstr "Desconectar"
 #: server_ui/templates/navbar.html:23
 msgid "Federated Access"
 msgstr "Acesso Federado"
+
+#: heliosinstitution/templates/navbar-bootstrap.html:33
+msgid "Help"
+msgstr "Ajuda"
 
 #: heliosinstitution/templates/stats_admin_actions.html:6
 msgid "Admin actions"
@@ -3456,9 +3460,6 @@ msgstr "Houve um erro durante o processamento de sua requisição."
 
 #~ msgid "About Helios"
 #~ msgstr "Sobre o Helios"
-
-#~ msgid "Help!"
-#~ msgstr "Ajuda!"
 
 #~ msgid "not logged in."
 #~ msgstr "não conectado."
