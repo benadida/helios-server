@@ -2,36 +2,40 @@
 
 # Guia de instalação e configuração do Helios
 
-*This README is intended for Portuguese audience. *
+*This README is intended for Portuguese audience.*
+
+versão 1.0  - adaptações realizadas para uso federado
 
 Neste tutorial são descritos os principais passos para instalação de um servidor para disponibilização do Helios.
 
-** Instalação servidor (Ubuntu) **
+**Instalação servidor (Ubuntu)**
 
 *Supondo uma máquina apenas com o sistema operacional*
 
 Atualizações/instalações de pacotes:
 
-sudo apt-get dist-upgrade
-sudo apt-get install apache2
-sudo apt-get install postgresql-9.3
-sudo apt-get install postgresql-server-dev-9.3
-sudo apt-get install python-dev
-sudo apt-get install libsasl2-dev
-sudo apt-get install libldap2-dev (*para o módulo de autenticação ldap*)
-sudo apt-get install python-ldap (*para o módulo de autenticação ldap*)
-sudo apt-get install gettext (*para tradução*)
-sudo apt-get install libapache2-mod-wsgi
-sudo apt-get install git (*se for baixar e/ou atualizar o código via github*)
+    sudo apt-get dist-upgrade
+
+    sudo apt-get install apache2 postgresql-9.3 postgresql-server-dev-9.3 python-dev libsasl2-dev libldap2-dev python-ldap gettext libapache2-mod-wsgi
+
+Se for baixar e/ou atualizar o código via github:
+
+    sudo apt-get install git 
 
 
-### Configurações
-#### Banco
-*sudo su postgres*
-*psql*
-*create user helios;*
-*create role helios with createdb createrole login;*
-*alter user helios with password 'sua senha';*
+
+##Configurações
+### Banco
+
+    sudo su postgres
+
+    psql
+
+    create user helios;
+
+    create role helios with createdb createrole login;
+    
+    alter user helios with password 'sua senha';
 
 Editar o arquiv **pg_hba.conf** e inserir a linha:
 
@@ -49,7 +53,7 @@ Exception Value:
 FATAL:  Peer authentication failed for user "helios"
 
 
-#### Obtenção do código-fonte e preparação da aplicação
+### Obtenção do código-fonte e preparação da aplicação
 
 Você pode baixar um zip com o fonte ou clonar o repositório. Supondo que o código vai ser baixado via git:
 
@@ -107,46 +111,90 @@ O servidor descrito no tópico anterior é apenas para desenvolvimento, não dev
 
 É possível trabalhar com diversos servidores web, porém no caso em questão optou-se pelo [Apache](https://docs.djangoproject.com/en/1.6/topics/install/#install-apache-and-mod-wsgi).
 
---- Configuração apache ---
+### Configuração apache
+
 Módulos a serem habilitados, para a configuração exemplo:
-sudo a2enmod rewrite
-sudo a2enmod ssl
+
+    sudo a2enmod rewrite
+
+    sudo a2enmod ssl
 
 Para configurar o httpd.conf ou equivalente, siga as instruções em [How to use Django with Apache and mod_wsgi](https://docs.djangoproject.com/en/1.6/howto/deployment/wsgi/modwsgi/).
 
 
-A parte de servir os arquivos estáticos é a mais trabalhosa. Essa configuração é necessária, porque no servidor de desenvolvimento, o django serve esses arquivos, porém, na produção, eles precisam ser configurados para serem servidos pelo servidor web.
+A parte de servir os arquivos estáticos é a mais trabalhosa. Essa configuração é necessária porque no servidor de desenvolvimento o django serve esses arquivos, porém, na produção, eles precisam ser configurados para serem servidos pelo servidor web.
 
-Os arquivos 'tradicionais' são os de css, javascript e imagens. Para coletar esses arquivos, você deve executar o comando collectstatic, conforme descrito em [Collect static app](https://docs.djangoproject.com/en/1.6/ref/contrib/staticfiles//).
+Os arquivos estáticos não servidos pelo django são os "tradicionais":  css, javascript e imagens, por exemplo. Para coletar esses arquivos, é preciso executar o comando collectstatic, conforme descrito em [Collect static app](https://docs.djangoproject.com/en/1.6/ref/contrib/staticfiles//).
 
-No caso do Helios em particular, há módulos sendo servido estaticamente (total ou parcial): o heliosbooth e o heliosverifier, os quais também precisam ser configurados.
+No caso do Helios em particular, há módulos sendo servidos estaticamente (total ou parcial): o heliosbooth e o heliosverifier, os quais também precisam ser configurados.
 
-No estágio atual, optei por uma solução feia, mas simples e que atendia ao curto prazo disponível, que foi a de fazer um link simbólico dos arquivos desses módulos para o diretório no qual coletei os demais arquivos estáticos (sitestatic). E então configurei *alias* para eles na configuração do apache:
+No estágio atual, com enfoque em desenvolvimento de novas funcionalidades, optou-se por uma solução "feia", mas que simplifica muito: fazer um link simbólico dos arquivos desses módulos para e os demais arquivos que precisam ser servidos estaticamente. E então configurar um *alias* para eles na configuração do apache:
 
-Alias /booth /`<path_to_site>`/sitestatic
+Alias /booth /`<path_to_site>`/sitestatic/booth
 
-Alias /verifier /`<path_to_site>`/sitestatic
+Alias /verifier /`<path_to_site>`/sitestatic/verifier
 
+Além desses, todos os demais arquivos a serem servidos diretamente pelo apache, como os do módulo admin do django, apresentado mais adiante, estão com links simbólicos no diretório sitestatic, que está sob controle do git.
 
-Maiores informações em:
-
-https://docs.djangoproject.com/en/1.6/ref/django-admin//[]
 
 #### Administração pelo site de administração do django
 
 Ao rodar o reset.sh, você deve ter sido solicitado a criar um usuário de administração do django. Isso se deve ao fato de aplicação admin estar habilitada no settings.py (django.contrib.admin), pois iremos utilizá-la em algumas customizações feitas para este *fork* do helios.
 
-Após finalizar a instalação, você deve entrar em http(s)://endereco-do-seu-servidor-helios/admin e se conectar com o usuário e senha de administração, cadastrados no passo descrito anteriormente. Após logar, será disponibilizada uma tela de administração, mostrando diversas apps habilitadas para essa tarefa. Localize a opção `Helios_Auth` e clique em *Users*. Na tela seguinte, escolha o usuário que quer editar, clicando no mesmo. Na tela de edição, marque a opção *Admin_p* e salve, caso você queira que o usuário em questão possa criar eleições ao se conectar no Helios.
+As configurações descritas nessa seção são para o administrador do serviço Helios.
 
-Outra customização disponível, acessível por essa administração, é a opção de listar ou não uma eleição na página pública inicial do sistema. Se você quiser que uma eleição seja listada, na página inicial de administração, localize a opção `Helios` e clique em *Elections*. Na tela seguinte, clique no nome da eleição que você gostaria que fosse listada na página pública e na tela de edição, marque a opção *Featured p* e salve.
+##### Para autenticação via ldap
+
+Após finalizar a instalação, você deve entrar em http(s)://endereco-do-seu-servidor-helios/admin e se conectar com o usuário e senha de administração, cadastrados no passo descrito anteriormente. Após logar, será disponibilizada uma tela de administração, mostrando diversas apps habilitadas para essa tarefa. Localize a opção `Helios_Auth` e clique em *Users*. Na tela seguinte, escolha o usuário que quer editar, clicando no mesmo. Na tela de edição, marque a opção *Admin_p* e salve, caso você queira que o usuário em questão possa criar eleições ao se conectar no Helios. 
+
+**Atenção**: *o usuário a ser configurado já deve ter se conectado ao menos uma vez  no Helios (na página da aplicação).*
+
+Outra customização disponível, acessível por essa administração, é a opção de listar ou não uma eleição na página pública inicial do sistema. Se você quiser que uma eleição seja listada, na página de administração do Django, localize a opção `Helios` e clique em *Elections*. Na tela seguinte, clique no nome da eleição que você gostaria que fosse listada na página pública e na tela de edição, marque a opção *Featured p* e salve.
+
+##### Para autenticação federada via shibboleth
+
+Para a utilização federada do Helios, diversas personalizações foram efetuadas tanto na página pública, quando na parte de gerenciamento de eleições.
+
+Toda instituição a utilizar o Helios deve ser previamente cadastrada. Esse cadastro é feito na parte administrativa do Django. Acesse http(s)://endereco-do-seu-servidor-helios/admin, procure por *HeliosInstitution* e clique em *Institutions* e então em *Adicionar Institution*. Forneça os dados necessários e clique em salvar.
+
+Para que a instituição possa ser administrada, é necessário fornecer via interface admin do Django ao menos um usuário administrador. Para tal, em *HeliosInstitution*, clique em *Institution user profiles", depois em *Adicionar institution user profiles* . Se o usuário a ser cadastrado já se conectou alguma vez via federação, deve aparecer no campo Helios user. Se não, deixe em branco. No campo django user, é necessário adicionar um novo usuário. Clique no ícone + e informe no campo usuário o email do administrador e em permissões selecione Institution Admin. Clique em salvar. 
+No campo institution, selecione a instituição previamente criada.
+Em e-mail, informe o e-mail do administrador. Se desejar, informe a data de expiração desse usuário. Deixe o campo active desmarcado (será marcado quando o usuário se conectar no serviço pela primeira vez).
 
 Para maiores informações da aplicação *django admin site*, visite https://docs.djangoproject.com/en/1.6/ref/contrib/admin/
 
-#### Alguns lembretes:
+#### Configuração dos módulos de autenticação
+
+##### LDAP
+
+Habilitar o módulo em settings.py:
+
+    AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'ldap').split(",")
 
 As configurações de conexão e autenticação LDAP devem ser configuradas caso a caso. 
+
 A documentação da biblioteca utilizada pode ser encontrada em:http://pythonhosted.org/django-auth-ldap/example.html
-Ela não é muito completa, mas as configurações principais estão no settings.py e são `AUTH_LDAP_SERVER_URI`, `AUTH_LDAP_BIND_DN`, `AUTH_LDAP_BIND_PASSWORD`, e `AUTH_LDAP_USER_SEARCH`. AUTH_LDAP_BIND_DN e AUTH_LDAP_BIND_PASSWORD vão ter um valor configurado se o servidor LDAP exigir usuário e senha para fazer consultas. Ou seja, a configuração é caso a caso e uma leitura cuidadosa da documentação disponível no link do django-auth-ldap é recomendada, para outras dúvidas.
+
+Ela não é muito completa, mas as configurações principais estão no settings.py e são:
+
+`AUTH_LDAP_SERVER_URI`, `AUTH_LDAP_BIND_PASSWORD`, e `AUTH_LDAP_USER_SEARCH`. 
+
+AUTH_LDAP_BIND_DN e AUTH_LDAP_BIND_PASSWORD vão ter um valor configurado se o servidor LDAP exigir usuário e senha para fazer consultas. Ou seja, a configuração é caso a caso e uma leitura cuidadosa da documentação disponível no link do django-auth-ldap é recomendada, para outras dúvidas.
+
+##### Shibboleth
+Habilitar o módulo em settings.py:
+
+AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'shibboleth').split(",")
+
+e torná-lo padrão, para que a interface multi-instituição seja utilizada:
+
+AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', 'shibboleth')
+
+Configurar demais atributos em settings.py, na seção # Shibboleth auth settings.
+
+As configurações indicadas aqui supõe que o provedor de serviço (apache, módulo shibboleth e demais configurações) está configurado e funcional.
+
+#### Alguns lembretes:
 
 LEMBRAR DE ALTERAR EM SETTINGS.PY A CONSTANTE DEBUG DE TRUE PRA FALSE!
 
