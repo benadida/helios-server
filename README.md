@@ -136,6 +136,21 @@ Alias /verifier /`<path_to_site>`/sitestatic/verifier
 
 Além desses, todos os demais arquivos a serem servidos diretamente pelo apache, como os do módulo admin do django, apresentado mais adiante, estão com links simbólicos no diretório sitestatic, que está sob controle do git.
 
+Conforme citado anteriormente, o celery (http://www.celeryproject.org/)  precisa estar rodando, pois ele é o enfileirador de tarefas como a de envio de e-mails e registro de votos.
+
+o script check-services.sh foi criado para checar se o serviço está rodando. Ele pode ser adicionado à crontab.
+
+Nesse mesmo script, também é verificado o celery beat (http://docs.celeryproject.org/en/latest/userguide/periodic-tasks.html), agendador de tarefas periódicas, como limpar a tabela celery_taskmeta, que guarda log das tarefas e pode crescer bastante.
+
+No settings.py disponível no corrente repositório, colocou-se 60 dias como o prazo para apagar essas tarefas:
+
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
+ 
+CELERY_TASK_RESULT_EXPIRES = 5184000 # 60 days
+
+Após iniciar o celery beat, é possível ver uma tarefa periódica criada através da interface administrativa do django, sob Djecelery, periodic tasks.
+
+Se não for desejado fazer a limpeza da tabela dessa forma, basta não iniciar o celery beat.
 
 #### Administração pelo site de administração do django
 
