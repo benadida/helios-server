@@ -234,6 +234,10 @@ CAS_PASSWORD = get_from_env('CAS_PASSWORD', "")
 CAS_ELIGIBILITY_URL = get_from_env('CAS_ELIGIBILITY_URL', "")
 CAS_ELIGIBILITY_REALM = get_from_env('CAS_ELIGIBILITY_REALM', "")
 
+# Clever
+CLEVER_CLIENT_ID = get_from_env('CLEVER_CLIENT_ID', "")
+CLEVER_CLIENT_SECRET = get_from_env('CLEVER_CLIENT_SECRET', "")
+
 # email server
 EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
 EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
