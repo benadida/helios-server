@@ -57,7 +57,7 @@ def password_login_view(request):
       try:
         user = User.get_by_type_and_id('password', username)
         if password_check(user, password):
-          request.session['password_user_id'] = user.id
+          request.session['password_user_id'] = user.user_id
           return HttpResponseRedirect(reverse(after))
       except User.DoesNotExist:
         pass
@@ -105,8 +105,7 @@ def get_auth_url(request, redirect_url = None):
     
 def get_user_info_after_auth(request):
   from helios_auth.models import User
-  user_id = request.session['password_user_id']
-  user = User.objects.get(id=request.session['password_user_id'])
+  user = User.get_by_type_and_id('password', request.session['password_user_id'])
   del request.session['password_user_id']
   
   return {'type': 'password', 'user_id' : user.user_id, 'name': user.name, 'info': user.info, 'token': None}
