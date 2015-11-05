@@ -50,22 +50,30 @@ Download and extract the zeus codebase
 Configure zeus
 **************
 
-Copy the example settings file::
+* Copy the example settings file::
 
-  $ sudo cp /srv/zeus-server/local_settings.py.example /srv/zeus-server/local_settings.py
+    $ sudo cp /srv/zeus-server/local_settings.py.example /srv/zeus-server/local_settings.py
 
-``local_settings.py`` is the file that contains your custom ``zeus``
-configuration.
+  ``local_settings.py`` is the file that contains your custom ``zeus`` configuration.
 
-Consider changing the following settings to match your deployment configuration:
+  Consider changing the following settings to match your deployment configuration:
 
-  * ``ADMINS``
-  * ``ELECTION_ADMINS``
-  * ``DATABASES``
-  * ``EMAIL_*`` settings
-  * ``DEFAULT_FROM_EMAIL``
-  * ``SITE_DOMAIN``
-  * ``SECRET_KEY``
+    * ``ADMINS``
+    * ``ELECTION_ADMINS``
+    * ``DATABASES``
+    * ``EMAIL_*`` settings
+    * ``DEFAULT_FROM_EMAIL``
+    * ``SITE_DOMAIN``
+    * ``SECRET_KEY``
+
+* Create an instance of the ``Institution`` model in order to be able to create
+  demo accounts::
+
+    $ cd /srv/zeus-server
+    $ python manage.py shell
+    >>> from zeus.models.zeus_models import Institution
+    >>> Institution.objects.create(name="DEMO")
+    >>> exit()
 
 
 Apache configuration
