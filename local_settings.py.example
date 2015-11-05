@@ -115,7 +115,7 @@ SECRET_KEY = "<RANDOM_STRING>"
 # https://docs.djangoproject.com/en/dev/ref/settings/
 
 LANGUAGE_CODE = 'en'
-LANGUAGES = (('en', 'English'),)
+LANGUAGES = (('en', 'English'), ('gr', 'Greek'))
 
 from settings import INSTALLED_APPS
 INSTALLED_APPS = list(INSTALLED_APPS)
