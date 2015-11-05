@@ -136,6 +136,7 @@ def _get_demo_user(email_address):
             User.objects.get(user_id=user_id)
         except User.DoesNotExist:
             break
+        tries -= 1
 
     if tries <= 0:
         return None, ''
