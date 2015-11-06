@@ -377,7 +377,7 @@ def csv_from_score_polls(election, polls, lang, outfile=None):
             return None
 
 
-class ElectionReport(object):
+class ElectionsReportCSV(object):
     '''
     Create CSV with data from all elections that
     are marked as suitable for reporting.

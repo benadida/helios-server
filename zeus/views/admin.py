@@ -7,7 +7,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.contrib import messages
 
-from zeus.reports import ElectionReport
+from zeus.reports import ElectionsReportCSV
 from zeus.utils import render_template, ELECTION_TABLE_HEADERS,\
     get_filters, ELECTION_SEARCH_FIELDS, ELECTION_BOOL_KEYS_MAP
 from zeus import auth
@@ -54,7 +54,7 @@ def home(request):
     return render_template(request, "index", context)
 
 @auth.manager_or_superadmin_required
-def elections_report(request):
+def elections_report_csv(request):
     _all = request.GET.get('full', 0)
 
     elections = Election.objects.filter(
@@ -67,7 +67,7 @@ def elections_report(request):
 
     elections = elections.order_by('completed_at')
 
-    report = ElectionReport(elections)
+    report = ElectionsReportCSV(elections)
     csv_path = getattr(settings, 'ZEUS_ELECTIONS_REPORT_INCLUDE', None)
     if csv_path:
         report.parse_csv(csv_path)

@@ -7,7 +7,7 @@
           <a class="button tiny" href="{% url admin_home %}">{% trans "control panel" %}</a>
           {% if user.is_manager or user.is_superadmin %}
           <a class="button tiny" href={% url list_users %}>{% trans "accounts" %}</a>
-          <a class="button tiny" href="{% url elections_report %}">{% trans "reports" %}</a>
+          <a class="button tiny" href="{% url elections_report_csv %}">{% trans "reports" %}</a>
           {% endif %}
           <a class="button tiny alert right" href="{% url logout %}?return_url=/">{% trans "logout" %}</a>
           <a class="button tiny right" href="{% url change_password %}?return_url=/">{% trans "change password" %}</a>
