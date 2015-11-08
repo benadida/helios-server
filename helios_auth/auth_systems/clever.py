@@ -71,13 +71,14 @@ def get_user_info_after_auth(request):
   user_name = "%s %s" % (response['data']['name']['first'], response['data']['name']['last'])
   user_type = response['type']
   user_district = response['data']['district']
+  user_grade = response['data'].get('grade', None)
 
   print content
   
   # watch out, response also contains email addresses, but not sure whether thsoe are verified or not
   # so for email address we will only look at the id_token
   
-  return {'type' : 'clever', 'user_id': user_id, 'name': user_name , 'info': {"district": user_district, "type": user_type}, 'token': {'access_token': access_token}}
+  return {'type' : 'clever', 'user_id': user_id, 'name': user_name , 'info': {"district": user_district, "type": user_type, "grade": user_grade}, 'token': {'access_token': access_token}}
     
 def do_logout(user):
   """
@@ -96,9 +97,40 @@ def send_message(user_id, name, user_info, subject, body):
   send email to google users. user_id is the email for google.
   """
   pass
+
+#
+# eligibility
+#
+
+def check_constraint(constraint, user):
+  if not user.info.has_key('grade'):
+    return False
+  return constraint['grade'] == user.info['grade']
+
+def generate_constraint(category, user):
+  """
+  generate the proper basic data structure to express a constraint
+  based on the category string
+  """
+  return {'grade': category}
+
+def list_categories(user):
+  return [{"id": str(g), "name": "Grade %d" % g} for g in range(3,13)]
   
-def check_constraint(constraint, user_info):
+def eligibility_category_id(constraint):
+  return constraint['grade']
+
+def pretty_eligibility(constraint):
+  return "Grade %s" % constraint['grade']
+  
+
+
+#
+# Election Creation
+#
+
+def can_create_election(user_id, user_info):
   """
-  for eligibility
+  Teachers only for now
   """
-  pass
+  return user_info['type'] == 'teacher'

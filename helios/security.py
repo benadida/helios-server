@@ -187,7 +187,7 @@ def can_create_election(request):
   if helios.ADMIN_ONLY:
     return user.admin_p
   else:
-    return user != None
+    return user.can_create_election()
   
 def user_can_feature_election(user, election):
   if not user:

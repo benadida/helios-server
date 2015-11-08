@@ -70,6 +70,16 @@ class User(models.Model):
 
     return AUTH_SYSTEMS[self.user_type].STATUS_UPDATES
 
+  def can_create_election(self):
+    """
+    Certain auth systems can choose to limit election creation
+    to certain users. 
+    """
+    if not AUTH_SYSTEMS.has_key(self.user_type):
+      return False
+    
+    return AUTH_SYSTEMS[self.user_type].can_create_election(self.user_id, self.info)
+
   def update_status_template(self):
     if not self.can_update_status():
       return None

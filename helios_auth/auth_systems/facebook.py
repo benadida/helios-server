@@ -116,3 +116,10 @@ def eligibility_category_id(constraint):
 
 def pretty_eligibility(constraint):
   return "Facebook users who are members of the \"%s\" group" % constraint['group']['name']
+
+#
+# Election Creation
+#
+
+def can_create_election(user_id, user_info):
+  return True

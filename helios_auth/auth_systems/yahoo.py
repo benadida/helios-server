@@ -52,3 +52,11 @@ def check_constraint(constraint, user_info):
   for eligibility
   """
   pass
+
+
+#
+# Election Creation
+#
+
+def can_create_election(user_id, user_info):
+  return True

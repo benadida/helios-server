@@ -117,3 +117,11 @@ def send_message(user_id, user_name, user_info, subject, body):
   email = user_id
   name = user_name or user_info.get('name', email)
   send_mail(subject, body, settings.SERVER_EMAIL, ["\"%s\" <%s>" % (name, email)], fail_silently=False)    
+
+
+#
+# Election Creation
+#
+
+def can_create_election(user_id, user_info):
+  return True
