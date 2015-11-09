@@ -45,8 +45,8 @@ SOUTH_DATABASE_ADAPTERS = {'default':'south.db.postgresql_psycopg2'}
 if get_from_env('DATABASE_URL', None):
     import dj_database_url
     DATABASES['default'] =  dj_database_url.config()
-    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
-    # DATABASES['default']['OPTIONS'] = {'MAX_CONNS': 1}
+    DATABASES['default']['ENGINE'] = 'dbpool.db.backends.postgresql_psycopg2'
+    DATABASES['default']['OPTIONS'] = {'MAX_CONNS': 1}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
