@@ -377,16 +377,9 @@ def csv_from_score_polls(election, polls, lang, outfile=None):
             return None
 
 
-class ElectionsReportCSV(object):
-    '''
-    Create CSV with data from all elections that
-    are marked as suitable for reporting.
-    Includes CSV file if set in settings.
-    '''
-
+class ElectionsReport(object):
     def __init__(self, elections):
         self.elections = elections
-        self.csvData = []
         self.objectData = []
         self.header = [_("Institution"),
                        _("Electors"),
@@ -406,20 +399,6 @@ class ElectionsReportCSV(object):
 
     def append_elections(self, election_list):
         self.elections += election_list
-
-    def parse_csv(self, csv_file_path):
-        data = []
-        with open(csv_file_path, 'rb') as f:
-            reader = CSVReader(f, min_fields=2, max_fields=9)
-            for row in reader:
-                keys = ('inst', 'nr_voters', 'nr_voters_voted', 'start',
-                        'end', 'uuid', 'election_name', 'admin')
-                new_row = {}
-                for index, key in enumerate(keys):
-                    new_row[key] = row[index]
-                new_row['nr_polls'] = '-'
-                data.append(new_row)
-        self.csvData += data
 
     def parse_object(self):
         data = []
@@ -442,6 +421,32 @@ class ElectionsReportCSV(object):
             row['admin'] = admins
             data.append(row)
         self.objectData += data
+
+
+class ElectionsReportCSV(ElectionsReport):
+    '''
+    Create CSV with data from all elections that
+    are marked as suitable for reporting.
+    Includes CSV file if set in settings.
+    '''
+
+    def __init__(self, elections):
+        super(ElectionsReportCSV, self).__init__(elections)
+        self.csvData = []
+
+    def parse_csv(self, csv_file_path):
+        data = []
+        with open(csv_file_path, 'rb') as f:
+            reader = CSVReader(f, min_fields=2, max_fields=9)
+            for row in reader:
+                keys = ('inst', 'nr_voters', 'nr_voters_voted', 'start',
+                        'end', 'uuid', 'election_name', 'admin')
+                new_row = {}
+                for index, key in enumerate(keys):
+                    new_row[key] = row[index]
+                new_row['nr_polls'] = '-'
+                data.append(new_row)
+        self.csvData += data
 
     def make_output(self, filename):
         data = self.csvData + self.objectData
