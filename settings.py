@@ -1,9 +1,13 @@
 
 import os, json
 
+# a massive hack to see if we're testing, in which case we use different settings
+import sys
+TESTING = 'test' in sys.argv
+
 # go through environment variables and override them
 def get_from_env(var, default):
-    if os.environ.has_key(var):
+    if not TESTING and os.environ.has_key(var):
         return os.environ[var]
     else:
         return default
@@ -41,8 +45,8 @@ SOUTH_DATABASE_ADAPTERS = {'default':'south.db.postgresql_psycopg2'}
 if get_from_env('DATABASE_URL', None):
     import dj_database_url
     DATABASES['default'] =  dj_database_url.config()
-    DATABASES['default']['ENGINE'] = 'dbpool.db.backends.postgresql_psycopg2'
-    DATABASES['default']['OPTIONS'] = {'MAX_CONNS': 1}
+    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
+    DATABASES['default']['CONN_MAX_AGE'] = 600
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -233,6 +237,10 @@ CAS_USERNAME = get_from_env('CAS_USERNAME', "")
 CAS_PASSWORD = get_from_env('CAS_PASSWORD', "")
 CAS_ELIGIBILITY_URL = get_from_env('CAS_ELIGIBILITY_URL', "")
 CAS_ELIGIBILITY_REALM = get_from_env('CAS_ELIGIBILITY_REALM', "")
+
+# Clever
+CLEVER_CLIENT_ID = get_from_env('CLEVER_CLIENT_ID', "")
+CLEVER_CLIENT_SECRET = get_from_env('CLEVER_CLIENT_SECRET', "")
 
 # email server
 EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
