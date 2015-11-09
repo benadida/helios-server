@@ -1,9 +1,13 @@
 
 import os, json
 
+# a massive hack to see if we're testing, in which case we use different settings
+import sys
+TESTING = 'test' in sys.argv
+
 # go through environment variables and override them
 def get_from_env(var, default):
-    if os.environ.has_key(var):
+    if not TESTING and os.environ.has_key(var):
         return os.environ[var]
     else:
         return default
