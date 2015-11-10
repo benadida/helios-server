@@ -1428,3 +1428,39 @@ msgstr ""
 
 msgid "Choose election"
 msgstr "Επιλογή ψηφοφορίας"
+
+msgid "Administrators"
+msgstr "Διαχειριστές"
+
+msgid "Voters Voted"
+msgstr "Ψηφοφόροι που ψήφισαν"
+
+msgid "Start"
+msgstr "Έναρξη"
+
+msgid "End"
+msgstr "Λήξη"
+
+msgid "Number of Polls"
+msgstr "Αριθμός Κάλπεων"
+
+msgid "Number of polls"
+msgstr "Αριθμός κάλπεων"
+
+msgid "Number of elections"
+msgstr "Αριθμός ψηφοφοριών"
+
+msgid "Number of voters"
+msgstr "Αριθμός ψηφοφόρων"
+
+msgid "Number of voters that voted"
+msgstr "Αριθμός ψηφοφόρων που ψήφισαν"
+
+msgid "Elections"
+msgstr "Εκλογές"
+
+msgid "General stats"
+msgstr "Γενικές στατιστικές"
+
+msgid "Download"
+msgstr "Κατέβασε"

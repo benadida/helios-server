@@ -242,6 +242,16 @@ ELECTION_TABLE_HEADERS = OrderedDict([
     ('trial', _('Trial'))
     ])
 
+REPORT_TABLE_HEADERS = OrderedDict([
+    ('institution', _('Institution')),
+    ('voters', _('Voters')),
+    ('voters_voted', _('Voters Voted')),
+    ('voting_starts_at', _('Start')),
+    ('completed_at', _('End')),
+    ('name', _('Name')),
+    ('polls_count', _('Number of Polls')),
+    ('admins', _('Administrators'))
+    ])
 
 VOTER_SEARCH_FIELDS = ['voter_name', 'voter_surname', 'voter_email']
 VOTER_EXTRA_HEADERS = ['excluded_at']
@@ -254,6 +264,10 @@ VOTER_BOOL_KEYS_MAP = {
 ELECTION_SEARCH_FIELDS = ['name', 'description', 'institution__name', 'admins__user_id',]
 ELECTION_EXTRA_HEADERS = []
 ELECTION_BOOL_KEYS_MAP = {'trial': 'trial'}
+
+REPORT_SEARCH_FIELDS = ['name', 'institution__name', 'admins__user_id',]
+REPORT_EXTRA_HEADERS = []
+REPORT_BOOL_KEYS_MAP = {}
 
 
 
