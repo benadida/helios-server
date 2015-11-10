@@ -217,7 +217,7 @@ Once you do this, the tally will visible to you, the administrator, only.
 		</span><br /><br />
 	{% else %}
 
-		{% if election.voting_has_started %}
+		{% if election.voting_has_started and eligible_p %}
 			<a class="btn btn-lg btn-primary" role="button" href="{{test_cookie_url}}">{% trans "Vote in this" %} {{election.pretty_type}} </a>
 			<br />
 			<br />
@@ -252,9 +252,11 @@ Visit <a target="_new" href="http://java.sun.com">java.sun.com</a> to install it
 			</div>
 			<br />
 		{% else %}
+			{% if eligible_p %}
 			<span class="highlight-box round">
 	  			{% trans "voting is not yet open" %}
 				</span> <br /><br />
+			{% endif %}
 		{% endif %}
 	{% endif %}
 {% endif %}
