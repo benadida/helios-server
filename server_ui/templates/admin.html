@@ -41,7 +41,7 @@
         <h2>{% trans "Elections" %}</h2>
         {% autopaginate elections elections_per_page %}
         {% paginate %}
-        <table>
+        <table class="info-table">
             <thead>
                 <tr>
                     {% for key, value in report_table_headers %}
