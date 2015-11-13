@@ -65,6 +65,9 @@
                         <td>{{election.election_name}}</td>
                         <td>{{election.nr_polls}}</td>
                         <td>{{election.admin}}</td>
+                        <td>
+                            {% trans election.official %}
+                        </td>
                     </tr>
                 {% empty %}
                     <tr>

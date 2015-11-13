@@ -239,7 +239,8 @@ ELECTION_TABLE_HEADERS = OrderedDict([
     ('voting_starts_at', _('Start')),
     ('voting_ends_at', _('End')),
     ('status_display', _('Election status')),
-    ('trial', _('Trial'))
+    ('trial', _('Trial')),
+    ('official', _('Official'))
     ])
 
 REPORT_TABLE_HEADERS = OrderedDict([
@@ -250,7 +251,8 @@ REPORT_TABLE_HEADERS = OrderedDict([
     ('completed_at', _('End')),
     ('name', _('Name')),
     ('polls_count', _('Number of Polls')),
-    ('admins', _('Administrators'))
+    ('admins', _('Administrators')),
+    ('official', _('Official'))
     ])
 
 VOTER_SEARCH_FIELDS = ['voter_name', 'voter_surname', 'voter_email']

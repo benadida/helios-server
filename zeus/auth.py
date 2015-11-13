@@ -28,6 +28,12 @@ def get_ip(request):
         ip = request.META.get('REMOTE_ADDR')
     return ip
 
+def class_method(func):
+    def wrapper(self, request, *args, **kwargs):
+        return func(request, *args, **kwargs)
+
+    return wrapper
+
 def trustee_view(func):
     @wraps(func)
     @election_view()

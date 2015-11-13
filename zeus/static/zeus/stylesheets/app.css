@@ -5489,6 +5489,9 @@ body table.info-table th a.desc:after, body table.polls-table th a.desc:after {
 body table.info-table th a.asc:after, body table.polls-table th a.asc:after {
   content: "\02C5";
 }
+body table.info-table td.official-field {
+    width: 120px;
+}
 body .cancel-msg {
   min-height: 100px !important;
 }

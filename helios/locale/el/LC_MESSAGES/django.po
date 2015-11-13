@@ -1464,3 +1464,12 @@ msgstr "Γενικές στατιστικές"
 
 msgid "Download"
 msgstr "Κατέβασε"
+
+msgid "Official"
+msgstr "Επίσημη"
+
+msgid "Unofficial"
+msgstr "Ανεπίσημη"
+
+msgid "Not Decided"
+msgstr "Εκκρεμεί απόφαση"

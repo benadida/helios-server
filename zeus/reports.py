@@ -389,7 +389,8 @@ class ElectionsReport(object):
                        _("uuid"),
                        _("Name"),
                        _("Polls"),
-                       _("Administrator")]
+                       _("Administrator"),
+                       _("Official"),]
 
     def get_elections(self):
         return self.elections
@@ -419,6 +420,12 @@ class ElectionsReport(object):
             admins = [admin.user_id for admin in e.admins.all()]
             admins = ",".join(map(str, admins))
             row['admin'] = admins
+            if e.official == 0:
+                row['official'] = 'Unofficial'
+            elif e.official == 1:
+                row['official'] = 'Official'
+            else:
+                row['official'] = 'Not Decided'
             data.append(row)
         self.objectData += data
 
@@ -437,10 +444,10 @@ class ElectionsReportCSV(ElectionsReport):
     def parse_csv(self, csv_file_path):
         data = []
         with open(csv_file_path, 'rb') as f:
-            reader = CSVReader(f, min_fields=2, max_fields=9)
+            reader = CSVReader(f, min_fields=2, max_fields=10)
             for row in reader:
                 keys = ('inst', 'nr_voters', 'nr_voters_voted', 'start',
-                        'end', 'uuid', 'election_name', 'admin')
+                        'end', 'uuid', 'election_name', 'admin', 'official')
                 new_row = {}
                 for index, key in enumerate(keys):
                     new_row[key] = row[index]
@@ -451,7 +458,7 @@ class ElectionsReportCSV(ElectionsReport):
     def make_output(self, filename):
         data = self.csvData + self.objectData
         keys = ('inst', 'nr_voters', 'nr_voters_voted', 'start',
-                'end', 'uuid', 'election_name', 'nr_polls', 'admin')
+                'end', 'uuid', 'election_name', 'nr_polls', 'admin', 'official')
 
         fd = filename
         close = False
