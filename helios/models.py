@@ -255,6 +255,12 @@ _default_voting_ends_at = lambda: datetime.datetime.now() + timedelta(hours=12)
 
 
 class Election(ElectionTasks, HeliosModel, ElectionFeatures):
+
+    OFFICIAL_CHOICES = (
+        (None, _('Unresolved')),
+        (0, _('Unofficial')),
+        (1, _('Official')),
+    )
     linked_polls = models.BooleanField(_('Linked polls'), default=False)
     election_module = models.CharField(_("Election type"), max_length=250,
                                          null=False,
@@ -322,7 +328,8 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
                                            null=True)
     archived_at = models.DateTimeField(auto_now_add=False, default=None,
                                         null=True)
-    include_in_reports = models.BooleanField(default=False)
+    official = models.IntegerField(null=True, default=None,
+                                    choices=OFFICIAL_CHOICES)
     objects = ElectionManager()
 
     class Meta:
