@@ -13,6 +13,7 @@ from django.test import TestCase
 from django.core import mail
 
 from auth_systems import AUTH_SYSTEMS
+from helios_auth import ENABLED_AUTH_SYSTEMS
 
 class UserModelTests(unittest.TestCase):
 
@@ -128,3 +129,43 @@ class UserBlackboxTests(TestCase):
         self.assertEquals(len(mail.outbox), 1)
         self.assertEquals(mail.outbox[0].subject, "testing subject")
         self.assertEquals(mail.outbox[0].to[0], "\"Foobar User\" <foobar-test@adida.net>")
+
+
+import auth_systems.ldapauth as ldap_views
+
+
+class LDAPAuthTests(TestCase):
+    """
+    These tests relies on OnLine LDAP Test Server, provided by forum Systems:
+    http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server/
+    """
+
+    def setUp(self):
+        """ set up necessary django-auth-ldap settings """
+        self.password = 'password'
+        self.username = 'euclid'
+
+    def test_backend_login(self):
+        """ test if authenticates using the backend """
+        if 'ldap' in ENABLED_AUTH_SYSTEMS:
+            from helios_auth.auth_systems.ldapbackend import backend
+            auth = backend.CustomLDAPBackend()
+            user = auth.authenticate(self.username, self.password)
+            self.assertEqual(user.username, 'euclid')
+
+    def test_ldap_view_login(self):
+        """ test if authenticates using the auth system login view """
+        if 'ldap' in ENABLED_AUTH_SYSTEMS:
+            resp = self.client.post(reverse(ldap_views.ldap_login_view), {
+                'username' : self.username,
+                'password': self.password
+                }, follow=True)
+            self.assertEqual(resp.status_code, 200)
+
+    def test_logout(self):
+        """ test if logs out using the auth system logout view """
+        if 'ldap' in ENABLED_AUTH_SYSTEMS:
+            response = self.client.post(reverse(views.logout), follow=True)
+            self.assertContains(response, "not logged in")
+            self.assertNotContains(response, "euclid")
+

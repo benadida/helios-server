@@ -9,6 +9,8 @@ from django.conf.urls import *
 from views import *
 from auth_systems.password import password_login_view, password_forgotten_view
 from auth_systems.twitter import follow_view
+from auth_systems.ldapauth import ldap_login_view
+
 
 urlpatterns = patterns('',
     # basic static stuff
@@ -28,4 +30,7 @@ urlpatterns = patterns('',
 
     # twitter
     (r'^twitter/follow', follow_view),
+
+    #ldap
+    (r'^ldap/login', ldap_login_view),
 )
