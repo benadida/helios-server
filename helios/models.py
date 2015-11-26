@@ -322,6 +322,7 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
                                            null=True)
     archived_at = models.DateTimeField(auto_now_add=False, default=None,
                                         null=True)
+    include_in_reports = models.BooleanField(default=False)
     objects = ElectionManager()
 
     class Meta:
@@ -333,7 +334,9 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
 
     @property
     def polls_by_link_id(self):
-        return self.polls.filter().distinct('link_id')
+        linked = self.polls.exclude(link_id="").distinct("link_id")
+        unlinked = self.polls.filter(link_id="")
+        return itertools.chain(linked, unlinked)
 
     @property
     def voting_end_date(self):

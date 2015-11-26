@@ -1,9 +1,13 @@
 import copy
+import datetime
+import cStringIO as StringIO
 
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.contrib import messages
 
+from zeus.reports import ElectionReport
 from zeus.utils import render_template, ELECTION_TABLE_HEADERS,\
     get_filters, ELECTION_SEARCH_FIELDS, ELECTION_BOOL_KEYS_MAP
 from zeus import auth
@@ -23,7 +27,7 @@ def home(request):
         elections_per_page = int(elections_per_page)
     except:
         elections_per_page = default_elections_per_page
-    order_by=request.GET.get('order', 'name')
+    order_by=request.GET.get('order', 'created_at')
     order_type = request.GET.get('order_type', 'desc')
     if not order_by in ELECTION_TABLE_HEADERS:
         order_by = 'name'
@@ -33,7 +37,6 @@ def home(request):
     if nr_unfiltered_elections == 0:
         return HttpResponseRedirect(reverse('election_create'))
 
-    # fix filter function
     elections = elections.filter(get_filters(q_param, ELECTION_TABLE_HEADERS,
                                              ELECTION_SEARCH_FIELDS,
                                              ELECTION_BOOL_KEYS_MAP))
@@ -49,3 +52,34 @@ def home(request):
         'elections_per_page': elections_per_page,
     }
     return render_template(request, "index", context)
+
+@auth.manager_or_superadmin_required
+def elections_report(request):
+    _all = request.GET.get('full', 0)
+
+    elections = Election.objects.filter(
+        trial=False,
+        completed_at__isnull=False
+    )
+
+    if not _all:
+        elections = elections.filter(include_in_reports=True)
+
+    elections = elections.order_by('completed_at')
+
+    report = ElectionReport(elections)
+    csv_path = getattr(settings, 'ZEUS_ELECTIONS_REPORT_INCLUDE', None)
+    if csv_path:
+        report.parse_csv(csv_path)
+    report.parse_object()
+    # ext is not needed
+    date = datetime.datetime.now()
+    str_date = date.strftime("%Y-%m-%d")
+    filename = 'elections_report_' + str_date
+    fd = StringIO.StringIO()
+    report.make_output(fd)
+    fd.seek(0)
+
+    response = HttpResponse(fd, mimetype='application/csv')
+    response['Content-Disposition'] = 'attachment; filename=%s.csv' % filename
+    return response

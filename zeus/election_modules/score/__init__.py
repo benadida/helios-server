@@ -24,7 +24,7 @@ class ScoreBallotElection(ElectionModuleBase):
     results_template = "election_modules/score/results.html"
     manage_questions_title = _('Manage questions')
     csv_result = True
-    pdf_result = False
+    pdf_result = True
 
     module_params = {}
 
@@ -155,8 +155,10 @@ class ScoreBallotElection(ElectionModuleBase):
         self.generate_json_file()
         for lang in settings.LANGUAGES:
             self.generate_csv_file(lang)
+            self.generate_result_docs(lang)
 
     def compute_election_results(self):
         for lang in settings.LANGUAGES:
             self.generate_election_csv_file(lang)
+            self.generate_election_result_docs(lang)
             self.generate_election_zip_file(lang)

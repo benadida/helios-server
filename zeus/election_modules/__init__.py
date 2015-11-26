@@ -158,13 +158,12 @@ class ElectionModuleBase(object):
             self.generate_electon_csv_file(lang)
         basename = os.path.basename(election_csvpath)
         all_docs_zip.write(election_csvpath, basename)
-        if self.module_id !='score':
-            election_pdfpath = self.get_election_result_file_path('pdf', 'pdf',
-                                                                  lang[0])
-            if not os.path.exists(election_pdfpath):
-                module.generate_election_result_docs(lang)
-            basename = os.path.basename(election_pdfpath)
-            all_docs_zip.write(election_pdfpath, basename)
+        election_pdfpath = self.get_election_result_file_path('pdf', 'pdf',
+                                                                lang[0])
+        if not os.path.exists(election_pdfpath):
+            module.generate_election_result_docs(lang)
+        basename = os.path.basename(election_pdfpath)
+        all_docs_zip.write(election_pdfpath, basename)
 
         poll_docpaths = []
         for poll in self.election.polls.all():
@@ -178,11 +177,10 @@ class ElectionModuleBase(object):
             if not os.path.exists(poll_jsonpath):
                 module.generate_json_file()
             poll_docpaths.append(poll_jsonpath)
-            if module.module_id !='score':
-                poll_pdfpath = module.get_poll_result_file_path('pdf', 'pdf', lang[0])
-                poll_docpaths.append(poll_pdfpath)
-                if not os.path.exists(poll_pdfpath):
-                    module.generate_result_docs(lang)
+            poll_pdfpath = module.get_poll_result_file_path('pdf', 'pdf', lang[0])
+            poll_docpaths.append(poll_pdfpath)
+            if not os.path.exists(poll_pdfpath):
+                module.generate_result_docs(lang)
         poll_docpaths = set(poll_docpaths)
         for path in poll_docpaths:
             basename = os.path.basename(path)
@@ -200,14 +198,15 @@ class ElectionModuleBase(object):
                       self.election.institution.name,
                       self.election.voting_starts_at, self.election.voting_ends_at,
                       self.election.voting_extended_until,
-                      [(poll.name, 
+                      [(poll.name,
                         poll.zeus.get_results(),
                         poll.questions_data,
-                        poll.questions[0]['answers'])],
+                        poll.questions[0]['answers'],
+                        poll.voters.all())],
                       lang,
                       self.get_poll_result_file_path('pdf', 'pdf', lang[0]),
                       score=score, parties=parties)
-    
+
     def generate_election_result_docs(self, lang):
         from zeus.results_report import build_doc
         pdfpath = self.get_election_result_file_path('pdf', 'pdf', lang[0])
@@ -219,14 +218,15 @@ class ElectionModuleBase(object):
             polls_data.append((poll.name, 
                                poll.zeus.get_results(),
                                poll.questions_data,
-                               poll.questions[0]['answers']))
+                               poll.questions[0]['answers'],
+                               poll.voters.all()))
 
         build_doc(_(u'Results'), self.election.name, self.election.institution.name,
                 self.election.voting_starts_at, self.election.voting_ends_at,
                 self.election.voting_extended_until,
                 polls_data,
                 lang,
-                pdfpath, score=score, parties=score)
+                pdfpath, score=score, parties=parties)
 
 
 from zeus.election_modules.simple import *

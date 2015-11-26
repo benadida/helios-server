@@ -3,6 +3,8 @@
 
 import re
 import sys
+import os
+import time
 
 from zeus.core import (c2048, get_random_selection,
                        gamma_encode, gamma_decode, gamma_encoding_max,
@@ -16,7 +18,7 @@ from zeus.core import (c2048, get_random_selection,
                        parties_from_candidates,
                        gamma_decode_to_party_ballot,
                        FormatError)
-                        
+
 from httplib import HTTPConnection, HTTPSConnection
 from urlparse import urlparse, parse_qsl
 from urllib import urlencode, unquote
@@ -26,6 +28,7 @@ from json import loads, dumps, load, dump
 from Queue import Queue, Empty
 from threading import Thread
 from random import choice, shuffle, randint
+from base64 import b64encode
 
 p, g, q, x, y = c2048()
 
@@ -291,20 +294,48 @@ def do_download_mix(url, savefile):
 
     return save_data
 
-def do_download_ciphers(url, savefile):
-    if exists(savefile):
-        m = "file '%s' already exists, will not overwrite" % (savefile,)
-        raise ValueError(m)
 
-    conn, headers, redirect = get_login(url)
-    get_path = redirect.rsplit('/', 1)[0] + '/download-ciphers'
-    conn.request('GET', get_path, headers=headers)
-    response = conn.getresponse()
-    save_data = response.read()
-    with open(savefile, "w") as f:
-        f.write(save_data)
+def get_login(url):
+    conn = get_http_connection(url)
+    parsed = urlparse(url)
+
+    _, _, election, _, _, trustee, password = parsed.path.split("/")
+    auth = b64encode("%s:%s:%s" % (election, trustee, password))
+    headers = {
+        'Authorization': 'Basic %s' % auth
+    }
+    base_url = "/elections/%s/trustee" % (election,)
+    return conn, headers, base_url
+
+
+def get_election_info(url):
+    conn, headers, url = get_login(url)
+    conn.request('GET', url + '/json', headers=headers)
+    resp = loads(conn.getresponse().read())
+    return resp
+
+
+def do_download_ciphers(url, savefile):
+    save_data = None
+
+    info = get_election_info(url)
+    for i, poll in enumerate(info['election']['polls']):
+        curr_file = savefile + ".%d" % i
+        if exists(curr_file):
+            m = "file '%s' already exists, will not overwrite" % (curr_file,)
+            sys.stdout.write(m + "\n")
+            continue
+
+        conn, headers, base = get_login(url)
+        download_url = urlparse(poll['ciphers_url']).path
+        conn.request('GET', download_url, headers=headers)
+        response = conn.getresponse()
+        save_data = response.read()
+        with open(curr_file, "w") as f:
+            f.write(save_data)
 
     return save_data
+
 
 def do_upload_mix(outfile, url):
     with open(outfile) as f:
@@ -314,15 +345,27 @@ def do_upload_mix(outfile, url):
     response = conn.getresponse()
     print response.status, response.read()
 
+
 def do_upload_factors(outfile, url):
-    with open(outfile) as f:
-        out_data = f.read()
-    conn, headers, redirect = get_login(url)
-    post_path = redirect.rsplit('/', 1)[0] + '/upload-decryption'
-    body = urlencode({'factors_and_proofs': out_data})
-    conn.request('POST', post_path, body=body, headers=headers)
-    response = conn.getresponse()
-    print response.status, response.read()
+    poll_index = 0
+    curr_file = outfile + ".%d" % poll_index
+
+    while(exists(curr_file)):
+        with open(curr_file) as f:
+            out_data = f.read()
+        info = get_election_info(url)
+        path = info['election']['polls'][poll_index]['post_decryption_url']
+        path = urlparse(path).path
+
+        conn, headers, redirect = get_login(url)
+        body = urlencode({'factors_and_proofs': out_data})
+        conn.request('POST', path, body=body, headers=headers)
+        response = conn.getresponse().read()
+        print response
+
+        poll_index += 1
+        curr_file = outfile + ".%d" % poll_index
+
 
 def do_mix(mixfile, newfile, nr_rounds, nr_parallel):
     if exists(newfile):
@@ -340,9 +383,8 @@ def do_mix(mixfile, newfile, nr_rounds, nr_parallel):
     return new_mix
 
 def do_decrypt(savefile, outfile, keyfile, nr_parallel):
-    if exists(outfile):
-        m = "file '%s' already exists, will not overwrite" % (outfile,)
-        raise ValueError(m)
+    poll_index = 0
+    curr_file = savefile + ".0"
 
     with open(keyfile) as f:
         key = load(f)
@@ -355,35 +397,50 @@ def do_decrypt(savefile, outfile, keyfile, nr_parallel):
     public = int(pk['y'])
     del key
 
-    with open(savefile) as f:
-        tally = load(f)
 
-    ciphers = [(int(ct['alpha']), int(ct['beta']))
-               for ct in tally['tally'][0]]
-    factors = compute_decryption_factors(modulus, generator, order,
-                                         secret, ciphers,
-                                         nr_parallel=nr_parallel)
-    decryption_factors = []
-    factor_append = decryption_factors.append
-    decryption_proofs = []
-    proof_append = decryption_proofs.append
+    while(os.path.isfile(curr_file)):
 
-    for factor, proof in factors:
-        factor_append(factor)
-        f = {}
-        f['commitment'] = {'A': proof[0], 'B': proof[1]}
-        f['challenge'] = proof[2]
-        f['response'] = proof[3]
-        proof_append(f)
+        curr_outfile = outfile + ".%d" % poll_index
+        if exists(curr_outfile):
+            m = "file '%s' already exists, will not overwrite" % (curr_outfile,)
+            sys.stderr.write(m + "\n")
+            poll_index += 1
+            curr_file = savefile + ".%d" % poll_index
+            continue
 
-    factors_and_proofs = {
+        with open(curr_file) as f:
+            tally = load(f)['tally']
+
+        ciphers = [(int(ct['alpha']), int(ct['beta']))
+                for ct in tally['tally'][0]]
+        factors = compute_decryption_factors(modulus, generator, order,
+                                            secret, ciphers,
+                                            nr_parallel=nr_parallel)
+        decryption_factors = []
+        factor_append = decryption_factors.append
+        decryption_proofs = []
+        proof_append = decryption_proofs.append
+
+        for factor, proof in factors:
+            factor_append(factor)
+            f = {}
+            f['commitment'] = {'A': proof[0], 'B': proof[1]}
+            f['challenge'] = proof[2]
+            f['response'] = proof[3]
+            proof_append(f)
+
+        factors_and_proofs = {
             'decryption_factors': [decryption_factors],
-            'decryption_proofs': [decryption_proofs] }
+            'decryption_proofs': [decryption_proofs]
+        }
 
-    with open(outfile, "w") as f:
-        dump(factors_and_proofs, f)
+        with open(curr_outfile, "w") as f:
+            dump(factors_and_proofs, f)
 
+        poll_index += 1
+        curr_file = savefile + ".%d" % poll_index
     return factors
+
 
 def main_help():
     usage = ("Usage: {0} generate <nr> <domain> <voters.csv>\n"

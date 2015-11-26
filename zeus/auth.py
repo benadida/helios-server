@@ -1,9 +1,12 @@
 import uuid
 import threading
+import re
+
+from base64 import b64decode
 
 from functools import wraps
 
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
 
@@ -16,6 +19,8 @@ from zeus.log import init_election_logger, init_poll_logger, _locals
 import logging
 logger = logging.getLogger(__name__)
 
+
+AUTH_RE = re.compile('Basic (\w+[=]*)')
 
 def get_ip(request):
     ip = request.META.get('HTTP_X_FORWARDER_FOR', None)
@@ -330,6 +335,28 @@ def get_users_from_request(request):
                 trustee = Trustee.objects.get(pk=int(trustee_pk))
         except:
             pass
+
+    # identify trustee http basic authentication
+    api_auth_header = request.META.get('HTTP_AUTHORIZATION', None)
+    if api_auth_header:
+        #TODO: allow other type of users to login this way ???
+        try:
+            auth = AUTH_RE.findall(api_auth_header)
+            election, username, password = b64decode(auth[0]).split(":")
+        except Exception:
+            raise PermissionDenied
+
+        try:
+            auth_trustee = Trustee.objects.get(email=username,
+                                               election__uuid=election)
+        except Trustee.DoesNotExist:
+            raise PermissionDenied
+
+        if auth_trustee.secret == password:
+            trustee = auth_trustee
+            setattr(request, '_dont_enforce_csrf_checks', True)
+        else:
+            raise PermissionDenied
 
     if user and not admin:
         del session[USER_SESSION_KEY]

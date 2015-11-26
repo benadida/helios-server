@@ -274,7 +274,7 @@ class QuestionBaseForm(forms.Form):
     def clean_question(self):
         q = self.cleaned_data.get('question', '')
         if '%' in q:
-            raise forms.ValidationError(_("% is not a valid character."))
+            raise forms.ValidationError(_("&#37; is not a valid character"))
         return q.replace(": ", ":\t")
 
 
@@ -304,7 +304,7 @@ class QuestionForm(QuestionBaseForm):
         for key in self.cleaned_data:
             if key.startswith('answer_'):
                 if '%' in self.cleaned_data[key]:
-                    raise forms.ValidationError(_("% is not a valid character"))
+                    raise forms.ValidationError(_("&#37; is not a valid character"))
                 answer_list.append(self.cleaned_data[key])
         if len(answer_list) > len(set(answer_list)):
             raise forms.ValidationError(_("No duplicate choices allowed"))
@@ -352,12 +352,12 @@ class ScoresForm(QuestionBaseForm):
         min_answers = int(self.cleaned_data.get('min_answers', 0))
         if (min_answers and max_answers) and min_answers > max_answers:
             raise forms.ValidationError(_("Max answers should be greater "
-                                          "or equal than min answers"))
+                                          "or equal to min answers"))
         answer_list = []
         for key in self.cleaned_data:
             if key.startswith('answer_'):
                 if '%' in self.cleaned_data[key]:
-                    raise forms.ValidationError(_("% is not a valid character"))
+                    raise forms.ValidationError(_("&#37; is not a valid character"))
                 answer_list.append(self.cleaned_data[key])
         if len(answer_list) > len(set(answer_list)):
             raise forms.ValidationError(_("No duplicate choices allowed"))
@@ -483,7 +483,7 @@ class StvForm(QuestionBaseForm):
             answer = self.cleaned_data[field_key]
             answer_lst = json.loads(answer)
             if '%' in answer_lst[0]:
-                raise forms.ValidationError(_("% is not a valid character"))
+                raise forms.ValidationError(_("&#37; is not a valid character"))
             candidates_list.append(answer_lst[0])
             if not answer_lst[0]:
                 self._errors[field_key] = ErrorList([message])
