@@ -3711,6 +3711,7 @@ table thead, table tfoot {
 table thead tr th,
 table tfoot tr th,
 table tbody tr td,
+table tbody tr th,
 table tr td,
 table tfoot tr td {
   display: table-cell;
@@ -3744,7 +3745,8 @@ table tbody tr:nth-child(even) {
   background: #f9f9f9;
 }
 
-table tbody tr td {
+table tbody tr td,
+table tbody tr th {
   color: #333;
   padding: 9px 10px;
   vertical-align: top;
@@ -5466,26 +5468,29 @@ body .before-table {
 body .before-table .columns {
   padding: 0 !important;
 }
-body table.voters thead th, body table.elections thead th, body table.polls-table thead th {
+body table.info-table thead th, body table.polls-table thead th {
   font-size: 11px;
 }
-body table.voters tbody td, body table.elections tbody td, body table.polls-table tbody td {
+body table.info-table tbody td, body table.polls-table tbody td {
   font-size: 12px;
 }
-body table.voters th a:after, body table.elections th a:after, body table.polls-table th a:after {
+body table.info-table th a:after, body table.polls-table th a:after {
   font-size: 1.5em;
   padding-top: 5px;
   display: block;
   float: right;
 }
-body table.voters th a.desc, body table.voters th a.asc, body table.elections th a.desc, body table.elections th a.asc, body table.polls-table th a.desc, body table.polls-table th a.asc {
+body table.info-table th a.desc, body table.info-table th a.asc, body table.polls-table th a.desc, body table.polls-table th a.asc {
   color: #103f4d;
 }
-body table.voters th a.desc:after, body table.elections th a.desc:after, body table.polls-table th a.desc:after {
+body table.info-table th a.desc:after, body table.polls-table th a.desc:after {
   content: "\02C4";
 }
-body table.voters th a.asc:after, body table.elections th a.asc:after, body table.polls-table th a.asc:after {
+body table.info-table th a.asc:after, body table.polls-table th a.asc:after {
   content: "\02C5";
+}
+body table.info-table td.official-field {
+    width: 120px;
 }
 body .cancel-msg {
   min-height: 100px !important;

@@ -1,0 +1,82 @@
+{% extends 'server_ui/templates/base.html' %}
+
+{% load i18n pagination_tags zeus_tags %}
+
+{% block content %}
+    {% block filter %}
+        <form action="" method="GET">
+            <label>{% trans "Filter" %}</label>
+            <div class="row collapse">
+                <div class="columns nine">
+                    <input class="q" name="q" type="text" value="{{q}}" />
+                </div>
+                <div class="columns two">
+                    <input class="button postfix" type="submit" value="✓" />
+                </div>
+                <div class="columns one">
+                    <a class="button alert postfix" href="{% url admin_home %}" />✗</a>
+                </div>
+            </div>
+        </form>
+        <div>
+            <span class="qresult">
+                {% if q %}
+                    {% blocktrans count elections_count as results_count %}
+                        {{results_count}} result found
+                    {% plural %}
+                        {{results_count}} results found
+                    {% endblocktrans %}
+                {% endif %}
+            </span>
+        </div>
+    {% endblock %}
+    {% block general %}
+        <h2>{% trans "General stats" %}</h2>
+        <p>{% trans "Number of elections" %}: {{elections_count}}</p>
+        <p>{% trans "Number of polls" %}: {{polls_count}}</p>
+        <p>{% trans "Number of voters" %}: {{voters_count}}</p>
+        <p>{% trans "Number of voters that voted" %}: {{voters_voted_count}} ({{percentage_voted|floatformat}}%)</p>
+    {% endblock %}
+    {% block elections-list %}
+        <h2>{% trans "Elections" %}</h2>
+        {% autopaginate elections elections_per_page %}
+        {% paginate %}
+        <table class="info-table">
+            <thead>
+                <tr>
+                    {% for key, value in report_table_headers %}
+                        <th>
+                            <a href="?order={{key}}{% complete_get_parameters request.GET key "voting_starts_at" %}"
+                                                                                            class="{{ordering_cls}}">
+                                {% trans value %}
+                            </a>
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for election in elections %}
+                    <tr>
+                        <td>{{election.inst}}</td>
+                        <td>{{election.nr_voters}}</td>
+                        <td>{{election.nr_voters_voted}}</td>
+                        <td>{{election.start}}</td>
+                        <td>{{election.end}}</td>
+                        <td>{{election.election_name}}</td>
+                        <td>{{election.nr_polls}}</td>
+                        <td>{{election.admin}}</td>
+                        <td>
+                            {% trans election.official %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan=7>{% trans "No results found" %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% paginate %}
+        <p><a href="{% url elections_report_csv %}?{{params}}">{% trans "Download" %} CSV</a></p>
+    {% endblock %}
+{% endblock %}

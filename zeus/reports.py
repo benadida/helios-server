@@ -377,16 +377,9 @@ def csv_from_score_polls(election, polls, lang, outfile=None):
             return None
 
 
-class ElectionReport(object):
-    '''
-    Create CSV with data from all elections that
-    are marked as suitable for reporting.
-    Includes CSV file if set in settings.
-    '''
-
+class ElectionsReport(object):
     def __init__(self, elections):
         self.elections = elections
-        self.csvData = []
         self.objectData = []
         self.header = [_("Institution"),
                        _("Electors"),
@@ -396,7 +389,8 @@ class ElectionReport(object):
                        _("uuid"),
                        _("Name"),
                        _("Polls"),
-                       _("Administrator")]
+                       _("Administrator"),
+                       _("Official"),]
 
     def get_elections(self):
         return self.elections
@@ -406,20 +400,6 @@ class ElectionReport(object):
 
     def append_elections(self, election_list):
         self.elections += election_list
-
-    def parse_csv(self, csv_file_path):
-        data = []
-        with open(csv_file_path, 'rb') as f:
-            reader = CSVReader(f, min_fields=2, max_fields=9)
-            for row in reader:
-                keys = ('inst', 'nr_voters', 'nr_voters_voted', 'start',
-                        'end', 'uuid', 'election_name', 'admin')
-                new_row = {}
-                for index, key in enumerate(keys):
-                    new_row[key] = row[index]
-                new_row['nr_polls'] = '-'
-                data.append(new_row)
-        self.csvData += data
 
     def parse_object(self):
         data = []
@@ -440,13 +420,45 @@ class ElectionReport(object):
             admins = [admin.user_id for admin in e.admins.all()]
             admins = ",".join(map(str, admins))
             row['admin'] = admins
+            if e.official == 0:
+                row['official'] = 'Unofficial'
+            elif e.official == 1:
+                row['official'] = 'Official'
+            else:
+                row['official'] = 'Not Decided'
             data.append(row)
         self.objectData += data
+
+
+class ElectionsReportCSV(ElectionsReport):
+    '''
+    Create CSV with data from all elections that
+    are marked as suitable for reporting.
+    Includes CSV file if set in settings.
+    '''
+
+    def __init__(self, elections):
+        super(ElectionsReportCSV, self).__init__(elections)
+        self.csvData = []
+
+    def parse_csv(self, csv_file_path):
+        data = []
+        with open(csv_file_path, 'rb') as f:
+            reader = CSVReader(f, min_fields=2, max_fields=10)
+            for row in reader:
+                keys = ('inst', 'nr_voters', 'nr_voters_voted', 'start',
+                        'end', 'uuid', 'election_name', 'admin', 'official')
+                new_row = {}
+                for index, key in enumerate(keys):
+                    new_row[key] = row[index]
+                new_row['nr_polls'] = '-'
+                data.append(new_row)
+        self.csvData += data
 
     def make_output(self, filename):
         data = self.csvData + self.objectData
         keys = ('inst', 'nr_voters', 'nr_voters_voted', 'start',
-                'end', 'uuid', 'election_name', 'nr_polls', 'admin')
+                'end', 'uuid', 'election_name', 'nr_polls', 'admin', 'official')
 
         fd = filename
         close = False
