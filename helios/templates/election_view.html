@@ -307,7 +307,7 @@ Visit <a target="_new" href="http://java.sun.com">java.sun.com</a> to install it
 			{% if election.voting_has_stopped %}
 				<p style="font-size: 1.2em;">
 					{% if election.result %}
-			  			{% trans "verify" %} <a target="_blank" href="/verifier/verify.html?election_url={% url "helios.views.one_election" election.uuid %}">{ % trans election tally" %}</a>.
+						{% trans "verify" %} <a target="_blank" href="/verifier/verify.html?election_url={% url "helios.views.one_election" election.uuid %}">{% trans "election tally" %}</a>.
 			  		{% endif %}
 {% blocktrans %} 
 review the <a href="{{vote_url}}">voting booth</a>.
