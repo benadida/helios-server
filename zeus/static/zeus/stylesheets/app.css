@@ -5677,6 +5677,18 @@ form .field-readonly {
   color: #2ba6cb;
 }
 
+.pagination-cont.top .pagination {
+  padding-top: 17px;
+}
+
+.pagination-cont.bottom .pagination {
+  margin-top: -3px;
+}
+
+table.reports-table {
+  zoom: 0.8;
+}
+
 /* Base Type Styles Using Modular Scale ---------------------- */
 body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, p, blockquote, th, td {
   margin: 0;

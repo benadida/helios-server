@@ -9,16 +9,16 @@
                 <h2>{% trans "Elections report" %}</h2>
             </div>
             <div class="columns five">
-                    <div href="#" class="button medium dropdown" style="float:right;">
-                        {% trans "Export" %}&nbsp;
+                <div href="#" class="button medium dropdown" style="float:right;">
+                    {% trans "Export" %}&nbsp;
                     <ul>
                         <li>
-                        <a style="" class="foundicon-mail" 
+                        <a style="" class="foundicon-paper-clip" 
                             href="{% url elections_report_csv %}?{{params}}">
                             &nbsp;{% trans "to CSV" %}</a>
                         </li>
                     </ul>
-                    </div>
+                </div>
             </div>
         </div>
         <div class="reports content-header">
@@ -31,7 +31,6 @@
                 <h6>{% trans "Number of voters that voted" %}: <span> {{voters_voted_count}} ({{percentage_voted|floatformat}}%)</span></h6>
             </div>
         </div>
-  </div>
     {% endblock %}
     {% block filter %}
     {% endblock %}
@@ -62,12 +61,12 @@
                 </form>
             </div>
             {% autopaginate elections elections_per_page %}
-            <div class="columns eight pagination-cont">
+            <div class="columns eight pagination-cont reports top">
                 {% paginate %}
             </div>
         </div>
     {% block elections-list %}
-        <table class="info-table" id="elections-table">
+        <table class="info-table reports-table" id="elections-table">
             <thead>
                 <tr>
                     {% for key, value in report_table_headers %}
@@ -86,7 +85,7 @@
                         <td>{{election.inst}}</td>
                         <td>{{election.nr_voters}}</td>
                         <td>{{election.nr_voters_voted}}</td>
-                        <td>{{election.start}}</td>
+                        <td>{{election.start|date}}</td>
                         <td>{{election.end}}</td>
                         <td>{{election.election_name}}</td>
                         <td>{{election.nr_polls}}</td>
@@ -102,7 +101,8 @@
                 {% endfor %}
             </tbody>
         </table>
-        {% paginate %}
-        <p><a href="{% url elections_report_csv %}?{{params}}">{% trans "Download" %} CSV</a></p>
+        <div class="columns twelve pagination-cont reports bottom">
+            {% paginate %}
+        </div>
     {% endblock %}
 {% endblock %}

@@ -566,11 +566,17 @@ form .field-readonly {
 
 .reports.content-header {
   padding: 0 0px;
-  
   @include clearfix();
-  h6 { padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;}
+  h6 { 
+    padding: 10px 0; 
+    margin: 10px 0; 
+    border-bottom: 1px solid #ddd;
+  }
   h6 span { color: $mainColor; }
 }
+.pagination-cont.top .pagination { padding-top: 17px; }
+.pagination-cont.bottom .pagination { margin-top: -3px; }
+table.reports-table { zoom: 0.8; }
 // ----------------------------------------
 // Import specific parts of Foundation by commenting the import "foundation"
 // and uncommenting what you want below. You must uncomment the following if customizing
