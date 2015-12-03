@@ -445,16 +445,14 @@ msgstr "Τελευταία είσοδος"
 msgid "Actions"
 msgstr "Επιλογές"
 
-#, fuzzy
 msgid "Creation"
-msgstr "Ερώτηση"
+msgstr "Δημιουργία"
 
-#, fuzzy
 msgid "Election status"
-msgstr "Τίτλος ψηφοφορίας"
+msgstr "Κατάσταση ψηφοφορίας"
 
 msgid "Trial"
-msgstr ""
+msgstr "Δοκιμαστική"
 
 msgid "Simple election with one or more questions"
 msgstr "Απλή ψηφοφορία με μία ή περισσότερες ερωτήσεις"

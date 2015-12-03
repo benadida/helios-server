@@ -2353,7 +2353,7 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
   position: absolute;
   top: 0;
   left: -20px;
-  background: url('/images/foundation/orbit/rotator-black.png?1397729432') no-repeat;
+  background: url('/images/foundation/orbit/rotator-black.png?1444643181') no-repeat;
   z-index: 3;
 }
 .orbit-wrapper span.rotator.move {
@@ -2372,7 +2372,7 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
 .orbit-wrapper span.mask.move {
   width: 40px;
   left: 0;
-  background: url('/images/foundation/orbit/timer-black.png?1397729432') repeat 0 0;
+  background: url('/images/foundation/orbit/timer-black.png?1444643181') repeat 0 0;
 }
 .orbit-wrapper span.pause {
   display: block;
@@ -2381,12 +2381,12 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
   position: absolute;
   top: 0;
   left: 0;
-  background: url('/images/foundation/orbit/pause-black.png?1397729432') no-repeat;
+  background: url('/images/foundation/orbit/pause-black.png?1444643181') no-repeat;
   z-index: 4;
   opacity: 0;
 }
 .orbit-wrapper span.pause.active {
-  background: url('/images/foundation/orbit/pause-black.png?1397729432') no-repeat 0 -40px;
+  background: url('/images/foundation/orbit/pause-black.png?1444643181') no-repeat 0 -40px;
 }
 .orbit-wrapper .timer:hover span.pause, .orbit-wrapper .timer:focus span.pause, .orbit-wrapper span.pause.active {
   opacity: 1;
@@ -2427,21 +2427,21 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
   cursor: pointer;
 }
 .orbit-wrapper .slider-nav span.right {
-  background: url('/images/foundation/orbit/right-arrow.png?1397729432');
+  background: url('/images/foundation/orbit/right-arrow.png?1444643181');
   background-size: 100%;
   right: 0;
 }
 .orbit-wrapper .slider-nav span.left {
-  background: url('/images/foundation/orbit/left-arrow.png?1397729432');
+  background: url('/images/foundation/orbit/left-arrow.png?1444643181');
   background-size: 100%;
   left: 0;
 }
 
 .lt-ie9 .orbit-wrapper .slider-nav span.right {
-  background: url('/images/foundation/orbit/right-arrow-small.png?1397729432');
+  background: url('/images/foundation/orbit/right-arrow-small.png?1444643181');
 }
 .lt-ie9 .orbit-wrapper .slider-nav span.left {
-  background: url('/images/foundation/orbit/left-arrow-small.png?1397729432');
+  background: url('/images/foundation/orbit/left-arrow-small.png?1444643181');
 }
 
 /* Bullet Nav ---------------------- */
@@ -2460,7 +2460,7 @@ ul.orbit-bullets li {
   cursor: pointer;
   color: #999999;
   text-indent: -9999px;
-  background: url('/images/foundation/orbit/bullets.jpg?1397729432') no-repeat 4px 0;
+  background: url('/images/foundation/orbit/bullets.jpg?1444643181') no-repeat 4px 0;
   width: 13px;
   height: 12px;
   overflow: hidden;
@@ -3711,7 +3711,6 @@ table thead, table tfoot {
 table thead tr th,
 table tfoot tr th,
 table tbody tr td,
-table tbody tr th,
 table tr td,
 table tfoot tr td {
   display: table-cell;
@@ -3745,8 +3744,7 @@ table tbody tr:nth-child(even) {
   background: #f9f9f9;
 }
 
-table tbody tr td,
-table tbody tr th {
+table tbody tr td {
   color: #333;
   padding: 9px 10px;
   vertical-align: top;
@@ -5468,29 +5466,26 @@ body .before-table {
 body .before-table .columns {
   padding: 0 !important;
 }
-body table.info-table thead th, body table.polls-table thead th {
+body table.voters thead th, body table.elections thead th, body table.polls-table thead th {
   font-size: 11px;
 }
-body table.info-table tbody td, body table.polls-table tbody td {
+body table.voters tbody td, body table.elections tbody td, body table.polls-table tbody td {
   font-size: 12px;
 }
-body table.info-table th a:after, body table.polls-table th a:after {
+body table.voters th a:after, body table.elections th a:after, body table.polls-table th a:after {
   font-size: 1.5em;
   padding-top: 5px;
   display: block;
   float: right;
 }
-body table.info-table th a.desc, body table.info-table th a.asc, body table.polls-table th a.desc, body table.polls-table th a.asc {
+body table.voters th a.desc, body table.voters th a.asc, body table.elections th a.desc, body table.elections th a.asc, body table.polls-table th a.desc, body table.polls-table th a.asc {
   color: #103f4d;
 }
-body table.info-table th a.desc:after, body table.polls-table th a.desc:after {
+body table.voters th a.desc:after, body table.elections th a.desc:after, body table.polls-table th a.desc:after {
   content: "\02C4";
 }
-body table.info-table th a.asc:after, body table.polls-table th a.asc:after {
+body table.voters th a.asc:after, body table.elections th a.asc:after, body table.polls-table th a.asc:after {
   content: "\02C5";
-}
-body table.info-table td.official-field {
-    width: 120px;
 }
 body .cancel-msg {
   min-height: 100px !important;
@@ -5660,6 +5655,26 @@ table tr.party {
 
 form .field-readonly {
   background-color: #cccccc !important;
+}
+
+.reports.content-header {
+  padding: 0 0px;
+  *zoom: 1;
+}
+.reports.content-header:before, .reports.content-header:after {
+  content: " ";
+  display: table;
+}
+.reports.content-header:after {
+  clear: both;
+}
+.reports.content-header h6 {
+  padding: 10px 0;
+  margin: 10px 0;
+  border-bottom: 1px solid #ddd;
+}
+.reports.content-header h6 span {
+  color: #2ba6cb;
 }
 
 /* Base Type Styles Using Modular Scale ---------------------- */

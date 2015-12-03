@@ -564,6 +564,13 @@ form .field-readonly {
     background-color: lighten(#000000, 80%) !important;
 } 
 
+.reports.content-header {
+  padding: 0 0px;
+  
+  @include clearfix();
+  h6 { padding: 10px 0; margin: 10px 0; border-bottom: 1px solid #ddd;}
+  h6 span { color: $mainColor; }
+}
 // ----------------------------------------
 // Import specific parts of Foundation by commenting the import "foundation"
 // and uncommenting what you want below. You must uncomment the following if customizing

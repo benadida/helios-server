@@ -3,45 +3,71 @@
 {% load i18n pagination_tags zeus_tags %}
 
 {% block content %}
-    {% block filter %}
-        <form action="" method="GET">
-            <label>{% trans "Filter" %}</label>
-            <div class="row collapse">
-                <div class="columns nine">
-                    <input class="q" name="q" type="text" value="{{q}}" />
-                </div>
-                <div class="columns two">
-                    <input class="button postfix" type="submit" value="✓" />
-                </div>
-                <div class="columns one">
-                    <a class="button alert postfix" href="{% url admin_home %}" />✗</a>
-                </div>
-            </div>
-        </form>
-        <div>
-            <span class="qresult">
-                {% if q %}
-                    {% blocktrans count elections_count as results_count %}
-                        {{results_count}} result found
-                    {% plural %}
-                        {{results_count}} results found
-                    {% endblocktrans %}
-                {% endif %}
-            </span>
-        </div>
-    {% endblock %}
     {% block general %}
-        <h2>{% trans "General stats" %}</h2>
-        <p>{% trans "Number of elections" %}: {{elections_count}}</p>
-        <p>{% trans "Number of polls" %}: {{polls_count}}</p>
-        <p>{% trans "Number of voters" %}: {{voters_count}}</p>
-        <p>{% trans "Number of voters that voted" %}: {{voters_voted_count}} ({{percentage_voted|floatformat}}%)</p>
+        <div class="row collapse">
+            <div class="columns seven">
+                <h2>{% trans "Elections report" %}</h2>
+            </div>
+            <div class="columns five">
+                    <div href="#" class="button medium dropdown" style="float:right;">
+                        {% trans "Export" %}&nbsp;
+                    <ul>
+                        <li>
+                        <a style="" class="foundicon-mail" 
+                            href="{% url elections_report_csv %}?{{params}}">
+                            &nbsp;{% trans "to CSV" %}</a>
+                        </li>
+                    </ul>
+                    </div>
+            </div>
+        </div>
+        <div class="reports content-header">
+            <div class="columns six" style="padding-left:0;">
+                <h6>{% trans "Number of elections" %}: <span>{{ elections_count }}</span></h6>
+                <h6>{% trans "Number of polls" %}: <span>{{ polls_count }}</span></h6>
+            </div>
+            <div class="columns six" style="padding-left:0; width: 49%;" >
+                <h6>{% trans "Number of voters" %}: <span>{{ voters_count }}</span></h6>
+                <h6>{% trans "Number of voters that voted" %}: <span> {{voters_voted_count}} ({{percentage_voted|floatformat}}%)</span></h6>
+            </div>
+        </div>
+  </div>
     {% endblock %}
+    {% block filter %}
+    {% endblock %}
+    <div class="row collapse">
+            <div class="columns four table-filters">
+                <form action="#elections-table" method="GET">
+                    <label>{% trans "Filter" %}:</label>
+                    <div class="row collapse">
+                        <div class="columns nine">
+                            <input class="q" name="q" type="text" value="{{ q }}"/>
+                            <span class="qresult">
+                              {% if q %}
+                                {% blocktrans count elections_count as results_count %}
+                                {{ elections_count }} result found
+                                {% plural %}
+                                {{ elections_count }} results found
+                                {% endblocktrans %}
+                              {% endif %}</span>
+                        </div>
+                        <div class="columns two">
+                            <input class="button postfix" type="submit" value="✓"/>
+                        </div>
+                        <div class="columns one">
+                            <a class="button alert postfix" 
+                               href="{% url elections_report %}#elections-table" />✗</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            {% autopaginate elections elections_per_page %}
+            <div class="columns eight pagination-cont">
+                {% paginate %}
+            </div>
+        </div>
     {% block elections-list %}
-        <h2>{% trans "Elections" %}</h2>
-        {% autopaginate elections elections_per_page %}
-        {% paginate %}
-        <table class="info-table">
+        <table class="info-table" id="elections-table">
             <thead>
                 <tr>
                     {% for key, value in report_table_headers %}
