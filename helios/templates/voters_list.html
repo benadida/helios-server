@@ -92,6 +92,7 @@
 {% endif %}
 {% endif %}
 {% endif %}
+
 <div id="third_row" class="row">
 <div class="col-md-12">
 	<!-- who can vote info -->
@@ -240,7 +241,11 @@
 {% if email_voters and election.frozen_at and admin_p %}
 	<div id="fifth_row" class="row">
 		<div class="col-md-12">
-			<p><a class="btn btn-primary" href="{% url "helios.views.voters_email" election.uuid %}">{% trans "email voters" %}</a></p>
+			<p><a class="btn btn-primary" href="{% url "helios.views.voters_email" election.uuid %}">{% trans "email voters" %}</a>
+		{% if upload_p %}
+			<a id="upload_voters" class="btn btn-primary" href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
+		{% endif %}
+		</p>
 		</div>
 	</div>
 {% endif %}
