@@ -65,3 +65,11 @@ def update_status(user_id, user_info, token, message):
 
 def send_message(user_id, user_name, user_info, subject, body):
   pass
+
+
+#
+# Election Creation
+#
+
+def can_create_election(user_id, user_info):
+  return True

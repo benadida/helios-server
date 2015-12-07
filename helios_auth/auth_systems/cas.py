@@ -242,3 +242,11 @@ def eligibility_category_id(constraint):
 
 def pretty_eligibility(constraint):
   return "Members of the Class of %s" % constraint['year']
+
+
+#
+# Election Creation
+#
+
+def can_create_election(user_id, user_info):
+  return True

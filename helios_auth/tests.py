@@ -47,6 +47,16 @@ class UserModelTests(unittest.TestCase):
                 self.assertEquals(u2.info['name'], new_name)
 
 
+    def test_can_create_election(self):
+        """
+        check that auth systems have the can_create_election call and that it's true for the common ones
+        """
+        for auth_system, auth_system_module in AUTH_SYSTEMS.iteritems():
+            assert(hasattr(auth_system_module, 'can_create_election'))
+            if auth_system != 'clever':
+                assert(auth_system_module.can_create_election('foobar', {}))
+        
+
     def test_status_update(self):
         """
         check that a user set up with status update ability reports it as such,
