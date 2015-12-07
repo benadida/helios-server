@@ -335,7 +335,7 @@ class Election(HeliosModel):
     or failing that the date voting was extended until, or failing that the date voting is scheduled to end at.
     """
     voting_end = self.voting_ended_at or self.voting_extended_until or self.voting_ends_at
-    return (voting_end != None and datetime.datetime.utcnow().replace(tzinfo=utc) >= voting_end) or self.encrypted_tally
+    return (voting_end != None and datetime.datetime.utcnow() >= voting_end) or self.encrypted_tally
 
   @property
   def issues_before_freeze(self):

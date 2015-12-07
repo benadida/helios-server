@@ -182,7 +182,7 @@ INSTALLED_APPS = (
     'helios',
     'server_ui',
     'helioslog',
-    'heliosinstitution',
+    'heliosinstitution.apps.HeliosInstitutionConfig',
 )
 
 ##
