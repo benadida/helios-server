@@ -133,7 +133,7 @@ def generate_constraint(category_id, user):
   constraints = {}
 
   for category in category_id:
-    constraints[category] = category_id[category].lower()
+    constraints[category] = category_id[category].replace('\n','').lower()
 
   if settings.USE_ELECTION_MANAGER_ATTRIBUTES:
     for em_attribute in settings.ELECTION_MANAGER_ATTRIBUTES:
