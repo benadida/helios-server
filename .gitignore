@@ -10,3 +10,4 @@ local_settings.py
 docs/install/_build
 *.swp
 *.mo
+*.log
