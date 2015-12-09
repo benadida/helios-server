@@ -125,7 +125,11 @@ def oauth2_login(request):
             messages.error(request, 'oauth2 user does not match voter')
             return HttpResponseRedirect(reverse("home"))
     else:
-        return HttpResponseBadRequest(400)
+        poll.logger.info("[thirdparty] oauth2 '%s' can_exchange failed",
+                         poll.remote_login_display)
+        messages.error(request, 'oauth2 exchange failed')
+        return HttpResponseRedirect(reverse('error', kwargs={'code': 400}))
+
 
 def jwt_login(request):
     if not JWT_SUPPORT:

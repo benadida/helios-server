@@ -89,6 +89,7 @@ class Oauth2Google(Oauth2Base):
         self.code_post_data['login_hint'] = email
 
     def exchange(self, url):
+        self.poll.logger.info("[thirdparty] Exchange url %s", url)
         response = urllib2.urlopen(url[0], url[1])
         data = json.loads(response.read())
         self.access_token = data['access_token']
@@ -97,6 +98,8 @@ class Oauth2Google(Oauth2Base):
         self.expires_in = data['expires_in']
 
     def confirm_email(self):
+        self.poll.logger.info("[thirdparty] Confirm email %s (%s)",
+                              self.access_token, self.confirmation_url)
         get_params = 'access_token={}'.format(self.access_token)
         get_url = '{}?{}'.format(self.confirmation_url, get_params)
         response = urllib2.urlopen(get_url)
