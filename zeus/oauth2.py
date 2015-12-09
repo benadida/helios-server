@@ -103,10 +103,17 @@ class Oauth2Google(Oauth2Base):
         get_params = 'access_token={}'.format(self.access_token)
         get_url = '{}?{}'.format(self.confirmation_url, get_params)
         response = urllib2.urlopen(get_url)
-        data = json.loads(response.read())
-        response_email = data['emails'][0]['value']
+        resp = response.read()
+        data = json.loads(resp)
+        response_email = data
+
+        if 'email' in data:
+            response_email = data['email']
+        if 'emails' in data:
+            response_email = data['emails'][0]['value']
         if response_email == self.session_email:
-            return True
+            return True, data
+        return False, data
 
 
 @oauth2_module
@@ -135,7 +142,8 @@ class Oauth2FB(Oauth2Base):
         data = json.loads(response.read())
         response_email = data['email']
         if response_email == self.session_email:
-            return True
+            return True, data
+        return False, data
 
 
 @oauth2_module
