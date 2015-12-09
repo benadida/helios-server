@@ -590,7 +590,7 @@ class PollForm(forms.ModelForm):
                                     required=False)
         self.fields['google_confirmation_url'] = forms.CharField(
                                     widget=HiddenInput,
-                                    initial="https://www.googleapis.com/plus/v1/people/me",
+                                    initial="https://www.googleapis.com/oauth2/v1/userinfo",
                                     required=False)
         self.fields['facebook_code_url'] = forms.CharField(
                                     widget=HiddenInput,
