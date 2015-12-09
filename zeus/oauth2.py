@@ -148,14 +148,14 @@ class Oauth2FB(Oauth2Base):
 
 @oauth2_module
 class Oauth2Other(Oauth2Base):
-    
+
     type_id = 'other'
 
     def __init__(self, poll):
         super(Oauth2Other, self).__init__(poll)
         self.code_post_data['scope'] = 'email'
 
-    def exchange(self):
+    def exchange(self, url):
         response = urllib2.urlopen(url[0], url[1])
         data = json.loads(response.read())
         self.access_token = data['access_token']
