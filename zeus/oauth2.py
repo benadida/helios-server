@@ -53,8 +53,8 @@ class Oauth2Base(object):
 
     def get_code_url(self):
         code_data = self.code_post_data
-        encoded_data = urllib.urlencode(self.code_post_data)
-        url = "{}?{}".format(self.poll.oauth2_url, encoded_data)
+        encoded_data = urllib.urlencode(code_data)
+        url = "{}?{}".format(self.poll.oauth2_code_url, encoded_data)
         return url
 
     def can_exchange(self, request):
