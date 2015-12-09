@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-23 14:13+0300\n"
+"POT-Creation-Date: 2015-12-09 19:36+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -38,6 +38,15 @@ msgstr "τους ψηφοφόρους που δεν έχουν ψηφίσει α
 
 msgid "Voter ID"
 msgstr "Αναγνωριστικό ψηφοφόρου"
+
+msgid "Unresolved"
+msgstr "Εκκρεμής"
+
+msgid "Unofficial"
+msgstr "Ανεπίσημη"
+
+msgid "Official"
+msgstr "Επίσημη"
 
 msgid "Linked polls"
 msgstr "Συνδεδεμένες κάλπες"
@@ -161,6 +170,13 @@ msgstr "Όνομα αντιστοιχίας κάλπης"
 msgid "Poll name"
 msgstr "Όνομα κάλπης"
 
+msgid "JSON Web Token Login"
+msgstr "Σύνδεση με JSON Web Token"
+
+#, python-format
+msgid "Oauth2 Login %s"
+msgstr "Σύνδεση με Oauth2 (%s)"
+
 msgid "Prepare poll questions"
 msgstr "Ορισμός των ερωτήσεων της κάλπης"
 
@@ -234,6 +250,9 @@ msgstr "ΟΧΙ"
 msgid "(EXCLUDED)"
 msgstr "(ΕΞΑΙΡΕΣΗ)"
 
+msgid "Results"
+msgstr "Αποτελέσματα"
+
 msgid "There must be at least two fields, Registration ID and Email"
 msgstr ""
 "Πρέπει να υπάρχουν τουλάχιστον δύο πεδία, Αριθμός Καταχώρισης και Email"
@@ -244,7 +263,7 @@ msgstr "Μη έγκυρος αριθμός τηλεφώνου: %s"
 
 #, python-format
 msgid "Voter weight must be a positive integer, not %s"
-msgstr ""
+msgstr "Tο βάρος ψήφου πρέπει να είναι θετικός ακέραιος αριθμός, όχι %s"
 
 #, python-format
 msgid "Invalid voter data at line %s"
@@ -329,15 +348,6 @@ msgstr "Επεξεργασία κάλπης"
 
 msgid "Voters"
 msgstr "Ψηφοφόροι"
-
-msgid "Add new poll"
-msgstr "Προσθήκη νέας κάλπης"
-
-msgid "Batch polls update"
-msgstr "Μαζική ανανέωση καλπών"
-
-msgid "Results"
-msgstr "Αποτελέσματα"
 
 msgid "Election information"
 msgstr "Πληροφορίες ψηφοφορίας"
@@ -499,6 +509,9 @@ msgstr ""
 
 msgid "Election Polls"
 msgstr "Οι κάλπες της ψηφοφορίας"
+
+msgid "Batch polls update"
+msgstr "Μαζική ανανέωση καλπών"
 
 msgid "No audited ballots posted yet"
 msgstr "Δεν έχουν ληφθεί ακόμη ψήφοι ελέγχου"
@@ -1068,11 +1081,11 @@ msgstr "λογαριασμοί"
 msgid "reports"
 msgstr "Αναφορά"
 
-msgid "change password"
-msgstr "αλλαγή κωδικού"
-
 msgid "logout"
 msgstr "έξοδος"
+
+msgid "change password"
+msgstr "αλλαγή κωδικού"
 
 msgid "You are logged in as voter"
 msgstr "Συδεθήκατε ως ψηφοφόρος"
@@ -1224,10 +1237,10 @@ msgid "Elected"
 msgstr "Εκλεγμένοι"
 
 msgid "System message"
-msgstr ""
+msgstr "Μήνυμα συστήματος"
 
 msgid "ELECTION INFO"
-msgstr ""
+msgstr "Πληροφορίες ψηφοφορίας"
 
 msgid "Vote fingerprint"
 msgstr "Αποτύπωμα ψήφου"
@@ -1434,48 +1447,3 @@ msgstr ""
 
 msgid "Choose election"
 msgstr "Επιλογή ψηφοφορίας"
-
-msgid "Administrators"
-msgstr "Διαχειριστές"
-
-msgid "Voters Voted"
-msgstr "Ψηφοφόροι που ψήφισαν"
-
-msgid "Start"
-msgstr "Έναρξη"
-
-msgid "End"
-msgstr "Λήξη"
-
-msgid "Number of Polls"
-msgstr "Αριθμός Κάλπεων"
-
-msgid "Number of polls"
-msgstr "Αριθμός κάλπεων"
-
-msgid "Number of elections"
-msgstr "Αριθμός ψηφοφοριών"
-
-msgid "Number of voters"
-msgstr "Αριθμός ψηφοφόρων"
-
-msgid "Number of voters that voted"
-msgstr "Αριθμός ψηφοφόρων που ψήφισαν"
-
-msgid "Elections"
-msgstr "Εκλογές"
-
-msgid "General stats"
-msgstr "Γενικές στατιστικές"
-
-msgid "Download"
-msgstr "Κατέβασε"
-
-msgid "Official"
-msgstr "Επίσημη"
-
-msgid "Unofficial"
-msgstr "Ανεπίσημη"
-
-msgid "Not Decided"
-msgstr "Εκκρεμεί απόφαση"

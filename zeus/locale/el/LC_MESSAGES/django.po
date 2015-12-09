@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-23 14:13+0300\n"
+"POT-Creation-Date: 2015-12-09 19:36+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -145,7 +145,7 @@ msgid "Email subject"
 msgstr "Tίτλος μηνύματος email"
 
 msgid "In place of BODY"
-msgstr ""
+msgstr "Στην θέση BODY"
 
 msgid "Send To"
 msgstr "Αποστολή πρός"
@@ -314,7 +314,7 @@ msgid "Elected"
 msgstr "Εκλεγμένοι"
 
 msgid "Departments"
-msgstr ""
+msgstr "Τμήματα"
 
 msgid "Round "
 msgstr "Γύρος "
@@ -363,6 +363,9 @@ msgstr "Κάλπες"
 
 msgid "Administrator"
 msgstr "Διαχειριστής"
+
+msgid "Official"
+msgstr "Επίσημη"
 
 msgid "Zeus Elections - Poll Results"
 msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
@@ -462,6 +465,15 @@ msgstr "Κατάσταση ψηφοφορίας"
 msgid "Trial"
 msgstr "Δοκιμαστική"
 
+msgid "Voters Voted"
+msgstr "Σύνολο συμμετεχόντων"
+
+msgid "Number of Polls"
+msgstr "Σύνολο κάλπεων"
+
+msgid "Administrators"
+msgstr "Διαχειριστές"
+
 msgid "Simple election with one or more questions"
 msgstr "Απλή ψηφοφορία με μία ή περισσότερες ερωτήσεις"
 
@@ -477,6 +489,7 @@ msgstr "Προσθήκη ερωτήσεων στην ψηφοφορία"
 msgid "Too many choices"
 msgstr "Περισσότερες επιλογές από το επιτρεπτό"
 
+#, python-brace-format
 msgid "Question '{0}' requires at least {1} choices."
 msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
 
@@ -507,8 +520,23 @@ msgstr "Επιβεβαιώστε"
 msgid "(all voters selected)"
 msgstr "σύνολο ψηφοφόρων"
 
+msgid "Uninitialized shibboleth session."
+msgstr "Μη αρχικοποιημένη σύνδεση shibboleth"
+
+msgid "Invalid shibboleth data resolved."
+msgstr "Πρόβλημα στα δεδομένα shibboleth"
+
+msgid "Invalid shibboleth email resolved."
+msgstr "Πρόβλημα στα δεδομένα shibboleth"
+
 msgid "Invalid batch file contents"
 msgstr "Μη αποδεκτό αρχείο"
+
+msgid "Poll updated successfully"
+msgstr "Η κάλπη ανανεώθηκε επιτυχώς"
+
+msgid "Invalid voter file id"
+msgstr "Λάθος ID αρχείου"
 
 msgid "Enter a valid email address. <br />"
 msgstr "Μη έγκυρη διεύθυνση email. <br />"
@@ -531,8 +559,11 @@ msgstr "Δεν βρέθηκαν ψηφοφόροι."
 msgid "Email sending started"
 msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει"
 
+msgid "Poll does not support voter url login."
+msgstr "Η κάλπη δεν επιτρέπει σύνδεση με URL"
+
 msgid "You need to logout from your current account to access this view."
-msgstr ""
+msgstr "Πρέπει να αποσυνδεθείτε για να αποκτήσετε πρόσβαση σε αυτή την σελίδα"
 
 msgid "Invalid email address"
 msgstr "Μη έγκυρη διεύθυνση email"

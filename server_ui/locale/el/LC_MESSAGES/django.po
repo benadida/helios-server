@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-23 14:13+0300\n"
+"POT-Creation-Date: 2015-12-09 19:36+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,6 +37,51 @@ msgstr ""
 "  %(election_name)s\n"
 "\n"
 "μπορείτε να βρείτε συνημμένη την απόδειξη της ψήφου σας.\n"
+
+msgid "Elections report"
+msgstr "Αναφορά ψηφοφοριών"
+
+msgid "Export"
+msgstr "Εξαγωγή"
+
+msgid "to CSV"
+msgstr "σε CSV"
+
+msgid "Number of elections"
+msgstr "Σύνολο ψηφοφορίων"
+
+msgid "Number of polls"
+msgstr "Σύνολο κάλπεων"
+
+msgid "Number of voters"
+msgstr "Σύνολο ψηφοφόρων"
+
+msgid "Number of voters that voted"
+msgstr "Σύνολο συμμετεχόντων"
+
+msgid "Filter"
+msgstr "Φίλτρο"
+
+#, python-format
+msgid ""
+"\n"
+"                                %(elections_count)s result found\n"
+"                                "
+msgid_plural ""
+"\n"
+"                                %(elections_count)s results found\n"
+"                                "
+msgstr[0] ""
+"\n"
+"                                %(elections_count)s αποτέλεσμα\n"
+"                                "
+msgstr[1] ""
+"\n"
+"                                %(elections_count)s αποτελέσματα\n"
+"                                "
+
+msgid "No results found"
+msgstr "Δεν βρέθηκαν αποτελέσματα"
 
 msgid "Zeus Electronic Voting"
 msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς»"
@@ -77,9 +122,6 @@ msgstr "Είσοδος Ψηφοφόρου"
 msgid "Your new password was set."
 msgstr "Ο νέος σας κωδικός έχει οριστεί."
 
-msgid "Filter"
-msgstr ""
-
 #, python-format
 msgid ""
 "\n"
@@ -98,29 +140,14 @@ msgstr "ΝΑΙ"
 msgid "NO"
 msgstr "ΟΧΙ"
 
+msgid "Not Decided"
+msgstr "Εκκρεμής"
+
+msgid "Unofficial"
+msgstr "Ανεπίσημη"
+
+msgid "Official"
+msgstr "Επίσημη"
+
 msgid "Change language"
 msgstr "Change language"
-
-#~ msgid "Name"
-#~ msgstr "Όνομα"
-
-#~ msgid "Institution"
-#~ msgstr "Ίδρυμα"
-
-#~ msgid "Administrator"
-#~ msgstr "Διαχειριστής"
-
-#~ msgid "Creation"
-#~ msgstr "Δημιουργία"
-
-#~ msgid "Start"
-#~ msgstr "Έναρξη"
-
-#~ msgid "End"
-#~ msgstr "Λήξη"
-
-#~ msgid "Election status"
-#~ msgstr "Κατάσταση ψηφοφορίας"
-
-#~ msgid "Trial"
-#~ msgstr "Δοκιμαστική"
