@@ -44,10 +44,21 @@ function hide_oauth2_elems(time){
 }
 
 var jwt_elems = $("textarea[id^=id_jwt_public_key],input[id^=id_jwt]:not(#id_jwt_auth)")
+var shibboleth_elems = $("textarea[id^=id_shibboleth_constraints],input[id^=id_shibboleth]:not(#id_shibboleth_auth)");
 
 function show_jwt_elems(time){
     jwt_elems.parent().show(time);
     jwt_elems.parent().next().show(time);
+}
+
+function show_shibboleth_elems(time){
+    shibboleth_elems.parent().show(time);
+    shibboleth_elems.parent().next().show(time);
+}
+
+function hide_shibboleth_elems(time){
+    shibboleth_elems.parent().hide(time);
+    shibboleth_elems.parent().next().hide(time);
 }
 
 function hide_jwt_elems(time){
@@ -90,26 +101,36 @@ $(function(){
     urls = collect_urls();
     set_initial_values(urls);
 
-    var jwt_auth = $('#id_jwt_auth')
+    var jwt_auth = $('#id_jwt_auth');
 
     if ($("#id_oauth2_thirdparty").prop('checked')){
         show_oauth2_elems(150);
         hide_jwt_elems(0);
+        hide_shibboleth_elems(0);
     }
     else if($("#id_jwt_auth").prop('checked')){
         show_jwt_elems(150);
+        hide_oauth2_elems(0);
+        hide_shibboleth_elems(0);
+    }
+    else if ($("#id_shibboleth_auth").prop('checked')) {
+        show_shibboleth_elems(150);
+        hide_jwt_elems(0);
         hide_oauth2_elems(0);
     }
     else{
         hide_oauth2_elems(150);
         hide_jwt_elems(0);
+        hide_shibboleth_elems(0);
     }
     $("#id_oauth2_thirdparty").change(function(){
         if ($("#id_oauth2_thirdparty").prop('checked')){
             hide_jwt_elems(150);
+            hide_shibboleth_elems(150);
             show_oauth2_elems(150);
             if (jwt_auth.prop('checked')){
                 jwt_auth.prop('checked', false)
+                $("#id_shibboleth_auth").prop('checked', false)
             }
         }
         else{
@@ -135,13 +156,27 @@ $(function(){
     });
 
 
+    $("#id_shibboleth_auth").change(function(){
+        if ($("#id_shibboleth_auth").prop('checked')){
+            show_shibboleth_elems(150);
+            $("#id_oauth2_thirdparty").prop("checked", false);
+            hide_oauth2_elems(150);
+            $("#id_jwt_auth").prop("checked", false);
+            hide_jwt_elems(150);
+        } else {
+            hide_shibboleth_elems(150);
+        }
+    });
+
     $("#id_jwt_auth").change(function(){
         if ($("#id_jwt_auth").prop('checked')){
                 show_jwt_elems(150)
             if ($("#id_oauth2_thirdparty").prop('checked')){
                 show_jwt_elems(150);
                 $("#id_oauth2_thirdparty").prop('checked', false)
+                $("#id_shibboleth_thirdparty").prop('checked', false)
                 hide_oauth2_elems(150);
+                hide_shibboleth_elems(150);
             }
         }
         else{

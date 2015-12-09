@@ -712,7 +712,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   oauth2_type = models.CharField(max_length=25,
                                  null=True, blank=True)
-  oauth2_client_type = models.CharField(max_length=25, 
+  oauth2_client_type = models.CharField(max_length=25,
                                         null=True, blank=True)
   oauth2_client_id = models.CharField(max_length=255,
                                       null=True, blank=True)
@@ -731,7 +731,11 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
   jwt_public_key = models.TextField(null=True, default=None)
   jwt_issuer = models.CharField(max_length=255,
                                 null=True, blank=True)
-  
+
+  # shibboleth authentication
+  shibboleth_auth = models.BooleanField(default=False)
+  shibboleth_constraints = JSONField(default=None, null=True, blank=True)
+
   objects = PollManager()
 
   class Meta:

@@ -17,6 +17,7 @@ auth_urls = patterns('zeus.views.auth',
     url(r'^voter-login$', 'voter_login', name="voter_login"),
     url(r'^auth/oauth2$', 'oauth2_login', name="oauth2_login"),
     url(r'^auth/jwt$', 'jwt_login', name="jwt_login"),
+    url(r'^auth/shibboleth/.*$', 'shibboleth_login', name="shibboleth_login"),
 )
 
 admin_urls = patterns('zeus.views.admin',

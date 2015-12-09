@@ -24,6 +24,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
 from django.views.decorators.http import require_http_methods
+from django.utils.translation import ugettext_lazy as _
 
 from helios.view_utils import render_template
 from helios.models import Voter, Poll
@@ -103,7 +104,6 @@ def change_password(request):
                             'password_changed': password_changed})
 
 def oauth2_login(request):
-
     poll_uuid = request.GET.get('state')
     try:
         poll = Poll.objects.get(uuid = poll_uuid)
@@ -143,6 +143,69 @@ def oauth2_login(request):
         return HttpResponseRedirect(reverse('error', kwargs={'code': 400}))
 
 
+def shibboleth_login(request):
+    voter_uuid = request.session.get('shibboleth_voter_uuid', None)
+    email = request.session.get('shibboleth_voter_email', None)
+    if voter_uuid is not None:
+        del request.session['shibboleth_voter_uuid']
+    if email is not None:
+        del request.session['shibboleth_voter_email']
+
+    if not all([voter_uuid, email]):
+        messages.error(request, _('Uninitialized shibboleth session.'))
+        return HttpResponseRedirect(reverse('error',
+                                            kwargs={'code': 400}))
+
+    voter = get_object_or_404(Voter, uuid=voter_uuid)
+    poll = voter.poll
+    defaults = {
+        'email_field': 'EMAIL',
+        'required_fields': ['REMOTE_USER', 'EPPN']
+    }
+    default_constraints = getattr(settings, 'SHIBBOLETH_DEFAULT_CONSTRAINTS',
+                                  defaults)
+    constraints = poll.shibboleth_constraints or default_constraints
+
+    common_fields = ['HTTP_EPPN', 'HTTP_REMOTE_USER']
+    meta = request.META
+    shibboleth = {}
+    for key, value in meta.iteritems():
+        if key in common_fields:
+            shibboleth[key.strip('HTTP_')] = value
+        if key.startswith('HTTP_SHIB_'):
+            shibboleth[key.strip('HTTP_SHIB_')] = value
+
+    poll.logger.info("[thirdparty] Voter (%s, %s) shibboleth data: %r" % (voter.uuid, voter.voter_email, shibboleth))
+    error = False
+    for key in constraints.get('required_fields'):
+        if not key in shibboleth:
+            error = 403
+            poll.logger.error('[thirdparty] %s field not found in shibboleth data', key)
+            messages.error(request, _('Invalid shibboleth data resolved.'))
+
+    email_field = constraints.get('email_field')
+    if not email_field in shibboleth:
+        error = 403
+        poll.logger.error('[thirdparty] %s field not found in shibboleth data', email_field)
+        messages.error(request, _('Invalid shibboleth data resolved.'))
+
+    if not shibboleth[email_field] == email == voter.voter_email:
+        error = 403
+        poll.logger.error('[thirdparty] cannot resolve email (%r)', [shibboleth, email, voter.voter_email])
+        messages.error(request, _('Invalid shibboleth email resolved.'))
+
+    if error:
+        return HttpResponseRedirect(reverse('error',
+                                            kwargs={'code': 400}))
+
+    user = auth.ZeusUser(voter)
+    user.authenticate(request)
+    poll.logger.info("[thirdparty] Shibboleth login for %s", voter.voter_login_id)
+    poll.logger.info("Poll voter '%s' logged in",
+                        voter.voter_login_id)
+    return HttpResponseRedirect(poll_reverse(poll, 'index'))
+
+
 def jwt_login(request):
     if not JWT_SUPPORT:
         logger.error("JWT login not supported")
@@ -152,7 +215,7 @@ def jwt_login(request):
     if not token:
         return HttpResponseBadRequest(400)
     AUDIENCE = 'zeus' # add to settings
-    data = jwt.decode(token, verify=False)   
+    data = jwt.decode(token, verify=False)
     aud = data['aud']
     iss = data['iss']
     voter_email = data['sub']

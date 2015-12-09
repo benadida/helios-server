@@ -257,7 +257,7 @@ def add_edit(request, election, poll=None):
         if form.is_valid():
             new_poll = form.save()
             if form.has_changed():
-                poll.logger.info("Poll updated %r" % form.changed_data)
+                new_poll.logger.info("Poll updated %r" % form.changed_data)
             message = _("Poll updated successfully")
             messages.success(request, message)
             newname = new_poll.name
@@ -829,7 +829,7 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
                         _("You need to logout from your current account "
                             "to access this view."))
         return HttpResponseRedirect(reverse('error', kwargs={'code': 403}))
-    
+
     if voter.voter_password != unicode(voter_secret):
         raise PermissionDenied("Invalid secret")
 
@@ -844,6 +844,23 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
         request.session['oauth2_voter_uuid'] = voter.uuid
         url = oauth2.get_code_url()
         poll.logger.info("[thirdparty] code handshake from %s", url)
+        context = {'url': url}
+        tpl = 'voter_redirect'
+        return render_template(request, tpl, context)
+    elif poll.shibboleth_auth:
+        poll.logger.info("[thirdparty] shibboleth redirect for voter (%s, %s)",
+                         voter.voter_email, voter.uuid)
+        constraints = poll.shibboleth_constraints or {}
+        endpoint = constraints.get('endpoint', '')
+        request.session['shibboleth_voter_email'] = voter.voter_email
+        request.session['shibboleth_voter_uuid'] = voter.uuid
+        shibboleth_login = reverse('shibboleth_login')
+        url = '/'.join(s.strip('/') for s in filter(bool,[
+            settings.SECURE_URL_HOST,
+            settings.SERVER_PREFIX,
+            shibboleth_login,
+            endpoint]))
+        print "URL", url
         context = {'url': url}
         tpl = 'voter_redirect'
         return render_template(request, tpl, context)

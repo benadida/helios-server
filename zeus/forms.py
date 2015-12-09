@@ -615,7 +615,8 @@ class PollForm(forms.ModelForm):
                   'oauth2_thirdparty', 'oauth2_type', 
                   'oauth2_client_type', 'oauth2_client_id', 
                   'oauth2_client_secret', 'oauth2_code_url',
-                  'oauth2_exchange_url', 'oauth2_confirmation_url')
+                  'oauth2_exchange_url', 'oauth2_confirmation_url',
+                  'shibboleth_auth', 'shibboleth_constraints')
 
     def clean(self):
 
@@ -651,6 +652,13 @@ class PollForm(forms.ModelForm):
         else:
             for field_name in oauth2_field_names:
                data[field_name] = ''
+
+        shibboleth_field_names = []
+        if data['shibboleth_auth']:
+            for field_name in shibboleth_field_names:
+                if not data[field_name]:
+                    self._errors[field_name] = _('This field is required.'), 
+
         if data['jwt_auth']:
             for field_name in jwt_field_names:
                 if not data[field_name]:

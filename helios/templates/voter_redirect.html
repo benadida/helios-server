@@ -6,7 +6,7 @@ Redirecting to third party
 {%endblock title%}
 
 {% block meta_block %}
-<meta http-equiv="refresh" content="3; url={{ url }}"/>
+<meta http-equiv="refresh" content="{% if sleep %}{{ sleep }}{% else %}3{% endif %}; url={{ url }}"/>
 {% endblock meta_block %}
 
 {% block content %}
