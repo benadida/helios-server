@@ -799,12 +799,24 @@ def voter_booth_linked_login(request, election, poll, voter_uuid):
 @require_http_methods(["GET"])
 def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
     voter = None
+
+    if poll.jwt_auth:
+        messages.error(request,
+                        _("Poll does not support voter url login."))
+        return HttpResponseRedirect(reverse('error', kwargs={'code': 403}))
+
     try:
         voter = Voter.objects.get(poll=poll, uuid=voter_uuid)
         if voter.excluded_at:
             raise PermissionDenied('37')
     except Voter.DoesNotExist:
         raise PermissionDenied("Invalid election")
+
+    if request.zeususer.is_authenticated() and request.zeususer.is_voter:
+        return HttpResponseRedirect(reverse('election_poll_index', kwargs={
+            'election_uuid': request.zeususer._user.poll.election.uuid,
+            'poll_uuid': request.zeususer._user.poll.uuid
+        }))
 
     if request.zeususer.is_authenticated() and (
             not request.zeususer.is_voter or \

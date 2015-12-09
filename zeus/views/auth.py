@@ -112,18 +112,30 @@ def oauth2_login(request):
     oauth2 = poll.get_oauth2_module
     if oauth2.can_exchange(request):
         oauth2.exchange(oauth2.get_exchange_url())
-        if oauth2.confirm_email():
-            voter = Voter.objects.get(poll__uuid=poll_uuid,
-                    uuid=oauth2.voter_uuid)
-            user = auth.ZeusUser(voter)
-            user.authenticate(request)
-            poll.logger.info("Poll voter '%s' logged in", voter.voter_login_id)
-            del request.session['oauth2_voter_uuid']
-            del request.session['oauth2_voter_email']
-            return HttpResponseRedirect(poll_reverse(poll, 'index'))
-        else:
-            messages.error(request, 'oauth2 user does not match voter')
-            return HttpResponseRedirect(reverse("home"))
+        try:
+            confirmed, data = oauth2.confirm_email()
+            if confirmed:
+                voter = Voter.objects.get(poll__uuid=poll_uuid,
+                                          uuid=oauth2.voter_uuid)
+                user = auth.ZeusUser(voter)
+                user.authenticate(request)
+                poll.logger.info("Poll voter '%s' logged in",
+                                 voter.voter_login_id)
+                del request.session['oauth2_voter_uuid']
+                del request.session['oauth2_voter_email']
+                return HttpResponseRedirect(poll_reverse(poll, 'index'))
+            else:
+                poll.logger.info("[thirdparty] %s cannot resolve email from %r",
+                                 poll.remote_login_display, data)
+                messages.error(request, 'oauth2 user does not match voter')
+                return HttpResponseRedirect(reverse('error',
+                                                    kwargs={'code': 400}))
+        except urllib2.HTTPError, e:
+            poll.logger.exception(e)
+            messages.error(request, 'oauth2 error')
+            return HttpResponseRedirect(reverse('error',
+                                                kwargs={'code': 400}))
+            pass
     else:
         poll.logger.info("[thirdparty] oauth2 '%s' can_exchange failed",
                          poll.remote_login_display)
