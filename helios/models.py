@@ -742,6 +742,18 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
       self._logger = None
       super(Poll, self).__init__(*args, **kwargs)
 
+  @property
+  def remote_login(self):
+      return self.oauth2_thirdparty or self.jwt_auth
+
+  @property
+  def remote_login_display(self):
+      if self.jwt_auth:
+          return _("JSON Web Token Login")
+      if self.oauth2_thirdparty:
+          return _("Oauth2 Login %s") % self.oauth2_client_id
+      return None
+
   def reset_logger(self):
       self._logger = None
 

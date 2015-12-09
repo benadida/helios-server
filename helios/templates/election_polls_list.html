@@ -101,6 +101,13 @@
           </ul>
         </div>
       </td>
+    <tr>
+        <td class="remote-login-info" colspan=7>
+    {% if poll.remote_login %}
+            {{poll.remote_login_display}}
+    {% endif %}
+        </td>
+    </tr>
     </tr>
     {% endfor %}
 </tbody>

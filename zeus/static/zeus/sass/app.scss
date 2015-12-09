@@ -362,6 +362,16 @@ body {
     margin-bottom: 5px !important;
   }
 
+  tbody td.remote-login-info {
+    padding: 0.2em 0.8em;
+    font-style: italic;
+    border-bottom: 1px solid #efefef;
+    text-align: right;
+  }
+
+  table#voters-table {
+    zoom: 0.8;
+  }
   table.voters, table.elections, table.polls-table {
       thead th { font-size: 11px; }
       tbody td { font-size: 12px; }

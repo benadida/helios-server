@@ -5466,6 +5466,15 @@ body .before-table {
 body .before-table .columns {
   padding: 0 !important;
 }
+body tbody td.remote-login-info {
+  padding: 0.2em 0.8em;
+  font-style: italic;
+  border-bottom: 1px solid #efefef;
+  text-align: right;
+}
+body table#voters-table {
+  zoom: 0.8;
+}
 body table.voters thead th, body table.elections thead th, body table.polls-table thead th {
   font-size: 11px;
 }
