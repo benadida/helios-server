@@ -234,9 +234,6 @@ msgstr "ΟΧΙ"
 msgid "(EXCLUDED)"
 msgstr "(ΕΞΑΙΡΕΣΗ)"
 
-msgid "Results"
-msgstr "Αποτελέσματα"
-
 msgid "There must be at least two fields, Registration ID and Email"
 msgstr ""
 "Πρέπει να υπάρχουν τουλάχιστον δύο πεδία, Αριθμός Καταχώρισης και Email"
