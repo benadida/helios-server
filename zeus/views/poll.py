@@ -256,6 +256,10 @@ def add_edit(request, election, poll=None):
         form = PollForm(request.POST, instance=poll, election=election)
         if form.is_valid():
             new_poll = form.save()
+            if form.has_changed():
+                poll.logger.info("Poll updated %r" % form.changed_data)
+            message = _("Poll updated successfully")
+            messages.success(request, message)
             newname = new_poll.name
             # log poll edit/creation
             if poll:
@@ -421,7 +425,7 @@ def voters_upload(request, election, poll):
             voter_file_id = request.session.get('voter_file_id', None)
             process_linked  = request.session.get('no_link', False) is False
             if not voter_file_id:
-                messages.error(request, "Invalid voter file id")
+                messages.error(request, _("Invalid voter file id"))
                 url = poll_reverse(poll, 'voters')
                 return HttpResponseRedirect(url)
             try:
