@@ -2,6 +2,7 @@ import json
 import urllib, urllib2
 
 from django.conf import settings
+from django.core.urlresolvers import reverse
 
 from helios.models import Poll
 
@@ -15,23 +16,38 @@ def get_oauth2_module(poll):
     return OAUTH2_REGISTRY.get(poll.oauth2_type)(poll)
 
 
+def oauth2_callback_url():
+    base = settings.SECURE_URL_HOST
+    prefix = settings.SERVER_PREFIX
+    path = reverse('oauth2_login')
+    if prefix:
+        path = prefix + path
+    if path.startswith("/"):
+        path = path[1:]
+    if base.endswith("/"):
+        base = base[:-1]
+
+    return "/".join([base, path])
+
+
 class Oauth2Base(object):
 
     def __init__(self, poll):
         self.poll = poll
         self.exchange_url = poll.oauth2_exchange_url
         self.confirmation_url = self.poll.oauth2_confirmation_url
+        callback_url = oauth2_callback_url()
         self.code_post_data = {
             'response_type': 'code',
             'client_id': poll.oauth2_client_id,
-            'redirect_uri': settings.OAUTH2_CALLBACK,
+            'redirect_uri': callback_url,
             'state': poll.uuid
             }
 
         self.exchange_data = {
             'client_id': poll.oauth2_client_id,
             'client_secret': poll.oauth2_client_secret,
-            'redirect_uri': settings.OAUTH2_CALLBACK,
+            'redirect_uri': callback_url,
             'grant_type': 'authorization_code',
             }
 
