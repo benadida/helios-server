@@ -19,6 +19,7 @@ from helios.views import ELGAMAL_PARAMS
 from helios.models import Election, Voter, Poll, Trustee
 from zeus.tests.utils import SetUpAdminAndClientMixin
 from zeus.core import to_relative_answers, gamma_encode, prove_encryption
+from zeus import auth
 
 
 class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
@@ -226,6 +227,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         post_data = {
             'name': 'test_poll'
             }
+        post_data.update(self._get_poll_params(self.polls_number+1))
         self.c.post(location, post_data)
         e = Election.objects.all()[0]
         self.assertEqual(e.polls.all().count(), 1)
@@ -239,6 +241,9 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         for p in polls:
             p.delete()
 
+    def _get_poll_params(self, poll_index, poll=None):
+        return {}
+
     def create_polls(self):
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
@@ -250,6 +255,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             post_data = {
                 'name': 'test_poll-{}'.format(i)
             }
+            post_data.update(self._get_poll_params(i, None))
             self.c.post(location, post_data)
         e = Election.objects.all()[0]
         self.assertEqual(e.polls.all().count(), self.polls_number)
@@ -439,6 +445,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             .voters.all()[0]
             .get_quick_login_url())
         p_uuid = self.p_uuids[0]
+        self.voter_login(self.get_voter_from_url(voter_login_url),
+                         voter_login_url)
         r = self.c.get(voter_login_url, follow=True)
         self.assertTrue(('Η ψηφοφορία έχει λήξει' in r.content)
                         or ('Voting closed' in r.content))
@@ -466,6 +474,10 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
     def make_ballot(self, p_uuid):
         raise Exception(NotImplemented)
 
+    def voter_login(self, voter, voter_login_url=None):
+        r = self.c.get(voter_login_url, follow=True)
+        self.assertEqual(r.status_code, 200)
+
     def encrypt_ballot_and_cast(self, selection, size, the_url, p_uuid):
         self.c.get(self.locations['logout'])
         e = Election.objects.get(uuid=self.e_uuid)
@@ -477,8 +489,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         modulus, generator, order = e.zeus.do_get_cryptosystem()
         enc_proof = prove_encryption(modulus, generator, order, cipher.alpha,
                                      cipher.beta, randomness)
-        r = self.c.get(the_url, follow=True)
-        self.assertEqual(r.status_code, 200)
+        r = self.voter_login(self.get_voter_from_url(the_url), the_url)
         cast_data = {}
         ##############
         ballot = {
@@ -1235,3 +1246,50 @@ class TestWeightElection(TestSimpleElection):
             counter += 1
         self.verbose('+ Voters file created')
         return voter_files
+
+
+class TestThirdPartyShibboleth(TestSimpleElection):
+
+    def voter_login(self, voter, voter_login_url=None):
+        r = self.c.get(voter_login_url, follow=True)
+        self.assertContains(r, "http-equiv")
+        url = auth.make_shibboleth_login_url('login')
+        self.assertContains(r, url)
+        self.assertEqual(self.c.session.get('shibboleth_voter_email'),
+                         voter.voter_email)
+        self.assertEqual(self.c.session.get('shibboleth_voter_uuid'),
+                         voter.uuid)
+        headers = {
+            'HTTP_SHIB_EMAIL': voter.voter_email + 'invalidate',
+            #'HTTP_EPPN': 'eppn',
+            'HTTP_REMOTE_USER': 'remoteid'
+        }
+        r = self.c.get(url, follow=True, **headers)
+        self.assertEqual(r.status_code, 403)
+
+        headers['HTTP_EPPN'] = 'eppn'
+        r = self.c.get(voter_login_url, follow=True)
+        r = self.c.get(url, follow=True, **headers)
+        self.assertEqual(r.status_code, 403)
+
+        headers['HTTP_SHIB_EMAIL'] = voter.voter_email
+        r = self.c.get(voter_login_url, follow=True)
+        r = self.c.get(url.replace("login", "fakeendpoint"),
+                       follow=True, **headers)
+        self.assertEqual(r.status_code, 403)
+
+        r = self.c.get(voter_login_url, follow=True)
+        r = self.c.get(url, follow=True, **headers)
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.context['user'])
+        self.assertEqual(r.context['user']._user.uuid, voter.uuid)
+        self.assertEqual(self.c.session.get('shibboleth_voter_email', None),
+                         None)
+        self.assertEqual(self.c.session.get('shibboleth_voter_uuid', None),
+                         None)
+
+    def _get_poll_params(self, index, poll=None):
+        return {
+            'shibboleth_auth': True,
+            'shibboleth_constraints': ''
+        }
