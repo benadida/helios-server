@@ -618,6 +618,12 @@ class PollForm(forms.ModelForm):
                   'oauth2_exchange_url', 'oauth2_confirmation_url',
                   'shibboleth_auth', 'shibboleth_constraints')
 
+    def clean_shibboleth_constraints(self):
+        value = self.cleaned_data.get('shibboleth_constraints', None)
+        if value == "None":
+            return None
+        return value
+
     def clean(self):
 
         data = self.cleaned_data
