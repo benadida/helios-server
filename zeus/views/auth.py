@@ -104,6 +104,7 @@ def change_password(request):
                            {'form': form,
                             'password_changed': password_changed})
 
+@auth.unauthenticated_user_required
 def oauth2_login(request):
     poll_uuid = request.GET.get('state')
     try:
@@ -144,6 +145,7 @@ def oauth2_login(request):
         return HttpResponseRedirect(reverse('error', kwargs={'code': 400}))
 
 
+@auth.unauthenticated_user_required
 def shibboleth_login(request):
     voter_uuid = request.session.get('shibboleth_voter_uuid', None)
     email = request.session.get('shibboleth_voter_email', None)
