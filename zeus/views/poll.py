@@ -851,16 +851,10 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
         poll.logger.info("[thirdparty] shibboleth redirect for voter (%s, %s)",
                          voter.voter_email, voter.uuid)
         constraints = poll.shibboleth_constraints or {}
-        endpoint = constraints.get('endpoint', '')
+        endpoint = constraints.get('endpoint', 'login')
         request.session['shibboleth_voter_email'] = voter.voter_email
         request.session['shibboleth_voter_uuid'] = voter.uuid
-        shibboleth_login = reverse('shibboleth_login')
-        url = '/'.join(s.strip('/') for s in filter(bool,[
-            settings.SECURE_URL_HOST,
-            settings.SERVER_PREFIX,
-            shibboleth_login,
-            endpoint]))
-        print "URL", url
+        url = auth.make_shibboleth_login_url(endpoint)
         context = {'url': url}
         tpl = 'voter_redirect'
         return render_template(request, tpl, context)

@@ -146,9 +146,10 @@ def oauth2_login(request):
 
 
 @auth.unauthenticated_user_required
-def shibboleth_login(request):
+def shibboleth_login(request, endpoint):
     voter_uuid = request.session.get('shibboleth_voter_uuid', None)
     email = request.session.get('shibboleth_voter_email', None)
+
     if voter_uuid is not None:
         del request.session['shibboleth_voter_uuid']
     if email is not None:
@@ -163,7 +164,8 @@ def shibboleth_login(request):
     poll = voter.poll
     defaults = {
         'email_field': 'EMAIL',
-        'required_fields': ['REMOTE_USER', 'EPPN']
+        'required_fields': ['REMOTE_USER', 'EPPN'],
+        'endpoint': 'login'
     }
     default_constraints = getattr(settings, 'SHIBBOLETH_DEFAULT_CONSTRAINTS',
                                   defaults)
@@ -180,26 +182,33 @@ def shibboleth_login(request):
 
     poll.logger.info("[thirdparty] Voter (%s, %s) shibboleth data: %r" % (voter.uuid, voter.voter_email, shibboleth))
     error = False
-    for key in constraints.get('required_fields'):
-        if not key in shibboleth:
-            error = 403
-            poll.logger.error('[thirdparty] %s field not found in shibboleth data', key)
-            messages.error(request, _('Invalid shibboleth data resolved.'))
+
+    if constraints.get('endpoint') != endpoint:
+        poll.logger.error('[thirdparty] invalid login endpoint %s', endpoint)
+        error = 403
+        messages.error(request, _("Invalid shibboleth endpoint"))
+
+    if not error:
+        for key in constraints.get('required_fields'):
+            if not key in shibboleth:
+                error = 403
+                poll.logger.error('[thirdparty] %s field not found in shibboleth data', key)
+                messages.error(request, _('Invalid shibboleth data resolved.'))
 
     email_field = constraints.get('email_field')
-    if not email_field in shibboleth:
+    if not error and email_field not in shibboleth:
         error = 403
         poll.logger.error('[thirdparty] %s field not found in shibboleth data', email_field)
         messages.error(request, _('Invalid shibboleth data resolved.'))
 
-    if not shibboleth[email_field] == email == voter.voter_email:
+    if not error and not shibboleth[email_field] == email == voter.voter_email:
         error = 403
         poll.logger.error('[thirdparty] cannot resolve email (%r)', [shibboleth, email, voter.voter_email])
         messages.error(request, _('Invalid shibboleth email resolved.'))
 
     if error:
         return HttpResponseRedirect(reverse('error',
-                                            kwargs={'code': 400}))
+                                            kwargs={'code': error}))
 
     user = auth.ZeusUser(voter)
     user.authenticate(request)

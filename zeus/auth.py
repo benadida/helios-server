@@ -7,8 +7,10 @@ from base64 import b64decode
 from functools import wraps
 
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
+from django.conf import settings
 
 from helios.models import Election, Poll, Trustee, Voter
 from heliosauth.models import User
@@ -386,3 +388,10 @@ def allow_manager_access(func):
     func._allow_manager = True
     func.func_globals['foo'] = 'bar'
     return func
+
+def make_shibboleth_login_url(endpoint):
+    shibboleth_login = reverse('shibboleth_login', kwargs={'endpoint': endpoint})
+    url = '/'.join(s.strip('/') for s in filter(bool,[
+        settings.SERVER_PREFIX,
+        shibboleth_login]))
+    return '/%s' % url
