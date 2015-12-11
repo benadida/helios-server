@@ -89,3 +89,10 @@ def send_notification(user_id, user_info, message):
   pass
 
 
+
+#
+# Election Creation
+#
+
+def can_create_election(user_id, user_info):
+  return True

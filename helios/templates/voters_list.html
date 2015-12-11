@@ -54,17 +54,17 @@
 		                {% endblocktrans %}
 		                </br>
 		                </br>
-		                <div id="attribute_0" class="cafe_attribute input-group">
-		                    <select name="attribute_name" class="form-control">
-		                        <option value="attribute_name">{% trans "Attribute Name" %}</option>
-		                        {% for attr in user.institutionuserprofile_set.get.institution_user_voter_attributes %}
-		                            <option value="{{ attr }}">{{ attr }}</option>
-		                        {% endfor %}
-		                    </select>
-		                    <span class="input-group-addon">=</span> 
-		                    <input type="text" name="cafe_attribute_values[]" class="form-control" placeholder="{% trans "Comma separated attribute value. Ex. val1,val2,val3" %}"></input>
-		                    <span class="add_cafe_attribute input-group-addon glyphicon glyphicon-plus"></span>
-		                </div>
+			                <div id="attribute_0" class="cafe_attribute input-group">
+				                    <select name="attribute_name" class="form-control">
+				                        <option value="attribute_name">{% trans "Attribute Name" %}</option>
+				                        {% for attr in user.institutionuserprofile_set.get.institution_user_voter_attributes %}
+				                            <option value="{{ attr }}">{{ attr }}</option>
+				                        {% endfor %}
+				                    </select>
+				                    <span class="input-group-addon">=</span>
+				                    <textarea name="cafe_attribute_values[]" class="form-control" placeholder="{% trans "Comma separated attribute value. Ex. val1,val2,val3" %}" style="height:34px;"></textarea>
+				                    <span class="add_cafe_attribute input-group-addon glyphicon glyphicon-plus"></span>
+			                </div>
 
 		                <span class="add_attr_result"></span>                
 		            </div>
@@ -92,6 +92,7 @@
 {% endif %}
 {% endif %}
 {% endif %}
+
 <div id="third_row" class="row">
 <div class="col-md-12">
 	<!-- who can vote info -->
@@ -204,7 +205,9 @@
 </div>
 
 {% if election.eligibility.0.auth_system == 'shibboleth' and election.frozen_at %}
-	{{ election.pretty_eligibility|safe }}
+    {% if admin_p %}
+        {{ election.pretty_eligibility|safe }}
+    {% endif %}
 {% endif %}
 <div id="forth_row" class="row">
 	<div class="col-md-12">
@@ -240,7 +243,11 @@
 {% if email_voters and election.frozen_at and admin_p %}
 	<div id="fifth_row" class="row">
 		<div class="col-md-12">
-			<p><a class="btn btn-primary" href="{% url "helios.views.voters_email" election.uuid %}">{% trans "email voters" %}</a></p>
+			<p><a class="btn btn-primary" href="{% url "helios.views.voters_email" election.uuid %}">{% trans "email voters" %}</a>
+		{% if upload_p %}
+			<a id="upload_voters" class="btn btn-primary" href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
+		{% endif %}
+		</p>
 		</div>
 	</div>
 {% endif %}
@@ -257,11 +264,11 @@
 				$(row).attr('id','attribute_' + '{{forloop.counter}}');
 				if ('{{forloop.counter}}' == '1') {
 					$('#attribute_0').children('select[name="attribute_name"]').val("{{key}}");
-					$('#attribute_0').children('input[name="cafe_attribute_values[]"]').val("{{value}}");
+					$('#attribute_0').children('textarea[name="cafe_attribute_values[]"]').val("{{value}}");
 				} else {
 					if ($('select[name="attribute_name"] option[value="{{key}}"]').val() !== undefined) {
 						$(row).children('select[name="attribute_name"]').val("{{key}}");
-						$(row).children('input[name="cafe_attribute_values[]"]').val("{{value}}");
+						$(row).children('textarea[name="cafe_attribute_values[]"]').val("{{value}}");
 						$(row).children('span:last').attr('class','remove_cafe_attribute input-group-addon glyphicon glyphicon-minus');
 						 $(row).insertAfter('div.cafe_attribute:last');
 					}

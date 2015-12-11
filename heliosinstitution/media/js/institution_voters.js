@@ -4,7 +4,7 @@ $("document").ready(function(){
     $('.add_cafe_attribute').click(function(){
         rowNum ++;
         var row = $('#attribute_0').clone();
-        $(row).children('input[name=cafe_attribute_values[]]').attr('value','');
+        $(row).children('textarea[name=cafe_attribute_values[]]').attr('value','');
         $(row).attr('id','attribute_' + rowNum);
         $(row).children('span:last').attr('class','remove_cafe_attribute input-group-addon  glyphicon glyphicon-minus');
         $(row).insertAfter('div.cafe_attribute:last');
@@ -27,7 +27,7 @@ $("document").ready(function(){
             var url = $('form#eligibility-form').attr('action');
             $('div.cafe_attribute').each(function(){
                 key = $(this).find('select option:selected').val();
-                value = $(this).find('input[name="cafe_attribute_values[]"]').val();
+                value = $(this).find('textarea[name="cafe_attribute_values[]"]').val();
                 if (key == 'attribute_name' || value == '') {
                     $(this).addClass('has-error');
                     has_error = true;

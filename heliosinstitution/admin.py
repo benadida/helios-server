@@ -17,6 +17,7 @@ class HeliosInstitutionAdmin(admin.ModelAdmin):
 
 
 class InstitutionUserProfileAdmin(admin.ModelAdmin):	
+    exclude = ('info', 'token')
     list_display = ('helios_user', 'email', 'institution')
 
 

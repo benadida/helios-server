@@ -57,7 +57,7 @@ def password_login_view(request):
       try:
         user = User.get_by_type_and_id('password', username)
         if password_check(user, password):
-          request.session['password_user'] = user
+          request.session['password_user_id'] = user.user_id
           return HttpResponseRedirect(reverse(after))
       except User.DoesNotExist:
         pass
@@ -104,9 +104,9 @@ def get_auth_url(request, redirect_url = None):
   return reverse(password_login_view)
     
 def get_user_info_after_auth(request):
-  user = request.session['password_user']
-  del request.session['password_user']
-  user_info = user.info
+  from helios_auth.models import User
+  user = User.get_by_type_and_id('password', request.session['password_user_id'])
+  del request.session['password_user_id']
   
   return {'type': 'password', 'user_id' : user.user_id, 'name': user.name, 'info': user.info, 'token': None}
     
@@ -117,3 +117,11 @@ def send_message(user_id, user_name, user_info, subject, body):
   email = user_id
   name = user_name or user_info.get('name', email)
   send_mail(subject, body, settings.SERVER_EMAIL, ["\"%s\" <%s>" % (name, email)], fail_silently=False)    
+
+
+#
+# Election Creation
+#
+
+def can_create_election(user_id, user_info):
+  return True
