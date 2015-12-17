@@ -18,6 +18,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 
+msgid "Election close message"
+msgstr ""
+"Please confirm that you want to permanently close the election. <br/><br />"
+"After closing the election registered voters will not be able to cast "
+"any additional votes."
+
 msgid "EXAMPLE_CSV_INPUT_TEXT"
 msgstr ""
 "      1,j.smith@email.tld,John,Smith,G.,+306971234567,1\n"
