@@ -746,6 +746,20 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
       self._logger = None
       super(Poll, self).__init__(*args, **kwargs)
 
+  def get_shibboleth_constraints(self):
+    defaults = {
+        'assert_idp_key': 'EMAIL',
+        'assert_voter_key': 'email',
+        'required_fields': ['REMOTE_USER', 'EPPN'],
+        'endpoint': 'login'
+    }
+    default_constraints = getattr(settings, 'SHIBBOLETH_DEFAULT_CONSTRAINTS',
+                                  defaults)
+    constraints = {}
+    constraints.update(default_constraints)
+    constraints.update(self.shibboleth_constraints or {})
+    return constraints
+
   @property
   def remote_login(self):
       return self.oauth2_thirdparty or self.jwt_auth

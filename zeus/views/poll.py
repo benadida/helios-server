@@ -789,7 +789,7 @@ def voter_booth_linked_login(request, election, poll, voter_uuid):
     if not linked_poll or linked_poll not in \
             poll.linked_polls.values_list('uuid', flat=True):
         raise PermissionDenied()
-    
+
     linked_poll = election.polls.get(uuid=linked_poll)
     linked_voter = linked_poll.voters.get(voter_login_id=voter.voter_login_id)
     user = auth.ZeusUser(linked_voter)
@@ -850,8 +850,8 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
     elif poll.shibboleth_auth:
         poll.logger.info("[thirdparty] shibboleth redirect for voter (%s, %s)",
                          voter.voter_email, voter.uuid)
-        constraints = poll.shibboleth_constraints or {}
-        endpoint = constraints.get('endpoint', 'login')
+        constraints = poll.get_shibboleth_constraints()
+        endpoint = constraints.get('endpoint')
         request.session['shibboleth_voter_email'] = voter.voter_email
         request.session['shibboleth_voter_uuid'] = voter.uuid
         url = auth.make_shibboleth_login_url(endpoint)
