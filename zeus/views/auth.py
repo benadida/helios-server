@@ -166,14 +166,14 @@ def shibboleth_login(request, endpoint):
     poll = voter.poll
     constraints = poll.get_shibboleth_constraints()
 
-    common_fields = ['HTTP_EPPN', 'HTTP_REMOTE_USER']
+    common_fields = ['HTTP_EPPN', 'HTTP_REMOTE_USER', 'HTTP_MAIL']
     meta = request.META
     shibboleth = {}
     for key, value in meta.iteritems():
         if key in common_fields:
-            shibboleth[key.strip('HTTP_')] = value
+            shibboleth[key.replace('HTTP_', '', 1)] = value
         if key.startswith('HTTP_SHIB_'):
-            shibboleth[key.strip('HTTP_SHIB_')] = value
+            shibboleth[key.replace('HTTP_SHIB_', '', 1)] = value
 
     poll.logger.info("[thirdparty] Voter (%s, %s) shibboleth data: %r" % (voter.uuid, voter.voter_email, shibboleth))
     error = False
@@ -196,16 +196,21 @@ def shibboleth_login(request, endpoint):
         poll.logger.error('[thirdparty] %s field not found in shibboleth data', idp_field_key)
         messages.error(request, _('Invalid shibboleth data resolved.'))
 
-    idp_field = shibboleth[idp_field_key]
-    voter_field_key = constraints.get('assert_voter_key')
-    voter_field = getattr(voter, 'voter_%s' % voter_field_key, None)
+    idp_field = None
+    voter_field = None
+    voter_field_key = None
+
+    if not error and idp_field_key in shibboleth:
+        idp_field = shibboleth[idp_field_key]
+        voter_field_key = constraints.get('assert_voter_key')
+        voter_field = getattr(voter, 'voter_%s' % voter_field_key, None)
 
     if not error and voter_field is None:
         error = 403
         poll.logger.error('[thirdparty] invalid assert_voter_key set %s' % voter_field_key)
 
     idp_field_arr = []
-    if ":" in idp_field:
+    if idp_field and ":" in idp_field:
         idp_field_arr = map(lambda x:x.strip(), idp_field.split(":"))
 
     if (not error and not idp_field == voter_field) and (not error and not voter_field in idp_field_arr):

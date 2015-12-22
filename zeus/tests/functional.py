@@ -1272,7 +1272,7 @@ class TestThirdPartyShibboleth(TestSimpleElection):
         r = self.c.get(url, follow=True, **headers)
         self.assertEqual(r.status_code, 403)
 
-        headers['HTTP_SHIB_EMAIL'] = voter.voter_email
+        headers['HTTP_MAIL'] = voter.voter_email
         r = self.c.get(voter_login_url, follow=True)
         r = self.c.get(url.replace("login", "fakeendpoint"),
                        follow=True, **headers)
@@ -1286,11 +1286,11 @@ class TestThirdPartyShibboleth(TestSimpleElection):
         self.assertTrue(r.context['user'].is_anonymous())
 
         r = self.c.get(voter_login_url, follow=True)
-        headers['HTTP_SHIB_EMAIL'] = 'email1@voters.com:email2@voters.com'
+        headers['HTTP_MAIL'] = 'email1@voters.com:email2@voters.com'
         r = self.c.get(url, follow=True, **headers)
         self.assertEqual(r.status_code, 403)
 
-        headers['HTTP_SHIB_EMAIL'] = 'email1@voters.com:email2@voters.com:%s' % voter.voter_email
+        headers['HTTP_MAIL'] = 'email1@voters.com:email2@voters.com:%s' % voter.voter_email
         r = self.c.get(voter_login_url, follow=True)
         r = self.c.get(url, follow=True, **headers)
         self.assertEqual(r.status_code, 200)

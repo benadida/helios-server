@@ -748,7 +748,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   def get_shibboleth_constraints(self):
     defaults = {
-        'assert_idp_key': 'EMAIL',
+        'assert_idp_key': 'MAIL',
         'assert_voter_key': 'email',
         'required_fields': ['REMOTE_USER', 'EPPN'],
         'endpoint': 'login'
