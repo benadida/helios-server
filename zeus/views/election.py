@@ -58,7 +58,7 @@ def add_or_update(request, election=None):
             if not election.has_helios_trustee():
                 election.generate_trustee()
             if election.polls.count() == 0:
-                url = election_reverse(election, 'polls_list')
+                url = election_reverse(election, 'polls_add')
             else:
                 url = election_reverse(election, 'index')
             if election.voting_extended_until:
