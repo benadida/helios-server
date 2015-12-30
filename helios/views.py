@@ -200,6 +200,7 @@ def election_new(request):
     election_form = forms.ElectionForm(initial={'private_p': settings.HELIOS_PRIVATE_DEFAULT,
                                                 'help_email': user.info.get("email", '')})
   else:
+    check_csrf(request)
     election_form = forms.ElectionForm(request.POST)
     
     if election_form.is_valid():
@@ -247,6 +248,7 @@ def one_election_edit(request, election):
       values[attr_name] = getattr(election, attr_name)
     election_form = forms.ElectionForm(values)
   else:
+    check_csrf(request)
     election_form = forms.ElectionForm(request.POST)
     
     if election_form.is_valid():
@@ -399,6 +401,7 @@ def new_trustee(request, election):
   if request.method == "GET":
     return render_template(request, 'new_trustee', {'election' : election})
   else:
+    check_csrf(request)
     # get the public key and the hash, and add it
     name = request.POST['name']
     email = request.POST['email']

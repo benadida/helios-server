@@ -527,7 +527,9 @@ class ElectionBlackboxTests(WebTest):
             "election_type" : "referendum",
             "use_voter_aliases": "0",
             "use_advanced_audit_features": "1",
-            "private_p" : "False"}
+            "private_p" : "False",
+            'csrf_token': self.client.session['csrf_token']
+        }
 
         # override with the given
         full_election_params.update(election_params)
@@ -788,7 +790,8 @@ class ElectionBlackboxTests(WebTest):
                 "election_type" : "election",
                 "use_voter_aliases": "0",
                 "use_advanced_audit_features": "1",
-                "private_p" : "False"})
+                "private_p" : "False",
+                'csrf_token': self.client.session['csrf_token']})
 
         election_id = re.match("(.*)/elections/(.*)/view", response['Location']).group(2)
 
