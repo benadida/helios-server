@@ -11,6 +11,7 @@ import datetime
 import string
 
 # utils from helios_auth, too
+from helios_auth.utils import *
 
 from django.conf import settings
 from django.core import mail as django_mail
