@@ -3,6 +3,7 @@ import json
 
 # a massive hack to see if we're testing, in which case we use different settings
 import sys
+
 TESTING = 'test' in sys.argv
 
 # go through environment variables and override them
@@ -11,6 +12,7 @@ def get_from_env(var, default):
         return os.environ[var]
     else:
         return default
+
 
 DEBUG = (get_from_env('DEBUG', '1') == '1')
 TEMPLATE_DEBUG = DEBUG
@@ -39,12 +41,13 @@ DATABASES = {
     }
 }
 
-SOUTH_DATABASE_ADAPTERS = {'default':'south.db.postgresql_psycopg2'}
+SOUTH_DATABASE_ADAPTERS = {'default': 'south.db.postgresql_psycopg2'}
 
 # override if we have an env variable
 if get_from_env('DATABASE_URL', None):
     import dj_database_url
-    DATABASES['default'] =  dj_database_url.config()
+
+    DATABASES['default'] = dj_database_url.config()
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
     DATABASES['default']['CONN_MAX_AGE'] = 600
 
@@ -84,9 +87,9 @@ SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
 
 # If debug is set to false and ALLOWED_HOSTS is not declared, django raises  "CommandError: You must set settings.ALLOWED_HOSTS if DEBUG is False."
 # If in production, you got a bad request (400) error
-#More info: https://docs.djangoproject.com/en/1.7/ref/settings/#allowed-hosts (same for 1.6)
+# More info: https://docs.djangoproject.com/en/1.7/ref/settings/#allowed-hosts (same for 1.6)
 
-ALLOWED_HOSTS = ['localhost'] # change to your allowed hosts
+ALLOWED_HOSTS = ['localhost']  # change to your allowed hosts
 
 # Secure Stuff
 if (get_from_env('SSL', '0') == '1'):
@@ -133,8 +136,8 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-#    'django.contrib.auth',
-#    'django.contrib.contenttypes',
+    #    'django.contrib.auth',
+    #    'django.contrib.contenttypes',
     'djangosecure',
     'django.contrib.sessions',
     #'django.contrib.sites',
@@ -181,7 +184,7 @@ SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", URL_HOST).rstrip("/")
 # which usually involve hooking in remote JavaScript, which could be
 # a security issue. Plus, if there's a loading issue, it blocks the whole
 # page. Not cool.
-SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", SECURE_URL_HOST).rstrip("/")
+SOCIALBUTTONS_URL_HOST = get_from_env("SOCIALBUTTONS_URL_HOST", SECURE_URL_HOST).rstrip("/")
 
 # election stuff
 SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Voting')
@@ -215,9 +218,9 @@ GOOGLE_CLIENT_ID = get_from_env('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = get_from_env('GOOGLE_CLIENT_SECRET', '')
 
 # facebook
-FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID','')
-FACEBOOK_API_KEY = get_from_env('FACEBOOK_API_KEY','')
-FACEBOOK_API_SECRET = get_from_env('FACEBOOK_API_SECRET','')
+FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID', '')
+FACEBOOK_API_KEY = get_from_env('FACEBOOK_API_KEY', '')
+FACEBOOK_API_SECRET = get_from_env('FACEBOOK_API_SECRET', '')
 
 # twitter
 TWITTER_API_KEY = ''
@@ -257,9 +260,10 @@ if get_from_env('EMAIL_USE_AWS', '0') == '1':
 
 # set up logging
 import logging
+
 logging.basicConfig(
-    level = logging.DEBUG,
-    format = '%(asctime)s %(levelname)s %(message)s'
+    level=logging.DEBUG,
+    format='%(asctime)s %(levelname)s %(message)s'
 )
 
 
@@ -268,6 +272,7 @@ logging.basicConfig(
 BROKER_URL = "django://"
 CELERY_RESULT_DBURI = DATABASES['default']
 import djcelery
+
 djcelery.setup_loader()
 
 

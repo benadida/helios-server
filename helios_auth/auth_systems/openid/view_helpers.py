@@ -9,18 +9,19 @@ PAPE_POLICIES = [
     'AUTH_PHISHING_RESISTANT',
     'AUTH_MULTI_FACTOR',
     'AUTH_MULTI_FACTOR_PHYSICAL',
-    ]
+]
 
 AX_REQUIRED_FIELDS = {
-    'firstname' : 'http://axschema.org/namePerson/first',
-    'lastname' : 'http://axschema.org/namePerson/last',
-    'fullname' : 'http://axschema.org/namePerson',
-    'email' : 'http://axschema.org/contact/email'
+    'firstname': 'http://axschema.org/namePerson/first',
+    'lastname': 'http://axschema.org/namePerson/last',
+    'fullname': 'http://axschema.org/namePerson',
+    'email': 'http://axschema.org/contact/email'
 }
 
 # List of (name, uri) for use in generating the request form.
 POLICY_PAIRS = [(p, getattr(pape, p))
                 for p in PAPE_POLICIES]
+
 
 def getOpenIDStore():
     """
@@ -29,11 +30,13 @@ def getOpenIDStore():
     """
     return util.getOpenIDStore('/tmp/djopenid_c_store', 'c_')
 
+
 def get_consumer(session):
     """
     Get a Consumer object to perform OpenID authentication.
     """
     return consumer.Consumer(session, getOpenIDStore())
+
 
 def start_openid(session, openid_url, trust_root, return_to):
     """
@@ -79,7 +82,7 @@ def start_openid(session, openid_url, trust_root, return_to):
         ax_request.add(ax.AttrInfo(v, required=True))
 
     auth_request.addExtension(ax_request)
-                
+
     # Compute the trust root and return URL values to build the
     # redirect information.
     # trust_root = util.getViewURL(request, startOpenID)
@@ -89,6 +92,7 @@ def start_openid(session, openid_url, trust_root, return_to):
     # URL or by generating a POST form.
     url = auth_request.redirectURL(trust_root, return_to)
     return url
+
 
 def finish_openid(session, request_args, return_to):
     """
@@ -129,16 +133,16 @@ def finish_openid(session, request_args, return_to):
         # Map different consumer status codes to template contexts.
         results = {
             consumer.CANCEL:
-            {'message': 'OpenID authentication cancelled.'},
+                {'message': 'OpenID authentication cancelled.'},
 
             consumer.FAILURE:
-            {'error': 'OpenID authentication failed.'},
+                {'error': 'OpenID authentication failed.'},
 
             consumer.SUCCESS:
-            {'url': response.getDisplayIdentifier(),
-             'sreg': sreg_response and sreg_response.items(),
-             'ax': ax_items}
-            }
+                {'url': response.getDisplayIdentifier(),
+                 'sreg': sreg_response and sreg_response.items(),
+                 'ax': ax_items}
+        }
 
         result = results[response.status]
 

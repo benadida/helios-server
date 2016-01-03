@@ -6,7 +6,7 @@
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-#     * Redistributions of source code must retain the above copyright
+# * Redistributions of source code must retain the above copyright
 #       notice, this list of conditions and the following disclaimer.
 #     * Redistributions in binary form must reproduce the above copyright
 #       notice, this list of conditions and the following disclaimer in the
@@ -40,6 +40,7 @@ Facebook tools for Google AppEngine's object-oriented "webapp" framework.
 # useful and familiar for most AppEngine development.
 FACEBOOK_CONFIG = yaml.load(file('facebook.yaml', 'r'))
 
+
 class FacebookRequestHandler(RequestHandler):
     """
     Base class for request handlers for Facebook apps, providing useful
@@ -53,7 +54,7 @@ class FacebookRequestHandler(RequestHandler):
         """
         if name in FACEBOOK_CONFIG:
             default = FACEBOOK_CONFIG[name]
-            
+
         return getattr(self, name, default)
 
     def initialize(self, request, response):
@@ -67,7 +68,7 @@ class FacebookRequestHandler(RequestHandler):
         secret_key = self._fbconfig_value('secret_key', None)
 
         self.facebook = Facebook(api_key, secret_key,
-            app_name=app_name)
+                                 app_name=app_name)
 
         require_app = self._fbconfig_value('require_app', False)
         require_login = self._fbconfig_value('require_login', False)
@@ -83,7 +84,7 @@ class FacebookRequestHandler(RequestHandler):
                 self.redirecting = True
                 return
         elif check_session:
-            self.facebook.check_session(request) # ignore response
+            self.facebook.check_session(request)  # ignore response
 
         # NOTE: require_app is deprecated according to modern Facebook login
         #       policies. Included for completeness, but unnecessary.
@@ -135,6 +136,7 @@ class FacebookRequestHandler(RequestHandler):
             memcache.delete(key)
             return self._messages
         return None
+
 
 class FacebookCanvasHandler(FacebookRequestHandler):
     """

@@ -26,36 +26,38 @@ calbtn = u'''<img src="%smedia/admin/img/admin/icon_calendar.gif" alt="calendar"
     });
 </script>'''
 
+
 class DateTimeWidget(forms.widgets.TextInput):
     class Media:
         css = {
             'all': (
-                    '/static/helios/jscal/css/jscal2.css',
-                    '/static/helios/jscal/css/border-radius.css',
-                    '/static/helios/jscal/css/win2k/win2k.css',
-                    )
+                '/static/helios/jscal/css/jscal2.css',
+                '/static/helios/jscal/css/border-radius.css',
+                '/static/helios/jscal/css/win2k/win2k.css',
+            )
         }
         js = (
-              '/static/helios/jscal/js/jscal2.js',
-              '/static/helios/jscal/js/lang/en.js',
+            '/static/helios/jscal/js/jscal2.js',
+            '/static/helios/jscal/js/lang/en.js',
         )
 
     dformat = '%Y-%m-%d %H:%M'
+
     def render(self, name, value, attrs=None):
         if value is None: value = ''
         final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
         if value != '':
             try:
                 final_attrs['value'] = \
-                                   force_unicode(value.strftime(self.dformat))
+                    force_unicode(value.strftime(self.dformat))
             except:
                 final_attrs['value'] = \
-                                   force_unicode(value)
+                    force_unicode(value)
         if not final_attrs.has_key('id'):
             final_attrs['id'] = u'%s_id' % (name)
         id = final_attrs['id']
 
-        jsdformat = self.dformat #.replace('%', '%%')
+        jsdformat = self.dformat  # .replace('%', '%%')
         cal = calbtn % (settings.MEDIA_URL, id, id, jsdformat, id)
         a = u'<input%s />%s%s' % (forms.util.flatatt(final_attrs), self.media, cal)
         return mark_safe(a)

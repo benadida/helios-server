@@ -4,9 +4,7 @@ from south.v2 import SchemaMigration
 
 
 class Migration(SchemaMigration):
-
     def forwards(self, orm):
-        
         # Adding model 'User'
         db.create_table('helios_auth_user', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -24,7 +22,6 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-        
         # Removing unique constraint on 'User', fields ['user_type', 'user_id']
         db.delete_unique('helios_auth_user', ['user_type', 'user_id'])
 

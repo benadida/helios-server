@@ -46,7 +46,7 @@ class JSONField(models.TextField):
 
         if self.json_type and parsed_value:
             parsed_value = self.json_type.fromJSONDict(parsed_value, **self.deserialization_params)
-                
+
         return parsed_value
 
     # we should never look up by JSON field anyways.

@@ -1,4 +1,3 @@
-
 """
 Utility code for the Django example consumer and server.
 """
@@ -51,22 +50,22 @@ def getOpenIDStore(filestore_path, table_prefix):
     tablenames = {
         'associations_table': table_prefix + 'openid_associations',
         'nonces_table': table_prefix + 'openid_nonces',
-        }
+    }
 
     types = {
         'postgresql': sqlstore.PostgreSQLStore,
         'postgresql_psycopg2': sqlstore.PostgreSQLStore,
         'mysql': sqlstore.MySQLStore,
         'sqlite3': sqlstore.SQLiteStore,
-        }
+    }
 
     try:
         s = types[db_engine](connection.connection,
-                                            **tablenames)
+                             **tablenames)
     except KeyError:
         raise ImproperlyConfigured, \
-              "Database engine %s not supported by OpenID library" % \
-              (db_engine,)
+            "Database engine %s not supported by OpenID library" % \
+            (db_engine,)
 
     try:
         s.createTables()
@@ -85,10 +84,12 @@ def getOpenIDStore(filestore_path, table_prefix):
 
     return s
 
+
 def getViewURL(req, view_name_or_obj, args=None, kwargs=None):
     relative_url = reverseURL(view_name_or_obj, args=args, kwargs=kwargs)
     full_path = req.META.get('SCRIPT_NAME', '') + relative_url
     return urljoin(getBaseURL(req), full_path)
+
 
 def getBaseURL(req):
     """
@@ -123,6 +124,7 @@ def getBaseURL(req):
 
     url = "%s://%s%s/" % (proto, name, port)
     return url
+
 
 def normalDict(request_data):
     """

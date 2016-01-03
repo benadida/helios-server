@@ -43,8 +43,8 @@ else:
             body = self.make_body(environ, self.template, html_quote, no_quote)
             return body
 
-class FacebookWSGIMiddleware(object):
 
+class FacebookWSGIMiddleware(object):
     """This is WSGI middleware for Facebook."""
 
     def __init__(self, app, config, facebook_class=Facebook):

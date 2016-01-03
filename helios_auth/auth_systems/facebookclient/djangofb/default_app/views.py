@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 # from django.views.generic.simple import direct_to_template
-#uncomment the following two lines and the one below
+# uncomment the following two lines and the one below
 #if you dont want to use a decorator instead of the middleware
 #from django.utils.decorators import decorator_from_middleware
 #from facebook.djangofb import FacebookMiddleware
@@ -32,6 +32,7 @@ def canvas(request):
     # the currently logged in user.
     #return direct_to_template(request, 'canvas.fbml', extra_context={'fbuser': user})
     return None
+
 
 @facebook.require_login()
 def ajax(request):

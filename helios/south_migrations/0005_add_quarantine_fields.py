@@ -4,21 +4,21 @@ from south.v2 import SchemaMigration
 
 
 class Migration(SchemaMigration):
-
     def forwards(self, orm):
-        
         # Adding field 'Election.complaint_period_ends_at'
-        db.add_column('helios_election', 'complaint_period_ends_at', self.gf('django.db.models.fields.DateTimeField')(default=None, null=True), keep_default=False)
+        db.add_column('helios_election', 'complaint_period_ends_at',
+                      self.gf('django.db.models.fields.DateTimeField')(default=None, null=True), keep_default=False)
 
         # Adding field 'CastVote.quarantined_p'
-        db.add_column('helios_castvote', 'quarantined_p', self.gf('django.db.models.fields.BooleanField')(default=False), keep_default=False)
+        db.add_column('helios_castvote', 'quarantined_p',
+                      self.gf('django.db.models.fields.BooleanField')(default=False), keep_default=False)
 
         # Adding field 'CastVote.released_from_quarantine_at'
-        db.add_column('helios_castvote', 'released_from_quarantine_at', self.gf('django.db.models.fields.DateTimeField')(null=True), keep_default=False)
+        db.add_column('helios_castvote', 'released_from_quarantine_at',
+                      self.gf('django.db.models.fields.DateTimeField')(null=True), keep_default=False)
 
 
     def backwards(self, orm):
-        
         # Deleting field 'Election.complaint_period_ends_at'
         db.delete_column('helios_election', 'complaint_period_ends_at')
 
@@ -58,7 +58,8 @@ class Migration(SchemaMigration):
             'verified_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'vote': ('helios_auth.jsonfield.JSONField', [], {}),
             'vote_hash': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'vote_tinyhash': ('django.db.models.fields.CharField', [], {'max_length': '50', 'unique': 'True', 'null': 'True'}),
+            'vote_tinyhash': (
+            'django.db.models.fields.CharField', [], {'max_length': '50', 'unique': 'True', 'null': 'True'}),
             'voter': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios.Voter']"})
         },
         'helios.election': {
@@ -66,9 +67,11 @@ class Migration(SchemaMigration):
             'admin': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios_auth.User']"}),
             'archived_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'cast_url': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
-            'complaint_period_ends_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
+            'complaint_period_ends_at': (
+            'django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'datatype': ('django.db.models.fields.CharField', [], {'default': "'legacy/Election'", 'max_length': '250'}),
+            'datatype': (
+            'django.db.models.fields.CharField', [], {'default': "'legacy/Election'", 'max_length': '250'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'election_type': ('django.db.models.fields.CharField', [], {'default': "'election'", 'max_length': '250'}),
             'eligibility': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
@@ -83,7 +86,8 @@ class Migration(SchemaMigration):
             'private_p': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'public_key': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'questions': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
-            'registration_starts_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
+            'registration_starts_at': (
+            'django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'result': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'result_proof': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'short_name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
@@ -129,7 +133,8 @@ class Migration(SchemaMigration):
             'cast_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'election': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios.Election']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios_auth.User']", 'null': 'True'}),
+            'user': (
+            'django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios_auth.User']", 'null': 'True'}),
             'uuid': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
             'vote': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'vote_hash': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True'}),

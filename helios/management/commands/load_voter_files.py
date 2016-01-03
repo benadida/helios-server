@@ -25,42 +25,45 @@ def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
         # decode UTF-8 back to Unicode, cell by cell:
         yield [unicode(cell, 'utf-8') for cell in row]
 
+
 def utf_8_encoder(unicode_csv_data):
     for line in unicode_csv_data:
         yield line.encode('utf-8')
-  
+
+
 def process_csv_file(election, f):
     reader = unicode_csv_reader(f)
-    
+
     num_voters = 0
     for voter in reader:
-      # bad line
-      if len(voter) < 1:
-        continue
-    
-      num_voters += 1
-      voter_id = voter[0]
-      name = voter_id
-      email = voter_id
-    
-      if len(voter) > 1:
-        email = voter[1]
-    
-      if len(voter) > 2:
-        name = voter[2]
-    
-      # create the user
-      user = User.update_or_create(user_type='password', user_id=voter_id, info = {'password': helios_utils.random_string(10), 'email': email, 'name': name})
-      user.save()
-    
-      # does voter for this user already exist
-      voter = Voter.get_by_election_and_user(election, user)
-    
-      # create the voter
-      if not voter:
-        voter_uuid = str(uuid.uuid1())
-        voter = Voter(uuid= voter_uuid, voter_type = 'password', voter_id = voter_id, name = name, election = election)
-        voter.save()
+        # bad line
+        if len(voter) < 1:
+            continue
+
+        num_voters += 1
+        voter_id = voter[0]
+        name = voter_id
+        email = voter_id
+
+        if len(voter) > 1:
+            email = voter[1]
+
+        if len(voter) > 2:
+            name = voter[2]
+
+        # create the user
+        user = User.update_or_create(user_type='password', user_id=voter_id,
+                                     info={'password': helios_utils.random_string(10), 'email': email, 'name': name})
+        user.save()
+
+        # does voter for this user already exist
+        voter = Voter.get_by_election_and_user(election, user)
+
+        # create the voter
+        if not voter:
+            voter_uuid = str(uuid.uuid1())
+            voter = Voter(uuid=voter_uuid, voter_type='password', voter_id=voter_id, name=name, election=election)
+            voter.save()
 
     return num_voters
 
@@ -68,7 +71,7 @@ def process_csv_file(election, f):
 class Command(BaseCommand):
     args = ''
     help = 'load up voters from unprocessed voter files'
-    
+
     def handle(self, *args, **options):
         # load up the voter files in order of last uploaded
         files_to_process = VoterFile.objects.filter(processing_started_at=None).order_by('uploaded_at')

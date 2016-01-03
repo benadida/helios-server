@@ -7,7 +7,7 @@
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
-#     * Redistributions of source code must retain the above copyright
+# * Redistributions of source code must retain the above copyright
 #       notice, this list of conditions and the following disclaimer.
 #     * Redistributions in binary form must reproduce the above copyright
 #       notice, this list of conditions and the following disclaimer in the
@@ -109,6 +109,7 @@ VERSION = '0.1'
 FACEBOOK_URL = 'http://api.facebook.com/restserver.php'
 FACEBOOK_SECURE_URL = 'https://api.facebook.com/restserver.php'
 
+
 class json(object): pass
 
 # simple IDL for the Facebook API
@@ -117,7 +118,7 @@ METHODS = {
         'getPublicInfo': [
             ('application_id', int, ['optional']),
             ('application_api_key', str, ['optional']),
-            ('application_canvas_name', str,['optional']),
+            ('application_canvas_name', str, ['optional']),
         ],
     },
 
@@ -478,12 +479,12 @@ METHODS = {
     },
 
     # SMS Methods
-    'sms' : {
-        'canSend' : [
+    'sms': {
+        'canSend': [
             ('uid', int, []),
         ],
 
-        'send' : [
+        'send': [
             ('uid', int, []),
             ('message', str, []),
             ('session_id', int, []),
@@ -521,8 +522,8 @@ METHODS = {
     },
 
     #stream methods (beta)
-    'stream' : {
-        'addComment' : [
+    'stream': {
+        'addComment': [
             ('post_id', int, []),
             ('comment', str, []),
             ('uid', int, ['optional']),
@@ -533,7 +534,7 @@ METHODS = {
             ('post_id', int, ['optional']),
         ],
 
-        'get' : [
+        'get': [
             ('viewer_id', int, ['optional']),
             ('source_ids', list, ['optional']),
             ('start_time', int, ['optional']),
@@ -542,15 +543,15 @@ METHODS = {
             ('filter_key', str, ['optional']),
         ],
 
-        'getComments' : [
+        'getComments': [
             ('post_id', int, []),
         ],
 
-        'getFilters' : [
+        'getFilters': [
             ('uid', int, ['optional']),
         ],
 
-        'publish' : [
+        'publish': [
             ('message', str, ['optional']),
             ('attachment', json, ['optional']),
             ('action_links', json, ['optional']),
@@ -558,22 +559,23 @@ METHODS = {
             ('uid', str, ['optional']),
         ],
 
-        'remove' : [
+        'remove': [
             ('post_id', int, []),
             ('uid', int, ['optional']),
         ],
 
-        'removeComment' : [
+        'removeComment': [
             ('comment_id', int, []),
             ('uid', int, ['optional']),
         ],
 
-        'removeLike' : [
+        'removeLike': [
             ('uid', int, ['optional']),
             ('post_id', int, ['optional']),
         ],
     }
 }
+
 
 class Proxy(object):
     """Represents a "namespace" of Facebook API calls."""
@@ -615,7 +617,8 @@ def __generate_proxies():
 
                 if param_type == json:
                     # we only jsonify the argument if it's a list or a dict, for compatibility
-                    body.append('if isinstance(%s, list) or isinstance(%s, dict): %s = simplejson.dumps(%s)' % ((param_name,) * 4))
+                    body.append('if isinstance(%s, list) or isinstance(%s, dict): %s = simplejson.dumps(%s)' % (
+                    (param_name,) * 4))
 
                 if 'optional' in param_options:
                     param = '%s=None' % param_name
@@ -626,13 +629,15 @@ def __generate_proxies():
                 params.append(param)
 
             # simple docstring to refer them to Facebook API docs
-            body.insert(0, '"""Facebook API call. See http://developers.facebook.com/documentation.php?v=1.0&method=%s.%s"""' % (namespace, method))
+            body.insert(0,
+                        '"""Facebook API call. See http://developers.facebook.com/documentation.php?v=1.0&method=%s.%s"""' % (
+                        namespace, method))
 
             body.insert(0, 'def %s(%s):' % (method, ', '.join(params)))
 
             body.append('return self(\'%s\', args)' % method)
 
-            exec('\n    '.join(body))
+            exec ('\n    '.join(body))
 
             methods[method] = eval(method)
 
@@ -766,7 +771,8 @@ class PhotosProxy(PhotosProxy):
             response = h.getresponse()
 
             if response.status != 200:
-                raise Exception('Error uploading photo: Facebook returned HTTP %s (%s)' % (response.status, response.reason))
+                raise Exception(
+                    'Error uploading photo: Facebook returned HTTP %s (%s)' % (response.status, response.reason))
             response = response.read()
         except:
             # sending the photo failed, perhaps we are using GAE
@@ -774,7 +780,9 @@ class PhotosProxy(PhotosProxy):
                 from google.appengine.api import urlfetch
 
                 try:
-                    response = urlread(url=self._client.facebook_url,data=body,headers={'POST':urlinfo[2],'Content-Type':content_type,'MIME-Version':'1.0'})
+                    response = urlread(url=self._client.facebook_url, data=body,
+                                       headers={'POST': urlinfo[2], 'Content-Type': content_type,
+                                                'MIME-Version': '1.0'})
                 except urllib2.URLError:
                     raise Exception('Error uploading photo: Facebook returned %s' % (response))
             except ImportError:
@@ -898,7 +906,8 @@ class Facebook(object):
 
     """
 
-    def __init__(self, api_key, secret_key, auth_token=None, app_name=None, callback_path=None, internal=None, proxy=None, facebook_url=None, facebook_secure_url=None):
+    def __init__(self, api_key, secret_key, auth_token=None, app_name=None, callback_path=None, internal=None,
+                 proxy=None, facebook_url=None, facebook_secure_url=None):
         """
         Initializes a new Facebook object which provides wrappers for the Facebook API.
 
@@ -953,7 +962,9 @@ class Facebook(object):
         """Hashes arguments by joining key=value pairs, appending a secret, and then taking the MD5 hex digest."""
         # @author: houyr
         # fix for UnicodeEncodeError
-        hasher = hashlib.md5(''.join(['%s=%s' % (isinstance(x, unicode) and x.encode("utf-8") or x, isinstance(args[x], unicode) and args[x].encode("utf-8") or args[x]) for x in sorted(args.keys())]))
+        hasher = hashlib.md5(''.join(['%s=%s' % (isinstance(x, unicode) and x.encode("utf-8") or x,
+                                                 isinstance(args[x], unicode) and args[x].encode("utf-8") or args[x])
+                                      for x in sorted(args.keys())]))
         if secret:
             hasher.update(secret)
         elif self.secret:
@@ -966,14 +977,14 @@ class Facebook(object):
     def _parse_response_item(self, node):
         """Parses an XML response node from Facebook."""
         if node.nodeType == node.DOCUMENT_NODE and \
-            node.childNodes[0].hasAttributes() and \
-            node.childNodes[0].hasAttribute('list') and \
-            node.childNodes[0].getAttribute('list') == "true":
+                node.childNodes[0].hasAttributes() and \
+                node.childNodes[0].hasAttribute('list') and \
+                        node.childNodes[0].getAttribute('list') == "true":
             return {node.childNodes[0].nodeName: self._parse_response_list(node.childNodes[0])}
         elif node.nodeType == node.ELEMENT_NODE and \
-            node.hasAttributes() and \
-            node.hasAttribute('list') and \
-            node.getAttribute('list')=="true":
+                node.hasAttributes() and \
+                node.hasAttribute('list') and \
+                        node.getAttribute('list') == "true":
             return self._parse_response_list(node)
         elif len(filter(lambda x: x.nodeType == x.ELEMENT_NODE, node.childNodes)) > 0:
             return self._parse_response_dict(node)
@@ -1088,7 +1099,7 @@ class Facebook(object):
         if isinstance(params, dict):
             params = params.items()
         return urllib.urlencode([(k, isinstance(v, unicode) and v.encode('utf-8') or v)
-                          for k, v in params])
+                                 for k, v in params])
 
 
     def __call__(self, method=None, args=None, secure=False):
@@ -1197,6 +1208,7 @@ class Facebook(object):
     def login(self, popup=False):
         """Open a web browser telling the user to login to Facebook."""
         import webbrowser
+
         webbrowser.open(self.get_login_url(popup=popup))
 
 
@@ -1222,6 +1234,7 @@ class Facebook(object):
     def request_extended_permission(self, ext_perm, popup=False):
         """Open a web browser telling the user to grant an extended permission."""
         import webbrowser
+
         webbrowser.open(self.get_ext_perm_url(ext_perm, popup=popup))
 
 
@@ -1238,7 +1251,6 @@ class Facebook(object):
 
         if self.session_key and (self.uid or self.page_id):
             return True
-
 
         if request.method == 'POST':
             params = self.validate_signature(request.POST)
@@ -1269,7 +1281,7 @@ class Facebook(object):
                 self.is_session_from_cookie = True
             else:
                 # if not, then we might be on GoogleAppEngine, check their request object cookies
-                if hasattr(request,'cookies'):
+                if hasattr(request, 'cookies'):
                     params = self.validate_cookie_signature(request.cookies)
                     self.is_session_from_cookie = True
 
@@ -1367,16 +1379,16 @@ class Facebook(object):
             return None
 
         prefix = api_key + "_"
-       
-        params = {} 
+
+        params = {}
         vals = ''
         for k in sorted(cookies):
             if k.startswith(prefix):
-                key = k.replace(prefix,"")
+                key = k.replace(prefix, "")
                 value = cookies[k]
                 params[key] = value
                 vals += '%s=%s' % (key, value)
-                
+
         hasher = hashlib.md5(vals)
 
         hasher.update(self.secret_key)
@@ -1386,8 +1398,6 @@ class Facebook(object):
             return params
         else:
             return False
-
-
 
 
 if __name__ == '__main__':
