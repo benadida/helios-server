@@ -20,7 +20,7 @@ urlpatterns = patterns('',
                        (r'^why$', perms_why),
                        (r'^after_intervention$', after_intervention),
 
-                       ## should make the following modular
+                       # should make the following modular
 
                        # password auth
                        (r'^password/login', password_login_view),

@@ -13,9 +13,10 @@ from django.core.management.base import BaseCommand
 from helios import utils as helios_utils
 from helios.models import *
 
-##
-## UTF8 craziness for CSV
-##
+#
+# UTF8 craziness for CSV
+#
+
 
 def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
     # csv.py doesn't do Unicode; encode temporarily as UTF-8:
@@ -87,5 +88,3 @@ class Command(BaseCommand):
             file_to_process.processing_finished_at = datetime.datetime.utcnow()
             file_to_process.num_voters = num_voters
             file_to_process.save()
-            
-            

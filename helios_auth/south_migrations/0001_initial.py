@@ -20,14 +20,12 @@ class Migration(SchemaMigration):
         # Adding unique constraint on 'User', fields ['user_type', 'user_id']
         db.create_unique('helios_auth_user', ['user_type', 'user_id'])
 
-
     def backwards(self, orm):
         # Removing unique constraint on 'User', fields ['user_type', 'user_id']
         db.delete_unique('helios_auth_user', ['user_type', 'user_id'])
 
         # Deleting model 'User'
         db.delete_table('helios_auth_user')
-
 
     models = {
         'helios_auth.user': {

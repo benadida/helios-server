@@ -107,9 +107,9 @@ def send_notification(user_id, user_info, message):
                                           args={'screen_name': user_id, 'text': message}, method='POST')
 
 
-##
-## views
-##
+#
+# views
+#
 
 def follow_view(request):
     if request.method == "GET":

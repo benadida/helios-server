@@ -29,4 +29,3 @@ class Timestamp(LDObject):
             return str(self.wrapped_obj)
         else:
             return None
-    

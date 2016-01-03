@@ -4,11 +4,13 @@ Unit Tests for Auth Systems
 
 import unittest
 
+from django.core import mail
+from django.core.urlresolvers import reverse
 from django.db import IntegrityError, transaction
 from django.test import TestCase
-from django.core import mail
 
 import models
+import views
 from auth_systems import AUTH_SYSTEMS
 
 
@@ -43,7 +45,6 @@ class UserModelTests(unittest.TestCase):
                 self.assertEquals(u.id, u2.id)
                 self.assertEquals(u2.info['name'], new_name)
 
-
     def test_can_create_election(self):
         """
         check that auth systems have the can_create_election call and that it's true for the common ones
@@ -52,7 +53,6 @@ class UserModelTests(unittest.TestCase):
             assert (hasattr(auth_system_module, 'can_create_election'))
             if auth_system != 'clever':
                 assert (auth_system_module.can_create_election('foobar', {}))
-
 
     def test_status_update(self):
         """
@@ -90,11 +90,9 @@ class UserModelTests(unittest.TestCase):
             self.assertEquals(u, u2)
 
 
-import views
-from django.core.urlresolvers import reverse
-
 # FIXME: login CSRF should make these tests more complicated
 # and should be tested for
+
 
 class UserBlackboxTests(TestCase):
     def setUp(self):
@@ -110,7 +108,8 @@ class UserBlackboxTests(TestCase):
         # login_page_response = self.client.get(reverse(views.start, kwargs={'system_name':'password'}), follow=True)
 
         # log in and follow all redirects
-        # response = self.client.post(reverse(password_views.password_login_view), {'username' : 'foobar_user', 'password': 'foobaz'}, follow=True)
+        # response = self.client.post(reverse(password_views.password_login_view),
+        #                             {'username': 'foobar_user', 'password': 'foobaz'}, follow=True)
 
         # self.assertContains(response, "logged in as")
         # self.assertContains(response, "Foobar User")

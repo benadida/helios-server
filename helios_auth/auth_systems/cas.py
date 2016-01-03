@@ -95,7 +95,9 @@ def get_saml_info(ticket):
 
     # ugly path down the tree of attributes
     attributes = response.findall(
-        '{http://schemas.xmlsoap.org/soap/envelope/}Body/{urn:oasis:names:tc:SAML:1.0:protocol}Response/{urn:oasis:names:tc:SAML:1.0:assertion}Assertion/{urn:oasis:names:tc:SAML:1.0:assertion}AttributeStatement/{urn:oasis:names:tc:SAML:1.0:assertion}Attribute')
+        '{http://schemas.xmlsoap.org/soap/envelope/}Body/{urn:oasis:names:tc:SAML:1.0:protocol}Response/'
+        '{urn:oasis:names:tc:SAML:1.0:assertion}Assertion/{urn:oasis:names:tc:SAML:1.0:assertion}AttributeStatement/'
+        '{urn:oasis:names:tc:SAML:1.0:assertion}Attribute')
 
     values = {}
     for attribute in attributes:
@@ -164,15 +166,15 @@ def get_user_info_special(ticket):
     r = urllib.urlopen(val_url).readlines()  # returns 2 lines
 
     # success
-    if len(r) == 2 and re.match("yes", r[0]) != None:
+    if len(r) == 2 and re.match("yes", r[0]) is not None:
         netid = r[1].strip()
 
         category = get_user_category(netid)
 
         # try:
-        #  user_info = get_user_info(netid)
-        #except:
-        #  user_info = None
+        #     user_info = get_user_info(netid)
+        # except:
+        #     user_info = None
 
         # for now, no need to wait for this request to finish
         user_info = None

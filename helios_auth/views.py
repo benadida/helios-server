@@ -29,17 +29,20 @@ def index(request):
     # single auth system?
     if len(helios_auth.ENABLED_AUTH_SYSTEMS) == 1 and not user:
         return HttpResponseRedirect(
-            reverse(start, args=[helios_auth.ENABLED_AUTH_SYSTEMS[0]]) + '?return_url=' + request.GET.get('return_url',
-                                                                                                          ''))
+                reverse(start, args=[helios_auth.ENABLED_AUTH_SYSTEMS[0]]) + '?return_url=' + request.GET.get(
+                        'return_url',
+                        ''))
 
     # if helios_auth.DEFAULT_AUTH_SYSTEM and not user:
-    #  return HttpResponseRedirect(reverse(start, args=[helios_auth.DEFAULT_AUTH_SYSTEM])+ '?return_url=' + request.GET.get('return_url', ''))
+    #     return HttpResponseRedirect(
+    #             reverse(start, args=[helios_auth.DEFAULT_AUTH_SYSTEM]) +
+    #             '?return_url=' + request.GET.get('return_url', ''))
 
     default_auth_system_obj = None
     if helios_auth.DEFAULT_AUTH_SYSTEM:
         default_auth_system_obj = AUTH_SYSTEMS[helios_auth.DEFAULT_AUTH_SYSTEM]
 
-    #form = password.LoginForm()
+    # form = password.LoginForm()
 
     return render_template(request, 'index', {'return_url': request.GET.get('return_url', '/'),
                                               'enabled_auth_systems': helios_auth.ENABLED_AUTH_SYSTEMS,
@@ -56,9 +59,9 @@ def login_box_raw(request, return_url='/', auth_systems=None):
         default_auth_system_obj = AUTH_SYSTEMS[helios_auth.DEFAULT_AUTH_SYSTEM]
 
     # make sure that auth_systems includes only available and enabled auth systems
-    if auth_systems != None:
+    if auth_systems is not None:
         enabled_auth_systems = set(auth_systems).intersection(set(helios_auth.ENABLED_AUTH_SYSTEMS)).intersection(
-            set(AUTH_SYSTEMS.keys()))
+                set(AUTH_SYSTEMS.keys()))
     else:
         enabled_auth_systems = set(helios_auth.ENABLED_AUTH_SYSTEMS).intersection(set(AUTH_SYSTEMS.keys()))
 
@@ -200,7 +203,7 @@ def after(request):
         request.session['user'] = user
     else:
         return HttpResponseRedirect(
-            "%s?%s" % (reverse(perms_why), urllib.urlencode({'system_name': request.session['auth_system_name']})))
+                "%s?%s" % (reverse(perms_why), urllib.urlencode({'system_name': request.session['auth_system_name']})))
 
     # does the auth system want to present an additional view?
     # this is, for example, to prompt the user to follow @heliosvoting
@@ -220,4 +223,3 @@ def after_intervention(request):
         return_url = request.session['auth_return_url']
         del request.session['auth_return_url']
     return HttpResponseRedirect("%s%s" % (settings.URL_HOST, return_url))
-

@@ -94,17 +94,17 @@ class OAuthToken(object):
 
 # OAuthRequest represents the request and can be serialized
 class OAuthRequest(object):
-    '''
+    """
     OAuth parameters:
-        - oauth_consumer_key 
+        - oauth_consumer_key
         - oauth_token
         - oauth_signature_method
-        - oauth_signature 
-        - oauth_timestamp 
+        - oauth_signature
+        - oauth_timestamp
         - oauth_nonce
         - oauth_version
         ... any additional parameters, as defined by the Service Provider.
-    '''
+    """
     parameters = None  # oauth parameters
     http_method = HTTP_METHOD
     http_url = None

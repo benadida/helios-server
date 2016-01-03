@@ -35,7 +35,7 @@ class LDObjectField(models.TextField):
         if not isinstance(value, basestring):
             return value
 
-        if value == None:
+        if value is None:
             return None
 
         # in some cases, we're loading an existing array or dict,
@@ -48,7 +48,7 @@ class LDObjectField(models.TextField):
         else:
             parsed_value = value
 
-        if parsed_value != None:
+        if parsed_value is not None:
             "we give the wrapped object back because we're not dealing with serialization types"
             return_val = LDObject.fromDict(parsed_value, type_hint=self.type_hint).wrapped_obj
             return return_val
@@ -60,7 +60,7 @@ class LDObjectField(models.TextField):
         if isinstance(value, basestring):
             return value
 
-        if value == None:
+        if value is None:
             return None
 
         # instantiate the proper LDObject to dump it appropriately

@@ -17,7 +17,6 @@ class Migration(SchemaMigration):
         db.add_column('helios_castvote', 'released_from_quarantine_at',
                       self.gf('django.db.models.fields.DateTimeField')(null=True), keep_default=False)
 
-
     def backwards(self, orm):
         # Deleting field 'Election.complaint_period_ends_at'
         db.delete_column('helios_election', 'complaint_period_ends_at')
@@ -27,7 +26,6 @@ class Migration(SchemaMigration):
 
         # Deleting field 'CastVote.released_from_quarantine_at'
         db.delete_column('helios_castvote', 'released_from_quarantine_at')
-
 
     models = {
         'helios_auth.user': {

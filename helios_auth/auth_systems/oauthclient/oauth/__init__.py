@@ -10,6 +10,7 @@ VERSION = '1.0'  # Hi Blaine!
 HTTP_METHOD = 'GET'
 SIGNATURE_METHOD = 'PLAINTEXT'
 
+
 # Generic exception class
 class OAuthError(RuntimeError):
     def __init__(self, message='OAuth error occured.'):
@@ -368,7 +369,7 @@ class OAuthServer(object):
         except:
             signature_method_names = ', '.join(self.signature_methods.keys())
             raise OAuthError('Signature method %s not supported try one of the following: %s' % (
-            signature_method, signature_method_names))
+                signature_method, signature_method_names))
 
         return signature_method
 
@@ -412,7 +413,7 @@ class OAuthServer(object):
         lapsed = now - timestamp
         if lapsed > self.timestamp_threshold:
             raise OAuthError('Expired timestamp: given %d and now %s has a greater difference than threshold %d' % (
-            timestamp, now, self.timestamp_threshold))
+                timestamp, now, self.timestamp_threshold))
 
     def _check_nonce(self, consumer, token, nonce):
         # verify that the nonce is uniqueish

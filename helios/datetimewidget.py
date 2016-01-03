@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # utils/widgets.py
 
-'''
+"""
 DateTimeWidget using JSCal2 from http://www.dynarch.com/projects/calendar/
 
 django snippets 1629
-'''
+"""
 
 import datetime
 import time
@@ -54,7 +54,7 @@ class DateTimeWidget(forms.widgets.TextInput):
                 final_attrs['value'] = \
                     force_unicode(value)
         if not final_attrs.has_key('id'):
-            final_attrs['id'] = u'%s_id' % (name)
+            final_attrs['id'] = u'%s_id' % name
         id = final_attrs['id']
 
         jsdformat = self.dformat  # .replace('%', '%%')

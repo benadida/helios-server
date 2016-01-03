@@ -33,4 +33,3 @@ class Command(BaseCommand):
             t.decryption_factors = factors
             t.decryption_proofs = proof
             t.save()
-            

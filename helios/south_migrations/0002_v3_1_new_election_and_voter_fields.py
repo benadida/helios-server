@@ -49,7 +49,6 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.CharField')(max_length=50, unique=True, null=True),
                       keep_default=False)
 
-
     def backwards(self, orm):
         # Deleting field 'Voter.user'
         db.delete_column('helios_voter', 'user_id')
@@ -80,7 +79,6 @@ class Migration(SchemaMigration):
 
         # Deleting field 'CastVote.vote_tinyhash'
         db.delete_column('helios_castvote', 'vote_tinyhash')
-
 
     models = {
         'helios_auth.user': {

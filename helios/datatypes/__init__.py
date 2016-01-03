@@ -29,11 +29,14 @@ And when data comes in:
 from helios import utils
 from helios.crypto import utils as cryptoutils
 
-##
-## utility function
-##
+
+#
+# utility function
+#
+
+
 def recursiveToDict(obj):
-    if obj == None:
+    if obj is None:
         return None
 
     if type(obj) == list:
@@ -132,7 +135,7 @@ class LDObject(object):
             raise Exception("no datatype found")
 
         # nulls
-        if obj == None:
+        if obj is None:
             return None
 
         # the class
@@ -174,7 +177,7 @@ class LDObject(object):
                 self.structured_fields[f] = sub_ld_object
 
                 # set the field on the wrapped object too
-                if sub_ld_object != None:
+                if sub_ld_object is not None:
                     self._setattr_wrapped(f, sub_ld_object.wrapped_obj)
                 else:
                     self._setattr_wrapped(f, None)
@@ -193,7 +196,7 @@ class LDObject(object):
         fields = self.FIELDS
 
         if not self.structured_fields:
-            if self.wrapped_obj.alias != None:
+            if self.wrapped_obj.alias is not None:
                 fields = self.ALIASED_VOTER_FIELDS
 
         for f in (alternate_fields or fields):
@@ -217,7 +220,7 @@ class LDObject(object):
     @classmethod
     def fromDict(cls, d, type_hint=None):
         # null objects
-        if d == None:
+        if d is None:
             return None
 
         # the LD type is either in d or in type_hint
@@ -251,11 +254,11 @@ class LDObject(object):
         """
         process some fields on the way into the object
         """
-        if field_value == None:
+        if field_value is None:
             return None
 
         val = self._process_value_in(field_name, field_value)
-        if val != None:
+        if val is not None:
             return val
         else:
             return field_value
@@ -267,11 +270,11 @@ class LDObject(object):
         """
         process some fields on the way out of the object
         """
-        if field_value == None:
+        if field_value is None:
             return None
 
         val = self._process_value_out(field_name, field_value)
-        if val != None:
+        if val is not None:
             return val
         else:
             return field_value
@@ -283,7 +286,7 @@ class LDObject(object):
         if not hasattr(self, 'uuid'):
             return super(LDObject, self) == other
 
-        return other != None and self.uuid == other.uuid
+        return other is not None and self.uuid == other.uuid
 
 
 class BaseArrayOfObjects(LDObject):
@@ -338,4 +341,3 @@ class ListObject(object):
 
     def toDict(self, complete=False):
         return self.wrapped_obj
-

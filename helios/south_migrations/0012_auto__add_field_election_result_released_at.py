@@ -10,11 +10,9 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.DateTimeField')(default=None, null=True),
                       keep_default=False)
 
-
     def backwards(self, orm):
         # Deleting field 'Election.result_released_at'
         db.delete_column('helios_election', 'result_released_at')
-
 
     models = {
         'helios.auditedballot': {

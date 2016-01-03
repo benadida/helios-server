@@ -9,7 +9,7 @@ import helios.signals
 
 
 def vote_cast_send_message(user, voter, election, cast_vote, **kwargs):
-    ## FIXME: this doesn't work for voters that are not also users
+    # FIXME: this doesn't work for voters that are not also users
     # prepare the message
     subject = "%s - vote cast" % election.name
 

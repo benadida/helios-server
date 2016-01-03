@@ -10,7 +10,6 @@ from django.shortcuts import render_to_response
 
 import utils
 
-
 # nicely update the wrapper function
 from functools import update_wrapper
 
@@ -20,18 +19,20 @@ import helios
 
 from django.conf import settings
 
-##
-## BASICS
-##
+#
+# BASICS
+#
 
 SUCCESS = HttpResponse("SUCCESS")
 
 # FIXME: error code
 FAILURE = HttpResponse("FAILURE")
 
-##
-## template abstraction
-##
+
+#
+# template abstraction
+#
+
 def prepare_vars(request, vars):
     vars_with_user = vars.copy()
     vars_with_user['user'] = get_user(request)
@@ -96,4 +97,3 @@ def return_json(func):
             raise e
 
     return update_wrapper(convert_to_json, func)
-    

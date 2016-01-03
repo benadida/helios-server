@@ -45,11 +45,9 @@ class Migration(DataMigration):
             cv.vote_tinyhash = vote_tinyhash
             cv.save()
 
-
     def backwards(self, orm):
         "Write your backwards methods here."
         raise Exception("can't revert to system-wide user passwords, rather than election specific")
-
 
     models = {
         'helios_auth.user': {

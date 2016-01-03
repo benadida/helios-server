@@ -57,7 +57,6 @@ class RandomPool:
     randomize([N]) : get N bytes of randomness from external source
     """
 
-
     def __init__(self, numbytes=160, cipher=None, hash=None):
         if hash is None:
             from hashlib import sha1 as hash
@@ -117,10 +116,10 @@ class RandomPool:
             # Windows CryptGenRandom provides random data.
             data = winrandom.new().get_bytes(nbytes)
         # GAE fix, benadida
-        #elif os.path.exists(devname):
-        #    # Many OSes support a /dev/urandom device
-        #    try:
-        #        f=open(devname)
+        # elif os.path.exists(devname):
+        # # Many OSes support a /dev/urandom device
+        # try:
+        # f=open(devname)
         #        data=f.read(nbytes)
         #        f.close()
         #    except IOError, (num, msg):
@@ -173,7 +172,6 @@ class RandomPool:
         # Restore the old value of the entropy.
         self.entropy = entropy
 
-
     def get_bytes(self, N):
         """get_bytes(N:int) : string
         Return N bytes of random data.
@@ -197,7 +195,6 @@ class RandomPool:
         self._updateEntropyEstimate(- 8 * N)
         return s[:N]
 
-
     def add_event(self, s=''):
         """add_event(s:string)
         Add an event to the random pool.  The current time is stored
@@ -219,7 +216,8 @@ class RandomPool:
             bits = 0
             while delta:
                 delta, bits = delta >> 1, bits + 1
-            if bits > 8: bits = 8
+            if bits > 8:
+                bits = 8
 
         self._event1, self._event2 = event, self._event1
 
@@ -242,9 +240,8 @@ class RandomPool:
 
         # Reduce delta to a maximum of 8 bits so we don't add too much
         # entropy as a result of this call.
-        delta = delta % 0xff
+        delta %= 0xff
         return int(delta)
-
 
     def _measureTickSize(self):
         # _measureTickSize() tries to estimate a rough average of the
@@ -257,7 +254,7 @@ class RandomPool:
 
         # Compute 100 differences
         t = time.time()
-        h.update(`t`)
+        h.update(repr(t))
         i = 0
         j = 0
         while i < 100:
@@ -273,7 +270,7 @@ class RandomPool:
         # Take the median of the array of intervals
         interval.sort()
         self._ticksize = interval[len(interval) / 2]
-        h.update(`(interval, self._ticksize)`)
+        h.update(repr((interval, self._ticksize)))
         # mix in the measurement times and wash the random pool
         self.stir(h.digest())
 
@@ -281,7 +278,7 @@ class RandomPool:
         "XOR the contents of the string S into the random pool"
         i, pool = self._addPos, self._randpool
         for j in range(0, len(s)):
-            pool[i] = pool[i] ^ ord(s[j])
+            pool[i] ^= ord(s[j])
             i = (i + 1) % self.bytes
         self._addPos = i
 
@@ -407,7 +404,7 @@ class KeyboardRandomPool(PersistentRandomPool):
             while e < bits:
                 temp = str(bits - e).rjust(6)
                 os.write(1, temp)
-                s = s + kb.getch()
+                s += kb.getch()
                 e += self.add_event(s)
                 os.write(1, 6 * chr(8))
             self.add_event(s + hash.new(s).digest())
@@ -433,8 +430,8 @@ if __name__ == '__main__':
     pool.randomize(128)
     pool.save()
     saved = open(fname, 'rb').read()
-    print 'saved', `saved`
-    print 'pool ', `pool._randpool.tostring()`
+    print 'saved', repr(saved)
+    print 'pool ', repr(pool._randpool.tostring())
     newpool = PersistentRandomPool(fname)
     print 'persistent random pool entropy', pool.entropy, 'bits'
     os.remove(fname)

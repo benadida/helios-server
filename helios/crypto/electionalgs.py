@@ -25,7 +25,7 @@ class HeliosObject(object):
         self.set_from_args(**kwargs)
 
         # generate uuid if need be
-        if 'uuid' in self.FIELDS and (not hasattr(self, 'uuid') or self.uuid == None):
+        if 'uuid' in self.FIELDS and (not hasattr(self, 'uuid') or self.uuid is None):
             self.uuid = str(uuid.uuid4())
 
     def set_from_args(self, **kwargs):
@@ -86,11 +86,11 @@ class HeliosObject(object):
         """
         process some fields on the way into the object
         """
-        if field_value == None:
+        if field_value is None:
             return None
 
         val = self._process_value_in(field_name, field_value)
-        if val != None:
+        if val is not None:
             return val
         else:
             return field_value
@@ -102,11 +102,11 @@ class HeliosObject(object):
         """
         process some fields on the way out of the object
         """
-        if field_value == None:
+        if field_value is None:
             return None
 
         val = self._process_value_out(field_name, field_value)
-        if val != None:
+        if val is not None:
             return val
         else:
             return field_value
@@ -118,7 +118,7 @@ class HeliosObject(object):
         if not hasattr(self, 'uuid'):
             return super(HeliosObject, self) == other
 
-        return other != None and self.uuid == other.uuid
+        return other is not None and self.uuid == other.uuid
 
 
 class EncryptedAnswer(HeliosObject):
@@ -184,10 +184,10 @@ class EncryptedAnswer(HeliosObject):
                 return False
 
             # compute homomorphic sum if needed
-            if max != None:
+            if max is not None:
                 homomorphic_sum = choice * homomorphic_sum
 
-        if max != None:
+        if max is not None:
             # determine possible plaintexts for the sum
             sum_possible_plaintexts = self.generate_plaintexts(pk, min=min, max=max)
 
@@ -254,7 +254,7 @@ class EncryptedAnswer(HeliosObject):
         plaintexts = cls.generate_plaintexts(pk)
 
         # keep track of number of options selected.
-        num_selected_answers = 0;
+        num_selected_answers = 0
 
         # homomorphic sum of all
         homomorphic_sum = 0
@@ -287,7 +287,7 @@ class EncryptedAnswer(HeliosObject):
                                                                                                       algs.EG_disjunctive_challenge_generator)
 
             # sum things up homomorphically if needed
-            if max_answers != None:
+            if max_answers is not None:
                 homomorphic_sum = choices[answer_num] * homomorphic_sum
                 randomness_sum = (randomness_sum + randomness[answer_num]) % pk.q
 
@@ -297,7 +297,7 @@ class EncryptedAnswer(HeliosObject):
         if num_selected_answers < min_answers:
             raise Exception("Need to select at least %s answer(s)" % min_answers)
 
-        if max_answers != None:
+        if max_answers is not None:
             sum_plaintexts = cls.generate_plaintexts(pk, min=min_answers, max=max_answers)
 
             # need to subtract the min from the offset
@@ -487,7 +487,7 @@ class Voter(HeliosObject):
 
     def toJSONDict(self):
         fields = None
-        if self.alias != None:
+        if self.alias is not None:
             return super(Voter, self).toJSONDict(self.ALIASED_VOTER_JSON_FIELDS)
         else:
             return super(Voter, self).toJSONDict()
@@ -585,7 +585,7 @@ class DLogTable(object):
     """
 
     def __init__(self, base, modulus):
-        self.dlogs = {}
+        self.dlogs = dict()
         self.dlogs[1] = 0
         self.last_dlog_result = 1
         self.counter = 0
@@ -636,7 +636,7 @@ class Tally(HeliosObject):
                 self.tally = None
 
         # initialize
-        if self.num_tallied == None:
+        if self.num_tallied is None:
             self.num_tallied = 0
 
     def init_election(self, election):
@@ -795,4 +795,3 @@ class Tally(HeliosObject):
     def _process_value_out(self, field_name, field_value):
         if field_name == 'tally':
             return [[a.toJSONDict() for a in q] for q in field_value]
-        

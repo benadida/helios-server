@@ -137,7 +137,6 @@ class User(models.Model):
         else:
             return False
 
-
     @property
     def pretty_name(self):
         if self.name:

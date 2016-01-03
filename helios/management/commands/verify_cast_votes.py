@@ -34,4 +34,3 @@ class Command(BaseCommand):
 
             # once broken out of the while loop, quit and wait for next invocation
             # this happens when there are no votes left to verify
-            

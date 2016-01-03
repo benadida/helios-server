@@ -13,9 +13,11 @@ import string
 # utils from helios_auth, too
 
 from django.conf import settings
+from django.core import mail as django_mail
 
 import random
-import hashlib, hmac
+import hashlib
+import hmac
 
 
 def do_hmac(k, s):
@@ -76,9 +78,9 @@ def dictToURLParams(d):
         return None
 
 
-##
-## XML escaping and unescaping
-## 
+#
+# XML escaping and unescaping
+#
 
 def xml_escape(s):
     raise Exception('not implemented yet')
@@ -89,9 +91,9 @@ def xml_unescape(s):
     return new_s
 
 
-##
-## XSS attack prevention
-##
+#
+# XSS attack prevention
+#
 
 def xss_strip_all_tags(s):
     """
@@ -149,21 +151,20 @@ def get_prefix():
     return settings.SERVER_PREFIX
 
 
-##
-## Datetime utilities
-##
+#
+# Datetime utilities
+#
 
 def string_to_datetime(str, fmt="%Y-%m-%d %H:%M"):
-    if str == None:
+    if str is None:
         return None
 
     return datetime.datetime.strptime(str, fmt)
 
-##
-## email
-##
 
-from django.core import mail as django_mail
+#
+# email
+#
 
 
 def send_email(sender, recpt_lst, subject, body):
@@ -173,9 +174,9 @@ def send_email(sender, recpt_lst, subject, body):
     django_mail.send_mail(subject, body, sender, recpt_lst, fail_silently=True)
 
 
-##
-## raw SQL and locking
-##
+#
+# raw SQL and locking
+#
 
 def one_val_raw_sql(raw_sql, values=[]):
     """

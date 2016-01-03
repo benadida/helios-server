@@ -8,11 +8,9 @@ class Migration(SchemaMigration):
         # Adding unique constraint on 'Trustee', fields ['election', 'email']
         db.create_unique('helios_trustee', ['election_id', 'email'])
 
-
     def backwards(self, orm):
         # Removing unique constraint on 'Trustee', fields ['election', 'email']
         db.delete_unique('helios_trustee', ['election_id', 'email'])
-
 
     models = {
         'helios.auditedballot': {

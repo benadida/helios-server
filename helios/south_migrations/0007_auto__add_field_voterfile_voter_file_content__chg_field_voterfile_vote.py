@@ -13,14 +13,12 @@ class Migration(SchemaMigration):
         db.alter_column('helios_voterfile', 'voter_file',
                         self.gf('django.db.models.fields.files.FileField')(max_length=250, null=True))
 
-
     def backwards(self, orm):
         # Deleting field 'VoterFile.voter_file_content'
         db.delete_column('helios_voterfile', 'voter_file_content')
 
         # User chose to not deal with backwards NULL issues for 'VoterFile.voter_file'
         raise RuntimeError("Cannot reverse this migration. 'VoterFile.voter_file' and its values cannot be restored.")
-
 
     models = {
         'helios_auth.user': {

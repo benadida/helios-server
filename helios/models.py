@@ -20,7 +20,6 @@ from helios import utils as heliosutils
 import helios.views
 from helios import datatypes
 
-
 # useful stuff in helios_auth
 from helios_auth.models import User, AUTH_SYSTEMS
 from helios_auth.jsonfield import JSONField
@@ -68,7 +67,8 @@ class Election(HeliosModel):
                               null=True)
 
     # eligibility is a JSON field, which lists auth_systems and eligibility details for that auth_system, e.g.
-    # [{'auth_system': 'cas', 'constraint': [{'year': 'u12'}, {'year':'u13'}]}, {'auth_system' : 'password'}, {'auth_system' : 'openid', 'constraint': [{'host':'http://myopenid.com'}]}]
+    # [{'auth_system': 'cas', 'constraint': [{'year': 'u12'}, {'year': 'u13'}]}, {'auth_system': 'password'},
+    #  {'auth_system': 'openid', 'constraint': [{'host': 'http://myopenid.com'}]}]
     eligibility = LDObjectField(type_hint='legacy/Eligibility',
                                 null=True)
 
@@ -183,8 +183,9 @@ class Election(HeliosModel):
             return None
 
         return heliosutils.one_val_raw_sql(
-            "select max(cast(substring(alias, 2) as integer)) from " + Voter._meta.db_table + " where election_id = %s",
-            [self.id]) or 0
+                "select max(cast(substring(alias, 2) as integer)) from " +
+                Voter._meta.db_table + " where election_id = %s",
+                [self.id]) or 0
 
     @property
     def encrypted_tally_hash(self):
@@ -195,7 +196,7 @@ class Election(HeliosModel):
 
     @property
     def is_archived(self):
-        return self.archived_at != None
+        return self.archived_at is not None
 
     @property
     def description_bleached(self):
@@ -212,9 +213,9 @@ class Election(HeliosModel):
     @classmethod
     def get_by_user_as_admin(cls, user, archived_p=None, limit=None):
         query = cls.objects.filter(admin=user)
-        if archived_p == True:
+        if archived_p is True:
             query = query.exclude(archived_at=None)
-        if archived_p == False:
+        if archived_p is False:
             query = query.filter(archived_at=None)
         query = query.order_by('-created_at')
         if limit:
@@ -225,9 +226,9 @@ class Election(HeliosModel):
     @classmethod
     def get_by_user_as_voter(cls, user, archived_p=None, limit=None):
         query = cls.objects.filter(voter__user=user)
-        if archived_p == True:
+        if archived_p is True:
             query = query.exclude(archived_at=None)
-        if archived_p == False:
+        if archived_p is False:
             query = query.filter(archived_at=None)
         query = query.order_by('-created_at')
         if limit:
@@ -271,7 +272,7 @@ class Election(HeliosModel):
         if not self.openreg:
             return False
 
-        if self.eligibility == None:
+        if self.eligibility is None:
             return True
 
         # is the user eligible for one of these cases?
@@ -316,7 +317,7 @@ class Election(HeliosModel):
                 if constraint.has_key('constraint'):
                     for one_constraint in constraint['constraint']:
                         return_val += "<li>%s</li>" % AUTH_SYSTEMS[constraint['auth_system']].pretty_eligibility(
-                            one_constraint)
+                                one_constraint)
                 else:
                     return_val += "<li> any %s user</li>" % constraint['auth_system']
 
@@ -324,12 +325,13 @@ class Election(HeliosModel):
 
             return return_val
 
+    @property
     def voting_has_started(self):
         """
         has voting begun? voting begins if the election is frozen, at the prescribed date or at the date that voting was forced to start
         """
-        return self.frozen_at != None and (self.voting_starts_at == None or (
-        datetime.datetime.utcnow() >= (self.voting_started_at or self.voting_starts_at)))
+        return self.frozen_at is not None and (self.voting_starts_at is None or (
+            datetime.datetime.utcnow() >= (self.voting_started_at or self.voting_starts_at)))
 
     def voting_has_stopped(self):
         """
@@ -337,15 +339,15 @@ class Election(HeliosModel):
         or failing that the date voting was extended until, or failing that the date voting is scheduled to end at.
         """
         voting_end = self.voting_ended_at or self.voting_extended_until or self.voting_ends_at
-        return (voting_end != None and datetime.datetime.utcnow() >= voting_end) or self.encrypted_tally
+        return (voting_end is not None and datetime.datetime.utcnow() >= voting_end) or self.encrypted_tally
 
     @property
     def issues_before_freeze(self):
         issues = []
-        if self.questions == None or len(self.questions) == 0:
+        if self.questions is None or len(self.questions) == 0:
             issues.append(
-                {'type': 'questions',
-                 'action': "add questions to the ballot"}
+                    {'type': 'questions',
+                     'action': "add questions to the ballot"}
             )
 
         trustees = Trustee.get_by_election(self)
@@ -356,7 +358,7 @@ class Election(HeliosModel):
             })
 
         for t in trustees:
-            if t.public_key == None:
+            if t.public_key is None:
                 issues.append({
                     'type': 'trustee keypairs',
                     'action': 'have trustee %s generate a keypair' % t.name
@@ -385,7 +387,7 @@ class Election(HeliosModel):
         self.save()
 
     def ready_for_decryption(self):
-        return self.encrypted_tally != None
+        return self.encrypted_tally is not None
 
     def ready_for_decryption_combination(self):
         """
@@ -437,11 +439,11 @@ class Election(HeliosModel):
             self.voters_hash = utils.hash_b64(voters_json)
 
     def increment_voters(self):
-        ## FIXME
+        # FIXME
         return 0
 
     def increment_cast_votes(self):
-        ## FIXME
+        # FIXME
         return 0
 
     def set_eligibility(self):
@@ -458,7 +460,7 @@ class Election(HeliosModel):
         """
 
         # don't override existing eligibility
-        if self.eligibility != None:
+        if self.eligibility is not None:
             return
 
         # enable this ONLY once the cast_confirm screen makes sense
@@ -467,7 +469,7 @@ class Election(HeliosModel):
 
         auth_systems = copy.copy(settings.AUTH_ENABLED_AUTH_SYSTEMS)
         voter_types = [r['user__user_type'] for r in self.voter_set.values('user__user_type').distinct() if
-                       r['user__user_type'] != None]
+                       r['user__user_type'] is not None]
 
         # password is now separate, not an explicit voter type
         if self.voter_set.filter(user=None).count() > 0:
@@ -543,7 +545,7 @@ class Election(HeliosModel):
             return None
 
     def has_helios_trustee(self):
-        return self.get_helios_trustee() != None
+        return self.get_helios_trustee() is not None
 
     def helios_trustee_decrypt(self):
         tally = self.encrypted_tally
@@ -658,9 +660,9 @@ class ElectionLog(models.Model):
     at = models.DateTimeField(auto_now_add=True)
 
 
-##
-## UTF8 craziness for CSV
-##
+#
+# UTF8 craziness for CSV
+#
 
 def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
     # csv.py doesn't do Unicode; encode temporarily as UTF-8:
@@ -783,8 +785,8 @@ class Voter(HeliosModel):
     # let's link directly to the user now
     # FIXME: delete this as soon as migrations are set up
     # name = models.CharField(max_length = 200, null=True)
-    #voter_type = models.CharField(max_length = 100)
-    #voter_id = models.CharField(max_length = 100)
+    # voter_type = models.CharField(max_length = 100)
+    # voter_id = models.CharField(max_length = 100)
 
     uuid = models.CharField(max_length=50)
 
@@ -841,14 +843,14 @@ class Voter(HeliosModel):
 
         # the boolean check is not stupid, this is ternary logic
         # none means don't care if it's cast or not
-        if cast == True:
+        if cast is True:
             query = query.exclude(cast_at=None)
-        elif cast == False:
+        elif cast is False:
             query = query.filter(cast_at=None)
 
         # little trick to get around GAE limitation
         # order by uuid only when no inequality has been added
-        if cast == None or order_by == 'cast_at' or order_by == '-cast_at':
+        if cast is None or order_by == 'cast_at' or order_by == '-cast_at':
             query = query.order_by(order_by)
 
             # if we want the list after a certain UUID, add the inequality here
@@ -1132,7 +1134,7 @@ class Trustee(HeliosModel):
                                       null=True)
 
     class Meta:
-        unique_together = (('election', 'email'))
+        unique_together = ('election', 'email')
 
     def save(self, *args, **kwargs):
         """
@@ -1176,4 +1178,3 @@ class Trustee(HeliosModel):
         return self.election.encrypted_tally.verify_decryption_proofs(self.decryption_factors, self.decryption_proofs,
                                                                       self.public_key,
                                                                       algs.EG_fiatshamir_challenge_generator)
-    

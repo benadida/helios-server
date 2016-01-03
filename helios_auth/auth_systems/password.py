@@ -30,7 +30,7 @@ class LoginForm(forms.Form):
 
 
 def password_check(user, password):
-    return (user and user.info['password'] == password)
+    return user and user.info['password'] == password
 
 
 # the view for logging in

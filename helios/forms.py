@@ -17,10 +17,14 @@ class ElectionForm(forms.Form):
                                   required=False)
     election_type = forms.ChoiceField(label="type", choices=Election.ELECTION_TYPES)
     use_voter_aliases = forms.BooleanField(required=False, initial=False,
-                                           help_text='If selected, voter identities will be replaced with aliases, e.g. "V12", in the ballot tracking center')
-    # use_advanced_audit_features = forms.BooleanField(required=False, initial=True, help_text='disable this only if you want a simple election with reduced security but a simpler user interface')
+                                           help_text='If selected, voter identities will be replaced with aliases,'
+                                                     ' e.g. "V12", in the ballot tracking center')
+    # use_advanced_audit_features = forms.BooleanField(required=False, initial=True,
+    #                                                  help_text='disable this only if you want a simple election '
+    #                                                            'with reduced security but a simpler user interface')
     randomize_answer_order = forms.BooleanField(required=False, initial=False,
-                                                help_text='enable this if you want the answers to questions to appear in random order for each voter')
+                                                help_text='enable this if you want the answers to questions to appear '
+                                                          'in random order for each voter')
     private_p = forms.BooleanField(required=False, initial=False, label="Private?",
                                    help_text='A private election is only visible to registered voters.')
     help_email = forms.CharField(required=False, initial="", label="Help Email Address",
@@ -28,7 +32,8 @@ class ElectionForm(forms.Form):
 
     if settings.ALLOW_ELECTION_INFO_URL:
         election_info_url = forms.CharField(required=False, initial="", label="Election Info Download URL",
-                                            help_text="the URL of a PDF document that contains extra election information, e.g. candidate bios and statements")
+                                            help_text="the URL of a PDF document that contains "
+                                                      "extra election information, e.g. candidate bios and statements")
 
 
 class ElectionTimesForm(forms.Form):
@@ -58,4 +63,3 @@ class TallyNotificationEmailForm(forms.Form):
 class VoterPasswordForm(forms.Form):
     voter_id = forms.CharField(max_length=50, label="Voter ID")
     password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
-

@@ -10,14 +10,11 @@ from django.conf import settings
 
 from helios_auth.security import get_user
 
+#
+# template abstraction
+#
 
 
-
-
-
-##
-## template abstraction
-##
 def render_template(request, template_name, vars={}):
     t = loader.get_template(template_name + '.html')
 
@@ -31,4 +28,3 @@ def render_template(request, template_name, vars={}):
         vars_with_user['csrf_token'] = request.session['csrf_token']
 
     return render_to_response('server_ui/templates/%s.html' % template_name, vars_with_user)
-  

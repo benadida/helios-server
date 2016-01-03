@@ -27,10 +27,10 @@ class ElectionModelTests(TestCase):
 
     def create_election(self):
         return models.Election.get_or_create(
-            short_name='demo',
-            name='Demo Election',
-            description='Demo Election Description',
-            admin=self.user)
+                short_name='demo',
+                name='Demo Election',
+                description='Demo Election Description',
+                admin=self.user)
 
     def setup_questions(self):
         QUESTIONS = [
@@ -203,7 +203,7 @@ class ElectionModelTests(TestCase):
 
         # make sure no voter yet
         voter = models.Voter.get_by_election_and_user(self.election, self.user)
-        self.assertTrue(voter == None)
+        self.assertTrue(voter is None)
 
         # make sure no voter at all across all elections
         voters = models.Voter.get_by_user(self.user)
@@ -215,8 +215,8 @@ class ElectionModelTests(TestCase):
         # make sure voter is there now
         voter_2 = models.Voter.get_by_election_and_user(self.election, self.user)
 
-        self.assertFalse(voter == None)
-        self.assertFalse(voter_2 == None)
+        self.assertFalse(voter is None)
+        self.assertFalse(voter_2 is None)
         self.assertEquals(voter, voter_2)
 
         # make sure voter is there in this call too
@@ -245,7 +245,7 @@ class VoterModelTests(TestCase):
         v.save()
 
         # password has been generated!
-        self.assertFalse(v.voter_password == None)
+        self.assertFalse(v.voter_password is None)
 
         # can't generate passwords twice
         self.assertRaises(Exception, lambda: v.generate_password())
@@ -281,10 +281,10 @@ class DatatypeTests(TestCase):
 
     def test_from_dict(self):
         ld_obj = datatypes.LDObject.fromDict({
-                                                 'y': '1234',
-                                                 'p': '23434',
-                                                 'g': '2343243242',
-                                                 'q': '2343242343434'}, type_hint='pkc/elgamal/PublicKey')
+            'y': '1234',
+            'p': '23434',
+            'g': '2343243242',
+            'q': '2343242343434'}, type_hint='pkc/elgamal/PublicKey')
 
     def test_dictobject_from_dict(self):
         original_dict = {
@@ -295,9 +295,9 @@ class DatatypeTests(TestCase):
         self.assertEquals(original_dict, ld_obj.toDict())
 
 
-##
-## Black box tests
-##
+#
+# Black box tests
+#
 
 class DataFormatBlackboxTests(object):
     def setUp(self):
@@ -329,9 +329,9 @@ class DataFormatBlackboxTests(object):
         self.assertEqualsToFile(response, self.EXPECTED_BALLOTS_FILE)
 
 
-## now we have a set of fixtures and expected results for various formats
-## note how TestCase is used as a "mixin" here, so that the generic DataFormatBlackboxTests
-## does not register as a set of test cases to run, but each concrete data format does.
+# now we have a set of fixtures and expected results for various formats
+# note how TestCase is used as a "mixin" here, so that the generic DataFormatBlackboxTests
+# does not register as a set of test cases to run, but each concrete data format does.
 
 class LegacyElectionBlackboxTests(DataFormatBlackboxTests, TestCase):
     fixtures = ['legacy-data.json']
@@ -366,18 +366,17 @@ class WebTest(django_webtest.WebTest):
         else:
             assert response.status_int == 302
 
-            #self.assertEqual(response.status_code, 302)
+            # self.assertEqual(response.status_code, 302)
 
-            #return super(django_webtest.WebTest, self).assertRedirects(response, url)
-            #if hasattr(response, 'status_code') and hasattr(response, 'location'):
+            # return super(django_webtest.WebTest, self).assertRedirects(response, url)
+            # if hasattr(response, 'status_code') and hasattr(response, 'location'):
 
-
-            #assert url in response.location, "redirected to %s instead of %s" % (response.location, url)
+            # assert url in response.location, "redirected to %s instead of %s" % (response.location, url)
 
     def assertContains(self, response, text):
         if hasattr(response, 'status_code'):
             assert response.status_code == 200
-        #            return super(django_webtest.WebTest, self).assertContains(response, text)
+        # return super(django_webtest.WebTest, self).assertContains(response, text)
         else:
             assert response.status_int == 200
 
@@ -389,10 +388,10 @@ class WebTest(django_webtest.WebTest):
             else:
                 assert text in response.content, "missing text %s" % text
 
+#
+# overall operation of the system
+#
 
-##
-## overall operation of the system
-##
 
 class ElectionBlackboxTests(WebTest):
     fixtures = ['users.json', 'election.json']
@@ -404,7 +403,7 @@ class ElectionBlackboxTests(WebTest):
     def assertContains(self, response, text):
         if hasattr(response, 'status_code'):
             assert response.status_code == 200
-        #            return super(django_webtest.WebTest, self).assertContains(response, text)
+        # return super(django_webtest.WebTest, self).assertContains(response, text)
         else:
             assert response.status_int == 200
 
@@ -511,7 +510,7 @@ class ElectionBlackboxTests(WebTest):
         self.assertEquals(new_election.short_name, self.election.short_name + "-2")
 
     def _setup_complete_election(self, election_params={}):
-        "do the setup part of a whole election"
+        """do the setup part of a whole election"""
 
         # a bogus call to set up the session
         self.client.get("/")
@@ -749,9 +748,9 @@ class ElectionBlackboxTests(WebTest):
         # cast a ballot while logged in as a user (not a voter)
         self.setup_login()
 
-        ## for now the above does not work, it's a testing problem
-        ## where the cookie isn't properly set. We'll have to figure this out.
-        ## FIXME FIXME FIXME 
+        # for now the above does not work, it's a testing problem
+        # where the cookie isn't properly set. We'll have to figure this out.
+        # FIXME FIXME FIXME
         # self._cast_ballot(election_id, username, password, check_user_logged_in=True)
         self._cast_ballot(election_id, username, password, check_user_logged_in=False)
         self.clear_login()
@@ -768,7 +767,7 @@ class ElectionBlackboxTests(WebTest):
 
         # ensure it redirects
         self.assertRedirects(response, "/helios/elections/%s/password_voter_login?%s" % (
-        election_id, urllib.urlencode({"return_url": "/helios/elections/%s/view" % election_id})))
+            election_id, urllib.urlencode({"return_url": "/helios/elections/%s/view" % election_id})))
 
         login_form = response.follow().form
 

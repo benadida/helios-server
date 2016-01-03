@@ -7,4 +7,3 @@ from helios.datatypes import LDObjectContainer
 
 class WorkflowObject(LDObjectContainer):
     pass
-    

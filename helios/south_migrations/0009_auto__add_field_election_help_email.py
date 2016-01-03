@@ -9,11 +9,9 @@ class Migration(SchemaMigration):
         db.add_column('helios_election', 'help_email',
                       self.gf('django.db.models.fields.EmailField')(max_length=75, null=True), keep_default=False)
 
-
     def backwards(self, orm):
         # Deleting field 'Election.help_email'
         db.delete_column('helios_election', 'help_email')
-
 
     models = {
         'helios.auditedballot': {

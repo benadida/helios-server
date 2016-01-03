@@ -7,7 +7,8 @@ Some basic utils
 
 import json
 
-## JSON
+
+# JSON
 def to_json(d):
     return json.dumps(d, sort_keys=True)
 

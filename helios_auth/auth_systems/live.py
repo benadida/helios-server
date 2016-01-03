@@ -5,18 +5,22 @@ so much like Facebook
 # NOT WORKING YET because Windows Live documentation and status is unclear. Is it in beta? I think it is.
 """
 
+import cgi
+import urllib
+import urllib2
+
 from django.conf import settings
+
+from helios_auth import utils
 
 APP_ID = settings.LIVE_APP_ID
 APP_SECRET = settings.LIVE_APP_SECRET
 
-import urllib, urllib2, cgi
-
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = False
-# STATUS_UPDATE_WORDING_TEMPLATE = "Send %s to your facebook status"
 
-from helios_auth import utils
+
+# STATUS_UPDATE_WORDING_TEMPLATE = "Send %s to your facebook status"
 
 
 def live_url(url, params):

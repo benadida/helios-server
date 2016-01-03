@@ -11,9 +11,6 @@ from django.conf import settings
 import httplib2
 from oauth2client.client import OAuth2WebServerFlow, OAuth2Credentials
 
-
-
-
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False
 

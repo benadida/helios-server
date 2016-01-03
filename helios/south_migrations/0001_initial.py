@@ -117,7 +117,6 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('helios', ['Trustee'])
 
-
     def backwards(self, orm):
         # Deleting model 'Election'
         db.delete_table('helios_election')
@@ -139,7 +138,6 @@ class Migration(SchemaMigration):
 
         # Deleting model 'Trustee'
         db.delete_table('helios_trustee')
-
 
     models = {
         'helios_auth.user': {

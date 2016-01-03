@@ -54,8 +54,8 @@ def get_user_info_after_auth(request):
     request.session['access_token'] = access_token
 
     user_info_xml = ElementTree.fromstring(
-        login_client.oauth_request('http://api.linkedin.com/v1/people/~:(id,first-name,last-name)', args={},
-                                   method='GET'))
+            login_client.oauth_request('http://api.linkedin.com/v1/people/~:(id,first-name,last-name)', args={},
+                                       method='GET'))
 
     user_id = user_info_xml.findtext('id')
     first_name = user_info_xml.findtext('first-name')
@@ -83,7 +83,8 @@ def update_status(user_id, user_info, token, message):
     """
     return
     # twitter_client = _get_client_by_token(token)
-    #result = twitter_client.oauth_request('http://api.twitter.com/1/statuses/update.json', args={'status': message}, method='POST')
+    # result = twitter_client.oauth_request('http://api.twitter.com/1/statuses/update.json',
+    #                                       args={'status': message}, method='POST')
 
 
 def send_message(user_id, user_name, user_info, subject, body):

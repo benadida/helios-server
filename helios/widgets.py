@@ -93,12 +93,11 @@ class SelectTimeWidget(Widget):
                         else:
                             self.meridiem_val = None
 
-
         # If we're doing a 12-hr clock, there will be a meridiem value, so make sure the
         # hours get printed correctly
         if self.twelve_hr and self.meridiem_val:
-            if self.meridiem_val.lower().startswith('p') and hour_val > 12 and hour_val < 24:
-                hour_val = hour_val % 12
+            if self.meridiem_val.lower().startswith('p') and 12 < hour_val < 24:
+                hour_val %= 12
         elif hour_val == 0:
             hour_val = 12
 

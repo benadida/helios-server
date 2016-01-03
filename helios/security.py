@@ -18,7 +18,6 @@ from helios_auth.security import get_user
 import helios
 
 
-
 # current voter
 def get_voter(request, user, election):
     """
@@ -68,14 +67,14 @@ def do_election_checks(election, props):
         newvoters = None
 
     # frozen check
-    if frozen != None:
+    if frozen is not None:
         if frozen and not election.frozen_at:
             raise PermissionDenied()
         if not frozen and election.frozen_at:
             raise PermissionDenied()
 
     # open for new voters check
-    if newvoters != None:
+    if newvoters is not None:
         if election.can_add_voters() != newvoters:
             raise PermissionDenied()
 
@@ -146,11 +145,11 @@ def user_can_see_election(request, election):
         return True
 
     # then this user has to be a voter
-    return (get_voter(request, user, election) != None)
+    return get_voter(request, user, election) is not None
 
 
 def api_client_can_admin_election(api_client, election):
-    return election.api_client == api_client and api_client != None
+    return election.api_client == api_client and api_client is not None
 
 
 # decorator for checking election admin access, and some properties of the election
@@ -205,4 +204,3 @@ def user_can_feature_election(user, election):
         return False
 
     return user.admin_p
-  

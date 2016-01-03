@@ -56,7 +56,6 @@ class Migration(SchemaMigration):
         # Changing field 'CastVote.vote'
         db.alter_column('helios_castvote', 'vote', self.gf('helios.datatypes.djangofield.LDObjectField')())
 
-
     def backwards(self, orm):
         # Removing unique constraint on 'Voter', fields ['voter_login_id', 'election']
         db.delete_unique('helios_voter', ['voter_login_id', 'election_id'])
@@ -99,7 +98,6 @@ class Migration(SchemaMigration):
 
         # Changing field 'CastVote.vote'
         db.alter_column('helios_castvote', 'vote', self.gf('helios_auth.jsonfield.JSONField')())
-
 
     models = {
         'helios_auth.user': {

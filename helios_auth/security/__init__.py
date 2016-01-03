@@ -17,11 +17,12 @@ from helios_auth.models import *
 
 FIELDS_TO_SAVE = 'FIELDS_TO_SAVE'
 
-## FIXME: oauth is NOT working right now
+# FIXME: oauth is NOT working right now
 
-##
-## OAuth and API clients
-##
+#
+# OAuth and API clients
+#
+
 
 class OAuthDataStore(oauth.OAuthDataStore):
     def __init__(self):

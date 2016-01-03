@@ -143,7 +143,7 @@ class PublicKey:
 
         expected_challenge = challenge_generator(dlog_proof.commitment) % self.q
 
-        return ((left_side == right_side) and (dlog_proof.challenge == expected_challenge))
+        return (left_side == right_side) and (dlog_proof.challenge == expected_challenge)
 
 
 class SecretKey:
@@ -303,10 +303,10 @@ class Ciphertext:
         """
         Check for ciphertext equality.
         """
-        if other == None:
+        if other is None:
             return False
 
-        return (self.alpha == other.alpha and self.beta == other.beta)
+        return self.alpha == other.alpha and self.beta == other.beta
 
     def generate_encryption_proof(self, plaintext, randomness, challenge_generator):
         """
@@ -323,12 +323,12 @@ class Ciphertext:
         proof.commitment['B'] = pow(self.pk.y, w, self.pk.p)
 
         # generate challenge
-        proof.challenge = challenge_generator(proof.commitment);
+        proof.challenge = challenge_generator(proof.commitment)
 
         # Compute response = w + randomness * challenge
-        proof.response = (w + (randomness * proof.challenge)) % self.pk.q;
+        proof.response = (w + (randomness * proof.challenge)) % self.pk.q
 
-        return proof;
+        return proof
 
     def simulate_encryption_proof(self, plaintext, challenge=None):
         # generate a random challenge if not provided
@@ -345,11 +345,13 @@ class Ciphertext:
         proof.response = Utils.random_mpz_lt(self.pk.q);
 
         # now we compute A and B
-        proof.commitment['A'] = (Utils.inverse(pow(self.alpha, proof.challenge, self.pk.p), self.pk.p) * pow(self.pk.g,
-                                                                                                             proof.response,
-                                                                                                             self.pk.p)) % self.pk.p
-        proof.commitment['B'] = (Utils.inverse(pow(beta_over_plaintext, proof.challenge, self.pk.p), self.pk.p) * pow(
-            self.pk.y, proof.response, self.pk.p)) % self.pk.p
+        proof.commitment['A'] = (Utils.inverse(pow(self.alpha, proof.challenge, self.pk.p), self.pk.p) *
+                                 pow(self.pk.g,
+                                     proof.response,
+                                     self.pk.p)) % self.pk.p
+
+        proof.commitment['B'] = (Utils.inverse(pow(beta_over_plaintext, proof.challenge, self.pk.p), self.pk.p) *
+                                 pow(self.pk.y, proof.response, self.pk.p)) % self.pk.p
 
         return proof
 
@@ -371,7 +373,7 @@ class Ciphertext:
 
             # get the commitments in a list and generate the whole disjunctive challenge
             commitments = [p.commitment for p in proofs]
-            disjunctive_challenge = challenge_generator(commitments);
+            disjunctive_challenge = challenge_generator(commitments)
 
             # now we must subtract all of the other challenges from this challenge.
             real_challenge = disjunctive_challenge
@@ -400,15 +402,15 @@ class Ciphertext:
 
         # check that g^response = A * alpha^challenge
         first_check = (pow(self.pk.g, proof.response, self.pk.p) == (
-        (pow(self.alpha, proof.challenge, self.pk.p) * proof.commitment['A']) % self.pk.p))
+            (pow(self.alpha, proof.challenge, self.pk.p) * proof.commitment['A']) % self.pk.p))
 
         # check that y^response = B * (beta/m)^challenge
         beta_over_m = (self.beta * Utils.inverse(plaintext.m, self.pk.p)) % self.pk.p
         second_check = (pow(self.pk.y, proof.response, self.pk.p) == (
-        (pow(beta_over_m, proof.challenge, self.pk.p) * proof.commitment['B']) % self.pk.p))
+            (pow(beta_over_m, proof.challenge, self.pk.p) * proof.commitment['B']) % self.pk.p))
 
         # print "1,2: %s %s " % (first_check, second_check)
-        return (first_check and second_check)
+        return first_check and second_check
 
     def verify_disjunctive_encryption_proof(self, plaintexts, proof, challenge_generator):
         """
@@ -430,7 +432,7 @@ class Ciphertext:
 
         # check the overall challenge
         return (challenge_generator([p.commitment for p in proof.proofs]) == (
-        sum([p.challenge for p in proof.proofs]) % self.pk.q))
+            sum([p.challenge for p in proof.proofs]) % self.pk.q))
 
     def verify_decryption_proof(self, plaintext, proof):
         """
@@ -516,7 +518,7 @@ class ZKProof(object):
         if challenge_generator:
             third_check = (self.challenge == challenge_generator(self.commitment))
 
-        return (first_check and second_check and third_check)
+        return first_check and second_check and third_check
 
 
 class ZKDisjunctiveProof:

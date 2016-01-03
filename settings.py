@@ -1,10 +1,12 @@
-import os
 import json
-
+import os
 # a massive hack to see if we're testing, in which case we use different settings
 import sys
+import logging
+import djcelery
 
 TESTING = 'test' in sys.argv
+
 
 # go through environment variables and override them
 def get_from_env(var, default):
@@ -85,14 +87,15 @@ STATIC_URL = '/media/'
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
 
-# If debug is set to false and ALLOWED_HOSTS is not declared, django raises  "CommandError: You must set settings.ALLOWED_HOSTS if DEBUG is False."
+# If debug is set to false and ALLOWED_HOSTS is not declared,
+# django raises  "CommandError: You must set settings.ALLOWED_HOSTS if DEBUG is False."
 # If in production, you got a bad request (400) error
 # More info: https://docs.djangoproject.com/en/1.7/ref/settings/#allowed-hosts (same for 1.6)
 
 ALLOWED_HOSTS = ['localhost']  # change to your allowed hosts
 
 # Secure Stuff
-if (get_from_env('SSL', '0') == '1'):
+if get_from_env('SSL', '0') == '1':
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
 
@@ -102,7 +105,7 @@ if (get_from_env('SSL', '0') == '1'):
 SESSION_COOKIE_HTTPONLY = True
 
 # one week HSTS seems like a good balance for MITM prevention
-if (get_from_env('HSTS', '0') == '1'):
+if get_from_env('HSTS', '0') == '1':
     SECURE_HSTS_SECONDS = 3600 * 24 * 7
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
@@ -117,7 +120,7 @@ TEMPLATE_LOADERS = (
 
 MIDDLEWARE_CLASSES = (
     # make all things SSL
-    #'sslify.middleware.SSLifyMiddleware',
+    # 'sslify.middleware.SSLifyMiddleware',
 
     # secure a bunch of things
     'djangosecure.middleware.SecurityMiddleware',
@@ -140,28 +143,27 @@ INSTALLED_APPS = (
     #    'django.contrib.contenttypes',
     'djangosecure',
     'django.contrib.sessions',
-    #'django.contrib.sites',
-    ## needed for queues
+    # 'django.contrib.sites',
+    # needed for queues
     'djcelery',
     'kombu.transport.django',
-    ## in Django 1.7 we now use built-in migrations, no more south
-    ## 'south',
-    ## HELIOS stuff
+    # in Django 1.7 we now use built-in migrations, no more south
+    # 'south',
+    # HELIOS stuff
     'helios_auth',
     'helios',
     'server_ui',
 )
 
-##
-## HELIOS
-##
+#
+# HELIOS
+#
 
 
 MEDIA_ROOT = ROOT_PATH + "media/"
 
 # a relative path where voter upload files are stored
 VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
-
 
 # Change your email settings
 DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'ben@adida.net')
@@ -209,7 +211,7 @@ HELIOS_VOTERS_EMAIL = True
 HELIOS_PRIVATE_DEFAULT = False
 
 # authentication systems enabled
-#AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
+# AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
 AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(",")
 AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
 
@@ -259,22 +261,17 @@ if get_from_env('EMAIL_USE_AWS', '0') == '1':
     EMAIL_BACKEND = 'django_ses.SESBackend'
 
 # set up logging
-import logging
-
 logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s %(levelname)s %(message)s'
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s %(message)s'
 )
-
 
 # set up django-celery
 # BROKER_BACKEND = "kombu.transport.DatabaseTransport"
 BROKER_URL = "django://"
 CELERY_RESULT_DBURI = DATABASES['default']
-import djcelery
 
 djcelery.setup_loader()
-
 
 # for testing
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'

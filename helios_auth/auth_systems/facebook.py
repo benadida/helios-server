@@ -4,19 +4,19 @@ Facebook Authentication
 
 from django.conf import settings
 from django.core.mail import send_mail
+# from facebookclient import Facebook
+import urllib
+import urllib2
+import cgi
+from helios_auth import utils
 
 APP_ID = settings.FACEBOOK_APP_ID
 API_KEY = settings.FACEBOOK_API_KEY
 API_SECRET = settings.FACEBOOK_API_SECRET
 
-# from facebookclient import Facebook
-import urllib, urllib2, cgi
-
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = True
 STATUS_UPDATE_WORDING_TEMPLATE = "Send %s to your facebook status"
-
-from helios_auth import utils
 
 
 def facebook_url(url, params):
@@ -81,7 +81,7 @@ def send_message(user_id, user_name, user_info, subject, body):
                   fail_silently=False)
 
 
-    ##
+        ##
 
 
 ## eligibility checking

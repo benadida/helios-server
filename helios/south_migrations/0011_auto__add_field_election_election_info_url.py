@@ -10,11 +10,9 @@ class Migration(SchemaMigration):
                       self.gf('django.db.models.fields.CharField')(max_length=300, null=True),
                       keep_default=False)
 
-
     def backwards(self, orm):
         # Deleting field 'Election.election_info_url'
         db.delete_column('helios_election', 'election_info_url')
-
 
     models = {
         'helios.auditedballot': {

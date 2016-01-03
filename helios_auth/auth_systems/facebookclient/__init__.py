@@ -110,7 +110,8 @@ FACEBOOK_URL = 'http://api.facebook.com/restserver.php'
 FACEBOOK_SECURE_URL = 'https://api.facebook.com/restserver.php'
 
 
-class json(object): pass
+class json(object):
+    pass
 
 # simple IDL for the Facebook API
 METHODS = {
@@ -791,7 +792,6 @@ class PhotosProxy(PhotosProxy):
 
         return self._client._parse_response(response, 'facebook.photos.upload')
 
-
     def __encode_multipart_formdata(self, fields, files):
         """Encodes a multipart/form-data message to upload an image."""
         boundary = '-------tHISiStheMulTIFoRMbOUNDaRY'
@@ -814,7 +814,6 @@ class PhotosProxy(PhotosProxy):
         body = crlf.join(l)
         content_type = 'multipart/form-data; boundary=%s' % boundary
         return content_type, body
-
 
     def __get_content_type(self, filename):
         """Returns a guess at the MIME type of the file from the filename."""
@@ -957,7 +956,6 @@ class Facebook(object):
         for namespace in METHODS:
             self.__dict__[namespace] = eval('%sProxy(self, \'%s\')' % (namespace.title(), 'facebook.%s' % namespace))
 
-
     def _hash_args(self, args, secret=None):
         """Hashes arguments by joining key=value pairs, appending a secret, and then taking the MD5 hex digest."""
         # @author: houyr
@@ -972,7 +970,6 @@ class Facebook(object):
         else:
             hasher.update(self.secret_key)
         return hasher.hexdigest()
-
 
     def _parse_response_item(self, node):
         """Parses an XML response node from Facebook."""
@@ -991,7 +988,6 @@ class Facebook(object):
         else:
             return ''.join(node.data for node in node.childNodes if node.nodeType == node.TEXT_NODE)
 
-
     def _parse_response_dict(self, node):
         """Parses an XML dictionary response node from Facebook."""
         result = {}
@@ -1002,7 +998,6 @@ class Facebook(object):
                 result['id'] = node.getAttribute('id')
         return result
 
-
     def _parse_response_list(self, node):
         """Parses an XML list response node from Facebook."""
         result = []
@@ -1010,12 +1005,10 @@ class Facebook(object):
             result.append(self._parse_response_item(item))
         return result
 
-
     def _check_error(self, response):
         """Checks if the given Facebook response is an error, and then raises the appropriate exception."""
         if type(response) is dict and response.has_key('error_code'):
             raise FacebookError(response['error_code'], response['error_msg'], response['request_args'])
-
 
     def _build_post_args(self, method, args=None):
         """Adds to args parameters that are necessary for every call to the API."""
@@ -1038,7 +1031,6 @@ class Facebook(object):
 
         return args
 
-
     def _add_session_args(self, args=None):
         """Adds 'session_key' and 'call_id' to args, which are used for API calls that need sessions."""
         if args is None:
@@ -1046,14 +1038,13 @@ class Facebook(object):
 
         if not self.session_key:
             return args
-            #some calls don't need a session anymore. this might be better done in the markup
-            #raise RuntimeError('Session key not set. Make sure auth.getSession has been called.')
+            # some calls don't need a session anymore. this might be better done in the markup
+            # raise RuntimeError('Session key not set. Make sure auth.getSession has been called.')
 
         args['session_key'] = self.session_key
         args['call_id'] = str(int(time.time() * 1000))
 
         return args
-
 
     def _parse_response(self, response, method, format=None):
         """Parses the response according to the given (optional) format, which should be either 'JSON' or 'XML'."""
@@ -1078,7 +1069,6 @@ class Facebook(object):
 
         return result
 
-
     def hash_email(self, email):
         """
         Hash an email address in a format suitable for Facebook Connect.
@@ -1090,7 +1080,6 @@ class Facebook(object):
             hashlib.md5(email).hexdigest(),
         )
 
-
     def unicode_urlencode(self, params):
         """
         @author: houyr
@@ -1100,7 +1089,6 @@ class Facebook(object):
             params = params.items()
         return urllib.urlencode([(k, isinstance(v, unicode) and v.encode('utf-8') or v)
                                  for k, v in params])
-
 
     def __call__(self, method=None, args=None, secure=False):
         """Make a call to Facebook's REST server."""
@@ -1132,7 +1120,6 @@ class Facebook(object):
 
         return self._parse_response(response, method)
 
-
     # URL helpers
     def get_url(self, page, **args):
         """
@@ -1142,14 +1129,12 @@ class Facebook(object):
         """
         return 'http://www.facebook.com/%s.php?%s' % (page, urllib.urlencode(args))
 
-
     def get_app_url(self, path=''):
         """
         Returns the URL for this app's canvas page, according to app_name.
 
         """
         return 'http://apps.facebook.com/%s/%s' % (self.app_name, path)
-
 
     def get_add_url(self, next=None):
         """
@@ -1162,7 +1147,6 @@ class Facebook(object):
             args['next'] = next
 
         return self.get_url('install', **args)
-
 
     def get_authorize_url(self, next=None, next_cancel=None):
         """
@@ -1179,7 +1163,6 @@ class Facebook(object):
             args['next_cancel'] = next_cancel
 
         return self.get_url('authorize', **args)
-
 
     def get_login_url(self, next=None, popup=False, canvas=True):
         """
@@ -1204,13 +1187,11 @@ class Facebook(object):
 
         return self.get_url('login', **args)
 
-
     def login(self, popup=False):
         """Open a web browser telling the user to login to Facebook."""
         import webbrowser
 
         webbrowser.open(self.get_login_url(popup=popup))
-
 
     def get_ext_perm_url(self, ext_perm, next=None, popup=False):
         """
@@ -1230,13 +1211,11 @@ class Facebook(object):
 
         return self.get_url('authorize', **args)
 
-
     def request_extended_permission(self, ext_perm, popup=False):
         """Open a web browser telling the user to grant an extended permission."""
         import webbrowser
 
         webbrowser.open(self.get_ext_perm_url(ext_perm, popup=popup))
-
 
     def check_session(self, request):
         """
@@ -1343,7 +1322,6 @@ class Facebook(object):
             return False
 
         return True
-
 
     def validate_signature(self, post, prefix='fb_sig', timeout=None):
         """

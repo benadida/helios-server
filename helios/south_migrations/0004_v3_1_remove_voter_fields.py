@@ -14,7 +14,6 @@ class Migration(SchemaMigration):
         # Deleting field 'Voter.voter_type'
         db.delete_column('helios_voter', 'voter_type')
 
-
     def backwards(self, orm):
         # Adding field 'Voter.name'
         db.add_column('helios_voter', 'name', self.gf('django.db.models.fields.CharField')(max_length=200, null=True),
@@ -27,7 +26,6 @@ class Migration(SchemaMigration):
         # We cannot add back in field 'Voter.voter_type'
         raise RuntimeError(
             "Cannot reverse this migration. 'Voter.voter_type' and its values cannot be restored.")
-
 
     models = {
         'helios_auth.user': {

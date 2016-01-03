@@ -3,18 +3,13 @@
 # (c) William Stein, 2004
 ##################################################
 
-
-
-
 from random import randrange
 from math import log, sqrt
 
-
-
-
 ##################################################
-## Greatest Common Divisors
+# Greatest Common Divisors
 ##################################################
+
 
 def gcd(a, b):  # (1)
     """
@@ -30,17 +25,21 @@ def gcd(a, b):  # (1)
     >>> gcd(97 * 10**15, 19**20 * 97**2)              # (2)
     97L
     """
-    if a < 0:  a = -a
-    if b < 0:  b = -b
-    if a == 0: return b
-    if b == 0: return a
+    if a < 0:
+        a = -a
+    if b < 0:
+        b = -b
+    if a == 0:
+        return b
+    if b == 0:
+        return a
     while b != 0:
         (a, b) = (b, a % b)
     return a
 
 
 ##################################################
-## Enumerating Primes
+# Enumerating Primes
 ##################################################
 
 def primes(n):
@@ -69,7 +68,7 @@ def primes(n):
 
 
 ##################################################
-## Integer Factorization
+# Integer Factorization
 ##################################################
 
 def trial_division(n, bound=None):
@@ -97,12 +96,15 @@ def trial_division(n, bound=None):
     >>> trial_division(387833, 400)  
     389
     """
-    if n == 1: return 1
+    if n == 1:
+        return 1
     for p in [2, 3, 5]:
-        if n % p == 0: return p
-    if bound == None: bound = n
+        if n % p == 0:
+            return p
+    if bound is None:
+        bound = n
     dif = [6, 4, 2, 4, 2, 4, 6, 2]
-    m = 7;
+    m = 7
     i = 1
     while m <= bound and m * m <= n:
         if n % m == 0:
@@ -132,14 +134,15 @@ def factor(n):
     [(2, 2), (3, 1), (167, 1)]
     """
     if n in [-1, 0, 1]: return []
-    if n < 0: n = -n
+    if n < 0:
+        n = -n
     F = []
     while n != 1:
         p = trial_division(n)
         e = 1
         n /= p
         while n % p == 0:
-            e += 1;
+            e += 1
             n /= p
         F.append((p, e))
     F.sort()
@@ -147,7 +150,7 @@ def factor(n):
 
 
 ##################################################
-## Linear Equations Modulo $n$
+# Linear Equations Modulo $n$
 ##################################################
 
 def xgcd(a, b):
@@ -171,21 +174,28 @@ def xgcd(a, b):
     >>> print x*100 + y*2004
     4
     """
-    if a == 0 and b == 0: return (0, 0, 1)
-    if a == 0: return (abs(b), 0, b / abs(b))
-    if b == 0: return (abs(a), a / abs(a), 0)
-    x_sign = 1;
+    if a == 0 and b == 0:
+        return 0, 0, 1
+    if a == 0:
+        return abs(b), 0, b / abs(b)
+    if b == 0:
+        return abs(a), a / abs(a), 0
+    x_sign = 1
     y_sign = 1
-    if a < 0: a = -a; x_sign = -1
-    if b < 0: b = -b; y_sign = -1
-    x = 1;
-    y = 0;
-    r = 0;
+    if a < 0:
+        a = -a
+        x_sign = -1
+    if b < 0:
+        b = -b
+        y_sign = -1
+    x = 1
+    y = 0
+    r = 0
     s = 1
     while b != 0:
         (c, q) = (a % b, a / b)
         (a, b, r, s, x, y) = (b, c, x - q * r, y - q * s, r, s)
-    return (a, x * x_sign, y * y_sign)
+    return a, x * x_sign, y * y_sign
 
 
 def inversemod(a, n):
@@ -230,11 +240,12 @@ def solve_linear(a, b, n):
     Examples:
     >>> solve_linear(4, 2, 10)
     8
-    >>> solve_linear(2, 1, 4) == None
+    >>> solve_linear(2, 1, 4) is None
     True
     """
     g, c, _ = xgcd(a, n)  # (1)
-    if b % g != 0: return None
+    if b % g != 0:
+        return None
     return ((b / g) * c) % n
 
 
@@ -261,7 +272,7 @@ def crt(a, b, m, n):
 
 
 ##################################################
-## Computation of Powers
+# Computation of Powers
 ##################################################
 
 def powermod(a, m, n):
@@ -292,7 +303,7 @@ def powermod(a, m, n):
 
 
 ##################################################
-## Finding a Primitive Root
+# Finding a Primitive Root
 ##################################################
 
 def primitive_root(p):
@@ -321,7 +332,8 @@ def primitive_root(p):
             if powermod(a, (p - 1) / q, p) == 1:
                 generates = False
                 break
-        if generates: return a
+        if generates:
+            return a
         a += 1
     assert False, "p must be prime."
 
@@ -359,8 +371,10 @@ def is_pseudoprime(n, bases=[2, 3, 5, 7]):
     >>> factor(29341)
     [(13, 1), (37, 1), (61, 1)]
     """
-    if n < 0: n = -n
-    if n <= 1: return False
+    if n < 0:
+        n = -n
+    if n <= 1:
+        return False
     for b in bases:
         if b % n != 0 and powermod(b, n - 1, n) != 1:
             return False
@@ -394,13 +408,16 @@ def miller_rabin(n, num_trials=4):
     >>> s == t                    
     True                          #rand
     """
-    if n < 0: n = -n
-    if n in [2, 3]: return True
-    if n <= 4: return False
+    if n < 0:
+        n = -n
+    if n in [2, 3]:
+        return True
+    if n <= 4:
+        return False
     m = n - 1
     k = 0
     while m % 2 == 0:
-        k += 1;
+        k += 1
         m /= 2
     # Now n - 1 = (2**k) * m with m odd
     for i in range(num_trials):
@@ -421,7 +438,7 @@ def miller_rabin(n, num_trials=4):
 
 
 ##################################################
-## The Diffie-Hellman Key Exchange
+# The Diffie-Hellman Key Exchange
 ##################################################
 
 def random_prime(num_digits, is_prime=miller_rabin):
@@ -487,7 +504,7 @@ def dh_secret(p, n, mpow):
 
 
 ##################################################
-## Encoding Strings as Lists of Integers
+# Encoding Strings as Lists of Integers
 ##################################################
 
 def str_to_numlist(s, bound):
@@ -510,10 +527,10 @@ def str_to_numlist(s, bound):
     assert bound >= 256, "bound must be at least 256."
     n = int(log(bound) / log(256))  # (1)
     salt = min(int(n / 8) + 1, n - 1)  # (2)
-    i = 0;
+    i = 0
     v = []
     while i < len(s):  # (3)
-        c = 0;
+        c = 0
         pow = 1
         for j in range(n):  # (4)
             if j < salt:
@@ -557,7 +574,7 @@ def numlist_to_str(v, bound):
 
 
 ##################################################
-## The RSA Cryptosystem
+# The RSA Cryptosystem
 ##################################################
 
 def rsa_init(p, q):
@@ -590,7 +607,8 @@ def rsa_init(p, q):
     """
     m = (p - 1) * (q - 1)
     e = 3
-    while gcd(e, m) != 1: e += 1
+    while gcd(e, m) != 1:
+        e += 1
     d = inversemod(e, m)
     return e, d, p * q
 
@@ -641,7 +659,7 @@ def rsa_decrypt(cipher, d, n):
 
 
 ##################################################
-## Computing the Legendre Symbol
+# Computing the Legendre Symbol
 ##################################################
 
 def legendre(a, p):
@@ -673,7 +691,7 @@ def legendre(a, p):
 
 
 ##################################################
-## In this section we implement the algorithm
+# In this section we implement the algorithm
 ##################################################
 
 def sqrtmod(a, p):
@@ -695,12 +713,14 @@ def sqrtmod(a, p):
     761044645L     #rand
     """
     a %= p
-    if p == 2: return a
+    if p == 2:
+        return a
     assert legendre(a, p) == 1, "a must be a square mod p."
-    if p % 4 == 3: return powermod(a, (p + 1) / 4, p)
+    if p % 4 == 3:
+        return powermod(a, (p + 1) / 4, p)
 
     def mul(x, y):  # multiplication in R       # (1)
-        return ((x[0] * y[0] + a * y[1] * x[1]) % p, \
+        return ((x[0] * y[0] + a * y[1] * x[1]) % p,
                 (x[0] * y[1] + x[1] * y[0]) % p)
 
     def pow(x, n):  # exponentiation in R       # (2)
@@ -723,7 +743,7 @@ def sqrtmod(a, p):
 
 
 ##################################################
-## Continued Fractions
+# Continued Fractions
 ##################################################
 
 def convergents(v):
@@ -844,12 +864,13 @@ def sum_of_two_squares(p):
     n = int(sqrt(p))
     for a, b in convergents(v):  # (3)
         c = r * b + p * a  # (4)
-        if -n <= c and c <= n: return (abs(b), abs(c))
+        if -n <= c <= n:
+            return abs(b), abs(c)
     assert False, "Bug in sum_of_two_squares."  # (5)
 
 
 ##################################################
-## Arithmetic
+# Arithmetic
 ##################################################
 
 def ellcurve_add(E, P1, P2):
@@ -878,21 +899,22 @@ def ellcurve_add(E, P1, P2):
     assert p > 2, "p must be odd."
     if P1 == "Identity": return P2
     if P2 == "Identity": return P1
-    x1, y1 = P1;
+    x1, y1 = P1
     x2, y2 = P2
-    x1 %= p;
-    y1 %= p;
-    x2 %= p;
+    x1 %= p
+    y1 %= p
+    x2 %= p
     y2 %= p
     if x1 == x2 and y1 == p - y2: return "Identity"
     if P1 == P2:
-        if y1 == 0: return "Identity"
+        if y1 == 0:
+            return "Identity"
         lam = (3 * x1 ** 2 + a) * inversemod(2 * y1, p)
     else:
         lam = (y1 - y2) * inversemod(x1 - x2, p)
     x3 = lam ** 2 - x1 - x2
     y3 = -lam * x3 - y1 + lam * x1
-    return (x3 % p, y3 % p)
+    return x3 % p, y3 % p
 
 
 def ellcurve_mul(E, m, P):
@@ -919,14 +941,15 @@ def ellcurve_mul(E, m, P):
     power = P
     mP = "Identity"
     while m != 0:
-        if m % 2 != 0: mP = ellcurve_add(E, mP, power)
+        if m % 2 != 0:
+            mP = ellcurve_add(E, mP, power)
         power = ellcurve_add(E, power, power)
         m /= 2
     return mP
 
 
 ##################################################
-## Integer Factorization
+# Integer Factorization
 ##################################################
 
 def lcm_to(B):
@@ -1048,7 +1071,7 @@ def elliptic_curve_method(N, m, tries=5):
 
 
 ##################################################
-## ElGamal Elliptic Curve Cryptosystem
+# ElGamal Elliptic Curve Cryptosystem
 ##################################################
 
 def elgamal_init(p):
@@ -1115,7 +1138,7 @@ def elgamal_encrypt(plain_text, public_key):
         y = sqrtmod(x ** 3 + a * x + b, p)  # (3)
         P = (x, y)
         r = randrange(1, p)
-        encrypted = (ellcurve_mul(E, r, B), \
+        encrypted = (ellcurve_mul(E, r, B),
                      ellcurve_add(E, P, ellcurve_mul(E, r, nB)))
         cipher.append(encrypted)
     return cipher
@@ -1148,7 +1171,7 @@ def elgamal_decrypt(cipher_text, private_key):
 
 
 ##################################################
-## Associativity of the Group Law
+# Associativity of the Group Law
 ##################################################
 
 # The variable order is x1, x2, x3, y1, y2, y3, a, b
@@ -1236,7 +1259,8 @@ class Poly:  # (1)
                         self[nx3] += c
                         # end for
             # end for
-            if finished: return
+            if finished:
+                return
             # end while
 
 
@@ -1254,21 +1278,21 @@ class Frac:  # (10)
         return -1
 
     def __add__(self, other):  # (12)
-        return Frac(self.num * other.denom + \
+        return Frac(self.num * other.denom +
                     self.denom * other.num,
                     self.denom * other.denom)
 
     def __sub__(self, other):
-        return Frac(self.num * other.denom - \
+        return Frac(self.num * other.denom -
                     self.denom * other.num,
                     self.denom * other.denom)
 
     def __mul__(self, other):
-        return Frac(self.num * other.num, \
+        return Frac(self.num * other.num,
                     self.denom * other.denom)
 
     def __div__(self, other):
-        return Frac(self.num * other.denom, \
+        return Frac(self.num * other.denom,
                     self.denom * other.num)
 
     def __neg__(self):
@@ -1276,19 +1300,19 @@ class Frac:  # (10)
 
 
 def var(i):  # (14)
-    v = [0, 0, 0, 0, 0, 0, 0, 0];
-    v[i] = 1;
+    v = [0, 0, 0, 0, 0, 0, 0, 0]
+    v[i] = 1
     return Frac(Poly({tuple(v): 1}))
 
 
 def prove_associative():  # (15)
-    x1 = var(0);
-    x2 = var(1);
+    x1 = var(0)
+    x2 = var(1)
     x3 = var(2)
-    y1 = var(3);
-    y2 = var(4);
+    y1 = var(3)
+    y2 = var(4)
     y3 = var(5)
-    a = var(6);
+    a = var(6)
     b = var(7)
 
     lambda12 = (y1 - y2) / (x1 - x2)
@@ -1299,9 +1323,9 @@ def prove_associative():  # (15)
     x5 = lambda23 * lambda23 - x2 - x3
     nu23 = y2 - lambda23 * x2
     y5 = -lambda23 * x5 - nu23
-    s1 = (x1 - x5) * (x1 - x5) * ((y3 - y4) * (y3 - y4) \
+    s1 = (x1 - x5) * (x1 - x5) * ((y3 - y4) * (y3 - y4)
                                   - (x3 + x4) * (x3 - x4) * (x3 - x4))
-    s2 = (x3 - x4) * (x3 - x4) * ((y1 - y5) * (y1 - y5) \
+    s2 = (x3 - x4) * (x3 - x4) * ((y1 - y5) * (y1 - y5)
                                   - (x1 + x5) * (x1 - x5) * (x1 - x5))
     print "Associative?"
     print s1 == s2  # (17)

@@ -12,20 +12,16 @@ from django.conf import settings
 from helios_auth.security import get_user
 import helios_auth
 
-
-
-
-
-
-##
-## BASICS
-##
+#
+# BASICS
+#
 
 SUCCESS = HttpResponse("SUCCESS")
 
-##
-## template abstraction
-##
+#
+# template abstraction
+#
+
 
 def prepare_vars(request, vars):
     vars_with_user = vars.copy()

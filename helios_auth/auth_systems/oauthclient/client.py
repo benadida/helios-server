@@ -1,4 +1,4 @@
-'''
+"""
 Python Oauth client for Twitter
 modified to work with other oAuth logins like LinkedIn (Ben Adida)
 
@@ -6,7 +6,7 @@ Used the SampleClient from the OAUTH.org example python client as basis.
 
 props to leahculver for making a very hard to use but in the end usable oauth lib.
 
-'''
+"""
 import urllib
 import webbrowser
 
@@ -27,7 +27,7 @@ class LoginOAuthClient(oauth.OAuthClient):
     def access_token_url(self):
         return self.server_params['root_url'] + self.server_params['access_token_path']
 
-    #oauth object
+    # oauth object
     def __init__(self, consumer_key, consumer_secret, server_params, oauth_token=None, oauth_token_secret=None):
         """
         params should be a dictionary including
@@ -37,28 +37,28 @@ class LoginOAuthClient(oauth.OAuthClient):
 
         self.sha1_method = oauth.OAuthSignatureMethod_HMAC_SHA1()
         self.consumer = oauth.OAuthConsumer(consumer_key, consumer_secret)
-        if ((oauth_token != None) and (oauth_token_secret != None)):
+        if (oauth_token is not None) and (oauth_token_secret is not None):
             self.token = oauth.OAuthConsumer(oauth_token, oauth_token_secret)
         else:
             self.token = None
 
     def oauth_request(self, url, args={}, method=None):
-        if (method == None):
+        if method is None:
             if args == {}:
                 method = "GET"
             else:
                 method = "POST"
         req = oauth.OAuthRequest.from_consumer_and_token(self.consumer, self.token, method, url, args)
         req.sign_request(self.sha1_method, self.consumer, self.token)
-        if (method == "GET"):
+        if method == "GET":
             return self.http_wrapper(req.to_url())
-        elif (method == "POST"):
+        elif method == "POST":
             return self.http_wrapper(req.get_normalized_http_url(), req.to_postdata())
 
-    #this is barely working. (i think. mostly it is that everyone else is using httplib) 
+    # this is barely working. (i think. mostly it is that everyone else is using httplib)
     def http_wrapper(self, url, postdata={}):
         try:
-            if (postdata != {}):
+            if postdata != {}:
                 f = urllib.urlopen(url, postdata)
             else:
                 f = urllib.urlopen(url)
@@ -78,7 +78,6 @@ class LoginOAuthClient(oauth.OAuthClient):
             response = ""
         return response
 
-
     def get_request_token(self):
         response = self.oauth_request(self.request_token_url())
         token = self.oauth_parse_response(response)
@@ -92,7 +91,7 @@ class LoginOAuthClient(oauth.OAuthClient):
         r = {}
         for param in response_string.split("&"):
             pair = param.split("=")
-            if (len(pair) != 2):
+            if len(pair) != 2:
                 break
 
             r[pair[0]] = pair[1]
@@ -114,22 +113,22 @@ class LoginOAuthClient(oauth.OAuthClient):
         return token
 
     def oauth_request(self, url, args={}, method=None):
-        if (method == None):
+        if method is None:
             if args == {}:
                 method = "GET"
             else:
                 method = "POST"
         req = oauth.OAuthRequest.from_consumer_and_token(self.consumer, self.token, method, url, args)
         req.sign_request(self.sha1_method, self.consumer, self.token)
-        if (method == "GET"):
+        if method == "GET":
             return self.http_wrapper(req.to_url())
-        elif (method == "POST"):
+        elif method == "POST":
             return self.http_wrapper(req.get_normalized_http_url(), req.to_postdata())
 
 
-##
-## the code below needs to be updated to take into account not just Twitter
-##
+#
+# the code below needs to be updated to take into account not just Twitter
+#
 
 if __name__ == '__main__':
     consumer_key = ''
@@ -151,10 +150,9 @@ if __name__ == '__main__':
     print "Making signed request"
     # verify user access
     content = response_client.oauth_request('https://twitter.com/account/verify_credentials.json', method='POST')
-    #make an update
-    #content = response_client.oauth_request('https://twitter.com/statuses/update.xml', {'status':'Updated from a python oauth client. awesome.'}, method='POST')
+    # make an update
+    # content = response_client.oauth_request('https://twitter.com/statuses/update.xml',
+    #                                         {'status': 'Updated from a python oauth client. awesome.'}, method='POST')
     print content
 
     print 'Done.'
-
-

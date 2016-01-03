@@ -1,7 +1,7 @@
 #
 # number.py : Number-theoretic functions
 #
-#  Part of the Python Cryptography Toolkit
+# Part of the Python Cryptography Toolkit
 #
 # Distribute and use freely; there are no restrictions on further
 # dissemination and usage except those imposed by the laws of your
@@ -19,17 +19,18 @@ except ImportError:
     _fastmath = None
 
 # Commented out and replaced with faster versions below
-## def long2str(n):
-##     s=''
-##     while n>0:
-##         s=chr(n & 255)+s
-##         n=n>>8
-##     return s
+# def long2str(n):
+# s=''
+#     while n>0:
+#         s=chr(n & 255)+s
+#         n=n>>8
+#     return s
 
-## import types
-## def str2long(s):
-##     if type(s)!=types.StringType: return s   # Integers will be left alone
-##     return reduce(lambda x,y : x*256+ord(y), s, 0L)
+# import types
+# def str2long(s):
+#     if type(s)!=types.StringType: return s   # Integers will be left alone
+#     return reduce(lambda x,y : x*256+ord(y), s, 0L)
+
 
 def size(N):
     """size(N:long) : int
@@ -38,7 +39,7 @@ def size(N):
     bits, power = 0, 1L
     while N >= power:
         bits += 1
-        power = power << 1
+        power <<= 1
     return bits
 
 
@@ -61,7 +62,7 @@ def GCD(x, y):
     """GCD(x:long, y:long): long
     Return the GCD of x and y.
     """
-    x = abs(x);
+    x = abs(x)
     y = abs(y)
     while x > 0:
         x, y = y % x, x
@@ -92,8 +93,8 @@ def getPrime(N, randfunc):
     """
 
     number = getRandomNumber(N, randfunc) | 1
-    while (not isPrime(number)):
-        number = number + 2
+    while not isPrime(number):
+        number += 2
     return number
 
 
@@ -117,15 +118,15 @@ def isPrime(N):
     N1 = N - 1L
     n = 1L
     while (n < N):
-        n = n << 1L
-    n = n >> 1L
+        n <<= 1L
+    n >>= 1L
 
     # Rabin-Miller test
     for c in sieve[:7]:
-        a = long(c);
-        d = 1L;
+        a = long(c)
+        d = 1L
         t = n
-        while (t):  # Iterate over the bits in N1
+        while t:  # Iterate over the bits in N1
             x = (d * d) % N
             if x == 1L and d != 1L and d != N1:
                 return 0  # Square root of 1 found
@@ -133,7 +134,7 @@ def isPrime(N):
                 d = (x * a) % N
             else:
                 d = x
-            t = t >> 1L
+            t >>= 1L
         if d != 1L:
             return 0
     return 1
@@ -167,7 +168,7 @@ def long_to_bytes(n, blocksize=0):
     pack = struct.pack
     while n > 0:
         s = pack('>I', n & 0xffffffffL) + s
-        n = n >> 32
+        n >>= 32
     # strip off leading zeros
     for i in range(len(s)):
         if s[i] != '\000':
@@ -196,7 +197,7 @@ def bytes_to_long(s):
     if length % 4:
         extra = (4 - length % 4)
         s = '\000' * extra + s
-        length = length + extra
+        length += extra
     for i in range(0, length, 4):
         acc = (acc << 32) + unpack('>I', s[i:i + 4])[0]
     return acc

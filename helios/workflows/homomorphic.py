@@ -70,10 +70,10 @@ class EncryptedAnswer(WorkflowObject):
                 return False
 
             # compute homomorphic sum if needed
-            if max != None:
+            if max is not None:
                 homomorphic_sum = choice * homomorphic_sum
 
-        if max != None:
+        if max is not None:
             # determine possible plaintexts for the sum
             sum_possible_plaintexts = self.generate_plaintexts(pk, min=min, max=max)
 
@@ -131,14 +131,15 @@ class EncryptedAnswer(WorkflowObject):
             choices[answer_num] = pk.encrypt_with_r(plaintexts[plaintext_index], randomness[answer_num])
 
             # generate proof
-            individual_proofs[answer_num] = choices[answer_num].generate_disjunctive_encryption_proof(plaintexts,
-                                                                                                      plaintext_index,
-                                                                                                      randomness[
-                                                                                                          answer_num],
-                                                                                                      algs.EG_disjunctive_challenge_generator)
+            individual_proofs[answer_num] = choices[answer_num] \
+                .generate_disjunctive_encryption_proof(plaintexts,
+                                                       plaintext_index,
+                                                       randomness[
+                                                           answer_num],
+                                                       algs.EG_disjunctive_challenge_generator)
 
             # sum things up homomorphically if needed
-            if max_answers != None:
+            if max_answers is not None:
                 homomorphic_sum = choices[answer_num] * homomorphic_sum
                 randomness_sum = (randomness_sum + randomness[answer_num]) % pk.q
 
@@ -148,14 +149,15 @@ class EncryptedAnswer(WorkflowObject):
         if num_selected_answers < min_answers:
             raise Exception("Need to select at least %s answer(s)" % min_answers)
 
-        if max_answers != None:
+        if max_answers is not None:
             sum_plaintexts = cls.generate_plaintexts(pk, min=min_answers, max=max_answers)
 
             # need to subtract the min from the offset
-            overall_proof = homomorphic_sum.generate_disjunctive_encryption_proof(sum_plaintexts,
-                                                                                  num_selected_answers - min_answers,
-                                                                                  randomness_sum,
-                                                                                  algs.EG_disjunctive_challenge_generator);
+            overall_proof = homomorphic_sum \
+                .generate_disjunctive_encryption_proof(sum_plaintexts,
+                                                       num_selected_answers - min_answers,
+                                                       randomness_sum,
+                                                       algs.EG_disjunctive_challenge_generator)
         else:
             # approval voting
             overall_proof = None
@@ -442,4 +444,3 @@ class Tally(WorkflowObject):
     def _process_value_out(self, field_name, field_value):
         if field_name == 'tally':
             return [[a.toJSONDict() for a in q] for q in field_value]
-        
