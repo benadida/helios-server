@@ -8,7 +8,6 @@ requires tlslite - http://trevp.net/tlslite/
 import binascii
 
 from gdata.tlslite.utils import keyfactory
-from gdata.tlslite.utils import cryptomath
 
 # XXX andy: ugly local import due to module name, oauth.oauth
 import gdata.oauth as oauth

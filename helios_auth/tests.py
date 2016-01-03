@@ -3,16 +3,14 @@ Unit Tests for Auth Systems
 """
 
 import unittest
-import models
 
 from django.db import IntegrityError, transaction
-
-from django.test.client import Client
 from django.test import TestCase
-
 from django.core import mail
 
+import models
 from auth_systems import AUTH_SYSTEMS
+
 
 class UserModelTests(unittest.TestCase):
 
@@ -90,7 +88,6 @@ class UserModelTests(unittest.TestCase):
 
 
 import views
-import auth_systems.password as password_views
 from django.core.urlresolvers import reverse
 
 # FIXME: login CSRF should make these tests more complicated

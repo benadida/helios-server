@@ -6,15 +6,13 @@ Ben Adida (ben@adida.net)
 
 # nicely update the wrapper function
 from functools import update_wrapper
+import uuid
 
-from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.core.exceptions import *
 from django.conf import settings
 
 import oauth
-
-import uuid
-
 from helios_auth.models import *
 
 FIELDS_TO_SAVE = 'FIELDS_TO_SAVE'

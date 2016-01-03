@@ -2,11 +2,10 @@
 Forms for Helios
 """
 
-from django import forms
-from models import Election
-from widgets import *
-from fields import *
 from django.conf import settings
+
+from models import Election
+from fields import *
 
 
 class ElectionForm(forms.Form):

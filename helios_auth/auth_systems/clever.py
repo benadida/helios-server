@@ -3,15 +3,16 @@ Clever Authentication
 
 """
 
-from django.http import *
-from django.core.mail import send_mail
+import json
+import base64
+import urllib
+
 from django.conf import settings
-
-import httplib2,json,base64
-
-import sys, os, cgi, urllib, urllib2, re
-
+import httplib2
 from oauth2client.client import OAuth2WebServerFlow, OAuth2Credentials
+
+
+
 
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False

@@ -2,29 +2,25 @@
 Unit Tests for Helios
 """
 
-import unittest, datetime, re, urllib
+import datetime
+import re
+import urllib
+import uuid
+
 import django_webtest
+from django.test import TestCase
+from django.utils.html import escape as html_escape
+from django.core import mail
+from django.core.files import File
+from django.conf import settings
 
 import models
 import datatypes
-
 from helios_auth import models as auth_models
 from views import ELGAMAL_PARAMS
 import views
 import utils
 
-from django.db import IntegrityError, transaction
-from django.test.client import Client
-from django.test import TestCase
-from django.utils.html import escape as html_escape
-
-from django.core import mail
-from django.core.files import File
-from django.core.urlresolvers import reverse
-from django.conf import settings
-from django.core.exceptions import PermissionDenied
-
-import uuid
 
 class ElectionModelTests(TestCase):
     fixtures = ['users.json']

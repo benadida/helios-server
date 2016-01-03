@@ -8,8 +8,6 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponseRedirect
 
-import logging
-
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = False
 

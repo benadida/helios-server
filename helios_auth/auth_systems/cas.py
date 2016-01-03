@@ -5,12 +5,17 @@ Some code borrowed from
 https://sp.princeton.edu/oit/sdp/CAS/Wiki%20Pages/Python.aspx
 """
 
+import urllib
+import urllib2
+import re
+import uuid
+import datetime
+from xml.etree import ElementTree
+
 from django.http import *
 from django.core.mail import send_mail
 from django.conf import settings
 
-import sys, os, cgi, urllib, urllib2, re, uuid, datetime
-from xml.etree import ElementTree
 
 CAS_EMAIL_DOMAIN = "princeton.edu"
 CAS_URL= 'https://fed.princeton.edu/cas/'

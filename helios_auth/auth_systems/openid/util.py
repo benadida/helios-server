@@ -6,17 +6,12 @@ Utility code for the Django example consumer and server.
 from urlparse import urljoin
 
 from django.db import connection
-from django.template.context import RequestContext
-from django.template import loader
-from django import http
 from django.core.exceptions import ImproperlyConfigured
 from django.core.urlresolvers import reverse as reverseURL
-
 from django.conf import settings
-
 from openid.store.filestore import FileOpenIDStore
 from openid.store import sqlstore
-from openid.yadis.constants import YADIS_CONTENT_TYPE
+
 
 def getOpenIDStore(filestore_path, table_prefix):
     """

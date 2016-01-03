@@ -5,8 +5,6 @@ so much like Facebook
 # NOT WORKING YET because Windows Live documentation and status is unclear. Is it in beta? I think it is.
 """
 
-import logging
-
 from django.conf import settings
 APP_ID = settings.LIVE_APP_ID
 APP_SECRET = settings.LIVE_APP_SECRET

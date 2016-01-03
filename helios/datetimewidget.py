@@ -7,10 +7,12 @@ DateTimeWidget using JSCal2 from http://www.dynarch.com/projects/calendar/
 django snippets 1629
 '''
 
+import datetime
+import time
+
 from django.utils.encoding import force_unicode
 from django.conf import settings
 from django import forms
-import datetime, time
 from django.utils.safestring import mark_safe
 
 # DATETIMEWIDGET

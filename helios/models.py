@@ -6,18 +6,18 @@ Ben Adida
 (ben@adida.net)
 """
 
-from django.db import models, transaction
-import json
-from django.conf import settings
-from django.core.mail import send_mail
+import datetime
+import uuid
+import random
+import io
 
-import datetime, logging, uuid, random, io
+from django.db import models, transaction
+from django.conf import settings
 import bleach
 
-from crypto import electionalgs, algs, utils
+from crypto import algs, utils
 from helios import utils as heliosutils
 import helios.views
-
 from helios import datatypes
 
 

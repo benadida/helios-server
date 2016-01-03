@@ -2,7 +2,7 @@
 data types for 2011/01 Helios
 """
 
-from helios.datatypes import LDObject, arrayOf, DictObject, ListObject
+from helios.datatypes import LDObject, arrayOf, ListObject
 
 class Trustee(LDObject):
   """

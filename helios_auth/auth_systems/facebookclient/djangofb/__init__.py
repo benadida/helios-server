@@ -1,11 +1,12 @@
 import re
-import datetime
-import facebook
+from datetime import datetime
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
-from datetime import datetime
+
+import facebook
+
 
 try:
     from threading import local

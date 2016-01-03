@@ -2,8 +2,8 @@
 Crypto Utils
 """
 
-import hmac, base64, json
-
+import base64
+import json
 from hashlib import sha256
   
 def hash_b64(s):

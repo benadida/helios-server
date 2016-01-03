@@ -7,12 +7,11 @@ Used the SampleClient from the OAUTH.org example python client as basis.
 props to leahculver for making a very hard to use but in the end usable oauth lib.
 
 '''
-import httplib
-import urllib, urllib2
-import time
+import urllib
 import webbrowser
+
 import oauth as oauth
-from urlparse import urlparse
+
 
 class LoginOAuthClient(oauth.OAuthClient):
 

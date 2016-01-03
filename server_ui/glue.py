@@ -3,11 +3,10 @@ Glue some events together
 """
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
-from django.conf import settings
-import helios.views, helios.signals
 
-import views
+import helios.views
+import helios.signals
+
 
 def vote_cast_send_message(user, voter, election, cast_vote, **kwargs):
   ## FIXME: this doesn't work for voters that are not also users

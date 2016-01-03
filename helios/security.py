@@ -6,19 +6,18 @@ Ben Adida (ben@adida.net)
 
 # nicely update the wrapper function
 from functools import update_wrapper
+import urllib
 
 from django.core.urlresolvers import reverse
 from django.core.exceptions import *
 from django.http import *
-from django.conf import settings
+from django.http import HttpResponseRedirect
 
 from models import *
 from helios_auth.security import get_user
-
-from django.http import HttpResponseRedirect
-import urllib
-
 import helios
+
+
 
 # current voter
 def get_voter(request, user, election):

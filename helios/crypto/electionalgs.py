@@ -5,11 +5,12 @@ Ben Adida
 2008-08-30
 """
 
-import algs
-import logging
-import utils
 import uuid
 import datetime
+
+import algs
+import utils
+
 
 class HeliosObject(object):
   """

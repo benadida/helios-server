@@ -44,7 +44,6 @@ http://undefined.org/python/#simplejson to download it, or do
 apt-get install python-simplejson on a Debian-like system.
 """
 
-import sys
 import time
 import struct
 import urllib

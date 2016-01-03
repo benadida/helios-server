@@ -5,42 +5,31 @@ Helios Django Views
 Ben Adida (ben@adida.net)
 """
 
-from django.core.urlresolvers import reverse
-from django.core.mail import send_mail
+import os
+import base64
+
 from django.core.paginator import Paginator
-from django.core.exceptions import PermissionDenied
-from django.http import *
-from django.db import transaction
-
-from mimetypes import guess_type
-
 from validate_email import validate_email
 
-import csv, urllib, os, base64
-
-from crypto import algs, electionalgs, elgamal
+from crypto import elgamal
 from crypto import utils as cryptoutils
 from workflows import homomorphic
 from helios import utils as helios_utils
 from view_utils import *
-
 from helios_auth.security import *
-from helios_auth.auth_systems import AUTH_SYSTEMS, can_list_categories
+from helios_auth.auth_systems import can_list_categories
 from helios_auth.models import AuthenticationExpired
-
 from helios import security
 from helios_auth import views as auth_views
-
 import tasks
-
 from security import *
 from helios_auth.security import get_user, save_in_session_across_logouts
-
-import uuid, datetime
-
 from models import *
+import forms
 
-import forms, signals
+
+
+
 
 # Parameters for everything
 ELGAMAL_PARAMS = elgamal.Cryptosystem()

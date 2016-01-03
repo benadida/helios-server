@@ -2,14 +2,10 @@
 Widget for datetime split, with calendar for date, and drop-downs for times.
 """
 
-from django import forms
-from django.db import models
-from django.template.loader import render_to_string
-from django.forms.widgets import Select, MultiWidget, DateInput, TextInput, Widget
-from django.forms.extras.widgets import SelectDateWidget
-from time import strftime
-
 import re
+
+from django.forms.widgets import Select, MultiWidget, Widget
+from django.forms.extras.widgets import SelectDateWidget
 from django.utils.safestring import mark_safe
 
 __all__ = ('SelectTimeWidget', 'SplitSelectDateTimeWidget')

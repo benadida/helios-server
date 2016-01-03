@@ -8,12 +8,11 @@ Ben Adida
 ben@adida.net
 """
 
-import math, hashlib, logging
-import randpool, number
-
-import numtheory
+import hashlib
+import logging
 
 from algs import Utils
+
 
 class Cryptosystem(object):
     def __init__(self):

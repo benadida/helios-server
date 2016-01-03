@@ -5,17 +5,18 @@ Ben Adida - ben@adida.net
 2005-04-11
 """
 
-import urllib, re, sys, datetime, urlparse, string
-
-import boto.ses
+import urllib
+import re
+import datetime
+import string
 
 # utils from helios_auth, too
-from helios_auth.utils import *
 
 from django.conf import settings
   
-import random, logging
-import hashlib, hmac, base64
+import random
+import hashlib, hmac
+
 
 def do_hmac(k,s):
   """
@@ -167,7 +168,8 @@ def one_val_raw_sql(raw_sql, values=[]):
   """
   for a simple aggregate
   """
-  from django.db import connection, transaction
+  from django.db import connection
+
   cursor = connection.cursor()
 
   cursor.execute(raw_sql, values)

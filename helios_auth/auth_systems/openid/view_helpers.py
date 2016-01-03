@@ -1,14 +1,9 @@
-
-from django import http
-from django.http import HttpResponseRedirect
-
 from openid.consumer import consumer
 from openid.consumer.discover import DiscoveryFailure
 from openid.extensions import ax, pape, sreg
-from openid.yadis.constants import YADIS_HEADER_NAME, YADIS_CONTENT_TYPE
-from openid.server.trustroot import RP_RETURN_TO_URL_TYPE
 
 import util
+
 
 PAPE_POLICIES = [
     'AUTH_PHISHING_RESISTANT',

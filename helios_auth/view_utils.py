@@ -4,15 +4,18 @@ Utilities for all views
 Ben Adida (12-30-2008)
 """
 
-from django.template import Context, Template, loader
-from django.http import HttpResponse, Http404
+from django.template import Context, loader
+from django.http import HttpResponse
 from django.shortcuts import render_to_response
+from django.conf import settings
 
 from helios_auth.security import get_user
-
 import helios_auth
 
-from django.conf import settings
+
+
+
+
 
 ##
 ## BASICS

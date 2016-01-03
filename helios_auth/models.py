@@ -8,11 +8,10 @@ Ben Adida
 """
 
 from django.db import models
+
 from jsonfield import JSONField
+from auth_systems import AUTH_SYSTEMS
 
-import datetime, logging
-
-from auth_systems import AUTH_SYSTEMS, can_check_constraint, can_list_categories
 
 # an exception to catch when a user is no longer authenticated
 class AuthenticationExpired(Exception):

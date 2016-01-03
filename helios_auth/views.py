@@ -5,22 +5,19 @@ Ben Adida
 2009-07-05
 """
 
+import urllib
+
 from django.http import *
 from django.core.urlresolvers import reverse
 
 from view_utils import *
 from helios_auth.security import get_user
-
-import auth_systems
 from auth_systems import AUTH_SYSTEMS
 from auth_systems import password
 import helios_auth
-
-import copy, urllib
-
 from models import User
-
 from security import FIELDS_TO_SAVE
+
 
 def index(request):
   """

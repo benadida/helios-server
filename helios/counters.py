@@ -13,10 +13,12 @@
 # limitations under the License.
 #
 
-from google.appengine.api import memcache 
+import random
+
+from google.appengine.api import memcache
 from google.appengine.ext import db
 from google.appengine.api.datastore import _CurrentTransactionKey
-import random
+
 
 class GeneralCounterShardConfig(db.Model):
   """Tracks the number of shards for each named counter."""

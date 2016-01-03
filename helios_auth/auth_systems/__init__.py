@@ -1,7 +1,15 @@
 
 AUTH_SYSTEMS = {}
 
-import twitter, password, cas, facebook, google, yahoo, linkedin, clever
+import twitter
+import password
+import cas
+import facebook
+import google
+import yahoo
+import linkedin
+import clever
+
 AUTH_SYSTEMS['twitter'] = twitter
 AUTH_SYSTEMS['linkedin'] = linkedin
 AUTH_SYSTEMS['password'] = password
