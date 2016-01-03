@@ -656,7 +656,7 @@ def one_election_cast_confirm(request, election):
         return HttpResponseRedirect(settings.URL_HOST)
 
     # election not frozen or started
-    if not election.voting_has_started():
+    if not election.voting_has_started:
         return render_template(request, 'election_not_started', {'election': election})
 
     voter = get_voter(request, user, election)
@@ -747,7 +747,7 @@ def one_election_cast_confirm(request, election):
         check_csrf(request)
 
         # voting has not started or has ended
-        if (not election.voting_has_started()) or election.voting_has_stopped():
+        if (not election.voting_has_started) or election.voting_has_stopped():
             return HttpResponseRedirect(settings.URL_HOST)
 
         # if user is not logged in
