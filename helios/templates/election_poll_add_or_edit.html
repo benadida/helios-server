@@ -123,21 +123,6 @@ $(function(){
         hide_jwt_elems(0);
         hide_shibboleth_elems(0);
     }
-    $("#id_oauth2_thirdparty").change(function(){
-        if ($("#id_oauth2_thirdparty").prop('checked')){
-            hide_jwt_elems(150);
-            hide_shibboleth_elems(150);
-            show_oauth2_elems(150);
-            if (jwt_auth.prop('checked')){
-                jwt_auth.prop('checked', false)
-                $("#id_shibboleth_auth").prop('checked', false)
-            }
-        }
-        else{
-            hide_oauth2_elems(150);
-        }
-    });
-
     $("#id_jwt_file").change(function(event){
         var output = $("#id_jwt_public_key");
         var input = event.target;
@@ -156,6 +141,21 @@ $(function(){
     });
 
 
+    $(".fieldset-auth").next("br").remove();
+
+    $("#id_oauth2_thirdparty").change(function(){
+        if ($("#id_oauth2_thirdparty").prop('checked')){
+            hide_jwt_elems(150);
+            hide_shibboleth_elems(150);
+            show_oauth2_elems(150);
+            jwt_auth.prop('checked', false)
+            $("#id_shibboleth_auth").prop('checked', false)
+        }
+        else{
+            hide_oauth2_elems(150);
+        }
+    });
+
     $("#id_shibboleth_auth").change(function(){
         if ($("#id_shibboleth_auth").prop('checked')){
             show_shibboleth_elems(150);
@@ -170,14 +170,11 @@ $(function(){
 
     $("#id_jwt_auth").change(function(){
         if ($("#id_jwt_auth").prop('checked')){
-                show_jwt_elems(150)
-            if ($("#id_oauth2_thirdparty").prop('checked')){
-                show_jwt_elems(150);
-                $("#id_oauth2_thirdparty").prop('checked', false)
-                $("#id_shibboleth_thirdparty").prop('checked', false)
-                hide_oauth2_elems(150);
-                hide_shibboleth_elems(150);
-            }
+            show_jwt_elems(150)
+            $("#id_shibboleth_auth").prop('checked', false)
+            hide_shibboleth_elems(150);
+            $("#id_oauth2_thirdparty").prop('checked', false)
+            hide_oauth2_elems(150);
         }
         else{
             hide_jwt_elems(150);

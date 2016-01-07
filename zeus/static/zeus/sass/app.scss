@@ -570,6 +570,12 @@ table tr.party {
     }
 }
 
+form .form-field.fieldset-auth {
+  float: left;
+  width: 33%;
+  height: 50px;
+}
+
 form .field-readonly {
     background-color: lighten(#000000, 80%) !important;
 } 

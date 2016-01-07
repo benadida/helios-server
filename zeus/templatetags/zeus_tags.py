@@ -293,3 +293,11 @@ def complete_get_parameters(context, GET, new_order,
         filter_param = '&q=%s' % urllib.quote_plus(q)
     params = '%s%s%s' % (page_param, order_param, filter_param)
     return params
+
+
+@register.simple_tag(takes_context=True)
+def fieldset_fields(context, form, fieldset, name='fieldset_'):
+    context[name + 'fields'] = list(form.iter_fieldset(fieldset))
+    context[name + 'helptext'] = form.fieldsets[fieldset][1]
+    context[name + 'name'] = form.fieldsets[fieldset][0]
+    return ''

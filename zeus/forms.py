@@ -608,15 +608,40 @@ class PollForm(forms.ModelForm):
         if self.election.feature_frozen:
             self.fields['name'].widget.attrs['readonly'] = True
 
+
+        auth_title = _('2-factor authentication')
+        auth_help = _('2-factor authentication help text')
+        self.fieldsets = {'auth': [auth_title, auth_help, []]}
+        self.fieldset_fields = []
+
+        auth_fields = ['jwt', 'google', 'facebook', 'shibboleth', 'oauth2']
+        for name, field in self.fields.items():
+            if name.split("_")[0] in auth_fields:
+                self.fieldsets['auth'][2].append(name)
+                self.fieldset_fields.append(field)
+
+        keyOrder = self.fieldsets['auth'][2]
+        for field in ['jwt_auth', 'oauth2_thirdparty', 'shibboleth_auth']:
+            prev_index = keyOrder.index(field)
+            item = keyOrder.pop(prev_index)
+            keyOrder.insert(0, item)
+            self.fields[field].widget.attrs['field_class'] = 'fieldset-auth'
+            if field == 'jwt_auth':
+                self.fields[field].widget.attrs['field_class'] = 'clearfix last'
+
     class Meta:
         model = Poll
         fields = ('name',
-                  'jwt_auth', 'jwt_issuer', 'jwt_public_key', 
-                  'oauth2_thirdparty', 'oauth2_type', 
-                  'oauth2_client_type', 'oauth2_client_id', 
+                  'jwt_auth', 'jwt_issuer', 'jwt_public_key',
+                  'oauth2_thirdparty', 'oauth2_type',
+                  'oauth2_client_type', 'oauth2_client_id',
                   'oauth2_client_secret', 'oauth2_code_url',
                   'oauth2_exchange_url', 'oauth2_confirmation_url',
                   'shibboleth_auth', 'shibboleth_constraints')
+
+    def iter_fieldset(self, name):
+        for field in self.fieldsets[name][2]:
+            yield self[field]
 
     def clean_shibboleth_constraints(self):
         value = self.cleaned_data.get('shibboleth_constraints', None)

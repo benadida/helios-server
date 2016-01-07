@@ -5662,6 +5662,12 @@ table tr.party {
   margin-top: 8px;
 }
 
+form .form-field.fieldset-auth {
+  float: left;
+  width: 33%;
+  height: 50px;
+}
+
 form .field-readonly {
   background-color: #cccccc !important;
 }
