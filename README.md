@@ -31,7 +31,6 @@ Se for baixar e/ou atualizar o código via github:
 
     psql
 
-    create user helios;
 
     create role helios with createdb createrole login;
     
@@ -52,6 +51,17 @@ Exception Type: 	OperationalError
 Exception Value: 	
 FATAL:  Peer authentication failed for user "helios"
 
+Para se conectar na base com um cliente como o pgAdmin, utilizar um túnel ssh. Editar ~/.ssh/config e inserir:
+
+`
+Host NOMEDOHOST
+	User NOMEDOUSER
+	Hostname ENDERECODOHOST
+	Port PORTASSH
+	LocalForward PORTALOCAL 127.0.0.1:PORTAREMOTA
+`
+
+Na configuração do pgAdmin, usar como endereço do host o seu endereço e não esquecer que precisa haver uma conexão ssh aberta com o servidor do banco!
 
 ### Obtenção do código-fonte e preparação da aplicação
 
@@ -82,7 +92,22 @@ Com o ambiente virtual ativado, instale os requisitos para a execução do helio
 
 *ATENÇÃO: Utilize o requirements.txt deste repositório, para instalar o pacote django-auth-ldap e outros necessários às customizações realizadas. Lembrando também que apesar de se pretender manter este repositório atualizado com o do Ben Adida, não necessariamente vai ser simultâneo, então se você utilizar o dele, pode haver versões diferentes de pacotes.*
 
-Após terminar a instalação dos pacotes necessários, é possível realizar as devidas execuções de banco de dados (criação de banco, tabelas, etc) executando o script reset.sh:
+Edite o arquivo settings.py, localize a seção databases e adicione as informações do banco de dados, conforme o exemplo:
+
+`
+DATABASES = {
+	'default': {
+	'ENGINE': 'django.db.backends.postgresql_psycopg2',
+	'NAME': 'helios',
+	'USER': 'helios',
+	'HOST': 'localhost',
+	'PASSWORD': 'SENHADOHELIOS'
+	}
+}
+
+`
+
+Agora é possível realizar as devidas execuções de banco de dados (criação de banco, tabelas, etc) executando o script reset.sh:
 
 `$./reset.sh`
 
