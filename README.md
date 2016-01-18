@@ -53,13 +53,13 @@ FATAL:  Peer authentication failed for user "helios"
 
 Para se conectar na base com um cliente como o pgAdmin, utilizar um túnel ssh. Editar ~/.ssh/config e inserir:
 
-`
-Host NOMEDOHOST
+
+	Host NOMEDOHOST
 	User NOMEDOUSER
 	Hostname ENDERECODOHOST
 	Port PORTASSH
 	LocalForward PORTALOCAL 127.0.0.1:PORTAREMOTA
-`
+
 
 Na configuração do pgAdmin, usar como endereço do host o seu endereço e não esquecer que precisa haver uma conexão ssh aberta com o servidor do banco!
 
@@ -94,18 +94,16 @@ Com o ambiente virtual ativado, instale os requisitos para a execução do helio
 
 Edite o arquivo settings.py, localize a seção databases e adicione as informações do banco de dados, conforme o exemplo:
 
-`
-DATABASES = {
+
+	DATABASES = {
 	'default': {
 	'ENGINE': 'django.db.backends.postgresql_psycopg2',
 	'NAME': 'helios',
 	'USER': 'helios',
 	'HOST': 'localhost',
 	'PASSWORD': 'SENHADOHELIOS'
-	}
-}
+	}}
 
-`
 
 Agora é possível realizar as devidas execuções de banco de dados (criação de banco, tabelas, etc) executando o script reset.sh:
 
