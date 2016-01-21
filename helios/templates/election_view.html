@@ -296,7 +296,7 @@ Visit <a target="_new" href="http://java.sun.com">java.sun.com</a> to install it
 				{% endif %}
 				<p style="font-size: 1.3em;">
 					<a href="{% url "helios.views.voters_list_pretty" election.uuid %}">{% trans "Ballot Tracking Center" %}</a> &nbsp;| &nbsp;
-					<a href="{% url "helios.views.one_election_audited_ballots" election.uuid %}">Audited Ballots</a>
+					<a href="{% url "helios.views.one_election_audited_ballots" election.uuid %}">{% trans "Audited Ballots" %}</a>
 				</p>
 			{% endif %}
 			{% if not election.voting_has_started and admin_p %}

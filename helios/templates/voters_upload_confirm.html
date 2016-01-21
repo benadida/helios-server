@@ -19,14 +19,14 @@ You have uploaded a file of voters. The first few rows of this file are:
 
 {% if problems %}
 <p style="font-size: 1.5em;">
-HOLD ON:<br />
+{% trans "HOLD ON:" %}<br />
 {% for problem in problems %}
 - {{problem}}<br />
 {% endfor %}
 </p>
 <br />
 
-<a href="{% url "helios.views.voters_upload_cancel" election.uuid %}">never mind, upload a different file</a>
+<a href="{% url "helios.views.voters_upload_cancel" election.uuid %}">{% trans "never mind, upload a different file" %}</a>
 </p>
 </div>
 <div class="col-md-12">
