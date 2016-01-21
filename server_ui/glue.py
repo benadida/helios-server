@@ -30,7 +30,7 @@ def vote_cast_send_message(user, voter, election, cast_vote, **kwargs):
 
 --
 %s
-""" % settings.SITE_TITLE  
+""" % unicode(settings.SITE_TITLE)
   
   # send it via the notification system associated with the auth system
   user.send_message(subject, body)
