@@ -1,13 +1,10 @@
 # encoding: utf-8
-import datetime
 from south.db import db
 from south.v2 import SchemaMigration
-from django.db import models
+
 
 class Migration(SchemaMigration):
-
     def forwards(self, orm):
-        
         # Adding model 'Election'
         db.create_table('helios_election', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
@@ -120,9 +117,7 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('helios', ['Trustee'])
 
-
     def backwards(self, orm):
-        
         # Deleting model 'Election'
         db.delete_table('helios_election')
 
@@ -143,7 +138,6 @@ class Migration(SchemaMigration):
 
         # Deleting model 'Trustee'
         db.delete_table('helios_trustee')
-
 
     models = {
         'helios_auth.user': {
@@ -192,7 +186,8 @@ class Migration(SchemaMigration):
             'private_key': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'public_key': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'questions': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
-            'registration_starts_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
+            'registration_starts_at': (
+            'django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'result': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'result_proof': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'short_name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),

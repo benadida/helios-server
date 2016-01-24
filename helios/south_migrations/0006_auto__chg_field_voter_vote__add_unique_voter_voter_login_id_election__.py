@@ -1,13 +1,10 @@
 # encoding: utf-8
-import datetime
 from south.db import db
 from south.v2 import SchemaMigration
-from django.db import models
+
 
 class Migration(SchemaMigration):
-
     def forwards(self, orm):
-        
         # Changing field 'Voter.vote'
         db.alter_column('helios_voter', 'vote', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
 
@@ -18,41 +15,48 @@ class Migration(SchemaMigration):
         db.alter_column('helios_election', 'result', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
 
         # Changing field 'Election.questions'
-        db.alter_column('helios_election', 'questions', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
+        db.alter_column('helios_election', 'questions',
+                        self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
 
         # Changing field 'Election.encrypted_tally'
-        db.alter_column('helios_election', 'encrypted_tally', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
+        db.alter_column('helios_election', 'encrypted_tally',
+                        self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
 
         # Changing field 'Election.eligibility'
-        db.alter_column('helios_election', 'eligibility', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
+        db.alter_column('helios_election', 'eligibility',
+                        self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
 
         # Changing field 'Election.private_key'
-        db.alter_column('helios_election', 'private_key', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
+        db.alter_column('helios_election', 'private_key',
+                        self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
 
         # Changing field 'Election.public_key'
-        db.alter_column('helios_election', 'public_key', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
+        db.alter_column('helios_election', 'public_key',
+                        self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
 
         # Changing field 'Trustee.public_key'
-        db.alter_column('helios_trustee', 'public_key', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
+        db.alter_column('helios_trustee', 'public_key',
+                        self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
 
         # Changing field 'Trustee.decryption_proofs'
-        db.alter_column('helios_trustee', 'decryption_proofs', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
+        db.alter_column('helios_trustee', 'decryption_proofs',
+                        self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
 
         # Changing field 'Trustee.pok'
         db.alter_column('helios_trustee', 'pok', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
 
         # Changing field 'Trustee.secret_key'
-        db.alter_column('helios_trustee', 'secret_key', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
+        db.alter_column('helios_trustee', 'secret_key',
+                        self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
 
         # Changing field 'Trustee.decryption_factors'
-        db.alter_column('helios_trustee', 'decryption_factors', self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
+        db.alter_column('helios_trustee', 'decryption_factors',
+                        self.gf('helios.datatypes.djangofield.LDObjectField')(null=True))
 
         # Changing field 'CastVote.vote'
         db.alter_column('helios_castvote', 'vote', self.gf('helios.datatypes.djangofield.LDObjectField')())
 
-
     def backwards(self, orm):
-        
         # Removing unique constraint on 'Voter', fields ['voter_login_id', 'election']
         db.delete_unique('helios_voter', ['voter_login_id', 'election_id'])
 
@@ -95,7 +99,6 @@ class Migration(SchemaMigration):
         # Changing field 'CastVote.vote'
         db.alter_column('helios_castvote', 'vote', self.gf('helios_auth.jsonfield.JSONField')())
 
-
     models = {
         'helios_auth.user': {
             'Meta': {'unique_together': "(('user_type', 'user_id'),)", 'object_name': 'User'},
@@ -125,7 +128,8 @@ class Migration(SchemaMigration):
             'verified_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'vote': ('helios.datatypes.djangofield.LDObjectField', [], {}),
             'vote_hash': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'vote_tinyhash': ('django.db.models.fields.CharField', [], {'max_length': '50', 'unique': 'True', 'null': 'True'}),
+            'vote_tinyhash': (
+            'django.db.models.fields.CharField', [], {'max_length': '50', 'unique': 'True', 'null': 'True'}),
             'voter': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios.Voter']"})
         },
         'helios.election': {
@@ -133,9 +137,11 @@ class Migration(SchemaMigration):
             'admin': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios_auth.User']"}),
             'archived_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'cast_url': ('django.db.models.fields.CharField', [], {'max_length': '500'}),
-            'complaint_period_ends_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
+            'complaint_period_ends_at': (
+            'django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'created_at': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'datatype': ('django.db.models.fields.CharField', [], {'default': "'legacy/Election'", 'max_length': '250'}),
+            'datatype': (
+            'django.db.models.fields.CharField', [], {'default': "'legacy/Election'", 'max_length': '250'}),
             'description': ('django.db.models.fields.TextField', [], {}),
             'election_type': ('django.db.models.fields.CharField', [], {'default': "'election'", 'max_length': '250'}),
             'eligibility': ('helios.datatypes.djangofield.LDObjectField', [], {'null': 'True'}),
@@ -150,7 +156,8 @@ class Migration(SchemaMigration):
             'private_p': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'public_key': ('helios.datatypes.djangofield.LDObjectField', [], {'null': 'True'}),
             'questions': ('helios.datatypes.djangofield.LDObjectField', [], {'null': 'True'}),
-            'registration_starts_at': ('django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
+            'registration_starts_at': (
+            'django.db.models.fields.DateTimeField', [], {'default': 'None', 'null': 'True'}),
             'result': ('helios.datatypes.djangofield.LDObjectField', [], {'null': 'True'}),
             'result_proof': ('helios_auth.jsonfield.JSONField', [], {'null': 'True'}),
             'short_name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
@@ -196,7 +203,8 @@ class Migration(SchemaMigration):
             'cast_at': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'election': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios.Election']"}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'user': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios_auth.User']", 'null': 'True'}),
+            'user': (
+            'django.db.models.fields.related.ForeignKey', [], {'to': "orm['helios_auth.User']", 'null': 'True'}),
             'uuid': ('django.db.models.fields.CharField', [], {'max_length': '50'}),
             'vote': ('helios.datatypes.djangofield.LDObjectField', [], {'null': 'True'}),
             'vote_hash': ('django.db.models.fields.CharField', [], {'max_length': '100', 'null': 'True'}),

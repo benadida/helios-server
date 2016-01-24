@@ -5,8 +5,11 @@
 # python extract-passwords-for-email.py <election_uuid> <email_address>
 #
 
+import sys
+
 from django.core.management import setup_environ
-import settings, sys, csv
+
+import settings
 
 setup_environ(settings)
 

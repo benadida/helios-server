@@ -4,9 +4,10 @@ from django.db import models
 # from outside of a view, which lets us have cleaner code
 from facebook.djangofb import get_facebook_client
 
+
 class UserManager(models.Manager):
     """Custom manager for a Facebook User."""
-    
+
     def get_current(self):
         """Gets a User object for the logged-in Facebook user."""
         facebook = get_facebook_client()
@@ -15,6 +16,7 @@ class UserManager(models.Manager):
             # we could do some custom actions for new users here...
             pass
         return user
+
 
 class User(models.Model):
     """A simple User model for Facebook users."""
