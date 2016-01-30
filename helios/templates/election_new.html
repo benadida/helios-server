@@ -11,6 +11,7 @@
 {% endif %}
   
   <form class="prettyform" action="" method="POST" id="create_election_form">
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     <table class="pretty">
      {{election_form.as_table}}
      </table>

@@ -4,6 +4,7 @@
   <h2 class="title">{{election.name}} &mdash; New Trustee <span style="font-size:0.7em;">[<a href="{% url "helios.views.list_trustees_view" election.uuid %}">cancel</a>]</span></h2>
   
 <form method="post" action="">
+<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 Name: <input type="text" name="name" size="60" /><br /><br />
 Email: <input type="text" name="email" size="60" /><br /><br />
 
