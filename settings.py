@@ -118,6 +118,7 @@ MIDDLEWARE_CLASSES = (
 
     # secure a bunch of things
     'djangosecure.middleware.SecurityMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
