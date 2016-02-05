@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-08-25 10:54+0300\n"
+"POT-Creation-Date: 2016-12-13 22:56+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,10 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
+
+#, python-format
+msgid "%s is not a valid character."
+msgstr "το %s είναι μή αποδεκτός χαρακτήρας."
 
 msgid "Trustees"
 msgstr "Εφορευτική επιτροπή"
@@ -57,9 +61,6 @@ msgstr "Επιλογή"
 msgid "Question"
 msgstr "Ερώτηση"
 
-msgid "&#37; is not a valid character"
-msgstr "Ο χαρακτήρας % δεν επιτρέπεται"
-
 msgid "Min answers"
 msgstr "Ελάχιστος αριθμός επιλογών"
 
@@ -82,8 +83,8 @@ msgstr "Βαθμοί"
 
 msgid "Number of answers must be equal or bigger than max answers"
 msgstr ""
-"Ο αριθμός των καταχωρημένων απαντήσεων πρέπει να είναι ίσoς ή μεγαλύτερος "
-"απο τον μέγιστο αριθμό επιλογών"
+"Ο αριθμός απαντήσεων πρέπει να είναι μεγαλύτερος ή ίσως του μέγιστου αριθμού "
+"απαντήσεων"
 
 msgid "set the eligibles count of the election"
 msgstr "το πλήθος των εκλεγόμενων"
@@ -537,6 +538,7 @@ msgstr "Προσθήκη ερωτήσεων στην ψηφοφορία"
 msgid "Too many choices"
 msgstr "Περισσότερες επιλογές από το επιτρεπτό"
 
+#, python-brace-format
 msgid "Question '{0}' requires at least {1} choices."
 msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
 
@@ -665,6 +667,14 @@ msgstr ""
 
 msgid "The requested page was not found."
 msgstr "Η σελίδα που ζητήσατε δεν βρέθηκε."
+
+#~ msgid "&#37; is not a valid character"
+#~ msgstr "Ο χαρακτήρας % δεν επιτρέπεται"
+
+#~ msgid "Max answers should be greater or equal than min answers"
+#~ msgstr ""
+#~ "Ο μέγιστος αριθμός απαντήσεων πρέπει να είναι ίσος ή μεγαλύτερος του "
+#~ "ελάχιστου αριθμού απαντήσεων"
 
 #~ msgid "Department limit"
 #~ msgstr "Κανόνας των '2'"

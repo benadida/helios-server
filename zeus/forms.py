@@ -46,6 +46,8 @@ LOG_CHANGED_FIELDS = [
     "help_phone"
 ]
 
+INVALID_CHAR_MSG = _("%s is not a valid character.") % "%"
+
 def election_form_formfield_cb(f, **kwargs):
     if f.name in ['voting_starts_at', 'voting_ends_at',
                   'voting_extended_until']:
@@ -278,7 +280,7 @@ class QuestionBaseForm(forms.Form):
     def clean_question(self):
         q = self.cleaned_data.get('question', '')
         if '%' in q:
-            raise forms.ValidationError(_("&#37; is not a valid character"))
+            raise forms.ValidationError(INVALID_CHAR_MSG)
         return q.replace(": ", ":\t")
 
 
@@ -308,7 +310,7 @@ class QuestionForm(QuestionBaseForm):
         for key in self.cleaned_data:
             if key.startswith('answer_'):
                 if '%' in self.cleaned_data[key]:
-                    raise forms.ValidationError(_("&#37; is not a valid character"))
+                    raise forms.ValidationError(INVALID_CHAR_MSG)
                 answer_list.append(self.cleaned_data[key])
         if len(answer_list) > len(set(answer_list)):
             raise forms.ValidationError(_("No duplicate choices allowed"))
@@ -361,7 +363,7 @@ class ScoresForm(QuestionBaseForm):
         for key in self.cleaned_data:
             if key.startswith('answer_'):
                 if '%' in self.cleaned_data[key]:
-                    raise forms.ValidationError(_("&#37; is not a valid character"))
+                    raise forms.ValidationError(INVALID_CHAR_MSG)
                 answer_list.append(self.cleaned_data[key])
         if len(answer_list) > len(set(answer_list)):
             raise forms.ValidationError(_("No duplicate choices allowed"))
@@ -487,7 +489,7 @@ class StvForm(QuestionBaseForm):
             answer = self.cleaned_data[field_key]
             answer_lst = json.loads(answer)
             if '%' in answer_lst[0]:
-                raise forms.ValidationError(_("&#37; is not a valid character"))
+                raise forms.ValidationError(INVALID_CHAR_MSG)
             candidates_list.append(answer_lst[0])
             if not answer_lst[0]:
                 self._errors[field_key] = ErrorList([message])

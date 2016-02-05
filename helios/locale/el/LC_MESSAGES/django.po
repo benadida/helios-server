@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-07 20:48+0300\n"
+"POT-Creation-Date: 2016-12-13 22:56+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -358,13 +358,6 @@ msgstr "Επεξεργασία κάλπης"
 msgid "Voters"
 msgstr "Ψηφοφόροι"
 
-#, fuzzy
-msgid "Add new poll"
-msgstr "Προσθήκη κάλπης"
-
-msgid "Batch polls update"
-msgstr "Μαζική ανανέωση καλπών"
-
 msgid "Election information"
 msgstr "Πληροφορίες ψηφοφορίας"
 
@@ -532,6 +525,9 @@ msgstr ""
 
 msgid "Election Polls"
 msgstr "Οι κάλπες της ψηφοφορίας"
+
+msgid "Batch polls update"
+msgstr "Μαζική ανανέωση καλπών"
 
 msgid "No audited ballots posted yet"
 msgstr "Δεν έχουν ληφθεί ακόμη ψήφοι ελέγχου"
@@ -1554,3 +1550,7 @@ msgstr "Για να ξεκινήσετε νέα καταμέτρηση πατή�
 
 msgid "Terms of use"
 msgstr "Όροι χρήσης"
+
+#, fuzzy
+#~ msgid "Add new poll"
+#~ msgstr "Προσθήκη κάλπης"
