@@ -73,13 +73,13 @@
                         <tr>
                             <td>
                                 {% if election.result %}
-                                    <b style="color:green">[ΕΧΕΙ ΟΛΟΚΛΗΡΩΘΕΙ]</b><br />
+                                    <b style="color:green">[{% trans "COMPLETED" %}]</b><br />
                                 {% endif %}
                                 {% if election.canceled_at %}
-                                    <b style="color:red">[ΕΧΕΙ ΑΚΥΡΩΘΕΙ]</b><br />
+                                <b style="color:red">[{% trans "CANCELED" %}]</b><br />
                                 {% endif %}
                                 {% if election.is_completed %}
-                                    <b style="color:orange">[ΔΗΜΟΣΙΑ ΠΡΟΒΟΛΗ]</b><br />
+                                <b style="color:orange">[{% trans "PUBLIC" %}]</b><br />
                                 {% endif %}
                                 {% if user.superadmin_p %}
                                     <a href="{% url helios.views.election_report election.uuid "html" %}">
@@ -91,9 +91,9 @@
                                     <a class="button small"
                                       href="{% url helios.views.one_election_set_completed election.uuid %}">
                                         {% if not election.is_completed %}
-                                            ΔΗΜΟΣΙΑ ΠΡΟΒΟΛΗ
+                                            {% trans "SET PUBLIC" %}
                                         {% else %}
-                                            ΑΚΥΡΩΣΗ ΔΗΜΟΣΙΑΣ ΠΡΟΒΟΛΗΣ
+                                            {% trans "UNSET PUBLIC" %}
                                         {% endif %}
                                     </a>
                                 {% else %}

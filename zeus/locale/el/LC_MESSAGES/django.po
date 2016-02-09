@@ -121,6 +121,12 @@ msgstr "Μη έγκυρος χρήστης ή συνθηματικό"
 msgid "Your account is disabled"
 msgstr "Ο λογαριασμός είναι απενεργοποιημένος"
 
+msgid "2-factor authentication"
+msgstr "Ταυτοποίηση 2-factor"
+
+msgid "2-factor authentication help text"
+msgstr ""
+
 msgid "Duplicate poll names are not allowed"
 msgstr "Δεν επιτρέπονται κάλπες με ίδιο όνομα"
 
@@ -522,6 +528,9 @@ msgstr "σύνολο ψηφοφόρων"
 
 msgid "Uninitialized shibboleth session."
 msgstr "Μη αρχικοποιημένη σύνδεση shibboleth"
+
+msgid "Invalid shibboleth endpoint"
+msgstr "Πρόβλημα στα δεδομένα shibboleth"
 
 msgid "Invalid shibboleth data resolved."
 msgstr "Πρόβλημα στα δεδομένα shibboleth"

@@ -170,6 +170,15 @@ msgstr "Όνομα αντιστοιχίας κάλπης"
 msgid "Poll name"
 msgstr "Όνομα κάλπης"
 
+msgid "Oauth2 login"
+msgstr "Σύνδεση με Oauth2 (%s)"
+
+msgid "JWT login"
+msgstr "Σύνδεση με JWT"
+
+msgid "Shibboleth login"
+msgstr "Σύνδεση με ακαδημαικό λογαριασμό (shibboleth)"
+
 msgid "JSON Web Token Login"
 msgstr "Σύνδεση με JSON Web Token"
 
@@ -1113,6 +1122,17 @@ msgstr ""
 "Τα απαραίτητα στοιχεία θα πρέπει να σας έχουν σταλεί μέσω Email, SMS, ή "
 "άλλου μέσου.\n"
 "Αν δεν τα έχετε λάβει, επικοινωνήστε με την εφορευτική επιτροπή.\n"
+
+msgid "Redirecting..."
+msgstr "Μεταφορά..."
+
+msgid "Voter login redirect"
+msgstr "Μεταφορά στην υπηρεσία ταυτοποίησης"
+
+msgid ""
+"Election requires third party authentication. You are being redirected to "
+"the third party login site."
+msgstr ""
 
 msgid "Send email"
 msgstr "Αποστολή μηνύματος email σε ψηφοφόρους"

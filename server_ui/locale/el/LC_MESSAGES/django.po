@@ -134,6 +134,21 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
+msgid "COMPLETED"
+msgstr "ΕΧΕΙ ΟΛΟΚΛΗΡΩΘΕΙ"
+
+msgid "CANCELED"
+msgstr "ΕΧΕΙ ΑΚΥΡΩΘΕΙ"
+
+msgid "PUBLIC"
+msgstr "ΔΗΜΟΣΙΑ ΠΡΟΒΟΛΗ"
+
+msgid "SET PUBLIC"
+msgstr "ΔΗΜΟΣΙΑ ΠΡΟΒΟΛΗ"
+
+msgid "UNSET PUBLIC"
+msgstr "ΑΚΥΡΩΣΗ ΔΗΜΟΣΙΑΣ ΠΡΟΒΟΛΗΣ"
+
 msgid "YES"
 msgstr "ΝΑΙ"
 
