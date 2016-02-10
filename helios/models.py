@@ -918,7 +918,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
           if self.election.feature_voting_date_passed:
               return _('Pending election close')
 
-          return _('Freezed')
+          return _('Frozen')
 
       if not self.questions_data:
           return _('No questions set')

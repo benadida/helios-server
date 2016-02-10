@@ -201,9 +201,6 @@ msgstr "Η ψηφοφορία έχει λήξει"
 msgid "Pending election close"
 msgstr "Αναμένεται λήξη της ψηφοφορίας"
 
-msgid "Freezed"
-msgstr "Οριστικοποιημένη"
-
 msgid "No questions set"
 msgstr "Δεν έχουν οριστεί ακόμη ερωτήσεις"
 
