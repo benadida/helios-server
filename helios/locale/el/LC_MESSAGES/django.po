@@ -714,6 +714,9 @@ msgstr ""
 "Ο ευκολότερος τρόπος είναι να ετοιμάσετε το αρχείο σε ένα λογιστικό φύλλο\n"
 "    και μετά να το αποθηκεύσετε σε μορφή CSV."
 
+msgid "Encoding"
+msgstr "Κωδικοποίηση"
+
 msgid "Upload file"
 msgstr "Αποστολή αρχείου"
 
@@ -1137,14 +1140,14 @@ msgstr ""
 msgid "Send email"
 msgstr "Αποστολή μηνύματος email σε ψηφοφόρους"
 
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "\n"
 "Send email to voter %(voter_name)s (%(voter_id)s)\n"
 msgstr ""
 "\n"
 "Αποστολή ηλεκτρονικού μηνύματος στον ψηφοφόρο  %(voter_name)s "
-"(%(voter.voter_id)s)\n"
+"(%(voter_id)s)\n"
 
 #, python-format
 msgid ""

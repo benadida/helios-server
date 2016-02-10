@@ -544,6 +544,18 @@ msgstr "Μη αποδεκτό αρχείο"
 msgid "Poll updated successfully"
 msgstr "Η κάλπη ανανεώθηκε επιτυχώς"
 
+msgid "Unicode"
+msgstr "Unicode"
+
+msgid "Greek (iso-8859-7)"
+msgstr "Greek (iso-8859-7)"
+
+msgid "Latin (iso-8859-1)"
+msgstr "Latin (iso-8859-1)"
+
+msgid "Invalid encoding"
+msgstr "Μη έγκυρη κωδικοποίηση"
+
 msgid "Invalid voter file id"
 msgstr "Λάθος ID αρχείου"
 
