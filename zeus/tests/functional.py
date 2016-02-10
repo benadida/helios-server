@@ -404,9 +404,10 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 % (self.e_uuid, p_uuid)
             self.c.post(
                 upload_voters_location,
-                {'voters_file': file(voter_files[p_uuid])}
+                {'voters_file': file(voter_files[p_uuid]),
+                 'encoding': 'iso-8859-7'}
                 )
-            self.c.post(upload_voters_location, {'confirm_p': 1})
+            self.c.post(upload_voters_location, {'confirm_p': 1, 'encoding': 'iso-8859-7'})
         e = Election.objects.get(uuid=self.e_uuid)
         voters = e.voters.count()
         self.assertEqual(voters, self.voters_num*self.polls_number)

@@ -409,17 +409,30 @@ def voters_clear(request, election, poll):
     return HttpResponseRedirect(url)
 
 
+ENCODINGS = [('utf-8', _('Unicode')),
+             ('iso-8859-7', _('Greek (iso-8859-7)')),
+             ('iso-8859-1', _('Latin (iso-8859-1)'))]
+
 @auth.election_admin_required
 @auth.requires_poll_features('can_add_voter')
 @require_http_methods(["POST", "GET"])
 def voters_upload(request, election, poll):
     common_context = {
         'election': election,
-        'poll': poll
+        'poll': poll,
+        'encodings': ENCODINGS
     }
 
     set_menu('voters', common_context)
     if request.method == "POST":
+        preferred_encoding = request.POST.get('encoding', None)
+        if preferred_encoding not in dict(ENCODINGS):
+            messages.error(request, _("Invalid encoding"))
+            url = poll_reverse(poll, 'voters_upload')
+            return HttpResponseRedirect(url)
+        else:
+            common_context['preferred_encoding'] = preferred_encoding
+
         if bool(request.POST.get('confirm_p', 0)):
             # launch the background task to parse that file
             voter_file_id = request.session.get('voter_file_id', None)
@@ -431,7 +444,8 @@ def voters_upload(request, election, poll):
             try:
                 voter_file = VoterFile.objects.get(pk=voter_file_id)
                 try:
-                    voter_file.process(process_linked)
+                    voter_file.process(process_linked,
+                                       preferred_encoding=preferred_encoding)
                 except (exceptions.VoterLimitReached, \
                     exceptions.DuplicateVoterID) as e:
                     messages.error(request, e.message)
@@ -473,14 +487,21 @@ def voters_upload(request, election, poll):
                 invalid_emails = []
                 try:
                     voters = [v for v in voter_file_obj.itervoters(
-                                            email_validator=_email_validate)]
+                                            email_validator=_email_validate,
+                    preferred_encoding=preferred_encoding)]
                 except ValidationError, e:
                     if hasattr(e, 'messages') and e.messages:
                         error = "".join(e.messages)
                     else:
                         error = "error."
                 except Exception, e:
+                    voter_file_obj.delete()
                     error = str(e)
+                    if 'voter_file_id' in request.session:
+                        del request.session['voter_file_id']
+                    messages.error(request, error)
+                    url = poll_reverse(poll, 'voters_upload')
+                    return HttpResponseRedirect(url)
 
                 if len(invalid_emails):
                     error = _("Enter a valid email address. "

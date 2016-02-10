@@ -66,6 +66,7 @@
   {% blocktrans %}The voters above will be enrolled. Note that you can also review and
   edit the complete voter list from the control panel.{% endblocktrans %}
   <input type="hidden" name="confirm_p" value="1" />
+  <input type="hidden" name="encoding" value="{{ preferred_encoding }}" />
   <br /><br />
   <input class="button success" type="submit" value="{% trans "Confirm voters" %}" />
 </form>

@@ -5704,6 +5704,16 @@ table.reports-table {
   zoom: 0.8;
 }
 
+form#upload_form label {
+  margin-top: 15px;
+  float: left;
+}
+form#upload_form select {
+  margin-top: 12px;
+  margin-left: 8px;
+  width: 33%;
+}
+
 /* Base Type Styles Using Modular Scale ---------------------- */
 body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, p, blockquote, th, td {
   margin: 0;

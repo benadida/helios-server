@@ -45,8 +45,15 @@
   <div style="color: red;">{{error}}</div>
   {% endif %}
     <input type="hidden" name="csrf_token" value="{{csrf_token}}"/>
-    
     <input type="file" name="voters_file" />
+    <div class="clearfix">
+        <label for="file_encoding">{% trans "Encoding" %}</label>
+        <select name="encoding" id="file_encoding">
+        {% for key, val in encodings %}
+            <option value="{{key}}">{{ val }}</option>
+        {% endfor %}
+        </select>
+    </div>
     <br /><br />
     <input class="button success" type="submit" value="{% trans "Upload file" %}"/>
 </form>

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from csv_reader import (CSVReader, get_encoding, CSVCellError,
+from zeus.utils import (CSVReader, get_encoding, CSVCellError,
                         pick_sample, get_dialect)
 from unittest import TestCase, main
 
@@ -36,7 +36,7 @@ class CSVReaderTests(TestCase):
             encoded_strings.append(unicode_string.encode(encoding))
         encodings_detected = []
         for enc_string in encoded_strings:
-            encodings_detected.append(get_encoding(enc_string))
+            encodings_detected.append(get_encoding(enc_string, encodings=encodings))
         self.assertEqual(encodings, encodings_detected)
 
     def test005_cells_less_than_min_fields(self):

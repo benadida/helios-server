@@ -339,12 +339,17 @@ class CSVReader(object):
             m = "Invalid arguments, min_fields must be less than max_fields"
             raise ValueError(m)
 
+        encodings = DEFAULT_ENCODINGS[:]
+        preferred_encoding = kwargs.get('preferred_encoding', None)
+        if preferred_encoding is not None:
+            encodings.insert(1, preferred_encoding)
+
         self.min_fields = min_fields
         self.max_fields = max_fields
         sample_data = pick_sample(f.read(65536))
         f.seek(0)
-        encoding = get_encoding(sample_data)
-        dialect = get_dialect(sample_data)
+        encoding = get_encoding(sample_data.strip(), encodings=encodings)
+        dialect = kwargs.get('dialect', get_dialect(sample_data))
         self.reader = UnicodeReader(f, dialect, encoding)
 
     def next(self):
@@ -404,11 +409,14 @@ class CSVCellError(Exception):
         return self.m
 
 
-def get_encoding(csv_data):
-    encodings = ['utf-8', 'iso8859-7', 'utf-16', 'utf-16le', 'utf-16be']
+DEFAULT_ENCODINGS = ['utf-8', 'utf-16', 'utf-16le', 'utf-16be']
+
+
+def get_encoding(csv_data, encodings=DEFAULT_ENCODINGS):
+    encodings = encodings[:]
     encodings.reverse()
     while 1:
-        m = "Cannot decode csv data!"
+        m = "Cannot decode csv data! Please choose another encoding."
         if not encodings:
             raise ValueError(m)
         encoding = encodings[-1]

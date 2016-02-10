@@ -66,7 +66,7 @@ from zeus.model_tasks import TaskModel, PollTasks, ElectionTasks
 from zeus import help_texts as help
 from zeus.log import init_election_logger, init_poll_logger
 from zeus.utils import decalize, get_filters, VOTER_SEARCH_FIELDS, \
-    VOTER_BOOL_KEYS_MAP, VOTER_EXTRA_HEADERS, VOTER_TABLE_HEADERS
+    VOTER_BOOL_KEYS_MAP, VOTER_EXTRA_HEADERS, VOTER_TABLE_HEADERS, CSVReader
 
 
 logger = logging.getLogger(__name__)
@@ -1392,55 +1392,11 @@ class ElectionLog(models.Model):
   log = models.CharField(max_length=500)
   at = models.DateTimeField(auto_now_add=True)
 
-##
-## Craziness for CSV
-##
 
-def csv_reader(csv_data, min_fields=2, max_fields=6, **kwargs):
-    if not isinstance(csv_data, str):
-        m = "Please provide string data to csv_reader, not %s" % type(csv_data)
-        raise ValueError(m)
-    encodings = ['utf-8', 'iso8859-7', 'utf-16', 'utf-16le', 'utf-16be']
-    encodings.reverse()
-    rows = []
-    append = rows.append
-    while 1:
-        if not encodings:
-            m = "Cannot decode csv data!"
-            raise ValueError(m)
-        encoding = encodings[-1]
-        try:
-            data = csv_data.decode(encoding)
-            data = data.strip(u'\ufeff')
-            if data.count(u'\x00') > 0:
-                m = "Wrong encoding detected (heuristic)"
-                raise ValueError(m)
-            if data.count(u'\u2000') > data.count(u'\u0020'):
-                m = "Wrong endianess (heuristic)"
-                raise ValueError(m)
-            break
-        except (UnicodeDecodeError, ValueError), e:
-            encodings.pop()
-            continue
-
-    for i, line in enumerate(data.splitlines()):
-        line = line.strip()
-        if not line:
-            continue
-        cells = line.split(',', max_fields)
-        if len(cells) < min_fields:
-            cells = line.split(';')
-            if len(cells) < min_fields:
-                m = ("line %d: CSV must have at least %d fields "
-                     "(email, last_name, name)" % (i+1, min_fields))
-                raise ValueError(m)
-        cells += [u''] * (max_fields - len(cells))
-        append(cells)
-
-    return rows
-
-def iter_voter_data(voter_data, email_validator=validate_email):
-    reader = csv_reader(voter_data, min_fields=2, max_fields=7)
+def iter_voter_data(voter_data, email_validator=validate_email,
+                    preferred_encoding=None):
+    reader = CSVReader(voter_data, min_fields=2, max_fields=7,
+                       preferred_encoding=preferred_encoding)
 
     line = 0
     for voter_fields in reader:
@@ -1541,16 +1497,17 @@ class VoterFile(models.Model):
   processing_finished_at = models.DateTimeField(auto_now_add=False, null=True)
   num_voters = models.IntegerField(null=True)
 
-  def itervoters(self, email_validator=validate_email):
+  def itervoters(self, email_validator=validate_email, preferred_encoding=None):
     if self.voter_file_content:
       voter_data = base64.decodestring(self.voter_file_content)
     else:
       voter_data = open(self.voter_file.path, "r").read()
 
-    return iter_voter_data(voter_data, email_validator=email_validator)
+    return iter_voter_data(voter_data, email_validator=email_validator,
+                           preferred_encoding=preferred_encoding)
 
   @transaction.commit_on_success
-  def process(self, linked=True, check_dupes=True):
+  def process(self, linked=True, check_dupes=True, preferred_encoding=None):
     demo_voters = 0
     poll = self.poll
     demo_user = False
@@ -1572,7 +1529,7 @@ class VoterFile(models.Model):
     else:
       voter_data = open(self.voter_file.path, "r").read()
 
-    reader = iter_voter_data(voter_data)
+    reader = iter_voter_data(voter_data, preferred_encoding=preferred_encoding)
 
     last_alias_num = poll.last_alias_num
 
