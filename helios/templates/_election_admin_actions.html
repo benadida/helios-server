@@ -10,7 +10,11 @@
 <div class="clearfix admin-actions">
 {% if not election.feature_canceled and not election.feature_frozen and not election.any_poll_feature_validate_create_running %}
 {% trans "Freeze election" as label %}
+{% if election.can_freeze %}
 {% reveal_action label "#freeze-admin-action" "" "freeze-election" %}
+{% else %}
+{% reveal_action label "#freeze-admin-action" "" "freeze-election disabled" %}
+{% endif %}
 {% endif %}
 
 {% if election.feature_can_close %}

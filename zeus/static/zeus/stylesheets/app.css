@@ -5714,6 +5714,32 @@ form#upload_form select {
   width: 33%;
 }
 
+.admin-freeze-issues {
+  background-color: #f2f2f2;
+  border: 1px solid #e6e6e6;
+  margin-top: 20px;
+  padding: 10px;
+}
+.admin-freeze-issues p.election-admin-message {
+  color: #990000;
+}
+.admin-freeze-issues ul {
+  list-style: none;
+}
+.admin-freeze-issues ul li {
+  color: #efefef;
+  background-color: #990000;
+  padding: 4px;
+  margin-bottom: 0px;
+  margin-top: 2px;
+}
+.admin-freeze-issues ul li:first-child {
+  margin-top: 0px;
+}
+.admin-freeze-issues ul li span {
+  font-weight: bold;
+}
+
 /* Base Type Styles Using Modular Scale ---------------------- */
 body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, p, blockquote, th, td {
   margin: 0;

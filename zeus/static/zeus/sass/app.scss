@@ -605,6 +605,30 @@ form#upload_form {
     width: 33%;
   }
 }
+
+.admin-freeze-issues {
+   background-color: #f2f2f2;
+   border: 1px solid #e6e6e6;
+   margin-top: 20px;
+   padding: 10px;
+   p.election-admin-message {
+     color: $red;
+   }
+   ul {
+    list-style: none;
+    li { 
+      color: #efefef;
+      background-color: $red;
+      padding: 4px;
+      &:first-child {
+        margin-top: 0px;
+      }
+      margin-bottom: 0px;
+      margin-top: 2px;
+      span { font-weight: bold;}
+    }
+   }
+}
 // ----------------------------------------
 // Import specific parts of Foundation by commenting the import "foundation"
 // and uncommenting what you want below. You must uncomment the following if customizing

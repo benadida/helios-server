@@ -1,5 +1,5 @@
 {% extends "election_page.html" %}
-{% load i18n %}
+{% load i18n zeus_tags %}
 
 {% block page_css %}election-page{% endblock %}
 
@@ -37,6 +37,19 @@ Election closed at <em>{{ date }}</em>. Waiting for results.
 {% endif %}
 </div>
 {% include "_election_information.html" %}
+
+{% if admin %}
+{% set_election_issues election %}
+{% if election_issues_list or polls_issues_list %}
+    <div class="columns twelve admin-freeze-issues">
+        <p class="election-admin-message">
+            {% trans "Please resolve the following issues in order to be able to freeze the election" %}
+        </p>
+        {% include "_freeze_issues.html" %}
+    </div>
+{% endif %}
+{% endif %}
+
 <div class="columns five election-contact">
   <h5>{% trans "Support" %}</h5>
   <ul>
