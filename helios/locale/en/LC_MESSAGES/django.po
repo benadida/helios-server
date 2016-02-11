@@ -23,7 +23,7 @@ msgstr ""
 "      1,j.smith@email.tld,John,Smith,G.,+306971234567,1\n"
 "      2,george.johnson@email.tld,George,Johnson,Lesley,+306971234568,1\n"
 "      ...\n"
-"      <id>,<email>,<name>,<surname>,<fathers-name>,<phone>,<weight>"
+"      <id>,<email>,<name>,<surname>,<middle-name>,<phone>,<weight>"
 
 msgid "Election close message"
 msgstr ""
