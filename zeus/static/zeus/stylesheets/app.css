@@ -5665,7 +5665,6 @@ table tr.party {
   margin-top: 8px;
 }
 .trustee-entry:last-child {
-  border-bottom: 0;
   margin-bottom: 0;
 }
 .trustee-entry h5 {

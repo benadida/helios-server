@@ -34,6 +34,8 @@
           <br /><br />
           <a class="button tiny" 
               href="{% url election_trustee_home trustee.election.uuid %}">{% trans "trustee dashboard" %}</a>
+          <a class="button tiny" href="{% url election_index trustee.election.uuid %}">
+		  {% trans "proceed to election site" %}</a>
           <a class="button tiny alert" href="{% url logout %}?return_url=/">{% trans "logout" %}</a>
         </div>
         <div class="alert-box alert" style="display:none"

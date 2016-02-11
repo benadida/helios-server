@@ -569,7 +569,7 @@ table tr.party {
         margin-top: 8px;
     }
     border-bottom: 1px solid #888;
-    &:last-child { border-bottom: 0; margin-bottom: 0;}
+    &:last-child { margin-bottom: 0;}
     h5 { margin-bottom: 15px; }
     .trustee-actions { display: block; @include clearfix(); }
     .send-login-form, .delete-trustee-form {
