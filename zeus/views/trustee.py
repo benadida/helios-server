@@ -51,6 +51,9 @@ def login(request, election, trustee_email, trustee_secret):
         election.logger.info("Trustee %r logged in", trustee.email)
         return HttpResponseRedirect(reverse('election_trustee_home',
                                             args=[election.uuid]))
+    else:
+        url = election_reverse(election, 'index')
+        return HttpResponseRedirect(url)
 
 @auth.trustee_view
 @auth.requires_election_features('trustee_can_generate_key')
