@@ -5669,7 +5669,7 @@ table tr.party {
   margin-bottom: 0;
 }
 .trustee-entry h5 {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 .trustee-entry .trustee-actions {
   display: block;
@@ -5775,6 +5775,11 @@ form#upload_form select {
 }
 .admin-freeze-issues ul li span {
   font-weight: bold;
+}
+
+.verification-date {
+  color: #888;
+  font-size: 0.7em;
 }
 
 /* Base Type Styles Using Modular Scale ---------------------- */

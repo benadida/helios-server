@@ -82,8 +82,13 @@ The trustees below are responsible for the decryption of the ballots
 {% endif %}
 {% endif %}
 </span>
+{% if admin %}
 {% if election.feature_can_send_trustee_email %}
 <p class="last-notified">{% trans "Trustee last notified at" %} <span>{{ t.last_notified_at }}</span></p>
+{% endif %}
+{% if election.feature_can_send_trustee_email and t.last_verified_key_at %}
+<p class="last-notified">{% trans "Trustee key last verified at" %} <span>{{ t.last_verified_key_at }}</span></p>
+{% endif %}
 {% endif %}
 </h5>
 {% if admin and election.feature_display_decryption_factors_status %}

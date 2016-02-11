@@ -570,7 +570,7 @@ table tr.party {
     }
     border-bottom: 1px solid #888;
     &:last-child { border-bottom: 0; margin-bottom: 0;}
-    h5 { margin-bottom: 10px; }
+    h5 { margin-bottom: 15px; }
     .trustee-actions { display: block; @include clearfix(); }
     .send-login-form, .delete-trustee-form {
       float: left
@@ -641,6 +641,11 @@ form#upload_form {
       span { font-weight: bold;}
     }
    }
+}
+
+.verification-date {
+  color: #888;
+  font-size: 0.7em;
 }
 // ----------------------------------------
 // Import specific parts of Foundation by commenting the import "foundation"
