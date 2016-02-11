@@ -523,6 +523,9 @@ msgstr "Λίστα υποψηφίων"
 msgid "Are you sure ?"
 msgstr "Επιβεβαιώστε"
 
+msgid "Are you sure?"
+msgstr "Επιβεβαιώστε"
+
 msgid "(all voters selected)"
 msgstr "σύνολο ψηφοφόρων"
 
@@ -537,6 +540,9 @@ msgstr "Πρόβλημα στα δεδομένα shibboleth"
 
 msgid "Invalid shibboleth email resolved."
 msgstr "Πρόβλημα στα δεδομένα shibboleth"
+
+msgid "Trustee login url sent"
+msgstr "Η αποστολή πρόσκλησης πραγματοποιήθηκε"
 
 msgid "Invalid batch file contents"
 msgstr "Μη αποδεκτό αρχείο"

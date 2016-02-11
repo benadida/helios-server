@@ -188,6 +188,17 @@ msgstr "Email"
 msgid "PHONE"
 msgstr "Τηλ."
 
+msgid "AUDIT_VOTE_CODE_PROMPT"
+msgstr "Ψήφος ελέγχου"
+
+msgid "AUDIT_VOTE_INSTRUCTIONS"
+msgstr ""
+"Οι ορθοί κωδικοί θα πρέπει να σας έχουν αποσταλεί μαζί με την πρόσκλησή σας "
+"για να ψηφίσετε."
+
+msgid "AUDIT_VOTE_CODE_LABEL"
+msgstr "Εισάγετε κωδικό:"
+
 msgid "UP_TO"
 msgstr "μέχρι"
 
@@ -211,17 +222,6 @@ msgstr "Λευκή ψήφος"
 
 msgid "AUDIT_VOTE_SUBMISSION_BUTTON"
 msgstr "Υποβολή ψήφου ελέγχου"
-
-msgid "AUDIT_VOTE_CODE_PROMPT"
-msgstr "Ψήφος ελέγχου"
-
-msgid "AUDIT_VOTE_INSTRUCTIONS"
-msgstr ""
-"Οι ορθοί κωδικοί θα πρέπει να σας έχουν αποσταλεί μαζί με την πρόσκλησή σας "
-"για να ψηφίσετε."
-
-msgid "AUDIT_VOTE_CODE_LABEL"
-msgstr "Εισάγετε κωδικό:"
 
 msgid "STV_BALLOT_HELP_TEXT"
 msgstr "STV_BALLOT_HELP_TEXT GREEK"
