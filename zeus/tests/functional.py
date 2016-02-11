@@ -913,7 +913,7 @@ class TestSimpleElection(TestElectionBase):
             duplicate_extra_data = extra_data.copy()
             for ans_num in range(0, nr_answers):
                 extra_data['form-%s-answer_%s' % (num, ans_num)] = \
-                    'test answer %s' % ans_num
+                    u'test γιούνικουάντ %s' % ans_num
                 duplicate_extra_data['form-%s-answer_%s' % (num, ans_num)] = \
                     'test answer 0'
                 #make sure we have at least 2 answers so there can be duplicate
