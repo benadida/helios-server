@@ -568,6 +568,19 @@ table tr.party {
         display: block;
         margin-top: 8px;
     }
+    border-bottom: 1px solid #888;
+    &:last-child { border-bottom: 0; margin-bottom: 0;}
+    h5 { margin-bottom: 10px; }
+    .trustee-actions { display: block; @include clearfix(); }
+    .send-login-form, .delete-trustee-form {
+      float: left
+    }
+    p.last-notified {
+      @include clearfix();
+       font-size: 0.7em;
+       color: #888;
+       margin: 0;
+    }
 }
 
 form .form-field.fieldset-auth {

@@ -63,17 +63,27 @@ The trustees below are responsible for the decryption of the ballots
 <span class="label alert">{% trans "No trustee election key set" %}.</span>
 {% endif %}
 <br /><br />
+
+<span class="trustee-actions">
 {% if election.feature_can_send_trustee_email %}
+<span class="send-login-form">
 {% url election_trustee_send_url election.uuid t.uuid as mail_url %}
 {% trans "Send trustee login url" as label %}
-{% small_confirm_action label mail_url cls="noconfirm" %}
+{% small_confirm_action label mail_url %}
+</span>
 {% endif %}
 
 {% if election.feature_delete_trustee %}
+<span class="delete-trustee-form">
 {% url election_trustee_delete election.uuid t.uuid as delete_url %}
 {% trans "Delete trustee" as label %}
-{% small_confirm_action label delete_url trustee_remove_confirm "" "POST" "alert" inline=1%}
+{% small_confirm_action label delete_url trustee_remove_confirm "" "POST" "delete-trustee alert" inline=1%}
+</span>
 {% endif %}
+{% endif %}
+</span>
+{% if election.feature_can_send_trustee_email %}
+<p class="last-notified">{% trans "Trustee last notified at" %} <span>{{ t.last_notified_at }}</span></p>
 {% endif %}
 </h5>
 {% if admin and election.feature_display_decryption_factors_status %}

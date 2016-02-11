@@ -158,7 +158,7 @@ def menu_action(context, label, url, icon="", cls=""):
 def menu_confirm_action(context, label, url, confirm_msg="", icon="",
                         method="POST", cls="", q=None):
     if not confirm_msg:
-        confirm_msg = _("Are you sure ?")
+        confirm_msg = _("Are you sure?")
 
     if icon == "remove" and cls == "":
         cls += " alert"

@@ -5651,6 +5651,9 @@ table tr.party {
   background-color: #ddd !important;
 }
 
+.trustee-entry {
+  border-bottom: 1px solid #888;
+}
 .trustee-entry tt {
   font-size: 0.8em;
 }
@@ -5660,6 +5663,40 @@ table tr.party {
   font-size: 0.9em;
   display: block;
   margin-top: 8px;
+}
+.trustee-entry:last-child {
+  border-bottom: 0;
+  margin-bottom: 0;
+}
+.trustee-entry h5 {
+  margin-bottom: 10px;
+}
+.trustee-entry .trustee-actions {
+  display: block;
+  *zoom: 1;
+}
+.trustee-entry .trustee-actions:before, .trustee-entry .trustee-actions:after {
+  content: " ";
+  display: table;
+}
+.trustee-entry .trustee-actions:after {
+  clear: both;
+}
+.trustee-entry .send-login-form, .trustee-entry .delete-trustee-form {
+  float: left;
+}
+.trustee-entry p.last-notified {
+  *zoom: 1;
+  font-size: 0.7em;
+  color: #888;
+  margin: 0;
+}
+.trustee-entry p.last-notified:before, .trustee-entry p.last-notified:after {
+  content: " ";
+  display: table;
+}
+.trustee-entry p.last-notified:after {
+  clear: both;
 }
 
 form .form-field.fieldset-auth {
