@@ -5785,6 +5785,10 @@ form#upload_form select {
   color: green;
 }
 
+.voter-weight {
+  margin-bottom: -29px;
+}
+
 /* Base Type Styles Using Modular Scale ---------------------- */
 body, div, dl, dt, dd, ul, ol, li, h1, h2, h3, h4, h5, h6, pre, form, p, blockquote, th, td {
   margin: 0;
