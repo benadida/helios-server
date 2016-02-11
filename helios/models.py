@@ -2128,6 +2128,10 @@ class Trustee(HeliosModel, TrusteeFeatures):
     objects = TrusteeManager()
 
     @property
+    def pending_partial_decryptions_len(self):
+        return len(self.pending_partial_decryptions())
+
+    @property
     def get_partial_decryptions(self):
         for poll in self.election.polls.all():
             try:
@@ -2159,7 +2163,7 @@ class Trustee(HeliosModel, TrusteeFeatures):
         return url
 
     def pending_partial_decryptions(self):
-        return filter(lambda p: p[1], self.get_partial_decryptions())
+        return filter(lambda p: p[1] is None, self.get_partial_decryptions)
 
     def get_step(self):
         """
@@ -2205,7 +2209,6 @@ class Trustee(HeliosModel, TrusteeFeatures):
             self.last_notified_at = datetime.datetime.now()
             self.save()
 
-    
     @property
     def datatype(self):
         return self.election.datatype.replace('Election', 'Trustee')
