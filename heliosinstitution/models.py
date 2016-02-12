@@ -44,12 +44,14 @@ class Institution(models.Model):
             elections = Election.objects.filter(admin_id__in=[
                 profile.helios_user_id for profile in self.institutionuserprofile_set.all()],
                 frozen_at__isnull=True,
+                archived_at__isnull=True,
                 voting_ended_at__isnull=True).order_by("short_name")
         else:
             elections = Election.objects.filter(admin_id__in=[
                 profile.helios_user_id for profile in self.institutionuserprofile_set.all()],
                 created_at__year=year,
                 frozen_at__isnull=True,
+                archived_at__isnull=True,
                 voting_ended_at__isnull=True).order_by("short_name")
 
         return utils.elections_as_json(elections)
@@ -60,12 +62,14 @@ class Institution(models.Model):
             elections = Election.objects.filter(admin_id__in=[
                 profile.helios_user_id for profile in self.institutionuserprofile_set.all()],
                 frozen_at__isnull=False,
+                archived_at__isnull=True,
                 voting_ended_at__isnull=True).order_by("short_name")
         else:
             elections = Election.objects.filter(admin_id__in=[
                 profile.helios_user_id for profile in self.institutionuserprofile_set.all()],
                 created_at__year=year,
                 frozen_at__isnull=False,
+                archived_at__isnull=True,
                 voting_ended_at__isnull=True).order_by("short_name")
         return utils.elections_as_json(elections)
 
@@ -75,12 +79,14 @@ class Institution(models.Model):
             elections = Election.objects.filter(admin_id__in=[
                 profile.helios_user_id for profile in self.institutionuserprofile_set.all()],
                 frozen_at__isnull=False,
+                archived_at__isnull=True,
                 voting_ended_at__isnull=False).order_by("short_name")
         else:
             elections = Election.objects.filter(admin_id__in=[
                 profile.helios_user_id for profile in self.institutionuserprofile_set.all()],
                 created_at__year=year,
                 frozen_at__isnull=False,
+                archived_at__isnull=True,
                 voting_ended_at__isnull=False).order_by("short_name")
         return utils.elections_as_json(elections)
 
