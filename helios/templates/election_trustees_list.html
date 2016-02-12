@@ -15,105 +15,100 @@ The trustees below are responsible for the decryption of the ballots
 {% if not trustees|length %}
 {% else %}
 {% for t in trustees %}
-<div class="trustee-entry">
-<h5>
-<span class="name">{{ t.name }}</span>
-{% if admin %}
-<br /><span style="font-size:0.8em; color:#aaa">{{ t.email }}</span>
-{% if t.public_key_hash %}
-<br />
-<span class="hash-title">{% trans "Trustee election identifier" %}: </span>
-<tt style="font-size:0.8em;">{{t.public_key_hash}}</tt>
-{% if not t.last_verified_key_at %}
-<br /><br />
-<span class="label alert">{% trans "Trustee key not verified" %}</span>
-{% else %}
-    <br />
-    <br />
-    <span class="label success">
-        {% trans "key verified" %}
-    </span>
-        {% if t.partial_decryptions.all %}
-            <br />
-            <br />
-            {% if t.partial_decryptions.all.count == election.polls.all.count %}
-                <span class="label success">
-            {% else %}
-                <span class="label warning">
-            {% endif %}
+    <div class="trustee-entry">
+        <h5>
+        <span class="name">{{ t.name }}</span>
+        {% if admin %}
+            <br /><span style="font-size:0.8em; color:#aaa">{{ t.email }}</span>
+            {% if t.public_key_hash %}
+                <br />
+                <span class="hash-title">{% trans "Trustee election identifier" %}: </span>
+                <tt style="font-size:0.8em;">{{t.public_key_hash}}</tt>
+                {% if not t.last_verified_key_at %}
+                    <br /><br />
+                    <span class="label alert">{% trans "Trustee key not verified" %}</span>
+                {% else %}
+                    <br />
+                    <br />
+                    <span class="label success">
+                        {% trans "key verified" %}
+                    </span>
+                    {% if t.partial_decryptions.all %}
+                        <br />
+                        <br />
+                        {% if t.partial_decryptions.all.count == election.polls.all.count %}
+                            <span class="label success">
+                        {% else %}
+                            <span class="label warning">
+                        {% endif %}
 
-            {% trans "Polls decrypted" %}
-            {{t.partial_decryptions.all.count}}/{{election.polls.all.count}}
-            </span>
-        {% else %}
-            {% if election.any_poll_feature_can_partial_decrypt %}
+                        {% trans "Polls decrypted" %}
+                        {{t.partial_decryptions.all.count}}/{{election.polls.all.count}}
+                        </span>
+                    {% else %}
+                        {% if election.any_poll_feature_can_partial_decrypt %}
+                            <br /><br />
+                            <span class="label alert">
+                                {% trans "No polls decrypted" %}
+                            </span>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            {% else %}
+                <br />
+                <br />
+                <span class="label alert">{% trans "No trustee election key set" %}.</span>
+            {% endif %}
             <br /><br />
-                <span class="label alert">
-                {% trans "No polls decrypted" %}
+
+            <div class="trustee-actions">
+            {% if election.feature_can_send_trustee_email %}
+                <span class="send-login-form">
+                {% url election_trustee_send_url election.uuid t.uuid as mail_url %}
+                {% trans "Send trustee login url" as label %}
+                {% small_confirm_action label mail_url %}
                 </span>
             {% endif %}
-{% endif %}
 
-
-    </span>
+            {% if election.feature_delete_trustee %}
+                <span class="delete-trustee-form">
+                {% url election_trustee_delete election.uuid t.uuid as delete_url %}
+                {% trans "Delete trustee" as label %}
+                {% small_confirm_action label delete_url trustee_remove_confirm "" "POST" "delete-trustee alert" inline=1%}
+                </span>
+            {% endif %}
+        {% endif %}
+        </div>
+        {% if admin %}
+            {% if election.feature_can_send_trustee_email %}
+                <p class="last-notified">{% trans "Trustee last notified at" %} <span>{{ t.last_notified_at }}</span></p>
+            {% endif %}
+            {% if election.feature_can_send_trustee_email and t.last_verified_key_at %}
+                <p class="last-notified">{% trans "Trustee key last verified at" %} <span>{{ t.last_verified_key_at }}</span></p>
+            {% endif %}
+        {% endif %}
+        </h5>
+        {% if admin and election.feature_display_decryption_factors_status %}
+            <p>
+                {% if t.decryption_factors %}
+                    <span class="success label">
+                        {% trans "Trustee completed partial decryption" %}
+                    </span>
+                {% else %}
+                    <span class="alert label">
+                    {% trans "Pending partial decryption from trustee" %}
+                    </span>
+                {% endif %}
+            </p>
+        {% endif %}
+        </li>
+        {% if not forloop.last %}
+            {% if admin %}
+                <br />
+            {% endif %}
+        {% endif %}
+    </div>
+    {% endfor %}
+    </ul>
 {% endif %}
-{% else %}
-<br />
-<br />
-<span class="label alert">{% trans "No trustee election key set" %}.</span>
-{% endif %}
-<br /><br />
-
-<span class="trustee-actions">
-{% if election.feature_can_send_trustee_email %}
-<span class="send-login-form">
-{% url election_trustee_send_url election.uuid t.uuid as mail_url %}
-{% trans "Send trustee login url" as label %}
-{% small_confirm_action label mail_url %}
-</span>
-{% endif %}
-
-{% if election.feature_delete_trustee %}
-<span class="delete-trustee-form">
-{% url election_trustee_delete election.uuid t.uuid as delete_url %}
-{% trans "Delete trustee" as label %}
-{% small_confirm_action label delete_url trustee_remove_confirm "" "POST" "delete-trustee alert" inline=1%}
-</span>
-{% endif %}
-{% endif %}
-</span>
-{% if admin %}
-{% if election.feature_can_send_trustee_email %}
-<p class="last-notified">{% trans "Trustee last notified at" %} <span>{{ t.last_notified_at }}</span></p>
-{% endif %}
-{% if election.feature_can_send_trustee_email and t.last_verified_key_at %}
-<p class="last-notified">{% trans "Trustee key last verified at" %} <span>{{ t.last_verified_key_at }}</span></p>
-{% endif %}
-{% endif %}
-</h5>
-{% if admin and election.feature_display_decryption_factors_status %}
-<p>
-{% if t.decryption_factors %}
-<span class="success label">
-    {% trans "Trustee completed partial decryption" %}
-</span>
-{% else %}
-<span class="alert label">
-    {% trans "Pending partial decryption from trustee" %}
-</span>
-{% endif %}
-</p>
-{% endif %}
-</li>
-{% if not forloop.last %}
-{% if admin %}
-<br />
-{% endif %}
-{% endif %}
-</div>
-{% endfor %}
-</ul>
-
-{% endif %}
-
 {% endblock %}

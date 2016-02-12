@@ -1,7 +1,7 @@
 {% load i18n %}
 <div class="panel voter-weight">
 {% if voter.voter_weight %}
-{% trans "Your vote weight is set to " %} <b>{{ voter.voter_weight}}</b>
+  {% trans "Your vote weight is set to " %} <b>{{ voter.voter_weight}}</b>
 {% endif %}
 </div>
 {% if poll.feature_can_cast_vote %}

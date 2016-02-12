@@ -50,9 +50,9 @@
     <div class="clearfix">
         <label for="file_encoding">{% trans "Encoding" %}</label>
         <select name="encoding" id="file_encoding">
-        {% for key, val in encodings %}
-            <option value="{{key}}">{{ val }}</option>
-        {% endfor %}
+            {% for key, val in encodings %}
+                <option value="{{ key }}">{{ val }}</option>
+            {% endfor %}
         </select>
     </div>
     <br /><br />

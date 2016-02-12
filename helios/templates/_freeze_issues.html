@@ -1,24 +1,24 @@
 {% load i18n %}
 
 <div class="issues-lists">
-<ul class="election-issues clearfix">
-{% for issue in election_issues_list %}
-  <li>
-  {{ issue.action }}{% if forloop.last %}{% else %}{% endif %}
-  </li>
-{% endfor %}
-</ul>
-
-<ul class="election-issues poll-issues clearfix">
-{% for poll, issues in polls_issues_list.items %}
-  {% for issue in issues %}
+  <ul class="election-issues clearfix">
+  {% for issue in election_issues_list %}
     <li>
-      {% if not election.single_poll %}
-      <span class="">{{ poll.name }}:</span>
-      {% endif %}
-      {{ issue.action }}{% if forloop.last %}{% else %}{% endif %}
+    {{ issue.action }}{% if forloop.last %}{% else %}{% endif %}
     </li>
   {% endfor %}
-  {% endfor %}
-</ul>
+  </ul>
+
+  <ul class="election-issues poll-issues clearfix">
+  {% for poll, issues in polls_issues_list.items %}
+    {% for issue in issues %}
+      <li>
+        {% if not election.single_poll %}
+          <span class="">{{ poll.name }}:</span>
+        {% endif %}
+        {{ issue.action }}
+      </li>
+    {% endfor %}
+    {% endfor %}
+  </ul>
 </div>

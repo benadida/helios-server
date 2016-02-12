@@ -177,7 +177,7 @@ msgid "JWT login"
 msgstr "Σύνδεση με JWT"
 
 msgid "Shibboleth login"
-msgstr "Σύνδεση με ακαδημαικό λογαριασμό (shibboleth)"
+msgstr "Σύνδεση με ακαδημαϊκό λογαριασμό (shibboleth)"
 
 msgid "JSON Web Token Login"
 msgstr "Σύνδεση με JSON Web Token"
@@ -897,7 +897,7 @@ msgid "if you haven't."
 msgstr "εαν δεν το έχετε κάνει ήδη."
 
 msgid "Confirm key possession"
-msgstr "Επιβεβαίωση κατωχής κωδικού ψηφοφορίας"
+msgstr "Επιβεβαίωση κατοχής κωδικού ψηφοφορίας"
 
 msgid "Key last verified at"
 msgstr "Τελευταία επιβεβαίωση κωδικού στις "
@@ -1160,6 +1160,8 @@ msgid ""
 "Election requires third party authentication. You are being redirected to "
 "the third party login site."
 msgstr ""
+"Η πρόσβαση στην ψηφοφορία απαιτεί σύνδεση σε εξωτερικό σύστημα "
+"ελέγχου χρηστών. Σας κατευθύνουμε στο εξωτερικό σύστημα."
 
 msgid "Send email"
 msgstr "Αποστολή μηνύματος email σε ψηφοφόρους"
