@@ -1,6 +1,6 @@
 {% load i18n %}
 <div class="panel voter-weight">
-{% if voter.voter_weight %}
+{% if voter.voter_weight and voter.voter_weight > 1 %}
   {% trans "Your vote weight is set to " %} <b>{{ voter.voter_weight}}</b>
 {% endif %}
 </div>
