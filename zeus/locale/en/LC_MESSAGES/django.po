@@ -25,3 +25,6 @@ msgstr "Enable limit of open positions per constituency"
 
 msgid "maximum number of elected from the same constituency"
 msgstr "Set the maximum number of open positions per constituency"
+
+msgid "2-factor authentication help text"
+msgstr "Optionally select 2-factor voter authentication"
