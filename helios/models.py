@@ -762,7 +762,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   @property
   def remote_login(self):
-      return self.oauth2_thirdparty or self.jwt_auth
+      return self.oauth2_thirdparty or self.jwt_auth or self.shibboleth_auth
 
   @property
   def remote_login_display(self):
@@ -770,6 +770,8 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
           return _("JSON Web Token Login")
       if self.oauth2_thirdparty:
           return _("Oauth2 Login %s") % self.oauth2_client_id
+      if self.shibboleth_auth:
+          return _("Shibboleth authentication")
       return None
 
   def reset_logger(self):
