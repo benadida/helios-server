@@ -748,10 +748,10 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
 
   def get_shibboleth_constraints(self):
     defaults = {
-        'assert_idp_key': 'MAIL',
-        'assert_voter_key': 'email',
+        'assert_idp_key': 'REMOTE_USER',
+        'assert_voter_key': 'id',
         'required_fields': ['REMOTE_USER', 'EPPN'],
-        'endpoint': 'login'
+        'endpoint': 'default/login'
     }
     default_constraints = getattr(settings, 'SHIBBOLETH_DEFAULT_CONSTRAINTS',
                                   defaults)
