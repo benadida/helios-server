@@ -303,11 +303,13 @@ def questions(request, election, poll):
             url = poll_reverse(poll, 'questions_manage')
             return HttpResponseRedirect(url)
 
+    preview_booth_url = poll.get_booth_url(request, preview=True)
     context = {
         'election': election,
         'poll': poll,
         'questions': questions,
-        'module': poll.get_module()
+        'module': poll.get_module(),
+        'preview_booth_url': preview_booth_url
     }
     set_menu('questions', context)
     tpl = getattr(module, 'questions_list_template', 'election_poll_questions')

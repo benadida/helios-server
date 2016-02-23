@@ -851,22 +851,24 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
   def get_oauth2_module(self):
     from zeus import oauth2
     return oauth2.get_oauth2_module(self)
-      
 
-  def get_booth_url(self, request):
+  def get_booth_url(self, request, preview=False):
+    url_params = {
+        'token': csrf(request)['csrf_token'],
+        'poll_url': "%s%s" % (settings.SECURE_URL_HOST,
+                                self.get_absolute_url()),
+        'poll_json_url': "%s%s" % (settings.SECURE_URL_HOST,
+                                    self.get_json_url()),
+        'messages_url': "%s%s" % (settings.SECURE_URL_HOST,
+                                    self.get_js_messages_url()),
+        'language': "%s" % (request.LANGUAGE_CODE)
+    }
+    if preview is True:
+        url_params['preview'] = 1
     vote_url = "%s/%s/booth/vote.html?%s" % (
             settings.SECURE_URL_HOST,
             settings.SERVER_PREFIX,
-            urllib.urlencode({
-                'token': csrf(request)['csrf_token'],
-                'poll_url': "%s%s" % (settings.SECURE_URL_HOST,
-                                      self.get_absolute_url()),
-                'poll_json_url': "%s%s" % (settings.SECURE_URL_HOST,
-                                           self.get_json_url()),
-                'messages_url': "%s%s" % (settings.SECURE_URL_HOST,
-                                          self.get_js_messages_url()),
-                'language': "%s" % (request.LANGUAGE_CODE)
-            }))
+            urllib.urlencode(url_params))
     return "%s?%s" % (reverse('test_cookie'),
                       urllib.urlencode({'continue_url': vote_url}))
 
