@@ -186,6 +186,9 @@ msgstr "Σύνδεση με JSON Web Token"
 msgid "Oauth2 Login %s"
 msgstr "Σύνδεση με Oauth2 (%s)"
 
+msgid "Shibboleth authentication"
+msgstr "Σύνδεση με ακαδημαϊκό λογαριασμό (shibboleth)"
+
 msgid "Prepare poll questions"
 msgstr "Ορισμός των ερωτήσεων της κάλπης"
 

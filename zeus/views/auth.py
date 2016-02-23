@@ -217,7 +217,7 @@ def shibboleth_login(request, endpoint):
         error = 403
         err_fields = [idp_field, idp_field_key, voter_field_key, voter_field]
         poll.logger.error('[thirdparty] assertion failed (%r=%s != %r=%s)', *err_fields)
-        messages.error(request, _('Invalid shibboleth email resolved.'))
+        messages.error(request, _('Shibboleth voter info assertion failed.'))
 
     if error:
         return HttpResponseRedirect(reverse('error',

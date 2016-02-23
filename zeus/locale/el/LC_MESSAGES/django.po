@@ -373,9 +373,6 @@ msgstr "Διαχειριστής"
 msgid "Official"
 msgstr "Επίσημη"
 
-msgid "Zeus Elections - Poll Results"
-msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
-
 #, python-format
 msgid "Total votes: %d"
 msgstr "Σύνολο ψηφοδελτίων: %d"
@@ -383,6 +380,9 @@ msgstr "Σύνολο ψηφοδελτίων: %d"
 #, python-format
 msgid "Blank: %d"
 msgstr "Λευκά: %d"
+
+msgid "Zeus Elections - Poll Results"
+msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
 
 msgid "Results"
 msgstr "Αποτελέσματα"
@@ -538,7 +538,7 @@ msgstr "Πρόβλημα στα δεδομένα shibboleth"
 msgid "Invalid shibboleth data resolved."
 msgstr "Πρόβλημα στα δεδομένα shibboleth"
 
-msgid "Invalid shibboleth email resolved."
+msgid "Shibboleth voter info assertion failed."
 msgstr "Πρόβλημα στα δεδομένα shibboleth"
 
 msgid "Trustee login url sent"
