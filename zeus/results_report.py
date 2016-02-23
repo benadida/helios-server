@@ -33,8 +33,6 @@ from stv.parser import STVParser
 
 PAGE_WIDTH, PAGE_HEIGHT = A4
 
-pageinfo = _("Zeus Elections - Poll Results")
-
 default_path = '/usr/share/fonts/truetype/linux-libertine/LinLibertine_Re.ttf'
 linlibertine = TTFont('LinLibertine',
 #                      '/Users/Panos/Library/Fonts/LinLibertine_Rah.ttf')
@@ -169,17 +167,19 @@ def make_first_page_hf(canvas, doc):
                      height = 1.1 * cm)
     canvas.restoreState()
 
-def make_later_pages_hf(canvas, doc):
-    canvas.saveState()
-    canvas.setFont('LinLibertine',9)
-    canvas.drawImage(ZEUS_LOGO,
-                     x = 2 * cm,
-                     y = PAGE_HEIGHT - 2 * cm,
-                     width = PAGE_WIDTH / 8,
-                     height = 1.1 * cm)
-    canvas.drawString(PAGE_WIDTH - 9 * cm, PAGE_HEIGHT - 2 * cm,
-                      "%s" % (pageinfo, ))
-    canvas.restoreState()
+def make_later_pages_hf(pageinfo):
+    def inner(canvas, doc):
+        canvas.saveState()
+        canvas.setFont('LinLibertine',9)
+        canvas.drawImage(ZEUS_LOGO,
+                        x = 2 * cm,
+                        y = PAGE_HEIGHT - 2 * cm,
+                        width = PAGE_WIDTH / 8,
+                        height = 1.1 * cm)
+        canvas.drawRightString(PAGE_WIDTH - 2 * cm, PAGE_HEIGHT - 1.5 * cm,
+                        "%s" % (pageinfo, ))
+        canvas.restoreState()
+    return inner
 
 
 def make_heading(elements, styles, contents):
@@ -255,6 +255,7 @@ def make_results(elements, styles, total_votes, blank_votes,
 def build_stv_doc(title, name, institution_name, voting_start, voting_end,
               extended_until, data, language, filename="election_results.pdf", new_page=True):
     with translation.override(language[0]):
+        pageinfo = _("Zeus Elections - Poll Results")
         title = _('Results')
         DATE_FMT = "%d/%m/%Y %H:%S"
         if isinstance(voting_start, datetime.datetime):
@@ -384,13 +385,14 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
                 elements.append(Spacer(1, 12))
 
         doc.build(elements, onFirstPage = make_first_page_hf,
-                  onLaterPages = make_later_pages_hf)
+                  onLaterPages = make_later_pages_hf(pageinfo))
 
 
 def build_doc(title, name, institution_name, voting_start, voting_end,
               extended_until, data, language, filename="election_results.pdf",
               new_page=True, score=False, parties=False):
     with translation.override(language[0]):
+        pageinfo = _("Zeus Elections - Poll Results")
         title = _('Results')
         DATE_FMT = "%d/%m/%Y %H:%S"
         if isinstance(voting_start, datetime.datetime):
@@ -477,7 +479,7 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
                          parties_results, candidates_results)
 
         doc.build(elements, onFirstPage = make_first_page_hf,
-                  onLaterPages = make_later_pages_hf)
+                  onLaterPages = make_later_pages_hf(pageinfo))
 
 
 def main():
