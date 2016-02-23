@@ -566,6 +566,9 @@ msgstr "Μέγιστος αριθμός επιλογών"
 msgid "Manage questions"
 msgstr "Διαχείριση ερωτήσεων"
 
+msgid "Booth preview"
+msgstr "Προεπισκόπηση παραπετάσματος"
+
 msgid "Total votes"
 msgstr "Σύνολο ψήφων"
 
