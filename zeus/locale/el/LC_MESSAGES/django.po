@@ -125,7 +125,7 @@ msgid "2-factor authentication"
 msgstr "Ταυτοποίηση 2-factor"
 
 msgid "2-factor authentication help text"
-msgstr "Προεραιτικά επιλέξτε μέθοδο επιπλέον πιστοποίησης ψηφοφόρων"
+msgstr "Προεραιτικά επιλέξτε μέθοδο 2ου βήματος/παράγοντα ταυτοποίησης ψηφοφόρων"
 
 msgid "Duplicate poll names are not allowed"
 msgstr "Δεν επιτρέπονται κάλπες με ίδιο όνομα"
@@ -617,7 +617,7 @@ msgstr "Δεν έχετε δικαίωμα πρόσβασης σε αυτή τη
 msgid "An error has been occured. Please notify the server admin."
 msgstr ""
 "Προέκυψε σφάλμα διακομιστή, παρακαλούμε ενημερώστε τους διαχειριστές του "
-"συστηματος."
+"συστήματος."
 
 msgid "The requested page was not found."
 msgstr "Η σελίδα που ζητήσατε δεν βρέθηκε."

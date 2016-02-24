@@ -57,7 +57,7 @@ msgid "Number of voters"
 msgstr "Σύνολο ψηφοφόρων"
 
 msgid "Number of voters that voted"
-msgstr "Σύνολο συμμετεχόντων"
+msgstr "Ψηφίσαντες"
 
 msgid "Filter"
 msgstr "Φίλτρο"

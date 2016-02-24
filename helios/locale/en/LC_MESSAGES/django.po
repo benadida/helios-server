@@ -30,3 +30,6 @@ msgstr ""
 "Are you sure you want to permanently close the election? "
 "Closing the election means that no additional votes will be "
 "accepted to the election."
+
+msgid "Voter login redirect"
+msgstr "Redirecting..."
