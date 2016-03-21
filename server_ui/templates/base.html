@@ -1,9 +1,9 @@
 {% load i18n %}<!DOCTYPE html>
 <!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
-<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="el"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="el"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js lt-ie9" lang="el"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="el"> <!--<![endif]-->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="{{ LANGUAGE_CODE }}"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="{{ LANGUAGE_CODE }}"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="{{ LANGUAGE_CODE }}"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="{{ LANGUAGE_CODE }}"> <!--<![endif]-->
 <head>
     <title>{% block title %}{% endblock %} {% trans "Zeus Electronic Voting" %}</title>
     <meta charset="utf-8">
@@ -77,7 +77,7 @@
                 {% else %}
                 <a href="{% url home %}">
                     {% endif %}
-                    <img src="{{ THEME_HEADER_BG_URL }}" alt="Zeus logo"/>
+                    <img src="{{ THEME_HEADER_BG_URL }}_{{ LANGUAGE_CODE }}.jpg" alt="Zeus logo"/>
             </a>
             <div id="banner">
                 <div class="lang-menu">

@@ -238,7 +238,7 @@ ZEUS_RESULTS_PATH = os.path.join('/', 'usr', 'share', 'zeus')
 ZEUS_PROOFS_PATH = os.path.join('/', 'usr', 'share', 'zeus_proofs')
 ZEUS_ALLOW_EARLY_ELECTION_CLOSE = True
 ZEUS_CELERY_TEMPDIR = os.path.join('/', 'var', 'run', 'zeus-celery')
-ZEUS_HEADER_BG_URL = '/static/zeus/images/logo_bg.jpg'
+ZEUS_HEADER_BG_URL = '/static/zeus/images/logo_bg_nobrand'
 
 SERVER_PREFIX = ''
 
