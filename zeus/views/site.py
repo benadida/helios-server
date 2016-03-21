@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core.validators import email_re
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, get_language
 from django.contrib import messages
 from django.conf import settings
 from django.views.i18n import set_language
@@ -38,6 +38,21 @@ def home(request):
         'user': user,
         'bad_login': bad_login
     })
+
+
+def terms(request):
+    terms_file = getattr(settings, 'ZEUS_TERMS_FILE', None)
+    if terms_file is None:
+        return HttpResponseRedirect(reverse('home'))
+
+    terms_fd = file(terms_file % {'lang': get_language()}, 'r')
+    terms_contents = terms_fd.read()
+    terms_fd.close()
+
+    return render_template(request, "zeus/terms", {
+        'content': terms_contents
+    })
+
 
 
 def faqs_trustee(request):
@@ -83,8 +98,8 @@ def stats(request):
 
     elections = Election.objects.filter()
     if not (user and user.superadmin_p):
-        elections = Election.objects.filter(canceled_at__isnull=True, 
-                                            completed_at__isnull=False, 
+        elections = Election.objects.filter(canceled_at__isnull=True,
+                                            completed_at__isnull=False,
                                             voting_ended_at__isnull=False,
                                             admins__in=[user],
                                             trial=False)

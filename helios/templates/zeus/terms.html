@@ -1,0 +1,8 @@
+{% extends "server_ui/templates/base.html" %}
+{% load i18n %}
+{% block tabs_menu %}
+<h4>{% trans "Terms of use" %}</h4>
+{% endblock %}
+{% block content %}
+{{ content|safe }}
+{% endblock %}
