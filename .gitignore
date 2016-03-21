@@ -11,3 +11,4 @@ docs/install/_build
 *.swp
 *.mo
 *.log
+.ropeproject
