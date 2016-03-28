@@ -766,10 +766,15 @@ $(".show-audit-form").live("click", function(e) {
 });
 
 $(document).ready(function(){
+  BOOTH.preview = false;
   window.setTimeout(function() {
     if (/dbg=1/.exec(window.location.toString())) {
       $(".start-voting").click();
       $("#stv_answer").show();
+    }
+    if (/preview=1/.exec(window.location.toString())) {
+      BOOTH.preview = true;
+      $(".start-voting").click();
     }
   }, 200);
 })

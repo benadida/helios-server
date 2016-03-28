@@ -1,0 +1,18 @@
+{% extends TEMPLATE_BASE %}
+{% load i18n %}
+
+{% block meta_block %}
+<meta http-equiv="refresh" content="{% if sleep %}{{ sleep }}{% else %}3{% endif %}; url={{ url }}"/>
+{% endblock meta_block %}
+
+{%block title%}
+{% trans "Redirecting..." %}
+{%endblock title%}
+
+{%block tabs_menu%}
+<h3>{% trans "Voter login redirect" %}</h3>
+{%endblock tabs_menu%}
+
+{% block content %}
+{% trans "Election requires third party authentication. You are being redirected to the third party login site." %}
+{% endblock %}

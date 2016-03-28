@@ -2,6 +2,8 @@
 from django.conf.urls.defaults import *
 from django.conf import settings
 
+from zeus.views import admin
+
 SERVER_PREFIX = getattr(settings, 'SERVER_PREFIX', '')
 if SERVER_PREFIX:
     SERVER_PREFIX = SERVER_PREFIX.rstrip('/') + '/'
@@ -13,11 +15,15 @@ auth_urls = patterns('zeus.views.auth',
     url(r'^auth/login', 'password_login_view', name='login'),
     url(r'^auth/change_password', 'change_password', name='change_password'),
     url(r'^voter-login$', 'voter_login', name="voter_login"),
+    url(r'^auth/oauth2$', 'oauth2_login', name="oauth2_login"),
+    url(r'^auth/jwt$', 'jwt_login', name="jwt_login"),
+    url(r'^auth/shibboleth/(?P<endpoint>.*)$', 'shibboleth_login', name="shibboleth_login"),
 )
 
 admin_urls = patterns('zeus.views.admin',
-    url(r'^$', 'home', name='admin_home'),
+    url(r'^$', admin.HomeView.as_view(), name='admin_home'),
     url(r'^reports$', 'elections_report', name='elections_report'),
+    url(r'^reports/csv$', 'elections_report_csv', name='elections_report_csv'),
 )
 
 app_patterns += patterns(

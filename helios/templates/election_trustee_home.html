@@ -11,24 +11,44 @@
 {% block content %}
 <p>
 {% if trustee.public_key_hash %}
+
 {% trans "The public part of your trustee key has been successfully uploaded." %}<br />
-{% trans "Please," %}<a href="{% url election_trustee_check_sk election.uuid %}{% if election.any_poll_feature_can_partial_decrypt %}?redirect={% url election_trustee_home election.uuid %}{% endif %}" id="check_sk_link">
-{% trans "confirm you indeed possess the trustee key" %}</a>, {% trans "if you haven't." %}
+{% trans "After voting is over, you must revisit this page to decrypt the results." %}
+
+{% if not trustee.last_verified_key_at %}
+    {% trans "Please," %}
+    <a 
+        href="{% url election_trustee_check_sk election.uuid %}{% if election.any_poll_feature_can_partial_decrypt %}?redirect={% url election_trustee_home election.uuid %}{% endif %}" 
+        id="check_sk_link">
+    {% trans "confirm you indeed possess the trustee key" %}
+    </a>, {% trans "if you haven't." %}
+{% endif %}
+
+    <br />
+    <br />
+    <a class="button success" href="{% url election_trustee_check_sk election.uuid %}{% if election.any_poll_feature_can_partial_decrypt %}?redirect={% url election_trustee_home election.uuid %}{% endif %}" id="check_sk_link">{% trans "Confirm key possession" %}</a>
+{% if trustee.last_verified_key_at %}
+    <div class="verification-date">
+        {% trans "Key last verified at" %} {{ trustee.last_verified_key_at }}
+    </div>
+{% endif %}
+
 {% else %}
-<a href="{% url election_trustee_keygen election.uuid %}">{% trans "generate trustee key" %}</a>
+    <a href="{% url election_trustee_keygen election.uuid %}">{% trans "generate trustee key" %}</a>
 {% endif %}
 </p>
 
 <p>
 {% if election.any_poll_feature_can_partial_decrypt %}
-{% if trustee.partial_decryptions_finished %}
-{% trans "Your partial decryption has been successfully uploaded." %}
+    {% if trustee.partial_decryptions_finished %}
+        {% trans "Your partial decryption has been successfully uploaded." %}
+    {% else %}
+        {% include "_trustee_decrypt.html" %}
+    {% endif %}
 {% else %}
-{% include "_trustee_decrypt.html" %}
-{% endif %}
-{% else %}
-{% trans "After voting is over, you must revisit this page to decrypt the results." %}
+    {% if not trustee.last_verified_key_at %}
+        {% trans "After voting is over, you must revisit this page to decrypt the results." %}
+    {% endif %}
 {% endif %}
 </p>
-
 {% endblock %}

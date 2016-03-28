@@ -362,6 +362,16 @@ body {
     margin-bottom: 5px !important;
   }
 
+  tbody td.remote-login-info {
+    padding: 0.2em 0.8em;
+    font-style: italic;
+    border-bottom: 1px solid #efefef;
+    text-align: right;
+  }
+
+  table#voters-table {
+    zoom: 0.8;
+  }
   table.voters, table.elections, table.polls-table {
       thead th { font-size: 11px; }
       tbody td { font-size: 12px; }
@@ -558,50 +568,93 @@ table tr.party {
         display: block;
         margin-top: 8px;
     }
+    border-bottom: 1px solid #888;
+    &:last-child { margin-bottom: 0;}
+    h5 { margin-bottom: 15px; }
+    .trustee-actions { display: block; @include clearfix(); }
+    .send-login-form, .delete-trustee-form {
+      float: left
+    }
+    p.last-notified {
+      @include clearfix();
+       font-size: 0.7em;
+       color: #888;
+       margin: 0;
+    }
+}
+
+form .form-field.fieldset-auth {
+  float: left;
+  width: 33%;
+  height: 50px;
 }
 
 form .field-readonly {
     background-color: lighten(#000000, 80%) !important;
 } 
 
-// ----------------------------------------
-// Import specific parts of Foundation by commenting the import "foundation"
-// and uncommenting what you want below. You must uncomment the following if customizing
+.reports.content-header {
+  padding: 0 0px;
+  @include clearfix();
+  h6 { 
+    padding: 10px 0; 
+    margin: 10px 0; 
+    border-bottom: 1px solid #ddd;
+  }
+  h6 span { color: $mainColor; }
+}
+.pagination-cont.top .pagination { padding-top: 17px; }
+.pagination-cont.bottom .pagination { margin-top: -3px; }
+table.reports-table { zoom: 0.8; }
+
+form#upload_form {
+  label {
+    margin-top: 15px;
+    float: left;
+  }
+  select {
+    margin-top: 12px;
+    margin-left: 8px;
+    width: 33%;
+  }
+}
+
+.admin-freeze-issues {
+   background-color: #f2f2f2;
+   border: 1px solid #e6e6e6;
+   margin-top: 20px;
+   padding: 10px;
+   p.election-admin-message {
+     color: $red;
+   }
+   ul {
+    list-style: none;
+    li { 
+      color: #efefef;
+      background-color: $red;
+      padding: 4px;
+      &:first-child {
+        margin-top: 0px;
+      }
+      margin-bottom: 0px;
+      margin-top: 2px;
+      span { font-weight: bold;}
+    }
+   }
+}
+
+.verification-date {
+  color: #888;
+  font-size: 0.7em;
+}
+
+.decryption-success {
+  color: green;
+}
+
+.voter-weight { margin-bottom: -29px }
+
 
 @import "compass/css3";
-// @import "foundation/settings";
-// @import "foundation/functions/all";
-// @import "foundation/common/globals";
-// @import "foundation/mixins/clearfix";
-// @import "modular-scale";
-
-// Control which mixins you have access too
-
-// @import "foundation/mixins/css-triangle";
-// @import "foundation/mixins/font-size";
-
-// Must include next two for semantic grid to work
-
-// @import "foundation/mixins/respond-to";
-// @import "foundation/mixins/semantic-grid";
-
-// Must include the grid for any responsiveness
-
-// @import "foundation/components/grid";
-
-// Control which common styles get compiled
-
 @import "foundation/common/typography";
 @import "foundation/common/forms";
-
-// Control which components you get if customizing
-
-// @import "foundation/components/modules/buttons";
-// @import "foundation/components/modules/tabs";
-// @import "foundation/components/modules/ui";
-// @import "foundation/components/modules/topbar";
-// @import "foundation/components/modules/navbar";
-// @import "foundation/components/modules/orbit";
-// @import "foundation/components/modules/reveal";
-// @import "foundation/components/modules/offcanvas";
-

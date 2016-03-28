@@ -76,17 +76,18 @@
   <input style="float:right" id="submit-stv" class="button medium success" type="button" 
   onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Λευκό" />
   <br />
-  <a class="show-audit-form" href="#">Υποβολή ψήφου ελέγχου</a>
+  <a class="show-audit-form" href="#">{gettext("AUDIT_BALLOT_SUBMIT")}</a>
   {#/if}
 </div>
 </div>
 
 <div class="row audit-form">
   <div class="columns twelve">
-    <h5>Εισάγετε κωδικό για υποβολή ψήφου ελέγχου</h5>
+    <h5>{gettext("AUDIT_VOTE_CODE_PROMPT")}</h5>
     <p>
-     Οι έγκυροι κωδικοί ελέγχου θα πρέπει να σας έχουν αποσταλεί μαζί με το σύνδεσμο ψηφοφορίας.
-    <label for="submit-pass-for-audit">Κωδικός ελέγχου</label><input id="submit-pass-for-audit" />
+    {gettext("AUDIT_VOTE_INSTRUCTIONS")}
+    </p>
+    <label for="submit-pass-for-audit">{gettext("AUDIT_VOTE_CODE_LABEL")}</label><input id="submit-pass-for-audit" />
   </div>
 </div>
 </form>

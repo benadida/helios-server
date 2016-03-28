@@ -24,42 +24,42 @@ def election_trustees_to_text(election):
 def append_ballot_to_msg(election, msg):
     if msg[-1] != '\n':
         msg += '\n'
-    el_type_str = "\nElection type: {}\n\n".format(election.election_module)
+    el_type_str = u"\nElection type: {}\n\n".format(election.election_module)
     msg += el_type_str
-    msg +="Ballot info\n***********************\n"
+    msg += u"Ballot info\n***********************\n"
     for poll in election.polls.all():
-        msg += "- Poll name: {}\n".format(poll.name)
+        msg += u"- Poll name: {}\n".format(poll.name)
         for ballot in poll.questions_data:
             question = ballot.get('question', None)
             if question:
-                msg += "- Question: {}\n".format(question)
+                msg += u"- Question: {}\n".format(question)
             answers = ballot.get('answers', None)
             if answers:
-                msg += "- Answers\n"
+                msg += u"- Answers\n"
                 for answer in answers:
-                    msg += "  * {}\n".format(answer)
+                    msg += u"  * {}\n".format(answer)
             scores = ballot.get('scores', None)
             if scores:
-                msg += "- Scores: "
+                msg += u"- Scores: "
                 for score in scores:
                     msg += '[{}] '.format(str(score))
                 msg += '\n'
             min_ans = ballot.get('min_answers', None)
             max_ans = ballot.get('max_answers', None)
             if min_ans and max_ans:
-                msg += "- Min answers: {}\n- Max answers: {}\n".format(min_ans,
+                msg += u"- Min answers: {}\n- Max answers: {}\n".format(min_ans,
                                                                    max_ans)
             eligibles = ballot.get('eligibles', None)
             if eligibles:
-                msg += "- Eligibles: {}\n".format(eligibles)
+                msg += u"- Eligibles: {}\n".format(eligibles)
             has_limit = ballot.get('has_department_limit', None)
             if has_limit:
                 department_limit = ballot.get('department_limit', None)
-                msg += "- Poll has department limit of:{}\n".format(str(department_limit))
+                msg += u"- Poll has department limit of:{}\n".format(str(department_limit))
         candidates = poll.zeus.do_get_candidates()
-        candidates = [str(x) for x in candidates]
+        candidates = [unicode(x) for x in candidates]
         candidates = str(candidates)
-        msg += "- do_get_candidates:\n{}\n\n".format(candidates)
+        msg += u"- do_get_candidates:\n{}\n\n".format(candidates)
     return msg
 
 def election_reverse(election, view, **extra):
@@ -239,9 +239,21 @@ ELECTION_TABLE_HEADERS = OrderedDict([
     ('voting_starts_at', _('Start')),
     ('voting_ends_at', _('End')),
     ('status_display', _('Election status')),
-    ('trial', _('Trial'))
+    ('trial', _('Trial')),
+    ('official', _('Official'))
     ])
 
+REPORT_TABLE_HEADERS = OrderedDict([
+    ('institution', _('Institution')),
+    ('voters', _('Voters')),
+    ('voters_voted', _('Voters Voted')),
+    ('voting_starts_at', _('Start')),
+    ('completed_at', _('End')),
+    ('name', _('Name')),
+    ('polls_count', _('Number of Polls')),
+    ('admins', _('Administrators')),
+    ('official', _('Official'))
+    ])
 
 VOTER_SEARCH_FIELDS = ['voter_name', 'voter_surname', 'voter_email']
 VOTER_EXTRA_HEADERS = ['excluded_at']
@@ -254,6 +266,10 @@ VOTER_BOOL_KEYS_MAP = {
 ELECTION_SEARCH_FIELDS = ['name', 'description', 'institution__name', 'admins__user_id',]
 ELECTION_EXTRA_HEADERS = []
 ELECTION_BOOL_KEYS_MAP = {'trial': 'trial'}
+
+REPORT_SEARCH_FIELDS = ['name', 'institution__name', 'admins__user_id',]
+REPORT_EXTRA_HEADERS = []
+REPORT_BOOL_KEYS_MAP = {}
 
 
 
@@ -323,12 +339,17 @@ class CSVReader(object):
             m = "Invalid arguments, min_fields must be less than max_fields"
             raise ValueError(m)
 
+        encodings = DEFAULT_ENCODINGS[:]
+        preferred_encoding = kwargs.get('preferred_encoding', None)
+        if preferred_encoding is not None:
+            encodings.insert(1, preferred_encoding)
+
         self.min_fields = min_fields
         self.max_fields = max_fields
         sample_data = pick_sample(f.read(65536))
         f.seek(0)
-        encoding = get_encoding(sample_data)
-        dialect = get_dialect(sample_data)
+        encoding = get_encoding(sample_data.strip(), encodings=encodings)
+        dialect = kwargs.get('dialect', get_dialect(sample_data))
         self.reader = UnicodeReader(f, dialect, encoding)
 
     def next(self):
@@ -388,11 +409,14 @@ class CSVCellError(Exception):
         return self.m
 
 
-def get_encoding(csv_data):
-    encodings = ['utf-8', 'iso8859-7', 'utf-16', 'utf-16le', 'utf-16be']
+DEFAULT_ENCODINGS = ['utf-8', 'utf-16', 'utf-16le', 'utf-16be']
+
+
+def get_encoding(csv_data, encodings=DEFAULT_ENCODINGS):
+    encodings = encodings[:]
     encodings.reverse()
     while 1:
-        m = "Cannot decode csv data!"
+        m = "Cannot decode csv data! Please choose another encoding."
         if not encodings:
             raise ValueError(m)
         encoding = encodings[-1]

@@ -25,6 +25,7 @@ from django.contrib import messages
 from django.core import serializers
 from django.core.exceptions import PermissionDenied
 from django.views.decorators.http import require_http_methods
+from django.utils.translation import ugettext_lazy as _
 
 from helios.view_utils import render_template
 from helios.models import Election, Poll, CastVote, Voter
@@ -58,13 +59,16 @@ def add_or_update(request, election=None):
             if not election.has_helios_trustee():
                 election.generate_trustee()
             if election.polls.count() == 0:
-                url = election_reverse(election, 'polls_list')
+                url = election_reverse(election, 'polls_add')
             else:
                 url = election_reverse(election, 'index')
             if election.voting_extended_until:
                 subject = "Voting extension"
                 msg = "Voting end date extended"
                 election.notify_admins(msg=msg, subject=subject)
+
+            election.zeus.compute_election_public()
+            election.logger.info("Public key updated")
             return HttpResponseRedirect(url)
 
     context = {'election_form': election_form, 'election': election}
@@ -79,7 +83,7 @@ def add_or_update(request, election=None):
 @require_http_methods(["GET"])
 def trustees_list(request, election):
     trustees = election.trustees.filter(election=election,
-                                        secret_key__isnull=True)
+                                        secret_key__isnull=True).order_by('pk')
 
     # TODO: can we move this in a context processor
     # or middleware ???
@@ -106,6 +110,7 @@ def trustee_send_url(request, election, trustee_uuid):
     trustee = election.trustees.get(uuid=trustee_uuid)
     trustee.send_url_via_mail()
     url = election_reverse(election, 'trustees_list')
+    messages.success(request, _("Trustee login url sent"))
     return HttpResponseRedirect(url)
 
 

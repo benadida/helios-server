@@ -1,0 +1,108 @@
+{% extends 'server_ui/templates/base.html' %}
+
+{% load i18n pagination_tags zeus_tags %}
+
+{% block content %}
+    {% block general %}
+        <div class="row collapse">
+            <div class="columns seven">
+                <h2>{% trans "Elections report" %}</h2>
+            </div>
+            <div class="columns five">
+                <div href="#" class="button medium dropdown" style="float:right;">
+                    {% trans "Export" %}&nbsp;
+                    <ul>
+                        <li>
+                        <a style="" class="foundicon-paper-clip" 
+                            href="{% url elections_report_csv %}?{{params}}">
+                            &nbsp;{% trans "to CSV" %}</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="reports content-header">
+            <div class="columns six" style="padding-left:0;">
+                <h6>{% trans "Number of elections" %}: <span>{{ elections_count }}</span></h6>
+                <h6>{% trans "Number of polls" %}: <span>{{ polls_count }}</span></h6>
+            </div>
+            <div class="columns six" style="padding-left:0; width: 49%;" >
+                <h6>{% trans "Number of voters" %}: <span>{{ voters_count }}</span></h6>
+                <h6>{% trans "Number of voters that voted" %}: <span> {{voters_voted_count}} ({{percentage_voted|floatformat}}%)</span></h6>
+            </div>
+        </div>
+    {% endblock %}
+    {% block filter %}
+    {% endblock %}
+    <div class="row collapse">
+            <div class="columns four table-filters">
+                <form action="#elections-table" method="GET">
+                    <label>{% trans "Filter" %}:</label>
+                    <div class="row collapse">
+                        <div class="columns nine">
+                            <input class="q" name="q" type="text" value="{{ q }}"/>
+                            <span class="qresult">
+                              {% if q %}
+                                {% blocktrans count elections_count as results_count %}
+                                {{ elections_count }} result found
+                                {% plural %}
+                                {{ elections_count }} results found
+                                {% endblocktrans %}
+                              {% endif %}</span>
+                        </div>
+                        <div class="columns two">
+                            <input class="button postfix" type="submit" value="✓"/>
+                        </div>
+                        <div class="columns one">
+                            <a class="button alert postfix" 
+                               href="{% url elections_report %}#elections-table" />✗</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            {% autopaginate elections elections_per_page %}
+            <div class="columns eight pagination-cont reports top">
+                {% paginate %}
+            </div>
+        </div>
+    {% block elections-list %}
+        <table class="info-table reports-table" id="elections-table">
+            <thead>
+                <tr>
+                    {% for key, value in report_table_headers %}
+                        <th>
+                            <a href="?order={{key}}{% complete_get_parameters request.GET key "voting_starts_at" %}"
+                                                                                            class="{{ordering_cls}}">
+                                {% trans value %}
+                            </a>
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for election in elections %}
+                    <tr>
+                        <td>{{election.inst}}</td>
+                        <td>{{election.nr_voters}}</td>
+                        <td>{{election.nr_voters_voted}}</td>
+                        <td>{{election.start|date}}</td>
+                        <td>{{election.end}}</td>
+                        <td>{{election.election_name}}</td>
+                        <td>{{election.nr_polls}}</td>
+                        <td>{{election.admin}}</td>
+                        <td>
+                            {% trans election.official %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan=7>{% trans "No results found" %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="columns twelve pagination-cont reports bottom">
+            {% paginate %}
+        </div>
+    {% endblock %}
+{% endblock %}

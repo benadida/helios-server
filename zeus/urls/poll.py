@@ -6,7 +6,7 @@ poll_patterns = patterns('',
 
 poll_patterns += patterns('zeus.views.poll',
     url(r'^remove$', 'remove', name='election_poll_remove'),
-    url(r'^rename$', 'rename', name='election_poll_rename'),
+    url(r'^edit$', 'add_edit', name='election_poll_edit'),
     url(r'^cast$', 'cast', name='election_poll_cast'),
     url(r'^cast-done$', 'cast_done', name='election_poll_cast_done'),
     url(r'^audited-ballot$', 'audited_ballots',
@@ -47,12 +47,12 @@ poll_patterns += patterns('zeus.views.poll',
         kwargs={'ext': 'pdf'}),
     url(r'^results-(?P<language>.*).csv$', 'results_file', name='election_poll_results_csv',
         kwargs={'ext': 'csv'}),
-    url(r'^proofs.zip$', 'zeus_proofs', name='election_poll_zeus_proofs')
+    url(r'^proofs.zip$', 'zeus_proofs', name='election_poll_zeus_proofs'),
 )
 
 urlpatterns = patterns('zeus.views.poll',
     url(r'^$', 'list', name='election_polls_list'),
-    url(r'^add$', 'add', name='election_polls_add'),
+    url(r'^add$', 'add_edit', name='election_polls_add'),
     url(r'^(?P<poll_uuid>[^/]+)/', include(poll_patterns)),
     url(r'^(?P<poll_uuid>[^/]+).json', 'to_json',
         name='election_poll_json'),

@@ -48,83 +48,113 @@
 {% paginate %}
 </div>
 <div class="columns twelve">
-<table id="elections-table" class="elections">
-  <thead>
-    <tr>
-      {% for key, value in election_table_headers %}
-        <th>
-          {% if key == 'status_display' %}
-            {{value}}
-          {% else %}
-          <a href="?order={{key}}{% complete_get_parameters request.GET key "created_at" %}"class="{{ ordering_cls }}">{{value}}</a>
-          {% endif %}
-        </th>
-      {% endfor %}
-      </tr>
-  </thead>
-  <tbody>
-    {% for election in elections_administered %}
-    <tr>
-      <td>  
-          {% if election.result %}
-          <b style="color:green">[ΕΧΕΙ ΟΛΟΚΛΗΡΩΘΕΙ]</b><br />
-          {% endif %}
-          {% if election.canceled_at %}
-          <b style="color:red">[ΕΧΕΙ ΑΚΥΡΩΘΕΙ]</b><br />
-          {% endif %}
-          {% if election.is_completed %}
-          <b style="color:orange">[ΔΗΜΟΣΙΑ ΠΡΟΒΟΛΗ]</b><br />
-          {% endif %}
-          {% if user.superadmin_p %}
-            <a href="{% url helios.views.election_report election.uuid "html" %}">
-              {{ election.name }}
-            </a>
-            {% if election.result %}
-            <br />
-            <a class="button small" 
-              href="{% url helios.views.one_election_set_completed election.uuid %}">
-              {% if not election.is_completed %}ΔΗΜΟΣΙΑ ΠΡΟΒΟΛΗ{% else %}ΑΚΥΡΩΣΗ ΔΗΜΟΣΙΑΣ ΠΡΟΒΟΛΗΣ{% endif %}
-            </a>
-            {% endif %}
-            {% else %}
-            <a href="{% url election_index election.uuid %}">
-              {{ election.name }}
-            </a>
-            {% endif %}
-        </td>
-        <td>
-          {{ election.institution.name }}
-        </td>
-        <td>
-            {{ election.admins.all.0.info.name }}
-        </td>
-        <td>
-          {{ election.created_at }}
-        </td>
-        <td>
-            {{ election.voting_starts_at }}
-        </td>
-        <td>
-            {% if election.voting_extended_until %}
-                {{ election.voting_extended_until }}
-            {% else %}
-                {{ election.voting_ends_at }}
-            {% endif %}
-        </td>
-        <td class="{% if election.feature_canceled %}alert{% endif %}">
-          {{ election.status_display }}
-        </td>
-        <td>
-          {% if election.trial %}
-            {% trans "YES" %}
-          {% else %}
-            {% trans "NO" %}
-          {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-    </table>
+    {% if is_superadmin %}
+        <form action="{{request.get_full_path}}" method="POST">
+            {% csrf_token %}
+    {% endif %}
+            <table id="elections-table" class="info-table">
+                <thead>
+                    <tr>
+                        {% for key, value in election_table_headers %}
+                            {% if key != 'official' or is_superadmin %}
+                                <th>
+                                    {% if key == 'status_display' %}
+                                        {{value}}
+                                    {% else %}
+                                        <a href="?order={{key}}{% complete_get_parameters request.GET key "created_at" %}"class="{{ordering_cls}}">{{value}}</a>
+                                    {% endif %}
+                                </th>
+                            {% endif %}
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for election in elections_administered %}
+                        <tr>
+                            <td>
+                                {% if election.result %}
+                                    <b style="color:green">[{% trans "COMPLETED" %}]</b><br />
+                                {% endif %}
+                                {% if election.canceled_at %}
+                                <b style="color:red">[{% trans "CANCELED" %}]</b><br />
+                                {% endif %}
+                                {% if election.is_completed %}
+                                <b style="color:orange">[{% trans "PUBLIC" %}]</b><br />
+                                {% endif %}
+                                {% if user.superadmin_p %}
+                                    <a href="{% url helios.views.election_report election.uuid "html" %}">
+                                        {{election.name}}
+                                    </a>
+                                {% endif %}
+                                {% if election.result %}
+                                    <br />
+                                    <a class="button small"
+                                      href="{% url helios.views.one_election_set_completed election.uuid %}">
+                                        {% if not election.is_completed %}
+                                            {% trans "SET PUBLIC" %}
+                                        {% else %}
+                                            {% trans "UNSET PUBLIC" %}
+                                        {% endif %}
+                                    </a>
+                                {% else %}
+                                    <a href="{% url election_index election.uuid %}">
+                                        {{election.name}}
+                                    </a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{election.institution.name}}
+                            </td>
+                            <td>
+                                {{election.admins.all.0.info.name}}
+                            </td>
+                            <td>
+                                {{election.created_at}}
+                            </td>
+                            <td>
+                                {{election.voting_starts_at}}
+                            </td>
+                            <td>
+                                {% if election.voting_extended_until %}
+                                    {{election.voting_extended_until}}
+                                {% else %}
+                                    {{election.voting_ends_at}}
+                                {% endif %}
+                            </td>
+                            <td class="{% if election.feature_canceled %}alert{% endif %}">
+                                {{election.status_display}}
+                            </td>
+                            <td>
+                                {% if election.trial %}
+                                    {% trans "YES" %}
+                                {% else %}
+                                    {% trans "NO" %}
+                                {% endif %}
+                            </td>
+                            {% if is_superadmin %}
+                                <td class="official-field">
+                                    <select name="official">
+                                        <option value="" {% if election.official == None %} selected="selected" {% endif %}>
+                                            {% trans "Not Decided" %}
+                                        </option>
+                                        <option value="0" {% if election.official == 0 %} selected="selected" {% endif %}>
+                                            {% trans "Unofficial" %}
+                                        </option>
+                                        <option value="1" {% if election.official == 1 %} selected="selected" {% endif %}>
+                                            {% trans "Official" %}
+                                        </option>
+                                    </select>
+                                    <input type="hidden" name="uuid" value="{{election.uuid}}" />
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+    {% if is_superadmin %}
+            <input type="submit" value="Save" />
+        </form>
+    {% endif %}
 </div>
 <div class="columns seven pagination-cont">
 {% paginate %}

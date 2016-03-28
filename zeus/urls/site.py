@@ -2,6 +2,7 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('zeus.views.site',
     url(r'^$', 'home', name='home'),
+    url(r'^terms/$', 'terms', name='terms'),
     url(r'^faqs/$', 'faqs_voter', name='faqs'),
     url(r'^faqs/voter/$', 'faqs_voter', name='faqs_voter'),
     url(r'^faqs/trustee/$', 'faqs_trustee', name='faqs_trustee'),

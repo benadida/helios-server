@@ -18,6 +18,7 @@ from django.db.models import Q, Max
 from django.core.context_processors import csrf
 from django.core.validators import validate_email
 from django.utils.html import mark_safe, escape
+from django.shortcuts import redirect
 from django import forms
 from django.template.loader import Template, Context
 
@@ -51,19 +52,11 @@ from helios.utils import force_utf8
 @auth.election_admin_required
 def list(request, election):
     polls = election.polls.filter()
-    extra = int(request.GET.get('extra', 1))
-    polls_formset = modelformset_factory(Poll, PollForm, extra=extra,
-                                         max_num=100, formset=PollFormSet,
-                                         can_delete=False)
-    add_polls = Poll.objects.none()
-    form = polls_formset(queryset=add_polls)
-    context = {'polls': polls, 'election': election, 'form': form}
+    context = {'polls': polls, 'election': election}
     set_menu('polls', context)
     return render_template(request, "election_polls_list", context)
 
-
 @auth.election_admin_required
-@auth.requires_election_features('can_rename_poll')
 @transaction.commit_on_success
 @require_http_methods(["POST"])
 def rename(request, election, poll):
@@ -75,7 +68,6 @@ def rename(request, election, poll):
         poll.logger.info("Renamed from %s to %s", oldname, newname)
     url = election_reverse(election, 'polls_list')
     return HttpResponseRedirect(url)
-
 
 @transaction.commit_on_success
 def _handle_batch(election, polls, vars, auto_link=False):
@@ -251,37 +243,40 @@ def _add_batch(request, election):
     url = election_reverse(election, 'polls_list')
     return HttpResponseRedirect(url)
 
-
 @auth.election_admin_required
-@auth.requires_election_features('can_add_poll')
 @require_http_methods(["POST", "GET"])
-def add(request, election, poll=None):
+def add_edit(request, election, poll=None):
+    if not poll and not election.feature_can_add_poll:
+        raise PermissionDenied
     if election.linked_polls and request.FILES.has_key('batch_file'):
         return _add_batch(request, election)
-
+    if poll:
+        oldname = poll.name
+    if request.method == "POST":
+        form = PollForm(request.POST, instance=poll, election=election)
+        if form.is_valid():
+            new_poll = form.save()
+            if form.has_changed():
+                new_poll.logger.info("Poll updated %r" % form.changed_data)
+            message = _("Poll updated successfully")
+            messages.success(request, message)
+            newname = new_poll.name
+            # log poll edit/creation
+            if poll:
+                if oldname != newname:
+                    poll.logger.info("Renamed from %s to %s", oldname, newname)
+            else:
+                new_poll.logger.info("Poll created")
+            url = election_reverse(election, 'polls_list')
+            return redirect(url)
     if request.method == "GET":
-        url = election_reverse(election, 'polls_list')
-        return HttpResponseRedirect(url)
-
-    extra = int(request.GET.get('extra', 2))
-    polls_formset = modelformset_factory(Poll, PollForm, extra=extra,
-                                         max_num=100, formset=PollFormSet,
-                                         can_delete=False)
-    polls = Poll.objects.none()
-    form = polls_formset(request.POST, queryset=polls, election=election)
-    if form.is_valid():
-        with transaction.commit_on_success():
-            polls = form.save(election)
-            for poll in polls:
-                poll.logger.info("Poll created")
-    else:
-        polls = Poll.objects.filter(election=election)
-        context = {'polls': polls, 'election': election, 'form': form}
-        set_menu('polls', context)
-        return render_template(request, "election_polls_list", context)
-    url = election_reverse(election, 'polls_list')
-    return HttpResponseRedirect(url)
-
+        form = PollForm(instance=poll, election=election)
+    context = {'election': election, 'poll': poll,  'form': form}
+    set_menu('polls', context)
+    if poll:
+        set_menu('edit_poll', context)
+    tpl = "election_poll_add_or_edit"
+    return render_template(request, tpl, context)
 
 @auth.election_admin_required
 @require_http_methods(["POST"])
@@ -308,11 +303,13 @@ def questions(request, election, poll):
             url = poll_reverse(poll, 'questions_manage')
             return HttpResponseRedirect(url)
 
+    preview_booth_url = poll.get_booth_url(request, preview=True)
     context = {
         'election': election,
         'poll': poll,
         'questions': questions,
-        'module': poll.get_module()
+        'module': poll.get_module(),
+        'preview_booth_url': preview_booth_url
     }
     set_menu('questions', context)
     tpl = getattr(module, 'questions_list_template', 'election_poll_questions')
@@ -386,7 +383,6 @@ def voters_list(request, election, poll):
     set_menu('voters', context)
     return render_template(request, 'election_poll_voters_list', context)
 
-
 @auth.election_admin_required
 @auth.requires_poll_features('can_clear_voters')
 @transaction.commit_on_success
@@ -415,29 +411,43 @@ def voters_clear(request, election, poll):
     return HttpResponseRedirect(url)
 
 
+ENCODINGS = [('utf-8', _('Unicode')),
+             ('iso-8859-7', _('Greek (iso-8859-7)')),
+             ('iso-8859-1', _('Latin (iso-8859-1)'))]
+
 @auth.election_admin_required
 @auth.requires_poll_features('can_add_voter')
 @require_http_methods(["POST", "GET"])
 def voters_upload(request, election, poll):
     common_context = {
         'election': election,
-        'poll': poll
+        'poll': poll,
+        'encodings': ENCODINGS
     }
 
     set_menu('voters', common_context)
     if request.method == "POST":
+        preferred_encoding = request.POST.get('encoding', None)
+        if preferred_encoding not in dict(ENCODINGS):
+            messages.error(request, _("Invalid encoding"))
+            url = poll_reverse(poll, 'voters_upload')
+            return HttpResponseRedirect(url)
+        else:
+            common_context['preferred_encoding'] = preferred_encoding
+
         if bool(request.POST.get('confirm_p', 0)):
             # launch the background task to parse that file
             voter_file_id = request.session.get('voter_file_id', None)
             process_linked  = request.session.get('no_link', False) is False
             if not voter_file_id:
-                messages.error(request, "Invalid voter file id")
+                messages.error(request, _("Invalid voter file id"))
                 url = poll_reverse(poll, 'voters')
                 return HttpResponseRedirect(url)
             try:
                 voter_file = VoterFile.objects.get(pk=voter_file_id)
                 try:
-                    voter_file.process(process_linked)
+                    voter_file.process(process_linked,
+                                       preferred_encoding=preferred_encoding)
                 except (exceptions.VoterLimitReached, \
                     exceptions.DuplicateVoterID) as e:
                     messages.error(request, e.message)
@@ -479,14 +489,21 @@ def voters_upload(request, election, poll):
                 invalid_emails = []
                 try:
                     voters = [v for v in voter_file_obj.itervoters(
-                                            email_validator=_email_validate)]
+                                            email_validator=_email_validate,
+                    preferred_encoding=preferred_encoding)]
                 except ValidationError, e:
                     if hasattr(e, 'messages') and e.messages:
                         error = "".join(e.messages)
                     else:
                         error = "error."
                 except Exception, e:
+                    voter_file_obj.delete()
                     error = str(e)
+                    if 'voter_file_id' in request.session:
+                        del request.session['voter_file_id']
+                    messages.error(request, error)
+                    url = poll_reverse(poll, 'voters_upload')
+                    return HttpResponseRedirect(url)
 
                 if len(invalid_emails):
                     error = _("Enter a valid email address. "
@@ -795,7 +812,7 @@ def voter_booth_linked_login(request, election, poll, voter_uuid):
     if not linked_poll or linked_poll not in \
             poll.linked_polls.values_list('uuid', flat=True):
         raise PermissionDenied()
-    
+
     linked_poll = election.polls.get(uuid=linked_poll)
     linked_voter = linked_poll.voters.get(voter_login_id=voter.voter_login_id)
     user = auth.ZeusUser(linked_voter)
@@ -809,12 +826,24 @@ def voter_booth_linked_login(request, election, poll, voter_uuid):
 @require_http_methods(["GET"])
 def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
     voter = None
+
+    if poll.jwt_auth:
+        messages.error(request,
+                        _("Poll does not support voter url login."))
+        return HttpResponseRedirect(reverse('error', kwargs={'code': 403}))
+
     try:
         voter = Voter.objects.get(poll=poll, uuid=voter_uuid)
         if voter.excluded_at:
             raise PermissionDenied('37')
     except Voter.DoesNotExist:
         raise PermissionDenied("Invalid election")
+
+    if request.zeususer.is_authenticated() and request.zeususer.is_voter:
+        return HttpResponseRedirect(reverse('election_poll_index', kwargs={
+            'election_uuid': request.zeususer._user.poll.election.uuid,
+            'poll_uuid': request.zeususer._user.poll.uuid
+        }))
 
     if request.zeususer.is_authenticated() and (
             not request.zeususer.is_voter or \
@@ -824,13 +853,39 @@ def voter_booth_login(request, election, poll, voter_uuid, voter_secret):
                             "to access this view."))
         return HttpResponseRedirect(reverse('error', kwargs={'code': 403}))
 
-    if voter.voter_password == unicode(voter_secret):
+    if voter.voter_password != unicode(voter_secret):
+        raise PermissionDenied("Invalid secret")
+
+    if poll.oauth2_thirdparty:
+        oauth2 = poll.get_oauth2_module
+        if oauth2.type_id == 'google':
+            oauth2.set_login_hint(voter.voter_email)
+        poll.logger.info("[thirdparty] setting thirdparty voter " + \
+                         "session data (%s, %s)",
+                         voter.voter_email, voter.uuid)
+        request.session['oauth2_voter_email'] = voter.voter_email
+        request.session['oauth2_voter_uuid'] = voter.uuid
+        url = oauth2.get_code_url()
+        poll.logger.info("[thirdparty] code handshake from %s", url)
+        context = {'url': url}
+        tpl = 'voter_redirect'
+        return render_template(request, tpl, context)
+    elif poll.shibboleth_auth:
+        poll.logger.info("[thirdparty] shibboleth redirect for voter (%s, %s)",
+                         voter.voter_email, voter.uuid)
+        constraints = poll.get_shibboleth_constraints()
+        endpoint = constraints.get('endpoint')
+        request.session['shibboleth_voter_email'] = voter.voter_email
+        request.session['shibboleth_voter_uuid'] = voter.uuid
+        url = auth.make_shibboleth_login_url(endpoint)
+        context = {'url': url}
+        tpl = 'voter_redirect'
+        return render_template(request, tpl, context)
+    else:
         user = auth.ZeusUser(voter)
         user.authenticate(request)
         poll.logger.info("Poll voter '%s' logged in", voter.voter_login_id)
         return HttpResponseRedirect(poll_reverse(poll, 'index'))
-    raise PermissionDenied('38')
-
 
 @auth.election_view(check_access=False)
 @require_http_methods(["GET"])

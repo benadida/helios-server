@@ -256,6 +256,10 @@ class PollFeatures(FeaturesMixin):
         return not self.feature_voting_started
 
     @poll_feature()
+    def _feature_can_preview_booth(self):
+        return not self.feature_validate_voting_finished
+
+    @poll_feature()
     def _feature_can_remove(self):
         return not self.feature_frozen
 

@@ -1,0 +1,197 @@
+{% extends "election_page.html" %}{% load i18n %}
+{% load zeus_tags %}
+{% block title %}{{election.name}}: {% trans "Election Polls" %}{% endblock %}
+{% block tabs_menu %}
+{% include "_election_view_menu.html" %}
+{% endblock %}
+{% block content %}
+{% if election.feature_can_add_poll or poll %}
+
+{% if election.linked_polls %}
+    <form action="{% url election_polls_add election.uuid %}" method="post"
+     enctype="multipart/form-data">
+        {% csrf_token %}
+        <label>{% trans "Batch polls update" %}</label>
+        <input type="file" name="batch_file" />
+        <br />
+        <br />
+        <input type="submit" class="button small" value="{% trans "Save" %}" />
+    </form>
+{% else %}
+    <form data-protect="1" class="prettyform" action="" method="POST">
+        <table class="pretty">
+        {% with form=form %}
+            {% include "foundation_form.html" %}
+        {% endwith %}
+        </table>
+        <a class="button" href="{% url election_polls_list  election.uuid %}">
+        {% trans "Cancel" %}</a>
+        <input class="button" type="submit" value="{% trans "Save" %}"/>
+    </form>
+{% endif %}
+
+<script>
+var oauth2_elems = $("input[id^=id_oauth2]:not(#id_oauth2_thirdparty), select[id^=id_oauth2]");
+
+function show_oauth2_elems(time){
+    oauth2_elems.parent().show(time);
+    oauth2_elems.parent().next().show(time);
+}
+
+function hide_oauth2_elems(time){
+    oauth2_elems.parent().hide(time);
+    oauth2_elems.parent().next().hide(time);
+}
+
+var jwt_elems = $("textarea[id^=id_jwt_public_key],input[id^=id_jwt]:not(#id_jwt_auth)")
+var shibboleth_elems = $("textarea[id^=id_shibboleth_constraints],input[id^=id_shibboleth]:not(#id_shibboleth_auth)");
+
+function show_jwt_elems(time){
+    jwt_elems.parent().show(time);
+    jwt_elems.parent().next().show(time);
+}
+
+function show_shibboleth_elems(time){
+    shibboleth_elems.parent().show(time);
+    shibboleth_elems.parent().next().show(time);
+}
+
+function hide_shibboleth_elems(time){
+    shibboleth_elems.parent().hide(time);
+    shibboleth_elems.parent().next().hide(time);
+}
+
+function hide_jwt_elems(time){
+    jwt_elems.parent().hide(time);
+    jwt_elems.parent().next().hide(time);
+}
+
+function collect_urls(){
+    
+    var urls = {};
+    var types = ["google", "facebook"];
+    var subtypes = ["code", "exchange", "confirmation"]
+    for (var i = 0; i < types.length; i++) {
+        type = types[i]
+        urls_arr = []
+        for (var j = 0; j < subtypes.length; j++) {
+            subtype = subtypes[j]
+            var value = $("#id_"+type+"_"+subtype+"_url").val()
+            urls_arr.push(value)
+        }
+        urls[type] = urls_arr;
+    }
+    urls['other'] = ['', '', '']
+    return urls
+    }
+
+function set_initial_values(urls){
+    if ("{{poll}}" == "None"){
+        var code_field = $("#id_oauth2_code_url")
+        var exchange_field = $("#id_oauth2_exchange_url")
+        var confirmation_field = $("#id_oauth2_confirmation_url")
+        var type = "google";
+        code_field.val(urls[type][0])
+        exchange_field.val(urls[type][1])
+        confirmation_field.val(urls[type][2])
+    }
+}
+
+$(function(){
+    urls = collect_urls();
+    set_initial_values(urls);
+
+    var jwt_auth = $('#id_jwt_auth');
+
+    if ($("#id_oauth2_thirdparty").prop('checked')){
+        show_oauth2_elems(150);
+        hide_jwt_elems(0);
+        hide_shibboleth_elems(0);
+    }
+    else if($("#id_jwt_auth").prop('checked')){
+        show_jwt_elems(150);
+        hide_oauth2_elems(0);
+        hide_shibboleth_elems(0);
+    }
+    else if ($("#id_shibboleth_auth").prop('checked')) {
+        show_shibboleth_elems(150);
+        hide_jwt_elems(0);
+        hide_oauth2_elems(0);
+    }
+    else{
+        hide_oauth2_elems(150);
+        hide_jwt_elems(0);
+        hide_shibboleth_elems(0);
+    }
+    $("#id_jwt_file").change(function(event){
+        var output = $("#id_jwt_public_key");
+        var input = event.target;
+        reader = new FileReader();
+        reader.onload = function(){
+            text = reader.result;
+            var header = "-----BEGIN RSA PUBLIC KEY-----";
+            if (text.startsWith(header)){
+            output.val(text);
+            }
+            else{
+                alert('Invalid file');
+            }
+        };
+        reader.readAsText(input.files[0]);
+    });
+
+
+    $(".fieldset-auth").next("br").remove();
+
+    $("#id_oauth2_thirdparty").change(function(){
+        if ($("#id_oauth2_thirdparty").prop('checked')){
+            hide_jwt_elems(150);
+            hide_shibboleth_elems(150);
+            show_oauth2_elems(150);
+            jwt_auth.prop('checked', false)
+            $("#id_shibboleth_auth").prop('checked', false)
+        }
+        else{
+            hide_oauth2_elems(150);
+        }
+    });
+
+    $("#id_shibboleth_auth").change(function(){
+        if ($("#id_shibboleth_auth").prop('checked')){
+            show_shibboleth_elems(150);
+            $("#id_oauth2_thirdparty").prop("checked", false);
+            hide_oauth2_elems(150);
+            $("#id_jwt_auth").prop("checked", false);
+            hide_jwt_elems(150);
+        } else {
+            hide_shibboleth_elems(150);
+        }
+    });
+
+    $("#id_jwt_auth").change(function(){
+        if ($("#id_jwt_auth").prop('checked')){
+            show_jwt_elems(150)
+            $("#id_shibboleth_auth").prop('checked', false)
+            hide_shibboleth_elems(150);
+            $("#id_oauth2_thirdparty").prop('checked', false)
+            hide_oauth2_elems(150);
+        }
+        else{
+            hide_jwt_elems(150);
+        }
+    });
+
+    $("#id_oauth2_type").change(function(){
+        var type = $(this).val();
+        var code_field = $("#id_oauth2_code_url")
+        var exchange_field = $("#id_oauth2_exchange_url")
+        var confirmation_field = $("#id_oauth2_confirmation_url")
+        code_field.val(urls[type][0])
+        exchange_field.val(urls[type][1])
+        confirmation_field.val(urls[type][2])
+        
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

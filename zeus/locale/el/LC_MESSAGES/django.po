@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-23 14:13+0300\n"
+"POT-Creation-Date: 2015-12-09 19:36+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -121,8 +121,22 @@ msgstr "Μη έγκυρος χρήστης ή συνθηματικό"
 msgid "Your account is disabled"
 msgstr "Ο λογαριασμός είναι απενεργοποιημένος"
 
+msgid "2-factor authentication"
+msgstr "Ταυτοποίηση 2-factor"
+
+msgid "2-factor authentication help text"
+msgstr "Προαιρετικά επιλέξτε μέθοδο 2ου βήματος/παράγοντα ταυτοποίησης ψηφοφόρων"
+
 msgid "Duplicate poll names are not allowed"
 msgstr "Δεν επιτρέπονται κάλπες με ίδιο όνομα"
+
+msgid ""
+"Poll name cannot be changed                                               "
+"after freeze"
+msgstr "Το όνομα της κάλπης δεν μπορεί να αλλάξει μετά την οριστικοποίηση"
+
+msgid "This URL is invalid"
+msgstr "Μη έγκυρo URL"
 
 msgid "all selected voters"
 msgstr "σύνολο ψηφοφόρων"
@@ -137,7 +151,7 @@ msgid "Email subject"
 msgstr "Tίτλος μηνύματος email"
 
 msgid "In place of BODY"
-msgstr ""
+msgstr "Στην θέση BODY"
 
 msgid "Send To"
 msgstr "Αποστολή πρός"
@@ -306,7 +320,7 @@ msgid "Elected"
 msgstr "Εκλεγμένοι"
 
 msgid "Departments"
-msgstr ""
+msgstr "Τμήματα"
 
 msgid "Round "
 msgstr "Γύρος "
@@ -356,8 +370,8 @@ msgstr "Κάλπες"
 msgid "Administrator"
 msgstr "Διαχειριστής"
 
-msgid "Zeus Elections - Poll Results"
-msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
+msgid "Official"
+msgstr "Επίσημη"
 
 #, python-format
 msgid "Total votes: %d"
@@ -366,6 +380,9 @@ msgstr "Σύνολο ψηφοδελτίων: %d"
 #, python-format
 msgid "Blank: %d"
 msgstr "Λευκά: %d"
+
+msgid "Zeus Elections - Poll Results"
+msgstr "Ηλεκτρονικές Ψηφοφορίες «Ζευς» — Αποτελέσματα"
 
 msgid "Results"
 msgstr "Αποτελέσματα"
@@ -445,16 +462,23 @@ msgstr "Τελευταία είσοδος"
 msgid "Actions"
 msgstr "Επιλογές"
 
-#, fuzzy
 msgid "Creation"
-msgstr "Ερώτηση"
+msgstr "Δημιουργία"
 
-#, fuzzy
 msgid "Election status"
-msgstr "Τίτλος ψηφοφορίας"
+msgstr "Κατάσταση ψηφοφορίας"
 
 msgid "Trial"
-msgstr ""
+msgstr "Δοκιμαστική"
+
+msgid "Voters Voted"
+msgstr "Σύνολο συμμετεχόντων"
+
+msgid "Number of Polls"
+msgstr "Σύνολο κάλπεων"
+
+msgid "Administrators"
+msgstr "Διαχειριστές"
 
 msgid "Simple election with one or more questions"
 msgstr "Απλή ψηφοφορία με μία ή περισσότερες ερωτήσεις"
@@ -499,11 +523,47 @@ msgstr "Λίστα υποψηφίων"
 msgid "Are you sure ?"
 msgstr "Επιβεβαιώστε"
 
+msgid "Are you sure?"
+msgstr "Επιβεβαιώστε"
+
 msgid "(all voters selected)"
 msgstr "σύνολο ψηφοφόρων"
 
+msgid "Uninitialized shibboleth session."
+msgstr "Μη αρχικοποιημένη σύνδεση shibboleth"
+
+msgid "Invalid shibboleth endpoint"
+msgstr "Πρόβλημα στα δεδομένα shibboleth"
+
+msgid "Invalid shibboleth data resolved."
+msgstr "Πρόβλημα στα δεδομένα shibboleth"
+
+msgid "Shibboleth voter info assertion failed."
+msgstr "Πρόβλημα στα δεδομένα shibboleth"
+
+msgid "Trustee login url sent"
+msgstr "Η αποστολή πρόσκλησης πραγματοποιήθηκε"
+
 msgid "Invalid batch file contents"
 msgstr "Μη αποδεκτό αρχείο"
+
+msgid "Poll updated successfully"
+msgstr "Η κάλπη ανανεώθηκε επιτυχώς"
+
+msgid "Unicode"
+msgstr "Unicode"
+
+msgid "Greek (iso-8859-7)"
+msgstr "Greek (iso-8859-7)"
+
+msgid "Latin (iso-8859-1)"
+msgstr "Latin (iso-8859-1)"
+
+msgid "Invalid encoding"
+msgstr "Μη έγκυρη κωδικοποίηση"
+
+msgid "Invalid voter file id"
+msgstr "Λάθος ID αρχείου"
 
 msgid "Enter a valid email address. <br />"
 msgstr "Μη έγκυρη διεύθυνση email. <br />"
@@ -526,8 +586,11 @@ msgstr "Δεν βρέθηκαν ψηφοφόροι."
 msgid "Email sending started"
 msgstr "Η αποστολή μηνυμάτων email έχει ξεκινήσει"
 
+msgid "Poll does not support voter url login."
+msgstr "Η κάλπη δεν επιτρέπει σύνδεση με URL"
+
 msgid "You need to logout from your current account to access this view."
-msgstr ""
+msgstr "Πρέπει να αποσυνδεθείτε για να αποκτήσετε πρόσβαση σε αυτή την σελίδα"
 
 msgid "Invalid email address"
 msgstr "Μη έγκυρη διεύθυνση email"
@@ -554,7 +617,7 @@ msgstr "Δεν έχετε δικαίωμα πρόσβασης σε αυτή τη
 msgid "An error has been occured. Please notify the server admin."
 msgstr ""
 "Προέκυψε σφάλμα διακομιστή, παρακαλούμε ενημερώστε τους διαχειριστές του "
-"συστηματος."
+"συστήματος."
 
 msgid "The requested page was not found."
 msgstr "Η σελίδα που ζητήσατε δεν βρέθηκε."

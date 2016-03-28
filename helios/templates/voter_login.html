@@ -2,7 +2,7 @@
 {% load i18n %}
 
 {% block header %}
-<h2>{{ settings.SITE_TITLE }} | Σύνδεση/h2>
+<h2>{{ settings.SITE_TITLE }} | {% trans "Login" %}</h2>
 {% endblock %}
 
 {% block page_top %}
@@ -40,7 +40,7 @@ Please, provide your voter credentials sent to you via Email or SMS
     {{form.as_p}}
 </table>
 <div>
-<input class="button" type="submit" value="Σύνδεση" />
+    <input class="button" type="submit" value="{% trans "Login" %}" />
 </div>
 </form>
 </div>

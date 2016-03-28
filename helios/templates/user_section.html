@@ -29,11 +29,13 @@
   {% endif %}
   {% if trustee and trustee.election %}
   <div class="columns twelve loginbox">
-      <div class="panel warning">{% trans "You are logged in as trustee" %} &#8212;
+    <div class="panel warning">{% trans "You are logged in as trustee" %} <u>{{ trustee.name }}</u> ({{ trustee.email }})" &#8212;
           <em>"<a href="{% url election_index trustee.election.uuid %}">{{ trustee.election.name }}</a>"</em>
           <br /><br />
           <a class="button tiny" 
               href="{% url election_trustee_home trustee.election.uuid %}">{% trans "trustee dashboard" %}</a>
+          <a class="button tiny" href="{% url election_index trustee.election.uuid %}">
+		  {% trans "proceed to election site" %}</a>
           <a class="button tiny alert" href="{% url logout %}?return_url=/">{% trans "logout" %}</a>
         </div>
         <div class="alert-box alert" style="display:none"

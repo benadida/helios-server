@@ -2353,7 +2353,7 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
   position: absolute;
   top: 0;
   left: -20px;
-  background: url('/images/foundation/orbit/rotator-black.png?1397729432') no-repeat;
+  background: url('/images/foundation/orbit/rotator-black.png?1444643181') no-repeat;
   z-index: 3;
 }
 .orbit-wrapper span.rotator.move {
@@ -2372,7 +2372,7 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
 .orbit-wrapper span.mask.move {
   width: 40px;
   left: 0;
-  background: url('/images/foundation/orbit/timer-black.png?1397729432') repeat 0 0;
+  background: url('/images/foundation/orbit/timer-black.png?1444643181') repeat 0 0;
 }
 .orbit-wrapper span.pause {
   display: block;
@@ -2381,12 +2381,12 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
   position: absolute;
   top: 0;
   left: 0;
-  background: url('/images/foundation/orbit/pause-black.png?1397729432') no-repeat;
+  background: url('/images/foundation/orbit/pause-black.png?1444643181') no-repeat;
   z-index: 4;
   opacity: 0;
 }
 .orbit-wrapper span.pause.active {
-  background: url('/images/foundation/orbit/pause-black.png?1397729432') no-repeat 0 -40px;
+  background: url('/images/foundation/orbit/pause-black.png?1444643181') no-repeat 0 -40px;
 }
 .orbit-wrapper .timer:hover span.pause, .orbit-wrapper .timer:focus span.pause, .orbit-wrapper span.pause.active {
   opacity: 1;
@@ -2427,21 +2427,21 @@ ul.flyout li.active a, .nav-bar li ul li.active a {
   cursor: pointer;
 }
 .orbit-wrapper .slider-nav span.right {
-  background: url('/images/foundation/orbit/right-arrow.png?1397729432');
+  background: url('/images/foundation/orbit/right-arrow.png?1444643181');
   background-size: 100%;
   right: 0;
 }
 .orbit-wrapper .slider-nav span.left {
-  background: url('/images/foundation/orbit/left-arrow.png?1397729432');
+  background: url('/images/foundation/orbit/left-arrow.png?1444643181');
   background-size: 100%;
   left: 0;
 }
 
 .lt-ie9 .orbit-wrapper .slider-nav span.right {
-  background: url('/images/foundation/orbit/right-arrow-small.png?1397729432');
+  background: url('/images/foundation/orbit/right-arrow-small.png?1444643181');
 }
 .lt-ie9 .orbit-wrapper .slider-nav span.left {
-  background: url('/images/foundation/orbit/left-arrow-small.png?1397729432');
+  background: url('/images/foundation/orbit/left-arrow-small.png?1444643181');
 }
 
 /* Bullet Nav ---------------------- */
@@ -2460,7 +2460,7 @@ ul.orbit-bullets li {
   cursor: pointer;
   color: #999999;
   text-indent: -9999px;
-  background: url('/images/foundation/orbit/bullets.jpg?1397729432') no-repeat 4px 0;
+  background: url('/images/foundation/orbit/bullets.jpg?1444643181') no-repeat 4px 0;
   width: 13px;
   height: 12px;
   overflow: hidden;
@@ -5466,6 +5466,15 @@ body .before-table {
 body .before-table .columns {
   padding: 0 !important;
 }
+body tbody td.remote-login-info {
+  padding: 0.2em 0.8em;
+  font-style: italic;
+  border-bottom: 1px solid #efefef;
+  text-align: right;
+}
+body table#voters-table {
+  zoom: 0.8;
+}
 body table.voters thead th, body table.elections thead th, body table.polls-table thead th {
   font-size: 11px;
 }
@@ -5642,6 +5651,9 @@ table tr.party {
   background-color: #ddd !important;
 }
 
+.trustee-entry {
+  border-bottom: 1px solid #888;
+}
 .trustee-entry tt {
   font-size: 0.8em;
 }
@@ -5652,9 +5664,129 @@ table tr.party {
   display: block;
   margin-top: 8px;
 }
+.trustee-entry:last-child {
+  margin-bottom: 0;
+}
+.trustee-entry h5 {
+  margin-bottom: 15px;
+}
+.trustee-entry .trustee-actions {
+  display: block;
+  *zoom: 1;
+}
+.trustee-entry .trustee-actions:before, .trustee-entry .trustee-actions:after {
+  content: " ";
+  display: table;
+}
+.trustee-entry .trustee-actions:after {
+  clear: both;
+}
+.trustee-entry .send-login-form, .trustee-entry .delete-trustee-form {
+  float: left;
+}
+.trustee-entry p.last-notified {
+  *zoom: 1;
+  font-size: 0.7em;
+  color: #888;
+  margin: 0;
+}
+.trustee-entry p.last-notified:before, .trustee-entry p.last-notified:after {
+  content: " ";
+  display: table;
+}
+.trustee-entry p.last-notified:after {
+  clear: both;
+}
+
+form .form-field.fieldset-auth {
+  float: left;
+  width: 33%;
+  height: 50px;
+}
 
 form .field-readonly {
   background-color: #cccccc !important;
+}
+
+.reports.content-header {
+  padding: 0 0px;
+  *zoom: 1;
+}
+.reports.content-header:before, .reports.content-header:after {
+  content: " ";
+  display: table;
+}
+.reports.content-header:after {
+  clear: both;
+}
+.reports.content-header h6 {
+  padding: 10px 0;
+  margin: 10px 0;
+  border-bottom: 1px solid #ddd;
+}
+.reports.content-header h6 span {
+  color: #2ba6cb;
+}
+
+.pagination-cont.top .pagination {
+  padding-top: 17px;
+}
+
+.pagination-cont.bottom .pagination {
+  margin-top: -3px;
+}
+
+table.reports-table {
+  zoom: 0.8;
+}
+
+form#upload_form label {
+  margin-top: 15px;
+  float: left;
+}
+form#upload_form select {
+  margin-top: 12px;
+  margin-left: 8px;
+  width: 33%;
+}
+
+.admin-freeze-issues {
+  background-color: #f2f2f2;
+  border: 1px solid #e6e6e6;
+  margin-top: 20px;
+  padding: 10px;
+}
+.admin-freeze-issues p.election-admin-message {
+  color: #990000;
+}
+.admin-freeze-issues ul {
+  list-style: none;
+}
+.admin-freeze-issues ul li {
+  color: #efefef;
+  background-color: #990000;
+  padding: 4px;
+  margin-bottom: 0px;
+  margin-top: 2px;
+}
+.admin-freeze-issues ul li:first-child {
+  margin-top: 0px;
+}
+.admin-freeze-issues ul li span {
+  font-weight: bold;
+}
+
+.verification-date {
+  color: #888;
+  font-size: 0.7em;
+}
+
+.decryption-success {
+  color: green;
+}
+
+.voter-weight {
+  margin-bottom: -29px;
 }
 
 /* Base Type Styles Using Modular Scale ---------------------- */

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-07-23 14:13+0300\n"
+"POT-Creation-Date: 2015-12-09 19:36+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -186,6 +186,17 @@ msgstr "Email"
 msgid "PHONE"
 msgstr "Phone"
 
+msgid "AUDIT_VOTE_CODE_PROMPT"
+msgstr "Audit ballot"
+
+msgid "AUDIT_VOTE_INSTRUCTIONS"
+msgstr ""
+"The valid audit codes must have been sent to you along with the invitation "
+"to vote."
+
+msgid "AUDIT_VOTE_CODE_LABEL"
+msgstr "Enter code:"
+
 msgid "UP_TO"
 msgstr "up to"
 
@@ -210,19 +221,10 @@ msgstr "Blank vote"
 msgid "AUDIT_VOTE_SUBMISSION_BUTTON"
 msgstr "Submit audit ballot"
 
-msgid "AUDIT_VOTE_CODE_PROMPT"
-msgstr "Audit ballot"
-
-msgid "AUDIT_VOTE_INSTRUCTIONS"
-msgstr ""
-"The valid audit codes must have been sent to you along with the invitation "
-"to vote."
-
-msgid "AUDIT_VOTE_CODE_LABEL"
-msgstr "Enter code:"
-
 msgid "STV_BALLOT_HELP_TEXT"
-msgstr "STV_BALLOT_HELP_TEXT EN"
+msgstr ""
+"Click on the candidates names on the left to fill your ballot. If you want "
+"to remove a choice click over the candidate name on the right column."
 
 msgid "STV_BALLOT_CANDIDATES_HEADER"
 msgstr "Candidates"

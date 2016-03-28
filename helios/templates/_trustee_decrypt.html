@@ -15,49 +15,55 @@
     'decrpyting': '{% trans "Decrypting" %}'
   }
 </script>
-<h5>{% trans "The final ballots are ready to be decrypted." %}</h5>
+{% if trustee.pending_partial_decryptions_len %}
+  <h5>{% trans "The final ballots are ready to be decrypted." %}</h5>
 
-<div class="sk-form decryption-section">
-<h5>{% trans "Insert your trustee key" %}</h5>
-<br />
-<input type="file" id="sk-file-input" />
-<textarea id="sk-textarea" cols="60" rows="5">
-</textarea>
-</div>
-<div class="trustee-decrypt-actions">
-{% trans "Perform partial decryption" as label %}
-{% action label "#decrypt-tally-admin-action" cls="small do-decrypt" %}
-</div>
-<div class="polls-list clearfix">
-<table class="polls-table">
-<thead>
-<tr>
-<th>{% trans "Poll name" %}</th>
-<th width="35%">{% trans "Decryption status" %}</th>
-</tr>
-</thead>
-</thead>
-<tbody>
-{% for poll, factors in trustee.get_partial_decryptions %}
-<tr class="poll" 
-  data-poll-uuid="{{ poll.uuid }}"
-  data-poll-finished="{% if factors %}1{% else %}0{% endif %}"
-  data-poll-url="{% url election_poll_index election.uuid poll.uuid %}">
-  <td>{{ poll.name }}</td>
-  <td>
-<span class="status">    
-{% if factors %}
-{% trans "Partial decryption finished" %}
+
+    <div class="sk-form decryption-section">
+      <h5>{% trans "Insert your trustee key" %}</h5>
+      <br />
+      <input type="file" id="sk-file-input" />
+      <textarea id="sk-textarea" cols="60" rows="5">
+      </textarea>
+    </div>
+    <div class="trustee-decrypt-actions">
+      {% trans "Perform partial decryption" as label %}
+      {% action label "#decrypt-tally-admin-action" cls="small do-decrypt" %}
+    </div>
+    <div class="polls-list clearfix">
+      <table class="polls-table">
+        <thead>
+          <tr>
+            <th>{% trans "Poll name" %}</th>
+            <th width="35%">{% trans "Decryption status" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for poll, factors in trustee.get_partial_decryptions %}
+        <tr class="poll" 
+          data-poll-uuid="{{ poll.uuid }}"
+          data-poll-finished="{% if factors %}1{% else %}0{% endif %}"
+          data-poll-url="{% url election_poll_index election.uuid poll.uuid %}">
+            <td>{{ poll.name }}</td>
+            <td>
+              <span class="status">    
+              {% if factors %}
+                {% trans "Partial decryption finished" %}
+                </span>
+              {% else %}
+                </span>
+
+                <input type="file" class="upload" />
+                {% trans "Download partial decryption" as label %}
+                {% action label "#decrypt-tally-admin-action" cls="hidden small download download-partial" %}
+              {% endif %}
+            </td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
 {% else %}
-</span>
-
-<input type="file" class="upload" />
-
-{% trans "Download partial decryption" as label %}
-{% action label "#decrypt-tally-admin-action" cls="hidden small download download-partial" %}
+  <h5 class="decryption-success">
+    {% blocktrans %}You have successfully uploaded your partial decryption of the election tally.{% endblocktrans %}
+  </h5>
 {% endif %}
-</td></tr>
-{% endfor %}
-</tbody>
-</table>
-</div>

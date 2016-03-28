@@ -1,12 +1,13 @@
 {% load i18n %}<!DOCTYPE html>
 <!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
-<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="el"> <![endif]-->
-<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="el"> <![endif]-->
-<!--[if IE 8]>    <html class="no-js lt-ie9" lang="el"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="el"> <!--<![endif]-->
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="{{ LANGUAGE_CODE }}"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="{{ LANGUAGE_CODE }}"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="{{ LANGUAGE_CODE }}"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="{{ LANGUAGE_CODE }}"> <!--<![endif]-->
 <head>
     <title>{% block title %}{% endblock %} {% trans "Zeus Electronic Voting" %}</title>
     <meta charset="utf-8">
+    {% block meta_block %}{% endblock %}
 
     <!--[if lt IE 8]>
     <link href="/static/zeus/stylesheets/general_foundicons_ie7.css" media="screen" rel="stylesheet" type="text/css" />
@@ -76,7 +77,7 @@
                 {% else %}
                 <a href="{% url home %}">
                     {% endif %}
-                    <img src="{{ THEME_HEADER_BG_URL }}" alt="Zeus logo"/>
+                    <img src="{{ THEME_HEADER_BG_URL }}_{{ LANGUAGE_CODE }}.jpg" alt="Zeus logo"/>
             </a>
             <div id="banner">
                 <div class="lang-menu">
@@ -119,8 +120,9 @@
         <div class="columns twelve">
           <span style="float:right;">
             {% if settings.FOOTER_LOGO %}
-            <img src="/static/footer-logo.gif" alt="Zeus logo" />
+            <img src="/static/footer-logo.gif" alt="Zeus logo" /> | 
             {% endif %}
+            <a href="{% url terms %}">{% trans "Terms of use" %}</a>
           </span>
           {% if user and user.is_admin %}
           {% trans "You are logged in as election administrator" %}: {{ user.display_html_small|safe }}
@@ -146,8 +148,7 @@
 	  <u>{{ election.name }}</u>.
 	  <a href="{{settings.SECURE_URL_HOST}}{% url logout %}">{% trans "Logout" %}</a>
           {% else %}
-	  <a href="{{settings.SECURE_URL_HOST}}{% url login %}">{% trans "Login" %}</a> | 
-	  <a href="{{settings.SECURE_URL_HOST}}{% url voter_login %}">{% trans "Voter Login" %}</a>
+	  <a href="{{settings.SECURE_URL_HOST}}{% url login %}">{% trans "Login" %}</a>
           {% endif %}
           {% endif %}
           <br />

@@ -73,7 +73,6 @@ TEMPLATE_LOADERS = (
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'zeus.middleware.ForceDefaultLanguageMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -239,7 +238,8 @@ ZEUS_RESULTS_PATH = os.path.join('/', 'usr', 'share', 'zeus')
 ZEUS_PROOFS_PATH = os.path.join('/', 'usr', 'share', 'zeus_proofs')
 ZEUS_ALLOW_EARLY_ELECTION_CLOSE = True
 ZEUS_CELERY_TEMPDIR = os.path.join('/', 'var', 'run', 'zeus-celery')
-ZEUS_HEADER_BG_URL = '/static/zeus/images/logo_bg.jpg'
+ZEUS_HEADER_BG_URL = '/static/zeus/images/logo_bg_nobrand'
+ZEUS_TERMS_FILE = os.path.join(ROOT_PATH, 'terms/terms_%(lang)s.html.example')
 
 SERVER_PREFIX = ''
 

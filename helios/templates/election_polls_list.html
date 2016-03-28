@@ -50,16 +50,14 @@
     {% for poll in polls %}
     <tr data-uuid="{{ poll.uuid }}">
       <td>
-          {% if not election.feature_can_rename_poll %}
+          {% if not election.feature_can_edit_poll %}
               {{ poll.name }}
           {% else %}
-              {% with "#rename-poll-"|add:poll.short_name as htmlid %}
-              {% reveal_action poll.name htmlid "" "rename-poll nobutton" %}
-              {% endwith %}
-          {% endif %}
-          {% if poll.has_linked_polls %}
-            <br />
-            <em style="color: #ccc">linked</em>
+              {% if poll.has_linked_polls %}
+                  <em style="color: #ccc">linked</em>
+              {% endif %}
+              <a href="{% url election_poll_edit election.uuid poll.uuid%}">
+                 {{poll.name}}</a>
           {% endif %}
       </td>
       <td>
@@ -85,6 +83,9 @@
           <div href="#" class="button tiny dropdown" style="">
               {% trans "Actions" %}&nbsp;
           <ul>
+            {% url election_poll_edit election.uuid poll.uuid as edit_url %}
+            {% trans "Edit poll" as label %}
+            {% menu_action label  edit_url "settings" %}
             {% url election_poll_voters election.uuid poll.uuid as manage_url %}
             {% trans "Manage voters" as label %}
             {% menu_action label manage_url "people" %}
@@ -100,6 +101,13 @@
           </ul>
         </div>
       </td>
+    <tr>
+        <td class="remote-login-info" colspan=7>
+    {% if poll.remote_login %}
+            {{poll.remote_login_display}}
+    {% endif %}
+        </td>
+    </tr>
     </tr>
     {% endfor %}
 </tbody>
@@ -119,19 +127,10 @@
     <td></td>
 </tfoot>
 </table>
-{% else %}
 {% endif %}
-{% if request.admin and election.feature_can_add_poll %}
-{% include "_election_polls_add.html" %}
+{% if election.feature_can_add_poll %}
+<a class="button" href="{% url election_polls_add election.uuid %}">
+{% trans "Add poll" %}</a>
 {% endif %}
 </div>
-{% endblock %}
-
-{% block reveals %}
-{{ block.super }}
-{% if admin %}
-{% for poll in polls %}
-{% include "_reveal_rename_poll.html" %}
-{% endfor %}
-{% endif %}
 {% endblock %}

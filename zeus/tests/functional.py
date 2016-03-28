@@ -19,6 +19,7 @@ from helios.views import ELGAMAL_PARAMS
 from helios.models import Election, Voter, Poll, Trustee
 from zeus.tests.utils import SetUpAdminAndClientMixin
 from zeus.core import to_relative_answers, gamma_encode, prove_encryption
+from zeus import auth
 
 
 class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
@@ -36,50 +37,6 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             "    \|_______|\|__| \|_|\n"
             )
 
-        conf = settings.ZEUS_TESTS_ELECTION_PARAMS
-        # set the voters number that will be produced for test
-        self.voters_num = conf.get('NR_VOTERS', 2)
-        # set the trustees number that will be produced for the test
-        trustees_num = conf.get('NR_TRUSTEES', 2)
-        trustees = "\n".join(",".join(['testName%x testSurname%x' % (x, x),
-                   'test%x@mail.com' % x]) for x in range(0, trustees_num))
-        # set the polls number that will be produced for the test
-        self.polls_number = conf.get('NR_POLLS', 2)
-        # set the number of max questions for simple election
-        self.simple_election_max_questions_number =\
-            conf.get('SIMPLE_MAX_NR_QUESTIONS', 2)
-        # set the number of max answers for each question of simple election
-        self.simple_election_max_answers_number =\
-            conf.get('SIMPLE_MAX_NR_ANSWERS', 2)
-        # set the number of max answers in score election
-        self.score_election_max_answers =\
-            conf.get('SCORE_MAX_NR_ANSWERS', 2)
-        # set the number of max questions in party election
-        self.party_election_max_questions_number =\
-            conf.get('PARTY_MAX_NR_QUESTIONS', 2)
-        # set the number of max answers in party election
-        self.party_election_max_answers_number =\
-            conf.get('PARTY_MAX_NR_ANSWERS', 2)
-        # set the number of max candidates in stv election
-        self.stv_election_max_answers_number =\
-            conf.get('STV_MAX_NR_CANDIDATES', 2)
-
-        start_date = datetime.datetime.now() + timedelta(hours=48)
-        end_date = datetime.datetime.now() + timedelta(hours=56)
-
-        self.election_form = {
-            'trial': conf.get('trial', False),
-            'name': 'test_election',
-            'description': 'testing_election',
-            'trustees': trustees,
-            'voting_starts_at_0': start_date.strftime('%Y-%m-%d'),
-            'voting_starts_at_1': start_date.strftime('%H:%M'),
-            'voting_ends_at_0': end_date.strftime('%Y-%m-%d'),
-            'voting_ends_at_1': end_date.strftime('%H:%M'),
-            'help_email': 'test@test.com',
-            'help_phone': 6988888888,
-            'communication_language': conf.get('com_lang', 'en'),
-            }
 
     def verbose(self, message):
         if self.local_verbose:
@@ -222,6 +179,21 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         if e.frozen_at:
             self.verbose('+ Election got frozen')
             return True
+        
+    def save_poll_without_name_change(self):
+        # help track bug where saving poll without changing name
+        # ends in duplicate name form error
+        self.c.get(self.locations['logout'])
+        self.c.post(self.locations['login'], self.login_data)
+        e = Election.objects.all()[0]
+        p_uuid = self.p_uuids[0] 
+        edit_url = '/elections/{}/polls/{}/edit'.format(e.uuid, p_uuid)
+        r = self.c.get(edit_url)
+        form = r.context['form']
+        data = form.initial
+        r = self.c.post(edit_url, data)
+        expected_url = '/elections/{}/polls/'.format(self.e_uuid)
+        self.assertRedirects(r, expected_url)
 
     def extend_election_voting_end(self):
         self.c.get(self.locations['logout'])
@@ -253,16 +225,24 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.c.post(self.locations['login'], self.login_data)
         location = '/elections/%s/polls/add' % self.e_uuid
         post_data = {
-            'form-TOTAL_FORMS': 2,
-            'form-INITIAL_FORMS': 0,
-            'form-MAX_NUM_FORMS': 100
+            'name': 'test_poll'
             }
-        for i in range(0, 2):
-            post_data['form-%s-name' % i] = 'test_poll'
+        post_data.update(self._get_poll_params(self.polls_number+1))
         self.c.post(location, post_data)
         e = Election.objects.all()[0]
-        self.assertEqual(e.polls.all().count(), 0)
-        self.verbose('- Polls were not created - duplicate poll names')
+        self.assertEqual(e.polls.all().count(), 1)
+        # try to create poll with same name
+        self.c.post(location, post_data)
+        e = Election.objects.all()[0]
+        self.assertEqual(e.polls.all().count(), 1)
+        self.verbose('- Poll was not created - duplicate poll names')
+        # clean - delete polls
+        polls = Poll.objects.all()
+        for p in polls:
+            p.delete()
+
+    def _get_poll_params(self, poll_index, poll=None):
+        return {}
 
     def create_polls(self):
         self.c.get(self.locations['logout'])
@@ -271,21 +251,61 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         # there shouldn't be any polls before we create them
         self.assertEqual(e.polls.all().count(), 0)
         location = '/elections/%s/polls/add' % self.e_uuid
-        post_data = {
-            'form-TOTAL_FORMS': self.polls_number,
-            'form-INITIAL_FORMS': 0,
-            'form-MAX_NUM_FORMS': 100
-            }
         for i in range(0, self.polls_number):
-            post_data['form-%s-name' % i] = 'test_poll%s' % i
-
-        self.c.post(location, post_data)
+            post_data = {
+                'name': 'test_poll-{}'.format(i)
+            }
+            post_data.update(self._get_poll_params(i, None))
+            self.c.post(location, post_data)
         e = Election.objects.all()[0]
         self.assertEqual(e.polls.all().count(), self.polls_number)
         self.verbose('+ Polls were created')
         self.p_uuids = []
         for poll in e.polls.all():
             self.p_uuids.append(poll.uuid)
+
+    def edit_poll_name_before_freeze(self):
+        self.c.get(self.locations['logout'])
+        self.c.post(self.locations['login'], self.login_data)
+        e = Election.objects.all()[0]
+        p_uuid = self.p_uuids[0] 
+        edit_url = '/elections/{}/polls/{}/edit'.format(e.uuid, p_uuid)
+        r = self.c.get(edit_url)
+        form = r.context['form']
+        data = form.initial
+        data['name'] = 'changed_poll_name'
+        self.c.post(edit_url, data)
+        poll = Poll.objects.get(uuid=p_uuid)
+        self.assertEqual(poll.name, 'changed_poll_name')
+    
+    def create_poll_after_freeze(self):
+        self.c.get(self.locations['logout'])
+        self.c.post(self.locations['login'], self.login_data)
+        e = Election.objects.all()[0]
+        location = '/elections/%s/polls/add' % self.e_uuid
+        post_data = {
+            'name': 'test_poll_after_freeze',
+            }
+        r = self.c.post(location, post_data)
+        self.assertEqual(r.status_code, 403)
+        e = Election.objects.all()[0]
+        self.assertEqual(e.polls.all().count(), self.polls_number)
+        
+
+    def edit_poll_name_after_freeze(self):
+        self.c.get(self.locations['logout'])
+        self.c.post(self.locations['login'], self.login_data)
+        e = Election.objects.all()[0]
+        p_uuid = self.p_uuids[0] 
+        
+        edit_url = '/elections/{}/polls/{}/edit'.format(e.uuid, p_uuid)
+        r = self.c.get(edit_url)
+        form = r.context['form']
+        data = form.initial
+        data['name'] = 'changed_poll_name_after_freeze'
+        r = self.c.post(edit_url, data)
+        self.assertFormError(r, 'form', None, "Poll name cannot be changed\
+                                               after freeze") 
 
     def submit_questions(self):
         for p_uuid in self.p_uuids:
@@ -384,9 +404,10 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
                 % (self.e_uuid, p_uuid)
             self.c.post(
                 upload_voters_location,
-                {'voters_file': file(voter_files[p_uuid])}
+                {'voters_file': file(voter_files[p_uuid]),
+                 'encoding': 'iso-8859-7'}
                 )
-            self.c.post(upload_voters_location, {'confirm_p': 1})
+            self.c.post(upload_voters_location, {'confirm_p': 1, 'encoding': 'iso-8859-7'})
         e = Election.objects.get(uuid=self.e_uuid)
         voters = e.voters.count()
         self.assertEqual(voters, self.voters_num*self.polls_number)
@@ -425,6 +446,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
             .voters.all()[0]
             .get_quick_login_url())
         p_uuid = self.p_uuids[0]
+        self.voter_login(self.get_voter_from_url(voter_login_url),
+                         voter_login_url)
         r = self.c.get(voter_login_url, follow=True)
         self.assertTrue(('Η ψηφοφορία έχει λήξει' in r.content)
                         or ('Voting closed' in r.content))
@@ -452,6 +475,10 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
     def make_ballot(self, p_uuid):
         raise Exception(NotImplemented)
 
+    def voter_login(self, voter, voter_login_url=None):
+        r = self.c.get(voter_login_url, follow=True)
+        self.assertEqual(r.status_code, 200)
+
     def encrypt_ballot_and_cast(self, selection, size, the_url, p_uuid):
         self.c.get(self.locations['logout'])
         e = Election.objects.get(uuid=self.e_uuid)
@@ -463,8 +490,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         modulus, generator, order = e.zeus.do_get_cryptosystem()
         enc_proof = prove_encryption(modulus, generator, order, cipher.alpha,
                                      cipher.beta, randomness)
-        r = self.c.get(the_url, follow=True)
-        self.assertEqual(r.status_code, 200)
+        r = self.voter_login(self.get_voter_from_url(the_url), the_url)
         cast_data = {}
         ##############
         ballot = {
@@ -788,6 +814,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.second_trustee_step_mail()
         self.create_duplicate_polls()
         self.create_polls()
+        self.edit_poll_name_before_freeze()
+        self.save_poll_without_name_change()
         self.submit_duplicate_id_voters_file()
         self.submit_wrong_field_number_voters_file()
         self.submit_voters_file()
@@ -797,6 +825,8 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.assertEqual(e.election_issues_before_freeze, [])
         self.assertTrue(self.freeze_election())
         self.admin_notified_for_freeze()
+        self.create_poll_after_freeze()
+        self.edit_poll_name_after_freeze()
         e = Election.objects.get(uuid=self.e_uuid)
         e.voting_starts_at = datetime.datetime.now()
         e.save()
@@ -883,7 +913,7 @@ class TestSimpleElection(TestElectionBase):
             duplicate_extra_data = extra_data.copy()
             for ans_num in range(0, nr_answers):
                 extra_data['form-%s-answer_%s' % (num, ans_num)] = \
-                    'test answer %s' % ans_num
+                    u'test γιούνικουάντ %s' % ans_num
                 duplicate_extra_data['form-%s-answer_%s' % (num, ans_num)] = \
                     'test answer 0'
                 #make sure we have at least 2 answers so there can be duplicate
@@ -1217,3 +1247,63 @@ class TestWeightElection(TestSimpleElection):
             counter += 1
         self.verbose('+ Voters file created')
         return voter_files
+
+
+class TestThirdPartyShibboleth(TestSimpleElection):
+
+    def voter_login(self, voter, voter_login_url=None):
+        r = self.c.get(voter_login_url, follow=True)
+        self.assertContains(r, "http-equiv")
+        url = auth.make_shibboleth_login_url('login')
+        self.assertContains(r, url)
+        self.assertEqual(self.c.session.get('shibboleth_voter_email'),
+                         voter.voter_email)
+        self.assertEqual(self.c.session.get('shibboleth_voter_uuid'),
+                         voter.uuid)
+        headers = {
+            'HTTP_SHIB_EMAIL': voter.voter_email + 'invalidate',
+            #'HTTP_EPPN': 'eppn',
+            'HTTP_REMOTE_USER': 'remoteid'
+        }
+        r = self.c.get(url, follow=True, **headers)
+        self.assertEqual(r.status_code, 403)
+
+        headers['HTTP_EPPN'] = 'eppn'
+        r = self.c.get(voter_login_url, follow=True)
+        r = self.c.get(url, follow=True, **headers)
+        self.assertEqual(r.status_code, 403)
+
+        headers['HTTP_MAIL'] = voter.voter_email
+        r = self.c.get(voter_login_url, follow=True)
+        r = self.c.get(url.replace("login", "fakeendpoint"),
+                       follow=True, **headers)
+        self.assertEqual(r.status_code, 403)
+
+        r = self.c.get(voter_login_url, follow=True)
+        r = self.c.get(url, follow=True, **headers)
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.context['user'])
+        r = self.c.get(self.locations['logout'], follow=True)
+        self.assertTrue(r.context['user'].is_anonymous())
+
+        r = self.c.get(voter_login_url, follow=True)
+        headers['HTTP_MAIL'] = 'email1@voters.com:email2@voters.com'
+        r = self.c.get(url, follow=True, **headers)
+        self.assertEqual(r.status_code, 403)
+
+        headers['HTTP_MAIL'] = 'email1@voters.com:email2@voters.com:%s' % voter.voter_email
+        r = self.c.get(voter_login_url, follow=True)
+        r = self.c.get(url, follow=True, **headers)
+        self.assertEqual(r.status_code, 200)
+        self.assertTrue(r.context['user'])
+        self.assertEqual(r.context['user']._user.uuid, voter.uuid)
+        self.assertEqual(self.c.session.get('shibboleth_voter_email', None),
+                         None)
+        self.assertEqual(self.c.session.get('shibboleth_voter_uuid', None),
+                         None)
+
+    def _get_poll_params(self, index, poll=None):
+        return {
+            'shibboleth_auth': True,
+            'shibboleth_constraints': ''
+        }

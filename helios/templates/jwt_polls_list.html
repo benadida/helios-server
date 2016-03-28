@@ -1,0 +1,32 @@
+{% extends TEMPLATE_BASE %}
+{% block page_top %}
+<h4>Issuer: {{issuer}}</h4>
+{% endblock%}
+{% block content%}
+{{request.messages.error}}
+<table class="elections" width="100%">
+<thead>
+    <tr>
+        <th>Election</th>
+        <th>Poll</th>
+        <th>Name</th>
+        <th>Surname</th>
+        <th>Email</th>
+        <th>Voting Link</th>
+    </tr>
+</thead>
+<tr>
+    {%for poll in  polls_data %}
+        <td align="right">{{poll.0.election.name}}</td>
+        <td>{{poll.0.name}}</td>
+        <td>{{voter_data.voter_name}}</td>
+        <td>{{voter_data.voter_surname}}</td>
+        <td>{{voter_data.voter_email}}</td>
+        <td><a href="{{poll.1}}">Voting Link</td>
+</tr>
+{% empty%}
+<h3>No elections found</h3>
+{% endfor%}
+</table>
+
+{% endblock%}

@@ -59,6 +59,10 @@
 {% url election_poll_questions_manage election.uuid poll.uuid as manage_url %}
 {% action label manage_url %}
 {% endif %}
+{% if admin and poll.feature_can_preview_booth %}
+{% trans "Booth preview" as label %}
+{% action label preview_booth_url %}
+{% endif %}
 </div>
 </div>
 {% endblock %}

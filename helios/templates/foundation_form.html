@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n zeus_tags %}
 {% csrf_token %}
 {% if form.errors %}
 <div class="alert-box alert has_errors">
@@ -12,6 +12,8 @@
 <br />
 {% endif %}
 {% for field in form %}
+
+{% if not form.fieldsets or not field.field in form.fieldset_fields %}
 {% if field.is_hidden %}
 {{ field }}
 {% else %}
@@ -31,6 +33,40 @@
   {% endfor %}
   {% endif %}
 </div>
-{% endif %}
 <br />
+{% endif %}
+{% endif %}
 {% endfor %}
+
+{% if form.fieldsets %}
+{% for fieldset in form.fieldsets %}
+{% fieldset_fields form fieldset %}
+<fieldset>
+<legend>{{ fieldset_name }}</legend>
+<p>{{ fieldset_helptext}}</p>
+{% for field in fieldset_fields %}
+{% if field.is_hidden %}
+{{ field }}
+{% else %}
+<div class="form-field {% if field.errors %} error{% endif %}{% if field.field.widget.attrs.field_class %}{{ field.field.widget.attrs.field_class }}{% endif %}">
+  {% if field.label %}
+  <label for="{{ field.auto_id }}" {% if field.field.required %}class="requiredField"{% endif %}>
+    {{ field.label|safe }}
+  </label>
+  {% if field.help_text %}
+  <div style="display:block; margin-bottom:10px; color:#aaa; font-size: 0.9em;">
+    {{ field.help_text|safe }}
+  </div>
+  {% endif %}
+  {{ field }}   
+  {% for error in field.errors %}
+  <div class="alert label small">{{ error }}</div>
+  {% endfor %}
+  {% endif %}
+</div>
+<br />
+{% endif %}
+{% endfor %}
+</fieldset>
+{% endfor %}
+{% endif %}

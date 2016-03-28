@@ -7,8 +7,10 @@ from base64 import b64decode
 from functools import wraps
 
 from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseRedirect
+from django.conf import settings
 
 from helios.models import Election, Poll, Trustee, Voter
 from heliosauth.models import User
@@ -27,6 +29,12 @@ def get_ip(request):
     if not ip:
         ip = request.META.get('REMOTE_ADDR')
     return ip
+
+def class_method(func):
+    def wrapper(self, request, *args, **kwargs):
+        return func(request, *args, **kwargs)
+
+    return wrapper
 
 def trustee_view(func):
     @wraps(func)
@@ -105,7 +113,7 @@ def manager_or_superadmin_required(func):
     @user_required
     @wraps(func)
     def wrapper(request, *args, **kwargs):
-        if not (request.zeususer._user.superadmin_p
+        if not (request.zeususer.is_superadmin
                 or request.zeususer.is_manager):
             raise PermissionDenied("Superadmin or manager required")
         return func(request, *args, **kwargs)
@@ -380,3 +388,9 @@ def allow_manager_access(func):
     func._allow_manager = True
     func.func_globals['foo'] = 'bar'
     return func
+
+def make_shibboleth_login_url(endpoint):
+    shibboleth_login = reverse('shibboleth_login', kwargs={'endpoint': endpoint})
+    url = '/'.join(s.strip('/') for s in filter(bool,[
+        shibboleth_login]))
+    return '/%s' % url

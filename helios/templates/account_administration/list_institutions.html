@@ -17,16 +17,17 @@
 {% autopaginate institutions paginate_by %}
 {% paginate %}
 <br />
-<table class="prettytable" border=1>
-  <div id='table_head'>
+<table class="elections">
+  <thead>
     <tr>
-      <td><b>ID</b></td>
-      <td><b>{% trans "Name" %}</b></td>
-      <td><b>{% trans "Users" %}</b></td>
-      <td><b>{% trans "Edit" %}</b></td>
-      <td><b>{% trans "Create User" %}</b></td>
+      <th>ID</th>
+      <th>{% trans "Name" %}</th>
+      <th>{% trans "Users" %}</th>
+      <th>{% trans "Edit" %}</th>
+      <th>{% trans "Create User" %}</th>
     </tr>
-  </div>
+  </thead>
+  <tbody>
   {% for inst in institutions %}
     <tr>
         <td>{{inst.id}}</td>
@@ -41,6 +42,7 @@
       <td colspan=7>{% trans "No results found" %}</td>
     </tr>
   {% endfor %}
+  </tbody>
 </table>
 {% paginate %}
 {% endblock content%}

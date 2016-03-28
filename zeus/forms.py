@@ -10,6 +10,8 @@ from datetime import datetime, timedelta
 
 from django import forms
 from django.core.urlresolvers import reverse
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.admin import widgets
 from django.db import transaction
@@ -18,7 +20,8 @@ from django.db.models import Q
 from django.utils.safestring import mark_safe
 from django.contrib.auth.hashers import check_password, make_password
 from django.forms.models import BaseModelFormSet
-from django.forms.widgets import Select, MultiWidget, DateInput, TextInput
+from django.forms.widgets import Select, MultiWidget, DateInput, TextInput,\
+    HiddenInput
 from django.forms.formsets import BaseFormSet
 
 from helios.models import Election, Poll, Trustee, Voter
@@ -552,16 +555,168 @@ class LoginForm(forms.Form):
 
 class PollForm(forms.ModelForm):
 
+    def __init__(self, *args, **kwargs):
+        self.election = kwargs.pop('election', None)
+        super(PollForm, self).__init__(*args, **kwargs)
+        CHOICES = (
+            ('public', 'public'),
+            ('confidential', 'confidential'),
+        )
+
+        TYPES = (
+            ('google', 'google'),
+            ('facebook', 'facfebook'),
+            ('other', 'other')
+        )
+
+
+        self.fields.insert(3, 'jwt_file', forms.FileField(
+                                            label="JWT public keyfile",
+                                            required=False))
+        self.fields['jwt_file'].widget.attrs['accept'] = '.pem'
+        self.fields['jwt_public_key'] = forms.CharField(required=False,
+                                                        widget=forms.Textarea)
+        self.fields['oauth2_type'] = forms.ChoiceField(required=False,
+                                                       choices=TYPES)
+        self.fields['oauth2_client_type'] = forms.ChoiceField(required=False,
+                                                              choices=CHOICES)
+        self.fields['google_code_url'] = forms.CharField(
+                                    widget=HiddenInput,
+                                    initial="https://accounts.google.com/o/oauth2/auth",
+                                    required=False)
+        self.fields['google_exchange_url'] = forms.CharField(
+                                    widget=HiddenInput,
+                                    initial="https://accounts.google.com/o/oauth2/token",
+                                    required=False)
+        self.fields['google_confirmation_url'] = forms.CharField(
+                                    widget=HiddenInput,
+                                    initial="https://www.googleapis.com/oauth2/v1/userinfo",
+                                    required=False)
+        self.fields['facebook_code_url'] = forms.CharField(
+                                    widget=HiddenInput,
+                                    initial="https://www.facebook.com/dialog/oauth",
+                                    required=False)
+        self.fields['facebook_exchange_url'] = forms.CharField(
+                                    widget=HiddenInput,
+                                    initial="https://graph.facebook.com/oauth/access_token",
+                                    required=False)
+        self.fields['facebook_confirmation_url'] = forms.CharField(
+                                    widget=HiddenInput,
+                                    initial="https://graph.facebook.com/v2.2/me",
+                                    required=False)
+
+        if self.election.feature_frozen:
+            self.fields['name'].widget.attrs['readonly'] = True
+
+
+        auth_title = _('2-factor authentication')
+        auth_help = _('2-factor authentication help text')
+        self.fieldsets = {'auth': [auth_title, auth_help, []]}
+        self.fieldset_fields = []
+
+        auth_fields = ['jwt', 'google', 'facebook', 'shibboleth', 'oauth2']
+        for name, field in self.fields.items():
+            if name.split("_")[0] in auth_fields:
+                self.fieldsets['auth'][2].append(name)
+                self.fieldset_fields.append(field)
+
+        keyOrder = self.fieldsets['auth'][2]
+        for field in ['jwt_auth', 'oauth2_thirdparty', 'shibboleth_auth']:
+            prev_index = keyOrder.index(field)
+            item = keyOrder.pop(prev_index)
+            keyOrder.insert(0, item)
+            self.fields[field].widget.attrs['field_class'] = 'fieldset-auth'
+            if field == 'jwt_auth':
+                self.fields[field].widget.attrs['field_class'] = 'clearfix last'
+
     class Meta:
         model = Poll
-        fields = ('name', )
-    
+        fields = ('name',
+                  'jwt_auth', 'jwt_issuer', 'jwt_public_key',
+                  'oauth2_thirdparty', 'oauth2_type',
+                  'oauth2_client_type', 'oauth2_client_id',
+                  'oauth2_client_secret', 'oauth2_code_url',
+                  'oauth2_exchange_url', 'oauth2_confirmation_url',
+                  'shibboleth_auth', 'shibboleth_constraints')
+
+    def iter_fieldset(self, name):
+        for field in self.fieldsets[name][2]:
+            yield self[field]
+
+    def clean_shibboleth_constraints(self):
+        value = self.cleaned_data.get('shibboleth_constraints', None)
+        if value == "None":
+            return None
+        return value
+
+    def clean(self):
+
+        data = self.cleaned_data
+        election_polls = self.election.polls.all()
+        for poll in election_polls:
+            if (data.get('name') == poll.name and
+                    ((not self.instance.pk ) or 
+                    (self.instance.pk and self.instance.name!=data.get('name')))):
+                message = _("Duplicate poll names are not allowed")
+                raise forms.ValidationError(message)
+        if self.election.feature_frozen and\
+            (self.cleaned_data['name'] != self.instance.name):
+                raise forms.ValidationError(_("Poll name cannot be changed\
+                                               after freeze"))
+
+        oauth2_field_names = ['type', 'client_type', 'client_id', 'client_secret',
+                       'code_url', 'exchange_url', 'confirmation_url']
+        oauth2_field_names = ['oauth2_' + x for x in oauth2_field_names]
+        jwt_field_names = ['jwt_issuer', 'jwt_public_key']
+        url_validate = URLValidator()
+        if data['oauth2_thirdparty']:
+            for field_name in oauth2_field_names:
+                if not data[field_name]:
+                    self._errors[field_name] = _('This field is required.'),
+            url_types = ['code', 'exchange', 'confirmation']
+            for url_type in url_types:
+                try:
+                    url_validate(data['oauth2_{}_url'.format(url_type)])
+                except ValidationError:
+                    self._errors['oauth2_{}_url'.format(url_type)] =\
+                        ((_("This URL is invalid"),))
+        else:
+            for field_name in oauth2_field_names:
+               data[field_name] = ''
+
+        shibboleth_field_names = []
+        if data['shibboleth_auth']:
+            for field_name in shibboleth_field_names:
+                if not data[field_name]:
+                    self._errors[field_name] = _('This field is required.'), 
+
+        if data['jwt_auth']:
+            for field_name in jwt_field_names:
+                if not data[field_name]:
+                    self._errors[field_name] = _('This field is required.'), 
+        else:
+            for field_name in jwt_field_names:
+                data[field_name]=''
+        return data
+
+    def save(self, *args, **kwargs):
+        commit = kwargs.pop('commit', True)
+        instance = super(PollForm, self).save(commit=False, *args, **kwargs)
+        instance.election = self.election
+        if commit:
+            instance.save()
+        return instance
+
 
 class PollFormSet(BaseModelFormSet):
 
     def __init__(self, *args, **kwargs):
         self.election = kwargs.pop('election', None)
         super(PollFormSet, self).__init__(*args, **kwargs)
+
+    def _construct_form(self, i, **kwargs):
+        kwargs['election'] = kwargs.get('election', self.election)
+        return super(PollFormSet, self)._construct_form(i, **kwargs)
 
     def clean(self):
         forms_data = self.cleaned_data
@@ -580,11 +735,13 @@ class PollFormSet(BaseModelFormSet):
             raise forms.ValidationError(message)
  
     def save(self, election, *args, **kwargs):
-        instances = super(PollFormSet, self).save(*args, commit=False,
+        commit = kwargs.pop('commit', True)
+        instances = super(PollFormSet, self).save(commit=False, *args,
                                                   **kwargs)
-        for instance in instances:
-            instance.election = election
-            instance.save()
+        if commit:
+            for instance in instances:
+                instance.election = election
+                instance.save()
 
         return instances
 

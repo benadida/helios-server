@@ -66,7 +66,7 @@ from zeus.model_tasks import TaskModel, PollTasks, ElectionTasks
 from zeus import help_texts as help
 from zeus.log import init_election_logger, init_poll_logger
 from zeus.utils import decalize, get_filters, VOTER_SEARCH_FIELDS, \
-    VOTER_BOOL_KEYS_MAP, VOTER_EXTRA_HEADERS, VOTER_TABLE_HEADERS
+    VOTER_BOOL_KEYS_MAP, VOTER_EXTRA_HEADERS, VOTER_TABLE_HEADERS, CSVReader
 
 
 logger = logging.getLogger(__name__)
@@ -255,6 +255,12 @@ _default_voting_ends_at = lambda: datetime.datetime.now() + timedelta(hours=12)
 
 
 class Election(ElectionTasks, HeliosModel, ElectionFeatures):
+
+    OFFICIAL_CHOICES = (
+        (None, _('Unresolved')),
+        (0, _('Unofficial')),
+        (1, _('Official')),
+    )
     linked_polls = models.BooleanField(_('Linked polls'), default=False)
     election_module = models.CharField(_("Election type"), max_length=250,
                                          null=False,
@@ -322,7 +328,8 @@ class Election(ElectionTasks, HeliosModel, ElectionFeatures):
                                            null=True)
     archived_at = models.DateTimeField(auto_now_add=False, default=None,
                                         null=True)
-    include_in_reports = models.BooleanField(default=False)
+    official = models.IntegerField(null=True, default=None,
+                                    choices=OFFICIAL_CHOICES)
     objects = ElectionManager()
 
     class Meta:
@@ -700,6 +707,35 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
   voters_last_notified_at = models.DateTimeField(null=True, default=None)
   index = models.PositiveIntegerField(default=1)
 
+  # voters oauth2 authentication
+  oauth2_thirdparty = models.BooleanField(default=False, verbose_name=_("Oauth2 login"))
+
+  oauth2_type = models.CharField(max_length=25,
+                                 null=True, blank=True)
+  oauth2_client_type = models.CharField(max_length=25,
+                                        null=True, blank=True)
+  oauth2_client_id = models.CharField(max_length=255,
+                                      null=True, blank=True)
+  oauth2_client_secret = models.CharField(max_length=255,
+                                          null=True, blank=True)
+  oauth2_code_url = models.CharField(max_length=255,
+                                null=True, blank=True)
+  oauth2_exchange_url = models.CharField(max_length=255,
+                                null=True, blank=True)
+  oauth2_confirmation_url = models.CharField(max_length=255,
+                                null=True, blank=True)
+  oauth2_extra = models.CharField(max_length=255,
+                                  null=True, blank=True)
+  # jwt authentication
+  jwt_auth = models.BooleanField(default=False, verbose_name=_("JWT login"))
+  jwt_public_key = models.TextField(null=True, default=None)
+  jwt_issuer = models.CharField(max_length=255,
+                                null=True, blank=True)
+
+  # shibboleth authentication
+  shibboleth_auth = models.BooleanField(default=False, verbose_name=_("Shibboleth login"))
+  shibboleth_constraints = JSONField(default=None, null=True, blank=True)
+
   objects = PollManager()
 
   class Meta:
@@ -709,6 +745,34 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
   def __init__(self, *args, **kwargs):
       self._logger = None
       super(Poll, self).__init__(*args, **kwargs)
+
+  def get_shibboleth_constraints(self):
+    defaults = {
+        'assert_idp_key': 'REMOTE_USER',
+        'assert_voter_key': 'id',
+        'required_fields': ['REMOTE_USER', 'EPPN'],
+        'endpoint': 'default/login'
+    }
+    default_constraints = getattr(settings, 'SHIBBOLETH_DEFAULT_CONSTRAINTS',
+                                  defaults)
+    constraints = {}
+    constraints.update(default_constraints)
+    constraints.update(self.shibboleth_constraints or {})
+    return constraints
+
+  @property
+  def remote_login(self):
+      return self.oauth2_thirdparty or self.jwt_auth or self.shibboleth_auth
+
+  @property
+  def remote_login_display(self):
+      if self.jwt_auth:
+          return _("JSON Web Token Login")
+      if self.oauth2_thirdparty:
+          return _("Oauth2 Login %s") % self.oauth2_client_id
+      if self.shibboleth_auth:
+          return _("Shibboleth authentication")
+      return None
 
   def reset_logger(self):
       self._logger = None
@@ -783,20 +847,28 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
       obj.do_set_stage(self.zeus_stage)
       return obj
 
-  def get_booth_url(self, request):
+  @property
+  def get_oauth2_module(self):
+    from zeus import oauth2
+    return oauth2.get_oauth2_module(self)
+
+  def get_booth_url(self, request, preview=False):
+    url_params = {
+        'token': csrf(request)['csrf_token'],
+        'poll_url': "%s%s" % (settings.SECURE_URL_HOST,
+                                self.get_absolute_url()),
+        'poll_json_url': "%s%s" % (settings.SECURE_URL_HOST,
+                                    self.get_json_url()),
+        'messages_url': "%s%s" % (settings.SECURE_URL_HOST,
+                                    self.get_js_messages_url()),
+        'language': "%s" % (request.LANGUAGE_CODE)
+    }
+    if preview is True:
+        url_params['preview'] = 1
     vote_url = "%s/%s/booth/vote.html?%s" % (
             settings.SECURE_URL_HOST,
             settings.SERVER_PREFIX,
-            urllib.urlencode({
-                'token': csrf(request)['csrf_token'],
-                'poll_url': "%s%s" % (settings.SECURE_URL_HOST,
-                                      self.get_absolute_url()),
-                'poll_json_url': "%s%s" % (settings.SECURE_URL_HOST,
-                                           self.get_json_url()),
-                'messages_url': "%s%s" % (settings.SECURE_URL_HOST,
-                                          self.get_js_messages_url()),
-                'language': "%s" % (request.LANGUAGE_CODE)
-            }))
+            urllib.urlencode(url_params))
     return "%s?%s" % (reverse('test_cookie'),
                       urllib.urlencode({'continue_url': vote_url}))
 
@@ -850,7 +922,7 @@ class Poll(PollTasks, HeliosModel, PollFeatures):
           if self.election.feature_voting_date_passed:
               return _('Pending election close')
 
-          return _('Freezed')
+          return _('Frozen')
 
       if not self.questions_data:
           return _('No questions set')
@@ -1324,55 +1396,11 @@ class ElectionLog(models.Model):
   log = models.CharField(max_length=500)
   at = models.DateTimeField(auto_now_add=True)
 
-##
-## Craziness for CSV
-##
 
-def csv_reader(csv_data, min_fields=2, max_fields=6, **kwargs):
-    if not isinstance(csv_data, str):
-        m = "Please provide string data to csv_reader, not %s" % type(csv_data)
-        raise ValueError(m)
-    encodings = ['utf-8', 'iso8859-7', 'utf-16', 'utf-16le', 'utf-16be']
-    encodings.reverse()
-    rows = []
-    append = rows.append
-    while 1:
-        if not encodings:
-            m = "Cannot decode csv data!"
-            raise ValueError(m)
-        encoding = encodings[-1]
-        try:
-            data = csv_data.decode(encoding)
-            data = data.strip(u'\ufeff')
-            if data.count(u'\x00') > 0:
-                m = "Wrong encoding detected (heuristic)"
-                raise ValueError(m)
-            if data.count(u'\u2000') > data.count(u'\u0020'):
-                m = "Wrong endianess (heuristic)"
-                raise ValueError(m)
-            break
-        except (UnicodeDecodeError, ValueError), e:
-            encodings.pop()
-            continue
-
-    for i, line in enumerate(data.splitlines()):
-        line = line.strip()
-        if not line:
-            continue
-        cells = line.split(',', max_fields)
-        if len(cells) < min_fields:
-            cells = line.split(';')
-            if len(cells) < min_fields:
-                m = ("line %d: CSV must have at least %d fields "
-                     "(email, last_name, name)" % (i+1, min_fields))
-                raise ValueError(m)
-        cells += [u''] * (max_fields - len(cells))
-        append(cells)
-
-    return rows
-
-def iter_voter_data(voter_data, email_validator=validate_email):
-    reader = csv_reader(voter_data, min_fields=2, max_fields=7)
+def iter_voter_data(voter_data, email_validator=validate_email,
+                    preferred_encoding=None):
+    reader = CSVReader(voter_data, min_fields=2, max_fields=7,
+                       preferred_encoding=preferred_encoding)
 
     line = 0
     for voter_fields in reader:
@@ -1473,16 +1501,17 @@ class VoterFile(models.Model):
   processing_finished_at = models.DateTimeField(auto_now_add=False, null=True)
   num_voters = models.IntegerField(null=True)
 
-  def itervoters(self, email_validator=validate_email):
+  def itervoters(self, email_validator=validate_email, preferred_encoding=None):
     if self.voter_file_content:
       voter_data = base64.decodestring(self.voter_file_content)
     else:
       voter_data = open(self.voter_file.path, "r").read()
 
-    return iter_voter_data(voter_data, email_validator=email_validator)
+    return iter_voter_data(voter_data, email_validator=email_validator,
+                           preferred_encoding=preferred_encoding)
 
   @transaction.commit_on_success
-  def process(self, linked=True, check_dupes=True):
+  def process(self, linked=True, check_dupes=True, preferred_encoding=None):
     demo_voters = 0
     poll = self.poll
     demo_user = False
@@ -1504,7 +1533,7 @@ class VoterFile(models.Model):
     else:
       voter_data = open(self.voter_file.path, "r").read()
 
-    reader = iter_voter_data(voter_data)
+    reader = iter_voter_data(voter_data, preferred_encoding=preferred_encoding)
 
     last_alias_num = poll.last_alias_num
 
@@ -2103,6 +2132,10 @@ class Trustee(HeliosModel, TrusteeFeatures):
     objects = TrusteeManager()
 
     @property
+    def pending_partial_decryptions_len(self):
+        return len(self.pending_partial_decryptions())
+
+    @property
     def get_partial_decryptions(self):
         for poll in self.election.polls.all():
             try:
@@ -2134,7 +2167,7 @@ class Trustee(HeliosModel, TrusteeFeatures):
         return url
 
     def pending_partial_decryptions(self):
-        return filter(lambda p: p[1], self.get_partial_decryptions())
+        return filter(lambda p: p[1] is None, self.get_partial_decryptions)
 
     def get_step(self):
         """
@@ -2180,7 +2213,6 @@ class Trustee(HeliosModel, TrusteeFeatures):
             self.last_notified_at = datetime.datetime.now()
             self.save()
 
-    
     @property
     def datatype(self):
         return self.election.datatype.replace('Election', 'Trustee')
