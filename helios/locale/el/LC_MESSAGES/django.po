@@ -171,7 +171,7 @@ msgid "Poll name"
 msgstr "Όνομα κάλπης"
 
 msgid "Oauth2 login"
-msgstr "Σύνδεση με Oauth2 (%s)"
+msgstr "Σύνδεση με Oauth2"
 
 msgid "JWT login"
 msgstr "Σύνδεση με JWT"
