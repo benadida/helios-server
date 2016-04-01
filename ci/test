@@ -1,0 +1,1 @@
+ZEUS_TESTS_VERBOSE=1 python manage.py test zeus --settings=test_settings
