@@ -1,1 +1,11 @@
-ZEUS_TESTS_VERBOSE=1 python manage.py test zeus --settings=test_settings
+#!/bin/bash
+set -v
+
+if [ -f /etc/ci_env ]; then source /etc/ci_env; fi;
+if [ "$#" -eq 0 ]; then 
+    ARGS="zeus" 
+else 
+    ARGS=$*
+fi;
+
+ZEUS_TESTS_VERBOSE=1 ZEUS_TEST_DATABASE=1 python manage.py test --noinput --settings=test_settings $ARGS;
