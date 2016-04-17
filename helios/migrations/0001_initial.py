@@ -22,6 +22,9 @@ class Migration(migrations.Migration):
                 ('vote_hash', models.CharField(max_length=100)),
                 ('added_at', models.DateTimeField(auto_now_add=True)),
             ],
+            options={
+            },
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='CastVote',
@@ -82,7 +85,7 @@ class Migration(migrations.Migration):
                 ('encrypted_tally', helios.datatypes.djangofield.LDObjectField(null=True)),
                 ('result', helios.datatypes.djangofield.LDObjectField(null=True)),
                 ('result_proof', helios_auth.jsonfield.JSONField(null=True)),
-                ('help_email', models.EmailField(max_length=254, null=True)),
+                ('help_email', models.EmailField(max_length=75, null=True)),
                 ('election_info_url', models.CharField(max_length=300, null=True)),
                 ('admin', models.ForeignKey(to='helios_auth.User')),
             ],
@@ -99,6 +102,9 @@ class Migration(migrations.Migration):
                 ('at', models.DateTimeField(auto_now_add=True)),
                 ('election', models.ForeignKey(to='helios.Election')),
             ],
+            options={
+            },
+            bases=(models.Model,),
         ),
         migrations.CreateModel(
             name='Trustee',
@@ -106,7 +112,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('uuid', models.CharField(max_length=50)),
                 ('name', models.CharField(max_length=200)),
-                ('email', models.EmailField(max_length=254)),
+                ('email', models.EmailField(max_length=75)),
                 ('secret', models.CharField(max_length=100)),
                 ('public_key', helios.datatypes.djangofield.LDObjectField(null=True)),
                 ('public_key_hash', models.CharField(max_length=100)),
@@ -116,6 +122,8 @@ class Migration(migrations.Migration):
                 ('decryption_proofs', helios.datatypes.djangofield.LDObjectField(null=True)),
                 ('election', models.ForeignKey(to='helios.Election')),
             ],
+            options={
+            },
             bases=(models.Model, helios.datatypes.LDObjectContainer),
         ),
         migrations.CreateModel(
@@ -134,6 +142,8 @@ class Migration(migrations.Migration):
                 ('election', models.ForeignKey(to='helios.Election')),
                 ('user', models.ForeignKey(to='helios_auth.User', null=True)),
             ],
+            options={
+            },
             bases=(models.Model, helios.datatypes.LDObjectContainer),
         ),
         migrations.CreateModel(
@@ -148,16 +158,9 @@ class Migration(migrations.Migration):
                 ('num_voters', models.IntegerField(null=True)),
                 ('election', models.ForeignKey(to='helios.Election')),
             ],
-        ),
-        migrations.AddField(
-            model_name='castvote',
-            name='voter',
-            field=models.ForeignKey(to='helios.Voter'),
-        ),
-        migrations.AddField(
-            model_name='auditedballot',
-            name='election',
-            field=models.ForeignKey(to='helios.Election'),
+            options={
+            },
+            bases=(models.Model,),
         ),
         migrations.AlterUniqueTogether(
             name='voter',
@@ -166,5 +169,17 @@ class Migration(migrations.Migration):
         migrations.AlterUniqueTogether(
             name='trustee',
             unique_together=set([('election', 'email')]),
+        ),
+        migrations.AddField(
+            model_name='castvote',
+            name='voter',
+            field=models.ForeignKey(to='helios.Voter'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='auditedballot',
+            name='election',
+            field=models.ForeignKey(to='helios.Election'),
+            preserve_default=True,
         ),
     ]

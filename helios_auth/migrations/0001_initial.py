@@ -22,6 +22,9 @@ class Migration(migrations.Migration):
                 ('token', helios_auth.jsonfield.JSONField(null=True)),
                 ('admin_p', models.BooleanField(default=False)),
             ],
+            options={
+            },
+            bases=(models.Model,),
         ),
         migrations.AlterUniqueTogether(
             name='user',
