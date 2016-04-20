@@ -12,3 +12,7 @@ docs/install/_build
 *.mo
 *.log
 .ropeproject
+.cache
+.coverage
+junit.xml
+.citoolrc

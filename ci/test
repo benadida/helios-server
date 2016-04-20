@@ -3,9 +3,17 @@ set -v
 
 if [ -f /etc/ci_env ]; then source /etc/ci_env; fi;
 if [ "$#" -eq 0 ]; then 
-    ARGS="zeus" 
+    ARGS="" 
 else 
-    ARGS=$*
+    ARGS="-k $*"
 fi;
 
-ZEUS_TESTS_VERBOSE=1 ZEUS_TEST_DATABASE=1 python manage.py test --noinput --settings=test_settings $ARGS;
+#export ZEUS_TESTS_VERBOSE=1
+export ZEUS_TEST_DATABASE=1
+export ZEUS_DB=${DB_NAME-"$ZEUS_DB"}
+export ZEUS_DB_USER=${DB_USER-"$ZEUS_DB_USER"}
+export ZEUS_DB_PASSWORD=${DB_PASSWORD-"$ZEUS_DB_PASSWORD"}
+export DJANGO_SETTINGS_MODULE=test_settings
+export OUTDIR=${REPORT_DIR-"."}
+
+py.test --create-db --cov="$OUTDIR/coverage.xml" --cov-report=xml --junit-xml="$OUTDIR/junit.xml" -s "$ARGS"
