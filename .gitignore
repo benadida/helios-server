@@ -16,3 +16,9 @@ docs/install/_build
 .coverage
 junit.xml
 .citoolrc
+.coveragerc
+*.coveragerc
+coverage.xml
+report
+test.html
+.test_report
