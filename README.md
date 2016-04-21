@@ -1,3 +1,22 @@
+O objetivo deste projeto era inicialmente atender a [necessidade N.47 do PDTI 2013 do IFSC](http://dtic.ifsc.edu.br/files/pdti2013-revisao02.pdf).
+
+No entanto, logo percebeu-se que outras instituições, especialmente as de ensino, poderiam se beneficiar das melhorias realizadas no projeto original, a fim de atender ao público brasileiro.
+
+Neste repositório encontra-se o código personalizado a partir do original disponível em [https://github.com/benadida/helios-server](https://github.com/benadida/helios-server), assim como um tutorial detalhado de instalação e configuração.
+
+Para saber um pouco mais, acesse:
+
+Tutoriais: 
+
+http://dtic.ifsc.edu.br/sistemas/sistema-de-votacao-on-line-helios/
+
+Publicações:
+
+1) [O uso de um sistema de votação on-line para escolha do conselho universitário](http://dtic.ifsc.edu.br/files/chaves-sbseg14.pdf)
+
+2) [Adoção de modelo controle acesso baseado em atributos em sistema de votação online para ofertá-lo como um serviço de TIC federado](http://sbseg2015.univali.br/anais/WGID/artigoWGID06.pdf)
+
+
 
 
 # Guia de instalação e configuração do Helios
