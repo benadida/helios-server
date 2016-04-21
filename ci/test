@@ -1,5 +1,6 @@
 #!/bin/bash
 set -v
+printenv
 
 if [ -f /etc/ci_env ]; then source /etc/ci_env; fi;
 if [ "$#" -eq 0 ]; then 
@@ -9,6 +10,7 @@ else
 fi;
 
 #export ZEUS_TESTS_VERBOSE=1
+export PYTHONPATH=.
 export ZEUS_TEST_DATABASE=${ZEUS_TEST_DATABASE-"1"}
 export ZEUS_DB=${DB_NAME-"zeus_test_db"}
 export ZEUS_DB_USER=${DB_USER-"$(whoami)"}
