@@ -940,7 +940,8 @@ def one_election_register(request, election):
 def one_election_save_questions(request, election):
   check_csrf(request)
   
-  election.questions = utils.from_json(request.POST['questions_json'])
+  questions = utils.from_json(request.POST['questions_json'])
+  election.save_questions_safely(questions)
   election.save()
 
   # always a machine API
