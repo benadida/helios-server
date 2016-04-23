@@ -581,7 +581,7 @@ class ElectionBlackboxTests(WebTest):
         
         # add questions
         response = self.client.post("/helios/elections/%s/save_questions" % election_id, {
-                'questions_json': utils.to_json([{"answer_urls": [None,None], "answers": ["Alice", "Bob"], "choice_type": "approval", "max": 1, "min": 0, "question": "Who should be president?", "result_type": "absolute", "short_name": "Who should be president?", "tally_type": "homomorphic"}]),
+                'questions_json': utils.to_json([{"answer_urls": ["http://example.com",None], "answers": ["Alice", "Bob"], "choice_type": "approval", "max": 1, "min": 0, "question": "Who should be president?", "result_type": "absolute", "short_name": "Who should be president?", "tally_type": "homomorphic"}]),
                 'csrf_token': self.client.session['csrf_token']})
 
         self.assertContains(response, "SUCCESS")
