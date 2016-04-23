@@ -256,7 +256,7 @@ class Election(HeliosModel):
           continue
           
         # abort saving if bad URL
-        if not (answer_url.startsWith("http://") or answer_url.startsWith("https://")):
+        if not (answer_url[:7] == "http://" or answer_url[:8]== "https://"):
           return
     
     self.questions = questions
