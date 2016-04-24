@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
+import pytest
+
 from django.test import TestCase
 from django.contrib.auth.hashers import make_password
 from django.utils import translation
 
 from heliosauth.models import User
 from zeus.models import Institution
-from account_administration.forms import userForm
 
 from utils import SetUpAdminAndClientMixin, get_messages_from_response
+
+pytestmark = pytest.mark.django_db(transaction=True)
 
 
 class TestHelpdeskWithClient(SetUpAdminAndClientMixin, TestCase):

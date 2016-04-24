@@ -1,3 +1,5 @@
+import pytest
+
 from django.test.client import Client
 from django.contrib.auth.hashers import make_password
 
@@ -5,8 +7,13 @@ from helios.models import *
 from heliosauth.models import User
 from zeus.models import Institution
 
+pytestmark = pytest.mark.django_db(transaction=True)
+
 
 class SetUpAdminAndClientMixin():
+
+    def tearDown(self):
+        self.institution.delete()
 
     def setUp(self):
         self.institution = Institution.objects.create(name="test_inst")
@@ -20,7 +27,7 @@ class SetUpAdminAndClientMixin():
         self.locations = {
             'home': '/',
             'logout': '/auth/auth/logout',
-            'login':'/auth/auth/login',
+            'login': '/auth/auth/login',
             'create': '/elections/new',
             'helpdesk': '/account_administration'
             }

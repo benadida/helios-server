@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import pytest
 import os
 import datetime
 import json
@@ -21,6 +22,7 @@ from zeus.tests.utils import SetUpAdminAndClientMixin
 from zeus.core import to_relative_answers, gamma_encode, prove_encryption
 from zeus import auth
 
+pytestmark = pytest.mark.django_db(transaction=True)
 
 class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
