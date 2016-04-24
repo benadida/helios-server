@@ -1,13 +1,13 @@
-from django.conf.urls.defaults import *
 from django.conf import settings
+from django.conf.urls.defaults import *
+from zeus.models import *
+from helios.models import *
+from heliosauth.models import *
+from django.http import *
 
 
 def quick_start_election(request):
-  from zeus.models import *
-  from helios.models import *
-  from heliosauth.models import *
   from heliosauth.auth_systems.password import create_user
-  from django.http import *
 
   eid = request.GET.get("elid", "test")
 
