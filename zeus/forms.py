@@ -92,7 +92,7 @@ class ElectionForm(forms.ModelForm):
         fields = ('trial', 'election_module', 'name', 'description',
                   'departments', 'voting_starts_at', 'voting_ends_at',
                   'voting_extended_until',
-                  'trustees', 'help_email', 'help_phone', 
+                  'trustees', 'help_email', 'help_phone',
                   'communication_language', 'linked_polls')
 
     def __init__(self, institution, *args, **kwargs):
@@ -244,7 +244,7 @@ class QuestionBaseForm(forms.Form):
         ('choice', _('Choice')),
     ))
     question = forms.CharField(label=_("Question"), max_length=5000,
-                               required=True, 
+                               required=True,
                                widget=forms.Textarea(attrs={
                                 'rows': 4,
                                 'class': 'textarea'
@@ -337,7 +337,7 @@ class ScoresForm(QuestionBaseForm):
         else:
             myDict = self.data
 
-        if 'form-0-scores' in myDict: 
+        if 'form-0-scores' in myDict:
             self._scores_len = len(myDict['form-0-scores'])
         elif 'scores' in self.initial:
             self._scores_len = len(self.initial['scores'])
@@ -447,13 +447,13 @@ class StvForm(QuestionBaseForm):
                                               label=('Candidate'))
 
         elig_help_text = _("set the eligibles count of the election")
-        label_text = _("Eligibles count") 
+        label_text = _("Eligibles count")
         self.fields.insert(0, 'eligibles', forms.CharField(
                                                     label=label_text,
                                                     help_text=elig_help_text))
         widget=forms.CheckboxInput(attrs={'onclick':'enable_limit()'})
         limit_help_text = _("enable limiting the elections from the same constituency")
-        limit_label = _("Limit elected per constituency") 
+        limit_label = _("Limit elected per constituency")
         self.fields.insert(1,'has_department_limit',
                             forms.BooleanField(
                                                 widget=widget,
@@ -542,7 +542,7 @@ class LoginForm(forms.Form):
             user = User.objects.get(user_id=username)
         except User.DoesNotExist:
             raise forms.ValidationError(_("Invalid username or password"))
-        
+
         if user.is_disabled:
             raise forms.ValidationError(_("Your account is disabled"))
 
@@ -605,6 +605,10 @@ class PollForm(forms.ModelForm):
                                     initial="https://graph.facebook.com/v2.2/me",
                                     required=False)
 
+        if self.initial:
+            shib = self.initial.get('shibboleth_constraints', None)
+            if shib is not None and isinstance(shib, dict):
+                self.initial['shibboleth_constraints'] = json.dumps(shib)
         if self.election.feature_frozen:
             self.fields['name'].widget.attrs['readonly'] = True
 
@@ -655,7 +659,7 @@ class PollForm(forms.ModelForm):
         election_polls = self.election.polls.all()
         for poll in election_polls:
             if (data.get('name') == poll.name and
-                    ((not self.instance.pk ) or 
+                    ((not self.instance.pk ) or
                     (self.instance.pk and self.instance.name!=data.get('name')))):
                 message = _("Duplicate poll names are not allowed")
                 raise forms.ValidationError(message)
@@ -688,12 +692,12 @@ class PollForm(forms.ModelForm):
         if data['shibboleth_auth']:
             for field_name in shibboleth_field_names:
                 if not data[field_name]:
-                    self._errors[field_name] = _('This field is required.'), 
+                    self._errors[field_name] = _('This field is required.'),
 
         if data['jwt_auth']:
             for field_name in jwt_field_names:
                 if not data[field_name]:
-                    self._errors[field_name] = _('This field is required.'), 
+                    self._errors[field_name] = _('This field is required.'),
         else:
             for field_name in jwt_field_names:
                 data[field_name]=''
@@ -733,7 +737,7 @@ class PollFormSet(BaseModelFormSet):
         if len(form_poll_names) > len(set(form_poll_names)):
             message = _("Duplicate poll names are not allowed")
             raise forms.ValidationError(message)
- 
+
     def save(self, election, *args, **kwargs):
         commit = kwargs.pop('commit', True)
         instances = super(PollFormSet, self).save(commit=False, *args,
