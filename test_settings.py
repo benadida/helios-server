@@ -94,3 +94,5 @@ HELIOS_CRYPTOSYSTEM_PARAMS['g'] = 1916706618702204743647841337288082431343867879
 if os.path.exists("/usr/share/fonts/truetype/ubuntu-font-family/"):
     ZEUS_RESULTS_FONT_REGULAR_PATH = '/usr/share/fonts/truetype/ubuntu-font-family/Ubuntu-R.ttf'
     ZEUS_RESULTS_FONT_BOLD_PATH = '/usr/share/fonts/truetype/ubuntu-font-family/Ubuntu-B.ttf'
+
+USE_X_SENDFILE = False
