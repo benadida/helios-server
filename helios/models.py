@@ -257,9 +257,10 @@ class Election(HeliosModel):
           
         # abort saving if bad URL
         if not (answer_url[:7] == "http://" or answer_url[:8]== "https://"):
-          return
+          return False
     
     self.questions = questions
+    return True
 
   def add_voters_file(self, uploaded_file):
     """
