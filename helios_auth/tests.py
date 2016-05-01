@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit Tests for Auth Systems
 """
@@ -26,10 +27,10 @@ class UserModelTests(unittest.TestCase):
         """
         for auth_system, auth_system_module in AUTH_SYSTEMS.iteritems():
             models.User.objects.create(user_type = auth_system, user_id = 'foobar', info={'name':'Foo Bar'})
-            
+
             def double_insert():
                 models.User.objects.create(user_type = auth_system, user_id = 'foobar', info={'name': 'Foo2 Bar'})
-                
+
             self.assertRaises(IntegrityError, double_insert)
             transaction.rollback()
 
@@ -56,7 +57,7 @@ class UserModelTests(unittest.TestCase):
             assert(hasattr(auth_system_module, 'can_create_election'))
             if auth_system != 'clever':
                 assert(auth_system_module.can_create_election('foobar', {}))
-        
+
 
     def test_status_update(self):
         """
@@ -118,7 +119,7 @@ class UserBlackboxTests(TestCase):
 
     def test_logout(self):
         response = self.client.post(reverse(views.logout), follow=True)
-        
+
         self.assertContains(response, "not logged in")
         self.assertNotContains(response, "Foobar User")
 
@@ -131,41 +132,195 @@ class UserBlackboxTests(TestCase):
         self.assertEquals(mail.outbox[0].to[0], "\"Foobar User\" <foobar-test@adida.net>")
 
 
+'''
+    tests for LDAP auth module.
+    Much of the code below was get or inspired on django-auth-ldap package.
+    See site-packages/django_ldap_auth/tests.py
+'''
+import ldap
+
 import auth_systems.ldapauth as ldap_views
+from mockldap import MockLdap
+from django_auth_ldap.backend import LDAPSettings
+from django_auth_ldap.config import LDAPSearch
+from helios_auth.auth_systems.ldapbackend.backend import CustomLDAPBackend
+try:
+    from django.test.utils import override_settings
+except ImportError:
+    override_settings = lambda *args, **kwargs: (lambda v: v)
+
+
+class TestSettings(LDAPSettings):
+    """
+    A replacement for backend.LDAPSettings that does not load settings
+    from django.conf.
+    """
+    def __init__(self, **kwargs):
+        for name, default in self.defaults.items():
+            value = kwargs.get(name, default)
+            setattr(self, name, value)
 
 
 class LDAPAuthTests(TestCase):
     """
-    These tests relies on OnLine LDAP Test Server, provided by forum Systems:
-    http://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server/
+    These tests uses mockldap 0.2.7 https://pypi.python.org/pypi/mockldap/
     """
 
+    top = ("o=test", {"o": "test"})
+    people = ("ou=people,o=test", {"ou": "people"})
+    groups = ("ou=groups,o=test", {"ou": "groups"})
+
+    alice = ("uid=alice,ou=people,o=test", {
+        "uid": ["alice"],
+        "objectClass": ["person", "organizationalPerson", "inetOrgPerson", "posixAccount"],
+        "userPassword": ["password"],
+        "uidNumber": ["1000"],
+        "gidNumber": ["1000"],
+        "givenName": ["Alice"],
+        "sn": ["Adams"],
+        "mail": ["alice@example.com"]
+    })
+    bob = ("uid=bob,ou=people,o=test", {
+        "uid": ["bob"],
+        "objectClass": ["person", "organizationalPerson", "inetOrgPerson", "posixAccount"],
+        "userPassword": ["password"],
+        "uidNumber": ["1001"],
+        "gidNumber": ["50"],
+        "givenName": ["Robert"],
+        "sn": ["Barker"],
+        "mail": ["bob@example.com"]
+    })
+    john = ("uid=john,ou=people,o=test", {
+        "uid": ["john"],
+        "objectClass": ["person", "organizationalPerson", "inetOrgPerson", "posixAccount"],
+        "userPassword": ["password"],
+        "uidNumber": ["1002"],
+        "gidNumber": ["60"],
+        "givenName": ["Robert"],
+        "sn": ["Doe"]
+    })
+
+    directory = dict([top, people, groups, alice, bob, john])
+
+    def _init_settings(self, **kwargs):
+        self.backend.settings = TestSettings(**kwargs)
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mockldap = MockLdap(cls.directory)
+
+    @classmethod
+    def tearDownClass(cls):
+        del cls.mockldap
+
     def setUp(self):
-        """ set up necessary django-auth-ldap settings """
-        self.password = 'password'
-        self.username = 'euclid'
+        self.mockldap.start()
+        self.ldapobj = self.mockldap['ldap://localhost']
+
+        self.backend = CustomLDAPBackend()
+        self.backend.ldap  # Force global configuration
+
+    def tearDown(self):
+        self.mockldap.stop()
+        del self.ldapobj
 
     def test_backend_login(self):
-        """ test if authenticates using the backend """
+        """ Test authentication usign correct username/password """
         if 'ldap' in ENABLED_AUTH_SYSTEMS:
-            from helios_auth.auth_systems.ldapbackend import backend
-            auth = backend.CustomLDAPBackend()
-            user = auth.authenticate(self.username, self.password)
-            self.assertEqual(user.username, 'euclid')
+            self._init_settings(
+                BIND_DN='uid=bob,ou=people,o=test',
+                BIND_PASSWORD='password',
+                USER_SEARCH=LDAPSearch(
+                    "ou=people,o=test", ldap.SCOPE_SUBTREE, '(uid=%(user)s)'
+                )
+            )
+            user = self.backend.authenticate(username='alice', password='password')
+            self.assertTrue(user is not None)
 
-    def test_ldap_view_login(self):
-        """ test if authenticates using the auth system login view """
+    def test_backend_bad_login(self):
+        """ Test authentication using incorrect username/password"""
         if 'ldap' in ENABLED_AUTH_SYSTEMS:
-            resp = self.client.post(reverse(ldap_views.ldap_login_view), {
-                'username' : self.username,
-                'password': self.password
-                }, follow=True)
-            self.assertEqual(resp.status_code, 200)
+            self._init_settings(
+                BIND_DN='uid=bob,ou=people,o=test',
+                BIND_PASSWORD='password',
+                USER_SEARCH=LDAPSearch(
+                    "ou=people,o=test", ldap.SCOPE_SUBTREE, '(uid=%(user)s)'
+                )
+            )
+            user = self.backend.authenticate(username='maria', password='password')
+            self.assertTrue(user is None)
+
+    @override_settings(AUTH_LDAP_BIND_DN='uid=bob,ou=people,o=test',
+        AUTH_LDAP_BIND_PASSWORD='password',AUTH_LDAP_USER_SEARCH=LDAPSearch(
+            "ou=people,o=test", ldap.SCOPE_SUBTREE, '(uid=%(user)s)'
+        )
+    )
+    def test_ldap_view_login_with_bind_credentials(self):
+        """ Test if authenticates using the auth system login view """
+        if 'ldap' in ENABLED_AUTH_SYSTEMS:
+            response = self.client.post(reverse(ldap_views.ldap_login_view), {
+                'username' : 'bob',
+                'password': 'password'
+            }, follow=True)
+            self.assertEqual(self.client.session['user']['name'], 'Robert Barker')
+            self.assertEqual(self.client.session['user']['type'], 'ldap')
+            self.assertEqual(self.client.session['user']['info']['email'],'bob@example.com')
+
+    @override_settings(AUTH_LDAP_BIND_DN='uid=bob,ou=people,o=test',
+        AUTH_LDAP_BIND_PASSWORD='password',AUTH_LDAP_USER_SEARCH=LDAPSearch(
+            "ou=people,o=test", ldap.SCOPE_SUBTREE, '(uid=%(user)s)'
+        )
+    )
+    def test_ldap_view_login_with_bad_password(self):
+        """ Test if given a wrong password the user can't login """
+        if 'ldap' in ENABLED_AUTH_SYSTEMS:
+            response = self.client.post(reverse(ldap_views.ldap_login_view), {
+                'username' : 'john',
+                'password': 'passworddd'
+            }, follow=True)
+            self.assertEqual(response.status_code, 200)
+            self.assertFalse(self.client.session.has_key('user'))
+
+    def test_ldap_view_login_anonymous_bind(self):
+        """
+        Test anonymous search/bind
+        See https://pythonhosted.org/django-auth-ldap/authentication.html#search-bind
+        """
+        self._init_settings(
+            BIND_PASSWORD='',
+            USER_ATTR_MAP={'first_name': 'givenName', 'last_name': 'sn','email':'mail'},
+            USER_SEARCH=LDAPSearch(
+                "ou=people,o=test", ldap.SCOPE_SUBTREE, '(uid=%(user)s)'
+            )
+        )
+        user = self.backend.authenticate(username='alice', password='password')
+        self.assertEqual(user.username, 'alice')
+        self.assertEqual(user.first_name, 'Alice')
+        self.assertEqual(user.last_name, 'Adams')
+        self.assertEqual(user.email,'alice@example.com')
+
+    def test_ldap_bind_as_user(self):
+        """
+        Test direct bind
+        See https://pythonhosted.org/django-auth-ldap/authentication.html#direct-bind
+        """
+        self._init_settings(
+            USER_DN_TEMPLATE='uid=%(user)s,ou=people,o=test',
+            USER_ATTR_MAP={'first_name': 'givenName', 'last_name': 'sn','email':'mail'},
+            BIND_AS_AUTHENTICATING_USER=True,
+            USER_SEARCH=LDAPSearch(
+                "ou=people,o=test", ldap.SCOPE_SUBTREE, '(uid=%(user)s)'
+            )
+        )
+        user = self.backend.authenticate(username='alice', password='password')
+        self.assertEqual(user.username, 'alice')
+        self.assertEqual(user.first_name, 'Alice')
+        self.assertEqual(user.last_name, 'Adams')
+        self.assertEqual(user.email,'alice@example.com')
 
     def test_logout(self):
-        """ test if logs out using the auth system logout view """
+        """ test logging out using the auth system logout view """
         if 'ldap' in ENABLED_AUTH_SYSTEMS:
             response = self.client.post(reverse(views.logout), follow=True)
             self.assertContains(response, "not logged in")
-            self.assertNotContains(response, "euclid")
-
+            self.assertNotContains(response, "alice")
