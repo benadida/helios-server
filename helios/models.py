@@ -980,6 +980,9 @@ class CastVote(HeliosModel):
   verified_at = models.DateTimeField(null=True)
   invalidated_at = models.DateTimeField(null=True)
   
+  # auditing purposes, like too many votes from the same IP, if it isn't expected
+  cast_ip = models.GenericIPAddressField(null=True)
+
   @property
   def datatype(self):
     return self.voter.datatype.replace('Voter', 'CastVote')
