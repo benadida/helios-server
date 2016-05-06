@@ -245,7 +245,7 @@ CLEVER_CLIENT_SECRET = get_from_env('CLEVER_CLIENT_SECRET', "")
 
 # ldap
 # see configuration example at https://pythonhosted.org/django-auth-ldap/example.html
-AUTH_LDAP_SERVER_URI = "ldap://ldap.forumsys.com" # replace by your Ldap URI
+AUTH_LDAP_SERVER_URI = "ldap://localhost" # replace by your Ldap URI
 AUTH_LDAP_BIND_DN = "cn=read-only-admin,dc=example,dc=com"
 AUTH_LDAP_BIND_PASSWORD = "password"
 AUTH_LDAP_USER_SEARCH = LDAPSearch("dc=example,dc=com",
@@ -257,11 +257,9 @@ AUTH_LDAP_USER_ATTR_MAP = {
     "last_name": "sn",
     "email": "mail",
 }
-AUTH_LDAP_GROUP_TYPE = GroupOfNamesType(name_attr="cn")
-AUTH_LDAP_FIND_GROUP_PERMS = True
+
 AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = True
-AUTH_LDAP_CACHE_GROUPS = True
-AUTH_LDAP_GROUP_CACHE_TIMEOUT = 3600
+
 AUTH_LDAP_ALWAYS_UPDATE_USER = False
 
 # email server
