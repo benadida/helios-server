@@ -116,7 +116,7 @@ BOOTH.setup_workers = function(election_raw_json) {
       // and one worker per question
       BOOTH.encrypted_answers = [];
       BOOTH.answer_timestamps = [];
-      BOOTH.worker = new window.Worker("boothworker.js");
+      BOOTH.worker = new window.Worker("boothworker-single.js");
       BOOTH.worker.postMessage({
         'type': 'setup',
         'election' : election_raw_json
