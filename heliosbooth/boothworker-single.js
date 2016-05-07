@@ -25,7 +25,7 @@ var console = {
 var ELECTION = null;
 
 function do_setup(message) {
-    console.log("setting up worker " + message.question_num);
+    console.log("setting up worker");
 
     ELECTION = HELIOS.Election.fromJSONString(message.election);
 }
