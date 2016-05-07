@@ -1,6 +1,7 @@
-
+import ldap
 import os, json
 
+from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
 # a massive hack to see if we're testing, in which case we use different settings
 import sys
 TESTING = 'test' in sys.argv
@@ -134,8 +135,8 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-#    'django.contrib.auth',
-#    'django.contrib.contenttypes',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
     'djangosecure',
     'django.contrib.sessions',
     #'django.contrib.sites',
@@ -201,7 +202,7 @@ HELIOS_VOTERS_EMAIL = True
 HELIOS_PRIVATE_DEFAULT = False
 
 # authentication systems enabled
-#AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
+#AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo','ldap']
 AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(",")
 AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
 
@@ -236,6 +237,25 @@ CAS_ELIGIBILITY_REALM = get_from_env('CAS_ELIGIBILITY_REALM', "")
 # Clever
 CLEVER_CLIENT_ID = get_from_env('CLEVER_CLIENT_ID', "")
 CLEVER_CLIENT_SECRET = get_from_env('CLEVER_CLIENT_SECRET', "")
+
+# ldap
+# see configuration example at https://pythonhosted.org/django-auth-ldap/example.html
+AUTH_LDAP_SERVER_URI = "ldap://localhost" # replace by your Ldap URI
+AUTH_LDAP_BIND_DN = "cn=read-only-admin,dc=example,dc=com"
+AUTH_LDAP_BIND_PASSWORD = "password"
+AUTH_LDAP_USER_SEARCH = LDAPSearch("dc=example,dc=com",
+    ldap.SCOPE_SUBTREE, "(uid=%(user)s)"
+)
+# Populate the Django user from the LDAP directory.
+AUTH_LDAP_USER_ATTR_MAP = {
+    "first_name": "givenName",
+    "last_name": "sn",
+    "email": "mail",
+}
+
+AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = True
+
+AUTH_LDAP_ALWAYS_UPDATE_USER = False
 
 # email server
 EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
