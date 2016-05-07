@@ -950,11 +950,14 @@ def one_election_register(request, election):
 def one_election_save_questions(request, election):
   check_csrf(request)
   
-  election.questions = utils.from_json(request.POST['questions_json'])
-  election.save()
-
-  # always a machine API
-  return SUCCESS
+  questions = utils.from_json(request.POST['questions_json'])
+  questions_saved = election.save_questions_safely(questions)
+  
+  if questions_saved:
+    election.save()
+    return SUCCESS
+  else:
+    return FAILURE
 
 @transaction.atomic
 @election_admin(frozen=False)

@@ -244,6 +244,23 @@ class Election(HeliosModel):
       return cls.objects.get(short_name=short_name)
     except cls.DoesNotExist:
       return None
+    
+  def save_questions_safely(self, questions):
+    """
+    Because Django doesn't let us override properties in a Pythonic way... doing the brute-force thing.
+    """
+    # verify all the answer_urls
+    for q in questions:
+      for answer_url in q['answer_urls']:
+        if not answer_url or answer_url == "":
+          continue
+          
+        # abort saving if bad URL
+        if not (answer_url[:7] == "http://" or answer_url[:8]== "https://"):
+          return False
+    
+    self.questions = questions
+    return True
 
   def add_voters_file(self, uploaded_file):
     """

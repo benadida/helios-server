@@ -26,7 +26,11 @@
   
   function save_questions(callback) {
       $.post('./save_questions', {'questions_json' : $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function(result) {
-          callback();          
+          if (result == "FAILURE") {
+            alert("The questions could not be saved. Please check that the URLs you entered are either http:// or https://");
+          } else {
+            callback();
+          }
       });      
   }
   
@@ -42,7 +46,7 @@
           if (!form['answer_' + i] || !form['answer_' + i].value)
             break;
           new_q.answers[i-1] = form['answer_' + i].value;
-          new_q.answer_urls[i-1] = null;
+          new_q.answer_urls[i-1] = form['answer_url_' +i].value;
       }
       
      return new_q;
@@ -83,7 +87,12 @@
     $(q_data.answers).each(function(i, a) {
      form[0]['answer_' + (i+1)].value = a;
     });
-  }
+
+    // URLs
+    $(q_data.answer_urls).each(function(i, a) {
+     form[0]['answer_url_' + (i+1)].value = a;
+    });
+}
 
   function question_edit_cancel(q_num) {
     $('#q_edit_'+q_num).hide();
@@ -101,7 +110,7 @@
   function add_answer(el) {
     el = $(el);
     var num_answers = el.find('input.answer').length + 1;
-    el.find('tbody').append('<tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #' + num_answers + '</th><td><input type="text" class="answer" name="answer_' + num_answers + '" size="70" /></td></tr>');
+    el.find('tbody').append('<tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #' + num_answers + '</th><td><input type="text" class="answer" name="answer_' + num_answers + '" size="70" /><br /><nobr>Link (optional, <tt>http</tt> or <tt>https</tt> only): <input type="url" name="answer_url_' + num_answers + '" width="50%" /></nobr></td></tr>');
   }
 
   function add_answers(el, num) {
