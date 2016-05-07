@@ -958,7 +958,7 @@ class Voter(HeliosModel):
     if self.voter_password:
       raise Exception("password already exists")
     
-    self.voter_password = heliosutils.random_string(length, alphabet='abcdefghijkmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ23456789')
+    self.voter_password = heliosutils.random_string(length, alphabet='abcdefghjkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789')
 
   def store_vote(self, cast_vote):
     # only store the vote if it's cast later than the current one
