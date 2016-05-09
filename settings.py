@@ -269,3 +269,13 @@ djcelery.setup_loader()
 # for testing
 TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 # this effectively does CELERY_ALWAYS_EAGER = True
+
+# Rollbar Error Logging
+ROLLBAR_ACCESS_TOKEN = get_from_env('ROLLBAR_ACCESS_TOKEN', None)
+if ROLLBAR_ACCESS_TOKEN:
+  print "setting up rollbar"
+  MIDDLEWARE_CLASSES += ('rollbar.contrib.django.middleware.RollbarNotifierMiddleware',)
+  ROLLBAR = {
+    'access_token': ROLLBAR_ACCESS_TOKEN,
+    'environment': 'development' if DEBUG else 'production',  
+  }
