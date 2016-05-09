@@ -22,5 +22,3 @@ boto==2.27.0
 django-ses==0.6.0
 validate_email==1.2
 oauth2client==1.2
-django-auth-ldap==1.2.7
-mockldap==0.2.7
