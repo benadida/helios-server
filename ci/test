@@ -30,7 +30,7 @@ py.test -vv --create-db \
     --cov-report=xml \
     --cov-report=html \
     --junit-xml="$OUTDIR/junit.xml" \
-    --html "$OUTDIR/test.html/" \
+    --html "$OUTDIR/test-html/index.html" \
     --capture="${CAPTURE-"fd"}" \
     $ARGS
 
