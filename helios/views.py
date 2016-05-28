@@ -524,7 +524,7 @@ def one_election_cast(request, election):
   if request.method == "GET":
     return HttpResponseRedirect("%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_view, args = [election.uuid])))
     
-  user = get_user(request)    
+  user = get_user(request)
   encrypted_vote = request.POST['encrypted_vote']
 
   save_in_session_across_logouts(request, 'encrypted_vote', encrypted_vote)
@@ -592,7 +592,7 @@ def one_election_cast_confirm(request, election):
   user = get_user(request)    
 
   # if no encrypted vote, the user is reloading this page or otherwise getting here in a bad way
-  if not request.session.has_key('encrypted_vote'):
+  if (not request.session.has_key('encrypted_vote')) or request.session['encrypted_vote'] == None:
     return HttpResponseRedirect(settings.URL_HOST)
 
   # election not frozen or started

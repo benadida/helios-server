@@ -33,8 +33,10 @@ def get_auth_url(request, redirect_url):
 
 def get_user_info_after_auth(request):
   flow = get_flow(request.session['google-redirect-url'])
-  del request.session['google-redirect-url']
 
+  if not request.GET.has_key('code'):
+    return None
+  
   code = request.GET['code']
   credentials = flow.step2_exchange(code)
 
