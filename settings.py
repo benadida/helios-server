@@ -15,8 +15,10 @@ def get_from_env(var, default):
 DEBUG = (get_from_env('DEBUG', '1') == '1')
 TEMPLATE_DEBUG = DEBUG
 
+# add admins of the form: 
+#    ('Ben Adida', 'ben@adida.net'),
+# if you want to be emailed about errors.
 ADMINS = (
-    ('Ben Adida', 'ben@adida.net'),
 )
 
 MANAGERS = ADMINS
