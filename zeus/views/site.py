@@ -1,4 +1,7 @@
+import os
 import logging
+import uuid
+import json
 
 from collections import defaultdict
 from time import time
@@ -20,7 +23,51 @@ from heliosauth.auth_systems.password import make_password
 from helios.models import User, Election
 from zeus.models import Institution
 
+from zeus.stv_count_reports import stv_count_and_report
+
+from django.core.servers.basehttp import FileWrapper
+from django.http import HttpResponse
+
 logger = logging.getLogger(__name__)
+
+
+def stv_count(request):
+
+    context = {'menu_active': 'home'}
+    session = request.session.get('stvcount', {})
+    results_generated = context['results'] = session.get('results', {})
+
+    if request.GET.get('reset', None):
+        del request.session['stvcount']
+        return HttpResponseRedirect(reverse('stv_count'))
+
+    if request.GET.get('download', None) and results_generated:
+        filename = results_generated.get(request.GET.get('download', 'pdf'), '/nofile')
+        if not os.path.exists(filename):
+            return HttpResponseRedirect(reverse('stv_count') + "?reset=1")
+
+        wrapper = FileWrapper(file(filename))
+        response = HttpResponse(wrapper, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename=%s' % os.path.basename(filename)
+        response['Content-Length'] = os.path.getsize(filename)
+        return response
+
+    if request.method == "POST":
+        try:
+            el_data = json.loads(request.FILES.get('data').read())
+            files = stv_count_and_report(str(uuid.uuid4()), el_data)
+        except Exception, e:
+            messages.error(request, e)
+            return HttpResponseRedirect(reverse('stv_count'))
+
+        session['results'] = dict(files)
+        request.session['stvcount'] = session
+        return HttpResponseRedirect(reverse('stv_count'))
+
+
+    request.session['stvcount'] = session
+    return render_template(request, "zeus/stvcount", context)
+
 
 
 def setlang(request):

@@ -1,0 +1,44 @@
+{% extends "server_ui/templates/base.html" %}
+{% load i18n %}
+
+{% block tabs_menu %}
+<dd id="" class="{% if menu_active == "home" %}active{% endif %}"><a
+  href="{% url home %}">Αρχική σελίδα</a></dd>
+<dd id="" class="{% if menu_active == "faqs" %}active{% endif %}"><a 
+  href="{% url faqs_voter %}">Συχνές ερωτήσεις</a></dd>
+<dd id="" class="{% if menu_active == "resources" %}active{% endif %}"><a 
+  href="{% url site_resources %}">Υλικό</a></dd>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="columns twelve">
+    <h4>Καταμέτρηση κάλπης ταξινομικής ψήφου (STV).</h4>
+    {% if not results %}
+    <p>
+    Επιλέξτε αρχείο και πατήστε υποβολή για την καταμέτρηση των αποτελεσμάτων.
+    </p>
+    <form method="POST" action="." enctype="multipart/form-data">
+        <input type="file" name="data"/>
+        <br />
+        <br />
+        {% csrf_token %}
+        <input type="submit" class="button" value="{% trans "Υποβολή" %}">
+    </form>
+    {% else %}
+        <p>Η καταμέτρηση εχει ολοκληρωθεί, μπορείτε να αποθηκεύσετε τα
+           αποτελέσματα χρησιμοποιώντας τους παρακάτω συνδέσμους.</p>
+        {% for type, result in results.items %}
+        <a href="{% url stv_count %}?download={{ type }}">Αποτελέσματα ({{ type}})</a><br />
+        {% endfor %}
+        <br />
+        <br />
+        <br />
+        <p style="font-style: italic; font-size: 0.8em;">Τα αρχεία θα είναι διαθέσιμα για τα επόμενα λεπτά.
+        Για να ξεκινήσετε νέα καταμέτρηση πατήστε 
+        <a href="{% url stv_count %}?reset=1">εδώ</a>.
+        </p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
