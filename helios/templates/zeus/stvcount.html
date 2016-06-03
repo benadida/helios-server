@@ -3,41 +3,91 @@
 
 {% block tabs_menu %}
 <dd id="" class="{% if menu_active == "home" %}active{% endif %}"><a
-  href="{% url home %}">Αρχική σελίδα</a></dd>
+    href="{% url home %}">{% trans "Homepage" %}</a></dd>
 <dd id="" class="{% if menu_active == "faqs" %}active{% endif %}"><a 
-  href="{% url faqs_voter %}">Συχνές ερωτήσεις</a></dd>
+    href="{% url faqs_voter %}">{% trans "FAQs" %}</a></dd>
 <dd id="" class="{% if menu_active == "resources" %}active{% endif %}"><a 
-  href="{% url site_resources %}">Υλικό</a></dd>
+    href="{% url site_resources %}">{% trans "Resources" %}</a></dd>
 {% endblock %}
 
 {% block content %}
 <div class="row">
   <div class="columns twelve">
-    <h4>Καταμέτρηση κάλπης ταξινομικής ψήφου (STV).</h4>
-    {% if not results %}
-    <p>
-    Επιλέξτε αρχείο και πατήστε υποβολή για την καταμέτρηση των αποτελεσμάτων.
-    </p>
-    <form method="POST" action="." enctype="multipart/form-data">
-        <input type="file" name="data"/>
-        <br />
-        <br />
-        {% csrf_token %}
-        <input type="submit" class="button" value="{% trans "Υποβολή" %}">
-    </form>
+    {% if import %}
+        <h4>Εισαγωγή ψηφοδελτίων φυσικής κάλπης ταξινομικής ψήφου (STV).</h4>
+        
+            {% if error %}
+            <div class="panel alert">
+                {{ error }}
+            </div>
+            {% endif %}
+        
+        <form data-protect="1" class="prettyform" action="?form=1" method="POST" id="create_election_form">
+            <div class="pretty">
+            {% with form=form %}
+            {% include "foundation_form.html" %}
+            {% endwith %}
+
+            {% if ballots_form %}
+                {% for ballot_form in ballots_form %}
+                    <h3>Ψήφος {{forloop.counter}}</h3>
+                    {% with form=ballot_form %}
+                    {% include "foundation_form.html" %}
+                    {% endwith %}
+                {% endfor %}
+                {{ ballots_form.management_form }}
+                <input type="hidden" name="submit_ballots" value="1" />
+            {% endif %}
+            </div>
+        <div>
+         {% if ballots_form %}
+            <input class="button" type="submit" value="{% trans "Αποτελέσματα" %}" id="next_button" />
+         {% else %}
+            <input class="button" type="submit" value="{% trans "Εισαγωγή ψηφοδελτίων" %}" id="next_button" />
+         {% endif %}
+        </div>
+
+        <script>
+        $(function() {
+        $(".datepicker[readonly!=readonly]").datepicker({ dateFormat: 'yy-mm-dd' });
+        $("[readonly]").addClass("field-readonly");
+        $("select[readonly] option[selected!=selected]").remove();
+        });
+        </script>
+        </form>
+
     {% else %}
-        <p>Η καταμέτρηση εχει ολοκληρωθεί, μπορείτε να αποθηκεύσετε τα
-           αποτελέσματα χρησιμοποιώντας τους παρακάτω συνδέσμους.</p>
-        {% for type, result in results.items %}
-        <a href="{% url stv_count %}?download={{ type }}">Αποτελέσματα ({{ type}})</a><br />
-        {% endfor %}
-        <br />
-        <br />
-        <br />
-        <p style="font-style: italic; font-size: 0.8em;">Τα αρχεία θα είναι διαθέσιμα για τα επόμενα λεπτά.
-        Για να ξεκινήσετε νέα καταμέτρηση πατήστε 
-        <a href="{% url stv_count %}?reset=1">εδώ</a>.
+        <h4>Καταμέτρηση κάλπης ταξινομικής ψήφου (STV).</h4>
+        {% if not results %}
+        <p>
+        Επιλέξτε αρχείο και πατήστε υποβολή για την καταμέτρηση των αποτελεσμάτων.
         </p>
+        <form method="POST" action="." enctype="multipart/form-data">
+            <input type="file" name="data"/>
+            <br />
+            <br />
+            {% csrf_token %}
+            <input type="submit" class="button" value="{% trans "Υποβολή" %}">
+            <br />
+            <br />
+            <p style="font-style:italic">Εναλλακτικά μπορείτε να εισάγετε τα δεδομένα σας 
+            <a class="" href="{% url stv_count %}?form=1">{% trans "εδώ" %}</a>
+            </p>
+        </form>
+        {% else %}
+            <p>Η καταμέτρηση εχει ολοκληρωθεί, μπορείτε να αποθηκεύσετε τα
+            αποτελέσματα χρησιμοποιώντας τους παρακάτω συνδέσμους.</p>
+            {% for type, result in results.items %}
+            <a href="{% url stv_count %}?download={{ type }}">{% if type == "json" %} {% trans "Election data" %} {% else %} {% trans "Results" %}{% endif %} ({{ type}})</a><br />
+            {% endfor %}
+            <br />
+            <br />
+            <br />
+            <p style="font-style: italic; font-size: 0.8em;">Τα αρχεία θα είναι διαθέσιμα για τα επόμενα λεπτά.
+            Για να ξεκινήσετε νέα καταμέτρηση πατήστε 
+            <a href="{% url stv_count %}?reset=1">εδώ</a>.
+            </p>
+        {% endif %}
     {% endif %}
   </div>
 </div>
