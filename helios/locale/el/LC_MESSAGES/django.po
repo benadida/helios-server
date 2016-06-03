@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-03-21 15:36+0200\n"
+"POT-Creation-Date: 2016-06-03 12:49+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1501,6 +1501,50 @@ msgstr ""
 
 msgid "Choose election"
 msgstr "Επιλογή ψηφοφορίας"
+
+msgid "Homepage"
+msgstr "Αρχική"
+
+msgid "FAQs"
+msgstr "Συχνές ερωτήσεις"
+
+msgid "STV ballot box import form"
+msgstr "Εισαγωγή ψηφοδελτίων φυσικής κάλπης ταξινομικής ψήφου (STV)"
+
+msgid "Ballot"
+msgstr "Ψήφος"
+
+msgid "Import ballots"
+msgstr "Εισαγωγή ψηφοδελτίων"
+
+msgid "Count STV ballot box."
+msgstr "Καταμέτρηση κάλπης ταξινομικής ψήφου (STV)"
+
+msgid "Choose a file and press submit to count STV results"
+msgstr ""
+"Επιλέξτε αρχείο και πατήστε υποβολή για την καταμέτρηση των αποτελεσμάτων"
+
+msgid "Submit ballots"
+msgstr "Υποβολή ψήφων"
+
+msgid "You may want to manually import ballots"
+msgstr "Εναλλακτικά μπορείτε να εισάγετε τα δεδομένα της κάλπης"
+
+msgid "here"
+msgstr "εδώ"
+
+msgid ""
+"Ballot counting is completed. Use the following links to save the results."
+msgstr "Η καταμέτρηση έχει ολοκληρωθεί, μπορίτε να αποθηκεύσετε τα αποτελέσματα χρησιμοποιώντας τους παρακάτω συνδέσμους."
+
+msgid "Election data"
+msgstr "Στοιχεία ψηφοφορίας"
+
+msgid "Results files will be available from this url for a few minutes."
+msgstr "Τα αρχεία αποτελεσμάτων θα είναι διαθέσιμα για τα επόμενα λεπτά."
+
+msgid "To restart the counting process click "
+msgstr "Για να ξεκινήσετε νέα καταμέτρηση πατήστε"
 
 msgid "Terms of use"
 msgstr "Όροι χρήσης"
