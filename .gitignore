@@ -12,3 +12,13 @@ docs/install/_build
 *.mo
 *.log
 .ropeproject
+.cache
+.coverage
+junit.xml
+.citoolrc
+.coveragerc
+*.coveragerc
+coverage.xml
+report
+test.html
+.test_report

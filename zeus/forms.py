@@ -606,6 +606,10 @@ class PollForm(forms.ModelForm):
                                     initial="https://graph.facebook.com/v2.2/me",
                                     required=False)
 
+        if self.initial:
+            shib = self.initial.get('shibboleth_constraints', None)
+            if shib is not None and isinstance(shib, dict):
+                self.initial['shibboleth_constraints'] = json.dumps(shib)
         if self.election.feature_frozen:
             self.fields['name'].widget.attrs['readonly'] = True
 

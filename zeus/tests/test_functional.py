@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import pytest
 import os
 import datetime
 import json
@@ -21,6 +22,7 @@ from zeus.tests.utils import SetUpAdminAndClientMixin
 from zeus.core import to_relative_answers, gamma_encode, prove_encryption
 from zeus import auth
 
+pytestmark = pytest.mark.django_db(transaction=True)
 
 class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
 
@@ -179,14 +181,14 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         if e.frozen_at:
             self.verbose('+ Election got frozen')
             return True
-        
+
     def save_poll_without_name_change(self):
         # help track bug where saving poll without changing name
         # ends in duplicate name form error
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
         e = Election.objects.all()[0]
-        p_uuid = self.p_uuids[0] 
+        p_uuid = self.p_uuids[0]
         edit_url = '/elections/{}/polls/{}/edit'.format(e.uuid, p_uuid)
         r = self.c.get(edit_url)
         form = r.context['form']
@@ -268,7 +270,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
         e = Election.objects.all()[0]
-        p_uuid = self.p_uuids[0] 
+        p_uuid = self.p_uuids[0]
         edit_url = '/elections/{}/polls/{}/edit'.format(e.uuid, p_uuid)
         r = self.c.get(edit_url)
         form = r.context['form']
@@ -277,7 +279,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.c.post(edit_url, data)
         poll = Poll.objects.get(uuid=p_uuid)
         self.assertEqual(poll.name, 'changed_poll_name')
-    
+
     def create_poll_after_freeze(self):
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
@@ -290,14 +292,14 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         self.assertEqual(r.status_code, 403)
         e = Election.objects.all()[0]
         self.assertEqual(e.polls.all().count(), self.polls_number)
-        
+
 
     def edit_poll_name_after_freeze(self):
         self.c.get(self.locations['logout'])
         self.c.post(self.locations['login'], self.login_data)
         e = Election.objects.all()[0]
-        p_uuid = self.p_uuids[0] 
-        
+        p_uuid = self.p_uuids[0]
+
         edit_url = '/elections/{}/polls/{}/edit'.format(e.uuid, p_uuid)
         r = self.c.get(edit_url)
         form = r.context['form']
@@ -305,7 +307,7 @@ class TestElectionBase(SetUpAdminAndClientMixin, TestCase):
         data['name'] = 'changed_poll_name_after_freeze'
         r = self.c.post(edit_url, data)
         self.assertFormError(r, 'form', None, "Poll name cannot be changed\
-                                               after freeze") 
+                                               after freeze")
 
     def submit_questions(self):
         for p_uuid in self.p_uuids:
@@ -1254,14 +1256,14 @@ class TestThirdPartyShibboleth(TestSimpleElection):
     def voter_login(self, voter, voter_login_url=None):
         r = self.c.get(voter_login_url, follow=True)
         self.assertContains(r, "http-equiv")
-        url = auth.make_shibboleth_login_url('login')
+        url = auth.make_shibboleth_login_url('default/login')
         self.assertContains(r, url)
         self.assertEqual(self.c.session.get('shibboleth_voter_email'),
                          voter.voter_email)
         self.assertEqual(self.c.session.get('shibboleth_voter_uuid'),
                          voter.uuid)
         headers = {
-            'HTTP_SHIB_EMAIL': voter.voter_email + 'invalidate',
+            'HTTP_MAIL': voter.voter_email + 'invalidate',
             #'HTTP_EPPN': 'eppn',
             'HTTP_REMOTE_USER': 'remoteid'
         }
@@ -1305,5 +1307,5 @@ class TestThirdPartyShibboleth(TestSimpleElection):
     def _get_poll_params(self, index, poll=None):
         return {
             'shibboleth_auth': True,
-            'shibboleth_constraints': ''
+            'shibboleth_constraints': '{"assert_idp_key": "MAIL"}'
         }
