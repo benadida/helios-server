@@ -6,6 +6,7 @@ import uuid
 import copy
 import json
 
+from collections import defaultdict
 from datetime import datetime, timedelta
 
 from django import forms
@@ -92,7 +93,7 @@ class ElectionForm(forms.ModelForm):
         fields = ('trial', 'election_module', 'name', 'description',
                   'departments', 'voting_starts_at', 'voting_ends_at',
                   'voting_extended_until',
-                  'trustees', 'help_email', 'help_phone', 
+                  'trustees', 'help_email', 'help_phone',
                   'communication_language', 'linked_polls')
 
     def __init__(self, institution, *args, **kwargs):
@@ -244,7 +245,7 @@ class QuestionBaseForm(forms.Form):
         ('choice', _('Choice')),
     ))
     question = forms.CharField(label=_("Question"), max_length=5000,
-                               required=True, 
+                               required=True,
                                widget=forms.Textarea(attrs={
                                 'rows': 4,
                                 'class': 'textarea'
@@ -337,7 +338,7 @@ class ScoresForm(QuestionBaseForm):
         else:
             myDict = self.data
 
-        if 'form-0-scores' in myDict: 
+        if 'form-0-scores' in myDict:
             self._scores_len = len(myDict['form-0-scores'])
         elif 'scores' in self.initial:
             self._scores_len = len(self.initial['scores'])
@@ -447,13 +448,13 @@ class StvForm(QuestionBaseForm):
                                               label=('Candidate'))
 
         elig_help_text = _("set the eligibles count of the election")
-        label_text = _("Eligibles count") 
+        label_text = _("Eligibles count")
         self.fields.insert(0, 'eligibles', forms.CharField(
                                                     label=label_text,
                                                     help_text=elig_help_text))
         widget=forms.CheckboxInput(attrs={'onclick':'enable_limit()'})
         limit_help_text = _("enable limiting the elections from the same constituency")
-        limit_label = _("Limit elected per constituency") 
+        limit_label = _("Limit elected per constituency")
         self.fields.insert(1,'has_department_limit',
                             forms.BooleanField(
                                                 widget=widget,
@@ -542,7 +543,7 @@ class LoginForm(forms.Form):
             user = User.objects.get(user_id=username)
         except User.DoesNotExist:
             raise forms.ValidationError(_("Invalid username or password"))
-        
+
         if user.is_disabled:
             raise forms.ValidationError(_("Your account is disabled"))
 
@@ -655,7 +656,7 @@ class PollForm(forms.ModelForm):
         election_polls = self.election.polls.all()
         for poll in election_polls:
             if (data.get('name') == poll.name and
-                    ((not self.instance.pk ) or 
+                    ((not self.instance.pk ) or
                     (self.instance.pk and self.instance.name!=data.get('name')))):
                 message = _("Duplicate poll names are not allowed")
                 raise forms.ValidationError(message)
@@ -688,12 +689,12 @@ class PollForm(forms.ModelForm):
         if data['shibboleth_auth']:
             for field_name in shibboleth_field_names:
                 if not data[field_name]:
-                    self._errors[field_name] = _('This field is required.'), 
+                    self._errors[field_name] = _('This field is required.'),
 
         if data['jwt_auth']:
             for field_name in jwt_field_names:
                 if not data[field_name]:
-                    self._errors[field_name] = _('This field is required.'), 
+                    self._errors[field_name] = _('This field is required.'),
         else:
             for field_name in jwt_field_names:
                 data[field_name]=''
@@ -733,7 +734,7 @@ class PollFormSet(BaseModelFormSet):
         if len(form_poll_names) > len(set(form_poll_names)):
             message = _("Duplicate poll names are not allowed")
             raise forms.ValidationError(message)
- 
+
     def save(self, election, *args, **kwargs):
         commit = kwargs.pop('commit', True)
         instances = super(PollFormSet, self).save(commit=False, *args,
@@ -822,3 +823,108 @@ class VoterLoginForm(forms.Form):
             raise forms.ValidationError(_("Invalid email or password"))
 
         return cleaned_data
+
+
+class STVBallotForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        candidates = self.candidates
+        super(STVBallotForm, self).__init__(*args, **kwargs)
+        choices = [('', '')]
+        for i, c in enumerate(candidates):
+            choices.append((str(i), c))
+        for i, c in enumerate(candidates):
+            self.fields['choice_%d' % (i + 1)] = forms.ChoiceField(choices=choices, initial='', required=False, label=_("Ballot choice %s") % str(i + 1))
+
+    def get_choices(self, serial):
+        vote = {'votes': [], "ballotSerialNumber": serial}
+        for i, c in enumerate(self.candidates):
+            val = self.cleaned_data.get('choice_%d' % (i + 1), '')
+            if not val:
+                break
+            vote['votes'].append({'rank': (i + 1), "candidateTmpId": val})
+        return vote
+
+    def clean(self):
+        data = self.cleaned_data
+        empty = False
+        choices = []
+        for i, c in enumerate(self.candidates):
+            val = self.cleaned_data.get('choice_%d' % (i + 1), '')
+            if val == "":
+                empty = True
+            if val and empty:
+                raise ValidationError(_("Invalid ballot"))
+            if val:
+                choices.append(val)
+
+        if len(choices) != len(set(choices)):
+            raise ValidationError(_("Invalid ballot"))
+        return data
+
+
+candidates_help_text = _("""Candidates list. e.g. <br/><br/>
+FirstName, LastName, FatherName, SchoolA<br />
+FirstName, LastName, FatherName, SchoolB<br />
+""")
+
+limit_choices = map(lambda x: (x, str(x)), range(2))
+eligibles_choices = map(lambda x: (x, str(x)), range(1, 20))
+class STVElectionForm(forms.Form):
+    name = forms.CharField(label=_("Election name"), required=True)
+    voting_starts = forms.CharField(label=_("Voting start date"), required=True, help_text=_("e.g. 25/01/2015 07:00"))
+    voting_ends = forms.CharField(label=_("Voting end date"), required=True, help_text=_("e.g. 25/01/2015 19:00"))
+    institution = forms.CharField(label=_("Institution name"))
+    candidates = forms.CharField(label=_("Candidates"), widget=forms.Textarea, help_text=candidates_help_text)
+    eligibles_count = forms.ChoiceField(label=_("Eligibles count"), choices=eligibles_choices)
+    has_limit = forms.ChoiceField(label=_("Department limit"), initial=1, choices=limit_choices)
+    ballots_count = forms.CharField(label=_("Ballots count"))
+
+    def __init__(self, *args, **kwargs):
+        disabled = kwargs.pop('disabled', False)
+        super(STVElectionForm, self).__init__(*args, **kwargs)
+
+    def clean_candidates(self):
+        candidates = self.cleaned_data.get('candidates').strip()
+        candidates = map(lambda x: x.strip(), candidates.split("\n"))
+        for c in candidates:
+            if len(c.split(",")) != 4:
+                raise ValidationError(_("Candidate %s is invalid") % c)
+
+        return candidates
+
+    def get_candidates(self):
+        if not hasattr(self, 'cleaned_data'):
+            return []
+
+        cs = self.cleaned_data.get('candidates')[:]
+        for i, c in enumerate(cs):
+            cs[i] = map(lambda x: x.strip().replace(" ", "-"), c.split(","))
+            cs[i] = u"{} {} {}:{}".format(*cs[i])
+        return cs
+
+    def get_data(self):
+        data = self.cleaned_data
+        ret = {}
+        ret['elName'] = data.get('name')
+        ret['hasLimit'] = int(data.get('has_limit'))
+        ret["votingStarts"] = data.get('voting_starts')
+        ret["votingEnds"] = data.get('voting_ends')
+        ret["institution"] = data.get('institution')
+        ret["numOfEligibles"] = int(data.get('eligibles_count'))
+        cands = self.get_candidates()
+        schools = defaultdict(lambda: [])
+        for i, c in enumerate(cands):
+            name, school = c.split(":")
+            name, surname, fathername = name.split(" ")
+            entry = {'lastName': surname, 'fatherName': fathername,
+                     'candidateTmpId': i, 'firstName': name}
+            schools[school].append(entry)
+
+        _schools = []
+        for school, cands in schools.iteritems():
+            _schools.append({'candidates': cands, 'Name': school})
+
+        ret['schools'] = _schools
+        ret['ballots'] = []
+        return ret

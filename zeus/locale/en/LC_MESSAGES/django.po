@@ -28,3 +28,9 @@ msgstr "Set the maximum number of open positions per constituency"
 
 msgid "2-factor authentication help text"
 msgstr "Optionally select 2-factor voter authentication"
+
+msgid "TRUSTEES_LIST_HELP_TEXT"
+msgstr ""
+"Trustees list. e.g., <br/><br/>Helen Jones, hjones@email.com<br/>John "
+"Smith, jsmith79@gmail.com<br/>"
+

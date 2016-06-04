@@ -2,10 +2,7 @@ from django.utils.translation import ugettext_lazy as _
 
 trial = _("This is a trial election")
 election_module = _("Choose the type of the election")
-trustees = _("""Trustees list. e.g. <br/><br/>
-Giannhs Gianopoulos, giannhs@email.com<br />
-Kwstas Kwstopoulos, kwstas@email.com<br />
-""")
+trustees = _("""TRUSTEES_LIST_HELP_TEXT""")
 election_name = _("Election name")
 election_description = _("Election description")
 voting_ends_at = _("When voting ends")

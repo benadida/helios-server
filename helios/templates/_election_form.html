@@ -21,6 +21,21 @@ $(function() {
   $(".datepicker[readonly!=readonly]").datepicker({ dateFormat: 'yy-mm-dd' });
   $("[readonly]").addClass("field-readonly");
   $("select[readonly] option[selected!=selected]").remove();
+  $("select[name=election_module]").on("change", function(e) {
+    updateDeptsVisible();
+  });
+
+  function updateDeptsVisible() {
+    var module = $("select[name=election_module]").val();
+    var depts = $("label[for=id_departments]").parent();
+    if (depts.hasClass("error")) { depts.show(); return; }
+    if (module == "stv") {
+      depts.show();
+    } else {
+      depts.hide();
+    }
+  }
+  updateDeptsVisible();
 });
 </script>
   </form>

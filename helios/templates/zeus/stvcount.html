@@ -1,0 +1,96 @@
+{% extends "server_ui/templates/base.html" %}
+{% load i18n %}
+
+{% block tabs_menu %}
+<dd id="" class="{% if menu_active == "home" %}active{% endif %}"><a
+    href="{% url home %}">{% trans "Homepage" %}</a></dd>
+<dd id="" class="{% if menu_active == "faqs" %}active{% endif %}"><a 
+    href="{% url faqs_voter %}">{% trans "FAQs" %}</a></dd>
+<dd id="" class="{% if menu_active == "resources" %}active{% endif %}"><a 
+    href="{% url site_resources %}">{% trans "Resources" %}</a></dd>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="columns twelve">
+    {% if import %}
+        <h4>{% trans "STV ballot box import form" %}.</h4>
+        
+            {% if error %}
+            <div class="panel alert">
+                {{ error }}
+            </div>
+            {% endif %}
+        
+        <form data-protect="1" class="prettyform" action="?form=1" method="POST" id="create_election_form">
+            <div class="pretty">
+                <div style="{% if ballots_form %}display: none{% endif %}">
+            {% with form=form %}
+            {% include "foundation_form.html" %}
+            {% endwith %}
+        </div>
+
+            {% if ballots_form %}
+                {% for ballot_form in ballots_form %}
+                <h3>{% trans "Ballot" %} {{forloop.counter}}</h3>
+                    {% with form=ballot_form %}
+                    {% include "foundation_form.html" %}
+                    {% endwith %}
+                {% endfor %}
+                {{ ballots_form.management_form }}
+                <input type="hidden" name="submit_ballots" value="1" />
+            {% endif %}
+            </div>
+        <div>
+         {% if ballots_form %}
+            <input class="button" type="submit" value="{% trans "Results" %}" id="next_button" />
+         {% else %}
+            <input class="button" type="submit" value="{% trans "Import ballots" %}" id="next_button" />
+         {% endif %}
+        </div>
+
+        <script>
+        $(function() {
+        $(".datepicker[readonly!=readonly]").datepicker({ dateFormat: 'yy-mm-dd' });
+        $("[readonly]").addClass("field-readonly");
+        $("select[readonly] option[selected!=selected]").remove();
+        });
+        </script>
+        </form>
+
+    {% else %}
+    <h4>{% trans "Count STV ballot box." %}</h4>
+        {% if not results %}
+        <p>
+        {% trans "Choose a file and press submit to count STV results" %}
+        </p>
+        <form method="POST" action="." enctype="multipart/form-data">
+            <input type="file" name="data"/>
+            <br />
+            <br />
+            {% csrf_token %}
+            <input type="submit" class="button" value="{% trans "Submit ballots" %}">
+            <br />
+            <br />
+            <p style="font-style:italic">
+            {% trans "You may want to manually import ballots" %} 
+            <a class="" href="{% url stv_count %}?form=1">{% trans "here" %}</a>
+            </p>
+        </form>
+        {% else %}
+        <p>{% trans "Ballot counting is completed. Use the following links to save the results." %}</p>
+            {% for type, result in results.items %}
+            <a href="{% url stv_count %}?download={{ type }}">{% if type == "json" %} {% trans "Election data" %} {% else %} {% trans "Results" %}{% endif %} ({{ type}})</a><br />
+            {% endfor %}
+            <br />
+            <br />
+            <br />
+            <p style="font-style: italic; font-size: 0.8em;">{% trans "Results files will be available from this url for a few minutes." %}
+            {% trans "To restart the counting process click " %}
+            <a href="{% url stv_count %}?reset=1">{% trans "here" %}</a>.
+            </p>
+        {% endif %}
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

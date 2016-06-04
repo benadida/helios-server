@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-12-09 19:36+0200\n"
+"POT-Creation-Date: 2016-06-04 20:04+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -125,7 +125,8 @@ msgid "2-factor authentication"
 msgstr "Ταυτοποίηση 2-factor"
 
 msgid "2-factor authentication help text"
-msgstr "Προαιρετικά επιλέξτε μέθοδο 2ου βήματος/παράγοντα ταυτοποίησης ψηφοφόρων"
+msgstr ""
+"Προαιρετικά επιλέξτε μέθοδο 2ου βήματος/παράγοντα ταυτοποίησης ψηφοφόρων"
 
 msgid "Duplicate poll names are not allowed"
 msgstr "Δεν επιτρέπονται κάλπες με ίδιο όνομα"
@@ -180,23 +181,61 @@ msgstr "Μη έγκυρος κωδικός σύνδεσης"
 msgid "Invalid email or password"
 msgstr "Μη έγκυρη διεύθυνση email ή συνθηματικό"
 
+#, python-format
+msgid "Ballot choice %s"
+msgstr "Επιλογή %s"
+
+msgid "Invalid ballot"
+msgstr "Μη έγκυρη ψήφος"
+
+msgid ""
+"Candidates list. e.g. <br/><br/>\n"
+"FirstName, LastName, FatherName, SchoolA<br />\n"
+"FirstName, LastName, FatherName, SchoolB<br />\n"
+msgstr ""
+
+msgid "Election name"
+msgstr "Τίτλος ψηφοφορίας"
+
+msgid "Voting start date"
+msgstr "Έναρξη της ψηφοφορίας στις"
+
+msgid "e.g. 25/01/2015 07:00"
+msgstr "π.χ. 25/01/2015 07:00"
+
+msgid "Voting end date"
+msgstr "Λήξη της ψηφοφορίας"
+
+msgid "e.g. 25/01/2015 19:00"
+msgstr "π.χ. 25/01/2015 19:00"
+
+msgid "Institution name"
+msgstr "Ίδρυμα"
+
+msgid "Candidates"
+msgstr "Υποψήφιοι"
+
+msgid "Department limit"
+msgstr "Τμήματα"
+
+msgid "Ballots count"
+msgstr "Πλήθος ψήφων"
+
+#, python-format
+msgid "Candidate %s is invalid"
+msgstr "Ο υποψήφιος %s δεν είναι σωστός"
+
 msgid "This is a trial election"
 msgstr "Επιλέξτε το πεδίο αν πρόκειται για δοκιμαστική ψηφοφορία"
 
 msgid "Choose the type of the election"
 msgstr "επιλέξτε τον τύπο της ψηφοφορίας"
 
-msgid ""
-"Trustees list. e.g. <br/><br/>\n"
-"Giannhs Gianopoulos, giannhs@email.com<br />\n"
-"Kwstas Kwstopoulos, kwstas@email.com<br />\n"
+msgid "TRUSTEES_LIST_HELP_TEXT"
 msgstr ""
-"συμπληρώστε τη λίστα μελών της εφορευτικής επιτροπής με τα e-mails τους. Π.χ."
-"<br/><br/>Κωσταντίνος Κωστόπουλος, kwstopoulos@email.com<br/>Ιωάννης "
-"Γιαννόπουλος, giannhs@gmail.com<br/>\n"
-
-msgid "Election name"
-msgstr "Τίτλος ψηφοφορίας"
+"συμπληρώστε τη λίστα μελών της εφορευτικής επιτροπής με τα e-mails τους. "
+"Π.χ.<br/><br/>Κωσταντίνος Κωστόπουλος, kwstopoulos@email.com<br/>Ιωάννης "
+"Γιαννόπουλος, giannhs@gmail.com<br/>"
 
 msgid "Election description"
 msgstr "περιγράψτε σύντομα την ψηφοφορία"
@@ -240,9 +279,6 @@ msgstr "Επιβεβαιώστε την οριστικοποίηση της ψη
 
 msgid "Are you sure you want to delete the selected poll ?"
 msgstr "Επιβεβαιώστε τη διαγραφή της επιλεγμένης κάλπης"
-
-msgid "Institution name"
-msgstr "Ίδρυμα"
 
 msgid "Start"
 msgstr "Έναρξη"
@@ -591,6 +627,9 @@ msgstr "Η κάλπη δεν επιτρέπει σύνδεση με URL"
 
 msgid "You need to logout from your current account to access this view."
 msgstr "Πρέπει να αποσυνδεθείτε για να αποκτήσετε πρόσβαση σε αυτή την σελίδα"
+
+msgid "Invalid ballot data"
+msgstr "Μη έγκυρα δεδομένα ψήφοδελτίου"
 
 msgid "Invalid email address"
 msgstr "Μη έγκυρη διεύθυνση email"

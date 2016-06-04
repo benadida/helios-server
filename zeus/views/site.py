@@ -1,4 +1,7 @@
+import os
 import logging
+import uuid
+import json
 
 from collections import defaultdict
 from time import time
@@ -14,13 +17,99 @@ from django.utils.translation import ugettext_lazy as _, get_language
 from django.contrib import messages
 from django.conf import settings
 from django.views.i18n import set_language
+from django.forms.formsets import formset_factory
 
 from helios.view_utils import render_template
 from heliosauth.auth_systems.password import make_password
 from helios.models import User, Election
 from zeus.models import Institution
 
+from zeus.stv_count_reports import stv_count_and_report
+
+from django.core.servers.basehttp import FileWrapper
+from django.http import HttpResponse
+
 logger = logging.getLogger(__name__)
+
+
+def stv_count(request):
+
+    context = {'menu_active': 'home'}
+    session = request.session.get('stvcount', {})
+    results_generated = context['results'] = session.get('results', {})
+    el_data = None
+
+    do_count = True
+    if request.GET.get('form', None):
+        do_count = False
+        from zeus.forms import STVElectionForm, STVBallotForm
+        form = STVElectionForm()
+
+        ballots_form = None
+        if request.method == "POST":
+            form = STVElectionForm(request.POST, disabled=False)
+            if form.is_valid():
+                candidates = form.get_candidates()
+                class F(STVBallotForm):
+                    pass
+                setattr(F, 'candidates', candidates)
+                formset_count = int(form.cleaned_data.get('ballots_count'))
+                if not request.POST.get('submit_ballots', False):
+                    BallotsForm = formset_factory(F, extra=formset_count,
+                                                max_num=formset_count)
+                    ballots_form = BallotsForm()
+                else:
+                    BallotsForm = formset_factory(F, extra=0,
+                                                max_num=formset_count)
+                    ballots_form = BallotsForm(request.POST)
+                    if ballots_form.is_valid():
+                        el = form.get_data()
+                        for i, b in enumerate(ballots_form):
+                            choices = b.get_choices(i + 1)
+                            if not choices.get('votes'):
+                                continue
+                            el['ballots'].append(b.get_choices(i + 1))
+                        el_data = el
+                        do_count = True
+                    else:
+                        context['error'] = _("Invalid ballot data")
+
+
+        context['import'] = 1
+        context['form'] = form
+        context['ballots_form'] = ballots_form
+
+
+    if request.GET.get('reset', None):
+        del request.session['stvcount']
+        return HttpResponseRedirect(reverse('stv_count'))
+
+    if request.GET.get('download', None) and results_generated:
+        filename = results_generated.get(request.GET.get('download', 'pdf'), '/nofile')
+        if not os.path.exists(filename):
+            return HttpResponseRedirect(reverse('stv_count') + "?reset=1")
+
+        wrapper = FileWrapper(file(filename))
+        response = HttpResponse(wrapper, content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename=%s' % os.path.basename(filename)
+        response['Content-Length'] = os.path.getsize(filename)
+        return response
+
+    if request.method == "POST" and do_count:
+        el_data = el_data or json.loads(request.FILES.get('data').read())
+        _uuid = str(uuid.uuid4())
+        files = stv_count_and_report(_uuid, el_data)
+        json_file = os.path.join('/tmp', 'json-stv-results-%s' % _uuid)
+        with file(json_file, 'w') as f:
+            f.write(json.dumps(el_data))
+        files.append(('json', json_file))
+        session['results'] = dict(files)
+        request.session['stvcount'] = session
+        return HttpResponseRedirect(reverse('stv_count'))
+
+    request.session['stvcount'] = session
+    return render_template(request, "zeus/stvcount", context)
+
 
 
 def setlang(request):
