@@ -6,7 +6,7 @@
 
   <script language="javascript">
 {% if election.questions %}
-  QUESTIONS = {{questions_json|safe}};
+  QUESTIONS = JSON.parse("{{questions_json|escapejs}}");
 {% else %}
   QUESTIONS = [];
 {% endif %}
