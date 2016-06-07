@@ -25,3 +25,7 @@ reportlab==3.0
 #trunserver==0.0.2
 #django-debug-toolbar==0.9.4
 #ipython==0.13
+#pytest==2.6.4
+#pytest-cov==1.8.1
+#pytest-xdist==1.11
+#pytest-django==2.9.1

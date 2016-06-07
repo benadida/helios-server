@@ -16,14 +16,15 @@ LANGUAGE_CODE = 'en'
 
 ZEUS_TESTS_ELECTION_PARAMS = {}
 
+ZEUS_TEST_DB = os.environ.get('ZEUS_DB')
 if os.environ.get('ZEUS_TEST_DATABASE'):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'zeus_test',
-            'USER': 'zeus_test',
-            'PASSWORD': 'zeus_test',
-            'HOST': 'localhost',
+            'NAME': os.environ.get('ZEUS_DB', 'zeus_test'),
+            'USER': os.environ.get('ZEUS_DB_USER', 'zeus_test'),
+            'PASSWORD': os.environ.get('ZEUS_DB_PASSWORD', 'zeus_test'),
+            'HOST': os.environ.get('ZEUS_DB_HOST', 'localhost'),
             'PORT': 5432 # in memory post
         }
     }
@@ -93,3 +94,5 @@ HELIOS_CRYPTOSYSTEM_PARAMS['g'] = 1916706618702204743647841337288082431343867879
 if os.path.exists("/usr/share/fonts/truetype/ubuntu-font-family/"):
     ZEUS_RESULTS_FONT_REGULAR_PATH = '/usr/share/fonts/truetype/ubuntu-font-family/Ubuntu-R.ttf'
     ZEUS_RESULTS_FONT_BOLD_PATH = '/usr/share/fonts/truetype/ubuntu-font-family/Ubuntu-B.ttf'
+
+USE_X_SENDFILE = False

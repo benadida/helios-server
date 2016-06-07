@@ -292,6 +292,13 @@ DEMO_EMAILS_PER_IP = 1
 
 PAGINATION_DEFAULT_WINDOW = 3
 
+# apt-get install ttf-dejavu
+DEFAULT_REGULAR_FONT = "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf"
+DEFAULT_BOLD_FONT = "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans-Bold.ttf"
+
+ZEUS_RESULTS_FONT_REGULAR_PATH = DEFAULT_REGULAR_FONT
+ZEUS_RESULTS_FONT_BOLD_PATH = DEFAULT_BOLD_FONT
+
 # useful trick for custom settings
 try:
     from local_settings import *

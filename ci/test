@@ -1,0 +1,40 @@
+#!/bin/bash
+
+if [ -f /etc/ci_env ]; then source /etc/ci_env; fi;
+ARGS="$*"
+
+#export ZEUS_TESTS_VERBOSE=1
+export PYTHONPATH=.
+export ZEUS_TEST_DATABASE=${ZEUS_TEST_DATABASE-"1"}
+export ZEUS_DB=${DB_NAME-"zeus_test_db"}
+export ZEUS_DB_USER=${DB_USER-"$(whoami)"}
+export ZEUS_DB_PASSWORD=${DB_PASSWORD-""}
+export ZEUS_DB_HOST=${DB_HOST-"/var/run/postgresql/"}
+export DJANGO_SETTINGS_MODULE=test_settings
+export OUTDIR=${CI_REPORT_DIR-".test_report"}
+
+if [ ! -d "$OUTDIR" ]; then mkdir $OUTDIR; fi;
+if [ -f .coveragerc ]; then cat .coveragerc > test.coveragerc; fi;
+cat << EOF >> test.coveragerc
+[xml]
+output = $OUTDIR/coverage.xml
+
+[html]
+directory = $OUTDIR/coverage-html
+title = "Zeus Coverage $(date +%F.%R)"
+EOF
+
+py.test -vv --create-db \
+    --cov="." \
+    --cov-config=test.coveragerc \
+    --cov-report=xml \
+    --cov-report=html \
+    --junit-xml="$OUTDIR/junit.xml" \
+    --html "$OUTDIR/test-html/index.html" \
+    --capture="${CAPTURE-"fd"}" \
+    $ARGS
+
+EXIT_CODE=$?
+
+if [ -f test.coveragerc ]; then rm test.coveragerc; fi;
+exit $EXIT_CODE

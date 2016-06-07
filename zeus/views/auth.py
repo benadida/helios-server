@@ -1,5 +1,5 @@
 import logging
-import urllib2 
+import urllib2
 import urllib
 import json
 
@@ -246,7 +246,7 @@ def jwt_login(request):
     AUDIENCE = 'zeus' # add to settings
 
     try:
-        data = jwt.decode(token, verify=False)   
+        data = jwt.decode(token, verify=False)
     except (jwt.InvalidTokenError, ValueError) as error:
         messages.error(request, error)
         return redirect('home')
@@ -269,7 +269,7 @@ def jwt_login(request):
             messages.error(request, error)
             return redirect('home')
         allowed_polls.append(poll)
-    
+
     polls_data = []
     for poll in allowed_polls:
         data = [poll]
