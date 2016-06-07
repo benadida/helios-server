@@ -867,7 +867,7 @@ class STVBallotForm(forms.Form):
         return data
 
 
-candidates_help_text = _("""Candidates list. e.g. <br/><br/>
+candidates_help_text = _("""Candidates list. e.g., <br/><br/>
 FirstName, LastName, FatherName, SchoolA<br />
 FirstName, LastName, FatherName, SchoolB<br />
 """)
@@ -881,12 +881,30 @@ class STVElectionForm(forms.Form):
     institution = forms.CharField(label=_("Institution name"))
     candidates = forms.CharField(label=_("Candidates"), widget=forms.Textarea, help_text=candidates_help_text)
     eligibles_count = forms.ChoiceField(label=_("Eligibles count"), choices=eligibles_choices)
-    has_limit = forms.ChoiceField(label=_("Department limit"), initial=1, choices=limit_choices)
+    has_limit = forms.BooleanField(label=_("Department limit"), required=False)
     ballots_count = forms.CharField(label=_("Ballots count"))
 
     def __init__(self, *args, **kwargs):
-        disabled = kwargs.pop('disabled', False)
+        kwargs.pop('disabled', False)
         super(STVElectionForm, self).__init__(*args, **kwargs)
+
+    def clean_voting_starts(self):
+        d = self.cleaned_data.get('voting_starts') or ''
+        d = d.strip()
+        try:
+            datetime.strptime(d, "%d/%m/%Y %H:%M")
+        except:
+            raise ValidationError(_("Invalid date format"))
+        return d
+
+    def clean_voting_ends(self):
+        d = self.cleaned_data.get('voting_ends') or ''
+        d = d.strip()
+        try:
+            datetime.strptime(d, "%d/%m/%Y %H:%M")
+        except:
+            raise ValidationError(_("Invalid date format"))
+        return d
 
     def clean_candidates(self):
         candidates = self.cleaned_data.get('candidates').strip()
@@ -911,7 +929,7 @@ class STVElectionForm(forms.Form):
         data = self.cleaned_data
         ret = {}
         ret['elName'] = data.get('name')
-        ret['hasLimit'] = int(data.get('has_limit'))
+        ret['hasLimit'] = int(1 if data.get('has_limit') else 0)
         ret["votingStarts"] = data.get('voting_starts')
         ret["votingEnds"] = data.get('voting_ends')
         ret["institution"] = data.get('institution')
