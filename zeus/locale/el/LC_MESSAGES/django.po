@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-06-07 18:25+0300\n"
+"POT-Creation-Date: 2016-06-07 20:48+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -189,10 +189,13 @@ msgid "Invalid ballot"
 msgstr "Μη έγκυρη ψήφος"
 
 msgid ""
-"Candidates list. e.g. <br/><br/>\n"
+"Candidates list. e.g., <br/><br/>\n"
 "FirstName, LastName, FatherName, SchoolA<br />\n"
 "FirstName, LastName, FatherName, SchoolB<br />\n"
 msgstr ""
+"Λίστα υποψηφίων. π.x. <br/><br/>\n"
+"Όνομα, Επώνυμο, Πατρώνυμο, ΣχολήΑ<br />\n"
+"Όνομα, Επώνυμο, Πατρώνυμο, ΣχολήΒ<br />\n"
 
 msgid "Election name"
 msgstr "Τίτλος ψηφοφορίας"
@@ -216,10 +219,13 @@ msgid "Candidates"
 msgstr "Υποψήφιοι"
 
 msgid "Department limit"
-msgstr "Τμήματα"
+msgstr "Κανόνας των '2'"
 
 msgid "Ballots count"
 msgstr "Πλήθος ψήφων"
+
+msgid "Invalid date format"
+msgstr "Μη έγκυρη μορφή ημερομηνίας."
 
 #, python-format
 msgid "Candidate %s is invalid"
