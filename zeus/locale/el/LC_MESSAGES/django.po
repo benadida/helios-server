@@ -95,13 +95,13 @@ msgid "enable limiting the elections from the same constituency"
 msgstr "ενεργοποίηση περιορισμού εκλεγόμενων από την ίδια περιφέρεια"
 
 msgid "Limit elected per constituency"
-msgstr "Περιορισμός εκλεγόμενων ανά περιφέρεια"
+msgstr "Περιορισμός εκλεγόμενων ανά Σχολή ή Ανεξάρτητο Τμήμα"
 
 msgid "maximum number of elected from the same constituency"
-msgstr "μέγιστος αριθμός εκλεγόμενων από την ίδια περιφέρεια"
+msgstr "μέγιστος αριθμός εκλεγόμενων από την ίδια Σχολή ή Ανεξάρτητο Τμήμα"
 
 msgid "Constituency limit"
-msgstr "Όριο ανά περιφέρεια"
+msgstr "Όριο ανά Σχολή ή Ανεξάρτητο Τμήμα"
 
 msgid "This field is required."
 msgstr "Αυτό το πεδίο είναι απαραίτητο."
