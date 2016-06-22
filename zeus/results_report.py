@@ -257,7 +257,7 @@ def build_stv_doc(title, name, institution_name, voting_start, voting_end,
     with translation.override(language[0]):
         pageinfo = _("Zeus Elections - Poll Results")
         title = _('Results')
-        DATE_FMT = "%d/%m/%Y %H:%S"
+        DATE_FMT = "%d/%m/%Y %H:%M"
         if isinstance(voting_start, datetime.datetime):
             voting_start = _('Start: %(date)s') % {'date':
             voting_start.strftime(DATE_FMT)}
@@ -394,7 +394,7 @@ def build_doc(title, name, institution_name, voting_start, voting_end,
     with translation.override(language[0]):
         pageinfo = _("Zeus Elections - Poll Results")
         title = _('Results')
-        DATE_FMT = "%d/%m/%Y %H:%S"
+        DATE_FMT = "%d/%m/%Y %H:%M"
         if isinstance(voting_start, datetime.datetime):
             voting_start = _('Start: %(date)s') % {'date':
             voting_start.strftime(DATE_FMT)}

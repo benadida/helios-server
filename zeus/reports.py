@@ -141,7 +141,7 @@ def uwriterow(uni_string, csvout):
 
 def make_csv_intro(writerow, election, lang):
     with translation.override(lang):
-        DATE_FMT = "%d/%m/%Y %H:%S"
+        DATE_FMT = "%d/%m/%Y %H:%M"
         voting_start = election.voting_starts_at.strftime(DATE_FMT)
         voting_end = election.voting_ends_at.strftime(DATE_FMT)
         extended_until = ""
