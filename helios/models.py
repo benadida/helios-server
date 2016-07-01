@@ -1666,6 +1666,7 @@ class Voter(HeliosModel, VoterFeatures):
 
   last_sms_send_at = models.DateTimeField(null=True)
   last_sms_code = models.CharField(max_length=100, blank=True, null=True)
+  last_sms_status = models.CharField(max_length=100, blank=True, null=True)
   last_email_send_at = models.DateTimeField(null=True)
   last_booth_invitation_send_at = models.DateTimeField(null=True)
   last_visit = models.DateTimeField(null=True)
