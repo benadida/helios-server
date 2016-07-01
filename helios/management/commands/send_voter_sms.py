@@ -8,7 +8,7 @@ from django.core.management.base import BaseCommand, CommandError
 
 from heliosauth.models import *
 from heliosauth.auth_systems.password import make_password
-from helios.models import Voter, Poll, Election, csv_reader
+from helios.models import Voter, Poll, Election
 from zeus import utils
 from zeus import mobile as mobile_api
 
@@ -155,7 +155,7 @@ class Command(BaseCommand):
             mobiles_map = {}
             with open(mobiles_map_file, 'r') as f:
                 data = f.read()
-            reader = csv_reader(data, min_fields=3, max_fields=4)
+            reader = utils.CSVReader(data, min_fields=3, max_fields=4)
             for fields in reader:
                 voter_id = fields[0].strip()
                 email = fields[1].strip()
@@ -216,7 +216,7 @@ class Command(BaseCommand):
                     print "No SMS notification for %s" % (voter.zeus_string)
                     continue
 
-                res = task(voter.last_sms_code, election.uuid)
+                res = task(voter.pk, voter.last_sms_code, election.uuid)
                 print "%s: %s" % (voter.zeus_string, res)
                 continue
 
