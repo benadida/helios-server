@@ -16,6 +16,7 @@ from django.db import connection
 from django.db.models.query import EmptyQuerySet
 from django.db.models import Q, Max
 from django.core.context_processors import csrf
+from django.views.decorators.csrf import csrf_exempt
 from django.core.validators import validate_email
 from django.utils.html import mark_safe, escape
 from django.shortcuts import redirect
@@ -1169,3 +1170,27 @@ def results_json(request, election, poll):
     data = poll.zeus.get_results()
     return HttpResponse(json.dumps(data, default=common_json_handler),
                         mimetype="application/json")
+
+
+@csrf_exempt
+@auth.election_view(check_access=False)
+@require_http_methods(["POST"])
+def sms_delivery(request, election, poll):
+    try:
+        resp = json.loads(request.body)
+    except ValueError:
+        raise PermissionDenied
+
+    ip_addr = request.META.get('REMOTE_ADDR', '')
+    error = resp.get('error', None) or None
+    try:
+        voter = poll.voters.get(last_sms_code=resp['id'])
+        poll.logger.info(
+            "Mobile delivery status received from '%r': %r" % (ip_addr, resp))
+        status = resp.get('status', 'unknown')
+        if error:
+            status = "%s:%r:r" % ("ERROR", status, resp)
+        voter.last_sms_status = status
+    except Voter.DoesNotExist:
+        pass
+    return HttpResponse("OK")

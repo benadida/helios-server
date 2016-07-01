@@ -48,6 +48,7 @@ poll_patterns += patterns('zeus.views.poll',
     url(r'^results-(?P<language>.*).csv$', 'results_file', name='election_poll_results_csv',
         kwargs={'ext': 'csv'}),
     url(r'^proofs.zip$', 'zeus_proofs', name='election_poll_zeus_proofs'),
+    url(r'^sms_delivery$', 'sms_delivery', name='election_poll_sms_delivery'),
 )
 
 urlpatterns = patterns('zeus.views.poll',
