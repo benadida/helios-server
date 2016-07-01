@@ -20,6 +20,7 @@ class Client(object):
 
     apiurl = "https://mybsms.gr/ws/send.json"
     id = "mybsms"
+    remote_status = False
 
     def __init__(self, from_mobile, user, password, dlr_url):
         self.user = user

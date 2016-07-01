@@ -13,6 +13,7 @@ from helios.view_utils import render_template_raw
 
 from django.template import Context, Template, loader
 from django.utils.translation import ugettext_lazy as _
+from django.core.urlresolvers import reverse
 from django.utils import translation
 from django.core.mail import send_mail, EmailMessage
 from django.conf import settings
@@ -321,7 +322,8 @@ def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
     if not voter.voter_mobile and not override_mobile:
         raise Exception("Voter mobile field not set")
 
-    client = mobile.get_client(voter.poll.election.uuid)
+    dlr_url = settings.SECURE_URL_HOST + reverse('election_poll_sms_delivery', args=(voter.poll.election.uuid, voter.poll.uuid))
+    client = mobile.get_client(voter.poll.election.uuid, dlr_url=dlr_url)
     message = ""
     context = Context({
         'voter': voter,
@@ -372,13 +374,19 @@ def send_voter_sms(voter_id, tpl, override_mobile=None, resend=False,
         if sent:
             # store last notification date
             voter.last_sms_send_at = datetime.datetime.now()
-            voter.last_sms_code = error_or_code
+            voter.last_sms_code = client.id + ":" + error_or_code
+            if not client.remote_status:
+                voter.last_sms_status = 'sent'
             voter.save()
 
     return sent, error_or_code
 
 
 @task(ignore_result=False)
-def check_sms_status(code, election_uuid=None):
+def check_sms_status(voter_id, code, election_uuid=None):
+    voter = Voter.objects.select_related().get(pk=voter_id)
+    if voter.last_sms_status:
+        return voter.last_sms_status
+
     client = mobile.get_client(election_uuid)
     return client.status(code)

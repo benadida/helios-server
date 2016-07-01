@@ -21,6 +21,7 @@ class Loco(object):
 
     apiurl = "http://www.locosms.gr/xmlsend.php"
     report_apiurl = "http://www.locosms.gr/input.php"
+    remote_status = True
     id = "loco"
 
     STATUS_MAP = {
