@@ -21,6 +21,7 @@ class Loco(object):
 
     apiurl = "http://www.locosms.gr/xmlsend.php"
     report_apiurl = "http://www.locosms.gr/input.php"
+    id = "loco"
 
     STATUS_MAP = {
         '0': 'Message in queue',
@@ -60,7 +61,7 @@ class Loco(object):
             'ta': 'ds',
             'slid': msgid,
         }
-	
+
         post_data = urllib.urlencode(params)
         http_response = urllib.urlopen(self.report_apiurl, data=post_data)
         resp = http_response.read()
@@ -70,7 +71,7 @@ class Loco(object):
     def send(self, mobile, msg, fields={}, uid=None):
         if not uid:
             uid = unicode(uuid.uuid4())
-        
+
         msg = self._cosntruct(uid, mobile, msg, fields)
         _msg = etree.tostring(msg)
         http_response = urllib.urlopen(self.apiurl, data=_msg)
