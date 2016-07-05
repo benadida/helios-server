@@ -18,6 +18,7 @@ urlpatterns = patterns('',
     # edit election params
     (r'^/edit$', one_election_edit),
     (r'^/schedule$', one_election_schedule),
+    (r'^/extend$', one_election_extend),
     (r'^/archive$', one_election_archive),
 
     # badge

@@ -29,6 +29,9 @@ class ElectionForm(forms.Form):
   voting_ends_at = SplitDateTimeField(help_text = 'UTC date and time when voting ends',
                                    widget=SplitSelectDateTimeWidget, required=False)
 
+class ElectionTimeExtensionForm(forms.Form):
+  voting_extended_until = SplitDateTimeField(help_text = 'UTC date and time voting extended to',
+                                   widget=SplitSelectDateTimeWidget, required=False)
   
 class EmailVotersForm(forms.Form):
   subject = forms.CharField(max_length=80)
