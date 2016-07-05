@@ -157,8 +157,8 @@ class SelectTimeWidget(Widget):
             elif meridiem.lower().startswith('a') and int(h) == 12:
                 h = 0
         
-        if (int(h) == 0 or h) and m and s:
-            return '%s:%s:%s' % (h, m, s)
+        if (int(h) == 0 or h) and m:
+            return '%s:%s' % (h, m)
 
         return data.get(name, None)
 
@@ -173,6 +173,12 @@ class SplitSelectDateTimeWidget(MultiWidget):
         """ pass all these parameters to their respective widget constructors..."""
         widgets = (SelectDateWidget(attrs=attrs, years=years), SelectTimeWidget(attrs=attrs, hour_step=hour_step, minute_step=minute_step, twelve_hr=twelve_hr))
         super(SplitSelectDateTimeWidget, self).__init__(widgets, attrs)
+
+    # See https://stackoverflow.com/questions/4324676/django-multiwidget-subclass-not-calling-decompress
+    def value_from_datadict(self, data, files, name):
+        if data.get(name, None) is None:
+            return [widget.value_from_datadict(data, files, name + '_%s' % i) for i, widget in enumerate(self.widgets)]
+        return self.decompress(data.get(name, None))
 
     def decompress(self, value):
         if value:
