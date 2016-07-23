@@ -247,6 +247,9 @@ Anyone can vote in this election.
 
 {% endif %}
 
+{% if admin_p and election.voting_ends_at and not election.tallying_started_at %}
+<br /><a href="{% url "helios.views.one_election_extend" election.uuid %}">extend voting</a><br />
+{% endif %}
 
 <div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">
 <a href="#" onclick="$('#auditbody').slideToggle(250);">Audit Info</a>

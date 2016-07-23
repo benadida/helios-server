@@ -23,14 +23,15 @@ class ElectionForm(forms.Form):
   if settings.ALLOW_ELECTION_INFO_URL:
     election_info_url = forms.CharField(required=False, initial="", label="Election Info Download URL", help_text="the URL of a PDF document that contains extra election information, e.g. candidate bios and statements")
   
-
-class ElectionTimesForm(forms.Form):
   # times
   voting_starts_at = SplitDateTimeField(help_text = 'UTC date and time when voting begins',
-                                   widget=SplitSelectDateTimeWidget)
+                                   widget=SplitSelectDateTimeWidget, required=False)
   voting_ends_at = SplitDateTimeField(help_text = 'UTC date and time when voting ends',
-                                   widget=SplitSelectDateTimeWidget)
+                                   widget=SplitSelectDateTimeWidget, required=False)
 
+class ElectionTimeExtensionForm(forms.Form):
+  voting_extended_until = SplitDateTimeField(help_text = 'UTC date and time voting extended to',
+                                   widget=SplitSelectDateTimeWidget, required=False)
   
 class EmailVotersForm(forms.Form):
   subject = forms.CharField(max_length=80)

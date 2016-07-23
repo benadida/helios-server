@@ -254,6 +254,23 @@ def one_election_edit(request, election):
 def one_election_schedule(request, election):
   return HttpResponse("foo")
 
+@election_admin()
+def one_election_extend(request, election):
+  if request.method == "GET":
+    election_form = forms.ElectionTimeExtensionForm({'voting_extended_until': election.voting_extended_until})
+  else:
+    check_csrf(request)
+    election_form = forms.ElectionTimeExtensionForm(request.POST)
+
+    if election_form.is_valid():
+      clean_data = election_form.cleaned_data
+      election.voting_extended_until = clean_data['voting_extended_until']
+      election.save()
+        
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
+  
+  return render_template(request, "election_extend", {'election_form' : election_form, 'election' : election})
+
 @election_view()
 @return_json
 def one_election(request, election):
