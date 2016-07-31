@@ -10,7 +10,7 @@ from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied
 from django.http import *
-from django.db import transaction
+from django.db import transaction, IntegrityError
 
 from mimetypes import guess_type
 
@@ -205,15 +205,11 @@ def election_new(request):
 
         user = get_user(request)
         election_params['admin'] = user
-        
-        election, created_p = Election.get_or_create(**election_params)
-      
-        if created_p:
-          # add Helios as a trustee by default
+        try:
+          election = Election.objects.create(**election_params)
           election.generate_trustee(ELGAMAL_PARAMS)
-          
           return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
-        else:
+        except IntegrityError:
           error = "An election with short name %s already exists" % election_params['short_name']
       else:
         error = "No special characters allowed in the short name."
@@ -243,11 +239,12 @@ def one_election_edit(request, election):
       clean_data = election_form.cleaned_data
       for attr_name in RELEVANT_FIELDS:
         setattr(election, attr_name, clean_data[attr_name])
+      try:
+        election.save()
+        return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
+      except IntegrityError:
+        error = "An election with short name %s already exists" % clean_data['short_name']
 
-      election.save()
-        
-      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
-  
   return render_template(request, "election_edit", {'election_form' : election_form, 'election' : election, 'error': error})
 
 @election_admin(frozen=False)

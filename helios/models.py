@@ -45,7 +45,7 @@ class Election(HeliosModel):
   # later versions, at some point will upgrade to "2011/01/Election"
   datatype = models.CharField(max_length=250, null=False, default="legacy/Election")
   
-  short_name = models.CharField(max_length=100)
+  short_name = models.CharField(max_length=100, unique=True)
   name = models.CharField(max_length=250)
   
   ELECTION_TYPES = (
