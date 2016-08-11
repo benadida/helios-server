@@ -1183,14 +1183,17 @@ def sms_delivery(request, election, poll):
 
     ip_addr = request.META.get('REMOTE_ADDR', '')
     error = resp.get('error', None) or None
+    code = "mybsms:" + resp['id']
     try:
-        voter = poll.voters.get(last_sms_code=resp['id'])
+        voter = poll.voters.get(last_sms_code=code)
         poll.logger.info(
             "Mobile delivery status received from '%r': %r" % (ip_addr, resp))
         status = resp.get('status', 'unknown')
         if error:
             status = "%s:%r:r" % ("ERROR", status, resp)
         voter.last_sms_status = status
+        voter.save()
     except Voter.DoesNotExist:
+        poll.logger.error("Cannot resolve voter for sms delivery code: %r", code)
         pass
     return HttpResponse("OK")
