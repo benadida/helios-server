@@ -8,6 +8,7 @@
 <li> <a href="{% url "helios.stats_views.elections" %}">{% trans "elections" %}</a></li>
 <li> <a href="{% url "helios.stats_views.recent_votes" %}">{% trans "recent votes" %}</a></li>
 <li> <a href="{% url "helios.stats_views.recent_problem_elections" %}">{% trans "recent problem elections" %}</a></li>
+<li> <a href="{% url "helios.stats_views.admin_actions" %}">{% trans "Admin actions" %}</a></li>
 </ul>
 
 <p><b>{{num_votes_in_queue}}</b> {% trans "votes in queue." %} {% if num_votes_in_queue %}[<a href="{% url "helios.stats_views.force_queue" %}">{% trans "force it" %}</a>]{% endif %}</p>

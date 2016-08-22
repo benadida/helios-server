@@ -12,6 +12,8 @@
                 <li>
                   <a class="navbar-brand admin_menu" style="color:#FFFFFF;" href="{% url "heliosinstitution.views.dashboard" %}">Admin</a>
                 </li>
+	       {% elif user and user.admin_p %}
+		<li><a class="navbar-brand " style="color:#FFFFFF;" href="{% url "helios.stats_views.home" %}">Admin</a></li>
               {% endif %}
               {% if user.user_type != "shibboleth" %} 
                 <li>

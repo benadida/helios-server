@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext_lazy as _, string_concat
 
 from helios_auth.models import User
 from helios_auth.jsonfield import JSONField
@@ -23,8 +23,9 @@ class HeliosLog(models.Model):
 		choices = ACTION_TYPES)
 
 	def __unicode__(self):
-			return (self.user.name + ' - ' + self.action_type + _(' object of ')
-			 + self.model)
+		obj_str = _(' object of ')
+		return u'%s - %s%s%s' % (self.user.name, self.action_type, obj_str,
+			self.model)
 
 	@property
 	def pretty_type(self):

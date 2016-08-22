@@ -6,6 +6,8 @@ from django.core.urlresolvers import reverse
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.http import *
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_http_methods
 from django.db import transaction
 from django.db.models import *
 
@@ -66,3 +68,17 @@ def recent_problem_elections(request):
   elections_with_problems = Election.objects.filter(frozen_at = None, created_at__gt = datetime.datetime.utcnow() - datetime.timedelta(days=10), created_at__lt = datetime.datetime.utcnow() - datetime.timedelta(days=1) )
 
   return render_template(request, "stats_problem_elections", {'elections' : elections_with_problems})
+
+
+@login_required
+@require_http_methods(["GET",])
+def admin_actions(request):
+    user = get_user(request)
+    page = int(request.GET.get('page', 1))
+    limit = int(request.GET.get('limit', 25))
+    actions = HeliosLog.objects.filter(user=user).order_by('-at')
+    actions_paginator = Paginator(actions, limit)
+    actions_page = actions_paginator.page(page)
+
+    return render_template(request, "stats_admin_actions", {'actions' : actions_page.object_list, 'actions_page': actions_page,
+                                                      'limit' : limit})
