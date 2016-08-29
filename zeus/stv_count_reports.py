@@ -10,7 +10,7 @@ from datetime import datetime
 
 def stv_count_and_report(uuid, el_data, base_path="/tmp/"):
     eligibles = el_data['numOfEligibles']
-    hasLimit = el_data['hasLimit']
+    elected_limit = el_data['electedLimit']
     ballots = el_data['ballots']
     input_ballots = []
     elName = el_data.get("elName")
@@ -60,7 +60,7 @@ def stv_count_and_report(uuid, el_data, base_path="/tmp/"):
     count_results = count_stv(input_ballots, eligibles,
                                 droop=False,
                                 constituencies=constituencies,
-                                quota_limit=2 if hasLimit else 0,
+                                quota_limit=elected_limit if elected_limit else 0,
                                 rnd_gen=None, logger=stv_logger)
 
     results = list(count_results[0:2])

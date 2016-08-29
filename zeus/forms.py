@@ -881,7 +881,7 @@ class STVElectionForm(forms.Form):
     institution = forms.CharField(label=_("Institution name"))
     candidates = forms.CharField(label=_("Candidates"), widget=forms.Textarea, help_text=candidates_help_text)
     eligibles_count = forms.ChoiceField(label=_("Eligibles count"), choices=eligibles_choices)
-    has_limit = forms.BooleanField(label=_("Department limit"), required=False)
+    elected_limit = forms.IntegerField(label=_("Maximum elected per department"), required=False)
     ballots_count = forms.CharField(label=_("Ballots count"))
 
     def __init__(self, *args, **kwargs):
@@ -929,7 +929,7 @@ class STVElectionForm(forms.Form):
         data = self.cleaned_data
         ret = {}
         ret['elName'] = data.get('name')
-        ret['hasLimit'] = int(1 if data.get('has_limit') else 0)
+        ret['electedLimit'] = data.get('elected_limit') or 0
         ret["votingStarts"] = data.get('voting_starts')
         ret["votingEnds"] = data.get('voting_ends')
         ret["institution"] = data.get('institution')
