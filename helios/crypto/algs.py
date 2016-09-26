@@ -266,7 +266,7 @@ class EGPublicKey:
       if not (1 < self.g < self.p-1):
         raise Exception("g out of range.")
 
-      if not (1 < self.y < p-1):
+      if not (1 < self.y < self.p-1):
         raise Exception("y out of range.")
 
       if (pow(self.y,self.q,self.p)!=1):
