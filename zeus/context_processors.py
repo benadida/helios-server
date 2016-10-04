@@ -5,6 +5,7 @@ from zeus import messages
 def user(request):
     data = {}
     user = request.zeususer
+    key = None
     if not user.is_authenticated():
         return data
     if user.is_admin:
@@ -13,6 +14,9 @@ def user(request):
         key = 'trustee'
     if user.is_voter:
         key = 'voter'
+    if key is None:
+        user.logout(request)
+        return data
     data[key] = user._user
     data['user'] = user
     return data
