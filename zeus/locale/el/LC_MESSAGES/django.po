@@ -537,7 +537,6 @@ msgstr "Προσθήκη ερωτήσεων στην ψηφοφορία"
 msgid "Too many choices"
 msgstr "Περισσότερες επιλογές από το επιτρεπτό"
 
-#, python-brace-format
 msgid "Question '{0}' requires at least {1} choices."
 msgstr "Η ερώτηση '{0}' απαιτεί τουλάχιστον {1} επιλογές."
 
@@ -666,3 +665,6 @@ msgstr ""
 
 msgid "The requested page was not found."
 msgstr "Η σελίδα που ζητήσατε δεν βρέθηκε."
+
+#~ msgid "Department limit"
+#~ msgstr "Κανόνας των '2'"
