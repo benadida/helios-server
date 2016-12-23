@@ -103,7 +103,8 @@ SESSION_COOKIE_HTTPONLY = True
 # one week HSTS seems like a good balance for MITM prevention
 if (get_from_env('HSTS', '0') == '1'):
     SECURE_HSTS_SECONDS = 3600 * 24 * 7
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # not doing subdomains for now cause that is not likely to be necessary and can screw things up.
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
