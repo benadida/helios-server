@@ -1,0 +1,43 @@
+version: '2'
+services:
+  db:
+    environment:
+      - POSTGRES_USER=helios
+      - POSTGRES_PASSWORD
+    image: postgres
+    volumes:
+      - database:/var/lib/postgresql/data
+  web:
+    build:
+      context: .
+      args:
+        - USER_ID
+    environment:
+      - PGHOST=db
+      - WELCOME_MESSAGE
+    command: /home/helios/.local/bin/gunicorn wsgi:application -b 0.0.0.0:$PORT -w 8
+    volumes:
+      - .:/home/helios/server
+      - .pipcache:/home/helios/.cache/pip
+      - .pip:/home/helios/.local
+    ports:
+      - "9000:9000"
+    depends_on:
+      - db
+
+  worker:
+    build:
+      context: .
+      args:
+        - USER_ID
+    environment:
+      - PGHOST=db
+    command: python manage.py celeryd -E -B --beat --concurrency=1
+    volumes:
+      - .:/home/helios/server
+      - .pipcache:/home/helios/.cache/pip
+      - .pip:/home/helios/.local
+    depends_on:
+      - db
+volumes:
+  database:
