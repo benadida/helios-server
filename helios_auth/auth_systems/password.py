@@ -13,6 +13,8 @@ import logging
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = False
 
+# display tweaks
+LOGIN_MESSAGE = "Log in with my System Account"
 
 def create_user(username, password, name = None):
   from helios_auth.models import User
