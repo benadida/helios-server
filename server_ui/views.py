@@ -41,9 +41,6 @@ def home(request):
     elections_voted = None
  
   auth_systems = copy.copy(settings.AUTH_ENABLED_AUTH_SYSTEMS)
-  try:
-    auth_systems.remove('password')
-  except: pass
 
   login_box = auth_views.login_box_raw(request, return_url="/", auth_systems=auth_systems)
 
