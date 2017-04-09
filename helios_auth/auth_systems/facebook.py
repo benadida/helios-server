@@ -43,7 +43,7 @@ def get_auth_url(request, redirect_url):
   return facebook_url('/oauth/authorize', {
       'client_id': APP_ID,
       'redirect_uri': redirect_url,
-      'scope': 'publish_stream,email,user_groups'})
+      'scope': 'email,user_groups'})
     
 def get_user_info_after_auth(request):
   args = facebook_get('/oauth/access_token', {
