@@ -15,6 +15,7 @@
 {% endif %}
 {% if admin_p %}
 &nbsp;{% if election.is_archived %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=0">unarchive it</a>{% else %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=1">archive it</a>{% endif %}
+<a class="small button" href="{% url "helios.views.one_election_copy" election_uuid=election.uuid %}">copy</a>
 {% endif %}
 <br />
 {% if admin_p %}

@@ -920,6 +920,40 @@ def one_election_archive(request, election):
   election.save()
 
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
+  
+@election_admin()
+def one_election_copy(request, election):
+  # FIXME: make this a POST and CSRF protect it
+  # check_csrf(request)
+  
+  # new short name by uuid, because it's easier and the user can change it.
+  new_uuid = uuid.uuid4()
+  new_short_name = new_uuid
+  
+  new_election = Election.objects.create(
+    admin = election.admin,
+    uuid = new_uuid,
+    datatype = election.datatype,
+    short_name = new_short_name,
+    name = "Copy of " + election.name,
+    election_type = election.election_type,
+    private_p = election.private_p,
+    description = election.description,
+    questions = election.questions,
+    eligibility = election.eligibility,
+    openreg = election.openreg,
+    use_voter_aliases = election.use_voter_aliases,
+    use_advanced_audit_features = election.use_advanced_audit_features,
+    randomize_answer_order = election.randomize_answer_order,
+    registration_starts_at = election.registration_starts_at,
+    voting_starts_at = election.voting_starts_at,
+    voting_ends_at = election.voting_ends_at,
+    cast_url = settings.SECURE_URL_HOST + reverse(one_election_cast, args=[new_uuid])
+  )
+  
+
+  new_election.generate_trustee(ELGAMAL_PARAMS)
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[new_election.uuid]))
 
 # changed from admin to view because 
 # anyone can see the questions, the administration aspect is now
