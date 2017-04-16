@@ -20,6 +20,7 @@ urlpatterns = patterns('',
     (r'^/schedule$', one_election_schedule),
     (r'^/extend$', one_election_extend),
     (r'^/archive$', one_election_archive),
+    (r'^/copy$', one_election_copy),
 
     # badge
     (r'^/badge$', election_badge),
