@@ -911,8 +911,7 @@ class Voter(HeliosModel):
     """
     if not self.vote_hash:
       return None
-    
-    return CastVote.objects.get(vote_hash = self.vote_hash).vote_tinyhash
+    return CastVote.get_by_voter(self)[0].vote_tinyhash
 
   @property
   def election_uuid(self):
