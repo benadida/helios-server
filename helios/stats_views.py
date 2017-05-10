@@ -47,8 +47,10 @@ def elections(request):
   elections_paginator = Paginator(elections, limit)
   elections_page = elections_paginator.page(page)
 
+  total_elections = elections_paginator.count
+
   return render_template(request, "stats_elections", {'elections' : elections_page.object_list, 'elections_page': elections_page,
-                                                      'limit' : limit, 'q': q})
+                                                      'limit' : limit, 'total_elections': total_elections, 'q': q})
     
 def recent_votes(request):
   user = require_admin(request)
