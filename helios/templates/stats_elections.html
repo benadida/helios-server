@@ -5,14 +5,22 @@
 <h1>Elections</h1>
 
 <p>
+<form method="get" action="{% url "helios.stats_views.elections" %}">
+<b>search</b>: <input type="text" name="q" value="{{q}}"/> 
+<input class="small button" type="submit" value="search" /> <a class="small button" href="?">clear search</a>
+</form>
+</p>
+
+
+<p>
 {% if elections_page.has_previous %}
-<a href="?page={{elections_page.previous_page_number}}&limit={{limit}}">previous {{limit}}</a> &nbsp;&nbsp;
+<a href="?page={{elections_page.previous_page_number}}&limit={{limit}}&q={{q|urlencode}}">previous {{limit}}</a> &nbsp;&nbsp;
 {% endif %}
 
-Elections {{elections_page.start_index}} - {{elections_page.end_index}}&nbsp;&nbsp;
+Elections {{elections_page.start_index}} - {{elections_page.end_index}} (of {{total_elections}})&nbsp;&nbsp;
 
 {% if elections_page.has_next %}
-<a href="?page={{elections_page.next_page_number}}&limit={{limit}}">next {{limit}}</a> &nbsp;&nbsp;
+<a href="?page={{elections_page.next_page_number}}&limit={{limit}}&q={{q|urlencode}}">next {{limit}}</a> &nbsp;&nbsp;
 {% endif %}
 </p>
 

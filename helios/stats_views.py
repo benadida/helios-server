@@ -40,13 +40,15 @@ def elections(request):
 
   page = int(request.GET.get('page', 1))
   limit = int(request.GET.get('limit', 25))
+  q = request.GET.get('q','')
 
-  elections = Election.objects.all().order_by('-created_at')
+  elections = Election.objects.filter(name__icontains = q)
+  elections.all().order_by('-created_at')
   elections_paginator = Paginator(elections, limit)
   elections_page = elections_paginator.page(page)
 
   return render_template(request, "stats_elections", {'elections' : elections_page.object_list, 'elections_page': elections_page,
-                                                      'limit' : limit})
+                                                      'limit' : limit, 'q': q})
     
 def recent_votes(request):
   user = require_admin(request)
