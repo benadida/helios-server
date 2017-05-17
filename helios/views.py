@@ -870,12 +870,28 @@ def voter_delete(request, election, voter_uuid):
 
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
   if voter:
-    voter.delete()
-
-  if election.frozen_at:
-    # log it
-    election.append_log("Voter %s/%s removed after election frozen" % (voter.voter_type,voter.voter_id))
     
+    if (voter.vote_hash):
+      # send email to voter
+      subject = "Vote removed"
+      body = """
+
+Your vote were removed from the election "%s".
+  
+--
+Helios  
+""" % (election.name)
+      voter.user.send_message(subject, body)
+
+      # log it
+      election.append_log("Voter %s/%s and your vote were removed after election frozen" % (voter.voter_type,voter.voter_id))
+
+    elif election.frozen_at:
+      # log it
+      election.append_log("Voter %s/%s removed after election frozen" % (voter.voter_type,voter.voter_id))
+
+    voter.delete()
+          
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
 
 @election_admin(frozen=False)
