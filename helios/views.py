@@ -871,7 +871,7 @@ def voter_delete(request, election, voter_uuid):
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
   if voter:
     
-    if (voter.vote_hash):
+    if voter.vote_hash:
       # send email to voter
       subject = "Vote removed"
       body = """
@@ -884,7 +884,7 @@ Helios
       voter.user.send_message(subject, body)
 
       # log it
-      election.append_log("Voter %s/%s and your vote were removed after election frozen" % (voter.voter_type,voter.voter_id))
+      election.append_log("Voter %s/%s and their vote were removed after election frozen" % (voter.voter_type,voter.voter_id))
 
     elif election.frozen_at:
       # log it
