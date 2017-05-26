@@ -32,7 +32,10 @@ class ElectionForm(forms.Form):
 class ElectionTimeExtensionForm(forms.Form):
   voting_extended_until = SplitDateTimeField(help_text = 'UTC date and time voting extended to',
                                    widget=SplitSelectDateTimeWidget, required=False)
-  
+
+class ElectionDeleteConfirmForm(forms.Form):
+  short_name_confirm = forms.CharField(label='Confirm the short name', max_length=40)
+
 class EmailVotersForm(forms.Form):
   subject = forms.CharField(max_length=80)
   body = forms.CharField(max_length=4000, widget=forms.Textarea)

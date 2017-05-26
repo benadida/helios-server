@@ -349,6 +349,33 @@ def one_election_view(request, election):
                           'show_result': show_result,
                           'test_cookie_url': test_cookie_url})
 
+@election_admin()
+def one_election_delete(request, election):
+  if election.num_cast_votes>0:
+    return HttpResponseForbidden('This election can not be excluded.')
+
+  if request.method == "GET":
+    confirm_form = forms.ElectionDeleteConfirmForm()
+    return render_template(request, 'election_delete',
+                           {'election' : election, 
+                            'confirm_form' : confirm_form})
+  else:
+    check_csrf(request)
+    confirm_form = forms.ElectionDeleteConfirmForm(request.POST)    
+    error = ""
+    
+    if confirm_form.is_valid():
+      if election.short_name != request.POST['short_name_confirm']:
+        error = "Enter the Identifier correctly"
+      else:
+        election.delete()
+        return HttpResponseRedirect("/helios/stats/elections")
+    
+    return render_template(request, 'election_delete',
+                           {'election' : election, 
+                            'confirm_form' : confirm_form,
+                            'error' : error})
+
 def test_cookie(request):
   continue_url = request.GET['continue_url']
   request.session.set_test_cookie()
