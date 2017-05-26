@@ -10,6 +10,9 @@
 
   <form method="POST" action="">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+    <p>
+    <input type="checkbox" name="send_email" value="send_email" checked="checked"/> Send email to voters reporting release of result.
+    </p>
     <input type="submit" value="release result!" />
   </form>
 
