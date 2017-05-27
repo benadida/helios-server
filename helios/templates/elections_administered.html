@@ -5,7 +5,7 @@
 
 <ul>
 {% for election in elections %}
-<li> <a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></li>
+<li> <a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a><em> - {{election.num_voters}} voters / {{election.num_cast_votes}} cast votes</em></li>
 {% endfor %}
 </ul>
 {% endblock %}
