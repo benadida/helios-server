@@ -1119,7 +1119,10 @@ def release_result(request, election):
     election.release_result()
     election.save()
 
-    return HttpResponseRedirect("%s" % (settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid])))
+    if request.POST.get('send_email', ''):
+      return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_email, args=[election.uuid]),urllib.urlencode({'template': 'result'})))
+    else:
+      return HttpResponseRedirect("%s" % (settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid])))
 
   # if just viewing the form or the form is not valid
   return render_template(request, 'release_result', {'election': election})
