@@ -550,7 +550,7 @@ def password_voter_login(request, election):
   """
   This is used to log in as a voter for a particular election
   """
-
+  
   # the URL to send the user to after they've logged in
   return_url = request.REQUEST.get('return_url', reverse(one_election_cast_confirm, args=[election.uuid]))
   bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
@@ -598,7 +598,15 @@ def password_voter_login(request, election):
           })
 
       return HttpResponseRedirect(settings.SECURE_URL_HOST + redirect_url)
-  
+  else:
+    # bad form, bad voter login
+    redirect_url = login_url + "?" + urllib.urlencode({
+        'bad_voter_login' : '1',
+        'return_url' : return_url
+        })
+
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + redirect_url)
+    
   return HttpResponseRedirect(settings.SECURE_URL_HOST + return_url)
 
 @election_view()
@@ -1362,7 +1370,7 @@ def voters_email(request, election):
       })
 
   if request.method == "GET":
-    email_form = forms.EmailVotersForm()
+    email_form = forms.EmailVotersForm(initial={'subject': election.name, 'body': ' '})
     if voter:
       email_form.fields['send_to'].widget = email_form.fields['send_to'].hidden_widget()
   else:
