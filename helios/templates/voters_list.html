@@ -136,7 +136,7 @@ Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voter
 <td>{{voter.voter_login_id}}</td>
 <td>{{voter.voter_email}}</td>
 {% endif %}
-<td>{{voter.name}}</td>
+<td><img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}</td>
 {% endif %}
 {% if election.use_voter_aliases %}
 <td>{{voter.alias}}</td>
