@@ -18,7 +18,7 @@
 <form method="post" action="" onsubmit="alert('ok, tally has begun')" class="pretty">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
-<input class="pretty" type="submit" value="compute encrypted tally!" />
+<input class="button" type="submit" value="compute encrypted tally!" />
 <button onclick="document.location='./view'; return false;">never mind</button>
 </form>
 {% else %}
