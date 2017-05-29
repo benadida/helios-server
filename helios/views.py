@@ -1315,6 +1315,12 @@ def voters_email(request, election):
   if not template in [t[0] for t in TEMPLATES]:
     raise Exception("bad template")
 
+  template_tyte = ('','')
+  for i in TEMPLATES:
+    if i[0] == template:
+      template_tyte = i
+      break
+
   voter_id = request.REQUEST.get('voter_id', None)
 
   if voter_id:
@@ -1327,7 +1333,7 @@ def voters_email(request, election):
 
   default_subject = render_template_raw(None, 'email/%s_subject.txt' % template, {
       'custom_subject': "&lt;SUBJECT&gt;"
-})
+    })
   default_body = render_template_raw(None, 'email/%s_body.txt' % template, {
       'election' : election,
       'election_url' : election_url,
@@ -1365,9 +1371,12 @@ def voters_email(request, election):
         
       voter_constraints_include = None
       voter_constraints_exclude = None
-
+      
       if voter:
         tasks.single_voter_email.delay(voter_uuid = voter.uuid, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars)
+        
+        # get send_to
+        send_to = voter.name
       else:
         # exclude those who have not voted
         if email_form.cleaned_data['send_to'] == 'voted':
@@ -1378,6 +1387,17 @@ def voters_email(request, election):
           voter_constraints_include = {'vote_hash': None}
 
         tasks.voters_email.delay(election_id = election.id, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars, voter_constraints_include = voter_constraints_include, voter_constraints_exclude = voter_constraints_exclude)
+
+        # get send_to
+        send_to_choices = email_form.fields['send_to'].choices
+        send_to = ''
+        for i in send_to_choices:
+          if i[0] == email_form.cleaned_data['send_to']:
+            send_to = i[1]
+            break
+        
+      # log it
+      election.append_log("Task to send email of type \"%s\" to \"%s\" was requested" % (template_tyte[1],send_to))
 
       # this batch process is all async, so we can return a nice note
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
