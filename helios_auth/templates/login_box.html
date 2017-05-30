@@ -1,5 +1,6 @@
 {% if default_auth_system %}
-<p><a  style="font-size:1.3em; border: 1px solid #bbb; padding: 5px;" href="{% url "helios_auth.views.start" system_name=default_auth_system %}?return_url={{return_url}}">{{default_auth_system_obj.LOGIN_MESSAGE}}</a></p>
+<p>
+<a class="small button" href="{% url "helios_auth.views.start" system_name=default_auth_system %}?return_url={{return_url}}">Log in</a></p>
 {% else %}
 {% for auth_system in enabled_auth_systems %}
 {% ifequal auth_system "password" %}

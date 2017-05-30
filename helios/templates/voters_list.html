@@ -130,7 +130,9 @@ Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voter
 {% if admin_p or not election.use_voter_aliases %}
 {% if admin_p %}
 <td style="white-space: nowrap;">
+{% if election.frozen_at %}
 [<a href="{% url "helios.views.voters_email" election.uuid %}?voter_id={{voter.voter_login_id}}">email</a>]
+{% endif %}
 [<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url "helios.views.voter_delete" election.uuid voter.uuid %}">x</a>]
 </td>
 <td>{{voter.voter_login_id}}</td>
