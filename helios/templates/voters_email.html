@@ -20,11 +20,11 @@ voter_id = '{{voter.voter_id}}';
 <p>
 <b>Templates</b>:
 
-{% for template_option in templates %}
-{% if template_option.0 == template %}
-<b>{{template_option.1}}</b>
+{% for template_option,template_description in templates.items %}
+{% if template_option == template %}
+<b>{{template_description}}</b>
 {% else %}
-<a href="?template={{template_option.0}}&voter_id={{voter.voter_login_id}}">{{template_option.1}}</a>
+<a href="?template={{template_option}}&voter_id={{voter.voter_login_id}}">{{template_description}}</a>
 {% endif %}
 &nbsp;&nbsp;&nbsp;
 {% endfor %}
