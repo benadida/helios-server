@@ -49,13 +49,19 @@
           new_q.answer_urls[i-1] = form['answer_url_' +i].value;
       }
       
-     return new_q;
+      if (new_q.answers.length == 0) {
+        return null;
+      }
+      
+      return new_q;
   }
 
   function question_add(form) {
       var new_q = get_question_from_form(form);
-      QUESTIONS.push(new_q);
-      save_questions(refresh);
+      if (new_q) {
+        QUESTIONS.push(new_q);
+        save_questions(refresh);
+      }
   }
   
   function question_remove(q_num) {
