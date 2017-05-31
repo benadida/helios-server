@@ -1384,11 +1384,10 @@ def voters_email(request, election):
         tasks.voters_email.delay(election_id = election.id, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars, voter_constraints_include = voter_constraints_include, voter_constraints_exclude = voter_constraints_exclude)
 
         # get send_to
-        send_to_choices = dict((x, y) for x, y in email_form.fields['send_to'].choices)
-        send_to = send_to_choices.get(email_form.cleaned_data['send_to'])
+        send_to =dict(email_form.fields['send_to'].choices).get(email_form.cleaned_data['send_to'],'')
         
       # log it
-      election.append_log("Task to send email of type \"%s\" to \"%s\" was requested" % (TEMPLATES.get(template),send_to))
+      election.append_log("Task to send email of type \"%s\" to \"%s\" was requested" % (TEMPLATES.get(template,''),send_to))
 
       # this batch process is all async, so we can return a nice note
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
