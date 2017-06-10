@@ -22,7 +22,7 @@ def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwarg
 
     voter = cast_vote.voter
     election = voter.election
-    user = voter.user
+    user = voter.get_user()
 
     if result:
         # send the signal
@@ -71,7 +71,7 @@ def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={
     subject = render_template_raw(None, subject_template, the_vars)
     body = render_template_raw(None, body_template, the_vars)
 
-    voter.user.send_message(subject, body)
+    voter.send_message(subject, body)
 
 @task()
 def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
@@ -82,7 +82,7 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
 
     notification = render_template_raw(None, notification_template, the_vars)
 
-    voter.user.send_notification(notification)
+    voter.send_notification(notification)
 
 @task()
 def election_compute_tally(election_id):

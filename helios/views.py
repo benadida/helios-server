@@ -622,7 +622,7 @@ def one_election_cast_confirm(request, election):
     return render_template(request, 'election_not_started', {'election': election})
 
   voter = get_voter(request, user, election)
-
+  
   # auto-register this person if the election is openreg
   if user and not voter and election.openreg:
     voter = _register_voter(election, user)
@@ -677,7 +677,7 @@ def one_election_cast_confirm(request, election):
     bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
 
     # status update this vote
-    if voter and voter.user.can_update_status():
+    if voter and voter.can_update_status():
       status_update_label = voter.user.update_status_template() % "your smart ballot tracker"
       status_update_message = "I voted in %s - my smart tracker is %s.. #heliosvoting" % (get_election_url(election),cast_vote.vote_hash[:10])
     else:
@@ -761,7 +761,8 @@ def one_election_cast_done(request, election):
 
     # only log out if the setting says so *and* we're dealing
     # with a site-wide voter. Definitely remove current_voter
-    if voter.user == user:
+    # checking that voter.user != None is needed because voter.user may now be None if voter is password only
+    if voter.user == user and voter.user != None:
       logout = settings.LOGOUT_ON_CONFIRMATION
     else:
       logout = False
