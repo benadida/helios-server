@@ -87,6 +87,7 @@ More than <b>100,000 votes</b> have been cast using Helios.
 {% endif %}
 <div class="row right"><a class="tiny button" href="{% url "helios.views.elections_voted" %}">see all</a></div>
 <div class="row"></div>
+<a class="tiny button" href="{% url "helios.views.elections_deleted" %}">see the trash</a>
 {% else %}
 {% if settings.SHOW_LOGIN_OPTIONS %}
 <h5>Log In to Start Voting</h5>

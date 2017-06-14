@@ -147,11 +147,17 @@ def api_client_can_admin_election(api_client, election):
 # decorator for checking election admin access, and some properties of the election
 # frozen - is the election frozen
 # newvoters - does the election accept new voters
+# undelete - allows excluded election load
 def election_admin(**checks):
   
   def election_admin_decorator(func):
     def election_admin_wrapper(request, election_uuid=None, *args, **kw):
-      election = get_election_by_uuid(election_uuid)
+      if checks.get('undelete',False):
+        if not election_uuid:
+          raise Exception("no election ID")
+        election = Election.get_by_uuid_deleted(election_uuid)
+      else:
+        election = get_election_by_uuid(election_uuid)
 
       user = get_user(request)
       if not user_can_admin_election(user, election):
@@ -165,7 +171,7 @@ def election_admin(**checks):
     return update_wrapper(election_admin_wrapper, func)
     
   return election_admin_decorator
-  
+
 def trustee_check(func):
   def trustee_check_wrapper(request, election_uuid, trustee_uuid, *args, **kwargs):
     election = get_election_by_uuid(election_uuid)

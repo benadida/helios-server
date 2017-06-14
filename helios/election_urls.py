@@ -22,6 +22,7 @@ urlpatterns = patterns('',
     (r'^/archive$', one_election_archive),
     (r'^/copy$', one_election_copy),
     (r'^/delete', one_election_delete),
+    (r'^/undelete', one_election_undelete),
 
     # badge
     (r'^/badge$', election_badge),

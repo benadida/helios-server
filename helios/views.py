@@ -368,13 +368,30 @@ def one_election_delete(request, election):
       if election.short_name != request.POST['short_name_confirm']:
         error = "Enter the Identifier correctly"
       else:
-        election.delete()
-        return HttpResponseRedirect("/helios/stats/elections")
+        election.deleted_at = datetime.datetime.utcnow()
+        election.save()
+        return HttpResponseRedirect("/")
     
     return render_template(request, 'election_delete',
                            {'election' : election, 
                             'confirm_form' : confirm_form,
                             'error' : error})
+
+@election_admin(undelete=True)
+def one_election_undelete(request, election):
+  election.deleted_at = None
+  election.save()
+  return HttpResponseRedirect("/helios/elections/deleted")
+
+@login_required
+def elections_deleted(request):
+  if not can_create_election(request):
+    return HttpResponseForbidden('only an administrator has elections to administer')
+  
+  user = get_user(request)
+  elections = Election.get_by_user_as_admin_and_deleted(user)
+  
+  return render_template(request, "elections_deleted", {'elections': elections})
 
 def test_cookie(request):
   continue_url = request.GET['continue_url']

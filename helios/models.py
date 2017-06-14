@@ -93,6 +93,7 @@ class Election(HeliosModel):
   # dates at which this was touched
   created_at = models.DateTimeField(auto_now_add=True)
   modified_at = models.DateTimeField(auto_now_add=True)
+  deleted_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
   
   # dates at which things happen for the election
   frozen_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
@@ -199,15 +200,15 @@ class Election(HeliosModel):
 
   @classmethod
   def get_featured(cls):
-    return cls.objects.filter(featured_p = True).order_by('short_name')
+    return cls.objects.filter(featured_p = True, deleted_at=None).order_by('short_name')
     
   @classmethod
   def get_or_create(cls, **kwargs):
-    return cls.objects.get_or_create(short_name = kwargs['short_name'], defaults=kwargs)
+    return cls.objects.get_or_create(short_name = kwargs['short_name'], deleted_at=None, defaults=kwargs)
 
   @classmethod
   def get_by_user_as_admin(cls, user, archived_p=None, limit=None):
-    query = cls.objects.filter(admin = user)
+    query = cls.objects.filter(admin = user, deleted_at=None)
     if archived_p == True:
       query = query.exclude(archived_at= None)
     if archived_p == False:
@@ -217,10 +218,16 @@ class Election(HeliosModel):
       return query[:limit]
     else:
       return query
+
+  @classmethod
+  def get_by_user_as_admin_and_deleted(cls, user):
+    query = cls.objects.filter(admin = user, deleted_at__isnull=False)
+    query = query.order_by('-deleted_at')
+    return query
     
   @classmethod
   def get_by_user_as_voter(cls, user, archived_p=None, limit=None):
-    query = cls.objects.filter(voter__user = user)
+    query = cls.objects.filter(voter__user = user, deleted_at=None)
     if archived_p == True:
       query = query.exclude(archived_at= None)
     if archived_p == False:
@@ -234,14 +241,21 @@ class Election(HeliosModel):
   @classmethod
   def get_by_uuid(cls, uuid):
     try:
-      return cls.objects.select_related().get(uuid=uuid)
+      return cls.objects.select_related().get(uuid=uuid, deleted_at=None)
+    except cls.DoesNotExist:
+      return None
+
+  @classmethod
+  def get_by_uuid_deleted(cls, uuid):
+    try:
+      return cls.objects.select_related().get(uuid=uuid, deleted_at__isnull=False)
     except cls.DoesNotExist:
       return None
   
   @classmethod
   def get_by_short_name(cls, short_name):
     try:
-      return cls.objects.get(short_name=short_name)
+      return cls.objects.get(short_name=short_name, deleted_at=None)
     except cls.DoesNotExist:
       return None
     
