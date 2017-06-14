@@ -265,11 +265,13 @@ class Election(HeliosModel):
     if not self.deleted_at:
       self.deleted_at = datetime.datetime.utcnow()
       self.save()
+      self.append_log("Election deleted")
     return True   
 
   def undelete_election(self):
     self.deleted_at = None
     self.save()
+    self.append_log("Election undeleted")
         
   def save_questions_safely(self, questions):
     """
