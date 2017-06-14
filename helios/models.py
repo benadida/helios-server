@@ -258,7 +258,19 @@ class Election(HeliosModel):
       return cls.objects.get(short_name=short_name, deleted_at=None)
     except cls.DoesNotExist:
       return None
-    
+  
+  def delete_election(self):
+    if self.num_cast_votes>0:
+      return False
+    if not self.deleted_at:
+      self.deleted_at = datetime.datetime.utcnow()
+      self.save()
+    return True   
+
+  def undelete_election(self):
+    self.deleted_at = None
+    self.save()
+        
   def save_questions_safely(self, questions):
     """
     Because Django doesn't let us override properties in a Pythonic way... doing the brute-force thing.

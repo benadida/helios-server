@@ -351,9 +351,6 @@ def one_election_view(request, election):
 
 @election_admin()
 def one_election_delete(request, election):
-  if election.num_cast_votes>0:
-    return HttpResponseForbidden('This election can not be excluded.')
-
   if request.method == "GET":
     confirm_form = forms.ElectionDeleteConfirmForm()
     return render_template(request, 'election_delete',
@@ -368,9 +365,10 @@ def one_election_delete(request, election):
       if election.short_name != request.POST['short_name_confirm']:
         error = "Enter the Identifier correctly"
       else:
-        election.deleted_at = datetime.datetime.utcnow()
-        election.save()
-        return HttpResponseRedirect("/")
+        if election.delete_election():
+          return HttpResponseRedirect("/")
+        else:
+          return HttpResponseForbidden('This election can not be excluded.')
     
     return render_template(request, 'election_delete',
                            {'election' : election, 
@@ -379,8 +377,7 @@ def one_election_delete(request, election):
 
 @election_admin(undelete=True)
 def one_election_undelete(request, election):
-  election.deleted_at = None
-  election.save()
+  election.undelete_election()
   return HttpResponseRedirect("/helios/elections/deleted")
 
 @login_required

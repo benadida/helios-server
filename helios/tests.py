@@ -69,6 +69,27 @@ class ElectionModelTests(TestCase):
 
         election = models.Election.get_by_short_name(self.election.short_name)
         self.assertEquals(self.election, election)
+
+        election = models.Election.get_by_uuid_deleted(self.election.uuid)
+        self.assertEquals(None, election)
+        
+        # test find on a deleted election
+        quantity_before = models.Election.get_by_user_as_admin(self.user).count()        
+        self.assertTrue(self.election.delete_election())
+        quantity_after = models.Election.get_by_user_as_admin(self.user).count()
+               
+        self.assertEquals(quantity_before, quantity_after + 1)
+
+        election = models.Election.get_by_uuid(self.election.uuid)
+        self.assertEquals(None, election)
+
+        election = models.Election.get_by_short_name(self.election.short_name)
+        self.assertEquals(None, election)
+
+        election = models.Election.get_by_uuid_deleted(self.election.uuid)
+        self.assertEquals(self.election, election)
+        
+        self.election.undelete_election()
         
     def test_setup_trustee(self):
         self.setup_trustee()
@@ -701,7 +722,7 @@ class ElectionBlackboxTests(WebTest):
 
         # if we request the redirect to cast_done, the voter should be logged out, but not the user
         response = self.app.get("/helios/elections/%s/cast_done" % election_id)
-
+        
         # FIXME: how to check this? We can't do it by checking session that we're doign webtes
         # assert not self.client.session.has_key('CURRENT_VOTER')
 
@@ -754,6 +775,12 @@ class ElectionBlackboxTests(WebTest):
         # self._cast_ballot(election_id, username, password, check_user_logged_in=True)
         self._cast_ballot(election_id, username, password, check_user_logged_in=False)
         self.clear_login()
+
+        # test delete election with cast votes
+        election = models.Election.get_by_uuid(election_id)
+        deleted = election.delete_election()
+        self.assertFalse(deleted)
+        election.undelete_election()
 
         self._do_tally(election_id)
 
