@@ -845,9 +845,9 @@ class Voter(HeliosModel):
   def __init__(self, *args, **kwargs):
     super(Voter, self).__init__(*args, **kwargs)
 
+  def get_user(self):
     # stub the user so code is not full of IF statements
-    if not self.user:
-      self.user = User(user_type='password', user_id=self.voter_email, name=self.voter_name)
+    return self.user or User(user_type='password', user_id=self.voter_email, name=self.voter_name)
 
   @classmethod
   @transaction.atomic
@@ -948,11 +948,11 @@ class Voter(HeliosModel):
 
   @property
   def name(self):
-    return self.user.name
+    return self.get_user().name
 
   @property
   def voter_id(self):
-    return self.user.user_id
+    return self.get_user().user_id
 
   @property
   def voter_id_hash(self):
@@ -973,14 +973,17 @@ class Voter(HeliosModel):
 
   @property
   def voter_type(self):
-    return self.user.user_type
+    return self.get_user().user_type
 
   @property
   def display_html_big(self):
-    return self.user.display_html_big
+    return self.get_user().display_html_big
       
   def send_message(self, subject, body):
-    self.user.send_message(subject, body)
+    self.get_user().send_message(subject, body)
+    
+  def can_update_status(self):
+    return self.get_user().can_update_status()
 
   def generate_password(self, length=10):
     if self.voter_password:
