@@ -73,7 +73,7 @@
 
   <!-- Main Page Content and Sidebar -->
 
-  <div class="row" id="contentbody">
+  <div class="row" id="contentbody" style="padding: 0px 10px;">
       {% block content %}{% endblock %}
   </div>
   
@@ -106,6 +106,14 @@ powered by <a href="http://heliosvoting.org">Helios Voting</a>.
   </div>
       <script>
 	$(document).foundation();
-      </script>     
+      </script>
+
+
+    <div id="simpleModal" class="reveal-modal">
+      <h2 id="simpleModalTitle"></h2>
+      <p id="simpleModalText"></p>
+      <a class="close-reveal-modal" onclick="$('#simpleModal').foundation('reveal', 'close');return;">&#215;</a>
+      <button class="small button" onclick="$('#simpleModal').foundation('reveal', 'close');return;">Close</button>
+    </div>
 </body>
 </html>

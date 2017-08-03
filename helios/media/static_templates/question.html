@@ -1,10 +1,20 @@
-
 {#foreach $T.questions as question}
 <div id="q_view_{$T.question$index}">
+<h4><strong>{$T.question$index + 1}&ordf; Question</strong>
+{#if $T.admin_p}
+    {#if $T.question$index > 0}
+    <a href="javascript:question_move_up({$T.question$index});"><i title="Move up (reorder)." class="glyphicon glyphicon-arrow-up"></i></a>
+    {#/if}
+    [<a href="javascript:question_edit({$T.question$index})">edit</a>]
+    [<a onclick="return confirm('Are you sure you want to remove this question?');" href="javascript:question_remove({$T.question$index})">x</a>]
+    <br />
+{#/if}
+</h4>
+
 <h4>
-{#if $T.admin_p}[
-{#if $T.question$index > 0}<a href="javascript:question_move_up({$T.question$index});">^</a>]&nbsp;[{#/if}
-<a onclick="return confirm('Are you sure you want to remove this question?');" href="javascript:question_remove({$T.question$index})">x</a>] [<a href="javascript:question_edit({$T.question$index})">edit</a>] {#/if}{$T.question$index + 1}. {$T.question.question} ({$T.question.choice_type}, select between {$T.question.min} and {#if $T.question.max != null}{$T.question.max}{#else}unlimited{#/if} answers, result type {$T.question.result_type}.)</h4>
+    {$T.question.question}<br />
+    <small>({$T.question.choice_type}, select between {$T.question.min} and {#if $T.question.max != null}{$T.question.max}{#else}unlimited{#/if} answers, result type {$T.question.result_type}.)</small>
+</h4>
 <ul>
 {#foreach $T.question.answers as answer}
 <li> {$T.answer}
@@ -24,109 +34,140 @@
     <option selected>approval</option>
   </select>
 -->
-<input type="hidden" name="choice_type" value="approval" />
-<b>{$T.question$index + 1}.</b> &nbsp;&nbsp;&nbsp;Select between &nbsp;&nbsp;
-<select name="min">
-    <option selected>0</option>
-{#for option_index = 1 to 20}
-    <option>{$T.option_index}</option>
-{#/for}
-</select>
-
-&nbsp;&nbsp; and  &nbsp;&nbsp;
-
-<select name="max">
-    <option>0</option>
-    <option selected>1</option>
-{#for option_index = 2 to 50}
-    <option>{$T.option_index}</option>
-{#/for}
-    <option value="">- (approval)</option>
-</select>
-
-&nbsp;&nbsp;
-answers.
-
-&nbsp;&nbsp;
-&nbsp;&nbsp;
-Result Type:&nbsp;
-<select name="result_type">
-    <option selected>absolute</option>
-    <option>relative</option>
-</select>
-
+<h4><strong>{$T.question$index + 1}&ordf; Question:</strong></h4>
+<div class="row">
+    <div class="large-6 columns">
+        <input type="hidden" name="choice_type" value="approval" />
+        <div class="row">
+            <div class="large-6 columns">
+                Select between &nbsp;&nbsp;
+                <select name="min">
+                    <option selected>0</option>
+                {#for option_index = 1 to 20}
+                    <option>{$T.option_index}</option>
+                {#/for}
+                </select>
+                &nbsp;&nbsp;and
+            </div>
+            <div class="large-6 columns">
+                <select name="max">
+                    <option>0</option>
+                    <option selected>1</option>
+                {#for option_index = 2 to 50}
+                    <option>{$T.option_index}</option>
+                {#/for}
+                    <option value="">- (approval)</option>
+                </select>
+                &nbsp;&nbsp;
+                answers.
+            </div>
+        </div>
+    </div>
+    <div class="large-6 columns">
+        Result Type:&nbsp;
+        <select name="result_type">
+            <option selected>absolute</option>
+            <option>relative</option>
+        </select>
+    </div>
+</div>
 </p>
 
-<table id="answer_table_{$T.question$index}">
-  <tbody>
-    <tr><th colspan="2">Question:</th><td><input type="text" name="question" size="70" /></td></tr>
-    <tr><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr>
-  </tbody>
-  <tfoot>
-    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table_{$T.question$index}'),5)">add 5 more answers</a></th></tr>
-    <tr><td colspan="3"><input type="submit" value="update question" /> &nbsp; <input type="reset" value="cancel" onclick="question_edit_cancel({$T.question$index});" /></td></tr>
-  </tfoot>
-
-</table>
+<div>
+    <div>
+        <h5>Question:</h5>
+        <input type="text" name="question" size="70" />
+    </div>
+    <div>
+        <h5>Answers:</h5>
+    </div>
+    <table id="answer_table_{$T.question$index}" style="width:100%;">
+      <tbody></tbody>
+      <tfoot>
+        <tr>
+            <th colspan="1"></th>
+            <th><a href="javascript:add_answers($('#answer_table_{$T.question$index}'),5)">add 5 more answers</a></th>
+        </tr>
+      </tfoot>
+    </table>
+    <input class="button small" style="margin-bottom: 0px;" type="submit" value="update question" />&nbsp;
+    <input type="reset" class="button small" style="margin-bottom: 0px;" value="cancel" onclick="question_edit_cancel({$T.question$index});" />
+</div>
 </form>
 </div>
+<hr />
 {#else}
-no questions yet
+<h4>No questions yet</h4>
 {#/for}
 
 {#if $T.admin_p}
-<h4>Add a Question:</h4>
-<form id="question_form" onsubmit="question_add(this); return false;" action="#">
-<p>
-<!--
-  Type of Question:
-  <select name="choice_type">
-    <option selected>approval</option>
-  </select>
--->
-<input type="hidden" name="choice_type" value="approval" />
-&nbsp;&nbsp;&nbsp;Select between &nbsp;&nbsp;
-<select name="min">
-    <option selected>0</option>
-{#for option_index = 1 to 20}
-    <option>{$T.option_index}</option>
-{#/for}
-</select>
+<div style="border: thin solid #ccc; padding: 8px 15px;">
+    <h4>Add a Question:</h4>
+    <form id="question_form" onsubmit="question_add(this); return false;" action="#">
+    <p>
+        <!--
+          Type of Question:
+          <select name="choice_type">
+            <option selected>approval</option>
+          </select>
+        -->
+        <div class="row">
+            <div class="large-6 columns">
+                <input type="hidden" name="choice_type" value="approval" />
+                <div class="row">
+                    <div class="large-6 columns">
+                        Select between &nbsp;&nbsp;
+                        <select name="min">
+                            <option selected>0</option>
+                        {#for option_index = 1 to 20}
+                            <option>{$T.option_index}</option>
+                        {#/for}
+                        </select>
+                        &nbsp;&nbsp;and
+                    </div>
+                    <div class="large-6 columns">
+                        <select name="max">
+                            <option>0</option>
+                            <option selected>1</option>
+                        {#for option_index = 2 to 50}
+                            <option>{$T.option_index}</option>
+                        {#/for}
+                            <option value="">- (approval)</option>
+                        </select>
+                        &nbsp;&nbsp;
+                        answers.
+                    </div>
+                </div>
+            </div>
+            <div class="large-6 columns">
+                Result Type:&nbsp;
+                <select name="result_type">
+                    <option selected>absolute</option>
+                    <option>relative</option>
+                </select>
+            </div>
+        </div>
+    </p>
+    <div>
+        <div>
+            <h5>Question:</h5>
+            <input type="text" name="question" size="70" />
+        </div>
+        <div>
+            <h5>Answers:</h5>
+        </div>
+        <table id="answer_table" style="width:100%;">
+          <tbody></tbody>
+          <tfoot>
+            <tr>
+                <th colspan="1"></th>
+                <th><a href="javascript:add_answers($('#answer_table'), 5)">add 5 more answers</a></th>
+            </tr>
+          </tfoot>
+        </table>
+        <input class="button small" style="margin-bottom: 0px;" type="submit" value="add question" />
+    </div>
+</div><br />
 
-&nbsp;&nbsp; and  &nbsp;&nbsp;
-
-<select name="max">
-    <option>0</option>
-    <option selected>1</option>
-{#for option_index = 2 to 50}
-    <option>{$T.option_index}</option>
-{#/for}
-    <option value="">- (approval)</option>
-</select>
-
-&nbsp;&nbsp;
-answers.
-
-&nbsp;&nbsp;
-&nbsp;&nbsp;
-Result Type:&nbsp;
-<select name="result_type">
-    <option selected>absolute</option>
-    <option>relative</option>
-</select>
-
-</p>
-
-<table id="answer_table" style="width:100%;">
-  <tbody>
-    <tr><th colspan="2">Question:</th><td><input type="text" name="question" size="70" /></td></tr>
-    <tr><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr>
-  </tbody>
-  <tfoot>
-    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table'), 5)">add 5 more answers</a></th></tr>
-    <tr><td colspan="2"><input type="submit" value="add question" /></td></tr>
-  </tfoot>
-
-</table>
 {#/if}
 </form>
