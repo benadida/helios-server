@@ -6,7 +6,34 @@ body {
   margin: 0px;
 }
 
+
 #wrapper {
+    padding: 0px;
+    background: white;
+    margin: auto;
+    max-width: 960px;
+    width: 100%;
+}
+@media (min-width: 600px) {
+    #wrapper {
+      border: 1px solid #666;
+    }
+}
+
+.btn_footer {
+    text-align: center;
+}
+.btn_footer > ul {
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+}
+.btn_footer > ul > li {
+    display: inline;
+    width: auto;
+}
+
+/*#wrapper {
   position: absolute;
   padding: 0px;
   background: white;
@@ -15,7 +42,7 @@ body {
   margin-left: 100px;
   margin-top: 0px;
   width: 1000px;
-}
+}*/
 
 #content {
   padding: 20px 30px 20px 30px;

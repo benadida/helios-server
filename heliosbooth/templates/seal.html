@@ -37,12 +37,14 @@ You will then be guided to re-encrypt your choices for final casting.
 </div>
 
 
-<p><p>Your ballot tracker is <b><tt style="font-size: 11pt;">{$T.encrypted_vote_hash}</tt></b>, and you can <a onclick="BOOTH.show_receipt(); return false;" href="#">print</a> it.<br /><br /></p>
+<p><p>Your ballot tracker is <b><tt style="word-break: break-all; word-wrap: break-word; font-weight:bold; font-size: 11pt;">{$T.encrypted_vote_hash}</tt></b>, and you can <a onclick="BOOTH.show_receipt(); return false;" href="#">print</a> it.<br /><br /></p>
 
 <p>
 Once you click "Submit", the unencrypted version of your ballot will be destroyed, and only the encrypted version will remain.  The encrypted version will be submitted to the Helios server.</p>
 
-<button id="proceed_button" onclick="BOOTH.cast_ballot();">Submit this Vote!</button><br />
+<div style="text-align: center;">
+    <button id="proceed_button" onclick="BOOTH.cast_ballot();">Submit this Vote!</button><br />
+</div>
 <div id="loading_div"><img src="loading.gif" id="proceed_loading_img" /></div>
 
 
