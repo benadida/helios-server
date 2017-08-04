@@ -31,7 +31,7 @@ You can change this setting:
 </select>
 <br />
 {% endif %}
-<input type="submit" value="update" />
+<input class="button small" type="submit" value="update" />
 </form>
 {% endif %}
 {% endif %}
@@ -54,7 +54,7 @@ You can change this setting:
 <!-- Add a Voter: WORK HERE-->
 {% if upload_p and not election.openreg %}
 <p>
-<a class="button" href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">bulk upload voters</a>
+<a class="button small" href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">bulk upload voters</a>
 </p>
 
 {% if voter_files %}
