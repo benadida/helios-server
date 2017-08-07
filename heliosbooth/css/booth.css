@@ -14,9 +14,21 @@ body {
     max-width: 960px;
     width: 100%;
 }
-@media (min-width: 600px) {
+.audit_warn {
+    background: lightyellow;
+    border: 1px solid #ddd;
+    width: 100%;
+    margin: 20px 0px;
+}
+@media only screen and (min-width: 768px) {
     #wrapper {
       border: 1px solid #666;
+    }
+    .audit_warn {
+        float: right;
+        margin-left: 20px;
+        padding: 0px 10px 0px 10px;
+        width: 200px !important;
     }
 }
 

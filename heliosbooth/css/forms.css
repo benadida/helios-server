@@ -35,6 +35,7 @@ form.prettyform input, button {
 input.pretty {
     font-size: 16pt;
     border: 1px solid black;
+    margin-top: 10px;
 }
 
 input.prettysmall {
