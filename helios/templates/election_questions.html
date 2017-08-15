@@ -1,8 +1,8 @@
 {% extends "helios/templates/cryptobase.html" %}
 {% load i18n %}
-{% block title %}Questions for {{election.name}}{% endblock %}
+{% block title %}{% trans "Questions for" %} {{election.name}}{% endblock %}
 {% block content %}
-  <h3 class="title">{{election.name}} &mdash; Questions <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">back to election</a>]</span></h3>
+  <h3 class="title">{{election.name}} &mdash; {% trans "Questions" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
   <hr />
   <script language="javascript">
 {% if election.questions %}
@@ -27,7 +27,7 @@
   function save_questions(callback) {
       $.post('./save_questions', {'questions_json' : $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function(result) {
           if (result == "FAILURE") {
-            alert("The questions could not be saved. Please check that the URLs you entered are either http:// or https://");
+            alert("{% trans "The questions could not be saved. Please check that the URLs you entered are either http:// or https://" %}");
           } else {
             callback();
           }
@@ -170,7 +170,7 @@
         '<input style="margin-bottom: 0px;" type="text" class="answer" name="answer_' + num_answers + '" size="70" />' +
         '<br />' +
         '<nobr>' +
-          'Link (optional, <tt>http</tt> or <tt>https</tt> only): <input style="margin-bottom: 0px;" type="url" name="answer_url_' + num_answers + '" width="50%" />' +
+          '{% trans "Link (optional, <tt>http</tt> or <tt>https</tt> only):" %} <input style="margin-bottom: 0px;" type="url" name="answer_url_' + num_answers + '" width="50%" />' +
         '</nobr>' +
       '</td>' +
     '</tr>');

@@ -5,25 +5,23 @@
 
     <div class="small-12 large-9 columns" style="text-align: left;">
         <h3 class="title">{{ election.name }}</h3>
-        <p style="padding-top:0px; margin-top:0px">
         <div>
-            <strong>Information:</strong>
-            <ul>
+            <ul style="list-style: none; margin: 0px;">
                 {% if election.is_archived %}
                 <li><em>archived</em></li>
                 {% endif %}
-                <li><em>{% if election.private_p %}private{%else%}public{% endif %}</em></li>
-                <li>{{ election.election_type }}{% if settings.SHOW_USER_INFO %} created by <u><b>{{election.admin.display_html_small|safe}}</b></u>{% endif %}</li>
                 <li>
+                    {{ election.election_type }} is <em>{% if election.private_p %}private{%else%}public{% endif %}</em>,
+                    {% if settings.SHOW_USER_INFO %} created by <u><b>{{election.admin.display_html_small|safe}}</b></u>{% endif %}
                     {% if admin_p %}
                         {% if not election.private_p %}
                             {% if election.featured_p %}
-                    this {{election.election_type}} is featured on the front page.
+                                and <em>is featured on the front page.</em>
                                 {% if can_feature_p %}
                     [<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=0">unfeature it</a>]
                                 {% endif %}
                             {% else %}
-                    this {{election.election_type}} is <u>not</u> featured on the front page.
+                                and <em><u>not</u> featured on the front page.</em>
                                 {% if can_feature_p %}
                     [<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=1">feature it</a>]
                                 {% endif %}
@@ -206,10 +204,6 @@ This election is <em>private</em>. You are signed in as eligible voter <em>{{vot
 
     </div>
     <div class="small-12 large-3 columns" style="text-align: left;">
-        <br />
-        <div>
-            <strong>Operations:</strong>
-        </div>
         <br />
         <ul style="list-style-type: none; margin: 0px;">
         {% if admin_p %}

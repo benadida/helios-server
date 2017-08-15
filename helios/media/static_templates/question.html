@@ -1,20 +1,20 @@
 {#foreach $T.questions as question}
 <div id="q_view_{$T.question$index}">
-<h4><strong>{$T.question$index + 1}&ordf; Question</strong>
+<h5><strong>{$T.question$index + 1}&ordf; Question&nbsp;&nbsp;</strong>
 {#if $T.admin_p}
-    {#if $T.question$index > 0}
-    <a href="javascript:question_move_up({$T.question$index});"><i title="Move up (reorder)." class="glyphicon glyphicon-arrow-up"></i></a>
-    {#/if}
-    [<a href="javascript:question_edit({$T.question$index})">edit</a>]
+{#if $T.question$index > 0}
+[<a href="javascript:question_move_up({$T.question$index});" title="Move up (reorder).">&#x25B2;</a>]
+{#/if}
+    [<a style="font-size: .9em;" href="javascript:question_edit({$T.question$index})">edit</a>]
     [<a onclick="return confirm('Are you sure you want to remove this question?');" href="javascript:question_remove({$T.question$index})">x</a>]
     <br />
 {#/if}
-</h4>
+</h5>
 
-<h4>
+<h5>
     {$T.question.question}<br />
-    <small>({$T.question.choice_type}, select between {$T.question.min} and {#if $T.question.max != null}{$T.question.max}{#else}unlimited{#/if} answers, result type {$T.question.result_type}.)</small>
-</h4>
+    <span style="color: #888; font-size: .7em;">({$T.question.choice_type}, select between {$T.question.min} and {#if $T.question.max != null}{$T.question.max}{#else}unlimited{#/if} answers, result type {$T.question.result_type}.)</span>
+</h5>
 <ul>
 {#foreach $T.question.answers as answer}
 <li> {$T.answer}
