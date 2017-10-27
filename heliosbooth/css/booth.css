@@ -6,7 +6,6 @@ body {
   margin: 0px;
 }
 
-
 #wrapper {
     padding: 0px;
     background: white;
@@ -30,6 +29,9 @@ body {
         padding: 0px 10px 0px 10px;
         width: 200px !important;
     }
+}
+@-ms-viewport{
+    width: device-width;
 }
 
 .btn_footer {
