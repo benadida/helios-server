@@ -102,7 +102,7 @@ SESSION_COOKIE_HTTPONLY = True
 
 # let's go with one year because that's the way to do it now
 if (get_from_env('HSTS', '0') == '1'):
-    SECURE_HSTS_SECONDS = 52 * 3600 * 24 * 7
+    SECURE_HSTS_SECONDS = 31536000
     # not doing subdomains for now cause that is not likely to be necessary and can screw things up.
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
