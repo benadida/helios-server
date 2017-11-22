@@ -11,7 +11,7 @@ from django.utils.translation import ugettext_lazy as _
 
 
 class ElectionForm(forms.Form):
-  short_name = forms.SlugField(max_length=25, label=_("Short name"),
+  short_name = forms.SlugField(max_length=40, label=_("Short name"),
     help_text=_('no spaces, will be part of the URL for your election, e.g. my-club-2010'))
   name = forms.CharField(max_length=100, widget=forms.TextInput(attrs={'size':60}), 
     label=_("Name"), help_text=_('the pretty name for your election, e.g. My Club 2010 Election. Maximum of 250 characters.'))
@@ -49,6 +49,9 @@ class ElectionTimesForm(forms.Form):
   voting_ends_at = SplitDateTimeField(help_text = _('UTC date and time when voting ends'),
                                    widget=SplitSelectDateTimeWidget)
 
+class ElectionTimeExtensionForm(forms.Form):
+  voting_extended_until = SplitDateTimeField(help_text = 'UTC date and time voting extended to',
+                                   widget=SplitSelectDateTimeWidget, required=False)
   
 class EmailVotersForm(forms.Form):
   subject = forms.CharField(max_length=80, required=True)

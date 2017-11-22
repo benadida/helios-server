@@ -8,3 +8,4 @@ celery*.log
 *.pid
 *.mo
 env.sh
+.cache

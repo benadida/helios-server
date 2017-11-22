@@ -9,7 +9,7 @@
 <br><br>
 <script language="javascript">
 {% if election.questions %}
-  QUESTIONS = {{questions_json|safe}};
+  QUESTIONS = JSON.parse("{{questions_json|escapejs}}");
 {% else %}
   QUESTIONS = [];
 {% endif %}
@@ -29,7 +29,11 @@
   
   function save_questions(callback) {
       $.post('./save_questions', {'questions_json' : $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function(result) {
-          callback();          
+          if (result == "FAILURE") {
+            alert("The questions could not be saved. Please check that the URLs you entered are either http:// or https://");
+          } else {
+            callback();
+          }
       });      
   }
   
@@ -45,16 +49,22 @@
           if (!form['answer_' + i] || !form['answer_' + i].value)
             break;
           new_q.answers[i-1] = form['answer_' + i].value;
-          new_q.answer_urls[i-1] = null;
+          new_q.answer_urls[i-1] = form['answer_url_' +i].value;
       }
       
-     return new_q;
+      if (new_q.answers.length == 0) {
+        return null;
+      }
+      
+      return new_q;
   }
 
   function question_add(form) {
       var new_q = get_question_from_form(form);
-      QUESTIONS.push(new_q);
-      save_questions(refresh);
+      if (new_q) {
+        QUESTIONS.push(new_q);
+        save_questions(refresh);
+      }
   }
   
   function question_remove(q_num) {
@@ -86,7 +96,12 @@
     $(q_data.answers).each(function(i, a) {
      form[0]['answer_' + (i+1)].value = a;
     });
-  }
+
+    // URLs
+    $(q_data.answer_urls).each(function(i, a) {
+     form[0]['answer_url_' + (i+1)].value = a;
+    });
+}
 
   function question_edit_cancel(q_num) {
     $('#q_edit_'+q_num).hide();

@@ -250,7 +250,7 @@ class VoterModelTests(TestCase):
         self.assertRaises(Exception, lambda: v.generate_password())
         
         # check that you can get at the voter user structure
-        self.assertEquals(v.user.user_id, v.voter_email)
+        self.assertEquals(v.get_user().user_id, v.voter_email)
 
 
 class CastVoteModelTests(TestCase):
@@ -424,8 +424,8 @@ class ElectionBlackboxTests(WebTest):
 
         # set up the app, too
         # this does not appear to work, boohoo
-        session = self.app.session
-        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
+        #session = self.app.session
+        #session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
 
     def clear_login(self):
         session = self.client.session
@@ -527,7 +527,9 @@ class ElectionBlackboxTests(WebTest):
             "election_type" : "referendum",
             "use_voter_aliases": "0",
             "use_advanced_audit_features": "1",
-            "private_p" : "False"}
+            "private_p" : "False",
+            'csrf_token': self.client.session['csrf_token']
+        }
 
         # override with the given
         full_election_params.update(election_params)
@@ -579,7 +581,7 @@ class ElectionBlackboxTests(WebTest):
         
         # add questions
         response = self.client.post("/helios/elections/%s/save_questions" % election_id, {
-                'questions_json': utils.to_json([{"answer_urls": [None,None], "answers": ["Alice", "Bob"], "choice_type": "approval", "max": 1, "min": 0, "question": "Who should be president?", "result_type": "absolute", "short_name": "Who should be president?", "tally_type": "homomorphic"}]),
+                'questions_json': utils.to_json([{"answer_urls": ["http://example.com",None], "answers": ["Alice", "Bob"], "choice_type": "approval", "max": 1, "min": 0, "question": "Who should be president?", "result_type": "absolute", "short_name": "Who should be president?", "tally_type": "homomorphic"}]),
                 'csrf_token': self.client.session['csrf_token']})
 
         self.assertContains(response, "SUCCESS")
@@ -640,7 +642,7 @@ class ElectionBlackboxTests(WebTest):
         self.assertRedirects(response, "%s/helios/elections/%s/cast_confirm" % (settings.SECURE_URL_HOST, election_id))
 
         cast_confirm_page = response.follow()
-
+        
         if need_login:
             if check_user_logged_in:
                 self.assertContains(cast_confirm_page, "You are logged in as")
@@ -651,12 +653,7 @@ class ElectionBlackboxTests(WebTest):
             login_form['voter_id'] = username
             login_form['password'] = password
 
-            # we skip that intermediary page now
-            # cast_confirm_page = login_form.submit()
             response = login_form.submit()
-
-            # self.assertRedirects(cast_confirm_page, "/helios/elections/%s/cast_confirm" % election_id)
-            # cast_confirm_page = cast_confirm_page.follow()
         else:
             # here we should be at the cast-confirm page and logged in
             self.assertContains(cast_confirm_page, "CAST this ballot")
@@ -749,7 +746,7 @@ class ElectionBlackboxTests(WebTest):
         ## for now the above does not work, it's a testing problem
         ## where the cookie isn't properly set. We'll have to figure this out.
         ## FIXME FIXME FIXME 
-        # self._cast_ballot(election_id, username, password, check_user_logged_in=True)
+        #self._cast_ballot(election_id, username, password, check_user_logged_in=True)
         self._cast_ballot(election_id, username, password, check_user_logged_in=False)
         self.clear_login()
 
@@ -788,7 +785,8 @@ class ElectionBlackboxTests(WebTest):
                 "election_type" : "election",
                 "use_voter_aliases": "0",
                 "use_advanced_audit_features": "1",
-                "private_p" : "False"})
+                "private_p" : "False",
+                'csrf_token': self.client.session['csrf_token']})
 
         election_id = re.match("(.*)/elections/(.*)/view", response['Location']).group(2)
 

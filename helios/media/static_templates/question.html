@@ -7,7 +7,11 @@
  <a href="javascript:question_remove({$T.question$index})"><i title="Remover Questão" class="glyphicon glyphicon-remove"></i></a> <a href="javascript:question_edit({$T.question$index})"><i title="Editar Questão" class="glyphicon glyphicon-edit"></i></a> {#/if}</h4>
 <ul>
 {#foreach $T.question.answers as answer}
-<li> {$T.answer}</li>
+<li> {$T.answer}
+{#if $T.question.answer_urls[$T.answer$index]}
+  [<a target="_new" href="{$T.question.answer_urls[$T.answer$index]}">more</a>]
+{#/if}
+</li>
 {#/for}
 </ul>
 </div>
@@ -21,26 +25,9 @@
 <b>{$T.question$index + 1}.</b> &nbsp;&nbsp;&nbsp;Selecionar entre &nbsp;&nbsp;
 <select name="min">
     <option selected>0</option>
-    <option>1</option>
-    <option>2</option>
-    <option>3</option>
-    <option>4</option>
-    <option>5</option>
-    <option>6</option>
-    <option>7</option>
-    <option>8</option>
-    <option>9</option>
-    <option>10</option>
-    <option>11</option>
-    <option>12</option>
-    <option>13</option>
-    <option>14</option>
-    <option>15</option>
-    <option>16</option>
-    <option>17</option>
-    <option>18</option>
-    <option>19</option>
-    <option>20</option>
+{#for option_index = 1 to 20}
+    <option>{$T.option_index}</option>
+{#/for}
 </select>
 
 &nbsp;&nbsp; e  &nbsp;&nbsp;
@@ -48,25 +35,9 @@
 <select name="max">
     <option>0</option>
     <option selected>1</option>
-    <option>2</option>
-    <option>3</option>
-    <option>4</option>
-    <option>5</option>
-    <option>6</option>
-    <option>7</option>
-    <option>8</option>
-    <option>9</option>
-    <option>10</option>
-    <option>11</option>
-    <option>12</option>
-    <option>13</option>
-    <option>14</option>
-    <option>15</option>
-    <option>16</option>
-    <option>17</option>
-    <option>18</option>
-    <option>19</option>
-    <option>20</option>
+{#for option_index = 2 to 50}
+    <option>{$T.option_index}</option>
+{#/for}
     <option value="">- (aprovação)</option>
 </select>
 
@@ -124,6 +95,12 @@ Tipo de Resultado:
 <select name="result_type">
     <option selected>absoluto</option>
     <option>relativo</option>
+&nbsp;&nbsp;&nbsp;Select between &nbsp;&nbsp;
+<select name="min">
+    <option selected>0</option>
+{#for option_index = 1 to 20}
+    <option>{$T.option_index}</option>
+{#/for}
 </select>
  <i title="O tipo de resultado na apuração da questão. Na dúvida, escolha absoluto." class="glyphicon glyphicon-question-sign"></i>
 </div>
@@ -137,66 +114,39 @@ Tipo de Resultado:
 O eleitor deve selecionar no mínimo 
     <select name="min">
         <option selected>0</option>
-        <option>1</option>
-        <option>2</option>
-        <option>3</option>
-        <option>4</option>
-        <option>5</option>
-        <option>6</option>
-        <option>7</option>
-        <option>8</option>
-        <option>9</option>
-        <option>10</option>
-        <option>11</option>
-        <option>12</option>
-        <option>13</option>
-        <option>14</option>
-        <option>15</option>
-        <option>16</option>
-        <option>17</option>
-        <option>18</option>
-        <option>19</option>
-        <option>20</option>
+	{#for option_index = 1 to 20}
+    <option>{$T.option_index}</option>
+	{#/for}
  </select>
  e no máximo 
  <select name="max">
     <option>0</option>
     <option selected>1</option>
-    <option>2</option>
-    <option>3</option>
-    <option>4</option>
-    <option>5</option>
-    <option>6</option>
-    <option>7</option>
-    <option>8</option>
-    <option>9</option>
-    <option>10</option>
-    <option>11</option>
-    <option>12</option>
-    <option>13</option>
-    <option>14</option>
-    <option>15</option>
-    <option>16</option>
-    <option>17</option>
-    <option>18</option>
-    <option>19</option>
-    <option>20</option>
-    <option value="">- (ilimitado)</option>
+	{#for option_index = 2 to 50}
+    <option>{$T.option_index}</option>
+	{#/for}
+    <option value="">- (aprovação)</option>
 </select>
  alternativas.</td>
     </tr>
+
+&nbsp;&nbsp;
+answers.
+
+&nbsp;&nbsp;
+&nbsp;&nbsp;
+Result Type:&nbsp;
+<select name="result_type">
+    <option selected>absolute</option>
+    <option>relative</option>
+</select>
+
+</p>
+
+<table id="answer_table" style="width:100%;">
+  <tbody>
+    <tr><th colspan="2">Question:</th><td><input type="text" name="question" size="70" /></td></tr>
     <tr><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr>
-<!--
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #1:</th><td><input type="text" name="answer_1" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #2:</th><td><input type="text" name="answer_2" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #3:</th><td><input type="text" name="answer_3" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #4:</th><td><input type="text" name="answer_4" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #5:</th><td><input type="text" name="answer_5" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #6:</th><td><input type="text" name="answer_6" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #7:</th><td><input type="text" name="answer_7" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #8:</th><td><input type="text" name="answer_8" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #9:</th><td><input type="text" name="answer_9" size="70" /></td></tr>
-    <tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #10:</th><td><input type="text" name="answer_10" size="70" /></td></tr> -->
   </tbody>
   <tfoot>
     <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table'), 5)"><!--add 5 more answers--> adicionar mais 5 respostas</a> <i title="Se precisar mais campos de resposta. Não vai ser necessário preencher todos." class="glyphicon glyphicon-question-sign"></i></th></tr>

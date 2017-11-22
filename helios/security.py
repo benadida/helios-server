@@ -23,6 +23,12 @@ import urllib
 import helios
 
 
+class HSTSMiddleware:
+    def process_response(self, request, response):
+        if settings.STS:
+          response['Strict-Transport-Security'] = "max-age=31536000; includeSubDomains; preload"
+        return response
+        
 # current voter
 def get_voter(request, user, election):
   """

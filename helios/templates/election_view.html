@@ -22,6 +22,21 @@
 	{% endif %}
 	  {% if election.is_archived %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=0">{% trans "unarchive it" %}</a>{% else %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=1"> <i title="{% trans "archive it" %}" class="glyphicon glyphicon-briefcase"></i></a>{% endif %}
 	{% endif %}
+		<a class="small button" onclick="return window.confirm('Are you sure you want to copy this election?');" href="{% url "helios.views.one_election_copy" election_uuid=election.uuid %}">copy</a>
+		{% if not election.private_p %}
+		{% if election.featured_p %}
+		this {{election.election_type}} is featured on the front page.
+		{% if can_feature_p %}
+		[<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=0">unfeature it</a>]
+		{% endif %}
+		{% else %}
+		this {{election.election_type}} is <u>not</u> featured on the front page.
+		{% if can_feature_p %}
+		[<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=1">feature it</a>]
+		{% endif %}
+		{% endif %}
+		{% endif %}
+		{% endif %}
   </div>
 </div>
 <div class="row">

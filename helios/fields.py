@@ -24,7 +24,7 @@ class SplitDateTimeField(fields.MultiValueField):
         """
         if data_list:
             if not (data_list[0] and data_list[1]):
-                raise forms.ValidationError("Field is missing data.")
+                return None
             return datetime.datetime.combine(*data_list)
         return None
 

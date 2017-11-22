@@ -24,7 +24,8 @@ TEMPLATE_DEBUG = DEBUG
 #This validation only applies via get_host(); if your code accesses the Host header directly from request.META you are bypassing this security protection.
 #More info: https://docs.djangoproject.com/en/1.7/ref/settings/#allowed-hosts
 
-ALLOWED_HOSTS = ['sp-helios.cafeexpresso.rnp.br'] # set a value for production environment, alongside with debug set to false
+# set a value for production environment, alongside with debug set to false
+ALLOWED_HOSTS = get_from_env('ALLOWED_HOSTS', 'localhost').split(",")
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
@@ -32,8 +33,10 @@ ROOT_URLCONF = 'urls'
 
 ROOT_PATH = os.path.dirname(__file__)
 
+# add admins of the form: 
+#    ('Ben Adida', 'ben@adida.net'),
+# if you want to be emailed about errors.
 ADMINS = (
-   ('Shirlei Chaves', 'shirlei@gmail.com'),
 )
 
 MANAGERS = ADMINS
@@ -112,11 +115,6 @@ STATICFILES_DIRS = (
 )
 
 
-# If debug is set to false and ALLOWED_HOSTS is not declared, django raises  "CommandError: You must set settings.ALLOWED_HOSTS if DEBUG is False."
-# If in production, you got a bad request (400) error
-#More info: https://docs.djangoproject.com/en/1.7/ref/settings/#allowed-hosts (same for 1.6)
-
-
 # Secure Stuff
 if (get_from_env('SSL', '0') == '1'):
     SECURE_SSL_REDIRECT = True
@@ -127,10 +125,14 @@ if (get_from_env('SSL', '0') == '1'):
 
 SESSION_COOKIE_HTTPONLY = True
 
-# one week HSTS seems like a good balance for MITM prevention
+# let's go with one year because that's the way to do it now
+STS = False
 if (get_from_env('HSTS', '0') == '1'):
-    SECURE_HSTS_SECONDS = 3600 * 24 * 7
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    STS = True
+    # we're using our own custom middleware now
+    # SECURE_HSTS_SECONDS = 31536000
+    # not doing subdomains for now cause that is not likely to be necessary and can screw things up.
+    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -147,6 +149,8 @@ MIDDLEWARE_CLASSES = (
 
     # secure a bunch of things
     'djangosecure.middleware.SecurityMiddleware',
+    'helios.security.HSTSMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -212,12 +216,6 @@ URL_HOST = get_from_env("URL_HOST", "http://localhost:8000").rstrip("/")
 # elections, as your elections' cast_url will then be incorrect.
 # SECURE_URL_HOST = "https://localhost:8443"
 SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", URL_HOST).rstrip("/")
-
-# this additional host is used to iframe-isolate the social buttons,
-# which usually involve hooking in remote JavaScript, which could be
-# a security issue. Plus, if there's a loading issue, it blocks the whole
-# page. Not cool.
-SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", SECURE_URL_HOST).rstrip("/")
 
 # election stuff
 SITE_TITLE = get_from_env('SITE_TITLE', _('IFSC E-Voting System'))
@@ -363,3 +361,12 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 USE_EMBEDDED_DS = False
 # end shibboleth auth settings
+# Rollbar Error Logging
+ROLLBAR_ACCESS_TOKEN = get_from_env('ROLLBAR_ACCESS_TOKEN', None)
+if ROLLBAR_ACCESS_TOKEN:
+  print "setting up rollbar"
+  MIDDLEWARE_CLASSES += ('rollbar.contrib.django.middleware.RollbarNotifierMiddleware',)
+  ROLLBAR = {
+    'access_token': ROLLBAR_ACCESS_TOKEN,
+    'environment': 'development' if DEBUG else 'production',  
+  }

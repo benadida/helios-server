@@ -40,7 +40,7 @@
           if (!form['answer_' + i] || !form['answer_' + i].value)
             break;
           new_q.answers[i-1] = form['answer_' + i].value;
-          new_q.answer_urls[i-1] = null;
+          new_q.answer_urls[i-1] = form['answer_urls_' + i].value;
       }
       
       QUESTIONS.push(new_q);

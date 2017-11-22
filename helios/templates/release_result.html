@@ -15,7 +15,10 @@
 <div class="col-md-12">
   <form class="form" method="POST" action="">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    <input class="btn btn-primary" type="submit" value="{% trans "release result!" %}" />
+    <p>
+    <input type="checkbox" name="send_email" value="send_email" checked="checked"/> Send email to voters reporting release of result.
+    </p>
+    <input type="submit" class="button" value="release result!" />
   </form>
 </div>
 </div>
