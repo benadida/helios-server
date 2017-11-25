@@ -121,6 +121,9 @@ class Institution(models.Model):
                     })
         return admins
 
+    class Meta:
+        app_label = 'heliosinstitution'
+
 
 class InstitutionUserProfile(models.Model):
 
@@ -138,6 +141,7 @@ class InstitutionUserProfile(models.Model):
             ("delegate_election_mngt", _("Can delegate election management tasks")),
             ("revoke_election_mngt", _("Can revoke election management tasks")),
     )
+        app_label = 'heliosinstitution'
 
     def __unicode__(self):
         return self.helios_user.name if self.helios_user is not None else self.email
