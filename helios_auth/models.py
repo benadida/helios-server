@@ -35,7 +35,8 @@ class User(models.Model):
 
   class Meta:
     unique_together = (('user_type', 'user_id'),)
-    
+    app_label = 'helios_auth'
+
   @classmethod
   def _get_type_and_id(cls, user_type, user_id):
     return "%s:%s" % (user_type, user_id)    

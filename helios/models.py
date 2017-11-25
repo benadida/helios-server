@@ -145,6 +145,9 @@ class Election(HeliosModel):
   # downloadable election info
   election_info_url = models.CharField(max_length=300, null=True)
 
+  class Meta:
+    app_label = 'helios'
+
   # metadata for the election
   @property
   def metadata(self):
@@ -649,7 +652,8 @@ class Election(HeliosModel):
       prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
 
     return prettified_result
-    
+
+
 class ElectionLog(models.Model):
   """
   a log of events for an election
@@ -662,6 +666,9 @@ class ElectionLog(models.Model):
   election = models.ForeignKey(Election)
   log = models.CharField(max_length=500)
   at = models.DateTimeField(auto_now_add=True)
+
+  class Meta:
+    app_label = 'helios'
 
 ##
 ## UTF8 craziness for CSV
@@ -701,6 +708,9 @@ class VoterFile(models.Model):
   processing_started_at = models.DateTimeField(auto_now_add=False, null=True)
   processing_finished_at = models.DateTimeField(auto_now_add=False, null=True)
   num_voters = models.IntegerField(null=True)
+
+  class Meta:
+    app_label = 'helios'
 
   def itervoters(self):
     if self.voter_file_content:
@@ -779,7 +789,6 @@ class VoterFile(models.Model):
 
     return num_voters
 
-
     
 class Voter(HeliosModel):
   election = models.ForeignKey(Election)
@@ -813,6 +822,7 @@ class Voter(HeliosModel):
 
   class Meta:
     unique_together = (('election', 'voter_login_id'))
+    app_label = 'helios'
 
   def __init__(self, *args, **kwargs):
     super(Voter, self).__init__(*args, **kwargs)
@@ -1003,6 +1013,9 @@ class CastVote(HeliosModel):
   # auditing purposes, like too many votes from the same IP, if it isn't expected
   cast_ip = models.GenericIPAddressField(null=True)
 
+  class Meta:
+      app_label = 'helios'
+
   @property
   def datatype(self):
     return self.voter.datatype.replace('Voter', 'CastVote')
@@ -1091,6 +1104,9 @@ class AuditedBallot(models.Model):
   vote_hash = models.CharField(max_length=100)
   added_at = models.DateTimeField(auto_now_add=True)
 
+  class Meta:
+    app_label = 'helios'
+
   @classmethod
   def get(cls, election, vote_hash):
     return cls.objects.get(election = election, vote_hash = vote_hash)
@@ -1107,7 +1123,8 @@ class AuditedBallot(models.Model):
       query = query[:limit]
 
     return query
-    
+
+
 class Trustee(HeliosModel):
   election = models.ForeignKey(Election)
   
@@ -1140,7 +1157,8 @@ class Trustee(HeliosModel):
 
   class Meta:
     unique_together = (('election', 'email'))
-    
+    app_label = 'helios'
+
   def save(self, *args, **kwargs):
     """
     override this just to get a hook
