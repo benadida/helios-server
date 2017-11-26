@@ -11,32 +11,34 @@
 <!-- election info -->
 <div class="row">
   <div class="col-md-12">
-	{% trans "Election type" %}: <em>{% if election.private_p %}{% trans "private" %}{%else%}{% trans "public" %}{% endif %}</em> - 
+	{% trans "Election type" %}: <em>{% if election.private_p %}{% trans "private" %}{%else%}{% trans "public" %}{% endif %}</em> -
 	{% if settings.SHOW_USER_INFO %} {% trans "created by" %} <u><b>{{election.admin.pretty_name}}</b></u>{% endif %}
-	{% if election.is_archived %}
-	[archived]
-	{% endif %}
+	{% if election.is_archived %} {% trans "[archived]" %}{% endif %}
 	{% if admin_p %}
-	{% if not election.frozen_at %}
-	  <a title="{% trans "edit" %}" href="{% url "helios.views.one_election_edit" election.uuid %}"><i class="glyphicon glyphicon-edit"></i></a>
-	{% endif %}
-	  {% if election.is_archived %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=0">{% trans "unarchive it" %}</a>{% else %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=1"> <i title="{% trans "archive it" %}" class="glyphicon glyphicon-briefcase"></i></a>{% endif %}
-	{% endif %}
+		{% if not election.frozen_at %}
+		  <a title="{% trans "edit" %}" href="{% url "helios.views.one_election_edit" election.uuid %}"><i class="glyphicon glyphicon-edit"></i></a>
+		{% endif %}
+		{% if election.is_archived %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=0">{% trans "unarchive it" %}</a>{% else %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=1"> <i title="{% trans "archive it" %}" class="glyphicon glyphicon-briefcase"></i></a>{% endif %}
+		{% endif %}
 		<a class="small button" onclick="return window.confirm('Are you sure you want to copy this election?');" href="{% url "helios.views.one_election_copy" election_uuid=election.uuid %}">copy</a>
 		{% if not election.private_p %}
 		{% if election.featured_p %}
-		this {{election.election_type}} is featured on the front page.
-		{% if can_feature_p %}
-		[<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=0">unfeature it</a>]
-		{% endif %}
+        	{% blocktrans %}
+				this {{election.election_type}} is featured on the front page.
+        	{% endblocktrans %}
+			{% if can_feature_p %}
+				[<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=0">{% trans "unfeature it" %}</a>]
+			{% endif %}
 		{% else %}
-		this {{election.election_type}} is <u>not</u> featured on the front page.
-		{% if can_feature_p %}
-		[<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=1">feature it</a>]
+        	{% blocktrans %}
+				this {{election.election_type}} is <u>not</u> featured on the front page.
+        	{% endblocktrans %}
+			{% if can_feature_p %}
+				[<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=1">{% trans "feature it "%}</a>]
+			{% endif %}
 		{% endif %}
-		{% endif %}
-		{% endif %}
-		{% endif %}
+	{% endif %}
+
   </div>
 </div>
 <div class="row">
@@ -71,7 +73,7 @@
 			{% else %}
 				{% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
 			{% endif %} <!-- end if eligible_p -->
-		  {% else %} 
+		  {% else %}
 		   {% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
 		<br />
 		{% endif %} <!-- end if election.openreg -->
@@ -324,7 +326,7 @@ Visit <a target="_new" href="http://java.sun.com">java.sun.com</a> to install it
 					{% if election.result %}
 						{% trans "verify" %} <a target="_blank" href="/verifier/verify.html?election_url={% url "helios.views.one_election" election.uuid %}">{% trans "election tally" %}</a>.
 			  		{% endif %}
-{% blocktrans %} 
+{% blocktrans %}
 review the <a href="{{vote_url}}">voting booth</a>.
 {% endblocktrans %}
 				</p>
@@ -332,5 +334,5 @@ review the <a href="{{vote_url}}">voting booth</a>.
 		</div>
 	</div>
 </div> <!-- end audit info -->
-{% endif %} 
+{% endif %}
 {% endblock %}
