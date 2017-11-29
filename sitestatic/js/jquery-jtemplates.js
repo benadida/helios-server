@@ -1,1 +1,1 @@
-../../helios/media/helios/jquery-jtemplates.js
+../../helios/media/js/jquery-jtemplates.js

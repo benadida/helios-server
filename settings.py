@@ -106,10 +106,10 @@ STATIC_URL = '/media/'
 STATIC_ROOT = ROOT_PATH + '/sitestatic'
 
 STATICFILES_DIRS = (
+    ROOT_PATH + '/helios/media',
     ROOT_PATH + '/heliosbooth',
     ROOT_PATH + '/heliosverifier',
     ROOT_PATH + '/helios_auth/media',
-    ROOT_PATH + '/helios/media',
     ROOT_PATH + '/server_ui/media',
     ROOT_PATH + '/heliosinstitution/media/',
 )
