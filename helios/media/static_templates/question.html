@@ -1,3 +1,4 @@
+
 {#foreach $T.questions as question}
 <div id="q_view_{$T.question$index}">
 <h4>
@@ -9,7 +10,7 @@
 {#foreach $T.question.answers as answer}
 <li> {$T.answer}
 {#if $T.question.answer_urls[$T.answer$index]}
-  [<a target="_new" href="{$T.question.answer_urls[$T.answer$index]}">more</a>]
+  [<a target="_new" href="{$T.question.answer_urls[$T.answer$index]}">mais</a>]
 {#/if}
 </li>
 {#/for}
@@ -17,12 +18,88 @@
 </div>
 <div class="row">
 <div class="col-md-12">
-<div id="q_edit_{$T.question$index}" style="display:none;">
-<form class="form form-horizontal" id="question_edit_{$T.question$index}_form" onsubmit="question_update({$T.question$index}, this); return false;" action="#">
-<p>
 
-<input type="hidden" name="choice_type" value="aprovação" />
-<b>{$T.question$index + 1}.</b> &nbsp;&nbsp;&nbsp;Selecionar entre &nbsp;&nbsp;
+<div id="q_edit_{$T.question$index}" style="display:none;">
+  <div class="well">
+<form class="form-horizontal" role="form" id="question_edit_{$T.question$index}_form" onsubmit="question_update({$T.question$index}, this); return false;" action="#">
+  <div class="form-group">
+      <div id="result_type" style="display:none;">
+      <input type="hidden" name="choice_type" value="approval" />
+      <select name="result_type">
+          <option selected>absoluta</option>
+          <option>relativa</option>
+      </select>
+      </div>
+  </div>
+<div class="form-group">
+<table class="table table-striped" id="answer_table_{$T.question$index}">
+  <tbody>
+    <tr><th colspan="2">Resposta:</th><td><input type="text" name="question" size="70" /></td></tr>
+    <tr><th colspan="2"></th>
+    <td>
+      <input type="hidden" name="choice_type" value="approval" />
+      O eleitor deve selecionar no mínimo
+      <select name="min">
+          <option selected>0</option>
+      {#for option_index = 1 to 20}
+          <option>{$T.option_index}</option>
+      {#/for}
+      </select>
+
+      e
+
+      <select name="max">
+          <option>0</option>
+          <option selected>1</option>
+      {#for option_index = 2 to 50}
+          <option>{$T.option_index}</option>
+      {#/for}
+          <option value="">- (ilimitado)</option>
+      </select>
+       alternativas.</td></tr>
+</td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table_{$T.question$index}'),5)">adicionar mais 5 respostas</a> <i title="Se precisar mais campos de resposta. Não vai ser necessário preencher todos." class="glyphicon glyphicon-question-sign"></i></th></tr>
+    <tr><td colspan="3"><button type="submit" class="btn-primary">atualizar questão </button> <button type="reset" class="btn-warning" onclick="question_edit_cancel({$T.question$index});">cancelar</button></td></tr>
+  </tfoot>
+
+</table>
+</div>
+</div>
+</div>
+</form>
+
+
+{#else}
+<span class="alert alert-info">nenhuma questão ainda</span>
+{#/for}
+</div>
+</div> <!-- end div row -->
+{#if $T.admin_p}
+<br><br><br>
+<div class="row">
+<div class="col-md-12">
+<div class="well">
+<h4><span>Adicionar Questão:</span></h4>
+<br><br>
+<form class="form-horizontal" role="form" id="question_form" onsubmit="question_add(this); return false;" action="#">
+    <div class="form-group">
+        <div id="result_type" style="display:none;">
+        <input type="hidden" name="choice_type" value="approval" />
+        <select name="result_type">
+            <option selected>absoluta</option>
+            <option>relative</option>
+        </select>
+        </div>
+    </div>
+<div class="form-group">
+<table class="table table-striped" id="answer_table">
+  <tbody>
+ <tr><th colspan="2">Questão:</th><td><input type="text" name="question" size="70" /> <i title="A pergunta a ser feita ao eleitor." class="glyphicon glyphicon-question-sign"></i></td></tr>
+    <tr><th colspan="2"></th><td>
+O eleitor deve selecionar no mínimo
 <select name="min">
     <option selected>0</option>
 {#for option_index = 1 to 20}
@@ -30,7 +107,7 @@
 {#/for}
 </select>
 
-&nbsp;&nbsp; e  &nbsp;&nbsp;
+ e no máximo
 
 <select name="max">
     <option>0</option>
@@ -38,125 +115,19 @@
 {#for option_index = 2 to 50}
     <option>{$T.option_index}</option>
 {#/for}
-    <option value="">- (aprovação)</option>
+    <option value="">- (ilimitado)</option>
 </select>
-
-&nbsp;&nbsp;
-<!--answers.-->
-respostas.
-<i class="glyphicon glyphicon-question-sign"></i>
-&nbsp;&nbsp;
-&nbsp;&nbsp;
-<!--Result Type:&nbsp;-->
-Tipo de Resultado:&nbsp;
-<select name="result_type">
-    <option selected>absoluto</option>
-    <option>relativo</option>
-</select>
-
-</p>
-
-<table id="answer_table_{$T.question$index}">
-  <tbody>
-    <tr><th colspan="2">Questão:</th><td><input type="text" name="question" size="70" /></td></tr>
-    <tr><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr>
+ alternativas.</td></tr>
   </tbody>
   <tfoot>
-    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table_{$T.question$index}'),5)"><!--add 5 more answers-->adicionar mais 5 questões</a></th></tr>
-    <tr><td colspan="3"><input type="submit" value="atualizar questão" /> &nbsp; <input type="reset" value="cancelar" onclick="question_edit_cancel({$T.question$index});" /></td></tr>
-  </tfoot>
-
-</table>
-</form>
-</div>
-{#else}
-<!-- no questions yet -->
-<span class="alert alert-info">nenhuma questão ainda</span>
-{#/for}
-</div>
-</div> <!-- end div row-->
-<br><br><br>
-{#if $T.admin_p}
-<div class="row">
-<div class="col-md-12">
-    <div class="well">
-<!--<h4>Add a Question:</h4>-->
-<h4><span>Adicionar Questão:</span></h4>
-<br><br>
-<form class="form-horizontal" role="form" id="question_form" onsubmit="question_add(this); return false;" action="#">
-<div class="form-group">
-
-<input type="hidden" name="choice_type" value="aprovação" />
-<!--&nbsp;&nbsp;&nbsp;Select between &nbsp;&nbsp; -->
-
-<!--Result Type:&nbsp; -->
-<div id="result_type" style="display:none;">
-Tipo de Resultado: 
-<select name="result_type">
-    <option selected>absoluto</option>
-    <option>relativo</option>
-&nbsp;&nbsp;&nbsp;Select between &nbsp;&nbsp;
-<select name="min">
-    <option selected>0</option>
-{#for option_index = 1 to 20}
-    <option>{$T.option_index}</option>
-{#/for}
-</select>
- <i title="O tipo de resultado na apuração da questão. Na dúvida, escolha absoluto." class="glyphicon glyphicon-question-sign"></i>
-</div>
-</div>
-
-<div class="form-group">
-<table class="table table-striped" id="answer_table">
-  <tbody>
-    <tr><th colspan="2">Questão:</th><td><input type="text" name="question" size="70" /> <i title="A pergunta a ser feita ao eleitor." class="glyphicon glyphicon-question-sign"></i></td></tr>
-    <tr><th colspan="2"></th><td>
-O eleitor deve selecionar no mínimo 
-    <select name="min">
-        <option selected>0</option>
-	{#for option_index = 1 to 20}
-    <option>{$T.option_index}</option>
-	{#/for}
- </select>
- e no máximo 
- <select name="max">
-    <option>0</option>
-    <option selected>1</option>
-	{#for option_index = 2 to 50}
-    <option>{$T.option_index}</option>
-	{#/for}
-    <option value="">- (aprovação)</option>
-</select>
- alternativas.</td>
-    </tr>
-
-&nbsp;&nbsp;
-answers.
-
-&nbsp;&nbsp;
-&nbsp;&nbsp;
-Result Type:&nbsp;
-<select name="result_type">
-    <option selected>absolute</option>
-    <option>relative</option>
-</select>
-
-</p>
-
-<table id="answer_table" style="width:100%;">
-  <tbody>
-    <tr><th colspan="2">Question:</th><td><input type="text" name="question" size="70" /></td></tr>
-    <tr><th>&nbsp;</th><th>&nbsp;</th><th>&nbsp;</th></tr>
-  </tbody>
-  <tfoot>
-    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table'), 5)"><!--add 5 more answers--> adicionar mais 5 respostas</a> <i title="Se precisar mais campos de resposta. Não vai ser necessário preencher todos." class="glyphicon glyphicon-question-sign"></i></th></tr>
+    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table'), 5)">adicionar mais 5 respostas</a> <i title="Se precisar mais campos de resposta. Não vai ser necessário preencher todos." class="glyphicon glyphicon-question-sign"></i></th></tr>
     <tr><td colspan="2"><button type="submit" class="btn-primary">adicionar questão</button></td></tr>
   </tfoot>
 
 </table>
 </div>
-{#/if}
-</div>
-</div>
-</div>
 </form>
+</div>
+</div>
+</div>
+{#/if}
