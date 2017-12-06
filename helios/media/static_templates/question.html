@@ -5,7 +5,7 @@
 {$T.question$index + 1}. {$T.question.question} ({$T.question.choice_type}, selecionar entre {$T.question.min} e {#if $T.question.max != null}{$T.question.max}{#else}ilimitado{#/if} resposta(s), tipo de resultado {$T.question.result_type}.)
 {#if $T.admin_p}
 {#if $T.question$index > 0} <a href="javascript:question_move_up({$T.question$index});"><i title="Mover questão para cima (reordenar)." class="glyphicon glyphicon-arrow-up"></i></a>&nbsp;{#/if}
- <a href="javascript:question_remove({$T.question$index})"><i title="Remover Questão" class="glyphicon glyphicon-remove"></i></a> <a href="javascript:question_edit({$T.question$index})"><i title="Editar Questão" class="glyphicon glyphicon-edit"></i></a> {#/if}</h4>
+ <a  onclick="return confirm('Tem certeza de que deseja remover a questão?');" href="javascript:question_remove({$T.question$index})"><i title="Remover Questão" class="glyphicon glyphicon-remove"></i></a> <a href="javascript:question_edit({$T.question$index})"><i title="Editar Questão" class="glyphicon glyphicon-edit"></i></a> {#/if}</h4>
 <ul>
 {#foreach $T.question.answers as answer}
 <li> {$T.answer}
@@ -19,25 +19,23 @@
 <div class="row">
 <div class="col-md-12">
 
-<div id="q_edit_{$T.question$index}" style="display:none;">
-  <div class="well">
+<div id="q_edit_{$T.question$index}" style="display:none;" class="well">
 <form class="form-horizontal" role="form" id="question_edit_{$T.question$index}_form" onsubmit="question_update({$T.question$index}, this); return false;" action="#">
   <div class="form-group">
       <div id="result_type" style="display:none;">
       <input type="hidden" name="choice_type" value="approval" />
       <select name="result_type">
           <option selected>absoluta</option>
-          <option>relativa</option>
+          <option>relative</option>
       </select>
       </div>
   </div>
 <div class="form-group">
 <table class="table table-striped" id="answer_table_{$T.question$index}">
   <tbody>
-    <tr><th colspan="2">Resposta:</th><td><input type="text" name="question" size="70" /></td></tr>
+    <tr><th colspan="2">Questão:</th><td><input type="text" name="question" size="70" /></td></tr>
     <tr><th colspan="2"></th>
     <td>
-      <input type="hidden" name="choice_type" value="approval" />
       O eleitor deve selecionar no mínimo
       <select name="min">
           <option selected>0</option>
@@ -45,9 +43,7 @@
           <option>{$T.option_index}</option>
       {#/for}
       </select>
-
       e
-
       <select name="max">
           <option>0</option>
           <option selected>1</option>
@@ -66,7 +62,6 @@
   </tfoot>
 
 </table>
-</div>
 </div>
 </div>
 </form>
