@@ -1,17 +1,31 @@
 {% extends TEMPLATE_BASE %}
-
+{% load i18n %}
 {% block content %}
-
-  <h2 class="title">{{election.name}} &mdash; Extend Voting <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">cancel</a>]</span></h2>
-  
-  <form class="prettyform" action="" method="POST" id="edit_election_form">
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    <table class="pretty">
-     {{election_form.as_table}}
-     </table>
-  <div>
-  <label for="">&nbsp;</label><input type="submit" value="Extend Voting" id="update_button" />
+{% if error %}
+  <div style="color: red;">{{error}}</div>
+{% endif %}
+<div id="header" class="col-md-12">
+  <h2 class="title">{% trans "Extend Voting" %}
+    <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "cancel" %}</a>]</span>
+  </h2>
+  <h3 class="title">{{election.name}}</h3>
+</div>
+<div class="col-md-12">
+  <form class="form-horizontal" role="form" action="" method="POST" id="edit_election_form">
+  <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+  {% for field in election_form.visible_fields %}
+  <div class="form-group {% if field.errors %}has-error{% endif %}">
+   {{ field.errors }}
+    <label for="{{ field.label }}" class="col-sm-2 control-label">{{ field.label }}</label>
+    <div class="col-sm-10" class="form-control">
+    {{ field }}
+    {{ field.help_text }}
+    </div>
+  </div>
+  {% endfor %}
+  <div class="form-group">
+    <button id="next_button" type="submit" class="btn btn-primary">{% trans "Extend Voting" %}</button>
   </div>
   </form>
-
+</div>
 {% endblock %}

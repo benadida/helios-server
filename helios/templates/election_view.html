@@ -1,5 +1,6 @@
 {% extends TEMPLATE_BASE %}
 {% load i18n %}
+{% load tz %}
 {% block title %}{{election.name}}{% endblock %}
 {% block content %}
 <div class="row">
@@ -150,8 +151,10 @@
 			<a href="{% url "helios.views.one_election_freeze" election.uuid %}">{% trans "freeze ballot and open election." %}</a>
 			<br /><br />
 			{% if election.voting_starts_at %}
-				once you do this, the election will be ready for voting and will open automatically<br />
-				at {{election.voting_starts_at}}, as per your settings.
+				{% blocktrans %}
+					once you do this, the election will be ready for voting and will open automatically<br />
+					at {{election.voting_starts_at}}, as per your settings.
+				{% endblocktrans %}
 			{% else %}
 				{% trans "once you do this, the election will be immediately open for voting." %}
 			{% endif %}
@@ -293,6 +296,10 @@ Visit <a target="_new" href="http://java.sun.com">java.sun.com</a> to install it
 	{% endif %}
 	</div>
 </div>
+
+{% if admin_p and election.voting_ends_at and not election.tallying_started_at %}
+<br /><a href="{% url "helios.views.one_election_extend" election.uuid %}">{% trans "extend voting" %}</a><br />
+{% endif %}
 
 {% if election.use_advanced_audit_features %}
 <div class="row well">
