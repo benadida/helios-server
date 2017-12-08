@@ -14,7 +14,10 @@
 	{% if election.private_p %}
 	<div  id="private_p_row" class="row">
 		<em>{% blocktrans %}Your election is marked private, which means you cannot open registration up more widely{% endblocktrans %}</em>
-	</div> <!-- first_row -->
+	</div>
+	{% if upload_p and not election.openreg %}
+		<a id="upload_voters" class="btn btn-primary" href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
+	{% endif %}
 {% else %}
 
 {% if not election.frozen_at %}
@@ -24,7 +27,7 @@
 	<div class="panel-heading">
 		{% trans "You can change this setting:" %}
 	</div>
-	<div class="panel-body" style="padding:35px;"> 
+	<div class="panel-body" style="padding:35px;">
 	<form id="eligibility-form" method="post" role="form" class="form-horizontal" action="{% url "helios.views.voters_eligibility" election.uuid %}">
 		<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 		<div class="form-group">
@@ -46,7 +49,7 @@
 				<input id="idp_type" type="radio" name="eligibility" value="limitedreg" {% if election.eligibility %}CHECKED{% endif %} /> {% trans "only voters with the following attributes" %}
 				<div class="panel panel-info shib-attr-panel hidden">
 		            <div class="panel-heading">{% trans "Dynamic Fields - CAFe Attributes" %}</div>
-		            <div class="panel-body"> 
+		            <div class="panel-body">
 		                {% blocktrans %}
 		                    Click the plus button to add attributes.<br>
 		                    Example: affiliationType = student<br>
@@ -66,7 +69,7 @@
 				                    <span class="add_cafe_attribute input-group-addon glyphicon glyphicon-plus"></span>
 			                </div>
 
-		                <span class="add_attr_result"></span>                
+		                <span class="add_attr_result"></span>
 		            </div>
 		        </div>
 			{% else %}
@@ -187,6 +190,7 @@
 		{% if voters_page.has_previous %}
 			<a href="./list?page={{voters_page.previous_page_number}}&limit={{limit}}&q={{q|urlencode}}">{% trans "previous" %} {{limit}}</a> &nbsp;&nbsp;
 		{% endif %}
+
 
 		{% trans "Voters" %} {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voters}})&nbsp;&nbsp;
 

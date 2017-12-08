@@ -10,6 +10,7 @@
 </div>
 <div class="col-md-12">
   <form class="form-horizontal" role="form" action="" method="POST" id="create_election_form">
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
   {% for field in election_form.visible_fields %}
     <div class="form-group {% if field.errors %}has-error{% endif %}">
      {{ field.errors }}

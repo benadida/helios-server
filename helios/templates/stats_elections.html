@@ -7,8 +7,8 @@
 
 <p>
 <form method="get" action="{% url "helios.stats_views.elections" %}">
-<b>{% trans "search" %}</b>: <input type="text" name="q" value="{{q}}"/> 
-<input class="small button" type="submit" value="search" /> <a class="small button" href="?">{%trans "clear search" %}</a>
+<b>{% trans "search" %}</b>: <input type="text" name="q" value="{{q}}"/>
+<input class="small button" type="submit" value="{% trans "search" %}" /> <a class="small button" href="?">{%trans "clear search" %}</a>
 </form>
 </p>
 
