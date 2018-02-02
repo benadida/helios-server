@@ -6,7 +6,7 @@ django-picklefield==0.3.0
 kombu==3.0.30
 html5lib==0.999
 psycopg2==2.6.1
-pyparsing==1.5.7
+pyparsing==2.1.10
 python-dateutil>=1.5
 python-openid==2.2.5
 wsgiref==0.1.2
