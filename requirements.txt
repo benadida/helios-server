@@ -5,7 +5,7 @@ django-celery==3.1.16
 django-picklefield==0.3.0
 kombu==3.0.30
 html5lib==0.999
-psycopg2==2.6.1
+psycopg2==2.7.3.2
 pyparsing==1.5.7
 python-dateutil>=1.5
 python-openid==2.2.5
