@@ -1,62 +1,51 @@
 {% extends TEMPLATE_BASE %}
 {% block title %}{{election.name}}{% endblock %}
 {% block content %}
-<div style="float: left; margin-right: 50px;">
-  <h3 class="title">{{ election.name }}
-{% if admin_p %}
-{% if not election.frozen_at %}
-<small><a class="small button" href="{% url "helios.views.one_election_edit" election.uuid %}">edit</a></small>
-{% endif %}
-{% endif %}</h3>
-<p style="padding-top:0px; margin-top:0px">
-<em>{% if election.private_p %}private{%else%}public{% endif %}</em> {{ election.election_type }}{% if settings.SHOW_USER_INFO %} created by <u><b>{{election.admin.display_html_small|safe}}</b></u>{% endif %}
-{% if election.is_archived %}
-[archived]
-{% endif %}
-{% if admin_p %}
-&nbsp;{% if election.is_archived %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=0">unarchive it</a>{% else %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=1">archive it</a>{% endif %}
-<a class="small button" onclick="return window.confirm('Are you sure you want to copy this election?');" href="{% url "helios.views.one_election_copy" election_uuid=election.uuid %}">copy</a>
-{% endif %}
-<br />
-{% if admin_p %}
-{% if not election.private_p %}
-{% if election.featured_p %}
-this {{election.election_type}} is featured on the front page.
-{% if can_feature_p %}
-[<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=0">unfeature it</a>]
-{% endif %}
-{% else %}
-this {{election.election_type}} is <u>not</u> featured on the front page.
-{% if can_feature_p %}
-[<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=1">feature it</a>]
-{% endif %}
-{% endif %}
-{% endif %}
-{% endif %}
-</p>
+<div class="row">
 
-</div>
+    <div class="small-12 large-9 columns" style="text-align: left;">
+        <h3 class="title">{{ election.name }}</h3>
+        <div>
+            <ul style="list-style: none; margin: 0px;">
+                {% if election.is_archived %}
+                <li><em>archived</em></li>
+                {% endif %}
+                <li>
+                    {{ election.election_type }} is <em>{% if election.private_p %}private{%else%}public{% endif %}</em>,
+                    {% if settings.SHOW_USER_INFO %} created by <u><b>{{election.admin.display_html_small|safe}}</b></u>{% endif %}
+                    {% if admin_p %}
+                        {% if not election.private_p %}
+                            {% if election.featured_p %}
+                                and <em>is featured on the front page.</em>
+                                {% if can_feature_p %}
+                    [<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=0">unfeature it</a>]
+                                {% endif %}
+                            {% else %}
+                                and <em><u>not</u> featured on the front page.</em>
+                                {% if can_feature_p %}
+                    [<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=1">feature it</a>]
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+        </p>
+        <div style="margin-bottom: 25px; line-height: 1.3;">
+            <div><strong>Description:</strong></div>
+            <div>{{election.description_bleached|safe}}</div>
+        </div>
 
 
-<br />
 
-<br clear="left" />
 
-<div style="margin-bottom: 25px; line-height: 1.3;">
-{{election.description_bleached|safe}}
-</div>
 
 {% if election.election_info_url %}
 <p style="font-size:1.5em;">[<a target="_blank" href="{{election.election_info_url}}" rel="noopener noreferrer">download candidate bios &amp; statements</a>]</p>
 {% endif %}
 
-<p align="center" style="font-size: 1.5em;">
-<a href="{% url "helios.views.one_election_questions" election.uuid %}">questions ({% if election.questions %}{{election.questions|length}}{% else %}0{% endif %})</a>
-&nbsp;&nbsp;|&nbsp;&nbsp;
-<a href="{% url "helios.views.voters_list_pretty" election.uuid %}">voters &amp; ballots</a>
-&nbsp;&nbsp;|&nbsp;&nbsp;
-<a href="{% url "helios.views.list_trustees_view" election.uuid %}">trustees ({{trustees|length}})</a>
-</p>
+
 
 {% if admin_p %}
 {% if election.frozen_p %}
@@ -207,6 +196,51 @@ This election is <em>private</em>. You are signed in as eligible voter <em>{{vot
 </span> <br /><br />
 {% endif %}
 
+
+
+
+
+
+
+    </div>
+    <div class="small-12 large-3 columns" style="text-align: left;">
+        <br />
+        <ul style="list-style-type: none; margin: 0px;">
+        {% if admin_p %}
+            {% if not election.frozen_at %}
+                <li>
+                    <a class="small button expand" href="{% url "helios.views.one_election_edit" election.uuid %}">edit</a>
+                </li>
+            {% endif %}
+            {% if election.is_archived %}
+                <li>
+                    <a class="small button expand" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=0">unarchive it</a>
+                </li>
+            {% else %}
+                <li>
+                    <a class="small button expand" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=1">archive it</a>
+                </li>
+            {% endif %}
+                <li>
+                    <a class="small button expand" onclick="return window.confirm('Are you sure you want to copy this election?');" href="{% url "helios.views.one_election_copy" election_uuid=election.uuid %}">copy</a>
+                </li>
+        {% endif %}
+            <li>
+                <a class="button small expand" href="{% url "helios.views.one_election_questions" election.uuid %}">questions ({% if election.questions %}{{election.questions|length}}{% else %}0{% endif %})</a>
+            </li>
+            <li>
+                <a class="button small expand"  href="{% url "helios.views.voters_list_pretty" election.uuid %}">voters &amp; ballots</a>
+            </li>
+            <li>
+                <a class="button small expand" href="{% url "helios.views.list_trustees_view" election.uuid %}">trustees ({{trustees|length}})</a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+
+
+
 {% if user %}
 {% if voter %}
 <p style="padding-top:1px;">
@@ -252,7 +286,7 @@ Anyone can vote in this election.
 <br /><a href="{% url "helios.views.one_election_extend" election.uuid %}">extend voting</a><br />
 {% endif %}
 
-<div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">
+<div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: auto;" class="round">
 <a href="#" onclick="$('#auditbody').slideToggle(250);">Audit Info</a>
 <div id="auditbody" style="display:none;">
 <br />Election URL:<br />
@@ -281,7 +315,7 @@ Anyone can vote in this election.
 <p style="font-size: 1.2em;">
   <a href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url "helios.views.one_election" election.uuid %}">preview booth</a>
 </p>
-{% endif %}  
+{% endif %}
 
 {% if election.voting_has_stopped %}
 <p style="font-size: 1.2em;">
@@ -296,8 +330,5 @@ review the <a href="{{vote_url}}">voting booth</a>.
 
 </div>
 </div>
-
-
-
-
+<br />
 {% endblock %}

@@ -7,6 +7,47 @@ body {
 }
 
 #wrapper {
+    padding: 0px;
+    background: white;
+    margin: auto;
+    max-width: 960px;
+    width: 100%;
+}
+.audit_warn {
+    background: lightyellow;
+    border: 1px solid #ddd;
+    width: 100%;
+    margin: 20px 0px;
+}
+@media only screen and (min-width: 768px) {
+    #wrapper {
+      border: 1px solid #666;
+    }
+    .audit_warn {
+        float: right;
+        margin-left: 20px;
+        padding: 0px 10px 0px 10px;
+        width: 200px !important;
+    }
+}
+@-ms-viewport{
+    width: device-width;
+}
+
+.btn_footer {
+    text-align: center;
+}
+.btn_footer > ul {
+    list-style-type: none;
+    margin: 0px;
+    padding: 0px;
+}
+.btn_footer > ul > li {
+    display: inline;
+    width: auto;
+}
+
+/*#wrapper {
   position: absolute;
   padding: 0px;
   background: white;
@@ -15,7 +56,7 @@ body {
   margin-left: 100px;
   margin-top: 0px;
   width: 1000px;
-}
+}*/
 
 #content {
   padding: 20px 30px 20px 30px;

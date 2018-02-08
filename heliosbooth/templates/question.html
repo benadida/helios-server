@@ -39,22 +39,19 @@ as many as you approve of
 <div id="warning_box" style="color: green; text-align:center; font-size: 0.8em; padding-top:10px; padding-bottom: 10px; height:50px;">
 </div>
 
-
-{#if $T.show_reviewall}
-<div style="float: right;">
-<input type="button" onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Proceed" />
-</div>
-{#/if}
-
+<div class="btn_footer">
+<ul>
 {#if $T.question_num != 0}
-<input type="button" onclick="BOOTH.previous({$T.question_num})" value="Previous" />
-&nbsp;
+<li><input type="button" onclick="BOOTH.previous({$T.question_num})" value="Previous" /></li>
 {#/if}
-
 {#if $T.question_num < $T.last_question_num}
-<input type="button" onclick="BOOTH.next({$T.question_num})" value="Next" />
-&nbsp;
+<li><input type="button" onclick="BOOTH.next({$T.question_num})" value="Next" /></li>
 {#/if}
+{#if $T.show_reviewall}
+<li><input type="button" onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Proceed" /></li>
+{#/if}
+</ul>
+</div>
 
 <br clear="both" />
 

@@ -1,9 +1,9 @@
 {% extends "helios/templates/cryptobase.html" %}
-
-{% block title %}Questions for {{election.name}}{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Questions for" %} {{election.name}}{% endblock %}
 {% block content %}
-  <h3 class="title">{{election.name}} &mdash; Questions <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">back to election</a>]</span></h3>
-
+  <h3 class="title">{{election.name}} &mdash; {% trans "Questions" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
+  <hr />
   <script language="javascript">
 {% if election.questions %}
   QUESTIONS = JSON.parse("{{questions_json|escapejs}}");
@@ -27,7 +27,7 @@
   function save_questions(callback) {
       $.post('./save_questions', {'questions_json' : $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function(result) {
           if (result == "FAILURE") {
-            alert("The questions could not be saved. Please check that the URLs you entered are either http:// or https://");
+            alert("{% trans "The questions could not be saved. Please check that the URLs you entered are either http:// or https://" %}");
           } else {
             callback();
           }
@@ -57,6 +57,10 @@
   }
 
   function question_add(form) {
+      if(!validate_form(form)) {
+        return false;
+      }
+
       var new_q = get_question_from_form(form);
       if (new_q) {
         QUESTIONS.push(new_q);
@@ -82,10 +86,10 @@
     // set the default values for this question
     var form = $('#question_edit_' + q_num + '_form');
     var q_data = QUESTIONS[q_num];
-    form[0].min.value = q_data.min;
-    form[0].max.value = q_data.max;
-    form[0].question.value = q_data.question;
-    form[0].result_type.value = q_data.result_type;
+    $(form[0].min).val(q_data.min);
+    $(form[0].max).val(q_data.max);
+    $(form[0].question).val(q_data.question);
+    $(form[0].result_type).val(q_data.result_type);
 
     // add the answers
     var answer_table = $('#answer_table_' + q_num);
@@ -106,9 +110,52 @@
   }
 
   function question_update(q_num, form) {
+      if(!validate_form(form)) {
+        return false;
+      }
       var new_q = get_question_from_form(form);
       QUESTIONS[q_num] = new_q;
       save_questions(refresh);
+  }
+
+  function validate_form(form) {
+    var msg = "";
+    var error = false;
+
+    var question_value = $(form.question).val();
+    if (!!question_value) {
+      // NOT EMPTY, NOT NULL
+    } else {
+      msg += '- {% trans "Question name should not be empty." %}<br />';
+      error = true;
+    }
+
+    var min = parseInt($(form.min).val(), 10);
+    var max = parseInt($(form.max).val(), 10);
+    if (min > max) {
+      msg += '- {% trans "Minimum value must be lower than the highest." %}<br />';
+      error = true;
+    }
+
+    var valid_resp_count = 0;
+    $(form).find('input.answer').each(function(i, obj) {
+      var answer_val = $(obj).val();
+      if (!!answer_val) {
+        valid_resp_count++;
+      }
+    });
+
+    if (valid_resp_count <= 0) {
+      msg += '- {% trans "At least one answer must be filled." %}<br />';
+      error = true;
+    }
+
+    if (error) {
+      $('#simpleModalTitle').html('Attention: error')
+      $('#simpleModalText').html(msg)
+      $('#simpleModal').foundation('reveal', 'open');
+    }
+    return !error;
   }
 
   var DEFAULT_NUM_ANSWERS = 5;
@@ -116,7 +163,17 @@
   function add_answer(el) {
     el = $(el);
     var num_answers = el.find('input.answer').length + 1;
-    el.find('tbody').append('<tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #' + num_answers + '</th><td><input type="text" class="answer" name="answer_' + num_answers + '" size="70" /><br /><nobr>Link (optional, <tt>http</tt> or <tt>https</tt> only): <input type="url" name="answer_url_' + num_answers + '" width="50%" /></nobr></td></tr>');
+    el.find('tbody').append('' +
+    '<tr>' +
+      '<th>#' + num_answers + '</th>' +
+      '<td style="border: 0px;">' +
+        '<input style="margin-bottom: 0px;" type="text" class="answer" name="answer_' + num_answers + '" size="70" />' +
+        '<br />' +
+        '<nobr>' +
+          '{% trans "Link (optional, <tt>http</tt> or <tt>https</tt> only):" %} <input style="margin-bottom: 0px;" type="url" name="answer_url_' + num_answers + '" width="50%" />' +
+        '</nobr>' +
+      '</td>' +
+    '</tr>');
   }
 
   function add_answers(el, num) {

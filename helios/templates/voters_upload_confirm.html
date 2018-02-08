@@ -31,10 +31,10 @@ HOLD ON:<br />
 <form method="post" action="" id="upload_form">
   Does this look right to you?
   <input type="hidden" name="confirm_p" value="1" />
-  <input type="submit" value="Yes, let's go" />
+  <input class="button success small" type="submit" value="Yes, let's go" />
 </form>
 
-<a href="{% url "helios.views.voters_upload_cancel" election.uuid %}">no, let me upload a different file</a>
+<a class="button small" href="{% url "helios.views.voters_upload_cancel" election.uuid %}">no, let me upload a different file</a>
 
 {% endif %}
 
