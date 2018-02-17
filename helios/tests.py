@@ -623,8 +623,8 @@ class ElectionBlackboxTests(WebTest):
         check_user_logged_in looks for the "you're already logged" message
         """
         # vote by preparing a ballot via the server-side encryption
-        response = self.app.post("/helios/elections/%s/encrypt-ballot" % election_id, {
-                'answers_json': utils.to_json([[1]])})
+        response = self.app.post("/helios/elections/%s/encrypt-ballot" % election_id,
+                   params={'answers_json': utils.to_json([[1]])})
         self.assertContains(response, "answers")
 
         # parse it as an encrypted vote with randomness, and make sure randomness is there
@@ -637,8 +637,8 @@ class ElectionBlackboxTests(WebTest):
         encrypted_vote = ballot.serialize()
         
         # cast the ballot
-        response = self.app.post("/helios/elections/%s/cast" % election_id, {
-                'encrypted_vote': encrypted_vote})
+        response = self.app.post("/helios/elections/%s/cast" % election_id,
+                   params={'encrypted_vote': encrypted_vote})
         self.assertRedirects(response, "%s/helios/elections/%s/cast_confirm" % (settings.SECURE_URL_HOST, election_id))
 
         cast_confirm_page = response.follow()
