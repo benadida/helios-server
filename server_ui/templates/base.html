@@ -5,36 +5,29 @@
 {% load staticfiles %}
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>{% block title %}{% endblock %}</title>
-  
-  <!--<link rel="stylesheet" href="/static/foundation/css/foundation.css">
-  <link rel="stylesheet" href="/static/foundation-tweaks.css"> -->
+
   <link rel="stylesheet" type="text/css" media="screen" href="{% static "bootstrap/css/bootstrap.min.css" %}"/>
   <link rel="stylesheet" type="text/css" media="screen" href="{% static "css/custom.css" %}"/>
   <link rel="stylesheet" type="text/css" media="screen" href="{% static "css/ui-lightness/jquery-ui-1.8.1.custom.css" %}">
 
-{% if settings.DEBUG %}  
+
   <script src={% static "foundation/js/vendor/custom.modernizr.js" %}></script>
-  <script language="javascript" src={% static "js/jquery-1.4.2.min.js" %}></script>
+  <script language="javascript" src={% static "js/jquery-1.11.2.min.js" %}></script>
   <script language="javascript" src={% static "js/jquery-ui-1.8.1.custom.min.js" %}></script>
   <script language="javascript" src={% static "js/jqsplitdatetime.js" %}></script>
-  <script language="javascript" src={% static "helios/jquery.json.min.js" %}></script>
-  <script language="javascript" src={% static "foundation/js/foundation.min.js" %}></script>  
-{% else %}
-<script language="javascript" src={% static "20140302-helios-combined.js" %}></script>
-{% endif %}
-  
+  <script language="javascript" src={% static "js/jquery.json.min.js" %}></script>
+  <script language="javascript" src={% static "foundation/js/foundation.min.js" %}></script>
+
   {% block js %}
   {% endblock %}
-  
+
   {% block extra-head %}{% endblock %}
-  <script language="javascript" src={% static "js/utils.js" %}></script> 
-  <script language="javascript" src={% static "js/institution_voters.js" %}></script>
   <script type="text/javascript" src="{% url "django.views.i18n.javascript_catalog" %}"></script>
 </head>
 <body>
-  {% include "navbar.html" %} 
+  {% include "navbar.html" %}
   <!-- Main Page Content and Sidebar -->
 
   <div class="container">
@@ -42,7 +35,7 @@
         {% block subcontent %}{% endblock subcontent %}
       {% endblock %}
   </div>
-  
+
   {% if user %}
       <div class="panel-footer">
       {% block footer %}
@@ -51,10 +44,15 @@
       {% endblock footer%}
       </div>
   {% endif %}
-  
+
       <script>
 	$(document).foundation();
-      </script>     
+      </script>
 
 </body>
+<link rel="stylesheet" type="text/css" media="screen" href="{% static "datetimepicker/jquery.datetimepicker.css" %}"/ >
+<script language="javascript" src={% static "datetimepicker/jquery.datetimepicker.full.js" %}></script>
+<script language="javascript" src={% static "js/utils.js" %}></script>
+<script language="javascript" src={% static "js/institution_voters.js" %}></script>
+
 </html>

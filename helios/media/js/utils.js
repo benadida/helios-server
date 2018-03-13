@@ -1,5 +1,5 @@
 $("document").ready(function(){
-	$(".remove_helios_as_trustee").click(function() { 
+	$(".remove_helios_as_trustee").click(function() {
 		if (confirm(gettext('Are you sure you want to remove Helios as a trustee?'))){
 			return true;
 		}
@@ -28,11 +28,24 @@ $("document").ready(function(){
 		alert(gettext('ok, tally has begun'));
 	});
 	$(".remove_voter").click(function(){
-    var textToBeFormatted2 = gettext('Are you sure you want to remove voter %s?');
-    var formattedText2 = interpolate(textToBeFormatted2, [$(this).attr("data-name")]);		
+		var textToBeFormatted2 = gettext('Are you sure you want to remove voter %s?');
+		var formattedText2 = interpolate(textToBeFormatted2, [$(this).attr("data-name")]);
 		if (confirm(formattedText2)){
 			return true;
 		}
 		return false;
 	});
+
+	$('#id_voting_starts_at,#id_voting_ends_at,#id_voting_extended_until').datetimepicker({
+        format: 'd/m/Y H:i',
+        step: 15
+	});
+	$(".copy_election").click(function(){
+		if (confirm(gettext('Are you sure you want to copy this election?'))) {
+			return true;
+		}
+		return false;
+	});
+
+
 })
