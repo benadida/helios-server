@@ -77,26 +77,10 @@ class ElectionTimeExtensionForm(forms.Form):
     required=False)
 
 class EmailVotersForm(forms.Form):
-  CHOICES = [
-    ('all', _('all voters')),
-    ('voted', _('voters who have cast a ballot')),
-    ('not-voted', _('voters who have not yet cast a ballot')),
-    ('not-sent',_("Only voters not sent yet"))
-    ]
   subject = forms.CharField(max_length=80, required=True)
   body = forms.CharField(max_length=4000, widget=forms.Textarea)
-  send_to = forms.ChoiceField(label=_("Send To"), initial="all",
-  choices= CHOICES)
+  send_to = forms.ChoiceField(label=_("Send To"), initial="all", choices= [('all', _('all voters')), ('voted', _('voters who have cast a ballot')), ('not-voted', _('voters who have not yet cast a ballot'))])
 
-  def __init__(self, *args, **kwargs):
-    super(EmailVotersForm, self).__init__(*args, **kwargs)
-
-    initial = kwargs.pop('initial', None)
-    if initial is not None and 'voters_total' in initial:
-        self.CHOICES[3] = ('not-sent',
-            _("Only voters not sent yet") + " (%s/%s)" % (initial['not_logged_as_sent'] ,
-            initial['voters_total']))
-        self.fields['send_to'].choices = self.CHOICES
 
 class TallyNotificationEmailForm(forms.Form):
   subject = forms.CharField(max_length=80)
