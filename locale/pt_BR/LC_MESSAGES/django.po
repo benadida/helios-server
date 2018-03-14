@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-10-14 16:16-0300\n"
+"POT-Creation-Date: 2018-03-13 23:04-0300\n"
 "PO-Revision-Date: 2015-10-14 16:16-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: \n"
@@ -128,25 +128,33 @@ msgstr ""
 
 #: helios/forms.py:47
 msgid "UTC date and time when voting begins"
-msgstr "Data e hora UTC quando a votação inicia"
+msgstr "Data e horário de início da votação"
 
-#: helios/forms.py:49
+#: helios/forms.py:45 helios/forms.py:67
 msgid "UTC date and time when voting ends"
-msgstr "Data e hora UTC quando a votação termina"
+msgstr "Data e horário de término da votação"
 
-#: helios/forms.py:56 helios/forms.py:61 helios/templates/voters_email.html:70
-msgid "Send To"
-msgstr "Enviar Para"
+#: helios/forms.py:46 helios/forms.py:68
+msgid "Voting ends at"
+msgstr "Votação termina em"
 
-#: helios/forms.py:56 helios/forms.py:62
+#: helios/forms.py:73
+msgid "UTC date and time voting extended to"
+msgstr "Data e horário da extensão da votação"
+
+#: helios/forms.py:74
+msgid "Voting extended until"
+msgstr "Votação estentida até"
+
+#: helios/forms.py:81 helios/forms.py:105
 msgid "all voters"
 msgstr "todos os eleitores"
 
-#: helios/forms.py:56
+#: helios/forms.py:82
 msgid "voters who have cast a ballot"
 msgstr "eleitores que depositaram uma cédula"
 
-#: helios/forms.py:56
+#: helios/forms.py:83
 msgid "voters who have not yet cast a ballot"
 msgstr "eleitores que ainda não depositaram uma cédula"
 
@@ -154,7 +162,7 @@ msgstr "eleitores que ainda não depositaram uma cédula"
 msgid "only voters who cast a ballot"
 msgstr "apenas eleitores que lançaram uma cédula"
 
-#: helios/forms.py:64
+#: helios/forms.py:107
 msgid "no one -- are you sure about this?"
 msgstr "nenhum - você tem certeza disso?"
 
