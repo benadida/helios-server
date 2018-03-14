@@ -237,7 +237,7 @@ Once you do this, the tally will visible to you, the administrator, only.
 		</span><br /><br />
 	{% else %}
 
-		{% if election.voting_has_started and eligible_p %}
+		{% if election.voting_has_started and eligible_p or admin_p %}
 			<a class="btn btn-lg btn-primary" role="button" href="{{test_cookie_url}}">{% trans "Vote in this" %} {{election.pretty_type}} </a>
 			<br />
 			<br />
