@@ -28,7 +28,7 @@ def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwarg
     election = voter.election
     user = voter.get_user()
 
-    if result:
+    if result and settings.HELIOS_VOTERS_EMAIL:
         # send the signal
         signals.vote_cast.send(sender=election, election=election, user=user, voter=voter, cast_vote=cast_vote)
         

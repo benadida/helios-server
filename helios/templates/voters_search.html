@@ -5,7 +5,7 @@
 
 {% if voter %}
 {% trans "Voter Found:" %} {{voter.name}} ({{voter.voter_id}})<br /><br />
-{% if election.frozen_at %}
+{% if email_voters and election.frozen_at %}
 <a href="{% url "helios.views.voters_email" election.uuid %}?voter_id={{voter.voter_id}}">{% trans "email this voter" %}</a>
 {% else %}
 {% trans "once this election is frozen, you'll be able to email this voter." %}
