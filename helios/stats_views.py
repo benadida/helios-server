@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.db import transaction
 from django.db.models import *
+from django.utils import timezone
 
 from security import *
 from helios_auth.security import get_user, save_in_session_across_logouts
@@ -60,7 +61,7 @@ def recent_votes(request):
   
   # elections with a vote in the last 24 hours, ordered by most recent cast vote time
   # also annotated with number of votes cast in last 24 hours
-  elections_with_votes_in_24hours = Election.objects.filter(voter__castvote__cast_at__gt= datetime.datetime.utcnow() - datetime.timedelta(days=1), admin=user).annotate(last_cast_vote = Max('voter__castvote__cast_at'), 
+  elections_with_votes_in_24hours = Election.objects.filter(voter__castvote__cast_at__gt= timezone.now() - datetime.timedelta(days=1), admin=user).annotate(last_cast_vote = Max('voter__castvote__cast_at'), 
     num_recent_cast_votes = Count('voter__castvote')).order_by('-last_cast_vote')
 
   return render_template(request, "stats_recent_votes", {'elections' : elections_with_votes_in_24hours})
@@ -69,7 +70,7 @@ def recent_problem_elections(request):
   user = require_admin(request)
 
   # elections left unfrozen older than 1 day old (and younger than 10 days old, so we don't go back too far)
-  elections_with_problems = Election.objects.filter(frozen_at = None, created_at__gt = datetime.datetime.utcnow() - datetime.timedelta(days=10), created_at__lt = datetime.datetime.utcnow() - datetime.timedelta(days=1) )
+  elections_with_problems = Election.objects.filter(frozen_at = None, created_at__gt = timezone.now() - datetime.timedelta(days=10), created_at__lt = timezone.now() - datetime.timedelta(days=1) )
 
   return render_template(request, "stats_problem_elections", {'elections' : elections_with_problems})
 

@@ -13,6 +13,7 @@ from django.core.exceptions import PermissionDenied
 from django.http import *
 from django.db import transaction, IntegrityError
 from django.utils.datastructures import MultiValueDictKeyError
+from django.utils import timezone
 from django.utils.translation import ugettext as _
 
 from mimetypes import guess_type
@@ -657,7 +658,7 @@ def one_election_cast_confirm(request, election):
       'vote' : vote,
       'voter' : voter,
       'vote_hash': vote_fingerprint,
-      'cast_at': datetime.datetime.utcnow(),
+      'cast_at': timezone.now(),
       'cast_ip': cast_ip
     }
 
@@ -894,7 +895,7 @@ def voter_delete(request, election, voter_uuid):
       'description': voter.metadata,
       'model': 'Voter',
       'user': get_user(request),
-      'at': datetime.datetime.utcnow(),
+      'at': timezone.now(),
       'ip': request.META.get('HTTP_X_FORWARDED_FOR'),
       'action_type': 'DEL'
     }
@@ -965,7 +966,7 @@ def one_election_archive(request, election):
   archive_p = request.GET.get('archive_p', True)
   
   if bool(int(archive_p)):
-    election.archived_at = datetime.datetime.utcnow()
+    election.archived_at = timezone.now()
   else:
     election.archived_at = None
     
@@ -1097,9 +1098,9 @@ def one_election_compute_tally(request, election):
   check_csrf(request)
 
   if not election.voting_ended_at:
-    election.voting_ended_at = datetime.datetime.utcnow()
+    election.voting_ended_at = timezone.now()
 
-  election.tallying_started_at = datetime.datetime.utcnow()
+  election.tallying_started_at = timezone.now()
   election.save()
 
   tasks.election_compute_tally.delay(election_id = election.id)
