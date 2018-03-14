@@ -1350,7 +1350,11 @@ msgstr "cabine de votação"
 msgid "review purposes only"
 msgstr "apenas para conferência"
 
-#: helios/templates/election_view.html:281
+#: helios/templates/election_view.html:301
+msgid "extend voting"
+msgstr "estender votação"
+
+#: helios/templates/election_view.html:307
 msgid "Audit Info"
 msgstr "Informação de auditoria"
 
