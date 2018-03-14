@@ -11,7 +11,7 @@ class HeliosLog(models.Model):
     #log description
     description = JSONField()
     at = models.DateTimeField(auto_now_add=True)
-    ip = models.IPAddressField(null=True)
+    ip = models.GenericIPAddressField(null=True)
 
     class Meta:
         app_label = 'helioslog'
