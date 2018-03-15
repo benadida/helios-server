@@ -999,6 +999,19 @@ class Voter(HeliosModel):
 
       }
 
+    @property
+    def pretty_name(self):
+        if self.voter_name:
+            return self.voter_name
+
+        if self.voter_email:
+            return self.voter_email
+
+        if self.name:
+            return self.name
+
+        return self.voter_login_id
+
   def store_vote(self, cast_vote):
     # only store the vote if it's cast later than the current one
     if self.cast_at and cast_vote.cast_at < self.cast_at:
