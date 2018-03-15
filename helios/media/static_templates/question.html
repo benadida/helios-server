@@ -1,6 +1,6 @@
 
 {#foreach $T.questions as question}
-<div id="q_view_{$T.question$index}">
+<div id="q_view_{$T.question$index}" tabindex="{$T.question$index}" class="question">
 <h4>
 {$T.question$index + 1}. {$T.question.question} ({$T.question.choice_type}, selecionar entre {$T.question.min} e {#if $T.question.max != null}{$T.question.max}{#else}ilimitado{#/if} resposta(s), tipo de resultado {$T.question.result_type}.)
 {#if $T.admin_p}

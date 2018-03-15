@@ -23,6 +23,7 @@
   function refresh() {
       $('#questions').processTemplate({'questions' : QUESTIONS, 'admin_p' : ADMIN_P});
       add_answers($('#answer_table'),DEFAULT_NUM_ANSWERS);
+      $('div.question').last().focus();
  }
 
   function save_questions(callback) {
