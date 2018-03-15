@@ -24,7 +24,8 @@
 		{% else %}
 			<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=1"> <i title="{% trans "archive it" %}" class="glyphicon glyphicon-briefcase"></i></a>
 		{% endif %}
-		<a title="{% trans "copy" %}"  onclick="return window.confirm('Are you sure you want to copy this election?');" href="{% url "helios.views.one_election_copy" election_uuid=election.uuid %}"><i class="glyphicon glyphicon-export"></i></a>
+        <a title="{% trans "copy" %}" class="glyphicon glyphicon-export copy_election" href="{% url "helios.views.one_election_copy" election_uuid=election.uuid %}"></a>
+
 		{% if not election.private_p %}
 			{% if election.featured_p %}
 				{% blocktrans %} this {{election.election_type}} is featured on the front page. {% endblocktrans %}

@@ -40,12 +40,13 @@ $("document").ready(function(){
         format: 'd/m/Y H:i',
         step: 15
 	});
-	$(".copy_election").click(function(){
-		if (confirm(gettext('Are you sure you want to copy this election?'))) {
-			return true;
-		}
-		return false;
-	});
+
+    $(".copy_election").click(function(){
+        if (confirm(gettext('Are you sure you want to copy this election?'))) {
+            return true;
+        }
+        return false;
+    });
 
 
 })
