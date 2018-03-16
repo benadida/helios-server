@@ -231,3 +231,8 @@ def parse_attributes(META):
     shib_attrs['attributes'] = attributes        
 
     return shib_attrs, errors
+
+
+def can_create_election(user_id, user_info):
+    """ for now, just let it be"""
+    return True
