@@ -15,9 +15,11 @@
 <div class="col-md-12">
   <form class="form" method="POST" action="">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    <div class="form-group">
-    <input type="checkbox" name="send_email" value="send_email"/> {% trans "Send email to voters reporting release of result." %}
-  </div>
+    <div class="checkbox">
+        <label><strong>{% trans "Send email to voters reporting release of result." %}</strong>
+            <input type="checkbox" name="send_email" value="send_email"/>
+        </label>
+    </div>
     <div class="form-group">
       <button id="release_result" class="btn btn-primary">{% trans "release result!" %}</button>
   </div>
