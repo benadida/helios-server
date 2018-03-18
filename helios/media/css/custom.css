@@ -45,3 +45,7 @@ a:hover, a:focus {
 .panel-primary {
     border-color: #2ecc71;    
 }
+
+:focus{
+    outline: 0;
+}
