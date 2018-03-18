@@ -84,6 +84,11 @@ BOOTH.exit = function() {
     if (confirm("Tem certeza de que você deseja sair da cabine e perder toda a informação de sua cédula atual?")) {
         BOOTH.started_p = false;
         window.location = BOOTH.election.cast_url;
+        if (BOOTH.election_metadata.private_p){
+            window.location = BOOTH.logout_url;
+        }else{
+            window.location = BOOTH.election_cast_url;
+        }
     }
 };
 
@@ -380,6 +385,7 @@ BOOTH.load_and_setup_election = function(election_url) {
           BOOTH.setup_election(raw_json, election_metadata);
           BOOTH.show_election();
           BOOTH.election_url = election_url;
+          BOOTH.logout_url = "/auth/logout";
         });
     });
 
