@@ -838,7 +838,8 @@ class Voter(HeliosModel):
     return self.user or User(user_type='password', user_id=self.voter_email, name=self.voter_name)
 
   def __unicode__(self):
-    return self.user.name
+    user = self.get_user()
+    return user.name
 
   @classmethod
   @transaction.atomic
@@ -985,6 +986,7 @@ class Voter(HeliosModel):
   # metadata for the election
   @property
   def metadata(self):
+    self.user = self.get_user()
     return {
       'voter_email': self.voter_email,
       'uuid': self.uuid,
