@@ -75,10 +75,9 @@ def recent_problem_elections(request):
   return render_template(request, "stats_problem_elections", {'elections' : elections_with_problems})
 
 
-@login_required
 @require_http_methods(["GET",])
 def admin_actions(request):
-    user = get_user(request)
+    user = require_admin(request)
     page = int(request.GET.get('page', 1))
     limit = int(request.GET.get('limit', 25))
     actions = HeliosLog.objects.filter(user=user).order_by('-at')
