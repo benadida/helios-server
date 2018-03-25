@@ -28,12 +28,12 @@
 
 		{% if not election.private_p %}
 			{% if election.featured_p %}
-				{% blocktrans %} this {{election.election_type}} is featured on the front page. {% endblocktrans %}
+				{% blocktrans with pretty_type=election.pretty_type|title %} this {{pretty_type}} is featured on the front page. {% endblocktrans %}
 				{% if can_feature_p %}
 					[<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=0">{% trans "unfeature it" %}</a>]
 				{% endif %}
 			{% else %}
-				{% blocktrans %} this {{election.election_type}} is <u>not</u> featured on the front page.{% endblocktrans %}
+				{% blocktrans with pretty_type=election.pretty_type|title %} this {{pretty_type}} is <u>not</u> featured on the front page.{% endblocktrans %}
 				{% if can_feature_p %}
 					[<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=1">{% trans "feature it"%}</a>]
 				{% endif %}
@@ -243,10 +243,9 @@ Once you do this, the tally will visible to you, the administrator, only.
 			<br />
 			<br />
 			{% if election.voting_extended_until %}
-				{% blocktrans %}
-This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
-but has been extended until {{ election.voting_extended_until }} (UTC).
-				{% endblocktrans %}
+            {% blocktrans with pretty_type=election.pretty_type|title voting_ends_at=election.voting_ends_at|date:"d/m/Y H:i"  voting_extended_until=election.voting_extended_until|date:"d/m/Y H:i" %}
+            This {{pretty_type}} was initially scheduled to end at {{voting_ends_at}}, but has been extended until {{ voting_extended_until }}.
+            {% endblocktrans %}
 			{% else %}
 				{% if election.voting_ends_at %}
 					<br />
