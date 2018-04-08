@@ -23,8 +23,8 @@
   <script language="javascript" src="js/jscrypto/sha1.js"></script>
   <script language="javascript" src="js/jscrypto/sha2.js"></script>
   <script language="javascript" src="js/jscrypto/helios.js"></script>-->
-  
-  <script language="javascript" src="js/20160507-helios-booth-compressed.js"></script>
+
+  <script language="javascript" src="js/20180214-helios-booth-compressed.js"></script>
 </head>
 <body>
 <div id="wrapper">
@@ -177,7 +177,7 @@ BOOTH.setup_election = function(raw_json, election_metadata) {
 
   // whether the election wants candidate order randomization or not
   // we set up an ordering array so that the rest of the code is
-  // less error-prone. 
+  // less error-prone.
   BOOTH.election.question_answer_orderings = [];
   $(BOOTH.election.questions).each(function(i, question) {
     var ordering = new Array(question.answers.length);
