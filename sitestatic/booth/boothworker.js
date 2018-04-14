@@ -1,1 +1,0 @@
-../../heliosbooth/boothworker.js
