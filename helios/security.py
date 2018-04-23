@@ -23,6 +23,12 @@ import urllib
 import helios
 
 
+class HSTSMiddleware:
+    def process_response(self, request, response):
+        if settings.STS:
+          response['Strict-Transport-Security'] = "max-age=31536000; includeSubDomains; preload"
+        return response
+        
 # current voter
 def get_voter(request, user, election):
   """
@@ -121,15 +127,7 @@ def user_can_admin_election(user, election):
   if not user:
     return False
 
-  # election admin
-  if election and user != election.admin:
-    return False
-
-  # can create election
-  if not user.admin_p:
-    return False
-
-  return True
+  return election.admin == user or user.admin_p
   
 def user_can_see_election(request, election):
   user = get_user(request)

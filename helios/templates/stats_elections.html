@@ -5,15 +5,22 @@
 <div class="col-md-12">
 <h1>{% trans "Elections" %}</h1>
 
+<p>
+<form method="get" action="{% url "helios.stats_views.elections" %}">
+<b>{% trans "search" %}</b>: <input type="text" name="q" value="{{q}}"/>
+<input class="small button" type="submit" value="{% trans "search" %}" /> <a class="small button" href="?">{%trans "clear search" %}</a>
+</form>
+</p>
 
+<p>
 {% if elections_page.has_previous %}
-<a href="?page={{elections_page.previous_page_number}}&limit={{limit}}"> {% trans "previous" %} {{limit}}</a> &nbsp;&nbsp;
+<a href="?page={{elections_page.previous_page_number}}&limit={{limit}}&q={{q|urlencode}}">{% trans "previous" %} {{limit}}</a> &nbsp;&nbsp;
 {% endif %}
 
-{% trans "Elections" %} {{elections_page.start_index}} - {{elections_page.end_index}}&nbsp;&nbsp;
+{% trans "Elections" %} {{elections_page.start_index}} - {{elections_page.end_index}} ({% trans "of" %} {{total_elections}})&nbsp;&nbsp;
 
 {% if elections_page.has_next %}
-<a href="?page={{elections_page.next_page_number}}&limit={{limit}}">{% trans "next" %} {{limit}}</a> &nbsp;&nbsp;
+<a href="?page={{elections_page.next_page_number}}&limit={{limit}}&q={{q|urlencode}}">next {{limit}}</a> &nbsp;&nbsp;
 {% endif %}
 	<table class="table table-striped">
 	  <thead>

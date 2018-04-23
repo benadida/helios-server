@@ -24,7 +24,8 @@ TEMPLATE_DEBUG = DEBUG
 #This validation only applies via get_host(); if your code accesses the Host header directly from request.META you are bypassing this security protection.
 #More info: https://docs.djangoproject.com/en/1.7/ref/settings/#allowed-hosts
 
-ALLOWED_HOSTS = ['sp-helios.cafeexpresso.rnp.br'] # set a value for production environment, alongside with debug set to false
+# set a value for production environment, alongside with debug set to false
+ALLOWED_HOSTS = get_from_env('ALLOWED_HOSTS', 'localhost').split(",")
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
@@ -32,8 +33,10 @@ ROOT_URLCONF = 'urls'
 
 ROOT_PATH = os.path.dirname(__file__)
 
+# add admins of the form: 
+#    ('Ben Adida', 'ben@adida.net'),
+# if you want to be emailed about errors.
 ADMINS = (
-   ('Shirlei Chaves', 'shirlei@gmail.com'),
 )
 
 MANAGERS = ADMINS
@@ -65,6 +68,9 @@ if get_from_env('DATABASE_URL', None):
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
     DATABASES['default']['CONN_MAX_AGE'] = 600
 
+    # require SSL
+    DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
@@ -74,7 +80,7 @@ TIME_ZONE = 'America/Sao_Paulo'
 LANGUAGE_CODE = 'pt-br'
 SITE_ID = 1
 USE_I18N = True
-#USE_TZ = True
+USE_TZ = True
 
 LANGUAGES = (
     ('en', _('English')),
@@ -103,18 +109,13 @@ STATIC_URL = '/media/'
 STATIC_ROOT = ROOT_PATH + '/sitestatic'
 
 STATICFILES_DIRS = (
+    ROOT_PATH + '/helios/media',
     ROOT_PATH + '/heliosbooth',
     ROOT_PATH + '/heliosverifier',
     ROOT_PATH + '/helios_auth/media',
-    ROOT_PATH + '/helios/media',
     ROOT_PATH + '/server_ui/media',
     ROOT_PATH + '/heliosinstitution/media/',
 )
-
-
-# If debug is set to false and ALLOWED_HOSTS is not declared, django raises  "CommandError: You must set settings.ALLOWED_HOSTS if DEBUG is False."
-# If in production, you got a bad request (400) error
-#More info: https://docs.djangoproject.com/en/1.7/ref/settings/#allowed-hosts (same for 1.6)
 
 
 # Secure Stuff
@@ -127,10 +128,14 @@ if (get_from_env('SSL', '0') == '1'):
 
 SESSION_COOKIE_HTTPONLY = True
 
-# one week HSTS seems like a good balance for MITM prevention
+# let's go with one year because that's the way to do it now
+STS = False
 if (get_from_env('HSTS', '0') == '1'):
-    SECURE_HSTS_SECONDS = 3600 * 24 * 7
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    STS = True
+    # we're using our own custom middleware now
+    # SECURE_HSTS_SECONDS = 31536000
+    # not doing subdomains for now cause that is not likely to be necessary and can screw things up.
+    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -147,6 +152,8 @@ MIDDLEWARE_CLASSES = (
 
     # secure a bunch of things
     'djangosecure.middleware.SecurityMiddleware',
+    'helios.security.HSTSMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -182,7 +189,6 @@ INSTALLED_APPS = (
     'server_ui',
     'helioslog',
     'heliosinstitution',
-
 )
 
 ##
@@ -197,9 +203,8 @@ VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
 
 
 # Change your email settings
-DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'helios.ifsc@gmail.com')
-#DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', _('IFSC E-Voting System'))
-DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Sistema de Votação do IFSC')
+DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'heliosvoting.pt@gmail.com')
+DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Sistema de Votação Eletrônica')
 SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 
 LOGIN_URL = '/auth/'
@@ -214,14 +219,8 @@ URL_HOST = get_from_env("URL_HOST", "http://localhost:8000").rstrip("/")
 # SECURE_URL_HOST = "https://localhost:8443"
 SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", URL_HOST).rstrip("/")
 
-# this additional host is used to iframe-isolate the social buttons,
-# which usually involve hooking in remote JavaScript, which could be
-# a security issue. Plus, if there's a loading issue, it blocks the whole
-# page. Not cool.
-SOCIALBUTTONS_URL_HOST= get_from_env("SOCIALBUTTONS_URL_HOST", SECURE_URL_HOST).rstrip("/")
-
 # election stuff
-SITE_TITLE = get_from_env('SITE_TITLE', _('IFSC E-Voting System'))
+SITE_TITLE = get_from_env('SITE_TITLE', _('Helios E-Voting System'))
 MAIN_LOGO_URL = get_from_env('MAIN_LOGO_URL', '/static/logo.png')
 ALLOW_ELECTION_INFO_URL = (get_from_env('ALLOW_ELECTION_INFO_URL', '0') == '1')
 
@@ -229,7 +228,7 @@ ALLOW_ELECTION_INFO_URL = (get_from_env('ALLOW_ELECTION_INFO_URL', '0') == '1')
 FOOTER_LINKS = json.loads(get_from_env('FOOTER_LINKS', '[]'))
 FOOTER_LOGO_URL = get_from_env('FOOTER_LOGO_URL', None)
 
-WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', _('Welcome to IFSC E-Voting System'))
+WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', _('Welcome to Helios E-Voting System'))
 
 HELP_EMAIL_ADDRESS = get_from_env('HELP_EMAIL_ADDRESS', 'shirlei@gmail.com')
 
@@ -358,3 +357,12 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 USE_EMBEDDED_DS = False
 # end shibboleth auth settings
+# Rollbar Error Logging
+ROLLBAR_ACCESS_TOKEN = get_from_env('ROLLBAR_ACCESS_TOKEN', None)
+if ROLLBAR_ACCESS_TOKEN:
+  print "setting up rollbar"
+  MIDDLEWARE_CLASSES += ('rollbar.contrib.django.middleware.RollbarNotifierMiddleware',)
+  ROLLBAR = {
+    'access_token': ROLLBAR_ACCESS_TOKEN,
+    'environment': 'development' if DEBUG else 'production',  
+  }

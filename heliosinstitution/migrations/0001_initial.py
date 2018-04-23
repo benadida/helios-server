@@ -1,42 +1,44 @@
 # -*- coding: utf-8 -*-
-import datetime
-from south.db import db
-from south.v2 import SchemaMigration
-from django.db import models
+from __future__ import unicode_literals
+
+from django.db import migrations, models
+from django.conf import settings
 
 
-class Migration(SchemaMigration):
+class Migration(migrations.Migration):
 
-    def forwards(self, orm):
-        # Adding model 'Institution'
-        db.create_table(u'heliosinstitution_institution', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=250)),
-            ('short_name', self.gf('django.db.models.fields.CharField')(max_length=100, blank=True)),
-            ('main_phone', self.gf('django.db.models.fields.CharField')(max_length=25)),
-            ('sec_phone', self.gf('django.db.models.fields.CharField')(max_length=25, blank=True)),
-            ('address', self.gf('django.db.models.fields.TextField')(max_length=250)),
-            ('mngt_email', self.gf('django.db.models.fields.EmailField')(max_length=75)),
-        ))
-        db.send_create_signal(u'heliosinstitution', ['Institution'])
+    dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ('helios_auth', '0001_initial'),
+    ]
 
-
-    def backwards(self, orm):
-        # Deleting model 'Institution'
-        db.delete_table(u'heliosinstitution_institution')
-
-
-    models = {
-        u'heliosinstitution.institution': {
-            'Meta': {'object_name': 'Institution'},
-            'address': ('django.db.models.fields.TextField', [], {'max_length': '250'}),
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'main_phone': ('django.db.models.fields.CharField', [], {'max_length': '25'}),
-            'mngt_email': ('django.db.models.fields.EmailField', [], {'max_length': '75'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '250'}),
-            'sec_phone': ('django.db.models.fields.CharField', [], {'max_length': '25', 'blank': 'True'}),
-            'short_name': ('django.db.models.fields.CharField', [], {'max_length': '100', 'blank': 'True'})
-        }
-    }
-
-    complete_apps = ['heliosinstitution']
+    operations = [
+        migrations.CreateModel(
+            name='Institution',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('name', models.CharField(max_length=250)),
+                ('short_name', models.CharField(max_length=100, blank=True)),
+                ('main_phone', models.CharField(max_length=25)),
+                ('sec_phone', models.CharField(max_length=25, blank=True)),
+                ('address', models.TextField()),
+                ('idp_address', models.URLField(unique=True)),
+                ('upload_voters', models.BooleanField(default=False)),
+            ],
+        ),
+        migrations.CreateModel(
+            name='InstitutionUserProfile',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('email', models.EmailField(max_length=254)),
+                ('expires_at', models.DateTimeField(default=None, null=True, blank=True)),
+                ('active', models.BooleanField(default=False)),
+                ('django_user', models.ForeignKey(to=settings.AUTH_USER_MODEL, unique=True)),
+                ('helios_user', models.ForeignKey(default=None, blank=True, to='helios_auth.User', null=True)),
+                ('institution', models.ForeignKey(to='heliosinstitution.Institution')),
+            ],
+            options={
+                'permissions': (('delegate_institution_mngt', 'Can delegate institution management tasks'), ('revoke_institution_mngt', 'Can revoke institution management tasks'), ('delegate_election_mngt', 'Can delegate election management tasks'), ('revoke_election_mngt', 'Can revoke election management tasks')),
+            },
+        ),
+    ]

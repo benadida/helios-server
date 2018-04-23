@@ -11,7 +11,7 @@ import json
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.core.mail import send_mail
-from django.utils.timezone import utc
+from django.utils import timezone
 
 import datetime, logging, uuid, random, io
 import bleach
@@ -147,6 +147,9 @@ class Election(HeliosModel):
   # downloadable election info
   election_info_url = models.CharField(max_length=300, null=True)
 
+  class Meta:
+    app_label = 'helios'
+
   def __unicode__(self):
     return self.name
 
@@ -249,6 +252,23 @@ class Election(HeliosModel):
       return cls.objects.get(short_name=short_name)
     except cls.DoesNotExist:
       return None
+    
+  def save_questions_safely(self, questions):
+    """
+    Because Django doesn't let us override properties in a Pythonic way... doing the brute-force thing.
+    """
+    # verify all the answer_urls
+    for q in questions:
+      for answer_url in q['answer_urls']:
+        if not answer_url or answer_url == "":
+          continue
+          
+        # abort saving if bad URL
+        if not (answer_url[:7] == "http://" or answer_url[:8]== "https://"):
+          return False
+    
+    self.questions = questions
+    return True
 
   def add_voters_file(self, uploaded_file):
     """
@@ -327,7 +347,7 @@ class Election(HeliosModel):
     """
     has voting begun? voting begins if the election is frozen, at the prescribed date or at the date that voting was forced to start
     """
-    return self.frozen_at != None and (self.voting_starts_at == None or (datetime.datetime.utcnow() >= (self.voting_started_at or self.voting_starts_at)))
+    return self.frozen_at != None and (self.voting_starts_at == None or (timezone.now() >= (self.voting_started_at or self.voting_starts_at)))
     
   def voting_has_stopped(self):
     """
@@ -335,7 +355,7 @@ class Election(HeliosModel):
     or failing that the date voting was extended until, or failing that the date voting is scheduled to end at.
     """
     voting_end = self.voting_ended_at or self.voting_extended_until or self.voting_ends_at
-    return (voting_end != None and datetime.datetime.utcnow() >= voting_end) or self.encrypted_tally
+    return (voting_end != None and timezone.now() >= voting_end) or self.encrypted_tally
 
   @property
   def issues_before_freeze(self):
@@ -369,7 +389,7 @@ class Election(HeliosModel):
     return issues    
 
   def ready_for_tallying(self):
-    return datetime.datetime.utcnow() >= self.tallying_starts_at
+    return timezone.now() >= self.tallying_starts_at
 
   def compute_tally(self):
     """
@@ -402,7 +422,7 @@ class Election(HeliosModel):
     if not self.result:
       return
 
-    self.result_released_at = datetime.datetime.utcnow()
+    self.result_released_at = timezone.now()
   
   def combine_decryptions(self):
     """
@@ -489,7 +509,7 @@ class Election(HeliosModel):
     if len(self.issues_before_freeze) > 0:
       raise Exception(_("cannot freeze an election that has issues"))
 
-    self.frozen_at = datetime.datetime.utcnow()
+    self.frozen_at = timezone.now()
     
     # voters hash
     self.generate_voters_hash()
@@ -554,7 +574,7 @@ class Election(HeliosModel):
     trustee.save()
 
   def append_log(self, text):
-    item = ElectionLog(election = self, log=text, at=datetime.datetime.utcnow())
+    item = ElectionLog(election = self, log=text, at=timezone.now())
     item.save()
     return item
 
@@ -637,6 +657,7 @@ class Election(HeliosModel):
       prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
 
     return prettified_result
+
     
 class ElectionLog(models.Model):
   """
@@ -650,6 +671,9 @@ class ElectionLog(models.Model):
   election = models.ForeignKey(Election)
   log = models.CharField(max_length=500)
   at = models.DateTimeField(auto_now_add=True)
+
+  class Meta:
+    app_label = 'helios'
 
 ##
 ## UTF8 craziness for CSV
@@ -689,6 +713,9 @@ class VoterFile(models.Model):
   processing_started_at = models.DateTimeField(auto_now_add=False, null=True)
   processing_finished_at = models.DateTimeField(auto_now_add=False, null=True)
   num_voters = models.IntegerField(null=True)
+
+  class Meta:
+    app_label = 'helios'
 
   def itervoters(self):
     if self.voter_file_content:
@@ -731,7 +758,7 @@ class VoterFile(models.Model):
       yield return_dict
     
   def process(self):
-    self.processing_started_at = datetime.datetime.utcnow()
+    self.processing_started_at = timezone.now()
     self.save()
 
     election = self.election    
@@ -762,11 +789,10 @@ class VoterFile(models.Model):
         voter.save()
 
     self.num_voters = num_voters
-    self.processing_finished_at = datetime.datetime.utcnow()
+    self.processing_finished_at = timezone.now()
     self.save()
 
     return num_voters
-
 
     
 class Voter(HeliosModel):
@@ -802,16 +828,18 @@ class Voter(HeliosModel):
 
   class Meta:
     unique_together = (('election', 'voter_login_id'))
+    app_label = 'helios'
 
   def __init__(self, *args, **kwargs):
     super(Voter, self).__init__(*args, **kwargs)
 
+  def get_user(self):
     # stub the user so code is not full of IF statements
-    if not self.user:
-      self.user = User(user_type='password', user_id=self.voter_email, name=self.voter_name)
+    return self.user or User(user_type='password', user_id=self.voter_email, name=self.voter_name)
 
   def __unicode__(self):
-    return self.user.name
+    user = self.get_user()
+    return user.name
 
   @classmethod
   @transaction.atomic
@@ -912,11 +940,11 @@ class Voter(HeliosModel):
 
   @property
   def name(self):
-    return self.user.name
+    return self.get_user().name
 
   @property
   def voter_id(self):
-    return self.user.user_id
+    return self.get_user().user_id
 
   @property
   def voter_id_hash(self):
@@ -937,24 +965,28 @@ class Voter(HeliosModel):
 
   @property
   def voter_type(self):
-    return self.user.user_type
+    return self.get_user().user_type
 
   @property
   def display_html_big(self):
-    return self.user.display_html_big
+    return self.get_user().display_html_big
       
   def send_message(self, subject, body):
-    self.user.send_message(subject, body)
+    self.get_user().send_message(subject, body)
+    
+  def can_update_status(self):
+    return self.get_user().can_update_status()
 
   def generate_password(self, length=10):
     if self.voter_password:
       raise Exception(_('password already exists'))
     
-    self.voter_password = heliosutils.random_string(length, alphabet='abcdefghijkmnopqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ23456789')
+    self.voter_password = heliosutils.random_string(length, alphabet='abcdefghjkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789')
 
   # metadata for the election
   @property
   def metadata(self):
+    self.user = self.get_user()
     return {
       'voter_email': self.voter_email,
       'uuid': self.uuid,
@@ -968,6 +1000,19 @@ class Voter(HeliosModel):
       'election url': self.election.url
 
       }
+
+    @property
+    def pretty_name(self):
+        if self.voter_name:
+            return self.voter_name
+
+        if self.voter_email:
+            return self.voter_email
+
+        if self.name:
+            return self.name
+
+        return self.voter_login_id
 
   def store_vote(self, cast_vote):
     # only store the vote if it's cast later than the current one
@@ -1006,8 +1051,11 @@ class CastVote(HeliosModel):
   verified_at = models.DateTimeField(null=True)
   invalidated_at = models.DateTimeField(null=True)
   
-    # auditing purposes, like too many votes from the same IP, if the case
-  cast_ip = models.IPAddressField(null=True)
+  # auditing purposes, like too many votes from the same IP, if it isn't expected
+  cast_ip = models.GenericIPAddressField(null=True)
+
+  class Meta:
+      app_label = 'helios'
 
   @property
   def datatype(self):
@@ -1064,9 +1112,9 @@ class CastVote(HeliosModel):
     result = self.vote.verify(self.voter.election)
 
     if result:
-      self.verified_at = datetime.datetime.utcnow()
+      self.verified_at = timezone.now()
     else:
-      self.invalidated_at = datetime.datetime.utcnow()
+      self.invalidated_at = timezone.now()
       
     # save and store the vote as the voter's last cast vote
     self.save()
@@ -1097,6 +1145,9 @@ class AuditedBallot(models.Model):
   vote_hash = models.CharField(max_length=100)
   added_at = models.DateTimeField(auto_now_add=True)
 
+  class Meta:
+    app_label = 'helios'
+
   @classmethod
   def get(cls, election, vote_hash):
     return cls.objects.get(election = election, vote_hash = vote_hash)
@@ -1113,7 +1164,8 @@ class AuditedBallot(models.Model):
       query = query[:limit]
 
     return query
-    
+
+
 class Trustee(HeliosModel):
   election = models.ForeignKey(Election)
   
@@ -1146,7 +1198,8 @@ class Trustee(HeliosModel):
 
   class Meta:
     unique_together = (('election', 'email'))
-    
+    app_label = 'helios'
+
   def save(self, *args, **kwargs):
     """
     override this just to get a hook

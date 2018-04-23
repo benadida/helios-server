@@ -9,6 +9,7 @@ ben@adida.net
 """
 
 from django.core.management.base import BaseCommand, CommandError
+from django.utils import timezone
 import csv, datetime
 
 from helios import utils as helios_utils
@@ -77,13 +78,13 @@ class Command(BaseCommand):
 
         for file_to_process in files_to_process:
             # mark processing begins
-            file_to_process.processing_started_at = datetime.datetime.utcnow()
+            file_to_process.processing_started_at = timezone.now()
             file_to_process.save()
 
             num_voters = process_csv_file(file_to_process.election, file_to_process.voter_file)
 
             # mark processing done
-            file_to_process.processing_finished_at = datetime.datetime.utcnow()
+            file_to_process.processing_finished_at = timezone.now()
             file_to_process.num_voters = num_voters
             file_to_process.save()
             

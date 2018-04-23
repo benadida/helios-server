@@ -25,8 +25,8 @@
   <script language="javascript" src="js/jscrypto/sha1.js"></script>
   <script language="javascript" src="js/jscrypto/sha2.js"></script>
   <script language="javascript" src="js/jscrypto/helios.js"></script>-->
-  
-  <script language="javascript" src="js/20140302-helios-booth-compressed.js"></script>
+
+  <script language="javascript" src="js/20180214-helios-booth-compressed.js"></script>
 </head>
 <body>
 <div id="wrapper">
@@ -84,6 +84,11 @@ BOOTH.exit = function() {
     if (confirm("Tem certeza de que você deseja sair da cabine e perder toda a informação de sua cédula atual?")) {
         BOOTH.started_p = false;
         window.location = BOOTH.election.cast_url;
+        if (BOOTH.election_metadata.private_p){
+            window.location = BOOTH.logout_url;
+        }else{
+            window.location = BOOTH.election_cast_url;
+        }
     }
 };
 
@@ -121,35 +126,32 @@ BOOTH.setup_workers = function(election_raw_json) {
       // and one worker per question
       BOOTH.encrypted_answers = [];
       BOOTH.answer_timestamps = [];
-      BOOTH.workers = [];
+      BOOTH.worker = new window.Worker("boothworker-single.js");
+      BOOTH.worker.postMessage({
+        'type': 'setup',
+        'election' : election_raw_json
+      });
+
+      BOOTH.worker.onmessage = function(event) {
+        // logging
+        if (event.data.type == 'log')
+          return BOOTH.log(event.data.msg);
+
+        // result of encryption
+        if (event.data.type == 'result') {
+          // this check ensures that race conditions
+          // don't screw up votes.
+          if (event.data.id == BOOTH.answer_timestamps[event.data.q_num]) {
+            BOOTH.encrypted_answers[event.data.q_num] = HELIOS.EncryptedAnswer.fromJSONObject(event.data.encrypted_answer, BOOTH.election);
+            BOOTH.log("got encrypted answer " + event.data.q_num);
+          } else {
+            BOOTH.log("no way jose");
+          }
+        }
+      };
+
       $(BOOTH.election.questions).each(function(q_num, q) {
         BOOTH.encrypted_answers[q_num] = null;
-        var new_worker = new window.Worker("boothworker.js");
-        new_worker.postMessage({
-          'type': 'setup',
-          'election' : election_raw_json,
-          'question_num' : q_num
-        });
-
-        new_worker.onmessage = function(event) {
-           // logging
-           if (event.data.type == 'log')
-             return BOOTH.log(event.data.msg);
-
-           // result of encryption
-           if (event.data.type == 'result') {
-             // this check ensures that race conditions
-             // don't screw up votes.
-             if (event.data.id == BOOTH.answer_timestamps[q_num]) {
-                BOOTH.encrypted_answers[q_num] = HELIOS.EncryptedAnswer.fromJSONObject(event.data.encrypted_answer, BOOTH.election);
-                BOOTH.log("got encrypted answer " + q_num);
-             } else {
-                BOOTH.log("no way jose");
-             }
-           }
-        };
-
-        BOOTH.workers[q_num] = new_worker;
       });
   }
 };
@@ -185,7 +187,7 @@ BOOTH.setup_election = function(raw_json, election_metadata) {
 
   // whether the election wants candidate order randomization or not
   // we set up an ordering array so that the rest of the code is
-  // less error-prone. 
+  // less error-prone.
   BOOTH.election.question_answer_orderings = [];
   $(BOOTH.election.questions).each(function(i, question) {
     var ordering = new Array(question.answers.length);
@@ -220,8 +222,9 @@ BOOTH.launch_async_encryption_answer = function(question_num) {
    BOOTH.answer_timestamps[question_num] = new Date().getTime();
    BOOTH.encrypted_answers[question_num] = null;
    BOOTH.dirty[question_num] = false;
-   BOOTH.workers[question_num].postMessage({
+   BOOTH.worker.postMessage({
       'type' : 'encrypt',
+      'q_num': question_num,
       'answer' : BOOTH.ballot.answers[question_num],
       'id' : BOOTH.answer_timestamps[question_num]
    });
@@ -382,6 +385,7 @@ BOOTH.load_and_setup_election = function(election_url) {
           BOOTH.setup_election(raw_json, election_metadata);
           BOOTH.show_election();
           BOOTH.election_url = election_url;
+          BOOTH.logout_url = "/auth/logout";
         });
     });
 

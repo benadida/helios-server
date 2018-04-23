@@ -1,5 +1,6 @@
 {% extends TEMPLATE_BASE %}
 {% load i18n %}
+{% load tz %}
 {% block title %}{{election.name}}{% endblock %}
 {% block content %}
 <div class="row">
@@ -11,17 +12,35 @@
 <!-- election info -->
 <div class="row">
   <div class="col-md-12">
-	{% trans "Election type" %}: <em>{% if election.private_p %}{% trans "private" %}{%else%}{% trans "public" %}{% endif %}</em> - 
+	{% trans "Election type" %}: <em>{% if election.private_p %}{% trans "private" %}{%else%}{% trans "public" %}{% endif %}</em> -
 	{% if settings.SHOW_USER_INFO %} {% trans "created by" %} <u><b>{{election.admin.pretty_name}}</b></u>{% endif %}
-	{% if election.is_archived %}
-	[archived]
-	{% endif %}
+	{% if election.is_archived %} {% trans "[archived]" %}{% endif %}
 	{% if admin_p %}
-	{% if not election.frozen_at %}
-	  <a title="{% trans "edit" %}" href="{% url "helios.views.one_election_edit" election.uuid %}"><i class="glyphicon glyphicon-edit"></i></a>
+		{% if not election.frozen_at %}
+		  <a title="{% trans "edit" %}" href="{% url "helios.views.one_election_edit" election.uuid %}"><i class="glyphicon glyphicon-edit"></i></a>
+		{% endif %}
+		{% if election.is_archived %}
+			<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=0">{% trans "unarchive it" %}</a>
+		{% else %}
+			<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=1"> <i title="{% trans "archive it" %}" class="glyphicon glyphicon-briefcase"></i></a>
+		{% endif %}
+        <a title="{% trans "copy" %}" class="glyphicon glyphicon-export copy_election" href="{% url "helios.views.one_election_copy" election_uuid=election.uuid %}"></a>
+
+		{% if not election.private_p %}
+			{% if election.featured_p %}
+				{% blocktrans with pretty_type=election.pretty_type|title %} this {{pretty_type}} is featured on the front page. {% endblocktrans %}
+				{% if can_feature_p %}
+					[<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=0">{% trans "unfeature it" %}</a>]
+				{% endif %}
+			{% else %}
+				{% blocktrans with pretty_type=election.pretty_type|title %} this {{pretty_type}} is <u>not</u> featured on the front page.{% endblocktrans %}
+				{% if can_feature_p %}
+					[<a href="{% url "helios.views.one_election_set_featured" election.uuid %}?featured_p=1">{% trans "feature it"%}</a>]
+				{% endif %}
+			{% endif %}<!-- test election featured -->
+		{% endif %} <!-- not election.private_p -->
 	{% endif %}
-	  {% if election.is_archived %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=0">{% trans "unarchive it" %}</a>{% else %}<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=1"> <i title="{% trans "archive it" %}" class="glyphicon glyphicon-briefcase"></i></a>{% endif %}
-	{% endif %}
+
   </div>
 </div>
 <div class="row">
@@ -56,7 +75,7 @@
 			{% else %}
 				{% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
 			{% endif %} <!-- end if eligible_p -->
-		  {% else %} 
+		  {% else %}
 		   {% trans "You are <em>not eligible</em> to vote in this" %} {{election.pretty_type}}.
 		<br />
 		{% endif %} <!-- end if election.openreg -->
@@ -133,8 +152,10 @@
 			<a href="{% url "helios.views.one_election_freeze" election.uuid %}">{% trans "freeze ballot and open election." %}</a>
 			<br /><br />
 			{% if election.voting_starts_at %}
-				once you do this, the election will be ready for voting and will open automatically<br />
-				at {{election.voting_starts_at}}, as per your settings.
+				{% blocktrans %}
+					once you do this, the election will be ready for voting and will open automatically<br />
+					at {{election.voting_starts_at}}, as per your settings.
+				{% endblocktrans %}
 			{% else %}
 				{% trans "once you do this, the election will be immediately open for voting." %}
 			{% endif %}
@@ -217,15 +238,14 @@ Once you do this, the tally will visible to you, the administrator, only.
 		</span><br /><br />
 	{% else %}
 
-		{% if election.voting_has_started and eligible_p %}
+		{% if election.voting_has_started and eligible_p or admin_p %}
 			<a class="btn btn-lg btn-primary" role="button" href="{{test_cookie_url}}">{% trans "Vote in this" %} {{election.pretty_type}} </a>
 			<br />
 			<br />
 			{% if election.voting_extended_until %}
-				{% blocktrans %}
-This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
-but has been extended until {{ election.voting_extended_until }} (UTC).
-				{% endblocktrans %}
+            {% blocktrans with pretty_type=election.pretty_type|title voting_ends_at=election.voting_ends_at|date:"d/m/Y H:i"  voting_extended_until=election.voting_extended_until|date:"d/m/Y H:i" %}
+            This {{pretty_type}} was initially scheduled to end at {{voting_ends_at}}, but has been extended until {{ voting_extended_until }}.
+            {% endblocktrans %}
 			{% else %}
 				{% if election.voting_ends_at %}
 					<br />
@@ -277,6 +297,10 @@ Visit <a target="_new" href="http://java.sun.com">java.sun.com</a> to install it
 	</div>
 </div>
 
+{% if admin_p and election.voting_ends_at and not election.tallying_started_at %}
+<br /><a href="{% url "helios.views.one_election_extend" election.uuid %}">{% trans "extend voting" %}</a><br />
+{% endif %}
+
 {% if election.use_advanced_audit_features %}
 <div class="row well">
 	<div class="col-md-12">
@@ -309,7 +333,7 @@ Visit <a target="_new" href="http://java.sun.com">java.sun.com</a> to install it
 					{% if election.result %}
 						{% trans "verify" %} <a target="_blank" href="/verifier/verify.html?election_url={% url "helios.views.one_election" election.uuid %}">{% trans "election tally" %}</a>.
 			  		{% endif %}
-{% blocktrans %} 
+{% blocktrans %}
 review the <a href="{{vote_url}}">voting booth</a>.
 {% endblocktrans %}
 				</p>
@@ -317,5 +341,5 @@ review the <a href="{{vote_url}}">voting booth</a>.
 		</div>
 	</div>
 </div> <!-- end audit info -->
-{% endif %} 
+{% endif %}
 {% endblock %}

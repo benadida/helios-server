@@ -14,7 +14,10 @@
 	{% if election.private_p %}
 	<div  id="private_p_row" class="row">
 		<em>{% blocktrans %}Your election is marked private, which means you cannot open registration up more widely{% endblocktrans %}</em>
-	</div> <!-- first_row -->
+	</div>
+	{% if upload_p and not election.openreg %}
+		<a id="upload_voters" class="btn btn-primary" href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
+	{% endif %}
 {% else %}
 
 {% if not election.frozen_at %}
@@ -24,7 +27,7 @@
 	<div class="panel-heading">
 		{% trans "You can change this setting:" %}
 	</div>
-	<div class="panel-body" style="padding:35px;"> 
+	<div class="panel-body" style="padding:35px;">
 	<form id="eligibility-form" method="post" role="form" class="form-horizontal" action="{% url "helios.views.voters_eligibility" election.uuid %}">
 		<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 		<div class="form-group">
@@ -46,7 +49,7 @@
 				<input id="idp_type" type="radio" name="eligibility" value="limitedreg" {% if election.eligibility %}CHECKED{% endif %} /> {% trans "only voters with the following attributes" %}
 				<div class="panel panel-info shib-attr-panel hidden">
 		            <div class="panel-heading">{% trans "Dynamic Fields - CAFe Attributes" %}</div>
-		            <div class="panel-body"> 
+		            <div class="panel-body">
 		                {% blocktrans %}
 		                    Click the plus button to add attributes.<br>
 		                    Example: affiliationType = student<br>
@@ -66,7 +69,7 @@
 				                    <span class="add_cafe_attribute input-group-addon glyphicon glyphicon-plus"></span>
 			                </div>
 
-		                <span class="add_attr_result"></span>                
+		                <span class="add_attr_result"></span>
 		            </div>
 		        </div>
 			{% else %}
@@ -163,7 +166,9 @@
 		<tr>
 		{% if admin_p %}
 			<td>
+                {% if email_voters and election.frozen_at %}
 				<a href="{% url "helios.views.voters_email" election.uuid %}?voter_id={{voter.voter_login_id}}"><i title="{% trans "Send email to this voter. This action will only be possible if the ballot is already frozen." %}" class="glyphicon glyphicon-envelope"></i></a>
+                {% endif %}
 				<a href="{% url "helios.views.voter_delete" election.uuid voter.uuid %}"><i data-name="{{voter.name}}" title="{% trans "Remove voter" %}" class="glyphicon glyphicon-remove remove_voter"></i></a>
 			<!--<img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" />--> {{voter.name}}
 			</td>

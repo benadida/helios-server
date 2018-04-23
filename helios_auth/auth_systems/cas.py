@@ -8,6 +8,7 @@ https://sp.princeton.edu/oit/sdp/CAS/Wiki%20Pages/Python.aspx
 from django.http import *
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils import timezone
 
 import sys, os, cgi, urllib, urllib2, re, uuid, datetime
 from xml.etree import ElementTree
@@ -73,7 +74,7 @@ def get_saml_info(ticket):
        </samlp:Request>
      </soap-env:Body> 
   </soap-env:Envelope>
-""" % (uuid.uuid1(), datetime.datetime.utcnow().isoformat(), ticket)
+""" % (uuid.uuid1(), timezone.now().isoformat(), ticket)
 
   url = CAS_SAML_VALIDATE_URL % urllib.quote(_get_service_url())
 

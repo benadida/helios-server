@@ -5,6 +5,7 @@
 	<h3 class="title">{{election.name}}</h3>
 	<div class="col-md-4">
 	<form method="post" action="" role="form" class="form-horizontal">
+	<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 	<div class="form-group">
 	{% trans "Name:" %} <input type="text" name="name" size="60" />
 	</div>
