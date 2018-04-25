@@ -449,13 +449,17 @@ def trustee_send_url(request, election, trustee_uuid):
   trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
   
   url = settings.SECURE_URL_HOST + reverse(trustee_login, args=[election.short_name, trustee.email, trustee.secret])
+  try:
+      default_from_name = settings.DEFAULT_FROM_NAME.decode('utf8')
+  except UnicodeDecodeError:
+      default_from_name = settings.DEFAULT_FROM_NAME.decode('latin1')
   body  = _(u'You are a trustee for %(election_name)s \n') % {'election_name': election.name}
   body += _(u'Your trustee dashboard is at: \n %(url)s') % {'url': url}
   body += """
   --
   \n
   %s
-  """ % settings.DEFAULT_FROM_NAME
+  """ % default_from_name
   
   helios_utils.send_email(settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], _('your trustee homepage for %(election_name)s') % {'election_name': election.name}, body)
 

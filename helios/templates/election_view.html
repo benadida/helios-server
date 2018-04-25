@@ -153,8 +153,8 @@
 			<br /><br />
 			{% if election.voting_starts_at %}
 				{% blocktrans %}
-					once you do this, the election will be ready for voting and will open automatically<br />
-					at {{election.voting_starts_at}}, as per your settings.
+				once you do this, the election will be ready for voting and will open automatically<br />
+				at {{election.voting_starts_at}}, as per your settings.
 				{% endblocktrans %}
 			{% else %}
 				{% trans "once you do this, the election will be immediately open for voting." %}
@@ -244,8 +244,8 @@ Once you do this, the tally will visible to you, the administrator, only.
 			<br />
 			{% if election.voting_extended_until %}
             {% blocktrans with pretty_type=election.pretty_type|title voting_ends_at=election.voting_ends_at|date:"d/m/Y H:i"  voting_extended_until=election.voting_extended_until|date:"d/m/Y H:i" %}
-            This {{pretty_type}} was initially scheduled to end at {{voting_ends_at}}, but has been extended until {{ voting_extended_until }}.
-            {% endblocktrans %}
+	This {{pretty_type}} was initially scheduled to end at {{voting_ends_at}}, but has been extended until {{ voting_extended_until }}.
+	{% endblocktrans %}
 			{% else %}
 				{% if election.voting_ends_at %}
 					<br />
