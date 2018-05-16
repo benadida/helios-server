@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-25 13:56-0300\n"
+"POT-Creation-Date: 2018-04-26 14:13-0300\n"
 "PO-Revision-Date: 2015-10-14 16:16-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: \n"
@@ -1027,8 +1027,6 @@ msgid "copy"
 msgstr "copiar"
 
 #: helios/templates/election_view.html:31
-#, fuzzy, python-format
-#| msgid "this %(pretty_type)s is featured on the front page."
 msgid " this %(pretty_type)s is featured on the front page. "
 msgstr "Essa %(pretty_type)s está destacada na página inicial."
 
@@ -1113,11 +1111,19 @@ msgstr "congelar cédula e abrir eleição."
 #, python-format
 msgid ""
 "\n"
-"\t\t\t\tonce you do this, the election will be ready for voting and will "
-"open automatically<br />\n"
-"\t\t\t\tat %(election.voting_starts_at)s, as per your settings.\n"
+"once you do this, the election will be ready for voting and will open "
+"automatically<br />\n"
+"at %(voting_starts_at)s, as per your settings.\n"
 "\t\t\t\t"
 msgstr ""
+"\n"
+"Após fazer isso, a eleição estará pronta para votação e será aberta "
+"automaticamente <br/> \n"
+"em %(voting_starts_at)s, conforme configurado. \n"
+"ATENÇÃO:  caso você tenha cadastrado uma lista de eleitores, é necessário "
+"enviar email para os mesmos, para que recebam usuário e senha para votação. "
+"Sem esses dados, eles não poderão votar.\n"
+"\t\t\t\t"
 
 #: helios/templates/election_view.html:160
 msgid "once you do this, the election will be immediately open for voting."
@@ -1214,6 +1220,7 @@ msgid "Vote in this"
 msgstr "Votar nessa "
 
 #: helios/templates/election_view.html:246
+#, python-format
 msgid ""
 "\n"
 "\tThis %(pretty_type)s was initially scheduled to end at %(voting_ends_at)s, "
@@ -1505,7 +1512,7 @@ msgstr "Você está prestes a liberar o resultado para essa eleição."
 
 #: helios/templates/release_result.html:19
 msgid "Send email to voters reporting release of result."
-msgstr ""
+msgstr "Enviar email para os eleitores avisando do resultado."
 
 #: helios/templates/release_result.html:24
 msgid "release result!"
@@ -2244,7 +2251,7 @@ msgstr "Registre-se para votar %(election_name)s"
 msgid "Results are in for %(election_name)s"
 msgstr "Os resultados estão em %(election_name)s"
 
-#: helios/views.py:452
+#: helios/views.py:456
 #, python-format
 msgid "You are a trustee for %(election_name)s \n"
 msgstr ""
@@ -2253,7 +2260,7 @@ msgstr ""
 "Você foi designado como apurador para a eleição %(election_name)s.\n"
 "\n"
 
-#: helios/views.py:453
+#: helios/views.py:457
 #, python-format
 msgid ""
 "Your trustee dashboard is at: \n"
@@ -2272,26 +2279,26 @@ msgstr ""
 "possa acessar novamente sua página de apurador através do link fornecido "
 "acima."
 
-#: helios/views.py:460
+#: helios/views.py:464
 #, python-format
 msgid "your trustee homepage for %(election_name)s"
 msgstr ""
 "ATENÇÃO: Você foi designado como apurador para a eleição  %(election_name)s"
 
-#: helios/views.py:688
+#: helios/views.py:692
 #, python-format
 msgid "I voted in %(url)s - my smart tracker is %(vote_hash)s.. #heliosvoting"
 msgstr "Eu votei em %(url)s - meu rastreador é %(vote_hash)s.. #heliosvoting"
 
-#: helios/views.py:1036
+#: helios/views.py:1040
 msgid "registration is closed for this election"
 msgstr "registro fechado para essa eleição"
 
-#: helios/views.py:1309
+#: helios/views.py:1313
 msgid "Constraints successfully saved"
 msgstr "Restrições salvas com sucesso."
 
-#: helios/views.py:1353
+#: helios/views.py:1357
 msgid ""
 "your CSV file could not be processed. Please check that it is a proper CSV "
 "file."
@@ -2299,7 +2306,7 @@ msgstr ""
 "o seu arquivo CSV não pôde ser processado. Por favor, verifique se é um "
 "arquivo CSV válido."
 
-#: helios/views.py:1357
+#: helios/views.py:1361
 msgid ""
 "those don't look like correct email addresses. Are you sure you uploaded a "
 "file with email address as second field?"
@@ -2307,27 +2314,27 @@ msgstr ""
 "os dados não se parecem com e-mails válidos. Você tem certeza de que "
 "carregou um arquivo com o e-mail como segundo campo?"
 
-#: helios/views.py:1361
+#: helios/views.py:1365
 msgid "no voter file specified, try again"
 msgstr "nenhum arquivo carregado, tente novamente"
 
-#: helios/views.py:1381
+#: helios/views.py:1385
 msgid "Time to Vote"
 msgstr "Hora de Votar"
 
-#: helios/views.py:1382
+#: helios/views.py:1386
 msgid "Simple"
 msgstr "Simples"
 
-#: helios/views.py:1383
+#: helios/views.py:1387
 msgid "Additional Info"
 msgstr "Informação Adicional"
 
-#: helios/views.py:1384
+#: helios/views.py:1388
 msgid "Election Result"
 msgstr "Resultado da Eleição"
 
-#: helios/views.py:1389
+#: helios/views.py:1393
 msgid "bad template"
 msgstr "template inválido"
 

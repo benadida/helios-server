@@ -1,14 +1,14 @@
-Dear {{voter.name}},
+Caro(a) {{voter.name}},
 
-You have successfully cast a vote in {{election.name}}.
+Você depositou com sucesso um voto na eleição {{election.name}}.
 
-Your ballot is archived at: {{cast_vote_url}}
+O seu voto está guardado em: {{cast_vote_url}}
 
 {% if election.use_voter_aliases %}
-This election uses voter aliases to protect your privacy.
-Your voter alias is: {{voter.alias}}.
+Essa eleição usa pseudônimos para proteger a sua privacidade.
+O seu pseudônimo de eleitor é: {{voter.alias}}.
 {% endif %}
 
 --
 
-Helios
+Sistema de Votação Online do IFSC
