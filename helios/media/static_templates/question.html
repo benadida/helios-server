@@ -2,7 +2,7 @@
 {#foreach $T.questions as question}
 <div id="q_view_{$T.question$index}" tabindex="{$T.question$index}" class="question">
 <h4>
-{$T.question$index + 1}. {$T.question.question} ({$T.question.choice_type}, selecionar entre {$T.question.min} e {#if $T.question.max != null}{$T.question.max}{#else}ilimitado{#/if} resposta(s), tipo de resultado {$T.question.result_type}.)
+{$T.question$index + 1}. {$T.question.question} (selecionar entre {$T.question.min} e {#if $T.question.max != null}{$T.question.max}{#else}ilimitado{#/if} resposta(s).)
 {#if $T.admin_p}
 {#if $T.question$index > 0} <a href="javascript:question_move_up({$T.question$index});"><i title="Mover questão para cima (reordenar)." class="glyphicon glyphicon-arrow-up"></i></a>&nbsp;{#/if}
  <a  onclick="return confirm('Tem certeza de que deseja remover a questão?');" href="javascript:question_remove({$T.question$index})"><i title="Remover Questão" class="glyphicon glyphicon-remove"></i></a> <a href="javascript:question_edit({$T.question$index})"><i title="Editar Questão" class="glyphicon glyphicon-edit"></i></a> {#/if}</h4>

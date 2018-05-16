@@ -7,18 +7,18 @@ body {
 }
 
 #wrapper {
-  position: absolute;
+  position: relative;
   padding: 0px;
   background: white;
   border: 1px solid #666;
   top: 20px;
-  margin-left: 100px;
-  margin-top: 0px;
-  width: 1000px;
+  margin: auto;
+  max-width: 1000px;
+  width: 98%;
 }
 
 #content {
-  padding: 20px 30px 20px 30px;
+  padding: 10px 20px 10px 20px;
 }
 
 #header {
@@ -53,7 +53,7 @@ body {
 
 #progress_div {
   width: 100%;
-  font-size: 14pt;
+  font-size: 12pt;
 }
 
 #progress_div table {

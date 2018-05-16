@@ -13,7 +13,7 @@
 
 <p>
   {% trans "Your smart ballot tracker is:" %}<br /><br />
-    <tt style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_hash}}</tt>
+    <tt style="font-size: 12pt;width: 10em; word-wrap: break-word; font-weight: bold; padding-left: 20px;">{{vote_hash}}</tt>
 </p>
 
 <p>
@@ -24,13 +24,13 @@
 </p>-->
 
 {% if logout %}
-<p><span class="label label-info">{% trans "For your safety, we have logged you out." %}</span></p>
+<p><span style="font-size: 12pt;width: 10em; word-wrap: break-word; font-weight: bold; padding-left: 20px;">{% trans "For your safety, we have logged you out." %}</span></p>
 <iframe width="0" height="0" border="0" frameborder="0" src="/auth/logout">
 </iframe>
 {% endif %}
 
-<p style="font-size: 1.4em;">
-[ <a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "return to election info" %}</a> ]
+<p class="btn btn-success">
+ <a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "return to election info" %}</a> 
 </p>
 
 {% endblock %}

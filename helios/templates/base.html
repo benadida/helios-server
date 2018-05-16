@@ -9,6 +9,8 @@
     {% load staticfiles %}
   <head>
     <title>{% block title %}{% endblock %} - Helios</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     {% block css %}
       <!--
           <link rel="stylesheet" type="text/css"  media="screen, projection" href="{{ MEDIA_URL }}combined-{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}.css" />
