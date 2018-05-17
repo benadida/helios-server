@@ -1,34 +1,42 @@
 {% load i18n %}
 {% load staticfiles %}
-<nav class="navbar navbar-default top-bar" role="navigation">
-  <div class="container-fluid">
-    <div class="collapse navbar-collapse">
-        <ul class="nav navbar-nav navbar-right">
-              <li>
-                <a class="navbar-brand" style="color:#FFFFFF;" href="/">{% trans "Home" %}</a>
-              </li>
-            {% if user %}
-              {% if user.institutionuserprofile_set.get.is_institution_admin %}
-                <li>
-                  <a class="navbar-brand admin_menu" style="color:#FFFFFF;" href="{% url "heliosinstitution.views.dashboard" %}">Admin</a>
-                </li>
-	       {% elif user and user.admin_p %}
-		<li><a class="navbar-brand " style="color:#FFFFFF;" href="{% url "helios.stats_views.home" %}">Admin</a></li>
-              {% endif %}
-              {% if user.user_type != "shibboleth" %} 
-                <li>
-                  <a class="navbar-brand " style="color:#FFFFFF;" href="/auth/logout?return_url=/">{% trans "Logout" %}</a>
-                </li>
-              {% endif %}
-            {% else %}
-              <li>
-              <a class="navbar-brand" style="color:#FFFFFF;" href="{{SECURE_URL_HOST}}{% url "helios_auth.views.start" system_name=auth_system %}?return_url={{return_url}}">{% if settings.AUTH_DEFAULT_AUTH_SYSTEM == "shibboleth" %}{% trans "Federated Access" %} {% else %} {% trans "Login" %}{% endif %}</a>
-              </li>
-            {% endif %}
-	    <li>
-            	<a class="navbar-brand" style="color:#FFFFFF;" href="http://dtic.ifsc.edu.br/sistemas/sistema-de-votacao-on-line-helios/">{% trans "Help" %}</a>
-            </li>
-        </ul>
-    </div>
-  </div>
+<nav class="navbar navbar-default top-bar">
+	<div class="container-fluid">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+		</div>
+		<div class="collapse navbar-collapse navbar-right" id="bs-example-navbar-collapse-1">
+			<ul class="nav navbar-nav">
+				 <li>
+					<a class="navbar-brand" href="/">{% trans "Home" %}</a>
+				</li>
+				{% if user %}
+					{% if user.institutionuserprofile_set.get.is_institution_admin %}
+					<li>
+						<a class="navbar-brand admin_menu" href="{% url "heliosinstitution.views.dashboard" %}">Admin</a>
+					</li>
+					{% elif user and user.admin_p %}
+					<li><a class="navbar-brand" href="{% url "helios.stats_views.home" %}">Admin</a></li>
+					{% endif %}
+					{% if user.user_type != "shibboleth" %}
+					<li>
+						<a class="navbar-brand" href="/auth/logout?return_url=/">{% trans "Logout" %}</a>
+					</li>
+					{% endif %}
+			       {% else %}
+			       <li>
+				       <a class="navbar-brand" href="{{SECURE_URL_HOST}}{% url "helios_auth.views.start" system_name=auth_system %}?return_url={{return_url}}">{% if settings.AUTH_DEFAULT_AUTH_SYSTEM == "shibboleth" %}{% trans "Federated Access" %} {% else %} {% trans "Login" %}{% endif %}</a>
+				</li>
+				{% endif %}
+				<li>
+					<a class="navbar-brand" href="http://dtic.ifsc.edu.br/sistemas/sistema-de-votacao-on-line-helios/">{% trans "Help" %}</a>
+				</li>
+			</ul>
+		</div>
+	</div>
 </nav>
