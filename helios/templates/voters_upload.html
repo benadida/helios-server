@@ -5,7 +5,7 @@
 <div class="col-md-12">
 <form method="post" role="form" class="form-horizontal" action="" id="upload_form" enctype="multipart/form-data">
    <div class="form-group">
-  <h2 class="title">{% trans "Bulk Upload Voters" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "back to election" %}</a>]</span></h2>
+  <h2 class="title">{% trans "Bulk Upload Voters" %}</h2>
   <h3 class="title">{{election.name}}</h3>
  <pre>
    {% trans "&lt;unique_id&gt;,&lt;email&gt,&lt;full name&gt;" %}
@@ -29,7 +29,8 @@
     <input class="btn btn-primary" type="file" name="voters_file" value="{% trans "Browse" %}"/>
     </div>
     <div class="form-group">
-    <input class="btn btn-primary" type="submit" value="{% trans "go" %}" />
+        <input class="btn btn-primary" type="submit" value="{% trans "go" %}" />
+        <a class="btn btn-danger" href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "back to election" %}</a>
     </div>
 </form>
 

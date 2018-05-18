@@ -149,6 +149,7 @@
 		{% else %}
 			<a href="{% url "helios.views.one_election_freeze" election.uuid %}">{% trans "freeze ballot and open election." %}</a>
 			<br />
+			<br />
 			{% if election.voting_starts_at %}
 				{% blocktrans  with voting_starts_at=election.voting_starts_at|date:"d/m/Y H:i:s"%} once you do this, the election will be ready for voting and will open automatically<br />
 				at {{voting_starts_at}}, as per your settings.

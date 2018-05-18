@@ -30,8 +30,10 @@
       </select>
       </div>
   </div>
-<div class="form-group">
-<table class="table table-striped" id="answer_table_{$T.question$index}">
+
+<div class="table-responsive">
+
+<table class="table table-striped form-group" id="answer_table_{$T.question$index}">
   <tbody>
     <tr><th colspan="2">Questão:</th><td><input type="text" name="question" size="70" /></td></tr>
     <tr><th colspan="2"></th>
@@ -58,7 +60,7 @@
   </tbody>
   <tfoot>
     <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table_{$T.question$index}'),5)">adicionar mais 5 respostas</a> <i title="Se precisar mais campos de resposta. Não vai ser necessário preencher todos." class="glyphicon glyphicon-question-sign"></i></th></tr>
-    <tr><td colspan="3"><button type="submit" class="btn-primary">atualizar questão </button> <button type="reset" class="btn-warning" onclick="question_edit_cancel({$T.question$index});">cancelar</button></td></tr>
+    <tr><td colspan="3"><button type="submit" class="btn btn-primary">atualizar questão </button> <button type="reset" class="btn btn-danger" onclick="question_edit_cancel({$T.question$index});">cancelar</button></td></tr>
   </tfoot>
 
 </table>
@@ -75,10 +77,9 @@
 {#if $T.admin_p}
 <br><br><br>
 <div class="row">
-<div class="col-md-12">
-<div class="well">
-<h4><span>Adicionar Questão:</span></h4>
-<br><br>
+<div class="panel panel-primary">
+<div class="panel-heading">Adicionar Questão:</div>
+<div class="panel-body">
 <form class="form-horizontal" role="form" id="question_form" onsubmit="question_add(this); return false;" action="#">
     <div class="form-group">
         <div id="result_type" style="display:none;">
@@ -89,38 +90,38 @@
         </select>
         </div>
     </div>
-<div class="form-group">
-<table class="table table-striped" id="answer_table">
-  <tbody>
- <tr><th colspan="2">Questão:</th><td><input type="text" name="question" size="70" /> <i title="A pergunta a ser feita ao eleitor." class="glyphicon glyphicon-question-sign"></i></td></tr>
-    <tr><th colspan="2"></th><td>
-O eleitor deve selecionar no mínimo
-<select name="min">
-    <option selected>0</option>
-{#for option_index = 1 to 20}
-    <option>{$T.option_index}</option>
-{#/for}
-</select>
+<div class="form-group table-responsive">
+    <table class="table table-striped" id="answer_table">
+      <tbody>
+     <tr><th colspan="2">Questão:</th><td><input type="text" name="question" size="70" /> <i title="A pergunta a ser feita ao eleitor." class="glyphicon glyphicon-question-sign"></i></td></tr>
+        <tr><th colspan="2"></th><td>
+    O eleitor deve selecionar no mínimo
+    <select name="min">
+        <option selected>0</option>
+    {#for option_index = 1 to 20}
+        <option>{$T.option_index}</option>
+    {#/for}
+    </select>
 
- e no máximo
+     e no máximo
 
-<select name="max">
-    <option>0</option>
-    <option selected>1</option>
-{#for option_index = 2 to 50}
-    <option>{$T.option_index}</option>
-{#/for}
-    <option value="">- (ilimitado)</option>
-</select>
- alternativas.</td></tr>
-  </tbody>
-  <tfoot>
-    <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table'), 5)">adicionar mais 5 respostas</a> <i title="Se precisar mais campos de resposta. Não vai ser necessário preencher todos." class="glyphicon glyphicon-question-sign"></i></th></tr>
-    <tr><td colspan="2"><button type="submit" class="btn-primary">adicionar questão</button></td></tr>
-  </tfoot>
+    <select name="max">
+        <option>0</option>
+        <option selected>1</option>
+    {#for option_index = 2 to 50}
+        <option>{$T.option_index}</option>
+    {#/for}
+        <option value="">- (ilimitado)</option>
+    </select>
+     alternativas.</td></tr>
+      </tbody>
+      <tfoot>
+        <tr><th colspan="2"></th><th><a href="javascript:add_answers($('#answer_table'), 5)">adicionar mais 5 respostas</a> <i title="Se precisar mais campos de resposta. Não vai ser necessário preencher todos." class="glyphicon glyphicon-question-sign"></i></th></tr>
+        <tr><td colspan="2"><button type="submit" class="btn btn-primary">adicionar questão</button></td></tr>
+      </tfoot>
 
-</table>
-</div>
+    </table>
+    </div>
 </form>
 </div>
 </div>

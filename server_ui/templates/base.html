@@ -17,6 +17,7 @@
   <script language="javascript" src={% static "js/jquery-1.11.2.min.js" %}></script>
   <script language="javascript" src={% static "js/jquery-ui-1.8.1.custom.min.js" %}></script>
   <script language="javascript" src={% static "js/jqsplitdatetime.js" %}></script>
+  <script language="javascript" src={% static "bootstrap/js/collapse.js" %}></script>
   <script language="javascript" src={% static "js/jquery.json.min.js" %}></script>
   <script language="javascript" src={% static "foundation/js/foundation.min.js" %}></script>
 
@@ -31,21 +32,12 @@
 <body>
   {% include "navbar.html" %}
   <!-- Main Page Content and Sidebar -->
-
+<br><br><br>
   <div class="container">
       {% block content %}
         {% block subcontent %}{% endblock subcontent %}
       {% endblock %}
   </div>
-
-  {% if user %}
-      <div class="panel-footer">
-      {% block footer %}
-         {% trans "logged in as" %} <b>{{user.pretty_name|safe}}</b>
-          <br clear="right" />
-      {% endblock footer%}
-      </div>
-  {% endif %}
 
       <script>
 	$(document).foundation();
@@ -55,4 +47,14 @@
 <link rel="stylesheet" type="text/css" media="screen" href="{% static "datetimepicker/jquery.datetimepicker.css" %}"/ >
 <script language="javascript" src={% static "datetimepicker/jquery.datetimepicker.full.js" %}></script>
 
+  {% if user %}
+      <div id="footer">
+      <div class="container" id="container-footer">
+      {% block footer %}
+         {% trans "logged in as" %} <b>{{user.pretty_name|safe}}</b>
+          <br clear="right" />
+      {% endblock footer%}
+      </div>
+      </div>
+  {% endif %}
 </html>

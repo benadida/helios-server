@@ -6,7 +6,6 @@
 {% endif %}
 <div id="header" class="col-md-12">
   <h2 class="title">{% trans "Extend Voting" %}
-    <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "cancel" %}</a>]</span>
   </h2>
   <h3 class="title">{{election.name}}</h3>
 </div>
@@ -23,6 +22,7 @@
   {% endfor %}
   <div class="form-group">
     <button id="next_button" type="submit" class="btn btn-primary">{% trans "Extend Voting" %}</button>
+    <a class="btn btn-danger" href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "cancel" %}</a>
   </div>
   </form>
 </div>
