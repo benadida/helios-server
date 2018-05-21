@@ -130,17 +130,21 @@ def voter_file_process(voter_file_id):
     activate(settings.LANGUAGE_CODE)
     voter_file = VoterFile.objects.get(id = voter_file_id)
     voter_file.process()
-    election_notify_admin.delay(election_id = voter_file.election.id, 
-                                subject = _('voter file processed'),
-                                body = """
-Your voter file upload for election %s
-has been processed.
+    subject = _(u'voter file processed')
+    body = _(u'Your voter file upload for %(election_name)s has been processed\n ') % {'election_name': voter_file.election.name}
+    body += _(u'%(number_of_voters)s voters have been created \n\n') % {'number_of_voters': voter_file.num_voters}
+    try:
+        default_from_name = settings.DEFAULT_FROM_NAME.decode('utf8')
+    except UnicodeDecodeError:
+        default_from_name = settings.DEFAULT_FROM_NAME.decode('latin1')
 
-%s voters have been created.
-
---
-Helios
-""" % (voter_file.election.name, voter_file.num_voters))
+    body += """
+    --
+    \n
+    %s
+    """ % default_from_name
+    election_id = voter_file.election.id
+    election_notify_admin.delay(election_id, subject, body)
 
 @task()
 def election_notify_admin(election_id, subject, body):
