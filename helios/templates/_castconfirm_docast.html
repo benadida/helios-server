@@ -5,7 +5,7 @@
 <div id="cast_form">
 <form id="cast_confirm_form" method="post" action="" onsubmit="show_waiting()">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    
+
 {% if status_update_label %}
 <div class="round" style="background: #eee; padding: 10px; border: 1px dashed #888;">
 <input type="checkbox" name="status_update" value="1" checked /> {{status_update_label}}<br />
@@ -16,21 +16,15 @@
 </div>
 <br />
 {% endif %}
+{% trans "You are logged in as" %} <u>{{voter|safe}}</u><br /><br />
 
-{% trans "You are logged in as" %} <u>{{voter.user.pretty_name|safe}}</u><br /><br />
-
-    <button class="btn btn-primary" type="submit" class="large">{% trans "CAST this ballot" %}</button>
-    <span style="font-size:0.8em;"><br />{% blocktrans %}You can cast as many ballots as you want.<br />Only the last one counts.{% endblocktrans %}</span>
+    <button class="btn btn-primary" type="submit" >{% trans "CAST this ballot" %}</button>
+    <button class="btn btn-danger" type="button" onclick="document.location='/auth/logout';">{% trans "cancel" %}</button><br />
 </form>
-
-<p>
-    <button class="btn btn-danger" onclick="document.location='./view';">{% trans "cancel" %}</button><br />
-    <span style="font-size:0.8em;">{% blocktrans %}If you cancel now, your ballot will <em>NOT</em> be recorded.<br />
+<p>&nbsp;
+    <p><span style="font-size:0.9em;">{% blocktrans %}If you cancel now, your ballot will <em>NOT</em> be recorded.<br />
     You can start the voting process over again, of course.{% endblocktrans %}</span>
 </p>
-
-<!-- for now, for CSRF protection, no auto-submit just yet (benadida) -->
-<!-- <script>$('#cast_confirm_form').submit()</script> -->
 
 </div>
   {% else %}

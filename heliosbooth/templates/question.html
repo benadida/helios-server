@@ -7,13 +7,14 @@
 <b>{$T.question.question}</b>
 </span>
 <br />
+
 <span style="font-size: 0.9em;">questão {$T.question_num + 1} de {$T.last_question_num + 1} &mdash;
  você deve marcar
 {#if $T.question.max && $T.question.min == 0}
  no máximo {$T.question.max}
 {#else}
 {#if $T.question.min && $T.question.min > 0}
-no mínimo
+ no mínimo
 {#if $T.question.max}
 {$T.question.min} e no máximo {$T.question.max}
 {#else}
@@ -28,6 +29,8 @@ quantas desejar
 {#/if}
 {#/if}
 </span>
+
+
 </p>
 <span style="font-size: 1.1em;">
 {#foreach $T.question.answers as answer}

@@ -1,36 +1,27 @@
 {% extends TEMPLATE_BASENONAV %}
 {% load i18n %}
-{% block title %}{% trans "Confirm Vote" %}{% endblock %}
+{% block title %}Voto depositado!{% endblock %}
 
 {% block content %}
-<h1>{{election.name}} &mdash; {% trans "Vote Successfully Cast!" %}</h1>
-
-<p>
+<h2>{{election.name}}</h2>
+<br>
+<h4>
 {% blocktrans %}
     Congratulations, your vote has been <b><u>successfully cast</u></b>!
 {% endblocktrans %}
-</p>
-
+</h4>
+<br>
+<div class="alert alert-info" role="alert">
 <p>
-  {% trans "Your smart ballot tracker is:" %}<br /><br />
-    <tt style="font-size: 12pt;width: 10em; word-wrap: break-word; font-weight: bold; padding-left: 20px;">{{vote_hash}}</tt>
+{% trans "Your smart ballot tracker is:" %}
+  <tt style="font-size: 10pt;width: 10em; word-wrap: break-word; font-weight: bold; ">  {{vote_hash}}</tt>
 </p>
-
-<p>
-{% trans "You can use it to verify that your vote has been cast, "%}<a href="{% url "helios.views.voters_list_pretty" election.uuid %}">{% trans "clicking here" %}</a>.
-</p>
-<!--<p>
-<iframe src="{{socialbuttons_url}}" frameborder="0" border="0" style="width: 300px; height:35px;" scrolling="no" align="middle"></iframe>
-</p>-->
+</div>
 
 {% if logout %}
-<p><span style="font-size: 12pt;width: 10em; word-wrap: break-word; font-weight: bold; padding-left: 20px;">{% trans "For your safety, we have logged you out." %}</span></p>
+<p><span class="label label-info">{% trans "For your safety, we have logged you out." %}</span></p>
 <iframe width="0" height="0" border="0" frameborder="0" src="/auth/logout">
 </iframe>
 {% endif %}
-
-<p class="btn btn-success">
- <a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "return to election info" %}</a> 
-</p>
 
 {% endblock %}

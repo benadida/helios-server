@@ -244,9 +244,10 @@ Once you do this, the tally will visible to you, the administrator, only.
 			{% if election.private_p and voter %}
 				<br />
 {% blocktrans %}
-This election is <em>private</em>. You are signed in as eligible voter <em>{{voter.name}}</em>.
+This election is <em>private</em>. You are signed in as eligible voter:  <em>{{ voter }}</em>.
 {% endblocktrans %}
 			{% endif %}
+            <br>
 			<div class="highlight-box round" style="font-size: 1.2em; margin-right: 400px; display:none;" id="nojava_message">
 {% blocktrans %}
 You do not have Java installed in your browser.<br />At this time, Helios requires Java.<br />

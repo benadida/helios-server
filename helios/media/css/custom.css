@@ -16,7 +16,8 @@
     color:#eef1ec;
 }
 #progress_div td.selected {
-  background:#2f9e40;
+  background:#0d4f4d;
+  color:#eef1ec;
 }
 .btn-primary,a.btn,.btn-lg,.btn-primary {
 	background-color:#0d4f4d;
@@ -35,7 +36,7 @@ a:hover, a:focus {
 	background-color:#2f9e40;
 }
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary {
-  color: #3c4146;
+  color: #eef1ec;
   background-color: #2f9e40;
   /*border-color: #0d4f4d;*/
 }
@@ -92,6 +93,28 @@ html {
     color: #eef1ec;
 }
 
+.alert-warning {
+    background-color: #0f5f5c;
+    border-color: #0f5f5c;
+    color: #eef1ec;
+}
 input {
     color: #333;
+}
+
+a {
+    font-weight: bold;
+    color: #2f9e40;
+    text-decoration: none;
+}
+
+div.selected {
+    background: none;
+    border-color: #45981e;
+    border-width:1px;
+    border-style:solid;
+}
+
+a.link-booth {
+    color: #eef1ec;
 }
