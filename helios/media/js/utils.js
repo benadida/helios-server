@@ -48,5 +48,6 @@ $("document").ready(function(){
         return false;
     });
 
+    $("#voter_id").focus();
 
 })
