@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-05-23 16:43-0300\n"
+"POT-Creation-Date: 2018-05-23 17:14-0300\n"
 "PO-Revision-Date: 2015-10-14 16:16-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: \n"
@@ -289,11 +289,19 @@ msgstr ""
 
 #: helios/templates/_castconfirm_docast.html:32
 msgid "voting has stopped, sorry."
-msgstr "a votação parou, desculpe-nos."
+msgstr "Desculpe-nos, mas a votação para esta eleição já foi finalizada."
 
 #: helios/templates/_castconfirm_docast.html:37
 msgid "voting has not yet begun, sorry."
-msgstr "a votação ainda não está aberta, desculpe-nos."
+msgstr "Desculpe-nos, mas a votação ainda não está aberta para esta eleição."
+
+#: helios/templates/_castconfirm_docast.html:44
+msgid "Visit"
+msgstr "Acesse"
+
+#: helios/templates/_castconfirm_docast.html:44
+msgid "for more info."
+msgstr "para mais informações."
 
 #: helios/templates/_castconfirm_password.html:2
 msgid "Please provide the voter ID and password you received by email."
@@ -328,7 +336,7 @@ msgstr "Conectar"
 msgid "logged in as"
 msgstr "Conectado como "
 
-#: helios/templates/cast_done.html:10
+#: helios/templates/cast_done.html:9
 msgid ""
 "\n"
 "    Congratulations, your vote has been <b><u>successfully cast</u></b>!\n"
@@ -343,11 +351,11 @@ msgstr ""
 # "pública da eleição, através do link abaixo, e verificar que o número "
 # "rastreador da sua célula aparece na listagem de cédulas depositadas na urna. "
 # "Essa é a sua garantiria que seu voto será contabilizado corretamente.\n"
-#: helios/templates/cast_done.html:19
+#: helios/templates/cast_done.html:16
 msgid "Your smart ballot tracker is:"
 msgstr "O número do rastreador da sua cédula é:"
 
-#: helios/templates/cast_done.html:24
+#: helios/templates/cast_done.html:22
 msgid "For your safety, we have logged you out."
 msgstr ""
 "Você foi desconectado. Por favor, para sua segurança, feche seu navegador."

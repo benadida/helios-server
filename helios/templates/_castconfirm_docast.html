@@ -28,12 +28,19 @@
 
 </div>
   {% else %}
-<p style="font-size:1.4em;">
+<p>
   {% trans "voting has stopped, sorry." %}
 </p>
   {% endif %}
 {% else %}
-<p style="font-size:1.4em;">
+<p>
   {% trans "voting has not yet begun, sorry." %}
 </p>
+
+{% endif %}
+
+{% if not election.voting_has_started or election.voting_has_stopped %}
+    <p>
+        {% trans "Visit"  %}  <a href="{{ election.url }}"> {{election.name}} </a> {% trans "for more info." %}
+    </p>
 {% endif %}
