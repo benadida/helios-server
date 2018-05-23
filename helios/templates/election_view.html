@@ -11,7 +11,6 @@
 <!-- election info -->
 <div class="row">
   <div class="col-xs-12 col-md-12">
-	{% trans "Election type" %}: <em>{% if election.private_p %}{% trans "private" %}{%else%}{% trans "public" %}{% endif %}</em> -
 	{% if settings.SHOW_USER_INFO %} {% trans "created by" %} <u><b>{{election.admin.pretty_name}}</b></u>{% endif %}
 	{% if election.is_archived %} {% trans "[archived]" %}{% endif %}
 	{% if admin_p %}
