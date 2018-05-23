@@ -22,7 +22,7 @@
 				 <li>
 					<a class="navbar-brand " style="color:#FFFFFF;" href="/">{% trans "Home" %}</a>
 				</li>
-				{% if user %}
+				{% if user or voter %}
 					{% if user.institutionuserprofile_set.get.is_institution_admin %}
 					<li>
 						<a class="navbar-brand " style="color:#FFFFFF;" href="{% url "heliosinstitution.views.dashboard" %}">Admin</a>
