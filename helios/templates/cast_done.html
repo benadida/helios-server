@@ -11,15 +11,16 @@
 {% endblocktrans %}
 </h4>
 <br>
-<div class="alert alert-info" role="alert">
 <p>
+<span class="alert alert-info" role="alert">
+
 {% trans "Your smart ballot tracker is:" %}
   <tt style="font-size: 10pt;width: 10em; word-wrap: break-word; font-weight: bold; ">  {{vote_hash}}</tt>
+</span>
 </p>
-</div>
-
+<br><br>
 {% if logout %}
-<p><span class="label label-info">{% trans "For your safety, we have logged you out." %}</span></p>
+<p><span>{% trans "For your safety, we have logged you out." %}</span></p>
 <iframe width="0" height="0" border="0" frameborder="0" src="/auth/logout">
 </iframe>
 {% endif %}
