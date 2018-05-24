@@ -39,13 +39,14 @@
         {% block subcontent %}{% endblock subcontent %}
       {% endblock %}
   </div>
-
   {% if user %}
-      <div class="panel-footer">
+      <div id="footer">
+      <div class="container" id="container-footer">
       {% block footer %}
          {% trans "logged in as" %} <b>{{user.pretty_name|safe}}</b>
           <br clear="right" />
       {% endblock footer%}
+      </div>
       </div>
   {% endif %}
 
