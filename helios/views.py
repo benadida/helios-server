@@ -779,7 +779,7 @@ def one_election_cast_done(request, election):
     if voter.user == user and voter.user != None:
       logout = settings.LOGOUT_ON_CONFIRMATION
     else:
-      logout = False
+      logout = True
       del request.session['CURRENT_VOTER_ID']
 
     save_in_session_across_logouts(request, 'last_vote_hash', vote_hash)
@@ -1431,13 +1431,18 @@ def voters_email(request, election):
       # the client knows to submit only once with a specific voter_id
       subject_template = 'email/%s_subject.txt' % template
       body_template = 'email/%s_body.txt' % template
+      try:
+          default_from_name = settings.DEFAULT_FROM_NAME.decode('utf8')
+      except UnicodeDecodeError:
+          default_from_name = settings.DEFAULT_FROM_NAME.decode('latin1')
 
       extra_vars = {
         'custom_subject' : email_form.cleaned_data['subject'],
         'custom_message' : email_form.cleaned_data['body'],
         'election_vote_url' : election_vote_url,
         'election_url' : election_url,
-        'election' : election
+        'election' : election,
+        'default_from_name': default_from_name
         }
         
       voter_constraints_include = None

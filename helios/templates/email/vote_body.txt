@@ -1,28 +1,55 @@
-Caro (a) {{voter.name}},
+<!doctype html>
+<html lang="pt-br">
+<title>{{default_from_name|safe|linebreaksbr}}</title>
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
+<p>Caro (a) <strong>{{voter.name}}</strong>,
+<br>
+<p>{{custom_message|safe|linebreaksbr}}</p>
+<br>
+<p> URL da Eleição: {{election_vote_url}}</p>
 
-{{custom_message|safe}}
+<p>Código de Identificação da Eleição: {{voter.election.hash}}</p>
+<br>
 
-URL da Eleição: {{election_vote_url}}
-Código de Identificação da Eleição: {{voter.election.hash}}
 {% ifequal voter.voter_type "password" %}
-Seu ID de eleitor: {{voter.voter_login_id}}
-Sua senha para essa eleição: {{voter.voter_password}}
+<p>
+    <strong>Seu ID de eleitor</strong>: {{voter.voter_login_id}}<br>
+    <strong>Sua senha para essa eleição</strong>: {{voter.voter_password}}<br>
+</p>
 {% else %}
-Conecte-se com seu usuário e senha dos sistemas do IFSC.
-{% endifequal %}{% if voter.vote_hash %}
-O seu voto foi registrado com o seguinte código de identificação:
+<p>Conecte-se com seu usuário e senha dos sistemas do IFSC.</p>
+{% endifequal %}
 
-  {{voter.vote_hash}}
-
-Você pode depositar quantos votos quiser, apenas o último voto será contabilizado.
-{% endif %}{% if election.use_voter_aliases %}
-
-Para proteger a sua privacidade, essa eleição está configurada para utilizar um pseudônimo de eleitor, assim seu login, nome ou email não será mostrado para o público em geral. Portanto, ao invés de seu nome, o centro de rastreamento de cédula vai listar apenas o seu pseudônimo.
-
-Seu pseudônimo de eleitor: {{voter.alias}}.
-IMPORTANTE: quando você for solicitado a informar seu login para votar, informe seu *ID de eleitor* ao invés de seu pseudônimo.
-
+{% if voter.vote_hash %}
+<p>
+   O seu voto foi registrado com o seguinte código de identificação:
+<br><br>
+  <strong> {{voter.vote_hash}}</strong>
+<br>
+</p>
 {% endif %}
 
+{% if election.use_voter_aliases %}
+<p>
+Para proteger a sua privacidade, essa eleição está configurada para utilizar um pseudônimo de eleitor, assim seu login, nome ou email não serão mostrados para o público em geral. Portanto, ao invés de seu nome, o centro de rastreamento de cédula vai listar apenas o seu pseudônimo.
+<br>
+Seu pseudônimo de eleitor: <strong>{{voter.alias}}</strong>.<br>
+IMPORTANTE: quando você for solicitado a informar seu login para votar, informe seu *ID de eleitor* ao invés de seu pseudônimo.
+</p>
+{% endif %}
+<br>
+<p>Você pode depositar quantos votos quiser, apenas o último voto será contabilizado.</p>
 --
-Sistema de Votação Online do IFSC
+<br>
+<font style="" size="1" face="verdana, sans-serif"><b style="">Instituto Federal de Santa Catarina - Reitoria</b>
+</font>
+<br>
+<font style="" size="1" face="verdana, sans-serif">Rua 14 de Julho, 150, Coqueiros, Florianópolis / SC - CEP: 88075-010</font>
+<br>
+<u><a href="http://www.ifsc.edu.br" target="_blank" style=""><font style="" face="verdana, sans-serif">www.ifsc.edu.br</font></a></u>
+
+</body>
+</html>

@@ -88,6 +88,13 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
     the_vars = copy.copy(extra_vars)
     the_vars.update({'voter' : voter})
 
+    try:
+        default_from_name = settings.DEFAULT_FROM_NAME.decode('utf8')
+    except UnicodeDecodeError:
+        default_from_name = settings.DEFAULT_FROM_NAME.decode('latin1')
+
+    the_vars.update({'default_from_name': default_from_name})
+
     notification = render_template_raw(None, notification_template, the_vars)
 
     voter.send_notification(notification)
