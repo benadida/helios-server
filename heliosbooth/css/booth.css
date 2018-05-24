@@ -15,10 +15,12 @@ body {
   margin: auto;
   max-width: 1000px;
   width: 98%;
+  height:80%;
 }
 
 #content {
   padding: 10px 20px 10px 20px;
+  background-color:#eef1ec;
 }
 
 #header {
@@ -69,7 +71,7 @@ body {
 }
 
 #progress_div td.selected {
-  background: #fc9;
+  background-color:#eef1ec;
   color: black;
   font-weight: bold;
   border: 1px solid black;
@@ -92,6 +94,18 @@ body {
   padding: 5px 0px 2px 5px;
 }
 
+div#page,
+div#election_div,
+div#answer_form,
+div#confirm_div,
+div#processing_div,
+div#encrypting_div,
+div#seal_div,
+div#loading_div,
+div#audit_div {
+  background-color:#eef1ec;
+}
+
 h3 {
 	font-size: 1.6em;
 }
@@ -106,4 +120,8 @@ h3 {
 
 #loading_div {
   display: none;
+}
+
+.panel {
+    border: none;
 }
