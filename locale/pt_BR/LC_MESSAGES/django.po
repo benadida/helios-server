@@ -289,7 +289,7 @@ msgstr ""
 
 #: helios/templates/_castconfirm_docast.html:32
 msgid "voting has stopped, sorry."
-msgstr "Desculpe-nos, mas a votação para esta eleição já foi finalizada."
+msgstr "Desculpe-nos, o período para depositar cédulas já encerrou."
 
 #: helios/templates/_castconfirm_docast.html:37
 msgid "voting has not yet begun, sorry."
@@ -1137,11 +1137,11 @@ msgid ""
 "trustees will be asked to provide their share of the decryption.\n"
 msgstr ""
 "\n"
-"Fechar eleição, ninguém mais poderá votar.</a><br />\n"
+"Iniciar a apuração dos votos, ninguém mais poderá votar.</a><br />\n"
 
 #: helios/templates/election_view.html:181
 msgid "release result"
-msgstr "liberar o resultado"
+msgstr "tornar público o resultado"
 
 #: helios/templates/election_view.html:182
 msgid ""
@@ -1151,7 +1151,8 @@ msgid ""
 msgstr ""
 "\n"
 "O resultado mostrado abaixo está visível apenas para você.<br />\n"
-"Após você liberar o resultado, estará visível para todo mundo.\n"
+"Após você tornar público o resultado, o mesmo estará disponível para todos "
+"com direito de acesso à esta página.\n"
 
 #: helios/templates/election_view.html:190
 msgid "compute results"
