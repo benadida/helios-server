@@ -1,21 +1,47 @@
-Caro (a) {{voter.name}},
+<!doctype html>
+<html lang="pt-br">
+<title>{{default_from_name|safe|linebreaksbr}}</title>
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
 
-A apuração da eleição {{election.name}} foi realizada e liberada:
+<p>Caro (a) {{voter.name}},</p>
 
+<br>
+<p>
+A apuração da eleição <strong>{{election.name}}</strong> foi realizada e liberada:
+<br>
+<br>
   {{election_url}}
-
-{{custom_message|safe}}
-
+<br>
+{{custom_message|safe|linebreaksbr}}
+</p>
+<br>
 {% if voter.vote_hash %} O código de rastreamento de sua cédula nessa eleição foi:
-
-  {{voter.vote_hash}}
-
+<br>
+<p>
+  <em>{{voter.vote_hash}}</em>
+<br>
+<br>
 Se você acha que esse rastreador está errado, por favor, entre em contato.
+<br>
+</p>
 {% else %}
+<p>
 Parece que você não votou nessa eleição. Se você acha que votou, por favor, entre em contato.
-
+</p>
 {% endif %}
-
+<br>
 --
-Sistema de Votação Online do IFSC
+<br>
+<font style="" size="1" face="verdana, sans-serif"><b style="">Instituto Federal de Santa Catarina - Reitoria</b>
+</font>
+<br>
+<font style="" size="1" face="verdana, sans-serif">Rua 14 de Julho, 150, Coqueiros, Florianópolis / SC - CEP: 88075-010</font>
+<br>
+<u><a href="http://www.ifsc.edu.br" target="_blank" style=""><font style="" face="verdana, sans-serif">www.ifsc.edu.br</font></a></u>
+
+</body>
+</html>
 

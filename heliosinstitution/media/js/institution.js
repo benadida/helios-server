@@ -156,6 +156,8 @@ $("document").ready(function(){
         var url = $(this).data('url');
         var institution_name = $(this).parents('tr').data('institution');
         var election_type = $(this).data('type');
+	var year = $('select[name=year] option:selected').val();
+	if (year) { url = url + year}
         table.clear();
         $.getJSON(url, function(data) {
             $.each( data.elections, function( i, item ) {

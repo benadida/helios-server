@@ -234,6 +234,8 @@ HELP_EMAIL_ADDRESS = get_from_env('HELP_EMAIL_ADDRESS', 'shirlei@gmail.com')
 
 AUTH_TEMPLATE_BASE = "server_ui/templates/base.html"
 HELIOS_TEMPLATE_BASE = "server_ui/templates/base.html"
+AUTH_TEMPLATE_BASENONAV = "server_ui/templates/basenonav.html"
+HELIOS_TEMPLATE_BASENONAV = "server_ui/templates/basenonav.html"
 HELIOS_ADMIN_ONLY = False
 HELIOS_VOTERS_UPLOAD = True
 HELIOS_VOTERS_EMAIL = True
@@ -327,13 +329,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
     "email": "mail",
 }
 
-AUTH_LDAP_GROUP_TYPE = GroupOfNamesType(name_attr="cn")
-
-AUTH_LDAP_FIND_GROUP_PERMS = True
-
 AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = True
-AUTH_LDAP_CACHE_GROUPS = True
-AUTH_LDAP_GROUP_CACHE_TIMEOUT = 3600
 
 AUTH_LDAP_ALWAYS_UPDATE_USER = False
 
@@ -372,3 +368,5 @@ if ROLLBAR_ACCESS_TOKEN:
     'access_token': ROLLBAR_ACCESS_TOKEN,
     'environment': 'development' if DEBUG else 'production',  
   }
+
+FEATURE_ELECTION = False

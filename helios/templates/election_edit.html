@@ -4,11 +4,12 @@
 {% if error %}
 <div style="color: red;">{{error}}</div>
 {% endif %}
-<div id="header" class="col-md-12"> 
-  <h2 class="title">{% trans "Update" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "cancel" %}</a>]</span></h2>
+
+<div class="panel panel-primary">
+<div id="header" class="panel-heading">
   <h3 class="title">{{election.name}}</h3>
 </div>
-<div class="col-md-12">
+<div class="panel-body">
   <form class="form-horizontal" role="form" action="" method="POST" id="create_election_form">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
   {% for field in election_form.visible_fields %}
@@ -21,10 +22,11 @@
       </div>
     </div> 
   {% endfor %}
-  <div class="form-group">
-    <button id="next_button" type="submit" class="btn btn-primary">{% trans "Next" %}</button>
+  <div class="pull-right">
+    <button id="next_button" type="submit" class="btn btn-primary">{% trans "Update" %}</button>
+    <a class="btn btn-danger" href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "Cancel" %}</a>
   </div>
   </form>
 </div>
-
+</div>
 {% endblock %}

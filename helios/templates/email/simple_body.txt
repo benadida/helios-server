@@ -1,14 +1,32 @@
-Dear {{voter.name}},
+<!doctype html>
+<html lang="pt-br">
+<title>{{default_from_name|safe|linebreaksbr}}</title>
+<head>
+    <meta charset="utf-8">
+</head>
+<body>
+<p><strong> Caro(a) {{voter.name}},</strong></p>
 
-{{custom_message|safe}}
+<p>{{custom_message|safe|linebreaksbr}}
 
-========
-How to Vote
-
-Election URL:  {{election_vote_url}}
+<p>Para votar nessa eleição, clique no link: {{election_vote_url}}</p>
+<br>
 {% ifequal voter.voter_type "password" %}
-Your voter ID: {{voter.voter_login_id}}
-Your password: {{voter.voter_password}}
+<p><strong>Seu ID de eleitor:</strong> {{voter.voter_login_id}}
+<br><strong>Sua senha para votar nessa eleição:</strong> {{voter.voter_password}}</p>
 {% else %}
-Log in with your {{voter.voter_type}} account.
+<p>
+Autentique-se com sua conta de usuário {{voter.voter_type}}.
+</p>
 {% endifequal %}
+<br><br>
+--
+<br>
+<font style="" size="1" face="verdana, sans-serif"><b style="">Instituto Federal de Santa Catarina - Reitoria</b>
+</font>
+<br>
+<font style="" size="1" face="verdana, sans-serif">Rua 14 de Julho, 150, Coqueiros, Florianópolis / SC - CEP: 88075-010</font>
+<br>
+<u><a href="http://www.ifsc.edu.br" target="_blank" style=""><font style="" face="verdana, sans-serif">www.ifsc.edu.br</font></a></u>
+</body>
+</html>

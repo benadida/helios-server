@@ -1,51 +1,120 @@
 .top-bar {
-	background-color:#339933;	
-	background-image:url('/media/img/logo.png');
-	background-repeat:no-repeat;
-	min-height:80px;
+	background-color:#eef1ec;
+	height:100px;
 }
 #banner {
-	background:#4C9900;
+	background:#0d4f4d;;
+    color:#eef1ec;
 }
 
 #footer {
-	background:#4C9900;
+	background:#0d4f4d;;
+    bottom:0;
+    position:absolute;
+    width:100%;
+    height:40px;
+    color:#eef1ec;
 }
 #progress_div td.selected {
-  background:#DFF0D8;
+  background:#0d4f4d;
+  color:#eef1ec;
 }
 .btn-primary,a.btn,.btn-lg,.btn-primary {
-	background-color:#336633;
-	border-color:#336633;
+	background-color:#0d4f4d;
+	border-color:#0d4f4d;
 }
 .btn-primary:hover,#proceed_button{
-	background-color:#009933;
-	border-color:#009933;
+	background-color:#2f9e40;
+	border-color:#2f9e40;
 }
 a:hover, a:focus {
-  color: #009933;
+  color: #2f9e40;
   text-decoration: underline;
 }
 .nav-pills>li.active>a,.nav-pills>li.active>a:hover,.nav-pills>li.active>a:focus{
 	color:#fff;
-	background-color:#009933;
+	background-color:#2f9e40;
 }
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .open .dropdown-toggle.btn-primary {
-  color: #FFF;
-  background-color: #009933;
-  border-color: #336633;
+  color: #eef1ec;
+  background-color: #2f9e40;
+  /*border-color: #0d4f4d;*/
 }
 
 .panel-primary > .panel-heading {
     color: #fff;
-    background-color: #2ecc71;
-    border-color: #2ecc71;    
+    background-color: #0f5f5c;
+    border-color: #0f5f5c;
 }
 
 .panel-primary {
-    border-color: #2ecc71;    
+    border-color: #0f5f5c;    
 }
 
 :focus{
     outline: 0;
+}
+
+.top-bar-menu {
+	background-color: #0d4f4d;
+}
+
+img.logo {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 10px;
+}
+
+body {
+    background-color:#eef1ec;
+    margin-bottom: 40px;
+}
+
+html {
+      position: relative;
+      min-height: 100%;
+}
+
+#container-footer {
+    padding-top:10px;
+}
+
+.panel-info {
+    border-color: #0f5f5c;
+}
+.panel-info > .panel-heading {
+    background-color: #0f5f5c;
+    color: #eef1ec;
+}
+
+.alert-info {
+    background-color: #0f5f5c;
+    border-color: #0f5f5c;
+    color: #eef1ec;
+}
+
+.alert-warning {
+    background-color: #0f5f5c;
+    border-color: #0f5f5c;
+    color: #eef1ec;
+}
+input {
+    color: #333;
+}
+
+a {
+    font-weight: bold;
+    color: #2f9e40;
+    text-decoration: none;
+}
+
+div.selected {
+    background: none;
+    border-color: #45981e;
+    border-width:1px;
+    border-style:solid;
+}
+
+a.link-booth {
+    color: #eef1ec;
 }

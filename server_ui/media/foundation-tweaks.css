@@ -10,6 +10,8 @@ table.pretty th, td {
     border: 1px silver solid;
     padding: 0.3em;
     vertical-align: top;
+    word-break: break-all;
+    word-wrap: break-word;
 }
 
 .highlight-box {

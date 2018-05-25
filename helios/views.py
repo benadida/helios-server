@@ -449,13 +449,17 @@ def trustee_send_url(request, election, trustee_uuid):
   trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
   
   url = settings.SECURE_URL_HOST + reverse(trustee_login, args=[election.short_name, trustee.email, trustee.secret])
+  try:
+      default_from_name = settings.DEFAULT_FROM_NAME.decode('utf8')
+  except UnicodeDecodeError:
+      default_from_name = settings.DEFAULT_FROM_NAME.decode('latin1')
   body  = _(u'You are a trustee for %(election_name)s \n') % {'election_name': election.name}
   body += _(u'Your trustee dashboard is at: \n %(url)s') % {'url': url}
   body += """
   --
   \n
   %s
-  """ % settings.DEFAULT_FROM_NAME
+  """ % default_from_name
   
   helios_utils.send_email(settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], _('your trustee homepage for %(election_name)s') % {'election_name': election.name}, body)
 
@@ -775,7 +779,7 @@ def one_election_cast_done(request, election):
     if voter.user == user and voter.user != None:
       logout = settings.LOGOUT_ON_CONFIRMATION
     else:
-      logout = False
+      logout = True
       del request.session['CURRENT_VOTER_ID']
 
     save_in_session_across_logouts(request, 'last_vote_hash', vote_hash)
@@ -1350,11 +1354,11 @@ def voters_upload(request, election):
           voters = [v for v in voter_file_obj.itervoters()][:5]
         except:
           voters = []
-          problems.append("your CSV file could not be processed. Please check that it is a proper CSV file.")
+          problems.append(_("your CSV file could not be processed. Please check that it is a proper CSV file."))
 
         # check if voter emails look like emails
         if False in [validate_email(v['email']) for v in voters]:
-          problems.append("those don't look like correct email addresses. Are you sure you uploaded a file with email address as second field?")
+          problems.append(_("those don't look like correct email addresses. Are you sure you uploaded a file with email address as second field?"))
 
         return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters, 'problems': problems})
       else:
@@ -1427,13 +1431,18 @@ def voters_email(request, election):
       # the client knows to submit only once with a specific voter_id
       subject_template = 'email/%s_subject.txt' % template
       body_template = 'email/%s_body.txt' % template
+      try:
+          default_from_name = settings.DEFAULT_FROM_NAME.decode('utf8')
+      except UnicodeDecodeError:
+          default_from_name = settings.DEFAULT_FROM_NAME.decode('latin1')
 
       extra_vars = {
         'custom_subject' : email_form.cleaned_data['subject'],
         'custom_message' : email_form.cleaned_data['body'],
         'election_vote_url' : election_vote_url,
         'election_url' : election_url,
-        'election' : election
+        'election' : election,
+        'default_from_name': default_from_name
         }
         
       voter_constraints_include = None
