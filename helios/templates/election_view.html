@@ -15,14 +15,14 @@
 	{% if election.is_archived %} {% trans "[archived]" %}{% endif %}
 	{% if admin_p %}
 		{% if not election.frozen_at %}
-		  <a title="{% trans "edit" %}" href="{% url "helios.views.one_election_edit" election.uuid %}"><i class="glyphicon glyphicon-edit"></i></a>
+		  <a class="btn btn-primary glyphicon glyphicon-edit" title="{% trans "edit" %}" href="{% url "helios.views.one_election_edit" election.uuid %}"> {% trans "edit" %}</a>
 		{% endif %}
 		{% if election.is_archived %}
-			<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=0">{% trans "unarchive it" %}</a>
+			<a class="small button btn btn-danger glyphicon glyphicon-briefcase" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=0">{% trans "unarchive it" %}</a>
 		{% else %}
-			<a class="small button" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=1"> <i title="{% trans "archive it" %}" class="glyphicon glyphicon-briefcase"></i></a>
+			<a title="{% trans "archive it" %}" class="btn btn-danger glyphicon glyphicon-briefcase" href="{% url "helios.views.one_election_archive" election_uuid=election.uuid %}?archive_p=1"> {% trans "archive it" %}</a>
 		{% endif %}
-		<a title="{% trans "copy" %}" class="glyphicon glyphicon-export copy_election" href="{% url "helios.views.one_election_copy" election_uuid=election.uuid %}"></a>
+		<a title="{% trans "copy" %}" class="btn btn-primary glyphicon glyphicon-export copy_election" href="{% url "helios.views.one_election_copy" election_uuid=election.uuid %}"> {%trans "copy" %}</a>
 		{% if not election.private_p %}
 		<!--	{% if election.featured_p %}
 				{% trans "featured on the front page."  %}

@@ -103,7 +103,6 @@ input {
 }
 
 a {
-    font-weight: bold;
     color: #2f9e40;
     text-decoration: none;
 }
@@ -118,3 +117,11 @@ div.selected {
 a.link-booth {
     color: #eef1ec;
 }
+
+.panel-body {
+    padding: 25px;
+}
+
+.glyphicon{
+    margin-bottom: 10px;
+ }
