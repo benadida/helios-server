@@ -492,7 +492,12 @@ def trustee_upload_pk(request, election, trustee):
     
     # send a note to admin
     try:
-      election.admin.send_message("%s - trustee pk upload" % election.name, "trustee %s (%s) uploaded a pk." % (trustee.name, trustee.email))
+      subject = _(u' %(election_name)s trustee pk upload') % {'election_name': election.name}
+      body = _(u'Trustee %(trustee_name)s (%(trustee_email)s) uploaded a pk.') % {
+          'trustee_name': trustee.name,
+          'trustee_email': trustee.email
+          }
+      election.admin.send_message(subject, body)
     except:
       # oh well, no message sent
       pass
