@@ -2227,7 +2227,6 @@ msgid " %(election_name)s trustee pk upload"
 msgstr "%(election_name)s - carga de chave de apurador"
 
 #: helios/views.py:496
-#, python-format
 msgid "Trustee %(trustee_name)s (%(trustee_email)s) uploaded a pk."
 msgstr "O apurador %(trustee_name)s (%(trustee_email)s) carregou a chave de apurador."
 
