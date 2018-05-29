@@ -91,7 +91,7 @@ Na configuração do pgAdmin, usar como endereço do host o seu endereço e não
 
 Você pode baixar um zip com o fonte ou clonar o repositório. Supondo que o código vai ser baixado via git:
 
-*git clone https://github.com/ifsc/helios.git*
+*git clone https://github.com/ifsc/helios-server.git*
 
 
 Não é obrigatório, mas é uma boa prática, criar um ambiente virtual para a disponibilização do Helios, tanto para desenvolvimento quanto para implantação, pois isso permite separar as dependências do projeto e não interferir em outros sistemas na mesma máquina. 
