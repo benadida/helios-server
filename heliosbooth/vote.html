@@ -87,11 +87,10 @@ BOOTH.exit = function() {
     //if (confirm("Are you sure you want to exit the booth and lose all information about your current ballot?")) {
     if (confirm("Tem certeza de que você deseja sair da cabine e perder toda a informação de sua cédula atual?")) {
         BOOTH.started_p = false;
-        window.location = BOOTH.election.cast_url;
         if (BOOTH.election_metadata.private_p){
             window.location = BOOTH.logout_url;
-        }else{
-            window.location = BOOTH.election_cast_url;
+        } else {
+            window.location = BOOTH.election.cast_url;
         }
     }
 };
