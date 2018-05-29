@@ -200,7 +200,6 @@ def user_can_feature_election(user, election):
     return False
 
   if settings.FEATURE_ELECTION and user.admin_p:
-    print settings.FEATURE_ELECTION
     return True
 
   return False
