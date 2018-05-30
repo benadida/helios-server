@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-05-28 14:52-0300\n"
+"POT-Creation-Date: 2018-05-30 08:28-0300\n"
 "PO-Revision-Date: 2015-10-14 16:16-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: \n"
@@ -2223,12 +2223,14 @@ msgstr ""
 "ATENÇÃO: Você foi designado como apurador para a eleição  %(election_name)s"
 
 #: helios/views.py:495
+#, python-format
 msgid " %(election_name)s trustee pk upload"
 msgstr "%(election_name)s - carga de chave de apurador"
 
 #: helios/views.py:496
 msgid "Trustee %(trustee_name)s (%(trustee_email)s) uploaded a pk."
-msgstr "O apurador %(trustee_name)s (%(trustee_email)s) carregou a chave de apurador."
+msgstr ""
+"O apurador %(trustee_name)s (%(trustee_email)s) carregou a chave de apurador."
 
 #: helios/views.py:697
 #, python-format
@@ -3223,20 +3225,20 @@ msgid ""
 "</ul>\n"
 msgstr ""
 
-#: settings.py:86
+#: settings.py:83
 msgid "English"
 msgstr "Inglês"
 
-#: settings.py:87
+#: settings.py:84
 msgid "Brazilian Portuguese"
 msgstr "Português Brasileiro"
 
-#: settings.py:223
-msgid "Helios E-Voting System"
+#: settings.py:226
+msgid "IFSC E-Voting System"
 msgstr "Sistema de Votação Online do IFSC"
 
-#: settings.py:231
-msgid "Welcome to Helios E-Voting System"
+#: settings.py:235
+msgid "Welcome to IFSC E-Voting System"
 msgstr "Bem Vindo ao Sistema de Votação Online do IFSC"
 
 #: templates/403.html:3
