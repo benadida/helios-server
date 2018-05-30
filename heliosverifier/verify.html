@@ -97,151 +97,158 @@ function load_election_and_ballots(election_url) {
     
     // the hash will be computed within the setup function call now
     $.get(election_url, function(raw_json) {
-        election = HELIOS.Election.fromJSONString(raw_json);
-        result_append("loaded election: " + election.name);
-        result_append("election fingerprint: " + election.get_hash());
-        
-        var tally = [];
+        try {
+            election = HELIOS.Election.fromJSONString(raw_json);
+            result_append("loaded election: " + election.name);
+            result_append("election fingerprint: " + election.get_hash());
 
-        $(election.questions).each(function(qnum, q) {
-            if (q.tally_type != "homomorphic") {
-              result_append("PROBLEM: this election is not a straight-forward homomorphic-tally election. As a result, Helios cannot currently verify it.");
-              return;
-            }
+            var tally = [];
 
-            tally[qnum] = $(q.answers).map(function(anum, a) {
-                return 1;
+            $(election.questions).each(function(qnum, q) {
+                if (q.tally_type != "homomorphic") {
+                  result_append("PROBLEM: this election is not a straight-forward homomorphic-tally election. As a result, Helios cannot currently verify it.");
+                  return;
+                }
+
+                tally[qnum] = $(q.answers).map(function(anum, a) {
+                    return 1;
+                });
             });
-        });
 
-        result_append("loading list of voters...");
-        
-        // load voter list
-        load_ballot_list(election_url, [], null, function(ballot_list) {
-            result_append("loaded voter list, now loading ballots for each..");
+            result_append("loading list of voters...");
             
-            // load all ballots
-            load_ballots(election_url, ballot_list, [], function(ballots) {
-                result_append("");
-                result_append("<h3>Ballots</h3>");
-                // now load each ballot
-                $(ballots).each(function(i, cast_vote){
+            // load voter list
+            load_ballot_list(election_url, [], null, function(ballot_list) {
+                result_append("loaded voter list, now loading ballots for each..");
 
-                    if (cast_vote.vote == null)
-                      return;
-                      
-                    var vote = HELIOS.EncryptedVote.fromJSONObject(cast_vote.vote, election);
-                    result_append("Voter #" + (i+1));
-                    result_append("-- UUID: " + cast_vote.voter_uuid);
-                    result_append("-- Ballot Tracking Number: " + vote.get_hash());
+                // load all ballots
+                load_ballots(election_url, ballot_list, [], function(ballots) {
+                    result_append("");
+                    result_append("<h3>Ballots</h3>");
+                    // now load each ballot
+                    $(ballots).each(function(i, cast_vote){
 
-                    vote.verifyProofs(election.public_key, function(answer_num, choice_num, result, choice) {
-                        overall_result = overall_result && result;
-                        if (choice_num != null) {
-                            // keep track of tally
-                            tally[answer_num][choice_num] = choice.multiply(tally[answer_num][choice_num]);
+                        if (cast_vote.vote == null)
+                          return;
 
-                            result_append("Question #" + (answer_num+1) + ", Option #" + (choice_num+1) + " -- " + pretty_result(result));                            
-                        } else {
-                            result_append("Question #" + (answer_num+1) + " OVERALL -- " + pretty_result(result));            
-                        }
+                        var vote = HELIOS.EncryptedVote.fromJSONObject(cast_vote.vote, election);
+                        result_append("Voter #" + (i+1));
+                        result_append("-- UUID: " + cast_vote.voter_uuid);
+                        result_append("-- Ballot Tracking Number: " + vote.get_hash());
+
+                        vote.verifyProofs(election.public_key, function(answer_num, choice_num, result, choice) {
+                            overall_result = overall_result && result;
+                            if (choice_num != null) {
+                                // keep track of tally
+                                tally[answer_num][choice_num] = choice.multiply(tally[answer_num][choice_num]);
+
+                                result_append("Question #" + (answer_num+1) + ", Option #" + (choice_num+1) + " -- " + pretty_result(result));
+                            } else {
+                                result_append("Question #" + (answer_num+1) + " OVERALL -- " + pretty_result(result));
+                            }
+                        });
+
+                        result_append("");
                     });
 
-                    result_append("");
-                });
+                    // get the election result
+                    $.get(election_url + "/result", function(result) {
+                        var results = $.secureEvalJSON(result);
 
-                // get the election result
-                $.get(election_url + "/result", function(result) {
-                    var results = $.secureEvalJSON(result);
+                        // get the trustees and proofs
+                        $.get(election_url + "/trustees/", function(trustees_json) {
+                           trustees = $.secureEvalJSON(trustees_json);
 
-                    // get the trustees and proofs
-                    $.get(election_url + "/trustees/", function(trustees_json) {
-                       trustees = $.secureEvalJSON(trustees_json);
+                           // create the Helios objects
+                           trustees = $(trustees).map(function(i, trustee) {return HELIOS.Trustee.fromJSONObject(trustee)});
 
-                       // create the Helios objects
-                       trustees = $(trustees).map(function(i, trustee) {return HELIOS.Trustee.fromJSONObject(trustee)});
+                           // the public key that we'll check
+                           var combined_key = 1;
 
-                       // the public key that we'll check
-                       var combined_key = 1;
+                           result_append("<h3>Trustees</h3>");
+                           // verify the keys
+                           $(trustees).each(function(i, trustee) {
+                              result_append("Trustee #" + (i+1) + ": " + trustee.email);
+                              if (trustee.public_key.verifyKnowledgeOfSecretKey(trustee.pok, ElGamal.fiatshamir_dlog_challenge_generator)) {
+                                  result_append("-- PK " + trustee.public_key_hash + " -- VERIFIED.");
 
-                       result_append("<h3>Trustees</h3>");
-                       // verify the keys
-                       $(trustees).each(function(i, trustee) {
-                          result_append("Trustee #" + (i+1) + ": " + trustee.email);
-                          if (trustee.public_key.verifyKnowledgeOfSecretKey(trustee.pok, ElGamal.fiatshamir_dlog_challenge_generator)) {
-                              result_append("-- PK " + trustee.public_key_hash + " -- VERIFIED.");
+                                  // FIXME check the public key hash
+                              } else {
+                                  result_append("==== ERROR for PK of trustee " + trustee.email);
+                                  overall_result = false;
+                              }
 
-                              // FIXME check the public key hash
-                          } else {
-                              result_append("==== ERROR for PK of trustee " + trustee.email);
-                              overall_result = false;
-                          }
+                              combined_key = trustee.public_key.multiply(combined_key);
 
-                          combined_key = trustee.public_key.multiply(combined_key);
+                              result_append("");
+                           });
 
-                          result_append("");
-                       });
+                           // verify the combination of the keys into the final public key
+                           if (combined_key.equals(election.public_key)) {
+                               result_append("election public key CORRECTLY FORMED");
+                           } else {
+                               result_append("==== ERROR, election public key doesn't match");
+                               overall_result = false;
+                           }
 
-                       // verify the combination of the keys into the final public key
-                       if (combined_key.equals(election.public_key)) {
-                           result_append("election public key CORRECTLY FORMED");
-                       } else {
-                           result_append("==== ERROR, election public key doesn't match");
-                           overall_result = false;
-                       }
+                           result_append("<h3>Tally</h3>");
 
-                       result_append("<h3>Tally</h3>");
+                           $(tally).each(function(q_num, q) {
+                               result_append("Question #" + (q_num+1) + ": " + election.questions[q_num].short_name);
+                               $(q).each(function(a_num, a) {
+                                   var plaintext = new ElGamal.Plaintext(election.public_key.g.modPow(BigInt.fromInt(results[q_num][a_num]), election.public_key.p), election.public_key);
 
-                       $(tally).each(function(q_num, q) {
-                           result_append("Question #" + (q_num+1) + ": " + election.questions[q_num].short_name);
-                           $(q).each(function(a_num, a) {
-                               var plaintext = new ElGamal.Plaintext(election.public_key.g.modPow(BigInt.fromInt(results[q_num][a_num]), election.public_key.p), election.public_key);
+                                   var check = true;
+                                   result_append("Answer #" + (a_num + 1) + ": " + election.questions[q_num].answers[a_num] + " - COUNT = " + results[q_num][a_num]);
 
-                               var check = true;
-                               result_append("Answer #" + (a_num + 1) + ": " + election.questions[q_num].answers[a_num] + " - COUNT = " + results[q_num][a_num]);
+                                   var decryption_factors = [];
 
-                               var decryption_factors = [];
+                                   // go through the trustees' decryption factors and verify each one
+                                   $(trustees).each(function(t_num, trustee) {
+                                       if (trustee.public_key.verifyDecryptionFactor(a, trustee.decryption_factors[q_num][a_num],
+                                                       trustee.decryption_proofs[q_num][a_num], ElGamal.fiatshamir_challenge_generator)) {
+                                           result_append("-- Trustee " + trustee.email + ": decryption factor verifies");
+                                       } else {
+                                           result_append("==== ERROR with Trustee " + trustee.email + ": decryption factor does not verify");
+                                           check= false;
+                                           overall_result = false;
+                                       }
 
-                               // go through the trustees' decryption factors and verify each one
-                               $(trustees).each(function(t_num, trustee) {
-                                   if (trustee.public_key.verifyDecryptionFactor(a, trustee.decryption_factors[q_num][a_num],
-                                                   trustee.decryption_proofs[q_num][a_num], ElGamal.fiatshamir_challenge_generator)) {
-                                       result_append("-- Trustee " + trustee.email + ": decryption factor verifies");
+                                       decryption_factors.push(trustee.decryption_factors[q_num][a_num]);
+                                   });
+
+                                   // recheck decryption factors
+                                   var expected_value = election.public_key.g.modPow(BigInt.fromInt(results[q_num][a_num]), election.public_key.p);                        
+                                   var recomputed_value = a.decrypt(decryption_factors).getM();
+                                   if (expected_value.equals(recomputed_value)) {
                                    } else {
-                                       result_append("==== ERROR with Trustee " + trustee.email + ": decryption factor does not verify");
-                                       check= false;
+                                       check = false;
                                        overall_result = false;
                                    }
 
-                                   decryption_factors.push(trustee.decryption_factors[q_num][a_num]);
+                                   result_append("-" + pretty_result(check));
                                });
 
-                               // recheck decryption factors
-                               var expected_value = election.public_key.g.modPow(BigInt.fromInt(results[q_num][a_num]), election.public_key.p);                        
-                               var recomputed_value = a.decrypt(decryption_factors).getM();
-                               if (expected_value.equals(recomputed_value)) {
-                               } else {
-                                   check = false;
-                                   overall_result = false;
-                               }
-
-                               result_append("-" + pretty_result(check));
                            });
 
-                       });
+                           result_append("<h3>FINAL RESULT</h3>");
 
-                       result_append("<h3>FINAL RESULT</h3>");
-        
-                       if (overall_result) {
-                         result_append("ELECTION FULLY VERIFIED -- SUCCESS!");
-                       } else {
-                         result_append("VERIFICATION FAILED");
-                       }
+                           if (overall_result) {
+                             result_append("ELECTION FULLY VERIFIED -- SUCCESS!");
+                           } else {
+                             result_append("VERIFICATION FAILED");
+                           }
+                        });
                     });
-                });                
+                });
+
             });
-            
-        });
+    } catch (error) {
+        result_append("<p>It appears that you are trying to verify a private election.</p>");
+        result_append('<p>You can log in as a valid voter or log in as the election admin.</p>');
+        result_append('<a class="btn" href="' + election_url + '">Log in as a valid voter </a>');
+        result_append('<a class="btn" href="/auth/?return_url=/verifier/verify.html?election_url=' + election_url + '">Log in as the election admin</a>');
+    }
     });
         
 }
