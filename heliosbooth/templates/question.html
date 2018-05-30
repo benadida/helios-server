@@ -29,20 +29,21 @@ quantas desejar
 {#/if}
 {#/if}
 </span>
-
-
 </p>
-<span style="font-size: 1.1em;">
-{#foreach $T.question.answers as answer}
-<div id="answer_label_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}"><input type="checkbox" class="ballot_answer" id="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}" name="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}" value="yes" onclick="BOOTH.click_checkbox({$T.question_num}, {$T.answer_ordering[$T.answer$index]}, this.checked);" /> {$T.question.answers[$T.answer_ordering[$T.answer$index]]}
-</span>
 
-{#if $T.question.answer_urls && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] != ""}
-&nbsp;&nbsp;
-<span style="font-size: 12pt;">
-[<a target="_blank" href="{$T.question.answer_urls[$T.answer_ordering[$T.answer$index]]}" rel="noopener noreferrer">mais informações</a>]
-</span>
-{#/if}
+{#foreach $T.question.answers as answer}
+<div id="answer_label_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}">
+    <input type="checkbox" class="ballot_answer" id="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}" name="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}" value="yes" onclick="BOOTH.click_checkbox({$T.question_num}, {$T.answer_ordering[$T.answer$index]}, this.checked);" />
+    <label class="answer" for="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}">
+        {$T.question.answers[$T.answer_ordering[$T.answer$index]]}
+
+        {#if $T.question.answer_urls && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] != ""}
+           &nbsp;&nbsp;
+        <span style="font-size: 12pt;">
+        [<a target="_blank" href="{$T.question.answer_urls[$T.answer_ordering[$T.answer$index]]}" rel="noopener noreferrer">mais informações</a>]
+        </span>
+    {#/if}
+    </label>
 </div>
 {#/for}
 
