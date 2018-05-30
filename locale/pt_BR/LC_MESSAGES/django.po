@@ -1121,7 +1121,7 @@ msgstr ""
 
 #: helios/templates/election_view.html:180
 msgid "release result"
-msgstr "tornar público o resultado"
+msgstr "liberar o resultado"
 
 #: helios/templates/election_view.html:181
 msgid ""
