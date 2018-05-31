@@ -20,6 +20,9 @@
           </div>
         </div> 
       {% endfor %}
+      {% for hidden in election_form.hidden_fields %}
+          {{ hidden }}
+      {% endfor %}
         <div class="pull-right">
             <button id="next_button" type="submit" class="btn btn-primary">{% trans "Next" %}</button>
         </div>

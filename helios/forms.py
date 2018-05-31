@@ -27,8 +27,9 @@ class ElectionForm(forms.Form):
     help_text=_('disable this only if you want a simple election with reduced security but a simpler user interface'))
   randomize_answer_order = forms.BooleanField(required=False, initial=False,
     label=_("Randomize answer order"), help_text=_('enable this if you want the answers to questions to appear in random order for each voter'))
-  #private_p = forms.BooleanField(required=False, initial=True, label=_("Private?"),
-  #  help_text=_('A private election is only visible to registered voters.'))
+  private_p = forms.BooleanField(required=False, initial=True, label=_("Private?"),
+          help_text=_('A private election is only visible to registered voters.'),
+          widget = forms.HiddenInput())
   help_email = forms.CharField(required=False, initial="", label=_("Help Email Address"),
     help_text=_('An email address voters should contact if they need help.'),
     widget=forms.TextInput(attrs={'size':60}))
