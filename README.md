@@ -1,3 +1,22 @@
+O objetivo deste projeto era inicialmente atender a [necessidade N.47 do PDTI 2013 do IFSC](http://dtic.ifsc.edu.br/files/pdti2013-revisao02.pdf).
+
+No entanto, logo percebeu-se que outras instituições, especialmente as de ensino, poderiam se beneficiar das melhorias realizadas no projeto original, a fim de atender ao público brasileiro.
+
+Neste repositório encontra-se o código personalizado a partir do original disponível em [https://github.com/benadida/helios-server](https://github.com/benadida/helios-server), assim como um tutorial detalhado de instalação e configuração.
+
+Para saber um pouco mais, acesse:
+
+Tutoriais: 
+
+http://dtic.ifsc.edu.br/sistemas/sistema-de-votacao-on-line-helios/
+
+Publicações:
+
+1) [O uso de um sistema de votação on-line para escolha do conselho universitário](http://dtic.ifsc.edu.br/files/chaves-sbseg14.pdf)
+
+2) [Adoção de modelo controle acesso baseado em atributos em sistema de votação online para ofertá-lo como um serviço de TIC federado](http://sbseg2015.univali.br/anais/WGID/artigoWGID06.pdf)
+
+
 
 
 # Guia de instalação e configuração do Helios
@@ -18,6 +37,11 @@ Atualizações/instalações de pacotes:
 
     sudo apt-get install apache2 postgresql-9.3 postgresql-server-dev-9.3 python-dev libsasl2-dev libldap2-dev python-ldap gettext libapache2-mod-wsgi
 
+Para utilizar o login via shibboleth (federação), instalar também o módulo shib para o apache:
+
+	sudo apt-get install libapache2-mod-shib2
+
+
 Se for baixar e/ou atualizar o código via github:
 
     sudo apt-get install git 
@@ -31,7 +55,6 @@ Se for baixar e/ou atualizar o código via github:
 
     psql
 
-    create user helios;
 
     create role helios with createdb createrole login;
     
@@ -52,12 +75,23 @@ Exception Type: 	OperationalError
 Exception Value: 	
 FATAL:  Peer authentication failed for user "helios"
 
+Para se conectar na base com um cliente como o pgAdmin, utilizar um túnel ssh. Editar ~/.ssh/config e inserir:
+
+
+	Host NOMEDOHOST
+	User NOMEDOUSER
+	Hostname ENDERECODOHOST
+	Port PORTASSH
+	LocalForward PORTALOCAL 127.0.0.1:PORTAREMOTA
+
+
+Na configuração do pgAdmin, usar como endereço do host o seu endereço e não esquecer que precisa haver uma conexão ssh aberta com o servidor do banco!
 
 ### Obtenção do código-fonte e preparação da aplicação
 
 Você pode baixar um zip com o fonte ou clonar o repositório. Supondo que o código vai ser baixado via git:
 
-*git clone https://github.com/shirlei/helios-server.git*
+*git clone https://github.com/ifsc/helios-server.git*
 
 
 Não é obrigatório, mas é uma boa prática, criar um ambiente virtual para a disponibilização do Helios, tanto para desenvolvimento quanto para implantação, pois isso permite separar as dependências do projeto e não interferir em outros sistemas na mesma máquina. 
@@ -82,7 +116,20 @@ Com o ambiente virtual ativado, instale os requisitos para a execução do helio
 
 *ATENÇÃO: Utilize o requirements.txt deste repositório, para instalar o pacote django-auth-ldap e outros necessários às customizações realizadas. Lembrando também que apesar de se pretender manter este repositório atualizado com o do Ben Adida, não necessariamente vai ser simultâneo, então se você utilizar o dele, pode haver versões diferentes de pacotes.*
 
-Após terminar a instalação dos pacotes necessários, é possível realizar as devidas execuções de banco de dados (criação de banco, tabelas, etc) executando o script reset.sh:
+Edite o arquivo settings.py, localize a seção databases e adicione as informações do banco de dados, conforme o exemplo:
+
+
+	DATABASES = {
+	'default': {
+	'ENGINE': 'django.db.backends.postgresql_psycopg2',
+	'NAME': 'helios',
+	'USER': 'helios',
+	'HOST': 'localhost',
+	'PASSWORD': 'SENHADOHELIOS'
+	}}
+
+
+Agora é possível realizar as devidas execuções de banco de dados (criação de banco, tabelas, etc) executando o script reset.sh:
 
 `$./reset.sh`
 
@@ -138,7 +185,9 @@ Além desses, todos os demais arquivos a serem servidos diretamente pelo apache,
 
 Conforme citado anteriormente, o celery (http://www.celeryproject.org/)  precisa estar rodando, pois ele é o enfileirador de tarefas como a de envio de e-mails e registro de votos.
 
-o script check-services.sh foi criado para checar se o serviço está rodando. Ele pode ser adicionado à crontab.
+O script check-services.sh foi criado para checar se o serviço está rodando. Ele pode ser adicionado à crontab, como no exemplo abaixo, no qual ele executa de 10 em 10 minutos.
+
+	*/10 * * * *  /var/www/helios-server/check-services.sh >/dev/null 2>&1
 
 Nesse mesmo script, também é verificado o celery beat (http://docs.celeryproject.org/en/latest/userguide/periodic-tasks.html), agendador de tarefas periódicas, como limpar a tabela celery_taskmeta, que guarda log das tarefas e pode crescer bastante.
 
@@ -151,6 +200,31 @@ CELERY_TASK_RESULT_EXPIRES = 5184000 # 60 days
 Após iniciar o celery beat, é possível ver uma tarefa periódica criada através da interface administrativa do django, sob Djecelery, periodic tasks.
 
 Se não for desejado fazer a limpeza da tabela dessa forma, basta não iniciar o celery beat.
+
+#### Configuração módulo apache shibboleth2
+
+Após instalar o módulo shibboleth para o apache, é necessário realizar algumas configurações.
+
+Um dos arquivos a ser editado é o /etc/shibboleth/shibboleth2.xml.
+Ver exemplo de configuração em:
+https://wiki.rnp.br/display/gidlab/Procedimentos+operacionais+da+CAFe+Expresso e
+https://www.cmu.edu/computing/web/authenticate/web-login/shib.html
+
+Gerar chaves:
+
+sudo openssl genrsa -out /etc/ssl/private/$HOSTNAME.key 4096 -config openssl.cnf
+
+sudo openssl req -new -key /etc/ssl/private/$HOSTNAME.key -out /etc/ssl/private/$HOSTNAME.csr -batch -config openssl.cnf
+
+sudo openssl x509 -req -days 1825 -in /etc/ssl/private/$HOSTNAME.csr -signkey /etc/ssl/private/$HOSTNAME.key -out /etc/ssl/certs/$HOSTNAME.crt
+
+O arquivo openssl.cnf é um arquivo com os dados necessários para a geração de chaves. Ver exemplo em: https://wiki.rnp.br/display/gidlab/Procedimentos+operacionais+da+CAFe+Expresso
+
+Também é necessário editar o arquivo attribute-map.xml, para adicionar os atributos que a aplicação necessita (ver em settings.py).
+
+Após realizar as configurações, é necessário reiniciar o apache.
+Algumas vezes é necessário parar e iniciar o shibd (/etc/init.d/shibd).
+
 
 #### Administração pelo site de administração do django
 

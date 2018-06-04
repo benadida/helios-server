@@ -3,35 +3,47 @@
 
 <p>
 <br />
+<span style="font-size: 1.2em;">
 <b>{$T.question.question}</b>
+</span>
 <br />
-<span style="font-size: 0.6em;">#{$T.question_num + 1} de {$T.last_question_num + 1} &mdash;
- voto para 
-{#if $T.question.min && $T.question.min > 0}
-{#if $T.question.max}
-{$T.question.min} to {$T.question.max}
+
+<span style="font-size: 0.9em;">questão {$T.question_num + 1} de {$T.last_question_num + 1} &mdash;
+ você deve marcar
+{#if $T.question.max && $T.question.min == 0}
+ no máximo {$T.question.max}
 {#else}
-at least {$T.question.min}
+{#if $T.question.min && $T.question.min > 0}
+ no mínimo
+{#if $T.question.max}
+{$T.question.min} e no máximo {$T.question.max}
+{#else}
+{$T.question.min}
 {#/if}
 {#else}
 {#if $T.question.max}
-{#if $T.question.max > 1}up to {#/if}{$T.question.max}
+{#if $T.question.max > 1} até {#/if}{$T.question.max}
 {#else}
-as many as you approve of
+quantas desejar
+{#/if}
 {#/if}
 {#/if}
 </span>
 </p>
 
 {#foreach $T.question.answers as answer}
-<div id="answer_label_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}"><input type="checkbox" class="ballot_answer" id="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}" name="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}" value="yes" onclick="BOOTH.click_checkbox({$T.question_num}, {$T.answer_ordering[$T.answer$index]}, this.checked);" /> {$T.question.answers[$T.answer_ordering[$T.answer$index]]}
+<div id="answer_label_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}">
+    <input type="checkbox" class="ballot_answer" id="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}" name="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}" value="yes" onclick="BOOTH.click_checkbox({$T.question_num}, {$T.answer_ordering[$T.answer$index]}, this.checked);" />
+    <label class="answer" for="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}">
+        {$T.question.answers[$T.answer_ordering[$T.answer$index]]}
 
-{#if $T.question.answer_urls && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] != ""}
-&nbsp;&nbsp;
-<span style="font-size: 12pt;">
-[<a target="_blank" href="{$T.question.answer_urls[$T.answer_ordering[$T.answer$index]]}" rel="noopener noreferrer">more info</a>]
-</span>
-{#/if}
+        {#if $T.question.answer_urls && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] != ""}
+           &nbsp;&nbsp;
+        <span style="font-size: 12pt;">
+        [<a target="_blank" href="{$T.question.answer_urls[$T.answer_ordering[$T.answer$index]]}" rel="noopener noreferrer">mais informações</a>]
+        </span>
+    {#/if}
+    </label>
 </div>
 {#/for}
 
@@ -41,17 +53,17 @@ as many as you approve of
 
 {#if $T.show_reviewall}
 <div style="float: right;">
-<input type="button" class="btn btn-primary" onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Avançar" />
+<input type="button" class="btn btn-primary" onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Próximo passo" />
 </div>
 {#/if}
 
 {#if $T.question_num != 0}
-<input type="button" onclick="BOOTH.previous({$T.question_num})" value="Anterior" />
+<input type="button" class="btn btn-primary" onclick="BOOTH.previous({$T.question_num})" value="Questão Anterior" />
 &nbsp;
 {#/if}
 
 {#if $T.question_num < $T.last_question_num}
-<input type="button" onclick="BOOTH.next({$T.question_num})" value="Próximo" />
+<input type="button" class="btn btn-primary" onclick="BOOTH.next({$T.question_num})" value="Próxima Questão" />
 &nbsp;
 {#/if}
 

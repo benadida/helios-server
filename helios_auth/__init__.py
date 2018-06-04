@@ -2,6 +2,7 @@
 from django.conf import settings
 
 TEMPLATE_BASE = settings.AUTH_TEMPLATE_BASE or "helios_auth/templates/base.html"
+TEMPLATE_BASENONAV = settings.AUTH_TEMPLATE_BASENONAV or "helios_auth/templates/base.html"
 
 # enabled auth systems
 import auth_systems

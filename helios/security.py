@@ -198,6 +198,8 @@ def can_create_election(request):
 def user_can_feature_election(user, election):
   if not user:
     return False
-    
-  return user.admin_p
-  
+
+  if settings.FEATURE_ELECTION and user.admin_p:
+    return True
+
+  return False

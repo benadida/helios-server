@@ -258,15 +258,15 @@ def elections_by_year(request, year=None):
 @require_http_methods(["GET",])
 def elections_by_type_year(request, institution_pk, type=None, year=None):
     user = get_user(request)
-    try:        
-        institution = Institution.objects.get(pk=institution_pk)
+    try:
+	institution = Institution.objects.get(pk=institution_pk)
         status = 200
         if type == 'new':
-            response_data = {'success': _('Success'), 'elections': institution.elections_new() }
+            response_data = {'success': _('Success'), 'elections': institution.elections_new(year) }
         elif type =='in_progress':
-            response_data = {'success': _('Success'), 'elections': institution.elections_in_progress() }
+            response_data = {'success': _('Success'), 'elections': institution.elections_in_progress(year) }
         elif type == 'done':
-            response_data = {'success': _('Success'), 'elections': institution.elections_done() }
+            response_data = {'success': _('Success'), 'elections': institution.elections_done(year) }
         else:
             response_data = {'success': _('Success'), 'elections': institution.elections}
     except Institution.DoesNotExist:

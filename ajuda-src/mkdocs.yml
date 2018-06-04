@@ -1,0 +1,24 @@
+# Para gerar o site estático: mkdocs build
+# Para rodar um servidor para testes: mkdocs serve
+
+site_name: Helios - Sistema de votação eletrônica
+site_description: 'Ajuda do sistema de votação eletrônica'
+site_author: 'Instituto Federal de Santa Catarina'
+copyright: 'Copyright &copy; 2018 - IFSC'
+
+pages:
+    - Como votar: index.md
+
+theme:
+  name: 'material'
+  include_sidebar: false
+  custom_dir: 'theme'
+  logo:
+    icon: 'home'
+  language: pt
+  font:
+    text: 'Roboto'
+    code: 'Roboto Mono'
+  extra:
+  search:
+    language: 'pt'

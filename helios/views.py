@@ -178,7 +178,7 @@ def elections_voted(request):
   elections = Election.get_by_user_as_voter(user)
   
   return render_template(request, "elections_voted", {'elections': elections})
-    
+   
 
 @login_required
 def election_new(request):
@@ -228,12 +228,12 @@ def one_election_edit(request, election):
 
   user = get_user(request)
   
-  RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases', 'election_type', 'private_p', 'help_email', 'randomize_answer_order', 'voting_starts_at', 'voting_ends_at']
+  RELEVANT_FIELDS = ['short_name', 'name', 'description', 'use_voter_aliases', 'election_type', 'help_email', 'randomize_answer_order', 'voting_starts_at', 'voting_ends_at']
   RELEVANT_FIELDS += ['use_advanced_audit_features']
 
   if settings.ALLOW_ELECTION_INFO_URL:
     RELEVANT_FIELDS += ['election_info_url']
-  
+ 
   if request.method == "GET":
     values = {}
     for attr_name in RELEVANT_FIELDS:
@@ -242,7 +242,7 @@ def one_election_edit(request, election):
   else:
     check_csrf(request)
     election_form = forms.ElectionForm(request.POST)
-    
+ 
     if election_form.is_valid():
       clean_data = election_form.cleaned_data
       for attr_name in RELEVANT_FIELDS:
@@ -469,11 +469,11 @@ def trustee_send_url(request, election, trustee_uuid):
 @trustee_check
 def trustee_home(request, election, trustee):
   return render_template(request, 'trustee_home', {'election': election, 'trustee':trustee})
-  
+
 @trustee_check
 def trustee_check_sk(request, election, trustee):
   return render_template(request, 'trustee_check_sk', {'election': election, 'trustee':trustee})
-  
+
 @trustee_check
 def trustee_upload_pk(request, election, trustee):
   if request.method == "POST":
@@ -481,18 +481,23 @@ def trustee_upload_pk(request, election, trustee):
     public_key_and_proof = utils.from_json(request.POST['public_key_json'])
     trustee.public_key = algs.EGPublicKey.fromJSONDict(public_key_and_proof['public_key'])
     trustee.pok = algs.DLogProof.fromJSONDict(public_key_and_proof['pok'])
-    
+
     # verify the pok
     if not trustee.public_key.verify_sk_proof(trustee.pok, algs.DLog_challenge_generator):
       raise Exception("bad pok for this public key")
-    
+  
     trustee.public_key_hash = utils.hash_b64(utils.to_json(trustee.public_key.toJSONDict()))
 
     trustee.save()
     
     # send a note to admin
     try:
-      election.admin.send_message("%s - trustee pk upload" % election.name, "trustee %s (%s) uploaded a pk." % (trustee.name, trustee.email))
+      subject = _(u' %(election_name)s trustee pk upload') % {'election_name': election.name}
+      body = _(u'Trustee %(trustee_name)s (%(trustee_email)s) uploaded a pk.') % {
+          'trustee_name': trustee.name,
+          'trustee_email': trustee.email
+          }
+      election.admin.send_message(subject, body)
     except:
       # oh well, no message sent
       pass
@@ -779,7 +784,7 @@ def one_election_cast_done(request, election):
     if voter.user == user and voter.user != None:
       logout = settings.LOGOUT_ON_CONFIRMATION
     else:
-      logout = False
+      logout = True
       del request.session['CURRENT_VOTER_ID']
 
     save_in_session_across_logouts(request, 'last_vote_hash', vote_hash)
@@ -1115,7 +1120,7 @@ def trustee_decrypt_and_prove(request, election, trustee):
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view,args=[election.uuid]))
     
   return render_template(request, 'trustee_decrypt_and_prove', {'election': election, 'trustee': trustee})
-  
+
 @election_view(frozen=True)
 def trustee_upload_decryption(request, election, trustee_uuid):
   if not _check_election_tally_type(election) or election.encrypted_tally == None:
@@ -1354,11 +1359,11 @@ def voters_upload(request, election):
           voters = [v for v in voter_file_obj.itervoters()][:5]
         except:
           voters = []
-          problems.append("your CSV file could not be processed. Please check that it is a proper CSV file.")
+          problems.append(_("your CSV file could not be processed. Please check that it is a proper CSV file."))
 
         # check if voter emails look like emails
         if False in [validate_email(v['email']) for v in voters]:
-          problems.append("those don't look like correct email addresses. Are you sure you uploaded a file with email address as second field?")
+          problems.append(_("those don't look like correct email addresses. Are you sure you uploaded a file with email address as second field?"))
 
         return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters, 'problems': problems})
       else:
@@ -1431,13 +1436,18 @@ def voters_email(request, election):
       # the client knows to submit only once with a specific voter_id
       subject_template = 'email/%s_subject.txt' % template
       body_template = 'email/%s_body.txt' % template
+      try:
+          default_from_name = settings.DEFAULT_FROM_NAME.decode('utf8')
+      except UnicodeDecodeError:
+          default_from_name = settings.DEFAULT_FROM_NAME.decode('latin1')
 
       extra_vars = {
         'custom_subject' : email_form.cleaned_data['subject'],
         'custom_message' : email_form.cleaned_data['body'],
         'election_vote_url' : election_vote_url,
         'election_url' : election_url,
-        'election' : election
+        'election' : election,
+        'default_from_name': default_from_name
         }
         
       voter_constraints_include = None

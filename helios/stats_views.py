@@ -46,7 +46,7 @@ def elections(request):
   limit = int(request.GET.get('limit', 25))
   q = request.GET.get('q','')
 
-  elections = Election.objects.filter(name__icontains = q)
+  elections = Election.objects.filter(name__icontains = q, admin=user)
   elections.all().order_by('-created_at')
   elections_paginator = Paginator(elections, limit)
   elections_page = elections_paginator.page(page)
@@ -70,7 +70,10 @@ def recent_problem_elections(request):
   user = require_admin(request)
 
   # elections left unfrozen older than 1 day old (and younger than 10 days old, so we don't go back too far)
-  elections_with_problems = Election.objects.filter(frozen_at = None, created_at__gt = timezone.now() - datetime.timedelta(days=10), created_at__lt = timezone.now() - datetime.timedelta(days=1) )
+  elections_with_problems = Election.objects.filter(frozen_at = None,
+    created_at__gt = timezone.now() - datetime.timedelta(days=10),
+    created_at__lt = timezone.now() - datetime.timedelta(days=1),
+    admin = user )
 
   return render_template(request, "stats_problem_elections", {'elections' : elections_with_problems})
 

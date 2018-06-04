@@ -2,11 +2,15 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Cabine de Votação</title>
+  <link rel="stylesheet" type="text/css" media="screen" href="/static/bootstrap/css/bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="css/booth.css" />
   <link rel="stylesheet" type="text/css" href="css/forms.css" />
-  <link rel="stylesheet" type="text/css" media="screen" href="/static/bootstrap/css/bootstrap.min.css" />
   <link rel="stylesheet" type="text/css" href="/static/css/custom.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono">
+    <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
 <!--
   <script language="javascript" src="js/jscrypto/class.js"></script>
@@ -30,7 +34,7 @@
 </head>
 <body>
 <div id="wrapper">
-<span style="float:right; padding: 7px 15px 5px 10px;">[<a style="color:#000;" href="javascript:BOOTH.exit();">sair</a>]</span>
+<span style="float:right; padding: 7px 15px 5px 10px;"><a class="link-booth" href="javascript:BOOTH.exit();">[sair]</a></span>
 <div id="banner">Cabine de Votação</div>
 <div id="content">
 
@@ -83,11 +87,10 @@ BOOTH.exit = function() {
     //if (confirm("Are you sure you want to exit the booth and lose all information about your current ballot?")) {
     if (confirm("Tem certeza de que você deseja sair da cabine e perder toda a informação de sua cédula atual?")) {
         BOOTH.started_p = false;
-        window.location = BOOTH.election.cast_url;
         if (BOOTH.election_metadata.private_p){
             window.location = BOOTH.logout_url;
-        }else{
-            window.location = BOOTH.election_cast_url;
+        } else {
+            window.location = BOOTH.election.cast_url;
         }
     }
 };
@@ -614,9 +617,9 @@ BOOTH.do_done = function() {
 
 </script>
 <div id="page">
-  <div id="progress_div" style="display:none; width: 500px; margin:auto;">
-      <table width="100%" class="table table-bordered">
-          <tr><td id="progress_1">(1) Selecionar</td><td id="progress_2">(2) Revisar</td><td id="progress_3">(3) Depositar</td></tr>
+  <div id="progress_div" style="display:none; max-width: 500px; width: 100%; margin:auto;">
+      <table width="80%" class="table table-bordered">
+          <tr><td id="progress_1">(1) Marcar</td><td id="progress_2">(2) Revisar</td><td id="progress_3">(3) Depositar</td></tr>
       </table>
   </div>
   <div id="election_div" class="panel list-group">

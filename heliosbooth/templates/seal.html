@@ -16,28 +16,16 @@ Você será guiado para cifrar novamente suas escolhas para o depósito final da
 </div>
 {#/if}
 
-<!--<h3>Your ballot is ready to be submitted</h3> -->
 <h3>Sua cédula está cifrada e pronta para ser depositada na urna.</h3>
 
-<p>
-<!--<em>Don't forget to click "Proceed to Submission" below!</em> -->
-<em>Não esqueça de clicar em "Depositar Cédula na Urna"!</em>
-</p>
-
-<!--<p>Before submitting, you can take note of your smart ballot tracker [<a onclick="BOOTH.show_receipt(); return false;" href="#">print</a>]:<br /><br /> -->
 
 <p>Antes de depositar na urna, você pode anotar seu rastreador de cédula:<br /><br />
 
-
-<b><tt style="font-size: 16pt;">&nbsp;&nbsp;&nbsp;{$T.encrypted_vote_hash}</tt></b><br /><br />
-
+<b><tt style="font-size: 12pt;width: 10em; word-wrap: break-word;">{$T.encrypted_vote_hash}</tt></b><br /><br />
 </p>
 
-<!--<p>
-Once you click "Proceed", Helios will remember only your encrypted vote. Thus, only you know your vote.</p> -->
-<p>Sua cédula foi cifrada e ninguém conseguirá identificar as escolhas que você fez.</p>
 
-<button class="btn-primary" id="proceed_button" onclick="BOOTH.cast_ballot();">Depositar Cédula na Urna</button><br />
+<button class="btn btn-primary" id="proceed_button" onclick="BOOTH.cast_ballot();">Depositar Cédula na Urna</button><br />
 <div id="loading_div"><img src="loading.gif" id="proceed_loading_img" /></div>
 
 

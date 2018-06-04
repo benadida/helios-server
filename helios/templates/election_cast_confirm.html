@@ -1,4 +1,4 @@
-{% extends TEMPLATE_BASE %}
+{% extends TEMPLATE_BASENONAV %}
 {% load i18n %}
 {% load staticfiles %}
 {% block title %}{% trans "Confirm Vote" %}{% endblock %}
@@ -26,7 +26,8 @@ window.onbeforeunload = function(evt) {
     evt = window.event;
   }
   
-  var message = "You have not yet cast your ballot! Make sure to complete the voting process if you want your vote to count.";
+  //var message = "You have not yet cast your ballot! Make sure to complete the voting process if you want your vote to count.";
+  var message = "Você ainda NÃO DEPOSITOU sua cédula na urna! Se você quiser que seu voto seja considerado, então complete todo o processo";
 
   if (evt) {
     evt.returnValue = message;
@@ -37,14 +38,11 @@ window.onbeforeunload = function(evt) {
 
 </script>
 <div id="ballot-not-cast-yet" class="container-fluid">
-<h1>{{election.name}} - {% trans "Submit your Vote" %}</h1>
+<h2>{{election.name}}</h2>
+<h3>{% trans "Submit your Vote" %}</h3>
 
 <div class="alert alert-warning" role="alert">
-  {% blocktrans %}
-  We have received, <b><u>but not yet recorded</u></b>, your encrypted ballot.<br />
-  Your smart ballot tracker is:
-  {% endblocktrans %}
-  <em style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</em>
+    A sua cédula <b><u>ainda não foi depositada</u></b> na urna.
 </div>
 
 <div id="waiting_div">

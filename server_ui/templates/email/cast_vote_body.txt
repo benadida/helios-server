@@ -1,14 +1,39 @@
-Caro(a) {{voter.name}},
+<!doctype html>
 
-Você depositou com sucesso um voto na eleição {{election.name}}.
-
-O seu voto está guardado em: {{cast_vote_url}}
+<html lang="pt-br">
+<title>{{default_from_name|safe}}</title>
+<head>
+    <meta charset="utf-8">
+</head>
+    <body>
+        <p><strong>{{voter.name}}</strong>,
+        <p>Seu voto foi depositado com sucesso para {{election.name}}</p>
+        <p>O seu voto foi registrado com o seguinte código de confirmação:<br>
+        <strong>
+            {{cast_vote.vote_hash}}
+        </strong>
+        <br>
+        <br>
+        O seu voto está guardado em: {{cast_vote_url}}
+        <br>
+        <br>
 
 {% if election.use_voter_aliases %}
-Essa eleição usa pseudônimos para proteger a sua privacidade.
-O seu pseudônimo de eleitor é: {{voter.alias}}.
+    <p> O seu pseudônimo de eleitor é: <strong>{{voter.alias}} </strong></p>
 {% endif %}
-
+    <br><br>
+    <p>O resultado da eleição será divulgado em horário e local conforme Edital.</p>
+    <br><br>
 --
-
-Sistema de Votação Online do IFSC
+<br>
+<font style="" size="1" face="verdana, sans-serif"><b style="">Instituto Federal de Santa Catarina - Reitoria</b>
+</font>
+<br>
+<font style="" size="1" face="verdana, sans-serif">
+    Rua 14 de Julho, 150, Coqueiros, Florianópolis / SC - CEP: 88075-010
+</font>
+<br>
+<u><a href="http://www.ifsc.edu.br" target="_blank" style=""><font style="" face="verdana, sans-serif">www.ifsc.edu.br</font></a>
+</u>
+</body>
+</html>

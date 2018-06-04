@@ -12,7 +12,7 @@ has been removed from memory.
 {% blocktrans %}
 As a reminder, your ballot tracking number is:<br />
 {% endblocktrans %}
-<b><tt style="font-size: 16pt;">{$T.encrypted_vote_hash}</tt></b>
+<b><tt style="font-size: 12pt;width: 10em; word-wrap: break-word">{$T.encrypted_vote_hash}</tt></b>
 </p>
 
 <p>
@@ -21,7 +21,7 @@ According to the election definition file, this ballot will be submitted to:
 {% endblocktrans %}
 </p>
 
-<p><b><tt style="font-size:1.3em;">{$T.cast_url}</tt></b></p>
+<p><b><tt style="font-size: 12pt;width: 10em; word-wrap: break-word">{$T.cast_url}</tt></b></p>
 
 <p>
 {% blocktrans %}
@@ -40,4 +40,3 @@ According to the election definition file, this ballot will be submitted to:
   <input type="submit" value="{% trans "Submit Ballot" %}" class="pretty" />
 </div>
 </form>
-

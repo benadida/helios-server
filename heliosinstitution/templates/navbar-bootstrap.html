@@ -1,19 +1,28 @@
 {% load i18n %}
 {% load staticfiles %}
-<nav class="navbar navbar-default" style="background-color: #339933" role="navigation">
+<nav class="navbar navbar-default top-bar">
     <div class="container-fluid">
-        <div class="row">
-            <div class="navbar-header">
-                <a href="http://www.ifsc.edu.br">
-                    <img alt="IFSC" src="/media/img/logo.png" >
-                </a>
-            </div>
-            <div class="collapse navbar-collapse">
+	<div class="row">
+		<a title="site IFSC" href="http://www.ifsc.edu.br">
+            <img class="img-responsive logo" width="177" height="65" src={% static "img/logo.png" %} alt="Logo IFSC" />
+		</a>
+
+	</div>
+	<div class="row top-bar-menu">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#top-bar-menu" aria-expanded="false">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+		</div>
+            <div class="collapse navbar-collapse" id="top-bar-menu">
                 <ul class="nav navbar-nav navbar-right">
-                    {% if user %}
                     <li>
                         <a class="navbar-brand" style="color:#FFFFFF;" href="/">{% trans "Home" %}</a>
                     </li>
+                    {% if user %}
                     {% if user.institutionuserprofile_set.get.is_institution_admin %}
                     <li>
                         <a class="navbar-brand" style="color:#FFFFFF;" href="{% url "heliosinstitution.views.dashboard" %}">Admin</a>

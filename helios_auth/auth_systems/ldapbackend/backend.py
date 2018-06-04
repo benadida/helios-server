@@ -26,7 +26,7 @@ class CustomLDAPBackend(LDAPBackend):
         """
         user =  super(CustomLDAPBackend, self).authenticate(username, password)
 
-        if user and settings.AUTH_LDAP_BIND_PASSWORD == '' :
+        if user and self.settings.BIND_PASSWORD == '' :
             search = self.settings.USER_SEARCH
             if search is None:
                 raise ImproperlyConfigured('AUTH_LDAP_USER_SEARCH must be an LDAPSearch instance.')
