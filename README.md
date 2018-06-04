@@ -250,7 +250,7 @@ Para que a instituição possa ser administrada, é necessário fornecer via int
 No campo institution, selecione a instituição previamente criada.
 Em e-mail, informe o e-mail do administrador. Se desejar, informe a data de expiração desse usuário. Deixe o campo active desmarcado (será marcado quando o usuário se conectar no serviço pela primeira vez).
 
-Para maiores informações da aplicação *django admin site*, visite https://docs.djangoproject.com/en/1.6/ref/contrib/admin/
+Para maiores informações da aplicação *django admin site*, visite https://docs.djangoproject.com/en/1.8/ref/contrib/admin/
 
 #### Configuração dos módulos de autenticação
 
