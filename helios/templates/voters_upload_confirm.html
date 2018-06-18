@@ -18,8 +18,10 @@ You have uploaded a file of voters. The first few rows of this file are:
 </table>
 
 {% if problems %}
-<p style="font-size: 1.5em;">
+<p style="font-size: 1.5em;color: red">
 {% trans "HOLD ON:" %}<br />
+</p>
+<p>
 {% for problem in problems %}
 - {{problem}}<br />
 {% endfor %}
