@@ -1348,22 +1348,25 @@ def voters_upload(request, election):
       # we need to confirm
       if request.FILES.has_key('voters_file'):
         voters_file = request.FILES['voters_file']
-        voter_file_obj = election.add_voters_file(voters_file)
-
-        request.session['voter_file_id'] = voter_file_obj.id
-
         problems = []
-
-        # import the first few lines to check
+        voters = []
         try:
-          voters = [v for v in voter_file_obj.itervoters()][:5]
-        except:
-          voters = []
-          problems.append(_("your CSV file could not be processed. Please check that it is a proper CSV file."))
+            voter_file_obj = election.add_voters_file(voters_file)
+            request.session['voter_file_id'] = voter_file_obj.id
 
-        # check if voter emails look like emails
-        if False in [validate_email(v['email']) for v in voters]:
-          problems.append(_("those don't look like correct email addresses. Are you sure you uploaded a file with email address as second field?"))
+            # import the first few lines to check
+            try:
+              voters = [v for v in voter_file_obj.itervoters()][:5]
+            except:
+              voters = []
+              problems.append(_("your CSV file could not be processed. Please check that it is a proper CSV file."))
+
+            # check if voter emails look like emails
+            if False in [validate_email(v['email']) for v in voters]:
+              problems.append(_("those don't look like correct email addresses. Are you sure you uploaded a file with email address as second field?"))
+
+        except UnicodeDecodeError:
+            problems.append(_("Your file should be saved in UTF-8 format"))
 
         return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters, 'problems': problems})
       else:
