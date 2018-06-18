@@ -16,7 +16,7 @@ def hash_b64(s):
   return result
 
 def to_json(d):
-  return json.dumps(d, sort_keys=True)
+  return json.dumps(d, sort_keys=True, separators=(',', ':'))
 
 def from_json(json_str):
   if not json_str: return None
