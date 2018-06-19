@@ -1,27 +1,8 @@
-O objetivo deste projeto era inicialmente atender a [necessidade N.47 do PDTI 2013 do IFSC](http://dtic.ifsc.edu.br/files/pdti2013-revisao02.pdf).
-
-No entanto, logo percebeu-se que outras instituições, especialmente as de ensino, poderiam se beneficiar das melhorias realizadas no projeto original, a fim de atender ao público brasileiro.
-
-Neste repositório encontra-se o código personalizado a partir do original disponível em [https://github.com/benadida/helios-server](https://github.com/benadida/helios-server), assim como um tutorial detalhado de instalação e configuração.
-
-Para saber um pouco mais, acesse:
-
-Tutoriais: 
-
-http://dtic.ifsc.edu.br/sistemas/sistema-de-votacao-on-line-helios/
-
-Publicações:
-
-1) [O uso de um sistema de votação on-line para escolha do conselho universitário](http://dtic.ifsc.edu.br/files/chaves-sbseg14.pdf)
-
-2) [Adoção de modelo controle acesso baseado em atributos em sistema de votação online para ofertá-lo como um serviço de TIC federado](http://sbseg2015.univali.br/anais/WGID/artigoWGID06.pdf)
-
-
-
-
 # Guia de instalação e configuração do Helios
 
 *This README is intended for Portuguese audience.*
+
+* Este é um repositório particular em que novas funcionalidades, atualizações e outras atividades de interesse particular ou de pesquisa são realizadas. Se você está interessado em informações sobre o repositório de uso no IFSC(http://www.ifsc.edu.br), por favor acesse https://github.com/ifsc/helios-server
 
 versão 1.0  - adaptações realizadas para uso federado
 
@@ -31,7 +12,7 @@ Neste tutorial são descritos os principais passos para instalação de um servi
 
 *Supondo uma máquina apenas com o sistema operacional*
 
-Atualizações/instalações de pacotes:
+Atualizações/instalações de pacotes: 
 
     sudo apt-get dist-upgrade
 
@@ -54,7 +35,6 @@ Se for baixar e/ou atualizar o código via github:
     sudo su postgres
 
     psql
-
 
     create role helios with createdb createrole login;
     
@@ -91,8 +71,7 @@ Na configuração do pgAdmin, usar como endereço do host o seu endereço e não
 
 Você pode baixar um zip com o fonte ou clonar o repositório. Supondo que o código vai ser baixado via git:
 
-*git clone https://github.com/ifsc/helios-server.git*
-
+*git clone https://github.com/shirlei/helios-server.git*
 
 Não é obrigatório, mas é uma boa prática, criar um ambiente virtual para a disponibilização do Helios, tanto para desenvolvimento quanto para implantação, pois isso permite separar as dependências do projeto e não interferir em outros sistemas na mesma máquina. 
 
@@ -168,7 +147,6 @@ Módulos a serem habilitados, para a configuração exemplo:
 
 Para configurar o httpd.conf ou equivalente, siga as instruções em [How to use Django with Apache and mod_wsgi](https://docs.djangoproject.com/en/1.6/howto/deployment/wsgi/modwsgi/).
 
-
 A parte de servir os arquivos estáticos é a mais trabalhosa. Essa configuração é necessária porque no servidor de desenvolvimento o django serve esses arquivos, porém, na produção, eles precisam ser configurados para serem servidos pelo servidor web.
 
 Os arquivos estáticos não servidos pelo django são os "tradicionais":  css, javascript e imagens, por exemplo. Para coletar esses arquivos, é preciso executar o comando collectstatic, conforme descrito em [Collect static app](https://docs.djangoproject.com/en/1.6/ref/contrib/staticfiles//).
@@ -201,30 +179,6 @@ Após iniciar o celery beat, é possível ver uma tarefa periódica criada atrav
 
 Se não for desejado fazer a limpeza da tabela dessa forma, basta não iniciar o celery beat.
 
-#### Configuração módulo apache shibboleth2
-
-Após instalar o módulo shibboleth para o apache, é necessário realizar algumas configurações.
-
-Um dos arquivos a ser editado é o /etc/shibboleth/shibboleth2.xml.
-Ver exemplo de configuração em:
-https://wiki.rnp.br/display/gidlab/Procedimentos+operacionais+da+CAFe+Expresso e
-https://www.cmu.edu/computing/web/authenticate/web-login/shib.html
-
-Gerar chaves:
-
-sudo openssl genrsa -out /etc/ssl/private/$HOSTNAME.key 4096 -config openssl.cnf
-
-sudo openssl req -new -key /etc/ssl/private/$HOSTNAME.key -out /etc/ssl/private/$HOSTNAME.csr -batch -config openssl.cnf
-
-sudo openssl x509 -req -days 1825 -in /etc/ssl/private/$HOSTNAME.csr -signkey /etc/ssl/private/$HOSTNAME.key -out /etc/ssl/certs/$HOSTNAME.crt
-
-O arquivo openssl.cnf é um arquivo com os dados necessários para a geração de chaves. Ver exemplo em: https://wiki.rnp.br/display/gidlab/Procedimentos+operacionais+da+CAFe+Expresso
-
-Também é necessário editar o arquivo attribute-map.xml, para adicionar os atributos que a aplicação necessita (ver em settings.py).
-
-Após realizar as configurações, é necessário reiniciar o apache.
-Algumas vezes é necessário parar e iniciar o shibd (/etc/init.d/shibd).
-
 
 #### Administração pelo site de administração do django
 
@@ -240,7 +194,7 @@ Após finalizar a instalação, você deve entrar em http(s)://endereco-do-seu-s
 
 Outra customização disponível, acessível por essa administração, é a opção de listar ou não uma eleição na página pública inicial do sistema. Se você quiser que uma eleição seja listada, na página de administração do Django, localize a opção `Helios` e clique em *Elections*. Na tela seguinte, clique no nome da eleição que você gostaria que fosse listada na página pública e na tela de edição, marque a opção *Featured p* e salve.
 
-##### Para autenticação federada via shibboleth
+##### Para autenticação federada via shibboleth (ver configuração shibboleth abaixo)
 
 Para a utilização federada do Helios, diversas personalizações foram efetuadas tanto na página pública, quando na parte de gerenciamento de eleições.
 
@@ -271,6 +225,32 @@ Ela não é muito completa, mas as configurações principais estão no settings
 AUTH_LDAP_BIND_DN e AUTH_LDAP_BIND_PASSWORD vão ter um valor configurado se o servidor LDAP exigir usuário e senha para fazer consultas. Ou seja, a configuração é caso a caso e uma leitura cuidadosa da documentação disponível no link do django-auth-ldap é recomendada, para outras dúvidas.
 
 ##### Shibboleth
+
+#### Configuração módulo apache shibboleth2
+
+Após instalar o módulo shibboleth para o apache, é necessário realizar algumas configurações.
+
+Um dos arquivos a ser editado é o /etc/shibboleth/shibboleth2.xml.
+Ver exemplo de configuração em:
+https://wiki.rnp.br/display/gidlab/Procedimentos+operacionais+da+CAFe+Expresso e
+https://www.cmu.edu/computing/web/authenticate/web-login/shib.html
+
+Gerar chaves:
+
+sudo openssl genrsa -out /etc/ssl/private/$HOSTNAME.key 4096 -config openssl.cnf
+
+sudo openssl req -new -key /etc/ssl/private/$HOSTNAME.key -out /etc/ssl/private/$HOSTNAME.csr -batch -config openssl.cnf
+
+sudo openssl x509 -req -days 1825 -in /etc/ssl/private/$HOSTNAME.csr -signkey /etc/ssl/private/$HOSTNAME.key -out /etc/ssl/certs/$HOSTNAME.crt
+
+O arquivo openssl.cnf é um arquivo com os dados necessários para a geração de chaves. Ver exemplo em: https://wiki.rnp.br/display/gidlab/Procedimentos+operacionais+da+CAFe+Expresso
+
+Também é necessário editar o arquivo attribute-map.xml, para adicionar os atributos que a aplicação necessita (ver em settings.py).
+
+Após realizar as configurações, é necessário reiniciar o apache.
+Algumas vezes é necessário parar e iniciar o shibd (/etc/init.d/shibd).
+
+
 Habilitar o módulo em settings.py:
 
 AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'shibboleth').split(",")
@@ -283,7 +263,7 @@ Configurar demais atributos em settings.py, na seção # Shibboleth auth setting
 
 As configurações indicadas aqui supõe que o provedor de serviço (apache, módulo shibboleth e demais configurações) está configurado e funcional.
 
-#### Alguns lembretes:
+#### Alguns lembretes finais:
 
 LEMBRAR DE ALTERAR EM SETTINGS.PY A CONSTANTE DEBUG DE TRUE PRA FALSE!
 
