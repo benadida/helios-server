@@ -513,7 +513,7 @@ def encrypt_ballot(request, election):
   (list of list because each question could have a list of answers if more than one.)
   """
   # FIXME: maybe make this just request.POST at some point?
-  answers = utils.from_json(request.GET['answers_json'])
+  answers = utils.from_json(request.POST['answers_json'])
   ev = homomorphic.EncryptedVote.fromElectionAndAnswers(election, answers)
   return ev.ld_object.includeRandomness().toJSONDict()
     
@@ -552,7 +552,13 @@ def password_voter_login(request, election):
   """
   
   # the URL to send the user to after they've logged in
-  return_url = request.GET.get('return_url', reverse(one_election_cast_confirm, args=[election.uuid]))
+  if request.method == "GET" and 'return_url' in request.GET:
+      return_url = request.GET['return_url']
+  elif request. method == "POST" and 'return_url' in request.POST:
+      return_url = request.POST['return_url']
+  else:
+      return_url = reverse(one_election_cast_confirm, args=[election.uuid])
+
   bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
 
   if request.method == "GET":
