@@ -19,15 +19,23 @@ form.prettyform br {
     clear: left;
 }
 
-form.prettyform input, form.prettyform textarea, button {
+form.prettyform input, form.prettyform textarea {
     border: 1px solid black;
     margin: 5px;
     font-size: 16pt;
 }
 
+form.prettyform input, button {
+    border: 1px solid black;
+    margin: 5px;
+    font-size: 1em;
+    padding: 8px 15px;
+}
+
 input.pretty {
     font-size: 16pt;
     border: 1px solid black;
+    margin-top: 10px;
 }
 
 input.prettysmall {

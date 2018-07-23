@@ -16,7 +16,7 @@ Once you're satisfied, click the "back to voting" button to re-encrypt and cast 
 </p>
 
 <form action="#">
-<textarea name="audit_trail" id="audit_trail" cols="80" rows="10" wrap="soft">
+<textarea name="audit_trail" id="audit_trail" cols="80" rows="10" wrap="soft" style="width: 100%;">
 {$T.audit_trail}
 </textarea>
 <br /><br />
@@ -25,9 +25,16 @@ you can post this audited ballot to the Helios tracking center so that others mi
 <br /><br />
 <b>Even if you post your audited ballot, you must go back to voting and choose "cast" if you want your vote to count.</b>
 <br /><br />
-<input type="button" value="back to voting" onclick="BOOTH.reset_ciphertexts();BOOTH.seal_ballot();" class="pretty" />
-&nbsp; &nbsp;&nbsp;
-<input type="button" value="post audited ballot to tracking center" onclick="$(this).attr('disabled', 'disabled');BOOTH.post_audited_ballot();" id="post_audited_ballot_button" class="pretty" style="font-size:0.8em;"/>
+<div class="btn_footer">
+<ul>
+    <li>
+        <input type="button" value="back to voting" onclick="BOOTH.reset_ciphertexts();BOOTH.seal_ballot();" class="pretty" />
+    </li>
+    <li>
+        <input type="button" class="pretty" value="post audited ballot to tracking center" onclick="$(this).attr('disabled', 'disabled');BOOTH.post_audited_ballot();" id="post_audited_ballot_button" style="max-width: 100%; white-space: normal;"/>
+    </li>
+</ul>
+</div>
 
 </form>
 
