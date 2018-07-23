@@ -70,7 +70,8 @@ def ldap_login_view(request):
                 
                 if user:
                     request.session['ldap_user']  = {
-                        'user_id': user.email,
+                        'username': user.username,
+                        'email': user.email,
                         'name': user.first_name + ' ' + user.last_name,
                     }
                     return HttpResponseRedirect(reverse(after))
@@ -87,9 +88,9 @@ def ldap_login_view(request):
 def get_user_info_after_auth(request):
     return {
        'type': 'ldap',
-       'user_id' : request.session['ldap_user']['user_id'],
+       'user_id' : request.session['ldap_user']['username'],
        'name': request.session['ldap_user']['name'],
-       'info': {'email': request.session['ldap_user']['user_id']},
+       'info': {'email': request.session['ldap_user']['email']},
        'token': None
     }
 
