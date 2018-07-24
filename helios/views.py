@@ -638,6 +638,13 @@ def one_election_cast_confirm(request, election):
 
   voter = get_voter(request, user, election)
   
+  # If from election auth_system search for an voter_id equal to user_id
+  if user and not voter:
+    for constraint in election.eligibility:
+      if constraint['auth_system'] == user.user_type and user.user_type in settings.AUTH_BIND_USERID_TO_VOTERID:
+        voter = Voter.get_by_election_and_voter_id(election, user.user_id)
+        break
+
   # auto-register this person if the election is openreg
   if user and not voter and election.openreg:
     voter = _register_voter(election, user)
@@ -772,6 +779,13 @@ def one_election_cast_done(request, election):
   user = get_user(request)
   voter = get_voter(request, user, election)
 
+  # If from election auth_system search for an voter_id equal to user_id
+  if user and not voter:
+    for constraint in election.eligibility:
+      if constraint['auth_system'] == user.user_type and user.user_type in settings.AUTH_BIND_USERID_TO_VOTERID:
+        voter = Voter.get_by_election_and_voter_id(election, user.user_id)
+        break
+  
   if voter:
     voter.cast_ip = request.META['REMOTE_ADDR']
     votes = CastVote.get_by_voter(voter)
@@ -785,7 +799,8 @@ def one_election_cast_done(request, election):
       logout = settings.LOGOUT_ON_CONFIRMATION
     else:
       logout = True
-      del request.session['CURRENT_VOTER_ID']
+      if 'CURRENT_VOTER_ID' in request.session:
+        del request.session['CURRENT_VOTER_ID']
 
     save_in_session_across_logouts(request, 'last_vote_hash', vote_hash)
     save_in_session_across_logouts(request, 'last_vote_cv_url', cv_url)
