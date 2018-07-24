@@ -1314,7 +1314,7 @@ def voters_eligibility(request, election):
   if eligibility in ['openreg', 'limitedreg']:
     election.openreg= True
 
-  if eligibility == 'closedreg':
+  if eligibility in ['closedreg', 'privatereg']:
     election.openreg= False
 
   if eligibility == 'limitedreg':
@@ -1324,6 +1324,8 @@ def voters_eligibility(request, election):
 
     constraint = AUTH_SYSTEMS[user.user_type].generate_constraint(category_id, user)
     election.eligibility = [{'auth_system': user.user_type, 'constraint': [constraint]}]
+  elif eligibility == 'privatereg':
+    election.eligibility = [{'auth_system': user.user_type}]
   else:
     election.eligibility = None
 
