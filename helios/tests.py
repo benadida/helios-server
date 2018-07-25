@@ -574,7 +574,7 @@ class ElectionBlackboxTests(WebTest):
         # let's get a single voter
         single_voter = models.Election.objects.get(uuid = election_id).voter_set.all()[0]
         response = self.client.get("/helios/elections/%s/voters/%s" % (election_id, single_voter.uuid))
-        self.assertContains(response, '"uuid": "%s"' % single_voter.uuid)
+        self.assertContains(response, '"uuid":"%s"' % single_voter.uuid)
 
         response = self.client.get("/helios/elections/%s/voters/foobar" % election_id)
         self.assertEquals(response.status_code, 404)
