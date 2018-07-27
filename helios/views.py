@@ -512,8 +512,7 @@ def encrypt_ballot(request, election):
   perform the ballot encryption given answers_json, a JSON'ified list of list of answers
   (list of list because each question could have a list of answers if more than one.)
   """
-  # FIXME: maybe make this just request.POST at some point?
-  answers = utils.from_json(request.REQUEST['answers_json'])
+  answers = utils.from_json(request.POST['answers_json'])
   ev = homomorphic.EncryptedVote.fromElectionAndAnswers(election, answers)
   return ev.ld_object.includeRandomness().toJSONDict()
     
@@ -550,9 +549,15 @@ def password_voter_login(request, election):
   """
   This is used to log in as a voter for a particular election
   """
-
+  
   # the URL to send the user to after they've logged in
-  return_url = request.REQUEST.get('return_url', reverse(one_election_cast_confirm, args=[election.uuid]))
+  if request.method == "GET" and 'return_url' in request.GET:
+      return_url = request.GET['return_url']
+  elif request. method == "POST" and 'return_url' in request.POST:
+      return_url = request.POST['return_url']
+  else:
+      return_url = reverse(one_election_cast_confirm, args=[election.uuid])
+
   bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
 
   if request.method == "GET":
@@ -568,7 +573,7 @@ def password_voter_login(request, election):
                             'password_login_form': password_login_form,
                             'bad_voter_login' : bad_voter_login})
   
-  login_url = request.REQUEST.get('login_url', None)
+  login_url = request.GET.get('login_url', None)
 
   if not login_url:
     # login depending on whether this is a private election
@@ -598,7 +603,15 @@ def password_voter_login(request, election):
           })
 
       return HttpResponseRedirect(settings.SECURE_URL_HOST + redirect_url)
-  
+  else:
+    # bad form, bad voter login
+    redirect_url = login_url + "?" + urllib.urlencode({
+        'bad_voter_login' : '1',
+        'return_url' : return_url
+        })
+
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + redirect_url)
+    
   return HttpResponseRedirect(settings.SECURE_URL_HOST + return_url)
 
 @election_view()
@@ -614,7 +627,7 @@ def one_election_cast_confirm(request, election):
     return render_template(request, 'election_not_started', {'election': election})
 
   voter = get_voter(request, user, election)
-
+  
   # auto-register this person if the election is openreg
   if user and not voter and election.openreg:
     voter = _register_voter(election, user)
@@ -669,7 +682,7 @@ def one_election_cast_confirm(request, election):
     bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
 
     # status update this vote
-    if voter and voter.user.can_update_status():
+    if voter and voter.can_update_status():
       status_update_label = voter.user.update_status_template() % "your smart ballot tracker"
       status_update_message = "I voted in %s - my smart tracker is %s.. #heliosvoting" % (get_election_url(election),cast_vote.vote_hash[:10])
     else:
@@ -753,7 +766,8 @@ def one_election_cast_done(request, election):
 
     # only log out if the setting says so *and* we're dealing
     # with a site-wide voter. Definitely remove current_voter
-    if voter.user == user:
+    # checking that voter.user != None is needed because voter.user may now be None if voter is password only
+    if voter.user == user and voter.user != None:
       logout = settings.LOGOUT_ON_CONFIRMATION
     else:
       logout = False
@@ -870,12 +884,28 @@ def voter_delete(request, election, voter_uuid):
 
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
   if voter:
-    voter.delete()
-
-  if election.frozen_at:
-    # log it
-    election.append_log("Voter %s/%s removed after election frozen" % (voter.voter_type,voter.voter_id))
     
+    if voter.vote_hash:
+      # send email to voter
+      subject = "Vote removed"
+      body = """
+
+Your vote were removed from the election "%s".
+  
+--
+Helios  
+""" % (election.name)
+      voter.user.send_message(subject, body)
+
+      # log it
+      election.append_log("Voter %s/%s and their vote were removed after election frozen" % (voter.voter_type,voter.voter_id))
+
+    elif election.frozen_at:
+      # log it
+      election.append_log("Voter %s/%s removed after election frozen" % (voter.voter_type,voter.voter_id))
+
+    voter.delete()
+          
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
 
 @election_admin(frozen=False)
@@ -1103,7 +1133,10 @@ def release_result(request, election):
     election.release_result()
     election.save()
 
-    return HttpResponseRedirect("%s" % (settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid])))
+    if request.POST.get('send_email', ''):
+      return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_email, args=[election.uuid]),urllib.urlencode({'template': 'result'})))
+    else:
+      return HttpResponseRedirect("%s" % (settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid])))
 
   # if just viewing the form or the form is not valid
   return render_template(request, 'release_result', {'election': election})
@@ -1311,11 +1344,11 @@ def voters_email(request, election):
     'result':'Election Result'
     }
 
-  template = request.REQUEST.get('template', 'vote')
-  if not TEMPLATES.has_key(template):
+  template = request.GET.get('template', 'vote')
+  if not template in [t[0] for t in TEMPLATES]:
     raise Exception("bad template")
 
-  voter_id = request.REQUEST.get('voter_id', None)
+  voter_id = request.GET.get('voter_id', None)
 
   if voter_id:
     voter = Voter.get_by_election_and_voter_id(election, voter_id)
@@ -1343,7 +1376,7 @@ def voters_email(request, election):
       })
 
   if request.method == "GET":
-    email_form = forms.EmailVotersForm()
+    email_form = forms.EmailVotersForm(initial={'subject': election.name, 'body': ' '})
     if voter:
       email_form.fields['send_to'].widget = email_form.fields['send_to'].hidden_widget()
   else:
