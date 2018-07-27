@@ -335,6 +335,22 @@ class Election(HeliosModel):
 
       return return_val
   
+  @property
+  def voting_start_at(self):
+    voting_start_at = self.voting_starts_at
+    if voting_start_at and self.frozen_at:
+      voting_start_at = max(voting_start_at, self.frozen_at)
+    return voting_start_at
+
+  @property
+  def voting_end_at(self):
+    voting_end_at = self.voting_ends_at
+    if voting_end_at and self.voting_extended_until:
+      voting_end_at = max(voting_end_at, self.voting_extended_until)
+    if voting_end_at and self.voting_ended_at:
+      voting_end_at = min(voting_end_at, self.voting_ended_at)
+    return voting_end_at
+
   def voting_has_started(self):
     """
     has voting begun? voting begins if the election is frozen, at the prescribed date or at the date that voting was forced to start

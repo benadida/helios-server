@@ -46,6 +46,12 @@ this {{election.election_type}} is <u>not</u> featured on the front page.
 {{election.description_bleached|safe}}
 </div>
 
+<p>
+{% if election.help_email and admin_p%}Help Email Address: {{election.help_email}}<br />{% endif %}
+{% if election.voting_start_at %}Voting start at {{election.voting_start_at}}<br />{% endif %}
+{% if election.voting_end_at %}Voting end at {{election.voting_end_at}}<br />{% endif %}
+</p>
+
 {% if election.election_info_url %}
 <p style="font-size:1.5em;">[<a target="_blank" href="{{election.election_info_url}}" rel="noopener noreferrer">download candidate bios &amp; statements</a>]</p>
 {% endif %}
