@@ -550,8 +550,7 @@ def encrypt_ballot(request, election):
   perform the ballot encryption given answers_json, a JSON'ified list of list of answers
   (list of list because each question could have a list of answers if more than one.)
   """
-  # FIXME: maybe make this just request.POST at some point?
-  answers = utils.from_json(request.REQUEST['answers_json'])
+  answers = utils.from_json(request.POST['answers_json'])
   ev = homomorphic.EncryptedVote.fromElectionAndAnswers(election, answers)
   return ev.ld_object.includeRandomness().toJSONDict()
     
@@ -590,7 +589,13 @@ def password_voter_login(request, election):
   """
   
   # the URL to send the user to after they've logged in
-  return_url = request.REQUEST.get('return_url', reverse(one_election_cast_confirm, args=[election.uuid]))
+  if request.method == "GET" and 'return_url' in request.GET:
+      return_url = request.GET['return_url']
+  elif request. method == "POST" and 'return_url' in request.POST:
+      return_url = request.POST['return_url']
+  else:
+      return_url = reverse(one_election_cast_confirm, args=[election.uuid])
+
   bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
 
   if request.method == "GET":
@@ -606,7 +611,7 @@ def password_voter_login(request, election):
                             'password_login_form': password_login_form,
                             'bad_voter_login' : bad_voter_login})
   
-  login_url = request.REQUEST.get('login_url', None)
+  login_url = request.GET.get('login_url', None)
 
   if not login_url:
     # login depending on whether this is a private election
@@ -1377,11 +1382,11 @@ def voters_email(request, election):
     ('result', 'Election Result')
     ]
 
-  template = request.REQUEST.get('template', 'vote')
+  template = request.GET.get('template', 'vote')
   if not template in [t[0] for t in TEMPLATES]:
     raise Exception("bad template")
 
-  voter_id = request.REQUEST.get('voter_id', None)
+  voter_id = request.GET.get('voter_id', None)
 
   if voter_id:
     voter = Voter.get_by_election_and_voter_id(election, voter_id)

@@ -7,7 +7,7 @@ form.prettyform label,input,textarea,select {
     line-height: 1.8;
 }
 
-form.prettyform label {
+form.prettyform label:not(.answer) {
     display: block;
     text-align: right;
     float: left;
