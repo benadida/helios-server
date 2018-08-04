@@ -34,7 +34,7 @@ class ElectionTimeExtensionForm(forms.Form):
                                    widget=SplitSelectDateTimeWidget, required=False)
 
 class ElectionDeleteConfirmForm(forms.Form):
-  short_name_confirm = forms.CharField(label='Confirm the short name', max_length=40)
+  delete_confirm = forms.BooleanField(label="",help_text = 'Yes, I confirm the exclusion.')
 
 class EmailVotersForm(forms.Form):
   subject = forms.CharField(max_length=80)

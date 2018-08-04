@@ -10,20 +10,16 @@
   Created by: <b><em>{{election.admin.pretty_name}}</em></b> on <b><em>{{election.created_at}}</em></b><br>
   Short name: <b><em>{{ election.short_name }}</em></b><br>
   </p>
+  <div style="margin-bottom: 25px; line-height: 1.3;">
+    {{election.description_bleached|safe}}
+  </div>
 
   <b>Are you sure you want to delete this election?</b>
-  
-{% if error %}
-<br><br>
-<p style="color: red;">
-    {{error}}
-</p>
-{% endif %}
-  
+    
   <form class="prettyform" action="" method="POST" id="confirm_form">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     <table class="pretty">
-     {{confirm_form.as_table}}
+     {{confirm_form.as_p}}
      </table>
   <div>
   <label for="">&nbsp;</label><input class="small button" type="submit" value="confirm exclusion" id="next_button" />

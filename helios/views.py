@@ -362,13 +362,10 @@ def one_election_delete(request, election):
     error = ""
     
     if confirm_form.is_valid():
-      if election.short_name != request.POST['short_name_confirm']:
-        error = "Enter the Identifier correctly"
+      if election.delete_election():
+        return HttpResponseRedirect("/")
       else:
-        if election.delete_election():
-          return HttpResponseRedirect("/")
-        else:
-          return HttpResponseForbidden('This election can not be excluded.')
+        return HttpResponseForbidden('This election can not be excluded.')
     
     return render_template(request, 'election_delete',
                            {'election' : election, 
