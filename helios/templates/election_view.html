@@ -150,9 +150,8 @@
 			<br />
 			<br />
 			{% if election.voting_starts_at %}
-				{% blocktrans with voting_starts_at=election.voting_starts_at|date:"d/m/Y H:i"  %}
-once you do this, the election will be ready for voting and will open automatically<br />
-at {{voting_starts_at}}, as per your settings.
+				{% blocktrans  with voting_starts_at=election.voting_starts_at|date:"d/m/Y H:i:s"%} once you do this, the election will be ready for voting and will open automatically<br />
+				at {{voting_starts_at}}, as per your settings.
 				{% endblocktrans %}
 			{% else %}
 				{% trans "once you do this, the election will be immediately open for voting." %}
@@ -236,24 +235,9 @@ Once you do this, the tally will visible to you, the administrator, only.
 		</span><br /><br />
 	{% else %}
 
-		{% if election.voting_has_started and eligible_p or admin_p %}
-			<a class="btn btn-lg btn-primary" role="button" href="{{test_cookie_url}}">{% trans "Vote in this" %} {{election.pretty_type}} </a>
-			<br />
-			<br />
-			{% if election.voting_extended_until %}
-            {% blocktrans with pretty_type=election.pretty_type|title voting_ends_at=election.voting_ends_at|date:"d/m/Y H:i"  voting_extended_until=election.voting_extended_until|date:"d/m/Y H:i" %}
-	This {{pretty_type}} was initially scheduled to end at {{voting_ends_at}}, but has been extended until {{ voting_extended_until }}.
-	{% endblocktrans %}
-			{% else %}
-				{% if election.voting_ends_at %}
-					<br />
-{% blocktrans with pretty_type=election.pretty_type|title voting_ends_at=election.voting_ends_at|date:"d/m/Y H:i"|title%}
-This {{pretty_type}} is scheduled to end at {{voting_ends_at}} (UTC).
-{% endblocktrans %}
-				{% else %}
-					{% trans "This {{election.election_type}} ends at the administrator's discretion." %}
-				{% endif %}
-					<br />
+		{% if election.voting_has_started %}
+			{% if eligible_p %}
+				<a class="btn btn-lg btn-success" role="button" href="{{test_cookie_url}}">{% trans "Vote in this" %} {{election.pretty_type}} </a>
 			{% endif %}
 			<br />
 			{% if election.private_p and voter %}
