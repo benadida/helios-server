@@ -42,8 +42,7 @@ def elections(request):
   limit = int(request.GET.get('limit', 25))
   q = request.GET.get('q','')
 
-  elections = Election.objects.filter(name__icontains = q)
-  elections.all().order_by('-created_at')
+  elections = Election.objects.filter(name__icontains = q).order_by('-created_at')
   elections_paginator = Paginator(elections, limit)
   elections_page = elections_paginator.page(page)
 
