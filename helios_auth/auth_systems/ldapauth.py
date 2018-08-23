@@ -29,6 +29,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
+from django.utils.translation import ugettext_lazy as _
 
 
 from helios_auth.auth_systems.ldapbackend import backend
@@ -38,7 +39,7 @@ from helios_auth.auth_systems.ldapbackend import backend
 STATUS_UPDATES = False
 
 
-LOGIN_MESSAGE = "Log in with my LDAP Account"
+LOGIN_MESSAGE = _("Log in with my LDAP Account")
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=250)

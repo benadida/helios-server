@@ -6,6 +6,7 @@ Google Authentication
 from django.http import *
 from django.core.mail import send_mail
 from django.conf import settings
+from django.utils.translation import ugettext_lazy as _
 
 import httplib2,json
 
@@ -17,7 +18,7 @@ from oauth2client.client import OAuth2WebServerFlow
 STATUS_UPDATES = False
 
 # display tweaks
-LOGIN_MESSAGE = "Log in with my Google Account"
+LOGIN_MESSAGE = _("Log in with my Google Account")
 
 def get_flow(redirect_url=None):
   return OAuth2WebServerFlow(client_id=settings.GOOGLE_CLIENT_ID,
