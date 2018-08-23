@@ -33,8 +33,15 @@
                 <input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> {% trans "anyone can vote" %}
             </div>
             <div class="form-group">
-                <input type="radio" name="eligibility" value="closedreg" {% if not election.openreg %}CHECKED{% endif %} /> {% trans "only voters listed explicitly below can vote" %} <i title="{% trans "Do not forget to upload voters file, using the bulk upload voters button bellow." %}" class="glyphicon glyphicon-info-sign"></i>
+                <input type="radio" name="eligibility" value="closedreg" {% if not election.openreg and not election.eligibility %}CHECKED{% endif %} /> {% trans "only voters listed explicitly below can vote" %}
+				<i title="{% trans "Do not forget to upload voters file, using the bulk upload voters button bellow." %}" class="glyphicon glyphicon-info-sign"></i>
             </div>
+            {% if user.user_type in settings.AUTH_BIND_USERID_TO_VOTERID %}
+            <div class="form-group">
+                <input type="radio" name="eligibility" value="privatereg" {% if not election.openreg and election.eligibility %}CHECKED{% endif %} /> {% trans "only voters from the same system" %}
+				<i title="{% trans "Do not forget to upload voters file, using the bulk upload voters button bellow." %}" class="glyphicon glyphicon-info-sign"></i>
+            </div>
+            {% endif %}
             {% if categories %}
             <div class="form-group">
                 <input type="radio" name="eligibility" value="{% trans "limitedreg" %}" {% if election.eligibility %}CHECKED{% endif %} /> {% trans "only voters who are members of " %}

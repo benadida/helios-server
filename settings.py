@@ -340,6 +340,8 @@ AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = True
 
 AUTH_LDAP_ALWAYS_UPDATE_USER = False
 
+AUTH_BIND_USERID_TO_VOTERID = ['ldap']
+
 # Shibboleth auth settings
 SHIBBOLETH_ATTRIBUTE_MAP = { 
     #"Shibboleth-givenName": (True, "first_name"),
