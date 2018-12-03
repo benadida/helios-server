@@ -2,45 +2,48 @@
 
 *This README is intended for Portuguese audience.*
 
-* Este é um repositório particular em que novas funcionalidades, atualizações e outras atividades de interesse particular ou de pesquisa são realizadas. Se você está interessado em informações sobre o repositório de uso no IFSC(http://www.ifsc.edu.br), por favor acesse https://github.com/ifsc/helios-server
+* Este é um repositório particular em que novas funcionalidades, atualizações e outras atividades de interesse particular ou de pesquisa são realizadas. Se você está interessado em informações sobre o repositório de uso no IFSC (http://www.ifsc.edu.br), por favor acesse https://github.com/ifsc/helios-server
 
-versão 1.0  - adaptações realizadas para uso federado
+Neste tutorial são descritos os principais passos para instalação de um servidor para disponibilização do Helios. Todo o tutorial considera a distribuição Linux Ubuntu (testado em 14.04 e 16.10 e, na versão mais recente deste tutorial, a 18.04), embora já tenha sido feita instalação no CentOs. A execução deste tutorial supõe alguma experiência com administração de sistemas em geral (instalação de pacotes, configuração de serviços, etc.).
 
-Neste tutorial são descritos os principais passos para instalação de um servidor para disponibilização do Helios.
+**Instalação servidor Linux com Ubuntu 18.04**
 
-**Instalação servidor (Ubuntu)**
+*Softwares necessários*
 
-*Supondo uma máquina apenas com o sistema operacional*
+* apache2 e libapache2-mod-wsgi
 
-Atualizações/instalações de pacotes: 
+* postgresql e postgresql-contrib (versão 10 na instalação testada do ubuntu 18.04. Um bom tutorial é o disponível em https://www.digitalocean.com/community/tutorials/how-to-install-and-use-postgresql-on-ubuntu-18-04). Em distribuições anteriores do Ubuntu já foi validado na versão 9.3 e 9.6
 
-    sudo apt-get dist-upgrade
+* build-essential
 
-    sudo apt-get install apache2 postgresql-9.3 postgresql-server-dev-9.3 python-dev libsasl2-dev libldap2-dev python-ldap gettext libapache2-mod-wsgi
+* git (se for clonar o repositório e manter versionamento via git)
 
-Para utilizar o login via shibboleth (federação), instalar também o módulo shib para o apache:
+* gettext (para uso das funcionalidade de compilação de mensagens traduzidas)
 
-	sudo apt-get install libapache2-mod-shib2
+* python-pip
 
+* python-ldap python-dev libsasl2-dev libldap2-dev  (para utilização do módulo de autenticação LDAP)
 
-Se for baixar e/ou atualizar o código via github:
+  
 
-    sudo apt-get install git 
+  Na imagem que utilizei do Ubuntu 18.04 para esta revisão do tutorial, foi necessário editar o arquivo  /etc/apt/sources.list e adicionar na linha
 
+  deb http://archive.ubuntu.com/ubuntu bionic main
 
+  a opção universe.
 
-##Configurações
-### Banco
+  No final a referida linha fica da seguinte forma:
 
-    sudo su postgres
+  ```
+  deb http://archive.ubuntu.com/ubuntu bionic main universe
+  ```
 
-    psql
+Depois é só fazer um apt update  e instalar o python-pip.
 
-    create role helios with createdb createrole login;
-    
-    alter user helios with password 'sua senha';
+## Configurações
+### 1. Banco de dados PostgreSQL
 
-Editar o arquiv **pg_hba.conf** e inserir a linha:
+### 1.1 Editar o arquivo **pg_hba.conf** e inserir a linha:
 
 `local   all              helios                         md5` 
 
@@ -55,7 +58,9 @@ Exception Type: 	OperationalError
 Exception Value: 	
 FATAL:  Peer authentication failed for user "helios"
 
-Para se conectar na base com um cliente como o pgAdmin, utilizar um túnel ssh. Editar ~/.ssh/config e inserir:
+
+
+*Observação:* Com a configuração padrão do postgresql só é possível se conectar nele a partir da máquina em que ele está instalado. Caso você queira se conectar na base com um cliente como o pgAdmin, sem abrir a configuração para conexão a partir de outra máquina, basta utilizar um túnel ssh. Editar ~/.ssh/config e inserir a entrada abaixo, substituindo os valores em letra maiúscula pelas configurações da sua instalação (e não esquecer que precisa haver uma conexão ssh aberta com o servidor do banco para que a configuração abaixo seja efetiva!):
 
 
 	Host NOMEDOHOST
@@ -63,9 +68,6 @@ Para se conectar na base com um cliente como o pgAdmin, utilizar um túnel ssh. 
 	Hostname ENDERECODOHOST
 	Port PORTASSH
 	LocalForward PORTALOCAL 127.0.0.1:PORTAREMOTA
-
-
-Na configuração do pgAdmin, usar como endereço do host o seu endereço e não esquecer que precisa haver uma conexão ssh aberta com o servidor do banco!
 
 ### Obtenção do código-fonte e preparação da aplicação
 
@@ -120,7 +122,7 @@ Para disponibilizar o helios em português, é preciso compilar os arquivos de t
 
 Após a compilação, arquivos .mo devem ter sido gerados em locale/pt_BR/LC_MESSAGES
 
-Maiores informações em https://docs.djangoproject.com/en/1.6/ref/django-admin/
+Maiores informações em https://docs.djangoproject.com/en/1.8/ref/django-admin/
 
 Se tudo estiver correto até aqui, agora você pode rodar o servidor de desenvolvimento, distribuído com o django, e testar a instalação básica:
 
@@ -135,21 +137,21 @@ Em outro terminal, coloque o celery para rodar. Essa parte é importante, pois �
 
 O servidor descrito no tópico anterior é apenas para desenvolvimento, não deve ser usado em um ambiente de produção! 
 
-É possível trabalhar com diversos servidores web, porém no caso em questão optou-se pelo [Apache](https://docs.djangoproject.com/en/1.6/topics/install/#install-apache-and-mod-wsgi).
+É possível trabalhar com diversos servidores web, porém no caso em questão optou-se pelo [Apache](https://docs.djangoproject.com/en/1.8/topics/install/#install-apache-and-mod-wsgi).
 
 ### Configuração apache
 
 Módulos a serem habilitados, para a configuração exemplo:
 
     sudo a2enmod rewrite
-
+    
     sudo a2enmod ssl
 
-Para configurar o httpd.conf ou equivalente, siga as instruções em [How to use Django with Apache and mod_wsgi](https://docs.djangoproject.com/en/1.6/howto/deployment/wsgi/modwsgi/).
+Para configurar o httpd.conf ou equivalente, siga as instruções em [How to use Django with Apache and mod_wsgi](https://docs.djangoproject.com/en/1.8/howto/deployment/wsgi/modwsgi/).
 
 A parte de servir os arquivos estáticos é a mais trabalhosa. Essa configuração é necessária porque no servidor de desenvolvimento o django serve esses arquivos, porém, na produção, eles precisam ser configurados para serem servidos pelo servidor web.
 
-Os arquivos estáticos não servidos pelo django são os "tradicionais":  css, javascript e imagens, por exemplo. Para coletar esses arquivos, é preciso executar o comando collectstatic, conforme descrito em [Collect static app](https://docs.djangoproject.com/en/1.6/ref/contrib/staticfiles//).
+Os arquivos estáticos não servidos pelo django são os "tradicionais":  css, javascript e imagens, por exemplo. Para coletar esses arquivos, é preciso executar o comando collectstatic, conforme descrito em [Collect static app](https://docs.djangoproject.com/en/1.8/ref/contrib/staticfiles//).
 
 No caso do Helios em particular, há módulos sendo servidos estaticamente (total ou parcial): o heliosbooth e o heliosverifier, os quais também precisam ser configurados.
 
@@ -172,7 +174,7 @@ Nesse mesmo script, também é verificado o celery beat (http://docs.celeryproje
 No settings.py disponível no corrente repositório, colocou-se 60 dias como o prazo para apagar essas tarefas:
 
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
- 
+
 CELERY_TASK_RESULT_EXPIRES = 5184000 # 60 days
 
 Após iniciar o celery beat, é possível ver uma tarefa periódica criada através da interface administrativa do django, sob Djecelery, periodic tasks.
@@ -228,30 +230,12 @@ AUTH_LDAP_BIND_DN e AUTH_LDAP_BIND_PASSWORD vão ter um valor configurado se o s
 
 #### Configuração módulo apache shibboleth2
 
-Após instalar o módulo shibboleth para o apache, é necessário realizar algumas configurações.
+Além do módulo de autenticação LDAP, também foi desenvolvido um módulo de autenticação considerando o módulo shibboleth2 para o Apache. Nesse caso, o helios funciona como um Service Provider - SP, que deve ser liberado no IdP shibboleth de acordo com as configurações necessárias para que um SP possa se conectar usando o IdP Shibboleth.
 
-Um dos arquivos a ser editado é o /etc/shibboleth/shibboleth2.xml.
-Ver exemplo de configuração em:
-https://wiki.rnp.br/display/gidlab/Procedimentos+operacionais+da+CAFe+Expresso e
-https://www.cmu.edu/computing/web/authenticate/web-login/shib.html
-
-Gerar chaves:
-
-sudo openssl genrsa -out /etc/ssl/private/$HOSTNAME.key 4096 -config openssl.cnf
-
-sudo openssl req -new -key /etc/ssl/private/$HOSTNAME.key -out /etc/ssl/private/$HOSTNAME.csr -batch -config openssl.cnf
-
-sudo openssl x509 -req -days 1825 -in /etc/ssl/private/$HOSTNAME.csr -signkey /etc/ssl/private/$HOSTNAME.key -out /etc/ssl/certs/$HOSTNAME.crt
-
-O arquivo openssl.cnf é um arquivo com os dados necessários para a geração de chaves. Ver exemplo em: https://wiki.rnp.br/display/gidlab/Procedimentos+operacionais+da+CAFe+Expresso
-
-Também é necessário editar o arquivo attribute-map.xml, para adicionar os atributos que a aplicação necessita (ver em settings.py).
-
-Após realizar as configurações, é necessário reiniciar o apache.
-Algumas vezes é necessário parar e iniciar o shibd (/etc/init.d/shibd).
+Para utilizar essa funcionalidade, deve-se instalar o módulo apache shib (funcionalidade testada com libapache2-mod-shib2) do servidor que vai servir o SP Helios e efetuar as configurações necessárias do shibboleth. Essas configurações incluem por exemplo o estabelecimento de confiança com o IdP, obtenção de metadados do IdP, envio de metadados do SP para o Idp, etc. Um bom ponto de partida, caso a instituição não costume configurar SPs shibboleth, é pesquisar por tutoriais que auxiliem na configuração de um SP.
 
 
-Habilitar o módulo em settings.py:
+Além disso, o módulo de autenticação deve ser habilitado em settings.py:
 
 AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'shibboleth').split(",")
 
@@ -259,9 +243,13 @@ e torná-lo padrão, para que a interface multi-instituição seja utilizada:
 
 AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', 'shibboleth')
 
-Configurar demais atributos em settings.py, na seção # Shibboleth auth settings.
+Configurar demais atributos em settings.py, na seção #Shibboleth auth settings.
 
-As configurações indicadas aqui supõe que o provedor de serviço (apache, módulo shibboleth e demais configurações) está configurado e funcional.
+*Obs.:* As configurações aqui indicadas supõe que o provedor de serviço (apache, módulo shibboleth e demais configurações) está configurado e funcional.
+
+#### Configurações Gerais:
+
+1) Para que qualquer usuário que se logar no sistema possa criar eleição, a opção HELIOS_ADMIN_ONLY, em settings.py, deve estar configurada para False.
 
 #### Alguns lembretes finais:
 
@@ -271,14 +259,4 @@ TROCAR [SECRET_KEY](https://docs.djangoproject.com/en/dev/ref/settings/#std:sett
 
 Conforme indicado no settings.py, na configuração de SECURE_URL_HOST, ela não deve ser mudada depois que você criar eleições (ao menos eleições reais), pois senão a URL de depósito de voto na eleição ficará inválida, pois esta informação é utilizada na geração da eleição.
 
-A versão do Django utilizada nesta versão do Helios é a 1.6.10, sendo esta a principal fonte de consulta pra aprendizado sobre esta versão: https://docs.djangoproject.com/en/1.6/
-
---- Original Readme ---
-
-# Helios Election System
-
-Helios is an end-to-end verifiable voting system.
-
-![Travis Build Status](https://travis-ci.org/benadida/helios-server.svg?branch=master)
-
-[![Stories in Ready](https://badge.waffle.io/benadida/helios-server.png?label=ready&title=Ready)](https://waffle.io/benadida/helios-server)
+A versão do Django utilizada nesta versão do Helios é a 1.8.18, sendo esta a principal fonte de consulta pra aprendizado sobre esta versão: https://docs.djangoproject.com/en/1.8/
