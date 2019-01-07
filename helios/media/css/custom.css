@@ -125,3 +125,7 @@ a.link-booth {
 .glyphicon{
     margin-bottom: 10px;
  }
+
+div#question_div {
+    background-color: #eef1ec;
+}
