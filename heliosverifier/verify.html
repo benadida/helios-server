@@ -107,16 +107,13 @@ function load_election_and_ballots(election_url) {
     $.get(election_url, function(raw_json) {
         try {
             election = HELIOS.Election.fromJSONString(raw_json);
-            //result_append("loaded election: " + election.name);
             result_append("eleição carregada: " + election.name);
-            //result_append("election fingerprint: " + election.get_hash());
             result_append("código de identificação da eleição: " + election.get_hash());
 
             var tally = [];
 
             $(election.questions).each(function(qnum, q) {
                 if (q.tally_type != "homomorphic") {
-                  //result_append("PROBLEM: this election is not a straight-forward homomorphic-tally election. As a result, Helios cannot currently verify it.");
                   result_append("PROBLEMA: esta eleição não é uma eleição de apuração homomórfica direta. Portanto,o Helios não pode verificá-la.");
                   return;
                 }
@@ -126,17 +123,14 @@ function load_election_and_ballots(election_url) {
                 });
             });
 
-            //result_append("loading list of voters...");
             result_append("carregando lista de eleitores...");
             // load voter list
             load_ballot_list(election_url, [], null, function(ballot_list) {
-               //result_append("loaded voter list, now loading ballots for each..");
                 result_append("lista de eleitores carregada, agora carregando a cédula de cada um..");
 
                 // load all ballots
                 load_ballots(election_url, ballot_list, [], function(ballots) {
                     result_append("");
-                    //result_append("<h3>Ballots</h3>");
                     result_append("<h3>Cédulas</h3>");
                     // now load each ballot
                     $(ballots).each(function(i, cast_vote){
@@ -145,10 +139,8 @@ function load_election_and_ballots(election_url) {
                           return;
                           
                         var vote = HELIOS.EncryptedVote.fromJSONObject(cast_vote.vote, election);
-                        //result_append("Voter #" + (i+1));
                         result_append("Eleitor #" + (i+1));
                         result_append("-- UUID: " + cast_vote.voter_uuid);
-                        //result_append("-- Ballot Tracking Number: " + vote.get_hash());
                         result_append("-- Número de Rastreamento da Cédula: " + vote.get_hash());
 
                         vote.verifyProofs(election.public_key, function(answer_num, choice_num, result, choice) {
@@ -157,10 +149,8 @@ function load_election_and_ballots(election_url) {
                                 // keep track of tally
                                 tally[answer_num][choice_num] = choice.multiply(tally[answer_num][choice_num]);
 
-                                //result_append("Question #" + (answer_num+1) + ", Option #" + (choice_num+1) + " -- " + pretty_result(result));
                                 result_append("Questão #" + (answer_num+1) + ", Opção #" + (choice_num+1) + " -- " + pretty_result(result));
                             } else {
-                                //result_append("Question #" + (answer_num+1) + " OVERALL -- " + pretty_result(result));
                                 result_append("Questão #" + (answer_num+1) + " GLOBAL -- " + pretty_result(result));
                             }
                         });
@@ -182,20 +172,16 @@ function load_election_and_ballots(election_url) {
                            // the public key that we'll check
                            var combined_key = 1;
 
-                           //result_append("<h3>Trustees</h3>");
                            result_append("<h3>Apuradores</h3>");
                            // verify the keys
                            $(trustees).each(function(i, trustee) {
-                              //result_append("Trustee #" + (i+1) + ": " + trustee.email);
                               result_append("Apurador #" + (i+1) + ": " + trustee.name);
                               console.log(trustee);
                               if (trustee.public_key.verifyKnowledgeOfSecretKey(trustee.pok, ElGamal.fiatshamir_dlog_challenge_generator)) {
-                                  //result_append("-- PK " + trustee.public_key_hash + " -- VERIFIED.");
                                   result_append("-- PK " + trustee.public_key_hash + " -- VERIFICADO.");
 
                                   // FIXME check the public key hash
                               } else {
-                                  //result_append("==== ERROR for PK of trustee " + rustee.email);
                                   result_append("==== ERRO de chave do apurador " + trustee.name);
                                   overall_result = false;
                               }
@@ -207,25 +193,20 @@ function load_election_and_ballots(election_url) {
 
                            // verify the combination of the keys into the final public key
                            if (combined_key.equals(election.public_key)) {
-                               //result_append("election public key CORRECTLY FORMED");
                                result_append("chave pública da eleição CORRETAMENTE FORMADA");
                            } else {
-                               //result_append("==== ERROR, election public key doesn't match");
                                result_append("==== ERRO, a chave pública da eleição não confere.");
                                overall_result = false;
                            }
 
-                           //result_append("<h3>Tally</h3>");
                            result_append("<h3>Apuração</h3>");
 
                            $(tally).each(function(q_num, q) {
-                               //result_append("Question #" + (q_num+1) + ": " + election.questions[q_num].short_name);
                                result_append("Questão #" + (q_num+1) + ": " + election.questions[q_num].short_name);
                                $(q).each(function(a_num, a) {
                                    var plaintext = new ElGamal.Plaintext(election.public_key.g.modPow(BigInt.fromInt(results[q_num][a_num]), election.public_key.p), election.public_key);
 
                                    var check = true;
-                                   //result_append("Answer #" + (a_num + 1) + ": " + election.questions[q_num].answers[a_num] + " - COUNT = " + results[q_num][a_num]);
                                    result_append("Resposta #" + (a_num + 1) + ": " + election.questions[q_num].answers[a_num] + " - CONTAGEM = " + results[q_num][a_num]);
 
                                    var decryption_factors = [];
@@ -234,10 +215,8 @@ function load_election_and_ballots(election_url) {
                                    $(trustees).each(function(t_num, trustee) {
                                        if (trustee.public_key.verifyDecryptionFactor(a, trustee.decryption_factors[q_num][a_num],
                                                        trustee.decryption_proofs[q_num][a_num], ElGamal.fiatshamir_challenge_generator)) {
-                                           //result_append("-- Trustee " + trustee.email + ": decryption factor verifies");
                                             result_append("-- Apurador " + trustee.name + ": fator de decifragem confere");
                                        } else {
-                                           //result_append("==== ERROR with Trustee " + trustee.email + ": decryption factor does not verify");
                                            result_append("==== ERRO com o apurador " + trustee.name + ": o fator de decifragem não confere");
                                            check= false;
                                            overall_result = false;
@@ -260,14 +239,11 @@ function load_election_and_ballots(election_url) {
 
                            });
 
-                           //result_append("<h3>FINAL RESULT</h3>");
                            result_append("<h3>RESULTADO FINAL</h3>");
 
                            if (overall_result) {
-                             //result_append("ELECTION FULLY VERIFIED -- SUCCESS!");
                              result_append("ELEIÇÃO COMPLETAMENTE VERIFICADA -- SUCESSO");
                            } else {
-                             //result_append("VERIFICATION FAILED");
                              result_append("FALHA NA VERIFICAÇÃO");
                            }
                         });

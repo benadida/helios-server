@@ -8,6 +8,7 @@ form.prettyform label,input,textarea,select {
 }
 
 form.prettyform label:not(.answer){
+form.prettyform label:not(.answer) {
     display: block;
     text-align: right;
     float: left;
