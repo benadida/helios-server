@@ -161,7 +161,7 @@ function reset() {
 
       <form onsubmit="return false;">
           <h3>{% trans "FIRST STEP: enter your secret key" %}</h3>
-          <textarea id="sk_textarea" cols="60" rows="5"></textarea>
+          <textarea id="sk_textarea" cols="60" rows="5" style="height: 25em;"></textarea>
       </form>
       <p id="tally_section">
           <button class="btn btn-primary" onclick="do_tally();">{% trans "Generate partial decryption" %}</button>
@@ -194,12 +194,10 @@ function reset() {
       </p>
       {% trans "Your partial decryption:" %}<br />
       <form action="javascript:submit_result();">
-          <textarea id="result_textarea" cols="60" rows="5" wrap="soft"></textarea><br /><br />
+          <textarea id="result_textarea" cols="60" rows="5" wrap="soft" style="height: 25em;"></textarea>
           <button class="btn btn-primary">{% trans "Upload decryption factors to server" %}</button>
       </form>
-      <br />
       <a href="javascript:reset()">{% trans "reset and restart decryption process" %}</a>
-      <br />
   </div>
   
   <div id="done_div">
