@@ -1,31 +1,33 @@
+
 """
 Authentication URLs
 
 Ben Adida (ben@adida.net)
 """
 
-from django.conf.urls import *
+from django.conf.urls import url
 
-from views import *
-from auth_systems.password import password_login_view, password_forgotten_view
-from auth_systems.twitter import follow_view
+import views
+from settings import AUTH_ENABLED_AUTH_SYSTEMS
 
-urlpatterns = patterns('',
+urlpatterns = [
     # basic static stuff
-    (r'^$', index),
-    (r'^logout$', logout),
-    (r'^start/(?P<system_name>.*)$', start),
+    url(r'^$', views.index),
+    url(r'^logout$', views.logout),
+    url(r'^start/(?P<system_name>.*)$', views.start),
     # weird facebook constraint for trailing slash
-    (r'^after/$', after),
-    (r'^why$', perms_why),
-    (r'^after_intervention$', after_intervention),
-    
-    ## should make the following modular
+    url(r'^after/$', views.after),
+    url(r'^why$', views.perms_why),
+    url(r'^after_intervention$', views.after_intervention),
+]
 
-    # password auth
-    (r'^password/login', password_login_view),
-    (r'^password/forgot', password_forgotten_view),
+# password auth
+if 'password' in AUTH_ENABLED_AUTH_SYSTEMS:
+    from auth_systems.password import password_login_view, password_forgotten_view
+    urlpatterns.append(url(r'^password/login', password_login_view))
+    urlpatterns.append(url(r'^password/forgot', password_forgotten_view))
 
-    # twitter
-    (r'^twitter/follow', follow_view),
-)
+# twitter
+if 'twitter' in AUTH_ENABLED_AUTH_SYSTEMS:
+    from auth_systems.twitter import follow_view
+    urlpatterns.append(url(r'^twitter/follow', follow_view))
