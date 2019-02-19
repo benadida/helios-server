@@ -144,11 +144,11 @@ TEMPLATE_DIRS = (
 )
 
 INSTALLED_APPS = (
-#    'django.contrib.auth',
-#    'django.contrib.contenttypes',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
     'djangosecure',
     'django.contrib.sessions',
-    #'django.contrib.sites',
+    'django.contrib.sites',
     ## needed for queues
     'djcelery',
     'kombu.transport.django',
