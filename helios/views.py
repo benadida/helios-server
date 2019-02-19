@@ -535,14 +535,14 @@ def one_election_cast(request, election):
   on a GET, this is a cancellation, on a POST it's a cast
   """
   if request.method == "GET":
-    return HttpResponseRedirect("%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_view, args = [election.uuid])))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args = [election.uuid]))
     
   user = get_user(request)
   encrypted_vote = request.POST['encrypted_vote']
 
   save_in_session_across_logouts(request, 'encrypted_vote', encrypted_vote)
 
-  return HttpResponseRedirect("%s%s" % (settings.SECURE_URL_HOST, reverse(one_election_cast_confirm, args=[election.uuid])))
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_confirm, args=[election.uuid]))
 
 @election_view(allow_logins=True)
 def password_voter_login(request, election):
@@ -747,7 +747,7 @@ def one_election_cast_confirm(request, election):
     # remove the vote from the store
     del request.session['encrypted_vote']
     
-    return HttpResponseRedirect("%s%s" % (settings.URL_HOST, reverse(one_election_cast_done, args=[election.uuid])))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_done, args=[election.uuid]))
   
 @election_view()
 def one_election_cast_done(request, election):
@@ -1136,7 +1136,7 @@ def release_result(request, election):
     if request.POST.get('send_email', ''):
       return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_email, args=[election.uuid]),urllib.urlencode({'template': 'result'})))
     else:
-      return HttpResponseRedirect("%s" % (settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid])))
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
 
   # if just viewing the form or the form is not valid
   return render_template(request, 'release_result', {'election': election})
@@ -1155,7 +1155,7 @@ def combine_decryptions(request, election):
     election.combine_decryptions()
     election.save()
 
-    return HttpResponseRedirect("%s" % (settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid])))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
 
   # if just viewing the form or the form is not valid
   return render_template(request, 'combine_decryptions', {'election': election})
