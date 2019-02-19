@@ -1,8 +1,10 @@
 
-import os, json
-
 # a massive hack to see if we're testing, in which case we use different settings
 import sys
+
+import json
+import os
+
 TESTING = 'test' in sys.argv
 
 # go through environment variables and override them
@@ -13,7 +15,6 @@ def get_from_env(var, default):
         return default
 
 DEBUG = (get_from_env('DEBUG', '1') == '1')
-TEMPLATE_DEBUG = DEBUG
 
 # add admins of the form: 
 #    ('Ben Adida', 'ben@adida.net'),
@@ -113,12 +114,6 @@ if (get_from_env('HSTS', '0') == '1'):
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader'
-)
-
 MIDDLEWARE_CLASSES = (
     # make all things SSL
     #'sslify.middleware.SSLifyMiddleware',
@@ -136,10 +131,23 @@ MIDDLEWARE_CLASSES = (
 ROOT_URLCONF = 'urls'
 
 ROOT_PATH = os.path.dirname(__file__)
-TEMPLATE_DIRS = (
-    ROOT_PATH,
-    os.path.join(ROOT_PATH, 'templates')
-)
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'DIRS': [
+            ROOT_PATH,
+            os.path.join(ROOT_PATH, 'templates'),
+            # os.path.join(ROOT_PATH, 'helios/templates'),  # covered by APP_DIRS:True
+            # os.path.join(ROOT_PATH, 'helios_auth/templates'),  # covered by APP_DIRS:True
+            # os.path.join(ROOT_PATH, 'server_ui/templates'),  # covered by APP_DIRS:True
+        ],
+        'OPTIONS': {
+            'debug': DEBUG
+        }
+    },
+]
 
 INSTALLED_APPS = (
     'django.contrib.auth',
