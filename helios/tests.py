@@ -28,6 +28,7 @@ import uuid
 
 class ElectionModelTests(TestCase):
     fixtures = ['users.json']
+    allow_database_queries = True
 
     def create_election(self):
         return models.Election.get_or_create(
@@ -232,6 +233,7 @@ class ElectionModelTests(TestCase):
 
 class VoterModelTests(TestCase):
     fixtures = ['users.json', 'election.json']
+    allow_database_queries = True
 
     def setUp(self):
         self.election = models.Election.objects.get(short_name='test')
@@ -255,6 +257,7 @@ class VoterModelTests(TestCase):
 
 class CastVoteModelTests(TestCase):
     fixtures = ['users.json', 'election.json']
+    allow_database_queries = True
 
     def setUp(self):
         self.election = models.Election.objects.get(short_name='test')
@@ -268,6 +271,7 @@ class CastVoteModelTests(TestCase):
 
 class DatatypeTests(TestCase):
     fixtures = ['users.json', 'election.json']
+    allow_database_queries = True
 
     def setUp(self):
         self.election = models.Election.objects.all()[0]
@@ -334,6 +338,7 @@ class DataFormatBlackboxTests(object):
 
 class LegacyElectionBlackboxTests(DataFormatBlackboxTests, TestCase):
     fixtures = ['legacy-data.json']
+    allow_database_queries = True
     EXPECTED_ELECTION_FILE = 'helios/fixtures/legacy-election-expected.json'
     EXPECTED_ELECTION_METADATA_FILE = 'helios/fixtures/legacy-election-metadata-expected.json'
     EXPECTED_VOTERS_FILE = 'helios/fixtures/legacy-election-voters-expected.json'
@@ -387,6 +392,7 @@ class WebTest(django_webtest.WebTest):
 
 class ElectionBlackboxTests(WebTest):
     fixtures = ['users.json', 'election.json']
+    allow_database_queries = True
 
     def setUp(self):
         self.election = models.Election.objects.all()[0]
