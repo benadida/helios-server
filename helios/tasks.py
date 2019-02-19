@@ -4,16 +4,15 @@ Celery queued tasks for Helios
 2010-08-01
 ben@adida.net
 """
-
-from celery.decorators import task
-
-from models import *
-from view_utils import render_template_raw
-import signals
-
 import copy
 
-from django.conf import settings
+from celery.task import task
+from celery.utils.log import get_logger
+
+import signals
+from models import CastVote, Election, Voter, VoterFile
+from view_utils import render_template_raw
+
 
 @task()
 def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
@@ -29,11 +28,9 @@ def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwarg
         signals.vote_cast.send(sender=election, election=election, user=user, voter=voter, cast_vote=cast_vote)
         
         if status_update_message and user.can_update_status():
-            from views import get_election_url
-
             user.update_status(status_update_message)
     else:
-        logger = cast_vote_verify_and_store.get_logger(**kwargs)
+        logger = get_logger(cast_vote_verify_and_store.__name__)
         logger.error("Failed to verify and store %d" % cast_vote_id)
     
 @task()
