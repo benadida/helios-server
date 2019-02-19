@@ -2,18 +2,19 @@
 Helios stats views
 """
 
-from django.core.urlresolvers import reverse
-from django.core.mail import send_mail
-from django.core.paginator import Paginator
-from django.http import *
-from django.db import transaction
-from django.db.models import *
+import datetime
 
-from security import *
-from helios_auth.security import get_user, save_in_session_across_logouts
-from view_utils import *
+from django.core.paginator import Paginator
+from django.core.urlresolvers import reverse
+from django.db.models import Max, Count
+from django.http import HttpResponseRedirect
 
 from helios import tasks
+from helios.models import CastVote, Election
+from helios_auth.security import get_user
+from security import PermissionDenied
+from view_utils import render_template
+
 
 def require_admin(request):
   user = get_user(request)

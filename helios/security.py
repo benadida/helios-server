@@ -8,11 +8,11 @@ Ben Adida (ben@adida.net)
 from functools import update_wrapper
 
 from django.core.urlresolvers import reverse
-from django.core.exceptions import *
-from django.http import *
+from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from django.conf import settings
 
-from models import *
+from models import Voter, Trustee, Election
 from helios_auth.security import get_user
 
 from django.http import HttpResponseRedirect
