@@ -2,23 +2,15 @@
 server_ui specific views
 """
 
-from helios.models import *
-from helios_auth.security import *
-from view_utils import *
-
-import helios.views
-import helios
-from helios.crypto import utils as cryptoutils
-from helios_auth.security import *
-from helios.security import can_create_election
-
-from django.core.urlresolvers import reverse
-from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotAllowed
-
+import copy
 from django.conf import settings
 
-import copy
 import helios_auth.views as auth_views
+from helios.models import Election
+from helios.security import can_create_election
+from helios_auth.security import get_user
+from view_utils import render_template
+
 
 def get_election():
   return None
