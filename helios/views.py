@@ -424,14 +424,9 @@ def trustee_login(request, election_short_name, trustee_email, trustee_secret):
       if trustee.secret == trustee_secret:
         set_logged_in_trustee(request, trustee)
         return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustee_home, args=[election.uuid, trustee.uuid]))
-      else:
-        # bad secret, we'll let that redirect to the front page
-        pass
-    else:
-      # no such trustee
-      raise Http404
-
-  return HttpResponseRedirect(settings.SECURE_URL_HOST + "/")
+    # bad secret or no such trustee
+    raise Http404("Trustee not recognized.")
+  raise Http404("No election {} found.".format(election_short_name))
 
 @election_admin()
 def trustee_send_url(request, election, trustee_uuid):
