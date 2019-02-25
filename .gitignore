@@ -9,3 +9,4 @@ celery*.log
 *.mo
 env.sh
 .cache
+.idea/

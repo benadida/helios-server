@@ -5,9 +5,7 @@ Ben Adida - ben@adida.net
 2005-04-11
 """
 
-import urllib, re, sys, datetime, urlparse, string
-
-import boto.ses
+import urllib, re, datetime, string
 
 # utils from helios_auth, too
 from helios_auth.utils import *
@@ -16,14 +14,6 @@ from django.conf import settings
 from django.utils.translation import ugettext as _
   
 import random, logging
-import hashlib, hmac, base64
-
-def do_hmac(k,s):
-  """
-  HMAC a value with a key, hex output
-  """
-  mac = hmac.new(k, s, hashlib.sha1)
-  return mac.hexdigest()
 
 
 def split_by_length(str, length, rejoin_with=None):
@@ -168,7 +158,7 @@ def one_val_raw_sql(raw_sql, values=[]):
   """
   for a simple aggregate
   """
-  from django.db import connection, transaction
+  from django.db import connection
   cursor = connection.cursor()
 
   cursor.execute(raw_sql, values)
