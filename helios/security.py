@@ -127,7 +127,7 @@ def user_can_admin_election(user, election):
   if not user:
     return False
 
-  return election.admin == user or user.admin_p
+  return election.admin == user and user.admin_p
   
 def user_can_see_election(request, election):
   user = get_user(request)
