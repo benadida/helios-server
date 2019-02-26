@@ -101,7 +101,8 @@ def get_auth_url(request, redirect_url = None):
 
 
 def send_message(user_id, name, user_info, subject, body):
-    send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, user_info['email'])], fail_silently=False)
+    send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, user_info['email'])],
+            fail_silently=False, html_message=body)
 
 
 def check_constraint(constraint, user_info):
