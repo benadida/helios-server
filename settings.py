@@ -157,9 +157,6 @@ INSTALLED_APPS = (
     'djangosecure',
     'django.contrib.sessions',
     'django.contrib.sites',
-    ## needed for queues
-    'djcelery',
-    'kombu.transport.django',
     ## HELIOS stuff
     'helios_auth',
     'helios',
@@ -274,17 +271,10 @@ logging.basicConfig(
 )
 
 
-# set up django-celery
-# BROKER_BACKEND = "kombu.transport.DatabaseTransport"
-BROKER_URL = "django://"
-CELERY_RESULT_DBURI = DATABASES['default']
-import djcelery
-djcelery.setup_loader()
-
-
-# for testing
-TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
-# this effectively does CELERY_ALWAYS_EAGER = True
+# set up celery
+CELERY_BROKER_URL = 'amqp://localhost'
+CELERY_TASK_ALWAYS_EAGER = True
+#database_url = DATABASES['default']
 
 # Rollbar Error Logging
 ROLLBAR_ACCESS_TOKEN = get_from_env('ROLLBAR_ACCESS_TOKEN', None)

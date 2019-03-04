@@ -2,29 +2,24 @@
 Unit Tests for Helios
 """
 
-import unittest, datetime, re, urllib
+import datetime
+import re
+import urllib
+
 import django_webtest
-
-import models
-import datatypes
-
-from helios_auth import models as auth_models
-from views import ELGAMAL_PARAMS
-import views
-import utils
-
-from django.db import IntegrityError, transaction
-from django.test.client import Client
+import uuid
+from django.conf import settings
+from django.core import mail
+from django.core.files import File
 from django.test import TestCase
 from django.utils.html import escape as html_escape
 
-from django.core import mail
-from django.core.files import File
-from django.core.urlresolvers import reverse
-from django.conf import settings
-from django.core.exceptions import PermissionDenied
+import helios.datatypes as datatypes
+import helios.models as models
+import helios.utils as utils
+import helios.views as views
+from helios_auth import models as auth_models
 
-import uuid
 
 class ElectionModelTests(TestCase):
     fixtures = ['users.json']
@@ -42,7 +37,7 @@ class ElectionModelTests(TestCase):
         self.election.questions = QUESTIONS
 
     def setup_trustee(self):
-        self.election.generate_trustee(ELGAMAL_PARAMS)
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
 
     def setup_openreg(self):
         self.election.openreg=True
@@ -115,7 +110,7 @@ class ElectionModelTests(TestCase):
         self.assertEquals(len(issues), 0)
         
     def test_helios_trustee(self):
-        self.election.generate_trustee(ELGAMAL_PARAMS)
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
 
         self.assertTrue(self.election.has_helios_trustee())
 
@@ -199,15 +194,15 @@ class ElectionModelTests(TestCase):
     def test_voter_registration(self):
         # before adding a voter
         voters = models.Voter.get_by_election(self.election)
-        self.assertTrue(len(voters) == 0)
+        self.assertEquals(0, len(voters))
 
         # make sure no voter yet
         voter = models.Voter.get_by_election_and_user(self.election, self.user)
-        self.assertTrue(voter == None)
+        self.assertIsNone(voter)
 
         # make sure no voter at all across all elections
         voters = models.Voter.get_by_user(self.user)
-        self.assertTrue(len(voters) == 0)
+        self.assertEquals(0, len(voters))
 
         # register the voter
         voter = models.Voter.register_user_in_election(self.user, self.election)
@@ -215,13 +210,13 @@ class ElectionModelTests(TestCase):
         # make sure voter is there now
         voter_2 = models.Voter.get_by_election_and_user(self.election, self.user)
 
-        self.assertFalse(voter == None)
-        self.assertFalse(voter_2 == None)
+        self.assertIsNotNone(voter)
+        self.assertIsNotNone(voter_2)
         self.assertEquals(voter, voter_2)
 
         # make sure voter is there in this call too
         voters = models.Voter.get_by_user(self.user)
-        self.assertTrue(len(voters) == 1)
+        self.assertEquals(1, len(voters))
         self.assertEquals(voter, voters[0])
 
         voter_2 = models.Voter.get_by_election_and_uuid(self.election, voter.uuid)
@@ -275,7 +270,7 @@ class DatatypeTests(TestCase):
 
     def setUp(self):
         self.election = models.Election.objects.all()[0]
-        self.election.generate_trustee(ELGAMAL_PARAMS)
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
 
     def test_instantiate(self):
         ld_obj = datatypes.LDObject.instantiate(self.election.get_helios_trustee(), '2011/01/Trustee')
