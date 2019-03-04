@@ -5,8 +5,7 @@ Widget for datetime split, with calendar for date, and drop-downs for times.
 from django import forms
 from django.db import models
 from django.template.loader import render_to_string
-from django.forms.widgets import Select, MultiWidget, DateInput, TextInput, Widget
-from django.forms.extras.widgets import SelectDateWidget
+from django.forms.widgets import Select, MultiWidget, DateInput, TextInput, Widget, SelectDateWidget
 from time import strftime
 
 import re
