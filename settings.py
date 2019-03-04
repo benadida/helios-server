@@ -47,7 +47,7 @@ if get_from_env('DATABASE_URL', None):
     import dj_database_url
     DATABASES['default'] =  dj_database_url.config()
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
-    DATABASES['default']['CONN_MAX_AGE'] = 600
+    DATABASES['default']['CONN_MAX_AGE'] = '600'
 
     # require SSL
     DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
@@ -93,7 +93,7 @@ SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
 ALLOWED_HOSTS = get_from_env('ALLOWED_HOSTS', 'localhost').split(",")
 
 # Secure Stuff
-if (get_from_env('SSL', '0') == '1'):
+if get_from_env('SSL', '0') == '1':
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
 
@@ -104,7 +104,7 @@ SESSION_COOKIE_HTTPONLY = True
 
 # let's go with one year because that's the way to do it now
 STS = False
-if (get_from_env('HSTS', '0') == '1'):
+if get_from_env('HSTS', '0') == '1':
     STS = True
     # we're using our own custom middleware now
     # SECURE_HSTS_SECONDS = 31536000

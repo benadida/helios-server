@@ -1,4 +1,4 @@
-Django==1.8.19
+Django==1.9.13
 anyjson==0.3.3
 celery==3.1.25
 django-celery==3.2.2
