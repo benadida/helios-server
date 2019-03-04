@@ -7,14 +7,14 @@ Ben Adida
 """
 
 import datetime
-import io
-import random
-import uuid
 
 import bleach
 import copy
 import csv
+import io
+import random
 import unicodecsv
+import uuid
 from django.conf import settings
 from django.db import models, transaction
 
@@ -22,8 +22,8 @@ from crypto import algs, utils
 from helios import datatypes
 from helios import utils as heliosutils
 from helios.datatypes.djangofield import LDObjectField
-from helios_auth.jsonfield import JSONField
 # useful stuff in helios_auth
+from helios_auth.jsonfield import JSONField
 from helios_auth.models import User, AUTH_SYSTEMS
 
 
