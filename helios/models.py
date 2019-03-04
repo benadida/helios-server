@@ -32,7 +32,7 @@ class HeliosModel(models.Model, datatypes.LDObjectContainer):
     abstract = True
 
 class Election(HeliosModel):
-  admin = models.ForeignKey(User)
+  admin = models.ForeignKey(User, on_delete=models.CASCADE)
   
   uuid = models.CharField(max_length=50, null=False)
 
@@ -662,7 +662,7 @@ class ElectionLog(models.Model):
   VOTER_FILE_ADDED = "voter file added"
   DECRYPTIONS_COMBINED = "decryptions combined"
 
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, on_delete=models.CASCADE)
   log = models.CharField(max_length=500)
   at = models.DateTimeField(auto_now_add=True)
 
@@ -697,7 +697,7 @@ class VoterFile(models.Model):
   # path where we store voter upload 
   PATH = settings.VOTER_UPLOAD_REL_PATH
 
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, on_delete=models.CASCADE)
 
   # we move to storing the content in the DB
   voter_file = models.FileField(upload_to=PATH, max_length=250,null=True)
@@ -790,7 +790,7 @@ class VoterFile(models.Model):
 
     
 class Voter(HeliosModel):
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, on_delete=models.CASCADE)
   
   # let's link directly to the user now
   # FIXME: delete this as soon as migrations are set up
@@ -802,7 +802,7 @@ class Voter(HeliosModel):
 
   # for users of type password, no user object is created
   # but a dynamic user object is created automatically
-  user = models.ForeignKey('helios_auth.User', null=True)
+  user = models.ForeignKey('helios_auth.User', null=True, on_delete=models.CASCADE)
 
   # if user is null, then you need a voter login ID and password
   voter_login_id = models.CharField(max_length = 100, null=True)
@@ -988,7 +988,7 @@ class Voter(HeliosModel):
   
 class CastVote(HeliosModel):
   # the reference to the voter provides the voter_uuid
-  voter = models.ForeignKey(Voter)
+  voter = models.ForeignKey(Voter, on_delete=models.CASCADE)
   
   # the actual encrypted vote
   vote = LDObjectField(type_hint = 'legacy/EncryptedVote')
@@ -1098,7 +1098,7 @@ class AuditedBallot(models.Model):
   """
   ballots for auditing
   """
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, on_delete=models.CASCADE)
   raw_vote = models.TextField()
   vote_hash = models.CharField(max_length=100)
   added_at = models.DateTimeField(auto_now_add=True)
@@ -1125,7 +1125,7 @@ class AuditedBallot(models.Model):
 
 
 class Trustee(HeliosModel):
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, on_delete=models.CASCADE)
   
   uuid = models.CharField(max_length=50)
   name = models.CharField(max_length=200)
