@@ -393,10 +393,17 @@ class ElectionBlackboxTests(WebTest):
         self.election = models.Election.objects.all()[0]
         self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
 
-    def setup_login(self):
+    def setup_login(self, from_scratch=False, **kwargs):
+        if from_scratch:
+            # a bogus call to set up the session
+            self.client.get("/")
         # set up the session
         session = self.client.session
-        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
+        if kwargs:
+            user = auth_models.User.objects.get(**kwargs)
+        else:
+            user = self.user
+        session['user'] = {'type': user.user_type, 'user_id': user.user_id}
         session.save()
 
         # set up the app, too
@@ -468,10 +475,7 @@ class ElectionBlackboxTests(WebTest):
         self.assertRedirects(response, "/auth/?return_url=/helios/elections/new")
     
     def test_election_edit(self):
-        # a bogus call to set up the session
-        self.client.get("/")
-
-        self.setup_login()
+        self.setup_login(from_scratch=True)
         response = self.client.get("/helios/elections/%s/edit" % self.election.uuid)
         response = self.client.post("/helios/elections/%s/edit" % self.election.uuid, {
                 "short_name" : self.election.short_name + "-2",
@@ -490,11 +494,8 @@ class ElectionBlackboxTests(WebTest):
     def _setup_complete_election(self, election_params=None):
         "do the setup part of a whole election"
 
-        # a bogus call to set up the session
-        self.client.get("/")
-
         # REPLACE with params?
-        self.setup_login()
+        self.setup_login(from_scratch=True)
 
         # create the election
         full_election_params = {
@@ -755,8 +756,7 @@ class ElectionBlackboxTests(WebTest):
 
     def test_election_voters_eligibility(self):
         # create the election
-        self.client.get("/")
-        self.setup_login()
+        self.setup_login(from_scratch=True)
         response = self.client.post("/helios/elections/new", {
                 "short_name" : "test-eligibility",
                 "name" : "Test Eligibility",
