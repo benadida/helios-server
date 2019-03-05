@@ -6,7 +6,7 @@ Ben Adida
 """
 
 import urllib
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponseRedirect, HttpResponse
 
 import helios_auth

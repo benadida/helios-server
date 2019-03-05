@@ -5,7 +5,7 @@ Twitter Authentication
 from oauthclient import client
 
 from django.conf.urls import url
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponseRedirect
 
 from helios_auth import utils

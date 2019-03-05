@@ -5,7 +5,7 @@ Helios stats views
 import datetime
 
 from django.core.paginator import Paginator
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models import Max, Count
 from django.http import HttpResponseRedirect
 

@@ -36,7 +36,7 @@ def _get_service_url():
   # FIXME current URL
   from helios_auth import url_names
   from django.conf import settings
-  from django.core.urlresolvers import reverse
+  from django.urls import reverse
   
   return settings.SECURE_URL_HOST + reverse(url_names.AUTH_AFTER)
   

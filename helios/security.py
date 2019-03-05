@@ -7,7 +7,7 @@ Ben Adida (ben@adida.net)
 # nicely update the wrapper function
 from functools import update_wrapper
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.conf import settings
