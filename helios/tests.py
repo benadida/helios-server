@@ -491,6 +491,26 @@ class ElectionBlackboxTests(WebTest):
         new_election = models.Election.objects.get(uuid = self.election.uuid)
         self.assertEquals(new_election.short_name, self.election.short_name + "-2")
 
+    def test_get_election_stats(self):
+        self.setup_login(from_scratch=True, user_id='mccio@github.com', user_type='google')
+        response = self.client.get("/helios/stats/", follow=False)
+        self.assertStatusCode(response, 200)
+        response = self.client.get("/helios/stats/force-queue", follow=False)
+        self.assertRedirects(response, "/helios/stats/")
+        response = self.client.get("/helios/stats/elections", follow=False)
+        self.assertStatusCode(response, 200)
+        response = self.client.get("/helios/stats/problem-elections", follow=False)
+        self.assertStatusCode(response, 200)
+        response = self.client.get("/helios/stats/recent-votes", follow=False)
+        self.assertStatusCode(response, 200)
+        self.clear_login()
+        response = self.client.get("/helios/stats/", follow=False)
+        self.assertStatusCode(response, 403)
+        self.setup_login()
+        response = self.client.get("/helios/stats/", follow=False)
+        self.assertStatusCode(response, 403)
+        self.clear_login()
+
     def _setup_complete_election(self, election_params=None):
         "do the setup part of a whole election"
 
