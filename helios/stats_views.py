@@ -9,9 +9,8 @@ from django.core.urlresolvers import reverse
 from django.db.models import Max, Count
 from django.http import HttpResponseRedirect
 
-from helios import tasks
+from helios import tasks, url_names
 from helios.models import CastVote, Election
-from helios.stats_url_names import STATS_HOME
 from helios_auth.security import get_user
 from security import PermissionDenied
 from view_utils import render_template
@@ -35,7 +34,7 @@ def force_queue(request):
   for cv in votes_in_queue:
     tasks.cast_vote_verify_and_store.delay(cv.id)
 
-  return HttpResponseRedirect(reverse(STATS_HOME))
+  return HttpResponseRedirect(reverse(url_names.stats.STATS_HOME))
 
 def elections(request):
   user = require_admin(request)
