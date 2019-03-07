@@ -63,7 +63,7 @@ More than <b>2,000,000 votes</b> have been cast using Helios.
 {% if elections_administered %}
 <ul>
 {% for election in elections_administered %}
-<li> <a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></li>
+<li> <a href="{% url "election@view" election.uuid %}">{{election.name}}</a></li>
 {% endfor %}
 </ul>
 {% else %}
@@ -79,7 +79,7 @@ More than <b>2,000,000 votes</b> have been cast using Helios.
 {% if elections_voted %}
 <ul>
 {% for election in elections_voted %}
-<li><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></li>
+<li><a href="{% url "election@view" election.uuid %}">{{election.name}}</a></li>
 {% endfor %}
 </ul>
 {% else %}

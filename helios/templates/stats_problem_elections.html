@@ -8,7 +8,7 @@ Unfrozen for more than a day.
 
 {% for election in elections %}
 <p>
-<b><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></b> -- {{election.num_voters}} voters
+<b><a href="{% url "election@view" election.uuid %}">{{election.name}}</a></b> -- {{election.num_voters}} voters
 </p>
 {% endfor %}
 
