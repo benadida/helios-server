@@ -42,7 +42,7 @@
       <!-- Right Nav Section -->
       <ul class="right">
 	{% if user and user.admin_p %}
-	<li><a href="{% url "helios.stats_views.home" %}">Admin</a></li>
+	<li><a href="{% url "stats@home" %}">Admin</a></li>
 	<li class="divider"></li>
 	{% endif %}
 	{% if not settings.MASTER_HELIOS %}
