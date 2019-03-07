@@ -35,19 +35,20 @@ class SelectTimeWidget(Widget):
     
     Also allows user-defined increments for minutes/seconds
     """
+    template_name = ''
     hour_field = '%s_hour'
     minute_field = '%s_minute'
     meridiem_field = '%s_meridiem'
     twelve_hr = False # Default to 24hr.
-    
+
     def __init__(self, attrs=None, hour_step=None, minute_step=None, twelve_hr=False):
         """
         hour_step, minute_step, second_step are optional step values for
         for the range of values for the associated select element
         twelve_hr: If True, forces the output to be in 12-hr format (rather than 24-hr)
         """
-        self.attrs = attrs or {}
-        
+        super(SelectTimeWidget, self).__init__(attrs)
+
         if twelve_hr:
             self.twelve_hr = True # Do 12hr (rather than 24hr)
             self.meridiem_val = 'a.m.' # Default to Morning (A.M.)
@@ -66,7 +67,7 @@ class SelectTimeWidget(Widget):
         else:
             self.minutes = range(0,60)
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         try: # try to get time values from a datetime.time object (value)
             hour_val, minute_val = value.hour, value.minute
             if self.twelve_hr:
@@ -79,7 +80,7 @@ class SelectTimeWidget(Widget):
             if isinstance(value, basestring):
                 match = RE_TIME.match(value)
                 if match:
-                    time_groups = match.groups();
+                    time_groups = match.groups()
                     hour_val = int(time_groups[HOURS]) % 24 # force to range(0-24)
                     minute_val = int(time_groups[MINUTES]) 
                     
@@ -116,7 +117,7 @@ class SelectTimeWidget(Widget):
         minute_val = u"%.2d" % minute_val
 
         hour_choices = [("%.2d"%i, "%.2d"%i) for i in self.hours]
-        local_attrs = self.build_attrs(id=self.hour_field % id_)
+        local_attrs = self.build_attrs({'id': self.hour_field % id_})
         select_html = Select(choices=hour_choices).render(self.hour_field % name, hour_val, local_attrs)
         output.append(select_html)
 
@@ -168,6 +169,8 @@ class SplitSelectDateTimeWidget(MultiWidget):
     This class combines SelectTimeWidget and SelectDateWidget so we have something 
     like SpliteDateTimeWidget (in django.forms.widgets), but with Select elements.
     """
+    template_name = ''
+
     def __init__(self, attrs=None, hour_step=None, minute_step=None, twelve_hr=None, years=None):
         """ pass all these parameters to their respective widget constructors..."""
         widgets = (SelectDateWidget(attrs=attrs, years=years), SelectTimeWidget(attrs=attrs, hour_step=hour_step, minute_step=minute_step, twelve_hr=twelve_hr))
@@ -184,13 +187,6 @@ class SplitSelectDateTimeWidget(MultiWidget):
             return [value.date(), value.time().replace(microsecond=0)]
         return [None, None]
 
-    def format_output(self, rendered_widgets):
-        """
-        Given a list of rendered widgets (as strings), it inserts an HTML
-        linebreak between them.
-        
-        Returns a Unicode string representing the HTML for the whole lot.
-        """
-        rendered_widgets.insert(-1, '<br/>')
-        return u''.join(rendered_widgets)
-
+    def render(self, name, value, attrs=None, renderer=None):
+        rendered_widgets = list(widget.render(name, value, attrs=attrs, renderer=renderer) for widget in self.widgets)
+        return u'<br/>'.join(rendered_widgets)
