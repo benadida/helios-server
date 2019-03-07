@@ -34,11 +34,11 @@ STATUS_UPDATES = False
 
 def _get_service_url():
   # FIXME current URL
-  from helios_auth.views import after
+  from helios_auth import url_names
   from django.conf import settings
   from django.core.urlresolvers import reverse
   
-  return settings.SECURE_URL_HOST + reverse(after)
+  return settings.SECURE_URL_HOST + reverse(url_names.AUTH_AFTER)
   
 def get_auth_url(request, redirect_url):
   request.session['cas_redirect_url'] = redirect_url

@@ -24,6 +24,7 @@ from view_utils import SUCCESS, FAILURE, return_json, render_template, render_te
 from helios_auth.security import check_csrf, login_required, get_user, save_in_session_across_logouts
 from helios_auth.auth_systems import AUTH_SYSTEMS, can_list_categories
 from helios_auth.models import AuthenticationExpired
+import helios_auth.url_names as helios_auth_urls
 
 from helios_auth import views as auth_views
 
@@ -76,7 +77,7 @@ def user_reauth(request, user):
   # FIXME: should we be wary of infinite redirects here, and
   # add a parameter to prevent it? Maybe.
   login_url = "%s%s?%s" % (settings.SECURE_URL_HOST,
-                           reverse(auth_views.start, args=[user.user_type]),
+                           reverse(helios_auth_urls.AUTH_START, args=[user.user_type]),
                            urllib.urlencode({'return_url':
                                                request.get_full_path()}))
   return HttpResponseRedirect(login_url)
