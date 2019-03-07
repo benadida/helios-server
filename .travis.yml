@@ -5,9 +5,6 @@ python:
 
 os: linux
 
-addons:
-  postgresql: "9.3"
-
 before_install:
   - export BOTO_CONFIG=/dev/null
 
@@ -23,4 +20,23 @@ script: "python -Wall manage.py test"
 jobs:
   include:
   - dist: trusty
+    addons:
+      postgresql: "9.3"
+  - dist: trusty
+    addons:
+      postgresql: "9.4"
+  - dist: trusty
+    addons:
+      postgresql: "9.5"
+  - dist: trusty
+    addons:
+      postgresql: "9.6"
   - dist: xenial
+    addons:
+      postgresql: "9.4"
+  - dist: xenial
+    addons:
+      postgresql: "9.5"
+  - dist: xenial
+    addons:
+      postgresql: "9.6"
