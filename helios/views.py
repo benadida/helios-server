@@ -19,7 +19,7 @@ import election_url_names as election_names
 from crypto import algs, electionalgs, elgamal
 from crypto import utils as cryptoutils
 from workflows import homomorphic
-from helios import utils, VOTERS_EMAIL, VOTERS_UPLOAD
+from helios import utils, VOTERS_EMAIL, VOTERS_UPLOAD, url_names
 from view_utils import SUCCESS, FAILURE, return_json, render_template, render_template_raw
 
 from helios_auth.security import check_csrf, login_required, get_user, save_in_session_across_logouts
@@ -58,16 +58,16 @@ ELGAMAL_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(ELGAMAL_PARAMS, dataty
 from django.conf import settings
 
 def get_election_url(election):
-  return settings.URL_HOST + reverse(election_shortcut, args=[election.short_name])
+  return settings.URL_HOST + reverse(url_names.ELECTION_SHORTCUT, args=[election.short_name])
 
 def get_election_badge_url(election):
   return settings.URL_HOST + reverse(election_names.ELECTION_BADGE, args=[election.uuid])
 
 def get_election_govote_url(election):
-  return settings.URL_HOST + reverse(election_vote_shortcut, args=[election.short_name])  
+  return settings.URL_HOST + reverse(url_names.ELECTION_SHORTCUT_VOTE, args=[election.short_name])
 
 def get_castvote_url(cast_vote):
-  return settings.URL_HOST + reverse(castvote_shortcut, args=[cast_vote.vote_tinyhash])
+  return settings.URL_HOST + reverse(url_names.CAST_VOTE_SHORTCUT, args=[cast_vote.vote_tinyhash])
 
 
 ##
@@ -126,7 +126,7 @@ def election_shortcut(request, election_short_name):
 def _election_vote_shortcut(request, election):
   vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url' : reverse(election_names.ELECTION_HOME, args=[election.uuid])}))
   
-  test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : vote_url}))
+  test_cookie_url = "%s?%s" % (reverse(url_names.COOKIE_TEST), urllib.urlencode({'continue_url' : vote_url}))
 
   return HttpResponseRedirect(test_cookie_url)
   
@@ -306,7 +306,7 @@ def one_election_view(request, election):
 
   vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url' : reverse(election_names.ELECTION_HOME, args=[election.uuid])}))
 
-  test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : vote_url}))
+  test_cookie_url = "%s?%s" % (reverse(url_names.COOKIE_TEST), urllib.urlencode({'continue_url' : vote_url}))
   
   if user:
     voter = Voter.get_by_election_and_user(election, user)
@@ -353,20 +353,20 @@ def one_election_view(request, election):
 def test_cookie(request):
   continue_url = request.GET['continue_url']
   request.session.set_test_cookie()
-  next_url = "%s?%s" % (reverse(test_cookie_2), urllib.urlencode({'continue_url': continue_url}))
+  next_url = "%s?%s" % (reverse(url_names.COOKIE_TEST_2), urllib.urlencode({'continue_url': continue_url}))
   return HttpResponseRedirect(settings.SECURE_URL_HOST + next_url)  
 
 def test_cookie_2(request):
   continue_url = request.GET['continue_url']
 
   if not request.session.test_cookie_worked():
-    return HttpResponseRedirect(settings.SECURE_URL_HOST + ("%s?%s" % (reverse(nocookies), urllib.urlencode({'continue_url': continue_url}))))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + ("%s?%s" % (reverse(url_names.COOKIE_NO), urllib.urlencode({'continue_url': continue_url}))))
 
   request.session.delete_test_cookie()
   return HttpResponseRedirect(continue_url)  
 
 def nocookies(request):
-  retest_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : request.GET['continue_url']}))
+  retest_url = "%s?%s" % (reverse(url_names.COOKIE_TEST), urllib.urlencode({'continue_url' : request.GET['continue_url']}))
   return render_template(request, 'nocookies', {'retest_url': retest_url})
 
 ##
@@ -438,7 +438,7 @@ def trustee_login(request, election_short_name, trustee_email, trustee_secret):
 def trustee_send_url(request, election, trustee_uuid):
   trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
   
-  url = settings.SECURE_URL_HOST + reverse(trustee_login, args=[election.short_name, trustee.email, trustee.secret])
+  url = settings.SECURE_URL_HOST + reverse(url_names.TRUSTEE_LOGIN, args=[election.short_name, trustee.email, trustee.secret])
   
   body = """
 
