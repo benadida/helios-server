@@ -116,19 +116,20 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 SILENCED_SYSTEM_CHECKS = ['urls.W002']
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = [
     # make all things SSL
     #'sslify.middleware.SSLifyMiddleware',
 
     # secure a bunch of things
-    'djangosecure.middleware.SecurityMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'helios.security.HSTSMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
 
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware'
-)
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+]
 
 ROOT_URLCONF = 'urls'
 
@@ -280,7 +281,7 @@ CELERY_TASK_ALWAYS_EAGER = True
 ROLLBAR_ACCESS_TOKEN = get_from_env('ROLLBAR_ACCESS_TOKEN', None)
 if ROLLBAR_ACCESS_TOKEN:
   print "setting up rollbar"
-  MIDDLEWARE_CLASSES += ('rollbar.contrib.django.middleware.RollbarNotifierMiddleware',)
+  MIDDLEWARE += ['rollbar.contrib.django.middleware.RollbarNotifierMiddleware',]
   ROLLBAR = {
     'access_token': ROLLBAR_ACCESS_TOKEN,
     'environment': 'development' if DEBUG else 'production',  
