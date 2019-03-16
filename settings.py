@@ -59,8 +59,6 @@ DATABASES = {
     }
 }
 
-SOUTH_DATABASE_ADAPTERS = {'default':'south.db.postgresql_psycopg2'}
-
 # override if we have an env variable
 if get_from_env('DATABASE_URL', None):
     import dj_database_url
@@ -186,8 +184,6 @@ INSTALLED_APPS = (
     ## needed for queues
     'djcelery',
     'kombu.transport.django',
-    ## in Django 1.7 we now use built-in migrations, no more south
-    ## 'south',
     ## HELIOS stuff
     'helios_auth',
     'helios',
