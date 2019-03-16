@@ -24,6 +24,7 @@ from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
+from django.utils.translation import ugettext as _
 
 import uuid
 
@@ -453,7 +454,7 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.get("/helios/elections/%s/voters/list" % self.election.uuid, follow=False)
         # check total count of voters
         if self.election.num_voters == 0:
-            self.assertContains(response, "no voters")
+            self.assertContains(response, _("no voters"))
         else:
             self.assertContains(response, "(of %s)" % self.election.num_voters)
 
