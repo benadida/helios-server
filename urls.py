@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import *
-from django.contrib import admin
 from django.conf import settings
+from django.conf.urls import url, include
+from django.contrib import admin
+from django.views.static import serve
 from django.views.i18n import javascript_catalog
 
 js_info_dict = {
@@ -10,35 +11,30 @@ js_info_dict = {
 
 admin.autodiscover()
 
-urlpatterns = patterns(
-    '',
-    (r'^auth/', include('helios_auth.urls')),
-    (r'^helios/', include('helios.urls')),
-    (r'^admin/', include(admin.site.urls)),
-    (r'^jsi18n/$', javascript_catalog, js_info_dict),
-)
+urlpatterns = [
+    url(r'^auth/', include('helios_auth.urls')),
+    url(r'^helios/', include('helios.urls')),
+    url(r'^admin/', include(admin.site.urls)),
+    url(r'^jsi18n/$', javascript_catalog, js_info_dict),
+]
 
 if settings.AUTH_DEFAULT_AUTH_SYSTEM == 'shibboleth':
-    urlpatterns += patterns(
-        '',
-        (r'^', include('heliosinstitution.urls')),
-    )
+    urlpatterns += [
+        url(r'^', include('heliosinstitution.urls')),
+    ]
 else:
-    urlpatterns += patterns(
-        '',
-        (r'^', include('server_ui.urls')),
-    )
+    urlpatterns += [
+        url(r'^', include('server_ui.urls')),
+    ]
 
-if settings.DEBUG: # otherwise, they should be served by a webserver like apache
-
-    urlpatterns += patterns(
-        '',
+if settings.DEBUG:  # otherwise, they should be served by a webserver like apache
+    urlpatterns += [
         # SHOULD BE REPLACED BY APACHE STATIC PATH
-        (r'booth/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/heliosbooth'}),
-        (r'verifier/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/heliosverifier'}),
+        url(r'booth/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosbooth'}),
+        url(r'verifier/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosverifier'}),
 
-        (r'static/auth/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/helios_auth/media'}),
-        (r'static/helios/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/helios/media'}),
-        (r'static/heliosinstitution/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/heliosinstitution/media'}),
-        (r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/server_ui/media'})
-    )
+        url(r'static/auth/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/helios_auth/media'}),
+        url(r'static/helios/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/helios/media'}),
+        url(r'static/heliosinstitution/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosinstitution/media'}),
+        url(r'static/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/server_ui/media'}),
+    ]
