@@ -4,8 +4,8 @@ Forms for Helios
 
 from django import forms
 from models import Election
-from widgets import *
-from fields import *
+from widgets import SplitSelectDateTimeWidget
+from fields import SplitDateTimeField
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 

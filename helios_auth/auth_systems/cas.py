@@ -5,12 +5,14 @@ Some code borrowed from
 https://sp.princeton.edu/oit/sdp/CAS/Wiki%20Pages/Python.aspx
 """
 
-from django.http import *
-from django.core.mail import send_mail
+import re
+import urllib
+import urllib2
+import uuid
 from django.conf import settings
+from django.core.mail import send_mail
+from django.http import HttpResponseRedirect
 from django.utils import timezone
-
-import sys, os, cgi, urllib, urllib2, re, uuid, datetime
 from xml.etree import ElementTree
 
 CAS_EMAIL_DOMAIN = "princeton.edu"
@@ -234,7 +236,7 @@ def generate_constraint(category_id, user):
   return {'year': category_id}
 
 def list_categories(user):
-  current_year = datetime.datetime.now().year
+  current_year = timezone.now().year
   return [{'id': str(y), 'name': 'Class of %s' % y} for y 
           in range(current_year, current_year+5)]
 
