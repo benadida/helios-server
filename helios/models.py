@@ -6,30 +6,26 @@ Ben Adida
 (ben@adida.net)
 """
 
-from django.db import models, transaction
-import json
-from django.utils.translation import ugettext_lazy as _
-from django.conf import settings
-from django.core.mail import send_mail
-from django.utils import timezone
-
-import datetime, logging, uuid, random, io
 import bleach
+import copy
+import csv
+import io
+import random
+import unicodecsv
+import uuid
+from django.conf import settings
+from django.db import models, transaction
+from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 
-from crypto import electionalgs, algs, utils
-from helios import utils as heliosutils
-import helios.views
-
+from crypto import algs, utils
 from helios import datatypes
-
-
+from helios import utils as heliosutils
+from helios.datatypes.djangofield import LDObjectField
+from helios_auth.jsonfield import JSONField
 # useful stuff in helios_auth
 from helios_auth.models import User, AUTH_SYSTEMS
-from helios_auth.jsonfield import JSONField
-from helios.datatypes.djangofield import LDObjectField
 
-import csv, copy
-import unicodecsv
 
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
   class Meta:
@@ -583,6 +579,7 @@ class Election(HeliosModel):
 
   @property
   def url(self):
+    import helios.views
     return helios.views.get_election_url(self)
 
   def init_tally(self):
@@ -658,7 +655,7 @@ class Election(HeliosModel):
 
     return prettified_result
 
-    
+
 class ElectionLog(models.Model):
   """
   a log of events for an election
