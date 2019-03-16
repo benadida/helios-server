@@ -33,7 +33,7 @@ ROOT_URLCONF = 'urls'
 
 ROOT_PATH = os.path.dirname(__file__)
 
-# add admins of the form: 
+# add admins of the form:
 #    ('Ben Adida', 'ben@adida.net'),
 # if you want to be emailed about errors.
 ADMINS = (
@@ -343,7 +343,7 @@ AUTH_LDAP_ALWAYS_UPDATE_USER = False
 AUTH_BIND_USERID_TO_VOTERID = ['ldap']
 
 # Shibboleth auth settings
-SHIBBOLETH_ATTRIBUTE_MAP = { 
+SHIBBOLETH_ATTRIBUTE_MAP = {
     #"Shibboleth-givenName": (True, "first_name"),
     "Shib-inetOrgPerson-cn": (True, "common_name"),
     "Shib-inetOrgPerson-sn": (True, "last_name"),
