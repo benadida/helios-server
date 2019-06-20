@@ -7,9 +7,9 @@ Ben Adida
 (ben@adida.net)
 """
 from django.db import models
-from jsonfield import JSONField
 
 from auth_systems import AUTH_SYSTEMS
+from jsonfield import JSONField
 
 
 # an exception to catch when a user is no longer authenticated

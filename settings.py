@@ -143,6 +143,8 @@ if get_from_env('HSTS', '0') == '1':
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
+SILENCED_SYSTEM_CHECKS = ['urls.W002']
+
 MIDDLEWARE_CLASSES = (
     # make all things SSL
     #'sslify.middleware.SSLifyMiddleware',
