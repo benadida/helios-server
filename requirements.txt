@@ -1,9 +1,8 @@
 Django==1.9.13
 anyjson==0.3.3
-celery==3.1.25
-django-celery==3.2.2
+celery==4.2.1
 django-picklefield==0.3.0
-kombu==3.0.37
+kombu==4.2.0
 html5lib==0.999
 psycopg2==2.7.3.2
 pyparsing==1.5.7
