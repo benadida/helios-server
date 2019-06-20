@@ -33,9 +33,9 @@ class Migration(migrations.Migration):
                 ('email', models.EmailField(max_length=254)),
                 ('expires_at', models.DateTimeField(default=None, null=True, blank=True)),
                 ('active', models.BooleanField(default=False)),
-                ('django_user', models.ForeignKey(to=settings.AUTH_USER_MODEL, unique=True)),
-                ('helios_user', models.ForeignKey(default=None, blank=True, to='helios_auth.User', null=True)),
-                ('institution', models.ForeignKey(to='heliosinstitution.Institution')),
+                ('django_user', models.ForeignKey(to=settings.AUTH_USER_MODEL, unique=True, on_delete=models.CASCADE)),
+                ('helios_user', models.ForeignKey(default=None, blank=True, to='helios_auth.User', null=True, on_delete=models.CASCADE)),
+                ('institution', models.ForeignKey(to='heliosinstitution.Institution', on_delete=models.CASCADE)),
             ],
             options={
                 'permissions': (('delegate_institution_mngt', 'Can delegate institution management tasks'), ('revoke_institution_mngt', 'Can revoke institution management tasks'), ('delegate_election_mngt', 'Can delegate election management tasks'), ('revoke_election_mngt', 'Can revoke election management tasks')),
