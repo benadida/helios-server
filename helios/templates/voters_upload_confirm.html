@@ -45,7 +45,7 @@ You have uploaded a file of voters. The first few rows of this file are:
 </form>
 <div class="form-group">
 <a class="btn btn-danger" href="{% url "election@voters@upload-cancel" election.uuid %}">{% trans "no, let me upload a different file" %}</a>
- <a class="btn btn-danger" href="{% url "helios.views.one_election_view" election.uuid %}"> {% trans "back to election" %}</a>
+ <a class="btn btn-danger" href="{% url "election@view" election.uuid %}"> {% trans "back to election" %}</a>
 </div>
 </div>
 

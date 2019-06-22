@@ -34,9 +34,9 @@ if 'twitter' in AUTH_ENABLED_AUTH_SYSTEMS:
 # ldap
 if 'ldap' in AUTH_ENABLED_AUTH_SYSTEMS:
     from auth_systems.ldapauth import urlpatterns as ldap_patterns
-    urlpatterns.append(ldap_patterns)
+    urlpatterns.extend(ldap_patterns)
 
 # shibboleth
 if 'shibboleth' in AUTH_ENABLED_AUTH_SYSTEMS:
     from auth_systems.shibboleth import urlpatterns as shibboleth_patterns
-    urlpatterns.append(shibboleth_patterns)
+    urlpatterns.extend(shibboleth_patterns)

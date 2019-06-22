@@ -24,7 +24,7 @@
   {% endfor %}
   <div class="pull-right">
     <button id="next_button" type="submit" class="btn btn-primary">{% trans "Update" %}</button>
-    <a class="btn btn-danger" href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "Cancel" %}</a>
+    <a class="btn btn-danger" href="{% url "election@view" election.uuid %}">{% trans "Cancel" %}</a>
   </div>
   </form>
 </div>

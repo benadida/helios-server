@@ -158,7 +158,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware'
+    'django.contrib.messages.middleware.MessageMiddleware',
 
     # 'flatpages_i18n.middleware.FlatpageFallbackMiddleware'
 ]
@@ -176,7 +176,10 @@ TEMPLATES = [
             # os.path.join(ROOT_PATH, 'server_ui/templates'),  # covered by APP_DIRS:True
         ],
         'OPTIONS': {
-            'debug': DEBUG
+            'debug': DEBUG,
+            'context_processors': [
+                "django.contrib.auth.context_processors.auth",
+            ],
         }
     },
 ]

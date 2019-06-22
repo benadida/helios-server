@@ -3,7 +3,7 @@ from django.conf import settings
 from django.conf.urls import url, include
 from django.contrib import admin
 from django.views.static import serve
-from django.views.i18n import javascript_catalog
+from django.views.i18n import JavaScriptCatalog
 
 js_info_dict = {
     'packages': ('helios', 'helios_auth'),
@@ -15,7 +15,7 @@ urlpatterns = [
     url(r'^auth/', include('helios_auth.urls')),
     url(r'^helios/', include('helios.urls')),
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^jsi18n/$', javascript_catalog, js_info_dict),
+    url(r'^jsi18n/$', JavaScriptCatalog, js_info_dict, name='i18n@JSCatalog'),
 ]
 
 if settings.AUTH_DEFAULT_AUTH_SYSTEM == 'shibboleth':

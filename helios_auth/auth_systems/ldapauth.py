@@ -28,8 +28,8 @@ from django import forms
 from django.conf import settings
 from django.conf.urls import url
 from django.core.mail import send_mail
-from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 
 # some parameters to indicate that status updating is possible

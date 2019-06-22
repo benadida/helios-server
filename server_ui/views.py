@@ -3,16 +3,16 @@ server_ui specific views
 """
 
 import copy
-from django.conf import settings
-from django.core.urlresolvers import reverse
-from django.http import HttpResponseRedirect
 
+from django.conf import settings
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+
+import glue
 import helios_auth.views as auth_views
 from helios.security import can_create_election
 from helios_auth.security import get_user
 from view_utils import render_template
-import glue
-
 
 glue.glue()  # actually apply glue helios.view <-> helios.signals
 

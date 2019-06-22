@@ -101,7 +101,7 @@
 		{% if q %}
 			<p><em>{% trans "searching for" %} <u>{{q}}</u>.</em> [<a href="?">{% trans "clear search" %}</a>]</p>
 		{% else %}
-			<form method="get" action="{% url "helios.views.voters_list_pretty" election.uuid %}"><b>	{% if not election.use_voter_aliases or admin_p %} {% trans "Voter name" %} {% else %} {% trans "Alias" %}{% endif %}</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
+			<form method="get" action="{% url "election@voters@list-pretty" election.uuid %}"><b>	{% if not election.use_voter_aliases or admin_p %} {% trans "Voter name" %} {% else %} {% trans "Alias" %}{% endif %}</b>: <input type="text" name="q" /> <input type="submit" value="{% trans "search" %}" /></form>
 		{% endif %}
 		</p>
 		</div>
