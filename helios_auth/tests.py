@@ -91,7 +91,7 @@ class UserModelTests(unittest.TestCase):
 
 import views
 import auth_systems.password as password_views
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 # FIXME: login CSRF should make these tests more complicated
 # and should be tested for

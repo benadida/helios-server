@@ -5,14 +5,15 @@ Ben Adida (ben@adida.net)
 """
 
 import urllib
-from django.conf import settings
-from django.core.exceptions import PermissionDenied
-from django.core.urlresolvers import reverse
-from django.http import Http404
-from django.http import HttpResponseRedirect
-from django.utils.translation import ugettext as _
 # nicely update the wrapper function
 from functools import update_wrapper
+
+from django.conf import settings
+from django.core.exceptions import PermissionDenied
+from django.http import Http404
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.utils.translation import ugettext as _
 
 from helios_auth.security import get_user
 from models import Voter, Trustee, Election

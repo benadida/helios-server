@@ -6,7 +6,7 @@ Ben Adida (ben@adida.net)
 """
 import json
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseForbidden
