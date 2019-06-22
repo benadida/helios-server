@@ -31,11 +31,9 @@
     "fields": {
       "info": "{}",
       "user_id": "mccio@github.com",
-      "name": "Mc Cio",
-      "user_type": "facebook",
-      "token": {
-        "access_token": "9999"
-      },
+      "name": "Marco Ciotola",
+      "user_type": "google",
+      "token": null,
       "admin_p": true
     }
   }

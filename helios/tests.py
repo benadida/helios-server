@@ -390,12 +390,18 @@ class ElectionBlackboxTests(WebTest):
     def setUp(self):
         self.election = models.Election.objects.all()[0]
         self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
-        self.adminUser = auth_models.User.objects.get(user_id='mccio@github.com', user_type='facebook')
+        self.adminUser = auth_models.User.objects.get(user_id='mccio@github.com', user_type='google')
 
-    def setup_login(self, admin=False):
+    def setup_login(self, admin=False, from_scratch=False, **kwargs):
+        if from_scratch:
+            # a bogus call to set up the session
+            self.client.get("/")
         # set up the session
         session = self.client.session
-        user = self.adminUser if admin else self.user
+        if kwargs:
+            user = auth_models.User.objects.get(**kwargs)
+        else:
+            user = self.adminUser if admin else self.user
         session['user'] = {'type': user.user_type, 'user_id': user.user_id}
         session.save()
 
@@ -468,11 +474,9 @@ class ElectionBlackboxTests(WebTest):
         self.assertRedirects(response, "/auth/?return_url=/helios/elections/new")
     
     def test_election_edit(self):
-        # a bogus call to set up the session
-        self.client.get("/")
-
-        self.setup_login()
+        self.setup_login(from_scratch=True)
         response = self.client.get("/helios/elections/%s/edit" % self.election.uuid)
+        self.assertStatusCode(response, 200)
         response = self.client.post("/helios/elections/%s/edit" % self.election.uuid, {
                 "short_name" : self.election.short_name + "-2",
                 "name" : self.election.name,
@@ -486,14 +490,31 @@ class ElectionBlackboxTests(WebTest):
         new_election = models.Election.objects.get(uuid = self.election.uuid)
         self.assertEquals(new_election.short_name, self.election.short_name + "-2")
 
+    def test_get_election_stats(self):
+        self.setup_login(from_scratch=True, user_id='mccio@github.com', user_type='google')
+        response = self.client.get("/helios/stats/", follow=False)
+        self.assertStatusCode(response, 200)
+        response = self.client.get("/helios/stats/force-queue", follow=False)
+        self.assertRedirects(response, "/helios/stats/")
+        response = self.client.get("/helios/stats/elections", follow=False)
+        self.assertStatusCode(response, 200)
+        response = self.client.get("/helios/stats/problem-elections", follow=False)
+        self.assertStatusCode(response, 200)
+        response = self.client.get("/helios/stats/recent-votes", follow=False)
+        self.assertStatusCode(response, 200)
+        self.clear_login()
+        response = self.client.get("/helios/stats/", follow=False)
+        self.assertStatusCode(response, 403)
+        self.setup_login()
+        response = self.client.get("/helios/stats/", follow=False)
+        self.assertStatusCode(response, 403)
+        self.clear_login()
+
     def _setup_complete_election(self, election_params=None, admin=False):
         """do the setup part of a whole election"""
 
-        # a bogus call to set up the session
-        self.client.get("/")
-
         # REPLACE with params?
-        self.setup_login(admin=admin)
+        self.setup_login(admin=admin, from_scratch=True)
 
         # create the election
         full_election_params = {
@@ -755,8 +776,7 @@ class ElectionBlackboxTests(WebTest):
 
     def test_election_voters_eligibility(self):
         # create the election
-        self.client.get("/")
-        self.setup_login(admin=True)
+        self.setup_login(admin=True, from_scratch=True)
         response = self.client.post("/helios/elections/new", {
                 "short_name" : "test-eligibility",
                 "name" : "Test Eligibility",
