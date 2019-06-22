@@ -1,4 +1,4 @@
-Django==1.10.8
+Django==1.11.20
 anyjson==0.3.3
 celery==4.2.1
 django-picklefield==0.3.0
