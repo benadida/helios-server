@@ -474,7 +474,7 @@ class ElectionBlackboxTests(WebTest):
         self.assertRedirects(response, "/auth/?return_url=/helios/elections/new")
     
     def test_election_edit(self):
-        self.setup_login(from_scratch=True)
+        self.setup_login(from_scratch=True, admin=True)
         response = self.client.get("/helios/elections/%s/edit" % self.election.uuid)
         self.assertStatusCode(response, 200)
         response = self.client.post("/helios/elections/%s/edit" % self.election.uuid, {

@@ -3,7 +3,7 @@
     "pk": 1000,
     "model": "helios.election",
     "fields": {
-      "admin": 1,
+      "admin": 3,
       "uuid": "206ef039-05c9-4e9c-bb8f-963da50c08d4",
       "short_name": "test",
       "name": "Test Election",
