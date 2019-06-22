@@ -15,5 +15,5 @@ urlpatterns = [
     url(r'^elections$', elections, name=names.STATS_ELECTIONS),
     url(r'^problem-elections$', recent_problem_elections, name=names.STATS_ELECTIONS_PROBLEMS),
     url(r'^recent-votes$', recent_votes, name=names.STATS_RECENT_VOTES),
-    url(r'^admin-actions$', admin_actions),
+    url(r'^admin-actions$', admin_actions, name=names.STATS_ADMIN_ACTIONS),
 ]
