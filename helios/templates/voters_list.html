@@ -6,7 +6,7 @@
 <div class="row">
 <div class="col-xs-12 col-md-12">
 <div id="header">
-  <h3 class="title">{% trans "Voters and Ballot Tracking Center" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
+  <h3 class="title">{% trans "Voters and Ballot Tracking Center" %} <span style="font-size:0.7em;">[<a href="{% url "election@view" election.uuid %}">{% trans "back to election" %}</a>]</span></h3>
   <h3 class="title">{{election.name}}</h3>
 	<br /><br />
 </div>
@@ -27,7 +27,7 @@
 		<label>{% trans "You can change this setting:" %}</label>
 	</div>
     <div class="panel-body">
-        <form method="post" role="form" class="form-horizontal" action="{% url "helios.views.voters_eligibility" election.uuid %}">
+        <form method="post" role="form" class="form-horizontal" action="{% url "election@voters@eligibility" election.uuid %}">
             <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
             <div class="form-group">
                 <input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> {% trans "anyone can vote" %}
@@ -63,7 +63,7 @@
 	{% endif %}
 	{% endif %}
 	{% if email_voters and election.frozen_at and admin_p %}
-	<p><a class="btn btn-primary" href="{% url "helios.views.voters_email" election.uuid %}">{% trans "email voters" %}</a></p>
+	<p><a class="btn btn-primary" href="{% url "election@voters@email" election.uuid %}">{% trans "email voters" %}</a></p>
 	{% endif %}
 
 </div> <!-- end column -->
@@ -75,11 +75,10 @@
 	<!-- Add a Voter: WORK HERE-->
 		{% if upload_p and not election.openreg %}
 		<div class="form-group">
-			<a class="btn btn-primary" href="{% url "helios.views.voters_upload" election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
+			<a class="btn btn-primary" href="{% url "election@voters@upload" election_uuid=election.uuid %}">{% trans "bulk upload voters" %}</a>
 		</div>
 		{% endif %}
 	{% endif %}
-
 
 
 	<!-- who can vote info -->
@@ -122,14 +121,14 @@
 	</p>
 
 	{% if voters_page.has_previous %}
-		<a href="./list?page={{voters_page.previous_page_number}}&limit={{limit}}&q={{q|urlencode}}">{% trans "previous" %} {{limit}}</a> &nbsp;&nbsp;
+		<a href="{% url "election@voters@list-pretty" election.uuid %}?page={{voters_page.previous_page_number}}&limit={{limit}}&q={{q|urlencode}}">{% trans "previous" %} {{limit}}</a> &nbsp;&nbsp;
 	{% endif %}
 
 
 	{% trans "Voters" %} {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voters}})&nbsp;&nbsp;
 
 	{% if voters_page.has_next %}
-		<a href="./list?page={{voters_page.next_page_number}}&limit={{limit}}&q={{q|urlencode}}">{% trans "next" %} {{limit}}</a> &nbsp;&nbsp;
+		<a href="{% url "election@voters@list-pretty" election.uuid %}?page={{voters_page.next_page_number}}&limit={{limit}}&q={{q|urlencode}}">{% trans "next" %} {{limit}}</a> &nbsp;&nbsp;
 	{% endif %}
 	<br/><br/>
  	<div class="table-responsive">
@@ -155,9 +154,9 @@
 		{% if admin_p %}
 			<td>
 				{% if email_voters and election.frozen_at %}
-				<a href="{% url "helios.views.voters_email" election.uuid %}?voter_id={{voter.voter_login_id}}"><i title="{% trans "Send email to this voter. This action will only be possible if the ballot is already frozen." %}" class="glyphicon glyphicon-envelope"></i></a>
+				<a href="{% url "election@voters@email" election.uuid %}?voter_id={{voter.voter_login_id}}"><i title="{% trans "Send email to this voter. This action will only be possible if the ballot is already frozen." %}" class="glyphicon glyphicon-envelope"></i></a>
 				{% endif %}
-				<a href="{% url "helios.views.voter_delete" election.uuid voter.uuid %}"><i data-name="{{voter.name}}" title="{% trans "Remove voter" %}" class="glyphicon glyphicon-remove remove_voter"></i></a>
+				<a href="{% url "election@voter@delete" election.uuid voter.uuid %}"><i data-name="{{voter.name}}" title="{% trans "Remove voter" %}" class="glyphicon glyphicon-remove remove_voter"></i></a>
 
 			<!--<img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" />--> {{voter.name}}</td>
 			{% if election.use_voter_aliases %}

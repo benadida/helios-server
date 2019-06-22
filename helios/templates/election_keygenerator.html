@@ -36,7 +36,7 @@ $(document).ready(function() {
     $('#generator').hide();
 
     // get some more server-side randomness for keygen
-    $.getJSON('../../get-randomness', function(result) {
+    $.getJSON('{% url "election@get-randomness" election.uuid %}', function(result) {
        sjcl.random.addEntropy(result.randomness);
        BigInt.setup(function() {
           ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
@@ -163,7 +163,7 @@ function show_pk() {
 </p>
 </div>
 
-<form method="post" id="pk_form" action="{% url "helios.views.trustee_upload_pk" election.uuid trustee.uuid %}">
+<form method="post" id="pk_form" action="{% url "election@trustee@upload-pk" election.uuid trustee.uuid %}">
 
 <h3>{% trans "Your Public Key" %}</h3>
 <p>

@@ -28,14 +28,14 @@ You have uploaded a file of voters. The first few rows of this file are:
 </p>
 <br />
 
-<a href="{% url "helios.views.voters_upload_cancel" election.uuid %}">{% trans "never mind, upload a different file" %}</a>
+<a href="{% url "election@voters@upload-cancel" election.uuid %}">{% trans "never mind, upload a different file" %}</a>
 </p>
 </div>
 <div class="col-md-12">
 {% else %}
 
 <form method="post" role="form" class="form" action="" id="upload_form">
- <input type="hidden" name="confirm_p" value="1" />  
+ <input type="hidden" name="confirm_p" value="1" />
 <div class="form-group">
   <label for="upload">{% trans "Does this look right to you?" %}</label>
  </div>
@@ -44,7 +44,7 @@ You have uploaded a file of voters. The first few rows of this file are:
 </div>
 </form>
 <div class="form-group">
-<a class="btn btn-danger" href="{% url "helios.views.voters_upload_cancel" election.uuid %}">{% trans "no, let me upload a different file" %}</a>
+<a class="btn btn-danger" href="{% url "election@voters@upload-cancel" election.uuid %}">{% trans "no, let me upload a different file" %}</a>
  <a class="btn btn-danger" href="{% url "helios.views.one_election_view" election.uuid %}"> {% trans "back to election" %}</a>
 </div>
 </div>

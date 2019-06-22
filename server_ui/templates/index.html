@@ -36,20 +36,20 @@ More than <b>2,000,000 votes</b> have been cast using Helios.
     <p style="font-size: 1.4em;">
       {{settings.WELCOME_MESSAGE|safe}}
     </p>
-    
+
     {% if elections|length %}
 
       {% for election in elections %}
- 
+
         <a style="font-size: 1.4em;" href="{% url "helios.views.election_shortcut" election.short_name %}">{{election.name}}</a>{% if settings.SHOW_USER_INFO %}<br /> {% trans "by" %} {{election.admin.pretty_name}}{% endif %}
-     
+
       <br />
       {% endfor %}
- 
+
     {% else %}
     {% endif %}
   {% endif %}
-    
+
   </div> <!-- span10 -->
 
   <div class="col-md-4">
@@ -61,7 +61,7 @@ More than <b>2,000,000 votes</b> have been cast using Helios.
     {% if elections_administered %}
     <ul>
     {% for election in elections_administered %}
-    <li> <a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></li>
+    <li> <a href="{% url "election@view" election.uuid %}">{{election.name}}</a></li>
     {% endfor %}
     </ul>
     {% else %}
@@ -75,7 +75,7 @@ More than <b>2,000,000 votes</b> have been cast using Helios.
     {% if elections_voted %}
     <ul>
     {% for election in elections_voted %}
-    <li><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></li>
+    <li><a href="{% url "election@view" election.uuid %}">{{election.name}}</a></li>
     {% endfor %}
     </ul>
     {% else %}

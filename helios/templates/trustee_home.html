@@ -12,9 +12,9 @@ You have successfully uploaded your public key.<br />
 Your public key fingerprint is: <b>
 {% endblocktrans %}
 {{trustee.public_key_hash}}</b>. <br /><br />
-{% blocktrans %}You can{% endblocktrans %} <a class="btn btn-primary" href="{% url "helios.views.trustee_check_sk" election.uuid trustee.uuid %}">{% blocktrans %}verify that you have the right secret key {% endblocktrans %}</a>
+{% blocktrans %}You can{% endblocktrans %} <a class="btn btn-primary" href="{% url "election@trustee@check-sk" election.uuid trustee.uuid %}">{% blocktrans %}verify that you have the right secret key {% endblocktrans %}</a>
 {% else %}
-<a class="btn btn-primary" href="{% url "helios.views.trustee_keygenerator" election.uuid trustee.uuid %}">{% blocktrans %}setup your key {% endblocktrans %}</a>
+<a class="btn btn-primary" href="{% url "election@trustee@key-generator" election.uuid trustee.uuid %}">{% blocktrans %}setup your key {% endblocktrans %}</a>
 {% endif %}
 </p>
 <br /><br />
@@ -26,7 +26,7 @@ You have successfully uploaded your decryption.
 {% endblocktrans %}
 {% else %}
     {% blocktrans %}The encrypted tally for this election is ready.{% endblocktrans %}<br /><br />
-    <a class="btn btn-primary" href="{% url "helios.views.trustee_decrypt_and_prove" election.uuid trustee.uuid %}">{% blocktrans %}decrypt with your key{% endblocktrans %}</a>
+    <a class="btn btn-primary" href="{% url "election@trustee@decrypt-and-prove" election.uuid trustee.uuid %}">{% blocktrans %}decrypt with your key{% endblocktrans %}</a>
 {% endif %}
 {% else %}
 {% blocktrans %}
