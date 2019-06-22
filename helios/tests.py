@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Unit Tests for Helios
 """
@@ -360,11 +361,11 @@ class WebTest(django_webtest.WebTest):
         and it seems to be screwing up in a few places too
         thus the localhost exception
         """
+        self.assertStatusCode(response, 302)
         if hasattr(response, 'location'):
             assert url in response.location, response.location
         else:
             assert url in response['location'], response['location']
-        self.assertStatusCode(response, 302)
         #return super(django_webtest.WebTest, self).assertRedirects(response, url)
         #assert url in response.location, "redirected to %s instead of %s" % (response.location, url)
 
@@ -375,7 +376,7 @@ class WebTest(django_webtest.WebTest):
         body = response.testbody if hasattr(response, "testbody")\
             else (response.body if hasattr(response, "body") else response.content)
 
-        assert text in body, "missing text %s\n%s" % (text, body)
+        assert text.decode('utf-8') in body.decode('utf-8'), "missing text %s\n%s" % (text.decode('utf-8'), body.decode('utf-8'))
 
 
 ##
@@ -446,7 +447,7 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.get("/helios/elections/%s/voters/list" % self.election.uuid, follow=False)
         # check total count of voters
         if self.election.num_voters == 0:
-            self.assertContains(response, _("no voters"))
+            self.assertContains(response, "Anyone can vote.")
         else:
             self.assertContains(response, "(of %s)" % self.election.num_voters)
 
@@ -480,7 +481,6 @@ class ElectionBlackboxTests(WebTest):
                 "use_voter_aliases": self.election.use_voter_aliases,
                 'csrf_token': self.client.session['csrf_token']
                 })
-
         self.assertRedirects(response, "/helios/elections/%s/view" % self.election.uuid)
 
         new_election = models.Election.objects.get(uuid = self.election.uuid)
@@ -586,8 +586,9 @@ class ElectionBlackboxTests(WebTest):
         assert "your password" in email_message.subject, "bad subject in email"
 
         # get the username and password
-        username = re.search('voter ID: (.*)', email_message.body).group(1)
-        password = re.search('password: (.*)', email_message.body).group(1)
+        email_body = email_message.message().as_string()
+        username = re.search('Seu ID de eleitor[^:]*: (.*)<br>', email_body).group(1)
+        password = re.search('Sua senha para (votar n)?essa eleição[^:]*: (.*)<br>', email_body).group(2)
 
         # now log out as administrator
         self.clear_login()
@@ -648,7 +649,7 @@ class ElectionBlackboxTests(WebTest):
         # at this point an email should have gone out to the user
         # at position num_messages after, since that was the len() before we cast this ballot
         email_message = mail.outbox[len(mail.outbox) - 1]
-        url = re.search('https?://[^/]+(/[^ \n]*)', email_message.body).group(1)
+        url = re.search('https?://[^/]+(/[^ \n]*)', email_message.message().as_string()).group(1)
 
         # check that we can get at that URL
         if not need_login:
