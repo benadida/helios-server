@@ -2,17 +2,14 @@
 Twitter Authentication
 """
 
-from oauthclient import client
-
+from django.conf import settings
 from django.conf.urls import url
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 
 from helios_auth import utils
+from oauthclient import client
 
-import logging
-
-from django.conf import settings
 API_KEY = settings.TWITTER_API_KEY
 API_SECRET = settings.TWITTER_API_SECRET
 USER_TO_FOLLOW = settings.TWITTER_USER_TO_FOLLOW
@@ -102,8 +99,7 @@ def send_notification(user_id, user_info, message):
 def follow_view(request):
   if request.method == "GET":
     from helios_auth.view_utils import render_template
-    from helios_auth.views import after
-    
+
     return render_template(request, 'twitter/follow', {'user_to_follow': USER_TO_FOLLOW, 'reason_to_follow' : REASON_TO_FOLLOW})
 
   if request.method == "POST":

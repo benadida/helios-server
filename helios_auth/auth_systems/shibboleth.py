@@ -10,6 +10,7 @@ from urlparse import urlsplit
 
 from django import forms
 from django.conf import settings
+from django.conf.urls import url
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
@@ -236,3 +237,11 @@ def parse_attributes(META):
 def can_create_election(user_id, user_info):
     """ for now, just let it be"""
     return True
+
+SHIBBOLETH_LOGIN_URL_NAME = "auth@shibboleth@login"
+SHIBBOLETH_REGISTER_URL_NAME = "auth@shibboleth@register"
+
+urlpatterns = [
+    url(r'^shib/login', shibboleth_login_view, name=SHIBBOLETH_LOGIN_URL_NAME),
+    url(r'^shib/register', shibboleth_register, name=SHIBBOLETH_REGISTER_URL_NAME),
+]

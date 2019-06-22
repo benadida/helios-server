@@ -33,11 +33,10 @@ if 'twitter' in AUTH_ENABLED_AUTH_SYSTEMS:
 
 # ldap
 if 'ldap' in AUTH_ENABLED_AUTH_SYSTEMS:
-    from auth_systems.ldapauth import ldap_login_view
-    urlpatterns.append(url(r'^ldap/login', ldap_login_view))
+    from auth_systems.ldapauth import urlpatterns as ldap_patterns
+    urlpatterns.append(ldap_patterns)
 
 # shibboleth
 if 'shibboleth' in AUTH_ENABLED_AUTH_SYSTEMS:
-    from auth_systems.shibboleth import shibboleth_login_view, shibboleth_register
-    urlpatterns.append(url(r'^shib/login', shibboleth_login_view))
-    urlpatterns.append(url(r'^shib/register', shibboleth_register))
+    from auth_systems.shibboleth import urlpatterns as shibboleth_patterns
+    urlpatterns.append(shibboleth_patterns)

@@ -26,16 +26,16 @@ https://docs.djangoproject.com/en/1.8/topics/auth/
 
 from django import forms
 from django.conf import settings
+from django.conf.urls import url
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.utils.translation import ugettext_lazy as _
 
-
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = False
 
-
+LDAP_LOGIN_URL_NAME = "auth@ldap@login"
 LOGIN_MESSAGE = _("Log in with my LDAP Account")
 
 class LoginForm(forms.Form):
@@ -112,3 +112,5 @@ def check_constraint(constraint, user_info):
 
 def can_create_election(user_id, user_info):
   return True
+
+urlpatterns = [url(r'^ldap/login', ldap_login_view, name=LDAP_LOGIN_URL_NAME)]
