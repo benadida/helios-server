@@ -9,9 +9,8 @@ from django.http import HttpResponseRedirect
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
-from helios import tasks
+from helios import tasks, url_names
 from helios.models import CastVote, Election
-from helios.stats_url_names import STATS_HOME
 from helios_auth.security import get_user
 from helioslog.models import HeliosLog
 from security import PermissionDenied
@@ -36,7 +35,7 @@ def force_queue(request):
   for cv in votes_in_queue:
     tasks.cast_vote_verify_and_store.delay(cv.id)
 
-  return HttpResponseRedirect(reverse(STATS_HOME))
+  return HttpResponseRedirect(reverse(url_names.stats.STATS_HOME))
 
 def elections(request):
   user = require_admin(request)

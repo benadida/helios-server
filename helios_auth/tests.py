@@ -116,7 +116,7 @@ class UserBlackboxTests(TestCase):
         # self.assertContains(response, "Foobar User")
 
     def test_logout(self):
-        response = self.client.post(reverse(views.logout), follow=True)
+        response = self.client.post(reverse("auth@logout"), follow=True)
         
         self.assertNotContains(response, "logged in")
         self.assertNotContains(response, "Foobar User")

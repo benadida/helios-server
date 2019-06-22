@@ -14,6 +14,7 @@ import settings
 from auth_systems import AUTH_SYSTEMS
 from auth_systems import password
 from helios_auth.security import get_user
+from helios_auth.url_names import AUTH_INDEX, AUTH_START, AUTH_AFTER, AUTH_WHY, AUTH_AFTER_INTERVENTION
 from models import User
 from security import FIELDS_TO_SAVE
 from view_utils import render_template, render_template_raw
@@ -28,7 +29,7 @@ def index(request):
 
   # single auth system?
   if len(helios_auth.ENABLED_AUTH_SYSTEMS) == 1 and not user:
-    return HttpResponseRedirect(reverse(start, args=[helios_auth.ENABLED_AUTH_SYSTEMS[0]])+ '?return_url=' + request.GET.get('return_url', ''))
+    return HttpResponseRedirect(reverse(AUTH_START, args=[helios_auth.ENABLED_AUTH_SYSTEMS[0]])+ '?return_url=' + request.GET.get('return_url', ''))
 
   #if helios_auth.DEFAULT_AUTH_SYSTEM and not user:
   #  return HttpResponseRedirect(reverse(start, args=[helios_auth.DEFAULT_AUTH_SYSTEM])+ '?return_url=' + request.GET.get('return_url', ''))
@@ -141,7 +142,7 @@ def _do_auth(request):
   system = AUTH_SYSTEMS[system_name]
   
   # where to send the user to?
-  redirect_url = settings.SECURE_URL_HOST + reverse(after)
+  redirect_url = settings.SECURE_URL_HOST + reverse(AUTH_AFTER)
   auth_url = system.get_auth_url(request, redirect_url=redirect_url)
   
   if auth_url:
@@ -151,7 +152,7 @@ def _do_auth(request):
   
 def start(request, system_name):
   if not (system_name in helios_auth.ENABLED_AUTH_SYSTEMS):
-    return HttpResponseRedirect(reverse(index))
+    return HttpResponseRedirect(reverse(AUTH_INDEX))
   
   # why is this here? Let's try without it
   # request.session.save()
@@ -187,7 +188,7 @@ def after(request):
     
     request.session['user'] = user
   else:
-    return HttpResponseRedirect("%s?%s" % (reverse(perms_why), urllib.urlencode({'system_name' : request.session['auth_system_name']})))
+    return HttpResponseRedirect("%s?%s" % (reverse(AUTH_WHY), urllib.urlencode({'system_name' : request.session['auth_system_name']})))
 
   # does the auth system want to present an additional view?
   # this is, for example, to prompt the user to follow @heliosvoting
@@ -198,7 +199,7 @@ def after(request):
       return intervention_response
 
   # go to the after intervention page. This is for modularity
-  return HttpResponseRedirect(reverse(after_intervention))
+  return HttpResponseRedirect(reverse(AUTH_AFTER_INTERVENTION))
 
 def after_intervention(request):
   return_url = "/"
