@@ -124,7 +124,7 @@ class EncryptedAnswer(WorkflowObject):
         num_selected_answers += 1
 
       # randomness and encryption
-      randomness[answer_num] = algs.Utils.random_mpz_lt(pk.q)
+      randomness[answer_num] = algs.random.mpz_lt(pk.q)
       choices[answer_num] = pk.encrypt_with_r(plaintexts[plaintext_index], randomness[answer_num])
       
       # generate proof

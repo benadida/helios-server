@@ -7,12 +7,11 @@ Ben Adida - ben@adida.net
 
 import urllib, re, datetime, string
 
+from helios.crypto.utils import random
 # utils from helios_auth, too
 from helios_auth.utils import *
 
 from django.conf import settings
-  
-import random, logging
 
 
 def split_by_length(str, length, rejoin_with=None):
@@ -107,11 +106,8 @@ def xss_strip_all_tags(s):
         
     return re.sub("(?s)<[^>]*>|&#?\w+;", fixup, s)
     
- 
-random.seed()
 
 def random_string(length=20, alphabet=None):
-    random.seed()
     ALPHABET = alphabet or 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     r_string = ''
     for i in range(length):
