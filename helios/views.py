@@ -1205,7 +1205,7 @@ def voters_list_pretty(request, election):
     return user_reauth(request, user)
   
   # files being processed
-  voter_files = election.voterfile_set.all()
+  voter_files = election.voterfile_set.all().order_by('-uploaded_at')
 
   # load a bunch of voters
   # voters = Voter.get_by_election(election, order_by=order_by)
