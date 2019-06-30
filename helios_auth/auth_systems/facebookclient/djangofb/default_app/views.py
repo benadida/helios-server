@@ -9,7 +9,7 @@ from django.http import HttpResponse
 import facebook.djangofb as facebook
 
 # The User model defined in models.py
-from models import User
+from .models import User
 
 # We'll require login for our canvas page. This
 # isn't necessarily a good idea, as we might want

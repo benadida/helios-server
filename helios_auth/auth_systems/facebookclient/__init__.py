@@ -44,16 +44,15 @@ http://undefined.org/python/#simplejson to download it, or do
 apt-get install python-simplejson on a Debian-like system.
 """
 
-import sys
-import time
-import struct
-import urllib
-import urllib2
-import httplib
-import hashlib
 import binascii
-import urlparse
+import hashlib
+import http.client
 import mimetypes
+import struct
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
 
 # try to use simplejson first, otherwise fallback to XML
 RESPONSE_FORMAT = 'JSON'
@@ -96,11 +95,11 @@ try:
         if result.status_code == 200:
             return result.content
         else:
-            raise urllib2.URLError("fetch error url=%s, code=%d" % (url, result.status_code))
+            raise urllib.error.URLError("fetch error url=%s, code=%d" % (url, result.status_code))
 
 except ImportError:
     def urlread(url, data=None):
-        res = urllib2.urlopen(url, data=data)
+        res = urllib.request.urlopen(url, data=data)
         return res.read()
 
 __all__ = ['Facebook']
@@ -711,9 +710,9 @@ class PhotosProxy(PhotosProxy):
         args = self._client._build_post_args('facebook.photos.upload', self._client._add_session_args(args))
 
         try:
-            import cStringIO as StringIO
+            import io as StringIO
         except ImportError:
-            import StringIO
+            import io
 
         # check for a filename specified...if the user is passing binary data in
         # image then a filename will be specified
@@ -721,26 +720,26 @@ class PhotosProxy(PhotosProxy):
             try:
                 import Image
             except ImportError:
-                data = StringIO.StringIO(open(image, 'rb').read())
+                data = io.StringIO(open(image, 'rb').read())
             else:
                 img = Image.open(image)
                 if size:
                     img.thumbnail(size, Image.ANTIALIAS)
-                data = StringIO.StringIO()
+                data = io.StringIO()
                 img.save(data, img.format)
         else:
             # there was a filename specified, which indicates that image was not
             # the path to an image file but rather the binary data of a file
-            data = StringIO.StringIO(image)
+            data = io.StringIO(image)
             image = filename
 
-        content_type, body = self.__encode_multipart_formdata(list(args.iteritems()), [(image, data)])
-        urlinfo = urlparse.urlsplit(self._client.facebook_url)
+        content_type, body = self.__encode_multipart_formdata(list(args.items()), [(image, data)])
+        urlinfo = urllib.parse.urlsplit(self._client.facebook_url)
         try:
             content_length = len(body)
             chunk_size = 4096
 
-            h = httplib.HTTPConnection(urlinfo[1])
+            h = http.client.HTTPConnection(urlinfo[1])
             h.putrequest('POST', urlinfo[2])
             h.putheader('Content-Type', content_type)
             h.putheader('Content-Length', str(content_length))
@@ -776,7 +775,7 @@ class PhotosProxy(PhotosProxy):
 
                 try:
                     response = urlread(url=self._client.facebook_url,data=body,headers={'POST':urlinfo[2],'Content-Type':content_type,'MIME-Version':'1.0'})
-                except urllib2.URLError:
+                except urllib.error.URLError:
                     raise Exception('Error uploading photo: Facebook returned %s' % (response))
             except ImportError:
                 # could not import from google.appengine.api, so we are not running in GAE
@@ -954,7 +953,7 @@ class Facebook(object):
         """Hashes arguments by joining key=value pairs, appending a secret, and then taking the MD5 hex digest."""
         # @author: houyr
         # fix for UnicodeEncodeError
-        hasher = hashlib.md5(''.join(['%s=%s' % (isinstance(x, unicode) and x.encode("utf-8") or x, isinstance(args[x], unicode) and args[x].encode("utf-8") or args[x]) for x in sorted(args.keys())]))
+        hasher = hashlib.md5(''.join(['%s=%s' % (isinstance(x, str) and x.encode("utf-8") or x, isinstance(args[x], str) and args[x].encode("utf-8") or args[x]) for x in sorted(args.keys())]))
         if secret:
             hasher.update(secret)
         elif self.secret:
@@ -976,7 +975,7 @@ class Facebook(object):
             node.hasAttribute('list') and \
             node.getAttribute('list')=="true":
             return self._parse_response_list(node)
-        elif len(filter(lambda x: x.nodeType == x.ELEMENT_NODE, node.childNodes)) > 0:
+        elif len([x for x in node.childNodes if x.nodeType == x.ELEMENT_NODE]) > 0:
             return self._parse_response_dict(node)
         else:
             return ''.join(node.data for node in node.childNodes if node.nodeType == node.TEXT_NODE)
@@ -985,7 +984,7 @@ class Facebook(object):
     def _parse_response_dict(self, node):
         """Parses an XML dictionary response node from Facebook."""
         result = {}
-        for item in filter(lambda x: x.nodeType == x.ELEMENT_NODE, node.childNodes):
+        for item in [x for x in node.childNodes if x.nodeType == x.ELEMENT_NODE]:
             result[item.nodeName] = self._parse_response_item(item)
         if node.nodeType == node.ELEMENT_NODE and node.hasAttributes():
             if node.hasAttribute('id'):
@@ -996,14 +995,14 @@ class Facebook(object):
     def _parse_response_list(self, node):
         """Parses an XML list response node from Facebook."""
         result = []
-        for item in filter(lambda x: x.nodeType == x.ELEMENT_NODE, node.childNodes):
+        for item in [x for x in node.childNodes if x.nodeType == x.ELEMENT_NODE]:
             result.append(self._parse_response_item(item))
         return result
 
 
     def _check_error(self, response):
         """Checks if the given Facebook response is an error, and then raises the appropriate exception."""
-        if type(response) is dict and response.has_key('error_code'):
+        if isinstance(response, dict) and 'error_code' in response:
             raise FacebookError(response['error_code'], response['error_msg'], response['request_args'])
 
 
@@ -1012,12 +1011,12 @@ class Facebook(object):
         if args is None:
             args = {}
 
-        for arg in args.items():
-            if type(arg[1]) == list:
+        for arg in list(args.items()):
+            if isinstance(arg[1], list):
                 args[arg[0]] = ','.join(str(a) for a in arg[1])
-            elif type(arg[1]) == unicode:
+            elif isinstance(arg[1], str):
                 args[arg[0]] = arg[1].encode("UTF-8")
-            elif type(arg[1]) == bool:
+            elif isinstance(arg[1], bool):
                 args[arg[0]] = str(arg[1]).lower()
 
         args['method'] = method
@@ -1087,8 +1086,8 @@ class Facebook(object):
         A unicode aware version of urllib.urlencode.
         """
         if isinstance(params, dict):
-            params = params.items()
-        return urllib.urlencode([(k, isinstance(v, unicode) and v.encode('utf-8') or v)
+            params = list(params.items())
+        return urllib.parse.urlencode([(k, isinstance(v, str) and v.encode('utf-8') or v)
                           for k, v in params])
 
 
@@ -1100,7 +1099,7 @@ class Facebook(object):
             return self
 
         # __init__ hard-codes into en_US
-        if args is not None and not args.has_key('locale'):
+        if args is not None and 'locale' not in args:
             args['locale'] = self.locale
 
         # @author: houyr
@@ -1108,8 +1107,8 @@ class Facebook(object):
         post_data = self.unicode_urlencode(self._build_post_args(method, args))
 
         if self.proxy:
-            proxy_handler = urllib2.ProxyHandler(self.proxy)
-            opener = urllib2.build_opener(proxy_handler)
+            proxy_handler = urllib.request.ProxyHandler(self.proxy)
+            opener = urllib.request.build_opener(proxy_handler)
             if secure:
                 response = opener.open(self.facebook_secure_url, post_data).read()
             else:
@@ -1130,7 +1129,7 @@ class Facebook(object):
         Named arguments are passed as GET query string parameters.
 
         """
-        return 'http://www.facebook.com/%s.php?%s' % (page, urllib.urlencode(args))
+        return 'http://www.facebook.com/%s.php?%s' % (page, urllib.parse.urlencode(args))
 
 
     def get_app_url(self, path=''):
@@ -1255,7 +1254,7 @@ class Facebook(object):
 
                 try:
                     self.auth.getSession()
-                except FacebookError, e:
+                except FacebookError as e:
                     self.auth_token = None
                     return False
 
@@ -1349,7 +1348,7 @@ class Facebook(object):
         if timeout and '%s_time' % prefix in post and time.time() - float(post['%s_time' % prefix]) > timeout:
             return None
 
-        args = dict([(key[len(prefix + '_'):], value) for key, value in args.items() if key.startswith(prefix)])
+        args = dict([(key[len(prefix + '_'):], value) for key, value in list(args.items()) if key.startswith(prefix)])
 
         hash = self._hash_args(args)
 
@@ -1406,24 +1405,24 @@ if __name__ == '__main__':
     facebook.login()
 
     # Login to the window, then press enter
-    print 'After logging in, press enter...'
-    raw_input()
+    print('After logging in, press enter...')
+    input()
 
     facebook.auth.getSession()
-    print 'Session Key:   ', facebook.session_key
-    print 'Your UID:      ', facebook.uid
+    print('Session Key:   ', facebook.session_key)
+    print('Your UID:      ', facebook.uid)
 
     info = facebook.users.getInfo([facebook.uid], ['name', 'birthday', 'affiliations', 'sex'])[0]
 
-    print 'Your Name:     ', info['name']
-    print 'Your Birthday: ', info['birthday']
-    print 'Your Gender:   ', info['sex']
+    print('Your Name:     ', info['name'])
+    print('Your Birthday: ', info['birthday'])
+    print('Your Gender:   ', info['sex'])
 
     friends = facebook.friends.get()
     friends = facebook.users.getInfo(friends[0:5], ['name', 'birthday', 'relationship_status'])
 
     for friend in friends:
-        print friend['name'], 'has a birthday on', friend['birthday'], 'and is', friend['relationship_status']
+        print(friend['name'], 'has a birthday on', friend['birthday'], 'and is', friend['relationship_status'])
 
     arefriends = facebook.friends.areFriends([friends[0]['uid']], [friends[1]['uid']])
 

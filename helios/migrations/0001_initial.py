@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 from django.db import models, migrations
+
+import helios.datatypes
 import helios.datatypes.djangofield
 import helios_auth.jsonfield
-import helios.datatypes
 
 
 class Migration(migrations.Migration):

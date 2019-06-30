@@ -6,14 +6,14 @@ FIXME: improve random number generation.
 Ben Adida
 ben@adida.net
 """
-from __future__ import print_function
 
-import hashlib
 import logging
 
+from Crypto.Hash import SHA1
 from Crypto.Util import number
 
 from helios.crypto.utils import random
+from helios.utils import to_json
 
 
 class ElGamal:
@@ -117,8 +117,7 @@ class EGPublicKey:
 
     # quick hack FIXME
     def toJSON(self):
-        import utils
-        return utils.to_json(self.toJSONDict())
+        return to_json(self.toJSONDict())
 
     def __mul__(self, other):
         if other == 0 or other == 1:
@@ -263,7 +262,7 @@ class EGSecretKey:
         a = pow(self.pk.g, w, self.pk.p)
         b = pow(ciphertext.alpha, w, self.pk.p)
 
-        c = int(hashlib.sha1(str(a) + "," + str(b)).hexdigest(), 16)
+        c = int(SHA1.new(bytes(str(a) + "," + str(b), 'utf-8')).hexdigest(), 16)
 
         t = (w + self.x * c) % self.pk.q
 
@@ -299,7 +298,7 @@ class EGSecretKey:
 
         sk = cls()
         sk.x = int(d['x'])
-        if d.has_key('public_key'):
+        if 'public_key' in d:
             sk.pk = EGPublicKey.from_dict(d['public_key'])
         else:
             sk.pk = None
@@ -333,7 +332,7 @@ class EGCiphertext:
         """
         Homomorphic Multiplication of ciphertexts.
         """
-        if type(other) == int and (other == 0 or other == 1):
+        if isinstance(other, int) and (other == 0 or other == 1):
             return self
 
         if self.pk != other.pk:
@@ -699,7 +698,7 @@ def EG_disjunctive_challenge_generator(commitments):
         array_to_hash.append(str(commitment['B']))
 
     string_to_hash = ",".join(array_to_hash)
-    return int(hashlib.sha1(string_to_hash).hexdigest(), 16)
+    return int(SHA1.new(bytes(string_to_hash, 'utf-8')).hexdigest(), 16)
 
 
 # a challenge generator for Fiat-Shamir with A,B commitment
@@ -709,4 +708,4 @@ def EG_fiatshamir_challenge_generator(commitment):
 
 def DLog_challenge_generator(commitment):
     string_to_hash = str(commitment)
-    return int(hashlib.sha1(string_to_hash).hexdigest(), 16)
+    return int(SHA1.new(bytes(string_to_hash, 'utf-8')).hexdigest(), 16)

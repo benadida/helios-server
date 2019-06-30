@@ -8,9 +8,9 @@ import copy
 from celery import shared_task
 from celery.utils.log import get_logger
 
-import signals
-from models import CastVote, Election, Voter, VoterFile
-from view_utils import render_template_raw
+from . import signals
+from .models import CastVote, Election, Voter, VoterFile
+from .view_utils import render_template_raw
 
 
 @shared_task

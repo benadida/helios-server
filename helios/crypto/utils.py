@@ -2,7 +2,6 @@
 Crypto Utils
 """
 import base64
-import json
 import math
 
 from Crypto.Hash import SHA256
@@ -30,12 +29,3 @@ def hash_b64(s):
     hasher = SHA256.new(s.encode('utf-8'))
     result = base64.b64encode(hasher.digest())[:-1]
     return result
-
-
-def to_json(d):
-    return json.dumps(d, sort_keys=True)
-
-
-def from_json(json_str):
-    if not json_str: return None
-    return json.loads(json_str)

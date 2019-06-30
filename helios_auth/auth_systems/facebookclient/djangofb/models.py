@@ -30,7 +30,7 @@ class Message(models.Model):
         return self.get_status_display().lower()
 
     def as_fbml(self):
-        return mark_safe(u'<fb:%s message="%s" />' % (
+        return mark_safe('<fb:%s message="%s" />' % (
             self._fb_tag(),
             escape(self.message),
         ))

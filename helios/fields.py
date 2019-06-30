@@ -1,9 +1,9 @@
-from time import strptime, strftime
 import datetime
-from django import forms
-from django.db import models
+
 from django.forms import fields
-from widgets import SplitSelectDateTimeWidget
+
+from .widgets import SplitSelectDateTimeWidget
+
 
 class SplitDateTimeField(fields.MultiValueField):
     widget = SplitSelectDateTimeWidget
