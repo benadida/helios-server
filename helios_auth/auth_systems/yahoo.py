@@ -6,7 +6,7 @@ Yahoo Authentication
 from django.conf import settings
 from django.core.mail import send_mail
 
-from openid import view_helpers
+from .openid import view_helpers
 
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False

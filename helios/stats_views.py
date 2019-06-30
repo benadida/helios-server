@@ -12,8 +12,8 @@ from django.http import HttpResponseRedirect
 from helios import tasks, url_names
 from helios.models import CastVote, Election
 from helios_auth.security import get_user
-from security import PermissionDenied
-from view_utils import render_template
+from .security import PermissionDenied
+from .view_utils import render_template
 
 
 def require_admin(request):

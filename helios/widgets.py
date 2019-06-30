@@ -54,18 +54,18 @@ class SelectTimeWidget(Widget):
             self.meridiem_val = 'a.m.' # Default to Morning (A.M.)
         
         if hour_step and twelve_hr:
-            self.hours = range(1,13,hour_step) 
+            self.hours = list(range(1,13,hour_step)) 
         elif hour_step: # 24hr, with stepping.
-            self.hours = range(0,24,hour_step)
+            self.hours = list(range(0,24,hour_step))
         elif twelve_hr: # 12hr, no stepping
-            self.hours = range(1,13)
+            self.hours = list(range(1,13))
         else: # 24hr, no stepping
-            self.hours = range(0,24) 
+            self.hours = list(range(0,24)) 
 
         if minute_step:
-            self.minutes = range(0,60,minute_step)
+            self.minutes = list(range(0,60,minute_step))
         else:
-            self.minutes = range(0,60)
+            self.minutes = list(range(0,60))
 
     def render(self, name, value, attrs=None, renderer=None):
         try: # try to get time values from a datetime.time object (value)
@@ -77,7 +77,7 @@ class SelectTimeWidget(Widget):
                     self.meridiem_val = 'a.m.'
         except AttributeError:
             hour_val = minute_val = 0
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 match = RE_TIME.match(value)
                 if match:
                     time_groups = match.groups()
@@ -113,8 +113,8 @@ class SelectTimeWidget(Widget):
 
         # For times to get displayed correctly, the values MUST be converted to unicode
         # When Select builds a list of options, it checks against Unicode values
-        hour_val = u"%.2d" % hour_val
-        minute_val = u"%.2d" % minute_val
+        hour_val = "%.2d" % hour_val
+        minute_val = "%.2d" % minute_val
 
         hour_choices = [("%.2d"%i, "%.2d"%i) for i in self.hours]
         local_attrs = self.build_attrs({'id': self.hour_field % id_})
@@ -137,7 +137,7 @@ class SelectTimeWidget(Widget):
             select_html = Select(choices=meridiem_choices).render(self.meridiem_field % name, self.meridiem_val, local_attrs)
             output.append(select_html)
 
-        return mark_safe(u'\n'.join(output))
+        return mark_safe('\n'.join(output))
 
     def id_for_label(self, id_):
         return '%s_hour' % id_
@@ -189,4 +189,4 @@ class SplitSelectDateTimeWidget(MultiWidget):
 
     def render(self, name, value, attrs=None, renderer=None):
         rendered_widgets = list(widget.render(name, value, attrs=attrs, renderer=renderer) for widget in self.widgets)
-        return u'<br/>'.join(rendered_widgets)
+        return '<br/>'.join(rendered_widgets)

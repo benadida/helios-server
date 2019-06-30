@@ -7,12 +7,11 @@ Used the SampleClient from the OAUTH.org example python client as basis.
 props to leahculver for making a very hard to use but in the end usable oauth lib.
 
 '''
-import httplib
-import urllib, urllib2
-import time
+import urllib.request
 import webbrowser
-import oauth as oauth
-from urlparse import urlparse
+
+from . import oauth as oauth
+
 
 class LoginOAuthClient(oauth.OAuthClient):
 
@@ -36,31 +35,35 @@ class LoginOAuthClient(oauth.OAuthClient):
 
         self.sha1_method = oauth.OAuthSignatureMethod_HMAC_SHA1()
         self.consumer = oauth.OAuthConsumer(consumer_key, consumer_secret)
-        if ((oauth_token != None) and (oauth_token_secret!=None)):
+        if (oauth_token is not None) and (oauth_token_secret is not None):
             self.token = oauth.OAuthConsumer(oauth_token, oauth_token_secret)
         else:
             self.token = None
 
-    def oauth_request(self,url, args = {}, method=None):
-        if (method==None):
-            if args=={}:
+    def oauth_request(self, url, args=None, method=None):
+        if args is None:
+            args = {}
+        if method is None:
+            if args == {}:
                 method = "GET"
             else:
                 method = "POST"
         req = oauth.OAuthRequest.from_consumer_and_token(self.consumer, self.token, method, url, args)
         req.sign_request(self.sha1_method, self.consumer,self.token)
-        if (method=="GET"):
+        if method== "GET":
             return self.http_wrapper(req.to_url())
-        elif (method == "POST"):
+        elif method == "POST":
             return self.http_wrapper(req.get_normalized_http_url(),req.to_postdata())
 
     #this is barely working. (i think. mostly it is that everyone else is using httplib) 
-    def http_wrapper(self, url, postdata={}): 
+    def http_wrapper(self, url, postdata=None):
+        if postdata is None:
+            postdata = {}
         try:
-            if (postdata != {}): 
-                f = urllib.urlopen(url, postdata) 
+            if postdata != {}:
+                f = urllib.request.urlopen(url, postdata) 
             else: 
-                f = urllib.urlopen(url) 
+                f = urllib.request.urlopen(url) 
             response = f.read()
         except:
             import traceback
@@ -133,26 +136,26 @@ if __name__ == '__main__':
     consumer_key = ''
     consumer_secret = ''
     while not consumer_key:
-        consumer_key = raw_input('Please enter consumer key: ')
+        consumer_key = input('Please enter consumer key: ')
     while not consumer_secret:
-        consumer_secret = raw_input('Please enter consumer secret: ')
+        consumer_secret = input('Please enter consumer secret: ')
     auth_client = LoginOAuthClient(consumer_key,consumer_secret)
     tok = auth_client.get_request_token()
     token = tok['oauth_token']
     token_secret = tok['oauth_token_secret']
     url = auth_client.get_authorize_url(token) 
     webbrowser.open(url)
-    print "Visit this URL to authorize your app: " + url
-    response_token = raw_input('What is the oauth_token from twitter: ')
+    print("Visit this URL to authorize your app: " + url)
+    response_token = input('What is the oauth_token from twitter: ')
     response_client = LoginOAuthClient(consumer_key, consumer_secret,token, token_secret, server_params={})
     tok = response_client.get_access_token()
-    print "Making signed request"
+    print("Making signed request")
     #verify user access
     content = response_client.oauth_request('https://twitter.com/account/verify_credentials.json', method='POST')
     #make an update
     #content = response_client.oauth_request('https://twitter.com/statuses/update.xml', {'status':'Updated from a python oauth client. awesome.'}, method='POST')
-    print content
+    print(content)
    
-    print 'Done.'
+    print('Done.')
 
 

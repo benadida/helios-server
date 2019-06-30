@@ -192,7 +192,7 @@ class SecretKey:
         a = pow(self.pk.g, w, self.pk.p)
         b = pow(ciphertext.alpha, w, self.pk.p)
 
-        c = int(SHA1.new(str(a) + "," + str(b)).hexdigest(),16)
+        c = int(SHA1.new(bytes(str(a) + "," + str(b), 'utf-8')).hexdigest(),16)
 
         t = (w + self.x * c) % self.pk.q
 
@@ -232,7 +232,7 @@ class Ciphertext:
         """
         Homomorphic Multiplication of ciphertexts.
         """
-        if type(other) == int and (other == 0 or other == 1):
+        if isinstance(other, int) and (other == 0 or other == 1):
           return self
           
         if self.pk != other.pk:
@@ -278,10 +278,10 @@ class Ciphertext:
       """
       Check for ciphertext equality.
       """
-      if other == None:
+      if other is None:
         return False
         
-      return (self.alpha == other.alpha and self.beta == other.beta)
+      return self.alpha == other.alpha and self.beta == other.beta
     
     def generate_encryption_proof(self, plaintext, randomness, challenge_generator):
       """
@@ -393,7 +393,7 @@ class Ciphertext:
       for i in range(len(plaintexts)):
         # if a proof fails, stop right there
         if not self.verify_encryption_proof(plaintexts[i], proof.proofs[i]):
-          print "bad proof %s, %s, %s" % (i, plaintexts[i], proof.proofs[i])
+          print("bad proof %s, %s, %s" % (i, plaintexts[i], proof.proofs[i]))
           return False
           
       # logging.info("made it past the two encryption proofs")
@@ -503,7 +503,7 @@ def disjunctive_challenge_generator(commitments):
     array_to_hash.append(str(commitment['B']))
 
   string_to_hash = ",".join(array_to_hash)
-  return int(SHA1.new(string_to_hash).hexdigest(),16)
+  return int(SHA1.new(bytes(string_to_hash, 'utf-8')).hexdigest(),16)
   
 # a challenge generator for Fiat-Shamir with A,B commitment
 def fiatshamir_challenge_generator(commitment):
@@ -511,5 +511,5 @@ def fiatshamir_challenge_generator(commitment):
 
 def DLog_challenge_generator(commitment):
   string_to_hash = str(commitment)
-  return int(SHA1.new(string_to_hash).hexdigest(),16)
+  return int(SHA1.new(bytes(string_to_hash, 'utf-8')).hexdigest(),16)
 

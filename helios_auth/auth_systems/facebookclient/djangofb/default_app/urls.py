@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from views import canvas
+from .views import canvas
 
 urlpatterns = [
     url(r'^$', canvas),

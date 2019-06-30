@@ -68,10 +68,10 @@ class EncryptedAnswer(WorkflowObject):
         return False
 
       # compute homomorphic sum if needed
-      if max != None:
+      if max is not None:
         homomorphic_sum = choice * homomorphic_sum
     
-    if max != None:
+    if max is not None:
       # determine possible plaintexts for the sum
       sum_possible_plaintexts = self.generate_plaintexts(pk, min=min, max=max)
 
@@ -110,7 +110,7 @@ class EncryptedAnswer(WorkflowObject):
 
     # min and max for number of answers, useful later
     min_answers = 0
-    if question.has_key('min'):
+    if 'min' in question:
       min_answers = question['min']
     max_answers = question['max']
 
@@ -132,7 +132,7 @@ class EncryptedAnswer(WorkflowObject):
                                                 randomness[answer_num], algs.EG_disjunctive_challenge_generator)
                                                 
       # sum things up homomorphically if needed
-      if max_answers != None:
+      if max_answers is not None:
         homomorphic_sum = choices[answer_num] * homomorphic_sum
         randomness_sum = (randomness_sum + randomness[answer_num]) % pk.q
 
@@ -142,7 +142,7 @@ class EncryptedAnswer(WorkflowObject):
     if num_selected_answers < min_answers:
       raise Exception("Need to select at least %s answer(s)" % min_answers)
     
-    if max_answers != None:
+    if max_answers is not None:
       sum_plaintexts = cls.generate_plaintexts(pk, min=min_answers, max=max_answers)
     
       # need to subtract the min from the offset
@@ -195,7 +195,7 @@ class EncryptedVote(WorkflowObject):
 
       question = election.questions[question_num]
       min_answers = 0
-      if question.has_key('min'):
+      if 'min' in question:
         min_answers = question['min']
         
       if not ea.verify(election.public_key, min=min_answers, max=question['max']):
