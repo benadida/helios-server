@@ -12,7 +12,6 @@ import bleach
 import copy
 import csv
 import io
-import random
 import unicodecsv
 import uuid
 from django.conf import settings
@@ -21,6 +20,8 @@ from django.db import models, transaction
 from crypto import algs, utils
 from helios import datatypes
 from helios import utils as heliosutils
+from helios.crypto.elgamal import Cryptosystem
+from helios.crypto.utils import random
 from helios.datatypes.djangofield import LDObjectField
 # useful stuff in helios_auth
 from helios_auth.jsonfield import JSONField
@@ -526,6 +527,7 @@ class Election(HeliosModel):
     """
     generate a trustee including the secret key,
     thus a helios-based trustee
+    :type params: Cryptosystem
     """
     # FIXME: generate the keypair
     keypair = params.generate_keypair()
