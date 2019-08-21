@@ -6,41 +6,41 @@ Ben Adida (ben@adida.net)
 """
 
 from django.core.urlresolvers import reverse
-from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied
-from django.http import *
+from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseForbidden
 from django.db import transaction, IntegrityError
-
-from mimetypes import guess_type
 
 from validate_email import validate_email
 
-import csv, urllib, os, base64
+import urllib, os, base64
 
 from crypto import algs, electionalgs, elgamal
 from crypto import utils as cryptoutils
 from workflows import homomorphic
-from helios import utils as helios_utils
-from view_utils import *
+from helios import utils, VOTERS_EMAIL, VOTERS_UPLOAD
+from view_utils import SUCCESS, FAILURE, return_json, render_template, render_template_raw
 
-from helios_auth.security import *
+from helios_auth.security import check_csrf, login_required, get_user, save_in_session_across_logouts
 from helios_auth.auth_systems import AUTH_SYSTEMS, can_list_categories
 from helios_auth.models import AuthenticationExpired
 
-from helios import security
 from helios_auth import views as auth_views
 
 import tasks
 
-from security import *
-from helios_auth.security import get_user, save_in_session_across_logouts
+from security import (election_view, election_admin,
+                      trustee_check, set_logged_in_trustee,
+                      can_create_election, user_can_see_election, get_voter,
+                      user_can_admin_election, user_can_feature_election)
 
 import uuid, datetime
+import logging
 
-from models import *
+from models import User, Election, CastVote, Voter, VoterFile, Trustee, AuditedBallot
+import datatypes
 
-import forms, signals
+import forms
 
 # Parameters for everything
 ELGAMAL_PARAMS = elgamal.Cryptosystem()
@@ -196,7 +196,7 @@ def election_new(request):
       election_params = dict(election_form.cleaned_data)
       
       # is the short name valid
-      if helios_utils.urlencode(election_params['short_name']) == election_params['short_name']:      
+      if utils.urlencode(election_params['short_name']) == election_params['short_name']:
         election_params['uuid'] = str(uuid.uuid1())
         election_params['cast_url'] = settings.SECURE_URL_HOST + reverse(one_election_cast, args=[election_params['uuid']])
       
@@ -293,8 +293,8 @@ def election_badge(request, election):
 @election_view()
 def one_election_view(request, election):
   user = get_user(request)
-  admin_p = security.user_can_admin_election(user, election)
-  can_feature_p = security.user_can_feature_election(user, election)
+  admin_p = user_can_admin_election(user, election)
+  can_feature_p = user_can_feature_election(user, election)
   
   notregistered = False
   eligible_p = True
@@ -383,7 +383,7 @@ def list_trustees(request, election):
 def list_trustees_view(request, election):
   trustees = Trustee.get_by_election(election)
   user = get_user(request)
-  admin_p = security.user_can_admin_election(user, election)
+  admin_p = user_can_admin_election(user, election)
   
   return render_template(request, 'list_trustees', {'election': election, 'trustees': trustees, 'admin_p':admin_p})
   
@@ -424,14 +424,9 @@ def trustee_login(request, election_short_name, trustee_email, trustee_secret):
       if trustee.secret == trustee_secret:
         set_logged_in_trustee(request, trustee)
         return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(trustee_home, args=[election.uuid, trustee.uuid]))
-      else:
-        # bad secret, we'll let that redirect to the front page
-        pass
-    else:
-      # no such trustee
-      raise Http404
-
-  return HttpResponseRedirect(settings.SECURE_URL_HOST + "/")
+    # bad secret or no such trustee
+    raise Http404("Trustee not recognized.")
+  raise Http404("No election {} found.".format(election_short_name))
 
 @election_admin()
 def trustee_send_url(request, election, trustee_uuid):
@@ -451,7 +446,7 @@ Your trustee dashboard is at
 Helios  
 """ % (election.name, url)
 
-  helios_utils.send_email(settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], 'your trustee homepage for %s' % election.name, body)
+  utils.send_email(settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], 'your trustee homepage for %s' % election.name, body)
 
   logging.info("URL %s " % url)
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(list_trustees_view, args = [election.uuid]))
@@ -476,7 +471,7 @@ def trustee_upload_pk(request, election, trustee):
     if not trustee.public_key.verify_sk_proof(trustee.pok, algs.DLog_challenge_generator):
       raise Exception("bad pok for this public key")
     
-    trustee.public_key_hash = utils.hash_b64(utils.to_json(trustee.public_key.toJSONDict()))
+    trustee.public_key_hash = cryptoutils.hash_b64(utils.to_json(trustee.public_key.toJSONDict()))
 
     trustee.save()
     
@@ -512,8 +507,7 @@ def encrypt_ballot(request, election):
   perform the ballot encryption given answers_json, a JSON'ified list of list of answers
   (list of list because each question could have a list of answers if more than one.)
   """
-  # FIXME: maybe make this just request.POST at some point?
-  answers = utils.from_json(request.REQUEST['answers_json'])
+  answers = utils.from_json(request.POST['answers_json'])
   ev = homomorphic.EncryptedVote.fromElectionAndAnswers(election, answers)
   return ev.ld_object.includeRandomness().toJSONDict()
     
@@ -552,7 +546,13 @@ def password_voter_login(request, election):
   """
   
   # the URL to send the user to after they've logged in
-  return_url = request.REQUEST.get('return_url', reverse(one_election_cast_confirm, args=[election.uuid]))
+  if request.method == "GET" and 'return_url' in request.GET:
+      return_url = request.GET['return_url']
+  elif request. method == "POST" and 'return_url' in request.POST:
+      return_url = request.POST['return_url']
+  else:
+      return_url = reverse(one_election_cast_confirm, args=[election.uuid])
+
   bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
 
   if request.method == "GET":
@@ -568,7 +568,7 @@ def password_voter_login(request, election):
                             'password_login_form': password_login_form,
                             'bad_voter_login' : bad_voter_login})
   
-  login_url = request.REQUEST.get('login_url', None)
+  login_url = request.GET.get('login_url', None)
 
   if not login_url:
     # login depending on whether this is a private election
@@ -923,7 +923,7 @@ def one_election_set_featured(request, election):
   """
 
   user = get_user(request)
-  if not security.user_can_feature_election(user, election):
+  if not user_can_feature_election(user, election):
     raise PermissionDenied()
 
   featured_p = bool(int(request.GET['featured_p']))
@@ -987,7 +987,7 @@ def one_election_copy(request, election):
 def one_election_questions(request, election):
   questions_json = utils.to_json(election.questions)
   user = get_user(request)
-  admin_p = security.user_can_admin_election(user, election)
+  admin_p = user_can_admin_election(user, election)
 
   return render_template(request, 'election_questions', {'election': election, 'questions_json' : questions_json, 'admin_p': admin_p})
 
@@ -1191,7 +1191,7 @@ def voters_list_pretty(request, election):
     order_by = 'alias'
 
   user = get_user(request)
-  admin_p = security.user_can_admin_election(user, election)
+  admin_p = user_can_admin_election(user, election)
 
   categories = None
   eligibility_category_id = None
@@ -1204,7 +1204,7 @@ def voters_list_pretty(request, election):
     return user_reauth(request, user)
   
   # files being processed
-  voter_files = election.voterfile_set.all()
+  voter_files = election.voterfile_set.all().order_by('-uploaded_at')
 
   # load a bunch of voters
   # voters = Voter.get_by_election(election, order_by=order_by)
@@ -1224,9 +1224,9 @@ def voters_list_pretty(request, election):
   return render_template(request, 'voters_list', 
                          {'election': election, 'voters_page': voters_page,
                           'voters': voters_page.object_list, 'admin_p': admin_p, 
-                          'email_voters': helios.VOTERS_EMAIL,
+                          'email_voters': VOTERS_EMAIL,
                           'limit': limit, 'total_voters': total_voters,
-                          'upload_p': helios.VOTERS_UPLOAD, 'q' : q,
+                          'upload_p': VOTERS_UPLOAD, 'q' : q,
                           'voter_files': voter_files,
                           'categories': categories,
                           'eligibility_category_id' : eligibility_category_id})
@@ -1330,7 +1330,7 @@ def voters_upload_cancel(request, election):
 
 @election_admin(frozen=True)
 def voters_email(request, election):
-  if not helios.VOTERS_EMAIL:
+  if not VOTERS_EMAIL:
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
   TEMPLATES = [
     ('vote', 'Time to Vote'),
@@ -1339,11 +1339,11 @@ def voters_email(request, election):
     ('result', 'Election Result')
     ]
 
-  template = request.REQUEST.get('template', 'vote')
+  template = request.GET.get('template', 'vote')
   if not template in [t[0] for t in TEMPLATES]:
     raise Exception("bad template")
 
-  voter_id = request.REQUEST.get('voter_id', None)
+  voter_id = request.GET.get('voter_id', None)
 
   if voter_id:
     voter = Voter.get_by_election_and_voter_id(election, voter_id)

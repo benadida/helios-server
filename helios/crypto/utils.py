@@ -1,7 +1,7 @@
 """
 Crypto Utils
 """
-
+import hashlib
 import hmac, base64, json
 
 from hashlib import sha256
@@ -21,3 +21,11 @@ def to_json(d):
 def from_json(json_str):
   if not json_str: return None
   return json.loads(json_str)
+
+
+def do_hmac(k,s):
+  """
+  HMAC a value with a key, hex output
+  """
+  mac = hmac.new(k, s, hashlib.sha1)
+  return mac.hexdigest()
