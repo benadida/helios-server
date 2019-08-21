@@ -49,12 +49,16 @@ function do_encrypt(message) {
 // receive either
 // a) an election and an integer position of the question
 // that this worker will be used to encrypt
-// {'type': 'setup', 'question_num' : 2, 'election' : election_json}
+// {'type': 'setup', 'election': election_json}
 //
 // b) an answer that needs encrypting
-// {'type': 'encrypt', 'answer' : answer_json}
+// {'type': 'encrypt', 'q_num': 2, 'id': id, 'answer': answer_json}
 //
 self.onmessage = function(event) {
     // dispatch to method
-    self['do_' + event.data.type](event.data);
-}
+    if (event.data.type === "setup") {
+        do_setup(event.data);
+	} else if (event.data.type === "encrypt") {
+        do_encrypt(event.data);
+    }
+};
