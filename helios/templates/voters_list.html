@@ -112,11 +112,6 @@ Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voter
 <table class="pretty">
 <tr>
 {% if admin_p or not election.use_voter_aliases %}
-{% if admin_p %}
-<th style="width: 80px;">Actions</th>
-<th>Login</th>
-<th>Email Address</th>
-{% endif %}
 <th>Name</th>
 {% endif %}
 
@@ -128,22 +123,19 @@ Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voter
 {% for voter in voters %}
 <tr>
 {% if admin_p or not election.use_voter_aliases %}
+<td>
 {% if admin_p %}
-<td style="white-space: nowrap;">
 {% if election.frozen_at %}
 [<a href="{% url "helios.views.voters_email" election.uuid %}?voter_id={{voter.voter_login_id}}">email</a>]
 {% endif %}
 [<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url "helios.views.voter_delete" election.uuid voter.uuid %}">x</a>]
-</td>
-<td>{{voter.voter_login_id}}</td>
-<td>{{voter.voter_email}}</td>
 {% endif %}
-<td><img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}</td>
+<img class="small-logo" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {{voter.name}}</td>
 {% endif %}
 {% if election.use_voter_aliases %}
 <td>{{voter.alias}}</td>
 {% endif %}
-<td><tt style="font-size: 1.4em;">{% if voter.vote_hash %}{{voter.vote_hash}} <span style="font-size:0.8em;">[<a href="{% url "helios.views.castvote_shortcut" vote_tinyhash=voter.vote_tinyhash %}">view</a>]</span>{% else %}&mdash;{% endif %}</tt></td>
+<td><tt style="font-size: 1.4em;;">{% if voter.vote_hash %}{{voter.vote_hash}} <span style="font-size:0.8em;">[<a href="{% url "helios.views.castvote_shortcut" vote_tinyhash=voter.vote_tinyhash %}">view</a>]</span>{% else %}&mdash;{% endif %}</tt></td>
 </tr>
 {% endfor %}
 </table>

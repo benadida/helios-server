@@ -12,6 +12,3 @@ addons:
   postgresql: "9.3"
 before_script:
   - psql -c 'create database helios;' -U postgres
-before_install:
-  - export BOTO_CONFIG=/dev/null
-

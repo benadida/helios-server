@@ -50,11 +50,11 @@ def get_user_info_after_auth(request):
   # get the nice name
   http = httplib2.Http(".cache")
   http = credentials.authorize(http)
-  (resp_headers, content) = http.request("https://people.googleapis.com/v1/people/me?personFields=names", "GET")
+  (resp_headers, content) = http.request("https://www.googleapis.com/plus/v1/people/me", "GET")
 
   response = json.loads(content)
 
-  name = response['names'][0]['displayName']
+  name = response['displayName']
   
   # watch out, response also contains email addresses, but not sure whether thsoe are verified or not
   # so for email address we will only look at the id_token

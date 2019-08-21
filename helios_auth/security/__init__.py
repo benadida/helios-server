@@ -10,7 +10,6 @@ from functools import update_wrapper
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.core.exceptions import *
 from django.conf import settings
-from django.http import HttpResponseNotAllowed
 
 import oauth
 

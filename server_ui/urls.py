@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import patterns
+from django.conf.urls import *
 
-from views import home, about, docs, faq, privacy
+from views import *
 
 urlpatterns = patterns('',
   (r'^$', home),

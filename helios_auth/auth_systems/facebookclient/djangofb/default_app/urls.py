@@ -1,4 +1,4 @@
-from django.conf.urls import *
+from django.conf.urls.defaults import *
 
 urlpatterns = patterns('{{ project }}.{{ app }}.views',
     (r'^$', 'canvas'),

@@ -7,4 +7,3 @@ venv
 celerybeat-*
 env.sh
 .cache
-.idea/
