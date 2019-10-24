@@ -1,0 +1,27 @@
+{% extends TEMPLATE_BASE %}
+
+{% block header %}
+<h2>{{ settings.SITE_TITLE }} &mdash; Login</h2>
+{% endblock %}
+
+
+{% block content %}
+
+{% if error %}
+<p style="border: 1px solid black; padding: 5px;">
+    {{error}}
+</p>
+{% endif %}
+
+<p>
+<form class="prettyform" action="" method="POST" id="login_form">
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<table>
+    {{form.as_table}}
+</table>
+<div>
+<label for="">&nbsp;</label><input type="submit" value="Login" />
+</div>
+</form>
+</p>
+{% endblock %}

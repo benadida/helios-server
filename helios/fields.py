@@ -1,12 +1,16 @@
+
 from time import strptime, strftime
 import datetime
 from django import forms
 from django.db import models
 from django.forms import fields
-from widgets import SplitSelectDateTimeWidget
+# from .widgets_old import SplitSelectDateTimeWidget
+from .widgets import SplitSelectDateTimeWidget
+from django.utils.formats import get_format
 
 class SplitDateTimeField(fields.MultiValueField):
     widget = SplitSelectDateTimeWidget
+    # widget = SelectTimeWidget
 
     def __init__(self, *args, **kwargs):
         """

@@ -8,12 +8,17 @@ Ben Adida
 ben@adida.net
 """
 
+# from builtins import str
+# from builtins import range
+# from builtins import object
+# from past.utils import old_div
+
 import math, hashlib, logging
-import randpool, number
+from . import randpool, number
 
-import numtheory
+from . import numtheory
 
-from algs import Utils
+from .algs import Utils
 
 class Cryptosystem(object):
     def __init__(self):
@@ -73,7 +78,7 @@ class KeyPair(object):
       
       self.sk.public_key = self.pk
 
-class PublicKey:
+class PublicKey(object):
     def __init__(self):
         self.y = None
         self.p = None
@@ -145,7 +150,7 @@ class PublicKey:
       return ((left_side == right_side) and (dlog_proof.challenge == expected_challenge))
 
 
-class SecretKey:
+class SecretKey(object):
     def __init__(self):
         self.x = None
         self.public_key = None
@@ -214,8 +219,8 @@ class SecretKey:
         w = Utils.random_mpz_lt(self.pk.q)
         a = pow(self.pk.g, w, self.pk.p)
         b = pow(ciphertext.alpha, w, self.pk.p)
-
-        c = int(hashlib.sha1(str(a) + "," + str(b)).hexdigest(),16)
+        bytes_to_hash = str.encode(str(a) + "," + str(b))
+        c = int(hashlib.sha1(bytes_to_hash).hexdigest(),16)
 
         t = (w + self.x * c) % self.pk.q
 
@@ -240,12 +245,12 @@ class SecretKey:
       return DLogProof(commitment, challenge, response)
       
 
-class Plaintext:
+class Plaintext(object):
     def __init__(self, m = None, pk = None):
         self.m = m
         self.pk = pk
         
-class Ciphertext:
+class Ciphertext(object):
     def __init__(self, alpha=None, beta=None, pk=None):
         self.pk = pk
         self.alpha = alpha
@@ -410,16 +415,19 @@ class Ciphertext:
       overall_challenge is what all of the challenges combined should yield.
       """
       if len(plaintexts) != len(proof.proofs):
-        print("bad number of proofs (expected %s, found %s)" % (len(plaintexts), len(proof.proofs)))
+        print(("bad number of proofs (expected %s, found %s)" % (len(plaintexts), len(proof.proofs))))
         return False
 
       for i in range(len(plaintexts)):
         # if a proof fails, stop right there
         if not self.verify_encryption_proof(plaintexts[i], proof.proofs[i]):
-          print "bad proof %s, %s, %s" % (i, plaintexts[i], proof.proofs[i])
+          print(("bad proof %s, %s, %s" % (i, plaintexts[i], proof.proofs[i])))
           return False
           
       # logging.info("made it past the two encryption proofs")
+      # Debugging
+      a = challenge_generator([p.commitment for p in proof.proofs])
+      b = (sum([p.challenge for p in proof.proofs]) % self.pk.q)
           
       # check the overall challenge
       return (challenge_generator([p.commitment for p in proof.proofs]) == (sum([p.challenge for p in proof.proofs]) % self.pk.q))
@@ -509,7 +517,7 @@ class ZKProof(object):
 
     return (first_check and second_check and third_check)
   
-class ZKDisjunctiveProof:
+class ZKDisjunctiveProof(object):
   def __init__(self, proofs = None):
     self.proofs = proofs  
 
@@ -526,7 +534,14 @@ def disjunctive_challenge_generator(commitments):
     array_to_hash.append(str(commitment['B']))
 
   string_to_hash = ",".join(array_to_hash)
-  return int(hashlib.sha1(string_to_hash).hexdigest(),16)
+  bytes_to_hash = str.encode(string_to_hash)
+
+  # Debug
+  # a = hashlib.sha1(bytes_to_hash)
+  # b = a.hexdigest()
+  # c = int(b, 16)
+  
+  return int(hashlib.sha1(bytes_to_hash).hexdigest(),16)
   
 # a challenge generator for Fiat-Shamir with A,B commitment
 def fiatshamir_challenge_generator(commitment):
@@ -534,5 +549,5 @@ def fiatshamir_challenge_generator(commitment):
 
 def DLog_challenge_generator(commitment):
   string_to_hash = str(commitment)
-  return int(hashlib.sha1(string_to_hash).hexdigest(),16)
+  return int(hashlib.sha1(string_to_hash.encode()).hexdigest(),16)
 

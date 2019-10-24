@@ -8,7 +8,7 @@ from django.template import Context, Template, loader
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
 
-from helios_auth.security import get_user
+from helios_auth.security.datastore import get_user
 
 import helios_auth
 
@@ -32,8 +32,8 @@ def prepare_vars(request, vars):
     vars_with_user['csrf_token'] = request.session['csrf_token']
     vars_with_user['SECURE_URL_HOST'] = settings.SECURE_URL_HOST
     
-  vars_with_user['STATIC'] = '/static/auth'
-  vars_with_user['MEDIA_URL'] = '/static/auth/'
+  vars_with_user['STATIC'] = '/static'
+  vars_with_user['MEDIA_URL'] = '/static/'
   vars_with_user['TEMPLATE_BASE'] = helios_auth.TEMPLATE_BASE
   
   vars_with_user['settings'] = settings
@@ -51,7 +51,7 @@ def render_template_raw(request, template_name, vars={}):
   t = loader.get_template(template_name + '.html')
   
   vars_with_user = prepare_vars(request, vars)
-  c = Context(vars_with_user)  
+  c = vars_with_user  
   return t.render(c)
 
 def render_json(json_txt):

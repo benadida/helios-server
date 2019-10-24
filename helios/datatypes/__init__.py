@@ -26,8 +26,12 @@ And when data comes in:
   LDObject.deserialize(json_string, type=...)
 """
 
+# from past.builtins import str
+# from builtins import object
 from helios import utils
 from helios.crypto import utils as cryptoutils
+#from helios.datatypes import legacy
+
 
 ##
 ## utility function
@@ -43,17 +47,18 @@ def recursiveToDict(obj):
 
 def get_class(datatype):
     # already done?
-    if not isinstance(datatype, basestring):
+    if not isinstance(datatype, str):
         return datatype
 
     # parse datatype string "v31/Election" --> from v31 import Election
     parsed_datatype = datatype.split("/")
-    
+    # parsed_datatype.insert(0,'helios.datatypes')   ## Added
     # get the module
-    dynamic_module = __import__(".".join(parsed_datatype[:-1]), globals(), locals(), [], level=-1)
+    # dynamic_module = __import__(".".join(parsed_datatype[:-1]), globals(), locals(), [parsed_datatype[1:-1]], level=0)
+    dynamic_module = __import__(".".join(parsed_datatype[:-1]), globals(), locals(), [], level=1)
     
     if not dynamic_module:
-        raise Exception("no module for %s" % datatpye)
+        raise Exception("no module for %s" % datatype)
 
     # go down the attributes to get to the class
     try:
@@ -139,7 +144,6 @@ class LDObject(object):
         # instantiate it and load data
         return_obj = dynamic_cls(obj)
         return_obj.loadData()
-
         return return_obj
 
     def _getattr_wrapped(self, attr):
@@ -151,7 +155,7 @@ class LDObject(object):
     def loadData(self):
         "load data using from the wrapped object"
         # go through the subfields and instantiate them too
-        for subfield_name, subfield_type in self.STRUCTURED_FIELDS.iteritems():
+        for subfield_name, subfield_type in list(self.STRUCTURED_FIELDS.items()): 
             self.structured_fields[subfield_name] = self.instantiate(self._getattr_wrapped(subfield_name), datatype = subfield_type)
         
     def loadDataFromDict(self, d):
@@ -160,7 +164,7 @@ class LDObject(object):
         """
 
         # the structured fields
-        structured_fields = self.STRUCTURED_FIELDS.keys()
+        structured_fields = list(self.STRUCTURED_FIELDS.keys()) 
 
         # go through the fields and set them properly
         # on the newly instantiated object
@@ -195,7 +199,7 @@ class LDObject(object):
 
         for f in (alternate_fields or fields):
             # is it a structured subfield?
-            if self.structured_fields.has_key(f):
+            if f in self.structured_fields:
                 val[f] = recursiveToDict(self.structured_fields[f])
             else:
                 val[f] = self.process_value_out(f, self._getattr_wrapped(f))

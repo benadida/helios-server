@@ -6,7 +6,8 @@ http://www.djangosnippets.org/snippets/377/
 and adapted to LDObject
 """
 
-import datetime
+# from past.builtins import basestring
+# import datetime
 import json
 from django.db import models
 from django.db.models import signals
@@ -14,6 +15,7 @@ from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 
 from . import LDObject
+# from future.utils import with_metaclass
 
 class LDObjectField(models.TextField):
     """
@@ -23,18 +25,17 @@ class LDObjectField(models.TextField):
     deserialization_params added on 2011-01-09 to provide additional hints at deserialization time
     """
 
-    # Used so to_python() is called
-    __metaclass__ = models.SubfieldBase
-
-    def __init__(self, type_hint=None, **kwargs):
+    def __init__(self, type_hint=None, *args, **kwargs):
         self.type_hint = type_hint
-        super(LDObjectField, self).__init__(**kwargs)
+        super().__init__(**kwargs)
+    
 
-    def to_python(self, value):
+    def from_db_value(self, value, expression, connection):
+
         """Convert our string value to LDObject after we load it from the DB"""
 
         # did we already convert this?
-        if not isinstance(value, basestring):
+        if not isinstance(value, str):
             return value
 
         if  value == None:
@@ -42,7 +43,7 @@ class LDObjectField(models.TextField):
 
         # in some cases, we're loading an existing array or dict,
         # we skip this part but instantiate the LD object
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             try:
                 parsed_value = json.loads(value)
             except:
@@ -59,7 +60,7 @@ class LDObjectField(models.TextField):
 
     def get_prep_value(self, value):
         """Convert our JSON object to a string before we save"""
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return value
 
         if value == None:

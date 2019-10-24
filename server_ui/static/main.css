@@ -1,0 +1,115 @@
+
+body {
+  font-family: 'Lucida Grande',sans-serif;
+  background: white;
+  padding: 0px;
+  margin: 0px;
+}
+
+#content {
+  position: absolute;
+  top: 0px;
+  margin-left: 100px;
+  margin-top: 20px;
+  width: 1100px;
+  background: white;
+  padding: 0px;
+  border: 1px solid #666;
+}
+
+#contentbody {
+  padding: 20px 30px 20px 30px;
+}
+
+#header {
+  padding-top: 20px;
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+#footer {
+  bottom: 0px;
+  background: #ddd;
+  width: 1060px;
+  padding: 8px 20px 8px 20px;
+  border-top: 1px solid #bbb;
+  text-align: left;
+  color: #666;
+  clear: both;
+}
+
+#footer a, #footer a:visited {
+  color: black;
+  text-decoration: none;
+}
+
+#footer a:hover {
+  text-decoration: underline;
+}
+
+#contentbody h2 {
+    margin-bottom:2px;
+}
+
+#election_info {
+  font-size: 16pt;
+}
+
+#mystuff {
+ float:right;
+ width: 250px;
+ border-left: 1px solid #888;
+ padding-left: 20px;
+}
+
+table.pretty {
+    margin: 0.5em 0.5em 0.5em 0.5em;
+    background: whitesmoke;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table.pretty th, td {
+    border: 1px silver solid;
+    padding: 0.3em;
+    vertical-align: top;
+}
+
+.highlight-box {
+  background:#eee;
+  padding: 10px;
+  color: black;
+  border: 1px solid #888;
+}
+
+.highlight-box-margin {
+  background:#eee;
+  padding: 10px;
+  color: black;
+  border: 1px solid #888;
+  margin-right: 300px;
+}
+
+.round {
+-moz-border-radius-bottomleft:5px;
+-moz-border-radius-bottomright:5px;
+-moz-border-radius-topleft:5px;
+-moz-border-radius-topright:5px;
+}
+
+.adminaction {
+    font-size: 9pt;
+    font-weight: normal;
+    background:#ddd;
+    padding: 2px 6px 1px 6px;
+    color: black;
+    border: 1px solid #888;
+    -moz-border-radius-bottomleft:3px;
+    -moz-border-radius-bottomright:3px;
+    -moz-border-radius-topleft:3px;
+    -moz-border-radius-topright:3px;
+}
+
+.adminaction a {
+    color: black;
+}

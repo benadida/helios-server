@@ -3,13 +3,29 @@
 
 {% block content %}
 <script language="javascript">
-$(document).ready(function() {
-  $('#waiting_div').hide();
-});
+
+// $(document).ready(function() {
+//   $('#waiting_div').hide();
+// });
+
+window.onload = function() {
+  console.log('Onload.....');
+  if (document.readyState != 'loading'){
+    startSetup();
+  } else {
+    document.addEventListener('DOMContentLoaded', startSetup);
+  }
+}
+
+function startSetup() {
+  document.getElementById('waiting_div').style.display = 'none';
+}
 
 function show_waiting() {
-  $('#all_forms').hide();
-  $('#waiting_div').show();
+  // $('#all_forms').hide();
+  // $('#waiting_div').show();
+  document.getElementById('all_forms').style.display = 'none';
+  document.getElementById('waiting_div').style.display = 'block';
 }
 
 // FIXME: set this to false once it's clear how to set it back to true
@@ -38,7 +54,7 @@ window.onbeforeunload = function(evt) {
 
 <div id="waiting_div">
     Verifying and Casting your ballot<br />
-    <img src="/static/helios/loading.gif" />
+    <img src="/static/loading.gif" />
 </div>
 
 <div id="all_forms">
@@ -73,7 +89,7 @@ requires election-specific credentials.
   {% endif %}
   </b><br /></p>
 <p>
-    [<a href="{% url "helios.views.one_election_view" election.uuid %}">return to the main election page</a>]
+    [<a href="{% url "one-election-view" election.uuid %}">return to the main election page</a>]
 </p>
 {% else %}
 <p>

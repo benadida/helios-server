@@ -8,7 +8,7 @@ from django.template import Context, Template, loader
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
 
-from helios_auth.security import get_user
+from helios_auth.security.datastore import get_user
 
 from django.conf import settings
 

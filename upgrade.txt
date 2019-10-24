@@ -1,0 +1,86 @@
+Moved from helios-server on AppEngine:
+wsgi.py
+urls.py
+requirements.txt, but did not include Google cloud or future
+
+helios:
+__init.py__
+counters.py
+datetimewidget.py
+etc except tasks.py, test.py, tests.py, 
+
+helios/crypto:
+all
+
+helios/datatypes:
+all
+
+helios/fixtures:
+all
+
+helios/templates:
+all
+
+helios_auth:
+all
+
+helios_auth/auth_systems:
+all
+
+helios_auth/auth_systems/facebookclient:
+helios_auth/auth_systems/oauthclient:
+helios_auth/auth_systems/openid:
+none
+
+helios_auth/auth_systems/security:
+all
+
+helios_auth/auth_systems/templates:
+all
+
+
+heliosbooth:
+all
+
+heliosverifier:
+all
+
+server_ui:
+all
+
+
+
+Not changed:
+settings.py
+reset.sh
+README.md
+manage.py
+LICENSE
+INSTALL.md
+extract-passwords-for-email.py
+email_debug.py
+deploy-staging.sh
+CONTRIBUTORS.txt
+selenium ??? what is this
+templates
+
+
+
+helios/media:
+helios_auth/auth_systems/media:
+come back after figuring static
+
+Removed:
+runtime.txt
+Procfile
+migrate-to-3.5
+build-helios-main-site-js.txt (depends on jquery)
+helios/mmigrations removed migrations
+helios_auth/auth_systems/migrations removed migrations
+helios/south_migrations
+helios_auth/auth_systems/south_migrations
+
+
+Other:
+commented out djangosecure in settings (error message not found)
+commented out djcelery, kombu in settings

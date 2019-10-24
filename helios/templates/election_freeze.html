@@ -29,7 +29,7 @@ You must freeze the ballot before you can contact voters.
         <li>{{issue.action}}</li>
         {% endfor %}
     </ul>
-    <a href="{% url "helios.views.one_election_view" election.uuid %}">go back to the election</a>
+    <a href="{% url "one-election-view" election.uuid %}">go back to the election</a>
 </p>
 {% else %}
 <form method="post" action="">

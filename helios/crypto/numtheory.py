@@ -1,3 +1,5 @@
+
+
 ##################################################
 # ent.py -- Element Number Theory 
 # (c) William Stein, 2004
@@ -6,6 +8,10 @@
 
 
 
+from builtins import chr
+from builtins import range
+from builtins import object
+# from past.utils import old_div
 from random import randrange
 from math import log, sqrt
 
@@ -173,14 +179,14 @@ def xgcd(a, b):
     4
     """
     if a == 0 and b == 0: return (0, 0, 1)
-    if a == 0: return (abs(b), 0, b/abs(b))
-    if b == 0: return (abs(a), a/abs(a), 0)
+    if a == 0: return (abs(b), 0, old_div(b,abs(b)))
+    if b == 0: return (abs(a), old_div(a,abs(a)), 0)
     x_sign = 1; y_sign = 1
     if a < 0: a = -a; x_sign = -1
     if b < 0: b = -b; y_sign = -1
     x = 1; y = 0; r = 0; s = 1
     while b != 0:
-        (c, q) = (a%b, a/b)
+        (c, q) = (a%b, old_div(a,b))
         (a, b, r, s, x, y) = (b, c, x-q*r, y-q*s, r, s)
     return (a, x*x_sign, y*y_sign)
 
@@ -207,7 +213,7 @@ def inversemod(a, n):
     """
     g, x, y = xgcd(a, n)
     if g != 1:
-        raise ZeroDivisionError, (a,n)
+        raise ZeroDivisionError(a,n)
     assert g == 1, "a must be coprime to n."
     return x%n
 
@@ -230,7 +236,7 @@ def solve_linear(a,b,n):
     """
     g, c, _ = xgcd(a,n)                 # (1)
     if b%g != 0: return None
-    return ((b/g)*c) % n                
+    return ((old_div(b,g))*c) % n                
 
 def crt(a, b, m, n):
     """
@@ -312,7 +318,7 @@ def primitive_root(p):
     while a < p:
         generates = True
         for q, _ in F:
-            if powermod(a, (p-1)/q, p) == 1:
+            if powermod(a, old_div((p-1),q), p) == 1:
                 generates = False
                 break
         if generates: return a
@@ -503,8 +509,8 @@ def str_to_numlist(s, bound):
     [4995371940984439512L, 92656709616492L]   #rand
     """
     assert bound >= 256, "bound must be at least 256."
-    n = int(log(bound) / log(256))          # (1)
-    salt = min(int(n/8) + 1, n-1)           # (2)
+    n = int(old_div(log(bound), log(256)))          # (1)
+    salt = min(int(old_div(n,8)) + 1, n-1)           # (2)
     i = 0; v = []
     while i < len(s):                       # (3)
         c = 0; pow = 1
@@ -536,9 +542,9 @@ def numlist_to_str(v, bound):
     TOP SECRET MESSAGE
     """
     assert bound >= 256, "bound must be at least 256."
-    n = int(log(bound) / log(256))
+    n = int(old_div(log(bound), log(256)))
     s = ""
-    salt = min(int(n/8) + 1, n-1)
+    salt = min(int(old_div(n,8)) + 1, n-1)
     for x in v:
         for j in range(n):
             y = x%256
@@ -654,7 +660,7 @@ def legendre(a, p):
     -1
     """
     assert p%2 == 1, "p must be an odd prime."
-    b = powermod(a, (p-1)/2, p)
+    b = powermod(a, old_div((p-1),2), p)
     if b == 1: return 1
     elif b == p-1: return -1
     return 0
@@ -685,7 +691,7 @@ def sqrtmod(a, p):
     a %= p
     if p == 2: return a 
     assert legendre(a, p) == 1, "a must be a square mod p."
-    if p%4 == 3: return powermod(a, (p+1)/4, p)
+    if p%4 == 3: return powermod(a, old_div((p+1),4), p)
 
     def mul(x, y):   # multiplication in R       # (1)
         return ((x[0]*y[0] + a*y[1]*x[1]) % p, \
@@ -701,7 +707,7 @@ def sqrtmod(a, p):
 
     while True:
         z = randrange(2,p)
-        u, v = pow((1,z), (p-1)/2)
+        u, v = pow((1,z), old_div((p-1),2))
         if v != 0:
             vinv = inversemod(v, p)
             for x in [-u*vinv, (1-u)*vinv, (-1-u)*vinv]:
@@ -757,7 +763,7 @@ def contfrac_rat(numer, denom):
     a = numer; b = denom
     v = []
     while b != 0:
-        v.append(a/b)
+        v.append(old_div(a,b))
         (a, b) = (b, a%b)
     return v
 
@@ -800,7 +806,7 @@ def contfrac_float(x):
         if abs(start - float(pn)/float(qn)) == 0:    # (2)
             del w[0]; del w[0]                       # (3)
             return v, w
-        x = 1/x
+        x = old_div(1,x)
 
 def sum_of_two_squares(p):
     """
@@ -924,7 +930,7 @@ def lcm_to(B):
     ans = 1
     logB = log(B)
     for p in primes(B):
-        ans *= p**int(logB/log(p))
+        ans *= p**int(old_div(logB,log(p)))
     return ans
 
 def pollard(N, m):
@@ -1014,7 +1020,7 @@ def elliptic_curve_method(N, m, tries=5):
         E, P = randcurve(N)                    # (2)
         try:                                   # (3)
             Q = ellcurve_mul(E, m, P)          # (4)
-        except ZeroDivisionError, x:           # (5)
+        except ZeroDivisionError(x):           # (5)
             g = gcd(x[0],N)                    # (6)
             if g != 1 or g != N: return g      # (7)
     return N             
@@ -1079,7 +1085,7 @@ def elgamal_encrypt(plain_text, public_key):
     a, b, p = E 
     assert p > 10000, "p must be at least 10000."
     v = [1000*x for x in \
-           str_to_numlist(plain_text, p/1000)]       # (1)
+           str_to_numlist(plain_text, old_div(p,1000))]       # (1)
     cipher = []
     for x in v:
         while not legendre(x**3+a*x+b, p)==1:        # (2)
@@ -1114,8 +1120,8 @@ def elgamal_decrypt(cipher_text, private_key):
         nrB = ellcurve_mul(E, n, rB)
         minus_nrB = (nrB[0], -nrB[1])
         P = ellcurve_add(E, minus_nrB, P_plus_rnB)
-        plain.append(P[0]/1000)
-    return numlist_to_str(plain, p/1000)
+        plain.append(old_div(P[0],1000))
+    return numlist_to_str(plain, old_div(p,1000))
 
 
 ##################################################
@@ -1123,7 +1129,7 @@ def elgamal_decrypt(cipher_text, private_key):
 ##################################################
 
 # The variable order is x1, x2, x3, y1, y2, y3, a, b
-class Poly:                                     # (1)
+class Poly(object):                                     # (1)
     def __init__(self, d):                      # (2)
         self.v = dict(d)                        
     def __cmp__(self, other):                   # (3)
@@ -1153,7 +1159,7 @@ class Poly:                                     # (1)
         return r
     def __neg__(self):
         v = {}
-        for m in self.v.keys():
+        for m in list(self.v.keys()):
             v[m] = -self.v[m]
         return Poly(v)
     def __div__(self, other):
@@ -1161,7 +1167,7 @@ class Poly:                                     # (1)
 
     def __getitem__(self, m):                   # (6)
         m = tuple(m)
-        if not self.v.has_key(m): self.v[m] = 0
+        if m not in self.v: self.v[m] = 0
         return self.v[m]
     def __setitem__(self, m, c):
         self.v[tuple(m)] = c
@@ -1169,7 +1175,7 @@ class Poly:                                     # (1)
         del self.v[tuple(m)]
 
     def monomials(self):                        # (7)
-        return self.v.keys()
+        return list(self.v.keys())
     def normalize(self):                        # (8)
         while True:
             finished = True
@@ -1198,7 +1204,7 @@ class Poly:                                     # (1)
 
 one = Poly({(0,0,0,0,0,0,0,0):1})               # (9)
 
-class Frac:                                     # (10)
+class Frac(object):                                     # (10)
     def __init__(self, num, denom=one):         
         self.num = num; self.denom = denom
     def __cmp__(self, other):                   # (11)
@@ -1232,11 +1238,11 @@ def prove_associative():                        # (15)
     y1 = var(3); y2 = var(4); y3 = var(5)
     a  = var(6); b  = var(7)
     
-    lambda12 = (y1 - y2)/(x1 - x2)              
+    lambda12 = old_div((y1 - y2),(x1 - x2))              
     x4       = lambda12*lambda12 - x1 - x2
     nu12     = y1 - lambda12*x1   
     y4       = -lambda12*x4 - nu12
-    lambda23 = (y2 - y3)/(x2 - x3)
+    lambda23 = old_div((y2 - y3),(x2 - x3))
     x5       = lambda23*lambda23 - x2 - x3
     nu23     = y2 - lambda23*x2
     y5       = -lambda23*x5 - nu23
@@ -1244,8 +1250,8 @@ def prove_associative():                        # (15)
                    - (x3 + x4)*(x3 - x4)*(x3 - x4))
     s2 = (x3 - x4)*(x3 - x4)*((y1 - y5)*(y1 - y5) \
                    - (x1 + x5)*(x1 - x5)*(x1 - x5))
-    print "Associative?"
-    print s1 == s2                              # (17)
+    print("Associative?")
+    print(s1 == s2)                              # (17)
 
 
 

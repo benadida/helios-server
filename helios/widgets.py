@@ -1,197 +1,180 @@
-"""
-Widget for datetime split, with calendar for date, and drop-downs for times.
-"""
-
-from django import forms
-from django.db import models
-from django.template.loader import render_to_string
-from django.forms.widgets import Select, MultiWidget, DateInput, TextInput, Widget
-from django.forms.extras.widgets import SelectDateWidget
-from time import strftime
+from django.forms.widgets import Widget, Select, SelectDateWidget, MultiWidget
+from django.conf import settings 
+from django.utils.translation import gettext_lazy as _
+from django.utils.formats import get_format
+from django.utils import datetime_safe, formats
+from django.forms.utils import to_current_timezone
 
 import re
-from django.utils.safestring import mark_safe
+import datetime
 
-__all__ = ('SelectTimeWidget', 'SplitSelectDateTimeWidget')
-
-# Attempt to match many time formats:
-# Example: "12:34:56 P.M."  matches:
-# ('12', '34', ':56', '56', 'P.M.', 'P', '.', 'M', '.')
-# ('12', '34', ':56', '56', 'P.M.')
-# Note that the colon ":" before seconds is optional, but only if seconds are omitted
-time_pattern = r'(\d\d?):(\d\d)(:(\d\d))? *([aApP]\.?[mM]\.?)?$'
-
-RE_TIME = re.compile(time_pattern)
-# The following are just more readable ways to access re.matched groups:
-HOURS = 0
-MINUTES = 1
-SECONDS = 3
-MERIDIEM = 4
 
 class SelectTimeWidget(Widget):
     """
-    A Widget that splits time input into <select> elements.
-    Allows form to show as 24hr: <hour>:<minute>:<second>, (default)
-    or as 12hr: <hour>:<minute>:<second> <am|pm> 
-    
-    Also allows user-defined increments for minutes/seconds
+    A widget that splits time input into two <select> boxes.
+
     """
+    none_value = ('', '---')
     hour_field = '%s_hour'
     minute_field = '%s_minute'
     meridiem_field = '%s_meridiem'
-    twelve_hr = False # Default to 24hr.
-    
-    def __init__(self, attrs=None, hour_step=None, minute_step=None, twelve_hr=False):
-        """
-        hour_step, minute_step, second_step are optional step values for
-        for the range of values for the associated select element
-        twelve_hr: If True, forces the output to be in 12-hr format (rather than 24-hr)
-        """
+    twelve_hr = False # Default to 24hr.'
+
+    template_name = 'widgets/select_time.html'
+    input_type = 'select'
+    select_widget = Select
+    # time_pattern = r'(\d\d?):(\d\d)(:(\d\d))? *([aApP]\.?[mM]\.?)?$'
+    time_pattern = r'(\d\d?):(\d\d?)$'
+    time_re = re.compile(time_pattern)
+
+    def __init__(self, attrs=None, empty_label=["00","00"]):
         self.attrs = attrs or {}
-        
-        if twelve_hr:
-            self.twelve_hr = True # Do 12hr (rather than 24hr)
-            self.meridiem_val = 'a.m.' # Default to Morning (A.M.)
-        
-        if hour_step and twelve_hr:
-            self.hours = range(1,13,hour_step) 
-        elif hour_step: # 24hr, with stepping.
-            self.hours = range(0,24,hour_step)
-        elif twelve_hr: # 12hr, no stepping
-            self.hours = range(1,13)
-        else: # 24hr, no stepping
-            self.hours = range(0,24) 
 
-        if minute_step:
-            self.minutes = range(0,60,minute_step)
+        # Optional string, list, or tuple to use as empty_label.
+        if isinstance(empty_label, (list, tuple)):
+            if not len(empty_label) == 2:
+                raise ValueError('empty_label list/tuple must have 2 elements.')
+
+            self.hour_none_value = ('', empty_label[0])
+            self.minute_none_value = ('', empty_label[1])
         else:
-            self.minutes = range(0,60)
+            if empty_label is not None:
+                self.none_value = ('', empty_label)
 
-    def render(self, name, value, attrs=None):
-        try: # try to get time values from a datetime.time object (value)
-            hour_val, minute_val = value.hour, value.minute
-            if self.twelve_hr:
-                if hour_val >= 12:
-                    self.meridiem_val = 'p.m.'
+            self.hour_none_value = self.none_value
+            self.minute_none_value = self.none_value
+
+    def get_context(self, name, value, attrs):
+        context = super().get_context(name, value, attrs)
+        time_context = {}
+        hour_choices = [("%d"%i, "%.2d"%i) for i in range(0, 24)]
+        if not self.is_required:
+            hour_choices.insert(0, self.hour_none_value)
+        hour_name = self.hour_field % name
+        time_context['hour'] = self.select_widget(attrs, choices=hour_choices).get_context(
+            name=hour_name,
+            value=context['widget']['value']['hour'],
+            attrs={
+                **context['widget']['attrs'],
+                'id': 'id_%s' % hour_name,
+                'placeholder': _('Hour') if self.is_required else False,
+            },
+        )
+        minute_choices = [("%d"%i, "%.2d"%i) for i in range(1, 60)]  #list(self.minutes.items())
+        if not self.is_required:
+            minute_choices.insert(0, self.minute_none_value)
+        minute_name = self.minute_field % name
+        time_context['minute'] = self.select_widget(attrs, choices=minute_choices).get_context(
+            name=minute_name,
+            value=context['widget']['value']['minute'],
+            attrs={
+                **context['widget']['attrs'],
+                'id': 'id_%s' % minute_name,
+                'placeholder': _('Minute') if self.is_required else False,
+            },
+        )
+        subwidgets = []
+        for field in self._parse_time_fmt():
+            subwidgets.append(time_context[field]['widget'])
+        subwidgets.append(time_context['minute']['widget'])
+        context['widget']['subwidgets'] = subwidgets
+        return context
+
+    def format_value(self, value):
+        """
+        Return a dict containing the hour and minute of the current value.
+
+        """
+        hour, minute = None, None
+        # if isinstance(value, (datetime.date, datetime.datetime)):
+        if isinstance(value, (datetime.time)):
+            hour, minute = value.hour, value.minute
+        elif isinstance(value, str):
+            match = self.time_re.match(value)
+            if match:
+                # Convert any zeros in the date to empty strings to match the
+                # empty option value.
+                hour, minute = [int(val) or '' for val in match.groups()]
+            elif settings.USE_L10N:
+                input_format = get_format('TIME_INPUT_FORMATS')[2]
+                try:
+                    d = datetime.datetime.strptime(value, input_format)
+                except ValueError:
+                    pass
                 else:
-                    self.meridiem_val = 'a.m.'
-        except AttributeError:
-            hour_val = minute_val = 0
-            if isinstance(value, basestring):
-                match = RE_TIME.match(value)
-                if match:
-                    time_groups = match.groups();
-                    hour_val = int(time_groups[HOURS]) % 24 # force to range(0-24)
-                    minute_val = int(time_groups[MINUTES]) 
-                    
-                    # check to see if meridiem was passed in
-                    if time_groups[MERIDIEM] is not None:
-                        self.meridiem_val = time_groups[MERIDIEM]
-                    else: # otherwise, set the meridiem based on the time
-                        if self.twelve_hr:
-                            if hour_val >= 12:
-                                self.meridiem_val = 'p.m.'
-                            else:
-                                self.meridiem_val = 'a.m.'
-                        else:
-                            self.meridiem_val = None
-                    
+                    hour, minute = d.hour, d.minute
+        return {'hour': hour, 'minute': minute}
 
-        # If we're doing a 12-hr clock, there will be a meridiem value, so make sure the
-        # hours get printed correctly
-        if self.twelve_hr and self.meridiem_val:
-            if self.meridiem_val.lower().startswith('p') and hour_val > 12 and hour_val < 24:
-                hour_val = hour_val % 12
-        elif hour_val == 0:
-            hour_val = 12
-            
-        output = []
-        if 'id' in self.attrs:
-            id_ = self.attrs['id']
-        else:
-            id_ = 'id_%s' % name
-
-        # For times to get displayed correctly, the values MUST be converted to unicode
-        # When Select builds a list of options, it checks against Unicode values
-        hour_val = u"%.2d" % hour_val
-        minute_val = u"%.2d" % minute_val
-
-        hour_choices = [("%.2d"%i, "%.2d"%i) for i in self.hours]
-        local_attrs = self.build_attrs(id=self.hour_field % id_)
-        select_html = Select(choices=hour_choices).render(self.hour_field % name, hour_val, local_attrs)
-        output.append(select_html)
-
-        minute_choices = [("%.2d"%i, "%.2d"%i) for i in self.minutes]
-        local_attrs['id'] = self.minute_field % id_
-        select_html = Select(choices=minute_choices).render(self.minute_field % name, minute_val, local_attrs)
-        output.append(select_html)
-
-        if self.twelve_hr:
-            #  If we were given an initial value, make sure the correct meridiem gets selected.
-            if self.meridiem_val is not None and  self.meridiem_val.startswith('p'):
-                    meridiem_choices = [('p.m.','p.m.'), ('a.m.','a.m.')]
-            else:
-                meridiem_choices = [('a.m.','a.m.'), ('p.m.','p.m.')]
-
-            local_attrs['id'] = local_attrs['id'] = self.meridiem_field % id_
-            select_html = Select(choices=meridiem_choices).render(self.meridiem_field % name, self.meridiem_val, local_attrs)
-            output.append(select_html)
-
-        return mark_safe(u'\n'.join(output))
+    @staticmethod
+    def _parse_time_fmt():
+        fmt = get_format('TIME_FORMAT')
+        escaped = False
+        for char in fmt:
+            if escaped:
+                escaped = False
+            elif char == '\\':
+                escaped = True
+            elif char in 'HhP':
+                yield 'hour'
+            elif char in 'Mm':
+                yield 'minute'
 
     def id_for_label(self, id_):
-        return '%s_hour' % id_
-    id_for_label = classmethod(id_for_label)
+        for first_select in self._parse_time_fmt():
+            return '%s_%s' % (id_, first_select)
+        return '%s_minute' % id_
 
     def value_from_datadict(self, data, files, name):
-        # if there's not h:m:s data, assume zero:
-        h = data.get(self.hour_field % name, 0) # hour
-        m = data.get(self.minute_field % name, 0) # minute 
+        h = data.get(self.hour_field % name, 0)
+        m = data.get(self.minute_field % name, 0)
 
-        meridiem = data.get(self.meridiem_field % name, None)
+        if h == m == '':
+            return None
+        if h is not None and m is not None:
+            input_format = get_format('TIME_INPUT_FORMATS')[2]
+            try:
+                time_value = datetime.time(int(h), int(m))   
+            except ValueError:
+                # Return pseudo-ISO dates with zeros for any unselected values,
+                # e.g. '2017-0-23'.
+                return '%s-%s' % (h or 0, m or 0)
+            # time_value = datetime_safe.new_datetime(time_value)
+            return time_value.strftime(input_format)
+        return data.get(name)
 
-        #NOTE: if meridiem is None, assume 24-hr
-        if meridiem is not None:
-            if meridiem.lower().startswith('p') and int(h) != 12:
-                h = (int(h)+12)%24 
-            elif meridiem.lower().startswith('a') and int(h) == 12:
-                h = 0
-        
-        if (int(h) == 0 or h) and m:
-            return '%s:%s' % (h, m)
+    def value_omitted_from_data(self, data, files, name):
+        return not any(
+            ('{}_{}'.format(name, interval) in data)
+            for interval in ('hour', 'minute')
+        )
 
-        return data.get(name, None)
 
 class SplitSelectDateTimeWidget(MultiWidget):
-    """
-    MultiWidget = A widget that is composed of multiple widgets.
+    supports_microseconds = False
+    template_name = 'widgets/split_select_date_time.html'
 
-    This class combines SelectTimeWidget and SelectDateWidget so we have something 
-    like SpliteDateTimeWidget (in django.forms.widgets), but with Select elements.
-    """
-    def __init__(self, attrs=None, hour_step=None, minute_step=None, twelve_hr=None, years=None):
-        """ pass all these parameters to their respective widget constructors..."""
-        widgets = (SelectDateWidget(attrs=attrs, years=years), SelectTimeWidget(attrs=attrs, hour_step=hour_step, minute_step=minute_step, twelve_hr=twelve_hr))
-        super(SplitSelectDateTimeWidget, self).__init__(widgets, attrs)
+    def __init__(self, attrs=None, date_format=None, time_format=None, date_attrs=None, time_attrs=None):
+        widgets = (
+            SelectDateWidget(
+                attrs=attrs if date_attrs is None else date_attrs,
+                # format=date_format,
+            ),
+            SelectTimeWidget(
+                attrs=attrs if time_attrs is None else time_attrs,
+                # format=time_format,
+            )
+        )
+        super().__init__(widgets)
 
-    # See https://stackoverflow.com/questions/4324676/django-multiwidget-subclass-not-calling-decompress
+    def decompress(self, value):
+        if value:
+            value = to_current_timezone(value)
+            return [value.date(), value.time()]
+        return [None, None]
+
+
     def value_from_datadict(self, data, files, name):
         if data.get(name, None) is None:
             return [widget.value_from_datadict(data, files, name + '_%s' % i) for i, widget in enumerate(self.widgets)]
         return self.decompress(data.get(name, None))
-
-    def decompress(self, value):
-        if value:
-            return [value.date(), value.time().replace(microsecond=0)]
-        return [None, None]
-
-    def format_output(self, rendered_widgets):
-        """
-        Given a list of rendered widgets (as strings), it inserts an HTML
-        linebreak between them.
-        
-        Returns a Unicode string representing the HTML for the whole lot.
-        """
-        rendered_widgets.insert(-1, '<br/>')
-        return u''.join(rendered_widgets)
 

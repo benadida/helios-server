@@ -13,6 +13,7 @@
 # limitations under the License.
 #
 
+from builtins import str
 from google.appengine.api import memcache 
 from google.appengine.ext import db
 from google.appengine.api.datastore import _CurrentTransactionKey

@@ -4,23 +4,25 @@ Views for authentication
 Ben Adida
 2009-07-05
 """
-
+# 
+# from future import standard_library
+# standard_library.install_aliases()
 from django.http import *
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
-from view_utils import *
-from helios_auth.security import get_user
+from helios_auth.view_utils import *
+from helios_auth.security.datastore import get_user
 
-import auth_systems
-from auth_systems import AUTH_SYSTEMS
-from auth_systems import password
+import helios_auth.auth_systems
+from helios_auth.auth_systems import AUTH_SYSTEMS
+from helios_auth.auth_systems import password
 import helios_auth
 
-import copy, urllib
+import copy, urllib.request, urllib.parse, urllib.error
 
-from models import User
+from helios_auth.models import User
 
-from security import FIELDS_TO_SAVE
+from helios_auth.security.datastore import FIELDS_TO_SAVE
 
 def index(request):
   """
@@ -190,7 +192,7 @@ def after(request):
     
     request.session['user'] = user
   else:
-    return HttpResponseRedirect("%s?%s" % (reverse(perms_why), urllib.urlencode({'system_name' : request.session['auth_system_name']})))
+    return HttpResponseRedirect("%s?%s" % (reverse(perms_why), urllib.parse.urlencode({'system_name' : request.session['auth_system_name']})))
 
   # does the auth system want to present an additional view?
   # this is, for example, to prompt the user to follow @heliosvoting

@@ -6,6 +6,7 @@ Ben Adida
 (ben@adida.net)
 """
 
+
 from django.db import models, transaction
 import json
 from django.conf import settings
@@ -14,9 +15,8 @@ from django.core.mail import send_mail
 import datetime, logging, uuid, random, io
 import bleach
 
-from crypto import electionalgs, algs, utils
+from .crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
-import helios.views
 
 from helios import datatypes
 
@@ -27,14 +27,17 @@ from helios_auth.jsonfield import JSONField
 from helios.datatypes.djangofield import LDObjectField
 
 import csv, copy
-import unicodecsv
+# import unicodecsv
+
+# from helios.views import get_election_url
+
 
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
-  class Meta:
+  class Meta(object):
     abstract = True
 
 class Election(HeliosModel):
-  admin = models.ForeignKey(User)
+  admin = models.ForeignKey(User, models.CASCADE)
   
   uuid = models.CharField(max_length=50, null=False)
 
@@ -270,7 +273,7 @@ class Election(HeliosModel):
     # random_filename = str(uuid.uuid4())
     # new_voter_file.voter_file.save(random_filename, uploaded_file)
 
-    new_voter_file = VoterFile(election = self, voter_file_content = uploaded_file.read())
+    new_voter_file = VoterFile(election = self, voter_file_content = uploaded_file.read().decode())
     new_voter_file.save()
     
     self.append_log(ElectionLog.VOTER_FILE_ADDED)
@@ -299,7 +302,7 @@ class Election(HeliosModel):
       return []
 
     # constraints that are relevant
-    relevant_constraints = [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type and constraint.has_key('constraint')]
+    relevant_constraints = [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type and 'constraint' in constraint]
     if len(relevant_constraints) > 0:
       return relevant_constraints[0]
     else:
@@ -325,7 +328,7 @@ class Election(HeliosModel):
       return_val = "<ul>"
       
       for constraint in self.eligibility:
-        if constraint.has_key('constraint'):
+        if 'constraint' in constraint:
           for one_constraint in constraint['constraint']:
             return_val += "<li>%s</li>" % AUTH_SYSTEMS[constraint['auth_system']].pretty_eligibility(one_constraint)
         else:
@@ -387,6 +390,7 @@ class Election(HeliosModel):
     """
     tally the election, assuming votes already verified
     """
+    print('\nStarting to compute tally...............\n')
     tally = self.init_tally()
     for voter in self.voter_set.exclude(vote=None):
       tally.add_vote(voter.vote, verify_p=False)
@@ -555,6 +559,7 @@ class Election(HeliosModel):
     return self.get_helios_trustee() != None
 
   def helios_trustee_decrypt(self):
+    print('\nhelios.models.Election.helios_trustee_decrypt started........\n')
     tally = self.encrypted_tally
     tally.init_election(self)
 
@@ -575,7 +580,9 @@ class Election(HeliosModel):
 
   @property
   def url(self):
-    return helios.views.get_election_url(self)
+    from helios.views import get_election_url
+    return get_election_url(self)
+
 
   def init_tally(self):
     # FIXME: create the right kind of tally
@@ -595,7 +602,7 @@ class Election(HeliosModel):
     determining the winner for one question
     """
     # sort the answers , keep track of the index
-    counts = sorted(enumerate(result), key=lambda(x): x[1])
+    counts = sorted(enumerate(result), key=lambda x: x[1])
     counts.reverse()
     
     the_max = question['max'] or 1
@@ -659,7 +666,7 @@ class ElectionLog(models.Model):
   VOTER_FILE_ADDED = "voter file added"
   DECRYPTIONS_COMBINED = "decryptions combined"
 
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, models.CASCADE)
   log = models.CharField(max_length=500)
   at = models.DateTimeField(auto_now_add=True)
 
@@ -674,9 +681,9 @@ def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
     for row in csv_reader:
       # decode UTF-8 back to Unicode, cell by cell:
       try:
-        yield [unicode(cell, 'utf-8') for cell in row]
+        yield [str(cell, 'utf-8') for cell in row]
       except:
-        yield [unicode(cell, 'latin-1') for cell in row]        
+        yield [str(cell, 'latin-1') for cell in row]        
 
 def utf_8_encoder(unicode_csv_data):
     for line in unicode_csv_data:
@@ -691,7 +698,7 @@ class VoterFile(models.Model):
   # path where we store voter upload 
   PATH = settings.VOTER_UPLOAD_REL_PATH
 
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, models.CASCADE)
 
   # we move to storing the content in the DB
   voter_file = models.FileField(upload_to=PATH, max_length=250,null=True)
@@ -704,23 +711,25 @@ class VoterFile(models.Model):
 
   def itervoters(self):
     if self.voter_file_content:
-      if type(self.voter_file_content) == unicode:
-        content = self.voter_file_content.encode('utf-8')
-      else:
+      if type(self.voter_file_content) == str:
         content = self.voter_file_content
+      else:
+        content = self.voter_file_content.decode()
 
       # now we have to handle non-universal-newline stuff
       # we do this in a simple way: replace all \r with \n
       # then, replace all double \n with single \n
       # this should leave us with only \n
-      content = content.replace('\r','\n').replace('\n\n','\n')
+      # content = content.replace('\r','\n').replace('\n\n','\n')
 
-      voter_stream = io.BytesIO(content)
+      # voter_stream = io.BytesIO(content)
+      voter_stream = content.split('\n')
     else:
-      voter_stream = open(self.voter_file.path, "rU")
+      voter_stream = open(self.voter_file.path, newline='')
 
     #reader = unicode_csv_reader(voter_stream)
-    reader = unicodecsv.reader(voter_stream, encoding='utf-8')
+    #reader = unicodecsv.reader(voter_stream, encoding='utf-8')
+    reader = csv.reader(voter_stream, delimiter=',', lineterminator='\n')
 
     for voter_fields in reader:
       # bad line
@@ -767,7 +776,7 @@ class VoterFile(models.Model):
         existing_voter.save()
 
     if election.use_voter_aliases:
-      voter_alias_integers = range(last_alias_num+1, last_alias_num+1+num_voters)
+      voter_alias_integers = list(range(last_alias_num+1, last_alias_num+1+num_voters))
       random.shuffle(voter_alias_integers)
       for i, voter in enumerate(new_voters):
         voter.alias = 'V%s' % voter_alias_integers[i]
@@ -782,7 +791,7 @@ class VoterFile(models.Model):
 
     
 class Voter(HeliosModel):
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, models.CASCADE)
   
   # let's link directly to the user now
   # FIXME: delete this as soon as migrations are set up
@@ -794,7 +803,7 @@ class Voter(HeliosModel):
 
   # for users of type password, no user object is created
   # but a dynamic user object is created automatically
-  user = models.ForeignKey('helios_auth.User', null=True)
+  user = models.ForeignKey('helios_auth.User', models.CASCADE, null=True)
 
   # if user is null, then you need a voter login ID and password
   voter_login_id = models.CharField(max_length = 100, null=True)
@@ -811,7 +820,7 @@ class Voter(HeliosModel):
   vote_hash = models.CharField(max_length = 100, null=True)
   cast_at = models.DateTimeField(auto_now_add=False, null=True)
 
-  class Meta:
+  class Meta(object):
     unique_together = (('election', 'voter_login_id'))
 
   def __init__(self, *args, **kwargs):
@@ -939,9 +948,9 @@ class Voter(HeliosModel):
       return utils.hash_b64(value_to_hash)
     except:
       try:
-        return utils.hash_b64(value_to_hash.encode('latin-1'))
+        return utils.hash_b64(value_to_hash)
       except:
-        return utils.hash_b64(value_to_hash.encode('utf-8'))        
+        return utils.hash_b64(value_to_hash)        
 
   @property
   def voter_type(self):
@@ -979,7 +988,7 @@ class Voter(HeliosModel):
   
 class CastVote(HeliosModel):
   # the reference to the voter provides the voter_uuid
-  voter = models.ForeignKey(Voter)
+  voter = models.ForeignKey(Voter, models.CASCADE)
   
   # the actual encrypted vote
   vote = LDObjectField(type_hint = 'legacy/EncryptedVote')
@@ -1086,7 +1095,7 @@ class AuditedBallot(models.Model):
   """
   ballots for auditing
   """
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, models.CASCADE)
   raw_vote = models.TextField()
   vote_hash = models.CharField(max_length=100)
   added_at = models.DateTimeField(auto_now_add=True)
@@ -1109,7 +1118,7 @@ class AuditedBallot(models.Model):
     return query
     
 class Trustee(HeliosModel):
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, models.CASCADE)
   
   uuid = models.CharField(max_length=50)
   name = models.CharField(max_length=200)
@@ -1138,7 +1147,7 @@ class Trustee(HeliosModel):
   decryption_proofs = LDObjectField(type_hint = datatypes.arrayOf(datatypes.arrayOf('legacy/EGZKProof')),
                                     null=True)
 
-  class Meta:
+  class Meta(object):
     unique_together = (('election', 'email'))
     
   def save(self, *args, **kwargs):

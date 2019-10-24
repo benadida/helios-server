@@ -159,7 +159,7 @@ Your key has been generated, but you may choose to<br /><a href="javascript:clea
 </p>
 </div>
 
-<form method="post" id="pk_form" action="{% url "helios.views.trustee_upload_pk" election.uuid trustee.uuid %}">
+<form method="post" id="pk_form" action="{% url "trustee-upload-pk" election.uuid trustee.uuid %}">
 <h3>Your Public Key</h3>
 <p>
     It's time to upload the public key to the server.

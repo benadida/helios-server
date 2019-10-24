@@ -22,12 +22,12 @@ function verify_ballot(election_raw_json, encrypted_vote_json, status_cb) {
       
       // display the ballot as it is claimed to be
       status_cb("Ballot Contents:");
-      _(election.questions).each(function(q, qnum) {
+        (election.questions).forEach(function(q, qnum) {
 	      if (q.tally_type != "homomorphic") {
 		  status_cb("WARNING: the tally type for this question is not homomorphic. Verification may fail because this verifier is only set up to handle homomorphic ballots.");
 	      }
-        
-	      var answer_pretty_list = _(encrypted_vote.encrypted_answers[qnum].answer).map(function(aindex, anum) {
+        //   var answer_pretty_list = _(encrypted_vote.encrypted_answers[qnum].answer).map(function(aindex, anum) {
+	      var answer_pretty_list = (encrypted_vote.encrypted_answers[qnum].answer).map(function(aindex, anum) {
 		      return q.answers[aindex];
 		  });
 	      status_cb("Question #" + (qnum+1) + " - " + q.short_name + " : " + answer_pretty_list.join(", "));

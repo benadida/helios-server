@@ -5,7 +5,7 @@ Helios Django Views
 Ben Adida (ben@adida.net)
 """
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseForbidden
@@ -13,23 +13,23 @@ from django.db import transaction, IntegrityError
 
 from validate_email import validate_email
 
-import urllib, os, base64
+import urllib.request, urllib.parse, urllib.error, os, base64
 
-from crypto import algs, electionalgs, elgamal
-from crypto import utils as cryptoutils
-from workflows import homomorphic
+from .crypto import algs, electionalgs, elgamal
+from .crypto import utils as cryptoutils
+from .workflows import homomorphic
 from helios import utils, VOTERS_EMAIL, VOTERS_UPLOAD
-from view_utils import SUCCESS, FAILURE, return_json, render_template, render_template_raw
+from .view_utils import SUCCESS, FAILURE, return_json, render_template, render_template_raw
 
-from helios_auth.security import check_csrf, login_required, get_user, save_in_session_across_logouts
+from helios_auth.security.datastore import check_csrf, login_required, get_user, save_in_session_across_logouts
 from helios_auth.auth_systems import AUTH_SYSTEMS, can_list_categories
-from helios_auth.models import AuthenticationExpired
+from helios_auth.models import AuthenticationExpired, User
 
 from helios_auth import views as auth_views
 
-import tasks
+from . import tasks
 
-from security import (election_view, election_admin,
+from .security import (election_view, election_admin,
                       trustee_check, set_logged_in_trustee,
                       can_create_election, user_can_see_election, get_voter,
                       user_can_admin_election, user_can_feature_election)
@@ -37,18 +37,26 @@ from security import (election_view, election_admin,
 import uuid, datetime
 import logging
 
-from models import User, Election, CastVote, Voter, VoterFile, Trustee, AuditedBallot
-import datatypes
+# from .models import Election, CastVote, Voter, VoterFile, Trustee, AuditedBallot
+from . import datatypes
+from . import forms
+from django.apps import apps
 
-import forms
+Election = apps.get_model('helios', 'Election')
+Voter = apps.get_model('helios', 'Voter')
+CastVote = apps.get_model('helios', 'CastVote')
+VoterFile = apps.get_model('helios', 'VoterFile')
+Trustee = apps.get_model('helios', 'Trustee')
+AuditedBallot = apps.get_model('helios', 'AuditedBallot')
+
 
 # Parameters for everything
 ELGAMAL_PARAMS = elgamal.Cryptosystem()
 
 # trying new ones from OlivierP
-ELGAMAL_PARAMS.p = 16328632084933010002384055033805457329601614771185955389739167309086214800406465799038583634953752941675645562182498120750264980492381375579367675648771293800310370964745767014243638518442553823973482995267304044326777047662957480269391322789378384619428596446446984694306187644767462460965622580087564339212631775817895958409016676398975671266179637898557687317076177218843233150695157881061257053019133078545928983562221396313169622475509818442661047018436264806901023966236718367204710755935899013750306107738002364137917426595737403871114187750804346564731250609196846638183903982387884578266136503697493474682071L
-ELGAMAL_PARAMS.q = 61329566248342901292543872769978950870633559608669337131139375508370458778917L
-ELGAMAL_PARAMS.g = 14887492224963187634282421537186040801304008017743492304481737382571933937568724473847106029915040150784031882206090286938661464458896494215273989547889201144857352611058572236578734319505128042602372864570426550855201448111746579871811249114781674309062693442442368697449970648232621880001709535143047913661432883287150003429802392229361583608686643243349727791976247247948618930423866180410558458272606627111270040091203073580238905303994472202930783207472394578498507764703191288249547659899997131166130259700604433891232298182348403175947450284433411265966789131024573629546048637848902243503970966798589660808533L
+ELGAMAL_PARAMS.p = 16328632084933010002384055033805457329601614771185955389739167309086214800406465799038583634953752941675645562182498120750264980492381375579367675648771293800310370964745767014243638518442553823973482995267304044326777047662957480269391322789378384619428596446446984694306187644767462460965622580087564339212631775817895958409016676398975671266179637898557687317076177218843233150695157881061257053019133078545928983562221396313169622475509818442661047018436264806901023966236718367204710755935899013750306107738002364137917426595737403871114187750804346564731250609196846638183903982387884578266136503697493474682071
+ELGAMAL_PARAMS.q = 61329566248342901292543872769978950870633559608669337131139375508370458778917
+ELGAMAL_PARAMS.g = 14887492224963187634282421537186040801304008017743492304481737382571933937568724473847106029915040150784031882206090286938661464458896494215273989547889201144857352611058572236578734319505128042602372864570426550855201448111746579871811249114781674309062693442442368697449970648232621880001709535143047913661432883287150003429802392229361583608686643243349727791976247247948618930423866180410558458272606627111270040091203073580238905303994472202930783207472394578498507764703191288249547659899997131166130259700604433891232298182348403175947450284433411265966789131024573629546048637848902243503970966798589660808533
 
 # object ready for serialization
 ELGAMAL_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(ELGAMAL_PARAMS, datatype='legacy/EGParams')
@@ -77,7 +85,7 @@ def user_reauth(request, user):
   # add a parameter to prevent it? Maybe.
   login_url = "%s%s?%s" % (settings.SECURE_URL_HOST,
                            reverse(auth_views.start, args=[user.user_type]),
-                           urllib.urlencode({'return_url':
+                           urllib.parse.urlencode({'return_url':
                                                request.get_full_path()}))
   return HttpResponseRedirect(login_url)
 
@@ -123,9 +131,9 @@ def election_shortcut(request, election_short_name):
 # a hidden view behind the shortcut that performs the actual perm check
 @election_view()
 def _election_vote_shortcut(request, election):
-  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url' : reverse(one_election, args=[election.uuid])}))
+  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.parse.urlencode({'election_url' : reverse(one_election, args=[election.uuid])}))
   
-  test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : vote_url}))
+  test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.parse.urlencode({'continue_url' : vote_url}))
 
   return HttpResponseRedirect(test_cookie_url)
   
@@ -303,9 +311,9 @@ def one_election_view(request, election):
   election_badge_url = get_election_badge_url(election)
   status_update_message = None
 
-  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.urlencode({'election_url' : reverse(one_election, args=[election.uuid])}))
+  vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urllib.parse.urlencode({'election_url' : reverse(one_election, args=[election.uuid])}))
 
-  test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : vote_url}))
+  test_cookie_url = "%s?%s" % (reverse(test_cookie), urllib.parse.urlencode({'continue_url' : vote_url}))
   
   if user:
     voter = Voter.get_by_election_and_user(election, user)
@@ -328,13 +336,13 @@ def one_election_view(request, election):
   # status update message?
   if election.openreg:
     if election.voting_has_started:
-      status_update_message = u"Vote in %s" % election.name
+      status_update_message = "Vote in %s" % election.name
     else:
-      status_update_message = u"Register to vote in %s" % election.name
+      status_update_message = "Register to vote in %s" % election.name
 
   # result!
   if election.result:
-    status_update_message = u"Results are in for %s" % election.name
+    status_update_message = "Results are in for %s" % election.name
   
   trustees = Trustee.get_by_election(election)
 
@@ -352,20 +360,20 @@ def one_election_view(request, election):
 def test_cookie(request):
   continue_url = request.GET['continue_url']
   request.session.set_test_cookie()
-  next_url = "%s?%s" % (reverse(test_cookie_2), urllib.urlencode({'continue_url': continue_url}))
+  next_url = "%s?%s" % (reverse(test_cookie_2), urllib.parse.urlencode({'continue_url': continue_url}))
   return HttpResponseRedirect(settings.SECURE_URL_HOST + next_url)  
 
 def test_cookie_2(request):
   continue_url = request.GET['continue_url']
 
   if not request.session.test_cookie_worked():
-    return HttpResponseRedirect(settings.SECURE_URL_HOST + ("%s?%s" % (reverse(nocookies), urllib.urlencode({'continue_url': continue_url}))))
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + ("%s?%s" % (reverse(nocookies), urllib.parse.urlencode({'continue_url': continue_url}))))
 
   request.session.delete_test_cookie()
   return HttpResponseRedirect(continue_url)  
 
 def nocookies(request):
-  retest_url = "%s?%s" % (reverse(test_cookie), urllib.urlencode({'continue_url' : request.GET['continue_url']}))
+  retest_url = "%s?%s" % (reverse(test_cookie), urllib.parse.urlencode({'continue_url' : request.GET['continue_url']}))
   return render_template(request, 'nocookies', {'retest_url': retest_url})
 
 ##
@@ -470,7 +478,6 @@ def trustee_upload_pk(request, election, trustee):
     # verify the pok
     if not trustee.public_key.verify_sk_proof(trustee.pok, algs.DLog_challenge_generator):
       raise Exception("bad pok for this public key")
-    
     trustee.public_key_hash = cryptoutils.hash_b64(utils.to_json(trustee.public_key.toJSONDict()))
 
     trustee.save()
@@ -592,7 +599,7 @@ def password_voter_login(request, election):
         return one_election_cast_confirm(request, election.uuid)
       
     except Voter.DoesNotExist:
-      redirect_url = login_url + "?" + urllib.urlencode({
+      redirect_url = login_url + "?" + urllib.parse.urlencode({
           'bad_voter_login' : '1',
           'return_url' : return_url
           })
@@ -600,7 +607,7 @@ def password_voter_login(request, election):
       return HttpResponseRedirect(settings.SECURE_URL_HOST + redirect_url)
   else:
     # bad form, bad voter login
-    redirect_url = login_url + "?" + urllib.urlencode({
+    redirect_url = login_url + "?" + urllib.parse.urlencode({
         'bad_voter_login' : '1',
         'return_url' : return_url
         })
@@ -614,7 +621,7 @@ def one_election_cast_confirm(request, election):
   user = get_user(request)    
 
   # if no encrypted vote, the user is reloading this page or otherwise getting here in a bad way
-  if (not request.session.has_key('encrypted_vote')) or request.session['encrypted_vote'] == None:
+  if ('encrypted_vote' not in request.session) or request.session['encrypted_vote'] == None:
     return HttpResponseRedirect(settings.URL_HOST)
 
   # election not frozen or started
@@ -738,7 +745,7 @@ def one_election_cast_confirm(request, election):
     tasks.cast_vote_verify_and_store.delay(
       cast_vote_id = cast_vote.id,
       status_update_message = status_update_message)
-    
+
     # remove the vote from the store
     del request.session['encrypted_vote']
     
@@ -818,7 +825,7 @@ def one_election_bboard(request, election):
     order_by = 'alias'
 
   # if there's a specific voter
-  if request.GET.has_key('q'):
+  if 'q' in request.GET:
     # FIXME: figure out the voter by voter_id
     voters = []
   else:
@@ -842,7 +849,7 @@ def one_election_audited_ballots(request, election):
   UI to show election audited ballots
   """
   
-  if request.GET.has_key('vote_hash'):
+  if 'vote_hash' in request.GET:
     b = AuditedBallot.get(election, request.GET['vote_hash'])
     return HttpResponse(b.raw_vote, content_type="text/plain")
     
@@ -1075,7 +1082,8 @@ def one_election_compute_tally(request, election):
   election.tallying_started_at = datetime.datetime.utcnow()
   election.save()
 
-  tasks.election_compute_tally.delay(election_id = election.id)
+  # tasks.election_compute_tally.delay(election_id = election.id)
+  tasks.election_compute_tally(election_id = election.id)
 
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view,args=[election.uuid]))
 
@@ -1129,7 +1137,7 @@ def release_result(request, election):
     election.save()
 
     if request.POST.get('send_email', ''):
-      return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_email, args=[election.uuid]),urllib.urlencode({'template': 'result'})))
+      return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_email, args=[election.uuid]),urllib.parse.urlencode({'template': 'result'})))
     else:
       return HttpResponseRedirect("%s" % (settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid])))
 
@@ -1286,13 +1294,14 @@ def voters_upload(request, election):
   if request.method == "POST":
     if bool(request.POST.get('confirm_p', 0)):
       # launch the background task to parse that file
+      print("In helios.views.voters_upload: request.session['voter_file_id']", request.session['voter_file_id'])
       tasks.voter_file_process.delay(voter_file_id = request.session['voter_file_id'])
       del request.session['voter_file_id']
 
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
     else:
       # we need to confirm
-      if request.FILES.has_key('voters_file'):
+      if 'voters_file' in request.FILES:
         voters_file = request.FILES['voters_file']
         voter_file_obj = election.add_voters_file(voters_file)
 
@@ -1313,7 +1322,7 @@ def voters_upload(request, election):
 
         return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters, 'problems': problems})
       else:
-        return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_upload, args=[election.uuid]), urllib.urlencode({'e':'no voter file specified, try again'})))
+        return HttpResponseRedirect("%s?%s" % (settings.SECURE_URL_HOST + reverse(voters_upload, args=[election.uuid]), urllib.parse.urlencode({'e':'no voter file specified, try again'})))
 
 @election_admin()
 def voters_upload_cancel(request, election):
@@ -1355,7 +1364,7 @@ def voters_email(request, election):
 
   default_subject = render_template_raw(None, 'email/%s_subject.txt' % template, {
       'custom_subject': "&lt;SUBJECT&gt;"
-})
+  })
   default_body = render_template_raw(None, 'email/%s_body.txt' % template, {
       'election' : election,
       'election_url' : election_url,
@@ -1383,19 +1392,24 @@ def voters_email(request, election):
       subject_template = 'email/%s_subject.txt' % template
       body_template = 'email/%s_body.txt' % template
 
+      # commented out 'election'
+      # the voters_email task retrieves it from election_id anyway so no need for celery/kombu to serialise it to send to the task
+      # celery default serialization changed in 4.0 from pickle to json.  kombu cannot serialize 'election' without additional help.
       extra_vars = {
         'custom_subject' : email_form.cleaned_data['subject'],
         'custom_message' : email_form.cleaned_data['body'],
         'election_vote_url' : election_vote_url,
         'election_url' : election_url,
-        'election' : election
+        # 'election' : election
         }
         
       voter_constraints_include = None
       voter_constraints_exclude = None
 
       if voter:
+        print('if voter')
         tasks.single_voter_email.delay(voter_uuid = voter.uuid, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars)
+ 
       else:
         # exclude those who have not voted
         if email_form.cleaned_data['send_to'] == 'voted':
@@ -1406,6 +1420,7 @@ def voters_email(request, election):
           voter_constraints_include = {'vote_hash': None}
 
         tasks.voters_email.delay(election_id = election.id, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars, voter_constraints_include = voter_constraints_include, voter_constraints_exclude = voter_constraints_exclude)
+        # tasks.voters_email(election_id = election.id, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars, voter_constraints_include = voter_constraints_include, voter_constraints_exclude = voter_constraints_exclude)
 
       # this batch process is all async, so we can return a nice note
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid]))
@@ -1426,7 +1441,7 @@ def voter_list(request, election):
   limit = int(request.GET.get('limit', 500))
   if limit > 500: limit = 500
     
-  voters = Voter.get_by_election(election, order_by='uuid', after=request.GET.get('after',None), limit= limit)
+  voters = Voter.get_by_election(election, order_by='uuid', after=request.GET.get('after',None), limit=limit)
   return [v.ld_object.toDict() for v in voters]
   
 @election_view()
@@ -1471,16 +1486,13 @@ def ballot_list(request, election):
   and optionally take a after parameter.
   """
   limit = after = None
-  if request.GET.has_key('limit'):
+  if 'limit' in request.GET:
     limit = int(request.GET['limit'])
-  if request.GET.has_key('after'):
+  if 'after' in request.GET:
     after = datetime.datetime.strptime(request.GET['after'], '%Y-%m-%d %H:%M:%S')
     
   voters = Voter.get_by_election(election, cast=True, order_by='cast_at', limit=limit, after=after)
 
   # we explicitly cast this to a short cast vote
   return [v.last_cast_vote().ld_object.short.toDict(complete=True) for v in voters]
-
-
-
 

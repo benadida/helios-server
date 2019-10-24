@@ -2,16 +2,16 @@
 Helios stats views
 """
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.http import *
 from django.db import transaction
 from django.db.models import *
 
-from security import *
-from helios_auth.security import get_user, save_in_session_across_logouts
-from view_utils import *
+from .security import *
+from helios_auth.security.datastore import get_user, save_in_session_across_logouts
+from .view_utils import *
 
 from helios import tasks
 

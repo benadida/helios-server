@@ -6,10 +6,10 @@ from django.http import HttpResponse
 #from facebook.djangofb import FacebookMiddleware
 
 # Import the Django helpers
-import facebook.djangofb as facebook
+import helios_auth.auth_systems.facebookclient.djangofb as facebook
 
 # The User model defined in models.py
-from models import User
+from .models import User
 
 # We'll require login for our canvas page. This
 # isn't necessarily a good idea, as we might want

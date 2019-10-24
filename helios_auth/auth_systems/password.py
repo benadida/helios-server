@@ -2,7 +2,7 @@
 Username/Password Authentication
 """
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django import forms
 from django.core.mail import send_mail
 from django.conf import settings
@@ -48,7 +48,7 @@ def password_login_view(request):
     # set this in case we came here straight from the multi-login chooser
     # and thus did not have a chance to hit the "start/password" URL
     request.session['auth_system_name'] = 'password'
-    if request.POST.has_key('return_url'):
+    if 'return_url' in request.POST:
       request.session['auth_return_url'] = request.POST.get('return_url')
 
     if form.is_valid():

@@ -1,16 +1,16 @@
 import re
 import datetime
-import facebook
+from helios_auth.auth_systems import facebookclient as facebook
 
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.exceptions import ImproperlyConfigured
 from django.conf import settings
 from datetime import datetime
 
-try:
-    from threading import local
-except ImportError:
-    from django.utils._threading_local import local
+# try:
+from threading import local
+# except ImportError:
+#     from django.utils._threading_local import local
 
 __all__ = ['Facebook', 'FacebookMiddleware', 'get_facebook_client', 'require_login', 'require_add']
 

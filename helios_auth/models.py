@@ -7,12 +7,15 @@ Ben Adida
 (ben@adida.net)
 """
 
+from builtins import object
 from django.db import models
-from jsonfield import JSONField
+from helios_auth.jsonfield import JSONField
 
 import datetime, logging
 
-from auth_systems import AUTH_SYSTEMS, can_check_constraint, can_list_categories
+from helios_auth.auth_systems import AUTH_SYSTEMS
+from helios_auth.auth_systems import can_check_constraint
+from helios_auth.auth_systems import can_list_categories
 
 # an exception to catch when a user is no longer authenticated
 class AuthenticationExpired(Exception):
@@ -21,7 +24,6 @@ class AuthenticationExpired(Exception):
 class User(models.Model):
   user_type = models.CharField(max_length=50)
   user_id = models.CharField(max_length=100)
-    
   name = models.CharField(max_length=200, null=True)
   
   # other properties
@@ -33,7 +35,7 @@ class User(models.Model):
   # administrator
   admin_p = models.BooleanField(default=False)
 
-  class Meta:
+  class Meta(object):
     unique_together = (('user_type', 'user_id'),)
     
   @classmethod
@@ -54,7 +56,7 @@ class User(models.Model):
     
     if not created_p:
       # special case the password: don't replace it if it exists
-      if obj.info.has_key('password'):
+      if 'password' in obj.info:
         info['password'] = obj.info['password']
 
       obj.info = info
@@ -65,7 +67,7 @@ class User(models.Model):
     return obj
     
   def can_update_status(self):
-    if not AUTH_SYSTEMS.has_key(self.user_type):
+    if self.user_type not in AUTH_SYSTEMS:
       return False
 
     return AUTH_SYSTEMS[self.user_type].STATUS_UPDATES
@@ -75,7 +77,7 @@ class User(models.Model):
     Certain auth systems can choose to limit election creation
     to certain users. 
     """
-    if not AUTH_SYSTEMS.has_key(self.user_type):
+    if self.user_type not in AUTH_SYSTEMS:
       return False
     
     return AUTH_SYSTEMS[self.user_type].can_create_election(self.user_id, self.info)
@@ -87,16 +89,16 @@ class User(models.Model):
     return AUTH_SYSTEMS[self.user_type].STATUS_UPDATE_WORDING_TEMPLATE
 
   def update_status(self, status):
-    if AUTH_SYSTEMS.has_key(self.user_type):
+    if self.user_type in AUTH_SYSTEMS:
       AUTH_SYSTEMS[self.user_type].update_status(self.user_id, self.info, self.token, status)
       
   def send_message(self, subject, body):
-    if AUTH_SYSTEMS.has_key(self.user_type):
+    if self.user_type in AUTH_SYSTEMS:
       subject = subject.split("\n")[0]
       AUTH_SYSTEMS[self.user_type].send_message(self.user_id, self.name, self.info, subject, body)
 
   def send_notification(self, message):
-    if AUTH_SYSTEMS.has_key(self.user_type):
+    if self.user_type in AUTH_SYSTEMS:
       if hasattr(AUTH_SYSTEMS[self.user_type], 'send_notification'):
         AUTH_SYSTEMS[self.user_type].send_notification(self.user_id, self.info, message)
   
@@ -111,7 +113,7 @@ class User(models.Model):
       return False
       
     # no constraint? Then eligible!
-    if not eligibility_case.has_key('constraint'):
+    if 'constraint' not in eligibility_case:
       return True
     
     # from here on we know we match the auth system, but do we match one of the constraints?  
@@ -142,14 +144,14 @@ class User(models.Model):
     if self.name:
       return self.name
 
-    if self.info.has_key('name'):
+    if 'name' in self.info:
       return self.info['name']
 
     return self.user_id
   
   @property
   def public_url(self):
-    if AUTH_SYSTEMS.has_key(self.user_type):
+    if self.user_type in AUTH_SYSTEMS:
       if hasattr(AUTH_SYSTEMS[self.user_type], 'public_url'):
         return AUTH_SYSTEMS[self.user_type].public_url(self.user_id)
 
@@ -163,7 +165,7 @@ class User(models.Model):
     else:
       name_display = self.pretty_name
 
-    return """<img class="%s-logo" src="/static/auth/login-icons/%s.png" alt="%s" /> %s""" % (
+    return """<img class="%s-logo" src="/static/login-icons/%s.png" alt="%s" /> %s""" % (
       size, self.user_type, self.user_type, name_display)
 
   @property

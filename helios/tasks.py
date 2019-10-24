@@ -5,17 +5,17 @@ Celery queued tasks for Helios
 ben@adida.net
 """
 
-from celery.decorators import task
+from celery import shared_task, task
 
-from models import *
-from view_utils import render_template_raw
-import signals
-
+from helios.models import *
+from helios.view_utils import render_template_raw
+from . import signals
 import copy
-
 from django.conf import settings
+from Crypto import Random
 
-@task()
+
+@shared_task()
 def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
     cast_vote = CastVote.objects.get(id = cast_vote_id)
     result = cast_vote.verify_and_store()
@@ -23,26 +23,26 @@ def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwarg
     voter = cast_vote.voter
     election = voter.election
     user = voter.get_user()
-
     if result:
         # send the signal
         signals.vote_cast.send(sender=election, election=election, user=user, voter=voter, cast_vote=cast_vote)
         
         if status_update_message and user.can_update_status():
-            from views import get_election_url
+            from .views import get_election_url
 
             user.update_status(status_update_message)
     else:
         logger = cast_vote_verify_and_store.get_logger(**kwargs)
         logger.error("Failed to verify and store %d" % cast_vote_id)
     
-@task()
+@shared_task()
 def voters_email(election_id, subject_template, body_template, extra_vars={},
                  voter_constraints_include=None, voter_constraints_exclude=None):
     """
     voter_constraints_include are conditions on including voters
     voter_constraints_exclude are conditions on excluding voters
     """
+    print("Entering voters_email task")
     election = Election.objects.get(id = election_id)
 
     # select the right list of voters
@@ -55,13 +55,13 @@ def voters_email(election_id, subject_template, body_template, extra_vars={},
     for voter in voters:
         single_voter_email.delay(voter.uuid, subject_template, body_template, extra_vars)            
 
-@task()
+@shared_task()
 def voters_notify(election_id, notification_template, extra_vars={}):
     election = Election.objects.get(id = election_id)
     for voter in election.voter_set.all():
         single_voter_notify.delay(voter.uuid, notification_template, extra_vars)
 
-@task()
+@shared_task()
 def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={}):
     voter = Voter.objects.get(uuid = voter_uuid)
 
@@ -73,7 +73,7 @@ def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={
 
     voter.send_message(subject, body)
 
-@task()
+@shared_task()
 def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
     voter = Voter.objects.get(uuid = voter_uuid)
 
@@ -84,11 +84,11 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
 
     voter.send_notification(notification)
 
-@task()
+@shared_task()
 def election_compute_tally(election_id):
+    Random.atfork()
     election = Election.objects.get(id = election_id)
     election.compute_tally()
-
     election_notify_admin.delay(election_id = election_id,
                                 subject = "encrypted tally computed",
                                 body = """
@@ -101,8 +101,9 @@ Helios
     if election.has_helios_trustee():
         tally_helios_decrypt.delay(election_id = election.id)
 
-@task()
+@shared_task()
 def tally_helios_decrypt(election_id):
+    Random.atfork()
     election = Election.objects.get(id = election_id)
     election.helios_trustee_decrypt()
     election_notify_admin.delay(election_id = election_id,
@@ -115,8 +116,9 @@ for election %s.
 Helios
 """ % election.name)
 
-@task()
+@shared_task()
 def voter_file_process(voter_file_id):
+    print("entering voter_file_process")
     voter_file = VoterFile.objects.get(id = voter_file_id)
     voter_file.process()
     election_notify_admin.delay(election_id = voter_file.election.id, 
@@ -131,7 +133,8 @@ has been processed.
 Helios
 """ % (voter_file.election.name, voter_file.num_voters))
 
-@task()
+@shared_task()
 def election_notify_admin(election_id, subject, body):
+    print("entering election_notify_adimin")
     election = Election.objects.get(id = election_id)
     election.admin.send_message(subject, body)

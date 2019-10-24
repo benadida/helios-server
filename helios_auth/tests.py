@@ -3,7 +3,7 @@ Unit Tests for Auth Systems
 """
 
 import unittest
-import models
+from helios_auth import models
 
 from django.db import IntegrityError, transaction
 
@@ -12,7 +12,7 @@ from django.test import TestCase
 
 from django.core import mail
 
-from auth_systems import AUTH_SYSTEMS
+from helios_auth.auth_systems import AUTH_SYSTEMS
 
 class UserModelTests(unittest.TestCase):
 
@@ -23,7 +23,7 @@ class UserModelTests(unittest.TestCase):
         """
         there should not be two users with the same user_type and user_id
         """
-        for auth_system, auth_system_module in AUTH_SYSTEMS.iteritems():
+        for auth_system, auth_system_module in list(AUTH_SYSTEMS.items()):
             models.User.objects.create(user_type = auth_system, user_id = 'foobar', info={'name':'Foo Bar'})
             
             def double_insert():
@@ -36,7 +36,7 @@ class UserModelTests(unittest.TestCase):
         """
         shouldn't create two users, and should reset the password
         """
-        for auth_system, auth_system_module in AUTH_SYSTEMS.iteritems():
+        for auth_system, auth_system_module in list(AUTH_SYSTEMS.items()):
             u = models.User.update_or_create(user_type = auth_system, user_id = 'foobar_cou', info={'name':'Foo Bar'})
 
             def double_update_or_create():
@@ -51,7 +51,7 @@ class UserModelTests(unittest.TestCase):
         """
         check that auth systems have the can_create_election call and that it's true for the common ones
         """
-        for auth_system, auth_system_module in AUTH_SYSTEMS.iteritems():
+        for auth_system, auth_system_module in list(AUTH_SYSTEMS.items()):
             assert(hasattr(auth_system_module, 'can_create_election'))
             if auth_system != 'clever':
                 assert(auth_system_module.can_create_election('foobar', {}))
@@ -62,7 +62,7 @@ class UserModelTests(unittest.TestCase):
         check that a user set up with status update ability reports it as such,
         and otherwise does not report it
         """
-        for auth_system, auth_system_module in AUTH_SYSTEMS.iteritems():
+        for auth_system, auth_system_module in list(AUTH_SYSTEMS.items()):
             u = models.User.update_or_create(user_type = auth_system, user_id = 'foobar_status_update', info={'name':'Foo Bar Status Update'})
 
             if hasattr(auth_system_module, 'send_message'):
@@ -76,22 +76,22 @@ class UserModelTests(unittest.TestCase):
 
         FIXME: also test constraints on eligibility
         """
-        for auth_system, auth_system_module in AUTH_SYSTEMS.iteritems():
+        for auth_system, auth_system_module in list(AUTH_SYSTEMS.items()):
             u = models.User.update_or_create(user_type = auth_system, user_id = 'foobar_status_update', info={'name':'Foo Bar Status Update'})
 
             self.assertTrue(u.is_eligible_for({'auth_system': auth_system}))
 
     def test_eq(self):
-        for auth_system, auth_system_module in AUTH_SYSTEMS.iteritems():
+        for auth_system, auth_system_module in list(AUTH_SYSTEMS.items()):
             u = models.User.update_or_create(user_type = auth_system, user_id = 'foobar_eq', info={'name':'Foo Bar Status Update'})
             u2 = models.User.update_or_create(user_type = auth_system, user_id = 'foobar_eq', info={'name':'Foo Bar Status Update'})
 
             self.assertEquals(u, u2)
 
 
-import views
-import auth_systems.password as password_views
-from django.core.urlresolvers import reverse
+from helios_auth import views
+import helios_auth.auth_systems.password as password_views
+from django.urls import reverse
 
 # FIXME: login CSRF should make these tests more complicated
 # and should be tested for

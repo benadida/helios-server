@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 # utils/widgets.py
 
+#############  NOT USED
+
+
 '''
 DateTimeWidget using JSCal2 from http://www.dynarch.com/projects/calendar/
 
 django snippets 1629
 '''
 
+from builtins import object
 from django.utils.encoding import force_unicode
 from django.conf import settings
 from django import forms
@@ -25,7 +29,7 @@ calbtn = u'''<img src="%smedia/admin/img/admin/icon_calendar.gif" alt="calendar"
 </script>'''
 
 class DateTimeWidget(forms.widgets.TextInput):
-    class Media:
+    class Media(object):
         css = {
             'all': (
                     '/static/helios/jscal/css/jscal2.css',
@@ -49,7 +53,7 @@ class DateTimeWidget(forms.widgets.TextInput):
             except:
                 final_attrs['value'] = \
                                    force_unicode(value)
-        if not final_attrs.has_key('id'):
+        if 'id' not in final_attrs:
             final_attrs['id'] = u'%s_id' % (name)
         id = final_attrs['id']
 

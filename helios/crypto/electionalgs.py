@@ -4,10 +4,16 @@ Election-specific algorithms for Helios
 Ben Adida
 2008-08-30
 """
+# from __future__ import division
+# from __future__ import absolute_import
 
-import algs
+# from builtins import str
+# from builtins import range
+# from past.utils import old_div
+# from builtins import object
+from . import algs
 import logging
-import utils
+from . import utils
 import uuid
 import datetime
 
@@ -29,7 +35,7 @@ class HeliosObject(object):
 
   def set_from_args(self, **kwargs):
     for f in self.FIELDS:
-      if kwargs.has_key(f):
+      if f in kwargs:
         new_val = self.process_value_in(f, kwargs[f])
         setattr(self, f, new_val)
       else:
@@ -55,7 +61,7 @@ class HeliosObject(object):
   def fromJSONDict(cls, d):
     # go through the keys and fix them
     new_d = {}
-    for k in d.keys():
+    for k in list(d.keys()):
       new_d[str(k)] = d[k]
 
     return cls(**new_d)
@@ -227,7 +233,7 @@ class EncryptedAnswer(HeliosObject):
     else:
       ea.overall_proof = None
 
-    if d.has_key('randomness'):
+    if 'randomness' in d:
       ea.randomness = [int(r) for r in d['randomness']]
       ea.answer = d['answer']
 
@@ -262,7 +268,7 @@ class EncryptedAnswer(HeliosObject):
 
     # min and max for number of answers, useful later
     min_answers = 0
-    if question.has_key('min'):
+    if 'min' in question:
       min_answers = question['min']
     max_answers = question['max']
 
@@ -331,7 +337,7 @@ class EncryptedVote(HeliosObject):
 
       question = election.questions[question_num]
       min_answers = 0
-      if question.has_key('min'):
+      if 'min' in question:
         min_answers = question['min']
 
       if not ea.verify(election.public_key, min=min_answers, max=question['max']):
@@ -373,7 +379,7 @@ def one_question_winner(question, result, num_cast_votes):
   determining the winner for one question
   """
   # sort the answers , keep track of the index
-  counts = sorted(enumerate(result), key=lambda(x): x[1])
+  counts = sorted(enumerate(result), key=lambda x: x[1])
   counts.reverse()
 
   # if there's a max > 1, we assume that the top MAX win
@@ -405,7 +411,7 @@ class Election(HeliosObject):
 
   def _process_value_in(self, field_name, field_value):
     if field_name == 'frozen_at' or field_name == 'voting_starts_at' or field_name == 'voting_ends_at':
-      if type(field_value) == str or type(field_value) == unicode:
+      if type(field_value) == str or type(field_value) == str:
         return datetime.datetime.strptime(field_value, '%Y-%m-%d %H:%M:%S')
 
     if field_name == 'public_key':
@@ -415,7 +421,6 @@ class Election(HeliosObject):
       return algs.EGSecretKey.fromJSONDict(field_value)
 
   def _process_value_out(self, field_name, field_value):
-    # the date
     if field_name == 'frozen_at' or field_name == 'voting_starts_at' or field_name == 'voting_ends_at':
       return str(field_value)
 

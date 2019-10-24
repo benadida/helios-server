@@ -3,19 +3,21 @@ Utilities for all views
 
 Ben Adida (12-30-2008)
 """
+# from __future__ import absolute_import
 
+# from builtins import str
 from django.template import Context, Template, loader
 from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
 
-import utils
+from . import utils
 
 from helios import datatypes
 
 # nicely update the wrapper function
 from functools import update_wrapper
 
-from helios_auth.security import get_user
+from helios_auth.security.datastore import get_user
 
 import helios
 
@@ -38,12 +40,12 @@ def prepare_vars(request, vars):
   vars_with_user['user'] = get_user(request)
   
   # csrf protection
-  if request.session.has_key('csrf_token'):
+  if 'csrf_token' in request.session:
     vars_with_user['csrf_token'] = request.session['csrf_token']
     
   vars_with_user['utils'] = utils
   vars_with_user['settings'] = settings
-  vars_with_user['HELIOS_STATIC'] = '/static/helios/helios'
+  vars_with_user['HELIOS_STATIC'] = '/static/js'
   vars_with_user['TEMPLATE_BASE'] = helios.TEMPLATE_BASE
   vars_with_user['CURRENT_URL'] = request.path
   vars_with_user['SECURE_URL_HOST'] = settings.SECURE_URL_HOST
@@ -69,7 +71,7 @@ def render_template_raw(request, template_name, vars={}):
   else:
     full_vars = vars
 
-  c = Context(full_vars)  
+  c = full_vars  
   return t.render(c)
 
 
@@ -86,7 +88,7 @@ def return_json(func):
       return_val = func(self, *args, **kwargs)
       try:
         return render_json(utils.to_json(return_val))
-      except Exception, e:
+      except Exception as e:
         import logging
         logging.error("problem with serialization: " + str(return_val) + " / " + str(e))
         raise e

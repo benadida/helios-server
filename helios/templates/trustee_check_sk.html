@@ -3,25 +3,47 @@
 {% block content %}
 <script>
 function reset() {
-    $('#processing').hide();
-    $('#result').html("");
-    $('#input').hide();
-    $('#loading').show();
+    // $('#processing').hide();
+    // $('#result').html("");
+    // $('#input').hide();
+    // $('#loading').show();
+    // BigInt.setup(function() {
+    //     $('#loading').hide();
+    //     $('#input').show();
+    // });
+
+    document.getElementById('processing').style.display = 'none';
+    document.getElementById('result').innerHTML = '';
+    document.getElementById('input').style.display = 'none';
+    document.getElementById('loading').style.display = 'block';
     BigInt.setup(function() {
-        $('#loading').hide();
-        $('#input').show();
-    });
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('input').style.display = 'block';
+    });    
 }
 
-$(document).ready(function() {
-    reset();
-});
+// $(document).ready(function() {
+//     reset();
+// });
+
+window.onload = function() {
+  console.log('Onload.....');
+  if (document.readyState != 'loading'){
+   reset();
+  } else {
+    document.addEventListener('DOMContentLoaded', reset);
+  }
+}
+
+
 
 var PK_HASH = "{{trustee.public_key_hash}}";
 
 function check_sk(sk_value) {
-    $('#input').hide();
-    $('#processing').show();
+    // $('#input').hide();
+    // $('#processing').show();
+    document.getElementById('input').style.display = 'none';
+    document.getElementById('processing').style.display = 'block';
 
     try {
       var secret_key = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(sk_value));
@@ -33,13 +55,13 @@ function check_sk(sk_value) {
       var key_ok_p = false;
     }
     
-    $('#processing').hide();
+    document.getElementById('processing').style.display = 'none';
 
     var reset_link = "<br /><a href='javascript:reset();'>try again</a>";
     if (key_ok_p) {
-      $('#result').html("your secret key matches!");
+      document.getElementById('result').innerHTML = "your secret key matches!";
     } else {
-      $('#result').html("OH OH, your key is bad." + reset_link);
+      document.getElementById('result').innerHTML = "OH OH, your key is bad." + reset_link;
     }
 }
 </script>

@@ -4,7 +4,7 @@ server_ui specific views
 
 from helios.models import *
 from helios_auth.security import *
-from view_utils import *
+from server_ui.view_utils import *
 
 import helios.views
 import helios
@@ -12,13 +12,15 @@ from helios.crypto import utils as cryptoutils
 from helios_auth.security import *
 from helios.security import can_create_election
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotAllowed
 
 from django.conf import settings
 
 import copy
 import helios_auth.views as auth_views
+from server_ui import glue
+
 
 def get_election():
   return None
@@ -65,3 +67,9 @@ def faq(request):
 def privacy(request):
   return render_template(request, "privacy")
     
+def save_vote_handler(request):
+  """Log the request payload."""
+  # payload = request.get_data(as_text=True) or '(empty payload)'
+  payload = request.body
+  print('Received task with payload: {}'.format(payload))
+  return 'Printed task payload: {}'.format(payload)

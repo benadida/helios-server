@@ -2,11 +2,16 @@
 Forms for Helios
 """
 
+
 from django import forms
-from models import Election
-from widgets import *
-from fields import *
+# from .models import Election
+from .widgets import *
+from .fields import *
 from django.conf import settings
+
+from django.apps import apps
+Election = apps.get_model('helios', 'Election')
+from django.forms.widgets import SelectDateWidget
 
 
 class ElectionForm(forms.Form):
@@ -30,9 +35,9 @@ class ElectionForm(forms.Form):
                                    widget=SplitSelectDateTimeWidget, required=False)
 
 class ElectionTimeExtensionForm(forms.Form):
-  voting_extended_until = SplitDateTimeField(help_text = 'UTC date and time voting extended to',
-                                   widget=SplitSelectDateTimeWidget, required=False)
-  
+  voting_extended_until = SplitDateTimeField(help_text = 'UTC date and time voting extended to', widget=SplitSelectDateTimeWidget, required=False)
+  # voting_extended_until = SplitDateTimeField(help_text = 'UTC date and time voting extended to', widget=SelectTimeWidget, required=False)
+
 class EmailVotersForm(forms.Form):
   subject = forms.CharField(max_length=80)
   body = forms.CharField(max_length=4000, widget=forms.Textarea)

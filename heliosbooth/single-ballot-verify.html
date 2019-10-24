@@ -5,20 +5,14 @@
   <title>Helios Voting System</title>
   <link rel="stylesheet" type="text/css" href="css/booth.css" />
   <link rel="stylesheet" type="text/css" href="css/forms.css" />
-  <script language="javascript" src="js/jscrypto/jsbn.js"></script>
-  <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
-  <script language="javascript" src="js/jscrypto/sjcl.js"></script>
-  <script language="javascript" src="js/underscore-min.js"></script>
-  <script language="javascript" src="js/jquery-1.2.6.min.js"></script>
-  <script language="javascript" src="js/jquery-jtemplates.js"></script>
-  <script language="javascript" src="js/jquery.json.min.js"></script>
-  <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
 
   <script language="javascript">
     // required for jscrypto library
     var JSCRYPTO_HOME = document.location.pathname.replace("single-ballot-verify.html", "js/jscrypto");
   </script>
-
+  <script language="javascript" src="js/jscrypto/jsbn.js"></script>
+  <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
+  <script language="javascript" src="js/jscrypto/sjcl.js"></script>
   <script language="javascript" src="js/jscrypto/class.js"></script>  
   <script language="javascript" src="js/jscrypto/bigint.js"></script>
   <script language="javascript" src="js/jscrypto/random.js"></script>
@@ -30,29 +24,66 @@
 </head>
 <body>
 <script language="javascript">
-$(document).ready(function() {
+
+window.onload = function() {
+  console.log('Onload.....');
+  if (document.readyState != 'loading'){
+    startSetup();
+  } else {
+    document.addEventListener('DOMContentLoaded', startSetup);
+  }
+}
+
+/*
+Entry point
+
+*/
+
+function startSetup() {
     BigInt.setup(function() {
-       $('#verifier_loading').hide();
-
-       if (BigInt.is_dummy) {
-          $('#dummy_bigint').show();
-          return;
-       }
-
-       $('#verifier').show();
-       var election_url = $.query.get('election_url');
-       $('#election_url').val(election_url); 
+    //    $('#verifier_loading').hide();
+    //    $('#verifier').show();
+       document.getElementById('verifier_loading').style.display = 'none';
+       document.getElementById('verifier').style.display = 'block';
     }, function() {
-       $('#dummy_bigint').show();
+       alert('sorry, in-browser verification requires Java Support at this time.');
     });
-});    
+    // var election_url = $.query.get('election_url');
+    // $('#election_url').val(election_url); 
+    const urlParams = new URLSearchParams(window.location.search);
+    var election_url = urlParams.get('election_url');
+    document.getElementById('election_url').value = election_url;
+}
+
+
+
+
+// $(document).ready(function() {
+//     BigInt.setup(function() {
+//        $('#verifier_loading').hide();
+
+//        if (BigInt.is_dummy) {
+//           $('#dummy_bigint').show();
+//           return;
+//        }
+
+//        $('#verifier').show();
+//        var election_url = $.query.get('election_url');
+//        $('#election_url').val(election_url); 
+//     }, function() {
+//        $('#dummy_bigint').show();
+//     });
+// });    
 
 function result_append(str) {
-    $('#results').append(str).append("<br />");
+    // $('#results').append(str).append("<br />");
+    let txt = document.getElementById('results').innerHTML 
+    document.getElementById('results').innerHTML = txt + str + "<br/>"
 }
 
 function verify_single_ballot(election_url, audit_trail) {
-  var encrypted_vote_json = jQuery.secureEvalJSON(audit_trail);
+  // var encrypted_vote_json = jQuery.secureEvalJSON(audit_trail);
+  var encrypted_vote_json = JSON.parse(audit_trail);
   
   result_append("loading election...");
 
@@ -62,13 +93,15 @@ function verify_single_ballot(election_url, audit_trail) {
     return;
   }
   
-  $('#loading').show();
+  // $('#loading').show();
+  document.getElementById('loading').style.display = 'block';
   
   var after_computation = function(overall_result) {
     result_append("<br />");
     
-    $('#loading').hide();
-    
+    // $('#loading').hide();
+    document.getElementById('loading').style.display = 'none';
+
     if (overall_result) {
        result_append('SUCCESSFUL VERIFICATION, DONE!');
     } else {
@@ -77,7 +110,14 @@ function verify_single_ballot(election_url, audit_trail) {
   };
 
   // the hash will be computed within the setup function call now
-  $.ajax({url: election_url, success: function(raw_json) {
+  // $.ajax({url: election_url, success: function(raw_json) {
+
+  var request = new XMLHttpRequest();
+  request.open('GET', election_url, true);
+
+  request.onload = function() {
+    var raw_json = request.responseText;
+
     if (window.Worker) {
       var verifier_worker = new window.Worker("verifierworker.js");
       verifier_worker.onmessage = function(event) {
@@ -96,14 +136,17 @@ function verify_single_ballot(election_url, audit_trail) {
       var overall_result = verify_ballot(raw_json, encrypted_vote_json, result_append);
       after_computation(overall_result);
     }
-  }, error: function() {
+  }, 
+  request.onerror = function() {
       result_append('PROBLEM LOADING election. Are you sure you have the right election URL?<br />');
 
-      $('#loading').hide();
-      
+      // $('#loading').hide();
+      document.getElementById('loading').style.display = 'none';
       result_append('PROBLEM - THIS BALLOT DOES NOT VERIFY.');        
-  }
-  });
+  };
+
+  request.send();
+
 }
 
 </script>

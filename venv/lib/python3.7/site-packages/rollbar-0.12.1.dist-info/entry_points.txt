@@ -1,0 +1,6 @@
+[console_scripts]
+rollbar = rollbar.cli:main
+
+[paste.filter_app_factory]
+pyramid = rollbar.contrib.pyramid:create_rollbar_middleware
+

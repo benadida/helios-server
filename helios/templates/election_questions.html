@@ -2,7 +2,7 @@
 
 {% block title %}Questions for {{election.name}}{% endblock %}
 {% block content %}
-  <h3 class="title">{{election.name}} &mdash; Questions <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">back to election</a>]</span></h3>
+  <h3 class="title">{{election.name}} &mdash; Questions <span style="font-size:0.7em;">[<a href="{% url "one-election-view" election.uuid %}">back to election</a>]</span></h3>
 
   <script language="javascript">
 {% if election.questions %}
@@ -18,20 +18,29 @@
 
   CSRF_TOKEN = '{{csrf_token}}';
 
-  function refresh() {
-      $('#questions').processTemplate({'questions' : QUESTIONS, 'admin_p' : ADMIN_P}); 
-
-      add_answers($('#answer_table'),DEFAULT_NUM_ANSWERS);
+  async function refresh() {
+      await setupQuestionDiv();
+      add_answers(document.getElementById('answer_table'),DEFAULT_NUM_ANSWERS);
  }
   
+//  ??????????????????????
+  // function save_questions(callback) {
+  //     $.post('./save_questions', {'questions_json' : $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function(result) {
+  //         if (result == "FAILURE") {
+  //           alert("The questions could not be saved. Please check that the URLs you entered are either http:// or https://");
+  //         } else {
+  //           callback();
+  //         }
+  //     });      
+  // }
   function save_questions(callback) {
-      $.post('./save_questions', {'questions_json' : $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function(result) {
-          if (result == "FAILURE") {
-            alert("The questions could not be saved. Please check that the URLs you entered are either http:// or https://");
-          } else {
-            callback();
-          }
-      });      
+      var request = new XMLHttpRequest();
+      request.open('POST', './save_questions', true);
+      request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+      request.send('questions_json='+JSON.stringify(QUESTIONS)+'&csrf_token='+CSRF_TOKEN);
+      request.onload = function() {
+        callback();
+      }
   }
   
   function get_question_from_form(form) {
@@ -66,7 +75,7 @@
   
   function question_remove(q_num) {
       var new_questions = [];
-      $(QUESTIONS).each(function(i, q) {
+      QUESTIONS.forEach(function(q, i) {
           if (i == q_num)
             return;
           new_questions.push(q);
@@ -76,33 +85,33 @@
   }
 
   function question_edit(q_num) {
-    $('#q_view_'+q_num).hide();
-    $('#q_edit_'+q_num).show();
+    document.getElementById('q_view_'+q_num).style.display = 'none';
+    document.getElementById('q_edit_'+q_num).style.display = 'block';
 
     // set the default values for this question
-    var form = $('#question_edit_' + q_num + '_form');
+    var form = document.getElementById('question_edit_' + q_num + '_form');
     var q_data = QUESTIONS[q_num];
-    form[0].min.value = q_data.min;
-    form[0].max.value = q_data.max;
-    form[0].question.value = q_data.question;
-    form[0].result_type.value = q_data.result_type;
+    form.min.value = q_data.min;
+    form.max.value = q_data.max;
+    form.question.value = q_data.question;
+    form.result_type.value = q_data.result_type;
 
     // add the answers
-    var answer_table = $('#answer_table_' + q_num);
+    var answer_table = document.getElementById('answer_table_' + q_num);
     add_answers(answer_table, q_data.answers.length);
-    $(q_data.answers).each(function(i, a) {
-     form[0]['answer_' + (i+1)].value = a;
+    (q_data.answers).forEach(function(a, i) {
+     form['answer_' + (i+1)].value = a;
     });
 
     // URLs
-    $(q_data.answer_urls).each(function(i, a) {
-     form[0]['answer_url_' + (i+1)].value = a;
+    (q_data.answer_urls).forEach(function(a, i) {
+     form['answer_url_' + (i+1)].value = a;
     });
-}
+  }
 
   function question_edit_cancel(q_num) {
-    $('#q_edit_'+q_num).hide();
-    $('#q_view_'+q_num).show();
+    document.getElementById('q_edit_'+q_num).style.display = 'none';
+    document.getElementById('q_view_'+q_num).style.display = '';
   }
 
   function question_update(q_num, form) {
@@ -114,9 +123,14 @@
   var DEFAULT_NUM_ANSWERS = 5;
 
   function add_answer(el) {
-    el = $(el);
-    var num_answers = el.find('input.answer').length + 1;
-    el.find('tbody').append('<tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #' + num_answers + '</th><td><input type="text" class="answer" name="answer_' + num_answers + '" size="70" /><br /><nobr>Link (optional, <tt>http</tt> or <tt>https</tt> only): <input type="url" name="answer_url_' + num_answers + '" width="50%" /></nobr></td></tr>');
+    // el = $(el);  ???????????????
+    // var num_answers = el.find('input.answer').length + 1;
+    var num_answers = el.querySelectorAll('input.answer').length + 1;
+    
+    // el.querySelector('tbody').innerHTML = el.querySelector('tbody').innerHTML + '<tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #' + num_answers + '</th><td><input type="text" class="answer" name="answer_' + num_answers + '" size="70" /><br /><nobr>Link (optional, <tt>http</tt> or <tt>https</tt> only): <input type="url" name="answer_url_' + num_answers + '" width="50%" /></nobr></td></tr>';
+    var el1 = document.createElement('tr');
+    el1.innerHTML = '<th>&nbsp;&nbsp;&nbsp;</th><th>Answer #' + num_answers + '</th><td><input type="text" class="answer" name="answer_' + num_answers + '" size="70" /><br /><nobr>Link (optional, <tt>http</tt> or <tt>https</tt> only): <input type="url" name="answer_url_' + num_answers + '" width="50%" /></nobr></td>';
+    el.querySelector('tbody').appendChild(el1);
   }
 
   function add_answers(el, num) {
@@ -131,12 +145,28 @@
     save_questions(refresh);
   }
 
-  $(document).ready(function() {
-      $('#questions').setTemplateURL("/static/helios/static_templates/question.html");
+  // $(document).ready(function() {
+  //     $('#questions').setTemplateURL("/static/helios/static_templates/question.html");
 
-      refresh();
-  });
-  
+  //     refresh();
+  // });
+  window.onload = function() {
+    console.log('Onload.....');
+    if (document.readyState != 'loading'){
+      startSetup();
+    } else {
+      document.addEventListener('DOMContentLoaded', startSetup);
+    }
+  }
+
+  function startSetup() {
+    refresh();
+  }
+
+  async function setupQuestionDiv() {
+    const q_div = await import('/static/static_templates/question.js');
+    document.getElementById('questions').innerHTML = q_div.question_markup; 
+  }
 
   </script>
 

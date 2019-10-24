@@ -1,21 +1,13 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import *
+from django.urls import include, re_path
 from django.contrib import admin
 from django.conf import settings
+from django.views.static import serve
 
-urlpatterns = patterns(
-    '',
-    (r'^auth/', include('helios_auth.urls')),
-    (r'^helios/', include('helios.urls')),
 
-    # SHOULD BE REPLACED BY APACHE STATIC PATH
-    (r'booth/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/heliosbooth'}),
-    (r'verifier/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/heliosverifier'}),
-
-    (r'static/auth/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/helios_auth/media'}),
-    (r'static/helios/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/helios/media'}),
-    (r'static/(?P<path>.*)$', 'django.views.static.serve', {'document_root' : settings.ROOT_PATH + '/server_ui/media'}),
-
-    (r'^', include('server_ui.urls')),
-
-    )
+urlpatterns = [
+    re_path(r'^auth/', include('helios_auth.urls')),
+    re_path(r'^helios/', include('helios.urls')),
+    re_path(r'^', include('server_ui.urls')),
+    re_path(r'booth/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosbooth'}),
+]

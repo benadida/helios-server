@@ -2,9 +2,9 @@
 LinkedIn Authentication
 """
 
-from oauthclient import client
+from helios_auth.auth_systems.oauthclient import client
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http import HttpResponseRedirect
 
 from helios_auth import utils

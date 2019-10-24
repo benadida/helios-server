@@ -9,9 +9,10 @@ from django.conf import settings
 
 import httplib2,json
 
-import sys, os, cgi, urllib, urllib2, re
+import sys, os, cgi, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, re
 
 from oauth2client.client import OAuth2WebServerFlow
+# from google.appengine.api import memcache
 
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False
@@ -34,7 +35,7 @@ def get_auth_url(request, redirect_url):
 def get_user_info_after_auth(request):
   flow = get_flow(request.session['google-redirect-url'])
 
-  if not request.GET.has_key('code'):
+  if 'code' not in request.GET:
     return None
   
   code = request.GET['code']
@@ -47,8 +48,19 @@ def get_user_info_after_auth(request):
    
   email = id_token['email']
 
+  # From https://stackoverflow.com/questions/26607645/what-does-h-httplib2-http-cache-mean 
+  # httplib2.Http(".cache") creates an instance of the HTTP() class, and sets the cache parameter to .cache, 
+  # meaning that a .cache directory in the current working directory is used for cached data.
+  # From the Usage section of the project documentation you can see that the cache is used to 
+  # cache responses according to HTTP caching rules; the cache will honour cache headers set on 
+  # the response unless you override those headers with corresponding request headers.
+  
+  # http = httplib2.Http(".cache") creates issues on app engine.  Python 3 runtime does not have memcache?
+  # Don't use cache in meantime.
+
   # get the nice name
-  http = httplib2.Http(".cache")
+  #http = httplib2.Http(".cache")
+  http = httplib2.Http()
   http = credentials.authorize(http)
   (resp_headers, content) = http.request("https://people.googleapis.com/v1/people/me?personFields=names", "GET")
 

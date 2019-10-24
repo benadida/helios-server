@@ -7,13 +7,17 @@ Ben Adida
 ben@adida.net
 """
 
+# from builtins import str
+# from builtins import range
+# from builtins import object
+# from past.utils import old_div
 import math, hashlib, logging
-import randpool, number
+from . import randpool, number
 
-import numtheory
+from . import numtheory
 
 # some utilities
-class Utils:
+class Utils(object):
     RAND = randpool.RandomPool()
 
     @classmethod
@@ -90,7 +94,7 @@ class Utils:
                 return p, q, z
 
 
-class ElGamal:
+class ElGamal(object):
     def __init__(self):
       self.p = None
       self.q = None
@@ -141,7 +145,7 @@ class ElGamal:
       eg.g = int(d['g'])
       return eg
 
-class EGKeyPair:
+class EGKeyPair(object):
     def __init__(self):
       self.pk = EGPublicKey()
       self.sk = EGSecretKey()
@@ -159,7 +163,7 @@ class EGKeyPair:
 
       self.sk.pk = self.pk
 
-class EGPublicKey:
+class EGPublicKey(object):
     def __init__(self):
         self.y = None
         self.p = None
@@ -213,7 +217,7 @@ class EGPublicKey:
 
     # quick hack FIXME
     def toJSON(self):
-      import utils
+      from . import utils
       return utils.to_json(self.toJSONDict())
 
     def __mul__(self,other):
@@ -292,7 +296,7 @@ class EGPublicKey:
 
     fromJSONDict = from_dict
 
-class EGSecretKey:
+class EGSecretKey(object):
     def __init__(self):
         self.x = None
         self.pk = None
@@ -357,8 +361,8 @@ class EGSecretKey:
         w = Utils.random_mpz_lt(self.pk.q)
         a = pow(self.pk.g, w, self.pk.p)
         b = pow(ciphertext.alpha, w, self.pk.p)
-
-        c = int(hashlib.sha1(str(a) + "," + str(b)).hexdigest(),16)
+        bytes_to_hash = str.encode(str(a) + "," + str(b))
+        c = int(hashlib.sha1(bytes_to_hash).hexdigest(),16)
 
         t = (w + self.x * c) % self.pk.q
 
@@ -395,7 +399,7 @@ class EGSecretKey:
 
         sk = cls()
         sk.x = int(d['x'])
-        if d.has_key('public_key'):
+        if 'public_key' in d:
           sk.pk = EGPublicKey.from_dict(d['public_key'])
         else:
           sk.pk = None
@@ -403,7 +407,7 @@ class EGSecretKey:
 
     fromJSONDict = from_dict
 
-class EGPlaintext:
+class EGPlaintext(object):
     def __init__(self, m = None, pk = None):
         self.m = m
         self.pk = pk
@@ -418,7 +422,7 @@ class EGPlaintext:
         return r
 
 
-class EGCiphertext:
+class EGCiphertext(object):
     def __init__(self, alpha=None, beta=None, pk=None):
         self.pk = pk
         self.alpha = alpha
@@ -586,13 +590,13 @@ class EGCiphertext:
       overall_challenge is what all of the challenges combined should yield.
       """
       if len(plaintexts) != len(proof.proofs):
-        print("bad number of proofs (expected %s, found %s)" % (len(plaintexts), len(proof.proofs)))
+        print(("bad number of proofs (expected %s, found %s)" % (len(plaintexts), len(proof.proofs))))
         return False
 
       for i in range(len(plaintexts)):
         # if a proof fails, stop right there
         if not self.verify_encryption_proof(plaintexts[i], proof.proofs[i]):
-          print "bad proof %s, %s, %s" % (i, plaintexts[i], proof.proofs[i])
+          print(("bad proof %s, %s, %s" % (i, plaintexts[i], proof.proofs[i])))
           return False
 
       # logging.info("made it past the two encryption proofs")
@@ -743,7 +747,7 @@ class EGZKProof(object):
 
   toJSONDict = to_dict
 
-class EGZKDisjunctiveProof:
+class EGZKDisjunctiveProof(object):
   def __init__(self, proofs = None):
     self.proofs = proofs
 
@@ -783,12 +787,19 @@ def EG_disjunctive_challenge_generator(commitments):
     array_to_hash.append(str(commitment['B']))
 
   string_to_hash = ",".join(array_to_hash)
-  return int(hashlib.sha1(string_to_hash).hexdigest(),16)
+  bytes_to_hash = str.encode(string_to_hash)
+
+  # Debug
+  # a = hashlib.sha1(bytes_to_hash)
+  # b = a.hexdigest()
+  # c = int(b, 16)
+
+  return int(hashlib.sha1(bytes_to_hash).hexdigest(),16)
 
 # a challenge generator for Fiat-Shamir with A,B commitment
 def EG_fiatshamir_challenge_generator(commitment):
   return EG_disjunctive_challenge_generator([commitment])
 
 def DLog_challenge_generator(commitment):
-  string_to_hash = str(commitment)
-  return int(hashlib.sha1(string_to_hash).hexdigest(),16)
+  bytes_to_hash = str(commitment).encode('Latin-1')
+  return int(hashlib.sha1(bytes_to_hash).hexdigest(),16)
