@@ -1,0 +1,18 @@
+sudo: false
+language: python
+python:
+  - "3.7"
+# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+install:
+  - pip install setuptools
+  - pip install -r requirements.txt
+# command to run tests, e.g. python setup.py test
+script: 
+  - python manage.py test
+services:
+ - postgresql
+before_script:
+  - psql -c 'create database helios;' -U postgres
+  - python manage.py migrate
+before_install:
+  - export BOTO_CONFIG=/dev/null
