@@ -87,7 +87,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'helios',
         'USER': 'warwickmcnaughton',
-        'PASSWORD': '1629',
+        'PASSWORD': 'xxxx',
     }
 }
 
@@ -306,8 +306,8 @@ AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').
 AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
 
 # google
-GOOGLE_CLIENT_ID = get_from_env('GOOGLE_CLIENT_ID', '739721212934-9anb7pq77h6nglknafiiq6svb50a73mr.apps.googleusercontent.com')
-GOOGLE_CLIENT_SECRET = get_from_env('GOOGLE_CLIENT_SECRET', 'e6BIkCxWG6sAJO32o1FuyaS_')
+GOOGLE_CLIENT_ID = get_from_env('GOOGLE_CLIENT_ID', 'xxxx')
+GOOGLE_CLIENT_SECRET = get_from_env('GOOGLE_CLIENT_SECRET', 'xxxx')
 
 # facebook
 FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID','')
