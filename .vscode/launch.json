@@ -24,9 +24,10 @@
             "program": "${workspaceFolder}/manage.py",
             "args": [
                 "test", 
-                "helios_auth.tests.UserModelTests",
+                "helios_auth.tests",
             ],
-            "django": true
+            "django": true,
+            "justMyCode": false
         }
     ]
 }

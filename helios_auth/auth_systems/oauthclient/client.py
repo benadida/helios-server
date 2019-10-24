@@ -133,17 +133,17 @@ if __name__ == '__main__':
     consumer_key = ''
     consumer_secret = ''
     while not consumer_key:
-        consumer_key = input('Please enter consumer key: ')
+        consumer_key = eval(input('Please enter consumer key: '))
     while not consumer_secret:
-        consumer_secret = input('Please enter consumer secret: ')
+        consumer_secret = eval(input('Please enter consumer secret: '))
     auth_client = LoginOAuthClient(consumer_key,consumer_secret)
     tok = auth_client.get_request_token()
     token = tok['oauth_token']
     token_secret = tok['oauth_token_secret']
     url = auth_client.get_authorize_url(token) 
     webbrowser.open(url)
-    print("Visit this URL to authorize your app: " + url)
-    response_token = input('What is the oauth_token from twitter: ')
+    print(("Visit this URL to authorize your app: " + url))
+    response_token = eval(input('What is the oauth_token from twitter: '))
     response_client = LoginOAuthClient(consumer_key, consumer_secret,token, token_secret, server_params={})
     tok = response_client.get_access_token()
     print("Making signed request")
