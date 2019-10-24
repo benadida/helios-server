@@ -80,7 +80,7 @@ def start_openid(session, openid_url, trust_root, return_to):
     # XXX - uses myOpenID-compatible schema values, which are
     # not those listed at axschema.org.
 
-    for k, v in AX_REQUIRED_FIELDS.items():
+    for k, v in list(AX_REQUIRED_FIELDS.items()):
         ax_request.add(ax.AttrInfo(v, required=True))
 
     auth_request.addExtension(ax_request)
@@ -123,7 +123,7 @@ def finish_openid(session, request_args, return_to):
 
             ax_response = ax.FetchResponse.fromSuccessResponse(response)
             if ax_response:
-                for k, v in AX_REQUIRED_FIELDS.items():
+                for k, v in list(AX_REQUIRED_FIELDS.items()):
                     """
                     the values are the URIs, they are the key into the data
                     the key is the shortname

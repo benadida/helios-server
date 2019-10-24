@@ -137,5 +137,5 @@ def normalDict(request_data):
     values are lists, because in OpenID, each key in the query arg set
     can have at most one value.
     """
-    return dict((k, v[0]) for k, v in request_data.items())
+    return dict((k, v[0]) for k, v in list(request_data.items()))
 
