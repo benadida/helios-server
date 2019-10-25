@@ -1,6 +1,6 @@
 
 import os, json
-from secrets import DBPWD, GOOGLESECRET, GOOGLEID
+# from secrets import DBPWD, GOOGLESECRET, GOOGLEID
 
 ##############################
 # SETUP                      #
