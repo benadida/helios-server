@@ -9,3 +9,4 @@ env.sh
 .idea/
 .wm
 settings.py
+venv
