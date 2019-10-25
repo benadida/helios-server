@@ -1,5 +1,6 @@
 
 import os, json
+from secrets import DBPWD
 
 ##############################
 # SETUP                      #
@@ -86,8 +87,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'helios',
-        # 'USER': 'warwickmcnaughton',
-        # 'PASSWORD': 'xxxx',
+        'USER': 'warwickmcnaughton',
+        'PASSWORD': DBPWD,
     }
 }
 

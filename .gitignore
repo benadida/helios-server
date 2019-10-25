@@ -10,3 +10,4 @@ env.sh
 .wm
 settings.py
 venv/*
+secrets.py
