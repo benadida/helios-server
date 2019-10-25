@@ -3,7 +3,6 @@ deploy-latest.sh
 .DS_Store
 *~
 media/*
-venv
 celerybeat-*
 env.sh
 .cache
