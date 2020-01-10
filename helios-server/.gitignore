@@ -1,0 +1,10 @@
+deploy-latest.sh
+*.pyc
+.DS_Store
+*~
+media/*
+venv
+celerybeat-*
+env.sh
+.cache
+.idea/

@@ -1,0 +1,36 @@
+version: '3.7'
+
+services:
+  db:
+    image: postgres:9.4-alpine
+    volumes:
+      - ./shared/postgresql:/var/lib/postgresql/data
+    env_file:
+      - .envs/.postgres
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - 5432:5432
+    networks:
+      - sherlock-network
+
+  app:
+    container_name: helios-backend
+    build:
+      context: .
+      dockerfile: ./docker/local/helios-server/Dockerfile
+    depends_on:
+      - db
+    env_file:
+      - .envs/.django
+      - .envs/.postgres
+    volumes:
+      - ./helios-server:/app
+    ports:
+    - 8000:8000
+    networks:
+      - sherlock-network
+
+networks:
+  sherlock-network:
+    name: sherlock-network
