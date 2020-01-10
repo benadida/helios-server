@@ -6,13 +6,12 @@ django-picklefield==0.3.0
 kombu==3.0.30
 html5lib==0.999
 psycopg2==2.7.3.2
-pyparsing==1.5.7
+pyparsing==2.4.5
 python-dateutil>=1.5
 python-openid==2.2.5
-wsgiref==0.1.2
 gunicorn==19.9
 requests==2.21.0
-unicodecsv==0.9.0
+unicodecsv==0.14.1
 dj_database_url==0.3.0
 django-sslify==0.2.7
 django_webtest>=1.9

@@ -1,4 +1,4 @@
-FROM python:2.7-slim
+FROM python:3.5-slim
 
 ARG USER_ID=1000
 ENV HOME=/home/django
