@@ -114,7 +114,7 @@ class EncryptedAnswer(WorkflowObject):
 
     # min and max for number of answers, useful later
     min_answers = 0
-    if question.has_key('min'):
+    if 'min' in question:
       min_answers = question['min']
     max_answers = question['max']
 
@@ -199,7 +199,7 @@ class EncryptedVote(WorkflowObject):
 
       question = election.questions[question_num]
       min_answers = 0
-      if question.has_key('min'):
+      if 'min' in question:
         min_answers = question['min']
         
       if not ea.verify(election.public_key, min=min_answers, max=question['max']):

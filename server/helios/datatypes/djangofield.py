@@ -15,16 +15,13 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 from . import LDObject
 
-class LDObjectField(models.TextField):
+class LDObjectField(models.TextField, metaclass=models.SubfieldBase):
     """
     LDObject is a generic textfield that neatly serializes/unserializes
     JSON objects seamlessly.
     
     deserialization_params added on 2011-01-09 to provide additional hints at deserialization time
     """
-
-    # Used so to_python() is called
-    __metaclass__ = models.SubfieldBase
 
     def __init__(self, type_hint=None, **kwargs):
         self.type_hint = type_hint
@@ -34,7 +31,7 @@ class LDObjectField(models.TextField):
         """Convert our string value to LDObject after we load it from the DB"""
 
         # did we already convert this?
-        if not isinstance(value, basestring):
+        if not isinstance(value, str):
             return value
 
         if  value == None:
@@ -42,7 +39,7 @@ class LDObjectField(models.TextField):
 
         # in some cases, we're loading an existing array or dict,
         # we skip this part but instantiate the LD object
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             try:
                 parsed_value = json.loads(value)
             except:
@@ -59,7 +56,7 @@ class LDObjectField(models.TextField):
 
     def get_prep_value(self, value):
         """Convert our JSON object to a string before we save"""
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return value
 
         if value == None:

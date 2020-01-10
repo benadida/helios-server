@@ -9,11 +9,11 @@ ben@adida.net
 """
 
 import math, hashlib, logging
-import randpool, number
+from . import randpool, number
 
-import numtheory
+from . import numtheory
 
-from algs import Utils
+from .algs import Utils
 
 class Cryptosystem(object):
     def __init__(self):
@@ -410,13 +410,13 @@ class Ciphertext:
       overall_challenge is what all of the challenges combined should yield.
       """
       if len(plaintexts) != len(proof.proofs):
-        print("bad number of proofs (expected %s, found %s)" % (len(plaintexts), len(proof.proofs)))
+        print(("bad number of proofs (expected %s, found %s)" % (len(plaintexts), len(proof.proofs))))
         return False
 
       for i in range(len(plaintexts)):
         # if a proof fails, stop right there
         if not self.verify_encryption_proof(plaintexts[i], proof.proofs[i]):
-          print "bad proof %s, %s, %s" % (i, plaintexts[i], proof.proofs[i])
+          print(("bad proof %s, %s, %s" % (i, plaintexts[i], proof.proofs[i])))
           return False
           
       # logging.info("made it past the two encryption proofs")

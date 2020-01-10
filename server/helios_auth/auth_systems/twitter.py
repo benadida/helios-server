@@ -2,7 +2,7 @@
 Twitter Authentication
 """
 
-from oauthclient import client
+from .oauthclient import client
 
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect

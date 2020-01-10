@@ -5,7 +5,7 @@ Ben Adida - ben@adida.net
 2005-04-11
 """
 
-import urllib, re, datetime, string
+import urllib.request, urllib.parse, urllib.error, re, datetime, string
 
 # utils from helios_auth, too
 from helios_auth.utils import *
@@ -38,7 +38,7 @@ def urlencode(str):
     if not str:
         return ""
 
-    return urllib.quote(str)
+    return urllib.parse.quote(str)
 
 def urlencodeall(str):
     """
@@ -53,11 +53,11 @@ def urldecode(str):
     if not str:
         return ""
 
-    return urllib.unquote(str)
+    return urllib.parse.unquote(str)
 
 def dictToURLParams(d):
   if d:
-    return '&'.join([i + '=' + urlencode(v) for i,v in d.items()])
+    return '&'.join([i + '=' + urlencode(v) for i,v in list(d.items())])
   else:
     return None
 ##
@@ -87,22 +87,22 @@ def xss_strip_all_tags(s):
         if text[:2] == "&#":
             try:
                 if text[:3] == "&#x":
-                    return unichr(int(text[3:-1], 16))
+                    return chr(int(text[3:-1], 16))
                 else:
-                    return unichr(int(text[2:-1]))
+                    return chr(int(text[2:-1]))
             except ValueError:
                 pass
         elif text[:1] == "&":
-            import htmlentitydefs
-            entity = htmlentitydefs.entitydefs.get(text[1:-1])
+            import html.entities
+            entity = html.entities.entitydefs.get(text[1:-1])
             if entity:
                 if entity[:2] == "&#":
                     try:
-                        return unichr(int(entity[2:-1]))
+                        return chr(int(entity[2:-1]))
                     except ValueError:
                         pass
                 else:
-                    return unicode(entity, "iso-8859-1")
+                    return str(entity, "iso-8859-1")
         return text # leave as is
         
     return re.sub("(?s)<[^>]*>|&#?\w+;", fixup, s)

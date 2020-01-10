@@ -6,6 +6,7 @@ Ben Adida (ben@adida.net)
 
 from django.conf.urls import *
 
+from helios.common import election_badge
 from helios.views import *
 
 urlpatterns = patterns('',

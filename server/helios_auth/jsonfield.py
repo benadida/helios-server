@@ -10,16 +10,13 @@ from django.db.models import signals
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 
-class JSONField(models.TextField):
+class JSONField(models.TextField, metaclass=models.SubfieldBase):
     """
     JSONField is a generic textfield that neatly serializes/unserializes
     JSON objects seamlessly.
     
     deserialization_params added on 2011-01-09 to provide additional hints at deserialization time
     """
-
-    # Used so to_python() is called
-    __metaclass__ = models.SubfieldBase
 
     def __init__(self, json_type=None, deserialization_params=None, **kwargs):
         self.json_type = json_type
@@ -54,7 +51,7 @@ class JSONField(models.TextField):
 
     def get_prep_value(self, value):
         """Convert our JSON object to a string before we save"""
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return value
 
         if value == None:

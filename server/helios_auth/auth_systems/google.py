@@ -9,7 +9,7 @@ from django.conf import settings
 
 import httplib2,json
 
-import sys, os, cgi, urllib, urllib2, re
+import sys, os, cgi, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, re
 
 from oauth2client.client import OAuth2WebServerFlow
 
@@ -34,7 +34,7 @@ def get_auth_url(request, redirect_url):
 def get_user_info_after_auth(request):
   flow = get_flow(request.session['google-redirect-url'])
 
-  if not request.GET.has_key('code'):
+  if 'code' not in request.GET:
     return None
   
   code = request.GET['code']

@@ -7,10 +7,10 @@ Hacked a bit by Ben Adida (ben@adida.net) so that:
 """
 
 import cgi
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import time
 import random
-import urlparse
+import urllib.parse
 import hmac
 import base64
 import logging
@@ -32,7 +32,7 @@ def build_authenticate_header(realm=''):
 # url escape
 def escape(s):
     # escape '/' too
-    return urllib.quote(s, safe='~')
+    return urllib.parse.quote(s, safe='~')
 
 # util function: current timestamp
 # seconds since epoch (UTC)
@@ -70,7 +70,7 @@ class OAuthToken(object):
         self.secret = secret
 
     def to_string(self):
-        return urllib.urlencode({'oauth_token': self.key, 'oauth_token_secret': self.secret})
+        return urllib.parse.urlencode({'oauth_token': self.key, 'oauth_token_secret': self.secret})
 
     # return a token from something like:
     # oauth_token_secret=digg&oauth_token=digg
@@ -125,7 +125,7 @@ class OAuthRequest(object):
     # get any non-oauth parameters
     def get_nonoauth_parameters(self):
         parameters = {}
-        for k, v in self.parameters.iteritems():
+        for k, v in self.parameters.items():
             # ignore oauth parameters
             if k.find('oauth_') < 0:
                 parameters[k] = v
@@ -136,7 +136,7 @@ class OAuthRequest(object):
         auth_header = 'OAuth realm="%s"' % realm
         # add the oauth parameters
         if self.parameters:
-            for k, v in self.parameters.iteritems():
+            for k, v in self.parameters.items():
               # only if it's a standard OAUTH param (Ben)
               if k in self.OAUTH_PARAMS:
                 auth_header += ', %s="%s"' % (k, escape(str(v)))
@@ -144,7 +144,7 @@ class OAuthRequest(object):
 
     # serialize as post data for a POST request
     def to_postdata(self):
-        return '&'.join('%s=%s' % (escape(str(k)), escape(str(v))) for k, v in self.parameters.iteritems())
+        return '&'.join('%s=%s' % (escape(str(k)), escape(str(v))) for k, v in self.parameters.items())
 
     # serialize as a url for a GET request
     def to_url(self):
@@ -158,7 +158,7 @@ class OAuthRequest(object):
             del params['oauth_signature']
         except:
             pass
-        key_values = params.items()
+        key_values = list(params.items())
         # sort lexicographically, first after key, then after value
         key_values.sort()
         # combine key value pairs in string and escape
@@ -170,7 +170,7 @@ class OAuthRequest(object):
 
     # parses the url and rebuilds it to be scheme://host/path
     def get_normalized_http_url(self):
-        parts = urlparse.urlparse(self.http_url)
+        parts = urllib.parse.urlparse(self.http_url)
         url_string = '%s://%s%s' % (parts[0], parts[1], parts[2]) # scheme, netloc, path
         return url_string
         
@@ -209,7 +209,7 @@ class OAuthRequest(object):
             parameters.update(query_params)
 
         # URL parameters
-        param_str = urlparse.urlparse(http_url)[4] # query
+        param_str = urllib.parse.urlparse(http_url)[4] # query
         url_params = OAuthRequest._split_url_string(param_str)
         parameters.update(url_params)
 
@@ -264,15 +264,15 @@ class OAuthRequest(object):
             # split key-value
             param_parts = param.split('=', 1)
             # remove quotes and unescape the value
-            params[param_parts[0]] = urllib.unquote(param_parts[1].strip('\"'))
+            params[param_parts[0]] = urllib.parse.unquote(param_parts[1].strip('\"'))
         return params
     
     # util function: turn url string into parameters, has to do some unescaping
     @staticmethod
     def _split_url_string(param_str):
         parameters = cgi.parse_qs(param_str, keep_blank_values=False)
-        for k, v in parameters.iteritems():
-            parameters[k] = urllib.unquote(v[0])
+        for k, v in parameters.items():
+            parameters[k] = urllib.parse.unquote(v[0])
         return parameters
 
 # OAuthServer is a worker to check a requests validity against a data store
@@ -365,7 +365,7 @@ class OAuthServer(object):
             # get the signature method object
             signature_method = self.signature_methods[signature_method]
         except:
-            signature_method_names = ', '.join(self.signature_methods.keys())
+            signature_method_names = ', '.join(list(self.signature_methods.keys()))
             raise OAuthError('Signature method %s not supported try one of the following: %s' % (signature_method, signature_method_names))
 
         return signature_method

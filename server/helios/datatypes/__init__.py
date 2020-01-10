@@ -43,7 +43,7 @@ def recursiveToDict(obj):
 
 def get_class(datatype):
     # already done?
-    if not isinstance(datatype, basestring):
+    if not isinstance(datatype, str):
         return datatype
 
     # parse datatype string "v31/Election" --> from v31 import Election
@@ -151,7 +151,7 @@ class LDObject(object):
     def loadData(self):
         "load data using from the wrapped object"
         # go through the subfields and instantiate them too
-        for subfield_name, subfield_type in self.STRUCTURED_FIELDS.iteritems():
+        for subfield_name, subfield_type in self.STRUCTURED_FIELDS.items():
             self.structured_fields[subfield_name] = self.instantiate(self._getattr_wrapped(subfield_name), datatype = subfield_type)
         
     def loadDataFromDict(self, d):
@@ -160,7 +160,7 @@ class LDObject(object):
         """
 
         # the structured fields
-        structured_fields = self.STRUCTURED_FIELDS.keys()
+        structured_fields = list(self.STRUCTURED_FIELDS.keys())
 
         # go through the fields and set them properly
         # on the newly instantiated object
@@ -195,7 +195,7 @@ class LDObject(object):
 
         for f in (alternate_fields or fields):
             # is it a structured subfield?
-            if self.structured_fields.has_key(f):
+            if f in self.structured_fields:
                 val[f] = recursiveToDict(self.structured_fields[f])
             else:
                 val[f] = self.process_value_out(f, self._getattr_wrapped(f))

@@ -24,7 +24,7 @@ def render_template(request, template_name, vars = {}):
   vars_with_user['CURRENT_URL'] = request.path
   
   # csrf protection
-  if request.session.has_key('csrf_token'):
+  if 'csrf_token' in request.session:
     vars_with_user['csrf_token'] = request.session['csrf_token']
   
   return render_to_response('server_ui/templates/%s.html' % template_name, vars_with_user)

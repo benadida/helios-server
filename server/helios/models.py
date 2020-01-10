@@ -14,9 +14,8 @@ from django.core.mail import send_mail
 import datetime, logging, uuid, random, io
 import bleach
 
-from crypto import electionalgs, algs, utils
+from helios.crypto import electionalgs, algs, utils
 from helios import utils as heliosutils
-import helios.views
 
 from helios import datatypes
 
@@ -299,7 +298,7 @@ class Election(HeliosModel):
       return []
 
     # constraints that are relevant
-    relevant_constraints = [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type and constraint.has_key('constraint')]
+    relevant_constraints = [constraint['constraint'] for constraint in self.eligibility if constraint['auth_system'] == user_type and 'constraint' in constraint]
     if len(relevant_constraints) > 0:
       return relevant_constraints[0]
     else:
@@ -325,7 +324,7 @@ class Election(HeliosModel):
       return_val = "<ul>"
       
       for constraint in self.eligibility:
-        if constraint.has_key('constraint'):
+        if 'constraint' in constraint:
           for one_constraint in constraint['constraint']:
             return_val += "<li>%s</li>" % AUTH_SYSTEMS[constraint['auth_system']].pretty_eligibility(one_constraint)
         else:
@@ -573,10 +572,6 @@ class Election(HeliosModel):
   def get_log(self):
     return self.electionlog_set.order_by('-at')
 
-  @property
-  def url(self):
-    return helios.views.get_election_url(self)
-
   def init_tally(self):
     # FIXME: create the right kind of tally
     from helios.workflows import homomorphic
@@ -595,7 +590,7 @@ class Election(HeliosModel):
     determining the winner for one question
     """
     # sort the answers , keep track of the index
-    counts = sorted(enumerate(result), key=lambda(x): x[1])
+    counts = sorted(enumerate(result), key=lambda x: x[1])
     counts.reverse()
     
     the_max = question['max'] or 1
@@ -674,9 +669,9 @@ def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
     for row in csv_reader:
       # decode UTF-8 back to Unicode, cell by cell:
       try:
-        yield [unicode(cell, 'utf-8') for cell in row]
+        yield [str(cell, 'utf-8') for cell in row]
       except:
-        yield [unicode(cell, 'latin-1') for cell in row]        
+        yield [str(cell, 'latin-1') for cell in row]        
 
 def utf_8_encoder(unicode_csv_data):
     for line in unicode_csv_data:
@@ -704,7 +699,7 @@ class VoterFile(models.Model):
 
   def itervoters(self):
     if self.voter_file_content:
-      if type(self.voter_file_content) == unicode:
+      if type(self.voter_file_content) == str:
         content = self.voter_file_content.encode('utf-8')
       else:
         content = self.voter_file_content
@@ -767,7 +762,7 @@ class VoterFile(models.Model):
         existing_voter.save()
 
     if election.use_voter_aliases:
-      voter_alias_integers = range(last_alias_num+1, last_alias_num+1+num_voters)
+      voter_alias_integers = list(range(last_alias_num+1, last_alias_num+1+num_voters))
       random.shuffle(voter_alias_integers)
       for i, voter in enumerate(new_voters):
         voter.alias = 'V%s' % voter_alias_integers[i]

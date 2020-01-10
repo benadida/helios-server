@@ -8,7 +8,7 @@ from django.conf import settings
 from helios.view_utils import render_template_raw
 import helios.views, helios.signals
 
-import views
+from . import views
 
 def vote_cast_send_message(user, voter, election, cast_vote, **kwargs):
   ## FIXME: this doesn't work for voters that are not also users

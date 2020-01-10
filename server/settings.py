@@ -7,7 +7,7 @@ TESTING = 'test' in sys.argv
 
 # go through environment variables and override them
 def get_from_env(var, default):
-    if not TESTING and os.environ.has_key(var):
+    if not TESTING and var in os.environ:
         return os.environ[var]
     else:
         return default
@@ -151,7 +151,9 @@ INSTALLED_APPS = (
 #    'django.contrib.auth',
 #    'django.contrib.contenttypes',
     'djangosecure',
+    "django.contrib.contenttypes",
     'django.contrib.sessions',
+    'django.contrib.auth',
     #'django.contrib.sites',
     ## needed for queues
     'djcelery',
@@ -287,7 +289,7 @@ TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
 # Rollbar Error Logging
 ROLLBAR_ACCESS_TOKEN = get_from_env('ROLLBAR_ACCESS_TOKEN', None)
 if ROLLBAR_ACCESS_TOKEN:
-  print "setting up rollbar"
+  print("setting up rollbar")
   MIDDLEWARE_CLASSES += ('rollbar.contrib.django.middleware.RollbarNotifierMiddleware',)
   ROLLBAR = {
     'access_token': ROLLBAR_ACCESS_TOKEN,

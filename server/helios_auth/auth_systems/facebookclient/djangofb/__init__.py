@@ -64,7 +64,7 @@ def require_login(next=None, internal=None):
     """
     def decorator(view):
         def newview(request, *args, **kwargs):
-            next = newview.next
+            next = newview.__next__
             internal = newview.internal
 
             try:
@@ -127,7 +127,7 @@ def require_add(next=None, internal=None, on_install=None):
     """
     def decorator(view):
         def newview(request, *args, **kwargs):
-            next = newview.next
+            next = newview.__next__
             internal = newview.internal
 
             try:

@@ -7,9 +7,9 @@ ben@adida.net
 
 from celery.decorators import task
 
-from models import *
-from view_utils import render_template_raw
-import signals
+from .models import *
+from .view_utils import render_template_raw
+from . import signals
 
 import copy
 
@@ -29,7 +29,7 @@ def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwarg
         signals.vote_cast.send(sender=election, election=election, user=user, voter=voter, cast_vote=cast_vote)
         
         if status_update_message and user.can_update_status():
-            from views import get_election_url
+            from .common import get_election_url
 
             user.update_status(status_update_message)
     else:

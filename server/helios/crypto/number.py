@@ -12,7 +12,7 @@
 
 __revision__ = "$Id: number.py,v 1.13 2003/04/04 18:21:07 akuchling Exp $"
 
-bignum = long
+bignum = int
 try:
     from Crypto.PublicKey import _fastmath
 except ImportError:
@@ -35,7 +35,7 @@ def size (N):
     """size(N:long) : int
     Returns the size of the number N in bits.
     """
-    bits, power = 0,1L
+    bits, power = 0,1
     while N >= power:
         bits += 1
         power = power << 1
@@ -51,7 +51,7 @@ def getRandomNumber(N, randfunc):
         char = ord(randfunc(1)) >> (8-odd_bits)
         S = chr(char) + S
     value = bytes_to_long(S)
-    value |= 2L ** (N-1)                # Ensure high bit is set
+    value |= 2 ** (N-1)                # Ensure high bit is set
     assert size(value) >= N
     return value
 
@@ -68,8 +68,8 @@ def inverse(u, v):
     """inverse(u:long, u:long):long
     Return the inverse of u mod v.
     """
-    u3, v3 = long(u), long(v)
-    u1, v1 = 1L, 0L
+    u3, v3 = int(u), int(v)
+    u1, v1 = 1, 0
     while v3 > 0:
         q=u3 / v3
         u1, v1 = v1, u1 - v1*q
@@ -108,25 +108,25 @@ def isPrime(N):
         return _fastmath.isPrime(N)
 
     # Compute the highest bit that's set in N
-    N1 = N - 1L
-    n = 1L
+    N1 = N - 1
+    n = 1
     while (n<N):
-        n=n<<1L
-    n = n >> 1L
+        n=n<<1
+    n = n >> 1
 
     # Rabin-Miller test
     for c in sieve[:7]:
-        a=long(c) ; d=1L ; t=n
+        a=int(c) ; d=1 ; t=n
         while (t):  # Iterate over the bits in N1
             x=(d*d) % N
-            if x==1L and d!=1L and d!=N1:
+            if x==1 and d!=1 and d!=N1:
                 return 0  # Square root of 1 found
             if N1 & t:
                 d=(x*a) % N
             else:
                 d=x
-            t = t >> 1L
-        if d!=1L:
+            t = t >> 1
+        if d!=1:
             return 0
     return 1
 
@@ -153,19 +153,19 @@ def long_to_bytes(n, blocksize=0):
     blocksize.
     """
     # after much testing, this algorithm was deemed to be the fastest
-    s = ''
-    n = long(n)
+    s = b''
+    n = int(n)
     pack = struct.pack
     while n > 0:
-        s = pack('>I', n & 0xffffffffL) + s
+        s = pack('>I', n & 0xffffffff) + s
         n = n >> 32
     # strip off leading zeros
     for i in range(len(s)):
-        if s[i] != '\000':
+        if s[i] != 0:
             break
     else:
         # only happens when n == 0
-        s = '\000'
+        s = b'0'
         i = 0
     s = s[i:]
     # add back some pad bytes.  this could be done more efficiently w.r.t. the
@@ -180,7 +180,7 @@ def bytes_to_long(s):
 
     This is (essentially) the inverse of long_to_bytes().
     """
-    acc = 0L
+    acc = 0
     unpack = struct.unpack
     length = len(s)
     if length % 4:

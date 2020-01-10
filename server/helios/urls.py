@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import patterns, include
 
-from views import *
+from .common import election_shortcut, test_cookie_2, nocookies
+from .views import *
 
 urlpatterns = patterns('',
   (r'^autologin$', admin_autologin),

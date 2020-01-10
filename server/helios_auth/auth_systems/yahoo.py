@@ -7,10 +7,10 @@ from django.http import *
 from django.core.mail import send_mail
 from django.conf import settings
 
-import sys, os, cgi, urllib, urllib2, re
+import sys, os, cgi, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, re
 from xml.etree import ElementTree
 
-from openid import view_helpers
+from .openid import view_helpers
 
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False

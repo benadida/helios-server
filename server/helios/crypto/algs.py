@@ -8,9 +8,9 @@ ben@adida.net
 """
 
 import math, hashlib, logging
-import randpool, number
+from . import randpool, number
 
-import numtheory
+from . import numtheory
 
 # some utilities
 class Utils:
@@ -213,7 +213,7 @@ class EGPublicKey:
 
     # quick hack FIXME
     def toJSON(self):
-      import utils
+      from . import utils
       return utils.to_json(self.toJSONDict())
 
     def __mul__(self,other):
@@ -395,7 +395,7 @@ class EGSecretKey:
 
         sk = cls()
         sk.x = int(d['x'])
-        if d.has_key('public_key'):
+        if 'public_key' in d:
           sk.pk = EGPublicKey.from_dict(d['public_key'])
         else:
           sk.pk = None
@@ -586,13 +586,13 @@ class EGCiphertext:
       overall_challenge is what all of the challenges combined should yield.
       """
       if len(plaintexts) != len(proof.proofs):
-        print("bad number of proofs (expected %s, found %s)" % (len(plaintexts), len(proof.proofs)))
+        print(("bad number of proofs (expected %s, found %s)" % (len(plaintexts), len(proof.proofs))))
         return False
 
       for i in range(len(plaintexts)):
         # if a proof fails, stop right there
         if not self.verify_encryption_proof(plaintexts[i], proof.proofs[i]):
-          print "bad proof %s, %s, %s" % (i, plaintexts[i], proof.proofs[i])
+          print("bad proof %s, %s, %s" % (i, plaintexts[i], proof.proofs[i]))
           return False
 
       # logging.info("made it past the two encryption proofs")

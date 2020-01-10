@@ -7,12 +7,12 @@ Used the SampleClient from the OAUTH.org example python client as basis.
 props to leahculver for making a very hard to use but in the end usable oauth lib.
 
 '''
-import httplib
-import urllib, urllib2
+import http.client
+import urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse
 import time
 import webbrowser
-import oauth as oauth
-from urlparse import urlparse
+from . import oauth as oauth
+from urllib.parse import urlparse
 
 class LoginOAuthClient(oauth.OAuthClient):
 
@@ -58,9 +58,9 @@ class LoginOAuthClient(oauth.OAuthClient):
     def http_wrapper(self, url, postdata={}): 
         try:
             if (postdata != {}): 
-                f = urllib.urlopen(url, postdata) 
+                f = urllib.request.urlopen(url, postdata) 
             else: 
-                f = urllib.urlopen(url) 
+                f = urllib.request.urlopen(url) 
             response = f.read()
         except:
             import traceback
@@ -133,26 +133,26 @@ if __name__ == '__main__':
     consumer_key = ''
     consumer_secret = ''
     while not consumer_key:
-        consumer_key = raw_input('Please enter consumer key: ')
+        consumer_key = input('Please enter consumer key: ')
     while not consumer_secret:
-        consumer_secret = raw_input('Please enter consumer secret: ')
+        consumer_secret = input('Please enter consumer secret: ')
     auth_client = LoginOAuthClient(consumer_key,consumer_secret)
     tok = auth_client.get_request_token()
     token = tok['oauth_token']
     token_secret = tok['oauth_token_secret']
     url = auth_client.get_authorize_url(token) 
     webbrowser.open(url)
-    print "Visit this URL to authorize your app: " + url
-    response_token = raw_input('What is the oauth_token from twitter: ')
+    print("Visit this URL to authorize your app: " + url)
+    response_token = input('What is the oauth_token from twitter: ')
     response_client = LoginOAuthClient(consumer_key, consumer_secret,token, token_secret, server_params={})
     tok = response_client.get_access_token()
-    print "Making signed request"
+    print("Making signed request")
     #verify user access
     content = response_client.oauth_request('https://twitter.com/account/verify_credentials.json', method='POST')
     #make an update
     #content = response_client.oauth_request('https://twitter.com/statuses/update.xml', {'status':'Updated from a python oauth client. awesome.'}, method='POST')
-    print content
+    print(content)
    
-    print 'Done.'
+    print('Done.')
 
 
