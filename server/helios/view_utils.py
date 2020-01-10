@@ -4,37 +4,27 @@ Utilities for all views
 Ben Adida (12-30-2008)
 """
 
-from django.template import Context, Template, loader
-from django.http import HttpResponse, Http404
-from django.shortcuts import render_to_response
-
-from . import utils
-
-from helios import datatypes
-
 # nicely update the wrapper function
 from functools import update_wrapper
 
-from helios_auth.security import get_user
+from django.conf import settings
+from django.http import HttpResponse
+from django.shortcuts import render_to_response
+from django.template import Context, loader
 
 import helios
+from helios_auth.security import get_user
+from . import utils
 
-from django.conf import settings
-
-##
-## BASICS
-##
 
 SUCCESS = HttpResponse("SUCCESS")
 
 # FIXME: error code
 FAILURE = HttpResponse("FAILURE")
 
-##
-## template abstraction
-##
-def prepare_vars(request, vars):
-    vars_with_user = vars.copy()
+
+def prepare_vars(request, values):
+    vars_with_user = values.copy() if values else {}
     vars_with_user["user"] = get_user(request)
 
     # csrf protection
@@ -51,10 +41,9 @@ def prepare_vars(request, vars):
     return vars_with_user
 
 
-def render_template(request, template_name, vars={}, include_user=True):
+def render_template(request, template_name, values=None, include_user=True):
+    vars_with_user = prepare_vars(request, values)
     t = loader.get_template(template_name + ".html")
-
-    vars_with_user = prepare_vars(request, vars)
 
     if not include_user:
         del vars_with_user["user"]
@@ -64,17 +53,17 @@ def render_template(request, template_name, vars={}, include_user=True):
     )
 
 
-def render_template_raw(request, template_name, vars={}):
+def render_template_raw(request, template_name, values=None):
     t = loader.get_template(template_name)
 
     # if there's a request, prep the vars, otherwise can't do it.
     if request:
-        full_vars = prepare_vars(request, vars)
+        full_vars = prepare_vars(request, values)
     else:
-        full_vars = vars
+        full_vars = values or {}
 
     c = Context(full_vars)
-    return t.render(c)
+    return t.render(context=full_vars, request=request)
 
 
 def render_json(json_txt):

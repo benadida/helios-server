@@ -5,18 +5,16 @@ Celery queued tasks for Helios
 ben@adida.net
 """
 
-from celery.decorators import task
-
-from .models import *
-from .view_utils import render_template_raw
-from . import signals
-
 import copy
+from celery import shared_task
+from celery.utils.log import get_logger
 
-from django.conf import settings
+from . import signals
+from .models import CastVote, Election, Voter, VoterFile
+from .view_utils import render_template_raw
 
 
-@task()
+@shared_task()
 def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
     cast_vote = CastVote.objects.get(id=cast_vote_id)
     result = cast_vote.verify_and_store()
@@ -36,15 +34,13 @@ def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwarg
         )
 
         if status_update_message and user.can_update_status():
-            from .common import get_election_url
-
             user.update_status(status_update_message)
     else:
-        logger = cast_vote_verify_and_store.get_logger(**kwargs)
+        logger = get_logger(cast_vote_verify_and_store.__name__)
         logger.error("Failed to verify and store %d" % cast_vote_id)
 
 
-@task()
+@shared_task()
 def voters_email(
     election_id,
     subject_template,
@@ -72,14 +68,14 @@ def voters_email(
         )
 
 
-@task()
+@shared_task()
 def voters_notify(election_id, notification_template, extra_vars={}):
     election = Election.objects.get(id=election_id)
     for voter in election.voter_set.all():
         single_voter_notify.delay(voter.uuid, notification_template, extra_vars)
 
 
-@task()
+@shared_task()
 def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={}):
     voter = Voter.objects.get(uuid=voter_uuid)
 
@@ -92,7 +88,7 @@ def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={
     voter.send_message(subject, body)
 
 
-@task()
+@shared_task()
 def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
     voter = Voter.objects.get(uuid=voter_uuid)
 
@@ -104,7 +100,7 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
     voter.send_notification(notification)
 
 
-@task()
+@shared_task()
 def election_compute_tally(election_id):
     election = Election.objects.get(id=election_id)
     election.compute_tally()
@@ -125,7 +121,7 @@ Helios
         tally_helios_decrypt.delay(election_id=election.id)
 
 
-@task()
+@shared_task()
 def tally_helios_decrypt(election_id):
     election = Election.objects.get(id=election_id)
     election.helios_trustee_decrypt()
@@ -143,7 +139,7 @@ Helios
     )
 
 
-@task()
+@shared_task()
 def voter_file_process(voter_file_id):
     voter_file = VoterFile.objects.get(id=voter_file_id)
     voter_file.process()
@@ -163,7 +159,7 @@ Helios
     )
 
 
-@task()
+@shared_task()
 def election_notify_admin(election_id, subject, body):
     election = Election.objects.get(id=election_id)
     election.admin.send_message(subject, body)

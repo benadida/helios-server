@@ -4,37 +4,27 @@ Helios Security -- mostly access control
 Ben Adida (ben@adida.net)
 """
 
+import urllib.error
+import urllib.parse
+import urllib.request
 # nicely update the wrapper function
 from functools import update_wrapper
 
-from django.core.urlresolvers import reverse
-from django.core.exceptions import *
-from django.http import *
 from django.conf import settings
-
-from .models import *
-from helios_auth.security import get_user
-
-from django.http import HttpResponseRedirect
-import urllib.request, urllib.parse, urllib.error
+from django.core.exceptions import PermissionDenied
+from django.urls import reverse
+from django.http import HttpResponseRedirect, Http404
 
 import helios
-
-
-class HSTSMiddleware:
-    def process_response(self, request, response):
-        if settings.STS:
-            response[
-                "Strict-Transport-Security"
-            ] = "max-age=31536000; includeSubDomains; preload"
-        return response
+from helios.models import Voter, Trustee
+from helios_auth.security import get_user
 
 
 # current voter
 def get_voter(request, user, election):
     """
-  return the current voter
-  """
+    return the current voter
+    """
     voter = None
     if "CURRENT_VOTER_ID" in request.session:
         voter = Voter.objects.get(id=request.session["CURRENT_VOTER_ID"])

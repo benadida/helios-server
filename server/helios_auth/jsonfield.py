@@ -4,14 +4,13 @@ taken from
 http://www.djangosnippets.org/snippets/377/
 """
 
-import datetime, json
-from django.db import models
-from django.db.models import signals
-from django.conf import settings
+import json
+
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db import models
 
 
-class JSONField(models.TextField, metaclass=models.SubfieldBase):
+class JSONField(models.TextField):
     """
     JSONField is a generic textfield that neatly serializes/unserializes
     JSON objects seamlessly.
@@ -34,13 +33,13 @@ class JSONField(models.TextField, metaclass=models.SubfieldBase):
         if isinstance(value, dict) or isinstance(value, list):
             return value
 
-        if value == "" or value == None:
+        if value == '' or value is None:
             return None
 
         try:
             parsed_value = json.loads(value)
-        except:
-            raise Exception("not JSON")
+        except Exception as e:
+            raise Exception("Received value is not JSON", e)
 
         if self.json_type and parsed_value:
             parsed_value = self.json_type.fromJSONDict(
@@ -57,7 +56,7 @@ class JSONField(models.TextField, metaclass=models.SubfieldBase):
         if isinstance(value, str):
             return value
 
-        if value == None:
+        if value is None:
             return None
 
         if self.json_type and isinstance(value, self.json_type):
@@ -69,4 +68,5 @@ class JSONField(models.TextField, metaclass=models.SubfieldBase):
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
-        return self.get_db_prep_value(value)
+        return self.get_db_prep_value(value, None)
+

@@ -5,12 +5,22 @@ Some code borrowed from
 https://sp.princeton.edu/oit/sdp/CAS/Wiki%20Pages/Python.aspx
 """
 
-from django.http import *
-from django.core.mail import send_mail
-from django.conf import settings
-
-import sys, os, cgi, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, re, uuid, datetime
+import datetime
+import re
+import urllib.error
+import urllib.error
+import urllib.parse
+import urllib.parse
+import urllib.request
+import urllib.request
+import uuid
 from xml.etree import ElementTree
+
+from django.conf import settings
+from django.core.mail import send_mail
+from django.http import *
+
+from helios_auth import url_names
 
 CAS_EMAIL_DOMAIN = "princeton.edu"
 CAS_URL = "https://fed.princeton.edu/cas/"
@@ -33,9 +43,9 @@ def _get_service_url():
     # FIXME current URL
     from helios_auth.views import after
     from django.conf import settings
-    from django.core.urlresolvers import reverse
+    from django.urls import reverse
 
-    return settings.SECURE_URL_HOST + reverse(after)
+    return settings.SECURE_URL_HOST + reverse(url_names.AUTH_AFTER)
 
 
 def get_auth_url(request, redirect_url):

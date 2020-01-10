@@ -3,16 +3,17 @@ Unit Tests for Auth Systems
 """
 
 import unittest
-from . import models
-
-from django.db import IntegrityError, transaction
-
-from django.test.client import Client
-from django.test import TestCase
 
 from django.core import mail
+from django.db import IntegrityError, transaction
+from django.test import TestCase
 
+from . import models
 from .auth_systems import AUTH_SYSTEMS
+
+from django.urls import reverse
+
+
 
 class UserModelTests(unittest.TestCase):
 
@@ -89,10 +90,6 @@ class UserModelTests(unittest.TestCase):
             self.assertEqual(u, u2)
 
 
-from . import views
-from . import auth_systems.password as password_views
-from django.core.urlresolvers import reverse
-
 # FIXME: login CSRF should make these tests more complicated
 # and should be tested for
 
@@ -116,7 +113,7 @@ class UserBlackboxTests(TestCase):
         # self.assertContains(response, "Foobar User")
 
     def test_logout(self):
-        response = self.client.post(reverse(views.logout), follow=True)
+        response = self.client.post(reverse('auth@logout'), follow=True)
         
         self.assertContains(response, "not logged in")
         self.assertNotContains(response, "Foobar User")

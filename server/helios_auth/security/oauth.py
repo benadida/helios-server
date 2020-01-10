@@ -6,19 +6,21 @@ Hacked a bit by Ben Adida (ben@adida.net) so that:
 - access tokens are looked up with an extra param of consumer
 """
 
-import cgi
-import urllib.request, urllib.parse, urllib.error
-import time
-import random
-import urllib.parse
-import hmac
 import base64
-import logging
 import hashlib
+import hmac
+import logging
+import random
+import time
+import urllib.error
+import urllib.parse
+import urllib.parse
+import urllib.request
 
 VERSION = "1.0"  # Hi Blaine!
 HTTP_METHOD = "GET"
 SIGNATURE_METHOD = "PLAINTEXT"
+
 
 # Generic exception class
 class OAuthError(RuntimeError):
@@ -85,7 +87,7 @@ class OAuthToken(object):
     # oauth_token_secret=digg&oauth_token=digg
     @staticmethod
     def from_string(s):
-        params = cgi.parse_qs(s, keep_blank_values=False)
+        params = urllib.parse.parse_qs(s, keep_blank_values=False)
         key = params["oauth_token"][0]
         secret = params["oauth_token_secret"][0]
         return OAuthToken(key, secret)
@@ -312,7 +314,7 @@ class OAuthRequest(object):
     # util function: turn url string into parameters, has to do some unescaping
     @staticmethod
     def _split_url_string(param_str):
-        parameters = cgi.parse_qs(param_str, keep_blank_values=False)
+        parameters = urllib.parse.parse_qs(param_str, keep_blank_values=False)
         for k, v in parameters.items():
             parameters[k] = urllib.parse.unquote(v[0])
         return parameters
@@ -330,7 +332,7 @@ class OAuthServer(object):
         self.signature_methods = signature_methods or {}
 
     def set_data_store(self, oauth_data_store):
-        self.data_store = data_store
+        self.data_store = oauth_data_store
 
     def get_data_store(self):
         return self.data_store

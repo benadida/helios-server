@@ -5,18 +5,19 @@ Helios Django Views
 Ben Adida (ben@adida.net)
 """
 
+import base64
 import datetime
 import logging
-import uuid
-
-import base64
 import os
+import urllib
 import urllib.error
 import urllib.parse
 import urllib.request
+import uuid
+
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import transaction, IntegrityError
 from django.http import (
     HttpResponse,
@@ -26,7 +27,7 @@ from django.http import (
 )
 from validate_email import validate_email
 
-from helios import utils, VOTERS_EMAIL, VOTERS_UPLOAD
+from helios import utils, VOTERS_EMAIL, VOTERS_UPLOAD, url_names
 from helios.models import (
     User,
     Election,
@@ -48,14 +49,6 @@ from helios_auth.security import (
 from . import datatypes
 from . import forms
 from . import tasks
-from .common import (
-    get_election_url,
-    one_election_view,
-    one_election,
-    test_cookie,
-    _check_eligibility,
-    user_reauth,
-)
 from .crypto import algs, electionalgs, elgamal
 from .crypto import utils as cryptoutils
 from .security import (
@@ -78,6 +71,8 @@ from .view_utils import (
 )
 from .workflows import homomorphic
 
+import helios_auth.url_names as helios_auth_urls
+
 # Parameters for everything
 ELGAMAL_PARAMS = elgamal.Cryptosystem()
 
@@ -97,15 +92,23 @@ ELGAMAL_PARAMS_LD_OBJECT = datatypes.LDObject.instantiate(
 from django.conf import settings
 
 
+def get_election_url(election):
+    return settings.URL_HOST + reverse(url_names.ELECTION_SHORTCUT, args=[election.short_name])
+
+
+def get_election_badge_url(election):
+    return settings.URL_HOST + reverse(url_names.election.ELECTION_BADGE, args=[election.uuid])
+
+
 def get_election_govote_url(election):
     return settings.URL_HOST + reverse(
-        election_vote_shortcut, args=[election.short_name]
+        url_names.ELECTION_SHORTCUT_VOTE, args=[election.short_name]
     )
 
 
 def get_castvote_url(cast_vote):
     return settings.URL_HOST + reverse(
-        castvote_shortcut, args=[cast_vote.vote_tinyhash]
+        url_names.CAST_VOTE_SHORTCUT, args=[cast_vote.vote_tinyhash]
     )
 
 
@@ -1834,3 +1837,166 @@ def ballot_list(request, election):
 
     # we explicitly cast this to a short cast vote
     return [v.last_cast_vote().ld_object.short.toDict(complete=True) for v in voters]
+
+
+def election_shortcut(request, election_short_name):
+    election = Election.get_by_short_name(election_short_name)
+    if election:
+        return HttpResponseRedirect(
+            settings.SECURE_URL_HOST + reverse(one_election_view, args=[election.uuid])
+        )
+    else:
+        raise Http404
+
+
+@election_view()
+def one_election_view(request, election):
+    user = get_user(request)
+    admin_p = user_can_admin_election(user, election)
+    can_feature_p = user_can_feature_election(user, election)
+
+    notregistered = False
+    eligible_p = True
+
+    election_url = get_election_url(election)
+    election_badge_url = get_election_badge_url(election)
+    status_update_message = None
+
+    vote_url = "%s/booth/vote.html?%s" % (
+        settings.SECURE_URL_HOST,
+        urllib.parse.urlencode(
+            {"election_url": reverse(one_election, args=[election.uuid])}
+        ),
+    )
+
+    test_cookie_url = "%s?%s" % (
+        reverse(test_cookie),
+        urllib.parse.urlencode({"continue_url": vote_url}),
+    )
+
+    if user:
+        voter = Voter.get_by_election_and_user(election, user)
+
+        if not voter:
+            try:
+                eligible_p = _check_eligibility(election, user)
+            except AuthenticationExpired:
+                return user_reauth(request, user)
+            notregistered = True
+    else:
+        voter = get_voter(request, user, election)
+
+    if voter:
+        # cast any votes?
+        votes = CastVote.get_by_voter(voter)
+    else:
+        votes = None
+
+    # status update message?
+    if election.openreg:
+        if election.voting_has_started:
+            status_update_message = "Vote in %s" % election.name
+        else:
+            status_update_message = "Register to vote in %s" % election.name
+
+    # result!
+    if election.result:
+        status_update_message = "Results are in for %s" % election.name
+
+    trustees = Trustee.get_by_election(election)
+
+    # should we show the result?
+    show_result = election.result_released_at or (election.result and admin_p)
+
+    return render_template(
+        request,
+        "election_view",
+        {
+            "election": election,
+            "trustees": trustees,
+            "admin_p": admin_p,
+            "user": user,
+            "voter": voter,
+            "votes": votes,
+            "notregistered": notregistered,
+            "eligible_p": eligible_p,
+            "can_feature_p": can_feature_p,
+            "election_url": election_url,
+            "vote_url": vote_url,
+            "election_badge_url": election_badge_url,
+            "show_result": show_result,
+            "test_cookie_url": test_cookie_url,
+        },
+    )
+
+@election_view()
+@return_json
+def one_election(request, election):
+    if not election:
+        raise Http404
+    return election.toJSONDict(complete=True)
+
+
+def test_cookie(request):
+    continue_url = request.GET["continue_url"]
+    request.session.set_test_cookie()
+    next_url = "%s?%s" % (
+        reverse(test_cookie_2),
+        urllib.parse.urlencode({"continue_url": continue_url}),
+    )
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + next_url)
+
+
+def _check_eligibility(election, user):
+    # prevent password-users from signing up willy-nilly for other elections, doesn't make sense
+    if user.user_type == "password":
+        return False
+
+    return election.user_eligible_p(user)
+
+
+def user_reauth(request, user):
+    # FIXME: should we be wary of infinite redirects here, and
+    # add a parameter to prevent it? Maybe.
+    login_url = "%s%s?%s" % (
+        settings.SECURE_URL_HOST,
+        reverse(auth_views.start, args=[user.user_type]),
+        urllib.parse.urlencode({"return_url": request.get_full_path()}),
+    )
+    return HttpResponseRedirect(login_url)
+
+
+@election_view()
+def election_badge(request, election):
+    election_url = get_election_url(election)
+    params = {"election": election, "election_url": election_url}
+    for option_name in ["show_title", "show_vote_link"]:
+        params[option_name] = request.GET.get(option_name, "1") == "1"
+    return render_template(request, "election_badge", params)
+
+
+def test_cookie_2(request):
+    continue_url = request.GET["continue_url"]
+
+    if not request.session.test_cookie_worked():
+        return HttpResponseRedirect(
+            settings.SECURE_URL_HOST
+            + (
+                "%s?%s"
+                % (
+                    reverse(nocookies),
+                    urllib.parse.urlencode({"continue_url": continue_url}),
+                )
+            )
+        )
+
+    request.session.delete_test_cookie()
+    return HttpResponseRedirect(continue_url)
+
+
+def nocookies(request):
+    retest_url = "%s?%s" % (
+        reverse(test_cookie),
+        urllib.parse.urlencode({"continue_url": request.GET["continue_url"]}),
+    )
+    return render_template(request, "nocookies", {"retest_url": retest_url})

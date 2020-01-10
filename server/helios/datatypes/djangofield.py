@@ -5,18 +5,15 @@ http://www.djangosnippets.org/snippets/377/
 
 and adapted to LDObject
 """
-
-import datetime
 import json
+
 from django.db import models
-from django.db.models import signals
-from django.conf import settings
-from django.core.serializers.json import DjangoJSONEncoder
+from pyparsing import basestring
 
 from . import LDObject
 
 
-class LDObjectField(models.TextField, metaclass=models.SubfieldBase):
+class LDObjectField(models.TextField):
     """
     LDObject is a generic textfield that neatly serializes/unserializes
     JSON objects seamlessly.
@@ -32,15 +29,18 @@ class LDObjectField(models.TextField, metaclass=models.SubfieldBase):
         """Convert our string value to LDObject after we load it from the DB"""
 
         # did we already convert this?
-        if not isinstance(value, str):
+        if not isinstance(value, basestring):
             return value
 
-        if value == None:
+        return self.from_db_value(value)
+
+    def from_db_value(self, value, *args, **kwargs):
+        if value is None:
             return None
 
         # in some cases, we're loading an existing array or dict,
         # we skip this part but instantiate the LD object
-        if isinstance(value, str):
+        if isinstance(value, basestring):
             try:
                 parsed_value = json.loads(value)
             except:
@@ -48,11 +48,9 @@ class LDObjectField(models.TextField, metaclass=models.SubfieldBase):
         else:
             parsed_value = value
 
-        if parsed_value != None:
-            "we give the wrapped object back because we're not dealing with serialization types"
-            return_val = LDObject.fromDict(
-                parsed_value, type_hint=self.type_hint
-            ).wrapped_obj
+        if parsed_value is not None:
+            # we give the wrapped object back because we're not dealing with serialization types
+            return_val = LDObject.fromDict(parsed_value, type_hint=self.type_hint).wrapped_obj
             return return_val
         else:
             return None
@@ -62,7 +60,7 @@ class LDObjectField(models.TextField, metaclass=models.SubfieldBase):
         if isinstance(value, str):
             return value
 
-        if value == None:
+        if value is None:
             return None
 
         # instantiate the proper LDObject to dump it appropriately
@@ -71,4 +69,4 @@ class LDObjectField(models.TextField, metaclass=models.SubfieldBase):
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
-        return self.get_db_prep_value(value)
+        return self.get_db_prep_value(value, None)

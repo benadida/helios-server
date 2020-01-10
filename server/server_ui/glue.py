@@ -2,17 +2,13 @@
 Glue some events together 
 """
 
-from django.conf import settings
-from django.core.urlresolvers import reverse
-from django.conf import settings
+import helios.signals
+import helios.views
 from helios.view_utils import render_template_raw
-import helios.views, helios.signals
-
-from . import views
 
 
 def vote_cast_send_message(user, voter, election, cast_vote, **kwargs):
-    ## FIXME: this doesn't work for voters that are not also users
+    # FIXME: this doesn't work for voters that are not also users
     # prepare the message
     subject_template = "email/cast_vote_subject.txt"
     body_template = "email/cast_vote_body.txt"
@@ -31,11 +27,11 @@ def vote_cast_send_message(user, voter, election, cast_vote, **kwargs):
     user.send_message(subject, body)
 
 
-helios.signals.vote_cast.connect(vote_cast_send_message)
-
-
 def election_tallied(election, **kwargs):
     pass
 
 
-helios.signals.election_tallied.connect(election_tallied)
+def glue():
+    helios.signals.vote_cast.connect(vote_cast_send_message)
+    helios.signals.election_tallied.connect(election_tallied)
+

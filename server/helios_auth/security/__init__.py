@@ -4,27 +4,21 @@ Generic Security -- for the auth system
 Ben Adida (ben@adida.net)
 """
 
+import uuid
 # nicely update the wrapper function
 from functools import update_wrapper
 
-from django.http import HttpResponse, Http404, HttpResponseRedirect
-from django.core.exceptions import *
 from django.conf import settings
-from django.http import HttpResponseNotAllowed
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponseNotAllowed, HttpResponseRedirect
 
+from helios_auth.models import User
 from . import oauth
-
-import uuid
-
-from helios_auth.models import *
 
 FIELDS_TO_SAVE = "FIELDS_TO_SAVE"
 
-## FIXME: oauth is NOT working right now
 
-##
-## OAuth and API clients
-##
+# FIXME: oauth is NOT working right now
 
 
 class OAuthDataStore(oauth.OAuthDataStore):

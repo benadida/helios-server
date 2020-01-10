@@ -5,6 +5,7 @@ import sys
 
 TESTING = "test" in sys.argv
 
+
 # go through environment variables and override them
 def get_from_env(var, default):
     if not TESTING and var in os.environ:
@@ -14,7 +15,6 @@ def get_from_env(var, default):
 
 
 DEBUG = get_from_env("DEBUG", "1") == "1"
-TEMPLATE_DEBUG = DEBUG
 
 # add admins of the form:
 #    ('Ben Adida', 'ben@adida.net'),
@@ -53,7 +53,7 @@ if get_from_env("DATABASE_URL", None):
 
     DATABASES["default"] = dj_database_url.config()
     DATABASES["default"]["ENGINE"] = "django.db.backends.postgresql_psycopg2"
-    DATABASES["default"]["CONN_MAX_AGE"] = 600
+    DATABASES["default"]["CONN_MAX_AGE"] = '600'
 
     # require SSL
     DATABASES["default"]["OPTIONS"] = {"sslmode": "require"}
@@ -120,43 +120,45 @@ if get_from_env("HSTS", "0") == "1":
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    "django.template.loaders.filesystem.Loader",
-    "django.template.loaders.app_directories.Loader",
-)
 
-MIDDLEWARE_CLASSES = (
-    # make all things SSL
-    #'sslify.middleware.SSLifyMiddleware',
+MIDDLEWARE = [
     # secure a bunch of things
-    "djangosecure.middleware.SecurityMiddleware",
-    "helios.security.HSTSMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-)
+    'django.middleware.security.SecurityMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
+
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+]
 
 ROOT_URLCONF = "urls"
 
 ROOT_PATH = os.path.dirname(__file__)
-TEMPLATE_DIRS = (ROOT_PATH, os.path.join(ROOT_PATH, "templates"))
+
+TEMPLATES = [
+    {
+
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'DIRS': [
+            ROOT_PATH,
+            os.path.join(ROOT_PATH, 'templates'),
+            # os.path.join(ROOT_PATH, 'helios/templates'),  # covered by APP_DIRS:True
+            # os.path.join(ROOT_PATH, 'helios_auth/templates'),  # covered by APP_DIRS:True
+            # os.path.join(ROOT_PATH, 'server_ui/templates'),  # covered by APP_DIRS:True
+        ],
+        'OPTIONS': {
+            'debug': DEBUG
+        }
+    },
+]
 
 INSTALLED_APPS = (
-    #    'django.contrib.auth',
-    #    'django.contrib.contenttypes',
-    "djangosecure",
+    "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
-    "django.contrib.auth",
-    #'django.contrib.sites',
-    ## needed for queues
-    "djcelery",
-    "kombu.transport.django",
-    ## in Django 1.7 we now use built-in migrations, no more south
-    ## 'south',
-    ## HELIOS stuff
+    "django.contrib.sites",
     "helios_auth",
     "helios",
     "server_ui",
@@ -277,25 +279,20 @@ logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(mes
 
 # set up django-celery
 # BROKER_BACKEND = "kombu.transport.DatabaseTransport"
-BROKER_URL = "django://"
-CELERY_RESULT_DBURI = DATABASES["default"]
-import djcelery
 
-djcelery.setup_loader()
-
-
-# for testing
-TEST_RUNNER = "djcelery.contrib.test_runner.CeleryTestSuiteRunner"
-# this effectively does CELERY_ALWAYS_EAGER = True
+CELERY_BROKER_URL = 'amqp://localhost'
+CELERY_TASKS_ALWAYS_EAGER = True
 
 # Rollbar Error Logging
 ROLLBAR_ACCESS_TOKEN = get_from_env("ROLLBAR_ACCESS_TOKEN", None)
 if ROLLBAR_ACCESS_TOKEN:
     print("setting up rollbar")
-    MIDDLEWARE_CLASSES += (
-        "rollbar.contrib.django.middleware.RollbarNotifierMiddleware",
-    )
+    MIDDLEWARE += ['rollbar.contrib.django.middleware.RollbarNotifierMiddleware', ]
     ROLLBAR = {
         "access_token": ROLLBAR_ACCESS_TOKEN,
         "environment": "development" if DEBUG else "production",
     }
+
+
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_PRELOAD = True

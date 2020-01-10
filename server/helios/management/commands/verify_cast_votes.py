@@ -6,12 +6,9 @@ ben@adida.net
 2010-05-22
 """
 
-from django.core.management.base import BaseCommand, CommandError
-import csv, datetime
+from django.core.management.base import BaseCommand
 
-from helios import utils as helios_utils
-
-from helios.models import *
+from helios.models import CastVote
 
 
 def get_cast_vote_to_verify():

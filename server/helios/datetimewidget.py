@@ -26,6 +26,8 @@ calbtn = """<img src="%smedia/admin/img/admin/icon_calendar.gif" alt="calendar" 
 
 
 class DateTimeWidget(forms.widgets.TextInput):
+    template_name = ''
+
     class Media:
         css = {
             "all": (
