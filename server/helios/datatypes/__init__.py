@@ -48,15 +48,15 @@ def get_class(datatype):
         return datatype
 
     # parse datatype string "v31/Election" --> from v31 import Election
-    parsed_datatype = datatype.split("/")
+    parsed_datatype = ['helios', 'datatypes'] + datatype.split("/")
 
     # get the module
     dynamic_module = __import__(
-        ".".join(parsed_datatype[:-1]), globals(), locals(), [], level=-1
+        ".".join(parsed_datatype[:-1]), globals(), locals(), []
     )
 
     if not dynamic_module:
-        raise Exception("no module for %s" % datatpye)
+        raise Exception("no module for %s" % datatype)
 
     # go down the attributes to get to the class
     try:

@@ -83,7 +83,6 @@ def xml_unescape(s):
 ## XSS attack prevention
 ##
 
-
 def xss_strip_all_tags(s):
     """
     Strips out all HTML.
