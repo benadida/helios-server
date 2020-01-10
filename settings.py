@@ -37,11 +37,15 @@ SHOW_USER_INFO = (get_from_env('SHOW_USER_INFO', '1') == '1')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'helios'
+        'NAME': 'helios',
+        'HOST': get_from_env('POSTGRES_HOST', ''),
+        'PORT': get_from_env('POSTGRES_PORT', ''),
+        'USER': get_from_env('POSTGRES_USER', ''),
+        'PASSWORD': get_from_env('POSTGRES_PASSWORD', '')
     }
 }
 
-SOUTH_DATABASE_ADAPTERS = {'default':'south.db.postgresql_psycopg2'}
+SOUTH_DATABASE_ADAPTERS = {'default': 'south.db.postgresql_psycopg2'}
 
 # override if we have an env variable
 if get_from_env('DATABASE_URL', None):

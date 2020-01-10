@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "helios-backend"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^2.7"
+anyjson = "==0.3.3"
+bleach = "==1.4.1"
+boto = "==2.27.0"
+celery = "==3.1.18"
+dj-database-url = "==0.3.0"
+django = "==1.8.19"
+django-celery = "==3.1.16"
+django-picklefield = "==0.3.0"
+django-secure = "==1.0.1"
+django-ses = "==0.6.0"
+django-sslify = "==0.2.7"
+django-webtest = ">=1.9"
+gunicorn = "==19.9"
+html5lib = "==0.999"
+kombu = "==3.0.30"
+oauth2client = "==1.2"
+psycopg2 = "==2.7.3.2"
+pyparsing = "==1.5.7"
+python-dateutil = ">=1.5"
+python-openid = "==2.2.5"
+requests = "==2.21.0"
+rollbar = "==0.12.1"
+unicodecsv = "==0.9.0"
+validate-email = "==1.2"
+webtest = "==2.0.18"
+wsgiref = "==0.1.2"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
