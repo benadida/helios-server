@@ -1,4 +1,3 @@
-
 """
 Utility code for the Django example consumer and server.
 """
@@ -17,6 +16,7 @@ from django.conf import settings
 from openid.store.filestore import FileOpenIDStore
 from openid.store import sqlstore
 from openid.yadis.constants import YADIS_CONTENT_TYPE
+
 
 def getOpenIDStore(filestore_path, table_prefix):
     """
@@ -41,12 +41,12 @@ def getOpenIDStore(filestore_path, table_prefix):
     constructor as the store parameter.
     """
 
-    db_engine = settings.DATABASES['default']['ENGINE']
+    db_engine = settings.DATABASES["default"]["ENGINE"]
     if not db_engine:
         return FileOpenIDStore(filestore_path)
 
     # get the suffix
-    db_engine = db_engine.split('.')[-1]
+    db_engine = db_engine.split(".")[-1]
 
     # Possible side-effect: create a database connection if one isn't
     # already open.
@@ -54,23 +54,23 @@ def getOpenIDStore(filestore_path, table_prefix):
 
     # Create table names to specify for SQL-backed stores.
     tablenames = {
-        'associations_table': table_prefix + 'openid_associations',
-        'nonces_table': table_prefix + 'openid_nonces',
-        }
+        "associations_table": table_prefix + "openid_associations",
+        "nonces_table": table_prefix + "openid_nonces",
+    }
 
     types = {
-        'postgresql': sqlstore.PostgreSQLStore,
-        'postgresql_psycopg2': sqlstore.PostgreSQLStore,
-        'mysql': sqlstore.MySQLStore,
-        'sqlite3': sqlstore.SQLiteStore,
-        }
+        "postgresql": sqlstore.PostgreSQLStore,
+        "postgresql_psycopg2": sqlstore.PostgreSQLStore,
+        "mysql": sqlstore.MySQLStore,
+        "sqlite3": sqlstore.SQLiteStore,
+    }
 
     try:
-        s = types[db_engine](connection.connection,
-                                            **tablenames)
+        s = types[db_engine](connection.connection, **tablenames)
     except KeyError:
-        raise ImproperlyConfigured("Database engine %s not supported by OpenID library" % \
-              (db_engine,))
+        raise ImproperlyConfigured(
+            "Database engine %s not supported by OpenID library" % (db_engine,)
+        )
 
     try:
         s.createTables()
@@ -89,10 +89,12 @@ def getOpenIDStore(filestore_path, table_prefix):
 
     return s
 
+
 def getViewURL(req, view_name_or_obj, args=None, kwargs=None):
     relative_url = reverseURL(view_name_or_obj, args=args, kwargs=kwargs)
-    full_path = req.META.get('SCRIPT_NAME', '') + relative_url
+    full_path = req.META.get("SCRIPT_NAME", "") + relative_url
     return urljoin(getBaseURL(req), full_path)
+
 
 def getBaseURL(req):
     """
@@ -102,31 +104,32 @@ def getBaseURL(req):
     proper scheme and authority.  It will lack a port if the port is
     standard (80, 443).
     """
-    name = req.META['HTTP_HOST']
+    name = req.META["HTTP_HOST"]
     try:
-        name = name[:name.index(':')]
+        name = name[: name.index(":")]
     except:
         pass
 
     try:
-        port = int(req.META['SERVER_PORT'])
+        port = int(req.META["SERVER_PORT"])
     except:
         port = 80
 
-    proto = req.META['SERVER_PROTOCOL']
+    proto = req.META["SERVER_PROTOCOL"]
 
-    if 'HTTPS' in proto:
-        proto = 'https'
+    if "HTTPS" in proto:
+        proto = "https"
     else:
-        proto = 'http'
+        proto = "http"
 
     if port in [80, 443] or not port:
-        port = ''
+        port = ""
     else:
-        port = ':%s' % (port,)
+        port = ":%s" % (port,)
 
     url = "%s://%s%s/" % (proto, name, port)
     return url
+
 
 def normalDict(request_data):
     """
@@ -138,4 +141,3 @@ def normalDict(request_data):
     can have at most one value.
     """
     return dict((k, v[0]) for k, v in request_data.items())
-

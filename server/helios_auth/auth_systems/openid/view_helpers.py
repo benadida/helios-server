@@ -1,4 +1,3 @@
-
 from django import http
 from django.http import HttpResponseRedirect
 
@@ -11,34 +10,36 @@ from openid.server.trustroot import RP_RETURN_TO_URL_TYPE
 from . import util
 
 PAPE_POLICIES = [
-    'AUTH_PHISHING_RESISTANT',
-    'AUTH_MULTI_FACTOR',
-    'AUTH_MULTI_FACTOR_PHYSICAL',
-    ]
+    "AUTH_PHISHING_RESISTANT",
+    "AUTH_MULTI_FACTOR",
+    "AUTH_MULTI_FACTOR_PHYSICAL",
+]
 
 AX_REQUIRED_FIELDS = {
-    'firstname' : 'http://axschema.org/namePerson/first',
-    'lastname' : 'http://axschema.org/namePerson/last',
-    'fullname' : 'http://axschema.org/namePerson',
-    'email' : 'http://axschema.org/contact/email'
+    "firstname": "http://axschema.org/namePerson/first",
+    "lastname": "http://axschema.org/namePerson/last",
+    "fullname": "http://axschema.org/namePerson",
+    "email": "http://axschema.org/contact/email",
 }
 
 # List of (name, uri) for use in generating the request form.
-POLICY_PAIRS = [(p, getattr(pape, p))
-                for p in PAPE_POLICIES]
+POLICY_PAIRS = [(p, getattr(pape, p)) for p in PAPE_POLICIES]
+
 
 def getOpenIDStore():
     """
     Return an OpenID store object fit for the currently-chosen
     database backend, if any.
     """
-    return util.getOpenIDStore('/tmp/djopenid_c_store', 'c_')
+    return util.getOpenIDStore("/tmp/djopenid_c_store", "c_")
+
 
 def get_consumer(session):
     """
     Get a Consumer object to perform OpenID authentication.
     """
     return consumer.Consumer(session, getOpenIDStore())
+
 
 def start_openid(session, openid_url, trust_root, return_to):
     """
@@ -71,8 +72,7 @@ def start_openid(session, openid_url, trust_root, return_to):
     # are optional, some are required.  It's possible that the
     # server doesn't support sreg or won't return any of the
     # fields.
-    sreg_request = sreg.SRegRequest(required=['email'],
-                                    optional=[])
+    sreg_request = sreg.SRegRequest(required=["email"], optional=[])
     auth_request.addExtension(sreg_request)
 
     # Add Attribute Exchange request information.
@@ -84,7 +84,7 @@ def start_openid(session, openid_url, trust_root, return_to):
         ax_request.add(ax.AttrInfo(v, required=True))
 
     auth_request.addExtension(ax_request)
-                
+
     # Compute the trust root and return URL values to build the
     # redirect information.
     # trust_root = util.getViewURL(request, startOpenID)
@@ -94,6 +94,7 @@ def start_openid(session, openid_url, trust_root, return_to):
     # URL or by generating a POST form.
     url = auth_request.redirectURL(trust_root, return_to)
     return url
+
 
 def finish_openid(session, request_args, return_to):
     """
@@ -133,17 +134,14 @@ def finish_openid(session, request_args, return_to):
 
         # Map different consumer status codes to template contexts.
         results = {
-            consumer.CANCEL:
-            {'message': 'OpenID authentication cancelled.'},
-
-            consumer.FAILURE:
-            {'error': 'OpenID authentication failed.'},
-
-            consumer.SUCCESS:
-            {'url': response.getDisplayIdentifier(),
-             'sreg': sreg_response and list(sreg_response.items()),
-             'ax': ax_items}
-            }
+            consumer.CANCEL: {"message": "OpenID authentication cancelled."},
+            consumer.FAILURE: {"error": "OpenID authentication failed."},
+            consumer.SUCCESS: {
+                "url": response.getDisplayIdentifier(),
+                "sreg": sreg_response and list(sreg_response.items()),
+                "ax": ax_items,
+            },
+        }
 
         result = results[response.status]
 
@@ -152,7 +150,6 @@ def finish_openid(session, request_args, return_to):
             # written to a log for debugging/tracking OpenID
             # authentication failures. In general, the messages are
             # not user-friendly, but intended for developers.
-            result['failure_reason'] = response.message
+            result["failure_reason"] = response.message
 
     return result
-

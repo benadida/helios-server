@@ -31,38 +31,43 @@ except ImportError:
 ##     if type(s)!=types.StringType: return s   # Integers will be left alone
 ##     return reduce(lambda x,y : x*256+ord(y), s, 0L)
 
-def size (N):
+
+def size(N):
     """size(N:long) : int
     Returns the size of the number N in bits.
     """
-    bits, power = 0,1
+    bits, power = 0, 1
     while N >= power:
         bits += 1
         power = power << 1
     return bits
 
+
 def getRandomNumber(N, randfunc):
     """getRandomNumber(N:int, randfunc:callable):long
     Return an N-bit random number."""
 
-    S = randfunc(N/8)
+    S = randfunc(N / 8)
     odd_bits = N % 8
     if odd_bits != 0:
-        char = ord(randfunc(1)) >> (8-odd_bits)
+        char = ord(randfunc(1)) >> (8 - odd_bits)
         S = chr(char) + S
     value = bytes_to_long(S)
-    value |= 2 ** (N-1)                # Ensure high bit is set
+    value |= 2 ** (N - 1)  # Ensure high bit is set
     assert size(value) >= N
     return value
 
-def GCD(x,y):
+
+def GCD(x, y):
     """GCD(x:long, y:long): long
     Return the GCD of x and y.
     """
-    x = abs(x) ; y = abs(y)
+    x = abs(x)
+    y = abs(y)
     while x > 0:
         x, y = y % x, x
     return y
+
 
 def inverse(u, v):
     """inverse(u:long, u:long):long
@@ -71,25 +76,28 @@ def inverse(u, v):
     u3, v3 = int(u), int(v)
     u1, v1 = 1, 0
     while v3 > 0:
-        q=u3 / v3
-        u1, v1 = v1, u1 - v1*q
-        u3, v3 = v3, u3 - v3*q
-    while u1<0:
+        q = u3 / v3
+        u1, v1 = v1, u1 - v1 * q
+        u3, v3 = v3, u3 - v3 * q
+    while u1 < 0:
         u1 = u1 + v
     return u1
 
+
 # Given a number of bits to generate and a random generation function,
 # find a prime number of the appropriate size.
+
 
 def getPrime(N, randfunc):
     """getPrime(N:int, randfunc:callable):long
     Return a random N-bit prime number.
     """
 
-    number=getRandomNumber(N, randfunc) | 1
-    while (not isPrime(number)):
-        number=number+2
+    number = getRandomNumber(N, randfunc) | 1
+    while not isPrime(number):
+        number = number + 2
     return number
+
 
 def isPrime(N):
     """isPrime(N:long):bool
@@ -100,7 +108,7 @@ def isPrime(N):
     if N in sieve:
         return 1
     for i in sieve:
-        if (N % i)==0:
+        if (N % i) == 0:
             return 0
 
     # Use the accelerator if available
@@ -110,39 +118,95 @@ def isPrime(N):
     # Compute the highest bit that's set in N
     N1 = N - 1
     n = 1
-    while (n<N):
-        n=n<<1
+    while n < N:
+        n = n << 1
     n = n >> 1
 
     # Rabin-Miller test
     for c in sieve[:7]:
-        a=int(c) ; d=1 ; t=n
-        while (t):  # Iterate over the bits in N1
-            x=(d*d) % N
-            if x==1 and d!=1 and d!=N1:
+        a = int(c)
+        d = 1
+        t = n
+        while t:  # Iterate over the bits in N1
+            x = (d * d) % N
+            if x == 1 and d != 1 and d != N1:
                 return 0  # Square root of 1 found
             if N1 & t:
-                d=(x*a) % N
+                d = (x * a) % N
             else:
-                d=x
+                d = x
             t = t >> 1
-        if d!=1:
+        if d != 1:
             return 0
     return 1
+
 
 # Small primes used for checking primality; these are all the primes
 # less than 256.  This should be enough to eliminate most of the odd
 # numbers before needing to do a Rabin-Miller test at all.
 
-sieve=[2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59,
-       61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127,
-       131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193,
-       197, 199, 211, 223, 227, 229, 233, 239, 241, 251]
+sieve = [
+    2,
+    3,
+    5,
+    7,
+    11,
+    13,
+    17,
+    19,
+    23,
+    29,
+    31,
+    37,
+    41,
+    43,
+    47,
+    53,
+    59,
+    61,
+    67,
+    71,
+    73,
+    79,
+    83,
+    89,
+    97,
+    101,
+    103,
+    107,
+    109,
+    113,
+    127,
+    131,
+    137,
+    139,
+    149,
+    151,
+    157,
+    163,
+    167,
+    173,
+    179,
+    181,
+    191,
+    193,
+    197,
+    199,
+    211,
+    223,
+    227,
+    229,
+    233,
+    239,
+    241,
+    251,
+]
 
 # Improved conversion functions contributed by Barry Warsaw, after
 # careful benchmarking
 
 import struct
+
 
 def long_to_bytes(n, blocksize=0):
     """long_to_bytes(n:long, blocksize:int) : string
@@ -153,11 +217,11 @@ def long_to_bytes(n, blocksize=0):
     blocksize.
     """
     # after much testing, this algorithm was deemed to be the fastest
-    s = b''
+    s = b""
     n = int(n)
     pack = struct.pack
     while n > 0:
-        s = pack('>I', n & 0xffffffff) + s
+        s = pack(">I", n & 0xFFFFFFFF) + s
         n = n >> 32
     # strip off leading zeros
     for i in range(len(s)):
@@ -165,14 +229,15 @@ def long_to_bytes(n, blocksize=0):
             break
     else:
         # only happens when n == 0
-        s = b'0'
+        s = b"0"
         i = 0
     s = s[i:]
     # add back some pad bytes.  this could be done more efficiently w.r.t. the
     # de-padding being done above, but sigh...
     if blocksize > 0 and len(s) % blocksize:
-        s = (blocksize - len(s) % blocksize) * '\000' + s
+        s = (blocksize - len(s) % blocksize) * "\000" + s
     return s
+
 
 def bytes_to_long(s):
     """bytes_to_long(string) : long
@@ -184,18 +249,23 @@ def bytes_to_long(s):
     unpack = struct.unpack
     length = len(s)
     if length % 4:
-        extra = (4 - length % 4)
-        s = '\000' * extra + s
+        extra = 4 - length % 4
+        s = "\000" * extra + s
         length = length + extra
     for i in range(0, length, 4):
-        acc = (acc << 32) + unpack('>I', s[i:i+4])[0]
+        acc = (acc << 32) + unpack(">I", s[i : i + 4])[0]
     return acc
+
 
 # For backwards compatibility...
 import warnings
+
+
 def long2str(n, blocksize=0):
     warnings.warn("long2str() has been replaced by long_to_bytes()")
     return long_to_bytes(n, blocksize)
+
+
 def str2long(s):
     warnings.warn("str2long() has been replaced by bytes_to_long()")
     return bytes_to_long(s)

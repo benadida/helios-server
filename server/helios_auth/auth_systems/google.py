@@ -7,7 +7,7 @@ from django.http import *
 from django.core.mail import send_mail
 from django.conf import settings
 
-import httplib2,json
+import httplib2, json
 
 import sys, os, cgi, urllib.request, urllib.parse, urllib.error, urllib.request, urllib.error, urllib.parse, re
 
@@ -19,76 +19,100 @@ STATUS_UPDATES = False
 # display tweaks
 LOGIN_MESSAGE = "Log in with my Google Account"
 
+
 def get_flow(redirect_url=None):
-  return OAuth2WebServerFlow(client_id=settings.GOOGLE_CLIENT_ID,
-            client_secret=settings.GOOGLE_CLIENT_SECRET,
-            scope='profile email',
-            redirect_uri=redirect_url)
+    return OAuth2WebServerFlow(
+        client_id=settings.GOOGLE_CLIENT_ID,
+        client_secret=settings.GOOGLE_CLIENT_SECRET,
+        scope="profile email",
+        redirect_uri=redirect_url,
+    )
+
 
 def get_auth_url(request, redirect_url):
-  flow = get_flow(redirect_url)
+    flow = get_flow(redirect_url)
 
-  request.session['google-redirect-url'] = redirect_url
-  return flow.step1_get_authorize_url()
+    request.session["google-redirect-url"] = redirect_url
+    return flow.step1_get_authorize_url()
+
 
 def get_user_info_after_auth(request):
-  flow = get_flow(request.session['google-redirect-url'])
+    flow = get_flow(request.session["google-redirect-url"])
 
-  if 'code' not in request.GET:
-    return None
-  
-  code = request.GET['code']
-  credentials = flow.step2_exchange(code)
+    if "code" not in request.GET:
+        return None
 
-  # the email address is in the credentials, that's how we make sure it's verified
-  id_token = credentials.id_token
-  if not id_token['email_verified']:
-    raise Exception("email address with Google not verified")
-   
-  email = id_token['email']
+    code = request.GET["code"]
+    credentials = flow.step2_exchange(code)
 
-  # get the nice name
-  http = httplib2.Http(".cache")
-  http = credentials.authorize(http)
-  (resp_headers, content) = http.request("https://people.googleapis.com/v1/people/me?personFields=names", "GET")
+    # the email address is in the credentials, that's how we make sure it's verified
+    id_token = credentials.id_token
+    if not id_token["email_verified"]:
+        raise Exception("email address with Google not verified")
 
-  response = json.loads(content)
+    email = id_token["email"]
 
-  name = response['names'][0]['displayName']
-  
-  # watch out, response also contains email addresses, but not sure whether thsoe are verified or not
-  # so for email address we will only look at the id_token
-  
-  return {'type' : 'google', 'user_id': email, 'name': name , 'info': {'email': email}, 'token':{}}
-    
+    # get the nice name
+    http = httplib2.Http(".cache")
+    http = credentials.authorize(http)
+    (resp_headers, content) = http.request(
+        "https://people.googleapis.com/v1/people/me?personFields=names", "GET"
+    )
+
+    response = json.loads(content)
+
+    name = response["names"][0]["displayName"]
+
+    # watch out, response also contains email addresses, but not sure whether thsoe are verified or not
+    # so for email address we will only look at the id_token
+
+    return {
+        "type": "google",
+        "user_id": email,
+        "name": name,
+        "info": {"email": email},
+        "token": {},
+    }
+
+
 def do_logout(user):
-  """
+    """
   logout of Google
   """
-  return None
-  
+    return None
+
+
 def update_status(token, message):
-  """
+    """
   simple update
   """
-  pass
+    pass
+
 
 def send_message(user_id, name, user_info, subject, body):
-  """
+    """
   send email to google users. user_id is the email for google.
   """
-  send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, user_id)], fail_silently=False)
-  
+    send_mail(
+        subject,
+        body,
+        settings.SERVER_EMAIL,
+        ["%s <%s>" % (name, user_id)],
+        fail_silently=False,
+    )
+
+
 def check_constraint(constraint, user_info):
-  """
+    """
   for eligibility
   """
-  pass
+    pass
 
 
 #
 # Election Creation
 #
 
+
 def can_create_election(user_id, user_info):
-  return True
+    return True

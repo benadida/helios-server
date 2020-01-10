@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # utils/widgets.py
 
-'''
+"""
 DateTimeWidget using JSCal2 from http://www.dynarch.com/projects/calendar/
 
 django snippets 1629
-'''
+"""
 
 from django.utils.encoding import force_unicode
 from django.conf import settings
@@ -14,7 +14,7 @@ import datetime, time
 from django.utils.safestring import mark_safe
 
 # DATETIMEWIDGET
-calbtn = '''<img src="%smedia/admin/img/admin/icon_calendar.gif" alt="calendar" id="%s_btn" style="cursor: pointer;" title="Select date" />
+calbtn = """<img src="%smedia/admin/img/admin/icon_calendar.gif" alt="calendar" id="%s_btn" style="cursor: pointer;" title="Select date" />
 <script type="text/javascript">
     Calendar.setup({
         inputField     :    "%s",
@@ -22,40 +22,41 @@ calbtn = '''<img src="%smedia/admin/img/admin/icon_calendar.gif" alt="calendar" 
         trigger        :    "%s_btn",
         showTime: true
     });
-</script>'''
+</script>"""
+
 
 class DateTimeWidget(forms.widgets.TextInput):
     class Media:
         css = {
-            'all': (
-                    '/static/helios/jscal/css/jscal2.css',
-                    '/static/helios/jscal/css/border-radius.css',
-                    '/static/helios/jscal/css/win2k/win2k.css',
-                    )
+            "all": (
+                "/static/helios/jscal/css/jscal2.css",
+                "/static/helios/jscal/css/border-radius.css",
+                "/static/helios/jscal/css/win2k/win2k.css",
+            )
         }
         js = (
-              '/static/helios/jscal/js/jscal2.js',
-              '/static/helios/jscal/js/lang/en.js',
+            "/static/helios/jscal/js/jscal2.js",
+            "/static/helios/jscal/js/lang/en.js",
         )
 
-    dformat = '%Y-%m-%d %H:%M'
-    def render(self, name, value, attrs=None):
-        if value is None: value = ''
-        final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
-        if value != '':
-            try:
-                final_attrs['value'] = \
-                                   force_unicode(value.strftime(self.dformat))
-            except:
-                final_attrs['value'] = \
-                                   force_unicode(value)
-        if 'id' not in final_attrs:
-            final_attrs['id'] = '%s_id' % (name)
-        id = final_attrs['id']
+    dformat = "%Y-%m-%d %H:%M"
 
-        jsdformat = self.dformat #.replace('%', '%%')
+    def render(self, name, value, attrs=None):
+        if value is None:
+            value = ""
+        final_attrs = self.build_attrs(attrs, type=self.input_type, name=name)
+        if value != "":
+            try:
+                final_attrs["value"] = force_unicode(value.strftime(self.dformat))
+            except:
+                final_attrs["value"] = force_unicode(value)
+        if "id" not in final_attrs:
+            final_attrs["id"] = "%s_id" % (name)
+        id = final_attrs["id"]
+
+        jsdformat = self.dformat  # .replace('%', '%%')
         cal = calbtn % (settings.MEDIA_URL, id, id, jsdformat, id)
-        a = '<input%s />%s%s' % (forms.util.flatatt(final_attrs), self.media, cal)
+        a = "<input%s />%s%s" % (forms.util.flatatt(final_attrs), self.media, cal)
         return mark_safe(a)
 
     def value_from_datadict(self, data, files, name):
@@ -82,17 +83,19 @@ class DateTimeWidget(forms.widgets.TextInput):
         Copy of parent's method, but modify value with strftime function before final comparsion
         """
         if data is None:
-            data_value = ''
+            data_value = ""
         else:
             data_value = data
 
         if initial is None:
-            initial_value = ''
+            initial_value = ""
         else:
             initial_value = initial
 
         try:
-            if force_unicode(initial_value.strftime(self.dformat)) != force_unicode(data_value.strftime(self.dformat)):
+            if force_unicode(initial_value.strftime(self.dformat)) != force_unicode(
+                data_value.strftime(self.dformat)
+            ):
                 return True
         except:
             if force_unicode(initial_value) != force_unicode(data_value):

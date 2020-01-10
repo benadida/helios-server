@@ -10,7 +10,9 @@ import django.dispatch
 election_created = django.dispatch.Signal(providing_args=["election"])
 
 # when a vote is cast
-vote_cast = django.dispatch.Signal(providing_args=["user", "voter", "election", "cast_vote"])
+vote_cast = django.dispatch.Signal(
+    providing_args=["user", "voter", "election", "cast_vote"]
+)
 
 # when an election is tallied
 election_tallied = django.dispatch.Signal(providing_args=["election"])

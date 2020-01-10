@@ -1,21 +1,23 @@
-
 AUTH_SYSTEMS = {}
 
 from . import twitter, password, cas, facebook, google, linkedin, clever
-AUTH_SYSTEMS['twitter'] = twitter
-AUTH_SYSTEMS['linkedin'] = linkedin
-AUTH_SYSTEMS['password'] = password
-AUTH_SYSTEMS['cas'] = cas
-AUTH_SYSTEMS['facebook'] = facebook
-AUTH_SYSTEMS['google'] = google
-AUTH_SYSTEMS['clever'] = clever
+
+AUTH_SYSTEMS["twitter"] = twitter
+AUTH_SYSTEMS["linkedin"] = linkedin
+AUTH_SYSTEMS["password"] = password
+AUTH_SYSTEMS["cas"] = cas
+AUTH_SYSTEMS["facebook"] = facebook
+AUTH_SYSTEMS["google"] = google
+AUTH_SYSTEMS["clever"] = clever
 
 # not ready
-#import live
-#AUTH_SYSTEMS['live'] = live
+# import live
+# AUTH_SYSTEMS['live'] = live
+
 
 def can_check_constraint(auth_system):
-    return hasattr(AUTH_SYSTEMS[auth_system], 'check_constraint')
+    return hasattr(AUTH_SYSTEMS[auth_system], "check_constraint")
+
 
 def can_list_categories(auth_system):
-    return hasattr(AUTH_SYSTEMS[auth_system], 'list_categories')
+    return hasattr(AUTH_SYSTEMS[auth_system], "list_categories")

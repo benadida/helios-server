@@ -56,7 +56,7 @@ import urllib.parse
 import mimetypes
 
 # try to use simplejson first, otherwise fallback to XML
-RESPONSE_FORMAT = 'JSON'
+RESPONSE_FORMAT = "JSON"
 
 import json
 
@@ -90,491 +90,318 @@ try:
                 headers = {}
             method = urlfetch.GET
 
-        result = urlfetch.fetch(url, method=method,
-                                payload=data, headers=headers)
+        result = urlfetch.fetch(url, method=method, payload=data, headers=headers)
 
         if result.status_code == 200:
             return result.content
         else:
-            raise urllib.error.URLError("fetch error url=%s, code=%d" % (url, result.status_code))
+            raise urllib.error.URLError(
+                "fetch error url=%s, code=%d" % (url, result.status_code)
+            )
+
 
 except ImportError:
+
     def urlread(url, data=None):
         res = urllib.request.urlopen(url, data=data)
         return res.read()
 
-__all__ = ['Facebook']
 
-VERSION = '0.1'
+__all__ = ["Facebook"]
 
-FACEBOOK_URL = 'http://api.facebook.com/restserver.php'
-FACEBOOK_SECURE_URL = 'https://api.facebook.com/restserver.php'
+VERSION = "0.1"
 
-class json(object): pass
+FACEBOOK_URL = "http://api.facebook.com/restserver.php"
+FACEBOOK_SECURE_URL = "https://api.facebook.com/restserver.php"
+
+
+class json(object):
+    pass
+
 
 # simple IDL for the Facebook API
 METHODS = {
-    'application': {
-        'getPublicInfo': [
-            ('application_id', int, ['optional']),
-            ('application_api_key', str, ['optional']),
-            ('application_canvas_name', str,['optional']),
+    "application": {
+        "getPublicInfo": [
+            ("application_id", int, ["optional"]),
+            ("application_api_key", str, ["optional"]),
+            ("application_canvas_name", str, ["optional"]),
         ],
     },
-
     # admin methods
-    'admin': {
-        'getAllocation': [
-            ('integration_point_name', str, []),
-        ],
-    },
-
+    "admin": {"getAllocation": [("integration_point_name", str, []),],},
     # auth methods
-    'auth': {
-        'revokeAuthorization': [
-            ('uid', int, ['optional']),
-        ],
-    },
-
+    "auth": {"revokeAuthorization": [("uid", int, ["optional"]),],},
     # feed methods
-    'feed': {
-        'publishStoryToUser': [
-            ('title', str, []),
-            ('body', str, ['optional']),
-            ('image_1', str, ['optional']),
-            ('image_1_link', str, ['optional']),
-            ('image_2', str, ['optional']),
-            ('image_2_link', str, ['optional']),
-            ('image_3', str, ['optional']),
-            ('image_3_link', str, ['optional']),
-            ('image_4', str, ['optional']),
-            ('image_4_link', str, ['optional']),
-            ('priority', int, ['optional']),
+    "feed": {
+        "publishStoryToUser": [
+            ("title", str, []),
+            ("body", str, ["optional"]),
+            ("image_1", str, ["optional"]),
+            ("image_1_link", str, ["optional"]),
+            ("image_2", str, ["optional"]),
+            ("image_2_link", str, ["optional"]),
+            ("image_3", str, ["optional"]),
+            ("image_3_link", str, ["optional"]),
+            ("image_4", str, ["optional"]),
+            ("image_4_link", str, ["optional"]),
+            ("priority", int, ["optional"]),
         ],
-
-        'publishActionOfUser': [
-            ('title', str, []),
-            ('body', str, ['optional']),
-            ('image_1', str, ['optional']),
-            ('image_1_link', str, ['optional']),
-            ('image_2', str, ['optional']),
-            ('image_2_link', str, ['optional']),
-            ('image_3', str, ['optional']),
-            ('image_3_link', str, ['optional']),
-            ('image_4', str, ['optional']),
-            ('image_4_link', str, ['optional']),
-            ('priority', int, ['optional']),
+        "publishActionOfUser": [
+            ("title", str, []),
+            ("body", str, ["optional"]),
+            ("image_1", str, ["optional"]),
+            ("image_1_link", str, ["optional"]),
+            ("image_2", str, ["optional"]),
+            ("image_2_link", str, ["optional"]),
+            ("image_3", str, ["optional"]),
+            ("image_3_link", str, ["optional"]),
+            ("image_4", str, ["optional"]),
+            ("image_4_link", str, ["optional"]),
+            ("priority", int, ["optional"]),
         ],
-
-        'publishTemplatizedAction': [
-            ('title_template', str, []),
-            ('page_actor_id', int, ['optional']),
-            ('title_data', json, ['optional']),
-            ('body_template', str, ['optional']),
-            ('body_data', json, ['optional']),
-            ('body_general', str, ['optional']),
-            ('image_1', str, ['optional']),
-            ('image_1_link', str, ['optional']),
-            ('image_2', str, ['optional']),
-            ('image_2_link', str, ['optional']),
-            ('image_3', str, ['optional']),
-            ('image_3_link', str, ['optional']),
-            ('image_4', str, ['optional']),
-            ('image_4_link', str, ['optional']),
-            ('target_ids', list, ['optional']),
+        "publishTemplatizedAction": [
+            ("title_template", str, []),
+            ("page_actor_id", int, ["optional"]),
+            ("title_data", json, ["optional"]),
+            ("body_template", str, ["optional"]),
+            ("body_data", json, ["optional"]),
+            ("body_general", str, ["optional"]),
+            ("image_1", str, ["optional"]),
+            ("image_1_link", str, ["optional"]),
+            ("image_2", str, ["optional"]),
+            ("image_2_link", str, ["optional"]),
+            ("image_3", str, ["optional"]),
+            ("image_3_link", str, ["optional"]),
+            ("image_4", str, ["optional"]),
+            ("image_4_link", str, ["optional"]),
+            ("target_ids", list, ["optional"]),
         ],
-
-        'registerTemplateBundle': [
-            ('one_line_story_templates', json, []),
-            ('short_story_templates', json, ['optional']),
-            ('full_story_template', json, ['optional']),
-            ('action_links', json, ['optional']),
+        "registerTemplateBundle": [
+            ("one_line_story_templates", json, []),
+            ("short_story_templates", json, ["optional"]),
+            ("full_story_template", json, ["optional"]),
+            ("action_links", json, ["optional"]),
         ],
-
-        'deactivateTemplateBundleByID': [
-            ('template_bundle_id', int, []),
-        ],
-
-        'getRegisteredTemplateBundles': [],
-
-        'getRegisteredTemplateBundleByID': [
-            ('template_bundle_id', str, []),
-        ],
-
-        'publishUserAction': [
-            ('template_bundle_id', int, []),
-            ('template_data', json, ['optional']),
-            ('target_ids', list, ['optional']),
-            ('body_general', str, ['optional']),
-            ('story_size', int, ['optional']),
+        "deactivateTemplateBundleByID": [("template_bundle_id", int, []),],
+        "getRegisteredTemplateBundles": [],
+        "getRegisteredTemplateBundleByID": [("template_bundle_id", str, []),],
+        "publishUserAction": [
+            ("template_bundle_id", int, []),
+            ("template_data", json, ["optional"]),
+            ("target_ids", list, ["optional"]),
+            ("body_general", str, ["optional"]),
+            ("story_size", int, ["optional"]),
         ],
     },
-
     # fql methods
-    'fql': {
-        'query': [
-            ('query', str, []),
-        ],
-    },
-
+    "fql": {"query": [("query", str, []),],},
     # friends methods
-    'friends': {
-        'areFriends': [
-            ('uids1', list, []),
-            ('uids2', list, []),
-        ],
-
-        'get': [
-            ('flid', int, ['optional']),
-        ],
-
-        'getLists': [],
-
-        'getAppUsers': [],
+    "friends": {
+        "areFriends": [("uids1", list, []), ("uids2", list, []),],
+        "get": [("flid", int, ["optional"]),],
+        "getLists": [],
+        "getAppUsers": [],
     },
-
     # notifications methods
-    'notifications': {
-        'get': [],
-
-        'send': [
-            ('to_ids', list, []),
-            ('notification', str, []),
-            ('email', str, ['optional']),
-            ('type', str, ['optional']),
+    "notifications": {
+        "get": [],
+        "send": [
+            ("to_ids", list, []),
+            ("notification", str, []),
+            ("email", str, ["optional"]),
+            ("type", str, ["optional"]),
         ],
-
-        'sendRequest': [
-            ('to_ids', list, []),
-            ('type', str, []),
-            ('content', str, []),
-            ('image', str, []),
-            ('invite', bool, []),
+        "sendRequest": [
+            ("to_ids", list, []),
+            ("type", str, []),
+            ("content", str, []),
+            ("image", str, []),
+            ("invite", bool, []),
         ],
-
-        'sendEmail': [
-            ('recipients', list, []),
-            ('subject', str, []),
-            ('text', str, ['optional']),
-            ('fbml', str, ['optional']),
-        ]
+        "sendEmail": [
+            ("recipients", list, []),
+            ("subject", str, []),
+            ("text", str, ["optional"]),
+            ("fbml", str, ["optional"]),
+        ],
     },
-
     # profile methods
-    'profile': {
-        'setFBML': [
-            ('markup', str, ['optional']),
-            ('uid', int, ['optional']),
-            ('profile', str, ['optional']),
-            ('profile_action', str, ['optional']),
-            ('mobile_fbml', str, ['optional']),
-            ('profile_main', str, ['optional']),
+    "profile": {
+        "setFBML": [
+            ("markup", str, ["optional"]),
+            ("uid", int, ["optional"]),
+            ("profile", str, ["optional"]),
+            ("profile_action", str, ["optional"]),
+            ("mobile_fbml", str, ["optional"]),
+            ("profile_main", str, ["optional"]),
         ],
-
-        'getFBML': [
-            ('uid', int, ['optional']),
-            ('type', int, ['optional']),
+        "getFBML": [("uid", int, ["optional"]), ("type", int, ["optional"]),],
+        "setInfo": [
+            ("title", str, []),
+            ("type", int, []),
+            ("info_fields", json, []),
+            ("uid", int, []),
         ],
-
-        'setInfo': [
-            ('title', str, []),
-            ('type', int, []),
-            ('info_fields', json, []),
-            ('uid', int, []),
-        ],
-
-        'getInfo': [
-            ('uid', int, []),
-        ],
-
-        'setInfoOptions': [
-            ('field', str, []),
-            ('options', json, []),
-        ],
-
-        'getInfoOptions': [
-            ('field', str, []),
-        ],
+        "getInfo": [("uid", int, []),],
+        "setInfoOptions": [("field", str, []), ("options", json, []),],
+        "getInfoOptions": [("field", str, []),],
     },
-
     # users methods
-    'users': {
-        'getInfo': [
-            ('uids', list, []),
-            ('fields', list, [('default', ['name'])]),
+    "users": {
+        "getInfo": [("uids", list, []), ("fields", list, [("default", ["name"])]),],
+        "getStandardInfo": [
+            ("uids", list, []),
+            ("fields", list, [("default", ["uid"])]),
         ],
-
-        'getStandardInfo': [
-            ('uids', list, []),
-            ('fields', list, [('default', ['uid'])]),
-        ],
-
-        'getLoggedInUser': [],
-
-        'isAppAdded': [],
-
-        'hasAppPermission': [
-            ('ext_perm', str, []),
-            ('uid', int, ['optional']),
-        ],
-
-        'setStatus': [
-            ('status', str, []),
-            ('clear', bool, []),
-            ('status_includes_verb', bool, ['optional']),
-            ('uid', int, ['optional']),
+        "getLoggedInUser": [],
+        "isAppAdded": [],
+        "hasAppPermission": [("ext_perm", str, []), ("uid", int, ["optional"]),],
+        "setStatus": [
+            ("status", str, []),
+            ("clear", bool, []),
+            ("status_includes_verb", bool, ["optional"]),
+            ("uid", int, ["optional"]),
         ],
     },
-
     # events methods
-    'events': {
-        'get': [
-            ('uid', int, ['optional']),
-            ('eids', list, ['optional']),
-            ('start_time', int, ['optional']),
-            ('end_time', int, ['optional']),
-            ('rsvp_status', str, ['optional']),
+    "events": {
+        "get": [
+            ("uid", int, ["optional"]),
+            ("eids", list, ["optional"]),
+            ("start_time", int, ["optional"]),
+            ("end_time", int, ["optional"]),
+            ("rsvp_status", str, ["optional"]),
         ],
-
-        'getMembers': [
-            ('eid', int, []),
-        ],
-
-        'create': [
-            ('event_info', json, []),
-        ],
+        "getMembers": [("eid", int, []),],
+        "create": [("event_info", json, []),],
     },
-
     # update methods
-    'update': {
-        'decodeIDs': [
-            ('ids', list, []),
-        ],
-    },
-
+    "update": {"decodeIDs": [("ids", list, []),],},
     # groups methods
-    'groups': {
-        'get': [
-            ('uid', int, ['optional']),
-            ('gids', list, ['optional']),
-        ],
-
-        'getMembers': [
-            ('gid', int, []),
-        ],
+    "groups": {
+        "get": [("uid", int, ["optional"]), ("gids", list, ["optional"]),],
+        "getMembers": [("gid", int, []),],
     },
-
     # marketplace methods
-    'marketplace': {
-        'createListing': [
-            ('listing_id', int, []),
-            ('show_on_profile', bool, []),
-            ('listing_attrs', str, []),
+    "marketplace": {
+        "createListing": [
+            ("listing_id", int, []),
+            ("show_on_profile", bool, []),
+            ("listing_attrs", str, []),
         ],
-
-        'getCategories': [],
-
-        'getListings': [
-            ('listing_ids', list, []),
-            ('uids', list, []),
-        ],
-
-        'getSubCategories': [
-            ('category', str, []),
-        ],
-
-        'removeListing': [
-            ('listing_id', int, []),
-            ('status', str, []),
-        ],
-
-        'search': [
-            ('category', str, ['optional']),
-            ('subcategory', str, ['optional']),
-            ('query', str, ['optional']),
+        "getCategories": [],
+        "getListings": [("listing_ids", list, []), ("uids", list, []),],
+        "getSubCategories": [("category", str, []),],
+        "removeListing": [("listing_id", int, []), ("status", str, []),],
+        "search": [
+            ("category", str, ["optional"]),
+            ("subcategory", str, ["optional"]),
+            ("query", str, ["optional"]),
         ],
     },
-
     # pages methods
-    'pages': {
-        'getInfo': [
-            ('fields', list, [('default', ['page_id', 'name'])]),
-            ('page_ids', list, ['optional']),
-            ('uid', int, ['optional']),
+    "pages": {
+        "getInfo": [
+            ("fields", list, [("default", ["page_id", "name"])]),
+            ("page_ids", list, ["optional"]),
+            ("uid", int, ["optional"]),
         ],
-
-        'isAdmin': [
-            ('page_id', int, []),
-        ],
-
-        'isAppAdded': [
-            ('page_id', int, []),
-        ],
-
-        'isFan': [
-            ('page_id', int, []),
-            ('uid', int, []),
-        ],
+        "isAdmin": [("page_id", int, []),],
+        "isAppAdded": [("page_id", int, []),],
+        "isFan": [("page_id", int, []), ("uid", int, []),],
     },
-
     # photos methods
-    'photos': {
-        'addTag': [
-            ('pid', int, []),
-            ('tag_uid', int, [('default', 0)]),
-            ('tag_text', str, [('default', '')]),
-            ('x', float, [('default', 50)]),
-            ('y', float, [('default', 50)]),
-            ('tags', str, ['optional']),
+    "photos": {
+        "addTag": [
+            ("pid", int, []),
+            ("tag_uid", int, [("default", 0)]),
+            ("tag_text", str, [("default", "")]),
+            ("x", float, [("default", 50)]),
+            ("y", float, [("default", 50)]),
+            ("tags", str, ["optional"]),
         ],
-
-        'createAlbum': [
-            ('name', str, []),
-            ('location', str, ['optional']),
-            ('description', str, ['optional']),
+        "createAlbum": [
+            ("name", str, []),
+            ("location", str, ["optional"]),
+            ("description", str, ["optional"]),
         ],
-
-        'get': [
-            ('subj_id', int, ['optional']),
-            ('aid', int, ['optional']),
-            ('pids', list, ['optional']),
+        "get": [
+            ("subj_id", int, ["optional"]),
+            ("aid", int, ["optional"]),
+            ("pids", list, ["optional"]),
         ],
-
-        'getAlbums': [
-            ('uid', int, ['optional']),
-            ('aids', list, ['optional']),
-        ],
-
-        'getTags': [
-            ('pids', list, []),
-        ],
+        "getAlbums": [("uid", int, ["optional"]), ("aids", list, ["optional"]),],
+        "getTags": [("pids", list, []),],
     },
-
     # status methods
-    'status': {
-        'get': [
-            ('uid', int, ['optional']),
-            ('limit', int, ['optional']),
-        ],
-        'set': [
-            ('status', str, ['optional']),
-            ('uid', int, ['optional']),
-        ],
+    "status": {
+        "get": [("uid", int, ["optional"]), ("limit", int, ["optional"]),],
+        "set": [("status", str, ["optional"]), ("uid", int, ["optional"]),],
     },
-
     # fbml methods
-    'fbml': {
-        'refreshImgSrc': [
-            ('url', str, []),
-        ],
-
-        'refreshRefUrl': [
-            ('url', str, []),
-        ],
-
-        'setRefHandle': [
-            ('handle', str, []),
-            ('fbml', str, []),
-        ],
+    "fbml": {
+        "refreshImgSrc": [("url", str, []),],
+        "refreshRefUrl": [("url", str, []),],
+        "setRefHandle": [("handle", str, []), ("fbml", str, []),],
     },
-
     # SMS Methods
-    'sms' : {
-        'canSend' : [
-            ('uid', int, []),
-        ],
-
-        'send' : [
-            ('uid', int, []),
-            ('message', str, []),
-            ('session_id', int, []),
-            ('req_session', bool, []),
+    "sms": {
+        "canSend": [("uid", int, []),],
+        "send": [
+            ("uid", int, []),
+            ("message", str, []),
+            ("session_id", int, []),
+            ("req_session", bool, []),
         ],
     },
-
-    'data': {
-        'getCookies': [
-            ('uid', int, []),
-            ('string', str, ['optional']),
-        ],
-
-        'setCookie': [
-            ('uid', int, []),
-            ('name', str, []),
-            ('value', str, []),
-            ('expires', int, ['optional']),
-            ('path', str, ['optional']),
+    "data": {
+        "getCookies": [("uid", int, []), ("string", str, ["optional"]),],
+        "setCookie": [
+            ("uid", int, []),
+            ("name", str, []),
+            ("value", str, []),
+            ("expires", int, ["optional"]),
+            ("path", str, ["optional"]),
         ],
     },
-
     # connect methods
-    'connect': {
-        'registerUsers': [
-            ('accounts', json, []),
-        ],
-
-        'unregisterUsers': [
-            ('email_hashes', json, []),
-        ],
-
-        'getUnconnectedFriendsCount': [
-        ],
+    "connect": {
+        "registerUsers": [("accounts", json, []),],
+        "unregisterUsers": [("email_hashes", json, []),],
+        "getUnconnectedFriendsCount": [],
     },
-
-    #stream methods (beta)
-    'stream' : {
-        'addComment' : [
-            ('post_id', int, []),
-            ('comment', str, []),
-            ('uid', int, ['optional']),
+    # stream methods (beta)
+    "stream": {
+        "addComment": [
+            ("post_id", int, []),
+            ("comment", str, []),
+            ("uid", int, ["optional"]),
         ],
-
-        'addLike': [
-            ('uid', int, ['optional']),
-            ('post_id', int, ['optional']),
+        "addLike": [("uid", int, ["optional"]), ("post_id", int, ["optional"]),],
+        "get": [
+            ("viewer_id", int, ["optional"]),
+            ("source_ids", list, ["optional"]),
+            ("start_time", int, ["optional"]),
+            ("end_time", int, ["optional"]),
+            ("limit", int, ["optional"]),
+            ("filter_key", str, ["optional"]),
         ],
-
-        'get' : [
-            ('viewer_id', int, ['optional']),
-            ('source_ids', list, ['optional']),
-            ('start_time', int, ['optional']),
-            ('end_time', int, ['optional']),
-            ('limit', int, ['optional']),
-            ('filter_key', str, ['optional']),
+        "getComments": [("post_id", int, []),],
+        "getFilters": [("uid", int, ["optional"]),],
+        "publish": [
+            ("message", str, ["optional"]),
+            ("attachment", json, ["optional"]),
+            ("action_links", json, ["optional"]),
+            ("target_id", str, ["optional"]),
+            ("uid", str, ["optional"]),
         ],
-
-        'getComments' : [
-            ('post_id', int, []),
-        ],
-
-        'getFilters' : [
-            ('uid', int, ['optional']),
-        ],
-
-        'publish' : [
-            ('message', str, ['optional']),
-            ('attachment', json, ['optional']),
-            ('action_links', json, ['optional']),
-            ('target_id', str, ['optional']),
-            ('uid', str, ['optional']),
-        ],
-
-        'remove' : [
-            ('post_id', int, []),
-            ('uid', int, ['optional']),
-        ],
-
-        'removeComment' : [
-            ('comment_id', int, []),
-            ('uid', int, ['optional']),
-        ],
-
-        'removeLike' : [
-            ('uid', int, ['optional']),
-            ('post_id', int, ['optional']),
-        ],
-    }
+        "remove": [("post_id", int, []), ("uid", int, ["optional"]),],
+        "removeComment": [("comment_id", int, []), ("uid", int, ["optional"]),],
+        "removeLike": [("uid", int, ["optional"]), ("post_id", int, ["optional"]),],
+    },
 }
+
 
 class Proxy(object):
     """Represents a "namespace" of Facebook API calls."""
@@ -591,7 +418,7 @@ class Proxy(object):
         if add_session_args:
             self._client._add_session_args(args)
 
-        return self._client('%s.%s' % (self._name, method), args)
+        return self._client("%s.%s" % (self._name, method), args)
 
 
 # generate the Facebook proxies
@@ -600,44 +427,57 @@ def __generate_proxies():
         methods = {}
 
         for method in METHODS[namespace]:
-            params = ['self']
-            body = ['args = {}']
+            params = ["self"]
+            body = ["args = {}"]
 
             for param_name, param_type, param_options in METHODS[namespace][method]:
                 param = param_name
 
                 for option in param_options:
-                    if isinstance(option, tuple) and option[0] == 'default':
+                    if isinstance(option, tuple) and option[0] == "default":
                         if param_type == list:
-                            param = '%s=None' % param_name
-                            body.append('if %s is None: %s = %s' % (param_name, param_name, repr(option[1])))
+                            param = "%s=None" % param_name
+                            body.append(
+                                "if %s is None: %s = %s"
+                                % (param_name, param_name, repr(option[1]))
+                            )
                         else:
-                            param = '%s=%s' % (param_name, repr(option[1]))
+                            param = "%s=%s" % (param_name, repr(option[1]))
 
                 if param_type == json:
                     # we only jsonify the argument if it's a list or a dict, for compatibility
-                    body.append('if isinstance(%s, list) or isinstance(%s, dict): %s = simplejson.dumps(%s)' % ((param_name,) * 4))
+                    body.append(
+                        "if isinstance(%s, list) or isinstance(%s, dict): %s = simplejson.dumps(%s)"
+                        % ((param_name,) * 4)
+                    )
 
-                if 'optional' in param_options:
-                    param = '%s=None' % param_name
-                    body.append('if %s is not None: args[\'%s\'] = %s' % (param_name, param_name, param_name))
+                if "optional" in param_options:
+                    param = "%s=None" % param_name
+                    body.append(
+                        "if %s is not None: args['%s'] = %s"
+                        % (param_name, param_name, param_name)
+                    )
                 else:
-                    body.append('args[\'%s\'] = %s' % (param_name, param_name))
+                    body.append("args['%s'] = %s" % (param_name, param_name))
 
                 params.append(param)
 
             # simple docstring to refer them to Facebook API docs
-            body.insert(0, '"""Facebook API call. See http://developers.facebook.com/documentation.php?v=1.0&method=%s.%s"""' % (namespace, method))
+            body.insert(
+                0,
+                '"""Facebook API call. See http://developers.facebook.com/documentation.php?v=1.0&method=%s.%s"""'
+                % (namespace, method),
+            )
 
-            body.insert(0, 'def %s(%s):' % (method, ', '.join(params)))
+            body.insert(0, "def %s(%s):" % (method, ", ".join(params)))
 
-            body.append('return self(\'%s\', args)' % method)
+            body.append("return self('%s', args)" % method)
 
-            exec('\n    '.join(body))
+            exec("\n    ".join(body))
 
             methods[method] = eval(method)
 
-        proxy = type('%sProxy' % namespace.title(), (Proxy, ), methods)
+        proxy = type("%sProxy" % namespace.title(), (Proxy,), methods)
 
         globals()[proxy.__name__] = proxy
 
@@ -654,7 +494,7 @@ class FacebookError(Exception):
         self.args = args
 
     def __str__(self):
-        return 'Error %s: %s' % (self.code, self.msg)
+        return "Error %s: %s" % (self.code, self.msg)
 
 
 class AuthProxy(AuthProxy):
@@ -664,19 +504,19 @@ class AuthProxy(AuthProxy):
         """Facebook API call. See http://developers.facebook.com/documentation.php?v=1.0&method=auth.getSession"""
         args = {}
         try:
-            args['auth_token'] = self._client.auth_token
+            args["auth_token"] = self._client.auth_token
         except AttributeError:
-            raise RuntimeError('Client does not have auth_token set.')
-        result = self._client('%s.getSession' % self._name, args)
-        self._client.session_key = result['session_key']
-        self._client.uid = result['uid']
-        self._client.secret = result.get('secret')
-        self._client.session_key_expires = result['expires']
+            raise RuntimeError("Client does not have auth_token set.")
+        result = self._client("%s.getSession" % self._name, args)
+        self._client.session_key = result["session_key"]
+        self._client.uid = result["uid"]
+        self._client.secret = result.get("secret")
+        self._client.session_key_expires = result["expires"]
         return result
 
     def createToken(self):
         """Facebook API call. See http://developers.facebook.com/documentation.php?v=1.0&method=auth.createToken"""
-        token = self._client('%s.createToken' % self._name)
+        token = self._client("%s.createToken" % self._name)
         self._client.auth_token = token
         return token
 
@@ -686,7 +526,7 @@ class FriendsProxy(FriendsProxy):
 
     def get(self, **kwargs):
         """Facebook API call. See http://developers.facebook.com/documentation.php?v=1.0&method=friends.get"""
-        if not kwargs.get('flid') and self._client._friends:
+        if not kwargs.get("flid") and self._client._friends:
             return self._client._friends
         return super(FriendsProxy, self).get(**kwargs)
 
@@ -694,7 +534,15 @@ class FriendsProxy(FriendsProxy):
 class PhotosProxy(PhotosProxy):
     """Special proxy for facebook.photos."""
 
-    def upload(self, image, aid=None, caption=None, size=(604, 1024), filename=None, callback=None):
+    def upload(
+        self,
+        image,
+        aid=None,
+        caption=None,
+        size=(604, 1024),
+        filename=None,
+        callback=None,
+    ):
         """Facebook API call. See http://developers.facebook.com/documentation.php?v=1.0&method=photos.upload
 
         size -- an optional size (width, height) to resize the image to before uploading. Resizes by default
@@ -703,12 +551,14 @@ class PhotosProxy(PhotosProxy):
         args = {}
 
         if aid is not None:
-            args['aid'] = aid
+            args["aid"] = aid
 
         if caption is not None:
-            args['caption'] = caption
+            args["caption"] = caption
 
-        args = self._client._build_post_args('facebook.photos.upload', self._client._add_session_args(args))
+        args = self._client._build_post_args(
+            "facebook.photos.upload", self._client._add_session_args(args)
+        )
 
         try:
             import io as StringIO
@@ -721,7 +571,7 @@ class PhotosProxy(PhotosProxy):
             try:
                 import Image
             except ImportError:
-                data = io.StringIO(open(image, 'rb').read())
+                data = io.StringIO(open(image, "rb").read())
             else:
                 img = Image.open(image)
                 if size:
@@ -734,18 +584,20 @@ class PhotosProxy(PhotosProxy):
             data = io.StringIO(image)
             image = filename
 
-        content_type, body = self.__encode_multipart_formdata(list(args.items()), [(image, data)])
+        content_type, body = self.__encode_multipart_formdata(
+            list(args.items()), [(image, data)]
+        )
         urlinfo = urllib.parse.urlsplit(self._client.facebook_url)
         try:
             content_length = len(body)
             chunk_size = 4096
 
             h = http.client.HTTPConnection(urlinfo[1])
-            h.putrequest('POST', urlinfo[2])
-            h.putheader('Content-Type', content_type)
-            h.putheader('Content-Length', str(content_length))
-            h.putheader('MIME-Version', '1.0')
-            h.putheader('User-Agent', 'PyFacebook Client Library')
+            h.putrequest("POST", urlinfo[2])
+            h.putheader("Content-Type", content_type)
+            h.putheader("Content-Length", str(content_length))
+            h.putheader("MIME-Version", "1.0")
+            h.putheader("User-Agent", "PyFacebook Client Library")
             h.endheaders()
 
             if callback:
@@ -753,7 +605,7 @@ class PhotosProxy(PhotosProxy):
                 while len(body) > 0:
                     if len(body) < chunk_size:
                         data = body
-                        body = ''
+                        body = ""
                     else:
                         data = body[0:chunk_size]
                         body = body[chunk_size:]
@@ -767,7 +619,10 @@ class PhotosProxy(PhotosProxy):
             response = h.getresponse()
 
             if response.status != 200:
-                raise Exception('Error uploading photo: Facebook returned HTTP %s (%s)' % (response.status, response.reason))
+                raise Exception(
+                    "Error uploading photo: Facebook returned HTTP %s (%s)"
+                    % (response.status, response.reason)
+                )
             response = response.read()
         except:
             # sending the photo failed, perhaps we are using GAE
@@ -775,43 +630,51 @@ class PhotosProxy(PhotosProxy):
                 from google.appengine.api import urlfetch
 
                 try:
-                    response = urlread(url=self._client.facebook_url,data=body,headers={'POST':urlinfo[2],'Content-Type':content_type,'MIME-Version':'1.0'})
+                    response = urlread(
+                        url=self._client.facebook_url,
+                        data=body,
+                        headers={
+                            "POST": urlinfo[2],
+                            "Content-Type": content_type,
+                            "MIME-Version": "1.0",
+                        },
+                    )
                 except urllib.error.URLError:
-                    raise Exception('Error uploading photo: Facebook returned %s' % (response))
+                    raise Exception(
+                        "Error uploading photo: Facebook returned %s" % (response)
+                    )
             except ImportError:
                 # could not import from google.appengine.api, so we are not running in GAE
-                raise Exception('Error uploading photo.')
+                raise Exception("Error uploading photo.")
 
-        return self._client._parse_response(response, 'facebook.photos.upload')
-
+        return self._client._parse_response(response, "facebook.photos.upload")
 
     def __encode_multipart_formdata(self, fields, files):
         """Encodes a multipart/form-data message to upload an image."""
-        boundary = '-------tHISiStheMulTIFoRMbOUNDaRY'
-        crlf = '\r\n'
+        boundary = "-------tHISiStheMulTIFoRMbOUNDaRY"
+        crlf = "\r\n"
         l = []
 
         for (key, value) in fields:
-            l.append('--' + boundary)
+            l.append("--" + boundary)
             l.append('Content-Disposition: form-data; name="%s"' % str(key))
-            l.append('')
+            l.append("")
             l.append(str(value))
         for (filename, value) in files:
-            l.append('--' + boundary)
-            l.append('Content-Disposition: form-data; filename="%s"' % (str(filename), ))
-            l.append('Content-Type: %s' % self.__get_content_type(filename))
-            l.append('')
+            l.append("--" + boundary)
+            l.append('Content-Disposition: form-data; filename="%s"' % (str(filename),))
+            l.append("Content-Type: %s" % self.__get_content_type(filename))
+            l.append("")
             l.append(value.getvalue())
-        l.append('--' + boundary + '--')
-        l.append('')
+        l.append("--" + boundary + "--")
+        l.append("")
         body = crlf.join(l)
-        content_type = 'multipart/form-data; boundary=%s' % boundary
+        content_type = "multipart/form-data; boundary=%s" % boundary
         return content_type, body
-
 
     def __get_content_type(self, filename):
         """Returns a guess at the MIME type of the file from the filename."""
-        return str(mimetypes.guess_type(filename)[0]) or 'application/octet-stream'
+        return str(mimetypes.guess_type(filename)[0]) or "application/octet-stream"
 
 
 class Facebook(object):
@@ -899,7 +762,18 @@ class Facebook(object):
 
     """
 
-    def __init__(self, api_key, secret_key, auth_token=None, app_name=None, callback_path=None, internal=None, proxy=None, facebook_url=None, facebook_secure_url=None):
+    def __init__(
+        self,
+        api_key,
+        secret_key,
+        auth_token=None,
+        app_name=None,
+        callback_path=None,
+        internal=None,
+        proxy=None,
+        facebook_url=None,
+        facebook_secure_url=None,
+    ):
         """
         Initializes a new Facebook object which provides wrappers for the Facebook API.
 
@@ -933,7 +807,7 @@ class Facebook(object):
         self.callback_path = callback_path
         self.internal = internal
         self._friends = None
-        self.locale = 'en_US'
+        self.locale = "en_US"
         self.profile_update_time = None
         self.ext_perms = None
         self.proxy = proxy
@@ -947,14 +821,26 @@ class Facebook(object):
             self.facebook_secure_url = facebook_secure_url
 
         for namespace in METHODS:
-            self.__dict__[namespace] = eval('%sProxy(self, \'%s\')' % (namespace.title(), 'facebook.%s' % namespace))
-
+            self.__dict__[namespace] = eval(
+                "%sProxy(self, '%s')" % (namespace.title(), "facebook.%s" % namespace)
+            )
 
     def _hash_args(self, args, secret=None):
         """Hashes arguments by joining key=value pairs, appending a secret, and then taking the MD5 hex digest."""
         # @author: houyr
         # fix for UnicodeEncodeError
-        hasher = hashlib.md5(''.join(['%s=%s' % (isinstance(x, str) and x.encode("utf-8") or x, isinstance(args[x], str) and args[x].encode("utf-8") or args[x]) for x in sorted(args.keys())]))
+        hasher = hashlib.md5(
+            "".join(
+                [
+                    "%s=%s"
+                    % (
+                        isinstance(x, str) and x.encode("utf-8") or x,
+                        isinstance(args[x], str) and args[x].encode("utf-8") or args[x],
+                    )
+                    for x in sorted(args.keys())
+                ]
+            )
+        )
         if secret:
             hasher.update(secret)
         elif self.secret:
@@ -963,24 +849,32 @@ class Facebook(object):
             hasher.update(self.secret_key)
         return hasher.hexdigest()
 
-
     def _parse_response_item(self, node):
         """Parses an XML response node from Facebook."""
-        if node.nodeType == node.DOCUMENT_NODE and \
-            node.childNodes[0].hasAttributes() and \
-            node.childNodes[0].hasAttribute('list') and \
-            node.childNodes[0].getAttribute('list') == "true":
-            return {node.childNodes[0].nodeName: self._parse_response_list(node.childNodes[0])}
-        elif node.nodeType == node.ELEMENT_NODE and \
-            node.hasAttributes() and \
-            node.hasAttribute('list') and \
-            node.getAttribute('list')=="true":
+        if (
+            node.nodeType == node.DOCUMENT_NODE
+            and node.childNodes[0].hasAttributes()
+            and node.childNodes[0].hasAttribute("list")
+            and node.childNodes[0].getAttribute("list") == "true"
+        ):
+            return {
+                node.childNodes[0].nodeName: self._parse_response_list(
+                    node.childNodes[0]
+                )
+            }
+        elif (
+            node.nodeType == node.ELEMENT_NODE
+            and node.hasAttributes()
+            and node.hasAttribute("list")
+            and node.getAttribute("list") == "true"
+        ):
             return self._parse_response_list(node)
         elif len([x for x in node.childNodes if x.nodeType == x.ELEMENT_NODE]) > 0:
             return self._parse_response_dict(node)
         else:
-            return ''.join(node.data for node in node.childNodes if node.nodeType == node.TEXT_NODE)
-
+            return "".join(
+                node.data for node in node.childNodes if node.nodeType == node.TEXT_NODE
+            )
 
     def _parse_response_dict(self, node):
         """Parses an XML dictionary response node from Facebook."""
@@ -988,10 +882,9 @@ class Facebook(object):
         for item in [x for x in node.childNodes if x.nodeType == x.ELEMENT_NODE]:
             result[item.nodeName] = self._parse_response_item(item)
         if node.nodeType == node.ELEMENT_NODE and node.hasAttributes():
-            if node.hasAttribute('id'):
-                result['id'] = node.getAttribute('id')
+            if node.hasAttribute("id"):
+                result["id"] = node.getAttribute("id")
         return result
-
 
     def _parse_response_list(self, node):
         """Parses an XML list response node from Facebook."""
@@ -1000,12 +893,12 @@ class Facebook(object):
             result.append(self._parse_response_item(item))
         return result
 
-
     def _check_error(self, response):
         """Checks if the given Facebook response is an error, and then raises the appropriate exception."""
-        if type(response) is dict and 'error_code' in response:
-            raise FacebookError(response['error_code'], response['error_msg'], response['request_args'])
-
+        if type(response) is dict and "error_code" in response:
+            raise FacebookError(
+                response["error_code"], response["error_msg"], response["request_args"]
+            )
 
     def _build_post_args(self, method, args=None):
         """Adds to args parameters that are necessary for every call to the API."""
@@ -1014,20 +907,19 @@ class Facebook(object):
 
         for arg in list(args.items()):
             if type(arg[1]) == list:
-                args[arg[0]] = ','.join(str(a) for a in arg[1])
+                args[arg[0]] = ",".join(str(a) for a in arg[1])
             elif type(arg[1]) == str:
                 args[arg[0]] = arg[1].encode("UTF-8")
             elif type(arg[1]) == bool:
                 args[arg[0]] = str(arg[1]).lower()
 
-        args['method'] = method
-        args['api_key'] = self.api_key
-        args['v'] = '1.0'
-        args['format'] = RESPONSE_FORMAT
-        args['sig'] = self._hash_args(args)
+        args["method"] = method
+        args["api_key"] = self.api_key
+        args["v"] = "1.0"
+        args["format"] = RESPONSE_FORMAT
+        args["sig"] = self._hash_args(args)
 
         return args
-
 
     def _add_session_args(self, args=None):
         """Adds 'session_key' and 'call_id' to args, which are used for API calls that need sessions."""
@@ -1036,38 +928,36 @@ class Facebook(object):
 
         if not self.session_key:
             return args
-            #some calls don't need a session anymore. this might be better done in the markup
-            #raise RuntimeError('Session key not set. Make sure auth.getSession has been called.')
+            # some calls don't need a session anymore. this might be better done in the markup
+            # raise RuntimeError('Session key not set. Make sure auth.getSession has been called.')
 
-        args['session_key'] = self.session_key
-        args['call_id'] = str(int(time.time() * 1000))
+        args["session_key"] = self.session_key
+        args["call_id"] = str(int(time.time() * 1000))
 
         return args
-
 
     def _parse_response(self, response, method, format=None):
         """Parses the response according to the given (optional) format, which should be either 'JSON' or 'XML'."""
         if not format:
             format = RESPONSE_FORMAT
 
-        if format == 'JSON':
+        if format == "JSON":
             result = simplejson.loads(response)
 
             self._check_error(result)
-        elif format == 'XML':
+        elif format == "XML":
             dom = minidom.parseString(response)
             result = self._parse_response_item(dom)
             dom.unlink()
 
-            if 'error_response' in result:
-                self._check_error(result['error_response'])
+            if "error_response" in result:
+                self._check_error(result["error_response"])
 
-            result = result[method[9:].replace('.', '_') + '_response']
+            result = result[method[9:].replace(".", "_") + "_response"]
         else:
-            raise RuntimeError('Invalid format specified.')
+            raise RuntimeError("Invalid format specified.")
 
         return result
-
 
     def hash_email(self, email):
         """
@@ -1080,7 +970,6 @@ class Facebook(object):
             hashlib.md5(email).hexdigest(),
         )
 
-
     def unicode_urlencode(self, params):
         """
         @author: houyr
@@ -1088,9 +977,9 @@ class Facebook(object):
         """
         if isinstance(params, dict):
             params = list(params.items())
-        return urllib.parse.urlencode([(k, isinstance(v, str) and v.encode('utf-8') or v)
-                          for k, v in params])
-
+        return urllib.parse.urlencode(
+            [(k, isinstance(v, str) and v.encode("utf-8") or v) for k, v in params]
+        )
 
     def __call__(self, method=None, args=None, secure=False):
         """Make a call to Facebook's REST server."""
@@ -1100,8 +989,8 @@ class Facebook(object):
             return self
 
         # __init__ hard-codes into en_US
-        if args is not None and 'locale' not in args:
-            args['locale'] = self.locale
+        if args is not None and "locale" not in args:
+            args["locale"] = self.locale
 
         # @author: houyr
         # fix for bug of UnicodeEncodeError
@@ -1122,7 +1011,6 @@ class Facebook(object):
 
         return self._parse_response(response, method)
 
-
     # URL helpers
     def get_url(self, page, **args):
         """
@@ -1130,29 +1018,29 @@ class Facebook(object):
         Named arguments are passed as GET query string parameters.
 
         """
-        return 'http://www.facebook.com/%s.php?%s' % (page, urllib.parse.urlencode(args))
+        return "http://www.facebook.com/%s.php?%s" % (
+            page,
+            urllib.parse.urlencode(args),
+        )
 
-
-    def get_app_url(self, path=''):
+    def get_app_url(self, path=""):
         """
         Returns the URL for this app's canvas page, according to app_name.
 
         """
-        return 'http://apps.facebook.com/%s/%s' % (self.app_name, path)
-
+        return "http://apps.facebook.com/%s/%s" % (self.app_name, path)
 
     def get_add_url(self, next=None):
         """
         Returns the URL that the user should be redirected to in order to add the application.
 
         """
-        args = {'api_key': self.api_key, 'v': '1.0'}
+        args = {"api_key": self.api_key, "v": "1.0"}
 
         if next is not None:
-            args['next'] = next
+            args["next"] = next
 
-        return self.get_url('install', **args)
-
+        return self.get_url("install", **args)
 
     def get_authorize_url(self, next=None, next_cancel=None):
         """
@@ -1160,16 +1048,15 @@ class Facebook(object):
         authorize certain actions for application.
 
         """
-        args = {'api_key': self.api_key, 'v': '1.0'}
+        args = {"api_key": self.api_key, "v": "1.0"}
 
         if next is not None:
-            args['next'] = next
+            args["next"] = next
 
         if next_cancel is not None:
-            args['next_cancel'] = next_cancel
+            args["next_cancel"] = next_cancel
 
-        return self.get_url('authorize', **args)
-
+        return self.get_url("authorize", **args)
 
     def get_login_url(self, next=None, popup=False, canvas=True):
         """
@@ -1178,28 +1065,27 @@ class Facebook(object):
         next -- the URL that Facebook should redirect to after login
 
         """
-        args = {'api_key': self.api_key, 'v': '1.0'}
+        args = {"api_key": self.api_key, "v": "1.0"}
 
         if next is not None:
-            args['next'] = next
+            args["next"] = next
 
         if canvas is True:
-            args['canvas'] = 1
+            args["canvas"] = 1
 
         if popup is True:
-            args['popup'] = 1
+            args["popup"] = 1
 
         if self.auth_token is not None:
-            args['auth_token'] = self.auth_token
+            args["auth_token"] = self.auth_token
 
-        return self.get_url('login', **args)
-
+        return self.get_url("login", **args)
 
     def login(self, popup=False):
         """Open a web browser telling the user to login to Facebook."""
         import webbrowser
-        webbrowser.open(self.get_login_url(popup=popup))
 
+        webbrowser.open(self.get_login_url(popup=popup))
 
     def get_ext_perm_url(self, ext_perm, next=None, popup=False):
         """
@@ -1209,22 +1095,21 @@ class Facebook(object):
         next     -- the URL that Facebook should redirect to after login
 
         """
-        args = {'ext_perm': ext_perm, 'api_key': self.api_key, 'v': '1.0'}
+        args = {"ext_perm": ext_perm, "api_key": self.api_key, "v": "1.0"}
 
         if next is not None:
-            args['next'] = next
+            args["next"] = next
 
         if popup is True:
-            args['popup'] = 1
+            args["popup"] = 1
 
-        return self.get_url('authorize', **args)
-
+        return self.get_url("authorize", **args)
 
     def request_extended_permission(self, ext_perm, popup=False):
         """Open a web browser telling the user to grant an extended permission."""
         import webbrowser
-        webbrowser.open(self.get_ext_perm_url(ext_perm, popup=popup))
 
+        webbrowser.open(self.get_ext_perm_url(ext_perm, popup=popup))
 
     def check_session(self, request):
         """
@@ -1235,23 +1120,22 @@ class Facebook(object):
         (either log the user in or have him add the application).
 
         """
-        self.in_canvas = (request.POST.get('fb_sig_in_canvas') == '1')
+        self.in_canvas = request.POST.get("fb_sig_in_canvas") == "1"
 
         if self.session_key and (self.uid or self.page_id):
             return True
 
-
-        if request.method == 'POST':
+        if request.method == "POST":
             params = self.validate_signature(request.POST)
         else:
-            if 'installed' in request.GET:
+            if "installed" in request.GET:
                 self.added = True
 
-            if 'fb_page_id' in request.GET:
-                self.page_id = request.GET['fb_page_id']
+            if "fb_page_id" in request.GET:
+                self.page_id = request.GET["fb_page_id"]
 
-            if 'auth_token' in request.GET:
-                self.auth_token = request.GET['auth_token']
+            if "auth_token" in request.GET:
+                self.auth_token = request.GET["auth_token"]
 
                 try:
                     self.auth.getSession()
@@ -1265,76 +1149,75 @@ class Facebook(object):
 
         if not params:
             # first check if we are in django - to check cookies
-            if hasattr(request, 'COOKIES'):
+            if hasattr(request, "COOKIES"):
                 params = self.validate_cookie_signature(request.COOKIES)
                 self.is_session_from_cookie = True
             else:
                 # if not, then we might be on GoogleAppEngine, check their request object cookies
-                if hasattr(request,'cookies'):
+                if hasattr(request, "cookies"):
                     params = self.validate_cookie_signature(request.cookies)
                     self.is_session_from_cookie = True
 
         if not params:
             return False
 
-        if params.get('in_canvas') == '1':
+        if params.get("in_canvas") == "1":
             self.in_canvas = True
 
-        if params.get('in_iframe') == '1':
+        if params.get("in_iframe") == "1":
             self.in_iframe = True
 
-        if params.get('in_profile_tab') == '1':
+        if params.get("in_profile_tab") == "1":
             self.in_profile_tab = True
 
-        if params.get('added') == '1':
+        if params.get("added") == "1":
             self.added = True
 
-        if params.get('expires'):
-            self.session_key_expires = int(params['expires'])
+        if params.get("expires"):
+            self.session_key_expires = int(params["expires"])
 
-        if 'locale' in params:
-            self.locale = params['locale']
+        if "locale" in params:
+            self.locale = params["locale"]
 
-        if 'profile_update_time' in params:
+        if "profile_update_time" in params:
             try:
-                self.profile_update_time = int(params['profile_update_time'])
+                self.profile_update_time = int(params["profile_update_time"])
             except ValueError:
                 pass
 
-        if 'ext_perms' in params:
-            self.ext_perms = params['ext_perms']
+        if "ext_perms" in params:
+            self.ext_perms = params["ext_perms"]
 
-        if 'friends' in params:
-            if params['friends']:
-                self._friends = params['friends'].split(',')
+        if "friends" in params:
+            if params["friends"]:
+                self._friends = params["friends"].split(",")
             else:
                 self._friends = []
 
-        if 'session_key' in params:
-            self.session_key = params['session_key']
-            if 'user' in params:
-                self.uid = params['user']
-            elif 'page_id' in params:
-                self.page_id = params['page_id']
+        if "session_key" in params:
+            self.session_key = params["session_key"]
+            if "user" in params:
+                self.uid = params["user"]
+            elif "page_id" in params:
+                self.page_id = params["page_id"]
             else:
                 return False
-        elif 'profile_session_key' in params:
-            self.session_key = params['profile_session_key']
-            if 'profile_user' in params:
-                self.uid = params['profile_user']
+        elif "profile_session_key" in params:
+            self.session_key = params["profile_session_key"]
+            if "profile_user" in params:
+                self.uid = params["profile_user"]
             else:
                 return False
-        elif 'canvas_user' in params:
-            self.uid = params['canvas_user']
-        elif 'uninstall' in params:
-            self.uid = params['user']
+        elif "canvas_user" in params:
+            self.uid = params["canvas_user"]
+        elif "uninstall" in params:
+            self.uid = params["user"]
         else:
             return False
 
         return True
 
-
-    def validate_signature(self, post, prefix='fb_sig', timeout=None):
+    def validate_signature(self, post, prefix="fb_sig", timeout=None):
         """
         Validate parameters passed to an internal Facebook app from Facebook.
 
@@ -1346,10 +1229,20 @@ class Facebook(object):
 
         del args[prefix]
 
-        if timeout and '%s_time' % prefix in post and time.time() - float(post['%s_time' % prefix]) > timeout:
+        if (
+            timeout
+            and "%s_time" % prefix in post
+            and time.time() - float(post["%s_time" % prefix]) > timeout
+        ):
             return None
 
-        args = dict([(key[len(prefix + '_'):], value) for key, value in list(args.items()) if key.startswith(prefix)])
+        args = dict(
+            [
+                (key[len(prefix + "_") :], value)
+                for key, value in list(args.items())
+                if key.startswith(prefix)
+            ]
+        )
 
         hash = self._hash_args(args)
 
@@ -1368,34 +1261,32 @@ class Facebook(object):
             return None
 
         prefix = api_key + "_"
-       
-        params = {} 
-        vals = ''
+
+        params = {}
+        vals = ""
         for k in sorted(cookies):
             if k.startswith(prefix):
-                key = k.replace(prefix,"")
+                key = k.replace(prefix, "")
                 value = cookies[k]
                 params[key] = value
-                vals += '%s=%s' % (key, value)
-                
+                vals += "%s=%s" % (key, value)
+
         hasher = hashlib.md5(vals)
 
         hasher.update(self.secret_key)
         digest = hasher.hexdigest()
         if digest == cookies[api_key]:
-            params['is_session_from_cookie'] = True
+            params["is_session_from_cookie"] = True
             return params
         else:
             return False
 
 
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     # sample desktop application
 
-    api_key = ''
-    secret_key = ''
+    api_key = ""
+    secret_key = ""
 
     facebook = Facebook(api_key, secret_key)
 
@@ -1406,26 +1297,35 @@ if __name__ == '__main__':
     facebook.login()
 
     # Login to the window, then press enter
-    print('After logging in, press enter...')
+    print("After logging in, press enter...")
     input()
 
     facebook.auth.getSession()
-    print('Session Key:   ', facebook.session_key)
-    print('Your UID:      ', facebook.uid)
+    print("Session Key:   ", facebook.session_key)
+    print("Your UID:      ", facebook.uid)
 
-    info = facebook.users.getInfo([facebook.uid], ['name', 'birthday', 'affiliations', 'sex'])[0]
+    info = facebook.users.getInfo(
+        [facebook.uid], ["name", "birthday", "affiliations", "sex"]
+    )[0]
 
-    print('Your Name:     ', info['name'])
-    print('Your Birthday: ', info['birthday'])
-    print('Your Gender:   ', info['sex'])
+    print("Your Name:     ", info["name"])
+    print("Your Birthday: ", info["birthday"])
+    print("Your Gender:   ", info["sex"])
 
     friends = facebook.friends.get()
-    friends = facebook.users.getInfo(friends[0:5], ['name', 'birthday', 'relationship_status'])
+    friends = facebook.users.getInfo(
+        friends[0:5], ["name", "birthday", "relationship_status"]
+    )
 
     for friend in friends:
-        print(friend['name'], 'has a birthday on', friend['birthday'], 'and is', friend['relationship_status'])
+        print(
+            friend["name"],
+            "has a birthday on",
+            friend["birthday"],
+            "and is",
+            friend["relationship_status"],
+        )
 
-    arefriends = facebook.friends.areFriends([friends[0]['uid']], [friends[1]['uid']])
+    arefriends = facebook.friends.areFriends([friends[0]["uid"]], [friends[1]["uid"]])
 
     photos = facebook.photos.getAlbums(facebook.uid)
-

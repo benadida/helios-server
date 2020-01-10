@@ -11,5 +11,3 @@ VOTERS_UPLOAD = settings.HELIOS_VOTERS_UPLOAD
 
 # allow emailing of voters?
 VOTERS_EMAIL = settings.HELIOS_VOTERS_EMAIL
-
-

@@ -38,7 +38,8 @@ Facebook tools for Google AppEngine's object-oriented "webapp" framework.
 # for Facebook requests such as the application's API key and secret
 # key. Defaults to loading a 'facebook.yaml' YAML file. This should be
 # useful and familiar for most AppEngine development.
-FACEBOOK_CONFIG = yaml.load(file('facebook.yaml', 'r'))
+FACEBOOK_CONFIG = yaml.load(file("facebook.yaml", "r"))
+
 
 class FacebookRequestHandler(RequestHandler):
     """
@@ -53,7 +54,7 @@ class FacebookRequestHandler(RequestHandler):
         """
         if name in FACEBOOK_CONFIG:
             default = FACEBOOK_CONFIG[name]
-            
+
         return getattr(self, name, default)
 
     def initialize(self, request, response):
@@ -62,17 +63,16 @@ class FacebookRequestHandler(RequestHandler):
         """
         super(FacebookRequestHandler, self).initialize(request, response)
 
-        app_name = self._fbconfig_value('app_name', '')
-        api_key = self._fbconfig_value('api_key', None)
-        secret_key = self._fbconfig_value('secret_key', None)
+        app_name = self._fbconfig_value("app_name", "")
+        api_key = self._fbconfig_value("api_key", None)
+        secret_key = self._fbconfig_value("secret_key", None)
 
-        self.facebook = Facebook(api_key, secret_key,
-            app_name=app_name)
+        self.facebook = Facebook(api_key, secret_key, app_name=app_name)
 
-        require_app = self._fbconfig_value('require_app', False)
-        require_login = self._fbconfig_value('require_login', False)
-        need_session = self._fbconfig_value('need_session', False)
-        check_session = self._fbconfig_value('check_session', True)
+        require_app = self._fbconfig_value("require_app", False)
+        require_login = self._fbconfig_value("require_login", False)
+        need_session = self._fbconfig_value("need_session", False)
+        check_session = self._fbconfig_value("check_session", True)
 
         self._messages = None
         self.redirecting = False
@@ -83,7 +83,7 @@ class FacebookRequestHandler(RequestHandler):
                 self.redirecting = True
                 return
         elif check_session:
-            self.facebook.check_session(request) # ignore response
+            self.facebook.check_session(request)  # ignore response
 
         # NOTE: require_app is deprecated according to modern Facebook login
         #       policies. Included for completeness, but unnecessary.
@@ -102,21 +102,21 @@ class FacebookRequestHandler(RequestHandler):
         """
         if self.facebook.in_canvas:
             self.response.clear()
-            self.response.out.write('<fb:redirect url="%s" />' % (url, ))
+            self.response.out.write('<fb:redirect url="%s" />' % (url,))
         else:
             super(FacebookRequestHandler, self).redirect(url, **kwargs)
 
-    def add_user_message(self, kind, msg, detail='', time=15 * 60):
+    def add_user_message(self, kind, msg, detail="", time=15 * 60):
         """
         Add a message to the current user to memcache.
         """
         if self.facebook.uid:
-            key = 'messages:%s' % self.facebook.uid
+            key = "messages:%s" % self.facebook.uid
             self._messages = memcache.get(key)
             message = {
-                'kind': kind,
-                'message': msg,
-                'detail': detail,
+                "kind": kind,
+                "message": msg,
+                "detail": detail,
             }
             if self._messages is not None:
                 self._messages.append(message)
@@ -129,12 +129,13 @@ class FacebookRequestHandler(RequestHandler):
         Get all of the messages for the current user; removing them.
         """
         if self.facebook.uid:
-            key = 'messages:%s' % self.facebook.uid
-            if not hasattr(self, '_messages') or self._messages is None:
+            key = "messages:%s" % self.facebook.uid
+            if not hasattr(self, "_messages") or self._messages is None:
                 self._messages = memcache.get(key)
             memcache.delete(key)
             return self._messages
         return None
+
 
 class FacebookCanvasHandler(FacebookRequestHandler):
     """
@@ -159,12 +160,14 @@ class FacebookCanvasHandler(FacebookRequestHandler):
         Check a couple of simple safety checks and then call the canvas
         handler.
         """
-        if self.redirecting: return
+        if self.redirecting:
+            return
 
         if not self.facebook.in_canvas:
             self.error(404)
             return
 
         self.canvas(*args, **kwargs)
+
 
 # vim: ai et ts=4 sts=4 sw=4

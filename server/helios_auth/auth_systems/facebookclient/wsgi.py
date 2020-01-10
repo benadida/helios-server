@@ -29,7 +29,6 @@ except ImportError:
 else:
     facebook = StackedObjectProxy(name="PyFacebook Facebook Connection")
 
-
     class CanvasRedirect(_HTTPMove):
 
         """This is for canvas redirects."""
@@ -42,6 +41,7 @@ else:
             """ text/html representation of the exception """
             body = self.make_body(environ, self.template, html_quote, no_quote)
             return body
+
 
 class FacebookWSGIMiddleware(object):
 
@@ -69,12 +69,13 @@ class FacebookWSGIMiddleware(object):
 
     def __call__(self, environ, start_response):
         config = self.config
-        real_facebook = self.facebook_class(config["pyfacebook.apikey"],
-                                            config["pyfacebook.secret"])
-        registry = environ.get('paste.registry')
+        real_facebook = self.facebook_class(
+            config["pyfacebook.apikey"], config["pyfacebook.secret"]
+        )
+        registry = environ.get("paste.registry")
         if registry:
             registry.register(facebook, real_facebook)
-        environ['pyfacebook.facebook'] = real_facebook
+        environ["pyfacebook.facebook"] = real_facebook
         return self.app(environ, start_response)
 
 
@@ -87,7 +88,6 @@ try:
 except ImportError:
     pass
 else:
-
 
     class PylonsFacebook(Facebook):
 
@@ -118,12 +118,10 @@ else:
             """Like url_for, but starts with "http://apps.facebook.com"."""
             return "http://apps.facebook.com" + url_for(*args, **kargs)
 
-
     def create_pylons_facebook_middleware(app, config):
         """This is a simple wrapper for FacebookWSGIMiddleware.
 
         It passes the correct facebook_class.
 
         """
-        return FacebookWSGIMiddleware(app, config,
-                                      facebook_class=PylonsFacebook)
+        return FacebookWSGIMiddleware(app, config, facebook_class=PylonsFacebook)
