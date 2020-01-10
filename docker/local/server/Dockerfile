@@ -6,11 +6,11 @@ ENV HOME=/home/django
 RUN apt-get update && apt-get install -yy build-essential
 
 # RUN pip install poetry==1.0.0
-COPY ./helios-server /app
+COPY ./server /app
 WORKDIR /app
 
-COPY docker/local/helios-server/entrypoint.sh /entrypoint.sh
-COPY docker/local/helios-server/start.sh /start.sh
+COPY docker/local/server/entrypoint.sh /entrypoint.sh
+COPY docker/local/server/start.sh /start.sh
 
 # RUN poetry update && poetry install
 RUN pip install -r requirements.txt

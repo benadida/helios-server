@@ -18,14 +18,14 @@ services:
     container_name: helios-backend
     build:
       context: .
-      dockerfile: ./docker/local/helios-server/Dockerfile
+      dockerfile: docker/local/server/Dockerfile
     depends_on:
       - db
     env_file:
       - .envs/.django
       - .envs/.postgres
     volumes:
-      - ./helios-server:/app
+      - ./server:/app
     ports:
     - 8000:8000
     networks:
