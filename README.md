@@ -6,9 +6,11 @@ Helios is an end-to-end verifiable voting system.
 
 The master branch is a fork of Ben Adida's Helios Voting server.
 
+### My contributions
+
 Branch **wm-python3-django2** uses Python 3.7, Django 2.2 and Celery 4.3.
 
-Branch **wm-py3-django2-heroku** uses and is deployed to [Heroku](https://helios-heroku.herokuapp.com). 
+Branch **wm-py3-django2-heroku** uses Python 3.7, Django 2.2 and Celery 4.3 and code for deployment to [Heroku](https://helios-heroku.herokuapp.com). 
 
 I have started compiling my own [documentation](https://wrmack.github.io/helios-server-docs/site/).
 
