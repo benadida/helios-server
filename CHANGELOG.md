@@ -4,6 +4,7 @@ Updated to Python 3.7 and Django 2.2
 ## Python
 * upgraded to python 3.7 with the help of the 2to3 utility
 * [summary of changes introduced by Python 3.0](https://docs.python.org/3.7/whatsnew/3.0.html#porting-to-python-3-0)
+* [The Conservative Python 3 Porting Guide](https://portingguide.readthedocs.io/en/latest/index.html)
 * there were notable changes to:
     * print is a function
     * iterable lists
