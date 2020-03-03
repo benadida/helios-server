@@ -959,7 +959,7 @@ def one_election_copy(request, election):
     name = "Copy of " + election.name,
     election_type = election.election_type,
     private_p = election.private_p,
-    description = election.description,
+    description = election.description_bleached,
     questions = election.questions,
     eligibility = election.eligibility,
     openreg = election.openreg,

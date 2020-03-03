@@ -36,7 +36,7 @@ def home(request):
   else:
     elections_voted = None
  
-  auth_systems = copy.copy(settings.AUTH_ENABLED_AUTH_SYSTEMS)
+  auth_systems = copy.copy(settings.AUTH_ENABLED_SYSTEMS)
   try:
     auth_systems.remove('password')
   except: pass

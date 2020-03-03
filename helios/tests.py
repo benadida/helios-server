@@ -434,7 +434,7 @@ class ElectionBlackboxTests(WebTest):
 
     def test_get_election_shortcut(self):
         response = self.client.get("/helios/e/%s" % self.election.short_name, follow=True)
-        self.assertContains(response, self.election.description)
+        self.assertContains(response, self.election.description_bleached)
         
     def test_get_election_raw(self):
         response = self.client.get("/helios/elections/%s" % self.election.uuid, follow=False)
@@ -442,7 +442,7 @@ class ElectionBlackboxTests(WebTest):
     
     def test_get_election(self):
         response = self.client.get("/helios/elections/%s/view" % self.election.uuid, follow=False)
-        self.assertContains(response, self.election.description)
+        self.assertContains(response, self.election.description_bleached)
 
     def test_get_election_questions(self):
         response = self.client.get("/helios/elections/%s/questions" % self.election.uuid, follow=False)
