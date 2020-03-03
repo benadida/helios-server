@@ -8,7 +8,7 @@ Ben Adida
 """
 from django.db import models
 
-from .auth_systems import AUTH_SYSTEMS
+from .auth_systems import can_check_constraint, AUTH_SYSTEMS
 from .jsonfield import JSONField
 
 
@@ -115,12 +115,12 @@ class User(models.Model):
     
     # from here on we know we match the auth system, but do we match one of the constraints?  
 
+    # does the auth system allow for checking a constraint?
+    if not can_check_constraint(self.user_type):
+      return False
+
     auth_system = AUTH_SYSTEMS[self.user_type]
 
-    # does the auth system allow for checking a constraint?
-    if not hasattr(auth_system, 'check_constraint'):
-      return False
-      
     for constraint in eligibility_case['constraint']:
       # do we match on this constraint?
       if auth_system.check_constraint(constraint=constraint, user = self):

@@ -1,8 +1,8 @@
 from django.conf import settings
 
-_enabled = settings.AUTH_ENABLED_AUTH_SYSTEMS or None
+_enabled = settings.AUTH_ENABLED_SYSTEMS or None
 def _is_enabled(system):
-    return _enabled is not None or system in _enabled
+    return _enabled is None or system in _enabled
 
 AUTH_SYSTEMS = {}
 
@@ -43,7 +43,7 @@ if _is_enabled('clever'):
 #AUTH_SYSTEMS['live'] = live
 
 def can_check_constraint(auth_system):
-    return hasattr(AUTH_SYSTEMS[auth_system], 'check_constraint')
+    return auth_system in AUTH_SYSTEMS and hasattr(AUTH_SYSTEMS[auth_system], 'check_constraint')
 
 def can_list_categories(auth_system):
-    return hasattr(AUTH_SYSTEMS[auth_system], 'list_categories')
+    return auth_system in AUTH_SYSTEMS and hasattr(AUTH_SYSTEMS[auth_system], 'list_categories')
