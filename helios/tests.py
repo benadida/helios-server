@@ -378,7 +378,11 @@ class WebTest(django_webtest.WebTest):
         else:
             t = response.content
 
-        assert text in str(t), "missing text %s" % text
+        if isinstance(text, bytes):
+            text = text.decode()
+        if isinstance(t, bytes):
+            t = t.decode()
+        assert text in t, "missing text %s" % text
 
 
 ##
