@@ -12,10 +12,8 @@ gunicorn==19.9
 requests==2.21.0
 unicodecsv==0.14.1
 dj_database_url==0.3.0
-django-sslify==0.2.7
 django_webtest>=1.9
 webtest==2.0.18
-django-secure==1.0.1
 bleach==3.1.1
 boto==2.49.0
 django-ses==0.8.10
