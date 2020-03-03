@@ -350,20 +350,26 @@ class LegacyElectionBlackboxTests(DataFormatBlackboxTests, TestCase):
 class WebTest(django_webtest.WebTest):
     def assertStatusCode(self, response, status_code):
         actual_code = response.status_code if hasattr(response, 'status_code') else response.status_int
-        assert actual_code == status_code, "%s instad of %s" % (actual_code, status_code)
+        if isinstance(status_code, (list, tuple)):
+            assert actual_code in status_code, "%s instad of %s" % (actual_code, status_code)
+        else:
+            assert actual_code == status_code, "%s instad of %s" % (actual_code, status_code)
 
 
-    def assertRedirects(self, response, url):
+    def assertRedirects(self, response, url=None):
         """
         reimplement this in case it's a WebOp response
         and it seems to be screwing up in a few places too
         thus the localhost exception
         """
+        self.assertStatusCode(response, (301, 302))
+        location = None
         if hasattr(response, 'location'):
-            assert url in response.location, response.location
+            location = response.location
         else:
-            assert url in response['location'], response['location']
-        self.assertStatusCode(response, 302)
+            location = response['location']
+        if url is not None:
+            assert url in location, location
         #return super(django_webtest.WebTest, self).assertRedirects(response, url)
         #assert url in response.location, "redirected to %s instead of %s" % (response.location, url)
 
@@ -537,10 +543,11 @@ class ElectionBlackboxTests(WebTest):
         full_election_params.update(election_params or {})
 
         response = self.client.post("/helios/elections/new", full_election_params)
+        self.assertRedirects(response)
 
         # we are redirected to the election, let's extract the ID out of the URL
-        election_id = re.search('/elections/([^/]+)/', str(response['Location']))
-        self.assertIsNotNone(election_id, "Election id not found in redirect: %s" % str(response['Location']))
+        election_id = re.search('/elections/([^/]+)/', str(response['location']))
+        self.assertIsNotNone(election_id, "Election id not found in redirect: %s" % str(response['location']))
         election_id = election_id.group(1)
 
         # helios is automatically added as a trustee
