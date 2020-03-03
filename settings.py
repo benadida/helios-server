@@ -146,9 +146,6 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SILENCED_SYSTEM_CHECKS = ['urls.W002']
 
 MIDDLEWARE = [
-    # make all things SSL
-    #'sslify.middleware.SSLifyMiddleware',
-
     # secure a bunch of things
     'django.middleware.security.SecurityMiddleware',
     'helios.security.HSTSMiddleware',
@@ -187,7 +184,6 @@ TEMPLATES = [
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'djangosecure',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
