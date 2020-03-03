@@ -1,10 +1,35 @@
-sudo: false
-language: python
-python:
-  - "3.7"
-  - "3.8"
-
 os: linux
+
+jobs:
+  include:
+  - python: "3.7"
+    dist: xenial
+    addons:
+      postgresql: "9.5"
+  - python: "3.7"
+    dist: xenial
+    addons:
+      postgresql: "9.6"
+  - python: "3.7"
+    dist: xenial
+    addons:
+      postgresql: "10"
+  - python: "3.8"
+    dist: bionic
+    addons:
+      postgresql: "9.5"
+  - python: "3.8"
+    dist: bionic
+    addons:
+      postgresql: "9.6"
+  - python: "3.8"
+    dist: bionic
+    addons:
+      postgresql: "10"
+  - python: "3.8"
+    dist: bionic
+    addons:
+      postgresql: "11"
 
 before_install:
   - export BOTO_CONFIG=/dev/null
@@ -17,28 +42,4 @@ install:
 before_script:
   - psql -c 'create database helios;' -U postgres
 
-script: "python3 -Wall manage.py test"
-
-jobs:
-  include:
-  - dist: xenial
-    addons:
-      postgresql: "9.5"
-  - dist: xenial
-    addons:
-      postgresql: "9.6"
-  - dist: xenial
-    addons:
-      postgresql: "10"
-  - dist: bionic
-    addons:
-      postgresql: "9.5"
-  - dist: bionic
-    addons:
-      postgresql: "9.6"
-  - dist: bionic
-    addons:
-      postgresql: "10"
-  - dist: bionic
-    addons:
-      postgresql: "11"
+script: "python3 -Wall manage.py test -v 2"
