@@ -633,7 +633,7 @@ class ElectionBlackboxTests(WebTest):
         assert len(the_ballot['answers'][0]['randomness']) == 2, "not enough randomness"
         
         # parse it as an encrypted vote, and re-serialize it
-        ballot = datatypes.LDObject.fromDict(utils.from_json(response.testbody), type_hint='legacy/EncryptedVote')
+        ballot = datatypes.LDObject.fromDict(the_ballot, type_hint='legacy/EncryptedVote')
         encrypted_vote = ballot.serialize()
         
         # cast the ballot
