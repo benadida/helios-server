@@ -460,7 +460,7 @@ class ElectionBlackboxTests(WebTest):
 
     def test_get_election_voters_raw(self):
         response = self.client.get("/helios/elections/%s/voters/" % self.election.uuid, follow=False)
-        self.assertEqual(len(utils.from_json(response.content)), self.election.num_voters)
+        self.assertEqual(len(response.json()), self.election.num_voters)
         
     def test_election_creation_not_logged_in(self):
         response = self.client.post("/helios/elections/new", {
@@ -569,7 +569,7 @@ class ElectionBlackboxTests(WebTest):
         # and we want to check that there are now voters
         response = self.client.get("/helios/elections/%s/voters/" % election_id)
         NUM_VOTERS = 4
-        self.assertEqual(len(utils.from_json(response.content)), NUM_VOTERS)
+        self.assertEqual(len(response.json()), NUM_VOTERS)
 
         # let's get a single voter
         single_voter = models.Election.objects.get(uuid = election_id).voter_set.all()[0]
@@ -732,7 +732,7 @@ class ElectionBlackboxTests(WebTest):
 
         # check that tally matches
         response = self.client.get("/helios/elections/%s/result" % election_id)
-        self.assertEqual(utils.from_json(response.content), [[0,1]])
+        self.assertEqual(response.json(), [[0,1]])
         
     def test_do_complete_election(self):
         election_id, username, password = self._setup_complete_election()
