@@ -1,29 +1,22 @@
 * install PostgreSQL 8.3+
 
-* make sure you have virtualenv installed:
-http://www.virtualenv.org/en/latest/
+* make sure you have pipenv installed: https://pypi.org/project/pipenv/
 
 * download helios-server
 
 * cd into the helios-server directory
 
-* create a virtualenv:
+* install all the things:
 
 ```
-virtualenv venv
+pipenv install
 ```
 
 * activate virtual environment
 
 ```
-source venv/bin/activate
+pipenv shell
 ````
-
-* install requirements
-
-```
-pip install -r requirements.txt
-```
 
 * reset database
 

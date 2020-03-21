@@ -1,13 +1,10 @@
-sudo: false
 language: python
 python:
   - "2.7"
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
-  - pip install setuptools==24.3.1
-  - pip install -r requirements.txt
-# command to run tests, e.g. python setup.py test
-script: "python manage.py test"
+  - pip install pipenv
+  - pipenv install --dev
+script: "pipenv run python manage.py test"
 addons:
   postgresql: "9.3"
 before_script:
