@@ -8,12 +8,10 @@ ben@adida.net
 2010-05-22
 """
 
-from django.core.management.base import BaseCommand, CommandError
-import csv, datetime
+from django.core.management.base import BaseCommand
 
-from helios import utils as helios_utils
+from helios.models import Trustee
 
-from helios.models import *
 
 class Command(BaseCommand):
     args = ''

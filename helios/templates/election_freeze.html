@@ -29,14 +29,14 @@ You must freeze the ballot before you can contact voters.
         <li>{{issue.action}}</li>
         {% endfor %}
     </ul>
-    <a href="{% url "helios.views.one_election_view" election.uuid %}">go back to the election</a>
+    <a href="{% url "election@view" election.uuid %}">go back to the election</a>
 </p>
 {% else %}
 <form method="post" action="">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
 <input class="button" type="submit" value="Freeze the ballot" />
-<button onclick="document.location='./view'; return false;">never mind</button>
+<button onclick="document.location='{% url "election@view" election.uuid %}'; return false;">never mind</button>
 </form>
 {% endif %}
 
