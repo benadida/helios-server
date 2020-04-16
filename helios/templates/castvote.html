@@ -3,7 +3,7 @@
 {% block title %}{{cast_vote.vote_tinyhash}} &mdash; {{election.name}}{% endblock %}
 {% block content %}
 <h2 class="title">Cast Vote {{cast_vote.vote_tinyhash}}</h2>
-cast in <a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a><br />
+cast in <a href="{% url "election@view" election.uuid %}">{{election.name}}</a><br />
 Fingerprint: <tt>{{cast_vote.vote_hash}}</tt><br />
 by <b><u>
 {% if the_voter.alias %}

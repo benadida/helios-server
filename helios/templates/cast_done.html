@@ -15,12 +15,12 @@
 
 {% if logout %}
 <p><b>For your safety, we have logged you out.</b></p>
-<iframe width="0" height="0" border="0" frameborder="0" src="/auth/logout">
+<iframe width="0" height="0" border="0" frameborder="0" src="{% url "auth@logout" %}">
 </iframe>
 {% endif %}
 
 <p style="font-size: 1.4em;">
-[ <a href="{% url "helios.views.one_election_view" election.uuid %}">return to election info</a> ]
+[ <a href="{% url "election@view" election.uuid %}">return to election info</a> ]
 </p>
 
 {% endblock %}

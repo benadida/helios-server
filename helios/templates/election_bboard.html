@@ -3,7 +3,7 @@
 {% block title %}Ballot Tracking Center for {{election.name}}{% endblock %}
 
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Ballot Tracking Center <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election_uuid=election.uuid %}">back to election</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; Ballot Tracking Center <span style="font-size:0.7em;">[<a href="{% url "election@view" election_uuid=election.uuid %}">back to election</a>]</span></h2>
 
 <p>
   This is the ballot tracking center, which displays the tracking numbers of all cast ballots in this election.
@@ -16,15 +16,15 @@
 Voters {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
 
 {% if next_after %}
-<a href="./bboard?after={{next_after}}&offset={{offset_plus_limit}}">next {{limit}}</a> &nbsp;&nbsp;
+<a href="{% url "election@bboard" election.uuid %}?after={{next_after}}&offset={{offset_plus_limit}}">next {{limit}}</a> &nbsp;&nbsp;
 {% endif %}
 
 {% ifequal offset 0 %}
 {% else %}
-<a href="./bboard">back to start</a> &nbsp;&nbsp;
+<a href="{% url "election@bboard" election.uuid %}">back to start</a> &nbsp;&nbsp;
 {% endifequal %}
 {% if more_p %}
-<a href="./bboard?after={{next_after}}&offset={{next_offset}}">next {{limit}}</a>
+<a href="{% url "election@bboard" election.uuid %}?after={{next_after}}&offset={{next_offset}}">next {{limit}}</a>
 {% endif %}
 <table class="pretty">
 <tr><th>
@@ -40,7 +40,7 @@ Name
 {{voter.alias}}
 {% else %}
 <img border="0" height="20" src="/static/auth/login-icons/{{voter.voter_type}}.png" alt="{{voter.voter_type}}" /> {% if voter.name %}{{voter.name}}{% else %}{{voter.voter_id}}{% endif %}
-{% endif %}</td><td><tt style="font-size: 1.4em;;">{% if voter.vote_hash %}{{voter.vote_hash}} <span style="font-size:0.8em;">[<a href="{% url "helios.views.voter_last_vote" election_uuid=election.uuid voter_uuid=voter.uuid %}">view</a>]</span>{% else %}&mdash;{% endif %}</tt></td></tr>
+{% endif %}</td><td><tt style="font-size: 1.4em;;">{% if voter.vote_hash %}{{voter.vote_hash}} <span style="font-size:0.8em;">[<a href="{% url "election@ballots@voter@last" election_uuid=election.uuid voter_uuid=voter.uuid %}">view</a>]</span>{% else %}&mdash;{% endif %}</tt></td></tr>
 {% endfor %}
 </table>
 

@@ -19,12 +19,12 @@
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
 <input class="button" type="submit" value="compute encrypted tally!" />
-<button onclick="document.location='./view'; return false;">never mind</button>
+<button onclick="document.location='{% url "election@view" election.uuid %}'; return false;">never mind</button>
 </form>
 {% else %}
 <p>
 No votes have been cast in this election. At least one vote must be cast before you compute the tally.<br /><br />
-<a href="./view">back to election</a>
+<a href="{% url "election@view" election.uuid %}">back to election</a>
 </p>
 {% endif %}
 </div>
