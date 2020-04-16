@@ -6,6 +6,7 @@ Hacked a bit by Ben Adida (ben@adida.net) so that:
 - access tokens are looked up with an extra param of consumer
 """
 
+import cgi
 import urllib
 import time
 import random
@@ -54,7 +55,7 @@ class OAuthConsumer(object):
         self.secret = secret
 
 # OAuthToken is a data type that represents an End User via either an access
-# or request token.
+# or request token.     
 class OAuthToken(object):
     # access tokens and request tokens
     key = None
@@ -73,9 +74,9 @@ class OAuthToken(object):
 
     # return a token from something like:
     # oauth_token_secret=digg&oauth_token=digg
-    @staticmethod
+    @staticmethod   
     def from_string(s):
-        params = urlparse.parse_qs(s, keep_blank_values=False)
+        params = cgi.parse_qs(s, keep_blank_values=False)
         key = params['oauth_token'][0]
         secret = params['oauth_token_secret'][0]
         return OAuthToken(key, secret)
@@ -87,11 +88,11 @@ class OAuthToken(object):
 class OAuthRequest(object):
     '''
     OAuth parameters:
-        - oauth_consumer_key
+        - oauth_consumer_key 
         - oauth_token
         - oauth_signature_method
-        - oauth_signature
-        - oauth_timestamp
+        - oauth_signature 
+        - oauth_timestamp 
         - oauth_nonce
         - oauth_version
         ... any additional parameters, as defined by the Service Provider.
@@ -100,7 +101,7 @@ class OAuthRequest(object):
     http_method = HTTP_METHOD
     http_url = None
     version = VERSION
-
+    
     # added by Ben to filter out extra params from header
     OAUTH_PARAMS = ['oauth_consumer_key', 'oauth_token', 'oauth_signature_method', 'oauth_signature', 'oauth_timestamp', 'oauth_nonce', 'oauth_version']
 
@@ -172,7 +173,7 @@ class OAuthRequest(object):
         parts = urlparse.urlparse(self.http_url)
         url_string = '%s://%s%s' % (parts[0], parts[1], parts[2]) # scheme, netloc, path
         return url_string
-
+        
     # set the signature parameter to the result of build_signature
     def sign_request(self, signature_method, consumer, token):
         # set the signature method
@@ -265,11 +266,11 @@ class OAuthRequest(object):
             # remove quotes and unescape the value
             params[param_parts[0]] = urllib.unquote(param_parts[1].strip('\"'))
         return params
-
+    
     # util function: turn url string into parameters, has to do some unescaping
     @staticmethod
     def _split_url_string(param_str):
-        parameters = urlparse.parse_qs(param_str, keep_blank_values=False)
+        parameters = cgi.parse_qs(param_str, keep_blank_values=False)
         for k, v in parameters.iteritems():
             parameters[k] = urllib.unquote(v[0])
         return parameters
@@ -286,7 +287,7 @@ class OAuthServer(object):
         self.signature_methods = signature_methods or {}
 
     def set_data_store(self, oauth_data_store):
-        self.data_store = oauth_data_store
+        self.data_store = data_store
 
     def get_data_store(self):
         return self.data_store
@@ -335,12 +336,12 @@ class OAuthServer(object):
     # authorize a request token
     def authorize_token(self, token, user):
         return self.data_store.authorize_request_token(token, user)
-
+    
     # get the callback url
     def get_callback(self, oauth_request):
         return oauth_request.get_parameter('oauth_callback')
 
-    # optional support for the authenticate header
+    # optional support for the authenticate header   
     def build_authenticate_header(self, realm=''):
         return {'WWW-Authenticate': 'OAuth realm="%s"' % realm}
 
@@ -494,7 +495,7 @@ class OAuthSignatureMethod_HMAC_SHA1(OAuthSignatureMethod):
 
     def get_name(self):
         return 'HMAC-SHA1'
-
+        
     def build_signature_base_string(self, oauth_request, consumer, token):
         sig = (
             escape(oauth_request.get_normalized_http_method()),

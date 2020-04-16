@@ -91,7 +91,7 @@ class UserModelTests(unittest.TestCase):
 
 import views
 import auth_systems.password as password_views
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 # FIXME: login CSRF should make these tests more complicated
 # and should be tested for
@@ -116,7 +116,7 @@ class UserBlackboxTests(TestCase):
         # self.assertContains(response, "Foobar User")
 
     def test_logout(self):
-        response = self.client.post(reverse("auth@logout"), follow=True)
+        response = self.client.post(reverse(views.logout), follow=True)
         
         self.assertContains(response, "not logged in")
         self.assertNotContains(response, "Foobar User")

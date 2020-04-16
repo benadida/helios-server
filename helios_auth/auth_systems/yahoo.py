@@ -3,8 +3,12 @@ Yahoo Authentication
 
 """
 
-from django.conf import settings
+from django.http import *
 from django.core.mail import send_mail
+from django.conf import settings
+
+import sys, os, cgi, urllib, urllib2, re
+from xml.etree import ElementTree
 
 from openid import view_helpers
 

@@ -4,16 +4,22 @@ Utilities for all views
 Ben Adida (12-30-2008)
 """
 
-from django.conf import settings
-from django.http import HttpResponse
+from django.template import Context, Template, loader
+from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
-from django.template import loader
+
+import utils
+
+from helios import datatypes
+
 # nicely update the wrapper function
 from functools import update_wrapper
 
-import helios
-import utils
 from helios_auth.security import get_user
+
+import helios
+
+from django.conf import settings
 
 ##
 ## BASICS
@@ -27,14 +33,14 @@ FAILURE = HttpResponse("FAILURE")
 ##
 ## template abstraction
 ##
-def prepare_vars(request, values):
-  vars_with_user = values.copy() if values is not None else {}
+def prepare_vars(request, vars):
+  vars_with_user = vars.copy()
   vars_with_user['user'] = get_user(request)
-
+  
   # csrf protection
   if request.session.has_key('csrf_token'):
     vars_with_user['csrf_token'] = request.session['csrf_token']
-
+    
   vars_with_user['utils'] = utils
   vars_with_user['settings'] = settings
   vars_with_user['HELIOS_STATIC'] = '/static/helios/helios'
@@ -44,31 +50,31 @@ def prepare_vars(request, values):
 
   return vars_with_user
 
-
-def render_template(request, template_name, values = None, include_user=True):
-  vars_with_user = prepare_vars(request, values)
-
+def render_template(request, template_name, vars = {}, include_user=True):
+  t = loader.get_template(template_name + '.html')
+  
+  vars_with_user = prepare_vars(request, vars)
+  
   if not include_user:
     del vars_with_user['user']
-
+  
   return render_to_response('helios/templates/%s.html' % template_name, vars_with_user)
-
-
-def render_template_raw(request, template_name, values=None):
+  
+def render_template_raw(request, template_name, vars={}):
   t = loader.get_template(template_name)
-
+  
   # if there's a request, prep the vars, otherwise can't do it.
   if request:
-    full_vars = prepare_vars(request, values)
+    full_vars = prepare_vars(request, vars)
   else:
-    full_vars = values or {}
+    full_vars = vars
 
-  return t.render(context=full_vars, request=request)
+  c = Context(full_vars)  
+  return t.render(c)
 
 
 def render_json(json_txt):
   return HttpResponse(json_txt, "application/json")
-
 
 # decorator
 def return_json(func):
@@ -86,3 +92,4 @@ def return_json(func):
         raise e
 
     return update_wrapper(convert_to_json,func)
+    

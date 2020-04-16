@@ -4,17 +4,21 @@ Utilities for single election views
 Ben Adida (2009-07-18)
 """
 
-from django.conf import settings
+from django.template import Context, Template, loader
+from django.http import HttpResponse, Http404
 from django.shortcuts import render_to_response
 
 from helios_auth.security import get_user
 
+from django.conf import settings
 
 ##
 ## template abstraction
 ##
-def render_template(request, template_name, values = None):
-  vars_with_user = values.copy() if values is not None else {}
+def render_template(request, template_name, vars = {}):
+  t = loader.get_template(template_name + '.html')
+  
+  vars_with_user = vars.copy()
   vars_with_user['user'] = get_user(request)
   vars_with_user['settings'] = settings
   vars_with_user['CURRENT_URL'] = request.path

@@ -2,21 +2,17 @@
 Username/Password Authentication
 """
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django import forms
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponseRedirect
-from django.conf.urls import url
-
-from helios_auth import url_names
 
 import logging
 
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = False
-PASSWORD_LOGIN_URL_NAME = "auth@password@login"
-PASSWORD_FORGOTTEN_URL_NAME = "auth@password@forgotten"
+
 
 def create_user(username, password, name = None):
   from helios_auth.models import User
@@ -62,7 +58,7 @@ def password_login_view(request):
         user = User.get_by_type_and_id('password', username)
         if password_check(user, password):
           request.session['password_user_id'] = user.user_id
-          return HttpResponseRedirect(reverse(url_names.AUTH_AFTER))
+          return HttpResponseRedirect(reverse(after))
       except User.DoesNotExist:
         pass
       error = 'Bad Username or Password'
@@ -105,7 +101,7 @@ Your password: %s
     return HttpResponseRedirect(return_url)
   
 def get_auth_url(request, redirect_url = None):
-  return reverse(PASSWORD_LOGIN_URL_NAME)
+  return reverse(password_login_view)
     
 def get_user_info_after_auth(request):
   from helios_auth.models import User
@@ -129,9 +125,3 @@ def send_message(user_id, user_name, user_info, subject, body):
 
 def can_create_election(user_id, user_info):
   return True
-
-
-urlpatterns = [
-  url(r'^password/login', password_login_view, name=PASSWORD_LOGIN_URL_NAME),
-  url(r'^password/forgot', password_forgotten_view, name=PASSWORD_FORGOTTEN_URL_NAME)
-]

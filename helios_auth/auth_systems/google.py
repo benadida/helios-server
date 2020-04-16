@@ -3,10 +3,14 @@ Google Authentication
 
 """
 
-import httplib2
-import json
-from django.conf import settings
+from django.http import *
 from django.core.mail import send_mail
+from django.conf import settings
+
+import httplib2,json
+
+import sys, os, cgi, urllib, urllib2, re
+
 from oauth2client.client import OAuth2WebServerFlow
 
 # some parameters to indicate that status updating is not possible

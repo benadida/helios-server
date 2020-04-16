@@ -1,7 +1,7 @@
-from django.conf.urls import url
+from django.conf.urls import *
 
-from views import canvas
+urlpatterns = patterns('{{ project }}.{{ app }}.views',
+    (r'^$', 'canvas'),
+    # Define other pages you want to create here
+)
 
-urlpatterns = [
-    url(r'^$', canvas),
-]

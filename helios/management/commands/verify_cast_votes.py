@@ -6,10 +6,12 @@ ben@adida.net
 2010-05-22
 """
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
+import csv, datetime
 
-from helios.models import CastVote
+from helios import utils as helios_utils
 
+from helios.models import *
 
 def get_cast_vote_to_verify():
     # fixme: add "select for update" functionality here

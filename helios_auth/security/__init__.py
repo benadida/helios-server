@@ -4,16 +4,19 @@ Generic Security -- for the auth system
 Ben Adida (ben@adida.net)
 """
 
-import uuid
-from django.conf import settings
-from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseNotAllowed
-from django.http import HttpResponseRedirect
 # nicely update the wrapper function
 from functools import update_wrapper
 
+from django.http import HttpResponse, Http404, HttpResponseRedirect
+from django.core.exceptions import *
+from django.conf import settings
+from django.http import HttpResponseNotAllowed
+
 import oauth
-from helios_auth.models import User
+
+import uuid
+
+from helios_auth.models import *
 
 FIELDS_TO_SAVE = 'FIELDS_TO_SAVE'
 
