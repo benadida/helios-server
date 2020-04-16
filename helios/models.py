@@ -6,35 +6,33 @@ Ben Adida
 (ben@adida.net)
 """
 
-from django.db import models, transaction
-import json
-from django.conf import settings
-from django.core.mail import send_mail
+import datetime
 
-import datetime, logging, uuid, random, io
 import bleach
-
-from crypto import electionalgs, algs, utils
-from helios import utils as heliosutils
-import helios.views
-
-from helios import datatypes
-
-
-# useful stuff in helios_auth
-from helios_auth.models import User, AUTH_SYSTEMS
-from helios_auth.jsonfield import JSONField
-from helios.datatypes.djangofield import LDObjectField
-
-import csv, copy
+import copy
+import csv
+import io
+import random
 import unicodecsv
+import uuid
+from django.conf import settings
+from django.db import models, transaction
+
+from crypto import algs, utils
+from helios import datatypes
+from helios import utils as heliosutils
+from helios.datatypes.djangofield import LDObjectField
+# useful stuff in helios_auth
+from helios_auth.jsonfield import JSONField
+from helios_auth.models import User, AUTH_SYSTEMS
+
 
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
   class Meta:
     abstract = True
 
 class Election(HeliosModel):
-  admin = models.ForeignKey(User)
+  admin = models.ForeignKey(User, on_delete=models.CASCADE)
   
   uuid = models.CharField(max_length=50, null=False)
 
@@ -144,6 +142,9 @@ class Election(HeliosModel):
 
   # downloadable election info
   election_info_url = models.CharField(max_length=300, null=True)
+
+  class Meta:
+    app_label = 'helios'
 
   # metadata for the election
   @property
@@ -575,6 +576,7 @@ class Election(HeliosModel):
 
   @property
   def url(self):
+    import helios.views
     return helios.views.get_election_url(self)
 
   def init_tally(self):
@@ -649,7 +651,8 @@ class Election(HeliosModel):
       prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
 
     return prettified_result
-    
+
+
 class ElectionLog(models.Model):
   """
   a log of events for an election
@@ -659,9 +662,12 @@ class ElectionLog(models.Model):
   VOTER_FILE_ADDED = "voter file added"
   DECRYPTIONS_COMBINED = "decryptions combined"
 
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, on_delete=models.CASCADE)
   log = models.CharField(max_length=500)
   at = models.DateTimeField(auto_now_add=True)
+
+  class Meta:
+    app_label = 'helios'
 
 ##
 ## UTF8 craziness for CSV
@@ -691,7 +697,7 @@ class VoterFile(models.Model):
   # path where we store voter upload 
   PATH = settings.VOTER_UPLOAD_REL_PATH
 
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, on_delete=models.CASCADE)
 
   # we move to storing the content in the DB
   voter_file = models.FileField(upload_to=PATH, max_length=250,null=True)
@@ -701,6 +707,9 @@ class VoterFile(models.Model):
   processing_started_at = models.DateTimeField(auto_now_add=False, null=True)
   processing_finished_at = models.DateTimeField(auto_now_add=False, null=True)
   num_voters = models.IntegerField(null=True)
+
+  class Meta:
+    app_label = 'helios'
 
   def itervoters(self):
     if self.voter_file_content:
@@ -779,10 +788,9 @@ class VoterFile(models.Model):
 
     return num_voters
 
-
     
 class Voter(HeliosModel):
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, on_delete=models.CASCADE)
   
   # let's link directly to the user now
   # FIXME: delete this as soon as migrations are set up
@@ -794,7 +802,7 @@ class Voter(HeliosModel):
 
   # for users of type password, no user object is created
   # but a dynamic user object is created automatically
-  user = models.ForeignKey('helios_auth.User', null=True)
+  user = models.ForeignKey('helios_auth.User', null=True, on_delete=models.CASCADE)
 
   # if user is null, then you need a voter login ID and password
   voter_login_id = models.CharField(max_length = 100, null=True)
@@ -813,6 +821,7 @@ class Voter(HeliosModel):
 
   class Meta:
     unique_together = (('election', 'voter_login_id'))
+    app_label = 'helios'
 
   def __init__(self, *args, **kwargs):
     super(Voter, self).__init__(*args, **kwargs)
@@ -979,7 +988,7 @@ class Voter(HeliosModel):
   
 class CastVote(HeliosModel):
   # the reference to the voter provides the voter_uuid
-  voter = models.ForeignKey(Voter)
+  voter = models.ForeignKey(Voter, on_delete=models.CASCADE)
   
   # the actual encrypted vote
   vote = LDObjectField(type_hint = 'legacy/EncryptedVote')
@@ -1002,6 +1011,9 @@ class CastVote(HeliosModel):
   
   # auditing purposes, like too many votes from the same IP, if it isn't expected
   cast_ip = models.GenericIPAddressField(null=True)
+
+  class Meta:
+      app_label = 'helios'
 
   @property
   def datatype(self):
@@ -1086,10 +1098,13 @@ class AuditedBallot(models.Model):
   """
   ballots for auditing
   """
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, on_delete=models.CASCADE)
   raw_vote = models.TextField()
   vote_hash = models.CharField(max_length=100)
   added_at = models.DateTimeField(auto_now_add=True)
+
+  class Meta:
+    app_label = 'helios'
 
   @classmethod
   def get(cls, election, vote_hash):
@@ -1107,9 +1122,10 @@ class AuditedBallot(models.Model):
       query = query[:limit]
 
     return query
-    
+
+
 class Trustee(HeliosModel):
-  election = models.ForeignKey(Election)
+  election = models.ForeignKey(Election, on_delete=models.CASCADE)
   
   uuid = models.CharField(max_length=50)
   name = models.CharField(max_length=200)
@@ -1140,7 +1156,8 @@ class Trustee(HeliosModel):
 
   class Meta:
     unique_together = (('election', 'email'))
-    
+    app_label = 'helios'
+
   def save(self, *args, **kwargs):
     """
     override this just to get a hook

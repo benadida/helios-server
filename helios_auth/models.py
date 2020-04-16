@@ -6,13 +6,11 @@ GAE
 Ben Adida
 (ben@adida.net)
 """
-
 from django.db import models
+
+from auth_systems import AUTH_SYSTEMS
 from jsonfield import JSONField
 
-import datetime, logging
-
-from auth_systems import AUTH_SYSTEMS, can_check_constraint, can_list_categories
 
 # an exception to catch when a user is no longer authenticated
 class AuthenticationExpired(Exception):
@@ -35,7 +33,8 @@ class User(models.Model):
 
   class Meta:
     unique_together = (('user_type', 'user_id'),)
-    
+    app_label = 'helios_auth'
+
   @classmethod
   def _get_type_and_id(cls, user_type, user_id):
     return "%s:%s" % (user_type, user_id)    

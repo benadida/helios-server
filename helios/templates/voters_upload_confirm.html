@@ -1,7 +1,7 @@
 {% extends TEMPLATE_BASE %}
 
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Bulk Upload Voters &mdash; Confirm<span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">back to election</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; Bulk Upload Voters &mdash; Confirm<span style="font-size:0.7em;">[<a href="{% url "election@view" election.uuid %}">back to election</a>]</span></h2>
 
 <p>
 You have uploaded a file of voters. The first few rows of this file are:
@@ -23,7 +23,7 @@ HOLD ON:<br />
 </p>
 <br />
 
-<a href="{% url "helios.views.voters_upload_cancel" election.uuid %}">never mind, upload a different file</a>
+<a href="{% url "election@voters@upload-cancel" election.uuid %}">never mind, upload a different file</a>
 </p>
 
 {% else %}
@@ -34,7 +34,7 @@ HOLD ON:<br />
   <input type="submit" value="Yes, let's go" />
 </form>
 
-<a href="{% url "helios.views.voters_upload_cancel" election.uuid %}">no, let me upload a different file</a>
+<a href="{% url "election@voters@upload-cancel" election.uuid %}">no, let me upload a different file</a>
 
 {% endif %}
 
