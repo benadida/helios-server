@@ -1171,7 +1171,7 @@ class Trustee(HeliosModel):
   
   @classmethod
   def get_by_election(cls, election):
-    return cls.objects.filter(election = election)
+    return cls.objects.filter(election = election).order_by('id')
 
   @classmethod
   def get_by_uuid(cls, uuid):
