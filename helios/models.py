@@ -510,7 +510,7 @@ class Election(HeliosModel):
     self.set_eligibility()
     
     # public key for trustees
-    trustees = Trustee.get_by_election(self)
+    trustees = list(Trustee.get_by_election(self))
     combined_pk = trustees[0].public_key
     for t in trustees[1:]:
       combined_pk = combined_pk * t.public_key
@@ -1171,7 +1171,7 @@ class Trustee(HeliosModel):
   
   @classmethod
   def get_by_election(cls, election):
-    return cls.objects.filter(election = election).order_by('id')
+    return cls.objects.filter(election = election)
 
   @classmethod
   def get_by_uuid(cls, uuid):
