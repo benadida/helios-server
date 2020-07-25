@@ -15,8 +15,11 @@ def hash_b64(s):
   result= base64.b64encode(hasher.digest())[:-1]
   return result
 
-def to_json(d):
-  return json.dumps(d, sort_keys=True)
+def to_json(d, no_whitespace=False):
+  if no_whitespace:
+    return json.dumps(d, sort_keys=True, separators=(',',':'))
+  else:
+    return json.dumps(d, sort_keys=True)
 
 def from_json(json_str):
   if not json_str: return None
