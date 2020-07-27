@@ -17,7 +17,7 @@ function verify_ballot(election_raw_json, encrypted_vote_json, status_cb) {
       // check the hash
       if (election_hash == encrypted_vote.election_hash) {
           //status_cb("election fingerprint matches ballot");
-          status_cb("código de identificação da eleição na cédula não confere");
+          status_cb("código de identificação da eleição na cédula confere");
       } else {
           overall_result = false;
           //status_cb("PROBLEM = election fingerprint does not match");          
