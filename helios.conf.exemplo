@@ -1,0 +1,57 @@
+WSGIScriptAlias / /var/www/helios-server/wsgi.py
+WSGIPythonPath /var/www/helios-server:/var/www/helios-server/venv/lib/python2.7/site-packages
+
+Alias /robots.txt /var/www/helios-server/sitestatic/robots.txt
+Alias /favicon.ico /var/www/helios-server/sitestatic/favicon.ico
+
+AliasMatch ^/([^/]*\.css) /var/www/helios-server/static/styles/$1
+
+Alias /media /var/www/helios-server/sitestatic
+Alias /static /var/www/helios-server/sitestatic
+Alias /booth /var/www/helios-server/sitestatic/booth
+Alias /verifier /var/www/helios-server/sitestatic/verifier
+
+<VirtualHost *:443>
+    UseCanonicalName On
+
+    SSLEngine               on
+    SSLCertificateFile      /etc/ssl/certs/dev-helios-apache.crt
+    SSLCertificateKeyFile   /etc/ssl/private/dev-helios-apache.key
+
+    DocumentRoot /var/www/helios-server
+    <Directory /var/www/helios-server>
+            Options All
+            AllowOverride All
+            Require all granted
+    </Directory>
+
+    <Directory /var/www/helios-server/static>
+            Options All
+            AllowOverride All
+            Require all granted
+    </Directory>
+
+    <Directory /var/www/helios-server/media>
+            Options All
+            AllowOverride All
+            Require all granted
+    </Directory>
+
+    <Directory /var/www/helios-server>
+            Options All
+            AllowOverride All
+            Require all granted
+           <Files wsgi.py>
+                    Order deny,allow
+                    Allow from all
+                    Require all granted
+            </Files>
+    </Directory>
+
+    ErrorLog /var/log/apache2/error.log
+        # Possible values include: debug, info, notice, warn, error, crit,
+        # alert, emerg.
+        LogLevel info
+        CustomLog /var/log/apache2/helios-access-443.log combined
+</VirtualHost>
+
