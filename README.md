@@ -241,7 +241,7 @@ Alias /verifier /`<path_to_site>`/sitestatic/verifier
 Além desses, todos os demais arquivos a serem servidos diretamente pelo apache, como os do módulo `admin` do django estão com links simbólicos no diretório `sitestatic`, que está sob controle do git. Ou seja, não é necessário rodar o comando `collectstatic`, apenas configurar o apache para apontar para o diretório `sitestatic` contido neste projeto, conforme exemplo de configuração acima.
 
 
->>**Observações:**
+>**Observações:**
 >
 >1. Neste repositório há um arquivo exemplo de configuração do Apache, o arquivo [helios.conf.exemplo](https://github.com/shirlei/helios-server/blob/master/helios.conf.exemplo). É um exemplo funcional para ambiente de homologação/dev com >Apache, mas é bastante similar à ambiente de produção, especialmente com relação aos alias necessários.
 >
