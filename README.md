@@ -241,11 +241,11 @@ Alias /verifier /`<path_to_site>`/sitestatic/verifier
 Além desses, todos os demais arquivos a serem servidos diretamente pelo apache, como os do módulo `admin` do django estão com links simbólicos no diretório `sitestatic`, que está sob controle do git. Ou seja, não é necessário rodar o comando `collectstatic`, apenas configurar o apache para apontar para o diretório `sitestatic` contido neste projeto, conforme exemplo de configuração acima.
 
 
-**Observações:**
-
-1. Neste repositório há um arquivo exemplo de configuração do Apache, o arquivo helios.conf.exemplo. É um exemplo funcional para ambiente de homologação/dev com Apache, mas é bastante similar à ambiente de produção, especialmente com relação aos alias necessários.
-
-2. Em algumas instalações mais recentes usando Apache tem havido relatos de problemas (internal server erros, com logs com registro de segmentation fault ou outros), para o qual se identificou que atualizando a biblioteca pyscopg2 (para psycopg2-2.8.5) e instalando a libpq-dev, resolvia. Obrigada ao pessoal do IF Sudeste MG por compartilhar a solução.
+>>**Observações:**
+>
+>1. Neste repositório há um arquivo exemplo de configuração do Apache, o arquivo [helios.conf.exemplo](https://github.com/shirlei/helios-server/blob/master/helios.conf.exemplo). É um exemplo funcional para ambiente de homologação/dev com >Apache, mas é bastante similar à ambiente de produção, especialmente com relação aos alias necessários.
+>
+>2. Em algumas instalações mais recentes usando Apache tem havido relatos de problemas (internal server erros, com logs com registro de segmentation fault ou >outros), para o qual se identificou que atualizando a biblioteca pyscopg2 (para psycopg2-2.8.5) e instalando a libpq-dev, resolvia. Obrigada ao pessoal do IF >Sudeste MG por compartilhar a solução.
 
 ### Celery
 
@@ -261,7 +261,8 @@ O *script* `check-services.sh` foi criado para verificar se o serviço celery es
 
 Nesse mesmo *script*, também é verificado o [celery beat](http://docs.celeryproject.org/en/latest/userguide/periodic-tasks.html), agendador de tarefas periódicas, como limpar a tabela `celery_taskmeta`, que mantém o *log* das tarefas e pode crescer bastante.
 
-Obs.: Gerenciar esses processos com o [supervisor](http://supervisord.org/introduction.html) é mais recomendado, em momento oportuno essa documentação será atualizada com exemplos.
+>**Observação:**
+>Gerenciar esses processos com o [supervisor](http://supervisord.org/introduction.html) é mais recomendado, em momento oportuno essa documentação será atualizada com exemplos.
 
 No arquivo `settings.py` no presente repositório, colocou-se 60 dias como o prazo para apagar essas tarefas:
 
