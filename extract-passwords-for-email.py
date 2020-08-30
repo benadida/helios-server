@@ -11,10 +11,10 @@ import csv
 import django
 import os
 
-from helios.models import Election
-
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 django.setup()
+
+from helios.models import Election
 
 election_uuid = sys.argv[1]
 email = sys.argv[2]
