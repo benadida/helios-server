@@ -181,6 +181,8 @@ As opções `AUTH_LDAP_BIND_DN` e `AUTH_LDAP_BIND_PASSWORD` deverão ter um valo
 
 Ao executar o script `reset.sh`, você teve que criar um usuário de administração do django. Isso se deve ao fato de aplicação `admin` estar habilitada no arquivo `settings.py` (django.contrib.admin), pois iremos utilizá-la em algumas personalizações feitas para este *fork* do Helios.
 
+>*Observação*: você sempre pode criar um novo usuário para o django admin site executando o comando `python manage.py createsuperuser`
+
 Se tudo estiver correto até aqui, agora você poderá executar o servidor web para desenvolvimento que é provido pelo próprio django. Use esse servidor somente para verificar se a instalação foi feita com sucesso, porém não use-o caso queira colocar o Helios no ambiente de produção.
 
 Execute o seguinte comando:
@@ -243,7 +245,7 @@ Além desses, todos os demais arquivos a serem servidos diretamente pelo apache,
 
 >**Observações:**
 >
->1. Neste repositório há um arquivo exemplo de configuração do Apache, o arquivo [helios.conf.exemplo](https://github.com/shirlei/helios-server/blob/master/helios.conf.exemplo). É um exemplo funcional para ambiente de homologação/dev com >Apache, mas é bastante similar à ambiente de produção, especialmente com relação aos alias necessários.
+>1. Neste repositório há um arquivo exemplo de configuração do Apache, o arquivo [helios-ssl.conf](docker/apache/helios-ssl.conf). É um exemplo funcional para ambiente de homologação/dev com >Apache, mas é bastante similar à ambiente de produção, especialmente com relação aos alias necessários.
 >
 >2. Em algumas instalações mais recentes usando Apache tem havido relatos de problemas (internal server erros, com logs com registro de segmentation fault ou >outros), para o qual se identificou que atualizando a biblioteca pyscopg2 (para psycopg2-2.8.5) e instalando a libpq-dev, resolvia. Obrigada ao pessoal do IF >Sudeste MG por compartilhar a solução.
 
@@ -328,6 +330,85 @@ Toda instituição deve ter pelo menos um usuário com o papel de **administrado
 3. No campo *django user*, é necessário adicionar um novo usuário. Clique no ícone + e informe no campo usuário o email do administrador e em permissões selecione *Institution Admin*. Clique em salvar. 
 4. No campo *institution*, selecione a instituição previamente criada.
 5. Em e-mail, informe o e-mail do administrador. Se desejar, informe a data de expiração desse usuário. Deixe o campo *active* desmarcado (será marcado quando o usuário se conectar no serviço pela primeira vez).
+
+## Usando docker para desenvolvimento
+
+O objetivo desta seção é repassar as informações necessárias para subir containeres docker para ambiente de desenvolvimento. Alguma familiaridade com o uso do docker é necessária, para ajustes eventuais de acordo com a sua realidade.
+
+Os arquivos relacionados ao docker são os seguintes:
+
+- [docker-compose.yml](docker-compose.yml)
+
+Execute `docker-compose up -d`, por exemplo, para iniciar os containeres. Imagens inexistentes serão baixadas (postgres e ubuntu:18.04) e os builds necessários serão realizados, assim como a inicialização dos containers.
+Se você já executou essa operação e quer forçcar fazer build novamente, pode por exemplo rodar o mesmo comando, adicionando também o parâmetro *--build*
+Como a intenção deste tutorial não é ensinar a usar o docker, por favor verifique a [documentação](https://docs.docker.com/compose/reference/overview/) para outras informações e detalhes.
+
+Ao término, você deve ter dois containeres rodando, um com o postgres e outro com o helios e dependências. O container do helios vai possuir tanto a aplicação Django helios, como também Apache e celery rodando. Não foram feitas maiores separações pelo entendimento de que para brevidade de disponilibidade de desenvolvimento não há necessidade.
+Além disso, como geralmente há muitas dúvidas com configurações de Apache, esse container já vai estar também simulando uma configuração de ambiente de produção em uma VM, por exemplo, com as devidas configurações de Apache e *supervisor* para controle tanto do Apache como do celery.
+
+Você pode logar no container e verificar as configurações e também pode, supondo que nenhuma modificação foi feita nos arquivos de build, acessar tanto localhost:8000 para o ambiente de dev, como https://localhost , no navegador, para acesso via Apache.
+
+>Obs.: alterações que você faça localmente no código fonte (veja que o código fonte foi montado como um volume), se refletirão 'automaticamente' apenas para localhost:8000 (ou outra porta que você tenha configurado), que é onde está rodando o servidor de desenvolvimento. Para refletir para o Apache e celery você precisa reiniciar o supervidor ou o container.
+
+- [docker folder](docker)
+    - [Dockerfile](docker/Dockerfile)
+    Arquivo de build da imagem a ser usada pelo container do serviço helios.
+    - [Arquivos supervisor](docker/supervisor)
+    Arquivos que serão carregados na imagem do helios, para utilização pelo gerenciador de processos [*supervisor*](http://supervisord.org/)
+    - [Arquivos Apache2](docker/apache)
+    Arquivo de configuração para o helios ser servido pelo Apache. Os arquivos de certificados não são válidos, você deve gerar um autoassinado para testes em desenvolvimento, como uma ferramenta como o *openssl* ou usar algum que você já possua para esse propósito. Basta substituir os arquivos.
+    - [docker-entrypoint.sh](docker/docker-entrypoint.sh)
+    Script com as execuções necessárias para inicialização da aplicação helios pelo Django, especialmente, além da inicialização do *supervisor*.
+    - [Arquivos postgres](docker/db/init.sql)
+    Script de inicialização da base de dados a ser usada pelo helios.
+
+Antes de executar o docker-compose, você deve criar um arquivo .env na raiz deste projeto, contendo as seguintes variáveis de ambiente:
+
+        DEBUG=1
+        ALLOWED_HOSTS='localhost,192.168.15.7'
+        SECRET_KEY='^m-&-5eq6bu))ovhgzuus4g)#v-&m&0d8qaf)f2*z9av!t!7+('
+        POSTGRES_PASSWORD=postgres
+        DB_NAME=helios
+        DB_PWD=helios
+        DB_USER=helios
+        POSTGRES_HOST=db
+        POSTGRES_PORT=5432
+        EMAIL_USE_TLS=1
+        EMAIL_HOST=<your smtp server>
+        EMAIL_PORT=587
+        EMAIL_HOST_USER=<email a ser usado como remetente>
+        EMAIL_HOST_PASSWORD=<a senha do email fornecido em EMAIL_HOST_USER>
+        URL_HOST=http://localhost
+        SECURE_URL_HOST=https://localhost
+        DJANGO_SUPERUSER_USERNAME=admin
+        DJANGO_SUPERUSER_EMAIL=<adicione um email valido>
+        DJANGO_SUPERUSER_PASSWORD=admin
+        GROUP_ID=1000
+        USER_ID=1000
+
+DEBUG=1 indica que o django está em modo DEBUG, exibindo por exemplos mensagens de erro da aplicação com detalhamento no navegador. Use apenas em desenvolvimento!
+
+Em ALLOWED_HOSTS indique o(s) nomes de hosts/domínios nos quais o Django pode servir o Helios. Obrigatório configurar se DEBUG configurada pra false (DEBUG=0).
+
+Para a SECRET_KEY, troque os valores conforme orientação em [Alguns lembretes finais cruciais para o ambiente de produção](#alguns-lembretes-finais-cruciais-para-o-ambiente-de-produção)
+
+DB_NAME, DB_PWD e DB_USER devem conferir com nome do banco, usuário e senha fornecidos no arquivo [init.sql](docker/db/init.sql) para o container do postgres.
+
+POSTGRES_HOST e POSTGRES_PORT devem conferir com o nome do serviço e porta definidos no [docker-compose.yml](docker-compose.yml) para o postgres.
+
+As variáveis EMAIL_* devem ser preenchidas com o serviço de email a ser usado para as atividades de envio de email pelo Helios.
+
+URL_HOST indica endereço sem considerar HTTPS e SECURE_URL_HOST indica o endereço a ser usado quando HTTPS configurado. 
+
+>**Observação**: Para o caso de desenvolvimento, é importante indicar a porta na qual o servidor de desenvolvimento foi iniciado (no caso do nosso docker-compose.yml, a porta 8000), para que a navegação se direcione para essa porta e possa ser utilizada a funcionalidade de *reload* automático para mudanças de código.
+
+DJANGO_SUPERUSER_USERNAME, DJANGO_SUPERUSER_EMAIL e  DJANGO_SUPERUSER_PASSWORD são as informações para criar um usuário admin (você pode configurar outro username no arquivo .env, assim como outra senha!), aquele que você normalmente criaria executando no shell o comando `python manage.py createsuperuser`. Esse usuário é o usuário do app django admin site, que foi habilitado para essa personalização do helios. Com ele você acessa, por exemplo, http://localhost:8000/admin e consegue executar algumas operações administrativas, como habilitar um usuário que já logou previamente no helios para ser gestor de eleições ou então visualizar lista de usuários do helios. Não confundir com usuário gestor de eleição do helios! Esse usuário não é usuário que consegue logar na aplicação Helios. A aplicação Helios depende de módulo de autenticação próprio habilitado, dentre os disponíveis (Google ou Ldap, por exemplo).
+
+O GROUP_ID e USER_ID você pode usar o do usuário local, no host em que você vai rodar o docker-compose, para evitar problemas de permissão de diretórios. Por exemplo, o teu usuário local tem o uid 1000 e você montou o diretório local onde baixou o helios para um volume do docker, no qual o usuário criado tem outro uid. Importante: se você não quiser fornecer esse valor, remova o parâmetro -g e -u do comando `RUN groupadd -r -g 1000 helios && useradd -r -g helios -u 1000 helios` no [Dockerfile da imagem](docker/Dockerfile).
+
+Importante destacar que para variáveis que não sejam informadas, será utilizado o valor padrão definido em [settings.py](settings.py).
+
+>**Observação**: Todos os valores de configuração e escolhas de organização de serviços e containeres foram feitas pensando em ambiente de desenvolvimento local, para facilitar configurar o ambiente especialmente considerando questões de versões de software (como o Python2, por exemplo). Questões de segurança e até melhores práticas de separação de serviços por containers e etc não estão aqui consideradas!
 
 ## Alguns lembretes finais cruciais para o ambiente de produção
 

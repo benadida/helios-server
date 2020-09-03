@@ -1,0 +1,2 @@
+CREATE DATABASE helios;
+CREATE USER helios ENCRYPTED PASSWORD 'helios';

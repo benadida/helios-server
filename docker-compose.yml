@@ -1,0 +1,41 @@
+version: '3'
+services: 
+    db:
+        image: postgres
+        env_file:
+            - .env
+        ports:
+            - "6432:5432"
+        volumes:
+            - ~/docker-volumes/heliosdb/pgdata:/var/lib/postgresql/data
+            - ./docker/db/init.sql:/docker-entrypoint-initdb.d/init.sql
+        networks:
+            - helios-network
+    helios:
+        build:
+            dockerfile: ./docker/Dockerfile
+            context: ./
+        command: python manage.py runserver 0.0.0.0:8000
+        depends_on:
+            - db
+        env_file:
+            - .env
+        environment:
+            - USER_ID=1000
+            - GROUP_ID=1000
+        ports:
+            - "80:80"
+            - "443:443"
+            - "8000:8000"
+        networks:
+            - helios-network
+        restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
+        stop_grace_period: "${DOCKER_STOP_GRACE_PERIOD:-3s}"
+        volumes:
+            - ./.:/var/www/helios-server
+            - ~/docker-volumes/heliosapp/apache-logs:/var/log/apache2
+            - ~/docker-volumes/heliosapp/celery-logs:/var/log/celery
+            - ~/docker-volumes/heliosapp/supervisor-logs:/var/log/supervisor
+networks:
+    helios-network:
+        driver: bridge

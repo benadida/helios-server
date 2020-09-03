@@ -55,7 +55,11 @@ SHOW_USER_INFO = (get_from_env('SHOW_USER_INFO', '1') == '1')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'helios'
+        'NAME': get_from_env('DB_NAME', 'helios'),
+        'USER': get_from_env('DB_USER', 'helios'),
+        'PASSWORD': get_from_env('DB_PWD', 'helios'),
+        'HOST': get_from_env('POSTGRES_HOST', 'db'),
+        'PORT': get_from_env('POSTGRES_PORT', '5432'),
     }
 }
 
@@ -217,7 +221,7 @@ LOGOUT_ON_CONFIRMATION = True
 
 # The two hosts are here so the main site can be over plain HTTP
 # while the voting URLs are served over SSL.
-URL_HOST = get_from_env("URL_HOST", "http://localhost:8000").rstrip("/")
+URL_HOST = get_from_env("URL_HOST", "http://localhost").rstrip("/")
 
 # IMPORTANT: you should not change this setting once you've created
 # elections, as your elections' cast_url will then be incorrect.
