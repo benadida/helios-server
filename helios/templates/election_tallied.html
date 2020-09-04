@@ -3,7 +3,7 @@
 {% block content %}
 <div id="header">
   <h2 class="title">
-  {% blocktrans %} 
+  {% blocktrans %}
   Election {{election.name}} Already Tallied
   {% endblocktrans %}
   </h2>
@@ -15,6 +15,6 @@
   </p>
   
   <p>
-      <a href="{% url "helios.views.one_election_view" election.uuid %}"> {%trans "view the election tally" %}</a>
+      <a href="{% url "election@view" election.uuid %}"> {%trans "view the election tally" %}</a>
   </p>
 {% endblock %}

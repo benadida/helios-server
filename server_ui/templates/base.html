@@ -33,7 +33,7 @@
   {% block extra-head %}{% endblock %}
   <script language="javascript" src={% static "datetimepicker/jquery.datetimepicker.full.js" %}></script>
   <script language="javascript" src={% static "js/utils.js" %}></script>
-  <script type="text/javascript" src="{% url "django.views.i18n.javascript_catalog" %}"></script>
+  <script type="text/javascript" src="{% url "i18n@JSCatalog" %}"></script>
 </head>
 <body>
   {% include "navbar.html" %}

@@ -24,12 +24,12 @@
           <td>{% if user.active %}{% trans "Yes" %}{% else %}{% trans "No" %} <i title="{% trans "User did not logged yet" %}" class="glyphicon glyphicon-exclamation-sign"></i>{% endif %} </td>
           <td>
           <div>
-            <span style="cursor:pointer" data-url="{% url "heliosinstitution.views.add_expires_at" user.pk %}" class="glyphicon glyphicon-calendar date_expires_at">&nbsp;</span>
+            <span style="cursor:pointer" data-url="{% url "institution@user@add-expires" user.pk %}" class="glyphicon glyphicon-calendar date_expires_at">&nbsp;</span>
             <span class="date">{{user.expires_at|date:"d/m/Y"}}</span>
           </div>
           </td>
           <td>
-            <a class="remove_institution_user" class="glyphicon glyphicon-remove" href="{% url "heliosinstitution.views.revoke_user" user.pk %} "><i title="{% trans "Remove user" %}" class="glyphicon glyphicon-remove"></i></a>
+            <a class="remove_institution_user" class="glyphicon glyphicon-remove" href="{% url "institution@user@revoke" user.pk %} "><i title="{% trans "Remove user" %}" class="glyphicon glyphicon-remove"></i></a>
           </td>
         </tr>
         {% endfor %}

@@ -2,16 +2,14 @@
 Twitter Authentication
 """
 
-from oauthclient import client
-
-from django.core.urlresolvers import reverse
+from django.conf import settings
+from django.conf.urls import url
+from django.urls import reverse
 from django.http import HttpResponseRedirect
 
 from helios_auth import utils
+from oauthclient import client
 
-import logging
-
-from django.conf import settings
 API_KEY = settings.TWITTER_API_KEY
 API_SECRET = settings.TWITTER_API_SECRET
 USER_TO_FOLLOW = settings.TWITTER_USER_TO_FOLLOW
@@ -21,6 +19,7 @@ DM_TOKEN = settings.TWITTER_DM_TOKEN
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = True
 STATUS_UPDATE_WORDING_TEMPLATE = "Tweet %s"
+FOLLOW_VIEW_URL_NAME = "auth@twitter@follow"
 
 OAUTH_PARAMS = {
   'root_url' : 'https://twitter.com',
@@ -70,7 +69,7 @@ def user_needs_intervention(user_id, user_info, token):
   if friendship:
     return None
 
-  return HttpResponseRedirect(reverse(follow_view))
+  return HttpResponseRedirect(reverse(FOLLOW_VIEW_URL_NAME))
 
 def _get_client_by_request(request):
   access_token = request.session['access_token']
@@ -100,8 +99,7 @@ def send_notification(user_id, user_info, message):
 def follow_view(request):
   if request.method == "GET":
     from helios_auth.view_utils import render_template
-    from helios_auth.views import after
-    
+
     return render_template(request, 'twitter/follow', {'user_to_follow': USER_TO_FOLLOW, 'reason_to_follow' : REASON_TO_FOLLOW})
 
   if request.method == "POST":
@@ -114,8 +112,8 @@ def follow_view(request):
       twitter_client = _get_client_by_token(user.token)
       result = twitter_client.oauth_request('http://api.twitter.com/1/friendships/create.json', args={'screen_name': USER_TO_FOLLOW}, method='POST')
 
-    from helios_auth.views import after_intervention
-    return HttpResponseRedirect(reverse(after_intervention))
+    from helios_auth.url_names import AUTH_AFTER_INTERVENTION
+    return HttpResponseRedirect(reverse(AUTH_AFTER_INTERVENTION))
 
 
 
@@ -125,3 +123,6 @@ def follow_view(request):
 
 def can_create_election(user_id, user_info):
   return True
+
+
+urlpatterns = [url(r'^twitter/follow', follow_view, name=FOLLOW_VIEW_URL_NAME)]

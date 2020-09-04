@@ -4,7 +4,7 @@
 	<div class="container-fluid">
 	<div class="row">
 		<a title="site IFSC" href="http://www.ifsc.edu.br">
-            <img class="img-responsive logo" width="177" height="65" src={% static "img/logo.png" %} alt="Logo IFSC" />
+            <img class="img-responsive logo" width="177" height="65" src="{% static "img/logo.png" %}" alt="Logo IFSC" />
 		</a>
 
 	</div>
@@ -25,19 +25,19 @@
 				{% if user or voter %}
 					{% if user.institutionuserprofile_set.get.is_institution_admin %}
 					<li>
-						<a class="navbar-brand " style="color:#FFFFFF;" href="{% url "heliosinstitution.views.dashboard" %}">Admin</a>
+						<a class="navbar-brand " style="color:#FFFFFF;" href="{% url "institution@dashboard" %}">Admin</a>
 					</li>
 					{% elif user and user.admin_p %}
-					<li><a class="navbar-brand " style="color:#FFFFFF;" href="{% url "helios.stats_views.home" %}">Admin</a></li>
+					<li><a class="navbar-brand " style="color:#FFFFFF;" href="{% url "stats@home" %}">Admin</a></li>
 					{% endif %}
 					{% if user.user_type != "shibboleth" %}
 					<li>
-						<a class="navbar-brand " style="color:#FFFFFF;" href="/auth/logout?return_url=/">{% trans "Logout" %}</a>
+						<a class="navbar-brand " style="color:#FFFFFF;" href="{% url "auth@logout" %}?return_url=/">{% trans "Logout" %}</a>
 					</li>
 					{% endif %}
 			       {% else %}
 			       <li>
-				       <a class="navbar-brand " style="color:#FFFFFF;" href="{{SECURE_URL_HOST}}{% url "helios_auth.views.start" system_name=auth_system %}?return_url={{return_url}}">{% if settings.AUTH_DEFAULT_AUTH_SYSTEM == "shibboleth" %}{% trans "Federated Access" %} {% else %} {% trans "Login" %}{% endif %}</a>
+				       <a class="navbar-brand " style="color:#FFFFFF;" href="{{SECURE_URL_HOST}}{% url "auth@start" system_name=auth_system %}?return_url={{return_url}}">{% if settings.AUTH_DEFAULT_AUTH_SYSTEM == "shibboleth" %}{% trans "Federated Access" %} {% else %} {% trans "Login" %}{% endif %}</a>
 				</li>
 				{% endif %}
                 {% if user.admin_p %}

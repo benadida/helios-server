@@ -1,25 +1,18 @@
-import copy
 import json
 
-from django.views.decorators.http import require_http_methods
-from django.http import HttpResponseRedirect, HttpResponse
-from django.conf import settings
-from django.core.paginator import Paginator
-from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User as DjangoUser, Group
+from django.core.paginator import Paginator
 from django.utils.translation import ugettext as _
+from django.views.decorators.http import require_http_methods
 
 from helios.models import Election
 from helios.security import can_create_election
 from helios_auth.security import *
-import helios_auth.views as auth_views
-from heliosinstitution.models import InstitutionUserProfile, Institution
-from heliosinstitution.decorators import *
-from helioslog.models import HeliosLog
-
-
-from view_utils import *
 from heliosinstitution import utils
+from heliosinstitution.decorators import *
+from heliosinstitution.models import InstitutionUserProfile, Institution
+from helioslog.models import HeliosLog
+from view_utils import *
 
 
 def home(request):

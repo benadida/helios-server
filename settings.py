@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
+import json
 import ldap
-import os, json
-
+import os
 from django.utils.translation import ugettext_lazy as _
-
 from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
+
 # a massive hack to see if we're testing, in which case we use different settings
 import sys
+
 TESTING = 'test' in sys.argv
 
 # go through environment variables and override them
@@ -17,7 +18,6 @@ def get_from_env(var, default):
         return default
 
 DEBUG = (get_from_env('DEBUG', '1') == '1')
-TEMPLATE_DEBUG = DEBUG
 
 #If the Host header (or X-Forwarded-Host if USE_X_FORWARDED_HOST is enabled) does not match any value in this list, the django.http.HttpRequest.get_host() method will raise SuspiciousOperation.
 #When DEBUG is True or when running tests, host validation is disabled; any host will be accepted. Thus it’s usually only necessary to set it in production.
@@ -33,7 +33,7 @@ ROOT_URLCONF = 'urls'
 
 ROOT_PATH = os.path.dirname(__file__)
 
-# add admins of the form: 
+# add admins of the form:
 #    ('Ben Adida', 'ben@adida.net'),
 # if you want to be emailed about errors.
 ADMINS = (
@@ -63,14 +63,12 @@ DATABASES = {
     }
 }
 
-SOUTH_DATABASE_ADAPTERS = {'default':'south.db.postgresql_psycopg2'}
-
 # override if we have an env variable
 if get_from_env('DATABASE_URL', None):
     import dj_database_url
     DATABASES['default'] =  dj_database_url.config()
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
-    DATABASES['default']['CONN_MAX_AGE'] = 600
+    DATABASES['default']['CONN_MAX_AGE'] = '600'
 
     # require SSL
     DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
@@ -128,7 +126,7 @@ STATICFILES_DIRS = (
 
 
 # Secure Stuff
-if (get_from_env('SSL', '0') == '1'):
+if get_from_env('SSL', '0') == '1':
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
 
@@ -139,7 +137,7 @@ SESSION_COOKIE_HTTPONLY = True
 
 # let's go with one year because that's the way to do it now
 STS = False
-if (get_from_env('HSTS', '0') == '1'):
+if get_from_env('HSTS', '0') == '1':
     STS = True
     # we're using our own custom middleware now
     # SECURE_HSTS_SECONDS = 31536000
@@ -149,49 +147,52 @@ if (get_from_env('HSTS', '0') == '1'):
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-# List of callables that know how to import templates from various sources.
-TEMPLATE_LOADERS = (
-    'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader'
-)
+SILENCED_SYSTEM_CHECKS = ['urls.W002']
 
-MIDDLEWARE_CLASSES = (
-    # make all things SSL
-    #'sslify.middleware.SSLifyMiddleware',
-
+MIDDLEWARE = [
     # secure a bunch of things
-    'djangosecure.middleware.SecurityMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'helios.security.HSTSMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
 
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware'
+    'django.contrib.messages.middleware.MessageMiddleware',
 
-   # 'flatpages_i18n.middleware.FlatpageFallbackMiddleware'
-)
+    # 'flatpages_i18n.middleware.FlatpageFallbackMiddleware'
+]
 
 
-TEMPLATE_DIRS = (
-    ROOT_PATH,
-    os.path.join(ROOT_PATH, 'templates')
-)
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'DIRS': [
+            ROOT_PATH,
+            os.path.join(ROOT_PATH, 'templates'),
+            # os.path.join(ROOT_PATH, 'helios/templates'),  # covered by APP_DIRS:True
+            # os.path.join(ROOT_PATH, 'helios_auth/templates'),  # covered by APP_DIRS:True
+            # os.path.join(ROOT_PATH, 'server_ui/templates'),  # covered by APP_DIRS:True
+        ],
+        'OPTIONS': {
+            'debug': DEBUG,
+            'context_processors': [
+                "django.contrib.auth.context_processors.auth",
+            ],
+        }
+    },
+]
 
 INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'djangosecure',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'django.contrib.messages',
     'django.contrib.admin',
-    ## needed for queues
-    'djcelery',
-    'kombu.transport.django',
-    ## in Django 1.7 we now use built-in migrations, no more south
-    ## 'south',
     ## HELIOS stuff
     'helios_auth',
     'helios',
@@ -312,19 +313,10 @@ logging.basicConfig(
 )
 
 
-# set up django-celery
-# BROKER_BACKEND = "kombu.transport.DatabaseTransport"
-BROKER_URL = "django://"
-CELERY_RESULT_DBURI = DATABASES['default']
-import djcelery
-djcelery.setup_loader()
-
-CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
-
-CELERY_TASK_RESULT_EXPIRES = 5184000 # 60 days
-# for testing
-TEST_RUNNER = 'djcelery.contrib.test_runner.CeleryTestSuiteRunner'
-# this effectively does CELERY_ALWAYS_EAGER = True
+# set up celery
+CELERY_BROKER_URL = 'amqp://localhost'
+CELERY_TASK_ALWAYS_EAGER = True
+#database_url = DATABASES['default']
 
 # see configuration example at https://pythonhosted.org/django-auth-ldap/example.html
 AUTH_LDAP_SERVER_URI = "ldap://ldap.forumsys.com" # replace by your Ldap URI
@@ -347,7 +339,7 @@ AUTH_LDAP_ALWAYS_UPDATE_USER = False
 AUTH_BIND_USERID_TO_VOTERID = ['ldap']
 
 # Shibboleth auth settings
-SHIBBOLETH_ATTRIBUTE_MAP = { 
+SHIBBOLETH_ATTRIBUTE_MAP = {
     #"Shibboleth-givenName": (True, "first_name"),
     "Shib-inetOrgPerson-cn": (True, "common_name"),
     "Shib-inetOrgPerson-sn": (True, "last_name"),
@@ -376,7 +368,7 @@ USE_EMBEDDED_DS = False
 ROLLBAR_ACCESS_TOKEN = get_from_env('ROLLBAR_ACCESS_TOKEN', None)
 if ROLLBAR_ACCESS_TOKEN:
   print "setting up rollbar"
-  MIDDLEWARE_CLASSES += ('rollbar.contrib.django.middleware.RollbarNotifierMiddleware',)
+  MIDDLEWARE += ['rollbar.contrib.django.middleware.RollbarNotifierMiddleware',]
   ROLLBAR = {
     'access_token': ROLLBAR_ACCESS_TOKEN,
     'environment': 'development' if DEBUG else 'production',  

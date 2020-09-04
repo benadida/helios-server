@@ -22,7 +22,7 @@
 
     {% block extra-head %}{% endblock %}
     <script type="text/javascript" src="{% static "js/institution.js" %}"></script>
-    <script type="text/javascript" src="{% url "django.views.i18n.javascript_catalog" %}"></script>
+    <script type="text/javascript" src="{% url "i18n@JSCatalog" %}"></script>
 </head>
 <body>
     {% include "navbar-bootstrap.html" %} 

@@ -1,7 +1,7 @@
 {% extends "helios/templates/cryptobase.html" %}
 {% load i18n %}
 {% block content %}
-	<h2 class="title">{% trans "New Trustee" %} <span style="font-size:0.7em;">[<a href="{% url "helios.views.list_trustees_view" election.uuid %}">{% trans "cancel" %}</a>]</span></h2>
+	<h2 class="title">{% trans "New Trustee" %} <span style="font-size:0.7em;">[<a href="{% url "election@trustees@view" election.uuid %}">{% trans "cancel" %}</a>]</span></h2>
 	<h3 class="title">{{election.name}}</h3>
 	<div class="col-md-4">
 	<form method="post" action="" role="form" class="form-horizontal">

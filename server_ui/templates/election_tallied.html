@@ -3,7 +3,7 @@
 {% block content %}
 
   <h2 class="title">{% blocktrans %}
-  Election {{election.name}} Already Tallied 
+  Election {{election.name}} Already Tallied
   {% endblocktrans %}
   </h2>
 
@@ -12,6 +12,6 @@
   </p>
   
   <p>
-      <a href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "view the election" %}</a>
+      <a href="{% url "election@view" election.uuid %}">{% trans "view the election" %}</a>
   </p>
 {% endblock %}

@@ -21,7 +21,7 @@
             <h5 class="text-right">{% trans "Welcome" %} <b>{{user.pretty_name|safe}}</b></h5>
             {% if create_p %}
             <div class="text-right">
-                <a class="btn btn-primary btn-xs" href="{% url "helios.views.election_new" %}">{% trans "create an election" %}</a>
+                <a class="btn btn-primary btn-xs" href="{% url "elections@new" %}">{% trans "create an election" %}</a>
             </div>
             {% endif %}
             {% endif %}
@@ -31,7 +31,7 @@
 {% if institutions %}
 <div class="row">
     <div class="col-xs-12">
-            <div class="form-group get-by-year" data-url="{% url "heliosinstitution.views.elections_by_year" %}">
+            <div class="form-group get-by-year" data-url="{% url "institution@elections@by-year" %}">
                 <label for="year">{% trans "Year" %}</label>
                 {% with drop_type='year' %}
                     {% dropdown %}
@@ -41,7 +41,7 @@
 </div>
 
 <div class="row">
-    <div class="col-md-8 slice-institutions" data-url="{% url "heliosinstitution.views.elections_summary" %}">
+    <div class="col-md-8 slice-institutions" data-url="{% url "institution@elections@summary" %}">
         {% include "elections_summary.html" %}
     </div>
 {% else %} <!-- no elections -->
@@ -54,11 +54,11 @@
         <ul>
             {% for election in elections_administered %}
             <li>
-                <a href="{% url "helios.views.one_election_view" election.uuid %}">{{ election.name }}</a>
+                <a href="{% url "election@view" election.uuid %}">{{ election.name }}</a>
             </li>
             {% endfor %}
         </ul>
-        <a class="tiny button" href="{% url "heliosinstitution.views.elections_administered" user.pk %}">{% trans "See all" %}</a>
+        <a class="tiny button" href="{% url "institution@user@administered-elections" user.pk %}">{% trans "See all" %}</a>
         {% endif %} <!-- end elections administered -->
         <br/>
         <br/>
@@ -67,11 +67,11 @@
         <ul>
             {% for election in elections_voted %}
             <li>
-                <a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a>
+                <a href="{% url "election@view" election.uuid %}">{{election.name}}</a>
             </li>
             {% endfor %}
         </ul>
-        <a class="tiny button" href="{% url "helios.views.elections_voted" %}">{% trans "See all" %}</a>
+        <a class="tiny button" href="{% url "elections@voted" %}">{% trans "See all" %}</a>
         {% endif %} <!-- end elections voted -->
         <br/>
         <br/>

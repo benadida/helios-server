@@ -21,14 +21,14 @@
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
 <input class="btn btn-primary" type="submit" value="{% trans "compute encrypted tally!" %}" />
-<button class="btn btn-danger" onclick="document.location='./view'; return false;">{% trans "never mind" %}</button>
+<button class="btn btn-danger" onclick="document.location='{% url "election@view" election.uuid %}'; return false;">{% trans "never mind" %}</button>
 </form>
 {% else %}
 <p>
 {% blocktrans %}
 No votes have been cast in this election. At least one vote must be cast before you compute the tally.<br /><br />
 {% endblocktrans %}
-<a href="./view">{%trans "back to election" %}</a>
+<a href="{% url "election@view" election.uuid %}">{%trans "back to election" %}</a>
 </p>
 {% endif %}
 </div>
