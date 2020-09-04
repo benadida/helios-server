@@ -22,7 +22,7 @@ var datetimepickerFactory = function ($) {
 
 	var default_options  = {
 		i18n: {
-			'pt-BR': { //Português(Brasil)
+			'pt-br': { //Português(Brasil)
 				months: [
 					"Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 				],
@@ -130,8 +130,8 @@ var datetimepickerFactory = function ($) {
 	};
 
 	var dateHelper = null,
-		globalLocaleDefault = 'pt-BR',
-		globalLocale = 'pt-BR';
+		globalLocaleDefault = 'pt-br',
+		globalLocale = 'pt-br';
 
 	var dateFormatterOptionsDefault = {
 		meridiem: ['AM', 'PM']

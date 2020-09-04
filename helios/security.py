@@ -4,31 +4,39 @@ Helios Security -- mostly access control
 Ben Adida (ben@adida.net)
 """
 
+import urllib
 # nicely update the wrapper function
 from functools import update_wrapper
 
-from django.core.urlresolvers import reverse
-from django.core.exceptions import *
-from django.http import *
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
+from django.http import Http404
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.translation import ugettext as _
 
-from models import *
-
 from helios_auth.security import get_user
-
-from django.http import HttpResponseRedirect
-import urllib
-
-import helios
+from models import Voter, Trustee, Election
 
 
 class HSTSMiddleware:
-    def process_response(self, request, response):
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # One-time configuration and initialization.
+
+    def __call__(self, request):
+        # Code to be executed for each request before
+        # the view (and later middleware) are called.
+
+        response = self.get_response(request)
+
+        # Code to be executed for each request/response after
+        # the view is called.
+
         if settings.STS:
           response['Strict-Transport-Security'] = "max-age=31536000; includeSubDomains; preload"
         return response
-        
+
 # current voter
 def get_voter(request, user, election):
   """
@@ -90,7 +98,7 @@ def get_election_by_uuid(uuid):
   if not uuid:
     raise Exception(_("no election ID"))
       
-  return helios.models.Election.get_by_uuid(uuid)
+  return Election.get_by_uuid(uuid)
   
 # decorator for views that pertain to an election
 # takes parameters:
@@ -164,7 +172,7 @@ def election_admin(**checks):
       user = get_user(request)
       if not user_can_admin_election(user, election):
         raise PermissionDenied()
-      
+
       # do checks
       do_election_checks(election, checks)
         
@@ -189,7 +197,7 @@ def trustee_check(func):
 
 def can_create_election(request):
   user = get_user(request)
-  
+
   if user and user.admin_p:
     return True
 

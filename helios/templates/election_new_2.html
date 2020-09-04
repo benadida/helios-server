@@ -62,7 +62,7 @@ $(document).ready(function() {
   {% endblocktrans %}
 {% endifequal %}
 {% endifequal %}
-  <form class="prettyform" action="{% url "helios.views.election_new_3" %}" method="POST" id="create_election_form" onsubmit="return before_create();">
+  <form class="prettyform" action="{% url "elections@new_3" %}" method="POST" id="create_election_form" onsubmit="return before_create();">
       <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
       <input type="hidden" name="name" value="{{name}}" />
       <input type="hidden" name="public_key" id="pk" value="" />

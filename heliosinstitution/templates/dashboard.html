@@ -8,7 +8,7 @@
         </div>
         <div id="content" class="col-lg-10 col-sm-10">
          {% block subcontent %}
-            <div id="inst_details" class="panel panel-primary" data-url="{% url "heliosinstitution.views.institution_details" institution.pk %}">
+            <div id="inst_details" class="panel panel-primary" data-url="{% url "institution@details" institution.pk %}">
                 {% include "institution_details.html" %}
             </div>
          {% endblock subcontent %}

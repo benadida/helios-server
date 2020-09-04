@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('at', models.DateTimeField(auto_now_add=True)),
                 ('ip', models.IPAddressField(null=True)),
                 ('action_type', models.CharField(default=b'MODIFY', max_length=250, choices=[(b'ADD', 'Add'), (b'DEL', 'Delete'), (b'MODIFY', 'Modify')])),
-                ('user', models.ForeignKey(to='helios_auth.User')),
+                ('user', models.ForeignKey(to='helios_auth.User', on_delete=models.CASCADE)),
             ],
         ),
     ]

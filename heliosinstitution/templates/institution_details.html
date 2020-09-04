@@ -10,7 +10,7 @@
     <p><button id="edit_inst_button" class="btn btn-primary">{% trans "Edit" %}</button></p>    
 </div>
 <div id="edit_inst" class="hidden">
-    <form id="form_edit_inst" class="form-horizontal" action="{% url "heliosinstitution.views.institution_details" institution.pk %}" >
+    <form id="form_edit_inst" class="form-horizontal" action="{% url "institution@details" institution.pk %}" >
     <p class="inst_data">
         <label for="name">{% trans "Name:" %}</label>
         <input class="form-control" name="name" type="text" value="{{ institution.name }}" maxlength="250"/>

@@ -6,7 +6,7 @@ from helios_auth.models import User
 from helios_auth.jsonfield import JSONField
 
 class HeliosLog(models.Model):
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     model = models.CharField(max_length=200, null=True) # model name
     #log description
     description = JSONField()

@@ -14,12 +14,12 @@
 	      <th>{% trans "recently cast votes" %}</th>
 	   </tr>
 	  </thead>
-	  <tbody>	
+	  <tbody>
 		{% for election in elections %}
 			<tr>
-			<td><b><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></b></td>
+			<td><b><a href="{% url "election@view" election.uuid %}">{{election.name}}</a></b></td>
 			<td>{{election.last_cast_vote|date:"d/m/Y H:i"}}</td>
-			<td>{{election.num_recent_cast_votes}}</td>	
+			<td>{{election.num_recent_cast_votes}}</td>
 			</tr>
 		{% endfor %}
 		</tbody>

@@ -8,5 +8,5 @@
 {% if institution.elections %}
     {% include "heliosinstitution/templates/stats_elections.html" %}
 {% endif %} 
-<p><b>{{num_votes_in_queue}}</b> {% trans "votes in queue." %} {% if num_votes_in_queue %}[<a href="{% url "helios.stats_views.force_queue" %}">{% trans "force it" %}</a>]{% endif %}</p>
+<p><b>{{num_votes_in_queue}}</b> {% trans "votes in queue." %} {% if num_votes_in_queue %}[<a href="{% url "stats@force-queue" %}">{% trans "force it" %}</a>]{% endif %}</p>
 {% endblock subcontent %}

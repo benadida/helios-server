@@ -10,13 +10,12 @@ from urlparse import urlsplit
 
 from django import forms
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.conf.urls import url
 from django.core.mail import send_mail
-from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-
 
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = False
@@ -31,18 +30,18 @@ SHIBBOLETH_NATIVE_SP_ATTRIBUTES = ['Shib-Application-ID', 'Shib-Session-ID',
 
 
 class LoginForm(forms.Form):
-	username = forms.CharField(max_length=50)
-	password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
+    username = forms.CharField(max_length=50)
+    password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
 
 
 def shibboleth_login_view(request):
     from helios_auth.view_utils import render_template
-	
+
     error = None
 
     return render_template(request, 'shibboleth/login_box', {
         'error': error,
-	'enabled_auth_systems': settings.AUTH_ENABLED_AUTH_SYSTEMS,
+    'enabled_auth_systems': settings.AUTH_ENABLED_AUTH_SYSTEMS,
     })
 
 
@@ -72,19 +71,19 @@ def shibboleth_register(request):
 def get_user_info_after_auth(request):
     shib_user = request.session['shib_attrs']
     return {
-		'type': 'shibboleth', 
-		'user_id' : shib_user['email'], 
-		'name': shib_user['common_name'], 
-		'info': shib_user,
-		'token': None,
-		}
+        'type': 'shibboleth',
+        'user_id' : shib_user['email'],
+        'name': shib_user['common_name'],
+        'info': shib_user,
+        'token': None,
+        }
 
 
 def get_auth_url(request, redirect_url = None):
-	if settings.USE_EMBEDDED_DS:
-		return reverse(shibboleth_login_view)
+    if settings.USE_EMBEDDED_DS:
+        return reverse(shibboleth_login_view)
 
-	return reverse(shibboleth_register)
+    return reverse(shibboleth_register)
 
 
 def send_message(user_id, name, user_info, subject, body):
@@ -155,14 +154,15 @@ def list_categories(user):
 
 
 def user_needs_intervention(user_id, user_info, token):
-    from heliosinstitution.models import Institution, InstitutionUserProfile
+    from django.contrib.auth.models import Group
+    from heliosinstitution.models import InstitutionUserProfile
     from helios_auth.models import User
 
     try:
-		#  getting the logged user
+        #  getting the logged user
         helios_user = User.objects.get(user_id=user_id, user_type='shibboleth')
 
-		# checking if the logged user has association with an institution
+        # checking if the logged user has association with an institution
         provider_url_details = urlsplit(user_info['attributes']['provider'])
         user_provider = provider_url_details.scheme + '://' + \
             provider_url_details.netloc + '/'
@@ -176,7 +176,7 @@ def user_needs_intervention(user_id, user_info, token):
         institution_user_profile.save()
 
 
-		# checking if role hasn't expired
+        # checking if role hasn't expired
         if ( institution_user_profile.expires_at and  institution_user_profile.expires_at >= timezone.now()) or (
             institution_user_profile.expires_at is None):
 
@@ -237,3 +237,11 @@ def parse_attributes(META):
 def can_create_election(user_id, user_info):
     """ for now, just let it be"""
     return True
+
+SHIBBOLETH_LOGIN_URL_NAME = "auth@shibboleth@login"
+SHIBBOLETH_REGISTER_URL_NAME = "auth@shibboleth@register"
+
+urlpatterns = [
+    url(r'^shib/login', shibboleth_login_view, name=SHIBBOLETH_LOGIN_URL_NAME),
+    url(r'^shib/register', shibboleth_register, name=SHIBBOLETH_REGISTER_URL_NAME),
+]

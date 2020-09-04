@@ -16,15 +16,15 @@
     <div class="form-group {% if field.errors %}has-error{% endif %}">
      {{ field.errors }}
       <label for="{{ field.label }}" class="col-sm-2 control-label">{{ field.label }}</label>
-      <div class="col-sm-10" class="form-control"> 
+      <div class="col-sm-10" class="form-control">
       {{ field }}
       {{ field.help_text }}
       </div>
-    </div> 
+    </div>
   {% endfor %}
   <div class="pull-right">
     <button id="next_button" type="submit" class="btn btn-primary">{% trans "Update" %}</button>
-    <a class="btn btn-danger" href="{% url "helios.views.one_election_view" election.uuid %}">{% trans "Cancel" %}</a>
+    <a class="btn btn-danger" href="{% url "election@view" election.uuid %}">{% trans "Cancel" %}</a>
   </div>
   </form>
 </div>
