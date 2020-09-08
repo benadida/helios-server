@@ -385,6 +385,8 @@ Antes de executar o docker-compose, você deve criar um arquivo .env na raiz des
         DJANGO_SUPERUSER_PASSWORD=admin
         GROUP_ID=1000
         USER_ID=1000
+        CELERY_BROKER_URL=amqp://localhost
+
 
 DEBUG=1 indica que o django está em modo DEBUG, exibindo por exemplos mensagens de erro da aplicação com detalhamento no navegador. Use apenas em desenvolvimento!
 
@@ -405,6 +407,8 @@ URL_HOST indica endereço sem considerar HTTPS e SECURE_URL_HOST indica o endere
 DJANGO_SUPERUSER_USERNAME, DJANGO_SUPERUSER_EMAIL e  DJANGO_SUPERUSER_PASSWORD são as informações para criar um usuário admin (você pode configurar outro username no arquivo .env, assim como outra senha!), aquele que você normalmente criaria executando no shell o comando `python manage.py createsuperuser`. Esse usuário é o usuário do app django admin site, que foi habilitado para essa personalização do helios. Com ele você acessa, por exemplo, http://localhost:8000/admin e consegue executar algumas operações administrativas, como habilitar um usuário que já logou previamente no helios para ser gestor de eleições ou então visualizar lista de usuários do helios. Não confundir com usuário gestor de eleição do helios! Esse usuário não é usuário que consegue logar na aplicação Helios. A aplicação Helios depende de módulo de autenticação próprio habilitado, dentre os disponíveis (Google ou Ldap, por exemplo).
 
 O GROUP_ID e USER_ID você pode usar o do usuário local, no host em que você vai rodar o docker-compose, para evitar problemas de permissão de diretórios. Por exemplo, o teu usuário local tem o uid 1000 e você montou o diretório local onde baixou o helios para um volume do docker, no qual o usuário criado tem outro uid. Importante: se você não quiser fornecer esse valor, remova o parâmetro -g e -u do comando `RUN groupadd -r -g 1000 helios && useradd -r -g helios -u 1000 helios` no [Dockerfile da imagem](docker/Dockerfile).
+
+CELERY_BROKER_URL indica o endereço e credenciais de acesso ao serviço de message broker, no caso, o RabbitMQ.
 
 Importante destacar que para variáveis que não sejam informadas, será utilizado o valor padrão definido em [settings.py](settings.py).
 

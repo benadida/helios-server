@@ -15,14 +15,15 @@ RUN \
     libapache2-mod-wsgi \
     build-essential \
     gettext \
-    supervisor &&\
+    supervisor \
+    rabbitmq-server &&\
+    rm -rf /var/lib/apt/lists/* && \
  	apt-get clean
 
-EXPOSE 80
-EXPOSE 443
 
 COPY ./docker/supervisor/apache2-supervisor.conf /etc/supervisor/conf.d/apache2.conf
 COPY ./docker/supervisor/celery-supervisor.conf /etc/supervisor/conf.d/celery-helios.conf
+COPY ./docker/supervisor/rabbitmq.conf /etc/supervisor/conf.d/rabbitmq.conf
 
 COPY ./docker/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
@@ -31,15 +32,18 @@ COPY ./docker/apache/dummy-server.key /etc/ssl/private/dev-helios-apache.key
 COPY ./docker/apache/dummy-server.crt /etc/ssl/certs/dev-helios-apache.crt
 COPY ./docker/apache/helios-ssl.conf /etc/apache2/sites-available
 
-RUN a2enmod rewrite
-RUN a2enmod ssl
-RUN a2dissite 000-default.conf
-RUN a2dissite default-ssl.conf
-RUN a2ensite helios-ssl.conf
+RUN a2enmod rewrite && \
+    a2enmod ssl && \
+    a2dissite 000-default.conf && \
+    a2dissite default-ssl.conf && \
+    a2ensite helios-ssl.conf
 
 RUN groupadd -r -g 1000 helios && useradd -r -g helios -u 1000 helios
 
 WORKDIR /var/www/helios-server
 RUN chown helios:helios /var/www/helios-server
+
+EXPOSE 80
+EXPOSE 443
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
