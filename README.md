@@ -385,7 +385,7 @@ Antes de executar o docker-compose, você deve criar um arquivo .env na raiz des
         DJANGO_SUPERUSER_PASSWORD=admin
         GROUP_ID=1000
         USER_ID=1000
-        CELERY_BROKER_URL=amqp://localhost
+        CELERY_BROKER_URL=redis://127.0.0.1:6379
 
 
 DEBUG=1 indica que o django está em modo DEBUG, exibindo por exemplos mensagens de erro da aplicação com detalhamento no navegador. Use apenas em desenvolvimento!
@@ -408,9 +408,9 @@ DJANGO_SUPERUSER_USERNAME, DJANGO_SUPERUSER_EMAIL e  DJANGO_SUPERUSER_PASSWORD s
 
 O GROUP_ID e USER_ID você pode usar o do usuário local, no host em que você vai rodar o docker-compose, para evitar problemas de permissão de diretórios. Por exemplo, o teu usuário local tem o uid 1000 e você montou o diretório local onde baixou o helios para um volume do docker, no qual o usuário criado tem outro uid. Importante: se você não quiser fornecer esse valor, remova o parâmetro -g e -u do comando `RUN groupadd -r -g 1000 helios && useradd -r -g helios -u 1000 helios` no [Dockerfile da imagem](docker/Dockerfile).
 
-CELERY_BROKER_URL indica o endereço e credenciais de acesso ao serviço de message broker, no caso, o RabbitMQ.
+CELERY_BROKER_URL indica o endereço e credenciais de acesso ao serviço de message broker, no caso, o Redis.
 
-Importante destacar que para variáveis que não sejam informadas, será utilizado o valor padrão definido em [settings.py](settings.py).
+Importante destacar que para variáveis que não sejam informadas, será utilizado o valor padrão definido em [settings.py](settings.py). Você também pode configurar assim outras variáveis do settings.py que achar necessário, seguindo o mesmo padrão.
 
 >**Observação**: Todos os valores de configuração e escolhas de organização de serviços e containeres foram feitas pensando em ambiente de desenvolvimento local, para facilitar configurar o ambiente especialmente considerando questões de versões de software (como o Python2, por exemplo). Questões de segurança e até melhores práticas de separação de serviços por containers e etc não estão aqui consideradas!
 

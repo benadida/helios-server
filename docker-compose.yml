@@ -35,6 +35,7 @@ services:
             - ./.:/var/www/helios-server
             - ~/docker-volumes/heliosapp/apache-logs:/var/log/apache2
             - ~/docker-volumes/heliosapp/celery-logs:/var/log/celery
+            - ~/docker-volumes/heliosapp/redis-logs:/var/log/redis
             - ~/docker-volumes/heliosapp/supervisor-logs:/var/log/supervisor
 networks:
     helios-network:

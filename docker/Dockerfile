@@ -16,14 +16,17 @@ RUN \
     build-essential \
     gettext \
     supervisor \
-    rabbitmq-server &&\
+    redis-server &&\
     rm -rf /var/lib/apt/lists/* && \
  	apt-get clean
 
+RUN sed -i "s/bind .*/bind 127.0.0.1/g" /etc/redis/redis.conf
+RUN sed -i "s/supervised no/supervised systemd/" /etc/redis/redis.conf
+RUN sed -i "s/daemonize yes/daemonize no/" /etc/redis/redis.conf
 
 COPY ./docker/supervisor/apache2-supervisor.conf /etc/supervisor/conf.d/apache2.conf
 COPY ./docker/supervisor/celery-supervisor.conf /etc/supervisor/conf.d/celery-helios.conf
-COPY ./docker/supervisor/rabbitmq.conf /etc/supervisor/conf.d/rabbitmq.conf
+COPY ./docker/supervisor/redis-supervisor.conf /etc/supervisor/conf.d/redis-helios.conf
 
 COPY ./docker/docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
