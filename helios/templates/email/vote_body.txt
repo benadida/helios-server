@@ -11,7 +11,7 @@
 <br>
 <p> URL da Eleição: {{election_vote_url}}</p>
 
-<p>Código de Identificação da Eleição: {{voter.election.hash}}</p>
+<p>Código de Identificação da Eleição: {{election_hash}}</p>
 <br>
 
 {% ifequal voter.voter_type "password" %}
@@ -32,7 +32,7 @@
 </p>
 {% endif %}
 
-{% if election.use_voter_aliases %}
+{% if election_use_voter_aliases %}
 <p>
 Para proteger a sua privacidade, essa eleição está configurada para utilizar um pseudônimo de eleitor, assim seu login, nome ou email não serão mostrados para o público em geral. Portanto, ao invés de seu nome, o centro de rastreamento de cédula vai listar apenas o seu pseudônimo.
 <br>

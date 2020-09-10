@@ -1432,7 +1432,7 @@ def voters_email(request, election):
       'custom_subject': "&lt;SUBJECT&gt;"
 })
   default_body = render_template_raw(None, 'email/%s_body.txt' % template, {
-      'election' : election,
+      'election_name' : election.name,
       'election_url' : election_url,
       'election_vote_url' : election_vote_url,
       'custom_subject' : default_subject,
@@ -1441,8 +1441,7 @@ def voters_email(request, election):
                 'name': '<VOTER_NAME>',
                 'voter_login_id': '<VOTER_LOGIN_ID>',
                 'voter_password': '<VOTER_PASSWORD>',
-                'voter_type' : election.voter_set.all()[0].voter_type,
-                'election' : election}
+                'voter_type' : election.voter_set.all()[0].voter_type}
       })
 
   if request.method == "GET":
@@ -1467,7 +1466,9 @@ def voters_email(request, election):
         'custom_message' : email_form.cleaned_data['body'],
         'election_vote_url' : election_vote_url,
         'election_url' : election_url,
-        'election' : election,
+        'election_name' : election.name,
+        'election_hash' : election.hash,
+        'election_use_voter_aliases': election.use_voter_aliases,
         'default_from_name': default_from_name
         }
         

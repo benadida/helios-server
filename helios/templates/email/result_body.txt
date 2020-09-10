@@ -10,7 +10,7 @@
 
 <br>
 <p>
-A apuração da eleição <strong>{{election.name}}</strong> foi realizada e liberada:
+A apuração da eleição <strong>{{election_name}}</strong> foi realizada e liberada:
 <br>
 <br>
   {{election_url}}
