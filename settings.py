@@ -316,8 +316,8 @@ logging.basicConfig(
 
 
 # set up celery
-#CELERY_BROKER_URL = get_from_env('CELERY_BROKER_URL', 'amqp://localhost')
-#CELERY_TASK_ALWAYS_EAGER = True
+if TESTING:
+    CELERY_TASK_ALWAYS_EAGER = True
 #database_url = DATABASES['default']
 
 CELERY_BROKER_URL = get_from_env('CELERY_BROKER_URL', 'redis://127.0.0.1:6379')
