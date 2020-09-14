@@ -71,7 +71,7 @@ requires election-specific credentials." %}
 {% else %}
 
 {% if user %}
-<div class="alert alert-danger" role="alert"></div>
+<div class="alert alert-danger" role="alert">
     {% blocktrans %}
         <h1>Sorry!</h1>
         <em>Sorry, you are 
@@ -122,13 +122,14 @@ Don't worry, we'll remember your ballot while you log in.
 {% endif %}
 
 <br />
+{# Don't show this when presenting login form #}
+{% if voter %}
 {%trans "Your smart ballot tracker is:" %} <br /><br />
-    <label><em>{{vote_fingerprint}}</em></label>
+    <span><em>{{vote_fingerprint}}</em></span>
 </p>
-
+{% endif %}
 {# this closes the IF ELSE of this being password_only #}
 {% endif %}
-
 </div>
 </div> <!-- ballot-not-cast-yet -->
 <br>
