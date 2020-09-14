@@ -29,9 +29,10 @@ Você será guiado para cifrar novamente suas escolhas para o depósito final da
 <div style="margin-left: 15px;">&#x2713; {$T.choice}</div>
 {#/for}
 {#if $T.choices[$T.question$index].length < $T.question.max}
-[você selecionou {$T.choices[$T.question$index].length} candidatos(as); você pode selecionar de {$T.question.min} até {$T.question.max}]
+(Atenção: você selecionou {$T.choices[$T.question$index].length} candidatos(as), mas você poderia ter selecionado de {$T.question.min} até {$T.question.max}.
+ Se prefefir, volte e edite a cédula antes de depositar)
 {#/if}
-[<a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#">editar resposta(s)</a>]
+<br><br><a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#">Editar resposta(s)</a>
 {#if !$T.question$last}<br><br>{#/if}
 {#/for}
 </div>
@@ -43,7 +44,7 @@ Você será guiado para cifrar novamente suas escolhas para o depósito final da
 {% trans "Once you click "Submit", the unencrypted version of your ballot will be destroyed, and only the encrypted version will remain. The encrypted version will be submitted to the Helios server. %}</p>
 
 
-<button class="btn btn-primary" id="proceed_button" onclick="BOOTH.cast_ballot();">Deposite esta Cédula na Urna!</button><br />
+<button class="btn btn-primary" id="proceed_button" onclick="BOOTH.cast_ballot();">Depositar esta Cédula na Urna</button><br />
 <div id="loading_div"><img src="/static/loading.gif" id="proceed_loading_img" /></div>
 
 
