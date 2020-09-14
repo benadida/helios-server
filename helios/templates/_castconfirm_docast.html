@@ -16,13 +16,13 @@
 </div>
 <br />
 {% endif %}
-{% trans "You are logged in as" %} <u>{{voter|safe}}</u><br /><br />
+{% trans "You are logged in as " %} <u>{{voter|safe}}</u><br /><br />
 
     <button class="btn btn-primary" type="submit" >{% trans "CAST this ballot" %}</button>
     <button class="btn btn-danger" type="button" onclick="document.location='/auth/logout';">{% trans "cancel" %}</button><br />
 </form>
 <p>
-    <span style="font-size:0.8em;"><br />{% trans "You can cast as many ballots as you want.<em>Only the last one counts</em>." %}</span>
+    <span style="font-size:0.8em;"><br />{% trans "You can cast as many ballots as you want.<em><br>Only the last one counts</em>." %}</span>
 </p>
 <p>
     <span style="font-size:0.9em;"><strong>{% blocktrans %}If you cancel now, your ballot will <em>NOT</em> be recorded.<br />
