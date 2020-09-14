@@ -158,6 +158,20 @@ Após a compilação, arquivos `.mo` devem ter sido gerados em `locale/pt_BR/LC_
 
 > **Observação:** Para alterar alguma tradução é possível utilizar o aplicativo [POEDIT](https://poedit.net), os mesmo editar diretamente os arquivos `django.po` e `djangojs.po` no editor de texto de sua preferência.
 
+Se você adicionou alguma mensagem nova para ser traduzida e gostaria que fossem adicionadas aos arquivos de tradução, execute os comandos abaixo.
+
+1. Para adicionar strings de arquivos python:
+
+```bash
+python manage.py makemessages -l pt_BR
+```
+2. Para adicionar strings de arquivos .js (os que passam pelo engine do Django):
+
+```bash
+python manage.py makemessages -d djangojs -l pt_BR --ignore=venv
+```
+> **Observação:** Para a coleta de mensagens de arquivos .js, se você tiver criado o diretório de virtualenv relativo ao diretório do helios e chamado de por exemplo `venv`, você pode passar o parâmetro `--ignore=venv` conforme acima, para ignorar esse diretório.
+
 ### Configuração dos módulos de autenticação
 
 Você precisará habilitar em `settings.py` os módulos de autenticação que deseja. Por exemplo, poderia usar os módulos de autenticação do projeto original e permitir a autenticação de usuários por meio de contas Google, Facebook ou Twitter. 
