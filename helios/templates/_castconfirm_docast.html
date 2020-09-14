@@ -21,10 +21,16 @@
     <button class="btn btn-primary" type="submit" >{% trans "CAST this ballot" %}</button>
     <button class="btn btn-danger" type="button" onclick="document.location='/auth/logout';">{% trans "cancel" %}</button><br />
 </form>
-<p>&nbsp;
-    <p><span style="font-size:0.9em;">{% blocktrans %}If you cancel now, your ballot will <em>NOT</em> be recorded.<br />
-    You can start the voting process over again, of course.{% endblocktrans %}</span>
+<p>
+    <span style="font-size:0.8em;"><br />{% trans "You can cast as many ballots as you want.<em>Only the last one counts</em>." %}</span>
 </p>
+<p>
+    <span style="font-size:0.9em;"><strong>{% blocktrans %}If you cancel now, your ballot will <em>NOT</em> be recorded.<br />
+    You can start the voting process over again, of course.{% endblocktrans %}</strong></span>
+</p>
+
+<!-- for now, for CSRF protection, no auto-submit just yet (benadida) -->
+<!-- <script>$('#cast_confirm_form').submit()</script> -->
 
 </div>
   {% else %}
