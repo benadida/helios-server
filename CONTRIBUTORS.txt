@@ -7,3 +7,5 @@ Significant contributors:
 - Olivier de Marneffe
 - Emily Stark, Mike Hamburg, Tom Wu, and Dan Boneh for SJCL and integration of javascript crypto.
 - Nicholas Chang-Fong and Aleksander Essex for security reports and fixes.
+- Shirley Chaves
+- Marco Ciotola

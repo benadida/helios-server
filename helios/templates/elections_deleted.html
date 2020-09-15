@@ -8,7 +8,7 @@
 {% for election in elections %}
 <li>[<a 
      onclick="return window.confirm('Are you sure you want to undelete this election?');" 
-     href="{% url "helios.views.one_election_undelete" election.uuid %}">undelete</a>]
+     href="{% url "election@undelete" election.uuid %}">undelete</a>]
      <b>{{election.name}}</b> - {{election.num_voters}} voters / {{election.num_cast_votes}} cast votes - <em>deleted at {{election.deleted_at}}</em></li>
 {% endfor %}
 </ul>

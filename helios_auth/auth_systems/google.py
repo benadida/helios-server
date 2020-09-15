@@ -3,14 +3,10 @@ Google Authentication
 
 """
 
-from django.http import *
-from django.core.mail import send_mail
+import httplib2
+import json
 from django.conf import settings
-
-import httplib2,json
-
-import sys, os, cgi, urllib, urllib2, re
-
+from django.core.mail import send_mail
 from oauth2client.client import OAuth2WebServerFlow
 
 # some parameters to indicate that status updating is not possible
@@ -50,11 +46,11 @@ def get_user_info_after_auth(request):
   # get the nice name
   http = httplib2.Http(".cache")
   http = credentials.authorize(http)
-  (resp_headers, content) = http.request("https://www.googleapis.com/plus/v1/people/me", "GET")
+  (resp_headers, content) = http.request("https://people.googleapis.com/v1/people/me?personFields=names", "GET")
 
   response = json.loads(content)
 
-  name = response['displayName']
+  name = response['names'][0]['displayName']
   
   # watch out, response also contains email addresses, but not sure whether thsoe are verified or not
   # so for email address we will only look at the id_token

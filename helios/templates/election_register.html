@@ -16,7 +16,7 @@
     You are <em>not</em> registered for this election.
 </p>
 
-<form method="post" action="{% url "helios.views.one_election_register" election.uuid %}">
+<form method="post" action="{% url "election@register" election.uuid %}">
 <input type="submit" value="register!" />
 </form>
 {% endif %}

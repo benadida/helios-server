@@ -1,9 +1,8 @@
-Django==1.8.18
+Django==1.11.28
 anyjson==0.3.3
-celery==3.1.18
-django-celery==3.1.16
+celery==4.2.1
 django-picklefield==0.3.0
-kombu==3.0.30
+kombu==4.2.0
 html5lib==0.999
 psycopg2==2.7.3.2
 pyparsing==1.5.7
@@ -11,13 +10,11 @@ python-dateutil>=1.5
 python-openid==2.2.5
 wsgiref==0.1.2
 gunicorn==19.9
-requests==2.7.0
+requests==2.21.0
 unicodecsv==0.9.0
 dj_database_url==0.3.0
-django-sslify==0.2.7
 django_webtest>=1.9
 webtest==2.0.18
-django-secure==1.0.1
 bleach==1.4.1
 boto==2.27.0
 django-ses==0.6.0

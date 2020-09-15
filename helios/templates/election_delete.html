@@ -5,7 +5,7 @@
 {% block content %}
 
 <div style="float: left; margin-right: 50px;">
-  <h3 class="title">{{ election.name }} <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">back to election</a>]</span></h3>
+  <h3 class="title">{{ election.name }} <span style="font-size:0.7em;">[<a href="{% url "election@view" election.uuid %}">back to election</a>]</span></h3>
   <p>
   Created by: <b><em>{{election.admin.pretty_name}}</em></b> on <b><em>{{election.created_at}}</em></b><br>
   Short name: <b><em>{{ election.short_name }}</em></b><br>
