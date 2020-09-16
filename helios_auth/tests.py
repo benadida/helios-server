@@ -147,7 +147,7 @@ class LDAPAuthTests(TestCase):
         """ test if authenticates using the backend """
         from helios_auth.auth_systems.ldapbackend import backend
         auth = backend.CustomLDAPBackend()
-        user = auth.authenticate(self.username, self.password)
+        user = auth.authenticate(None, username=self.username, password=self.password)
         self.assertEqual(user.username, 'euclid')
 
     def test_ldap_view_login(self):

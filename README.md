@@ -190,6 +190,7 @@ A documentação da biblioteca utilizada pode ser encontrada em http://pythonhos
 
 As opções `AUTH_LDAP_BIND_DN` e `AUTH_LDAP_BIND_PASSWORD` deverão ter um valor configurado se o servidor LDAP exigir autenticação de usuário mesmo que seja para fazer consultas.
 
+> Observação: Você pode testar a conexão usando o próprio teste unitário do app de autenticação. Para tal, edite o arquivo [helios_auth/tests.py](helios_auth/tests.py), altere o usuário (euclid) e senha (password) que estão no teste usando o [servidor de testes LDAP da ForumSys](https://www.forumsys.com/tutorials/integration-how-to/ldap/online-ldap-test-server/) para um usuário e senha válidos no LDAP que você configurou no arquivo [settings.py](settings.py) e execute `python manage.py test helios_auth`
 
 ### Testando a instalação em ambiente de desenvolvimento
 
