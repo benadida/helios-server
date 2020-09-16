@@ -6,14 +6,11 @@ http://www.djangosnippets.org/snippets/377/
 and adapted to LDObject
 """
 
-import datetime
 import json
 from django.db import models
-from django.db.models import signals
-from django.conf import settings
-from django.core.serializers.json import DjangoJSONEncoder
 
 from . import LDObject
+
 
 class LDObjectField(models.TextField):
     """
@@ -22,9 +19,6 @@ class LDObjectField(models.TextField):
     
     deserialization_params added on 2011-01-09 to provide additional hints at deserialization time
     """
-
-    # Used so to_python() is called
-    __metaclass__ = models.SubfieldBase
 
     def __init__(self, type_hint=None, **kwargs):
         self.type_hint = type_hint
@@ -37,7 +31,11 @@ class LDObjectField(models.TextField):
         if not isinstance(value, basestring):
             return value
 
-        if  value == None:
+        return self.from_db_value(value)
+
+    # noinspection PyUnusedLocal
+    def from_db_value(self, value, *args, **kwargs):
+        if value is None:
             return None
 
         # in some cases, we're loading an existing array or dict,
@@ -50,9 +48,9 @@ class LDObjectField(models.TextField):
         else:
             parsed_value = value
 
-        if parsed_value != None:
-            "we give the wrapped object back because we're not dealing with serialization types"            
-            return_val = LDObject.fromDict(parsed_value, type_hint = self.type_hint).wrapped_obj
+        if parsed_value is not None:
+            # we give the wrapped object back because we're not dealing with serialization types
+            return_val = LDObject.fromDict(parsed_value, type_hint=self.type_hint).wrapped_obj
             return return_val
         else:
             return None
@@ -62,7 +60,7 @@ class LDObjectField(models.TextField):
         if isinstance(value, basestring):
             return value
 
-        if value == None:
+        if value is None:
             return None
 
         # instantiate the proper LDObject to dump it appropriately
@@ -71,4 +69,4 @@ class LDObjectField(models.TextField):
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
-        return self.get_db_prep_value(value)
+        return self.get_db_prep_value(value, None)

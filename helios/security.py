@@ -7,12 +7,12 @@ Ben Adida (ben@adida.net)
 # nicely update the wrapper function
 from functools import update_wrapper
 
-from django.core.urlresolvers import reverse
-from django.core.exceptions import *
-from django.http import *
+from django.urls import reverse
+from django.core.exceptions import PermissionDenied
+from django.http import Http404
 from django.conf import settings
 
-from models import *
+from models import Voter, Trustee, Election
 from helios_auth.security import get_user
 
 from django.http import HttpResponseRedirect
@@ -22,11 +22,23 @@ import helios
 
 
 class HSTSMiddleware:
-    def process_response(self, request, response):
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # One-time configuration and initialization.
+
+    def __call__(self, request):
+        # Code to be executed for each request before
+        # the view (and later middleware) are called.
+
+        response = self.get_response(request)
+
+        # Code to be executed for each request/response after
+        # the view is called.
+
         if settings.STS:
           response['Strict-Transport-Security'] = "max-age=31536000; includeSubDomains; preload"
         return response
-        
+
 # current voter
 def get_voter(request, user, election):
   """

@@ -8,7 +8,7 @@
     You are currently logged in as<br /><b>{{user.user_id}}</b> via <b>{{user.user_type}}</b>.
 </p>
 <p>
-    <a href="{% url "helios_auth.views.logout" %}">logout</a>
+    <a href="{% url "auth@logout" %}">logout</a>
 </p>
 
 {% else %}

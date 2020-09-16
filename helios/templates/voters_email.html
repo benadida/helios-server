@@ -9,7 +9,7 @@ voter_id = '{{voter.voter_id}}';
 {% endif %}
 </script>
 
-  <h2 class="title">{{election.name}} &mdash; Contact Voters <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">back to election</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; Contact Voters <span style="font-size:0.7em;">[<a href="{% url "election@view" election.uuid %}">back to election</a>]</span></h2>
 
 {% if voter %}  
   <p>
@@ -55,7 +55,7 @@ You may tweak the subject and add a custom message using the form below.
   </div>
   
   <div id="done" style="display:none;">
-    Done, go <a href="{% url "helios.views.one_election_view" election.uuid %}">back to election</a>.
+    Done, go <a href="{% url "election@view" election.uuid %}">back to election</a>.
   </div>
 
   <div id="error" style="display:none;">

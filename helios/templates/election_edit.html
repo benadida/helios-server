@@ -2,7 +2,7 @@
 
 {% block content %}
 
-  <h2 class="title">{{election.name}} &mdash; Update <span style="font-size:0.7em;">[<a href="{% url "helios.views.one_election_view" election.uuid %}">cancel</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; Update <span style="font-size:0.7em;">[<a href="{% url "election@view" election.uuid %}">cancel</a>]</span></h2>
   
 {% if error %}
 <p style="color: red;">

@@ -5,11 +5,11 @@
 <h1>Admin</h1>
 
 <ul>
-<li> <a href="{% url "helios.stats_views.elections" %}">elections</a></li>
-<li> <a href="{% url "helios.stats_views.recent_votes" %}">recent votes</a></li>
-<li> <a href="{% url "helios.stats_views.recent_problem_elections" %}">recent problem elections</a></li>
+<li> <a href="{% url "stats@elections" %}">elections</a></li>
+<li> <a href="{% url "stats@recent-votes" %}">recent votes</a></li>
+<li> <a href="{% url "stats@elections-problems" %}">recent problem elections</a></li>
 </ul>
 
-<p><b>{{num_votes_in_queue}}</b> votes in queue. {% if num_votes_in_queue %}[<a href="{% url "helios.stats_views.force_queue" %}">force it</a>]{% endif %}</p>
+<p><b>{{num_votes_in_queue}}</b> votes in queue. {% if num_votes_in_queue %}[<a href="{% url "stats@force-queue" %}">force it</a>]{% endif %}</p>
 
 {% endblock %}
