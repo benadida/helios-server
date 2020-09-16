@@ -16,13 +16,13 @@ from django_auth_ldap.backend import LDAPBackend
 
 class CustomLDAPBackend(LDAPBackend):
 
-    def authenticate(self, username, password, **kwargs):
+    def authenticate_ldap_user(self, username, password):
         """
         Some ldap servers allow anonymous search but naturally return just a set
         of user attributes. So, here we re-perform search and populate user methods.
         For now, just in cases where AUTH_LDAP_BIND_PASSWORD is empty
         """
-        user =  super(CustomLDAPBackend, self).authenticate(username, password, **kwargs)
+        user =  super(CustomLDAPBackend, self).authenticate_ldap_user(username, password)
 
         if user and self.settings.BIND_PASSWORD == '' :
             search = self.settings.USER_SEARCH

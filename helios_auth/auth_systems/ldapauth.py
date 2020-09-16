@@ -65,7 +65,7 @@ def ldap_login_view(request):
                 password = form.cleaned_data['password'].strip()
 
                 auth = backend.CustomLDAPBackend()
-                user = auth.authenticate(username, password)
+                user = auth.authenticate(None, username=username, password=password)
                 
                 if user:
                     request.session['ldap_user']  = {

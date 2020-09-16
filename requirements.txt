@@ -21,7 +21,7 @@ boto==2.27.0
 django-ses==0.6.0
 validate_email==1.2
 oauth2client==1.2
-django-auth-ldap==1.2.7
+django-auth-ldap==1.6.1
 rollbar==0.12.1
 django_celery_results==1.0.4
 django_celery_beat==1.6.0
