@@ -94,16 +94,22 @@ function download_sk_to_file(filename) {
 function show_pk() {
     $('#sk_download').hide();
     $('#pk_content').hide();
+    $('#pk_link').hide();
     $('#pk_hash').show();
     $('#pk_form').show();
 }
 
 </script>
+<div class="row">
+<div class="col-xs-12 col-md-12">
 <div id="header">
 <h2 class="title">{% trans "Trustee" %} {{trustee.name}} &mdash; {% trans "Key Setup" %}</h2>
 <h3 class="title">{{election.name}}</h3>
 </div>
-
+</div>
+</div>
+<div class="row">
+<div class="col-sm-24 col-md-12">
 <p>
  {% trans "As a trustee, it's time to set up your key for this election." %}
 </p>
@@ -115,9 +121,9 @@ function show_pk() {
 <p id="generator">
 
 <span id="buttons"><button class="btn btn-primary" onclick="generate_keypair(); return false;" id="generate_button" class="btn btn-primary">{% trans "Generate Election Keys" %}</button></span>
-
-<br /><br />
-{% trans "If you've already generated a keypair, you can" %} <a href="javascript:show_key_reuse()">{% trans "reuse it" %}</a>.
+</p>
+<p>
+<span>{% trans "If you've already generated a keypair, you can" %} <a href="javascript:show_key_reuse()">{% trans "reuse it" %}</a>.</span>
 </p>
 
 <div id="reuse">
@@ -137,7 +143,7 @@ function show_pk() {
 <div id="sk_download">
 <h3>{% trans "Your Secret Key" %}</h3>
 <span id="clear_button">
-{% trans "Your key has been generated, but you may choose to" %}<br /><a href="javascript:clear_keys();">{% trans "clear it from memory and start from scratch</a> if you prefer." %}<br />
+{% trans "Your key has been generated, but you may choose to " %}<a href="javascript:clear_keys();">{% trans "clear it from memory and start from scratch</a> if you prefer." %}<br />
 
 </span>
 <br />
@@ -146,23 +152,35 @@ function show_pk() {
 </p>
 </div>
 
+</div><!-- col-->
+</div><!-- row-->
+
+<div class="row">
+    <div class="col-sm-24 col-md-12">
 <div style="display:none;" id="pk_content">
-    <p>Bellow is your trustee secret key content. Please copy its content and save it securely. <br>
+    <p> {% blocktrans %}
+        Bellow is your trustee secret key content. Please copy its content and save it securely. <br>
        You can also click to dowload it to a file.
        And please don't lose it! Otherwise it will not be possible to decrypt the election tally.<br>
+       {% endblocktrans %}
     </p>
     <textarea id="sk_content" rows="5" wrap="soft" cols="50" style="height: 25em;"></textarea>
 </div>
 
 <div style="display:none;" id="pk_link">
+<div class="btn-group" role="group">
 <p>
-<a id="download_to_file" href="javascript:download_sk_to_file('trustee_key_for_{{election.name}}.txt');">download private key to a file</a>
+<a class="btn btn-primary" id="download_to_file" href="javascript:download_sk_to_file('trustee_key_for_{{election.name}}.txt');">{% trans "download private key to a file" %}</a>
 </p>
 <p>
-  <a href="javascript:show_pk();">ok, I've saved the key, let's move on</a>
+  <a class="btn btn-primary" href="javascript:show_pk();">{% trans "ok, I've saved the key, let's move on" %}</a>
 </p>
 </div>
-
+</div>
+</div>
+</div> <!--row-->
+<div class="row">
+<div class="col-sm-24 col-md-12">
 <form method="post" id="pk_form" action="{% url "election@trustee@upload-pk" election.uuid trustee.uuid %}">
 
 <h3>{% trans "Your Public Key" %}</h3>
@@ -170,7 +188,7 @@ function show_pk() {
     {% trans "It's time to upload the public key to the server." %}
 </p>
 <p>
-    {% trans "The fingerprint of your public key is:" %} <tt id="pk_hash" style="font-size: 1.5em; font-weight: bold;"></tt>.<br />
+    {% trans "The fingerprint of your public key is:" %} <strong><span id="pk_hash" style="font-size: 12pt;width: 10em; word-wrap: break-word;"></span></strong>.<br />
     {% blocktrans %}
     You may want to save this to confirm that your public key was properly stored by the server.<br />
     (Your public key is not currently being displayed because you do not need to save it, the fingerprint is sufficient.)
@@ -178,9 +196,18 @@ function show_pk() {
 </p>
 <textarea id="pk_textarea" name="public_key_json" cols="80" rows="10" style="display:none;">
 </textarea>
+<p>
+    {% blocktrans %}
+    <strong>Attention:</strong>
+    After you upload your public key, the private key that you've saved is only of your knowledge/possession so if you lose it
+    will be impossible to recover or tally the election. So, keep it safe and secure!
+    {% endblocktrans %}
+</p>
 <input class="btn btn-primary" type="submit" value="{% trans "Upload your public key" %}">
 </form>
 
 <div id="applet_div"></div>
+</div><!-- col-->
+</div><!-- row-->
 <br /><br />
 {% endblock %}

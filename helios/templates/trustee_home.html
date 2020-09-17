@@ -1,23 +1,38 @@
 {% extends "helios/templates/cryptobase.html" %}
 {% load i18n %}
 {% block content %}
+<div class="row">
+    <div class="col-xs-12 col-md-12">
   <h2 class="title">{% trans "Trustee" %} {{trustee.name}}</span></h2>
 	<h2 class="title">{{election.name}}</h2>
 <br /><br />
 <p>
 {% if trustee.public_key_hash %}
-
-{% blocktrans %}
-You have successfully uploaded your public key.<br />
-Your public key fingerprint is: <b>
+{% blocktrans %}You have successfully uploaded your public key.<br />Your public key fingerprint is:
 {% endblocktrans %}
-{{trustee.public_key_hash}}</b>. <br /><br />
-{% blocktrans %}You can{% endblocktrans %} <a class="btn btn-primary" href="{% url "election@trustee@check-sk" election.uuid trustee.uuid %}">{% blocktrans %}verify that you have the right secret key {% endblocktrans %}</a>
+<strong><span id="pk_hash" style="font-size: 12pt;width: 10em; word-wrap: break-word;"></span> {{trustee.public_key_hash}}</span></strong>. <br /><br />
+</p>
+</div>
+</div>
+<div class="row">
+<div class="col-sm-6 col-md-6 bg-success">
+<p>
+<strong>
+{% blocktrans %}You can{% endblocktrans %}
+    <a class="alert-link" href="{% url "election@trustee@check-sk" election.uuid trustee.uuid %}">
+        {% blocktrans %}verify that you have the right secret key.{% endblocktrans %}
+    </a>
+</strong>
+</p>
+<p><em>{% blocktrans %}We recommend that you do verify, to validate the private key you've saved.{% endblocktrans %}</em></p>
 {% else %}
 <a class="btn btn-primary" href="{% url "election@trustee@key-generator" election.uuid trustee.uuid %}">{% blocktrans %}setup your key {% endblocktrans %}</a>
 {% endif %}
-</p>
+</div>
+</div>
 <br /><br />
+<div class="row">
+    <div class="col-sm-12 col-md-12">
 <p>
 {% if election.encrypted_tally %}
 {% if trustee.decryption_factors %}
@@ -29,10 +44,13 @@ You have successfully uploaded your decryption.
     <a class="btn btn-primary" href="{% url "election@trustee@decrypt-and-prove" election.uuid trustee.uuid %}">{% blocktrans %}decrypt with your key{% endblocktrans %}</a>
 {% endif %}
 {% else %}
+
 {% blocktrans %}
 ATTENTION: Once the tally is computed, come back here to provide your secret key for decryption purposes.<br />
 You should keep the email with your trustee homepage link, which contains the credentials needed to get back here.
 {% endblocktrans %}
 {% endif %}
 </p>
+</div>
+</div>
 {% endblock %}

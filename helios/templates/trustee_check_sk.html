@@ -37,7 +37,7 @@ function check_sk(sk_value) {
 
     var reset_link = "<br /><a class='btn btn-primary' href='javascript:reset();'>try again</a><br />";
     if (key_ok_p) {
-      $('#result').html("<h3><span class='label label-info'>{% trans "your secret key matches!" %}</span></h3>");
+      $('#result').html("<h3><span class='label label-success'>{% trans "your secret key matches!" %}</span></h3>");
     } else {
       $('#result').html("<h3><span class='label label-danger'>{% trans "OH OH, your key is bad." %}</span></h3>" + reset_link);
     }
