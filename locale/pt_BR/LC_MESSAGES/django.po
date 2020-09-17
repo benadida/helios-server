@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: helios-ifsc\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-14 18:06+0000\n"
-"PO-Revision-Date: 2020-09-16 09:44-0300\n"
+"POT-Creation-Date: 2020-09-17 18:46+0000\n"
+"PO-Revision-Date: 2020-09-17 15:47-0300\n"
 "Last-Translator: Shirlei Chaves <shirlei@gmail.com>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -360,7 +360,7 @@ msgstr ""
 # "rastreador da sua célula aparece na listagem de cédulas depositadas na urna. "
 # "Essa é a sua garantiria que seu voto será contabilizado corretamente.\n"
 #: helios/templates/cast_done.html:17
-#: helios/templates/election_cast_confirm.html:125
+#: helios/templates/election_cast_confirm.html:127
 msgid "Your smart ballot tracker is:"
 msgstr "O número do rastreador da sua cédula é:"
 
@@ -736,81 +736,105 @@ msgstr "voltar para a eleição"
 msgid "Freeze the ballot"
 msgstr "Congelar a cédula"
 
-#: helios/templates/election_keygenerator.html:103
+#: helios/templates/election_keygenerator.html:106
 #: helios/templates/list_trustees.html:54
 #: helios/templates/trustee_check_sk.html:46
 #: helios/templates/trustee_decrypt_and_prove.html:134
-#: helios/templates/trustee_home.html:4
+#: helios/templates/trustee_home.html:6
 msgid "Trustee"
 msgstr "Apurador"
 
-#: helios/templates/election_keygenerator.html:103
+#: helios/templates/election_keygenerator.html:106
 msgid "Key Setup"
 msgstr "Configuração de chave"
 
-#: helios/templates/election_keygenerator.html:108
+#: helios/templates/election_keygenerator.html:114
 msgid "As a trustee, it's time to set up your key for this election."
 msgstr "Como apurador, é hora de configurar sua chave para essa eleição."
 
-#: helios/templates/election_keygenerator.html:112
+#: helios/templates/election_keygenerator.html:118
 msgid "Please wait for the generator to load..."
 msgstr "Por favor, aguarde o carregamento do gerador..."
 
-#: helios/templates/election_keygenerator.html:117
+#: helios/templates/election_keygenerator.html:123
 msgid "Generate Election Keys"
 msgstr "Gerar Chaves da Eleição"
 
-#: helios/templates/election_keygenerator.html:120
+#: helios/templates/election_keygenerator.html:126
 msgid "If you've already generated a keypair, you can"
 msgstr "Se você já tem um par de chaves, você pode"
 
-#: helios/templates/election_keygenerator.html:120
+#: helios/templates/election_keygenerator.html:126
 msgid "reuse it"
-msgstr "reusá-la"
+msgstr "reutilizá-la"
 
-#: helios/templates/election_keygenerator.html:124
+#: helios/templates/election_keygenerator.html:130
 msgid "Reusing a Key"
 msgstr "Reutilizando uma Chave"
 
-#: helios/templates/election_keygenerator.html:127
+#: helios/templates/election_keygenerator.html:133
 msgid "Enter your complete secret key below:"
 msgstr "Informe sua chave privada completa abaixo:"
 
-#: helios/templates/election_keygenerator.html:133
+#: helios/templates/election_keygenerator.html:139
 msgid "reuse"
 msgstr "reusar"
 
-#: helios/templates/election_keygenerator.html:138
+#: helios/templates/election_keygenerator.html:144
 msgid "Your Secret Key"
 msgstr "Sua Chave Secreta"
 
-#: helios/templates/election_keygenerator.html:140
-msgid "Your key has been generated, but you may choose to"
-msgstr "Sua chave foi gerada, mas você pode optar por"
+#: helios/templates/election_keygenerator.html:146
+msgid "Your key has been generated, but you may choose to "
+msgstr "Sua chave foi gerada, mas você pode optar por "
 
-#: helios/templates/election_keygenerator.html:140
+#: helios/templates/election_keygenerator.html:146
 msgid "clear it from memory and start from scratch</a> if you prefer."
 msgstr "limpar da memória e começar do zero</a> se preferir."
 
-#: helios/templates/election_keygenerator.html:145
-#, fuzzy
-#| msgid "Save your secret key"
+#: helios/templates/election_keygenerator.html:151
 msgid "Show my secret key"
-msgstr "Salve sua chave privada"
+msgstr "Exibir minha chave secreta"
 
-#: helios/templates/election_keygenerator.html:168
+#: helios/templates/election_keygenerator.html:161
+msgid ""
+"\n"
+"        Bellow is your trustee secret key content. Please copy its content "
+"and save it securely. <br>\n"
+"       You can also click to dowload it to a file.\n"
+"       And please don't lose it! Otherwise it will not be possible to "
+"decrypt the election tally.<br>\n"
+"       "
+msgstr ""
+"\n"
+"        Abaixo se encontra o conteúdo da sua chave secreta de apurador. Por "
+"favor, copie o conteúdo e salve de modo seguro. <br>\n"
+"       Você também pode fazer download dela para salvar em arquivo.<br><br>\n"
+"       <strong>E, por favor, NÃO A PERCA! Se sua chave secreta for perdida, "
+"não será possível apurar o resultado da eleição.</strong><br>\n"
+"       "
+
+#: helios/templates/election_keygenerator.html:173
+msgid "download private key to a file"
+msgstr "salvar chave secreta em arquivo"
+
+#: helios/templates/election_keygenerator.html:176
+msgid "ok, I've saved the key, let's move on"
+msgstr "já salvei a chave, prosseguir"
+
+#: helios/templates/election_keygenerator.html:186
 msgid "Your Public Key"
 msgstr "Sua Chave Pública"
 
-#: helios/templates/election_keygenerator.html:170
+#: helios/templates/election_keygenerator.html:188
 msgid "It's time to upload the public key to the server."
 msgstr "É hora de carregar a chave pública para o servidor."
 
-#: helios/templates/election_keygenerator.html:173
+#: helios/templates/election_keygenerator.html:191
 msgid "The fingerprint of your public key is:"
 msgstr "O código de identificação da  sua chave pública é:"
 
-#: helios/templates/election_keygenerator.html:174
+#: helios/templates/election_keygenerator.html:192
 msgid ""
 "\n"
 "    You may want to save this to confirm that your public key was properly "
@@ -820,13 +844,30 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"    Você pode querer salvar isso para confirmar que a sua chave pública foi "
-"adequadamente armazenada pelo servidor.<br />\n"
-"    (Sua chave pública não está sendo mostrada no momento porque você não "
-"precisa salvá-la, a impressão digital (fingerprint) é suficiente.)\n"
+"    Você pode salvar este código para conferir se a sua chave pública foi "
+"corretamente salva no servidor.<br />\n"
+"\n"
 "    "
 
-#: helios/templates/election_keygenerator.html:181
+#: helios/templates/election_keygenerator.html:200
+msgid ""
+"\n"
+"    <strong>Attention:</strong>\n"
+"    After you upload your public key, the private key that you've saved is "
+"only of your knowledge/possession so if you lose it\n"
+"    will be impossible to recover or tally the election. So, keep it safe "
+"and secure!\n"
+"    "
+msgstr ""
+"\n"
+"    <strong>Atenção:</strong> \n"
+"    Depois que você carregar a sua chave pública, a chave privada que você "
+"salvou é apenas de seu conhecimento e posse, \n"
+"    entao se perdê-la não será possível recuperar ou apurar a eleição. "
+"Portanto, não a perca e guarde-a de modo seguro!\n"
+"    "
+
+#: helios/templates/election_keygenerator.html:206
 msgid "Upload your public key"
 msgstr "Carregar sua chave pública"
 
@@ -1818,29 +1859,34 @@ msgstr "Voltar para eleição"
 msgid "Error: your secret key was likely incorrect."
 msgstr "Erro: sua chave privada provavelmente está incorreta."
 
-#: helios/templates/trustee_home.html:10
+#: helios/templates/trustee_home.html:11
 msgid ""
-"\n"
-"You have successfully uploaded your public key.<br />\n"
-"Your public key fingerprint is: <b>\n"
+"You have successfully uploaded your public key.<br />Your public key "
+"fingerprint is:\n"
 msgstr ""
-"\n"
-"Você carregou com sucesso sua chave pública.<br />\n"
-"O código de identificação de sua chave pública é: <b>\n"
+"Você carregou com sucesso sua chave pública.<br />O código de identificação "
+"de sua chave pública é:\n"
 
-#: helios/templates/trustee_home.html:15
+#: helios/templates/trustee_home.html:21
 msgid "You can"
 msgstr "Você pode"
 
-#: helios/templates/trustee_home.html:15
-msgid "verify that you have the right secret key "
-msgstr "verificar se você tem a chave privada correta "
+#: helios/templates/trustee_home.html:23
+msgid "verify that you have the right secret key."
+msgstr "verificar se você tem a chave privada correta."
 
-#: helios/templates/trustee_home.html:17
+#: helios/templates/trustee_home.html:27
+msgid ""
+"We recommend that you do verify, to validate the private key you've saved."
+msgstr ""
+"Recomendamos fortemente que você faça essa verificação, para validar que "
+"você salvou corretamente a chave secreta."
+
+#: helios/templates/trustee_home.html:29
 msgid "setup your key "
 msgstr "configurar chave de apurador "
 
-#: helios/templates/trustee_home.html:24
+#: helios/templates/trustee_home.html:39
 msgid ""
 "\n"
 "You have successfully uploaded your decryption.\n"
@@ -1848,15 +1894,15 @@ msgstr ""
 "\n"
 "Você carregou com sucesso sua desencriptação.\n"
 
-#: helios/templates/trustee_home.html:28
+#: helios/templates/trustee_home.html:43
 msgid "The encrypted tally for this election is ready."
 msgstr "A apuração criptografada dessa eleição está pronta."
 
-#: helios/templates/trustee_home.html:29
+#: helios/templates/trustee_home.html:44
 msgid "decrypt with your key"
 msgstr "decifrar com sua chave"
 
-#: helios/templates/trustee_home.html:32
+#: helios/templates/trustee_home.html:48
 msgid ""
 "\n"
 "ATTENTION: Once the tally is computed, come back here to provide your secret "
@@ -1865,12 +1911,12 @@ msgid ""
 "the credentials needed to get back here.\n"
 msgstr ""
 "\n"
-"ATENÇÃO: Quando a apuração for computada, você vai ser solicitado(a) a "
-"retornar para essa página e informar sua chave secreta para poder "
-"desencriptar a apuração. <br />\n"
-"Você deve manter o email que você recebeu com o link para a sua página de "
-"apurador, o qual contém as credenciais necessárias para retornar a essa "
-"página.\n"
+"<strong>ATENÇÃO: </strong>Quando a apuração for computada e for o momento "
+"dos apuradores informarem suas chaves secretas,<br> você deve retornar a "
+"esta página e informar sua chave secreta na opção que vai estar disponível, "
+"para poder desencriptar a apuração. <br />\n"
+"Guarde o email que você recebeu quando foi designado como apurador, o qual "
+"contém o link com as credenciais necessárias para retornar a esta página.\n"
 
 #: helios/templates/voters_eligibility.html:3
 msgid "Voter Eligibility for"
@@ -2259,18 +2305,18 @@ msgstr ""
 #: helios/views.py:460
 #, python-format
 msgid "your trustee homepage for %(election_name)s"
-msgstr ""
-"ATENÇÃO: Você foi designado como apurador para a eleição  %(election_name)s"
+msgstr "Sua página de apurador para a eleição %(election_name)s"
 
 #: helios/views.py:491
 #, python-format
 msgid " %(election_name)s trustee pk upload"
-msgstr ""
+msgstr " Upload de chave pública de apurador da eleição %(election_name)s"
 
 #: helios/views.py:492
 #, python-format
 msgid "Trustee %(trustee_name)s (%(trustee_email)s) uploaded a pk."
 msgstr ""
+"O Apurador %(trustee_name)s (%(trustee_email)s) carregou uma chave pública."
 
 #: helios/views.py:705
 #, python-format
@@ -2484,7 +2530,7 @@ msgstr ""
 "urna....\n"
 "</p>\n"
 
-#: heliosbooth/templates/seal.html:43
+#: heliosbooth/templates/seal.html:44
 msgid "Once you click "
 msgstr ""
 
@@ -3337,9 +3383,6 @@ msgstr "Houve um erro durante o processamento de sua requisição."
 #~ "conectar com seu usuário e senha, para que possamos verificar se você é "
 #~ "um eleitor válido nessa eleição.<br /><br />\n"
 #~ "  "
-
-#~ msgid "ok, I've saved the key, let's move on"
-#~ msgstr "ok, a chave foi salva, vamos prosseguir"
 
 #~ msgid ""
 #~ "\n"
