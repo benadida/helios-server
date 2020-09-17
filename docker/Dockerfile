@@ -16,7 +16,8 @@ RUN \
     build-essential \
     gettext \
     supervisor \
-    redis-server &&\
+    redis-server \
+    vim less &&\
     rm -rf /var/lib/apt/lists/* && \
  	apt-get clean
 
