@@ -596,7 +596,7 @@ msgstr "retornar para a página da eleição"
 
 #: helios/templates/election_cast_confirm.html:96
 msgid "Wait! You need to log in."
-msgstr ""
+msgstr "Você precisa se conectar para depositar o voto."
 
 #: helios/templates/election_cast_confirm.html:101
 msgid ""
@@ -2386,7 +2386,7 @@ msgstr "Conecte-se com sua conta {{voter.voter_type}}."
 
 #: helios_auth/auth_systems/ldapauth.py:39
 msgid "Log in with my LDAP Account"
-msgstr ""
+msgstr "Conectar com meu usuário e senha do IFSC"
 
 #: helios_auth/auth_systems/shibboleth.py:24
 msgid "Click here to login"
