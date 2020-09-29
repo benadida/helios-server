@@ -265,6 +265,7 @@ msgstr ""
 "\n"
 
 #: helios/templates/_castconfirm_docast.html:19
+#: helios/templates/election_cast_confirm.html:63
 msgid "You are logged in as "
 msgstr "Você está conectado como "
 
@@ -550,7 +551,7 @@ msgstr "Verificando e depositando sua cédula"
 
 #: helios/templates/election_cast_confirm.html:61
 msgid "Wait!"
-msgstr "Um momento!"
+msgstr "Atenção!"
 
 #: helios/templates/election_cast_confirm.html:75
 #, fuzzy
@@ -3372,6 +3373,10 @@ msgstr "Erro no servidor"
 msgid "There was an error while handling your request."
 msgstr "Houve um erro durante o processamento de sua requisição."
 
+#: helios/templates/election_cast_confirm.html:63
+msgid "but this election requires election-specific credentials."
+msgstr "mas essa eleição requer credenciais específicas à eleição."
+
 #~ msgid ""
 #~ "\n"
 #~ "  Now, we need you to log in, so we can verify your eligibility.<br /"
@@ -3645,17 +3650,6 @@ msgstr "Houve um erro durante o processamento de sua requisição."
 #~ "    O jeito mais fácil de preparar tal arquivo é usando um programa de "
 #~ "planilha e exportar como \"CSV\".\n"
 #~ "  "
-
-#~ msgid ""
-#~ "\n"
-#~ "You are logged in as <u>%(user.pretty_name)s</u>, but this election<br /"
-#~ ">\n"
-#~ "requires election-specific credentials.\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Você está conectado como <u>%(user.pretty_name)s</u>, mas essa "
-#~ "eleição<br />\n"
-#~ "requer credenciais específicas à eleição.\n"
 
 #~ msgid "email"
 #~ msgstr "email"

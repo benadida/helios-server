@@ -58,10 +58,9 @@ window.onbeforeunload = function(evt) {
 
 {% if show_password %}
 {% if user %}
-<h1>{% trans "Wait!" %}</h1>
+<h3>{% trans "Wait!" %}</h3>
 <p>
-    % trans "You are logged in as" %}  <u>{{user.display_html_small|safe}}</u>, {% trans "but this election
-requires election-specific credentials." %}
+    {% trans "You are logged in as " %}  <u> {{user.pretty_name|safe}} </u>, {% trans "but this election requires election-specific credentials." %}
 </p>
 {% endif %}
 {% with cast_ballot="1" %}
