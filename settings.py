@@ -248,7 +248,7 @@ AUTH_TEMPLATE_BASE = "server_ui/templates/base.html"
 HELIOS_TEMPLATE_BASE = "server_ui/templates/base.html"
 AUTH_TEMPLATE_BASENONAV = "server_ui/templates/basenonav.html"
 HELIOS_TEMPLATE_BASENONAV = "server_ui/templates/basenonav.html"
-HELIOS_ADMIN_ONLY = False
+HELIOS_ADMIN_ONLY = True
 HELIOS_VOTERS_UPLOAD = True
 HELIOS_VOTERS_EMAIL = True
 
