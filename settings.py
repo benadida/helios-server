@@ -326,6 +326,7 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'django-cache'
+CELERY_RESULT_EXPIRES = 5184000  # 60 dias
 
 # see configuration example at https://pythonhosted.org/django-auth-ldap/example.html
 AUTH_LDAP_SERVER_URI = "ldap://ldap.forumsys.com" # replace by your Ldap URI
