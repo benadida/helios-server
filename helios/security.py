@@ -18,6 +18,7 @@ from django.utils.translation import ugettext as _
 from helios_auth.security import get_user
 from models import Voter, Trustee, Election
 
+import helios
 
 class HSTSMiddleware:
     def __init__(self, get_response):
@@ -197,11 +198,13 @@ def trustee_check(func):
 
 def can_create_election(request):
   user = get_user(request)
+  if not user:
+	  return False
 
-  if user and user.admin_p:
-    return True
-
-  return False
+  if helios.ADMIN_ONLY:
+    return user.admin_p
+  else:
+    return user.can_create_election()
   
 def user_can_feature_election(user, election):
   if not user:
