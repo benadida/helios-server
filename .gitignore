@@ -8,5 +8,6 @@ env.sh
 .cache
 .idea/
 .wm
+.env
 venv/*
 secrets.py

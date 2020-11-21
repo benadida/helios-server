@@ -1,6 +1,17 @@
 
 import os, json
-# from secrets import DBPWD, GOOGLESECRET, GOOGLEID
+import environ
+
+###############################
+# SECRETS                     #
+###############################
+
+# Read in secrets from .env file
+env = environ.Env()
+environ.Env.read_env()  
+DBPWD = env('DBPWD')
+GOOGLESECRET = env('GOOGLESECRET')
+GOOGLEID = env('GOOGLEID')
 
 ##############################
 # SETUP                      #

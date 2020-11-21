@@ -1,4 +1,19 @@
 # CHANGELOG
+
+## 22 November 2020
+* runs on Python 3.8
+* requirements.txt: 
+    - upgraded celery to 5.0.0
+    - replaced pycryto with pycryptodome for compatability with python 3.8
+    - added django-environ so can read secret values in a .env file for use in settings.py 
+* settings.py:
+    - added facility to import secret values from a .env file
+* documentation:
+    - added a walk-through of installing Helios on Ubuntu
+
+
+## October 2019
+
 Updated to Python 3.7 and Django 2.2
 
 ## Python
