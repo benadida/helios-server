@@ -8,6 +8,8 @@
     - added django-environ so can read secret values in a .env file for use in settings.py 
 * settings.py:
     - added facility to import secret values from a .env file
+* tasks.py:
+    - removed `tasks` from `from celery import shared_task, tasks`
 * documentation:
     - added a walk-through of installing Helios on Ubuntu
 

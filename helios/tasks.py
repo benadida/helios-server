@@ -5,7 +5,7 @@ Celery queued tasks for Helios
 ben@adida.net
 """
 
-from celery import shared_task, task
+from celery import shared_task
 
 from helios.models import *
 from helios.view_utils import render_template_raw
