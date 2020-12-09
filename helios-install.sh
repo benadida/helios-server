@@ -8,10 +8,11 @@ sudo apt-get update
 sudo apt-get install -y python-setuptools
 sudo apt-get install -y python-pip
 sudo pip install virtualenv
-virtualenv venv; virtualenv -p /usr/bin/python2.7 venv; source venv/bin/activate
+sudo virtualenv venv;sudo virtualenv -p /usr/bin/python2.7 venv; source venv/bin/activate
 
-sudo /bin/sh -c 'apt-get install -y aptitude'
-sudo apt-get install -y apache2 postgresql-9.3
+#sudo /bin/sh -c 'apt-get install -y aptitude'
+sudo apt-get install -y apache2
+sudo apt-get install -y postgresql postgresql-contrib
 sudo apt-get install -y libsasl2-dev python-dev libldap2-dev libssl-dev
 sudo apt-get install -y python-ldap gettext libapache2-mod-wsgi
 sudo apt-get install -y apache2-utils ssl-cert libapache2-mod-shib2
@@ -29,8 +30,8 @@ sudo apt update
 sudo pip install -r requirements.txt
 sudo apt-get install -y postfix
 
-su - postgres createuser --superuser debian
-su - postgres createuser --superuser root
+sudo -u debian createuser
+sudo -u createuser --superuser root
 sudo -u postgres createdb helios
 sudo ./reset.sh
 
