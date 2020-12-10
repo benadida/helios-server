@@ -9,7 +9,7 @@ Helios is an end-to-end verifiable voting system. Project forked from [benadida/
 
 You can install the Helios server easily by following 3 steps:
 
-1.  ```git clone https://github.com/bmalbusca/helios-server.git && git fetch && git checkout develop```
+1.  ```git clone https://github.com/bmalbusca/helios-server.git```
   
 2.  ```cd helios-server/```
    
