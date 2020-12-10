@@ -1,7 +1,9 @@
 #!/bin/bash
 if [[ `uname` == 'Linux' ]]; then
 
-echo Helios Debian-Ubuntu installation 
+echo #####################
+echo Helios Debian-Ubuntu installation
+echo #####################
 
 sudo apt-get install -y build-essential
 sudo apt-get update
@@ -31,9 +33,7 @@ activate(){
 	sudo pip install python_openid
 	
 	sudo apt update
-	sudo pip install -r requirements.txt
-	#sudo apt-get install -y postfix >> should be done before
-	
+	sudo pip install -r requirements.txt	
 	
 	sudo -u postgres createuser $(whoami)
 	sudo -u postgres createuser root
