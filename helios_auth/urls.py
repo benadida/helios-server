@@ -31,3 +31,7 @@ if 'password' in AUTH_ENABLED_AUTH_SYSTEMS:
 if 'twitter' in AUTH_ENABLED_AUTH_SYSTEMS:
     from auth_systems.twitter import urlpatterns as twitter_patterns
     urlpatterns.extend(twitter_patterns)
+
+if 'fenix_oauth' in AUTH_ENABLED_AUTH_SYSTEMS:
+    from auth_systems.fenix_oauth import urlpatterns as fenix_patterns
+    urlpatterns.extend(fenix_patterns)
