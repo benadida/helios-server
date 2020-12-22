@@ -1,7 +1,7 @@
 
 AUTH_SYSTEMS = {}
 
-import twitter, password, cas, facebook, google, yahoo, linkedin, clever, fenix-oauth
+import twitter, password, cas, facebook, google, yahoo, linkedin, clever, fenixoauth
 AUTH_SYSTEMS['twitter'] = twitter
 AUTH_SYSTEMS['linkedin'] = linkedin
 AUTH_SYSTEMS['password'] = password
@@ -10,7 +10,7 @@ AUTH_SYSTEMS['facebook'] = facebook
 AUTH_SYSTEMS['google'] = google
 AUTH_SYSTEMS['yahoo'] = yahoo
 AUTH_SYSTEMS['clever'] = clever
-AUTH_SYSTEMS['fenix-oauth'] = fenix-oauth
+AUTH_SYSTEMS['fenixoauth'] = fenixoauth
 
 
 
