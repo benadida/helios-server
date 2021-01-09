@@ -255,6 +255,13 @@ EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
 
+# Fenix
+FENIX_CLIENT_ID = get_from_env('FENIX_CLIENT_ID',"1695915081466108")
+FENIX_CLIENT_SECRET = get_from_env('FENIX_CLIENT_SECRET',"z7UfPrUGHgckUSJYPTMZDItXsBYsla+NaWEI2d7+rIo6c/nv0ExAUvE/vkYf77uF64Xk1teGJvMkAu+syIz3Dg==")
+FENIX_URL_TOKEN = "https://fenix.tecnico.ulisboa.pt/oauth/access_token"
+FENIX_LOGIN= "https://fenix.tecnico.ulisboa.pt/oauth/userdialog?client_id=%s&redirect_uri=%s"
+FENIX_REDIRECT_URL_PATH="/auth/fenix/login"
+
 # to use AWS Simple Email Service
 # in which case environment should contain
 # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
@@ -267,7 +274,6 @@ logging.basicConfig(
     level = logging.DEBUG,
     format = '%(asctime)s %(levelname)s %(message)s'
 )
-
 
 # set up celery
 CELERY_BROKER_URL = get_from_env('CELERY_BROKER_URL', 'amqp://localhost')

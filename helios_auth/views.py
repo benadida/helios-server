@@ -179,16 +179,16 @@ def after(request):
     return HttpResponseRedirect("/")
     
   system = AUTH_SYSTEMS[request.session['auth_system_name']]
-  print("\n\n")
-  print("REQUEST SESSION:",request.session)
+  #print("\n\n","after() - REQUEST SESSION:",request.session) #debug
+  
   # get the user info
   user = system.get_user_info_after_auth(request)
-  print("\n\n")
-  print("USER RECEIVED:", user)
+  
+  #print("\n\n","after() - USER RECEIVED:", user) #debug
   if user:
     # get the user and store any new data about him
     user_obj = User.update_or_create(user['type'], user['user_id'], user['name'], user['info'], user['token'])
-    print("\n\n", "USER CREATION", user_obj) 
+    #print("\n\n", "USER CREATION", user_obj) #debug
     request.session['user'] = user
   else:
     return HttpResponseRedirect("%s?%s" % (reverse(AUTH_WHY), urllib.urlencode({'system_name' : request.session['auth_system_name']})))
