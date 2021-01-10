@@ -47,7 +47,7 @@ if get_from_env('DATABASE_URL', None):
     import dj_database_url
     DATABASES['default'] =  dj_database_url.config()
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
-    DATABASES['default']['CONN_MAX_AGE'] = '600'
+    DATABASES['default']['CONN_MAX_AGE'] = 600
 
     # require SSL
     DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
