@@ -64,6 +64,10 @@ Other methods that we can implement is :
 4. ` helios-server/settings.py` - Enable your default authentication system
 
 
+### Celery integration
+
+- https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html
+- https://docs.celeryproject.org/en/stable/getting-started/brokers/rabbitmq.html
 
 
 
