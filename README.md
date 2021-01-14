@@ -91,14 +91,19 @@ At `settings.py` add:
 ```
 #### How to run
 
-command: `celery -A helios worker -S django -l info -E`
+1. `python manage.py migrate django_celery_results`
+2. `celery -A helios worker -S django -l info -E`
+3. In other shell. `celery -A helios beat -l info`
 
 
 #### References
-
+Documentation
 - https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html
 - https://docs.celeryproject.org/en/stable/getting-started/brokers/rabbitmq.html
+
+Issues
 - https://github.com/celery/django-celery-results/issues/19
+- https://github.com/celery/django-celery-results/issues/102
 
 for redis usage: https://tekshinobi.com/django-celery-rabbitmq-redis-broker-results-backend/
 
