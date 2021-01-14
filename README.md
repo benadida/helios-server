@@ -66,10 +66,41 @@ Other methods that we can implement is :
 
 ### Celery integration
 
+#### Installation
+
+The `celery` and `rabbitmq` are automatically installed if you proceed helios-server installation via requirements file.
+
+#### Dependencies
+
+- `django-celery-results` - compatible, substitute of `djcelery` package 
+
+##### Configuration
+At `settings.py` add:
+
+```python 
+  INSTALLED_APPS = (
+    ...,
+    'django_celery_results',
+)
+```
+```python 
+    # set up celery                                                                                                                               
+    CELERY_BROKER_URL = get_from_env('CELERY_BROKER_URL', 'amqp://localhost')                                                                     
+    
+    CELERY_RESULT_BACKEND = 'django-db'  
+```
+#### How to run
+
+command: `celery -A helios worker -S django -l info -E`
+
+
+#### References
+
 - https://docs.celeryproject.org/en/stable/django/first-steps-with-django.html
 - https://docs.celeryproject.org/en/stable/getting-started/brokers/rabbitmq.html
+- https://github.com/celery/django-celery-results/issues/19
 
-
+for redis usage: https://tekshinobi.com/django-celery-rabbitmq-redis-broker-results-backend/
 
 ##  Dev groups
 
