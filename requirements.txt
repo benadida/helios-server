@@ -21,3 +21,4 @@ django-ses==0.6.0
 validate_email==1.2
 oauth2client==1.2
 rollbar==0.12.1
+django-celery-results==2.0.0

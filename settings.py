@@ -56,7 +56,7 @@ if get_from_env('DATABASE_URL', None):
 # although not all choices may be available on all operating systems.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'America/Los_Angeles'
+TIME_ZONE = 'Europe/Lisbon'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -89,8 +89,8 @@ SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
 # If in production, you got a bad request (400) error
 #More info: https://docs.djangoproject.com/en/1.7/ref/settings/#allowed-hosts (same for 1.6)
 
-ALLOWED_HOSTS = get_from_env('ALLOWED_HOSTS', 'localhost').split(",")
-ALLOWED_HOSTS +=['*']
+ALLOWED_HOSTS = get_from_env('ALLOWED_HOSTS', '*').split(",")
+
 # Secure Stuff
 if get_from_env('SSL', '0') == '1':
     SECURE_SSL_REDIRECT = True
@@ -157,6 +157,9 @@ INSTALLED_APPS = (
     'helios_auth',
     'helios',
     'server_ui',
+    'django_celery_results',
+    'djcelery',
+
 )
 
 ##
@@ -171,8 +174,8 @@ VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
 
 
 # Change your email settings
-DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'ben@adida.net')
-DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Ben for Helios')
+DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'athens@tecnico.ulisboa.pt')
+DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Election Admin')
 SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 
 LOGIN_URL = '/auth/'
@@ -180,7 +183,10 @@ LOGOUT_ON_CONFIRMATION = True
 
 # The two hosts are here so the main site can be over plain HTTP
 # while the voting URLs are served over SSL.
-URL_HOST = get_from_env("URL_HOST", "http://localhost:8000").rstrip("/")
+IP_HOST = get_from_env("IP_HOST", "localhost")
+URL_DEFAULT = "http://%s:8000" % IP_HOST
+
+URL_HOST = get_from_env( "URL_HOST", URL_DEFAULT).rstrip("/")
 
 # IMPORTANT: you should not change this setting once you've created
 # elections, as your elections' cast_url will then be incorrect.
@@ -188,17 +194,17 @@ URL_HOST = get_from_env("URL_HOST", "http://localhost:8000").rstrip("/")
 SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", URL_HOST).rstrip("/")
 
 # election stuff
-SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Voting')
+SITE_TITLE = get_from_env('SITE_TITLE', 'IST E-Voting')
 MAIN_LOGO_URL = get_from_env('MAIN_LOGO_URL', '/static/logo.png')
-ALLOW_ELECTION_INFO_URL = (get_from_env('ALLOW_ELECTION_INFO_URL', '0') == '1')
+ALLOW_ELECTION_INFO_URL = (get_from_env('ALLOW_ELECTION_INFO_URL', '1') == '1')
 
 # FOOTER links
 FOOTER_LINKS = json.loads(get_from_env('FOOTER_LINKS', '[]'))
 FOOTER_LOGO_URL = get_from_env('FOOTER_LOGO_URL', None)
 
-WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', "This is the default message")
+WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', "Benvindo ao sistema E-Voting do IST")
 
-HELP_EMAIL_ADDRESS = get_from_env('HELP_EMAIL_ADDRESS', 'help@heliosvoting.org')
+HELP_EMAIL_ADDRESS = get_from_env('HELP_EMAIL_ADDRESS', 'si@tecnico.ulisboa.pt')
 
 AUTH_TEMPLATE_BASE = "server_ui/templates/base.html"
 HELIOS_TEMPLATE_BASE = "server_ui/templates/base.html"
@@ -256,8 +262,8 @@ EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
 
 # Fenix
-FENIX_CLIENT_ID = get_from_env('FENIX_CLIENT_ID',"1695915081466108")
-FENIX_CLIENT_SECRET = get_from_env('FENIX_CLIENT_SECRET',"z7UfPrUGHgckUSJYPTMZDItXsBYsla+NaWEI2d7+rIo6c/nv0ExAUvE/vkYf77uF64Xk1teGJvMkAu+syIz3Dg==")
+FENIX_CLIENT_ID = get_from_env('FENIX_CLIENT_ID',"")
+FENIX_CLIENT_SECRET = get_from_env('FENIX_CLIENT_SECRET',"")
 FENIX_URL_TOKEN = "https://fenix.tecnico.ulisboa.pt/oauth/access_token"
 FENIX_LOGIN= "https://fenix.tecnico.ulisboa.pt/oauth/userdialog?client_id=%s&redirect_uri=%s"
 FENIX_REDIRECT_URL_PATH="/auth/fenix/login"
@@ -277,6 +283,8 @@ logging.basicConfig(
 
 # set up celery
 CELERY_BROKER_URL = get_from_env('CELERY_BROKER_URL', 'amqp://localhost')
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_TRACK_STARTED = True
 if TESTING:
     CELERY_TASK_ALWAYS_EAGER = True
 #database_url = DATABASES['default']
