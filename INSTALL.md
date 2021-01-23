@@ -8,11 +8,16 @@ http://www.virtualenv.org/en/latest/
 * cd into the helios-server directory
 
 * create a virtualenv
-* make sure you use Python2.7 and **not** Python3+
-* The above can be done by typing something similar to
+* make sure you use Python3 
 
 ```
-virtualenv --python=/usr/bin/python2.7 $(pwd)/venv
+virtualenv --python=/usr/bin/python3 $(pwd)/venv
+```
+
+* you'll also need Postgres and Python dev libraries. For example on Ubuntu:
+
+```
+sudo apt install libpq-dev python3-dev
 ```
 
 * activate virtual environment
