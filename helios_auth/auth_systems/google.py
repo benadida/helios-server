@@ -49,7 +49,7 @@ def get_user_info_after_auth(request):
   http = credentials.authorize(http)
   (resp_headers, content) = http.request("https://people.googleapis.com/v1/people/me?personFields=names", "GET")
 
-  response = utils.from_json(content)
+  response = utils.from_json(content.decode('utf-8'))
 
   name = response['names'][0]['displayName']
   
