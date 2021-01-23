@@ -15,6 +15,12 @@ You can install the Helios server easily by following 3 steps:
    
 3.   ```sudo sh helios-install.sh```
 
+## Run
+
+1. ```python2 manage.py runserver 0.0.0.0:8000```
+
+2. ```celery -A helios worker -S django -l info -E``` (as a parallel process)
+
 ## Development
 
 ### OAuth integration
@@ -111,3 +117,5 @@ for redis usage: https://tekshinobi.com/django-celery-rabbitmq-redis-broker-resu
 
 - [Helios Google groups](https://groups.google.com/g/helios-voting/)
 
+##  Other Issues
+- https://github.com/benadida/helios-server/issues/242
