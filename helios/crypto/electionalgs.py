@@ -413,7 +413,7 @@ def one_question_winner(question, result, num_cast_votes):
     if question['result_type'] == 'relative':
         return [counts[0][0]]
 
-
+    
 class Election(HeliosObject):
     FIELDS = ['uuid', 'questions', 'name', 'short_name', 'description', 'voters_hash', 'openreg',
               'frozen_at', 'public_key', 'private_key', 'cast_url', 'result', 'result_proof', 'use_voter_aliases',

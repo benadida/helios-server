@@ -1383,8 +1383,7 @@ def voters_email(request, election):
         'custom_subject' : email_form.cleaned_data['subject'],
         'custom_message' : email_form.cleaned_data['body'],
         'election_vote_url' : election_vote_url,
-        'election_url' : election_url,
-        'election' : election
+        'election_url' : election_url
         }
         
       voter_constraints_include = None

@@ -7,10 +7,12 @@ http://www.virtualenv.org/en/latest/
 
 * cd into the helios-server directory
 
-* create a virtualenv:
+* create a virtualenv
+* make sure you use Python2.7 and **not** Python3+
+* The above can be done by typing something similar to
 
 ```
-virtualenv venv
+virtualenv --python=/usr/bin/python2.7 $(pwd)/venv
 ```
 
 * activate virtual environment
@@ -45,6 +47,6 @@ python manage.py runserver
 
 ** set up oauth2 credentials as a web application, with your origin, e.g. https://myhelios.example.com, and your auth callback, which, based on our example, is https://myhelios.example.com/auth/after/
 
-** still in the developer console, enable the Google+ API.
+** still in the developer console, enable the Google+ API and Google People API.
 
 ** set the GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET configuration variables accordingly.

@@ -46,7 +46,6 @@ DATABASES = {
 # override if we have an env variable
 if get_from_env('DATABASE_URL', None):
     import dj_database_url
-
     DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
 
