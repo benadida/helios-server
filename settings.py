@@ -158,8 +158,7 @@ INSTALLED_APPS = (
     'helios',
     'server_ui',
     'django_celery_results',
-    'djcelery',
-
+    'django_celery_beat',
 )
 
 ##
@@ -255,11 +254,11 @@ CLEVER_CLIENT_ID = get_from_env('CLEVER_CLIENT_ID', "")
 CLEVER_CLIENT_SECRET = get_from_env('CLEVER_CLIENT_SECRET', "")
 
 # email server
-EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
-EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
-EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
-EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
+#EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
+#EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
+#EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
+#EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
+#EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
 
 # Fenix
 FENIX_CLIENT_ID = get_from_env('FENIX_CLIENT_ID',"")
@@ -273,6 +272,10 @@ FENIX_REDIRECT_URL_PATH="/auth/fenix/login"
 # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
 if get_from_env('EMAIL_USE_AWS', '0') == '1':
     EMAIL_BACKEND = 'django_ses.SESBackend'
+
+# Send email to the console by default
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 
 # set up logging
 import logging

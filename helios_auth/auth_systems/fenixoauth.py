@@ -4,6 +4,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.conf.urls import url
 from django.conf import settings
+from django.core.mail import send_mail
 
 client_id = settings.FENIX_CLIENT_ID
 clientSecret = settings.FENIX_CLIENT_SECRET
@@ -50,7 +51,9 @@ def get_user_info_after_auth(request):
     obj =  {'type': 'fenixoauth', 'user_id' : json.dumps(r_info["username"]),'name':r_info["name"],'info':{'email': r_info["email"]}, 'token': None}
     return obj
 
-    
+def send_message(user_id, name, user_info, subject, body):
+    #send email to google users. user_id is the email for google.
+    send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, user_id)], fail_silently=False)
 
 #
 # Election Creation
