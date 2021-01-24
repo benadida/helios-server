@@ -72,6 +72,10 @@ USE_I18N = True
 # Example: "/home/media/media.lawrence.com/"
 MEDIA_ROOT = ''
 
+# For debug
+# Send email to the console by default
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
@@ -173,7 +177,7 @@ VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
 
 
 # Change your email settings
-DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'athens@tecnico.ulisboa.pt')
+DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'noreply.athens@tecnico.ulisboa.pt')
 DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Election Admin')
 SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 
@@ -254,18 +258,18 @@ CLEVER_CLIENT_ID = get_from_env('CLEVER_CLIENT_ID', "")
 CLEVER_CLIENT_SECRET = get_from_env('CLEVER_CLIENT_SECRET', "")
 
 # email server
-#EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
-#EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
-#EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
-#EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
-#EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
-
-# Fenix
-FENIX_CLIENT_ID = get_from_env('FENIX_CLIENT_ID',"")
-FENIX_CLIENT_SECRET = get_from_env('FENIX_CLIENT_SECRET',"")
-FENIX_URL_TOKEN = "https://fenix.tecnico.ulisboa.pt/oauth/access_token"
-FENIX_LOGIN= "https://fenix.tecnico.ulisboa.pt/oauth/userdialog?client_id=%s&redirect_uri=%s"
-FENIX_REDIRECT_URL_PATH="/auth/fenix/login"
+if 'EMAIL_HOST' in os.environ:
+    EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
+    EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
+    EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
+    #EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
+    EMAIL_BACKEND = 'django_smtp_ssl.SSLEmailBackend'
+else:
+    # For debug
+    # Send email to the console by default
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    print('*Alert* EMAIL HOST was not defined')
 
 # to use AWS Simple Email Service
 # in which case environment should contain
@@ -273,9 +277,12 @@ FENIX_REDIRECT_URL_PATH="/auth/fenix/login"
 if get_from_env('EMAIL_USE_AWS', '0') == '1':
     EMAIL_BACKEND = 'django_ses.SESBackend'
 
-# Send email to the console by default
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
+# Fenix
+FENIX_CLIENT_ID = get_from_env('FENIX_CLIENT_ID',"")
+FENIX_CLIENT_SECRET = get_from_env('FENIX_CLIENT_SECRET',"")
+FENIX_URL_TOKEN = "https://fenix.tecnico.ulisboa.pt/oauth/access_token"
+FENIX_LOGIN= "https://fenix.tecnico.ulisboa.pt/oauth/userdialog?client_id=%s&redirect_uri=%s"
+FENIX_REDIRECT_URL_PATH="/auth/fenix/login"
 
 # set up logging
 import logging
