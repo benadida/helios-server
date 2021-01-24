@@ -4,6 +4,9 @@ Helios is an end-to-end verifiable voting system. Project forked from [benadida/
 
 [![Travis Build Status](https://travis-ci.org/benadida/helios-server.svg?branch=master)](https://travis-ci.org/benadida/helios-server)
 
+This fork is a more user-friendly version of the helios-server. Also, this still a version with high compatiblity with the orginal repository, which should be fine to update this fork automatically. See [Changelog](./CHANGELOG.md).
+
+
 
 ## Installation 
 
@@ -113,9 +116,17 @@ Issues
 
 for redis usage: https://tekshinobi.com/django-celery-rabbitmq-redis-broker-results-backend/
 
+### Email server
+
+To send an email with the user credencials (using the batch mode), it will be necessary to **run the celery** and, having the `send_mail()` **method defined at the user authentication** level. 
+
+Assuming that the authentication method can send emails, in this version/fork, if there are no email variables in the environment, it is still possible to test the email. The emails will be redirected to the console. (see `settings.py`)
+
 ##  Dev groups
 
 - [Helios Google groups](https://groups.google.com/g/helios-voting/)
 
-##  Other Issues
+##  Relevant issues 
+
+##### Issue #1 - Election is not JSON serializable
 - https://github.com/benadida/helios-server/issues/242
