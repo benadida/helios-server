@@ -1,5 +1,9 @@
 * install PostgreSQL 8.3+
 
+* install Rabbit MQ
+  This is needed for celery to work, which does background processing such as
+  the processing of uploaded list-of-voter CSV files.  
+
 * make sure you have virtualenv installed:
 http://www.virtualenv.org/en/latest/
 
