@@ -491,10 +491,8 @@ def get_randomness(request, election):
   get some randomness to sprinkle into the sjcl entropy pool
   """
   return {
-    # back to urandom, it's fine
-    "randomness" : base64.b64encode(os.urandom(32))
-    #"randomness" : base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)
-    }
+    "randomness" : base64.b64encode(os.urandom(32)).decode('utf-8')
+  }
 
 @election_view(frozen=True)
 @return_json
