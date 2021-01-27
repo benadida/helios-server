@@ -11,11 +11,11 @@ sudo apt-get install -y python-setuptools
 sudo apt-get install -y python-pip
 sudo pip install --upgrade pip
 sudo pip install virtualenv
-sudo virtualenv venv && sudo chmod 777 -R $(pwd)venv/
-source $(pwd)/venv/bin/activate
+sudo virtualenv .venv && sudo chmod 777 -R $(pwd)/.venv/
+source $(pwd)/.venv/bin/activate
 
 activate(){
-	. ./venv/bin/activate
+	. ./.venv/bin/activate
 	
 	sudo apt-get install -y apache2
 	sudo apt-get install -y postgresql postgresql-contrib
@@ -59,4 +59,5 @@ echo Add missing installation: sudo apt-get install -y postfix
 echo #####################
 echo Your Server IP: $(hostname -i)
 echo Run Command: python manage.py runserver 0.0.0.0:8000
+echo Run Command: celery -A helios worker -S django -l info -E
 fi

@@ -18,7 +18,7 @@ from helios_auth.url_names import AUTH_INDEX, AUTH_START, AUTH_AFTER, AUTH_WHY, 
 from models import User
 from security import FIELDS_TO_SAVE
 from view_utils import render_template, render_template_raw
-
+import json
 
 def index(request):
   """
@@ -38,7 +38,7 @@ def index(request):
   if helios_auth.DEFAULT_AUTH_SYSTEM:
     default_auth_system_obj = AUTH_SYSTEMS[helios_auth.DEFAULT_AUTH_SYSTEM]
 
-  #form = password.LoginForm()
+  form = password.LoginForm()
 
   return render_template(request, 'index', {'return_url' : request.GET.get('return_url', '/'),
                                             'enabled_auth_systems' : helios_auth.ENABLED_AUTH_SYSTEMS,
@@ -173,19 +173,22 @@ def perms_why(request):
 
 def after(request):
   # which auth system were we using?
+  
   if not request.session.has_key('auth_system_name'):
     do_local_logout(request)
     return HttpResponseRedirect("/")
     
   system = AUTH_SYSTEMS[request.session['auth_system_name']]
+  #print("\n\n","after() - REQUEST SESSION:",request.session) #debug
   
   # get the user info
   user = system.get_user_info_after_auth(request)
-
+  
+  #print("\n\n","after() - USER RECEIVED:", user) #debug
   if user:
     # get the user and store any new data about him
     user_obj = User.update_or_create(user['type'], user['user_id'], user['name'], user['info'], user['token'])
-    
+    #print("\n\n", "USER CREATION", user_obj) #debug
     request.session['user'] = user
   else:
     return HttpResponseRedirect("%s?%s" % (reverse(AUTH_WHY), urllib.urlencode({'system_name' : request.session['auth_system_name']})))

@@ -14,18 +14,17 @@ def get_from_env(var, default):
     else:
         return default
 
-DEBUG = (get_from_env('DEBUG', '1') == '1')
+DEBUG = (get_from_env('DEBUG', '0') == '1')
 
 # add admins of the form: 
 #    ('Ben Adida', 'ben@adida.net'),
 # if you want to be emailed about errors.
-ADMINS = (
-)
+ADMINS = ()
 
 MANAGERS = ADMINS
 
 # is this the master Helios web site?
-MASTER_HELIOS = (get_from_env('MASTER_HELIOS', '0') == '1')
+MASTER_HELIOS = (get_from_env('MASTER_HELIOS', '1') == '1')
 
 # show ability to log in? (for example, if the site is mostly used by voters)
 # if turned off, the admin will need to know to go to /auth/login manually
@@ -57,7 +56,7 @@ if get_from_env('DATABASE_URL', None):
 # although not all choices may be available on all operating systems.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = 'America/Los_Angeles'
+TIME_ZONE = 'Europe/Lisbon'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -72,6 +71,10 @@ USE_I18N = True
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
 MEDIA_ROOT = ''
+
+# For debug
+# Send email to the console by default
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
@@ -90,8 +93,8 @@ SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
 # If in production, you got a bad request (400) error
 #More info: https://docs.djangoproject.com/en/1.7/ref/settings/#allowed-hosts (same for 1.6)
 
-ALLOWED_HOSTS = get_from_env('ALLOWED_HOSTS', 'localhost').split(",")
-ALLOWED_HOSTS +=['*']
+ALLOWED_HOSTS = get_from_env('ALLOWED_HOSTS', '*').split(",")
+
 # Secure Stuff
 if get_from_env('SSL', '0') == '1':
     SECURE_SSL_REDIRECT = True
@@ -158,6 +161,8 @@ INSTALLED_APPS = (
     'helios_auth',
     'helios',
     'server_ui',
+    'django_celery_results',
+    'django_celery_beat',
 )
 
 ##
@@ -172,8 +177,8 @@ VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
 
 
 # Change your email settings
-DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'ben@adida.net')
-DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Ben for Helios')
+DEFAULT_FROM_EMAIL = get_from_env('DEFAULT_FROM_EMAIL', 'noreply.athens@tecnico.ulisboa.pt')
+DEFAULT_FROM_NAME = get_from_env('DEFAULT_FROM_NAME', 'Election Admin')
 SERVER_EMAIL = '%s <%s>' % (DEFAULT_FROM_NAME, DEFAULT_FROM_EMAIL)
 
 LOGIN_URL = '/auth/'
@@ -181,7 +186,10 @@ LOGOUT_ON_CONFIRMATION = True
 
 # The two hosts are here so the main site can be over plain HTTP
 # while the voting URLs are served over SSL.
-URL_HOST = get_from_env("URL_HOST", "http://localhost:8000").rstrip("/")
+IP_HOST = get_from_env("IP_HOST", "localhost")
+URL_DEFAULT = "http://%s:8000" % IP_HOST
+
+URL_HOST = get_from_env( "URL_HOST", URL_DEFAULT).rstrip("/")
 
 # IMPORTANT: you should not change this setting once you've created
 # elections, as your elections' cast_url will then be incorrect.
@@ -189,17 +197,17 @@ URL_HOST = get_from_env("URL_HOST", "http://localhost:8000").rstrip("/")
 SECURE_URL_HOST = get_from_env("SECURE_URL_HOST", URL_HOST).rstrip("/")
 
 # election stuff
-SITE_TITLE = get_from_env('SITE_TITLE', 'Helios Voting')
+SITE_TITLE = get_from_env('SITE_TITLE', 'IST E-Voting')
 MAIN_LOGO_URL = get_from_env('MAIN_LOGO_URL', '/static/logo.png')
-ALLOW_ELECTION_INFO_URL = (get_from_env('ALLOW_ELECTION_INFO_URL', '0') == '1')
+ALLOW_ELECTION_INFO_URL = (get_from_env('ALLOW_ELECTION_INFO_URL', '1') == '1')
 
 # FOOTER links
 FOOTER_LINKS = json.loads(get_from_env('FOOTER_LINKS', '[]'))
 FOOTER_LOGO_URL = get_from_env('FOOTER_LOGO_URL', None)
 
-WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', "This is the default message")
+WELCOME_MESSAGE = get_from_env('WELCOME_MESSAGE', "Benvindo ao sistema E-Voting do IST")
 
-HELP_EMAIL_ADDRESS = get_from_env('HELP_EMAIL_ADDRESS', 'help@heliosvoting.org')
+HELP_EMAIL_ADDRESS = get_from_env('HELP_EMAIL_ADDRESS', 'si@tecnico.ulisboa.pt')
 
 AUTH_TEMPLATE_BASE = "server_ui/templates/base.html"
 HELIOS_TEMPLATE_BASE = "server_ui/templates/base.html"
@@ -212,7 +220,9 @@ HELIOS_PRIVATE_DEFAULT = False
 
 # authentication systems enabled
 #AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
-AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(",")
+AUTH_ENABLED_AUTH_SYSTEMS = ['password','fenix']
+
+#AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(",")
 AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
 
 # google
@@ -248,17 +258,31 @@ CLEVER_CLIENT_ID = get_from_env('CLEVER_CLIENT_ID', "")
 CLEVER_CLIENT_SECRET = get_from_env('CLEVER_CLIENT_SECRET', "")
 
 # email server
-EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
-EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
-EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
-EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
+if 'EMAIL_HOST' in os.environ:
+    EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
+    EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
+    EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
+    EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
+    #EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
+    EMAIL_BACKEND = 'django_smtp_ssl.SSLEmailBackend'
+else:
+    # For debug
+    # Send email to the console by default
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    print('*Alert* EMAIL HOST was not defined')
 
 # to use AWS Simple Email Service
 # in which case environment should contain
 # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
 if get_from_env('EMAIL_USE_AWS', '0') == '1':
     EMAIL_BACKEND = 'django_ses.SESBackend'
+
+# Fenix
+FENIX_CLIENT_ID = get_from_env('FENIX_CLIENT_ID',"")
+FENIX_CLIENT_SECRET = get_from_env('FENIX_CLIENT_SECRET',"")
+FENIX_URL_TOKEN = "https://fenix.tecnico.ulisboa.pt/oauth/access_token"
+FENIX_LOGIN= "https://fenix.tecnico.ulisboa.pt/oauth/userdialog?client_id=%s&redirect_uri=%s"
+FENIX_REDIRECT_URL_PATH="/auth/fenix/login"
 
 # set up logging
 import logging
@@ -267,9 +291,10 @@ logging.basicConfig(
     format = '%(asctime)s %(levelname)s %(message)s'
 )
 
-
 # set up celery
 CELERY_BROKER_URL = get_from_env('CELERY_BROKER_URL', 'amqp://localhost')
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_TRACK_STARTED = True
 if TESTING:
     CELERY_TASK_ALWAYS_EAGER = True
 #database_url = DATABASES['default']
