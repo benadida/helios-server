@@ -30,7 +30,7 @@ def login_fenix_oauth(request):
         params = {'access_token': r_token['access_token']}
         #print("login_fenix_0auth() - OUATH PARAMS",params) # debug
         request.session['access_token_fenix'] =r_token['access_token'] # save token
-        request.session['auth_system_name']='fenixoauth'
+        request.session['auth_system_name']='fenix'
         return HttpResponseRedirect(reverse(url_names.AUTH_AFTER))
     else:
         print("login_fenix_0auth() - OAUTH FAILED")
@@ -48,7 +48,7 @@ def get_user_info_after_auth(request):
     r_info = resp.json() # user data from Fenix
     
     del request.session['access_token_fenix']
-    obj =  {'type': 'fenixoauth', 'user_id' : json.dumps(r_info["username"]),'name':r_info["name"],'info':{'email': r_info["email"]}, 'token': None}
+    obj =  {'type': 'fenix', 'user_id' : json.dumps(r_info["username"]),'name':r_info["name"],'info':{'email': r_info["email"]}, 'token': None}
     return obj
 
 def send_message(user_id, name, user_info, subject, body):
