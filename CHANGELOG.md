@@ -4,7 +4,7 @@
 * runs on Python 3.8
 * requirements.txt: 
     - upgraded celery to 5.0.0
-    - replaced pycryto with pycryptodome for compatability with python 3.8
+    - replaced pycrypto with pycryptodome for compatability with python 3.8
     - added django-environ so can read secret values in a .env file for use in settings.py 
 * settings.py:
     - added facility to import secret values from a .env file
