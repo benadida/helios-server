@@ -77,7 +77,7 @@ class Voter(LegacyObject):
         """
         depending on whether the voter is aliased, use different fields
         """
-        if self.wrapped_obj.alias != None:
+        if self.wrapped_obj.alias is not None:
             return super(Voter, self).toDict(self.ALIASED_VOTER_FIELDS, complete = complete)
         else:
             return super(Voter,self).toDict(complete = complete)

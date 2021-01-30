@@ -8,7 +8,7 @@ Last 24 hours
 
 {% for election in elections %}
 <p>
-<b><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></b> -- {{election.last_cast_vote}} {{election.num_recent_cast_votes}} recently cast votes
+<b><a href="{% url "election@view" election.uuid %}">{{election.name}}</a></b> -- {{election.last_cast_vote}} {{election.num_recent_cast_votes}} recently cast votes
 </p>
 {% endfor %}
 

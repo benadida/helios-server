@@ -1,7 +1,7 @@
 {% extends "helios/templates/cryptobase.html" %}
 
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; New Trustee <span style="font-size:0.7em;">[<a href="{% url "helios.views.list_trustees_view" election.uuid %}">cancel</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; New Trustee <span style="font-size:0.7em;">[<a href="{% url "election@trustees@view" election.uuid %}">cancel</a>]</span></h2>
   
 <form method="post" action="">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />

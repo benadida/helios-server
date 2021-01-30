@@ -29,7 +29,7 @@ You will then be guided to re-encrypt your choices for final casting.
 <div style="margin-left: 15px;">&#x2713; {$T.choice}</div>
 {#/for}
 {#if $T.choices[$T.question$index].length < $T.question.max}
-[you under-voted: you may select up to {$T.question.max}]
+[you selected {$T.choices[$T.question$index].length} candidates; you may select from {$T.question.min} to {$T.question.max}]
 {#/if}
 [<a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#">edit responses</a>]
 {#if !$T.question$last}<br><br>{#/if}

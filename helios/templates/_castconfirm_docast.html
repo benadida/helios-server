@@ -23,7 +23,7 @@ You are logged in as <u>{{voter.display_html_big|safe}}</u><br /><br />
 </form>
 
 <p>
-    <button class="tiny" onclick="document.location='./view';">cancel</button><br />
+    <button class="tiny" onclick="document.location='{% url "election@view" election.uuid %}';">cancel</button><br />
     <span style="font-size:0.8em;">If you cancel now, your ballot will <em>NOT</em> be recorded.<br />
     You can start the voting process over again, of course.</span>
 </p>
