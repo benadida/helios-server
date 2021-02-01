@@ -1,4 +1,4 @@
-* install PostgreSQL 8.3+
+* install PostgreSQL 9.5+
 
 * install Rabbit MQ
   This is needed for celery to work, which does background processing such as
@@ -11,17 +11,22 @@ http://www.virtualenv.org/en/latest/
 
 * cd into the helios-server directory
 
+* install Python3.6 including dev, pip, and venv
+
+```
+sudo apt install python3.6 python3.6-venv python3.6-pip python3.6-venv
+```
+
 * create a virtualenv
-* make sure you use Python3 
 
 ```
-virtualenv --python=/usr/bin/python3 $(pwd)/venv
+python3.6-m venv $(pwd)/venv
 ```
 
-* you'll also need Postgres and Python dev libraries. For example on Ubuntu:
+* you'll also need Postgres dev libraries. For example on Ubuntu:
 
 ```
-sudo apt install libpq-dev python3-dev
+sudo apt install libpq-dev 
 ```
 
 * activate virtual environment
