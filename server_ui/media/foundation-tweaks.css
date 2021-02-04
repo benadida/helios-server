@@ -1,0 +1,69 @@
+
+table.pretty {
+    margin: 0.5em 0.5em 0.5em 0.5em;
+    background: whitesmoke;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+table.pretty th, td {
+    border: 1px silver solid;
+    padding: 0.3em;
+    vertical-align: top;
+}
+
+.highlight-box {
+  background:#eee;
+  padding: 10px;
+  color: black;
+  border: 1px solid #888;
+}
+
+.highlight-box-margin {
+  background:#eee;
+  padding: 10px;
+  color: black;
+  border: 1px solid #888;
+  margin-right: 300px;
+}
+
+.small-logo {
+  height: 15px;
+}
+
+.big-logo {
+  height: 25px;
+}
+
+/* sticky footer */
+#footer {
+ width: 100%;
+ border-top: 1px solid black;
+ padding: 5px;
+ background: #ddd;
+}
+
+* {
+ margin:0
+}
+
+html, body {
+height: 100%;
+}
+.wrapper {
+min-height: 100%;
+height: auto !important;
+height: 100%;
+margin: 0 auto -2.5em;
+}
+.footer, .push {
+height: 2.5em;
+}
+
+select {
+    width: auto;
+}
+
+ul {
+    margin-left: 20px;
+}

@@ -1,0 +1,65 @@
+
+form.prettyform {
+  font-size: 1.4em;
+}
+
+form.prettyform label,input,textarea,select {
+    line-height: 1.8;
+}
+
+form.prettyform label:not(.answer) {
+    display: block;
+    text-align: right;
+    float: left;
+    width: 200px;
+    padding-right: 10px;
+}
+
+form.prettyform br {
+    clear: left;
+}
+
+form.prettyform input, form.prettyform textarea, button {
+    border: 1px solid black;
+    margin: 5px;
+    font-size: 16pt;
+}
+
+input.pretty {
+    font-size: 16pt;
+    border: 1px solid black;
+}
+
+input.prettysmall {
+    font-size: 12pt;
+    border: 1px solid black;
+}
+
+
+table.pretty {
+    margin: 1em 1em 1em 2em;
+    background: whitesmoke;
+    border-collapse: collapse;
+    width: 80%;
+}
+
+table.pretty th, td {
+    border: 1px silver solid;
+    padding: 0.3em;
+}
+
+
+#answers {
+    padding-left: 210px;
+    padding-top: 0px;
+    margin-top: 0px;
+}
+
+#questions_div {
+    font-size: 1.4em;
+}
+
+div.selected {
+  background: lightblue;
+}
+

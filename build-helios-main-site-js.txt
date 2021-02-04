@@ -1,0 +1,1 @@
+uglifyjs server_ui/media/foundation/js/vendor/custom.modernizr.js helios/media/js/jquery-1.4.2.min.js helios/media/js/jquery-ui-1.8.1.custom.min.js helios/media/js/jqsplitdatetime.js helios/media/helios/jquery.json.min.js server_ui/media/foundation/js/foundation.min.js > server_ui/media/20140302-helios-combined.js
