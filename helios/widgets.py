@@ -27,7 +27,7 @@ class SelectTimeWidget(Widget):
     time_pattern = r'(\d\d?):(\d\d?)$'
     time_re = re.compile(time_pattern)
 
-    def __init__(self, attrs=None, empty_label=["00","00"]):
+    def __init__(self, attrs=None, empty_label=["--","--"]):
         self.attrs = attrs or {}
 
         # Optional string, list, or tuple to use as empty_label.
@@ -36,7 +36,7 @@ class SelectTimeWidget(Widget):
                 raise ValueError('empty_label list/tuple must have 2 elements.')
 
             self.hour_none_value = ('', empty_label[0])
-            self.minute_none_value = ('', empty_label[1])
+            self.minute_none_value = ('', empty_label[0])
         else:
             if empty_label is not None:
                 self.none_value = ('', empty_label)
@@ -60,7 +60,7 @@ class SelectTimeWidget(Widget):
                 'placeholder': _('Hour') if self.is_required else False,
             },
         )
-        minute_choices = [("%d"%i, "%.2d"%i) for i in range(1, 60)]  #list(self.minutes.items())
+        minute_choices = [("%d"%i, "%.2d"%i) for i in range(0, 60)]  #list(self.minutes.items())
         if not self.is_required:
             minute_choices.insert(0, self.minute_none_value)
         minute_name = self.minute_field % name
