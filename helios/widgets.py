@@ -179,7 +179,7 @@ class SplitSelectDateTimeWidget(MultiWidget):
     # See https://stackoverflow.com/questions/4324676/django-multiwidget-subclass-not-calling-decompress
     def value_from_datadict(self, data, files, name):
         if data.get(name, None) is None:
-            return [widget.value_from_datadict(data, files, name + '_%s' % i) for i, widget in enumerate(self.widgets)]
+            return [widget.value_from_datadict(data, files, name ) for widget in self.widgets]
         return self.decompress(data.get(name, None))
 
     def decompress(self, value):
