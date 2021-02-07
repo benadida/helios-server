@@ -187,6 +187,23 @@ class SplitSelectDateTimeWidget(MultiWidget):
             return [value.date(), value.time().replace(microsecond=0)]
         return [None, None]
 
+    def compress(self, data_list):
+        """
+        Takes the values from the MultiWidget and passes them as a
+        list to this function. This function needs to compress the
+        list into a single object in order to be correctly rendered by the widget.
+        For instace, django.forms.widgets.SelectDateWidget.format_value(value)
+        expects a date object or a string, not a list.
+        This method was taken from helios/fields.py
+        """
+        if data_list:
+            import datetime
+            if not (data_list[0] and data_list[1]):
+                return None
+            return datetime.datetime.combine(*data_list)
+        return None
+
     def render(self, name, value, attrs=None, renderer=None):
+        value = self.compress(value)
         rendered_widgets = list(widget.render(name, value, attrs=attrs, renderer=renderer) for widget in self.widgets)
         return '<br/>'.join(rendered_widgets)
