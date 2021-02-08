@@ -8,42 +8,19 @@ Ben Adida
 ben@adida.net
 """
 
-import math, hashlib, logging
-import randpool, number
+import logging
 
-import numtheory
+from Crypto.Hash import SHA1
+from Crypto.Util.number import inverse
 
-from algs import Utils
+from helios.crypto.utils import random
+
 
 class Cryptosystem(object):
     def __init__(self):
       self.p = None
       self.q = None
       self.g = None
-
-    @classmethod
-    def generate(cls, n_bits):
-      """
-      generate an El-Gamal environment. Returns an instance
-      of ElGamal(), with prime p, group size q, and generator g
-      """
-      
-      EG = cls()
-      
-      # find a prime p such that (p-1)/2 is prime q
-      EG.p = Utils.random_safe_prime(n_bits)
-
-      # q is the order of the group
-      # FIXME: not always p-1/2
-      EG.q = (EG.p-1)/2
-  
-      # find g that generates the q-order subgroup
-      while True:
-        EG.g = Utils.random_mpz_lt(EG.p)
-        if pow(EG.g, EG.q, EG.p) == 1:
-          break
-
-      return EG
 
     def generate_keypair(self):
       """
@@ -68,7 +45,7 @@ class KeyPair(object):
       self.pk.p = p
       self.pk.q = q
       
-      self.sk.x = Utils.random_mpz_lt(q)
+      self.sk.x = random.mpz_lt(q)
       self.pk.y = pow(g, self.sk.x, p)
       
       self.sk.public_key = self.pk
@@ -106,7 +83,7 @@ class PublicKey:
         """
         Encrypt a plaintext and return the randomness just generated and used.
         """
-        r = Utils.random_mpz_lt(self.q)
+        r = random.mpz_lt(self.q)
         ciphertext = self.encrypt_with_r(plaintext, r)
         
         return [ciphertext, r]
@@ -181,7 +158,7 @@ class SecretKey:
         if not dec_factor:
             dec_factor = self.decryption_factor(ciphertext)
 
-        m = (Utils.inverse(dec_factor, self.pk.p) * ciphertext.beta) % self.pk.p
+        m = (inverse(dec_factor, self.pk.p) * ciphertext.beta) % self.pk.p
 
         if decode_m:
           # get m back from the q-order subgroup
@@ -207,15 +184,15 @@ class SecretKey:
         and alpha^t = b * beta/m ^ c
         """
         
-        m = (Utils.inverse(pow(ciphertext.alpha, self.x, self.pk.p), self.pk.p) * ciphertext.beta) % self.pk.p
-        beta_over_m = (ciphertext.beta * Utils.inverse(m, self.pk.p)) % self.pk.p
+        m = (inverse(pow(ciphertext.alpha, self.x, self.pk.p), self.pk.p) * ciphertext.beta) % self.pk.p
+        beta_over_m = (ciphertext.beta * inverse(m, self.pk.p)) % self.pk.p
 
         # pick a random w
-        w = Utils.random_mpz_lt(self.pk.q)
+        w = random.mpz_lt(self.pk.q)
         a = pow(self.pk.g, w, self.pk.p)
         b = pow(ciphertext.alpha, w, self.pk.p)
 
-        c = int(hashlib.sha1(str(a) + "," + str(b)).hexdigest(),16)
+        c = int(SHA1.new(bytes(str(a) + "," + str(b), 'utf-8')).hexdigest(),16)
 
         t = (w + self.x * c) % self.pk.q
 
@@ -232,7 +209,7 @@ class SecretKey:
       Verifier provides challenge modulo q.
       Prover computes response = w + x*challenge mod q, where x is the secret key.
       """
-      w = Utils.random_mpz_lt(self.pk.q)
+      w = random.mpz_lt(self.pk.q)
       commitment = pow(self.pk.g, w, self.pk.p)
       challenge = challenge_generator(commitment) % self.pk.q
       response = (w + (self.x * challenge)) % self.pk.q
@@ -255,7 +232,7 @@ class Ciphertext:
         """
         Homomorphic Multiplication of ciphertexts.
         """
-        if type(other) == int and (other == 0 or other == 1):
+        if isinstance(other, int) and (other == 0 or other == 1):
           return self
           
         if self.pk != other.pk:
@@ -287,7 +264,7 @@ class Ciphertext:
         """
         Reencryption with fresh randomness, which is returned.
         """
-        r = Utils.random_mpz_lt(self.pk.q)
+        r = random.mpz_lt(self.pk.q)
         new_c = self.reenc_with_r(r)
         return [new_c, r]
     
@@ -301,17 +278,17 @@ class Ciphertext:
       """
       Check for ciphertext equality.
       """
-      if other == None:
+      if other is None:
         return False
         
-      return (self.alpha == other.alpha and self.beta == other.beta)
+      return self.alpha == other.alpha and self.beta == other.beta
     
     def generate_encryption_proof(self, plaintext, randomness, challenge_generator):
       """
       Generate the disjunctive encryption proof of encryption
       """
       # random W
-      w = Utils.random_mpz_lt(self.pk.q)
+      w = random.mpz_lt(self.pk.q)
 
       # build the proof
       proof = ZKProof()
@@ -331,20 +308,20 @@ class Ciphertext:
     def simulate_encryption_proof(self, plaintext, challenge=None):
       # generate a random challenge if not provided
       if not challenge:
-        challenge = Utils.random_mpz_lt(self.pk.q)
+        challenge = random.mpz_lt(self.pk.q)
         
       proof = ZKProof()
       proof.challenge = challenge
 
       # compute beta/plaintext, the completion of the DH tuple
-      beta_over_plaintext =  (self.beta * Utils.inverse(plaintext.m, self.pk.p)) % self.pk.p
+      beta_over_plaintext =  (self.beta * inverse(plaintext.m, self.pk.p)) % self.pk.p
       
       # random response, does not even need to depend on the challenge
-      proof.response = Utils.random_mpz_lt(self.pk.q);
+      proof.response = random.mpz_lt(self.pk.q);
 
       # now we compute A and B
-      proof.commitment['A'] = (Utils.inverse(pow(self.alpha, proof.challenge, self.pk.p), self.pk.p) * pow(self.pk.g, proof.response, self.pk.p)) % self.pk.p
-      proof.commitment['B'] = (Utils.inverse(pow(beta_over_plaintext, proof.challenge, self.pk.p), self.pk.p) * pow(self.pk.y, proof.response, self.pk.p)) % self.pk.p
+      proof.commitment['A'] = (inverse(pow(self.alpha, proof.challenge, self.pk.p), self.pk.p) * pow(self.pk.g, proof.response, self.pk.p)) % self.pk.p
+      proof.commitment['B'] = (inverse(pow(beta_over_plaintext, proof.challenge, self.pk.p), self.pk.p) * pow(self.pk.y, proof.response, self.pk.p)) % self.pk.p
 
       return proof
     
@@ -397,7 +374,7 @@ class Ciphertext:
       first_check = (pow(self.pk.g, proof.response, self.pk.p) == ((pow(self.alpha, proof.challenge, self.pk.p) * proof.commitment['A']) % self.pk.p))
       
       # check that y^response = B * (beta/m)^challenge
-      beta_over_m = (self.beta * Utils.inverse(plaintext.m, self.pk.p)) % self.pk.p
+      beta_over_m = (self.beta * inverse(plaintext.m, self.pk.p)) % self.pk.p
       second_check = (pow(self.pk.y, proof.response, self.pk.p) == ((pow(beta_over_m, proof.challenge, self.pk.p) * proof.commitment['B']) % self.pk.p))
       
       # print "1,2: %s %s " % (first_check, second_check)
@@ -416,7 +393,7 @@ class Ciphertext:
       for i in range(len(plaintexts)):
         # if a proof fails, stop right there
         if not self.verify_encryption_proof(plaintexts[i], proof.proofs[i]):
-          print "bad proof %s, %s, %s" % (i, plaintexts[i], proof.proofs[i])
+          print("bad proof %s, %s, %s" % (i, plaintexts[i], proof.proofs[i]))
           return False
           
       # logging.info("made it past the two encryption proofs")
@@ -444,7 +421,7 @@ class Ciphertext:
       """
       running_decryption = self.beta
       for dec_factor in decryption_factors:
-        running_decryption = (running_decryption * Utils.inverse(dec_factor, public_key.p)) % public_key.p
+        running_decryption = (running_decryption * inverse(dec_factor, public_key.p)) % public_key.p
         
       return running_decryption
 
@@ -473,7 +450,7 @@ class ZKProof(object):
       """
 
       # generate random w
-      w = Utils.random_mpz_lt(q)
+      w = random.mpz_lt(q)
       
       # create proof instance
       proof = cls()
@@ -526,7 +503,7 @@ def disjunctive_challenge_generator(commitments):
     array_to_hash.append(str(commitment['B']))
 
   string_to_hash = ",".join(array_to_hash)
-  return int(hashlib.sha1(string_to_hash).hexdigest(),16)
+  return int(SHA1.new(bytes(string_to_hash, 'utf-8')).hexdigest(),16)
   
 # a challenge generator for Fiat-Shamir with A,B commitment
 def fiatshamir_challenge_generator(commitment):
@@ -534,5 +511,5 @@ def fiatshamir_challenge_generator(commitment):
 
 def DLog_challenge_generator(commitment):
   string_to_hash = str(commitment)
-  return int(hashlib.sha1(string_to_hash).hexdigest(),16)
+  return int(SHA1.new(bytes(string_to_hash, 'utf-8')).hexdigest(),16)
 

@@ -4,10 +4,11 @@ Google Authentication
 """
 
 import httplib2
-import json
 from django.conf import settings
 from django.core.mail import send_mail
 from oauth2client.client import OAuth2WebServerFlow
+
+from helios_auth import utils
 
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False
@@ -30,7 +31,7 @@ def get_auth_url(request, redirect_url):
 def get_user_info_after_auth(request):
   flow = get_flow(request.session['google-redirect-url'])
 
-  if not request.GET.has_key('code'):
+  if 'code' not in request.GET:
     return None
   
   code = request.GET['code']
@@ -48,7 +49,7 @@ def get_user_info_after_auth(request):
   http = credentials.authorize(http)
   (resp_headers, content) = http.request("https://people.googleapis.com/v1/people/me?personFields=names", "GET")
 
-  response = json.loads(content)
+  response = utils.from_json(content.decode('utf-8'))
 
   name = response['names'][0]['displayName']
   

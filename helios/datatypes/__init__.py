@@ -25,6 +25,7 @@ And when data comes in:
   # but is not necessary for full JSON-LD objects.
   LDObject.deserialize(json_string, type=...)
 """
+import importlib
 
 from helios import utils
 from helios.crypto import utils as cryptoutils
@@ -36,21 +37,21 @@ def recursiveToDict(obj):
     if obj is None:
         return None
 
-    if type(obj) == list:
+    if isinstance(obj, list):
         return [recursiveToDict(el) for el in obj]
     else:
         return obj.toDict()
 
 def get_class(datatype):
     # already done?
-    if not isinstance(datatype, basestring):
+    if not isinstance(datatype, str):
         return datatype
 
     # parse datatype string "v31/Election" --> from v31 import Election
     parsed_datatype = datatype.split("/")
     
     # get the module
-    dynamic_module = __import__(".".join(parsed_datatype[:-1]), globals(), locals(), [], level=-1)
+    dynamic_module = importlib.import_module("helios.datatypes." + (".".join(parsed_datatype[:-1])))
     
     if not dynamic_module:
         raise Exception("no module for %s" % datatype)
@@ -58,7 +59,7 @@ def get_class(datatype):
     # go down the attributes to get to the class
     try:
         dynamic_ptr = dynamic_module
-        for attr in parsed_datatype[1:]:
+        for attr in parsed_datatype[-1:]:
             dynamic_ptr = getattr(dynamic_ptr, attr)
         dynamic_cls = dynamic_ptr
     except AttributeError:
@@ -119,7 +120,7 @@ class LDObject(object):
 
     @classmethod
     def instantiate(cls, obj, datatype=None):
-        "FIXME: should datatype override the object's internal datatype? probably not"
+        """FIXME: should datatype override the object's internal datatype? probably not"""
         if isinstance(obj, LDObject):
             return obj
 
@@ -149,9 +150,11 @@ class LDObject(object):
         setattr(self.wrapped_obj, attr, val)
 
     def loadData(self):
-        "load data using from the wrapped object"
+        """
+        load data using from the wrapped object
+        """
         # go through the subfields and instantiate them too
-        for subfield_name, subfield_type in self.STRUCTURED_FIELDS.iteritems():
+        for subfield_name, subfield_type in self.STRUCTURED_FIELDS.items():
             self.structured_fields[subfield_name] = self.instantiate(self._getattr_wrapped(subfield_name), datatype = subfield_type)
         
     def loadDataFromDict(self, d):
@@ -160,7 +163,7 @@ class LDObject(object):
         """
 
         # the structured fields
-        structured_fields = self.STRUCTURED_FIELDS.keys()
+        structured_fields = list(self.STRUCTURED_FIELDS.keys())
 
         # go through the fields and set them properly
         # on the newly instantiated object
@@ -195,7 +198,7 @@ class LDObject(object):
 
         for f in (alternate_fields or fields):
             # is it a structured subfield?
-            if self.structured_fields.has_key(f):
+            if f in self.structured_fields:
                 val[f] = recursiveToDict(self.structured_fields[f])
             else:
                 val[f] = self.process_value_out(f, self._getattr_wrapped(f))
@@ -274,8 +277,10 @@ class LDObject(object):
             return field_value
   
     def _process_value_out(self, field_name, field_value):
+        if isinstance(field_value, bytes):
+            return field_value.decode('utf-8')
         return None
-    
+
     def __eq__(self, other):
         if not hasattr(self, 'uuid'):
             return super(LDObject, self) == other

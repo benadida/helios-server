@@ -52,7 +52,3 @@ def render_template_raw(request, template_name, values=None):
   vars_with_user = prepare_vars(request, values)
 
   return t.render(context=vars_with_user, request=request)
-
-
-def render_json(json_txt):
-  return HttpResponse(json_txt)

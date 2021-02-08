@@ -7,9 +7,8 @@ Ben Adida (ben@adida.net)
 
 from django.conf.urls import url
 
-import url_names
-import views
-from settings import AUTH_ENABLED_AUTH_SYSTEMS
+from settings import AUTH_ENABLED_SYSTEMS
+from . import views, url_names
 
 urlpatterns = [
     # basic static stuff
@@ -23,11 +22,11 @@ urlpatterns = [
 ]
 
 # password auth
-if 'password' in AUTH_ENABLED_AUTH_SYSTEMS:
-    from auth_systems.password import urlpatterns as password_patterns
+if 'password' in AUTH_ENABLED_SYSTEMS:
+    from .auth_systems.password import urlpatterns as password_patterns
     urlpatterns.extend(password_patterns)
 
 # twitter
-if 'twitter' in AUTH_ENABLED_AUTH_SYSTEMS:
-    from auth_systems.twitter import urlpatterns as twitter_patterns
+if 'twitter' in AUTH_ENABLED_SYSTEMS:
+    from .auth_systems.twitter import urlpatterns as twitter_patterns
     urlpatterns.extend(twitter_patterns)
