@@ -20,7 +20,7 @@ sudo apt install python3.6 python3.6-venv python3.6-pip python3.6-venv
 * create a virtualenv
 
 ```
-python3.6-m venv $(pwd)/venv
+python3.6 -m venv $(pwd)/venv
 ```
 
 * you'll also need Postgres dev libraries. For example on Ubuntu:
