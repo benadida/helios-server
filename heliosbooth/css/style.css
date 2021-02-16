@@ -4,13 +4,16 @@ a:visited {color:#00a;}
 
 a:active {color:blue;}
 
-a:hover, a.subfoot:hover, a.linknav:hover, a.sublinknav:hover {color:blue;text-decoration:underline;}
+a:hover, a.subfoot:hover, a.linknav:hover, a.sublinknav:hover {
+    color:blue;
+    text-decoration:underline;
+}
 
 body {
-	margin:0px;
-	padding: 0px;
+	margin:0;
+	padding: 0;
 	background:#ddd;
-	font-family: "Trebuchet MS",verdana,sans-serif;
+	font-family: sans-serif;
 	font-size: 14px;
 	color:#333;
 }
@@ -19,16 +22,9 @@ body {
     margin-top:20px;
 	margin-right:50px;
 	margin-left:50px;
-	background:white;
-	border-top:1px solid #666;
-	border-left:1px solid #666;
-	border-right:1px solid #666;
-	border-bottom:1px solid #666;
-    background-color: white;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    padding-left: 0px;
-    padding-right: 0px;
+	background: #ffffff;
+	border: 1px solid #666;
+    padding: 0;
 }
 
 #content {
@@ -43,7 +39,7 @@ body {
 
 h1, h2, h3, h4, pre {
     line-height:120%;
-    margin: 0px;
+    margin: 0;
 }
 
 p {
@@ -94,7 +90,6 @@ h3 {
   border-bottom: 1px dotted #888;
 }
 
-
 .question_selected {
   padding-top: 15px;
   padding-bottom: 10px;
@@ -114,6 +109,5 @@ h3 {
 }
 
 .data {
-    font-family: courier;
+    font-family: monospace;
 }
-
