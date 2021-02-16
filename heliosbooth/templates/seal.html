@@ -1,22 +1,4 @@
-
-{#if $T.election_metadata.use_advanced_audit_features}
-<div style="float: right; background: lightyellow; margin-left: 20px; padding: 0px 10px 10px 10px; border: 1px solid #ddd; width:200px;">
-<h4><a onclick="$('#auditbody').slideToggle(250);" href="#">Audit</a> <span style="font-size: 0.8em; color: #444">[optional]</span></h4>
-<div id="auditbody" style="display:none;">
-<p>
-If you choose, you can audit your ballot and reveal how your choices were encrypted.
-</p>
-<p>
-You will then be guided to re-encrypt your choices for final casting.
-</p>
-<input type="button" value="Verify Encryption" onclick="BOOTH.audit_ballot();" class="pretty" />
-</p>
-</div>
-</div>
-{#/if}
-
 <h3>Review your Ballot</h3>
-
 
 <div style="padding: 10px; margin-bottom: 10px; background-color: #eee; border: 1px #ddd solid; max-width: 340px;">
 {#foreach $T.questions as question}
@@ -36,16 +18,30 @@ You will then be guided to re-encrypt your choices for final casting.
 {#/for}
 </div>
 
+<p>Your ballot tracker is <b><tt style="font-size: 11pt; word-break: break-all;">{$T.encrypted_vote_hash}</tt></b>, and you can <a onclick="BOOTH.show_receipt(); return false;" href="#">print</a> it.</p>
 
-<p><p>Your ballot tracker is <b><tt style="font-size: 11pt;">{$T.encrypted_vote_hash}</tt></b>, and you can <a onclick="BOOTH.show_receipt(); return false;" href="#">print</a> it.<br /><br /></p>
-
+{#if $T.election_metadata.use_advanced_audit_features}
+<div style="background: lightyellow; padding: 10px; border: 1px solid #ddd; max-width: 340px;">
+<h4><a onclick="$('#auditbody').slideToggle(250);" href="#">Audit</a> <span style="font-size: 0.8em; color: #444">[optional]</span></h4>
+<div id="auditbody" style="display:none;">
 <p>
-Once you click "Submit", the unencrypted version of your ballot will be destroyed, and only the encrypted version will remain.  The encrypted version will be submitted to the Helios server.</p>
+If you choose, you can audit your ballot and reveal how your choices were encrypted.
+</p>
+<p>
+You will then be guided to re-encrypt your choices for final casting.
+</p>
+<input type="button" value="Verify Encryption" onclick="BOOTH.audit_ballot();" class="pretty" />
+</p>
+</div>
+</div>
+{#/if}
+
+<br />
+
+<p>Once you click "Submit", the unencrypted version of your ballot will be destroyed, and only the encrypted version will remain. The encrypted version will be submitted to the Helios server.</p>
 
 <button id="proceed_button" onclick="BOOTH.cast_ballot();">Submit this Vote!</button><br />
 <div id="loading_div"><img src="loading.gif" id="proceed_loading_img" /></div>
-
-
 
 <form method="POST" action="{$T.cast_url}" id="send_ballot_form" class="prettyform">
 <input type="hidden" name="election_uuid" value="{$T.election_uuid}" />

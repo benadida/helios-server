@@ -1,65 +1,84 @@
-
 body {
-  font-family: Arial;
+  font-family: sans-serif;
   background: white;
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
 }
 
 #wrapper {
-  position: absolute;
-  padding: 0px;
-  background: white;
+  padding: 0;
+  background: #ffffff;
   border: 1px solid #666;
-  top: 20px;
-  margin-left: 100px;
-  margin-top: 0px;
-  width: 1000px;
+  margin: 20px auto;
+  max-width: 1000px;
+}
+
+@media screen and (max-width: 1000px) {
+  #wrapper {
+    margin: 0;
+  }
 }
 
 #content {
-  padding: 20px 30px 20px 30px;
+  padding: 20px;
 }
 
 #header {
-  padding-top: 0px;
+  padding-top: 0;
   text-align: center;
   padding-bottom: 5px;
 }
 
 #header h1 {
   font-size: 28pt;
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
   line-height: 120%;
 }
 
 #header h2 {
   font-size: 20pt;
-  padding: 0px;
-  margin: 0px;
+  padding: 0;
+  margin: 0;
   line-height: 100%;
-  font-weight: none;
 }
 
-#banner {
+.edge {
   width: 100%;
+  display: flex;
+  padding: 5px 0;
   text-align: center;
-  padding: 2px 0px 2px 0px;
   background: #ccc;
   font-size: 18pt;
-  border-bottom: 1px solid #666;
+}
+
+.box {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.box:nth-child(2) {
+  flex: 3;
+}
+
+.box:last-child > span {
+  margin-left: auto;
+  margin-right: 5px;
+  font-size: 12pt;
 }
 
 #progress_div {
-  width: 100%;
+  margin: auto;
+  max-width: 500px;
   font-size: 14pt;
 }
 
 #progress_div table {
+  width: 100%;
   border-collapse: collapse;
   text-align: center;
-  border: 0px;
+  border: 0;
 }
 
 #progress_div td.unselected {
@@ -76,20 +95,14 @@ body {
 }
 
 #footer {
-  position: relative;
-  bottom: 0px;
-  width: 100%;
-  text-align: center;
-  margin-top: 10px;
-  padding: 2px 0px 2px 0px;
-  background: #ddd;
-  border-top: 1px solid #666;
+  font-size: 12pt;
+  word-break: break-all;
 }
 
 #page h2 {
   background: #fc9;
   border-bottom: 1px solid #f90;
-  padding: 5px 0px 2px 5px;
+  padding: 5px 0 2px 5px;
 }
 
 h3 {
@@ -101,7 +114,7 @@ h3 {
 }
 
 #election_hash {
-  font-family: courier;
+  font-family: monospace;
 }
 
 #loading_div {
