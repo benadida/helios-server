@@ -9,7 +9,7 @@ TESTING = 'test' in sys.argv
 
 # go through environment variables and override them
 def get_from_env(var, default):
-    if not TESTING and os.environ.has_key(var):
+    if not TESTING and var in os.environ:
         return os.environ[var]
     else:
         return default
@@ -38,19 +38,16 @@ SHOW_USER_INFO = (get_from_env('SHOW_USER_INFO', '1') == '1')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'helios'
-    }
+        'NAME': 'helios',
+        'CONN_MAX_AGE': 600,
+    },
 }
 
 # override if we have an env variable
 if get_from_env('DATABASE_URL', None):
     import dj_database_url
-    DATABASES['default'] =  dj_database_url.config()
+    DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
-    DATABASES['default']['CONN_MAX_AGE'] = 600
-
-    # require SSL
-    DATABASES['default']['OPTIONS'] = {'sslmode': 'require'}
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -211,9 +208,11 @@ HELIOS_VOTERS_EMAIL = True
 HELIOS_PRIVATE_DEFAULT = False
 
 # authentication systems enabled
-#AUTH_ENABLED_AUTH_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
-AUTH_ENABLED_AUTH_SYSTEMS = get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'google').split(",")
-AUTH_DEFAULT_AUTH_SYSTEM = get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None)
+# AUTH_ENABLED_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
+AUTH_ENABLED_SYSTEMS = get_from_env('AUTH_ENABLED_SYSTEMS',
+                                    get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'password,google,facebook')
+                                    ).split(",")
+AUTH_DEFAULT_SYSTEM = get_from_env('AUTH_DEFAULT_SYSTEM', get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None))
 
 # google
 GOOGLE_CLIENT_ID = get_from_env('GOOGLE_CLIENT_ID', '')
@@ -262,9 +261,10 @@ if get_from_env('EMAIL_USE_AWS', '0') == '1':
 
 # set up logging
 import logging
+
 logging.basicConfig(
-    level = logging.DEBUG,
-    format = '%(asctime)s %(levelname)s %(message)s'
+    level=logging.DEBUG if TESTING else logging.INFO,
+    format='%(asctime)s %(levelname)s %(message)s'
 )
 
 
@@ -277,7 +277,9 @@ if TESTING:
 # Rollbar Error Logging
 ROLLBAR_ACCESS_TOKEN = get_from_env('ROLLBAR_ACCESS_TOKEN', None)
 if ROLLBAR_ACCESS_TOKEN:
-  print "setting up rollbar"
+
+  print("setting up rollbar")
+
   MIDDLEWARE += ['rollbar.contrib.django.middleware.RollbarNotifierMiddleware',]
   ROLLBAR = {
     'access_token': ROLLBAR_ACCESS_TOKEN,

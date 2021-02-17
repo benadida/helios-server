@@ -1,14 +1,8 @@
-
-from django import http
-from django.http import HttpResponseRedirect
-
 from openid.consumer import consumer
 from openid.consumer.discover import DiscoveryFailure
 from openid.extensions import ax, pape, sreg
-from openid.yadis.constants import YADIS_HEADER_NAME, YADIS_CONTENT_TYPE
-from openid.server.trustroot import RP_RETURN_TO_URL_TYPE
 
-import util
+from . import util
 
 PAPE_POLICIES = [
     'AUTH_PHISHING_RESISTANT',
@@ -56,16 +50,12 @@ def start_openid(session, openid_url, trust_root, return_to):
 
     # Start OpenID authentication.
     c = get_consumer(session)
-    error = None
 
     try:
         auth_request = c.begin(openid_url)
-    except DiscoveryFailure, e:
+    except DiscoveryFailure as e:
         # Some other protocol-level failure occurred.
-        error = "OpenID discovery error: %s" % (str(e),)
-
-    if error:
-        raise Exception("error in openid")
+        raise Exception("error in openid: OpenID discovery error") from e
 
     # Add Simple Registration request information.  Some fields
     # are optional, some are required.  It's possible that the
@@ -80,7 +70,7 @@ def start_openid(session, openid_url, trust_root, return_to):
     # XXX - uses myOpenID-compatible schema values, which are
     # not those listed at axschema.org.
 
-    for k, v in AX_REQUIRED_FIELDS.iteritems():
+    for k, v in AX_REQUIRED_FIELDS.items():
         ax_request.add(ax.AttrInfo(v, required=True))
 
     auth_request.addExtension(ax_request)
@@ -123,12 +113,12 @@ def finish_openid(session, request_args, return_to):
 
             ax_response = ax.FetchResponse.fromSuccessResponse(response)
             if ax_response:
-                for k, v in AX_REQUIRED_FIELDS.iteritems():
+                for k, v in AX_REQUIRED_FIELDS.items():
                     """
                     the values are the URIs, they are the key into the data
                     the key is the shortname
                     """
-                    if ax_response.data.has_key(v):
+                    if v in ax_response.data:
                         ax_items[k] = ax_response.get(v)
 
         # Map different consumer status codes to template contexts.
@@ -141,7 +131,7 @@ def finish_openid(session, request_args, return_to):
 
             consumer.SUCCESS:
             {'url': response.getDisplayIdentifier(),
-             'sreg': sreg_response and sreg_response.items(),
+             'sreg': sreg_response and list(sreg_response.items()),
              'ax': ax_items}
             }
 

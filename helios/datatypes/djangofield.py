@@ -6,9 +6,9 @@ http://www.djangosnippets.org/snippets/377/
 and adapted to LDObject
 """
 
-import json
 from django.db import models
 
+from helios import utils
 from . import LDObject
 
 
@@ -28,36 +28,26 @@ class LDObjectField(models.TextField):
         """Convert our string value to LDObject after we load it from the DB"""
 
         # did we already convert this?
-        if not isinstance(value, basestring):
+        if not isinstance(value, str):
             return value
 
         return self.from_db_value(value)
 
     # noinspection PyUnusedLocal
     def from_db_value(self, value, *args, **kwargs):
-        if value is None:
-            return None
-
         # in some cases, we're loading an existing array or dict,
-        # we skip this part but instantiate the LD object
-        if isinstance(value, basestring):
-            try:
-                parsed_value = json.loads(value)
-            except:
-                raise Exception("value is not JSON parseable, that's bad news")
-        else:
-            parsed_value = value
-
-        if parsed_value is not None:
-            # we give the wrapped object back because we're not dealing with serialization types
-            return_val = LDObject.fromDict(parsed_value, type_hint=self.type_hint).wrapped_obj
-            return return_val
-        else:
+        # from_json takes care of this duality
+        parsed_value = utils.from_json(value)
+        if parsed_value is None:
             return None
+
+        # we give the wrapped object back because we're not dealing with serialization types
+        return_val = LDObject.fromDict(parsed_value, type_hint=self.type_hint).wrapped_obj
+        return return_val
 
     def get_prep_value(self, value):
         """Convert our JSON object to a string before we save"""
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return value
 
         if value is None:

@@ -5,9 +5,11 @@ http://www.djangosnippets.org/snippets/377/
 """
 
 import json
-from django.core.exceptions import ValidationError
+
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
+
+from . import utils
 
 
 class JSONField(models.TextField):
@@ -37,13 +39,9 @@ class JSONField(models.TextField):
 
     # noinspection PyUnusedLocal
     def from_db_value(self, value, *args, **kwargs):
-        if value == "" or value is None:
+        parsed_value = utils.from_json(value)
+        if parsed_value is None:
             return None
-
-        try:
-            parsed_value = json.loads(value)
-        except Exception as e:
-            raise ValidationError("Received value is not JSON", e)
 
         if self.json_type and parsed_value:
             parsed_value = self.json_type.fromJSONDict(parsed_value, **self.deserialization_params)
@@ -55,7 +53,7 @@ class JSONField(models.TextField):
 
     def get_prep_value(self, value):
         """Convert our JSON object to a string before we save"""
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return value
 
         if value is None:

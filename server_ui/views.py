@@ -3,15 +3,15 @@ server_ui specific views
 """
 
 import copy
-from django.conf import settings
+
+glue.glue()  # actually apply glue helios.view <-> helios.signals
 
 import helios_auth.views as auth_views
 from helios.models import Election
 from helios.security import can_create_election
 from helios_auth.security import get_user
-from view_utils import render_template
-import glue
-
+from . import glue
+from .view_utils import render_template
 
 glue.glue()  # actually apply glue helios.view <-> helios.signals
 
@@ -36,7 +36,7 @@ def home(request):
   else:
     elections_voted = None
  
-  auth_systems = copy.copy(settings.AUTH_ENABLED_AUTH_SYSTEMS)
+  auth_systems = copy.copy(settings.AUTH_ENABLED_SYSTEMS)
   try:
     auth_systems.remove('password')
   except: pass

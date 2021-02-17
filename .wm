@@ -1,0 +1,17 @@
+Personal stuff
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'helios',
+        'USER': 'warwickmcnaughton',
+        'PASSWORD': 'xxxx',
+    }
+}
+
+
+# google
+GOOGLE_CLIENT_ID = get_from_env('GOOGLE_CLIENT_ID', '739721212934-9anb7pq77h6nglknafiiq6svb50a73mr.apps.googleusercontent.com')
+GOOGLE_CLIENT_SECRET = get_from_env('GOOGLE_CLIENT_SECRET', 'e6BIkCxWG6sAJO32o1FuyaS_')
+
