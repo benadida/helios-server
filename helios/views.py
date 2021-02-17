@@ -19,11 +19,11 @@ from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpRespons
 from django.urls import reverse
 from validate_email import validate_email
 
-
-import urllib, os, base64
-
-from crypto import algs, electionalgs, elgamal
-from crypto import utils as cryptoutils
+import helios_auth.url_names as helios_auth_urls
+from helios import utils, VOTERS_EMAIL, VOTERS_UPLOAD, url_names
+from helios_auth import views as auth_views
+from helios_auth.auth_systems import AUTH_SYSTEMS, can_list_categories
+from helios_auth.models import AuthenticationExpired
 from helios_auth.security import check_csrf, login_required, get_user, save_in_session_across_logouts
 from . import datatypes
 from . import forms
@@ -350,17 +350,22 @@ def test_cookie(request):
   request.session.set_test_cookie()
   next_url = "%s?%s" % (reverse(url_names.COOKIE_TEST_2), urlencode({'continue_url': continue_url}))
   return HttpResponseRedirect(settings.SECURE_URL_HOST + next_url)  
+
+def test_cookie_2(request):
+  continue_url = request.GET['continue_url']
+
+  if not request.session.test_cookie_worked():
     return HttpResponseRedirect(settings.SECURE_URL_HOST + ("%s?%s" % (reverse(url_names.COOKIE_NO), urlencode({'continue_url': continue_url}))))
 
   request.session.delete_test_cookie()
   return HttpResponseRedirect(continue_url)  
 
 def nocookies(request):
-
-  retest_url = "%s?%s" % (reverse(url_names.COOKIE_TEST), urllib.urlencode({'continue_url' : request.GET['continue_url']}))
-
   retest_url = "%s?%s" % (reverse(url_names.COOKIE_TEST), urlencode({'continue_url' : request.GET['continue_url']}))
+  return render_template(request, 'nocookies', {'retest_url': retest_url})##
+
 ##
+## Trustees and Public Key
 ##
 ## As of July 2009, there are always trustees for a Helios election: one trustee is acceptable, for simple elections.
 ##

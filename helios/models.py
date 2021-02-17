@@ -20,12 +20,13 @@ from django.db import models, transaction
 
 from helios import datatypes
 from helios import utils
->>>>>>> bc09371246073b46d441ae5ac95c225ea6dbb5a9
 from helios.datatypes.djangofield import LDObjectField
 # useful stuff in helios_auth
 from helios_auth.jsonfield import JSONField
 from helios_auth.models import User, AUTH_SYSTEMS
-
+from .crypto import algs
+from .crypto.elgamal import Cryptosystem
+from .crypto.utils import random, hash_b64
 
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
   class Meta:

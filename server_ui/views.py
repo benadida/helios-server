@@ -4,7 +4,7 @@ server_ui specific views
 
 import copy
 
-glue.glue()  # actually apply glue helios.view <-> helios.signals
+from django.conf import settings
 
 import helios_auth.views as auth_views
 from helios.models import Election
@@ -59,5 +59,4 @@ def faq(request):
   return render_template(request, "faq")
 
 def privacy(request):
-  return render_template(request, "privacy")
-    
+  return render_template(request, "privacy")  

@@ -8,3 +8,4 @@ celerybeat-*
 env.sh
 .cache
 .idea/
+.env

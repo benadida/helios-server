@@ -51,13 +51,8 @@ def voters_email(election_id, subject_template, body_template, extra_vars={},
 
     for voter in voters:
         single_voter_email.delay(voter.uuid, subject_template, body_template, extra_vars)
-<<<<<<< HEAD
 
 
-=======
-
-
->>>>>>> bc09371246073b46d441ae5ac95c225ea6dbb5a9
 @shared_task
 def voters_notify(election_id, notification_template, extra_vars={}):
     election = Election.objects.get(id=election_id)

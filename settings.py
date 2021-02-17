@@ -1,9 +1,19 @@
 
+
 # a massive hack to see if we're testing, in which case we use different settings
 import sys
 
 import json
 import os
+
+import environ
+
+# Read in secrets from .env file
+env = environ.Env()
+environ.Env.read_env()  
+DBPWD = env('DBPWD')
+GOOGLESECRET = env('GOOGLESECRET')
+GOOGLEID = env('GOOGLEID')
 
 TESTING = 'test' in sys.argv
 
@@ -215,8 +225,8 @@ AUTH_ENABLED_SYSTEMS = get_from_env('AUTH_ENABLED_SYSTEMS',
 AUTH_DEFAULT_SYSTEM = get_from_env('AUTH_DEFAULT_SYSTEM', get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None))
 
 # google
-GOOGLE_CLIENT_ID = get_from_env('GOOGLE_CLIENT_ID', '')
-GOOGLE_CLIENT_SECRET = get_from_env('GOOGLE_CLIENT_SECRET', '')
+GOOGLE_CLIENT_ID = get_from_env('GOOGLE_CLIENT_ID', GOOGLEID)
+GOOGLE_CLIENT_SECRET = get_from_env('GOOGLE_CLIENT_SECRET', GOOGLESECRET)
 
 # facebook
 FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID','')
