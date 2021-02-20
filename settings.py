@@ -262,6 +262,9 @@ EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
 
+# EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+
+
 # to use AWS Simple Email Service
 # in which case environment should contain
 # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
