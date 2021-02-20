@@ -180,62 +180,62 @@ class Meta:
         makes things a lot harder
         """
         if not self.use_voter_aliases:
-          return None
+            return None
         
         return utils.one_val_raw_sql("select max(cast(substring(alias, 2) as integer)) from " + Voter._meta.db_table + " where election_id = %s", [self.id]) or 0
 
     @property
     def encrypted_tally_hash(self):
-      if not self.encrypted_tally:
-        return None
+        if not self.encrypted_tally:
+            return None
 
-      return hash_b64(self.encrypted_tally.toJSON())
+        return hash_b64(self.encrypted_tally.toJSON())
 
     @property
     def is_archived(self):
-      return self.archived_at is not None
+        return self.archived_at is not None
 
     @property
     def description_bleached(self):
-      return bleach.clean(self.description,
-                          tags=bleach.ALLOWED_TAGS + ['p', 'h4', 'h5', 'h3', 'h2', 'br', 'u'],
-                          strip=True,
-                          strip_comments=True,
-                          )
+        return bleach.clean(self.description,
+                            tags=bleach.ALLOWED_TAGS + ['p', 'h4', 'h5', 'h3', 'h2', 'br', 'u'],
+                            strip=True,
+                            strip_comments=True,
+                            )
 
     @classmethod
     def get_featured(cls):
-      return cls.objects.filter(featured_p = True).order_by('short_name')
+        return cls.objects.filter(featured_p = True).order_by('short_name')
       
     @classmethod
     def get_or_create(cls, **kwargs):
-      return cls.objects.get_or_create(short_name = kwargs['short_name'], defaults=kwargs)
+        return cls.objects.get_or_create(short_name = kwargs['short_name'], defaults=kwargs)
 
     @classmethod
     def get_by_user_as_admin(cls, user, archived_p=None, limit=None):
         query = cls.objects.filter(admin = user)
         if archived_p is True:
-          query = query.exclude(archived_at= None)
+            query = query.exclude(archived_at= None)
         if archived_p is False:
-          query = query.filter(archived_at= None)
+            query = query.filter(archived_at= None)
         query = query.order_by('-created_at')
         if limit:
-          return query[:limit]
+            return query[:limit]
         else:
-          return query
+            return query
       
     @classmethod
     def get_by_user_as_voter(cls, user, archived_p=None, limit=None):
         query = cls.objects.filter(voter__user = user)
         if archived_p is True:
-          query = query.exclude(archived_at= None)
+            query = query.exclude(archived_at= None)
         if archived_p is False:
-          query = query.filter(archived_at= None)
+            query = query.filter(archived_at= None)
         query = query.order_by('-created_at')
         if limit:
-          return query[:limit]
+            return query[:limit]
         else:
-          return query
+            return query
       
     @classmethod
     def get_by_uuid(cls, uuid):
@@ -258,12 +258,12 @@ class Meta:
         # verify all the answer_urls
         for q in questions:
             for answer_url in q['answer_urls']:
-            if not answer_url or answer_url == "":
-                continue
-                
-            # abort saving if bad URL
-            if not (answer_url[:7] == "http://" or answer_url[:8]== "https://"):
-                return False
+                if not answer_url or answer_url == "":
+                    continue
+                    
+                # abort saving if bad URL
+                if not (answer_url[:7] == "http://" or answer_url[:8]== "https://"):
+                    return False
         
         self.questions = questions
         return True
@@ -296,7 +296,7 @@ class Meta:
         # is the user eligible for one of these cases?
         for eligibility_case in self.eligibility:
             if user.is_eligible_for(eligibility_case):
-            return True
+                return True
             
         return False
 
@@ -315,13 +315,13 @@ class Meta:
         "when eligibility is by category, this returns the category_id"
         if not self.eligibility:
             return None
-      
-      constraint_for = self.eligibility_constraint_for(user_type)
-      if len(constraint_for) > 0:
-        constraint = constraint_for[0]
-        return AUTH_SYSTEMS[user_type].eligibility_category_id(constraint)
-      else:
-        return None
+        
+        constraint_for = self.eligibility_constraint_for(user_type)
+        if len(constraint_for) > 0:
+            constraint = constraint_for[0]
+            return AUTH_SYSTEMS[user_type].eligibility_category_id(constraint)
+        else:
+            return None
       
     @property
     def pretty_eligibility(self):
@@ -331,11 +331,11 @@ class Meta:
             return_val = "<ul>"
             
             for constraint in self.eligibility:
-            if 'constraint' in constraint:
-                for one_constraint in constraint['constraint']:
-                return_val += "<li>%s</li>" % AUTH_SYSTEMS[constraint['auth_system']].pretty_eligibility(one_constraint)
-            else:
-                return_val += "<li> any %s user</li>" % constraint['auth_system']
+                if 'constraint' in constraint:
+                    for one_constraint in constraint['constraint']:
+                        return_val += "<li>%s</li>" % AUTH_SYSTEMS[constraint['auth_system']].pretty_eligibility(one_constraint)
+                else:
+                    return_val += "<li> any %s user</li>" % constraint['auth_system']
 
             return_val += "</ul>"
 
@@ -357,324 +357,324 @@ class Meta:
 
     @property
     def issues_before_freeze(self):
-      issues = []
-      if self.questions is None or len(self.questions) == 0:
-        issues.append(
-          {'type': 'questions',
-          'action': "add questions to the ballot"}
-          )
+        issues = []
+        if self.questions is None or len(self.questions) == 0:
+            issues.append(
+            {'type': 'questions',
+            'action': "add questions to the ballot"}
+            )
     
-      trustees = Trustee.get_by_election(self)
-      if len(trustees) == 0:
-        issues.append({
-            'type': 'trustees',
-            'action': "add at least one trustee"
-            })
+        trustees = Trustee.get_by_election(self)
+        if len(trustees) == 0:
+            issues.append({
+                'type': 'trustees',
+                'action': "add at least one trustee"
+                })
 
-      for t in trustees:
-        if t.public_key is None:
-          issues.append({
-              'type': 'trustee keypairs',
-              'action': 'have trustee %s generate a keypair' % t.name
-              })
+        for t in trustees:
+            if t.public_key is None:
+                issues.append({
+                    'type': 'trustee keypairs',
+                    'action': 'have trustee %s generate a keypair' % t.name
+                    })
 
-      if self.voter_set.count() == 0 and not self.openreg:
-        issues.append({
-            "type" : "voters",
-            "action" : 'enter your voter list (or open registration to the public)'
-            })
+        if self.voter_set.count() == 0 and not self.openreg:
+            issues.append({
+                "type" : "voters",
+                "action" : 'enter your voter list (or open registration to the public)'
+                })
 
-      return issues    
+        return issues    
 
     def ready_for_tallying(self):
-      return datetime.datetime.utcnow() >= self.tallying_starts_at
+        return datetime.datetime.utcnow() >= self.tallying_starts_at
 
     def compute_tally(self):
-      """
-      tally the election, assuming votes already verified
-      """
-      tally = self.init_tally()
-      for voter in self.voter_set.exclude(vote=None):
-        tally.add_vote(voter.vote, verify_p=False)
+        """
+        tally the election, assuming votes already verified
+        """
+        tally = self.init_tally()
+        for voter in self.voter_set.exclude(vote=None):
+            tally.add_vote(voter.vote, verify_p=False)
 
-      self.encrypted_tally = tally
-      self.save()    
+        self.encrypted_tally = tally
+        self.save()    
     
     def ready_for_decryption(self):
-      return self.encrypted_tally is not None
+        return self.encrypted_tally is not None
 
     def ready_for_decryption_combination(self):
-      """
-      do we have a tally from all trustees?
-      """
-      for t in Trustee.get_by_election(self):
-        if not t.decryption_factors:
-          return False
-      
-      return True
+        """
+        do we have a tally from all trustees?
+        """
+        for t in Trustee.get_by_election(self):
+            if not t.decryption_factors:
+                return False
+        
+        return True
       
     def release_result(self):
-      """
-      release the result that should already be computed
-      """
-      if not self.result:
-        return
+        """
+        release the result that should already be computed
+        """
+        if not self.result:
+            return
 
-      self.result_released_at = datetime.datetime.utcnow()
+        self.result_released_at = datetime.datetime.utcnow()
     
     def combine_decryptions(self):
-      """
-      combine all of the decryption results
-      """
-      
-      # gather the decryption factors
-      trustees = Trustee.get_by_election(self)
-      decryption_factors = [t.decryption_factors for t in trustees]
-      
-      self.result = self.encrypted_tally.decrypt_from_factors(decryption_factors, self.public_key)
+        """
+        combine all of the decryption results
+        """
+        
+        # gather the decryption factors
+        trustees = Trustee.get_by_election(self)
+        decryption_factors = [t.decryption_factors for t in trustees]
+        
+        self.result = self.encrypted_tally.decrypt_from_factors(decryption_factors, self.public_key)
 
-      self.append_log(ElectionLog.DECRYPTIONS_COMBINED)
+        self.append_log(ElectionLog.DECRYPTIONS_COMBINED)
 
-      self.save()
+        self.save()
     
     def generate_voters_hash(self):
-      """
-      look up the list of voters, make a big file, and hash it
-      """
+        """
+        look up the list of voters, make a big file, and hash it
+        """
 
-      # FIXME: for now we don't generate this voters hash:
-      return
-
-      if self.openreg:
-        self.voters_hash = None
-      else:
-        voters = Voter.get_by_election(self)
-        voters_json = utils.to_json([v.toJSONDict() for v in voters])
-        self.voters_hash = hash_b64(voters_json)
-      
-    def increment_voters(self):
-      ## FIXME
-      return 0
-      
-    def increment_cast_votes(self):
-      ## FIXME
-      return 0
-          
-    def set_eligibility(self):
-      """
-      if registration is closed and eligibility has not been
-      already set, then this call sets the eligibility criteria
-      based on the actual list of voters who are already there.
-
-      This helps ensure that the login box shows the proper options.
-
-      If registration is open but no voters have been added with password,
-      then that option is also canceled out to prevent confusion, since
-      those elections usually just use the existing login systems.
-      """
-
-      # don't override existing eligibility
-      if self.eligibility is not None:
+        # FIXME: for now we don't generate this voters hash:
         return
 
-      # enable this ONLY once the cast_confirm screen makes sense
-      #if self.voter_set.count() == 0:
-      #  return
+        if self.openreg:
+            self.voters_hash = None
+        else:
+            voters = Voter.get_by_election(self)
+            voters_json = utils.to_json([v.toJSONDict() for v in voters])
+            self.voters_hash = hash_b64(voters_json)
+      
+    def increment_voters(self):
+        ## FIXME
+        return 0
+      
+    def increment_cast_votes(self):
+        ## FIXME
+        return 0
+          
+    def set_eligibility(self):
+        """
+        if registration is closed and eligibility has not been
+        already set, then this call sets the eligibility criteria
+        based on the actual list of voters who are already there.
 
-      auth_systems = copy.copy(settings.AUTH_ENABLED_SYSTEMS)
-      voter_types = [r['user__user_type'] for r in self.voter_set.values('user__user_type').distinct() if
-                    r['user__user_type'] is not None]
+        This helps ensure that the login box shows the proper options.
 
-      # password is now separate, not an explicit voter type
-      if self.voter_set.filter(user=None).count() > 0:
-        voter_types.append('password')
-      else:
-        # no password users, remove password from the possible auth systems
-        if 'password' in auth_systems:
-          auth_systems.remove('password')        
+        If registration is open but no voters have been added with password,
+        then that option is also canceled out to prevent confusion, since
+        those elections usually just use the existing login systems.
+        """
 
-      # closed registration: limit the auth_systems to just the ones
-      # that have registered voters
-      if not self.openreg:
-        auth_systems = [vt for vt in voter_types if vt in auth_systems]
+        # don't override existing eligibility
+        if self.eligibility is not None:
+            return
 
-      self.eligibility = [{'auth_system': auth_system} for auth_system in auth_systems]
-      self.save()    
+        # enable this ONLY once the cast_confirm screen makes sense
+        #if self.voter_set.count() == 0:
+        #  return
+
+        auth_systems = copy.copy(settings.AUTH_ENABLED_SYSTEMS)
+        voter_types = [r['user__user_type'] for r in self.voter_set.values('user__user_type').distinct() if
+                        r['user__user_type'] is not None]
+
+        # password is now separate, not an explicit voter type
+        if self.voter_set.filter(user=None).count() > 0:
+            voter_types.append('password')
+        else:
+            # no password users, remove password from the possible auth systems
+            if 'password' in auth_systems:
+                auth_systems.remove('password')        
+
+        # closed registration: limit the auth_systems to just the ones
+        # that have registered voters
+        if not self.openreg:
+            auth_systems = [vt for vt in voter_types if vt in auth_systems]
+
+        self.eligibility = [{'auth_system': auth_system} for auth_system in auth_systems]
+        self.save()    
       
     def freeze(self):
-      """
-      election is frozen when the voter registration, questions, and trustees are finalized
-      """
-      if len(self.issues_before_freeze) > 0:
-        raise Exception("cannot freeze an election that has issues")
+        """
+        election is frozen when the voter registration, questions, and trustees are finalized
+        """
+        if len(self.issues_before_freeze) > 0:
+            raise Exception("cannot freeze an election that has issues")
 
-      self.frozen_at = datetime.datetime.utcnow()
-      
-      # voters hash
-      self.generate_voters_hash()
-
-      self.set_eligibility()
-      
-      # public key for trustees
-      trustees = list(Trustee.get_by_election(self))
-      combined_pk = trustees[0].public_key
-      for t in trustees[1:]:
-        combined_pk = combined_pk * t.public_key
+        self.frozen_at = datetime.datetime.utcnow()
         
-      self.public_key = combined_pk
-      
-      # log it
-      self.append_log(ElectionLog.FROZEN)
+        # voters hash
+        self.generate_voters_hash()
 
-      self.save()
+        self.set_eligibility()
+        
+        # public key for trustees
+        trustees = list(Trustee.get_by_election(self))
+        combined_pk = trustees[0].public_key
+        for t in trustees[1:]:
+            combined_pk = combined_pk * t.public_key
+            
+        self.public_key = combined_pk
+        
+        # log it
+        self.append_log(ElectionLog.FROZEN)
+
+        self.save()
 
     def generate_trustee(self, params):
-      """
-      generate a trustee including the secret key,
-      thus a helios-based trustee
-      :type params: Cryptosystem
-      """
-      # FIXME: generate the keypair
-      keypair = params.generate_keypair()
+        """
+        generate a trustee including the secret key,
+        thus a helios-based trustee
+        :type params: Cryptosystem
+        """
+        # FIXME: generate the keypair
+        keypair = params.generate_keypair()
 
-      # create the trustee
-      trustee = Trustee(election = self)
-      trustee.uuid = str(uuid.uuid4())
-      trustee.name = settings.DEFAULT_FROM_NAME
-      trustee.email = settings.DEFAULT_FROM_EMAIL
-      trustee.public_key = keypair.pk
-      trustee.secret_key = keypair.sk
-      
-      # FIXME: is this at the right level of abstraction?
-      trustee.public_key_hash = datatypes.LDObject.instantiate(trustee.public_key, datatype='legacy/EGPublicKey').hash
+        # create the trustee
+        trustee = Trustee(election = self)
+        trustee.uuid = str(uuid.uuid4())
+        trustee.name = settings.DEFAULT_FROM_NAME
+        trustee.email = settings.DEFAULT_FROM_EMAIL
+        trustee.public_key = keypair.pk
+        trustee.secret_key = keypair.sk
+        
+        # FIXME: is this at the right level of abstraction?
+        trustee.public_key_hash = datatypes.LDObject.instantiate(trustee.public_key, datatype='legacy/EGPublicKey').hash
 
-      trustee.pok = trustee.secret_key.prove_sk(algs.DLog_challenge_generator)
+        trustee.pok = trustee.secret_key.prove_sk(algs.DLog_challenge_generator)
 
-      trustee.save()
+        trustee.save()
 
     def get_helios_trustee(self):
-      trustees_with_sk = self.trustee_set.exclude(secret_key = None)
-      if len(trustees_with_sk) > 0:
-        return trustees_with_sk[0]
-      else:
-        return None
+        trustees_with_sk = self.trustee_set.exclude(secret_key = None)
+        if len(trustees_with_sk) > 0:
+            return trustees_with_sk[0]
+        else:
+            return None
       
     def has_helios_trustee(self):
-      return self.get_helios_trustee() is not None
+        return self.get_helios_trustee() is not None
 
     def helios_trustee_decrypt(self):
-      tally = self.encrypted_tally
-      tally.init_election(self)
+        tally = self.encrypted_tally
+        tally.init_election(self)
 
-      trustee = self.get_helios_trustee()
-      factors, proof = tally.decryption_factors_and_proofs(trustee.secret_key)
+        trustee = self.get_helios_trustee()
+        factors, proof = tally.decryption_factors_and_proofs(trustee.secret_key)
 
-      trustee.decryption_factors = factors
-      trustee.decryption_proofs = proof
-      trustee.save()
+        trustee.decryption_factors = factors
+        trustee.decryption_proofs = proof
+        trustee.save()
 
     def append_log(self, text):
-      item = ElectionLog(election = self, log=text, at=datetime.datetime.utcnow())
-      item.save()
-      return item
+        item = ElectionLog(election = self, log=text, at=datetime.datetime.utcnow())
+        item.save()
+        return item
 
     def get_log(self):
-      return self.electionlog_set.order_by('-at')
+        return self.electionlog_set.order_by('-at')
 
     @property
     def url(self):
-      import helios.views
-      return helios.views.get_election_url(self)
+        import helios.views
+        return helios.views.get_election_url(self)
 
     def init_tally(self):
-      # FIXME: create the right kind of tally
-      from helios.workflows import homomorphic
-      return homomorphic.Tally(election=self)
+        # FIXME: create the right kind of tally
+        from helios.workflows import homomorphic
+        return homomorphic.Tally(election=self)
           
     @property
     def registration_status_pretty(self):
-      if self.openreg:
-        return "Open"
-      else:
-        return "Closed"
+        if self.openreg:
+            return "Open"
+        else:
+            return "Closed"
 
     @classmethod
     def one_question_winner(cls, question, result, num_cast_votes):
-      """
-      determining the winner for one question
-      """
-      # sort the answers , keep track of the index
-      counts = sorted(enumerate(result), key=lambda x: x[1])
-      counts.reverse()
-      
-      the_max = question['max'] or 1
-      the_min = question['min'] or 0
+        """
+        determining the winner for one question
+        """
+        # sort the answers , keep track of the index
+        counts = sorted(enumerate(result), key=lambda x: x[1])
+        counts.reverse()
+        
+        the_max = question['max'] or 1
+        the_min = question['min'] or 0
 
-      # if there's a max > 1, we assume that the top MAX win
-      if the_max > 1:
-        return [c[0] for c in counts[:the_max]]
+        # if there's a max > 1, we assume that the top MAX win
+        if the_max > 1:
+            return [c[0] for c in counts[:the_max]]
 
-      # if max = 1, then depends on absolute or relative
-      if question['result_type'] == 'absolute':
-        if counts[0][1] >=  (num_cast_votes/2 + 1):
-          return [counts[0][0]]
+        # if max = 1, then depends on absolute or relative
+        if question['result_type'] == 'absolute':
+            if counts[0][1] >=  (num_cast_votes/2 + 1):
+                return [counts[0][0]]
+            else:
+                return []
         else:
-          return []
-      else:
-        # assumes that anything non-absolute is relative
-        return [counts[0][0]]    
+            # assumes that anything non-absolute is relative
+            return [counts[0][0]]    
 
     @property
     def winners(self):
-      """
-      Depending on the type of each question, determine the winners
-      returns an array of winners for each question, aka an array of arrays.
-      assumes that if there is a max to the question, that's how many winners there are.
-      """
-      return [self.one_question_winner(self.questions[i], self.result[i], self.num_cast_votes) for i in range(len(self.questions))]
+        """
+        Depending on the type of each question, determine the winners
+        returns an array of winners for each question, aka an array of arrays.
+        assumes that if there is a max to the question, that's how many winners there are.
+        """
+        return [self.one_question_winner(self.questions[i], self.result[i], self.num_cast_votes) for i in range(len(self.questions))]
       
     @property
     def pretty_result(self):
-      if not self.result:
-        return None
-      
-      # get the winners
-      winners = self.winners
-
-      raw_result = self.result
-      prettified_result = []
-
-      # loop through questions
-      for i in range(len(self.questions)):
-        q = self.questions[i]
-        pretty_question = []
+        if not self.result:
+            return None
         
-        # go through answers
-        for j in range(len(q['answers'])):
-          a = q['answers'][j]
-          count = raw_result[i][j]
-          pretty_question.append({'answer': a, 'count': count, 'winner': (j in winners[i])})
-          
-        prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
+        # get the winners
+        winners = self.winners
 
-      return prettified_result
+        raw_result = self.result
+        prettified_result = []
+
+        # loop through questions
+        for i in range(len(self.questions)):
+            q = self.questions[i]
+            pretty_question = []
+            
+            # go through answers
+            for j in range(len(q['answers'])):
+                a = q['answers'][j]
+                count = raw_result[i][j]
+                pretty_question.append({'answer': a, 'count': count, 'winner': (j in winners[i])})
+                
+                prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
+
+        return prettified_result
 
 
 class ElectionLog(models.Model):
-  """
-  a log of events for an election
-  """
+    """
+    a log of events for an election
+    """
 
-  FROZEN = "frozen"
-  VOTER_FILE_ADDED = "voter file added"
-  DECRYPTIONS_COMBINED = "decryptions combined"
+    FROZEN = "frozen"
+    VOTER_FILE_ADDED = "voter file added"
+    DECRYPTIONS_COMBINED = "decryptions combined"
 
-  election = models.ForeignKey(Election, on_delete=models.CASCADE)
-  log = models.CharField(max_length=500)
-  at = models.DateTimeField(auto_now_add=True)
+    election = models.ForeignKey(Election, on_delete=models.CASCADE)
+    log = models.CharField(max_length=500)
+    at = models.DateTimeField(auto_now_add=True)
 
-  class Meta:
-    app_label = 'helios'
+    class Meta:
+        app_label = 'helios'
 
 ##
 ## UTF8 craziness for CSV
@@ -685,530 +685,530 @@ def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
     csv_reader = csv.reader(utf_8_encoder(unicode_csv_data),
                             dialect=dialect, **kwargs)
     for row in csv_reader:
-      # decode UTF-8 back to Unicode, cell by cell:
-      try:
-        yield [str(cell, 'utf-8') for cell in row]
-      except:
-        yield [str(cell, 'latin-1') for cell in row]        
+        # decode UTF-8 back to Unicode, cell by cell:
+        try:
+            yield [str(cell, 'utf-8') for cell in row]
+        except:
+            yield [str(cell, 'latin-1') for cell in row]        
 
 def utf_8_encoder(unicode_csv_data):
     for line in unicode_csv_data:
-      # FIXME: this used to be line.encode('utf-8'),
-      # need to figure out why this isn't consistent
-      yield line
+        # FIXME: this used to be line.encode('utf-8'),
+        # need to figure out why this isn't consistent
+        yield line
   
 class VoterFile(models.Model):
-  """
-  A model to store files that are lists of voters to be processed
-  """
-  # path where we store voter upload 
-  PATH = settings.VOTER_UPLOAD_REL_PATH
+    """
+    A model to store files that are lists of voters to be processed
+    """
+    # path where we store voter upload 
+    PATH = settings.VOTER_UPLOAD_REL_PATH
 
-  election = models.ForeignKey(Election, on_delete=models.CASCADE)
+    election = models.ForeignKey(Election, on_delete=models.CASCADE)
 
-  # we move to storing the content in the DB
-  voter_file = models.FileField(upload_to=PATH, max_length=250,null=True)
-  voter_file_content = models.TextField(null=True)
+    # we move to storing the content in the DB
+    voter_file = models.FileField(upload_to=PATH, max_length=250,null=True)
+    voter_file_content = models.TextField(null=True)
 
-  uploaded_at = models.DateTimeField(auto_now_add=True)
-  processing_started_at = models.DateTimeField(auto_now_add=False, null=True)
-  processing_finished_at = models.DateTimeField(auto_now_add=False, null=True)
-  num_voters = models.IntegerField(null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    processing_started_at = models.DateTimeField(auto_now_add=False, null=True)
+    processing_finished_at = models.DateTimeField(auto_now_add=False, null=True)
+    num_voters = models.IntegerField(null=True)
 
-  class Meta:
-    app_label = 'helios'
+    class Meta:
+        app_label = 'helios'
 
-  def itervoters(self):
-    if self.voter_file_content:
-      if isinstance(self.voter_file_content, str):
-        content = self.voter_file_content.encode(encoding='utf-8')
-      elif isinstance(self.voter_file_content, bytes):
-        content = self.voter_file_content
-      else:
-        raise TypeError("voter_file_content is of type {0} instead of str or bytes"
-                        .format(str(type(self.voter_file_content))))
+    def itervoters(self):
+        if self.voter_file_content:
+            if isinstance(self.voter_file_content, str):
+                content = self.voter_file_content.encode(encoding='utf-8')
+            elif isinstance(self.voter_file_content, bytes):
+                content = self.voter_file_content
+            else:
+                raise TypeError("voter_file_content is of type {0} instead of str or bytes"
+                                .format(str(type(self.voter_file_content))))
 
-      # now we have to handle non-universal-newline stuff
-      # we do this in a simple way: replace all \r with \n
-      # then, replace all double \n with single \n
-      # this should leave us with only \n
-      content = content.replace(b'\r',b'\n').replace(b'\n\n',b'\n')
+            # now we have to handle non-universal-newline stuff
+            # we do this in a simple way: replace all \r with \n
+            # then, replace all double \n with single \n
+            # this should leave us with only \n
+            content = content.replace(b'\r',b'\n').replace(b'\n\n',b'\n')
 
-      close = False
-      voter_stream = io.BytesIO(content)
-    else:
-      close = True
-      voter_stream = open(self.voter_file.path, "rb")
+            close = False
+            voter_stream = io.BytesIO(content)
+        else:
+            close = True
+            voter_stream = open(self.voter_file.path, "rb")
 
-    #reader = unicode_csv_reader(voter_stream)
-    reader = unicodecsv.reader(voter_stream, encoding='utf-8')
+        #reader = unicode_csv_reader(voter_stream)
+        reader = unicodecsv.reader(voter_stream, encoding='utf-8')
 
-    for voter_fields in reader:
-      # bad line
-      if len(voter_fields) < 1:
-        continue
-    
-      return_dict = {'voter_id': voter_fields[0].strip()}
+        for voter_fields in reader:
+            # bad line
+            if len(voter_fields) < 1:
+                continue
+        
+            return_dict = {'voter_id': voter_fields[0].strip()}
 
-      if len(voter_fields) > 1:
-        return_dict['email'] = voter_fields[1].strip()
-      else:
-        # assume single field means the email is the same field
-        return_dict['email'] = voter_fields[0].strip()
+            if len(voter_fields) > 1:
+                return_dict['email'] = voter_fields[1].strip()
+            else:
+                # assume single field means the email is the same field
+                return_dict['email'] = voter_fields[0].strip()
 
-      if len(voter_fields) > 2:
-        return_dict['name'] = voter_fields[2].strip()
-      else:
-        return_dict['name'] = return_dict['email']
+            if len(voter_fields) > 2:
+                return_dict['name'] = voter_fields[2].strip()
+            else:
+                return_dict['name'] = return_dict['email']
 
-      yield return_dict
-    if close:
-      voter_stream.close()
-    
-  def process(self):
-    self.processing_started_at = datetime.datetime.utcnow()
-    self.save()
+            yield return_dict
+        if close:
+            voter_stream.close()
+        
+    def process(self):
+        self.processing_started_at = datetime.datetime.utcnow()
+        self.save()
 
-    election = self.election    
-    last_alias_num = election.last_alias_num
+        election = self.election    
+        last_alias_num = election.last_alias_num
 
-    num_voters = 0
-    new_voters = []
-    for voter in self.itervoters():
-      num_voters += 1
-    
-      # does voter for this user already exist
-      existing_voter = Voter.get_by_election_and_voter_id(election, voter['voter_id'])
-    
-      # create the voter
-      if not existing_voter:
-        voter_uuid = str(uuid.uuid4())
-        existing_voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter['voter_id'],
-                      voter_name = voter['name'], voter_email = voter['email'], election = election)
-        existing_voter.generate_password()
-        new_voters.append(existing_voter)
-        existing_voter.save()
+        num_voters = 0
+        new_voters = []
+        for voter in self.itervoters():
+            num_voters += 1
+        
+        # does voter for this user already exist
+        existing_voter = Voter.get_by_election_and_voter_id(election, voter['voter_id'])
+        
+        # create the voter
+        if not existing_voter:
+            voter_uuid = str(uuid.uuid4())
+            existing_voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter['voter_id'],
+                        voter_name = voter['name'], voter_email = voter['email'], election = election)
+            existing_voter.generate_password()
+            new_voters.append(existing_voter)
+            existing_voter.save()
 
-    if election.use_voter_aliases:
-      voter_alias_integers = list(range(last_alias_num+1, last_alias_num+1+num_voters))
-      random.shuffle(voter_alias_integers)
-      for i, voter in enumerate(new_voters):
-        voter.alias = 'V%s' % voter_alias_integers[i]
-        voter.save()
+        if election.use_voter_aliases:
+        voter_alias_integers = list(range(last_alias_num+1, last_alias_num+1+num_voters))
+        random.shuffle(voter_alias_integers)
+        for i, voter in enumerate(new_voters):
+            voter.alias = 'V%s' % voter_alias_integers[i]
+            voter.save()
 
-    self.num_voters = num_voters
-    self.processing_finished_at = datetime.datetime.utcnow()
-    self.save()
+        self.num_voters = num_voters
+        self.processing_finished_at = datetime.datetime.utcnow()
+        self.save()
 
-    return num_voters
+        return num_voters
 
     
 class Voter(HeliosModel):
-  election = models.ForeignKey(Election, on_delete=models.CASCADE)
-  
-  # let's link directly to the user now
-  # FIXME: delete this as soon as migrations are set up
-  #name = models.CharField(max_length = 200, null=True)
-  #voter_type = models.CharField(max_length = 100)
-  #voter_id = models.CharField(max_length = 100)
-
-  uuid = models.CharField(max_length = 50)
-
-  # for users of type password, no user object is created
-  # but a dynamic user object is created automatically
-  user = models.ForeignKey('helios_auth.User', null=True, on_delete=models.CASCADE)
-
-  # if user is null, then you need a voter login ID and password
-  voter_login_id = models.CharField(max_length = 100, null=True)
-  voter_password = models.CharField(max_length = 100, null=True)
-  voter_name = models.CharField(max_length = 200, null=True)
-  voter_email = models.CharField(max_length = 250, null=True)
-  
-  # if election uses aliases
-  alias = models.CharField(max_length = 100, null=True)
-  
-  # we keep a copy here for easy tallying
-  vote = LDObjectField(type_hint = 'legacy/EncryptedVote', null=True)
-  vote_hash = models.CharField(max_length = 100, null=True)
-  cast_at = models.DateTimeField(auto_now_add=False, null=True)
-
-  class Meta:
-    unique_together = (('election', 'voter_login_id'))
-    app_label = 'helios'
-
-  def __init__(self, *args, **kwargs):
-    super(Voter, self).__init__(*args, **kwargs)
-
-  def get_user(self):
-    # stub the user so code is not full of IF statements
-    return self.user or User(user_type='password', user_id=self.voter_email, name=self.voter_name)
-
-  @classmethod
-  @transaction.atomic
-  def register_user_in_election(cls, user, election):
-    voter_uuid = str(uuid.uuid4())
-    voter = Voter(uuid= voter_uuid, user = user, election = election)
-
-    # do we need to generate an alias?
-    if election.use_voter_aliases:
-      utils.lock_row(Election, election.id)
-      alias_num = election.last_alias_num + 1
-      voter.alias = "V%s" % alias_num
-
-    voter.save()
-    return voter
-
-  @classmethod
-  def get_by_election(cls, election, cast=None, order_by='voter_login_id', after=None, limit=None):
-    """
-    FIXME: review this for non-GAE?
-    """
-    query = cls.objects.filter(election = election)
+    election = models.ForeignKey(Election, on_delete=models.CASCADE)
     
-    # the boolean check is not stupid, this is ternary logic
-    # none means don't care if it's cast or not
-    if cast is True:
-      query = query.exclude(cast_at = None)
-    elif cast is False:
-      query = query.filter(cast_at = None)
+    # let's link directly to the user now
+    # FIXME: delete this as soon as migrations are set up
+    #name = models.CharField(max_length = 200, null=True)
+    #voter_type = models.CharField(max_length = 100)
+    #voter_id = models.CharField(max_length = 100)
 
-    # little trick to get around GAE limitation
-    # order by uuid only when no inequality has been added
-    if cast is None or order_by == 'cast_at' or order_by == '-cast_at':
-      query = query.order_by(order_by)
-      
-      # if we want the list after a certain UUID, add the inequality here
-      if after:
-        if order_by[0] == '-':
-          field_name = "%s__gt" % order_by[1:]
+    uuid = models.CharField(max_length = 50)
+
+    # for users of type password, no user object is created
+    # but a dynamic user object is created automatically
+    user = models.ForeignKey('helios_auth.User', null=True, on_delete=models.CASCADE)
+
+    # if user is null, then you need a voter login ID and password
+    voter_login_id = models.CharField(max_length = 100, null=True)
+    voter_password = models.CharField(max_length = 100, null=True)
+    voter_name = models.CharField(max_length = 200, null=True)
+    voter_email = models.CharField(max_length = 250, null=True)
+    
+    # if election uses aliases
+    alias = models.CharField(max_length = 100, null=True)
+    
+    # we keep a copy here for easy tallying
+    vote = LDObjectField(type_hint = 'legacy/EncryptedVote', null=True)
+    vote_hash = models.CharField(max_length = 100, null=True)
+    cast_at = models.DateTimeField(auto_now_add=False, null=True)
+
+    class Meta:
+        unique_together = (('election', 'voter_login_id'))
+        app_label = 'helios'
+
+    def __init__(self, *args, **kwargs):
+        super(Voter, self).__init__(*args, **kwargs)
+
+    def get_user(self):
+        # stub the user so code is not full of IF statements
+        return self.user or User(user_type='password', user_id=self.voter_email, name=self.voter_name)
+
+    @classmethod
+    @transaction.atomic
+    def register_user_in_election(cls, user, election):
+        voter_uuid = str(uuid.uuid4())
+        voter = Voter(uuid= voter_uuid, user = user, election = election)
+
+        # do we need to generate an alias?
+        if election.use_voter_aliases:
+            utils.lock_row(Election, election.id)
+            alias_num = election.last_alias_num + 1
+            voter.alias = "V%s" % alias_num
+
+        voter.save()
+        return voter
+
+    @classmethod
+    def get_by_election(cls, election, cast=None, order_by='voter_login_id', after=None, limit=None):
+        """
+        FIXME: review this for non-GAE?
+        """
+        query = cls.objects.filter(election = election)
+        
+        # the boolean check is not stupid, this is ternary logic
+        # none means don't care if it's cast or not
+        if cast is True:
+            query = query.exclude(cast_at = None)
+        elif cast is False:
+            query = query.filter(cast_at = None)
+
+        # little trick to get around GAE limitation
+        # order by uuid only when no inequality has been added
+        if cast is None or order_by == 'cast_at' or order_by == '-cast_at':
+            query = query.order_by(order_by)
+        
+        # if we want the list after a certain UUID, add the inequality here
+        if after:
+            if order_by[0] == '-':
+                field_name = "%s__gt" % order_by[1:]
+            else:
+                field_name = "%s__gt" % order_by
+                conditions = {field_name : after}
+                query = query.filter (**conditions)
+        
+        if limit:
+            query = query[:limit]
+        
+        return query
+    
+    @classmethod
+    def get_all_by_election_in_chunks(cls, election, cast=None, chunk=100):
+        return cls.get_by_election(election)
+
+    @classmethod
+    def get_by_election_and_voter_id(cls, election, voter_id):
+        try:
+            return cls.objects.get(election = election, voter_login_id = voter_id)
+        except cls.DoesNotExist:
+            return None
+        
+    @classmethod
+    def get_by_election_and_user(cls, election, user):
+        try:
+            return cls.objects.get(election = election, user = user)
+        except cls.DoesNotExist:
+            return None
+        
+    @classmethod
+    def get_by_election_and_uuid(cls, election, uuid):
+        query = cls.objects.filter(election = election, uuid = uuid)
+
+        try:
+            return query[0]
+        except:
+            return None
+
+    @classmethod
+    def get_by_user(cls, user):
+        return cls.objects.select_related().filter(user = user).order_by('-cast_at')
+
+    @property
+    def datatype(self):
+        return self.election.datatype.replace('Election', 'Voter')
+
+    @property
+    def vote_tinyhash(self):
+        """
+        get the tinyhash of the latest castvote
+        """
+        if not self.vote_hash:
+            return None
+        
+        return CastVote.objects.get(vote_hash = self.vote_hash).vote_tinyhash
+
+    @property
+    def election_uuid(self):
+        return self.election.uuid
+
+    @property
+    def name(self):
+        return self.get_user().name
+
+    @property
+    def voter_id(self):
+        return self.get_user().user_id
+
+    @property
+    def voter_id_hash(self):
+        if self.voter_login_id:
+            # for backwards compatibility with v3.0, and since it doesn't matter
+            # too much if we hash the email or the unique login ID here.
+            value_to_hash = self.voter_login_id
         else:
-          field_name = "%s__gt" % order_by
-        conditions = {field_name : after}
-        query = query.filter (**conditions)
+            value_to_hash = self.voter_id
+
+        try:
+            return hash_b64(value_to_hash)
+        except:
+            try:
+                return hash_b64(value_to_hash.encode('latin-1'))
+            except:
+                return hash_b64(value_to_hash.encode('utf-8'))        
+
+    @property
+    def voter_type(self):
+        return self.get_user().user_type
+
+    @property
+    def display_html_big(self):
+        return self.get_user().display_html_big
+        
+    def send_message(self, subject, body):
+        self.get_user().send_message(subject, body)
+        
+    def can_update_status(self):
+        return self.get_user().can_update_status()
+
+    def generate_password(self, length=10):
+        if self.voter_password:
+            raise Exception("password already exists")
+        
+        self.voter_password = utils.random_string(length, alphabet='abcdefghjkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789')
+
+    def store_vote(self, cast_vote):
+        # only store the vote if it's cast later than the current one
+        if self.cast_at and cast_vote.cast_at < self.cast_at:
+            return
+
+        self.vote = cast_vote.vote
+        self.vote_hash = cast_vote.vote_hash
+        self.cast_at = cast_vote.cast_at
+        self.save()
     
-    if limit:
-      query = query[:limit]
-      
-    return query
-  
-  @classmethod
-  def get_all_by_election_in_chunks(cls, election, cast=None, chunk=100):
-    return cls.get_by_election(election)
-
-  @classmethod
-  def get_by_election_and_voter_id(cls, election, voter_id):
-    try:
-      return cls.objects.get(election = election, voter_login_id = voter_id)
-    except cls.DoesNotExist:
-      return None
+    def last_cast_vote(self):
+        return CastVote(vote = self.vote, vote_hash = self.vote_hash, cast_at = self.cast_at, voter=self)
+        
     
-  @classmethod
-  def get_by_election_and_user(cls, election, user):
-    try:
-      return cls.objects.get(election = election, user = user)
-    except cls.DoesNotExist:
-      return None
-      
-  @classmethod
-  def get_by_election_and_uuid(cls, election, uuid):
-    query = cls.objects.filter(election = election, uuid = uuid)
-
-    try:
-      return query[0]
-    except:
-      return None
-
-  @classmethod
-  def get_by_user(cls, user):
-    return cls.objects.select_related().filter(user = user).order_by('-cast_at')
-
-  @property
-  def datatype(self):
-    return self.election.datatype.replace('Election', 'Voter')
-
-  @property
-  def vote_tinyhash(self):
-    """
-    get the tinyhash of the latest castvote
-    """
-    if not self.vote_hash:
-      return None
-    
-    return CastVote.objects.get(vote_hash = self.vote_hash).vote_tinyhash
-
-  @property
-  def election_uuid(self):
-    return self.election.uuid
-
-  @property
-  def name(self):
-    return self.get_user().name
-
-  @property
-  def voter_id(self):
-    return self.get_user().user_id
-
-  @property
-  def voter_id_hash(self):
-    if self.voter_login_id:
-      # for backwards compatibility with v3.0, and since it doesn't matter
-      # too much if we hash the email or the unique login ID here.
-      value_to_hash = self.voter_login_id
-    else:
-      value_to_hash = self.voter_id
-
-    try:
-      return hash_b64(value_to_hash)
-    except:
-      try:
-        return hash_b64(value_to_hash.encode('latin-1'))
-      except:
-        return hash_b64(value_to_hash.encode('utf-8'))        
-
-  @property
-  def voter_type(self):
-    return self.get_user().user_type
-
-  @property
-  def display_html_big(self):
-    return self.get_user().display_html_big
-      
-  def send_message(self, subject, body):
-    self.get_user().send_message(subject, body)
-    
-  def can_update_status(self):
-    return self.get_user().can_update_status()
-
-  def generate_password(self, length=10):
-    if self.voter_password:
-      raise Exception("password already exists")
-    
-    self.voter_password = utils.random_string(length, alphabet='abcdefghjkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789')
-
-  def store_vote(self, cast_vote):
-    # only store the vote if it's cast later than the current one
-    if self.cast_at and cast_vote.cast_at < self.cast_at:
-      return
-
-    self.vote = cast_vote.vote
-    self.vote_hash = cast_vote.vote_hash
-    self.cast_at = cast_vote.cast_at
-    self.save()
-  
-  def last_cast_vote(self):
-    return CastVote(vote = self.vote, vote_hash = self.vote_hash, cast_at = self.cast_at, voter=self)
-    
-  
 class CastVote(HeliosModel):
-  # the reference to the voter provides the voter_uuid
-  voter = models.ForeignKey(Voter, on_delete=models.CASCADE)
-  
-  # the actual encrypted vote
-  vote = LDObjectField(type_hint = 'legacy/EncryptedVote')
-
-  # cache the hash of the vote
-  vote_hash = models.CharField(max_length=100)
-
-  # a tiny version of the hash to enable short URLs
-  vote_tinyhash = models.CharField(max_length=50, null=True, unique=True)
-
-  cast_at = models.DateTimeField(auto_now_add=True)
-
-  # some ballots can be quarantined (this is not the same thing as provisional)
-  quarantined_p = models.BooleanField(default=False, null=False)
-  released_from_quarantine_at = models.DateTimeField(auto_now_add=False, null=True)
-
-  # when is the vote verified?
-  verified_at = models.DateTimeField(null=True)
-  invalidated_at = models.DateTimeField(null=True)
-  
-  # auditing purposes, like too many votes from the same IP, if it isn't expected
-  cast_ip = models.GenericIPAddressField(null=True)
-
-  class Meta:
-      app_label = 'helios'
-
-  @property
-  def datatype(self):
-    return self.voter.datatype.replace('Voter', 'CastVote')
-
-  @property
-  def voter_uuid(self):
-    return self.voter.uuid  
+    # the reference to the voter provides the voter_uuid
+    voter = models.ForeignKey(Voter, on_delete=models.CASCADE)
     
-  @property
-  def voter_hash(self):
-    return self.voter.hash
+    # the actual encrypted vote
+    vote = LDObjectField(type_hint = 'legacy/EncryptedVote')
 
-  @property
-  def is_quarantined(self):
-    return self.quarantined_p and not self.released_from_quarantine_at
+    # cache the hash of the vote
+    vote_hash = models.CharField(max_length=100)
 
-  def set_tinyhash(self):
-    """
-    find a tiny version of the hash for a URL slug.
-    """
-    safe_hash = self.vote_hash.decode() if isinstance(self.vote_hash, bytes) else self.vote_hash
-    for c in ['/', '+', '#']:
-      safe_hash = safe_hash.replace(c, '')
+    # a tiny version of the hash to enable short URLs
+    vote_tinyhash = models.CharField(max_length=50, null=True, unique=True)
+
+    cast_at = models.DateTimeField(auto_now_add=True)
+
+    # some ballots can be quarantined (this is not the same thing as provisional)
+    quarantined_p = models.BooleanField(default=False, null=False)
+    released_from_quarantine_at = models.DateTimeField(auto_now_add=False, null=True)
+
+    # when is the vote verified?
+    verified_at = models.DateTimeField(null=True)
+    invalidated_at = models.DateTimeField(null=True)
     
-    length = 8
-    while True:
-      vote_tinyhash = safe_hash[:length]
-      if CastVote.objects.filter(vote_tinyhash = vote_tinyhash).count() == 0:
-        break
-      length += 1
-      
-    self.vote_tinyhash = vote_tinyhash
+    # auditing purposes, like too many votes from the same IP, if it isn't expected
+    cast_ip = models.GenericIPAddressField(null=True)
 
-  def save(self, *args, **kwargs):
-    """
-    override this just to get a hook
-    """
-    # not saved yet? then we generate a tiny hash
-    if not self.vote_tinyhash:
-      self.set_tinyhash()
+    class Meta:
+        app_label = 'helios'
 
-    super(CastVote, self).save(*args, **kwargs)
-  
-  @classmethod
-  def get_by_voter(cls, voter):
-    return cls.objects.filter(voter = voter).order_by('-cast_at')
+    @property
+    def datatype(self):
+        return self.voter.datatype.replace('Voter', 'CastVote')
 
-  def verify_and_store(self):
-    # if it's quarantined, don't let this go through
-    if self.is_quarantined:
-      raise Exception("cast vote is quarantined, verification and storage is delayed.")
+    @property
+    def voter_uuid(self):
+        return self.voter.uuid  
+        
+    @property
+    def voter_hash(self):
+        return self.voter.hash
 
-    result = self.vote.verify(self.voter.election)
+    @property
+    def is_quarantined(self):
+        return self.quarantined_p and not self.released_from_quarantine_at
 
-    if result:
-      self.verified_at = datetime.datetime.utcnow()
-    else:
-      self.invalidated_at = datetime.datetime.utcnow()
-      
-    # save and store the vote as the voter's last cast vote
-    self.save()
+    def set_tinyhash(self):
+        """
+        find a tiny version of the hash for a URL slug.
+        """
+        safe_hash = self.vote_hash.decode() if isinstance(self.vote_hash, bytes) else self.vote_hash
+        for c in ['/', '+', '#']:
+            safe_hash = safe_hash.replace(c, '')
+        
+        length = 8
+        while True:
+            vote_tinyhash = safe_hash[:length]
+            if CastVote.objects.filter(vote_tinyhash = vote_tinyhash).count() == 0:
+                break
+            length += 1
+        
+        self.vote_tinyhash = vote_tinyhash
 
-    if result:
-      self.voter.store_vote(self)
+    def save(self, *args, **kwargs):
+        """
+        override this just to get a hook
+        """
+        # not saved yet? then we generate a tiny hash
+        if not self.vote_tinyhash:
+            self.set_tinyhash()
+
+        super(CastVote, self).save(*args, **kwargs)
     
-    return result
+    @classmethod
+    def get_by_voter(cls, voter):
+        return cls.objects.filter(voter = voter).order_by('-cast_at')
 
-  def issues(self, election):
-    """
-    Look for consistency problems
-    """
-    issues = []
-    
-    # check the election
-    if self.vote.election_uuid != election.uuid:
-      issues.append("the vote's election UUID does not match the election for which this vote is being cast")
-    
-    return issues
+    def verify_and_store(self):
+        # if it's quarantined, don't let this go through
+        if self.is_quarantined:
+            raise Exception("cast vote is quarantined, verification and storage is delayed.")
+
+        result = self.vote.verify(self.voter.election)
+
+        if result:
+            self.verified_at = datetime.datetime.utcnow()
+        else:
+            self.invalidated_at = datetime.datetime.utcnow()
+        
+        # save and store the vote as the voter's last cast vote
+        self.save()
+
+        if result:
+            self.voter.store_vote(self)
+        
+        return result
+
+    def issues(self, election):
+        """
+        Look for consistency problems
+        """
+        issues = []
+        
+        # check the election
+        if self.vote.election_uuid != election.uuid:
+            issues.append("the vote's election UUID does not match the election for which this vote is being cast")
+        
+        return issues
     
 class AuditedBallot(models.Model):
-  """
-  ballots for auditing
-  """
-  election = models.ForeignKey(Election, on_delete=models.CASCADE)
-  raw_vote = models.TextField()
-  vote_hash = models.CharField(max_length=100)
-  added_at = models.DateTimeField(auto_now_add=True)
+    """
+    ballots for auditing
+    """
+    election = models.ForeignKey(Election, on_delete=models.CASCADE)
+    raw_vote = models.TextField()
+    vote_hash = models.CharField(max_length=100)
+    added_at = models.DateTimeField(auto_now_add=True)
 
-  class Meta:
-    app_label = 'helios'
+    class Meta:
+        app_label = 'helios'
 
-  @classmethod
-  def get(cls, election, vote_hash):
-    return cls.objects.get(election = election, vote_hash = vote_hash)
+    @classmethod
+    def get(cls, election, vote_hash):
+        return cls.objects.get(election = election, vote_hash = vote_hash)
 
-  @classmethod
-  def get_by_election(cls, election, after=None, limit=None):
-    query = cls.objects.filter(election = election).order_by('vote_hash')
+    @classmethod
+    def get_by_election(cls, election, after=None, limit=None):
+        query = cls.objects.filter(election = election).order_by('vote_hash')
 
-    # if we want the list after a certain UUID, add the inequality here
-    if after:
-      query = query.filter(vote_hash__gt = after)
+        # if we want the list after a certain UUID, add the inequality here
+        if after:
+            query = query.filter(vote_hash__gt = after)
 
-    if limit:
-      query = query[:limit]
+        if limit:
+            query = query[:limit]
 
-    return query
+        return query
 
 
 class Trustee(HeliosModel):
-  election = models.ForeignKey(Election, on_delete=models.CASCADE)
-  
-  uuid = models.CharField(max_length=50)
-  name = models.CharField(max_length=200)
-  email = models.EmailField()
-  secret = models.CharField(max_length=100)
-  
-  # public key
-  public_key = LDObjectField(type_hint = 'legacy/EGPublicKey',
-                             null=True)
-  public_key_hash = models.CharField(max_length=100)
-
-  # secret key
-  # if the secret key is present, this means
-  # Helios is playing the role of the trustee.
-  secret_key = LDObjectField(type_hint = 'legacy/EGSecretKey',
-                             null=True)
-  
-  # proof of knowledge of secret key
-  pok = LDObjectField(type_hint = 'legacy/DLogProof',
-                      null=True)
-  
-  # decryption factors
-  decryption_factors = LDObjectField(type_hint = datatypes.arrayOf(datatypes.arrayOf('core/BigInteger')),
-                                     null=True)
-
-  decryption_proofs = LDObjectField(type_hint = datatypes.arrayOf(datatypes.arrayOf('legacy/EGZKProof')),
-                                    null=True)
-
-  class Meta:
-    unique_together = (('election', 'email'))
-    app_label = 'helios'
-
-  def save(self, *args, **kwargs):
-    """
-    override this just to get a hook
-    """
-    # not saved yet?
-    if not self.secret:
-      self.secret = utils.random_string(12)
-      self.election.append_log("Trustee %s added" % self.name)
-      
-    super(Trustee, self).save(*args, **kwargs)
-  
-  @classmethod
-  def get_by_election(cls, election):
-    return cls.objects.filter(election = election)
-
-  @classmethod
-  def get_by_uuid(cls, uuid):
-    return cls.objects.get(uuid = uuid)
+    election = models.ForeignKey(Election, on_delete=models.CASCADE)
     
-  @classmethod
-  def get_by_election_and_uuid(cls, election, uuid):
-    return cls.objects.get(election = election, uuid = uuid)
-
-  @classmethod
-  def get_by_election_and_email(cls, election, email):
-    try:
-      return cls.objects.get(election = election, email = email)
-    except cls.DoesNotExist:
-      return None
-
-  @property
-  def datatype(self):
-    return self.election.datatype.replace('Election', 'Trustee')    
+    uuid = models.CharField(max_length=50)
+    name = models.CharField(max_length=200)
+    email = models.EmailField()
+    secret = models.CharField(max_length=100)
     
-  def verify_decryption_proofs(self):
-    """
-    verify that the decryption proofs match the tally for the election
-    """
-    # verify_decryption_proofs(self, decryption_factors, decryption_proofs, public_key, challenge_generator):
-    return self.election.encrypted_tally.verify_decryption_proofs(self.decryption_factors, self.decryption_proofs, self.public_key, algs.EG_fiatshamir_challenge_generator)
+    # public key
+    public_key = LDObjectField(type_hint = 'legacy/EGPublicKey',
+                                null=True)
+    public_key_hash = models.CharField(max_length=100)
+
+    # secret key
+    # if the secret key is present, this means
+    # Helios is playing the role of the trustee.
+    secret_key = LDObjectField(type_hint = 'legacy/EGSecretKey',
+                                null=True)
     
+    # proof of knowledge of secret key
+    pok = LDObjectField(type_hint = 'legacy/DLogProof',
+                        null=True)
+    
+    # decryption factors
+    decryption_factors = LDObjectField(type_hint = datatypes.arrayOf(datatypes.arrayOf('core/BigInteger')),
+                                        null=True)
+
+    decryption_proofs = LDObjectField(type_hint = datatypes.arrayOf(datatypes.arrayOf('legacy/EGZKProof')),
+                                        null=True)
+
+    class Meta:
+        unique_together = (('election', 'email'))
+        app_label = 'helios'
+
+    def save(self, *args, **kwargs):
+        """
+        override this just to get a hook
+        """
+        # not saved yet?
+        if not self.secret:
+            self.secret = utils.random_string(12)
+            self.election.append_log("Trustee %s added" % self.name)
+        
+        super(Trustee, self).save(*args, **kwargs)
+    
+    @classmethod
+    def get_by_election(cls, election):
+        return cls.objects.filter(election = election)
+
+    @classmethod
+    def get_by_uuid(cls, uuid):
+        return cls.objects.get(uuid = uuid)
+        
+    @classmethod
+    def get_by_election_and_uuid(cls, election, uuid):
+        return cls.objects.get(election = election, uuid = uuid)
+
+    @classmethod
+    def get_by_election_and_email(cls, election, email):
+        try:
+            return cls.objects.get(election = election, email = email)
+        except cls.DoesNotExist:
+            return None
+
+    @property
+    def datatype(self):
+        return self.election.datatype.replace('Election', 'Trustee')    
+        
+    def verify_decryption_proofs(self):
+        """
+        verify that the decryption proofs match the tally for the election
+        """
+        # verify_decryption_proofs(self, decryption_factors, decryption_proofs, public_key, challenge_generator):
+        return self.election.encrypted_tally.verify_decryption_proofs(self.decryption_factors, self.decryption_proofs, self.public_key, algs.EG_fiatshamir_challenge_generator)
+        
