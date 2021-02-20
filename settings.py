@@ -1,5 +1,4 @@
 
-
 # a massive hack to see if we're testing, in which case we use different settings
 import sys
 
@@ -10,7 +9,7 @@ import environ
 
 # Read in secrets from .env file
 env = environ.Env()
-environ.Env.read_env()  
+environ.Env.read_env()
 DBPWD = env('DBPWD')
 GOOGLESECRET = env('GOOGLESECRET')
 GOOGLEID = env('GOOGLEID')
@@ -26,7 +25,7 @@ def get_from_env(var, default):
 
 DEBUG = (get_from_env('DEBUG', '1') == '1')
 
-# add admins of the form: 
+# add admins of the form:
 #    ('Ben Adida', 'ben@adida.net'),
 # if you want to be emailed about errors.
 ADMINS = (
@@ -288,10 +287,10 @@ if TESTING:
 ROLLBAR_ACCESS_TOKEN = get_from_env('ROLLBAR_ACCESS_TOKEN', None)
 if ROLLBAR_ACCESS_TOKEN:
 
-  print("setting up rollbar")
+    print("setting up rollbar")
 
-  MIDDLEWARE += ['rollbar.contrib.django.middleware.RollbarNotifierMiddleware',]
-  ROLLBAR = {
-    'access_token': ROLLBAR_ACCESS_TOKEN,
-    'environment': 'development' if DEBUG else 'production',  
-  }
+    MIDDLEWARE += ['rollbar.contrib.django.middleware.RollbarNotifierMiddleware',]
+    ROLLBAR = {
+        'access_token': ROLLBAR_ACCESS_TOKEN,
+        'environment': 'development' if DEBUG else 'production'
+    }
