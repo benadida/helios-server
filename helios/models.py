@@ -272,11 +272,15 @@ class Election(HeliosModel):
     """
     expects a django uploaded_file data structure, which has filename, content, size...
     """
-    # now we're just storing the content
-    # random_filename = str(uuid.uuid4())
-    # new_voter_file.voter_file.save(random_filename, uploaded_file)
+    voter_file_content_bytes = uploaded_file.read()
 
-    new_voter_file = VoterFile(election = self, voter_file_content = uploaded_file.read())
+    # usually it's utf-8 encoded, but occasionally it's latin-1
+    try:
+      voter_file_content = voter_file_content_bytes.decode('utf-8')
+    except:
+      voter_file_content = voter_file_content_bytes.decode('latin-1')
+    
+    new_voter_file = VoterFile(election = self, voter_file_content = voter_file_content)
     new_voter_file.save()
     
     self.append_log(ElectionLog.VOTER_FILE_ADDED)
@@ -341,6 +345,22 @@ class Election(HeliosModel):
 
       return return_val
   
+  @property
+  def voting_start_at(self):
+    voting_start_at = self.voting_starts_at
+    if voting_start_at and self.frozen_at:
+      voting_start_at = max(voting_start_at, self.frozen_at)
+    return voting_start_at
+
+  @property
+  def voting_end_at(self):
+    voting_end_at = self.voting_ends_at
+    if voting_end_at and self.voting_extended_until:
+      voting_end_at = max(voting_end_at, self.voting_extended_until)
+    if voting_end_at and self.voting_ended_at:
+      voting_end_at = min(voting_end_at, self.voting_ended_at)
+    return voting_end_at
+
   def voting_has_started(self):
     """
     has voting begun? voting begins if the election is frozen, at the prescribed date or at the date that voting was forced to start

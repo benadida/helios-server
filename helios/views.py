@@ -128,6 +128,10 @@ def _election_vote_shortcut(request, election):
 def election_vote_shortcut(request, election_short_name):
   election = Election.get_by_short_name(election_short_name)
   if election:
+    if not election.voting_has_started():
+      return render_template(request, 'election_not_started', {'election': election})      
+    if election.voting_has_stopped():
+      return render_template(request, 'election_tallied', {'election': election})      
     return _election_vote_shortcut(request, election_uuid=election.uuid)
   else:
     raise Http404
