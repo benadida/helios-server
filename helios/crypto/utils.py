@@ -27,5 +27,5 @@ def hash_b64(s):
     removes the trailing "="
     """
     hasher = SHA256.new(s.encode('utf-8'))
-    result = base64.b64encode(hasher.digest())[:-1]
+    result = base64.b64encode(hasher.digest())[:-1].decode('ascii')
     return result
