@@ -585,6 +585,13 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'confirm_p': "1"})
         self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
 
+        # Try a latin-1 encoded file
+        FILE = "helios/fixtures/voter-file-latin1.csv"
+        voters_file = open(FILE, mode='rb')
+        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'voters_file': voters_file})
+        voters_file.close()
+        self.assertContains(response, "first few rows of this file")
+        
         # and we want to check that there are now voters
         response = self.client.get("/helios/elections/%s/voters/" % election_id)
         NUM_VOTERS = 4
