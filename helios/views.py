@@ -77,13 +77,13 @@ def user_reauth(request, user):
                                                request.get_full_path()}))
   return HttpResponseRedirect(login_url)
 
-## 
+##
 ## simple admin for development
 ##
 def admin_autologin(request):
   if "localhost" not in settings.URL_HOST and "127.0.0.1" not in settings.URL_HOST:
     raise Http404
-  
+
   users = User.objects.filter(admin_p=True)
   if len(users) == 0:
     return HttpResponse("no admin users!")
@@ -120,7 +120,7 @@ def election_shortcut(request, election_short_name):
 @election_view()
 def _election_vote_shortcut(request, election):
   vote_url = "%s/booth/vote.html?%s" % (settings.SECURE_URL_HOST, urlencode({'election_url' : reverse(url_names.election.ELECTION_HOME, args=[election.uuid])}))
-  
+
   test_cookie_url = "%s?%s" % (reverse(url_names.COOKIE_TEST), urlencode({'continue_url' : vote_url}))
 
   return HttpResponseRedirect(test_cookie_url)
@@ -135,7 +135,7 @@ def election_vote_shortcut(request, election_short_name):
 @election_view()
 def _castvote_shortcut_by_election(request, election, cast_vote):
   return render_template(request, 'castvote', {'cast_vote' : cast_vote, 'vote_content': cast_vote.vote.toJSON(), 'the_voter': cast_vote.voter, 'election': election})
-  
+
 def castvote_shortcut(request, vote_tinyhash):
   try:
     cast_vote = CastVote.objects.get(vote_tinyhash = vote_tinyhash)
@@ -157,27 +157,27 @@ def trustee_keygenerator(request, election, trustee):
 def elections_administered(request):
   if not can_create_election(request):
     return HttpResponseForbidden('only an administrator has elections to administer')
-  
+
   user = get_user(request)
   elections = Election.get_by_user_as_admin(user)
-  
+
   return render_template(request, "elections_administered", {'elections': elections})
 
 @login_required
 def elections_voted(request):
   user = get_user(request)
   elections = Election.get_by_user_as_voter(user)
-  
+
   return render_template(request, "elections_voted", {'elections': elections})
-    
+
 
 @login_required
 def election_new(request):
   if not can_create_election(request):
     return HttpResponseForbidden('only an administrator can create an election')
-    
+
   error = None
-  
+
   user = get_user(request)
 
   if request.method == "GET":

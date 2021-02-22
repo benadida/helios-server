@@ -5,23 +5,23 @@ import sys
 import json
 import os
 
-import environ
+# import environ
 
-# Read in secrets from .env file
-env = environ.Env()
-environ.Env.read_env()
-DBPWD = env('DBPWD')
-GOOGLESECRET = env('GOOGLESECRET')
-GOOGLEID = env('GOOGLEID')
+# # Read in secrets from .env file
+# env = environ.Env()
+# environ.Env.read_env()
+# DBPWD = env('DBPWD')
+# GOOGLESECRET = env('GOOGLESECRET')
+# GOOGLEID = env('GOOGLEID')
 
 TESTING = 'test' in sys.argv
 
 # go through environment variables and override them
 def get_from_env(var, default):
-    if not TESTING and var in os.environ:
-        return os.environ[var]
-    else:
-        return default
+  if not TESTING and var in os.environ:
+    return os.environ[var]
+  else:
+    return default
 
 DEBUG = (get_from_env('DEBUG', '1') == '1')
 
@@ -45,18 +45,18 @@ SHOW_LOGIN_OPTIONS = (get_from_env('SHOW_LOGIN_OPTIONS', '1') == '1')
 SHOW_USER_INFO = (get_from_env('SHOW_USER_INFO', '1') == '1')
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'helios',
-        'CONN_MAX_AGE': 600,
-    },
+  'default': {
+      'ENGINE': 'django.db.backends.postgresql_psycopg2',
+      'NAME': 'helios',
+      'CONN_MAX_AGE': 600,
+  },
 }
 
 # override if we have an env variable
 if get_from_env('DATABASE_URL', None):
-    import dj_database_url
-    DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
-    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
+  import dj_database_url
+  DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+  DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -100,22 +100,22 @@ ALLOWED_HOSTS = get_from_env('ALLOWED_HOSTS', 'localhost').split(",")
 
 # Secure Stuff
 if get_from_env('SSL', '0') == '1':
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
+  SECURE_SSL_REDIRECT = True
+  SESSION_COOKIE_SECURE = True
 
-    # tuned for Heroku
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+  # tuned for Heroku
+  SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 SESSION_COOKIE_HTTPONLY = True
 
 # let's go with one year because that's the way to do it now
 STS = False
 if get_from_env('HSTS', '0') == '1':
-    STS = True
-    # we're using our own custom middleware now
-    # SECURE_HSTS_SECONDS = 31536000
-    # not doing subdomains for now cause that is not likely to be necessary and can screw things up.
-    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+  STS = True
+  # we're using our own custom middleware now
+  # SECURE_HSTS_SECONDS = 31536000
+  # not doing subdomains for now cause that is not likely to be necessary and can screw things up.
+  # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -123,15 +123,15 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SILENCED_SYSTEM_CHECKS = ['urls.W002']
 
 MIDDLEWARE = [
-    # secure a bunch of things
-    'django.middleware.security.SecurityMiddleware',
-    'helios.security.HSTSMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'django.middleware.csrf.CsrfViewMiddleware',
+  # secure a bunch of things
+  'django.middleware.security.SecurityMiddleware',
+  'helios.security.HSTSMiddleware',
+  'django.middleware.clickjacking.XFrameOptionsMiddleware',
+  # 'django.middleware.csrf.CsrfViewMiddleware',
 
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+  'django.middleware.common.CommonMiddleware',
+  'django.contrib.sessions.middleware.SessionMiddleware',
+  'django.contrib.auth.middleware.AuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'urls'
@@ -269,7 +269,7 @@ EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
 # in which case environment should contain
 # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
 if get_from_env('EMAIL_USE_AWS', '0') == '1':
-    EMAIL_BACKEND = 'django_ses.SESBackend'
+  EMAIL_BACKEND = 'django_ses.SESBackend'
 
 # set up logging
 import logging
@@ -283,17 +283,17 @@ logging.basicConfig(
 # set up celery
 CELERY_BROKER_URL = get_from_env('CELERY_BROKER_URL', 'amqp://localhost')
 if TESTING:
-    CELERY_TASK_ALWAYS_EAGER = True
+  CELERY_TASK_ALWAYS_EAGER = True
 #database_url = DATABASES['default']
 
 # Rollbar Error Logging
 ROLLBAR_ACCESS_TOKEN = get_from_env('ROLLBAR_ACCESS_TOKEN', None)
 if ROLLBAR_ACCESS_TOKEN:
 
-    print("setting up rollbar")
+  print("setting up rollbar")
 
-    MIDDLEWARE += ['rollbar.contrib.django.middleware.RollbarNotifierMiddleware',]
-    ROLLBAR = {
-        'access_token': ROLLBAR_ACCESS_TOKEN,
-        'environment': 'development' if DEBUG else 'production'
-    }
+  MIDDLEWARE += ['rollbar.contrib.django.middleware.RollbarNotifierMiddleware',]
+  ROLLBAR = {
+      'access_token': ROLLBAR_ACCESS_TOKEN,
+      'environment': 'development' if DEBUG else 'production'
+  }
