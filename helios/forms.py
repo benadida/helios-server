@@ -3,10 +3,11 @@ Forms for Helios
 """
 
 from django import forms
-from models import Election
-from widgets import *
-from fields import *
 from django.conf import settings
+
+from .fields import SplitDateTimeField
+from .models import Election
+from .widgets import SplitSelectDateTimeWidget
 
 
 class ElectionForm(forms.Form):

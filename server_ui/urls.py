@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import *
+from django.conf.urls import url
 
-from views import *
+from .views import home, about, docs, faq, privacy
 
-urlpatterns = patterns('',
-  (r'^$', home),
-  (r'^about$', about),
-  (r'^docs$', docs),
-  (r'^faq$', faq),
-  (r'^privacy$', privacy),
-)
+urlpatterns = [
+  url(r'^$', home),
+  url(r'^about$', about),
+  url(r'^docs$', docs),
+  url(r'^faq$', faq),
+  url(r'^privacy$', privacy),
+]

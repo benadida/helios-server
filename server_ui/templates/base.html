@@ -42,7 +42,7 @@
       <!-- Right Nav Section -->
       <ul class="right">
 	{% if user and user.admin_p %}
-	<li><a href="{% url "helios.stats_views.home" %}">Admin</a></li>
+	<li><a href="{% url "stats@home" %}">Admin</a></li>
 	<li class="divider"></li>
 	{% endif %}
 	{% if not settings.MASTER_HELIOS %}
@@ -88,13 +88,13 @@
     </span>-->
     {% if user %}
     logged in as <b>{{user.display_html_small|safe}}</b>&nbsp;&nbsp;
-    <a class="tiny button" href="{% url "helios_auth.views.logout" %}?return_url={{CURRENT_URL}}">logout</a><br />
+    <a class="tiny button" href="{% url "auth@logout" %}?return_url={{CURRENT_URL}}">logout</a><br />
     {% else %}
     {% if voter %}
-    You are signed in as voter <u>{% if voter.alias %}{{voter.alias}}{% else %}{{voter.name}}{% endif %}</u> in election <u>{{voter.election.name}}</u>. [<a href="{{settings.SECURE_URL_HOST}}{% url "helios_auth.views.logout" %}?return_url={{CURRENT_URL}}">sign out</a>]
+    You are signed in as voter <u>{% if voter.alias %}{{voter.alias}}{% else %}{{voter.name}}{% endif %}</u> in election <u>{{voter.election.name}}</u>. [<a href="{{settings.SECURE_URL_HOST}}{% url "auth@logout" %}?return_url={{CURRENT_URL}}">sign out</a>]
     {% else %}
 {% if settings.SHOW_LOGIN_OPTIONS %}
-    not logged in. <a class="tiny button" href="{{settings.SECURE_URL_HOST}}{% url "helios_auth.views.index" %}?return_url={{CURRENT_URL}}">log in</a>
+    not logged in. <a class="tiny button" href="{{settings.SECURE_URL_HOST}}{% url "auth@index" %}?return_url={{CURRENT_URL}}">log in</a>
 {% else %}
 powered by <a href="http://heliosvoting.org">Helios Voting</a>.
 {% endif %}

@@ -6,14 +6,11 @@ http://www.djangosnippets.org/snippets/377/
 and adapted to LDObject
 """
 
-import datetime
-import json
 from django.db import models
-from django.db.models import signals
-from django.conf import settings
-from django.core.serializers.json import DjangoJSONEncoder
 
+from helios import utils
 from . import LDObject
+
 
 class LDObjectField(models.TextField):
     """
@@ -23,9 +20,6 @@ class LDObjectField(models.TextField):
     deserialization_params added on 2011-01-09 to provide additional hints at deserialization time
     """
 
-    # Used so to_python() is called
-    __metaclass__ = models.SubfieldBase
-
     def __init__(self, type_hint=None, **kwargs):
         self.type_hint = type_hint
         super(LDObjectField, self).__init__(**kwargs)
@@ -34,35 +28,29 @@ class LDObjectField(models.TextField):
         """Convert our string value to LDObject after we load it from the DB"""
 
         # did we already convert this?
-        if not isinstance(value, basestring):
+        if not isinstance(value, str):
             return value
 
-        if  value == None:
-            return None
+        return self.from_db_value(value)
 
+    # noinspection PyUnusedLocal
+    def from_db_value(self, value, *args, **kwargs):
         # in some cases, we're loading an existing array or dict,
-        # we skip this part but instantiate the LD object
-        if isinstance(value, basestring):
-            try:
-                parsed_value = json.loads(value)
-            except:
-                raise Exception("value is not JSON parseable, that's bad news")
-        else:
-            parsed_value = value
-
-        if parsed_value != None:
-            "we give the wrapped object back because we're not dealing with serialization types"            
-            return_val = LDObject.fromDict(parsed_value, type_hint = self.type_hint).wrapped_obj
-            return return_val
-        else:
+        # from_json takes care of this duality
+        parsed_value = utils.from_json(value)
+        if parsed_value is None:
             return None
+
+        # we give the wrapped object back because we're not dealing with serialization types
+        return_val = LDObject.fromDict(parsed_value, type_hint=self.type_hint).wrapped_obj
+        return return_val
 
     def get_prep_value(self, value):
         """Convert our JSON object to a string before we save"""
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return value
 
-        if value == None:
+        if value is None:
             return None
 
         # instantiate the proper LDObject to dump it appropriately
@@ -71,4 +59,4 @@ class LDObjectField(models.TextField):
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
-        return self.get_db_prep_value(value)
+        return self.get_db_prep_value(value, None)

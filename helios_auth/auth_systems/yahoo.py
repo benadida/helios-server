@@ -3,14 +3,10 @@ Yahoo Authentication
 
 """
 
-from django.http import *
-from django.core.mail import send_mail
 from django.conf import settings
+from django.core.mail import send_mail
 
-import sys, os, cgi, urllib, urllib2, re
-from xml.etree import ElementTree
-
-from openid import view_helpers
+from .openid import view_helpers
 
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False

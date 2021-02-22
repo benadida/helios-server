@@ -3,20 +3,15 @@
 Utility code for the Django example consumer and server.
 """
 
-from urlparse import urljoin
-
-from django.db import connection
-from django.template.context import RequestContext
-from django.template import loader
-from django import http
-from django.core.exceptions import ImproperlyConfigured
-from django.core.urlresolvers import reverse as reverseURL
+from urllib.parse import urljoin
 
 from django.conf import settings
-
-from openid.store.filestore import FileOpenIDStore
+from django.core.exceptions import ImproperlyConfigured
+from django.db import connection
+from django.urls import reverse as reverseURL
 from openid.store import sqlstore
-from openid.yadis.constants import YADIS_CONTENT_TYPE
+from openid.store.filestore import FileOpenIDStore
+
 
 def getOpenIDStore(filestore_path, table_prefix):
     """
@@ -69,14 +64,13 @@ def getOpenIDStore(filestore_path, table_prefix):
         s = types[db_engine](connection.connection,
                                             **tablenames)
     except KeyError:
-        raise ImproperlyConfigured, \
-              "Database engine %s not supported by OpenID library" % \
-              (db_engine,)
+        raise ImproperlyConfigured("Database engine %s not supported by OpenID library" % \
+              (db_engine,))
 
     try:
         s.createTables()
-    except (SystemExit, KeyboardInterrupt, MemoryError), e:
-        raise
+    except (SystemExit, KeyboardInterrupt, MemoryError) as e:
+        raise e
     except:
         # XXX This is not the Right Way to do this, but because the
         # underlying database implementation might differ in behavior
@@ -138,5 +132,5 @@ def normalDict(request_data):
     values are lists, because in OpenID, each key in the query arg set
     can have at most one value.
     """
-    return dict((k, v[0]) for k, v in request_data.iteritems())
+    return dict((k, v[0]) for k, v in request_data.items())
 

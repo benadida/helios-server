@@ -5,12 +5,16 @@ Some code borrowed from
 https://sp.princeton.edu/oit/sdp/CAS/Wiki%20Pages/Python.aspx
 """
 
-from django.http import *
-from django.core.mail import send_mail
-from django.conf import settings
-
-import sys, os, cgi, urllib, urllib2, re, uuid, datetime
+import datetime
+import re
+import urllib.parse
+import urllib.request
+import uuid
 from xml.etree import ElementTree
+
+from django.conf import settings
+from django.core.mail import send_mail
+from django.http import HttpResponseRedirect
 
 CAS_EMAIL_DOMAIN = "princeton.edu"
 CAS_URL= 'https://fed.princeton.edu/cas/'
@@ -31,25 +35,25 @@ STATUS_UPDATES = False
 
 def _get_service_url():
   # FIXME current URL
-  from helios_auth.views import after
+  from helios_auth import url_names
   from django.conf import settings
-  from django.core.urlresolvers import reverse
+  from django.urls import reverse
   
-  return settings.SECURE_URL_HOST + reverse(after)
+  return settings.SECURE_URL_HOST + reverse(url_names.AUTH_AFTER)
   
 def get_auth_url(request, redirect_url):
   request.session['cas_redirect_url'] = redirect_url
-  return CAS_URL + 'login?service=' + urllib.quote(_get_service_url())
+  return CAS_URL + 'login?service=' + urllib.parse.quote(_get_service_url())
 
 def get_user_category(user_id):
   theurl = CAS_ELIGIBILITY_URL % user_id
 
-  auth_handler = urllib2.HTTPBasicAuthHandler()
+  auth_handler = urllib.request.HTTPBasicAuthHandler()
   auth_handler.add_password(realm=CAS_ELIGIBILITY_REALM, uri= theurl, user= CAS_USERNAME, passwd = CAS_PASSWORD)
-  opener = urllib2.build_opener(auth_handler)
-  urllib2.install_opener(opener)
+  opener = urllib.request.build_opener(auth_handler)
+  urllib.request.install_opener(opener)
   
-  result = urllib2.urlopen(CAS_ELIGIBILITY_URL % user_id).read().strip()
+  result = urllib.request.urlopen(CAS_ELIGIBILITY_URL % user_id).read().strip()
   parsed_result = ElementTree.fromstring(result)
   return parsed_result.text
   
@@ -75,11 +79,11 @@ def get_saml_info(ticket):
   </soap-env:Envelope>
 """ % (uuid.uuid1(), datetime.datetime.utcnow().isoformat(), ticket)
 
-  url = CAS_SAML_VALIDATE_URL % urllib.quote(_get_service_url())
+  url = CAS_SAML_VALIDATE_URL % urllib.parse.quote(_get_service_url())
 
   # by virtue of having a body, this is a POST
-  req = urllib2.Request(url, saml_request)
-  raw_response = urllib2.urlopen(req).read()
+  req = urllib.request.Request(url, saml_request)
+  raw_response = urllib.request.urlopen(req).read()
 
   logging.info("RESP:\n%s\n\n" % raw_response)
 
@@ -127,8 +131,8 @@ def get_user_info(user_id):
   </soap-env:Envelope>
 """ % user_id
 
-  req = urllib2.Request(url, request_body, headers)
-  response = urllib2.urlopen(req).read()
+  req = urllib.request.Request(url, request_body, headers)
+  response = urllib.request.urlopen(req).read()
   
   # parse the result
   from xml.dom.minidom import parseString
@@ -146,12 +150,12 @@ def get_user_info(user_id):
 def get_user_info_special(ticket):
   # fetch the information from the CAS server
   val_url = CAS_URL + "validate" + \
-     '?service=' + urllib.quote(_get_service_url()) + \
-     '&ticket=' + urllib.quote(ticket)
-  r = urllib.urlopen(val_url).readlines() # returns 2 lines
+     '?service=' + urllib.parse.quote(_get_service_url()) + \
+     '&ticket=' + urllib.parse.quote(ticket)
+  r = urllib.request.urlopen(val_url).readlines() # returns 2 lines
 
   # success
-  if len(r) == 2 and re.match("yes", r[0]) != None:
+  if len(r) == 2 and re.match("yes", r[0]) is not None:
     netid = r[1].strip()
     
     category = get_user_category(netid)
@@ -209,7 +213,7 @@ def send_message(user_id, name, user_info, subject, body):
   else:
     email = "%s@%s" % (user_id, CAS_EMAIL_DOMAIN)
     
-  if user_info.has_key('name'):
+  if 'name' in user_info:
     name = user_info["name"]
   else:
     name = email
@@ -221,7 +225,7 @@ def send_message(user_id, name, user_info, subject, body):
 #
 
 def check_constraint(constraint, user):
-  if not user.info.has_key('category'):
+  if 'category' not in user.info:
     return False
   return constraint['year'] == user.info['category']
 

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 from django.db import models, migrations
+
+import helios.datatypes
 import helios.datatypes.djangofield
 import helios_auth.jsonfield
-import helios.datatypes
 
 
 class Migration(migrations.Migration):
@@ -87,7 +87,7 @@ class Migration(migrations.Migration):
                 ('result_proof', helios_auth.jsonfield.JSONField(null=True)),
                 ('help_email', models.EmailField(max_length=75, null=True)),
                 ('election_info_url', models.CharField(max_length=300, null=True)),
-                ('admin', models.ForeignKey(to='helios_auth.User')),
+                ('admin', models.ForeignKey(to='helios_auth.User', on_delete=models.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -100,7 +100,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('log', models.CharField(max_length=500)),
                 ('at', models.DateTimeField(auto_now_add=True)),
-                ('election', models.ForeignKey(to='helios.Election')),
+                ('election', models.ForeignKey(to='helios.Election', on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -120,7 +120,7 @@ class Migration(migrations.Migration):
                 ('pok', helios.datatypes.djangofield.LDObjectField(null=True)),
                 ('decryption_factors', helios.datatypes.djangofield.LDObjectField(null=True)),
                 ('decryption_proofs', helios.datatypes.djangofield.LDObjectField(null=True)),
-                ('election', models.ForeignKey(to='helios.Election')),
+                ('election', models.ForeignKey(to='helios.Election', on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -139,8 +139,8 @@ class Migration(migrations.Migration):
                 ('vote', helios.datatypes.djangofield.LDObjectField(null=True)),
                 ('vote_hash', models.CharField(max_length=100, null=True)),
                 ('cast_at', models.DateTimeField(null=True)),
-                ('election', models.ForeignKey(to='helios.Election')),
-                ('user', models.ForeignKey(to='helios_auth.User', null=True)),
+                ('election', models.ForeignKey(to='helios.Election', on_delete=models.CASCADE)),
+                ('user', models.ForeignKey(to='helios_auth.User', null=True, on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -156,7 +156,7 @@ class Migration(migrations.Migration):
                 ('processing_started_at', models.DateTimeField(null=True)),
                 ('processing_finished_at', models.DateTimeField(null=True)),
                 ('num_voters', models.IntegerField(null=True)),
-                ('election', models.ForeignKey(to='helios.Election')),
+                ('election', models.ForeignKey(to='helios.Election', on_delete=models.CASCADE)),
             ],
             options={
             },
@@ -173,13 +173,13 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='castvote',
             name='voter',
-            field=models.ForeignKey(to='helios.Voter'),
+            field=models.ForeignKey(to='helios.Voter', on_delete=models.CASCADE),
             preserve_default=True,
         ),
         migrations.AddField(
             model_name='auditedballot',
             name='election',
-            field=models.ForeignKey(to='helios.Election'),
+            field=models.ForeignKey(to='helios.Election', on_delete=models.CASCADE),
             preserve_default=True,
         ),
     ]

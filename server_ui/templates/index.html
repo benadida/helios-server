@@ -24,11 +24,11 @@ Helios elections are:
 </ul>
 
 <p>
-More than <b>100,000 votes</b> have been cast using Helios.
+More than <b>2,000,000 votes</b> have been cast using Helios.
 </p>
 
 {% if create_p %}
-<a class="button" href="{% url "helios.views.election_new" %}">create an election</a>
+<a class="button" href="{% url "elections@new" %}">create an election</a>
 {% endif %}
 
   {% else %}
@@ -40,7 +40,7 @@ More than <b>100,000 votes</b> have been cast using Helios.
   <p>
     {% for election in elections %}
     <div class="panel">
-      <a style="font-size: 1.4em;" href="{% url "helios.views.election_shortcut" election.short_name %}">{{election.name}}</a>{% if settings.SHOW_USER_INFO %}<br /> by {{election.admin.display_html_small|safe}}{% endif %}
+      <a style="font-size: 1.4em;" href="{% url "shortcut@election" election.short_name %}">{{election.name}}</a>{% if settings.SHOW_USER_INFO %}<br /> by {{election.admin.display_html_small|safe}}{% endif %}
     </div>
     <br />
     {% endfor %}
@@ -58,19 +58,19 @@ More than <b>100,000 votes</b> have been cast using Helios.
 {% if user %}
 <!--<div class="row right">{{user.display_html_big|safe}}</div>-->
 {% if create_p %}
-<a class="small button" href="{% url "helios.views.election_new" %}">create election</a>
+<a class="small button" href="{% url "elections@new" %}">create election</a>
 <h5 class="subheader">Administration</h5>
 {% if elections_administered %}
 <ul>
 {% for election in elections_administered %}
-<li> <a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></li>
+<li> <a href="{% url "election@view" election.uuid %}">{{election.name}}</a></li>
 {% endfor %}
 </ul>
 {% else %}
 <em>none yet</em>
 {% endif %}
 <div class="row right">
-<a class="tiny button" href="{% url "helios.views.elections_administered" %}">see all</a>
+<a class="tiny button" href="{% url "elections@administered" %}">see all</a>
 </div>
 <div class="row"></div>
 {% endif %}
@@ -79,13 +79,13 @@ More than <b>100,000 votes</b> have been cast using Helios.
 {% if elections_voted %}
 <ul>
 {% for election in elections_voted %}
-<li><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></li>
+<li><a href="{% url "election@view" election.uuid %}">{{election.name}}</a></li>
 {% endfor %}
 </ul>
 {% else %}
 <em>none yet</em>
 {% endif %}
-<div class="row right"><a class="tiny button" href="{% url "helios.views.elections_voted" %}">see all</a></div>
+<div class="row right"><a class="tiny button" href="{% url "elections@voted" %}">see all</a></div>
 <div class="row"></div>
 {% else %}
 {% if settings.SHOW_LOGIN_OPTIONS %}

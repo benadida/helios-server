@@ -5,7 +5,7 @@
 <h1>Elections</h1>
 
 <p>
-<form method="get" action="{% url "helios.stats_views.elections" %}">
+<form method="get" action="{% url "stats@elections" %}">
 <b>search</b>: <input type="text" name="q" value="{{q}}"/> 
 <input class="small button" type="submit" value="search" /> <a class="small button" href="?">clear search</a>
 </form>
@@ -26,7 +26,7 @@ Elections {{elections_page.start_index}} - {{elections_page.end_index}} (of {{to
 
 {% for election in elections %}
 <p>
-<b><a href="{% url "helios.views.one_election_view" election.uuid %}">{{election.name}}</a></b> by <a href="mailto:{{election.admin.info.email}}">{{election.admin.pretty_name}}</a> -- {{election.num_voters}} voters / {{election.num_cast_votes}} cast votes
+<b><a href="{% url "election@view" election.uuid %}">{{election.name}}</a></b> by <a href="mailto:{{election.admin.info.email}}">{{election.admin.pretty_name}}</a> -- {{election.num_voters}} voters / {{election.num_cast_votes}} cast votes
 </p>
 {% endfor %}
 

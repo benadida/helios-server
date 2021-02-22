@@ -1,14 +1,46 @@
-sudo: false
 language: python
-python:
-  - "2.7"
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
+os: linux
+
+jobs:
+  include:
+  - python: "3.7"
+    dist: xenial
+    addons:
+      postgresql: "9.5"
+  - python: "3.7"
+    dist: xenial
+    addons:
+      postgresql: "9.6"
+  - python: "3.7"
+    dist: xenial
+    addons:
+      postgresql: "10"
+  - python: "3.8"
+    dist: bionic
+    addons:
+      postgresql: "9.5"
+  - python: "3.8"
+    dist: bionic
+    addons:
+      postgresql: "9.6"
+  - python: "3.8"
+    dist: bionic
+    addons:
+      postgresql: "10"
+  - python: "3.8"
+    dist: bionic
+    addons:
+      postgresql: "11"
+
+before_install:
+  - export BOTO_CONFIG=/dev/null
+
 install:
-  - pip install setuptools==24.3.1
-  - pip install -r requirements.txt
-# command to run tests, e.g. python setup.py test
-script: "python manage.py test"
-addons:
-  postgresql: "9.3"
+  - pip3 install --upgrade pip
+  - pip3 install -r requirements.txt
+  - pip3 freeze
+
 before_script:
   - psql -c 'create database helios;' -U postgres
+
+script: "python3 -Wall manage.py test -v 2"

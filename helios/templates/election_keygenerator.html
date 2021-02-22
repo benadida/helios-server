@@ -35,7 +35,7 @@ $(document).ready(function() {
     $('#generator').hide();
 
     // get some more server-side randomness for keygen
-    $.getJSON('../../get-randomness', function(result) {
+    $.getJSON('{% url "election@get-randomness" election.uuid %}', function(result) {
        sjcl.random.addEntropy(result.randomness);
        BigInt.setup(function() {
           ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
@@ -76,11 +76,23 @@ function show_sk() {
 }
 
 function download_sk() {
-    UTILS.open_window_with_content(jQuery.toJSON(SECRET_KEY), "application/json");
+    $('#pk_content').show();
+    $('#sk_content').html(jQuery.toJSON(SECRET_KEY));
+}
+
+function download_sk_to_file(filename) {
+    var element = document.createElement('a');
+    element.setAttribute('href','data:text/plain;charset=utf-8,'+ encodeURIComponent(jQuery.toJSON(SECRET_KEY)));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
 }
 
 function show_pk() {
     $('#sk_download').hide();
+    $('#pk_content').hide();
     $('#pk_hash').show();
     $('#pk_form').show();
 }
@@ -101,7 +113,7 @@ function show_pk() {
 
 <span id="buttons"><button onclick="generate_keypair(); return false;" id="generate_button">Generate Election Keys</button></span>
 
-<br /><br />
+<br />
 If you've already generated a keypair, you can <a href="javascript:show_key_reuse()">reuse it</a>.
 </p>
 
@@ -126,15 +138,28 @@ Your key has been generated, but you may choose to<br /><a href="javascript:clea
 </span>
 
 <p>
-    <button style="font-size:16pt;" onclick="download_sk(); $('#pk_link').show();">Save your secret key</button>
-</p>
-
-<p style="display: none;" id="pk_link">
-  <a href="javascript:show_pk();">ok, I've saved the key, let's move on</a>.
+    <button style="font-size:16pt;" onclick="download_sk(); $('#pk_link').show();">Show my secret key</button>
 </p>
 </div>
 
-<form method="post" id="pk_form" action="{% url "helios.views.trustee_upload_pk" election.uuid trustee.uuid %}">
+<div style="display:none;" id="pk_content">
+    <p>Bellow is your trustee secret key content. Please copy its content and save it securely. <br>
+       You can also click to dowload it to a file.
+       And please don't lose it! Otherwise it will not be possible to decrypt the election tally.<br>
+    </p>
+    <textarea id="sk_content" rows="5" wrap="soft" cols="50" style="height: 25em;"></textarea>
+</div>
+
+<div style="display:none;" id="pk_link">
+<p>
+<a id="download_to_file" href="javascript:download_sk_to_file('trustee_key_for_{{election.name}}.txt');">download private key to a file</a>
+</p>
+<p>
+  <a href="javascript:show_pk();">ok, I've saved the key, let's move on</a>
+</p>
+</div>
+
+<form method="post" id="pk_form" action="{% url "election@trustee@upload-pk" election.uuid trustee.uuid %}">
 <h3>Your Public Key</h3>
 <p>
     It's time to upload the public key to the server.

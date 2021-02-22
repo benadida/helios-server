@@ -5,8 +5,7 @@ Widget for datetime split, with calendar for date, and drop-downs for times.
 from django import forms
 from django.db import models
 from django.template.loader import render_to_string
-from django.forms.widgets import Select, MultiWidget, DateInput, TextInput, Widget
-from django.forms.extras.widgets import SelectDateWidget
+from django.forms.widgets import Select, MultiWidget, DateInput, TextInput, Widget, SelectDateWidget
 from time import strftime
 
 import re
@@ -36,38 +35,39 @@ class SelectTimeWidget(Widget):
     
     Also allows user-defined increments for minutes/seconds
     """
+    template_name = ''
     hour_field = '%s_hour'
     minute_field = '%s_minute'
     meridiem_field = '%s_meridiem'
     twelve_hr = False # Default to 24hr.
-    
+
     def __init__(self, attrs=None, hour_step=None, minute_step=None, twelve_hr=False):
         """
         hour_step, minute_step, second_step are optional step values for
         for the range of values for the associated select element
         twelve_hr: If True, forces the output to be in 12-hr format (rather than 24-hr)
         """
-        self.attrs = attrs or {}
-        
+        super(SelectTimeWidget, self).__init__(attrs)
+
         if twelve_hr:
             self.twelve_hr = True # Do 12hr (rather than 24hr)
             self.meridiem_val = 'a.m.' # Default to Morning (A.M.)
         
         if hour_step and twelve_hr:
-            self.hours = range(1,13,hour_step) 
+            self.hours = list(range(1,13,hour_step)) 
         elif hour_step: # 24hr, with stepping.
-            self.hours = range(0,24,hour_step)
+            self.hours = list(range(0,24,hour_step))
         elif twelve_hr: # 12hr, no stepping
-            self.hours = range(1,13)
+            self.hours = list(range(1,13))
         else: # 24hr, no stepping
-            self.hours = range(0,24) 
+            self.hours = list(range(0,24)) 
 
         if minute_step:
-            self.minutes = range(0,60,minute_step)
+            self.minutes = list(range(0,60,minute_step))
         else:
-            self.minutes = range(0,60)
+            self.minutes = list(range(0,60))
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         try: # try to get time values from a datetime.time object (value)
             hour_val, minute_val = value.hour, value.minute
             if self.twelve_hr:
@@ -77,10 +77,10 @@ class SelectTimeWidget(Widget):
                     self.meridiem_val = 'a.m.'
         except AttributeError:
             hour_val = minute_val = 0
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 match = RE_TIME.match(value)
                 if match:
-                    time_groups = match.groups();
+                    time_groups = match.groups()
                     hour_val = int(time_groups[HOURS]) % 24 # force to range(0-24)
                     minute_val = int(time_groups[MINUTES]) 
                     
@@ -113,11 +113,11 @@ class SelectTimeWidget(Widget):
 
         # For times to get displayed correctly, the values MUST be converted to unicode
         # When Select builds a list of options, it checks against Unicode values
-        hour_val = u"%.2d" % hour_val
-        minute_val = u"%.2d" % minute_val
+        hour_val = "%.2d" % hour_val
+        minute_val = "%.2d" % minute_val
 
         hour_choices = [("%.2d"%i, "%.2d"%i) for i in self.hours]
-        local_attrs = self.build_attrs(id=self.hour_field % id_)
+        local_attrs = self.build_attrs({'id': self.hour_field % id_})
         select_html = Select(choices=hour_choices).render(self.hour_field % name, hour_val, local_attrs)
         output.append(select_html)
 
@@ -137,7 +137,7 @@ class SelectTimeWidget(Widget):
             select_html = Select(choices=meridiem_choices).render(self.meridiem_field % name, self.meridiem_val, local_attrs)
             output.append(select_html)
 
-        return mark_safe(u'\n'.join(output))
+        return mark_safe('\n'.join(output))
 
     def id_for_label(self, id_):
         return '%s_hour' % id_
@@ -169,6 +169,8 @@ class SplitSelectDateTimeWidget(MultiWidget):
     This class combines SelectTimeWidget and SelectDateWidget so we have something 
     like SpliteDateTimeWidget (in django.forms.widgets), but with Select elements.
     """
+    template_name = ''
+
     def __init__(self, attrs=None, hour_step=None, minute_step=None, twelve_hr=None, years=None):
         """ pass all these parameters to their respective widget constructors..."""
         widgets = (SelectDateWidget(attrs=attrs, years=years), SelectTimeWidget(attrs=attrs, hour_step=hour_step, minute_step=minute_step, twelve_hr=twelve_hr))
@@ -177,7 +179,7 @@ class SplitSelectDateTimeWidget(MultiWidget):
     # See https://stackoverflow.com/questions/4324676/django-multiwidget-subclass-not-calling-decompress
     def value_from_datadict(self, data, files, name):
         if data.get(name, None) is None:
-            return [widget.value_from_datadict(data, files, name + '_%s' % i) for i, widget in enumerate(self.widgets)]
+            return [widget.value_from_datadict(data, files, name ) for widget in self.widgets]
         return self.decompress(data.get(name, None))
 
     def decompress(self, value):
@@ -185,13 +187,27 @@ class SplitSelectDateTimeWidget(MultiWidget):
             return [value.date(), value.time().replace(microsecond=0)]
         return [None, None]
 
-    def format_output(self, rendered_widgets):
+    def compress(self, data_list):
         """
-        Given a list of rendered widgets (as strings), it inserts an HTML
-        linebreak between them.
-        
-        Returns a Unicode string representing the HTML for the whole lot.
+        Takes the values from the MultiWidget and passes them as a
+        list to this function. This function needs to compress the
+        list into a single object in order to be correctly rendered by the widget.
+        For instace, django.forms.widgets.SelectDateWidget.format_value(value)
+        expects a date object or a string, not a list.
+        This method was taken from helios/fields.py
         """
-        rendered_widgets.insert(-1, '<br/>')
-        return u''.join(rendered_widgets)
+        if data_list:
+            import datetime
+            if not (data_list[0] and data_list[1]):
+                return None
+            try:
+                return datetime.datetime.combine(*data_list)
+            except:
+                # badly formed date
+                return None
+        return None
 
+    def render(self, name, value, attrs=None, renderer=None):
+        value = self.compress(value)
+        rendered_widgets = list(widget.render(name, value, attrs=attrs, renderer=renderer) for widget in self.widgets)
+        return '<br/>'.join(rendered_widgets)

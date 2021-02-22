@@ -157,7 +157,7 @@ function reset() {
 
       <form onsubmit="return false;">
           <h3>FIRST STEP: enter your secret key</h3>
-          <textarea id="sk_textarea" cols="60" rows="5"></textarea>
+          <textarea id="sk_textarea" cols="60" rows="5" style="height: 25em;"></textarea>
       </form>
       <p id="tally_section">
           <button onclick="do_tally();">Generate partial decryption</button>
@@ -187,17 +187,15 @@ function reset() {
           When you're ready, you can submit this result to the server.
       </p>
       Your partial decryption:<br />
-      <form action="javascript:submit_result();">
-          <textarea id="result_textarea" cols="60" rows="5" wrap="soft"></textarea><br /><br />
-          <input type="submit" value="Upload decryption factors to server" />
-      </form>
-      <br />
-      <a href="javascript:reset()">reset and restart decryption process</a>
-      <br />
+      <p>
+          <textarea id="result_textarea" cols="60" rows="5" wrap="soft" style="height: 25em;"></textarea>
+          <button onclick="submit_result();">Upload decryption factors to server</button>
+      </p>
+      <p><a href="javascript:reset()">reset and restart decryption process</a></p>
   </div>
   
   <div id="done_div">
-      Done! <a href="{% url "helios.views.one_election_view" election.uuid %}">Back to election</a>
+      Done! <a href="{% url "election@view" election.uuid %}">Back to election</a>
   </div>
   
   <div id="error_div">

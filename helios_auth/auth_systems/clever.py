@@ -3,15 +3,14 @@ Clever Authentication
 
 """
 
-from django.http import *
-from django.core.mail import send_mail
+import base64
+import urllib.parse
+
+import httplib2
 from django.conf import settings
-
-import httplib2,json,base64
-
-import sys, os, cgi, urllib, urllib2, re
-
 from oauth2client.client import OAuth2WebServerFlow, OAuth2Credentials
+
+from helios_auth import utils
 
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False
@@ -45,7 +44,7 @@ def get_user_info_after_auth(request):
   # do the POST manually, because OAuth2WebFlow can't do auth header for token exchange
   http = httplib2.Http(".cache")
   auth_header = "Basic %s" % base64.b64encode(settings.CLEVER_CLIENT_ID + ":" + settings.CLEVER_CLIENT_SECRET)
-  resp_headers, content = http.request("https://clever.com/oauth/tokens", "POST", urllib.urlencode({
+  resp_headers, content = http.request("https://clever.com/oauth/tokens", "POST", urllib.parse.urlencode({
         "code" : code,
         "grant_type": "authorization_code",
         "redirect_uri": redirect_uri
@@ -54,7 +53,7 @@ def get_user_info_after_auth(request):
         'Content-Type': "application/x-www-form-urlencoded"
       })
 
-  token_response = json.loads(content)
+  token_response = utils.from_json(content)
   access_token = token_response['access_token']
 
   # package the credentials
@@ -65,7 +64,7 @@ def get_user_info_after_auth(request):
   (resp_headers, content) = http.request("https://api.clever.com/me", "GET")
 
   # {"type":"student","data":{"id":"563395179f7408755c0006b7","district":"5633941748c07c0100000aac","type":"student","created":"2015-10-30T16:04:39.262Z","credentials":{"district_password":"eel7Thohd","district_username":"dianes10"},"dob":"1998-11-01T00:00:00.000Z","ell_status":"Y","email":"diane.s@example.org","gender":"F","grade":"9","hispanic_ethnicity":"Y","last_modified":"2015-10-30T16:04:39.274Z","location":{"zip":"11433"},"name":{"first":"Diane","last":"Schmeler","middle":"J"},"race":"Asian","school":"5633950c62fc41c041000005","sis_id":"738733110","state_id":"114327752","student_number":"738733110"},"links":[{"rel":"self","uri":"/me"},{"rel":"canonical","uri":"/v1.1/students/563395179f7408755c0006b7"},{"rel":"district","uri":"/v1.1/districts/5633941748c07c0100000aac"}]}
-  response = json.loads(content)
+  response = utils.from_json(content)
   
   user_id = response['data']['id']
   user_name = "%s %s" % (response['data']['name']['first'], response['data']['name']['last'])
@@ -73,7 +72,7 @@ def get_user_info_after_auth(request):
   user_district = response['data']['district']
   user_grade = response['data'].get('grade', None)
 
-  print content
+  print(content)
   
   # watch out, response also contains email addresses, but not sure whether thsoe are verified or not
   # so for email address we will only look at the id_token
@@ -103,7 +102,7 @@ def send_message(user_id, name, user_info, subject, body):
 #
 
 def check_constraint(constraint, user):
-  if not user.info.has_key('grade'):
+  if 'grade' not in user.info:
     return False
   return constraint['grade'] == user.info['grade']
 

@@ -2,7 +2,7 @@
 
 {% block title %}Voter Eligibility for {{election.name}}{% endblock %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Voter Eligibility <span style="font-size:0.7em;">[<a href="{% url "helios.views.voters_list_pretty" election.uuid %}">back to voters</a>]</span></h2>
+  <h2 class="title">{{election.name}} &mdash; Voter Eligibility <span style="font-size:0.7em;">[<a href="{% url "election@voters@list-pretty" election.uuid %}">back to voters</a>]</span></h2>
 
 <p>
 <em>{{election.pretty_eligibility|safe}}</em>

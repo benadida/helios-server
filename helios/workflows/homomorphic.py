@@ -6,11 +6,8 @@ Ben Adida
 reworked 2011-01-09
 """
 
-from helios.crypto import algs, utils
 import logging
-import uuid
-import datetime
-from helios import models
+from helios.crypto import algs
 from . import WorkflowObject
 
 class EncryptedAnswer(WorkflowObject):
@@ -72,10 +69,10 @@ class EncryptedAnswer(WorkflowObject):
         return False
 
       # compute homomorphic sum if needed
-      if max != None:
+      if max is not None:
         homomorphic_sum = choice * homomorphic_sum
     
-    if max != None:
+    if max is not None:
       # determine possible plaintexts for the sum
       sum_possible_plaintexts = self.generate_plaintexts(pk, min=min, max=max)
 
@@ -114,7 +111,7 @@ class EncryptedAnswer(WorkflowObject):
 
     # min and max for number of answers, useful later
     min_answers = 0
-    if question.has_key('min'):
+    if 'min' in question:
       min_answers = question['min']
     max_answers = question['max']
 
@@ -128,7 +125,7 @@ class EncryptedAnswer(WorkflowObject):
         num_selected_answers += 1
 
       # randomness and encryption
-      randomness[answer_num] = algs.Utils.random_mpz_lt(pk.q)
+      randomness[answer_num] = algs.random.mpz_lt(pk.q)
       choices[answer_num] = pk.encrypt_with_r(plaintexts[plaintext_index], randomness[answer_num])
       
       # generate proof
@@ -136,7 +133,7 @@ class EncryptedAnswer(WorkflowObject):
                                                 randomness[answer_num], algs.EG_disjunctive_challenge_generator)
                                                 
       # sum things up homomorphically if needed
-      if max_answers != None:
+      if max_answers is not None:
         homomorphic_sum = choices[answer_num] * homomorphic_sum
         randomness_sum = (randomness_sum + randomness[answer_num]) % pk.q
 
@@ -146,7 +143,7 @@ class EncryptedAnswer(WorkflowObject):
     if num_selected_answers < min_answers:
       raise Exception("Need to select at least %s answer(s)" % min_answers)
     
-    if max_answers != None:
+    if max_answers is not None:
       sum_plaintexts = cls.generate_plaintexts(pk, min=min_answers, max=max_answers)
     
       # need to subtract the min from the offset
@@ -164,7 +161,7 @@ class EncryptedVote(WorkflowObject):
   An encrypted ballot
   """
   def __init__(self):
-    self.encrypted_answers = None
+    self.encrypted_answers = []
 
   @property
   def datatype(self):
@@ -180,26 +177,37 @@ class EncryptedVote(WorkflowObject):
   answers = property(_answers_get, _answers_set)
 
   def verify(self, election):
-    # right number of answers
-    if len(self.encrypted_answers) != len(election.questions):
+    # correct number of answers
+    # noinspection PyUnresolvedReferences
+    n_answers = len(self.encrypted_answers) if self.encrypted_answers is not None else 0
+    n_questions = len(election.questions) if election.questions is not None else 0
+    if n_answers != n_questions:
+      logging.error(f"Incorrect number of answers ({n_answers}) vs questions ({n_questions})")
       return False
-    
+
     # check hash
-    if self.election_hash != election.hash:
-      # print "%s / %s " % (self.election_hash, election.hash)
+    # noinspection PyUnresolvedReferences
+    our_election_hash = self.election_hash if isinstance(self.election_hash, str) else self.election_hash.decode()
+    actual_election_hash = election.hash if isinstance(election.hash, str) else election.hash.decode()
+    if our_election_hash != actual_election_hash:
+      logging.error(f"Incorrect election_hash {our_election_hash} vs {actual_election_hash} ")
       return False
-      
+
     # check ID
-    if self.election_uuid != election.uuid:
+    # noinspection PyUnresolvedReferences
+    our_election_uuid = self.election_uuid if isinstance(self.election_uuid, str) else self.election_uuid.decode()
+    actual_election_uuid = election.uuid if isinstance(election.uuid, str) else election.uuid.decode()
+    if our_election_uuid != actual_election_uuid:
+      logging.error(f"Incorrect election_uuid {our_election_uuid} vs {actual_election_uuid} ")
       return False
-      
+
     # check proofs on all of answers
     for question_num in range(len(election.questions)):
       ea = self.encrypted_answers[question_num]
 
       question = election.questions[question_num]
       min_answers = 0
-      if question.has_key('min'):
+      if 'min' in question:
         min_answers = question['min']
         
       if not ea.verify(election.public_key, min=min_answers, max=question['max']):

@@ -4,11 +4,13 @@ taken from
 http://www.djangosnippets.org/snippets/377/
 """
 
-import datetime, json
-from django.db import models
-from django.db.models import signals
-from django.conf import settings
+import json
+
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db import models
+
+from . import utils
+
 
 class JSONField(models.TextField):
     """
@@ -17,9 +19,6 @@ class JSONField(models.TextField):
     
     deserialization_params added on 2011-01-09 to provide additional hints at deserialization time
     """
-
-    # Used so to_python() is called
-    __metaclass__ = models.SubfieldBase
 
     def __init__(self, json_type=None, deserialization_params=None, **kwargs):
         self.json_type = json_type
@@ -36,17 +35,17 @@ class JSONField(models.TextField):
         if isinstance(value, dict) or isinstance(value, list):
             return value
 
-        if value == "" or value == None:
-            return None
+        return self.from_db_value(value)
 
-        try:
-            parsed_value = json.loads(value)
-        except:
-            raise Exception("not JSON")
+    # noinspection PyUnusedLocal
+    def from_db_value(self, value, *args, **kwargs):
+        parsed_value = utils.from_json(value)
+        if parsed_value is None:
+            return None
 
         if self.json_type and parsed_value:
             parsed_value = self.json_type.fromJSONDict(parsed_value, **self.deserialization_params)
-                
+
         return parsed_value
 
     # we should never look up by JSON field anyways.
@@ -54,10 +53,10 @@ class JSONField(models.TextField):
 
     def get_prep_value(self, value):
         """Convert our JSON object to a string before we save"""
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return value
 
-        if value == None:
+        if value is None:
             return None
 
         if self.json_type and isinstance(value, self.json_type):
@@ -70,5 +69,4 @@ class JSONField(models.TextField):
 
     def value_to_string(self, obj):
         value = self._get_val_from_obj(obj)
-        return self.get_db_prep_value(value)        
-
+        return self.get_db_prep_value(value, None)
