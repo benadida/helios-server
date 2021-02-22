@@ -200,7 +200,11 @@ class SplitSelectDateTimeWidget(MultiWidget):
             import datetime
             if not (data_list[0] and data_list[1]):
                 return None
-            return datetime.datetime.combine(*data_list)
+            try:
+                return datetime.datetime.combine(*data_list)
+            except:
+                # badly formed date
+                return None
         return None
 
     def render(self, name, value, attrs=None, renderer=None):
