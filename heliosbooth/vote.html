@@ -1,7 +1,8 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Helios Voting Booth</title>
   <link rel="stylesheet" type="text/css" href="css/booth.css" />
   <link rel="stylesheet" type="text/css" href="css/forms.css" />
@@ -26,10 +27,14 @@
   
   <script language="javascript" src="js/20160507-helios-booth-compressed.js"></script>
 </head>
+
 <body>
 <div id="wrapper">
-<span style="float:right; padding: 7px 15px 5px 10px;">[<a href="javascript:BOOTH.exit();">exit</a>]</span>
-<div id="banner">Helios Voting Booth</div>
+<div id="banner" class="edge">
+    <div class="box"></div>
+    <div class="box"><span>Helios Voting Booth</span></div>
+    <div class="box"><span><a href="javascript:BOOTH.exit();">exit</a></span></div>
+</div>
 <div id="content">
 
 <div id="header">
@@ -592,9 +597,13 @@ BOOTH.do_done = function() {
 
 </script>
 <div id="page">
-  <div id="progress_div" style="display:none; width: 500px; margin:auto;">
-      <table width="100%">
-          <tr><td id="progress_1">(1) Select</td><td id="progress_2">(2) Review</td><td id="progress_3">(3) Submit</td></tr>
+  <div id="progress_div" style="display:none">
+      <table>
+          <tr>
+              <td id="progress_1">(1) Select</td>
+              <td id="progress_2">(2) Review</td>
+              <td id="progress_3">(3) Submit</td>
+          </tr>
       </table>
   </div>
   <div id="election_div" class="panel">
@@ -636,7 +645,7 @@ BOOTH.do_done = function() {
 
 <br clear="both" />
 </div>
-<div id="footer">&nbsp;</div>
+<div id="footer" class="edge">&nbsp;</div>
 </div>
 <div id="applet_div">
 </div>
