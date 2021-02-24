@@ -4,7 +4,10 @@ a:visited {color:#00a;}
 
 a:active {color:blue;}
 
-a:hover, a.subfoot:hover, a.linknav:hover, a.sublinknav:hover {color:blue;text-decoration:underline;}
+a:hover, a.subfoot:hover, a.linknav:hover, a.sublinknav:hover {
+    color:blue;
+    text-decoration:underline;
+}
 
 body {
 	margin:0;
@@ -86,7 +89,6 @@ h3 {
   font-size: 18pt;
   border-bottom: 1px dotted #888;
 }
-
 
 .question_selected {
   padding-top: 15px;

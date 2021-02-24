@@ -34,7 +34,6 @@ input.prettysmall {
     border: 1px solid black;
 }
 
-
 table.pretty {
     margin: 1em 1em 1em 2em;
     background: whitesmoke;
@@ -47,11 +46,10 @@ table.pretty th, td {
     padding: 0.3em;
 }
 
-
 #answers {
     padding-left: 210px;
-    padding-top: 0px;
-    margin-top: 0px;
+    padding-top: 0;
+    margin-top: 0;
 }
 
 #questions_div {
