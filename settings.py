@@ -15,7 +15,7 @@ import os
 # GOOGLEID = env('GOOGLEID')
 
 TESTING = 'test' in sys.argv
-TESTING = False
+# TESTING = False
 
 # go through environment variables and override them
 def get_from_env(var, default):
@@ -226,9 +226,10 @@ AUTH_ENABLED_SYSTEMS = get_from_env('AUTH_ENABLED_SYSTEMS',
 AUTH_DEFAULT_SYSTEM = get_from_env('AUTH_DEFAULT_SYSTEM', get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None))
 
 # google
-GOOGLE_CLIENT_ID = get_from_env('GOOGLE_CLIENT_ID', GOOGLEID)
-GOOGLE_CLIENT_SECRET = get_from_env('GOOGLE_CLIENT_SECRET', GOOGLESECRET)
-
+# GOOGLE_CLIENT_ID = get_from_env('GOOGLE_CLIENT_ID', GOOGLEID)
+# GOOGLE_CLIENT_SECRET = get_from_env('GOOGLE_CLIENT_SECRET', GOOGLESECRET)
+GOOGLE_CLIENT_ID = os.environ['GOOGLEID']
+GOOGLE_CLIENT_SECRET = os.environ['GOOGLESECRET']
 
 # facebook
 FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID','')
