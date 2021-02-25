@@ -15,7 +15,7 @@ import os
 # GOOGLEID = env('GOOGLEID')
 
 TESTING = 'test' in sys.argv
-TESTING = false
+TESTING = False
 
 # go through environment variables and override them
 def get_from_env(var, default):
