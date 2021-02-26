@@ -260,11 +260,17 @@ CLEVER_CLIENT_ID = get_from_env('CLEVER_CLIENT_ID', "")
 CLEVER_CLIENT_SECRET = get_from_env('CLEVER_CLIENT_SECRET', "")
 
 # email server
-EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
-EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
-EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
-EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
-EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
+# EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
+# EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
+# EMAIL_HOST_USER = get_from_env('EMAIL_HOST_USER', '')
+# EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
+# EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
+
+EMAIL_HOST = os.environ['MAILGUN_SMTP_SERVER']
+EMAIL_HOST_USER = os.environ['MAILGUN_SMTP_LOGIN']
+EMAIL_HOST_PASSWORD = os.environ['MAILGUN_SMTP_PASSWORD']
+EMAIL_PORT = os.environ['MAILGUN_SMTP_PORT']
+EMAIL_USE_TLS = True
 
 # EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
 

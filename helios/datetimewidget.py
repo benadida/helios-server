@@ -4,7 +4,7 @@
 '''
 DateTimeWidget using JSCal2 from http://www.dynarch.com/projects/calendar/
 
-django snippets 1629
+django snippets
 '''
 
 from django.utils.encoding import force_unicode
