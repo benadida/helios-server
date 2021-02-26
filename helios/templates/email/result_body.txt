@@ -1,6 +1,6 @@
 Dear {{voter.name}},
 
-The tally for {{election.name}} has been computed and released:
+The tally for {{voter.election.name}} has been computed and released:
 
   {{election_url}}
 

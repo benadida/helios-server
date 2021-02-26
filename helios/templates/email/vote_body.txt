@@ -2,10 +2,11 @@ Dear {{voter.name}},
 
 {{custom_message|safe}}
 
+Election Name:  {{voter.election.name}}
 Election URL:  {{election_vote_url}}
 Election Fingerprint:  {{voter.election.hash}}
-{% if election.voting_start_at %}Voting start at {{election.voting_start_at}}
-{% endif %}{% if election.voting_end_at %}Voting end at {{election.voting_end_at}}
+{% if voter.election.voting_start_at %}Voting start at {{voter.election.voting_start_at}}
+{% endif %}{% if voter.election.voting_end_at %}Voting end at {{voter.election.voting_end_at}}
 {% endif %}
 
 {% ifequal voter.voter_type "password" %}
