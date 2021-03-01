@@ -841,8 +841,11 @@ def one_election_audited_ballots(request, election):
   """
   
   if 'vote_hash' in request.GET:
-    b = AuditedBallot.get(election, request.GET['vote_hash'])
-    return HttpResponse(b.raw_vote, content_type="text/plain")
+    try:
+      b = AuditedBallot.get(election, request.GET['vote_hash'])
+      return HttpResponse(b.raw_vote, content_type="text/plain")
+    except:
+      return HttpResponse("No such ballot", content_type="text/plain")
     
   after = request.GET.get('after', None)
   offset= int(request.GET.get('offset', 0))
