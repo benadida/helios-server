@@ -1292,22 +1292,31 @@ def voters_upload(request, election):
       # we need to confirm
       if 'voters_file' in request.FILES:
         voters_file = request.FILES['voters_file']
-        voter_file_obj = election.add_voters_file(voters_file)
-
-        request.session['voter_file_id'] = voter_file_obj.id
 
         problems = []
 
-        # import the first few lines to check
+        voter_file_obj = None
+        voters = None
+        
         try:
-          voters = [v for v in voter_file_obj.itervoters()][:5]
+          with transaction.atomic():
+            voter_file_obj = election.add_voters_file(voters_file)
+          request.session['voter_file_id'] = voter_file_obj.id
         except:
-          voters = []
-          problems.append("your CSV file could not be processed. Please check that it is a proper CSV file.")
+          problems.append("Your CSV file was invalid, likely because it contains illegal characters. Please check it and try again.")
 
-        # check if voter emails look like emails
-        if False in [validate_email(v['email']) for v in voters]:
-          problems.append("those don't look like correct email addresses. Are you sure you uploaded a file with email address as second field?")
+        if voter_file_obj:
+          # import the first few lines to check
+          try:
+            voters = [v for v in voter_file_obj.itervoters()][:5]
+          except:
+            voters = []
+            problems.append("your CSV file could not be processed. Please check that it is a proper CSV file.")
+
+        if voters:
+          # check if voter emails look like emails
+          if False in [validate_email(v['email']) for v in voters]:
+            problems.append("those don't look like correct email addresses. Are you sure you uploaded a file with email address as second field?")
 
         return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters, 'problems': problems})
       else:

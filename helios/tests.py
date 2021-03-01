@@ -564,6 +564,13 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.get("/helios/elections/%s/trustees/view" % election_id)
         self.assertContains(response, "Trustee #1")
 
+        # add a voter file with a null character and see it fail
+        FILE = "helios/fixtures/voter-badfile-null.csv"
+        voters_file = open(FILE)
+        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'voters_file': voters_file})
+        voters_file.close()
+        self.assertContains(response, "contains illegal characters")
+
         # add a few voters with an improperly placed email address
         FILE = "helios/fixtures/voter-badfile.csv"
         voters_file = open(FILE)
