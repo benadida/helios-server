@@ -6,7 +6,7 @@ import json
 import os
 
 TESTING = 'test' in sys.argv
-
+ROOT_PATH = os.path.dirname(__file__)
 # go through environment variables and override them
 def get_from_env(var, default):
     if not TESTING and os.environ.has_key(var):
@@ -16,7 +16,7 @@ def get_from_env(var, default):
 
 DEBUG = (get_from_env('DEBUG', '0') == '1')
 
-# add admins of the form: 
+# add admins of the form:
 #    ('Ben Adida', 'ben@adida.net'),
 # if you want to be emailed about errors.
 ADMINS = ()
@@ -85,6 +85,18 @@ MEDIA_URL = ''
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
 STATIC_URL = '/media/'
+
+# mkdir media static
+# python3 manage.py collectstatic
+STATIC_ROOT = ROOT_PATH + '/sitestatic'
+
+STATICFILES_DIRS = (
+    ROOT_PATH + '/heliosbooth',
+    ROOT_PATH + '/heliosverifier',
+    ROOT_PATH + '/helios_auth/media',
+    ROOT_PATH + '/helios/media',
+    ROOT_PATH + '/server_ui/media',
+)
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
@@ -157,6 +169,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
     ## HELIOS stuff
     'helios_auth',
     'helios',
@@ -306,5 +319,5 @@ if ROLLBAR_ACCESS_TOKEN:
   MIDDLEWARE += ['rollbar.contrib.django.middleware.RollbarNotifierMiddleware',]
   ROLLBAR = {
     'access_token': ROLLBAR_ACCESS_TOKEN,
-    'environment': 'development' if DEBUG else 'production',  
+    'environment': 'development' if DEBUG else 'production',
   }

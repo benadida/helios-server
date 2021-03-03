@@ -1,24 +1,13 @@
 
-#   Supervisor
+#  Deploy
 ```bash
-        mv var/www/helios-server/deploy/supervisor/celery-worker.conf /etc/supervisor/conf.d/
-        mkdir /var/log/celery/
-        supervisorctl reread
-        supervisorctl update
-        sudo supervisorctl start celery-worker
-
+        sudo chmod -R 777 /var/www
+        sudo chmod o+u ./deploy/
+        sudo chmod o+u ./deploy/*
+        sudo python2 manage.py collectstatic
+        sudo bash ./deploy/apache/apache2-service.sh
+        sudo bash ./deploy/supervisor/supervisor-service.sh
 
 ```
 
-#   Apache2
-```bash
-        mv var/www/helios-server/deploy/apache/helios.conf /etc/apache2/sites-available
-        sudo apachectl configtest
-        sudo a2enmod rewrite
-        sudo a2dissite 000-default.conf
-        sudo a2ensite helios.conf
-        sudo systemctl reload apache2
-        chown www-data -R /var/www/helios-server
-        chmod -R 750 /var/www/helios-server/*
 
-```
