@@ -16,7 +16,7 @@ source $(pwd)/venv/bin/activate
 
 activate(){
 	. ./venv/bin/activate
-	
+
 	sudo apt-get install -y apache2
 	sudo apt-get install -y postgresql postgresql-contrib
 	sudo apt-get install -y libsasl2-dev python-dev libldap2-dev libssl-dev
@@ -25,16 +25,17 @@ activate(){
 	sudo apt-get install -y ufw
 	sudo apt-get install -y rabbitmq-server
 	sudo apt-get install -y tmux
-	
+	sudo apt-get install -y supervisor
+
 	sudo pip install south
 	sudo pip install uwsgi
 	sudo pip install httplib2
 	sudo pip install oauth2client
 	sudo pip install python_openid
-	
+
 	sudo apt update
-	sudo pip install -r requirements.txt	
-	
+	sudo pip install -r requirements.txt
+
 	sudo -u postgres createuser $(whoami)
 	sudo -u postgres createuser root
 	sudo -u postgres psql -c 'alter user '$(whoami)' with createdb;' postgres
@@ -44,9 +45,9 @@ activate(){
 	echo Updating...
 	sudo apt-get install -f
 	pip install -r requirements.txt
-	
 
-	
+
+
 }
 activate
 
@@ -54,7 +55,7 @@ echo Reset database...
 sudo chmod 777 reset.sh
 sh -x ./reset.sh
 echo Installation Finished!
-echo ##################### 
+echo #####################
 echo Add missing installation: sudo apt-get install -y postfix
 echo #####################
 echo Your Server IP: $(hostname -i)
