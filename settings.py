@@ -258,7 +258,6 @@ EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
 # AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY
 if get_from_env('EMAIL_USE_AWS', '0') == '1':
     EMAIL_BACKEND = 'django_ses.SESBackend'
-    AWS_SES_REGION_NAME = get_from_env('AWS_DEFAULT_REGION', 'us-east-1')
 
 # set up logging
 import logging
