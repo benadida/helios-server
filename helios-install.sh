@@ -40,12 +40,12 @@ activate(){
 	sudo -u postgres createuser root
 	sudo -u postgres psql -c 'alter user '$(whoami)' with createdb;' postgres
 	sudo -u postgres createdb -O $(whoami) helios
+
 	echo Enviroment setup is Done!
 	sudo apt-get update
 	echo Updating...
 	sudo apt-get install -f
 	pip install -r requirements.txt
-
 
 
 }
