@@ -96,7 +96,11 @@ STATICFILES_DIRS = (
     ROOT_PATH + '/helios_auth/media',
     ROOT_PATH + '/helios/media',
     ROOT_PATH + '/server_ui/media',
+    ROOT_PATH + '/selenium'
+
 )
+# whitenoise.storage.CompressedManifestStaticFilesStorage
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
@@ -141,6 +145,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    #'whitenoise.middleware.WhiteNoiseMiddleware',
+
 ]
 
 ROOT_URLCONF = 'urls'
