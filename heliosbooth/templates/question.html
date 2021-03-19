@@ -10,15 +10,15 @@
  vote for 
 {#if $T.question.min && $T.question.min > 0}
 {#if $T.question.max}
-{$T.question.min} to {$T.question.max}
+ {$T.question.min} to {$T.question.max}
 {#else}
-at least {$T.question.min}
+ at least {$T.question.min}
 {#/if}
 {#else}
 {#if $T.question.max}
-{#if $T.question.max > 1}up to {#/if}{$T.question.max}
+{#if $T.question.max > 1} up to{#/if} {$T.question.max}
 {#else}
-as many as you approve of
+ as many as you approve of
 {#/if} 
 {#/if}
 </span>
