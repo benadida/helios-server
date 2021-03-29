@@ -6,7 +6,7 @@ import json
 import os
 
 TESTING = 'test' in sys.argv
-
+ROOT_PATH = os.path.dirname(__file__)
 # go through environment variables and override them
 def get_from_env(var, default):
     if not TESTING and os.environ.has_key(var):
@@ -16,7 +16,7 @@ def get_from_env(var, default):
 
 DEBUG = (get_from_env('DEBUG', '0') == '1')
 
-# add admins of the form: 
+# add admins of the form:
 #    ('Ben Adida', 'ben@adida.net'),
 # if you want to be emailed about errors.
 ADMINS = ()
@@ -79,12 +79,28 @@ MEDIA_ROOT = ''
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash if there is a path component (optional in other cases).
 # Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = ''
+MEDIA_URL = '/media/'
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-STATIC_URL = '/media/'
+STATIC_URL = '/static/'
+
+# mkdir media
+# python3 manage.py collectstatic
+STATIC_ROOT = ROOT_PATH + '/static'
+
+STATICFILES_DIRS = (
+    ROOT_PATH + '/heliosbooth',
+    ROOT_PATH + '/heliosverifier',
+    ROOT_PATH + '/helios_auth/media',
+    ROOT_PATH + '/helios/media',
+    ROOT_PATH + '/server_ui/media',
+    ROOT_PATH + '/selenium'
+
+)
+# whitenoise.storage.CompressedManifestStaticFilesStorage
+# STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_from_env('SECRET_KEY', 'replaceme')
@@ -129,6 +145,8 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    #'whitenoise.middleware.WhiteNoiseMiddleware',
+
 ]
 
 ROOT_URLCONF = 'urls'
@@ -157,6 +175,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
     ## HELIOS stuff
     'helios_auth',
     'helios',
@@ -186,11 +205,14 @@ LOGOUT_ON_CONFIRMATION = True
 
 # The two hosts are here so the main site can be over plain HTTP
 # while the voting URLs are served over SSL.
+if 'EMAIL_HOST' in os.environ:
+    print('*ALERT* EMAIL HOST was not defined')
+
 IP_HOST = get_from_env("IP_HOST", "localhost")
 URL_DEFAULT = "http://%s:8000" % IP_HOST
 
+# An exaple of an URL_HOST http://debian.athens-dev.al.vps.domain
 URL_HOST = get_from_env( "URL_HOST", URL_DEFAULT).rstrip("/")
-
 # IMPORTANT: you should not change this setting once you've created
 # elections, as your elections' cast_url will then be incorrect.
 # SECURE_URL_HOST = "https://localhost:8443"
@@ -269,7 +291,7 @@ else:
     # For debug
     # Send email to the console by default
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    print('*Alert* EMAIL HOST was not defined')
+    print('*ALERT* EMAIL HOST was not defined')
 
 # to use AWS Simple Email Service
 # in which case environment should contain
@@ -306,5 +328,5 @@ if ROLLBAR_ACCESS_TOKEN:
   MIDDLEWARE += ['rollbar.contrib.django.middleware.RollbarNotifierMiddleware',]
   ROLLBAR = {
     'access_token': ROLLBAR_ACCESS_TOKEN,
-    'environment': 'development' if DEBUG else 'production',  
+    'environment': 'development' if DEBUG else 'production',
   }

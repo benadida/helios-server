@@ -24,3 +24,4 @@ rollbar==0.12.1
 django-celery-results==2.0.0
 django-celery-beat==1.6.0
 django-smtp-ssl==1.0
+python-dotenv==0.15.0

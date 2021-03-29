@@ -16,7 +16,7 @@ You can install the Helios server easily by following 3 steps:
   
 2.  ```cd helios-server/```
    
-3.   ```sudo sh helios-install.sh```
+3.   ```sudo bash helios-install.sh```
 
 ## Run
 
@@ -121,6 +121,12 @@ for redis usage: https://tekshinobi.com/django-celery-rabbitmq-redis-broker-resu
 To send an email with the user credencials (using the batch mode), it will be necessary to **run the celery** and, having the `send_mail()` **method defined at the user authentication** level. 
 
 Assuming that the authentication method can send emails, in this version/fork, if there are no email variables in the environment, it is still possible to test the email. The emails will be redirected to the console. (see `settings.py`)
+
+## Deploy
+    1. Active your virtual environment (optional)
+    2. Collect static files `sudo .venv/bin/python2 manage.py collectstatic`; Make sure the `collectstatic` is enabled on settings.py
+    3. Verify static files paths at your new static folder
+    4. Use a provisioner to launch Apache/Nginx services and Celery
 
 ##  Dev groups
 
