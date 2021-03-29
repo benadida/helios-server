@@ -179,7 +179,7 @@ LOGIN_URL = '/auth/'
 LOGOUT_ON_CONFIRMATION = True
 
 # The two hosts are here so the main site can be over plain HTTP
-# while the voting URLs are served over SSL.
+# while the voting URLs are served over SSL.  export URL_HOST=$(hostname -I | cut -f1 -d " ")
 URL_HOST = get_from_env("URL_HOST", "http://localhost:8000").rstrip("/")
 
 # IMPORTANT: you should not change this setting once you've created
@@ -256,8 +256,8 @@ EMAIL_HOST_PASSWORD = get_from_env('EMAIL_HOST_PASSWORD', '')
 EMAIL_USE_TLS = (get_from_env('EMAIL_USE_TLS', '0') == '1')
 
 # Fenix
-FENIX_CLIENT_ID = get_from_env('FENIX_CLIENT_ID',"1695915081466108")
-FENIX_CLIENT_SECRET = get_from_env('FENIX_CLIENT_SECRET',"z7UfPrUGHgckUSJYPTMZDItXsBYsla+NaWEI2d7+rIo6c/nv0ExAUvE/vkYf77uF64Xk1teGJvMkAu+syIz3Dg==")
+FENIX_CLIENT_ID = get_from_env('FENIX_CLIENT_ID',"")
+FENIX_CLIENT_SECRET = get_from_env('FENIX_CLIENT_SECRET',"")
 FENIX_URL_TOKEN = "https://fenix.tecnico.ulisboa.pt/oauth/access_token"
 FENIX_LOGIN= "https://fenix.tecnico.ulisboa.pt/oauth/userdialog?client_id=%s&redirect_uri=%s"
 FENIX_REDIRECT_URL_PATH="/auth/fenix/login"
