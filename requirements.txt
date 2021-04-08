@@ -1,4 +1,4 @@
-Django==2.2.19
+Django==2.2.20
 django_webtest>=1.9.7
 
 gunicorn==20.0.4
