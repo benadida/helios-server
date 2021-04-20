@@ -367,7 +367,7 @@ BOOTH.load_and_setup_election = function(election_url) {
     // the hash will be computed within the setup function call now
     $.get(election_url, function(raw_json) {
         // let's also get the metadata
-        $.getJSON(election_url + "/meta", {}, function(election_metadata) {
+        $.get(election_url + "/meta", function(election_metadata) {
           BOOTH.election_metadata = election_metadata;
           BOOTH.setup_election(raw_json, election_metadata);
           BOOTH.show_election();
