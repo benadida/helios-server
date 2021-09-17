@@ -1298,13 +1298,11 @@ def voters_upload(request, election):
         # import the first few lines to check
         try:
           voters = [v for v in voter_file_obj.itervoters()][:5]
-        except:
+          if len(voters) == 0:
+            raise Exception("no valid lines found in voter file")
+        except Exception as e:
           voters = []
-          problems.append("your CSV file could not be processed. Please check that it is a proper CSV file.")
-
-        # check if voter emails look like emails
-        if False in [v['voter_type'] in AUTH_SYSTEMS for v in voters]:
-          problems.append("those don't look like valid auth methods. Are you sure you uploaded a file with voter type as first field?")
+          problems.append("your CSV file could not be processed because %s" % str(e))
 
         return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters, 'problems': problems})
       else:

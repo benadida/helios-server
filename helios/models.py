@@ -16,6 +16,7 @@ import bleach
 import unicodecsv
 from django.conf import settings
 from django.db import models, transaction
+from validate_email import validate_email
 
 from helios import datatypes
 from helios import utils
@@ -768,20 +769,33 @@ class VoterFile(models.Model):
       if len(voter_fields) < 2:
         continue
 
-      return_dict = {'voter_type': voter_fields[0].strip(), 'voter_id': voter_fields[1].strip()}
+      voter_type = voter_fields[0].strip()
+      voter_id = voter_fields[1].strip()
 
+      if not voter_type in AUTH_SYSTEMS:
+        raise Exception("invalid voter type '%s' for voter id '%s'" % (voter_type, voter_id))
+
+      # default to having email be the same as voter_id
+      voter_email = voter_id
       if len(voter_fields) > 2:
-        return_dict['email'] = voter_fields[2].strip()
-      else:
-        # assume single field means the email is the same field as voter_id
-        return_dict['email'] = voter_fields[1].strip()
+        # but if it's supplied, it will be the 3rd field.
+        voter_email = voter_fields[2].strip()
+      if voter_type == "password" and not validate_email(voter_email):
+        raise Exception("invalid voter email '%s' for voter id '%s'" % (voter_email, voter_id))
 
+      # same thing for voter display name.
+      voter_name = voter_email
       if len(voter_fields) > 3:
-        return_dict['name'] = voter_fields[3].strip()
-      else:
-        return_dict['name'] = return_dict['email']
+        # which is supplied as the 4th field if known.
+        voter_name = voter_fields[3].strip()
 
-      yield return_dict
+      yield {
+        'voter_type': voter_type,
+        'voter_id': voter_id,
+        'email': voter_email,
+        'name': voter_name,
+      }
+
     if close:
       voter_stream.close()
 
@@ -794,23 +808,26 @@ class VoterFile(models.Model):
     random.shuffle(voters)
 
     for voter in voters:
-      # does voter for this user already exist
-      existing_voter = Voter.get_by_election_and_voter_id(self.election, voter['voter_id'])
-      # create the voter
-      if not existing_voter:
-          if voter['voter_type'] != 'password':
-              user, _ = User.objects.get_or_create(user_type=voter['voter_type'], user_id=voter['voter_id'], defaults = {'name': voter['voter_id'], 'info': {}, 'token': None})
+      if voter['voter_type'] == 'password':
+          # does voter for this user already exist
+          existing_voter = Voter.get_by_election_and_voter_id(self.election, voter['voter_id'])
+          if existing_voter:
+              continue
+          # create the voter
+          voter_uuid = str(uuid.uuid4())
+          new_voter = Voter(uuid=voter_uuid, user = None, voter_login_id = voter['voter_id'],
+              voter_name = voter['name'], voter_email = voter['email'], election = self.election)
+          new_voter.generate_password()
+          if election.use_voter_aliases:
+              utils.lock_row(Election, election.id)
+              alias_num = election.last_alias_num + 1
+              new_voter.alias = "V%s" % alias_num
+          new_voter.save()
+      else:
+          user, _ = User.objects.get_or_create(user_type=voter['voter_type'], user_id=voter['voter_id'], defaults = {'name': voter['voter_id'], 'info': {}, 'token': None})
+          existing_voter = Voter.get_by_election_and_user(self.election, user)
+          if not existing_voter:
               Voter.register_user_in_election(user, self.election)
-          else:
-              voter_uuid = str(uuid.uuid4())
-              new_voter = Voter(uuid=voter_uuid, user = None, voter_login_id = voter['voter_id'],
-                  voter_name = voter['name'], voter_email = voter['email'], election = self.election)
-              new_voter.generate_password()
-              if election.use_voter_aliases:
-                  utils.lock_row(Election, election.id)
-                  alias_num = election.last_alias_num + 1
-                  new_voter.alias = "V%s" % alias_num
-              new_voter.save()
 
     self.processing_finished_at = datetime.datetime.utcnow()
     self.save()
