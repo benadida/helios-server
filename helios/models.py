@@ -765,64 +765,58 @@ class VoterFile(models.Model):
 
     for voter_fields in reader:
       # bad line
-      if len(voter_fields) < 1:
+      if len(voter_fields) < 2:
         continue
-    
-      return_dict = {'voter_id': voter_fields[0].strip()}
 
-      if len(voter_fields) > 1:
-        return_dict['email'] = voter_fields[1].strip()
-      else:
-        # assume single field means the email is the same field
-        return_dict['email'] = voter_fields[0].strip()
+      return_dict = {'voter_type': voter_fields[0].strip(), 'voter_id': voter_fields[1].strip()}
 
       if len(voter_fields) > 2:
-        return_dict['name'] = voter_fields[2].strip()
+        return_dict['email'] = voter_fields[2].strip()
+      else:
+        # assume single field means the email is the same field as voter_id
+        return_dict['email'] = voter_fields[1].strip()
+
+      if len(voter_fields) > 3:
+        return_dict['name'] = voter_fields[3].strip()
       else:
         return_dict['name'] = return_dict['email']
 
       yield return_dict
     if close:
       voter_stream.close()
-    
+
   def process(self):
     self.processing_started_at = datetime.datetime.utcnow()
     self.save()
 
-    election = self.election    
-    last_alias_num = election.last_alias_num
+    voters = list(self.itervoters())
+    self.num_voters = len(voters)
+    random.shuffle(voters)
 
-    num_voters = 0
-    new_voters = []
-    for voter in self.itervoters():
-      num_voters += 1
-    
+    for voter in voters:
       # does voter for this user already exist
-      existing_voter = Voter.get_by_election_and_voter_id(election, voter['voter_id'])
-    
+      existing_voter = Voter.get_by_election_and_voter_id(self.election, voter['voter_id'])
       # create the voter
       if not existing_voter:
-        voter_uuid = str(uuid.uuid4())
-        existing_voter = Voter(uuid= voter_uuid, user = None, voter_login_id = voter['voter_id'],
-                      voter_name = voter['name'], voter_email = voter['email'], election = election)
-        existing_voter.generate_password()
-        new_voters.append(existing_voter)
-        existing_voter.save()
+          if voter['voter_type'] != 'password':
+              user = User.update_or_create(user_type=voter['voter_type'], user_id=voter['voter_id'])
+              Voter.register_user_in_election(user, election)
+          else:
+              voter_uuid = str(uuid.uuid4())
+              new_voter = Voter(uuid=voter_uuid, user = None, voter_login_id = voter['voter_id'],
+                  voter_name = voter['name'], voter_email = voter['email'], election = self.election)
+              new_voter.generate_password()
+              if election.use_voter_aliases:
+                  utils.lock_row(Election, election.id)
+                  alias_num = election.last_alias_num + 1
+                  new_voter.alias = "V%s" % alias_num
+              new_voter.save()
 
-    if election.use_voter_aliases:
-      voter_alias_integers = list(range(last_alias_num+1, last_alias_num+1+num_voters))
-      random.shuffle(voter_alias_integers)
-      for i, voter in enumerate(new_voters):
-        voter.alias = 'V%s' % voter_alias_integers[i]
-        voter.save()
-
-    self.num_voters = num_voters
     self.processing_finished_at = datetime.datetime.utcnow()
     self.save()
 
-    return num_voters
+    return self.num_voters
 
-    
 class Voter(HeliosModel):
   election = models.ForeignKey(Election, on_delete=models.CASCADE)
   
