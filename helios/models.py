@@ -799,8 +799,8 @@ class VoterFile(models.Model):
       # create the voter
       if not existing_voter:
           if voter['voter_type'] != 'password':
-              user = User.update_or_create(user_type=voter['voter_type'], user_id=voter['voter_id'])
-              Voter.register_user_in_election(user, election)
+              user, _ = User.objects.get_or_create(user_type=voter['voter_type'], user_id=voter['voter_id'], defaults = {'name': voter['voter_id'], 'info': {}, 'token': None})
+              Voter.register_user_in_election(user, self.election)
           else:
               voter_uuid = str(uuid.uuid4())
               new_voter = Voter(uuid=voter_uuid, user = None, voter_login_id = voter['voter_id'],
