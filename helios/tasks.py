@@ -65,6 +65,7 @@ def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={
     voter = Voter.objects.get(uuid=voter_uuid)
 
     the_vars = copy.copy(extra_vars)
+    the_vars.update({'election': voter.election})
     the_vars.update({'voter': voter})
 
     subject = render_template_raw(None, subject_template, the_vars)
