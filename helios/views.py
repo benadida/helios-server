@@ -17,7 +17,6 @@ from django.core.paginator import Paginator
 from django.db import transaction, IntegrityError
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseForbidden
 from django.urls import reverse
-from validate_email import validate_email
 
 import helios_auth.url_names as helios_auth_urls
 from helios import utils, VOTERS_EMAIL, VOTERS_UPLOAD, url_names
@@ -1268,10 +1267,8 @@ def voters_eligibility(request, election):
 @election_admin()
 def voters_upload(request, election):
   """
-  Upload a CSV of password-based voters with
-  voter_id, email, name
-  
-  name and email are needed only if voter_type is static
+  Upload a CSV of voters with
+  voter_type, voter_id, optional_additional_params (e.g. email, name)
   """
 
   ## TRYING this: allowing voters upload by admin when election is frozen
@@ -1301,13 +1298,11 @@ def voters_upload(request, election):
         # import the first few lines to check
         try:
           voters = [v for v in voter_file_obj.itervoters()][:5]
-        except:
+          if len(voters) == 0:
+            raise Exception("no valid lines found in voter file")
+        except Exception as e:
           voters = []
-          problems.append("your CSV file could not be processed. Please check that it is a proper CSV file.")
-
-        # check if voter emails look like emails
-        if False in [validate_email(v['email']) for v in voters]:
-          problems.append("those don't look like correct email addresses. Are you sure you uploaded a file with email address as second field?")
+          problems.append("your CSV file could not be processed because %s" % str(e))
 
         return render_template(request, 'voters_upload_confirm', {'election': election, 'voters': voters, 'problems': problems})
       else:
