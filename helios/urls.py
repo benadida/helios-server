@@ -16,6 +16,9 @@ urlpatterns = [
 
   # vote shortcut
   url(r'^v/(?P<vote_tinyhash>[^/]+)$', views.castvote_shortcut, name=names.CAST_VOTE_SHORTCUT),
+
+  # vote by hash
+  url(r'^vh/(?P<vote_hash>[^/]+)$', views.castvote_fullhash_shortcut, name=names.CAST_VOTE_FULLHASH_SHORTCUT),
   
   # trustee login
   url(r'^t/(?P<election_short_name>[^/]+)/(?P<trustee_email>[^/]+)/(?P<trustee_secret>[^/]+)$', views.trustee_login,

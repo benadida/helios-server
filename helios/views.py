@@ -147,6 +147,14 @@ def castvote_shortcut(request, vote_tinyhash):
 
   return _castvote_shortcut_by_election(request, election_uuid = cast_vote.voter.election.uuid, cast_vote=cast_vote)
 
+def castvote_fullhash_shortcut(request, vote_hash):
+  try:
+    cast_vote = CastVote.objects.get(vote_hash = vote_hash)
+  except CastVote.DoesNotExist:
+    raise Http404
+
+  return _castvote_shortcut_by_election(request, election_uuid = cast_vote.voter.election.uuid, cast_vote=cast_vote)
+
 @trustee_check
 def trustee_keygenerator(request, election, trustee):
   """
