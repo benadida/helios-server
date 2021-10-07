@@ -19,8 +19,7 @@ DEBUG = (get_from_env('DEBUG', '1') == '1')
 # add admins of the form: 
 #    ('Ben Adida', 'ben@adida.net'),
 # if you want to be emailed about errors.
-ADMINS = (
-)
+ADMINS = (get_from_env('ADMIN_NAME', ''), get_from_env('ADMIN_EMAIL', ''))
 
 MANAGERS = ADMINS
 
