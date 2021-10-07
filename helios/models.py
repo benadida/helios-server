@@ -773,7 +773,7 @@ class VoterFile(models.Model):
       voter_id = voter_fields[1].strip()
 
       if not voter_type in AUTH_SYSTEMS:
-        raise Exception("invalid voter type '%s' for voter id '%s'" % (voter_type, voter_id))
+        raise Exception("invalid voter type '%s' for voter id '%s', available voter types are %s" % (voter_type, voter_id, ",".join(AUTH_SYSTEMS.keys())))
 
       # default to having email be the same as voter_id
       voter_email = voter_id
