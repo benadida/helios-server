@@ -818,6 +818,7 @@ class VoterFile(models.Model):
           new_voter = Voter(uuid=voter_uuid, user = None, voter_login_id = voter['voter_id'],
               voter_name = voter['name'], voter_email = voter['email'], election = self.election)
           new_voter.generate_password()
+          election=self.election
           if election.use_voter_aliases:
               utils.lock_row(Election, election.id)
               alias_num = election.last_alias_num + 1
