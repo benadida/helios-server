@@ -40,6 +40,7 @@ def voters_email(election_id, subject_template, body_template, extra_vars={},
     voter_constraints_include are conditions on including voters
     voter_constraints_exclude are conditions on excluding voters
     """
+    return # temporary hack to stop emails
     election = Election.objects.get(id=election_id)
 
     # select the right list of voters
@@ -62,6 +63,7 @@ def voters_notify(election_id, notification_template, extra_vars={}):
 
 @shared_task
 def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={}):
+    return # temporary hack to short circuit emails
     voter = Voter.objects.get(uuid=voter_uuid)
 
     the_vars = copy.copy(extra_vars)
