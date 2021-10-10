@@ -8,9 +8,9 @@ You have uploaded a file of voters. The first few rows of this file are:
 </p>
 
 <table>
-<tr><th>Voter Login</th><th>Email Address</th><th>Name</th></tr>
+<tr><th>Voter Type</th><th>Voter Login</th><th>Email Address</th><th>Name</th></tr>
 {% for v in voters %}
-<tr><td>{{v.voter_id}}</td><td>{{v.email}}</td><td>{{v.name}}</td></tr>
+<tr><td>{{v.voter_type}}</td><td>{{v.voter_id}}</td><td>{{v.email}}</td><td>{{v.name}}</td></tr>
 {% endfor %}
 </table>
 
