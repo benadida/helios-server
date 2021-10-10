@@ -124,10 +124,8 @@ HELIOS.Election = Class.extend({
 });
 
 HELIOS.Election.fromJSONString = function(raw_json) {
-  var json_object = JSON.parse(raw_json);
-  
   // let's hash the raw_json
-  var election = HELIOS.Election.fromJSONObject(json_object);
+  var election = HELIOS.Election.fromJSONObject(raw_json);
   election.election_hash = b64_sha256(raw_json);
   
   return election;
