@@ -92,11 +92,6 @@ def get_user(request):
   # push the expiration of the session back
   # request.session.set_expiry(settings.SESSION_COOKIE_AGE)
 
-  # voter = election.voter_set.get(voter_login_id=password_login_form.cleaned_data['voter_id'].strip(),
-  #                               voter_password=password_login_form.cleaned_data['password'].strip())
-
-  # request.session['CURRENT_VOTER_ID'] = voter.id
-  
   # set up CSRF protection if needed
   if 'csrf_token' not in request.session or not isinstance(request.session['csrf_token'], str):
     request.session['csrf_token'] = str(uuid.uuid4())
