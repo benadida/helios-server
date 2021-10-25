@@ -620,7 +620,15 @@ def one_election_cast_confirm(request, election):
 
   # if no encrypted vote, the user is reloading this page or otherwise getting here in a bad way
   if ('encrypted_vote' not in request.session) or request.session['encrypted_vote'] is None:
-    return HttpResponseRedirect(settings.URL_HOST)
+    if request.method == "GET":
+      return HttpResponseRedirect(
+        settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
+
+    encrypted_vote = request.POST['encrypted_vote']
+    if encrypted_vote:
+      save_in_session_across_logouts(request, 'encrypted_vote', encrypted_vote)
+    else:
+      return HttpResponseRedirect(settings.URL_HOST)
 
   # election not frozen or started
   if not election.voting_has_started():
@@ -719,7 +727,8 @@ def one_election_cast_confirm(request, election):
         'bad_voter_login': bad_voter_login})
       
   if request.method == "POST":
-    check_csrf(request)
+    # Temporarilly disabling for helios-desktop
+    # check_csrf(request)
     
     # voting has not started or has ended
     if (not election.voting_has_started()) or election.voting_has_stopped():
