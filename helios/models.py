@@ -183,7 +183,7 @@ class Election(HeliosModel):
     if not self.use_voter_aliases:
       return None
     
-    return utils.one_val_raw_sql("select max(cast(substring(alias, 2) as integer)) from " + Voter._meta.db_table + " where election_id = %s", [self.id]) or 0
+    return utils.one_val_raw_sql("select max(cast(substr(alias, 2) as integer)) from " + Voter._meta.db_table + " where election_id = %s", [self.id]) or 0
 
   @property
   def encrypted_tally_hash(self):
