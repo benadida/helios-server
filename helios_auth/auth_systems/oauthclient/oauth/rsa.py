@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 """
 requires tlslite - http://trevp.net/tlslite/
