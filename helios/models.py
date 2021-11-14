@@ -759,7 +759,7 @@ class VoterFile(models.Model):
       voter_stream = io.BytesIO(content)
     else:
       close = True
-      voter_stream = open(self.voter_file.path, "U")
+      voter_stream = open(self.voter_file.path, "rb")
 
     #reader = unicode_csv_reader(voter_stream)
     reader = unicodecsv.reader(voter_stream, encoding='utf-8')
