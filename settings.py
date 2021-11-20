@@ -150,11 +150,19 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'anymail',
     ## HELIOS stuff
     'helios_auth',
     'helios',
     'server_ui',
 )
+
+ANYMAIL = {
+    "MAILGUN_API_KEY": get_from_env('MAILGUN_API_KEY', None),
+}
+
+if ANYMAIL["MAILGUN_API_KEY"]:
+    EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
 
 ##
 ## HELIOS
