@@ -4,7 +4,7 @@
 <h4>
 {#if $T.admin_p}[
 {#if $T.question$index > 0}<a href="javascript:question_move_up({$T.question$index});">^</a>]&nbsp;[{#/if}
-<a onclick="return confirm('Are you sure you want to remove this question?');" href="javascript:question_remove({$T.question$index})">x</a>] [<a href="javascript:question_edit({$T.question$index})">edit</a>] {#/if}{$T.question$index + 1}. {$T.question.question} ({$T.question.choice_type}, select between {$T.question.min} and {#if $T.question.max != null}{$T.question.max}{#else}unlimited{#/if} answers, result type {$T.question.result_type}.)</h4>
+<a onclick="return confirm('Are you sure you want to remove this question?');" href="javascript:question_remove({$T.question$index})">x</a>] [<a href="javascript:question_edit({$T.question$index})">edit</a>] {#/if}{$T.question$index + 1}. {$T.question.question} ({$T.question.choice_type}, select between {$T.question.min} and {#if $T.question.max != null}{$T.question.max}{#else}unlimited{#/if} answers, result type {$T.question.result_type}{#if $T.question.randomize_answer_order}, random answer order{#/if}.)</h4>
 <ul>
 {#foreach $T.question.answers as answer}
 <li> {$T.answer}
@@ -55,6 +55,13 @@ Result Type:&nbsp;
     <option>relative</option>
 </select>
 
+&nbsp;&nbsp;
+&nbsp;&nbsp;
+Random Answer Order:&nbsp;
+<select name="randomize_answer_order">
+  <option selected value="0">no</option>
+  <option value="1">yes</option>
+</select>
 </p>
 
 <table id="answer_table_{$T.question$index}">
@@ -114,6 +121,15 @@ Result Type:&nbsp;
     <option selected>absolute</option>
     <option>relative</option>
 </select>
+
+&nbsp;&nbsp;
+&nbsp;&nbsp;
+Random Answer Order:&nbsp;
+<select name="randomize_answer_order">
+  <option selected value="0">no</option>
+  <option value="1">yes</option>
+</select>
+</p>
 
 </p>
 

@@ -190,8 +190,8 @@ BOOTH.setup_election = function(raw_json, election_metadata) {
     // initialize array so it is the identity permutation
     $(ordering).each(function(j, answer) {ordering[j]=j;});
 
-    // if we want reordering, then we shuffle the array
-    if (election_metadata && election_metadata.randomize_answer_order) {
+    // if we want reordering, at election or question level, then we shuffle the array
+    if ((election_metadata && election_metadata.randomize_answer_order) || question.randomize_answer_order) {
       shuffleArray(ordering);
     }
 
