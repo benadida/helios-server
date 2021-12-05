@@ -8,10 +8,12 @@
     Congratulations, your vote has been <b><u>successfully cast</u></b>!
 </p>
 
+{% if vote_hash %}
 <p>
   Your smart ballot tracker is:<br /><br />
     <tt style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_hash}}</tt>
 </p>
+{% endif %}
 
 {% if logout %}
 <p><b>For your safety, we have logged you out.</b></p>

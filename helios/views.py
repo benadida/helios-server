@@ -776,16 +776,8 @@ def one_election_cast_done(request, election):
     save_in_session_across_logouts(request, 'last_vote_hash', vote_hash)
     save_in_session_across_logouts(request, 'last_vote_cv_url', cv_url)
   else:
-    vote_hash = request.session['last_vote_hash']
-    cv_url = request.session['last_vote_cv_url']
+    vote_hash = request.session.get('last_vote_hash', None)
     logout = False
-  
-  # local logout ensures that there's no more
-  # user locally
-  # WHY DO WE COMMENT THIS OUT? because we want to force a full logout via the iframe, including
-  # from remote systems, just in case, i.e. CAS
-  # if logout:
-  #   auth_views.do_local_logout(request)
   
   # remote logout is happening asynchronously in an iframe to be modular given the logout mechanism
   # include_user is set to False if logout is happening
