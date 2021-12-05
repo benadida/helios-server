@@ -2,7 +2,11 @@ Dear {{voter.name}},
 
 You have successfully cast a vote in {{election.name}}.
 
-Your ballot is archived at: {{cast_vote_url}}
+Your smart ballot tracker is:
+{{cast_vote.vote_hash}}
+
+And your full encrypted ballot is archived at:
+{{cast_vote_url}}
 
 {% if election.use_voter_aliases %}
 This election uses voter aliases to protect your privacy.
@@ -10,5 +14,4 @@ Your voter alias is: {{voter.alias}}.
 {% endif %}
 
 --
-
 Helios
