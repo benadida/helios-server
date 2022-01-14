@@ -873,7 +873,7 @@ class Voter(HeliosModel):
 
   def get_user(self):
     # stub the user so code is not full of IF statements
-    return self.user or User(user_type='password', user_id=self.voter_email, name=self.voter_name)
+    return self.user or User(user_type='password', user_id=self.voter_email, name=self.voter_name, info={})
 
   @classmethod
   @transaction.atomic
