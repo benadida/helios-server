@@ -3,8 +3,7 @@
 {% block content %}
   <h2 class="title">{{election.name}} &mdash; Freeze Ballot</h2>
 <p>
-Once the ballot is frozen, the questions and options can no longer be modified.<br />
-The list of trustees and their public keys will also be frozen.
+Once an election is frozen, the questions, options, and trustees can no longer be modified.<br />
 </p>
 
 <p>
@@ -36,7 +35,7 @@ You must freeze the ballot before you can contact voters.
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
 <input class="button" type="submit" value="Freeze the ballot" />
-<button onclick="document.location='{% url "election@view" election.uuid %}'; return false;">never mind</button>
+<button onclick="document.location='{% url "election@view" election.uuid %}'; return false;">do NOT freeze yet</button>
 </form>
 {% endif %}
 

@@ -17,7 +17,6 @@
 {% if election.private_p %}
 <em>Your election is marked private, which means you cannot open registration up more widely</em>.<br />
 {% else %}
-You can change this setting:
 <form method="post" action="{% url "election@voters@eligibility" election.uuid %}">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 <input type="radio" name="eligibility" value="openreg" {% if election.openreg and not election.eligibility %}CHECKED{% endif %} /> anyone can vote<br />
@@ -31,7 +30,7 @@ You can change this setting:
 </select>
 <br />
 {% endif %}
-<input type="submit" value="update" />
+<input class="button" type="submit" value="update" />
 </form>
 {% endif %}
 {% endif %}
