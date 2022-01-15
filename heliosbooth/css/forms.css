@@ -18,10 +18,17 @@ form.prettyform br {
     clear: left;
 }
 
-form.prettyform input, form.prettyform textarea, button {
+form.prettyform input, form.prettyform textarea {
     border: 1px solid black;
     margin: 5px;
     font-size: 16pt;
+}
+
+button {
+    background: lightblue;
+    margin: 5px;
+    padding: 5px 20px 5px 20px;
+    font-size: 18pt;
 }
 
 input.pretty {

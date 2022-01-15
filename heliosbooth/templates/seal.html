@@ -11,9 +11,9 @@
 <div style="margin-left: 15px;">&#x2713; {$T.choice}</div>
 {#/for}
 {#if $T.choices[$T.question$index].length < $T.question.max}
-[you selected {$T.choices[$T.question$index].length} candidates; you may select from {$T.question.min} to {$T.question.max}]
+[{$T.choices[$T.question$index].length} selections out of possible {$T.question.min}-{$T.question.max}]<br />
 {#/if}
-[<a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#">edit responses</a>]
+[<a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#">change</a>]
 {#if !$T.question$last}<br><br>{#/if}
 {#/for}
 </div>
@@ -44,7 +44,7 @@ were encrypted. This is an optional auditing process.
 <p>
 You will then be guided to re-encrypt your choices for final casting.
 </p>
-<input type="button" value="Spoil &amp; Audit" onclick="BOOTH.audit_ballot();" class="pretty" />
+<button onclick="BOOTH.audit_ballot();" class="pretty">Spoil &amp; Audit</button>
 </p>
 </div>
 </div>

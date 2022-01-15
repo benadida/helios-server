@@ -47,17 +47,17 @@
 
 {#if $T.show_reviewall}
 <div style="float: right;">
-<input type="button" onclick="BOOTH.validate_and_confirm({$T.question_num});" value="Proceed" />
+<button onclick="BOOTH.validate_and_confirm({$T.question_num});">Proceed</button>
 </div>
 {#/if}
 
 {#if $T.question_num != 0}
-<input type="button" onclick="BOOTH.previous({$T.question_num})" value="Previous" />
+<button onclick="BOOTH.previous({$T.question_num});">Previous</button>
 &nbsp;
 {#/if}
 
 {#if $T.question_num < $T.last_question_num}
-<input type="button" onclick="BOOTH.next({$T.question_num})" value="Next" />
+<button onclick="BOOTH.next({$T.question_num});">Next</button>
 &nbsp;
 {#/if}
 
