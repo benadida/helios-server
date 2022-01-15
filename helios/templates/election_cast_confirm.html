@@ -34,7 +34,7 @@ window.onbeforeunload = function(evt) {
 };
 
 </script>
-<p style="margin-top: 10px">Submitting your vote for <b>{{election.name}}</b>...</p>
+<h1>Don't go yet!<br />Your ballot has not yet been cast.</h1>
 
 <div id="waiting_div">
     Verifying and Casting your ballot<br />
@@ -50,13 +50,6 @@ window.onbeforeunload = function(evt) {
 {% else %}
 
 {% if show_password %}
-{% if user %}
-<h1>Wait!</h1>
-<p>
-You are logged in as <u>{{user.display_html_small|safe}}</u>, but this election<br />
-requires election-specific credentials.
-</p>
-{% endif %}
 {% with cast_ballot="1" %}
 {% include "_castconfirm_password.html" %}
 {% endwith %}
@@ -77,7 +70,6 @@ requires election-specific credentials.
 </p>
 {% else %}
 <p>
-<h1>Wait!  You need to log in.</h1>
 {% if election.openreg %}
 
   {% if election.eligibility %}
@@ -99,7 +91,7 @@ Don't worry, we'll remember your ballot while you log in.
 
 {% endif %}
 <br />
-Your smart ballot tracker is:<br /><br />
+Your ballot tracker is:<br /><br />
     <tt style="font-size:1.3em; font-weight: bold; padding-left: 20px;">  {{vote_fingerprint}}</tt>
 </p>
 {# this closes the IF ELSE of this being password_only #}

@@ -6,7 +6,7 @@ The tally for {{election.name}} has been computed and released:
 
 {{custom_message|safe}}
 
-{% if voter.vote_hash %}Your smart ballot tracker in this election was:
+{% if voter.vote_hash %}Your ballot tracker in this election was:
 
   {{voter.vote_hash}}
 

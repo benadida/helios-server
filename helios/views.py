@@ -683,8 +683,8 @@ def one_election_cast_confirm(request, election):
 
     # status update this vote
     if voter and voter.can_update_status():
-      status_update_label = voter.user.update_status_template() % "your smart ballot tracker"
-      status_update_message = "I voted in %s - my smart tracker is %s.. #heliosvoting" % (get_election_url(election),cast_vote.vote_hash[:10])
+      status_update_label = voter.user.update_status_template() % "your ballot tracker"
+      status_update_message = "I voted in %s - my ballot tracker is %s.. #heliosvoting" % (get_election_url(election),cast_vote.vote_hash[:10])
     else:
       status_update_label = None
       status_update_message = None

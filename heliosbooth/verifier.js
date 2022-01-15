@@ -10,7 +10,7 @@ function verify_ballot(election_raw_json, encrypted_vote_json, status_cb) {
 	
 	// display ballot fingerprint
 	encrypted_vote = HELIOS.EncryptedVote.fromJSONObject(encrypted_vote_json, election);
-	status_cb("smart ballot tracker is " + encrypted_vote.get_hash());
+	status_cb("ballot tracker is " + encrypted_vote.get_hash());
 	
       // check the hash
       if (election_hash == encrypted_vote.election_hash) {

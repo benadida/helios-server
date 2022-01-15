@@ -2,7 +2,7 @@ Dear {{voter.name}},
 
 You have successfully cast a vote in {{election.name}}.
 
-Your smart ballot tracker is:
+Your ballot tracker is:
 {{cast_vote.vote_hash}}
 
 And your full encrypted ballot is archived at:
