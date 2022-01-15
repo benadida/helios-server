@@ -91,8 +91,10 @@ Don't worry, we'll remember your ballot while you log in.
 
 {% endif %}
 <br />
-Your ballot tracker is:<br /><br />
-    <tt style="font-weight: bold;">  {{vote_fingerprint}}</tt>
+<div style="font-size:0.8em;">
+Your ballot tracker is:<br>
+<b>{{vote_fingerprint}}</b>
+</div>
 </p>
 {# this closes the IF ELSE of this being password_only #}
 {% endif %}

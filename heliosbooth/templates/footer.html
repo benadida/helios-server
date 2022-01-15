@@ -1,4 +1,4 @@
-<div class="box"></div>
+
 <div class="box">
     <span>
         {#if $T.election.BOGUS_P}
@@ -6,10 +6,5 @@
         {#else}
         Election Fingerprint: <span id="election_hash" style="font-weight:bold;">{$T.election.hash}</span>
         {#/if}
-    </span>
-</div>
-<div class="box">
-    <span>
-        <a target="_new" href="mailto:{$T.election_metadata.help_email}?subject=help%20with%20election%20{$T.election.name}&body=I%20need%20help%20with%20election%20{$T.election.uuid}">help</a>
     </span>
 </div>

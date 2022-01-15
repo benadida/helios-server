@@ -31,7 +31,7 @@
 <body>
 <div id="wrapper">
 <div id="banner" class="edge">
-    <div class="box"></div>
+  <div class="box"></div>
     <div class="box"><span>Helios Voting Booth</span></div>
     <div class="box"><span><a href="javascript:BOOTH.exit();">exit</a></span></div>
 </div>
@@ -210,7 +210,7 @@ BOOTH.show = function(el) {
 };
 
 BOOTH.show_election = function() {
-  BOOTH.show($('#election_div')).processTemplate({'election' : BOOTH.election});
+  BOOTH.show($('#election_div')).processTemplate({'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
 };
 
 BOOTH.launch_async_encryption_answer = function(question_num) {

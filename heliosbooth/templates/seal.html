@@ -1,14 +1,14 @@
 <h3>Review your Ballot</h3>
 
-<div style="padding: 10px; margin-bottom: 10px; background-color: #eee; border: 1px #ddd solid; max-width: 340px;">
+<div style="padding: 10px; margin-bottom: 10px; background-color: #eee; border: 1px #ddd solid;">
 {#foreach $T.questions as question}
 
-<b>Question #{$T.question$index + 1}: {$T.question.short_name}</b><br>
+Question #{$T.question$index + 1}: {$T.question.short_name}<br>
 {#if $T.choices[$T.question$index].length == 0}
-<div style="margin-left: 15px;">&#x2610; <i>No choice selected</i></div>
+<div style="margin-left: 15px;">&#x2610; <b><i>No choice selected</i></b></div>
 {#/if}
 {#foreach $T.choices[$T.question$index] as choice}
-<div style="margin-left: 15px;">&#x2713; {$T.choice}</div>
+<div style="margin-left: 15px;">&#x2713; <b>{$T.choice}</b></div>
 {#/for}
 {#if $T.choices[$T.question$index].length < $T.question.max}
 [{$T.choices[$T.question$index].length} selections out of possible {$T.question.min}-{$T.question.max}]<br />
