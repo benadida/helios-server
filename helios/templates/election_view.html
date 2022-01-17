@@ -258,11 +258,11 @@ Anyone can vote in this election.
 <br /><a href="{% url "election@extend" election.uuid %}">extend voting</a><br />
 {% endif %}
 
-<div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa; width: 720px;" class="round">
+<div style="background: lightyellow; padding:5px; padding-left: 10px; margin-top: 15px; border: 1px solid #aaa;" class="round">
 <a href="#" onclick="$('#auditbody').slideToggle(250);">Audit Info</a>
-<div id="auditbody" style="display:none;">
+<div id="auditbody" style="display:none; word-wrap: break-word;">
 <br />Election URL:<br />
-<tt style="font-size: 1.2em;"><a href="{{election.url}}">{{election.url}}</a></tt>
+<a href="{{election.url}}">{{election.url}}</a>
 
 {% if election.frozen_at %}
 <br />
@@ -285,6 +285,7 @@ Anyone can vote in this election.
 
 {% if not election.voting_has_started %}
 <p style="font-size: 1.2em;">
+  <br>
   <a href="{{SECURE_URL_HOST}}/booth/vote.html?election_url={% url "election@home" election.uuid %}">preview booth</a>
 </p>
 {% endif %}  

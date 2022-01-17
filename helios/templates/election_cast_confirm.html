@@ -41,6 +41,12 @@ window.onbeforeunload = function(evt) {
     <img src="/static/helios/loading.gif" />
 </div>
 
+<div style="word-wrap: break-word; width: 90vw;">
+Your ballot tracker is:<br>
+<b>{{vote_fingerprint}}</b>
+<br><br>
+</div>
+
 <div id="all_forms">
 
 {% if voter %}
@@ -90,11 +96,6 @@ Don't worry, we'll remember your ballot while you log in.
 {% endif %}
 
 {% endif %}
-<br />
-<div style="font-size:0.8em;">
-Your ballot tracker is:<br>
-<b>{{vote_fingerprint}}</b>
-</div>
 </p>
 {# this closes the IF ELSE of this being password_only #}
 {% endif %}
