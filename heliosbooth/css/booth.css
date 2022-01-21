@@ -52,22 +52,6 @@ body {
   font-size: 18pt;
 }
 
-.box {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-}
-
-.box:nth-child(2) {
-  flex: 3;
-}
-
-.box:last-child > span {
-  margin-left: auto;
-  margin-right: 5px;
-  font-size: 12pt;
-}
-
 #progress_div {
   margin: auto;
   max-width: 500px;

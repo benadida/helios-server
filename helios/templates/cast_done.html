@@ -4,14 +4,13 @@
 {% block content %}
 <h1>{{election.name}} &mdash; Vote Successfully Cast!</h1>
 
-<p>
-    Congratulations, your vote has been <b><u>successfully cast</u></b>!
-</p>
-
 {% if vote_hash %}
 <p>
-  Your ballot tracker is:<br /><br />
-    <tt style="font-size:1.8em; font-weight: bold; padding-left: 20px;">  {{vote_hash}}</tt>
+  Your ballot tracker is:<br />
+    <span style="font-size:1.4em; font-weight: bold; word-break: break-word;">  {{vote_hash}}</span>
+</p>
+<p>
+  This ballot tracker mathematically ensures that your ballot is counted. You can check all ballot trackers by viewing the <a href="{% url "election@voters@list-pretty" election.uuid %}">voter list</a>, where your ballot tracker should appear within a few minutes.
 </p>
 {% endif %}
 
