@@ -1,1 +1,1 @@
-Vote: {{custom_subject|safe}}
+{{custom_subject|safe}}

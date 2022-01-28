@@ -2,11 +2,8 @@ Dear {{voter.name}},
 
 {{custom_message|safe}}
 
-Election URL:  {{election_vote_url}}
-Election Fingerprint:  {{voter.election.hash}}
-{% if election.voting_start_at %}Voting start at {{election.voting_start_at}}
-{% endif %}{% if election.voting_end_at %}Voting end at {{election.voting_end_at}}
-{% endif %}
+Election URL (click to begin voting):
+{{election_vote_url}}
 
 {% ifequal voter.voter_type "password" %}
 Your voter ID: {{voter.voter_login_id}}
@@ -29,5 +26,9 @@ Your voter alias is {{voter.alias}}.
 IMPORTANTLY, when you are prompted to log in to vote,
 please use your *voter ID*, not your alias.
 {% endif %}
+
+You may wish to verify the election fingerprint at the bottom of
+the screen when you vote:  {{voter.election.hash}}
+
 --
 Helios
