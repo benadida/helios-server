@@ -350,6 +350,9 @@ BOOTH.click_checkbox = function(question_num, answer_num, checked_p) {
        checkbox.disabled = false;
      });
      $('#warning_box').html("");
+     if (BOOTH.election.questions[question_num].max != null && (BOOTH.ballot.answers[question_num].length < BOOTH.election.questions[question_num].max)) {
+        $('#warning_box').html("You may select up to " + BOOTH.election.questions[question_num].max + " choices total.");
+     }
   }
 };
 
