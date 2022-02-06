@@ -30,13 +30,14 @@
 </head>
 <body>
   <div class="wrapper">
-  <nav class="top-bar">
+  <nav class="top-bar" id="nav">
     <ul class="title-area">
       <!-- Title Area -->
       <li class="name">
         <h1><a href="/"><img src="/static/tinylogo.png"></a></h1>
       </li>
-      <li class="toggle-topbar menu-icon"><a href="#"><span>menu</span></a></li>
+      <li class="toggle-topbar menu-icon"><a href="#" onclick="$('nav').toggleClass('expanded'); return false;"><span>Menu</span></a>
+      </li>
     </ul>
  
     <section class="top-bar-section">
@@ -55,7 +56,7 @@
         <li><a href="/">{{settings.SITE_TITLE}}</a></li>
 	{% if settings.MASTER_HELIOS %}
         <li class="divider"></li>
-        <li><a href="/about">About</a></li>
+        <li class="active"><a href="/about">About</a></li>
         <li class="divider"></li>
         <li><a target="_new" href="https://github.com/benadida/helios-server">Code</a></li>
         <li class="divider"></li>
