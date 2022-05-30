@@ -9,11 +9,9 @@ Ben Adida
 import copy
 import csv
 import datetime
-import io
 import uuid
 
 import bleach
-import unicodecsv
 from django.conf import settings
 from django.db import models, transaction
 from validate_email import validate_email
@@ -697,27 +695,7 @@ class ElectionLog(models.Model):
   class Meta:
     app_label = 'helios'
 
-##
-## UTF8 craziness for CSV
-##
 
-def unicode_csv_reader(unicode_csv_data, dialect=csv.excel, **kwargs):
-    # csv.py doesn't do Unicode; encode temporarily as UTF-8:
-    csv_reader = csv.reader(utf_8_encoder(unicode_csv_data),
-                            dialect=dialect, **kwargs)
-    for row in csv_reader:
-      # decode UTF-8 back to Unicode, cell by cell:
-      try:
-        yield [str(cell, 'utf-8') for cell in row]
-      except:
-        yield [str(cell, 'latin-1') for cell in row]        
-
-def utf_8_encoder(unicode_csv_data):
-    for line in unicode_csv_data:
-      # FIXME: this used to be line.encode('utf-8'),
-      # need to figure out why this isn't consistent
-      yield line
-  
 class VoterFile(models.Model):
   """
   A model to store files that are lists of voters to be processed
@@ -742,9 +720,9 @@ class VoterFile(models.Model):
   def itervoters(self):
     if self.voter_file_content:
       if isinstance(self.voter_file_content, str):
-        content = self.voter_file_content.encode(encoding='utf-8')
-      elif isinstance(self.voter_file_content, bytes):
         content = self.voter_file_content
+      elif isinstance(self.voter_file_content, bytes):
+        content = self.voter_file_content.decode('utf-8')
       else:
         raise TypeError("voter_file_content is of type {0} instead of str or bytes"
                         .format(str(type(self.voter_file_content))))
@@ -753,16 +731,12 @@ class VoterFile(models.Model):
       # we do this in a simple way: replace all \r with \n
       # then, replace all double \n with single \n
       # this should leave us with only \n
-      content = content.replace(b'\r',b'\n').replace(b'\n\n',b'\n').decode("utf-8-sig").encode("utf-8")
-
-      close = False
-      voter_stream = io.BytesIO(content)
+      # We then split the contents by line
+      content = content.replace('\r', '\n').replace('\n\n', '\n').split('\n')
     else:
-      close = True
-      voter_stream = open(self.voter_file.path, "rb")
+      content = open(self.voter_file.path, encoding='utf-8', newline='')
 
-    #reader = unicode_csv_reader(voter_stream)
-    reader = unicodecsv.reader(voter_stream, encoding='utf-8')
+    reader = csv.reader(content, delimiter=',')
 
     for voter_fields in reader:
       # bad line
@@ -795,9 +769,6 @@ class VoterFile(models.Model):
         'email': voter_email,
         'name': voter_name,
       }
-
-    if close:
-      voter_stream.close()
 
   def process(self):
     self.processing_started_at = datetime.datetime.utcnow()
