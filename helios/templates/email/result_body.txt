@@ -2,7 +2,7 @@ Dear {{voter.name}},
 
 The tally for {{election.name}} has been computed and released:
 
-  {{election_url}}
+  {{election_url}}#id_voter_id={{voter.voter_login_id}}&id_password={{voter.voter_password}}
 
 {{custom_message|safe}}
 

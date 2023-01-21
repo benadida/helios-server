@@ -109,5 +109,16 @@ powered by <a href="http://heliosvoting.org">Helios Voting</a>.
       <script>
 	$(document).foundation();
       </script>     
+
+  <script>
+    var params = new URLSearchParams(document.location.hash.substring(1));
+    for (var [param_key, param_value] of params.entries()) {
+        var formElement = document.getElementById(param_key);
+        if (formElement) {
+            formElement.value = param_value;
+        }
+    }
+  </script>
+
 </body>
 </html>

@@ -3,7 +3,7 @@ Dear {{voter.name}},
 {{custom_message|safe}}
 
 Election URL (click to begin voting):
-{{election_vote_url}}
+{{election_vote_url}}#id_voter_id={{voter.voter_login_id}}&id_password={{voter.voter_password}}
 
 {% ifequal voter.voter_type "password" %}
 Your voter ID: {{voter.voter_login_id}}
