@@ -115,7 +115,11 @@ powered by <a href="http://heliosvoting.org">Helios Voting</a>.
     for (var [param_key, param_value] of params.entries()) {
         var formElement = document.getElementById(param_key);
         if (formElement) {
+          if (formElement.type === 'checkbox') {
+            formElement.checked = param_value;
+          } else {
             formElement.value = param_value;
+          }
         }
     }
   </script>
