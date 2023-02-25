@@ -1,0 +1,29 @@
+{% extends TEMPLATE_BASE %}
+{% load i18n %}
+
+{% block content %}
+<div class="row">
+ <div class="col-md-6 col-sm-12">
+	<form class="form" role="form" action="" method="POST" id="login_form">
+	{{ form.non_field_errors }}
+	<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+		<div class="form-group {% if form.username.errors %}has-error{% endif %}">
+		<label for="username">{% trans "Username" %}</label>
+		<input type="text" name="username" class="form-control" id="username" {% if form.username.value %} value="{{form.username.value}}" {% endif %} placeholder="{% trans "Username" %}">
+
+		</div> {{ form.username.errors }}
+		<div class="form-group {% if form.password.errors %}has-error{% endif %}">
+		
+		<label for="password">{% trans "Password" %}</label>
+		<input type="password" name="password" class="form-control" id="password" placeholder="{% trans "Password" %}"> {{ form.password.errors }}
+		</div>
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary">{% trans "Login" %}</button>
+		</div>
+	</form>
+</div>
+</div>
+{% endblock content %}
+{% block footer %}
+
+{% endblock footer %}

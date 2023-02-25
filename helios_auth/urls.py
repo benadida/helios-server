@@ -30,3 +30,8 @@ if 'password' in AUTH_ENABLED_SYSTEMS:
 if 'twitter' in AUTH_ENABLED_SYSTEMS:
     from .auth_systems.twitter import urlpatterns as twitter_patterns
     urlpatterns.extend(twitter_patterns)
+
+# ldap
+if 'ldap' in AUTH_ENABLED_SYSTEMS:
+    from .auth_systems.ldapauth import urlpatterns as ldap_patterns
+    urlpatterns.extend(ldap_patterns)

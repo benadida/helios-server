@@ -5,6 +5,9 @@ import sys
 import json
 import os
 
+import ldap
+from django_auth_ldap.config import LDAPSearch
+
 TESTING = 'test' in sys.argv
 
 # go through environment variables and override them
@@ -221,7 +224,7 @@ HELIOS_PRIVATE_DEFAULT = False
 # authentication systems enabled
 # AUTH_ENABLED_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
 AUTH_ENABLED_SYSTEMS = get_from_env('AUTH_ENABLED_SYSTEMS',
-                                    get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'password,google,facebook')
+                                    get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'password,google,facebook,ldap')
                                     ).split(",")
 AUTH_DEFAULT_SYSTEM = get_from_env('AUTH_DEFAULT_SYSTEM', get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None))
 
@@ -297,3 +300,25 @@ if ROLLBAR_ACCESS_TOKEN:
     'access_token': ROLLBAR_ACCESS_TOKEN,
     'environment': 'development' if DEBUG else 'production',  
   }
+
+
+# ldap
+# see configuration example at https://pythonhosted.org/django-auth-ldap/example.html
+AUTH_LDAP_SERVER_URI = "ldap://ldap.forumsys.com" # replace by your Ldap URI
+AUTH_LDAP_BIND_DN = "cn=read-only-admin,dc=example,dc=com"
+AUTH_LDAP_BIND_PASSWORD = "password"
+AUTH_LDAP_USER_SEARCH = LDAPSearch("dc=example,dc=com",
+    ldap.SCOPE_SUBTREE, "(uid=%(user)s)"
+)
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    "first_name": "givenName",
+    "last_name": "sn",
+    "email": "mail",
+}
+
+AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = True
+
+AUTH_LDAP_ALWAYS_UPDATE_USER = False
+
+AUTH_BIND_USERID_TO_VOTERID = ['ldap']
