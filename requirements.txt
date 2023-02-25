@@ -22,3 +22,7 @@ boto==2.49.0
 django-ses==0.8.14
 oauth2client==4.1.3
 rollbar==0.14.7
+
+#ldap auth
+django_auth_ldap==4.1.0
+python-ldap==3.4.3
