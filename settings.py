@@ -5,6 +5,9 @@ import sys
 import json
 import os
 
+import ldap
+from django_auth_ldap.config import LDAPSearch
+
 TESTING = 'test' in sys.argv
 
 # go through environment variables and override them
@@ -297,3 +300,23 @@ if ROLLBAR_ACCESS_TOKEN:
     'access_token': ROLLBAR_ACCESS_TOKEN,
     'environment': 'development' if DEBUG else 'production',  
   }
+
+
+# ldap
+# see configuration example at https://pythonhosted.org/django-auth-ldap/example.html
+AUTH_LDAP_SERVER_URI = "ldap://ldap.forumsys.com" # replace by your Ldap URI
+AUTH_LDAP_BIND_DN = "cn=read-only-admin,dc=example,dc=com"
+AUTH_LDAP_BIND_PASSWORD = "password"
+AUTH_LDAP_USER_SEARCH = LDAPSearch("dc=example,dc=com",
+    ldap.SCOPE_SUBTREE, "(uid=%(user)s)"
+)
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    "first_name": "givenName",
+    "last_name": "sn",
+    "email": "mail",
+}
+
+AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = True
+
+AUTH_LDAP_ALWAYS_UPDATE_USER = False
