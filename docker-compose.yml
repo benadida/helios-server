@@ -102,10 +102,10 @@ networks:
 volumes:
   app:
     name: app
-     driver_opts:
-           type: none
-           device: ${APP_FILES}
-           o: bind
+    driver_opts:
+       type: none
+       device: ${APP_FILES}
+       o: bind
   pg_data:
     name: pg_data
   rabbitmq_data:
