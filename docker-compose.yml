@@ -76,7 +76,7 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     networks:
-      - traefik_proxy
+      - proxy_default
       - postgresql 
       - rabbitmq 
     depends_on:
@@ -86,7 +86,7 @@ services:
       sh -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
           
 networks:
-  traefik_proxy:
+  proxy_default:
     external: true
   postgresql:
     driver: bridge
