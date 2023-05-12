@@ -1,5 +1,5 @@
 # https://github.com/benadida/helios-server/blob/master/INSTALL.md
-# set env vars:  POSTGRES_PASSWORD, SERVER_URL, SECRET_KEY, RABBITMQ_DEFAULT_PASS, DEFAULT_FROM_EMAIL, MAIN_LOGO_URL, EMAIL_HOST, AUTH_LDAP_SERVER_URI, AUTH_LDAP_BASE, AUTH_LDAP_BIND_DN, AUTH_LDAP_BIND_PASSWORD
+# set env vars:  POSTGRES_PASSWORD, SERVER_URL, SECRET_KEY, RABBITMQ_DEFAULT_PASS, DEFAULT_FROM_EMAIL, MAIN_LOGO_URL, EMAIL_HOST, AUTH_LDAP_SERVER_URI, AUTH_LDAP_BASE, AUTH_LDAP_BIND_DN, AUTH_LDAP_BIND_PASSWORD, APP_FILES
 version: '3'
 
 services:
@@ -8,8 +8,8 @@ services:
     container_name: rabbitmq
     restart: unless-stopped
     volumes:
-      - rabbitmq_conf:/etc/rabbitmq/
-      - rabbitmq_data:/var/lib/rabbitmq/mnesia
+      - rabbitmq_conf:/etc/rabbitmq
+      - rabbitmq_data:/var/lib/rabbitmq
     environment:
       RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:-secret_cookie}
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
@@ -102,6 +102,10 @@ networks:
 volumes:
   app:
     name: app
+     driver_opts:
+           type: none
+           device: ${APP_FILES}
+           o: bind
   pg_data:
     name: pg_data
   rabbitmq_data:
