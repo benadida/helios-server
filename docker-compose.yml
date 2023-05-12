@@ -1,0 +1,110 @@
+# https://github.com/benadida/helios-server/blob/master/INSTALL.md
+# set env vars:  POSTGRES_PASSWORD, SERVER_URL, SECRET_KEY, RABBITMQ_DEFAULT_PASS, DEFAULT_FROM_EMAIL, MAIN_LOGO_URL, EMAIL_HOST, AUTH_LDAP_SERVER_URI, AUTH_LDAP_BASE, AUTH_LDAP_BIND_DN, AUTH_LDAP_BIND_PASSWORD
+version: '3'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.10.6-management-alpine
+    container_name: rabbitmq
+    restart: unless-stopped
+    volumes:
+      - rabbitmq_conf:/etc/rabbitmq/
+      - rabbitmq_data:/var/lib/rabbitmq/mnesia
+    environment:
+      RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE:-secret_cookie}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-admin}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-admin}
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 20s
+      retries: 5
+    networks:
+      - rabbitmq 
+      
+  postgres:
+    image: postgres
+    container_name: postgres
+    environment:
+      - POSTGRES_DB=helios
+      - POSTGRES_USER=helios
+      - POSTGRES_INITDB_ARGS="--auth-host=md5"
+      - POSTGRES_PASSWORD 
+    restart: unless-stopped
+    volumes:   
+      - pg_data:/var/lib/postgresql/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    healthcheck:
+      test: ["CMD", "sh", "-c", "pg_isready -U postgres"]
+      interval: 5m
+      timeout: 5s
+      retries: 5
+    networks:
+      - postgresql
+      
+  web:
+    image: python:3.6
+    container_name: helios
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik_proxy
+      - traefik.http.services.guac.loadbalancer.server.port=8000
+      - traefik.http.routers.guac.rule=Host(`${SERVER_URL}`)
+      - traefik.http.routers.guac.tls.certresolver=letsencrypt
+      - traefik.frontend.entryPoints=http,https
+    environment:
+      - DEBUG=0
+      - SECRET_KEY=${SECRET_KEY}
+      - EMAIL_HOST
+      - EMAIL_PORT=25
+      - ADMIN_EMAIL
+      - DATABASE_URL=postgres://helios:${POSTGRES_PASSWORD}@postgres/helios
+      - DEFAULT_FROM_EMAIL
+      - DEFAULT_FROM_NAME=Vote
+      - SITE_TITLE=Helios
+      - MAIN_LOGO_URL
+      - CELERY_BROKER_URL=amqp://admin:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672/0
+      - AUTH_LDAP_SERVER_URI
+      - AUTH_LDAP_BASE
+      - AUTH_LDAP_BIND_DN
+      - AUTH_LDAP_BIND_PASSWORD
+      - AUTH_LDAP_USER_SEARCH='LDAPSearch(${AUTH_LDAP_BASE},ldap.SCOPE_SUBTREE, "(uid=%(user)s)")'
+    volumes:
+      - app:/app
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - traefik_proxy
+      - postgresql 
+      - rabbitmq 
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+          
+networks:
+  traefik_proxy:
+    external: true
+  postgresql:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 192.168.100.0/24
+  rabbitmq:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 192.168.101.0/24
+
+volumes:
+  app:
+    name: app
+  pg_data:
+    name: pg_data
+  rabbitmq_data:
+    name: rabbitmq_data
+  rabbitmq_conf:
+    name: rabbitmq_conf
