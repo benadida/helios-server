@@ -37,7 +37,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     healthcheck:
       test: ["CMD", "sh", "-c", "pg_isready -U postgres"]
-      interval: 5m
+      interval: 30s
       timeout: 5s
       retries: 5
     networks:
