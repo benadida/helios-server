@@ -54,6 +54,7 @@ services:
       - traefik.http.routers.guac.rule=Host(`${SERVER_URL}`)
       - traefik.http.routers.guac.tls.certresolver=letsencrypt
       - traefik.frontend.entryPoints=http,https
+    working_dir: /app
     environment:
       - DEBUG=0
       - SECRET_KEY=${SECRET_KEY}
