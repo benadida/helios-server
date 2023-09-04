@@ -18,9 +18,7 @@ services:
       test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping"]
       interval: 30s
       timeout: 20s
-      retries: 5
-    networks:
-      - rabbitmq 
+      retries: 5 
       
   postgres:
     image: postgres
@@ -43,8 +41,9 @@ services:
     networks:
       - postgresql
       
-  web:
-    image: python:3.6
+  helios:
+    #image: python:3.6
+    build: ./docker/
     container_name: helios
     restart: unless-stopped
     labels:
@@ -56,35 +55,44 @@ services:
       - traefik.frontend.entryPoints=http,https
     working_dir: /app
     environment:
+      - TZ
+      - LANGUAGE_CODE
       - DEBUG=0
-      - SECRET_KEY=${SECRET_KEY}
+      - SECRET_KEY           
+      - ALLOWED_HOSTS=${DOMAIN_NAME}
+      - URL_HOST=/     
+      - SSL=1 
       - EMAIL_HOST
-      - EMAIL_PORT=25
+      - EMAIL_PORT
+      - ADMIN_NAME                                    
+      - HELIOS_ADMIN_ONLY="True"                      
+      - SHOW_LOGIN_OPTIONS=True                      
+      - MEDIA_ROOT                                    
+      - HELP_EMAIL_ADDRESS=${EMAIL_CONTACT}
       - ADMIN_EMAIL
-      - DATABASE_URL=postgres://helios:${POSTGRES_PASSWORD}@postgres/helios
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB}
       - DEFAULT_FROM_EMAIL
       - DEFAULT_FROM_NAME=Vote
       - SITE_TITLE=Helios
-      - MAIN_LOGO_URL
+      - WELCOME_MESSAGE 
       - CELERY_BROKER_URL=amqp://admin:${RABBITMQ_DEFAULT_PASS}@rabbitmq:5672/0
+      - MAIN_LOGO_URL
+      - AUTH_DEFAULT_SYSTEM
+      - AUTH_ENABLED_AUTH_SYSTEMS=password,ldap
       - AUTH_LDAP_SERVER_URI
       - AUTH_LDAP_BASE
       - AUTH_LDAP_BIND_DN
       - AUTH_LDAP_BIND_PASSWORD
-      - AUTH_LDAP_USER_SEARCH='LDAPSearch(${AUTH_LDAP_BASE},ldap.SCOPE_SUBTREE, "(uid=%(user)s)")'
     volumes:
-      - app:/app
+      - media:${MEDIA_ROOT}
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     networks:
       - proxy_default
-      - postgresql 
-      - rabbitmq 
+      - postgresql  
     depends_on:
       postgres:
         condition: service_healthy
-    command: >
-      sh -c "pip install -r requirements.txt && python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
           
 networks:
   proxy_default:
@@ -94,18 +102,13 @@ networks:
     ipam:
      config:
        - subnet: 192.168.101.0/24
-  rabbitmq:
-    driver: bridge
-    ipam:
-     config:
-       - subnet: 192.168.102.0/24
 
 volumes:
-  app:
-    name: app
+  media:
+    name: media 
     driver_opts:
        type: none
-       device: ${APP_FILES}
+       device: ${MEDIA_ROOT}
        o: bind
   pg_data:
     name: pg_data
