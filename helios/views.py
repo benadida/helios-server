@@ -887,7 +887,7 @@ Your vote were removed from the election "%s".
 --
 Helios  
 """ % (election.name)
-      voter.user.send_message(subject, body)
+      voter.send_message(subject, body)
 
       # log it
       election.append_log("Voter %s/%s and their vote were removed after election frozen" % (voter.voter_type,voter.voter_id))
