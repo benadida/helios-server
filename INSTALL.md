@@ -50,7 +50,7 @@ pip install -r requirements.txt
 * start server
 
 ```
-python manage.py runserver
+python3 manage.py runserver
 ```
 
 * to get Google Auth working:

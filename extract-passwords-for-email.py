@@ -2,7 +2,7 @@
 # extract voter_id and passwords for a particular email address
 # may return many rows, if they all have the same email address
 #
-# python extract-passwords-for-email.py <election_uuid> <email_address>
+# python3 extract-passwords-for-email.py <election_uuid> <email_address>
 #
 
 import sys
