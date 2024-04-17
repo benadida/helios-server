@@ -1,7 +1,7 @@
 Django==2.2.24
 django_webtest>=1.9.7
 
-gunicorn==20.0.4
+gunicorn==22.0.0
 
 dj_database_url==0.5.0
 psycopg2==2.8.4
