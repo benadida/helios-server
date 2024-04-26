@@ -6,7 +6,7 @@ gunicorn==22.0.0
 dj_database_url==0.5.0
 psycopg2==2.9.9
 
-celery==4.4.7
+celery==5.2.2
 django-picklefield==1.1.0
 
 django-anymail==8.4
