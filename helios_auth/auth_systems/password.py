@@ -20,9 +20,12 @@ PASSWORD_FORGOTTEN_URL_NAME = "auth@password@forgotten"
 
 def create_user(username, password, name = None):
   from helios_auth.models import User
-  
-  user = User.get_by_type_and_id('password', username)
-  if user:
+
+  try:
+    User.get_by_type_and_id('password', username)
+  except User.DoesNotExist:
+    pass
+  else:
     raise Exception('user exists')
   
   info = {'password' : password, 'name': name}
