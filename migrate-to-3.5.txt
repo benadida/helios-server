@@ -5,8 +5,8 @@ migrate-to-3.5.sql
 
 - fake a migration
 
-heroku run python manage.py migrate helios_auth --fake
+heroku run python3 manage.py migrate helios_auth --fake
 
 - do the rest of the migrations
 
-heroku run python manage.py migrate
+heroku run python3 manage.py migrate
