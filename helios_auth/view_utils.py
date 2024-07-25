@@ -6,7 +6,7 @@ Ben Adida (12-30-2008)
 
 from django.conf import settings
 from django.http import HttpResponse
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template import loader
 
 import helios_auth
@@ -42,7 +42,7 @@ def prepare_vars(request, values):
 def render_template(request, template_name, values=None):
   vars_with_user = prepare_vars(request, values or {})
 
-  return render_to_response('helios_auth/templates/%s.html' % template_name, vars_with_user)
+  return render(request, 'helios_auth/templates/%s.html' % template_name, vars_with_user)
 
 
 def render_template_raw(request, template_name, values=None):
