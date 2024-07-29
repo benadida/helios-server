@@ -7,7 +7,7 @@ from django import forms
 from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponseRedirect
-from django.conf.urls import url
+from django.urls import re_path
 
 from helios_auth import url_names
 
@@ -132,6 +132,6 @@ def can_create_election(user_id, user_info):
 
 
 urlpatterns = [
-  url(r'^password/login', password_login_view, name=PASSWORD_LOGIN_URL_NAME),
-  url(r'^password/forgot', password_forgotten_view, name=PASSWORD_FORGOTTEN_URL_NAME)
+  re_path(r'^password/login', password_login_view, name=PASSWORD_LOGIN_URL_NAME),
+  re_path(r'^password/forgot', password_forgotten_view, name=PASSWORD_FORGOTTEN_URL_NAME)
 ]

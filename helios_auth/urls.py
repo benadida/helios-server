@@ -5,20 +5,20 @@ Authentication URLs
 Ben Adida (ben@adida.net)
 """
 
-from django.conf.urls import url
+from django.urls import path, re_path
 
 from settings import AUTH_ENABLED_SYSTEMS
 from . import views, url_names
 
 urlpatterns = [
     # basic static stuff
-    url(r'^$', views.index, name=url_names.AUTH_INDEX),
-    url(r'^logout$', views.logout, name=url_names.AUTH_LOGOUT),
-    url(r'^start/(?P<system_name>.*)$', views.start, name=url_names.AUTH_START),
+    path('', views.index, name=url_names.AUTH_INDEX),
+    path('logout', views.logout, name=url_names.AUTH_LOGOUT),
+    re_path(r'^start/(?P<system_name>.*)$', views.start, name=url_names.AUTH_START),
     # weird facebook constraint for trailing slash
-    url(r'^after/$', views.after, name=url_names.AUTH_AFTER),
-    url(r'^why$', views.perms_why, name=url_names.AUTH_WHY),
-    url(r'^after_intervention$', views.after_intervention, name=url_names.AUTH_AFTER_INTERVENTION),
+    path('after/', views.after, name=url_names.AUTH_AFTER),
+    path('why', views.perms_why, name=url_names.AUTH_WHY),
+    path('after_intervention', views.after_intervention, name=url_names.AUTH_AFTER_INTERVENTION),
 ]
 
 # password auth
