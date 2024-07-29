@@ -8,7 +8,7 @@ LDAP authentication relies on django-auth-ldap (https://django-auth-ldap.readthe
 
 from django import forms
 from django.conf import settings
-from django.conf.urls import url
+from django.urls import re_path
 from django.core.mail import send_mail
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -101,4 +101,4 @@ def check_constraint(constraint, user_info):
 def can_create_election(user_id, user_info):
   return True
 
-urlpatterns = [url(r'^ldap/login', ldap_login_view, name=LDAP_LOGIN_URL_NAME)]
+urlpatterns = [re_path(r'^ldap/login', ldap_login_view, name=LDAP_LOGIN_URL_NAME)]
