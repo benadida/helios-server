@@ -3,12 +3,12 @@
 <a class="small button" href="{% url "auth@start" system_name=default_auth_system %}?return_url={{return_url}}">Log in</a></p>
 {% else %}
 {% for auth_system in enabled_auth_systems %}
-{% ifequal auth_system "password" %}
+{% if auth_system == "password" %}
 {% else %}
 <p>
     <a href="{{SECURE_URL_HOST}}{% url "auth@start" system_name=auth_system %}?return_url={{return_url}}" style="font-size: 1.4em;">
 <img style="height: 35px; border: 0px;" src="/static/auth/login-icons/{{auth_system}}.png" alt="{{auth_system}}" /> {{auth_system}}
-{% endifequal %}
+{% endif %}
 </a>
 </p>
 {% endfor %}

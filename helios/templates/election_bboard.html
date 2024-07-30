@@ -19,10 +19,10 @@ Voters {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
 <a href="{% url "election@bboard" election.uuid %}?after={{next_after}}&offset={{offset_plus_limit}}">next {{limit}}</a> &nbsp;&nbsp;
 {% endif %}
 
-{% ifequal offset 0 %}
+{% if offset == 0 %}
 {% else %}
 <a href="{% url "election@bboard" election.uuid %}">back to start</a> &nbsp;&nbsp;
-{% endifequal %}
+{% endif %}
 {% if more_p %}
 <a href="{% url "election@bboard" election.uuid %}?after={{next_after}}&offset={{next_offset}}">next {{limit}}</a>
 {% endif %}
