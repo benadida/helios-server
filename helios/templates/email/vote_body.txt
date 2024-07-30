@@ -5,12 +5,12 @@ Dear {{voter.name}},
 Election URL (click to begin voting):
 {{election_vote_url}}
 
-{% ifequal voter.voter_type "password" %}
+{% if voter.voter_type == "password" %}
 Your voter ID: {{voter.voter_login_id}}
 Your password: {{voter.voter_password}}
 {% else %}
 Log in with your {{voter.voter_type}} account.
-{% endifequal %}{% if voter.vote_hash %}
+{% endif %}{% if voter.vote_hash %}
 We have recorded your vote with ballot tracker:
 
   {{voter.vote_hash}}
