@@ -62,6 +62,8 @@ if get_from_env('DATABASE_URL', None):
 # system time zone.
 TIME_ZONE = 'America/Los_Angeles'
 
+USE_TZ = False
+
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
