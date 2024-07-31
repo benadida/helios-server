@@ -210,4 +210,4 @@ class SplitSelectDateTimeWidget(MultiWidget):
     def render(self, name, value, attrs=None, renderer=None):
         value = self.compress(value)
         rendered_widgets = list(widget.render(name, value, attrs=attrs, renderer=renderer) for widget in self.widgets)
-        return '<br/>'.join(rendered_widgets)
+        return mark_safe('<br/>'.join(rendered_widgets))
