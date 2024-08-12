@@ -55,6 +55,9 @@ if get_from_env('DATABASE_URL', None):
     DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
 
+# explicitly set the default auto-created primary field to silence warning models.W042
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
