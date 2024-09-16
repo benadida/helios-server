@@ -9,3 +9,4 @@ Significant contributors:
 - Nicholas Chang-Fong and Aleksander Essex for security reports and fixes.
 - Shirley Chaves
 - Marco Ciotola
+- Lucas Araujo
