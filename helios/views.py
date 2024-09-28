@@ -1341,6 +1341,8 @@ def voters_email(request, election):
 
   if voter_id:
     voter = Voter.get_by_election_and_voter_id(election, voter_id)
+    if not voter:
+      raise Exception("Voter not found")
   else:
     voter = None
   
