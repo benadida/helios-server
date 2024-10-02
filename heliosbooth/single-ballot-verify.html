@@ -41,7 +41,8 @@ $(document).ready(function() {
        }
 
        $('#verifier').show();
-       var election_url = $.query.get('election_url');
+       var url_params = new URLSearchParams(window.location.search);
+       var election_url = url_params.get('election_url');
        $('#election_url').val(election_url); 
     }, function() {
        $('#dummy_bigint').show();

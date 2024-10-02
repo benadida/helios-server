@@ -411,7 +411,8 @@ BOOTH.so_lets_go = function () {
     BOOTH.setup_templates();
 
     // election URL
-    var election_url = $.query.get('election_url');
+    var url_params = new URLSearchParams(window.location.search);
+    var election_url = url_params.get('election_url');
     BOOTH.load_and_setup_election(election_url);
 };
 
