@@ -520,13 +520,13 @@ BOOTH.seal_ballot_raw = function() {
 };
 
 BOOTH.request_ballot_encryption = function() {
-    $.post(BOOTH.election_url + "/encrypt-ballot", {'answers_json': $.toJSON(BOOTH.ballot.answers)}, function(result) {
-      //BOOTH.encrypted_ballot = HELIOS.EncryptedVote.fromJSONObject($.secureEvalJSON(result), BOOTH.election);
+    $.post(BOOTH.election_url + "/encrypt-ballot", {'answers_json': JSON.stringify(BOOTH.ballot.answers)}, function(result) {
+      //BOOTH.encrypted_ballot = HELIOS.EncryptedVote.fromJSONObject(JSON.parse(result), BOOTH.election);
       // rather than deserialize and reserialize, which is inherently slow on browsers
       // that already need to do network requests, just remove the plaintexts
 
       BOOTH.encrypted_ballot_with_plaintexts_serialized = result;
-      var ballot_json_obj = $.secureEvalJSON(BOOTH.encrypted_ballot_with_plaintexts_serialized);
+      var ballot_json_obj = JSON.parse(BOOTH.encrypted_ballot_with_plaintexts_serialized);
       var answers = ballot_json_obj.answers;
       for (var i=0; i<answers.length; i++) {
          delete answers[i]['answer'];
@@ -553,7 +553,7 @@ BOOTH.seal_ballot = function() {
 };
 
 BOOTH.audit_ballot = function() {
-    BOOTH.audit_trail = BOOTH.encrypted_ballot_with_plaintexts_serialized || $.toJSON(BOOTH.encrypted_ballot.get_audit_trail());
+    BOOTH.audit_trail = BOOTH.encrypted_ballot_with_plaintexts_serialized || JSON.stringify(BOOTH.encrypted_ballot.get_audit_trail());
 
     BOOTH.show($('#audit_div')).processTemplate({'audit_trail' : BOOTH.audit_trail, 'election_url' : BOOTH.election_url});
 };

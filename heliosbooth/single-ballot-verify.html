@@ -53,7 +53,7 @@ function result_append(str) {
 }
 
 function verify_single_ballot(election_url, audit_trail) {
-  var encrypted_vote_json = jQuery.secureEvalJSON(audit_trail);
+  var encrypted_vote_json = JSON.parse(audit_trail);
   
   result_append("loading election...");
 

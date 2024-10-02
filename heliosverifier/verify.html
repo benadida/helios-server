@@ -54,7 +54,7 @@ function load_ballots(election_url, ballot_list, ballots, final_callback) {
         
     // get the next ballot
     $.get(election_url + "/ballots/" + ballot_list[ballots.length].uuid + '/last', function(result) {
-        var new_ballot = jQuery.secureEvalJSON(result);
+        var new_ballot = JSON.parse(result);
         ballots.push(new_ballot);
         if (new_ballot.vote == null)
           result_append("no ballot for this voter #" + ballots.length);
@@ -71,7 +71,7 @@ function load_ballot_list(election_url, ballot_list, after, final_callback) {
         url+= "&after=" + after;
         
     $.get(url, function(result) {
-        var new_ballot_list = jQuery.secureEvalJSON(result);
+        var new_ballot_list = JSON.parse(result);
 
         // done, no more ballots?
         if (new_ballot_list.length == 0)
@@ -151,11 +151,11 @@ function load_election_and_ballots(election_url) {
 
                     // get the election result
                     $.get(election_url + "/result", function(result) {
-                        var results = $.secureEvalJSON(result);
+                        var results = JSON.parse(result);
 
                         // get the trustees and proofs
                         $.get(election_url + "/trustees/", function(trustees_json) {
-                           trustees = $.secureEvalJSON(trustees_json);
+                           trustees = JSON.parse(trustees_json);
 
                            // create the Helios objects
                            trustees = $(trustees).map(function(i, trustee) {return HELIOS.Trustee.fromJSONObject(trustee)});
