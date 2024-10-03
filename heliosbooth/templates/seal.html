@@ -1,39 +1,37 @@
 <h3>Review your Ballot</h3>
 
 <div style="padding: 10px; margin-bottom: 10px; background-color: #eee; border: 1px #ddd solid;">
-{#foreach $T.questions as question}
+<% for (let i = 0; i < questions.length; i++) { question = questions[i]; %>
 
-Question #{$T.question$index + 1}: {$T.question.short_name}<br>
-{#if $T.choices[$T.question$index].length == 0}
+Question #<%=i + 1%>: <%-question.short_name%><br>
+<% if (choices[i].length == 0) { %>
 <div style="margin-left: 15px;">&#x2610; <b><i>No choice selected</i></b></div>
-{#/if}
-{#foreach $T.choices[$T.question$index] as choice}
-<div style="margin-left: 15px;">&#x2713; <b>{$T.choice}</b></div>
-{#/for}
-{#if $T.choices[$T.question$index].length < $T.question.max}
-[{$T.choices[$T.question$index].length} selections out of possible {$T.question.min}-{$T.question.max}]<br />
-{#/if}
-[<a onclick="BOOTH.show_question({$T.question$index}); return false;" href="#">change</a>]
-{#if !$T.question$last}<br><br>{#/if}
-{#/for}
+<% } %>
+<% for (const choice of choices[i]) { %>
+<div style="margin-left: 15px;">&#x2713; <b><%-choice%></b></div>
+<% } %>
+<% if (choices[i].length < question.max) { %>
+[<%=choices[i].length%> selections out of possible <%=question.min%>-<%=question.max%>]<br />
+<% } %>
+[<a onclick="BOOTH.show_question(<%=i%>); return false;" href="#">change</a>]
+<% if (i  < (questions.length - 1)) { %><br><br><% } %>
+<% } %> <!-- end for -->
 </div>
 
-<p>Your ballot tracker is <b><tt style="font-size: 1.5em; word-break: break-all;">{$T.encrypted_vote_hash}</tt></b>.
+<p>Your ballot tracker is <b><tt style="font-size: 1.5em; word-break: break-all;"><%-encrypted_vote_hash%></tt></b>.
 
 <p>  
   <button id="proceed_button" onclick="BOOTH.cast_ballot();">Proceed to Login</button><span id="loading_div"><img src="loading.gif" id="proceed_loading_img" /></span><br />
 </p>
 
 
-<form method="POST" action="{$T.cast_url}" id="send_ballot_form" class="prettyform">
-<input type="hidden" name="election_uuid" value="{$T.election_uuid}" />
-<input type="hidden" name="election_hash" value="{$T.election_hash}" />
-<textarea name="encrypted_vote" style="display: none;">
-{$T.encrypted_vote_json}
-</textarea>
+<form method="POST" action="<%=cast_url%>" id="send_ballot_form" class="prettyform">
+<input type="hidden" name="election_uuid" value="<%=election_uuid%>" />
+<input type="hidden" name="election_hash" value="<%=election_hash%>" />
+<textarea name="encrypted_vote" style="display: none;"><%=encrypted_vote_json%></textarea>
 </form>
 
-{#if $T.election_metadata.use_advanced_audit_features}
+<% if (election_metadata.use_advanced_audit_features) { %>
 <div style="background: lightyellow; padding: 10px; border: 1px solid #ddd; max-width: 340px;">
 <h4 style="padding: 0px; margin:0px;"><a onclick="$('#auditbody').slideToggle(250);" href="#">Spoil & Audit</a> <span style="font-size: 0.8em; color: #444">[optional]</span></h4>
 <div id="auditbody" style="display:none;">
@@ -47,7 +45,7 @@ You will then be guided to re-encrypt your choices for final casting.
 </p>
 </div>
 </div>
-{#/if}
+<% } %>
 
 <br />
 

@@ -1,65 +1,70 @@
 
 <form onsubmit="return false;" class="prettyform" id="answer_form">
-<input type="hidden" name="question_num" value="{$T.question_num}" />
+<input type="hidden" name="question_num" value="<%=question_num%>" />
 
 <p>
 <br /> 
-<b>{$T.question.question}</b>
+<b><%-question.question%></b>
 <br />
-<span style="font-size: 0.6em;">#{$T.question_num + 1} of {$T.last_question_num + 1} &mdash;
+<span style="font-size: 0.6em;">#<%=question_num + 1%> of <%=last_question_num + 1%> &mdash;
  vote for
-{#if $T.question.min && $T.question.min > 0}
-{#if $T.question.max}
- {$T.question.min} to {$T.question.max}
-{#else}
- at least {$T.question.min}
-{#/if}
-{#else}
-{#if $T.question.max}
-{#if $T.question.max > 1} up to{#/if} {$T.question.max}
-{#else}
+<% if (question.min && question.min > 0) { %>
+<% if (question.max) { %>
+ <%=question.min%> to <%=question.max%>
+<% } else { %>
+ at least <%=question.min%>
+<% } %>
+<% } else { %>
+<% if (question.max) { %>
+<% if (question.max > 1) { %> up to <% } %> <%=question.max%>
+<% } else { %>
  as many as you approve of
-{#/if} 
-{#/if}
+<% } %>
+<% } %>
 </span>
 </p>
 
-{#foreach $T.question.answers as answer}
-<div id="answer_label_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}">
-  <input type="checkbox" class="ballot_answer" id="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}" name="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}" value="yes" onclick="BOOTH.click_checkbox({$T.question_num}, {$T.answer_ordering[$T.answer$index]}, this.checked);" />
+<% for (const answer_order of answer_ordering) {
+  answer = question.answers[answer_order];
+  answer_url = question.answer_urls[answer_order] ?
+      (question.answer_urls && question.answer_urls[answer_order]) :
+      "";
+%>
+<div id="answer_label_<%=question_num%>_<%=answer_order%>">
+  <input type="checkbox" class="ballot_answer" id="answer_<%=question_num%>_<%=answer_order%>" name="answer_<%=question_num%>_<%=answer_order%>" value="yes" onclick="BOOTH.click_checkbox(<%=question_num%>, <%=answer_order%>, this.checked);" />
 
-  <label class="answer" for="answer_{$T.question_num}_{$T.answer_ordering[$T.answer$index]}">
-    {$T.question.answers[$T.answer_ordering[$T.answer$index]]}
+  <label class="answer" for="answer_<%=question_num%>_<%=answer_order%>">
+    <%-answer%>
 
-    {#if $T.question.answer_urls && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] && $T.question.answer_urls[$T.answer_ordering[$T.answer$index]] != ""}
+    <% if (answer_url) { %>
       &nbsp;&nbsp;
       <span style="font-size: 12pt;">
-        [<a target="_blank" href="{$T.question.answer_urls[$T.answer_ordering[$T.answer$index]]}" rel="noopener noreferrer">more info</a>]
+        [<a target="_blank" href="<%=answer_url%>" rel="noopener noreferrer">more info</a>]
       </span>
-    {#/if}
+    <% } %>
   </label>
 </div>
-{#/for}
+<% } %> <!-- end for -->
 
 <div id="warning_box" style="color: green; text-align:center; font-size: 0.8em; padding-top:10px; padding-bottom: 10px; height:50px;">
 </div>
 
 
-{#if $T.show_reviewall}
+<% if (show_reviewall) { %>
 <div style="float: right;">
-<button onclick="BOOTH.validate_and_confirm({$T.question_num});">Proceed</button>
+<button onclick="BOOTH.validate_and_confirm(<%=question_num%>);">Proceed</button>
 </div>
-{#/if}
+<% } %>
 
-{#if $T.question_num != 0}
-<button onclick="BOOTH.previous({$T.question_num});">Previous</button>
+<% if (question_num > 0) { %>
+<button onclick="BOOTH.previous(<%=question_num%>);">Previous</button>
 &nbsp;
-{#/if}
+<% } %>
 
-{#if $T.question_num < $T.last_question_num}
-<button onclick="BOOTH.next({$T.question_num});">Next</button>
+<% if (question_num < last_question_num) { %>
+<button onclick="BOOTH.next(<%=question_num%>);">Next</button>
 &nbsp;
-{#/if}
+<% } %>
 
 <br clear="both" />
 
