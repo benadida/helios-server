@@ -42,19 +42,41 @@
 BOOTH = {};
 
 BOOTH.setup_templates = function() {
-    if (BOOTH.templates_setup_p)
-        return;
+  if (BOOTH.templates_setup_p)
+      return;
 
-    var cache_bust = "?cb=" + new Date().getTime();
+  var cache_bust = "?cb=" + new Date().getTime();
 
-    $('#header').setTemplateURL("templates/header.html" + cache_bust);
-    $('#election_div').setTemplateURL("templates/election.html" + cache_bust);
-    $('#question_div').setTemplateURL("templates/question.html" + cache_bust);
-    $('#seal_div').setTemplateURL("templates/seal.html" + cache_bust);
-    $('#audit_div').setTemplateURL("templates/audit.html" + cache_bust);
-    $('#footer').setTemplateURL("templates/footer.html" + cache_bust);
+  BOOTH.compiled_templates = new Map();
 
-    BOOTH.templates_setup_p = true;
+  const get_template = async function (element_id, url) {
+    const response = await fetch(url);
+    const html_template = await response.text();
+    return [element_id, html_template];
+  }
+  // fetch all templates
+  Promise.all([
+    get_template('#header',       "templates/header.html" + cache_bust),
+    get_template('#election_div', "templates/election.html" + cache_bust),
+    get_template('#question_div', "templates/question.html" + cache_bust),
+    get_template('#seal_div',     "templates/seal.html" + cache_bust),
+    get_template('#audit_div',    "templates/audit.html" + cache_bust),
+    get_template('#footer',       "templates/footer.html" + cache_bust),
+  ])
+  .then(function(id_and_templates) {
+    id_and_templates.forEach(function (id_and_template) {
+      // associates element id with compiled template
+      BOOTH.compiled_templates.set(id_and_template[0], _.template(id_and_template[1]));
+    })
+  });
+
+  BOOTH.templates_setup_p = true;
+};
+
+BOOTH.render_template = function (element_id, template_info) {
+  const compiled_template = BOOTH.compiled_templates.get(element_id);
+  const rendered_html = compiled_template(template_info);
+  $(element_id).html(rendered_html);
 };
 
 // set up the message when navigating away
@@ -195,8 +217,8 @@ BOOTH.setup_election = function(raw_json, election_metadata) {
     BOOTH.election.question_answer_orderings[i] = ordering;
   });
 
-  $('#header').processTemplate({'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
-  $('#footer').processTemplate({'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
+  BOOTH.render_template('#header', {'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
+  BOOTH.render_template('#footer', {'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
   BOOTH.setup_ballot();
 };
 
@@ -207,7 +229,8 @@ BOOTH.show = function(el) {
 };
 
 BOOTH.show_election = function() {
-  BOOTH.show($('#election_div')).processTemplate({'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
+  BOOTH.render_template('#election_div', {'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
+  BOOTH.show($('#election_div'));
 };
 
 BOOTH.launch_async_encryption_answer = function(question_num) {
@@ -290,11 +313,13 @@ BOOTH.show_question = function(question_num) {
     BOOTH.all_questions_seen = true;
 
   BOOTH.show_progress('1');
-  BOOTH.show($('#question_div')).processTemplate({'question_num' : question_num,
+  BOOTH.render_template('#question_div', {'question_num' : question_num,
                       'last_question_num' : BOOTH.election.questions.length - 1,
-                      'question' : BOOTH.election.questions[question_num], 'show_reviewall' : BOOTH.all_questions_seen,
-		      'answer_ordering': BOOTH.election.question_answer_orderings[question_num]
+                      'question' : BOOTH.election.questions[question_num],
+                      'show_reviewall' : BOOTH.all_questions_seen,
+                      'answer_ordering': BOOTH.election.question_answer_orderings[question_num]
                 });
+  BOOTH.show($('#question_div'));
 
   // fake clicking through the answers, to trigger the disabling if need be
   // first we remove the answers array
@@ -464,7 +489,7 @@ BOOTH._after_ballot_encryption = function() {
     };
 
     var show_cast = function() {
-      $('#seal_div').processTemplate({'cast_url': BOOTH.election.cast_url,
+      BOOTH.render_template('#seal_div', {'cast_url': BOOTH.election.cast_url,
         'encrypted_vote_json': BOOTH.encrypted_vote_json,
         'encrypted_vote_hash' : BOOTH.encrypted_ballot_hash,
         'election_uuid' : BOOTH.election.uuid,
@@ -554,7 +579,8 @@ BOOTH.seal_ballot = function() {
 BOOTH.audit_ballot = function() {
     BOOTH.audit_trail = BOOTH.encrypted_ballot_with_plaintexts_serialized || JSON.stringify(BOOTH.encrypted_ballot.get_audit_trail());
 
-    BOOTH.show($('#audit_div')).processTemplate({'audit_trail' : BOOTH.audit_trail, 'election_url' : BOOTH.election_url});
+    BOOTH.render_template('#audit_div', {'audit_trail' : BOOTH.audit_trail, 'election_url' : BOOTH.election_url});
+    BOOTH.show($('#audit_div'));
 };
 
 BOOTH.post_audited_ballot = function() {
