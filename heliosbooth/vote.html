@@ -403,14 +403,14 @@ BOOTH.load_and_setup_election = function(election_url) {
           BOOTH.show_election();
           BOOTH.election_url = election_url;
         });
-    });
+    }, "text");
 
 
     if (USE_SJCL) {
       // get more randomness from server
-      $.get(election_url + "/get-randomness", {}, function(raw_json) {
-        sjcl.random.addEntropy(JSON.parse(raw_json).randomness);
-      });
+      $.get(election_url + "/get-randomness", {}, function(randomness) {
+        sjcl.random.addEntropy(randomness.randomness);
+      }, "json");
     }
 };
 
@@ -560,7 +560,7 @@ BOOTH.request_ballot_encryption = function() {
       BOOTH.encrypted_ballot_serialized = JSON.stringify(ballot_json_obj);
 
       window.setTimeout(BOOTH._after_ballot_encryption, 0);
-    });
+    }, "text");
 };
 
 BOOTH.seal_ballot = function() {

@@ -77,7 +77,7 @@ function verify_single_ballot(election_url, audit_trail) {
   };
 
   // the hash will be computed within the setup function call now
-  $.ajax({url: election_url, success: function(raw_json) {
+  $.ajax({url: election_url, dataType: "text", success: function(raw_json) {
     if (window.Worker) {
       var verifier_worker = new window.Worker("verifierworker.js");
       verifier_worker.onmessage = function(event) {

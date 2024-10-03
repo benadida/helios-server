@@ -52,15 +52,14 @@ function load_ballots(election_url, ballot_list, ballots, final_callback) {
     result_append("loading ballot for voter #" + (ballots.length + 1));
         
     // get the next ballot
-    $.get(election_url + "/ballots/" + ballot_list[ballots.length].uuid + '/last', function(result) {
-        var new_ballot = JSON.parse(result);
+    $.get(election_url + "/ballots/" + ballot_list[ballots.length].uuid + '/last', function(new_ballot) {
         ballots.push(new_ballot);
         if (new_ballot.vote == null)
           result_append("no ballot for this voter #" + ballots.length);
         else
           result_append("FOUND a ballot for voter #" + ballots.length);
         load_ballots(election_url, ballot_list, ballots, final_callback);
-    });
+    }, "json");
 }
 
 // load the ballot list in increments of 50, for long ballots
@@ -69,9 +68,7 @@ function load_ballot_list(election_url, ballot_list, after, final_callback) {
     if (after)
         url+= "&after=" + after;
         
-    $.get(url, function(result) {
-        var new_ballot_list = JSON.parse(result);
-
+    $.get(url, function(new_ballot_list) {
         // done, no more ballots?
         if (new_ballot_list.length == 0)
             return final_callback(ballot_list);
@@ -82,7 +79,7 @@ function load_ballot_list(election_url, ballot_list, after, final_callback) {
         
         // and iterate
         load_ballot_list(election_url, ballot_list, after, final_callback);
-    });
+    }, "json");
 }
 
 function load_election_and_ballots(election_url) {
@@ -149,13 +146,9 @@ function load_election_and_ballots(election_url) {
                     });
 
                     // get the election result
-                    $.get(election_url + "/result", function(result) {
-                        var results = JSON.parse(result);
-
+                    $.get(election_url + "/result", function(results) {
                         // get the trustees and proofs
-                        $.get(election_url + "/trustees/", function(trustees_json) {
-                           trustees = JSON.parse(trustees_json);
-
+                        $.get(election_url + "/trustees/", function(trustees) {
                            // create the Helios objects
                            trustees = $(trustees).map(function(i, trustee) {return HELIOS.Trustee.fromJSONObject(trustee)});
 
@@ -235,8 +228,8 @@ function load_election_and_ballots(election_url) {
                            } else {
                              result_append("VERIFICATION FAILED");
                            }
-                        });
-                    });
+                        }, "json");
+                    }, "json");
                 });
 
             });
@@ -246,7 +239,7 @@ function load_election_and_ballots(election_url) {
         result_append('<a class="btn" href="' + election_url + '">Log in as a valid voter </a>');
         result_append('<a class="btn" href="/auth/?return_url=/verifier/verify.html?election_url=' + election_url + '">Log in as the election admin</a>');
     }
-    });
+    }, "text");
         
 }
 
