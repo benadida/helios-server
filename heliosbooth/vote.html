@@ -611,7 +611,7 @@ BOOTH.cast_ballot = function() {
     BOOTH.started_p = false;
 
     // submit the form
-    $('#send_ballot_form').submit();
+    $('#send_ballot_form').trigger("submit");
 };
 
 BOOTH.show_receipt = function() {
