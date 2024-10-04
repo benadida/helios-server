@@ -10,7 +10,7 @@ import json
 
 ## JSON
 def to_json(d):
-    return json.dumps(d, sort_keys=True)
+    return json.dumps(d, sort_keys=True, separators=(',', ':'))
 
 
 def from_json(value):
