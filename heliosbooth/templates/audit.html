@@ -27,7 +27,7 @@ you can post this audited ballot to the Helios tracking center so that others mi
 <br /><br />
 <button onclick="BOOTH.reset_ciphertexts();BOOTH.seal_ballot(); return false;" class="pretty">back to voting</button>
 &nbsp; &nbsp;&nbsp;
-<button onclick="$(this).attr('disabled', 'disabled');BOOTH.post_audited_ballot(); return false;" id="post_audited_ballot_button" class="pretty" style="font-size:0.8em;">post audited ballot to tracking center</button>
+<button onclick="$(this).prop('disabled', true);BOOTH.post_audited_ballot(); return false;" id="post_audited_ballot_button" class="pretty" style="font-size:0.8em;">post audited ballot to tracking center</button>
 
 </form>
 
