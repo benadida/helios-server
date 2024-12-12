@@ -41,7 +41,7 @@
 // utils
 BOOTH = {};
 
-BOOTH.setup_templates = function() {
+BOOTH.setup_templates = async function() {
   if (BOOTH.templates_setup_p)
       return;
 
@@ -55,7 +55,7 @@ BOOTH.setup_templates = function() {
     return [element_id, html_template];
   }
   // fetch all templates
-  Promise.all([
+  await Promise.all([
     get_template('#header',       "templates/header.html" + cache_bust),
     get_template('#election_div', "templates/election.html" + cache_bust),
     get_template('#question_div', "templates/question.html" + cache_bust),
@@ -428,10 +428,10 @@ BOOTH.show_progress = function(step_num) {
     });
 };
 
-BOOTH.so_lets_go = function () {
+BOOTH.so_lets_go = async function () {
     BOOTH.hide_progress();
 
-    BOOTH.setup_templates();
+    await BOOTH.setup_templates();
 
     // election URL
     var url_params = new URLSearchParams(window.location.search);
