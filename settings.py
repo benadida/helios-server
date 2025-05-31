@@ -272,6 +272,10 @@ CLEVER_CLIENT_SECRET = get_from_env('CLEVER_CLIENT_SECRET', "")
 GH_CLIENT_ID = get_from_env('GH_CLIENT_ID', '')
 GH_CLIENT_SECRET = get_from_env('GH_CLIENT_SECRET', '')
 
+# Gitlab
+GITLAB_CLIENT_ID = get_from_env('GITLAB_CLIENT_ID', "")
+GITLAB_CLIENT_SECRET = get_from_env('GITLAB_CLIENT_SECRET', "")
+
 # email server
 EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
 EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
