@@ -181,3 +181,66 @@ def lock_row(model, pk):
     pass
 
   return row
+
+
+##
+## Email opt-out utilities
+##
+
+import hashlib
+import hmac
+
+
+def hash_email(email):
+    """
+    Hash an email address for privacy-preserving opt-out storage.
+    Always use lowercase and strip whitespace.
+    """
+    if not email:
+        return None
+    
+    normalized_email = email.lower().strip()
+    return hashlib.sha256(normalized_email.encode('utf-8')).hexdigest()
+
+
+def generate_email_confirmation_code(email, action):
+    """
+    Generate HMAC confirmation code for email opt-out/opt-in actions.
+    
+    Args:
+        email: The email address
+        action: 'optout' or 'optin'
+    
+    Returns:
+        HMAC hex digest string
+    """
+    if not email or not action:
+        return None
+    
+    normalized_email = email.lower().strip()
+    message = f"{normalized_email}:{action}"
+    
+    return hmac.new(
+        settings.EMAIL_OPTOUT_SECRET.encode('utf-8'),
+        message.encode('utf-8'),
+        hashlib.sha256
+    ).hexdigest()
+
+
+def verify_email_confirmation_code(email, action, code):
+    """
+    Verify HMAC confirmation code for email opt-out/opt-in actions.
+    
+    Args:
+        email: The email address
+        action: 'optout' or 'optin'
+        code: The HMAC code to verify
+    
+    Returns:
+        Boolean indicating if code is valid
+    """
+    if not email or not action or not code:
+        return False
+    
+    expected_code = generate_email_confirmation_code(email, action)
+    return expected_code == code

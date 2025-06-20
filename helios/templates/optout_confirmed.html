@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto; padding: 20px; text-align: center;">
+  <h2>{{ title }}</h2>
+  
+  <div style="margin: 30px 0; padding: 20px; background-color: #f0f8f0; border: 1px solid #4caf50; border-radius: 4px;">
+    <p style="margin: 0; font-size: 16px; color: #333;">{{ message }}</p>
+  </div>
+  
+  {% if action == 'optout' %}
+  <div style="margin-top: 30px; color: #666; font-size: 14px;">
+    <p><strong>What this means:</strong></p>
+    <ul style="text-align: left; display: inline-block;">
+      <li>You will not receive any emails from Helios voting system</li>
+      <li>You cannot be added to new elections until you opt back in</li>
+      <li>You can opt back in at any time by visiting <a href="/optin/" style="color: #007cba;">/optin/</a></li>
+    </ul>
+  </div>
+  {% else %}
+  <div style="margin-top: 30px; color: #666; font-size: 14px;">
+    <p><strong>What this means:</strong></p>
+    <ul style="text-align: left; display: inline-block;">
+      <li>You will now receive emails from Helios voting system</li>
+      <li>You can be added to elections and receive voting notifications</li>
+      <li>You can opt out again at any time using the unsubscribe link in any email</li>
+    </ul>
+  </div>
+  {% endif %}
+  
+  <div style="margin-top: 40px;">
+    <a href="/" style="color: #007cba; text-decoration: none;">← Return to Helios</a>
+  </div>
+</div>
+{% endblock %}
