@@ -1209,7 +1209,15 @@ def voters_list_pretty(request, election):
   voters = Voter.objects.filter(election = election).order_by(order_by).defer('vote')
 
   if q != '':
-    if election.use_voter_aliases:
+    from django.db.models import Q
+    
+    if admin_p:
+      # Admins can search all fields
+      query = Q(voter_name__icontains=q) | Q(voter_email__icontains=q) | Q(voter_login_id__icontains=q)
+      if election.use_voter_aliases:
+        query |= Q(alias__icontains=q)
+      voters = voters.filter(query)
+    elif election.use_voter_aliases:
       voters = voters.filter(alias__icontains = q)
     else:
       voters = voters.filter(voter_name__icontains = q)

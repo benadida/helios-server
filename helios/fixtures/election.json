@@ -1,0 +1,30 @@
+[
+  {
+    "pk": 1,
+    "model": "helios.election",
+    "fields": {
+      "admin": 1,
+      "uuid": "43b498b7-2b84-4e4e-ba82-3c2ba1a63519",
+      "datatype": "legacy/Election",
+      "short_name": "test",
+      "name": "Test Election",
+      "election_type": "election",
+      "private_p": false,
+      "description": "Test Election for Unit Tests",
+      "public_key": null,
+      "private_key": null,
+      "questions": [{"answer_urls": [null, null, null], "answers": ["a", "b", "c"], "choice_type": "approval", "max": 1, "min": 0, "question": "Test Question?", "result_type": "absolute", "short_name": "q1", "tally_type": "homomorphic"}],
+      "eligibility": null,
+      "openreg": false,
+      "featured_p": false,
+      "use_voter_aliases": false,
+      "use_advanced_audit_features": true,
+      "randomize_answer_order": false,
+      "cast_url": "",
+      "created_at": "2023-01-01T00:00:00Z",
+      "modified_at": "2023-01-01T00:00:00Z",
+      "frozen_at": null,
+      "archived_at": null
+    }
+  }
+]
