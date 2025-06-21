@@ -234,6 +234,11 @@ HELIOS_PRIVATE_DEFAULT = False
 AUTH_ENABLED_SYSTEMS = get_from_env('AUTH_ENABLED_SYSTEMS',
                                     get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'ldap,password,google,facebook')
                                     ).split(",")
+
+# Add development login in debug mode
+if DEBUG:
+    AUTH_ENABLED_SYSTEMS = ['devlogin'] + AUTH_ENABLED_SYSTEMS
+
 AUTH_DEFAULT_SYSTEM = get_from_env('AUTH_DEFAULT_SYSTEM', get_from_env('AUTH_DEFAULT_AUTH_SYSTEM', None))
 
 # google
