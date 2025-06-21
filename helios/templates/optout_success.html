@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto; padding: 20px; text-align: center;">
+  <h2>{{ title }}</h2>
+  
+  <div style="margin: 30px 0; padding: 20px; background-color: #f0f8ff; border: 1px solid #007cba; border-radius: 4px;">
+    <p style="margin: 0; font-size: 16px; color: #333;">{{ message }}</p>
+  </div>
+  
+  <div style="margin-top: 30px; color: #666; font-size: 14px;">
+    <p>Please check your email and click the confirmation link to complete your request.</p>
+    <p>If you don't see the email, please check your spam folder.</p>
+  </div>
+  
+  <div style="margin-top: 40px;">
+    <a href="/" style="color: #007cba; text-decoration: none;">← Return to Helios</a>
+  </div>
+</div>
+{% endblock %}
