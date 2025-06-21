@@ -1,0 +1,41 @@
+{% extends TEMPLATE_BASE %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block header %}
+  <h1 style="font-size: 2em; margin: 10px 0; color: #333;">Helios Voting</h1>
+{% endblock %}
+
+{% block content %}
+  <h2 class="title">{{ title }}</h2>
+  
+  {% if error %}
+  <p style="color: red;">{{ error }}</p>
+  {% endif %}
+  
+  <p>{{ description }}</p>
+  
+  <form class="prettyform" method="POST" action="">
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+    <table class="pretty">
+      <tr>
+        <td><label for="email">Email Address:</label></td>
+        <td><input type="email" id="email" name="email" required style="width: 300px;" /></td>
+      </tr>
+    </table>
+    <div>
+      <label for="">&nbsp;</label>
+      <input type="submit" value="{% if action == 'optout' %}Send Opt-Out Confirmation{% else %}Send Opt-In Confirmation{% endif %}" class="button" />
+    </div>
+  </form>
+  
+  <div style="margin-top: 30px; padding: 15px; background: #f9f9f9; border: 1px solid #ddd;">
+    <p><strong>Next Steps:</strong></p>
+    <p>You will receive a confirmation email with a link to complete your request.</p>
+    {% if action == 'optout' %}
+    <p>Once opted out, you will not receive any emails from Helios until you opt back in.</p>
+    {% else %}
+    <p>Once opted back in, you will resume receiving emails from Helios voting system.</p>
+    {% endif %}
+  </div>
+{% endblock %}

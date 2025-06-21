@@ -4,3 +4,8 @@ Dear {{voter.name}},
 
 --
 Helios
+
+{% if unsubscribe_url %}
+To stop receiving all emails from Helios, click here:
+{{ unsubscribe_url }}
+{% endif %}

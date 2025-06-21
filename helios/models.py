@@ -778,7 +778,21 @@ class VoterFile(models.Model):
     self.num_voters = len(voters)
     random.shuffle(voters)
 
+    opted_out_voters = []
+    successful_voters = 0
+
     for voter in voters:
+      # Check if email is opted out before processing
+      voter_email = voter['email']
+      if voter_email and EmailOptOut.is_opted_out(voter_email):
+          opted_out_voters.append({
+              'email': voter_email,
+              'name': voter['name'],
+              'voter_id': voter['voter_id'],
+              'voter_type': voter['voter_type']
+          })
+          continue
+
       if voter['voter_type'] == 'password':
           # does voter for this user already exist
           existing_voter = Voter.get_by_election_and_voter_id(self.election, voter['voter_id'])
@@ -795,16 +809,23 @@ class VoterFile(models.Model):
               alias_num = election.last_alias_num + 1
               new_voter.alias = "V%s" % alias_num
           new_voter.save()
+          successful_voters += 1
       else:
           user, _ = User.objects.get_or_create(user_type=voter['voter_type'], user_id=voter['voter_id'], defaults = {'name': voter['voter_id'], 'info': {}, 'token': None})
           existing_voter = Voter.get_by_election_and_user(self.election, user)
           if not existing_voter:
               Voter.register_user_in_election(user, self.election)
+              successful_voters += 1
+
+    # Notify admin if there were opted-out voters
+    if opted_out_voters:
+        from . import tasks
+        tasks.notify_admin_opted_out_voters.delay(self.election.id, opted_out_voters)
 
     self.processing_finished_at = datetime.datetime.utcnow()
     self.save()
 
-    return self.num_voters
+    return successful_voters
 
 class Voter(HeliosModel):
   election = models.ForeignKey(Election, on_delete=models.CASCADE)
@@ -849,6 +870,11 @@ class Voter(HeliosModel):
   @classmethod
   @transaction.atomic
   def register_user_in_election(cls, user, election):
+    # Check if user email is opted out
+    user_email = user.user_id if user else None
+    if user_email and EmailOptOut.is_opted_out(user_email):
+        raise ValueError(f"Cannot register user {user_email} - email has opted out of Helios emails")
+
     voter_uuid = str(uuid.uuid4())
     voter = Voter(uuid= voter_uuid, user = user, election = election)
 
@@ -1214,3 +1240,58 @@ class Trustee(HeliosModel):
     """
     # verify_decryption_proofs(self, decryption_factors, decryption_proofs, public_key, challenge_generator):
     return self.election.encrypted_tally.verify_decryption_proofs(self.decryption_factors, self.decryption_proofs, self.public_key, algs.EG_fiatshamir_challenge_generator)
+
+
+class EmailOptOut(models.Model):
+  email_hash = models.CharField(max_length=64, unique=True, help_text="SHA-256 hash of lowercase email")
+  opted_out_at = models.DateTimeField(auto_now_add=True)
+  user_agent = models.CharField(max_length=500, null=True, blank=True, help_text="User agent when opt-out was requested")
+  ip_address = models.GenericIPAddressField(null=True, blank=True, help_text="IP address when opt-out was requested")
+  
+  class Meta:
+    app_label = 'helios'
+    
+  def __str__(self):
+    return f"EmailOptOut {self.email_hash[:8]}... at {self.opted_out_at}"
+    
+  @classmethod
+  def is_opted_out(cls, email):
+    if not email:
+      return False
+      
+    email_hash = utils.hash_email(email)
+    if not email_hash:
+      return False
+      
+    return cls.objects.filter(email_hash=email_hash).exists()
+    
+  @classmethod  
+  def add_opt_out(cls, email, user_agent=None, ip_address=None):
+    if not email:
+      return None
+      
+    email_hash = utils.hash_email(email)
+    if not email_hash:
+      return None
+      
+    opt_out, created = cls.objects.get_or_create(
+      email_hash=email_hash,
+      defaults={
+        'user_agent': user_agent,
+        'ip_address': ip_address
+      }
+    )
+    
+    return opt_out
+    
+  @classmethod
+  def remove_opt_out(cls, email):
+    if not email:
+      return False
+      
+    email_hash = utils.hash_email(email)
+    if not email_hash:
+      return False
+      
+    deleted_count, _ = cls.objects.filter(email_hash=email_hash).delete()
+    return deleted_count > 0

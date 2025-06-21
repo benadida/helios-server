@@ -12,3 +12,11 @@ Your password: {{voter.voter_password}}
 {% else %}
 Log in with your {{voter.voter_type}} account.
 {% endif %}
+
+--
+Helios
+
+{% if unsubscribe_url %}
+To stop receiving all emails from Helios, click here:
+{{ unsubscribe_url }}
+{% endif %}
