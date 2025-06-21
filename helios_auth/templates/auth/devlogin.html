@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dev Login</title>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; background: #fafafa; }
+        .container { text-align: center; }
+        h1 { font-weight: normal; color: #666; margin-bottom: 24px; }
+        .email { color: #333; font-family: monospace; margin-bottom: 24px; }
+        button { background: #333; color: white; border: none; padding: 12px 32px; border-radius: 4px; font-size: 15px; cursor: pointer; }
+        button:hover { background: #555; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dev Login</h1>
+        <p class="email">user@example.com</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit">Log in</button>
+        </form>
+    </div>
+</body>
+</html>
