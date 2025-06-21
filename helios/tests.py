@@ -1044,7 +1044,7 @@ class EmailOptOutViewTests(WebTest):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Opt Out of Helios Emails')
         self.assertContains(response, 'Enter your email address to stop receiving all emails')
-        self.assertContains(response, '<form method="POST" action="/optout/request/">')
+        self.assertContains(response, '<form class="prettyform" method="POST" action="">')
         self.assertContains(response, 'name="email"')
 
     def test_optin_form_renders(self):
@@ -1053,13 +1053,13 @@ class EmailOptOutViewTests(WebTest):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Opt Back Into Helios Emails')
         self.assertContains(response, 'Enter your email address to resume receiving emails')
-        self.assertContains(response, '<form method="POST" action="/optin/request/">')
+        self.assertContains(response, '<form class="prettyform" method="POST" action="">')
         self.assertContains(response, 'name="email"')
 
     def test_optout_request_sends_email(self):
         """Test that opt-out request sends confirmation email"""
         with self.settings(DEFAULT_FROM_EMAIL='test@helios.org'):
-            response = self.client.post('/optout/request/', {'email': 'test@example.com'})
+            response = self.client.post('/optout/', {'email': 'test@example.com'})
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.url, '/optout/success/')
             
@@ -1102,7 +1102,7 @@ class EmailOptOutViewTests(WebTest):
         models.EmailOptOut.add_opt_out(email)
         
         with self.settings(DEFAULT_FROM_EMAIL='test@helios.org'):
-            response = self.client.post('/optin/request/', {'email': email})
+            response = self.client.post('/optin/', {'email': email})
             self.assertEqual(response.status_code, 302)
             self.assertEqual(response.url, '/optin/success/')
             
@@ -1116,7 +1116,7 @@ class EmailOptOutViewTests(WebTest):
         """Test that opt-in request shows message for non-opted-out address"""
         email = 'test@example.com'
         
-        response = self.client.post('/optin/request/', {'email': email})
+        response = self.client.post('/optin/', {'email': email})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Email Not Found')
         self.assertContains(response, f'The email address <strong>{email}</strong> is not currently opted out')
