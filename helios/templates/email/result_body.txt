@@ -17,3 +17,8 @@ Please contact us if you believe you did.
 {% endif %}
 --
 Helios
+
+{% if unsubscribe_url %}
+To stop receiving all emails from Helios, click here:
+{{ unsubscribe_url }}
+{% endif %}

@@ -15,7 +15,7 @@ from urllib.parse import urlencode
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db import transaction, IntegrityError
-from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseForbidden, HttpResponseBadRequest
 from django.urls import reverse
 
 import helios_auth.url_names as helios_auth_urls
@@ -1481,6 +1481,224 @@ def ballot_list(request, election):
 
   # we explicitly cast this to a short cast vote
   return [v.last_cast_vote().ld_object.short.toDict(complete=True) for v in voters]
+
+
+##
+## Email opt-out/opt-in views
+##
+
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import send_mail
+from django.conf import settings
+from validate_email import validate_email
+from .models import EmailOptOut
+
+
+def get_client_ip(request):
+    """Get client IP address from request"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
+@require_http_methods(["GET", "POST"])
+def optout_form(request):
+    """Show the opt-out form and process opt-out requests"""
+    if request.method == "GET":
+        return render_template(request, 'optout_form', {
+            'action': 'optout',
+            'title': 'Opt Out of Helios Emails',
+            'description': 'Enter your email address to stop receiving all emails from Helios voting system.'
+        })
+    
+    # POST: Process opt-out request
+    email = request.POST.get('email', '').strip()
+    
+    if not email:
+        return render_template(request, 'optout_form', {
+            'action': 'optout',
+            'title': 'Opt Out of Helios Emails',
+            'description': 'Enter your email address to stop receiving all emails from Helios voting system.',
+            'error': 'Email address is required'
+        })
+    
+    if not validate_email(email):
+        return render_template(request, 'optout_form', {
+            'action': 'optout',
+            'title': 'Opt Out of Helios Emails',
+            'description': 'Enter your email address to stop receiving all emails from Helios voting system.',
+            'error': 'Invalid email address'
+        })
+    
+    # Generate confirmation code
+    confirmation_code = utils.generate_email_confirmation_code(email, 'optout')
+    
+    # Send confirmation email
+    subject = "Confirm your opt-out from Helios emails"
+    confirmation_path = reverse('optout_confirm', kwargs={'email': email, 'code': confirmation_code})
+    confirmation_url = request.build_absolute_uri(confirmation_path)
+    
+    body = f"""
+Please confirm that you want to opt out of all Helios voting system emails.
+
+Click this link to confirm: {confirmation_url}
+
+If you did not request this, please ignore this email.
+
+--
+Helios Voting System
+"""
+    
+    try:
+        send_mail(
+            subject,
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False
+        )
+        return HttpResponseRedirect(reverse('optout_success'))
+    except Exception as e:
+        return render_template(request, 'optout_form', {
+            'action': 'optout',
+            'title': 'Opt Out of Helios Emails',
+            'description': 'Enter your email address to stop receiving all emails from Helios voting system.',
+            'error': f'Failed to send confirmation email: {str(e)}'
+        })
+
+
+@require_http_methods(["GET"])
+def optout_success(request):
+    """Show opt-out success page"""
+    return render_template(request, 'optout_success', {
+        'action': 'optout',
+        'title': 'Opt-Out Confirmation Sent',
+        'message': 'We have sent you a confirmation email. Please click the link in the email to complete your opt-out request.'
+    })
+
+
+@require_http_methods(["GET"])
+def optout_confirm(request, email, code):
+    """Confirm opt-out with HMAC verification"""
+    if not utils.verify_email_confirmation_code(email, 'optout', code):
+        raise Http404("Invalid confirmation link")
+    
+    # Add to opt-out list
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    ip_address = get_client_ip(request)
+    
+    EmailOptOut.add_opt_out(email, user_agent, ip_address)
+    
+    return render_template(request, 'optout_confirmed', {
+        'action': 'optout',
+        'title': 'Successfully Opted Out',
+        'message': f'The email address {email} has been successfully opted out of all Helios emails.',
+        'email': email
+    })
+
+
+@require_http_methods(["GET", "POST"])
+def optin_form(request):
+    """Show the opt-in form and process opt-in requests"""
+    if request.method == "GET":
+        return render_template(request, 'optout_form', {
+            'action': 'optin',
+            'title': 'Opt Back Into Helios Emails',
+            'description': 'Enter your email address to resume receiving emails from Helios voting system.'
+        })
+    
+    # POST: Process opt-in request
+    email = request.POST.get('email', '').strip()
+    
+    if not email:
+        return render_template(request, 'optout_form', {
+            'action': 'optin',
+            'title': 'Opt Back Into Helios Emails',
+            'description': 'Enter your email address to resume receiving emails from Helios voting system.',
+            'error': 'Email address is required'
+        })
+    
+    if not validate_email(email):
+        return render_template(request, 'optout_form', {
+            'action': 'optin',
+            'title': 'Opt Back Into Helios Emails',
+            'description': 'Enter your email address to resume receiving emails from Helios voting system.',
+            'error': 'Invalid email address'
+        })
+    
+    # Check if email is actually opted out
+    if not EmailOptOut.is_opted_out(email):
+        return render_template(request, 'optout_not_opted_out', {'email': email})
+    
+    # Generate confirmation code
+    confirmation_code = utils.generate_email_confirmation_code(email, 'optin')
+    
+    # Send confirmation email
+    subject = "Confirm your opt-in to Helios emails"
+    confirmation_path = reverse('optin_confirm', kwargs={'email': email, 'code': confirmation_code})
+    confirmation_url = request.build_absolute_uri(confirmation_path)
+    
+    body = f"""
+Please confirm that you want to opt back in to Helios voting system emails.
+
+Click this link to confirm: {confirmation_url}
+
+If you did not request this, please ignore this email.
+
+--
+Helios Voting System
+"""
+    
+    try:
+        send_mail(
+            subject,
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False
+        )
+        return HttpResponseRedirect(reverse('optin_success'))
+    except Exception as e:
+        return render_template(request, 'optout_form', {
+            'action': 'optin',
+            'title': 'Opt Back Into Helios Emails',
+            'description': 'Enter your email address to resume receiving emails from Helios voting system.',
+            'error': f'Failed to send confirmation email: {str(e)}'
+        })
+
+
+@require_http_methods(["GET"])
+def optin_success(request):
+    """Show opt-in success page"""
+    return render_template(request, 'optout_success', {
+        'action': 'optin',
+        'title': 'Opt-In Confirmation Sent',
+        'message': 'We have sent you a confirmation email. Please click the link in the email to complete your opt-in request.'
+    })
+
+
+@require_http_methods(["GET"])
+def optin_confirm(request, email, code):
+    """Confirm opt-in with HMAC verification"""
+    if not utils.verify_email_confirmation_code(email, 'optin', code):
+        raise Http404("Invalid confirmation link")
+    
+    # Remove from opt-out list
+    removed = EmailOptOut.remove_opt_out(email)
+    
+    if not removed:
+        return render_template(request, 'optout_not_opted_out', {'email': email})
+    
+    return render_template(request, 'optout_confirmed', {
+        'action': 'optin',
+        'title': 'Successfully Opted Back In',
+        'message': f'The email address {email} has been successfully opted back in to Helios emails.',
+        'email': email
+    })
 
 
 

@@ -7,9 +7,13 @@ ben@adida.net
 import copy
 from celery import shared_task
 from celery.utils.log import get_logger
+from django.conf import settings
+from django.urls import reverse
+from urllib.parse import urlparse
 
 from . import signals
-from .models import CastVote, Election, Voter, VoterFile
+from . import utils
+from .models import CastVote, Election, Voter, VoterFile, EmailOptOut
 from .view_utils import render_template_raw
 
 
@@ -63,10 +67,39 @@ def voters_notify(election_id, notification_template, extra_vars={}):
 @shared_task
 def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={}):
     voter = Voter.objects.get(uuid=voter_uuid)
+    
+    # Check if voter email is opted out
+    voter_email = voter.voter_email or (voter.user and voter.user.user_id)
+    if voter_email and EmailOptOut.is_opted_out(voter_email):
+        logger = get_logger(single_voter_email.__name__)
+        logger.info(f"Skipping email to opted-out voter {voter.uuid}")
+        return
 
     the_vars = copy.copy(extra_vars)
     the_vars.update({'election': voter.election})
     the_vars.update({'voter': voter})
+    
+    # Add unsubscribe link to email context
+    if voter_email:
+        unsubscribe_code = utils.generate_email_confirmation_code(voter_email, 'optout')
+        # Use the site URL from settings if available, otherwise construct from election URL
+        if hasattr(settings, 'SITE_URL'):
+            base_url = settings.SITE_URL.rstrip('/')
+        else:
+            # Try to extract base URL from election if available
+            base_url = ''
+            if 'election_url' in the_vars and the_vars['election_url']:
+                parsed = urlparse(the_vars['election_url'])
+                base_url = f"{parsed.scheme}://{parsed.netloc}"
+        
+        # Generate unsubscribe URL using Django's reverse function
+        unsubscribe_path = reverse('optout_confirm', kwargs={'email': voter_email, 'code': unsubscribe_code})
+        unsubscribe_url = f"{base_url}{unsubscribe_path}" if base_url else unsubscribe_path
+        
+        the_vars.update({
+            'unsubscribe_url': unsubscribe_url,
+            'unsubscribe_code': unsubscribe_code
+        })
 
     subject = render_template_raw(None, subject_template, the_vars)
     body = render_template_raw(None, body_template, the_vars)
@@ -134,6 +167,46 @@ has been processed.
 --
 Helios
 """ % (voter_file.election.name, voter_file.num_voters))
+
+
+@shared_task
+def notify_admin_opted_out_voters(election_id, opted_out_voters):
+    election = Election.objects.get(id=election_id)
+    
+    if not opted_out_voters:
+        return
+    
+    subject = f"Opted-out voters not added to election {election.name}"
+    
+    body = f"""
+The following {len(opted_out_voters)} voters could not be added to election "{election.name}" 
+because they have opted out of receiving Helios emails:
+
+"""
+    
+    for voter in opted_out_voters:
+        body += f"- {voter['name']} ({voter['email']}) [ID: {voter['voter_id']}, Type: {voter['voter_type']}]\n"
+    
+    # Construct full opt-in URL using Django's reverse function
+    if hasattr(settings, 'SITE_URL'):
+        base_url = settings.SITE_URL.rstrip('/')
+    else:
+        # Fallback to URL_HOST if SITE_URL not available
+        base_url = getattr(settings, 'URL_HOST', '').rstrip('/')
+    
+    optin_path = reverse('optin_form')
+    optin_url = f"{base_url}{optin_path}" if base_url else optin_path
+    
+    body += f"""
+
+These voters will need to opt back in before they can be added to elections.
+They can opt back in at: {optin_url}
+
+--
+Helios
+"""
+    
+    election.admin.send_message(subject, body)
 
 
 @shared_task

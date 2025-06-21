@@ -32,3 +32,8 @@ the screen when you vote:  {{voter.election.hash}}
 
 --
 Helios
+
+{% if unsubscribe_url %}
+To stop receiving all emails from Helios, click here:
+{{ unsubscribe_url }}
+{% endif %}

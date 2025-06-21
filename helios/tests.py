@@ -19,6 +19,7 @@ import helios.datatypes as datatypes
 import helios.models as models
 import helios.utils as utils
 import helios.views as views
+from helios import tasks
 from helios_auth import models as auth_models
 
 
@@ -840,3 +841,296 @@ class ElectionBlackboxTests(WebTest):
         FIXME: do the this test
         """
         pass
+
+
+class EmailOptOutTests(TestCase):
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+
+    def test_email_hashing(self):
+        """Test email hashing utility function"""
+        email = "test@example.com"
+        hash1 = utils.hash_email(email)
+        hash2 = utils.hash_email(email.upper())  # Should be same after normalization
+        hash3 = utils.hash_email("  " + email + "  ")  # Should be same after strip
+        
+        self.assertEqual(hash1, hash2)
+        self.assertEqual(hash1, hash3)
+        self.assertEqual(len(hash1), 64)  # SHA-256 hex length
+
+    def test_hmac_generation_and_verification(self):
+        """Test HMAC confirmation code generation and verification"""
+        email = "test@example.com"
+        action = "optout"
+        
+        code = utils.generate_email_confirmation_code(email, action)
+        self.assertIsNotNone(code)
+        self.assertEqual(len(code), 64)  # SHA-256 hex length
+        
+        # Valid verification
+        self.assertTrue(utils.verify_email_confirmation_code(email, action, code))
+        
+        # Invalid verifications
+        self.assertFalse(utils.verify_email_confirmation_code(email, "optin", code))  # Wrong action
+        self.assertFalse(utils.verify_email_confirmation_code("other@example.com", action, code))  # Wrong email
+        self.assertFalse(utils.verify_email_confirmation_code(email, action, "invalidcode"))  # Wrong code
+
+    def test_email_opt_out_model(self):
+        """Test EmailOptOut model functionality"""
+        email = "test@example.com"
+        
+        # Initially not opted out
+        self.assertFalse(models.EmailOptOut.is_opted_out(email))
+        
+        # Add opt-out
+        opt_out = models.EmailOptOut.add_opt_out(email, "test-agent", "127.0.0.1")
+        self.assertIsNotNone(opt_out)
+        
+        # Now should be opted out
+        self.assertTrue(models.EmailOptOut.is_opted_out(email))
+        
+        # Adding again should return existing record
+        opt_out2 = models.EmailOptOut.add_opt_out(email)
+        self.assertEqual(opt_out.id, opt_out2.id)
+        
+        # Remove opt-out
+        removed = models.EmailOptOut.remove_opt_out(email)
+        self.assertTrue(removed)
+        
+        # Should no longer be opted out
+        self.assertFalse(models.EmailOptOut.is_opted_out(email))
+        
+        # Removing again should return False
+        removed2 = models.EmailOptOut.remove_opt_out(email)
+        self.assertFalse(removed2)
+
+    def test_voter_registration_with_opted_out_email(self):
+        """Test that voter registration fails for opted-out emails"""
+        email = "opted-out@example.com"
+        
+        # Opt out the email
+        models.EmailOptOut.add_opt_out(email)
+        
+        # Create a user with opted-out email
+        user = auth_models.User.objects.create(
+            user_type='password',
+            user_id=email,
+            name='Test User'
+        )
+        
+        # Create an election
+        election, _ = models.Election.get_or_create(
+            short_name='test-optout',
+            name='Test Opt-Out Election',
+            description='Test Election for Opt-Out',
+            admin=self.user
+        )
+        
+        # Trying to register should raise ValueError
+        with self.assertRaises(ValueError):
+            models.Voter.register_user_in_election(user, election)
+
+    def test_opted_out_check_in_tasks(self):
+        """Test that tasks check for opted-out status correctly"""
+        email = "voter@example.com"
+        
+        # Create an election and voter  
+        election, _ = models.Election.get_or_create(
+            short_name='test-email',
+            name='Test Email Election', 
+            description='Test Election for Email',
+            admin=self.user
+        )
+        
+        voter = models.Voter.objects.create(
+            uuid=str(uuid.uuid4()),
+            election=election,
+            voter_email=email,
+            voter_name="Test Voter"
+        )
+        
+        # Test the opt-out checking logic directly
+        # Before opt-out, voter should not be skipped
+        self.assertFalse(models.EmailOptOut.is_opted_out(email))
+        
+        from unittest.mock import patch
+        
+        # Test that single_voter_email DOES send emails before opt-out
+        with patch.object(models.Voter, 'send_message') as mock_send_message:
+            
+            # Verify voter setup
+            self.assertEqual(voter.voter_email, email)
+            self.assertFalse(models.EmailOptOut.is_opted_out(email))
+            
+            # Call single_voter_email before opt-out is applied
+            result = tasks.single_voter_email.apply(args=[voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {}])
+            
+            # Debug: check if task completed successfully
+            self.assertTrue(result.successful())
+            
+            # The send_message method should have been called because voter is not opted out
+            mock_send_message.assert_called_once()
+        
+        # Now opt out the email
+        models.EmailOptOut.add_opt_out(email)
+        
+        # After opt-out, voter should be skipped
+        self.assertTrue(models.EmailOptOut.is_opted_out(email))
+        
+        # Test that single_voter_email does NOT send emails after opt-out
+        with patch.object(models.Voter, 'send_message') as mock_send_message:
+            
+            # Call single_voter_email after opt-out is applied
+            tasks.single_voter_email.apply(args=[voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {}])
+            
+            # The send_message method should not have been called because voter is opted out
+            mock_send_message.assert_not_called()
+
+    def test_email_contains_unsubscribe_link(self):
+        """Test that emails sent to voters contain unsubscribe links"""
+        from helios.view_utils import render_template_raw
+        
+        email = "voter@example.com"
+        
+        # Create an election and voter
+        election, _ = models.Election.get_or_create(
+            short_name='test-unsubscribe',
+            name='Test Unsubscribe Election',
+            description='Test Election for Unsubscribe Links',
+            admin=self.user
+        )
+        
+        voter = models.Voter.objects.create(
+            uuid=str(uuid.uuid4()),
+            election=election,
+            voter_email=email,
+            voter_name="Test Voter"
+        )
+        
+        # Generate the unsubscribe URL as the task would
+        unsubscribe_code = utils.generate_email_confirmation_code(email, 'optout')
+        
+        # Prepare template context similar to what single_voter_email does
+        template_vars = {
+            'election': election,
+            'voter': voter,
+            'election_url': 'http://example.com/election/123',
+            'election_vote_url': 'http://example.com/election/123/vote',
+            'custom_message': 'Please vote!',
+            'unsubscribe_url': f'http://example.com/optout/confirm/{email}/{unsubscribe_code}/',
+            'unsubscribe_code': unsubscribe_code
+        }
+        
+        # Render the email body template
+        body = render_template_raw(None, 'email/vote_body.txt', template_vars)
+        
+        # Verify the unsubscribe link is in the body
+        self.assertIn('To stop receiving all emails from Helios', body)
+        self.assertIn('/optout/confirm/', body)
+        self.assertIn(email, body)
+        self.assertIn(unsubscribe_code, body)
+
+
+class EmailOptOutViewTests(WebTest):
+    """Test the opt-out/opt-in web views and templates"""
+    allow_database_queries = True
+
+    def test_optout_form_renders(self):
+        """Test that opt-out form page renders correctly"""
+        response = self.client.get('/optout/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Opt Out of Helios Emails')
+        self.assertContains(response, 'Enter your email address to stop receiving all emails')
+        self.assertContains(response, '<form method="POST" action="/optout/request/">')
+        self.assertContains(response, 'name="email"')
+
+    def test_optin_form_renders(self):
+        """Test that opt-in form page renders correctly"""
+        response = self.client.get('/optin/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Opt Back Into Helios Emails')
+        self.assertContains(response, 'Enter your email address to resume receiving emails')
+        self.assertContains(response, '<form method="POST" action="/optin/request/">')
+        self.assertContains(response, 'name="email"')
+
+    def test_optout_request_sends_email(self):
+        """Test that opt-out request sends confirmation email"""
+        with self.settings(DEFAULT_FROM_EMAIL='test@helios.org'):
+            response = self.client.post('/optout/request/', {'email': 'test@example.com'})
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, '/optout/success/')
+            
+            # Check that email was sent
+            self.assertEqual(len(mail.outbox), 1)
+            self.assertEqual(mail.outbox[0].subject, 'Confirm your opt-out from Helios emails')
+            self.assertIn('test@example.com', mail.outbox[0].to)
+            self.assertIn('/optout/confirm/test@example.com/', mail.outbox[0].body)
+
+    def test_optout_success_page_renders(self):
+        """Test that opt-out success page renders correctly"""
+        response = self.client.get('/optout/success/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Opt-Out Confirmation Sent')
+        self.assertContains(response, 'We have sent you a confirmation email')
+
+    def test_optout_confirm_with_valid_code(self):
+        """Test opt-out confirmation with valid HMAC code"""
+        email = 'test@example.com'
+        code = utils.generate_email_confirmation_code(email, 'optout')
+        
+        response = self.client.get(f'/optout/confirm/{email}/{code}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Successfully Opted Out')
+        self.assertContains(response, email)
+        
+        # Verify email is now opted out
+        self.assertTrue(models.EmailOptOut.is_opted_out(email))
+
+    def test_optout_confirm_with_invalid_code(self):
+        """Test opt-out confirmation with invalid HMAC code"""
+        email = 'test@example.com'
+        
+        response = self.client.get(f'/optout/confirm/{email}/invalidcode/')
+        self.assertEqual(response.status_code, 404)
+
+    def test_optin_request_for_opted_out_email(self):
+        """Test that opt-in request sends confirmation email for opted-out address"""
+        email = 'test@example.com'
+        models.EmailOptOut.add_opt_out(email)
+        
+        with self.settings(DEFAULT_FROM_EMAIL='test@helios.org'):
+            response = self.client.post('/optin/request/', {'email': email})
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.url, '/optin/success/')
+            
+            # Check that email was sent
+            self.assertEqual(len(mail.outbox), 1)
+            self.assertEqual(mail.outbox[0].subject, 'Confirm your opt-in to Helios emails')
+            self.assertIn(email, mail.outbox[0].to)
+            self.assertIn(f'/optin/confirm/{email}/', mail.outbox[0].body)
+
+    def test_optin_request_for_non_opted_out_email(self):
+        """Test that opt-in request shows message for non-opted-out address"""
+        email = 'test@example.com'
+        
+        response = self.client.post('/optin/request/', {'email': email})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Email Not Found')
+        self.assertContains(response, f'The email address <strong>{email}</strong> is not currently opted out')
+
+    def test_optin_confirm_with_valid_code(self):
+        """Test opt-in confirmation with valid HMAC code"""
+        email = 'test@example.com'
+        models.EmailOptOut.add_opt_out(email)
+        code = utils.generate_email_confirmation_code(email, 'optin')
+        
+        response = self.client.get(f'/optin/confirm/{email}/{code}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Successfully Opted Back In')
+        self.assertContains(response, email)
+        
+        # Verify email is no longer opted out
+        self.assertFalse(models.EmailOptOut.is_opted_out(email))
