@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Email Not Opted Out{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 50px auto; padding: 20px; text-align: center;">
+  <h2>Email Not Found</h2>
+  
+  <div style="margin: 30px 0; padding: 20px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
+    <p style="margin: 0; font-size: 16px; color: #333;">
+      The email address <strong>{{ email }}</strong> is not currently opted out of Helios emails.
+    </p>
+  </div>
+  
+  <div style="margin-top: 30px; color: #666; font-size: 14px;">
+    <p>This email address is already receiving Helios emails, so no action is needed.</p>
+    <p>If you want to opt out of emails, you can do so using the unsubscribe link in any Helios email you receive.</p>
+  </div>
+  
+  <div style="margin-top: 40px;">
+    <a href="/" style="color: #007cba; text-decoration: none;">← Return to Helios</a>
+  </div>
+</div>
+{% endblock %}
