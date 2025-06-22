@@ -49,6 +49,10 @@
 </p>
 {% endif %}
 
+<p>
+<a class="button" href="{% url "election@voters@download-csv" election.uuid %}{% if q %}?q={{q|urlencode}}{% endif %}">Download Voters as CSV</a>
+</p>
+
 {% if admin_p %}
 <!-- Add a Voter: WORK HERE-->
 {% if upload_p and not election.openreg %}

@@ -1237,6 +1237,82 @@ def voters_list_pretty(request, election):
                           'categories': categories,
                           'eligibility_category_id' : eligibility_category_id})
 
+@election_view()
+def voters_download_csv(request, election):
+  """
+  Download the list of voters as CSV, showing only the fields visible to the current user
+  """
+  import csv
+  from django.http import HttpResponse
+  
+  user = get_user(request)
+  admin_p = user_can_admin_election(user, election)
+  
+  # Get all voters (no pagination for CSV export)
+  order_by = 'alias' if election.use_voter_aliases else 'user__user_id'
+  voters = Voter.objects.filter(election=election).order_by(order_by).defer('vote')
+  
+  # Apply search filter if provided
+  q = request.GET.get('q', '')
+  if q:
+    from django.db.models import Q
+    
+    if admin_p:
+      # Admins can search all fields
+      query = Q(voter_name__icontains=q) | Q(voter_email__icontains=q) | Q(voter_login_id__icontains=q)
+      if election.use_voter_aliases:
+        query |= Q(alias__icontains=q)
+      voters = voters.filter(query)
+    elif election.use_voter_aliases:
+      voters = voters.filter(alias__icontains=q)
+    else:
+      voters = voters.filter(voter_name__icontains=q)
+  
+  # Create the HttpResponse object with CSV header
+  response = HttpResponse(content_type='text/csv')
+  response['Content-Disposition'] = f'attachment; filename="voters_{election.short_name}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+  
+  writer = csv.writer(response)
+  
+  # Write headers based on what's visible to the user
+  headers = []
+  if admin_p:
+    headers.extend(['Login', 'Email Address'])
+  
+  if admin_p or not election.use_voter_aliases:
+    headers.append('Name')
+    headers.append('Voter Type')
+  
+  if election.use_voter_aliases:
+    headers.append('Alias')
+  
+  headers.append('Smart Ballot Tracker')
+  headers.append('Vote Cast At')
+  
+  writer.writerow(headers)
+  
+  # Write voter data
+  for voter in voters:
+    row = []
+    
+    if admin_p:
+      row.append(voter.voter_login_id)
+      row.append(voter.voter_email)
+    
+    if admin_p or not election.use_voter_aliases:
+      row.append(voter.name)
+      row.append(voter.voter_type)
+    
+    if election.use_voter_aliases:
+      row.append(voter.alias)
+    
+    row.append(voter.vote_hash if voter.vote_hash else '')
+    row.append(voter.cast_at.strftime('%Y-%m-%d %H:%M:%S') if voter.cast_at else '')
+    
+    writer.writerow(row)
+  
+  return response
+
 @election_admin()
 def voters_eligibility(request, election):
   """
