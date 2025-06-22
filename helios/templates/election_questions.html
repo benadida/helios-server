@@ -18,6 +18,43 @@
 
   CSRF_TOKEN = '{{csrf_token}}';
 
+  // Utility function for escaping HTML attribute values
+  function escapeAttr(text) {
+    return text.replace(/&/g, '&amp;')
+               .replace(/"/g, '&quot;')
+               .replace(/'/g, '&#39;')
+               .replace(/</g, '&lt;')
+               .replace(/>/g, '&gt;');
+  }
+
+  // Unified function to create answer row HTML
+  function createAnswerRowHTML(answer_num, answer_text, answer_url) {
+    answer_text = answer_text || '';
+    answer_url = answer_url || '';
+    
+    var required_attr = answer_num === 1 ? 'required' : '';
+    var placeholder = answer_num === 1 ? 'Enter answer option' : 'Enter answer option (optional)';
+    var escaped_answer = escapeAttr(answer_text);
+    var escaped_url = escapeAttr(answer_url);
+    var has_url = answer_url.length > 0;
+    var url_display = has_url ? 'flex' : 'none';
+    var toggle_text = has_url ? '- Hide link' : '+ Add link';
+    
+    return '<div class="answer-row">' +
+      '<div class="answer-number">Answer #' + answer_num + 
+        '<span class="url-toggle" onclick="toggle_url(this, ' + answer_num + ')">' +
+          '<span>' + toggle_text + '</span>' +
+        '</span>' +
+      '</div>' +
+      '<div class="answer-inputs">' +
+        '<input type="text" class="form-control answer-input answer" name="answer_' + answer_num + '" value="' + escaped_answer + '" placeholder="' + placeholder + '" ' + required_attr + ' />' +
+        '<div class="url-input-wrapper" id="url_wrapper_' + answer_num + '" style="display:' + url_display + ';">' +
+          '<input type="url" class="form-control url-input" name="answer_url_' + answer_num + '" value="' + escaped_url + '" placeholder="https://example.com" />' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
   function refresh() {
       $('#questions').processTemplate({'questions' : QUESTIONS, 'admin_p' : ADMIN_P}); 
 
@@ -40,16 +77,42 @@
         max = parseInt(form.max.value);
         
       var new_q = {'question' : form.question.value, 'min': parseInt(form.min.value), 'max': max, 'short_name': form.question.value, 'answers': [], 'answer_urls': [], 'choice_type': form.choice_type.value, 'tally_type': 'homomorphic', 'result_type': form.result_type.value, 'randomize_answer_order': form.randomize_answer_order.value == "1"};
-      var i = 0;
-      while(true) {
-          i += 1;
-          if (!form['answer_' + i] || !form['answer_' + i].value)
-            break;
-          new_q.answers[i-1] = form['answer_' + i].value;
-          new_q.answer_urls[i-1] = form['answer_url_' +i].value;
+      
+      // Process answers in a single pass
+      var all_answers = [];
+      var all_urls = [];
+      var last_valid_index = -1;
+      var i = 1;
+      
+      // Collect all answers and find the last valid one
+      while(form['answer_' + i]) {
+          var answer_text = form['answer_' + i].value.trim();
+          var answer_url = form['answer_url_' + i] ? form['answer_url_' + i].value.trim() : '';
+          all_answers.push(answer_text);
+          all_urls.push(answer_url);
+          
+          if (answer_text !== '') {
+              last_valid_index = i - 1; // Convert to 0-based index
+          }
+          i++;
+      }
+      
+      // Check for gaps in answers (empty answers before the last valid one)
+      for (var k = 0; k <= last_valid_index; k++) {
+          if (all_answers[k] === '') {
+              alert('Please fill in all answer fields up to answer #' + (last_valid_index + 1) + '. You cannot skip answer #' + (k + 1) + '.');
+              return null;
+          }
+      }
+      
+      // Build the final arrays with only the valid answers
+      if (last_valid_index >= 0) {
+          new_q.answers = all_answers.slice(0, last_valid_index + 1);
+          new_q.answer_urls = all_urls.slice(0, last_valid_index + 1);
       }
       
       if (new_q.answers.length == 0) {
+        alert('Please enter at least one answer option.');
         return null;
       }
       
@@ -90,14 +153,13 @@
 
     // add the answers
     var answer_table = $('#answer_table_' + q_num);
-    add_answers(answer_table, q_data.answers.length);
+    answer_table.empty(); // Clear existing answers
+    
+    // Create answer inputs using the unified function
     $(q_data.answers).each(function(i, a) {
-     form[0]['answer_' + (i+1)].value = a;
-    });
-
-    // URLs
-    $(q_data.answer_urls).each(function(i, a) {
-     form[0]['answer_url_' + (i+1)].value = a;
+      var num = i + 1;
+      var answer_html = createAnswerRowHTML(num, a, q_data.answer_urls[i]);
+      answer_table.append(answer_html);
     });
 }
 
@@ -116,9 +178,22 @@
 
   function add_answer(el) {
     el = $(el);
-    var num_answers = el.find('input.answer').length + 1;
-    el.find('tbody').append('<tr><th>&nbsp;&nbsp;&nbsp;</th><th>Answer #' + num_answers + '</th><td><input type="text" class="answer" name="answer_' + num_answers + '" size="70" /><br /><nobr>Link (optional, <tt>http</tt> or <tt>https</tt> only): <input type="url" name="answer_url_' + num_answers + '" width="50%" /></nobr></td></tr>');
+    var num_answers = el.find('.answer-row').length + 1;
+    var answer_html = createAnswerRowHTML(num_answers); // No text or URL for new answers
+    el.append(answer_html);
   }
+
+  function toggle_url(element, num) {
+    var wrapper = $('#url_wrapper_' + num);
+    if (wrapper.is(':visible')) {
+      wrapper.hide();
+      $(element).find('span').text('+ Add link');
+    } else {
+      wrapper.show();
+      $(element).find('span').text('- Hide link');
+    }
+  }
+
 
   function add_answers(el, num) {
     for (var i=0; i<num; i++)
