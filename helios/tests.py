@@ -1134,3 +1134,123 @@ class EmailOptOutViewTests(WebTest):
         
         # Verify email is no longer opted out
         self.assertFalse(models.EmailOptOut.is_opted_out(email))
+
+
+class VotersCSVDownloadTests(TestCase):
+    """Test voter CSV download functionality"""
+    fixtures = ['users.json']
+    
+    def setUp(self):
+        self.admin = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-csv',
+            name='Test CSV Election',
+            description='Test Election for CSV Download',
+            admin=self.admin)
+        
+        # Ensure the election has a UUID
+        if not self.election.uuid:
+            self.election.uuid = str(uuid.uuid4())
+            self.election.save()
+        
+        # Add some voters
+        self.voter1 = models.Voter(
+            uuid=str(uuid.uuid4()),
+            election=self.election,
+            voter_email='voter1@example.com',
+            voter_name='Voter One',
+            voter_login_id='voter1'
+        )
+        self.voter1.save()
+        
+        self.voter2 = models.Voter(
+            uuid=str(uuid.uuid4()),
+            election=self.election,
+            voter_email='voter2@example.com',
+            voter_name='Voter Two',
+            voter_login_id='voter2',
+            vote_hash='test-hash-123',
+            cast_at=datetime.datetime.now()
+        )
+        self.voter2.user = auth_models.User.objects.filter(user_type='google')[0]
+        self.voter2.save()
+        
+    def test_csv_download_as_admin(self):
+        """Test CSV download as admin shows all fields"""
+        # Set session to simulate admin login - check that admin matches election admin
+        self.assertEqual(self.election.admin, self.admin)
+        
+        # Set up the session properly
+        session = self.client.session
+        session['user'] = {
+            'type': self.admin.user_type,
+            'user_id': self.admin.user_id
+        }
+        session.save()
+        
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/download-csv')
+        
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        self.assertIn('attachment; filename="voters_test-csv_', response['Content-Disposition'])
+        
+        # Check CSV content
+        content = response.content.decode('utf-8')
+        lines = content.strip().splitlines()
+        headers = lines[0].split(',')
+        
+        # Admin should see all fields
+        self.assertEqual(headers, ['Login', 'Email Address', 'Name', 'Voter Type', 'Smart Ballot Tracker', 'Vote Cast At'])
+        
+        # Check we have the right number of voters
+        self.assertEqual(len(lines), 3)  # Header + 2 voters
+    
+    def test_csv_download_as_non_admin(self):
+        """Test CSV download as non-admin shows limited fields"""
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/download-csv')
+        
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        
+        # Check CSV content
+        content = response.content.decode('utf-8')
+        lines = content.strip().splitlines()
+        headers = lines[0].split(',')
+        
+        # Non-admin should see limited fields
+        self.assertEqual(headers, ['Name', 'Voter Type', 'Smart Ballot Tracker', 'Vote Cast At'])
+        
+    def test_csv_download_with_aliases(self):
+        """Test CSV download with voter aliases enabled"""
+        self.election.use_voter_aliases = True
+        self.election.save()
+        
+        # Set aliases
+        self.voter1.alias = 'Alias One'
+        self.voter1.save()
+        self.voter2.alias = 'Alias Two'
+        self.voter2.save()
+        
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/download-csv')
+        
+        content = response.content.decode('utf-8')
+        lines = content.strip().split('\n')
+        headers = [h.strip() for h in lines[0].split(',')]
+        
+        # With aliases, should show alias instead of name
+        self.assertEqual(headers, ['Alias', 'Smart Ballot Tracker', 'Vote Cast At'])
+        
+    def test_csv_download_with_search(self):
+        """Test CSV download with search filter"""
+        # Set session to simulate admin login
+        session = self.client.session
+        session['user'] = {
+            'type': self.admin.user_type,
+            'user_id': self.admin.user_id
+        }
+        session.save()
+        
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/download-csv?q=One')
+        
+        content = response.content.decode('utf-8')
+        lines = content.strip().splitlines()
+        # Should only have header + 1 voter
+        self.assertEqual(len(lines), 2)
