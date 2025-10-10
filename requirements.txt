@@ -25,4 +25,4 @@ rollbar==1.0.0
 
 #ldap auth
 django-auth-ldap==4.8.0
-python-ldap==3.4.4
+python-ldap==3.4.5
