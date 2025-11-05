@@ -1,4 +1,4 @@
-Django==5.0
+Django==5.1.14
 django-webtest>=1.9.11
 
 gunicorn==22.0.0
