@@ -1132,11 +1132,11 @@ class EmailOptOutViewTests(WebTest):
     def test_optin_request_for_non_opted_out_email(self):
         """Test that opt-in request shows message for non-opted-out address"""
         email = 'test@example.com'
-        
+
         response = self.client.post('/optin/', {'email': email})
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, 'Email Not Found')
-        self.assertContains(response, f'The email address <strong>{email}</strong> is not currently opted out')
+        self.assertContains(response, 'Good News!')
+        self.assertContains(response, f'The email address <strong>{email}</strong> is already receiving emails from Helios')
 
     def test_optin_confirm_with_valid_code(self):
         """Test opt-in confirmation with valid HMAC code"""

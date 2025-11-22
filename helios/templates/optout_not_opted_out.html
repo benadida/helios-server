@@ -1,22 +1,26 @@
-{% extends "base.html" %}
+{% extends TEMPLATE_BASE %}
 
-{% block title %}Email Not Opted Out{% endblock %}
+{% block title %}Already Receiving Emails{% endblock %}
+
+{% block header %}
+  <h1 style="font-size: 2em; margin: 10px 0; color: #333;">Helios Voting</h1>
+{% endblock %}
 
 {% block content %}
 <div style="max-width: 600px; margin: 50px auto; padding: 20px; text-align: center;">
-  <h2>Email Not Found</h2>
-  
-  <div style="margin: 30px 0; padding: 20px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
+  <h2 class="title" style="color: #4caf50;">Good News!</h2>
+
+  <div style="margin: 30px 0; padding: 20px; background-color: #e8f5e9; border: 1px solid #4caf50; border-radius: 4px;">
     <p style="margin: 0; font-size: 16px; color: #333;">
-      The email address <strong>{{ email }}</strong> is not currently opted out of Helios emails.
+      The email address <strong>{{ email }}</strong> is already receiving emails from Helios.
     </p>
   </div>
-  
+
   <div style="margin-top: 30px; color: #666; font-size: 14px;">
-    <p>This email address is already receiving Helios emails, so no action is needed.</p>
-    <p>If you want to opt out of emails, you can do so using the unsubscribe link in any Helios email you receive.</p>
+    <p>No action is needed - you're all set!</p>
+    <p>If you want to stop receiving emails in the future, you can use the unsubscribe link in any Helios email.</p>
   </div>
-  
+
   <div style="margin-top: 40px;">
     <a href="/" style="color: #007cba; text-decoration: none;">← Return to Helios</a>
   </div>
