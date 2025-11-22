@@ -1078,15 +1078,32 @@ class EmailOptOutViewTests(WebTest):
 
     def test_optout_confirm_with_valid_code(self):
         """Test opt-out confirmation with valid HMAC code"""
+        # Set up session for CSRF token
+        self.client.get('/')  # Initialize session
+
         email = 'test@example.com'
         code = utils.generate_email_confirmation_code(email, 'optout')
-        
+
+        # GET should show the confirmation form
         response = self.client.get(f'/optout/confirm/{email}/{code}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Confirm Opt-Out')
+        self.assertContains(response, email)
+        self.assertContains(response, 'Please confirm that you want to opt out')
+        self.assertContains(response, '<form class="prettyform" method="POST"')
+
+        # Email should NOT be opted out yet
+        self.assertFalse(models.EmailOptOut.is_opted_out(email))
+
+        # POST should perform the opt-out
+        response = self.client.post(f'/optout/confirm/{email}/{code}/', {
+            'csrf_token': self.client.session.get('csrf_token', '')
+        })
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Successfully Opted Out')
         self.assertContains(response, email)
-        
-        # Verify email is now opted out
+
+        # Now email should be opted out
         self.assertTrue(models.EmailOptOut.is_opted_out(email))
 
     def test_optout_confirm_with_invalid_code(self):
@@ -1123,16 +1140,33 @@ class EmailOptOutViewTests(WebTest):
 
     def test_optin_confirm_with_valid_code(self):
         """Test opt-in confirmation with valid HMAC code"""
+        # Set up session for CSRF token
+        self.client.get('/')  # Initialize session
+
         email = 'test@example.com'
         models.EmailOptOut.add_opt_out(email)
         code = utils.generate_email_confirmation_code(email, 'optin')
-        
+
+        # GET should show the confirmation form
         response = self.client.get(f'/optin/confirm/{email}/{code}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Confirm Opt-In')
+        self.assertContains(response, email)
+        self.assertContains(response, 'Please confirm that you want to resume receiving emails')
+        self.assertContains(response, '<form class="prettyform" method="POST"')
+
+        # Email should still be opted out
+        self.assertTrue(models.EmailOptOut.is_opted_out(email))
+
+        # POST should perform the opt-in
+        response = self.client.post(f'/optin/confirm/{email}/{code}/', {
+            'csrf_token': self.client.session.get('csrf_token', '')
+        })
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Successfully Opted Back In')
         self.assertContains(response, email)
-        
-        # Verify email is no longer opted out
+
+        # Now email should no longer be opted out
         self.assertFalse(models.EmailOptOut.is_opted_out(email))
 
 

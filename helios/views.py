@@ -1657,18 +1657,30 @@ def optout_success(request):
     })
 
 
-@require_http_methods(["GET"])
+@require_http_methods(["GET", "POST"])
 def optout_confirm(request, email, code):
     """Confirm opt-out with HMAC verification"""
     if not utils.verify_email_confirmation_code(email, 'optout', code):
         raise Http404("Invalid confirmation link")
-    
+
+    if request.method == "GET":
+        # Show confirmation form
+        return render_template(request, 'optout_confirm_form', {
+            'action': 'optout',
+            'title': 'Confirm Opt-Out',
+            'description': 'Please confirm that you want to opt out of all Helios voting system emails.',
+            'email': email
+        })
+
+    # POST: Perform the opt-out action
+    check_csrf(request)
+
     # Add to opt-out list
     user_agent = request.META.get('HTTP_USER_AGENT', '')
     ip_address = get_client_ip(request)
-    
+
     EmailOptOut.add_opt_out(email, user_agent, ip_address)
-    
+
     return render_template(request, 'optout_confirmed', {
         'action': 'optout',
         'title': 'Successfully Opted Out',
@@ -1757,18 +1769,34 @@ def optin_success(request):
     })
 
 
-@require_http_methods(["GET"])
+@require_http_methods(["GET", "POST"])
 def optin_confirm(request, email, code):
     """Confirm opt-in with HMAC verification"""
     if not utils.verify_email_confirmation_code(email, 'optin', code):
         raise Http404("Invalid confirmation link")
-    
+
+    if request.method == "GET":
+        # Check if email is actually opted out before showing the form
+        if not EmailOptOut.is_opted_out(email):
+            return render_template(request, 'optout_not_opted_out', {'email': email})
+
+        # Show confirmation form
+        return render_template(request, 'optout_confirm_form', {
+            'action': 'optin',
+            'title': 'Confirm Opt-In',
+            'description': 'Please confirm that you want to resume receiving emails from Helios voting system.',
+            'email': email
+        })
+
+    # POST: Perform the opt-in action
+    check_csrf(request)
+
     # Remove from opt-out list
     removed = EmailOptOut.remove_opt_out(email)
-    
+
     if not removed:
         return render_template(request, 'optout_not_opted_out', {'email': email})
-    
+
     return render_template(request, 'optout_confirmed', {
         'action': 'optin',
         'title': 'Successfully Opted Back In',
