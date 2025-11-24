@@ -14,18 +14,15 @@
   <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
   <script language="javascript" src="js/jscrypto/sjcl.js"></script>
   <script language="javascript" src="js/underscore-min.js"></script>
-  <script language="javascript" src="js/jquery-1.2.2.min.js"></script>
-  <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
-  <script language="javascript" src="js/jquery-jtemplates.js"></script>
-  <script language="javascript" src="js/jquery.json.min.js"></script>
+  <script language="javascript" src="js/jquery-3.7.1.min.js"></script>
   <script language="javascript" src="js/jscrypto/bigint.js"></script>
   <script language="javascript" src="js/jscrypto/random.js"></script>
   <script language="javascript" src="js/jscrypto/elgamal.js"></script>
   <script language="javascript" src="js/jscrypto/sha1.js"></script>
   <script language="javascript" src="js/jscrypto/sha2.js"></script>
   <script language="javascript" src="js/jscrypto/helios.js"></script>-->
-  
-  <script language="javascript" src="js/20160507-helios-booth-compressed.js"></script>
+
+  <script language="javascript" src="js/20241001-helios-booth-compressed.js"></script> 
 </head>
 
 <body>
@@ -44,20 +41,42 @@
 // utils
 BOOTH = {};
 
-BOOTH.setup_templates = function() {
-    if (BOOTH.templates_setup_p)
-        return;
+BOOTH.setup_templates = async function() {
+  if (BOOTH.templates_setup_p)
+      return;
 
-    var cache_bust = "?cb=" + new Date().getTime();
+  var cache_bust = "?cb=" + new Date().getTime();
 
-    $('#header').setTemplateURL("templates/header.html" + cache_bust);
-    $('#election_div').setTemplateURL("templates/election.html" + cache_bust);
-    $('#question_div').setTemplateURL("templates/question.html" + cache_bust);
-    $('#seal_div').setTemplateURL("templates/seal.html" + cache_bust);
-    $('#audit_div').setTemplateURL("templates/audit.html" + cache_bust);
-    $('#footer').setTemplateURL("templates/footer.html" + cache_bust);
+  BOOTH.compiled_templates = new Map();
 
-    BOOTH.templates_setup_p = true;
+  const get_template = async function (element_id, url) {
+    const response = await fetch(url);
+    const html_template = await response.text();
+    return [element_id, html_template];
+  }
+  // fetch all templates
+  await Promise.all([
+    get_template('#header',       "templates/header.html" + cache_bust),
+    get_template('#election_div', "templates/election.html" + cache_bust),
+    get_template('#question_div', "templates/question.html" + cache_bust),
+    get_template('#seal_div',     "templates/seal.html" + cache_bust),
+    get_template('#audit_div',    "templates/audit.html" + cache_bust),
+    get_template('#footer',       "templates/footer.html" + cache_bust),
+  ])
+  .then(function(id_and_templates) {
+    id_and_templates.forEach(function (id_and_template) {
+      // associates element id with compiled template
+      BOOTH.compiled_templates.set(id_and_template[0], _.template(id_and_template[1]));
+    })
+  });
+
+  BOOTH.templates_setup_p = true;
+};
+
+BOOTH.render_template = function (element_id, template_info) {
+  const compiled_template = BOOTH.compiled_templates.get(element_id);
+  const rendered_html = compiled_template(template_info);
+  $(element_id).html(rendered_html);
 };
 
 // set up the message when navigating away
@@ -198,8 +217,8 @@ BOOTH.setup_election = function(raw_json, election_metadata) {
     BOOTH.election.question_answer_orderings[i] = ordering;
   });
 
-  $('#header').processTemplate({'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
-  $('#footer').processTemplate({'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
+  BOOTH.render_template('#header', {'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
+  BOOTH.render_template('#footer', {'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
   BOOTH.setup_ballot();
 };
 
@@ -210,7 +229,8 @@ BOOTH.show = function(el) {
 };
 
 BOOTH.show_election = function() {
-  BOOTH.show($('#election_div')).processTemplate({'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
+  BOOTH.render_template('#election_div', {'election' : BOOTH.election, 'election_metadata': BOOTH.election_metadata});
+  BOOTH.show($('#election_div'));
 };
 
 BOOTH.launch_async_encryption_answer = function(question_num) {
@@ -293,11 +313,13 @@ BOOTH.show_question = function(question_num) {
     BOOTH.all_questions_seen = true;
 
   BOOTH.show_progress('1');
-  BOOTH.show($('#question_div')).processTemplate({'question_num' : question_num,
+  BOOTH.render_template('#question_div', {'question_num' : question_num,
                       'last_question_num' : BOOTH.election.questions.length - 1,
-                      'question' : BOOTH.election.questions[question_num], 'show_reviewall' : BOOTH.all_questions_seen,
-		      'answer_ordering': BOOTH.election.question_answer_orderings[question_num]
+                      'question' : BOOTH.election.questions[question_num],
+                      'show_reviewall' : BOOTH.all_questions_seen,
+                      'answer_ordering': BOOTH.election.question_answer_orderings[question_num]
                 });
+  BOOTH.show($('#question_div'));
 
   // fake clicking through the answers, to trigger the disabling if need be
   // first we remove the answers array
@@ -381,14 +403,14 @@ BOOTH.load_and_setup_election = function(election_url) {
           BOOTH.show_election();
           BOOTH.election_url = election_url;
         });
-    });
+    }, "text");
 
 
     if (USE_SJCL) {
       // get more randomness from server
-      $.get(election_url + "/get-randomness", {}, function(raw_json) {
-        sjcl.random.addEntropy(JSON.parse(raw_json).randomness);
-      });
+      $.get(election_url + "/get-randomness", {}, function(randomness) {
+        sjcl.random.addEntropy(randomness.randomness);
+      }, "json");
     }
 };
 
@@ -406,13 +428,14 @@ BOOTH.show_progress = function(step_num) {
     });
 };
 
-BOOTH.so_lets_go = function () {
+BOOTH.so_lets_go = async function () {
     BOOTH.hide_progress();
 
-    BOOTH.setup_templates();
+    await BOOTH.setup_templates();
 
     // election URL
-    var election_url = $.query.get('election_url');
+    var url_params = new URLSearchParams(window.location.search);
+    var election_url = url_params.get('election_url');
     BOOTH.load_and_setup_election(election_url);
 };
 
@@ -466,7 +489,7 @@ BOOTH._after_ballot_encryption = function() {
     };
 
     var show_cast = function() {
-      $('#seal_div').processTemplate({'cast_url': BOOTH.election.cast_url,
+      BOOTH.render_template('#seal_div', {'cast_url': BOOTH.election.cast_url,
         'encrypted_vote_json': BOOTH.encrypted_vote_json,
         'encrypted_vote_hash' : BOOTH.encrypted_ballot_hash,
         'election_uuid' : BOOTH.election.uuid,
@@ -521,13 +544,13 @@ BOOTH.seal_ballot_raw = function() {
 };
 
 BOOTH.request_ballot_encryption = function() {
-    $.post(BOOTH.election_url + "/encrypt-ballot", {'answers_json': $.toJSON(BOOTH.ballot.answers)}, function(result) {
-      //BOOTH.encrypted_ballot = HELIOS.EncryptedVote.fromJSONObject($.secureEvalJSON(result), BOOTH.election);
+    $.post(BOOTH.election_url + "/encrypt-ballot", {'answers_json': JSON.stringify(BOOTH.ballot.answers)}, function(result) {
+      //BOOTH.encrypted_ballot = HELIOS.EncryptedVote.fromJSONObject(JSON.parse(result), BOOTH.election);
       // rather than deserialize and reserialize, which is inherently slow on browsers
       // that already need to do network requests, just remove the plaintexts
 
       BOOTH.encrypted_ballot_with_plaintexts_serialized = result;
-      var ballot_json_obj = $.secureEvalJSON(BOOTH.encrypted_ballot_with_plaintexts_serialized);
+      var ballot_json_obj = JSON.parse(BOOTH.encrypted_ballot_with_plaintexts_serialized);
       var answers = ballot_json_obj.answers;
       for (var i=0; i<answers.length; i++) {
          delete answers[i]['answer'];
@@ -537,7 +560,7 @@ BOOTH.request_ballot_encryption = function() {
       BOOTH.encrypted_ballot_serialized = JSON.stringify(ballot_json_obj);
 
       window.setTimeout(BOOTH._after_ballot_encryption, 0);
-    });
+    }, "text");
 };
 
 BOOTH.seal_ballot = function() {
@@ -554,9 +577,10 @@ BOOTH.seal_ballot = function() {
 };
 
 BOOTH.audit_ballot = function() {
-    BOOTH.audit_trail = BOOTH.encrypted_ballot_with_plaintexts_serialized || $.toJSON(BOOTH.encrypted_ballot.get_audit_trail());
+    BOOTH.audit_trail = BOOTH.encrypted_ballot_with_plaintexts_serialized || JSON.stringify(BOOTH.encrypted_ballot.get_audit_trail());
 
-    BOOTH.show($('#audit_div')).processTemplate({'audit_trail' : BOOTH.audit_trail, 'election_url' : BOOTH.election_url});
+    BOOTH.render_template('#audit_div', {'audit_trail' : BOOTH.audit_trail, 'election_url' : BOOTH.election_url});
+    BOOTH.show($('#audit_div'));
 };
 
 BOOTH.post_audited_ballot = function() {
@@ -568,7 +592,7 @@ BOOTH.post_audited_ballot = function() {
 BOOTH.cast_ballot = function() {
     // show progress spinner
     $('#loading_div').show();
-    $('#proceed_button').attr('disabled', 'disabled');
+    $('#proceed_button').prop('disabled', true);
 
     // at this point, we delete the plaintexts by resetting the ballot
     BOOTH.setup_ballot(BOOTH.election);
@@ -587,7 +611,7 @@ BOOTH.cast_ballot = function() {
     BOOTH.started_p = false;
 
     // submit the form
-    $('#send_ballot_form').submit();
+    $('#send_ballot_form').trigger("submit");
 };
 
 BOOTH.show_receipt = function() {
