@@ -421,7 +421,137 @@ def delete_trustee(request, election):
   trustee = Trustee.get_by_election_and_uuid(election, request.GET['uuid'])
   trustee.delete()
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_TRUSTEES_VIEW, args=[election.uuid]))
-  
+
+##
+## Election Administrators Management
+##
+
+@election_admin()
+def election_admin_list(request, election):
+  """
+  List all administrators for an election.
+  """
+  user = get_user(request)
+  # Get all admins: the creator plus any additional admins
+  additional_admins = list(election.admins.all())
+
+  return render_template(request, 'election_admins', {
+    'election': election,
+    'admin': election.admin,
+    'additional_admins': additional_admins,
+    'current_user': user,
+  })
+
+@election_admin()
+def election_admin_add(request, election):
+  """
+  Add a new administrator to an election.
+  GET: show form to add admin
+  POST: add the admin (may show selection if multiple users match)
+  """
+  if request.method == "GET":
+    return render_template(request, 'election_admin_add', {'election': election})
+  else:
+    check_csrf(request)
+    email = request.POST.get('email', '').strip()
+
+    if not email:
+      return render_template(request, 'election_admin_add', {
+        'election': election,
+        'error': 'Please enter an email address.'
+      })
+
+    # Check if a specific auth type was selected (when multiple users have same email)
+    selected_auth_type = request.POST.get('auth_type', '').strip()
+    if selected_auth_type:
+      try:
+        new_admin = User.objects.get(user_id=email, user_type=selected_auth_type)
+      except User.DoesNotExist:
+        raise Http404("User not found")
+    else:
+      # Find users by email - they must have logged in to Helios at least once
+      # Note: same email can exist across multiple auth systems (google, facebook, etc.)
+      matching_users = list(User.objects.filter(user_id=email))
+
+      if not matching_users:
+        return render_template(request, 'election_admin_add', {
+          'election': election,
+          'error': 'No user found with that email. They must log in to Helios at least once before being added as an administrator.'
+        })
+
+      if len(matching_users) > 1:
+        # Multiple users with same email - let admin choose
+        return render_template(request, 'election_admin_add', {
+          'election': election,
+          'matching_users': matching_users,
+          'email': email,
+        })
+
+      new_admin = matching_users[0]
+
+    # Check if already the creator
+    if new_admin == election.admin:
+      return render_template(request, 'election_admin_add', {
+        'election': election,
+        'error': 'This user is already the election creator.'
+      })
+
+    # Check if already an admin
+    if election.admins.filter(pk=new_admin.pk).exists():
+      return render_template(request, 'election_admin_add', {
+        'election': election,
+        'error': 'This user is already an administrator.'
+      })
+
+    # Add the new admin
+    election.admins.add(new_admin)
+    election.append_log("Administrator %s (%s) added" % (new_admin.user_id, new_admin.user_type))
+
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_ADMINS_LIST, args=[election.uuid]))
+
+@election_admin()
+def election_admin_remove(request, election):
+  """
+  Remove an administrator from an election.
+  GET: show confirmation form
+  POST: remove the admin
+  """
+  user_email = request.GET.get('email') or request.POST.get('email')
+  user_type = request.GET.get('user_type') or request.POST.get('user_type')
+  current_user = get_user(request)
+
+  if not user_email or not user_type:
+    raise Http404("No user specified")
+
+  try:
+    admin_to_remove = User.objects.get(user_id=user_email, user_type=user_type)
+  except User.DoesNotExist:
+    raise Http404("User not found")
+
+  # Cannot remove the original creator
+  if admin_to_remove == election.admin:
+    return HttpResponseForbidden("Cannot remove the election creator.")
+
+  # Cannot remove yourself
+  if admin_to_remove == current_user:
+    return HttpResponseForbidden("You cannot remove yourself as an administrator.")
+
+  # Check if this user is actually an admin
+  if not election.admins.filter(pk=admin_to_remove.pk).exists():
+    raise Http404("User is not an administrator of this election")
+
+  if request.method == "GET":
+    return render_template(request, 'election_admin_remove', {
+      'election': election,
+      'admin_to_remove': admin_to_remove,
+    })
+  else:
+    check_csrf(request)
+    election.admins.remove(admin_to_remove)
+    election.append_log("Administrator %s (%s) removed" % (admin_to_remove.user_id, admin_to_remove.user_type))
+
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_ADMINS_LIST, args=[election.uuid]))
+
 def trustee_login(request, election_short_name, trustee_email, trustee_secret):
   election = Election.get_by_short_name(election_short_name)
   if election:

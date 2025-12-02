@@ -14,6 +14,10 @@ ELECTION_TRUSTEES_NEW="election@trustees@new"
 ELECTION_TRUSTEES_ADD_HELIOS="election@trustees@add-helios"
 ELECTION_TRUSTEES_DELETE="election@trustees@delete"
 
+ELECTION_ADMINS_LIST="election@admins"
+ELECTION_ADMINS_ADD="election@admins@add"
+ELECTION_ADMINS_REMOVE="election@admins@remove"
+
 ELECTION_TRUSTEE_HOME="election@trustee"
 ELECTION_TRUSTEE_SEND_URL="election@trustee@send-url"
 ELECTION_TRUSTEE_KEY_GENERATOR="election@trustee@key-generator"

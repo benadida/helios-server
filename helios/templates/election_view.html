@@ -62,6 +62,10 @@ this {{election.election_type}} is <u>not</u> featured on the front page.
 <a href="{% url "election@voters@list-pretty" election.uuid %}">voters &amp; ballots</a>
 &nbsp;&nbsp;|&nbsp;&nbsp;
 <a href="{% url "election@trustees@view" election.uuid %}">trustees ({{trustees|length}})</a>
+{% if admin_p %}
+&nbsp;&nbsp;|&nbsp;&nbsp;
+<a href="{% url "election@admins" election.uuid %}">administrators</a>
+{% endif %}
 </p>
 
 {% if admin_p %}
