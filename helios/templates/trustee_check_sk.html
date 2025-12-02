@@ -26,13 +26,21 @@ function check_sk(sk_value) {
     try {
       var secret_key = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(sk_value));
 
+      // Check 1: Verify the public key hash matches
       var pk_hash = b64_sha256(jQuery.toJSON(secret_key.pk));
-      var key_ok_p = (pk_hash == PK_HASH);
+      var hash_ok = (pk_hash == PK_HASH);
+
+      // Check 2: Verify that g^x = y mod p (cryptographic verification)
+      // This ensures the secret exponent actually corresponds to the public key
+      var computed_y = secret_key.pk.g.modPow(secret_key.x, secret_key.pk.p);
+      var crypto_ok = computed_y.equals(secret_key.pk.y);
+
+      var key_ok_p = hash_ok && crypto_ok;
     } catch (e) {
       debugger;
       var key_ok_p = false;
     }
-    
+
     $('#processing').hide();
 
     var reset_link = "<br /><a href='javascript:reset();'>try again</a>";
