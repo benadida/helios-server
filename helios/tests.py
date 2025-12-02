@@ -1283,8 +1283,333 @@ class VotersCSVDownloadTests(TestCase):
         session.save()
         
         response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/download-csv?q=One')
-        
+
         content = response.content.decode('utf-8')
         lines = content.strip().splitlines()
         # Should only have header + 1 voter
         self.assertEqual(len(lines), 2)
+
+
+class ElectionMultipleAdminsModelTests(TestCase):
+    """Test multiple administrators functionality at the model level"""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.admin = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.other_user = auth_models.User.objects.filter(user_type='facebook').first()
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-multi-admin',
+            name='Test Multi-Admin Election',
+            description='Test Election for Multiple Admins',
+            admin=self.admin
+        )
+
+    def test_election_has_admins_field(self):
+        """Test that Election model has admins ManyToMany field"""
+        self.assertTrue(hasattr(self.election, 'admins'))
+        # Initially should be empty
+        self.assertEqual(self.election.admins.count(), 0)
+
+    def test_add_additional_admin(self):
+        """Test adding an additional administrator"""
+        self.election.admins.add(self.other_user)
+        self.assertEqual(self.election.admins.count(), 1)
+        self.assertIn(self.other_user, self.election.admins.all())
+
+    def test_remove_additional_admin(self):
+        """Test removing an additional administrator"""
+        self.election.admins.add(self.other_user)
+        self.assertEqual(self.election.admins.count(), 1)
+
+        self.election.admins.remove(self.other_user)
+        self.assertEqual(self.election.admins.count(), 0)
+
+    def test_get_by_user_as_admin_includes_creator(self):
+        """Test that get_by_user_as_admin returns elections for the creator"""
+        elections = models.Election.get_by_user_as_admin(self.admin)
+        self.assertIn(self.election, elections)
+
+    def test_get_by_user_as_admin_includes_additional_admins(self):
+        """Test that get_by_user_as_admin returns elections for additional admins"""
+        # Before adding as admin, other_user shouldn't see the election
+        elections = models.Election.get_by_user_as_admin(self.other_user)
+        self.assertNotIn(self.election, elections)
+
+        # After adding as admin, other_user should see the election
+        self.election.admins.add(self.other_user)
+        elections = models.Election.get_by_user_as_admin(self.other_user)
+        self.assertIn(self.election, elections)
+
+    def test_get_by_user_as_admin_no_duplicates(self):
+        """Test that elections aren't duplicated if user is both creator and in admins"""
+        # Add creator to admins list as well (edge case)
+        self.election.admins.add(self.admin)
+
+        elections = list(models.Election.get_by_user_as_admin(self.admin))
+        # Should only appear once due to distinct()
+        self.assertEqual(elections.count(self.election), 1)
+
+
+class ElectionMultipleAdminsSecurityTests(TestCase):
+    """Test multiple administrators authorization checks"""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.admin = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.other_user = auth_models.User.objects.filter(user_type='facebook').first()
+        self.site_admin = auth_models.User.objects.filter(admin_p=True).first()
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-admin-security',
+            name='Test Admin Security Election',
+            description='Test Election for Admin Security',
+            admin=self.admin
+        )
+
+    def test_creator_can_admin_election(self):
+        """Test that election creator can admin the election"""
+        from helios.security import user_can_admin_election
+        self.assertTrue(user_can_admin_election(self.admin, self.election))
+
+    def test_additional_admin_can_admin_election(self):
+        """Test that additional admin can admin the election"""
+        from helios.security import user_can_admin_election
+
+        # Before adding
+        self.assertFalse(user_can_admin_election(self.other_user, self.election))
+
+        # After adding
+        self.election.admins.add(self.other_user)
+        self.assertTrue(user_can_admin_election(self.other_user, self.election))
+
+    def test_site_admin_can_admin_any_election(self):
+        """Test that site admin can admin any election"""
+        from helios.security import user_can_admin_election
+
+        if self.site_admin:
+            self.assertTrue(user_can_admin_election(self.site_admin, self.election))
+
+    def test_random_user_cannot_admin_election(self):
+        """Test that random user cannot admin election"""
+        from helios.security import user_can_admin_election
+        self.assertFalse(user_can_admin_election(self.other_user, self.election))
+
+    def test_none_user_cannot_admin_election(self):
+        """Test that None user cannot admin election"""
+        from helios.security import user_can_admin_election
+        self.assertFalse(user_can_admin_election(None, self.election))
+
+
+class ElectionMultipleAdminsViewTests(WebTest):
+    """Test multiple administrators view functionality"""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.admin = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.other_user = auth_models.User.objects.filter(user_type='facebook').first()
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-admin-views',
+            name='Test Admin Views Election',
+            description='Test Election for Admin Views',
+            admin=self.admin
+        )
+        if not self.election.uuid:
+            self.election.uuid = str(uuid.uuid4())
+            self.election.save()
+
+    def setup_login(self, user=None):
+        """Set up session for a user"""
+        self.client.get("/")  # Initialize session
+        session = self.client.session
+        user = user or self.admin
+        session['user'] = {'type': user.user_type, 'user_id': user.user_id}
+        session.save()
+
+    def test_admins_list_view_as_admin(self):
+        """Test admins list view accessible to admin"""
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/admins/')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Administrators')
+        self.assertContains(response, self.admin.user_id)
+
+    def test_admins_list_view_as_non_admin(self):
+        """Test admins list view not accessible to non-admin"""
+        self.setup_login(self.other_user)
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/admins/')
+        self.assertStatusCode(response, 403)
+
+    def test_admins_list_shows_additional_admins(self):
+        """Test admins list shows additional administrators"""
+        self.election.admins.add(self.other_user)
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/admins/')
+        self.assertContains(response, self.other_user.user_id)
+
+    def test_add_admin_form_renders(self):
+        """Test add admin form renders correctly"""
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/admins/add')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Add Administrator')
+        self.assertContains(response, 'name="email"')
+
+    def test_add_admin_success(self):
+        """Test successfully adding an administrator"""
+        self.setup_login()
+        response = self.client.post(f'/helios/elections/{self.election.uuid}/admins/add', {
+            'email': self.other_user.user_id,
+            'csrf_token': self.client.session['csrf_token']
+        })
+        self.assertRedirects(response, f'/helios/elections/{self.election.uuid}/admins/')
+
+        # Verify admin was added
+        self.assertTrue(self.election.admins.filter(pk=self.other_user.pk).exists())
+
+    def test_add_admin_nonexistent_user(self):
+        """Test adding nonexistent user as admin shows error"""
+        self.setup_login()
+        response = self.client.post(f'/helios/elections/{self.election.uuid}/admins/add', {
+            'email': 'nonexistent@example.com',
+            'csrf_token': self.client.session['csrf_token']
+        })
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'No user found')
+
+    def test_add_admin_already_creator(self):
+        """Test adding election creator as admin shows error"""
+        self.setup_login()
+        response = self.client.post(f'/helios/elections/{self.election.uuid}/admins/add', {
+            'email': self.admin.user_id,
+            'csrf_token': self.client.session['csrf_token']
+        })
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'already the election creator')
+
+    def test_add_admin_already_admin(self):
+        """Test adding existing admin shows error"""
+        self.election.admins.add(self.other_user)
+        self.setup_login()
+        response = self.client.post(f'/helios/elections/{self.election.uuid}/admins/add', {
+            'email': self.other_user.user_id,
+            'csrf_token': self.client.session['csrf_token']
+        })
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'already an administrator')
+
+    def test_add_admin_multiple_users_same_email(self):
+        """Test that multiple users with same email shows selection"""
+        # Create another user with the same user_id but different user_type
+        same_email = 'shared@example.com'
+        user1 = auth_models.User.objects.create(
+            user_type='google',
+            user_id=same_email,
+            name='Google User'
+        )
+        user2 = auth_models.User.objects.create(
+            user_type='facebook',
+            user_id=same_email,
+            name='Facebook User'
+        )
+
+        self.setup_login()
+        response = self.client.post(f'/helios/elections/{self.election.uuid}/admins/add', {
+            'email': same_email,
+            'csrf_token': self.client.session['csrf_token']
+        })
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Multiple users were found')
+        self.assertContains(response, 'google')
+        self.assertContains(response, 'facebook')
+
+    def test_add_admin_select_from_multiple(self):
+        """Test selecting a specific user when multiple match"""
+        same_email = 'shared2@example.com'
+        user1 = auth_models.User.objects.create(
+            user_type='google',
+            user_id=same_email,
+            name='Google User 2'
+        )
+        user2 = auth_models.User.objects.create(
+            user_type='facebook',
+            user_id=same_email,
+            name='Facebook User 2'
+        )
+
+        self.setup_login()
+        # Select the google user by email + auth_type
+        response = self.client.post(f'/helios/elections/{self.election.uuid}/admins/add', {
+            'email': same_email,
+            'auth_type': 'google',
+            'csrf_token': self.client.session['csrf_token']
+        })
+        self.assertRedirects(response, f'/helios/elections/{self.election.uuid}/admins/')
+
+        # Verify only the google user was added
+        self.assertTrue(self.election.admins.filter(pk=user1.pk).exists())
+        self.assertFalse(self.election.admins.filter(pk=user2.pk).exists())
+
+    def test_remove_admin_form_renders(self):
+        """Test remove admin confirmation form renders"""
+        self.election.admins.add(self.other_user)
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/admins/remove?email={self.other_user.user_id}&user_type={self.other_user.user_type}')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Remove Administrator')
+        self.assertContains(response, self.other_user.user_id)
+
+    def test_remove_admin_success(self):
+        """Test successfully removing an administrator"""
+        self.election.admins.add(self.other_user)
+        self.setup_login()
+        response = self.client.post(f'/helios/elections/{self.election.uuid}/admins/remove', {
+            'email': self.other_user.user_id,
+            'user_type': self.other_user.user_type,
+            'csrf_token': self.client.session['csrf_token']
+        })
+        self.assertRedirects(response, f'/helios/elections/{self.election.uuid}/admins/')
+
+        # Verify admin was removed
+        self.assertFalse(self.election.admins.filter(pk=self.other_user.pk).exists())
+
+    def test_remove_creator_forbidden(self):
+        """Test that election creator cannot be removed"""
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/admins/remove?email={self.admin.user_id}&user_type={self.admin.user_type}')
+        self.assertStatusCode(response, 403)
+
+    def test_remove_self_forbidden(self):
+        """Test that an administrator cannot remove themselves"""
+        # Add other_user as admin
+        self.election.admins.add(self.other_user)
+        # Login as other_user
+        self.setup_login(self.other_user)
+        # Try to remove self
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/admins/remove?email={self.other_user.user_id}&user_type={self.other_user.user_type}')
+        self.assertStatusCode(response, 403)
+
+    def test_admins_list_hides_remove_link_for_self(self):
+        """Test that admins list doesn't show remove link for current user"""
+        self.election.admins.add(self.other_user)
+        self.setup_login(self.other_user)
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/admins/')
+        self.assertContains(response, '(you)')
+        # The remove link should not appear for themselves
+        self.assertNotContains(response, f'email={self.other_user.user_id}&amp;user_type={self.other_user.user_type}')
+
+    def test_additional_admin_can_access_admin_views(self):
+        """Test that additional admin can access election admin views"""
+        self.election.admins.add(self.other_user)
+        self.setup_login(self.other_user)
+
+        # Should be able to access the admins list
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/admins/')
+        self.assertStatusCode(response, 200)
+
+    def test_election_view_shows_admins_link_for_admin(self):
+        """Test that election view shows administrators link for admins"""
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/view')
+        self.assertContains(response, 'administrators')

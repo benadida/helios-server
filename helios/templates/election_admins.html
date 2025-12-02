@@ -1,0 +1,42 @@
+{% extends TEMPLATE_BASE %}
+
+{% block title %}Administrators for {{election.name}}{% endblock %}
+
+{% block content %}
+  <h3 class="title">{{election.name}} &mdash; Administrators <span style="font-size:0.7em;">[<a href="{% url "election@view" election.uuid %}">back to election</a>]</span></h3>
+
+<p>
+    Administrators have full control over this election, including managing voters, questions, trustees, and settings.
+</p>
+
+<p>
+    [ <a href="{% url "election@admins@add" election.uuid %}">add an administrator</a> ]
+</p>
+
+<h4>Election Creator</h4>
+<p>
+  <strong>{{admin.display_html_small|safe}}</strong> ({{admin.user_id}})<br />
+  <em>The election creator cannot be removed.</em>
+</p>
+
+{% if additional_admins %}
+<h4>Additional Administrators</h4>
+<ul>
+{% for a in additional_admins %}
+<li>
+  {{a.display_html_small|safe}} ({{a.user_id}})
+  {% if a.pk != current_user.pk %}
+  [<a href="{% url "election@admins@remove" election.uuid %}?email={{a.user_id}}&user_type={{a.user_type}}">remove</a>]
+  {% else %}
+  <em>(you)</em>
+  {% endif %}
+</li>
+{% endfor %}
+</ul>
+{% else %}
+<p>
+  <em>No additional administrators have been added.</em>
+</p>
+{% endif %}
+
+{% endblock %}

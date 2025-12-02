@@ -34,6 +34,9 @@ class HeliosModel(models.Model, datatypes.LDObjectContainer):
 class Election(HeliosModel):
   admin = models.ForeignKey(User, on_delete=models.CASCADE)
 
+  # additional administrators with equal privileges to the creator
+  admins = models.ManyToManyField(User, related_name='elections_administered', blank=True)
+
   uuid = models.CharField(max_length=50, null=False)
 
   # keep track of the type and version of election, which will help dispatch to the right
@@ -212,7 +215,9 @@ class Election(HeliosModel):
 
   @classmethod
   def get_by_user_as_admin(cls, user, archived_p=None, limit=None):
-    query = cls.objects.filter(admin = user)
+    from django.db.models import Q
+    # Include elections where user is the creator (admin) OR in the admins list
+    query = cls.objects.filter(Q(admin=user) | Q(admins=user)).distinct()
     if archived_p is True:
       query = query.exclude(archived_at= None)
     if archived_p is False:

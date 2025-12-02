@@ -32,6 +32,11 @@ urlpatterns = [
     path('/trustees/new', views.new_trustee, name=names.ELECTION_TRUSTEES_NEW),
     path('/trustees/add-helios', views.new_trustee_helios, name=names.ELECTION_TRUSTEES_ADD_HELIOS),
     path('/trustees/delete', views.delete_trustee, name=names.ELECTION_TRUSTEES_DELETE),
+
+    # managing administrators
+    path('/admins/', views.election_admin_list, name=names.ELECTION_ADMINS_LIST),
+    path('/admins/add', views.election_admin_add, name=names.ELECTION_ADMINS_ADD),
+    path('/admins/remove', views.election_admin_remove, name=names.ELECTION_ADMINS_REMOVE),
     
     # trustee pages
     path('/trustees/<str:trustee_uuid>/home',

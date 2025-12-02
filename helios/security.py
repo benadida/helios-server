@@ -135,8 +135,8 @@ def user_can_admin_election(user, election):
   if not user:
     return False
 
-  # election or site administrator
-  return election.admin == user or user.admin_p
+  # site administrator, election creator, or listed administrator
+  return user.admin_p or election.admin == user or election.admins.filter(pk=user.pk).exists()
   
 def user_can_see_election(request, election):
   user = get_user(request)
