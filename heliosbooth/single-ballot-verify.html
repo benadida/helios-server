@@ -11,10 +11,7 @@
   <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
   <script language="javascript" src="js/jscrypto/sjcl.js"></script>
   <script language="javascript" src="js/underscore-min.js"></script>
-  <script language="javascript" src="js/jquery-1.2.6.min.js"></script>
-  <script language="javascript" src="js/jquery-jtemplates.js"></script>
-  <script language="javascript" src="js/jquery.json.min.js"></script>
-  <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
+  <script language="javascript" src="js/jquery-3.7.1.min.js"></script>
 
   <script language="javascript">
     // required for jscrypto library
@@ -42,7 +39,8 @@ $(document).ready(function() {
        }
 
        $('#verifier').show();
-       var election_url = $.query.get('election_url');
+       var url_params = new URLSearchParams(window.location.search);
+       var election_url = url_params.get('election_url');
        $('#election_url').val(election_url); 
     }, function() {
        $('#dummy_bigint').show();
@@ -54,7 +52,7 @@ function result_append(str) {
 }
 
 function verify_single_ballot(election_url, audit_trail) {
-  var encrypted_vote_json = jQuery.secureEvalJSON(audit_trail);
+  var encrypted_vote_json = JSON.parse(audit_trail);
   
   result_append("loading election...");
 
@@ -79,7 +77,7 @@ function verify_single_ballot(election_url, audit_trail) {
   };
 
   // the hash will be computed within the setup function call now
-  $.ajax({url: election_url, success: function(raw_json) {
+  $.ajax({url: election_url, dataType: "text", success: function(raw_json) {
     if (window.Worker) {
       var verifier_worker = new window.Worker("verifierworker.js");
       verifier_worker.onmessage = function(event) {
