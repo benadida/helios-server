@@ -109,7 +109,7 @@ def xss_strip_all_tags(s):
                     return str(entity, "iso-8859-1")
         return text # leave as is
         
-    return re.sub("(?s)<[^>]*>|&#?\w+;", fixup, s)
+    return re.sub(r"(?s)<[^>]*>|&#?\w+;", fixup, s)
     
 
 def random_string(length=20, alphabet=None):
