@@ -1805,7 +1805,7 @@ class VoterEmailCutoffViewTests(WebTest):
     def test_individual_voter_email_link_disabled_when_old_tally(self):
         """Test that individual voter email links are disabled when blocked"""
         # Add a voter
-        voter = models.Voter.objects.create(
+        models.Voter.objects.create(
             uuid=str(uuid.uuid4()),
             election=self.election,
             voter_email='test@example.com',
