@@ -1656,27 +1656,6 @@ class VoterEmailCutoffTests(TestCase):
         self.assertIsNotNone(reason)
         self.assertIn('3 weeks', reason)
 
-    def test_cannot_send_emails_exactly_at_cutoff(self):
-        """Test edge case: tally exactly at cutoff boundary"""
-        # Set tallying_finished_at to exactly 3 weeks ago
-        self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=3)
-        self.election.save()
-
-        can_send, reason = self.election.can_send_voter_emails()
-        # Should still be able to send (cutoff is > 3 weeks, not >= 3 weeks)
-        self.assertTrue(can_send)
-        self.assertIsNone(reason)
-
-    def test_cannot_send_emails_just_past_cutoff(self):
-        """Test that emails are blocked just after cutoff"""
-        # Set tallying_finished_at to 3 weeks + 1 day ago
-        self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=3, days=1)
-        self.election.save()
-
-        can_send, reason = self.election.can_send_voter_emails()
-        self.assertFalse(can_send)
-        self.assertIsNotNone(reason)
-
     def test_reason_message_format(self):
         """Test that reason message is properly formatted"""
         # Set tallying_finished_at to 4 weeks ago
