@@ -1540,6 +1540,13 @@ def voters_upload_cancel(request, election):
 def voters_email(request, election):
   if not VOTERS_EMAIL:
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
+
+  # Disable email sending if election was tallied more than 3 weeks ago
+  if election.tallying_finished_at:
+    three_weeks_ago = datetime.datetime.utcnow() - datetime.timedelta(weeks=3)
+    if election.tallying_finished_at < three_weeks_ago:
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
+
   TEMPLATES = [
     ('vote', 'Time to Vote'),
     ('simple', 'Simple'),
