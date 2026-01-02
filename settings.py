@@ -226,6 +226,9 @@ HELIOS_ADMIN_ONLY = False
 HELIOS_VOTERS_UPLOAD = True
 HELIOS_VOTERS_EMAIL = True
 
+# Number of weeks after tallying when voter emails should be disabled
+HELIOS_VOTER_EMAIL_CUTOFF_WEEKS = int(get_from_env('HELIOS_VOTER_EMAIL_CUTOFF_WEEKS', '3'))
+
 # are elections private by default?
 HELIOS_PRIVATE_DEFAULT = False
 

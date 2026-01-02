@@ -1356,11 +1356,16 @@ def voters_list_pretty(request, election):
   voters_page = voter_paginator.page(page)
 
   total_voters = voter_paginator.count
-    
-  return render_template(request, 'voters_list', 
+
+  # Check if voter emails can be sent
+  can_send_emails, email_disabled_reason = election.can_send_voter_emails()
+
+  return render_template(request, 'voters_list',
                          {'election': election, 'voters_page': voters_page,
-                          'voters': voters_page.object_list, 'admin_p': admin_p, 
+                          'voters': voters_page.object_list, 'admin_p': admin_p,
                           'email_voters': VOTERS_EMAIL,
+                          'can_send_emails': can_send_emails,
+                          'email_disabled_reason': email_disabled_reason,
                           'limit': limit, 'total_voters': total_voters,
                           'upload_p': VOTERS_UPLOAD, 'q' : q,
                           'voter_files': voter_files,
@@ -1540,6 +1545,12 @@ def voters_upload_cancel(request, election):
 def voters_email(request, election):
   if not VOTERS_EMAIL:
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
+
+  # Check if voter emails can be sent for this election
+  can_send, reason = election.can_send_voter_emails()
+  if not can_send:
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
+
   TEMPLATES = [
     ('vote', 'Time to Vote'),
     ('simple', 'Simple'),

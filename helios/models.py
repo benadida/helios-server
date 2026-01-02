@@ -410,6 +410,25 @@ class Election(HeliosModel):
 
     return issues
 
+  def can_send_voter_emails(self):
+    """
+    Check if voter emails can be sent for this election.
+    Returns a tuple: (can_send: bool, reason: str|None)
+
+    If can_send is True, reason will be None.
+    If can_send is False, reason will explain why emails are disabled.
+    """
+    # Check if election was tallied more than configured weeks ago
+    if self.tallying_finished_at:
+      cutoff_date = datetime.datetime.utcnow() - datetime.timedelta(weeks=settings.HELIOS_VOTER_EMAIL_CUTOFF_WEEKS)
+      if self.tallying_finished_at < cutoff_date:
+        weeks = settings.HELIOS_VOTER_EMAIL_CUTOFF_WEEKS
+        return (False, f"Election was tallied more than {weeks} week{'s' if weeks != 1 else ''} ago")
+
+    # Add more reasons here in the future
+
+    return (True, None)
+
   def ready_for_tallying(self):
     return datetime.datetime.utcnow() >= self.tallying_starts_at
 

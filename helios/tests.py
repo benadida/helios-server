@@ -1613,3 +1613,212 @@ class ElectionMultipleAdminsViewTests(WebTest):
         self.setup_login()
         response = self.client.get(f'/helios/elections/{self.election.uuid}/view')
         self.assertContains(response, 'administrators')
+
+
+class VoterEmailCutoffTests(TestCase):
+    """Test voter email cutoff functionality"""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-email-cutoff',
+            name='Test Email Cutoff Election',
+            description='Test Election for Email Cutoff',
+            admin=self.user
+        )
+
+    def test_can_send_emails_no_tally(self):
+        """Test that emails can be sent when election hasn't been tallied"""
+        can_send, reason = self.election.can_send_voter_emails()
+        self.assertTrue(can_send)
+        self.assertIsNone(reason)
+
+    def test_can_send_emails_recent_tally(self):
+        """Test that emails can be sent when tally is recent (within cutoff)"""
+        # Set tallying_finished_at to 1 week ago
+        self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=1)
+        self.election.save()
+
+        can_send, reason = self.election.can_send_voter_emails()
+        self.assertTrue(can_send)
+        self.assertIsNone(reason)
+
+    def test_cannot_send_emails_old_tally(self):
+        """Test that emails cannot be sent when tally is beyond cutoff"""
+        # Set tallying_finished_at to 4 weeks ago (default cutoff is 3 weeks)
+        self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=4)
+        self.election.save()
+
+        can_send, reason = self.election.can_send_voter_emails()
+        self.assertFalse(can_send)
+        self.assertIsNotNone(reason)
+        self.assertIn('3 weeks', reason)
+
+    def test_reason_message_format(self):
+        """Test that reason message is properly formatted"""
+        # Set tallying_finished_at to 4 weeks ago
+        self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=4)
+        self.election.save()
+
+        can_send, reason = self.election.can_send_voter_emails()
+        self.assertFalse(can_send)
+        self.assertEqual(reason, "Election was tallied more than 3 weeks ago")
+
+    def test_cutoff_respects_settings(self):
+        """Test that cutoff respects HELIOS_VOTER_EMAIL_CUTOFF_WEEKS setting"""
+        # Temporarily override the setting
+        with self.settings(HELIOS_VOTER_EMAIL_CUTOFF_WEEKS=2):
+            # Set tallying_finished_at to 2.5 weeks ago
+            self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=2, days=3)
+            self.election.save()
+
+            can_send, reason = self.election.can_send_voter_emails()
+            self.assertFalse(can_send)
+            self.assertIn('2 weeks', reason)
+
+    def test_singular_week_in_reason(self):
+        """Test that reason uses singular 'week' when cutoff is 1"""
+        with self.settings(HELIOS_VOTER_EMAIL_CUTOFF_WEEKS=1):
+            # Set tallying_finished_at to 2 weeks ago
+            self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=2)
+            self.election.save()
+
+            can_send, reason = self.election.can_send_voter_emails()
+            self.assertFalse(can_send)
+            self.assertEqual(reason, "Election was tallied more than 1 week ago")
+
+
+class VoterEmailCutoffViewTests(WebTest):
+    """Test voter email cutoff in views"""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-email-view',
+            name='Test Email View Election',
+            description='Test Election for Email Views',
+            admin=self.user
+        )
+        if not self.election.uuid:
+            self.election.uuid = str(uuid.uuid4())
+            self.election.save()
+
+        # Freeze the election so we can access email views
+        self.election.questions = [{"answer_urls": [None, None], "answers": ["Yes", "No"], "choice_type": "approval", "max": 1, "min": 0, "question": "Test?", "result_type": "absolute", "short_name": "Test?", "tally_type": "homomorphic"}]
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
+        self.election.openreg = True
+        self.election.freeze()
+
+        # Add at least one voter so email view templates can access voter_type
+        self.voter = models.Voter.objects.create(
+            uuid=str(uuid.uuid4()),
+            election=self.election,
+            voter_email='test@example.com',
+            voter_name='Test Voter'
+        )
+
+    def setup_login(self):
+        """Set up session for admin login"""
+        self.client.get("/")  # Initialize session
+        session = self.client.session
+        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
+        session.save()
+
+    def test_voters_email_accessible_when_no_tally(self):
+        """Test that voters email page is accessible when election not tallied"""
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/email')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Email')
+
+    def test_voters_email_accessible_when_recent_tally(self):
+        """Test that voters email page is accessible when tally is recent"""
+        self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=1)
+        self.election.save()
+
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/email')
+        self.assertStatusCode(response, 200)
+
+    def test_voters_email_redirects_when_old_tally(self):
+        """Test that voters email page redirects when tally is beyond cutoff"""
+        self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=4)
+        self.election.save()
+
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/email')
+        self.assertRedirects(response, f'/helios/elections/{self.election.uuid}/view')
+
+    def test_voters_email_post_blocked_when_old_tally(self):
+        """Test that posting to voters email is blocked when tally is old"""
+        self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=4)
+        self.election.save()
+
+        self.setup_login()
+        response = self.client.post(f'/helios/elections/{self.election.uuid}/voters/email', {
+            'csrf_token': self.client.session['csrf_token'],
+            'subject': 'Test',
+            'body': 'Test message',
+            'send_to': 'all'
+        })
+        self.assertRedirects(response, f'/helios/elections/{self.election.uuid}/view')
+
+    def test_voters_list_shows_email_button_when_enabled(self):
+        """Test that voters list shows enabled email button when allowed"""
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/list')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'email voters')
+        # Should have a link, not a disabled button
+        self.assertContains(response, 'href')
+
+    def test_voters_list_shows_disabled_button_when_old_tally(self):
+        """Test that voters list shows disabled button with reason when blocked"""
+        self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=4)
+        self.election.save()
+
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/list')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'email voters')
+        self.assertContains(response, 'disabled')
+        self.assertContains(response, '3 weeks ago')
+
+    def test_voters_list_passes_email_availability_to_template(self):
+        """Test that voters_list view passes email availability info to template"""
+        self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=4)
+        self.election.save()
+
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/list')
+
+        # Check that the response context includes the necessary variables
+        # Note: We can't directly access response.context in WebTest,
+        # but we can verify the rendered output
+        self.assertContains(response, 'disabled')
+        self.assertContains(response, 'Election was tallied more than')
+
+    def test_individual_voter_email_link_disabled_when_old_tally(self):
+        """Test that individual voter email links are disabled when blocked"""
+        # Add a voter
+        models.Voter.objects.create(
+            uuid=str(uuid.uuid4()),
+            election=self.election,
+            voter_email='test@example.com',
+            voter_name='Test Voter',
+            voter_login_id='test'
+        )
+
+        self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=4)
+        self.election.save()
+
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/list')
+
+        # Should have disabled span instead of link
+        self.assertContains(response, 'opacity: 0.5')
+        self.assertContains(response, 'cursor: not-allowed')
