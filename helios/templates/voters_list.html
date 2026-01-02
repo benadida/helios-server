@@ -36,7 +36,13 @@
 {% endif %}
 
 {% if email_voters and election.frozen_at and admin_p %}
-<p><a class="button" href="{% url "election@voters@email" election.uuid %}">email voters</a></p>
+<p>
+{% if can_send_emails %}
+<a class="button" href="{% url "election@voters@email" election.uuid %}">email voters</a>
+{% else %}
+<button class="button" disabled style="opacity: 0.5; cursor: not-allowed;" title="{{email_disabled_reason}}">email voters (disabled: {{email_disabled_reason}})</button>
+{% endif %}
+</p>
 {% endif %}
 
 {% if election.num_voters > 20 %}
@@ -134,7 +140,11 @@ Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voter
 {% if admin_p %}
 <td style="white-space: nowrap;">
 {% if election.frozen_at %}
+{% if can_send_emails %}
 [<a href="{% url "election@voters@email" election.uuid %}?voter_id={{voter.voter_login_id}}">email</a>]
+{% else %}
+[<span style="opacity: 0.5; cursor: not-allowed;" title="{{email_disabled_reason}}">email</span>]
+{% endif %}
 {% endif %}
 [<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url "election@voter@delete" election.uuid voter.uuid %}">x</a>]
 </td>
