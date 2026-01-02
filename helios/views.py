@@ -1541,10 +1541,10 @@ def voters_email(request, election):
   if not VOTERS_EMAIL:
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
 
-  # Disable email sending if election was tallied more than 3 weeks ago
+  # Disable email sending if election was tallied more than configured weeks ago
   if election.tallying_finished_at:
-    three_weeks_ago = datetime.datetime.utcnow() - datetime.timedelta(weeks=3)
-    if election.tallying_finished_at < three_weeks_ago:
+    cutoff_date = datetime.datetime.utcnow() - datetime.timedelta(weeks=settings.HELIOS_VOTER_EMAIL_CUTOFF_WEEKS)
+    if election.tallying_finished_at < cutoff_date:
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
 
   TEMPLATES = [
