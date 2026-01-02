@@ -1713,6 +1713,14 @@ class VoterEmailCutoffViewTests(WebTest):
         self.election.openreg = True
         self.election.freeze()
 
+        # Add at least one voter so email view templates can access voter_type
+        self.voter = models.Voter.objects.create(
+            uuid=str(uuid.uuid4()),
+            election=self.election,
+            voter_email='test@example.com',
+            voter_name='Test Voter'
+        )
+
     def setup_login(self):
         """Set up session for admin login"""
         self.client.get("/")  # Initialize session
