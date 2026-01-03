@@ -172,10 +172,16 @@ INSTALLED_APPS = (
     'server_ui',
 )
 
+# Email backend configuration
+# In development mode, set EMAIL_USE_CONSOLE=1 to print emails to stdout
+if DEBUG and get_from_env('EMAIL_USE_CONSOLE', '0') == '1':
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 ANYMAIL = {
     "MAILGUN_API_KEY": get_from_env('MAILGUN_API_KEY', None),
 }
 
+# Mailgun overrides console backend if configured
 if ANYMAIL["MAILGUN_API_KEY"]:
     EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
 
