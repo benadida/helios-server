@@ -81,6 +81,7 @@ urlpatterns = [
     path('/cast', views.one_election_cast, name=names.ELECTION_CAST),
     path('/cast_confirm', views.one_election_cast_confirm, name=names.ELECTION_CAST_CONFIRM),
     path('/password_voter_login', views.password_voter_login, name=names.ELECTION_PASSWORD_VOTER_LOGIN),
+    path('/password_voter_resend', views.password_voter_resend, name=names.ELECTION_PASSWORD_VOTER_RESEND),
     path('/cast_done', views.one_election_cast_done, name=names.ELECTION_CAST_DONE),
     
     # post audited ballot

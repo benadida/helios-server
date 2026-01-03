@@ -2359,3 +2359,150 @@ class DateTimeLocalFieldTests(TestCase):
         """Test that field has correct input formats defined"""
         self.assertIn('%Y-%m-%dT%H:%M', self.field.input_formats)
         self.assertIn('%Y-%m-%dT%H:%M:%S', self.field.input_formats)
+
+
+class PasswordResendTests(WebTest):
+    """Test password resend feature for voters"""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-password-resend',
+            name='Test Password Resend Election',
+            description='Test Election for Password Resend',
+            admin=self.user
+        )
+        if not self.election.uuid:
+            self.election.uuid = str(uuid.uuid4())
+            self.election.save()
+
+        # Freeze the election so voters can use password resend
+        self.election.questions = [{"answer_urls": [None, None], "answers": ["Yes", "No"], "choice_type": "approval", "max": 1, "min": 0, "question": "Test?", "result_type": "absolute", "short_name": "Test?", "tally_type": "homomorphic"}]
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
+        self.election.openreg = True
+        self.election.freeze()
+
+        # Create a password voter
+        self.voter = models.Voter.objects.create(
+            uuid=str(uuid.uuid4()),
+            election=self.election,
+            voter_email='voter@example.com',
+            voter_name='Test Voter',
+            voter_login_id='testvoter'
+        )
+        self.voter.generate_password()
+        self.voter.save()
+
+    def get_resend_url(self):
+        return f'/helios/elections/{self.election.uuid}/password_voter_resend'
+
+    def test_get_shows_form(self):
+        """Test that GET request shows the resend form"""
+        response = self.client.get(self.get_resend_url())
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Voter ID')
+        self.assertContains(response, 'Resend')
+
+    def test_post_valid_voter_shows_success_and_sends_email(self):
+        """Test that POST with valid voter ID shows success message and sends email"""
+        # First get to set up session/csrf
+        self.client.get(self.get_resend_url())
+        csrf_token = self.client.session.get('csrf_token', '')
+
+        num_messages_before = len(mail.outbox)
+
+        response = self.client.post(self.get_resend_url(), {
+            'csrf_token': csrf_token,
+            'voter_id': 'testvoter'
+        })
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'email with your voting credentials has been sent')
+
+        # Check that an email was queued
+        self.assertEqual(len(mail.outbox), num_messages_before + 1)
+        email_message = mail.outbox[-1]
+        # Email 'to' field may include name like '"Test Voter" <voter@example.com>'
+        self.assertTrue(any('voter@example.com' in recipient for recipient in email_message.to))
+        self.assertIn('credentials', email_message.subject.lower())
+        self.assertIn(self.voter.voter_login_id, email_message.body)
+        self.assertIn(self.voter.voter_password, email_message.body)
+
+    def test_post_invalid_voter_still_shows_success_but_no_email(self):
+        """Test that POST with invalid voter ID still shows success but sends no email"""
+        self.client.get(self.get_resend_url())
+        csrf_token = self.client.session.get('csrf_token', '')
+
+        num_messages_before = len(mail.outbox)
+
+        response = self.client.post(self.get_resend_url(), {
+            'csrf_token': csrf_token,
+            'voter_id': 'nonexistent_voter'
+        })
+        self.assertStatusCode(response, 200)
+        # Should still show success message to prevent enumeration attacks
+        self.assertContains(response, 'email with your voting credentials has been sent')
+
+        # But no email should have been sent
+        self.assertEqual(len(mail.outbox), num_messages_before)
+
+    def test_post_empty_voter_id_shows_error(self):
+        """Test that POST with empty voter ID shows error"""
+        self.client.get(self.get_resend_url())
+        csrf_token = self.client.session.get('csrf_token', '')
+
+        response = self.client.post(self.get_resend_url(), {
+            'csrf_token': csrf_token,
+            'voter_id': ''
+        })
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'valid voter ID')
+
+    def test_resend_blocked_when_election_too_old(self):
+        """Test that password resend is blocked when election tally is too old"""
+        self.election.tallying_finished_at = datetime.datetime.utcnow() - datetime.timedelta(weeks=4)
+        self.election.save()
+
+        response = self.client.get(self.get_resend_url())
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'weeks ago')
+
+    def test_link_appears_on_cast_confirm_page(self):
+        """Test that resend link appears on cast confirm password template"""
+        # We need to check the template content includes the resend link
+        # This is more of an integration test - check the template file
+        from django.template.loader import get_template
+        template = get_template('_castconfirm_password.html')
+        template_source = template.template.source
+        self.assertIn('password-voter-resend', template_source)
+        self.assertIn('target="_blank"', template_source)
+
+    def test_voter_without_email_does_not_send_email(self):
+        """Test that voter without email address doesn't cause an error and no email is sent"""
+        # Create voter without email
+        voter_no_email = models.Voter.objects.create(
+            uuid=str(uuid.uuid4()),
+            election=self.election,
+            voter_name='No Email Voter',
+            voter_login_id='noemailvoter'
+        )
+        voter_no_email.generate_password()
+        voter_no_email.save()
+
+        self.client.get(self.get_resend_url())
+        csrf_token = self.client.session.get('csrf_token', '')
+
+        num_messages_before = len(mail.outbox)
+
+        response = self.client.post(self.get_resend_url(), {
+            'csrf_token': csrf_token,
+            'voter_id': 'noemailvoter'
+        })
+        # Should still show success (doesn't reveal that email is missing)
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'email with your voting credentials has been sent')
+
+        # But no email should have been sent since voter has no email
+        self.assertEqual(len(mail.outbox), num_messages_before)
+

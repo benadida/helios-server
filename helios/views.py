@@ -730,8 +730,68 @@ def password_voter_login(request, election):
         })
 
     return HttpResponseRedirect(settings.SECURE_URL_HOST + redirect_url)
-    
+
   return HttpResponseRedirect(settings.SECURE_URL_HOST + return_url)
+
+@election_view()
+def password_voter_resend(request, election):
+  """
+  Resend the password to a voter who has forgotten it.
+  This page opens in a new window so the voter doesn't lose their ballot.
+  """
+  # Only allow this for elections that use password voters and allow emails
+  if not VOTERS_EMAIL:
+    return render_template(request, 'password_voter_resend', {
+      'election': election,
+      'error': 'Email sending is not enabled on this server.'
+    })
+
+  can_send, reason = election.can_send_voter_emails()
+  if not can_send:
+    return render_template(request, 'password_voter_resend', {
+      'election': election,
+      'error': reason
+    })
+
+  if request.method == "GET":
+    resend_form = forms.VoterPasswordResendForm()
+    return render_template(request, 'password_voter_resend', {
+      'election': election,
+      'resend_form': resend_form
+    })
+
+  # POST - process the form
+  check_csrf(request)
+  resend_form = forms.VoterPasswordResendForm(request.POST)
+
+  if not resend_form.is_valid():
+    return render_template(request, 'password_voter_resend', {
+      'election': election,
+      'resend_form': resend_form,
+      'error': 'Please enter a valid voter ID.'
+    })
+
+  voter_id = resend_form.cleaned_data['voter_id'].strip()
+
+  # Look up the voter by voter_login_id
+  voter = Voter.get_by_election_and_voter_id(election, voter_id)
+
+  # Always show success message to prevent enumeration attacks
+  # but only actually send if voter exists and is a password voter
+  if voter and voter.voter_type == 'password' and voter.voter_email:
+    # Queue the email
+    election_vote_url = get_election_govote_url(election)
+    tasks.single_voter_email.delay(
+      voter_uuid=voter.uuid,
+      subject_template='email/password_resend_subject.txt',
+      body_template='email/password_resend_body.txt',
+      extra_vars={'election_vote_url': election_vote_url},
+    )
+
+  return render_template(request, 'password_voter_resend', {
+    'election': election,
+    'sent': True
+  })
 
 @election_view()
 def one_election_cast_confirm(request, election):
