@@ -649,16 +649,18 @@ class ElectionBlackboxTests(WebTest):
         """
         check_user_logged_in looks for the "you're already logged" message
         """
-        # vote by preparing a ballot via the server-side encryption
-        response = self.app.post("/helios/elections/%s/encrypt-ballot" % election_id,
-                   params={'answers_json': utils.to_json([[1]])})
-        self.assertContains(response, "answers")
+        from helios.workflows import homomorphic
 
-        # parse it as an encrypted vote with randomness, and make sure randomness is there
-        the_ballot = utils.from_json(response.testbody)
+        # get the election and generate an encrypted vote
+        election = models.Election.objects.get(uuid=election_id)
+        answers = [[1]]
+        ev = homomorphic.EncryptedVote.fromElectionAndAnswers(election, answers)
+        the_ballot = ev.ld_object.includeRandomness().toJSONDict()
+
+        # verify randomness is present
         assert 'randomness' in the_ballot['answers'][0], "no randomness"
         assert len(the_ballot['answers'][0]['randomness']) == 2, "not enough randomness"
-        
+
         # parse it as an encrypted vote, and re-serialize it
         ballot = datatypes.LDObject.fromDict(the_ballot, type_hint='legacy/EncryptedVote')
         encrypted_vote = ballot.serialize()
