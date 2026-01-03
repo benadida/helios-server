@@ -77,7 +77,7 @@ def get_saml_info(ticket):
        </samlp:Request>
      </soap-env:Body> 
   </soap-env:Envelope>
-""" % (uuid.uuid1(), datetime.datetime.utcnow().isoformat(), ticket)
+""" % (uuid.uuid4(), datetime.datetime.utcnow().isoformat(), ticket)
 
   url = CAS_SAML_VALIDATE_URL % urllib.parse.quote(_get_service_url())
 
