@@ -782,10 +782,10 @@ def password_voter_resend(request, election):
     # Queue the email
     election_vote_url = get_election_govote_url(election)
     tasks.single_voter_email.delay(
-      voter.uuid,
-      'email/password_resend_subject.txt',
-      'email/password_resend_body.txt',
-      {'election_vote_url': election_vote_url}
+      voter_uuid=voter.uuid,
+      subject_template='email/password_resend_subject.txt',
+      body_template='email/password_resend_body.txt',
+      extra_vars={'election_vote_url': election_vote_url},
     )
 
   return render_template(request, 'password_voter_resend', {
