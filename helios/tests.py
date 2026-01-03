@@ -1822,3 +1822,155 @@ class VoterEmailCutoffViewTests(WebTest):
         # Should have disabled span instead of link
         self.assertContains(response, 'opacity: 0.5')
         self.assertContains(response, 'cursor: not-allowed')
+
+
+class DateTimeLocalWidgetTests(TestCase):
+    """Unit tests for DateTimeLocalWidget"""
+
+    def setUp(self):
+        from helios.widgets import DateTimeLocalWidget
+        self.widget = DateTimeLocalWidget()
+
+    def test_widget_initialization(self):
+        """Test that widget initializes with correct default attributes"""
+        self.assertEqual(self.widget.attrs['type'], 'datetime-local')
+        self.assertEqual(self.widget.attrs['class'], 'helios-datetime-input')
+        self.assertEqual(self.widget.attrs['placeholder'], 'YYYY-MM-DDTHH:MM')
+
+    def test_widget_custom_attrs(self):
+        """Test that custom attributes are merged with defaults"""
+        from helios.widgets import DateTimeLocalWidget
+        widget = DateTimeLocalWidget(attrs={'id': 'custom-id', 'class': 'custom-class'})
+        self.assertEqual(widget.attrs['id'], 'custom-id')
+        self.assertEqual(widget.attrs['class'], 'custom-class')
+        self.assertEqual(widget.attrs['type'], 'datetime-local')
+
+    def test_render_with_none_value(self):
+        """Test rendering with None value"""
+        html = self.widget.render('test_field', None)
+        self.assertIn('type="datetime-local"', html)
+        self.assertIn('name="test_field"', html)
+        self.assertIn('class="helios-datetime-input"', html)
+        self.assertIn('placeholder="YYYY-MM-DDTHH:MM"', html)
+        self.assertNotIn('value=', html)
+
+    def test_render_with_empty_string(self):
+        """Test rendering with empty string value"""
+        html = self.widget.render('test_field', '')
+        self.assertIn('type="datetime-local"', html)
+        self.assertIn('name="test_field"', html)
+        self.assertNotIn('value=', html)
+
+    def test_render_with_datetime_value(self):
+        """Test rendering with a datetime object"""
+        test_datetime = datetime.datetime(2026, 1, 15, 14, 30)
+        html = self.widget.render('test_field', test_datetime)
+        self.assertIn('type="datetime-local"', html)
+        self.assertIn('name="test_field"', html)
+        self.assertIn('value="2026-01-15T14:30"', html)
+
+    def test_render_datetime_formatting(self):
+        """Test that datetime is formatted correctly for datetime-local input"""
+        test_datetime = datetime.datetime(2026, 12, 31, 23, 59)
+        html = self.widget.render('voting_starts_at', test_datetime)
+        # Should format as YYYY-MM-DDTHH:MM
+        self.assertIn('value="2026-12-31T23:59"', html)
+        # Should not have seconds
+        self.assertNotIn('23:59:00', html)
+
+    def test_render_output_is_safe(self):
+        """Test that render output is marked as safe HTML"""
+        from django.utils.safestring import SafeString
+        html = self.widget.render('test_field', None)
+        self.assertIsInstance(html, SafeString)
+
+    def test_value_from_datadict_with_value(self):
+        """Test extracting value from form data"""
+        data = {'voting_starts_at': '2026-01-15T14:30'}
+        value = self.widget.value_from_datadict(data, {}, 'voting_starts_at')
+        self.assertEqual(value, '2026-01-15T14:30')
+
+    def test_value_from_datadict_with_empty(self):
+        """Test extracting empty value from form data"""
+        data = {'voting_starts_at': ''}
+        value = self.widget.value_from_datadict(data, {}, 'voting_starts_at')
+        self.assertEqual(value, '')
+
+    def test_value_from_datadict_with_missing_field(self):
+        """Test extracting value when field is missing from data"""
+        data = {}
+        value = self.widget.value_from_datadict(data, {}, 'voting_starts_at')
+        self.assertIsNone(value)
+
+    def test_media_class_includes_css(self):
+        """Test that Media class includes the CSS file"""
+        self.assertIn('helios/datetime-local.css', self.widget.media._css['all'])
+
+    def test_render_includes_all_required_attributes(self):
+        """Test that rendered HTML includes all required attributes"""
+        test_datetime = datetime.datetime(2026, 6, 15, 10, 0)
+        html = self.widget.render('election_date', test_datetime)
+
+        # Check all required attributes are present
+        self.assertIn('type="datetime-local"', html)
+        self.assertIn('name="election_date"', html)
+        self.assertIn('class="helios-datetime-input"', html)
+        self.assertIn('placeholder="YYYY-MM-DDTHH:MM"', html)
+        self.assertIn('value="2026-06-15T10:00"', html)
+
+    def test_render_handles_midnight(self):
+        """Test rendering datetime at midnight"""
+        test_datetime = datetime.datetime(2026, 1, 1, 0, 0)
+        html = self.widget.render('test_field', test_datetime)
+        self.assertIn('value="2026-01-01T00:00"', html)
+
+    def test_render_handles_single_digit_hours_and_minutes(self):
+        """Test that single-digit hours and minutes are zero-padded"""
+        test_datetime = datetime.datetime(2026, 1, 5, 9, 5)
+        html = self.widget.render('test_field', test_datetime)
+        # Should be zero-padded
+        self.assertIn('value="2026-01-05T09:05"', html)
+
+
+class DateTimeLocalFieldTests(TestCase):
+    """Unit tests for DateTimeLocalField"""
+
+    def setUp(self):
+        from helios.fields import DateTimeLocalField
+        self.field = DateTimeLocalField(required=False)
+
+    def test_field_uses_correct_widget(self):
+        """Test that field uses DateTimeLocalWidget"""
+        from helios.widgets import DateTimeLocalWidget
+        self.assertIsInstance(self.field.widget, DateTimeLocalWidget)
+
+    def test_field_accepts_datetime_local_format(self):
+        """Test that field accepts datetime-local format input"""
+        value = self.field.clean('2026-01-15T14:30')
+        self.assertEqual(value.year, 2026)
+        self.assertEqual(value.month, 1)
+        self.assertEqual(value.day, 15)
+        self.assertEqual(value.hour, 14)
+        self.assertEqual(value.minute, 30)
+
+    def test_field_accepts_datetime_local_format_with_seconds(self):
+        """Test that field accepts datetime-local format with seconds"""
+        value = self.field.clean('2026-01-15T14:30:45')
+        self.assertEqual(value.year, 2026)
+        self.assertEqual(value.second, 45)
+
+    def test_field_accepts_empty_value_when_not_required(self):
+        """Test that field accepts empty value when not required"""
+        value = self.field.clean('')
+        self.assertIsNone(value)
+
+    def test_field_rejects_invalid_format(self):
+        """Test that field rejects completely invalid datetime format"""
+        from django.core.exceptions import ValidationError
+        with self.assertRaises(ValidationError):
+            self.field.clean('not-a-date')
+
+    def test_field_has_correct_input_formats(self):
+        """Test that field has correct input formats defined"""
+        self.assertIn('%Y-%m-%dT%H:%M', self.field.input_formats)
+        self.assertIn('%Y-%m-%dT%H:%M:%S', self.field.input_formats)

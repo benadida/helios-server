@@ -227,14 +227,11 @@ class DateTimeLocalWidget(Widget):
         }
 
     def __init__(self, attrs=None):
-        default_attrs = {
-            'type': 'datetime-local',
-            'class': 'helios-datetime-input',
-            'placeholder': 'YYYY-MM-DDTHH:MM'
-        }
-        if attrs:
-            default_attrs.update(attrs)
-        super(DateTimeLocalWidget, self).__init__(default_attrs)
+        super(DateTimeLocalWidget, self).__init__(attrs)
+        # Set default attributes
+        self.attrs['type'] = 'datetime-local'
+        self.attrs.setdefault('class', 'helios-datetime-input')
+        self.attrs.setdefault('placeholder', 'YYYY-MM-DDTHH:MM')
 
     def render(self, name, value, attrs=None, renderer=None):
         if value is None:
@@ -244,16 +241,12 @@ class DateTimeLocalWidget(Widget):
             # Format: YYYY-MM-DDTHH:MM
             value = value.strftime('%Y-%m-%dT%H:%M')
 
-        final_attrs = self.build_attrs(attrs, {'name': name, 'type': 'datetime-local'})
+        # Merge self.attrs with provided attrs and extra attributes
+        final_attrs = {**self.attrs, **(attrs or {}), 'name': name, 'type': 'datetime-local'}
         if value != '':
             final_attrs['value'] = value
 
         return mark_safe('<input%s />' % flatatt(final_attrs))
 
     def value_from_datadict(self, data, files, name):
-        value = data.get(name)
-        if value:
-            # Convert from datetime-local format (YYYY-MM-DDTHH:MM) to Python datetime
-            # The form field will handle the actual conversion
-            return value
-        return None
+        return data.get(name, None)
