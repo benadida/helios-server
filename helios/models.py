@@ -829,10 +829,14 @@ class VoterFile(models.Model):
           new_voter.generate_password()
           election=self.election
           if election.use_voter_aliases:
-              utils.lock_row(Election, election.id)
-              alias_num = election.last_alias_num + 1
-              new_voter.alias = "V%s" % alias_num
-          new_voter.save()
+              # Use transaction to ensure alias assignment is atomic
+              with transaction.atomic():
+                  utils.lock_row(Election, election.id)
+                  alias_num = election.last_alias_num + 1
+                  new_voter.alias = "V%s" % alias_num
+                  new_voter.save()
+          else:
+              new_voter.save()
           successful_voters += 1
       else:
           user, _ = User.objects.get_or_create(user_type=voter['voter_type'], user_id=voter['voter_id'], defaults = {'name': voter['voter_id'], 'info': {}, 'token': None})

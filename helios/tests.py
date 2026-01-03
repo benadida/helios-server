@@ -836,6 +836,76 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.get("/helios/elections/%s/voters/list" % election_id)
         self.assertContains(response, "Only the voters listed here")
 
+    def test_multiple_voter_uploads_with_aliases(self):
+        """Test that uploading multiple voter files with aliases generates unique sequential aliases"""
+        self.setup_login(from_scratch=True)
+
+        # Create election with voter aliases enabled
+        response = self.client.post("/helios/elections/new", {
+            "short_name": "test-aliases",
+            "name": "Test Voter Aliases",
+            "description": "Testing multiple voter uploads with aliases",
+            "election_type": "referendum",
+            "use_voter_aliases": "1",
+            "use_advanced_audit_features": "1",
+            "private_p": "False",
+            "csrf_token": self.client.session["csrf_token"]
+        })
+        self.assertRedirects(response)
+
+        election_id = re.search('/elections/([^/]+)/', str(response['location'])).group(1)
+        election = models.Election.objects.get(uuid=election_id)
+        self.assertTrue(election.use_voter_aliases)
+
+        # Upload first voter file (4 voters)
+        with open("helios/fixtures/voter-file.csv") as f:
+            response = self.client.post(
+                "/helios/elections/%s/voters/upload" % election_id,
+                {"voters_file": f}
+            )
+        self.assertContains(response, "first few rows")
+
+        # Confirm first upload
+        response = self.client.post(
+            "/helios/elections/%s/voters/upload" % election_id,
+            {"confirm_p": "1"}
+        )
+        self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
+
+        # Verify first batch - should have 4 voters with aliases V1-V4
+        election.refresh_from_db()
+        self.assertEqual(election.voter_set.count(), 4)
+        first_aliases = sorted([v.alias for v in election.voter_set.all()])
+        self.assertEqual(first_aliases, ["V1", "V2", "V3", "V4"])
+
+        # Upload second voter file (3 more voters)
+        with open("helios/fixtures/voter-file-2.csv") as f:
+            response = self.client.post(
+                "/helios/elections/%s/voters/upload" % election_id,
+                {"voters_file": f}
+            )
+        self.assertContains(response, "first few rows")
+
+        # Confirm second upload
+        response = self.client.post(
+            "/helios/elections/%s/voters/upload" % election_id,
+            {"confirm_p": "1"}
+        )
+        self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
+
+        # Verify all 7 voters have unique sequential aliases V1-V7
+        election.refresh_from_db()
+        self.assertEqual(election.voter_set.count(), 7)
+        all_aliases = sorted([v.alias for v in election.voter_set.all()])
+        self.assertEqual(all_aliases, ["V1", "V2", "V3", "V4", "V5", "V6", "V7"])
+
+        # Verify the second batch got V5-V7 (continuing from first batch)
+        for voter_id in ["voter8", "voter9", "voter10"]:
+            voter = election.voter_set.get(voter_login_id=voter_id)
+            alias_num = int(voter.alias[1:])
+            self.assertGreaterEqual(alias_num, 5,
+                f"Voter {voter_id} should have alias >= V5, got {voter.alias}")
+
     def test_do_complete_election_with_trustees(self):
         """
         FIXME: do the this test
