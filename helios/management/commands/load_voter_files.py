@@ -66,7 +66,7 @@ def process_csv_file(election, f):
 
         # create the voter
         if not voter:
-            voter_uuid = str(uuid.uuid1())
+            voter_uuid = str(uuid.uuid4())
             voter = Voter(uuid=voter_uuid, voter_type='password', voter_id=voter_id, name=name, election=election)
             voter.save()
 

@@ -204,7 +204,7 @@ def election_new(request):
       
       # is the short name valid
       if utils.urlencode(election_params['short_name']) == election_params['short_name']:
-        election_params['uuid'] = str(uuid.uuid1())
+        election_params['uuid'] = str(uuid.uuid4())
         election_params['cast_url'] = settings.SECURE_URL_HOST + reverse(one_election_cast, args=[election_params['uuid']])
       
         # registration starts closed
@@ -404,7 +404,7 @@ def new_trustee(request, election):
     name = request.POST['name']
     email = request.POST['email']
     
-    trustee = Trustee(uuid = str(uuid.uuid1()), election = election, name=name, email=email)
+    trustee = Trustee(uuid = str(uuid.uuid4()), election = election, name=name, email=email)
     trustee.save()
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_TRUSTEES_VIEW, args=[election.uuid]))
 
