@@ -9,7 +9,7 @@ Helios is an end-to-end verifiable voting system that provides secure, transpare
 ## Technology Stack
 
 - **Python**: 3.12
-- **Framework**: Django 5.0
+- **Framework**: Django 5.2
 - **Database**: PostgreSQL 9.5+
 - **Task Queue**: Celery with RabbitMQ
 - **Crypto**: pycryptodome
