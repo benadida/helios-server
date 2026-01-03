@@ -244,7 +244,7 @@ class DateTimeLocalWidget(Widget):
             # Format: YYYY-MM-DDTHH:MM
             value = value.strftime('%Y-%m-%dT%H:%M')
 
-        final_attrs = self.build_attrs(attrs, extra_attrs={'name': name, 'type': 'datetime-local'})
+        final_attrs = self.build_attrs(attrs, {'name': name, 'type': 'datetime-local'})
         if value != '':
             final_attrs['value'] = value
 
