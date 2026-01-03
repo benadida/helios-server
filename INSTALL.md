@@ -14,7 +14,7 @@
 
 ## Python Setup
 
-* Install Python 3.10+ including dev and venv packages
+* Install Python 3.12 including dev and venv packages
 
 ```
 sudo apt install python3 python3-dev python3-venv python3-pip
