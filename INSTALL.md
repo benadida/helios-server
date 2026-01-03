@@ -1,66 +1,75 @@
-* install PostgreSQL 9.5+
+# Helios Server Installation
 
-* install Rabbit MQ
-  This is needed for celery to work, which does background processing such as
-  the processing of uploaded list-of-voter CSV files.  
+## Prerequisites
 
-* make sure you have virtualenv installed:
-http://www.virtualenv.org/en/latest/
+* Install PostgreSQL 12+
 
-* download helios-server
+* Install RabbitMQ
+  This is needed for Celery to work, which does background processing such as
+  the processing of uploaded list-of-voter CSV files.
 
-* cd into the helios-server directory
+* Download helios-server
 
-* install Python3.6 including dev, pip, and venv
+* `cd` into the helios-server directory
 
-```
-sudo apt install python3.6 python3.6-venv python3.6-pip python3.6-venv
-```
+## Python Setup
 
-* create a virtualenv
+* Install Python 3.10+ including dev and venv packages
 
 ```
-python3.6 -m venv $(pwd)/venv
+sudo apt install python3 python3-dev python3-venv python3-pip
 ```
 
-* you'll also need Postgres dev libraries. For example on Ubuntu:
+* Create a virtualenv
 
 ```
-sudo apt install libpq-dev 
+python3 -m venv venv
 ```
 
-* activate virtual environment
+* You'll also need Postgres dev libraries. For example on Ubuntu:
+
+```
+sudo apt install libpq-dev
+```
+
+* Activate virtual environment
 
 ```
 source venv/bin/activate
-````
+```
 
-* install requirements
+* Install requirements
 
 ```
 pip install -r requirements.txt
 ```
 
-* reset database
+## Database Setup
+
+* Reset database
 
 ```
 ./reset.sh
 ```
 
-* start server
+## Running the Server
+
+* Start server
 
 ```
 python manage.py runserver
 ```
 
-* to get Google Auth working:
+## Google Auth Configuration
 
-** go to https://console.developers.google.com
+To get Google Auth working:
 
-** create an application
+* Go to https://console.developers.google.com
 
-** set up oauth2 credentials as a web application, with your origin, e.g. https://myhelios.example.com, and your auth callback, which, based on our example, is https://myhelios.example.com/auth/after/
+* Create an application
 
-** still in the developer console, enable the Google+ API and Google People API.
+* Set up OAuth2 credentials as a web application, with your origin, e.g. `https://myhelios.example.com`, and your auth callback, which based on our example is `https://myhelios.example.com/auth/after/`
 
-** set the GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET configuration variables accordingly.
+* In the developer console, enable the Google People API
+
+* Set the `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` configuration variables accordingly
