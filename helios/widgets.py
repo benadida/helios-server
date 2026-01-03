@@ -221,8 +221,17 @@ class DateTimeLocalWidget(Widget):
     """
     template_name = ''
 
+    class Media:
+        css = {
+            'all': ('helios/datetime-local.css',)
+        }
+
     def __init__(self, attrs=None):
-        default_attrs = {'type': 'datetime-local', 'class': 'datetime-local-input'}
+        default_attrs = {
+            'type': 'datetime-local',
+            'class': 'helios-datetime-input',
+            'placeholder': 'YYYY-MM-DDTHH:MM'
+        }
         if attrs:
             default_attrs.update(attrs)
         super(DateTimeLocalWidget, self).__init__(default_attrs)
@@ -235,47 +244,11 @@ class DateTimeLocalWidget(Widget):
             # Format: YYYY-MM-DDTHH:MM
             value = value.strftime('%Y-%m-%dT%H:%M')
 
-        final_attrs = self.build_attrs(attrs, {'name': name, 'type': 'datetime-local'})
+        final_attrs = self.build_attrs(attrs, extra_attrs={'name': name, 'type': 'datetime-local'})
         if value != '':
             final_attrs['value'] = value
 
-        # Add some inline styling and JavaScript for better UX
-        html = '<input%s />' % flatatt(final_attrs)
-
-        # Add a script to enhance the datetime picker with helpful features
-        script = '''
-        <script type="text/javascript">
-        (function() {
-            var input = document.querySelector('input[name="%s"]');
-            if (input) {
-                // Add a helpful placeholder
-                input.setAttribute('placeholder', 'YYYY-MM-DD HH:MM');
-
-                // Style the input to make it more prominent
-                input.style.padding = '8px';
-                input.style.fontSize = '14px';
-                input.style.border = '1px solid #ccc';
-                input.style.borderRadius = '4px';
-                input.style.width = '250px';
-                input.style.boxSizing = 'border-box';
-
-                // Add focus styling
-                input.addEventListener('focus', function() {
-                    this.style.borderColor = '#4CAF50';
-                    this.style.outline = 'none';
-                    this.style.boxShadow = '0 0 5px rgba(76, 175, 80, 0.3)';
-                });
-
-                input.addEventListener('blur', function() {
-                    this.style.borderColor = '#ccc';
-                    this.style.boxShadow = 'none';
-                });
-            }
-        })();
-        </script>
-        ''' % name
-
-        return mark_safe(html + script)
+        return mark_safe('<input%s />' % flatatt(final_attrs))
 
     def value_from_datadict(self, data, files, name):
         value = data.get(name)
