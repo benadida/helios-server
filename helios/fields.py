@@ -2,7 +2,7 @@ import datetime
 
 from django.forms import fields
 
-from .widgets import SplitSelectDateTimeWidget
+from .widgets import SplitSelectDateTimeWidget, DateTimeLocalWidget
 
 
 class SplitDateTimeField(fields.MultiValueField):
@@ -27,4 +27,17 @@ class SplitDateTimeField(fields.MultiValueField):
                 return None
             return datetime.datetime.combine(*data_list)
         return None
+
+
+class DateTimeLocalField(fields.DateTimeField):
+    """
+    A field for HTML5 datetime-local input widget.
+    Handles datetime input in the format: YYYY-MM-DDTHH:MM
+    """
+    widget = DateTimeLocalWidget
+    input_formats = ['%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S']
+
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('input_formats', self.input_formats)
+        super(DateTimeLocalField, self).__init__(*args, **kwargs)
 

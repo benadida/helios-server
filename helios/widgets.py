@@ -11,7 +11,7 @@ from time import strftime
 import re
 from django.utils.safestring import mark_safe
 
-__all__ = ('SelectTimeWidget', 'SplitSelectDateTimeWidget')
+__all__ = ('SelectTimeWidget', 'SplitSelectDateTimeWidget', 'DateTimeLocalWidget')
 
 # Attempt to match many time formats:
 # Example: "12:34:56 P.M."  matches:
@@ -211,3 +211,75 @@ class SplitSelectDateTimeWidget(MultiWidget):
         value = self.compress(value)
         rendered_widgets = list(widget.render(name, value, attrs=attrs, renderer=renderer) for widget in self.widgets)
         return mark_safe('<br/>'.join(rendered_widgets))
+
+
+class DateTimeLocalWidget(Widget):
+    """
+    A modern datetime picker widget using HTML5 datetime-local input.
+    Provides a native, user-friendly datetime picker interface.
+    """
+    template_name = ''
+
+    def __init__(self, attrs=None):
+        default_attrs = {'type': 'datetime-local', 'class': 'datetime-local-input'}
+        if attrs:
+            default_attrs.update(attrs)
+        super(DateTimeLocalWidget, self).__init__(default_attrs)
+
+    def render(self, name, value, attrs=None, renderer=None):
+        if value is None:
+            value = ''
+        elif hasattr(value, 'strftime'):
+            # Convert datetime to the format expected by datetime-local input
+            # Format: YYYY-MM-DDTHH:MM
+            value = value.strftime('%Y-%m-%dT%H:%M')
+
+        final_attrs = self.build_attrs(attrs, {'name': name, 'type': 'datetime-local'})
+        if value != '':
+            final_attrs['value'] = value
+
+        # Add some inline styling and JavaScript for better UX
+        html = '<input%s />' % forms.widgets.flatatt(final_attrs)
+
+        # Add a script to enhance the datetime picker with helpful features
+        script = '''
+        <script type="text/javascript">
+        (function() {
+            var input = document.querySelector('input[name="%s"]');
+            if (input) {
+                // Add a helpful placeholder
+                input.setAttribute('placeholder', 'YYYY-MM-DD HH:MM');
+
+                // Style the input to make it more prominent
+                input.style.padding = '8px';
+                input.style.fontSize = '14px';
+                input.style.border = '1px solid #ccc';
+                input.style.borderRadius = '4px';
+                input.style.width = '250px';
+                input.style.boxSizing = 'border-box';
+
+                // Add focus styling
+                input.addEventListener('focus', function() {
+                    this.style.borderColor = '#4CAF50';
+                    this.style.outline = 'none';
+                    this.style.boxShadow = '0 0 5px rgba(76, 175, 80, 0.3)';
+                });
+
+                input.addEventListener('blur', function() {
+                    this.style.borderColor = '#ccc';
+                    this.style.boxShadow = 'none';
+                });
+            }
+        })();
+        </script>
+        ''' % name
+
+        return mark_safe(html + script)
+
+    def value_from_datadict(self, data, files, name):
+        value = data.get(name)
+        if value:
+            # Convert from datetime-local format (YYYY-MM-DDTHH:MM) to Python datetime
+            # The form field will handle the actual conversion
+            return value
+        return None
