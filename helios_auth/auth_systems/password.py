@@ -26,7 +26,7 @@ def create_user(username, password, name = None):
   except User.DoesNotExist:
     pass
   else:
-    raise Exception('user exists')
+    raise ValueError(f"user '{username}' already exists")
   
   info = {'password' : password, 'name': name}
   user = User.update_or_create(user_type='password', user_id=username, info = info)
