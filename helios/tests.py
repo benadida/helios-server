@@ -2302,7 +2302,8 @@ class PasswordResendTests(WebTest):
         # Check that an email was queued
         self.assertEqual(len(mail.outbox), num_messages_before + 1)
         email_message = mail.outbox[-1]
-        self.assertIn('voter@example.com', email_message.to)
+        # Email 'to' field may include name like '"Test Voter" <voter@example.com>'
+        self.assertTrue(any('voter@example.com' in recipient for recipient in email_message.to))
         self.assertIn('credentials', email_message.subject.lower())
         self.assertIn(self.voter.voter_login_id, email_message.body)
         self.assertIn(self.voter.voter_password, email_message.body)
