@@ -32,7 +32,6 @@ ELECTION_BBOARD="election@bboard"
 ELECTION_AUDITED_BALLOTS="election@audited-ballots"
 
 ELECTION_GET_RANDOMNESS="election@get-randomness"
-ELECTION_ENCRYPT_BALLOT="election@encrypt-ballot"
 ELECTION_QUESTIONS="election@questions"
 ELECTION_SET_REG="election@set-reg"
 ELECTION_SET_FEATURED="election@set-featured"

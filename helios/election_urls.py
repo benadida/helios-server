@@ -64,9 +64,6 @@ urlpatterns = [
     # get randomness
     path('/get-randomness', views.get_randomness, name=names.ELECTION_GET_RANDOMNESS),
 
-    # server-side encryption
-    path('/encrypt-ballot', views.encrypt_ballot, name=names.ELECTION_ENCRYPT_BALLOT),
-
     # construct election
     path('/questions', views.one_election_questions, name=names.ELECTION_QUESTIONS),
     path('/set_reg', views.one_election_set_reg, name=names.ELECTION_SET_REG),

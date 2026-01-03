@@ -636,17 +636,6 @@ def get_randomness(request, election):
   }
 
 @election_view(frozen=True)
-@return_json
-def encrypt_ballot(request, election):
-  """
-  perform the ballot encryption given answers_json, a JSON'ified list of list of answers
-  (list of list because each question could have a list of answers if more than one.)
-  """
-  answers = utils.from_json(request.POST['answers_json'])
-  ev = homomorphic.EncryptedVote.fromElectionAndAnswers(election, answers)
-  return ev.ld_object.includeRandomness().toJSONDict()
-    
-@election_view(frozen=True)
 def post_audited_ballot(request, election):
   if request.method == "POST":
     raw_vote = request.POST['audited_ballot']
