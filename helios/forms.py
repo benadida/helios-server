@@ -5,9 +5,8 @@ Forms for Helios
 from django import forms
 from django.conf import settings
 
-from .fields import SplitDateTimeField, DateTimeLocalField
+from .fields import DateTimeLocalField
 from .models import Election
-from .widgets import SplitSelectDateTimeWidget, DateTimeLocalWidget
 
 
 class ElectionForm(forms.Form):
@@ -26,13 +25,13 @@ class ElectionForm(forms.Form):
   
   # times
   voting_starts_at = DateTimeLocalField(help_text = 'UTC date and time when voting begins',
-                                   widget=DateTimeLocalWidget, required=False)
+                                   required=False)
   voting_ends_at = DateTimeLocalField(help_text = 'UTC date and time when voting ends',
-                                   widget=DateTimeLocalWidget, required=False)
+                                   required=False)
 
 class ElectionTimeExtensionForm(forms.Form):
   voting_extended_until = DateTimeLocalField(help_text = 'UTC date and time voting extended to',
-                                   widget=DateTimeLocalWidget, required=False)
+                                   required=False)
   
 class EmailVotersForm(forms.Form):
   subject = forms.CharField(max_length=80)

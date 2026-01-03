@@ -1,0 +1,21 @@
+/* Helios DateTime Picker Styles */
+
+.helios-datetime-input {
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 250px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.helios-datetime-input:focus {
+    border-color: #4CAF50;
+    outline: none;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+.helios-datetime-input:hover {
+    border-color: #999;
+}
