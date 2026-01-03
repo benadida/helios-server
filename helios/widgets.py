@@ -6,6 +6,7 @@ from django import forms
 from django.db import models
 from django.template.loader import render_to_string
 from django.forms.widgets import Select, MultiWidget, DateInput, TextInput, Widget, SelectDateWidget
+from django.forms.utils import flatatt
 from time import strftime
 
 import re
@@ -239,7 +240,7 @@ class DateTimeLocalWidget(Widget):
             final_attrs['value'] = value
 
         # Add some inline styling and JavaScript for better UX
-        html = '<input%s />' % forms.widgets.flatatt(final_attrs)
+        html = '<input%s />' % flatatt(final_attrs)
 
         # Add a script to enhance the datetime picker with helpful features
         script = '''
