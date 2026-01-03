@@ -47,3 +47,6 @@ class VoterPasswordForm(forms.Form):
   voter_id = forms.CharField(max_length=50, label="Voter ID")
   password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
 
+class VoterPasswordResendForm(forms.Form):
+  voter_id = forms.CharField(max_length=50, label="Voter ID", help_text="Enter the voter ID you were assigned for this election")
+
