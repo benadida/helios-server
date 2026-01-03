@@ -405,7 +405,7 @@ def one_question_winner(question, result, num_cast_votes):
 
     # if max = 1, then depends on absolute or relative
     if question['result_type'] == 'absolute':
-        if counts[0][1] >= (num_cast_votes / 2 + 1):
+        if counts[0][1] >= (num_cast_votes // 2 + 1):
             return [counts[0][0]]
         else:
             return []

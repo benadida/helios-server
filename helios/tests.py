@@ -20,6 +20,7 @@ import helios.models as models
 import helios.utils as utils
 import helios.views as views
 from helios import tasks
+from helios.crypto import electionalgs
 from helios_auth import models as auth_models
 
 
@@ -234,6 +235,197 @@ class ElectionModelTests(TestCase):
 
         self.assertEqual(voter.user, self.user)
 
+
+class AbsoluteWinnerCalculationTests(TestCase):
+    """
+    Tests for the one_question_winner method with absolute result type.
+
+    These tests verify that integer division is used correctly when calculating
+    the majority threshold. With 5 votes, a candidate needs 3 votes to win
+    (5//2 + 1 = 3). With 6 votes, a candidate needs 4 votes (6//2 + 1 = 4).
+
+    Regression tests for GitHub issue #417.
+    """
+
+    def make_absolute_question(self):
+        """Create a question with absolute result type"""
+        return {
+            "answer_urls": [None, None],
+            "answers": ["Yes", "No"],
+            "choice_type": "approval",
+            "max": 1,
+            "min": 0,
+            "question": "Test?",
+            "result_type": "absolute",
+            "short_name": "Test?",
+            "tally_type": "homomorphic"
+        }
+
+    def test_absolute_winner_with_5_votes_needs_3_to_win(self):
+        """
+        With 5 total votes, a candidate needs 3 votes to win (5//2 + 1 = 3).
+
+        This tests the integer division fix: with float division (5/2 + 1 = 3.5),
+        a candidate with 3 votes would incorrectly not win.
+        """
+        question = self.make_absolute_question()
+        # Result: Yes got 3 votes, No got 2 votes
+        result = [3, 2]
+        num_cast_votes = 5
+
+        winners = models.Election.one_question_winner(question, result, num_cast_votes)
+
+        # Candidate 0 (Yes) should win with 3 votes (absolute majority of 5)
+        self.assertEqual(winners, [0])
+
+    def test_absolute_winner_with_5_votes_2_not_enough(self):
+        """
+        With 5 total votes, 2 votes is not enough to win (needs 3).
+        """
+        question = self.make_absolute_question()
+        # Result: Yes got 2 votes, No got 3 votes (but No needs 3 to win too)
+        result = [2, 3]
+        num_cast_votes = 5
+
+        winners = models.Election.one_question_winner(question, result, num_cast_votes)
+
+        # Candidate 1 (No) wins with 3 votes
+        self.assertEqual(winners, [1])
+
+    def test_absolute_no_winner_with_5_votes_when_tie(self):
+        """
+        With 5 votes split without anyone reaching majority, no winner.
+        """
+        question = self.make_absolute_question()
+        # Result: Yes got 2 votes, No got 2 votes, 1 abstention
+        result = [2, 2]
+        num_cast_votes = 5
+
+        winners = models.Election.one_question_winner(question, result, num_cast_votes)
+
+        # No one has 3 votes, so no winner
+        self.assertEqual(winners, [])
+
+    def test_absolute_winner_with_6_votes_needs_4_to_win(self):
+        """
+        With 6 total votes, a candidate needs 4 votes to win (6//2 + 1 = 4).
+        """
+        question = self.make_absolute_question()
+        # Result: Yes got 4 votes, No got 2 votes
+        result = [4, 2]
+        num_cast_votes = 6
+
+        winners = models.Election.one_question_winner(question, result, num_cast_votes)
+
+        # Candidate 0 (Yes) should win with 4 votes
+        self.assertEqual(winners, [0])
+
+    def test_absolute_no_winner_with_6_votes_only_3(self):
+        """
+        With 6 total votes, 3 votes is not enough to win (needs 4).
+        """
+        question = self.make_absolute_question()
+        # Result: Yes got 3 votes, No got 3 votes
+        result = [3, 3]
+        num_cast_votes = 6
+
+        winners = models.Election.one_question_winner(question, result, num_cast_votes)
+
+        # Neither candidate has 4 votes, so no winner
+        self.assertEqual(winners, [])
+
+    def test_absolute_winner_with_7_votes_needs_4_to_win(self):
+        """
+        With 7 total votes, a candidate needs 4 votes to win (7//2 + 1 = 4).
+        """
+        question = self.make_absolute_question()
+        # Result: Yes got 4 votes, No got 3 votes
+        result = [4, 3]
+        num_cast_votes = 7
+
+        winners = models.Election.one_question_winner(question, result, num_cast_votes)
+
+        # Candidate 0 (Yes) should win with 4 votes
+        self.assertEqual(winners, [0])
+
+    def test_relative_winner_does_not_require_majority(self):
+        """
+        With relative result type, highest vote count wins regardless of majority.
+        """
+        question = self.make_absolute_question()
+        question['result_type'] = 'relative'
+        # Result: Yes got 2 votes, No got 1 vote
+        result = [2, 1]
+        num_cast_votes = 5
+
+        winners = models.Election.one_question_winner(question, result, num_cast_votes)
+
+        # Candidate 0 (Yes) wins even without majority in relative mode
+        self.assertEqual(winners, [0])
+
+
+class ElectionAlgsWinnerCalculationTests(TestCase):
+    """
+    Tests for the one_question_winner function in helios.crypto.electionalgs.
+
+    This is a duplicate of the function in models.py and needs the same
+    integer division fix. These tests verify both implementations are correct.
+
+    Regression tests for GitHub issue #417.
+    """
+
+    def make_absolute_question(self):
+        """Create a question with absolute result type"""
+        return {
+            "answer_urls": [None, None],
+            "answers": ["Yes", "No"],
+            "choice_type": "approval",
+            "max": 1,
+            "min": 0,
+            "question": "Test?",
+            "result_type": "absolute",
+            "short_name": "Test?",
+            "tally_type": "homomorphic"
+        }
+
+    def test_electionalgs_absolute_winner_with_5_votes_needs_3_to_win(self):
+        """
+        With 5 total votes, a candidate needs 3 votes to win (5//2 + 1 = 3).
+        Tests the electionalgs.one_question_winner function.
+        """
+        question = self.make_absolute_question()
+        result = [3, 2]
+        num_cast_votes = 5
+
+        winners = electionalgs.one_question_winner(question, result, num_cast_votes)
+
+        self.assertEqual(winners, [0])
+
+    def test_electionalgs_absolute_winner_with_7_votes_needs_4_to_win(self):
+        """
+        With 7 total votes, a candidate needs 4 votes to win (7//2 + 1 = 4).
+        Tests the electionalgs.one_question_winner function.
+        """
+        question = self.make_absolute_question()
+        result = [4, 3]
+        num_cast_votes = 7
+
+        winners = electionalgs.one_question_winner(question, result, num_cast_votes)
+
+        self.assertEqual(winners, [0])
+
+    def test_electionalgs_absolute_no_winner_when_threshold_not_met(self):
+        """
+        With 5 votes, 2 votes is not enough to win.
+        Tests the electionalgs.one_question_winner function.
+        """
+        question = self.make_absolute_question()
+        result = [2, 2]
+        num_cast_votes = 5
+
+        winners = electionalgs.one_question_winner(question, result, num_cast_votes)
+
+        self.assertEqual(winners, [])
 
 
 class VoterModelTests(TestCase):
