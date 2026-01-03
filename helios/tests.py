@@ -2284,11 +2284,13 @@ class PasswordResendTests(WebTest):
         self.assertContains(response, 'Voter ID')
         self.assertContains(response, 'Resend')
 
-    def test_post_valid_voter_shows_success(self):
-        """Test that POST with valid voter ID shows success message"""
+    def test_post_valid_voter_shows_success_and_sends_email(self):
+        """Test that POST with valid voter ID shows success message and sends email"""
         # First get to set up session/csrf
         self.client.get(self.get_resend_url())
         csrf_token = self.client.session.get('csrf_token', '')
+
+        num_messages_before = len(mail.outbox)
 
         response = self.client.post(self.get_resend_url(), {
             'csrf_token': csrf_token,
@@ -2297,10 +2299,20 @@ class PasswordResendTests(WebTest):
         self.assertStatusCode(response, 200)
         self.assertContains(response, 'email with your voting credentials has been sent')
 
-    def test_post_invalid_voter_still_shows_success(self):
-        """Test that POST with invalid voter ID still shows success (prevents enumeration)"""
+        # Check that an email was queued
+        self.assertEqual(len(mail.outbox), num_messages_before + 1)
+        email_message = mail.outbox[-1]
+        self.assertIn('voter@example.com', email_message.to)
+        self.assertIn('credentials', email_message.subject.lower())
+        self.assertIn(self.voter.voter_login_id, email_message.body)
+        self.assertIn(self.voter.voter_password, email_message.body)
+
+    def test_post_invalid_voter_still_shows_success_but_no_email(self):
+        """Test that POST with invalid voter ID still shows success but sends no email"""
         self.client.get(self.get_resend_url())
         csrf_token = self.client.session.get('csrf_token', '')
+
+        num_messages_before = len(mail.outbox)
 
         response = self.client.post(self.get_resend_url(), {
             'csrf_token': csrf_token,
@@ -2309,6 +2321,9 @@ class PasswordResendTests(WebTest):
         self.assertStatusCode(response, 200)
         # Should still show success message to prevent enumeration attacks
         self.assertContains(response, 'email with your voting credentials has been sent')
+
+        # But no email should have been sent
+        self.assertEqual(len(mail.outbox), num_messages_before)
 
     def test_post_empty_voter_id_shows_error(self):
         """Test that POST with empty voter ID shows error"""
@@ -2341,8 +2356,8 @@ class PasswordResendTests(WebTest):
         self.assertIn('password-voter-resend', template_source)
         self.assertIn('target="_blank"', template_source)
 
-    def test_voter_without_email_does_not_cause_error(self):
-        """Test that voter without email address doesn't cause an error"""
+    def test_voter_without_email_does_not_send_email(self):
+        """Test that voter without email address doesn't cause an error and no email is sent"""
         # Create voter without email
         voter_no_email = models.Voter.objects.create(
             uuid=str(uuid.uuid4()),
@@ -2356,6 +2371,8 @@ class PasswordResendTests(WebTest):
         self.client.get(self.get_resend_url())
         csrf_token = self.client.session.get('csrf_token', '')
 
+        num_messages_before = len(mail.outbox)
+
         response = self.client.post(self.get_resend_url(), {
             'csrf_token': csrf_token,
             'voter_id': 'noemailvoter'
@@ -2363,4 +2380,7 @@ class PasswordResendTests(WebTest):
         # Should still show success (doesn't reveal that email is missing)
         self.assertStatusCode(response, 200)
         self.assertContains(response, 'email with your voting credentials has been sent')
+
+        # But no email should have been sent since voter has no email
+        self.assertEqual(len(mail.outbox), num_messages_before)
 
