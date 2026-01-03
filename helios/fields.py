@@ -38,6 +38,7 @@ class DateTimeLocalField(fields.DateTimeField):
     input_formats = ['%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S']
 
     def __init__(self, *args, **kwargs):
-        kwargs.setdefault('input_formats', self.input_formats)
+        if 'input_formats' not in kwargs or kwargs.get('input_formats') is None:
+            kwargs['input_formats'] = self.input_formats
         super(DateTimeLocalField, self).__init__(*args, **kwargs)
 
