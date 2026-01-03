@@ -1196,23 +1196,23 @@ class ElectionBlackboxTests(WebTest):
 
         # Add voters
         with open("helios/fixtures/voter-file.csv") as f:
-            response = self.client.post(
+            self.client.post(
                 "/helios/elections/%s/voters/upload" % election_id,
                 {"voters_file": f}
             )
-        response = self.client.post(
+        self.client.post(
             "/helios/elections/%s/voters/upload" % election_id,
             {"confirm_p": "1"}
         )
 
         # Add a question
-        response = self.client.post("/helios/elections/%s/save_questions" % election_id, {
+        self.client.post("/helios/elections/%s/save_questions" % election_id, {
             "questions_json": '[{"answer_urls":[null,null],"answers":["Yes","No"],"choice_type":"approval","max":1,"min":0,"question":"Test?","result_type":"absolute","short_name":"test","tally_type":"homomorphic"}]',
             "csrf_token": self.client.session["csrf_token"]
         })
 
         # Freeze the election
-        response = self.client.post("/helios/elections/%s/freeze" % election_id, {
+        self.client.post("/helios/elections/%s/freeze" % election_id, {
             "csrf_token": self.client.session["csrf_token"]
         })
 
