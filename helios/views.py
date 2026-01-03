@@ -1001,7 +1001,7 @@ def voter_delete(request, election, voter_uuid):
       election_url = get_election_url(election)
       subject = "Your vote has been removed - %s" % election.name
       body = """
-Your vote has been removed from the election "%s" by an election administrator.
+Your vote has been removed by an election administrator.
 
 Election: %s
 Election URL: %s
@@ -1010,7 +1010,7 @@ If you believe this was done in error, please contact the election administrator
 
 --
 Helios
-""" % (election.name, election.name, election_url)
+""" % (election.name, election_url)
       voter.send_message(subject, body)
 
       # log it
