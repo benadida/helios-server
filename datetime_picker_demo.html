@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helios Election DateTime Picker - Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .demo-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #666;
+            margin-top: 30px;
+        }
+        .form-section {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #fafafa;
+            border-radius: 4px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        .help-text {
+            display: block;
+            font-size: 12px;
+            color: #777;
+            margin-top: 4px;
+            font-style: italic;
+        }
+        input[type="datetime-local"] {
+            padding: 8px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 250px;
+            box-sizing: border-box;
+        }
+        input[type="datetime-local"]:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .old-style, .new-style {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .old-style {
+            background-color: #fff9e6;
+        }
+        .new-style {
+            background-color: #e8f5e9;
+        }
+        .old-style h3 {
+            color: #e65100;
+        }
+        .new-style h3 {
+            color: #2e7d32;
+        }
+        select {
+            padding: 4px 8px;
+            margin: 0 2px;
+            border: 1px solid #aaa;
+            background-color: white;
+        }
+        .note {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>Helios Election DateTime Picker - New Implementation</h1>
+
+        <div class="note">
+            <strong>Note:</strong> This demonstrates the new HTML5 datetime-local picker that replaces the old multiple-dropdown approach.
+        </div>
+
+        <h2>Election Creation Form</h2>
+
+        <div class="form-section">
+            <div class="form-group">
+                <label for="voting_starts_at">Voting Starts At:</label>
+                <input type="datetime-local" id="voting_starts_at" name="voting_starts_at" placeholder="YYYY-MM-DD HH:MM">
+                <span class="help-text">UTC date and time when voting begins</span>
+            </div>
+
+            <div class="form-group">
+                <label for="voting_ends_at">Voting Ends At:</label>
+                <input type="datetime-local" id="voting_ends_at" name="voting_ends_at" placeholder="YYYY-MM-DD HH:MM">
+                <span class="help-text">UTC date and time when voting ends</span>
+            </div>
+        </div>
+
+        <h2>Comparison: Old vs New</h2>
+
+        <div class="comparison">
+            <div class="old-style">
+                <h3>❌ Old Approach</h3>
+                <p><strong>Date:</strong></p>
+                <select><option>2026</option></select>
+                <select>
+                    <option>January</option>
+                    <option>February</option>
+                    <option>March</option>
+                </select>
+                <select>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                </select>
+                <br><br>
+                <p><strong>Time:</strong></p>
+                <select>
+                    <option>00</option>
+                    <option>01</option>
+                    <option>02</option>
+                </select> :
+                <select>
+                    <option>00</option>
+                    <option>15</option>
+                    <option>30</option>
+                </select>
+                <p style="margin-top: 10px; font-size: 12px; color: #666;">
+                    <em>6 dropdown menus, clunky interface</em>
+                </p>
+            </div>
+
+            <div class="new-style">
+                <h3>✅ New Approach</h3>
+                <input type="datetime-local" value="2026-01-03T14:30" style="width: 100%; margin-top: 10px;">
+                <p style="margin-top: 15px; font-size: 12px; color: #666;">
+                    <em>Single input with native picker, modern interface with calendar popup and time selection</em>
+                </p>
+            </div>
+        </div>
+
+        <h2>Features of the New Picker</h2>
+        <ul>
+            <li>✅ Modern, native browser datetime picker</li>
+            <li>✅ Calendar popup for easy date selection</li>
+            <li>✅ Integrated time picker</li>
+            <li>✅ Green focus highlight for better UX</li>
+            <li>✅ Clean, minimal interface (replaces 6 dropdowns with 1 input)</li>
+            <li>✅ Mobile-friendly with native controls</li>
+            <li>✅ Better accessibility</li>
+            <li>✅ Automatic validation</li>
+        </ul>
+
+        <div class="note" style="background-color: #f3e5f5; border-left-color: #9c27b0;">
+            <strong>Try it:</strong> Click on the datetime inputs above to see the native browser picker in action!
+        </div>
+    </div>
+
+    <script>
+        // Apply the same styling as the Django widget
+        document.querySelectorAll('input[type="datetime-local"]').forEach(function(input) {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = '#4CAF50';
+                this.style.outline = 'none';
+                this.style.boxShadow = '0 0 5px rgba(76, 175, 80, 0.3)';
+            });
+
+            input.addEventListener('blur', function() {
+                this.style.borderColor = '#ccc';
+                this.style.boxShadow = 'none';
+            });
+        });
+
+        // Set a sample date for demonstration
+        const now = new Date();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        // Format: YYYY-MM-DDTHH:MM
+        const formatDateTime = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        };
+
+        document.getElementById('voting_starts_at').value = formatDateTime(now);
+        document.getElementById('voting_ends_at').value = formatDateTime(tomorrow);
+    </script>
+</body>
+</html>
