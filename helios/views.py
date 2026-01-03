@@ -998,22 +998,27 @@ def voter_delete(request, election, voter_uuid):
     
     if voter.vote_hash:
       # send email to voter
-      subject = "Vote removed"
+      election_url = get_election_url(election)
+      subject = "Your vote has been removed - %s" % election.name
       body = """
+Your vote has been removed by an election administrator.
 
-Your vote were removed from the election "%s".
-  
+Election: %s
+Election URL: %s
+
+If you believe this was done in error, please contact the election administrator.
+
 --
-Helios  
-""" % (election.name)
+Helios
+""" % (election.name, election_url)
       voter.send_message(subject, body)
 
       # log it
-      election.append_log("Voter %s/%s and their vote were removed after election frozen" % (voter.voter_type,voter.voter_id))
+      election.append_log("Voter %s/%s and their vote were removed after election was frozen" % (voter.voter_type,voter.voter_id))
 
     elif election.frozen_at:
       # log it
-      election.append_log("Voter %s/%s removed after election frozen" % (voter.voter_type,voter.voter_id))
+      election.append_log("Voter %s/%s removed after election was frozen" % (voter.voter_type,voter.voter_id))
 
     voter.delete()
           
