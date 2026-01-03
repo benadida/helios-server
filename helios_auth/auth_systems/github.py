@@ -3,12 +3,10 @@ Github Authentication
 
 """
 
-import httplib2
 from django.conf import settings
 from django.core.mail import send_mail
-from oauth2client.client import OAuth2WebServerFlow
+from requests_oauthlib import OAuth2Session
 
-from helios_auth import utils
 from helios_auth.utils import format_recipient
 
 # some parameters to indicate that status updating is not possible
@@ -20,41 +18,48 @@ CASE_INSENSITIVE_USER_ID = True
 # display tweaks
 LOGIN_MESSAGE = "Log in with GitHub"
 
-def get_flow(redirect_url=None):
-  return OAuth2WebServerFlow(
-    client_id=settings.GH_CLIENT_ID,
-    client_secret=settings.GH_CLIENT_SECRET,
-    scope='read:user user:email',
-    auth_uri="https://github.com/login/oauth/authorize",
-    token_uri="https://github.com/login/oauth/access_token",
+AUTHORIZATION_URL = "https://github.com/login/oauth/authorize"
+TOKEN_URL = "https://github.com/login/oauth/access_token"
+
+def get_oauth_session(redirect_url=None):
+  return OAuth2Session(
+    settings.GH_CLIENT_ID,
     redirect_uri=redirect_url,
+    scope=['read:user', 'user:email'],
   )
 
 def get_auth_url(request, redirect_url):
-  flow = get_flow(redirect_url)
+  oauth = get_oauth_session(redirect_url)
+  authorization_url, state = oauth.authorization_url(AUTHORIZATION_URL)
   request.session['gh_redirect_uri'] = redirect_url
-  return flow.step1_get_authorize_url()
+  request.session['gh_oauth_state'] = state
+  return authorization_url
 
 def get_user_info_after_auth(request):
-  redirect_uri = request.session['gh_redirect_uri']
-  del request.session['gh_redirect_uri']
-  flow = get_flow(redirect_uri)
   if 'code' not in request.GET:
     return None
-  code = request.GET['code']
-  credentials = flow.step2_exchange(code)
 
-  http = httplib2.Http(".cache")
-  http = credentials.authorize(http)
-  (_, content) = http.request("https://api.github.com/user", "GET")
-  response = utils.from_json(content.decode('utf-8'))
-  user_id = response['login']
-  user_name = response['name']
+  redirect_uri = request.session['gh_redirect_uri']
+  del request.session['gh_redirect_uri']
 
-  (_, content) = http.request("https://api.github.com/user/emails", "GET")
-  response = utils.from_json(content.decode('utf-8'))
+  oauth = get_oauth_session(redirect_uri)
+  token = oauth.fetch_token(
+    TOKEN_URL,
+    client_secret=settings.GH_CLIENT_SECRET,
+    code=request.GET['code'],
+  )
+
+  # Get user info
+  response = oauth.get("https://api.github.com/user")
+  user_data = response.json()
+  user_id = user_data['login']
+  user_name = user_data.get('name', user_id)
+
+  # Get user emails
+  response = oauth.get("https://api.github.com/user/emails")
+  emails = response.json()
   user_email = None
-  for email in response:
+  for email in emails:
     if email['verified'] and email['primary']:
       user_email = email['email']
       break
