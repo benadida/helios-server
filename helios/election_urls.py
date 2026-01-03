@@ -94,6 +94,7 @@ urlpatterns = [
     path('/voters/download-csv', views.voters_download_csv, name='election@voters@download-csv'),
     path('/voters/eligibility', views.voters_eligibility, name=names.ELECTION_VOTERS_ELIGIBILITY),
     path('/voters/email', views.voters_email, name=names.ELECTION_VOTERS_EMAIL),
+    path('/voters/clear', views.voters_clear, name=names.ELECTION_VOTERS_CLEAR),
     path('/voters/<str:voter_uuid>', views.one_voter, name=names.ELECTION_VOTER),
     path('/voters/<str:voter_uuid>/delete', views.voter_delete, name=names.ELECTION_VOTER_DELETE),
     

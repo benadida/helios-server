@@ -1020,6 +1020,26 @@ Helios
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
 
 @election_admin(frozen=False)
+def voters_clear(request, election):
+  """
+  Clear all voters from the election.
+  Only allowed when election is not frozen.
+  Requires POST with confirmation.
+  """
+  check_csrf(request)
+
+  num_voters = election.num_voters
+
+  if num_voters > 0:
+    # Delete all voters for this election
+    Voter.objects.filter(election=election).delete()
+
+    # Log the action
+    election.append_log("All voters cleared (%d voters removed)" % num_voters)
+
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
+
+@election_admin(frozen=False)
 def one_election_set_reg(request, election):
   """
   Set whether this is open registration or not

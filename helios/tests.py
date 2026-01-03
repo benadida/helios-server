@@ -1106,6 +1106,127 @@ class ElectionBlackboxTests(WebTest):
         """
         pass
 
+    def test_voters_clear(self):
+        """Test clearing all voters from an unfrozen election"""
+        self.setup_login(from_scratch=True)
+
+        # Create a new election
+        response = self.client.post("/helios/elections/new", {
+            "short_name": "test-clear-voters",
+            "name": "Test Clear Voters",
+            "description": "Testing clearing all voters",
+            "election_type": "referendum",
+            "use_voter_aliases": "0",
+            "use_advanced_audit_features": "1",
+            "private_p": "True",
+            "csrf_token": self.client.session["csrf_token"]
+        })
+        self.assertRedirects(response)
+
+        election_id = re.search('/elections/([^/]+)/', str(response['location'])).group(1)
+        election = models.Election.objects.get(uuid=election_id)
+
+        # Upload voters
+        with open("helios/fixtures/voter-file.csv") as f:
+            response = self.client.post(
+                "/helios/elections/%s/voters/upload" % election_id,
+                {"voters_file": f}
+            )
+        self.assertContains(response, "first few rows")
+
+        # Confirm upload
+        response = self.client.post(
+            "/helios/elections/%s/voters/upload" % election_id,
+            {"confirm_p": "1"}
+        )
+        self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
+
+        # Verify voters were added
+        election.refresh_from_db()
+        initial_voter_count = election.voter_set.count()
+        self.assertGreater(initial_voter_count, 0)
+
+        # Clear all voters
+        response = self.client.post(
+            "/helios/elections/%s/voters/clear" % election_id,
+            {"csrf_token": self.client.session["csrf_token"]}
+        )
+        self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
+
+        # Verify all voters were removed
+        election.refresh_from_db()
+        self.assertEqual(election.voter_set.count(), 0)
+
+        # Verify it was logged
+        logs = list(election.get_log().all())
+        self.assertTrue(any("voters cleared" in log.log.lower() for log in logs))
+
+    def test_voters_clear_requires_admin(self):
+        """Test that only admins can clear voters"""
+        # Use existing election from fixture
+        election = self.election
+
+        # Try to clear without being logged in
+        response = self.client.post(
+            "/helios/elections/%s/voters/clear" % election.uuid,
+            {"csrf_token": "fake"}
+        )
+        # Should be redirected to login
+        self.assertStatusCode(response, 302)
+
+    def test_voters_clear_blocked_when_frozen(self):
+        """Test that clearing voters is blocked when election is frozen"""
+        self.setup_login(from_scratch=True)
+
+        # Create a new election
+        response = self.client.post("/helios/elections/new", {
+            "short_name": "test-clear-frozen",
+            "name": "Test Clear Frozen",
+            "description": "Testing clearing voters on frozen election",
+            "election_type": "referendum",
+            "use_voter_aliases": "0",
+            "use_advanced_audit_features": "1",
+            "private_p": "True",
+            "csrf_token": self.client.session["csrf_token"]
+        })
+        self.assertRedirects(response)
+
+        election_id = re.search('/elections/([^/]+)/', str(response['location'])).group(1)
+        election = models.Election.objects.get(uuid=election_id)
+
+        # Add voters
+        with open("helios/fixtures/voter-file.csv") as f:
+            response = self.client.post(
+                "/helios/elections/%s/voters/upload" % election_id,
+                {"voters_file": f}
+            )
+        response = self.client.post(
+            "/helios/elections/%s/voters/upload" % election_id,
+            {"confirm_p": "1"}
+        )
+
+        # Add a question
+        response = self.client.post("/helios/elections/%s/save_questions" % election_id, {
+            "questions_json": '[{"answer_urls":[null,null],"answers":["Yes","No"],"choice_type":"approval","max":1,"min":0,"question":"Test?","result_type":"absolute","short_name":"test","tally_type":"homomorphic"}]',
+            "csrf_token": self.client.session["csrf_token"]
+        })
+
+        # Freeze the election
+        response = self.client.post("/helios/elections/%s/freeze" % election_id, {
+            "csrf_token": self.client.session["csrf_token"]
+        })
+
+        # Verify election is frozen
+        election.refresh_from_db()
+        self.assertIsNotNone(election.frozen_at)
+
+        # Try to clear voters - should fail with 403
+        response = self.client.post(
+            "/helios/elections/%s/voters/clear" % election_id,
+            {"csrf_token": self.client.session["csrf_token"]}
+        )
+        self.assertStatusCode(response, 403)
+
 
 class EmailOptOutTests(TestCase):
     fixtures = ['users.json']
