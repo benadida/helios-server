@@ -1171,8 +1171,8 @@ class ElectionBlackboxTests(WebTest):
             "/helios/elections/%s/voters/clear" % election.uuid,
             {"csrf_token": "fake"}
         )
-        # Should be redirected to login
-        self.assertStatusCode(response, 302)
+        # Should get permission denied (403) since not authenticated
+        self.assertStatusCode(response, 403)
 
     def test_voters_clear_blocked_when_frozen(self):
         """Test that clearing voters is blocked when election is frozen"""
