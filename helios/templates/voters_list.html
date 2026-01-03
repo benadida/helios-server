@@ -94,7 +94,7 @@ Prior Bulk Uploads:
 {% endif %}
 {% endif %}
 
-{% if not election.frozen_at and election.num_voters > 0 %}
+{% if admin_p and not election.frozen_at and election.num_voters > 0 %}
 <p>
 <form style="display: inline;" method="post" action="{% url "election@voters@clear" election.uuid %}" onsubmit="return confirm('Are you sure you want to remove ALL {{election.num_voters}} voter(s)? This action cannot be undone.');">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
