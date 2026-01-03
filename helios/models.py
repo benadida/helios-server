@@ -991,7 +991,11 @@ class Voter(HeliosModel):
     if not self.vote_hash:
       return None
 
-    return CastVote.objects.get(vote_hash = self.vote_hash).vote_tinyhash
+    # Use filter() and order by cast_at to handle multiple CastVote objects with same vote_hash
+    cast_vote = CastVote.objects.filter(vote_hash=self.vote_hash).order_by('-cast_at').first()
+    if cast_vote:
+      return cast_vote.vote_tinyhash
+    return None
 
   @property
   def election_uuid(self):
