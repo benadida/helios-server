@@ -269,7 +269,7 @@ HELIOS_VOTER_EMAIL_CUTOFF_WEEKS = int(get_from_env('HELIOS_VOTER_EMAIL_CUTOFF_WE
 HELIOS_PRIVATE_DEFAULT = False
 
 # authentication systems enabled
-# AUTH_ENABLED_SYSTEMS = ['password','facebook','twitter', 'google', 'yahoo']
+# AUTH_ENABLED_SYSTEMS = ['password','facebook', 'google', 'yahoo']
 AUTH_ENABLED_SYSTEMS = get_from_env('AUTH_ENABLED_SYSTEMS',
                                     get_from_env('AUTH_ENABLED_AUTH_SYSTEMS', 'ldap,password,google,facebook')
                                     ).split(",")
@@ -283,15 +283,6 @@ GOOGLE_CLIENT_SECRET = get_from_env('GOOGLE_CLIENT_SECRET', '')
 FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID','')
 FACEBOOK_API_KEY = get_from_env('FACEBOOK_API_KEY','')
 FACEBOOK_API_SECRET = get_from_env('FACEBOOK_API_SECRET','')
-
-# twitter
-TWITTER_API_KEY = ''
-TWITTER_API_SECRET = ''
-TWITTER_USER_TO_FOLLOW = 'heliosvoting'
-TWITTER_REASON_TO_FOLLOW = "we can direct-message you when the result has been computed in an election in which you participated"
-
-# the token for Helios to do direct messaging
-TWITTER_DM_TOKEN = {"oauth_token": "", "oauth_token_secret": "", "user_id": "", "screen_name": ""}
 
 # LinkedIn
 LINKEDIN_API_KEY = ''

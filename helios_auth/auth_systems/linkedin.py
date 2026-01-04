@@ -13,7 +13,7 @@ API_SECRET = settings.LINKEDIN_API_SECRET
 
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = False
-STATUS_UPDATE_WORDING_TEMPLATE = "Tweet %s"
+STATUS_UPDATE_WORDING_TEMPLATE = "Post %s"
 
 OAUTH_PARAMS = {
   'root_url' : 'https://api.linkedin.com/uas',
@@ -70,11 +70,9 @@ def _get_client_by_request(request):
   
 def update_status(user_id, user_info, token, message):
   """
-  post a message to the auth system's update stream, e.g. twitter stream
+  post a message to the auth system's update stream
   """
   return
-  #twitter_client = _get_client_by_token(token)
-  #result = twitter_client.oauth_request('http://api.twitter.com/1/statuses/update.json', args={'status': message}, method='POST')
 
 def send_message(user_id, user_name, user_info, subject, body):
   pass
