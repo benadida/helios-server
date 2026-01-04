@@ -65,7 +65,9 @@ def get_user_info_after_auth(request):
   if not userinfo.get('email_verified'):
     raise Exception("email address with Google not verified")
 
-  email = userinfo['email']
+  email = userinfo.get('email')
+  if not email:
+    raise Exception("email address not provided by Google")
   name = userinfo.get('name', email)
 
   return {'type': 'google', 'user_id': email, 'name': name, 'info': {'email': email}, 'token': {}}
