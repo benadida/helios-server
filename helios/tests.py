@@ -480,15 +480,51 @@ class VoterModelTests(TestCase):
         v.generate_password()
 
         v.save()
-        
+
         # password has been generated!
         self.assertFalse(v.voter_password is None)
 
         # can't generate passwords twice
         self.assertRaises(Exception, lambda: v.generate_password())
-        
+
         # check that you can get at the voter user structure
         self.assertEqual(v.get_user().user_id, v.voter_email)
+
+    def test_create_token_voter(self):
+        v = models.Voter(uuid = str(uuid.uuid4()), election = self.election, voter_login_id = 'voter_test_2', voter_name = 'Voter Test 2', voter_email='token@acme.com')
+
+        v.generate_voting_token()
+
+        v.save()
+
+        # token has been generated!
+        self.assertIsNotNone(v.voting_token)
+
+        # token should be 20 characters (no dashes)
+        self.assertEqual(len(v.voting_token), 20)
+
+        # can't generate tokens twice
+        self.assertRaises(Exception, lambda: v.generate_voting_token())
+
+        # check that you can get at the voter user structure
+        self.assertEqual(v.get_user().user_id, v.voter_email)
+
+    def test_token_uniqueness_per_election(self):
+        # Create two voters with tokens in the same election
+        v1 = models.Voter(uuid = str(uuid.uuid4()), election = self.election, voter_login_id = 'voter_test_3', voter_name = 'Voter Test 3', voter_email='token1@acme.com')
+        v1.generate_voting_token()
+        v1.save()
+
+        v2 = models.Voter(uuid = str(uuid.uuid4()), election = self.election, voter_login_id = 'voter_test_4', voter_name = 'Voter Test 4', voter_email='token2@acme.com')
+        v2.generate_voting_token()
+
+        # Tokens should be different
+        self.assertNotEqual(v1.voting_token, v2.voting_token)
+
+        v2.save()
+
+        # Both voters should exist with unique tokens
+        self.assertEqual(models.Voter.objects.filter(election=self.election, voting_token__isnull=False).count(), 2)
 
 
 class CastVoteModelTests(TestCase):
