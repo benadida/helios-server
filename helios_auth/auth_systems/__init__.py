@@ -1,6 +1,10 @@
 from django.conf import settings
 from . import password, linkedin, cas, facebook, google, yahoo, clever, github, ldapauth, gitlab
 
+# Import devlogin only in debug mode
+if settings.DEBUG:
+    from . import devlogin
+
 AUTH_SYSTEMS = {}
 
 AUTH_SYSTEMS['password'] = password
@@ -13,6 +17,10 @@ AUTH_SYSTEMS['clever'] = clever
 AUTH_SYSTEMS['github'] = github
 AUTH_SYSTEMS['ldap'] = ldapauth
 AUTH_SYSTEMS['gitlab'] = gitlab
+
+# Add devlogin only in debug mode
+if settings.DEBUG:
+    AUTH_SYSTEMS['devlogin'] = devlogin
 
 # not ready
 #import live

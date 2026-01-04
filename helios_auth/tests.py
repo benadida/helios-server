@@ -6,11 +6,17 @@ import unittest
 
 from django.core import mail
 from django.db import IntegrityError, transaction
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
 from . import models, views
 from .auth_systems import AUTH_SYSTEMS, password as password_views
+
+# Import devlogin for testing if available
+try:
+    from .auth_systems import devlogin
+except ImportError:
+    devlogin = None
 
 
 class UserModelTests(unittest.TestCase):
@@ -263,3 +269,32 @@ class LDAPAuthTests(TestCase):
         print(response.content)
         self.assertContains(response, "not logged in")
         self.assertNotContains(response, "euclid")
+
+
+# Development Login Tests
+@unittest.skipIf(devlogin is None, "devlogin not available (not in DEBUG mode)")
+@override_settings(DEBUG=True, AUTH_ENABLED_SYSTEMS=['devlogin', 'password'], ALLOWED_HOSTS=['localhost', '127.0.0.1', 'testserver'], TEMPLATE_BASE='server_ui/templates/base.html')
+class DevLoginTests(TestCase):
+    """Tests for the development-only authentication system."""
+
+    def test_full_devlogin_flow(self):
+        """Test the complete devlogin authentication flow"""
+        # Start auth, submit form, verify logged in
+        response = self.client.get(reverse('auth@start', kwargs={'system_name': 'devlogin'}))
+        response = self.client.post(response.url, follow=True)
+
+        self.assertIn('user', self.client.session)
+        self.assertEqual(self.client.session['user']['type'], 'devlogin')
+        self.assertEqual(self.client.session['user']['user_id'], 'user@example.com')
+
+    def test_devlogin_blocked_when_not_localhost(self):
+        """Test that devlogin is blocked for non-localhost requests"""
+        from django.test import RequestFactory
+        from django.http import Http404
+
+        with self.settings(DEBUG=False):
+            factory = RequestFactory()
+            request = factory.get('/', HTTP_HOST='example.com')
+
+            with self.assertRaises(Http404):
+                devlogin.get_auth_url(request)
