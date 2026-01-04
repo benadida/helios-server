@@ -6,6 +6,7 @@ Yahoo Authentication
 from django.conf import settings
 from django.core.mail import send_mail
 
+from helios_auth.utils import format_recipient
 from .openid import view_helpers
 
 # some parameters to indicate that status updating is not possible
@@ -41,7 +42,7 @@ def send_message(user_id, user_name, user_info, subject, body):
   """
   send email to yahoo user, user_id is email for yahoo and other openID logins.
   """
-  send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (user_name, user_id)], fail_silently=False)
+  send_mail(subject, body, settings.SERVER_EMAIL, [format_recipient(user_name, user_id)], fail_silently=False)
   
 def check_constraint(constraint, user_info):
   """

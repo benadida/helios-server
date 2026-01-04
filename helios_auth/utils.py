@@ -34,3 +34,13 @@ def JSONFiletoDict(filename):
     with open(filename, 'r') as f:
         content = f.read()
     return from_json(content)
+
+
+def format_recipient(name, email):
+    """
+    Format an email recipient as "name" <email>.
+    Truncates name to 70 characters to avoid issues with Python3's email module.
+    Quotes the name per RFC 5322 to handle special characters.
+    """
+    truncated_name = name[:70] if name else email
+    return "\"%s\" <%s>" % (truncated_name, email)

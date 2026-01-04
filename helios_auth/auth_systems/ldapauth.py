@@ -14,6 +14,8 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from helios_auth.utils import format_recipient
+
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = False
 
@@ -85,7 +87,7 @@ def send_message(user_id, name, user_info, subject, body):
         subject,
         body,
         settings.SERVER_EMAIL,
-        [f"{name} <{user_info['email']}>"],
+        [format_recipient(name, user_info['email'])],
         fail_silently=False,
         html_message=body,
     )

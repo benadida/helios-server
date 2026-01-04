@@ -16,6 +16,8 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.http import HttpResponseRedirect
 
+from helios_auth.utils import format_recipient
+
 CAS_EMAIL_DOMAIN = "princeton.edu"
 CAS_URL= 'https://fed.princeton.edu/cas/'
 CAS_LOGOUT_URL = 'https://fed.princeton.edu/cas/logout?service=%s'
@@ -218,7 +220,7 @@ def send_message(user_id, name, user_info, subject, body):
   else:
     name = email
     
-  send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, email)], fail_silently=False)
+  send_mail(subject, body, settings.SERVER_EMAIL, [format_recipient(name, email)], fail_silently=False)
 
 #
 # eligibility
