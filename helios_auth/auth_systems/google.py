@@ -63,7 +63,7 @@ def get_user_info_after_auth(request):
   userinfo = userinfo_response.json()
 
   if not userinfo.get('email_verified'):
-    raise Exception("email address with Google not verified")
+    raise Exception("Email verification failed: the email address associated with your Google account is not verified. Please verify your email in your Google account settings and try again.")
 
   email = userinfo.get('email')
   if not email:
