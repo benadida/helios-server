@@ -13,6 +13,9 @@ from helios_auth import utils
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False
 
+# GitHub usernames are case-insensitive
+CASE_INSENSITIVE_USER_ID = True
+
 # display tweaks
 LOGIN_MESSAGE = "Log in with GitHub"
 

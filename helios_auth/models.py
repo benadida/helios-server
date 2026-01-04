@@ -8,7 +8,7 @@ Ben Adida
 """
 from django.db import models
 
-from .auth_systems import can_check_constraint, AUTH_SYSTEMS
+from .auth_systems import can_check_constraint, uses_case_insensitive_user_id, AUTH_SYSTEMS
 from .jsonfield import JSONField
 
 
@@ -45,15 +45,15 @@ class User(models.Model):
     
   @classmethod
   def get_by_type_and_id(cls, user_type, user_id):
-    # For GitHub users, do case-insensitive matching since GitHub usernames are case-insensitive
-    if user_type == 'github':
+    if uses_case_insensitive_user_id(user_type):
       return cls.objects.get(user_type=user_type, user_id__iexact=user_id)
-    return cls.objects.get(user_type = user_type, user_id = user_id)
+    return cls.objects.get(user_type=user_type, user_id=user_id)
   
   @classmethod
   def update_or_create(cls, user_type, user_id, name=None, info=None, token=None):
-    # For GitHub users, do case-insensitive matching since GitHub usernames are case-insensitive
-    if user_type == 'github':
+    case_insensitive = uses_case_insensitive_user_id(user_type)
+
+    if case_insensitive:
       try:
         obj = cls.objects.get(user_type=user_type, user_id__iexact=user_id)
         created_p = False
@@ -61,7 +61,7 @@ class User(models.Model):
         obj = cls.objects.create(user_type=user_type, user_id=user_id, name=name, info=info, token=token)
         created_p = True
     else:
-      obj, created_p = cls.objects.get_or_create(user_type = user_type, user_id = user_id, defaults = {'name': name, 'info':info, 'token':token})
+      obj, created_p = cls.objects.get_or_create(user_type=user_type, user_id=user_id, defaults={'name': name, 'info': info, 'token': token})
 
     if not created_p:
       # special case the password: don't replace it if it exists
@@ -71,8 +71,8 @@ class User(models.Model):
       obj.info = info
       obj.name = name
       obj.token = token
-      # For GitHub, also update user_id to preserve the current case from GitHub
-      if user_type == 'github':
+      # For case-insensitive systems, update user_id to preserve the current case
+      if case_insensitive:
         obj.user_id = user_id
       obj.save()
 
