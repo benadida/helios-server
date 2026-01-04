@@ -1124,6 +1124,17 @@ class Voter(HeliosModel):
 
     self.voter_password = utils.random_string(length, alphabet='abcdefghjkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789')
 
+  def generate_voting_token(self, length=20):
+    """
+    Generate a voting token for single-field authentication.
+    Token is 20 characters (vs 10 for password) for higher entropy.
+    Uses same alphabet as password (no ambiguous characters).
+    """
+    if self.voting_token:
+      raise Exception("voting token already exists")
+
+    self.voting_token = utils.random_string(length, alphabet='abcdefghjkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789')
+
   def store_vote(self, cast_vote):
     # only store the vote if it's cast later than the current one
     if self.cast_at and cast_vote.cast_at < self.cast_at:
