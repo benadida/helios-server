@@ -44,8 +44,12 @@ class TallyNotificationEmailForm(forms.Form):
   send_to = forms.ChoiceField(label="Send To", choices= [('all', 'all voters'), ('voted', 'only voters who cast a ballot'), ('none', 'no one -- are you sure about this?')])
 
 class VoterPasswordForm(forms.Form):
-  voter_id = forms.CharField(max_length=50, label="Voter ID")
-  password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
+  # For token-based authentication
+  voting_token = forms.CharField(max_length=100, required=False, label="Voting Token")
+
+  # For password-based authentication (legacy)
+  voter_id = forms.CharField(max_length=50, required=False, label="Voter ID")
+  password = forms.CharField(widget=forms.PasswordInput(), max_length=100, required=False)
 
 class VoterPasswordResendForm(forms.Form):
   voter_id = forms.CharField(max_length=50, label="Voter ID", help_text="Enter the voter ID you were assigned for this election")

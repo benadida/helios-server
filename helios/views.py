@@ -707,15 +707,26 @@ def password_voter_login(request, election):
 
   if password_login_form.is_valid():
     try:
-      voter = election.voter_set.get(voter_login_id = password_login_form.cleaned_data['voter_id'].strip(),
-                                     voter_password = password_login_form.cleaned_data['password'].strip())
+      # Token-based authentication
+      if election.use_token_auth:
+        voting_token = password_login_form.cleaned_data.get('voting_token', '').strip()
+        if not voting_token:
+          raise Voter.DoesNotExist("No token provided")
+        voter = election.voter_set.get(voting_token=voting_token)
+      # Password-based authentication (legacy)
+      else:
+        voter_id = password_login_form.cleaned_data.get('voter_id', '').strip()
+        password = password_login_form.cleaned_data.get('password', '').strip()
+        if not voter_id or not password:
+          raise Voter.DoesNotExist("No voter_id or password provided")
+        voter = election.voter_set.get(voter_login_id=voter_id, voter_password=password)
 
       request.session['CURRENT_VOTER_ID'] = voter.id
 
       # if we're asked to cast, let's do it
       if request.POST.get('cast_ballot') == "1":
         return one_election_cast_confirm(request, election.uuid)
-      
+
     except Voter.DoesNotExist:
       redirect_url = login_url + "?" + urlencode({
           'bad_voter_login' : '1',
