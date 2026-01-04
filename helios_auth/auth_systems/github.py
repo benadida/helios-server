@@ -52,7 +52,7 @@ def get_user_info_after_auth(request):
     request.session.pop(key, None)
 
   oauth = get_oauth_session(redirect_uri)
-  token = oauth.fetch_token(
+  oauth.fetch_token(
     TOKEN_URL,
     client_secret=settings.GH_CLIENT_SECRET,
     code=request.GET['code'],

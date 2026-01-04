@@ -49,7 +49,7 @@ def get_user_info_after_auth(request):
     request.session.pop(key, None)
 
   oauth = get_oauth_session(redirect_uri)
-  token = oauth.fetch_token(
+  oauth.fetch_token(
     TOKEN_URL,
     client_secret=settings.GITLAB_CLIENT_SECRET,
     code=request.GET['code'],
@@ -57,6 +57,10 @@ def get_user_info_after_auth(request):
 
   # Get user info
   response = oauth.get("https://gitlab.com/api/v4/user")
+  try:
+    response.raise_for_status()
+  except Exception as e:
+    raise Exception("GitLab user API request failed") from e
   user_data = response.json()
   user_id = user_data['username']
   user_name = user_data['name']
