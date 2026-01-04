@@ -146,6 +146,8 @@ CSP_OBJECT_SRC = ("'none'",)
 # Set CSP_REPORT_ONLY=1 to test without enforcing
 if get_from_env('CSP_REPORT_ONLY', '0') == '1':
     CSP_REPORT_ONLY = True
+else:
+    CSP_REPORT_ONLY = False
 
 # Optional: URI to receive CSP violation reports
 _csp_report_uri = get_from_env('CSP_REPORT_URI', None)
