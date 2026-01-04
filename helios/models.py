@@ -96,6 +96,9 @@ class Election(HeliosModel):
   # randomize candidate order?
   randomize_answer_order = models.BooleanField(default=False, null=False)
 
+  # use token-based authentication for voters?
+  use_token_auth = models.BooleanField(default=True, null=False)
+
   # where votes should be cast
   cast_url = models.CharField(max_length = 500)
 
@@ -943,6 +946,10 @@ class Voter(HeliosModel):
   # if user is null, then you need a voter login ID and password
   voter_login_id = models.CharField(max_length = 100, null=True)
   voter_password = models.CharField(max_length = 100, null=True)
+
+  # token-based authentication (alternative to voter_login_id + voter_password)
+  voting_token = models.CharField(max_length = 100, null=True)
+
   voter_name = models.CharField(max_length = 200, null=True)
   voter_email = models.CharField(max_length = 250, null=True)
 
@@ -955,7 +962,7 @@ class Voter(HeliosModel):
   cast_at = models.DateTimeField(auto_now_add=False, null=True)
 
   class Meta:
-    unique_together = (('election', 'voter_login_id'))
+    unique_together = (('election', 'voter_login_id'), ('election', 'voting_token'))
     app_label = 'helios'
 
   def __init__(self, *args, **kwargs):
