@@ -2506,3 +2506,95 @@ class PasswordResendTests(WebTest):
         # But no email should have been sent since voter has no email
         self.assertEqual(len(mail.outbox), num_messages_before)
 
+
+class PendingVotesTests(TestCase):
+    """Tests for pending votes detection and tabulation blocking"""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-pending-votes',
+            name='Test Pending Votes Election',
+            description='Test Election for Pending Votes',
+            admin=self.user
+        )
+        if not self.election.uuid:
+            self.election.uuid = str(uuid.uuid4())
+            self.election.save()
+
+        self.election.questions = [{"answer_urls": [None, None], "answers": ["Yes", "No"], "choice_type": "approval", "max": 1, "min": 0, "question": "Test?", "result_type": "absolute", "short_name": "Test?", "tally_type": "homomorphic"}]
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
+        self.election.openreg = True
+        self.election.freeze()
+
+        self.voter = models.Voter.objects.create(
+            uuid=str(uuid.uuid4()),
+            election=self.election,
+            voter_email='voter@example.com',
+            voter_name='Test Voter',
+            voter_login_id='testvoter'
+        )
+
+    def _create_cast_vote(self, verified=False, invalidated=False, quarantined=False):
+        """Helper to create a CastVote with specified state"""
+        cast_vote = models.CastVote(
+            voter=self.voter,
+            vote_hash='fakehash' + str(uuid.uuid4())[:8],
+            quarantined_p=quarantined
+        )
+        cast_vote.save()
+        if verified:
+            cast_vote.verified_at = datetime.datetime.utcnow()
+            cast_vote.save()
+        elif invalidated:
+            cast_vote.invalidated_at = datetime.datetime.utcnow()
+            cast_vote.save()
+        return cast_vote
+
+    def test_num_pending_votes_counts_correctly(self):
+        """Test that num_pending_votes only counts unverified, non-quarantined votes"""
+        self.assertEqual(self.election.num_pending_votes, 0)
+
+        # These should NOT be counted as pending
+        self._create_cast_vote(verified=True)
+        self._create_cast_vote(invalidated=True)
+        self._create_cast_vote(quarantined=True)
+        self.assertEqual(self.election.num_pending_votes, 0)
+
+        # These SHOULD be counted as pending
+        self._create_cast_vote()
+        self._create_cast_vote()
+        self.assertEqual(self.election.num_pending_votes, 2)
+
+    def test_compute_tally_blocked_with_pending_votes(self):
+        """Test that tally is blocked when there are pending votes"""
+        # Create a verified vote so election has cast votes
+        verified = self._create_cast_vote(verified=True)
+        self.voter.vote_hash = verified.vote_hash
+        self.voter.cast_at = verified.cast_at
+        self.voter.save()
+
+        # Create a pending vote
+        self._create_cast_vote()
+
+        # Set up admin session
+        session = self.client.session
+        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
+        session.save()
+
+        url = f'/helios/elections/{self.election.uuid}/compute_tally'
+        self.client.get(url)
+        csrf_token = self.client.session.get('csrf_token', '')
+
+        response = self.client.post(url, {'csrf_token': csrf_token})
+
+        # Should show pending votes message, not redirect
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'still being processed')
+
+        # Election should not have started tallying
+        self.election.refresh_from_db()
+        self.assertIsNone(self.election.tallying_started_at)
+

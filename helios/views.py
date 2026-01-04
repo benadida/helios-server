@@ -1280,8 +1280,7 @@ def one_election_compute_tally(request, election):
   if num_pending_votes > 0:
     return render_template(request, 'election_compute_tally', {
       'election': election,
-      'num_pending_votes': num_pending_votes,
-      'error': f"Cannot compute tally: {num_pending_votes} vote{'s are' if num_pending_votes != 1 else ' is'} still being processed. Please wait for all votes to be verified before computing the tally."
+      'num_pending_votes': num_pending_votes
     })
 
   if not election.voting_ended_at:
