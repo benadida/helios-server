@@ -63,11 +63,12 @@ def update_status(token, message):
   pass
 
 def send_message(user_id, name, user_info, subject, body):
+  name = name or user_info['email']
   send_mail(
     subject,
     body,
     settings.SERVER_EMAIL,
-    ["%s <%s>" % (user_id, user_info['email'])],
+    ["%s <%s>" % (name, user_info['email'])],
     fail_silently=False,
   )
 

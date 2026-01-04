@@ -81,6 +81,7 @@ def get_auth_url(request, redirect_url = None):
 
 
 def send_message(user_id, name, user_info, subject, body):
+    name = name or user_info['email']
     send_mail(
         subject,
         body,

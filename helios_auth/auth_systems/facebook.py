@@ -68,7 +68,8 @@ def update_status(user_id, user_info, token, message):
 
 def send_message(user_id, user_name, user_info, subject, body):
   if 'email' in user_info:
-    send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (user_name, user_info['email'])], fail_silently=False)    
+    name = user_name or user_info['email']
+    send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (name, user_info['email'])], fail_silently=False)    
 
 
 ##
