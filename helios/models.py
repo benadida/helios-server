@@ -168,6 +168,20 @@ class Election(HeliosModel):
     return self.voter_set.exclude(vote=None).count()
 
   @property
+  def num_pending_votes(self):
+    """
+    Count votes that have been cast but not yet verified or invalidated.
+    These are votes still waiting in the queue to be processed.
+    Excludes quarantined votes which are intentionally held.
+    """
+    return CastVote.objects.filter(
+      voter__election=self,
+      verified_at=None,
+      invalidated_at=None,
+      quarantined_p=False
+    ).count()
+
+  @property
   def num_voters(self):
     return self.voter_set.count()
 

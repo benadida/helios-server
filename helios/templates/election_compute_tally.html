@@ -6,7 +6,20 @@
   <h2 class="title">Compute Tally for Election: {{election.name}}</h2>
 
 <div id="instructions">
-{% if election.num_cast_votes %}
+{% if error %}
+<p style="color: red; font-weight: bold;">
+    {{ error }}
+</p>
+<p>
+    This typically happens when the vote verification queue is backed up. The Celery worker processes each vote
+    to verify its cryptographic proof before it can be counted. Please try again shortly, or run
+    <code>python manage.py verify_cast_votes</code> to process pending votes manually.
+</p>
+<p>
+    <a href="{% url "election@compute-tally" election.uuid %}">Refresh this page</a> |
+    <a href="{% url "election@view" election.uuid %}">back to election</a>
+</p>
+{% elif election.num_cast_votes %}
 <p>
     You are about to compute the encrypted tally for election <b>{{election.name}}</b>.
 </p>
@@ -15,10 +28,21 @@
     Once you do this, voters will no longer be able to cast a ballot.
 </p>
 
+{% if num_pending_votes > 0 %}
+<p style="color: orange; font-weight: bold;">
+    Warning: {{ num_pending_votes }} vote{{ num_pending_votes|pluralize }} still pending verification.
+</p>
+<p>
+    Votes are processed asynchronously after being cast. If you proceed now, these pending votes
+    will not be included in the tally. Please wait for all votes to be verified, or check that
+    the Celery worker is running.
+</p>
+{% endif %}
+
 <form method="post" action="" onsubmit="alert('ok, tally has begun')" class="pretty">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    
-<input class="button" type="submit" value="compute encrypted tally!" />
+
+<input class="button" type="submit" value="compute encrypted tally!"{% if num_pending_votes > 0 %} disabled{% endif %} />
 <button onclick="document.location='{% url "election@view" election.uuid %}'; return false;">never mind</button>
 </form>
 {% else %}
