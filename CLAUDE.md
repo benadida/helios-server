@@ -6,6 +6,10 @@ This file provides guidance to Claude Code when working with the Helios Election
 
 Helios is an end-to-end verifiable voting system that provides secure, transparent online elections with cryptographic verification. It supports multiple authentication systems (Google, Facebook, GitHub, LDAP, CAS, password, etc.) and uses homomorphic encryption for privacy-preserving vote tallying.
 
+## Critical Instructions for Claude when preparing a PR
+
+- always run the tests. Install everything and run the tests. Every time.
+
 ## Technology Stack
 
 - **Python**: 3.12
