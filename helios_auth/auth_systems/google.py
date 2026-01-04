@@ -56,12 +56,19 @@ def get_user_info_after_auth(request):
   # Verify the ID token and get user info
   # Use the userinfo endpoint instead of decoding id_token manually
   headers = {'Authorization': f'Bearer {credentials.token}'}
-  userinfo_response = requests.get(
-    'https://www.googleapis.com/oauth2/v3/userinfo',
-    headers=headers
-  )
-  userinfo = userinfo_response.json()
+  try:
+    userinfo_response = requests.get(
+      'https://www.googleapis.com/oauth2/v3/userinfo',
+      headers=headers
+    )
+    userinfo_response.raise_for_status()
+  except requests.RequestException as e:
+    raise Exception("Failed to retrieve user info from Google.") from e
 
+  try:
+    userinfo = userinfo_response.json()
+  except ValueError as e:
+    raise Exception("Received invalid user info response from Google.") from e
   if not userinfo.get('email_verified'):
     raise Exception("Email verification failed: the email address associated with your Google account is not verified. Please verify your email in your Google account settings and try again.")
 
