@@ -88,6 +88,109 @@ class UserModelTests(unittest.TestCase):
             self.assertEqual(u, u2)
 
 
+class GitHubUserTests(TestCase):
+    """
+    Tests specific to GitHub authentication, particularly case-insensitive username matching.
+    GitHub usernames are case-insensitive, so 'JohnDoe', 'johndoe', and 'JOHNDOE' should all
+    refer to the same user.
+    """
+
+    def test_github_case_insensitive_update_or_create(self):
+        """
+        Test that update_or_create matches GitHub users case-insensitively
+        """
+        # Create a user with mixed case
+        u1 = models.User.update_or_create(
+            user_type='github',
+            user_id='JohnDoe',
+            name='John Doe (JohnDoe)',
+            info={'email': 'john@example.com'}
+        )
+
+        # Login again with lowercase - should return the same user
+        u2 = models.User.update_or_create(
+            user_type='github',
+            user_id='johndoe',
+            name='John Doe (johndoe)',
+            info={'email': 'john@example.com'}
+        )
+
+        # Should be the same database record
+        self.assertEqual(u1.id, u2.id)
+
+        # The user_id should be updated to the new case
+        u2.refresh_from_db()
+        self.assertEqual(u2.user_id, 'johndoe')
+
+    def test_github_case_insensitive_get_by_type_and_id(self):
+        """
+        Test that get_by_type_and_id finds GitHub users case-insensitively
+        """
+        # Create a user with uppercase
+        models.User.update_or_create(
+            user_type='github',
+            user_id='TESTUSER',
+            name='Test User (TESTUSER)',
+            info={'email': 'test@example.com'}
+        )
+
+        # Should find the user with lowercase
+        u = models.User.get_by_type_and_id('github', 'testuser')
+        self.assertEqual(u.user_id, 'TESTUSER')
+
+        # Should find the user with mixed case
+        u = models.User.get_by_type_and_id('github', 'TestUser')
+        self.assertEqual(u.user_id, 'TESTUSER')
+
+    def test_github_preserves_display_case(self):
+        """
+        Test that the username case is preserved from the most recent login
+        """
+        # First login with lowercase
+        u1 = models.User.update_or_create(
+            user_type='github',
+            user_id='myuser',
+            name='My User (myuser)',
+            info={'email': 'my@example.com'}
+        )
+        self.assertEqual(u1.user_id, 'myuser')
+
+        # Second login with mixed case - should update stored case
+        u2 = models.User.update_or_create(
+            user_type='github',
+            user_id='MyUser',
+            name='My User (MyUser)',
+            info={'email': 'my@example.com'}
+        )
+        self.assertEqual(u2.user_id, 'MyUser')
+
+        # Verify it's the same user
+        self.assertEqual(u1.id, u2.id)
+
+    def test_password_auth_still_case_sensitive(self):
+        """
+        Test that password auth remains case-sensitive (not affected by GitHub changes)
+        """
+        # Create a user with mixed case
+        u1 = models.User.update_or_create(
+            user_type='password',
+            user_id='TestUser@example.com',
+            name='Test User',
+            info={'password': 'hashed_password'}
+        )
+
+        # Create another user with different case - should be a new user
+        u2 = models.User.update_or_create(
+            user_type='password',
+            user_id='testuser@example.com',
+            name='Test User 2',
+            info={'password': 'hashed_password2'}
+        )
+
+        # Should be different users
+        self.assertNotEqual(u1.id, u2.id)
+
+
 # FIXME: login CSRF should make these tests more complicated
 # and should be tested for
 

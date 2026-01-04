@@ -23,3 +23,10 @@ def can_check_constraint(auth_system):
 
 def can_list_categories(auth_system):
     return auth_system in AUTH_SYSTEMS and hasattr(AUTH_SYSTEMS[auth_system], 'list_categories')
+
+def uses_case_insensitive_user_id(auth_system):
+    """
+    Check if an auth system uses case-insensitive user IDs.
+    Auth systems can opt in by setting CASE_INSENSITIVE_USER_ID = True.
+    """
+    return auth_system in AUTH_SYSTEMS and getattr(AUTH_SYSTEMS[auth_system], 'CASE_INSENSITIVE_USER_ID', False)
