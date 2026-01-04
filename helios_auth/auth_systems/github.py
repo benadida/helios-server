@@ -51,12 +51,20 @@ def get_user_info_after_auth(request):
 
   # Get user info
   response = oauth.get("https://api.github.com/user")
+  try:
+    response.raise_for_status()
+  except Exception as e:
+    raise Exception("GitHub user API request failed") from e
   user_data = response.json()
   user_id = user_data['login']
   user_name = user_data.get('name', user_id)
 
   # Get user emails
   response = oauth.get("https://api.github.com/user/emails")
+  try:
+    response.raise_for_status()
+  except Exception as e:
+    raise Exception("GitHub user emails API request failed") from e
   emails = response.json()
   user_email = None
   for email in emails:
