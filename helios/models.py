@@ -908,8 +908,8 @@ class Voter(HeliosModel):
 
     # Set voter_login_id and voter_email from user object for consistent lookups
     if user:
-      voter.voter_login_id = user.user_id
-      voter.voter_email = user.info.get('email') or user.user_id
+        voter.voter_login_id = user.user_id
+        voter.voter_email = user.info.get('email') or user.user_id
 
     # do we need to generate an alias?
     if election.use_voter_aliases:
