@@ -80,7 +80,12 @@ def get_user_info_after_auth(request):
     userinfo = userinfo_response.json()
   except ValueError as e:
     raise Exception("Received invalid user info response from Google.") from e
-  if not userinfo.get('email_verified'):
+
+  # Check email_verified (v3) or verified_email (v2) - Google uses different field names
+  email_verified = userinfo.get('email_verified', userinfo.get('verified_email'))
+  if email_verified is None:
+    raise Exception("Google did not provide email verification status")
+  if not email_verified:
     raise Exception("Email verification failed: the email address associated with your Google account is not verified. Please verify your email in your Google account settings and try again.")
 
   email = userinfo.get('email')
