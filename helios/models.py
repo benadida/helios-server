@@ -97,7 +97,7 @@ class Election(HeliosModel):
   randomize_answer_order = models.BooleanField(default=False, null=False)
 
   # use token-based authentication for voters?
-  use_token_auth = models.BooleanField(default=True, null=False)
+  use_token_auth = models.BooleanField(default=False, null=False)
 
   # where votes should be cast
   cast_url = models.CharField(max_length = 500)
