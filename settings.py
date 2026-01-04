@@ -125,26 +125,32 @@ if get_from_env('HSTS', '0') == '1':
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
-# Content Security Policy Configuration
-# CSP is enabled by default for security. Set CSP_ENABLED=0 to disable.
-CSP_ENABLED = get_from_env('CSP_ENABLED', '1') == '1'
+# Content Security Policy Configuration (django-csp)
+# https://django-csp.readthedocs.io/
+#
+# 'unsafe-inline' and 'unsafe-eval' are required due to legacy inline scripts,
+# onclick handlers, and jQuery JSON eval usage. Future improvement: use nonces.
 
-# Use report-only mode to test CSP without enforcing (set CSP_REPORT_ONLY=1)
-CSP_REPORT_ONLY = get_from_env('CSP_REPORT_ONLY', '0') == '1'
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "'unsafe-eval'")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+CSP_IMG_SRC = ("'self'", "data:")
+CSP_FONT_SRC = ("'self'",)
+CSP_CONNECT_SRC = ("'self'",)
+CSP_WORKER_SRC = ("'self'", "blob:")
+CSP_FORM_ACTION = ("'self'",)
+CSP_FRAME_ANCESTORS = ("'self'",)
+CSP_BASE_URI = ("'self'",)
+CSP_OBJECT_SRC = ("'none'",)
+
+# Set CSP_REPORT_ONLY=1 to test without enforcing
+if get_from_env('CSP_REPORT_ONLY', '0') == '1':
+    CSP_REPORT_ONLY = True
 
 # Optional: URI to receive CSP violation reports
-CSP_REPORT_URI = get_from_env('CSP_REPORT_URI', None)
-
-# Frame ancestors policy: controls who can embed this site in iframes
-# Default is 'self' (same origin only). Use 'none' for stricter policy.
-CSP_FRAME_ANCESTORS = get_from_env('CSP_FRAME_ANCESTORS', "'self'")
-
-# Additional sources can be added via environment variables (comma-separated)
-# Example: CSP_SCRIPT_SRC_EXTRA="https://trusted-cdn.com,https://another.com"
-CSP_SCRIPT_SRC_EXTRA = [s.strip() for s in get_from_env('CSP_SCRIPT_SRC_EXTRA', '').split(',') if s.strip()]
-CSP_STYLE_SRC_EXTRA = [s.strip() for s in get_from_env('CSP_STYLE_SRC_EXTRA', '').split(',') if s.strip()]
-CSP_IMG_SRC_EXTRA = [s.strip() for s in get_from_env('CSP_IMG_SRC_EXTRA', '').split(',') if s.strip()]
-CSP_CONNECT_SRC_EXTRA = [s.strip() for s in get_from_env('CSP_CONNECT_SRC_EXTRA', '').split(',') if s.strip()]
+_csp_report_uri = get_from_env('CSP_REPORT_URI', None)
+if _csp_report_uri:
+    CSP_REPORT_URI = _csp_report_uri
 
 SILENCED_SYSTEM_CHECKS = ['urls.W002']
 
@@ -152,7 +158,7 @@ MIDDLEWARE = [
     # secure a bunch of things
     'django.middleware.security.SecurityMiddleware',
     'helios.security.HSTSMiddleware',
-    'helios.security.ContentSecurityPolicyMiddleware',
+    'csp.middleware.CSPMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
 
