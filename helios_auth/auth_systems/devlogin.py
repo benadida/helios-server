@@ -67,13 +67,13 @@ def send_message(user_id, name, user_info, subject, body):
     """
     logging.info(f"Dev login message to {user_id}: {subject}")
 
-def check_constraint(constraint, user_info):
+def check_constraint(constraint, user):
     """
     Check if user meets a constraint. Always true for dev login.
     """
     return True
 
-def can_create_election(user_id, user_info):
+def can_create_election(user_id, user):
     """
     Check if user can create elections. Always true for dev login.
     """
