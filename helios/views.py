@@ -1277,10 +1277,22 @@ def one_election_compute_tally(request, election):
   if not _check_election_tally_type(election):
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW,args=[election.election_id]))
 
+  num_pending_votes = election.num_pending_votes
+
   if request.method == "GET":
-    return render_template(request, 'election_compute_tally', {'election': election})
-  
+    return render_template(request, 'election_compute_tally', {
+      'election': election,
+      'num_pending_votes': num_pending_votes
+    })
+
   check_csrf(request)
+
+  # Prevent tabulation if there are votes still waiting to be verified
+  if num_pending_votes > 0:
+    return render_template(request, 'election_compute_tally', {
+      'election': election,
+      'num_pending_votes': num_pending_votes
+    })
 
   if not election.voting_ended_at:
     election.voting_ended_at = datetime.datetime.utcnow()
