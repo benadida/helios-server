@@ -985,7 +985,15 @@ def one_election_bboard(request, election):
   """
   after = request.GET.get('after', None)
   offset= int(request.GET.get('offset', 0))
-  limit = int(request.GET.get('limit', 50))
+
+  # Allowed pagination limits
+  ALLOWED_LIMITS = [50, 100, 250, 500]
+  try:
+    limit = int(request.GET.get('limit', 50))
+  except (ValueError, TypeError):
+    limit = 50
+  if limit not in ALLOWED_LIMITS:
+    limit = 50
   
   order_by = 'voter_id'
   
@@ -1010,7 +1018,7 @@ def one_election_bboard(request, election):
     
   return render_template(request, 'election_bboard', {'election': election, 'voters': voters, 'next_after': next_after,
                 'offset': offset, 'limit': limit, 'offset_plus_one': offset+1, 'offset_plus_limit': offset+limit,
-                'voter_id': request.GET.get('voter_id', '')})
+                'voter_id': request.GET.get('voter_id', ''), 'allowed_limits': ALLOWED_LIMITS})
 
 @election_view(frozen=True)
 def one_election_audited_ballots(request, election):
