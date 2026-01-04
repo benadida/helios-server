@@ -283,6 +283,9 @@ Anyone can vote in this election.
 <p style="font-size: 1.3em;">
 <a href="{% url "election@voters@list-pretty" election.uuid %}">Ballot Tracking Center</a> &nbsp;| &nbsp;
 <a href="{% url "election@audited-ballots" election.uuid %}">Audited Ballots</a>
+{% if admin_p %}&nbsp;| &nbsp;
+<a href="{% url "election@log@download-csv" election.uuid %}">Download Election Log (CSV)</a>
+{% endif %}
 </p>
 
 {% endif %}

@@ -1675,6 +1675,63 @@ class VotersCSVDownloadTests(TestCase):
         self.assertEqual(len(lines), 2)
 
 
+class ElectionLogCSVDownloadTests(TestCase):
+    """Test election log CSV download functionality"""
+    fixtures = ['users.json']
+
+    def setUp(self):
+        self.admin = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-log-csv',
+            name='Test Log CSV Election',
+            description='Test Election for Log CSV Download',
+            admin=self.admin)
+
+        # Ensure the election has a UUID
+        if not self.election.uuid:
+            self.election.uuid = str(uuid.uuid4())
+            self.election.save()
+
+        # Add some log entries
+        self.election.append_log("Election created")
+        self.election.append_log("Voter file added")
+        self.election.append_log("Election frozen")
+
+    def test_log_csv_download_as_admin(self):
+        """Test log CSV download as admin returns correct data"""
+        session = self.client.session
+        session['user'] = {
+            'type': self.admin.user_type,
+            'user_id': self.admin.user_id
+        }
+        session.save()
+
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/log/download-csv')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'text/csv')
+        self.assertIn('attachment; filename="election_log_test-log-csv_', response['Content-Disposition'])
+
+        # Check CSV content
+        content = response.content.decode('utf-8')
+        lines = content.strip().splitlines()
+        headers = lines[0].split(',')
+
+        self.assertEqual(headers, ['Timestamp', 'Event'])
+        # Header + 3 log entries
+        self.assertEqual(len(lines), 4)
+        # Check log entries are present (in chronological order)
+        self.assertIn('Election created', lines[1])
+        self.assertIn('Voter file added', lines[2])
+        self.assertIn('Election frozen', lines[3])
+
+    def test_log_csv_download_requires_admin(self):
+        """Test log CSV download requires admin access"""
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/log/download-csv')
+        # Should return 403 Forbidden for non-admin
+        self.assertEqual(response.status_code, 403)
+
+
 class ElectionMultipleAdminsModelTests(TestCase):
     """Test multiple administrators functionality at the model level"""
     fixtures = ['users.json']
