@@ -899,7 +899,11 @@ class VoterFile(models.Model):
           voter_uuid = str(uuid.uuid4())
           new_voter = Voter(uuid=voter_uuid, user = None, voter_login_id = voter['voter_id'],
               voter_name = voter['name'], voter_email = voter['email'], election = self.election)
-          new_voter.generate_password()
+          # generate token or password based on election setting
+          if self.election.use_token_auth:
+              new_voter.generate_voting_token()
+          else:
+              new_voter.generate_password()
           election=self.election
           if election.use_voter_aliases:
               # Use transaction to ensure alias assignment is atomic
