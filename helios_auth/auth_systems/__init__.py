@@ -1,10 +1,9 @@
 from django.conf import settings
-from . import password, twitter, linkedin, cas, facebook, google, yahoo, clever, github, ldapauth, gitlab
+from . import password, linkedin, cas, facebook, google, yahoo, clever, github, ldapauth, gitlab
 
 AUTH_SYSTEMS = {}
 
 AUTH_SYSTEMS['password'] = password
-AUTH_SYSTEMS['twitter'] = twitter
 AUTH_SYSTEMS['linkedin'] = linkedin
 AUTH_SYSTEMS['cas'] = cas
 AUTH_SYSTEMS['facebook'] = facebook
