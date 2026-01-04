@@ -1,4 +1,5 @@
 {% extends TEMPLATE_BASE %}
+{% load timezone_tags %}
 {% block title %}{{election.name}}{% endblock %}
 {% block content %}
 <div style="float: left; margin-right: 50px;">
@@ -48,8 +49,8 @@ this {{election.election_type}} is <u>not</u> featured on the front page.
 
 <p>
 {% if election.help_email and admin_p%}Help Email Address: {{election.help_email}}<br />{% endif %}
-{% if election.voting_start_at %}Voting start at {{election.voting_start_at}}<br />{% endif %}
-{% if election.voting_end_at %}Voting end at {{election.voting_end_at}}<br />{% endif %}
+{% if election.voting_start_at %}Voting start at {{election.voting_start_at|utc_time}}<br />{% endif %}
+{% if election.voting_end_at %}Voting end at {{election.voting_end_at|utc_time}}<br />{% endif %}
 </p>
 
 {% if election.election_info_url %}
@@ -101,7 +102,7 @@ this {{election.election_type}} is <u>not</u> featured on the front page.
 <br />
 {% if election.voting_starts_at %}
 once you do this, the election will be ready for voting and will open automatically<br />
-at {{election.voting_starts_at}}, as per your settings.
+at {{election.voting_starts_at|utc_time}}, as per your settings.
 {% else %}
 once you do this, the election will be immediately open for voting.
 {% endif %}
@@ -189,12 +190,12 @@ Once you do this, the tally will visible to you, the administrator, only.
 <br />
 <br />
 {% if election.voting_extended_until %}
-This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at}} (UTC),<br />
-but has been extended until {{ election.voting_extended_until }} (UTC).
+This {{election.election_type}} was initially scheduled to end at {{election.voting_ends_at|utc_time}},<br />
+but has been extended until {{election.voting_extended_until|utc_time}}.
 {% else %}
 {% if election.voting_ends_at %}
 <br />
-This {{election.election_type}} is scheduled to end at {{election.voting_ends_at}} (UTC).
+This {{election.election_type}} is scheduled to end at {{election.voting_ends_at|utc_time}}.
 {% else %}
 This {{election.election_type}} ends at the administrator's discretion.
 {% endif %}
