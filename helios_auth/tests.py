@@ -84,8 +84,7 @@ class UserModelTests(unittest.TestCase):
         """
         for auth_system, auth_system_module in AUTH_SYSTEMS.items():
             assert(hasattr(auth_system_module, 'can_create_election'))
-            if auth_system != 'clever':
-                assert(auth_system_module.can_create_election('foobar', {}))
+            assert(auth_system_module.can_create_election('foobar', {}))
         
 
     def test_status_update(self):
