@@ -65,3 +65,5 @@ ELECTION_VOTERS_CLEAR="election@voters@clear"
 ELECTION_BALLOTS_LIST="election@ballots@list"
 ELECTION_BALLOTS_VOTER="election@ballots@voter"
 ELECTION_BALLOTS_VOTER_LAST="election@ballots@voter@last"
+
+ELECTION_LOG_DOWNLOAD_CSV="election@log@download-csv"

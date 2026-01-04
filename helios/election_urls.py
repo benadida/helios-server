@@ -104,4 +104,7 @@ urlpatterns = [
     path('/ballots/<str:voter_uuid>/all', views.voter_votes, name=names.ELECTION_BALLOTS_VOTER),
     path('/ballots/<str:voter_uuid>/last', views.voter_last_vote, name=names.ELECTION_BALLOTS_VOTER_LAST),
 
+    # election log
+    path('/log/download-csv', views.election_log_download_csv, name=names.ELECTION_LOG_DOWNLOAD_CSV),
+
 ]
