@@ -1523,6 +1523,36 @@ def voters_download_csv(request, election):
   return response
 
 @election_admin()
+def election_log_download_csv(request, election):
+  """
+  Download the election log as CSV (admin only)
+  """
+  import csv
+  from django.http import HttpResponse
+  from .models import ElectionLog
+
+  # Get all log entries ordered by timestamp (oldest first for chronological reading)
+  logs = ElectionLog.objects.filter(election=election).order_by('at')
+
+  # Create the HttpResponse object with CSV header
+  response = HttpResponse(content_type='text/csv')
+  response['Content-Disposition'] = f'attachment; filename="election_log_{election.short_name}_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+
+  writer = csv.writer(response)
+
+  # Write header row
+  writer.writerow(['Timestamp', 'Event'])
+
+  # Write log entries
+  for log in logs:
+    writer.writerow([
+      log.at.strftime('%Y-%m-%d %H:%M:%S') if log.at else '',
+      log.log
+    ])
+
+  return response
+
+@election_admin()
 def voters_eligibility(request, election):
   """
   set eligibility for voters
