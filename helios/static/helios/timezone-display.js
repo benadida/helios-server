@@ -1,70 +1,41 @@
 /**
  * Helios Timezone Display Utility
- * Automatically converts UTC timestamps to show both UTC and local timezone
+ * Uses built-in browser Intl API for timezone conversion
  */
 
 (function() {
   'use strict';
 
-  /**
-   * Format a date in a human-readable way
-   */
-  function formatDateTime(date) {
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const year = date.getFullYear();
-    const month = months[date.getMonth()];
-    const day = String(date.getDate()).padStart(2, '0');
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
+  // Formatters using browser's built-in Intl API
+  const utcFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'UTC',
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
 
-    return `${year}-${month}-${day} ${hours}:${minutes}`;
-  }
-
-  /**
-   * Get timezone abbreviation
-   */
-  function getTimezoneAbbr(date) {
-    const tzString = date.toString();
-    const tzMatch = tzString.match(/\(([^)]+)\)$/);
-    if (tzMatch && tzMatch[1]) {
-      // Return the timezone abbreviation from the string
-      const tz = tzMatch[1];
-      // Try to create abbreviation from timezone name
-      const abbr = tz.split(' ').map(word => word[0]).join('');
-      return abbr || 'Local';
-    }
-
-    // Fallback: get offset
-    const offset = -date.getTimezoneOffset();
-    const hours = Math.floor(Math.abs(offset) / 60);
-    const minutes = Math.abs(offset) % 60;
-    const sign = offset >= 0 ? '+' : '-';
-    return `UTC${sign}${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
-  }
+  const localFormatter = new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
 
   /**
-   * Parse various datetime formats
+   * Get timezone name/abbreviation using Intl API
    */
-  function parseDateTime(dateStr) {
-    // Remove any existing timezone indicators
-    dateStr = dateStr.trim();
-
-    // Try to parse ISO format or common formats
-    // Formats to handle:
-    // - "2024-03-15 14:30" (no timezone, assume UTC)
-    // - "2024-03-15T14:30" (ISO format, no timezone, assume UTC)
-    // - "2024-Mar-15 14:30"
-    // - "March 15, 2024, 2:30 p.m."
-
-    // First, try standard Date parsing
-    let date = new Date(dateStr + ' UTC');
-
-    // If invalid, try without UTC suffix (in case it already has timezone)
-    if (isNaN(date.getTime())) {
-      date = new Date(dateStr);
-    }
-
-    return date;
+  function getLocalTimezoneName() {
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      timeZoneName: 'short'
+    });
+    const parts = formatter.formatToParts(new Date());
+    const tzPart = parts.find(part => part.type === 'timeZoneName');
+    return tzPart ? tzPart.value : 'Local';
   }
 
   /**
@@ -78,21 +49,26 @@
       return;
     }
 
-    const utcDate = parseDateTime(utcDateStr);
+    // Parse datetime - assume UTC if no timezone specified
+    const date = new Date(utcDateStr + ' UTC');
 
-    if (isNaN(utcDate.getTime())) {
-      console.warn('Could not parse datetime:', utcDateStr);
-      return;
+    if (isNaN(date.getTime())) {
+      // Try without ' UTC' suffix
+      const altDate = new Date(utcDateStr);
+      if (isNaN(altDate.getTime())) {
+        console.warn('Could not parse datetime:', utcDateStr);
+        return;
+      }
+      date.setTime(altDate.getTime());
     }
 
-    // Format both times
-    const utcFormatted = formatDateTime(new Date(utcDate.toISOString().replace('Z', '')));
-    const localDate = new Date(utcDate);
-    const localFormatted = formatDateTime(localDate);
-    const localTz = getTimezoneAbbr(localDate);
+    // Format using browser's Intl API
+    const utcFormatted = utcFormatter.format(date);
+    const localFormatted = localFormatter.format(date);
+    const localTz = getLocalTimezoneName();
 
-    // Check if UTC and local are the same
-    const sameAsUTC = utcDate.getTimezoneOffset() === 0;
+    // Check if user is in UTC timezone
+    const sameAsUTC = date.getTimezoneOffset() === 0;
 
     // Create the display
     const container = document.createElement('span');
@@ -106,7 +82,7 @@
       container.innerHTML = `
         <span class="tz-utc" title="Universal Coordinated Time">${utcFormatted} UTC</span>
         <span class="tz-separator"> / </span>
-        <span class="tz-local" title="Your local timezone: ${localTz}">${localFormatted} ${localTz}</span>
+        <span class="tz-local" title="Your local timezone">${localFormatted} ${localTz}</span>
       `;
     }
 
@@ -124,9 +100,9 @@
     if (!value) return;
 
     // Parse the datetime-local value (format: YYYY-MM-DDTHH:MM)
-    const utcDate = new Date(value + ':00Z'); // Add seconds and Z for UTC
+    const date = new Date(value + ':00Z'); // Add seconds and Z for UTC
 
-    if (isNaN(utcDate.getTime())) {
+    if (isNaN(date.getTime())) {
       return;
     }
 
@@ -138,14 +114,13 @@
       input.parentNode.insertBefore(helper, input.nextSibling);
     }
 
-    // Format both times
-    const utcFormatted = formatDateTime(new Date(utcDate.toISOString().replace('Z', '')));
-    const localDate = new Date(utcDate);
-    const localFormatted = formatDateTime(localDate);
-    const localTz = getTimezoneAbbr(localDate);
+    // Format using browser's Intl API
+    const utcFormatted = utcFormatter.format(date);
+    const localFormatted = localFormatter.format(date);
+    const localTz = getLocalTimezoneName();
 
-    // Check if UTC and local are the same
-    const sameAsUTC = utcDate.getTimezoneOffset() === 0;
+    // Check if user is in UTC timezone
+    const sameAsUTC = date.getTimezoneOffset() === 0;
 
     if (sameAsUTC) {
       helper.innerHTML = `<small>This time is: <strong>${utcFormatted} UTC</strong></small>`;
