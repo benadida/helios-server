@@ -17,6 +17,7 @@ STATUS_UPDATES = True
 STATUS_UPDATE_WORDING_TEMPLATE = "Send %s to your facebook status"
 
 from helios_auth import utils
+from helios_auth.utils import format_recipient
 
 def facebook_url(url, params):
   if params:
@@ -68,7 +69,7 @@ def update_status(user_id, user_info, token, message):
 
 def send_message(user_id, user_name, user_info, subject, body):
   if 'email' in user_info:
-    send_mail(subject, body, settings.SERVER_EMAIL, ["%s <%s>" % (user_name, user_info['email'])], fail_silently=False)    
+    send_mail(subject, body, settings.SERVER_EMAIL, [format_recipient(user_name, user_info['email'])], fail_silently=False)    
 
 
 ##

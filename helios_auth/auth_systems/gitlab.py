@@ -9,6 +9,7 @@ from django.core.mail import send_mail
 from oauth2client.client import OAuth2WebServerFlow
 
 from helios_auth import utils
+from helios_auth.utils import format_recipient
 
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False
@@ -67,7 +68,7 @@ def send_message(user_id, name, user_info, subject, body):
     subject,
     body,
     settings.SERVER_EMAIL,
-    ["%s <%s>" % (user_id, user_info['email'])],
+    [format_recipient(user_id, user_info['email'])],
     fail_silently=False,
   )
 

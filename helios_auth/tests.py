@@ -11,6 +11,32 @@ from django.urls import reverse
 
 from . import models, views
 from .auth_systems import AUTH_SYSTEMS, password as password_views
+from .utils import format_recipient
+
+
+class FormatRecipientTests(unittest.TestCase):
+    """Tests for the format_recipient helper function"""
+
+    def test_basic_formatting(self):
+        """Test basic name and email formatting"""
+        result = format_recipient("John Doe", "john@example.com")
+        self.assertEqual(result, "\"John Doe\" <john@example.com>")
+
+    def test_truncates_long_name(self):
+        """Test that names longer than 70 characters are truncated"""
+        long_name = "A" * 100
+        result = format_recipient(long_name, "test@example.com")
+        self.assertEqual(result, "\"%s\" <test@example.com>" % ("A" * 70))
+
+    def test_empty_name_uses_email(self):
+        """Test that empty name falls back to email"""
+        result = format_recipient("", "test@example.com")
+        self.assertEqual(result, "\"test@example.com\" <test@example.com>")
+
+    def test_none_name_uses_email(self):
+        """Test that None name falls back to email"""
+        result = format_recipient(None, "test@example.com")
+        self.assertEqual(result, "\"test@example.com\" <test@example.com>")
 
 
 class UserModelTests(unittest.TestCase):
