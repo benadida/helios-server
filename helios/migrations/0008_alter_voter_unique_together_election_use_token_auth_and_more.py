@@ -10,10 +10,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterUniqueTogether(
-            name="voter",
-            unique_together={("election", "voter_login_id")},
-        ),
         migrations.AddField(
             model_name="election",
             name="use_token_auth",
