@@ -1819,7 +1819,7 @@ def optout_form(request):
             'error': 'Email address is required'
         })
     
-    if not validate_email(email):
+    if not validate_email(email, check_dns=False, check_smtp=False):
         return render_template(request, 'optout_form', {
             'action': 'optout',
             'title': 'Opt Out of Helios Emails',
@@ -1927,7 +1927,7 @@ def optin_form(request):
             'error': 'Email address is required'
         })
     
-    if not validate_email(email):
+    if not validate_email(email, check_dns=False, check_smtp=False):
         return render_template(request, 'optout_form', {
             'action': 'optin',
             'title': 'Opt Back Into Helios Emails',

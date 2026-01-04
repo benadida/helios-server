@@ -778,7 +778,7 @@ class VoterFile(models.Model):
       if len(voter_fields) > 2:
         # but if it's supplied, it will be the 3rd field.
         voter_email = voter_fields[2].strip()
-      if voter_type == "password" and not validate_email(voter_email):
+      if voter_type == "password" and not validate_email(voter_email, check_dns=False, check_smtp=False):
         raise Exception("invalid voter email '%s' for voter id '%s'" % (voter_email, voter_id))
 
       # same thing for voter display name.
