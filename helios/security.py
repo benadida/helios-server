@@ -37,6 +37,105 @@ class HSTSMiddleware:
           response['Strict-Transport-Security'] = "max-age=31536000; includeSubDomains; preload"
         return response
 
+
+class ContentSecurityPolicyMiddleware:
+    """
+    Middleware to add Content-Security-Policy header to responses.
+
+    The CSP is designed to be restrictive while allowing the necessary
+    functionality for Helios voting system:
+
+    - Scripts: 'self' with 'unsafe-inline' and 'unsafe-eval' required due to
+      legacy inline scripts, onclick handlers, and jQuery JSON eval usage
+    - Styles: 'self' with 'unsafe-inline' for inline style attributes
+    - Images: 'self' and data: URIs (used in key generation download links)
+    - Workers: 'self' and blob: for Web Workers used in ballot encryption
+    - Forms: restricted to 'self' to prevent form hijacking
+    - Frame ancestors: 'self' to prevent clickjacking (supplements X-Frame-Options)
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+
+        if not getattr(settings, 'CSP_ENABLED', True):
+            return response
+
+        # Build CSP directives
+        directives = []
+
+        # Default policy - restrict everything to same origin by default
+        directives.append("default-src 'self'")
+
+        # Script sources
+        # 'unsafe-inline' required for: inline <script> tags, onclick handlers
+        # 'unsafe-eval' required for: jQuery.parseJSON using eval(), jTemplates
+        script_src = ["'self'", "'unsafe-inline'", "'unsafe-eval'"]
+        extra_script_src = getattr(settings, 'CSP_SCRIPT_SRC_EXTRA', [])
+        script_src.extend(extra_script_src)
+        directives.append("script-src " + " ".join(script_src))
+
+        # Style sources
+        # 'unsafe-inline' required for: inline style attributes
+        style_src = ["'self'", "'unsafe-inline'"]
+        extra_style_src = getattr(settings, 'CSP_STYLE_SRC_EXTRA', [])
+        style_src.extend(extra_style_src)
+        directives.append("style-src " + " ".join(style_src))
+
+        # Image sources
+        # data: required for: download links using data: URIs in key generation
+        img_src = ["'self'", "data:"]
+        extra_img_src = getattr(settings, 'CSP_IMG_SRC_EXTRA', [])
+        img_src.extend(extra_img_src)
+        directives.append("img-src " + " ".join(img_src))
+
+        # Font sources
+        directives.append("font-src 'self'")
+
+        # Connect sources (XHR, fetch, WebSocket)
+        connect_src = ["'self'"]
+        extra_connect_src = getattr(settings, 'CSP_CONNECT_SRC_EXTRA', [])
+        connect_src.extend(extra_connect_src)
+        directives.append("connect-src " + " ".join(connect_src))
+
+        # Worker sources (Web Workers for encryption)
+        # blob: may be needed for some worker implementations
+        directives.append("worker-src 'self' blob:")
+
+        # Form action - restrict form submissions to same origin
+        directives.append("form-action 'self'")
+
+        # Frame ancestors - prevent embedding in frames (clickjacking protection)
+        # This supplements X-Frame-Options
+        frame_ancestors = getattr(settings, 'CSP_FRAME_ANCESTORS', "'self'")
+        directives.append(f"frame-ancestors {frame_ancestors}")
+
+        # Base URI - prevent base tag hijacking
+        directives.append("base-uri 'self'")
+
+        # Object/embed sources - disable plugins
+        directives.append("object-src 'none'")
+
+        # Build the policy string
+        policy = "; ".join(directives)
+
+        # Use report-only mode if configured (useful for testing)
+        if getattr(settings, 'CSP_REPORT_ONLY', False):
+            header_name = 'Content-Security-Policy-Report-Only'
+        else:
+            header_name = 'Content-Security-Policy'
+
+        # Add report URI if configured
+        report_uri = getattr(settings, 'CSP_REPORT_URI', None)
+        if report_uri:
+            policy += f"; report-uri {report_uri}"
+
+        response[header_name] = policy
+
+        return response
+
 # current voter
 def get_voter(request, user, election):
   """
