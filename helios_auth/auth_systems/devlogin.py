@@ -108,8 +108,8 @@ def _is_localhost(request):
     host = request.get_host().split(':')[0]  # Remove port if present
     localhost_hosts = ['localhost', '127.0.0.1', 'testserver']
     
-    # During testing, allow testserver or if we're clearly in a test environment
-    if hasattr(settings, 'TESTING') or 'test' in host:
+    # During testing, allow testserver explicitly or when TESTING flag is set
+    if getattr(settings, 'TESTING', False) or host == 'testserver':
         return True
         
     return host in localhost_hosts
