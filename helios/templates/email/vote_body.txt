@@ -6,8 +6,15 @@ Election URL (click to begin voting):
 {{election_vote_url}}
 
 {% if voter.voter_type == "password" %}
+{% if voter.election.use_token_auth %}
+Your voting token:
+  {{voter.voting_token}}
+
+Copy and paste this token when prompted to log in.
+{% else %}
 Your voter ID: {{voter.voter_login_id}}
 Your password: {{voter.voter_password}}
+{% endif %}
 {% else %}
 Log in with your {{voter.voter_type}} account.
 {% endif %}{% if voter.vote_hash %}
