@@ -46,7 +46,18 @@ def get_user_info_after_auth(request):
   if 'code' not in request.GET:
     return None
 
-  redirect_url = request.session['google-redirect-url']
+  # Verify OAuth state to prevent CSRF attacks
+  expected_state = request.session.get('google-oauth-state')
+  actual_state = request.GET.get('state')
+  if not expected_state or expected_state != actual_state:
+    raise Exception("OAuth state mismatch - possible CSRF attack")
+
+  redirect_url = request.session.get('google-redirect-url')
+
+  # Clean up session data
+  for key in ['google-redirect-url', 'google-oauth-state']:
+    request.session.pop(key, None)
+
   flow = get_flow(redirect_url)
 
   # Exchange the authorization code for credentials

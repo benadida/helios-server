@@ -39,8 +39,17 @@ def get_user_info_after_auth(request):
   if 'code' not in request.GET:
     return None
 
-  redirect_uri = request.session['gh_redirect_uri']
-  del request.session['gh_redirect_uri']
+  # Verify OAuth state to prevent CSRF attacks
+  expected_state = request.session.get('gh_oauth_state')
+  actual_state = request.GET.get('state')
+  if not expected_state or expected_state != actual_state:
+    raise Exception("OAuth state mismatch - possible CSRF attack")
+
+  redirect_uri = request.session.get('gh_redirect_uri')
+
+  # Clean up session data
+  for key in ['gh_redirect_uri', 'gh_oauth_state']:
+    request.session.pop(key, None)
 
   oauth = get_oauth_session(redirect_uri)
   token = oauth.fetch_token(
