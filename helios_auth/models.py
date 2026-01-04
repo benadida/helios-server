@@ -45,12 +45,24 @@ class User(models.Model):
     
   @classmethod
   def get_by_type_and_id(cls, user_type, user_id):
+    # For GitHub users, do case-insensitive matching since GitHub usernames are case-insensitive
+    if user_type == 'github':
+      return cls.objects.get(user_type=user_type, user_id__iexact=user_id)
     return cls.objects.get(user_type = user_type, user_id = user_id)
   
   @classmethod
   def update_or_create(cls, user_type, user_id, name=None, info=None, token=None):
-    obj, created_p = cls.objects.get_or_create(user_type = user_type, user_id = user_id, defaults = {'name': name, 'info':info, 'token':token})
-    
+    # For GitHub users, do case-insensitive matching since GitHub usernames are case-insensitive
+    if user_type == 'github':
+      try:
+        obj = cls.objects.get(user_type=user_type, user_id__iexact=user_id)
+        created_p = False
+      except cls.DoesNotExist:
+        obj = cls.objects.create(user_type=user_type, user_id=user_id, name=name, info=info, token=token)
+        created_p = True
+    else:
+      obj, created_p = cls.objects.get_or_create(user_type = user_type, user_id = user_id, defaults = {'name': name, 'info':info, 'token':token})
+
     if not created_p:
       # special case the password: don't replace it if it exists
       if 'password' in obj.info:
@@ -59,6 +71,9 @@ class User(models.Model):
       obj.info = info
       obj.name = name
       obj.token = token
+      # For GitHub, also update user_id to preserve the current case from GitHub
+      if user_type == 'github':
+        obj.user_id = user_id
       obj.save()
 
     return obj
