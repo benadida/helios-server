@@ -984,7 +984,10 @@ def one_election_bboard(request, election):
   UI to show election bboard
   """
   after = request.GET.get('after', None)
-  offset= int(request.GET.get('offset', 0))
+  try:
+    offset = int(request.GET.get('offset', 0))
+  except (ValueError, TypeError):
+    offset = 0
 
   # Allowed pagination limits
   ALLOWED_LIMITS = [50, 100, 250, 500]
