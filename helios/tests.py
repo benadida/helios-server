@@ -526,6 +526,61 @@ class VoterModelTests(TestCase):
         # Both voters should exist with unique tokens
         self.assertEqual(models.Voter.objects.filter(election=self.election, voting_token__isnull=False).count(), 2)
 
+    def test_token_authentication_functional(self):
+        """Functional test: Create token-based election and verify token authentication"""
+        # Create a token-based election
+        election = models.Election.objects.create(
+            admin=auth_models.User.objects.get(user_id='ben@adida.net', user_type='google'),
+            uuid=str(uuid.uuid4()),
+            short_name='token-test',
+            name='Token Test Election',
+            election_type='election',
+            use_token_auth=True,
+            cast_url='http://localhost:8000/helios',
+            description='Test election for token auth'
+        )
+
+        # Create a voter with token
+        voter_uuid = str(uuid.uuid4())
+        voter = models.Voter(
+            uuid=voter_uuid,
+            election=election,
+            voter_login_id='tokenvoter',
+            voter_name='Token Voter',
+            voter_email='token@example.com'
+        )
+        voter.generate_voting_token()
+        voter.save()
+
+        # Verify token was generated
+        self.assertIsNotNone(voter.voting_token)
+        self.assertEqual(len(voter.voting_token), 20)
+
+        # Verify voter can be looked up by token
+        found_voter = election.voter_set.get(voting_token=voter.voting_token)
+        self.assertEqual(found_voter.id, voter.id)
+
+        # Verify election uses token auth
+        self.assertTrue(election.use_token_auth)
+
+        # Verify token is unique - create another voter
+        voter2 = models.Voter(
+            uuid=str(uuid.uuid4()),
+            election=election,
+            voter_login_id='tokenvoter2',
+            voter_name='Token Voter 2',
+            voter_email='token2@example.com'
+        )
+        voter2.generate_voting_token()
+        voter2.save()
+
+        # Tokens should be different
+        self.assertNotEqual(voter.voting_token, voter2.voting_token)
+
+        # Both voters should be findable by their respective tokens
+        self.assertEqual(election.voter_set.get(voting_token=voter.voting_token).id, voter.id)
+        self.assertEqual(election.voter_set.get(voting_token=voter2.voting_token).id, voter2.id)
+
 
 class CastVoteModelTests(TestCase):
     fixtures = ['users.json', 'election.json']

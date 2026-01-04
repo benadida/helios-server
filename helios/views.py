@@ -686,13 +686,18 @@ def password_voter_login(request, election):
     if user_can_see_election(request, election):
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args = [election.uuid]))
 
-    password_login_form = forms.VoterPasswordForm()
+    # Use appropriate form based on election type
+    if election.use_token_auth:
+      login_form = forms.VoterTokenForm()
+    else:
+      login_form = forms.VoterPasswordForm()
+
     return render_template(request, 'password_voter_login',
-                           {'election': election, 
+                           {'election': election,
                             'return_url' : return_url,
-                            'password_login_form': password_login_form,
+                            'login_form': login_form,
                             'bad_voter_login' : bad_voter_login})
-  
+
   login_url = request.GET.get('login_url', None)
 
   if not login_url:
@@ -703,22 +708,22 @@ def password_voter_login(request, election):
     else:
       login_url = reverse(one_election_cast_confirm, args=[election.uuid])
 
-  password_login_form = forms.VoterPasswordForm(request.POST)
+  # Use appropriate form based on election type
+  if election.use_token_auth:
+    login_form = forms.VoterTokenForm(request.POST)
+  else:
+    login_form = forms.VoterPasswordForm(request.POST)
 
-  if password_login_form.is_valid():
+  if login_form.is_valid():
     try:
       # Token-based authentication
       if election.use_token_auth:
-        voting_token = password_login_form.cleaned_data.get('voting_token', '').strip()
-        if not voting_token:
-          raise Voter.DoesNotExist("No token provided")
+        voting_token = login_form.cleaned_data['voting_token'].strip()
         voter = election.voter_set.get(voting_token=voting_token)
-      # Password-based authentication (legacy)
+      # Password-based authentication
       else:
-        voter_id = password_login_form.cleaned_data.get('voter_id', '').strip()
-        password = password_login_form.cleaned_data.get('password', '').strip()
-        if not voter_id or not password:
-          raise Voter.DoesNotExist("No voter_id or password provided")
+        voter_id = login_form.cleaned_data['voter_id'].strip()
+        password = login_form.cleaned_data['password'].strip()
         voter = election.voter_set.get(voter_login_id=voter_id, voter_password=password)
 
       request.session['CURRENT_VOTER_ID'] = voter.id
