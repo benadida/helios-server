@@ -57,10 +57,12 @@ The system branches based on `Election.use_token_auth`:
 - `password_voter_login()`: Branches authentication logic based on `election.use_token_auth`
 
 **Forms:**
-- `VoterPasswordForm`: Contains fields for both methods (all optional)
+- `VoterPasswordForm`: For password-based auth (voter_id + password fields)
+- `VoterTokenForm`: For token-based auth (voting_token field)
+- View selects and instantiates appropriate form based on election setting
 
 **Templates:**
-- Login form conditionally renders single token field OR dual ID/password fields
+- Login template renders the selected form (VoterPasswordForm or VoterTokenForm)
 - Email templates show appropriate credentials based on election type
 
 ## Migration & Compatibility
@@ -97,6 +99,7 @@ Token-based auth maintains the existing security posture while improving entropy
 
 - `test_create_token_voter`: Validates 20-character token generation
 - `test_token_uniqueness_per_election`: Ensures per-election uniqueness
+- `test_token_authentication_functional`: End-to-end token authentication flow
 - Existing password tests continue passing without modification
 
 ## Usage
