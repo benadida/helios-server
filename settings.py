@@ -313,7 +313,7 @@ GITLAB_CLIENT_SECRET = get_from_env('GITLAB_CLIENT_SECRET', "")
 
 # OAuth generic
 OAUTH_NAME = ""
-OAUTH_LOGIN_MESSAGE = "Identificado com OAuth"
+OAUTH_LOGIN_MESSAGE = "Log in with OAuth"
 OAUTH_CLIENT_ID = get_from_env('OAUTH_CLIENT_ID', '')
 OAUTH_CLIENT_SECRET = get_from_env('OAUTH_CLIENT_SECRET', '')
 OAUTH_AUTH_URI = ""
