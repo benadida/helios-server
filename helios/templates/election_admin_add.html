@@ -1,41 +1,47 @@
 {% extends TEMPLATE_BASE %}
+{% load i18n %}
 
-{% block title %}Add Administrator - {{election.name}}{% endblock %}
+{% block title %}{% trans "Add Administrator" %} - {{election.name}}{% endblock %}
 
 {% block content %}
-  <h3 class="title">{{election.name}} &mdash; Add Administrator <span style="font-size:0.7em;">[<a href="{% url "election@admins" election.uuid %}">cancel</a>]</span></h3>
+<h3 class="title">
+  {{election.name}} - {% trans "Add Administrator" %}
+  <span style="font-size:0.7em;">[ <a
+      href="{% url "election@admins" election.uuid %}">{% trans "cancel" %}</a> ]
+  </span>
+</h3>
 
 {% if matching_users %}
 <p>
-    Multiple users were found with the email <strong>{{email}}</strong>. Please select which one to add:
+  {% trans "Multiple users were found with the email" %} <strong>{{email}}</strong>.
+  {% trans "Please select which one to add" %}:
 </p>
 
 <form method="post" action="">
-<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-<input type="hidden" name="email" value="{{email}}" />
-<ul>
-{% for user in matching_users %}
-<li>
-  <label>
-    <input type="radio" name="auth_type" value="{{user.user_type}}" {% if forloop.first %}checked{% endif %} />
-    {{user.display_html_small|safe}} ({{user.user_type}})
-  </label>
-</li>
-{% endfor %}
-</ul>
-<br />
-<input type="submit" value="Add Selected Administrator" />
+  <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+  <input type="hidden" name="email" value="{{email}}" />
+  <ul>
+    {% for user in matching_users %}
+    <li>
+      <label>
+        <input type="radio" name="auth_type" value="{{user.user_type}}" {% if forloop.first %}checked{% endif %} />
+        {{user.display_html_small|safe}} ({{user.user_type}})
+      </label>
+    </li>
+    {% endfor %}
+  </ul>
+  <br />
+  <input type="submit" value="{% trans "Add Selected Administrator" %}" />
 </form>
 
 {% else %}
 
 <p>
-    Add another administrator to this election. The new administrator will have the same privileges as you,
-    including the ability to manage voters, questions, trustees, and other settings.
+  {% trans "Add another administrator to this election. The new administrator will have the same privileges as you, including the ability to manage voters, questions, trustees, and other settings." %}
 </p>
 
 <p>
-    <em>Note: The user must have logged in to Helios at least once before they can be added as an administrator.</em>
+  <em>{% trans "Note: The user must have logged in to Helios at least once before they can be added as an administrator." %}</em>
 </p>
 
 {% if error %}
@@ -45,10 +51,10 @@
 {% endif %}
 
 <form method="post" action="">
-<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-Email: <input type="text" name="email" size="60" /><br /><br />
+  <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+  {% trans "Email" %}: <input type="text" name="email" size="60" /><br /><br />
 
-<input type="submit" value="Add Administrator" />
+  <input type="submit" value="{% trans "Add Administrator" %}" />
 </form>
 
 {% endif %}

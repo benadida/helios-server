@@ -1,14 +1,17 @@
 {% extends TEMPLATE_BASE %}
-{% block title %}Statistics{% endblock %}
+{% load i18n %}
+
+{% block title %}{% trans "Statistics" %}{% endblock %}
 
 {% block content %}
-<h1>Problematic Elections</h1>
+<h1>{% trans "Problematic Elections" %}</h1>
 
-Unfrozen for more than a day.
+{% trans "Unfrozen for more than a day." %}
 
 {% for election in elections %}
 <p>
-<b><a href="{% url "election@view" election.uuid %}">{{election.name}}</a></b> -- {{election.num_voters}} voters
+    <b><a href="{% url "election@view" election.uuid %}">{{election.name}}</a></b>
+    - {{election.num_voters}} {% trans "voters" %}
 </p>
 {% endfor %}
 

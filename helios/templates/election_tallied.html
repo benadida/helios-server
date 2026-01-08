@@ -1,19 +1,21 @@
 {% extends TEMPLATE_BASE %}
+{% load i18n %}
 
 {% block content %}
+<h3 class="title">
+    {% trans "Election" %} {{election.name}} - {% trans "Already Tallied" %}
+</h3>
 
-  <h2 class="title">Election {{election.name}} Already Tallied</h2>
+<p>
+    {% trans "This election has already been tallied, you can no longer cast a vote." %}
+</p>
 
-  <p>
-      This election has already been tallied, you can no longer cast a vote.
-  </p>
-  
-  <p>
-      {% if election.voting_start_at %}Voting start at {{election.voting_start_at}}<br />{% endif %}
-      {% if election.voting_end_at %}Voting end at {{election.voting_end_at}}<br />{% endif %}
-  </p>
-  
-  <p>
-      <a href="{% url "election@view" election.uuid %}">view the election tally</a>
-  </p>
+<p>
+    {% if election.voting_start_at %}{% trans "Voting start at" %} {{election.voting_start_at}}<br />{% endif %}
+    {% if election.voting_end_at %}{% trans "Voting end at" %} {{election.voting_end_at}}<br />{% endif %}
+</p>
+
+<p>
+    <a href="{% url "election@view" election.uuid %}">{% trans "View the election tally" %}</a>
+</p>
 {% endblock %}

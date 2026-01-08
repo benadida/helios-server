@@ -1,44 +1,50 @@
 {% extends TEMPLATE_BASE %}
+{% load i18n %}
 
-{% block title %}Compute Encryted Tally for {{election.name}}{% endblock %}
+{% block title %}{% trans "Compute Encryted Tally for" %} {{election.name}}{% endblock %}
 
 {% block content %}
-  <h2 class="title">Compute Tally for Election: {{election.name}}</h2>
+<h3 class="title">
+  {% trans "Compute Tally for Election" %}: {{election.name}}
+</h3>
 
 <div id="instructions">
-{% if num_pending_votes > 0 %}
-<p>
-    <b>{{ num_pending_votes }} vote{{ num_pending_votes|pluralize }} still being processed.</b>
-</p>
-<p>
-    All votes must be verified before computing the tally. Please wait and try again shortly.
-    If this persists, contact <a href="mailto:{{settings.HELP_EMAIL_ADDRESS}}">{{settings.HELP_EMAIL_ADDRESS}}</a>.
-</p>
-<p>
-    <a href="{% url "election@compute-tally" election.uuid %}">Refresh this page</a> |
-    <a href="{% url "election@view" election.uuid %}">back to election</a>
-</p>
-{% elif election.num_cast_votes %}
-<p>
-    You are about to compute the encrypted tally for election <b>{{election.name}}</b>.
-</p>
+  {% if num_pending_votes > 0 %}
+  <p>
+    <b>{{ num_pending_votes }} {% trans "vote(s) still being processed." %}</b>
+  </p>
+  <p>
+    {% trans "All votes must be verified before computing the tally. Please wait and try again shortly." %}
+    {% trans "If this persists, contact" %} <a
+      href="mailto:{{settings.HELP_EMAIL_ADDRESS}}">{{settings.HELP_EMAIL_ADDRESS}}</a>.
+  </p>
+  <p>
+    <a href="{% url "election@compute-tally" election.uuid %}">{% trans "Refresh this page" %}</a> |
+    <a href="{% url "election@view" election.uuid %}">{% trans "back to election" %}</a>
+  </p>
+  {% elif election.num_cast_votes %}
+  <p>
+    {% trans "You are about to compute the encrypted tally for election" %} <b>{{election.name}}</b>.
+  </p>
 
-<p>
-    Once you do this, voters will no longer be able to cast a ballot.
-</p>
+  <p>
+    {% trans "Once you do this, voters will no longer be able to cast a ballot." %}
+  </p>
 
-<form method="post" action="" onsubmit="alert('ok, tally has begun')" class="pretty">
-<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+  <form method="post" action="" onsubmit="alert('{% trans "Ok, tally has begun" %}')" class="pretty">
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 
-<input class="button" type="submit" value="compute encrypted tally!" />
-<button onclick="document.location='{% url "election@view" election.uuid %}'; return false;">never mind</button>
-</form>
-{% else %}
-<p>
-No votes have been cast in this election. At least one vote must be cast before you compute the tally.<br /><br />
-<a href="{% url "election@view" election.uuid %}">back to election</a>
-</p>
-{% endif %}
+    <input class="button" type="submit" value="{% trans "Compute encrypted tally!" %}" />
+    <button onclick="document.location='{% url "election@view" election.uuid %}'; return false;">
+      {% trans "Never mind" %}
+    </button>
+  </form>
+  {% else %}
+  <p>
+    {% trans "No votes have been cast in this election. At least one vote must be cast before you compute the tally."%}<br /><br />
+    <a href="{% url "election@view" election.uuid %}">{% trans "back to election" %}</a>
+  </p>
+  {% endif %}
 </div>
 
 <br /><br />

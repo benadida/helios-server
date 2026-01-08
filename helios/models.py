@@ -14,6 +14,7 @@ import uuid
 import bleach
 from django.conf import settings
 from django.db import models, transaction
+from django.utils.translation import gettext_lazy as _
 from validate_email import validate_email
 
 from helios import datatypes
@@ -50,8 +51,8 @@ class Election(HeliosModel):
   name = models.CharField(max_length=250)
 
   ELECTION_TYPES = (
-    ('election', 'Election'),
-    ('referendum', 'Referendum')
+    ('election', _('Election')),
+    ('referendum', _('Referendum'))
     )
 
   election_type = models.CharField(max_length=250, null=False, default='election', choices = ELECTION_TYPES)
@@ -348,7 +349,7 @@ class Election(HeliosModel):
   @property
   def pretty_eligibility(self):
     if not self.eligibility:
-      return "Anyone can vote."
+      return _("Anyone can vote.")
     else:
       return_val = "<ul>"
 
@@ -357,7 +358,12 @@ class Election(HeliosModel):
           for one_constraint in constraint['constraint']:
             return_val += "<li>%s</li>" % AUTH_SYSTEMS[constraint['auth_system']].pretty_eligibility(one_constraint)
         else:
-          return_val += "<li> any %s user</li>" % constraint['auth_system']
+          auth_type = constraint['auth_system']
+          if auth_type == "oauth":
+            system_name = getattr(settings, 'OAUTH_NAME', 'OAuth')
+          else:
+            system_name = auth_type
+          return_val += ("<li>" + _("any %s user") + "</li>") % system_name
 
       return_val += "</ul>"
 
@@ -399,27 +405,27 @@ class Election(HeliosModel):
     if self.questions is None or len(self.questions) == 0:
       issues.append(
         {'type': 'questions',
-         'action': "add questions to the ballot"}
+         'action': _("add questions to the ballot")}
         )
 
     trustees = Trustee.get_by_election(self)
     if len(trustees) == 0:
       issues.append({
           'type': 'trustees',
-          'action': "add at least one trustee"
+          'action': _("add at least one trustee")
           })
 
     for t in trustees:
       if t.public_key is None:
         issues.append({
             'type': 'trustee keypairs',
-            'action': 'have trustee %s generate a keypair' % t.name
+            'action': _("have trustee %s generate a keypair") % t.name
             })
 
     if self.voter_set.count() == 0 and not self.openreg:
       issues.append({
           "type" : "voters",
-          "action" : 'enter your voter list (or open registration to the public)'
+          "action" : _("enter your voter list (or open registration to the public)")
           })
 
     return issues
@@ -563,7 +569,7 @@ class Election(HeliosModel):
     election is frozen when the voter registration, questions, and trustees are finalized
     """
     if len(self.issues_before_freeze) > 0:
-      raise Exception("cannot freeze an election that has issues")
+      raise Exception(_("cannot freeze an election that has issues"))
 
     self.frozen_at = datetime.datetime.utcnow()
 
@@ -651,9 +657,9 @@ class Election(HeliosModel):
   @property
   def registration_status_pretty(self):
     if self.openreg:
-      return "Open"
+      return _("Open")
     else:
-      return "Closed"
+      return _("Closed")
 
   @classmethod
   def one_question_winner(cls, question, result, num_cast_votes):
@@ -762,7 +768,7 @@ class VoterFile(models.Model):
       elif isinstance(self.voter_file_content, bytes):
         content = self.voter_file_content.decode('utf-8')
       else:
-        raise TypeError("voter_file_content is of type {0} instead of str or bytes"
+        raise TypeError(_("voter_file_content is of type {0} instead of str or bytes")
                         .format(str(type(self.voter_file_content))))
 
       # now we have to handle non-universal-newline stuff
@@ -785,7 +791,7 @@ class VoterFile(models.Model):
       voter_id = voter_fields[1].strip()
 
       if not voter_type in AUTH_SYSTEMS:
-        raise Exception("invalid voter type '%s' for voter id '%s', available voter types are %s" % (voter_type, voter_id, ",".join(AUTH_SYSTEMS.keys())))
+        raise Exception(_("invalid voter type '%s' for voter id '%s', available voter types are %s") % (voter_type, voter_id, ",".join(AUTH_SYSTEMS.keys())))
 
       # default to having email be the same as voter_id
       voter_email = voter_id
@@ -793,7 +799,7 @@ class VoterFile(models.Model):
         # but if it's supplied, it will be the 3rd field.
         voter_email = voter_fields[2].strip()
       if voter_type == "password" and not validate_email(voter_email):
-        raise Exception("invalid voter email '%s' for voter id '%s'" % (voter_email, voter_id))
+        raise Exception(_("invalid voter email '%s' for voter id '%s'") % (voter_email, voter_id))
 
       # same thing for voter display name.
       voter_name = voter_email
@@ -915,7 +921,7 @@ class Voter(HeliosModel):
     # Check if user email is opted out
     user_email = user.user_id if user else None
     if user_email and EmailOptOut.is_opted_out(user_email):
-        raise ValueError(f"Cannot register user {user_email} - email has opted out of Helios emails")
+        raise ValueError(_("Cannot register user %s - email has opted out of Helios emails") % user_email)
 
     voter_uuid = str(uuid.uuid4())
     voter = Voter(uuid= voter_uuid, user = user, election = election)
@@ -1057,7 +1063,7 @@ class Voter(HeliosModel):
 
   def generate_password(self, length=10):
     if self.voter_password:
-      raise Exception("password already exists")
+      raise Exception(_("password already exists"))
 
     self.voter_password = utils.random_string(length, alphabet='abcdefghjkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789')
 
@@ -1154,7 +1160,7 @@ class CastVote(HeliosModel):
   def verify_and_store(self):
     # if it's quarantined, don't let this go through
     if self.is_quarantined:
-      raise Exception("cast vote is quarantined, verification and storage is delayed.")
+      raise Exception(_("cast vote is quarantined, verification and storage is delayed."))
 
     result = self.vote.verify(self.voter.election)
 
@@ -1179,7 +1185,7 @@ class CastVote(HeliosModel):
 
     # check the election
     if self.vote.election_uuid != election.uuid:
-      issues.append("the vote's election UUID does not match the election for which this vote is being cast")
+      issues.append(_("the vote's election UUID does not match the election for which this vote is being cast"))
 
     return issues
 
@@ -1290,37 +1296,37 @@ class Trustee(HeliosModel):
 
 
 class EmailOptOut(models.Model):
-  email_hash = models.CharField(max_length=64, unique=True, help_text="SHA-256 hash of lowercase email")
+  email_hash = models.CharField(max_length=64, unique=True, help_text=_("SHA-256 hash of lowercase email"))
   opted_out_at = models.DateTimeField(auto_now_add=True)
-  user_agent = models.CharField(max_length=500, null=True, blank=True, help_text="User agent when opt-out was requested")
-  ip_address = models.GenericIPAddressField(null=True, blank=True, help_text="IP address when opt-out was requested")
-  
+  user_agent = models.CharField(max_length=500, null=True, blank=True, help_text=_("User agent when opt-out was requested"))
+  ip_address = models.GenericIPAddressField(null=True, blank=True, help_text=_("IP address when opt-out was requested"))
+
   class Meta:
     app_label = 'helios'
-    
+
   def __str__(self):
     return f"EmailOptOut {self.email_hash[:8]}... at {self.opted_out_at}"
-    
+
   @classmethod
   def is_opted_out(cls, email):
     if not email:
       return False
-      
+
     email_hash = utils.hash_email(email)
     if not email_hash:
       return False
-      
+
     return cls.objects.filter(email_hash=email_hash).exists()
-    
-  @classmethod  
+
+  @classmethod
   def add_opt_out(cls, email, user_agent=None, ip_address=None):
     if not email:
       return None
-      
+
     email_hash = utils.hash_email(email)
     if not email_hash:
       return None
-      
+
     opt_out, created = cls.objects.get_or_create(
       email_hash=email_hash,
       defaults={
@@ -1328,17 +1334,17 @@ class EmailOptOut(models.Model):
         'ip_address': ip_address
       }
     )
-    
+
     return opt_out
-    
+
   @classmethod
   def remove_opt_out(cls, email):
     if not email:
       return False
-      
+
     email_hash = utils.hash_email(email)
     if not email_hash:
       return False
-      
+
     deleted_count, _ = cls.objects.filter(email_hash=email_hash).delete()
     return deleted_count > 0

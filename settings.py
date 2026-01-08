@@ -77,6 +77,11 @@ SITE_ID = 1
 # to load the internationalization machinery.
 USE_I18N = True
 
+# Internationalization (i18n) settings: Path to custom locale files.
+LOCALE_PATHS = [
+    os.path.join(os.path.dirname(__file__), 'locale'),
+]
+
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
 MEDIA_ROOT = ''
@@ -164,8 +169,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
 
-    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 ]
 

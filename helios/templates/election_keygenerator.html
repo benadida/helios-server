@@ -1,177 +1,188 @@
 {% extends "helios/templates/cryptobase.html" %}
+{% load i18n %}
+
 {% block content %}
 <script language="javascript">
 
-var PUBLIC_KEY, PROOF;
+    var PUBLIC_KEY, PROOF;
 
-function clear_keys() {
-    $('#sk_download').hide();
-    $('#pk_form').hide();
-    $('#buttons').show();
-    $('#clear_button').hide();
-    $('#reuse').hide();
-}
+    function clear_keys() {
+        $('#sk_download').hide();
+        $('#pk_form').hide();
+        $('#buttons').show();
+        $('#clear_button').hide();
+        $('#reuse').hide();
+    }
 
-function show_key_reuse() {
-    $('#generator').hide();
-    $('#reuse').show();
-}
+    function show_key_reuse() {
+        $('#generator').hide();
+        $('#reuse').show();
+    }
 
-SECRET_KEY = null;
+    SECRET_KEY = null;
 
-function reuse_key(secret_key_text) {
-    SECRET_KEY = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(secret_key_text));
+    function reuse_key(secret_key_text) {
+        SECRET_KEY = ElGamal.SecretKey.fromJSONObject(jQuery.secureEvalJSON(secret_key_text));
 
-    $('#reuse').hide();
-    setup_public_key_and_proof();
-    show_pk();
-}
+        $('#reuse').hide();
+        setup_public_key_and_proof();
+        show_pk();
+    }
 
-// start collecting some local randomness
-sjcl.random.startCollectors();
+    // start collecting some local randomness
+    sjcl.random.startCollectors();
 
-$(document).ready(function() {
-    clear_keys();
-    $('#generator').hide();
+    $(document).ready(function () {
+        clear_keys();
+        $('#generator').hide();
 
-    // get some more server-side randomness for keygen
-    $.getJSON('{% url "election@get-randomness" election.uuid %}', function(result) {
-       sjcl.random.addEntropy(result.randomness);
-       BigInt.setup(function() {
-          ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{eg_params_json|safe}});
-          $('#waiting_message').hide();
-          $('#generator').show();
-       });
+        // get some more server-side randomness for keygen
+        $.getJSON('{% url "election@get-randomness" election.uuid %}', function (result) {
+            sjcl.random.addEntropy(result.randomness);
+            BigInt.setup(function () {
+                ELGAMAL_PARAMS = ElGamal.Params.fromJSONObject({{ eg_params_json| safe}});
+        $('#waiting_message').hide();
+        $('#generator').show();
+    });
     });
 });
 
 
-function generate_keypair() {
-    $('#buttons').hide();
-    
-    try {
-        SECRET_KEY = ELGAMAL_PARAMS.generate();
-    } catch (e) {
-        alert(e);
+    function generate_keypair() {
+        $('#buttons').hide();
+
+        try {
+            SECRET_KEY = ELGAMAL_PARAMS.generate();
+        } catch (e) {
+            alert(e);
+        }
+
+        setup_public_key_and_proof();
     }
 
-    setup_public_key_and_proof();
-}
+    function setup_public_key_and_proof() {
+        // generate PoK of secret key
+        PROOF = SECRET_KEY.proveKnowledge(ElGamal.fiatshamir_dlog_challenge_generator);
+        PUBLIC_KEY = SECRET_KEY.pk;
 
-function setup_public_key_and_proof() {    
-    // generate PoK of secret key
-    PROOF = SECRET_KEY.proveKnowledge(ElGamal.fiatshamir_dlog_challenge_generator);
-    PUBLIC_KEY = SECRET_KEY.pk;
+        var pk_val = jQuery.toJSON({ 'pok': PROOF, 'public_key': PUBLIC_KEY });
+        $('#pk_textarea').val(pk_val);
+        $('#pk_hash').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY)));
 
-    var pk_val = jQuery.toJSON({'pok': PROOF, 'public_key': PUBLIC_KEY});
-    $('#pk_textarea').val(pk_val);
-    $('#pk_hash').html(b64_sha256(jQuery.toJSON(PUBLIC_KEY)));
+        $('#clear_button').show();
+        show_sk();
+    }
 
-    $('#clear_button').show();
-    show_sk();
-}
+    function show_sk() {
+        $('#sk_download').show();
+    }
 
-function show_sk() {
-    $('#sk_download').show();
-}
+    function download_sk() {
+        $('#pk_content').show();
+        $('#sk_content').html(jQuery.toJSON(SECRET_KEY));
+    }
 
-function download_sk() {
-    $('#pk_content').show();
-    $('#sk_content').html(jQuery.toJSON(SECRET_KEY));
-}
+    function download_sk_to_file(filename) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(jQuery.toJSON(SECRET_KEY)));
+        element.setAttribute('download', filename);
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+    }
 
-function download_sk_to_file(filename) {
-    var element = document.createElement('a');
-    element.setAttribute('href','data:text/plain;charset=utf-8,'+ encodeURIComponent(jQuery.toJSON(SECRET_KEY)));
-    element.setAttribute('download', filename);
-    element.style.display = 'none';
-    document.body.appendChild(element);
-    element.click();
-    document.body.removeChild(element);
-}
-
-function show_pk() {
-    $('#sk_download').hide();
-    $('#pk_content').hide();
-    $('#pk_hash').show();
-    $('#pk_form').show();
-}
+    function show_pk() {
+        $('#sk_download').hide();
+        $('#pk_content').hide();
+        $('#pk_hash').show();
+        $('#pk_form').show();
+    }
 
 </script>
 
-<h2 class="title">{{election.name}} &mdash; Trustee {{trustee.name}} &mdash; Key Setup</h2>
+<h3 class="title">
+    {{election.name}} - {% trans "Trustee" %} {{trustee.name}} - {% trans "Key Setup" %}
+</h3>
 
 <p>
-  As a trustee, it's time to set up your key for this election.
+    {% trans "As a trustee, it's time to set up your key for this election." %}
 </p>
 
 <p id="waiting_message">
-  Please wait for the generator to load...
+    {% trans "Please wait for the generator to load..." %}
 </p>
 
 <p id="generator">
 
-<span id="buttons"><button onclick="generate_keypair(); return false;" id="generate_button">Generate Election Keys</button></span>
+    <span id="buttons">
+        <button onclick="generate_keypair(); return false;" id="generate_button">
+            {% trans "Generate Election Keys" %}
+        </button>
+    </span>
 
-<br />
-If you've already generated a keypair, you can <a href="javascript:show_key_reuse()">reuse it</a>.
+    <br />
+    {% trans "If you've already generated a keypair, you can" %} <a href="javascript:show_key_reuse()">{% trans "reuse it" %}</a>.
 </p>
 
 <div id="reuse">
-<h3>Reusing a Key</h3>
-
-<p>
-Enter your complete secret key below:
-</p>
-<form onsubmit="reuse_key(this.secret_key.value); return false;">
-<textarea cols="80" rows="5" wrap="soft" name="secret_key">
-</textarea>
-<br />
-<input type="submit" value="reuse" />
-</form>
+    <h3>{% trans "Reusing a Key" %}</h3>
+    <p>
+        {% trans "Enter your complete secret key below" %}:
+    </p>
+    <form onsubmit="reuse_key(this.secret_key.value); return false;">
+        <textarea cols="80" rows="5" wrap="soft" name="secret_key"></textarea>
+        <br />
+        <input type="submit" value="{% trans "Reuse" %}" />
+    </form>
 </div>
 
 <div id="sk_download">
-<h3>Your Secret Key</h3>
-<span id="clear_button">
-Your key has been generated, but you may choose to<br /><a href="javascript:clear_keys();">clear it from memory and start from scratch</a> if you prefer.<br />
-</span>
+    <h3>{% trans "Your Secret Key" %}</h3>
+    <span id="clear_button">
+        {% trans "Your key has been generated, but you may choose to" %}<br />
+        <a href="javascript:clear_keys();">{% trans "clear it from memory and start from scratch" %}</a>
+        {% trans "if you prefer." %}<br />
+    </span>
 
-<p>
-    <button style="font-size:16pt;" onclick="download_sk(); $('#pk_link').show();">Show my secret key</button>
-</p>
+    <p>
+        <button style="font-size:16pt;" onclick="download_sk(); $('#pk_link').show();">
+            {% trans "Show my secret key" %}
+        </button>
+    </p>
 </div>
 
 <div style="display:none;" id="pk_content">
-    <p>Bellow is your trustee secret key content. Please copy its content and save it securely. <br>
-       You can also click to dowload it to a file.
-       And please don't lose it! Otherwise it will not be possible to decrypt the election tally.<br>
+    <p>
+        {% trans "Below is your trustee secret key content. Please copy its content and save it securely.<br />You can also click to download it to a file.<br />And please don't lose it! Otherwise it will not be possible to decrypt the election tally." %}
     </p>
     <textarea id="sk_content" rows="5" wrap="soft" cols="50" style="height: 25em;"></textarea>
 </div>
 
 <div style="display:none;" id="pk_link">
-<p>
-<a id="download_to_file" href="javascript:download_sk_to_file('trustee_key_for_{{election.name}}.txt');">download private key to a file</a>
-</p>
-<p>
-  <a href="javascript:show_pk();">ok, I've saved the key, let's move on</a>
-</p>
+    <p>
+        <a id="download_to_file"
+            href="javascript:download_sk_to_file('trustee_key_for_{{election.name}}.txt');">{% trans "download private key to a file" %}</a>
+    </p>
+    <p>
+        <a href="javascript:show_pk();">{% trans "ok, I've saved the key, let's move on" %}</a>
+    </p>
 </div>
 
 <form method="post" id="pk_form" action="{% url "election@trustee@upload-pk" election.uuid trustee.uuid %}">
-<h3>Your Public Key</h3>
-<p>
-    It's time to upload the public key to the server.
-</p>
-<p>
-    The fingerprint of your public key is: <tt id="pk_hash" style="font-size: 1.5em; font-weight: bold;"></tt>.<br />
-    You may want to save this to confirm that your public key was properly stored by the server.<br />
-    (Your public key is not currently being displayed because you do not need to save it, the fingerprint is sufficient.)
-</p>
-<textarea id="pk_textarea" name="public_key_json" cols="80" rows="10" style="display:none;">
-</textarea>
-<input type="submit" value="Upload your public key">
+    <h3>{% trans "Your Public Key" %}</h3>
+    <p>
+        {% trans "It's time to upload the public key to the server." %}
+    </p>
+    <p>
+        The fingerprint of your public key is: <tt id="pk_hash"
+            style="font-size: 1.5em; font-weight: bold;"></tt>.<br />
+        {% trans "You may want to save this to confirm that your public key was properly stored by the
+        server.<br />(Your public key is not currently being displayed because you do not need to save it, the
+        fingerprint is sufficient.)" %}
+    </p>
+    <textarea id="pk_textarea" name="public_key_json" cols="80" rows="10" style="display:none;"></textarea>
+    <input type="submit" value="{% trans "Upload your public key" %}">
 </form>
 
 <div id="applet_div"></div>

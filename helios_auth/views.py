@@ -9,6 +9,7 @@ from urllib.parse import urlencode
 
 from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
 import settings
 from helios_auth import DEFAULT_AUTH_SYSTEM, ENABLED_AUTH_SYSTEMS
@@ -151,7 +152,7 @@ def _do_auth(request):
   if auth_url:
     return HttpResponseRedirect(auth_url)
   else:
-    return HttpResponse("an error occurred trying to contact " + system_name +", try again later")
+    return HttpResponse(_("an error occurred trying to contact %s, try again later") % system_name)
 
 def start(request, system_name):
   if not (system_name in ENABLED_AUTH_SYSTEMS):

@@ -1,36 +1,36 @@
+{% load i18n %}
 
-<h3>Your audited ballot</h3>
+<h3>{% trans "Your audited ballot" %}</h3>
 
 <p>
-<b><u>IMPORTANT</u></b>: this ballot, now that it has been audited, <em>will not be tallied</em>.<br />
-To cast a ballot, you must click the "Back to Voting" button below, re-encrypt it, and choose "cast" instead of "audit."
+    {% blocktrans %}<b><u>IMPORTANT</u></b>: this ballot, now that it has been audited, <em>will not be tallied</em>.<br />To cast a ballot, you must click the "Back to Voting" button below, re-encrypt it, and choose "cast" instead of "audit."{% endblocktrans %}
 </p>
 
 <p>
-<b>Why?</b> Helios prevents you from auditing and casting the same ballot to provide you with some protection against coercion.
+    {% blocktrans %}<b>Why?</b> Helios prevents you from auditing and casting the same ballot to provide you with some protection against coercion.{% endblocktrans %}
 </p>
 
 <p>
-<b>Now what?</b> <a onclick="$('#audit_trail').select(); return false;" href="#">Select your ballot audit info</a>, copy it to your clipboard, then use the <a target="_blank" href="single-ballot-verify.html?election_url={$T.election_url}">ballot verifier</a> to verify it.<br />
-Once you're satisfied, click the "back to voting" button to re-encrypt and cast your ballot.
+    <b>{% trans "Now what?" %}</b>
+    <a onclick="$('#audit_trail').select(); return false;" href="#">{% trans "Select your ballot audit info" %}</a>,
+    {% trans "copy it to your clipboard, then use the" %}
+    <a target="_blank" href="single-ballot-verify.html?election_url={$T.election_url}">{% trans "ballot verifier" %}</a>
+    {% blocktrans %}to verify it.<br />Once you're satisfied, click the "back to voting" button to re-encrypt and cast your ballot.{% endblocktrans %}
 </p>
 
 <form action="#">
-<textarea name="audit_trail" id="audit_trail" cols="80" rows="10" wrap="soft">
-{$T.audit_trail}
-</textarea>
-<br /><br />
-Before going back to voting,<br />
-you can post this audited ballot to the Helios tracking center so that others might double-check the verification of this ballot.
-<br /><br />
-<b>Even if you post your audited ballot, you must go back to voting and choose "cast" if you want your vote to count.</b>
-<br /><br />
-<button onclick="BOOTH.reset_ciphertexts();BOOTH.seal_ballot(); return false;" class="pretty">back to voting</button>
-&nbsp; &nbsp;&nbsp;
-<button onclick="$(this).attr('disabled', 'disabled');BOOTH.post_audited_ballot(); return false;" id="post_audited_ballot_button" class="pretty" style="font-size:0.8em;">post audited ballot to tracking center</button>
-
+    <textarea name="audit_trail" id="audit_trail" cols="80" rows="10" wrap="soft">{$T.audit_trail}</textarea>
+    <br /><br />
+    {% blocktrans %}Before going back to voting, you can post this audited ballot to the Helios tracking center so that others might double-check the verification of this ballot.{% endblocktrans %}
+    <br /><br />
+    <b>{% blocktrans %}Even if you post your audited ballot, you must go back to voting and choose "cast" if you want your vote to count.{% endblocktrans %}</b>
+    <br /><br />
+    <button onclick="BOOTH.reset_ciphertexts();BOOTH.seal_ballot(); return false;" class="pretty">
+        {% trans "Back to voting" %}
+    </button>
+    &nbsp; &nbsp;&nbsp;
+    <button onclick="$(this).attr('disabled', 'disabled');BOOTH.post_audited_ballot(); return false;"
+        id="post_audited_ballot_button" class="pretty" style="font-size:0.8em;">
+        {% trans "Post audited ballot to tracking center" %}
+    </button>
 </form>
-
-
-
-

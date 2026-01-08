@@ -5,6 +5,7 @@ LinkedIn Authentication
 from xml.etree import ElementTree
 
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 
 from .oauthclient import client
 
@@ -13,7 +14,7 @@ API_SECRET = settings.LINKEDIN_API_SECRET
 
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = False
-STATUS_UPDATE_WORDING_TEMPLATE = "Post %s"
+STATUS_UPDATE_WORDING_TEMPLATE = _("Post %s")
 
 OAUTH_PARAMS = {
   'root_url' : 'https://api.linkedin.com/uas',
@@ -38,25 +39,25 @@ def get_auth_url(request, redirect_url):
     tok = client.get_request_token()
   except:
     return None
-  
+
   request.session['request_token'] = tok
-  url = client.get_authenticate_url(tok['oauth_token']) 
+  url = client.get_authenticate_url(tok['oauth_token'])
   return url
-    
+
 def get_user_info_after_auth(request):
   tok = request.session['request_token']
   login_client = _get_client_by_token(tok)
   access_token = login_client.get_access_token(verifier = request.GET.get('oauth_verifier', None))
   request.session['access_token'] = access_token
-    
+
   user_info_xml = ElementTree.fromstring(login_client.oauth_request('http://api.linkedin.com/v1/people/~:(id,first-name,last-name)', args={}, method='GET'))
-  
+
   user_id = user_info_xml.findtext('id')
   first_name = user_info_xml.findtext('first-name')
   last_name = user_info_xml.findtext('last-name')
 
   return {'type': 'linkedin', 'user_id' : user_id, 'name': "%s %s" % (first_name, last_name), 'info': {}, 'token': access_token}
-    
+
 
 def user_needs_intervention(user_id, user_info, token):
   """
@@ -67,7 +68,7 @@ def user_needs_intervention(user_id, user_info, token):
 def _get_client_by_request(request):
   access_token = request.session['access_token']
   return _get_client_by_token(access_token)
-  
+
 def update_status(user_id, user_info, token, message):
   """
   post a message to the auth system's update stream

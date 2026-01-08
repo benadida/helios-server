@@ -1,27 +1,29 @@
 {% extends TEMPLATE_BASE %}
-{% block title %}Confirm Vote{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Confirm Vote" %}{% endblock %}
 
 {% block content %}
-<h1>{{election.name}} &mdash; Vote Successfully Cast!</h1>
+<h1>{{election.name}} - {% trans "Vote Successfully Cast!" %}</h1>
 
 {% if vote_hash %}
 <p>
-  Your ballot tracker is:<br />
-    <span style="font-size:1.4em; font-weight: bold; word-break: break-word;">  {{vote_hash}}</span>
+  {% trans "Your ballot tracker is" %}:<br />
+  <span style="font-size:1.4em; font-weight: bold; word-break: break-word;">{{vote_hash}}</span>
 </p>
 <p>
-  This ballot tracker mathematically ensures that your ballot is counted. You can check all ballot trackers by viewing the <a href="{% url "election@voters@list-pretty" election.uuid %}">voter list</a>, where your ballot tracker should appear within a few minutes.
+  {% trans "This ballot tracker mathematically ensures that your ballot is counted. You can check all ballot trackers by viewing the" %}
+  <a href="{% url "election@voters@list-pretty" election.uuid %}">{% trans "voter list" %}</a>, {% trans "where your ballot tracker should appear within a few minutes." %}
 </p>
 {% endif %}
 
 {% if logout %}
-<p><b>For your safety, we have logged you out.</b></p>
+<p><b>{% trans "For your safety, we have logged you out." %}</b></p>
 <iframe width="0" height="0" border="0" frameborder="0" src="{% url "auth@logout" %}">
 </iframe>
 {% endif %}
 
 <p style="font-size: 1.4em;">
-[ <a href="{% url "election@view" election.uuid %}">return to election info</a> ]
+  [ <a href="{% url "election@view" election.uuid %}">{% trans "return to election info" %}</a> ]
 </p>
 
 {% endblock %}

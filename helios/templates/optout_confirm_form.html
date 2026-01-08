@@ -1,50 +1,53 @@
 {% extends TEMPLATE_BASE %}
+{% load i18n %}
 
 {% block title %}{{ title }}{% endblock %}
 
 {% block header %}
-  <h1 style="font-size: 2em; margin: 10px 0; color: #333;">Helios Voting</h1>
+<h1 style="font-size: 2em; margin: 10px 0; color: #333;">Helios Voting</h1>
 {% endblock %}
 
 {% block content %}
-  <h2 class="title">{{ title }}</h2>
+<h3 class="title">{{ title }}</h3>
 
-  <div style="margin: 20px 0; padding: 20px; background: #f9f9f9; border: 1px solid #ddd;">
-    <p style="font-size: 16px;">{{ description }}</p>
+<div style="margin: 20px 0; padding: 20px; background: #f9f9f9; border: 1px solid #ddd;">
+  <p style="font-size: 16px;">{{ description }}</p>
 
-    <div style="margin-top: 20px; padding: 15px; background: white; border-left: 4px solid {% if action == 'optout' %}#ff9800{% else %}#4caf50{% endif %};">
-      <p><strong>Email address:</strong> {{ email }}</p>
-    </div>
+  <div
+    style="margin-top: 20px; padding: 15px; background: white; border-left: 4px solid {% if action == 'optout' %}#ff9800{% else %}#4caf50{% endif %};">
+    <p><strong>{% trans "Email Address" %}:</strong> {{ email }}</p>
   </div>
+</div>
 
-  {% if action == 'optout' %}
-  <div style="margin: 20px 0; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7;">
-    <p><strong>What will happen:</strong></p>
-    <ul style="margin: 10px 0;">
-      <li>You will not receive any emails from Helios voting system</li>
-      <li>You cannot be added to new elections until you opt back in</li>
-      <li>You can opt back in at any time</li>
-    </ul>
-  </div>
-  {% else %}
-  <div style="margin: 20px 0; padding: 15px; background: #e8f5e9; border: 1px solid #c8e6c9;">
-    <p><strong>What will happen:</strong></p>
-    <ul style="margin: 10px 0;">
-      <li>You will resume receiving emails from Helios voting system</li>
-      <li>You can be added to elections and receive voting notifications</li>
-      <li>You can opt out again at any time</li>
-    </ul>
-  </div>
-  {% endif %}
+{% if action == 'optout' %}
+<div style="margin: 20px 0; padding: 15px; background: #fff3cd; border: 1px solid #ffeaa7;">
+  <p><strong>{% trans "What will happen" %}:</strong></p>
+  <ul style="margin: 10px 0;">
+    <li>{% trans "You will not receive any emails from Helios voting system" %}</li>
+    <li>{% trans "You cannot be added to new elections until you opt back in" %}</li>
+    <li>{% trans "You can opt back in at any time" %}</li>
+  </ul>
+</div>
+{% else %}
+<div style="margin: 20px 0; padding: 15px; background: #e8f5e9; border: 1px solid #c8e6c9;">
+  <p><strong>{% trans "What will happen" %}:</strong></p>
+  <ul style="margin: 10px 0;">
+    <li>{% trans "You will resume receiving emails from Helios voting system" %}</li>
+    <li>{% trans "You can be added to elections and receive voting notifications" %}</li>
+    <li>{% trans "You can opt out again at any time" %}</li>
+  </ul>
+</div>
+{% endif %}
 
-  <form class="prettyform" method="POST" action="">
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    <div style="margin-top: 30px; text-align: center;">
-      <input type="submit" value="{% if action == 'optout' %}Confirm Opt-Out{% else %}Confirm Opt-In{% endif %}" class="button" style="padding: 12px 30px; font-size: 16px; background-color: {% if action == 'optout' %}#ff9800{% else %}#4caf50{% endif %}; color: white; border: none; cursor: pointer;" />
-    </div>
-  </form>
-
-  <div style="margin-top: 20px; text-align: center;">
-    <a href="/" style="color: #666;">Cancel and return to Helios</a>
+<form class="prettyform" method="POST" action="">
+  <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+  <div style="margin-top: 30px; text-align: center;">
+    <input type="submit" value="{% if action == 'optout' %}{% trans "Confirm Opt-Out" %}{% else %}{% trans "Confirm Opt-In" %}{% endif %}"
+    class="button" style="padding: 12px 30px; font-size: 16px; background-color: {% if action == 'optout' %}#ff9800{% else %}#4caf50{% endif %}; color: white; border: none; cursor: pointer;" />
   </div>
+</form>
+
+<div style="margin-top: 20px; text-align: center;">
+  <a href="/" style="color: #666;">{% trans "Cancel and return to Helios" %}</a>
+</div>
 {% endblock %}

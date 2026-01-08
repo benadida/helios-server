@@ -1,26 +1,33 @@
 {% extends TEMPLATE_BASE %}
+{% load i18n %}
 
-{% block title %}Remove Administrator - {{election.name}}{% endblock %}
+{% block title %}{% trans "Remove Administrator" %} - {{election.name}}{% endblock %}
 
 {% block content %}
-  <h3 class="title">{{election.name}} &mdash; Remove Administrator <span style="font-size:0.7em;">[<a href="{% url "election@admins" election.uuid %}">cancel</a>]</span></h3>
+<h3 class="title">
+  {{election.name}} - {% trans "Remove Administrator" %}
+  <span style="font-size:0.7em;">[ <a
+      href="{% url "election@admins" election.uuid %}">{% trans "cancel" %}</a> ]
+  </span>
+</h3>
 
 <p>
-    Are you sure you want to remove <strong>{{admin_to_remove.display_html_small|safe}}</strong> ({{admin_to_remove.user_id}}) as an administrator of this election?
+  {% trans "Are you sure you want to remove" %} <strong>{{admin_to_remove.display_html_small|safe}}</strong>
+  ({{admin_to_remove.user_id}}) {% trans "as an administrator of this election?" %}
 </p>
 
 <p>
-    They will no longer be able to manage this election.
+  {% trans "They will no longer be able to manage this election." %}
 </p>
 
 <form method="post" action="">
-<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-<input type="hidden" name="email" value="{{admin_to_remove.user_id}}" />
-<input type="hidden" name="user_type" value="{{admin_to_remove.user_type}}" />
+  <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+  <input type="hidden" name="email" value="{{admin_to_remove.user_id}}" />
+  <input type="hidden" name="user_type" value="{{admin_to_remove.user_type}}" />
 
-<input type="submit" value="Remove Administrator" />
-&nbsp;&nbsp;
-<a href="{% url "election@admins" election.uuid %}">Cancel</a>
+  <input type="submit" value="{% trans "Remove Administrator" %}" />
+  &nbsp;&nbsp;
+  <a href="{% url "election@admins" election.uuid %}">{% trans "Cancel" %}</a>
 </form>
 
 {% endblock %}

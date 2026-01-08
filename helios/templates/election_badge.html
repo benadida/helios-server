@@ -1,3 +1,13 @@
-{% if show_title %}<h3 style="padding:0; margin:0">{{election.name}}</h3>{% endif %}
-<b>{{election.num_cast_votes}}</b> cast votes.{% if show_vote_link %} [<a target="_top" href="{{election_url}}">vote!</a>]{% endif %}<br />
-<span style="font-size:0.7em;">powered by <a target="_top" href="http://heliosvoting.org">Helios Voting</a></span>
+{% load i18n %}
+
+{% if show_title %}
+<h3 style="padding:0; margin:0">{{election.name}}</h3>
+{% endif %}
+
+<b>{{election.num_cast_votes}}</b>
+{% trans "cast votes" %}.
+{% if show_vote_link %}[ <a target="_top" href="{{election_url}}">{% trans "vote!" %}</a> ]{% endif %}<br />
+<span style="font-size:0.7em;">
+    {% trans "powered by" %}
+    <a target="_top" href="http://heliosvoting.org">Helios Voting</a>
+</span>

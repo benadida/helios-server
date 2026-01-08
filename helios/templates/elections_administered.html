@@ -1,11 +1,20 @@
 {% extends TEMPLATE_BASE %}
+{% load i18n %}
 
 {% block content %}
-  <h2 class="title">Elections you Administer <span style="font-size:0.7em;">[<a href="/">back to home</a>]</span></h2>
+<h3 class="title">
+  {% trans "Elections you Administer" %}
+  <span style="font-size:0.7em;">[ <a href="/">{% trans "back to home" %}</a> ]</span>
+</h3>
 
 <ul>
-{% for election in elections %}
-<li> <a href="{% url "election@view" election.uuid %}">{{election.name}}</a><em> - {{election.num_voters}} voters / {{election.num_cast_votes}} cast votes</em></li>
-{% endfor %}
+  {% for election in elections %}
+  <li>
+    <a href="{% url "election@view" election.uuid %}">{{election.name}}</a>
+    <em>
+      - {{election.num_voters}} {% trans "voters" %} / {{election.num_cast_votes}} {% trans "cast votes" %}
+    </em>
+  </li>
+  {% endfor %}
 </ul>
 {% endblock %}

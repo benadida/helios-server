@@ -6,6 +6,7 @@ Google Authentication
 import httplib2
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils.translation import gettext_lazy as _
 from oauth2client.client import OAuth2WebServerFlow
 
 from helios_auth import utils
@@ -15,7 +16,7 @@ from helios_auth.utils import format_recipient
 STATUS_UPDATES = False
 
 # display tweaks
-LOGIN_MESSAGE = "Log in with my Google Account"
+LOGIN_MESSAGE = _("Log in with my Google Account")
 
 def get_flow(redirect_url=None):
   return OAuth2WebServerFlow(client_id=settings.GOOGLE_CLIENT_ID,
@@ -34,15 +35,15 @@ def get_user_info_after_auth(request):
 
   if 'code' not in request.GET:
     return None
-  
+
   code = request.GET['code']
   credentials = flow.step2_exchange(code)
 
   # the email address is in the credentials, that's how we make sure it's verified
   id_token = credentials.id_token
   if not id_token['email_verified']:
-    raise Exception("email address with Google not verified")
-   
+    raise Exception(_("email address with Google not verified"))
+
   email = id_token['email']
 
   # get the nice name
@@ -53,18 +54,18 @@ def get_user_info_after_auth(request):
   response = utils.from_json(content.decode('utf-8'))
 
   name = response['names'][0]['displayName']
-  
+
   # watch out, response also contains email addresses, but not sure whether thsoe are verified or not
   # so for email address we will only look at the id_token
-  
+
   return {'type' : 'google', 'user_id': email, 'name': name , 'info': {'email': email}, 'token':{}}
-    
+
 def do_logout(user):
   """
   logout of Google
   """
   return None
-  
+
 def update_status(token, message):
   """
   simple update
@@ -76,7 +77,7 @@ def send_message(user_id, name, user_info, subject, body):
   send email to google users. user_id is the email for google.
   """
   send_mail(subject, body, settings.SERVER_EMAIL, [format_recipient(name, user_id)], fail_silently=False)
-  
+
 def check_constraint(constraint, user_info):
   """
   for eligibility

@@ -55,7 +55,7 @@ def start_openid(session, openid_url, trust_root, return_to):
         auth_request = c.begin(openid_url)
     except DiscoveryFailure as e:
         # Some other protocol-level failure occurred.
-        raise Exception("error in openid: OpenID discovery error") from e
+        raise Exception(_("error in openid: OpenID discovery error")) from e
 
     # Add Simple Registration request information.  Some fields
     # are optional, some are required.  It's possible that the
@@ -74,7 +74,7 @@ def start_openid(session, openid_url, trust_root, return_to):
         ax_request.add(ax.AttrInfo(v, required=True))
 
     auth_request.addExtension(ax_request)
-                
+
     # Compute the trust root and return URL values to build the
     # redirect information.
     # trust_root = util.getViewURL(request, startOpenID)
@@ -124,10 +124,10 @@ def finish_openid(session, request_args, return_to):
         # Map different consumer status codes to template contexts.
         results = {
             consumer.CANCEL:
-            {'message': 'OpenID authentication cancelled.'},
+            {'message': _("OpenID authentication cancelled.")},
 
             consumer.FAILURE:
-            {'error': 'OpenID authentication failed.'},
+            {'error': _("OpenID authentication failed.")},
 
             consumer.SUCCESS:
             {'url': response.getDisplayIdentifier(),

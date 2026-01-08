@@ -8,13 +8,14 @@ import ssl
 from django.conf import settings
 from django.core.mail import send_mail
 from oauth2client.client import OAuth2WebServerFlow
+from django.utils.translation import gettext_lazy as _
 from helios_auth import utils
 
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False
 
 # display tweaks
-LOGIN_MESSAGE = getattr(settings, 'OAUTH_LOGIN_MESSAGE', "Log in with OAuth")
+LOGIN_MESSAGE = getattr(settings, 'OAUTH_LOGIN_MESSAGE', _("Log in with OAuth"))
 
 CA_CERTS = getattr(settings, 'CA_CERTS', None)
 

@@ -10,7 +10,7 @@ http://dtic.ifsc.edu.br/sistemas/sistema-de-votacao-on-line-helios/
 """
 
 from django.core.exceptions import ImproperlyConfigured
-
+from django.utils.translation import gettext_lazy as _
 from django_auth_ldap.backend import LDAPBackend
 
 
@@ -25,7 +25,7 @@ class CustomLDAPBackend(LDAPBackend):
         if user and self.settings.BIND_PASSWORD == '' :
             search = self.settings.USER_SEARCH
             if not isinstance(search, LDAPSearch):
-                raise ImproperlyConfigured('AUTH_LDAP_USER_SEARCH must be an LDAPSearch instance.')
+                raise ImproperlyConfigured(_('AUTH_LDAP_USER_SEARCH must be an LDAPSearch instance.'))
             results = search.execute(user.ldap_user.connection, {'user': user.username})
             if results is not None and len(results) == 1:
                 (user.ldap_user._user_dn, user.ldap_user.user_attrs) = results[0]

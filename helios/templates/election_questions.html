@@ -1,146 +1,152 @@
 {% extends "helios/templates/cryptobase.html" %}
+{% load i18n %}
 
-{% block title %}Questions for {{election.name}}{% endblock %}
+{% block title %}{% trans "Questions for" %} {{election.name}}{% endblock %}
 {% block content %}
-  <h3 class="title">{{election.name}} &mdash; Questions <span style="font-size:0.7em;">[<a href="{% url "election@view" election.uuid %}">back to election</a>]</span></h3>
+<h3 class="title">
+  {{election.name}} - {% trans "Questions" %}
+  <span style="font-size:0.7em;">
+    [ <a href="{% url "election@view" election.uuid %}">{% trans "back to election" %}</a> ]
+  </span>
+</h3>
 
-  <script language="javascript">
-{% if election.questions %}
+<script>
+  {% if election.questions %}
   QUESTIONS = JSON.parse("{{questions_json|escapejs}}");
-{% else %}
+  {% else %}
   QUESTIONS = [];
-{% endif %}
-{% if admin_p and not election.frozen_at %}
+  {% endif %}
+  {% if admin_p and not election.frozen_at %}
   ADMIN_P = true;
-{% else %}
+  {% else %}
   ADMIN_P = false;
-{% endif %}
+  {% endif %}
 
   CSRF_TOKEN = '{{csrf_token}}';
 
   // Utility function for escaping HTML attribute values
   function escapeAttr(text) {
     return text.replace(/&/g, '&amp;')
-               .replace(/"/g, '&quot;')
-               .replace(/'/g, '&#39;')
-               .replace(/</g, '&lt;')
-               .replace(/>/g, '&gt;');
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   }
 
   // Unified function to create answer row HTML
   function createAnswerRowHTML(answer_num, answer_text, answer_url) {
     answer_text = answer_text || '';
     answer_url = answer_url || '';
-    
+
     var required_attr = answer_num === 1 ? 'required' : '';
-    var placeholder = answer_num === 1 ? 'Enter answer option' : 'Enter answer option (optional)';
+    var placeholder = answer_num === 1 ? '{% trans "Enter answer option" %}' : '{% trans "Enter answer option (optional)" %}';
     var escaped_answer = escapeAttr(answer_text);
     var escaped_url = escapeAttr(answer_url);
     var has_url = answer_url.length > 0;
     var url_display = has_url ? 'flex' : 'none';
-    var toggle_text = has_url ? '- Hide link' : '+ Add link';
-    
+    var toggle_text = has_url ? '{% trans "- Hide link" %}' : '{% trans "+ Add link" %}';
+
     return '<div class="answer-row">' +
-      '<div class="answer-number">Answer #' + answer_num + 
-        '<span class="url-toggle" onclick="toggle_url(this, ' + answer_num + ')">' +
-          '<span>' + toggle_text + '</span>' +
-        '</span>' +
+      '<div class="answer-number">{% trans "Answer" %} #' + answer_num +
+      '<span class="url-toggle" onclick="toggle_url(this, ' + answer_num + ')">' +
+      '<span>' + toggle_text + '</span>' +
+      '</span>' +
       '</div>' +
       '<div class="answer-inputs">' +
-        '<input type="text" class="form-control answer-input answer" name="answer_' + answer_num + '" value="' + escaped_answer + '" placeholder="' + placeholder + '" ' + required_attr + ' />' +
-        '<div class="url-input-wrapper" id="url_wrapper_' + answer_num + '" style="display:' + url_display + ';">' +
-          '<input type="url" class="form-control url-input" name="answer_url_' + answer_num + '" value="' + escaped_url + '" placeholder="https://example.com" />' +
-        '</div>' +
+      '<input type="text" class="form-control answer-input answer" name="answer_' + answer_num + '" value="' + escaped_answer + '" placeholder="' + placeholder + '" ' + required_attr + ' />' +
+      '<div class="url-input-wrapper" id="url_wrapper_' + answer_num + '" style="display:' + url_display + ';">' +
+      '<input type="url" class="form-control url-input" name="answer_url_' + answer_num + '" value="' + escaped_url + '" placeholder="https://example.com" />' +
       '</div>' +
-    '</div>';
+      '</div>' +
+      '</div>';
   }
 
   function refresh() {
-      $('#questions').processTemplate({'questions' : QUESTIONS, 'admin_p' : ADMIN_P}); 
+    $('#questions').processTemplate({ 'questions': QUESTIONS, 'admin_p': ADMIN_P });
 
-      add_answers($('#answer_table'),DEFAULT_NUM_ANSWERS);
- }
-  
-  function save_questions(callback) {
-      $.post('./save_questions', {'questions_json' : $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN}, function(result) {
-          if (result == "FAILURE") {
-            alert("The questions could not be saved. Please check that the URLs you entered are either http:// or https://");
-          } else {
-            callback();
-          }
-      });      
+    add_answers($('#answer_table'), DEFAULT_NUM_ANSWERS);
   }
-  
+
+  function save_questions(callback) {
+    $.post('./save_questions', { 'questions_json': $.toJSON(QUESTIONS), 'csrf_token': CSRF_TOKEN }, function (result) {
+      if (result == "FAILURE") {
+        alert("{% trans "The questions could not be saved. Please check that the URLs you entered are either http:// or https://" %}");
+      } else {
+        callback();
+      }
+    });
+  }
+
   function get_question_from_form(form) {
-      var max = null;
-      if (form.max.value != "")
-        max = parseInt(form.max.value);
-        
-      var new_q = {'question' : form.question.value, 'min': parseInt(form.min.value), 'max': max, 'short_name': form.question.value, 'answers': [], 'answer_urls': [], 'choice_type': form.choice_type.value, 'tally_type': 'homomorphic', 'result_type': form.result_type.value, 'randomize_answer_order': form.randomize_answer_order.value == "1"};
-      
-      // Process answers in a single pass
-      var all_answers = [];
-      var all_urls = [];
-      var last_valid_index = -1;
-      var i = 1;
-      
-      // Collect all answers and find the last valid one
-      while(form['answer_' + i]) {
-          var answer_text = form['answer_' + i].value.trim();
-          var answer_url = form['answer_url_' + i] ? form['answer_url_' + i].value.trim() : '';
-          all_answers.push(answer_text);
-          all_urls.push(answer_url);
-          
-          if (answer_text !== '') {
-              last_valid_index = i - 1; // Convert to 0-based index
-          }
-          i++;
+    var max = null;
+    if (form.max.value != "")
+      max = parseInt(form.max.value);
+
+    var new_q = { 'question': form.question.value, 'min': parseInt(form.min.value), 'max': max, 'short_name': form.question.value, 'answers': [], 'answer_urls': [], 'choice_type': form.choice_type.value, 'tally_type': 'homomorphic', 'result_type': form.result_type.value, 'randomize_answer_order': form.randomize_answer_order.value == "1" };
+
+    // Process answers in a single pass
+    var all_answers = [];
+    var all_urls = [];
+    var last_valid_index = -1;
+    var i = 1;
+
+    // Collect all answers and find the last valid one
+    while (form['answer_' + i]) {
+      var answer_text = form['answer_' + i].value.trim();
+      var answer_url = form['answer_url_' + i] ? form['answer_url_' + i].value.trim() : '';
+      all_answers.push(answer_text);
+      all_urls.push(answer_url);
+
+      if (answer_text !== '') {
+        last_valid_index = i - 1; // Convert to 0-based index
       }
-      
-      // Check for gaps in answers (empty answers before the last valid one)
-      for (var k = 0; k <= last_valid_index; k++) {
-          if (all_answers[k] === '') {
-              alert('Please fill in all answer fields up to answer #' + (last_valid_index + 1) + '. You cannot skip answer #' + (k + 1) + '.');
-              return null;
-          }
-      }
-      
-      // Build the final arrays with only the valid answers
-      if (last_valid_index >= 0) {
-          new_q.answers = all_answers.slice(0, last_valid_index + 1);
-          new_q.answer_urls = all_urls.slice(0, last_valid_index + 1);
-      }
-      
-      if (new_q.answers.length == 0) {
-        alert('Please enter at least one answer option.');
+      i++;
+    }
+
+    // Check for gaps in answers (empty answers before the last valid one)
+    for (var k = 0; k <= last_valid_index; k++) {
+      if (all_answers[k] === '') {
+        alert('{% trans "Please fill in all answer fields up to answer" %} #' + (last_valid_index + 1) + '. {% trans "You cannot skip answer" %} #' + (k + 1) + '.');
         return null;
       }
-      
-      return new_q;
+    }
+
+    // Build the final arrays with only the valid answers
+    if (last_valid_index >= 0) {
+      new_q.answers = all_answers.slice(0, last_valid_index + 1);
+      new_q.answer_urls = all_urls.slice(0, last_valid_index + 1);
+    }
+
+    if (new_q.answers.length == 0) {
+      alert('{% trans "Please enter at least one answer option." %}');
+      return null;
+    }
+
+    return new_q;
   }
 
   function question_add(form) {
-      var new_q = get_question_from_form(form);
-      if (new_q) {
-        QUESTIONS.push(new_q);
-        save_questions(refresh);
-      }
-  }
-  
-  function question_remove(q_num) {
-      var new_questions = [];
-      $(QUESTIONS).each(function(i, q) {
-          if (i == q_num)
-            return;
-          new_questions.push(q);
-      });
-      QUESTIONS = new_questions;
+    var new_q = get_question_from_form(form);
+    if (new_q) {
+      QUESTIONS.push(new_q);
       save_questions(refresh);
+    }
+  }
+
+  function question_remove(q_num) {
+    var new_questions = [];
+    $(QUESTIONS).each(function (i, q) {
+      if (i == q_num)
+        return;
+      new_questions.push(q);
+    });
+    QUESTIONS = new_questions;
+    save_questions(refresh);
   }
 
   function question_edit(q_num) {
-    $('#q_view_'+q_num).hide();
-    $('#q_edit_'+q_num).show();
+    $('#q_view_' + q_num).hide();
+    $('#q_edit_' + q_num).show();
 
     // set the default values for this question
     var form = $('#question_edit_' + q_num + '_form');
@@ -154,24 +160,24 @@
     // add the answers
     var answer_table = $('#answer_table_' + q_num);
     answer_table.empty(); // Clear existing answers
-    
+
     // Create answer inputs using the unified function
-    $(q_data.answers).each(function(i, a) {
+    $(q_data.answers).each(function (i, a) {
       var num = i + 1;
       var answer_html = createAnswerRowHTML(num, a, q_data.answer_urls[i]);
       answer_table.append(answer_html);
     });
-}
+  }
 
   function question_edit_cancel(q_num) {
-    $('#q_edit_'+q_num).hide();
-    $('#q_view_'+q_num).show();
+    $('#q_edit_' + q_num).hide();
+    $('#q_view_' + q_num).show();
   }
 
   function question_update(q_num, form) {
-      var new_q = get_question_from_form(form);
-      QUESTIONS[q_num] = new_q;
-      save_questions(refresh);
+    var new_q = get_question_from_form(form);
+    QUESTIONS[q_num] = new_q;
+    save_questions(refresh);
   }
 
   var DEFAULT_NUM_ANSWERS = 5;
@@ -196,28 +202,27 @@
 
 
   function add_answers(el, num) {
-    for (var i=0; i<num; i++)
+    for (var i = 0; i < num; i++)
       add_answer(el);
   }
 
   function question_move_up(num) {
     var temp_q = QUESTIONS[num];
-    QUESTIONS[num] = QUESTIONS[num-1];
-    QUESTIONS[num-1] = temp_q;
+    QUESTIONS[num] = QUESTIONS[num - 1];
+    QUESTIONS[num - 1] = temp_q;
     save_questions(refresh);
   }
 
-  $(document).ready(function() {
-      $('#questions').setTemplateURL("/static/helios/static_templates/question.html");
+  $(document).ready(function () {
+    $('#questions').setTemplateURL("/static/helios/static_templates/question.html");
 
-      refresh();
+    refresh();
   });
-  
 
-  </script>
 
-  <div id="questions">
-  </div>
-					
-			<!-- end #content -->
+</script>
+
+<div id="questions">
+</div>
+
 {% endblock %}

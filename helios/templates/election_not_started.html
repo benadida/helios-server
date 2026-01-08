@@ -1,19 +1,22 @@
 {% extends TEMPLATE_BASE %}
+{% load i18n %}
 
 {% block content %}
 
-  <h2 class="title">Election {{election.name}} Not Yet Open</h2>
+<h3 class="title">
+    {% trans "Election" %} {{election.name}} {% trans "Not Yet Open" %}
+</h3>
 
-  <p>
-      This election is not yet open.
-  </p>
-  
-  <p>
-      {% if election.voting_start_at %}Voting start at {{election.voting_start_at}}<br />{% endif %}
-      {% if election.voting_end_at %}Voting end at {{election.voting_end_at}}<br />{% endif %}  
-  </p>
-  
-  <p>
-      <a href="{% url "election@view" election.uuid %}">back to the election</a>
-  </p>
+<p>
+    {% trans "This election is not yet open." %}
+</p>
+
+<p>
+    {% if election.voting_start_at %}{% trans "Voting start at" %} {{election.voting_start_at}}<br />{% endif %}
+    {% if election.voting_end_at %}{% trans "Voting end at" %} {{election.voting_end_at}}<br />{% endif %}
+</p>
+
+<p>
+    <a href="{% url "election@view" election.uuid %}">{% trans "back to the election" %}</a>
+</p>
 {% endblock %}

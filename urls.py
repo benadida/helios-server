@@ -8,11 +8,14 @@ urlpatterns = [
     path('auth/', include('helios_auth.urls')),
     path('helios/', include('helios.urls')),
 
-    # SHOULD BE REPLACED BY APACHE STATIC PATH
+    re_path(r'booth/(?P<template_name>(templates/)?[a-z\-]+\.html)$', helios_views.booth_template),
     re_path(r'booth/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosbooth'}),
+
+    path('verifier/verify.html', helios_views.verify_template),
     re_path(r'verifier/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosverifier'}),
 
     re_path(r'static/auth/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/helios_auth/media'}),
+    path('static/helios/static_templates/question.html', helios_views.question_template),
     re_path(r'static/helios/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/helios/media'}),
     re_path(r'static/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/server_ui/media'}),
 
