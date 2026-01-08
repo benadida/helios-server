@@ -19,7 +19,7 @@ def get_from_env(var, default):
 
 DEBUG = (get_from_env('DEBUG', '1') == '1')
 
-# add admins of the form: 
+# add admins of the form:
 #    ('Ben Adida', 'ben@adida.net'),
 # if you want to be emailed about errors.
 admin_email = get_from_env('ADMIN_EMAIL', None)
@@ -311,6 +311,18 @@ GH_CLIENT_SECRET = get_from_env('GH_CLIENT_SECRET', '')
 GITLAB_CLIENT_ID = get_from_env('GITLAB_CLIENT_ID', "")
 GITLAB_CLIENT_SECRET = get_from_env('GITLAB_CLIENT_SECRET', "")
 
+# OAuth generic
+OAUTH_NAME = ""
+OAUTH_LOGIN_MESSAGE = "Identificado com OAuth"
+OAUTH_CLIENT_ID = get_from_env('OAUTH_CLIENT_ID', '')
+OAUTH_CLIENT_SECRET = get_from_env('OAUTH_CLIENT_SECRET', '')
+OAUTH_AUTH_URI = ""
+OAUTH_TOKEN_URI = ""
+OAUTH_USER_INFO_URI = ""
+OAUTH_CAN_CREATE_ELECTION = False
+
+CA_CERTS = ""
+
 # email server
 EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
 EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
@@ -346,7 +358,7 @@ if ROLLBAR_ACCESS_TOKEN:
   MIDDLEWARE += ['rollbar.contrib.django.middleware.RollbarNotifierMiddleware',]
   ROLLBAR = {
     'access_token': ROLLBAR_ACCESS_TOKEN,
-    'environment': 'development' if DEBUG else 'production',  
+    'environment': 'development' if DEBUG else 'production',
   }
 
 

@@ -7,7 +7,12 @@
 {% else %}
 <p>
     <a href="{{SECURE_URL_HOST}}{% url "auth@start" system_name=auth_system %}?return_url={{return_url}}" style="font-size: 1.4em;">
-<img style="height: 35px; border: 0px;" src="/static/auth/login-icons/{{auth_system}}.png" alt="{{auth_system}}" /> {{auth_system}}
+<img style="height: 35px; border: 0px;" src="/static/auth/login-icons/{{auth_system}}.png" alt="{{auth_system}}" />
+{% if auth_system == 'oauth' %}
+    {{ oauth_name }}
+{% else %}
+    {{ auth_system }}
+{% endif %}
 {% endif %}
 </a>
 </p>
