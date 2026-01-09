@@ -67,6 +67,10 @@ def get_user_info_after_auth(request):
     user_name = response.get('name', user_id)
     user_email = response.get('email')
 
+    # Ensure required fields are present; fail authentication if they are missing.
+    if not user_id or not user_name or not user_email:
+        return None
+
     return {
         'type': 'oauth',
         'user_id': user_id,
