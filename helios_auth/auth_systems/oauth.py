@@ -60,8 +60,17 @@ def get_user_info_after_auth(request):
     http = get_http(".cache")
     http = credentials.authorize(http)
 
-    (request_response, content) = http.request(settings.OAUTH_USER_INFO_URI, "GET")
-    response = utils.from_json(content.decode('utf-8'))
+    try:
+        request_response, content = http.request(settings.OAUTH_USER_INFO_URI, "GET")
+
+        status = getattr(request_response, 'status', None)
+        if int(status) < 200 or int(status) >= 300:
+            return None
+
+        decoded_content = content.decode('utf-8')
+        response = utils.from_json(decoded_content)
+    except (Exception, AttributeError, UnicodeDecodeError, TypeError, ValueError):
+        return None
 
     user_id = response.get('preferred_username', response.get('sub'))
     user_name = response.get('name', user_id)
