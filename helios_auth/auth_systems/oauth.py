@@ -4,7 +4,6 @@ OAuth2 Authentication
 """
 
 import httplib2
-import ssl
 from django.conf import settings
 from django.core.mail import send_mail
 from oauth2client.client import OAuth2WebServerFlow
