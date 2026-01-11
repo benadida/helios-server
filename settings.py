@@ -19,7 +19,7 @@ def get_from_env(var, default):
 
 DEBUG = (get_from_env('DEBUG', '1') == '1')
 
-# add admins of the form: 
+# add admins of the form:
 #    ('Ben Adida', 'ben@adida.net'),
 # if you want to be emailed about errors.
 admin_email = get_from_env('ADMIN_EMAIL', None)
@@ -76,6 +76,11 @@ SITE_ID = 1
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
 USE_I18N = True
+
+# Internationalization (i18n) settings: Path to custom locale files.
+LOCALE_PATHS = [
+    os.path.join(os.path.dirname(__file__), 'locale'),
+]
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
@@ -164,8 +169,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
 
-    'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 ]
 
@@ -311,6 +317,18 @@ GH_CLIENT_SECRET = get_from_env('GH_CLIENT_SECRET', '')
 GITLAB_CLIENT_ID = get_from_env('GITLAB_CLIENT_ID', "")
 GITLAB_CLIENT_SECRET = get_from_env('GITLAB_CLIENT_SECRET', "")
 
+# OAuth generic
+OAUTH_NAME = ""
+OAUTH_LOGIN_MESSAGE = "Log in with OAuth"
+OAUTH_CLIENT_ID = get_from_env('OAUTH_CLIENT_ID', '')
+OAUTH_CLIENT_SECRET = get_from_env('OAUTH_CLIENT_SECRET', '')
+OAUTH_AUTH_URI = ""
+OAUTH_TOKEN_URI = ""
+OAUTH_USER_INFO_URI = ""
+OAUTH_CAN_CREATE_ELECTION = True
+
+CA_CERTS = ""
+
 # email server
 EMAIL_HOST = get_from_env('EMAIL_HOST', 'localhost')
 EMAIL_PORT = int(get_from_env('EMAIL_PORT', "2525"))
@@ -346,7 +364,7 @@ if ROLLBAR_ACCESS_TOKEN:
   MIDDLEWARE += ['rollbar.contrib.django.middleware.RollbarNotifierMiddleware',]
   ROLLBAR = {
     'access_token': ROLLBAR_ACCESS_TOKEN,
-    'environment': 'development' if DEBUG else 'production',  
+    'environment': 'development' if DEBUG else 'production',
   }
 
 

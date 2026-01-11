@@ -1,44 +1,46 @@
+{% load i18n %}
 {% if election.voting_has_started %}
-  {% if not election.voting_has_stopped %}
+{% if not election.voting_has_stopped %}
 
 <div id="cast_form">
-<form id="cast_confirm_form" method="post" action="" onsubmit="show_waiting()">
+  <form id="cast_confirm_form" method="post" action="" onsubmit="show_waiting()">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    
-{% if status_update_label %}
-<div class="round" style="background: #eee; padding: 10px; border: 1px dashed #888;">
-<input type="checkbox" name="status_update" value="1" checked /> {{status_update_label}}<br />
-<blockquote style="font-size: 1.3em;">
-"{{status_update_message}}"
-</blockquote>
-<input type="hidden" name="status_update_message" value="{{status_update_message}}" />
+
+    {% if status_update_label %}
+    <div class="round" style="background: #eee; padding: 10px; border: 1px dashed #888;">
+      <input type="checkbox" name="status_update" value="1" checked /> {{status_update_label}}<br />
+      <blockquote style="font-size: 1.3em;">
+        "{{status_update_message}}"
+      </blockquote>
+      <input type="hidden" name="status_update_message" value="{{status_update_message}}" />
+    </div>
+    <br />
+    {% endif %}
+
+    {% trans "You are logged in as" %} <u>{{voter.display_html_big|safe}}</u><br /><br />
+
+    <button type="submit" class="large">{% trans "CAST this ballot" %}</button>
+    <span style="font-size:0.8em;"><br />
+      {% trans "You can cast as many ballots as you want.<br />Only the last one counts." %}</span>
+  </form>
+
+  <p>
+    <button class="tiny"
+      onclick="if (confirm('{% trans "Are you sure you want to clear this ballot and NOT cast it?" %}')) {document.location='{% url "election@view" election.uuid %}' ;}">{% trans "cancel" %}</button><br />
+    <span style="font-size:0.8em;">{% trans "If you cancel now, your ballot will <em>NOT</em> be recorded.<br />You can start the voting process over again, of course." %}</span>
+  </p>
+
+  <!-- for now, for CSRF protection, no auto-submit just yet (benadida) -->
+  <!-- <script>$('#cast_confirm_form').submit()</script> -->
+
 </div>
-<br />
-{% endif %}
-
-You are logged in as <u>{{voter.display_html_big|safe}}</u><br /><br />
-
-    <button type="submit" class="large">CAST this ballot</button>
-    <span style="font-size:0.8em;"><br />You can cast as many ballots as you want.<br />Only the last one counts.</span>
-</form>
-
-<p>
-    <button class="tiny" onclick="if (confirm('Are you sure you want to clear this ballot and NOT cast it?')) {document.location='{% url "election@view" election.uuid %}';}">cancel</button><br />
-    <span style="font-size:0.8em;">If you cancel now, your ballot will <em>NOT</em> be recorded.<br />
-    You can start the voting process over again, of course.</span>
-</p>
-
-<!-- for now, for CSRF protection, no auto-submit just yet (benadida) -->
-<!-- <script>$('#cast_confirm_form').submit()</script> -->
-
-</div>
-  {% else %}
-<p style="font-size:1.4em;">
-  voting has stopped, sorry.
-</p>
-  {% endif %}
 {% else %}
 <p style="font-size:1.4em;">
-  voting has not yet begun, sorry.
+  {% trans "Voting has stopped, sorry." %}
+</p>
+{% endif %}
+{% else %}
+<p style="font-size:1.4em;">
+  {% trans "Voting has not yet begun, sorry." %}
 </p>
 {% endif %}

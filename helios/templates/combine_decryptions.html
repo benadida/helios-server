@@ -1,16 +1,22 @@
 {% extends TEMPLATE_BASE %}
+{% load i18n %}
 
-{% block title %}Compute Tally &mdash; {{election.name}}{% endblock %}
+{% block title %}{% trans "Compute Tally" %} - {{election.name}}{% endblock %}
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Compute Tally <span style="font-size:0.7em;">[<a href="{% url "election@view" election.uuid %}">cancel</a>]</span></h2>
+<h3 class="title">
+  {{election.name}} - {% trans "Compute Tally" %}
+  <span style="font-size:0.7em;">
+    [ <a href="{% url "election@view" election.uuid %}">{% trans "cancel" %}</a> ]
+  </span>
+</h3>
 
-  <p>
-    You are about to compute the tally for this election. You only will then see the results.
-  </p>
+<p>
+  {% trans "You are about to compute the tally for this election. You only will then see the results." %}
+</p>
 
-  <form method="POST" action="">
-    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-    <input type="submit" class="button" value="compute the tally!" />
-  </form>
+<form method="POST" action="">
+  <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+  <input type="submit" class="button" value="{% trans "Compute the tally!" %}" />
+</form>
 
 {% endblock %}

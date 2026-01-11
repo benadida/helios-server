@@ -6,6 +6,7 @@ Github Authentication
 import httplib2
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils.translation import gettext_lazy as _
 from oauth2client.client import OAuth2WebServerFlow
 
 from helios_auth import utils
@@ -18,7 +19,7 @@ STATUS_UPDATES = False
 CASE_INSENSITIVE_USER_ID = True
 
 # display tweaks
-LOGIN_MESSAGE = "Log in with GitHub"
+LOGIN_MESSAGE = _("Log in with GitHub")
 
 def get_flow(redirect_url=None):
   return OAuth2WebServerFlow(

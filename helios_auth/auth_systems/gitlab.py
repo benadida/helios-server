@@ -6,6 +6,7 @@ Gitlab Authentication
 import httplib2
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils.translation import gettext_lazy as _
 from oauth2client.client import OAuth2WebServerFlow
 
 from helios_auth import utils
@@ -15,7 +16,7 @@ from helios_auth.utils import format_recipient
 STATUS_UPDATES = False
 
 # display tweaks
-LOGIN_MESSAGE = "Log in with Gitlab"
+LOGIN_MESSAGE = _("Log in with Gitlab")
 
 def get_flow(redirect_url=None):
   return OAuth2WebServerFlow(

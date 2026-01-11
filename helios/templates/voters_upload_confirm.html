@@ -1,40 +1,55 @@
 {% extends TEMPLATE_BASE %}
+{% load i18n %}
 
 {% block content %}
-  <h2 class="title">{{election.name}} &mdash; Bulk Upload Voters &mdash; Confirm<span style="font-size:0.7em;">[<a href="{% url "election@view" election.uuid %}">back to election</a>]</span></h2>
+<h3 class="title">
+  {{election.name}} - {% trans "Bulk Upload Voters" %} - {% trans "Confirm" %}
+  <span style="font-size:0.7em;">[ <a href="{% url "election@view" election.uuid %}">
+    {% trans "back to election" %}</a> ]
+  </span>
+</h3>
 
 <p>
-You have uploaded a file of voters. The first few rows of this file are:
+  {% trans "You have uploaded a file of voters. The first few rows of this file are" %}:
 </p>
 
 <table>
-<tr><th>Voter Type</th><th>Voter Login</th><th>Email Address</th><th>Name</th></tr>
-{% for v in voters %}
-<tr><td>{{v.voter_type}}</td><td>{{v.voter_id}}</td><td>{{v.email}}</td><td>{{v.name}}</td></tr>
-{% endfor %}
+  <tr>
+    <th>{% trans "Voter Type" %}</th>
+    <th>{% trans "Voter Login" %}</th>
+    <th>{% trans "Email Address" %}</th>
+    <th>{% trans "Name" %}</th>
+  </tr>
+  {% for v in voters %}
+  <tr>
+    <td>{{v.voter_type}}</td>
+    <td>{{v.voter_id}}</td>
+    <td>{{v.email}}</td>
+    <td>{{v.name}}</td>
+  </tr>
+  {% endfor %}
 </table>
 
 {% if problems %}
 <p style="font-size: 1.5em;">
-HOLD ON:<br />
-{% for problem in problems %}
-- {{problem}}<br />
-{% endfor %}
+  {% trans "HOLD ON" %}:<br />
+  {% for problem in problems %}
+  - {{problem}}<br />
+  {% endfor %}
 </p>
 <br />
 
-<a href="{% url "election@voters@upload-cancel" election.uuid %}">never mind, upload a different file</a>
-</p>
+<a href="{% url "election@voters@upload-cancel" election.uuid %}">{% trans "never mind, upload a different file" %}</a>
 
 {% else %}
-<p></p>
+
 <form method="post" action="" id="upload_form">
-  Does this look right to you?
+  {% trans "Does this look right to you?" %}
   <input type="hidden" name="confirm_p" value="1" />
-  <input type="submit" value="Yes, let's go" />
+  <input type="submit" value="{% trans "Yes, let's go" %}" />
 </form>
 
-<a href="{% url "election@voters@upload-cancel" election.uuid %}">no, let me upload a different file</a>
+<a href="{% url "election@voters@upload-cancel" election.uuid %}">{% trans "no, let me upload a different file" %}</a>
 
 {% endif %}
 

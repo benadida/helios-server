@@ -1,5 +1,5 @@
 from django.conf import settings
-from . import password, linkedin, cas, facebook, google, yahoo, clever, github, ldapauth, gitlab
+from . import password, linkedin, cas, facebook, google, yahoo, clever, github, ldapauth, gitlab, oauth
 
 # Import devlogin only in debug mode
 if settings.DEBUG:
@@ -17,6 +17,7 @@ AUTH_SYSTEMS['clever'] = clever
 AUTH_SYSTEMS['github'] = github
 AUTH_SYSTEMS['ldap'] = ldapauth
 AUTH_SYSTEMS['gitlab'] = gitlab
+AUTH_SYSTEMS['oauth'] = oauth
 
 # Add devlogin only in debug mode
 if settings.DEBUG:

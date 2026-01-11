@@ -1,38 +1,40 @@
+{% load i18n %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{% firstof settings.LANGUAGE_CODE 'en' %}">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta charset="UTF-8">
-  <title>Helios Voting Booth</title>
+  <title>{% trans "Helios Voting Booth" %}</title>
   <link rel="stylesheet" type="text/css" href="css/booth.css" />
   <link rel="stylesheet" type="text/css" href="css/forms.css" />
 
 <!--
-  <script language="javascript" src="js/jscrypto/class.js"></script>
-  <script language="javascript" src="js/jscrypto/bigint.dummy.js"></script>
-  <script language="javascript" src="js/jscrypto/jsbn.js"></script>
-  <script language="javascript" src="js/jscrypto/jsbn2.js"></script>
-  <script language="javascript" src="js/jscrypto/sjcl.js"></script>
-  <script language="javascript" src="js/underscore-min.js"></script>
-  <script language="javascript" src="js/jquery-1.2.2.min.js"></script>
-  <script language="javascript" src="js/jquery.query-2.1.5.js"></script>
-  <script language="javascript" src="js/jquery-jtemplates.js"></script>
-  <script language="javascript" src="js/jquery.json.min.js"></script>
-  <script language="javascript" src="js/jscrypto/bigint.js"></script>
-  <script language="javascript" src="js/jscrypto/random.js"></script>
-  <script language="javascript" src="js/jscrypto/elgamal.js"></script>
-  <script language="javascript" src="js/jscrypto/sha1.js"></script>
-  <script language="javascript" src="js/jscrypto/sha2.js"></script>
-  <script language="javascript" src="js/jscrypto/helios.js"></script>-->
-  
-  <script language="javascript" src="js/20160507-helios-booth-compressed.js"></script>
+  <script src="js/jscrypto/class.js"></script>
+  <script src="js/jscrypto/bigint.dummy.js"></script>
+  <script src="js/jscrypto/jsbn.js"></script>
+  <script src="js/jscrypto/jsbn2.js"></script>
+  <script src="js/jscrypto/sjcl.js"></script>
+  <script src="js/underscore-min.js"></script>
+  <script src="js/jquery-1.2.2.min.js"></script>
+  <script src="js/jquery.query-2.1.5.js"></script>
+  <script src="js/jquery-jtemplates.js"></script>
+  <script src="js/jquery.json.min.js"></script>
+  <script src="js/jscrypto/bigint.js"></script>
+  <script src="js/jscrypto/random.js"></script>
+  <script src="js/jscrypto/elgamal.js"></script>
+  <script src="js/jscrypto/sha1.js"></script>
+  <script src="js/jscrypto/sha2.js"></script>
+  <script src="js/jscrypto/helios.js"></script>-->
+
+  <script src="js/20160507-helios-booth-compressed.js"></script>
 </head>
 
 <body>
 <div id="wrapper">
 <div id="banner" class="edge">
-  <div style="text-align:center; width: 100%;">Helios Voting Booth
-      <div style="float: right; margin-right: 10px; font-size: 0.8em;"><span><a href="javascript:BOOTH.exit();">exit</a></span></div>
+  <div style="text-align:center; width: 100%;">{% trans "Helios Voting Booth" %}
+      <div style="float: right; margin-right: 10px; font-size: 0.8em;"><span>
+        <a href="javascript:BOOTH.exit();">{% trans "exit" %}</a></span></div>
   </div>
 </div>
 <div id="content">
@@ -71,7 +73,7 @@ window.onbeforeunload = function(evt) {
     evt = window.event;
   }
 
-  var message = "If you leave this page with an in-progress ballot, your ballot will be lost.";
+  var message = "{% trans "If you leave this page with an in-progress ballot, your ballot will be lost." %}";
 
   if (evt) {
     evt.returnValue = message;
@@ -81,7 +83,7 @@ window.onbeforeunload = function(evt) {
 };
 
 BOOTH.exit = function() {
-    if (confirm("Are you sure you want to exit the booth and lose all information about your current ballot?")) {
+    if (confirm("{% trans "Are you sure you want to exit the booth and lose all information about your current ballot?" %}")) {
         BOOTH.started_p = false;
         window.location = BOOTH.election.cast_url;
     }
@@ -182,7 +184,7 @@ BOOTH.setup_election = function(raw_json, election_metadata) {
 
   // whether the election wants candidate order randomization or not
   // we set up an ordering array so that the rest of the code is
-  // less error-prone. 
+  // less error-prone.
   BOOTH.election.question_answer_orderings = [];
   $(BOOTH.election.questions).each(function(i, question) {
     var ordering = new Array(question.answers.length);
@@ -229,7 +231,7 @@ BOOTH.launch_async_encryption_answer = function(question_num) {
 BOOTH.validate_question = function(question_num) {
     // check if enough answers are checked
     if (BOOTH.ballot.answers[question_num].length < BOOTH.election.questions[question_num].min) {
-        alert('You need to select at least ' + BOOTH.election.questions[question_num].min + ' answer(s).');
+        alert('{% trans "You need to select at least" %} ' + BOOTH.election.questions[question_num].min + ' {% trans "answer(s)" %}.');
         return false;
     }
 
@@ -342,7 +344,7 @@ BOOTH.click_checkbox = function(question_num, answer_num, checked_p) {
 
      // do the warning only if the question allows more than one option, otherwise it's confusing
      if (BOOTH.election.questions[question_num].max > 1) {
-        $('#warning_box').html("Maximum number of options selected.<br />To change your selection, please de-select a current selection first.");
+        $('#warning_box').html("{% trans "Maximum number of options selected.<br />To change your selection, please de-select a current selection first." %}");
      }
   } else {
      // enable the other checkboxes
@@ -351,13 +353,13 @@ BOOTH.click_checkbox = function(question_num, answer_num, checked_p) {
      });
      $('#warning_box').html("");
      if (BOOTH.election.questions[question_num].max != null && (BOOTH.ballot.answers[question_num].length < BOOTH.election.questions[question_num].max)) {
-        $('#warning_box').html("You may select up to " + BOOTH.election.questions[question_num].max + " choices total.");
+        $('#warning_box').html("{% trans "You may select up to" %} " + BOOTH.election.questions[question_num].max + " {% trans "choices total" %}.");
      }
   }
 };
 
 BOOTH.show_processing_before = function(str_to_execute) {
-    $('#processing_div').html("<h3 align='center'>Processing...</h3>");
+    $('#processing_div').html("<h3 align='center'>{% trans "Processing..." %}</h3>");
     BOOTH.show($('#processing_div'));
 
     // add a timeout so browsers like Safari actually display the processing message
@@ -485,7 +487,7 @@ BOOTH.wait_for_ciphertexts = function() {
     var percentage_done = Math.round((100 * answers_done.length) / BOOTH.encrypted_answers.length);
 
     if (BOOTH.total_cycles_waited > 250) {
-      alert('there appears to be a problem with the encryption process.\nPlease email help@heliosvoting.org and indicate that your encryption process froze at ' + percentage_done + '%');
+      alert('{% trans "There appears to be a problem with the encryption process.\nPlease email help@heliosvoting.org and indicate that your encryption process froze at" %} ' + percentage_done + '%');
       return;
     }
 
@@ -527,7 +529,7 @@ BOOTH.audit_ballot = function() {
 
 BOOTH.post_audited_ballot = function() {
   $.post(BOOTH.election_url + "/post-audited-ballot", {'audited_ballot': BOOTH.audit_trail}, function(result) {
-    alert('This audited ballot has been posted.\nRemember, this vote will only be used for auditing and will not be tallied.\nClick "back to voting" and cast a new ballot to make sure your vote counts.');
+    alert('{% trans "This audited ballot has been posted.\nRemember, this vote will only be used for auditing and will not be tallied.\nClick \"back to voting\" and cast a new ballot to make sure your vote counts." %}');
   });
 };
 
@@ -556,7 +558,7 @@ BOOTH.cast_ballot = function() {
 };
 
 BOOTH.show_receipt = function() {
-    UTILS.open_window_with_content("Your ballot tracker for " + BOOTH.election.name + ": " + BOOTH.encrypted_ballot_hash);
+    UTILS.open_window_with_content("{% trans "Your ballot tracker for" %} " + BOOTH.election.name + ": " + BOOTH.encrypted_ballot_hash);
 };
 
 BOOTH.do_done = function() {
@@ -568,24 +570,24 @@ BOOTH.do_done = function() {
   <div id="progress_div" style="display:none">
       <table>
           <tr>
-              <td id="progress_1">(1) Select</td>
-              <td id="progress_2">(2) Review</td>
-              <td id="progress_3">(3) Submit</td>
+              <td id="progress_1">(1) {% trans "Select" %}</td>
+              <td id="progress_2">(2) {% trans "Review" %}</td>
+              <td id="progress_3">(3) {% trans "Submit" %}</td>
           </tr>
       </table>
   </div>
   <div id="election_div" class="panel">
-    <h3>Checking capabilities and loading election booth...</h3>
-    <div align="center"><img src="loading.gif" /><br />This may take up to 10 seconds</div>
+    <h3>{% trans "Checking capabilities and loading election booth..." %}</h3>
+    <div align="center"><img src="loading.gif" /><br />{% trans "This may take up to 10 seconds" %}</div>
   </div>
 
   <div id="error_div" class="panel" style="display: none;">
-    <h3>There's a problem</h3>
+    <h3>{% trans "There's a problem" %}</h3>
     <p>
-      It appears that your browser does not have Java enabled. Helios needs Java to perform encryption within the browser.
+      {% trans "It appears that your browser does not have Java enabled. Helios needs Java to perform encryption within the browser." %}
     </p>
     <p>
-      You may be able to install Java by visiting <a target="_new" href="http://java.com">java.com</a>.
+      {% trans "You may be able to install Java by visiting" %} <a target="_blank" href="http://java.com">java.com</a>.
     </p>
   </div>
 
@@ -593,14 +595,14 @@ BOOTH.do_done = function() {
   </div>
 
   <div id="processing_div" class="panel" style="display:none;">
-      <h3 align="center">Processing....</h3>
+      <h3 align="center">{% trans "Processing...." %}</h3>
   </div>
 
   <div id="encrypting_div" class="panel" style="display:none;">
-      <h3 align="center">Helios is now encrypting your ballot<br />
+      <h3 align="center">{% trans "Helios is now encrypting your ballot" %}<br />
           <img src="encrypting.gif" /> <span style="font-size:0.7em; display:none;" id="percent_done_container">(<span id="percent_done">0</span>%)</span></h3>
 
-      <p align="center"><b>This may take up to two minutes.</b>
+      <p align="center"><b>{% trans "This may take up to two minutes." %}</b>
   </div>
 
   <div id="seal_div" class="panel">

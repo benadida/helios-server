@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.db import connection
 from django.urls import reverse as reverseURL
+from django.utils.translation import gettext_lazy as _
 from openid.store import sqlstore
 from openid.store.filestore import FileOpenIDStore
 
@@ -64,7 +65,7 @@ def getOpenIDStore(filestore_path, table_prefix):
         s = types[db_engine](connection.connection,
                                             **tablenames)
     except KeyError:
-        raise ImproperlyConfigured("Database engine %s not supported by OpenID library" % \
+        raise ImproperlyConfigured(_("Database engine %s not supported by OpenID library") % \
               (db_engine,))
 
     try:

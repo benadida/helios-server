@@ -8,6 +8,7 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.urls import re_path
+from django.utils.translation import gettext_lazy as _
 
 from helios_auth import url_names
 from helios_auth.utils import format_recipient
@@ -27,19 +28,19 @@ def create_user(username, password, name = None):
   except User.DoesNotExist:
     pass
   else:
-    raise ValueError(f"user '{username}' already exists")
-  
+    raise ValueError("User '%s' already exists" % username)
+
   info = {'password' : password, 'name': name}
   user = User.update_or_create(user_type='password', user_id=username, info = info)
   user.save()
 
 class LoginForm(forms.Form):
-  username = forms.CharField(max_length=50)
-  password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
+  username = forms.CharField(label=_("Username"), max_length=50)
+  password = forms.CharField(label=_("Password"), widget=forms.PasswordInput(), max_length=100)
 
 def password_check(user, password):
   return (user and user.info['password'] == password)
-  
+
 # the view for logging in
 def password_login_view(request):
   from helios_auth.view_utils import render_template
@@ -47,7 +48,7 @@ def password_login_view(request):
   from helios_auth.models import User
 
   error = None
-  
+
   if request.method == "GET":
     form = LoginForm()
   else:
@@ -69,10 +70,10 @@ def password_login_view(request):
           return HttpResponseRedirect(reverse(url_names.AUTH_AFTER))
       except User.DoesNotExist:
         pass
-      error = 'Bad Username or Password'
-  
+      error = _("Bad Username or Password")
+
   return render_template(request, 'password/login', {'form': form, 'error': error})
-    
+
 def password_forgotten_view(request):
   """
   forgotten password view and submit.
@@ -86,13 +87,13 @@ def password_forgotten_view(request):
   else:
     username = request.POST['username']
     return_url = request.POST['return_url']
-    
+
     try:
       user = User.get_by_type_and_id('password', username)
     except User.DoesNotExist:
-      return render_template(request, 'password/forgot', {'return_url': request.GET.get('return_url', ''), 'error': 'no such username'})
-    
-    body = """
+      return render_template(request, 'password/forgot', {'return_url': request.GET.get('return_url', ''), 'error': _("no such username")})
+
+    body = _("""
 
 This is a password reminder:
 
@@ -101,30 +102,30 @@ Your password: %s
 
 --
 %s
-""" % (user.user_id, user.info['password'], settings.SITE_TITLE)
+""") % (user.user_id, user.info['password'], settings.SITE_TITLE)
 
     # FIXME: make this a task
     send_mail('password reminder', body, settings.SERVER_EMAIL, [format_recipient(user.info['name'], user.info['email'])], fail_silently=False)
-    
+
     return HttpResponseRedirect(return_url)
-  
+
 def get_auth_url(request, redirect_url = None):
   return reverse(PASSWORD_LOGIN_URL_NAME)
-    
+
 def get_user_info_after_auth(request):
   from helios_auth.models import User
   user = User.get_by_type_and_id('password', request.session['password_user_id'])
   del request.session['password_user_id']
-  
+
   return {'type': 'password', 'user_id' : user.user_id, 'name': user.name, 'info': user.info, 'token': None}
-    
+
 def update_status(token, message):
   pass
-  
+
 def send_message(user_id, user_name, user_info, subject, body):
   email = user_id
   name = user_name or email
-  send_mail(subject, body, settings.SERVER_EMAIL, [format_recipient(name, email)], fail_silently=False)    
+  send_mail(subject, body, settings.SERVER_EMAIL, [format_recipient(name, email)], fail_silently=False)
 
 
 #

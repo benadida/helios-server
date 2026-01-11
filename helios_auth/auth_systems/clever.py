@@ -8,6 +8,7 @@ import urllib.parse
 
 import httplib2
 from django.conf import settings
+from django.utils.translation import gettext_lazy as _
 from oauth2client.client import OAuth2WebServerFlow, OAuth2Credentials
 
 from helios_auth import utils
@@ -16,7 +17,7 @@ from helios_auth import utils
 STATUS_UPDATES = False
 
 # display tweaks
-LOGIN_MESSAGE = "Log in with Clever"
+LOGIN_MESSAGE = _("Log in with Clever")
 
 def get_flow(redirect_url=None):
   return OAuth2WebServerFlow(
@@ -27,7 +28,7 @@ def get_flow(redirect_url=None):
     #token_uri="https://clever.com/oauth/tokens",
     token_uri="http://requestb.in/1b18gwf1",
     redirect_uri=redirect_url)
-  
+
 def get_auth_url(request, redirect_url):
   flow = get_flow(redirect_url)
 
@@ -58,14 +59,14 @@ def get_user_info_after_auth(request):
 
   # package the credentials
   credentials = OAuth2Credentials(access_token, settings.CLEVER_CLIENT_ID, settings.CLEVER_CLIENT_SECRET, None, None, None, None)
-  
+
   # get the nice name
   http = credentials.authorize(http)
   (resp_headers, content) = http.request("https://api.clever.com/me", "GET")
 
   # {"type":"student","data":{"id":"563395179f7408755c0006b7","district":"5633941748c07c0100000aac","type":"student","created":"2015-10-30T16:04:39.262Z","credentials":{"district_password":"eel7Thohd","district_username":"dianes10"},"dob":"1998-11-01T00:00:00.000Z","ell_status":"Y","email":"diane.s@example.org","gender":"F","grade":"9","hispanic_ethnicity":"Y","last_modified":"2015-10-30T16:04:39.274Z","location":{"zip":"11433"},"name":{"first":"Diane","last":"Schmeler","middle":"J"},"race":"Asian","school":"5633950c62fc41c041000005","sis_id":"738733110","state_id":"114327752","student_number":"738733110"},"links":[{"rel":"self","uri":"/me"},{"rel":"canonical","uri":"/v1.1/students/563395179f7408755c0006b7"},{"rel":"district","uri":"/v1.1/districts/5633941748c07c0100000aac"}]}
   response = utils.from_json(content)
-  
+
   user_id = response['data']['id']
   user_name = "%s %s" % (response['data']['name']['first'], response['data']['name']['last'])
   user_type = response['type']
@@ -73,18 +74,18 @@ def get_user_info_after_auth(request):
   user_grade = response['data'].get('grade', None)
 
   print(content)
-  
+
   # watch out, response also contains email addresses, but not sure whether thsoe are verified or not
   # so for email address we will only look at the id_token
-  
+
   return {'type' : 'clever', 'user_id': user_id, 'name': user_name , 'info': {"district": user_district, "type": user_type, "grade": user_grade}, 'token': {'access_token': access_token}}
-    
+
 def do_logout(user):
   """
   logout of Google
   """
   return None
-  
+
 def update_status(token, message):
   """
   simple update
@@ -114,14 +115,14 @@ def generate_constraint(category, user):
   return {'grade': category}
 
 def list_categories(user):
-  return [{"id": str(g), "name": "Grade %d" % g} for g in range(3,13)]
-  
+  return [{"id": str(g), "name": _("Grade %d") % g} for g in range(3,13)]
+
 def eligibility_category_id(constraint):
   return constraint['grade']
 
 def pretty_eligibility(constraint):
-  return "Grade %s" % constraint['grade']
-  
+  return _("Grade %s") % constraint['grade']
+
 
 
 #

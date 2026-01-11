@@ -4,17 +4,18 @@ Facebook Authentication
 
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils.translation import gettext_lazy as _
 
 APP_ID = settings.FACEBOOK_APP_ID
 API_KEY = settings.FACEBOOK_API_KEY
 API_SECRET = settings.FACEBOOK_API_SECRET
-  
+
 #from facebookclient import Facebook
 import urllib.request, urllib.error, urllib.parse
 
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = True
-STATUS_UPDATE_WORDING_TEMPLATE = "Send %s to your facebook status"
+STATUS_UPDATE_WORDING_TEMPLATE = _("Send %s to your facebook status")
 
 from helios_auth import utils
 from helios_auth.utils import format_recipient
@@ -43,7 +44,7 @@ def get_auth_url(request, redirect_url):
       'client_id': APP_ID,
       'redirect_uri': redirect_url,
       'scope': 'email,user_groups'})
-    
+
 def get_user_info_after_auth(request):
   args = facebook_get('/oauth/access_token', {
       'client_id' : APP_ID,
@@ -57,7 +58,7 @@ def get_user_info_after_auth(request):
   info = utils.from_json(facebook_get('/me', {'access_token':access_token}))
 
   return {'type': 'facebook', 'user_id' : info['id'], 'name': info.get('name'), 'email': info.get('email'), 'info': info, 'token': {'access_token': access_token}}
-    
+
 def update_status(user_id, user_info, token, message):
   """
   post a message to the auth system's update stream, e.g. twitter stream
@@ -69,7 +70,7 @@ def update_status(user_id, user_info, token, message):
 
 def send_message(user_id, user_name, user_info, subject, body):
   if 'email' in user_info:
-    send_mail(subject, body, settings.SERVER_EMAIL, [format_recipient(user_name, user_info['email'])], fail_silently=False)    
+    send_mail(subject, body, settings.SERVER_EMAIL, [format_recipient(user_name, user_info['email'])], fail_silently=False)
 
 
 ##
@@ -84,7 +85,7 @@ def send_message(user_id, user_name, user_info, subject, body):
 
 def get_user_groups(user):
   groups_raw = utils.from_json(facebook_get('/me/groups', {'access_token':user.token['access_token']}))
-  return groups_raw['data']    
+  return groups_raw['data']
 
 def check_constraint(constraint, user):
   # get the groups for the user
@@ -114,7 +115,7 @@ def eligibility_category_id(constraint):
   return constraint['group']['id']
 
 def pretty_eligibility(constraint):
-  return "Facebook users who are members of the \"%s\" group" % constraint['group']['name']
+  return _("Facebook users who are members of the \"%s\" group") % constraint['group']['name']
 
 #
 # Election Creation

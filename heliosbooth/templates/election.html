@@ -1,24 +1,20 @@
-
+{% load i18n %}
 <div id="questions_div">
-<p>
-    To vote, follow these steps:
-<p>
-    
-<ol>
-    <li> <b>Select</b> your preferred options.</li>
-<br />
+    <p>
+        {% trans "To vote, follow these steps" %}:
+    <p>
+    <ol>
+        <li>{% trans "<b>Select</b> your preferred options." %}</li>
+        <li>{% trans "<b>Review</b> your choices, which are then encrypted." %}</li>
+        <li>{% trans "<b>Submit</b> your encrypted ballot and authenticate to verify your eligibility." %}</li>
+    </ol>
 
-    <li> <b>Review</b> your choices, which are then encrypted.</li>
-<br />
-
-    <li> <b>Submit</b> your encrypted ballot and authenticate to verify your eligibility.</li>
-
-</ol>
-
-<div align="center"><button onclick="BOOTH.show_question(0);">Start</button></div>
+    <div align="center"><button onclick="BOOTH.show_question(0);">{% trans "Start" %}</button></div>
 </div>
 
 <p>
-  You can <a target="_new" href="mailto:{$T.election_metadata.help_email}?subject=help%20with%20election%20{$T.election.name}&body=I%20need%20help%20with%20election%20{$T.election.uuid}">email for help</a>.
+    {% trans "You can" %}
+    <a target="_blank"
+        href="mailto:{$T.election_metadata.help_email}?subject={% filter urlencode %}{% trans 'Help with election' %}{% endfilter %}%20{$T.election.name}&body={% filter urlencode %}{% trans 'I need help with election' %}{% endfilter %}%20{$T.election.uuid}">
+        {% trans "email for help" %}</a>.
 </p>
-

@@ -11,7 +11,7 @@ import urllib.request
 import webbrowser
 
 from . import oauth as oauth
-
+from django.utils.translation import gettext_lazy as _
 
 class LoginOAuthClient(oauth.OAuthClient):
 
@@ -55,15 +55,15 @@ class LoginOAuthClient(oauth.OAuthClient):
         elif method == "POST":
             return self.http_wrapper(req.get_normalized_http_url(),req.to_postdata())
 
-    #this is barely working. (i think. mostly it is that everyone else is using httplib) 
+    #this is barely working. (i think. mostly it is that everyone else is using httplib)
     def http_wrapper(self, url, postdata=None):
         if postdata is None:
             postdata = {}
         try:
             if postdata != {}:
-                f = urllib.request.urlopen(url, postdata) 
-            else: 
-                f = urllib.request.urlopen(url) 
+                f = urllib.request.urlopen(url, postdata)
+            else:
+                f = urllib.request.urlopen(url)
             response = f.read()
         except:
             import traceback
@@ -77,8 +77,8 @@ class LoginOAuthClient(oauth.OAuthClient):
             logging.error(exc.args)
             logging.error(traceback.format_tb(tb))
             response = ""
-        return response 
-    
+        return response
+
 
     def get_request_token(self):
         response = self.oauth_request(self.request_token_url())
@@ -87,7 +87,7 @@ class LoginOAuthClient(oauth.OAuthClient):
             self.token = oauth.OAuthConsumer(token['oauth_token'],token['oauth_token_secret'])
             return token
         except:
-            raise oauth.OAuthError('Invalid oauth_token')
+            raise oauth.OAuthError(_('Invalid oauth_token'))
 
     def oauth_parse_response(self, response_string):
         r = {}
@@ -95,7 +95,7 @@ class LoginOAuthClient(oauth.OAuthClient):
             pair = param.split("=")
             if (len(pair)!=2):
                 break
-                
+
             r[pair[0]]=pair[1]
         return r
 
@@ -127,7 +127,7 @@ class LoginOAuthClient(oauth.OAuthClient):
         elif (method == "POST"):
             return self.http_wrapper(req.get_normalized_http_url(),req.to_postdata())
 
-        
+
 ##
 ## the code below needs to be updated to take into account not just Twitter
 ##
@@ -136,26 +136,26 @@ if __name__ == '__main__':
     consumer_key = ''
     consumer_secret = ''
     while not consumer_key:
-        consumer_key = input('Please enter consumer key: ')
+        consumer_key = input(_('Please enter consumer key: '))
     while not consumer_secret:
-        consumer_secret = input('Please enter consumer secret: ')
+        consumer_secret = input(_('Please enter consumer secret: '))
     auth_client = LoginOAuthClient(consumer_key,consumer_secret)
     tok = auth_client.get_request_token()
     token = tok['oauth_token']
     token_secret = tok['oauth_token_secret']
-    url = auth_client.get_authorize_url(token) 
+    url = auth_client.get_authorize_url(token)
     webbrowser.open(url)
-    print("Visit this URL to authorize your app: " + url)
-    response_token = input('What is the oauth_token from twitter: ')
+    print(_("Visit this URL to authorize your app: %s") % url)
+    response_token = input(_('What is the oauth_token from twitter: '))
     response_client = LoginOAuthClient(consumer_key, consumer_secret,token, token_secret, server_params={})
     tok = response_client.get_access_token()
-    print("Making signed request")
+    print(_("Making signed request"))
     #verify user access
     content = response_client.oauth_request('https://twitter.com/account/verify_credentials.json', method='POST')
     #make an update
     #content = response_client.oauth_request('https://twitter.com/statuses/update.xml', {'status':'Updated from a python oauth client. awesome.'}, method='POST')
     print(content)
-   
-    print('Done.')
+
+    print(_("Done."))
 
 
