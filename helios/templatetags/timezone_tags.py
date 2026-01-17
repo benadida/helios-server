@@ -23,14 +23,16 @@ def utc_time(value):
     return ''
 
   # Only accept datetime objects to prevent XSS
-  if not isinstance(value, (datetime.datetime, datetime.date)):
-    return escape(str(value))
-
-  # Format the datetime for display
-  if hasattr(value, 'strftime'):
+  # Note: datetime.datetime is a subclass of datetime.date, so check datetime first
+  if isinstance(value, datetime.datetime):
+    # Format datetime with time
     formatted = value.strftime('%Y-%m-%d %H:%M')
+  elif isinstance(value, datetime.date):
+    # Format date only (no time component)
+    formatted = value.strftime('%Y-%m-%d 00:00')
   else:
-    formatted = str(value)
+    # Reject any other type and escape it
+    return escape(str(value))
 
   # Escape the formatted string to prevent XSS
   escaped_formatted = escape(formatted)
