@@ -2655,3 +2655,169 @@ class PendingVotesTests(TestCase):
         self.election.refresh_from_db()
         self.assertIsNone(self.election.tallying_started_at)
 
+
+class UserSearchTests(WebTest):
+    """Test user search functionality for site administrators"""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        """Set up test data"""
+        self.site_admin = auth_models.User.objects.get(user_id='mccio@github.com', user_type='google')
+        self.regular_user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.fb_user = auth_models.User.objects.filter(user_type='facebook').first()
+
+        # Create test elections
+        self.election1, _ = models.Election.get_or_create(
+            short_name='test-user-search-1',
+            name='Test User Search Election 1',
+            description='Test Election 1',
+            admin=self.regular_user
+        )
+        if not self.election1.uuid:
+            self.election1.uuid = str(uuid.uuid4())
+            self.election1.save()
+
+        self.election2, _ = models.Election.get_or_create(
+            short_name='test-user-search-2',
+            name='Test User Search Election 2',
+            description='Test Election 2',
+            admin=self.fb_user
+        )
+        if not self.election2.uuid:
+            self.election2.uuid = str(uuid.uuid4())
+            self.election2.save()
+
+        # Add regular_user as additional admin to election2
+        self.election2.admins.add(self.regular_user)
+
+        # Add regular_user as voter to election2
+        self.voter = models.Voter.objects.create(
+            uuid=str(uuid.uuid4()),
+            election=self.election2,
+            user=self.regular_user,
+            voter_email=self.regular_user.user_id,
+            voter_name=self.regular_user.name
+        )
+
+        # Add regular_user as trustee to election1
+        self.trustee = models.Trustee.objects.create(
+            election=self.election1,
+            uuid=str(uuid.uuid4()),
+            name=self.regular_user.name,
+            email=self.regular_user.user_id,
+            secret='test-secret',
+            public_key_hash='test-hash'
+        )
+
+    def setup_login(self, user):
+        """Set up session for a user"""
+        self.client.get("/")  # Initialize session
+        session = self.client.session
+        session['user'] = {'type': user.user_type, 'user_id': user.user_id}
+        session.save()
+
+    def test_user_search_requires_admin(self):
+        """Test that user search page requires site admin privileges"""
+        # Not logged in - should return 403
+        response = self.client.get('/helios/stats/user-search')
+        self.assertStatusCode(response, 403)
+
+        # Regular user - should return 403
+        self.setup_login(self.regular_user)
+        response = self.client.get('/helios/stats/user-search')
+        self.assertStatusCode(response, 403)
+
+    def test_user_search_accessible_to_site_admin(self):
+        """Test that user search page is accessible to site admin"""
+        self.setup_login(self.site_admin)
+        response = self.client.get('/helios/stats/user-search')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'User Search')
+
+    def test_user_search_empty_query(self):
+        """Test user search with no query returns prompt"""
+        self.setup_login(self.site_admin)
+        response = self.client.get('/helios/stats/user-search')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Enter a search term')
+
+    def test_user_search_by_name(self):
+        """Test searching for users by name"""
+        self.setup_login(self.site_admin)
+        response = self.client.get('/helios/stats/user-search?q=Ben')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Ben Adida')
+        self.assertContains(response, 'ben@adida.net')
+
+    def test_user_search_by_user_id(self):
+        """Test searching for users by user ID"""
+        self.setup_login(self.site_admin)
+        response = self.client.get('/helios/stats/user-search?q=ben@adida.net')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Ben Adida')
+        self.assertContains(response, 'ben@adida.net')
+
+    def test_user_search_shows_elections_as_admin(self):
+        """Test that search results show elections where user is admin"""
+        self.setup_login(self.site_admin)
+        response = self.client.get('/helios/stats/user-search?q=ben@adida.net')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Elections as Administrator')
+        self.assertContains(response, 'Test User Search Election 1')
+        self.assertContains(response, 'Test User Search Election 2')
+
+    def test_user_search_shows_elections_as_voter(self):
+        """Test that search results show elections where user is voter"""
+        self.setup_login(self.site_admin)
+        response = self.client.get('/helios/stats/user-search?q=ben@adida.net')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Elections as Voter')
+        self.assertContains(response, 'Test User Search Election 2')
+
+    def test_user_search_shows_elections_as_trustee(self):
+        """Test that search results show elections where user is trustee"""
+        self.setup_login(self.site_admin)
+        response = self.client.get('/helios/stats/user-search?q=ben@adida.net')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Elections as Trustee')
+        self.assertContains(response, 'Test User Search Election 1')
+
+    def test_user_search_no_results(self):
+        """Test user search with query that returns no results"""
+        self.setup_login(self.site_admin)
+        response = self.client.get('/helios/stats/user-search?q=nonexistent@example.com')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'No users found')
+
+    def test_user_search_case_insensitive(self):
+        """Test that user search is case insensitive"""
+        self.setup_login(self.site_admin)
+        response = self.client.get('/helios/stats/user-search?q=BEN')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Ben Adida')
+
+    def test_user_search_shows_user_type(self):
+        """Test that search results show user type"""
+        self.setup_login(self.site_admin)
+        response = self.client.get('/helios/stats/user-search?q=ben@adida.net')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'User Type')
+        self.assertContains(response, 'google')
+
+    def test_user_search_shows_admin_status(self):
+        """Test that search results show site admin status"""
+        self.setup_login(self.site_admin)
+
+        # Search for site admin
+        response = self.client.get('/helios/stats/user-search?q=mccio')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Site Admin')
+        self.assertContains(response, 'Yes')
+
+        # Search for regular user
+        response = self.client.get('/helios/stats/user-search?q=ben@adida.net')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Site Admin')
+        self.assertContains(response, 'No')
+

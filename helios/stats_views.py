@@ -11,6 +11,7 @@ from django.http import HttpResponseRedirect
 
 from helios import tasks, url_names
 from helios.models import CastVote, Election
+from helios_auth.models import User
 from helios_auth.security import get_user
 from .security import PermissionDenied
 from .view_utils import render_template
@@ -68,3 +69,43 @@ def recent_problem_elections(request):
   elections_with_problems = Election.objects.filter(frozen_at = None, created_at__gt = datetime.datetime.utcnow() - datetime.timedelta(days=10), created_at__lt = datetime.datetime.utcnow() - datetime.timedelta(days=1) )
 
   return render_template(request, "stats_problem_elections", {'elections' : elections_with_problems})
+
+def user_search(request):
+  user = require_admin(request)
+
+  q = request.GET.get('q', '')
+  found_users = []
+
+  if q:
+    # Search for users by name, user_id, or email (in info field)
+    from django.db.models import Q
+    found_users = User.objects.filter(
+      Q(name__icontains=q) |
+      Q(user_id__icontains=q)
+    ).order_by('name')
+
+  # For each user, get their elections
+  users_with_elections = []
+  for found_user in found_users:
+    # Get elections where user is admin (creator or additional admin)
+    elections_as_admin = Election.get_by_user_as_admin(found_user)
+
+    # Get elections where user is a voter
+    elections_as_voter = Election.get_by_user_as_voter(found_user)
+
+    # Get elections where user is a trustee (by email matching user_id)
+    elections_as_trustee = Election.objects.filter(
+      trustee__email__iexact=found_user.user_id
+    ).distinct()
+
+    users_with_elections.append({
+      'user': found_user,
+      'elections_as_admin': elections_as_admin,
+      'elections_as_voter': elections_as_voter,
+      'elections_as_trustee': elections_as_trustee,
+    })
+
+  return render_template(request, "stats_user_search", {
+    'q': q,
+    'users_with_elections': users_with_elections
+  })
