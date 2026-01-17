@@ -1162,14 +1162,18 @@ def one_election_archive(request, election):
 def one_election_delete(request, election):
   """
   Soft delete an election. The election will be hidden from default queries.
+  Requires POST request with CSRF protection.
   Pass delete_p=1 to delete, delete_p=0 to undelete.
   """
-  delete_p = request.GET.get('delete_p', True)
+  if request.method == "POST":
+    check_csrf(request)
 
-  if bool(int(delete_p)):
-    election.soft_delete()
-  else:
-    election.undelete()
+    delete_p = request.POST.get('delete_p', '1')
+
+    if bool(int(delete_p)):
+      election.soft_delete()
+    else:
+      election.undelete()
 
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
 
