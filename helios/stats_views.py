@@ -10,7 +10,7 @@ from django.db.models import Max, Count
 from django.http import HttpResponseRedirect
 
 from helios import tasks, url_names
-from helios.models import CastVote, Election, Trustee
+from helios.models import CastVote, Election
 from helios_auth.models import User
 from helios_auth.security import get_user
 from .security import PermissionDenied
