@@ -56,10 +56,10 @@ class UserModelTests(unittest.TestCase):
         """
         for auth_system, auth_system_module in AUTH_SYSTEMS.items():
             models.User.objects.create(user_type = auth_system, user_id = 'foobar', info={'name':'Foo Bar'})
-            
+
             def double_insert():
                 models.User.objects.create(user_type = auth_system, user_id = 'foobar', info={'name': 'Foo2 Bar'})
-                
+
             self.assertRaises(IntegrityError, double_insert)
             transaction.rollback()
 
@@ -84,9 +84,8 @@ class UserModelTests(unittest.TestCase):
         """
         for auth_system, auth_system_module in AUTH_SYSTEMS.items():
             assert(hasattr(auth_system_module, 'can_create_election'))
-            if auth_system != 'clever':
-                assert(auth_system_module.can_create_election('foobar', {}))
-        
+            assert(auth_system_module.can_create_election('foobar', {}))
+
 
     def test_status_update(self):
         """
@@ -247,7 +246,7 @@ class UserBlackboxTests(TestCase):
 
     def test_logout(self):
         response = self.client.post(reverse("auth@logout"), follow=True)
-        
+
         self.assertContains(response, "not logged in")
         self.assertNotContains(response, "Foobar User")
 
@@ -258,7 +257,7 @@ class UserBlackboxTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, "testing subject")
         self.assertEqual(mail.outbox[0].to[0], "\"Foobar User\" <foobar-test@adida.net>")
-        
+
 # LDAP auth tests
 from .auth_systems import ldapauth as ldap_views
 class LDAPAuthTests(TestCase):
@@ -324,3 +323,91 @@ class DevLoginTests(TestCase):
 
             with self.assertRaises(Http404):
                 devlogin.get_auth_url(request)
+
+
+class OAuthAuthSystemTests(TestCase):
+    """
+    Tests for OAuth-based authentication systems (Google, GitHub, GitLab)
+    """
+
+    def test_oauth_systems_have_required_interface(self):
+        """Verify OAuth auth systems implement required interface methods"""
+        oauth_systems = ['google', 'github', 'gitlab']
+        required_methods = [
+            'get_auth_url',
+            'get_user_info_after_auth',
+            'do_logout',
+            'send_message',
+            'can_create_election',
+        ]
+
+        for system_name in oauth_systems:
+            if system_name not in AUTH_SYSTEMS:
+                continue
+            system = AUTH_SYSTEMS[system_name]
+            for method in required_methods:
+                self.assertTrue(
+                    hasattr(system, method),
+                    f"{system_name} missing required method: {method}"
+                )
+
+    def test_oauth_state_verification_rejects_missing_state(self):
+        """Verify OAuth state verification rejects requests with missing state"""
+        from django.test import RequestFactory
+        from .auth_systems import google, github, gitlab
+
+        factory = RequestFactory()
+
+        for system, session_key in [
+            (google, 'google-oauth-state'),
+            (github, 'gh_oauth_state'),
+            (gitlab, 'gl_oauth_state'),
+        ]:
+            # Create request with code but no state
+            request = factory.get('/auth/after/', {'code': 'test_code'})
+            request.session = {}
+
+            with self.assertRaises(Exception) as context:
+                system.get_user_info_after_auth(request)
+            self.assertIn('state mismatch', str(context.exception).lower())
+
+    def test_oauth_state_verification_rejects_wrong_state(self):
+        """Verify OAuth state verification rejects requests with wrong state"""
+        from django.test import RequestFactory
+        from .auth_systems import google, github, gitlab
+
+        factory = RequestFactory()
+
+        test_cases = [
+            (google, 'google-oauth-state', 'google-redirect-url'),
+            (github, 'gh_oauth_state', 'gh_redirect_uri'),
+            (gitlab, 'gl_oauth_state', 'gl_redirect_uri'),
+        ]
+
+        for system, state_key, redirect_key in test_cases:
+            # Create request with code and wrong state
+            request = factory.get('/auth/after/', {
+                'code': 'test_code',
+                'state': 'wrong_state'
+            })
+            request.session = {
+                state_key: 'correct_state',
+                redirect_key: 'http://example.com/callback'
+            }
+
+            with self.assertRaises(Exception) as context:
+                system.get_user_info_after_auth(request)
+            self.assertIn('state mismatch', str(context.exception).lower())
+
+    def test_oauth_returns_none_without_code(self):
+        """Verify OAuth auth returns None when no code is provided"""
+        from django.test import RequestFactory
+        from .auth_systems import google, github, gitlab
+
+        factory = RequestFactory()
+        request = factory.get('/auth/after/')
+        request.session = {}
+
+        for system in [google, github, gitlab]:
+            result = system.get_user_info_after_auth(request)
+            self.assertIsNone(result)
