@@ -1142,18 +1142,33 @@ def one_election_set_featured(request, election):
 
 @election_admin()
 def one_election_archive(request, election):
-  
+
   archive_p = request.GET.get('archive_p', True)
-  
+
   if bool(int(archive_p)):
     election.archived_at = datetime.datetime.utcnow()
   else:
     election.archived_at = None
-    
+
   election.save()
 
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
-  
+
+@election_admin()
+def one_election_delete(request, election):
+  """
+  Soft delete an election. The election will be hidden from default queries.
+  Pass delete_p=1 to delete, delete_p=0 to undelete.
+  """
+  delete_p = request.GET.get('delete_p', True)
+
+  if bool(int(delete_p)):
+    election.soft_delete()
+  else:
+    election.undelete()
+
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
+
 @election_admin()
 def one_election_copy(request, election):
   # FIXME: make this a POST and CSRF protect it

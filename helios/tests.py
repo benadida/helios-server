@@ -202,6 +202,41 @@ class ElectionModelTests(TestCase):
         self.election.archived_at = None
         self.assertFalse(self.election.is_archived)
 
+    def test_soft_delete(self):
+        # Test that soft delete sets the flags correctly
+        self.assertFalse(self.election.is_deleted)
+        self.assertIsNone(self.election.deleted_at)
+
+        # Soft delete the election
+        self.election.soft_delete()
+        self.assertTrue(self.election.is_deleted)
+        self.assertIsNotNone(self.election.deleted_at)
+
+        # Verify it's logged
+        log_entries = self.election.get_log().all()
+        self.assertTrue(any('deleted' in log.log.lower() for log in log_entries))
+
+        # Test that deleted elections are excluded from default queries
+        elections = models.Election.objects.filter(uuid=self.election.uuid)
+        self.assertEqual(len(elections), 0)
+
+        # But can still be found with objects_with_deleted
+        election = models.Election.objects_with_deleted.get(uuid=self.election.uuid)
+        self.assertEqual(election, self.election)
+
+        # Test that get_by_uuid still works (uses objects_with_deleted)
+        election = models.Election.get_by_uuid(self.election.uuid)
+        self.assertEqual(election, self.election)
+
+        # Test undelete
+        self.election.undelete()
+        self.assertFalse(self.election.is_deleted)
+        self.assertIsNone(self.election.deleted_at)
+
+        # Should be visible in default queries again
+        elections = models.Election.objects.filter(uuid=self.election.uuid)
+        self.assertEqual(len(elections), 1)
+
     def test_voter_registration(self):
         # before adding a voter
         voters = models.Voter.get_by_election(self.election)

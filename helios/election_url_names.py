@@ -5,6 +5,7 @@ ELECTION_EDIT="election@edit"
 ELECTION_SCHEDULE="election@schedule"
 ELECTION_EXTEND="election@extend"
 ELECTION_ARCHIVE="election@archive"
+ELECTION_DELETE="election@delete"
 ELECTION_COPY="election@copy"
 ELECTION_BADGE="election@badge"
 
