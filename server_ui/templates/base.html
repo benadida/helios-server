@@ -1,4 +1,3 @@
-{% load static %}
 <!DOCTYPE html>
 <!--[if IE 8]> 				 <html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
@@ -11,7 +10,7 @@
   <link rel="stylesheet" href="/static/foundation/css/foundation.css">
   <link rel="stylesheet" href="/static/foundation-tweaks.css">
   <link rel="stylesheet" href="/static/main.css">
-  <link rel="stylesheet" href="{% static 'helios/timezone-display.css' %}">
+  <link rel="stylesheet" href="/static/helios/timezone-display.css">
 
 {% if settings.DEBUG %}  
   <script src="/static/foundation/js/vendor/custom.modernizr.js"></script>
@@ -24,8 +23,8 @@
 {% else %}
 <script language="javascript" src="/static/20140302-helios-combined.js"></script>
 {% endif %}
-  
-  <script language="javascript" src="{% static 'helios/timezone-display.js' %}"></script>
+
+  <script language="javascript" src="/static/helios/timezone-display.js"></script></script>
 
   {% block js %}
   {% endblock %}
