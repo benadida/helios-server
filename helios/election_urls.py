@@ -21,6 +21,7 @@ urlpatterns = [
     path('/schedule', views.one_election_schedule, name=names.ELECTION_SCHEDULE),
     path('/extend', views.one_election_extend, name=names.ELECTION_EXTEND),
     path('/archive', views.one_election_archive, name=names.ELECTION_ARCHIVE),
+    path('/delete', views.one_election_delete, name=names.ELECTION_DELETE),
     path('/copy', views.one_election_copy, name=names.ELECTION_COPY),
 
     # badge
