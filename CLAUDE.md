@@ -17,32 +17,36 @@ Helios is an end-to-end verifiable voting system that provides secure, transpare
 - **Database**: PostgreSQL 9.5+
 - **Task Queue**: Celery with RabbitMQ
 - **Crypto**: pycryptodome
+- **Package Manager**: uv
 
 ## Common Commands
 
 ```bash
+# Install dependencies
+uv sync
+
 # Run development server
-python manage.py runserver
+uv run python manage.py runserver
 
 # Run all tests
-python manage.py test -v 2
+uv run python manage.py test -v 2
 
 # Run tests for a specific app
-python manage.py test helios -v 2
-python manage.py test helios_auth -v 2
+uv run python manage.py test helios -v 2
+uv run python manage.py test helios_auth -v 2
 
 # Run a specific test class
-python manage.py test helios.tests.ElectionModelTests -v 2
+uv run python manage.py test helios.tests.ElectionModelTests -v 2
 
 # Database migrations
-python manage.py makemigrations
-python manage.py migrate
+uv run python manage.py makemigrations
+uv run python manage.py migrate
 
 # Reset database (drops and recreates)
 ./reset.sh
 
 # Start Celery worker (for background tasks)
-celery --app helios worker --events --beat --concurrency 1
+uv run celery --app helios worker --events --beat --concurrency 1
 ```
 
 ## Project Structure

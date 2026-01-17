@@ -14,16 +14,16 @@
 
 ## Python Setup
 
-* Install Python 3.12 including dev and venv packages
+* Install Python 3.13 including dev packages
 
 ```
-sudo apt install python3 python3-dev python3-venv python3-pip
+sudo apt install python3 python3-dev
 ```
 
-* Create a virtualenv
+* Install uv (modern Python package manager)
 
 ```
-python3 -m venv venv
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 * You'll also need Postgres dev libraries. For example on Ubuntu:
@@ -32,16 +32,10 @@ python3 -m venv venv
 sudo apt install libpq-dev
 ```
 
-* Activate virtual environment
+* Install dependencies (uv creates a virtual environment automatically)
 
 ```
-source venv/bin/activate
-```
-
-* Install requirements
-
-```
-pip install -r requirements.txt
+uv sync
 ```
 
 ## Database Setup
@@ -57,7 +51,7 @@ pip install -r requirements.txt
 * Start server
 
 ```
-python manage.py runserver
+uv run python manage.py runserver
 ```
 
 ## Google Auth Configuration
