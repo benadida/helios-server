@@ -3,88 +3,122 @@
  * Uses built-in browser Intl API for timezone conversion
  */
 
-(function() {
+var HeliosTimezone = (function() {
   'use strict';
 
-  // Formatters using browser's built-in Intl API
-  const utcFormatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'UTC',
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
-
-  const localFormatter = new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
-  });
+  // Module configuration
+  var config = {
+    utcFormatter: new Intl.DateTimeFormat('en-US', {
+      timeZone: 'UTC',
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    }),
+    localFormatter: new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    })
+  };
 
   /**
-   * Get timezone name/abbreviation using Intl API
+   * Get local timezone name/abbreviation using Intl API
+   * @returns {string} Timezone abbreviation or 'Local'
    */
   function getLocalTimezoneName() {
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      timeZoneName: 'short'
-    });
-    const parts = formatter.formatToParts(new Date());
-    const tzPart = parts.find(part => part.type === 'timeZoneName');
-    return tzPart ? tzPart.value : 'Local';
+    try {
+      var formatter = new Intl.DateTimeFormat('en-US', {
+        timeZoneName: 'short'
+      });
+      var parts = formatter.formatToParts(new Date());
+      var tzPart = parts.find(function(part) { return part.type === 'timeZoneName'; });
+      return tzPart ? tzPart.value : 'Local';
+    } catch (e) {
+      return 'Local';
+    }
+  }
+
+  /**
+   * Parse UTC datetime string into Date object
+   * @param {string} utcDateStr - UTC datetime string
+   * @returns {Date|null} Date object or null if invalid
+   */
+  function parseUTCDate(utcDateStr) {
+    if (!utcDateStr || typeof utcDateStr !== 'string') {
+      return null;
+    }
+
+    // Try parsing with ' UTC' suffix first
+    var date = new Date(utcDateStr + ' UTC');
+
+    if (isNaN(date.getTime())) {
+      // Try without ' UTC' suffix
+      date = new Date(utcDateStr);
+      if (isNaN(date.getTime())) {
+        return null;
+      }
+    }
+
+    return date;
+  }
+
+  /**
+   * Check if user is in UTC timezone
+   * @param {Date} date - Date object to check
+   * @returns {boolean} True if in UTC timezone
+   */
+  function isUTCTimezone(date) {
+    return date.getTimezoneOffset() === 0;
+  }
+
+  /**
+   * Create timezone display HTML
+   * @param {Date} date - Date object to format
+   * @returns {string} HTML string for display
+   */
+  function createTimezoneHTML(date) {
+    var utcFormatted = config.utcFormatter.format(date);
+    var localFormatted = config.localFormatter.format(date);
+    var localTz = getLocalTimezoneName();
+
+    if (isUTCTimezone(date)) {
+      return '<strong>' + utcFormatted + ' UTC</strong>';
+    }
+
+    return '<span class="tz-utc" title="Universal Coordinated Time">' +
+           utcFormatted + ' UTC</span>' +
+           '<span class="tz-separator"> / </span>' +
+           '<span class="tz-local" title="Your local timezone">' +
+           localFormatted + ' ' + localTz + '</span>';
   }
 
   /**
    * Convert a UTC timestamp element to show both UTC and local time
+   * @param {HTMLElement} element - Element to convert
    */
   function convertTimestamp(element) {
-    const utcDateStr = element.getAttribute('data-utc-time') || element.textContent.trim();
-
-    // Skip if already converted
-    if (element.classList.contains('tz-converted')) {
+    if (!element || element.classList.contains('tz-converted')) {
       return;
     }
 
-    // Parse datetime - assume UTC if no timezone specified
-    const date = new Date(utcDateStr + ' UTC');
+    var utcDateStr = element.getAttribute('data-utc-time') || element.textContent.trim();
+    var date = parseUTCDate(utcDateStr);
 
-    if (isNaN(date.getTime())) {
-      // Try without ' UTC' suffix
-      const altDate = new Date(utcDateStr);
-      if (isNaN(altDate.getTime())) {
-        console.warn('Could not parse datetime:', utcDateStr);
-        return;
-      }
-      date.setTime(altDate.getTime());
+    if (!date) {
+      console.warn('[HeliosTimezone] Could not parse datetime:', utcDateStr);
+      return;
     }
 
-    // Format using browser's Intl API
-    const utcFormatted = utcFormatter.format(date);
-    const localFormatted = localFormatter.format(date);
-    const localTz = getLocalTimezoneName();
-
-    // Check if user is in UTC timezone
-    const sameAsUTC = date.getTimezoneOffset() === 0;
-
-    // Create the display
-    const container = document.createElement('span');
+    // Create and insert the display
+    var container = document.createElement('span');
     container.className = 'tz-display';
-
-    if (sameAsUTC) {
-      // If browser is in UTC, just show UTC
-      container.innerHTML = `<strong>${utcFormatted} UTC</strong>`;
-    } else {
-      // Show both UTC and local
-      container.innerHTML = `
-        <span class="tz-utc" title="Universal Coordinated Time">${utcFormatted} UTC</span>
-        <span class="tz-separator"> / </span>
-        <span class="tz-local" title="Your local timezone">${localFormatted} ${localTz}</span>
-      `;
-    }
+    container.innerHTML = createTimezoneHTML(date);
 
     // Replace element content
     element.innerHTML = '';
@@ -93,53 +127,65 @@
   }
 
   /**
+   * Create helper text HTML for datetime input
+   * @param {Date} date - Date object to format
+   * @returns {string} HTML string for helper text
+   */
+  function createHelperHTML(date) {
+    var utcFormatted = config.utcFormatter.format(date);
+    var localFormatted = config.localFormatter.format(date);
+    var localTz = getLocalTimezoneName();
+
+    if (isUTCTimezone(date)) {
+      return '<small>This time is: <strong>' + utcFormatted + ' UTC</strong></small>';
+    }
+
+    return '<small>This time is: <strong>' + utcFormatted + ' UTC</strong> / ' +
+           '<strong>' + localFormatted + ' ' + localTz + '</strong></small>';
+  }
+
+  /**
    * Update datetime-local input helper text
+   * @param {HTMLInputElement} input - Input element to update
    */
   function updateDateTimeInputHelper(input) {
-    const value = input.value;
-    if (!value) return;
+    if (!input || !input.value) {
+      return;
+    }
 
     // Parse the datetime-local value (format: YYYY-MM-DDTHH:MM)
-    const date = new Date(value + ':00Z'); // Add seconds and Z for UTC
+    var date = new Date(input.value + ':00Z'); // Add seconds and Z for UTC
 
     if (isNaN(date.getTime())) {
       return;
     }
 
     // Get or create helper element
-    let helper = input.nextElementSibling;
+    var helper = input.nextElementSibling;
     if (!helper || !helper.classList.contains('tz-input-helper')) {
       helper = document.createElement('div');
       helper.className = 'tz-input-helper';
       input.parentNode.insertBefore(helper, input.nextSibling);
     }
 
-    // Format using browser's Intl API
-    const utcFormatted = utcFormatter.format(date);
-    const localFormatted = localFormatter.format(date);
-    const localTz = getLocalTimezoneName();
-
-    // Check if user is in UTC timezone
-    const sameAsUTC = date.getTimezoneOffset() === 0;
-
-    if (sameAsUTC) {
-      helper.innerHTML = `<small>This time is: <strong>${utcFormatted} UTC</strong></small>`;
-    } else {
-      helper.innerHTML = `<small>This time is: <strong>${utcFormatted} UTC</strong> / <strong>${localFormatted} ${localTz}</strong></small>`;
-    }
+    helper.innerHTML = createHelperHTML(date);
   }
 
   /**
-   * Initialize timezone conversion on page load
+   * Initialize timezone display for all timestamp elements
    */
-  function initTimezoneDisplay() {
-    // Convert all elements with data-utc-time attribute
-    const elements = document.querySelectorAll('[data-utc-time]');
-    elements.forEach(convertTimestamp);
+  function initTimestampElements() {
+    var elements = document.querySelectorAll('[data-utc-time]');
+    Array.prototype.forEach.call(elements, convertTimestamp);
+  }
 
-    // Add event listeners to datetime-local inputs
-    const datetimeInputs = document.querySelectorAll('input[type="datetime-local"]');
-    datetimeInputs.forEach(input => {
+  /**
+   * Initialize datetime input helpers
+   */
+  function initDateTimeInputs() {
+    var datetimeInputs = document.querySelectorAll('input[type="datetime-local"]');
+
+    Array.prototype.forEach.call(datetimeInputs, function(input) {
       // Update helper on input change
       input.addEventListener('change', function() {
         updateDateTimeInputHelper(this);
@@ -152,10 +198,29 @@
     });
   }
 
-  // Run on DOM ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initTimezoneDisplay);
-  } else {
-    initTimezoneDisplay();
+  /**
+   * Initialize all timezone display functionality
+   */
+  function init() {
+    initTimestampElements();
+    initDateTimeInputs();
   }
+
+  // Auto-initialize on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // Public API
+  return {
+    init: init,
+    convertTimestamp: convertTimestamp,
+    updateDateTimeInputHelper: updateDateTimeInputHelper,
+    parseUTCDate: parseUTCDate,
+    getLocalTimezoneName: getLocalTimezoneName,
+    createTimezoneHTML: createTimezoneHTML,
+    createHelperHTML: createHelperHTML
+  };
 })();
