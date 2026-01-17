@@ -1457,6 +1457,9 @@ def voters_list_pretty(request, election):
   # Check if voter emails can be sent
   can_send_emails, email_disabled_reason = election.can_send_voter_emails()
 
+  # Check if voter uploads are allowed
+  can_add_voters_file, upload_disabled_reason = election.can_add_voters_file()
+
   return render_template(request, 'voters_list',
                          {'election': election, 'voters_page': voters_page,
                           'voters': voters_page.object_list, 'admin_p': admin_p,
@@ -1464,7 +1467,10 @@ def voters_list_pretty(request, election):
                           'can_send_emails': can_send_emails,
                           'email_disabled_reason': email_disabled_reason,
                           'limit': limit, 'total_voters': total_voters,
-                          'upload_p': VOTERS_UPLOAD, 'q' : q,
+                          'upload_p': VOTERS_UPLOAD,
+                          'can_add_voters_file': can_add_voters_file,
+                          'upload_disabled_reason': upload_disabled_reason,
+                          'q' : q,
                           'voter_files': voter_files,
                           'categories': categories,
                           'eligibility_category_id' : eligibility_category_id})
@@ -1618,9 +1624,10 @@ def voters_upload(request, election):
   voter_type, voter_id, optional_additional_params (e.g. email, name)
   """
 
-  ## TRYING this: allowing voters upload by admin when election is frozen
-  #if election.frozen_at and not election.openreg:
-  #  raise PermissionDenied()
+  # don't allow voter upload when election is tallied
+  can_upload, reason = election.can_add_voters_file()
+  if not can_upload:
+    raise PermissionDenied()
 
   if request.method == "GET":
     return render_template(request, 'voters_upload', {'election': election, 'error': request.GET.get('e',None)})

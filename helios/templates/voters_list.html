@@ -63,7 +63,11 @@
 <!-- Add a Voter: WORK HERE-->
 {% if upload_p and not election.openreg %}
 <p>
+{% if can_add_voters_file %}
 <a class="button" href="{% url "election@voters@upload" election_uuid=election.uuid %}">bulk upload voters</a>
+{% else %}
+<button class="button" disabled style="opacity: 0.5; cursor: not-allowed;" title="{{upload_disabled_reason}}">bulk upload voters (disabled: {{upload_disabled_reason}})</button>
+{% endif %}
 </p>
 
 {% if voter_files %}

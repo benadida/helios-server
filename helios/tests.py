@@ -2821,3 +2821,66 @@ class UserSearchTests(WebTest):
         self.assertContains(response, 'Site Admin')
         self.assertContains(response, 'No')
 
+
+class VoterUploadRestrictionTests(WebTest):
+    """Tests for voter upload restrictions when election is tallied (issue #455)"""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-upload-restriction',
+            name='Test Upload Restriction',
+            description='Test',
+            admin=self.user
+        )
+        if not self.election.uuid:
+            self.election.uuid = str(uuid.uuid4())
+            self.election.save()
+
+    def setup_login(self):
+        self.client.get("/")
+        session = self.client.session
+        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
+        session.save()
+
+    def test_can_add_voters_file_allowed_by_default(self):
+        can_add, reason = self.election.can_add_voters_file()
+        self.assertTrue(can_add)
+        self.assertIsNone(reason)
+
+    def test_can_add_voters_file_blocked_when_encrypted_tally_exists(self):
+        # Set in memory only - the method just checks truthiness
+        self.election.encrypted_tally = True
+
+        can_add, reason = self.election.can_add_voters_file()
+        self.assertFalse(can_add)
+        self.assertEqual(reason, "Election has been tallied")
+
+    def test_can_add_voters_file_blocked_when_tallying_started(self):
+        self.election.tallying_started_at = datetime.datetime.utcnow()
+        self.election.save()
+
+        can_add, reason = self.election.can_add_voters_file()
+        self.assertFalse(can_add)
+        self.assertEqual(reason, "Tallying has started")
+
+    def test_voter_upload_view_returns_403_when_blocked(self):
+        self.setup_login()
+        self.election.tallying_started_at = datetime.datetime.utcnow()
+        self.election.save()
+
+        response = self.client.get("/helios/elections/%s/voters/upload" % self.election.uuid)
+        self.assertStatusCode(response, 403)
+
+    def test_voters_list_shows_disabled_button_when_blocked(self):
+        self.setup_login()
+        self.election.tallying_started_at = datetime.datetime.utcnow()
+        self.election.save()
+
+        response = self.client.get("/helios/elections/%s/voters/list" % self.election.uuid)
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'disabled')
+        self.assertContains(response, 'Tallying has started')
+
