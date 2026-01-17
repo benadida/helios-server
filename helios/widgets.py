@@ -223,8 +223,9 @@ class DateTimeLocalWidget(Widget):
 
     class Media:
         css = {
-            'all': ('helios/datetime-local.css',)
+            'all': ('helios/datetime-local.css', 'helios/timezone-display.css',)
         }
+        js = ('helios/timezone-display.js',)
 
     def __init__(self, attrs=None):
         super(DateTimeLocalWidget, self).__init__(attrs)

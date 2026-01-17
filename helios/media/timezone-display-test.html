@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Helios Timezone Display - Test Suite</title>
+  <link rel="stylesheet" href="timezone-display.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    .test-section {
+      margin: 30px 0;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    .test-case {
+      margin: 15px 0;
+      padding: 10px;
+      background: #f9f9f9;
+      border-left: 3px solid #0066cc;
+    }
+    .test-result {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 3px;
+    }
+    .test-result.pass {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    .test-result.fail {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+    .code {
+      font-family: monospace;
+      background: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+    }
+    input[type="datetime-local"] {
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 250px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Helios Timezone Display - Test Suite</h1>
+  <p>This page tests the timezone display functionality with various inputs and edge cases.</p>
+
+  <!-- Test Section 1: Module API -->
+  <div class="test-section">
+    <h2>1. Module API Tests</h2>
+    <div id="api-tests"></div>
+  </div>
+
+  <!-- Test Section 2: Date Parsing -->
+  <div class="test-section">
+    <h2>2. Date Parsing Tests</h2>
+    <div id="parsing-tests"></div>
+  </div>
+
+  <!-- Test Section 3: HTML Generation -->
+  <div class="test-section">
+    <h2>3. HTML Generation Tests</h2>
+    <div id="html-tests"></div>
+  </div>
+
+  <!-- Test Section 4: Visual Display Tests -->
+  <div class="test-section">
+    <h2>4. Visual Display Tests</h2>
+
+    <div class="test-case">
+      <h3>Standard Timestamp</h3>
+      <p>Input: <code>2024-01-15 14:30</code></p>
+      <p>Output: <span class="tz-timestamp" data-utc-time="2024-01-15 14:30">2024-01-15 14:30 UTC</span></p>
+    </div>
+
+    <div class="test-case">
+      <h3>ISO Format Timestamp</h3>
+      <p>Input: <code>2024-03-20T09:00</code></p>
+      <p>Output: <span class="tz-timestamp" data-utc-time="2024-03-20T09:00">2024-03-20T09:00 UTC</span></p>
+    </div>
+
+    <div class="test-case">
+      <h3>Invalid Timestamp (should not convert)</h3>
+      <p>Input: <code>not-a-date</code></p>
+      <p>Output: <span class="tz-timestamp" data-utc-time="not-a-date">not-a-date UTC</span></p>
+    </div>
+  </div>
+
+  <!-- Test Section 5: DateTime Input Tests -->
+  <div class="test-section">
+    <h2>5. DateTime Input Helper Tests</h2>
+
+    <div class="test-case">
+      <h3>Standard DateTime Input</h3>
+      <p>Try entering a date and time:</p>
+      <input type="datetime-local" value="2024-06-15T18:30">
+    </div>
+
+    <div class="test-case">
+      <h3>Empty DateTime Input</h3>
+      <p>This should not show a helper:</p>
+      <input type="datetime-local">
+    </div>
+  </div>
+
+  <!-- Test Section 6: Edge Cases -->
+  <div class="test-section">
+    <h2>6. Edge Case Tests</h2>
+
+    <div class="test-case">
+      <h3>Leap Year Date</h3>
+      <p>Input: <code>2024-02-29 12:00</code></p>
+      <p>Output: <span class="tz-timestamp" data-utc-time="2024-02-29 12:00">2024-02-29 12:00 UTC</span></p>
+    </div>
+
+    <div class="test-case">
+      <h3>Midnight</h3>
+      <p>Input: <code>2024-01-01 00:00</code></p>
+      <p>Output: <span class="tz-timestamp" data-utc-time="2024-01-01 00:00">2024-01-01 00:00 UTC</span></p>
+    </div>
+
+    <div class="test-case">
+      <h3>End of Day</h3>
+      <p>Input: <code>2024-12-31 23:59</code></p>
+      <p>Output: <span class="tz-timestamp" data-utc-time="2024-12-31 23:59">2024-12-31 23:59 UTC</span></p>
+    </div>
+  </div>
+
+  <script src="timezone-display.js"></script>
+  <script>
+    // Run automated tests
+    (function() {
+      'use strict';
+
+      function assert(condition, message) {
+        var result = document.createElement('div');
+        result.className = 'test-result ' + (condition ? 'pass' : 'fail');
+        result.textContent = (condition ? '✓ PASS: ' : '✗ FAIL: ') + message;
+        return result;
+      }
+
+      // Test 1: Module API
+      var apiTests = document.getElementById('api-tests');
+      apiTests.appendChild(assert(
+        typeof HeliosTimezone === 'object',
+        'HeliosTimezone module is defined'
+      ));
+      apiTests.appendChild(assert(
+        typeof HeliosTimezone.init === 'function',
+        'HeliosTimezone.init() is a function'
+      ));
+      apiTests.appendChild(assert(
+        typeof HeliosTimezone.parseUTCDate === 'function',
+        'HeliosTimezone.parseUTCDate() is a function'
+      ));
+      apiTests.appendChild(assert(
+        typeof HeliosTimezone.getLocalTimezoneName === 'function',
+        'HeliosTimezone.getLocalTimezoneName() is a function'
+      ));
+      apiTests.appendChild(assert(
+        typeof HeliosTimezone.createTimezoneHTML === 'function',
+        'HeliosTimezone.createTimezoneHTML() is a function'
+      ));
+
+      // Test 2: Date Parsing
+      var parsingTests = document.getElementById('parsing-tests');
+
+      var validDate = HeliosTimezone.parseUTCDate('2024-01-15 14:30');
+      parsingTests.appendChild(assert(
+        validDate !== null && validDate instanceof Date,
+        'Parses valid date string "2024-01-15 14:30"'
+      ));
+
+      var isoDate = HeliosTimezone.parseUTCDate('2024-03-20T09:00');
+      parsingTests.appendChild(assert(
+        isoDate !== null && isoDate instanceof Date,
+        'Parses ISO format "2024-03-20T09:00"'
+      ));
+
+      var invalidDate = HeliosTimezone.parseUTCDate('not-a-date');
+      parsingTests.appendChild(assert(
+        invalidDate === null,
+        'Returns null for invalid date string'
+      ));
+
+      var nullDate = HeliosTimezone.parseUTCDate(null);
+      parsingTests.appendChild(assert(
+        nullDate === null,
+        'Returns null for null input'
+      ));
+
+      var emptyDate = HeliosTimezone.parseUTCDate('');
+      parsingTests.appendChild(assert(
+        emptyDate === null,
+        'Returns null for empty string'
+      ));
+
+      // Test 3: HTML Generation
+      var htmlTests = document.getElementById('html-tests');
+
+      var testDate = new Date('2024-01-15T14:30:00Z');
+      var html = HeliosTimezone.createTimezoneHTML(testDate);
+      htmlTests.appendChild(assert(
+        typeof html === 'string' && html.length > 0,
+        'Generates non-empty HTML string'
+      ));
+      htmlTests.appendChild(assert(
+        html.indexOf('UTC') !== -1,
+        'HTML contains "UTC" label'
+      ));
+      htmlTests.appendChild(assert(
+        html.indexOf('tz-utc') !== -1,
+        'HTML contains tz-utc class'
+      ));
+
+      var helperHtml = HeliosTimezone.createHelperHTML(testDate);
+      htmlTests.appendChild(assert(
+        typeof helperHtml === 'string' && helperHtml.length > 0,
+        'Generates non-empty helper HTML string'
+      ));
+      htmlTests.appendChild(assert(
+        helperHtml.indexOf('<small>') !== -1,
+        'Helper HTML contains <small> tag'
+      ));
+
+      // Test 4: Timezone Name
+      var tzName = HeliosTimezone.getLocalTimezoneName();
+      htmlTests.appendChild(assert(
+        typeof tzName === 'string' && tzName.length > 0,
+        'Returns non-empty timezone name: "' + tzName + '"'
+      ));
+
+      // Summary
+      var allTests = document.querySelectorAll('.test-result');
+      var passCount = document.querySelectorAll('.test-result.pass').length;
+      var failCount = document.querySelectorAll('.test-result.fail').length;
+
+      var summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 30px; padding: 20px; background: #f0f0f0; border-radius: 5px; font-size: 18px; font-weight: bold;';
+      summary.innerHTML = 'Test Results: <span style="color: green;">' + passCount + ' passed</span>, ' +
+                         '<span style="color: red;">' + failCount + ' failed</span> out of ' +
+                         allTests.length + ' total tests';
+      document.body.appendChild(summary);
+    })();
+  </script>
+</body>
+</html>

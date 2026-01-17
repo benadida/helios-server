@@ -1,4 +1,5 @@
 {% extends TEMPLATE_BASE %}
+{% load timezone_tags %}
 
 {% block title %}Voters &amp; Ballot Tracking Center for {{election.name}}{% endblock %}
 {% block content %}
@@ -80,7 +81,7 @@ Prior Bulk Uploads:
 {% else %}
 {{vf.voter_file_content|length}}
 {% endif %}
- bytes, at {{vf.uploaded_at}}:
+ bytes, at {{vf.uploaded_at|utc_time}}:
 {% if vf.processing_finished_at %}
 <em>done processing: {{vf.num_voters}} voters loaded</em>
 {% else %}

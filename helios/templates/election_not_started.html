@@ -1,4 +1,5 @@
 {% extends TEMPLATE_BASE %}
+{% load timezone_tags %}
 
 {% block content %}
 
@@ -9,8 +10,8 @@
   </p>
   
   <p>
-      {% if election.voting_start_at %}Voting start at {{election.voting_start_at}}<br />{% endif %}
-      {% if election.voting_end_at %}Voting end at {{election.voting_end_at}}<br />{% endif %}  
+      {% if election.voting_start_at %}Voting start at {{election.voting_start_at|utc_time}}<br />{% endif %}
+      {% if election.voting_end_at %}Voting end at {{election.voting_end_at|utc_time}}<br />{% endif %}
   </p>
   
   <p>
