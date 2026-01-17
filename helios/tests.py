@@ -1263,6 +1263,98 @@ class ElectionBlackboxTests(WebTest):
         self.assertStatusCode(response, 403)
 
 
+class ElectionDeleteViewTests(WebTest):
+    fixtures = ['users.json', 'election.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.election = models.Election.objects.all()[0]
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+
+    def setup_login(self, from_scratch=False):
+        if from_scratch:
+            self.client.get("/")
+        session = self.client.session
+        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
+        session.save()
+
+    def test_delete_requires_post(self):
+        """Test that delete endpoint requires POST request"""
+        self.setup_login(from_scratch=True)
+
+        # GET request should not delete
+        response = self.client.get(
+            "/helios/elections/%s/delete" % self.election.uuid,
+            {"delete_p": "1"}
+        )
+        # Should redirect without deleting
+        self.assertRedirects(response)
+
+        # Election should still not be deleted
+        election = models.Election.objects_with_deleted.get(uuid=self.election.uuid)
+        self.assertFalse(election.is_deleted)
+
+    def test_delete_with_post(self):
+        """Test soft deleting an election via POST"""
+        self.setup_login(from_scratch=True)
+
+        # Verify election is not deleted initially
+        self.assertFalse(self.election.is_deleted)
+
+        # POST to delete endpoint
+        response = self.client.post(
+            "/helios/elections/%s/delete" % self.election.uuid,
+            {"delete_p": "1", "csrf_token": self.client.session.get("csrf_token", "")}
+        )
+        self.assertRedirects(response)
+
+        # Election should be soft deleted
+        election = models.Election.objects_with_deleted.get(uuid=self.election.uuid)
+        self.assertTrue(election.is_deleted)
+        self.assertIsNotNone(election.deleted_at)
+
+        # Should not appear in default queries
+        elections = models.Election.objects.filter(uuid=self.election.uuid)
+        self.assertEqual(len(elections), 0)
+
+    def test_undelete_with_post(self):
+        """Test undeleting an election via POST"""
+        self.setup_login(from_scratch=True)
+
+        # First soft delete the election
+        self.election.soft_delete()
+        self.assertTrue(self.election.is_deleted)
+
+        # POST to undelete
+        response = self.client.post(
+            "/helios/elections/%s/delete" % self.election.uuid,
+            {"delete_p": "0", "csrf_token": self.client.session.get("csrf_token", "")}
+        )
+        self.assertRedirects(response)
+
+        # Election should be restored
+        election = models.Election.objects_with_deleted.get(uuid=self.election.uuid)
+        self.assertFalse(election.is_deleted)
+        self.assertIsNone(election.deleted_at)
+
+        # Should appear in default queries again
+        elections = models.Election.objects.filter(uuid=self.election.uuid)
+        self.assertEqual(len(elections), 1)
+
+    def test_delete_requires_admin(self):
+        """Test that only election admins can delete"""
+        # Don't log in - should get permission denied
+        response = self.client.post(
+            "/helios/elections/%s/delete" % self.election.uuid,
+            {"delete_p": "1", "csrf_token": "fake"}
+        )
+        self.assertStatusCode(response, 403)
+
+        # Election should not be deleted
+        election = models.Election.objects_with_deleted.get(uuid=self.election.uuid)
+        self.assertFalse(election.is_deleted)
+
+
 class EmailOptOutTests(TestCase):
     fixtures = ['users.json']
     allow_database_queries = True
