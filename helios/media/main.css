@@ -68,11 +68,23 @@ table.pretty th, td {
 
 /* Mobile responsive styles */
 @media screen and (max-width: 768px) {
+  html, body {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
   #content {
     position: relative;
     width: 100%;
     margin-left: 0;
     padding: 10px 15px;
+    box-sizing: border-box;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #header {
+    width: 100%;
     box-sizing: border-box;
   }
 
@@ -82,12 +94,9 @@ table.pretty th, td {
   }
 
   table.pretty {
-    width: 100%;
     margin: 1em 0;
     font-size: 0.9em;
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    min-width: 100%;
   }
 
   table.pretty th, table.pretty td {
