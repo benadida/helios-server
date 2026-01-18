@@ -18,7 +18,7 @@
 <input type="hidden" name="email" value="{{admin_to_remove.user_id}}" />
 <input type="hidden" name="user_type" value="{{admin_to_remove.user_type}}" />
 
-<input type="submit" value="Remove Administrator" />
+<input class="button" type="submit" value="Remove Administrator" />
 &nbsp;&nbsp;
 <a href="{% url "election@admins" election.uuid %}">Cancel</a>
 </form>

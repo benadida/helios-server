@@ -63,7 +63,7 @@ $(document).ready(function() {
       <input type="hidden" name="private_key" id="sk" value="" /><br />
 
 {% if election_type != "multiple" %}
-  <label for="generate_key">&nbsp;</label><button onclick="generate_keypair(); return false;" id="generate_button">Generate Election Keys</button>
+  <label for="generate_key">&nbsp;</label><button class="button" onclick="generate_keypair(); return false;" id="generate_button">Generate Election Keys</button>
 {% else %}
 <div id="trustees">
 <h3>Trustees (up to 5)</h3>
@@ -75,7 +75,7 @@ $(document).ready(function() {
 </div>
 {% endif %}
 <br /><br />
-<label for="">&nbsp;</label>  <input type="submit" value="create" id="submit" />
+<label for="">&nbsp;</label>  <input class="button" type="submit" value="create" id="submit" />
   </form>
   <br /><br />
 {% if election_type == "one" %}

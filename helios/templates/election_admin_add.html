@@ -24,7 +24,7 @@
 {% endfor %}
 </ul>
 <br />
-<input type="submit" value="Add Selected Administrator" />
+<input class="button" type="submit" value="Add Selected Administrator" />
 </form>
 
 {% else %}
@@ -48,7 +48,7 @@
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 Email: <input type="text" name="email" size="60" /><br /><br />
 
-<input type="submit" value="Add Administrator" />
+<input class="button" type="submit" value="Add Administrator" />
 </form>
 
 {% endif %}
