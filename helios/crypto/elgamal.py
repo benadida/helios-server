@@ -10,7 +10,7 @@ ben@adida.net
 
 import logging
 
-from Crypto.Hash import SHA1
+from Crypto.Hash import SHA1, SHA256
 from Crypto.Util.number import inverse
 
 from helios.crypto.utils import random
@@ -512,4 +512,47 @@ def fiatshamir_challenge_generator(commitment):
 def DLog_challenge_generator(commitment):
   string_to_hash = str(commitment)
   return int(SHA1.new(bytes(string_to_hash, 'utf-8')).hexdigest(),16)
+
+
+# =============================================================================
+# Enhanced SHA-256 Challenge Generators (2026/01 datatype)
+# =============================================================================
+
+def disjunctive_challenge_generator_sha256(commitments, context_string=None):
+  """
+  SHA-256 based disjunctive challenge generator with optional context binding.
+
+  Args:
+      commitments: List of commitment dicts with 'A' and 'B' keys
+      context_string: Optional pre-formatted context string for binding
+
+  Returns:
+      Integer challenge value derived from SHA-256 hash
+  """
+  array_to_hash = []
+
+  if context_string:
+    array_to_hash.append(context_string)
+
+  for commitment in commitments:
+    array_to_hash.append(str(commitment['A']))
+    array_to_hash.append(str(commitment['B']))
+
+  string_to_hash = ",".join(array_to_hash)
+  return int(SHA256.new(bytes(string_to_hash, 'utf-8')).hexdigest(), 16)
+
+
+def fiatshamir_challenge_generator_sha256(commitment, context_string=None):
+  """SHA-256 Fiat-Shamir challenge generator with optional context binding."""
+  return disjunctive_challenge_generator_sha256([commitment], context_string)
+
+
+def DLog_challenge_generator_sha256(commitment, context_string=None):
+  """SHA-256 DLog challenge generator with optional context binding."""
+  parts = []
+  if context_string:
+    parts.append(context_string)
+  parts.append(str(commitment))
+  string_to_hash = ",".join(parts)
+  return int(SHA256.new(bytes(string_to_hash, 'utf-8')).hexdigest(), 16)
 

@@ -502,10 +502,7 @@ class EGCiphertext:
         for i in range(len(plaintexts)):
             # if a proof fails, stop right there
             if not self.verify_encryption_proof(plaintexts[i], proof.proofs[i]):
-                print("bad proof %s, %s, %s" % (i, plaintexts[i], proof.proofs[i]))
                 return False
-
-        # logging.info("made it past the two encryption proofs")
 
         # check the overall challenge
         return (challenge_generator([p.commitment for p in proof.proofs]) == (
@@ -709,3 +706,140 @@ def EG_fiatshamir_challenge_generator(commitment):
 def DLog_challenge_generator(commitment):
     string_to_hash = str(commitment)
     return int(SHA1.new(bytes(string_to_hash, 'utf-8')).hexdigest(), 16)
+
+
+# =============================================================================
+# Enhanced NIZK Proof Context Binding (2026/01 datatype)
+# =============================================================================
+# These functions provide SHA-256 based challenge generators with context binding
+# to cryptographically tie proofs to their election/question/answer/voter context,
+# preventing proof transplantation attacks.
+
+from Crypto.Hash import SHA256
+
+
+class ProofContext:
+    """
+    Context information to bind NIZK proofs to specific election elements.
+
+    This creates a cryptographic binding between the proof and its context,
+    preventing proof transplantation between elections, questions, or voters.
+
+    Attributes:
+        election_hash: Hash of the election definition (binds to specific election)
+        question_index: Index of the question/contest (binds to specific question)
+        answer_index: Index of the answer/candidate within the question
+        voter_alias: Voter's alias identifier (binds to specific voter's ballot)
+    """
+
+    def __init__(self, election_hash=None, question_index=None,
+                 answer_index=None, voter_alias=None):
+        self.election_hash = election_hash
+        self.question_index = question_index
+        self.answer_index = answer_index
+        self.voter_alias = voter_alias
+
+    def to_string(self):
+        """
+        Create a deterministic string representation of the context.
+
+        Format: "election:{hash}|question:{idx}|answer:{idx}|voter:{alias}"
+        Only includes fields that are set (not None).
+        """
+        parts = []
+        if self.election_hash:
+            parts.append(f"election:{self.election_hash}")
+        if self.question_index is not None:
+            parts.append(f"question:{self.question_index}")
+        if self.answer_index is not None:
+            parts.append(f"answer:{self.answer_index}")
+        if self.voter_alias:
+            parts.append(f"voter:{self.voter_alias}")
+        return "|".join(parts)
+
+    def __repr__(self):
+        return f"ProofContext({self.to_string()})"
+
+
+def EG_disjunctive_challenge_generator_sha256(commitments, context=None):
+    """
+    SHA-256 based disjunctive challenge generator with optional context binding.
+
+    This is the enhanced version of EG_disjunctive_challenge_generator that:
+    1. Uses SHA-256 instead of SHA-1 for improved security
+    2. Optionally includes context binding in the hash input
+
+    Args:
+        commitments: List of commitment dicts with 'A' and 'B' keys
+        context: Optional ProofContext for binding the challenge to election elements
+
+    Returns:
+        Integer challenge value derived from SHA-256 hash
+    """
+    array_to_hash = []
+
+    # Include context prefix if provided (this is what binds the proof to context)
+    if context:
+        array_to_hash.append(context.to_string())
+
+    # Add all commitment values (same as legacy, but with context prefix)
+    for commitment in commitments:
+        array_to_hash.append(str(commitment['A']))
+        array_to_hash.append(str(commitment['B']))
+
+    string_to_hash = ",".join(array_to_hash)
+    return int(SHA256.new(bytes(string_to_hash, 'utf-8')).hexdigest(), 16)
+
+
+def EG_fiatshamir_challenge_generator_sha256(commitment, context=None):
+    """
+    SHA-256 Fiat-Shamir challenge generator with optional context binding.
+
+    Single-commitment version of EG_disjunctive_challenge_generator_sha256.
+    """
+    return EG_disjunctive_challenge_generator_sha256([commitment], context)
+
+
+def make_context_bound_challenge_generator(context, q=None):
+    """
+    Factory function to create a challenge generator bound to a specific context.
+
+    This returns a function with the same signature as EG_disjunctive_challenge_generator
+    but with the context pre-bound, making it easy to use in existing code paths.
+
+    Usage:
+        context = ProofContext(election_hash='...', question_index=0, ...)
+        challenge_gen = make_context_bound_challenge_generator(context, q=pk.q)
+        proof = ciphertext.generate_disjunctive_encryption_proof(
+            plaintexts, index, randomness, challenge_gen
+        )
+
+    Args:
+        context: ProofContext to bind into the challenge generator
+        q: Optional modulus for reducing the challenge (required for SHA-256 since
+           its 256-bit output can exceed q, unlike SHA-1's 160-bit output which is
+           always less than the typical 256-bit q)
+
+    Returns:
+        A challenge generator function that includes the context in its hash
+    """
+    def challenge_generator(commitments):
+        result = EG_disjunctive_challenge_generator_sha256(commitments, context)
+        if q:
+            return result % q
+        return result
+    return challenge_generator
+
+
+def DLog_challenge_generator_sha256(commitment, context=None):
+    """
+    SHA-256 DLog challenge generator with optional context binding.
+
+    Used for discrete log proofs (e.g., trustee key proofs).
+    """
+    parts = []
+    if context:
+        parts.append(context.to_string())
+    parts.append(str(commitment))
+    string_to_hash = ",".join(parts)
+    return int(SHA256.new(bytes(string_to_hash, 'utf-8')).hexdigest(), 16)

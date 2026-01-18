@@ -536,3 +536,115 @@ ElGamal.fiatshamir_challenge_generator = function(commitment) {
 ElGamal.fiatshamir_dlog_challenge_generator = function(commitment) {
   return new BigInt(hex_sha1(commitment.toJSONObject()), 16);
 };
+
+// =============================================================================
+// Enhanced NIZK Proof Context Binding (2026/01 datatype)
+// =============================================================================
+// These functions provide SHA-256 based challenge generators with context binding
+// to cryptographically tie proofs to their election/question/answer/voter context,
+// preventing proof transplantation attacks.
+
+/**
+ * ProofContext - Context information to bind NIZK proofs to specific election elements.
+ *
+ * This creates a cryptographic binding between the proof and its context,
+ * preventing proof transplantation between elections, questions, or voters.
+ */
+ElGamal.ProofContext = Class.extend({
+  init: function(election_hash, question_index, answer_index, voter_alias) {
+    this.election_hash = election_hash;
+    this.question_index = question_index;
+    this.answer_index = answer_index;
+    this.voter_alias = voter_alias;
+  },
+
+  /**
+   * Create a deterministic string representation of the context.
+   * Format: "election:{hash}|question:{idx}|answer:{idx}|voter:{alias}"
+   */
+  toString: function() {
+    var parts = [];
+    if (this.election_hash) {
+      parts.push("election:" + this.election_hash);
+    }
+    if (this.question_index !== null && this.question_index !== undefined) {
+      parts.push("question:" + this.question_index);
+    }
+    if (this.answer_index !== null && this.answer_index !== undefined) {
+      parts.push("answer:" + this.answer_index);
+    }
+    if (this.voter_alias) {
+      parts.push("voter:" + this.voter_alias);
+    }
+    return parts.join("|");
+  }
+});
+
+/**
+ * SHA-256 based disjunctive challenge generator with optional context binding.
+ *
+ * This is the enhanced version of disjunctive_challenge_generator that:
+ * 1. Uses SHA-256 instead of SHA-1 for improved security
+ * 2. Optionally includes context binding in the hash input
+ *
+ * @param {Array} commitments - List of commitment objects with A and B properties
+ * @param {ElGamal.ProofContext} context - Optional context for binding the challenge
+ * @returns {BigInt} Challenge value derived from SHA-256 hash
+ */
+ElGamal.disjunctive_challenge_generator_sha256 = function(commitments, context) {
+  var strings_to_hash = [];
+
+  // Include context prefix if provided (this is what binds the proof to context)
+  if (context) {
+    strings_to_hash.push(context.toString());
+  }
+
+  // go through all proofs and append the commitments
+  _(commitments).each(function(commitment) {
+    // toJSONObject instead of toString because of IE weirdness.
+    strings_to_hash.push(commitment.A.toJSONObject());
+    strings_to_hash.push(commitment.B.toJSONObject());
+  });
+
+  return new BigInt(hex_sha256(strings_to_hash.join(",")), 16);
+};
+
+/**
+ * SHA-256 Fiat-Shamir challenge generator with optional context binding.
+ */
+ElGamal.fiatshamir_challenge_generator_sha256 = function(commitment, context) {
+  return ElGamal.disjunctive_challenge_generator_sha256([commitment], context);
+};
+
+/**
+ * SHA-256 DLog challenge generator with optional context binding.
+ */
+ElGamal.fiatshamir_dlog_challenge_generator_sha256 = function(commitment, context) {
+  var parts = [];
+  if (context) {
+    parts.push(context.toString());
+  }
+  parts.push(commitment.toJSONObject());
+  return new BigInt(hex_sha256(parts.join(",")), 16);
+};
+
+/**
+ * Factory function to create a challenge generator bound to a specific context.
+ *
+ * This returns a function with the same signature as disjunctive_challenge_generator
+ * but with the context pre-bound, making it easy to use in existing code paths.
+ *
+ * @param {ElGamal.ProofContext} context - Context to bind into the challenge generator
+ * @param {BigInt} q - Optional modulus for reducing the challenge (required for SHA-256
+ *                     since its 256-bit output can exceed q, unlike SHA-1's 160-bit output)
+ * @returns {Function} Challenge generator function that includes the context in its hash
+ */
+ElGamal.make_context_bound_challenge_generator = function(context, q) {
+  return function(commitments) {
+    var result = ElGamal.disjunctive_challenge_generator_sha256(commitments, context);
+    if (q) {
+      return result.mod(q);
+    }
+    return result;
+  };
+};

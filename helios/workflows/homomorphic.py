@@ -55,56 +55,106 @@ class EncryptedAnswer(WorkflowObject):
     
     return False
     
-  def verify(self, pk, min=0, max=1):
+  def verify(self, pk, min=0, max=1, election=None, question_num=None, voter_alias=None):
+    """
+    Verify all proofs for this encrypted answer.
+
+    Args:
+        pk: Public key for verification
+        min: Minimum number of selections allowed
+        max: Maximum number of selections allowed
+        election: Optional Election object for context-bound verification (2026/01+)
+        question_num: Optional question index for context-bound verification
+        voter_alias: Optional voter alias for context-bound verification
+    """
     possible_plaintexts = self.generate_plaintexts(pk)
     homomorphic_sum = 0
-      
+
+    # Determine which challenge generator to use based on election datatype
+    use_context_binding = (
+        election is not None and
+        hasattr(election, 'datatype') and
+        election.datatype is not None and
+        election.datatype.startswith('2026/')
+    )
+
     for choice_num in range(len(self.choices)):
       choice = self.choices[choice_num]
       choice.pk = pk
       individual_proof = self.individual_proofs[choice_num]
-      
+
+      # Select appropriate challenge generator
+      if use_context_binding:
+        context = algs.ProofContext(
+            election_hash=election.hash,
+            question_index=question_num,
+            answer_index=choice_num,
+            voter_alias=voter_alias
+        )
+        challenge_gen = algs.make_context_bound_challenge_generator(context, q=pk.q)
+      else:
+        challenge_gen = algs.EG_disjunctive_challenge_generator
+
       # verify the proof on the encryption of that choice
-      if not choice.verify_disjunctive_encryption_proof(possible_plaintexts, individual_proof, algs.EG_disjunctive_challenge_generator):
+      if not choice.verify_disjunctive_encryption_proof(possible_plaintexts, individual_proof, challenge_gen):
         return False
 
       # compute homomorphic sum if needed
       if max is not None:
         homomorphic_sum = choice * homomorphic_sum
-    
+
     if max is not None:
       # determine possible plaintexts for the sum
       sum_possible_plaintexts = self.generate_plaintexts(pk, min=min, max=max)
 
+      # Select challenge generator for overall proof
+      if use_context_binding:
+        # For overall proof, use question_index but answer_index="overall"
+        context = algs.ProofContext(
+            election_hash=election.hash,
+            question_index=question_num,
+            answer_index="overall",
+            voter_alias=voter_alias
+        )
+        challenge_gen = algs.make_context_bound_challenge_generator(context, q=pk.q)
+      else:
+        challenge_gen = algs.EG_disjunctive_challenge_generator
+
       # verify the sum
-      return homomorphic_sum.verify_disjunctive_encryption_proof(sum_possible_plaintexts, self.overall_proof, algs.EG_disjunctive_challenge_generator)
+      return homomorphic_sum.verify_disjunctive_encryption_proof(sum_possible_plaintexts, self.overall_proof, challenge_gen)
     else:
       # approval voting, no need for overall proof verification
       return True
         
   @classmethod
-  def fromElectionAndAnswer(cls, election, question_num, answer_indexes):
+  def fromElectionAndAnswer(cls, election, question_num, answer_indexes, voter_alias=None):
     """
     Given an election, a question number, and a list of answers to that question
     in the form of an array of 0-based indexes into the answer array,
     produce an EncryptedAnswer that works.
+
+    Args:
+        election: Election object containing questions and public key
+        question_num: Index of the question being answered
+        answer_indexes: List of selected answer indices
+        voter_alias: Optional voter alias for context binding (2026/01+)
     """
     question = election.questions[question_num]
     answers = question['answers']
     pk = election.public_key
-    
+
     # initialize choices, individual proofs, randomness and overall proof
     choices = [None for a in range(len(answers))]
     individual_proofs = [None for a in range(len(answers))]
     overall_proof = None
     randomness = [None for a in range(len(answers))]
-    
+
     # possible plaintexts [0, 1]
     plaintexts = cls.generate_plaintexts(pk)
-    
+
     # keep track of number of options selected.
     num_selected_answers = 0;
-    
+
     # homomorphic sum of all
     homomorphic_sum = 0
     randomness_sum = 0
@@ -115,10 +165,17 @@ class EncryptedAnswer(WorkflowObject):
       min_answers = question['min']
     max_answers = question['max']
 
+    # Determine which challenge generator to use based on election datatype
+    use_context_binding = (
+        hasattr(election, 'datatype') and
+        election.datatype is not None and
+        election.datatype.startswith('2026/')
+    )
+
     # go through each possible answer and encrypt either a g^0 or a g^1.
     for answer_num in range(len(answers)):
       plaintext_index = 0
-      
+
       # assuming a list of answers
       if answer_num in answer_indexes:
         plaintext_index = 1
@@ -127,11 +184,23 @@ class EncryptedAnswer(WorkflowObject):
       # randomness and encryption
       randomness[answer_num] = algs.random.mpz_lt(pk.q)
       choices[answer_num] = pk.encrypt_with_r(plaintexts[plaintext_index], randomness[answer_num])
-      
+
+      # Select appropriate challenge generator
+      if use_context_binding:
+        context = algs.ProofContext(
+            election_hash=election.hash,
+            question_index=question_num,
+            answer_index=answer_num,
+            voter_alias=voter_alias
+        )
+        challenge_gen = algs.make_context_bound_challenge_generator(context, q=pk.q)
+      else:
+        challenge_gen = algs.EG_disjunctive_challenge_generator
+
       # generate proof
-      individual_proofs[answer_num] = choices[answer_num].generate_disjunctive_encryption_proof(plaintexts, plaintext_index, 
-                                                randomness[answer_num], algs.EG_disjunctive_challenge_generator)
-                                                
+      individual_proofs[answer_num] = choices[answer_num].generate_disjunctive_encryption_proof(
+          plaintexts, plaintext_index, randomness[answer_num], challenge_gen)
+
       # sum things up homomorphically if needed
       if max_answers is not None:
         homomorphic_sum = choices[answer_num] * homomorphic_sum
@@ -139,19 +208,32 @@ class EncryptedAnswer(WorkflowObject):
 
     # prove that the sum is 0 or 1 (can be "blank vote" for this answer)
     # num_selected_answers is 0 or 1, which is the index into the plaintext that is actually encoded
-    
+
     if num_selected_answers < min_answers:
       raise Exception("Need to select at least %s answer(s)" % min_answers)
-    
+
     if max_answers is not None:
       sum_plaintexts = cls.generate_plaintexts(pk, min=min_answers, max=max_answers)
-    
+
+      # Select challenge generator for overall proof
+      if use_context_binding:
+        context = algs.ProofContext(
+            election_hash=election.hash,
+            question_index=question_num,
+            answer_index="overall",
+            voter_alias=voter_alias
+        )
+        challenge_gen = algs.make_context_bound_challenge_generator(context, q=pk.q)
+      else:
+        challenge_gen = algs.EG_disjunctive_challenge_generator
+
       # need to subtract the min from the offset
-      overall_proof = homomorphic_sum.generate_disjunctive_encryption_proof(sum_plaintexts, num_selected_answers - min_answers, randomness_sum, algs.EG_disjunctive_challenge_generator);
+      overall_proof = homomorphic_sum.generate_disjunctive_encryption_proof(
+          sum_plaintexts, num_selected_answers - min_answers, randomness_sum, challenge_gen)
     else:
       # approval voting
       overall_proof = None
-    
+
     return cls(choices, individual_proofs, overall_proof, randomness, answer_indexes)
     
 # WORK HERE
@@ -176,7 +258,14 @@ class EncryptedVote(WorkflowObject):
 
   answers = property(_answers_get, _answers_set)
 
-  def verify(self, election):
+  def verify(self, election, voter_alias=None):
+    """
+    Verify all proofs in this encrypted vote.
+
+    Args:
+        election: Election object for verification
+        voter_alias: Optional voter alias for context-bound verification (2026/01+)
+    """
     # correct number of answers
     # noinspection PyUnresolvedReferences
     n_answers = len(self.encrypted_answers) if self.encrypted_answers is not None else 0
@@ -209,18 +298,31 @@ class EncryptedVote(WorkflowObject):
       min_answers = 0
       if 'min' in question:
         min_answers = question['min']
-        
-      if not ea.verify(election.public_key, min=min_answers, max=question['max']):
+
+      # Pass election and context for 2026/01+ context-bound verification
+      if not ea.verify(election.public_key, min=min_answers, max=question['max'],
+                       election=election, question_num=question_num, voter_alias=voter_alias):
         return False
-        
+
     return True
     
   @classmethod
-  def fromElectionAndAnswers(cls, election, answers):
+  def fromElectionAndAnswers(cls, election, answers, voter_alias=None):
+    """
+    Create an encrypted vote from election and answers.
+
+    Args:
+        election: Election object
+        answers: List of answer indices for each question
+        voter_alias: Optional voter alias for context binding (2026/01+)
+    """
     pk = election.public_key
 
     # each answer is an index into the answer array
-    encrypted_answers = [EncryptedAnswer.fromElectionAndAnswer(election, answer_num, answers[answer_num]) for answer_num in range(len(answers))]
+    encrypted_answers = [
+        EncryptedAnswer.fromElectionAndAnswer(election, answer_num, answers[answer_num], voter_alias=voter_alias)
+        for answer_num in range(len(answers))
+    ]
     return_val = cls()
     return_val.encrypted_answers = encrypted_answers
     return_val.election_hash = election.hash

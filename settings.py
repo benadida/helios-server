@@ -268,6 +268,11 @@ HELIOS_VOTER_EMAIL_CUTOFF_WEEKS = int(get_from_env('HELIOS_VOTER_EMAIL_CUTOFF_WE
 # are elections private by default?
 HELIOS_PRIVATE_DEFAULT = False
 
+# Default datatype for new elections
+# - 'legacy/Election': SHA-1 proofs, no context binding (v3.0 compatible)
+# - '2026/01/Election': SHA-256 proofs with context binding to election/question/answer/voter
+HELIOS_DEFAULT_ELECTION_DATATYPE = get_from_env('HELIOS_DEFAULT_ELECTION_DATATYPE', '2026/01/Election')
+
 # authentication systems enabled
 # AUTH_ENABLED_SYSTEMS = ['password','facebook', 'google', 'yahoo']
 AUTH_ENABLED_SYSTEMS = get_from_env('AUTH_ENABLED_SYSTEMS',

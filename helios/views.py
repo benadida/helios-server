@@ -210,6 +210,9 @@ def election_new(request):
         # registration starts closed
         election_params['openreg'] = False
 
+        # set the datatype for new elections (determines proof algorithm)
+        election_params['datatype'] = getattr(settings, 'HELIOS_DEFAULT_ELECTION_DATATYPE', 'legacy/Election')
+
         user = get_user(request)
         election_params['admin'] = user
         try:
