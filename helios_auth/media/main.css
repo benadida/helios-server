@@ -66,25 +66,25 @@ body {
     width: 100vw;
     max-width: 100vw;
     margin-left: 0;
-    padding: 10px 15px;
+    margin-right: 0;
+    padding: 10px 0;
     box-sizing: border-box;
+    border-left: none;
+    border-right: none;
   }
 
   #header {
-    margin-left: -15px;
-    margin-right: -15px;
     padding-left: 15px;
     padding-right: 15px;
-    width: calc(100% + 30px);
-    box-sizing: border-box;
   }
 
   #footer {
-    margin-left: -15px;
-    margin-right: -15px;
     padding-left: 15px;
     padding-right: 15px;
-    width: calc(100% + 30px);
-    box-sizing: border-box;
+  }
+
+  #content > *:not(#header):not(#footer) {
+    padding-left: 15px;
+    padding-right: 15px;
   }
 }
