@@ -40,8 +40,10 @@
 <p>
 {% if can_send_emails %}
 <a class="button" href="{% url "election@voters@email" election.uuid %}">email voters</a>
+<a class="button" href="{% url "election@voters@auto-reminder" election.uuid %}">auto-reminder settings</a>
 {% else %}
 <button class="button" disabled style="opacity: 0.5; cursor: not-allowed;" title="{{email_disabled_reason}}">email voters (disabled: {{email_disabled_reason}})</button>
+<a class="button" href="{% url "election@voters@auto-reminder" election.uuid %}">auto-reminder settings</a>
 {% endif %}
 </p>
 {% endif %}
