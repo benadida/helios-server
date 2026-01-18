@@ -111,7 +111,7 @@ function show_pk() {
 
 <p id="generator">
 
-<span id="buttons"><button onclick="generate_keypair(); return false;" id="generate_button">Generate Election Keys</button></span>
+<span id="buttons"><button class="button" onclick="generate_keypair(); return false;" id="generate_button">Generate Election Keys</button></span>
 
 <br />
 If you've already generated a keypair, you can <a href="javascript:show_key_reuse()">reuse it</a>.
@@ -127,7 +127,7 @@ Enter your complete secret key below:
 <textarea cols="80" rows="5" wrap="soft" name="secret_key">
 </textarea>
 <br />
-<input type="submit" value="reuse" />
+<input class="button" type="submit" value="reuse" />
 </form>
 </div>
 
@@ -138,7 +138,7 @@ Your key has been generated, but you may choose to<br /><a href="javascript:clea
 </span>
 
 <p>
-    <button style="font-size:16pt;" onclick="download_sk(); $('#pk_link').show();">Show my secret key</button>
+    <button class="button large" onclick="download_sk(); $('#pk_link').show();">Show my secret key</button>
 </p>
 </div>
 
@@ -171,7 +171,7 @@ Your key has been generated, but you may choose to<br /><a href="javascript:clea
 </p>
 <textarea id="pk_textarea" name="public_key_json" cols="80" rows="10" style="display:none;">
 </textarea>
-<input type="submit" value="Upload your public key">
+<input class="button" type="submit" value="Upload your public key">
 </form>
 
 <div id="applet_div"></div>

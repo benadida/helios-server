@@ -160,7 +160,7 @@ function reset() {
           <textarea id="sk_textarea" cols="60" rows="5" style="height: 25em;"></textarea>
       </form>
       <p id="tally_section">
-          <button onclick="do_tally();">Generate partial decryption</button>
+          <button class="button" onclick="do_tally();">Generate partial decryption</button>
       </p>
 
       <p id="skip_to_second_step_instructions">
@@ -189,7 +189,7 @@ function reset() {
       Your partial decryption:<br />
       <p>
           <textarea id="result_textarea" cols="60" rows="5" wrap="soft" style="height: 25em;"></textarea>
-          <button onclick="submit_result();">Upload decryption factors to server</button>
+          <button class="button" onclick="submit_result();">Upload decryption factors to server</button>
       </p>
       <p><a href="javascript:reset()">reset and restart decryption process</a></p>
   </div>

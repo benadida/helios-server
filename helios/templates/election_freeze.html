@@ -35,7 +35,7 @@ You must freeze the ballot before you can contact voters.
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     
 <input class="button" type="submit" value="Freeze the ballot" />
-<button onclick="document.location='{% url "election@view" election.uuid %}'; return false;">do NOT freeze yet</button>
+<button class="button" onclick="document.location='{% url "election@view" election.uuid %}'; return false;">do NOT freeze yet</button>
 </form>
 {% endif %}
 

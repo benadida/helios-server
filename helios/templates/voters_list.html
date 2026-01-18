@@ -103,7 +103,7 @@ Prior Bulk Uploads:
 <p>
 <form style="display: inline;" method="post" action="{% url "election@voters@clear" election.uuid %}" onsubmit="return confirm('Are you sure you want to remove ALL {{election.num_voters}} voter(s)? This action cannot be undone.');">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
-<input class="button" type="submit" value="clear all voters" style="background-color: #dc3545; color: white;" />
+<input class="button alert" type="submit" value="clear all voters" />
 </form>
 </p>
 {% endif %}

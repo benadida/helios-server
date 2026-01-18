@@ -18,12 +18,12 @@
 
 You are logged in as <u>{{voter.display_html_big|safe}}</u><br /><br />
 
-    <button type="submit" class="large">CAST this ballot</button>
+    <button type="submit" class="button large">CAST this ballot</button>
     <span style="font-size:0.8em;"><br />You can cast as many ballots as you want.<br />Only the last one counts.</span>
 </form>
 
 <p>
-    <button class="tiny" onclick="if (confirm('Are you sure you want to clear this ballot and NOT cast it?')) {document.location='{% url "election@view" election.uuid %}';}">cancel</button><br />
+    <button class="button tiny" onclick="if (confirm('Are you sure you want to clear this ballot and NOT cast it?')) {document.location='{% url "election@view" election.uuid %}';}">cancel</button><br />
     <span style="font-size:0.8em;">If you cancel now, your ballot will <em>NOT</em> be recorded.<br />
     You can start the voting process over again, of course.</span>
 </p>
