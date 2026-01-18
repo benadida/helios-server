@@ -57,26 +57,34 @@ body {
 /* Mobile responsive styles */
 @media screen and (max-width: 768px) {
   html, body {
-    width: 100%;
+    max-width: 100vw;
     overflow-x: hidden;
   }
 
   #content {
     position: relative;
-    width: 100%;
-    max-width: 100%;
+    width: 100vw;
+    max-width: 100vw;
     margin-left: 0;
     padding: 10px 15px;
     box-sizing: border-box;
   }
 
   #header {
-    width: 100%;
+    margin-left: -15px;
+    margin-right: -15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    width: calc(100% + 30px);
     box-sizing: border-box;
   }
 
   #footer {
-    width: 100%;
+    margin-left: -15px;
+    margin-right: -15px;
+    padding-left: 15px;
+    padding-right: 15px;
+    width: calc(100% + 30px);
     box-sizing: border-box;
   }
 }
