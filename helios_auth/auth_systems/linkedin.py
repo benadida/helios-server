@@ -34,11 +34,7 @@ def _get_client_by_token(token):
 
 def get_auth_url(request, redirect_url):
   client = _get_new_client()
-  try:
-    tok = client.get_request_token()
-  except:
-    return None
-  
+  tok = client.get_request_token()
   request.session['request_token'] = tok
   url = client.get_authenticate_url(tok['oauth_token']) 
   return url
