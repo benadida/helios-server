@@ -581,6 +581,149 @@ class VoterModelTests(TestCase):
         self.assertEqual(election.voter_set.get(voting_token=voter.voting_token).id, voter.id)
         self.assertEqual(election.voter_set.get(voting_token=voter2.voting_token).id, voter2.id)
 
+    def test_upload_token_voters(self):
+        """Test uploading token voters via CSV"""
+        from unittest.mock import patch
+
+        # Create a new election
+        election = models.Election.objects.create(
+            admin=auth_models.User.objects.get(user_id='ben@adida.net', user_type='google'),
+            uuid=str(uuid.uuid4()),
+            short_name='token-upload-test',
+            name='Token Upload Test Election',
+            election_type='election',
+            use_token_auth=False,  # Start as False, should auto-enable
+            cast_url='http://localhost:8000/helios'
+        )
+
+        # Upload token voters via VoterFile
+        csv_content = "token,alice@acme.com,Alice Smith\ntoken,bob@acme.com,Bob Jones"
+        voter_file = models.VoterFile(election=election, voter_file_content=csv_content)
+        voter_file.save()
+
+        # Mock validate_email to avoid DNS issues
+        with patch('helios.models.validate_email', return_value=True):
+            voter_file.process()
+
+        # Verify use_token_auth was auto-enabled
+        election.refresh_from_db()
+        self.assertTrue(election.use_token_auth)
+
+        # Verify voters were created with tokens
+        voters = election.voter_set.all()
+        self.assertEqual(voters.count(), 2)
+
+        alice = election.voter_set.get(voter_email='alice@acme.com')
+        self.assertEqual(alice.voter_login_id, 'alice@acme.com')
+        self.assertEqual(alice.voter_name, 'Alice Smith')
+        self.assertIsNotNone(alice.voting_token)
+        self.assertEqual(len(alice.voting_token), 20)
+
+        bob = election.voter_set.get(voter_email='bob@acme.com')
+        self.assertEqual(bob.voter_login_id, 'bob@acme.com')
+        self.assertEqual(bob.voter_name, 'Bob Jones')
+        self.assertIsNotNone(bob.voting_token)
+
+    def test_upload_mixed_voters_in_same_csv(self):
+        """Test that mixing token and password voters in same CSV fails"""
+        from unittest.mock import patch
+
+        election = models.Election.objects.create(
+            admin=auth_models.User.objects.get(user_id='ben@adida.net', user_type='google'),
+            uuid=str(uuid.uuid4()),
+            short_name='mixed-test',
+            name='Mixed Test Election',
+            election_type='election',
+            cast_url='http://localhost:8000/helios'
+        )
+
+        # CSV with both token and password voters
+        csv_content = "token,alice@acme.com,Alice Smith\npassword,bob123,bob@acme.com,Bob Jones"
+        voter_file = models.VoterFile(election=election, voter_file_content=csv_content)
+        voter_file.save()
+
+        # Should raise exception about mixing
+        with patch('helios.models.validate_email', return_value=True):
+            with self.assertRaises(Exception) as context:
+                voter_file.process()
+            self.assertIn("Cannot mix", str(context.exception))
+
+    def test_upload_token_voters_after_password_voters(self):
+        """Test that uploading token voters to election with password voters fails"""
+        from unittest.mock import patch
+
+        election = models.Election.objects.create(
+            admin=auth_models.User.objects.get(user_id='ben@adida.net', user_type='google'),
+            uuid=str(uuid.uuid4()),
+            short_name='password-first-test',
+            name='Password First Test Election',
+            election_type='election',
+            use_token_auth=False,
+            cast_url='http://localhost:8000/helios'
+        )
+
+        # First upload password voters
+        csv_content1 = "password,alice123,alice@acme.com,Alice Smith"
+        voter_file1 = models.VoterFile(election=election, voter_file_content=csv_content1)
+        voter_file1.save()
+
+        with patch('helios.models.validate_email', return_value=True):
+            voter_file1.process()
+
+        # Verify password voter was created
+        self.assertEqual(election.voter_set.count(), 1)
+        alice = election.voter_set.first()
+        self.assertIsNotNone(alice.voter_password)
+
+        # Now try to upload token voters - should fail
+        csv_content2 = "token,bob@acme.com,Bob Jones"
+        voter_file2 = models.VoterFile(election=election, voter_file_content=csv_content2)
+        voter_file2.save()
+
+        with patch('helios.models.validate_email', return_value=True):
+            with self.assertRaises(Exception) as context:
+                voter_file2.process()
+            self.assertIn("already has password voters", str(context.exception))
+
+    def test_upload_password_voters_after_token_voters(self):
+        """Test that uploading password voters to election with token voters fails"""
+        from unittest.mock import patch
+
+        election = models.Election.objects.create(
+            admin=auth_models.User.objects.get(user_id='ben@adida.net', user_type='google'),
+            uuid=str(uuid.uuid4()),
+            short_name='token-first-test',
+            name='Token First Test Election',
+            election_type='election',
+            use_token_auth=False,
+            cast_url='http://localhost:8000/helios'
+        )
+
+        # First upload token voters
+        csv_content1 = "token,alice@acme.com,Alice Smith"
+        voter_file1 = models.VoterFile(election=election, voter_file_content=csv_content1)
+        voter_file1.save()
+
+        with patch('helios.models.validate_email', return_value=True):
+            voter_file1.process()
+
+        # Verify token voter was created and use_token_auth was enabled
+        election.refresh_from_db()
+        self.assertTrue(election.use_token_auth)
+        self.assertEqual(election.voter_set.count(), 1)
+        alice = election.voter_set.first()
+        self.assertIsNotNone(alice.voting_token)
+
+        # Now try to upload password voters - should fail
+        csv_content2 = "password,bob123,bob@acme.com,Bob Jones"
+        voter_file2 = models.VoterFile(election=election, voter_file_content=csv_content2)
+        voter_file2.save()
+
+        with patch('helios.models.validate_email', return_value=True):
+            with self.assertRaises(Exception) as context:
+                voter_file2.process()
+            self.assertIn("already has token voters", str(context.exception))
+
 
 class CastVoteModelTests(TestCase):
     fixtures = ['users.json', 'election.json']

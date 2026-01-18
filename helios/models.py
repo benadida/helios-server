@@ -841,6 +841,32 @@ class VoterFile(models.Model):
         continue
 
       voter_type = voter_fields[0].strip()
+
+      # Special handling for "token" voter type
+      if voter_type == "token":
+        # Format: token,<email>,<full name>
+        if len(voter_fields) < 3:
+          raise Exception("token voter format requires: token,<email>,<full name>")
+
+        voter_email = voter_fields[1].strip()
+        voter_name = voter_fields[2].strip()
+
+        # Validate email
+        if not validate_email(voter_email):
+          raise Exception("invalid email '%s' for token voter" % voter_email)
+
+        # Use email as voter_id for token voters
+        voter_id = voter_email
+
+        yield {
+          'voter_type': voter_type,
+          'voter_id': voter_id,
+          'email': voter_email,
+          'name': voter_name,
+        }
+        continue
+
+      # Standard handling for other voter types
       voter_id = voter_fields[1].strip()
 
       if not voter_type in AUTH_SYSTEMS:
@@ -875,6 +901,31 @@ class VoterFile(models.Model):
     self.num_voters = len(voters)
     random.shuffle(voters)
 
+    # Check for mixing of token and password voters
+    has_token_voters = any(v['voter_type'] == 'token' for v in voters)
+    has_password_voters = any(v['voter_type'] == 'password' for v in voters)
+
+    # Cannot mix token and password voters in the same upload
+    if has_token_voters and has_password_voters:
+      raise Exception("Cannot mix 'token' and 'password' voter types in the same upload. Please use only one authentication method per election.")
+
+    # Check existing voters in the election
+    existing_password_voters = self.election.voter_set.filter(voter_password__isnull=False).exists()
+    existing_token_voters = self.election.voter_set.filter(voting_token__isnull=False).exists()
+
+    # Cannot upload token voters if election already has password voters
+    if has_token_voters and existing_password_voters:
+      raise Exception("Cannot upload token voters to an election that already has password voters. Election must use a single authentication method.")
+
+    # Cannot upload password voters if election already has token voters
+    if has_password_voters and existing_token_voters:
+      raise Exception("Cannot upload password voters to an election that already has token voters. Election must use a single authentication method.")
+
+    # Auto-enable token auth if all voters are token type
+    if has_token_voters and not self.election.use_token_auth:
+      self.election.use_token_auth = True
+      self.election.save()
+
     opted_out_voters = []
     successful_voters = 0
 
@@ -890,7 +941,29 @@ class VoterFile(models.Model):
           })
           continue
 
-      if voter['voter_type'] == 'password':
+      if voter['voter_type'] == 'token':
+          # Token voter type - always generates voting tokens
+          # does voter for this user already exist
+          existing_voter = Voter.get_by_election_and_voter_id(self.election, voter['voter_id'])
+          if existing_voter:
+              continue
+          # create the voter
+          voter_uuid = str(uuid.uuid4())
+          new_voter = Voter(uuid=voter_uuid, user = None, voter_login_id = voter['voter_id'],
+              voter_name = voter['name'], voter_email = voter['email'], election = self.election)
+          new_voter.generate_voting_token()
+          election=self.election
+          if election.use_voter_aliases:
+              # Use transaction to ensure alias assignment is atomic
+              with transaction.atomic():
+                  utils.lock_row(Election, election.id)
+                  alias_num = election.last_alias_num + 1
+                  new_voter.alias = "V%s" % alias_num
+                  new_voter.save()
+          else:
+              new_voter.save()
+          successful_voters += 1
+      elif voter['voter_type'] == 'password':
           # does voter for this user already exist
           existing_voter = Voter.get_by_election_and_voter_id(self.election, voter['voter_id'])
           if existing_voter:
