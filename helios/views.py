@@ -17,6 +17,7 @@ from django.core.paginator import Paginator
 from django.db import transaction, IntegrityError
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseForbidden, HttpResponseBadRequest
 from django.urls import reverse
+from django.views.decorators.http import require_http_methods
 
 import helios_auth.url_names as helios_auth_urls
 from helios import utils, VOTERS_EMAIL, VOTERS_UPLOAD, url_names
@@ -1155,21 +1156,21 @@ def one_election_archive(request, election):
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
 
 @election_admin()
+@require_http_methods(["POST"])
 def one_election_delete(request, election):
   """
   Soft delete an election. The election will be hidden from default queries.
   Requires POST request with CSRF protection.
   Pass delete_p=1 to delete, delete_p=0 to undelete.
   """
-  if request.method == "POST":
-    check_csrf(request)
+  check_csrf(request)
 
-    delete_p = request.POST.get('delete_p', '1')
+  delete_p = request.POST.get('delete_p', '1')
 
-    if bool(int(delete_p)):
-      election.soft_delete()
-    else:
-      election.undelete()
+  if bool(int(delete_p)):
+    election.soft_delete()
+  else:
+    election.undelete()
 
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
 

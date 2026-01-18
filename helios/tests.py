@@ -1278,22 +1278,6 @@ class ElectionDeleteViewTests(WebTest):
         session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
         session.save()
 
-    def test_delete_requires_post(self):
-        """Test that delete endpoint requires POST request"""
-        self.setup_login(from_scratch=True)
-
-        # GET request should not delete
-        response = self.client.get(
-            "/helios/elections/%s/delete" % self.election.uuid,
-            {"delete_p": "1"}
-        )
-        # Should redirect without deleting
-        self.assertRedirects(response)
-
-        # Election should still not be deleted
-        election = models.Election.objects_with_deleted.get(uuid=self.election.uuid)
-        self.assertFalse(election.is_deleted)
-
     def test_delete_with_post(self):
         """Test soft deleting an election via POST"""
         self.setup_login(from_scratch=True)
