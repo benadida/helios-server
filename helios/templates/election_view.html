@@ -14,8 +14,24 @@
 {% if election.is_archived %}
 [archived]
 {% endif %}
+{% if election.is_deleted %}
+[deleted]
+{% endif %}
 {% if admin_p %}
 &nbsp;{% if election.is_archived %}<a class="small button" href="{% url "election@archive" election_uuid=election.uuid %}?archive_p=0">unarchive it</a>{% else %}<a class="small button" href="{% url "election@archive" election_uuid=election.uuid %}?archive_p=1">archive it</a>{% endif %}
+{% if election.is_deleted %}
+<form method="post" action="{% url "election@delete" election_uuid=election.uuid %}" style="display:inline;">
+<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<input type="hidden" name="delete_p" value="0" />
+<button type="submit" class="small button">undelete it</button>
+</form>
+{% else %}
+<form method="post" action="{% url "election@delete" election_uuid=election.uuid %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this election? It will be hidden but can be restored later.');">
+<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<input type="hidden" name="delete_p" value="1" />
+<button type="submit" class="small button">delete it</button>
+</form>
+{% endif %}
 <a class="small button" onclick="return window.confirm('Are you sure you want to copy this election?');" href="{% url "election@copy" election_uuid=election.uuid %}">copy</a>
 {% endif %}
 <br />
