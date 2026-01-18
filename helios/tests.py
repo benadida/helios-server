@@ -2845,25 +2845,25 @@ class VoterUploadRestrictionTests(WebTest):
         session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
         session.save()
 
-    def test_can_add_voters_file_allowed_by_default(self):
-        can_add, reason = self.election.can_add_voters_file()
-        self.assertTrue(can_add)
+    def test_can_modify_voters_allowed_by_default(self):
+        can_modify, reason = self.election.can_modify_voters()
+        self.assertTrue(can_modify)
         self.assertIsNone(reason)
 
-    def test_can_add_voters_file_blocked_when_encrypted_tally_exists(self):
+    def test_can_modify_voters_blocked_when_encrypted_tally_exists(self):
         # Set in memory only - the method just checks truthiness
         self.election.encrypted_tally = True
 
-        can_add, reason = self.election.can_add_voters_file()
-        self.assertFalse(can_add)
+        can_modify, reason = self.election.can_modify_voters()
+        self.assertFalse(can_modify)
         self.assertEqual(reason, "Election has been tallied")
 
-    def test_can_add_voters_file_blocked_when_tallying_started(self):
+    def test_can_modify_voters_blocked_when_tallying_started(self):
         self.election.tallying_started_at = datetime.datetime.utcnow()
         self.election.save()
 
-        can_add, reason = self.election.can_add_voters_file()
-        self.assertFalse(can_add)
+        can_modify, reason = self.election.can_modify_voters()
+        self.assertFalse(can_modify)
         self.assertEqual(reason, "Tallying has started")
 
     def test_voter_upload_view_returns_403_when_blocked(self):
@@ -2883,4 +2883,73 @@ class VoterUploadRestrictionTests(WebTest):
         self.assertStatusCode(response, 200)
         self.assertContains(response, 'disabled')
         self.assertContains(response, 'Tallying has started')
+
+
+class VoterDeleteRestrictionTests(WebTest):
+    """Tests for voter deletion restrictions when tallying has begun (issue #470)"""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-delete-restriction',
+            name='Test Delete Restriction',
+            description='Test',
+            admin=self.user
+        )
+        if not self.election.uuid:
+            self.election.uuid = str(uuid.uuid4())
+            self.election.save()
+        # Create a voter to test deletion
+        self.voter = models.Voter.objects.create(
+            uuid=str(uuid.uuid4()),
+            election=self.election,
+            voter_email='voter@test.com',
+            voter_name='Test Voter'
+        )
+
+    def setup_login(self):
+        self.client.get("/")
+        session = self.client.session
+        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
+        session.save()
+
+    def test_voter_delete_allowed_by_default(self):
+        """Voter deletion should be allowed before tallying starts"""
+        self.setup_login()
+        response = self.client.post("/helios/elections/%s/voters/%s/delete" % (
+            self.election.uuid, self.voter.uuid))
+        # Should redirect (302) on successful deletion
+        self.assertStatusCode(response, 302)
+
+    def test_voter_delete_blocked_when_tallying_started(self):
+        """Voter deletion should be blocked once tallying has started"""
+        self.setup_login()
+        self.election.tallying_started_at = datetime.datetime.utcnow()
+        self.election.save()
+
+        response = self.client.post("/helios/elections/%s/voters/%s/delete" % (
+            self.election.uuid, self.voter.uuid))
+        self.assertStatusCode(response, 403)
+
+    def test_voters_list_shows_delete_button_when_allowed(self):
+        """Voter list should show delete [x] button when deletion is allowed"""
+        self.setup_login()
+
+        response = self.client.get("/helios/elections/%s/voters/list" % self.election.uuid)
+        self.assertStatusCode(response, 200)
+        # Check for the delete link with [x] text
+        self.assertContains(response, '>x</a>]')
+
+    def test_voters_list_hides_delete_button_when_blocked(self):
+        """Voter list should hide delete [x] button when tallying has started"""
+        self.setup_login()
+        self.election.tallying_started_at = datetime.datetime.utcnow()
+        self.election.save()
+
+        response = self.client.get("/helios/elections/%s/voters/list" % self.election.uuid)
+        self.assertStatusCode(response, 200)
+        # Check that the delete link is not present
+        self.assertNotContains(response, '>x</a>]')
 

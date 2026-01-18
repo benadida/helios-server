@@ -64,10 +64,10 @@
 <!-- Add a Voter: WORK HERE-->
 {% if upload_p and not election.openreg %}
 <p>
-{% if can_add_voters_file %}
+{% if can_modify_voters %}
 <a class="button" href="{% url "election@voters@upload" election_uuid=election.uuid %}">bulk upload voters</a>
 {% else %}
-<button class="button" disabled style="opacity: 0.5; cursor: not-allowed;" title="{{upload_disabled_reason}}">bulk upload voters (disabled: {{upload_disabled_reason}})</button>
+<button class="button" disabled style="opacity: 0.5; cursor: not-allowed;" title="{{modify_voters_disabled_reason}}">bulk upload voters (disabled: {{modify_voters_disabled_reason}})</button>
 {% endif %}
 </p>
 
@@ -161,7 +161,7 @@ Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voter
 [<span style="opacity: 0.5; cursor: not-allowed;" title="{{email_disabled_reason}}">email</span>]
 {% endif %}
 {% endif %}
-[<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url "election@voter@delete" election.uuid voter.uuid %}">x</a>]
+{% if can_modify_voters %}[<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url "election@voter@delete" election.uuid voter.uuid %}">x</a>]{% endif %}
 </td>
 <td>{{voter.voter_login_id}}</td>
 <td>{{voter.voter_email}}</td>

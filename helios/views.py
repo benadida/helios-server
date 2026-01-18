@@ -1052,16 +1052,12 @@ def one_election_audited_ballots(request, election):
 @election_admin()
 def voter_delete(request, election, voter_uuid):
   """
-  Two conditions under which a voter can be deleted:
-  - election is not frozen or
-  - election is open reg
+  Voter deletion uses the same restrictions as voter file uploads:
+  blocked once tallying has started or election has been tallied,
+  as modifying voters after vote counting begins would compromise election integrity.
   """
-  ## FOR NOW we allow this to see if we can redefine the meaning of "closed reg" to be more flexible
-  # if election is frozen and has closed registration
-  #if election.frozen_at and (not election.openreg):
-  #  raise PermissionDenied()
-
-  if election.encrypted_tally:
+  can_delete, _ = election.can_modify_voters()
+  if not can_delete:
     raise PermissionDenied()
 
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
@@ -1457,8 +1453,8 @@ def voters_list_pretty(request, election):
   # Check if voter emails can be sent
   can_send_emails, email_disabled_reason = election.can_send_voter_emails()
 
-  # Check if voter uploads are allowed
-  can_add_voters_file, upload_disabled_reason = election.can_add_voters_file()
+  # Check if voter modifications (uploads, deletions) are allowed
+  can_modify_voters, modify_voters_disabled_reason = election.can_modify_voters()
 
   return render_template(request, 'voters_list',
                          {'election': election, 'voters_page': voters_page,
@@ -1468,8 +1464,8 @@ def voters_list_pretty(request, election):
                           'email_disabled_reason': email_disabled_reason,
                           'limit': limit, 'total_voters': total_voters,
                           'upload_p': VOTERS_UPLOAD,
-                          'can_add_voters_file': can_add_voters_file,
-                          'upload_disabled_reason': upload_disabled_reason,
+                          'can_modify_voters': can_modify_voters,
+                          'modify_voters_disabled_reason': modify_voters_disabled_reason,
                           'q' : q,
                           'voter_files': voter_files,
                           'categories': categories,
@@ -1625,7 +1621,7 @@ def voters_upload(request, election):
   """
 
   # don't allow voter upload when election is tallied
-  can_upload, reason = election.can_add_voters_file()
+  can_upload, reason = election.can_modify_voters()
   if not can_upload:
     raise PermissionDenied()
 
