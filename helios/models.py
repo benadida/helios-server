@@ -275,18 +275,18 @@ class Election(HeliosModel):
       return query
 
   @classmethod
-  def get_by_uuid(cls, uuid):
+  def get_by_uuid(cls, uuid, include_deleted=False):
     try:
-      # Use objects_with_deleted to allow admin access to deleted elections
-      return cls.objects_with_deleted.select_related().get(uuid=uuid)
+      manager = cls.objects_with_deleted if include_deleted else cls.objects
+      return manager.select_related().get(uuid=uuid)
     except cls.DoesNotExist:
       return None
 
   @classmethod
-  def get_by_short_name(cls, short_name):
+  def get_by_short_name(cls, short_name, include_deleted=False):
     try:
-      # Use objects_with_deleted to allow admin access to deleted elections
-      return cls.objects_with_deleted.get(short_name=short_name)
+      manager = cls.objects_with_deleted if include_deleted else cls.objects
+      return manager.get(short_name=short_name)
     except cls.DoesNotExist:
       return None
 

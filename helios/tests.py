@@ -224,8 +224,12 @@ class ElectionModelTests(TestCase):
         election = models.Election.objects_with_deleted.get(uuid=self.election.uuid)
         self.assertEqual(election, self.election)
 
-        # Test that get_by_uuid still works (uses objects_with_deleted)
+        # Test that get_by_uuid respects the default manager (excludes deleted)
         election = models.Election.get_by_uuid(self.election.uuid)
+        self.assertIsNone(election)
+
+        # But get_by_uuid with include_deleted=True should work
+        election = models.Election.get_by_uuid(self.election.uuid, include_deleted=True)
         self.assertEqual(election, self.election)
 
         # Test undelete

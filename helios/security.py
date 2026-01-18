@@ -105,16 +105,22 @@ def get_election_by_uuid(uuid):
 # frozen - is the election frozen
 # newvoters - does the election accept new voters
 def election_view(**checks):
-  
+
   def election_view_decorator(func):
     def election_view_wrapper(request, election_uuid=None, *args, **kw):
+      # Try to get election (excludes deleted by default)
       election = get_election_by_uuid(election_uuid)
 
       if not election:
-        raise Http404
+        # Election not found in default manager - might be deleted
+        # Try to get it with deleted elections included
+        election = get_election_by_uuid(election_uuid, include_deleted=True)
 
-      # if election is deleted, only admins can see it
-      if election.is_deleted:
+        if not election:
+          # Really doesn't exist
+          raise Http404
+
+        # Election is deleted - only admins can see it
         user = get_user(request)
         if not user_can_admin_election(user, election):
           raise Http404
@@ -173,35 +179,43 @@ def api_client_can_admin_election(api_client, election):
 # frozen - is the election frozen
 # newvoters - does the election accept new voters
 def election_admin(**checks):
-  
+
   def election_admin_decorator(func):
     def election_admin_wrapper(request, election_uuid=None, *args, **kw):
-      election = get_election_by_uuid(election_uuid)
+      # Admins should be able to access deleted elections
+      election = get_election_by_uuid(election_uuid, include_deleted=True)
+
+      if not election:
+        raise Http404
 
       user = get_user(request)
       if not user_can_admin_election(user, election):
         raise PermissionDenied()
-        
+
       # do checks
       do_election_checks(election, checks)
-        
+
       return func(request, election, *args, **kw)
 
     return update_wrapper(election_admin_wrapper, func)
-    
+
   return election_admin_decorator
   
 def trustee_check(func):
   def trustee_check_wrapper(request, election_uuid, trustee_uuid, *args, **kwargs):
-    election = get_election_by_uuid(election_uuid)
-    
+    # Trustees should be able to access deleted elections (e.g., for decryption)
+    election = get_election_by_uuid(election_uuid, include_deleted=True)
+
+    if not election:
+      raise Http404
+
     trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
-    
+
     if trustee == get_logged_in_trustee(request):
       return func(request, election, trustee, *args, **kwargs)
     else:
       raise PermissionDenied()
-  
+
   return update_wrapper(trustee_check_wrapper, func)
 
 def can_create_election(request):
