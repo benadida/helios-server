@@ -216,7 +216,18 @@ UTILS.generate_plaintexts = function(pk, min, max) {
 
 
 HELIOS.EncryptedAnswer = Class.extend({
-  init: function(question, answer, pk, progress) {    
+  /**
+   * Initialize an encrypted answer.
+   *
+   * @param {Object} question - Question object with answers array, min, max
+   * @param {Array} answer - Array of selected answer indices
+   * @param {Object} pk - Public key for encryption
+   * @param {Object} progress - Optional progress tracker
+   * @param {Object} election - Optional election for context binding (2026/01+)
+   * @param {Number} question_num - Optional question index for context binding
+   * @param {String} voter_alias - Optional voter alias for context binding
+   */
+  init: function(question, answer, pk, progress, election, question_num, voter_alias) {
     // if nothing in the constructor
     if (question == null)
       return;
@@ -226,37 +237,47 @@ HELIOS.EncryptedAnswer = Class.extend({
     this.answer = answer;
 
     // do the encryption
-    var enc_result = this.doEncryption(question, answer, pk, null, progress);
+    var enc_result = this.doEncryption(question, answer, pk, null, progress, election, question_num, voter_alias);
 
     this.choices = enc_result.choices;
     this.randomness = enc_result.randomness;
     this.individual_proofs = enc_result.individual_proofs;
-    this.overall_proof = enc_result.overall_proof;    
+    this.overall_proof = enc_result.overall_proof;
   },
-  
-  doEncryption: function(question, answer, pk, randomness, progress) {
+
+  /**
+   * Perform the actual encryption with optional context binding.
+   */
+  doEncryption: function(question, answer, pk, randomness, progress, election, question_num, voter_alias) {
     var choices = [];
     var individual_proofs = [];
     var overall_proof = null;
-    
+
     // possible plaintexts [question.min .. , question.max]
     var plaintexts = null;
     if (question.max != null) {
       plaintexts = UTILS.generate_plaintexts(pk, question.min, question.max);
     }
-    
+
     var zero_one_plaintexts = UTILS.generate_plaintexts(pk, 0, 1);
-    
+
     // keep track of whether we need to generate new randomness
-    var generate_new_randomness = false;    
+    var generate_new_randomness = false;
     if (!randomness) {
       randomness = [];
       generate_new_randomness = true;
     }
-    
+
+    // Determine if using context-bound proofs (2026/01+)
+    var use_context_binding = (
+        election &&
+        election.datatype &&
+        election.datatype.indexOf('2026/') === 0
+    );
+
     // keep track of number of options selected.
     var num_selected_answers = 0;
-    
+
     // go through each possible answer and encrypt either a g^0 or a g^1.
     for (var i=0; i<question.answers.length; i++) {
       var index, plaintext_index;
@@ -270,17 +291,31 @@ HELIOS.EncryptedAnswer = Class.extend({
 
       // generate randomness?
       if (generate_new_randomness) {
-        randomness[i] = Random.getRandomInteger(pk.q);        
+        randomness[i] = Random.getRandomInteger(pk.q);
       }
 
       choices[i] = ElGamal.encrypt(pk, zero_one_plaintexts[plaintext_index], randomness[i]);
-      
+
       // generate proof
       if (generate_new_randomness) {
+        // Select challenge generator based on context binding
+        var challenge_gen;
+        if (use_context_binding) {
+          var context = new ElGamal.ProofContext(
+              election.get_hash(),
+              question_num,
+              i,
+              voter_alias
+          );
+          challenge_gen = ElGamal.make_context_bound_challenge_generator(context, pk.q);
+        } else {
+          challenge_gen = ElGamal.disjunctive_challenge_generator;
+        }
+
         // generate proof that this ciphertext is a 0 or a 1
-        individual_proofs[i] = choices[i].generateDisjunctiveProof(zero_one_plaintexts, plaintext_index, randomness[i], ElGamal.disjunctive_challenge_generator);        
+        individual_proofs[i] = choices[i].generateDisjunctiveProof(zero_one_plaintexts, plaintext_index, randomness[i], challenge_gen);
       }
-      
+
       if (progress)
         progress.tick();
     }
@@ -288,7 +323,7 @@ HELIOS.EncryptedAnswer = Class.extend({
     if (generate_new_randomness && question.max != null) {
       // we also need proof that the whole thing sums up to the right number
       // only if max is non-null, otherwise it's full approval voting
-    
+
       // compute the homomorphic sum of all the options
       var hom_sum = choices[0];
       var rand_sum = randomness[0];
@@ -296,7 +331,7 @@ HELIOS.EncryptedAnswer = Class.extend({
         hom_sum = hom_sum.multiply(choices[i]);
         rand_sum = rand_sum.add(randomness[i]).mod(pk.q);
       }
-    
+
       // prove that the sum is 0 or 1 (can be "blank vote" for this answer)
       // num_selected_answers is 0 or 1, which is the index into the plaintext that is actually encoded
       //
@@ -305,15 +340,29 @@ HELIOS.EncryptedAnswer = Class.extend({
       var overall_plaintext_index = num_selected_answers;
       if (question.min)
         overall_plaintext_index -= question.min;
-      
-      overall_proof = hom_sum.generateDisjunctiveProof(plaintexts, overall_plaintext_index, rand_sum, ElGamal.disjunctive_challenge_generator);
+
+      // Select challenge generator for overall proof
+      var overall_challenge_gen;
+      if (use_context_binding) {
+        var overall_context = new ElGamal.ProofContext(
+            election.get_hash(),
+            question_num,
+            "overall",
+            voter_alias
+        );
+        overall_challenge_gen = ElGamal.make_context_bound_challenge_generator(overall_context, pk.q);
+      } else {
+        overall_challenge_gen = ElGamal.disjunctive_challenge_generator;
+      }
+
+      overall_proof = hom_sum.generateDisjunctiveProof(plaintexts, overall_plaintext_index, rand_sum, overall_challenge_gen);
 
       if (progress) {
         for (var i=0; i<question.max; i++)
           progress.tick();
       }
     }
-    
+
     return {
       'choices' : choices,
       'randomness' : randomness,
@@ -405,7 +454,15 @@ HELIOS.EncryptedAnswer.fromJSONObject = function(d, election) {
 };
 
 HELIOS.EncryptedVote = Class.extend({
-  init: function(election, answers, progress) {
+  /**
+   * Initialize an encrypted vote.
+   *
+   * @param {Object} election - Election object
+   * @param {Array} answers - Array of answer arrays for each question
+   * @param {Object} progress - Optional progress tracker
+   * @param {String} voter_alias - Optional voter alias for context binding (2026/01+)
+   */
+  init: function(election, answers, progress, voter_alias) {
     // empty constructor
     if (election == null)
       return;
@@ -414,10 +471,10 @@ HELIOS.EncryptedVote = Class.extend({
     this.election_uuid = election.uuid;
     this.election_hash = election.get_hash();
     this.election = election;
-     
+
     if (answers == null)
       return;
-      
+
     var n_questions = election.questions.length;
     this.encrypted_answers = [];
 
@@ -432,11 +489,15 @@ HELIOS.EncryptedVote = Class.extend({
 
       progress.addTicks(0, n_questions);
     }
-      
+
     // loop through questions
     for (var i=0; i<n_questions; i++) {
-      this.encrypted_answers[i] = new HELIOS.EncryptedAnswer(election.questions[i], answers[i], election.public_key, progress);
-    }    
+      // Pass election, question_num, and voter_alias for context binding (2026/01+)
+      this.encrypted_answers[i] = new HELIOS.EncryptedAnswer(
+          election.questions[i], answers[i], election.public_key, progress,
+          election, i, voter_alias
+      );
+    }
   },
 
   toString: function() {
@@ -480,13 +541,27 @@ HELIOS.EncryptedVote = Class.extend({
     return this.toJSONObject(true);
   },
   
-  verifyProofs: function(pk, outcome_callback) {
+  /**
+   * Verify all proofs in this encrypted vote.
+   *
+   * @param {Object} pk - Public key for verification
+   * @param {Function} outcome_callback - Callback for each verification result
+   * @param {String} voter_alias - Optional voter alias for context-bound verification (2026/01+)
+   */
+  verifyProofs: function(pk, outcome_callback, voter_alias) {
     var zero_or_one = UTILS.generate_plaintexts(pk, 0, 1);
 
     var VALID_P = true;
-    
+
     var self = this;
-    
+
+    // Determine if using context-bound verification (2026/01+)
+    var use_context_binding = (
+        self.election &&
+        self.election.datatype &&
+        self.election.datatype.indexOf('2026/') === 0
+    );
+
     // for each question and associate encrypted answer
     _(this.encrypted_answers).each(function(enc_answer, ea_num) {
         var overall_result = 1;
@@ -496,22 +571,50 @@ HELIOS.EncryptedVote = Class.extend({
 
         // go through each individual proof
         _(enc_answer.choices).each(function(choice, choice_num) {
-          var result = choice.verifyDisjunctiveProof(zero_or_one, enc_answer.individual_proofs[choice_num], ElGamal.disjunctive_challenge_generator);
+          // Select challenge generator based on context binding
+          var challenge_gen;
+          if (use_context_binding) {
+            var context = new ElGamal.ProofContext(
+                self.election.get_hash(),
+                ea_num,
+                choice_num,
+                voter_alias
+            );
+            challenge_gen = ElGamal.make_context_bound_challenge_generator(context, pk.q);
+          } else {
+            challenge_gen = ElGamal.disjunctive_challenge_generator;
+          }
+
+          var result = choice.verifyDisjunctiveProof(zero_or_one, enc_answer.individual_proofs[choice_num], challenge_gen);
           outcome_callback(ea_num, choice_num, result, choice);
-          
+
           VALID_P = VALID_P && result;
-           
+
           // keep track of homomorphic product, if needed
           if (max != null)
             overall_result = choice.multiply(overall_result);
         });
-        
+
         if (max != null) {
           // possible plaintexts [0, 1, .. , question.max]
           var plaintexts = UTILS.generate_plaintexts(pk, self.election.questions[ea_num].min, self.election.questions[ea_num].max);
-        
+
+          // Select challenge generator for overall proof
+          var overall_challenge_gen;
+          if (use_context_binding) {
+            var overall_context = new ElGamal.ProofContext(
+                self.election.get_hash(),
+                ea_num,
+                "overall",
+                voter_alias
+            );
+            overall_challenge_gen = ElGamal.make_context_bound_challenge_generator(overall_context, pk.q);
+          } else {
+            overall_challenge_gen = ElGamal.disjunctive_challenge_generator;
+          }
+
           // check the proof on the overall product
-          var overall_check = overall_result.verifyDisjunctiveProof(plaintexts, enc_answer.overall_proof, ElGamal.disjunctive_challenge_generator);
+          var overall_check = overall_result.verifyDisjunctiveProof(plaintexts, enc_answer.overall_proof, overall_challenge_gen);
           outcome_callback(ea_num, null, overall_check, null);
           VALID_P = VALID_P && overall_check;
         } else {
@@ -519,7 +622,7 @@ HELIOS.EncryptedVote = Class.extend({
           VALID_P = VALID_P && (enc_answer.overall_proof == null)
         }
     });
-    
+
     return VALID_P;
   }
 });
@@ -609,14 +712,13 @@ HELIOS.dejsonify_list_of_lists = function(lol, item_dejsonifier) {
 }
 
 HELIOS.Trustee = Class.extend({
-  init: function(uuid, public_key, public_key_hash, pok, decryption_factors, decryption_proofs, email) {
+  init: function(uuid, public_key, public_key_hash, pok, decryption_factors, decryption_proofs) {
     this.uuid = uuid;
     this.public_key = public_key;
     this.public_key_hash = public_key_hash;
     this.pok = pok;
     this.decryption_factors = decryption_factors;
     this.decryption_proofs = decryption_proofs;
-    this.email = email;
   },
   
   toJSONObject: function() {
@@ -632,7 +734,5 @@ HELIOS.Trustee.fromJSONObject = function(d) {
   return new HELIOS.Trustee(d.uuid,
     ElGamal.PublicKey.fromJSONObject(d.public_key), d.public_key_hash, ElGamal.DLogProof.fromJSONObject(d.pok),
     HELIOS.dejsonify_list_of_lists(d.decryption_factors, BigInt.fromJSONObject),
-    HELIOS.dejsonify_list_of_lists(d.decryption_proofs, ElGamal.Proof.fromJSONObject),
-    d.email
-   );
+    HELIOS.dejsonify_list_of_lists(d.decryption_proofs, ElGamal.Proof.fromJSONObject));
 };

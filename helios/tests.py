@@ -2884,3 +2884,216 @@ class VoterUploadRestrictionTests(WebTest):
         self.assertContains(response, 'disabled')
         self.assertContains(response, 'Tallying has started')
 
+
+class ContextBoundProofTests(TestCase):
+    """
+    Tests for the enhanced NIZK proof context binding (2026/01 datatype).
+
+    These tests verify that:
+    1. ProofContext correctly serializes context information
+    2. SHA-256 challenge generators produce different challenges with different contexts
+    3. Context-bound proofs verify correctly
+    4. Legacy (SHA-1) proofs still work for backward compatibility
+    """
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        from helios.crypto import algs
+        self.algs = algs
+
+        # Create a test election with 2026/01 datatype
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election = models.Election.objects.create(
+            short_name='test-context-proof',
+            name='Test Context Proof Election',
+            description='Testing context-bound proofs',
+            admin=self.user,
+            uuid=str(uuid.uuid4()),
+            datatype='2026/01/Election'
+        )
+
+        # Setup questions first
+        self.election.questions = [
+            {"answer_urls": [None, None], "answers": ["Yes", "No"],
+             "choice_type": "approval", "max": 1, "min": 0,
+             "question": "Test Question?", "result_type": "absolute",
+             "short_name": "q1", "tally_type": "homomorphic"}
+        ]
+
+        # Generate trustee
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
+
+        # Enable open registration and freeze election to get public key
+        self.election.openreg = True
+        self.election.freeze()
+
+    def test_proof_context_serialization(self):
+        """Test that ProofContext serializes correctly."""
+        context = self.algs.ProofContext(
+            election_hash="abc123",
+            question_index=0,
+            answer_index=1,
+            voter_alias="voter42"
+        )
+
+        context_str = context.to_string()
+        self.assertIn("election:abc123", context_str)
+        self.assertIn("question:0", context_str)
+        self.assertIn("answer:1", context_str)
+        self.assertIn("voter:voter42", context_str)
+
+    def test_proof_context_partial_fields(self):
+        """Test ProofContext with only some fields set."""
+        context = self.algs.ProofContext(
+            election_hash="abc123",
+            question_index=0
+        )
+
+        context_str = context.to_string()
+        self.assertIn("election:abc123", context_str)
+        self.assertIn("question:0", context_str)
+        self.assertNotIn("answer:", context_str)
+        self.assertNotIn("voter:", context_str)
+
+    def test_sha256_challenge_differs_from_sha1(self):
+        """Test that SHA-256 produces different challenges than SHA-1."""
+        commitment = {'A': 12345, 'B': 67890}
+
+        sha1_challenge = self.algs.EG_disjunctive_challenge_generator([commitment])
+        sha256_challenge = self.algs.EG_disjunctive_challenge_generator_sha256([commitment])
+
+        self.assertNotEqual(sha1_challenge, sha256_challenge)
+
+    def test_context_changes_challenge(self):
+        """Test that different contexts produce different challenges."""
+        commitment = {'A': 12345, 'B': 67890}
+
+        context1 = self.algs.ProofContext(election_hash="election1", question_index=0)
+        context2 = self.algs.ProofContext(election_hash="election2", question_index=0)
+
+        challenge1 = self.algs.EG_disjunctive_challenge_generator_sha256([commitment], context1)
+        challenge2 = self.algs.EG_disjunctive_challenge_generator_sha256([commitment], context2)
+
+        self.assertNotEqual(challenge1, challenge2)
+
+    def test_same_context_same_challenge(self):
+        """Test that the same context produces deterministic challenges."""
+        commitment = {'A': 12345, 'B': 67890}
+
+        context1 = self.algs.ProofContext(election_hash="same", question_index=0)
+        context2 = self.algs.ProofContext(election_hash="same", question_index=0)
+
+        challenge1 = self.algs.EG_disjunctive_challenge_generator_sha256([commitment], context1)
+        challenge2 = self.algs.EG_disjunctive_challenge_generator_sha256([commitment], context2)
+
+        self.assertEqual(challenge1, challenge2)
+
+    def test_context_bound_proof_generation_and_verification(self):
+        """Test full proof generation and verification cycle with context binding."""
+        from helios.workflows import homomorphic
+
+        # Create an encrypted answer with context binding
+        encrypted_answer = homomorphic.EncryptedAnswer.fromElectionAndAnswer(
+            self.election, 0, [0], voter_alias="test_voter"
+        )
+
+        # Verify the proof with context
+        is_valid = encrypted_answer.verify(
+            self.election.public_key,
+            min=0, max=1,
+            election=self.election,
+            question_num=0,
+            voter_alias="test_voter"
+        )
+
+        self.assertTrue(is_valid)
+
+    def test_context_bound_proof_fails_wrong_context(self):
+        """Test that proofs fail verification with wrong context."""
+        from helios.workflows import homomorphic
+
+        # Create an encrypted answer with context binding
+        encrypted_answer = homomorphic.EncryptedAnswer.fromElectionAndAnswer(
+            self.election, 0, [0], voter_alias="voter1"
+        )
+
+        # Verify with wrong voter alias - should fail
+        is_valid = encrypted_answer.verify(
+            self.election.public_key,
+            min=0, max=1,
+            election=self.election,
+            question_num=0,
+            voter_alias="wrong_voter"
+        )
+
+        self.assertFalse(is_valid)
+
+    def test_legacy_election_uses_sha1(self):
+        """Test that legacy elections still use SHA-1 proofs."""
+        from helios.workflows import homomorphic
+
+        # Create a legacy election
+        legacy_election = models.Election.objects.create(
+            short_name='test-legacy-proof',
+            name='Test Legacy Proof Election',
+            description='Testing legacy proofs',
+            admin=self.user,
+            uuid=str(uuid.uuid4()),
+            datatype='legacy/Election'
+        )
+
+        # Setup questions first
+        legacy_election.questions = [
+            {"answer_urls": [None, None], "answers": ["Yes", "No"],
+             "choice_type": "approval", "max": 1, "min": 0,
+             "question": "Test?", "result_type": "absolute",
+             "short_name": "q1", "tally_type": "homomorphic"}
+        ]
+
+        # Generate trustee and freeze to get public key
+        legacy_election.generate_trustee(views.ELGAMAL_PARAMS)
+        legacy_election.openreg = True
+        legacy_election.freeze()
+
+        # Create and verify an encrypted answer (should use legacy SHA-1)
+        encrypted_answer = homomorphic.EncryptedAnswer.fromElectionAndAnswer(
+            legacy_election, 0, [0]
+        )
+
+        # Verify without context (legacy mode)
+        is_valid = encrypted_answer.verify(
+            legacy_election.public_key,
+            min=0, max=1
+        )
+
+        self.assertTrue(is_valid)
+
+    def test_encrypted_vote_with_context(self):
+        """Test full encrypted vote creation and verification with context binding."""
+        from helios.workflows import homomorphic
+
+        # Create an encrypted vote with context
+        encrypted_vote = homomorphic.EncryptedVote.fromElectionAndAnswers(
+            self.election, [[0]], voter_alias="test_voter"
+        )
+
+        # Verify the vote
+        is_valid = encrypted_vote.verify(self.election, voter_alias="test_voter")
+
+        self.assertTrue(is_valid)
+
+    def test_encrypted_vote_fails_wrong_voter(self):
+        """Test that encrypted vote fails with wrong voter context."""
+        from helios.workflows import homomorphic
+
+        # Create an encrypted vote with context
+        encrypted_vote = homomorphic.EncryptedVote.fromElectionAndAnswers(
+            self.election, [[0]], voter_alias="voter1"
+        )
+
+        # Verify with wrong voter - should fail
+        is_valid = encrypted_vote.verify(self.election, voter_alias="different_voter")
+
+        self.assertFalse(is_valid)
+
