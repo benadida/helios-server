@@ -53,6 +53,7 @@ def get_user_info_after_auth(request):
     TOKEN_URL,
     client_secret=settings.LINKEDIN_CLIENT_SECRET,
     code=request.GET['code'],
+    include_client_id=True,
   )
 
   # Get user info from LinkedIn's OpenID Connect userinfo endpoint
