@@ -25,7 +25,7 @@ def get_oauth_session(redirect_url=None):
   return OAuth2Session(
     settings.GH_CLIENT_ID,
     redirect_uri=redirect_url,
-    scope=['read:user', 'user:email'],
+    scope='read:user,user:email',
   )
 
 def get_auth_url(request, redirect_url):
