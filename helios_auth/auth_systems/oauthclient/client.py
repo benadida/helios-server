@@ -55,28 +55,15 @@ class LoginOAuthClient(oauth.OAuthClient):
         elif method == "POST":
             return self.http_wrapper(req.get_normalized_http_url(),req.to_postdata())
 
-    #this is barely working. (i think. mostly it is that everyone else is using httplib) 
+    #this is barely working. (i think. mostly it is that everyone else is using httplib)
     def http_wrapper(self, url, postdata=None):
         if postdata is None:
             postdata = {}
-        try:
-            if postdata != {}:
-                f = urllib.request.urlopen(url, postdata) 
-            else: 
-                f = urllib.request.urlopen(url) 
-            response = f.read()
-        except:
-            import traceback
-            import logging, sys
-            cla, exc, tb = sys.exc_info()
-            logging.error(url)
-            if postdata:
-              logging.error("with post data")
-            else:
-              logging.error("without post data")
-            logging.error(exc.args)
-            logging.error(traceback.format_tb(tb))
-            response = ""
+        if postdata != {}:
+            f = urllib.request.urlopen(url, postdata)
+        else:
+            f = urllib.request.urlopen(url)
+        response = f.read()
         return response 
     
 
