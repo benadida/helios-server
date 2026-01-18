@@ -1305,30 +1305,6 @@ class ElectionDeleteViewTests(WebTest):
         elections = models.Election.objects.filter(uuid=self.election.uuid)
         self.assertEqual(len(elections), 0)
 
-    def test_undelete_with_post(self):
-        """Test undeleting an election via POST"""
-        self.setup_login(from_scratch=True)
-
-        # First soft delete the election
-        self.election.soft_delete()
-        self.assertTrue(self.election.is_deleted)
-
-        # POST to undelete
-        response = self.client.post(
-            "/helios/elections/%s/delete" % self.election.uuid,
-            {"delete_p": "0", "csrf_token": self.client.session.get("csrf_token", "")}
-        )
-        self.assertRedirects(response)
-
-        # Election should be restored
-        election = models.Election.objects_with_deleted.get(uuid=self.election.uuid)
-        self.assertFalse(election.is_deleted)
-        self.assertIsNone(election.deleted_at)
-
-        # Should appear in default queries again
-        elections = models.Election.objects.filter(uuid=self.election.uuid)
-        self.assertEqual(len(elections), 1)
-
     def test_delete_requires_admin(self):
         """Test that only election admins can delete"""
         # Don't log in - should get permission denied
@@ -1351,16 +1327,16 @@ class ElectionDeleteViewTests(WebTest):
         response = self.client.get("/helios/elections/%s/view" % self.election.uuid)
         self.assertStatusCode(response, 404)
 
-    def test_deleted_election_accessible_to_admins(self):
-        """Test that deleted elections are still accessible to admins"""
+    def test_deleted_election_not_accessible_to_election_admins(self):
+        """Test that deleted elections return 404 even for election admins"""
         self.setup_login(from_scratch=True)
 
         # Soft delete the election
         self.election.soft_delete()
 
-        # Admin should still be able to access it
+        # Election admin should not be able to access it
         response = self.client.get("/helios/elections/%s/view" % self.election.uuid)
-        self.assertStatusCode(response, 200)
+        self.assertStatusCode(response, 404)
 
 
 class EmailOptOutTests(TestCase):

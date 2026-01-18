@@ -108,22 +108,11 @@ def election_view(**checks):
 
   def election_view_decorator(func):
     def election_view_wrapper(request, election_uuid=None, *args, **kw):
-      # Try to get election (excludes deleted by default)
+      # Get election (excludes deleted by default)
       election = get_election_by_uuid(election_uuid)
 
       if not election:
-        # Election not found in default manager - might be deleted
-        # Try to get it with deleted elections included
-        election = get_election_by_uuid(election_uuid, include_deleted=True)
-
-        if not election:
-          # Really doesn't exist
-          raise Http404
-
-        # Election is deleted - only admins can see it
-        user = get_user(request)
-        if not user_can_admin_election(user, election):
-          raise Http404
+        raise Http404
 
       # do checks
       do_election_checks(election, checks)
@@ -182,8 +171,8 @@ def election_admin(**checks):
 
   def election_admin_decorator(func):
     def election_admin_wrapper(request, election_uuid=None, *args, **kw):
-      # Admins should be able to access deleted elections
-      election = get_election_by_uuid(election_uuid, include_deleted=True)
+      # Get election (excludes deleted)
+      election = get_election_by_uuid(election_uuid)
 
       if not election:
         raise Http404
@@ -203,8 +192,8 @@ def election_admin(**checks):
   
 def trustee_check(func):
   def trustee_check_wrapper(request, election_uuid, trustee_uuid, *args, **kwargs):
-    # Trustees should be able to access deleted elections (e.g., for decryption)
-    election = get_election_by_uuid(election_uuid, include_deleted=True)
+    # Get election (excludes deleted)
+    election = get_election_by_uuid(election_uuid)
 
     if not election:
       raise Http404

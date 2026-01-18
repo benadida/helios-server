@@ -1159,20 +1159,15 @@ def one_election_archive(request, election):
 @require_http_methods(["POST"])
 def one_election_delete(request, election):
   """
-  Soft delete an election. The election will be hidden from default queries.
+  Soft delete an election. The election will be hidden from all users except site admins.
   Requires POST request with CSRF protection.
-  Pass delete_p=1 to delete, delete_p=0 to undelete.
   """
   check_csrf(request)
 
-  delete_p = request.POST.get('delete_p', '1')
+  election.soft_delete()
 
-  if bool(int(delete_p)):
-    election.soft_delete()
-  else:
-    election.undelete()
-
-  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
+  # After deletion, redirect to admin's election list since the election is now invisible
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + "/helios/")
 
 @election_admin()
 def one_election_copy(request, election):
