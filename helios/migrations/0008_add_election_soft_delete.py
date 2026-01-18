@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     migrations.AddField(
       model_name='election',
       name='deleted_p',
-      field=models.BooleanField(default=False),
+      field=models.BooleanField(default=False, null=False),
     ),
     migrations.AddField(
       model_name='election',
