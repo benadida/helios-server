@@ -327,12 +327,12 @@ class DevLoginTests(TestCase):
 
 class OAuthAuthSystemTests(TestCase):
     """
-    Tests for OAuth-based authentication systems (Google, GitHub, GitLab)
+    Tests for OAuth-based authentication systems (Google, GitHub, GitLab, LinkedIn)
     """
 
     def test_oauth_systems_have_required_interface(self):
         """Verify OAuth auth systems implement required interface methods"""
-        oauth_systems = ['google', 'github', 'gitlab']
+        oauth_systems = ['google', 'github', 'gitlab', 'linkedin']
         required_methods = [
             'get_auth_url',
             'get_user_info_after_auth',
@@ -354,7 +354,7 @@ class OAuthAuthSystemTests(TestCase):
     def test_oauth_state_verification_rejects_missing_state(self):
         """Verify OAuth state verification rejects requests with missing state"""
         from django.test import RequestFactory
-        from .auth_systems import google, github, gitlab
+        from .auth_systems import google, github, gitlab, linkedin
 
         factory = RequestFactory()
 
@@ -362,6 +362,7 @@ class OAuthAuthSystemTests(TestCase):
             (google, 'google-oauth-state'),
             (github, 'gh_oauth_state'),
             (gitlab, 'gl_oauth_state'),
+            (linkedin, 'linkedin_oauth_state'),
         ]:
             # Create request with code but no state
             request = factory.get('/auth/after/', {'code': 'test_code'})
@@ -374,7 +375,7 @@ class OAuthAuthSystemTests(TestCase):
     def test_oauth_state_verification_rejects_wrong_state(self):
         """Verify OAuth state verification rejects requests with wrong state"""
         from django.test import RequestFactory
-        from .auth_systems import google, github, gitlab
+        from .auth_systems import google, github, gitlab, linkedin
 
         factory = RequestFactory()
 
@@ -382,6 +383,7 @@ class OAuthAuthSystemTests(TestCase):
             (google, 'google-oauth-state', 'google-redirect-url'),
             (github, 'gh_oauth_state', 'gh_redirect_uri'),
             (gitlab, 'gl_oauth_state', 'gl_redirect_uri'),
+            (linkedin, 'linkedin_oauth_state', 'linkedin_redirect_uri'),
         ]
 
         for system, state_key, redirect_key in test_cases:
@@ -402,12 +404,12 @@ class OAuthAuthSystemTests(TestCase):
     def test_oauth_returns_none_without_code(self):
         """Verify OAuth auth returns None when no code is provided"""
         from django.test import RequestFactory
-        from .auth_systems import google, github, gitlab
+        from .auth_systems import google, github, gitlab, linkedin
 
         factory = RequestFactory()
         request = factory.get('/auth/after/')
         request.session = {}
 
-        for system in [google, github, gitlab]:
+        for system in [google, github, gitlab, linkedin]:
             result = system.get_user_info_after_auth(request)
             self.assertIsNone(result)
