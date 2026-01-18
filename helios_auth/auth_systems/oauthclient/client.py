@@ -55,7 +55,6 @@ class LoginOAuthClient(oauth.OAuthClient):
         elif method == "POST":
             return self.http_wrapper(req.get_normalized_http_url(),req.to_postdata())
 
-    #this is barely working. (i think. mostly it is that everyone else is using httplib)
     def http_wrapper(self, url, postdata=None):
         if postdata is None:
             postdata = {}
