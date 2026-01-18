@@ -76,11 +76,10 @@ table.pretty th, td {
   #content {
     position: relative;
     width: 100%;
+    max-width: 100%;
     margin-left: 0;
     padding: 10px 15px;
     box-sizing: border-box;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   #header {
@@ -94,9 +93,20 @@ table.pretty th, td {
   }
 
   table.pretty {
+    display: block;
     margin: 1em 0;
     font-size: 0.9em;
-    min-width: 100%;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table.pretty thead,
+  table.pretty tbody,
+  table.pretty tr {
+    display: table;
+    width: 100%;
+    table-layout: auto;
   }
 
   table.pretty th, table.pretty td {

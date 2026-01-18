@@ -64,11 +64,10 @@ body {
   #content {
     position: relative;
     width: 100%;
+    max-width: 100%;
     margin-left: 0;
     padding: 10px 15px;
     box-sizing: border-box;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   #header {
