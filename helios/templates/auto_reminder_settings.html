@@ -1,0 +1,30 @@
+{% extends TEMPLATE_BASE %}
+
+{% block title %}Auto-Reminder Settings for {{election.name}}{% endblock %}
+{% block content %}
+
+  <h2 class="title">{{election.name}} &mdash; Auto-Reminder Settings <span style="font-size:0.7em;">[<a href="{% url "election@view" election.uuid %}">back to election</a>]</span></h2>
+
+  <p>
+    Configure automatic email reminders to voters who have not yet cast their ballots.
+    Reminders will be sent once, at the specified time before voting ends.
+  </p>
+
+  {% if election.auto_reminder_sent_at %}
+  <div style="background-color: #e8f4f8; border: 1px solid #b8d4e8; padding: 10px; margin: 10px 0;">
+    <strong>Note:</strong> Auto-reminder was already sent on {{ election.auto_reminder_sent_at|date:"Y-m-d H:i" }} UTC.
+    Changing settings below will not trigger another reminder for this election.
+  </div>
+  {% endif %}
+
+  <form class="prettyform" action="" method="POST" id="auto_reminder_form">
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+    <table class="pretty">
+      {{auto_reminder_form.as_table}}
+    </table>
+    <div>
+      <label for="">&nbsp;</label><input type="submit" value="Save Settings" class="button" />
+    </div>
+  </form>
+
+{% endblock %}

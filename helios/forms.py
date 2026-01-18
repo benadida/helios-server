@@ -50,3 +50,10 @@ class VoterPasswordForm(forms.Form):
 class VoterPasswordResendForm(forms.Form):
   voter_id = forms.CharField(max_length=50, label="Voter ID", help_text="Enter the voter ID you were assigned for this election")
 
+class AutoReminderForm(forms.Form):
+  auto_reminder_enabled_p = forms.BooleanField(required=False, initial=False, label="Enable Auto-Reminders", 
+    help_text='Automatically send reminder emails to voters who have not yet cast their ballots')
+  auto_reminder_hours = forms.IntegerField(required=False, initial=24, min_value=1, 
+    label="Reminder Time (hours before voting ends)", 
+    help_text='Number of hours before voting ends to send the reminder (e.g., 24 for one day before)')
+

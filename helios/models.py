@@ -146,6 +146,12 @@ class Election(HeliosModel):
   # downloadable election info
   election_info_url = models.CharField(max_length=300, null=True)
 
+  # auto-email reminders for voters who haven't cast ballots
+  auto_reminder_enabled_p = models.BooleanField(default=False, null=False)
+  auto_reminder_hours = models.IntegerField(default=24, null=True, 
+    help_text="Hours before voting ends to send reminder (e.g., 24 for one day before)")
+  auto_reminder_sent_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+
   class Meta:
     app_label = 'helios'
 

@@ -5,6 +5,7 @@ Celery queued tasks for Helios
 ben@adida.net
 """
 import copy
+import datetime
 from celery import shared_task
 from celery.utils.log import get_logger
 from django.conf import settings
@@ -195,3 +196,82 @@ Helios
 def election_notify_admin(election_id, subject, body):
     election = Election.objects.get(id=election_id)
     election.admin.send_message(subject, body)
+
+
+@shared_task
+def send_auto_reminders():
+    """
+    Check all elections and send auto-reminders to voters who haven't voted yet.
+    This task should be run periodically (e.g., every hour via Celery Beat).
+    """
+    from helios import url_names
+    
+    logger = get_logger(send_auto_reminders.__name__)
+    now = datetime.datetime.utcnow()
+    
+    # Find elections that:
+    # 1. Have auto_reminder enabled
+    # 2. Are currently in voting period (voting has started, not ended)
+    # 3. Haven't sent a reminder yet OR need another reminder
+    # 4. Are close enough to the end time to send reminder
+    
+    elections = Election.objects.filter(
+        auto_reminder_enabled_p=True,
+        voting_started_at__isnull=False,  # voting has started
+        voting_ends_at__isnull=False,     # has an end date
+        auto_reminder_sent_at__isnull=True  # hasn't sent reminder yet
+    ).exclude(
+        voting_ended_at__isnull=False  # hasn't ended yet
+    )
+    
+    for election in elections:
+        # Calculate when the reminder should be sent
+        voting_end = election.voting_ended_at or election.voting_extended_until or election.voting_ends_at
+        
+        if not voting_end:
+            continue
+            
+        # Check if voting is still ongoing
+        if now >= voting_end:
+            continue
+        
+        # Calculate reminder time (hours before voting ends)
+        reminder_hours = election.auto_reminder_hours or 24
+        reminder_time = voting_end - datetime.timedelta(hours=reminder_hours)
+        
+        # Check if it's time to send the reminder
+        if now >= reminder_time:
+            logger.info(f"Sending auto-reminder for election {election.uuid} ({election.name})")
+            
+            # Send reminder to voters who haven't voted
+            subject_template = 'email/vote_subject.txt'
+            body_template = 'email/vote_body.txt'
+            
+            election_url = f"{settings.URL_HOST}{reverse(url_names.ELECTION_SHORTCUT, args=[election.short_name])}"
+            election_vote_url = f"{settings.URL_HOST}{reverse(url_names.ELECTION_SHORTCUT_VOTE, args=[election.short_name])}"
+            
+            extra_vars = {
+                'custom_subject': f"Reminder: Cast your vote in {election.name}",
+                'custom_message': f"Voting ends soon! Please cast your vote before {voting_end.strftime('%Y-%m-%d %H:%M UTC')}.",
+                'election_vote_url': election_vote_url,
+                'election_url': election_url
+            }
+            
+            # Queue email task for voters who haven't voted (vote_hash is None)
+            voter_constraints_include = {'vote_hash': None}
+            
+            voters_email.delay(
+                election_id=election.id,
+                subject_template=subject_template,
+                body_template=body_template,
+                extra_vars=extra_vars,
+                voter_constraints_include=voter_constraints_include
+            )
+            
+            # Mark reminder as sent
+            election.auto_reminder_sent_at = now
+            election.save()
+            
+            logger.info(f"Auto-reminder queued for election {election.uuid}")
+    
+    logger.info(f"Auto-reminder check completed. Processed {len(elections)} elections.")

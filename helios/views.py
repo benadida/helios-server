@@ -1768,6 +1768,42 @@ def voters_email(request, election):
       'template' : template,
       'templates' : TEMPLATES})    
 
+@election_admin()
+def auto_reminder_settings(request, election):
+  """
+  Configure auto-reminder settings for an election
+  """
+  from . import forms
+  
+  if request.method == "GET":
+    # Pre-fill form with current settings
+    auto_reminder_form = forms.AutoReminderForm(initial={
+      'auto_reminder_enabled_p': election.auto_reminder_enabled_p,
+      'auto_reminder_hours': election.auto_reminder_hours or 24
+    })
+  else:
+    check_csrf(request)
+    auto_reminder_form = forms.AutoReminderForm(request.POST)
+    
+    if auto_reminder_form.is_valid():
+      # Update election settings
+      election.auto_reminder_enabled_p = auto_reminder_form.cleaned_data.get('auto_reminder_enabled_p', False)
+      election.auto_reminder_hours = auto_reminder_form.cleaned_data.get('auto_reminder_hours', 24)
+      
+      # Reset the sent_at timestamp if settings changed, to allow resending
+      # if the reminder hasn't been sent yet
+      if not election.auto_reminder_sent_at:
+        pass  # No action needed
+      
+      election.save()
+      
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
+  
+  return render_template(request, "auto_reminder_settings", {
+    'auto_reminder_form': auto_reminder_form,
+    'election': election
+  })
+
 # Individual Voters
 @election_view()
 @return_json

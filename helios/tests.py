@@ -2953,3 +2953,88 @@ class VoterDeleteRestrictionTests(WebTest):
         # Check that the delete link is not present
         self.assertNotContains(response, '>x</a>]')
 
+
+
+class AutoReminderTests(TestCase):
+    """
+    Tests for auto-reminder functionality
+    """
+    fixtures = ['users.json']
+    
+    def setUp(self):
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election = models.Election.get_or_create(
+            short_name='test-election',
+            name='Test Election',
+            description='Test Election Description',
+            admin=self.user
+        )[0]
+        
+        # Set up election for voting
+        QUESTIONS = [{"answer_urls": [None, None, None], "answers": ["a", "b", "c"], 
+                     "choice_type": "approval", "max": 1, "min": 0, "question": "Test?", 
+                     "result_type": "absolute", "short_name": "test", "tally_type": "homomorphic"}]
+        self.election.questions = QUESTIONS
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
+        
+        # Set voting times
+        now = datetime.datetime.utcnow()
+        self.election.voting_starts_at = now - datetime.timedelta(days=1)
+        self.election.voting_started_at = now - datetime.timedelta(days=1)
+        self.election.voting_ends_at = now + datetime.timedelta(hours=48)  # 48 hours from now
+        self.election.save()
+        
+    def test_auto_reminder_fields_exist(self):
+        """Test that auto-reminder fields are present on Election model"""
+        self.assertFalse(self.election.auto_reminder_enabled_p)
+        self.assertEqual(self.election.auto_reminder_hours, 24)
+        self.assertIsNone(self.election.auto_reminder_sent_at)
+    
+    def test_enable_auto_reminder(self):
+        """Test enabling auto-reminder on an election"""
+        self.election.auto_reminder_enabled_p = True
+        self.election.auto_reminder_hours = 12
+        self.election.save()
+        
+        # Reload from database
+        election = models.Election.objects.get(id=self.election.id)
+        self.assertTrue(election.auto_reminder_enabled_p)
+        self.assertEqual(election.auto_reminder_hours, 12)
+    
+    def test_send_auto_reminders_task(self):
+        """Test that send_auto_reminders task can be called"""
+        # Enable reminder for election
+        self.election.auto_reminder_enabled_p = True
+        self.election.auto_reminder_hours = 24
+        self.election.save()
+        
+        # Add a voter who hasn't voted
+        voter = models.Voter.register_user_in_election(self.user, self.election)
+        
+        # Call the task (it should not send anything because we're not within the reminder window)
+        tasks.send_auto_reminders()
+        
+        # Verify reminder wasn't sent (we're 48 hours before end, reminder is set for 24 hours)
+        election = models.Election.objects.get(id=self.election.id)
+        self.assertIsNone(election.auto_reminder_sent_at)
+    
+    def test_send_auto_reminders_within_window(self):
+        """Test that reminder is sent when within the reminder window"""
+        # Set voting to end in 23 hours (within 24-hour reminder window)
+        now = datetime.datetime.utcnow()
+        self.election.voting_starts_at = now - datetime.timedelta(days=1)
+        self.election.voting_started_at = now - datetime.timedelta(days=1)
+        self.election.voting_ends_at = now + datetime.timedelta(hours=23)
+        self.election.auto_reminder_enabled_p = True
+        self.election.auto_reminder_hours = 24
+        self.election.save()
+        
+        # Add a voter who hasn't voted
+        voter = models.Voter.register_user_in_election(self.user, self.election)
+        
+        # Call the task - it should mark as sent
+        tasks.send_auto_reminders()
+        
+        # Verify reminder was marked as sent
+        election = models.Election.objects.get(id=self.election.id)
+        self.assertIsNotNone(election.auto_reminder_sent_at)
