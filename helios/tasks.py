@@ -212,16 +212,15 @@ def send_auto_reminders():
     # Find elections that:
     # 1. Have auto_reminder enabled
     # 2. Are currently in voting period (voting has started, not ended)
-    # 3. Haven't sent a reminder yet OR need another reminder
+    # 3. Haven't sent a reminder yet
     # 4. Are close enough to the end time to send reminder
     
     elections = Election.objects.filter(
         auto_reminder_enabled_p=True,
         voting_started_at__isnull=False,  # voting has started
         voting_ends_at__isnull=False,     # has an end date
+        voting_ended_at__isnull=True,     # voting has NOT ended yet
         auto_reminder_sent_at__isnull=True  # hasn't sent reminder yet
-    ).exclude(
-        voting_ended_at__isnull=False  # hasn't ended yet
     )
     
     for election in elections:
@@ -247,8 +246,12 @@ def send_auto_reminders():
             subject_template = 'email/vote_subject.txt'
             body_template = 'email/vote_body.txt'
             
-            election_url = f"{settings.URL_HOST}{reverse(url_names.ELECTION_SHORTCUT, args=[election.short_name])}"
-            election_vote_url = f"{settings.URL_HOST}{reverse(url_names.ELECTION_SHORTCUT_VOTE, args=[election.short_name])}"
+            try:
+                election_url = f"{settings.URL_HOST}{reverse(url_names.ELECTION_SHORTCUT, args=[election.short_name])}"
+                election_vote_url = f"{settings.URL_HOST}{reverse(url_names.ELECTION_SHORTCUT_VOTE, args=[election.short_name])}"
+            except Exception as e:
+                logger.error(f"Failed to generate URLs for election {election.uuid}: {str(e)}")
+                continue
             
             extra_vars = {
                 'custom_subject': f"Reminder: Cast your vote in {election.name}",

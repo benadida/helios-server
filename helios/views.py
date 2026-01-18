@@ -1789,12 +1789,6 @@ def auto_reminder_settings(request, election):
       # Update election settings
       election.auto_reminder_enabled_p = auto_reminder_form.cleaned_data.get('auto_reminder_enabled_p', False)
       election.auto_reminder_hours = auto_reminder_form.cleaned_data.get('auto_reminder_hours', 24)
-      
-      # Reset the sent_at timestamp if settings changed, to allow resending
-      # if the reminder hasn't been sent yet
-      if not election.auto_reminder_sent_at:
-        pass  # No action needed
-      
       election.save()
       
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
