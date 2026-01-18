@@ -1,86 +1,109 @@
 """
-LinkedIn Authentication
+LinkedIn Authentication using OAuth 2.0
+
 """
 
-from xml.etree import ElementTree
-
 from django.conf import settings
+from django.core.mail import send_mail
+from requests_oauthlib import OAuth2Session
 
-from .oauthclient import client
+from helios_auth.utils import format_recipient
 
-API_KEY = settings.LINKEDIN_API_KEY
-API_SECRET = settings.LINKEDIN_API_SECRET
-
-# some parameters to indicate that status updating is possible
+# some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False
-STATUS_UPDATE_WORDING_TEMPLATE = "Post %s"
 
-OAUTH_PARAMS = {
-  'root_url' : 'https://api.linkedin.com/uas',
-  'request_token_path' : '/oauth/requestToken',
-  'authorize_path' : '/oauth/authorize',
-  'authenticate_path' : '/oauth/authenticate',
-  'access_token_path': '/oauth/accessToken'
-}
+# display tweaks
+LOGIN_MESSAGE = "Log in with LinkedIn"
 
-def _get_new_client(token=None, token_secret=None):
-  if token:
-    return client.LoginOAuthClient(API_KEY, API_SECRET, OAUTH_PARAMS, token, token_secret)
-  else:
-    return client.LoginOAuthClient(API_KEY, API_SECRET, OAUTH_PARAMS)
+AUTHORIZATION_URL = "https://www.linkedin.com/oauth/v2/authorization"
+TOKEN_URL = "https://www.linkedin.com/oauth/v2/accessToken"
 
-def _get_client_by_token(token):
-  return _get_new_client(token['oauth_token'], token['oauth_token_secret'])
+def get_oauth_session(redirect_url=None):
+  return OAuth2Session(
+    settings.LINKEDIN_CLIENT_ID,
+    redirect_uri=redirect_url,
+    scope='openid profile email',
+  )
 
 def get_auth_url(request, redirect_url):
-  client = _get_new_client()
-  tok = client.get_request_token()
-  request.session['request_token'] = tok
-  url = client.get_authenticate_url(tok['oauth_token']) 
-  return url
-    
-def get_user_info_after_auth(request):
-  tok = request.session['request_token']
-  login_client = _get_client_by_token(tok)
-  access_token = login_client.get_access_token(verifier = request.GET.get('oauth_verifier', None))
-  request.session['access_token'] = access_token
-    
-  user_info_xml = ElementTree.fromstring(login_client.oauth_request('http://api.linkedin.com/v1/people/~:(id,first-name,last-name)', args={}, method='GET'))
-  
-  user_id = user_info_xml.findtext('id')
-  first_name = user_info_xml.findtext('first-name')
-  last_name = user_info_xml.findtext('last-name')
+  oauth = get_oauth_session(redirect_url)
+  authorization_url, state = oauth.authorization_url(AUTHORIZATION_URL)
+  request.session['linkedin_redirect_uri'] = redirect_url
+  request.session['linkedin_oauth_state'] = state
+  return authorization_url
 
-  return {'type': 'linkedin', 'user_id' : user_id, 'name': "%s %s" % (first_name, last_name), 'info': {}, 'token': access_token}
-    
+def get_user_info_after_auth(request):
+  if 'code' not in request.GET:
+    return None
+
+  # Verify OAuth state to prevent CSRF attacks
+  expected_state = request.session.get('linkedin_oauth_state')
+  actual_state = request.GET.get('state')
+  if not expected_state or expected_state != actual_state:
+    raise Exception("OAuth state mismatch - possible CSRF attack")
+
+  redirect_uri = request.session.get('linkedin_redirect_uri')
+
+  # Clean up session data
+  for key in ['linkedin_redirect_uri', 'linkedin_oauth_state']:
+    request.session.pop(key, None)
+
+  oauth = get_oauth_session(redirect_uri)
+  oauth.fetch_token(
+    TOKEN_URL,
+    client_secret=settings.LINKEDIN_CLIENT_SECRET,
+    code=request.GET['code'],
+  )
+
+  # Get user info from LinkedIn's OpenID Connect userinfo endpoint
+  response = oauth.get("https://api.linkedin.com/v2/userinfo")
+  try:
+    response.raise_for_status()
+  except Exception as e:
+    raise Exception("LinkedIn user API request failed") from e
+
+  user_data = response.json()
+  user_id = user_data['sub']
+  user_name = user_data.get('name', user_id)
+  user_email = user_data.get('email')
+
+  if not user_email:
+    raise Exception("Email address not available from LinkedIn")
+
+  return {
+    'type': 'linkedin',
+    'user_id': user_id,
+    'name': user_name,
+    'info': {'email': user_email},
+    'token': {},
+  }
+
+def do_logout(user):
+  return None
 
 def user_needs_intervention(user_id, user_info, token):
   """
-  check to see if user is following the users we need
+  check to see if user needs intervention
   """
   return None
 
-def _get_client_by_request(request):
-  access_token = request.session['access_token']
-  return _get_client_by_token(access_token)
-  
-def update_status(user_id, user_info, token, message):
-  """
-  post a message to the auth system's update stream
-  """
-  return
-
-def send_message(user_id, user_name, user_info, subject, body):
+def update_status(token, message):
   pass
 
-def send_notification(user_id, user_info, message):
+def send_message(user_id, name, user_info, subject, body):
+  send_mail(
+    subject,
+    body,
+    settings.SERVER_EMAIL,
+    [format_recipient(name, user_info['email'])],
+    fail_silently=False,
+  )
+
+def check_constraint(eligibility, user_info):
   pass
-
-
 
 #
 # Election Creation
 #
-
 def can_create_election(user_id, user_info):
   return True

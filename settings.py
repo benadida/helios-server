@@ -290,8 +290,8 @@ FACEBOOK_API_KEY = get_from_env('FACEBOOK_API_KEY','')
 FACEBOOK_API_SECRET = get_from_env('FACEBOOK_API_SECRET','')
 
 # LinkedIn
-LINKEDIN_API_KEY = ''
-LINKEDIN_API_SECRET = ''
+LINKEDIN_CLIENT_ID = get_from_env('LINKEDIN_CLIENT_ID', '')
+LINKEDIN_CLIENT_SECRET = get_from_env('LINKEDIN_CLIENT_SECRET', '')
 
 # CAS (for universities)
 CAS_USERNAME = get_from_env('CAS_USERNAME', "")
