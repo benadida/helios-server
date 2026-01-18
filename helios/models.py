@@ -443,13 +443,13 @@ class Election(HeliosModel):
 
     return (True, None)
 
-  def can_add_voters_file(self):
+  def can_modify_voters(self):
     """
-    Check if voter file uploads are allowed for this election.
-    Returns a tuple: (can_add: bool, reason: str|None)
+    Check if voter modifications (uploads, deletions) are allowed for this election.
+    Returns a tuple: (allowed: bool, reason: str|None)
 
-    Voter uploads are blocked once tallying has started,
-    as adding voters after vote counting would compromise election integrity.
+    Voter modifications are blocked once tallying has started,
+    as changing voters after vote counting would compromise election integrity.
     """
     if self.encrypted_tally:
       return (False, "Election has been tallied")
