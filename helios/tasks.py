@@ -224,8 +224,8 @@ def send_auto_reminders():
     )
     
     for election in elections:
-        # Calculate when the reminder should be sent
-        voting_end = election.voting_ended_at or election.voting_extended_until or election.voting_ends_at
+        # Calculate the actual voting end time (check extension first, then scheduled end)
+        voting_end = election.voting_extended_until or election.voting_ends_at
         
         if not voting_end:
             continue
