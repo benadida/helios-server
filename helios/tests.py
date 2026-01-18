@@ -1338,6 +1338,26 @@ class ElectionDeleteViewTests(WebTest):
         election = models.Election.objects_with_deleted.get(uuid=self.election.uuid)
         self.assertFalse(election.is_deleted)
 
+    def test_deleted_election_not_accessible_to_non_admins(self):
+        """Test that deleted elections return 404 for non-admin users"""
+        # Soft delete the election
+        self.election.soft_delete()
+
+        # Try to access as non-admin (not logged in)
+        response = self.client.get("/helios/elections/%s/view" % self.election.uuid)
+        self.assertStatusCode(response, 404)
+
+    def test_deleted_election_accessible_to_admins(self):
+        """Test that deleted elections are still accessible to admins"""
+        self.setup_login(from_scratch=True)
+
+        # Soft delete the election
+        self.election.soft_delete()
+
+        # Admin should still be able to access it
+        response = self.client.get("/helios/elections/%s/view" % self.election.uuid)
+        self.assertStatusCode(response, 200)
+
 
 class EmailOptOutTests(TestCase):
     fixtures = ['users.json']

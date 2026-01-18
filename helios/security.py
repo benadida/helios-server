@@ -113,6 +113,12 @@ def election_view(**checks):
       if not election:
         raise Http404
 
+      # if election is deleted, only admins can see it
+      if election.is_deleted:
+        user = get_user(request)
+        if not user_can_admin_election(user, election):
+          raise Http404
+
       # do checks
       do_election_checks(election, checks)
 
@@ -124,11 +130,11 @@ def election_view(**checks):
           return HttpResponseRedirect("%s?%s" % (reverse(password_voter_login, args=[election.uuid]), urllib.parse.urlencode({
                   'return_url' : return_url
                   })))
-    
+
       return func(request, election, *args, **kw)
 
     return update_wrapper(election_view_wrapper, func)
-    
+
   return election_view_decorator
 
 def user_can_admin_election(user, election):
