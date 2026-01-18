@@ -1919,6 +1919,30 @@ class ElectionMultipleAdminsModelTests(TestCase):
         # Should only appear once due to distinct()
         self.assertEqual(elections.count(self.election), 1)
 
+    def test_get_by_user_as_admin_excludes_deleted(self):
+        """Test that soft-deleted elections don't appear in get_by_user_as_admin"""
+        # Verify election appears initially
+        elections = models.Election.get_by_user_as_admin(self.admin)
+        self.assertIn(self.election, elections)
+
+        # Soft delete the election
+        self.election.soft_delete()
+
+        # Should no longer appear in admin list
+        elections = models.Election.get_by_user_as_admin(self.admin)
+        self.assertNotIn(self.election, elections)
+
+        # Same for additional admins
+        self.election.undelete()  # Restore first
+        self.election.admins.add(self.other_user)
+        elections = models.Election.get_by_user_as_admin(self.other_user)
+        self.assertIn(self.election, elections)
+
+        # Delete and verify other_user also doesn't see it
+        self.election.soft_delete()
+        elections = models.Election.get_by_user_as_admin(self.other_user)
+        self.assertNotIn(self.election, elections)
+
 
 class ElectionMultipleAdminsSecurityTests(TestCase):
     """Test multiple administrators authorization checks"""
