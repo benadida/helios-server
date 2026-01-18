@@ -66,3 +66,33 @@ table.pretty th, td {
     padding: 0.3em;
 }
 
+/* Mobile responsive styles */
+@media screen and (max-width: 768px) {
+  #content {
+    position: relative;
+    width: 100%;
+    margin-left: 0;
+    padding: 10px 15px;
+    box-sizing: border-box;
+  }
+
+  #footer {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  table.pretty {
+    width: 100%;
+    margin: 1em 0;
+    font-size: 0.9em;
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table.pretty th, table.pretty td {
+    padding: 0.2em;
+    white-space: nowrap;
+  }
+}
+

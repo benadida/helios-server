@@ -53,3 +53,19 @@ body {
 #election_info {
   font-size: 16pt;
 }
+
+/* Mobile responsive styles */
+@media screen and (max-width: 768px) {
+  #content {
+    position: relative;
+    width: 100%;
+    margin-left: 0;
+    padding: 10px 15px;
+    box-sizing: border-box;
+  }
+
+  #footer {
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
