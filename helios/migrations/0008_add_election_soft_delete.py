@@ -12,11 +12,6 @@ class Migration(migrations.Migration):
   operations = [
     migrations.AddField(
       model_name='election',
-      name='deleted_p',
-      field=models.BooleanField(default=False, null=False),
-    ),
-    migrations.AddField(
-      model_name='election',
       name='deleted_at',
       field=models.DateTimeField(default=None, null=True),
     ),

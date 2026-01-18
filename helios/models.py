@@ -37,7 +37,7 @@ class ElectionManager(models.Manager):
   Use Election.objects_with_deleted.all() to include deleted elections.
   """
   def get_queryset(self):
-    return super().get_queryset().filter(deleted_p=False)
+    return super().get_queryset().filter(deleted_at__isnull=True)
 
 class Election(HeliosModel):
   admin = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -107,8 +107,7 @@ class Election(HeliosModel):
   frozen_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
   archived_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
 
-  # soft delete flag and timestamp
-  deleted_p = models.BooleanField(default=False, null=False)
+  # soft delete timestamp - null means not deleted, non-null means deleted at that time
   deleted_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
 
   # dates for the election steps, as scheduled
@@ -229,7 +228,7 @@ class Election(HeliosModel):
 
   @property
   def is_deleted(self):
-    return self.deleted_p
+    return self.deleted_at is not None
 
   @property
   def description_bleached(self):
@@ -625,19 +624,17 @@ class Election(HeliosModel):
 
   def soft_delete(self):
     """
-    Soft delete the election by setting deleted_p flag and timestamp.
+    Soft delete the election by setting deleted_at timestamp.
     The election will be hidden from default queries.
     """
-    self.deleted_p = True
     self.deleted_at = datetime.datetime.utcnow()
     self.append_log(ElectionLog.DELETED)
     self.save()
 
   def undelete(self):
     """
-    Restore a soft-deleted election.
+    Restore a soft-deleted election by clearing deleted_at.
     """
-    self.deleted_p = False
     self.deleted_at = None
     self.append_log(ElectionLog.UNDELETED)
     self.save()
