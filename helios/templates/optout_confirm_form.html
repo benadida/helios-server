@@ -40,7 +40,7 @@
   <form class="prettyform" method="POST" action="">
     <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
     <div style="margin-top: 30px; text-align: center;">
-      <input type="submit" value="{% if action == 'optout' %}Confirm Opt-Out{% else %}Confirm Opt-In{% endif %}" class="button" style="padding: 12px 30px; font-size: 16px; background-color: {% if action == 'optout' %}#ff9800{% else %}#4caf50{% endif %}; color: white; border: none; cursor: pointer;" />
+      <input type="submit" value="{% if action == 'optout' %}Confirm Opt-Out{% else %}Confirm Opt-In{% endif %}" class="button large" />
     </div>
   </form>
 
