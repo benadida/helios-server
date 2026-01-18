@@ -22,7 +22,7 @@ def get_oauth_session(redirect_url=None):
   return OAuth2Session(
     settings.LINKEDIN_CLIENT_ID,
     redirect_uri=redirect_url,
-    scope='openid profile email',
+    scope='email,openid,profile',
   )
 
 def get_auth_url(request, redirect_url):
