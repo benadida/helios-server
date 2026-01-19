@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
     migrations.AlterField(
       model_name='election',
       name='deleted_at',
-      field=models.DateTimeField(default=None, null=True, db_index=True),
+      field=models.DateTimeField(default=None, null=True, db_index=True, auto_now_add=False),
     ),
   ]
