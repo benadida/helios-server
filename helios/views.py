@@ -1167,7 +1167,7 @@ def one_election_delete(request, election):
   election.soft_delete()
 
   # After deletion, redirect to admin's election list since the election is now invisible
-  return HttpResponseRedirect(settings.SECURE_URL_HOST + "/helios/")
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.ELECTIONS_ADMINISTERED))
 
 @election_admin()
 def one_election_copy(request, election):
