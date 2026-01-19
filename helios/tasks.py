@@ -44,7 +44,7 @@ def voters_email(election_id, subject_template, body_template, extra_vars={},
     voter_constraints_include are conditions on including voters
     voter_constraints_exclude are conditions on excluding voters
     """
-    election = Election.objects_with_deleted.get(id=election_id)
+    election = Election.objects.get(id=election_id)
 
     # select the right list of voters
     voters = election.voter_set.all()
@@ -59,7 +59,7 @@ def voters_email(election_id, subject_template, body_template, extra_vars={},
 
 @shared_task
 def voters_notify(election_id, notification_template, extra_vars={}):
-    election = Election.objects_with_deleted.get(id=election_id)
+    election = Election.objects.get(id=election_id)
     for voter in election.voter_set.all():
         single_voter_notify.delay(voter.uuid, notification_template, extra_vars)
 
@@ -110,7 +110,7 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
 
 @shared_task
 def election_compute_tally(election_id):
-    election = Election.objects_with_deleted.get(id=election_id)
+    election = Election.objects.get(id=election_id)
     election.compute_tally()
 
     election_notify_admin.delay(election_id=election_id,
@@ -128,7 +128,7 @@ Helios
 
 @shared_task
 def tally_helios_decrypt(election_id):
-    election = Election.objects_with_deleted.get(id=election_id)
+    election = Election.objects.get(id=election_id)
     election.helios_trustee_decrypt()
     election_notify_admin.delay(election_id=election_id,
                                 subject='Helios Decrypt',
@@ -160,7 +160,7 @@ Helios
 
 @shared_task
 def notify_admin_opted_out_voters(election_id, opted_out_voters):
-    election = Election.objects_with_deleted.get(id=election_id)
+    election = Election.objects.get(id=election_id)
     
     if not opted_out_voters:
         return
@@ -193,5 +193,5 @@ Helios
 
 @shared_task
 def election_notify_admin(election_id, subject, body):
-    election = Election.objects_with_deleted.get(id=election_id)
+    election = Election.objects.get(id=election_id)
     election.admin.send_message(subject, body)
