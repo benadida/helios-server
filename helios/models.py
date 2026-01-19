@@ -108,7 +108,7 @@ class Election(HeliosModel):
   archived_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
 
   # soft delete timestamp - null means not deleted, non-null means deleted at that time
-  deleted_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+  deleted_at = models.DateTimeField(auto_now_add=False, default=None, null=True, db_index=True)
 
   # dates for the election steps, as scheduled
   # these are always UTC
