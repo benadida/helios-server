@@ -8,11 +8,12 @@ from django.core.paginator import Paginator
 from django.urls import reverse
 from django.db.models import Max, Count
 from django.http import HttpResponseRedirect
+from django.views.decorators.http import require_http_methods
 
 from helios import tasks, url_names
 from helios.models import CastVote, Election
 from helios_auth.models import User
-from helios_auth.security import get_user
+from helios_auth.security import get_user, check_csrf
 from .security import PermissionDenied
 from .view_utils import render_template
 
@@ -136,8 +137,10 @@ def deleted_elections(request):
     'q': q
   })
 
+@require_http_methods(["POST"])
 def undelete_election(request, election_uuid):
   user = require_admin(request)
+  check_csrf(request)
 
   # Get the deleted election
   election = Election.objects_with_deleted.get(uuid=election_uuid)
