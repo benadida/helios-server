@@ -17,6 +17,7 @@ from django.core.paginator import Paginator
 from django.db import transaction, IntegrityError
 from django.http import HttpResponse, Http404, HttpResponseRedirect, HttpResponseForbidden, HttpResponseBadRequest
 from django.urls import reverse
+from django.views.decorators.http import require_http_methods
 
 import helios_auth.url_names as helios_auth_urls
 from helios import utils, VOTERS_EMAIL, VOTERS_UPLOAD, url_names
@@ -1142,18 +1143,32 @@ def one_election_set_featured(request, election):
 
 @election_admin()
 def one_election_archive(request, election):
-  
+
   archive_p = request.GET.get('archive_p', True)
-  
+
   if bool(int(archive_p)):
     election.archived_at = datetime.datetime.utcnow()
   else:
     election.archived_at = None
-    
+
   election.save()
 
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
-  
+
+@election_admin()
+@require_http_methods(["POST"])
+def one_election_delete(request, election):
+  """
+  Soft delete an election. The election will be hidden from all users except site admins.
+  Requires POST request with CSRF protection.
+  """
+  check_csrf(request)
+
+  election.soft_delete()
+
+  # After deletion, redirect to admin's election list since the election is now invisible
+  return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.ELECTIONS_ADMINISTERED))
+
 @election_admin()
 def one_election_copy(request, election):
   # FIXME: make this a POST and CSRF protect it

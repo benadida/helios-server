@@ -105,9 +105,10 @@ def get_election_by_uuid(uuid):
 # frozen - is the election frozen
 # newvoters - does the election accept new voters
 def election_view(**checks):
-  
+
   def election_view_decorator(func):
     def election_view_wrapper(request, election_uuid=None, *args, **kw):
+      # Get election (excludes deleted by default)
       election = get_election_by_uuid(election_uuid)
 
       if not election:
@@ -124,11 +125,11 @@ def election_view(**checks):
           return HttpResponseRedirect("%s?%s" % (reverse(password_voter_login, args=[election.uuid]), urllib.parse.urlencode({
                   'return_url' : return_url
                   })))
-    
+
       return func(request, election, *args, **kw)
 
     return update_wrapper(election_view_wrapper, func)
-    
+
   return election_view_decorator
 
 def user_can_admin_election(user, election):
@@ -167,35 +168,43 @@ def api_client_can_admin_election(api_client, election):
 # frozen - is the election frozen
 # newvoters - does the election accept new voters
 def election_admin(**checks):
-  
+
   def election_admin_decorator(func):
     def election_admin_wrapper(request, election_uuid=None, *args, **kw):
+      # Get election (excludes deleted)
       election = get_election_by_uuid(election_uuid)
+
+      if not election:
+        raise Http404
 
       user = get_user(request)
       if not user_can_admin_election(user, election):
         raise PermissionDenied()
-        
+
       # do checks
       do_election_checks(election, checks)
-        
+
       return func(request, election, *args, **kw)
 
     return update_wrapper(election_admin_wrapper, func)
-    
+
   return election_admin_decorator
   
 def trustee_check(func):
   def trustee_check_wrapper(request, election_uuid, trustee_uuid, *args, **kwargs):
+    # Get election (excludes deleted)
     election = get_election_by_uuid(election_uuid)
-    
+
+    if not election:
+      raise Http404
+
     trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
-    
+
     if trustee == get_logged_in_trustee(request):
       return func(request, election, trustee, *args, **kwargs)
     else:
       raise PermissionDenied()
-  
+
   return update_wrapper(trustee_check_wrapper, func)
 
 def can_create_election(request):

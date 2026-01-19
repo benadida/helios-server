@@ -8,11 +8,12 @@ from django.core.paginator import Paginator
 from django.urls import reverse
 from django.db.models import Max, Count
 from django.http import HttpResponseRedirect
+from django.views.decorators.http import require_http_methods
 
 from helios import tasks, url_names
 from helios.models import CastVote, Election
 from helios_auth.models import User
-from helios_auth.security import get_user
+from helios_auth.security import get_user, check_csrf
 from .security import PermissionDenied
 from .view_utils import render_template
 
@@ -109,3 +110,46 @@ def user_search(request):
     'q': q,
     'users_with_elections': users_with_elections
   })
+
+def deleted_elections(request):
+  user = require_admin(request)
+
+  page = int(request.GET.get('page', 1))
+  limit = int(request.GET.get('limit', 25))
+  q = request.GET.get('q','')
+
+  # Get deleted elections, searching by name if query provided
+  elections_query = Election.objects_with_deleted.filter(deleted_at__isnull=False)
+  if q:
+    elections_query = elections_query.filter(name__icontains=q)
+
+  elections = elections_query.order_by('-deleted_at')
+  elections_paginator = Paginator(elections, limit)
+  elections_page = elections_paginator.page(page)
+
+  total_elections = elections_paginator.count
+
+  return render_template(request, "stats_deleted_elections", {
+    'elections': elections_page.object_list,
+    'elections_page': elections_page,
+    'limit': limit,
+    'total_elections': total_elections,
+    'q': q
+  })
+
+@require_http_methods(["POST"])
+def undelete_election(request, election_uuid):
+  user = require_admin(request)
+  check_csrf(request)
+
+  # Get the deleted election
+  election = Election.objects_with_deleted.get(uuid=election_uuid)
+
+  if not election or not election.is_deleted:
+    raise PermissionDenied()
+
+  # Undelete it
+  election.undelete()
+
+  # Redirect back to deleted elections list
+  return HttpResponseRedirect(reverse(url_names.stats.STATS_DELETED_ELECTIONS))

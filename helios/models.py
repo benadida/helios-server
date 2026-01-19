@@ -31,6 +31,14 @@ class HeliosModel(models.Model, datatypes.LDObjectContainer):
   class Meta:
     abstract = True
 
+class ElectionManager(models.Manager):
+  """
+  Custom manager that filters out soft-deleted elections by default.
+  Use Election.objects_with_deleted.all() to include deleted elections.
+  """
+  def get_queryset(self):
+    return super().get_queryset().filter(deleted_at__isnull=True)
+
 class Election(HeliosModel):
   admin = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -99,6 +107,9 @@ class Election(HeliosModel):
   frozen_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
   archived_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
 
+  # soft delete timestamp - null means not deleted, non-null means deleted at that time
+  deleted_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+
   # dates for the election steps, as scheduled
   # these are always UTC
   registration_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
@@ -145,6 +156,10 @@ class Election(HeliosModel):
 
   # downloadable election info
   election_info_url = models.CharField(max_length=300, null=True)
+
+  # Custom managers
+  objects = ElectionManager()  # default manager excludes deleted elections
+  objects_with_deleted = models.Manager()  # includes all elections
 
   class Meta:
     app_label = 'helios'
@@ -212,6 +227,10 @@ class Election(HeliosModel):
     return self.archived_at is not None
 
   @property
+  def is_deleted(self):
+    return self.deleted_at is not None
+
+  @property
   def description_bleached(self):
     return bleach.clean(self.description,
                         tags=list(bleach.ALLOWED_TAGS) + ['p', 'h4', 'h5', 'h3', 'h2', 'br', 'u'],
@@ -256,16 +275,18 @@ class Election(HeliosModel):
       return query
 
   @classmethod
-  def get_by_uuid(cls, uuid):
+  def get_by_uuid(cls, uuid, include_deleted=False):
     try:
-      return cls.objects.select_related().get(uuid=uuid)
+      manager = cls.objects_with_deleted if include_deleted else cls.objects
+      return manager.select_related().get(uuid=uuid)
     except cls.DoesNotExist:
       return None
 
   @classmethod
-  def get_by_short_name(cls, short_name):
+  def get_by_short_name(cls, short_name, include_deleted=False):
     try:
-      return cls.objects.get(short_name=short_name)
+      manager = cls.objects_with_deleted if include_deleted else cls.objects
+      return manager.get(short_name=short_name)
     except cls.DoesNotExist:
       return None
 
@@ -601,6 +622,23 @@ class Election(HeliosModel):
 
     self.save()
 
+  def soft_delete(self):
+    """
+    Soft delete the election by setting deleted_at timestamp.
+    The election will be hidden from default queries.
+    """
+    self.deleted_at = datetime.datetime.utcnow()
+    self.append_log(ElectionLog.DELETED)
+    self.save()
+
+  def undelete(self):
+    """
+    Restore a soft-deleted election by clearing deleted_at.
+    """
+    self.deleted_at = None
+    self.append_log(ElectionLog.UNDELETED)
+    self.save()
+
   def generate_trustee(self, params):
     """
     generate a trustee including the secret key,
@@ -741,6 +779,8 @@ class ElectionLog(models.Model):
   FROZEN = "frozen"
   VOTER_FILE_ADDED = "voter file added"
   DECRYPTIONS_COMBINED = "decryptions combined"
+  DELETED = "deleted"
+  UNDELETED = "undeleted"
 
   election = models.ForeignKey(Election, on_delete=models.CASCADE)
   log = models.CharField(max_length=500)

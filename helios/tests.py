@@ -202,6 +202,45 @@ class ElectionModelTests(TestCase):
         self.election.archived_at = None
         self.assertFalse(self.election.is_archived)
 
+    def test_soft_delete(self):
+        # Test that soft delete sets the flags correctly
+        self.assertFalse(self.election.is_deleted)
+        self.assertIsNone(self.election.deleted_at)
+
+        # Soft delete the election
+        self.election.soft_delete()
+        self.assertTrue(self.election.is_deleted)
+        self.assertIsNotNone(self.election.deleted_at)
+
+        # Verify it's logged
+        log_entries = self.election.get_log().all()
+        self.assertTrue(any('deleted' in log.log.lower() for log in log_entries))
+
+        # Test that deleted elections are excluded from default queries
+        elections = models.Election.objects.filter(uuid=self.election.uuid)
+        self.assertEqual(len(elections), 0)
+
+        # But can still be found with objects_with_deleted
+        election = models.Election.objects_with_deleted.get(uuid=self.election.uuid)
+        self.assertEqual(election, self.election)
+
+        # Test that get_by_uuid respects the default manager (excludes deleted)
+        election = models.Election.get_by_uuid(self.election.uuid)
+        self.assertIsNone(election)
+
+        # But get_by_uuid with include_deleted=True should work
+        election = models.Election.get_by_uuid(self.election.uuid, include_deleted=True)
+        self.assertEqual(election, self.election)
+
+        # Test undelete
+        self.election.undelete()
+        self.assertFalse(self.election.is_deleted)
+        self.assertIsNone(self.election.deleted_at)
+
+        # Should be visible in default queries again
+        elections = models.Election.objects.filter(uuid=self.election.uuid)
+        self.assertEqual(len(elections), 1)
+
     def test_voter_registration(self):
         # before adding a voter
         voters = models.Voter.get_by_election(self.election)
@@ -1228,6 +1267,78 @@ class ElectionBlackboxTests(WebTest):
         self.assertStatusCode(response, 403)
 
 
+class ElectionDeleteViewTests(WebTest):
+    fixtures = ['users.json', 'election.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.election = models.Election.objects.all()[0]
+        self.user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+
+    def setup_login(self, from_scratch=False):
+        if from_scratch:
+            self.client.get("/")
+        session = self.client.session
+        session['user'] = {'type': self.user.user_type, 'user_id': self.user.user_id}
+        session.save()
+
+    def test_delete_with_post(self):
+        """Test soft deleting an election via POST"""
+        self.setup_login(from_scratch=True)
+
+        # Verify election is not deleted initially
+        self.assertFalse(self.election.is_deleted)
+
+        # POST to delete endpoint
+        response = self.client.post(
+            "/helios/elections/%s/delete" % self.election.uuid,
+            {"delete_p": "1", "csrf_token": self.client.session.get("csrf_token", "")}
+        )
+        self.assertRedirects(response)
+
+        # Election should be soft deleted
+        election = models.Election.objects_with_deleted.get(uuid=self.election.uuid)
+        self.assertTrue(election.is_deleted)
+        self.assertIsNotNone(election.deleted_at)
+
+        # Should not appear in default queries
+        elections = models.Election.objects.filter(uuid=self.election.uuid)
+        self.assertEqual(len(elections), 0)
+
+    def test_delete_requires_admin(self):
+        """Test that only election admins can delete"""
+        # Don't log in - should get permission denied
+        response = self.client.post(
+            "/helios/elections/%s/delete" % self.election.uuid,
+            {"delete_p": "1", "csrf_token": "fake"}
+        )
+        self.assertStatusCode(response, 403)
+
+        # Election should not be deleted
+        election = models.Election.objects_with_deleted.get(uuid=self.election.uuid)
+        self.assertFalse(election.is_deleted)
+
+    def test_deleted_election_not_accessible_to_non_admins(self):
+        """Test that deleted elections return 404 for non-admin users"""
+        # Soft delete the election
+        self.election.soft_delete()
+
+        # Try to access as non-admin (not logged in)
+        response = self.client.get("/helios/elections/%s/view" % self.election.uuid)
+        self.assertStatusCode(response, 404)
+
+    def test_deleted_election_not_accessible_to_election_admins(self):
+        """Test that deleted elections return 404 even for election admins"""
+        self.setup_login(from_scratch=True)
+
+        # Soft delete the election
+        self.election.soft_delete()
+
+        # Election admin should not be able to access it
+        response = self.client.get("/helios/elections/%s/view" % self.election.uuid)
+        self.assertStatusCode(response, 404)
+
+
 class EmailOptOutTests(TestCase):
     fixtures = ['users.json']
     allow_database_queries = True
@@ -1791,6 +1902,30 @@ class ElectionMultipleAdminsModelTests(TestCase):
         elections = list(models.Election.get_by_user_as_admin(self.admin))
         # Should only appear once due to distinct()
         self.assertEqual(elections.count(self.election), 1)
+
+    def test_get_by_user_as_admin_excludes_deleted(self):
+        """Test that soft-deleted elections don't appear in get_by_user_as_admin"""
+        # Verify election appears initially
+        elections = models.Election.get_by_user_as_admin(self.admin)
+        self.assertIn(self.election, elections)
+
+        # Soft delete the election
+        self.election.soft_delete()
+
+        # Should no longer appear in admin list
+        elections = models.Election.get_by_user_as_admin(self.admin)
+        self.assertNotIn(self.election, elections)
+
+        # Same for additional admins
+        self.election.undelete()  # Restore first
+        self.election.admins.add(self.other_user)
+        elections = models.Election.get_by_user_as_admin(self.other_user)
+        self.assertIn(self.election, elections)
+
+        # Delete and verify other_user also doesn't see it
+        self.election.soft_delete()
+        elections = models.Election.get_by_user_as_admin(self.other_user)
+        self.assertNotIn(self.election, elections)
 
 
 class ElectionMultipleAdminsSecurityTests(TestCase):
