@@ -85,7 +85,7 @@ class Election(HeliosModel):
   openreg = models.BooleanField(default=False)
 
   # featured election?
-  featured_p = models.BooleanField(default=False)
+  featured_p = models.BooleanField(default=False, db_index=True)
 
   # voter aliases?
   use_voter_aliases = models.BooleanField(default=False)
@@ -788,6 +788,9 @@ class ElectionLog(models.Model):
 
   class Meta:
     app_label = 'helios'
+    indexes = [
+      models.Index(fields=['election', 'at'], name='helios_eleclog_elec_at_idx'),
+    ]
 
 
 class VoterFile(models.Model):
@@ -934,7 +937,7 @@ class Voter(HeliosModel):
   #voter_type = models.CharField(max_length = 100)
   #voter_id = models.CharField(max_length = 100)
 
-  uuid = models.CharField(max_length = 50)
+  uuid = models.CharField(max_length=50, db_index=True)
 
   # for users of type password, no user object is created
   # but a dynamic user object is created automatically
@@ -1139,7 +1142,7 @@ class CastVote(HeliosModel):
   vote = LDObjectField(type_hint = 'legacy/EncryptedVote')
 
   # cache the hash of the vote
-  vote_hash = models.CharField(max_length=100)
+  vote_hash = models.CharField(max_length=100, db_index=True)
 
   # a tiny version of the hash to enable short URLs
   vote_tinyhash = models.CharField(max_length=50, null=True, unique=True)
@@ -1158,7 +1161,10 @@ class CastVote(HeliosModel):
   cast_ip = models.GenericIPAddressField(null=True)
 
   class Meta:
-      app_label = 'helios'
+    app_label = 'helios'
+    indexes = [
+      models.Index(fields=['verified_at', 'invalidated_at'], name='helios_cv_verified_invld_idx'),
+    ]
 
   @property
   def datatype(self):
@@ -1250,6 +1256,9 @@ class AuditedBallot(models.Model):
 
   class Meta:
     app_label = 'helios'
+    indexes = [
+      models.Index(fields=['election', 'vote_hash'], name='helios_ab_elec_hash_idx'),
+    ]
 
   @classmethod
   def get(cls, election, vote_hash):
@@ -1272,7 +1281,7 @@ class AuditedBallot(models.Model):
 class Trustee(HeliosModel):
   election = models.ForeignKey(Election, on_delete=models.CASCADE)
 
-  uuid = models.CharField(max_length=50)
+  uuid = models.CharField(max_length=50, db_index=True)
   name = models.CharField(max_length=200)
   email = models.EmailField()
   secret = models.CharField(max_length=100)
