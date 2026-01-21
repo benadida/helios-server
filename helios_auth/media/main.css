@@ -53,3 +53,38 @@ body {
 #election_info {
   font-size: 16pt;
 }
+
+/* Mobile responsive styles */
+@media screen and (max-width: 768px) {
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
+
+  #content {
+    position: relative;
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: 0;
+    margin-right: 0;
+    padding: 10px 0;
+    box-sizing: border-box;
+    border-left: none;
+    border-right: none;
+  }
+
+  #header {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  #footer {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  #content > *:not(#header):not(#footer) {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
