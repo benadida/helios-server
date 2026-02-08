@@ -30,6 +30,21 @@ export class BoothApp extends LitElement {
       padding: var(--spacing-md, 16px);
     }
 
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: var(--color-primary, #1a73e8);
+      color: white;
+      padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+      z-index: 100;
+      text-decoration: none;
+    }
+
+    .skip-link:focus {
+      top: 0;
+    }
+
     .banner {
       background-color: var(--color-surface, #f5f5f5);
       padding: var(--spacing-md, 16px);
@@ -59,6 +74,7 @@ export class BoothApp extends LitElement {
 
     .content {
       min-height: 400px;
+      outline: none;
     }
 
     .loading {
@@ -367,6 +383,7 @@ export class BoothApp extends LitElement {
   private sealBallot(): void {
     this.currentScreen = 'encrypting';
     this.encryptionProgress = 0;
+    this.focusMainContent();
 
     // Launch encryption for all dirty questions
     this.dirty.forEach((isDirty, qNum) => {
@@ -447,10 +464,24 @@ export class BoothApp extends LitElement {
   }
 
   /**
+   * Focus the main content area when screen changes.
+   */
+  private focusMainContent(): void {
+    // Use requestAnimationFrame to ensure DOM has updated
+    requestAnimationFrame(() => {
+      const main = this.shadowRoot?.querySelector('#main-content') as HTMLElement;
+      if (main) {
+        main.focus();
+      }
+    });
+  }
+
+  /**
    * Navigate to a specific screen.
    */
   navigateTo(screen: BoothScreen): void {
     this.currentScreen = screen;
+    this.focusMainContent();
   }
 
   /**
@@ -599,6 +630,7 @@ export class BoothApp extends LitElement {
     this.auditTrail = '';
 
     this.currentScreen = 'submit';
+    this.focusMainContent();
   }
 
   /**
@@ -612,6 +644,7 @@ export class BoothApp extends LitElement {
     this.auditTrail = JSON.stringify(auditObj, null, 2);
 
     this.currentScreen = 'audit';
+    this.focusMainContent();
   }
 
   /**
@@ -739,27 +772,45 @@ export class BoothApp extends LitElement {
 
   render() {
     return html`
-      <div class="banner">
+      <a href="#main-content" class="skip-link">Skip to main content</a>
+
+      <header class="banner" role="banner">
         <div class="exit-link">
-          <a href="#" @click=${(e: Event) => { e.preventDefault(); this.handleExit(); }}>exit</a>
+          <a href="#"
+             @click=${(e: Event) => { e.preventDefault(); this.handleExit(); }}
+             aria-label="Exit voting booth">
+            exit
+          </a>
         </div>
         <h1>Helios Voting Booth</h1>
-      </div>
+      </header>
 
       ${this.currentScreen !== 'loading' && this.currentScreen !== 'election' ? html`
-        <div class="progress-bar" role="navigation" aria-label="Voting progress">
-          <span class="progress-step ${this.getProgressStep() >= 1 ? 'active' : ''}" aria-current="${this.getProgressStep() === 1 ? 'step' : 'false'}">1. Select</span>
-          <span class="progress-step ${this.getProgressStep() >= 2 ? 'active' : ''}" aria-current="${this.getProgressStep() === 2 ? 'step' : 'false'}">2. Review</span>
-          <span class="progress-step ${this.getProgressStep() >= 3 ? 'active' : ''}" aria-current="${this.getProgressStep() === 3 ? 'step' : 'false'}">3. Submit</span>
-          <span class="progress-step ${this.getProgressStep() >= 4 ? 'active' : ''}" aria-current="${this.getProgressStep() === 4 ? 'step' : 'false'}">4. Done</span>
-        </div>
+        <nav class="progress-bar" aria-label="Voting progress">
+          <span class="progress-step ${this.getProgressStep() >= 1 ? 'active' : ''}"
+                ${this.getProgressStep() === 1 ? 'aria-current="step"' : ''}>
+            1. Select
+          </span>
+          <span class="progress-step ${this.getProgressStep() >= 2 ? 'active' : ''}"
+                ${this.getProgressStep() === 2 ? 'aria-current="step"' : ''}>
+            2. Review
+          </span>
+          <span class="progress-step ${this.getProgressStep() >= 3 ? 'active' : ''}"
+                ${this.getProgressStep() === 3 ? 'aria-current="step"' : ''}>
+            3. Submit
+          </span>
+          <span class="progress-step ${this.getProgressStep() === 4 ? 'active' : ''}"
+                ${this.getProgressStep() === 4 ? 'aria-current="step"' : ''}>
+            4. Done
+          </span>
+        </nav>
       ` : ''}
 
       ${this.error ? html`
-        <div class="error" role="alert">${this.error}</div>
+        <div class="error" role="alert" aria-live="assertive">${this.error}</div>
       ` : ''}
 
-      <main class="content">
+      <main id="main-content" class="content" role="main" tabindex="-1">
         ${this.renderCurrentScreen()}
       </main>
     `;
