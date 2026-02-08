@@ -10,6 +10,8 @@ urlpatterns = [
 
     # SHOULD BE REPLACED BY APACHE STATIC PATH
     re_path(r'booth/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosbooth'}),
+    # New Lit-based booth (serves source files in dev, built files in production)
+    # In production, this should point to heliosbooth2026/dist instead
     re_path(r'booth2026/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosbooth2026'}),
     re_path(r'verifier/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosverifier'}),
 
