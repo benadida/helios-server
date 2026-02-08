@@ -10,6 +10,7 @@ urlpatterns = [
 
     # SHOULD BE REPLACED BY APACHE STATIC PATH
     re_path(r'booth/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosbooth'}),
+    re_path(r'booth2026/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosbooth2026'}),
     re_path(r'verifier/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosverifier'}),
 
     re_path(r'static/auth/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/helios_auth/media'}),
