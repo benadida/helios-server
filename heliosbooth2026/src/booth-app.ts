@@ -82,6 +82,11 @@ export class BoothApp extends LitElement {
       padding: var(--spacing-xl, 32px);
     }
 
+    .loading-detail {
+      font-size: var(--font-size-sm, 0.875rem);
+      color: var(--color-text-secondary, #666);
+    }
+
     .error {
       background-color: #fee;
       border: 1px solid var(--color-error, #dc3545);
@@ -124,6 +129,26 @@ export class BoothApp extends LitElement {
     .help-email {
       margin-top: var(--spacing-lg, 24px);
     }
+
+    .error-screen {
+      text-align: center;
+      padding: var(--spacing-xl, 32px);
+    }
+
+    .error-message {
+      background-color: #fee;
+      border: 1px solid var(--color-error, #dc3545);
+      color: var(--color-error, #dc3545);
+      padding: var(--spacing-md, 16px);
+      border-radius: var(--border-radius, 4px);
+      margin: var(--spacing-lg, 24px) 0;
+    }
+
+    .error-actions {
+      display: flex;
+      gap: var(--spacing-md, 16px);
+      justify-content: center;
+    }
   `;
 
   // Application state
@@ -156,6 +181,9 @@ export class BoothApp extends LitElement {
   // Crypto readiness
   @state() private cryptoReady: boolean = false;
 
+  // Initialization state
+  @state() private isInitializing: boolean = true;
+
   // Event handler binding for beforeunload
   private boundBeforeUnload = this.handleBeforeUnload.bind(this);
 
@@ -174,6 +202,9 @@ export class BoothApp extends LitElement {
    * Initialize the booth by loading crypto libraries and election data.
    */
   private async initializeBooth(): Promise<void> {
+    this.isInitializing = true;
+    this.error = null;
+
     try {
       // Get election URL from query params
       const params = new URLSearchParams(window.location.search);
@@ -182,13 +213,14 @@ export class BoothApp extends LitElement {
       if (!electionUrl) {
         this.error = 'No election URL provided. Please access this page from an election link.';
         this.currentScreen = 'election';
+        this.isInitializing = false;
         return;
       }
 
       this.electionUrl = electionUrl;
 
-      // Wait for BigInt crypto to be ready
-      await this.waitForCrypto();
+      // Wait for BigInt crypto to be ready with timeout
+      await this.waitForCryptoWithTimeout(10000);
       this.cryptoReady = true;
 
       // Load election data
@@ -196,8 +228,23 @@ export class BoothApp extends LitElement {
 
       this.currentScreen = 'election';
     } catch (err) {
-      this.error = `Failed to initialize booth: ${err instanceof Error ? err.message : String(err)}`;
+      console.error('Booth initialization failed:', err);
+
+      if (err instanceof Error) {
+        if (err.message.includes('fetch')) {
+          this.error = 'Unable to connect to the election server. Please check your internet connection and try again.';
+        } else if (err.message.includes('crypto') || err.message.includes('BigInt')) {
+          this.error = 'Failed to initialize cryptographic libraries. Please try using a different browser.';
+        } else {
+          this.error = `Failed to initialize booth: ${err.message}`;
+        }
+      } else {
+        this.error = 'An unexpected error occurred. Please reload the page.';
+      }
+
       this.currentScreen = 'election';
+    } finally {
+      this.isInitializing = false;
     }
   }
 
@@ -216,6 +263,27 @@ export class BoothApp extends LitElement {
         console.warn('BigInt not available - crypto operations will fail');
         resolve();
       }
+    });
+  }
+
+  /**
+   * Wait for crypto with a timeout.
+   */
+  private waitForCryptoWithTimeout(timeoutMs: number): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const timeoutId = setTimeout(() => {
+        reject(new Error('Crypto library initialization timed out'));
+      }, timeoutMs);
+
+      this.waitForCrypto()
+        .then(() => {
+          clearTimeout(timeoutId);
+          resolve();
+        })
+        .catch((err) => {
+          clearTimeout(timeoutId);
+          reject(err);
+        });
     });
   }
 
@@ -461,6 +529,33 @@ export class BoothApp extends LitElement {
       return message;
     }
     return undefined;
+  }
+
+  /**
+   * Render error screen with recovery options.
+   */
+  private renderErrorScreen() {
+    return html`
+      <section class="error-screen" role="alert" aria-labelledby="error-title">
+        <h2 id="error-title">Something went wrong</h2>
+
+        <div class="error-message">
+          <p>${this.error}</p>
+        </div>
+
+        <div class="error-actions">
+          <button @click=${() => window.location.reload()}>
+            Reload Page
+          </button>
+
+          ${this.election?.cast_url ? html`
+            <button class="secondary" @click=${() => window.location.href = this.election!.cast_url}>
+              Return to Election Page
+            </button>
+          ` : ''}
+        </div>
+      </section>
+    `;
   }
 
   /**
@@ -820,12 +915,16 @@ export class BoothApp extends LitElement {
     switch (this.currentScreen) {
       case 'loading':
         return html`
-          <div class="loading">
-            <p>Loading election...</p>
+          <div class="loading" role="status" aria-live="polite">
+            <p>${this.isInitializing ? 'Initializing voting booth...' : 'Loading...'}</p>
+            <p class="loading-detail">This may take a few seconds</p>
           </div>
         `;
 
       case 'election':
+        if (this.error && !this.election) {
+          return this.renderErrorScreen();
+        }
         return this.renderElectionScreen();
 
       case 'question':
