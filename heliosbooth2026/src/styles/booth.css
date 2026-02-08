@@ -22,10 +22,15 @@
   --font-size-lg: 1.25rem;
   --font-size-xl: 1.5rem;
   --border-radius: 4px;
+  --max-width: 800px;
 }
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
 }
 
 body {
@@ -36,6 +41,19 @@ body {
   color: var(--color-text);
   background-color: var(--color-background);
   line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Focus visible for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Remove default focus for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* Utility classes */
@@ -66,7 +84,9 @@ button,
   border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  min-height: 44px; /* Touch target size */
+  min-width: 44px;
 }
 
 button:hover,
@@ -74,14 +94,20 @@ button:hover,
   background-color: var(--color-primary-dark);
 }
 
+button:active,
+.button:active {
+  transform: scale(0.98);
+}
+
 button:disabled,
 .button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+  transform: none;
 }
 
-button:focus,
-.button:focus {
+button:focus-visible,
+.button:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
@@ -97,4 +123,92 @@ button.secondary,
 button.secondary:hover,
 .button.secondary:hover {
   background-color: var(--color-surface);
+}
+
+button.secondary:disabled,
+.button.secondary:disabled {
+  color: #999;
+  border-color: #ccc;
+  background-color: transparent;
+}
+
+/* Link styles */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Form elements */
+input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+textarea {
+  font-family: monospace;
+  font-size: var(--font-size-sm);
+}
+
+/* Responsive breakpoints */
+@media (max-width: 600px) {
+  :root {
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+  }
+
+  button,
+  .button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Print styles */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  button,
+  .button {
+    display: none;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border: #000;
+    --color-text-secondary: #000;
+  }
+
+  button,
+  .button {
+    border: 2px solid currentColor;
+  }
 }
