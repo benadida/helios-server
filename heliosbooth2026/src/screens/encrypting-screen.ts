@@ -44,7 +44,7 @@ export class EncryptingScreen extends LitElement {
       <h2>Helios is now encrypting your ballot</h2>
 
       <div class="spinner" aria-hidden="true">
-        <img src="${new URL('../encrypting.gif', import.meta.url).href}" alt="" />
+        <img src="${new URL(/* @vite-ignore */ '/booth2026/encrypting.gif', import.meta.url).href}" alt="" />
       </div>
 
       <div class="progress" role="status" aria-live="polite">

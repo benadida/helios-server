@@ -238,7 +238,7 @@ export class ReviewScreen extends LitElement {
           </button>
           ${this.isLoading ? html`
             <span class="loading-indicator" aria-hidden="true">
-              <img src="${new URL('../loading.gif', import.meta.url).href}" alt="" width="20" height="20" />
+              <img src="${new URL(/* @vite-ignore */ '/booth2026/loading.gif', import.meta.url).href}" alt="" width="20" height="20" />
             </span>
           ` : ''}
         </div>
