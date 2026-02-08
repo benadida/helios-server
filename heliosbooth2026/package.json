@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && cp -r lib dist/lib",
+    "build": "tsc && vite build && cp -r lib dist/lib && mkdir -p dist/workers && cp workers/verify-ballot.js dist/workers/",
     "preview": "vite preview"
   },
   "dependencies": {

@@ -1,69 +1,31 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import type { Election } from '../crypto/types.js';
 
 /**
  * Submit screen component - final confirmation before ballot submission.
+ *
+ * Renders to light DOM (no Shadow DOM) so the <form> can POST normally.
+ * Shadow DOM forms don't participate in native browser form submission.
+ * Styles are in booth.css since light DOM components can't use adoptedStyleSheets.
  */
 @customElement('submit-screen')
 export class SubmitScreen extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-    }
-
-    h2 {
-      margin-top: 0;
-    }
-
-    .info-section {
-      margin-bottom: var(--spacing-lg, 24px);
-    }
-
-    .info-section p {
-      margin: var(--spacing-sm, 8px) 0;
-    }
-
-    .tracker-section {
-      background-color: var(--color-surface, #f5f5f5);
-      padding: var(--spacing-md, 16px);
-      border-radius: var(--border-radius, 4px);
-      margin-bottom: var(--spacing-lg, 24px);
-    }
-
-    .tracker-hash {
-      font-family: monospace;
-      font-size: 1.1rem;
-      word-break: break-all;
-    }
-
-    .cast-url {
-      font-family: monospace;
-      font-size: 1.1rem;
-      word-break: break-all;
-      background-color: var(--color-surface, #f5f5f5);
-      padding: var(--spacing-sm, 8px);
-      border-radius: var(--border-radius, 4px);
-    }
-
-    .submit-form {
-      margin-top: var(--spacing-lg, 24px);
-    }
-
-    .encrypted-vote-input {
-      display: none;
-    }
-  `;
-
   @property({ type: Object }) election: Election | null = null;
   @property({ type: String }) ballotHash: string = '';
   @property({ type: String }) encryptedVoteJson: string = '';
 
   /**
-   * Handle form submission - allow beforeunload to pass.
+   * Render to light DOM so the <form> participates in native browser submission.
+   */
+  protected createRenderRoot(): HTMLElement | DocumentFragment {
+    return this;
+  }
+
+  /**
+   * Handle form submission - notify booth-app to clear beforeunload guard.
    */
   private handleSubmit(): void {
-    // Dispatch event to let booth-app know we're submitting
     this.dispatchEvent(new CustomEvent('ballot-submit', {
       bubbles: true,
       composed: true

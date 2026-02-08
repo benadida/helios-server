@@ -189,6 +189,53 @@ textarea {
   }
 }
 
+/* Submit screen (light DOM component - styles can't use Shadow DOM adoptedStyleSheets) */
+submit-screen {
+  display: block;
+}
+
+submit-screen h2 {
+  margin-top: 0;
+}
+
+submit-screen .info-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+submit-screen .info-section p {
+  margin: var(--spacing-sm) 0;
+}
+
+submit-screen .tracker-section {
+  background-color: var(--color-surface);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-lg);
+}
+
+submit-screen .tracker-hash {
+  font-family: monospace;
+  font-size: 1.1rem;
+  word-break: break-all;
+}
+
+submit-screen .cast-url {
+  font-family: monospace;
+  font-size: 1.1rem;
+  word-break: break-all;
+  background-color: var(--color-surface);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius);
+}
+
+submit-screen .submit-form {
+  margin-top: var(--spacing-lg);
+}
+
+submit-screen .encrypted-vote-input {
+  display: none;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,

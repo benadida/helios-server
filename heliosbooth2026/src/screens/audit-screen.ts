@@ -124,7 +124,7 @@ export class AuditScreen extends LitElement {
 
   render() {
     const verifierUrl = this.electionUrl
-      ? `single-ballot-verify.html?election_url=${encodeURIComponent(this.electionUrl)}`
+      ? `verify.html?election_url=${encodeURIComponent(this.electionUrl)}`
       : '#';
 
     return html`

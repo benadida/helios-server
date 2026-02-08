@@ -10,14 +10,13 @@ export default defineConfig({
     cssCodeSplit: false,
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html')
+        main: resolve(__dirname, 'index.html'),
+        verify: resolve(__dirname, 'verify.html')
       },
       output: {
-        // Force everything into single bundle
-        manualChunks: () => 'booth',
-        entryFileNames: 'assets/booth.[hash].js',
-        chunkFileNames: 'assets/booth.[hash].js',
-        assetFileNames: 'assets/booth.[hash].[ext]'
+        entryFileNames: 'assets/[name].[hash].js',
+        chunkFileNames: 'assets/[name].[hash].js',
+        assetFileNames: 'assets/[name].[hash].[ext]'
       }
     },
     // Generate sourcemaps for debugging
