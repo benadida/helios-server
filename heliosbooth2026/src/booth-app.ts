@@ -123,9 +123,18 @@ export class BoothApp extends LitElement {
   // Crypto readiness
   @state() private cryptoReady: boolean = false;
 
+  // Event handler binding for beforeunload
+  private boundBeforeUnload = this.handleBeforeUnload.bind(this);
+
   connectedCallback(): void {
     super.connectedCallback();
+    window.addEventListener('beforeunload', this.boundBeforeUnload);
     this.initializeBooth();
+  }
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    window.removeEventListener('beforeunload', this.boundBeforeUnload);
   }
 
   /**
@@ -264,6 +273,22 @@ export class BoothApp extends LitElement {
     if (this.election?.cast_url) {
       window.location.href = this.election.cast_url;
     }
+  }
+
+  /**
+   * Handle beforeunload event - warn user about losing ballot data.
+   */
+  private handleBeforeUnload(event: BeforeUnloadEvent): string | undefined {
+    // Only warn if user has started voting (is on question or later screens)
+    if (this.currentScreen === 'question' ||
+        this.currentScreen === 'review' ||
+        this.currentScreen === 'audit') {
+      const message = 'If you leave this page with an in-progress ballot, your ballot will be lost.';
+      event.preventDefault();
+      event.returnValue = message;
+      return message;
+    }
+    return undefined;
   }
 
   /**
