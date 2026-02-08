@@ -149,6 +149,40 @@ export interface ElectionMetadata {
   use_advanced_audit_features?: boolean;
 }
 
+// Worker message types
+export interface WorkerSetupMessage {
+  type: 'setup';
+  election: string;
+}
+
+export interface WorkerEncryptMessage {
+  type: 'encrypt';
+  q_num: number;
+  answer: number[];
+  id: number;
+}
+
+export type WorkerInMessage = WorkerSetupMessage | WorkerEncryptMessage;
+
+export interface WorkerLogMessage {
+  type: 'log';
+  msg: string;
+}
+
+export interface WorkerResultMessage {
+  type: 'result';
+  q_num: number;
+  encrypted_answer: EncryptedAnswerJSON;
+  id: number;
+}
+
+export type WorkerOutMessage = WorkerLogMessage | WorkerResultMessage;
+
+// BALLOT helper (from helios.js)
+export interface BALLOTType {
+  pretty_choices(election: Election, ballot: { answers: number[][] }): string[][];
+}
+
 // Declare non-conflicting crypto globals that will be available after script loading
 // BigInt must use (window as any).BigInt due to conflict with TypeScript's built-in BigInt type
 declare global {
@@ -156,6 +190,7 @@ declare global {
   const ElGamal: ElGamalType;
   const Random: RandomType;
   const UTILS: UTILSType;
+  const BALLOT: BALLOTType;
   const sjcl: {
     random: {
       startCollectors(): void;
