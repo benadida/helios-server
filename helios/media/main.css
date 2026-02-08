@@ -66,3 +66,40 @@ table.pretty th, td {
     padding: 0.3em;
 }
 
+/* Mobile responsive styles */
+@media screen and (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  #content {
+    position: relative;
+    width: 100%;
+    margin-left: 0;
+    padding: 10px 15px;
+    box-sizing: border-box;
+    border-left: none;
+    border-right: none;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #header, #footer {
+    position: sticky;
+    left: 0;
+    width: 100%;
+    background: #eee;
+  }
+
+  /* Keep table as normal table, let content scroll */
+  table.pretty {
+    width: auto;
+    min-width: 100%;
+  }
+
+  table.pretty th,
+  table.pretty td {
+    white-space: nowrap;
+  }
+}
+
