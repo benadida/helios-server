@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && cp -r lib dist/lib",
     "preview": "vite preview"
   },
   "dependencies": {
