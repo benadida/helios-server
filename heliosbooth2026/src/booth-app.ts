@@ -1,6 +1,6 @@
 import { LitElement, html, css, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import type { Election, ElectionMetadata, EncryptedAnswer, EncryptedVote, BigIntType } from './crypto/types.js';
+import type { Election, ElectionMetadata, EncryptedAnswer, EncryptedVote, BigIntType, WorkerOutMessage, EncryptedAnswerJSON } from './crypto/types.js';
 import './screens/question-screen.js';
 import type { AnswerChangeEvent, NavigationEvent } from './screens/question-screen.js';
 import './screens/review-screen.js';
@@ -9,7 +9,6 @@ import './screens/audit-screen.js';
 import './screens/encrypting-screen.js';
 import type { ReviewNavigationEvent } from './screens/review-screen.js';
 import type { AuditNavigationEvent } from './screens/audit-screen.js';
-import type { WorkerOutMessage, EncryptedAnswerJSON } from './crypto/types.js';
 
 /**
  * Screen states for the voting booth flow.
@@ -172,13 +171,10 @@ export class BoothApp extends LitElement {
   @state() private encryptionProgress: number = 0;
   @state() private answerTimestamps: number[] = [];
   @state() private dirty: boolean[] = [];
-  @state() private encryptedBallot: unknown = null; // Full encrypted vote object
+  @state() private encryptedBallot: EncryptedVote | null = null;
   @state() private auditTrail: string = '';
   @state() private rawElectionJson: string = '';
   @state() private postingAudit: boolean = false;
-
-  // Crypto readiness
-  @state() private cryptoReady: boolean = false;
 
   // Initialization state
   @state() private isInitializing: boolean = true;
@@ -220,7 +216,6 @@ export class BoothApp extends LitElement {
 
       // Wait for BigInt crypto to be ready with timeout
       await this.waitForCryptoWithTimeout(10000);
-      this.cryptoReady = true;
 
       // Load election data
       await this.loadElection(electionUrl);
@@ -479,7 +474,7 @@ export class BoothApp extends LitElement {
     );
 
     // Serialize and hash
-    const ballotObj = (this.encryptedBallot as EncryptedVote).toJSONObject();
+    const ballotObj = this.encryptedBallot!.toJSONObject();
     this.encryptedVoteJson = JSON.stringify(ballotObj);
     this.encryptedBallotHash = b64_sha256(this.encryptedVoteJson);
 
@@ -736,7 +731,7 @@ export class BoothApp extends LitElement {
     if (!this.encryptedBallot) return;
 
     // Get audit trail (includes plaintexts and randomness)
-    const auditObj = (this.encryptedBallot as EncryptedVote).toJSONObject(true);
+    const auditObj = this.encryptedBallot.toJSONObject(true);
     this.auditTrail = JSON.stringify(auditObj, null, 2);
 
     this.currentScreen = 'audit';

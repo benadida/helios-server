@@ -211,7 +211,7 @@ export class ReviewScreen extends LitElement {
               <div class="choice"><strong>${choice}</strong></div>
             `)}
 
-            ${this.choices[index]?.length < question.max ? html`
+            ${(this.choices[index]?.length ?? 0) < question.max ? html`
               <div class="selection-info">
                 [${this.choices[index]?.length || 0} selections out of possible ${question.min}-${question.max}]
               </div>

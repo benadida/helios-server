@@ -11,7 +11,8 @@ urlpatterns = [
     # SHOULD BE REPLACED BY APACHE STATIC PATH
     re_path(r'booth/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosbooth'}),
     # New Lit-based booth (serves source files in dev, built files in production)
-    # In production, this should point to heliosbooth2026/dist instead
+    # In production, serve the full heliosbooth2026/ directory (not just dist/) because
+    # crypto libraries loaded via script tags in index.html live in lib/ alongside dist/
     re_path(r'booth2026/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosbooth2026'}),
     re_path(r'verifier/(?P<path>.*)$', serve, {'document_root' : settings.ROOT_PATH + '/heliosverifier'}),
 
