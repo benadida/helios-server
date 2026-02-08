@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { customElement, property, state } from 'lit/decorators.js';
 import type { Election, ElectionMetadata, Question } from '../crypto/types.js';
 
 /**
@@ -132,6 +132,11 @@ export class ReviewScreen extends LitElement {
     .audit-content p {
       margin: var(--spacing-sm, 8px) 0;
     }
+
+    .audit-optional {
+      font-size: 0.8em;
+      color: #444;
+    }
   `;
 
   @property({ type: Object }) election: Election | null = null;
@@ -143,7 +148,7 @@ export class ReviewScreen extends LitElement {
   @property({ type: Boolean }) isLoading: boolean = false;
   @property({ type: Boolean }) showAuditSection: boolean = false;
 
-  private auditExpanded: boolean = false;
+  @state() private auditExpanded: boolean = false;
 
   /**
    * Handle change question link click.
@@ -184,7 +189,6 @@ export class ReviewScreen extends LitElement {
    */
   private toggleAuditSection(): void {
     this.auditExpanded = !this.auditExpanded;
-    this.requestUpdate();
   }
 
   render() {
@@ -234,29 +238,17 @@ export class ReviewScreen extends LitElement {
           </button>
           ${this.isLoading ? html`
             <span class="loading-indicator" aria-hidden="true">
-              <img src="/lib/../loading.gif" alt="" width="20" height="20" />
+              <img src="${new URL('../loading.gif', import.meta.url).href}" alt="" width="20" height="20" />
             </span>
           ` : ''}
         </div>
       </div>
 
-      <!-- Hidden form for ballot submission -->
-      <form
-        method="POST"
-        action="${this.election?.cast_url || ''}"
-        id="send_ballot_form"
-        style="display: none;"
-      >
-        <input type="hidden" name="election_uuid" value="${this.election?.uuid || ''}" />
-        <input type="hidden" name="election_hash" value="${this.election?.election_hash || ''}" />
-        <textarea name="encrypted_vote">${this.encryptedVoteJson}</textarea>
-      </form>
-
       ${this.showAuditSection ? html`
         <div class="audit-section">
           <h4 @click=${this.toggleAuditSection}>
             Spoil & Audit
-            <span style="font-size: 0.8em; color: #444;">[optional]</span>
+            <span class="audit-optional">[optional]</span>
           </h4>
           ${this.auditExpanded ? html`
             <div class="audit-content">

@@ -286,7 +286,7 @@ export class BoothApp extends LitElement {
   private initializeWorker(): void {
     if (this.worker || !this.rawElectionJson) return;
 
-    this.worker = new Worker('/workers/encryption-worker.js');
+    this.worker = new Worker(new URL('../workers/encryption-worker.js', import.meta.url).href);
 
     this.worker.onmessage = (event: MessageEvent<WorkerOutMessage>) => {
       if (event.data.type === 'log') {
@@ -294,6 +294,12 @@ export class BoothApp extends LitElement {
       } else if (event.data.type === 'result') {
         this.handleEncryptionResult(event.data.q_num, event.data.encrypted_answer, event.data.id);
       }
+    };
+
+    this.worker.onerror = (event: ErrorEvent) => {
+      console.error('[Worker Error]', event.message, event.filename, event.lineno);
+      this.error = 'Ballot encryption failed. The voting booth encountered an error. Please try again or contact support.';
+      this.currentScreen = 'election';
     };
 
     // Send election to worker
@@ -612,7 +618,7 @@ export class BoothApp extends LitElement {
    * Helper to check if object has clearPlaintexts method.
    */
   private hasClearPlaintexts(obj: unknown): obj is { clearPlaintexts(): void } {
-    return typeof obj === 'object' && obj !== null && 'clearPlaintexts' in obj && typeof (obj as any).clearPlaintexts === 'function';
+    return typeof obj === 'object' && obj !== null && 'clearPlaintexts' in obj && typeof (obj as Record<string, unknown>).clearPlaintexts === 'function';
   }
 
   /**

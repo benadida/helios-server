@@ -78,6 +78,10 @@ export class AuditScreen extends LitElement {
     .post-note strong {
       color: var(--color-text, #333);
     }
+
+    .post-button {
+      font-size: 0.8em;
+    }
   `;
 
   @property({ type: String }) auditTrail: string = '';
@@ -187,10 +191,9 @@ export class AuditScreen extends LitElement {
         </button>
 
         <button
-          class="secondary"
+          class="secondary post-button"
           @click=${this.handlePostAudit}
           ?disabled=${this.postingAudit}
-          style="font-size: 0.8em;"
         >
           ${this.postingAudit ? 'Posting...' : 'post audited ballot to tracking center'}
         </button>

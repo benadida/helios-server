@@ -49,6 +49,10 @@ export class SubmitScreen extends LitElement {
     .submit-form {
       margin-top: var(--spacing-lg, 24px);
     }
+
+    .encrypted-vote-input {
+      display: none;
+    }
   `;
 
   @property({ type: Object }) election: Election | null = null;
@@ -101,7 +105,7 @@ export class SubmitScreen extends LitElement {
       >
         <input type="hidden" name="election_uuid" value="${this.election.uuid}" />
         <input type="hidden" name="election_hash" value="${this.election.election_hash}" />
-        <textarea name="encrypted_vote" style="display: none;">${this.encryptedVoteJson}</textarea>
+        <textarea name="encrypted_vote" class="encrypted-vote-input">${this.encryptedVoteJson}</textarea>
 
         <button type="submit" aria-label="Submit your encrypted ballot">
           Submit Ballot

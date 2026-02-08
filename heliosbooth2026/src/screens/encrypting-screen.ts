@@ -44,7 +44,7 @@ export class EncryptingScreen extends LitElement {
       <h2>Helios is now encrypting your ballot</h2>
 
       <div class="spinner" aria-hidden="true">
-        <img src="/encrypting.gif" alt="" />
+        <img src="${new URL('../encrypting.gif', import.meta.url).href}" alt="" />
       </div>
 
       <div class="progress" role="status" aria-live="polite">
