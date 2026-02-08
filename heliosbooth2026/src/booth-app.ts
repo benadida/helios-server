@@ -1,6 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import type { Election, ElectionMetadata, EncryptedAnswer, BigIntType } from './crypto/types.js';
+import './screens/question-screen.js';
+import type { AnswerChangeEvent, NavigationEvent } from './screens/question-screen.js';
 
 /**
  * Screen states for the voting booth flow.
@@ -277,6 +279,133 @@ export class BoothApp extends LitElement {
   startVoting(): void {
     this.currentQuestionIndex = 0;
     this.currentScreen = 'question';
+
+    // If only one question, show review button immediately
+    if (this.election && this.election.questions.length === 1) {
+      this.allQuestionsSeen = true;
+    }
+  }
+
+  /**
+   * Handle answer selection changes from question screen.
+   */
+  private handleAnswerChange(event: CustomEvent<AnswerChangeEvent>): void {
+    const { questionIndex, answerIndex, selected } = event.detail;
+
+    // Create a new answers array (immutable update)
+    const newAnswers = [...this.answers];
+    const questionAnswers = [...(newAnswers[questionIndex] || [])];
+
+    if (selected) {
+      // Add answer if not already present
+      if (!questionAnswers.includes(answerIndex)) {
+        questionAnswers.push(answerIndex);
+      }
+    } else {
+      // Remove answer
+      const idx = questionAnswers.indexOf(answerIndex);
+      if (idx !== -1) {
+        questionAnswers.splice(idx, 1);
+      }
+    }
+
+    newAnswers[questionIndex] = questionAnswers;
+    this.answers = newAnswers;
+
+    // Mark this question's encryption as dirty (will be used in Phase 3)
+    // For now, just track that answers changed
+  }
+
+  /**
+   * Validate current question has minimum required selections.
+   */
+  private validateCurrentQuestion(): boolean {
+    if (!this.election) return false;
+
+    const question = this.election.questions[this.currentQuestionIndex];
+    const answers = this.answers[this.currentQuestionIndex] || [];
+
+    if (answers.length < question.min) {
+      alert(`You need to select at least ${question.min} answer(s).`);
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Handle navigation events from question screen.
+   */
+  private handleNavigation(event: CustomEvent<NavigationEvent>): void {
+    const { direction } = event.detail;
+
+    // Validate before navigating away
+    if (!this.validateCurrentQuestion()) {
+      return;
+    }
+
+    switch (direction) {
+      case 'previous':
+        if (this.currentQuestionIndex > 0) {
+          this.currentQuestionIndex--;
+        }
+        break;
+
+      case 'next':
+        if (this.election && this.currentQuestionIndex < this.election.questions.length - 1) {
+          // Mark that we've reached the last question when we get there
+          if (this.currentQuestionIndex === this.election.questions.length - 2) {
+            this.allQuestionsSeen = true;
+          }
+          this.currentQuestionIndex++;
+        }
+        break;
+
+      case 'review':
+        this.currentScreen = 'review';
+        break;
+    }
+  }
+
+  /**
+   * Go to a specific question (used for editing from review screen).
+   */
+  goToQuestion(index: number): void {
+    if (this.election && index >= 0 && index < this.election.questions.length) {
+      this.currentQuestionIndex = index;
+      this.currentScreen = 'question';
+    }
+  }
+
+  /**
+   * Render the question screen.
+   */
+  private renderQuestionScreen() {
+    if (!this.election) {
+      return html`<p>Loading...</p>`;
+    }
+
+    const question = this.election.questions[this.currentQuestionIndex];
+    const ordering = this.election.question_answer_orderings?.[this.currentQuestionIndex]
+      ?? question.answers.map((_, i) => i);
+
+    // Show review button once user has seen the last question
+    // or if they're on the last question
+    const showReview = this.allQuestionsSeen ||
+      this.currentQuestionIndex === this.election.questions.length - 1;
+
+    return html`
+      <question-screen
+        .question=${question}
+        .questionIndex=${this.currentQuestionIndex}
+        .totalQuestions=${this.election.questions.length}
+        .selectedAnswers=${this.answers[this.currentQuestionIndex] || []}
+        .answerOrdering=${ordering}
+        .showReviewButton=${showReview}
+        @answer-change=${this.handleAnswerChange}
+        @navigate=${this.handleNavigation}
+      ></question-screen>
+    `;
   }
 
   /**
@@ -333,7 +462,7 @@ export class BoothApp extends LitElement {
         return this.renderElectionScreen();
 
       case 'question':
-        return html`<p>Question screen - to be implemented in Phase 2</p>`;
+        return this.renderQuestionScreen();
 
       case 'review':
         return html`<p>Review screen - to be implemented in Phase 3</p>`;
