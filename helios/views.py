@@ -895,7 +895,11 @@ def one_election_cast_confirm(request, election):
 
     if auth_systems is None or 'password' in auth_systems:
       show_password = True
-      password_login_form = forms.VoterPasswordForm()
+      # Select appropriate form based on election setting
+      if election.use_token_auth:
+        password_login_form = forms.VoterTokenForm()
+      else:
+        password_login_form = forms.VoterPasswordForm()
 
       if auth_systems == ['password']:
         password_only = True
@@ -911,7 +915,8 @@ def one_election_cast_confirm(request, election):
         'past_votes': past_votes, 'issues': issues, 'voter' : voter,
         'return_url': return_url,
         'status_update_label': status_update_label, 'status_update_message': status_update_message,
-        'show_password': show_password, 'password_only': password_only, 'password_login_form': password_login_form,
+        'show_password': show_password, 'password_only': password_only,
+        'password_login_form': password_login_form, 'login_form': password_login_form,
         'bad_voter_login': bad_voter_login})
       
   if request.method == "POST":
