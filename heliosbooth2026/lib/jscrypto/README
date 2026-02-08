@@ -1,0 +1,5 @@
+
+JavaScript crypto.
+
+IMPORTANT: this library REQUIRES that a variable JSCRYPTO_HOME be set by an HTML file, indicating
+the complete path to the current directory
