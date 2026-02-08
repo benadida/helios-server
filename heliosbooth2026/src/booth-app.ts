@@ -364,8 +364,8 @@ export class BoothApp extends LitElement {
   private handleNavigation(event: CustomEvent<NavigationEvent>): void {
     const { direction } = event.detail;
 
-    // Validate before navigating away
-    if (!this.validateCurrentQuestion()) {
+    // Validate before navigating away (skip validation for previous navigation)
+    if (direction !== 'previous' && !this.validateCurrentQuestion()) {
       return;
     }
 

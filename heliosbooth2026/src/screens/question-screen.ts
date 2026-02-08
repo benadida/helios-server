@@ -94,7 +94,7 @@ export class QuestionScreen extends LitElement {
     }
 
     .warning-box {
-      color: var(--color-success, #28a745);
+      color: var(--color-text-secondary, #666);
       text-align: center;
       font-size: var(--font-size-sm, 0.875rem);
       padding: var(--spacing-sm, 8px);
@@ -198,14 +198,14 @@ export class QuestionScreen extends LitElement {
 
     const { min, max } = this.question;
 
-    if (min && min > 0) {
-      if (max) {
+    if (min !== undefined && min > 0) {
+      if (max !== undefined) {
         return `vote for ${min} to ${max}`;
       }
       return `vote for at least ${min}`;
     }
 
-    if (max) {
+    if (max !== undefined) {
       if (max > 1) {
         return `vote for up to ${max}`;
       }
@@ -264,9 +264,6 @@ export class QuestionScreen extends LitElement {
             return html`
               <li
                 class="answer-item ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : ''}"
-                role="checkbox"
-                aria-checked="${isSelected}"
-                aria-disabled="${isDisabled}"
                 tabindex="${isDisabled ? -1 : 0}"
                 @click=${() => this.handleAnswerClick(answerIndex)}
                 @keydown=${(e: KeyboardEvent) => this.handleAnswerKeydown(e, answerIndex)}
