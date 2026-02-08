@@ -61,16 +61,21 @@ body {
   }
 
   #content {
-    position: static;
+    position: relative;
     width: 100%;
     margin-left: 0;
     padding: 10px 15px;
     box-sizing: border-box;
     border-left: none;
     border-right: none;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   #header, #footer {
+    position: sticky;
+    left: 0;
     width: 100%;
+    background: #eee;
   }
 }

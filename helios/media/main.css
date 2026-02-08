@@ -73,40 +73,32 @@ table.pretty th, td {
   }
 
   #content {
-    position: static;
+    position: relative;
     width: 100%;
     margin-left: 0;
     padding: 10px 15px;
     box-sizing: border-box;
     border-left: none;
     border-right: none;
-  }
-
-  #header, #footer {
-    width: 100%;
-  }
-
-  /* Wrap table in scrollable container */
-  table.pretty {
-    display: block;
-    width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
-  table.pretty thead,
-  table.pretty tbody {
-    display: table;
-    width: auto;
+  #header, #footer {
+    position: sticky;
+    left: 0;
+    width: 100%;
+    background: #eee;
   }
 
-  table.pretty tr {
-    display: table-row;
+  /* Keep table as normal table, let content scroll */
+  table.pretty {
+    width: auto;
+    min-width: 100%;
   }
 
   table.pretty th,
   table.pretty td {
-    display: table-cell;
     white-space: nowrap;
   }
 }
