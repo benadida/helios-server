@@ -1,13 +1,20 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
-import type { Election, ElectionMetadata, EncryptedAnswer, BigIntType } from './crypto/types.js';
+import type { Election, ElectionMetadata, EncryptedAnswer, EncryptedVote, BigIntType } from './crypto/types.js';
 import './screens/question-screen.js';
 import type { AnswerChangeEvent, NavigationEvent } from './screens/question-screen.js';
+import './screens/review-screen.js';
+import './screens/submit-screen.js';
+import './screens/audit-screen.js';
+import './screens/encrypting-screen.js';
+import type { ReviewNavigationEvent } from './screens/review-screen.js';
+import type { AuditNavigationEvent } from './screens/audit-screen.js';
+import type { WorkerOutMessage, EncryptedAnswerJSON } from './crypto/types.js';
 
 /**
  * Screen states for the voting booth flow.
  */
-export type BoothScreen = 'loading' | 'election' | 'question' | 'review' | 'submit' | 'audit';
+export type BoothScreen = 'loading' | 'election' | 'question' | 'encrypting' | 'review' | 'submit' | 'audit';
 
 /**
  * Main booth application component.
@@ -120,6 +127,16 @@ export class BoothApp extends LitElement {
   @state() private encryptedBallotHash: string = '';
   @state() private encryptedVoteJson: string = '';
 
+  // Worker-based encryption
+  @state() private worker: Worker | null = null;
+  @state() private encryptionProgress: number = 0;
+  @state() private answerTimestamps: number[] = [];
+  @state() private dirty: boolean[] = [];
+  @state() private encryptedBallot: unknown = null; // Full encrypted vote object
+  @state() private auditTrail: string = '';
+  @state() private rawElectionJson: string = '';
+  @state() private postingAudit: boolean = false;
+
   // Crypto readiness
   @state() private cryptoReady: boolean = false;
 
@@ -196,6 +213,7 @@ export class BoothApp extends LitElement {
       throw new Error(`Failed to fetch election: ${electionResponse.status}`);
     }
     const rawJson = await electionResponse.text();
+    this.rawElectionJson = rawJson;
 
     // Fetch election metadata
     const metaResponse = await fetch(`${electionUrl}/meta`);
@@ -222,6 +240,9 @@ export class BoothApp extends LitElement {
 
       // Update document title
       document.title = `Helios Voting Booth - ${parsedElection.name}`;
+
+      // Initialize encryption worker
+      this.initializeWorker();
     } else {
       throw new Error('HELIOS crypto library not loaded');
     }
@@ -260,6 +281,133 @@ export class BoothApp extends LitElement {
   }
 
   /**
+   * Initialize the encryption worker.
+   */
+  private initializeWorker(): void {
+    if (this.worker || !this.rawElectionJson) return;
+
+    this.worker = new Worker('/workers/encryption-worker.js');
+
+    this.worker.onmessage = (event: MessageEvent<WorkerOutMessage>) => {
+      if (event.data.type === 'log') {
+        console.log('[Worker]', event.data.msg);
+      } else if (event.data.type === 'result') {
+        this.handleEncryptionResult(event.data.q_num, event.data.encrypted_answer, event.data.id);
+      }
+    };
+
+    // Send election to worker
+    this.worker.postMessage({
+      type: 'setup',
+      election: this.rawElectionJson
+    });
+
+    // Initialize dirty tracking
+    if (this.election) {
+      this.dirty = this.election.questions.map(() => true);
+      this.answerTimestamps = this.election.questions.map(() => 0);
+    }
+  }
+
+  /**
+   * Handle encryption result from worker.
+   */
+  private handleEncryptionResult(qNum: number, encryptedAnswer: EncryptedAnswerJSON, id: number): void {
+    // Check timestamp to avoid race conditions
+    if (id !== this.answerTimestamps[qNum]) {
+      console.log('Ignoring stale encryption result for question', qNum);
+      return;
+    }
+
+    // Store encrypted answer
+    if (typeof HELIOS !== 'undefined' && this.election) {
+      const ea = HELIOS.EncryptedAnswer.fromJSONObject(encryptedAnswer, this.election);
+      this.encryptedAnswers = [...this.encryptedAnswers];
+      this.encryptedAnswers[qNum] = ea;
+    }
+
+    // Update progress
+    const done = this.encryptedAnswers.filter(a => a !== null).length;
+    this.encryptionProgress = Math.round((done / this.encryptedAnswers.length) * 100);
+
+    // Check if all done
+    if (done === this.encryptedAnswers.length) {
+      this.finalizeEncryption();
+    }
+  }
+
+  /**
+   * Launch async encryption for a specific question.
+   */
+  private launchAsyncEncryption(questionNum: number): void {
+    if (!this.worker) return;
+
+    const timestamp = Date.now();
+    this.answerTimestamps[questionNum] = timestamp;
+    this.encryptedAnswers[questionNum] = null;
+    this.dirty[questionNum] = false;
+
+    this.worker.postMessage({
+      type: 'encrypt',
+      q_num: questionNum,
+      answer: this.answers[questionNum] || [],
+      id: timestamp
+    });
+  }
+
+  /**
+   * Start encryption process - seal the ballot.
+   */
+  private sealBallot(): void {
+    this.currentScreen = 'encrypting';
+    this.encryptionProgress = 0;
+
+    // Launch encryption for all dirty questions
+    this.dirty.forEach((isDirty, qNum) => {
+      if (isDirty || this.encryptedAnswers[qNum] === null) {
+        this.launchAsyncEncryption(qNum);
+      }
+    });
+
+    // If nothing to encrypt (all cached), finalize immediately
+    const allDone = this.encryptedAnswers.every(a => a !== null);
+    if (allDone) {
+      this.finalizeEncryption();
+    }
+  }
+
+  /**
+   * Finalize encryption after all answers are encrypted.
+   */
+  private finalizeEncryption(): void {
+    if (!this.election || typeof HELIOS === 'undefined') return;
+
+    // Create the full encrypted ballot from individual answers
+    this.encryptedBallot = HELIOS.EncryptedVote.fromEncryptedAnswers(
+      this.election,
+      this.encryptedAnswers as EncryptedAnswer[]
+    );
+
+    // Serialize and hash
+    const ballotObj = (this.encryptedBallot as EncryptedVote).toJSONObject();
+    this.encryptedVoteJson = JSON.stringify(ballotObj);
+    this.encryptedBallotHash = b64_sha256(this.encryptedVoteJson);
+
+    // Navigate to review
+    this.currentScreen = 'review';
+  }
+
+  /**
+   * Get pretty choices for display.
+   */
+  private getPrettyChoices(): string[][] {
+    if (!this.election || typeof BALLOT === 'undefined') {
+      return [];
+    }
+    return BALLOT.pretty_choices(this.election, { answers: this.answers });
+  }
+
+  /**
    * Handle exit button click.
    */
   private handleExit(): void {
@@ -281,6 +429,7 @@ export class BoothApp extends LitElement {
   private handleBeforeUnload(event: BeforeUnloadEvent): string | undefined {
     // Only warn if user has started voting (is on question or later screens)
     if (this.currentScreen === 'question' ||
+        this.currentScreen === 'encrypting' ||
         this.currentScreen === 'review' ||
         this.currentScreen === 'audit') {
       const message = 'If you leave this page with an in-progress ballot, your ballot will be lost.';
@@ -337,8 +486,11 @@ export class BoothApp extends LitElement {
     newAnswers[questionIndex] = questionAnswers;
     this.answers = newAnswers;
 
-    // Mark this question's encryption as dirty (will be used in Phase 3)
-    // For now, just track that answers changed
+    // Mark this question's encryption as dirty
+    if (this.dirty.length > questionIndex) {
+      this.dirty = [...this.dirty];
+      this.dirty[questionIndex] = true;
+    }
   }
 
   /**
@@ -387,7 +539,7 @@ export class BoothApp extends LitElement {
         break;
 
       case 'review':
-        this.currentScreen = 'review';
+        this.sealBallot();
         break;
     }
   }
@@ -400,6 +552,138 @@ export class BoothApp extends LitElement {
       this.currentQuestionIndex = index;
       this.currentScreen = 'question';
     }
+  }
+
+  /**
+   * Handle navigation events from review screen.
+   */
+  private handleReviewNavigation(event: CustomEvent<ReviewNavigationEvent>): void {
+    const { action, questionIndex } = event.detail;
+
+    switch (action) {
+      case 'change-question':
+        if (typeof questionIndex === 'number') {
+          this.goToQuestion(questionIndex);
+        }
+        break;
+
+      case 'cast':
+        this.prepareForCast();
+        break;
+
+      case 'audit':
+        this.auditBallot();
+        break;
+    }
+  }
+
+  /**
+   * Prepare for casting - clear plaintexts and go to submit screen.
+   */
+  private prepareForCast(): void {
+    // Clear plaintexts from answers (security measure)
+    this.answers = this.answers.map(() => []);
+
+    // Clear plaintexts from encrypted ballot
+    if (this.encryptedBallot && this.hasClearPlaintexts(this.encryptedBallot)) {
+      this.encryptedBallot.clearPlaintexts();
+    }
+
+    // Clear audit trail
+    this.auditTrail = '';
+
+    this.currentScreen = 'submit';
+  }
+
+  /**
+   * Audit the ballot - show audit trail.
+   */
+  private auditBallot(): void {
+    if (!this.encryptedBallot) return;
+
+    // Get audit trail (includes plaintexts and randomness)
+    const auditObj = (this.encryptedBallot as EncryptedVote).toJSONObject(true);
+    this.auditTrail = JSON.stringify(auditObj, null, 2);
+
+    this.currentScreen = 'audit';
+  }
+
+  /**
+   * Helper to check if object has clearPlaintexts method.
+   */
+  private hasClearPlaintexts(obj: unknown): obj is { clearPlaintexts(): void } {
+    return typeof obj === 'object' && obj !== null && 'clearPlaintexts' in obj && typeof (obj as any).clearPlaintexts === 'function';
+  }
+
+  /**
+   * Handle navigation events from audit screen.
+   */
+  private handleAuditNavigation(event: CustomEvent<AuditNavigationEvent>): void {
+    const { action } = event.detail;
+
+    switch (action) {
+      case 'back-to-voting':
+        this.resetAndReencrypt();
+        break;
+
+      case 'post-audit':
+        this.postAuditedBallot();
+        break;
+    }
+  }
+
+  /**
+   * Reset encryption and go back to re-encrypt.
+   */
+  private resetAndReencrypt(): void {
+    // Mark all answers as dirty to force re-encryption
+    this.dirty = this.dirty.map(() => true);
+    this.encryptedAnswers = this.encryptedAnswers.map(() => null);
+    this.encryptedBallot = null;
+    this.encryptedBallotHash = '';
+    this.encryptedVoteJson = '';
+    this.auditTrail = '';
+
+    // Go back to seal ballot (re-encrypt)
+    this.sealBallot();
+  }
+
+  /**
+   * Post audited ballot to tracking center.
+   */
+  private async postAuditedBallot(): Promise<void> {
+    if (!this.electionUrl || !this.auditTrail) return;
+
+    this.postingAudit = true;
+
+    try {
+      const response = await fetch(`${this.electionUrl}/post-audited-ballot`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `audited_ballot=${encodeURIComponent(this.auditTrail)}`
+      });
+
+      if (response.ok) {
+        alert('This audited ballot has been posted.\nRemember, this vote will only be used for auditing and will not be tallied.\nClick "back to voting" and cast a new ballot to make sure your vote counts.');
+      } else {
+        alert('Failed to post audited ballot. Please try again.');
+      }
+    } catch (err) {
+      alert('Failed to post audited ballot: ' + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      this.postingAudit = false;
+    }
+  }
+
+  /**
+   * Handle ballot submission.
+   */
+  private handleBallotSubmit(): void {
+    // Allow the page to unload
+    // The beforeunload handler checks currentScreen
+    this.currentScreen = 'loading'; // Temporarily set to allow navigation
   }
 
   /**
@@ -439,6 +723,7 @@ export class BoothApp extends LitElement {
   private getProgressStep(): number {
     switch (this.currentScreen) {
       case 'question': return 1;
+      case 'encrypting':
       case 'review': return 2;
       case 'submit': return 3;
       case 'audit': return 4;
@@ -489,14 +774,46 @@ export class BoothApp extends LitElement {
       case 'question':
         return this.renderQuestionScreen();
 
+      case 'encrypting':
+        return html`
+          <encrypting-screen
+            .percentDone=${this.encryptionProgress}
+          ></encrypting-screen>
+        `;
+
       case 'review':
-        return html`<p>Review screen - to be implemented in Phase 3</p>`;
+        return html`
+          <review-screen
+            .election=${this.election}
+            .electionMetadata=${this.electionMetadata}
+            .questions=${this.election?.questions || []}
+            .choices=${this.getPrettyChoices()}
+            .ballotHash=${this.encryptedBallotHash}
+            .encryptedVoteJson=${this.encryptedVoteJson}
+            .showAuditSection=${this.electionMetadata?.use_advanced_audit_features ?? false}
+            @review-navigate=${this.handleReviewNavigation}
+          ></review-screen>
+        `;
 
       case 'submit':
-        return html`<p>Submit screen - to be implemented in Phase 3</p>`;
+        return html`
+          <submit-screen
+            .election=${this.election}
+            .ballotHash=${this.encryptedBallotHash}
+            .encryptedVoteJson=${this.encryptedVoteJson}
+            @ballot-submit=${this.handleBallotSubmit}
+          ></submit-screen>
+        `;
 
       case 'audit':
-        return html`<p>Audit screen - to be implemented in Phase 3</p>`;
+        return html`
+          <audit-screen
+            .auditTrail=${this.auditTrail}
+            .electionUrl=${this.electionUrl}
+            .postingAudit=${this.postingAudit}
+            @audit-navigate=${this.handleAuditNavigation}
+          ></audit-screen>
+        `;
 
       default:
         return html`<p>Unknown screen</p>`;

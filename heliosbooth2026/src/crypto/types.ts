@@ -101,8 +101,9 @@ export interface EncryptedAnswerJSON {
 }
 
 export interface EncryptedVote {
-  toJSONObject(): EncryptedVoteJSON;
+  toJSONObject(includeRandomness?: boolean): EncryptedVoteJSON;
   get_hash(): string;
+  clearPlaintexts?(): void;
 }
 
 export interface EncryptedVoteJSON {
