@@ -8,26 +8,48 @@
     If you would like to specify your list of voters by name and email address,<br />
     you can bulk upload a list of such voters here.<br /><br />
 
-    Please prepare a text file of comma-separated values with the fields:
+    Please prepare a text file of comma-separated values with one of the following formats:
 </p>
+
+<p><strong>For token-based authentication:</strong></p>
 <pre>
-   password,&lt;unique_id&gt;,&lt;email&gt,&lt;full name&gt;
+   token,&lt;email&gt;,&lt;full name&gt;
 </pre>
-<p>
-or
-</p>
+
+<p><strong>For password-based authentication:</strong></p>
+<pre>
+   password,&lt;unique_id&gt;,&lt;email&gt;,&lt;full name&gt;
+</pre>
+
+<p><strong>For other authentication systems (GitHub, Google, etc.):</strong></p>
 <pre>
    github,&lt;username&gt;
 </pre>
 
 <p>
-For example:
+<strong>Examples:</strong>
   </p>
   <pre>
-      password,bobsmith,bob@acme.org,Bob Smith
+      token,alice@example.com,Alice Smith
+      token,bob@example.com,Bob Jones
+      ...
+  </pre>
+  <p>or</p>
+  <pre>
+      password,alice123,alice@example.com,Alice Smith
+      password,bob456,bob@example.com,Bob Jones
+      ...
+  </pre>
+  <p>or</p>
+  <pre>
       github,benadida
       ...
-  </pre> 
+  </pre>
+
+<p>
+<strong>Important:</strong> You cannot mix different authentication methods in the same election.
+All voters must use either token-based or password-based authentication, not both.
+</p> 
 
   <p>
     The easiest way to prepare such a file is to use a spreadsheet program and to export as "CSV".

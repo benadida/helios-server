@@ -686,13 +686,18 @@ def password_voter_login(request, election):
     if user_can_see_election(request, election):
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args = [election.uuid]))
 
-    password_login_form = forms.VoterPasswordForm()
+    # Use appropriate form based on election type
+    if election.use_token_auth:
+      login_form = forms.VoterTokenForm()
+    else:
+      login_form = forms.VoterPasswordForm()
+
     return render_template(request, 'password_voter_login',
-                           {'election': election, 
+                           {'election': election,
                             'return_url' : return_url,
-                            'password_login_form': password_login_form,
+                            'login_form': login_form,
                             'bad_voter_login' : bad_voter_login})
-  
+
   login_url = request.GET.get('login_url', None)
 
   if not login_url:
@@ -703,19 +708,30 @@ def password_voter_login(request, election):
     else:
       login_url = reverse(one_election_cast_confirm, args=[election.uuid])
 
-  password_login_form = forms.VoterPasswordForm(request.POST)
+  # Use appropriate form based on election type
+  if election.use_token_auth:
+    login_form = forms.VoterTokenForm(request.POST)
+  else:
+    login_form = forms.VoterPasswordForm(request.POST)
 
-  if password_login_form.is_valid():
+  if login_form.is_valid():
     try:
-      voter = election.voter_set.get(voter_login_id = password_login_form.cleaned_data['voter_id'].strip(),
-                                     voter_password = password_login_form.cleaned_data['password'].strip())
+      # Token-based authentication
+      if election.use_token_auth:
+        voting_token = login_form.cleaned_data['voting_token'].strip()
+        voter = election.voter_set.get(voting_token=voting_token)
+      # Password-based authentication
+      else:
+        voter_id = login_form.cleaned_data['voter_id'].strip()
+        password = login_form.cleaned_data['password'].strip()
+        voter = election.voter_set.get(voter_login_id=voter_id, voter_password=password)
 
       request.session['CURRENT_VOTER_ID'] = voter.id
 
       # if we're asked to cast, let's do it
       if request.POST.get('cast_ballot') == "1":
         return one_election_cast_confirm(request, election.uuid)
-      
+
     except Voter.DoesNotExist:
       redirect_url = login_url + "?" + urlencode({
           'bad_voter_login' : '1',
@@ -879,7 +895,11 @@ def one_election_cast_confirm(request, election):
 
     if auth_systems is None or 'password' in auth_systems:
       show_password = True
-      password_login_form = forms.VoterPasswordForm()
+      # Select appropriate form based on election setting
+      if election.use_token_auth:
+        password_login_form = forms.VoterTokenForm()
+      else:
+        password_login_form = forms.VoterPasswordForm()
 
       if auth_systems == ['password']:
         password_only = True
@@ -895,7 +915,8 @@ def one_election_cast_confirm(request, election):
         'past_votes': past_votes, 'issues': issues, 'voter' : voter,
         'return_url': return_url,
         'status_update_label': status_update_label, 'status_update_message': status_update_message,
-        'show_password': show_password, 'password_only': password_only, 'password_login_form': password_login_form,
+        'show_password': show_password, 'password_only': password_only,
+        'password_login_form': password_login_form, 'login_form': password_login_form,
         'bad_voter_login': bad_voter_login})
       
   if request.method == "POST":
