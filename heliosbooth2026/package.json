@@ -8,9 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "lit": "^3.3.2"
-  },
-  "devDependencies": {
+    "lit": "^3.3.2",
     "@types/node": "^22.0.0",
     "terser": "^5.46.0",
     "typescript": "^5.7.0",
