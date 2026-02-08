@@ -149,19 +149,6 @@ export interface ElectionMetadata {
   use_advanced_audit_features?: boolean;
 }
 
-// Declare globals that will be available after loading jscrypto scripts
-declare global {
-  const BigInt: BigIntType;
-  const ElGamal: ElGamalType;
-  const HELIOS: HELIOSType;
-  const Random: RandomType;
-  const UTILS: UTILSType;
-  const USE_SJCL: boolean;
-  const sjcl: {
-    random: {
-      startCollectors(): void;
-      addEntropy(data: string): void;
-    };
-  };
-  function b64_sha256(data: string): string;
-}
+// Note: Crypto globals are accessed via window context in booth-app.ts
+// to avoid conflicts with TypeScript's built-in BigInt type.
+// They are loaded via <script> tags in index.html before the app runs.
