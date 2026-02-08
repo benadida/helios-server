@@ -5,7 +5,7 @@ import type { Election, ElectionMetadata, EncryptedAnswer, BigIntType } from './
 /**
  * Screen states for the voting booth flow.
  */
-type BoothScreen = 'loading' | 'election' | 'question' | 'review' | 'submit' | 'audit';
+export type BoothScreen = 'loading' | 'election' | 'question' | 'review' | 'submit' | 'audit';
 
 /**
  * Main booth application component.
@@ -90,6 +90,15 @@ export class BoothApp extends LitElement {
     .progress-step.completed {
       color: var(--color-success, #28a745);
     }
+
+    .start-button-container {
+      text-align: center;
+      margin-top: var(--spacing-lg, 24px);
+    }
+
+    .help-email {
+      margin-top: var(--spacing-lg, 24px);
+    }
   `;
 
   // Application state
@@ -153,6 +162,7 @@ export class BoothApp extends LitElement {
    */
   private waitForCrypto(): Promise<void> {
     return new Promise((resolve, reject) => {
+      // Note: BigInt is accessed via (window as any) to avoid conflicts with TypeScript's built-in BigInt
       const cryptoBigInt = (typeof window !== 'undefined' ? (window as any).BigInt : undefined) as BigIntType;
       if (cryptoBigInt && typeof cryptoBigInt.setup === 'function') {
         cryptoBigInt.setup(resolve, reject);
@@ -183,13 +193,10 @@ export class BoothApp extends LitElement {
     }
 
     // Parse election using HELIOS library
-    const helios = (typeof window !== 'undefined' ? (window as any).HELIOS : undefined);
-    const b64_sha256_fn = (typeof window !== 'undefined' ? (window as any).b64_sha256 : undefined);
-
-    if (helios && typeof helios.Election === 'object' && typeof helios.Election.fromJSONString === 'function') {
-      const parsedElection = helios.Election.fromJSONString(rawJson);
-      if (b64_sha256_fn && typeof b64_sha256_fn === 'function') {
-        parsedElection.hash = b64_sha256_fn(rawJson);
+    if (typeof HELIOS !== 'undefined' && HELIOS.Election && typeof HELIOS.Election.fromJSONString === 'function') {
+      const parsedElection = HELIOS.Election.fromJSONString(rawJson);
+      if (typeof b64_sha256 === 'function') {
+        parsedElection.hash = b64_sha256(rawJson);
         parsedElection.election_hash = parsedElection.hash;
       }
 
@@ -373,14 +380,14 @@ export class BoothApp extends LitElement {
           </ol>
         </div>
 
-        <div class="start-button-container" style="text-align: center; margin-top: 24px;">
+        <div class="start-button-container">
           <button @click=${this.startVoting} aria-label="Start voting">
             Start
           </button>
         </div>
 
         ${this.electionMetadata?.help_email ? html`
-          <p style="margin-top: 24px;">
+          <p class="help-email">
             You can
             <a href="mailto:${this.electionMetadata.help_email}?subject=Help%20with%20election%20${encodeURIComponent(this.election.name)}&body=I%20need%20help%20with%20election%20${this.election.uuid}"
                target="_blank">
