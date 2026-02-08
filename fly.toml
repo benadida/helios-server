@@ -1,0 +1,57 @@
+# Fly.io deployment configuration for Helios Voting
+#
+# To deploy:
+#   1. Install flyctl: https://fly.io/docs/flyctl/install/
+#   2. Create the app: fly apps create your-app-name
+#   3. Create a Postgres database: fly postgres create
+#   4. Attach it: fly postgres attach your-db-name
+#   5. Set secrets:
+#        fly secrets set SECRET_KEY="your-secret-key"
+#        fly secrets set ALLOWED_HOSTS="your-app-name.fly.dev"
+#        fly secrets set URL_HOST="https://your-app-name.fly.dev"
+#        fly secrets set SSL=1
+#        fly secrets set HSTS=1
+#        fly secrets set DEBUG=0
+#   6. Deploy: fly deploy
+#
+# For background worker (Celery), scale a separate process group:
+#   fly scale count worker=1
+#
+# Note: Fly Postgres uses internal networking without SSL,
+#       so DATABASE_SSL_REQUIRE defaults to 0 (override via env if needed).
+
+app = "helios-voting"
+primary_region = "iad"
+
+[build]
+
+[env]
+  PORT = "8080"
+  # Fly Postgres connects over internal network without SSL
+  DATABASE_SSL_REQUIRE = "0"
+
+[processes]
+  web = "uv run gunicorn wsgi:application -b 0.0.0.0:8080 -w 4"
+  worker = "uv run celery --app helios worker --events --beat --concurrency 1"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["web"]
+
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 250
+    soft_limit = 200
+
+[[vm]]
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+[[statics]]
+  guest_path = "/app/server_ui/media"
+  url_prefix = "/static/"

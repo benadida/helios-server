@@ -52,7 +52,8 @@ DATABASES = {
 # override if we have an env variable
 if get_from_env('DATABASE_URL', None):
     import dj_database_url
-    DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
+    _db_ssl = get_from_env('DATABASE_SSL_REQUIRE', '1') == '1'
+    DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=_db_ssl)
     DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
 
 # explicitly set the default auto-created primary field to silence warning models.W042
