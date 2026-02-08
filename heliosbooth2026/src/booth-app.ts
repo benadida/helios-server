@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, nothing } from 'lit';
 import { customElement, state } from 'lit/decorators.js';
 import type { Election, ElectionMetadata, EncryptedAnswer, EncryptedVote, BigIntType } from './crypto/types.js';
 import './screens/question-screen.js';
@@ -87,12 +87,16 @@ export class BoothApp extends LitElement {
       color: var(--color-text-secondary, #666);
     }
 
-    .error {
+    .error,
+    .error-message {
       background-color: #fee;
       border: 1px solid var(--color-error, #dc3545);
       color: var(--color-error, #dc3545);
       padding: var(--spacing-md, 16px);
       border-radius: var(--border-radius, 4px);
+    }
+
+    .error {
       margin-bottom: var(--spacing-md, 16px);
     }
 
@@ -135,12 +139,7 @@ export class BoothApp extends LitElement {
       padding: var(--spacing-xl, 32px);
     }
 
-    .error-message {
-      background-color: #fee;
-      border: 1px solid var(--color-error, #dc3545);
-      color: var(--color-error, #dc3545);
-      padding: var(--spacing-md, 16px);
-      border-radius: var(--border-radius, 4px);
+    .error-screen .error-message {
       margin: var(--spacing-lg, 24px) 0;
     }
 
@@ -585,6 +584,7 @@ export class BoothApp extends LitElement {
   startVoting(): void {
     this.currentQuestionIndex = 0;
     this.currentScreen = 'question';
+    this.focusMainContent();
 
     // If only one question, show review button immediately
     if (this.election && this.election.questions.length === 1) {
@@ -683,6 +683,7 @@ export class BoothApp extends LitElement {
     if (this.election && index >= 0 && index < this.election.questions.length) {
       this.currentQuestionIndex = index;
       this.currentScreen = 'question';
+      this.focusMainContent();
     }
   }
 
@@ -883,19 +884,19 @@ export class BoothApp extends LitElement {
       ${this.currentScreen !== 'loading' && this.currentScreen !== 'election' ? html`
         <nav class="progress-bar" aria-label="Voting progress">
           <span class="progress-step ${this.getProgressStep() >= 1 ? 'active' : ''}"
-                ${this.getProgressStep() === 1 ? 'aria-current="step"' : ''}>
+                aria-current=${this.getProgressStep() === 1 ? 'step' : nothing}>
             1. Select
           </span>
           <span class="progress-step ${this.getProgressStep() >= 2 ? 'active' : ''}"
-                ${this.getProgressStep() === 2 ? 'aria-current="step"' : ''}>
+                aria-current=${this.getProgressStep() === 2 ? 'step' : nothing}>
             2. Review
           </span>
           <span class="progress-step ${this.getProgressStep() >= 3 ? 'active' : ''}"
-                ${this.getProgressStep() === 3 ? 'aria-current="step"' : ''}>
+                aria-current=${this.getProgressStep() === 3 ? 'step' : nothing}>
             3. Submit
           </span>
           <span class="progress-step ${this.getProgressStep() === 4 ? 'active' : ''}"
-                ${this.getProgressStep() === 4 ? 'aria-current="step"' : ''}>
+                aria-current=${this.getProgressStep() === 4 ? 'step' : nothing}>
             4. Done
           </span>
         </nav>
@@ -905,7 +906,7 @@ export class BoothApp extends LitElement {
         <div class="error" role="alert" aria-live="assertive">${this.error}</div>
       ` : ''}
 
-      <main id="main-content" class="content" role="main" tabindex="-1">
+      <main id="main-content" class="content" tabindex="-1">
         ${this.renderCurrentScreen()}
       </main>
     `;
