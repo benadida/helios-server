@@ -6,7 +6,7 @@ readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.13"
 dependencies = [
-    "django==5.2.9",
+    "django==5.2.12",
     "django-webtest>=1.9.11",
     "gunicorn==22.0.0",
     "dj-database-url==2.2.0",

@@ -238,16 +238,16 @@ wheels = [
 
 [[package]]
 name = "django"
-version = "5.2.9"
+version = "5.2.12"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "asgiref" },
     { name = "sqlparse" },
     { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/eb/1c/188ce85ee380f714b704283013434976df8d3a2df8e735221a02605b6794/django-5.2.9.tar.gz", hash = "sha256:16b5ccfc5e8c27e6c0561af551d2ea32852d7352c67d452ae3e76b4f6b2ca495", size = 10848762, upload-time = "2025-12-02T14:01:08.418Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bd/55/b9445fc0695b03746f355c05b2eecc54c34e05198c686f4fc4406b722b52/django-5.2.12.tar.gz", hash = "sha256:6b809af7165c73eff5ce1c87fdae75d4da6520d6667f86401ecf55b681eb1eeb", size = 10860574, upload-time = "2026-03-03T13:56:05.509Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/17/b0/7f42bfc38b8f19b78546d47147e083ed06e12fc29c42da95655e0962c6c2/django-5.2.9-py3-none-any.whl", hash = "sha256:3a4ea88a70370557ab1930b332fd2887a9f48654261cdffda663fef5976bb00a", size = 8290652, upload-time = "2025-12-02T14:01:03.485Z" },
+    { url = "https://files.pythonhosted.org/packages/4e/32/4b144e125678efccf5d5b61581de1c4088d6b0286e46096e3b8de0d556c8/django-5.2.12-py3-none-any.whl", hash = "sha256:4853482f395c3a151937f6991272540fcbf531464f254a347bf7c89f53c8cff7", size = 8310245, upload-time = "2026-03-03T13:56:01.174Z" },
 ]
 
 [[package]]
@@ -404,7 +404,7 @@ requires-dist = [
     { name = "bleach", specifier = "==6.1.0" },
     { name = "celery", specifier = "==5.6.1" },
     { name = "dj-database-url", specifier = "==2.2.0" },
-    { name = "django", specifier = "==5.2.9" },
+    { name = "django", specifier = "==5.2.12" },
     { name = "django-anymail", specifier = "==11.0.1" },
     { name = "django-auth-ldap", specifier = "==4.8.0" },
     { name = "django-csp", specifier = "==3.8" },
