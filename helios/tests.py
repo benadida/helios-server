@@ -992,7 +992,8 @@ class ElectionBlackboxTests(WebTest):
         self.setup_login(from_scratch=True, user_id='mccio@github.com', user_type='google')
         response = self.client.get("/helios/stats/", follow=False)
         self.assertStatusCode(response, 200)
-        response = self.client.get("/helios/stats/force-queue", follow=False)
+        response = self.client.post("/helios/stats/force-queue", {
+                "csrf_token": self.client.session['csrf_token']}, follow=False)
         self.assertRedirects(response, "/helios/stats/")
         response = self.client.get("/helios/stats/elections", follow=False)
         self.assertStatusCode(response, 200)
@@ -1046,7 +1047,7 @@ class ElectionBlackboxTests(WebTest):
         # add a few voters with an improperly placed email address
         FILE = "helios/fixtures/voter-badfile.csv"
         voters_file = open(FILE)
-        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'voters_file': voters_file})
+        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'voters_file': voters_file, 'csrf_token': self.client.session['csrf_token']})
         voters_file.close()
         self.assertContains(response, "HOLD ON")
 
@@ -1056,18 +1057,18 @@ class ElectionBlackboxTests(WebTest):
         # I just needed some unicode quickly.
         FILE = "helios/fixtures/voter-file.csv"
         voters_file = open(FILE)
-        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'voters_file': voters_file})
+        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'voters_file': voters_file, 'csrf_token': self.client.session['csrf_token']})
         voters_file.close()
         self.assertContains(response, "first few rows of this file")
 
         # now we confirm the upload
-        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'confirm_p': "1"})
+        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'confirm_p': "1", 'csrf_token': self.client.session['csrf_token']})
         self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
 
         # Try a latin-1 encoded file
         FILE = "helios/fixtures/voter-file-latin1.csv"
         voters_file = open(FILE, mode='rb')
-        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'voters_file': voters_file})
+        response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'voters_file': voters_file, 'csrf_token': self.client.session['csrf_token']})
         voters_file.close()
         self.assertContains(response, "first few rows of this file")
         
@@ -1341,14 +1342,14 @@ class ElectionBlackboxTests(WebTest):
         with open("helios/fixtures/voter-file.csv") as f:
             response = self.client.post(
                 "/helios/elections/%s/voters/upload" % election_id,
-                {"voters_file": f}
+                {"voters_file": f, "csrf_token": self.client.session["csrf_token"]}
             )
         self.assertContains(response, "first few rows")
 
         # Confirm first upload
         response = self.client.post(
             "/helios/elections/%s/voters/upload" % election_id,
-            {"confirm_p": "1"}
+            {"confirm_p": "1", "csrf_token": self.client.session["csrf_token"]}
         )
         self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
 
@@ -1362,14 +1363,14 @@ class ElectionBlackboxTests(WebTest):
         with open("helios/fixtures/voter-file-2.csv") as f:
             response = self.client.post(
                 "/helios/elections/%s/voters/upload" % election_id,
-                {"voters_file": f}
+                {"voters_file": f, "csrf_token": self.client.session["csrf_token"]}
             )
         self.assertContains(response, "first few rows")
 
         # Confirm second upload
         response = self.client.post(
             "/helios/elections/%s/voters/upload" % election_id,
-            {"confirm_p": "1"}
+            {"confirm_p": "1", "csrf_token": self.client.session["csrf_token"]}
         )
         self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
 
@@ -1416,14 +1417,14 @@ class ElectionBlackboxTests(WebTest):
         with open("helios/fixtures/voter-file.csv") as f:
             response = self.client.post(
                 "/helios/elections/%s/voters/upload" % election_id,
-                {"voters_file": f}
+                {"voters_file": f, "csrf_token": self.client.session["csrf_token"]}
             )
         self.assertContains(response, "first few rows")
 
         # Confirm upload
         response = self.client.post(
             "/helios/elections/%s/voters/upload" % election_id,
-            {"confirm_p": "1"}
+            {"confirm_p": "1", "csrf_token": self.client.session["csrf_token"]}
         )
         self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
 
@@ -1484,11 +1485,11 @@ class ElectionBlackboxTests(WebTest):
         with open("helios/fixtures/voter-file.csv") as f:
             self.client.post(
                 "/helios/elections/%s/voters/upload" % election_id,
-                {"voters_file": f}
+                {"voters_file": f, "csrf_token": self.client.session["csrf_token"]}
             )
         self.client.post(
             "/helios/elections/%s/voters/upload" % election_id,
-            {"confirm_p": "1"}
+            {"confirm_p": "1", "csrf_token": self.client.session["csrf_token"]}
         )
 
         # Add a question
@@ -3301,7 +3302,8 @@ class VoterDeleteRestrictionTests(WebTest):
         """Voter deletion should be allowed before tallying starts"""
         self.setup_login()
         response = self.client.post("/helios/elections/%s/voters/%s/delete" % (
-            self.election.uuid, self.voter.uuid))
+            self.election.uuid, self.voter.uuid),
+            {"csrf_token": self.client.session["csrf_token"]})
         # Should redirect (302) on successful deletion
         self.assertStatusCode(response, 302)
 
@@ -3312,7 +3314,8 @@ class VoterDeleteRestrictionTests(WebTest):
         self.election.save()
 
         response = self.client.post("/helios/elections/%s/voters/%s/delete" % (
-            self.election.uuid, self.voter.uuid))
+            self.election.uuid, self.voter.uuid),
+            {"csrf_token": self.client.session["csrf_token"]})
         self.assertStatusCode(response, 403)
 
     def test_voters_list_shows_delete_button_when_allowed(self):
@@ -3321,8 +3324,8 @@ class VoterDeleteRestrictionTests(WebTest):
 
         response = self.client.get("/helios/elections/%s/voters/list" % self.election.uuid)
         self.assertStatusCode(response, 200)
-        # Check for the delete link with [x] text
-        self.assertContains(response, '>x</a>]')
+        # Check for the delete [x] button (a POST form, so that it carries a CSRF token)
+        self.assertContains(response, '>x</button></form>]')
 
     def test_voters_list_hides_delete_button_when_blocked(self):
         """Voter list should hide delete [x] button when tallying has started"""
@@ -3332,6 +3335,6 @@ class VoterDeleteRestrictionTests(WebTest):
 
         response = self.client.get("/helios/elections/%s/voters/list" % self.election.uuid)
         self.assertStatusCode(response, 200)
-        # Check that the delete link is not present
-        self.assertNotContains(response, '>x</a>]')
+        # Check that the delete button is not present
+        self.assertNotContains(response, '>x</button></form>]')
 

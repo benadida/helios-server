@@ -31,12 +31,15 @@ def ldap_login_view(request):
     from helios_auth.view_utils import render_template
     from helios_auth.views import after
     from helios_auth.auth_systems.ldapbackend import backend
+    from helios_auth.security import check_csrf
 
     error = None
 
     if request.method == "GET":
         form = LoginForm()
     else:
+        check_csrf(request)
+
         form = LoginForm(request.POST)
 
         request.session['auth_system_name'] = 'ldap'

@@ -45,12 +45,15 @@ def password_login_view(request):
   from helios_auth.view_utils import render_template
   from helios_auth.views import after
   from helios_auth.models import User
+  from helios_auth.security import check_csrf
 
   error = None
-  
+
   if request.method == "GET":
     form = LoginForm()
   else:
+    check_csrf(request)
+
     form = LoginForm(request.POST)
 
     # set this in case we came here straight from the multi-login chooser
@@ -80,10 +83,13 @@ def password_forgotten_view(request):
   """
   from helios_auth.view_utils import render_template
   from helios_auth.models import User
+  from helios_auth.security import check_csrf
 
   if request.method == "GET":
     return render_template(request, 'password/forgot', {'return_url': request.GET.get('return_url', '')})
   else:
+    check_csrf(request)
+
     username = request.POST['username']
     return_url = request.POST['return_url']
     

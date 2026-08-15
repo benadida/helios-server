@@ -2,3 +2,31 @@
 #contentbody {
   padding: 20px 30px 20px 30px;
 }
+
+/*
+  State-changing actions have to be POSTs so they can carry a CSRF token, but a
+  few of them (deleting a voter, deleting a trustee) read better as inline links
+  than as buttons. These rules let a <button> inside an inline form look like the
+  <a> it replaced.
+*/
+form.inline-action {
+  display: inline;
+  margin: 0;
+}
+
+button.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: #2ba6cb;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button.link-button:hover {
+  text-decoration: underline;
+}

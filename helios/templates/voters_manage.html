@@ -29,7 +29,7 @@ Voters {{offset_plus_one}} - {{offset_plus_limit}} &nbsp;&nbsp;
 <tr><td>{{voter.alias}}</td><td>{{voter.name}}</td><td>{{voter.voter_id}}
 {% if election.frozen_at %}
 {% else %}
-[<a onclick="return confirm('are you sure you want to remove {{voter.name}} ?');" href="{% url "election@voter@delete" election.uuid voter.uuid %}">x</a>]
+[<form class="inline-action" method="post" action="{% url "election@voter@delete" election.uuid voter.uuid %}" onsubmit="return confirm('are you sure you want to remove {{voter.name}} ?');"><input type="hidden" name="csrf_token" value="{{csrf_token}}" /><button type="submit" class="link-button">x</button></form>]
 {% endif %}
 </td></tr>
 {% endfor %}
