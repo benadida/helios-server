@@ -32,6 +32,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "html5lib>=1.1",
     "pytest>=8.0.0",
 ]
 

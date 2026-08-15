@@ -113,6 +113,13 @@ if get_from_env('SSL', '0') == '1':
 
 SESSION_COOKIE_HTTPONLY = True
 
+# Set this explicitly rather than relying on the Django default: it is a load-bearing
+# part of our CSRF defense, since Helios does its own CSRF checking (check_csrf) rather
+# than using Django's CsrfViewMiddleware. 'Lax' keeps the session cookie off every
+# cross-site POST and off cross-site GET subresources (images, iframes, fetch), while
+# still allowing ordinary inbound links to Helios to stay logged in.
+SESSION_COOKIE_SAMESITE = get_from_env('SESSION_COOKIE_SAMESITE', 'Lax')
+
 # let's go with one year because that's the way to do it now
 STS = False
 if get_from_env('HSTS', '0') == '1':

@@ -9,13 +9,25 @@
 <small><a class="small button" href="{% url "election@edit" election.uuid %}">edit</a></small>
 {% endif %}
 {% endif %}</h3>
-<p style="padding-top:0px; margin-top:0px">
+<!-- a div rather than a p: this block holds inline <form>s (the admin actions have to
+     be POSTs so they can carry a CSRF token), and the parser would auto-close a <p> at
+     the first one. -->
+<div style="padding-top:0px; margin-top:0px; margin-bottom:1em">
 <em>{% if election.private_p %}private{%else%}public{% endif %}</em> {{ election.election_type }}{% if settings.SHOW_USER_INFO %} created by <u><b>{{election.admin.display_html_small|safe}}</b></u>{% endif %}
 {% if election.is_archived %}
 [archived]
 {% endif %}
 {% if admin_p %}
-&nbsp;{% if election.is_archived %}<a class="small button" href="{% url "election@archive" election_uuid=election.uuid %}?archive_p=0">unarchive it</a>{% else %}<a class="small button" href="{% url "election@archive" election_uuid=election.uuid %}?archive_p=1">archive it</a>{% endif %}
+&nbsp;<form class="inline-action" method="post" action="{% url "election@archive" election_uuid=election.uuid %}">
+<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+{% if election.is_archived %}
+<input type="hidden" name="archive_p" value="0" />
+<button type="submit" class="small button">unarchive it</button>
+{% else %}
+<input type="hidden" name="archive_p" value="1" />
+<button type="submit" class="small button">archive it</button>
+{% endif %}
+</form>
 {% if election.is_archived %}
 <form method="post" action="{% url "election@delete" election_uuid=election.uuid %}" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this election? Once deleted, only site administrators can restore it.');">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
@@ -23,7 +35,10 @@
 <button type="submit" class="small button">delete it</button>
 </form>
 {% endif %}
-<a class="small button" onclick="return window.confirm('Are you sure you want to copy this election?');" href="{% url "election@copy" election_uuid=election.uuid %}">copy</a>
+<form class="inline-action" method="post" action="{% url "election@copy" election_uuid=election.uuid %}" onsubmit="return window.confirm('Are you sure you want to copy this election?');">
+<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<button type="submit" class="small button">copy</button>
+</form>
 {% endif %}
 <br />
 {% if admin_p %}
@@ -31,17 +46,17 @@
 {% if election.featured_p %}
 this {{election.election_type}} is featured on the front page.
 {% if can_feature_p %}
-[<a href="{% url "election@set-featured" election.uuid %}?featured_p=0">unfeature it</a>]
+[<form class="inline-action" method="post" action="{% url "election@set-featured" election.uuid %}"><input type="hidden" name="csrf_token" value="{{csrf_token}}" /><input type="hidden" name="featured_p" value="0" /><button type="submit" class="link-button">unfeature it</button></form>]
 {% endif %}
 {% else %}
 this {{election.election_type}} is <u>not</u> featured on the front page.
 {% if can_feature_p %}
-[<a href="{% url "election@set-featured" election.uuid %}?featured_p=1">feature it</a>]
+[<form class="inline-action" method="post" action="{% url "election@set-featured" election.uuid %}"><input type="hidden" name="csrf_token" value="{{csrf_token}}" /><input type="hidden" name="featured_p" value="1" /><button type="submit" class="link-button">feature it</button></form>]
 {% endif %}
 {% endif %}
 {% endif %}
 {% endif %}
-</p>
+</div>
 
 </div>
 

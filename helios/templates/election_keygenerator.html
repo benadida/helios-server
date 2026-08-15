@@ -160,6 +160,7 @@ Your key has been generated, but you may choose to<br /><a href="javascript:clea
 </div>
 
 <form method="post" id="pk_form" action="{% url "election@trustee@upload-pk" election.uuid trustee.uuid %}">
+<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
 <h3>Your Public Key</h3>
 <p>
     It's time to upload the public key to the server.

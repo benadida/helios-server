@@ -32,6 +32,8 @@ def home(request):
 
 def force_queue(request):
   user = require_admin(request)
+  check_csrf(request)
+
   votes_in_queue = CastVote.objects.filter(invalidated_at=None, verified_at=None)
   for cv in votes_in_queue:
     tasks.cast_vote_verify_and_store.delay(cv.id)

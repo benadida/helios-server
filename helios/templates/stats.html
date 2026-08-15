@@ -12,6 +12,6 @@
 <li> <a href="{% url "stats@elections-problems" %}">recent problem elections</a></li>
 </ul>
 
-<p><b>{{num_votes_in_queue}}</b> votes in queue. {% if num_votes_in_queue %}[<a href="{% url "stats@force-queue" %}">force it</a>]{% endif %}</p>
+<div><b>{{num_votes_in_queue}}</b> votes in queue. {% if num_votes_in_queue %}[<form class="inline-action" method="post" action="{% url "stats@force-queue" %}"><input type="hidden" name="csrf_token" value="{{csrf_token}}" /><button type="submit" class="link-button">force it</button></form>]{% endif %}</div>
 
 {% endblock %}

@@ -23,18 +23,24 @@ HOLD ON:<br />
 </p>
 <br />
 
-<a href="{% url "election@voters@upload-cancel" election.uuid %}">never mind, upload a different file</a>
-</p>
+<form class="inline-action" method="post" action="{% url "election@voters@upload-cancel" election.uuid %}">
+<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<button type="submit" class="link-button">never mind, upload a different file</button>
+</form>
 
 {% else %}
 <p></p>
 <form method="post" action="" id="upload_form">
   Does this look right to you?
+  <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
   <input type="hidden" name="confirm_p" value="1" />
   <input class="button" type="submit" value="Yes, let's go" />
 </form>
 
-<a href="{% url "election@voters@upload-cancel" election.uuid %}">no, let me upload a different file</a>
+<form class="inline-action" method="post" action="{% url "election@voters@upload-cancel" election.uuid %}">
+<input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<button type="submit" class="link-button">no, let me upload a different file</button>
+</form>
 
 {% endif %}
 

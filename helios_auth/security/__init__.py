@@ -6,8 +6,7 @@ Ben Adida (ben@adida.net)
 
 import uuid
 from django.conf import settings
-from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseNotAllowed
+from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.http import HttpResponseRedirect
 # nicely update the wrapper function
 from functools import update_wrapper
@@ -106,11 +105,17 @@ def get_user(request):
     return None  
 
 def check_csrf(request):
+  """
+  Raises SuspiciousOperation (which Django turns into a 400) when the request is
+  not a CSRF-protected POST. Both checks must raise rather than return: callers
+  invoke this as a bare statement, so a returned response would be discarded and
+  the view would keep going as if the check had passed.
+  """
   if request.method != "POST":
-    return HttpResponseNotAllowed("only a POST for this URL")
-    
-  if ('csrf_token' not in request.POST) or (request.POST['csrf_token'] != request.session['csrf_token']):
-    raise Exception("A CSRF problem was detected")
+    raise SuspiciousOperation("only a POST for this URL")
+
+  if ('csrf_token' not in request.POST) or (request.POST['csrf_token'] != request.session.get('csrf_token')):
+    raise SuspiciousOperation("A CSRF problem was detected")
 
 def save_in_session_across_logouts(request, field_name, field_value):
   fields_to_save = request.session.get(FIELDS_TO_SAVE, [])

@@ -282,9 +282,14 @@ class LDAPAuthTests(TestCase):
 
     def test_ldap_view_login(self):
         """ test if authenticates using the auth system login view """
+        # prime the session so that it carries a csrf_token, the way rendering the
+        # login form would
+        self.client.get(reverse(ldap_views.ldap_login_view))
+
         resp = self.client.post(reverse(ldap_views.ldap_login_view), {
             'username' : self.username,
-            'password': self.password
+            'password': self.password,
+            'csrf_token': self.client.session['csrf_token']
             }, follow=True)
         self.assertEqual(resp.status_code, 200)
 
