@@ -18,7 +18,13 @@ def random_mpz_lt(maximum, strong_random=random):
     which caps the output at 2^(n_bits) - 1 < maximum. The rejection loop below
     then never fires and the top slice of the range is never sampled (5.6% of
     the range for the default 256-bit q), biasing every exponent drawn here.
+
+    Raises ValueError for a non-positive maximum, which names no valid result:
+    the rejection loop would otherwise spin forever, since every draw is >= 0.
     """
+    if maximum <= 0:
+        raise ValueError("maximum must be positive, got %r" % (maximum,))
+
     n_bits = maximum.bit_length()
     res = strong_random.getrandbits(n_bits)
     while res >= maximum:
