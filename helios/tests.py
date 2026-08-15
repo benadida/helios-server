@@ -23,8 +23,88 @@ import helios.views as views
 from helios import tasks
 from helios.crypto import algs, electionalgs
 from helios.crypto import elgamal as crypto_elgamal
+from helios.crypto import utils as crypto_utils
 from helios.workflows import homomorphic
 from helios_auth import models as auth_models
+
+
+class RandomMpzLtTests(TestCase):
+    """
+    Tests for helios.crypto.utils.random_mpz_lt, which must sample uniformly
+    from [0, maximum) -- every exponent in the system is drawn through it.
+    """
+
+    # the exponent modulus every real draw is bounded by
+    Q = views.ELGAMAL_PARAMS.q
+
+    class ScriptedRandom(object):
+        """
+        Replays a canned sequence of draws and records the bit counts asked for.
+
+        getrandbits is honest about its width -- each value is masked to the
+        number of bits requested, exactly as a real generator would -- so a test
+        can tell a 255-bit draw from a 256-bit one by what comes back. Running
+        the sequence dry raises rather than blocking, so a regression that stops
+        the rejection loop from terminating fails the test instead of hanging it.
+        """
+
+        def __init__(self, values):
+            self.values = list(values)
+            self.requested_bits = []
+
+        def getrandbits(self, n_bits):
+            self.requested_bits.append(n_bits)
+            if not self.values:
+                raise AssertionError(
+                    "random_mpz_lt drew more times than the test scripted; "
+                    "the rejection loop is not terminating")
+            return self.values.pop(0) & ((1 << n_bits) - 1)
+
+    def test_samples_the_top_of_the_range(self):
+        """
+        Regression test: sizing the draw with floor(log2(q)) asked for one bit
+        too few and capped the output below 2^(bit_length - 1), so the top 5.6%
+        of [0, q) was never sampled. That made the simulated branch of a
+        disjunctive proof distinguishable from the real one, which leaks the
+        plaintext.
+
+        q - 1 lies in that top slice, so it survives a full-width draw but loses
+        its high bit to a one-bit-short one -- enough to tell the two sizings
+        apart without any real randomness.
+        """
+        n_bits = self.Q.bit_length()
+        top_slice = 1 << (n_bits - 1)
+        # q is prime, hence not a power of two, so q - 1 is inside the slice
+        self.assertGreater(self.Q - 1, top_slice)
+
+        scripted = self.ScriptedRandom([self.Q - 1])
+        result = crypto_utils.random_mpz_lt(self.Q, strong_random=scripted)
+        self.assertEqual(scripted.requested_bits, [n_bits])
+        self.assertEqual(result, self.Q - 1)
+        self.assertGreaterEqual(result, top_slice)
+
+    def test_redraws_values_at_or_above_maximum(self):
+        """Draws >= maximum are discarded and redrawn, keeping the result in range."""
+        n_bits = self.Q.bit_length()
+        scripted = self.ScriptedRandom([self.Q, self.Q + 1, self.Q - 1])
+        result = crypto_utils.random_mpz_lt(self.Q, strong_random=scripted)
+        self.assertEqual(result, self.Q - 1)
+        self.assertEqual(scripted.requested_bits, [n_bits] * 3)
+
+    def test_rejects_non_positive_maximum(self):
+        """
+        No integer satisfies 0 <= res < maximum when maximum <= 0, so the
+        rejection loop would spin forever. Fail loudly instead, as the previous
+        math.log implementation did.
+        """
+        for maximum in (0, -1, -self.Q):
+            with self.subTest(maximum=maximum):
+                # a scripted generator turns a regression here into a failure
+                # rather than a hang
+                scripted = self.ScriptedRandom([0, 0, 0])
+                with self.assertRaises(ValueError):
+                    crypto_utils.random_mpz_lt(maximum, strong_random=scripted)
+                self.assertEqual(scripted.requested_bits, [])
 
 
 class ElectionModelTests(TestCase):
