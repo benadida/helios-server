@@ -30,3 +30,17 @@ button.link-button {
 button.link-button:hover {
   text-decoration: underline;
 }
+
+/*
+  The trustee heading carries those inline action forms next to the trustee's name.
+  They cannot live inside the <h5> (a form is flow content, a heading takes phrasing
+  content), so the heading is inlined and the wrapper keeps the block spacing.
+*/
+.trustee-heading {
+  margin: 1.25rem 0 0.5rem;
+}
+
+.trustee-heading h5 {
+  display: inline;
+  margin: 0;
+}

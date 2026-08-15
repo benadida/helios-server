@@ -39,7 +39,10 @@
 
 {% else %}
 {% for t in trustees %}
-<h5> Trustee #{{forloop.counter}}: {{t.name}} 
+<!-- the action forms sit alongside the heading rather than inside it: a <form> is flow
+     content, which an <h5> is not allowed to contain. -->
+<div class="trustee-heading">
+<h5>Trustee #{{forloop.counter}}: {{t.name}}</h5>
 {% if admin_p %}
 {% if t.secret_key %}
 {% if not election.frozen_at %}[<form class="inline-action" method="post" action="{% url "election@trustees@delete" election.uuid %}" onsubmit="return confirm('Are you sure you want to remove Helios as a trustee?');"><input type="hidden" name="csrf_token" value="{{csrf_token}}" /><input type="hidden" name="uuid" value="{{t.uuid}}" /><button type="submit" class="link-button">x</button></form>]{% endif %}
@@ -49,7 +52,7 @@
 [<form class="inline-action" method="post" action="{% url "election@trustee@send-url" election.uuid t.uuid %}" onsubmit="return confirm('Are you sure you want to send this trustee his/her admin URL?');"><input type="hidden" name="csrf_token" value="{{csrf_token}}" /><button type="submit" class="link-button">send login</button></form>]
 {% endif %}
 {% endif %}
-</h5>
+</div>
 
 <p>
 {% if t.public_key_hash %}

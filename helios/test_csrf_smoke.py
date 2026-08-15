@@ -124,6 +124,34 @@ class CSRFProtectedActionTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEveryFormIsProtected(response.content.decode(), url)
 
+  def test_action_forms_are_not_nested_in_phrasing_only_elements(self):
+    """
+    A <form> is flow content, so it may not sit inside a <p> or an <h1>-<h6>. The
+    parser also silently closes a <p> at a <form>, which would move these actions
+    out of the block they appear to belong to.
+    """
+    try:
+      import html5lib
+    except ImportError:
+      self.skipTest("html5lib not installed")
+
+    self.election.generate_trustee(ELGAMAL_PARAMS)
+    models.Voter.objects.create(
+      uuid=str(uuidlib.uuid4()), election=self.election,
+      voter_email='voter@test.com', voter_name='Test Voter')
+
+    for path in ['/view', '/trustees/view', '/voters/list']:
+      with self.subTest(path=path):
+        response = self.client.get(self.election_url(path))
+        self.assertEqual(response.status_code, 200)
+        document = html5lib.parse(response.content.decode(), treebuilder="etree",
+                                  namespaceHTMLElements=False)
+        for tag in ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
+          for element in document.iter(tag):
+            self.assertIsNone(
+              element.find('.//form'),
+              "a <form> is nested inside a <%s> on %s" % (tag, path))
+
   def test_election_view_renders_the_admin_actions_as_forms(self):
     response = self.client.get(self.election_url('/view'))
     html = response.content.decode()
