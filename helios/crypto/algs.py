@@ -637,8 +637,8 @@ class EGZKProof(object):
         Verify a DH tuple proof
         """
         # check that A, B are in the correct group
-        if not (pow(self.commitment['A'], self.pk.q, self.pk.p) == 1
-                and pow(self.commitment['B'], self.pk.q, self.pk.p) == 1):
+        if not (pow(self.commitment['A'], q, p) == 1
+                and pow(self.commitment['B'], q, p) == 1):
             return False
 
         # check that little_g^response = A * big_g^challenge

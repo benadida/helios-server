@@ -369,7 +369,12 @@ class Ciphertext:
       
       Proof contains commitment = {A, B}, challenge, response
       """
-      
+
+      # check that A, B are in the correct group
+      if not (pow(proof.commitment['A'], self.pk.q, self.pk.p) == 1
+              and pow(proof.commitment['B'], self.pk.q, self.pk.p) == 1):
+        return False
+
       # check that g^response = A * alpha^challenge
       first_check = (pow(self.pk.g, proof.response, self.pk.p) == ((pow(self.alpha, proof.challenge, self.pk.p) * proof.commitment['A']) % self.pk.p))
       
@@ -425,6 +430,25 @@ class Ciphertext:
         
       return running_decryption
 
+    def check_group_membership(self, pk):
+      """
+      checks to see if an ElGamal element belongs to the group in the pk
+      """
+      if not (1 < self.alpha < pk.p - 1):
+        return False
+
+      elif not (1 < self.beta < pk.p - 1):
+        return False
+
+      elif pow(self.alpha, pk.q, pk.p) != 1:
+        return False
+
+      elif pow(self.beta, pk.q, pk.p) != 1:
+        return False
+
+      else:
+        return True
+
     def to_string(self):
         return "%s,%s" % (self.alpha, self.beta)
     
@@ -472,6 +496,11 @@ class ZKProof(object):
     """
     Verify a DH tuple proof
     """
+    # check that A, B are in the correct group
+    if not (pow(self.commitment['A'], q, p) == 1
+            and pow(self.commitment['B'], q, p) == 1):
+      return False
+
     # check that little_g^response = A * big_g^challenge
     first_check = (pow(little_g, self.response, p) == ((pow(big_g, self.challenge, p) * self.commitment['A']) % p))
     

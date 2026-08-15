@@ -288,10 +288,34 @@ ElGamal.Ciphertext = Class.extend({
     return new ElGamal.DisjunctiveProof(proofs);
   },
   
+  // check that the ElGamal elements belong to the order-q subgroup of the
+  // group described by the public key
+  checkGroupMembership: function() {
+    var p_minus_one = this.pk.p.add(BigInt.ONE.negate());
+
+    if (this.alpha.equals(BigInt.ONE) || this.alpha.equals(p_minus_one))
+      return false;
+
+    if (this.beta.equals(BigInt.ONE) || this.beta.equals(p_minus_one))
+      return false;
+
+    if (!this.alpha.modPow(this.pk.q, this.pk.p).equals(BigInt.ONE))
+      return false;
+
+    if (!this.beta.modPow(this.pk.q, this.pk.p).equals(BigInt.ONE))
+      return false;
+
+    return true;
+  },
+
   verifyDisjunctiveProof: function(list_of_plaintexts, disj_proof, challenge_generator) {
     var result = true;
     var proofs = disj_proof.proofs;
     
+    // verify that elements belong to the proper group
+    if (!this.checkGroupMembership())
+      return false;
+
     // for loop because we want to bail out of the inner loop
     // if we fail one of the verifications.
     for (var i=0; i < list_of_plaintexts.length; i++) {

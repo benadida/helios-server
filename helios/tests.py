@@ -4,6 +4,7 @@ Unit Tests for Helios
 
 import datetime
 import logging
+import random as stdlib_random
 import re
 import uuid
 from urllib.parse import urlencode
@@ -20,7 +21,9 @@ import helios.models as models
 import helios.utils as utils
 import helios.views as views
 from helios import tasks
-from helios.crypto import electionalgs
+from helios.crypto import algs, electionalgs
+from helios.crypto import elgamal as crypto_elgamal
+from helios.workflows import homomorphic
 from helios_auth import models as auth_models
 
 
@@ -504,6 +507,189 @@ class CastVoteModelTests(TestCase):
 
     def test_cast_vote(self):
         pass
+
+class BallotGroupMembershipTestsMixin(object):
+    """
+    Ballot verification must reject ciphertext elements that do not live in the
+    order-q subgroup. The Helios parameters use a 2048-bit p with a 256-bit q, so
+    p-1 has a large cofactor and elements of small order do exist; a proof of
+    knowledge alone does not pin alpha and beta down to the intended subgroup.
+
+    There are two ElGamal implementations in the tree, and only one of them is
+    reachable from a cast ballot, so every case here runs against both.
+    """
+    allow_database_queries = False
+
+    # filled in by the concrete subclasses
+    public_key_class = None
+    secret_key_class = None
+    ciphertext_class = None
+    proof_class = None
+    disjunctive_proof_class = None
+    secret_key_public_key_attribute = 'pk'
+
+    def setUp(self):
+        params = views.ELGAMAL_PARAMS
+        self.p, self.q, self.g = params.p, params.q, params.g
+
+        secret = stdlib_random.randrange(2, self.q)
+        self.pk = self.public_key_class()
+        self.pk.p, self.pk.q, self.pk.g = self.p, self.q, self.g
+        self.pk.y = pow(self.g, secret, self.p)
+
+        self.sk = self.secret_key_class()
+        self.sk.x = secret
+        setattr(self.sk, self.secret_key_public_key_attribute, self.pk)
+
+        self.plaintexts = homomorphic.EncryptedAnswer.generate_plaintexts(self.pk)
+
+        # p-1 has order 2, so it is a witness that p is not a safe prime
+        self.small_order_element = self.p - 1
+        self.assertEqual(pow(self.small_order_element, 2, self.p), 1)
+        self.assertNotEqual(pow(self.small_order_element, self.q, self.p), 1)
+
+    def encrypt(self, exponent, randomness, outside_subgroup=False):
+        """
+        encrypt g^exponent, optionally pushing alpha out of the order-q subgroup
+        """
+        ciphertext = self.ciphertext_class()
+        ciphertext.pk = self.pk
+        ciphertext.alpha = pow(self.g, randomness, self.p)
+        if outside_subgroup:
+            ciphertext.alpha = (ciphertext.alpha * self.small_order_element) % self.p
+        ciphertext.beta = (pow(self.pk.y, randomness, self.p) * pow(self.g, exponent, self.p)) % self.p
+        return ciphertext
+
+    def forge_disjunctive_proof(self, ciphertext, real_index, randomness):
+        """
+        Build a disjunctive proof for a ciphertext whose alpha carries a factor of
+        order 2. Every stored challenge is ground to be even, so that factor raised
+        to the challenge is 1 and drops out of each verification equation. Only a
+        couple of attempts per proof are needed, which is precisely why the subgroup
+        check cannot be left to the proof itself.
+        """
+        for _ in range(200):
+            proofs = [None] * len(self.plaintexts)
+            for index in range(len(self.plaintexts)):
+                if index != real_index:
+                    even_challenge = 2 * stdlib_random.randrange(1, self.q // 2)
+                    proofs[index] = ciphertext.simulate_encryption_proof(
+                        self.plaintexts[index], challenge=even_challenge)
+
+            commitment_randomness = stdlib_random.randrange(self.q)
+            real_proof = self.proof_class()
+            real_proof.commitment = {
+                'A': pow(self.g, commitment_randomness, self.p),
+                'B': pow(self.pk.y, commitment_randomness, self.p),
+            }
+            proofs[real_index] = real_proof
+
+            overall = algs.EG_disjunctive_challenge_generator([p.commitment for p in proofs])
+            simulated_sum = sum(proofs[i].challenge for i in range(len(proofs)) if i != real_index)
+            challenge = (overall - simulated_sum) % self.q
+
+            if challenge % 2:
+                continue
+
+            real_proof.challenge = challenge
+            real_proof.response = (commitment_randomness + randomness * challenge) % self.q
+            return self.disjunctive_proof_class(proofs)
+
+        self.fail("could not grind an even challenge")
+
+    def build_answer(self, outside_subgroup):
+        """
+        a single-question, two-answer ballot voting for the first answer
+        """
+        randomness = [stdlib_random.randrange(self.q) for _ in range(2)]
+        choices = [
+            self.encrypt(1, randomness[0], outside_subgroup=outside_subgroup),
+            self.encrypt(0, randomness[1]),
+        ]
+
+        answer = homomorphic.EncryptedAnswer()
+        answer.choices = choices
+
+        if outside_subgroup:
+            answer.individual_proofs = [
+                self.forge_disjunctive_proof(choices[0], 1, randomness[0]),
+                self.forge_disjunctive_proof(choices[1], 0, randomness[1]),
+            ]
+            answer.overall_proof = self.forge_disjunctive_proof(
+                choices[0] * choices[1], 1, (randomness[0] + randomness[1]) % self.q)
+        else:
+            answer.individual_proofs = [
+                choices[0].generate_disjunctive_encryption_proof(
+                    self.plaintexts, 1, randomness[0], algs.EG_disjunctive_challenge_generator),
+                choices[1].generate_disjunctive_encryption_proof(
+                    self.plaintexts, 0, randomness[1], algs.EG_disjunctive_challenge_generator),
+            ]
+            answer.overall_proof = (choices[0] * choices[1]).generate_disjunctive_encryption_proof(
+                self.plaintexts, 1, (randomness[0] + randomness[1]) % self.q,
+                algs.EG_disjunctive_challenge_generator)
+
+        return answer
+
+    def test_well_formed_answer_verifies(self):
+        answer = self.build_answer(outside_subgroup=False)
+        self.assertTrue(answer.verify(self.pk, min=0, max=1))
+
+    def test_answer_outside_subgroup_is_rejected(self):
+        answer = self.build_answer(outside_subgroup=True)
+
+        # the forged ballot is well formed apart from the subgroup violation:
+        # every proof equation still holds
+        self.assertNotEqual(pow(answer.choices[0].alpha, self.q, self.p), 1)
+        for choice_num, choice in enumerate(answer.choices):
+            choice.pk = self.pk
+            self.assertTrue(choice.verify_disjunctive_encryption_proof(
+                self.plaintexts, answer.individual_proofs[choice_num],
+                algs.EG_disjunctive_challenge_generator))
+
+        self.assertFalse(answer.verify(self.pk, min=0, max=1))
+
+    def test_check_group_membership_rejects_small_order_factor(self):
+        ciphertext = self.encrypt(1, stdlib_random.randrange(self.q), outside_subgroup=True)
+        self.assertFalse(ciphertext.check_group_membership(self.pk))
+
+    def test_decryption_factor_proof_verifies(self):
+        """
+        the DH tuple proof is reached when a trustee uploads its decryption; it must
+        use the p and q it is handed rather than attributes it does not carry
+        """
+        randomness = stdlib_random.randrange(self.q)
+        ciphertext = self.encrypt(1, randomness)
+
+        factor, proof = self.sk.decryption_factor_and_proof(ciphertext)
+
+        self.assertTrue(proof.verify(
+            self.pk.g, ciphertext.alpha, self.pk.y, factor, self.pk.p, self.pk.q,
+            algs.EG_fiatshamir_challenge_generator))
+
+
+class AlgsBallotGroupMembershipTests(BallotGroupMembershipTestsMixin, TestCase):
+    public_key_class = algs.EGPublicKey
+    secret_key_class = algs.EGSecretKey
+    ciphertext_class = algs.EGCiphertext
+    proof_class = algs.EGZKProof
+    disjunctive_proof_class = algs.EGZKDisjunctiveProof
+
+
+class ElGamalBallotGroupMembershipTests(BallotGroupMembershipTestsMixin, TestCase):
+    """
+    crypto.elgamal is the implementation a cast ballot actually deserializes into,
+    by way of datatypes.legacy.EGCiphertext
+    """
+    public_key_class = crypto_elgamal.PublicKey
+    secret_key_class = crypto_elgamal.SecretKey
+    ciphertext_class = crypto_elgamal.Ciphertext
+    proof_class = crypto_elgamal.ZKProof
+    disjunctive_proof_class = crypto_elgamal.ZKDisjunctiveProof
+    secret_key_public_key_attribute = 'public_key'
+
+    def test_cast_ballots_deserialize_into_this_implementation(self):
+        self.assertIs(datatypes.legacy.EGCiphertext.WRAPPED_OBJ_CLASS, self.ciphertext_class)
+
 
 class DatatypeTests(TestCase):
     fixtures = ['users.json', 'election.json']
