@@ -63,7 +63,11 @@ class EncryptedAnswer(WorkflowObject):
       choice = self.choices[choice_num]
       choice.pk = pk
       individual_proof = self.individual_proofs[choice_num]
-      
+
+      # verify that elements belong to the proper group
+      if not choice.check_group_membership(pk):
+        return False
+
       # verify the proof on the encryption of that choice
       if not choice.verify_disjunctive_encryption_proof(possible_plaintexts, individual_proof, algs.EG_disjunctive_challenge_generator):
         return False
