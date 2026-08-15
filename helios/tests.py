@@ -34,8 +34,8 @@ class RandomMpzLtTests(TestCase):
     from [0, maximum) -- every exponent in the system is drawn through it.
     """
 
-    # the q of the default Helios group, see helios.views.ELGAMAL_PARAMS
-    Q = 61329566248342901292543872769978950870633559608669337131139375508370458778917
+    # the exponent modulus every real draw is bounded by
+    Q = views.ELGAMAL_PARAMS.q
 
     class ScriptedRandom(object):
         """
@@ -62,28 +62,34 @@ class RandomMpzLtTests(TestCase):
 
     def test_samples_the_top_of_the_range(self):
         """
-        Regression test: sizing the draw with floor(log2(q)) asked for 255 bits
-        and capped the output at 2^255 - 1, so the top 5.6% of [0, q) was never
-        sampled. That made the simulated branch of a disjunctive proof
-        distinguishable from the real one, which leaks the plaintext.
+        Regression test: sizing the draw with floor(log2(q)) asked for one bit
+        too few and capped the output below 2^(bit_length - 1), so the top 5.6%
+        of [0, q) was never sampled. That made the simulated branch of a
+        disjunctive proof distinguishable from the real one, which leaks the
+        plaintext.
 
-        q - 1 lies in that top slice, so it survives a 256-bit draw but loses
-        its high bit to a 255-bit one -- no real randomness needed to tell the
-        two apart.
+        q - 1 lies in that top slice, so it survives a full-width draw but loses
+        its high bit to a one-bit-short one -- enough to tell the two sizings
+        apart without any real randomness.
         """
-        self.assertEqual(self.Q.bit_length(), 256)
+        n_bits = self.Q.bit_length()
+        top_slice = 1 << (n_bits - 1)
+        # q is prime, hence not a power of two, so q - 1 is inside the slice
+        self.assertGreater(self.Q - 1, top_slice)
+
         scripted = self.ScriptedRandom([self.Q - 1])
         result = crypto_utils.random_mpz_lt(self.Q, strong_random=scripted)
-        self.assertEqual(scripted.requested_bits, [256])
+        self.assertEqual(scripted.requested_bits, [n_bits])
         self.assertEqual(result, self.Q - 1)
-        self.assertGreaterEqual(result, 1 << 255)
+        self.assertGreaterEqual(result, top_slice)
 
     def test_redraws_values_at_or_above_maximum(self):
         """Draws >= maximum are discarded and redrawn, keeping the result in range."""
+        n_bits = self.Q.bit_length()
         scripted = self.ScriptedRandom([self.Q, self.Q + 1, self.Q - 1])
         result = crypto_utils.random_mpz_lt(self.Q, strong_random=scripted)
         self.assertEqual(result, self.Q - 1)
-        self.assertEqual(scripted.requested_bits, [256, 256, 256])
+        self.assertEqual(scripted.requested_bits, [n_bits] * 3)
 
     def test_rejects_non_positive_maximum(self):
         """
