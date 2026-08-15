@@ -23,8 +23,70 @@ import helios.views as views
 from helios import tasks
 from helios.crypto import algs, electionalgs
 from helios.crypto import elgamal as crypto_elgamal
+from helios.crypto import utils as crypto_utils
 from helios.workflows import homomorphic
 from helios_auth import models as auth_models
+
+
+class RandomMpzLtTests(TestCase):
+    """
+    Tests for helios.crypto.utils.random_mpz_lt, which must sample uniformly
+    from [0, maximum) -- every exponent in the system is drawn through it.
+    """
+
+    # the q of the default Helios group, see helios.views.ELGAMAL_PARAMS
+    Q = 61329566248342901292543872769978950870633559608669337131139375508370458778917
+
+    class FakeRandom(object):
+        """Records the bit counts requested, and replays a canned sequence."""
+
+        def __init__(self, values):
+            self.values = list(values)
+            self.requested_bits = []
+
+        def getrandbits(self, n_bits):
+            self.requested_bits.append(n_bits)
+            return self.values.pop(0)
+
+    def test_requests_the_full_bit_length(self):
+        """Sampling must draw maximum.bit_length() bits, not floor(log2(maximum))."""
+        fake = self.FakeRandom([0])
+        crypto_utils.random_mpz_lt(self.Q, strong_random=fake)
+        self.assertEqual(fake.requested_bits, [256])
+        self.assertEqual(self.Q.bit_length(), 256)
+
+    def test_rejects_values_at_or_above_maximum(self):
+        """Draws >= maximum are discarded and redrawn, keeping the result in range."""
+        fake = self.FakeRandom([self.Q, self.Q + 1, self.Q - 1])
+        result = crypto_utils.random_mpz_lt(self.Q, strong_random=fake)
+        self.assertEqual(result, self.Q - 1)
+        self.assertEqual(fake.requested_bits, [256, 256, 256])
+
+    def test_reaches_the_top_of_the_range(self):
+        """
+        Regression test: with floor(log2(q)) bits the output was capped at
+        2^255 - 1, so the top 5.6% of [0, q) was never sampled. That made the
+        simulated branch of a disjunctive proof distinguishable from the real
+        one, which leaks the plaintext.
+        """
+        threshold = 1 << 255
+        self.assertLess(threshold, self.Q)
+        # each draw clears the threshold with probability ~5.6%, so 500 draws
+        # miss with probability ~3e-13
+        samples = [crypto_utils.random_mpz_lt(self.Q) for _ in range(500)]
+        self.assertTrue(any(sample >= threshold for sample in samples))
+        self.assertTrue(all(0 <= sample < self.Q for sample in samples))
+
+    def test_covers_every_value_of_a_small_range(self):
+        """A small maximum yields every value below it, and never maximum itself."""
+        samples = set(crypto_utils.random_mpz_lt(3) for _ in range(200))
+        self.assertEqual(samples, {0, 1, 2})
+
+    def test_power_of_two_maximum(self):
+        """An exact power of two stays in range (the old floor(log2()) edge case)."""
+        samples = [crypto_utils.random_mpz_lt(256) for _ in range(200)]
+        self.assertTrue(all(0 <= sample < 256 for sample in samples))
+        self.assertTrue(any(sample >= 128 for sample in samples))
 
 
 class ElectionModelTests(TestCase):

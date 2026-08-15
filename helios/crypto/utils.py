@@ -2,7 +2,6 @@
 Crypto Utils
 """
 import base64
-import math
 
 from Crypto.Hash import SHA256
 from Crypto.Random.random import StrongRandom
@@ -11,7 +10,16 @@ random = StrongRandom()
 
 
 def random_mpz_lt(maximum, strong_random=random):
-    n_bits = int(math.floor(math.log(maximum, 2)))
+    """
+    Uniformly sample an integer in [0, maximum).
+
+    n_bits must be the exact bit length of maximum, not floor(log2(maximum)):
+    the latter is one too small for every maximum that isn't a power of two,
+    which caps the output at 2^(n_bits) - 1 < maximum. The rejection loop below
+    then never fires and the top slice of the range is never sampled (5.6% of
+    the range for the default 256-bit q), biasing every exponent drawn here.
+    """
+    n_bits = maximum.bit_length()
     res = strong_random.getrandbits(n_bits)
     while res >= maximum:
         res = strong_random.getrandbits(n_bits)
