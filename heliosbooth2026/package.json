@@ -1,0 +1,17 @@
+{
+  "name": "heliosbooth2026",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build && cp -r lib dist/lib && mkdir -p dist/workers && cp workers/verify-ballot.js dist/workers/",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lit": "^3.3.2",
+    "@types/node": "^22.0.0",
+    "terser": "^5.46.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0"
+  }
+}
