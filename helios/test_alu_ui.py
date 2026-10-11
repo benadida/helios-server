@@ -2,6 +2,10 @@
 import json
 import subprocess
 import uuid
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier, local
+from django.db import close_old_connections, connections
+from django.test import TransactionTestCase, override_settings
 from pathlib import Path
 from unittest.mock import Mock, patch
 
@@ -72,7 +76,7 @@ class AluUiTests(test_bridge.BridgeTests):
     models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
     self.assertEqual(self.management('stats', self.election.uuid, subject='organizer').json()['votes'], 1)
     done = self.client.get(self.base + '/cast_done')
-    self.assertTrue(done.url.startswith('https://alu.example/vote/' + self.election.uuid + '?tracker='))
+    self.assertEqual(done.url, 'https://alu.example/vote/' + self.election.uuid)
     receipt = self.client.get(self.base + '/ui/receipt/' + result['tracker']).json()
     self.assertEqual(receipt['status'], 'verified')
     self.assertFalse(receipt['released'])
@@ -118,7 +122,7 @@ class AluUiTests(test_bridge.BridgeTests):
     response = self.client.post(self.base + '/ui/submit',
       {'encrypted_vote': vote['encrypted']}, HTTP_ORIGIN='https://alu.example')
     self.assertEqual(response.status_code, 302)
-    self.assertEqual(response.url, self.base + '/ui/login')
+    self.assertEqual(response.url, '/auth/alu/start/' + self.election.uuid + '/')
     self.assertEqual(self.client.session['encrypted_vote'], vote['encrypted'])
     self.assertEqual(models.CastVote.objects.count(), 0)
     self.client.get(self.base + '/ui/login')
@@ -143,6 +147,91 @@ class AluUiTests(test_bridge.BridgeTests):
     self.assertEqual(result.json(), {'election_id': self.election.uuid, 'votes': 0, 'pending': 0})
     self.assertEqual(self.client.post('/helios/alu/manage', '{}', content_type='application/json').status_code, 401)
     self.assertEqual(self.management('stats', self.election.uuid, subject='student').status_code, 403)
+
+  def test_stale_login_for_another_election_renews_at_handoff(self):
+    self.frozen_ballot()
+    vote = self.server_ballot()
+    self.finish(self.begin())
+    session = self.client.session
+    session['alu_election'] = str(uuid.uuid4())
+    session.save()
+    response = self.client.post(self.base + '/ui/submit',
+      {'encrypted_vote': vote['encrypted']}, HTTP_ORIGIN='https://alu.example')
+    self.assertEqual(response.status_code, 302)
+    self.assertEqual(response.url, '/auth/alu/start/' + self.election.uuid + '/')
+    self.assertEqual(self.client.session['encrypted_vote'], vote['encrypted'])
+    self.assertEqual(models.CastVote.objects.count(), 0)
+
+  def test_submitted_choices_for_all_positions_cannot_be_replaced(self):
+    self.election.questions = [
+      {'answer_urls': [None, None], 'answers': ['Alice', 'Bob'],
+       'choice_type': 'approval', 'max': 1, 'min': 0, 'question': title,
+       'result_type': 'absolute', 'short_name': title, 'tally_type': 'homomorphic'}
+      for title in ('President', 'Vice President')]
+    self.election.generate_trustee(views.ELGAMAL_PARAMS)
+    self.election.save()
+    self.election.freeze()
+    self.base = f'/helios/elections/{self.election.uuid}'
+    self.finish(self.begin())
+    original = homomorphic.EncryptedVote.fromElectionAndAnswers(self.election, [[0], [1]]).ld_object.serialize()
+    replacement = homomorphic.EncryptedVote.fromElectionAndAnswers(self.election, [[1], [0]]).ld_object.serialize()
+    self.client.post(self.base + '/ui/submit', {'encrypted_vote': original}, HTTP_ORIGIN='https://alu.example')
+    self.client.get(self.base + '/cast_confirm')
+    token = self.client.session['csrf_token']
+    with patch('helios.views.tasks.cast_vote_verify_and_store.delay'):
+      accepted = self.client.post(self.base + '/cast_confirm', {'csrf_token': token})
+      self.assertEqual(accepted.url, 'https://alu.example/vote/' + self.election.uuid)
+      self.assertEqual(models.CastVote.objects.count(), 1)
+      # A pending submission is locked too, before the worker verifies it.
+      self.client.post(self.base + '/ui/submit', {'encrypted_vote': replacement}, HTTP_ORIGIN='https://alu.example')
+      session = self.client.session
+      session['encrypted_vote'] = replacement
+      session.save()
+      self.client.post(self.base + '/cast_confirm', {'csrf_token': token})
+    self.assertEqual(models.CastVote.objects.count(), 1)
+    cast = models.CastVote.objects.get()
+    self.assertTrue(cast.verify_and_store())
+    retained = cast.vote_hash
+    self.client.post(self.base + '/cast', {'encrypted_vote': replacement})
+    self.client.post(self.base + '/cast_confirm', {'csrf_token': token})
+    self.assertEqual(models.CastVote.objects.count(), 1)
+    cast.voter.refresh_from_db()
+    self.assertEqual(cast.voter.vote_hash, retained)
+    self.assertEqual(cast.vote.ld_object.serialize(), original)
+
+  def test_administrator_cannot_remove_a_submitted_vote(self):
+    self.frozen_ballot()
+    self.finish(self.begin())
+    vote = self.server_ballot()
+    self.client.post(self.base + '/ui/submit', {'encrypted_vote': vote['encrypted']}, HTTP_ORIGIN='https://alu.example')
+    self.client.get(self.base + '/cast_confirm')
+    self.client.post(self.base + '/cast_confirm', {'csrf_token': self.client.session['csrf_token']})
+    cast = models.CastVote.objects.get()
+    self.client = Client()
+    self.finish(self.begin(), subject='organizer', email='organizer@alustudent.com', access_kind='committee')
+    response = self.client.post(self.base + '/voters/' + cast.voter.uuid + '/delete',
+      {'csrf_token': self.client.session['csrf_token']})
+    self.assertEqual(response.status_code, 403)
+    self.assertEqual(models.CastVote.objects.count(), 1)
+
+  def test_vote_status_requires_server_auth_and_returns_no_tracker(self):
+    self.frozen_ballot()
+    endpoint = self.base + '/ui/vote-status'
+    body = json.dumps({'client_id': settings.ALU_BRIDGE_CLIENT_ID, 'subject': 'student'})
+    self.assertEqual(self.client.post(endpoint, body, content_type='application/json').status_code, 401)
+    headers = {'HTTP_AUTHORIZATION': 'Bearer ' + settings.ALU_BRIDGE_SECRET}
+    self.assertEqual(self.client.post(endpoint, body, content_type='application/json', **headers).json(),
+      {'election_id': self.election.uuid, 'status': 'none'})
+    self.finish(self.begin())
+    vote = self.server_ballot()
+    self.client.post(self.base + '/ui/submit', {'encrypted_vote': vote['encrypted']}, HTTP_ORIGIN='https://alu.example')
+    self.client.get(self.base + '/cast_confirm')
+    with patch('helios.views.tasks.cast_vote_verify_and_store.delay'):
+      self.client.post(self.base + '/cast_confirm', {'csrf_token': self.client.session['csrf_token']})
+    self.assertEqual(self.client.post(endpoint, body, content_type='application/json', **headers).json()['status'], 'pending')
+    self.assertTrue(models.CastVote.objects.get().verify_and_store())
+    self.assertEqual(self.client.post(endpoint, body, content_type='application/json', **headers).json(),
+      {'election_id': self.election.uuid, 'status': 'verified'})
 
   def test_private_or_unallowlisted_ballot_not_exposed(self):
     self.frozen_ballot()
@@ -268,3 +357,49 @@ class AluUiTests(test_bridge.BridgeTests):
     election.voting_ended_at=now-datetime.timedelta(seconds=1);election.save()
     self.assertEqual(self.management('freeze', election_id, setup_digest=digest, start_now=True).status_code,403)
     self.assertEqual(self.management('freeze', election_id, setup_digest=digest, start_now='true').status_code,400)
+
+# A real PostgreSQL transaction test ensures two simultaneous confirmations
+# reserve only one submission before the verification task runs.
+
+
+@override_settings(AUTH_ENABLED_SYSTEMS=['alu'], ALU_STUDENT_DOMAIN='alustudent.com',
+  ALU_BRIDGE_APP_ORIGIN='https://alu.example', SECURE_URL_HOST='https://helios.example',
+  ALU_BRIDGE_SECRET='test-only-secret-with-at-least-32-bytes',
+  ALU_BRIDGE_CLIENT_ID='alu-helios-demo', CELERY_TASK_ALWAYS_EAGER=True,
+  CELERY_BROKER_URL='memory://', EMAIL_BACKEND='django.core.mail.backends.dummy.EmailBackend')
+class AluSingleSubmissionTests(TransactionTestCase):
+  setUp = test_bridge.BridgeTests.setUp
+  begin = test_bridge.BridgeTests.begin
+  finish = test_bridge.BridgeTests.finish
+  frozen_ballot = AluUiTests.frozen_ballot
+  server_ballot = AluUiTests.server_ballot
+
+  def test_concurrent_confirmations_keep_only_one_submission(self):
+    self.frozen_ballot()
+    self.finish(self.begin())
+    original = self.server_ballot()['encrypted']
+    self.client.post(self.base + '/ui/submit', {'encrypted_vote': original}, HTTP_ORIGIN='https://alu.example')
+    self.client.get(self.base + '/cast_confirm')
+    second = Client()
+    self.finish(self.begin(client=second), client=second)
+    second.post(self.base + '/ui/submit', {'encrypted_vote': original}, HTTP_ORIGIN='https://alu.example')
+    barrier = Barrier(2)
+    thread = local()
+    original_access = views.require_voting_access
+    def synchronized_access(*args):
+      original_access(*args)
+      thread.checks = getattr(thread, 'checks', 0) + 1
+      if thread.checks == 2:
+        barrier.wait(timeout=10)
+    def submit(client):
+      close_old_connections()
+      try:
+        return client.post(self.base + '/cast_confirm', {'csrf_token': client.session['csrf_token']}).status_code
+      finally:
+        connections.close_all()
+    with patch('helios.views.require_voting_access', side_effect=synchronized_access), \
+         patch('helios.views.tasks.cast_vote_verify_and_store.delay') as verification:
+      with ThreadPoolExecutor(max_workers=2) as pool:
+        self.assertEqual(list(pool.map(submit, [self.client, second])), [302, 302])
+      self.assertEqual(verification.call_count, 1)
+    self.assertEqual(models.CastVote.objects.count(), 1)
