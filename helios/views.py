@@ -670,6 +670,12 @@ def one_election_cast(request, election):
   user = get_user(request)
   if user:
     require_voting_access(request, election, user)
+  if bridge_election(election) and user:
+    existing = CastVote.objects.filter(voter__election=election, voter__user=user,
+      invalidated_at=None).order_by('-cast_at').first()
+    if existing:
+      from .alu_ui import return_url
+      return HttpResponseRedirect(return_url(election))
   encrypted_vote = request.POST['encrypted_vote']
 
   save_in_session_across_logouts(request, 'encrypted_vote', encrypted_vote)
@@ -838,6 +844,12 @@ def one_election_cast_confirm(request, election):
   if user and not voter and election.openreg:
     voter = _register_voter(election, user)
     
+  if bridge_election(election) and voter:
+    existing = voter.castvote_set.filter(invalidated_at=None).order_by('-cast_at').first()
+    if existing:
+      from .alu_ui import return_url
+      return HttpResponseRedirect(return_url(election))
+
   # tallied election, no vote casting
   if election.encrypted_tally or election.result:
     return render_template(request, 'election_tallied', {'election': election})
@@ -943,7 +955,18 @@ def one_election_cast_confirm(request, election):
     # code, session, registration or GET confirmation cannot bypass membership.
     require_voting_access(request, election, user)
     # don't store the vote in the voter's data structure until verification
-    cast_vote.save()
+    if bridge_election(election):
+      # Lock the voter until a submission is reserved. Concurrent confirmations
+      # must not produce two votes, even while verification runs asynchronously.
+      with transaction.atomic():
+        Voter.objects.select_for_update().get(pk=voter.pk)
+        existing = voter.castvote_set.filter(invalidated_at=None).order_by('-cast_at').first()
+        if existing:
+          from .alu_ui import return_url
+          return HttpResponseRedirect(return_url(election))
+        cast_vote.save()
+    else:
+      cast_vote.save()
 
     # status update?
     if request.POST.get('status_update', False):
@@ -959,6 +982,9 @@ def one_election_cast_confirm(request, election):
     # remove the vote from the store
     del request.session['encrypted_vote']
     
+    if request.session.get('alu_ui_election') == election.uuid and bridge_election(election):
+      from .alu_ui import return_url
+      return HttpResponseRedirect(return_url(election))
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_done, args=[election.uuid]))
   
 @election_view()
@@ -975,7 +1001,7 @@ def one_election_cast_done(request, election):
     votes = CastVote.get_by_voter(voter)
     if request.session.get('alu_ui_election') == election.uuid and bridge_election(election) and votes:
       from .alu_ui import return_url
-      return HttpResponseRedirect(return_url(election, votes[0].vote_hash))
+      return HttpResponseRedirect(return_url(election))
     vote_hash = votes[0].vote_hash
     cv_url = get_castvote_url(votes[0])
 
@@ -1100,6 +1126,8 @@ def voter_delete(request, election, voter_uuid):
 
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
   if voter:
+    if bridge_election(election) and voter.castvote_set.filter(invalidated_at=None).exists():
+      raise PermissionDenied('Submitted votes are locked and cannot be removed.')
     
     if voter.vote_hash:
       # send email to voter

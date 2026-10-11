@@ -1,18 +1,21 @@
 """ALU presentation adapters. Casting and proof verification stay in Helios."""
 import json
+import hmac
+import time
+import logging
 import re
-from urllib.parse import urlencode
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect, JsonResponse, Http404
+from django.shortcuts import render
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_GET, require_POST
 
 from helios import utils
 from helios.crypto import utils as cryptoutils
-from helios.models import CastVote
-from helios.security import election_view
+from helios.models import CastVote, Election
+from helios.security import election_view, do_election_checks
 from helios_auth.security import get_user
 from helios_auth.bridge_protocol import https_origin
 from helios_auth.bridge_views import private_response
@@ -97,29 +100,39 @@ def ciphertext_only(raw, election):
 
 @sensitive_post_parameters('encrypted_vote')
 @require_POST
-@election_view(frozen=True)
-def submit(request, election):
-  public_demo(election)
-  # This top-level, ciphertext-only handoff cannot cast a vote. Explicit same-origin
-  # CSRF-protected confirmation and fresh validated shared login are still required.
-  if request.headers.get('Origin') != https_origin(settings.ALU_BRIDGE_APP_ORIGIN):
-    raise PermissionDenied('Ballot handoff origin rejected.')
-  if set(request.POST) != {'encrypted_vote'} or len(request.POST.getlist('encrypted_vote')) != 1:
-    raise PermissionDenied('Invalid encrypted ballot.')
+def submit(request, election_uuid):
+  # This handoff cannot cast. A login for another election must not prevent
+  # saving ciphertext and renewing the election-bound voting identity.
+  election = Election.get_by_uuid(election_uuid)
+  if not election:
+    raise Http404
   try:
+    public_demo(election)
+    do_election_checks(election, {'frozen': True})
+    if request.headers.get('Origin') != https_origin(settings.ALU_BRIDGE_APP_ORIGIN):
+      logging.getLogger(__name__).warning('ALU vote handoff rejected: origin mismatch')
+      return private_response(render(request, 'helios/templates/alu_vote_error.html', {
+        'message': 'Please open the current voting link and try again.',
+        'return_url': return_url(election)}, status=403))
+    if set(request.POST) != {'encrypted_vote'} or len(request.POST.getlist('encrypted_vote')) != 1:
+      raise ValueError()
     ciphertext_only(request.POST['encrypted_vote'], election)
   except (ValueError, KeyError, TypeError, RecursionError):
-    raise PermissionDenied('Invalid encrypted ballot.') from None
+    logging.getLogger(__name__).warning('ALU vote handoff rejected: invalid prepared vote')
+    return private_response(render(request, 'helios/templates/alu_vote_error.html', {
+      'message': 'Your vote could not be prepared. Please return to voting and choose again.',
+      'return_url': return_url(election)}, status=403))
   from helios.views import one_election_cast
-  save_in_session_across_logouts(request, 'alu_ui_election', election.uuid)
-  # A stale browser login must renew before eligibility is checked. The handoff
-  # only saves validated ciphertext; confirmation still checks access and CSRF.
   user = get_user(request)
-  if not user:
-    save_in_session_across_logouts(request, 'encrypted_vote', request.POST['encrypted_vote'])
-    return private_response(HttpResponseRedirect(f'/helios/elections/{election.uuid}/ui/login'))
-  response = one_election_cast(request, election_uuid=election.uuid)
-  return private_response(response)
+  save_in_session_across_logouts(request, 'alu_ui_election', election.uuid)
+  if (user and user.user_type == 'alu' and
+      request.session.get('alu_election') == election.uuid and
+      request.session.get('alu_session_expires_at', 0) > time.time()):
+    return private_response(one_election_cast(request, election_uuid=election.uuid))
+  # Authenticate fresh without passing the stale identity through ui/login.
+  save_in_session_across_logouts(request, 'encrypted_vote', request.POST['encrypted_vote'])
+  request.session['alu_return_path'] = f'/helios/elections/{election.uuid}/cast_confirm'
+  return private_response(HttpResponseRedirect(f'/auth/alu/start/{election.uuid}/'))
 
 
 @require_GET
@@ -148,6 +161,32 @@ def receipt(request, election, tracker):
     'released': bool(election.result_released_at)}))
 
 
-def return_url(election, tracker=None):
+def return_url(election):
   path = https_origin(settings.ALU_BRIDGE_APP_ORIGIN) + '/vote/' + election.uuid
-  return path + ('?' + urlencode({'tracker': tracker}) if tracker else '')
+  return path
+
+
+@require_POST
+@election_view()
+def vote_status(request, election):
+  # This private server-to-server read never accepts a browser's identity.
+  if (not settings.ALU_BRIDGE_SECRET or not hmac.compare_digest(
+      request.headers.get('Authorization', '').encode(),
+      ('Bearer ' + settings.ALU_BRIDGE_SECRET).encode())):
+    return private_response(JsonResponse({'error': 'Unauthorized'}, status=401))
+  public_demo(election)
+  try:
+    if len(request.body) > 1024:
+      raise ValueError()
+    data = json.loads(request.body)
+    if (not isinstance(data, dict) or set(data) != {'client_id', 'subject'} or
+        data['client_id'] != settings.ALU_BRIDGE_CLIENT_ID or
+        not isinstance(data['subject'], str) or not 0 < len(data['subject']) <= 100):
+      raise ValueError()
+  except (ValueError, TypeError, KeyError):
+    return private_response(JsonResponse({'error': 'Invalid request'}, status=400))
+  cast = CastVote.objects.filter(voter__election=election,
+    voter__user__user_type='alu', voter__user__user_id=data['subject'],
+    invalidated_at=None).order_by('-cast_at').first()
+  status = 'verified' if cast and cast.verified_at else 'pending' if cast else 'none'
+  return private_response(JsonResponse({'election_id': election.uuid, 'status': status}))

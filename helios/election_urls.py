@@ -12,6 +12,7 @@ from helios import election_url_names as names
 
 urlpatterns = [
     path('/ui/ballot', alu_ui.ballot),
+    path('/ui/vote-status', alu_ui.vote_status),
     path('/ui/submit', alu_ui.submit),
     path('/ui/login', alu_ui.login),
     path('/ui/receipt/<path:tracker>', alu_ui.receipt),

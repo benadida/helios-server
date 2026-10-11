@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="referrer" content="no-referrer"><title>Confirm your ballot · ALU Rwanda</title>
+<meta name="referrer" content="no-referrer"><title>Submit your vote · ALU Rwanda</title>
 <style>
 body{margin:0;background:#f7f8fa;color:#10131a;font-family:Arial,sans-serif}header{background:white;border-bottom:1px solid #e4e7ec;padding:20px 6%;font-weight:600;color:#002e6d}main{max-width:640px;margin:auto;padding:32px 24px}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:#767d8c}h1{font-size:30px;margin:12px 0}.card{background:white;border:1px solid #e4e7ec;border-radius:14px;padding:24px;margin-top:28px}p{font-size:14px;line-height:1.6;color:#4a5160}.tracker{overflow-wrap:anywhere;font:16px monospace;color:#10131a}button,.button{display:inline-block;border:0;border-radius:12px;padding:16px 24px;background:#002e6d;color:white;font-size:15px;font-weight:600;text-decoration:none;cursor:pointer;transition:background .13s,transform .13s}button:hover,.button:hover{background:#06366f}button:active,.button:active{transform:scale(.98)}button:disabled{opacity:.5}a{color:#002e6d}small{color:#767d8c}.error{color:#b3261e}
 </style></head><body><header>ALU Rwanda · Student elections</header><main>
@@ -15,7 +15,7 @@ body{margin:0;background:#f7f8fa;color:#10131a;font-family:Arial,sans-serif}head
 <form method="post" action="" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Submitting your vote…'">
 <input type="hidden" name="csrf_token" value="{{csrf_token}}">
 <button type="submit">Submit my vote</button></form>
-<p><small>If you vote again, only your latest vote counts.</small></p>
+<p><small>You can vote only once in this election.</small></p>
 {% else %}
 <p>Sign in with your ALU student account to submit your vote.</p>
 <a class="button" href="/helios/elections/{{election.uuid}}/ui/login">Continue with ALU account</a>
