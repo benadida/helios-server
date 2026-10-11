@@ -103,7 +103,7 @@ def manage(request):
     if election_id != data['election_id']:
       raise ValueError()
     operation = data['operation']
-    if operation not in ('create', 'ballot', 'freeze', 'tally', 'combine', 'release'):
+    if operation not in ('create', 'ballot', 'freeze', 'tally', 'combine', 'release', 'stats'):
       raise ValueError()
     if 'start_now' in data and (operation != 'freeze' or type(data['start_now']) is not bool):
       raise ValueError()
@@ -139,6 +139,11 @@ def manage(request):
         raise PermissionDenied('An existing election permission is required.') from None
       if not views.user_can_admin_election(actor, election):
         raise PermissionDenied('An existing election permission is required.')
+      if operation == 'stats':
+        return private_response(JsonResponse({'election_id': election_id,
+          'votes': election.num_cast_votes, 'pending': election.num_pending_votes}))
+      if operation == 'tally' and election.num_pending_votes:
+        raise PermissionDenied('Votes are still being checked. Please wait a moment and try again.')
       if operation == 'ballot':
         if election.frozen_at:
           raise PermissionDenied('A frozen ballot cannot be changed.')
@@ -205,7 +210,13 @@ def manage(request):
         'voting_started_at': election.voting_started_at.isoformat() + 'Z' if election.voting_started_at else None,
         'frozen': bool(election.frozen_at), 'closed': bool(election.voting_has_stopped()),
         'released': bool(election.result_released_at), 'setup_digest': setup_digest(election)}))
-  except PermissionDenied:
-    return private_response(HttpResponse('Election action refused', status=403))
+  except PermissionDenied as error:
+    messages = {
+      'Votes are still being checked. Please wait a moment and try again.': 'Votes are still being checked. Please wait a moment and try again.',
+      'Ballots require an explicit election-policy decision before tallying.': 'Some votes need committee review before voting can close.',
+      'Voting eligibility could not be checked. Please retry.': 'We could not check student accounts. Please try again shortly.',
+      'An existing election permission is required.': 'Your account does not have permission to do this. Ask the election administrator for help.',
+    }
+    return private_response(JsonResponse({'error': messages.get(str(error), 'This step is not ready yet. Check the election setup and try again.')}, status=403))
   except (ValueError, KeyError, TypeError, RecursionError):
     return private_response(HttpResponse('Invalid election setup request', status=400))

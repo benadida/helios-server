@@ -13,6 +13,7 @@ from helios import utils
 from helios.crypto import utils as cryptoutils
 from helios.models import CastVote
 from helios.security import election_view
+from helios_auth.security import get_user
 from helios_auth.bridge_protocol import https_origin
 from helios_auth.bridge_views import private_response
 from helios_auth.security import save_in_session_across_logouts
@@ -111,6 +112,12 @@ def submit(request, election):
     raise PermissionDenied('Invalid encrypted ballot.') from None
   from helios.views import one_election_cast
   save_in_session_across_logouts(request, 'alu_ui_election', election.uuid)
+  # A stale browser login must renew before eligibility is checked. The handoff
+  # only saves validated ciphertext; confirmation still checks access and CSRF.
+  user = get_user(request)
+  if not user:
+    save_in_session_across_logouts(request, 'encrypted_vote', request.POST['encrypted_vote'])
+    return private_response(HttpResponseRedirect(f'/helios/elections/{election.uuid}/ui/login'))
   response = one_election_cast(request, election_uuid=election.uuid)
   return private_response(response)
 

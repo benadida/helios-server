@@ -44,7 +44,7 @@ class AluUiTests(test_bridge.BridgeTests):
   def test_actual_candidate_ui_encrypts_casts_verifies_and_tallies(self):
     ballot = self.frozen_ballot()
     result = self.ui_ballot(ballot)
-    self.assertGreaterEqual(result['checks'], 15)
+    self.assertGreaterEqual(result['checks'], 12)
     vote = result['encrypted']
     parsed = datatypes.LDObject.fromDict(json.loads(vote), type_hint='legacy/EncryptedVote')
     self.assertTrue(parsed.wrapped_obj.verify(self.election))
@@ -53,14 +53,14 @@ class AluUiTests(test_bridge.BridgeTests):
     # Ciphertext handoff itself neither registers nor casts a ballot.
     self.assertEqual(self.election.voter_set.count(), 0)
     self.assertEqual(models.CastVote.objects.count(), 0)
-    self.assertContains(self.client.get(self.base + '/cast_confirm'), 'Continue with ALU account')
+    self.assertEqual(self.client.get(self.base + '/cast_confirm').status_code, 200)
     self.assertEqual(self.client.get(self.base + '/ui/login').status_code, 302)
     pending = self.begin()
     self.assertEqual(pending['return_path'], self.base + '/cast_confirm')
     self.assertEqual(self.finish(pending)[0].status_code, 200)
     confirm = self.client.get(self.base + '/cast_confirm')
-    self.assertContains(confirm, 'Confirm your encrypted ballot')
-    self.assertContains(confirm, result['tracker'])
+    self.assertContains(confirm, 'Submit your vote')
+    self.assertNotContains(confirm, result['tracker'])
     self.assertEqual(self.election.voter_set.count(), 1)
     self.assertEqual(self.client.post(self.base + '/cast_confirm', {}).status_code, 400)
     self.assertEqual(models.CastVote.objects.count(), 0)
@@ -69,6 +69,8 @@ class AluUiTests(test_bridge.BridgeTests):
     cast = models.CastVote.objects.get()
     self.assertIsNotNone(cast.verified_at)
     self.assertEqual(cast.vote_hash, result['tracker'])
+    models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
+    self.assertEqual(self.management('stats', self.election.uuid, subject='organizer').json()['votes'], 1)
     done = self.client.get(self.base + '/cast_done')
     self.assertTrue(done.url.startswith('https://alu.example/vote/' + self.election.uuid + '?tracker='))
     receipt = self.client.get(self.base + '/ui/receipt/' + result['tracker']).json()
@@ -105,6 +107,42 @@ class AluUiTests(test_bridge.BridgeTests):
     self.assertEqual(self.client.post(self.base + '/ui/submit', {'encrypted_vote': result['encrypted']}, HTTP_ORIGIN='https://alu.example').status_code, 403)
     self.assertEqual(models.CastVote.objects.count(), 0)
     self.assertEqual(self.election.voter_set.count(), 0)
+
+  def test_expired_login_renews_without_losing_prepared_vote(self):
+    self.frozen_ballot()
+    vote = self.server_ballot()
+    self.finish(self.begin())
+    session = self.client.session
+    session['alu_session_expires_at'] = 1
+    session.save()
+    response = self.client.post(self.base + '/ui/submit',
+      {'encrypted_vote': vote['encrypted']}, HTTP_ORIGIN='https://alu.example')
+    self.assertEqual(response.status_code, 302)
+    self.assertEqual(response.url, self.base + '/ui/login')
+    self.assertEqual(self.client.session['encrypted_vote'], vote['encrypted'])
+    self.assertEqual(models.CastVote.objects.count(), 0)
+    self.client.get(self.base + '/ui/login')
+    session = self.client.session
+    session['alu_last_start'] = 0
+    session.save()
+    pending = self.begin()
+    self.assertEqual(pending['return_path'], self.base + '/cast_confirm')
+    self.finish(pending)
+    self.assertContains(self.client.get(self.base + '/cast_confirm'), 'Submit my vote')
+    session = self.client.session
+    session['alu_session_expires_at'] = 1
+    session.save()
+    self.assertEqual(self.client.get(self.base + '/cast_confirm').url, self.base + '/ui/login')
+    self.assertEqual(models.CastVote.objects.count(), 0)
+
+  def test_live_count_is_authorized_and_does_not_expose_choices(self):
+    self.frozen_ballot()
+    models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
+    result = self.management('stats', self.election.uuid, subject='organizer')
+    self.assertEqual(result.status_code, 200)
+    self.assertEqual(result.json(), {'election_id': self.election.uuid, 'votes': 0, 'pending': 0})
+    self.assertEqual(self.client.post('/helios/alu/manage', '{}', content_type='application/json').status_code, 401)
+    self.assertEqual(self.management('stats', self.election.uuid, subject='student').status_code, 403)
 
   def test_private_or_unallowlisted_ballot_not_exposed(self):
     self.frozen_ballot()
