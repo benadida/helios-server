@@ -74,7 +74,13 @@ class AluUiTests(test_bridge.BridgeTests):
     self.assertIsNotNone(cast.verified_at)
     self.assertEqual(cast.vote_hash, result['tracker'])
     models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
-    self.assertEqual(self.management('stats', self.election.uuid, subject='organizer').json()['votes'], 1)
+    running = self.management('stats', self.election.uuid, subject='organizer').json()
+    self.assertEqual(running['votes'], 1)
+    self.assertEqual([c['votes'] for c in running['positions'][0]['candidates']], [0, 1])
+    self.election.refresh_from_db()
+    self.assertIsNone(self.election.encrypted_tally)
+    self.assertIsNone(self.election.result)
+    self.assertFalse(self.election.voting_has_stopped())
     done = self.client.get(self.base + '/cast_done')
     self.assertEqual(done.url, 'https://alu.example/vote/' + self.election.uuid)
     receipt = self.client.get(self.base + '/ui/receipt/' + result['tracker']).json()
@@ -139,14 +145,25 @@ class AluUiTests(test_bridge.BridgeTests):
     self.assertEqual(self.client.get(self.base + '/cast_confirm').url, self.base + '/ui/login')
     self.assertEqual(models.CastVote.objects.count(), 0)
 
-  def test_live_count_is_authorized_and_does_not_expose_choices(self):
+  def test_live_count_is_committee_only_and_grouped_by_position(self):
     self.frozen_ballot()
     models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
     result = self.management('stats', self.election.uuid, subject='organizer')
     self.assertEqual(result.status_code, 200)
-    self.assertEqual(result.json(), {'election_id': self.election.uuid, 'votes': 0, 'pending': 0})
+    self.assertEqual(result.json()['positions'], [{'name': 'President', 'candidates': [{'name': 'Alice', 'votes': 0}, {'name': 'Bob', 'votes': 0}]}])
+    self.assertEqual(result.json()['counts_status'], 'available')
     self.assertEqual(self.client.post('/helios/alu/manage', '{}', content_type='application/json').status_code, 401)
     self.assertEqual(self.management('stats', self.election.uuid, subject='student').status_code, 403)
+
+  def test_live_counts_do_not_bypass_external_trustee_keys(self):
+    self.frozen_ballot()
+    trustee = self.election.trustee_set.get()
+    trustee.secret_key = None
+    trustee.save()
+    models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
+    result = self.management('stats', self.election.uuid, subject='organizer').json()
+    self.assertIsNone(result['positions'])
+    self.assertEqual(result['counts_status'], 'keys_unavailable')
 
   def test_stale_login_for_another_election_renews_at_handoff(self):
     self.frozen_ballot()
@@ -190,7 +207,19 @@ class AluUiTests(test_bridge.BridgeTests):
       self.client.post(self.base + '/cast_confirm', {'csrf_token': token})
     self.assertEqual(models.CastVote.objects.count(), 1)
     cast = models.CastVote.objects.get()
+    models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
+    pending_counts = self.management('stats', self.election.uuid, subject='organizer').json()
+    self.assertEqual(pending_counts['votes'], 0)
+    self.assertEqual(pending_counts['pending'], 1)
+    self.assertEqual([[c['votes'] for c in p['candidates']] for p in pending_counts['positions']], [[0, 0], [0, 0]])
     self.assertTrue(cast.verify_and_store())
+    live = self.management('stats', self.election.uuid, subject='organizer').json()
+    self.assertEqual([p['name'] for p in live['positions']], ['President', 'Vice President'])
+    self.assertEqual([[c['votes'] for c in p['candidates']] for p in live['positions']], [[1, 0], [0, 1]])
+    self.assertEqual(live['votes'], 1)
+    self.election.refresh_from_db()
+    self.assertIsNone(self.election.encrypted_tally)
+    self.assertIsNone(self.election.result)
     retained = cast.vote_hash
     self.client.post(self.base + '/cast', {'encrypted_vote': replacement})
     self.client.post(self.base + '/cast_confirm', {'csrf_token': token})
