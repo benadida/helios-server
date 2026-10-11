@@ -812,6 +812,14 @@ def password_voter_resend(request, election):
 
 @election_view()
 def one_election_cast_confirm(request, election):
+  # Renew an expired ALU voting login without losing the prepared ciphertext.
+  import time
+  if (bridge_election(election) and
+      request.session.get('alu_ui_election') == election.uuid and
+      request.session.get('encrypted_vote') and
+      request.session.get('alu_access_kind') == 'voter' and
+      request.session.get('alu_session_expires_at', 0) <= time.time()):
+    return HttpResponseRedirect(f'/helios/elections/{election.uuid}/ui/login')
   user = get_user(request)    
   if user:
     require_voting_access(request, election, user)

@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Unable to continue</title>
+<style>body{margin:0;background:#f7f8fa;color:#10131a;font-family:Arial,sans-serif}main{max-width:560px;margin:10vh auto;padding:28px;background:white;border:1px solid #e4e7ec;border-radius:14px}p{line-height:1.6}button{border:0;border-radius:10px;padding:14px 22px;background:#002e6d;color:white;font-size:15px;cursor:pointer}</style></head><body><main><h1>We could not continue</h1>
+{% if exception == 'Committee members cannot vote in this election.' %}<p>Committee members cannot vote in this election.</p>
+{% elif exception == 'A student voting login is required.' %}<p>Please sign in again with your ALU student account.</p>
+{% elif exception == 'Voting eligibility could not be checked. Please retry.' %}<p>We could not check your student account. Please try again shortly.</p>
+{% else %}<p>Please go back and try again. If this keeps happening, contact the election committee.</p>{% endif %}
+<button onclick="history.back()">Go back</button></main></body></html>
