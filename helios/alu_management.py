@@ -11,6 +11,7 @@ import requests
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.db import connection, transaction
+from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.http import HttpResponse, JsonResponse
 from django.test import RequestFactory
 from django.views.decorators.http import require_POST
@@ -22,11 +23,11 @@ from helios_auth.bridge_views import private_response
 from helios_auth.models import User
 
 
-def candidate_counts_after_close(election):
+def candidate_counts_after_close(election, closed=None):
   """Private final totals only. Never decrypt interim votes while voting is open."""
   if not election.frozen_at or not election.questions:
     return {'positions': None, 'counts_status': 'not_ready'}
-  if not election.voting_has_stopped():
+  if not (election.voting_has_stopped() if closed is None else closed):
     return {'positions': None, 'counts_status': 'voting'}
   if models.BallotPolicyReview.objects.filter(election=election, decision='pending').exists():
     return {'positions': None, 'counts_status': 'review_needed'}
@@ -153,7 +154,14 @@ def manage(request):
           client_id=settings.ALU_BRIDGE_CLIENT_ID)
       if not binding:
         raise PermissionDenied('Election unavailable.')
-      election = binding.election
+      if operation == 'stats':
+        # A count probe needs dates and final numbers, never cryptographic blobs.
+        election = models.Election.objects.defer('encrypted_tally', 'public_key', 'private_key',
+          'result_proof', 'description', 'eligibility').annotate(
+          has_encrypted_tally=ExpressionWrapper(Q(encrypted_tally__isnull=False), output_field=BooleanField())
+        ).get(pk=binding.election_id)
+      else:
+        election = binding.election
       try:
         actor = User.get_by_type_and_id('alu', identity['subject'])
       except User.DoesNotExist:
@@ -161,11 +169,13 @@ def manage(request):
       if not views.user_can_admin_election(actor, election):
         raise PermissionDenied('An existing election permission is required.')
       if operation == 'stats':
+        voting_end = election.voting_ended_at or election.voting_extended_until or election.voting_ends_at
+        closed = bool((voting_end is not None and datetime.datetime.utcnow() >= voting_end) or election.has_encrypted_tally)
         return private_response(JsonResponse({'election_id': election_id,
           'votes': election.num_cast_votes, 'pending': election.num_pending_votes,
-          'open': bool(election.voting_has_started() and not election.voting_has_stopped()),
-          'closed': bool(election.voting_has_stopped()),
-          **candidate_counts_after_close(election)}))
+          'open': bool(election.voting_has_started() and not closed),
+          'closed': closed,
+          **candidate_counts_after_close(election, closed)}))
       if operation == 'tally' and election.num_pending_votes:
         raise PermissionDenied('Votes are still being checked. Please wait a moment and try again.')
       if operation == 'ballot':
