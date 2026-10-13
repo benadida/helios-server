@@ -9,7 +9,6 @@ import uuid
 
 import requests
 from django.conf import settings
-from django.core.cache import cache
 from django.core.exceptions import PermissionDenied
 from django.db import connection, transaction
 from django.http import HttpResponse, JsonResponse
@@ -23,32 +22,22 @@ from helios_auth.bridge_views import private_response
 from helios_auth.models import User
 
 
-def live_candidate_counts(election):
-  """Private running aggregate; never save it as the election's final tally."""
+def candidate_counts_after_close(election):
+  """Private final totals only. Never decrypt interim votes while voting is open."""
   if not election.frozen_at or not election.questions:
     return {'positions': None, 'counts_status': 'not_ready'}
+  if not election.voting_has_stopped():
+    return {'positions': None, 'counts_status': 'voting'}
   if models.BallotPolicyReview.objects.filter(election=election, decision='pending').exists():
     return {'positions': None, 'counts_status': 'review_needed'}
-  trustees = list(election.trustee_set.all())
-  # External trustees retain control of their keys. Never bypass their shares.
-  if not trustees or any(t.secret_key is None for t in trustees):
-    return {'positions': None, 'counts_status': 'keys_unavailable'}
-  voters = list(election.voter_set.exclude(vote=None).only('vote', 'vote_hash'))
-  fingerprint = hashlib.sha256(json.dumps(sorted(v.vote_hash for v in voters)).encode()).hexdigest()
-  key = 'alu-live-counts:' + election.uuid + ':' + fingerprint
-  counts = cache.get(key)
-  if counts is None:
-    counts = [[0 for _ in q['answers']] for q in election.questions]
-    if voters:
-      tally = election.init_tally()
-      for voter in voters:
-        tally.add_vote(voter.vote, verify_p=False)  # stored votes have already passed verification
-      factors = [tally.decryption_factors_and_proofs(t.secret_key)[0] for t in trustees]
-      counts = tally.decrypt_from_factors(factors, election.public_key)
-      if any(not isinstance(n, int) or n < 0 for row in counts for n in row):
-        raise PermissionDenied('Running vote count could not be computed.')
-    cache.set(key, counts, 10)
-  return {'counts_status': 'available', 'votes': len(voters), 'positions': [
+  if election.result is None:
+    return {'positions': None, 'counts_status': 'counting'}
+  counts = election.result
+  if (len(counts) != len(election.questions) or any(
+      len(row) != len(q['answers']) or any(type(n) is not int or n < 0 for n in row)
+      for row, q in zip(counts, election.questions))):
+    raise PermissionDenied('The final vote count is not ready.')
+  return {'counts_status': 'available', 'positions': [
     {'name': q.get('short_name') or q['question'], 'candidates': [
       {'name': name, 'votes': counts[i][j]} for j, name in enumerate(q['answers'])]}
     for i, q in enumerate(election.questions)]}
@@ -174,7 +163,9 @@ def manage(request):
       if operation == 'stats':
         return private_response(JsonResponse({'election_id': election_id,
           'votes': election.num_cast_votes, 'pending': election.num_pending_votes,
-          **live_candidate_counts(election)}))
+          'open': bool(election.voting_has_started() and not election.voting_has_stopped()),
+          'closed': bool(election.voting_has_stopped()),
+          **candidate_counts_after_close(election)}))
       if operation == 'tally' and election.num_pending_votes:
         raise PermissionDenied('Votes are still being checked. Please wait a moment and try again.')
       if operation == 'ballot':

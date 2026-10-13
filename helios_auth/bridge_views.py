@@ -41,6 +41,13 @@ def start(request, election_id):
   if not election:
     return private_response(HttpResponseForbidden('Election unavailable.'))
   if request.session.get('alu_last_start', 0) > time.time() - 2:
+    confirmed = request.session.get('alu_confirmed_vote')
+    if (isinstance(confirmed, dict) and confirmed.get('election') == election_id and
+        request.session.get('alu_ui_election') == election_id and request.session.get('encrypted_vote')):
+      # Preserve the login cooldown without stranding an already confirmed vote.
+      response = render(request, 'helios_auth/bridge_wait.html', {'election_id': election_id})
+      response['Retry-After'] = '2'
+      return private_response(response)
     return private_response(HttpResponse('Please retry in a moment.', status=429))
   get_user(request)  # establishes the existing Helios CSRF token
   if not request.session.session_key:

@@ -4,4 +4,5 @@ set -eu
 python manage.py check
 python manage.py migrate --noinput
 exec gunicorn wsgi:application --bind "0.0.0.0:${PORT:-10000}" \
-  --workers 1 --threads 1 --timeout 180 --error-logfile -
+  --workers "${WEB_CONCURRENCY:-1}" --worker-class gthread --threads "${GUNICORN_THREADS:-4}" \
+  --timeout 180 --error-logfile -
