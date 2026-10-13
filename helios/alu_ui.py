@@ -114,7 +114,7 @@ def submit(request, election_uuid):
       return private_response(render(request, 'helios/templates/alu_vote_error.html', {
         'message': 'Please open the current voting link and try again.',
         'return_url': return_url(election)}, status=403))
-    if set(request.POST) != {'encrypted_vote'} or len(request.POST.getlist('encrypted_vote')) != 1:
+    if set(request.POST) not in ({'encrypted_vote'}, {'encrypted_vote', 'confirmed'}) or len(request.POST.getlist('encrypted_vote')) != 1 or ('confirmed' in request.POST and request.POST.getlist('confirmed') != ['yes']):
       raise ValueError()
     ciphertext_only(request.POST['encrypted_vote'], election)
   except (ValueError, KeyError, TypeError, RecursionError):
@@ -122,6 +122,15 @@ def submit(request, election_uuid):
     return private_response(render(request, 'helios/templates/alu_vote_error.html', {
       'message': 'Your vote could not be prepared. Please return to voting and choose again.',
       'return_url': return_url(election)}, status=403))
+  # Consent came from the app's modal, bound to this exact ciphertext and election.
+  # Persist across fresh login; an ordinary GET/legacy handoff never authorizes casting.
+  request.session.pop('alu_confirmed_vote', None)
+  if request.POST.get('confirmed') == 'yes':
+    # App logout/account switching does not clear this other origin's cookie.
+    # Renew through the app's fresh session; never reuse a different student's login.
+    request.session['alu_session_expires_at'] = 0
+    save_in_session_across_logouts(request, 'alu_confirmed_vote', {
+      'election': election.uuid, 'hash': cryptoutils.hash_b64(request.POST['encrypted_vote'])})
   from helios.views import one_election_cast
   user = get_user(request)
   save_in_session_across_logouts(request, 'alu_ui_election', election.uuid)

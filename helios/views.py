@@ -883,7 +883,18 @@ def one_election_cast_confirm(request, election):
   else:
     cast_vote = None
     
-  if request.method == "GET":
+  confirmed = request.session.get('alu_confirmed_vote')
+  confirmed_handoff = bool(request.method == 'GET' and voter and user and
+    bridge_election(election) and request.session.get('alu_ui_election') == election.uuid and
+    isinstance(confirmed, dict) and confirmed == {'election': election.uuid, 'hash': vote_fingerprint})
+  if confirmed_handoff:
+    # One-use consent requires the original trusted-origin POST and a fresh login.
+    request.session.pop('alu_confirmed_vote', None)
+    if cast_vote.issues(election):
+      from .alu_ui import return_url
+      return HttpResponseRedirect(return_url(election))
+
+  if request.method == "GET" and not confirmed_handoff:
     if voter:
       past_votes = CastVote.get_by_voter(voter)
       if len(past_votes) == 0:
@@ -939,8 +950,9 @@ def one_election_cast_confirm(request, election):
         'show_password': show_password, 'password_only': password_only, 'password_login_form': password_login_form,
         'bad_voter_login': bad_voter_login})
       
-  if request.method == "POST":
-    check_csrf(request)
+  if request.method == "POST" or confirmed_handoff:
+    if not confirmed_handoff:
+      check_csrf(request)
     
     # voting has not started or has ended
     if (not election.voting_has_started()) or election.voting_has_stopped():

@@ -76,7 +76,8 @@ class AluUiTests(test_bridge.BridgeTests):
     models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
     running = self.management('stats', self.election.uuid, subject='organizer').json()
     self.assertEqual(running['votes'], 1)
-    self.assertEqual([c['votes'] for c in running['positions'][0]['candidates']], [0, 1])
+    self.assertIsNone(running['positions'])
+    self.assertEqual(running['counts_status'], 'voting')
     self.election.refresh_from_db()
     self.assertIsNone(self.election.encrypted_tally)
     self.assertIsNone(self.election.result)
@@ -92,8 +93,69 @@ class AluUiTests(test_bridge.BridgeTests):
     token = self.client.session['csrf_token']
     for endpoint in ('compute_tally', 'combine_decryptions', 'release_result'):
       self.assertEqual(self.client.post(self.base + '/' + endpoint, {'csrf_token': token}).status_code, 302)
+    final = self.management('stats', self.election.uuid, subject='organizer').json()
+    self.assertTrue(final['closed'])
+    self.assertFalse(final['open'])
+    self.assertEqual([c['votes'] for c in final['positions'][0]['candidates']], [0, 1])
     self.assertEqual(self.client.get(self.base + '/result').json(), [[0, 1]])
     self.assertTrue(self.client.get(self.base + '/ui/ballot').json()['released'])
+
+  def test_modal_confirmation_casts_without_a_second_confirmation(self):
+    self.frozen_ballot()
+    self.finish(self.begin())
+    vote = self.server_ballot()
+    response = self.client.post(self.base + '/ui/submit', {'encrypted_vote': vote['encrypted'], 'confirmed': 'yes'}, HTTP_ORIGIN='https://alu.example')
+    self.assertEqual(response.status_code, 302)
+    self.assertTrue(response.url.startswith('/auth/alu/start/'))
+    session = self.client.session
+    session['alu_last_start'] = 0  # simulate the existing 2-second login cooldown elapsing
+    session.save()
+    self.finish(self.begin())
+    done = self.client.get(self.base + '/cast_confirm')
+    self.assertEqual(done.url, 'https://alu.example/vote/' + self.election.uuid)
+    cast = models.CastVote.objects.get()
+    self.assertIsNotNone(cast.verified_at)
+    self.assertNotIn('alu_confirmed_vote', self.client.session)
+    self.assertEqual(self.client.get(self.base + '/cast_confirm').status_code, 302)
+    self.assertEqual(models.CastVote.objects.count(), 1)
+
+  def test_confirmed_handoff_does_not_reuse_previous_student_login(self):
+    self.frozen_ballot()
+    self.finish(self.begin())
+    vote = self.server_ballot()
+    response = self.client.post(self.base + '/ui/submit', {'encrypted_vote': vote['encrypted'], 'confirmed': 'yes'}, HTTP_ORIGIN='https://alu.example')
+    self.assertTrue(response.url.startswith('/auth/alu/start/'))
+    self.assertEqual(self.client.session['alu_session_expires_at'], 0)
+    self.assertEqual(self.client.get(self.base + '/cast_confirm').url, self.base + '/ui/login')
+    self.assertEqual(models.CastVote.objects.count(), 0)
+    waiting = self.client.get(response.url)
+    self.assertContains(waiting, 'Submitting your votes')
+    self.assertEqual(waiting['Retry-After'], '2')
+    session = self.client.session
+    session['alu_last_start'] = 0
+    session.save()
+    self.finish(self.begin(), subject='different-student', email='different@alustudent.com')
+    self.assertEqual(self.client.get(self.base + '/cast_confirm').status_code, 302)
+    self.assertEqual(models.CastVote.objects.get().voter.user.user_id, 'different-student')
+
+  def test_modal_consent_survives_fresh_login_and_is_bound_to_ciphertext(self):
+    self.frozen_ballot()
+    vote = self.server_ballot()
+    response = self.client.post(self.base + '/ui/submit', {'encrypted_vote': vote['encrypted'], 'confirmed': 'yes'}, HTTP_ORIGIN='https://alu.example')
+    self.assertTrue(response.url.startswith('/auth/alu/start/'))
+    self.assertEqual(models.CastVote.objects.count(), 0)
+    self.finish(self.begin())
+    session = self.client.session
+    session['alu_confirmed_vote']['hash'] = 'wrong'
+    session.save()
+    self.assertContains(self.client.get(self.base + '/cast_confirm'), 'Submit my vote')
+    self.assertEqual(models.CastVote.objects.count(), 0)
+    session = self.client.session
+    session['alu_confirmed_vote']['hash'] = vote['tracker']
+    session.save()
+    done = self.client.get(self.base + '/cast_confirm')
+    self.assertEqual(done.url, 'https://alu.example/vote/' + self.election.uuid)
+    self.assertEqual(models.CastVote.objects.count(), 1)
 
   def test_handoff_rejects_plaintext_origin_forgery_and_wrong_election(self):
     ballot = self.frozen_ballot()
@@ -150,10 +212,24 @@ class AluUiTests(test_bridge.BridgeTests):
     models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
     result = self.management('stats', self.election.uuid, subject='organizer')
     self.assertEqual(result.status_code, 200)
-    self.assertEqual(result.json()['positions'], [{'name': 'President', 'candidates': [{'name': 'Alice', 'votes': 0}, {'name': 'Bob', 'votes': 0}]}])
-    self.assertEqual(result.json()['counts_status'], 'available')
+    self.assertIsNone(result.json()['positions'])
+    self.assertEqual(result.json()['counts_status'], 'voting')
+    self.assertTrue(result.json()['open'])
     self.assertEqual(self.client.post('/helios/alu/manage', '{}', content_type='application/json').status_code, 401)
     self.assertEqual(self.management('stats', self.election.uuid, subject='student').status_code, 403)
+
+  def test_open_stats_never_load_ciphertexts(self):
+    from django.db import connection
+    from django.test.utils import CaptureQueriesContext
+    self.frozen_ballot()
+    models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
+    self.management('stats', self.election.uuid, subject='organizer')
+    with CaptureQueriesContext(connection) as queries:
+      result = self.management('stats', self.election.uuid, subject='organizer')
+    self.assertEqual(result.status_code, 200)
+    for query in queries:
+      selected = query['sql'].split(' FROM ')[0]
+      self.assertNotIn('"helios_voter"."vote"', selected)
 
   def test_live_counts_do_not_bypass_external_trustee_keys(self):
     self.frozen_ballot()
@@ -163,7 +239,26 @@ class AluUiTests(test_bridge.BridgeTests):
     models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
     result = self.management('stats', self.election.uuid, subject='organizer').json()
     self.assertIsNone(result['positions'])
-    self.assertEqual(result['counts_status'], 'keys_unavailable')
+    self.assertEqual(result['counts_status'], 'voting')
+
+  def test_closed_election_waits_for_final_count_without_decrypting(self):
+    import datetime
+    self.frozen_ballot()
+    self.election.voting_ended_at = datetime.datetime.utcnow()
+    self.election.save()
+    models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
+    with patch.object(models.Election, 'init_tally', side_effect=AssertionError('Stats must not decrypt votes')):
+      waiting = self.management('stats', self.election.uuid, subject='organizer').json()
+      self.assertTrue(waiting['closed'])
+      self.assertEqual(waiting['counts_status'], 'counting')
+      self.assertIsNone(waiting['positions'])
+      self.election.result = [[0, 0]]
+      self.election.save()
+      final = self.management('stats', self.election.uuid, subject='organizer').json()
+      self.assertEqual(final['counts_status'], 'available')
+      self.assertEqual([c['votes'] for c in final['positions'][0]['candidates']], [0, 0])
+    self.assertFalse(self.client.get(self.base + '/ui/ballot').json()['released'])
+    self.assertIsNone(self.client.get(self.base + '/ui/ballot').json()['result'])
 
   def test_stale_login_for_another_election_renews_at_handoff(self):
     self.frozen_ballot()
@@ -211,11 +306,11 @@ class AluUiTests(test_bridge.BridgeTests):
     pending_counts = self.management('stats', self.election.uuid, subject='organizer').json()
     self.assertEqual(pending_counts['votes'], 0)
     self.assertEqual(pending_counts['pending'], 1)
-    self.assertEqual([[c['votes'] for c in p['candidates']] for p in pending_counts['positions']], [[0, 0], [0, 0]])
+    self.assertIsNone(pending_counts['positions'])
     self.assertTrue(cast.verify_and_store())
     live = self.management('stats', self.election.uuid, subject='organizer').json()
-    self.assertEqual([p['name'] for p in live['positions']], ['President', 'Vice President'])
-    self.assertEqual([[c['votes'] for c in p['candidates']] for p in live['positions']], [[1, 0], [0, 1]])
+    self.assertIsNone(live['positions'])
+    self.assertEqual(live['counts_status'], 'voting')
     self.assertEqual(live['votes'], 1)
     self.election.refresh_from_db()
     self.assertIsNone(self.election.encrypted_tally)
