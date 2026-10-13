@@ -230,6 +230,9 @@ class AluUiTests(test_bridge.BridgeTests):
     for query in queries:
       selected = query['sql'].split(' FROM ')[0]
       self.assertNotIn('"helios_voter"."vote"', selected)
+      for field in ('public_key', 'private_key', 'result_proof'):
+        self.assertNotIn(f'"helios_election"."{field}"', selected)
+      self.assertNotIn('"helios_election"."encrypted_tally",', selected)
 
   def test_live_counts_do_not_bypass_external_trustee_keys(self):
     self.frozen_ballot()
