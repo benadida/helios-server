@@ -1,4 +1,4 @@
-name: Free demo Docker validation
+name: Backend Docker validation
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ on:
       - 'settings*.py'
       - 'helios/**'
       - 'helios_auth/**'
-      - 'scripts/render-start.sh'
+      - 'scripts/backend-start.sh'
 
 permissions:
   contents: read
@@ -53,16 +53,16 @@ jobs:
           docker run --rm --network host "${test_mounts[@]}" \
             --env DJANGO_SETTINGS_MODULE=settings_ci \
             alu-helios-demo python manage.py test --settings=settings_ci -v 1
-      - name: Check strict demo runtime configuration
+      - name: Check strict Cloudflare runtime configuration
         run: >-
           docker run --rm
-          --env HELIOS_DEMO_MODE=1
           --env DATABASE_URL=postgresql://postgres:postgres@localhost:5432/helios
           --env SECRET_KEY=ci-only-long-placeholder-secret-for-runtime-config-check
-          --env EMAIL_OPTOUT_SECRET=ci-only-placeholder
+          --env EMAIL_OPTOUT_SECRET=ci-only-long-placeholder-secret-with-32-bytes
           --env ALU_BRIDGE_SECRET=ci-only-long-placeholder-secret-with-32-bytes
           --env ALU_BRIDGE_APP_ORIGIN=https://alu.example
           --env ALU_STUDENT_DOMAIN=alustudent.com
           --env AUTH_ENABLED_SYSTEMS=alu
-          --env RENDER_EXTERNAL_HOSTNAME=helios.example
-          alu-helios-demo python manage.py check --settings=settings_render_demo
+          --env URL_HOST=https://helios.example
+          --env RECOVERY_SECRET=ci-only-long-placeholder-recovery-secret-with-32-bytes
+          alu-helios-demo python manage.py check --settings=settings_cloudflare
