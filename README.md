@@ -2,7 +2,7 @@
 
 Helios is an end-to-end verifiable voting system.
 
-For the ALU testing demo, see the [Render Free setup and mock election guide](docs/render-demo.md).
+For the ALU backend, see the [Cloudflare deployment guide](docs/cloudflare-backend.md).
 
 [![Travis Build Status](https://travis-ci.org/benadida/helios-server.svg?branch=master)](https://travis-ci.org/benadida/helios-server)
 

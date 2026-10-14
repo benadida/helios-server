@@ -11,11 +11,11 @@ ENV UV_PROJECT_ENVIRONMENT=/app/.venv \
     PATH="/app/.venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    DJANGO_SETTINGS_MODULE=settings_render_demo
+    DJANGO_SETTINGS_MODULE=settings_cloudflare
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 RUN useradd --create-home helios
 COPY --chown=helios:helios . .
 RUN install -d -o helios -g helios /app/media
 USER helios
-CMD ["sh", "scripts/render-start.sh"]
+CMD ["sh", "scripts/backend-start.sh"]

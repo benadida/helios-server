@@ -47,7 +47,7 @@ Test one test election end to end: student sign-in, optional positions, confirma
 
 ## Rollback and cost
 
-Render can remain deployed during setup. Once Cloudflare receives new votes, its Neon database and the original Render database diverge. A rollback must use the current authoritative data; simply changing the URL back could hide new votes.
+Render hosting is retired. Cloudflare and its Neon backend database are authoritative. Restore or roll back using the current authoritative data and a reviewed backup; do not switch to an obsolete database snapshot.
 
 Workers Paid is the account subscription. Container CPU, memory, disk and network usage have their own metered charges; the monthly subscription is not an all-inclusive backend hosting price. The current instance cap is one `standard-4` container. Neon and the frontend host have separate allowances and charges.
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-# Free services have no pre-deploy command. Migrate on each demo startup.
+# Check configuration and migrate before starting the backend.
 python manage.py check
 python manage.py migrate --noinput
 if [ "${ALU_VOTE_VERIFICATION_BACKEND:-celery}" = "database" ]; then
