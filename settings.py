@@ -342,6 +342,10 @@ logging.basicConfig(
 )
 
 # set up celery
+ALU_VOTE_VERIFICATION_BACKEND = get_from_env('ALU_VOTE_VERIFICATION_BACKEND', 'celery')
+if ALU_VOTE_VERIFICATION_BACKEND not in ('celery', 'database'):
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured('ALU_VOTE_VERIFICATION_BACKEND must be celery or database.')
 CELERY_BROKER_URL = get_from_env('CELERY_BROKER_URL', 'amqp://localhost')
 if TESTING:
     CELERY_TASK_ALWAYS_EAGER = True

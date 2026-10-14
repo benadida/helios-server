@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "alu-voting-backend",
+  "account_id": "c66816623540ac2342c071dee2a16704",
+  "main": "index.ts",
+  "compatibility_date": "2026-10-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "secrets": {"required": ["DATABASE_URL", "SECRET_KEY", "EMAIL_OPTOUT_SECRET", "ALU_BRIDGE_SECRET", "RECOVERY_SECRET"]},
+  "ratelimits": [{"name": "VOTE_REQUESTS", "namespace_id": "1041401", "simple": {"limit": 60, "period": 60}}],
+  "containers": [{
+    "class_name": "VotingBackend",
+    "image": "../Dockerfile",
+    "instance_type": "standard-4",
+    "max_instances": 1
+  }],
+  "durable_objects": {"bindings": [
+    {"name": "BACKEND", "class_name": "VotingBackend"},
+    {"name": "RECOVERY", "class_name": "VerificationRecovery"}
+  ]},
+  "migrations": [{"tag": "v1", "new_sqlite_classes": ["VotingBackend", "VerificationRecovery"]}],
+  "observability": {"enabled": true, "head_sampling_rate": 0.05},
+  "vars": {
+    "PUBLIC_BACKEND_ORIGIN": "https://alu-voting-backend.e-nnamah.workers.dev",
+    "ALU_BRIDGE_APP_ORIGIN": "https://elections.getpesa.xyz",
+    "ALU_BRIDGE_CLIENT_ID": "alu-helios-demo",
+    "ALU_BRIDGE_ELECTIONS": ""
+  }
+}

@@ -8,6 +8,7 @@ import copy
 from celery import shared_task
 from celery.utils.log import get_logger
 from django.conf import settings
+from django.db import transaction
 from django.urls import reverse
 from urllib.parse import urlparse
 
@@ -19,22 +20,29 @@ from .view_utils import render_template_raw
 
 @shared_task
 def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
-    cast_vote = CastVote.objects.get(id=cast_vote_id)
+    # verify_and_store locks and fetches the ciphertext once, using a fresh row.
+    cast_vote = CastVote.objects.only('id').get(id=cast_vote_id)
     result = cast_vote.verify_and_store()
-
-    voter = cast_vote.voter
-    election = voter.election
-    user = voter.get_user()
-
     if result:
-        # send the signal
-        signals.vote_cast.send(sender=election, election=election, user=user, voter=voter, cast_vote=cast_vote)
-
-        if status_update_message and user.can_update_status():
-            user.update_status(status_update_message)
-    else:
+        # Notifications cannot invalidate a committed vote or cause it to be
+        # verified again. Callbacks run only after the outer job transaction.
+        def notify():
+            try:
+                voter = cast_vote.voter
+                election = voter.election
+                user = voter.get_user()
+                signals.vote_cast.send(sender=election, election=election, user=user,
+                                       voter=voter, cast_vote=cast_vote)
+                if status_update_message and user.can_update_status():
+                    user.update_status(status_update_message)
+            except Exception as exc:
+                get_logger(__name__).warning('Vote notification failed for cast %d (%s)',
+                                             cast_vote_id, type(exc).__name__)
+        transaction.on_commit(notify)
+    elif result is False:
         logger = get_logger(cast_vote_verify_and_store.__name__)
         logger.error("Failed to verify and store %d" % cast_vote_id)
+    return result
 
 
 @shared_task

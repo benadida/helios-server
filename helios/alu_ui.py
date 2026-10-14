@@ -160,7 +160,8 @@ def receipt(request, election, tracker):
   public_demo(election)
   if not re.fullmatch(r'[A-Za-z0-9+/]{43}', tracker):
     raise PermissionDenied('Invalid tracker.')
-  cast = CastVote.objects.filter(voter__election=election, vote_hash=tracker).first()
+  cast = (CastVote.objects.filter(voter__election=election, vote_hash=tracker)
+    .select_related('voter').only('verified_at', 'invalidated_at', 'vote_hash', 'voter__vote_hash').first())
   status = 'missing'
   if cast:
     status = 'invalid' if cast.invalidated_at else ('verified' if cast.verified_at else 'pending')
@@ -196,6 +197,6 @@ def vote_status(request, election):
     return private_response(JsonResponse({'error': 'Invalid request'}, status=400))
   cast = CastVote.objects.filter(voter__election=election,
     voter__user__user_type='alu', voter__user__user_id=data['subject'],
-    invalidated_at=None).order_by('-cast_at').first()
+    invalidated_at=None).only('verified_at').order_by('-cast_at').first()
   status = 'verified' if cast and cast.verified_at else 'pending' if cast else 'none'
   return private_response(JsonResponse({'election_id': election.uuid, 'status': status}))

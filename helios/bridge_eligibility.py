@@ -68,28 +68,34 @@ def refresh_policy_reviews(election):
   if not bridge_election(election):
     return
   from helios.models import BallotPolicyReview
-  voters = list(election.voter_set.exclude(vote=None).select_related('user'))
+  # Policy checks need identity and the first verified time,
+  # not thousands of encrypted ballots or one query per voter.
+  from django.db.models import Min, Q
+  voters = list(election.voter_set.exclude(vote=None)
+    .values('id', 'user__user_type', 'user__user_id')
+    .annotate(first_verified_cast=Min('castvote__cast_at',
+      filter=Q(castvote__verified_at__isnull=False))))
   # The earliest verified cast detects joining after ANY retained cast, including
   # superseded ballots. No ballot is deleted, invalidated or replaced here.
   requests_to_check = []
   for voter in voters:
-    if not voter.user or voter.user.user_type != 'alu':
+    if voter['user__user_type'] != 'alu':
       raise PermissionDenied('An unbound voter requires election-policy review.')
-    cast = voter.castvote_set.filter(verified_at__isnull=False).order_by('cast_at').first()
-    if not cast:
+    cast_at = voter['first_verified_cast']
+    if cast_at is None:
       raise PermissionDenied('A ballot without a verified cast requires election-policy review.')
-    timestamp = cast.cast_at.replace(tzinfo=datetime.timezone.utc).isoformat()
-    requests_to_check.append({'subject': voter.user.user_id, 'cast_at': timestamp})
+    timestamp = cast_at.replace(tzinfo=datetime.timezone.utc).isoformat()
+    requests_to_check.append({'subject': voter['user__user_id'], 'cast_at': timestamp})
   current = statuses(election, requests_to_check)
   for voter in voters:
-    row = current[voter.user.user_id]
+    row = current[voter['user__user_id']]
     events = row['events']
     if row['committee'] and not events:
       events = ['current']
     if not row['student']:
       events = events + ['identity']
     for event in events:
-      BallotPolicyReview.objects.get_or_create(election=election, voter=voter,
+      BallotPolicyReview.objects.get_or_create(election=election, voter_id=voter['id'],
         event_key=event, defaults={'reason': 'Committee membership after a cast or current eligibility conflict.'})
 
 
