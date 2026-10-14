@@ -1161,7 +1161,10 @@ class ElectionBlackboxTests(WebTest):
             login_form['voter_id'] = username
             login_form['password'] = password
 
-            response = login_form.submit()
+            # TestCase keeps its outer transaction open; run the receipt
+            # notification callbacks as they would run after a real commit.
+            with self.captureOnCommitCallbacks(execute=True):
+                response = login_form.submit()
         else:
             # here we should be at the cast-confirm page and logged in
             self.assertContains(cast_confirm_page, "CAST this ballot")
@@ -1171,7 +1174,8 @@ class ElectionBlackboxTests(WebTest):
         
             if 'status_update' in list(cast_form.fields.keys()):
                 cast_form['status_update'] = False
-            response = cast_form.submit()
+            with self.captureOnCommitCallbacks(execute=True):
+                response = cast_form.submit()
 
         self.assertRedirects(response, "%s/helios/elections/%s/cast_done" % (settings.URL_HOST, election_id))
 
