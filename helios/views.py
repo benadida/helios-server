@@ -845,8 +845,7 @@ def one_election_cast_confirm(request, election):
     voter = _register_voter(election, user)
     
   if bridge_election(election) and voter:
-    existing = voter.castvote_set.filter(invalidated_at=None).order_by('-cast_at').first()
-    if existing:
+    if voter.castvote_set.filter(invalidated_at=None).exists():
       from .alu_ui import return_url
       return HttpResponseRedirect(return_url(election))
 
@@ -966,30 +965,31 @@ def one_election_cast_confirm(request, election):
     # Fresh check immediately before accepting the encrypted ballot. A previous
     # code, session, registration or GET confirmation cannot bypass membership.
     require_voting_access(request, election, user)
-    # don't store the vote in the voter's data structure until verification
-    if bridge_election(election):
-      # Lock the voter until a submission is reserved. Concurrent confirmations
-      # must not produce two votes, even while verification runs asynchronously.
-      with transaction.atomic():
-        Voter.objects.select_for_update().get(pk=voter.pk)
-        existing = voter.castvote_set.filter(invalidated_at=None).order_by('-cast_at').first()
-        if existing:
-          from .alu_ui import return_url
-          return HttpResponseRedirect(return_url(election))
-        cast_vote.save()
-    else:
-      cast_vote.save()
-
     # status update?
     if request.POST.get('status_update', False):
       status_update_message = request.POST.get('status_update_message')
     else:
       status_update_message = None
 
-    # launch the verification task
-    tasks.cast_vote_verify_and_store.delay(
-      cast_vote_id = cast_vote.id,
-      status_update_message = status_update_message)
+    from .vote_verification import database_queue_enabled, schedule_verification
+    # Save the vote and its durable verification job in a single transaction.
+    # Neither can be committed without the other in database queue mode.
+    with transaction.atomic():
+      if bridge_election(election):
+        # Lock the voter until a submission is reserved. Concurrent confirmations
+        # must not produce two votes, even while verification is pending.
+        Voter.objects.select_for_update().get(pk=voter.pk)
+        if voter.castvote_set.filter(invalidated_at=None).exists():
+          from .alu_ui import return_url
+          return HttpResponseRedirect(return_url(election))
+      cast_vote.save()
+      if database_queue_enabled():
+        schedule_verification(cast_vote)
+
+    if not database_queue_enabled():
+      # Preserve the existing Celery/eager deployment until explicitly switched.
+      tasks.cast_vote_verify_and_store.delay(
+        cast_vote_id=cast_vote.id, status_update_message=status_update_message)
     
     # remove the vote from the store
     del request.session['encrypted_vote']

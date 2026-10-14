@@ -20,3 +20,7 @@ media
 **/tests/
 settings_ci.py
 docs
+cloudflare
+.wrangler
+**/.wrangler
+**/node_modules

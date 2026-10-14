@@ -1,0 +1,5 @@
+DATABASE_URL=replace-with-the-backend-database-connection
+SECRET_KEY=replace-with-a-random-secret-at-least-32-bytes
+EMAIL_OPTOUT_SECRET=replace-with-a-separate-random-secret-at-least-32-bytes
+ALU_BRIDGE_SECRET=replace-with-the-same-bridge-secret-as-the-frontend
+RECOVERY_SECRET=replace-with-a-separate-random-secret-at-least-32-bytes

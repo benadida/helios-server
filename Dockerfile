@@ -14,7 +14,7 @@ ENV UV_PROJECT_ENVIRONMENT=/app/.venv \
     DJANGO_SETTINGS_MODULE=settings_render_demo
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
-COPY . .
-RUN useradd --create-home helios && chown -R helios:helios /app
+RUN useradd --create-home helios
+COPY --chown=helios:helios . .
 USER helios
 CMD ["sh", "scripts/render-start.sh"]

@@ -1174,7 +1174,7 @@ class Voter(HeliosModel):
     self.vote = cast_vote.vote
     self.vote_hash = cast_vote.vote_hash
     self.cast_at = cast_vote.cast_at
-    self.save()
+    self.save(update_fields=['vote', 'vote_hash', 'cast_at'])
 
   def last_cast_vote(self):
     return CastVote(vote = self.vote, vote_hash = self.vote_hash, cast_at = self.cast_at, voter=self)
@@ -1236,48 +1236,71 @@ class CastVote(HeliosModel):
     for c in ['/', '+', '#']:
       safe_hash = safe_hash.replace(c, '')
 
-    length = 8
-    while True:
+    # A repeated full ciphertext hash must never spin forever.
+    for length in range(8, len(safe_hash) + 1):
       vote_tinyhash = safe_hash[:length]
-      if CastVote.objects.filter(vote_tinyhash = vote_tinyhash).count() == 0:
-        break
-      length += 1
-
-    self.vote_tinyhash = vote_tinyhash
+      if not CastVote.objects.filter(vote_tinyhash=vote_tinyhash).exists():
+        self.vote_tinyhash = vote_tinyhash
+        return
+    import secrets
+    self.vote_tinyhash = safe_hash[:8] + '-' + secrets.token_hex(12)
 
   def save(self, *args, **kwargs):
     """
     override this just to get a hook
     """
-    # not saved yet? then we generate a tiny hash
-    if not self.vote_tinyhash:
+    if self.vote_tinyhash:
+      return super(CastVote, self).save(*args, **kwargs)
+    # Prefix allocation can race across different students.
+    from django.db import IntegrityError
+    for attempt in range(8):
       self.set_tinyhash()
-
-    super(CastVote, self).save(*args, **kwargs)
+      try:
+        with transaction.atomic():
+          return super(CastVote, self).save(*args, **kwargs)
+      except IntegrityError as exc:
+        if getattr(getattr(exc.__cause__, 'diag', None), 'constraint_name', None) != 'helios_castvote_vote_tinyhash_key':
+          raise
+        self.vote_tinyhash = None
+    raise IntegrityError('Could not reserve a unique internal vote receipt.')
 
   @classmethod
   def get_by_voter(cls, voter):
     return cls.objects.filter(voter = voter).order_by('-cast_at')
 
   def verify_and_store(self):
-    # if it's quarantined, don't let this go through
-    if self.is_quarantined:
-      raise Exception("cast vote is quarantined, verification and storage is delayed.")
-
-    result = self.vote.verify(self.voter.election)
-
-    if result:
-      self.verified_at = datetime.datetime.utcnow()
-    else:
-      self.invalidated_at = datetime.datetime.utcnow()
-
-    # save and store the vote as the voter's last cast vote
-    self.save()
-
-    if result:
-      self.voter.store_vote(self)
-
-    return result
+    # A retried job must neither reverify nor store the same vote twice. Both
+    # verification status and the voter's counted vote commit together. A killed
+    # process rolls back both, leaving the original ciphertext recoverable.
+    with transaction.atomic():
+      cast = CastVote.objects.select_for_update().get(pk=self.pk)
+      if cast.verified_at is not None or cast.invalidated_at is not None:
+        if cast.verified_at is not None and cast.invalidated_at is None and not cast.is_quarantined:
+          # Older deployments committed verified_at before storing the counted
+          # vote. Recover that interrupted write without replacing a newer vote.
+          voter = Voter.objects.select_for_update().defer('vote').get(pk=cast.voter_id)
+          if voter.cast_at is None or voter.cast_at < cast.cast_at:
+            if voter.election.encrypted_tally is not None or voter.election.result is not None:
+              raise ValueError('A vote missing from a started tally requires operator review.')
+            voter.store_vote(cast)
+          self.voter = voter
+        self.verified_at, self.invalidated_at = cast.verified_at, cast.invalidated_at
+        return None
+      if cast.is_quarantined:
+        raise ValueError('Vote verification is waiting for quarantine release.')
+      voter = Voter.objects.select_for_update().defer('vote').get(pk=cast.voter_id)
+      if voter.election.encrypted_tally is not None or voter.election.result is not None:
+        raise ValueError('A pending vote after counting started requires operator review.')
+      result = cast.vote.verify(voter.election)
+      field = 'verified_at' if result else 'invalidated_at'
+      setattr(cast, field, datetime.datetime.utcnow())
+      cast.save(update_fields=[field])
+      if result:
+        voter.store_vote(cast)
+      self.verified_at, self.invalidated_at = cast.verified_at, cast.invalidated_at
+      self.voter = voter
+      self.vote, self.vote_hash, self.cast_at = cast.vote, cast.vote_hash, cast.cast_at
+      return result
 
   def issues(self, election):
     """
@@ -1290,6 +1313,24 @@ class CastVote(HeliosModel):
       issues.append("the vote's election UUID does not match the election for which this vote is being cast")
 
     return issues
+
+class VoteVerificationJob(models.Model):
+  """Durable work references only; encrypted ballots remain in CastVote."""
+  cast_vote = models.OneToOneField(CastVote, on_delete=models.CASCADE,
+    related_name='verification_job')
+  state = models.CharField(max_length=10, default='pending',
+    choices=[('pending', 'Pending'), ('complete', 'Complete'), ('failed', 'Needs attention')])
+  attempts = models.PositiveSmallIntegerField(default=0)
+  next_attempt_at = models.DateTimeField(default=datetime.datetime.utcnow)
+  created_at = models.DateTimeField(auto_now_add=True)
+  completed_at = models.DateTimeField(null=True)
+  # Only an exception class is retained, never ciphertext, identity or secrets.
+  last_error_code = models.CharField(max_length=80, default='', blank=True)
+
+  class Meta:
+    indexes = [models.Index(fields=['next_attempt_at', 'id'],
+      condition=models.Q(state='pending'), name='helios_vjob_pending_idx')]
+
 
 class AuditedBallot(models.Model):
   """
