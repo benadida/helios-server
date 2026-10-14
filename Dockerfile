@@ -16,5 +16,6 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev
 RUN useradd --create-home helios
 COPY --chown=helios:helios . .
+RUN install -d -o helios -g helios /app/media
 USER helios
 CMD ["sh", "scripts/render-start.sh"]
