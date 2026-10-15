@@ -472,6 +472,19 @@ class AluUiTests(test_bridge.BridgeTests):
     self.assertEqual(models.Election.get_by_uuid(election_id).voting_ends_at,
       datetime.datetime.fromisoformat(payload['voting_ends_at'].rstrip('Z')))
 
+  def test_prepared_empty_election_can_close_count_and_publish(self):
+    import datetime
+    election_id = str(uuid.uuid4())
+    self.assertEqual(self.management('create', election_id, name='Empty test').status_code, 200)
+    prepared = self.management('prepare', election_id, name='Empty test',
+      seats=[{'title':'President','answers':['Alice','Bob']}], start_now=True)
+    self.assertEqual(prepared.status_code, 200)
+    for operation in ('tally','combine','release'):
+      self.assertEqual(self.management(operation, election_id).status_code, 200)
+    ballot = self.client.get('/helios/elections/'+election_id+'/ui/ballot').json()
+    self.assertEqual(ballot['result'], [[0,0]])
+    self.assertTrue(ballot['released'])
+
   @override_settings(RECOVERY_SECRET='stage-rehearsal-only-secret')
   def test_prepared_election_counts_publishes_reports_and_becomes_idle(self):
     import datetime
