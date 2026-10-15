@@ -18,6 +18,7 @@ from django.views.decorators.http import require_POST
 
 from helios import models, views
 from helios import utils
+from helios.alu_report import operational_report
 from helios_auth.bridge_protocol import eligible_identity, https_origin
 from helios_auth.bridge_views import private_response
 from helios_auth.models import User
@@ -125,7 +126,7 @@ def manage(request):
     if election_id != data['election_id']:
       raise ValueError()
     operation = data['operation']
-    if operation not in ('create', 'ballot', 'freeze', 'tally', 'combine', 'release', 'stats'):
+    if operation not in ('create', 'ballot', 'freeze', 'tally', 'combine', 'release', 'stats', 'report'):
       raise ValueError()
     if 'start_now' in data and (operation != 'freeze' or type(data['start_now']) is not bool):
       raise ValueError()
@@ -154,7 +155,7 @@ def manage(request):
           client_id=settings.ALU_BRIDGE_CLIENT_ID)
       if not binding:
         raise PermissionDenied('Election unavailable.')
-      if operation == 'stats':
+      if operation in ('stats', 'report'):
         # A count probe needs dates and final numbers, never cryptographic blobs.
         election = models.Election.objects.defer('encrypted_tally', 'public_key', 'private_key',
           'result_proof', 'description', 'eligibility').annotate(
@@ -168,13 +169,14 @@ def manage(request):
         raise PermissionDenied('An existing election permission is required.') from None
       if not views.user_can_admin_election(actor, election):
         raise PermissionDenied('An existing election permission is required.')
-      if operation == 'stats':
+      if operation in ('stats', 'report'):
         voting_end = election.voting_ended_at or election.voting_extended_until or election.voting_ends_at
         closed = bool((voting_end is not None and datetime.datetime.utcnow() >= voting_end) or election.has_encrypted_tally)
         return private_response(JsonResponse({'election_id': election_id,
           'votes': election.num_cast_votes, 'pending': election.num_pending_votes,
           'open': bool(election.voting_has_started() and not closed),
           'closed': closed,
+          **({'report': operational_report(election, closed)} if operation == 'report' else {}),
           **candidate_counts_after_close(election, closed)}))
       if operation == 'tally' and election.num_pending_votes:
         raise PermissionDenied('Votes are still being checked. Please wait a moment and try again.')
