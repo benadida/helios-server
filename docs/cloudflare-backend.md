@@ -35,7 +35,7 @@ npx wrangler deploy --keep-vars
 
 Dashboard secrets survive deployment. `--keep-vars` also preserves dashboard variables. Never place secret values in command arguments, config files tracked by Git, or Docker build arguments. `.dev.vars` is ignored and local only.
 
-The container checks Django configuration and applies migrations to its configured backend database before serving requests. HTTP workers and vote verifiers run together under a supervisor. Accepted votes and verification jobs commit together in PostgreSQL. A separate Durable Object alarm keeps recovery running while votes await verification. When the queue is empty, it stops polling; the container can sleep after ten idle minutes.
+The container checks Django configuration and applies migrations to its configured backend database before serving requests. HTTP workers and vote verifiers run together under a supervisor. Accepted votes and verification jobs commit together in PostgreSQL. A separate Durable Object alarm keeps recovery running while votes await verification. The recovery alarm also monitors election lifecycle state. It prewarms five minutes before scheduled voting, keeps the container active through voting and unpublished counting, and stops active polling once every election is published and verification work is complete. With a future election it schedules the next wake instead of polling while idle; otherwise the container can sleep after ten idle minutes. Management requests initialize this schedule. Bootstrap existing frozen elections with an authorized stats request after rollout.
 
 ## Switch the frontend
 

@@ -59,3 +59,66 @@ class ProcessReportTests(TestCase):
         self.assertEqual(response.status_code,200)
         self.assertIn('report',response.json())
         self.assertEqual(response['Cache-Control'],'no-store')
+
+    @override_settings(RECOVERY_SECRET='test-lifecycle-secret')
+    def test_lifecycle_future_open_closed_published_and_overlapping_elections(self):
+        from helios.runtime_health import verification_state
+        from django.test import RequestFactory
+        def state():
+            request=RequestFactory().get('/internal/verification-state',HTTP_AUTHORIZATION='Bearer test-lifecycle-secret')
+            return json.loads(verification_state(request).content)
+        now=datetime.datetime.utcnow()
+        self.assertFalse(state()['keep_alive'])
+        self.election.frozen_at=now
+        self.election.voting_starts_at=now+datetime.timedelta(days=1)
+        self.election.save()
+        self.assertFalse(state()['keep_alive'])
+        self.assertEqual(state()['next_wake_at'],int((self.election.voting_starts_at-datetime.timedelta(minutes=5)).replace(tzinfo=datetime.timezone.utc).timestamp()*1000))
+        self.election.voting_started_at=now;self.election.save()
+        self.assertTrue(state()['keep_alive'])
+        self.election.voting_ended_at=now;self.election.save()
+        self.assertTrue(state()['keep_alive'])
+        other=models.Election.objects.create(admin=self.actor,uuid=str(uuid.uuid4()),short_name='overlap',name='Overlap',frozen_at=now,voting_started_at=now)
+        self.election.result_released_at=now;self.election.save()
+        self.assertTrue(state()['keep_alive'])
+        other.result_released_at=now;other.save()
+        self.assertFalse(state()['keep_alive'])
+        self.assertIsNone(state()['next_wake_at'])
+        # Frozen elections without a start date are immediately open in Helios.
+        immediate=models.Election.objects.create(admin=self.actor,uuid=str(uuid.uuid4()),short_name='immediate',name='Immediate',frozen_at=now)
+        self.assertTrue(state()['keep_alive'])
+        immediate.result_released_at=now;immediate.save()
+        voter=models.Voter.objects.create(election=immediate,uuid=str(uuid.uuid4()),voter_login_id='pending-test')
+        with connection.cursor() as q:
+            q.execute("insert into helios_castvote(vote,vote_hash,cast_at,quarantined_p,voter_id) values(%s,%s,%s,%s,%s) returning id",['opaque-test-ciphertext','test-hash',now,False,voter.id])
+            cast_id=q.fetchone()[0]
+        job=models.VoteVerificationJob.objects.create(cast_vote_id=cast_id)
+        self.assertTrue(state()['keep_alive'])
+        job.state='failed';job.save()
+        self.assertTrue(state()['keep_alive'])
+        self.assertTrue(state()['needs_attention'])
+        job.state='complete';job.save()
+        self.assertFalse(state()['keep_alive'])
+
+
+    def test_eligibility_batches_are_bounded_and_fail_closed(self):
+        import threading,time
+        from helios.bridge_eligibility import statuses
+        from django.core.exceptions import PermissionDenied
+        voters=[{'subject':str(i),'cast_at':None} for i in range(250)]
+        lock=threading.Lock();active=0;peak=0
+        def request(url,**kwargs):
+            nonlocal active,peak
+            with lock:active+=1;peak=max(peak,active)
+            time.sleep(.01)
+            batch=kwargs['json']['voters']
+            with lock:active-=1
+            response=Mock(status_code=200)
+            response.json.return_value={'binding':{'client_id':'alu-helios-demo','election_id':self.election.uuid},'voters':[{'subject':v['subject'],'student':True,'committee':False,'events':[]} for v in batch]}
+            return response
+        with patch('helios.bridge_eligibility.requests.post',side_effect=request) as post:
+            result=statuses(self.election,voters)
+        self.assertEqual(len(result),250);self.assertEqual(post.call_count,5)
+        self.assertGreater(peak,1);self.assertLessEqual(peak,4)
+        with patch('helios.bridge_eligibility.requests.post',return_value=Mock(status_code=503)):
+            with self.assertRaises(PermissionDenied):statuses(self.election,voters)

@@ -449,6 +449,79 @@ class AluUiTests(test_bridge.BridgeTests):
     self.assertEqual(self.management('release', election_id).status_code, 200)
     self.assertEqual(self.client.get(base + '/ui/ballot').json()['result'], [[0, 1]])
 
+  def test_combined_prepare_is_atomic_idempotent_and_cannot_change_frozen_ballot(self):
+    import datetime
+    election_id = str(uuid.uuid4())
+    self.assertEqual(self.management('create', election_id, name='Combined election').status_code, 200)
+    now = datetime.datetime.utcnow()
+    payload = {'name':'Combined election','seats':[{'title':'President','answers':['Alice','Bob']}],
+      'voting_starts_at':(now+datetime.timedelta(days=2)).isoformat()+'Z',
+      'voting_ends_at':(now+datetime.timedelta(days=3)).isoformat()+'Z','start_now':False}
+    with patch('helios.alu_management.views.one_election_freeze',return_value=Mock(status_code=403)):
+      self.assertEqual(self.management('prepare',election_id,**payload).status_code,403)
+    self.assertIsNone(models.Election.get_by_uuid(election_id).questions)
+    prepared=self.management('prepare',election_id,**payload)
+    self.assertEqual(prepared.status_code,200)
+    self.assertTrue(prepared.json()['frozen'])
+    self.assertFalse(prepared.json()['open'])
+    self.assertEqual(self.management('prepare',election_id,**payload).status_code,200)
+    changed={**payload,'seats':[{'title':'President','answers':['Mallory']}]}
+    self.assertEqual(self.management('prepare',election_id,**changed).status_code,403)
+    opened=self.management('prepare',election_id,**{**payload,'start_now':True})
+    self.assertTrue(opened.json()['open'])
+    self.assertEqual(models.Election.get_by_uuid(election_id).voting_ends_at,
+      datetime.datetime.fromisoformat(payload['voting_ends_at'].rstrip('Z')))
+
+  @override_settings(RECOVERY_SECRET='stage-rehearsal-only-secret')
+  def test_prepared_election_counts_publishes_reports_and_becomes_idle(self):
+    import datetime
+    from django.test import RequestFactory
+    from helios.runtime_health import verification_state
+    def lifecycle():
+      request = RequestFactory().get('/internal/verification-state',
+        HTTP_AUTHORIZATION='Bearer stage-rehearsal-only-secret')
+      return json.loads(verification_state(request).content)
+    election_id = str(uuid.uuid4())
+    self.assertEqual(self.management('create', election_id, name='Local stage rehearsal').status_code, 200)
+    now = datetime.datetime.utcnow()
+    prepared = self.management('prepare', election_id, name='Local stage rehearsal',
+      seats=[{'title':'President','answers':['Alice','Bob']}],
+      voting_starts_at=(now+datetime.timedelta(days=1)).isoformat()+'Z',
+      voting_ends_at=(now+datetime.timedelta(days=2)).isoformat()+'Z', start_now=True)
+    self.assertEqual(prepared.status_code, 200)
+    self.assertTrue(prepared.json()['open'])
+    self.assertTrue(lifecycle()['keep_alive'])
+    self.election = models.Election.get_by_uuid(election_id)
+    self.client = Client()
+    self.finish(self.begin())
+    vote = self.server_ballot()
+    base = '/helios/elections/' + election_id
+    self.assertEqual(self.client.post(base+'/ui/submit', {'encrypted_vote':vote['encrypted']},
+      HTTP_ORIGIN='https://alu.example').status_code, 302)
+    self.assertEqual(self.client.get(base+'/cast_confirm').status_code, 200)
+    self.assertEqual(self.client.post(base+'/cast_confirm',
+      {'csrf_token':self.client.session['csrf_token']}).status_code, 302)
+    closed = self.management('tally', election_id)
+    self.assertEqual(closed.status_code, 200)
+    self.assertTrue(closed.json()['closed'])
+    self.assertTrue(lifecycle()['keep_alive'])
+    self.assertEqual(self.management('combine', election_id).status_code, 200)
+    self.assertTrue(lifecycle()['keep_alive'], 'Unpublished results must keep the backend active')
+    self.assertEqual(self.management('release', election_id).status_code, 200)
+    self.assertEqual(self.management('release', election_id).status_code, 200)
+    ballot = self.client.get(base+'/ui/ballot').json()
+    self.assertTrue(ballot['released'])
+    self.assertFalse(ballot['open'])
+    self.assertEqual(ballot['result'], [[0,1]])
+    report_response = self.management('report', election_id)
+    self.assertEqual(report_response.status_code, 200)
+    report = report_response.json()['report']
+    self.assertEqual(report['verified_records'], 1)
+    self.assertEqual(report['vote_days_status'], 'small_groups')
+    self.assertIsNotNone(report['dates']['result_released_at'])
+    self.assertNotIn(vote['tracker'], json.dumps(report))
+    self.assertEqual(lifecycle(), {'pending':False,'needs_attention':False,'keep_alive':False,'next_wake_at':None})
+
   def test_scheduled_and_manual_start_preserve_frozen_ballot_and_deadline(self):
     import datetime
     election_id = str(uuid.uuid4())

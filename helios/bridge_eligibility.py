@@ -1,5 +1,6 @@
 """Fresh, authenticated membership checks; ballot contents never leave Helios."""
 import datetime
+from concurrent.futures import ThreadPoolExecutor
 
 import requests
 from django.conf import settings
@@ -13,36 +14,47 @@ def bridge_election(election):
     election=election, client_id=settings.ALU_BRIDGE_CLIENT_ID).exists()
 
 
-def statuses(election, voters):
+def _status_batch(election, batch):
   result = {}
-  for offset in range(0, len(voters), 50):
-    batch = voters[offset:offset + 50]
-    try:
-      response = requests.post(https_origin(settings.ALU_BRIDGE_APP_ORIGIN) + '/api/helios/eligibility',
-        headers={'Authorization': 'Bearer ' + settings.ALU_BRIDGE_SECRET},
-        json={'client_id': settings.ALU_BRIDGE_CLIENT_ID, 'election_id': election.uuid, 'voters': batch},
-        timeout=15, allow_redirects=False)
-      if response.status_code != 200:
+  try:
+    response = requests.post(https_origin(settings.ALU_BRIDGE_APP_ORIGIN) + '/api/helios/eligibility',
+      headers={'Authorization': 'Bearer ' + settings.ALU_BRIDGE_SECRET},
+      json={'client_id': settings.ALU_BRIDGE_CLIENT_ID, 'election_id': election.uuid, 'voters': batch},
+      timeout=15, allow_redirects=False)
+    if response.status_code != 200:
+      raise ValueError()
+    data = response.json()
+    if data['binding'] != {'client_id': settings.ALU_BRIDGE_CLIENT_ID, 'election_id': election.uuid}:
+      raise ValueError()
+    rows = data['voters']
+    expected = {v['subject'] for v in batch}
+    if not isinstance(rows, list) or len(rows) != len(expected):
+      raise ValueError()
+    for row in rows:
+      if (not isinstance(row, dict) or row.get('subject') not in expected or
+          type(row.get('student')) is not bool or type(row.get('committee')) is not bool or
+          not isinstance(row.get('events'), list) or
+          any(not isinstance(event, str) or not event.isdigit() or len(event) > 30 for event in row['events'])):
         raise ValueError()
-      data = response.json()
-      if data['binding'] != {'client_id': settings.ALU_BRIDGE_CLIENT_ID, 'election_id': election.uuid}:
-        raise ValueError()
-      rows = data['voters']
-      expected = {v['subject'] for v in batch}
-      if not isinstance(rows, list) or len(rows) != len(expected):
-        raise ValueError()
-      for row in rows:
-        if (not isinstance(row, dict) or row.get('subject') not in expected or
-            type(row.get('student')) is not bool or type(row.get('committee')) is not bool or
-            not isinstance(row.get('events'), list) or
-            any(not isinstance(event, str) or not event.isdigit() or len(event) > 30 for event in row['events'])):
-          raise ValueError()
-        expected.remove(row['subject'])
-        result[row['subject']] = row
-    except (requests.RequestException, ValueError, KeyError, TypeError):
-      # Fail closed. Never log response bodies, headers, credentials or identity.
-      raise PermissionDenied('Voting eligibility could not be checked. Please retry.') from None
+      expected.remove(row['subject'])
+      result[row['subject']] = row
+  except (requests.RequestException, ValueError, KeyError, TypeError):
+    # Fail closed. Never log response bodies, headers, credentials or identity.
+    raise PermissionDenied('Voting eligibility could not be checked. Please retry.') from None
   return result
+
+
+def statuses(election, voters):
+  batches = [voters[offset:offset + 50] for offset in range(0, len(voters), 50)]
+  if not batches:
+    return {}
+  if len(batches) == 1:
+    return _status_batch(election, batches[0])
+  # Every batch still obtains fresh, independently authenticated eligibility.
+  # Bound concurrency to avoid flooding the frontend; never use partial results.
+  with ThreadPoolExecutor(max_workers=4) as pool:
+    checked = list(pool.map(lambda batch: _status_batch(election, batch), batches))
+  return {subject: row for batch in checked for subject, row in batch.items()}
 
 
 def require_voting_access(request, election, user):

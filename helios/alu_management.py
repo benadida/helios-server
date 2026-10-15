@@ -126,9 +126,9 @@ def manage(request):
     if election_id != data['election_id']:
       raise ValueError()
     operation = data['operation']
-    if operation not in ('create', 'ballot', 'freeze', 'tally', 'combine', 'release', 'stats', 'report'):
+    if operation not in ('create', 'ballot', 'freeze', 'tally', 'combine', 'release', 'stats', 'report', 'prepare'):
       raise ValueError()
-    if 'start_now' in data and (operation != 'freeze' or type(data['start_now']) is not bool):
+    if 'start_now' in data and (operation not in ('freeze', 'prepare') or type(data['start_now']) is not bool):
       raise ValueError()
     identity = management_identity(data)
     with transaction.atomic():
@@ -180,11 +180,10 @@ def manage(request):
           **candidate_counts_after_close(election, closed)}))
       if operation == 'tally' and election.num_pending_votes:
         raise PermissionDenied('Votes are still being checked. Please wait a moment and try again.')
-      if operation == 'ballot':
-        if election.frozen_at:
-          raise PermissionDenied('A frozen ballot cannot be changed.')
-        election.questions = questions(data)
-        election.name = text(data['name'], 250)
+      if operation in ('ballot', 'prepare'):
+        proposed_questions = questions(data)
+        proposed_name = text(data['name'], 250)
+        proposed_start, proposed_end = election.voting_starts_at, election.voting_ends_at
         if 'voting_starts_at' in data or 'voting_ends_at' in data:
           def utc(value):
             parsed = datetime.datetime.fromisoformat(value)
@@ -195,11 +194,19 @@ def manage(request):
           end = utc(data['voting_ends_at'])
           if end <= start:
             raise ValueError()
-          election.voting_starts_at = start
-          election.voting_ends_at = end
-        election.save()
-        election.append_log('Approved ALU ballot synchronized by ' + actor.user_id)
-      elif operation != 'create':
+          proposed_start, proposed_end = start, end
+        if election.frozen_at:
+          if operation == 'ballot' or (election.questions != proposed_questions or election.name != proposed_name or
+              election.voting_starts_at != proposed_start or election.voting_ends_at != proposed_end):
+            raise PermissionDenied('A frozen ballot cannot be changed.')
+        else:
+          election.questions, election.name = proposed_questions, proposed_name
+          election.voting_starts_at, election.voting_ends_at = proposed_start, proposed_end
+          election.save()
+          election.append_log('Approved ALU ballot synchronized by ' + actor.user_id)
+        if operation == 'prepare':
+          operation = 'freeze'
+      if operation not in ('create', 'ballot'):
         if operation == 'freeze' and data.get('start_now') and election.voting_has_stopped():
           raise PermissionDenied('Closed voting cannot be reopened.')
         # Reject out-of-order operations before native handlers or expensive work.
@@ -213,7 +220,7 @@ def manage(request):
         # Delegate to the existing protected Helios workflow. This server request
         # already has Bearer authentication AND a fresh independent capability
         # check, equivalent to API CSRF protection; no browser identity is used.
-        if operation == 'freeze' and (not isinstance(data.get('setup_digest'), str) or
+        if operation == 'freeze' and data['operation'] != 'prepare' and (not isinstance(data.get('setup_digest'), str) or
             not hmac.compare_digest(data['setup_digest'].encode(), setup_digest(election).encode())):
           raise PermissionDenied('The ballot changed. Review it before freezing.')
         handlers = {'freeze': views.one_election_freeze, 'tally': views.one_election_compute_tally,
