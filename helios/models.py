@@ -526,6 +526,8 @@ class Election(HeliosModel):
       tally.add_vote(voter.vote, verify_p=False)
 
     self.encrypted_tally = tally
+    if self.tallying_finished_at is None:
+      self.tallying_finished_at = datetime.datetime.utcnow()
     self.save()
 
   def ready_for_decryption(self):
@@ -564,6 +566,8 @@ class Election(HeliosModel):
     decryption_factors = [t.decryption_factors for t in trustees]
 
     self.result = self.encrypted_tally.decrypt_from_factors(decryption_factors, self.public_key)
+    if self.tallies_combined_at is None:
+      self.tallies_combined_at = datetime.datetime.utcnow()
 
     self.append_log(ElectionLog.DECRYPTIONS_COMBINED)
 
@@ -1297,6 +1301,8 @@ class CastVote(HeliosModel):
       cast.save(update_fields=[field])
       if result:
         voter.store_vote(cast)
+        from .vote_confirmation import queue_confirmation
+        queue_confirmation(cast)
       self.verified_at, self.invalidated_at = cast.verified_at, cast.invalidated_at
       self.voter = voter
       self.vote, self.vote_hash, self.cast_at = cast.vote, cast.vote_hash, cast.cast_at
@@ -1330,6 +1336,20 @@ class VoteVerificationJob(models.Model):
   class Meta:
     indexes = [models.Index(fields=['next_attempt_at', 'id'],
       condition=models.Q(state='pending'), name='helios_vjob_pending_idx')]
+
+
+class VoteConfirmationEmail(models.Model):
+  """One email per verified ballot; retries contain no candidate choices."""
+  id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+  cast_vote = models.OneToOneField(CastVote, on_delete=models.CASCADE, related_name='confirmation_email')
+  payload = models.JSONField()
+  state = models.CharField(max_length=20, default='pending')
+  attempts = models.PositiveIntegerField(default=0)
+  first_attempt_at = models.DateTimeField(null=True)
+  attempted_at = models.DateTimeField(null=True)
+  next_attempt_at = models.DateTimeField(default=datetime.datetime.utcnow, db_index=True)
+  sent_at = models.DateTimeField(null=True)
+  lease = models.UUIDField(null=True)
 
 
 class AuditedBallot(models.Model):

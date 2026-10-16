@@ -7,7 +7,7 @@ from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET
 
-from .models import VoteVerificationJob, Election
+from .models import VoteVerificationJob, VoteConfirmationEmail, Election
 
 
 class ContainerHealthMiddleware:
@@ -38,7 +38,7 @@ def verification_state(request):
         pending = active.exists()
         attention = VoteVerificationJob.objects.filter(state='failed', cast_vote__voter__election__deleted_at=None).exists()
         now = datetime.datetime.utcnow()
-        keep_alive = pending or attention or VoteVerificationJob.objects.filter(state='pending', cast_vote__voter__election__deleted_at=None).exists()
+        keep_alive = VoteConfirmationEmail.objects.filter(state__in=['pending', 'sending']).exists() or pending or attention or VoteVerificationJob.objects.filter(state='pending', cast_vote__voter__election__deleted_at=None).exists()
         next_wake = None
         # Helios dates are naive UTC. All elections share the same container.
         for election in Election.objects.filter(frozen_at__isnull=False, result_released_at__isnull=True).only(

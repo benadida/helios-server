@@ -18,7 +18,8 @@ from django.views.decorators.http import require_POST
 
 from helios import models, views
 from helios import utils
-from helios.alu_report import operational_report
+from helios.alu_report import operational_report, lifecycle_dates
+from helios.alu_live_counts import live_candidate_counts
 from helios_auth.bridge_protocol import eligible_identity, https_origin
 from helios_auth.bridge_views import private_response
 from helios_auth.models import User
@@ -172,12 +173,19 @@ def manage(request):
       if operation in ('stats', 'report'):
         voting_end = election.voting_ended_at or election.voting_extended_until or election.voting_ends_at
         closed = bool((voting_end is not None and datetime.datetime.utcnow() >= voting_end) or election.has_encrypted_tally)
+        counts = candidate_counts_after_close(election, closed)
+        if operation == 'stats' and not closed and election.voting_has_started():
+          try:
+            counts = live_candidate_counts(election)
+          except (ValueError, TypeError, KeyError, IndexError, ArithmeticError):
+            # Monitoring must not mutate or interrupt vote submission/tallying.
+            counts = {'positions': None, 'counts_status': 'unavailable'}
         return private_response(JsonResponse({'election_id': election_id,
           'votes': election.num_cast_votes, 'pending': election.num_pending_votes,
           'open': bool(election.voting_has_started() and not closed),
           'closed': closed,
           **({'report': operational_report(election, closed)} if operation == 'report' else {}),
-          **candidate_counts_after_close(election, closed)}))
+          **counts}))
       if operation == 'tally' and election.num_pending_votes:
         raise PermissionDenied('Votes are still being checked. Please wait a moment and try again.')
       if operation in ('ballot', 'prepare'):
@@ -252,7 +260,18 @@ def manage(request):
         'open': bool(election.voting_has_started() and not election.voting_has_stopped()),
         'voting_started_at': election.voting_started_at.isoformat() + 'Z' if election.voting_started_at else None,
         'frozen': bool(election.frozen_at), 'closed': bool(election.voting_has_stopped()),
-        'released': bool(election.result_released_at), 'setup_digest': setup_digest(election)}))
+        'released': bool(election.result_released_at), 'setup_digest': setup_digest(election),
+        'lifecycle': lifecycle_dates(election, bool(election.voting_has_stopped())),
+        # Capture once while the backend is already awake for publication.
+        # The trusted frontend archives this aggregate in Neon; readers never
+        # need to wake this service to reconstruct a completed report.
+        **({'publication_report': {'votes': election.num_cast_votes,
+          'pending': election.num_pending_votes,
+          'reader_subjects': list(User.objects.filter(user_type='alu').filter(
+            Q(admin_p=True) | Q(pk=election.admin_id) |
+            Q(pk__in=election.admins.values('pk'))).order_by('user_id').values_list('user_id', flat=True)),
+          'report': operational_report(election, True)}}
+          if operation == 'release' and election.result_released_at else {})}))
   except PermissionDenied as error:
     messages = {
       'Votes are still being checked. Please wait a moment and try again.': 'Votes are still being checked. Please wait a moment and try again.',

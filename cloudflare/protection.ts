@@ -23,7 +23,7 @@ export async function protectRequest(request: Request, env: Env, origin: URL): P
   if (!['', 'about', 'docs', 'faq', 'privacy', 'helios', 'auth', 'booth', 'verifier', 'static', 'optin', 'optout'].includes(route)) {
     return refusal('Not found', 404);
   }
-  if (path === '/helios/alu/manage' && !authenticatedManagement(request, env.ALU_BRIDGE_SECRET)) {
+  if ((path === '/helios/alu/manage' || /^\/helios\/elections\/[^/]+\/ui\/cast$/.test(path)) && !authenticatedManagement(request, env.ALU_BRIDGE_SECRET)) {
     return refusal('Unauthorized', 401);
   }
   if (request.method !== 'POST') return;

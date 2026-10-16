@@ -24,6 +24,24 @@ class ProcessReportTests(TestCase):
             with connection.cursor() as q:
                 q.execute("update helios_voter set vote=%s,cast_at=%s where id=%s",['PRIVATE-CIPHERTEXT',day,voter.pk])
 
+    @override_settings(TIME_ZONE='Africa/Kigali', USE_TZ=False)
+    def test_historical_combination_time_uses_real_local_audit_event(self):
+        from zoneinfo import ZoneInfo
+        self.election.result_released_at=datetime.datetime.utcnow()
+        self.election.save()
+        self.assertIsNone(operational_report(self.election,True)['dates']['tallies_combined_at'])
+        event=models.ElectionLog.objects.create(election=self.election,log=models.ElectionLog.DECRYPTIONS_COMBINED)
+        expected=event.at.replace(tzinfo=ZoneInfo('Africa/Kigali')).astimezone(datetime.timezone.utc).isoformat()
+        self.assertEqual(operational_report(self.election,True)['dates']['tallies_combined_at'],expected)
+        self.election.refresh_from_db()
+        self.assertIsNone(self.election.tallies_combined_at, 'Read fallback must not rewrite old records')
+        explicit=datetime.datetime(2026,10,15,2,47)
+        self.election.tallies_combined_at=explicit
+        self.assertEqual(operational_report(self.election,True)['dates']['tallies_combined_at'],explicit.replace(tzinfo=datetime.timezone.utc).isoformat())
+        self.election.tallies_combined_at=None
+        self.election.result_released_at=None
+        self.assertIsNone(operational_report(self.election,True)['dates']['tallies_combined_at'])
+
     def test_live_series_and_ballot_identity_are_never_exposed(self):
         self.voters(5,datetime.datetime(2026,10,14,10))
         data=operational_report(self.election,False)
@@ -45,6 +63,36 @@ class ProcessReportTests(TestCase):
         data=operational_report(self.election,True)
         self.assertEqual(data['vote_days'],[{'day':'2026-10-15','votes':5}])
         self.assertIsNone(data['verification_seconds'])
+
+    def test_scheduled_lifecycle_dates_are_labelled_and_never_future_events(self):
+        from helios.alu_report import lifecycle_dates
+        now=datetime.datetime.utcnow()
+        self.election.frozen_at=now-datetime.timedelta(hours=2)
+        self.election.voting_starts_at=now+datetime.timedelta(hours=1)
+        self.assertIsNone(lifecycle_dates(self.election,False)['dates']['voting_started_at'])
+        self.election.voting_starts_at=now-datetime.timedelta(hours=1)
+        self.election.voting_ends_at=now-datetime.timedelta(minutes=10)
+        self.election.voting_extended_until=now-datetime.timedelta(minutes=1)
+        data=lifecycle_dates(self.election,True)
+        self.assertEqual(data['date_sources']['voting_started_at'],'effective_schedule')
+        self.assertEqual(data['date_sources']['voting_ended_at'],'effective_schedule')
+        self.assertEqual(data['dates']['voting_ended_at'],self.election.voting_extended_until.replace(tzinfo=datetime.timezone.utc).isoformat())
+        self.assertIsNone(self.election.voting_started_at)
+        self.assertIsNone(self.election.voting_ended_at)
+
+    @override_settings(TIME_ZONE='Africa/Kigali', USE_TZ=False)
+    def test_historical_freeze_and_manual_open_recover_only_real_audit_dates(self):
+        from helios.alu_report import lifecycle_dates
+        from zoneinfo import ZoneInfo
+        frozen=models.ElectionLog.objects.create(election=self.election,log=models.ElectionLog.FROZEN)
+        opened=models.ElectionLog.objects.create(election=self.election,log='Voting opened manually by PRIVATE-SUBJECT')
+        data=lifecycle_dates(self.election,True)
+        self.assertEqual(data['date_sources']['frozen_at'],'audit_log')
+        self.assertEqual(data['date_sources']['voting_started_at'],'audit_log')
+        self.assertEqual(data['dates']['frozen_at'],frozen.at.replace(tzinfo=ZoneInfo('Africa/Kigali')).astimezone(datetime.timezone.utc).isoformat())
+        self.assertEqual(data['dates']['voting_started_at'],opened.at.replace(tzinfo=ZoneInfo('Africa/Kigali')).astimezone(datetime.timezone.utc).isoformat())
+        self.assertNotIn('PRIVATE-SUBJECT',json.dumps(data))
+        self.assertIsNone(self.election.frozen_at)
 
     def test_management_authentication_and_independent_permission_check(self):
         payload={'operation':'report','subject':'chair','client_id':'alu-helios-demo','election_id':self.election.uuid}

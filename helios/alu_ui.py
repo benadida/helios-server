@@ -195,8 +195,5 @@ def vote_status(request, election):
       raise ValueError()
   except (ValueError, TypeError, KeyError):
     return private_response(JsonResponse({'error': 'Invalid request'}, status=400))
-  cast = CastVote.objects.filter(voter__election=election,
-    voter__user__user_type='alu', voter__user__user_id=data['subject'],
-    invalidated_at=None).only('verified_at').order_by('-cast_at').first()
-  status = 'verified' if cast and cast.verified_at else 'pending' if cast else 'none'
-  return private_response(JsonResponse({'election_id': election.uuid, 'status': status}))
+  from .alu_submission import submission_status
+  return private_response(JsonResponse(submission_status(election, data['subject'])))

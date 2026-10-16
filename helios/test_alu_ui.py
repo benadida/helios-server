@@ -76,8 +76,8 @@ class AluUiTests(test_bridge.BridgeTests):
     models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
     running = self.management('stats', self.election.uuid, subject='organizer').json()
     self.assertEqual(running['votes'], 1)
-    self.assertIsNone(running['positions'])
-    self.assertEqual(running['counts_status'], 'voting')
+    self.assertEqual([c['votes'] for c in running['positions'][0]['candidates']], [0, 1])
+    self.assertEqual(running['counts_status'], 'live')
     self.election.refresh_from_db()
     self.assertIsNone(self.election.encrypted_tally)
     self.assertIsNone(self.election.result)
@@ -212,8 +212,8 @@ class AluUiTests(test_bridge.BridgeTests):
     models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
     result = self.management('stats', self.election.uuid, subject='organizer')
     self.assertEqual(result.status_code, 200)
-    self.assertIsNone(result.json()['positions'])
-    self.assertEqual(result.json()['counts_status'], 'voting')
+    self.assertEqual([c['votes'] for c in result.json()['positions'][0]['candidates']], [0, 0])
+    self.assertEqual(result.json()['counts_status'], 'live')
     self.assertTrue(result.json()['open'])
     self.assertEqual(self.client.post('/helios/alu/manage', '{}', content_type='application/json').status_code, 401)
     self.assertEqual(self.management('stats', self.election.uuid, subject='student').status_code, 403)
@@ -242,7 +242,7 @@ class AluUiTests(test_bridge.BridgeTests):
     models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
     result = self.management('stats', self.election.uuid, subject='organizer').json()
     self.assertIsNone(result['positions'])
-    self.assertEqual(result['counts_status'], 'voting')
+    self.assertEqual(result['counts_status'], 'trustees_required')
 
   def test_closed_election_waits_for_final_count_without_decrypting(self):
     import datetime
@@ -309,11 +309,11 @@ class AluUiTests(test_bridge.BridgeTests):
     pending_counts = self.management('stats', self.election.uuid, subject='organizer').json()
     self.assertEqual(pending_counts['votes'], 0)
     self.assertEqual(pending_counts['pending'], 1)
-    self.assertIsNone(pending_counts['positions'])
+    self.assertTrue(all(c['votes']==0 for p in pending_counts['positions'] for c in p['candidates']))
     self.assertTrue(cast.verify_and_store())
     live = self.management('stats', self.election.uuid, subject='organizer').json()
-    self.assertIsNone(live['positions'])
-    self.assertEqual(live['counts_status'], 'voting')
+    self.assertEqual([[c['votes'] for c in p['candidates']] for p in live['positions']], [[1, 0], [0, 1]])
+    self.assertEqual(live['counts_status'], 'live')
     self.assertEqual(live['votes'], 1)
     self.election.refresh_from_db()
     self.assertIsNone(self.election.encrypted_tally)
@@ -472,6 +472,22 @@ class AluUiTests(test_bridge.BridgeTests):
     self.assertEqual(models.Election.get_by_uuid(election_id).voting_ends_at,
       datetime.datetime.fromisoformat(payload['voting_ends_at'].rstrip('Z')))
 
+  def test_failed_crypto_operations_do_not_record_completion_times(self):
+    self.frozen_ballot()
+    with patch.object(models.Election, 'init_tally', side_effect=RuntimeError('tally failed')):
+      with self.assertRaises(RuntimeError):
+        self.election.compute_tally()
+    self.election.refresh_from_db()
+    self.assertIsNone(self.election.tallying_finished_at)
+    self.election.compute_tally()
+    self.assertIsNotNone(self.election.tallying_finished_at)
+    with patch.object(homomorphic.Tally, 'decrypt_from_factors', side_effect=RuntimeError('combination failed')):
+      with self.assertRaises(RuntimeError):
+        self.election.combine_decryptions()
+    self.election.refresh_from_db()
+    self.assertIsNone(self.election.tallies_combined_at)
+    self.assertIsNone(self.election.result)
+
   def test_prepared_empty_election_can_close_count_and_publish(self):
     import datetime
     election_id = str(uuid.uuid4())
@@ -517,11 +533,38 @@ class AluUiTests(test_bridge.BridgeTests):
     closed = self.management('tally', election_id)
     self.assertEqual(closed.status_code, 200)
     self.assertTrue(closed.json()['closed'])
+    self.election.refresh_from_db()
+    finished = self.election.tallying_finished_at
+    self.assertIsNotNone(finished)
     self.assertTrue(lifecycle()['keep_alive'])
     self.assertEqual(self.management('combine', election_id).status_code, 200)
+    self.election.refresh_from_db()
+    combined = self.election.tallies_combined_at
+    self.assertIsNotNone(combined)
+    self.assertGreaterEqual(combined, finished)
+    self.assertEqual(self.management('tally', election_id).status_code, 200)
+    self.assertEqual(self.management('combine', election_id).status_code, 200)
+    self.election.refresh_from_db()
+    self.assertEqual(self.election.tallying_finished_at, finished)
+    self.assertEqual(self.election.tallies_combined_at, combined)
     self.assertTrue(lifecycle()['keep_alive'], 'Unpublished results must keep the backend active')
-    self.assertEqual(self.management('release', election_id).status_code, 200)
-    self.assertEqual(self.management('release', election_id).status_code, 200)
+    reader = models.User.objects.create(user_type='alu', user_id='additional-reader', info={})
+    self.election.admins.add(reader)
+    publication = self.management('release', election_id)
+    self.assertEqual(publication.status_code, 200)
+    archive = publication.json()['publication_report']
+    self.assertEqual(archive['votes'], 1)
+    self.assertEqual(archive['pending'], 0)
+    self.assertIn('new-chair', archive['reader_subjects'])
+    self.assertIn('organizer', archive['reader_subjects'])
+    self.assertIn('additional-reader', archive['reader_subjects'])
+    self.assertNotIn('student', archive['reader_subjects'])
+    self.assertEqual(archive['report']['verified_records'], 1)
+    self.assertEqual(archive['report']['vote_days_status'], 'small_groups')
+    self.assertIsNotNone(archive['report']['dates']['result_released_at'])
+    self.assertNotIn(vote['tracker'], json.dumps(archive))
+    self.assertNotIn('encrypted_vote', json.dumps(archive))
+    self.assertEqual(self.management('release', election_id).json()['publication_report'], archive)
     ballot = self.client.get(base+'/ui/ballot').json()
     self.assertTrue(ballot['released'])
     self.assertFalse(ballot['open'])
@@ -533,6 +576,14 @@ class AluUiTests(test_bridge.BridgeTests):
     self.assertEqual(report['vote_days_status'], 'small_groups')
     self.assertIsNotNone(report['dates']['result_released_at'])
     self.assertNotIn(vote['tracker'], json.dumps(report))
+    # Publication must keep the service alive until verified-vote email is sent.
+    self.assertTrue(lifecycle()['keep_alive'])
+    from helios.vote_confirmation import deliver_next_confirmation
+    delivered = Mock(status_code=200)
+    delivered.json.return_value = {'sent': True}
+    with patch('helios.vote_confirmation.requests.post', return_value=delivered):
+      while deliver_next_confirmation():
+        pass
     self.assertEqual(lifecycle(), {'pending':False,'needs_attention':False,'keep_alive':False,'next_wake_at':None})
 
   def test_scheduled_and_manual_start_preserve_frozen_ballot_and_deadline(self):
@@ -570,6 +621,74 @@ class AluUiTests(test_bridge.BridgeTests):
     election.voting_ended_at=now-datetime.timedelta(seconds=1);election.save()
     self.assertEqual(self.management('freeze', election_id, setup_digest=digest, start_now=True).status_code,403)
     self.assertEqual(self.management('freeze', election_id, setup_digest=digest, start_now='true').status_code,400)
+
+  def test_provisional_aggregate_tracks_verified_votes_and_reuses_encrypted_sum(self):
+    from helios_auth.models import User
+    from helios.alu_live_counts import live_candidate_counts
+    from django.core.cache import cache
+    self.frozen_ballot()
+    models.AluElectionBinding.objects.create(uuid=self.election.uuid, election=self.election, client_id=settings.ALU_BRIDGE_CLIENT_ID)
+    def cast(subject, answer, verify=True):
+      user = User.objects.create(user_type='alu', user_id=subject, info={'email':subject+'@alustudent.com','email_verified':True})
+      voter = models.Voter.register_user_in_election(user, self.election)
+      vote = homomorphic.EncryptedVote.fromElectionAndAnswers(self.election, [answer])
+      from helios.crypto.utils import hash_b64
+      ballot = models.CastVote(voter=voter, vote=vote, vote_hash=hash_b64(vote.ld_object.serialize()))
+      ballot.save()
+      if verify:
+        self.assertTrue(ballot.verify_and_store())
+      return ballot
+    # Exact candidate counts, with a deliberately blank position and pending cast.
+    for n in range(10):
+      cast('alice-voter-'+str(n), [0])
+    for n in range(2):
+      cast('bob-voter-'+str(n), [1])
+    cast('blank-voter', [])
+    pending = cast('pending-voter', [1], verify=False)
+    original_logs = models.ElectionLog.objects.filter(election=self.election).count()
+    first = self.management('stats', self.election.uuid, subject='organizer').json()
+    self.assertEqual(first['counts_status'], 'live')
+    self.assertEqual((first['votes'], first['pending'], first['counted_votes']), (13, 1, 13))
+    self.assertEqual([c['votes'] for c in first['positions'][0]['candidates']], [10, 2])
+    self.assertNotIn('pending-voter', json.dumps(first))
+    self.assertNotIn('vote_hash', json.dumps(first))
+    with patch.object(models.Election, 'init_tally', side_effect=AssertionError('Cached aggregate should be reused')):
+      self.assertEqual(self.management('stats', self.election.uuid, subject='organizer').json()['positions'], first['positions'])
+      self.assertTrue(pending.verify_and_store())
+      advanced = self.management('stats', self.election.uuid, subject='organizer').json()
+    self.assertEqual([c['votes'] for c in advanced['positions'][0]['candidates']], [10, 3])
+    self.assertEqual(advanced['counted_votes'], 14)
+    self.election.refresh_from_db()
+    self.assertIsNone(self.election.encrypted_tally)
+    self.assertIsNone(self.election.result)
+    self.assertIsNone(self.election.tallying_started_at)
+    self.assertIsNone(self.election.tallies_combined_at)
+    self.assertFalse(self.election.voting_has_stopped())
+    self.assertEqual(models.ElectionLog.objects.filter(election=self.election).count(), original_logs)
+    trustee = self.election.trustee_set.get()
+    self.assertIsNone(trustee.decryption_factors)
+    self.assertIsNone(trustee.decryption_proofs)
+    self.assertFalse(self.client.get(self.base+'/ui/ballot').json()['released'])
+    self.assertIsNone(self.client.get(self.base+'/ui/ballot').json()['result'])
+    # Policy holds and externally held keys suppress even an existing snapshot.
+    review = models.BallotPolicyReview.objects.create(election=self.election, voter=pending.voter, event_key='test',reason='Review')
+    self.assertEqual(live_candidate_counts(self.election)['counts_status'], 'review_needed')
+    review.decision='retain';review.save()
+    trustee.secret_key=None;trustee.save()
+    self.assertEqual(live_candidate_counts(self.election)['counts_status'], 'trustees_required')
+    cache.clear()
+
+  def test_provisional_crypto_failure_does_not_change_election_or_show_zero(self):
+    self.frozen_ballot()
+    models.AluElectionBinding.objects.create(uuid=self.election.uuid,election=self.election,client_id=settings.ALU_BRIDGE_CLIENT_ID)
+    with patch.object(homomorphic.Tally,'decrypt_from_factors',side_effect=ValueError('fixture failure')):
+      response=self.management('stats',self.election.uuid,subject='organizer').json()
+    self.assertEqual(response['counts_status'],'unavailable')
+    self.assertIsNone(response['positions'])
+    self.assertEqual(self.management('stats',self.election.uuid,subject='organizer').json()['counts_status'],'live')
+    self.election.refresh_from_db()
+    self.assertIsNone(self.election.encrypted_tally)
+    self.assertIsNone(self.election.result)
 
 # A real PostgreSQL transaction test ensures two simultaneous confirmations
 # reserve only one submission before the verification task runs.

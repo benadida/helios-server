@@ -38,6 +38,7 @@ def main():
         '--worker-class', 'sync', '--timeout', '180', '--error-logfile', '-']]
     commands.extend([[sys.executable, 'manage.py', 'run_vote_verifier']
                      for _ in range(verifier_count)])
+    commands.append([sys.executable, 'manage.py', 'run_vote_confirmation_sender'])
     exit_code = 0
     try:
         for command in commands:
