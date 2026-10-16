@@ -35,7 +35,7 @@ npx wrangler deploy --keep-vars
 
 Dashboard secrets survive deployment. `--keep-vars` also preserves dashboard variables. Never place secret values in command arguments, config files tracked by Git, or Docker build arguments. `.dev.vars` is ignored and local only.
 
-The container checks Django configuration and applies migrations to its configured backend database before serving requests. HTTP workers and vote verifiers run together under a supervisor. Accepted votes and verification jobs commit together in PostgreSQL. A separate Durable Object alarm keeps recovery running while votes await verification. When the queue is empty, it stops polling; the container can sleep after ten idle minutes.
+The container checks Django configuration and applies migrations to its configured backend database before serving requests. HTTP workers and vote verifiers run together under a supervisor. Accepted votes and verification jobs commit together in PostgreSQL. A separate Durable Object alarm keeps recovery running while votes await verification. The recovery alarm also monitors election lifecycle state. It prewarms five minutes before scheduled voting, keeps the container active through voting and unpublished counting, and stops active polling once every election is published and verification work is complete. With a future election it schedules the next wake instead of polling while idle; otherwise the container can sleep after ten idle minutes. Management requests initialize this schedule. Bootstrap existing frozen elections with an authorized stats request after rollout.
 
 ## Switch the frontend
 
@@ -70,3 +70,13 @@ These source changes take effect only after deployment. Worker hosting is not pr
 Apply supported managed attack rules, and test legitimate student login, the browser-to-backend form handoff and server-to-server bridge calls. Do not add JavaScript challenges to bridge API endpoints, cache authenticated responses, or set a tight shared-IP voting limit. Bind the backend to its own protected hostname if zone firewall rules are required there; a `workers.dev` URL alone does not provide your zone's custom WAF rules. Keep Access off for public student voting.
 
 Local tests simulate browser and identity-provider boundaries with synthetic accounts. Real Google/Neon sign-in, edge WAF challenges, internet latency, DNS and hosted cold starts still require a controlled staging check before the real election.
+
+## Hosted lifecycle verification, 15 October 2026
+
+With explicit deployment approval, revision `d1808da` was deployed through GitHub Actions run `38672481569` (container application version 10). Hosted zero-vote test elections completed normal tally, decryption combination and publication after a regression fix initialized empty aggregates with identity ciphertexts. The backend suite now has 285 passing tests.
+
+Read-only Cloudflare control-plane observation confirmed idle shutdown at 02:59:40 UTC. Public results still returned from the frontend snapshot while the container remained inactive. With no operator backend request, the scheduled recovery alarm fired at 03:00:32.256 UTC and the container was observed running at 03:00:49.765 UTC, before the scheduled election opening. Successful periodic probes resumed during prewarming.
+
+This does not establish real student casting, 5,000-voter throughput or consistently low stage latency. The remaining student rehearsal uses real noncommittee accounts. Detailed evidence and timings are recorded in the frontend repository's `docs/hosted-lifecycle-verification-2026-10-15.md`.
+
+A later ballot read at 03:05:45 UTC confirmed scheduled voting opened without a manual operation. The scheduled test then closed, combined and published normally. All test elections finished published, with no pending/failed verification jobs and no cast records. Warm stage calls still took about 4–12 seconds; the hosted evidence does not claim this latency is resolved.

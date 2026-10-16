@@ -7,13 +7,14 @@ Ben Adida (ben@adida.net)
 from django.urls import path, re_path
 
 from helios import views
-from helios import alu_ui
+from helios import alu_ui, alu_submission
 from helios import election_url_names as names
 
 urlpatterns = [
     path('/ui/ballot', alu_ui.ballot),
     path('/ui/vote-status', alu_ui.vote_status),
     path('/ui/submit', alu_ui.submit),
+    path('/ui/cast', alu_submission.cast),
     path('/ui/login', alu_ui.login),
     path('/ui/receipt/<path:tracker>', alu_ui.receipt),
     path('/policy_reviews', views.one_election_policy_reviews),

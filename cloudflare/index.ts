@@ -42,9 +42,16 @@ export class VerificationRecovery extends DurableObject<Env> {
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS inflight (id TEXT PRIMARY KEY, expires_at INTEGER NOT NULL)');
+    ctx.storage.sql.exec('CREATE TABLE IF NOT EXISTS lifecycle_revision (id INTEGER PRIMARY KEY, value INTEGER NOT NULL)');
+    ctx.storage.sql.exec('INSERT OR IGNORE INTO lifecycle_revision VALUES (1, 0)');
+  }
+
+  private revision(): number {
+    return this.ctx.storage.sql.exec<{value:number}>('SELECT value FROM lifecycle_revision WHERE id = 1').one().value;
   }
 
   async arm(): Promise<string> {
+    this.ctx.storage.sql.exec('UPDATE lifecycle_revision SET value = value + 1 WHERE id = 1');
     const id = crypto.randomUUID();
     this.ctx.storage.sql.exec('DELETE FROM inflight WHERE expires_at <= ?', Date.now());
     this.ctx.storage.sql.exec('INSERT INTO inflight VALUES (?, ?)', id, Date.now() + REQUEST_LEASE_MS);
@@ -53,12 +60,14 @@ export class VerificationRecovery extends DurableObject<Env> {
   }
 
   async finish(id: string): Promise<void> {
+    this.ctx.storage.sql.exec('UPDATE lifecycle_revision SET value = value + 1 WHERE id = 1');
     this.ctx.storage.sql.exec('DELETE FROM inflight WHERE id = ?', id);
     await this.ensureAlarm();
   }
 
   private async ensureAlarm(): Promise<void> {
-    if (await this.ctx.storage.getAlarm() === null) {
+    const alarm = await this.ctx.storage.getAlarm();
+    if (alarm === null || alarm > Date.now() + RECOVERY_INTERVAL) {
       await this.ctx.storage.setAlarm(Date.now() + RECOVERY_INTERVAL);
     }
   }
@@ -67,6 +76,7 @@ export class VerificationRecovery extends DurableObject<Env> {
     // Persist the next check before network I/O so an interrupted alarm still
     // has a recovery path. Healthy empty queues clear it to avoid idle charges.
     await this.ctx.storage.setAlarm(Date.now() + RECOVERY_INTERVAL);
+    const revision = this.revision();
     const origin = backendOrigin(this.env);
     const probeUrl = new URL('/internal/verification-state', origin);
     probeUrl.protocol = 'http:';
@@ -83,8 +93,8 @@ export class VerificationRecovery extends DurableObject<Env> {
       await response.body?.cancel();
       throw new Error('Verification recovery probe unavailable.');
     }
-    const state: {pending?: unknown; needs_attention?: unknown} = await response.json();
-    if (typeof state.pending !== 'boolean' || typeof state.needs_attention !== 'boolean') {
+    const state: {pending?: unknown; needs_attention?: unknown; keep_alive?: unknown; next_wake_at?: unknown} = await response.json();
+    if (typeof state.pending !== 'boolean' || typeof state.needs_attention !== 'boolean' || typeof state.keep_alive !== 'boolean' || (state.next_wake_at !== null && (!Number.isSafeInteger(state.next_wake_at) || Number(state.next_wake_at) <= 0))) {
       throw new Error('Invalid verification recovery probe.');
     }
     if (state.needs_attention) console.error('Vote verification requires operator review.');
@@ -92,7 +102,10 @@ export class VerificationRecovery extends DurableObject<Env> {
     // alarm while its durable lease exists, even if this probe saw an empty queue.
     const active = this.ctx.storage.sql.exec<{total: number}>(
       'SELECT COUNT(*) AS total FROM inflight WHERE expires_at > ?', Date.now()).one().total;
-    if (!state.pending && active === 0) await this.ctx.storage.deleteAlarm();
+    if (!state.keep_alive && !state.pending && active === 0 && this.revision() === revision) {
+      if (state.next_wake_at !== null) await this.ctx.storage.setAlarm(Math.max(Date.now() + 1000, Number(state.next_wake_at)));
+      else await this.ctx.storage.deleteAlarm();
+    }
   }
 }
 
@@ -111,8 +124,9 @@ export default {
       }
       const checked = await protectRequest(request, env, origin);
       if (checked instanceof Response) return checked;
-      if (/^\/helios\/elections\/[^/]+\/cast_confirm$/.test(url.pathname) &&
-          ['GET', 'POST'].includes(request.method)) {
+      if ((/^\/helios\/elections\/[^/]+\/cast_confirm$/.test(url.pathname) &&
+          ['GET', 'POST'].includes(request.method)) ||
+          url.pathname === '/helios/alu/manage' && request.method === 'POST') {
         // Arm before forwarding: a crash after accepting the vote cannot leave
         // recovery dependent on this request completing or another student.
         recovery = env.RECOVERY.getByName(RECOVERY_NAME);
