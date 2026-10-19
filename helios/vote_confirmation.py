@@ -25,7 +25,7 @@ def deliver_next_confirmation():
     now = datetime.datetime.utcnow()
     with transaction.atomic():
         job = (VoteConfirmationEmail.objects.select_for_update(skip_locked=True)
-            .filter(next_attempt_at__lte=now)
+            .filter(next_attempt_at__lte=now, provider='sendbyte')
             .filter(Q(state='pending') | Q(state='sending', attempted_at__lt=now-datetime.timedelta(minutes=2)))
             .order_by('next_attempt_at', 'id').first())
         if not job:
@@ -45,7 +45,7 @@ def deliver_next_confirmation():
     try:
         response = requests.post(https_origin(settings.ALU_BRIDGE_APP_ORIGIN) + '/api/helios/vote-email',
             headers={'Authorization': 'Bearer ' + settings.ALU_BRIDGE_SECRET},
-            json={'id': str(job.id), **job.payload}, timeout=15, allow_redirects=False)
+            json={**job.payload, 'id': str(job.id), 'provider': job.provider}, timeout=15, allow_redirects=False)
         delivered = response.status_code == 200 and response.json().get('sent') is True
     except (requests.RequestException, ValueError, TypeError, AttributeError):
         pass

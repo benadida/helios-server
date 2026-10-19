@@ -148,6 +148,7 @@ class SubmissionTests(TransactionTestCase):
         with patch('helios.vote_confirmation.requests.post',return_value=reply) as send:
             deliver_next_confirmation()
             self.assertEqual(send.call_args.kwargs['json']['id'],first_id)
+            self.assertEqual(send.call_args.kwargs['json']['provider'],'sendbyte')
         mail.refresh_from_db();self.assertEqual(mail.state,'sent')
         with patch('helios.vote_confirmation.requests.post') as send:
             self.assertFalse(deliver_next_confirmation());send.assert_not_called()
@@ -155,3 +156,27 @@ class SubmissionTests(TransactionTestCase):
         with patch('helios.vote_confirmation.requests.post') as send:
             deliver_next_confirmation();send.assert_not_called()
         mail.refresh_from_db();self.assertEqual(mail.state,'review_required')
+
+    def test_confirmation_provider_switch_holds_ambiguous_deliveries(self):
+        from importlib import import_module
+        from types import SimpleNamespace
+        from django.apps import apps
+        from django.db import connection
+        transfer = import_module('helios.migrations.0016_sendbyte_email_provider').transfer_unsent
+        self.frozen_ballot();payload=self.payload()
+        with self.network(payload):self.submit(payload)
+        process_next_job();mail=models.VoteConfirmationEmail.objects.get()
+        self.assertEqual(mail.provider,'sendbyte')
+        for state,attempts,expected in [('pending',0,'pending'),('pending',1,'review_required'),
+                                        ('sending',1,'review_required'),('sent',1,'sent')]:
+            with self.subTest(state=state, attempts=attempts):
+                mail.provider='resend';mail.state=state;mail.attempts=attempts
+                mail.first_attempt_at=datetime.datetime.utcnow() if attempts else None
+                mail.attempted_at=mail.first_attempt_at;mail.save()
+                transfer(apps,SimpleNamespace(connection=connection))
+                mail.refresh_from_db()
+                self.assertEqual(mail.state,expected)
+                self.assertEqual(mail.provider,'sendbyte' if attempts==0 else 'resend')
+                if attempts:
+                    with patch('helios.vote_confirmation.requests.post') as send:
+                        self.assertFalse(deliver_next_confirmation());send.assert_not_called()
