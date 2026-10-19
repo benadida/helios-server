@@ -173,6 +173,7 @@ MIDDLEWARE = [
 
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'helios.alu_guardrails.AluRequestGuardrails',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 ]
 
@@ -227,7 +228,7 @@ if ANYMAIL["MAILGUN_API_KEY"]:
 ##
 
 
-MEDIA_ROOT = ROOT_PATH + "media/"
+MEDIA_ROOT = os.path.join(ROOT_PATH, 'media')
 
 # a relative path where voter upload files are stored
 VOTER_UPLOAD_REL_PATH = "voters/%Y/%m/%d"
@@ -290,6 +291,11 @@ AUTH_DEFAULT_SYSTEM = get_from_env('AUTH_DEFAULT_SYSTEM', get_from_env('AUTH_DEF
 # google
 GOOGLE_CLIENT_ID = get_from_env('GOOGLE_CLIENT_ID', '')
 GOOGLE_CLIENT_SECRET = get_from_env('GOOGLE_CLIENT_SECRET', '')
+ALU_STUDENT_DOMAIN = get_from_env('ALU_STUDENT_DOMAIN', '').strip().lower().lstrip('@')
+ALU_BRIDGE_APP_ORIGIN = get_from_env('ALU_BRIDGE_APP_ORIGIN', '')
+ALU_BRIDGE_SECRET = get_from_env('ALU_BRIDGE_SECRET', '')
+ALU_BRIDGE_CLIENT_ID = get_from_env('ALU_BRIDGE_CLIENT_ID', 'alu-helios-demo')
+ALU_BRIDGE_ELECTIONS = tuple(filter(None, get_from_env('ALU_BRIDGE_ELECTIONS', '').split(',')))
 
 # facebook
 FACEBOOK_APP_ID = get_from_env('FACEBOOK_APP_ID','')
@@ -336,6 +342,10 @@ logging.basicConfig(
 )
 
 # set up celery
+ALU_VOTE_VERIFICATION_BACKEND = get_from_env('ALU_VOTE_VERIFICATION_BACKEND', 'celery')
+if ALU_VOTE_VERIFICATION_BACKEND not in ('celery', 'database'):
+    from django.core.exceptions import ImproperlyConfigured
+    raise ImproperlyConfigured('ALU_VOTE_VERIFICATION_BACKEND must be celery or database.')
 CELERY_BROKER_URL = get_from_env('CELERY_BROKER_URL', 'amqp://localhost')
 if TESTING:
     CELERY_TASK_ALWAYS_EAGER = True
@@ -371,3 +381,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = True
 
 AUTH_LDAP_ALWAYS_UPDATE_USER = False
+
+# Bound request parsing before expensive ballot/proof work.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 2 * 1024 * 1024
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 100

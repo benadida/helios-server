@@ -1,0 +1,15 @@
+{
+  "name": "alu-voting-backend-cloudflare",
+  "private": true,
+  "scripts": {
+    "types": "wrangler types",
+    "check": "tsc --noEmit",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": { "@cloudflare/containers": "0.3.7" },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261014.1",
+    "typescript": "7.0.2",
+    "wrangler": "4.150.0"
+  }
+}

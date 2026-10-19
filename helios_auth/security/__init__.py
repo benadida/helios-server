@@ -5,6 +5,7 @@ Ben Adida (ben@adida.net)
 """
 
 import uuid
+import time
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, SuspiciousOperation
 from django.http import HttpResponseRedirect
@@ -97,6 +98,11 @@ def get_user(request):
 
   if 'user' in request.session:
     user = request.session['user']
+    if user['type'] == 'alu' and request.session.get('alu_session_expires_at', 0) <= time.time():
+      request.session.pop('user', None)
+      request.session.pop('alu_election', None)
+      request.session.pop('CURRENT_VOTER_ID', None)
+      return None
 
     # find the user
     user_obj = User.get_by_type_and_id(user['type'], user['user_id'])

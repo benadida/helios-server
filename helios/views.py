@@ -37,6 +37,7 @@ from .security import (election_view, election_admin,
                        user_can_admin_election, user_can_feature_election)
 from .view_utils import SUCCESS, FAILURE, return_json, render_template, render_template_raw
 from .workflows import homomorphic
+from .bridge_eligibility import bridge_election, require_voting_access, require_policy_decisions, refresh_policy_reviews
 
 # Parameters for everything
 ELGAMAL_PARAMS = elgamal.Cryptosystem()
@@ -306,6 +307,7 @@ def one_election_view(request, election):
   
   notregistered = False
   eligible_p = True
+  committee_login_p = bridge_election(election) and request.session.get('alu_access_kind') == 'committee'
   
   election_url = get_election_url(election)
   election_badge_url = get_election_badge_url(election)
@@ -354,7 +356,7 @@ def one_election_view(request, election):
                           'voter': voter, 'votes': votes, 'notregistered': notregistered, 'eligible_p': eligible_p,
                           'can_feature_p': can_feature_p, 'election_url' : election_url, 
                           'vote_url': vote_url, 'election_badge_url' : election_badge_url,
-                          'show_result': show_result,
+                          'show_result': show_result, 'committee_login_p': committee_login_p,
                           'test_cookie_url': test_cookie_url})
 
 def test_cookie(request):
@@ -592,7 +594,7 @@ Helios
 
   utils.send_email(settings.SERVER_EMAIL, ["%s <%s>" % (trustee.name, trustee.email)], 'your trustee homepage for %s' % election.name, body)
 
-  logging.info("URL %s " % url)
+  # This URL contains a trustee credential; never write it to logs.
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_TRUSTEES_VIEW, args = [election.uuid]))
 
 @trustee_check
@@ -666,6 +668,14 @@ def one_election_cast(request, election):
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args = [election.uuid]))
     
   user = get_user(request)
+  if user:
+    require_voting_access(request, election, user)
+  if bridge_election(election) and user:
+    existing = CastVote.objects.filter(voter__election=election, voter__user=user,
+      invalidated_at=None).order_by('-cast_at').first()
+    if existing:
+      from .alu_ui import return_url
+      return HttpResponseRedirect(return_url(election))
   encrypted_vote = request.POST['encrypted_vote']
 
   save_in_session_across_logouts(request, 'encrypted_vote', encrypted_vote)
@@ -677,6 +687,8 @@ def password_voter_login(request, election):
   """
   This is used to log in as a voter for a particular election
   """
+  if bridge_election(election):
+    raise PermissionDenied()
   
   # the URL to send the user to after they've logged in
   if request.method == "GET" and 'return_url' in request.GET:
@@ -806,7 +818,17 @@ def password_voter_resend(request, election):
 
 @election_view()
 def one_election_cast_confirm(request, election):
+  # Renew an expired ALU voting login without losing the prepared ciphertext.
+  import time
+  if (bridge_election(election) and
+      request.session.get('alu_ui_election') == election.uuid and
+      request.session.get('encrypted_vote') and
+      request.session.get('alu_access_kind') == 'voter' and
+      request.session.get('alu_session_expires_at', 0) <= time.time()):
+    return HttpResponseRedirect(f'/helios/elections/{election.uuid}/ui/login')
   user = get_user(request)    
+  if user:
+    require_voting_access(request, election, user)
 
   # if no encrypted vote, the user is reloading this page or otherwise getting here in a bad way
   if ('encrypted_vote' not in request.session) or request.session['encrypted_vote'] is None:
@@ -822,6 +844,11 @@ def one_election_cast_confirm(request, election):
   if user and not voter and election.openreg:
     voter = _register_voter(election, user)
     
+  if bridge_election(election) and voter:
+    if voter.castvote_set.filter(invalidated_at=None).exists():
+      from .alu_ui import return_url
+      return HttpResponseRedirect(return_url(election))
+
   # tallied election, no vote casting
   if election.encrypted_tally or election.result:
     return render_template(request, 'election_tallied', {'election': election})
@@ -855,7 +882,18 @@ def one_election_cast_confirm(request, election):
   else:
     cast_vote = None
     
-  if request.method == "GET":
+  confirmed = request.session.get('alu_confirmed_vote')
+  confirmed_handoff = bool(request.method == 'GET' and voter and user and
+    bridge_election(election) and request.session.get('alu_ui_election') == election.uuid and
+    isinstance(confirmed, dict) and confirmed == {'election': election.uuid, 'hash': vote_fingerprint})
+  if confirmed_handoff:
+    # One-use consent requires the original trusted-origin POST and a fresh login.
+    request.session.pop('alu_confirmed_vote', None)
+    if cast_vote.issues(election):
+      from .alu_ui import return_url
+      return HttpResponseRedirect(return_url(election))
+
+  if request.method == "GET" and not confirmed_handoff:
     if voter:
       past_votes = CastVote.get_by_voter(voter)
       if len(past_votes) == 0:
@@ -900,7 +938,10 @@ def one_election_cast_confirm(request, election):
     return_url = reverse(one_election_cast_confirm, args=[election.uuid])
     login_box = auth_views.login_box_raw(request, return_url=return_url, auth_systems = auth_systems)
 
-    return render_template(request, 'election_cast_confirm', {
+    alu_ui_p = request.session.get('alu_ui_election') == election.uuid and bridge_election(election)
+    from .alu_ui import return_url
+    return render_template(request, 'alu_cast_confirm' if alu_ui_p else 'election_cast_confirm', {
+        'alu_return_url': return_url(election) if alu_ui_p else None,
         'login_box': login_box, 'election' : election, 'vote_fingerprint': vote_fingerprint,
         'past_votes': past_votes, 'issues': issues, 'voter' : voter,
         'return_url': return_url,
@@ -908,8 +949,9 @@ def one_election_cast_confirm(request, election):
         'show_password': show_password, 'password_only': password_only, 'password_login_form': password_login_form,
         'bad_voter_login': bad_voter_login})
       
-  if request.method == "POST":
-    check_csrf(request)
+  if request.method == "POST" or confirmed_handoff:
+    if not confirmed_handoff:
+      check_csrf(request)
     
     # voting has not started or has ended
     if (not election.voting_has_started()) or election.voting_has_stopped():
@@ -920,23 +962,41 @@ def one_election_cast_confirm(request, election):
     if not voter:
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_confirm, args=[election.uuid]))
     
-    # don't store the vote in the voter's data structure until verification
-    cast_vote.save()
-
+    # Fresh check immediately before accepting the encrypted ballot. A previous
+    # code, session, registration or GET confirmation cannot bypass membership.
+    require_voting_access(request, election, user)
     # status update?
     if request.POST.get('status_update', False):
       status_update_message = request.POST.get('status_update_message')
     else:
       status_update_message = None
 
-    # launch the verification task
-    tasks.cast_vote_verify_and_store.delay(
-      cast_vote_id = cast_vote.id,
-      status_update_message = status_update_message)
+    from .vote_verification import database_queue_enabled, schedule_verification
+    # Save the vote and its durable verification job in a single transaction.
+    # Neither can be committed without the other in database queue mode.
+    with transaction.atomic():
+      if bridge_election(election):
+        # Lock the voter until a submission is reserved. Concurrent confirmations
+        # must not produce two votes, even while verification is pending.
+        Voter.objects.select_for_update().get(pk=voter.pk)
+        if voter.castvote_set.filter(invalidated_at=None).exists():
+          from .alu_ui import return_url
+          return HttpResponseRedirect(return_url(election))
+      cast_vote.save()
+      if database_queue_enabled():
+        schedule_verification(cast_vote)
+
+    if not database_queue_enabled():
+      # Preserve the existing Celery/eager deployment until explicitly switched.
+      tasks.cast_vote_verify_and_store.delay(
+        cast_vote_id=cast_vote.id, status_update_message=status_update_message)
     
     # remove the vote from the store
     del request.session['encrypted_vote']
     
+    if request.session.get('alu_ui_election') == election.uuid and bridge_election(election):
+      from .alu_ui import return_url
+      return HttpResponseRedirect(return_url(election))
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_done, args=[election.uuid]))
   
 @election_view()
@@ -951,6 +1011,9 @@ def one_election_cast_done(request, election):
 
   if voter:
     votes = CastVote.get_by_voter(voter)
+    if request.session.get('alu_ui_election') == election.uuid and bridge_election(election) and votes:
+      from .alu_ui import return_url
+      return HttpResponseRedirect(return_url(election))
     vote_hash = votes[0].vote_hash
     cv_url = get_castvote_url(votes[0])
 
@@ -1075,6 +1138,8 @@ def voter_delete(request, election, voter_uuid):
 
   voter = Voter.get_by_election_and_uuid(election, voter_uuid)
   if voter:
+    if bridge_election(election) and voter.castvote_set.filter(invalidated_at=None).exists():
+      raise PermissionDenied('Submitted votes are locked and cannot be removed.')
     
     if voter.vote_hash:
       # send email to voter
@@ -1251,6 +1316,7 @@ def one_election_register(request, election):
   check_csrf(request)
     
   user = get_user(request)
+  require_voting_access(request, election, user)
   voter = Voter.get_by_election_and_user(election, user)
   
   if not voter:
@@ -1304,6 +1370,7 @@ def one_election_compute_tally(request, election):
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW,args=[election.election_id]))
 
   num_pending_votes = election.num_pending_votes
+  require_policy_decisions(election)
 
   if request.method == "GET":
     return render_template(request, 'election_compute_tally', {
@@ -1329,6 +1396,32 @@ def one_election_compute_tally(request, election):
   tasks.election_compute_tally.delay(election_id = election.id)
 
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW,args=[election.uuid]))
+
+
+@election_admin()
+@require_http_methods(['GET', 'POST'])
+def one_election_policy_reviews(request, election):
+  from .models import BallotPolicyReview
+  if request.method == 'POST':
+    check_csrf(request)
+  refresh_policy_reviews(election)
+  if request.method == 'POST':
+    reason = request.POST.get('reason', '').strip()
+    if request.POST.get('decision') != 'retain' or not 10 <= len(reason) <= 2000:
+      return HttpResponseBadRequest('An explicit retain decision and policy reason are required.')
+    with transaction.atomic():
+      review = BallotPolicyReview.objects.select_for_update().filter(
+        election=election, id=request.POST.get('review_id'), decision='pending').first()
+      if not review:
+        return HttpResponseBadRequest('Review unavailable.')
+      review.decision = 'retain'
+      review.decided_by = get_user(request)
+      review.decided_at = datetime.datetime.utcnow()
+      review.decision_reason = reason
+      review.save()
+    return HttpResponseRedirect(f'/helios/elections/{election.uuid}/policy_reviews')
+  return render_template(request, 'election_policy_reviews', {'election': election,
+    'reviews': BallotPolicyReview.objects.filter(election=election).select_related('voter', 'decided_by')})
 
 @trustee_check
 def trustee_decrypt_and_prove(request, election, trustee):
@@ -1651,6 +1744,8 @@ def voters_upload(request, election):
   Upload a CSV of voters with
   voter_type, voter_id, optional_additional_params (e.g. email, name)
   """
+  if bridge_election(election):
+    raise PermissionDenied()
 
   # don't allow voter upload when election is tallied
   can_upload, reason = election.can_modify_voters()
@@ -2114,7 +2209,3 @@ def optin_confirm(request, email, code):
         'message': f'The email address {email} has been successfully opted back in to Helios emails.',
         'email': email
     })
-
-
-
-

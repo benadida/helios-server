@@ -1,0 +1,11 @@
+#!/bin/sh
+set -eu
+# Check configuration and migrate before starting the backend.
+python manage.py check
+python manage.py migrate --noinput
+if [ "${ALU_VOTE_VERIFICATION_BACKEND:-celery}" = "database" ]; then
+  exec python scripts/start-voting.py
+fi
+exec gunicorn wsgi:application --bind "0.0.0.0:${PORT:-10000}" \
+  --workers "${WEB_CONCURRENCY:-1}" --worker-class gthread --threads "${GUNICORN_THREADS:-4}" \
+  --timeout 180 --error-logfile -

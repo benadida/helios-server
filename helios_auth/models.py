@@ -16,6 +16,14 @@ from .jsonfield import JSONField
 class AuthenticationExpired(Exception):
   pass
 
+
+class BridgeLoginRequest(models.Model):
+  state_hash = models.CharField(max_length=64, primary_key=True)
+  session_hash = models.CharField(max_length=64)
+  election_id = models.CharField(max_length=50)
+  expires_at = models.DateTimeField(db_index=True)
+  consumed_at = models.DateTimeField(null=True)
+
 class User(models.Model):
   user_type = models.CharField(max_length=50)
   user_id = models.CharField(max_length=100)

@@ -1,0 +1,68 @@
+name: Backend Docker validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - '.github/workflows/docker-demo.yml'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'uv.lock'
+      - 'pyproject.toml'
+      - 'settings*.py'
+      - 'helios/**'
+      - 'helios_auth/**'
+      - 'scripts/backend-start.sh'
+
+permissions:
+  contents: read
+
+jobs:
+  docker-demo:
+    # Standard Linux runners are free for this public repository. No secrets,
+    # registry publishing, paid hosting or production database access.
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: helios
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build production image
+        run: docker build --tag alu-helios-demo .
+      - name: Test encrypted voting and bridge in the built image
+        # Keep fixtures out of the deployable image. Mount only tracked CI
+        # settings/tests; application code and installed dependencies stay built.
+        run: |
+          test_mounts=(--mount "type=bind,source=$PWD/settings_ci.py,target=/app/settings_ci.py,readonly")
+          while IFS= read -r test_file; do
+            test_mounts+=(--mount "type=bind,source=$PWD/$test_file,target=/app/$test_file,readonly")
+          done < <(git ls-files 'helios/test*.py' 'helios_auth/test*.py')
+          docker run --rm --network host "${test_mounts[@]}" \
+            --env DJANGO_SETTINGS_MODULE=settings_ci \
+            alu-helios-demo python manage.py test --settings=settings_ci -v 1
+      - name: Check strict Cloudflare runtime configuration
+        run: >-
+          docker run --rm
+          --env DATABASE_URL=postgresql://postgres:postgres@localhost:5432/helios
+          --env SECRET_KEY=ci-only-long-placeholder-secret-for-runtime-config-check
+          --env EMAIL_OPTOUT_SECRET=ci-only-long-placeholder-secret-with-32-bytes
+          --env ALU_BRIDGE_SECRET=ci-only-long-placeholder-secret-with-32-bytes
+          --env ALU_BRIDGE_APP_ORIGIN=https://alu.example
+          --env ALU_STUDENT_DOMAIN=alustudent.com
+          --env AUTH_ENABLED_SYSTEMS=alu
+          --env URL_HOST=https://helios.example
+          --env RECOVERY_SECRET=ci-only-long-placeholder-recovery-secret-with-32-bytes
+          alu-helios-demo python manage.py check --settings=settings_cloudflare

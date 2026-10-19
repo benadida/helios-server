@@ -1,0 +1,56 @@
+name: Cloudflare backend deployment
+
+# A committed, explicitly selected Git revision is deployed only on demand.
+# Adding this file or pushing a branch never switches the live backend.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-backend-production
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: cloudflare/package-lock.json
+      - name: Install Worker dependencies
+        run: npm ci --prefix cloudflare
+      - name: Check Worker types
+        working-directory: cloudflare
+        run: |
+          npm run types
+          npm run check
+      - name: Build the backend and check runtime integrity
+        run: |
+          docker build --tag alu-cloudflare-validated .
+          docker run --rm --entrypoint python alu-cloudflare-validated -c "import django,pathlib; assert django.get_version(); assert pathlib.Path('/app/helios/models.py').stat().st_size > 1000; assert not pathlib.Path('/app/.local-testing').exists(); assert not pathlib.Path('/app/cloudflare').exists()"
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: cloudflare-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: cloudflare/package-lock.json
+      - run: npm ci --prefix cloudflare
+      - name: Deploy the selected committed revision
+        working-directory: cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: c66816623540ac2342c071dee2a16704
+        run: npx wrangler deploy --keep-vars

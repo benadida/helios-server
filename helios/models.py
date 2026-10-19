@@ -14,6 +14,7 @@ import uuid
 import bleach
 from django.conf import settings
 from django.db import models, transaction
+from django.utils.html import escape
 from validate_email import validate_email
 
 from helios import datatypes
@@ -30,6 +31,21 @@ from .crypto.utils import random, hash_b64
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
   class Meta:
     abstract = True
+
+class AluRateBucket(models.Model):
+  """Shared bounded request counters. Identity is hashed, never stored in clear."""
+  key = models.CharField(max_length=85, primary_key=True)
+  hits = models.PositiveSmallIntegerField()
+  expires_at = models.DateTimeField(db_index=True)
+
+
+class AluElectionBinding(models.Model):
+  """Drafts created by the authenticated ALU management service, never by login."""
+  uuid = models.UUIDField(primary_key=True)
+  election = models.OneToOneField('Election', on_delete=models.PROTECT)
+  client_id = models.CharField(max_length=80)
+  created_at = models.DateTimeField(auto_now_add=True)
+
 
 class ElectionManager(models.Manager):
   """
@@ -329,6 +345,19 @@ class Election(HeliosModel):
     """
     Checks if a user is eligible for this election.
     """
+    if user.user_type == 'alu':
+      from helios_auth.bridge_protocol import eligible_identity
+      from helios.bridge_eligibility import bridge_election
+      if (not bridge_election(self) or not eligible_identity({
+          'subject': user.user_id, 'email': user.info.get('email'),
+          'email_verified': user.info.get('email_verified')})):
+        return False
+    if settings.ALU_STUDENT_DOMAIN:
+      from helios_auth.auth_systems.google import student_email_allowed
+      if (user.user_type not in ('google', 'alu') or
+          not student_email_allowed(user.info.get('email'), user.info.get('email_verified'))):
+        return False
+
     # registration closed, then eligibility doesn't come into play
     if not self.openreg:
       return False
@@ -368,6 +397,9 @@ class Election(HeliosModel):
 
   @property
   def pretty_eligibility(self):
+    if (settings.ALU_STUDENT_DOMAIN and self.openreg and
+        (self.eligibility is None or self.eligibility in ([{'auth_system': 'google'}], [{'auth_system': 'alu'}]))):
+      return 'Only verified ALU accounts at @%s can register to vote.' % escape(settings.ALU_STUDENT_DOMAIN)
     if not self.eligibility:
       return "Anyone can vote."
     else:
@@ -487,11 +519,15 @@ class Election(HeliosModel):
     """
     tally the election, assuming votes already verified
     """
+    from helios.bridge_eligibility import require_policy_decisions
+    require_policy_decisions(self)
     tally = self.init_tally()
     for voter in self.voter_set.exclude(vote=None):
       tally.add_vote(voter.vote, verify_p=False)
 
     self.encrypted_tally = tally
+    if self.tallying_finished_at is None:
+      self.tallying_finished_at = datetime.datetime.utcnow()
     self.save()
 
   def ready_for_decryption(self):
@@ -511,6 +547,8 @@ class Election(HeliosModel):
     """
     release the result that should already be computed
     """
+    from helios.bridge_eligibility import require_policy_decisions
+    require_policy_decisions(self)
     if not self.result:
       return
 
@@ -521,11 +559,15 @@ class Election(HeliosModel):
     combine all of the decryption results
     """
 
+    from helios.bridge_eligibility import require_policy_decisions
+    require_policy_decisions(self)
     # gather the decryption factors
     trustees = Trustee.get_by_election(self)
     decryption_factors = [t.decryption_factors for t in trustees]
 
     self.result = self.encrypted_tally.decrypt_from_factors(decryption_factors, self.public_key)
+    if self.tallies_combined_at is None:
+      self.tallies_combined_at = datetime.datetime.utcnow()
 
     self.append_log(ElectionLog.DECRYPTIONS_COMBINED)
 
@@ -595,10 +637,16 @@ class Election(HeliosModel):
     self.eligibility = [{'auth_system': auth_system} for auth_system in auth_systems]
     self.save()
 
+  @transaction.atomic
   def freeze(self):
     """
     election is frozen when the voter registration, questions, and trustees are finalized
     """
+    binding = AluElectionBinding.objects.select_for_update().filter(election=self).first()
+    if binding:
+      self.refresh_from_db(fields=['frozen_at'])
+      if self.frozen_at:
+        return
     if len(self.issues_before_freeze) > 0:
       raise Exception("cannot freeze an election that has issues")
 
@@ -971,6 +1019,8 @@ class Voter(HeliosModel):
   @classmethod
   @transaction.atomic
   def register_user_in_election(cls, user, election):
+    if settings.ALU_STUDENT_DOMAIN and not election.user_eligible_p(user):
+      raise ValueError('Only eligible verified student accounts may register.')
     # Check if user email is opted out
     user_email = user.user_id if user else None
     if user_email and EmailOptOut.is_opted_out(user_email):
@@ -1128,7 +1178,7 @@ class Voter(HeliosModel):
     self.vote = cast_vote.vote
     self.vote_hash = cast_vote.vote_hash
     self.cast_at = cast_vote.cast_at
-    self.save()
+    self.save(update_fields=['vote', 'vote_hash', 'cast_at'])
 
   def last_cast_vote(self):
     return CastVote(vote = self.vote, vote_hash = self.vote_hash, cast_at = self.cast_at, voter=self)
@@ -1190,48 +1240,73 @@ class CastVote(HeliosModel):
     for c in ['/', '+', '#']:
       safe_hash = safe_hash.replace(c, '')
 
-    length = 8
-    while True:
+    # A repeated full ciphertext hash must never spin forever.
+    for length in range(8, len(safe_hash) + 1):
       vote_tinyhash = safe_hash[:length]
-      if CastVote.objects.filter(vote_tinyhash = vote_tinyhash).count() == 0:
-        break
-      length += 1
-
-    self.vote_tinyhash = vote_tinyhash
+      if not CastVote.objects.filter(vote_tinyhash=vote_tinyhash).exists():
+        self.vote_tinyhash = vote_tinyhash
+        return
+    import secrets
+    self.vote_tinyhash = safe_hash[:8] + '-' + secrets.token_hex(12)
 
   def save(self, *args, **kwargs):
     """
     override this just to get a hook
     """
-    # not saved yet? then we generate a tiny hash
-    if not self.vote_tinyhash:
+    if self.vote_tinyhash:
+      return super(CastVote, self).save(*args, **kwargs)
+    # Prefix allocation can race across different students.
+    from django.db import IntegrityError
+    for attempt in range(8):
       self.set_tinyhash()
-
-    super(CastVote, self).save(*args, **kwargs)
+      try:
+        with transaction.atomic():
+          return super(CastVote, self).save(*args, **kwargs)
+      except IntegrityError as exc:
+        if getattr(getattr(exc.__cause__, 'diag', None), 'constraint_name', None) != 'helios_castvote_vote_tinyhash_key':
+          raise
+        self.vote_tinyhash = None
+    raise IntegrityError('Could not reserve a unique internal vote receipt.')
 
   @classmethod
   def get_by_voter(cls, voter):
     return cls.objects.filter(voter = voter).order_by('-cast_at')
 
   def verify_and_store(self):
-    # if it's quarantined, don't let this go through
-    if self.is_quarantined:
-      raise Exception("cast vote is quarantined, verification and storage is delayed.")
-
-    result = self.vote.verify(self.voter.election)
-
-    if result:
-      self.verified_at = datetime.datetime.utcnow()
-    else:
-      self.invalidated_at = datetime.datetime.utcnow()
-
-    # save and store the vote as the voter's last cast vote
-    self.save()
-
-    if result:
-      self.voter.store_vote(self)
-
-    return result
+    # A retried job must neither reverify nor store the same vote twice. Both
+    # verification status and the voter's counted vote commit together. A killed
+    # process rolls back both, leaving the original ciphertext recoverable.
+    with transaction.atomic():
+      cast = CastVote.objects.select_for_update().get(pk=self.pk)
+      if cast.verified_at is not None or cast.invalidated_at is not None:
+        if cast.verified_at is not None and cast.invalidated_at is None and not cast.is_quarantined:
+          # Older deployments committed verified_at before storing the counted
+          # vote. Recover that interrupted write without replacing a newer vote.
+          voter = Voter.objects.select_for_update().defer('vote').get(pk=cast.voter_id)
+          if voter.cast_at is None or voter.cast_at < cast.cast_at:
+            if voter.election.encrypted_tally is not None or voter.election.result is not None:
+              raise ValueError('A vote missing from a started tally requires operator review.')
+            voter.store_vote(cast)
+          self.voter = voter
+        self.verified_at, self.invalidated_at = cast.verified_at, cast.invalidated_at
+        return None
+      if cast.is_quarantined:
+        raise ValueError('Vote verification is waiting for quarantine release.')
+      voter = Voter.objects.select_for_update().defer('vote').get(pk=cast.voter_id)
+      if voter.election.encrypted_tally is not None or voter.election.result is not None:
+        raise ValueError('A pending vote after counting started requires operator review.')
+      result = cast.vote.verify(voter.election)
+      field = 'verified_at' if result else 'invalidated_at'
+      setattr(cast, field, datetime.datetime.utcnow())
+      cast.save(update_fields=[field])
+      if result:
+        voter.store_vote(cast)
+        from .vote_confirmation import queue_confirmation
+        queue_confirmation(cast)
+      self.verified_at, self.invalidated_at = cast.verified_at, cast.invalidated_at
+      self.voter = voter
+      self.vote, self.vote_hash, self.cast_at = cast.vote, cast.vote_hash, cast.cast_at
+      return result
 
   def issues(self, election):
     """
@@ -1244,6 +1319,39 @@ class CastVote(HeliosModel):
       issues.append("the vote's election UUID does not match the election for which this vote is being cast")
 
     return issues
+
+class VoteVerificationJob(models.Model):
+  """Durable work references only; encrypted ballots remain in CastVote."""
+  cast_vote = models.OneToOneField(CastVote, on_delete=models.CASCADE,
+    related_name='verification_job')
+  state = models.CharField(max_length=10, default='pending',
+    choices=[('pending', 'Pending'), ('complete', 'Complete'), ('failed', 'Needs attention')])
+  attempts = models.PositiveSmallIntegerField(default=0)
+  next_attempt_at = models.DateTimeField(default=datetime.datetime.utcnow)
+  created_at = models.DateTimeField(auto_now_add=True)
+  completed_at = models.DateTimeField(null=True)
+  # Only an exception class is retained, never ciphertext, identity or secrets.
+  last_error_code = models.CharField(max_length=80, default='', blank=True)
+
+  class Meta:
+    indexes = [models.Index(fields=['next_attempt_at', 'id'],
+      condition=models.Q(state='pending'), name='helios_vjob_pending_idx')]
+
+
+class VoteConfirmationEmail(models.Model):
+  """One email per verified ballot; retries contain no candidate choices."""
+  id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+  cast_vote = models.OneToOneField(CastVote, on_delete=models.CASCADE, related_name='confirmation_email')
+  payload = models.JSONField()
+  provider = models.CharField(max_length=20, default='sendbyte')
+  state = models.CharField(max_length=20, default='pending')
+  attempts = models.PositiveIntegerField(default=0)
+  first_attempt_at = models.DateTimeField(null=True)
+  attempted_at = models.DateTimeField(null=True)
+  next_attempt_at = models.DateTimeField(default=datetime.datetime.utcnow, db_index=True)
+  sent_at = models.DateTimeField(null=True)
+  lease = models.UUIDField(null=True)
+
 
 class AuditedBallot(models.Model):
   """
@@ -1352,6 +1460,21 @@ class Trustee(HeliosModel):
     """
     # verify_decryption_proofs(self, decryption_factors, decryption_proofs, public_key, challenge_generator):
     return self.election.encrypted_tally.verify_decryption_proofs(self.decryption_factors, self.decryption_proofs, self.public_key, algs.EG_fiatshamir_challenge_generator)
+
+
+class BallotPolicyReview(models.Model):
+  election = models.ForeignKey(Election, on_delete=models.PROTECT)
+  voter = models.ForeignKey(Voter, on_delete=models.PROTECT)
+  event_key = models.CharField(max_length=40)
+  reason = models.CharField(max_length=250)
+  flagged_at = models.DateTimeField(auto_now_add=True)
+  decision = models.CharField(max_length=10, default='pending', choices=[('pending', 'Pending'), ('retain', 'Retain')])
+  decided_by = models.ForeignKey(User, null=True, on_delete=models.PROTECT)
+  decided_at = models.DateTimeField(null=True)
+  decision_reason = models.TextField(blank=True)
+
+  class Meta:
+    constraints = [models.UniqueConstraint(fields=['election', 'voter', 'event_key'], name='helios_policy_event_unique')]
 
 
 class EmailOptOut(models.Model):

@@ -84,7 +84,7 @@ class UserModelTests(unittest.TestCase):
         """
         for auth_system, auth_system_module in AUTH_SYSTEMS.items():
             assert(hasattr(auth_system_module, 'can_create_election'))
-            assert(auth_system_module.can_create_election('foobar', {}))
+            self.assertEqual(auth_system_module.can_create_election('foobar', {}), auth_system != 'alu')
 
 
     def test_status_update(self):

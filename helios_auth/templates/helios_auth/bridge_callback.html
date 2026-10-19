@@ -1,0 +1,18 @@
+<!doctype html><html><head><meta name="referrer" content="no-referrer"><title>ALU election sign-in</title></head>
+<body><p id="status">Completing ALU sign-in…</p><input id="csrf" type="hidden" value="{{ csrf_token }}">
+<script>
+(async function () {
+  const values = new URLSearchParams(location.hash.slice(1));
+  history.replaceState(null, '', location.pathname);
+  try {
+    const response = await fetch('/auth/alu/complete/', {method: 'POST', credentials: 'same-origin',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({code: values.get('code') || '', state: values.get('state') || '',
+        csrf_token: document.getElementById('csrf').value})});
+    if (!response.ok) throw new Error();
+    const data = await response.json();
+    if (!/^\/helios\/elections\/[0-9a-f-]{36}\/(view|cast_confirm|register)$/.test(data.redirect)) throw new Error();
+    location.replace(data.redirect);
+  } catch (_) { document.getElementById('status').textContent = 'Sign-in failed. Return to the election and start again.'; }
+})();
+</script></body></html>

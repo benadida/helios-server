@@ -5,6 +5,7 @@ Ben Adida (ben@adida.net)
 """
 
 import urllib.parse
+import time
 # nicely update the wrapper function
 from functools import update_wrapper
 
@@ -42,6 +43,17 @@ def get_voter(request, user, election):
   """
   return the current voter
   """
+  from helios.bridge_eligibility import bridge_election
+  if bridge_election(election):
+    from helios_auth.bridge_protocol import eligible_identity
+    if (not user or user.user_type != 'alu' or
+        request.session.get('alu_election') != election.uuid or
+        request.session.get('alu_session_expires_at', 0) <= time.time() or
+        not eligible_identity({'subject': user.user_id, 'email': user.info.get('email'),
+                               'email_verified': user.info.get('email_verified')})):
+      return None
+    # A legacy cached/password voter must never replace the validated account.
+    return Voter.get_by_election_and_user(election, user)
   voter = None
   if 'CURRENT_VOTER_ID' in request.session:
     voter = Voter.objects.get(id=request.session['CURRENT_VOTER_ID'])
@@ -113,6 +125,13 @@ def election_view(**checks):
 
       if not election:
         raise Http404
+
+      user = get_user(request)
+      from helios.bridge_eligibility import bridge_election
+      if user and user.user_type == 'alu' and (
+          not bridge_election(election) or
+          request.session.get('alu_election') != election.uuid):
+        raise PermissionDenied()
 
       # do checks
       do_election_checks(election, checks)

@@ -1,5 +1,5 @@
 from django.conf import settings
-from . import password, linkedin, cas, facebook, google, yahoo, github, ldapauth, gitlab
+from . import password, linkedin, cas, facebook, google, yahoo, github, ldapauth, gitlab, alu
 
 # Import devlogin only in debug mode
 if settings.DEBUG:
@@ -12,6 +12,7 @@ AUTH_SYSTEMS['linkedin'] = linkedin
 AUTH_SYSTEMS['cas'] = cas
 AUTH_SYSTEMS['facebook'] = facebook
 AUTH_SYSTEMS['google'] = google
+AUTH_SYSTEMS['alu'] = alu
 AUTH_SYSTEMS['yahoo'] = yahoo
 AUTH_SYSTEMS['github'] = github
 AUTH_SYSTEMS['ldap'] = ldapauth

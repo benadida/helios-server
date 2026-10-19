@@ -9,8 +9,12 @@ from django.urls import path, re_path
 
 from settings import AUTH_ENABLED_SYSTEMS
 from . import views, url_names
+from . import bridge_views
 
 urlpatterns = [
+    path('alu/start/<str:election_id>/', bridge_views.start),
+    path('alu/callback/', bridge_views.callback),
+    path('alu/complete/', bridge_views.complete),
     # basic static stuff
     path('', views.index, name=url_names.AUTH_INDEX),
     path('logout', views.logout, name=url_names.AUTH_LOGOUT),

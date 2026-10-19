@@ -1,0 +1,21 @@
+{% extends TEMPLATE_BASE %}
+{% block content %}
+<h2>Ballot policy reviews: {{election.name}}</h2>
+<p>A student became a committee member after casting, or their current eligibility conflicts with a stored ballot. Their encrypted ballot and verification record remain intact. Pending reviews block tallying.</p>
+<p>Decide the election policy explicitly. This screen supports retaining a ballot with a recorded reason. If policy requires exclusion, stop and arrange a reviewed exclusion process; this screen never deletes or invalidates ballots.</p>
+{% for review in reviews %}
+<div>
+<p>Voter {{review.voter.uuid}} — {{review.reason}} — {{review.decision}}</p>
+{% if review.decision == 'pending' %}
+<form method="post">
+<input type="hidden" name="csrf_token" value="{{csrf_token}}">
+<input type="hidden" name="review_id" value="{{review.id}}">
+<label>Election policy reason <textarea name="reason" required minlength="10" maxlength="2000"></textarea></label>
+<button name="decision" value="retain">Explicitly retain this ballot</button>
+</form>
+{% else %}
+<p>{{review.decision_reason}} — {{review.decided_by.pretty_name}} at {{review.decided_at}}</p>
+{% endif %}
+</div>
+{% empty %}<p>No ballots currently require a policy decision.</p>{% endfor %}
+{% endblock %}

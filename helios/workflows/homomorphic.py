@@ -285,7 +285,11 @@ class Tally(WorkflowObject):
 
     if election:
       self.init_election(election)
-      self.tally = [[0 for a in q['answers']] for q in self.questions]
+      # The empty homomorphic product is the identity ciphertext (1, 1).
+      # Integer placeholders cannot be serialized or decrypted when no votes
+      # were cast. Multiplying a real vote by this identity preserves it.
+      self.tally = [[algs.EGCiphertext(alpha=1, beta=1, pk=self.public_key)
+                     for a in q['answers']] for q in self.questions]
     else:
       self.questions = None
       self.public_key = None

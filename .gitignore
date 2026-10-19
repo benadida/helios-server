@@ -9,3 +9,14 @@ celerybeat-*
 env.sh
 .cache
 .idea/
+.env
+.env.*
+!.env.example
+.local-testing/
+node_modules/
+.wrangler/
+worker-configuration.d.ts
+cloudflare/.wrangler/
+cloudflare/worker-configuration.d.ts
+cloudflare/.dev.vars*
+!cloudflare/.dev.vars.example

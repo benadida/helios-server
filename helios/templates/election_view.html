@@ -88,6 +88,7 @@ this {{election.election_type}} is <u>not</u> featured on the front page.
 {% if admin_p %}
 &nbsp;&nbsp;|&nbsp;&nbsp;
 <a href="{% url "election@admins" election.uuid %}">administrators</a>
+ | <a href="/helios/elections/{{election.uuid}}/policy_reviews">ballot policy reviews</a>
 {% endif %}
 </p>
 
@@ -208,7 +209,9 @@ Once you do this, the tally will visible to you, the administrator, only.
 {% else %}
 
 {% if election.voting_has_started %}
+{% if not committee_login_p %}
 <a class="button" href="{{test_cookie_url}}">Vote in this {{election.election_type}} </a>
+{% endif %}
 <br />
 <br />
 {% if election.voting_extended_until %}
@@ -241,6 +244,9 @@ This election is <em>private</em>. You are signed in as eligible voter <em>{{vot
 {% endif %}
 
 {% if user %}
+{% if committee_login_p %}
+Committee members cannot vote in this election. Your authorized organizer access is preserved.
+{% else %}
 {% if voter %}
 <p style="padding-top:1px;">
   You are registered to vote in this {{election.election_type}}.
@@ -261,6 +267,7 @@ You are <em>not eligible</em> to vote in this {{election.election_type}}.
 {% else %}
 You are <em>not eligible</em> to vote in this {{election.election_type}}.
 <br />
+{% endif %}
 {% endif %}
 {% endif %}
 {% endif %}

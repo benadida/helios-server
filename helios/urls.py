@@ -2,8 +2,10 @@
 from django.urls import include, path
 
 from . import views, url_names as names
+from . import alu_management
 
 urlpatterns = [
+  path('alu/manage', alu_management.manage),
   path('autologin', views.admin_autologin),
   path('testcookie', views.test_cookie, name=names.COOKIE_TEST),
   path('testcookie_2', views.test_cookie_2, name=names.COOKIE_TEST_2),

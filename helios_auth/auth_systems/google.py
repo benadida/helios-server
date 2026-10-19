@@ -16,6 +16,14 @@ STATUS_UPDATES = False
 # display tweaks
 LOGIN_MESSAGE = "Log in with my Google Account"
 
+def student_email_allowed(email, verified):
+  """Exact domain match, using only Google's verified email information."""
+  domain = settings.ALU_STUDENT_DOMAIN
+  if verified is not True or not isinstance(email, str) or email.count('@') != 1:
+    return False
+  local, email_domain = email.rsplit('@', 1)
+  return bool(local) and (not domain or email_domain.lower() == domain)
+
 def get_flow(redirect_url=None):
   client_config = {
     "web": {
@@ -70,7 +78,8 @@ def get_user_info_after_auth(request):
   try:
     userinfo_response = requests.get(
       'https://www.googleapis.com/oauth2/v3/userinfo',
-      headers=headers
+      headers=headers,
+      timeout=15
     )
     userinfo_response.raise_for_status()
   except requests.RequestException as e:
@@ -85,15 +94,21 @@ def get_user_info_after_auth(request):
   email_verified = userinfo.get('email_verified', userinfo.get('verified_email'))
   if email_verified is None:
     raise Exception("Google did not provide email verification status")
-  if not email_verified:
+  if email_verified is not True:
     raise Exception("Email verification failed: the email address associated with your Google account is not verified. Please verify your email in your Google account settings and try again.")
 
   email = userinfo.get('email')
   if not email:
     raise Exception("email address not provided by Google")
+  if not student_email_allowed(email, email_verified):
+    # The existing auth failure page allows retry without creating a user/session.
+    return None
+  if settings.ALU_STUDENT_DOMAIN:
+    email = email.lower()
   name = userinfo.get('name', email)
 
-  return {'type': 'google', 'user_id': email, 'name': name, 'info': {'email': email}, 'token': {}}
+  return {'type': 'google', 'user_id': email, 'name': name,
+          'info': {'email': email, 'email_verified': True}, 'token': {}}
 
 def do_logout(user):
   """

@@ -1,0 +1,26 @@
+.git
+.venv
+venv*
+.env*
+env.sh
+.aws
+.agents
+.codex
+__pycache__
+*.pyc
+.cache
+.DS_Store
+media
+
+# Local validation and test suites are not production runtime files.
+.local-testing
+**/test.py
+**/tests.py
+**/test_*.py
+**/tests/
+settings_ci.py
+docs
+cloudflare
+.wrangler
+**/.wrangler
+**/node_modules
