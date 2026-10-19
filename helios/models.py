@@ -1343,6 +1343,7 @@ class VoteConfirmationEmail(models.Model):
   id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
   cast_vote = models.OneToOneField(CastVote, on_delete=models.CASCADE, related_name='confirmation_email')
   payload = models.JSONField()
+  provider = models.CharField(max_length=20, default='sendbyte')
   state = models.CharField(max_length=20, default='pending')
   attempts = models.PositiveIntegerField(default=0)
   first_attempt_at = models.DateTimeField(null=True)

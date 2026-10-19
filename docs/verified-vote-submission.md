@@ -9,3 +9,7 @@ Migration `0015_vote_confirmation_email` is required before enabling this path. 
 Use `python manage.py run_vote_confirmation_sender --status` for aggregate delivery states; investigate `review_required` entries before any manual retry. Automatic retries stop at 23 hours from their first attempt. The mail has no candidate choices, proof, tracker or subject ID. Existing historical ballots are not backfilled. An email delivery failure cannot undo a verified vote.
 
 No production rollout or real student email was performed by this implementation. Apply the migration and coordinate Worker/backend/frontend deployment, then validate a dedicated test student's complete flow and inbox before relying on it for a live election.
+
+## SendByte provider migration
+
+Verified-vote confirmation requests now include `provider: "sendbyte"` when calling the portal. Backend migration `0016_sendbyte_email_provider` preserves sent Resend records, moves never-attempted jobs to SendByte and holds previously attempted unsent jobs as `review_required`. Stop old senders and drain in-flight sends before migration; deploy the matching portal endpoint and backend together before resuming delivery. The portal alone holds `SENDBYTE_API_KEY`; no provider secret is added to Helios. The existing 23-hour automatic retry period remains an application policy. Review legacy Resend records before replacing any ambiguous message. See the portal's `docs/sendbyte-migration.md` for the coordinated rollout and configuration.
