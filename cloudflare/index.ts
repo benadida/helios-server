@@ -32,6 +32,7 @@ export class VotingBackend extends Container<Env> {
     URL_HOST: backendOrigin(this.env).origin,
     ALU_VOTE_VERIFICATION_BACKEND: 'database',
     WEB_CONCURRENCY: '2',
+    GUNICORN_THREADS: '4',
     VOTE_VERIFIER_CONCURRENCY: '2',
   };
 }

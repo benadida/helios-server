@@ -1,5 +1,5 @@
 """Recover and verify saved votes; run as a supervised background process."""
-import time
+from helios.verification_wakeup import VerificationWakeup
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import OperationalError, close_old_connections
@@ -32,22 +32,29 @@ class Command(BaseCommand):
         if not 0.1 <= interval <= 60:
             raise CommandError('poll-interval must be between 0.1 and 60 seconds.')
         recover = True
-        while True:
-            close_old_connections()
-            try:
-                if recover:
-                    recover_pending_jobs()
-                    recover = False
-                if process_next_job():
-                    continue
-                if options['once']:
-                    return
-            except OperationalError:
-                # Do not log connection strings or exception text. Recover again
-                # after reconnection; any interrupted transaction was rolled back.
+        wakeup = VerificationWakeup()
+        try:
+            while True:
+                if not options['once']:
+                    # Listen before checking work, avoiding the probe/wait race.
+                    wakeup.connect()
                 close_old_connections()
-                recover = True
-                self.stderr.write('Vote verifier database unavailable; retrying.')
-                if options['once']:
-                    raise CommandError('Vote verifier database unavailable.') from None
-            time.sleep(interval)
+                try:
+                    if recover:
+                        recover_pending_jobs()
+                        recover = False
+                    if process_next_job():
+                        continue
+                    if options['once']:
+                        return
+                except OperationalError:
+                    # Do not log connection strings or exception text. Recover again
+                    # after reconnection; any interrupted transaction was rolled back.
+                    close_old_connections()
+                    recover = True
+                    self.stderr.write('Vote verifier database unavailable; retrying.')
+                    if options['once']:
+                        raise CommandError('Vote verifier database unavailable.') from None
+                wakeup.wait(interval)
+        finally:
+            wakeup.close()

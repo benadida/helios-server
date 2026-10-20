@@ -13,6 +13,7 @@ from django.http import JsonResponse
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_POST
 
+from helios.service_http import post as service_post
 from helios import datatypes
 from helios.models import CastVote, Election, Voter
 from helios.alu_ui import ciphertext_only, public_demo
@@ -27,7 +28,7 @@ def submission_status(election, subject):
     # A failed verifier or rejected proof must never look like an ordinary wait
     # or a student who has never submitted. Prefer any retained active ballot.
     casts = CastVote.objects.filter(voter__election=election,
-        voter__user__user_type='alu', voter__user__user_id=subject).select_related('voter').defer('vote', 'voter__vote')
+        voter__user__user_type='alu', voter__user__user_id=subject).select_related('voter', 'verification_job').defer('vote', 'voter__vote')
     cast = casts.filter(invalidated_at=None).order_by('-cast_at', '-pk').first()
     if cast is None:
         cast = casts.order_by('-cast_at', '-pk').first()
@@ -81,7 +82,7 @@ def cast(request, election_uuid):
         ciphertext_only(data['encrypted_vote'], election)
         # Consume the existing one-use, session-rechecked PKCE grant. A browser
         # identity, old Helios cookie, or bearer credential alone cannot vote.
-        response = requests.post(https_origin(settings.ALU_BRIDGE_APP_ORIGIN) + '/api/helios/exchange',
+        response = service_post(https_origin(settings.ALU_BRIDGE_APP_ORIGIN) + '/api/helios/exchange',
             headers={'Authorization': 'Bearer ' + settings.ALU_BRIDGE_SECRET},
             json={k: data[k] for k in ('client_id', 'code', 'state', 'verifier')} | {'election_id': election.uuid},
             timeout=15, allow_redirects=False)
@@ -95,24 +96,28 @@ def cast(request, election_uuid):
                 type(grant['session_expires_at']) not in (int, float) or
                 not time.time() < grant['session_expires_at'] <= time.time() + 305):
             raise PermissionDenied()
-        user = User.update_or_create('alu', identity['subject'],
-            str(identity.get('name') or identity['email'])[:200],
-            {'email': identity['email'].lower(), 'email_verified': True}, {})
-        request.session['alu_election'] = election.uuid
-        request.session['alu_access_kind'] = 'voter'
-        request.session['alu_session_expires_at'] = grant['session_expires_at']
-        require_voting_access(request, election, user)
-        request.session['user'] = {'type': 'alu', 'user_id': user.user_id}
+        # The exchange already checked the fresh managed session, student
+        # identity and committee exclusion. Keep this login request-local.
+        user, _ = User.objects.get_or_create(user_type='alu', user_id=identity['subject'],
+            defaults={'name': str(identity.get('name') or identity['email'])[:200],
+                'info': {'email': identity['email'].lower(), 'email_verified': True}, 'token': {}})
+        context = {'alu_election': election.uuid, 'alu_access_kind': 'voter',
+            'alu_session_expires_at': grant['session_expires_at'],
+            'user': {'type': 'alu', 'user_id': user.user_id}}
         from .alu_guardrails import AluRequestGuardrails
-        limited = AluRequestGuardrails(lambda _: None)(request)
+        limited = AluRequestGuardrails(lambda _: None).limit_identity(request, context)
         if limited is not None:
             return private_response(JsonResponse({'error': 'Please wait before retrying your vote.'}, status=limited.status_code))
         with transaction.atomic():
             # Serialize first registration too, before the normal voter lock.
-            User.objects.select_for_update().get(pk=user.pk)
-            voter = Voter.get_by_election_and_user(election, user)
+            user = User.objects.select_for_update().get(pk=user.pk)
+            info = {'email': identity['email'].lower(), 'email_verified': True}
+            name = str(identity.get('name') or identity['email'])[:200]
+            if user.info != info or user.name != name:
+                user.info, user.name = info, name
+                user.save(update_fields=['info', 'name'])
+            voter = Voter.objects.select_for_update().filter(election=election, user=user).first()
             if voter:
-                Voter.objects.select_for_update().get(pk=voter.pk)
                 if voter.castvote_set.filter(invalidated_at=None).exists():
                     return private_response(JsonResponse(submission_status(election, user.user_id)))
             election.refresh_from_db()
@@ -120,11 +125,11 @@ def cast(request, election_uuid):
                     election.voting_has_stopped() or election.encrypted_tally or election.result):
                 return private_response(JsonResponse({'error': 'Voting is closed.'}, status=409))
             if not voter:
-                if not election.openreg or not election.user_eligible_p(user):
+                if not election.openreg or not election.user_eligible_p(user, bridge_bound=True):
                     raise PermissionDenied()
-                voter = Voter.register_user_in_election(user, election)
+                voter = Voter.register_user_in_election(user, election, bridge_bound=True)
             # Recheck live membership at the write, as in the native cast path.
-            require_voting_access(request, election, user)
+            require_voting_access(request, election, user, context=context, bridge_bound=True)
             vote = datatypes.LDObject.fromDict(json.loads(data['encrypted_vote']),
                 type_hint='legacy/EncryptedVote').wrapped_obj
             cast_vote = CastVote.objects.create(voter=voter, vote=vote,

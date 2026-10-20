@@ -3,6 +3,7 @@ import datetime
 from concurrent.futures import ThreadPoolExecutor
 
 import requests
+from .service_http import post as service_post
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from helios_auth.bridge_protocol import eligible_identity, https_origin
@@ -17,7 +18,7 @@ def bridge_election(election):
 def _status_batch(election, batch):
   result = {}
   try:
-    response = requests.post(https_origin(settings.ALU_BRIDGE_APP_ORIGIN) + '/api/helios/eligibility',
+    response = service_post(https_origin(settings.ALU_BRIDGE_APP_ORIGIN) + '/api/helios/eligibility',
       headers={'Authorization': 'Bearer ' + settings.ALU_BRIDGE_SECRET},
       json={'client_id': settings.ALU_BRIDGE_CLIENT_ID, 'election_id': election.uuid, 'voters': batch},
       timeout=15, allow_redirects=False)
@@ -57,15 +58,16 @@ def statuses(election, voters):
   return {subject: row for batch in checked for subject, row in batch.items()}
 
 
-def require_voting_access(request, election, user):
-  if not bridge_election(election):
+def require_voting_access(request, election, user, *, context=None, bridge_bound=False):
+  if not bridge_bound and not bridge_election(election):
     return
+  context = request.session if context is None else context
   # Independent Helios identity/session/election checks precede the fresh query.
   import time
   if (not user or user.user_type != 'alu' or
-      request.session.get('alu_election') != election.uuid or
-      request.session.get('alu_access_kind') != 'voter' or
-      request.session.get('alu_session_expires_at', 0) <= time.time() or
+      context.get('alu_election') != election.uuid or
+      context.get('alu_access_kind') != 'voter' or
+      context.get('alu_session_expires_at', 0) <= time.time() or
       not eligible_identity({'subject': user.user_id, 'email': user.info.get('email'),
                              'email_verified': user.info.get('email_verified')})):
     raise PermissionDenied('A student voting login is required.')

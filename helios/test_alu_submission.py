@@ -26,7 +26,8 @@ class SubmissionTests(TransactionTestCase):
             'encrypted_vote':self.server_ballot()['encrypted']}
 
     def network(self, payload, subject='student', mutate=None):
-        status_mock = __import__('requests').post
+        from helios.bridge_eligibility import service_post
+        status_mock = service_post
         def dispatch(url, **kwargs):
             if url.endswith('/exchange'):
                 result=Mock(status_code=200)
@@ -36,7 +37,7 @@ class SubmissionTests(TransactionTestCase):
                 if mutate:mutate(result.json.return_value)
                 return result
             return status_mock(url,**kwargs)
-        return patch('helios.alu_submission.requests.post',side_effect=dispatch)
+        return patch('helios.alu_submission.service_post',side_effect=dispatch)
 
     def submit(self,payload,client=None,secret=True):
         return (client or self.client).post(self.base+'/ui/cast',data=json.dumps(payload),content_type='application/json',

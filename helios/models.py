@@ -341,14 +341,14 @@ class Election(HeliosModel):
     self.append_log(ElectionLog.VOTER_FILE_ADDED)
     return new_voter_file
 
-  def user_eligible_p(self, user):
+  def user_eligible_p(self, user, *, bridge_bound=False):
     """
     Checks if a user is eligible for this election.
     """
     if user.user_type == 'alu':
       from helios_auth.bridge_protocol import eligible_identity
       from helios.bridge_eligibility import bridge_election
-      if (not bridge_election(self) or not eligible_identity({
+      if ((not bridge_bound and not bridge_election(self)) or not eligible_identity({
           'subject': user.user_id, 'email': user.info.get('email'),
           'email_verified': user.info.get('email_verified')})):
         return False
@@ -1018,8 +1018,8 @@ class Voter(HeliosModel):
 
   @classmethod
   @transaction.atomic
-  def register_user_in_election(cls, user, election):
-    if settings.ALU_STUDENT_DOMAIN and not election.user_eligible_p(user):
+  def register_user_in_election(cls, user, election, *, bridge_bound=False):
+    if settings.ALU_STUDENT_DOMAIN and not election.user_eligible_p(user, bridge_bound=bridge_bound):
       raise ValueError('Only eligible verified student accounts may register.')
     # Check if user email is opted out
     user_email = user.user_id if user else None

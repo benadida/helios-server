@@ -28,6 +28,7 @@ def main():
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)
     web_count = positive_count('WEB_CONCURRENCY', 2, 32)
+    thread_count = positive_count('GUNICORN_THREADS', 4, 8)
     verifier_count = positive_count('VOTE_VERIFIER_CONCURRENCY', 2, 16)
     port = int(os.environ.get('PORT', '10000'))
     if not 1 <= port <= 65535:
@@ -35,7 +36,8 @@ def main():
     commands = [[sys.executable, '-m', 'gunicorn',
         os.environ.get('VOTING_WSGI_MODULE', 'wsgi:application'),
         '--bind', f'0.0.0.0:{port}', '--workers', str(web_count),
-        '--worker-class', 'sync', '--timeout', '180', '--error-logfile', '-']]
+        '--worker-class', 'gthread', '--threads', str(thread_count),
+        '--worker-connections', str(thread_count * 4), '--timeout', '180', '--error-logfile', '-']]
     commands.extend([[sys.executable, 'manage.py', 'run_vote_verifier']
                      for _ in range(verifier_count)])
     commands.append([sys.executable, 'manage.py', 'run_vote_confirmation_sender'])

@@ -1,9 +1,9 @@
 """ALU presentation adapters. Casting and proof verification stay in Helios."""
 import json
-import hmac
 import time
 import logging
 import re
+from functools import wraps
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
@@ -29,10 +29,29 @@ def public_demo(election):
     raise PermissionDenied('Election unavailable.')
 
 
+def service_election(*, private=False):
+  """Public JSON presentation only: no native browser login or CSRF session."""
+  def decorate(view):
+    @wraps(view)
+    def wrapped(request, election_uuid, *args, **kwargs):
+      # Private status authenticates before even looking up an election.
+      if private:
+        from .alu_submission import authenticated
+        if not authenticated(request):
+          return private_response(JsonResponse({'error': 'Unauthorized'}, status=401))
+      election = Election.get_by_uuid(election_uuid)
+      if not election:
+        raise Http404
+      public_demo(election)
+      return view(request, election, *args, **kwargs)
+    return wrapped
+
+  return decorate
+
+
 @require_GET
-@election_view()
+@service_election()
 def ballot(request, election):
-  public_demo(election)
   from helios.alu_management import setup_digest
   raw = utils.to_json(election.toJSONDict(complete=True))
   return private_response(JsonResponse({'raw': raw,
@@ -155,9 +174,8 @@ def login(request, election):
 
 
 @require_GET
-@election_view()
+@service_election()
 def receipt(request, election, tracker):
-  public_demo(election)
   if not re.fullmatch(r'[A-Za-z0-9+/]{43}', tracker):
     raise PermissionDenied('Invalid tracker.')
   cast = (CastVote.objects.filter(voter__election=election, vote_hash=tracker)
@@ -177,14 +195,9 @@ def return_url(election):
 
 
 @require_POST
-@election_view()
+@service_election(private=True)
 def vote_status(request, election):
-  # This private server-to-server read never accepts a browser's identity.
-  if (not settings.ALU_BRIDGE_SECRET or not hmac.compare_digest(
-      request.headers.get('Authorization', '').encode(),
-      ('Bearer ' + settings.ALU_BRIDGE_SECRET).encode())):
-    return private_response(JsonResponse({'error': 'Unauthorized'}, status=401))
-  public_demo(election)
+  # Authentication and public binding were checked by the stateless adapter.
   try:
     if len(request.body) > 1024:
       raise ValueError()

@@ -62,7 +62,7 @@ class BridgeTests(TestCase):
          'events': self.policy_events.get(v['subject'], []) if v['cast_at'] else []}
         for v in payload['voters']]}
       return result
-    self.status_patch = patch('helios.bridge_eligibility.requests.post', side_effect=fresh_status)
+    self.status_patch = patch('helios.bridge_eligibility.service_post', side_effect=fresh_status)
     self.status_patch.start()
     self.addCleanup(self.status_patch.stop)
 
@@ -140,7 +140,7 @@ class BridgeTests(TestCase):
     base = f'/helios/elections/{self.election.uuid}'
     for response in [Mock(status_code=503), Mock(status_code=200)]:
       response.json.return_value = {'binding': {}, 'voters': []}
-      with patch('helios.bridge_eligibility.requests.post', return_value=response):
+      with patch('helios.bridge_eligibility.service_post', return_value=response):
         self.assertEqual(self.client.post(base + '/cast', {'encrypted_vote': 'ignored'}).status_code, 403)
 
   def prepare_encrypted_ballot(self):

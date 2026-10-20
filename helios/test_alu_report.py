@@ -164,9 +164,9 @@ class ProcessReportTests(TestCase):
             response=Mock(status_code=200)
             response.json.return_value={'binding':{'client_id':'alu-helios-demo','election_id':self.election.uuid},'voters':[{'subject':v['subject'],'student':True,'committee':False,'events':[]} for v in batch]}
             return response
-        with patch('helios.bridge_eligibility.requests.post',side_effect=request) as post:
+        with patch('helios.bridge_eligibility.service_post',side_effect=request) as post:
             result=statuses(self.election,voters)
         self.assertEqual(len(result),250);self.assertEqual(post.call_count,5)
         self.assertGreater(peak,1);self.assertLessEqual(peak,4)
-        with patch('helios.bridge_eligibility.requests.post',return_value=Mock(status_code=503)):
+        with patch('helios.bridge_eligibility.service_post',return_value=Mock(status_code=503)):
             with self.assertRaises(PermissionDenied):statuses(self.election,voters)

@@ -17,7 +17,13 @@ class AluRequestGuardrails:
             return self.refuse(400, 'Invalid request length')
         if size < 0 or size > 2 * 1024 * 1024:
             return self.refuse(413, 'Request too large')
-        session = getattr(request, 'session', {})
+        # JSON adapters never use the browser's legacy session. Cast supplies
+        # its freshly exchanged identity to limit_identity exactly once.
+        if request.path.rstrip('/').endswith(('/ui/cast', '/ui/vote-status')):
+            return self.get_response(request)
+        return self.limit_identity(request, getattr(request, 'session', {}))
+
+    def limit_identity(self, request, session):
         user = session.get('user') or {}
         # Identity is from Django's server-side session, never an IP/header or
         # browser-supplied subject. Avoid campus-wide limits on shared NAT IPs.
