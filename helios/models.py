@@ -1190,14 +1190,20 @@ class CastVote(HeliosModel):
     for c in ['/', '+', '#']:
       safe_hash = safe_hash.replace(c, '')
 
-    length = 8
-    while True:
+    for length in range(8, max(8, len(safe_hash)) + 1):
       vote_tinyhash = safe_hash[:length]
-      if CastVote.objects.filter(vote_tinyhash = vote_tinyhash).count() == 0:
-        break
-      length += 1
+      if not CastVote.objects.filter(vote_tinyhash=vote_tinyhash).exists():
+        self.vote_tinyhash = vote_tinyhash
+        return
 
-    self.vote_tinyhash = vote_tinyhash
+    # Once the entire hash is taken, longer slices cannot produce a new receipt.
+    # A suffix also lets a repeated ciphertext retain a distinct short URL.
+    for attempt in range(8):
+      vote_tinyhash = safe_hash[:8] + '-' + uuid.uuid4().hex
+      if not CastVote.objects.filter(vote_tinyhash=vote_tinyhash).exists():
+        self.vote_tinyhash = vote_tinyhash
+        return
+    raise ValueError('Could not generate a unique vote receipt.')
 
   def save(self, *args, **kwargs):
     """

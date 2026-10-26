@@ -8,6 +8,7 @@ import random as stdlib_random
 import re
 import uuid
 from urllib.parse import urlencode
+from unittest import mock
 
 import django_webtest
 from django.conf import settings
@@ -587,6 +588,83 @@ class CastVoteModelTests(TestCase):
 
     def test_cast_vote(self):
         pass
+
+
+class CastVoteReceiptTests(TestCase):
+    def setUp(self):
+        user = auth_models.User.objects.create(
+            user_type='google', user_id='receipts@example.com', info={})
+        election = models.Election.objects.create(
+            uuid=str(uuid.uuid4()), short_name='receipt-tests',
+            name='Receipt tests', admin=user)
+        self.voter = models.Voter.objects.create(
+            uuid=str(uuid.uuid4()), election=election, user=user)
+
+    def allocate_receipt(self, cast_vote):
+        # A regression must fail instead of hanging once every hash prefix is taken.
+        query = models.CastVote.objects.filter
+        attempts = 0
+
+        def bounded_query(*args, **kwargs):
+            nonlocal attempts
+            attempts += 1
+            self.assertLessEqual(attempts, 100, "Receipt allocation did not terminate")
+            return query(*args, **kwargs)
+
+        with mock.patch.object(models.CastVote.objects, 'filter', side_effect=bounded_query):
+            cast_vote.set_tinyhash()
+
+    def reserve_hash_prefixes(self, vote_hash):
+        for length in range(8, len(vote_hash) + 1):
+            models.CastVote.objects.create(
+                voter=self.voter, vote_hash=vote_hash, vote_tinyhash=vote_hash[:length])
+
+    def test_receipt_uses_shortest_available_hash_prefix(self):
+        vote_hash = 'a' * 43
+        models.CastVote.objects.create(
+            voter=self.voter, vote_hash='existing-vote', vote_tinyhash=vote_hash[:8])
+        cast_vote = models.CastVote(voter=self.voter, vote_hash=vote_hash)
+        self.allocate_receipt(cast_vote)
+        self.assertEqual(cast_vote.vote_tinyhash, vote_hash[:9])
+
+    def test_receipt_sanitizes_bytes_hash(self):
+        cast_vote = models.CastVote(voter=self.voter, vote_hash=b'ab/c+d#efghijklmnop')
+        self.allocate_receipt(cast_vote)
+        self.assertEqual(cast_vote.vote_tinyhash, 'abcdefgh')
+
+    def test_receipt_terminates_when_all_hash_prefixes_are_taken(self):
+        vote_hash = 'a' * 43
+        self.reserve_hash_prefixes(vote_hash)
+        cast_vote = models.CastVote(voter=self.voter, vote_hash=vote_hash)
+        self.allocate_receipt(cast_vote)
+        self.assertLessEqual(len(cast_vote.vote_tinyhash), 50)
+        self.assertFalse(models.CastVote.objects.filter(
+            vote_tinyhash=cast_vote.vote_tinyhash).exists())
+        cast_vote.save()
+        cast_vote.refresh_from_db()
+        self.assertEqual(cast_vote.vote_hash, vote_hash)
+
+    def test_receipt_retries_a_random_suffix_collision(self):
+        vote_hash = 'a' * 43
+        self.reserve_hash_prefixes(vote_hash)
+        taken, available = uuid.UUID(int=1), uuid.UUID(int=2)
+        models.CastVote.objects.create(voter=self.voter, vote_hash=vote_hash,
+                                      vote_tinyhash=vote_hash[:8] + '-' + taken.hex)
+        cast_vote = models.CastVote(voter=self.voter, vote_hash=vote_hash)
+        with mock.patch.object(models.uuid, 'uuid4', side_effect=[taken, available]):
+            self.allocate_receipt(cast_vote)
+        self.assertEqual(cast_vote.vote_tinyhash, vote_hash[:8] + '-' + available.hex)
+
+    def test_receipt_allocation_is_bounded_when_random_suffixes_collide(self):
+        vote_hash = 'a' * 43
+        self.reserve_hash_prefixes(vote_hash)
+        taken = uuid.UUID(int=1)
+        models.CastVote.objects.create(voter=self.voter, vote_hash=vote_hash,
+                                      vote_tinyhash=vote_hash[:8] + '-' + taken.hex)
+        cast_vote = models.CastVote(voter=self.voter, vote_hash=vote_hash)
+        with mock.patch.object(models.uuid, 'uuid4', return_value=taken):
+            with self.assertRaisesMessage(ValueError, 'Could not generate a unique vote receipt'):
+                self.allocate_receipt(cast_vote)
 
 class BallotGroupMembershipTests(TestCase):
     """
