@@ -3349,3 +3349,74 @@ class VoterDeleteRestrictionTests(WebTest):
         # Check that the delete button is not present
         self.assertNotContains(response, '>x</button></form>]')
 
+
+
+class MergeDuplicateUsersTests(TestCase):
+    """Issue #506: merging GitHub users whose user_id differs only in case."""
+
+    def setUp(self):
+        from django.db import connection
+        # duplicates can't be created while the constraint exists; drop it for this test's transaction
+        constraint = [c for c in auth_models.User._meta.constraints if c.name == 'helios_auth_user_ci_unique_github'][0]
+        with connection.schema_editor() as editor:
+            editor.remove_constraint(auth_models.User, constraint)
+
+        self.logged_in = auth_models.User.objects.create(user_type='github', user_id='Alice', name='Alice', info={'email': 'a@example.com'}, token={})
+        self.uploaded = auth_models.User.objects.create(user_type='github', user_id='alice', name='alice', info={}, token=None)
+        self.e1 = models.Election.get_or_create(short_name='e1', name='E1', description='', admin=self.uploaded)[0]
+        self.e2 = models.Election.get_or_create(short_name='e2', name='E2', description='', admin=self.logged_in)[0]
+        self.e2.admins.add(self.uploaded)
+        self.v1 = models.Voter.register_user_in_election(self.logged_in, self.e1)
+        self.v2 = models.Voter.register_user_in_election(self.uploaded, self.e2)
+
+    def run_command(self, *args):
+        from io import StringIO
+        from django.core.management import call_command
+        out = StringIO()
+        call_command('merge_duplicate_users', *args, stdout=out)
+        return out.getvalue()
+
+    def test_merge(self):
+        out = self.run_command()
+        self.assertIn("1 group(s) merged, 0 skipped", out)
+
+        self.assertEqual(list(auth_models.User.objects.filter(user_type='github').values_list('id', flat=True)), [self.logged_in.id])
+        self.assertEqual(auth_models.User.get_by_type_and_id('github', 'alice').id, self.logged_in.id)
+
+        self.v2.refresh_from_db()
+        self.assertEqual(self.v2.user_id, self.logged_in.id)
+        # published voter hashes depend on voter_login_id, so it must not change
+        self.assertEqual(self.v2.voter_login_id, 'alice')
+        self.assertEqual(models.Election.objects.get(id=self.e1.id).admin_id, self.logged_in.id)
+        self.assertEqual(list(self.e2.admins.all()), [self.logged_in])
+
+    def test_dry_run_changes_nothing(self):
+        out = self.run_command('--dry-run')
+        self.assertIn("WOULD MERGE", out)
+        self.assertEqual(auth_models.User.objects.filter(user_type='github').count(), 2)
+
+    def test_skips_when_both_users_vote_in_same_election(self):
+        models.Voter.register_user_in_election(self.uploaded, self.e1)
+        out = self.run_command()
+        self.assertIn("SKIPPED", out)
+        self.assertIn("e1", out)
+        self.assertEqual(auth_models.User.objects.filter(user_type='github').count(), 2)
+
+
+class UserCaseInsensitiveConstraintTests(TestCase):
+
+    def test_github_case_duplicate_rejected(self):
+        from django.db import IntegrityError, transaction
+        auth_models.User.objects.create(user_type='github', user_id='Alice', info={})
+        with transaction.atomic(), self.assertRaises(IntegrityError):
+            auth_models.User.objects.create(user_type='github', user_id='alice', info={})
+
+    def test_other_types_stay_case_sensitive(self):
+        auth_models.User.objects.create(user_type='cas', user_id='Alice', info={})
+        auth_models.User.objects.create(user_type='cas', user_id='alice', info={})
+        self.assertEqual(auth_models.User.objects.filter(user_type='cas').count(), 2)
+
+    def test_user_delete(self):
+        u = auth_models.User.objects.create(user_type='github', user_id='Alice', info={})
+        u.delete()
+        self.assertFalse(auth_models.User.objects.filter(user_type='github').exists())
