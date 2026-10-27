@@ -912,7 +912,12 @@ class VoterFile(models.Model):
               new_voter.save()
           successful_voters += 1
       else:
-          user, _ = User.objects.get_or_create(user_type=voter['voter_type'], user_id=voter['voter_id'], defaults = {'name': voter['voter_id'], 'info': {}, 'token': None})
+          # match existing users the same way login does (case-insensitive for e.g. GitHub),
+          # so an upload never creates a case-only duplicate of an existing user
+          try:
+            user = User.get_by_type_and_id(voter['voter_type'], voter['voter_id'])
+          except User.DoesNotExist:
+            user, _ = User.objects.get_or_create(user_type=voter['voter_type'], user_id=voter['voter_id'], defaults = {'name': voter['voter_id'], 'info': {}, 'token': None})
           existing_voter = Voter.get_by_election_and_user(self.election, user)
           if not existing_voter:
               Voter.register_user_in_election(user, self.election)

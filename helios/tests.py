@@ -169,6 +169,17 @@ class ElectionModelTests(TestCase):
         self.assertEqual(voter.voter_email, 'ben5@adida.net')
         self.assertEqual(voter.voter_name, 'Ben5 Adida')
 
+    def test_add_voters_file_github_case_insensitive(self):
+        # an existing GitHub user with different casing must be reused, not duplicated (#506)
+        existing = auth_models.User.objects.create(user_type='github', user_id='Alice', name='Alice', info={})
+
+        vf = models.VoterFile.objects.create(election=self.election, voter_file_content='github,alice\n')
+        vf.process()
+
+        self.assertEqual(auth_models.User.objects.filter(user_type='github', user_id__iexact='alice').count(), 1)
+        self.assertEqual(auth_models.User.get_by_type_and_id('github', 'Alice').id, existing.id)
+        self.assertEqual(self.election.voter_set.get(user=existing).voter_login_id, 'Alice')
+
     def test_check_issues_before_freeze(self):
         # should be three issues: no trustees, and no questions, and no voters
         issues = self.election.issues_before_freeze
