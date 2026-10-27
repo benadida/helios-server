@@ -917,7 +917,7 @@ class VoterFile(models.Model):
           try:
             user = User.get_by_type_and_id(voter['voter_type'], voter['voter_id'])
           except User.DoesNotExist:
-            user = User.objects.create(user_type=voter['voter_type'], user_id=voter['voter_id'], name=voter['voter_id'], info={}, token=None)
+            user, _ = User.objects.get_or_create(user_type=voter['voter_type'], user_id=voter['voter_id'], defaults = {'name': voter['voter_id'], 'info': {}, 'token': None})
           existing_voter = Voter.get_by_election_and_user(self.election, user)
           if not existing_voter:
               Voter.register_user_in_election(user, self.election)
