@@ -3449,12 +3449,39 @@ class MergeDuplicateUsersTests(TestCase):
     def test_park_voted_voter_untouched(self):
         cast_at = datetime.datetime(2026, 1, 1)
         models.Voter.objects.filter(id=self.v2.id).update(cast_at=cast_at)
+        models.Election.objects.filter(id=self.e2.id).update(voting_ended_at=datetime.datetime(2026, 1, 2))
         out = self.run_command('--park')
         self.assertIn("PARKED", out)
         self.v2.refresh_from_db()
         self.assertEqual(self.v2.user_id, self.uploaded.id)
         self.assertEqual(self.v2.cast_at, cast_at)
         self.assertEqual(self.v2.voter_login_id, 'alice')
+
+    def test_park_skips_voted_in_open_election(self):
+        # once the kept user can log in, the person could vote again in e2
+        models.Voter.objects.filter(id=self.v2.id).update(cast_at=datetime.datetime(2026, 1, 1))
+        out = self.run_command('--park')
+        self.assertIn("voting is still open", out)
+        self.uploaded.refresh_from_db()
+        self.assertEqual(self.uploaded.user_id, 'alice')
+
+    def test_park_skips_voted_voter_needing_login_id(self):
+        models.Voter.objects.filter(id=self.v2.id).update(cast_at=datetime.datetime(2026, 1, 1), voter_login_id=None)
+        models.Election.objects.filter(id=self.e2.id).update(voting_ended_at=datetime.datetime(2026, 1, 2))
+        out = self.run_command('--park')
+        self.assertIn("cannot park", out)
+        self.v2.refresh_from_db()
+        self.assertIsNone(self.v2.voter_login_id)
+        self.uploaded.refresh_from_db()
+        self.assertEqual(self.uploaded.user_id, 'alice')
+
+    def test_park_skips_two_voters_needing_same_login_id(self):
+        models.Voter.objects.filter(id=self.v2.id).update(voter_login_id=None)
+        models.Voter.objects.create(uuid=str(uuid.uuid4()), election=self.e2, user=self.uploaded, voter_login_id=None)
+        out = self.run_command('--park')
+        self.assertIn("login id already taken", out)
+        self.uploaded.refresh_from_db()
+        self.assertEqual(self.uploaded.user_id, 'alice')
 
     def test_park_dry_run_changes_nothing(self):
         models.Voter.register_user_in_election(self.uploaded, self.e1)
