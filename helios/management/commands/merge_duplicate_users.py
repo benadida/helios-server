@@ -23,14 +23,15 @@ With --park, the groups skipped for the first or last of those reasons are
 '<user_id>.dup<id>' (not a valid GitHub username, so nobody can log in as it),
 and its election admin links move to the kept user. Voter rows are not
 changed, except that an empty voter_login_id is filled in with the old user_id
-so the published hash stays the same. The person can then log in again, and
-the case-insensitive index can be added. Still skipped, even with --park:
+so the published hash stays the same. This includes voters who have voted
+(only possible once voting has ended, see below): the hash, ballot and name
+are unchanged, and each such fill is listed in the output. The person can then
+log in again, and the case-insensitive index can be added. Still skipped, even
+with --park:
 - login-id clashes: filling in the voter_login_id is what keeps the hash
   stable, so those need a person to look;
 - a duplicate that has voted in an election where voting is still open: once
-  the kept user can log in, the person could vote a second time;
-- a duplicate's voter that has voted and would need its voter_login_id filled
-  in: voters who voted are never changed.
+  the kept user can log in, the person could vote a second time.
 """
 
 from django.core.management.base import BaseCommand
@@ -89,17 +90,28 @@ def login_id_clashes(duplicates):
   return clashes
 
 
+def voted_voters(duplicates):
+  return Voter.objects.filter(user__in=duplicates).filter(Q(cast_at__isnull=False) | Q(castvote__isnull=False)).distinct()
+
+
 def park_blockers(duplicates):
   # reasons not to park, even with --park
-  voted = Voter.objects.filter(user__in=duplicates).filter(Q(cast_at__isnull=False) | Q(castvote__isnull=False)).distinct()
-  still_open = sorted(set(v.election.short_name for v in voted if not v.election.voting_has_stopped()))
+  still_open = sorted(set(v.election.short_name for v in voted_voters(duplicates) if not v.election.voting_has_stopped()))
   if still_open:
     return "voted in election(s) where voting is still open: %s" % ", ".join(still_open)
-  needs_fill = voted.filter(Q(voter_login_id__isnull=True) | Q(voter_login_id=''))
-  if needs_fill.exists():
-    return "a voter who has voted would need its voter_login_id filled in, in election(s): %s" % (
-      ", ".join(sorted(set(v.election.short_name for v in needs_fill))))
   return None
+
+
+def elections_voted_more_than_once(users):
+  # elections where this person has more than one voter that has voted: worth a look at that election's tally
+  return list(Voter.objects.filter(user__in=users).filter(Q(cast_at__isnull=False) | Q(castvote__isnull=False))
+              .values('election__short_name').annotate(n=Count('id', distinct=True)).filter(n__gt=1)
+              .values_list('election__short_name', flat=True))
+
+
+def voted_voters_to_fill(duplicates):
+  # voters who have voted and will get voter_login_id filled in when parked (hash unchanged)
+  return voted_voters(duplicates).filter(Q(voter_login_id__isnull=True) | Q(voter_login_id='')).select_related('user', 'election')
 
 
 def move_admin_links(survivor, dup):
@@ -187,6 +199,11 @@ class Command(BaseCommand):
         self.stdout.write("%s%s: keep %r (id %d), rename %s -- %s" % (
           "WOULD PARK " if dry_run else "PARKED ", survivor.user_type, survivor.user_id, survivor.id,
           ", ".join("%r (id %d) to %r" % (u.user_id, u.id, parked_user_id(u)) for u in duplicates), reason))
+        for name in elections_voted_more_than_once(users):
+          self.stdout.write("  WARNING: this person has more than one voter that has voted in election %s; check that election's tally" % name)
+        for v in voted_voters_to_fill(duplicates):
+          self.stdout.write("  %s voter_login_id = %r on voter %s, who has voted, in election %s (voting has ended; hash unchanged)" % (
+            "will set" if dry_run else "set", v.user.user_id, v.uuid, v.election.short_name))
         if not dry_run:
           park_group(survivor, duplicates)
         continue
