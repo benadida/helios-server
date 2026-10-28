@@ -3409,6 +3409,21 @@ class MergeDuplicateUsersTests(TestCase):
         self.assertIn("SKIPPED", out)
         self.assertEqual(auth_models.User.objects.filter(user_type='github').count(), 2)
 
+    def test_skips_when_moved_voter_has_voted(self):
+        models.Voter.objects.filter(id=self.v2.id).update(cast_at=datetime.datetime.utcnow())
+        out = self.run_command()
+        self.assertIn("cast a ballot", out)
+        self.assertEqual(auth_models.User.objects.filter(user_type='github').count(), 2)
+        self.v2.refresh_from_db()
+        self.assertEqual(self.v2.user_id, self.uploaded.id)
+
+    def test_merges_when_only_kept_user_has_voted(self):
+        models.Voter.objects.filter(id=self.v1.id).update(cast_at=datetime.datetime.utcnow())
+        out = self.run_command()
+        self.assertIn("1 group(s) merged", out)
+        self.v1.refresh_from_db()
+        self.assertEqual(self.v1.user_id, self.logged_in.id)
+
     def test_merge_keeps_soft_deleted_elections(self):
         self.e1.soft_delete()
         self.run_command()

@@ -14,8 +14,9 @@ voters with an empty one get the old user_id written into it before being
 moved to the kept user.
 
 A group is skipped, and reported, if two of its users are voters in the same
-election (a person must decide which voter to keep), or if filling in a
-voter_login_id would clash with another voter in that election.
+election (a person must decide which voter to keep), if filling in a
+voter_login_id would clash with another voter in that election, or if a voter
+that would be moved has cast a ballot (voters who voted are never changed).
 """
 
 from django.core.management.base import BaseCommand
@@ -53,6 +54,12 @@ def conflicting_elections(users):
 
 def voters_without_login_id(user):
   return Voter.objects.filter(user=user).filter(Q(voter_login_id__isnull=True) | Q(voter_login_id=''))
+
+
+def elections_with_cast_votes(duplicates):
+  return list(Voter.objects.filter(user__in=duplicates)
+              .filter(Q(cast_at__isnull=False) | Q(castvote__isnull=False))
+              .values_list('election__short_name', flat=True).distinct())
 
 
 def login_id_clashes(duplicates):
@@ -102,6 +109,12 @@ class Command(BaseCommand):
       if conflicts:
         skipped += 1
         self.stdout.write("SKIPPED %s -- voter more than once in election(s): %s" % (desc, ", ".join(conflicts)))
+        continue
+
+      voted = elections_with_cast_votes(duplicates)
+      if voted:
+        skipped += 1
+        self.stdout.write("SKIPPED %s -- a voter to be moved has cast a ballot in election(s): %s" % (desc, ", ".join(voted)))
         continue
 
       clashes = login_id_clashes(duplicates)
