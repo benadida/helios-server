@@ -3465,15 +3465,43 @@ class MergeDuplicateUsersTests(TestCase):
         self.uploaded.refresh_from_db()
         self.assertEqual(self.uploaded.user_id, 'alice')
 
-    def test_park_skips_voted_voter_needing_login_id(self):
-        models.Voter.objects.filter(id=self.v2.id).update(cast_at=datetime.datetime(2026, 1, 1), voter_login_id=None)
+    def test_park_fills_login_id_on_voted_voter_after_voting_ended(self):
+        cast_at = datetime.datetime(2026, 1, 1)
+        models.Voter.objects.filter(id=self.v2.id).update(cast_at=cast_at, voter_login_id=None)
         models.Election.objects.filter(id=self.e2.id).update(voting_ended_at=datetime.datetime(2026, 1, 2))
-        out = self.run_command('--park')
-        self.assertIn("cannot park", out)
+        self.v2.refresh_from_db()
+        hash_before = self.v2.voter_id_hash
+
+        out = self.run_command('--park', '--dry-run')
+        self.assertIn("will set voter_login_id = 'alice' on voter %s" % self.v2.uuid, out)
         self.v2.refresh_from_db()
         self.assertIsNone(self.v2.voter_login_id)
+
+        out = self.run_command('--park')
+        self.assertIn("PARKED", out)
         self.uploaded.refresh_from_db()
-        self.assertEqual(self.uploaded.user_id, 'alice')
+        self.assertEqual(self.uploaded.user_id, 'alice.dup%d' % self.uploaded.id)
+        self.v2.refresh_from_db()
+        self.assertEqual(self.v2.user_id, self.uploaded.id)
+        self.assertEqual(self.v2.cast_at, cast_at)
+        self.assertEqual(self.v2.voter_login_id, 'alice')
+        self.assertEqual(self.v2.voter_id_hash, hash_before)
+
+    def test_park_warns_when_person_voted_twice_in_one_election(self):
+        v3 = models.Voter.register_user_in_election(self.uploaded, self.e1)
+        now = datetime.datetime(2026, 1, 1)
+        models.Voter.objects.filter(id__in=[self.v1.id, v3.id]).update(cast_at=now)
+        models.Election.objects.filter(id=self.e1.id).update(voting_ended_at=datetime.datetime(2026, 1, 2))
+        out = self.run_command('--park', '--dry-run')
+        self.assertIn("WOULD PARK", out)
+        self.assertIn("WARNING: this person has more than one voter that has voted in election e1", out)
+
+    def test_park_skips_voted_voter_needing_login_id_while_voting_open(self):
+        models.Voter.objects.filter(id=self.v2.id).update(cast_at=datetime.datetime(2026, 1, 1), voter_login_id=None)
+        out = self.run_command('--park')
+        self.assertIn("voting is still open", out)
+        self.v2.refresh_from_db()
+        self.assertIsNone(self.v2.voter_login_id)
 
     def test_park_skips_two_voters_needing_same_login_id(self):
         models.Voter.objects.filter(id=self.v2.id).update(voter_login_id=None)
