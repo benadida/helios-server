@@ -7,6 +7,8 @@ Ben Adida
 (ben@adida.net)
 """
 from django.db import models
+from django.db.models import Q, UniqueConstraint
+from django.db.models.functions import Lower
 
 from .auth_systems import can_check_constraint, uses_case_insensitive_user_id, AUTH_SYSTEMS
 from .jsonfield import JSONField
@@ -34,6 +36,12 @@ class User(models.Model):
   class Meta:
     unique_together = (('user_type', 'user_id'),)
     app_label = 'helios_auth'
+    constraints = [
+      # auth systems with CASE_INSENSITIVE_USER_ID must not have user_ids that differ only in case.
+      # keep this list in sync with those auth systems.
+      UniqueConstraint(Lower('user_id'), 'user_type', condition=Q(user_type='github'),
+                       name='helios_auth_user_ci_unique_github'),
+    ]
 
   @classmethod
   def _get_type_and_id(cls, user_type, user_id):
@@ -149,6 +157,9 @@ class User(models.Model):
       return self.type_and_id == other.type_and_id
     else:
       return False
+
+  # defining __eq__ removes the inherited __hash__, which breaks the ORM's delete()
+  __hash__ = models.Model.__hash__
   
 
   @property
