@@ -3424,6 +3424,80 @@ class MergeDuplicateUsersTests(TestCase):
         self.v1.refresh_from_db()
         self.assertEqual(self.v1.user_id, self.logged_in.id)
 
+    def test_park_voter_twice_in_same_election(self):
+        v3 = models.Voter.register_user_in_election(self.uploaded, self.e1)
+        models.Voter.objects.filter(id=v3.id).update(voter_login_id=None)
+        v3.refresh_from_db()
+        hashes_before = {v.id: v.voter_id_hash for v in models.Voter.objects.all()}
+
+        out = self.run_command('--park')
+        self.assertIn("PARKED", out)
+        self.assertIn("0 skipped, 1 parked", out)
+
+        self.uploaded.refresh_from_db()
+        self.assertEqual(self.uploaded.user_id, 'alice.dup%d' % self.uploaded.id)
+        # login now finds exactly one user
+        self.assertEqual(auth_models.User.get_by_type_and_id('github', 'alice').id, self.logged_in.id)
+        # voters stay on the parked user, with unchanged hashes
+        v3.refresh_from_db()
+        self.assertEqual(v3.user_id, self.uploaded.id)
+        self.assertEqual({v.id: v.voter_id_hash for v in models.Voter.objects.all()}, hashes_before)
+        # admin links move to the kept user
+        self.assertEqual(models.Election.objects.get(id=self.e1.id).admin_id, self.logged_in.id)
+        self.assertEqual(list(self.e2.admins.all()), [self.logged_in])
+
+    def test_park_voted_voter_untouched(self):
+        cast_at = datetime.datetime(2026, 1, 1)
+        models.Voter.objects.filter(id=self.v2.id).update(cast_at=cast_at)
+        models.Election.objects.filter(id=self.e2.id).update(voting_ended_at=datetime.datetime(2026, 1, 2))
+        out = self.run_command('--park')
+        self.assertIn("PARKED", out)
+        self.v2.refresh_from_db()
+        self.assertEqual(self.v2.user_id, self.uploaded.id)
+        self.assertEqual(self.v2.cast_at, cast_at)
+        self.assertEqual(self.v2.voter_login_id, 'alice')
+
+    def test_park_skips_voted_in_open_election(self):
+        # once the kept user can log in, the person could vote again in e2
+        models.Voter.objects.filter(id=self.v2.id).update(cast_at=datetime.datetime(2026, 1, 1))
+        out = self.run_command('--park')
+        self.assertIn("voting is still open", out)
+        self.uploaded.refresh_from_db()
+        self.assertEqual(self.uploaded.user_id, 'alice')
+
+    def test_park_skips_voted_voter_needing_login_id(self):
+        models.Voter.objects.filter(id=self.v2.id).update(cast_at=datetime.datetime(2026, 1, 1), voter_login_id=None)
+        models.Election.objects.filter(id=self.e2.id).update(voting_ended_at=datetime.datetime(2026, 1, 2))
+        out = self.run_command('--park')
+        self.assertIn("cannot park", out)
+        self.v2.refresh_from_db()
+        self.assertIsNone(self.v2.voter_login_id)
+        self.uploaded.refresh_from_db()
+        self.assertEqual(self.uploaded.user_id, 'alice')
+
+    def test_park_skips_two_voters_needing_same_login_id(self):
+        models.Voter.objects.filter(id=self.v2.id).update(voter_login_id=None)
+        models.Voter.objects.create(uuid=str(uuid.uuid4()), election=self.e2, user=self.uploaded, voter_login_id=None)
+        out = self.run_command('--park')
+        self.assertIn("login id already taken", out)
+        self.uploaded.refresh_from_db()
+        self.assertEqual(self.uploaded.user_id, 'alice')
+
+    def test_park_dry_run_changes_nothing(self):
+        models.Voter.register_user_in_election(self.uploaded, self.e1)
+        out = self.run_command('--park', '--dry-run')
+        self.assertIn("WOULD PARK", out)
+        self.uploaded.refresh_from_db()
+        self.assertEqual(self.uploaded.user_id, 'alice')
+
+    def test_park_still_skips_login_id_clash(self):
+        models.Voter.objects.filter(id=self.v2.id).update(voter_login_id=None)
+        models.Voter.objects.create(uuid=str(uuid.uuid4()), election=self.e2, voter_login_id='alice', voter_email='x@example.com', voter_name='x')
+        out = self.run_command('--park')
+        self.assertIn("SKIPPED", out)
+        self.uploaded.refresh_from_db()
+        self.assertEqual(self.uploaded.user_id, 'alice')
+
     def test_merge_keeps_soft_deleted_elections(self):
         self.e1.soft_delete()
         self.run_command()

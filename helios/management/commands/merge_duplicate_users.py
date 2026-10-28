@@ -17,6 +17,20 @@ A group is skipped, and reported, if two of its users are voters in the same
 election (a person must decide which voter to keep), if filling in a
 voter_login_id would clash with another voter in that election, or if a voter
 that would be moved has cast a ballot (voters who voted are never changed).
+
+With --park, the groups skipped for the first or last of those reasons are
+"parked" instead: each duplicate keeps its voters, its user_id is renamed to
+'<user_id>.dup<id>' (not a valid GitHub username, so nobody can log in as it),
+and its election admin links move to the kept user. Voter rows are not
+changed, except that an empty voter_login_id is filled in with the old user_id
+so the published hash stays the same. The person can then log in again, and
+the case-insensitive index can be added. Still skipped, even with --park:
+- login-id clashes: filling in the voter_login_id is what keeps the hash
+  stable, so those need a person to look;
+- a duplicate that has voted in an election where voting is still open: once
+  the kept user can log in, the person could vote a second time;
+- a duplicate's voter that has voted and would need its voter_login_id filled
+  in: voters who voted are never changed.
 """
 
 from django.core.management.base import BaseCommand
@@ -63,13 +77,43 @@ def elections_with_cast_votes(duplicates):
 
 
 def login_id_clashes(duplicates):
-  # elections where writing the duplicate's user_id into voter_login_id would hit unique (election, voter_login_id)
+  # elections where writing the duplicate's user_id into voter_login_id would hit unique (election, voter_login_id):
+  # either another voter already has it, or the duplicate has several voters there that would all get it
   clashes = []
   for dup in duplicates:
-    for voter in voters_without_login_id(dup):
-      if Voter.objects.filter(election_id=voter.election_id, voter_login_id=dup.user_id).exists():
-        clashes.append(voter.election.short_name)
+    pending = voters_without_login_id(dup)
+    for election_id in set(pending.values_list('election_id', flat=True)):
+      if (pending.filter(election_id=election_id).count() > 1
+          or Voter.objects.filter(election_id=election_id, voter_login_id=dup.user_id).exists()):
+        clashes.append(Election.objects_with_deleted.get(id=election_id).short_name)
   return clashes
+
+
+def park_blockers(duplicates):
+  # reasons not to park, even with --park
+  voted = Voter.objects.filter(user__in=duplicates).filter(Q(cast_at__isnull=False) | Q(castvote__isnull=False)).distinct()
+  still_open = sorted(set(v.election.short_name for v in voted if not v.election.voting_has_stopped()))
+  if still_open:
+    return "voted in election(s) where voting is still open: %s" % ", ".join(still_open)
+  needs_fill = voted.filter(Q(voter_login_id__isnull=True) | Q(voter_login_id=''))
+  if needs_fill.exists():
+    return "a voter who has voted would need its voter_login_id filled in, in election(s): %s" % (
+      ", ".join(sorted(set(v.election.short_name for v in needs_fill))))
+  return None
+
+
+def move_admin_links(survivor, dup):
+  Election.objects_with_deleted.filter(admin=dup).update(admin=survivor)
+  for election in Election.objects_with_deleted.filter(admins=dup):
+    election.admins.remove(dup)
+    election.admins.add(survivor)
+  if dup.admin_p and not survivor.admin_p:
+    survivor.admin_p = True
+    survivor.save()
+
+
+def parked_user_id(dup):
+  return "%s.dup%d" % (dup.user_id, dup.id)
 
 
 @transaction.atomic
@@ -78,25 +122,32 @@ def merge_group(survivor, duplicates):
     # keep these voters' published hash, which is currently computed from dup.user_id
     voters_without_login_id(dup).update(voter_login_id=dup.user_id)
     Voter.objects.filter(user=dup).update(user=survivor)
-    Election.objects_with_deleted.filter(admin=dup).update(admin=survivor)
-    for election in Election.objects_with_deleted.filter(admins=dup):
-      election.admins.remove(dup)
-      election.admins.add(survivor)
-    if dup.admin_p and not survivor.admin_p:
-      survivor.admin_p = True
-      survivor.save()
+    move_admin_links(survivor, dup)
     dup.delete()
+
+
+@transaction.atomic
+def park_group(survivor, duplicates):
+  for dup in duplicates:
+    # keep these voters' published hash, which is currently computed from dup.user_id
+    voters_without_login_id(dup).update(voter_login_id=dup.user_id)
+    move_admin_links(survivor, dup)
+    dup.user_id = parked_user_id(dup)
+    dup.save()
 
 
 class Command(BaseCommand):
   help = 'Merge users whose user_id differs only in case (case-insensitive auth systems only)'
 
   def add_arguments(self, parser):
-    parser.add_argument('--dry-run', action='store_true', help='report what would be merged without changing anything')
+    parser.add_argument('--dry-run', action='store_true', help='report what would be done without changing anything')
+    parser.add_argument('--park', action='store_true',
+                        help='park duplicates that would be skipped (voter twice in an election, or voted) instead of skipping them')
 
   def handle(self, *args, **options):
     dry_run = options['dry_run']
-    merged = skipped = 0
+    park = options['park']
+    merged = parked = skipped = 0
 
     for users in find_duplicate_groups():
       survivor = pick_survivor(users)
@@ -105,22 +156,39 @@ class Command(BaseCommand):
         survivor.user_type, survivor.user_id, survivor.id,
         ", ".join("%r (id %d)" % (u.user_id, u.id) for u in duplicates))
 
-      conflicts = conflicting_elections(users)
-      if conflicts:
-        skipped += 1
-        self.stdout.write("SKIPPED %s -- voter more than once in election(s): %s" % (desc, ", ".join(conflicts)))
-        continue
-
-      voted = elections_with_cast_votes(duplicates)
-      if voted:
-        skipped += 1
-        self.stdout.write("SKIPPED %s -- a voter to be moved has cast a ballot in election(s): %s" % (desc, ", ".join(voted)))
-        continue
-
       clashes = login_id_clashes(duplicates)
       if clashes:
         skipped += 1
         self.stdout.write("SKIPPED %s -- voter login id already taken in election(s): %s" % (desc, ", ".join(clashes)))
+        continue
+
+      reason = None
+      conflicts = conflicting_elections(users)
+      if conflicts:
+        reason = "voter more than once in election(s): %s" % ", ".join(conflicts)
+      else:
+        voted = elections_with_cast_votes(duplicates)
+        if voted:
+          reason = "a voter to be moved has cast a ballot in election(s): %s" % ", ".join(voted)
+
+      if reason and not park:
+        skipped += 1
+        self.stdout.write("SKIPPED %s -- %s" % (desc, reason))
+        continue
+
+      if reason:
+        blocker = park_blockers(duplicates)
+        if blocker:
+          skipped += 1
+          self.stdout.write("SKIPPED %s -- %s; cannot park: %s" % (desc, reason, blocker))
+          continue
+
+        parked += 1
+        self.stdout.write("%s%s: keep %r (id %d), rename %s -- %s" % (
+          "WOULD PARK " if dry_run else "PARKED ", survivor.user_type, survivor.user_id, survivor.id,
+          ", ".join("%r (id %d) to %r" % (u.user_id, u.id, parked_user_id(u)) for u in duplicates), reason))
+        if not dry_run:
+          park_group(survivor, duplicates)
         continue
 
       merged += 1
@@ -128,4 +196,5 @@ class Command(BaseCommand):
       if not dry_run:
         merge_group(survivor, duplicates)
 
-    self.stdout.write("%d group(s) %s, %d skipped" % (merged, "to merge" if dry_run else "merged", skipped))
+    self.stdout.write("%d group(s) %s, %d skipped, %d %s" % (
+      merged, "to merge" if dry_run else "merged", skipped, parked, "to park" if dry_run else "parked"))
