@@ -3390,6 +3390,30 @@ class MergeDuplicateUsersTests(TestCase):
         self.assertEqual(models.Election.objects.get(id=self.e1.id).admin_id, self.logged_in.id)
         self.assertEqual(list(self.e2.admins.all()), [self.logged_in])
 
+    def test_merge_keeps_hash_of_voter_without_login_id(self):
+        # voters registered before #440 have no voter_login_id; their hash comes from user.user_id
+        models.Voter.objects.filter(id=self.v2.id).update(voter_login_id=None)
+        self.v2.refresh_from_db()
+        hash_before = self.v2.voter_id_hash
+
+        self.run_command()
+
+        self.v2.refresh_from_db()
+        self.assertEqual(self.v2.user_id, self.logged_in.id)
+        self.assertEqual(self.v2.voter_id_hash, hash_before)
+
+    def test_skips_when_login_id_would_clash(self):
+        models.Voter.objects.filter(id=self.v2.id).update(voter_login_id=None)
+        models.Voter.objects.create(uuid=str(uuid.uuid4()), election=self.e2, voter_login_id='alice', voter_email='x@example.com', voter_name='x')
+        out = self.run_command()
+        self.assertIn("SKIPPED", out)
+        self.assertEqual(auth_models.User.objects.filter(user_type='github').count(), 2)
+
+    def test_merge_keeps_soft_deleted_elections(self):
+        self.e1.soft_delete()
+        self.run_command()
+        self.assertEqual(models.Election.objects_with_deleted.get(id=self.e1.id).admin_id, self.logged_in.id)
+
     def test_dry_run_changes_nothing(self):
         out = self.run_command('--dry-run')
         self.assertIn("WOULD MERGE", out)

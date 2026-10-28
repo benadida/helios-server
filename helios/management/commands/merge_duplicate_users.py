@@ -4,16 +4,23 @@ user_ids case-insensitively (e.g. GitHub). See issue #506.
 
 For each group of duplicates, one user is kept (the one that has logged in,
 otherwise the oldest). Voters and election admin links are moved to it and
-the other rows are deleted. Voter.voter_login_id is left untouched, since
-published voter hashes are computed from it.
+the other rows are deleted (including links on soft-deleted elections, which
+would otherwise be cascade-deleted with the user).
+
+Published voter hashes must not change. They are computed from
+Voter.voter_login_id, or from the user's user_id when that is empty (voters
+registered before #440). So existing voter_login_ids are left untouched, and
+voters with an empty one get the old user_id written into it before being
+moved to the kept user.
 
 A group is skipped, and reported, if two of its users are voters in the same
-election: that needs a person to decide which voter to keep.
+election (a person must decide which voter to keep), or if filling in a
+voter_login_id would clash with another voter in that election.
 """
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.db.models.functions import Lower
 
 from helios.models import Election, Voter
@@ -44,12 +51,28 @@ def conflicting_elections(users):
               .values_list('election__short_name', flat=True))
 
 
+def voters_without_login_id(user):
+  return Voter.objects.filter(user=user).filter(Q(voter_login_id__isnull=True) | Q(voter_login_id=''))
+
+
+def login_id_clashes(duplicates):
+  # elections where writing the duplicate's user_id into voter_login_id would hit unique (election, voter_login_id)
+  clashes = []
+  for dup in duplicates:
+    for voter in voters_without_login_id(dup):
+      if Voter.objects.filter(election_id=voter.election_id, voter_login_id=dup.user_id).exists():
+        clashes.append(voter.election.short_name)
+  return clashes
+
+
 @transaction.atomic
 def merge_group(survivor, duplicates):
   for dup in duplicates:
+    # keep these voters' published hash, which is currently computed from dup.user_id
+    voters_without_login_id(dup).update(voter_login_id=dup.user_id)
     Voter.objects.filter(user=dup).update(user=survivor)
-    Election.objects.filter(admin=dup).update(admin=survivor)
-    for election in Election.objects.filter(admins=dup):
+    Election.objects_with_deleted.filter(admin=dup).update(admin=survivor)
+    for election in Election.objects_with_deleted.filter(admins=dup):
       election.admins.remove(dup)
       election.admins.add(survivor)
     if dup.admin_p and not survivor.admin_p:
@@ -79,6 +102,12 @@ class Command(BaseCommand):
       if conflicts:
         skipped += 1
         self.stdout.write("SKIPPED %s -- voter more than once in election(s): %s" % (desc, ", ".join(conflicts)))
+        continue
+
+      clashes = login_id_clashes(duplicates)
+      if clashes:
+        skipped += 1
+        self.stdout.write("SKIPPED %s -- voter login id already taken in election(s): %s" % (desc, ", ".join(clashes)))
         continue
 
       merged += 1
