@@ -1041,12 +1041,21 @@ def one_election_audited_ballots(request, election):
   """
   
   if 'vote_hash' in request.GET:
-    b = AuditedBallot.get(election, request.GET['vote_hash'])
+    try:
+      b = AuditedBallot.get(election, request.GET['vote_hash'])
+    except AuditedBallot.DoesNotExist:
+      raise Http404
     return HttpResponse(b.raw_vote, content_type="text/plain")
     
   after = request.GET.get('after', None)
-  offset= int(request.GET.get('offset', 0))
-  limit = int(request.GET.get('limit', 50))
+  try:
+    offset = int(request.GET.get('offset', 0))
+  except (ValueError, TypeError):
+    offset = 0
+  try:
+    limit = int(request.GET.get('limit', 50))
+  except (ValueError, TypeError):
+    limit = 50
   
   audited_ballots = AuditedBallot.get_by_election(election, after=after, limit=limit+1)
     
@@ -1431,8 +1440,14 @@ def voters_list_pretty(request, election):
   """
 
   # for django pagination support
-  page = int(request.GET.get('page', 1))
-  limit = int(request.GET.get('limit', 50))
+  try:
+    page = int(request.GET.get('page', 1))
+  except (ValueError, TypeError):
+    page = 1
+  try:
+    limit = int(request.GET.get('limit', 50))
+  except (ValueError, TypeError):
+    limit = 50
   q = request.GET.get('q','')
   
   order_by = 'user__user_id'

@@ -1,0 +1,16 @@
+{% extends TEMPLATE_BASE %}
+
+{% block content %}
+<h1>Sign-in didn't go through</h1>
+
+<p>
+We couldn't finish signing you in. This usually happens when the sign-in
+page is refreshed or reopened with the back button partway through.
+It can also happen if the email address on your account isn't verified.
+</p>
+
+<p>
+<a class="button" href="{% url "auth@start" system_name=system_name %}?return_url={{ return_url|urlencode }}">Try signing in again</a>
+</p>
+
+{% endblock %}

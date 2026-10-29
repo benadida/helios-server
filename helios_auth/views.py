@@ -5,6 +5,7 @@ Ben Adida
 2009-07-05
 """
 
+import logging
 from urllib.parse import urlencode
 
 from django.http import HttpResponseRedirect, HttpResponse
@@ -18,6 +19,8 @@ from .auth_systems import AUTH_SYSTEMS, password
 from .models import User
 from .security import FIELDS_TO_SAVE
 from .view_utils import render_template, render_template_raw
+
+logger = logging.getLogger(__name__)
 
 
 def index(request):
@@ -179,8 +182,19 @@ def after(request):
     
   system = AUTH_SYSTEMS[request.session['auth_system_name']]
   
-  # get the user info
-  user = system.get_user_info_after_auth(request)
+  # get the user info. This fails when the callback is replayed (back button,
+  # refresh, double click), since the OAuth state was already used up, or when
+  # the provider rejects the code. Show a "try again" page rather than a 500.
+  try:
+    user = system.get_user_info_after_auth(request)
+  except Exception:
+    logger.warning("login callback failed for auth system %s", request.session['auth_system_name'], exc_info=True)
+    response = render_template(request, 'login_failed', {
+      'system_name': request.session['auth_system_name'],
+      'return_url': request.session.get('auth_return_url') or request.session.get('auth_last_return_url', '/'),
+    })
+    response.status_code = 400
+    return response
 
   if user:
     # get the user and store any new data about him
@@ -206,5 +220,7 @@ def after_intervention(request):
   if 'auth_return_url' in request.session:
     return_url = request.session['auth_return_url']
     del request.session['auth_return_url']
+    # kept so a callback replayed after sign-in (back button) can still offer the way back
+    request.session['auth_last_return_url'] = return_url
   return HttpResponseRedirect(settings.URL_HOST + return_url)
 
