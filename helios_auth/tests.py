@@ -225,6 +225,34 @@ class GitHubUserTests(TestCase):
 # FIXME: login CSRF should make these tests more complicated
 # and should be tested for
 
+class AuthCallbackFailureTests(TestCase):
+    """
+    A login callback that can't be completed (replayed with the back button or a
+    refresh, so the OAuth state is gone, or a code the provider rejects) should
+    show a "try again" page, not a 500.
+    """
+
+    def _start_session(self, system_name, return_url):
+        self.client.get("/")
+        session = self.client.session
+        session['auth_system_name'] = system_name
+        session['auth_return_url'] = return_url
+        session.save()
+
+    def test_replayed_callback_shows_try_again_page(self):
+        for system_name in ['google', 'github']:
+            self._start_session(system_name, '/helios/e/test-election')
+
+            # no OAuth state left in the session, as after a first callback already used it
+            response = self.client.get(reverse('auth@after'), {'code': 'used_code', 'state': 'used_state'})
+
+            self.assertEqual(response.status_code, 400)
+            self.assertContains(response, "Try signing in again", status_code=400)
+            self.assertContains(response, reverse('auth@start', kwargs={'system_name': system_name}), status_code=400)
+            self.assertContains(response, "return_url=/helios/e/test-election", status_code=400)
+            self.assertNotIn('user', self.client.session)
+
+
 class UserBlackboxTests(TestCase):
 
     def setUp(self):

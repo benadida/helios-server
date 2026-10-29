@@ -966,6 +966,23 @@ class ElectionBlackboxTests(WebTest):
         else:
             self.assertContains(response, "(of %s)" % self.election.num_voters)
 
+    def test_get_election_voters_bad_paging(self):
+        # malformed paging parameters, as sent by scanners, fall back to defaults
+        response = self.client.get("/helios/elections/%s/voters/list?limit=50%%27&page=2%%27&q=" % self.election.uuid, follow=False)
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_missing_audited_ballot(self):
+        self.election.frozen_at = datetime.datetime.utcnow()
+        self.election.save()
+        response = self.client.get("/helios/elections/%s/audited-ballots/?vote_hash=nonexistent" % self.election.uuid, follow=False)
+        self.assertEqual(response.status_code, 404)
+
+    def test_get_audited_ballots_bad_paging(self):
+        self.election.frozen_at = datetime.datetime.utcnow()
+        self.election.save()
+        response = self.client.get("/helios/elections/%s/audited-ballots/?limit=x&offset=y" % self.election.uuid, follow=False)
+        self.assertEqual(response.status_code, 200)
+
     def test_get_election_voters_raw(self):
         response = self.client.get("/helios/elections/%s/voters/" % self.election.uuid, follow=False)
         self.assertEqual(len(response.json()), self.election.num_voters)
