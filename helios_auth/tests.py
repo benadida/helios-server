@@ -252,6 +252,25 @@ class AuthCallbackFailureTests(TestCase):
             self.assertContains(response, "return_url=/helios/e/test-election", status_code=400)
             self.assertNotIn('user', self.client.session)
 
+    def test_replayed_callback_after_completed_sign_in_keeps_return_url(self):
+        from unittest import mock
+        from .auth_systems import google
+
+        self._start_session('google', '/helios/e/test-election')
+
+        # first callback succeeds and sends the person back to the election
+        user_info = {'type': 'google', 'user_id': 'voter@example.com', 'name': 'Voter',
+                     'info': {'email': 'voter@example.com'}, 'token': {}}
+        with mock.patch.object(google, 'get_user_info_after_auth', return_value=user_info):
+            response = self.client.get(reverse('auth@after'), {'code': 'code', 'state': 'state'}, follow=True)
+        self.assertEqual(self.client.session['user']['user_id'], 'voter@example.com')
+
+        # the back button replays the same callback, whose OAuth state is now used up
+        response = self.client.get(reverse('auth@after'), {'code': 'code', 'state': 'state'})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, "return_url=/helios/e/test-election", status_code=400)
+
 
 class UserBlackboxTests(TestCase):
 

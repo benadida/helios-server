@@ -191,7 +191,7 @@ def after(request):
     logger.warning("login callback failed for auth system %s", request.session['auth_system_name'], exc_info=True)
     response = render_template(request, 'login_failed', {
       'system_name': request.session['auth_system_name'],
-      'return_url': request.session.get('auth_return_url', '/'),
+      'return_url': request.session.get('auth_return_url') or request.session.get('auth_last_return_url', '/'),
     })
     response.status_code = 400
     return response
@@ -220,5 +220,7 @@ def after_intervention(request):
   if 'auth_return_url' in request.session:
     return_url = request.session['auth_return_url']
     del request.session['auth_return_url']
+    # kept so a callback replayed after sign-in (back button) can still offer the way back
+    request.session['auth_last_return_url'] = return_url
   return HttpResponseRedirect(settings.URL_HOST + return_url)
 
