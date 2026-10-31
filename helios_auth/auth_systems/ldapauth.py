@@ -92,7 +92,6 @@ def send_message(user_id, name, user_info, subject, body):
         settings.SERVER_EMAIL,
         [format_recipient(name, user_info['email'])],
         fail_silently=False,
-        html_message=body,
     )
 
 

@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 from . import signals
 from . import utils
 from .models import CastVote, Election, Voter, VoterFile, EmailOptOut
-from .view_utils import render_template_raw
+from .view_utils import render_text_template
 
 
 @shared_task
@@ -90,8 +90,8 @@ def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={
             'unsubscribe_code': unsubscribe_code
         })
 
-    subject = render_template_raw(None, subject_template, the_vars)
-    body = render_template_raw(None, body_template, the_vars)
+    subject = render_text_template(subject_template, the_vars)
+    body = render_text_template(body_template, the_vars)
 
     voter.send_message(subject, body)
 
@@ -103,7 +103,7 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
     the_vars = copy.copy(extra_vars)
     the_vars.update({'voter': voter})
 
-    notification = render_template_raw(None, notification_template, the_vars)
+    notification = render_text_template(notification_template, the_vars)
 
     voter.send_notification(notification)
 

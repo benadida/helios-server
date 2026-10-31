@@ -30,9 +30,9 @@ voter_id = '{{voter.voter_id}}';
 {% endfor %}
 
 <pre style="margin:10px; border: 1px solid #888; padding:20px">
-Subject: {{default_subject}}
+Subject: {{default_subject|force_escape}}
 
-{{default_body|safe}}
+{{default_body|force_escape}}
 </pre>
 
 <p>

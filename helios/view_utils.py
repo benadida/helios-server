@@ -7,7 +7,7 @@ Ben Adida (12-30-2008)
 from django.conf import settings
 from django.http import HttpResponse
 from django.shortcuts import render
-from django.template import loader
+from django.template import Context, loader
 # nicely update the wrapper function
 from functools import update_wrapper
 
@@ -64,6 +64,15 @@ def render_template_raw(request, template_name, values=None):
     full_vars = values or {}
 
   return t.render(context=full_vars, request=request)
+
+
+def render_text_template(template_name, values=None):
+  """
+  Render a plain-text template (email, notification) without HTML autoescaping,
+  so names and URLs with &, ' or < come out as typed rather than as entities.
+  """
+  t = loader.get_template(template_name)
+  return t.template.render(Context(values or {}, autoescape=False))
 
 
 def render_json(json_txt):

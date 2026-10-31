@@ -35,7 +35,7 @@ from .security import (election_view, election_admin,
                        trustee_check, set_logged_in_trustee,
                        can_create_election, user_can_see_election, get_voter,
                        user_can_admin_election, user_can_feature_election)
-from .view_utils import SUCCESS, FAILURE, return_json, render_template, render_template_raw
+from .view_utils import SUCCESS, FAILURE, return_json, render_template, render_text_template
 from .workflows import homomorphic
 
 # Parameters for everything
@@ -1755,15 +1755,15 @@ def voters_email(request, election):
   election_url = get_election_url(election)
   election_vote_url = get_election_govote_url(election)
 
-  default_subject = render_template_raw(None, 'email/%s_subject.txt' % template, {
-      'custom_subject': "&lt;SUBJECT&gt;"
+  default_subject = render_text_template('email/%s_subject.txt' % template, {
+      'custom_subject': "<SUBJECT>"
 })
-  default_body = render_template_raw(None, 'email/%s_body.txt' % template, {
+  default_body = render_text_template('email/%s_body.txt' % template, {
       'election' : election,
       'election_url' : election_url,
       'election_vote_url' : election_vote_url,
       'custom_subject' : default_subject,
-      'custom_message': '&lt;BODY&gt;',
+      'custom_message': '<BODY>',
       'voter': {'vote_hash' : '<SMART_TRACKER>',
                 'name': '<VOTER_NAME>',
                 'voter_login_id': '<VOTER_LOGIN_ID>',

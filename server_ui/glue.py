@@ -4,7 +4,7 @@ Glue some events together
 
 import helios.signals
 import helios.views
-from helios.view_utils import render_template_raw
+from helios.view_utils import render_text_template
 
 
 def vote_cast_send_message(user, voter, election, cast_vote, **kwargs):
@@ -20,8 +20,8 @@ def vote_cast_send_message(user, voter, election, cast_vote, **kwargs):
         'cast_vote_url': helios.views.get_castvote_url(cast_vote),
         'custom_subject': "%s - vote cast" % election.name
     }
-    subject = render_template_raw(None, subject_template, extra_vars)
-    body = render_template_raw(None, body_template, extra_vars)
+    subject = render_text_template(subject_template, extra_vars)
+    body = render_text_template(body_template, extra_vars)
 
     # send it via the notification system associated with the auth system
     user.send_message(subject, body)
