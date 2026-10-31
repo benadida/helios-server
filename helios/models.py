@@ -21,7 +21,7 @@ from helios.datatypes.djangofield import LDObjectField
 # useful stuff in helios_auth
 from helios_auth.jsonfield import JSONField
 from helios_auth.models import User, AUTH_SYSTEMS
-from .crypto import algs
+from .crypto import algs, electionalgs
 from .crypto.elgamal import Cryptosystem
 from .crypto.utils import random, hash_b64
 
@@ -690,26 +690,7 @@ class Election(HeliosModel):
     """
     determining the winner for one question
     """
-    # sort the answers , keep track of the index
-    counts = sorted(enumerate(result), key=lambda x: x[1])
-    counts.reverse()
-
-    the_max = question['max'] or 1
-    the_min = question['min'] or 0
-
-    # if there's a max > 1, we assume that the top MAX win
-    if the_max > 1:
-      return [c[0] for c in counts[:the_max]]
-
-    # if max = 1, then depends on absolute or relative
-    if question['result_type'] == 'absolute':
-      if counts[0][1] >=  (num_cast_votes//2 + 1):
-        return [counts[0][0]]
-      else:
-        return []
-    else:
-      # assumes that anything non-absolute is relative
-      return [counts[0][0]]
+    return electionalgs.one_question_winner(question, result, num_cast_votes)
 
   @property
   def winners(self):
@@ -725,24 +706,27 @@ class Election(HeliosModel):
     if not self.result:
       return None
 
-    # get the winners
-    winners = self.winners
-
     raw_result = self.result
     prettified_result = []
 
     # loop through questions
     for i in range(len(self.questions)):
       q = self.questions[i]
+      winners, tied = electionalgs.one_question_result(q, raw_result[i], self.num_cast_votes)
       pretty_question = []
 
       # go through answers
       for j in range(len(q['answers'])):
         a = q['answers'][j]
         count = raw_result[i][j]
-        pretty_question.append({'answer': a, 'count': count, 'winner': (j in winners[i])})
+        pretty_question.append({'answer': a, 'count': count, 'winner': (j in winners), 'tied': (j in tied)})
 
-      prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
+      prettified_result.append({
+        'question': q['short_name'],
+        'answers': pretty_question,
+        # seats left open because of a tie for the last one(s)
+        'unfilled_seats': (q['max'] or 1) - len(winners) if tied else 0,
+      })
 
     return prettified_result
 
