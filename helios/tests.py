@@ -7,6 +7,7 @@ import logging
 import random as stdlib_random
 import re
 import uuid
+from unittest import mock
 from urllib.parse import urlencode
 
 import django_webtest
@@ -559,6 +560,100 @@ class ElectionAlgsWinnerCalculationTests(TestCase):
         winners = electionalgs.one_question_winner(question, result, num_cast_votes)
 
         self.assertEqual(winners, [])
+
+
+class TieForLastSeatTests(TestCase):
+    """
+    A tie for a question's last seat leaves the tied seats unfilled instead of
+    breaking it by answer order. Regression tests for GitHub issue #491.
+    """
+
+    def make_question(self, the_max, result_type='relative', num_answers=5):
+        return {
+            "answer_urls": [None] * num_answers,
+            "answers": ["A", "B", "C", "D", "E"][:num_answers],
+            "choice_type": "approval",
+            "max": the_max,
+            "min": 0,
+            "question": "Test?",
+            "result_type": result_type,
+            "short_name": "Test?",
+            "tally_type": "homomorphic"
+        }
+
+    def assert_result(self, question, result, num_cast_votes, winners, tied):
+        self.assertEqual(
+            electionalgs.one_question_result(question, result, num_cast_votes),
+            (winners, tied))
+        self.assertEqual(
+            models.Election.one_question_winner(question, result, num_cast_votes),
+            winners)
+        self.assertEqual(
+            electionalgs.one_question_winner(question, result, num_cast_votes),
+            winners)
+
+    def test_tie_for_last_seat_leaves_it_unfilled(self):
+        # C and D tie for the 3rd seat
+        self.assert_result(self.make_question(3), [10, 8, 5, 5, 3], 20, [0, 1], [2, 3])
+
+    def test_tie_does_not_depend_on_answer_order(self):
+        self.assert_result(self.make_question(3), [5, 8, 10, 3, 5], 20, [2, 1], [0, 4])
+
+    def test_tie_spanning_several_seats(self):
+        # B, C and D tie for the last 2 seats
+        self.assert_result(self.make_question(3), [10, 5, 5, 5, 3], 20, [0], [1, 2, 3])
+
+    def test_tie_above_last_seat_is_not_a_tie(self):
+        self.assert_result(self.make_question(3), [10, 8, 8, 5, 3], 20, [0, 1, 2], [])
+
+    def test_all_seats_filled_without_tie(self):
+        self.assert_result(self.make_question(3), [10, 8, 5, 4, 3], 20, [0, 1, 2], [])
+
+    def test_as_many_seats_as_answers(self):
+        self.assert_result(self.make_question(3, num_answers=3), [5, 5, 5], 10, [0, 1, 2], [])
+
+    def test_relative_tie_for_single_seat(self):
+        self.assert_result(self.make_question(1, num_answers=2), [4, 4], 8, [], [0, 1])
+
+    def test_relative_single_seat_without_tie(self):
+        self.assert_result(self.make_question(1, num_answers=3), [4, 2, 4], 10, [], [0, 2])
+        self.assert_result(self.make_question(1, num_answers=3), [4, 2, 5], 11, [2], [])
+
+    def test_no_votes_is_a_tie(self):
+        self.assert_result(self.make_question(1, num_answers=2), [0, 0], 0, [], [0, 1])
+
+    def test_absolute_tie_has_no_majority(self):
+        # no majority, so no winner; that's not reported as a tie
+        self.assert_result(self.make_question(1, 'absolute', 2), [3, 3], 6, [], [])
+
+    def test_absolute_majority_wins(self):
+        self.assert_result(self.make_question(1, 'absolute', 3), [1, 4, 2], 7, [1], [])
+
+    def test_pretty_result_marks_tie(self):
+        election = models.Election(
+            questions=[self.make_question(3)],
+            result=[[10, 8, 5, 5, 3]])
+        with mock.patch.object(models.Election, 'num_cast_votes', 20):
+            question = election.pretty_result[0]
+
+        self.assertEqual(question['unfilled_seats'], 1)
+        self.assertEqual(
+            [(a['answer'], a['winner'], a['tied']) for a in question['answers']],
+            [('A', True, False), ('B', True, False), ('C', False, True),
+             ('D', False, True), ('E', False, False)])
+
+    def test_pretty_result_without_tie(self):
+        election = models.Election(
+            questions=[self.make_question(3)],
+            result=[[10, 8, 5, 4, 3]])
+        with mock.patch.object(models.Election, 'num_cast_votes', 20):
+            question = election.pretty_result[0]
+
+        self.assertEqual(question['unfilled_seats'], 0)
+        self.assertEqual(
+            [a['winner'] for a in question['answers']],
+            [True, True, True, False, False])
+        self.assertFalse(any(a['tied'] for a in question['answers']))
 
 
 class VoterModelTests(TestCase):
@@ -3627,3 +3722,32 @@ class UserCaseInsensitiveConstraintTests(TestCase):
         u = auth_models.User.objects.create(user_type='github', user_id='Alice', info={})
         u.delete()
         self.assertFalse(auth_models.User.objects.filter(user_type='github').exists())
+
+
+class TieResultViewTests(WebTest):
+    fixtures = ['users.json', 'election.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.election = models.Election.objects.get(short_name='test')
+        question = self.election.questions[0]
+        question['max'] = 2
+        question['result_type'] = 'relative'
+        self.election.questions = [question]
+        self.election.result_released_at = datetime.datetime.utcnow()
+
+    def view(self):
+        self.election.save()
+        return self.client.get(f'/helios/elections/{self.election.uuid}/view')
+
+    def test_tie_shown_on_results(self):
+        self.election.result = [[6, 3, 3]]
+        response = self.view()
+        self.assertEqual(response.content.decode().count('<em>(tied)</em>'), 2)
+        self.assertContains(response, 'so 1 seat is left unfilled')
+
+    def test_no_tie_on_results(self):
+        self.election.result = [[6, 4, 3]]
+        response = self.view()
+        self.assertNotContains(response, '(tied)')
+        self.assertNotContains(response, 'left unfilled')
