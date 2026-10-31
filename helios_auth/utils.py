@@ -8,6 +8,17 @@ Some basic utils
 import json
 
 
+class AuthenticationError(Exception):
+  """
+  Raised by an auth system when sign-in fails for a reason the person can fix
+  themselves. The message is shown to them, so it must not contain secrets.
+  """
+  def __init__(self, message, help_url=None):
+    super().__init__(message)
+    self.message = message
+    self.help_url = help_url
+
+
 ## JSON
 def to_json(d):
     return json.dumps(d, sort_keys=True)

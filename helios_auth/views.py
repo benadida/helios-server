@@ -18,6 +18,7 @@ from helios_auth.url_names import AUTH_INDEX, AUTH_START, AUTH_AFTER, AUTH_WHY, 
 from .auth_systems import AUTH_SYSTEMS, password
 from .models import User
 from .security import FIELDS_TO_SAVE
+from .utils import AuthenticationError
 from .view_utils import render_template, render_template_raw
 
 logger = logging.getLogger(__name__)
@@ -174,6 +175,16 @@ def perms_why(request):
 
   return _do_auth(request)
 
+def _login_failed(request, error_message=None, help_url=None):
+  response = render_template(request, 'login_failed', {
+    'system_name': request.session['auth_system_name'],
+    'return_url': request.session.get('auth_return_url') or request.session.get('auth_last_return_url', '/'),
+    'error_message': error_message,
+    'help_url': help_url,
+  })
+  response.status_code = 400
+  return response
+
 def after(request):
   # which auth system were we using?
   if 'auth_system_name' not in request.session:
@@ -187,14 +198,12 @@ def after(request):
   # the provider rejects the code. Show a "try again" page rather than a 500.
   try:
     user = system.get_user_info_after_auth(request)
+  except AuthenticationError as e:
+    logger.warning("login callback rejected for auth system %s: %s", request.session['auth_system_name'], e.message, exc_info=True)
+    return _login_failed(request, error_message=e.message, help_url=e.help_url)
   except Exception:
     logger.warning("login callback failed for auth system %s", request.session['auth_system_name'], exc_info=True)
-    response = render_template(request, 'login_failed', {
-      'system_name': request.session['auth_system_name'],
-      'return_url': request.session.get('auth_return_url') or request.session.get('auth_last_return_url', '/'),
-    })
-    response.status_code = 400
-    return response
+    return _login_failed(request)
 
   if user:
     # get the user and store any new data about him

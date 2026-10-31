@@ -2,6 +2,7 @@
 Unit Tests for Auth Systems
 """
 
+import json
 import unittest
 
 from django.core import mail
@@ -270,6 +271,61 @@ class AuthCallbackFailureTests(TestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertContains(response, "return_url=/helios/e/test-election", status_code=400)
+
+    def _github_callback(self, user_response, emails_response):
+        from unittest import mock
+        from .auth_systems import github
+
+        self._start_session('github', '/helios/e/test-election')
+        session = self.client.session
+        session['gh_oauth_state'] = 'the_state'
+        session['gh_redirect_uri'] = 'http://testserver/auth/after/'
+        session.save()
+
+        oauth = mock.MagicMock()
+        oauth.get.side_effect = lambda url: emails_response if url.endswith('/emails') else user_response
+        with mock.patch.object(github, 'get_oauth_session', return_value=oauth):
+            return self.client.get(reverse('auth@after'), {'code': 'the_code', 'state': 'the_state'})
+
+    def _json_response(self, data, status_code=200):
+        import requests
+        response = requests.Response()
+        response.status_code = status_code
+        response._content = json.dumps(data).encode()
+        return response
+
+    def test_github_unverified_primary_email_explains_how_to_fix(self):
+        response = self._github_callback(
+            self._json_response({'login': 'octocat', 'name': 'Octo Cat'}),
+            self._json_response([
+                {'email': 'octo@example.com', 'primary': True, 'verified': False},
+                {'email': 'other@example.com', 'primary': False, 'verified': True},
+            ]))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, "doesn&#x27;t have a verified primary email address", status_code=400)
+        self.assertContains(response, 'href="https://github.com/settings/emails"', status_code=400)
+        self.assertContains(response, "Try signing in again", status_code=400)
+        self.assertContains(response, "return_url=/helios/e/test-election", status_code=400)
+        self.assertNotIn('user', self.client.session)
+        self.assertFalse(models.User.objects.filter(user_type='github', user_id__iexact='octocat').exists())
+
+    def test_github_api_failure_says_to_retry_later(self):
+        response = self._github_callback(
+            self._json_response({'message': 'Server Error'}, status_code=502),
+            self._json_response([]))
+
+        self.assertEqual(response.status_code, 400)
+        self.assertContains(response, "GitHub didn&#x27;t send back your account details", status_code=400)
+        self.assertNotIn('user', self.client.session)
+
+    def test_github_verified_primary_email_signs_in(self):
+        response = self._github_callback(
+            self._json_response({'login': 'octocat', 'name': 'Octo Cat'}),
+            self._json_response([{'email': 'octo@example.com', 'primary': True, 'verified': True}]))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(self.client.session['user']['user_id'], 'octocat')
 
 
 class UserBlackboxTests(TestCase):
