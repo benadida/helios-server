@@ -1078,6 +1078,40 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.get("/helios/elections/%s/audited-ballots/?limit=x&offset=y" % self.election.uuid, follow=False)
         self.assertEqual(response.status_code, 200)
 
+    def _upload_voters(self, content_bytes):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        f = SimpleUploadedFile("voters.csv", content_bytes, content_type="text/csv")
+        return self.client.post("/helios/elections/%s/voters/upload" % self.election.uuid,
+                                {'voters_file': f, 'csrf_token': self.client.session['csrf_token']})
+
+    def test_upload_utf16_voter_file(self):
+        # Excel's "Unicode Text"/UTF-16 CSV export; decoding it as latin-1 left NUL
+        # characters that Postgres refuses to store, which surfaced as a 500
+        self.setup_login(from_scratch=True)
+        self.client.get("/helios/elections/%s/voters/upload" % self.election.uuid)
+        content = "password,v1,v1@example.com,Voter One\npassword,v2,v2@example.com,Voter Two\n".encode('utf-16')
+        response = self._upload_voters(content)
+        self.assertContains(response, "first few rows of this file")
+        self.assertContains(response, "v1@example.com")
+
+    def test_upload_voter_file_with_nul(self):
+        self.setup_login(from_scratch=True)
+        self.client.get("/helios/elections/%s/voters/upload" % self.election.uuid)
+        response = self._upload_voters(b"password,v1,v1@example.com,Voter\x00 One\n")
+        self.assertContains(response, "first few rows of this file")
+
+    def test_confirm_voter_upload_twice(self):
+        # a double click or a resubmit confirms with no pending file in the session
+        self.setup_login(from_scratch=True)
+        self.client.get("/helios/elections/%s/voters/upload" % self.election.uuid)
+        self._upload_voters(b"password,v1,v1@example.com,Voter One\n")
+        url = "/helios/elections/%s/voters/upload" % self.election.uuid
+        response = self.client.post(url, {'confirm_p': "1", 'csrf_token': self.client.session['csrf_token']})
+        self.assertEqual(response.status_code, 302)
+        response = self.client.post(url, {'confirm_p': "1", 'csrf_token': self.client.session['csrf_token']})
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response['location'].endswith("/helios/elections/%s/voters/list" % self.election.uuid))
+
     def test_get_election_voters_raw(self):
         response = self.client.get("/helios/elections/%s/voters/" % self.election.uuid, follow=False)
         self.assertEqual(len(response.json()), self.election.num_voters)
