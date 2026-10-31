@@ -87,6 +87,9 @@ def return_json(func):
     """
     def convert_to_json(self, *args, **kwargs):
       return_val = func(self, *args, **kwargs)
+      # let a view return an error response (e.g. a 400) as-is
+      if isinstance(return_val, HttpResponse):
+        return return_val
       try:
         return render_json(return_val)
       except Exception as e:
