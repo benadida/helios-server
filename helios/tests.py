@@ -998,6 +998,8 @@ class ElectionBlackboxTests(WebTest):
         self.assertEqual(response.status_code, 400)
         response = self.client.get("/helios/elections/%s/ballots/?limit=x" % self.election.uuid, follow=False)
         self.assertEqual(response.status_code, 400)
+        response = self.client.get("/helios/elections/%s/ballots/?limit=-1" % self.election.uuid, follow=False)
+        self.assertEqual(response.status_code, 400)
 
     def test_get_election_voters_raw(self):
         response = self.client.get("/helios/elections/%s/voters/" % self.election.uuid, follow=False)

@@ -1878,7 +1878,9 @@ def ballot_list(request, election):
     try:
       limit = int(request.GET['limit'])
     except (ValueError, TypeError):
-      return HttpResponseBadRequest("limit must be a number")
+      limit = -1
+    if limit < 0:
+      return HttpResponseBadRequest("limit must be a non-negative number")
   if 'after' in request.GET:
     # cast_at is published with str(datetime), which includes microseconds
     # whenever they're non-zero, so accept both forms as pagination input
@@ -1891,7 +1893,6 @@ def ballot_list(request, election):
         pass
     if after is None:
       return HttpResponseBadRequest("after must be a timestamp like 2017-10-17 05:08:27.938681")
-
 
   voters = Voter.get_by_election(election, cast=True, order_by='cast_at', limit=limit, after=after)
 
