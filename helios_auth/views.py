@@ -49,25 +49,28 @@ def index(request):
                                             'default_auth_system': DEFAULT_AUTH_SYSTEM,
                                             'default_auth_system_obj': default_auth_system_obj})
 
-def login_box_raw(request, return_url='/', auth_systems = None):
+def login_box_raw(request, return_url='/', auth_systems = None, use_default_auth_system=True):
   """
   a chunk of HTML that shows the various login options
+
+  use_default_auth_system=False lists every system in auth_systems even when
+  AUTH_DEFAULT_SYSTEM is set, e.g. for an election whose voters use other systems.
   """
+  default_auth_system = DEFAULT_AUTH_SYSTEM if use_default_auth_system else None
   default_auth_system_obj = None
-  if DEFAULT_AUTH_SYSTEM:
-    default_auth_system_obj = AUTH_SYSTEMS[DEFAULT_AUTH_SYSTEM]
+  if default_auth_system:
+    default_auth_system_obj = AUTH_SYSTEMS[default_auth_system]
 
   # make sure that auth_systems includes only available and enabled auth systems
-  if auth_systems is not None:
-    enabled_auth_systems = set(auth_systems).intersection(set(ENABLED_AUTH_SYSTEMS)).intersection(set(AUTH_SYSTEMS.keys()))
-  else:
-    enabled_auth_systems = set(ENABLED_AUTH_SYSTEMS).intersection(set(AUTH_SYSTEMS.keys()))
+  if auth_systems is None:
+    auth_systems = ENABLED_AUTH_SYSTEMS
+  enabled_auth_systems = [s for s in auth_systems if s in ENABLED_AUTH_SYSTEMS and s in AUTH_SYSTEMS]
 
   form = password.LoginForm()
 
   return render_template_raw(request, 'login_box', {
       'enabled_auth_systems': enabled_auth_systems, 'return_url': return_url,
-      'default_auth_system': DEFAULT_AUTH_SYSTEM, 'default_auth_system_obj': default_auth_system_obj,
+      'default_auth_system': default_auth_system, 'default_auth_system_obj': default_auth_system_obj,
       'form' : form})
   
 def do_local_logout(request):
