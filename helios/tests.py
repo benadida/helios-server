@@ -971,6 +971,13 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.get("/helios/elections/%s/voters/list?limit=50%%27&page=2%%27&q=" % self.election.uuid, follow=False)
         self.assertEqual(response.status_code, 200)
 
+    def test_cast_done_for_voter_without_a_vote(self):
+        # a signed-in voter who hasn't cast (old tab, bookmark) used to get a 500
+        models.Voter.register_user_in_election(self.user, self.election)
+        self.setup_login(from_scratch=True)
+        response = self.client.get("/helios/elections/%s/cast_done" % self.election.uuid, follow=False)
+        self.assertEqual(response.status_code, 200)
+
     def test_get_missing_audited_ballot(self):
         self.election.frozen_at = datetime.datetime.utcnow()
         self.election.save()
@@ -981,13 +988,6 @@ class ElectionBlackboxTests(WebTest):
         self.election.frozen_at = datetime.datetime.utcnow()
         self.election.save()
         response = self.client.get("/helios/elections/%s/audited-ballots/?limit=x&offset=y" % self.election.uuid, follow=False)
-        self.assertEqual(response.status_code, 200)
-
-    def test_cast_done_for_voter_without_a_vote(self):
-        # a signed-in voter who hasn't cast (old tab, bookmark) used to get a 500
-        models.Voter.register_user_in_election(self.user, self.election)
-        self.setup_login(from_scratch=True)
-        response = self.client.get("/helios/elections/%s/cast_done" % self.election.uuid, follow=False)
         self.assertEqual(response.status_code, 200)
 
     def test_get_election_voters_raw(self):
