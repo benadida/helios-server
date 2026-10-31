@@ -949,11 +949,15 @@ def one_election_cast_done(request, election):
   user = get_user(request)
   voter = get_voter(request, user, election)
 
-  # a signed-in voter can land here without a cast vote (an old tab, a bookmark,
-  # the back button); fall through to the session's last vote hash in that case
-  votes = CastVote.get_by_voter(voter) if voter else []
+  if voter:
+    votes = CastVote.get_by_voter(voter)
 
-  if votes:
+    # a voter can land here without a cast vote in this election (an old tab, a
+    # bookmark, the back button); don't show them a confirmation, send them back
+    # to the election
+    if not votes:
+      return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
+
     vote_hash = votes[0].vote_hash
     cv_url = get_castvote_url(votes[0])
 
