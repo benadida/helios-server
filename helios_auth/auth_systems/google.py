@@ -8,7 +8,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from google_auth_oauthlib.flow import Flow
 
-from helios_auth.utils import format_recipient
+from helios_auth.utils import AuthenticationError, format_recipient
 
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False
@@ -86,7 +86,11 @@ def get_user_info_after_auth(request):
   if email_verified is None:
     raise Exception("Google did not provide email verification status")
   if not email_verified:
-    raise Exception("Email verification failed: the email address associated with your Google account is not verified. Please verify your email in your Google account settings and try again.")
+    raise AuthenticationError(
+      "The email address on your Google account isn't verified. "
+      "Verify it in your Google account settings, then try signing in again.",
+      help_url="https://myaccount.google.com/email",
+    )
 
   email = userinfo.get('email')
   if not email:

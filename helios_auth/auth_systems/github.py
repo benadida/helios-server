@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 from requests_oauthlib import OAuth2Session
 
-from helios_auth.utils import format_recipient
+from helios_auth.utils import AuthenticationError, format_recipient
 
 # some parameters to indicate that status updating is not possible
 STATUS_UPDATES = False
@@ -63,7 +63,7 @@ def get_user_info_after_auth(request):
   try:
     response.raise_for_status()
   except Exception as e:
-    raise Exception("GitHub user API request failed") from e
+    raise AuthenticationError("GitHub didn't send back your account details. This is usually temporary, so please try again in a few minutes.") from e
   user_data = response.json()
   user_id = user_data['login']
   user_name = user_data.get('name', user_id)
@@ -73,7 +73,7 @@ def get_user_info_after_auth(request):
   try:
     response.raise_for_status()
   except Exception as e:
-    raise Exception("GitHub user emails API request failed") from e
+    raise AuthenticationError("GitHub didn't send back your email addresses. This is usually temporary, so please try again in a few minutes.") from e
   emails = response.json()
   user_email = None
   for email in emails:
@@ -81,7 +81,11 @@ def get_user_info_after_auth(request):
       user_email = email['email']
       break
   if not user_email:
-    raise Exception("email address with GitHub not verified")
+    raise AuthenticationError(
+      "Your GitHub account doesn't have a verified primary email address. "
+      "Verify your primary email on GitHub, then try signing in again.",
+      help_url="https://github.com/settings/emails",
+    )
 
   return {
     'type': 'github',
