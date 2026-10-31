@@ -391,27 +391,37 @@ class EncryptedVote(HeliosObject):
         return cls(encrypted_answers=encrypted_answers, election_hash=election.hash, election_uuid=election.uuid)
 
 
+def one_question_result(question, result, num_cast_votes):
+    """
+    determining the winners for one question, and the answers tied for its last
+    seat(s). Tied answers don't win: their seats are left unfilled rather than
+    decided by the order the answers are listed in.
+    returns (winners, tied), lists of answer indexes, most votes first.
+    """
+    the_max = question['max'] or 1
+    ranked = sorted(range(len(result)), key=lambda i: result[i], reverse=True)
+
+    # the top MAX win, unless the last seat is tied
+    winners, tied = ranked[:the_max], []
+    if len(ranked) > the_max:
+        cutoff = result[ranked[the_max - 1]]
+        if result[ranked[the_max]] == cutoff:
+            winners = [i for i in ranked if result[i] > cutoff]
+            tied = [i for i in ranked if result[i] == cutoff]
+
+    # if max = 1 and absolute, the winner also needs a majority of ballots cast
+    if the_max == 1 and question['result_type'] == 'absolute':
+        if not winners or result[winners[0]] < (num_cast_votes // 2 + 1):
+            return [], []
+
+    return winners, tied
+
+
 def one_question_winner(question, result, num_cast_votes):
     """
     determining the winner for one question
     """
-    # sort the answers , keep track of the index
-    counts = sorted(enumerate(result), key=lambda x: x[1])
-    counts.reverse()
-
-    # if there's a max > 1, we assume that the top MAX win
-    if question['max'] > 1:
-        return [c[0] for c in counts[:question['max']]]
-
-    # if max = 1, then depends on absolute or relative
-    if question['result_type'] == 'absolute':
-        if counts[0][1] >= (num_cast_votes // 2 + 1):
-            return [counts[0][0]]
-        else:
-            return []
-
-    if question['result_type'] == 'relative':
-        return [counts[0][0]]
+    return one_question_result(question, result, num_cast_votes)[0]
 
     
 class Election(HeliosObject):
@@ -468,24 +478,26 @@ class Election(HeliosObject):
         if not self.result:
             return None
 
-        # get the winners
-        winners = self.winners
-
         raw_result = self.result
         prettified_result = []
 
         # loop through questions
         for i in range(len(self.questions)):
             q = self.questions[i]
+            winners, tied = one_question_result(q, raw_result[i], self.num_cast_votes)
             pretty_question = []
 
             # go through answers
             for j in range(len(q['answers'])):
                 a = q['answers'][j]
                 count = raw_result[i][j]
-                pretty_question.append({'answer': a, 'count': count, 'winner': (j in winners[i])})
+                pretty_question.append({'answer': a, 'count': count, 'winner': (j in winners), 'tied': (j in tied)})
 
-            prettified_result.append({'question': q['short_name'], 'answers': pretty_question})
+            prettified_result.append({
+                'question': q['short_name'],
+                'answers': pretty_question,
+                'unfilled_seats': (q['max'] or 1) - len(winners) if tied else 0,
+            })
 
         return prettified_result
 
