@@ -2627,6 +2627,103 @@ class PrivateElectionLoginTests(WebTest):
         self.assertContains(response, 'which is not a voter in this election')
 
 
+    def _log_in(self, user_type, user_id):
+        self.client.get('/')
+        session = self.client.session
+        session['user'] = {'type': user_type, 'user_id': user_id}
+        session.save()
+
+    def test_password_voter_added_after_freeze_is_offered_password_login(self):
+        self.election.freeze()
+        self._add_password_voter()
+
+        response = self._login_page()
+        self.assertContains(response, 'name="password"')
+        self.assertContains(response, '/auth/start/google?return_url=')
+
+    def test_google_voter_added_after_freeze_is_offered_google_login(self):
+        models.Voter.objects.filter(election=self.election).delete()
+        self._add_password_voter()
+        self.election.freeze()
+        models.Voter.register_user_in_election(self.google_voter_user, self.election)
+
+        response = self._login_page()
+        self.assertContains(response, 'name="password"')
+        self.assertContains(response, '/auth/start/google?return_url=')
+
+    def test_freeze_does_not_store_login_systems(self):
+        self.election.freeze()
+        self.assertIsNone(models.Election.objects.get(uuid=self.election.uuid).eligibility)
+
+    def test_default_auth_system_does_not_hide_election_login(self):
+        from unittest.mock import patch
+        self.election.freeze()
+
+        with patch('helios_auth.views.DEFAULT_AUTH_SYSTEM', 'facebook'):
+            response = self._login_page()
+            self.assertContains(response, '/auth/start/google?return_url=')
+            self.assertNotContains(response, '/auth/start/facebook')
+
+            # the site-wide login box still uses the default
+            home = self.client.get('/')
+            self.assertContains(home, '/auth/start/facebook?return_url=/')
+            self.assertNotContains(home, '/auth/start/google')
+
+    def test_login_link_keeps_return_url_query(self):
+        self.election.freeze()
+
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/view?a=1&b=2')
+        response = self.client.get(response['location'])
+        self.assertContains(
+            response, f'/auth/start/google?return_url=/helios/elections/{self.election.uuid}/view%3Fa%3D1%26b%3D2')
+
+    def test_cast_confirm_offers_login_for_voters_added_after_freeze(self):
+        self.election.private_p = False
+        self.election.save()
+        self.election.freeze()
+        self._add_password_voter()
+
+        session = self.client.session
+        session['encrypted_vote'] = '{}'
+        session.save()
+
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/cast_confirm')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'name="password"')
+        self.assertContains(response, '/auth/start/google?return_url=')
+
+    def test_eligibility_cannot_change_after_freeze(self):
+        self.election.private_p = False
+        self.election.save()
+        self.election.freeze()
+        self._log_in('google', self.admin.user_id)
+
+        response = self.client.post(f'/helios/elections/{self.election.uuid}/voters/eligibility',
+                                    {'csrf_token': self.client.session.get('csrf_token', ''), 'eligibility': 'openreg'})
+        self.assertStatusCode(response, 403)
+        self.assertFalse(models.Election.objects.get(uuid=self.election.uuid).openreg)
+
+    def test_voter_auth_systems(self):
+        # closed registration: the current voters' systems only
+        self.assertEqual(self.election.voter_auth_systems(), ['google'])
+        self._add_password_voter()
+        self.assertEqual(self.election.voter_auth_systems(), ['password', 'google'])
+
+        models.Voter.objects.filter(election=self.election).delete()
+        self.assertEqual(self.election.voter_auth_systems(), [])
+
+        # open registration: every enabled system but password, plus the voters' systems
+        self.election.openreg = True
+        expected = [s for s in settings.AUTH_ENABLED_SYSTEMS if s != 'password']
+        self.assertEqual(self.election.voter_auth_systems(), expected)
+        self._add_password_voter()
+        self.assertEqual(self.election.voter_auth_systems(), settings.AUTH_ENABLED_SYSTEMS)
+
+        # open registration limited to a group: that group's system, plus the voters' systems
+        self.election.eligibility = [{'auth_system': 'facebook', 'constraint': [{'group': {'id': '1', 'name': 'G'}}]}]
+        models.Voter.register_user_in_election(self.google_voter_user, self.election)
+        self.assertEqual(self.election.voter_auth_systems(), ['password', 'google', 'facebook'])
+
 class VoterEmailCutoffViewTests(WebTest):
     """Test voter email cutoff in views"""
     fixtures = ['users.json']

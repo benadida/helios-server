@@ -677,11 +677,8 @@ def _voter_login_options(request, election, return_url):
   The ways a voter can log in to this election: the password form, the login
   box for the election's other auth systems, or both.
   """
-  # do we need to constrain the auth_systems?
-  if election.eligibility:
-    auth_systems = [e['auth_system'] for e in election.eligibility]
-  else:
-    auth_systems = None
+  # no voters yet: offer every enabled auth system
+  auth_systems = election.voter_auth_systems() or None
 
   show_password = auth_systems is None or 'password' in auth_systems
 
@@ -689,7 +686,8 @@ def _voter_login_options(request, election, return_url):
     'show_password': show_password,
     'password_only': auth_systems == ['password'],
     'password_login_form': forms.VoterPasswordForm() if show_password else None,
-    'login_box': auth_views.login_box_raw(request, return_url=return_url, auth_systems=auth_systems),
+    'login_box': auth_views.login_box_raw(request, return_url=return_url, auth_systems=auth_systems,
+                                          use_default_auth_system=False),
   }
 
 @election_view(allow_logins=True)
@@ -1622,7 +1620,7 @@ def election_log_download_csv(request, election):
 
   return response
 
-@election_admin()
+@election_admin(frozen=False)
 def voters_eligibility(request, election):
   """
   set eligibility for voters
