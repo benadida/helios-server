@@ -798,10 +798,16 @@ class VoterFile(models.Model):
       # this should leave us with only \n
       # We then split the contents by line
       content = content.replace('\r', '\n').replace('\n\n', '\n').split('\n')
+
+      # Excel's "Unicode Text" export is tab-separated: use tabs if the first
+      # line starts with a voter type followed by a tab
+      first_line = next((line for line in content if line.strip()), '')
+      delimiter = '\t' if first_line.split('\t')[0].strip() in AUTH_SYSTEMS else ','
     else:
       content = open(self.voter_file.path, encoding='utf-8', newline='')
+      delimiter = ','
 
-    reader = csv.reader(content, delimiter=',')
+    reader = csv.reader(content, delimiter=delimiter)
 
     for voter_fields in reader:
       # bad line

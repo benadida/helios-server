@@ -1026,14 +1026,24 @@ class ElectionBlackboxTests(WebTest):
                                 {'voters_file': f, 'csrf_token': self.client.session['csrf_token']})
 
     def test_upload_utf16_voter_file(self):
-        # Excel's "Unicode Text"/UTF-16 CSV export; decoding it as latin-1 left NUL
-        # characters that Postgres refuses to store, which surfaced as a 500
+        # a UTF-16 CSV; decoding it as latin-1 left NUL characters that Postgres
+        # refuses to store, which surfaced as a 500
         self.setup_login(from_scratch=True)
         self.client.get("/helios/elections/%s/voters/upload" % self.election.uuid)
         content = "password,v1,v1@example.com,Voter One\npassword,v2,v2@example.com,Voter Two\n".encode('utf-16')
         response = self._upload_voters(content)
         self.assertContains(response, "first few rows of this file")
         self.assertContains(response, "v1@example.com")
+
+    def test_upload_excel_unicode_text_voter_file(self):
+        # Excel's "Unicode Text" export: UTF-16 with a BOM, tab-separated, CRLF
+        self.setup_login(from_scratch=True)
+        self.client.get("/helios/elections/%s/voters/upload" % self.election.uuid)
+        content = "password\tv1\tv1@example.com\tOne, Voter\r\npassword\tv2\tv2@example.com\tVoter Two\r\n".encode('utf-16')
+        response = self._upload_voters(content)
+        self.assertContains(response, "first few rows of this file")
+        self.assertContains(response, "One, Voter")
+        self.assertContains(response, "v2@example.com")
 
     def test_upload_voter_file_with_nul(self):
         self.setup_login(from_scratch=True)
