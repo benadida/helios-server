@@ -1679,9 +1679,12 @@ def voters_upload(request, election):
     check_csrf(request)
 
     if bool(request.POST.get('confirm_p', 0)):
-      # launch the background task to parse that file
-      tasks.voter_file_process.delay(voter_file_id = request.session['voter_file_id'])
-      del request.session['voter_file_id']
+      # a double click or a resubmitted confirmation finds no pending file;
+      # the first one already queued it, so just show the voter list
+      voter_file_id = request.session.pop('voter_file_id', None)
+      if voter_file_id:
+        # launch the background task to parse that file
+        tasks.voter_file_process.delay(voter_file_id = voter_file_id)
 
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
     else:
