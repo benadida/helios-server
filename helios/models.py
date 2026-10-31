@@ -6,7 +6,6 @@ Ben Adida
 (ben@adida.net)
 """
 
-import copy
 import csv
 import datetime
 import uuid
@@ -554,46 +553,25 @@ class Election(HeliosModel):
     ## FIXME
     return 0
 
-  def set_eligibility(self):
+  def voter_auth_systems(self):
     """
-    if registration is closed and eligibility has not been
-    already set, then this call sets the eligibility criteria
-    based on the actual list of voters who are already there.
-
-    This helps ensure that the login box shows the proper options.
-
-    If registration is open but no voters have been added with password,
-    then that option is also canceled out to prevent confusion, since
-    those elections usually just use the existing login systems.
+    The auth systems this election's voters can log in with, in AUTH_ENABLED_SYSTEMS
+    order. Computed from the current voter list rather than stored at freeze time,
+    since voters can still be added after the election is frozen.
     """
+    systems = set(self.voter_set.exclude(user=None).values_list('user__user_type', flat=True))
+    if self.voter_set.filter(user=None).exists():
+      systems.add('password')
 
-    # don't override existing eligibility
-    if self.eligibility is not None:
-      return
+    # open registration: whoever the eligibility rules admit can also log in and
+    # register, except with password, which can't self-register
+    if self.openreg:
+      if self.eligibility:
+        systems.update(e['auth_system'] for e in self.eligibility if e['auth_system'] != 'password')
+      else:
+        systems.update(s for s in settings.AUTH_ENABLED_SYSTEMS if s != 'password')
 
-    # enable this ONLY once the cast_confirm screen makes sense
-    #if self.voter_set.count() == 0:
-    #  return
-
-    auth_systems = copy.copy(settings.AUTH_ENABLED_SYSTEMS)
-    voter_types = [r['user__user_type'] for r in self.voter_set.values('user__user_type').distinct() if
-                   r['user__user_type'] is not None]
-
-    # password is now separate, not an explicit voter type
-    if self.voter_set.filter(user=None).count() > 0:
-      voter_types.append('password')
-    else:
-      # no password users, remove password from the possible auth systems
-      if 'password' in auth_systems:
-        auth_systems.remove('password')
-
-    # closed registration: limit the auth_systems to just the ones
-    # that have registered voters
-    if not self.openreg:
-      auth_systems = [vt for vt in voter_types if vt in auth_systems]
-
-    self.eligibility = [{'auth_system': auth_system} for auth_system in auth_systems]
-    self.save()
+    return [s for s in settings.AUTH_ENABLED_SYSTEMS if s in systems]
 
   def freeze(self):
     """
@@ -606,8 +584,6 @@ class Election(HeliosModel):
 
     # voters hash
     self.generate_voters_hash()
-
-    self.set_eligibility()
 
     # public key for trustees
     trustees = list(Trustee.get_by_election(self))

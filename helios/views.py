@@ -672,6 +672,24 @@ def one_election_cast(request, election):
 
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_confirm, args=[election.uuid]))
 
+def _voter_login_options(request, election, return_url):
+  """
+  The ways a voter can log in to this election: the password form, the login
+  box for the election's other auth systems, or both.
+  """
+  # no voters yet: offer every enabled auth system
+  auth_systems = election.voter_auth_systems() or None
+
+  show_password = auth_systems is None or 'password' in auth_systems
+
+  return {
+    'show_password': show_password,
+    'password_only': auth_systems == ['password'],
+    'password_login_form': forms.VoterPasswordForm() if show_password else None,
+    'login_box': auth_views.login_box_raw(request, return_url=return_url, auth_systems=auth_systems,
+                                          use_default_auth_system=False),
+  }
+
 @election_view(allow_logins=True)
 def password_voter_login(request, election):
   """
@@ -694,12 +712,11 @@ def password_voter_login(request, election):
     if user_can_see_election(request, election):
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args = [election.uuid]))
 
-    password_login_form = forms.VoterPasswordForm()
     return render_template(request, 'password_voter_login',
-                           {'election': election, 
+                           {'election': election,
                             'return_url' : return_url,
-                            'password_login_form': password_login_form,
-                            'bad_voter_login' : bad_voter_login})
+                            'bad_voter_login' : bad_voter_login,
+                            **_voter_login_options(request, election, return_url)})
   
   check_csrf(request)
 
@@ -879,34 +896,15 @@ def one_election_cast_confirm(request, election):
       status_update_label = None
       status_update_message = None
 
-    # do we need to constrain the auth_systems?
-    if election.eligibility:
-      auth_systems = [e['auth_system'] for e in election.eligibility]
-    else:
-      auth_systems = None
-
-    password_only = False
-
-    if auth_systems is None or 'password' in auth_systems:
-      show_password = True
-      password_login_form = forms.VoterPasswordForm()
-
-      if auth_systems == ['password']:
-        password_only = True
-    else:
-      show_password = False
-      password_login_form = None
-
     return_url = reverse(one_election_cast_confirm, args=[election.uuid])
-    login_box = auth_views.login_box_raw(request, return_url=return_url, auth_systems = auth_systems)
 
     return render_template(request, 'election_cast_confirm', {
-        'login_box': login_box, 'election' : election, 'vote_fingerprint': vote_fingerprint,
+        'election' : election, 'vote_fingerprint': vote_fingerprint,
         'past_votes': past_votes, 'issues': issues, 'voter' : voter,
         'return_url': return_url,
         'status_update_label': status_update_label, 'status_update_message': status_update_message,
-        'show_password': show_password, 'password_only': password_only, 'password_login_form': password_login_form,
-        'bad_voter_login': bad_voter_login})
+        'bad_voter_login': bad_voter_login,
+        **_voter_login_options(request, election, return_url)})
       
   if request.method == "POST":
     check_csrf(request)
@@ -1622,7 +1620,7 @@ def election_log_download_csv(request, election):
 
   return response
 
-@election_admin()
+@election_admin(frozen=False)
 def voters_eligibility(request, election):
   """
   set eligibility for voters
