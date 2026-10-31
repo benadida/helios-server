@@ -928,6 +928,10 @@ class VoterFile(models.Model):
         from . import tasks
         tasks.notify_admin_opted_out_voters.delay(self.election.id, opted_out_voters)
 
+    # report the voters actually added: rows for voters already on the list, or
+    # who opted out of Helios emails, are skipped and shouldn't be counted as loaded
+    self.num_voters = successful_voters
+    self.num_skipped = len(voters) - successful_voters
     self.processing_finished_at = datetime.datetime.utcnow()
     self.save()
 
