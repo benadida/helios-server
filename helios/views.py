@@ -949,8 +949,11 @@ def one_election_cast_done(request, election):
   user = get_user(request)
   voter = get_voter(request, user, election)
 
-  if voter:
-    votes = CastVote.get_by_voter(voter)
+  # a signed-in voter can land here without a cast vote (an old tab, a bookmark,
+  # the back button); fall through to the session's last vote hash in that case
+  votes = CastVote.get_by_voter(voter) if voter else []
+
+  if votes:
     vote_hash = votes[0].vote_hash
     cv_url = get_castvote_url(votes[0])
 
@@ -961,7 +964,7 @@ def one_election_cast_done(request, election):
       logout = settings.LOGOUT_ON_CONFIRMATION
     else:
       logout = False
-      del request.session['CURRENT_VOTER_ID']
+      request.session.pop('CURRENT_VOTER_ID', None)
 
     save_in_session_across_logouts(request, 'last_vote_hash', vote_hash)
     save_in_session_across_logouts(request, 'last_vote_cv_url', cv_url)
