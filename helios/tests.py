@@ -1805,6 +1805,42 @@ class EmailOptOutTests(TestCase):
         self.assertIn(email, body)
         self.assertIn(unsubscribe_code, body)
 
+    def test_plaintext_email_is_not_html_escaped(self):
+        """Names, voter IDs and subjects with &, ' or < must reach voters as typed."""
+        election, _ = models.Election.get_or_create(
+            short_name='test-plaintext-email',
+            name='Board & "Council" <2026>',
+            description='Test Election',
+            admin=self.user
+        )
+        voter = models.Voter(
+            uuid=str(uuid.uuid4()),
+            election=election,
+            voter_login_id="o'brien&co@example.com",
+            voter_email="o'brien&co@example.com",
+            voter_name="O'Brien & <Co>"
+        )
+        voter.generate_password()
+        voter.save()
+
+        num_messages_before = len(mail.outbox)
+        tasks.single_voter_email.apply(args=[voter.uuid, 'email/vote_subject.txt', 'email/vote_body.txt', {
+            'custom_subject': 'Vote now: A & B',
+            'custom_message': 'Questions? Ask Q&A',
+            'election_vote_url': 'http://example.com/vote?a=1&b=2',
+            'election_url': 'http://example.com/election',
+        }])
+
+        self.assertEqual(len(mail.outbox), num_messages_before + 1)
+        message = mail.outbox[-1]
+        self.assertEqual(message.subject, 'Vote now: A & B')
+        self.assertEqual(message.alternatives, [])
+        self.assertIn("Dear O'Brien & <Co>,", message.body)
+        self.assertIn("Your voter ID: o'brien&co@example.com", message.body)
+        self.assertIn('http://example.com/vote?a=1&b=2', message.body)
+        for entity in ['&amp;', '&#x27;', '&lt;', '&quot;']:
+            self.assertNotIn(entity, message.body)
+
 
 class EmailOptOutViewTests(WebTest):
     """Test the opt-out/opt-in web views and templates"""
@@ -2587,6 +2623,19 @@ class VoterEmailCutoffViewTests(WebTest):
         response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/email')
         self.assertStatusCode(response, 200)
         self.assertContains(response, 'Email')
+
+    def test_voters_email_preview_is_escaped(self):
+        """The plain-text preview is shown escaped, placeholders and all"""
+        self.election.name = 'Board <b>election</b>'
+        self.election.save()
+
+        self.setup_login()
+        response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/email')
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Subject: &lt;SUBJECT&gt;')
+        self.assertContains(response, '&lt;BODY&gt;')
+        self.assertContains(response, 'Board &lt;b&gt;election&lt;/b&gt;')
+        self.assertNotContains(response, '<b>election</b>')
 
     def test_voters_email_accessible_when_recent_tally(self):
         """Test that voters email page is accessible when tally is recent"""

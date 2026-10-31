@@ -361,6 +361,13 @@ class UserBlackboxTests(TestCase):
         self.assertEqual(mail.outbox[0].subject, "testing subject")
         self.assertEqual(mail.outbox[0].to[0], "\"Foobar User\" <foobar-test@adida.net>")
 
+    def test_ldap_email_is_plain_text_only(self):
+        ldap_views.send_message('jdoe', 'J Doe', {'email': 'jdoe@example.com'}, "subject", "Use <VOTER_ID>\nthen vote")
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].alternatives, [])
+        self.assertEqual(mail.outbox[0].body, "Use <VOTER_ID>\nthen vote")
+
 # LDAP auth tests
 from .auth_systems import ldapauth as ldap_views
 class LDAPAuthTests(TestCase):
