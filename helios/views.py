@@ -1461,6 +1461,9 @@ def voters_list_pretty(request, election):
     limit = int(request.GET.get('limit', 50))
   except (ValueError, TypeError):
     limit = 50
+  # a zero or negative limit would crash the paginator
+  if limit < 1:
+    limit = 50
   q = request.GET.get('q','')
   
   order_by = 'user__user_id'
@@ -1504,7 +1507,9 @@ def voters_list_pretty(request, election):
       voters = voters.filter(voter_name__icontains = q)
 
   voter_paginator = Paginator(voters, limit)
-  voters_page = voter_paginator.page(page)
+  # get_page falls back to the last page for a page past the end (old links,
+  # or a search that narrows the list), and to page 1 for an invalid one
+  voters_page = voter_paginator.get_page(page)
 
   total_voters = voter_paginator.count
 

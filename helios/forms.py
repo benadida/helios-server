@@ -38,6 +38,17 @@ class EmailVotersForm(forms.Form):
   body = forms.CharField(max_length=4000, widget=forms.Textarea)
   send_to = forms.ChoiceField(label="Send To", initial="all", choices= [('all', 'all voters'), ('voted', 'voters who have cast a ballot'), ('not-voted', 'voters who have not yet cast a ballot')])
 
+  # placeholders shown in the email preview, which voters would receive literally
+  PREVIEW_PLACEHOLDERS = ['<SUBJECT>', '<BODY>', '<VOTER_NAME>', '<VOTER_LOGIN_ID>', '<VOTER_PASSWORD>', '<SMART_TRACKER>']
+
+  def clean(self):
+    cleaned_data = super().clean()
+    for field in ['subject', 'body']:
+      placeholders = [p for p in self.PREVIEW_PLACEHOLDERS if p in cleaned_data.get(field, '')]
+      if placeholders:
+        self.add_error(field, "Remove %s: it is only shown in the preview, and voters would receive it as is. Helios fills in each voter's details itself, so this box is only for your own message." % ", ".join(placeholders))
+    return cleaned_data
+
 class TallyNotificationEmailForm(forms.Form):
   subject = forms.CharField(max_length=80)
   body = forms.CharField(max_length=2000, widget=forms.Textarea, required=False)

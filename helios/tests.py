@@ -1125,6 +1125,20 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.get("/helios/elections/%s/voters/list?limit=50%%27&page=2%%27&q=" % self.election.uuid, follow=False)
         self.assertEqual(response.status_code, 200)
 
+    def test_get_election_voters_page_past_end(self):
+        # a page number past the end (old link, or a search that narrows the list)
+        # falls back to the last page instead of a 500
+        response = self.client.get("/helios/elections/%s/voters/list?page=999" % self.election.uuid, follow=False)
+        self.assertEqual(response.status_code, 200)
+        response = self.client.get("/helios/elections/%s/voters/list?page=2&q=nobody-matches-this" % self.election.uuid, follow=False)
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_election_voters_bad_limit(self):
+        # a zero or negative limit falls back to the default instead of a 500
+        for limit in ["0", "-5"]:
+            response = self.client.get("/helios/elections/%s/voters/list?limit=%s" % (self.election.uuid, limit), follow=False)
+            self.assertEqual(response.status_code, 200)
+
     def test_cast_done_for_voter_without_a_vote(self):
         # a signed-in voter who hasn't cast (old tab, bookmark) used to get a 500;
         # they go back to the election instead of seeing a "vote cast" confirmation
@@ -2998,6 +3012,31 @@ class VoterEmailCutoffViewTests(WebTest):
         self.assertContains(response, '&lt;BODY&gt;')
         self.assertContains(response, 'Board &lt;b&gt;election&lt;/b&gt;')
         self.assertNotContains(response, '<b>election</b>')
+
+    def test_voters_email_rejects_pasted_preview(self):
+        """Pasting the preview into the form would send its placeholders to voters (#500)"""
+        self.setup_login()
+        response = self.client.post(f'/helios/elections/{self.election.uuid}/voters/email', {
+            'csrf_token': self.client.session['csrf_token'],
+            'subject': 'Vote now <SUBJECT>',
+            'body': 'Dear <VOTER_NAME>,\n\nYour tracker: <SMART_TRACKER>',
+            'send_to': 'all'
+        })
+        self.assertStatusCode(response, 200)
+        self.assertContains(response, 'Remove &lt;SUBJECT&gt;')
+        self.assertContains(response, 'Remove &lt;VOTER_NAME&gt;, &lt;SMART_TRACKER&gt;')
+
+    def test_voters_email_accepts_custom_message(self):
+        self.setup_login()
+        with mock.patch('helios.views.tasks.voters_email.delay') as voters_email:
+            response = self.client.post(f'/helios/elections/{self.election.uuid}/voters/email', {
+                'csrf_token': self.client.session['csrf_token'],
+                'subject': 'Vote now',
+                'body': 'Polls close <b>Friday</b>.',
+                'send_to': 'all'
+            })
+        self.assertRedirects(response, f'/helios/elections/{self.election.uuid}/view')
+        self.assertEqual(voters_email.call_args.kwargs['extra_vars']['custom_message'], 'Polls close <b>Friday</b>.')
 
     def test_voters_email_accessible_when_recent_tally(self):
         """Test that voters email page is accessible when tally is recent"""
