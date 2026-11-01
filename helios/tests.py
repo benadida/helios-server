@@ -3019,12 +3019,12 @@ class VoterEmailCutoffViewTests(WebTest):
         response = self.client.post(f'/helios/elections/{self.election.uuid}/voters/email', {
             'csrf_token': self.client.session['csrf_token'],
             'subject': 'Vote now <SUBJECT>',
-            'body': 'Dear <VOTER_NAME>,\n\nYour tracker: <SMART_TRACKER>',
+            'body': 'Dear <VOTER_NAME>,\n\nYour token: <VOTING_TOKEN>\nYour tracker: <SMART_TRACKER>',
             'send_to': 'all'
         })
         self.assertStatusCode(response, 200)
         self.assertContains(response, 'Remove &lt;SUBJECT&gt;')
-        self.assertContains(response, 'Remove &lt;VOTER_NAME&gt;, &lt;SMART_TRACKER&gt;')
+        self.assertContains(response, 'Remove &lt;VOTER_NAME&gt;, &lt;VOTING_TOKEN&gt;, &lt;SMART_TRACKER&gt;')
 
     def test_voters_email_accepts_custom_message(self):
         self.setup_login()
