@@ -29,6 +29,10 @@ voter_id = '{{voter.voter_id}}';
 &nbsp;&nbsp;&nbsp;
 {% endfor %}
 
+<p>
+<b>Preview</b>: each voter receives this email, with the fields in angle brackets filled in for them.
+</p>
+
 <pre style="margin:10px; border: 1px solid #888; padding:20px">
 Subject: {{default_subject|force_escape}}
 
@@ -36,7 +40,7 @@ Subject: {{default_subject|force_escape}}
 </pre>
 
 <p>
-You may tweak the subject and add a custom message using the form below.
+You may tweak the subject and add a custom message using the form below. Your message appears where <tt>&lt;BODY&gt;</tt> is shown above. Don't paste the preview into it.
 </p>
 
   <form class="prettyform" action="" method="POST" id="email_form">
