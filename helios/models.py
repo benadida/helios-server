@@ -11,7 +11,7 @@ import csv
 import datetime
 import uuid
 
-import bleach
+import nh3
 from django.conf import settings
 from django.db import models, transaction
 from validate_email import validate_email
@@ -232,11 +232,13 @@ class Election(HeliosModel):
 
   @property
   def description_bleached(self):
-    return bleach.clean(self.description,
-                        tags=list(bleach.ALLOWED_TAGS) + ['p', 'h4', 'h5', 'h3', 'h2', 'br', 'u'],
-                        strip=True,
-                        strip_comments=True,
-                        )
+    return nh3.clean(self.description,
+                     tags={'a', 'abbr', 'acronym', 'b', 'blockquote', 'code', 'em', 'i', 'li', 'ol', 'strong', 'ul',
+                           'p', 'h2', 'h3', 'h4', 'h5', 'br', 'u'},
+                     attributes={'a': {'href', 'title'}, 'abbr': {'title'}, 'acronym': {'title'}},
+                     url_schemes={'http', 'https', 'mailto'},
+                     link_rel=None,
+                     )
 
   @classmethod
   def get_featured(cls):

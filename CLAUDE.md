@@ -78,7 +78,7 @@ import copy, csv, datetime, uuid
 
 # Third-party
 from django.db import models, transaction
-import bleach
+import nh3
 
 # Local
 from helios import datatypes, utils
@@ -136,7 +136,7 @@ return render_template(request, 'template_name', {'context': 'vars'})
 ## Security Considerations
 
 - Always use `check_csrf(request)` for POST handlers
-- Use `bleach.clean()` for user-provided HTML (see `description_bleached` pattern)
+- Use `nh3.clean()` for user-provided HTML (see `description_bleached` pattern)
 - Never store plaintext passwords; use the auth system's hashing
 - Check permissions with `user_can_admin_election()` and similar helpers
 
