@@ -3019,12 +3019,12 @@ class VoterEmailCutoffViewTests(WebTest):
         response = self.client.post(f'/helios/elections/{self.election.uuid}/voters/email', {
             'csrf_token': self.client.session['csrf_token'],
             'subject': 'Vote now <SUBJECT>',
-            'body': 'Dear <VOTER_NAME>,\n\nYour tracker: <SMART_TRACKER>',
+            'body': 'Dear <VOTER_NAME>,\n\nYour token: <VOTING_TOKEN>\nYour tracker: <SMART_TRACKER>',
             'send_to': 'all'
         })
         self.assertStatusCode(response, 200)
         self.assertContains(response, 'Remove &lt;SUBJECT&gt;')
-        self.assertContains(response, 'Remove &lt;VOTER_NAME&gt;, &lt;SMART_TRACKER&gt;')
+        self.assertContains(response, 'Remove &lt;VOTER_NAME&gt;, &lt;VOTING_TOKEN&gt;, &lt;SMART_TRACKER&gt;')
 
     def test_voters_email_accepts_custom_message(self):
         self.setup_login()
@@ -4057,3 +4057,191 @@ class TieResultViewTests(WebTest):
         response = self.view()
         self.assertNotContains(response, '(tied)')
         self.assertNotContains(response, 'left unfilled')
+
+
+class VoterTokenTests(WebTest):
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    TOKEN_VOTERS = b"token,alice@example.com,Alice Jones\ntoken,bob@example.com,Bob Smith\n"
+
+    def setUp(self):
+        self.client.get("/")
+        session = self.client.session
+        session['user'] = {'type': 'google', 'user_id': 'ben@adida.net'}
+        session.save()
+
+    def csrf(self):
+        return self.client.session['csrf_token']
+
+    def create_election(self, private=False):
+        params = {"short_name": "tokens", "name": "Tokens", "description": "token voters",
+                  "election_type": "referendum", 'csrf_token': self.csrf()}
+        if private:
+            params['private_p'] = "True"
+        response = self.client.post("/helios/elections/new", params)
+        election_id = re.search('/elections/([^/]+)/', str(response['location'])).group(1)
+        return models.Election.objects.get(uuid=election_id)
+
+    def upload(self, election, content):
+        from django.core.files.uploadedfile import SimpleUploadedFile
+        voters_file = SimpleUploadedFile("voters.csv", content, content_type="text/csv")
+        return self.client.post("/helios/elections/%s/voters/upload" % election.uuid,
+                                {'voters_file': voters_file, 'csrf_token': self.csrf()})
+
+    def upload_and_confirm(self, election, content):
+        self.assertContains(self.upload(election, content), "first few rows of this file")
+        self.client.post("/helios/elections/%s/voters/upload" % election.uuid,
+                         {'confirm_p': "1", 'csrf_token': self.csrf()})
+
+    def setup_frozen_election(self, private=False):
+        election = self.create_election(private)
+        self.upload_and_confirm(election, self.TOKEN_VOTERS)
+        self.client.post("/helios/elections/%s/save_questions" % election.uuid, {
+            'questions_json': utils.to_json([{"answer_urls": [None, None], "answers": ["Yes", "No"], "choice_type": "approval", "max": 1, "min": 0, "question": "Q?", "result_type": "absolute", "short_name": "Q", "tally_type": "homomorphic"}]),
+            'csrf_token': self.csrf()})
+        response = self.client.post("/helios/elections/%s/freeze" % election.uuid, {'csrf_token': self.csrf()})
+        self.assertRedirects(response, "/helios/elections/%s/view" % election.uuid)
+        return models.Election.objects.get(uuid=election.uuid)
+
+    def email_voters(self, election, template):
+        num_messages_before = len(mail.outbox)
+        self.client.post("/helios/elections/%s/voters/email?template=%s" % (election.uuid, template), {
+            'csrf_token': self.csrf(), 'subject': 'vote', 'body': 'please vote',
+            'suppress_election_links': '0', 'send_to': 'all'})
+        return mail.outbox[num_messages_before:]
+
+    def cast_confirm_page(self, election):
+        encrypted_vote = homomorphic.EncryptedVote.fromElectionAndAnswers(election, [[1]])
+        ballot = datatypes.LDObject.fromDict(encrypted_vote.ld_object.includeRandomness().toJSONDict(),
+                                             type_hint='legacy/EncryptedVote')
+        response = self.app.post("/helios/elections/%s/cast" % election.uuid,
+                                 params={'encrypted_vote': ballot.serialize()})
+        return response.follow()
+
+    def test_upload_creates_token_voters(self):
+        election = self.create_election()
+        self.upload_and_confirm(election, self.TOKEN_VOTERS)
+
+        voters = models.Voter.objects.filter(election=election).order_by('voter_login_id')
+        self.assertEqual([(v.voter_login_id, v.voter_email, v.voter_name) for v in voters],
+                         [('alice@example.com', 'alice@example.com', 'Alice Jones'),
+                          ('bob@example.com', 'bob@example.com', 'Bob Smith')])
+        for voter in voters:
+            self.assertEqual(len(voter.voting_token), 20)
+            self.assertIsNone(voter.voter_password)
+        self.assertNotEqual(voters[0].voting_token, voters[1].voting_token)
+        self.assertTrue(election.voting_tokens_p)
+
+        # tokens are never published
+        response = self.client.get("/helios/elections/%s/voters/" % election.uuid)
+        for voter in voters:
+            self.assertNotContains(response, voter.voting_token)
+
+    def test_tab_separated_token_file(self):
+        election = self.create_election()
+        voter_file = models.VoterFile(election=election, voter_file_content="token\talice@example.com\tAlice, Jones\n")
+        self.assertEqual(list(voter_file.itervoters()), [
+            {'voter_type': 'token', 'voter_id': 'alice@example.com', 'email': 'alice@example.com', 'name': 'Alice, Jones'}])
+
+    def test_token_voter_needs_valid_email(self):
+        election = self.create_election()
+        response = self.upload(election, b"token,not-an-email,Alice Jones\n")
+        self.assertContains(response, "HOLD ON")
+        self.assertContains(response, "invalid voter email")
+
+    def test_upload_rejects_mixed_file(self):
+        election = self.create_election()
+        response = self.upload(election, self.TOKEN_VOTERS + b"password,carol,carol@example.com,Carol\n")
+        self.assertContains(response, "HOLD ON")
+        self.assertContains(response, "mixes token and password voters")
+
+    def test_upload_rejects_password_voters_in_token_election(self):
+        election = self.create_election()
+        self.upload_and_confirm(election, self.TOKEN_VOTERS)
+        response = self.upload(election, b"password,carol,carol@example.com,Carol\n")
+        self.assertContains(response, "HOLD ON")
+        self.assertContains(response, "already has token voters")
+
+    def test_upload_rejects_token_voters_in_password_election(self):
+        election = self.create_election()
+        self.upload_and_confirm(election, b"password,carol,carol@example.com,Carol\n")
+        response = self.upload(election, self.TOKEN_VOTERS)
+        self.assertContains(response, "HOLD ON")
+        self.assertContains(response, "already has password voters")
+
+    def test_processing_rejects_mixing(self):
+        # the preview catches this, but a file processed regardless must not mix either
+        election = self.create_election()
+        self.upload_and_confirm(election, self.TOKEN_VOTERS)
+        voter_file = models.VoterFile.objects.create(election=election, voter_file_content="password,carol,carol@example.com,Carol\n")
+        with self.assertRaises(Exception):
+            voter_file.process()
+        self.assertFalse(election.voter_set.filter(voter_login_id='carol').exists())
+
+    def test_account_voters_alongside_token_voters(self):
+        election = self.create_election()
+        self.upload_and_confirm(election, self.TOKEN_VOTERS + b"github,someuser\n")
+        self.assertEqual(election.voter_set.count(), 3)
+
+    def test_emails_show_token(self):
+        election = self.setup_frozen_election()
+        alice = election.voter_set.get(voter_login_id='alice@example.com')
+        for template in ['vote', 'simple']:
+            message = [m for m in self.email_voters(election, template) if 'alice@example.com' in m.to[0]][0]
+            self.assertIn("Your voting token: %s" % alice.voting_token, message.body)
+            self.assertNotIn("password", message.body.lower())
+            self.assertNotIn("voter ID", message.body)
+
+        response = self.client.get("/helios/elections/%s/voters/email" % election.uuid)
+        self.assertContains(response, "VOTING_TOKEN")
+        self.assertNotContains(response, "VOTER_PASSWORD")
+
+    def test_vote_with_token(self):
+        election = self.setup_frozen_election()
+        alice = election.voter_set.get(voter_login_id='alice@example.com')
+
+        page = self.cast_confirm_page(election)
+        self.assertIn('voting_token', page.form.fields)
+        self.assertNotIn('voter_id', page.form.fields)
+        self.assertNotIn('password', page.form.fields)
+        self.assertContains(page, "Your voting token can be found in the email you received")
+
+        page.form['voting_token'] = '  %s ' % alice.voting_token
+        response = page.form.submit()
+        self.assertRedirects(response, "%s/helios/elections/%s/cast_done" % (settings.URL_HOST, election.uuid))
+
+        alice.refresh_from_db()
+        self.assertIsNotNone(alice.vote_hash)
+        self.assertIn(alice.vote_hash, mail.outbox[-1].body)
+
+    def test_wrong_token_rejected(self):
+        election = self.setup_frozen_election()
+        page = self.cast_confirm_page(election)
+        page.form['voting_token'] = 'notavalidtoken'
+        response = page.form.submit()
+        self.assertIn('bad_voter_login=1', response['Location'])
+        self.assertContains(response.follow(), "bad voting token")
+        self.assertFalse(models.CastVote.objects.filter(voter__election=election).exists())
+
+    def test_private_election_login_with_token(self):
+        election = self.setup_frozen_election(private=True)
+        response = self.app.get("/helios/elections/%s/view" % election.uuid)
+        login_page = response.follow()
+        login_page.form['voting_token'] = election.voter_set.get(voter_login_id='bob@example.com').voting_token
+        login_page.form.submit()
+        self.assertEqual(self.app.get("/helios/elections/%s/view" % election.uuid).status_int, 200)
+
+    def test_resend_token(self):
+        election = self.setup_frozen_election()
+        alice = election.voter_set.get(voter_login_id='alice@example.com')
+        page = self.app.get("/helios/elections/%s/password_voter_resend" % election.uuid)
+        self.assertContains(page, "Email address")
+        self.assertNotContains(page, "Voter ID")
+
+        num_messages_before = len(mail.outbox)
+        page.form['voter_id'] = 'alice@example.com'
+        response = page.form.submit()
+        self.assertContains(response, "check your email inbox (and spam folder) for your voting token")
+        self.assertEqual(len(mail.outbox), num_messages_before + 1)
+        self.assertIn("Your voting token: %s" % alice.voting_token, mail.outbox[-1].body)

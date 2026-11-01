@@ -39,7 +39,7 @@ class EmailVotersForm(forms.Form):
   send_to = forms.ChoiceField(label="Send To", initial="all", choices= [('all', 'all voters'), ('voted', 'voters who have cast a ballot'), ('not-voted', 'voters who have not yet cast a ballot')])
 
   # placeholders shown in the email preview, which voters would receive literally
-  PREVIEW_PLACEHOLDERS = ['<SUBJECT>', '<BODY>', '<VOTER_NAME>', '<VOTER_LOGIN_ID>', '<VOTER_PASSWORD>', '<SMART_TRACKER>']
+  PREVIEW_PLACEHOLDERS = ['<SUBJECT>', '<BODY>', '<VOTER_NAME>', '<VOTER_LOGIN_ID>', '<VOTER_PASSWORD>', '<VOTING_TOKEN>', '<SMART_TRACKER>']
 
   def clean(self):
     cleaned_data = super().clean()
@@ -58,6 +58,13 @@ class VoterPasswordForm(forms.Form):
   voter_id = forms.CharField(max_length=50, label="Voter ID")
   password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
 
+class VoterTokenForm(forms.Form):
+  voting_token = forms.CharField(max_length=100, label="Voting token")
+
 class VoterPasswordResendForm(forms.Form):
   voter_id = forms.CharField(max_length=50, label="Voter ID", help_text="Enter the voter ID you were assigned for this election")
+
+# token voters are identified by their email address
+class VoterTokenResendForm(forms.Form):
+  voter_id = forms.CharField(max_length=100, label="Email address", help_text="Enter the email address your voting token was sent to")
 
