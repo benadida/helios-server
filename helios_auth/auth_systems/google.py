@@ -70,7 +70,8 @@ def get_user_info_after_auth(request):
   try:
     userinfo_response = requests.get(
       'https://www.googleapis.com/oauth2/v3/userinfo',
-      headers=headers
+      headers=headers,
+      timeout=15
     )
     userinfo_response.raise_for_status()
   except requests.RequestException as e:
