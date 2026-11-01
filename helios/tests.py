@@ -143,6 +143,15 @@ class ElectionModelTests(TestCase):
         self.assertNotEqual(self.election.created_at, None)
         self.assertTrue(self.election.created_at < datetime.datetime.utcnow())
 
+    def test_description_bleached(self):
+        self.election.description = (
+            '<h2>Board</h2><p onclick="x()">Read <a href="https://example.org" title="t" target="_blank">this</a>'
+            ' <a href="javascript:alert(1)">bad</a></p><!-- note --><script>alert(1)</script><img src=x onerror=y>'
+            '<table><tr><td>cell</td></tr></table>')
+        self.assertEqual(
+            self.election.description_bleached,
+            '<h2>Board</h2><p>Read <a href="https://example.org" title="t">this</a> <a>bad</a></p>cell')
+
     def test_find_election(self):
         election = models.Election.get_by_user_as_admin(self.user)[0]
         self.assertEqual(self.election, election)
