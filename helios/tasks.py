@@ -145,17 +145,29 @@ Helios
 def voter_file_process(voter_file_id):
     voter_file = VoterFile.objects.get(id=voter_file_id)
     voter_file.process()
+
+    skipped = ""
+    if voter_file.num_skipped:
+        skipped = """
+%s in the file %s not added, because those voters were already
+on the voter list (or listed twice in the file), or have opted out of
+Helios emails. Opted-out voters are listed in a separate email.
+""" % ("1 row" if voter_file.num_skipped == 1 else "%d rows" % voter_file.num_skipped,
+       "was" if voter_file.num_skipped == 1 else "were")
+
     election_notify_admin.delay(election_id=voter_file.election.id,
                                 subject='voter file processed',
                                 body="""
 Your voter file upload for election %s
 has been processed.
 
-%s voters have been created.
-
+%s been created.
+%s
 --
 Helios
-""" % (voter_file.election.name, voter_file.num_voters))
+""" % (voter_file.election.name,
+       "1 voter has" if voter_file.num_voters == 1 else "%d voters have" % voter_file.num_voters,
+       skipped))
 
 
 @shared_task

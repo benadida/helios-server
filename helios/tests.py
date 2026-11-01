@@ -181,6 +181,21 @@ class ElectionModelTests(TestCase):
         self.assertEqual(auth_models.User.get_by_type_and_id('github', 'Alice').id, existing.id)
         self.assertEqual(self.election.voter_set.get(user=existing).voter_login_id, 'Alice')
 
+    def test_add_voters_file_counts_only_added_voters(self):
+        # a duplicate row and an opted-out voter are skipped, so they must not be
+        # reported as loaded
+        models.EmailOptOut.add_opt_out('optedout@example.com')
+        content = ("password,v1,v1@example.com,Voter One\n"
+                   "password,v1,v1@example.com,Voter One\n"
+                   "password,v2,optedout@example.com,Voter Two\n"
+                   "password,v3,v3@example.com,Voter Three\n")
+        vf = models.VoterFile.objects.create(election=self.election, voter_file_content=content)
+        added = vf.process()
+
+        self.assertEqual(added, 2)
+        self.assertEqual(models.VoterFile.objects.get(id=vf.id).num_voters, 2)
+        self.assertEqual(vf.num_skipped, 2)
+
     def test_check_issues_before_freeze(self):
         # should be three issues: no trustees, and no questions, and no voters
         issues = self.election.issues_before_freeze
