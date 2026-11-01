@@ -11,6 +11,12 @@
     Please prepare a text file of comma-separated values with the fields:
 </p>
 <pre>
+   token,&lt;email&gt;,&lt;full name&gt;
+</pre>
+<p>
+or
+</p>
+<pre>
    password,&lt;unique_id&gt;,&lt;email&gt,&lt;full name&gt;
 </pre>
 <p>
@@ -19,12 +25,18 @@ or
 <pre>
    github,&lt;username&gt;
 </pre>
+<p>
+Token voters are emailed a single voting token to log in with; password voters are
+emailed a voter ID and a password. An election can have token voters or password
+voters, but not both.
+</p>
 
 <p>
 For example:
   </p>
   <pre>
-      password,bobsmith,bob@acme.org,Bob Smith
+      token,alice@acme.org,Alice Jones
+      token,bob@acme.org,Bob Smith
       github,benadida
       ...
   </pre> 

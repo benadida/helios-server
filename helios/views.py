@@ -672,6 +672,9 @@ def one_election_cast(request, election):
 
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_confirm, args=[election.uuid]))
 
+def _voter_login_form(election):
+  return forms.VoterTokenForm if election.voting_tokens_p else forms.VoterPasswordForm
+
 def _voter_login_options(request, election, return_url):
   """
   The ways a voter can log in to this election: the password form, the login
@@ -685,7 +688,7 @@ def _voter_login_options(request, election, return_url):
   return {
     'show_password': show_password,
     'password_only': auth_systems == ['password'],
-    'password_login_form': forms.VoterPasswordForm() if show_password else None,
+    'password_login_form': _voter_login_form(election)() if show_password else None,
     'login_box': auth_views.login_box_raw(request, return_url=return_url, auth_systems=auth_systems,
                                           use_default_auth_system=False),
   }
@@ -730,12 +733,15 @@ def password_voter_login(request, election):
     else:
       login_url = reverse(one_election_cast_confirm, args=[election.uuid])
 
-  password_login_form = forms.VoterPasswordForm(request.POST)
+  password_login_form = _voter_login_form(election)(request.POST)
 
   if password_login_form.is_valid():
     try:
-      voter = election.voter_set.get(voter_login_id = password_login_form.cleaned_data['voter_id'].strip(),
-                                     voter_password = password_login_form.cleaned_data['password'].strip())
+      if 'voting_token' in password_login_form.cleaned_data:
+        voter = election.voter_set.get(voting_token = password_login_form.cleaned_data['voting_token'].strip())
+      else:
+        voter = election.voter_set.get(voter_login_id = password_login_form.cleaned_data['voter_id'].strip(),
+                                       voter_password = password_login_form.cleaned_data['password'].strip())
 
       request.session['CURRENT_VOTER_ID'] = voter.id
 
@@ -781,8 +787,10 @@ def password_voter_resend(request, election):
       'error': reason
     })
 
+  resend_form_class = forms.VoterTokenResendForm if election.voting_tokens_p else forms.VoterPasswordResendForm
+
   if request.method == "GET":
-    resend_form = forms.VoterPasswordResendForm()
+    resend_form = resend_form_class()
     return render_template(request, 'password_voter_resend', {
       'election': election,
       'resend_form': resend_form
@@ -790,13 +798,13 @@ def password_voter_resend(request, election):
 
   # POST - process the form
   check_csrf(request)
-  resend_form = forms.VoterPasswordResendForm(request.POST)
+  resend_form = resend_form_class(request.POST)
 
   if not resend_form.is_valid():
     return render_template(request, 'password_voter_resend', {
       'election': election,
       'resend_form': resend_form,
-      'error': 'Please enter a valid voter ID.'
+      'error': 'Please enter a valid email address.' if election.voting_tokens_p else 'Please enter a valid voter ID.'
     })
 
   voter_id = resend_form.cleaned_data['voter_id'].strip()
@@ -1704,9 +1712,13 @@ def voters_upload(request, election):
 
         # import the first few lines to check
         try:
-          voters = [v for v in voter_file_obj.itervoters()][:5]
+          voters = list(voter_file_obj.itervoters())
           if len(voters) == 0:
             raise Exception("no valid lines found in voter file")
+          problem = voter_file_obj.credentials_problem(voters)
+          if problem:
+            raise Exception(problem)
+          voters = voters[:5]
         except Exception as e:
           voters = []
           problems.append("your CSV file could not be processed because %s" % str(e))
@@ -1776,6 +1788,7 @@ def voters_email(request, election):
                 'name': '<VOTER_NAME>',
                 'voter_login_id': '<VOTER_LOGIN_ID>',
                 'voter_password': '<VOTER_PASSWORD>',
+                'voting_token': '<VOTING_TOKEN>' if election.voting_tokens_p else None,
                 'voter_type' : election.voter_set.all()[0].voter_type,
                 'election' : election}
       })
