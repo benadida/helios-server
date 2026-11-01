@@ -39,7 +39,7 @@ class EmailVotersForm(forms.Form):
   send_to = forms.ChoiceField(label="Send To", initial="all", choices= [('all', 'all voters'), ('voted', 'voters who have cast a ballot'), ('not-voted', 'voters who have not yet cast a ballot')])
 
   # placeholders shown in the email preview, which voters would receive literally
-  PREVIEW_PLACEHOLDERS = ['<SUBJECT>', '<BODY>', '<VOTER_NAME>', '<VOTER_LOGIN_ID>', '<VOTER_PASSWORD>', '<SMART_TRACKER>']
+  PREVIEW_PLACEHOLDERS = ['<SUBJECT>', '<BODY>', '<VOTER_NAME>', '<VOTER_LOGIN_ID>', '<VOTER_PASSWORD>', '<VOTING_TOKEN>', '<SMART_TRACKER>']
 
   def clean(self):
     cleaned_data = super().clean()
