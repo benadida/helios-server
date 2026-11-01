@@ -44,3 +44,54 @@ button.link-button:hover {
   display: inline;
   margin: 0;
 }
+
+/*
+  On phones and tablets, wide content (ballot trackers, key fingerprints, the
+  voter table) used to make the page wider than the screen: the browser zoomed
+  out to fit it, and the header and footer only covered part of the page. Keep
+  everything within the screen: long unbroken strings wrap, and tables that
+  still don't fit scroll sideways on their own.
+*/
+@media only screen and (max-width: 64em) {
+  #contentbody tt,
+  #contentbody pre {
+    overflow-wrap: anywhere;
+  }
+
+  #contentbody pre {
+    white-space: pre-wrap;
+  }
+
+  #contentbody textarea,
+  #contentbody img {
+    max-width: 100%;
+  }
+
+  table.pretty {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    overflow-x: auto;
+  }
+
+  #contentbody table.pretty tt {
+    overflow-wrap: normal;
+  }
+}
+
+@media only screen and (max-width: 40em) {
+  #contentbody {
+    padding: 15px;
+  }
+
+  #contentbody pre {
+    margin: 10px 0 !important;
+    padding: 10px !important;
+  }
+
+  .highlight-box-margin {
+    margin-right: 0;
+  }
+}
