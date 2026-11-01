@@ -1078,6 +1078,24 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.get("/helios/elections/%s/audited-ballots/?limit=x&offset=y" % self.election.uuid, follow=False)
         self.assertEqual(response.status_code, 200)
 
+    def test_get_ballots_after_with_microseconds(self):
+        # cast_at is published as str(datetime), with microseconds, and clients page with it
+        response = self.client.get("/helios/elections/%s/ballots/?limit=200&after=2017-10-17%%2005%%3A08%%3A27.938681" % self.election.uuid, follow=False)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), [])
+
+    def test_get_ballots_after_without_microseconds(self):
+        response = self.client.get("/helios/elections/%s/ballots/?after=2017-10-17%%2005%%3A08%%3A27" % self.election.uuid, follow=False)
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_ballots_bad_params(self):
+        response = self.client.get("/helios/elections/%s/ballots/?after=yesterday" % self.election.uuid, follow=False)
+        self.assertEqual(response.status_code, 400)
+        response = self.client.get("/helios/elections/%s/ballots/?limit=x" % self.election.uuid, follow=False)
+        self.assertEqual(response.status_code, 400)
+        response = self.client.get("/helios/elections/%s/ballots/?limit=-1" % self.election.uuid, follow=False)
+        self.assertEqual(response.status_code, 400)
+
     def test_get_election_voters_raw(self):
         response = self.client.get("/helios/elections/%s/voters/" % self.election.uuid, follow=False)
         self.assertEqual(len(response.json()), self.election.num_voters)
