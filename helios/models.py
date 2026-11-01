@@ -6,6 +6,7 @@ Ben Adida
 (ben@adida.net)
 """
 
+import codecs
 import csv
 import datetime
 import uuid
@@ -312,11 +313,18 @@ class Election(HeliosModel):
     """
     voter_file_content_bytes = uploaded_file.read()
 
-    # usually it's utf-8 encoded, but occasionally it's latin-1
-    try:
-      voter_file_content = voter_file_content_bytes.decode('utf-8')
-    except:
-      voter_file_content = voter_file_content_bytes.decode('latin-1')
+    # usually it's utf-8 encoded (maybe with a BOM), sometimes UTF-16 (Excel's
+    # "Unicode" export), and occasionally latin-1
+    if voter_file_content_bytes.startswith((codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)):
+      voter_file_content = voter_file_content_bytes.decode('utf-16')
+    else:
+      try:
+        voter_file_content = voter_file_content_bytes.decode('utf-8-sig')
+      except UnicodeDecodeError:
+        voter_file_content = voter_file_content_bytes.decode('latin-1')
+
+    # Postgres can't store NUL characters in a text field, and they never belong in a CSV
+    voter_file_content = voter_file_content.replace('\x00', '')
 
     new_voter_file = VoterFile(election = self, voter_file_content = voter_file_content)
     new_voter_file.save()
@@ -790,10 +798,16 @@ class VoterFile(models.Model):
       # this should leave us with only \n
       # We then split the contents by line
       content = content.replace('\r', '\n').replace('\n\n', '\n').split('\n')
+
+      # Excel's "Unicode Text" export is tab-separated: use tabs if the first
+      # line starts with a voter type followed by a tab
+      first_line = next((line for line in content if line.strip()), '')
+      delimiter = '\t' if first_line.split('\t')[0].strip() in AUTH_SYSTEMS else ','
     else:
       content = open(self.voter_file.path, encoding='utf-8', newline='')
+      delimiter = ','
 
-    reader = csv.reader(content, delimiter=',')
+    reader = csv.reader(content, delimiter=delimiter)
 
     for voter_fields in reader:
       # bad line
