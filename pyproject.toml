@@ -15,7 +15,7 @@ dependencies = [
     "django-picklefield==3.2",
     "django-anymail==11.0.1",
     "python-dateutil==2.9.0",
-    "bleach==6.1.0",
+    "bleach==6.4.0",
     "django-csp==3.8",
     "validate-email==1.3",
     "pycryptodome==3.23.0",
