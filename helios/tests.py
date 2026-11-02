@@ -1117,11 +1117,11 @@ class ElectionBlackboxTests(WebTest):
         self.assertContains(response, self.election.description_bleached)
 
     def test_get_election_escapes_admin_name(self):
-        self.election.admin.name = '<img src=x onerror=alert(1)>'
+        self.election.admin.name = 'Ann <b>Lee</b> & Co'
         self.election.admin.save()
         response = self.client.get("/helios/elections/%s/view" % self.election.uuid, follow=False)
-        self.assertContains(response, '&lt;img src=x onerror=alert(1)&gt;')
-        self.assertNotIn('<img src=x onerror=alert(1)>', response.content.decode())
+        self.assertContains(response, 'Ann &lt;b&gt;Lee&lt;/b&gt; &amp; Co')
+        self.assertNotIn('<b>Lee</b>', response.content.decode())
 
     def test_get_election_questions(self):
         response = self.client.get("/helios/elections/%s/questions" % self.election.uuid, follow=False)
