@@ -152,6 +152,11 @@ class ElectionModelTests(TestCase):
             self.election.description_bleached,
             '<h2>Board</h2><p>Read <a href="https://example.org" title="t">this</a> <a>bad</a></p>cell')
 
+    def test_pretty_eligibility_escapes_group_name(self):
+        self.election.eligibility = [{'auth_system': 'facebook', 'constraint': [{'group': {'id': '1', 'name': '<b>Group</b>'}}]}]
+        self.assertIn('&lt;b&gt;Group&lt;/b&gt;', self.election.pretty_eligibility)
+        self.assertNotIn('<b>', self.election.pretty_eligibility)
+
     def test_find_election(self):
         election = models.Election.get_by_user_as_admin(self.user)[0]
         self.assertEqual(self.election, election)
@@ -1110,6 +1115,13 @@ class ElectionBlackboxTests(WebTest):
     def test_get_election(self):
         response = self.client.get("/helios/elections/%s/view" % self.election.uuid, follow=False)
         self.assertContains(response, self.election.description_bleached)
+
+    def test_get_election_escapes_admin_name(self):
+        self.election.admin.name = '<img src=x onerror=alert(1)>'
+        self.election.admin.save()
+        response = self.client.get("/helios/elections/%s/view" % self.election.uuid, follow=False)
+        self.assertContains(response, '&lt;img src=x onerror=alert(1)&gt;')
+        self.assertNotIn('<img src=x onerror=alert(1)>', response.content.decode())
 
     def test_get_election_questions(self):
         response = self.client.get("/helios/elections/%s/questions" % self.election.uuid, follow=False)

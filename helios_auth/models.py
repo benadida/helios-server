@@ -9,6 +9,7 @@ Ben Adida
 from django.db import models
 from django.db.models import Q, UniqueConstraint
 from django.db.models.functions import Lower
+from django.utils.html import format_html
 
 from .auth_systems import can_check_constraint, uses_case_insensitive_user_id, AUTH_SYSTEMS
 from .jsonfield import JSONField
@@ -184,11 +185,11 @@ class User(models.Model):
     public_url = self.public_url
     
     if public_url:
-      name_display = '<a href="%s">%s</a>' % (public_url, self.pretty_name)
+      name_display = format_html('<a href="{}">{}</a>', public_url, self.pretty_name)
     else:
       name_display = self.pretty_name
 
-    return """<img class="%s-logo" src="/static/auth/login-icons/%s.png" alt="%s" /> %s""" % (
+    return format_html('<img class="{}-logo" src="/static/auth/login-icons/{}.png" alt="{}" /> {}',
       size, self.user_type, self.user_type, name_display)
 
   @property
