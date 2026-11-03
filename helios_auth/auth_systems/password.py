@@ -10,7 +10,7 @@ from django.http import HttpResponseRedirect
 from django.urls import re_path
 
 from helios_auth import url_names
-from helios_auth.utils import format_recipient
+from helios_auth.utils import format_recipient, same_site_path
 
 import logging
 
@@ -60,7 +60,7 @@ def password_login_view(request):
     # and thus did not have a chance to hit the "start/password" URL
     request.session['auth_system_name'] = 'password'
     if 'return_url' in request.POST:
-      request.session['auth_return_url'] = request.POST.get('return_url')
+      request.session['auth_return_url'] = same_site_path(request.POST.get('return_url'))
 
     if form.is_valid():
       username = form.cleaned_data['username'].strip()
@@ -91,7 +91,7 @@ def password_forgotten_view(request):
     check_csrf(request)
 
     username = request.POST['username']
-    return_url = request.POST['return_url']
+    return_url = same_site_path(request.POST.get('return_url'))
     
     try:
       user = User.get_by_type_and_id('password', username)

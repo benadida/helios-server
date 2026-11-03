@@ -4162,3 +4162,51 @@ class TrusteeUploadDecryptionTests(WebTest):
         response = self.client.post(self.url, {'factors_and_proofs': self.payload(factors, proofs), 'csrf_token': csrf_token})
         self.assertEqual(response.content, b"FAILURE")
         self.assertIsNone(self.stored_factors())
+
+
+class VoterPasswordLoginReturnUrlTests(WebTest):
+    """After a voter logs in with a password, they stay on this site."""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        admin = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-voter-login-return', name='Test Voter Login Return',
+            description='Test Election', admin=admin)
+        if not self.election.uuid:
+            self.election.uuid = str(uuid.uuid4())
+            self.election.save()
+        self.election.questions = [{"answer_urls": [None, None], "answers": ["Yes", "No"], "choice_type": "approval", "max": 1, "min": 0, "question": "Test?", "result_type": "absolute", "short_name": "Test?", "tally_type": "homomorphic"}]
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
+
+        self.voter = models.Voter.objects.create(
+            uuid=str(uuid.uuid4()), election=self.election, voter_email='voter@example.com',
+            voter_name='Test Voter', voter_login_id='testvoter')
+        self.voter.generate_password()
+        self.voter.save()
+        self.election.freeze()
+
+        self.login_url = f'/helios/elections/{self.election.uuid}/password_voter_login'
+        self.cast_confirm_url = f'/helios/elections/{self.election.uuid}/cast_confirm'
+
+    def _login(self, password, return_url, query=''):
+        self.client.get("/")
+        return self.client.post(self.login_url + query, {
+            'csrf_token': self.client.session['csrf_token'], 'voter_id': 'testvoter',
+            'password': password, 'return_url': return_url})
+
+    def test_login_keeps_return_url_on_site(self):
+        for return_url in ['@example.com/elsewhere', '.example.com/elsewhere', 'https://example.com/elsewhere']:
+            response = self._login(self.voter.voter_password, return_url)
+            self.assertEqual(response['Location'], settings.SECURE_URL_HOST + self.cast_confirm_url)
+
+    def test_login_follows_return_url_on_site(self):
+        return_url = f'/helios/elections/{self.election.uuid}/view'
+        response = self._login(self.voter.voter_password, return_url)
+        self.assertEqual(response['Location'], settings.SECURE_URL_HOST + return_url)
+
+    def test_bad_login_keeps_login_url_on_site(self):
+        response = self._login('wrong', '/', '?' + urlencode({'login_url': '@example.com/elsewhere'}))
+        self.assertTrue(response['Location'].startswith(settings.SECURE_URL_HOST + self.cast_confirm_url + '?'),
+                        response['Location'])
