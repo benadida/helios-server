@@ -55,7 +55,14 @@ class EncryptedAnswer(WorkflowObject):
     
     return False
     
-  def verify(self, pk, min=0, max=1):
+  def verify(self, pk, num_answers, min=0, max=1):
+    # one choice and one proof per answer to the question
+    if not (len(self.choices) == len(self.individual_proofs) == num_answers):
+      return False
+
+    if max is not None and self.overall_proof is None:
+      return False
+
     possible_plaintexts = self.generate_plaintexts(pk)
     homomorphic_sum = 0
       
@@ -214,7 +221,7 @@ class EncryptedVote(WorkflowObject):
       if 'min' in question:
         min_answers = question['min']
         
-      if not ea.verify(election.public_key, min=min_answers, max=question['max']):
+      if not ea.verify(election.public_key, len(question['answers']), min=min_answers, max=question['max']):
         return False
         
     return True
