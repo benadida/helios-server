@@ -14,6 +14,7 @@ import uuid
 import nh3
 from django.conf import settings
 from django.db import models, transaction
+from django.utils.html import format_html, format_html_join
 from validate_email import validate_email
 
 from helios import datatypes
@@ -380,18 +381,16 @@ class Election(HeliosModel):
     if not self.eligibility:
       return "Anyone can vote."
     else:
-      return_val = "<ul>"
+      items = []
 
       for constraint in self.eligibility:
         if 'constraint' in constraint:
           for one_constraint in constraint['constraint']:
-            return_val += "<li>%s</li>" % AUTH_SYSTEMS[constraint['auth_system']].pretty_eligibility(one_constraint)
+            items.append((AUTH_SYSTEMS[constraint['auth_system']].pretty_eligibility(one_constraint),))
         else:
-          return_val += "<li> any %s user</li>" % constraint['auth_system']
+          items.append((" any %s user" % constraint['auth_system'],))
 
-      return_val += "</ul>"
-
-      return return_val
+      return format_html("<ul>{}</ul>", format_html_join("", "<li>{}</li>", items))
 
   @property
   def voting_start_at(self):
