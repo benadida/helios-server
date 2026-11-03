@@ -7,6 +7,7 @@ import logging
 import random as stdlib_random
 import re
 import uuid
+from types import SimpleNamespace
 from unittest import mock
 from urllib.parse import urlencode
 
@@ -841,7 +842,7 @@ class BallotGroupMembershipTests(TestCase):
         return answer
 
     def test_well_formed_answer_verifies(self):
-        self.assertTrue(self.build_answer(forged=False).verify(self.pk, min=0, max=1))
+        self.assertTrue(self.build_answer(forged=False).verify(self.pk, 2, min=0, max=1))
 
     def test_answer_outside_subgroup_is_rejected(self):
         answer = self.build_answer(forged=True)
@@ -854,7 +855,7 @@ class BallotGroupMembershipTests(TestCase):
                 self.plaintexts, answer.individual_proofs[choice_num],
                 algs.EG_disjunctive_challenge_generator))
 
-        self.assertFalse(answer.verify(self.pk, min=0, max=1))
+        self.assertFalse(answer.verify(self.pk, 2, min=0, max=1))
 
     def test_cast_ballots_deserialize_into_this_implementation(self):
         self.assertIs(datatypes.legacy.EGCiphertext.WRAPPED_OBJ_CLASS, crypto_elgamal.Ciphertext)
@@ -885,6 +886,57 @@ class BallotGroupMembershipTests(TestCase):
             self.assertTrue(proof.verify(
                 self.g, self.pk.y, pow(self.g, secret, self.p), pow(self.pk.y, secret, self.p),
                 self.p, self.q, algs.EG_fiatshamir_challenge_generator))
+
+
+class BallotAnswerCountTests(TestCase):
+    """
+    each encrypted answer must carry exactly one choice per answer to its question
+    """
+    allow_database_queries = False
+
+    def setUp(self):
+        params = views.ELGAMAL_PARAMS
+        keypair = algs.EGKeyPair()
+        keypair.generate(params.p, params.q, params.g)
+        self.pk = keypair.pk
+
+    def make_election(self, num_answers):
+        question = {'answers': ['answer %d' % i for i in range(num_answers)], 'min': 0, 'max': 1}
+        return SimpleNamespace(questions=[question], public_key=self.pk, hash='election-hash', uuid='election-uuid')
+
+    def make_vote(self, implementation, num_answers):
+        return implementation.EncryptedVote.fromElectionAndAnswers(self.make_election(num_answers), [[0]])
+
+    def test_matching_answer_count_verifies(self):
+        for implementation in (homomorphic, electionalgs):
+            self.assertTrue(self.make_vote(implementation, 3).verify(self.make_election(3)))
+
+    def test_one_fewer_choice_is_rejected(self):
+        for implementation in (homomorphic, electionalgs):
+            self.assertFalse(self.make_vote(implementation, 2).verify(self.make_election(3)))
+
+    def test_one_more_choice_is_rejected(self):
+        for implementation in (homomorphic, electionalgs):
+            self.assertFalse(self.make_vote(implementation, 4).verify(self.make_election(3)))
+
+    def test_missing_proof_is_rejected(self):
+        for implementation in (homomorphic, electionalgs):
+            vote = self.make_vote(implementation, 3)
+            vote.encrypted_answers[0].individual_proofs.pop()
+            self.assertFalse(vote.verify(self.make_election(3)))
+
+            vote = self.make_vote(implementation, 3)
+            vote.encrypted_answers[0].overall_proof = None
+            self.assertFalse(vote.verify(self.make_election(3)))
+
+    def test_tally_rejects_short_ballot_and_counts_the_rest(self):
+        election = self.make_election(3)
+        tally = homomorphic.Tally(election=election)
+        tally.add_vote(self.make_vote(homomorphic, 3))
+        with self.assertRaises(Exception):
+            tally.add_vote(self.make_vote(homomorphic, 2))
+        tally.add_vote(self.make_vote(homomorphic, 3))
+        self.assertEqual(tally.num_tallied, 2)
 
 
 class DatatypeTests(TestCase):
