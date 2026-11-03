@@ -7,6 +7,8 @@ Some basic utils
 
 import json
 
+from django.utils.http import url_has_allowed_host_and_scheme
+
 
 class AuthenticationError(Exception):
   """
@@ -17,6 +19,15 @@ class AuthenticationError(Exception):
     super().__init__(message)
     self.message = message
     self.help_url = help_url
+
+
+def same_site_path(url, default="/"):
+  """
+  url if it is a path on this site (a single leading '/'), otherwise default.
+  """
+  if url and url.startswith('/') and url_has_allowed_host_and_scheme(url, allowed_hosts=None):
+    return url
+  return default
 
 
 ## JSON

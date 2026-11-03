@@ -14,7 +14,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
-from helios_auth.utils import format_recipient
+from helios_auth.utils import format_recipient, same_site_path
 
 # some parameters to indicate that status updating is possible
 STATUS_UPDATES = False
@@ -45,7 +45,7 @@ def ldap_login_view(request):
         request.session['auth_system_name'] = 'ldap'
 
         if 'return_url' in request.POST:
-            request.session['auth_return_url'] = request.POST.get('return_url')
+            request.session['auth_return_url'] = same_site_path(request.POST.get('return_url'))
 
         if form.is_valid():
             username = form.cleaned_data['username'].strip()

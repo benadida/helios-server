@@ -25,6 +25,7 @@ from helios_auth import views as auth_views
 from helios_auth.auth_systems import AUTH_SYSTEMS, can_list_categories
 from helios_auth.models import AuthenticationExpired
 from helios_auth.security import check_csrf, login_required, get_user, save_in_session_across_logouts
+from helios_auth.utils import same_site_path
 from . import datatypes
 from . import forms
 from . import tasks
@@ -697,12 +698,8 @@ def password_voter_login(request, election):
   """
   
   # the URL to send the user to after they've logged in
-  if request.method == "GET" and 'return_url' in request.GET:
-      return_url = request.GET['return_url']
-  elif request. method == "POST" and 'return_url' in request.POST:
-      return_url = request.POST['return_url']
-  else:
-      return_url = reverse(one_election_cast_confirm, args=[election.uuid])
+  params = request.GET if request.method == "GET" else request.POST
+  return_url = same_site_path(params.get('return_url'), reverse(one_election_cast_confirm, args=[election.uuid]))
 
   bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
 
@@ -720,7 +717,7 @@ def password_voter_login(request, election):
   
   check_csrf(request)
 
-  login_url = request.GET.get('login_url', None)
+  login_url = same_site_path(request.GET.get('login_url'), None)
 
   if not login_url:
     # login depending on whether this is a private election

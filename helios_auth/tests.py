@@ -12,7 +12,7 @@ from django.urls import reverse
 
 from . import models, views
 from .auth_systems import AUTH_SYSTEMS, password as password_views
-from .utils import format_recipient
+from .utils import format_recipient, same_site_path
 
 
 class FormatRecipientTests(unittest.TestCase):
@@ -528,3 +528,61 @@ class OAuthAuthSystemTests(TestCase):
         for system in [google, github, gitlab, linkedin]:
             result = system.get_user_info_after_auth(request)
             self.assertIsNone(result)
+
+
+class SameSitePathTests(unittest.TestCase):
+
+    def test_keeps_paths_on_this_site(self):
+        self.assertEqual(same_site_path('/helios/e/test?a=1'), '/helios/e/test?a=1')
+
+    def test_other_urls_fall_back_to_default(self):
+        for url in ['https://example.com/elsewhere', '//example.com/elsewhere', '/\\example.com/elsewhere',
+                    '@example.com/elsewhere', '.example.com/elsewhere', 'elsewhere', '', None]:
+            self.assertEqual(same_site_path(url), '/', url)
+            self.assertEqual(same_site_path(url, '/home'), '/home', url)
+
+
+class ReturnUrlTests(TestCase):
+    """return_url only ever sends people to a page on this site."""
+
+    def _csrf_token(self):
+        self.client.get("/")
+        return self.client.session['csrf_token']
+
+    def test_logout_keeps_return_url_on_site(self):
+        response = self.client.get(reverse("auth@logout"), {'return_url': 'https://example.com/elsewhere'})
+        self.assertEqual(response['Location'], '/')
+
+        response = self.client.get(reverse("auth@logout"), {'return_url': '/helios/e/test'})
+        self.assertEqual(response['Location'], '/helios/e/test')
+
+    def test_start_keeps_return_url_on_site(self):
+        self.client.get(reverse('auth@start', kwargs={'system_name': 'password'}),
+                        {'return_url': 'https://example.com/elsewhere'})
+        self.assertEqual(self.client.session['auth_return_url'], '/')
+
+    def test_after_intervention_keeps_return_url_on_site(self):
+        import settings
+        for return_url, expected in [('@example.com/elsewhere', '/'), ('/helios/e/test', '/helios/e/test')]:
+            self.client.get("/")
+            session = self.client.session
+            session['auth_return_url'] = return_url
+            session.save()
+
+            response = self.client.get(reverse('auth@after-intervention'))
+            self.assertEqual(response['Location'], settings.URL_HOST + expected)
+
+    def test_password_login_keeps_return_url_on_site(self):
+        self.client.post(reverse(password_views.PASSWORD_LOGIN_URL_NAME), {
+            'csrf_token': self._csrf_token(), 'username': 'nobody', 'password': 'wrong',
+            'return_url': '//example.com/elsewhere'})
+        self.assertEqual(self.client.session['auth_return_url'], '/')
+
+    def test_password_forgotten_keeps_return_url_on_site(self):
+        models.User.objects.create(user_type='password', user_id='forgetful', name='Forgetful User',
+                                   info={'password': 'foobaz', 'name': 'Forgetful User', 'email': 'forgetful@example.com'})
+        response = self.client.post(reverse(password_views.PASSWORD_FORGOTTEN_URL_NAME), {
+            'csrf_token': self._csrf_token(), 'username': 'forgetful',
+            'return_url': 'https://example.com/elsewhere'})
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(response['Location'], '/')
