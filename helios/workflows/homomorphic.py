@@ -400,9 +400,14 @@ class Tally(WorkflowObject):
         # parse the proof
         #proof = algs.EGZKProof.fromJSONDict(decryption_proofs[q_num][a_num])
         proof = decryption_proofs[q_num][a_num]
-        
+        dec_factor = int(decryption_factors[q_num][a_num])
+
+        # the factor must be in the order-q subgroup
+        if not (1 < dec_factor < public_key.p and pow(dec_factor, public_key.q, public_key.p) == 1):
+          return False
+
         # check that g, alpha, y, dec_factor is a DH tuple
-        if not proof.verify(public_key.g, answer_tally.alpha, public_key.y, int(decryption_factors[q_num][a_num]), public_key.p, public_key.q, challenge_generator):
+        if not proof.verify(public_key.g, answer_tally.alpha, public_key.y, dec_factor, public_key.p, public_key.q, challenge_generator):
           return False
     
     return True

@@ -4078,3 +4078,87 @@ class TieResultViewTests(WebTest):
         response = self.view()
         self.assertNotContains(response, '(tied)')
         self.assertNotContains(response, 'left unfilled')
+
+
+class TrusteeUploadDecryptionTests(WebTest):
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        admin = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-upload-decryption', name='Test Upload Decryption',
+            description='Upload decryption', admin=admin)
+        self.election.uuid = str(uuid.uuid4())
+        self.election.questions = [{"answer_urls": [None, None], "answers": ["Yes", "No"], "choice_type": "approval", "max": 1, "min": 0, "question": "Test?", "result_type": "absolute", "short_name": "Test?", "tally_type": "homomorphic"}]
+        self.election.save()
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
+        voter = models.Voter(uuid=str(uuid.uuid4()), election=self.election, voter_login_id='v1',
+                             voter_name='Voter One', voter_email='v1@example.com')
+        voter.generate_password()
+        voter.save()
+        self.election.freeze()
+
+        tally = self.election.init_tally()
+        tally.add_vote(homomorphic.EncryptedVote.fromElectionAndAnswers(self.election, [[0]]), verify_p=False)
+        self.election.encrypted_tally = tally
+        self.election.save()
+
+        self.trustee = self.election.get_helios_trustee()
+        self.url = "/helios/elections/%s/trustees/%s/upload-decryption" % (self.election.uuid, self.trustee.uuid)
+
+    def factors_and_proofs(self):
+        tally = self.election.encrypted_tally
+        tally.init_election(self.election)
+        return tally.decryption_factors_and_proofs(self.trustee.secret_key)
+
+    def payload(self, factors, proofs):
+        return utils.to_json({
+            'decryption_factors': [[str(f) for f in q] for q in factors],
+            'decryption_proofs': [[datatypes.LDObject.instantiate(p, datatype='legacy/EGZKProof').toDict() for p in q] for q in proofs]})
+
+    def login_trustee(self):
+        session = self.client.session
+        session['helios_trustee_uuid'] = self.trustee.uuid
+        session.save()
+        self.client.get("/helios/elections/%s/trustees/%s/decrypt-and-prove" % (self.election.uuid, self.trustee.uuid))
+        return self.client.session['csrf_token']
+
+    def stored_factors(self):
+        return models.Trustee.objects.get(id=self.trustee.id).decryption_factors
+
+    def test_upload_requires_trustee_login(self):
+        factors, proofs = self.factors_and_proofs()
+        response = self.client.post(self.url, {'factors_and_proofs': self.payload(factors, proofs)})
+        self.assertStatusCode(response, 403)
+        self.assertIsNone(self.stored_factors())
+
+    def test_upload_requires_csrf_token(self):
+        self.login_trustee()
+        factors, proofs = self.factors_and_proofs()
+        response = self.client.post(self.url, {'factors_and_proofs': self.payload(factors, proofs)})
+        self.assertStatusCode(response, 400)
+        self.assertIsNone(self.stored_factors())
+
+    def test_trustee_upload(self):
+        csrf_token = self.login_trustee()
+        factors, proofs = self.factors_and_proofs()
+        response = self.client.post(self.url, {'factors_and_proofs': self.payload(factors, proofs), 'csrf_token': csrf_token})
+        self.assertEqual(response.content, b"SUCCESS")
+        self.assertEqual(self.stored_factors(), factors)
+
+    def test_factor_outside_subgroup_rejected(self):
+        csrf_token = self.login_trustee()
+        p = self.election.public_key.p
+
+        for _ in range(50):
+            factors, proofs = self.factors_and_proofs()
+            even = [a for a, proof in enumerate(proofs[0]) if proof.challenge % 2 == 0]
+            if even:
+                break
+        self.assertTrue(even)
+        factors[0][even[0]] = p - factors[0][even[0]]
+
+        response = self.client.post(self.url, {'factors_and_proofs': self.payload(factors, proofs), 'csrf_token': csrf_token})
+        self.assertEqual(response.content, b"FAILURE")
+        self.assertIsNone(self.stored_factors())

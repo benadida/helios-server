@@ -1351,12 +1351,12 @@ def trustee_decrypt_and_prove(request, election, trustee):
     
   return render_template(request, 'trustee_decrypt_and_prove', {'election': election, 'trustee': trustee})
   
-@election_view(frozen=True)
-def trustee_upload_decryption(request, election, trustee_uuid):
-  if not _check_election_tally_type(election) or election.encrypted_tally is None:
-    return FAILURE
+@trustee_check
+def trustee_upload_decryption(request, election, trustee):
+  check_csrf(request)
 
-  trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
+  if not election.frozen_at or not _check_election_tally_type(election) or election.encrypted_tally is None:
+    return FAILURE
 
   factors_and_proofs = utils.from_json(request.POST['factors_and_proofs'])
 
