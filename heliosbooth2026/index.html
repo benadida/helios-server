@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Helios Voting Booth - Secure online voting with cryptographic verification">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Helios Voting Booth</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="./src/styles/booth.css">
+
+  <!-- Crypto libraries must load before the app (synchronous) -->
+  <script src="lib/jscrypto/jsbn.js"></script>
+  <script src="lib/jscrypto/jsbn2.js"></script>
+  <script src="lib/jscrypto/sjcl.js"></script>
+  <script src="lib/jscrypto/class.js"></script>
+  <script src="lib/jscrypto/bigint.js"></script>
+  <script src="lib/jscrypto/random.js"></script>
+  <script src="lib/jscrypto/elgamal.js"></script>
+  <script src="lib/jscrypto/sha1.js"></script>
+  <script src="lib/jscrypto/sha2.js"></script>
+  <script src="lib/jscrypto/helios.js"></script>
+  <script src="lib/underscore-min.js"></script>
+
+  <!-- Noscript fallback -->
+  <noscript>
+    <style>
+      booth-app { display: none; }
+      .noscript-message { display: block !important; }
+    </style>
+  </noscript>
+</head>
+<body>
+  <div class="noscript-message" style="display: none; padding: 20px; text-align: center;">
+    <h1>JavaScript Required</h1>
+    <p>The Helios Voting Booth requires JavaScript to encrypt your ballot securely.</p>
+    <p>Please enable JavaScript in your browser settings and reload this page.</p>
+  </div>
+
+  <booth-app></booth-app>
+
+  <script type="module" src="./src/main.ts"></script>
+</body>
+</html>
