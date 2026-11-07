@@ -4354,9 +4354,9 @@ class VoterTokenTests(WebTest):
         self.client.post("/helios/elections/%s/voters/upload" % election.uuid,
                          {'confirm_p': "1", 'csrf_token': self.csrf()})
 
-    def setup_frozen_election(self, private=False):
+    def setup_frozen_election(self, private=False, voters=None):
         election = self.create_election(private)
-        self.upload_and_confirm(election, self.TOKEN_VOTERS)
+        self.upload_and_confirm(election, voters or self.TOKEN_VOTERS)
         self.client.post("/helios/elections/%s/save_questions" % election.uuid, {
             'questions_json': utils.to_json([{"answer_urls": [None, None], "answers": ["Yes", "No"], "choice_type": "approval", "max": 1, "min": 0, "question": "Q?", "result_type": "absolute", "short_name": "Q", "tally_type": "homomorphic"}]),
             'csrf_token': self.csrf()})
@@ -4414,35 +4414,88 @@ class VoterTokenTests(WebTest):
         election = self.create_election()
         response = self.upload(election, self.TOKEN_VOTERS + b"password,carol,carol@example.com,Carol\n")
         self.assertContains(response, "HOLD ON")
-        self.assertContains(response, "mixes token and password voters")
+        self.assertContains(response, "mixes token voters with other voters")
 
     def test_upload_rejects_password_voters_in_token_election(self):
         election = self.create_election()
         self.upload_and_confirm(election, self.TOKEN_VOTERS)
         response = self.upload(election, b"password,carol,carol@example.com,Carol\n")
         self.assertContains(response, "HOLD ON")
-        self.assertContains(response, "already has token voters")
+        self.assertContains(response, "has token voters, so it can only have token voters")
 
     def test_upload_rejects_token_voters_in_password_election(self):
         election = self.create_election()
         self.upload_and_confirm(election, b"password,carol,carol@example.com,Carol\n")
         response = self.upload(election, self.TOKEN_VOTERS)
         self.assertContains(response, "HOLD ON")
-        self.assertContains(response, "already has password voters")
+        self.assertContains(response, "use voting tokens, so it can")
 
     def test_processing_rejects_mixing(self):
         # the preview catches this, but a file processed regardless must not mix either
         election = self.create_election()
         self.upload_and_confirm(election, self.TOKEN_VOTERS)
         voter_file = models.VoterFile.objects.create(election=election, voter_file_content="password,carol,carol@example.com,Carol\n")
-        with self.assertRaises(Exception):
-            voter_file.process()
+        num_messages_before = len(mail.outbox)
+        tasks.voter_file_process(voter_file.id)
         self.assertFalse(election.voter_set.filter(voter_login_id='carol').exists())
+        voter_file.refresh_from_db()
+        self.assertIsNotNone(voter_file.processing_finished_at)
+        self.assertEqual(len(mail.outbox), num_messages_before + 1)
+        self.assertIn("could not be processed because this election has token voters", mail.outbox[-1].body)
 
-    def test_account_voters_alongside_token_voters(self):
+    def test_no_account_voters_in_token_election(self):
         election = self.create_election()
-        self.upload_and_confirm(election, self.TOKEN_VOTERS + b"github,someuser\n")
-        self.assertEqual(election.voter_set.count(), 3)
+        self.assertContains(self.upload(election, self.TOKEN_VOTERS + b"github,someuser\n"), "mixes token voters with other voters")
+        self.upload_and_confirm(election, self.TOKEN_VOTERS)
+        self.assertContains(self.upload(election, b"github,someuser\n"), "has token voters, so it can only have token voters")
+
+    def test_no_token_voters_in_account_election(self):
+        election = self.create_election()
+        self.upload_and_confirm(election, b"github,someuser\n")
+        self.assertContains(self.upload(election, self.TOKEN_VOTERS), "use voting tokens, so it can")
+
+    def test_no_open_registration_in_token_election(self):
+        election = self.create_election()
+        self.upload_and_confirm(election, self.TOKEN_VOTERS)
+        self.assertContains(self.client.get("/helios/elections/%s/voters/list" % election.uuid), "Your election uses voting tokens")
+        self.client.post("/helios/elections/%s/voters/eligibility" % election.uuid, {'eligibility': 'openreg', 'csrf_token': self.csrf()})
+        self.client.post("/helios/elections/%s/set_reg" % election.uuid, {'open_p': '1', 'csrf_token': self.csrf()})
+        election.refresh_from_db()
+        self.assertFalse(election.openreg)
+
+    def test_no_token_voters_with_open_registration(self):
+        election = self.create_election()
+        self.client.post("/helios/elections/%s/voters/eligibility" % election.uuid, {'eligibility': 'openreg', 'csrf_token': self.csrf()})
+        election.refresh_from_db()
+        self.assertTrue(election.openreg)
+        self.assertContains(self.upload(election, self.TOKEN_VOTERS), "open registration")
+
+    def test_token_voter_email_is_case_insensitive(self):
+        election = self.setup_frozen_election(voters=self.TOKEN_VOTERS + b"token,Alice@Example.COM,Alice\n")
+        self.assertEqual(election.voter_set.count(), 2)
+
+        page = self.app.get("/helios/elections/%s/password_voter_resend" % election.uuid)
+        num_messages_before = len(mail.outbox)
+        page.form['voter_id'] = 'ALICE@example.com'
+        page.form.submit()
+        self.assertEqual(len(mail.outbox), num_messages_before + 1)
+
+    def test_token_voter_email_too_long(self):
+        response = self.upload(self.create_election(), b"token,%s@example.com,Alice\n" % (b"a" * 90))
+        self.assertContains(response, "longer than 100 characters")
+
+    def test_email_links_for_plus_address(self):
+        election = self.setup_frozen_election(voters=b"token,carol+helios@example.com,Carol\n")
+        response = self.client.get("/helios/elections/%s/voters/list" % election.uuid)
+        self.assertContains(response, "?voter_id=carol%2Bhelios%40example.com")
+        response = self.client.get("/helios/elections/%s/voters/email?voter_id=carol%%2Bhelios%%40example.com" % election.uuid)
+        self.assertContains(response, "&voter_id=carol%2Bhelios%40example.com")
+
+    def test_token_input_not_changed_by_phones(self):
+        from helios.forms import VoterTokenForm
+        field = str(VoterTokenForm()['voting_token'])
+        for attr in ['autocapitalize="off"', 'autocorrect="off"', 'spellcheck="false"', 'autocomplete="off"']:
+            self.assertIn(attr, field)
 
     def test_emails_show_token(self):
         election = self.setup_frozen_election()

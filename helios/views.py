@@ -805,6 +805,9 @@ def password_voter_resend(request, election):
     })
 
   voter_id = resend_form.cleaned_data['voter_id'].strip()
+  if resend_form_class == forms.VoterTokenResendForm:
+    # token voter IDs are lower-cased emails
+    voter_id = voter_id.lower()
 
   # Look up the voter by voter_login_id
   voter = Voter.get_by_election_and_voter_id(election, voter_id)
@@ -1153,8 +1156,10 @@ def one_election_set_reg(request, election):
   # only allow this for public elections
   if not election.private_p:
     open_p = bool(int(request.POST['open_p']))
-    election.openreg = open_p
-    election.save()
+    # token elections are limited to their token voters
+    if not (open_p and election.voting_tokens_p):
+      election.openreg = open_p
+      election.save()
   
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
 
@@ -1668,6 +1673,10 @@ def voters_eligibility(request, election):
 
   # eligibility
   eligibility = request.POST['eligibility']
+
+  # token elections are limited to their token voters
+  if eligibility != 'closedreg' and election.voting_tokens_p:
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
 
   if eligibility in ['openreg', 'limitedreg']:
     election.openreg= True

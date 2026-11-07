@@ -146,6 +146,20 @@ def voter_file_process(voter_file_id):
     voter_file = VoterFile.objects.get(id=voter_file_id)
     voter_file.process()
 
+    if voter_file.problem:
+        election_notify_admin.delay(election_id=voter_file.election.id,
+                                    subject='voter file not processed',
+                                    body="""
+Your voter file upload for election %s
+could not be processed because %s.
+
+No voters were added.
+
+--
+Helios
+""" % (voter_file.election.name, voter_file.problem))
+        return
+
     skipped = ""
     if voter_file.num_skipped:
         skipped = """

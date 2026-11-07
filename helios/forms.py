@@ -59,7 +59,9 @@ class VoterPasswordForm(forms.Form):
   password = forms.CharField(widget=forms.PasswordInput(), max_length=100)
 
 class VoterTokenForm(forms.Form):
-  voting_token = forms.CharField(max_length=100, label="Voting token")
+  # tokens are case-sensitive: stop phones from capitalizing or correcting them
+  voting_token = forms.CharField(max_length=100, label="Voting token", widget=forms.TextInput(attrs={
+    'autocapitalize': 'off', 'autocorrect': 'off', 'spellcheck': 'false', 'autocomplete': 'off'}))
 
 class VoterPasswordResendForm(forms.Form):
   voter_id = forms.CharField(max_length=50, label="Voter ID", help_text="Enter the voter ID you were assigned for this election")

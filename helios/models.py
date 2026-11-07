@@ -833,10 +833,14 @@ class VoterFile(models.Model):
         voter_email = voter_fields[1].strip()
         if not validate_email(voter_email):
           raise Exception("invalid voter email '%s' for token voter" % voter_email)
+        max_length = Voter._meta.get_field('voter_login_id').max_length
+        if len(voter_email) > max_length:
+          raise Exception("voter email '%s' is longer than %d characters" % (voter_email, max_length))
         voter_name = voter_fields[2].strip() if len(voter_fields) > 2 else voter_email
+        # lower-cased so case variants of an email are the same voter
         yield {
           'voter_type': voter_type,
-          'voter_id': voter_email,
+          'voter_id': voter_email.lower(),
           'email': voter_email,
           'name': voter_name,
         }
@@ -870,17 +874,19 @@ class VoterFile(models.Model):
 
   def credentials_problem(self, voters):
     """
-    Voters without an account log in either with a voting token or with a voter ID
-    and password, and an election uses one or the other. Returns why these voters
-    can't be added to this election, or None if they can.
+    An election has either only token voters or no token voters. Returns why these
+    voters can't be added to this election, or None if they can.
     """
     voter_types = {v['voter_type'] for v in voters}
-    if {'token', 'password'} <= voter_types:
-      return "it mixes token and password voters, and an election can only use one of them"
-    if 'token' in voter_types and self.election.voter_set.filter(voter_password__isnull=False).exists():
-      return "this election already has password voters, so it can't also have token voters"
-    if 'password' in voter_types and self.election.voting_tokens_p:
-      return "this election already has token voters, so it can't also have password voters"
+    if 'token' in voter_types:
+      if len(voter_types) > 1:
+        return "it mixes token voters with other voters, and a token election can only have token voters"
+      if self.election.openreg:
+        return "this election has open registration, which a token election can't have"
+      if self.election.voter_set.filter(voting_token__isnull=True).exists():
+        return "this election already has voters who don't use voting tokens, so it can't also have token voters"
+    elif voter_types and self.election.voting_tokens_p:
+      return "this election has token voters, so it can only have token voters"
     return None
 
   def process(self):
@@ -889,9 +895,10 @@ class VoterFile(models.Model):
 
     voters = list(self.itervoters())
 
-    problem = self.credentials_problem(voters)
-    if problem:
-      raise Exception(problem)
+    # the preview checked this too, but the election may have changed since
+    self.problem = self.credentials_problem(voters)
+    if self.problem:
+      voters = []
 
     self.num_voters = len(voters)
     random.shuffle(voters)
