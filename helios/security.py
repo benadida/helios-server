@@ -198,7 +198,10 @@ def trustee_check(func):
     if not election:
       raise Http404
 
-    trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
+    try:
+      trustee = Trustee.get_by_election_and_uuid(election, trustee_uuid)
+    except Trustee.DoesNotExist:
+      raise Http404
 
     if trustee == get_logged_in_trustee(request):
       return func(request, election, trustee, *args, **kwargs)
