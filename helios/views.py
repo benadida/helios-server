@@ -1358,15 +1358,27 @@ def trustee_upload_decryption(request, election, trustee):
   if not election.frozen_at or not _check_election_tally_type(election) or election.encrypted_tally is None:
     return FAILURE
 
-  factors_and_proofs = utils.from_json(request.POST['factors_and_proofs'])
+  # the upload is user-supplied JSON (the result textarea is editable), so a
+  # missing or malformed payload is a failed verification, not a server error
+  try:
+    factors_and_proofs = utils.from_json(request.POST.get('factors_and_proofs', ''))
+  except Exception:
+    # from_json raises a bare Exception for unparseable input
+    factors_and_proofs = None
 
-  # verify the decryption factors
-  trustee.decryption_factors = [[datatypes.LDObject.fromDict(factor, type_hint='core/BigInteger').wrapped_obj for factor in one_q_factors] for one_q_factors in factors_and_proofs['decryption_factors']]
+  try:
+    # verify the decryption factors
+    trustee.decryption_factors = [[datatypes.LDObject.fromDict(factor, type_hint='core/BigInteger').wrapped_obj for factor in one_q_factors] for one_q_factors in factors_and_proofs['decryption_factors']]
 
-  # each proof needs to be deserialized
-  trustee.decryption_proofs = [[datatypes.LDObject.fromDict(proof, type_hint='legacy/EGZKProof').wrapped_obj for proof in one_q_proofs] for one_q_proofs in factors_and_proofs['decryption_proofs']]
+    # each proof needs to be deserialized
+    trustee.decryption_proofs = [[datatypes.LDObject.fromDict(proof, type_hint='legacy/EGZKProof').wrapped_obj for proof in one_q_proofs] for one_q_proofs in factors_and_proofs['decryption_proofs']]
 
-  if trustee.verify_decryption_proofs():
+    verified = trustee.verify_decryption_proofs()
+  except (KeyError, TypeError, ValueError, IndexError, AttributeError) as e:
+    logging.warning("malformed decryption upload for trustee %s: %s: %s" % (trustee.uuid, type(e).__name__, e))
+    return FAILURE
+
+  if verified:
     trustee.save()
     
     try:
