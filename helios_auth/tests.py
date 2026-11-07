@@ -4,10 +4,11 @@ Unit Tests for Auth Systems
 
 import json
 import unittest
+from unittest import mock
 
 from django.core import mail
 from django.db import IntegrityError, transaction
-from django.test import TestCase, override_settings
+from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
 from . import models, views
@@ -528,3 +529,50 @@ class OAuthAuthSystemTests(TestCase):
         for system in [google, github, gitlab, linkedin]:
             result = system.get_user_info_after_auth(request)
             self.assertIsNone(result)
+
+
+class GoogleUserInfoTimeoutTests(SimpleTestCase):
+    def setUp(self):
+        from .auth_systems import google
+        self.google = google
+        self.request = RequestFactory().get('/auth/after/', {
+            'code': 'test-code', 'state': 'test-state'})
+        self.request.session = {
+            'google-oauth-state': 'test-state',
+            'google-redirect-url': 'https://example.com/auth/after/'}
+        self.flow = mock.Mock()
+        self.flow.credentials.token = 'test-access-token'
+
+    def test_userinfo_request_has_a_timeout(self):
+        with mock.patch.object(self.google, 'get_flow', return_value=self.flow):
+            with mock.patch.object(self.google.requests, 'get') as get:
+                get.return_value.json.return_value = {
+                    'email': 'voter@example.com', 'email_verified': True,
+                    'name': 'Test voter'}
+                user = self.google.get_user_info_after_auth(self.request)
+
+        get.assert_called_once_with(
+            'https://www.googleapis.com/oauth2/v3/userinfo',
+            headers={'Authorization': 'Bearer test-access-token'}, timeout=15)
+        self.flow.fetch_token.assert_called_once_with(code='test-code')
+        self.assertEqual(user['user_id'], 'voter@example.com')
+        self.assertEqual(user['name'], 'Test voter')
+
+    def assert_timeout_handled(self, failure):
+        with mock.patch.object(self.google, 'get_flow', return_value=self.flow):
+            with mock.patch.object(self.google.requests, 'get', side_effect=failure) as get:
+                with self.assertRaisesMessage(Exception, 'Failed to retrieve user info from Google.') as error:
+                    self.google.get_user_info_after_auth(self.request)
+
+        get.assert_called_once_with(
+            'https://www.googleapis.com/oauth2/v3/userinfo',
+            headers={'Authorization': 'Bearer test-access-token'}, timeout=15)
+        self.assertIs(error.exception.__cause__, failure)
+        self.assertNotIn('google-oauth-state', self.request.session)
+        self.assertNotIn('google-redirect-url', self.request.session)
+
+    def test_userinfo_connection_timeout_uses_existing_error_handling(self):
+        self.assert_timeout_handled(self.google.requests.ConnectTimeout())
+
+    def test_userinfo_read_timeout_uses_existing_error_handling(self):
+        self.assert_timeout_handled(self.google.requests.ReadTimeout())
