@@ -18,7 +18,7 @@ from helios_auth.url_names import AUTH_INDEX, AUTH_START, AUTH_AFTER, AUTH_WHY, 
 from .auth_systems import AUTH_SYSTEMS, password
 from .models import User
 from .security import FIELDS_TO_SAVE
-from .utils import AuthenticationError
+from .utils import AuthenticationError, same_site_path
 from .view_utils import render_template, render_template_raw
 
 logger = logging.getLogger(__name__)
@@ -134,7 +134,7 @@ def logout(request):
   logout
   """
 
-  return_url = request.GET.get('return_url',"/")
+  return_url = same_site_path(request.GET.get('return_url'))
   response = do_complete_logout(request, return_url)
   if response:
     return response
@@ -168,7 +168,7 @@ def start(request, system_name):
   request.session['auth_system_name'] = system_name
   
   # where to return to when done
-  request.session['auth_return_url'] = request.GET.get('return_url', '/')
+  request.session['auth_return_url'] = same_site_path(request.GET.get('return_url'))
 
   return _do_auth(request)
 
@@ -230,7 +230,7 @@ def after(request):
 def after_intervention(request):
   return_url = "/"
   if 'auth_return_url' in request.session:
-    return_url = request.session['auth_return_url']
+    return_url = same_site_path(request.session['auth_return_url'])
     del request.session['auth_return_url']
     # kept so a callback replayed after sign-in (back button) can still offer the way back
     request.session['auth_last_return_url'] = return_url
