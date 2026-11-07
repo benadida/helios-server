@@ -27,8 +27,9 @@ or
 </pre>
 <p>
 Token voters are emailed a single voting token to log in with; password voters are
-emailed a voter ID and a password. An election can have token voters or password
-voters, but not both.
+emailed a voter ID and a password. An election with token voters can only have
+token voters: no password voters, no voters who log in with an account, and no
+open registration.
 </p>
 
 <p>
@@ -37,7 +38,6 @@ For example:
   <pre>
       token,alice@acme.org,Alice Jones
       token,bob@acme.org,Bob Smith
-      github,benadida
       ...
   </pre> 
 
