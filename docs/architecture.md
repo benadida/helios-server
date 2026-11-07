@@ -136,8 +136,7 @@ than half of the ballots cast.
    encrypted ballot JSON. The voter can either:
    - **spoil and audit** the ballot: the booth reveals the choices and the
      encryption randomness, can post them to the public audited-ballots list
-     (`post_audited_ballot`), and
-     the voter starts again; or
+     (`post_audited_ballot`), and the voter starts again; or
    - **cast** it: the booth POSTs the encrypted ballot to the election's
      `cast_url`.
 3. `one_election_cast` stores the encrypted ballot in the session and sends
