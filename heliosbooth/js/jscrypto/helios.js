@@ -486,10 +486,20 @@ HELIOS.EncryptedVote = Class.extend({
     var VALID_P = true;
     
     var self = this;
+
+    if (this.encrypted_answers.length != this.election.questions.length)
+      return false;
     
     // for each question and associate encrypted answer
     _(this.encrypted_answers).each(function(enc_answer, ea_num) {
         var overall_result = 1;
+
+        // one choice and one proof per answer
+        var num_answers = self.election.questions[ea_num].answers.length;
+        if (enc_answer.choices.length != num_answers || enc_answer.individual_proofs.length != num_answers) {
+          VALID_P = false;
+          return;
+        }
 
         // the max number of answers (decides whether this is approval or not and requires an overall proof)
         var max = self.election.questions[ea_num].max;

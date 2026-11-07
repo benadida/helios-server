@@ -7,6 +7,7 @@ import logging
 import random as stdlib_random
 import re
 import uuid
+from types import SimpleNamespace
 from unittest import mock
 from urllib.parse import urlencode
 
@@ -885,6 +886,68 @@ class BallotGroupMembershipTests(TestCase):
             self.assertTrue(proof.verify(
                 self.g, self.pk.y, pow(self.g, secret, self.p), pow(self.pk.y, secret, self.p),
                 self.p, self.q, algs.EG_fiatshamir_challenge_generator))
+
+
+class BallotAnswerCountTests(TestCase):
+    """
+    each encrypted answer must carry exactly one choice per answer to its question
+    """
+    allow_database_queries = False
+
+    def setUp(self):
+        params = views.ELGAMAL_PARAMS
+        keypair = algs.EGKeyPair()
+        keypair.generate(params.p, params.q, params.g)
+        self.pk = keypair.pk
+
+    def make_election(self, num_answers, max=1):
+        question = {'answers': ['answer %d' % i for i in range(num_answers)], 'min': 0, 'max': max}
+        return SimpleNamespace(questions=[question], public_key=self.pk, hash='election-hash', uuid='election-uuid')
+
+    def make_vote(self, num_answers, max=1):
+        return homomorphic.EncryptedVote.fromElectionAndAnswers(self.make_election(num_answers, max), [[0]])
+
+    def test_matching_answer_count_verifies(self):
+        self.assertTrue(self.make_vote(3).verify(self.make_election(3)))
+        self.assertTrue(self.make_vote(3, max=None).verify(self.make_election(3, max=None)))
+
+    def test_one_fewer_choice_is_rejected(self):
+        self.assertFalse(self.make_vote(2).verify(self.make_election(3)))
+
+    def test_one_more_choice_is_rejected(self):
+        self.assertFalse(self.make_vote(4).verify(self.make_election(3)))
+
+    def test_missing_fields_are_rejected(self):
+        vote = self.make_vote(3)
+        vote.encrypted_answers[0].individual_proofs.pop()
+        self.assertFalse(vote.verify(self.make_election(3)))
+
+        vote = self.make_vote(3)
+        vote.encrypted_answers[0].choices = None
+        self.assertFalse(vote.verify(self.make_election(3)))
+
+    def test_overall_proof_must_match_question_max(self):
+        vote = self.make_vote(3)
+        vote.encrypted_answers[0].overall_proof = None
+        self.assertFalse(vote.verify(self.make_election(3)))
+
+        # an approval question takes no overall proof
+        self.assertFalse(self.make_vote(3).verify(self.make_election(3, max=None)))
+
+    def test_tally_rejects_mismatched_vote_without_changing(self):
+        tally = homomorphic.Tally(election=self.make_election(3))
+        tally.add_vote(self.make_vote(3), verify_p=False)
+        before = [(c.alpha, c.beta) for c in tally.tally[0]]
+
+        for num_answers in (2, 4):
+            with self.assertRaises(ValueError):
+                tally.add_vote(self.make_vote(num_answers), verify_p=False)
+
+        self.assertEqual([(c.alpha, c.beta) for c in tally.tally[0]], before)
+        self.assertEqual(tally.num_tallied, 1)
+
+        tally.add_vote(self.make_vote(3), verify_p=False)
+        self.assertEqual(tally.num_tallied, 2)
 
 
 class DatatypeTests(TestCase):

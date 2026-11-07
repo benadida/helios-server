@@ -55,6 +55,19 @@ class EncryptedAnswer(WorkflowObject):
     
     return False
     
+  def matches_question(self, question):
+    """
+    one choice and one proof per answer, and an overall proof exactly when the question has a max
+    """
+    if self.choices is None or self.individual_proofs is None:
+      return False
+
+    num_answers = len(question['answers'])
+    if not (len(self.choices) == len(self.individual_proofs) == num_answers):
+      return False
+
+    return (self.overall_proof is None) == (question['max'] is None)
+
   def verify(self, pk, min=0, max=1):
     possible_plaintexts = self.generate_plaintexts(pk)
     homomorphic_sum = 0
@@ -180,13 +193,18 @@ class EncryptedVote(WorkflowObject):
 
   answers = property(_answers_get, _answers_set)
 
+  def matches_questions(self, questions):
+    if self.encrypted_answers is None or questions is None:
+      return False
+
+    if len(self.encrypted_answers) != len(questions):
+      return False
+
+    return all(ea.matches_question(q) for ea, q in zip(self.encrypted_answers, questions))
+
   def verify(self, election):
-    # correct number of answers
-    # noinspection PyUnresolvedReferences
-    n_answers = len(self.encrypted_answers) if self.encrypted_answers is not None else 0
-    n_questions = len(election.questions) if election.questions is not None else 0
-    if n_answers != n_questions:
-      logging.error(f"Incorrect number of answers ({n_answers}) vs questions ({n_questions})")
+    if not self.matches_questions(election.questions):
+      logging.error("Encrypted answers do not match the election questions")
       return False
 
     # check hash
@@ -308,6 +326,10 @@ class Tally(WorkflowObject):
       self.add_vote(vote, verify_p)
     
   def add_vote(self, encrypted_vote, verify_p=True):
+    # checked even when proofs are skipped, so a malformed vote can't half-update the tally
+    if not encrypted_vote.matches_questions(self.questions):
+      raise ValueError('Vote does not match the election questions')
+
     # do we verify?
     if verify_p:
       if not encrypted_vote.verify(self.election):
