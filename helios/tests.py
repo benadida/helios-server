@@ -4163,6 +4163,27 @@ class TrusteeUploadDecryptionTests(WebTest):
         self.assertEqual(response.content, b"FAILURE")
         self.assertIsNone(self.stored_factors())
 
+    def test_malformed_uploads_rejected(self):
+        csrf_token = self.login_trustee()
+        factors, proofs = self.factors_and_proofs()
+        good = utils.from_json(self.payload(factors, proofs))
+        bad_payloads = [
+            utils.to_json({'decryption_factors': None, 'decryption_proofs': good['decryption_proofs']}),
+            utils.to_json({'decryption_factors': good['decryption_factors'], 'decryption_proofs': None}),
+            utils.to_json({'decryption_proofs': good['decryption_proofs']}),
+            utils.to_json({'decryption_factors': [[]], 'decryption_proofs': [[]]}),
+            utils.to_json({'decryption_factors': [["not-a-number"]], 'decryption_proofs': good['decryption_proofs']}),
+            utils.to_json(None),
+            '',
+            'not json',
+        ]
+        for payload in bad_payloads:
+            response = self.client.post(self.url, {'factors_and_proofs': payload, 'csrf_token': csrf_token})
+            self.assertEqual(response.content, b"FAILURE", payload)
+        response = self.client.post(self.url, {'csrf_token': csrf_token})
+        self.assertEqual(response.content, b"FAILURE")
+        self.assertIsNone(self.stored_factors())
+
 
 class TrusteeCheckTests(WebTest):
     fixtures = ['users.json']
