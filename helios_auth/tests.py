@@ -572,6 +572,19 @@ class ReturnUrlTests(TestCase):
             response = self.client.get(reverse('auth@after-intervention'))
             self.assertEqual(response['Location'], settings.URL_HOST + expected)
 
+    def test_password_login_returns_to_page_on_site(self):
+        import settings
+        models.User.objects.create(user_type='password', user_id='admin', name='Admin',
+                                   info={'password': 'foobaz', 'name': 'Admin', 'email': 'admin@example.com'})
+        return_url = '/verifier/verify.html?election_url=/helios/elections/abc'
+        self.client.get(reverse('auth@start', kwargs={'system_name': 'password'}), {'return_url': return_url})
+        response = self.client.post(reverse(password_views.PASSWORD_LOGIN_URL_NAME), {
+            'csrf_token': self._csrf_token(), 'username': 'admin', 'password': 'foobaz', 'return_url': return_url})
+        response = self.client.get(response['Location'])
+        response = self.client.get(response['Location'])
+        self.assertEqual(response['Location'], settings.URL_HOST + return_url)
+        self.assertEqual(self.client.session['user']['user_id'], 'admin')
+
     def test_password_login_keeps_return_url_on_site(self):
         self.client.post(reverse(password_views.PASSWORD_LOGIN_URL_NAME), {
             'csrf_token': self._csrf_token(), 'username': 'nobody', 'password': 'wrong',
