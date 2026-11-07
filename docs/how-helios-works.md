@@ -53,23 +53,28 @@ administrators, voters and trustees. For the technical design, see
 3. The voter can **audit** the ballot instead of casting it. The booth then
    reveals how the ballot was encrypted, so the voter (or anyone they give it
    to) can check that it really contains their choices. An audited ballot is
-   never counted, and the voter then makes a fresh ballot to cast. This is
+   never counted, and the voter then makes a fresh ballot to cast. If the
+   voter posts an audited ballot to the public list, anyone can see its
+   choices. This is
    how voters can check that the booth is not changing their vote: since it
    can't know in advance which ballots will be audited, any cheating risks
    being caught.
 4. The voter **casts** the ballot and logs in: with the voter ID and password
    Helios emailed them, or with the account they were invited with (for
    example Google or GitHub).
-5. Helios checks the ballot's proofs, records it, and emails the voter their
-   ballot tracker. The tracker appears next to the voter's entry in the
+5. Helios records the ballot, then checks its proofs in the background. Once
+   the checks pass, it becomes the voter's counted ballot and Helios emails
+   them their ballot tracker. The tracker appears next to the voter's entry in the
    election's ballot tracking center, so the voter can check their ballot
    was recorded.
 6. **Voting again.** A voter can cast a new ballot at any time while voting
-   is open. Only their most recent ballot is counted.
+   is open. Only their most recent ballot that passed the checks is counted.
 
 ## Privacy
 
-- Helios receives only the encrypted ballot, never the voter's choices.
+- For a cast ballot, Helios receives only the encrypted ballot, never the
+  voter's choices. Audited ballots are the exception: they reveal their
+  choices, and posting one publishes them.
 - Ballots are never decrypted one by one. Only the combined totals are
   decrypted.
 - Decrypting anything needs every trustee. Who can decrypt therefore depends

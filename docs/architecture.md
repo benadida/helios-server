@@ -8,8 +8,8 @@ and trustees, see [How Helios Works](how-helios-works.md).
 
 Helios is a Django application backed by PostgreSQL, with Celery (over
 RabbitMQ) for background work. Ballots are encrypted in the voter's browser
-by a JavaScript voting booth, so the server only ever receives encrypted
-ballots. The server adds the encrypted ballots together homomorphically, the
+by a JavaScript voting booth, so the server only receives encrypted ballots
+to cast. (A ballot the voter audits instead, if posted, includes its choices.) The server adds the encrypted ballots together homomorphically, the
 election's trustees each partially decrypt that encrypted tally, and the
 partial decryptions are combined into the result.
 
@@ -134,15 +134,19 @@ than half of the ballots cast.
    encrypts each answer in a Web Worker.
 2. The booth shows the ballot tracker: the base64 SHA-256 hash of the
    encrypted ballot JSON. The voter can either:
-   - **spoil and audit** the ballot: the booth reveals the encryption
-     randomness, can post the ballot to the public audited-ballots list, and
+   - **spoil and audit** the ballot: the booth reveals the choices and the
+     encryption randomness, can post them to the public audited-ballots list
+     (`post_audited_ballot`), and
      the voter starts again; or
    - **cast** it: the booth POSTs the encrypted ballot to the election's
      `cast_url`.
 3. `one_election_cast` stores the encrypted ballot in the session and sends
    the voter to `one_election_cast_confirm`. That page asks the voter to log
-   in if needed, offering only the login methods the election's voters use
-   (`Election.voter_auth_systems`).
+   in if needed. The login methods offered come from
+   `Election.voter_auth_systems`: those the current voters use, plus, with
+   open registration, the systems the eligibility rules allow (every enabled
+   system except password if registration is unrestricted). If that list is
+   empty, every enabled system is offered.
 4. On confirmation the server saves a `CastVote` and queues
    `cast_vote_verify_and_store`. That task checks the ballot belongs to this
    election (election hash and UUID), that every ciphertext is in the right
@@ -216,10 +220,19 @@ election creator). In tests, tasks run immediately (`CELERY_TASK_ALWAYS_EAGER`).
 Voter emails are plain text, rendered from `helios/templates/email/` with
 HTML escaping turned off. They are sent through the voter's login system:
 password, Google, GitHub and most others send email via Django's mail backend
-(SMTP, Mailgun or Amazon SES depending on settings). Every voter email
-includes a signed opt-out link (`EMAIL_OPTOUT_SECRET`). Opted-out addresses
-are skipped when sending and refused when voters are uploaded. Voter emails
-are disabled `HELIOS_VOTER_EMAIL_CUTOFF_WEEKS` weeks after tallying.
+(SMTP, Mailgun or Amazon SES depending on settings).
+
+Emails sent from the administrator's "email voters" page, and password
+resends, go through `single_voter_email`: it skips opted-out addresses and
+adds a signed opt-out link (`EMAIL_OPTOUT_SECRET`). Opted-out addresses are
+also refused when voters are uploaded. Two voter messages bypass this: the
+cast receipt (`server_ui/glue.py`, templates in `server_ui/templates/email/`)
+and the notice sent when an administrator removes a voter who has voted.
+
+`Election.can_send_voter_emails` turns voter emails off
+`HELIOS_VOTER_EMAIL_CUTOFF_WEEKS` weeks after `tallying_finished_at`. Nothing
+in the tally workflow sets that field yet, so in practice the cutoff doesn't
+apply.
 
 ## Public data
 
@@ -242,13 +255,15 @@ key, the recomputed tally, the partial decryptions and the result.
 
 ## Web security
 
-- **CSRF:** Django's CSRF middleware is off. Helios checks a session token on
-  each state-changing POST (`check_csrf`), backed by a `SameSite=Lax` session
-  cookie.
+- **CSRF:** Django's CSRF middleware is off. Instead, views that change
+  state call `check_csrf`, which checks a session token, and the session
+  cookie is `SameSite=Lax`. The check is per view, and a few POSTs skip it,
+  for example `one_election_cast` (which only puts the ballot in the session
+  until the voter confirms) and `post_audited_ballot`.
 - **Headers:** a Content Security Policy (django-csp; inline scripts are still
   allowed for legacy pages), optional HTTPS redirect and secure cookies
   (`SSL=1`), and optional HSTS (`HSTS=1`).
-- **Sanitizing:** election descriptions are sanitized with bleach before
+- **Sanitizing:** election descriptions are sanitized with nh3 before
   display.
 - **Plaintext passwords:** voter passwords are stored in plaintext so they can
   be emailed and re-sent. The password login system also stores account
