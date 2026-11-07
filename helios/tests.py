@@ -4162,3 +4162,26 @@ class TrusteeUploadDecryptionTests(WebTest):
         response = self.client.post(self.url, {'factors_and_proofs': self.payload(factors, proofs), 'csrf_token': csrf_token})
         self.assertEqual(response.content, b"FAILURE")
         self.assertIsNone(self.stored_factors())
+
+
+class TrusteeCheckTests(WebTest):
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        admin = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-trustee-check', name='Test Trustee Check',
+            description='Trustee check', admin=admin)
+        self.election.uuid = str(uuid.uuid4())
+        self.election.save()
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
+        self.trustee = self.election.get_helios_trustee()
+
+    def test_unknown_trustee_is_404(self):
+        response = self.client.get("/helios/elections/%s/trustees/%s/check-sk" % (self.election.uuid, uuid.uuid4()))
+        self.assertStatusCode(response, 404)
+
+    def test_known_trustee_not_logged_in_is_403(self):
+        response = self.client.get("/helios/elections/%s/trustees/%s/check-sk" % (self.election.uuid, self.trustee.uuid))
+        self.assertStatusCode(response, 403)
