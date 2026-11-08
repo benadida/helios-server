@@ -200,6 +200,8 @@ Once you do this, the tally will visible to you, the administrator, only.
 {% if question.unfilled_seats %}
 <p><em>Tie: the answers marked (tied) received the same number of votes, so {{question.unfilled_seats}} seat{{question.unfilled_seats|pluralize}} {{question.unfilled_seats|pluralize:"is,are"}} left unfilled.</em></p>
 {% endif %}
+{% empty %}
+<p><em>The tally could not be decrypted, so there is no result to show.</em></p>
 {% endfor %}
 
 {% else %}

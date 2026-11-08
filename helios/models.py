@@ -40,6 +40,21 @@ class ElectionManager(models.Manager):
   def get_queryset(self):
     return super().get_queryset().filter(deleted_at__isnull=True)
 
+class TallyDecryptionError(Exception):
+  """
+  Raised when the trustees' decryption factors don't decrypt the tally.
+  """
+  pass
+
+
+def result_is_complete(result):
+  """
+  True when result has a count for every answer. Answers whose decrypted
+  value isn't in the discrete-log table come back as None.
+  """
+  return bool(result) and all(count is not None for question in result for count in question)
+
+
 class Election(HeliosModel):
   admin = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -533,7 +548,14 @@ class Election(HeliosModel):
     trustees = Trustee.get_by_election(self)
     decryption_factors = [t.decryption_factors for t in trustees]
 
-    self.result = self.encrypted_tally.decrypt_from_factors(decryption_factors, self.public_key)
+    result = self.encrypted_tally.decrypt_from_factors(decryption_factors, self.public_key)
+
+    # a count the discrete-log table can't find comes back as None: the
+    # combined factors don't decrypt the tally, so there is no result to keep
+    if not result_is_complete(result):
+      raise TallyDecryptionError("the trustees' decryption factors do not decrypt the tally")
+
+    self.result = result
 
     self.append_log(ElectionLog.DECRYPTIONS_COMBINED)
 
@@ -712,7 +734,7 @@ class Election(HeliosModel):
 
   @property
   def pretty_result(self):
-    if not self.result:
+    if not result_is_complete(self.result):
       return None
 
     raw_result = self.result

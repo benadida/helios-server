@@ -4317,3 +4317,74 @@ class VoterPasswordLoginReturnUrlTests(WebTest):
         response = self._login('wrong', '/', '?' + urlencode({'login_url': '@example.com/elsewhere'}))
         self.assertTrue(response['Location'].startswith(settings.SECURE_URL_HOST + self.cast_confirm_url + '?'),
                         response['Location'])
+
+
+class UndecryptableTallyTests(WebTest):
+    """Decryption factors that don't decrypt the tally leave no result, and don't break the election page."""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.admin = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-undecryptable-tally', name='Test Undecryptable Tally',
+            description='Undecryptable tally', admin=self.admin)
+        self.election.uuid = str(uuid.uuid4())
+        self.election.questions = [{"answer_urls": [None, None], "answers": ["Yes", "No"], "choice_type": "approval", "max": 1, "min": 0, "question": "Test?", "result_type": "absolute", "short_name": "Test?", "tally_type": "homomorphic"}]
+        self.election.save()
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
+        voter = models.Voter(uuid=str(uuid.uuid4()), election=self.election, voter_login_id='v1',
+                             voter_name='Voter One', voter_email='v1@example.com')
+        voter.generate_password()
+        voter.save()
+        self.election.freeze()
+
+        tally = self.election.init_tally()
+        tally.add_vote(homomorphic.EncryptedVote.fromElectionAndAnswers(self.election, [[0]]), verify_p=False)
+        self.election.encrypted_tally = tally
+        self.election.save()
+
+        self.trustee = self.election.get_helios_trustee()
+
+    def set_trustee_factors(self, factors):
+        self.trustee.decryption_factors = factors
+        self.trustee.save()
+
+    def correct_factors(self):
+        tally = self.election.encrypted_tally
+        tally.init_election(self.election)
+        factors, _ = tally.decryption_factors_and_proofs(self.trustee.secret_key)
+        return factors
+
+    def login_admin(self):
+        self.client.get("/")
+        session = self.client.session
+        session['user'] = {'type': self.admin.user_type, 'user_id': self.admin.user_id}
+        session.save()
+
+    def combine(self):
+        self.login_admin()
+        return self.client.post("/helios/elections/%s/combine_decryptions" % self.election.uuid,
+                                {'csrf_token': self.client.session['csrf_token']})
+
+    def test_bad_factors_are_not_saved_as_result(self):
+        # factors of 1 leave the ciphertext's beta as-is, which isn't a small power of g
+        self.set_trustee_factors([[1 for _ in q] for q in self.correct_factors()])
+        with self.assertLogs(level='ERROR'):
+            response = self.combine()
+        self.assertContains(response, "don't decrypt the tally, so no result was saved")
+        self.assertIsNone(models.Election.objects.get(uuid=self.election.uuid).result)
+
+    def test_good_factors_are_saved_as_result(self):
+        self.set_trustee_factors(self.correct_factors())
+        response = self.combine()
+        self.assertRedirects(response, "/helios/elections/%s/view" % self.election.uuid)
+        self.assertEqual(models.Election.objects.get(uuid=self.election.uuid).result, [[1, 0]])
+
+    def test_view_with_undecrypted_counts_does_not_500(self):
+        # a result saved before this check existed can hold None counts
+        self.election.result = [[None, None]]
+        self.election.result_released_at = datetime.datetime.utcnow()
+        self.election.save()
+        response = self.client.get("/helios/elections/%s/view" % self.election.uuid)
+        self.assertContains(response, "The tally could not be decrypted")
