@@ -1587,6 +1587,14 @@ class ElectionBlackboxTests(WebTest):
 
         self._do_tally(election_id)
 
+    def test_cast_vote_not_stored_without_verification_task(self):
+        election_id, username, password = self._setup_complete_election()
+        with mock.patch('helios.views.tasks.cast_vote_verify_and_store') as verify_task:
+            verify_task.enqueue.side_effect = RuntimeError("queue unavailable")
+            with self.assertRaises(RuntimeError):
+                self._cast_ballot(election_id, username, password)
+        self.assertFalse(models.CastVote.objects.filter(voter__election__uuid=election_id).exists())
+
     def test_do_complete_election_private(self):
         # private election
         election_id, username, password = self._setup_complete_election({'private_p' : "True"})

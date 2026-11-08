@@ -937,19 +937,20 @@ def one_election_cast_confirm(request, election):
     if not voter:
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_confirm, args=[election.uuid]))
     
-    # don't store the vote in the voter's data structure until verification
-    cast_vote.save()
-
     # status update?
     if request.POST.get('status_update', False):
       status_update_message = request.POST.get('status_update_message')
     else:
       status_update_message = None
 
-    # launch the verification task
-    tasks.cast_vote_verify_and_store.enqueue(
-      cast_vote_id = cast_vote.id,
-      status_update_message = status_update_message)
+    # don't store the vote in the voter's data structure until verification.
+    # Tasks are queued in the database, so the vote and its verification task
+    # are committed together and the worker sees neither before the commit.
+    with transaction.atomic():
+      cast_vote.save()
+      tasks.cast_vote_verify_and_store.enqueue(
+        cast_vote_id = cast_vote.id,
+        status_update_message = status_update_message)
     
     # remove the vote from the store
     del request.session['encrypted_vote']
@@ -1357,9 +1358,9 @@ def one_election_compute_tally(request, election):
     election.voting_ended_at = datetime.datetime.utcnow()
 
   election.tallying_started_at = datetime.datetime.utcnow()
-  election.save()
-
-  tasks.election_compute_tally.enqueue(election_id = election.id)
+  with transaction.atomic():
+    election.save()
+    tasks.election_compute_tally.enqueue(election_id = election.id)
 
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW,args=[election.uuid]))
 
