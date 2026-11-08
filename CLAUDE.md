@@ -156,3 +156,4 @@ Key environment variables: `DEBUG`, `SECRET_KEY`, `DATABASE_URL`, `AUTH_ENABLED_
 - Tests use Django's TestCase with django-webtest
 - Fixtures are in `helios/fixtures/`
 - Test classes: `ElectionModelTests`, `VoterModelTests`, `ElectionBlackboxTests`, etc.
+- Background tasks always go through the database queue, in tests too. Tests that trigger a task call `run_queued_tasks()` (in `helios/tests.py`) before checking its effects; it runs the queue until empty and fails if any task failed.

@@ -51,17 +51,45 @@ uv run python manage.py runserver
 ```
 
 * Start the background task worker, which verifies cast votes, sends emails,
-  processes voter files and computes tallies. Tasks are queued in the database.
+  processes voter files and computes tallies.
 
 ```
 uv run python manage.py db_worker
 ```
+
+## Background Tasks
+
+Background tasks are queued in the PostgreSQL database (with `django-tasks` and its
+`django-tasks-db` backend); there is no separate message broker. Every task goes
+through this queue, so without a running `db_worker`, cast votes stay unverified,
+emails aren't sent and tallies aren't computed, in development too.
+
+* The worker runs one task at a time. To run more at once, start more `db_worker`
+  processes; each task is claimed by only one of them.
+
+* Cast vote verification runs ahead of other waiting tasks such as bulk voter emails.
 
 * Finished tasks stay in the database; prune them regularly, e.g. daily:
 
 ```
 uv run python manage.py prune_db_task_results
 ```
+
+* The stats page shows how many votes are waiting for verification; "force it"
+  re-queues them.
+
+## Upgrading from Celery and RabbitMQ
+
+Older versions of Helios used Celery with RabbitMQ. To upgrade:
+
+* Deploy at a quiet time, since tasks still waiting in RabbitMQ won't be run.
+
+* Run `uv run python manage.py migrate` to create the task table, and replace the
+  Celery worker with `db_worker` (see `Procfile`).
+
+* On the stats page, use "force it" to re-queue any cast votes that were still unverified.
+
+* Remove RabbitMQ and the `CELERY_BROKER_URL` setting.
 
 ## Google Auth Configuration
 
