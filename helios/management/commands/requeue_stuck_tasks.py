@@ -13,13 +13,15 @@ from django_tasks_db.models import DBTaskResult
 # re-running these would email every voter again
 NOT_REQUEUED = ['helios.tasks.voters_email', 'helios.tasks.voters_notify']
 
+STUCK_AFTER_MINUTES = 120
+
 
 class Command(BaseCommand):
   help = 'requeue background tasks that have been running for too long'
 
   def add_arguments(self, parser):
-    parser.add_argument('--older-than', type=int, default=120,
-                        help='minutes a task must have been running; longer than the longest tally (default 120)')
+    parser.add_argument('--older-than', type=int, default=STUCK_AFTER_MINUTES,
+                        help='minutes a task must have been running; longer than the longest tally (default %d)' % STUCK_AFTER_MINUTES)
     parser.add_argument('--dry-run', action='store_true')
 
   def handle(self, *args, **options):

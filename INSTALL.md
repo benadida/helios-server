@@ -81,7 +81,8 @@ uv run python manage.py prune_db_task_results
 uv run python manage.py requeue_stuck_tasks --older-than 120
 ```
 
-* The stats page shows how many votes are waiting for verification; "force it"
+* The stats page shows how many tasks are waiting, running, stuck and failed in
+  the last day, and how many votes are waiting for verification; "force it"
   re-queues them.
 
 ## Upgrading from Celery and RabbitMQ
