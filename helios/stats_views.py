@@ -6,7 +6,7 @@ import datetime
 
 from django.core.paginator import Paginator
 from django.urls import reverse
-from django.db.models import Max, Count, Q
+from django.db.models import Count, F, Max, Q
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
@@ -77,11 +77,12 @@ def recent_votes(request):
   # elections with a vote in the last 24 hours, ordered by most recent cast vote time
   # also annotated with number of votes cast in last 24 hours
   cutoff = datetime.datetime.utcnow() - datetime.timedelta(days=1)
-  elections_with_votes_in_24hours = Election.objects.filter(
-    voter__castvote__cast_at__gt=cutoff
-  ).distinct().annotate(
-    last_cast_vote=Max('voter__castvote__cast_at', filter=Q(voter__castvote__cast_at__gt=cutoff)),
-    num_recent_cast_votes=Count('voter__castvote', filter=Q(voter__castvote__cast_at__gt=cutoff))
+  elections_with_votes_in_24hours = CastVote.objects.filter(
+    cast_at__gt=cutoff, voter__election__deleted_at=None
+  ).values(
+    election_id=F('voter__election'), uuid=F('voter__election__uuid'), name=F('voter__election__name')
+  ).annotate(
+    last_cast_vote=Max('cast_at'), num_recent_cast_votes=Count('id')
   ).order_by('-last_cast_vote')
 
   return render_template(request, "stats_recent_votes", {'elections' : elections_with_votes_in_24hours})

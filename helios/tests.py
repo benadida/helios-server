@@ -1349,6 +1349,23 @@ class ElectionBlackboxTests(WebTest):
         self.assertStatusCode(response, 403)
         self.clear_login()
 
+    def test_stats_recent_votes(self):
+        self.setup_login(from_scratch=True, user_id='mccio@github.com', user_type='google')
+        voter = models.Voter.objects.create(uuid=str(uuid.uuid4()), election=self.election, voter_login_id='v1',
+                                            voter_name='V1', voter_email='v1@example.com')
+        for hours_ago in (1, 2, 30):
+            cast_vote = models.CastVote.objects.create(voter=voter, vote_hash='hash%d' % hours_ago)
+            models.CastVote.objects.filter(id=cast_vote.id).update(
+                cast_at=datetime.datetime.utcnow() - datetime.timedelta(hours=hours_ago))
+
+        response = self.client.get("/helios/stats/recent-votes", follow=False)
+        self.assertContains(response, '%s</a>' % self.election.name)
+        self.assertContains(response, "2 recently cast votes")
+
+        self.election.soft_delete()
+        response = self.client.get("/helios/stats/recent-votes", follow=False)
+        self.assertNotContains(response, "recently cast votes")
+
     def _setup_complete_election(self, election_params=None):
         "do the setup part of a whole election"
 

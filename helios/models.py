@@ -1179,6 +1179,7 @@ class CastVote(HeliosModel):
     app_label = 'helios'
     indexes = [
       models.Index(fields=['verified_at', 'invalidated_at'], name='helios_cv_verified_invld_idx'),
+      models.Index(fields=['cast_at'], name='helios_cv_cast_at_idx'),
     ]
 
   @property
