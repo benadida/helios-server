@@ -1325,8 +1325,13 @@ class ElectionBlackboxTests(WebTest):
 
     def test_get_election_stats(self):
         self.setup_login(from_scratch=True, user_id='mccio@github.com', user_type='google')
+        DBTaskResult.objects.create(
+            status=TaskResultStatus.FAILED, task_path='helios.tasks.election_compute_tally',
+            args_kwargs={'args': [], 'kwargs': {}}, backend_name='default', run_after=timezone.now(),
+            finished_at=timezone.now())
         response = self.client.get("/helios/stats/", follow=False)
         self.assertStatusCode(response, 200)
+        self.assertContains(response, "<b>1</b> failed in the last day")
         response = self.client.post("/helios/stats/force-queue", {
                 "csrf_token": self.client.session['csrf_token']}, follow=False)
         self.assertRedirects(response, "/helios/stats/")
