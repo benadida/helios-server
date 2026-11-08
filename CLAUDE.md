@@ -149,7 +149,7 @@ from settings import get_from_env
 MY_SETTING = get_from_env('MY_SETTING', 'default_value')
 ```
 
-Key environment variables: `DEBUG`, `SECRET_KEY`, `DATABASE_URL`, `TASKS_IMMEDIATE`, `AUTH_ENABLED_AUTH_SYSTEMS`
+Key environment variables: `DEBUG`, `SECRET_KEY`, `DATABASE_URL`, `AUTH_ENABLED_AUTH_SYSTEMS`
 
 ## Testing
 

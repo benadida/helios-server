@@ -57,8 +57,6 @@ uv run python manage.py runserver
 uv run python manage.py db_worker
 ```
 
-* Or, to run tasks inline without a worker (development only), set `TASKS_IMMEDIATE=1`.
-
 * Finished tasks stay in the database; prune them regularly, e.g. daily:
 
 ```

@@ -337,12 +337,8 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)s %(message)s'
 )
 
-# background tasks are stored in the database and run by `manage.py db_worker`;
-# TASKS_IMMEDIATE=1 runs them inline instead, with no worker
-if TESTING or get_from_env('TASKS_IMMEDIATE', '0') == '1':
-    TASKS = {'default': {'BACKEND': 'django_tasks.backends.immediate.ImmediateBackend'}}
-else:
-    TASKS = {'default': {'BACKEND': 'django_tasks_db.DatabaseBackend', 'QUEUES': ['default']}}
+# background tasks are stored in the database and run by `manage.py db_worker`
+TASKS = {'default': {'BACKEND': 'django_tasks_db.DatabaseBackend', 'QUEUES': ['default']}}
 
 # Rollbar Error Logging
 ROLLBAR_ACCESS_TOKEN = get_from_env('ROLLBAR_ACCESS_TOKEN', None)
