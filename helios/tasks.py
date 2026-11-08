@@ -144,6 +144,9 @@ Helios
 @task()
 def voter_file_process(voter_file_id):
     voter_file = VoterFile.objects.get(id=voter_file_id)
+    # a requeued task may find the file already processed; reprocessing would reset its counts
+    if voter_file.processing_finished_at:
+        return
     voter_file.process()
 
     skipped = ""

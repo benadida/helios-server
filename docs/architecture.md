@@ -227,6 +227,10 @@ election creator).
 - There are no automatic retries. Finished tasks stay in the table until
   `manage.py prune_db_task_results` deletes them. The `/helios/stats/` page
   re-queues cast votes still waiting for verification.
+- A worker killed mid-task leaves that task marked running.
+  `manage.py requeue_stuck_tasks --older-than 120` puts such tasks back in
+  the queue; bulk voter emails are only listed, since rerunning one would
+  email every voter again.
 - Tests use the same database queue: `run_queued_tasks()` in
   `helios/tests.py` runs the worker until the queue is empty, and fails the
   test if any task failed.

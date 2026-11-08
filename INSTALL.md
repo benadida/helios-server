@@ -75,6 +75,12 @@ emails aren't sent and tallies aren't computed, in development too.
 uv run python manage.py prune_db_task_results
 ```
 
+* A worker killed mid-task leaves that task stuck as running. Put tasks running longer than 120 minutes back in the queue (bulk voter emails are listed, not requeued):
+
+```
+uv run python manage.py requeue_stuck_tasks --older-than 120
+```
+
 * The stats page shows how many votes are waiting for verification; "force it"
   re-queues them.
 

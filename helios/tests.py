@@ -7,6 +7,7 @@ import logging
 import random as stdlib_random
 import re
 import uuid
+from io import StringIO
 from types import SimpleNamespace
 from unittest import mock
 from urllib.parse import urlencode
@@ -15,8 +16,11 @@ import django_webtest
 from django.conf import settings
 from django.core import mail
 from django.core.files import File
+from django.core.management import call_command
 from django.test import TestCase
+from django.utils import timezone
 from django.utils.html import escape as html_escape
+from django_tasks import TaskResultStatus
 from django_tasks_db.management.commands.db_worker import Worker
 from django_tasks_db.models import DBTaskResult
 
@@ -223,6 +227,15 @@ class ElectionModelTests(TestCase):
         self.assertEqual(added, 2)
         self.assertEqual(models.VoterFile.objects.get(id=vf.id).num_voters, 2)
         self.assertEqual(vf.num_skipped, 2)
+
+    def test_voter_file_process_task_skips_processed_file(self):
+        # a requeued task must not reprocess the file and reset its counts to zero
+        vf = models.VoterFile.objects.create(election=self.election, voter_file_content='password,v1,v1@example.com,Voter One\n')
+        for _ in range(2):
+            tasks.voter_file_process.enqueue(vf.id)
+            run_queued_tasks()
+        self.assertEqual(models.VoterFile.objects.get(id=vf.id).num_voters, 1)
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_check_issues_before_freeze(self):
         # should be three issues: no trustees, and no questions, and no voters
@@ -4528,3 +4541,36 @@ class CookieTestMissingContinueUrlTests(WebTest):
         response = self.client.get('/helios/testcookie', {'continue_url': continue_url})
         self.assertStatusCode(response, 302)
         self.assertIn(urlencode({'continue_url': continue_url}), response['Location'])
+
+
+class RequeueStuckTasksTests(TestCase):
+    def _task_result(self, task_path, started_minutes_ago):
+        return DBTaskResult.objects.create(
+            status=TaskResultStatus.RUNNING, task_path=task_path, args_kwargs={'args': [1], 'kwargs': {}},
+            backend_name='default', run_after=timezone.now(),
+            started_at=timezone.now() - datetime.timedelta(minutes=started_minutes_ago))
+
+    def test_requeues_only_old_running_tasks(self):
+        stuck = self._task_result('helios.tasks.election_compute_tally', 180)
+        running = self._task_result('helios.tasks.election_compute_tally', 10)
+        bulk_email = self._task_result('helios.tasks.voters_email', 180)
+
+        out = StringIO()
+        call_command('requeue_stuck_tasks', '--older-than', '120', stdout=out)
+
+        for task_result in (stuck, running, bulk_email):
+            task_result.refresh_from_db()
+        self.assertEqual(stuck.status, TaskResultStatus.READY)
+        self.assertIsNone(stuck.started_at)
+        self.assertEqual(running.status, TaskResultStatus.RUNNING)
+        self.assertEqual(bulk_email.status, TaskResultStatus.RUNNING)
+        self.assertIn('requeued 1 tasks', out.getvalue())
+        self.assertIn('not requeued: %s' % bulk_email.id, out.getvalue())
+
+    def test_dry_run_changes_nothing(self):
+        stuck = self._task_result('helios.tasks.election_compute_tally', 180)
+        out = StringIO()
+        call_command('requeue_stuck_tasks', '--dry-run', stdout=out)
+        stuck.refresh_from_db()
+        self.assertEqual(stuck.status, TaskResultStatus.RUNNING)
+        self.assertIn('would requeue 1 tasks', out.getvalue())
