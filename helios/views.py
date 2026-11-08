@@ -162,6 +162,9 @@ def trustee_keygenerator(request, election, trustee):
   """
   A key generator with the current params, like the trustee home but without a specific election.
   """
+  if election.frozen_at:
+    return HttpResponseForbidden("the election is frozen, so trustee keys can no longer be changed")
+
   eg_params_json = utils.to_json(ELGAMAL_PARAMS_LD_OBJECT.toJSONDict())
 
   return render_template(request, "election_keygenerator", {'eg_params_json': eg_params_json, 'election': election, 'trustee': trustee})
@@ -608,6 +611,11 @@ def trustee_check_sk(request, election, trustee):
 def trustee_upload_pk(request, election, trustee):
   if request.method == "POST":
     check_csrf(request)
+
+    # once the election is frozen, its public key is fixed from the trustees'
+    # keys and votes are encrypted under it: a new trustee key couldn't decrypt them
+    if election.frozen_at:
+      return HttpResponseForbidden("the election is frozen, so trustee keys can no longer be changed")
 
     # get the public key and the hash, and add it
     public_key_and_proof = utils.from_json(request.POST['public_key_json'])

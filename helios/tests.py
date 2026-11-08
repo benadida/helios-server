@@ -4408,3 +4408,62 @@ class UndecryptableTallyTests(WebTest):
         response = self.combine()
         self.assertRedirects(response, "/helios/elections/%s/view" % self.election.uuid)
         self.assertEqual(models.Election.objects.get(uuid=self.election.uuid).result, [[1, 0]])
+
+
+class TrusteeUploadPkTests(WebTest):
+    """A trustee can replace their key until the election is frozen, but not after."""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        admin = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-upload-pk', name='Test Upload PK',
+            description='Upload pk', admin=admin)
+        self.election.uuid = str(uuid.uuid4())
+        self.election.questions = [{"answer_urls": [None, None], "answers": ["Yes", "No"], "choice_type": "approval", "max": 1, "min": 0, "question": "Test?", "result_type": "absolute", "short_name": "Test?", "tally_type": "homomorphic"}]
+        self.election.save()
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
+        voter = models.Voter(uuid=str(uuid.uuid4()), election=self.election, voter_login_id='v1',
+                             voter_name='Voter One', voter_email='v1@example.com')
+        voter.generate_password()
+        voter.save()
+        self.trustee = self.election.get_helios_trustee()
+        self.original_pk_hash = self.trustee.public_key_hash
+        self.base = "/helios/elections/%s/trustees/%s" % (self.election.uuid, self.trustee.uuid)
+
+    def login_trustee(self):
+        self.client.get("/")
+        session = self.client.session
+        session['helios_trustee_uuid'] = self.trustee.uuid
+        session.save()
+        return self.client.session['csrf_token']
+
+    def upload_new_key(self):
+        csrf_token = self.login_trustee()
+        keypair = views.ELGAMAL_PARAMS.generate_keypair()
+        pok = keypair.sk.prove_sk(algs.DLog_challenge_generator)
+        public_key_json = utils.to_json({
+            'public_key': datatypes.LDObject.instantiate(keypair.pk, datatype='legacy/EGPublicKey').toDict(),
+            'pok': datatypes.LDObject.instantiate(pok, datatype='legacy/DLogProof').toDict()})
+        return self.client.post(self.base + "/upoad-pk", {'csrf_token': csrf_token, 'public_key_json': public_key_json})
+
+    def stored_pk_hash(self):
+        return models.Trustee.objects.get(id=self.trustee.id).public_key_hash
+
+    def test_key_can_be_replaced_before_freeze(self):
+        response = self.upload_new_key()
+        self.assertStatusCode(response, 302)
+        self.assertNotEqual(self.stored_pk_hash(), self.original_pk_hash)
+
+    def test_key_cannot_be_replaced_after_freeze(self):
+        self.election.freeze()
+        response = self.upload_new_key()
+        self.assertStatusCode(response, 403)
+        self.assertEqual(self.stored_pk_hash(), self.original_pk_hash)
+
+    def test_key_generator_unavailable_after_freeze(self):
+        self.login_trustee()
+        self.assertStatusCode(self.client.get(self.base + "/keygenerator"), 200)
+        self.election.freeze()
+        self.assertStatusCode(self.client.get(self.base + "/keygenerator"), 403)
