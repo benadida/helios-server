@@ -1,19 +1,35 @@
+# `fly deploy` builds from your working directory, not from git,
+# so anything listed in .gitignore must be excluded here too.
+
+# version control and editors
 .git
+.github
 .gitignore
+.idea
+.DS_Store
+*~
+
+# local environments, caches and build output
 .venv
 venv*
 __pycache__
 *.pyc
-.DS_Store
 *.egg-info
 .cache
-.idea
-celerybeat-*
 media/*
-*.md
-!CLAUDE.md
+
+# local secrets and deploy scripts
+env.sh
+.env
+.env.*
+deploy-latest.sh
+deploy-staging.sh
+*.dump
+
+# not needed at runtime
 docs/
 selenium/
-deploy-staging.sh
 reset.sh
 settings_ci.py
+fly.toml
+*.md

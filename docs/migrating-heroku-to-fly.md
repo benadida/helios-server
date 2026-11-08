@@ -4,26 +4,13 @@ This guide moves an existing Helios server, with its database and live elections
 
 Helios now keeps its background task queue in PostgreSQL (`django-tasks` with the `django-tasks-db` backend; see `INSTALL.md`, "Background Tasks"). There is no message broker, so **the database is the only stateful service to migrate**. It holds the elections, the voters, and every waiting background task. That makes the move simpler, but it means the database dump also carries the queue, which this guide handles explicitly.
 
-It assumes the Fly support files from benadida/helios-server#482 (`Dockerfile`, `fly.toml`, `.dockerignore`), with these settings in `fly.toml`:
+It uses the repo's Fly files: `fly.toml`, `Dockerfile` and `.dockerignore`. `fly.toml` already handles the settings this guide relies on:
 
-```toml
-kill_signal = "SIGTERM"
-kill_timeout = 300          # let db_worker finish the task it's running
-
-[env]
-  DEBUG = "0"
-  SSL = "1"
-  HSTS = "1"
-
-[deploy]
-  release_command = "/app/.venv/bin/python manage.py migrate --noinput"
-
-[processes]
-  web = "/app/.venv/bin/gunicorn wsgi:application -b 0.0.0.0:8080 -w 4"
-  worker = "/app/.venv/bin/python manage.py db_worker"
-```
-
-If your `fly.toml` still has a `celery` worker command, replace it with `db_worker` as above. The notes in each step say what breaks if one of the other settings is missing.
+- runs migrations on every deploy (`[deploy] release_command`);
+- pins `DEBUG = "0"`, `SSL = "1"`, `HSTS = "1"`;
+- runs a `web` process (gunicorn) and a `worker` process (`manage.py db_worker`);
+- gives the worker 5 minutes to finish its current task on shutdown (`kill_signal = "SIGTERM"`, `kill_timeout = 300`);
+- keeps one web machine always running.
 
 > Fly's CLI and products change often. Check each `fly` command against `fly <command> --help` and the current Fly docs before running it.
 
@@ -161,10 +148,7 @@ Do a full dry run first, while Heroku keeps serving traffic.
    ```bash
    fly scale count worker=0 -a YOUR_FLY_APP --yes
    ```
-   The `release_command` runs `manage.py migrate` before new machines start. **If your `fly.toml` has no `release_command`**, run it yourself after each deploy:
-   ```bash
-   fly ssh console -a YOUR_FLY_APP -C '/app/.venv/bin/python manage.py migrate --noinput'
-   ```
+   The `release_command` in `fly.toml` runs `manage.py migrate` before the new release starts; if it fails, the deploy stops.
 5. Clear the copied queue on the **rehearsal database only**. These tasks belong to Heroku, which is still running and will run them itself:
    ```bash
    fly ssh console -a YOUR_FLY_APP -C '/app/.venv/bin/python manage.py shell -c "from django_tasks import TaskResultStatus; from django_tasks_db.models import DBTaskResult; print(DBTaskResult.objects.filter(status__in=[TaskResultStatus.READY, TaskResultStatus.RUNNING]).delete())"'
@@ -295,8 +279,8 @@ Once you're confident:
 | Maintenance mode | `heroku maintenance:on` | none built in; `fly scale count web=0` or serve a static page |
 
 **Production recommendations**
-- Keep `min_machines_running = 1` (or higher) during elections; scale-to-zero means cold starts for voters.
+- `fly.toml` keeps one web machine running (`min_machines_running = 1`). Don't lower it to 0 for production: voters would hit cold starts.
 - Each `db_worker` runs one task at a time, and several workers are safe, since each task is claimed by exactly one. Scale `worker` to 2+ so a long tally doesn't hold up vote verification and emails.
-- Give the `worker` process group ≥1 GB. Tallying and bulk email run there.
+- `fly.toml` gives each process 1 GB. Raise the worker's for very large elections, since tallying runs there: `fly scale memory 2048 --process-group worker`.
 - Deploys restart workers. `db_worker` finishes its current task when it receives SIGTERM, but only within `kill_timeout`. A tally that runs longer is killed mid-task and needs `requeue_stuck_tasks`. Avoid deploying during a tally.
 - The database is now the single point of failure for both data and the queue. Back it up independently of Fly (e.g. scheduled `pg_dump` to object storage), especially with unmanaged Postgres.

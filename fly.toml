@@ -1,57 +1,62 @@
-# Fly.io deployment configuration for Helios Voting
+# Fly.io configuration for Helios.
 #
-# To deploy:
-#   1. Install flyctl: https://fly.io/docs/flyctl/install/
-#   2. Create the app: fly apps create your-app-name
-#   3. Create a Postgres database: fly postgres create
-#   4. Attach it: fly postgres attach your-db-name
-#   5. Set secrets:
-#        fly secrets set SECRET_KEY="your-secret-key"
-#        fly secrets set ALLOWED_HOSTS="your-app-name.fly.dev"
-#        fly secrets set URL_HOST="https://your-app-name.fly.dev"
-#        fly secrets set SSL=1
-#        fly secrets set HSTS=1
-#        fly secrets set DEBUG=0
-#   6. Deploy: fly deploy
+# First deploy (see docs/migrating-heroku-to-fly.md to move an existing Heroku app):
+#   fly launch --no-deploy --copy-config --name YOUR_APP   # sets `app` below
+#   fly postgres create --name YOUR_APP-db                 # or Fly Managed Postgres
+#   fly postgres attach YOUR_APP-db                        # sets DATABASE_URL
+#   fly secrets set DATABASE_SSL_REQUIRE=0                 # only for `fly postgres attach` URLs
+#   fly secrets set SECRET_KEY=... EMAIL_OPTOUT_SECRET=... \
+#     URL_HOST=https://YOUR_APP.fly.dev ALLOWED_HOSTS=YOUR_APP.fly.dev \
+#     MAILGUN_API_KEY=... DEFAULT_FROM_EMAIL=... DEFAULT_FROM_NAME=...
+#   fly deploy
 #
-# For background worker (Celery), scale a separate process group:
-#   fly scale count worker=1
-#
-# Note: Fly Postgres uses internal networking without SSL,
-#       so DATABASE_SSL_REQUIRE defaults to 0 (override via env if needed).
+# Background tasks are queued in Postgres, so there is no broker to set up.
 
-app = "helios-voting"
+app = "YOUR_APP"
 primary_region = "iad"
 
-[build]
+# db_worker finishes the task it's running on SIGTERM; give it time to
+kill_signal = "SIGTERM"
+kill_timeout = 300
+
+[deploy]
+  # runs in a temporary machine before the new release starts
+  release_command = "python manage.py migrate --noinput"
 
 [env]
-  PORT = "8080"
-  # Fly Postgres connects over internal network without SSL
-  DATABASE_SSL_REQUIRE = "0"
+  # DEBUG defaults to on in settings.py, which enables the devlogin backdoor
+  DEBUG = "0"
+  SSL = "1"
+  HSTS = "1"
 
 [processes]
-  web = "uv run gunicorn wsgi:application -b 0.0.0.0:8080 -w 4"
-  worker = "uv run celery --app helios worker --events --beat --concurrency 1"
+  web = "gunicorn wsgi:application -b 0.0.0.0:8080 -w 4"
+  worker = "python manage.py db_worker"
 
 [http_service]
   internal_port = 8080
   force_https = true
+  processes = ["web"]
+  # keep a machine up so voters never wait for a cold start
   auto_stop_machines = "stop"
   auto_start_machines = true
-  min_machines_running = 0
-  processes = ["web"]
+  min_machines_running = 1
 
+  # gunicorn's 4 sync workers serve 4 requests at a time
   [http_service.concurrency]
-    type = "connections"
-    hard_limit = 250
-    soft_limit = 200
+    type = "requests"
+    soft_limit = 8
+    hard_limit = 16
 
 [[vm]]
-  memory = "512mb"
+  processes = ["web"]
+  memory = "1gb"
   cpu_kind = "shared"
   cpus = 1
 
-[[statics]]
-  guest_path = "/app/server_ui/media"
-  url_prefix = "/static/"
+[[vm]]
+  # tallying and bulk email run here
+  processes = ["worker"]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1
