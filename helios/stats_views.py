@@ -36,7 +36,7 @@ def force_queue(request):
 
   votes_in_queue = CastVote.objects.filter(invalidated_at=None, verified_at=None)
   for cv in votes_in_queue:
-    tasks.cast_vote_verify_and_store.delay(cv.id)
+    tasks.cast_vote_verify_and_store.enqueue(cv.id)
 
   return HttpResponseRedirect(reverse(url_names.stats.STATS_HOME))
 

@@ -17,6 +17,8 @@ from django.core import mail
 from django.core.files import File
 from django.test import TestCase
 from django.utils.html import escape as html_escape
+from django_tasks_db.management.commands.db_worker import Worker
+from django_tasks_db.models import DBTaskResult
 
 import helios.datatypes as datatypes
 import helios.models as models
@@ -28,6 +30,17 @@ from helios.crypto import elgamal as crypto_elgamal
 from helios.crypto import utils as crypto_utils
 from helios.workflows import homomorphic
 from helios_auth import models as auth_models
+
+
+def run_queued_tasks():
+    """run every queued background task, as `manage.py db_worker --batch` would, and fail on any task error"""
+    worker = Worker(queue_names=['*'], excluded_queue_names=[], interval=0, batch=True, backend_name='default',
+                    startup_delay=False, max_tasks=None, worker_id='test-worker')
+    # the worker closes connections that are in a transaction, which would end the test's transaction
+    with mock.patch('django_tasks_db.management.commands.db_worker.close_old_connections'):
+        worker.run()
+    failed = DBTaskResult.objects.failed()
+    assert not failed.exists(), [(t.task_path, t.traceback) for t in failed]
 
 
 class RandomMpzLtTests(TestCase):
@@ -1150,8 +1163,10 @@ class ElectionBlackboxTests(WebTest):
         self._upload_voters(b"password,v1,v1@example.com,Voter One\n")
         url = "/helios/elections/%s/voters/upload" % self.election.uuid
         response = self.client.post(url, {'confirm_p': "1", 'csrf_token': self.client.session['csrf_token']})
+        run_queued_tasks()
         self.assertEqual(response.status_code, 302)
         response = self.client.post(url, {'confirm_p': "1", 'csrf_token': self.client.session['csrf_token']})
+        run_queued_tasks()
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response['location'].endswith("/helios/elections/%s/voters/list" % self.election.uuid))
 
@@ -1370,6 +1385,7 @@ class ElectionBlackboxTests(WebTest):
 
         # now we confirm the upload
         response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'confirm_p': "1", 'csrf_token': self.client.session['csrf_token']})
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
 
         # Try a latin-1 encoded file
@@ -1413,6 +1429,7 @@ class ElectionBlackboxTests(WebTest):
                 "suppress_election_links" : "0",
                 "send_to" : "all"
                 })
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
         num_messages_after = len(mail.outbox)
         self.assertEqual(num_messages_after - num_messages_before, NUM_VOTERS)
@@ -1469,6 +1486,7 @@ class ElectionBlackboxTests(WebTest):
             login_form['password'] = password
 
             response = login_form.submit()
+            run_queued_tasks()
         else:
             # here we should be at the cast-confirm page and logged in
             self.assertContains(cast_confirm_page, "CAST this ballot")
@@ -1479,6 +1497,7 @@ class ElectionBlackboxTests(WebTest):
             if 'status_update' in list(cast_form.fields.keys()):
                 cast_form['status_update'] = False
             response = cast_form.submit()
+            run_queued_tasks()
 
         self.assertRedirects(response, "%s/helios/elections/%s/cast_done" % (settings.URL_HOST, election_id))
 
@@ -1523,6 +1542,7 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.post("/helios/elections/%s/compute_tally" % election_id, {
                 "csrf_token" : self.client.session['csrf_token']                
                 })
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
 
         # should trigger helios decryption automatically
@@ -1584,6 +1604,7 @@ class ElectionBlackboxTests(WebTest):
         login_form['password'] = password
 
         response = login_form.submit()
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
 
         self._cast_ballot(election_id, username, password, need_login = False)
@@ -1658,6 +1679,7 @@ class ElectionBlackboxTests(WebTest):
             "/helios/elections/%s/voters/upload" % election_id,
             {"confirm_p": "1", "csrf_token": self.client.session["csrf_token"]}
         )
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
 
         # Verify first batch - should have 4 voters with aliases V1-V4
@@ -1679,6 +1701,7 @@ class ElectionBlackboxTests(WebTest):
             "/helios/elections/%s/voters/upload" % election_id,
             {"confirm_p": "1", "csrf_token": self.client.session["csrf_token"]}
         )
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
 
         # Verify all 7 voters have unique sequential aliases V1-V7
@@ -1733,6 +1756,7 @@ class ElectionBlackboxTests(WebTest):
             "/helios/elections/%s/voters/upload" % election_id,
             {"confirm_p": "1", "csrf_token": self.client.session["csrf_token"]}
         )
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
 
         # Verify voters were added
@@ -1798,6 +1822,7 @@ class ElectionBlackboxTests(WebTest):
             "/helios/elections/%s/voters/upload" % election_id,
             {"confirm_p": "1", "csrf_token": self.client.session["csrf_token"]}
         )
+        run_queued_tasks()
 
         # Add a question
         self.client.post("/helios/elections/%s/save_questions" % election_id, {
@@ -2017,10 +2042,7 @@ class EmailOptOutTests(TestCase):
             self.assertFalse(models.EmailOptOut.is_opted_out(email))
             
             # Call single_voter_email before opt-out is applied
-            result = tasks.single_voter_email.apply(args=[voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {}])
-            
-            # Debug: check if task completed successfully
-            self.assertTrue(result.successful())
+            tasks.single_voter_email.call(voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {})
             
             # The send_message method should have been called because voter is not opted out
             mock_send_message.assert_called_once()
@@ -2035,7 +2057,7 @@ class EmailOptOutTests(TestCase):
         with patch.object(models.Voter, 'send_message') as mock_send_message:
             
             # Call single_voter_email after opt-out is applied
-            tasks.single_voter_email.apply(args=[voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {}])
+            tasks.single_voter_email.call(voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {})
             
             # The send_message method should not have been called because voter is opted out
             mock_send_message.assert_not_called()
@@ -2103,12 +2125,12 @@ class EmailOptOutTests(TestCase):
         voter.save()
 
         num_messages_before = len(mail.outbox)
-        tasks.single_voter_email.apply(args=[voter.uuid, 'email/vote_subject.txt', 'email/vote_body.txt', {
+        tasks.single_voter_email.call(voter.uuid, 'email/vote_subject.txt', 'email/vote_body.txt', {
             'custom_subject': 'Vote now: A & B',
             'custom_message': 'Questions? Ask Q&A',
             'election_vote_url': 'http://example.com/vote?a=1&b=2',
             'election_url': 'http://example.com/election',
-        }])
+        })
 
         self.assertEqual(len(mail.outbox), num_messages_before + 1)
         message = mail.outbox[-1]
@@ -3112,7 +3134,7 @@ class VoterEmailCutoffViewTests(WebTest):
 
     def test_voters_email_accepts_custom_message(self):
         self.setup_login()
-        with mock.patch('helios.views.tasks.voters_email.delay') as voters_email:
+        with mock.patch('helios.views.tasks.voters_email') as voters_email:
             response = self.client.post(f'/helios/elections/{self.election.uuid}/voters/email', {
                 'csrf_token': self.client.session['csrf_token'],
                 'subject': 'Vote now',
@@ -3120,7 +3142,7 @@ class VoterEmailCutoffViewTests(WebTest):
                 'send_to': 'all'
             })
         self.assertRedirects(response, f'/helios/elections/{self.election.uuid}/view')
-        self.assertEqual(voters_email.call_args.kwargs['extra_vars']['custom_message'], 'Polls close <b>Friday</b>.')
+        self.assertEqual(voters_email.enqueue.call_args.kwargs['extra_vars']['custom_message'], 'Polls close <b>Friday</b>.')
 
     def test_voters_email_accessible_when_recent_tally(self):
         """Test that voters email page is accessible when tally is recent"""
@@ -3419,6 +3441,7 @@ class PasswordResendTests(WebTest):
             'csrf_token': csrf_token,
             'voter_id': 'testvoter'
         })
+        run_queued_tasks()
         self.assertStatusCode(response, 200)
         self.assertContains(response, 'email with your voting credentials has been sent')
 
@@ -3442,6 +3465,7 @@ class PasswordResendTests(WebTest):
             'csrf_token': csrf_token,
             'voter_id': 'nonexistent_voter'
         })
+        run_queued_tasks()
         self.assertStatusCode(response, 200)
         # Should still show success message to prevent enumeration attacks
         self.assertContains(response, 'email with your voting credentials has been sent')
@@ -3458,6 +3482,7 @@ class PasswordResendTests(WebTest):
             'csrf_token': csrf_token,
             'voter_id': ''
         })
+        run_queued_tasks()
         self.assertStatusCode(response, 200)
         self.assertContains(response, 'valid voter ID')
 
@@ -3501,6 +3526,7 @@ class PasswordResendTests(WebTest):
             'csrf_token': csrf_token,
             'voter_id': 'noemailvoter'
         })
+        run_queued_tasks()
         # Should still show success (doesn't reveal that email is missing)
         self.assertStatusCode(response, 200)
         self.assertContains(response, 'email with your voting credentials has been sent')

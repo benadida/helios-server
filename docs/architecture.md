@@ -6,8 +6,8 @@ and trustees, see [How Helios Works](how-helios-works.md).
 
 ## Overview
 
-Helios is a Django application backed by PostgreSQL, with Celery (over
-RabbitMQ) for background work. Ballots are encrypted in the voter's browser
+Helios is a Django application backed by PostgreSQL, which also holds the
+queue of background tasks (django-tasks with its database backend). Ballots are encrypted in the voter's browser
 by a JavaScript voting booth, so the server only receives encrypted ballots
 to cast. (A ballot the voter audits instead, if posted, includes its choices.) The server adds the encrypted ballots together homomorphically, the
 election's trustees each partially decrypt that encrypted tally, and the
@@ -19,10 +19,10 @@ partial decryptions are combined into the result.
  voting booth (heliosbooth/)  ──ballot──▶  Django: helios/, helios_auth/, server_ui/
  verifiers (heliosverifier/,  ◀──JSON───        │
    heliosbooth/single-ballot-verify.html)       ├── PostgreSQL
- trustee key/decrypt pages    ◀────────▶        └── Celery worker (RabbitMQ)
+ trustee key/decrypt pages    ◀────────▶        └── task worker (db_worker, queue in PostgreSQL)
 ```
 
-Runtime: Python 3.13, Django 5.2, PostgreSQL, Celery, dependencies managed
+Runtime: Python 3.13, Django 5.2, PostgreSQL, django-tasks, dependencies managed
 with `uv` (`pyproject.toml`, `uv.lock`). Cryptography on the server uses
 pycryptodome for hashing and randomness and Python integers for the group
 arithmetic.
@@ -31,7 +31,7 @@ arithmetic.
 
 | Path | Contents |
 | --- | --- |
-| `helios/` | The election application: models, views, crypto, Celery tasks, templates, tests. |
+| `helios/` | The election application: models, views, crypto, background tasks, templates, tests. |
 | `helios/crypto/` | ElGamal, zero-knowledge proofs, number theory, hashing helpers. |
 | `helios/workflows/homomorphic.py` | Encrypted answers, encrypted votes and the homomorphic tally. |
 | `helios/datatypes/` | JSON serialization of crypto and election objects (the `legacy/...` formats). |
@@ -107,7 +107,7 @@ All in `helios/models.py` except `User`:
    [Casting a ballot](#casting-a-ballot).
 5. **Tally** (`one_election_compute_tally`). Refused while any cast ballot is
    still waiting for verification. Ends voting if it hasn't ended, then a
-   Celery task multiplies together every voter's latest verified ballot to
+   background task multiplies together every voter's latest verified ballot to
    get the encrypted tally. If the election has a Helios trustee, a second
    task computes that trustee's partial decryption.
 6. **Trustee decryption.** Each external trustee opens the decryption page,
@@ -208,11 +208,27 @@ than half of the ballots cast.
 
 ## Background tasks
 
-Celery tasks live in `helios/tasks.py`; the worker runs with `--beat
---concurrency 1`. Tasks: verifying cast ballots, processing voter files,
+Tasks live in `helios/tasks.py` and use django-tasks (`@task()`, queued with
+`.enqueue(...)`), the backport of Django 6's `django.tasks`. Its
+django-tasks-db backend stores each queued task as a row in PostgreSQL
+(`DBTaskResult`), and `manage.py db_worker` runs them; there is no separate
+message broker. Tasks: verifying cast ballots, processing voter files,
 computing the encrypted tally, the Helios trustee's partial decryption, and
 sending email (to voters in bulk or individually, and notices to the
-election creator). In tests, tasks run immediately (`CELERY_TASK_ALWAYS_EAGER`).
+election creator).
+
+- A worker claims one task at a time with `SELECT ... FOR UPDATE SKIP
+  LOCKED` and commits the claim before running it, so several workers can
+  share the queue and long tasks don't hold a transaction open.
+- `cast_vote_verify_and_store` has a higher priority, so vote verification
+  runs ahead of bulk voter emails.
+- Arguments must be JSON-serializable (ids, UUID strings, template names).
+- There are no automatic retries. Finished tasks stay in the table until
+  `manage.py prune_db_task_results` deletes them. The `/helios/stats/` page
+  re-queues cast votes still waiting for verification.
+- Tests use the same database queue: `run_queued_tasks()` in
+  `helios/tests.py` runs the worker until the queue is empty, and fails the
+  test if any task failed.
 
 ## Email
 
@@ -275,7 +291,7 @@ All settings are in `settings.py` and read from environment variables.
 
 - `DEBUG`: on unless set to `0`; turning it on also enables `devlogin`.
 - `SECRET_KEY`, `EMAIL_OPTOUT_SECRET`.
-- `DATABASE_URL`, `CELERY_BROKER_URL`.
+- `DATABASE_URL`.
 - `URL_HOST` and `SECURE_URL_HOST`: the election `cast_url` is built from
   `SECURE_URL_HOST`, so don't change it once elections exist.
 - `ALLOWED_HOSTS`, `SSL`, `HSTS`.
@@ -285,7 +301,7 @@ All settings are in `settings.py` and read from environment variables.
 - Branding: `SITE_TITLE`, `WELCOME_MESSAGE`, `FOOTER_LINKS`, ...
 - `ROLLBAR_ACCESS_TOKEN` for error reporting.
 
-The `Procfile` runs a gunicorn web process and one Celery worker with beat.
+The `Procfile` runs a gunicorn web process and one `db_worker` task worker.
 Static files, the booth and the verifier are served by Django's static view
 (`urls.py`). Setup steps are in [INSTALL.md](../INSTALL.md).
 
