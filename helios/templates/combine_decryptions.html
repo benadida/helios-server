@@ -4,6 +4,13 @@
 {% block content %}
   <h2 class="title">{{election.name}} &mdash; Compute Tally <span style="font-size:0.7em;">[<a href="{% url "election@view" election.uuid %}">cancel</a>]</span></h2>
 
+  {% if decryption_failed %}
+  <p class="error">
+    The trustees' partial decryptions don't decrypt the tally, so no result was saved.
+    Check that every trustee's partial decryption is for the current tally.
+  </p>
+  {% endif %}
+
   <p>
     You are about to compute the tally for this election. You only will then see the results.
   </p>

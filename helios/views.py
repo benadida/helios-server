@@ -31,7 +31,7 @@ from . import forms
 from . import tasks
 from .crypto import algs, electionalgs, elgamal
 from .crypto import utils as cryptoutils
-from .models import User, Election, CastVote, Voter, VoterFile, Trustee, AuditedBallot
+from .models import User, Election, CastVote, Voter, VoterFile, Trustee, AuditedBallot, TallyDecryptionError
 from .security import (election_view, election_admin,
                        trustee_check, set_logged_in_trustee,
                        can_create_election, user_can_see_election, get_voter,
@@ -1421,7 +1421,11 @@ def combine_decryptions(request, election):
   if request.method == "POST":
     check_csrf(request)
 
-    election.combine_decryptions()
+    try:
+      election.combine_decryptions()
+    except TallyDecryptionError:
+      logging.error("decryption factors do not decrypt the tally for election %s" % election.uuid)
+      return render_template(request, 'combine_decryptions', {'election': election, 'decryption_failed': True})
     election.save()
 
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
