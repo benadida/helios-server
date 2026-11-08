@@ -612,8 +612,6 @@ def trustee_upload_pk(request, election, trustee):
   if request.method == "POST":
     check_csrf(request)
 
-    # once the election is frozen, its public key is fixed from the trustees'
-    # keys and votes are encrypted under it: a new trustee key couldn't decrypt them
     if election.frozen_at:
       return HttpResponseForbidden("the election is frozen, so trustee keys can no longer be changed")
 
@@ -628,7 +626,14 @@ def trustee_upload_pk(request, election, trustee):
     
     trustee.public_key_hash = cryptoutils.hash_b64(utils.to_json(trustee.public_key.toJSONDict()))
 
-    trustee.save()
+    with transaction.atomic():
+      # once the election is frozen, its public key is fixed from the trustees'
+      # keys and votes are encrypted under it: a new trustee key couldn't decrypt them.
+      # Check under the same row lock freeze takes, so the two can't interleave.
+      if Election.objects.select_for_update().get(pk=election.pk).frozen_at:
+        return HttpResponseForbidden("the election is frozen, so trustee keys can no longer be changed")
+
+      trustee.save()
     
     # send a note to admin
     try:

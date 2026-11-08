@@ -4462,6 +4462,17 @@ class TrusteeUploadPkTests(WebTest):
         self.assertStatusCode(response, 403)
         self.assertEqual(self.stored_pk_hash(), self.original_pk_hash)
 
+    def test_freeze_during_upload_keeps_original_key(self):
+        # the election freezes after the upload's first check but before it saves
+        real_verify = algs.EGPublicKey.verify_sk_proof
+        def verify_then_freeze(pk, *args, **kwargs):
+            models.Election.objects.get(pk=self.election.pk).freeze()
+            return real_verify(pk, *args, **kwargs)
+        with mock.patch.object(algs.EGPublicKey, 'verify_sk_proof', verify_then_freeze):
+            response = self.upload_new_key()
+        self.assertStatusCode(response, 403)
+        self.assertEqual(self.stored_pk_hash(), self.original_pk_hash)
+
     def test_key_generator_unavailable_after_freeze(self):
         self.login_trustee()
         self.assertStatusCode(self.client.get(self.base + "/keygenerator"), 200)

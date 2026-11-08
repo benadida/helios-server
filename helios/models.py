@@ -611,23 +611,28 @@ class Election(HeliosModel):
     if len(self.issues_before_freeze) > 0:
       raise Exception("cannot freeze an election that has issues")
 
-    self.frozen_at = datetime.datetime.utcnow()
+    with transaction.atomic():
+      # hold the election row while reading the trustees' keys, so a trustee
+      # key upload (which takes the same lock) can't land in between
+      Election.objects.select_for_update().filter(pk=self.pk).first()
 
-    # voters hash
-    self.generate_voters_hash()
+      self.frozen_at = datetime.datetime.utcnow()
 
-    # public key for trustees
-    trustees = list(Trustee.get_by_election(self))
-    combined_pk = trustees[0].public_key
-    for t in trustees[1:]:
-      combined_pk = combined_pk * t.public_key
+      # voters hash
+      self.generate_voters_hash()
 
-    self.public_key = combined_pk
+      # public key for trustees
+      trustees = list(Trustee.get_by_election(self))
+      combined_pk = trustees[0].public_key
+      for t in trustees[1:]:
+        combined_pk = combined_pk * t.public_key
 
-    # log it
-    self.append_log(ElectionLog.FROZEN)
+      self.public_key = combined_pk
 
-    self.save()
+      # log it
+      self.append_log(ElectionLog.FROZEN)
+
+      self.save()
 
   def soft_delete(self):
     """
