@@ -14,4 +14,8 @@
 
 <div><b>{{num_votes_in_queue}}</b> votes in queue. {% if num_votes_in_queue %}[<form class="inline-action" method="post" action="{% url "stats@force-queue" %}"><input type="hidden" name="csrf_token" value="{{csrf_token}}" /><button type="submit" class="link-button">force it</button></form>]{% endif %}</div>
 
+<div>Background tasks: <b>{{task_counts.ready}}</b> waiting, <b>{{task_counts.running}}</b> running
+({{task_counts.stuck}} for over {{stuck_after_minutes}} minutes, see <tt>manage.py requeue_stuck_tasks</tt>),
+<b>{{task_counts.failed_last_day}}</b> failed in the last day.</div>
+
 {% endblock %}

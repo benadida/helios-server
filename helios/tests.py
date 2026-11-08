@@ -7,6 +7,7 @@ import logging
 import random as stdlib_random
 import re
 import uuid
+from io import StringIO
 from types import SimpleNamespace
 from unittest import mock
 from urllib.parse import urlencode
@@ -15,8 +16,13 @@ import django_webtest
 from django.conf import settings
 from django.core import mail
 from django.core.files import File
+from django.core.management import call_command
 from django.test import TestCase
+from django.utils import timezone
 from django.utils.html import escape as html_escape
+from django_tasks import TaskResultStatus
+from django_tasks_db.management.commands.db_worker import Worker
+from django_tasks_db.models import DBTaskResult
 
 import helios.datatypes as datatypes
 import helios.models as models
@@ -28,6 +34,17 @@ from helios.crypto import elgamal as crypto_elgamal
 from helios.crypto import utils as crypto_utils
 from helios.workflows import homomorphic
 from helios_auth import models as auth_models
+
+
+def run_queued_tasks():
+    """run every queued background task, as `manage.py db_worker --batch` would, and fail on any task error"""
+    worker = Worker(queue_names=['*'], excluded_queue_names=[], interval=0, batch=True, backend_name='default',
+                    startup_delay=False, max_tasks=None, worker_id='test-worker')
+    # the worker closes connections that are in a transaction, which would end the test's transaction
+    with mock.patch('django_tasks_db.management.commands.db_worker.close_old_connections'):
+        worker.run()
+    failed = DBTaskResult.objects.failed()
+    assert not failed.exists(), [(t.task_path, t.traceback) for t in failed]
 
 
 class RandomMpzLtTests(TestCase):
@@ -210,6 +227,15 @@ class ElectionModelTests(TestCase):
         self.assertEqual(added, 2)
         self.assertEqual(models.VoterFile.objects.get(id=vf.id).num_voters, 2)
         self.assertEqual(vf.num_skipped, 2)
+
+    def test_voter_file_process_task_skips_processed_file(self):
+        # a requeued task must not reprocess the file and reset its counts to zero
+        vf = models.VoterFile.objects.create(election=self.election, voter_file_content='password,v1,v1@example.com,Voter One\n')
+        for _ in range(2):
+            tasks.voter_file_process.enqueue(vf.id)
+            run_queued_tasks()
+        self.assertEqual(models.VoterFile.objects.get(id=vf.id).num_voters, 1)
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_check_issues_before_freeze(self):
         # should be three issues: no trustees, and no questions, and no voters
@@ -1150,8 +1176,10 @@ class ElectionBlackboxTests(WebTest):
         self._upload_voters(b"password,v1,v1@example.com,Voter One\n")
         url = "/helios/elections/%s/voters/upload" % self.election.uuid
         response = self.client.post(url, {'confirm_p': "1", 'csrf_token': self.client.session['csrf_token']})
+        run_queued_tasks()
         self.assertEqual(response.status_code, 302)
         response = self.client.post(url, {'confirm_p': "1", 'csrf_token': self.client.session['csrf_token']})
+        run_queued_tasks()
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response['location'].endswith("/helios/elections/%s/voters/list" % self.election.uuid))
 
@@ -1297,8 +1325,13 @@ class ElectionBlackboxTests(WebTest):
 
     def test_get_election_stats(self):
         self.setup_login(from_scratch=True, user_id='mccio@github.com', user_type='google')
+        DBTaskResult.objects.create(
+            status=TaskResultStatus.FAILED, task_path='helios.tasks.election_compute_tally',
+            args_kwargs={'args': [], 'kwargs': {}}, backend_name='default', run_after=timezone.now(),
+            finished_at=timezone.now())
         response = self.client.get("/helios/stats/", follow=False)
         self.assertStatusCode(response, 200)
+        self.assertContains(response, "<b>1</b> failed in the last day")
         response = self.client.post("/helios/stats/force-queue", {
                 "csrf_token": self.client.session['csrf_token']}, follow=False)
         self.assertRedirects(response, "/helios/stats/")
@@ -1315,6 +1348,23 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.get("/helios/stats/", follow=False)
         self.assertStatusCode(response, 403)
         self.clear_login()
+
+    def test_stats_recent_votes(self):
+        self.setup_login(from_scratch=True, user_id='mccio@github.com', user_type='google')
+        voter = models.Voter.objects.create(uuid=str(uuid.uuid4()), election=self.election, voter_login_id='v1',
+                                            voter_name='V1', voter_email='v1@example.com')
+        for hours_ago in (1, 2, 30):
+            cast_vote = models.CastVote.objects.create(voter=voter, vote_hash='hash%d' % hours_ago)
+            models.CastVote.objects.filter(id=cast_vote.id).update(
+                cast_at=datetime.datetime.utcnow() - datetime.timedelta(hours=hours_ago))
+
+        response = self.client.get("/helios/stats/recent-votes", follow=False)
+        self.assertContains(response, '%s</a>' % self.election.name)
+        self.assertContains(response, "2 recently cast votes")
+
+        self.election.soft_delete()
+        response = self.client.get("/helios/stats/recent-votes", follow=False)
+        self.assertNotContains(response, "recently cast votes")
 
     def _setup_complete_election(self, election_params=None):
         "do the setup part of a whole election"
@@ -1370,6 +1420,7 @@ class ElectionBlackboxTests(WebTest):
 
         # now we confirm the upload
         response = self.client.post("/helios/elections/%s/voters/upload" % election_id, {'confirm_p': "1", 'csrf_token': self.client.session['csrf_token']})
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
 
         # Try a latin-1 encoded file
@@ -1413,6 +1464,7 @@ class ElectionBlackboxTests(WebTest):
                 "suppress_election_links" : "0",
                 "send_to" : "all"
                 })
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
         num_messages_after = len(mail.outbox)
         self.assertEqual(num_messages_after - num_messages_before, NUM_VOTERS)
@@ -1469,6 +1521,7 @@ class ElectionBlackboxTests(WebTest):
             login_form['password'] = password
 
             response = login_form.submit()
+            run_queued_tasks()
         else:
             # here we should be at the cast-confirm page and logged in
             self.assertContains(cast_confirm_page, "CAST this ballot")
@@ -1479,6 +1532,7 @@ class ElectionBlackboxTests(WebTest):
             if 'status_update' in list(cast_form.fields.keys()):
                 cast_form['status_update'] = False
             response = cast_form.submit()
+            run_queued_tasks()
 
         self.assertRedirects(response, "%s/helios/elections/%s/cast_done" % (settings.URL_HOST, election_id))
 
@@ -1523,6 +1577,7 @@ class ElectionBlackboxTests(WebTest):
         response = self.client.post("/helios/elections/%s/compute_tally" % election_id, {
                 "csrf_token" : self.client.session['csrf_token']                
                 })
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
 
         # should trigger helios decryption automatically
@@ -1567,6 +1622,14 @@ class ElectionBlackboxTests(WebTest):
 
         self._do_tally(election_id)
 
+    def test_cast_vote_not_stored_without_verification_task(self):
+        election_id, username, password = self._setup_complete_election()
+        with mock.patch('helios.views.tasks.cast_vote_verify_and_store') as verify_task:
+            verify_task.enqueue.side_effect = RuntimeError("queue unavailable")
+            with self.assertRaises(RuntimeError):
+                self._cast_ballot(election_id, username, password)
+        self.assertFalse(models.CastVote.objects.filter(voter__election__uuid=election_id).exists())
+
     def test_do_complete_election_private(self):
         # private election
         election_id, username, password = self._setup_complete_election({'private_p' : "True"})
@@ -1584,6 +1647,7 @@ class ElectionBlackboxTests(WebTest):
         login_form['password'] = password
 
         response = login_form.submit()
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/view" % election_id)
 
         self._cast_ballot(election_id, username, password, need_login = False)
@@ -1658,6 +1722,7 @@ class ElectionBlackboxTests(WebTest):
             "/helios/elections/%s/voters/upload" % election_id,
             {"confirm_p": "1", "csrf_token": self.client.session["csrf_token"]}
         )
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
 
         # Verify first batch - should have 4 voters with aliases V1-V4
@@ -1679,6 +1744,7 @@ class ElectionBlackboxTests(WebTest):
             "/helios/elections/%s/voters/upload" % election_id,
             {"confirm_p": "1", "csrf_token": self.client.session["csrf_token"]}
         )
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
 
         # Verify all 7 voters have unique sequential aliases V1-V7
@@ -1733,6 +1799,7 @@ class ElectionBlackboxTests(WebTest):
             "/helios/elections/%s/voters/upload" % election_id,
             {"confirm_p": "1", "csrf_token": self.client.session["csrf_token"]}
         )
+        run_queued_tasks()
         self.assertRedirects(response, "/helios/elections/%s/voters/list" % election_id)
 
         # Verify voters were added
@@ -1798,6 +1865,7 @@ class ElectionBlackboxTests(WebTest):
             "/helios/elections/%s/voters/upload" % election_id,
             {"confirm_p": "1", "csrf_token": self.client.session["csrf_token"]}
         )
+        run_queued_tasks()
 
         # Add a question
         self.client.post("/helios/elections/%s/save_questions" % election_id, {
@@ -2017,10 +2085,7 @@ class EmailOptOutTests(TestCase):
             self.assertFalse(models.EmailOptOut.is_opted_out(email))
             
             # Call single_voter_email before opt-out is applied
-            result = tasks.single_voter_email.apply(args=[voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {}])
-            
-            # Debug: check if task completed successfully
-            self.assertTrue(result.successful())
+            tasks.single_voter_email.call(voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {})
             
             # The send_message method should have been called because voter is not opted out
             mock_send_message.assert_called_once()
@@ -2035,7 +2100,7 @@ class EmailOptOutTests(TestCase):
         with patch.object(models.Voter, 'send_message') as mock_send_message:
             
             # Call single_voter_email after opt-out is applied
-            tasks.single_voter_email.apply(args=[voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {}])
+            tasks.single_voter_email.call(voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {})
             
             # The send_message method should not have been called because voter is opted out
             mock_send_message.assert_not_called()
@@ -2103,12 +2168,12 @@ class EmailOptOutTests(TestCase):
         voter.save()
 
         num_messages_before = len(mail.outbox)
-        tasks.single_voter_email.apply(args=[voter.uuid, 'email/vote_subject.txt', 'email/vote_body.txt', {
+        tasks.single_voter_email.call(voter.uuid, 'email/vote_subject.txt', 'email/vote_body.txt', {
             'custom_subject': 'Vote now: A & B',
             'custom_message': 'Questions? Ask Q&A',
             'election_vote_url': 'http://example.com/vote?a=1&b=2',
             'election_url': 'http://example.com/election',
-        }])
+        })
 
         self.assertEqual(len(mail.outbox), num_messages_before + 1)
         message = mail.outbox[-1]
@@ -3112,7 +3177,7 @@ class VoterEmailCutoffViewTests(WebTest):
 
     def test_voters_email_accepts_custom_message(self):
         self.setup_login()
-        with mock.patch('helios.views.tasks.voters_email.delay') as voters_email:
+        with mock.patch('helios.views.tasks.voters_email') as voters_email:
             response = self.client.post(f'/helios/elections/{self.election.uuid}/voters/email', {
                 'csrf_token': self.client.session['csrf_token'],
                 'subject': 'Vote now',
@@ -3120,7 +3185,7 @@ class VoterEmailCutoffViewTests(WebTest):
                 'send_to': 'all'
             })
         self.assertRedirects(response, f'/helios/elections/{self.election.uuid}/view')
-        self.assertEqual(voters_email.call_args.kwargs['extra_vars']['custom_message'], 'Polls close <b>Friday</b>.')
+        self.assertEqual(voters_email.enqueue.call_args.kwargs['extra_vars']['custom_message'], 'Polls close <b>Friday</b>.')
 
     def test_voters_email_accessible_when_recent_tally(self):
         """Test that voters email page is accessible when tally is recent"""
@@ -3419,6 +3484,7 @@ class PasswordResendTests(WebTest):
             'csrf_token': csrf_token,
             'voter_id': 'testvoter'
         })
+        run_queued_tasks()
         self.assertStatusCode(response, 200)
         self.assertContains(response, 'email with your voting credentials has been sent')
 
@@ -3442,6 +3508,7 @@ class PasswordResendTests(WebTest):
             'csrf_token': csrf_token,
             'voter_id': 'nonexistent_voter'
         })
+        run_queued_tasks()
         self.assertStatusCode(response, 200)
         # Should still show success message to prevent enumeration attacks
         self.assertContains(response, 'email with your voting credentials has been sent')
@@ -3458,6 +3525,7 @@ class PasswordResendTests(WebTest):
             'csrf_token': csrf_token,
             'voter_id': ''
         })
+        run_queued_tasks()
         self.assertStatusCode(response, 200)
         self.assertContains(response, 'valid voter ID')
 
@@ -3501,6 +3569,7 @@ class PasswordResendTests(WebTest):
             'csrf_token': csrf_token,
             'voter_id': 'noemailvoter'
         })
+        run_queued_tasks()
         # Should still show success (doesn't reveal that email is missing)
         self.assertStatusCode(response, 200)
         self.assertContains(response, 'email with your voting credentials has been sent')
@@ -4353,6 +4422,7 @@ class VoterTokenTests(WebTest):
         self.assertContains(self.upload(election, content), "first few rows of this file")
         self.client.post("/helios/elections/%s/voters/upload" % election.uuid,
                          {'confirm_p': "1", 'csrf_token': self.csrf()})
+        run_queued_tasks()
 
     def setup_frozen_election(self, private=False, voters=None):
         election = self.create_election(private)
@@ -4369,6 +4439,7 @@ class VoterTokenTests(WebTest):
         self.client.post("/helios/elections/%s/voters/email?template=%s" % (election.uuid, template), {
             'csrf_token': self.csrf(), 'subject': 'vote', 'body': 'please vote',
             'suppress_election_links': '0', 'send_to': 'all'})
+        run_queued_tasks()
         return mail.outbox[num_messages_before:]
 
     def cast_confirm_page(self, election):
@@ -4436,7 +4507,8 @@ class VoterTokenTests(WebTest):
         self.upload_and_confirm(election, self.TOKEN_VOTERS)
         voter_file = models.VoterFile.objects.create(election=election, voter_file_content="password,carol,carol@example.com,Carol\n")
         num_messages_before = len(mail.outbox)
-        tasks.voter_file_process(voter_file.id)
+        tasks.voter_file_process.call(voter_file.id)
+        run_queued_tasks()
         self.assertFalse(election.voter_set.filter(voter_login_id='carol').exists())
         voter_file.refresh_from_db()
         self.assertIsNotNone(voter_file.processing_finished_at)
@@ -4478,6 +4550,7 @@ class VoterTokenTests(WebTest):
         num_messages_before = len(mail.outbox)
         page.form['voter_id'] = 'ALICE@example.com'
         page.form.submit()
+        run_queued_tasks()
         self.assertEqual(len(mail.outbox), num_messages_before + 1)
 
     def test_token_voter_email_too_long(self):
@@ -4523,6 +4596,7 @@ class VoterTokenTests(WebTest):
         page.form['voting_token'] = '  %s ' % alice.voting_token
         response = page.form.submit()
         self.assertRedirects(response, "%s/helios/elections/%s/cast_done" % (settings.URL_HOST, election.uuid))
+        run_queued_tasks()
 
         alice.refresh_from_db()
         self.assertIsNotNone(alice.vote_hash)
@@ -4556,5 +4630,216 @@ class VoterTokenTests(WebTest):
         page.form['voter_id'] = 'alice@example.com'
         response = page.form.submit()
         self.assertContains(response, "check your email inbox (and spam folder) for your voting token")
+        run_queued_tasks()
         self.assertEqual(len(mail.outbox), num_messages_before + 1)
         self.assertIn("Your voting token: %s" % alice.voting_token, mail.outbox[-1].body)
+
+
+class UndecryptableTallyTests(WebTest):
+    """Decryption factors that don't decrypt the tally leave no result, and don't break the election page."""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.admin = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-undecryptable-tally', name='Test Undecryptable Tally',
+            description='Undecryptable tally', admin=self.admin)
+        self.election.uuid = str(uuid.uuid4())
+        self.election.questions = [{"answer_urls": [None, None], "answers": ["Yes", "No"], "choice_type": "approval", "max": 1, "min": 0, "question": "Test?", "result_type": "absolute", "short_name": "Test?", "tally_type": "homomorphic"}]
+        self.election.save()
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
+        voter = models.Voter(uuid=str(uuid.uuid4()), election=self.election, voter_login_id='v1',
+                             voter_name='Voter One', voter_email='v1@example.com')
+        voter.generate_password()
+        voter.save()
+        self.election.freeze()
+
+        tally = self.election.init_tally()
+        tally.add_vote(homomorphic.EncryptedVote.fromElectionAndAnswers(self.election, [[0]]), verify_p=False)
+        self.election.encrypted_tally = tally
+        self.election.save()
+
+        self.trustee = self.election.get_helios_trustee()
+
+    def set_trustee_factors(self, factors):
+        self.trustee.decryption_factors = factors
+        self.trustee.save()
+
+    def correct_factors(self):
+        tally = self.election.encrypted_tally
+        tally.init_election(self.election)
+        factors, _ = tally.decryption_factors_and_proofs(self.trustee.secret_key)
+        return factors
+
+    def login_admin(self):
+        self.client.get("/")
+        session = self.client.session
+        session['user'] = {'type': self.admin.user_type, 'user_id': self.admin.user_id}
+        session.save()
+
+    def combine(self):
+        self.login_admin()
+        return self.client.post("/helios/elections/%s/combine_decryptions" % self.election.uuid,
+                                {'csrf_token': self.client.session['csrf_token']})
+
+    def test_bad_factors_are_not_saved_as_result(self):
+        # factors of 1 leave the ciphertext's beta as-is, which isn't a small power of g
+        self.set_trustee_factors([[1 for _ in q] for q in self.correct_factors()])
+        with self.assertLogs(level='ERROR'):
+            response = self.combine()
+        self.assertContains(response, "don't decrypt the tally, so no result was saved")
+        self.assertIsNone(models.Election.objects.get(uuid=self.election.uuid).result)
+
+    def test_good_factors_are_saved_as_result(self):
+        self.set_trustee_factors(self.correct_factors())
+        response = self.combine()
+        self.assertRedirects(response, "/helios/elections/%s/view" % self.election.uuid)
+        self.assertEqual(models.Election.objects.get(uuid=self.election.uuid).result, [[1, 0]])
+
+    def test_view_with_undecrypted_counts_does_not_500(self):
+        # a result saved before this check existed can hold None counts
+        self.election.result = [[None, None]]
+        self.election.result_released_at = datetime.datetime.utcnow()
+        self.election.save()
+        response = self.client.get("/helios/elections/%s/view" % self.election.uuid)
+        self.assertContains(response, "The tally could not be decrypted")
+
+    def test_undecrypted_result_cannot_be_released(self):
+        self.election.result = [[None, None]]
+        self.election.save()
+        self.set_trustee_factors(self.correct_factors())
+        self.login_admin()
+        response = self.client.get("/helios/elections/%s/view" % self.election.uuid)
+        # the admin is offered to combine the decryptions again, not to release
+        self.assertNotContains(response, 'release result')
+        self.assertContains(response, 'compute results')
+        self.election.release_result()
+        self.assertIsNone(self.election.result_released_at)
+
+    def test_undecrypted_result_is_replaced_by_good_combination(self):
+        self.election.result = [[None, None]]
+        self.election.save()
+        self.set_trustee_factors(self.correct_factors())
+        response = self.combine()
+        self.assertRedirects(response, "/helios/elections/%s/view" % self.election.uuid)
+        self.assertEqual(models.Election.objects.get(uuid=self.election.uuid).result, [[1, 0]])
+
+
+class TrusteeUploadPkTests(WebTest):
+    """A trustee can replace their key until the election is frozen, but not after."""
+    fixtures = ['users.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        admin = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.election, _ = models.Election.get_or_create(
+            short_name='test-upload-pk', name='Test Upload PK',
+            description='Upload pk', admin=admin)
+        self.election.uuid = str(uuid.uuid4())
+        self.election.questions = [{"answer_urls": [None, None], "answers": ["Yes", "No"], "choice_type": "approval", "max": 1, "min": 0, "question": "Test?", "result_type": "absolute", "short_name": "Test?", "tally_type": "homomorphic"}]
+        self.election.save()
+        self.election.generate_trustee(views.ELGAMAL_PARAMS)
+        voter = models.Voter(uuid=str(uuid.uuid4()), election=self.election, voter_login_id='v1',
+                             voter_name='Voter One', voter_email='v1@example.com')
+        voter.generate_password()
+        voter.save()
+        self.trustee = self.election.get_helios_trustee()
+        self.original_pk_hash = self.trustee.public_key_hash
+        self.base = "/helios/elections/%s/trustees/%s" % (self.election.uuid, self.trustee.uuid)
+
+    def login_trustee(self):
+        self.client.get("/")
+        session = self.client.session
+        session['helios_trustee_uuid'] = self.trustee.uuid
+        session.save()
+        return self.client.session['csrf_token']
+
+    def upload_new_key(self):
+        csrf_token = self.login_trustee()
+        keypair = views.ELGAMAL_PARAMS.generate_keypair()
+        pok = keypair.sk.prove_sk(algs.DLog_challenge_generator)
+        public_key_json = utils.to_json({
+            'public_key': datatypes.LDObject.instantiate(keypair.pk, datatype='legacy/EGPublicKey').toDict(),
+            'pok': datatypes.LDObject.instantiate(pok, datatype='legacy/DLogProof').toDict()})
+        return self.client.post(self.base + "/upoad-pk", {'csrf_token': csrf_token, 'public_key_json': public_key_json})
+
+    def stored_pk_hash(self):
+        return models.Trustee.objects.get(id=self.trustee.id).public_key_hash
+
+    def test_key_can_be_replaced_before_freeze(self):
+        response = self.upload_new_key()
+        self.assertStatusCode(response, 302)
+        self.assertNotEqual(self.stored_pk_hash(), self.original_pk_hash)
+
+    def test_key_cannot_be_replaced_after_freeze(self):
+        self.election.freeze()
+        response = self.upload_new_key()
+        self.assertStatusCode(response, 403)
+        self.assertEqual(self.stored_pk_hash(), self.original_pk_hash)
+
+    def test_freeze_during_upload_keeps_original_key(self):
+        # the election freezes after the upload's first check but before it saves
+        real_verify = algs.EGPublicKey.verify_sk_proof
+        def verify_then_freeze(pk, *args, **kwargs):
+            models.Election.objects.get(pk=self.election.pk).freeze()
+            return real_verify(pk, *args, **kwargs)
+        with mock.patch.object(algs.EGPublicKey, 'verify_sk_proof', verify_then_freeze):
+            response = self.upload_new_key()
+        self.assertStatusCode(response, 403)
+        self.assertEqual(self.stored_pk_hash(), self.original_pk_hash)
+
+    def test_key_generator_unavailable_after_freeze(self):
+        self.login_trustee()
+        self.assertStatusCode(self.client.get(self.base + "/keygenerator"), 200)
+        self.election.freeze()
+        self.assertStatusCode(self.client.get(self.base + "/keygenerator"), 403)
+
+
+class CookieTestMissingContinueUrlTests(WebTest):
+    """The cookie-test pages send a request without continue_url home instead of 500ing."""
+
+    def test_missing_continue_url_redirects_home(self):
+        for path in ['/helios/testcookie', '/helios/testcookie_2', '/helios/nocookies']:
+            response = self.client.get(path)
+            self.assertStatusCode(response, 302)
+            self.assertEqual(response['Location'], settings.SECURE_URL_HOST + "/", path)
+
+    def test_continue_url_still_followed(self):
+        continue_url = settings.SECURE_URL_HOST + "/booth/vote.html"
+        response = self.client.get('/helios/testcookie', {'continue_url': continue_url})
+        self.assertStatusCode(response, 302)
+        self.assertIn(urlencode({'continue_url': continue_url}), response['Location'])
+
+
+class RequeueStuckTasksTests(TestCase):
+    def _task_result(self, task_path, started_minutes_ago):
+        return DBTaskResult.objects.create(
+            status=TaskResultStatus.RUNNING, task_path=task_path, args_kwargs={'args': [1], 'kwargs': {}},
+            backend_name='default', run_after=timezone.now(),
+            started_at=timezone.now() - datetime.timedelta(minutes=started_minutes_ago))
+
+    def test_requeues_only_old_running_tasks(self):
+        stuck = self._task_result('helios.tasks.election_compute_tally', 180)
+        running = self._task_result('helios.tasks.election_compute_tally', 10)
+        bulk_email = self._task_result('helios.tasks.voters_email', 180)
+
+        out = StringIO()
+        call_command('requeue_stuck_tasks', '--older-than', '120', stdout=out)
+
+        for task_result in (stuck, running, bulk_email):
+            task_result.refresh_from_db()
+        self.assertEqual(stuck.status, TaskResultStatus.READY)
+        self.assertIsNone(stuck.started_at)
+        self.assertEqual(running.status, TaskResultStatus.RUNNING)
+        self.assertEqual(bulk_email.status, TaskResultStatus.RUNNING)
+        self.assertIn('requeued 1 tasks', out.getvalue())
+        self.assertIn('not requeued: %s' % bulk_email.id, out.getvalue())
+
+    def test_dry_run_changes_nothing(self):
+        stuck = self._task_result('helios.tasks.election_compute_tally', 180)
+        out = StringIO()
+        call_command('requeue_stuck_tasks', '--dry-run', stdout=out)
+        stuck.refresh_from_db()
+        self.assertEqual(stuck.status, TaskResultStatus.RUNNING)
+        self.assertIn('would requeue 1 tasks', out.getvalue())

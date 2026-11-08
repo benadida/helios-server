@@ -15,7 +15,7 @@ Helios is an end-to-end verifiable voting system that provides secure, transpare
 - **Python**: 3.13
 - **Framework**: Django 5.2
 - **Database**: PostgreSQL 9.5+
-- **Task Queue**: Celery with RabbitMQ
+- **Task Queue**: django-tasks with the django-tasks-db database backend
 - **Crypto**: pycryptodome
 - **Package Manager**: uv
 
@@ -45,8 +45,8 @@ uv run python manage.py migrate
 # Reset database (drops and recreates)
 ./reset.sh
 
-# Start Celery worker (for background tasks)
-uv run celery --app helios worker --events --beat --concurrency 1
+# Start the background task worker (tasks are queued in the database)
+uv run python manage.py db_worker
 ```
 
 ## Project Structure
@@ -149,10 +149,11 @@ from settings import get_from_env
 MY_SETTING = get_from_env('MY_SETTING', 'default_value')
 ```
 
-Key environment variables: `DEBUG`, `SECRET_KEY`, `DATABASE_URL`, `CELERY_BROKER_URL`, `AUTH_ENABLED_AUTH_SYSTEMS`
+Key environment variables: `DEBUG`, `SECRET_KEY`, `DATABASE_URL`, `AUTH_ENABLED_AUTH_SYSTEMS`
 
 ## Testing
 
 - Tests use Django's TestCase with django-webtest
 - Fixtures are in `helios/fixtures/`
 - Test classes: `ElectionModelTests`, `VoterModelTests`, `ElectionBlackboxTests`, etc.
+- Background tasks always go through the database queue, in tests too. Tests that trigger a task call `run_queued_tasks()` (in `helios/tests.py`) before checking its effects; it runs the queue until empty and fails if any task failed.

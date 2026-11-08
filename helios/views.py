@@ -31,7 +31,7 @@ from . import forms
 from . import tasks
 from .crypto import algs, electionalgs, elgamal
 from .crypto import utils as cryptoutils
-from .models import User, Election, CastVote, Voter, VoterFile, Trustee, AuditedBallot
+from .models import User, Election, CastVote, Voter, VoterFile, Trustee, AuditedBallot, TallyDecryptionError
 from .security import (election_view, election_admin,
                        trustee_check, set_logged_in_trustee,
                        can_create_election, user_can_see_election, get_voter,
@@ -162,6 +162,9 @@ def trustee_keygenerator(request, election, trustee):
   """
   A key generator with the current params, like the trustee home but without a specific election.
   """
+  if election.frozen_at:
+    return HttpResponseForbidden("the election is frozen, so trustee keys can no longer be changed")
+
   eg_params_json = utils.to_json(ELGAMAL_PARAMS_LD_OBJECT.toJSONDict())
 
   return render_template(request, "election_keygenerator", {'eg_params_json': eg_params_json, 'election': election, 'trustee': trustee})
@@ -359,13 +362,19 @@ def one_election_view(request, election):
                           'test_cookie_url': test_cookie_url})
 
 def test_cookie(request):
-  continue_url = request.GET['continue_url']
+  # the link to this page always carries continue_url; without it there is
+  # nowhere to continue to, so send the visitor home rather than 500
+  continue_url = request.GET.get('continue_url')
+  if not continue_url:
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + "/")
   request.session.set_test_cookie()
   next_url = "%s?%s" % (reverse(url_names.COOKIE_TEST_2), urlencode({'continue_url': continue_url}))
   return HttpResponseRedirect(settings.SECURE_URL_HOST + next_url)  
 
 def test_cookie_2(request):
-  continue_url = request.GET['continue_url']
+  continue_url = request.GET.get('continue_url')
+  if not continue_url:
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + "/")
 
   if not request.session.test_cookie_worked():
     return HttpResponseRedirect(settings.SECURE_URL_HOST + ("%s?%s" % (reverse(url_names.COOKIE_NO), urlencode({'continue_url': continue_url}))))
@@ -374,7 +383,10 @@ def test_cookie_2(request):
   return HttpResponseRedirect(continue_url)  
 
 def nocookies(request):
-  retest_url = "%s?%s" % (reverse(url_names.COOKIE_TEST), urlencode({'continue_url' : request.GET['continue_url']}))
+  continue_url = request.GET.get('continue_url')
+  if not continue_url:
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + "/")
+  retest_url = "%s?%s" % (reverse(url_names.COOKIE_TEST), urlencode({'continue_url' : continue_url}))
   return render_template(request, 'nocookies', {'retest_url': retest_url})
 
 ##
@@ -609,6 +621,9 @@ def trustee_upload_pk(request, election, trustee):
   if request.method == "POST":
     check_csrf(request)
 
+    if election.frozen_at:
+      return HttpResponseForbidden("the election is frozen, so trustee keys can no longer be changed")
+
     # get the public key and the hash, and add it
     public_key_and_proof = utils.from_json(request.POST['public_key_json'])
     trustee.public_key = algs.EGPublicKey.fromJSONDict(public_key_and_proof['public_key'])
@@ -620,7 +635,14 @@ def trustee_upload_pk(request, election, trustee):
     
     trustee.public_key_hash = cryptoutils.hash_b64(utils.to_json(trustee.public_key.toJSONDict()))
 
-    trustee.save()
+    with transaction.atomic():
+      # once the election is frozen, its public key is fixed from the trustees'
+      # keys and votes are encrypted under it: a new trustee key couldn't decrypt them.
+      # Check under the same row lock freeze takes, so the two can't interleave.
+      if Election.objects.select_for_update().get(pk=election.pk).frozen_at:
+        return HttpResponseForbidden("the election is frozen, so trustee keys can no longer be changed")
+
+      trustee.save()
     
     # send a note to admin
     try:
@@ -817,7 +839,7 @@ def password_voter_resend(request, election):
   if voter and voter.voter_type == 'password' and voter.voter_email:
     # Queue the email
     election_vote_url = get_election_govote_url(election)
-    tasks.single_voter_email.delay(
+    tasks.single_voter_email.enqueue(
       voter_uuid=voter.uuid,
       subject_template='email/password_resend_subject.txt',
       body_template='email/password_resend_body.txt',
@@ -926,19 +948,20 @@ def one_election_cast_confirm(request, election):
     if not voter:
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(one_election_cast_confirm, args=[election.uuid]))
     
-    # don't store the vote in the voter's data structure until verification
-    cast_vote.save()
-
     # status update?
     if request.POST.get('status_update', False):
       status_update_message = request.POST.get('status_update_message')
     else:
       status_update_message = None
 
-    # launch the verification task
-    tasks.cast_vote_verify_and_store.delay(
-      cast_vote_id = cast_vote.id,
-      status_update_message = status_update_message)
+    # don't store the vote in the voter's data structure until verification.
+    # Tasks are queued in the database, so the vote and its verification task
+    # are committed together and the worker sees neither before the commit.
+    with transaction.atomic():
+      cast_vote.save()
+      tasks.cast_vote_verify_and_store.enqueue(
+        cast_vote_id = cast_vote.id,
+        status_update_message = status_update_message)
     
     # remove the vote from the store
     del request.session['encrypted_vote']
@@ -1348,9 +1371,9 @@ def one_election_compute_tally(request, election):
     election.voting_ended_at = datetime.datetime.utcnow()
 
   election.tallying_started_at = datetime.datetime.utcnow()
-  election.save()
-
-  tasks.election_compute_tally.delay(election_id = election.id)
+  with transaction.atomic():
+    election.save()
+    tasks.election_compute_tally.enqueue(election_id = election.id)
 
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW,args=[election.uuid]))
 
@@ -1434,7 +1457,11 @@ def combine_decryptions(request, election):
   if request.method == "POST":
     check_csrf(request)
 
-    election.combine_decryptions()
+    try:
+      election.combine_decryptions()
+    except TallyDecryptionError:
+      logging.error("decryption factors do not decrypt the tally for election %s" % election.uuid)
+      return render_template(request, 'combine_decryptions', {'election': election, 'decryption_failed': True})
     election.save()
 
     return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
@@ -1720,7 +1747,7 @@ def voters_upload(request, election):
       voter_file_id = request.session.pop('voter_file_id', None)
       if voter_file_id:
         # launch the background task to parse that file
-        tasks.voter_file_process.delay(voter_file_id = voter_file_id)
+        tasks.voter_file_process.enqueue(voter_file_id = voter_file_id)
 
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
     else:
@@ -1842,7 +1869,7 @@ def voters_email(request, election):
       voter_constraints_exclude = None
 
       if voter:
-        tasks.single_voter_email.delay(voter_uuid = voter.uuid, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars)
+        tasks.single_voter_email.enqueue(voter_uuid = voter.uuid, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars)
       else:
         # exclude those who have not voted
         if email_form.cleaned_data['send_to'] == 'voted':
@@ -1852,7 +1879,7 @@ def voters_email(request, election):
         if email_form.cleaned_data['send_to'] == 'not-voted':
           voter_constraints_include = {'vote_hash': None}
 
-        tasks.voters_email.delay(election_id = election.id, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars, voter_constraints_include = voter_constraints_include, voter_constraints_exclude = voter_constraints_exclude)
+        tasks.voters_email.enqueue(election_id = election.id, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars, voter_constraints_include = voter_constraints_include, voter_constraints_exclude = voter_constraints_exclude)
 
       # this batch process is all async, so we can return a nice note
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))

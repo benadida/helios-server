@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('helios', '0010_add_query_indexes'),
+        ('helios', '0011_add_castvote_cast_at_index'),
     ]
 
     operations = [

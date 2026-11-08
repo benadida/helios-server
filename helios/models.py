@@ -43,6 +43,21 @@ class ElectionManager(models.Manager):
   def get_queryset(self):
     return super().get_queryset().filter(deleted_at__isnull=True)
 
+class TallyDecryptionError(Exception):
+  """
+  Raised when the trustees' decryption factors don't decrypt the tally.
+  """
+  pass
+
+
+def result_is_complete(result):
+  """
+  True when result has a count for every answer. Answers whose decrypted
+  value isn't in the discrete-log table come back as None.
+  """
+  return bool(result) and all(count is not None for question in result for count in question)
+
+
 class Election(HeliosModel):
   admin = models.ForeignKey(User, on_delete=models.CASCADE)
 
@@ -522,7 +537,7 @@ class Election(HeliosModel):
     """
     release the result that should already be computed
     """
-    if not self.result:
+    if not self.has_complete_result:
       return
 
     self.result_released_at = datetime.datetime.utcnow()
@@ -536,7 +551,14 @@ class Election(HeliosModel):
     trustees = Trustee.get_by_election(self)
     decryption_factors = [t.decryption_factors for t in trustees]
 
-    self.result = self.encrypted_tally.decrypt_from_factors(decryption_factors, self.public_key)
+    result = self.encrypted_tally.decrypt_from_factors(decryption_factors, self.public_key)
+
+    # a count the discrete-log table can't find comes back as None: the
+    # combined factors don't decrypt the tally, so there is no result to keep
+    if not result_is_complete(result):
+      raise TallyDecryptionError("the trustees' decryption factors do not decrypt the tally")
+
+    self.result = result
 
     self.append_log(ElectionLog.DECRYPTIONS_COMBINED)
 
@@ -600,23 +622,28 @@ class Election(HeliosModel):
     if len(self.issues_before_freeze) > 0:
       raise Exception("cannot freeze an election that has issues")
 
-    self.frozen_at = datetime.datetime.utcnow()
+    with transaction.atomic():
+      # hold the election row while reading the trustees' keys, so a trustee
+      # key upload (which takes the same lock) can't land in between
+      Election.objects.select_for_update().filter(pk=self.pk).first()
 
-    # voters hash
-    self.generate_voters_hash()
+      self.frozen_at = datetime.datetime.utcnow()
 
-    # public key for trustees
-    trustees = list(Trustee.get_by_election(self))
-    combined_pk = trustees[0].public_key
-    for t in trustees[1:]:
-      combined_pk = combined_pk * t.public_key
+      # voters hash
+      self.generate_voters_hash()
 
-    self.public_key = combined_pk
+      # public key for trustees
+      trustees = list(Trustee.get_by_election(self))
+      combined_pk = trustees[0].public_key
+      for t in trustees[1:]:
+        combined_pk = combined_pk * t.public_key
 
-    # log it
-    self.append_log(ElectionLog.FROZEN)
+      self.public_key = combined_pk
 
-    self.save()
+      # log it
+      self.append_log(ElectionLog.FROZEN)
+
+      self.save()
 
   def soft_delete(self):
     """
@@ -722,8 +749,12 @@ class Election(HeliosModel):
     return [self.one_question_winner(self.questions[i], self.result[i], self.num_cast_votes) for i in range(len(self.questions))]
 
   @property
+  def has_complete_result(self):
+    return result_is_complete(self.result)
+
+  @property
   def pretty_result(self):
-    if not self.result:
+    if not self.has_complete_result:
       return None
 
     raw_result = self.result
@@ -957,7 +988,7 @@ class VoterFile(models.Model):
     # Notify admin if there were opted-out voters
     if opted_out_voters:
         from . import tasks
-        tasks.notify_admin_opted_out_voters.delay(self.election.id, opted_out_voters)
+        tasks.notify_admin_opted_out_voters.enqueue(self.election.id, opted_out_voters)
 
     # report the voters actually added: rows for voters already on the list, or
     # who opted out of Helios emails, are skipped and shouldn't be counted as loaded
@@ -1214,6 +1245,7 @@ class CastVote(HeliosModel):
     app_label = 'helios'
     indexes = [
       models.Index(fields=['verified_at', 'invalidated_at'], name='helios_cv_verified_invld_idx'),
+      models.Index(fields=['cast_at'], name='helios_cv_cast_at_idx'),
     ]
 
   @property

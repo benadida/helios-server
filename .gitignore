@@ -5,7 +5,6 @@ deploy-latest.sh
 media/*
 .venv
 venv*
-celerybeat-*
 env.sh
 .cache
 .idea/
