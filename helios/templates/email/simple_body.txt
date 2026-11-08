@@ -7,9 +7,10 @@ How to Vote
 
 Election URL:  {{election_vote_url}}
 {% if voter.voter_type == "password" %}
-Your voter ID: {{voter.voter_login_id}}
+{% if voter.voting_token %}Your voting token: {{voter.voting_token}}
+{% else %}Your voter ID: {{voter.voter_login_id}}
 Your password: {{voter.voter_password}}
-{% else %}
+{% endif %}{% else %}
 Log in with your {{voter.voter_type}} account.
 {% endif %}
 

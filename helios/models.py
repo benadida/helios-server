@@ -27,6 +27,9 @@ from .crypto import algs, electionalgs
 from .crypto.elgamal import Cryptosystem
 from .crypto.utils import random, hash_b64
 
+# the voter types a voter file can list: an auth system, or 'token'
+VOTER_FILE_TYPES = set(AUTH_SYSTEMS) | {'token'}
+
 
 class HeliosModel(models.Model, datatypes.LDObjectContainer):
   class Meta:
@@ -604,6 +607,14 @@ class Election(HeliosModel):
 
     return [s for s in settings.AUTH_ENABLED_SYSTEMS if s in systems]
 
+  @property
+  def voting_tokens_p(self):
+    """
+    Whether this election's voters without an account log in with a single voting
+    token, rather than with a voter ID and password.
+    """
+    return self.voter_set.filter(voting_token__isnull=False).exists()
+
   def freeze(self):
     """
     election is frozen when the voter registration, questions, and trustees are finalized
@@ -834,7 +845,7 @@ class VoterFile(models.Model):
       # Excel's "Unicode Text" export is tab-separated: use tabs if the first
       # line starts with a voter type followed by a tab
       first_line = next((line for line in content if line.strip()), '')
-      delimiter = '\t' if first_line.split('\t')[0].strip() in AUTH_SYSTEMS else ','
+      delimiter = '\t' if first_line.split('\t')[0].strip() in VOTER_FILE_TYPES else ','
     else:
       content = open(self.voter_file.path, encoding='utf-8', newline='')
       delimiter = ','
@@ -847,10 +858,29 @@ class VoterFile(models.Model):
         continue
 
       voter_type = voter_fields[0].strip()
+
+      # token voters are identified by their email: token,<email>,<full name>
+      if voter_type == 'token':
+        voter_email = voter_fields[1].strip()
+        if not validate_email(voter_email):
+          raise Exception("invalid voter email '%s' for token voter" % voter_email)
+        max_length = Voter._meta.get_field('voter_login_id').max_length
+        if len(voter_email) > max_length:
+          raise Exception("voter email '%s' is longer than %d characters" % (voter_email, max_length))
+        voter_name = voter_fields[2].strip() if len(voter_fields) > 2 else voter_email
+        # lower-cased so case variants of an email are the same voter
+        yield {
+          'voter_type': voter_type,
+          'voter_id': voter_email.lower(),
+          'email': voter_email,
+          'name': voter_name,
+        }
+        continue
+
       voter_id = voter_fields[1].strip()
 
       if not voter_type in AUTH_SYSTEMS:
-        raise Exception("invalid voter type '%s' for voter id '%s', available voter types are %s" % (voter_type, voter_id, ",".join(AUTH_SYSTEMS.keys())))
+        raise Exception("invalid voter type '%s' for voter id '%s', available voter types are %s" % (voter_type, voter_id, ",".join(list(AUTH_SYSTEMS.keys()) + ['token'])))
 
       # default to having email be the same as voter_id
       voter_email = voter_id
@@ -873,11 +903,34 @@ class VoterFile(models.Model):
         'name': voter_name,
       }
 
+  def credentials_problem(self, voters):
+    """
+    An election has either only token voters or no token voters. Returns why these
+    voters can't be added to this election, or None if they can.
+    """
+    voter_types = {v['voter_type'] for v in voters}
+    if 'token' in voter_types:
+      if len(voter_types) > 1:
+        return "it mixes token voters with other voters, and a token election can only have token voters"
+      if self.election.openreg:
+        return "this election has open registration, which a token election can't have"
+      if self.election.voter_set.filter(voting_token__isnull=True).exists():
+        return "this election already has voters who don't use voting tokens, so it can't also have token voters"
+    elif voter_types and self.election.voting_tokens_p:
+      return "this election has token voters, so it can only have token voters"
+    return None
+
   def process(self):
     self.processing_started_at = datetime.datetime.utcnow()
     self.save()
 
     voters = list(self.itervoters())
+
+    # the preview checked this too, but the election may have changed since
+    self.problem = self.credentials_problem(voters)
+    if self.problem:
+      voters = []
+
     self.num_voters = len(voters)
     random.shuffle(voters)
 
@@ -896,7 +949,7 @@ class VoterFile(models.Model):
           })
           continue
 
-      if voter['voter_type'] == 'password':
+      if voter['voter_type'] in ('password', 'token'):
           # does voter for this user already exist
           existing_voter = Voter.get_by_election_and_voter_id(self.election, voter['voter_id'])
           if existing_voter:
@@ -905,7 +958,10 @@ class VoterFile(models.Model):
           voter_uuid = str(uuid.uuid4())
           new_voter = Voter(uuid=voter_uuid, user = None, voter_login_id = voter['voter_id'],
               voter_name = voter['name'], voter_email = voter['email'], election = self.election)
-          new_voter.generate_password()
+          if voter['voter_type'] == 'token':
+              new_voter.generate_voting_token()
+          else:
+              new_voter.generate_password()
           election=self.election
           if election.use_voter_aliases:
               # Use transaction to ensure alias assignment is atomic
@@ -961,6 +1017,10 @@ class Voter(HeliosModel):
   # if user is null, then you need a voter login ID and password
   voter_login_id = models.CharField(max_length = 100, null=True)
   voter_password = models.CharField(max_length = 100, null=True)
+
+  # or, instead of a login ID and password, a single voting token
+  voting_token = models.CharField(max_length = 100, null=True)
+
   voter_name = models.CharField(max_length = 200, null=True)
   voter_email = models.CharField(max_length = 250, null=True)
 
@@ -973,7 +1033,7 @@ class Voter(HeliosModel):
   cast_at = models.DateTimeField(auto_now_add=False, null=True)
 
   class Meta:
-    unique_together = (('election', 'voter_login_id'))
+    unique_together = (('election', 'voter_login_id'), ('election', 'voting_token'))
     app_label = 'helios'
 
   def __init__(self, *args, **kwargs):
@@ -1134,6 +1194,12 @@ class Voter(HeliosModel):
       raise Exception("password already exists")
 
     self.voter_password = utils.random_string(length, alphabet='abcdefghjkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789')
+
+  def generate_voting_token(self, length=20):
+    if self.voting_token:
+      raise Exception("voting token already exists")
+
+    self.voting_token = utils.random_string(length, alphabet='abcdefghjkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789')
 
   def store_vote(self, cast_vote):
     # only store the vote if it's cast later than the current one
