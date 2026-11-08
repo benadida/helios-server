@@ -203,6 +203,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'anymail',
+    'django_tasks',
+    'django_tasks_db',
     ## HELIOS stuff
     'helios_auth',
     'helios',
@@ -335,12 +337,12 @@ logging.basicConfig(
     format='%(asctime)s %(levelname)s %(message)s'
 )
 
-# set up celery
-CELERY_BROKER_URL = get_from_env('CELERY_BROKER_URL', 'amqp://localhost')
-if TESTING:
-    CELERY_TASK_ALWAYS_EAGER = True
+# background tasks are stored in the database and run by `manage.py db_worker`;
+# TASKS_IMMEDIATE=1 runs them inline instead, with no worker
+if TESTING or get_from_env('TASKS_IMMEDIATE', '0') == '1':
+    TASKS = {'default': {'BACKEND': 'django_tasks.backends.immediate.ImmediateBackend'}}
 else:
-    CELERY_TASK_ALWAYS_EAGER = (get_from_env('CELERY_TASK_ALWAYS_EAGER', '0') == '1')
+    TASKS = {'default': {'BACKEND': 'django_tasks_db.DatabaseBackend', 'QUEUES': ['default']}}
 
 # Rollbar Error Logging
 ROLLBAR_ACCESS_TOKEN = get_from_env('ROLLBAR_ACCESS_TOKEN', None)

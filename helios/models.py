@@ -901,7 +901,7 @@ class VoterFile(models.Model):
     # Notify admin if there were opted-out voters
     if opted_out_voters:
         from . import tasks
-        tasks.notify_admin_opted_out_voters.delay(self.election.id, opted_out_voters)
+        tasks.notify_admin_opted_out_voters.enqueue(self.election.id, opted_out_voters)
 
     # report the voters actually added: rows for voters already on the list, or
     # who opted out of Helios emails, are skipped and shouldn't be counted as loaded

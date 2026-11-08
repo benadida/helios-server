@@ -4,10 +4,6 @@
 
 * Install PostgreSQL 12+
 
-* Install RabbitMQ
-  This is needed for Celery to work, which does background processing such as
-  the processing of uploaded list-of-voter CSV files.
-
 * Download helios-server
 
 * `cd` into the helios-server directory
@@ -52,6 +48,21 @@ uv sync
 
 ```
 uv run python manage.py runserver
+```
+
+* Start the background task worker, which verifies cast votes, sends emails,
+  processes voter files and computes tallies. Tasks are queued in the database.
+
+```
+uv run python manage.py db_worker
+```
+
+* Or, to run tasks inline without a worker (development only), set `TASKS_IMMEDIATE=1`.
+
+* Finished tasks stay in the database; prune them regularly, e.g. daily:
+
+```
+uv run python manage.py prune_db_task_results
 ```
 
 ## Google Auth Configuration

@@ -2017,10 +2017,7 @@ class EmailOptOutTests(TestCase):
             self.assertFalse(models.EmailOptOut.is_opted_out(email))
             
             # Call single_voter_email before opt-out is applied
-            result = tasks.single_voter_email.apply(args=[voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {}])
-            
-            # Debug: check if task completed successfully
-            self.assertTrue(result.successful())
+            tasks.single_voter_email.call(voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {})
             
             # The send_message method should have been called because voter is not opted out
             mock_send_message.assert_called_once()
@@ -2035,7 +2032,7 @@ class EmailOptOutTests(TestCase):
         with patch.object(models.Voter, 'send_message') as mock_send_message:
             
             # Call single_voter_email after opt-out is applied
-            tasks.single_voter_email.apply(args=[voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {}])
+            tasks.single_voter_email.call(voter.uuid, "email/simple_subject.txt", "email/simple_body.txt", {})
             
             # The send_message method should not have been called because voter is opted out
             mock_send_message.assert_not_called()
@@ -2103,12 +2100,12 @@ class EmailOptOutTests(TestCase):
         voter.save()
 
         num_messages_before = len(mail.outbox)
-        tasks.single_voter_email.apply(args=[voter.uuid, 'email/vote_subject.txt', 'email/vote_body.txt', {
+        tasks.single_voter_email.call(voter.uuid, 'email/vote_subject.txt', 'email/vote_body.txt', {
             'custom_subject': 'Vote now: A & B',
             'custom_message': 'Questions? Ask Q&A',
             'election_vote_url': 'http://example.com/vote?a=1&b=2',
             'election_url': 'http://example.com/election',
-        }])
+        })
 
         self.assertEqual(len(mail.outbox), num_messages_before + 1)
         message = mail.outbox[-1]
@@ -3112,7 +3109,7 @@ class VoterEmailCutoffViewTests(WebTest):
 
     def test_voters_email_accepts_custom_message(self):
         self.setup_login()
-        with mock.patch('helios.views.tasks.voters_email.delay') as voters_email:
+        with mock.patch('helios.views.tasks.voters_email') as voters_email:
             response = self.client.post(f'/helios/elections/{self.election.uuid}/voters/email', {
                 'csrf_token': self.client.session['csrf_token'],
                 'subject': 'Vote now',
@@ -3120,7 +3117,7 @@ class VoterEmailCutoffViewTests(WebTest):
                 'send_to': 'all'
             })
         self.assertRedirects(response, f'/helios/elections/{self.election.uuid}/view')
-        self.assertEqual(voters_email.call_args.kwargs['extra_vars']['custom_message'], 'Polls close <b>Friday</b>.')
+        self.assertEqual(voters_email.enqueue.call_args.kwargs['extra_vars']['custom_message'], 'Polls close <b>Friday</b>.')
 
     def test_voters_email_accessible_when_recent_tally(self):
         """Test that voters email page is accessible when tally is recent"""

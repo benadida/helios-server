@@ -1,14 +1,14 @@
 """
-Celery queued tasks for Helios
+Background tasks for Helios, run by the database task worker
 
 2010-08-01
 ben@adida.net
 """
 import copy
-from celery import shared_task
-from celery.utils.log import get_logger
+import logging
 from django.conf import settings
 from django.urls import reverse
+from django_tasks import task
 from urllib.parse import urlparse
 
 from . import signals
@@ -17,7 +17,7 @@ from .models import CastVote, Election, Voter, VoterFile, EmailOptOut
 from .view_utils import render_text_template
 
 
-@shared_task
+@task(priority=10)  # ahead of bulk voter emails
 def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwargs):
     cast_vote = CastVote.objects.get(id=cast_vote_id)
     result = cast_vote.verify_and_store()
@@ -33,11 +33,11 @@ def cast_vote_verify_and_store(cast_vote_id, status_update_message=None, **kwarg
         if status_update_message and user.can_update_status():
             user.update_status(status_update_message)
     else:
-        logger = get_logger(cast_vote_verify_and_store.__name__)
+        logger = logging.getLogger(__name__)
         logger.error("Failed to verify and store %d" % cast_vote_id)
 
 
-@shared_task
+@task()
 def voters_email(election_id, subject_template, body_template, extra_vars={},
                  voter_constraints_include=None, voter_constraints_exclude=None):
     """
@@ -54,24 +54,24 @@ def voters_email(election_id, subject_template, body_template, extra_vars={},
         voters = voters.exclude(**voter_constraints_exclude)
 
     for voter in voters:
-        single_voter_email.delay(voter.uuid, subject_template, body_template, extra_vars)
+        single_voter_email.enqueue(voter.uuid, subject_template, body_template, extra_vars)
 
 
-@shared_task
+@task()
 def voters_notify(election_id, notification_template, extra_vars={}):
     election = Election.objects.get(id=election_id)
     for voter in election.voter_set.all():
-        single_voter_notify.delay(voter.uuid, notification_template, extra_vars)
+        single_voter_notify.enqueue(voter.uuid, notification_template, extra_vars)
 
 
-@shared_task
+@task()
 def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={}):
     voter = Voter.objects.get(uuid=voter_uuid)
     
     # Check if voter email is opted out
     voter_email = voter.voter_email or (voter.user and voter.user.user_id)
     if voter_email and EmailOptOut.is_opted_out(voter_email):
-        logger = get_logger(single_voter_email.__name__)
+        logger = logging.getLogger(__name__)
         logger.info(f"Skipping email to opted-out voter {voter.uuid}")
         return
 
@@ -96,7 +96,7 @@ def single_voter_email(voter_uuid, subject_template, body_template, extra_vars={
     voter.send_message(subject, body)
 
 
-@shared_task
+@task()
 def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
     voter = Voter.objects.get(uuid=voter_uuid)
 
@@ -108,12 +108,12 @@ def single_voter_notify(voter_uuid, notification_template, extra_vars={}):
     voter.send_notification(notification)
 
 
-@shared_task
+@task()
 def election_compute_tally(election_id):
     election = Election.objects.get(id=election_id)
     election.compute_tally()
 
-    election_notify_admin.delay(election_id=election_id,
+    election_notify_admin.enqueue(election_id=election_id,
                                 subject="encrypted tally computed",
                                 body="""
 The encrypted tally for election %s has been computed.
@@ -123,14 +123,14 @@ Helios
 """ % election.name)
 
     if election.has_helios_trustee():
-        tally_helios_decrypt.delay(election_id=election.id)
+        tally_helios_decrypt.enqueue(election_id=election.id)
 
 
-@shared_task
+@task()
 def tally_helios_decrypt(election_id):
     election = Election.objects.get(id=election_id)
     election.helios_trustee_decrypt()
-    election_notify_admin.delay(election_id=election_id,
+    election_notify_admin.enqueue(election_id=election_id,
                                 subject='Helios Decrypt',
                                 body="""
 Helios has decrypted its portion of the tally
@@ -141,7 +141,7 @@ Helios
 """ % election.name)
 
 
-@shared_task
+@task()
 def voter_file_process(voter_file_id):
     voter_file = VoterFile.objects.get(id=voter_file_id)
     voter_file.process()
@@ -155,7 +155,7 @@ Helios emails. Opted-out voters are listed in a separate email.
 """ % ("1 row" if voter_file.num_skipped == 1 else "%d rows" % voter_file.num_skipped,
        "was" if voter_file.num_skipped == 1 else "were")
 
-    election_notify_admin.delay(election_id=voter_file.election.id,
+    election_notify_admin.enqueue(election_id=voter_file.election.id,
                                 subject='voter file processed',
                                 body="""
 Your voter file upload for election %s
@@ -170,7 +170,7 @@ Helios
        skipped))
 
 
-@shared_task
+@task()
 def notify_admin_opted_out_voters(election_id, opted_out_voters):
     election = Election.objects.get(id=election_id)
     
@@ -203,7 +203,7 @@ Helios
     election.admin.send_message(subject, body)
 
 
-@shared_task
+@task()
 def election_notify_admin(election_id, subject, body):
     election = Election.objects.get(id=election_id)
     election.admin.send_message(subject, body)

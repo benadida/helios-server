@@ -806,7 +806,7 @@ def password_voter_resend(request, election):
   if voter and voter.voter_type == 'password' and voter.voter_email:
     # Queue the email
     election_vote_url = get_election_govote_url(election)
-    tasks.single_voter_email.delay(
+    tasks.single_voter_email.enqueue(
       voter_uuid=voter.uuid,
       subject_template='email/password_resend_subject.txt',
       body_template='email/password_resend_body.txt',
@@ -925,7 +925,7 @@ def one_election_cast_confirm(request, election):
       status_update_message = None
 
     # launch the verification task
-    tasks.cast_vote_verify_and_store.delay(
+    tasks.cast_vote_verify_and_store.enqueue(
       cast_vote_id = cast_vote.id,
       status_update_message = status_update_message)
     
@@ -1337,7 +1337,7 @@ def one_election_compute_tally(request, election):
   election.tallying_started_at = datetime.datetime.utcnow()
   election.save()
 
-  tasks.election_compute_tally.delay(election_id = election.id)
+  tasks.election_compute_tally.enqueue(election_id = election.id)
 
   return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW,args=[election.uuid]))
 
@@ -1703,7 +1703,7 @@ def voters_upload(request, election):
       voter_file_id = request.session.pop('voter_file_id', None)
       if voter_file_id:
         # launch the background task to parse that file
-        tasks.voter_file_process.delay(voter_file_id = voter_file_id)
+        tasks.voter_file_process.enqueue(voter_file_id = voter_file_id)
 
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(voters_list_pretty, args=[election.uuid]))
     else:
@@ -1820,7 +1820,7 @@ def voters_email(request, election):
       voter_constraints_exclude = None
 
       if voter:
-        tasks.single_voter_email.delay(voter_uuid = voter.uuid, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars)
+        tasks.single_voter_email.enqueue(voter_uuid = voter.uuid, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars)
       else:
         # exclude those who have not voted
         if email_form.cleaned_data['send_to'] == 'voted':
@@ -1830,7 +1830,7 @@ def voters_email(request, election):
         if email_form.cleaned_data['send_to'] == 'not-voted':
           voter_constraints_include = {'vote_hash': None}
 
-        tasks.voters_email.delay(election_id = election.id, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars, voter_constraints_include = voter_constraints_include, voter_constraints_exclude = voter_constraints_exclude)
+        tasks.voters_email.enqueue(election_id = election.id, subject_template = subject_template, body_template = body_template, extra_vars = extra_vars, voter_constraints_include = voter_constraints_include, voter_constraints_exclude = voter_constraints_exclude)
 
       # this batch process is all async, so we can return a nice note
       return HttpResponseRedirect(settings.SECURE_URL_HOST + reverse(url_names.election.ELECTION_VIEW, args=[election.uuid]))
