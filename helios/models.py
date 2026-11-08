@@ -534,7 +534,7 @@ class Election(HeliosModel):
     """
     release the result that should already be computed
     """
-    if not self.result:
+    if not self.has_complete_result:
       return
 
     self.result_released_at = datetime.datetime.utcnow()
@@ -733,8 +733,12 @@ class Election(HeliosModel):
     return [self.one_question_winner(self.questions[i], self.result[i], self.num_cast_votes) for i in range(len(self.questions))]
 
   @property
+  def has_complete_result(self):
+    return result_is_complete(self.result)
+
+  @property
   def pretty_result(self):
-    if not result_is_complete(self.result):
+    if not self.has_complete_result:
       return None
 
     raw_result = self.result

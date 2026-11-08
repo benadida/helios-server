@@ -4388,3 +4388,23 @@ class UndecryptableTallyTests(WebTest):
         self.election.save()
         response = self.client.get("/helios/elections/%s/view" % self.election.uuid)
         self.assertContains(response, "The tally could not be decrypted")
+
+    def test_undecrypted_result_cannot_be_released(self):
+        self.election.result = [[None, None]]
+        self.election.save()
+        self.set_trustee_factors(self.correct_factors())
+        self.login_admin()
+        response = self.client.get("/helios/elections/%s/view" % self.election.uuid)
+        # the admin is offered to combine the decryptions again, not to release
+        self.assertNotContains(response, 'release result')
+        self.assertContains(response, 'compute results')
+        self.election.release_result()
+        self.assertIsNone(self.election.result_released_at)
+
+    def test_undecrypted_result_is_replaced_by_good_combination(self):
+        self.election.result = [[None, None]]
+        self.election.save()
+        self.set_trustee_factors(self.correct_factors())
+        response = self.combine()
+        self.assertRedirects(response, "/helios/elections/%s/view" % self.election.uuid)
+        self.assertEqual(models.Election.objects.get(uuid=self.election.uuid).result, [[1, 0]])
