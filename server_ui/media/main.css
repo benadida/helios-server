@@ -1,4 +1,11 @@
 
+.announcement-banner {
+  background: #fff3cd;
+  border-bottom: 1px solid #e0c97a;
+  padding: 10px 30px;
+  text-align: center;
+}
+
 #contentbody {
   padding: 20px 30px 20px 30px;
 }

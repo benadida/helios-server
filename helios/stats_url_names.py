@@ -1,5 +1,6 @@
 STATS_HOME="stats@home"
 STATS_FORCE_QUEUE="stats@force-queue"
+STATS_SET_ANNOUNCEMENT="stats@set-announcement"
 STATS_ELECTIONS="stats@elections"
 STATS_ELECTIONS_PROBLEMS="stats@elections-problems"
 STATS_RECENT_VOTES="stats@recent-votes"

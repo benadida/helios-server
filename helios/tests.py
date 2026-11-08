@@ -1323,6 +1323,29 @@ class ElectionBlackboxTests(WebTest):
         new_election = models.Election.objects.get(uuid = self.election.uuid)
         self.assertEqual(new_election.short_name, self.election.short_name + "-2")
 
+    def test_site_announcement(self):
+        self.setup_login(from_scratch=True, user_id='mccio@github.com', user_type='google')
+        response = self.client.get("/")
+        self.assertNotContains(response, "announcement-banner")
+        response = self.client.post("/helios/stats/announcement", {
+                "text": "Maintenance <b>tonight</b> & tomorrow",
+                "csrf_token": self.client.session['csrf_token']}, follow=False)
+        self.assertRedirects(response, "/helios/stats/")
+        response = self.client.get("/")
+        self.assertContains(response, "Maintenance &lt;b&gt;tonight&lt;/b&gt; &amp; tomorrow")
+        response = self.client.get("/helios/elections/%s/view" % self.election.uuid)
+        self.assertContains(response, "announcement-banner")
+        response = self.client.post("/helios/stats/announcement", {
+                "text": "", "csrf_token": self.client.session['csrf_token']}, follow=False)
+        response = self.client.get("/")
+        self.assertNotContains(response, "announcement-banner")
+
+        self.setup_login()
+        response = self.client.post("/helios/stats/announcement", {
+                "text": "hi", "csrf_token": self.client.session['csrf_token']}, follow=False)
+        self.assertStatusCode(response, 403)
+        self.assertEqual(models.SiteAnnouncement.current_text(), "")
+
     def test_get_election_stats(self):
         self.setup_login(from_scratch=True, user_id='mccio@github.com', user_type='google')
         DBTaskResult.objects.create(

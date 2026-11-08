@@ -1423,3 +1423,21 @@ class EmailOptOut(models.Model):
       
     deleted_count, _ = cls.objects.filter(email_hash=email_hash).delete()
     return deleted_count > 0
+
+
+class SiteAnnouncement(models.Model):
+  """A single banner message shown on every page, set from the site admin page."""
+  text = models.TextField(blank=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  class Meta:
+    app_label = 'helios'
+
+  @classmethod
+  def current_text(cls):
+    announcement = cls.objects.filter(pk=1).first()
+    return announcement.text if announcement else ''
+
+  @classmethod
+  def set_text(cls, text):
+    cls.objects.update_or_create(pk=1, defaults={'text': text})
