@@ -147,7 +147,8 @@ than half of the ballots cast.
    system except password if registration is unrestricted). If that list is
    empty, every enabled system is offered.
 4. On confirmation the server saves a `CastVote` and queues
-   `cast_vote_verify_and_store`. That task checks the ballot belongs to this
+   `cast_vote_verify_and_store` in one database transaction, so a stored
+   vote always has its verification task. That task checks the ballot belongs to this
    election (election hash and UUID), that every ciphertext is in the right
    group, and every zero-knowledge proof. If all checks pass, the ballot
    becomes the voter's current vote, and the voter is emailed their tracker.
