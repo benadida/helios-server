@@ -4478,3 +4478,19 @@ class TrusteeUploadPkTests(WebTest):
         self.assertStatusCode(self.client.get(self.base + "/keygenerator"), 200)
         self.election.freeze()
         self.assertStatusCode(self.client.get(self.base + "/keygenerator"), 403)
+
+
+class CookieTestMissingContinueUrlTests(WebTest):
+    """The cookie-test pages send a request without continue_url home instead of 500ing."""
+
+    def test_missing_continue_url_redirects_home(self):
+        for path in ['/helios/testcookie', '/helios/testcookie_2', '/helios/nocookies']:
+            response = self.client.get(path)
+            self.assertStatusCode(response, 302)
+            self.assertEqual(response['Location'], settings.SECURE_URL_HOST + "/", path)
+
+    def test_continue_url_still_followed(self):
+        continue_url = settings.SECURE_URL_HOST + "/booth/vote.html"
+        response = self.client.get('/helios/testcookie', {'continue_url': continue_url})
+        self.assertStatusCode(response, 302)
+        self.assertIn(urlencode({'continue_url': continue_url}), response['Location'])

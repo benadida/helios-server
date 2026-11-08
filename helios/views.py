@@ -362,13 +362,19 @@ def one_election_view(request, election):
                           'test_cookie_url': test_cookie_url})
 
 def test_cookie(request):
-  continue_url = request.GET['continue_url']
+  # the link to this page always carries continue_url; without it there is
+  # nowhere to continue to, so send the visitor home rather than 500
+  continue_url = request.GET.get('continue_url')
+  if not continue_url:
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + "/")
   request.session.set_test_cookie()
   next_url = "%s?%s" % (reverse(url_names.COOKIE_TEST_2), urlencode({'continue_url': continue_url}))
   return HttpResponseRedirect(settings.SECURE_URL_HOST + next_url)  
 
 def test_cookie_2(request):
-  continue_url = request.GET['continue_url']
+  continue_url = request.GET.get('continue_url')
+  if not continue_url:
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + "/")
 
   if not request.session.test_cookie_worked():
     return HttpResponseRedirect(settings.SECURE_URL_HOST + ("%s?%s" % (reverse(url_names.COOKIE_NO), urlencode({'continue_url': continue_url}))))
@@ -377,7 +383,10 @@ def test_cookie_2(request):
   return HttpResponseRedirect(continue_url)  
 
 def nocookies(request):
-  retest_url = "%s?%s" % (reverse(url_names.COOKIE_TEST), urlencode({'continue_url' : request.GET['continue_url']}))
+  continue_url = request.GET.get('continue_url')
+  if not continue_url:
+    return HttpResponseRedirect(settings.SECURE_URL_HOST + "/")
+  retest_url = "%s?%s" % (reverse(url_names.COOKIE_TEST), urlencode({'continue_url' : continue_url}))
   return render_template(request, 'nocookies', {'retest_url': retest_url})
 
 ##
