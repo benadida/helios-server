@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% load announcement_tags %}<!DOCTYPE html>
 <!--[if IE 8]> 				 <html class="no-js lt-ie9" lang="en" > <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
 
@@ -74,6 +74,11 @@
       </ul>
     </section>
   </nav>
+
+  {% site_announcement as announcement %}
+  {% if announcement %}
+  <div class="announcement-banner">{{announcement}}</div>
+  {% endif %}
 
 
   <!-- Main Page Content and Sidebar -->

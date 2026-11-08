@@ -15,7 +15,7 @@ from django_tasks_db.models import DBTaskResult
 
 from helios import tasks, url_names
 from helios.management.commands.requeue_stuck_tasks import STUCK_AFTER_MINUTES
-from helios.models import CastVote, Election
+from helios.models import CastVote, Election, SiteAnnouncement
 from helios_auth.models import User
 from helios_auth.security import get_user, check_csrf
 from .security import PermissionDenied
@@ -43,7 +43,15 @@ def home(request):
                                          finished_at__gte=now - datetime.timedelta(days=1))))
 
   return render_template(request, 'stats', {'num_votes_in_queue': num_votes_in_queue, 'task_counts': task_counts,
-                                            'stuck_after_minutes': STUCK_AFTER_MINUTES})
+                                            'stuck_after_minutes': STUCK_AFTER_MINUTES,
+                                            'announcement': SiteAnnouncement.current_text()})
+
+@require_http_methods(["POST"])
+def set_announcement(request):
+  require_admin(request)
+  check_csrf(request)
+  SiteAnnouncement.set_text(request.POST.get('text', '').strip())
+  return HttpResponseRedirect(reverse(url_names.stats.STATS_HOME))
 
 def force_queue(request):
   user = require_admin(request)

@@ -18,4 +18,12 @@
 ({{task_counts.stuck}} for over {{stuck_after_minutes}} minutes, see <tt>manage.py requeue_stuck_tasks</tt>),
 <b>{{task_counts.failed_last_day}}</b> failed in the last day.</div>
 
+<form method="post" action="{% url "stats@set-announcement" %}">
+  <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+  <label>Announcement banner shown on every page (leave empty for none):
+    <input type="text" name="text" value="{{announcement}}" />
+  </label>
+  <button type="submit" class="tiny button">Save</button>
+</form>
+
 {% endblock %}
