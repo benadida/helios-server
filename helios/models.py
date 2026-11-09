@@ -196,7 +196,7 @@ class Election(HeliosModel):
 
   @property
   def num_cast_votes(self):
-    return self.voter_set.exclude(vote=None).count()
+    return self.voter_set.exclude(vote_hash=None).count()
 
   @property
   def num_pending_votes(self):
@@ -511,8 +511,9 @@ class Election(HeliosModel):
     tally the election, assuming votes already verified
     """
     tally = self.init_tally()
-    for voter in self.voter_set.exclude(vote=None):
-      tally.add_vote(voter.vote, verify_p=False)
+    voters = self.voter_set.exclude(vote_hash=None).select_related('cast_vote')
+    for voter in voters.iterator(chunk_size=500):
+      tally.add_vote(voter.last_cast_vote().vote, verify_p=False)
 
     self.encrypted_tally = tally
     self.save()
@@ -972,9 +973,15 @@ class Voter(HeliosModel):
   vote_hash = models.CharField(max_length = 100, null=True)
   cast_at = models.DateTimeField(auto_now_add=False, null=True)
 
+  # the latest cast vote, which will replace the vote copy above
+  cast_vote = models.ForeignKey('CastVote', null=True, on_delete=models.SET_NULL, related_name='+', db_index=False)
+
   class Meta:
     unique_together = (('election', 'voter_login_id'))
     app_label = 'helios'
+    indexes = [
+      models.Index(fields=['cast_vote'], name='helios_voter_cast_vote_idx'),
+    ]
 
   def __init__(self, *args, **kwargs):
     super(Voter, self).__init__(*args, **kwargs)
@@ -1143,9 +1150,13 @@ class Voter(HeliosModel):
     self.vote = cast_vote.vote
     self.vote_hash = cast_vote.vote_hash
     self.cast_at = cast_vote.cast_at
+    self.cast_vote = cast_vote
     self.save()
 
   def last_cast_vote(self):
+    if self.cast_vote_id:
+      self.cast_vote.voter = self
+      return self.cast_vote
     return CastVote(vote = self.vote, vote_hash = self.vote_hash, cast_at = self.cast_at, voter=self)
 
 

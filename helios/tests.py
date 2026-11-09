@@ -750,6 +750,87 @@ class CastVoteModelTests(TestCase):
     def test_cast_vote(self):
         pass
 
+class VoterCastVoteTests(TestCase):
+    fixtures = ['users.json', 'election.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        self.election = models.Election.objects.get(short_name='test')
+        self.election.public_key = views.ELGAMAL_PARAMS.generate_keypair().pk
+        self.election.save()
+        user = auth_models.User.objects.get(user_id='ben@adida.net', user_type='google')
+        self.voter = models.Voter.register_user_in_election(user, self.election)
+        self.cast_vote = self._cast(self.voter, [[0]], timezone.now())
+
+    def _cast(self, voter, answers, cast_at):
+        vote = homomorphic.EncryptedVote.fromElectionAndAnswers(self.election, answers)
+        cast_vote = models.CastVote.objects.create(voter=voter, vote=vote, vote_hash=crypto_utils.hash_b64(datatypes.LDObject.instantiate(vote, datatype='legacy/EncryptedVote').serialize()))
+        # cast_at is auto_now_add
+        models.CastVote.objects.filter(id=cast_vote.id).update(cast_at=cast_at)
+        cast_vote.refresh_from_db()
+        voter.store_vote(cast_vote)
+        return cast_vote
+
+    def _voter(self):
+        return models.Voter.objects.get(id=self.voter.id)
+
+    def test_store_vote_links_latest_cast_vote(self):
+        self.assertEqual(self._voter().cast_vote_id, self.cast_vote.id)
+        self._cast(self.voter, [[1]], self.cast_vote.cast_at - datetime.timedelta(minutes=1))
+        self.assertEqual(self._voter().cast_vote_id, self.cast_vote.id)
+        newer = self._cast(self.voter, [[1]], self.cast_vote.cast_at + datetime.timedelta(minutes=1))
+        self.assertEqual(self._voter().cast_vote_id, newer.id)
+        self.assertEqual(self._voter().vote_hash, newer.vote_hash)
+
+    def test_last_vote_and_tally_use_cast_vote(self):
+        models.Voter.objects.filter(id=self.voter.id).update(vote=None)
+        response = self.client.get("/helios/elections/%s/ballots/%s/last" % (self.election.uuid, self.voter.uuid))
+        self.assertEqual(response.json()['vote_hash'], self.cast_vote.vote_hash)
+        self.assertEqual(response.json()['vote'], self.cast_vote.vote.toJSONDict())
+        self.election.compute_tally()
+        self.assertEqual(self.election.encrypted_tally.num_tallied, 1)
+
+    def test_unlinked_voter_uses_vote_copy(self):
+        models.Voter.objects.filter(id=self.voter.id).update(cast_vote=None)
+        self.assertEqual(self._voter().last_cast_vote().vote.toJSONDict(), self.cast_vote.vote.toJSONDict())
+        self.election.compute_tally()
+        self.assertEqual(self.election.encrypted_tally.num_tallied, 1)
+
+    def test_backfill(self):
+        user = auth_models.User.objects.get(user_id='mccio@github.com')
+        unmatched = models.Voter.register_user_in_election(user, self.election)
+        models.Voter.objects.filter(id=unmatched.id).update(vote_hash='nope', cast_at=timezone.now())
+        older = self._cast(self.voter, [[1]], self.cast_vote.cast_at - datetime.timedelta(minutes=1))
+        models.CastVote.objects.filter(id=older.id).update(vote_hash=self.cast_vote.vote_hash)
+        models.Voter.objects.update(cast_vote=None)
+
+        out = StringIO()
+        call_command('backfill_voter_cast_votes', stdout=out, verbosity=2)
+        self.assertEqual(self._voter().cast_vote_id, self.cast_vote.id)
+        self.assertIsNone(models.Voter.objects.get(id=unmatched.id).cast_vote_id)
+        self.assertIn("voter %s: no cast vote" % unmatched.id, out.getvalue())
+        self.assertIn("linked 1 voters; 1 without a matching cast vote, 0 with a different vote; 1 voters still unlinked", out.getvalue())
+
+        out = StringIO()
+        call_command('backfill_voter_cast_votes', stdout=out)
+        self.assertIn("linked 0 voters", out.getvalue())
+
+    def test_backfill_skips_different_vote(self):
+        other = homomorphic.EncryptedVote.fromElectionAndAnswers(self.election, [[1]])
+        models.Voter.objects.filter(id=self.voter.id).update(cast_vote=None, vote=other)
+        out = StringIO()
+        call_command('backfill_voter_cast_votes', stdout=out)
+        self.assertIsNone(self._voter().cast_vote_id)
+        self.assertIn("0 without a matching cast vote, 1 with a different vote", out.getvalue())
+
+    def test_delete_voter(self):
+        self._voter().delete()
+        self.assertFalse(models.CastVote.objects.filter(id=self.cast_vote.id).exists())
+
+    def test_delete_cast_vote_unlinks_voter(self):
+        self.cast_vote.delete()
+        self.assertIsNone(self._voter().cast_vote_id)
+
 class BallotGroupMembershipTests(TestCase):
     """
     A cast ballot's ciphertext elements must lie in the order-q subgroup named by
