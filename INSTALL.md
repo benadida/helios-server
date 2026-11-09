@@ -98,6 +98,17 @@ Older versions of Helios used Celery with RabbitMQ. To upgrade:
 
 * Remove RabbitMQ and the `CELERY_BROKER_URL` setting.
 
+## Deploying
+
+* **Heroku** uses the `Procfile`.
+
+* **Fly.io** uses `fly.toml` and the `Dockerfile`; the steps for a first deploy are at
+  the top of `fly.toml`. To move an existing Heroku deployment, see
+  [docs/migrating-heroku-to-fly.md](docs/migrating-heroku-to-fly.md).
+
+* Either way, set `DEBUG=0` in production: it defaults to on, which enables the
+  `devlogin` auth system.
+
 ## Google Auth Configuration
 
 To get Google Auth working:
