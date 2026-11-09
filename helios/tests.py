@@ -4411,6 +4411,16 @@ class VoterPasswordLoginReturnUrlTests(WebTest):
                         response['Location'])
 
 
+    def test_head_request_is_answered_like_get(self):
+        # link checkers send HEAD for the emailed login link; it must not fail the POST-only CSRF check
+        url = self.login_url + '?' + urlencode({'return_url': '/'})
+        get_response = self.client.get(url)
+        head_response = self.client.head(url)
+        self.assertEqual(head_response.status_code, get_response.status_code)
+        self.assertEqual(head_response.get('Location'), get_response.get('Location'))
+        self.assertEqual(head_response.content, b'')
+
+
 class UndecryptableTallyTests(WebTest):
     """Decryption factors that don't decrypt the tally leave no result, and don't break the election page."""
     fixtures = ['users.json']

@@ -720,12 +720,13 @@ def password_voter_login(request, election):
   """
   
   # the URL to send the user to after they've logged in
-  params = request.GET if request.method == "GET" else request.POST
+  params = request.POST if request.method == "POST" else request.GET
   return_url = same_site_path(params.get('return_url'), reverse(one_election_cast_confirm, args=[election.uuid]))
 
   bad_voter_login = (request.GET.get('bad_voter_login', "0") == "1")
 
-  if request.method == "GET":
+  # HEAD (sent by link checkers on the emailed login link) is answered like GET
+  if request.method in ("GET", "HEAD"):
     # if user logged in somehow in the interim, e.g. using the login link for administration,
     # then go!
     if user_can_see_election(request, election):
