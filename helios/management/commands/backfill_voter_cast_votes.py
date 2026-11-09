@@ -14,11 +14,11 @@ from django.db import connection
 from helios.models import Voter
 
 FIND_CAST_VOTES = """
-SELECT v.id, v.vote_hash, cv.id, v.vote IS NULL OR cv.vote = v.vote
+SELECT v.id, v.vote_hash, cv.id, cv.vote = v.vote
 FROM helios_voter v
 LEFT JOIN LATERAL (
   SELECT id, vote FROM helios_castvote
-  WHERE voter_id = v.id AND vote_hash = v.vote_hash
+  WHERE voter_id = v.id AND vote_hash = v.vote_hash AND v.vote IS NOT NULL
   ORDER BY cast_at DESC, id DESC LIMIT 1
 ) cv ON true
 WHERE v.id > %s AND v.vote_hash IS NOT NULL AND v.cast_vote_id IS NULL
@@ -54,7 +54,7 @@ class Command(BaseCommand):
         for voter_id, vote_hash, cast_vote_id, same_text in rows:
           if cast_vote_id is None:
             missing += 1
-            self.report(options, "voter %s: no cast vote with its vote_hash" % voter_id)
+            self.report(options, "voter %s: no cast vote matching its vote copy" % voter_id)
           elif same_text or self.same_vote(cursor, voter_id, cast_vote_id):
             links.append((voter_id, cast_vote_id, vote_hash))
           else:

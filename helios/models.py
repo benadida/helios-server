@@ -14,6 +14,7 @@ import uuid
 import nh3
 from django.conf import settings
 from django.db import models, transaction
+from django.db.models import Q
 from django.utils.html import format_html, format_html_join
 from validate_email import validate_email
 
@@ -196,7 +197,7 @@ class Election(HeliosModel):
 
   @property
   def num_cast_votes(self):
-    return self.voter_set.exclude(vote_hash=None).count()
+    return self.voter_set.filter(Q(cast_vote__isnull=False) | Q(vote__isnull=False)).count()
 
   @property
   def num_pending_votes(self):
@@ -511,7 +512,7 @@ class Election(HeliosModel):
     tally the election, assuming votes already verified
     """
     tally = self.init_tally()
-    voters = self.voter_set.exclude(vote_hash=None).select_related('cast_vote')
+    voters = self.voter_set.filter(Q(cast_vote__isnull=False) | Q(vote__isnull=False)).select_related('cast_vote')
     for voter in voters.iterator(chunk_size=500):
       tally.add_vote(voter.last_cast_vote().vote, verify_p=False)
 

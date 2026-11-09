@@ -809,6 +809,9 @@ class VoterCastVoteTests(TestCase):
         self.assertEqual(self._voter().cast_vote_id, self.cast_vote.id)
         self.assertIsNone(models.Voter.objects.get(id=unmatched.id).cast_vote_id)
         self.assertIn("voter %s: no cast vote" % unmatched.id, out.getvalue())
+        self.election.compute_tally()
+        self.assertEqual(self.election.encrypted_tally.num_tallied, 1)
+        self.assertEqual(self.election.num_cast_votes, 1)
         self.assertIn("linked 1 voters; 1 without a matching cast vote, 0 with a different vote; 1 voters still unlinked", out.getvalue())
 
         out = StringIO()
