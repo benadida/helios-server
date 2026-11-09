@@ -13,7 +13,7 @@
 # Background tasks are queued in Postgres, so there is no broker to set up.
 
 app = "YOUR_APP"
-primary_region = "iad"
+primary_region = "ord"
 
 # db_worker finishes the task it's running on SIGTERM; give it time to
 kill_signal = "SIGTERM"
@@ -27,8 +27,8 @@ kill_timeout = 300
   # DEBUG defaults to on in settings.py, which enables the devlogin backdoor
   DEBUG = "0"
   SSL = "1"
-  HSTS = "1"
-
+  HSTS = "1"	
+	
 [processes]
   web = "gunicorn wsgi:application -b 0.0.0.0:8080 -w 4"
   worker = "python manage.py db_worker"
