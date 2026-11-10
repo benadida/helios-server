@@ -3,6 +3,8 @@ Github Authentication
 
 """
 
+import logging
+
 from django.conf import settings
 from django.core.mail import send_mail
 from requests_oauthlib import OAuth2Session
@@ -102,11 +104,18 @@ def update_status(token, message):
   pass
 
 def send_message(user_id, name, user_info, subject, body):
+  # Voters uploaded by username who haven't logged in yet have no email on file.
+  # Skip them instead of raising KeyError and failing the email task.
+  email = (user_info or {}).get('email')
+  if not email:
+    logging.getLogger(__name__).warning("not emailing GitHub user: no email address on file")
+    return
+
   send_mail(
     subject,
     body,
     settings.SERVER_EMAIL,
-    [format_recipient(user_id, user_info['email'])],
+    [format_recipient(user_id, email)],
     fail_silently=False,
   )
 

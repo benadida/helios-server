@@ -529,6 +529,26 @@ class OAuthAuthSystemTests(TestCase):
             result = system.get_user_info_after_auth(request)
             self.assertIsNone(result)
 
+    def test_send_message_skips_user_without_email(self):
+        """Voters uploaded by username have no email until they log in; don't crash on them"""
+        from .auth_systems import github, gitlab
+
+        for system in [github, gitlab]:
+            mail.outbox = []
+            with self.assertLogs(system.__name__, level='WARNING'):
+                system.send_message('octocat', 'octocat', {}, 'subject', 'body')
+            system.send_message('octocat', 'octocat', None, 'subject', 'body')
+            self.assertEqual(len(mail.outbox), 0)
+
+    def test_send_message_emails_user_with_email(self):
+        from .auth_systems import github, gitlab
+
+        for system in [github, gitlab]:
+            mail.outbox = []
+            system.send_message('octocat', 'octocat', {'email': 'octocat@example.com'}, 'subject', 'body')
+            self.assertEqual(len(mail.outbox), 1)
+            self.assertIn('octocat@example.com', mail.outbox[0].to[0])
+
 
 class SameSitePathTests(unittest.TestCase):
 
