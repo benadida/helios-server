@@ -100,7 +100,9 @@ Older versions of Helios used Celery with RabbitMQ. To upgrade:
 
 ## Deploying
 
-* **Heroku** uses the `Procfile`.
+* **Heroku** uses the `Procfile`. Its `release` line runs `manage.py migrate` before
+  each new release starts taking traffic; if the migration fails, the release is not
+  deployed.
 
 * **Fly.io** uses `fly.toml` and the `Dockerfile`; the steps for a first deploy are at
   the top of `fly.toml`. To move an existing Heroku deployment, see
