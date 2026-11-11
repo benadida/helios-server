@@ -19,7 +19,7 @@ from django.core import mail
 from django.core.files import File
 from django.core.files.base import ContentFile
 from django.core.files.storage import storages
-from django.core.management import call_command
+from django.core.management import CommandError, call_command
 from django.test import TestCase
 from django.utils import timezone
 from django.utils.html import escape as html_escape
@@ -887,6 +887,60 @@ class OffloadedCastVoteTests(TestCase):
         with self.assertRaises(Exception):
             models.CastVote.objects.get(id=self.cast_vote.id).load_vote()
 
+
+    def _release_result(self, days_ago):
+        self.election.result_released_at = datetime.datetime.utcnow() - datetime.timedelta(days=days_ago)
+        self.election.save()
+
+    def _offload_command(self, *args):
+        out = StringIO()
+        call_command('offload_cast_votes', *args, stdout=out)
+        return out.getvalue()
+
+    def test_offload_and_restore_commands(self):
+        self._release_result(200)
+        self.assertIn('test: offloaded 1 votes, kept 0', self._offload_command())
+
+        cast_vote = models.CastVote.objects.get(id=self.cast_vote.id)
+        self.assertIsNone(cast_vote.vote)
+        self.assertIsNotNone(cast_vote.vote_offloaded_at)
+        self.assertIsNone(models.Voter.objects.get(id=self.voter.id).vote)
+        self.assertTrue(storages['ballots'].exists(cast_vote.vote_storage_name))
+        response = self.client.get("/helios/elections/%s/ballots/%s/last" % (self.election.uuid, self.voter.uuid))
+        self.assertEqual(response.json()['vote'], utils.from_json(self.vote_json))
+        with self.assertRaises(Exception):
+            models.Election.objects.get(id=self.election.id).compute_tally()
+
+        call_command('restore_cast_votes', self.election.uuid, stdout=StringIO())
+        cast_vote = models.CastVote.objects.get(id=self.cast_vote.id)
+        self.assertIsNone(cast_vote.vote_offloaded_at)
+        self.assertEqual(cast_vote.vote.toJSON(), self.vote_json)
+        self.assertEqual(models.Voter.objects.get(id=self.voter.id).vote.toJSON(), self.vote_json)
+
+    def test_offload_only_old_released_elections(self):
+        self._release_result(10)
+        self._offload_command()
+        self.assertIsNone(models.CastVote.objects.get(id=self.cast_vote.id).vote_offloaded_at)
+        with self.assertRaises(CommandError):
+            self._offload_command('--election', self.election.uuid)
+
+        self._release_result(200)
+        self.assertIn('test: would offload 1 votes', self._offload_command('--dry-run'))
+        self.assertIsNone(models.CastVote.objects.get(id=self.cast_vote.id).vote_offloaded_at)
+
+    def test_offload_keeps_copy_of_unlinked_voter(self):
+        models.Voter.objects.filter(id=self.voter.id).update(cast_vote=None)
+        self._release_result(200)
+        self.assertIn('test: offloaded 1 votes, kept 0', self._offload_command())
+        self.assertEqual(models.Voter.objects.get(id=self.voter.id).vote.toJSON(), self.vote_json)
+        response = self.client.get("/helios/elections/%s/ballots/%s/last" % (self.election.uuid, self.voter.uuid))
+        self.assertEqual(response.json()['vote'], utils.from_json(self.vote_json))
+
+    def test_offload_keeps_vote_not_matching_fingerprint(self):
+        models.CastVote.objects.filter(id=self.cast_vote.id).update(vote_hash='otherhash')
+        self._release_result(200)
+        self.assertIn('test: offloaded 0 votes, kept 1', self._offload_command())
+        self.assertIsNotNone(models.CastVote.objects.get(id=self.cast_vote.id).vote)
 
 class BallotGroupMembershipTests(TestCase):
     """

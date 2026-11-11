@@ -9,10 +9,12 @@ Ben Adida
 import codecs
 import csv
 import datetime
+import json
 import uuid
 
 import nh3
 from django.conf import settings
+from django.core.files.base import ContentFile
 from django.core.files.storage import storages
 from django.db import models, transaction
 from django.db.models import Q
@@ -512,6 +514,9 @@ class Election(HeliosModel):
     """
     tally the election, assuming votes already verified
     """
+    if CastVote.objects.filter(voter__election=self, vote_offloaded_at__isnull=False).exists():
+      raise Exception("votes are offloaded to ballot storage, run restore_cast_votes first")
+
     tally = self.init_tally()
     voters = self.voter_set.filter(Q(cast_vote__isnull=False) | Q(vote__isnull=False)).select_related('cast_vote')
     for voter in voters.iterator(chunk_size=500):
@@ -1258,6 +1263,45 @@ class CastVote(HeliosModel):
         raise Exception("offloaded vote %s does not match its fingerprint" % self.vote_storage_name)
       self.vote = CastVote._meta.get_field('vote').from_db_value(vote_json)
     return self.vote
+
+  def offload_vote(self):
+    """
+    move the vote JSON to ballot storage, keeping the fingerprint in the DB.
+    Returns False, leaving the vote in the DB, if the JSON doesn't match vote_hash.
+    """
+    db_json = CastVote._meta.get_field('vote').get_prep_value(self.vote)
+    # the booth fingerprints compact JSON, so store whichever form matches vote_hash
+    booth_json = json.dumps(json.loads(db_json), sort_keys=True, separators=(',', ':'))
+    vote_json = next((j for j in (booth_json, db_json) if hash_b64(j) == self.vote_hash), None)
+    if vote_json is None:
+      return False
+
+    storage = storages['ballots']
+    name = self.vote_storage_name
+    if storage.exists(name):
+      storage.delete(name)
+    storage.save(name, ContentFile(vote_json.encode('utf-8')))
+    with storage.open(name) as f:
+      if f.read().decode('utf-8') != vote_json:
+        raise Exception("ballot storage returned a different %s" % name)
+
+    with transaction.atomic():
+      self.vote = None
+      self.vote_offloaded_at = datetime.datetime.utcnow()
+      self.save(update_fields=['vote', 'vote_offloaded_at'])
+      # only voters who read their vote through cast_vote can drop their copy
+      Voter.objects.filter(id=self.voter_id, cast_vote_id=self.id).update(vote=None)
+    return True
+
+  def restore_vote(self):
+    """
+    bring an offloaded vote back into the DB
+    """
+    vote = self.load_vote()
+    with transaction.atomic():
+      self.vote_offloaded_at = None
+      self.save(update_fields=['vote', 'vote_offloaded_at'])
+      Voter.objects.filter(id=self.voter_id, cast_vote_id=self.id, vote=None).update(vote=vote)
 
   def verify_and_store(self):
     # if it's quarantined, don't let this go through
