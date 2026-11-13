@@ -150,7 +150,10 @@ def get_auth_url(request, redirect_url=None):
 def get_user_info_after_auth(request):
   from helios_auth.models import User
   user = User.get_by_type_and_id('phone', request.session.pop('phone_user_id'))
-  return {'type': 'phone', 'user_id': user.user_id, 'name': user.name, 'info': user.info, 'token': None}
+  # leave out the login code state: login writes info back without the code lock,
+  # and must not restore a code consumed since
+  info = {k: v for k, v in (user.info or {}).items() if not k.startswith('login_code_')}
+  return {'type': 'phone', 'user_id': user.user_id, 'name': user.name, 'info': info, 'token': None}
 
 def update_status(token, message):
   pass
