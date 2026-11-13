@@ -156,7 +156,7 @@ Voters {{voters_page.start_index}} - {{voters_page.end_index}} (of {{total_voter
 <td style="white-space: nowrap;">
 {% if election.frozen_at %}
 {% if can_send_emails %}
-[<a href="{% url "election@voters@email" election.uuid %}?voter_id={{voter.voter_login_id}}">email</a>]
+[<a href="{% url "election@voters@email" election.uuid %}?voter_id={{voter.voter_login_id|urlencode}}">email</a>]
 {% else %}
 [<span style="opacity: 0.5; cursor: not-allowed;" title="{{email_disabled_reason}}">email</span>]
 {% endif %}
