@@ -189,13 +189,17 @@ than half of the ballots cast.
     eligibility, `do_logout`.
 
   The registered systems are password, Google, GitHub, GitLab, Facebook,
-  LinkedIn, Yahoo, CAS, LDAP, and `devlogin` (debug mode only).
+  LinkedIn, Yahoo, CAS, LDAP, phone, and `devlogin` (debug mode only).
   `AUTH_ENABLED_SYSTEMS` picks which are offered. After login,
   `helios_auth.views.after` stores the user in the session. An
   `AuthenticationError` raised by a system is shown to the user.
 - **Password voters** are separate from site accounts. They log in to one
   election with the voter ID and password Helios generated and emailed them.
   The session then records `CURRENT_VOTER_ID`.
+- **Phone voters** have a `phone` site account named by their number. Only
+  numbers already on a voter list can log in, with a one-time code texted to
+  them (`helios_auth/auth_systems/phone.py`); their messages are sent as texts
+  through `helios_auth/sms.py` (`SMS_BACKEND`, Twilio settings).
 - **Permission checks** are decorators in `helios/security.py`:
   - `election_view` loads the election and, for private elections, redirects
     anyone who isn't an administrator, a trustee or a voter to a login page;
@@ -243,7 +247,7 @@ HTML escaping turned off. They are sent through the voter's login system:
 password, Google, GitHub and most others send email via Django's mail backend
 (SMTP, Mailgun or Amazon SES depending on settings).
 
-Emails sent from the administrator's "email voters" page, and password
+Emails sent from the administrator's "contact voters" page, and password
 resends, go through `single_voter_email`: it skips opted-out addresses and
 adds a signed opt-out link (`EMAIL_OPTOUT_SECRET`). Opted-out addresses are
 also refused when voters are uploaded. Two voter messages bypass this: the

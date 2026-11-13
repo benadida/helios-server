@@ -1,0 +1,28 @@
+{% extends TEMPLATE_BASE %}
+
+{% block header %}
+<h2>{{ settings.SITE_TITLE }} &mdash; Log in with your phone</h2>
+{% endblock %}
+
+{% block content %}
+
+{% if error %}
+<p style="border: 1px solid black; padding: 5px;">
+    {{error}}
+</p>
+{% endif %}
+
+<p>If {{number}} is on a voter list, we've texted it a login code. Enter it below.</p>
+
+<form class="prettyform" action="" method="POST" id="phone_verify_form">
+    <input type="hidden" name="csrf_token" value="{{csrf_token}}" />
+<table>
+    {{form.as_table}}
+</table>
+<div>
+<label for="">&nbsp;</label><input class="button" type="submit" value="Log in" />
+</div>
+</form>
+
+<p><a href="{% url "auth@phone@login" %}">Didn't get a code? Try again.</a></p>
+{% endblock %}

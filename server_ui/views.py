@@ -2,7 +2,6 @@
 server_ui specific views
 """
 
-import copy
 
 from django.conf import settings
 
@@ -36,10 +35,8 @@ def home(request):
   else:
     elections_voted = None
  
-  auth_systems = copy.copy(settings.AUTH_ENABLED_SYSTEMS)
-  try:
-    auth_systems.remove('password')
-  except: pass
+  # password and phone are for voters only
+  auth_systems = [s for s in settings.AUTH_ENABLED_SYSTEMS if s not in ('password', 'phone')]
 
   login_box = auth_views.login_box_raw(request, return_url="/", auth_systems=auth_systems)
 

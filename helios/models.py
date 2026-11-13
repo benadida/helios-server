@@ -595,12 +595,12 @@ class Election(HeliosModel):
       systems.add('password')
 
     # open registration: whoever the eligibility rules admit can also log in and
-    # register, except with password, which can't self-register
+    # register, except with password or phone, which only work for listed voters
     if self.openreg:
       if self.eligibility:
-        systems.update(e['auth_system'] for e in self.eligibility if e['auth_system'] != 'password')
+        systems.update(e['auth_system'] for e in self.eligibility if e['auth_system'] not in ('password', 'phone'))
       else:
-        systems.update(s for s in settings.AUTH_ENABLED_SYSTEMS if s != 'password')
+        systems.update(s for s in settings.AUTH_ENABLED_SYSTEMS if s not in ('password', 'phone'))
 
     return [s for s in settings.AUTH_ENABLED_SYSTEMS if s in systems]
 
@@ -851,6 +851,8 @@ class VoterFile(models.Model):
 
       if not voter_type in AUTH_SYSTEMS:
         raise Exception("invalid voter type '%s' for voter id '%s', available voter types are %s" % (voter_type, voter_id, ",".join(AUTH_SYSTEMS.keys())))
+      if hasattr(AUTH_SYSTEMS[voter_type], 'normalize_user_id'):
+        voter_id = AUTH_SYSTEMS[voter_type].normalize_user_id(voter_id)
 
       # default to having email be the same as voter_id
       voter_email = voter_id

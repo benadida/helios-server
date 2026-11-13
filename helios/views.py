@@ -1786,7 +1786,8 @@ def voters_email(request, election):
     ('vote', 'Time to Vote'),
     ('simple', 'Simple'),
     ('info', 'Additional Info'),
-    ('result', 'Election Result')
+    ('result', 'Election Result'),
+    ('short', 'Short (for text messages)')
     ]
 
   template = request.GET.get('template', 'vote')

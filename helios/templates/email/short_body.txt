@@ -1,0 +1,2 @@
+{{election.name}}: {{custom_message|safe}}
+Vote at {{election_vote_url}}

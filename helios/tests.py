@@ -17,7 +17,7 @@ from django.conf import settings
 from django.core import mail
 from django.core.files import File
 from django.core.management import call_command
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils import timezone
 from django.utils.html import escape as html_escape
 from django_tasks import TaskResultStatus
@@ -3247,7 +3247,7 @@ class VoterEmailCutoffViewTests(WebTest):
         self.setup_login()
         response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/list')
         self.assertStatusCode(response, 200)
-        self.assertContains(response, 'email voters')
+        self.assertContains(response, 'contact voters')
         # Should have a link, not a disabled button
         self.assertContains(response, 'href')
 
@@ -3259,7 +3259,7 @@ class VoterEmailCutoffViewTests(WebTest):
         self.setup_login()
         response = self.client.get(f'/helios/elections/{self.election.uuid}/voters/list')
         self.assertStatusCode(response, 200)
-        self.assertContains(response, 'email voters')
+        self.assertContains(response, 'contact voters')
         self.assertContains(response, 'disabled')
         self.assertContains(response, '3 weeks ago')
 
@@ -4629,3 +4629,43 @@ class RequeueStuckTasksTests(TestCase):
         stuck.refresh_from_db()
         self.assertEqual(stuck.status, TaskResultStatus.RUNNING)
         self.assertIn('would requeue 1 tasks', out.getvalue())
+
+
+@override_settings(AUTH_ENABLED_SYSTEMS=['password', 'phone'])
+class PhoneVoterTests(TestCase):
+    fixtures = ['users.json', 'election.json']
+    allow_database_queries = True
+
+    def setUp(self):
+        from helios_auth import sms
+        self.outbox = sms.outbox
+        self.outbox.clear()
+        self.election = models.Election.objects.get(short_name='test')
+
+    def test_upload_phone_voters(self):
+        voter_file = models.VoterFile(election=self.election, voter_file_content="phone,+1 555 123-4567,,Ann Lee\n")
+        voter_file.save()
+        voter_file.process()
+
+        voter = self.election.voter_set.get()
+        self.assertEqual(voter.voter_login_id, '+15551234567')
+        self.assertEqual(voter.voter_type, 'phone')
+        self.assertEqual(self.election.voter_auth_systems(), ['phone'])
+
+    def test_upload_rejects_bad_number(self):
+        voter_file = models.VoterFile(election=self.election, voter_file_content="phone,555 1234\n")
+        with self.assertRaisesRegex(ValueError, 'international format'):
+            list(voter_file.itervoters())
+
+    def test_short_template_is_texted(self):
+        user = auth_models.User.objects.create(user_type='phone', user_id='+15551234567', name='Ann Lee', info={})
+        voter = models.Voter.register_user_in_election(user, self.election)
+
+        tasks.single_voter_email.enqueue(voter_uuid=voter.uuid, subject_template='email/short_subject.txt',
+                                         body_template='email/short_body.txt',
+                                         extra_vars={'custom_subject': 'Vote', 'custom_message': 'Polls close Friday.',
+                                                     'election_vote_url': 'https://example.com/vote'})
+        run_queued_tasks()
+
+        self.assertEqual(self.outbox, [{'to': '+15551234567',
+                                        'body': '%s: Polls close Friday.\nVote at https://example.com/vote' % self.election.name}])
